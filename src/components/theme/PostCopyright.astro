@@ -1,4 +1,7 @@
 ---
+import { Heart, Link2, ScrollText, Share2 } from 'lucide-react';
+import { slugifySegment } from '../../lib/content';
+
 interface Props {
   permalink: string;
   title: string;
@@ -6,12 +9,23 @@ interface Props {
   authorRole: string;
   authorAvatar: string;
   badge: string;
+  copyrightTitle: string;
   notice: string;
   copyLabel: string;
   rewardLabel: string;
   rewardNote: string;
   category: string;
   tags: string[];
+  aboutTitle: string;
+  modeHref: string;
+  modeLabel: string;
+  modeDescription: string;
+  shareLabel: string;
+  rewardHref: string;
+  rewardDescription: string;
+  copyDoneLabel: string;
+  shareDoneLabel: string;
+  shareFallbackLabel: string;
 }
 
 const {
@@ -21,16 +35,70 @@ const {
   authorRole,
   authorAvatar,
   badge,
+  copyrightTitle,
   notice,
   copyLabel,
   rewardLabel,
   rewardNote,
   category,
   tags,
+  aboutTitle,
+  modeHref,
+  modeLabel,
+  modeDescription,
+  shareLabel,
+  rewardHref,
+  rewardDescription,
+  copyDoneLabel,
+  shareDoneLabel,
+  shareFallbackLabel,
 } = Astro.props;
+
+const categoryHref = `/categories/${slugifySegment(category)}/`;
 ---
 
-<section class="post-copyright-block">
+<section
+  class="post-copyright-block"
+  data-post-tools
+  data-title={title}
+  data-permalink={permalink}
+  data-copy-done={copyDoneLabel}
+  data-share-done={shareDoneLabel}
+  data-share-fallback={shareFallbackLabel}
+>
+  <div class="post-tools">
+    <div class="post-tools-left">
+      <div class="rewardLeftButton">
+        <a class="reward-link-button" href={modeHref}>
+          <ScrollText class="post-tools__icon" aria-hidden="true" />
+          <span>{modeLabel}</span>
+        </a>
+      </div>
+
+      <div class="post-tools__about">
+        <span class="post-tools__about-title">{aboutTitle}</span>
+        <p>{modeDescription}</p>
+      </div>
+    </div>
+
+    <div class="shareRight">
+      <button type="button" class="share-button" title={copyLabel} data-tool="copy">
+        <Link2 class="post-tools__icon" aria-hidden="true" />
+        <span>{copyLabel}</span>
+      </button>
+      <button type="button" class="share-button" title={shareLabel} data-tool="share">
+        <Share2 class="post-tools__icon" aria-hidden="true" />
+        <span>{shareLabel}</span>
+      </button>
+      <a class="share-button" href={rewardHref} title={rewardLabel}>
+        <Heart class="post-tools__icon" aria-hidden="true" />
+        <span>{rewardLabel}</span>
+      </a>
+    </div>
+
+    <div class="post-tools__status" aria-live="polite"></div>
+  </div>
+
   <div class="post-copyright">
     <div class="copyright-cc-box">©</div>
     <div class="post-copyright__author_box">
@@ -44,9 +112,9 @@ const {
 
     <div class="post-copyright__post__info">
       <a class="post-copyright__original" href={permalink}>{badge}</a>
-      <a class="post-copyright-title" href={permalink}>
+      <button type="button" class="post-copyright-title" data-tool="copy" title={copyLabel}>
         <span>{title}</span>
-      </a>
+      </button>
     </div>
 
     <div class="post-copyright__notice">
@@ -57,8 +125,13 @@ const {
   <div class="post-tools-right">
     <div class="tag_share">
       <div class="post-meta__box">
+        <div class="post-meta__box__heading">
+          <span class="post-meta__box__title">{copyrightTitle}</span>
+          <p>{rewardDescription}</p>
+        </div>
+
         <div class="post-meta__box__category-list">
-          <a href={`/categories/${category.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`} class="post-meta__box__categoryes">
+          <a href={categoryHref} class="post-meta__box__categoryes">
             <span class="categoryes-punctuation">#</span>
             {category}
           </a>
@@ -67,10 +140,7 @@ const {
         {tags.length > 0 && (
           <div class="post-meta__box__tag-list">
             {tags.map((tag) => (
-              <a
-                href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`}
-                class="post-meta__box__tags"
-              >
+              <a href={`/tags/${slugifySegment(tag)}/`} class="post-meta__box__tags">
                 <span class="tags-punctuation">#</span>
                 {tag}
               </a>
@@ -80,14 +150,13 @@ const {
       </div>
 
       <div class="post-share-actions">
-        <button
-          type="button"
-          class="post-share-actions__button"
-          onclick={`navigator.clipboard?.writeText(${JSON.stringify(permalink)})`}
-        >
+        <button type="button" class="post-share-actions__button" data-tool="copy">
           {copyLabel}
         </button>
-        <a href="/about/#about-reward" class="post-share-actions__button is-ghost">
+        <button type="button" class="post-share-actions__button is-ghost" data-tool="share">
+          {shareLabel}
+        </button>
+        <a href={rewardHref} class="post-share-actions__button is-accent">
           {rewardLabel}
         </a>
       </div>
@@ -95,3 +164,80 @@ const {
     <p class="post-share-actions__note">{rewardNote}</p>
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const sections = document.querySelectorAll('[data-post-tools]');
+    if (sections.length === 0) return;
+
+    const copyText = async (value) => {
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch {}
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    sections.forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+
+      const permalink = section.dataset.permalink ?? window.location.href;
+      const title = section.dataset.title ?? document.title;
+      const copyDone = section.dataset.copyDone ?? '链接已复制';
+      const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
+      const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
+      const status = section.querySelector('.post-tools__status');
+      let statusTimer = 0;
+
+      const setStatus = (message) => {
+        if (!(status instanceof HTMLElement)) return;
+        window.clearTimeout(statusTimer);
+        status.textContent = message;
+        status.classList.add('is-visible');
+        statusTimer = window.setTimeout(() => {
+          status.classList.remove('is-visible');
+        }, 2200);
+      };
+
+      section.querySelectorAll('[data-tool="copy"]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const copied = await copyText(permalink);
+          if (copied) setStatus(copyDone);
+        });
+      });
+
+      section.querySelectorAll('[data-tool="share"]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          if (navigator.share) {
+            try {
+              await navigator.share({ title, url: permalink });
+              setStatus(shareDone);
+              return;
+            } catch (error) {
+              if (error instanceof DOMException && error.name === 'AbortError') return;
+            }
+          }
+
+          const copied = await copyText(permalink);
+          if (copied) setStatus(shareFallback);
+        });
+      });
+    });
+  })();
+</script>

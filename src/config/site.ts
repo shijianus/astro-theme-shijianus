@@ -338,9 +338,16 @@ export const siteConfig = {
   },
   post: {
     tools: {
+      aboutTitle: '关于说明',
       modeLabel: '运营模式与责任',
       modeHref: '/about/',
+      modeDescription: '这篇文章按长期维护内容来处理，分享、转载和支持入口都统一收口，便于后续持续更新。',
       shareLabel: '系统分享',
+      rewardHref: '/about/#about-reward',
+      rewardDescription: '如果这篇文章对你有帮助，可以直接查看支持入口和最近的充电记录。',
+      copyDoneLabel: '链接已复制',
+      shareDoneLabel: '已唤起系统分享',
+      shareFallbackLabel: '当前环境不支持系统分享，已回退为复制链接',
     },
     copyright: {
       badge: '原创',
