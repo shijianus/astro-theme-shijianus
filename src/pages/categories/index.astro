@@ -3,72 +3,54 @@ import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import { collectCategories, sortPostsByDate } from '../../lib/content';
-import { createSidebarData, getLatestByCategory } from '../../lib/theme';
+import { createSidebarData } from '../../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
 const categories = collectCategories(posts);
-const latestByCategory = getLatestByCategory(posts);
+const sortedCategories = [...categories].sort(
+  (left, right) => right.label.length - left.label.length || right.count - left.count || left.label.localeCompare(right.label),
+);
 const sidebarData = createSidebarData(posts);
-const categoryAccents = ['#5b8cff', '#ff7d55', '#30c48d', '#7a6cff', '#ffb02e', '#49b6ff'];
 const latestEntry = posts[0];
-const featuredCategory = categories[0];
 ---
 
 <BlogLayout title="分类" showAside={false} pageType="categories" sidebarData={sidebarData}>
   <section class="taxonomy-page taxonomy-page--categories">
-    <div class="taxonomy-shell">
-      <header class="taxonomy-hero-card taxonomy-hero-card--categories theme-card">
-        <div class="taxonomy-hero-card__content">
-          <p class="eyebrow">Category Index</p>
+    <div class="taxonomy-index-card theme-card" style="--taxonomy-accent:#5b8cff;">
+      <header class="taxonomy-index-card__head">
+        <p class="taxonomy-index-card__eyebrow">Category Index</p>
+        <div class="taxonomy-index-card__title">
           <h1>{siteConfig.pages.categories.title}</h1>
-          <p class="taxonomy-hero-card__summary">
+          <p>
             {siteConfig.pages.categories.summary}
             {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
           </p>
-          <div class="taxonomy-cloud taxonomy-cloud--categories">
-            {categories.map((item, index) => (
-              <a href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
-                <span>#{item.label}</span>
-                <sup>{item.count}</sup>
-              </a>
-            ))}
-          </div>
         </div>
-
-        <div class="taxonomy-hero-card__stats">
+        <div class="taxonomy-index-card__meta" aria-label="分类页统计">
           <span>
             <strong>{categories.length}</strong>
-            <small>分类</small>
+            分类
           </span>
           <span>
             <strong>{posts.length}</strong>
-            <small>文章</small>
-          </span>
-          <span>
-            <strong>{featuredCategory?.label ?? '暂无'}</strong>
-            <small>当前主轴</small>
+            文章
           </span>
         </div>
       </header>
 
-      <section class="taxonomy-section-card taxonomy-section-card--categories">
-        <div class="taxonomy-section-card__head">
-          <p class="eyebrow">Topic Matrix</p>
-          <h2>按主题继续</h2>
-          <p>每个分类保留文章数量与最近更新线索，直接进入对应主题。</p>
+      <div class="tag-cloud-list is-center">
+        <div id="tag">
+          <div class="category-lists" id="tag-page-tags">
+            {sortedCategories.map((item) => (
+              <a href={`/categories/${item.slug}/`}>
+                <span class="tags-punctuation">#</span>
+                {item.label}
+                <span class="tagsPageCount">{item.count}</span>
+              </a>
+            ))}
+          </div>
         </div>
-
-        <div class="taxonomy-grid taxonomy-grid--categories">
-          {categories.map((item, index) => (
-            <a class="taxonomy-grid__item taxonomy-grid__item--category" href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
-              <span class="taxonomy-grid__index">{String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.label}</strong>
-              <span>{item.count} 篇文章</span>
-              <p>{latestByCategory.get(item.label) ?? '暂无文章'}</p>
-            </a>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   </section>
 </BlogLayout>
