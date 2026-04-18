@@ -1,0 +1,97 @@
+---
+interface Props {
+  permalink: string;
+  title: string;
+  authorName: string;
+  authorRole: string;
+  authorAvatar: string;
+  badge: string;
+  notice: string;
+  copyLabel: string;
+  rewardLabel: string;
+  rewardNote: string;
+  category: string;
+  tags: string[];
+}
+
+const {
+  permalink,
+  title,
+  authorName,
+  authorRole,
+  authorAvatar,
+  badge,
+  notice,
+  copyLabel,
+  rewardLabel,
+  rewardNote,
+  category,
+  tags,
+} = Astro.props;
+---
+
+<section class="post-copyright-block">
+  <div class="post-copyright">
+    <div class="copyright-cc-box">©</div>
+    <div class="post-copyright__author_box">
+      <a class="post-copyright__author_img" href="/about/" title={authorName}>
+        <img class="post-copyright__author_img_back" src={authorAvatar} alt={authorName} loading="lazy" />
+        <img class="post-copyright__author_img_front" src={authorAvatar} alt={authorName} loading="lazy" />
+      </a>
+      <div class="post-copyright__author_name">{authorName}</div>
+      <div class="post-copyright__author_desc">{authorRole}</div>
+    </div>
+
+    <div class="post-copyright__post__info">
+      <a class="post-copyright__original" href={permalink}>{badge}</a>
+      <a class="post-copyright-title" href={permalink}>
+        <span>{title}</span>
+      </a>
+    </div>
+
+    <div class="post-copyright__notice">
+      <span class="post-copyright-info">{notice}</span>
+    </div>
+  </div>
+
+  <div class="post-tools-right">
+    <div class="tag_share">
+      <div class="post-meta__box">
+        <div class="post-meta__box__category-list">
+          <a href={`/categories/${category.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`} class="post-meta__box__categoryes">
+            <span class="categoryes-punctuation">#</span>
+            {category}
+          </a>
+        </div>
+
+        {tags.length > 0 && (
+          <div class="post-meta__box__tag-list">
+            {tags.map((tag) => (
+              <a
+                href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`}
+                class="post-meta__box__tags"
+              >
+                <span class="tags-punctuation">#</span>
+                {tag}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="post-share-actions">
+        <button
+          type="button"
+          class="post-share-actions__button"
+          onclick={`navigator.clipboard?.writeText(${JSON.stringify(permalink)})`}
+        >
+          {copyLabel}
+        </button>
+        <a href="/about/#about-reward" class="post-share-actions__button is-ghost">
+          {rewardLabel}
+        </a>
+      </div>
+    </div>
+    <p class="post-share-actions__note">{rewardNote}</p>
+  </div>
+</section>

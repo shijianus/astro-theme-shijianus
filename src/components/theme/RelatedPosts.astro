@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
+import { formatDisplayDate } from '../../lib/theme';
+
+interface Props {
+  posts: CollectionEntry<'posts'>[];
+  eyebrow: string;
+  title: string;
+}
+
+const { posts, eyebrow, title } = Astro.props;
+---
+
+<section class="relatedPosts">
+  <div class="relatedPosts__head">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 class="relatedPosts__title">{title}</h2>
+  </div>
+
+  <div class="relatedPosts-list">
+    {posts.map((post) => (
+      <a class="relatedPosts-item" href={getPostPath(post)}>
+        <img src={resolveCover(post)} alt={resolveCoverAlt(post)} loading="lazy" />
+        <div class="content">
+          <div class="date">{formatDisplayDate(post.data.pubDate)}</div>
+          <div class="title">{post.data.title}</div>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>

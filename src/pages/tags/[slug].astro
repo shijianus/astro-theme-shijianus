@@ -22,7 +22,7 @@ const currentPosts = posts.filter((entry) => entry.data.tags.some((tag) => slugi
 const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout title={`标签: ${tagLabel}`} sidebarData={sidebarData}>
+<BlogLayout title={`标签: ${tagLabel}`} sidebarData={sidebarData} pageType="tag-detail">
   <Fragment slot="hero">
     <PageHero
       eyebrow="Tag Detail"

@@ -1,0 +1,272 @@
+---
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  stats: {
+    posts: number;
+    categories: number;
+    tags: number;
+    readingMinutes: number;
+  };
+}
+
+const { stats } = Astro.props;
+const about = siteConfig.pages.about;
+const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero.chips];
+---
+
+<section id="about-page">
+  <div class="author-box">
+    <div class="author-tag-left">
+      {about.floatingTagsLeft.map((item) => (
+        <span class="author-tag">{item}</span>
+      ))}
+    </div>
+
+    <div class="author-img">
+      <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="eager" />
+    </div>
+
+    <div class="author-tag-right">
+      {about.floatingTagsRight.map((item) => (
+        <span class="author-tag">{item}</span>
+      ))}
+    </div>
+  </div>
+
+  <p class="p center logo large">{about.title}</p>
+  <p class="p center small">{about.subtitle}</p>
+
+  <div class="author-content">
+    <div class="author-content-item myInfoAndSayHello">
+      <div class="title1">{about.helloTips}</div>
+      <div class="title2">
+        我叫 <span class="inline-word">{siteConfig.site.author.name}</span>
+      </div>
+      <div class="title1">{about.helloDescription}</div>
+    </div>
+
+    <div class="author-content-item aboutsiteTips">
+      <div class="author-content-item-tips">{about.siteTips.tips}</div>
+      <h2>
+        {about.siteTips.titleTop}
+        <br />
+        {about.siteTips.titleBottom}
+        <div class="mask">
+          {about.siteTips.words.map((word, index) => (
+            <span data-show={index === about.siteTips.words.length - 1 ? true : undefined} data-up={index === about.siteTips.words.length - 2 ? true : undefined}>
+              {word}
+            </span>
+          ))}
+        </div>
+      </h2>
+    </div>
+  </div>
+
+  <div class="hello-about">
+    <div class="content">
+      <h1>{about.helloWordmark}</h1>
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item skills">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.skills.tips}</div>
+        <span class="author-content-item-title">{about.skills.title}</span>
+
+        <div class="skills-style-group">
+          <div class="skills-style-group__track">
+            {[...skillMarquee, ...skillMarquee].map((item) => (
+              <span>{item}</span>
+            ))}
+          </div>
+        </div>
+
+        <div class="skills-list">
+          {about.skills.items.map((item) => (
+            <div class="skill-info">
+              <div class="skill-icon" style={`background:${item.accent}`}>
+                <span>{item.icon}</span>
+              </div>
+              <div class="skill-name">
+                <span>{item.label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="author-content-item careers">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.careers.tips}</div>
+        <span class="author-content-item-title">{about.careers.title}</span>
+        <div class="careers-group">
+          {about.careers.items.map((item) => (
+            <div class="career-item">
+              <div class="circle" style={`background:${item.accent}`}></div>
+              <div class="name">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <img class="author-content-img" src="/media/shijianus/system.jpg" alt="career board" loading="lazy" />
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="about-statistic author-content-item">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.statistics.tips}</div>
+        <span class="author-content-item-title">{about.statistics.title}</span>
+        <div class="about-statistic__grid">
+          <div>
+            <strong>{stats.posts}</strong>
+            <span>文章</span>
+          </div>
+          <div>
+            <strong>{stats.categories}</strong>
+            <span>分类</span>
+          </div>
+          <div>
+            <strong>{stats.tags}</strong>
+            <span>标签</span>
+          </div>
+          <div>
+            <strong>{stats.readingMinutes}</strong>
+            <span>阅读分钟</span>
+          </div>
+        </div>
+        <div class="banner-button-group">
+          <a class="banner-button" href={about.statistics.buttonHref}>
+            <span class="banner-button-text">{about.statistics.buttonLabel}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="author-content-item-group column mapAndInfo">
+      <div class="author-content-item map single">
+        <span class="map-title">
+          {about.map.title}
+          <b>{about.map.accent}</b>
+        </span>
+      </div>
+
+      <div class="author-content-item selfInfo single">
+        {about.selfInfo.map((item) => (
+          <div>
+            <span class="selfInfo-title">{item.label}</span>
+            <span class="selfInfo-content" style={`color:${item.accent}`}>{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item personalities">
+      <div class="author-content-item-tips">性格</div>
+      <span class="author-content-item-title">{about.personality.title}</span>
+      <p class="post-tips">{about.personality.summary}</p>
+    </div>
+
+    <div class="author-content-item myphoto">
+      <img class="author-content-img" src={siteConfig.site.author.cover} alt={about.photoTitle} loading="lazy" />
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item maxim">
+      <div class="author-content-item-tips">{about.maxim.tips}</div>
+      <span class="maxim-title">
+        <span>{about.maxim.top}</span>
+        <span>{about.maxim.bottom}</span>
+      </span>
+    </div>
+
+    <div class="author-content-item buff">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.buff.tips}</div>
+        <span class="buff-title">
+          <span>{about.buff.top}</span>
+          <span>{about.buff.bottom}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item game-yuanshen">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.game.tips}</div>
+        <span class="author-content-item-title">{about.game.title}</span>
+        <div class="content-bottom">
+          <div class="tips">{about.game.summary}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="author-content-item comic-content">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.comic.tips}</div>
+        <span class="author-content-item-title">{about.comic.title}</span>
+        <div class="comic-box">
+          {about.comic.items.map((item) => (
+            <span class="comic-item">{item}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item like-technology">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.likeTech.tips}</div>
+        <span class="author-content-item-title">{about.likeTech.title}</span>
+        <div class="content-bottom">
+          <div class="tips">{about.likeTech.summary}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="author-content-item like-music">
+      <div class="card-content">
+        <div class="author-content-item-tips">{about.likeMusic.tips}</div>
+        <span class="author-content-item-title">{about.likeMusic.title}</span>
+        <div class="content-bottom">
+          <div class="tips">{about.likeMusic.summary}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="author-content">
+    <div class="author-content-item single reward" id="about-reward">
+      <div class="author-content-item-tips">支持</div>
+      <span class="author-content-item-title">充电记录</span>
+      <div class="reward-list-all">
+        {about.rewards.map((item) => (
+          <div class="reward-list-item">
+            <div class="reward-list-item-name">{item.name}</div>
+            <div class="reward-list-bottom-group">
+              <div class="reward-list-item-money">{item.amount}</div>
+              <div class="reward-list-item-time">{item.date}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="about-reward">
+        <div class="about-reward__bars">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="about-reward__button">感谢每一份支持</div>
+      </div>
+    </div>
+  </div>
+</section>

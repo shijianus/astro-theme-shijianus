@@ -12,6 +12,7 @@ const { featuredPosts, latestPosts } = Astro.props;
 
 const topPosts = (featuredPosts.length > 0 ? featuredPosts : latestPosts).slice(0, 6);
 const todayPost = topPosts[0] ?? latestPosts[0];
+const mobileFocusPost = topPosts[0] ?? todayPost;
 const categoryItems = siteConfig.home.categories.slice(0, 3);
 const skillTags = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero.chips];
 const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
@@ -19,6 +20,12 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
 
 <section id="home_top" aria-label="Home highlight modules">
   <input id="today-card-toggle" class="today-card-toggle" type="checkbox" aria-hidden="true" />
+
+  <div class="home-top-notice">
+    <span class="home-top-notice__label">{siteConfig.home.announcement.eyebrow}</span>
+    <p>{siteConfig.home.announcement.summary}</p>
+    <a href={siteConfig.home.announcement.href}>更多</a>
+  </div>
 
   <div class="swiper_container_card">
     <div id="bannerGroup">
@@ -60,6 +67,17 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
           </div>
         ))}
       </div>
+
+      {mobileFocusPost && (
+        <article class="home-mobile-focus-card">
+          <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
+            <img src={resolveCover(mobileFocusPost)} alt={resolveCoverAlt(mobileFocusPost)} loading="eager" />
+            <span class="home-mobile-focus-card__body">
+              <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
+            </span>
+          </a>
+        </article>
+      )}
     </div>
 
     <div class="topGroup">

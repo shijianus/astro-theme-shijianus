@@ -39,9 +39,16 @@ export function getExcerpt(entry: PostEntry, maxLength = 170) {
 }
 
 export function estimateReadingMinutes(entry: PostEntry) {
-  const plain = entry.body.replace(/[`#>*_[\]\(\)!-]/g, ' ');
-  const tokenCount = plain.trim().split(/\s+/).filter(Boolean).length;
+  const tokenCount = estimateWordCount(entry);
   return Math.max(1, Math.round(tokenCount / 220));
+}
+
+export function estimateWordCount(entry: PostEntry) {
+  const plain = entry.body.replace(/[`#>*_[\]\(\)!-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!plain) return 0;
+  const compact = plain.replace(/\s+/g, '');
+  const latinTokens = plain.split(/\s+/).filter(Boolean).length;
+  return Math.max(compact.length, latinTokens);
 }
 
 export function slugifySegment(value: string) {

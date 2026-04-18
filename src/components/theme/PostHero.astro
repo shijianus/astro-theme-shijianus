@@ -1,0 +1,37 @@
+---
+interface Props {
+  title: string;
+  image: string;
+  imageAlt: string;
+  badges?: string[];
+  meta?: string[];
+}
+
+const { title, image, imageAlt, badges = [], meta = [] } = Astro.props;
+---
+
+<section class="post-hero">
+  <div class="post-hero__cover">
+    <img src={image} alt={imageAlt} class="post-hero__image" loading="eager" />
+    <div class="post-hero__overlay"></div>
+  </div>
+  <div class="post-hero__inner">
+    {badges.length > 0 && (
+      <div class="post-hero__badges">
+        {badges.map((item, index) => (
+          <span class:list={['post-hero__badge', index === 0 && 'is-primary']}>{item}</span>
+        ))}
+      </div>
+    )}
+
+    <h1>{title}</h1>
+
+    {meta.length > 0 && (
+      <div class="post-hero__meta">
+        {meta.map((item) => (
+          <span>{item}</span>
+        ))}
+      </div>
+    )}
+  </div>
+</section>

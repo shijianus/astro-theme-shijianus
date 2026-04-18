@@ -22,7 +22,7 @@ const currentPosts = posts.filter((entry) => slugifySegment(resolveCategory(entr
 const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout title={`分类: ${categoryLabel}`} sidebarData={sidebarData}>
+<BlogLayout title={`分类: ${categoryLabel}`} sidebarData={sidebarData} pageType="category-detail">
   <Fragment slot="hero">
     <PageHero
       eyebrow="Category Detail"

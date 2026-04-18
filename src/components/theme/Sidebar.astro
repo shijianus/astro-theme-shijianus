@@ -1,27 +1,37 @@
 ---
+import { Archive, BellRing, ChartColumnIncreasing, FolderTree, Newspaper, Sparkles, Tags } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCover } from '../../lib/content';
 import type { SidebarData } from '../../lib/theme';
+import { TocObserver } from '../TocObserver';
 import { ProfileWidget } from '../ProfileWidget';
 
-interface Props extends SidebarData {}
+interface Props extends SidebarData {
+  pageType?: string;
+}
 
 const {
   recentPosts,
   tags,
   archives,
+  categories,
   totalPosts,
   totalCategories,
   totalTags,
   totalReadingMinutes,
   headings = [],
+  pageType = 'page',
 } = Astro.props;
+
+const showRecentPosts = pageType === 'post' && recentPosts.length > 0;
+const showToc = pageType === 'post' && siteConfig.theme.features.postToc && headings.length > 0;
+const showCategories = pageType !== 'post' && siteConfig.theme.features.asideCategories && categories.length > 0;
+const showFeatureCard = pageType !== 'post' && siteConfig.theme.features.asideFeatureCard;
 ---
 
 <div class="aside-content" id="aside-content">
   {siteConfig.theme.features.asideAuthor && (
     <ProfileWidget
-      client:load
       name={siteConfig.site.author.name}
       role={siteConfig.site.author.role}
       motto={siteConfig.site.author.motto}
@@ -43,49 +53,101 @@ const {
   {siteConfig.theme.features.asideStatus && (
     <section class="card-widget card-announcement">
       <div class="item-headline">
-        <span>Working Notes</span>
+        <BellRing class="aside-title-icon" aria-hidden="true" />
+        <span>公告</span>
       </div>
-      <div class="announcement-list">
-        {siteConfig.aside.status.map((item) => (
-          <div class="announcement-item">
-            <span>{item.title}</span>
-            <strong>{item.value}</strong>
-            <p>{item.detail}</p>
-          </div>
+      <div class="announcement_content">
+        <p>{siteConfig.aside.announcement}</p>
+      </div>
+    </section>
+  )}
+
+  {showFeatureCard && (
+    <section class="card-widget card-feature-panel">
+      <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
+      <h3>{siteConfig.aside.featureCard.title}</h3>
+      <p>{siteConfig.aside.featureCard.summary}</p>
+      <div class="feature-card__chips">
+        {siteConfig.aside.featureCard.chips.map((item) => (
+          <span>{item}</span>
         ))}
       </div>
     </section>
   )}
 
-  {recentPosts.length > 0 && (
-    <section class="card-widget card-recent-post">
+  {showCategories && (
+    <section class="card-widget card-categories">
       <div class="item-headline">
-        <span>Recent Posts</span>
+        <FolderTree class="aside-title-icon" aria-hidden="true" />
+        <span>分类</span>
       </div>
-      <div class="aside-list">
-        {recentPosts.slice(0, 5).map((entry) => (
-          <a href={getPostPath(entry)} class="aside-list-item">
-            <span class="thumbnail">
-              <img src={resolveCover(entry)} alt={entry.data.title} loading="lazy" />
-            </span>
-            <span class="content">
-              <span class="title">{entry.data.title}</span>
-              <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-            </span>
-          </a>
+      <ul class="card-category-list">
+        {categories.slice(0, 8).map((item) => (
+          <li class="card-category-list-item">
+            <a class="card-category-list-link" href={`/categories/${item.slug}/`}>
+              <span class="card-category-list-name">{item.label}</span>
+              <span class="card-category-list-count-group">
+                <span class="card-category-list-count">{item.count}</span>
+                <span>篇</span>
+              </span>
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   )}
 
   <div class="sticky_layout">
+    {showToc && (
+      <section class="card-widget" id="card-toc">
+        <div class="item-headline">
+          <Sparkles class="aside-title-icon" aria-hidden="true" />
+          <span>文章目录</span>
+          <span class="toc-percentage"></span>
+        </div>
+        <div class="toc-content">
+          {headings
+            .filter((heading) => heading.depth <= 3)
+            .map((heading) => (
+              <a href={`#${heading.slug}`} class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}>
+                <span class="toc-text">{heading.text}</span>
+              </a>
+            ))}
+        </div>
+        <TocObserver client:visible />
+      </section>
+    )}
+
+    {showRecentPosts && (
+      <section class="card-widget card-recent-post">
+        <div class="item-headline">
+          <Newspaper class="aside-title-icon" aria-hidden="true" />
+          <span>最近文章</span>
+        </div>
+        <div class="aside-list">
+          {recentPosts.slice(0, 5).map((entry) => (
+            <a href={getPostPath(entry)} class="aside-list-item">
+              <span class="thumbnail">
+                <img src={resolveCover(entry)} alt={entry.data.title} loading="lazy" />
+              </span>
+              <span class="content">
+                <span class="title">{entry.data.title}</span>
+                <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     {siteConfig.theme.features.asideTags && tags.length > 0 && (
       <section class="card-widget card-tags">
         <div class="item-headline">
-          <span>Tags</span>
+          <Tags class="aside-title-icon" aria-hidden="true" />
+          <span>标签</span>
         </div>
         <div class="card-tag-cloud">
-          {tags.slice(0, 18).map((tag) => (
+          {tags.slice(0, 24).map((tag) => (
             <a href={`/tags/${tag.slug}/`}>
               {tag.label}
               <sup>{tag.count}</sup>
@@ -98,7 +160,8 @@ const {
     {siteConfig.theme.features.asideArchives && archives.length > 0 && (
       <section class="card-widget card-archives">
         <div class="item-headline">
-          <span>Archives</span>
+          <Archive class="aside-title-icon" aria-hidden="true" />
+          <span>归档</span>
         </div>
         <ul class="card-archive-list">
           {archives.slice(0, 8).map((item) => (
@@ -116,44 +179,34 @@ const {
       </section>
     )}
 
-    {siteConfig.theme.features.postToc && headings.length > 0 && (
-      <section class="card-widget" id="card-toc">
-        <div class="item-headline">
-          <span>On This Page</span>
-        </div>
-        <div class="toc-content">
-          {headings
-            .filter((heading) => heading.depth <= 3)
-            .map((heading) => (
-              <a href={`#${heading.slug}`} class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}>
-                <span class="toc-text">{heading.text}</span>
-              </a>
-            ))}
-        </div>
-      </section>
-    )}
-
     {siteConfig.theme.features.asideWebInfo && (
       <section class="card-widget card-webinfo">
         <div class="item-headline">
-          <span>Info</span>
+          <ChartColumnIncreasing class="aside-title-icon" aria-hidden="true" />
+          <span>站点信息</span>
         </div>
         <div class="webinfo">
           <div class="webinfo-item">
             <div class="webinfo-item-title">
-              <span class="item-name">Article :</span>
+              <span class="item-name">文章总数 :</span>
             </div>
             <div class="item-count">{totalPosts}</div>
           </div>
           <div class="webinfo-item">
             <div class="webinfo-item-title">
-              <span class="item-name">Categories :</span>
+              <span class="item-name">分类总数 :</span>
             </div>
             <div class="item-count">{totalCategories}</div>
           </div>
           <div class="webinfo-item">
             <div class="webinfo-item-title">
-              <span class="item-name">Read time :</span>
+              <span class="item-name">标签总数 :</span>
+            </div>
+            <div class="item-count">{totalTags}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">阅读时长 :</span>
             </div>
             <div class="item-count">{totalReadingMinutes}m</div>
           </div>

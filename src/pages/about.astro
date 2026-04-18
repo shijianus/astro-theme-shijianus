@@ -1,62 +1,21 @@
 ---
 import { getCollection } from 'astro:content';
-import { MacCodeBlock } from '../components/MacCodeBlock';
-import PageHero from '../components/theme/PageHero.astro';
-import { siteConfig } from '../config/site';
+import AboutDashboard from '../components/theme/AboutDashboard.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
 import { sortPostsByDate } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
-
-const manifesto = `export const manifesto = {
-  brand: 'shijianus',
-  strategy: ['config first', 'content first', 'api ready'],
-  interface: ['high density', 'strong identity', 'readable'],
-};`;
 ---
 
-<BlogLayout title="关于" sidebarData={sidebarData}>
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="About shijianus"
-      title="一套为长期写作和长期维护准备的主题内核"
-      summary="这一版不再只做结构演示，而是把共享样式、交互反馈和内容入口真正收束成可以长期迭代的主题系统。"
-      image="/media/shijianus/workbench.jpg"
-      imageAlt="about background"
-      meta={['Astro', 'React', 'Tailwind', 'API-ready']}
-    />
-  </Fragment>
-
-  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-    <section class="theme-card space-y-4">
-      <p class="eyebrow">Design Rules</p>
-      <h2 class="text-3xl font-semibold text-[var(--text-strong)]">当前实现遵守的核心约束</h2>
-      <div class="space-y-3 text-sm leading-7 text-[var(--text-soft)]">
-        <p>1. 所有用户可见文案只保留 shijianus 品牌。</p>
-        <p>2. 主题结构必须先于视觉细节，所有主板块都需要明确 config 入口。</p>
-        <p>3. 未来接 API 时优先替换数据来源，而不是重写页面。</p>
-        <p>4. React 只负责交互控件，内容渲染与路由组织交给 Astro。</p>
-      </div>
-    </section>
-
-    <MacCodeBlock code={manifesto} language="ts" title="Manifesto" client:load />
-  </section>
-
-  <section class="grid gap-4 md:grid-cols-2">
-    <section class="theme-card theme-card--soft space-y-3">
-      <p class="eyebrow">Author</p>
-      <h2 class="text-2xl font-semibold text-[var(--text-strong)]">{siteConfig.site.author.name}</h2>
-      <p class="text-sm leading-7 text-[var(--text-soft)]">{siteConfig.site.author.bio}</p>
-    </section>
-
-    <section class="theme-card theme-card--soft space-y-3">
-      <p class="eyebrow">Theme Intent</p>
-      <h2 class="text-2xl font-semibold text-[var(--text-strong)]">保留作者感，也保留工程秩序</h2>
-      <p class="text-sm leading-7 text-[var(--text-soft)]">
-        这次工作不是把旧模板搬过来，而是把它的布局逻辑、视觉节奏和模块能力系统化，变成真正适合长期维护的 Astro 主题。
-      </p>
-    </section>
-  </section>
+<BlogLayout title="关于" showAside={false} pageType="about" sidebarData={sidebarData}>
+  <AboutDashboard
+    stats={{
+      posts: sidebarData.totalPosts,
+      categories: sidebarData.totalCategories,
+      tags: sidebarData.totalTags,
+      readingMinutes: sidebarData.totalReadingMinutes,
+    }}
+  />
 </BlogLayout>

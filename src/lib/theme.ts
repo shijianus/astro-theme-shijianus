@@ -19,6 +19,19 @@ export type SidebarArchive = {
   count: number;
 };
 
+export type SidebarCategory = {
+  label: string;
+  slug: string;
+  count: number;
+};
+
+export type WeightedTaxonomyItem = {
+  label: string;
+  slug: string;
+  count: number;
+  weight: number;
+};
+
 export type SidebarHeading = {
   depth: number;
   slug: string;
@@ -29,6 +42,7 @@ export type SidebarData = {
   recentPosts: CollectionEntry<'posts'>[];
   tags: SidebarTag[];
   archives: SidebarArchive[];
+  categories: SidebarCategory[];
   totalPosts: number;
   totalCategories: number;
   totalTags: number;
@@ -49,6 +63,7 @@ export function createSidebarData(posts: PostEntry[], headings: SidebarHeading[]
     recentPosts: sortedPosts,
     tags,
     archives,
+    categories,
     totalPosts: sortedPosts.length,
     totalCategories: categories.length,
     totalTags: tags.length,
@@ -94,4 +109,18 @@ export function formatCompactDate(date: Date, locale = 'zh-CN') {
     month: '2-digit',
     day: '2-digit',
   });
+}
+
+export function createWeightedTaxonomy<T extends { label: string; slug: string; count: number }>(items: T[]): WeightedTaxonomyItem[] {
+  if (items.length === 0) return [];
+
+  const counts = items.map((item) => item.count);
+  const min = Math.min(...counts);
+  const max = Math.max(...counts);
+  const span = Math.max(1, max - min);
+
+  return items.map((item) => ({
+    ...item,
+    weight: Number(((item.count - min) / span).toFixed(3)),
+  }));
 }

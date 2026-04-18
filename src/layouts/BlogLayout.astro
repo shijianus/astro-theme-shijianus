@@ -1,6 +1,6 @@
 ---
 import { siteConfig } from '../config/site';
-import { LoadingScreen } from '../components/LoadingScreen';
+import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
@@ -9,12 +9,14 @@ import Sidebar from '../components/theme/Sidebar.astro';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
 import type { SidebarData } from '../lib/theme';
 import '../styles/global.css';
+import '../styles/rebuild.css';
 
 interface Props {
   title: string;
   description?: string;
   showAside?: boolean;
   sidebarData?: SidebarData;
+  pageType?: string;
 }
 
 const {
@@ -22,6 +24,7 @@ const {
   description = siteConfig.site.description,
   showAside = true,
   sidebarData,
+  pageType = 'page',
 } = Astro.props;
 
 const overlayPosts =
@@ -68,21 +71,16 @@ const overlayFeatures = {
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{title} | {siteConfig.site.title}</title>
   </head>
-  <body class="theme-body" data-type="shijianus">
+  <body class="theme-body" data-type={pageType}>
     {siteConfig.theme.features.loadingScreen && (
-      <LoadingScreen
-        client:load
-        brandName={siteConfig.site.name}
-        avatar={siteConfig.site.author.avatar}
-        durationMs={siteConfig.theme.motion.pageRevealDurationMs}
-      />
+      <LoadingScreen brandName={siteConfig.site.name} avatar={siteConfig.site.author.avatar} />
     )}
 
     <div id="web_bg" aria-hidden="true"></div>
 
     <div class="page" id="body-wrap">
       <SiteHeader
-        client:load
+        client:idle
         brandName={siteConfig.site.name}
         domainLabel={siteConfig.site.domainLabel}
         currentPath={Astro.url.pathname}
@@ -106,18 +104,18 @@ const overlayFeatures = {
           {showAside && sidebarData && (
             <aside class="page-aside">
               <div class="page-aside__sticky">
-                <Sidebar {...sidebarData} />
+                <Sidebar {...sidebarData} pageType={pageType} />
               </div>
             </aside>
           )}
         </div>
       </main>
 
-      <Footer />
+      <Footer stats={overlayStats} />
 
-      <ThemeDock client:load />
+      <ThemeDock client:idle />
       <ThemeOverlays
-        client:load
+        client:idle
         brandName={siteConfig.site.name}
         authorName={siteConfig.site.author.name}
         authorMotto={siteConfig.site.author.motto}

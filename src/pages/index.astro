@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import HomeHero from '../components/theme/HomeHero.astro';
 import PostCard from '../components/theme/PostCard.astro';
-import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
 import { collectCategories, getFeaturedPosts, sortPostsByDate } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
@@ -13,50 +12,10 @@ const categories = collectCategories(posts);
 const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout title="首页" sidebarData={sidebarData}>
+<BlogLayout title="首页" sidebarData={sidebarData} pageType="home">
   <Fragment slot="hero">
     <HomeHero featuredPosts={featuredPosts} latestPosts={posts} />
   </Fragment>
-
-  <section class="home-feed-head grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-    <section class="theme-card space-y-4">
-      <div class="space-y-3">
-        <p class="eyebrow">{siteConfig.home.feed.eyebrow}</p>
-        <h2 class="text-3xl font-semibold text-[var(--text-strong)] md:text-4xl">
-          {siteConfig.home.feed.title}
-        </h2>
-        <p class="max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          {siteConfig.home.feed.summary}
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <a href="/categories/" class="theme-chip">全部分类</a>
-        {categories.map((item) => (
-          <a href={`/categories/${item.slug}/`} class="theme-chip theme-chip--soft">
-            {item.label}
-            <span class="text-[var(--text-muted)]">({item.count})</span>
-          </a>
-        ))}
-      </div>
-    </section>
-
-    <section class="theme-card theme-card--soft space-y-4">
-      <p class="eyebrow">Feed Snapshot</p>
-      <div class="grid gap-3">
-        <div class="theme-card theme-card--soft theme-card--flat p-4">
-          <p class="text-xs uppercase text-[var(--text-muted)]">模块</p>
-          <p class="mt-2 text-lg font-semibold text-[var(--text-strong)]">首页 / 文章 / 侧栏</p>
-          <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">共享视觉和交互已经统一到同一套主题壳层里。</p>
-        </div>
-        <div class="theme-card theme-card--soft theme-card--flat p-4">
-          <p class="text-xs uppercase text-[var(--text-muted)]">状态</p>
-          <p class="mt-2 text-lg font-semibold text-[var(--text-strong)]">强结构内容流</p>
-          <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">保留高信息密度，同时把阅读入口做得更稳定、更容易扫读。</p>
-        </div>
-      </div>
-    </section>
-  </section>
 
   <section id="recent-posts" class="recent-posts">
     <div id="categoryBar">

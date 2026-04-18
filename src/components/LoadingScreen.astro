@@ -1,0 +1,53 @@
+---
+interface Props {
+  brandName: string;
+  avatar: string;
+}
+
+const { brandName, avatar } = Astro.props;
+---
+
+<div id="loading-box" aria-hidden="true">
+  <div class="loading-bg">
+    <img class="loading-img" alt={`${brandName} loading avatar`} src={avatar} />
+    <div class="loading-image-dot"></div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const loadingBox = document.getElementById('loading-box');
+    if (!loadingBox) return;
+
+    let ended = false;
+    const startedAt = performance.now();
+
+    const endLoading = () => {
+      if (ended) return;
+      const complete = () => {
+        if (ended) return;
+        ended = true;
+        root.classList.add('theme-ready');
+        loadingBox.classList.add('loaded');
+        window.setTimeout(() => {
+          loadingBox.remove();
+        }, 280);
+      };
+
+      const elapsed = performance.now() - startedAt;
+      const remaining = Math.max(0, 420 - elapsed);
+      window.setTimeout(complete, remaining);
+    };
+
+    root.classList.remove('theme-ready');
+    loadingBox.addEventListener('click', endLoading, { once: true });
+
+    if (document.readyState === 'complete') {
+      endLoading();
+    } else {
+      window.addEventListener('load', endLoading, { once: true });
+      window.setTimeout(endLoading, 10000);
+    }
+  })();
+</script>

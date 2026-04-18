@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import PageHero from '../../components/theme/PageHero.astro';
+import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import { collectCategories, sortPostsByDate } from '../../lib/content';
 import { createSidebarData, getLatestByCategory } from '../../lib/theme';
@@ -9,27 +9,35 @@ const posts = sortPostsByDate(await getCollection('posts'));
 const categories = collectCategories(posts);
 const latestByCategory = getLatestByCategory(posts);
 const sidebarData = createSidebarData(posts);
+const categoryAccents = ['#5b8cff', '#ff7d55', '#30c48d', '#7a6cff', '#ffb02e', '#49b6ff'];
 ---
 
-<BlogLayout title="分类" sidebarData={sidebarData}>
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="Category Index"
-      title="从主题到文章的稳定入口"
-      summary="分类页延续参考主题的强入口思路，但把视觉层次收紧，让入口更稳定、信息更容易扫读。"
-      image="/media/shijianus/system.jpg"
-      imageAlt="categories background"
-      meta={[`${categories.length} categories`, `${posts.length} posts`]}
-    />
-  </Fragment>
+<BlogLayout title="分类" showAside={false} pageType="categories" sidebarData={sidebarData}>
+  <section class="taxonomy-page">
+    <div class="taxonomy-panel">
+      <h1>{siteConfig.pages.categories.title}</h1>
+      <p>{siteConfig.pages.categories.summary}</p>
+      <div class="taxonomy-cloud taxonomy-cloud--categories">
+        {categories.map((item, index) => (
+          <a href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
+            <span>#{item.label}</span>
+            <sup>{item.count}</sup>
+          </a>
+        ))}
+      </div>
+    </div>
 
-  <section class="grid gap-4 md:grid-cols-2">
-    {categories.map((item) => (
-      <a href={`/categories/${item.slug}/`} class="theme-card theme-card--interactive block space-y-3">
-        <p class="eyebrow">Category</p>
-        <h2 class="text-2xl font-semibold text-[var(--text-strong)]">{item.label}</h2>
-        <p class="text-sm text-[var(--text-soft)]">{item.count} 篇文章</p>
-        <p class="text-sm leading-7 text-[var(--text-muted)]">最新文章：{latestByCategory.get(item.label) ?? '暂无'}</p>
+    <div class="taxonomy-avatar">
+      <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="lazy" />
+    </div>
+  </section>
+
+  <section class="taxonomy-grid">
+    {categories.map((item, index) => (
+      <a class="taxonomy-grid__item" href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
+        <strong>{item.label}</strong>
+        <span>{item.count} 篇文章</span>
+        <p>{latestByCategory.get(item.label) ?? '暂无文章'}</p>
       </a>
     ))}
   </section>

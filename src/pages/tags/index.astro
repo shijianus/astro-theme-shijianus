@@ -1,35 +1,41 @@
 ---
 import { getCollection } from 'astro:content';
-import PageHero from '../../components/theme/PageHero.astro';
+import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import { collectTags, sortPostsByDate } from '../../lib/content';
-import { createSidebarData } from '../../lib/theme';
+import { createSidebarData, createWeightedTaxonomy } from '../../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
-const tags = collectTags(posts);
+const tags = createWeightedTaxonomy(collectTags(posts));
 const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout title="标签" sidebarData={sidebarData}>
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="Tag Index"
-      title="用标签串起相邻的主题"
-      summary="标签页延续参考主题的高可点击密度，让相关内容之间的跳转保持直接和轻量。"
-      image="/media/shijianus/frontend.jpg"
-      imageAlt="tags background"
-      meta={[`${tags.length} tags`, `${posts.length} posts`]}
-    />
-  </Fragment>
-
-  <section class="theme-card theme-card--soft space-y-5">
-    <div class="flex flex-wrap gap-2">
-      {tags.map((tag) => (
-        <a href={`/tags/${tag.slug}/`} class="theme-chip theme-chip--soft">
-          #{tag.label}
-          <span class="text-[var(--text-muted)]">({tag.count})</span>
-        </a>
-      ))}
+<BlogLayout title="标签" showAside={false} pageType="tags" sidebarData={sidebarData}>
+  <section class="taxonomy-page">
+    <div class="taxonomy-panel">
+      <h1>{siteConfig.pages.tags.title}</h1>
+      <p>{siteConfig.pages.tags.summary}</p>
+      <div class="taxonomy-cloud taxonomy-cloud--tags">
+        {tags.map((tag) => (
+          <a href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
+            <span>#{tag.label}</span>
+            <sup>{tag.count}</sup>
+          </a>
+        ))}
+      </div>
     </div>
+
+    <div class="taxonomy-avatar">
+      <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="lazy" />
+    </div>
+  </section>
+
+  <section class="taxonomy-grid taxonomy-grid--tags">
+    {tags.slice(0, 12).map((tag) => (
+      <a class="taxonomy-grid__item" href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
+        <strong>#{tag.label}</strong>
+        <span>{tag.count} 次出现</span>
+      </a>
+    ))}
   </section>
 </BlogLayout>

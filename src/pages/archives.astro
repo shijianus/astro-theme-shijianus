@@ -1,53 +1,49 @@
 ---
 import { getCollection } from 'astro:content';
-import PageHero from '../components/theme/PageHero.astro';
+import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPostPath, resolveCategory, sortPostsByDate } from '../lib/content';
-import { createSidebarData, groupPostsByYear } from '../lib/theme';
+import { getPostPath, resolveCategory, resolveCover, resolveCoverAlt, sortPostsByDate } from '../lib/content';
+import { createSidebarData, formatCompactDate, groupPostsByYear } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 const years = groupPostsByYear(posts);
+let articleIndex = 0;
 ---
 
-<BlogLayout title="归档" sidebarData={sidebarData}>
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="Archive Index"
-      title="按年份查看所有记录"
-      summary="保留明显的归档入口和时间感，用更清楚的时间轴层次组织每一篇文章。"
-      image="/media/shijianus/network.jpg"
-      imageAlt="archive background"
-      meta={[`${posts.length} posts`, `${sidebarData.totalCategories} categories`, `${sidebarData.totalTags} tags`]}
-    />
-  </Fragment>
+<BlogLayout title="归档" sidebarData={sidebarData} pageType="archives">
+  <section id="archive" class="archive-page">
+    <div class="article-sort-title">
+      {siteConfig.pages.archives.title}
+      <span> - {posts.length}</span>
+    </div>
 
-  <section class="space-y-8">
-    {years.map(([year, items]) => (
-      <section class="theme-card space-y-4">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p class="eyebrow">Year</p>
-            <h2 class="text-3xl font-semibold text-[var(--text-strong)]">{year}</h2>
-          </div>
-          <p class="text-sm text-[var(--text-muted)]">{items.length} entries</p>
-        </div>
-
-        <div class="space-y-3">
-          {items.map((entry) => (
-            <a href={getPostPath(entry)} class="theme-card theme-card--soft theme-card--interactive block p-4">
-              <div class="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)_auto] md:items-center">
-                <span class="text-sm text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</span>
-                <div class="space-y-1">
-                  <p class="text-base font-medium text-[var(--text-strong)]">{entry.data.title}</p>
-                  <p class="text-sm text-[var(--text-soft)]">{entry.data.description}</p>
+    <div class="article-sort">
+      {years.map(([year, items]) => (
+        <>
+          <div class="article-sort-item year">{year}</div>
+          {items.map((entry) => {
+            articleIndex += 1;
+            return (
+              <article class="article-sort-item">
+                <a class="article-sort-item-img" href={getPostPath(entry)}>
+                  <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
+                </a>
+                <div class="article-sort-item-info">
+                  <a class="article-sort-item-title" href={getPostPath(entry)}>{entry.data.title}</a>
+                  <div class="article-meta-wrap">
+                    <span class="article-sort-item-time">
+                      <time datetime={entry.data.pubDate.toISOString()}>{formatCompactDate(entry.data.pubDate)}</time>
+                    </span>
+                    <span class="article-sort-item-tags">{resolveCategory(entry)}</span>
+                  </div>
+                  <span class="article-sort-item-index">{articleIndex}</span>
                 </div>
-                <span class="text-sm text-[var(--text-muted)]">{resolveCategory(entry)}</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
-    ))}
+              </article>
+            );
+          })}
+        </>
+      ))}
+    </div>
   </section>
 </BlogLayout>

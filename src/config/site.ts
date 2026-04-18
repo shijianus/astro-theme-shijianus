@@ -3,6 +3,7 @@ export type SiteNavItem = {
   href: string;
   description?: string;
   external?: boolean;
+  icon?: 'github' | 'mail' | 'archive' | 'tags' | 'about' | 'home';
 };
 
 export type HomeCategory = {
@@ -29,6 +30,23 @@ export type HomeSpotlight = {
   title: string;
   summary: string;
   href: string;
+};
+
+export type AboutSkill = {
+  label: string;
+  icon: string;
+  accent: string;
+};
+
+export type AboutCareer = {
+  label: string;
+  accent: string;
+};
+
+export type AboutReward = {
+  name: string;
+  amount: string;
+  date: string;
 };
 
 export const siteConfig = {
@@ -62,18 +80,23 @@ export const siteConfig = {
       asideStatus: true,
       asideTags: true,
       asideArchives: true,
+      asideCategories: true,
+      asideFeatureCard: true,
       asideWebInfo: true,
       postToc: true,
       relatedPosts: true,
       postCopyright: true,
       loadingScreen: true,
+      pageIntro: true,
       particles: true,
       searchPanel: true,
       centerConsole: true,
       rightClickMenu: true,
+      footerSocialBar: true,
+      footerRuntime: true,
     },
     motion: {
-      heroParticles: 36,
+      heroParticles: 18,
       pageRevealDurationMs: 820,
     },
   },
@@ -169,6 +192,14 @@ export const siteConfig = {
   },
   aside: {
     stack: ['Astro', 'React', 'Tailwind', 'MDX', 'Content Collections'],
+    announcement:
+      '这里会继续同步 shijianus 主题的重构进度，优先把首页、侧栏、文章页和基础交互动效做成完整、可长期维护的版本。',
+    featureCard: {
+      eyebrow: '界面状态',
+      title: '继续对齐参考主题的真实手感',
+      summary: '这一步优先收口侧栏、footer、首屏进入过渡和卡片交互，再继续处理页面级细节。',
+      chips: ['入场动画', '侧栏面板', 'Footer', 'Hover 动效'],
+    },
     notes: [
       '配置先于样式，保证每个模块都能被开关和替换。',
       '首页优先服务阅读，不做空洞品牌页。',
@@ -181,8 +212,25 @@ export const siteConfig = {
   },
   footer: {
     since: 2020,
+    startedAt: '2020-06-01',
     badges: ['Astro', 'React', 'Tailwind', 'TypeScript'],
     quote: '把博客当成长期维护的软件来做。',
+    customText: '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。',
+    socialBar: {
+      left: [
+        { label: 'GitHub', href: 'https://github.com/shijianus', external: true, icon: 'github' },
+        { label: '邮箱', href: 'mailto:hello@shijian.us', external: true, icon: 'mail' },
+      ] satisfies SiteNavItem[],
+      right: [
+        { label: '归档', href: '/archives/', icon: 'archive' },
+        { label: '标签', href: '/tags/', icon: 'tags' },
+      ] satisfies SiteNavItem[],
+    },
+    runtime: {
+      label: '运行状态',
+      workLabel: '持续维护中',
+      workDetail: 'shijianus 正在同步首页、文章页、页脚与交互动效',
+    },
     links: [
       { label: 'GitHub', href: 'https://github.com/shijianus', external: true },
       { label: '归档', href: '/archives/' },
@@ -195,6 +243,7 @@ export const siteConfig = {
           { label: '首页', href: '/' },
           { label: '归档', href: '/archives/' },
           { label: '分类', href: '/categories/' },
+          { label: '关于', href: '/about/' },
         ] satisfies SiteNavItem[],
       },
       {
@@ -204,7 +253,149 @@ export const siteConfig = {
           { label: '邮箱', href: 'mailto:hello@shijian.us', external: true },
         ] satisfies SiteNavItem[],
       },
+      {
+        title: '专题',
+        links: [
+          { label: '最新文章', href: '/archives/' },
+          { label: '设计对齐', href: '/about/' },
+          { label: '主题说明', href: '/tags/' },
+        ] satisfies SiteNavItem[],
+      },
     ],
+  },
+  post: {
+    copyright: {
+      badge: '原创',
+      title: '转载或引用请保留出处',
+      notice:
+        '本文属于 shijianus 的长期写作记录。允许分享与引用，但请保留原文链接、作者署名，并避免脱离上下文的片段搬运。',
+      copyLabel: '复制链接',
+      rewardLabel: '打赏作者',
+      rewardNote: '感谢你赐予我继续写下去的动力。',
+    },
+    related: {
+      eyebrow: '相关文章',
+      title: '继续阅读',
+    },
+    comments: {
+      title: '评论',
+      policyLabel: '隐私政策',
+      notice: '你无需删除空行，直接评论即可保留最佳展示效果。',
+      submitLabel: '发送',
+      previewLabel: '预览',
+      emptyTitle: '还没有公开评论',
+      emptySummary: '留下第一条反馈，评论会保存在当前浏览器中，方便本地预览评论区外观与交互。',
+      tips: ['理性交流', '就事论事', '欢迎补充资料'],
+    },
+  },
+  pages: {
+    about: {
+      title: '关于我',
+      subtitle: '生而热烈 / 写而笃定',
+      floatingTagsLeft: ['内容优先创作者', '长期维护者', '体验洁癖'],
+      floatingTagsRight: ['构建系统', '前端工程', '写作记录'],
+      helloTips: '你好，很高兴认识你',
+      helloLead: '我叫 shijianus',
+      helloDescription: '学生 / 开发者 / 写作者 / 系统整理者',
+      siteTips: {
+        tips: '追求',
+        titleTop: '源于',
+        titleBottom: '热爱而去感受',
+        words: ['源于热爱', '敬畏秩序', '持续构建', '写给未来'],
+      },
+      helloWordmark: 'Hello there!',
+      skills: {
+        tips: '技能',
+        title: '开启创造力',
+        items: [
+          { label: 'Astro', icon: 'AS', accent: '#5b27ff' },
+          { label: 'React', icon: 'RC', accent: '#4fb4ff' },
+          { label: 'Tailwind', icon: 'TW', accent: '#22c1c3' },
+          { label: 'TypeScript', icon: 'TS', accent: '#2f74ff' },
+          { label: 'Node.js', icon: 'ND', accent: '#63b85f' },
+          { label: 'MDX', icon: 'MD', accent: '#ffb02e' },
+          { label: 'Design', icon: 'UI', accent: '#ff6a88' },
+          { label: 'Writing', icon: 'WR', accent: '#6f6bff' },
+        ] satisfies AboutSkill[],
+      },
+      careers: {
+        tips: '生涯',
+        title: '阶段与长期方向',
+        items: [
+          { label: '工程化地整理自己的内容系统', accent: '#5b8cff' },
+          { label: '把主题做成可维护的产品，而不是一次性页面', accent: '#ff7d55' },
+          { label: '建立兼顾速度、阅读感和扩展性的个人博客架构', accent: '#30c48d' },
+        ] satisfies AboutCareer[],
+      },
+      statistics: {
+        tips: '数据',
+        title: '访问统计',
+        buttonLabel: '查看归档',
+        buttonHref: '/archives/',
+      },
+      map: {
+        title: '现在住在',
+        accent: 'UTC-8',
+      },
+      selfInfo: [
+        { label: '生于', value: '2002', accent: '#43a6c6' },
+        { label: '职业方向', value: '软件工程', accent: '#c69043' },
+        { label: '当前阶段', value: '大学生', accent: '#b04fe6' },
+      ],
+      personality: {
+        tips: '性格',
+        title: 'INFJ / Builder',
+        summary: '偏好建立秩序、耐心打磨细节，对长期可维护的系统有天然执念。',
+      },
+      photoTitle: '工作台',
+      maxim: {
+        tips: '座右铭',
+        top: '生活明朗',
+        bottom: '万物可爱。',
+      },
+      buff: {
+        tips: '加成',
+        top: '意图明确的构建',
+        bottom: '比一次性的热闹更重要',
+      },
+      game: {
+        tips: '正在沉迷',
+        title: '构建主题与写作系统',
+        summary: '把内容、界面与交互收束成长期可迭代的个人产品。',
+      },
+      comic: {
+        tips: '最近在看',
+        title: '关注的主题',
+        items: ['接口设计', '阅读体验', '设计系统', '站点性能'],
+      },
+      likeTech: {
+        tips: '偏好',
+        title: '高信息密度，不等于高噪音',
+        summary: '我更喜欢克制但有手感的界面，愿意花时间把阅读路径和交互反馈都打磨清楚。',
+      },
+      likeMusic: {
+        tips: '另一面',
+        title: '在代码与写作之间保持节奏',
+        summary: '保持输出，保持记录，保持对细节和秩序的耐心。',
+      },
+      rewards: [
+        { name: 'Astra', amount: '¥66', date: '2026-04-15' },
+        { name: 'Noah', amount: '¥32', date: '2026-04-12' },
+        { name: 'Luna', amount: '¥21', date: '2026-04-10' },
+      ] satisfies AboutReward[],
+    },
+    categories: {
+      title: '分类',
+      summary: '把长期主题拆成稳定入口，方便从具体兴趣点快速进入文章流。',
+    },
+    tags: {
+      title: '标签',
+      summary: '用更细的关键词把相邻主题串起来，减少信息孤岛。',
+    },
+    archives: {
+      title: '文章总览',
+      summary: '按年份集中查看所有记录，把时间感和主题线索保留下来。',
+    },
   },
   integrations: {
     dataSource: {
