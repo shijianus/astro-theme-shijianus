@@ -5,7 +5,9 @@ body[data-type='post'] #content-inner.layout {
 body[data-type='about'] #content-inner.layout,
 body[data-type='categories'] #content-inner.layout,
 body[data-type='tags'] #content-inner.layout,
-body[data-type='archives'] #content-inner.layout {
+body[data-type='archives'] #content-inner.layout,
+body[data-type='category-detail'] #content-inner.layout,
+body[data-type='tag-detail'] #content-inner.layout {
   display: block;
   max-width: 1240px;
   margin-top: 0;
@@ -15,7 +17,9 @@ body[data-type='archives'] #content-inner.layout {
 body[data-type='about'] .page-main,
 body[data-type='categories'] .page-main,
 body[data-type='tags'] .page-main,
-body[data-type='archives'] .page-main {
+body[data-type='archives'] .page-main,
+body[data-type='category-detail'] .page-main,
+body[data-type='tag-detail'] .page-main {
   display: block;
 }
 
@@ -1769,6 +1773,11 @@ body[data-type='archives'] .page-main {
   letter-spacing: 0;
 }
 
+.taxonomy-post-list {
+  display: grid;
+  gap: 16px;
+}
+
 .archive-page {
   position: relative;
   margin-top: 128px;
@@ -2185,7 +2194,9 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
   body[data-type='about'] #content-inner.layout,
   body[data-type='categories'] #content-inner.layout,
   body[data-type='tags'] #content-inner.layout,
-  body[data-type='archives'] #content-inner.layout {
+  body[data-type='archives'] #content-inner.layout,
+  body[data-type='category-detail'] #content-inner.layout,
+  body[data-type='tag-detail'] #content-inner.layout {
     padding: 0 20px 2rem;
   }
 

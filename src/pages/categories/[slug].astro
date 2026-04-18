@@ -1,6 +1,5 @@
 ---
 import { getCollection } from 'astro:content';
-import PageHero from '../../components/theme/PageHero.astro';
 import PostCard from '../../components/theme/PostCard.astro';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import { collectCategories, resolveCategory, slugifySegment, sortPostsByDate } from '../../lib/content';
@@ -20,23 +19,63 @@ const { categoryLabel } = Astro.props;
 const posts = sortPostsByDate(await getCollection('posts'));
 const currentPosts = posts.filter((entry) => slugifySegment(resolveCategory(entry)) === slugifySegment(categoryLabel));
 const sidebarData = createSidebarData(posts);
+const latestEntry = currentPosts[0];
+const earliestEntry = currentPosts[currentPosts.length - 1];
+const latestYear = latestEntry?.data.pubDate.getFullYear();
+const earliestYear = earliestEntry?.data.pubDate.getFullYear();
 ---
 
-<BlogLayout title={`分类: ${categoryLabel}`} sidebarData={sidebarData} pageType="category-detail">
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="Category Detail"
-      title={categoryLabel}
-      summary={`当前分类下共有 ${currentPosts.length} 篇文章，统一沿用主题文章卡片系统。`}
-      image="/media/shijianus/workbench.jpg"
-      imageAlt="category detail background"
-      meta={[`${currentPosts.length} posts`]}
-    />
-  </Fragment>
+<BlogLayout title={`分类: ${categoryLabel}`} showAside={false} sidebarData={sidebarData} pageType="category-detail">
+  <section class="taxonomy-page taxonomy-page--detail">
+    <div class="taxonomy-shell">
+      <header class="taxonomy-hero-card taxonomy-hero-card--category-detail theme-card" style="--taxonomy-accent:#5b8cff;">
+        <div class="taxonomy-hero-card__content">
+          <p class="eyebrow">Category Detail</p>
+          <h1>{categoryLabel}</h1>
+          <p class="taxonomy-hero-card__summary">
+            当前分类下共有 {currentPosts.length} 篇文章，沿用统一文章卡片顺序展开。
+            {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
+          </p>
+          <div class="taxonomy-cloud taxonomy-cloud--categories">
+            <a href="/categories/" style="--taxonomy-accent:#5b8cff;">
+              <span>#全部分类</span>
+            </a>
+            <a href={`/categories/${slugifySegment(categoryLabel)}/`} style="--taxonomy-accent:#5b8cff;">
+              <span>#{categoryLabel}</span>
+              <sup>{currentPosts.length}</sup>
+            </a>
+          </div>
+        </div>
 
-  <section class="space-y-4">
-    {currentPosts.map((entry, index) => (
-      <PostCard entry={entry} index={index} />
-    ))}
+        <div class="taxonomy-hero-card__stats">
+          <span>
+            <strong>{currentPosts.length}</strong>
+            <small>文章</small>
+          </span>
+          <span>
+            <strong>{latestYear ?? '-'}</strong>
+            <small>最近年份</small>
+          </span>
+          <span>
+            <strong>{earliestYear ?? '-'}</strong>
+            <small>起始年份</small>
+          </span>
+        </div>
+      </header>
+
+      <section class="taxonomy-section-card taxonomy-section-card--detail" style="--taxonomy-accent:#5b8cff;">
+        <div class="taxonomy-section-card__head">
+          <p class="eyebrow">Category Posts</p>
+          <h2>该分类下的文章</h2>
+          <p>继续使用站内统一卡片体系，便于和首页、归档页保持一致阅读节奏。</p>
+        </div>
+
+        <div class="taxonomy-post-list">
+          {currentPosts.map((entry, index) => (
+            <PostCard entry={entry} index={index} />
+          ))}
+        </div>
+      </section>
+    </div>
   </section>
 </BlogLayout>
