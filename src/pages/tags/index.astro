@@ -8,34 +8,71 @@ import { createSidebarData, createWeightedTaxonomy } from '../../lib/theme';
 const posts = sortPostsByDate(await getCollection('posts'));
 const tags = createWeightedTaxonomy(collectTags(posts));
 const sidebarData = createSidebarData(posts);
+const latestEntry = posts[0];
+const featuredTag = tags[0];
+const describeTagHeat = (weight: number) => {
+  if (weight >= 0.8) return '持续出现';
+  if (weight >= 0.55) return '稳定出现';
+  if (weight >= 0.3) return '阶段出现';
+  return '零散出现';
+};
 ---
 
 <BlogLayout title="标签" showAside={false} pageType="tags" sidebarData={sidebarData}>
-  <section class="taxonomy-page">
-    <div class="taxonomy-panel">
-      <h1>{siteConfig.pages.tags.title}</h1>
-      <p>{siteConfig.pages.tags.summary}</p>
-      <div class="taxonomy-cloud taxonomy-cloud--tags">
-        {tags.map((tag) => (
-          <a href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
-            <span>#{tag.label}</span>
-            <sup>{tag.count}</sup>
-          </a>
-        ))}
-      </div>
-    </div>
+  <section class="taxonomy-page taxonomy-page--tags">
+    <div class="taxonomy-shell">
+      <header class="taxonomy-hero-card taxonomy-hero-card--tags theme-card" style="--taxonomy-accent:#ff7d55;">
+        <div class="taxonomy-hero-card__content">
+          <p class="eyebrow">Tag Signals</p>
+          <h1>{siteConfig.pages.tags.title}</h1>
+          <p class="taxonomy-hero-card__summary">
+            {siteConfig.pages.tags.summary}
+            {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
+          </p>
+          <div class="taxonomy-cloud taxonomy-cloud--tags">
+            {tags.map((tag) => (
+              <a href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
+                <span>#{tag.label}</span>
+                <sup>{tag.count}</sup>
+              </a>
+            ))}
+          </div>
+        </div>
 
-    <div class="taxonomy-avatar">
-      <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="lazy" />
-    </div>
-  </section>
+        <div class="taxonomy-hero-card__stats">
+          <span>
+            <strong>{tags.length}</strong>
+            <small>标签</small>
+          </span>
+          <span>
+            <strong>{posts.length}</strong>
+            <small>文章</small>
+          </span>
+          <span>
+            <strong>#{featuredTag?.label ?? '暂无'}</strong>
+            <small>当前高频</small>
+          </span>
+        </div>
+      </header>
 
-  <section class="taxonomy-grid taxonomy-grid--tags">
-    {tags.slice(0, 12).map((tag) => (
-      <a class="taxonomy-grid__item" href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
-        <strong>#{tag.label}</strong>
-        <span>{tag.count} 次出现</span>
-      </a>
-    ))}
+      <section class="taxonomy-section-card taxonomy-section-card--tags" style="--taxonomy-accent:#ff7d55;">
+        <div class="taxonomy-section-card__head">
+          <p class="eyebrow">Tag Radar</p>
+          <h2>高频标签</h2>
+          <p>保留数量和活跃度线索，方便直接切进最近持续出现的话题。</p>
+        </div>
+
+        <div class="taxonomy-grid taxonomy-grid--tags">
+          {tags.slice(0, 12).map((tag, index) => (
+            <a class="taxonomy-grid__item taxonomy-grid__item--tag" href={`/tags/${tag.slug}/`} style={`--weight:${tag.weight};`}>
+              <span class="taxonomy-grid__index">{String(index + 1).padStart(2, '0')}</span>
+              <strong>#{tag.label}</strong>
+              <span>{tag.count} 次出现</span>
+              <p>{describeTagHeat(tag.weight)}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
   </section>
 </BlogLayout>

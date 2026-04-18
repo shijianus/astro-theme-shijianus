@@ -1750,11 +1750,16 @@ body[data-type='archives'] .page-main {
 }
 
 .taxonomy-grid--tags .taxonomy-grid__item {
-  min-height: 112px;
+  min-height: 136px;
+  align-content: start;
 }
 
 .taxonomy-grid--tags .taxonomy-grid__item strong {
   font-size: calc(15px + (var(--weight) * 6px));
+}
+
+.taxonomy-grid--tags .taxonomy-grid__item p {
+  font-size: 13px;
 }
 
 .taxonomy-grid__index {
