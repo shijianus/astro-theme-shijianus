@@ -1,12 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
-import BlogLayout from '../../layouts/BlogLayout.astro';
 import PageHero from '../../components/theme/PageHero.astro';
 import PostCard from '../../components/theme/PostCard.astro';
+import { siteConfig } from '../../config/site';
+import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
-  collectArchives,
-  collectCategories,
-  collectTags,
   estimateReadingMinutes,
   getRelatedPosts,
   resolveCategory,
@@ -15,6 +13,7 @@ import {
   resolveGroup,
   sortPostsByDate,
 } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -32,11 +31,10 @@ if (!entry) {
 }
 
 const { Content, headings } = await render(entry);
-const tags = collectTags(allPosts);
-const archives = collectArchives(allPosts);
-const categories = collectCategories(allPosts);
 const relatedPosts = getRelatedPosts(allPosts, entry, 3);
-const totalReadingMinutes = allPosts.reduce((total, post) => total + estimateReadingMinutes(post), 0);
+const sidebarData = createSidebarData(allPosts, headings);
+sidebarData.recentPosts = allPosts.filter((post) => post.id !== entry.id);
+
 const meta = [
   resolveCategory(entry),
   resolveGroup(entry),
@@ -45,20 +43,7 @@ const meta = [
 ];
 ---
 
-<BlogLayout
-  title={entry.data.title}
-  description={entry.data.description}
-  sidebarData={{
-    recentPosts: allPosts.filter((post) => post.id !== entry.id),
-    tags,
-    archives,
-    totalPosts: allPosts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-    headings,
-  }}
->
+<BlogLayout title={entry.data.title} description={entry.data.description} sidebarData={sidebarData}>
   <Fragment slot="hero">
     <PageHero
       eyebrow={`${resolveCategory(entry)} / ${resolveGroup(entry)}`}
@@ -70,19 +55,31 @@ const meta = [
     />
   </Fragment>
 
-  <article class="surface-panel article-body">
+  <article class="theme-card article-body">
     <Content />
   </article>
 
+  {siteConfig.theme.features.postCopyright && (
+    <section class="theme-card theme-card--soft grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div class="space-y-2">
+        <p class="eyebrow">版权提示</p>
+        <h2 class="text-2xl font-semibold text-[var(--text-strong)]">转载或引用请保留来源</h2>
+        <p class="text-sm leading-7 text-[var(--text-soft)]">
+          本文属于 {siteConfig.site.name} 的长期写作记录，欢迎分享观点，但请保留原始链接与作者署名。
+        </p>
+      </div>
+      <a href={Astro.url.href} class="theme-button theme-button--ghost break-all">
+        复制文章链接
+      </a>
+    </section>
+  )}
+
   {entry.data.tags.length > 0 && (
-    <section class="surface-panel space-y-4">
+    <section class="theme-card theme-card--soft space-y-4">
       <p class="eyebrow">Tags</p>
       <div class="flex flex-wrap gap-2">
         {entry.data.tags.map((tag) => (
-          <a
-            href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`}
-            class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1.5 text-xs text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
-          >
+          <a href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`} class="theme-chip theme-chip--soft">
             #{tag}
           </a>
         ))}

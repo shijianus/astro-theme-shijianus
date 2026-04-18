@@ -1,59 +1,36 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogLayout from '../layouts/BlogLayout.astro';
-import PageHero from '../components/theme/PageHero.astro';
 import { MacCodeBlock } from '../components/MacCodeBlock';
+import PageHero from '../components/theme/PageHero.astro';
 import { siteConfig } from '../config/site';
-import {
-  collectArchives,
-  collectCategories,
-  collectTags,
-  estimateReadingMinutes,
-  sortPostsByDate,
-} from '../lib/content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { sortPostsByDate } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
-const tags = collectTags(posts);
-const archives = collectArchives(posts);
-const categories = collectCategories(posts);
-const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+const sidebarData = createSidebarData(posts);
 
-const manifesto = `const manifesto = {
+const manifesto = `export const manifesto = {
   brand: 'shijianus',
-  style: 'geek, readable, configurable',
-  strategy: [
-    'config first',
-    'content first',
-    'api ready',
-  ],
+  strategy: ['config first', 'content first', 'api ready'],
+  interface: ['high density', 'strong identity', 'readable'],
 };`;
 ---
 
-<BlogLayout
-  title="关于"
-  sidebarData={{
-    recentPosts: posts,
-    tags,
-    archives,
-    totalPosts: posts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-  }}
->
+<BlogLayout title="关于" sidebarData={sidebarData}>
   <Fragment slot="hero">
     <PageHero
       eyebrow="About shijianus"
       title="一套为长期写作和长期维护准备的主题内核"
-      summary="这个版本不追求把原主题原样搬过来，而是把它最强的结构能力，转译成 Astro 时代更清晰、可扩展的实现。"
+      summary="这一版不再只做结构演示，而是把共享样式、交互反馈和内容入口真正收束成可以长期迭代的主题系统。"
       image="/media/shijianus/workbench.jpg"
       imageAlt="about background"
       meta={['Astro', 'React', 'Tailwind', 'API-ready']}
     />
   </Fragment>
 
-  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-    <section class="surface-panel space-y-4">
+  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <section class="theme-card space-y-4">
       <p class="eyebrow">Design Rules</p>
       <h2 class="text-3xl font-semibold text-[var(--text-strong)]">当前实现遵守的核心约束</h2>
       <div class="space-y-3 text-sm leading-7 text-[var(--text-soft)]">
@@ -67,19 +44,19 @@ const manifesto = `const manifesto = {
     <MacCodeBlock code={manifesto} language="ts" title="Manifesto" client:load />
   </section>
 
-  <section class="surface-panel space-y-4">
-    <p class="eyebrow">Site Profile</p>
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-4">
-        <p class="text-sm font-medium text-[var(--text-strong)]">Author</p>
-        <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">{siteConfig.site.author.bio}</p>
-      </div>
-      <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-4">
-        <p class="text-sm font-medium text-[var(--text-strong)]">Theme Intent</p>
-        <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-          保留强结构首页、灵活侧栏和明显作者感，同时把视觉语言收束得更理性、更适合长期使用。
-        </p>
-      </div>
-    </div>
+  <section class="grid gap-4 md:grid-cols-2">
+    <section class="theme-card theme-card--soft space-y-3">
+      <p class="eyebrow">Author</p>
+      <h2 class="text-2xl font-semibold text-[var(--text-strong)]">{siteConfig.site.author.name}</h2>
+      <p class="text-sm leading-7 text-[var(--text-soft)]">{siteConfig.site.author.bio}</p>
+    </section>
+
+    <section class="theme-card theme-card--soft space-y-3">
+      <p class="eyebrow">Theme Intent</p>
+      <h2 class="text-2xl font-semibold text-[var(--text-strong)]">保留作者感，也保留工程秩序</h2>
+      <p class="text-sm leading-7 text-[var(--text-soft)]">
+        这次工作不是把旧模板搬过来，而是把它的布局逻辑、视觉节奏和模块能力系统化，变成真正适合长期维护的 Astro 主题。
+      </p>
+    </section>
   </section>
 </BlogLayout>

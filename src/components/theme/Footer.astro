@@ -2,33 +2,61 @@
 import { siteConfig } from '../../config/site';
 ---
 
-<footer class="border-t border-[var(--line)]">
-  <div class="mx-auto grid max-w-[1400px] gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-8">
-    <div class="space-y-3">
-      <p class="eyebrow">shijianus theme system</p>
-      <h2 class="text-xl font-semibold text-[var(--text-strong)]">
-        为内容优先、配置优先和后续 API 接入准备的一套 Astro 主题骨架
-      </h2>
-      <div class="flex flex-wrap gap-2">
+<footer id="footer" class="site-footer">
+  <div id="footer-wrap">
+    <section class="footer-brand-card">
+      <div>
+        <p class="eyebrow">shijianus theme system</p>
+        <h2>{siteConfig.footer.quote}</h2>
+        <p>保留高信息密度、圆角卡片、悬浮反馈和模块化布局，同时把所有用户可见品牌统一到 shijianus。</p>
+      </div>
+      <div class="footer-badges">
         {siteConfig.footer.badges.map((badge) => (
-          <span class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-soft)]">
-            {badge}
-          </span>
+          <span class="theme-chip">{badge}</span>
         ))}
       </div>
-    </div>
+    </section>
 
-    <div class="space-y-4 lg:text-right">
-      <p class="text-sm text-[var(--text-soft)]">
-        © {siteConfig.footer.since} - {new Date().getFullYear()} {siteConfig.site.name}
-      </p>
-      <div class="flex flex-wrap gap-3 lg:justify-end">
+    <div class="footer-group-wrap">
+      {siteConfig.footer.groups.map((group) => (
+        <section class="footer-group">
+          <div class="footer-title-group">
+            <span class="footer-title">{group.title}</span>
+          </div>
+          <div class="footer-links">
+            {group.links.map((item) => (
+              <a
+                class="footer-item"
+                href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+
+  <div id="footer-bar">
+    <div class="footer-bar-links">
+      <div class="footer-bar-left">
+        <div id="footer-bar-tips">
+          <div class="copyright">
+            © {siteConfig.footer.since} - {new Date().getFullYear()} By
+            <a class="footer-bar-link" href="/" title={siteConfig.site.name}>{siteConfig.site.name}</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar-right">
         {siteConfig.footer.links.map((item) => (
           <a
+            class="footer-bar-link"
             href={item.href}
             target={item.external ? '_blank' : undefined}
             rel={item.external ? 'noreferrer' : undefined}
-            class="text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-strong)]"
           >
             {item.label}
           </a>

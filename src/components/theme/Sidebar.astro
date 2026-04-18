@@ -1,36 +1,10 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
-import { getPostPath } from '../../lib/content';
+import { getPostPath, resolveCover } from '../../lib/content';
+import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
 
-type SidebarTag = {
-  label: string;
-  slug: string;
-  count: number;
-};
-
-type SidebarArchive = {
-  label: string;
-  count: number;
-};
-
-type SidebarHeading = {
-  depth: number;
-  slug: string;
-  text: string;
-};
-
-interface Props {
-  recentPosts: CollectionEntry<'posts'>[];
-  tags: SidebarTag[];
-  archives: SidebarArchive[];
-  totalPosts: number;
-  totalCategories: number;
-  totalTags: number;
-  totalReadingMinutes: number;
-  headings?: SidebarHeading[];
-}
+interface Props extends SidebarData {}
 
 const {
   recentPosts,
@@ -44,14 +18,17 @@ const {
 } = Astro.props;
 ---
 
-<div class="space-y-4">
+<div class="aside-content" id="aside-content">
   {siteConfig.theme.features.asideAuthor && (
     <ProfileWidget
       client:load
       name={siteConfig.site.author.name}
       role={siteConfig.site.author.role}
+      motto={siteConfig.site.author.motto}
       bio={siteConfig.site.author.bio}
       avatar={siteConfig.site.author.avatar}
+      cover={siteConfig.site.author.cover}
+      statusLabel={siteConfig.site.author.statusLabel}
       location={siteConfig.site.author.location}
       email={siteConfig.site.author.email}
       stats={{
@@ -64,12 +41,16 @@ const {
   )}
 
   {siteConfig.theme.features.asideStatus && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">Working Notes</p>
-      <div class="space-y-3">
-        {siteConfig.aside.notes.map((note) => (
-          <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--text-soft)]">
-            {note}
+    <section class="card-widget card-announcement">
+      <div class="item-headline">
+        <span>Working Notes</span>
+      </div>
+      <div class="announcement-list">
+        {siteConfig.aside.status.map((item) => (
+          <div class="announcement-item">
+            <span>{item.title}</span>
+            <strong>{item.value}</strong>
+            <p>{item.detail}</p>
           </div>
         ))}
       </div>
@@ -77,82 +58,107 @@ const {
   )}
 
   {recentPosts.length > 0 && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">Recent Posts</p>
-      <div class="space-y-3">
+    <section class="card-widget card-recent-post">
+      <div class="item-headline">
+        <span>Recent Posts</span>
+      </div>
+      <div class="aside-list">
         {recentPosts.slice(0, 5).map((entry) => (
-          <a href={getPostPath(entry)} class="block rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 transition-colors hover:border-[var(--signal)]">
-            <p class="text-sm font-medium text-[var(--text-strong)]">{entry.data.title}</p>
-            <p class="mt-1 text-xs text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</p>
+          <a href={getPostPath(entry)} class="aside-list-item">
+            <span class="thumbnail">
+              <img src={resolveCover(entry)} alt={entry.data.title} loading="lazy" />
+            </span>
+            <span class="content">
+              <span class="title">{entry.data.title}</span>
+              <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+            </span>
           </a>
         ))}
       </div>
     </section>
   )}
 
-  {siteConfig.theme.features.asideTags && tags.length > 0 && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">Tag Index</p>
-      <div class="flex flex-wrap gap-2">
-        {tags.slice(0, 16).map((tag) => (
-          <a
-            href={`/tags/${tag.slug}/`}
-            class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]"
-          >
-            #{tag.label} <span class="text-[var(--text-muted)]">({tag.count})</span>
-          </a>
-        ))}
-      </div>
-    </section>
-  )}
-
-  {siteConfig.theme.features.asideArchives && archives.length > 0 && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">Archive Index</p>
-      <div class="space-y-2">
-        {archives.slice(0, 8).map((item) => (
-          <div class="flex items-center justify-between rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-sm">
-            <span class="text-[var(--text-soft)]">{item.label}</span>
-            <span class="text-[var(--text-muted)]">{item.count}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  )}
-
-  {siteConfig.theme.features.postToc && headings.length > 0 && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">On This Page</p>
-      <div class="space-y-2">
-        {headings
-          .filter((heading) => heading.depth <= 3)
-          .map((heading) => (
-            <a
-              href={`#${heading.slug}`}
-              class={`block rounded-md px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--text-strong)] ${
-                heading.depth === 3 ? 'ml-4 text-[var(--text-muted)]' : 'text-[var(--text-soft)]'
-              }`}
-            >
-              {heading.text}
+  <div class="sticky_layout">
+    {siteConfig.theme.features.asideTags && tags.length > 0 && (
+      <section class="card-widget card-tags">
+        <div class="item-headline">
+          <span>Tags</span>
+        </div>
+        <div class="card-tag-cloud">
+          {tags.slice(0, 18).map((tag) => (
+            <a href={`/tags/${tag.slug}/`}>
+              {tag.label}
+              <sup>{tag.count}</sup>
             </a>
           ))}
-      </div>
-    </section>
-  )}
+        </div>
+      </section>
+    )}
 
-  {siteConfig.theme.features.asideWebInfo && (
-    <section class="surface-panel space-y-4">
-      <p class="eyebrow">Web Info</p>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3">
-          <p class="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Posts</p>
-          <p class="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{totalPosts}</p>
+    {siteConfig.theme.features.asideArchives && archives.length > 0 && (
+      <section class="card-widget card-archives">
+        <div class="item-headline">
+          <span>Archives</span>
         </div>
-        <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3">
-          <p class="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Read Time</p>
-          <p class="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{totalReadingMinutes}m</p>
+        <ul class="card-archive-list">
+          {archives.slice(0, 8).map((item) => (
+            <li class="card-archive-list-item">
+              <a class="card-archive-list-link" href="/archives/">
+                <span class="card-archive-list-date">{item.label}</span>
+                <span class="card-archive-list-count-group">
+                  <span class="card-archive-list-count">{item.count}</span>
+                  <span>篇</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {siteConfig.theme.features.postToc && headings.length > 0 && (
+      <section class="card-widget" id="card-toc">
+        <div class="item-headline">
+          <span>On This Page</span>
         </div>
-      </div>
-    </section>
-  )}
+        <div class="toc-content">
+          {headings
+            .filter((heading) => heading.depth <= 3)
+            .map((heading) => (
+              <a href={`#${heading.slug}`} class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}>
+                <span class="toc-text">{heading.text}</span>
+              </a>
+            ))}
+        </div>
+      </section>
+    )}
+
+    {siteConfig.theme.features.asideWebInfo && (
+      <section class="card-widget card-webinfo">
+        <div class="item-headline">
+          <span>Info</span>
+        </div>
+        <div class="webinfo">
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">Article :</span>
+            </div>
+            <div class="item-count">{totalPosts}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">Categories :</span>
+            </div>
+            <div class="item-count">{totalCategories}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">Read time :</span>
+            </div>
+            <div class="item-count">{totalReadingMinutes}m</div>
+          </div>
+        </div>
+      </section>
+    )}
+  </div>
 </div>

@@ -15,12 +15,8 @@ import PageHero from '../components/theme/PageHero.astro';
     />
   </Fragment>
 
-  <section class="surface-panel flex flex-wrap gap-3">
-    <a href="/" class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-2.5 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]">
-      返回首页
-    </a>
-    <a href="/archives/" class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-2.5 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]">
-      查看归档
-    </a>
+  <section class="theme-card flex flex-wrap gap-3">
+    <a href="/" class="theme-button">返回首页</a>
+    <a href="/archives/" class="theme-button theme-button--ghost">查看归档</a>
   </section>
 </BlogLayout>

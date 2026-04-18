@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
-import { getPostPath, resolveCover } from '../../lib/content';
+import { getExcerpt, getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
 
 interface Props {
   featuredPosts: CollectionEntry<'posts'>[];
@@ -10,113 +10,97 @@ interface Props {
 
 const { featuredPosts, latestPosts } = Astro.props;
 
-const accentClasses = {
-  signal: 'border-orange-500/30 bg-orange-500/10',
-  teal: 'border-teal-500/30 bg-teal-500/10',
-  lime: 'border-lime-500/30 bg-lime-500/10',
-  ember: 'border-rose-500/30 bg-rose-500/10',
-} as const;
+const topPosts = (featuredPosts.length > 0 ? featuredPosts : latestPosts).slice(0, 6);
+const todayPost = topPosts[0] ?? latestPosts[0];
+const categoryItems = siteConfig.home.categories.slice(0, 3);
+const skillTags = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero.chips];
+const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
 ---
 
-<section class="space-y-5">
-  <div class="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_360px]">
-    <div class="relative overflow-hidden rounded-md border border-[var(--line)] bg-[var(--surface)]">
-      <img
-        src={siteConfig.home.hero.image}
-        alt={siteConfig.home.hero.imageAlt}
-        class="absolute inset-0 h-full w-full object-cover"
-        loading="eager"
-      />
-      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,15,13,0.08),rgba(10,15,13,0.82))]" />
-      <div class="relative z-10 flex min-h-[460px] flex-col justify-end gap-5 px-6 py-8 md:px-10 md:py-10">
-        <p class="eyebrow text-white/70">{siteConfig.home.hero.eyebrow}</p>
-        <h1 class="max-w-4xl text-4xl font-semibold leading-tight text-white md:text-6xl">
-          {siteConfig.home.hero.title}
-        </h1>
-        <p class="max-w-2xl text-base leading-7 text-white/80 md:text-lg">
-          {siteConfig.home.hero.summary}
-        </p>
+<section id="home_top" aria-label="Home highlight modules">
+  <input id="today-card-toggle" class="today-card-toggle" type="checkbox" aria-hidden="true" />
 
-        <div class="flex flex-wrap gap-3">
-          <a
-            href={siteConfig.home.hero.primaryCta.href}
-            class="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white transition-colors hover:bg-white/18"
-          >
-            {siteConfig.home.hero.primaryCta.label}
-          </a>
-          <a
-            href={siteConfig.home.hero.secondaryCta.href}
-            class="inline-flex items-center justify-center rounded-md border border-white/15 px-4 py-2.5 text-sm text-white/85 transition-colors hover:border-white/30 hover:text-white"
-          >
-            {siteConfig.home.hero.secondaryCta.label}
-          </a>
+  <div class="swiper_container_card">
+    <div id="bannerGroup">
+      <a id="random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'}>
+        <div id="skills-tags-group-all" aria-hidden="true">
+          <div class="tags-group-wrapper">
+            {skillTags.map((item, index) => (
+              <span class="tags-group-icon" style={`--delay:${index * 0.12}s;`}>
+                {item}
+              </span>
+            ))}
+          </div>
+          <div class="tags-group-wrapper tags-group-wrapper--offset">
+            {skillTags.slice().reverse().map((item, index) => (
+              <span class="tags-group-icon" style={`--delay:${index * 0.1}s;`}>
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {latestPosts[0] && (
-          <a
-            href={getPostPath(latestPosts[0])}
-            class="max-w-xl rounded-md border border-white/15 bg-black/20 px-4 py-3 text-sm text-white/82 backdrop-blur-sm transition-colors hover:border-white/30"
-          >
-            <span class="block text-[11px] uppercase tracking-[0.18em] text-white/60">Latest Dispatch</span>
-            <span class="mt-1 block text-base text-white">{latestPosts[0].data.title}</span>
-          </a>
-        )}
+        <span id="random-hover">
+          <span class="random-hover__icon">SJ</span>
+          <span class="bannerText">
+            {siteConfig.navigation.quickActions[0]?.label ?? '随便逛逛'}
+            <span class="bannerText__arrow">-></span>
+          </span>
+        </span>
+      </a>
+
+      <div class="categoryGroup" aria-label="Featured categories">
+        {categoryItems.map((item) => (
+          <div class="categoryItem">
+            <a class={`categoryButton ${item.accent}`} href={item.href}>
+              <span class="categoryButtonText">{item.label}</span>
+              <span class="categoryButtonDesc">{item.description}</span>
+              <span class="categoryButtonIcon">{item.label.slice(0, 2)}</span>
+            </a>
+          </div>
+        ))}
       </div>
     </div>
 
-    <div class="grid gap-4">
-      <a href={siteConfig.home.announcement.href} class="surface-panel block space-y-3 transition-colors hover:border-[var(--signal)]">
-        <p class="eyebrow">{siteConfig.home.announcement.eyebrow}</p>
-        <h2 class="text-2xl font-semibold leading-tight text-[var(--text-strong)]">
-          {siteConfig.home.announcement.title}
-        </h2>
-        <p class="text-sm leading-6 text-[var(--text-soft)]">{siteConfig.home.announcement.summary}</p>
-      </a>
-
-      <section class="surface-panel space-y-4">
-        <p class="eyebrow">Status Cards</p>
-        <div class="grid gap-3">
-          {siteConfig.home.statusCards.map((item) => (
-            <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3">
-              <p class="text-sm font-medium text-[var(--text-strong)]">{item.title}</p>
-              <p class="mt-1 text-lg font-semibold text-[var(--signal)]">{item.value}</p>
-              <p class="mt-1 text-sm text-[var(--text-soft)]">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {featuredPosts.length > 0 && (
-        <section class="surface-panel space-y-4">
-          <p class="eyebrow">Featured Flow</p>
-          <div class="space-y-3">
-            {featuredPosts.slice(0, 3).map((entry) => (
-              <a href={getPostPath(entry)} class="flex items-center gap-3 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3 transition-colors hover:border-[var(--line-strong)]">
-                <img src={resolveCover(entry)} alt={entry.data.title} class="h-16 w-20 rounded-md object-cover" loading="lazy" />
-                <div class="min-w-0">
-                  <p class="text-sm font-medium text-[var(--text-strong)]">{entry.data.title}</p>
-                  <p class="mt-1 text-xs text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</p>
-                </div>
-              </a>
-            ))}
+    <div class="topGroup">
+      {topPosts.map((entry, index) => (
+        <article class="recent-post-item top-post-card">
+          <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
+            <span class="recent-post-top-text">{index === 0 ? '荐' : '文'}</span>
+            <img
+              class="post_bg"
+              src={resolveCover(entry)}
+              alt={resolveCoverAlt(entry)}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+          </a>
+          <div class="recent-post-info">
+            <a class="article-title" href={getPostPath(entry)} title={entry.data.title}>
+              {entry.data.title}
+            </a>
+            <span class="top-post-card__meta">{resolveCategory(entry)}</span>
           </div>
-        </section>
+        </article>
+      ))}
+
+      {todayPost && (
+        <article class="todayCard">
+          <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title}>
+            <div class="todayCard-info">
+              <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
+              <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
+              <p>{getExcerpt(todayPost, 90)}</p>
+            </div>
+            <img class="todayCard-cover" src={resolveCover(todayPost)} alt={resolveCoverAlt(todayPost)} loading="eager" />
+          </a>
+          <div class="banner-button-group">
+            <label class="banner-button" for="today-card-toggle">
+              <span class="banner-button__icon">+</span>
+              <span class="banner-button-text">更多推荐</span>
+            </label>
+          </div>
+        </article>
       )}
     </div>
-  </div>
-
-  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-    {siteConfig.home.categories.map((item) => (
-      <a
-        href={item.href}
-        class:list={[
-          'rounded-md border p-4 transition-transform duration-200 hover:-translate-y-0.5',
-          accentClasses[item.accent],
-        ]}
-      >
-        <p class="text-sm font-medium text-[var(--text-strong)]">{item.label}</p>
-        <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">{item.description}</p>
-      </a>
-    ))}
   </div>
 </section>

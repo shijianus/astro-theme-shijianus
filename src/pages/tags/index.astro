@@ -1,53 +1,33 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogLayout from '../../layouts/BlogLayout.astro';
 import PageHero from '../../components/theme/PageHero.astro';
-import {
-  collectArchives,
-  collectCategories,
-  collectTags,
-  estimateReadingMinutes,
-  sortPostsByDate,
-} from '../../lib/content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { collectTags, sortPostsByDate } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
 const tags = collectTags(posts);
-const archives = collectArchives(posts);
-const categories = collectCategories(posts);
-const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout
-  title="标签"
-  sidebarData={{
-    recentPosts: posts,
-    tags,
-    archives,
-    totalPosts: posts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-  }}
->
+<BlogLayout title="标签" sidebarData={sidebarData}>
   <Fragment slot="hero">
     <PageHero
       eyebrow="Tag Index"
       title="用标签串起相邻的主题"
-      summary="标签页不追求花哨云图，而是优先保证可点、可扫、可维护。"
+      summary="标签页延续参考主题的高可点击密度，让相关内容之间的跳转保持直接和轻量。"
       image="/media/shijianus/frontend.jpg"
       imageAlt="tags background"
       meta={[`${tags.length} tags`, `${posts.length} posts`]}
     />
   </Fragment>
 
-  <section class="surface-panel space-y-5">
+  <section class="theme-card theme-card--soft space-y-5">
     <div class="flex flex-wrap gap-2">
       {tags.map((tag) => (
-        <a
-          href={`/tags/${tag.slug}/`}
-          class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]"
-        >
-          #{tag.label} <span class="text-[var(--text-muted)]">({tag.count})</span>
+        <a href={`/tags/${tag.slug}/`} class="theme-chip theme-chip--soft">
+          #{tag.label}
+          <span class="text-[var(--text-muted)]">({tag.count})</span>
         </a>
       ))}
     </div>

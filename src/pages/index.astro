@@ -1,72 +1,80 @@
 ---
 import { getCollection } from 'astro:content';
-import { MacCodeBlock } from '../components/MacCodeBlock';
 import HomeHero from '../components/theme/HomeHero.astro';
 import PostCard from '../components/theme/PostCard.astro';
+import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import {
-  collectArchives,
-  collectCategories,
-  collectTags,
-  estimateReadingMinutes,
-  getFeaturedPosts,
-  sortPostsByDate,
-} from '../lib/content';
+import { collectCategories, getFeaturedPosts, sortPostsByDate } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
 const featuredPosts = getFeaturedPosts(posts, 4);
 const categories = collectCategories(posts);
-const tags = collectTags(posts);
-const archives = collectArchives(posts);
-const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
-
-const themeSnippet = `export const theme = {
-  brand: 'shijianus',
-  renderer: ['Astro', 'React'],
-  sections: ['hero', 'feed', 'aside'],
-  dataSource: 'local-now-api-later',
-};`;
+const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout
-  title="首页"
-  sidebarData={{
-    recentPosts: posts,
-    tags,
-    archives,
-    totalPosts: posts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-  }}
->
+<BlogLayout title="首页" sidebarData={sidebarData}>
   <Fragment slot="hero">
     <HomeHero featuredPosts={featuredPosts} latestPosts={posts} />
   </Fragment>
 
-  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-    <div class="space-y-3">
-      <p class="eyebrow">Feed Overview</p>
-      <h2 class="text-3xl font-semibold text-[var(--text-strong)] md:text-4xl">近期更新</h2>
-      <p class="max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
-        版式延续强结构首页的阅读优势，但把信息组织改成更适合 shijianus 的节奏：明确分类入口、可扩展侧栏和稳定的内容流。
-      </p>
-      <div class="flex flex-wrap gap-2 border-y border-[var(--line)] py-3">
-        <a href="/categories/" class="rounded-md bg-[var(--surface-muted)] px-3 py-1.5 text-sm text-[var(--text-soft)]">全部分类</a>
+  <section class="home-feed-head grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <section class="theme-card space-y-4">
+      <div class="space-y-3">
+        <p class="eyebrow">{siteConfig.home.feed.eyebrow}</p>
+        <h2 class="text-3xl font-semibold text-[var(--text-strong)] md:text-4xl">
+          {siteConfig.home.feed.title}
+        </h2>
+        <p class="max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+          {siteConfig.home.feed.summary}
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <a href="/categories/" class="theme-chip">全部分类</a>
         {categories.map((item) => (
-          <a
-            href={`/categories/${item.slug}/`}
-            class="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
-          >
-            {item.label} <span class="text-[var(--text-muted)]">({item.count})</span>
+          <a href={`/categories/${item.slug}/`} class="theme-chip theme-chip--soft">
+            {item.label}
+            <span class="text-[var(--text-muted)]">({item.count})</span>
           </a>
         ))}
       </div>
-    </div>
-    <MacCodeBlock code={themeSnippet} language="ts" title="Theme Contract" client:load />
+    </section>
+
+    <section class="theme-card theme-card--soft space-y-4">
+      <p class="eyebrow">Feed Snapshot</p>
+      <div class="grid gap-3">
+        <div class="theme-card theme-card--soft theme-card--flat p-4">
+          <p class="text-xs uppercase text-[var(--text-muted)]">模块</p>
+          <p class="mt-2 text-lg font-semibold text-[var(--text-strong)]">首页 / 文章 / 侧栏</p>
+          <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">共享视觉和交互已经统一到同一套主题壳层里。</p>
+        </div>
+        <div class="theme-card theme-card--soft theme-card--flat p-4">
+          <p class="text-xs uppercase text-[var(--text-muted)]">状态</p>
+          <p class="mt-2 text-lg font-semibold text-[var(--text-strong)]">强结构内容流</p>
+          <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">保留高信息密度，同时把阅读入口做得更稳定、更容易扫读。</p>
+        </div>
+      </div>
+    </section>
   </section>
 
-  <section class="space-y-4">
+  <section id="recent-posts" class="recent-posts">
+    <div id="categoryBar">
+      <div class="category-bar" id="category-bar">
+        <div id="catalog-bar">
+          <div id="catalog-list">
+            <div class="catalog-list-item is-active"><a href="/">首页</a></div>
+            {categories.map((item) => (
+              <div class="catalog-list-item">
+                <a href={`/categories/${item.slug}/`}>{item.label}</a>
+              </div>
+            ))}
+          </div>
+          <a class="catalog-more" href="/categories/">更多</a>
+        </div>
+      </div>
+    </div>
+
     {posts.map((entry, index) => (
       <PostCard entry={entry} index={index} />
     ))}

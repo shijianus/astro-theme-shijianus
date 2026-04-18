@@ -1,43 +1,20 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../config/site';
-import '../styles/global.css';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
+import { ThemeOverlays } from '../components/ThemeOverlays';
 import Footer from '../components/theme/Footer.astro';
 import Sidebar from '../components/theme/Sidebar.astro';
-
-type SidebarTag = {
-  label: string;
-  slug: string;
-  count: number;
-};
-
-type SidebarArchive = {
-  label: string;
-  count: number;
-};
-
-type SidebarHeading = {
-  depth: number;
-  slug: string;
-  text: string;
-};
+import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
+import type { SidebarData } from '../lib/theme';
+import '../styles/global.css';
 
 interface Props {
   title: string;
   description?: string;
   showAside?: boolean;
-  sidebarData?: {
-    recentPosts: CollectionEntry<'posts'>[];
-    tags: SidebarTag[];
-    archives: SidebarArchive[];
-    totalPosts: number;
-    totalCategories: number;
-    totalTags: number;
-    totalReadingMinutes: number;
-    headings?: SidebarHeading[];
-  };
+  sidebarData?: SidebarData;
 }
 
 const {
@@ -46,6 +23,39 @@ const {
   showAside = true,
   sidebarData,
 } = Astro.props;
+
+const overlayPosts =
+  sidebarData?.recentPosts.map((entry) => ({
+    title: entry.data.title,
+    href: getPostPath(entry),
+    description: getExcerpt(entry, 96),
+    category: resolveCategory(entry),
+    cover: resolveCover(entry),
+    date: entry.data.pubDate.toLocaleDateString('zh-CN'),
+  })) ?? [];
+
+const overlayTags =
+  sidebarData?.tags.map((tag) => ({
+    label: tag.label,
+    href: `/tags/${tag.slug}/`,
+    count: tag.count,
+  })) ?? [];
+
+const overlayArchives = sidebarData?.archives ?? [];
+
+const overlayStats = {
+  posts: sidebarData?.totalPosts ?? 0,
+  categories: sidebarData?.totalCategories ?? 0,
+  tags: sidebarData?.totalTags ?? 0,
+  readingMinutes: sidebarData?.totalReadingMinutes ?? 0,
+};
+
+const overlayFeatures = {
+  searchPanel: siteConfig.theme.features.searchPanel,
+  centerConsole: siteConfig.theme.features.centerConsole,
+  rightClickMenu: siteConfig.theme.features.rightClickMenu,
+  particles: siteConfig.theme.features.particles,
+};
 ---
 
 <!doctype html>
@@ -58,44 +68,68 @@ const {
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{title} | {siteConfig.site.title}</title>
   </head>
-  <body>
-    <div class="pointer-events-none fixed inset-0 -z-20 bg-[var(--bg)]"></div>
-    <div class="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,var(--grid)_1px,transparent_1px),linear-gradient(to_bottom,var(--grid)_1px,transparent_1px)] bg-[size:32px_32px] opacity-60"></div>
-    <div class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[380px] bg-[linear-gradient(180deg,rgba(21,35,31,0.14),transparent)]"></div>
+  <body class="theme-body" data-type="shijianus">
+    {siteConfig.theme.features.loadingScreen && (
+      <LoadingScreen
+        client:load
+        brandName={siteConfig.site.name}
+        avatar={siteConfig.site.author.avatar}
+        durationMs={siteConfig.theme.motion.pageRevealDurationMs}
+      />
+    )}
 
-    <SiteHeader
-      client:load
-      brandName={siteConfig.site.name}
-      domainLabel={siteConfig.site.domainLabel}
-      currentPath={Astro.url.pathname}
-      primary={siteConfig.navigation.primary}
-      utility={siteConfig.navigation.utility}
-    />
+    <div id="web_bg" aria-hidden="true"></div>
 
-    <ThemeDock client:load />
+    <div class="page" id="body-wrap">
+      <SiteHeader
+        client:load
+        brandName={siteConfig.site.name}
+        domainLabel={siteConfig.site.domainLabel}
+        currentPath={Astro.url.pathname}
+        primary={siteConfig.navigation.primary}
+        utility={siteConfig.navigation.utility}
+        quickActions={siteConfig.navigation.quickActions}
+      />
 
-    <div class="mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-      {Astro.slots.has('hero') && (
-        <div class="mb-6">
-          <slot name="hero" />
-        </div>
-      )}
-
-      <div class:list={['page-grid gap-6', showAside && sidebarData ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_320px]' : '']}>
-        <main class="min-w-0 space-y-6">
-          <slot />
-        </main>
-
-        {showAside && sidebarData && (
-          <aside class="aside-column mt-6 min-w-0 xl:mt-0">
-            <div class="sticky top-24">
-              <Sidebar {...sidebarData} />
-            </div>
-          </aside>
+      <main id="blog-container">
+        {Astro.slots.has('hero') && (
+          <div class="page-shell__hero">
+            <slot name="hero" />
+          </div>
         )}
-      </div>
-    </div>
 
-    <Footer />
+        <div id="content-inner" class:list={['layout', showAside && sidebarData ? 'page-grid--with-aside' : '']}>
+          <main class="page-main">
+            <slot />
+          </main>
+
+          {showAside && sidebarData && (
+            <aside class="page-aside">
+              <div class="page-aside__sticky">
+                <Sidebar {...sidebarData} />
+              </div>
+            </aside>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+
+      <ThemeDock client:load />
+      <ThemeOverlays
+        client:load
+        brandName={siteConfig.site.name}
+        authorName={siteConfig.site.author.name}
+        authorMotto={siteConfig.site.author.motto}
+        posts={overlayPosts}
+        tags={overlayTags}
+        archives={overlayArchives}
+        navItems={siteConfig.navigation.primary}
+        quickActions={siteConfig.navigation.quickActions}
+        stats={overlayStats}
+        features={overlayFeatures}
+        particleCount={siteConfig.theme.motion.heroParticles}
+      />
+    </div>
   </body>
 </html>

@@ -10,6 +10,12 @@ export default defineConfig({
   output: 'static',
   integrations: [react(), mdx()],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ['lucide-react']
+    },
+    optimizeDeps: {
+      include: ['lucide-react']
+    }
   }
 });

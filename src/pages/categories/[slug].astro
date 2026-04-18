@@ -1,17 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogLayout from '../../layouts/BlogLayout.astro';
 import PageHero from '../../components/theme/PageHero.astro';
 import PostCard from '../../components/theme/PostCard.astro';
-import {
-  collectArchives,
-  collectCategories,
-  collectTags,
-  estimateReadingMinutes,
-  resolveCategory,
-  slugifySegment,
-  sortPostsByDate,
-} from '../../lib/content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { collectCategories, resolveCategory, slugifySegment, sortPostsByDate } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
 
 export async function getStaticPaths() {
   const posts = sortPostsByDate(await getCollection('posts'));
@@ -26,29 +19,15 @@ export async function getStaticPaths() {
 const { categoryLabel } = Astro.props;
 const posts = sortPostsByDate(await getCollection('posts'));
 const currentPosts = posts.filter((entry) => slugifySegment(resolveCategory(entry)) === slugifySegment(categoryLabel));
-const tags = collectTags(posts);
-const archives = collectArchives(posts);
-const categories = collectCategories(posts);
-const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout
-  title={`分类: ${categoryLabel}`}
-  sidebarData={{
-    recentPosts: posts,
-    tags,
-    archives,
-    totalPosts: posts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-  }}
->
+<BlogLayout title={`分类: ${categoryLabel}`} sidebarData={sidebarData}>
   <Fragment slot="hero">
     <PageHero
       eyebrow="Category Detail"
       title={categoryLabel}
-      summary={`当前分类下共有 ${currentPosts.length} 篇文章，保持统一卡片格式，便于后续替换为 API 数据源。`}
+      summary={`当前分类下共有 ${currentPosts.length} 篇文章，统一沿用主题文章卡片系统。`}
       image="/media/shijianus/workbench.jpg"
       imageAlt="category detail background"
       meta={[`${currentPosts.length} posts`]}

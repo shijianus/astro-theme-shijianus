@@ -8,7 +8,9 @@ import {
   resolveCover,
   resolveCoverAlt,
   resolveGroup,
+  slugifySegment,
 } from '../../lib/content';
+import { formatDisplayDate } from '../../lib/theme';
 
 interface Props {
   entry: CollectionEntry<'posts'>;
@@ -19,67 +21,57 @@ const { entry, index = 0 } = Astro.props;
 
 const href = getPostPath(entry);
 const reverse = index % 2 === 1;
-const metaDate = entry.data.pubDate.toLocaleDateString('zh-CN', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-});
+const metaDate = formatDisplayDate(entry.data.pubDate);
 ---
 
-<article class="grid gap-4 rounded-md border border-[var(--line)] bg-[var(--surface)] p-4 shadow-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-[var(--line-strong)] md:p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-  <div class:list={['space-y-4', reverse && 'lg:order-1']}>
-    <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
-      <span>{resolveCategory(entry)}</span>
-      <span class="text-[var(--line-strong)]">/</span>
-      <span>{resolveGroup(entry)}</span>
-    </div>
+<article class={`recent-post-item lastestpost-item ${reverse ? 'is-reverse' : ''}`}>
+  <a href={href} class={`post_cover ${reverse ? 'right right_radius' : 'left_radius'}`} title={entry.data.title}>
+    <img
+      src={resolveCover(entry)}
+      alt={resolveCoverAlt(entry)}
+      class="post_bg"
+      loading="lazy"
+    />
+  </a>
 
-    <div class="space-y-3">
-      <a href={href} class="group inline-block">
-        <h2 class="text-2xl font-semibold leading-tight text-[var(--text-strong)] transition-colors group-hover:text-[var(--signal)]">
-          {entry.data.title}
-        </h2>
+  <div class="recent-post-info">
+    <div class="recent-post-info-top">
+      <div class="recent-post-info-top-tips">
+        {entry.data.featured && <span class="newPost">Recommend</span>}
+        <a class="unvisited-post" href={href}>Unread</a>
+      </div>
+
+      <a href={href} class="article-title" title={entry.data.title}>
+        {entry.data.title}
       </a>
-      <p class="text-sm leading-6 text-[var(--text-soft)]">{getExcerpt(entry)}</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
-      <span>{metaDate}</span>
-      <span>{estimateReadingMinutes(entry)} min read</span>
-      {entry.data.featured && <span class="text-[var(--signal)]">featured</span>}
+    <div class="article-meta-wrap">
+      <span class="post-meta-date">
+        <span class="article-meta-label">Created</span>
+        <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
+      </span>
+      <span class="article-meta">
+        <a href={`/categories/${slugifySegment(resolveCategory(entry))}/`} class="article-meta-link">
+          {resolveCategory(entry)}
+        </a>
+        <span class="article-meta-separator">/</span>
+        <span>{resolveGroup(entry)}</span>
+        <span class="article-meta-separator">/</span>
+        <span>{estimateReadingMinutes(entry)} min</span>
+      </span>
     </div>
+
+    <p class="content">{getExcerpt(entry, 190)}</p>
 
     {entry.data.tags.length > 0 && (
-      <div class="flex flex-wrap gap-2">
+      <div class="post-card-tags">
         {entry.data.tags.slice(0, 4).map((tag) => (
-          <a
-            href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`}
-            class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
-          >
+          <a href={`/tags/${slugifySegment(tag)}/`} class="theme-chip theme-chip--soft">
             #{tag}
           </a>
         ))}
       </div>
     )}
   </div>
-
-  <a
-    href={href}
-    class:list={[
-      'group relative block aspect-[16/10] overflow-hidden rounded-md border border-[var(--line)] bg-[var(--surface-muted)]',
-      reverse && 'lg:order-2',
-    ]}
-  >
-    <img
-      src={resolveCover(entry)}
-      alt={resolveCoverAlt(entry)}
-      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-      loading="lazy"
-    />
-    <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(10,15,13,0.56))]" />
-    <div class="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 py-3 text-xs text-white/80">
-      <span>{resolveCategory(entry)}</span>
-      <span>Open</span>
-    </div>
-  </a>
 </article>

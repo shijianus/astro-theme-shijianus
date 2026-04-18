@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ExternalLink, Menu, MoonStar, SunMedium, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowUp, Dice5, ExternalLink, House, Menu, MoonStar, Search, SunMedium, X } from 'lucide-react';
 
 type NavItem = {
   label: string;
@@ -13,6 +13,7 @@ type SiteHeaderProps = {
   currentPath: string;
   primary: NavItem[];
   utility: NavItem[];
+  quickActions: NavItem[];
 };
 
 function isActive(currentPath: string, href: string) {
@@ -26,27 +27,58 @@ function applyTheme(nextTheme: 'light' | 'dark') {
   window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
 }
 
+function openSearchPanel() {
+  window.dispatchEvent(new CustomEvent('shijianus:open-search'));
+}
+
+function openCenterConsole() {
+  window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+}
+
 export function SiteHeader({
   brandName,
   domainLabel,
   currentPath,
   primary,
   utility,
+  quickActions,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [scrolled, setScrolled] = useState(false);
+
+  const activeLabel = useMemo(() => {
+    return primary.find((item) => isActive(currentPath, item.href))?.label ?? domainLabel;
+  }, [currentPath, domainLabel, primary]);
+
+  const randomAction = quickActions[0] ?? primary[0];
 
   useEffect(() => {
-    const currentTheme = (document.documentElement.dataset.theme as 'light' | 'dark' | undefined) ?? 'dark';
-    setTheme(currentTheme);
+    const savedTheme =
+      (window.localStorage.getItem('shijianus-theme') as 'light' | 'dark' | null) ??
+      (document.documentElement.dataset.theme as 'light' | 'dark' | undefined) ??
+      'light';
+
+    document.documentElement.dataset.theme = savedTheme;
+    setTheme(savedTheme);
 
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<'light' | 'dark'>;
-      setTheme(customEvent.detail ?? 'dark');
+      setTheme(customEvent.detail ?? 'light');
     };
 
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
-    return () => window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -54,117 +86,142 @@ export function SiteHeader({
   }, [currentPath]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:color-mix(in_oklab,var(--bg)_84%,transparent)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
-        <a href="/" className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--line-strong)] bg-[var(--surface)] text-sm font-semibold text-[var(--text-strong)]">
-            SJ
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
-              {brandName}
-            </p>
-            <p className="truncate text-xs text-[var(--text-soft)]">{domainLabel}</p>
-          </div>
-        </a>
-
-        <nav className="hidden items-center gap-2 lg:flex">
-          {primary.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`rounded-md px-3 py-2 text-sm transition-colors ${
-                isActive(currentPath, item.href)
-                  ? 'bg-[var(--surface-muted)] text-[var(--text-strong)]'
-                  : 'text-[var(--text-soft)] hover:text-[var(--text-strong)]'
-              }`}
-            >
-              {item.label}
+    <header id="page-header" className={`site-header not-top-img ${scrolled ? 'nav-fixed nav-visible' : ''}`}>
+      <nav id="nav" aria-label="Main navigation">
+        <div id="nav-group">
+          <span id="blog_name">
+            <a id="site-name" href="/" accessKey="h" aria-label={brandName}>
+              <span className="title">{brandName}</span>
+              <House className="site-name__icon" aria-hidden="true" />
             </a>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-3 lg:flex">
-          <span className="rounded-full border border-[var(--line)] px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
-            Configurable
           </span>
-          {utility.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noreferrer' : undefined}
-              className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-[var(--text-soft)] transition-colors hover:text-[var(--text-strong)]"
-            >
-              {item.label}
-              {item.external && <ExternalLink className="h-3.5 w-3.5" />}
-            </a>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              const nextTheme = theme === 'dark' ? 'light' : 'dark';
-              applyTheme(nextTheme);
-              setTheme(nextTheme);
-            }}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--line)] text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-          </button>
-        </div>
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--line)] text-[var(--text-soft)] lg:hidden"
-          aria-label="Toggle navigation"
-        >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
+          <div className="mask-name-container">
+            <div id="name-container">
+              <a id="page-name" href="#blog-container">
+                {activeLabel}
+              </a>
+            </div>
+          </div>
+
+          <div id="menus">
+            <div className="menus_items">
+              {primary.map((item) => (
+                <div key={item.href} className="menus_item">
+                  <a
+                    href={item.href}
+                    className={`site-page ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
+                  >
+                    {item.label}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div id="nav-right">
+            <div className="nav-button" id="center-console-button">
+              <button type="button" className="site-page center-console-trigger" onClick={openCenterConsole} title="Console">
+                <span className="console-trigger-bars" aria-hidden="true">
+                  <span className="left" />
+                  <span className="center" />
+                  <span className="right" />
+                </span>
+              </button>
+            </div>
+
+            <div className="nav-button" id="randomPost_button">
+              <a className="site-page" href={randomAction.href} title={randomAction.label}>
+                <Dice5 className="nav-icon" aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className="nav-button" id="search-button">
+              <button type="button" className="site-page" onClick={openSearchPanel} title="Search">
+                <Search className="nav-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="nav-button" id="display-mode-button">
+              <button
+                type="button"
+                className="site-page"
+                onClick={() => {
+                  const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                  applyTheme(nextTheme);
+                  setTheme(nextTheme);
+                }}
+                title="Display Mode"
+              >
+                {theme === 'dark' ? (
+                  <SunMedium className="nav-icon" aria-hidden="true" />
+                ) : (
+                  <MoonStar className="nav-icon" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+
+            <div className="nav-button" id="nav-totop">
+              <button
+                type="button"
+                className="totopbtn site-page"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                title="Back To Top"
+              >
+                <ArrowUp className="nav-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
+              <button
+                type="button"
+                className="site-page"
+                onClick={() => setMenuOpen((value) => !value)}
+                aria-label="Toggle navigation"
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? <X className="nav-icon" aria-hidden="true" /> : <Menu className="nav-icon" aria-hidden="true" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {menuOpen && (
-        <div className="border-t border-[var(--line)] bg-[var(--bg)] lg:hidden">
-          <div className="mx-auto flex max-w-[1400px] flex-col gap-2 px-4 py-4 sm:px-6">
+        <div className="site-mobile-panel">
+          <nav className="site-mobile-panel__group" aria-label="Mobile navigation">
             {primary.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-3 py-2 text-sm ${
-                  isActive(currentPath, item.href)
-                    ? 'bg-[var(--surface-muted)] text-[var(--text-strong)]'
-                    : 'text-[var(--text-soft)]'
-                }`}
+                className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
               >
                 {item.label}
               </a>
             ))}
-            <div className="my-2 h-px bg-[var(--line)]" />
+          </nav>
+
+          <div className="site-mobile-panel__group">
+            {quickActions.map((item) => (
+              <a key={item.href} href={item.href} className="site-mobile-link">
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="site-mobile-panel__group">
             {utility.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noreferrer' : undefined}
-                className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--text-soft)]"
+                className="site-mobile-link"
               >
-                {item.label}
+                <span>{item.label}</span>
                 {item.external && <ExternalLink className="h-3.5 w-3.5" />}
               </a>
             ))}
-            <button
-              type="button"
-              onClick={() => {
-                const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                applyTheme(nextTheme);
-                setTheme(nextTheme);
-              }}
-              className="mt-2 inline-flex items-center gap-2 rounded-md border border-[var(--line)] px-3 py-2 text-left text-sm text-[var(--text-soft)]"
-            >
-              {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-              切换到{theme === 'dark' ? '亮色' : '暗色'}模式
-            </button>
           </div>
         </div>
       )}

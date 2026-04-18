@@ -1,76 +1,49 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogLayout from '../layouts/BlogLayout.astro';
 import PageHero from '../components/theme/PageHero.astro';
-import {
-  collectArchives,
-  collectCategories,
-  collectTags,
-  estimateReadingMinutes,
-  getPostPath,
-  resolveCategory,
-  sortPostsByDate,
-} from '../lib/content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { getPostPath, resolveCategory, sortPostsByDate } from '../lib/content';
+import { createSidebarData, groupPostsByYear } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
-const tags = collectTags(posts);
-const archives = collectArchives(posts);
-const categories = collectCategories(posts);
-const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
-
-const postsByYear = new Map<number, typeof posts>();
-for (const post of posts) {
-  const year = post.data.pubDate.getFullYear();
-  const bucket = postsByYear.get(year) ?? [];
-  bucket.push(post);
-  postsByYear.set(year, bucket);
-}
-
-const years = [...postsByYear.entries()].sort((left, right) => right[0] - left[0]);
+const sidebarData = createSidebarData(posts);
+const years = groupPostsByYear(posts);
 ---
 
-<BlogLayout
-  title="归档"
-  sidebarData={{
-    recentPosts: posts,
-    tags,
-    archives,
-    totalPosts: posts.length,
-    totalCategories: categories.length,
-    totalTags: tags.length,
-    totalReadingMinutes,
-  }}
->
+<BlogLayout title="归档" sidebarData={sidebarData}>
   <Fragment slot="hero">
     <PageHero
       eyebrow="Archive Index"
       title="按年份查看所有记录"
-      summary="保留原主题的归档感，但用更直接的年份时间轴和文章摘要来组织内容。"
+      summary="保留明显的归档入口和时间感，用更清楚的时间轴层次组织每一篇文章。"
       image="/media/shijianus/network.jpg"
       imageAlt="archive background"
-      meta={[`${posts.length} posts`, `${categories.length} categories`, `${tags.length} tags`]}
+      meta={[`${posts.length} posts`, `${sidebarData.totalCategories} categories`, `${sidebarData.totalTags} tags`]}
     />
   </Fragment>
 
   <section class="space-y-8">
     {years.map(([year, items]) => (
-      <section class="surface-panel space-y-4">
-        <div class="flex items-end justify-between gap-4">
+      <section class="theme-card space-y-4">
+        <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p class="eyebrow">Year</p>
             <h2 class="text-3xl font-semibold text-[var(--text-strong)]">{year}</h2>
           </div>
           <p class="text-sm text-[var(--text-muted)]">{items.length} entries</p>
         </div>
+
         <div class="space-y-3">
           {items.map((entry) => (
-            <a href={getPostPath(entry)} class="grid gap-3 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-4 transition-colors hover:border-[var(--signal)] md:grid-cols-[132px_minmax(0,1fr)_auto] md:items-center">
-              <span class="text-sm text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</span>
-              <div class="space-y-1">
-                <p class="text-base font-medium text-[var(--text-strong)]">{entry.data.title}</p>
-                <p class="text-sm text-[var(--text-soft)]">{entry.data.description}</p>
+            <a href={getPostPath(entry)} class="theme-card theme-card--soft theme-card--interactive block p-4">
+              <div class="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)_auto] md:items-center">
+                <span class="text-sm text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</span>
+                <div class="space-y-1">
+                  <p class="text-base font-medium text-[var(--text-strong)]">{entry.data.title}</p>
+                  <p class="text-sm text-[var(--text-soft)]">{entry.data.description}</p>
+                </div>
+                <span class="text-sm text-[var(--text-muted)]">{resolveCategory(entry)}</span>
               </div>
-              <span class="text-sm text-[var(--text-muted)]">{resolveCategory(entry)}</span>
             </a>
           ))}
         </div>
