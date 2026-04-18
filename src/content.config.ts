@@ -7,14 +7,20 @@ const postsCollection = defineCollection({
     title: z.string(),
     pubDate: z.date(),
     description: z.string().optional(),
-    author: z.string().default('SmartKevin'),
+    author: z.string().default('shijianus'),
     image: z.object({
       url: z.string(),
       alt: z.string()
     }).optional(),
     tags: z.array(z.string()).default([]),
-    space: z.string(), // e.g., "Technology", "Science"
-    group: z.string(), // e.g., "Web Development", "Biology"
+    category: z.string().optional(),
+    space: z.string().optional(),
+    group: z.string().optional(),
+    cover: z.string().optional(),
+    coverAlt: z.string().optional(),
+    featured: z.boolean().default(false),
+    sticky: z.number().int().default(0),
+    draft: z.boolean().default(false),
   }),
 });
 
