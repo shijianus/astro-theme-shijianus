@@ -73,13 +73,18 @@ const runtimeDays = Math.max(
 
     {siteConfig.theme.features.footerRuntime && (
       <div id="workboard">
-        <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-        <strong>{siteConfig.footer.runtime.workLabel}</strong>
+        <div class="workboard-status">
+          <span class="workboard-dot" aria-hidden="true"></span>
+          <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+          <strong>{siteConfig.footer.runtime.workLabel}</strong>
+        </div>
         <p>{siteConfig.footer.runtime.workDetail}</p>
         <div id="runtimeTextTip">
           <span>已运行 {runtimeDays} 天</span>
           <span>{stats.posts} 篇文章</span>
+          <span>{stats.categories} 个分类</span>
           <span>{stats.tags} 个标签</span>
+          <span>{stats.readingMinutes} 分钟阅读</span>
         </div>
       </div>
     )}

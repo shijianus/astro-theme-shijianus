@@ -1,18 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowUp, Languages, MoonStar, PanelRightClose, PanelRightOpen, Settings, SunMedium } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowUp, Languages, MoonStar, PanelRightClose, PanelRightOpen, Settings, Sparkles, SunMedium } from 'lucide-react';
 
 type ThemeMode = 'light' | 'dark';
 type AsideState = 'expanded' | 'collapsed';
+type BackgroundMode = {
+  id: string;
+  label: string;
+};
+
+type ThemeDockProps = {
+  defaultBackground: string;
+  backgroundModes: readonly BackgroundMode[];
+};
+
+function readStorage(key: string) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {}
+}
 
 function syncTheme(nextTheme: ThemeMode) {
   document.documentElement.dataset.theme = nextTheme;
-  window.localStorage.setItem('shijianus-theme', nextTheme);
+  writeStorage('shijianus-theme', nextTheme);
   window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
 }
 
 function syncAside(nextAside: AsideState) {
   document.documentElement.dataset.aside = nextAside;
-  window.localStorage.setItem('shijianus-aside', nextAside);
+  writeStorage('shijianus-aside', nextAside);
+}
+
+function syncBackground(nextBackground: string) {
+  document.documentElement.dataset.background = nextBackground;
+  writeStorage('shijianus-background', nextBackground);
+  window.dispatchEvent(new CustomEvent('shijianus:backgroundchange', { detail: nextBackground }));
 }
 
 function calculateProgress() {
@@ -22,55 +51,104 @@ function calculateProgress() {
   return Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100));
 }
 
-export function ThemeDock() {
+export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps) {
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
+  const [background, setBackground] = useState(defaultBackground);
+  const [localeVariant, setLocaleVariant] = useState<'zh-CN' | 'zh-Hant'>('zh-CN');
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [nearFooter, setNearFooter] = useState(false);
+
+  const currentBackground = useMemo(() => {
+    return backgroundModes.find((mode) => mode.id === background) ?? backgroundModes[0];
+  }, [background, backgroundModes]);
+
+  const cycleBackground = () => {
+    const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
+    const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
+    syncBackground(nextBackground);
+    setBackground(nextBackground);
+  };
 
   useEffect(() => {
     const root = document.documentElement;
     const savedTheme =
-      (window.localStorage.getItem('shijianus-theme') as ThemeMode | null) ??
+      (readStorage('shijianus-theme') as ThemeMode | null) ??
       (root.dataset.theme as ThemeMode | undefined) ??
       'light';
     const savedAside =
-      (window.localStorage.getItem('shijianus-aside') as AsideState | null) ??
+      (readStorage('shijianus-aside') as AsideState | null) ??
       (root.dataset.aside as AsideState | undefined) ??
       'expanded';
+    const savedBackground =
+      readStorage('shijianus-background') ??
+      root.dataset.background ??
+      defaultBackground;
+    const savedLocaleVariant =
+      (readStorage('shijianus-locale-variant') as 'zh-CN' | 'zh-Hant' | null) ?? 'zh-CN';
 
     root.dataset.theme = savedTheme;
     root.dataset.aside = savedAside;
+    root.dataset.background = savedBackground;
+    root.dataset.localeVariant = savedLocaleVariant;
+    root.lang = savedLocaleVariant;
 
     setTheme(savedTheme);
     setAside(savedAside);
+    setBackground(savedBackground);
+    setLocaleVariant(savedLocaleVariant);
 
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<ThemeMode>;
       setTheme(customEvent.detail ?? 'light');
     };
+    const onBackgroundChange = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      setBackground(customEvent.detail ?? defaultBackground);
+    };
 
     const onScroll = () => {
       setProgress(calculateProgress());
       setVisible(window.scrollY > 120);
+      const footer = document.getElementById('footer');
+      if (!footer) return;
+      setNearFooter(footer.getBoundingClientRect().top < window.innerHeight - 24);
     };
 
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
+    window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
+      window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
     };
-  }, []);
+  }, [defaultBackground]);
 
   return (
-    <div id="rightside" className={visible ? 'is-visible' : ''}>
+    <div id="rightside" className={`${visible ? 'is-visible' : ''} ${nearFooter ? 'is-near-footer' : ''}`}>
       <div id="rightside-config-hide" className={configOpen ? 'show' : ''}>
-        <button type="button" id="translateLink" title="Switch Language Variant">
+        <button
+          type="button"
+          id="translateLink"
+          title={localeVariant === 'zh-CN' ? '切换为繁体语境' : '切换为简体语境'}
+          onClick={() => {
+            const nextVariant = localeVariant === 'zh-CN' ? 'zh-Hant' : 'zh-CN';
+            document.documentElement.dataset.localeVariant = nextVariant;
+            document.documentElement.lang = nextVariant;
+            writeStorage('shijianus-locale-variant', nextVariant);
+            setLocaleVariant(nextVariant);
+          }}
+        >
           <Languages className="rightside-icon" aria-hidden="true" />
+        </button>
+
+        <button type="button" id="background-mode" title={`切换背景：${currentBackground?.label ?? background}`} onClick={cycleBackground}>
+          <Sparkles className="rightside-icon" aria-hidden="true" />
         </button>
 
         <button

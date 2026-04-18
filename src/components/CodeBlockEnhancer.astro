@@ -1,0 +1,87 @@
+<script is:inline>
+  (() => {
+    const copyText = async (value) => {
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch {}
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        textarea.remove();
+        return copied;
+      } catch {
+        return false;
+      }
+    };
+
+    const getLanguage = (pre, code) => {
+      const dataLanguage = pre.dataset.language || code?.dataset.language;
+      if (dataLanguage) return dataLanguage.toUpperCase();
+
+      const className = `${pre.className} ${code?.className ?? ''}`;
+      const match = className.match(/language-([a-z0-9_+-]+)/i);
+      return match?.[1]?.toUpperCase() ?? 'CODE';
+    };
+
+    const enhanceCodeBlocks = () => {
+      document.querySelectorAll('.article-body pre').forEach((pre) => {
+        if (!(pre instanceof HTMLElement) || pre.dataset.enhanced === 'true') return;
+
+        const code = pre.querySelector('code');
+        const shell = document.createElement('div');
+        const toolbar = document.createElement('div');
+        const lights = document.createElement('span');
+        const lang = document.createElement('span');
+        const button = document.createElement('button');
+        const buttonText = document.createElement('span');
+
+        pre.dataset.enhanced = 'true';
+        shell.className = 'code-block-shell';
+        toolbar.className = 'code-block-toolbar';
+        lights.className = 'code-block-lights';
+        lang.className = 'code-block-lang';
+        button.className = 'code-copy-button';
+        button.type = 'button';
+        button.title = '复制代码';
+        buttonText.textContent = '复制';
+
+        lights.innerHTML = '<i></i><i></i><i></i>';
+        lang.textContent = getLanguage(pre, code);
+        button.append(buttonText);
+        toolbar.append(lights, lang, button);
+
+        pre.parentNode?.insertBefore(shell, pre);
+        shell.append(toolbar, pre);
+
+        button.addEventListener('click', async () => {
+          const copied = await copyText(code?.textContent ?? pre.textContent ?? '');
+          if (!copied) return;
+          button.classList.add('copied');
+          buttonText.textContent = '已复制';
+          window.setTimeout(() => {
+            button.classList.remove('copied');
+            buttonText.textContent = '复制';
+          }, 1800);
+        });
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', enhanceCodeBlocks, { once: true });
+    } else {
+      enhanceCodeBlocks();
+    }
+    document.addEventListener('astro:page-load', enhanceCodeBlocks);
+  })();
+</script>

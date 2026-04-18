@@ -23,7 +23,9 @@ function isActive(currentPath: string, href: string) {
 
 function applyTheme(nextTheme: 'light' | 'dark') {
   document.documentElement.dataset.theme = nextTheme;
-  window.localStorage.setItem('shijianus-theme', nextTheme);
+  try {
+    window.localStorage.setItem('shijianus-theme', nextTheme);
+  } catch {}
   window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
 }
 
@@ -52,10 +54,27 @@ export function SiteHeader({
   }, [currentPath, domainLabel, primary]);
 
   const randomAction = quickActions[0] ?? primary[0];
+  const goRandom = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const candidates = quickActions.length > 0 ? quickActions : primary;
+    const next = candidates[Math.floor(Math.random() * candidates.length)] ?? randomAction;
+    if (!next) return;
+    if (next.external) {
+      window.open(next.href, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    window.location.href = next.href;
+  };
 
   useEffect(() => {
     const savedTheme =
-      (window.localStorage.getItem('shijianus-theme') as 'light' | 'dark' | null) ??
+      (() => {
+        try {
+          return window.localStorage.getItem('shijianus-theme') as 'light' | 'dark' | null;
+        } catch {
+          return null;
+        }
+      })() ??
       (document.documentElement.dataset.theme as 'light' | 'dark' | undefined) ??
       'light';
 
@@ -131,7 +150,7 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href={randomAction.href} title={randomAction.label}>
+              <a className="site-page" href={randomAction.href} onClick={goRandom} title={randomAction.label}>
                 <Dice5 className="nav-icon" aria-hidden="true" />
               </a>
             </div>

@@ -51,6 +51,7 @@ export function PostComments({
 }: PostCommentsProps) {
   const storageKey = `shijianus-comments:${slug}`;
   const [comments, setComments] = useState<StoredComment[]>([]);
+  const [storageReady, setStorageReady] = useState(false);
   const [preview, setPreview] = useState(false);
   const [form, setForm] = useState<CommentForm>({
     name: '',
@@ -62,17 +63,27 @@ export function PostComments({
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(storageKey);
-      if (!raw) return;
+      if (!raw) {
+        setStorageReady(true);
+        return;
+      }
       const parsed = JSON.parse(raw) as StoredComment[];
       if (Array.isArray(parsed)) setComments(parsed);
     } catch {
-      window.localStorage.removeItem(storageKey);
+      try {
+        window.localStorage.removeItem(storageKey);
+      } catch {}
+    } finally {
+      setStorageReady(true);
     }
   }, [storageKey]);
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(comments));
-  }, [comments, storageKey]);
+    if (!storageReady) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(comments));
+    } catch {}
+  }, [comments, storageKey, storageReady]);
 
   const remaining = LIMIT - form.message.length;
   const canSubmit = form.name.trim().length > 0 && form.message.trim().length > 0;
@@ -136,7 +147,17 @@ export function PostComments({
             </div>
 
             <div className="comment-form-card__editor">
-              <textarea value={form.message} onChange={onFieldChange('message')} placeholder="留下你的想法..." />
+              <textarea
+                value={form.message}
+                onChange={onFieldChange('message')}
+                onKeyDown={(event) => {
+                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                    event.preventDefault();
+                    submit();
+                  }
+                }}
+                placeholder="留下你的想法..."
+              />
             </div>
 
             <div className="comment-form-card__footer">

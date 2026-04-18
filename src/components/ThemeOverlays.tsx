@@ -9,6 +9,7 @@ import {
   MoonStar,
   PanelRightClose,
   PanelRightOpen,
+  Sparkles,
   RefreshCw,
   Search,
   SunMedium,
@@ -44,6 +45,10 @@ export type OverlayArchiveItem = {
 
 type ThemeMode = 'light' | 'dark';
 type AsideState = 'expanded' | 'collapsed';
+type BackgroundMode = {
+  id: string;
+  label: string;
+};
 
 type ThemeOverlaysProps = {
   brandName: string;
@@ -67,17 +72,39 @@ type ThemeOverlaysProps = {
     particles: boolean;
   };
   particleCount: number;
+  defaultBackground: string;
+  backgroundModes: readonly BackgroundMode[];
 };
+
+function readStorage(key: string) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {}
+}
 
 function syncTheme(nextTheme: ThemeMode) {
   document.documentElement.dataset.theme = nextTheme;
-  window.localStorage.setItem('shijianus-theme', nextTheme);
+  writeStorage('shijianus-theme', nextTheme);
   window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
 }
 
 function syncAside(nextAside: AsideState) {
   document.documentElement.dataset.aside = nextAside;
-  window.localStorage.setItem('shijianus-aside', nextAside);
+  writeStorage('shijianus-aside', nextAside);
+}
+
+function syncBackground(nextBackground: string) {
+  document.documentElement.dataset.background = nextBackground;
+  writeStorage('shijianus-background', nextBackground);
+  window.dispatchEvent(new CustomEvent('shijianus:backgroundchange', { detail: nextBackground }));
 }
 
 function isEditableTarget(target: EventTarget | null) {
@@ -101,12 +128,15 @@ export function ThemeOverlays({
   stats,
   features,
   particleCount,
+  defaultBackground,
+  backgroundModes,
 }: ThemeOverlaysProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
+  const [background, setBackground] = useState(defaultBackground);
   const [rightMenu, setRightMenu] = useState<{ open: boolean; x: number; y: number; selectedText: string }>({
     open: false,
     x: 0,
@@ -137,26 +167,43 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
+  const cycleBackground = () => {
+    const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
+    const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
+    syncBackground(nextBackground);
+    setBackground(nextBackground);
+  };
+
   useEffect(() => {
     const savedTheme =
-      (window.localStorage.getItem('shijianus-theme') as ThemeMode | null) ??
+      (readStorage('shijianus-theme') as ThemeMode | null) ??
       (document.documentElement.dataset.theme as ThemeMode | undefined) ??
       'light';
     const savedAside =
-      (window.localStorage.getItem('shijianus-aside') as AsideState | null) ??
+      (readStorage('shijianus-aside') as AsideState | null) ??
       (document.documentElement.dataset.aside as AsideState | undefined) ??
       'expanded';
+    const savedBackground =
+      readStorage('shijianus-background') ??
+      document.documentElement.dataset.background ??
+      defaultBackground;
 
     document.documentElement.dataset.theme = savedTheme;
     document.documentElement.dataset.aside = savedAside;
+    document.documentElement.dataset.background = savedBackground;
     setTheme(savedTheme);
     setAside(savedAside);
+    setBackground(savedBackground);
 
     const openSearch = () => setSearchOpen(true);
     const openConsole = () => setConsoleOpen(true);
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<ThemeMode>;
       setTheme(customEvent.detail ?? 'light');
+    };
+    const onBackgroundChange = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      setBackground(customEvent.detail ?? defaultBackground);
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && features.searchPanel) {
@@ -188,6 +235,7 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:open-search', openSearch);
     window.addEventListener('shijianus:open-console', openConsole);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
+    window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('contextmenu', onContextMenu);
     window.addEventListener('click', closeRightMenu);
@@ -196,11 +244,12 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:open-search', openSearch);
       window.removeEventListener('shijianus:open-console', openConsole);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
+      window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('click', closeRightMenu);
     };
-  }, [features.rightClickMenu, features.searchPanel]);
+  }, [defaultBackground, features.rightClickMenu, features.searchPanel]);
 
   useEffect(() => {
     document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen);
@@ -225,8 +274,30 @@ export function ThemeOverlays({
   };
 
   const copyText = async (value: string) => {
-    if (!value) return;
-    await navigator.clipboard?.writeText(value);
+    if (!value) return false;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+    } catch {}
+
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      return copied;
+    } catch {
+      return false;
+    }
   };
 
   return (
@@ -369,6 +440,9 @@ export function ThemeOverlays({
             </button>
             <button type="button" className="console-btn-item" onClick={() => setSearchOpen(true)} title="打开搜索">
               <Search aria-hidden="true" />
+            </button>
+            <button type="button" className="console-btn-item" onClick={cycleBackground} title="切换背景">
+              <Sparkles aria-hidden="true" />
             </button>
             <button type="button" className="console-btn-item" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="回到顶部">
               <ArrowUp aria-hidden="true" />

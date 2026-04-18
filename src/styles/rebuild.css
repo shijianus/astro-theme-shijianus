@@ -633,9 +633,15 @@ body[data-type='tag-detail'] .page-main {
   gap: 16px;
   padding: 20px;
   border: var(--style-border-always);
-  border-radius: 12px;
+  border-radius: 8px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 10%, var(--card-bg)), var(--card-bg) 55%);
   box-shadow: var(--shadow-border);
+  transition: 0.3s var(--animation-on);
+}
+
+.comment-surface:hover {
+  border-color: var(--theme-main);
+  box-shadow: var(--shadow-main);
 }
 
 .comment-surface__eyebrow {
@@ -689,7 +695,7 @@ body[data-type='tag-detail'] .page-main {
   gap: 12px;
   padding: 16px;
   border: var(--style-border-always);
-  border-radius: 12px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
   backdrop-filter: blur(10px);
 }
@@ -754,6 +760,7 @@ body[data-type='tag-detail'] .page-main {
   background: var(--card-bg);
   color: var(--font-color);
   font-weight: 700;
+  transition: 0.2s var(--animation-on);
 }
 
 .comment-form-card__actions button.is-primary,
@@ -800,9 +807,11 @@ body[data-type='tag-detail'] .page-main {
   gap: 12px;
   padding: 16px 18px;
   border: var(--style-border-always);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--card-bg);
   box-shadow: var(--shadow-border);
+  transition: 0.3s var(--animation-on);
+  animation: slide-in 0.35s var(--animation-in) backwards;
 }
 
 .comment-thread__item {
@@ -820,6 +829,16 @@ body[data-type='tag-detail'] .page-main {
   color: var(--white);
   font-size: 15px;
   font-weight: 800;
+  transition: 0.3s var(--animation-on);
+}
+
+.comment-thread__item:hover {
+  border-color: var(--theme-main);
+  box-shadow: var(--shadow-main);
+}
+
+.comment-thread__item:hover .comment-thread__avatar {
+  transform: rotate(6deg) scale(1.06);
 }
 
 .comment-thread__meta {

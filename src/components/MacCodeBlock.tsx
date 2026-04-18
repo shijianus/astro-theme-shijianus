@@ -12,7 +12,19 @@ export function MacCodeBlock({ code, language, title }: MacCodeBlockProps) {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch (error) {

@@ -111,6 +111,14 @@ export const siteConfig = {
   },
   theme: {
     defaultMode: 'light',
+    background: {
+      defaultMode: 'grid',
+      modes: [
+        { id: 'grid', label: '网格背景' },
+        { id: 'starfield', label: '星空背景' },
+        { id: 'clean', label: '纯净背景' },
+      ],
+    },
     features: {
       hero: true,
       categoryRail: true,

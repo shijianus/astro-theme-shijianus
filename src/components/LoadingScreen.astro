@@ -9,8 +9,15 @@ const { brandName, avatar } = Astro.props;
 
 <div id="loading-box" aria-hidden="true">
   <div class="loading-bg">
+    <div class="loading-stars" aria-hidden="true">
+      {Array.from({ length: 10 }).map((_, index) => (
+        <span style={`--i:${index};--x:${8 + ((index * 29) % 84)}%;--y:${12 + ((index * 37) % 76)}%`}></span>
+      ))}
+    </div>
+    <div class="loading-orbit" aria-hidden="true"></div>
     <img class="loading-img" alt={`${brandName} loading avatar`} src={avatar} />
     <div class="loading-image-dot"></div>
+    <p class="loading-title">{brandName}</p>
   </div>
 </div>
 
@@ -22,6 +29,24 @@ const { brandName, avatar } = Astro.props;
 
     let ended = false;
     const startedAt = performance.now();
+    const sessionKey = 'shijianus-loader-seen';
+    const hasSeenLoader = () => {
+      try {
+        return sessionStorage.getItem(sessionKey) === 'true';
+      } catch {
+        return false;
+      }
+    };
+    const markSeen = () => {
+      try {
+        sessionStorage.setItem(sessionKey, 'true');
+      } catch {}
+    };
+    const firstVisit = !hasSeenLoader();
+    const minimumDuration = firstVisit ? 2400 : 360;
+    const removeDelay = firstVisit ? 520 : 280;
+
+    loadingBox.classList.toggle('is-first-visit', firstVisit);
 
     const endLoading = () => {
       if (ended) return;
@@ -29,19 +54,22 @@ const { brandName, avatar } = Astro.props;
         if (ended) return;
         ended = true;
         root.classList.add('theme-ready');
+        markSeen();
         loadingBox.classList.add('loaded');
         window.setTimeout(() => {
           loadingBox.remove();
-        }, 280);
+        }, removeDelay);
       };
 
       const elapsed = performance.now() - startedAt;
-      const remaining = Math.max(0, 420 - elapsed);
+      const remaining = Math.max(0, minimumDuration - elapsed);
       window.setTimeout(complete, remaining);
     };
 
     root.classList.remove('theme-ready');
-    loadingBox.addEventListener('click', endLoading, { once: true });
+    loadingBox.addEventListener('click', () => {
+      if (!firstVisit) endLoading();
+    }, { once: true });
 
     if (document.readyState === 'complete') {
       endLoading();

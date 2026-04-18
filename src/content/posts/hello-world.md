@@ -23,6 +23,14 @@ tags: ["Astro", "Tailwind", "主题重构"]
 1. 保留原主题强结构首页、侧栏模块和卡片体系的优点。
 2. 把实现方式完全切换到 Astro + React + Tailwind 的内容优先架构。
 
+```ts
+const themeContract = {
+  brand: 'shijianus',
+  runtime: 'Astro Islands',
+  interaction: ['loading', 'copy-code', 'comments', 'dock'],
+};
+```
+
 ## 首页应该先解决什么
 
 首页不是宣传页，它首先是一张信息地图。读者进入第一页，需要很快看见：

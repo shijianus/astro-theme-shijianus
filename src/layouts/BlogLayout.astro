@@ -4,6 +4,7 @@ import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
+import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import Sidebar from '../components/theme/Sidebar.astro';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
@@ -62,7 +63,12 @@ const overlayFeatures = {
 ---
 
 <!doctype html>
-<html lang={siteConfig.site.locale} data-theme={siteConfig.theme.defaultMode} data-aside="expanded">
+<html
+  lang={siteConfig.site.locale}
+  data-theme={siteConfig.theme.defaultMode}
+  data-aside="expanded"
+  data-background={siteConfig.theme.background.defaultMode}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -113,7 +119,11 @@ const overlayFeatures = {
 
       <Footer stats={overlayStats} />
 
-      <ThemeDock client:idle />
+      <ThemeDock
+        client:idle
+        defaultBackground={siteConfig.theme.background.defaultMode}
+        backgroundModes={siteConfig.theme.background.modes}
+      />
       <ThemeOverlays
         client:idle
         brandName={siteConfig.site.name}
@@ -127,7 +137,10 @@ const overlayFeatures = {
         stats={overlayStats}
         features={overlayFeatures}
         particleCount={siteConfig.theme.motion.heroParticles}
+        defaultBackground={siteConfig.theme.background.defaultMode}
+        backgroundModes={siteConfig.theme.background.modes}
       />
+      <CodeBlockEnhancer />
     </div>
   </body>
 </html>
