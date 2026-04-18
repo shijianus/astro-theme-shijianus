@@ -12,9 +12,12 @@ const { featuredPosts, latestPosts } = Astro.props;
 
 const topPosts = (featuredPosts.length > 0 ? featuredPosts : latestPosts).slice(0, 6);
 const todayPost = topPosts[0] ?? latestPosts[0];
+const stackPosts = topPosts.slice(0, 3);
 const mobileFocusPost = topPosts[0] ?? todayPost;
 const categoryItems = siteConfig.home.categories.slice(0, 3);
-const skillTags = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero.chips];
+const showcase = siteConfig.home.hero.showcase;
+const showcaseTiles = [...showcase.tiles, ...showcase.tiles];
+const topDeck = siteConfig.home.hero.topDeck;
 const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
 ---
 
@@ -24,35 +27,51 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
   <div class="home-top-notice">
     <span class="home-top-notice__label">{siteConfig.home.announcement.eyebrow}</span>
     <p>{siteConfig.home.announcement.summary}</p>
-    <a href={siteConfig.home.announcement.href}>更多</a>
+    <a href={siteConfig.home.announcement.href}>{siteConfig.home.announcement.linkLabel}</a>
   </div>
 
   <div class="swiper_container_card">
     <div id="bannerGroup">
       <a id="random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'}>
+        <div class="random-banner__content">
+          <span class="random-banner__eyebrow">{showcase.eyebrow}</span>
+          <span class="random-banner__title">
+            <span>{showcase.leadTop}</span>
+            <span>{showcase.leadBottom}</span>
+          </span>
+          <span class="random-banner__domain">{showcase.foot}</span>
+        </div>
+
         <div id="skills-tags-group-all" aria-hidden="true">
           <div class="tags-group-wrapper">
-            {skillTags.map((item, index) => (
-              <span class="tags-group-icon" style={`--delay:${index * 0.12}s;`}>
-                {item}
+            {showcaseTiles.map((item, index) => (
+              <span class="tags-group-icon-pair" style={`--delay:${index * 0.12}s;`}>
+                <span class={`tags-group-icon is-${item.accent}`}>
+                  <span class="tags-group-icon__short">{item.short}</span>
+                  <span class="tags-group-icon__label">{item.label}</span>
+                </span>
               </span>
             ))}
           </div>
           <div class="tags-group-wrapper tags-group-wrapper--offset">
-            {skillTags.slice().reverse().map((item, index) => (
-              <span class="tags-group-icon" style={`--delay:${index * 0.1}s;`}>
-                {item}
+            {showcaseTiles.slice().reverse().map((item, index) => (
+              <span class="tags-group-icon-pair" style={`--delay:${index * 0.1}s;`}>
+                <span class={`tags-group-icon is-${item.accent}`}>
+                  <span class="tags-group-icon__short">{item.short}</span>
+                  <span class="tags-group-icon__label">{item.label}</span>
+                </span>
               </span>
             ))}
           </div>
         </div>
 
         <span id="random-hover">
-          <span class="random-hover__icon">SJ</span>
+          <span class="random-hover__icon">{topDeck.hoverMonogram}</span>
           <span class="bannerText">
-            {siteConfig.navigation.quickActions[0]?.label ?? '随便逛逛'}
+            {topDeck.hoverActionLabel}
             <span class="bannerText__arrow">-></span>
           </span>
+          <span class="random-hover__hint">{topDeck.hoverActionHint} · {showcase.hoverHint}</span>
         </span>
       </a>
 
@@ -81,10 +100,15 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
     </div>
 
     <div class="topGroup">
-      {topPosts.map((entry, index) => (
+      <div class="topGroup__stack" aria-hidden="true">
+        <span class="topGroup__stack-back topGroup__stack-back--one"></span>
+        <span class="topGroup__stack-back topGroup__stack-back--two"></span>
+      </div>
+
+      {stackPosts.map((entry, index) => (
         <article class="recent-post-item top-post-card">
           <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
-            <span class="recent-post-top-text">{index === 0 ? '荐' : '文'}</span>
+            <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
             <img
               class="post_bg"
               src={resolveCover(entry)}
@@ -93,6 +117,7 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
             />
           </a>
           <div class="recent-post-info">
+            <span class="top-post-card__eyebrow">{topDeck.panelLabel}</span>
             <a class="article-title" href={getPostPath(entry)} title={entry.data.title}>
               {entry.data.title}
             </a>
@@ -103,6 +128,7 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
 
       {todayPost && (
         <article class="todayCard">
+          <div class="todayCard__panel-label">{topDeck.panelLabel}</div>
           <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title}>
             <div class="todayCard-info">
               <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
@@ -114,8 +140,12 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
           <div class="banner-button-group">
             <label class="banner-button" for="today-card-toggle">
               <span class="banner-button__icon">+</span>
-              <span class="banner-button-text">更多推荐</span>
+              <span class="banner-button-text">{topDeck.toggleLabel}</span>
             </label>
+          </div>
+          <div class="todayCard__footer">
+            <span>{topDeck.panelFootnote}</span>
+            <span>{topDeck.panelAction}</span>
           </div>
         </article>
       )}

@@ -25,6 +25,47 @@ export type HeroStat = {
   detail: string;
 };
 
+export type HeroShowcase = {
+  eyebrow: string;
+  leadTop: string;
+  leadBottom: string;
+  foot: string;
+  hoverHint: string;
+  tiles: HeroShowcaseTile[];
+};
+
+export type HeroShowcaseTile = {
+  label: string;
+  short: string;
+  accent: 'blue' | 'dark' | 'light' | 'teal' | 'orange' | 'green';
+};
+
+export type HeroTopDeck = {
+  hoverMonogram: string;
+  hoverActionLabel: string;
+  hoverActionHint: string;
+  primaryCardBadge: string;
+  secondaryCardBadge: string;
+  toggleLabel: string;
+  panelLabel: string;
+  panelAction: string;
+  panelFootnote: string;
+};
+
+export type HomeCategoryRail = {
+  homeLabel: string;
+  moreLabel: string;
+  nextLabel: string;
+};
+
+export type HomeAnnouncement = {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  href: string;
+  linkLabel: string;
+};
+
 export type HomeSpotlight = {
   eyebrow: string;
   title: string;
@@ -125,6 +166,32 @@ export const siteConfig = {
       emphasis: '在高信息密度里保留阅读秩序',
       summary:
         '重建参考主题的首页结构、交互节奏和作者感，但所有数据、组件和配置都收束到更适合 shijianus 的 Astro 体系里。',
+      showcase: {
+        eyebrow: 'shijian.us',
+        leadTop: '内容优先',
+        leadBottom: '界面有序。',
+        foot: '内容、结构与交互一起重做',
+        hoverHint: '点击快速进入当前推荐文章',
+        tiles: [
+          { label: 'Astro', short: 'AS', accent: 'light' },
+          { label: 'React', short: 'RC', accent: 'blue' },
+          { label: 'Tailwind', short: 'TW', accent: 'green' },
+          { label: 'Motion', short: 'MT', accent: 'dark' },
+          { label: 'TypeScript', short: 'TS', accent: 'light' },
+          { label: 'Config', short: 'CF', accent: 'orange' },
+        ] satisfies HeroShowcaseTile[],
+      } satisfies HeroShowcase,
+      topDeck: {
+        hoverMonogram: 'SJ',
+        hoverActionLabel: '随便逛逛',
+        hoverActionHint: '打开当前推荐',
+        primaryCardBadge: '荐',
+        secondaryCardBadge: '文',
+        toggleLabel: '更多推荐',
+        panelLabel: '本次重构',
+        panelAction: '更多推荐',
+        panelFootnote: '推荐卡组会在这里继续展开',
+      } satisfies HeroTopDeck,
       primaryCta: { label: '开始阅读', href: '/archives/' },
       secondaryCta: { label: '关于主题', href: '/about/' },
       image: '/media/shijianus/hero.jpg',
@@ -152,6 +219,11 @@ export const siteConfig = {
       { label: '学习笔记', description: '课程、实验与思考', href: '/categories/学习笔记/', accent: 'lime' },
       { label: '产品观察', description: '工具、写作与产品判断', href: '/categories/产品观察/', accent: 'slate' },
     ] satisfies HomeCategory[],
+    categoryRail: {
+      homeLabel: '首页',
+      moreLabel: '更多',
+      nextLabel: '向右查看更多分类',
+    } satisfies HomeCategoryRail,
     statusCards: [
       { title: '当前阶段', value: 'UI 复刻中', detail: '先把首页、文章页和侧栏系统做完整' },
       { title: '实现原则', value: 'Config Surface', detail: '所有区块有明确配置入口' },
@@ -163,7 +235,8 @@ export const siteConfig = {
       summary:
         '这一步不再停留在“有内容的默认壳子”，而是把头图、导航、卡片、侧栏、按钮反馈、开场过渡和页面层次一起重新做完整。',
       href: '/about/',
-    },
+      linkLabel: '更多',
+    } satisfies HomeAnnouncement,
     spotlight: [
       {
         eyebrow: '结构',
@@ -264,6 +337,11 @@ export const siteConfig = {
     ],
   },
   post: {
+    tools: {
+      modeLabel: '运营模式与责任',
+      modeHref: '/about/',
+      shareLabel: '系统分享',
+    },
     copyright: {
       badge: '原创',
       title: '转载或引用请保留出处',
