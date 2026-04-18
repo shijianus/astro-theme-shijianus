@@ -1,0 +1,101 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../config/site';
+import '../styles/global.css';
+import { SiteHeader } from '../components/SiteHeader';
+import { ThemeDock } from '../components/ThemeDock';
+import Footer from '../components/theme/Footer.astro';
+import Sidebar from '../components/theme/Sidebar.astro';
+
+type SidebarTag = {
+  label: string;
+  slug: string;
+  count: number;
+};
+
+type SidebarArchive = {
+  label: string;
+  count: number;
+};
+
+type SidebarHeading = {
+  depth: number;
+  slug: string;
+  text: string;
+};
+
+interface Props {
+  title: string;
+  description?: string;
+  showAside?: boolean;
+  sidebarData?: {
+    recentPosts: CollectionEntry<'posts'>[];
+    tags: SidebarTag[];
+    archives: SidebarArchive[];
+    totalPosts: number;
+    totalCategories: number;
+    totalTags: number;
+    totalReadingMinutes: number;
+    headings?: SidebarHeading[];
+  };
+}
+
+const {
+  title,
+  description = siteConfig.site.description,
+  showAside = true,
+  sidebarData,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={siteConfig.site.locale} data-theme={siteConfig.theme.defaultMode} data-aside="expanded">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>{title} | {siteConfig.site.title}</title>
+  </head>
+  <body>
+    <div class="pointer-events-none fixed inset-0 -z-20 bg-[var(--bg)]"></div>
+    <div class="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,var(--grid)_1px,transparent_1px),linear-gradient(to_bottom,var(--grid)_1px,transparent_1px)] bg-[size:32px_32px] opacity-60"></div>
+    <div class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[380px] bg-[linear-gradient(180deg,rgba(21,35,31,0.14),transparent)]"></div>
+
+    <SiteHeader
+      client:load
+      brandName={siteConfig.site.name}
+      domainLabel={siteConfig.site.domainLabel}
+      currentPath={Astro.url.pathname}
+      primary={siteConfig.navigation.primary}
+      utility={siteConfig.navigation.utility}
+    />
+
+    <ThemeDock client:load />
+
+    <div class="mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      {Astro.slots.has('hero') && (
+        <div class="mb-6">
+          <slot name="hero" />
+        </div>
+      )}
+
+      <div class:list={['page-grid gap-6', showAside && sidebarData ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_320px]' : '']}>
+        <main class="min-w-0 space-y-6">
+          <slot />
+        </main>
+
+        {showAside && sidebarData && (
+          <aside class="aside-column mt-6 min-w-0 xl:mt-0">
+            <div class="sticky top-24">
+              <Sidebar {...sidebarData} />
+            </div>
+          </aside>
+        )}
+      </div>
+    </div>
+
+    <Footer />
+  </body>
+</html>

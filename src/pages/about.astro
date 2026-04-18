@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import PageHero from '../components/theme/PageHero.astro';
+import { MacCodeBlock } from '../components/MacCodeBlock';
+import { siteConfig } from '../config/site';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  sortPostsByDate,
+} from '../lib/content';
+
+const posts = sortPostsByDate(await getCollection('posts'));
+const tags = collectTags(posts);
+const archives = collectArchives(posts);
+const categories = collectCategories(posts);
+const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+
+const manifesto = `const manifesto = {
+  brand: 'shijianus',
+  style: 'geek, readable, configurable',
+  strategy: [
+    'config first',
+    'content first',
+    'api ready',
+  ],
+};`;
+---
+
+<BlogLayout
+  title="关于"
+  sidebarData={{
+    recentPosts: posts,
+    tags,
+    archives,
+    totalPosts: posts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+  }}
+>
+  <Fragment slot="hero">
+    <PageHero
+      eyebrow="About shijianus"
+      title="一套为长期写作和长期维护准备的主题内核"
+      summary="这个版本不追求把原主题原样搬过来，而是把它最强的结构能力，转译成 Astro 时代更清晰、可扩展的实现。"
+      image="/media/shijianus/workbench.jpg"
+      imageAlt="about background"
+      meta={['Astro', 'React', 'Tailwind', 'API-ready']}
+    />
+  </Fragment>
+
+  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Design Rules</p>
+      <h2 class="text-3xl font-semibold text-[var(--text-strong)]">当前实现遵守的核心约束</h2>
+      <div class="space-y-3 text-sm leading-7 text-[var(--text-soft)]">
+        <p>1. 所有用户可见文案只保留 shijianus 品牌。</p>
+        <p>2. 主题结构必须先于视觉细节，所有主板块都需要明确 config 入口。</p>
+        <p>3. 未来接 API 时优先替换数据来源，而不是重写页面。</p>
+        <p>4. React 只负责交互控件，内容渲染与路由组织交给 Astro。</p>
+      </div>
+    </section>
+
+    <MacCodeBlock code={manifesto} language="ts" title="Manifesto" client:load />
+  </section>
+
+  <section class="surface-panel space-y-4">
+    <p class="eyebrow">Site Profile</p>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-4">
+        <p class="text-sm font-medium text-[var(--text-strong)]">Author</p>
+        <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">{siteConfig.site.author.bio}</p>
+      </div>
+      <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-4">
+        <p class="text-sm font-medium text-[var(--text-strong)]">Theme Intent</p>
+        <p class="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+          保留强结构首页、灵活侧栏和明显作者感，同时把视觉语言收束得更理性、更适合长期使用。
+        </p>
+      </div>
+    </div>
+  </section>
+</BlogLayout>

@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import PageHero from '../../components/theme/PageHero.astro';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  sortPostsByDate,
+} from '../../lib/content';
+
+const posts = sortPostsByDate(await getCollection('posts'));
+const tags = collectTags(posts);
+const archives = collectArchives(posts);
+const categories = collectCategories(posts);
+const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+---
+
+<BlogLayout
+  title="标签"
+  sidebarData={{
+    recentPosts: posts,
+    tags,
+    archives,
+    totalPosts: posts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+  }}
+>
+  <Fragment slot="hero">
+    <PageHero
+      eyebrow="Tag Index"
+      title="用标签串起相邻的主题"
+      summary="标签页不追求花哨云图，而是优先保证可点、可扫、可维护。"
+      image="/media/shijianus/frontend.jpg"
+      imageAlt="tags background"
+      meta={[`${tags.length} tags`, `${posts.length} posts`]}
+    />
+  </Fragment>
+
+  <section class="surface-panel space-y-5">
+    <div class="flex flex-wrap gap-2">
+      {tags.map((tag) => (
+        <a
+          href={`/tags/${tag.slug}/`}
+          class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]"
+        >
+          #{tag.label} <span class="text-[var(--text-muted)]">({tag.count})</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</BlogLayout>

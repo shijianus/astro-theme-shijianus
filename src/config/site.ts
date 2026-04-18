@@ -31,7 +31,7 @@ export const siteConfig = {
       bio: '记录构建、实验、写作和日常技术判断，让内容和界面都能长期维护。',
       email: 'hello@shijian.us',
       location: 'UTC-8',
-      avatar: '/img/siteicon/apple-icon-180.png',
+      avatar: '/media/shijianus/avatar.svg',
     },
   },
   theme: {
@@ -71,14 +71,14 @@ export const siteConfig = {
       summary: '保留强结构首页、信息密度和模块化配置，同时把品牌、视觉语言和交互节奏重建为更适合 shijianus 的版本。',
       primaryCta: { label: '进入归档', href: '/archives/' },
       secondaryCta: { label: '查看关于', href: '/about/' },
-      image: '/img/default_cover.jpg',
+      image: '/media/shijianus/hero.jpg',
       imageAlt: 'shijianus theme hero background',
     },
     categories: [
-      { label: '系统设计', description: '架构判断与演进记录', href: '/categories/system-design/', accent: 'signal' },
-      { label: '前端工程', description: '界面、组件和体验实现', href: '/categories/frontend/', accent: 'teal' },
-      { label: '学习笔记', description: '课程、实验与思考', href: '/categories/learning/', accent: 'lime' },
-      { label: '产品观察', description: '工具与写作习惯', href: '/categories/product/', accent: 'ember' },
+      { label: '系统设计', description: '架构判断与演进记录', href: '/categories/系统设计/', accent: 'signal' },
+      { label: '前端工程', description: '界面、组件和体验实现', href: '/categories/前端工程/', accent: 'teal' },
+      { label: '学习笔记', description: '课程、实验与思考', href: '/categories/学习笔记/', accent: 'lime' },
+      { label: '产品观察', description: '工具与写作习惯', href: '/categories/产品观察/', accent: 'ember' },
     ] satisfies HomeCategory[],
     statusCards: [
       { title: 'Theme Core', value: 'Astro + React', detail: '内容渲染与交互分层' },

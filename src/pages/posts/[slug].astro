@@ -1,0 +1,106 @@
+---
+import { getCollection, render } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import PageHero from '../../components/theme/PageHero.astro';
+import PostCard from '../../components/theme/PostCard.astro';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  getRelatedPosts,
+  resolveCategory,
+  resolveCover,
+  resolveCoverAlt,
+  resolveGroup,
+  sortPostsByDate,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((entry) => ({
+    params: { slug: entry.id },
+  }));
+}
+
+const { slug } = Astro.params;
+const allPosts = sortPostsByDate(await getCollection('posts'));
+const entry = allPosts.find((post) => post.id === slug);
+
+if (!entry) {
+  throw new Error(`Post not found: ${slug}`);
+}
+
+const { Content, headings } = await render(entry);
+const tags = collectTags(allPosts);
+const archives = collectArchives(allPosts);
+const categories = collectCategories(allPosts);
+const relatedPosts = getRelatedPosts(allPosts, entry, 3);
+const totalReadingMinutes = allPosts.reduce((total, post) => total + estimateReadingMinutes(post), 0);
+const meta = [
+  resolveCategory(entry),
+  resolveGroup(entry),
+  `${estimateReadingMinutes(entry)} min read`,
+  entry.data.pubDate.toLocaleDateString('zh-CN'),
+];
+---
+
+<BlogLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  sidebarData={{
+    recentPosts: allPosts.filter((post) => post.id !== entry.id),
+    tags,
+    archives,
+    totalPosts: allPosts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+    headings,
+  }}
+>
+  <Fragment slot="hero">
+    <PageHero
+      eyebrow={`${resolveCategory(entry)} / ${resolveGroup(entry)}`}
+      title={entry.data.title}
+      summary={entry.data.description ?? ''}
+      image={resolveCover(entry)}
+      imageAlt={resolveCoverAlt(entry)}
+      meta={meta}
+    />
+  </Fragment>
+
+  <article class="surface-panel article-body">
+    <Content />
+  </article>
+
+  {entry.data.tags.length > 0 && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Tags</p>
+      <div class="flex flex-wrap gap-2">
+        {entry.data.tags.map((tag) => (
+          <a
+            href={`/tags/${tag.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')}/`}
+            class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1.5 text-xs text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
+          >
+            #{tag}
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {relatedPosts.length > 0 && (
+    <section class="space-y-4">
+      <div class="space-y-2">
+        <p class="eyebrow">Related Posts</p>
+        <h2 class="text-3xl font-semibold text-[var(--text-strong)]">继续阅读</h2>
+      </div>
+      <div class="space-y-4">
+        {relatedPosts.map((post, index) => (
+          <PostCard entry={post} index={index} />
+        ))}
+      </div>
+    </section>
+  )}
+</BlogLayout>

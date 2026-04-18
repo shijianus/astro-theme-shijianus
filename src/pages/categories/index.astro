@@ -1,0 +1,63 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import PageHero from '../../components/theme/PageHero.astro';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  resolveCategory,
+  slugifySegment,
+  sortPostsByDate,
+} from '../../lib/content';
+
+const posts = sortPostsByDate(await getCollection('posts'));
+const tags = collectTags(posts);
+const archives = collectArchives(posts);
+const categories = collectCategories(posts);
+const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+
+const latestByCategory = new Map<string, string>();
+for (const post of posts) {
+  const key = resolveCategory(post);
+  if (!latestByCategory.has(key)) latestByCategory.set(key, post.data.title);
+}
+---
+
+<BlogLayout
+  title="分类"
+  sidebarData={{
+    recentPosts: posts,
+    tags,
+    archives,
+    totalPosts: posts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+  }}
+>
+  <Fragment slot="hero">
+    <PageHero
+      eyebrow="Category Index"
+      title="从主题到文章的稳定入口"
+      summary="分类页延续原主题的强入口思路，但把视觉秩序收紧，避免信息在第一屏过度堆叠。"
+      image="/media/shijianus/system.jpg"
+      imageAlt="categories background"
+      meta={[`${categories.length} categories`, `${posts.length} posts`]}
+    />
+  </Fragment>
+
+  <section class="grid gap-4 md:grid-cols-2">
+    {categories.map((item) => (
+      <a href={`/categories/${slugifySegment(item.label)}/`} class="surface-panel block space-y-3 transition-colors hover:border-[var(--signal)]">
+        <p class="eyebrow">Category</p>
+        <h2 class="text-2xl font-semibold text-[var(--text-strong)]">{item.label}</h2>
+        <p class="text-sm text-[var(--text-soft)]">{item.count} 篇文章</p>
+        <p class="text-sm leading-6 text-[var(--text-muted)]">
+          最新文章：{latestByCategory.get(item.label) ?? '暂无'}
+        </p>
+      </a>
+    ))}
+  </section>
+</BlogLayout>

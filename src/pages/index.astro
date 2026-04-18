@@ -1,64 +1,74 @@
 ---
-import GeekLayout from '../layouts/GeekLayout.astro';
 import { getCollection } from 'astro:content';
 import { MacCodeBlock } from '../components/MacCodeBlock';
+import HomeHero from '../components/theme/HomeHero.astro';
+import PostCard from '../components/theme/PostCard.astro';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  getFeaturedPosts,
+  sortPostsByDate,
+} from '../lib/content';
 
-const allPosts = await getCollection('posts');
-const sortedPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = sortPostsByDate(await getCollection('posts'));
+const featuredPosts = getFeaturedPosts(posts, 4);
+const categories = collectCategories(posts);
+const tags = collectTags(posts);
+const archives = collectArchives(posts);
+const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
 
-const welcomeCode = `// Welcome to SmartKevin's Blog v2
-const profile = {
-  name: "SmartKevin",
-  role: "Biological Sciences & Web Dev",
-  motto: "Code is the DNA of the future"
-};
-
-function explore() {
-  console.log("Initializing geek experience...");
-}
-
-explore();`;
+const themeSnippet = `export const theme = {
+  brand: 'shijianus',
+  renderer: ['Astro', 'React'],
+  sections: ['hero', 'feed', 'aside'],
+  dataSource: 'local-now-api-later',
+};`;
 ---
 
-<GeekLayout title="Home">
-	<section class="space-y-6">
-		<div class="space-y-2">
-			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter">
-				EXPLORING THE <span class="text-primary italic">FRONTIER</span>
-			</h1>
-			<p class="text-lg text-gray-400 font-medium">
-				A digital sanctuary for thoughts on biology, engineering, and everything in between.
-			</p>
-		</div>
+<BlogLayout
+  title="首页"
+  sidebarData={{
+    recentPosts: posts,
+    tags,
+    archives,
+    totalPosts: posts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+  }}
+>
+  <Fragment slot="hero">
+    <HomeHero featuredPosts={featuredPosts} latestPosts={posts} />
+  </Fragment>
 
-		<MacCodeBlock code={welcomeCode} language="typescript" client:load />
+  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div class="space-y-3">
+      <p class="eyebrow">Feed Overview</p>
+      <h2 class="text-3xl font-semibold text-[var(--text-strong)] md:text-4xl">近期更新</h2>
+      <p class="max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
+        版式延续强结构首页的阅读优势，但把信息组织改成更适合 shijianus 的节奏：明确分类入口、可扩展侧栏和稳定的内容流。
+      </p>
+      <div class="flex flex-wrap gap-2 border-y border-[var(--line)] py-3">
+        <a href="/categories/" class="rounded-md bg-[var(--surface-muted)] px-3 py-1.5 text-sm text-[var(--text-soft)]">全部分类</a>
+        {categories.map((item) => (
+          <a
+            href={`/categories/${item.slug}/`}
+            class="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
+          >
+            {item.label} <span class="text-[var(--text-muted)]">({item.count})</span>
+          </a>
+        ))}
+      </div>
+    </div>
+    <MacCodeBlock code={themeSnippet} language="ts" title="Theme Contract" client:load />
+  </section>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			{sortedPosts.map((post) => (
-				<a href={`/posts/${post.slug}`} class="group relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 p-6 transition-all hover:bg-white/10 hover:border-primary/50">
-					<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-						<div class="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 px-2 py-1 rounded">
-							{post.data.space}
-						</div>
-					</div>
-					<div class="space-y-4">
-						<span class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-							{post.data.pubDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-						</span>
-						<h2 class="text-xl font-bold group-hover:text-primary transition-colors leading-tight">
-							{post.data.title}
-						</h2>
-						<p class="text-sm text-gray-400 line-clamp-2">
-							{post.data.description}
-						</p>
-						<div class="flex gap-2">
-							{post.data.tags.map(tag => (
-								<span class="text-[10px] bg-white/5 px-2 py-1 rounded-md text-gray-400">#{tag}</span>
-							))}
-						</div>
-					</div>
-				</a>
-			))}
-		</div>
-	</section>
-</GeekLayout>
+  <section class="space-y-4">
+    {posts.map((entry, index) => (
+      <PostCard entry={entry} index={index} />
+    ))}
+  </section>
+</BlogLayout>

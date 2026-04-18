@@ -1,0 +1,158 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../../config/site';
+import { getPostPath } from '../../lib/content';
+import { ProfileWidget } from '../ProfileWidget';
+
+type SidebarTag = {
+  label: string;
+  slug: string;
+  count: number;
+};
+
+type SidebarArchive = {
+  label: string;
+  count: number;
+};
+
+type SidebarHeading = {
+  depth: number;
+  slug: string;
+  text: string;
+};
+
+interface Props {
+  recentPosts: CollectionEntry<'posts'>[];
+  tags: SidebarTag[];
+  archives: SidebarArchive[];
+  totalPosts: number;
+  totalCategories: number;
+  totalTags: number;
+  totalReadingMinutes: number;
+  headings?: SidebarHeading[];
+}
+
+const {
+  recentPosts,
+  tags,
+  archives,
+  totalPosts,
+  totalCategories,
+  totalTags,
+  totalReadingMinutes,
+  headings = [],
+} = Astro.props;
+---
+
+<div class="space-y-4">
+  {siteConfig.theme.features.asideAuthor && (
+    <ProfileWidget
+      client:load
+      name={siteConfig.site.author.name}
+      role={siteConfig.site.author.role}
+      bio={siteConfig.site.author.bio}
+      avatar={siteConfig.site.author.avatar}
+      location={siteConfig.site.author.location}
+      email={siteConfig.site.author.email}
+      stats={{
+        posts: totalPosts,
+        categories: totalCategories,
+        tags: totalTags,
+      }}
+      stack={siteConfig.aside.stack}
+    />
+  )}
+
+  {siteConfig.theme.features.asideStatus && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Working Notes</p>
+      <div class="space-y-3">
+        {siteConfig.aside.notes.map((note) => (
+          <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--text-soft)]">
+            {note}
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {recentPosts.length > 0 && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Recent Posts</p>
+      <div class="space-y-3">
+        {recentPosts.slice(0, 5).map((entry) => (
+          <a href={getPostPath(entry)} class="block rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 transition-colors hover:border-[var(--signal)]">
+            <p class="text-sm font-medium text-[var(--text-strong)]">{entry.data.title}</p>
+            <p class="mt-1 text-xs text-[var(--text-muted)]">{entry.data.pubDate.toLocaleDateString('zh-CN')}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {siteConfig.theme.features.asideTags && tags.length > 0 && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Tag Index</p>
+      <div class="flex flex-wrap gap-2">
+        {tags.slice(0, 16).map((tag) => (
+          <a
+            href={`/tags/${tag.slug}/`}
+            class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]"
+          >
+            #{tag.label} <span class="text-[var(--text-muted)]">({tag.count})</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {siteConfig.theme.features.asideArchives && archives.length > 0 && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Archive Index</p>
+      <div class="space-y-2">
+        {archives.slice(0, 8).map((item) => (
+          <div class="flex items-center justify-between rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-sm">
+            <span class="text-[var(--text-soft)]">{item.label}</span>
+            <span class="text-[var(--text-muted)]">{item.count}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {siteConfig.theme.features.postToc && headings.length > 0 && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">On This Page</p>
+      <div class="space-y-2">
+        {headings
+          .filter((heading) => heading.depth <= 3)
+          .map((heading) => (
+            <a
+              href={`#${heading.slug}`}
+              class={`block rounded-md px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--text-strong)] ${
+                heading.depth === 3 ? 'ml-4 text-[var(--text-muted)]' : 'text-[var(--text-soft)]'
+              }`}
+            >
+              {heading.text}
+            </a>
+          ))}
+      </div>
+    </section>
+  )}
+
+  {siteConfig.theme.features.asideWebInfo && (
+    <section class="surface-panel space-y-4">
+      <p class="eyebrow">Web Info</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3">
+          <p class="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Posts</p>
+          <p class="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{totalPosts}</p>
+        </div>
+        <div class="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3">
+          <p class="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Read Time</p>
+          <p class="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{totalReadingMinutes}m</p>
+        </div>
+      </div>
+    </section>
+  )}
+</div>

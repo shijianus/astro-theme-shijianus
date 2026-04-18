@@ -1,82 +1,107 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Github, Mail, Twitter, GraduationCap, MapPin } from 'lucide-react';
+import { Github, Mail, MapPin } from 'lucide-react';
 
-export const ProfileWidget: React.FC = () => {
-  const profile = {
-    name: "SmartKevin",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SmartKevin",
-    bio: "Passionate about Biological Sciences and Web Engineering. Bridging the gap between life and code.",
-    tags: ["Biological Sciences Sophomore", "Fullstack Developer", "Astro Fanatic"],
-    stats: {
-      posts: 42,
-      followers: 128,
-      following: 85
-    },
-    social: [
-      { icon: <Github className="h-5 w-5" />, label: "GitHub", href: "https://github.com/shijianus" },
-      { icon: <Twitter className="h-5 w-5" />, label: "Twitter", href: "#" },
-      { icon: <Mail className="h-5 w-5" />, label: "Email", href: "mailto:hello@shijian.us" }
-    ]
+type ProfileWidgetProps = {
+  name: string;
+  role: string;
+  bio: string;
+  avatar: string;
+  location: string;
+  email: string;
+  stats: {
+    posts: number;
+    categories: number;
+    tags: number;
   };
+  stack: string[];
+};
 
+export const ProfileWidget: React.FC<ProfileWidgetProps> = ({
+  name,
+  role,
+  bio,
+  avatar,
+  location,
+  email,
+  stats,
+  stack,
+}) => {
   return (
-    <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-6 shadow-xl hover:shadow-primary/10 transition-shadow">
-      <div className="flex flex-col items-center text-center">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative mb-4 h-24 w-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent p-0.5 shadow-lg shadow-primary/20"
-        >
-          <img
-            src={profile.avatar}
-            alt={profile.name}
-            className="h-full w-full rounded-2xl bg-white object-cover"
-          />
-        </motion.div>
-
-        <h3 className="text-xl font-bold text-white mb-1">{profile.name}</h3>
-        
-        <div className="flex items-center gap-2 mb-4 text-xs text-white/60 font-medium uppercase tracking-widest">
-          <GraduationCap className="h-3 w-3" />
-          {profile.tags[0]}
-        </div>
-
-        <p className="mb-6 text-sm leading-relaxed text-white/80 line-clamp-3 italic">
-          "{profile.bio}"
-        </p>
-
-        <div className="flex w-full justify-around border-y border-white/10 py-4 mb-6">
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-white">{profile.stats.posts}</span>
-            <span className="text-[10px] text-white/40 uppercase tracking-wider">Posts</span>
+    <section className="surface-panel flex flex-col gap-5">
+      <div className="flex items-start gap-4">
+        <img
+          src={avatar}
+          alt={name}
+          className="h-16 w-16 rounded-md border border-[var(--line)] object-cover"
+        />
+        <div className="min-w-0 space-y-2">
+          <div>
+            <p className="eyebrow">Author Console</p>
+            <h2 className="text-xl font-semibold text-[var(--text-strong)]">{name}</h2>
           </div>
-          <div className="h-8 w-px bg-white/10 self-center" />
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-white">{profile.stats.followers}</span>
-            <span className="text-[10px] text-white/40 uppercase tracking-wider">Followers</span>
-          </div>
-          <div className="h-8 w-px bg-white/10 self-center" />
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-white">{profile.stats.following}</span>
-            <span className="text-[10px] text-white/40 uppercase tracking-wider">Following</span>
-          </div>
-        </div>
-
-        <div className="flex gap-4">
-          {profile.social.map((item, idx) => (
-            <a
-              key={idx}
-              href={item.href}
-              className="flex items-center justify-center h-10 w-10 rounded-full bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white hover:scale-110 active:scale-95"
-              title={item.label}
-            >
-              {item.icon}
+          <p className="text-sm text-[var(--text-soft)]">{role}</p>
+          <div className="flex flex-wrap gap-3 text-xs text-[var(--text-muted)]">
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              {location}
+            </span>
+            <a href={`mailto:${email}`} className="inline-flex items-center gap-1.5 transition-colors hover:text-[var(--signal)]">
+              <Mail className="h-3.5 w-3.5" />
+              {email}
             </a>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-sm leading-6 text-[var(--text-soft)]">{bio}</p>
+
+      <div className="grid grid-cols-3 gap-3 border-y border-[var(--line)] py-4">
+        <div className="space-y-1">
+          <p className="text-2xl font-semibold text-[var(--text-strong)]">{stats.posts}</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Posts</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-2xl font-semibold text-[var(--text-strong)]">{stats.categories}</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Categories</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-2xl font-semibold text-[var(--text-strong)]">{stats.tags}</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Tags</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="eyebrow">Current Stack</p>
+        <div className="flex flex-wrap gap-2">
+          {stack.map((item) => (
+            <span
+              key={item}
+              className="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-soft)]"
+            >
+              {item}
+            </span>
           ))}
         </div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-3">
+        <a
+          href="https://github.com/shijianus"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] px-3 py-2 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--signal)] hover:text-[var(--text-strong)]"
+        >
+          <Github className="h-4 w-4" />
+          GitHub
+        </a>
+        <a
+          href={`mailto:${email}`}
+          className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] px-3 py-2 text-sm text-[var(--text-soft)] transition-colors hover:border-[var(--teal)] hover:text-[var(--text-strong)]"
+        >
+          <Mail className="h-4 w-4" />
+          Contact
+        </a>
+      </div>
+    </section>
   );
 };

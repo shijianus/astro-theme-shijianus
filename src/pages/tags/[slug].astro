@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import PageHero from '../../components/theme/PageHero.astro';
+import PostCard from '../../components/theme/PostCard.astro';
+import {
+  collectArchives,
+  collectCategories,
+  collectTags,
+  estimateReadingMinutes,
+  slugifySegment,
+  sortPostsByDate,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = sortPostsByDate(await getCollection('posts'));
+  const tags = collectTags(posts);
+
+  return tags.map((item) => ({
+    params: { slug: item.slug },
+    props: { tagLabel: item.label },
+  }));
+}
+
+const { tagLabel } = Astro.props;
+const posts = sortPostsByDate(await getCollection('posts'));
+const currentPosts = posts.filter((entry) => entry.data.tags.some((tag) => slugifySegment(tag) === slugifySegment(tagLabel)));
+const tags = collectTags(posts);
+const archives = collectArchives(posts);
+const categories = collectCategories(posts);
+const totalReadingMinutes = posts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+---
+
+<BlogLayout
+  title={`标签: ${tagLabel}`}
+  sidebarData={{
+    recentPosts: posts,
+    tags,
+    archives,
+    totalPosts: posts.length,
+    totalCategories: categories.length,
+    totalTags: tags.length,
+    totalReadingMinutes,
+  }}
+>
+  <Fragment slot="hero">
+    <PageHero
+      eyebrow="Tag Detail"
+      title={`#${tagLabel}`}
+      summary={`当前标签下共有 ${currentPosts.length} 篇文章，可直接替换为未来 API 返回的数据集。`}
+      image="/media/shijianus/network.jpg"
+      imageAlt="tag detail background"
+      meta={[`${currentPosts.length} posts`]}
+    />
+  </Fragment>
+
+  <section class="space-y-4">
+    {currentPosts.map((entry, index) => (
+      <PostCard entry={entry} index={index} />
+    ))}
+  </section>
+</BlogLayout>

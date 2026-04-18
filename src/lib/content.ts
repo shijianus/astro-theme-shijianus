@@ -2,8 +2,8 @@ import type { CollectionEntry } from 'astro:content';
 
 type PostEntry = CollectionEntry<'posts'>;
 
-export function getPostPath(entry: Pick<PostEntry, 'slug'>) {
-  return `/posts/${entry.slug}/`;
+export function getPostPath(entry: Pick<PostEntry, 'id'>) {
+  return `/posts/${entry.id}/`;
 }
 
 export function sortPostsByDate(posts: PostEntry[]) {
@@ -25,7 +25,7 @@ export function resolveGroup(entry: PostEntry) {
 }
 
 export function resolveCover(entry: PostEntry) {
-  return entry.data.cover ?? entry.data.image?.url ?? '/img/default_cover.jpg';
+  return entry.data.cover ?? entry.data.image?.url ?? '/media/shijianus/hero.jpg';
 }
 
 export function resolveCoverAlt(entry: PostEntry) {
