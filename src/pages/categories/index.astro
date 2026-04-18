@@ -10,35 +10,65 @@ const categories = collectCategories(posts);
 const latestByCategory = getLatestByCategory(posts);
 const sidebarData = createSidebarData(posts);
 const categoryAccents = ['#5b8cff', '#ff7d55', '#30c48d', '#7a6cff', '#ffb02e', '#49b6ff'];
+const latestEntry = posts[0];
+const featuredCategory = categories[0];
 ---
 
 <BlogLayout title="分类" showAside={false} pageType="categories" sidebarData={sidebarData}>
-  <section class="taxonomy-page">
-    <div class="taxonomy-panel">
-      <h1>{siteConfig.pages.categories.title}</h1>
-      <p>{siteConfig.pages.categories.summary}</p>
-      <div class="taxonomy-cloud taxonomy-cloud--categories">
-        {categories.map((item, index) => (
-          <a href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
-            <span>#{item.label}</span>
-            <sup>{item.count}</sup>
-          </a>
-        ))}
-      </div>
-    </div>
+  <section class="taxonomy-page taxonomy-page--categories">
+    <div class="taxonomy-shell">
+      <header class="taxonomy-hero-card taxonomy-hero-card--categories theme-card">
+        <div class="taxonomy-hero-card__content">
+          <p class="eyebrow">Category Index</p>
+          <h1>{siteConfig.pages.categories.title}</h1>
+          <p class="taxonomy-hero-card__summary">
+            {siteConfig.pages.categories.summary}
+            {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
+          </p>
+          <div class="taxonomy-cloud taxonomy-cloud--categories">
+            {categories.map((item, index) => (
+              <a href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
+                <span>#{item.label}</span>
+                <sup>{item.count}</sup>
+              </a>
+            ))}
+          </div>
+        </div>
 
-    <div class="taxonomy-avatar">
-      <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="lazy" />
-    </div>
-  </section>
+        <div class="taxonomy-hero-card__stats">
+          <span>
+            <strong>{categories.length}</strong>
+            <small>分类</small>
+          </span>
+          <span>
+            <strong>{posts.length}</strong>
+            <small>文章</small>
+          </span>
+          <span>
+            <strong>{featuredCategory?.label ?? '暂无'}</strong>
+            <small>当前主轴</small>
+          </span>
+        </div>
+      </header>
 
-  <section class="taxonomy-grid">
-    {categories.map((item, index) => (
-      <a class="taxonomy-grid__item" href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
-        <strong>{item.label}</strong>
-        <span>{item.count} 篇文章</span>
-        <p>{latestByCategory.get(item.label) ?? '暂无文章'}</p>
-      </a>
-    ))}
+      <section class="taxonomy-section-card taxonomy-section-card--categories">
+        <div class="taxonomy-section-card__head">
+          <p class="eyebrow">Topic Matrix</p>
+          <h2>按主题继续</h2>
+          <p>每个分类保留文章数量与最近更新线索，直接进入对应主题。</p>
+        </div>
+
+        <div class="taxonomy-grid taxonomy-grid--categories">
+          {categories.map((item, index) => (
+            <a class="taxonomy-grid__item taxonomy-grid__item--category" href={`/categories/${item.slug}/`} style={`--taxonomy-accent:${categoryAccents[index % categoryAccents.length]};`}>
+              <span class="taxonomy-grid__index">{String(index + 1).padStart(2, '0')}</span>
+              <strong>{item.label}</strong>
+              <span>{item.count} 篇文章</span>
+              <p>{latestByCategory.get(item.label) ?? '暂无文章'}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
   </section>
 </BlogLayout>

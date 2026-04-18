@@ -1514,6 +1514,84 @@ body[data-type='archives'] .page-main {
   margin-top: 128px;
 }
 
+.taxonomy-shell {
+  display: grid;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.taxonomy-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(240px, 0.9fr);
+  gap: 24px;
+  padding: 28px 30px;
+  border: var(--style-border-always);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--taxonomy-accent, var(--theme-main)) 10%, transparent), transparent 52%),
+    var(--card-bg);
+  box-shadow: var(--shadow-border);
+}
+
+.taxonomy-hero-card__content {
+  display: grid;
+  gap: 12px;
+}
+
+.taxonomy-hero-card .eyebrow,
+.taxonomy-section-card .eyebrow {
+  margin: 0;
+  color: var(--taxonomy-accent, var(--theme-main));
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.taxonomy-hero-card h1 {
+  margin: 0;
+  color: var(--font-color);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.taxonomy-hero-card__summary {
+  max-width: 58ch;
+  margin: 0;
+  color: var(--secondtext);
+  line-height: 1.8;
+}
+
+.taxonomy-hero-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-self: end;
+}
+
+.taxonomy-hero-card__stats span {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--taxonomy-accent, var(--theme-main)) 12%, var(--theme-op));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+}
+
+.taxonomy-hero-card__stats strong {
+  color: var(--font-color);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.taxonomy-hero-card__stats small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .taxonomy-panel {
   max-width: 1120px;
   margin: 0 auto;
@@ -1603,7 +1681,42 @@ body[data-type='archives'] .page-main {
   margin: 24px auto 0;
 }
 
+.taxonomy-section-card {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: var(--style-border-always);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-border);
+}
+
+.taxonomy-section-card__head {
+  display: grid;
+  gap: 10px;
+}
+
+.taxonomy-section-card__head h2 {
+  margin: 0;
+  color: var(--font-color);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.taxonomy-section-card__head p {
+  margin: 0;
+  color: var(--secondtext);
+  line-height: 1.8;
+}
+
+.taxonomy-section-card .taxonomy-grid {
+  max-width: none;
+  margin: 0;
+}
+
 .taxonomy-grid__item {
+  position: relative;
   display: grid;
   gap: 8px;
   padding: 18px;
@@ -1612,6 +1725,12 @@ body[data-type='archives'] .page-main {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--taxonomy-accent, var(--theme-main)) 13%, transparent), var(--card-bg) 40%);
   box-shadow: var(--shadow-border);
+  transition: 0.2s ease-in-out;
+}
+
+.taxonomy-grid__item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-main);
 }
 
 .taxonomy-grid__item strong {
@@ -1636,6 +1755,13 @@ body[data-type='archives'] .page-main {
 
 .taxonomy-grid--tags .taxonomy-grid__item strong {
   font-size: calc(15px + (var(--weight) * 6px));
+}
+
+.taxonomy-grid__index {
+  color: color-mix(in srgb, var(--font-color) 28%, transparent);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .archive-page {
@@ -2062,6 +2188,15 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
     margin-top: 96px;
   }
 
+  .taxonomy-shell,
+  .archive-shell {
+    gap: 20px;
+  }
+
+  .taxonomy-hero-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .archive-page {
     margin-top: 96px;
   }
@@ -2329,6 +2464,19 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
 
   .taxonomy-panel {
     padding: 22px 18px;
+  }
+
+  .taxonomy-shell {
+    gap: 18px;
+  }
+
+  .taxonomy-hero-card,
+  .taxonomy-section-card {
+    padding: 22px 18px;
+  }
+
+  .taxonomy-hero-card__stats {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .archive-page {
