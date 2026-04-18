@@ -8,42 +8,77 @@ import { createSidebarData, formatCompactDate, groupPostsByYear } from '../lib/t
 const posts = sortPostsByDate(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 const years = groupPostsByYear(posts);
+const latestEntry = posts[0];
+const totalYears = years.length;
+const latestYear = years[0]?.[0];
 let articleIndex = 0;
 ---
 
 <BlogLayout title="归档" sidebarData={sidebarData} pageType="archives">
   <section id="archive" class="archive-page">
-    <div class="article-sort-title">
-      {siteConfig.pages.archives.title}
-      <span> - {posts.length}</span>
-    </div>
+    <div class="archive-shell">
+      <header class="archive-hero-card theme-card">
+        <div class="archive-hero-card__content">
+          <p class="eyebrow">Archive Timeline</p>
+          <h1 class="article-sort-title">
+            {siteConfig.pages.archives.title}
+            <span> - {posts.length}</span>
+          </h1>
+          <p class="archive-hero-card__summary">
+            把所有文章按年份连续展开，保留明确时间顺序、封面信息和最短阅读路径。
+            {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
+          </p>
+        </div>
 
-    <div class="article-sort">
-      {years.map(([year, items]) => (
-        <>
-          <div class="article-sort-item year">{year}</div>
-          {items.map((entry) => {
-            articleIndex += 1;
-            return (
-              <article class="article-sort-item">
-                <a class="article-sort-item-img" href={getPostPath(entry)}>
-                  <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
-                </a>
-                <div class="article-sort-item-info">
-                  <a class="article-sort-item-title" href={getPostPath(entry)}>{entry.data.title}</a>
-                  <div class="article-meta-wrap">
-                    <span class="article-sort-item-time">
-                      <time datetime={entry.data.pubDate.toISOString()}>{formatCompactDate(entry.data.pubDate)}</time>
-                    </span>
-                    <span class="article-sort-item-tags">{resolveCategory(entry)}</span>
-                  </div>
-                  <span class="article-sort-item-index">{articleIndex}</span>
-                </div>
-              </article>
-            );
-          })}
-        </>
-      ))}
+        <div class="archive-hero-card__stats">
+          <span>
+            <strong>{posts.length}</strong>
+            <small>文章</small>
+          </span>
+          <span>
+            <strong>{totalYears}</strong>
+            <small>年份</small>
+          </span>
+          <span>
+            <strong>{latestYear ?? new Date().getFullYear()}</strong>
+            <small>最近归档</small>
+          </span>
+        </div>
+      </header>
+
+      <div class="article-sort">
+        {years.map(([year, items]) => (
+          <section class="article-sort-group" aria-labelledby={`archive-year-${year}`}>
+            <div class="article-sort-item year">
+              <span id={`archive-year-${year}`}>{year}</span>
+              <small>{items.length} 篇</small>
+            </div>
+
+            <div class="article-sort-group__list">
+              {items.map((entry) => {
+                articleIndex += 1;
+                return (
+                  <article class="article-sort-item">
+                    <a class="article-sort-item-img" href={getPostPath(entry)}>
+                      <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
+                    </a>
+                    <div class="article-sort-item-info">
+                      <a class="article-sort-item-title" href={getPostPath(entry)}>{entry.data.title}</a>
+                      <div class="article-meta-wrap">
+                        <span class="article-sort-item-time">
+                          <time datetime={entry.data.pubDate.toISOString()}>{formatCompactDate(entry.data.pubDate)}</time>
+                        </span>
+                        <span class="article-sort-item-tags">{resolveCategory(entry)}</span>
+                      </div>
+                      <span class="article-sort-item-index">{String(articleIndex).padStart(2, '0')}</span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   </section>
 </BlogLayout>
