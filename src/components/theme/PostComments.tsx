@@ -461,6 +461,14 @@ export function PostComments({
       ? `本地评论板 / ${getCloudflareSyncLabel(cloudflareStatus)} · ${comments.length} 条记录`
       : `本地评论板 / 浏览器存储 · ${comments.length} 条记录`
     : `${getProviderName(selectedExternalProvider)} / ${getExternalProviderStatusLabel(providerStatus)}`;
+  const commentHeadSummary = localBoardEnabled
+    ? cloudflareEnabled
+      ? '当前以本地评论板作为唯一评论入口，留言会先进入本地测试流，再继续尝试同步到 Cloudflare。'
+      : '当前以本地评论板作为唯一评论入口，留言、预览和浏览器存储会保留完整的作者化输入体验。'
+    : `当前以 ${getProviderName(selectedExternalProvider)} 作为唯一评论入口，本地评论板不会同时渲染。`;
+  const commentHeadTags = localBoardEnabled
+    ? ['单模式评论', cloudflareEnabled ? '本地 DB + Cloudflare' : '浏览器存储']
+    : ['单模式评论', `${getProviderName(selectedExternalProvider)} 挂载`];
 
   return (
     <section
@@ -473,13 +481,24 @@ export function PostComments({
       <div className="comment-head">
         <div className="comment-head__intro">
           <span className="comment-head__eyebrow">reader feedback</span>
-          <span className="comment-headline">{heading}</span>
+          <div className="comment-head__title-block">
+            <span className="comment-headline">{heading}</span>
+            <p className="comment-head__summary">{commentHeadSummary}</p>
+          </div>
+          <div className="comment-head__chips">
+            {commentHeadTags.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
         </div>
         <div className="comment-head__meta">
-          <span className="comment-head__status">{commentStatusLabel}</span>
-          <span className="comment-randomInfo">
-            {policyLabel} ✅ {notice}
-          </span>
+          <div className="comment-head__meta-card">
+            <span className="comment-head__status">{commentStatusLabel}</span>
+            <div className="comment-randomInfo comment-head__policy">
+              <span className="comment-head__policy-label">{policyLabel}</span>
+              <p className="comment-head__policy-note">{notice}</p>
+            </div>
+          </div>
         </div>
       </div>
 
