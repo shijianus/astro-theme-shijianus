@@ -33,6 +33,8 @@ const runtimeDays = Math.max(
 );
 const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN');
 const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
+const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
+const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN') : '持续更新中';
 ---
 
 <div class="aside-content" id="aside-content">
@@ -191,60 +193,62 @@ const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.au
           <ChartColumnIncreasing class="aside-title-icon" aria-hidden="true" />
           <span>站点信息</span>
         </div>
-        <div class="workboard-panel webinfo-workboard">
-          <div class="webinfo-workboard__head">
-            <div class="workboard-status">
-              <span class="workboard-dot" aria-hidden="true"></span>
-              <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-              <strong>{siteConfig.footer.runtime.workLabel}</strong>
+        <div class="webinfo-panel">
+          <div class="workboard-panel webinfo-workboard">
+            <div class="webinfo-workboard__head">
+              <div class="workboard-status">
+                <span class="workboard-dot" aria-hidden="true"></span>
+                <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+                <strong>{siteConfig.footer.runtime.workLabel}</strong>
+              </div>
+              <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
             </div>
-            <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-          </div>
-          <p>{siteConfig.footer.runtime.workDetail}</p>
-          <div class="webinfo-highlight-grid">
-            <article class="webinfo-highlight-card">
-              <span>已运行</span>
-              <strong>{runtimeDays} 天</strong>
-            </article>
-            <article class="webinfo-highlight-card">
-              <span>当前阶段</span>
-              <strong>{currentPhase}</strong>
-            </article>
-            <article class="webinfo-highlight-card">
-              <span>维护状态</span>
-              <strong>{siteConfig.site.author.statusLabel}</strong>
-            </article>
-          </div>
-          <div class="workboard-chip-list">
-            <span>{siteConfig.footer.runtime.workLabel}</span>
-            <span>Started {startedAtLabel}</span>
-            <span>{siteConfig.home.announcement.eyebrow}</span>
-          </div>
-        </div>
-        <div class="webinfo">
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">文章总数 :</span>
+            <p>{siteConfig.footer.runtime.workDetail}</p>
+            <div class="webinfo-highlight-grid">
+              <article class="webinfo-highlight-card">
+                <span>已运行</span>
+                <strong>{runtimeDays} 天</strong>
+              </article>
+              <article class="webinfo-highlight-card">
+                <span>最近更新</span>
+                <strong>{latestPublishedLabel}</strong>
+              </article>
+              <article class="webinfo-highlight-card">
+                <span>当前阶段</span>
+                <strong>{currentPhase}</strong>
+              </article>
             </div>
-            <div class="item-count">{totalPosts}</div>
-          </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">分类总数 :</span>
+            <div class="workboard-chip-list">
+              <span>{siteConfig.footer.runtime.workLabel}</span>
+              <span>{siteConfig.site.author.statusLabel}</span>
+              <span>{siteConfig.home.announcement.eyebrow}</span>
             </div>
-            <div class="item-count">{totalCategories}</div>
           </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">标签总数 :</span>
+          <div class="webinfo webinfo-grid">
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <span class="item-name">文章总数</span>
+              </div>
+              <div class="item-count">{totalPosts}</div>
             </div>
-            <div class="item-count">{totalTags}</div>
-          </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">阅读时长 :</span>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <span class="item-name">分类总数</span>
+              </div>
+              <div class="item-count">{totalCategories}</div>
             </div>
-            <div class="item-count">{totalReadingMinutes}m</div>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <span class="item-name">标签总数</span>
+              </div>
+              <div class="item-count">{totalTags}</div>
+            </div>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <span class="item-name">阅读时长</span>
+              </div>
+              <div class="item-count">{totalReadingMinutes}m</div>
+            </div>
           </div>
         </div>
       </section>
