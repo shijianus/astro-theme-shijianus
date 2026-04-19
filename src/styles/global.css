@@ -214,13 +214,18 @@ img {
   height: 100%;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  filter: saturate(1.08) brightness(1.04);
+  transition: opacity 0.35s ease, filter 0.35s ease;
 }
 
 :root[data-theme='dark'][data-background='starfield'] #universe,
 :root[data-theme='dark'][data-background='nebula'] #universe,
 :root[data-theme='dark'][data-background='aurora'] #universe {
   opacity: 1;
+}
+
+:root[data-theme='dark'][data-background='starfield'] #universe {
+  filter: saturate(1.12) brightness(1.08);
 }
 
 :root[data-background='clean'] #web_bg::after {
