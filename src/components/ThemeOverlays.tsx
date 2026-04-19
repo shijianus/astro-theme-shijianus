@@ -18,10 +18,11 @@ import {
 } from 'lucide-react';
 import {
   applyThemeWithBackground,
+  markBackgroundAsManual,
   readStorage,
+  resolveBackgroundSource,
   resolveInitialBackground,
   syncAside,
-  syncBackground,
   type AsideState,
   type ThemeMode,
 } from '../lib/client-theme';
@@ -148,29 +149,38 @@ export function ThemeOverlays({
   const cycleBackground = () => {
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
     const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
-    syncBackground(nextBackground);
+    markBackgroundAsManual(nextBackground);
     setBackground(nextBackground);
   };
 
   useEffect(() => {
+    const root = document.documentElement;
     const savedTheme =
       (readStorage('shijianus-theme') as ThemeMode | null) ??
-      (document.documentElement.dataset.theme as ThemeMode | undefined) ??
+      (root.dataset.theme as ThemeMode | undefined) ??
       'light';
     const savedAside =
       (readStorage('shijianus-aside') as AsideState | null) ??
-      (document.documentElement.dataset.aside as AsideState | undefined) ??
+      (root.dataset.aside as AsideState | undefined) ??
       'expanded';
+    const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
+    const savedBackgroundSource = resolveBackgroundSource(
+      storedBackground,
+      readStorage('shijianus-background-source') ?? root.dataset.backgroundSource ?? null,
+      { defaultBackground, darkBackground },
+    );
     const savedBackground =
       resolveInitialBackground(
         savedTheme,
-        readStorage('shijianus-background') ?? document.documentElement.dataset.background ?? null,
+        storedBackground,
         { defaultBackground, darkBackground },
+        savedBackgroundSource,
       );
 
-    document.documentElement.dataset.theme = savedTheme;
-    document.documentElement.dataset.aside = savedAside;
-    document.documentElement.dataset.background = savedBackground;
+    root.dataset.theme = savedTheme;
+    root.dataset.aside = savedAside;
+    root.dataset.background = savedBackground;
+    root.dataset.backgroundSource = savedBackgroundSource;
     setTheme(savedTheme);
     setAside(savedAside);
     setBackground(savedBackground);

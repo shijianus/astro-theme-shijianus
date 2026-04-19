@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUp, Dice5, ExternalLink, House, Menu, MoonStar, Search, SunMedium, X } from 'lucide-react';
 import { siteConfig } from '../config/site';
-import { applyThemeWithBackground, readStorage, resolveInitialBackground } from '../lib/client-theme';
+import { applyThemeWithBackground, readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 
 type NavItem = {
   label: string;
@@ -61,21 +61,33 @@ export function SiteHeader({
   };
 
   useEffect(() => {
+    const root = document.documentElement;
     const savedTheme =
       (readStorage('shijianus-theme') as 'light' | 'dark' | null) ??
-      (document.documentElement.dataset.theme as 'light' | 'dark' | undefined) ??
+      (root.dataset.theme as 'light' | 'dark' | undefined) ??
       'light';
-    const savedBackground = resolveInitialBackground(
-      savedTheme,
-      readStorage('shijianus-background') ?? document.documentElement.dataset.background ?? null,
+    const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
+    const savedBackgroundSource = resolveBackgroundSource(
+      storedBackground,
+      readStorage('shijianus-background-source') ?? root.dataset.backgroundSource ?? null,
       {
         defaultBackground: siteConfig.theme.background.defaultMode,
         darkBackground: siteConfig.theme.background.darkMode,
       },
     );
+    const savedBackground = resolveInitialBackground(
+      savedTheme,
+      storedBackground,
+      {
+        defaultBackground: siteConfig.theme.background.defaultMode,
+        darkBackground: siteConfig.theme.background.darkMode,
+      },
+      savedBackgroundSource,
+    );
 
-    document.documentElement.dataset.theme = savedTheme;
-    document.documentElement.dataset.background = savedBackground;
+    root.dataset.theme = savedTheme;
+    root.dataset.background = savedBackground;
+    root.dataset.backgroundSource = savedBackgroundSource;
     setTheme(savedTheme);
 
     const onThemeChange = (event: Event) => {

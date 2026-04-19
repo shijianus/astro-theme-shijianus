@@ -2,10 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUp, Languages, MoonStar, PanelRightClose, PanelRightOpen, Settings, Sparkles, SunMedium } from 'lucide-react';
 import {
   applyThemeWithBackground,
+  markBackgroundAsManual,
   readStorage,
+  resolveBackgroundSource,
   resolveInitialBackground,
   syncAside,
-  syncBackground,
   type AsideState,
   type ThemeMode,
   writeStorage,
@@ -45,7 +46,7 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
   const cycleBackground = () => {
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
     const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
-    syncBackground(nextBackground);
+    markBackgroundAsManual(nextBackground);
     setBackground(nextBackground);
   };
 
@@ -59,11 +60,18 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
       (readStorage('shijianus-aside') as AsideState | null) ??
       (root.dataset.aside as AsideState | undefined) ??
       'expanded';
+    const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
+    const savedBackgroundSource = resolveBackgroundSource(
+      storedBackground,
+      readStorage('shijianus-background-source') ?? root.dataset.backgroundSource ?? null,
+      { defaultBackground, darkBackground },
+    );
     const savedBackground =
       resolveInitialBackground(
         savedTheme,
-        readStorage('shijianus-background') ?? root.dataset.background ?? null,
+        storedBackground,
         { defaultBackground, darkBackground },
+        savedBackgroundSource,
       );
     const savedLocaleVariant =
       (readStorage('shijianus-locale-variant') as 'zh-CN' | 'zh-Hant' | null) ?? 'zh-CN';
@@ -71,6 +79,7 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
     root.dataset.theme = savedTheme;
     root.dataset.aside = savedAside;
     root.dataset.background = savedBackground;
+    root.dataset.backgroundSource = savedBackgroundSource;
     root.dataset.localeVariant = savedLocaleVariant;
     root.lang = savedLocaleVariant;
 

@@ -1,10 +1,19 @@
 export type ThemeMode = 'light' | 'dark';
 export type AsideState = 'expanded' | 'collapsed';
+export type BackgroundSource = 'auto' | 'manual';
 
 type BackgroundStrategy = {
   defaultBackground: string;
   darkBackground: string;
 };
+
+const BACKGROUND_KEY = 'shijianus-background';
+const BACKGROUND_SOURCE_KEY = 'shijianus-background-source';
+
+function normalizeBackgroundSource(value: string | null | undefined): BackgroundSource | null {
+  if (value === 'auto' || value === 'manual') return value;
+  return null;
+}
 
 export function readStorage(key: string) {
   try {
@@ -33,29 +42,66 @@ export function syncAside(nextAside: AsideState) {
 
 export function syncBackground(nextBackground: string) {
   document.documentElement.dataset.background = nextBackground;
-  writeStorage('shijianus-background', nextBackground);
+  writeStorage(BACKGROUND_KEY, nextBackground);
   window.dispatchEvent(new CustomEvent('shijianus:backgroundchange', { detail: nextBackground }));
 }
 
-export function resolveThemeAwareBackground(theme: ThemeMode, currentBackground: string, strategy: BackgroundStrategy) {
-  if (theme === 'dark' && currentBackground === strategy.defaultBackground) return strategy.darkBackground;
-  if (theme === 'light' && currentBackground === strategy.darkBackground) return strategy.defaultBackground;
-  return currentBackground;
+export function syncBackgroundWithSource(nextBackground: string, source: BackgroundSource) {
+  document.documentElement.dataset.backgroundSource = source;
+  writeStorage(BACKGROUND_SOURCE_KEY, source);
+  syncBackground(nextBackground);
 }
 
-export function resolveInitialBackground(theme: ThemeMode, storedBackground: string | null, strategy: BackgroundStrategy) {
-  if (storedBackground) return storedBackground;
+export function resolveBackgroundSource(
+  storedBackground: string | null,
+  storedSource: string | null,
+  strategy: BackgroundStrategy,
+) {
+  const normalizedSource = normalizeBackgroundSource(storedSource);
+  if (normalizedSource) return normalizedSource;
+  if (!storedBackground) return 'auto';
+  if (storedBackground === strategy.defaultBackground || storedBackground === strategy.darkBackground) return 'auto';
+  return 'manual';
+}
+
+export function resolveInitialBackground(
+  theme: ThemeMode,
+  storedBackground: string | null,
+  strategy: BackgroundStrategy,
+  source?: BackgroundSource,
+) {
+  const backgroundSource = source ?? resolveBackgroundSource(storedBackground, null, strategy);
+  if (backgroundSource === 'manual' && storedBackground) return storedBackground;
+  return theme === 'dark' ? strategy.darkBackground : strategy.defaultBackground;
+}
+
+export function resolveThemeAwareBackground(
+  theme: ThemeMode,
+  currentBackground: string,
+  strategy: BackgroundStrategy,
+  source: BackgroundSource,
+) {
+  if (source === 'manual') return currentBackground;
   return theme === 'dark' ? strategy.darkBackground : strategy.defaultBackground;
 }
 
 export function applyThemeWithBackground(nextTheme: ThemeMode, strategy: BackgroundStrategy) {
   const currentBackground =
-    readStorage('shijianus-background') ??
+    readStorage(BACKGROUND_KEY) ??
     document.documentElement.dataset.background ??
     strategy.defaultBackground;
-  const nextBackground = resolveThemeAwareBackground(nextTheme, currentBackground, strategy);
+  const backgroundSource = resolveBackgroundSource(
+    currentBackground,
+    readStorage(BACKGROUND_SOURCE_KEY) ?? document.documentElement.dataset.backgroundSource ?? null,
+    strategy,
+  );
+  const nextBackground = resolveThemeAwareBackground(nextTheme, currentBackground, strategy, backgroundSource);
 
   syncTheme(nextTheme);
-  if (nextBackground !== currentBackground) syncBackground(nextBackground);
+  syncBackgroundWithSource(nextBackground, backgroundSource);
   return nextBackground;
+}
+
+export function markBackgroundAsManual(nextBackground: string) {
+  syncBackgroundWithSource(nextBackground, 'manual');
 }
