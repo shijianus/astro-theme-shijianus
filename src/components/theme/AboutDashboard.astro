@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from '../../config/site';
+import RewardRegionPanel from './RewardRegionPanel.astro';
 
 interface Props {
   stats: {
@@ -246,7 +247,11 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
   <div class="author-content">
     <div class="author-content-item single reward" id="about-reward">
       <div class="author-content-item-tips">支持</div>
-      <span class="author-content-item-title">充电记录</span>
+      <span class="author-content-item-title">打赏与支持</span>
+      <div class="about-reward__summary">
+        <p>{siteConfig.support.reward.summary}</p>
+      </div>
+      <RewardRegionPanel variant="page" />
       <div class="reward-list-all">
         {about.rewards.map((item) => (
           <div class="reward-list-item">
@@ -265,7 +270,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
           <span></span>
           <span></span>
         </div>
-        <div class="about-reward__button">感谢每一份支持</div>
+        <a class="about-reward__button" href={siteConfig.support.reward.historyHref}>{siteConfig.support.reward.historyLabel}</a>
       </div>
     </div>
   </div>

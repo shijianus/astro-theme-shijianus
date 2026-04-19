@@ -27,6 +27,12 @@ const showRecentPosts = pageType === 'post' && recentPosts.length > 0;
 const showToc = pageType === 'post' && siteConfig.theme.features.postToc && headings.length > 0;
 const showCategories = pageType !== 'post' && siteConfig.theme.features.asideCategories && categories.length > 0;
 const showFeatureCard = pageType !== 'post' && siteConfig.theme.features.asideFeatureCard;
+const runtimeDays = Math.max(
+  1,
+  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
+);
+const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN');
+const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
 ---
 
 <div class="aside-content" id="aside-content">
@@ -184,6 +190,36 @@ const showFeatureCard = pageType !== 'post' && siteConfig.theme.features.asideFe
         <div class="item-headline">
           <ChartColumnIncreasing class="aside-title-icon" aria-hidden="true" />
           <span>站点信息</span>
+        </div>
+        <div class="workboard-panel webinfo-workboard">
+          <div class="webinfo-workboard__head">
+            <div class="workboard-status">
+              <span class="workboard-dot" aria-hidden="true"></span>
+              <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+              <strong>{siteConfig.footer.runtime.workLabel}</strong>
+            </div>
+            <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+          </div>
+          <p>{siteConfig.footer.runtime.workDetail}</p>
+          <div class="webinfo-highlight-grid">
+            <article class="webinfo-highlight-card">
+              <span>已运行</span>
+              <strong>{runtimeDays} 天</strong>
+            </article>
+            <article class="webinfo-highlight-card">
+              <span>当前阶段</span>
+              <strong>{currentPhase}</strong>
+            </article>
+            <article class="webinfo-highlight-card">
+              <span>维护状态</span>
+              <strong>{siteConfig.site.author.statusLabel}</strong>
+            </article>
+          </div>
+          <div class="workboard-chip-list">
+            <span>{siteConfig.footer.runtime.workLabel}</span>
+            <span>Started {startedAtLabel}</span>
+            <span>{siteConfig.home.announcement.eyebrow}</span>
+          </div>
         </div>
         <div class="webinfo">
           <div class="webinfo-item">

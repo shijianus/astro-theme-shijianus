@@ -1,6 +1,9 @@
 ---
-import { Heart, Link2, ScrollText, Share2 } from 'lucide-react';
+import { Heart, Link2, ScrollText, Share2, Smartphone } from 'lucide-react';
+import { siteConfig } from '../../config/site';
 import { slugifySegment } from '../../lib/content';
+import QrCodeImage from './QrCodeImage.astro';
+import RewardRegionPanel from './RewardRegionPanel.astro';
 
 interface Props {
   permalink: string;
@@ -55,6 +58,7 @@ const {
 } = Astro.props;
 
 const categoryHref = `/categories/${slugifySegment(category)}/`;
+const sharePlatforms = siteConfig.support.share.platforms;
 ---
 
 <section
@@ -69,6 +73,10 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
   <div class="post-tools">
     <div class="post-tools-left">
       <div class="rewardLeftButton">
+        <button type="button" class="reward-link-button" data-panel-trigger="reward">
+          <Heart class="post-tools__icon" aria-hidden="true" />
+          <span>{rewardLabel}</span>
+        </button>
         <a class="reward-link-button" href={modeHref}>
           <ScrollText class="post-tools__icon" aria-hidden="true" />
           <span>{modeLabel}</span>
@@ -82,6 +90,10 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
     </div>
 
     <div class="shareRight">
+      <button type="button" class="share-button" title={siteConfig.support.share.qrcodeLabel} data-panel-trigger="wechat">
+        <Smartphone class="post-tools__icon" aria-hidden="true" />
+        <span>扫码</span>
+      </button>
       <button type="button" class="share-button" title={copyLabel} data-tool="copy">
         <Link2 class="post-tools__icon" aria-hidden="true" />
         <span>{copyLabel}</span>
@@ -90,13 +102,54 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
         <Share2 class="post-tools__icon" aria-hidden="true" />
         <span>{shareLabel}</span>
       </button>
-      <a class="share-button" href={rewardHref} title={rewardLabel}>
-        <Heart class="post-tools__icon" aria-hidden="true" />
-        <span>{rewardLabel}</span>
-      </a>
     </div>
 
     <div class="post-tools__status" aria-live="polite"></div>
+  </div>
+
+  <div class="post-tools-panels">
+    <div class="post-floating-panel" data-panel="reward" hidden>
+      <div class="post-floating-panel__head">
+        <div>
+          <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
+          <strong>{rewardLabel}</strong>
+        </div>
+        <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+          ×
+        </button>
+      </div>
+      <p class="post-floating-panel__summary">{siteConfig.support.reward.summary}</p>
+      <RewardRegionPanel variant="panel" />
+      <div class="post-floating-panel__footer">
+        <a href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
+        <span>{rewardNote}</span>
+      </div>
+    </div>
+
+    <div class="post-floating-panel" data-panel="wechat" hidden>
+      <div class="post-floating-panel__head">
+        <div>
+          <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
+          <strong>WeChat / Mobile Share</strong>
+        </div>
+        <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+          ×
+        </button>
+      </div>
+      <p class="post-floating-panel__summary">{siteConfig.support.share.qrcodeDescription}</p>
+      <div class="post-share-qrcode">
+        <div class="post-share-qrcode__image">
+          <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
+        </div>
+        <div class="post-share-qrcode__meta">
+          <strong>{title}</strong>
+          <p>扫码后可在 WeChat、移动端浏览器或另一台设备上直接打开本文。</p>
+          <button type="button" class="post-share-qrcode__action" data-tool="copy">
+            {copyLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="post-copyright">
@@ -149,16 +202,19 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
         )}
       </div>
 
-      <div class="post-share-actions">
-        <button type="button" class="post-share-actions__button" data-tool="copy">
-          {copyLabel}
-        </button>
-        <button type="button" class="post-share-actions__button is-ghost" data-tool="share">
-          {shareLabel}
-        </button>
-        <a href={rewardHref} class="post-share-actions__button is-accent">
-          {rewardLabel}
-        </a>
+      <div class="post-share-grid">
+        {sharePlatforms.map((platform) => (
+          <button
+            type="button"
+            class="post-share-grid__item"
+            style={`--platform-accent:${platform.accent};`}
+            data-share-platform={platform.id}
+          >
+            <span class="post-share-grid__badge">{platform.shortLabel}</span>
+            <strong>{platform.label}</strong>
+            <span>{platform.description}</span>
+          </button>
+        ))}
       </div>
     </div>
     <p class="post-share-actions__note">{rewardNote}</p>
@@ -203,6 +259,7 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
       const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
       const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
       const status = section.querySelector('.post-tools__status');
+      const panels = Array.from(section.querySelectorAll('[data-panel]')).filter((node) => node instanceof HTMLElement);
       let statusTimer = 0;
 
       const setStatus = (message) => {
@@ -215,11 +272,68 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
         }, 2200);
       };
 
+      const closePanels = () => {
+        panels.forEach((panel) => {
+          panel.hidden = true;
+          panel.classList.remove('is-open');
+        });
+      };
+
+      const togglePanel = (name) => {
+        panels.forEach((panel) => {
+          const shouldOpen = panel.dataset.panel === name && panel.hidden;
+          panel.hidden = !shouldOpen;
+          panel.classList.toggle('is-open', shouldOpen);
+        });
+      };
+
+      const buildShareUrl = (platform) => {
+        const encodedUrl = encodeURIComponent(permalink);
+        const encodedTitle = encodeURIComponent(title);
+        const combined = encodeURIComponent(`${title} ${permalink}`);
+
+        switch (platform) {
+          case 'x':
+            return `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+          case 'facebook':
+            return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+          case 'threads':
+            return `https://threads.com/intent/post?text=${combined}`;
+          case 'linkedin':
+            return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+          case 'telegram':
+            return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+          case 'reddit':
+            return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`;
+          case 'weibo':
+            return `https://service.weibo.com/share/share.php?title=${encodedTitle}&url=${encodedUrl}`;
+          case 'qq':
+            return `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}`;
+          case 'email':
+            return `mailto:?subject=${encodedTitle}&body=${encodeURIComponent(`${title}\n${permalink}`)}`;
+          default:
+            return '';
+        }
+      };
+
       section.querySelectorAll('[data-tool="copy"]').forEach((button) => {
         button.addEventListener('click', async () => {
           const copied = await copyText(permalink);
           if (copied) setStatus(copyDone);
         });
+      });
+
+      section.querySelectorAll('[data-panel-trigger]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const panelName = button.getAttribute('data-panel-trigger');
+          if (!panelName) return;
+          togglePanel(panelName);
+          setStatus(panelName === 'reward' ? '已打开支持二维码面板' : '已打开扫码分享面板');
+        });
+      });
+
+      section.querySelectorAll('[data-panel-close]').forEach((button) => {
+        button.addEventListener('click', () => closePanels());
       });
 
       section.querySelectorAll('[data-tool="share"]').forEach((button) => {
@@ -237,6 +351,56 @@ const categoryHref = `/categories/${slugifySegment(category)}/`;
           const copied = await copyText(permalink);
           if (copied) setStatus(shareFallback);
         });
+      });
+
+      section.querySelectorAll('[data-share-platform]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const platform = button.getAttribute('data-share-platform');
+          if (!platform) return;
+
+          if (platform === 'copy') {
+            const copied = await copyText(permalink);
+            if (copied) setStatus(copyDone);
+            return;
+          }
+
+          if (platform === 'native') {
+            if (navigator.share) {
+              try {
+                await navigator.share({ title, url: permalink });
+                setStatus(shareDone);
+                return;
+              } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+              }
+            }
+
+            const copied = await copyText(permalink);
+            if (copied) setStatus(shareFallback);
+            return;
+          }
+
+          if (platform === 'wechat') {
+            togglePanel('wechat');
+            setStatus('已打开扫码分享面板');
+            return;
+          }
+
+          const shareUrl = buildShareUrl(platform);
+          if (!shareUrl) return;
+
+          closePanels();
+          if (platform === 'email') {
+            window.location.href = shareUrl;
+          } else {
+            window.open(shareUrl, '_blank', 'noopener,noreferrer,width=860,height=720');
+          }
+          setStatus('已打开对应平台分享窗口');
+        });
+      });
+
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closePanels();
       });
     });
   })();

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUp, Dice5, ExternalLink, House, Menu, MoonStar, Search, SunMedium, X } from 'lucide-react';
+import { siteConfig } from '../config/site';
+import { applyThemeWithBackground, readStorage, resolveInitialBackground } from '../lib/client-theme';
 
 type NavItem = {
   label: string;
@@ -19,14 +21,6 @@ type SiteHeaderProps = {
 function isActive(currentPath: string, href: string) {
   if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
-}
-
-function applyTheme(nextTheme: 'light' | 'dark') {
-  document.documentElement.dataset.theme = nextTheme;
-  try {
-    window.localStorage.setItem('shijianus-theme', nextTheme);
-  } catch {}
-  window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
 }
 
 function openSearchPanel() {
@@ -68,17 +62,20 @@ export function SiteHeader({
 
   useEffect(() => {
     const savedTheme =
-      (() => {
-        try {
-          return window.localStorage.getItem('shijianus-theme') as 'light' | 'dark' | null;
-        } catch {
-          return null;
-        }
-      })() ??
+      (readStorage('shijianus-theme') as 'light' | 'dark' | null) ??
       (document.documentElement.dataset.theme as 'light' | 'dark' | undefined) ??
       'light';
+    const savedBackground = resolveInitialBackground(
+      savedTheme,
+      readStorage('shijianus-background') ?? document.documentElement.dataset.background ?? null,
+      {
+        defaultBackground: siteConfig.theme.background.defaultMode,
+        darkBackground: siteConfig.theme.background.darkMode,
+      },
+    );
 
     document.documentElement.dataset.theme = savedTheme;
+    document.documentElement.dataset.background = savedBackground;
     setTheme(savedTheme);
 
     const onThemeChange = (event: Event) => {
@@ -167,7 +164,10 @@ export function SiteHeader({
                 className="site-page"
                 onClick={() => {
                   const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                  applyTheme(nextTheme);
+                  applyThemeWithBackground(nextTheme, {
+                    defaultBackground: siteConfig.theme.background.defaultMode,
+                    darkBackground: siteConfig.theme.background.darkMode,
+                  });
                   setTheme(nextTheme);
                 }}
                 title="Display Mode"

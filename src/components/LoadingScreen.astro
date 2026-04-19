@@ -43,8 +43,27 @@ const { brandName, avatar } = Astro.props;
       } catch {}
     };
     const firstVisit = !hasSeenLoader();
-    const minimumDuration = firstVisit ? 2400 : 360;
-    const removeDelay = firstVisit ? 520 : 280;
+    const minimumDuration = firstVisit ? 3400 : 420;
+    const removeDelay = firstVisit ? 580 : 280;
+
+    const preloadVisuals = () => {
+      const candidates = Array.from(
+        document.querySelectorAll('img[src], [data-preload-image]')
+      )
+        .map((node) => {
+          if (!(node instanceof HTMLElement)) return '';
+          if (node instanceof HTMLImageElement) return node.currentSrc || node.src;
+          return node.dataset.preloadImage || '';
+        })
+        .filter(Boolean)
+        .slice(0, 12);
+
+      candidates.forEach((src) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = src;
+      });
+    };
 
     loadingBox.classList.toggle('is-first-visit', firstVisit);
 
@@ -67,6 +86,7 @@ const { brandName, avatar } = Astro.props;
     };
 
     root.classList.remove('theme-ready');
+    preloadVisuals();
     loadingBox.addEventListener('click', () => {
       if (!firstVisit) endLoading();
     }, { once: true });

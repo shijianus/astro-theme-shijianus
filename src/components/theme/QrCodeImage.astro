@@ -1,0 +1,50 @@
+---
+import QRCode from 'qrcode';
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  value: string;
+  alt: string;
+  size?: number;
+  fgColor?: string;
+  bgColor?: string;
+  imageSrc?: string;
+}
+
+const {
+  value,
+  alt,
+  size = 220,
+  fgColor = '#111827',
+  bgColor = '#ffffff',
+  imageSrc,
+} = Astro.props;
+
+const src = imageSrc
+  ? imageSrc
+  : await QRCode.toDataURL(
+      value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('mailto:') ||
+        value.startsWith('tel:')
+        ? value
+        : new URL(value, siteConfig.site.url).toString(),
+      {
+        width: size,
+        margin: 1,
+        color: {
+          dark: fgColor,
+          light: bgColor,
+        },
+      },
+    );
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={size}
+  height={size}
+  loading="lazy"
+  decoding="async"
+/>

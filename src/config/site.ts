@@ -1,9 +1,21 @@
+const siteOrigin = 'https://shijian.us';
+
 export type SiteNavItem = {
   label: string;
   href: string;
   description?: string;
   external?: boolean;
-  icon?: 'github' | 'mail' | 'archive' | 'tags' | 'about' | 'home';
+  icon?:
+    | 'github'
+    | 'mail'
+    | 'archive'
+    | 'tags'
+    | 'about'
+    | 'home'
+    | 'rss'
+    | 'link'
+    | 'book'
+    | 'message';
 };
 
 export type HomeCategory = {
@@ -90,10 +102,53 @@ export type AboutReward = {
   date: string;
 };
 
+export type CommentProvider = 'local' | 'giscus' | 'waline' | 'twikoo';
+
+export type RewardChannel = {
+  label: string;
+  shortLabel: string;
+  description: string;
+  qrImageSrc: string;
+  note?: string;
+  accent: string;
+};
+
+export type RewardRegionId = 'cn' | 'hk';
+
+export type RewardRegion = {
+  id: RewardRegionId;
+  label: string;
+  shortLabel: string;
+  description: string;
+  ipCountryCodes: string[];
+  channels: RewardChannel[];
+};
+
+export type SharePlatform = {
+  id:
+    | 'native'
+    | 'copy'
+    | 'wechat'
+    | 'x'
+    | 'facebook'
+    | 'threads'
+    | 'linkedin'
+    | 'telegram'
+    | 'reddit'
+    | 'weibo'
+    | 'qq'
+    | 'email';
+  label: string;
+  shortLabel: string;
+  description: string;
+  accent: string;
+};
+
 export const siteConfig = {
   site: {
     name: 'shijianus',
     title: 'shijianus',
+    url: siteOrigin,
     domainLabel: 'shijian.us',
     locale: 'zh-CN',
     description: '用 Astro、React 和 Tailwind 构建一套高信息密度、强作者感、可长期维护的个人博客主题。',
@@ -113,9 +168,12 @@ export const siteConfig = {
     defaultMode: 'light',
     background: {
       defaultMode: 'grid',
+      darkMode: 'starfield',
       modes: [
         { id: 'grid', label: '网格背景' },
         { id: 'starfield', label: '星空背景' },
+        { id: 'nebula', label: '星云背景' },
+        { id: 'aurora', label: '极光背景' },
         { id: 'clean', label: '纯净背景' },
       ],
     },
@@ -146,7 +204,7 @@ export const siteConfig = {
     },
     motion: {
       heroParticles: 18,
-      pageRevealDurationMs: 820,
+      pageRevealDurationMs: 980,
     },
   },
   navigation: {
@@ -192,7 +250,7 @@ export const siteConfig = {
       topDeck: {
         hoverMonogram: 'SJ',
         hoverActionLabel: '随便逛逛',
-        hoverActionHint: '打开当前推荐',
+        hoverActionHint: '打开当前推荐文章',
         primaryCardBadge: '荐',
         secondaryCardBadge: '文',
         toggleLabel: '更多推荐',
@@ -294,55 +352,169 @@ export const siteConfig = {
   footer: {
     since: 2020,
     startedAt: '2020-06-01',
-    badges: ['Astro', 'React', 'Tailwind', 'TypeScript'],
+    badges: ['Astro', 'React', 'Tailwind', 'TypeScript', 'MDX'],
     quote: '把博客当成长期维护的软件来做。',
     customText: '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。',
     socialBar: {
       left: [
         { label: 'GitHub', href: 'https://github.com/shijianus', external: true, icon: 'github' },
         { label: '邮箱', href: 'mailto:hello@shijian.us', external: true, icon: 'mail' },
-      ] satisfies SiteNavItem[],
-      right: [
         { label: '归档', href: '/archives/', icon: 'archive' },
         { label: '标签', href: '/tags/', icon: 'tags' },
+      ] satisfies SiteNavItem[],
+      right: [
+        { label: '关于', href: '/about/', icon: 'about' },
+        { label: '首页', href: '/', icon: 'home' },
+        { label: '动态', href: '/tags/', icon: 'rss' },
+        { label: '链接', href: '/categories/', icon: 'link' },
       ] satisfies SiteNavItem[],
     },
     runtime: {
       label: '运行状态',
       workLabel: '持续维护中',
-      workDetail: 'shijianus 正在同步首页、文章页、页脚与交互动效',
+      workDetail: 'shijianus 正在同步首页、文章页、页脚、按钮反馈与交互动效',
     },
     links: [
       { label: 'GitHub', href: 'https://github.com/shijianus', external: true },
       { label: '归档', href: '/archives/' },
       { label: '标签', href: '/tags/' },
+      { label: '关于', href: '/about/' },
     ] satisfies SiteNavItem[],
     groups: [
       {
-        title: '导航',
+        title: '服务',
         links: [
           { label: '首页', href: '/' },
           { label: '归档', href: '/archives/' },
           { label: '分类', href: '/categories/' },
-          { label: '关于', href: '/about/' },
         ] satisfies SiteNavItem[],
       },
       {
-        title: '联系',
+        title: '主题',
         links: [
-          { label: 'GitHub', href: 'https://github.com/shijianus', external: true },
-          { label: '邮箱', href: 'mailto:hello@shijian.us', external: true },
+          { label: '设计对齐', href: '/about/' },
+          { label: '重构进度', href: '/archives/' },
+          { label: '内容系统', href: '/tags/' },
         ] satisfies SiteNavItem[],
       },
       {
-        title: '专题',
+        title: '导航',
         links: [
           { label: '最新文章', href: '/archives/' },
-          { label: '设计对齐', href: '/about/' },
-          { label: '主题说明', href: '/tags/' },
+          { label: '系统设计', href: '/categories/系统设计/' },
+          { label: '前端工程', href: '/categories/前端工程/' },
+        ] satisfies SiteNavItem[],
+      },
+      {
+        title: '协议',
+        links: [
+          { label: '隐私说明', href: '/about/#about-reward' },
+          { label: '版权说明', href: '/about/' },
+          { label: '使用条款', href: '/tags/' },
+        ] satisfies SiteNavItem[],
+      },
+      {
+        title: '友链',
+        links: [
+          { label: 'Astro', href: 'https://astro.build/', external: true },
+          { label: 'Tailwind', href: 'https://tailwindcss.com/', external: true },
+          { label: 'React', href: 'https://react.dev/', external: true },
+          { label: 'MDN', href: 'https://developer.mozilla.org/', external: true },
         ] satisfies SiteNavItem[],
       },
     ],
+  },
+  support: {
+    reward: {
+      title: '打赏作者',
+      summary: '文章页和关于页共用同一套地区化打赏配置。当前只开放 China 与 HongKong 两个区域，默认优先根据访问 IP 推荐合适的打赏方式，并允许手动切换。',
+      historyLabel: '查看支持记录',
+      historyHref: '/about/#about-reward',
+      geoEndpoint: 'https://ipapi.co/json/',
+      storageKey: 'shijianus-reward-region',
+      detect: {
+        regionLabel: '打赏地区',
+        autoLabel: '按 IP 推荐',
+        autoDescription: '将优先根据你的 IP 默认展示 China 或 HongKong 区的打赏方式。',
+        switchLabel: '切换地区',
+        manualDescription: '如果你的 IP 与实际地区不符，可以在右侧直接切换地区。',
+        resetLabel: '恢复按 IP 推荐',
+        unsupportedTitle: '该地区暂不支援打赏',
+        unsupportedDescription: '当前仅开放 China 与 HongKong 两个打赏区。如果你的实际地区在这两个区域内，请手动切换。',
+      },
+      regions: [
+        {
+          id: 'cn',
+          label: 'China',
+          shortLabel: 'CN',
+          description: '中国大陆区打赏方式',
+          ipCountryCodes: ['CN'],
+          channels: [
+            {
+              label: 'Weixin Pay',
+              shortLabel: 'WX',
+              description: '推荐中国大陆用户使用微信扫一扫直接打赏。',
+              qrImageSrc: '/media/shijianus/support/weixin-pay-cn.jpg',
+              note: '请使用微信扫一扫。',
+              accent: '#07c160',
+            },
+            {
+              label: 'Alipay',
+              shortLabel: 'ALI',
+              description: '适合使用支付宝的中国大陆用户。',
+              qrImageSrc: '/media/shijianus/support/alipay-cn.jpg',
+              note: '请使用支付宝扫一扫。',
+              accent: '#1677ff',
+            },
+          ] satisfies RewardChannel[],
+        },
+        {
+          id: 'hk',
+          label: 'HongKong',
+          shortLabel: 'HK',
+          description: 'HongKong 区打赏方式',
+          ipCountryCodes: ['HK'],
+          channels: [
+            {
+              label: 'WeChat Pay HK',
+              shortLabel: 'WX-HK',
+              description: '适合 HongKong 区用户使用 WeChat Pay HK 打赏。',
+              qrImageSrc: '/media/shijianus/support/wechat-pay-hk.jpg',
+              note: '请使用 WeChat Pay HK 扫码。',
+              accent: '#00c26f',
+            },
+            {
+              label: 'Alipay HK',
+              shortLabel: 'ALI-HK',
+              description: '适合 HongKong 区用户使用 Alipay HK 打赏。',
+              qrImageSrc: '/media/shijianus/support/alipay-hk.jpg',
+              note: '请使用 Alipay HK 扫码。',
+              accent: '#7b61ff',
+            },
+          ] satisfies RewardChannel[],
+        },
+      ] satisfies RewardRegion[],
+    },
+    share: {
+      title: '分享这篇文章',
+      summary: '保留系统分享，同时补齐国际平台和本地平台的显式分享入口。',
+      qrcodeLabel: '扫码分享',
+      qrcodeDescription: '使用 WeChat 或手机扫码，直接在另一台设备上打开当前页面。',
+      platforms: [
+        { id: 'native', label: '系统分享', shortLabel: 'SYS', description: '唤起系统分享面板', accent: '#425AEF' },
+        { id: 'copy', label: '复制链接', shortLabel: 'COPY', description: '复制当前文章链接', accent: '#111827' },
+        { id: 'wechat', label: 'WeChat', shortLabel: 'WX', description: '通过二维码分享到微信', accent: '#07c160' },
+        { id: 'x', label: 'X', shortLabel: 'X', description: '分享到 X', accent: '#111111' },
+        { id: 'facebook', label: 'Facebook', shortLabel: 'FB', description: '分享到 Facebook', accent: '#1877f2' },
+        { id: 'threads', label: 'Threads', shortLabel: 'TH', description: '分享到 Threads', accent: '#101010' },
+        { id: 'linkedin', label: 'LinkedIn', shortLabel: 'IN', description: '分享到 LinkedIn', accent: '#0a66c2' },
+        { id: 'telegram', label: 'Telegram', shortLabel: 'TG', description: '分享到 Telegram', accent: '#229ed9' },
+        { id: 'reddit', label: 'Reddit', shortLabel: 'RD', description: '分享到 Reddit', accent: '#ff4500' },
+        { id: 'weibo', label: 'Weibo', shortLabel: 'WB', description: '分享到微博', accent: '#e6162d' },
+        { id: 'qq', label: 'QQ', shortLabel: 'QQ', description: '分享到 QQ', accent: '#12b7f5' },
+        { id: 'email', label: 'Email', shortLabel: 'MAIL', description: '通过邮件分享', accent: '#7c3aed' },
+      ] satisfies SharePlatform[],
+    },
   },
   post: {
     tools: {
@@ -350,9 +522,9 @@ export const siteConfig = {
       modeLabel: '运营模式与责任',
       modeHref: '/about/',
       modeDescription: '这篇文章按长期维护内容来处理，分享、转载和支持入口都统一收口，便于后续持续更新。',
-      shareLabel: '系统分享',
+      shareLabel: '分享文章',
       rewardHref: '/about/#about-reward',
-      rewardDescription: '如果这篇文章对你有帮助，可以直接查看支持入口和最近的充电记录。',
+      rewardDescription: '如果这篇文章对你有帮助，可以直接使用二维码支持入口，或把它分享到你正在使用的平台。',
       copyDoneLabel: '链接已复制',
       shareDoneLabel: '已唤起系统分享',
       shareFallbackLabel: '当前环境不支持系统分享，已回退为复制链接',
@@ -495,6 +667,28 @@ export const siteConfig = {
       homeFeed: 'local',
       metrics: 'local',
       search: 'future-api',
+    },
+    comments: {
+      provider: 'local' as CommentProvider,
+      fallback: 'local' as CommentProvider,
+      giscus: {
+        repo: '',
+        repoId: '',
+        category: '',
+        categoryId: '',
+        mapping: 'pathname',
+        theme: 'light',
+      },
+      waline: {
+        serverURL: '',
+        lang: 'zh-CN',
+        pageSize: 10,
+      },
+      twikoo: {
+        envId: '',
+        region: '',
+        lang: 'zh-CN',
+      },
     },
   },
 } as const;

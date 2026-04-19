@@ -34,4 +34,18 @@ const { title, image, imageAlt, badges = [], meta = [] } = Astro.props;
       </div>
     )}
   </div>
+
+  <div class="post-hero__waves" aria-hidden="true">
+    <svg class="post-hero__waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+      <defs>
+        <path id="post-hero-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352Z"></path>
+      </defs>
+      <g class="post-hero__waves-group">
+        <use href="#post-hero-wave" x="48" y="0"></use>
+        <use href="#post-hero-wave" x="48" y="3"></use>
+        <use href="#post-hero-wave" x="48" y="5"></use>
+        <use href="#post-hero-wave" x="48" y="7"></use>
+      </g>
+    </svg>
+  </div>
 </section>

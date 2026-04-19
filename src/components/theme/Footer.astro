@@ -1,123 +1,92 @@
 ---
-import { Archive, Github, House, Mail, Tags } from 'lucide-react';
+import { Archive, BookOpenText, Github, House, Link2, Mail, MessageCircleMore, Rss, Tags, UserRound } from 'lucide-react';
 import { siteConfig } from '../../config/site';
-
-interface Props {
-  stats?: {
-    posts: number;
-    categories: number;
-    tags: number;
-    readingMinutes: number;
-  };
-}
-
-const { stats = { posts: 0, categories: 0, tags: 0, readingMinutes: 0 } } = Astro.props;
 
 const iconMap = {
   github: Github,
   mail: Mail,
   archive: Archive,
   tags: Tags,
+  about: UserRound,
   home: House,
+  rss: Rss,
+  link: Link2,
+  book: BookOpenText,
+  message: MessageCircleMore,
 } as const;
-
-const runtimeDays = Math.max(
-  1,
-  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
-);
 ---
 
 <footer id="footer" class="site-footer">
   <div id="footer-wrap">
-    {siteConfig.theme.features.footerSocialBar && (
-      <div id="footer_deal">
-        {siteConfig.footer.socialBar.left.map((item) => {
-          const Icon = iconMap[item.icon ?? 'home'];
-          return (
-            <a
-              class="deal_link"
-              href={item.href}
-              title={item.label}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noreferrer' : undefined}
-            >
-              <Icon class="footer-deal-icon" aria-hidden="true" />
-            </a>
-          );
-        })}
-
-        <img
-          class="footer_mini_logo"
-          title="返回顶部"
-          alt={siteConfig.site.author.name}
-          src={siteConfig.site.author.avatar}
-          onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
-        />
-
-        {siteConfig.footer.socialBar.right.map((item) => {
-          const Icon = iconMap[item.icon ?? 'home'];
-          return (
-            <a
-              class="deal_link"
-              href={item.href}
-              title={item.label}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noreferrer' : undefined}
-            >
-              <Icon class="footer-deal-icon" aria-hidden="true" />
-            </a>
-          );
-        })}
-      </div>
-    )}
-
-    {siteConfig.theme.features.footerRuntime && (
-      <div id="workboard">
-        <div class="workboard-status">
-          <span class="workboard-dot" aria-hidden="true"></span>
-          <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-          <strong>{siteConfig.footer.runtime.workLabel}</strong>
-        </div>
-        <p>{siteConfig.footer.runtime.workDetail}</p>
-        <div id="runtimeTextTip">
-          <span>已运行 {runtimeDays} 天</span>
-          <span>{stats.posts} 篇文章</span>
-          <span>{stats.categories} 个分类</span>
-          <span>{stats.tags} 个标签</span>
-          <span>{stats.readingMinutes} 分钟阅读</span>
-        </div>
-      </div>
-    )}
-
-    {siteConfig.footer.customText && <div class="footer_custom_text">{siteConfig.footer.customText}</div>}
-
-    <div id="site-footer-grid">
-      {siteConfig.footer.groups.map((group) => (
-        <section class="footer-group">
-          <div class="footer-title-group">
-            <span class="footer-title">{group.title}</span>
-          </div>
-          <div class="footer-links">
-            {group.links.map((item) => (
+    <div class="footer-main-shell">
+      {siteConfig.theme.features.footerSocialBar && (
+        <div id="footer_deal">
+          {siteConfig.footer.socialBar.left.map((item) => {
+            const Icon = iconMap[item.icon ?? 'home'];
+            return (
               <a
-                class="footer-item"
+                class="deal_link"
                 href={item.href}
+                title={item.label}
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noreferrer' : undefined}
               >
-                {item.label}
+                <Icon class="footer-deal-icon" aria-hidden="true" />
               </a>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
+            );
+          })}
 
-    <p id="ghbdages">
-      {siteConfig.footer.badges.map((badge) => (
-        <span class="github-badge">{badge}</span>
-      ))}
-    </p>
+          <button type="button" class="footer_mini_logo" title="返回顶部" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+            <img alt={siteConfig.site.author.name} src={siteConfig.site.author.avatar} />
+          </button>
+
+          {siteConfig.footer.socialBar.right.map((item) => {
+            const Icon = iconMap[item.icon ?? 'home'];
+            return (
+              <a
+                class="deal_link"
+                href={item.href}
+                title={item.label}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
+              >
+                <Icon class="footer-deal-icon" aria-hidden="true" />
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+      {siteConfig.footer.customText && <div class="footer_custom_text">{siteConfig.footer.customText}</div>}
+
+      <div id="site-footer-grid">
+        {siteConfig.footer.groups.map((group) => (
+          <section class="footer-group">
+            <div class="footer-title-group">
+              <span class="footer-title">{group.title}</span>
+            </div>
+            <div class="footer-links">
+              {group.links.map((item) => (
+                <a
+                  class="footer-item"
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noreferrer' : undefined}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <p id="ghbdages">
+        {siteConfig.footer.badges.map((badge) => (
+          <span class="github-badge">{badge}</span>
+        ))}
+      </p>
+    </div>
   </div>
 
   <div id="footer-bar">

@@ -1,8 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUp, Languages, MoonStar, PanelRightClose, PanelRightOpen, Settings, Sparkles, SunMedium } from 'lucide-react';
-
-type ThemeMode = 'light' | 'dark';
-type AsideState = 'expanded' | 'collapsed';
+import {
+  applyThemeWithBackground,
+  readStorage,
+  resolveInitialBackground,
+  syncAside,
+  syncBackground,
+  type AsideState,
+  type ThemeMode,
+  writeStorage,
+} from '../lib/client-theme';
 type BackgroundMode = {
   id: string;
   label: string;
@@ -10,39 +17,9 @@ type BackgroundMode = {
 
 type ThemeDockProps = {
   defaultBackground: string;
+  darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
 };
-
-function readStorage(key: string) {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStorage(key: string, value: string) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {}
-}
-
-function syncTheme(nextTheme: ThemeMode) {
-  document.documentElement.dataset.theme = nextTheme;
-  writeStorage('shijianus-theme', nextTheme);
-  window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
-}
-
-function syncAside(nextAside: AsideState) {
-  document.documentElement.dataset.aside = nextAside;
-  writeStorage('shijianus-aside', nextAside);
-}
-
-function syncBackground(nextBackground: string) {
-  document.documentElement.dataset.background = nextBackground;
-  writeStorage('shijianus-background', nextBackground);
-  window.dispatchEvent(new CustomEvent('shijianus:backgroundchange', { detail: nextBackground }));
-}
 
 function calculateProgress() {
   const documentElement = document.documentElement;
@@ -51,7 +28,7 @@ function calculateProgress() {
   return Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100));
 }
 
-export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps) {
+export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }: ThemeDockProps) {
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
   const [background, setBackground] = useState(defaultBackground);
@@ -59,7 +36,7 @@ export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
-  const [nearFooter, setNearFooter] = useState(false);
+  const [footerOffset, setFooterOffset] = useState(0);
 
   const currentBackground = useMemo(() => {
     return backgroundModes.find((mode) => mode.id === background) ?? backgroundModes[0];
@@ -83,9 +60,11 @@ export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps
       (root.dataset.aside as AsideState | undefined) ??
       'expanded';
     const savedBackground =
-      readStorage('shijianus-background') ??
-      root.dataset.background ??
-      defaultBackground;
+      resolveInitialBackground(
+        savedTheme,
+        readStorage('shijianus-background') ?? root.dataset.background ?? null,
+        { defaultBackground, darkBackground },
+      );
     const savedLocaleVariant =
       (readStorage('shijianus-locale-variant') as 'zh-CN' | 'zh-Hant' | null) ?? 'zh-CN';
 
@@ -113,8 +92,20 @@ export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps
       setProgress(calculateProgress());
       setVisible(window.scrollY > 120);
       const footer = document.getElementById('footer');
-      if (!footer) return;
-      setNearFooter(footer.getBoundingClientRect().top < window.innerHeight - 24);
+      if (!footer) {
+        setFooterOffset(0);
+        return;
+      }
+
+      const footerRect = footer.getBoundingClientRect();
+      if (footerRect.top >= window.innerHeight) {
+        setFooterOffset(0);
+        return;
+      }
+
+      const overlap = Math.max(0, window.innerHeight - footerRect.top + 16);
+      const maxOffset = Math.max(0, Math.min(footerRect.height - 96, 320));
+      setFooterOffset(Math.min(overlap, maxOffset));
     };
 
     onScroll();
@@ -127,10 +118,14 @@ export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
     };
-  }, [defaultBackground]);
+  }, [darkBackground, defaultBackground]);
 
   return (
-    <div id="rightside" className={`${visible ? 'is-visible' : ''} ${nearFooter ? 'is-near-footer' : ''}`}>
+    <div
+      id="rightside"
+      className={`${visible ? 'is-visible' : ''} ${footerOffset > 0 ? 'is-near-footer' : ''}`}
+      style={{ bottom: `${20 + footerOffset}px` }}
+    >
       <div id="rightside-config-hide" className={configOpen ? 'show' : ''}>
         <button
           type="button"
@@ -151,16 +146,20 @@ export function ThemeDock({ defaultBackground, backgroundModes }: ThemeDockProps
           <Sparkles className="rightside-icon" aria-hidden="true" />
         </button>
 
-        <button
-          type="button"
-          id="darkmode"
-          title="Switch Display Mode"
-          onClick={() => {
-            const nextTheme = theme === 'dark' ? 'light' : 'dark';
-            syncTheme(nextTheme);
-            setTheme(nextTheme);
-          }}
-        >
+                <button
+                  type="button"
+                  id="darkmode"
+                  title="Switch Display Mode"
+                  onClick={() => {
+                    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                    const nextBackground = applyThemeWithBackground(nextTheme, {
+                      defaultBackground,
+                      darkBackground,
+                    });
+                    setTheme(nextTheme);
+                    setBackground(nextBackground);
+                  }}
+                >
           {theme === 'dark' ? (
             <SunMedium className="rightside-icon" aria-hidden="true" />
           ) : (

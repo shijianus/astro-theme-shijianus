@@ -4,6 +4,7 @@ import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
+import { ThemeUniverse } from '../components/ThemeUniverse';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import Sidebar from '../components/theme/Sidebar.astro';
@@ -83,6 +84,7 @@ const overlayFeatures = {
     )}
 
     <div id="web_bg" aria-hidden="true"></div>
+    <ThemeUniverse client:idle />
 
     <div class="page" id="body-wrap">
       <SiteHeader
@@ -122,6 +124,7 @@ const overlayFeatures = {
       <ThemeDock
         client:idle
         defaultBackground={siteConfig.theme.background.defaultMode}
+        darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
       />
       <ThemeOverlays
@@ -138,6 +141,7 @@ const overlayFeatures = {
         features={overlayFeatures}
         particleCount={siteConfig.theme.motion.heroParticles}
         defaultBackground={siteConfig.theme.background.defaultMode}
+        darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
       />
       <CodeBlockEnhancer />

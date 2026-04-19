@@ -16,6 +16,15 @@ import {
   Tags,
   X,
 } from 'lucide-react';
+import {
+  applyThemeWithBackground,
+  readStorage,
+  resolveInitialBackground,
+  syncAside,
+  syncBackground,
+  type AsideState,
+  type ThemeMode,
+} from '../lib/client-theme';
 
 type NavItem = {
   label: string;
@@ -43,8 +52,6 @@ export type OverlayArchiveItem = {
   count: number;
 };
 
-type ThemeMode = 'light' | 'dark';
-type AsideState = 'expanded' | 'collapsed';
 type BackgroundMode = {
   id: string;
   label: string;
@@ -73,39 +80,9 @@ type ThemeOverlaysProps = {
   };
   particleCount: number;
   defaultBackground: string;
+  darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
 };
-
-function readStorage(key: string) {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStorage(key: string, value: string) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {}
-}
-
-function syncTheme(nextTheme: ThemeMode) {
-  document.documentElement.dataset.theme = nextTheme;
-  writeStorage('shijianus-theme', nextTheme);
-  window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: nextTheme }));
-}
-
-function syncAside(nextAside: AsideState) {
-  document.documentElement.dataset.aside = nextAside;
-  writeStorage('shijianus-aside', nextAside);
-}
-
-function syncBackground(nextBackground: string) {
-  document.documentElement.dataset.background = nextBackground;
-  writeStorage('shijianus-background', nextBackground);
-  window.dispatchEvent(new CustomEvent('shijianus:backgroundchange', { detail: nextBackground }));
-}
 
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -129,6 +106,7 @@ export function ThemeOverlays({
   features,
   particleCount,
   defaultBackground,
+  darkBackground,
   backgroundModes,
 }: ThemeOverlaysProps) {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -184,9 +162,11 @@ export function ThemeOverlays({
       (document.documentElement.dataset.aside as AsideState | undefined) ??
       'expanded';
     const savedBackground =
-      readStorage('shijianus-background') ??
-      document.documentElement.dataset.background ??
-      defaultBackground;
+      resolveInitialBackground(
+        savedTheme,
+        readStorage('shijianus-background') ?? document.documentElement.dataset.background ?? null,
+        { defaultBackground, darkBackground },
+      );
 
     document.documentElement.dataset.theme = savedTheme;
     document.documentElement.dataset.aside = savedAside;
@@ -249,7 +229,7 @@ export function ThemeOverlays({
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('click', closeRightMenu);
     };
-  }, [defaultBackground, features.rightClickMenu, features.searchPanel]);
+  }, [darkBackground, defaultBackground, features.rightClickMenu, features.searchPanel]);
 
   useEffect(() => {
     document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen);
@@ -263,8 +243,12 @@ export function ThemeOverlays({
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    syncTheme(nextTheme);
+    const nextBackground = applyThemeWithBackground(nextTheme, {
+      defaultBackground,
+      darkBackground,
+    });
     setTheme(nextTheme);
+    setBackground(nextBackground);
   };
 
   const toggleAside = () => {

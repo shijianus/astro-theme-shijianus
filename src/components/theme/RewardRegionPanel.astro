@@ -1,0 +1,300 @@
+---
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  variant?: 'page' | 'panel';
+}
+
+const { variant = 'page' } = Astro.props;
+const reward = siteConfig.support.reward;
+---
+
+<div
+  class:list={['reward-region-panel', `reward-region-panel--${variant}`]}
+  data-reward-regions
+  data-geo-endpoint={reward.geoEndpoint}
+  data-storage-key={reward.storageKey}
+  data-auto-label={reward.detect.autoLabel}
+  data-auto-description={reward.detect.autoDescription}
+  data-manual-description={reward.detect.manualDescription}
+  data-reset-label={reward.detect.resetLabel}
+  data-unsupported-title={reward.detect.unsupportedTitle}
+  data-unsupported-description={reward.detect.unsupportedDescription}
+>
+  <div class="reward-region-panel__status">
+    <span class="reward-region-panel__eyebrow" data-reward-status-eyebrow>{reward.detect.autoLabel}</span>
+    <strong data-reward-status-title>正在识别你的地区</strong>
+    <p data-reward-status-description>{reward.detect.autoDescription}</p>
+    <button type="button" class="reward-region-panel__reset" data-reward-reset hidden>
+      {reward.detect.resetLabel}
+    </button>
+  </div>
+
+  <div class="reward-region-panel__layout">
+    <aside class="reward-region-panel__selector-shell" aria-label={reward.detect.switchLabel}>
+      <div class="reward-region-panel__selector-head">
+        <span>{reward.detect.switchLabel}</span>
+        <p>{reward.detect.manualDescription}</p>
+      </div>
+      <div class="reward-region-panel__selector">
+        {reward.regions.map((region) => (
+          <button
+            type="button"
+            class="reward-region-panel__option"
+            data-reward-region-option={region.id}
+            data-reward-region-label={region.label}
+            aria-pressed="false"
+          >
+            <span class="reward-region-panel__option-short">{region.shortLabel}</span>
+            <span class="reward-region-panel__option-copy">
+              <strong>{region.label}</strong>
+              <small>{region.description}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </aside>
+
+    <div class="reward-region-panel__content">
+      <section class="reward-region-panel__empty" data-reward-region-panel="unsupported" hidden>
+        <div class="reward-region-panel__empty-badge">!</div>
+        <div class="reward-region-panel__empty-copy">
+          <strong>{reward.detect.unsupportedTitle}</strong>
+          <p>{reward.detect.unsupportedDescription}</p>
+        </div>
+      </section>
+
+      {reward.regions.map((region) => (
+        <section class="reward-region-panel__region" data-reward-region-panel={region.id} hidden>
+          <div class="reward-region-panel__region-head">
+            <div>
+              <span class="reward-region-panel__region-eyebrow">{region.shortLabel}</span>
+              <strong>{region.label}</strong>
+              <p>{region.description}</p>
+            </div>
+          </div>
+
+          <div class="reward-channel-grid reward-channel-grid--region">
+            {region.channels.map((channel) => (
+              <article class="reward-channel-card reward-channel-card--region" style={`--channel-accent:${channel.accent};`}>
+                <div class="reward-channel-card__meta">
+                  <span class="reward-channel-card__short">{channel.shortLabel}</span>
+                  <div>
+                    <strong>{channel.label}</strong>
+                    <p>{channel.description}</p>
+                  </div>
+                </div>
+
+                <div class="reward-channel-card__qr reward-channel-card__qr--static">
+                  <img src={channel.qrImageSrc} alt={`${region.label} / ${channel.label} 打赏二维码`} loading="lazy" decoding="async" />
+                </div>
+
+                <div class="reward-channel-card__link reward-channel-card__link--static">
+                  直接扫码打赏
+                </div>
+
+                {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const roots = document.querySelectorAll('[data-reward-regions]');
+    if (!roots.length) return;
+
+    const COUNTRY_CACHE_KEY = 'shijianus-reward-country';
+    let countryPromise = null;
+
+    const safeSessionGet = (key) => {
+      try {
+        return window.sessionStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    };
+
+    const safeSessionSet = (key, value) => {
+      try {
+        window.sessionStorage.setItem(key, value);
+      } catch {}
+    };
+
+    const safeLocalGet = (key) => {
+      try {
+        return window.localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    };
+
+    const safeLocalSet = (key, value) => {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch {}
+    };
+
+    const safeLocalRemove = (key) => {
+      try {
+        window.localStorage.removeItem(key);
+      } catch {}
+    };
+
+    const fallbackCountryCode = () => {
+      const locale = (navigator.language || '').toLowerCase();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+
+      if (locale.includes('zh-cn') || timezone === 'Asia/Shanghai') return 'CN';
+      if (locale.includes('zh-hk') || timezone === 'Asia/Hong_Kong') return 'HK';
+      return '';
+    };
+
+    const detectCountryCode = async (endpoint) => {
+      const cached = safeSessionGet(COUNTRY_CACHE_KEY);
+      if (cached) return cached;
+
+      if (!countryPromise) {
+        countryPromise = (async () => {
+          try {
+            const response = await fetch(endpoint, {
+              headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error(`geo lookup failed: ${response.status}`);
+
+            const payload = await response.json();
+            const countryCode = typeof payload.country_code === 'string' ? payload.country_code.toUpperCase() : '';
+            if (countryCode) {
+              safeSessionSet(COUNTRY_CACHE_KEY, countryCode);
+              return countryCode;
+            }
+          } catch {}
+
+          const fallback = fallbackCountryCode();
+          if (fallback) safeSessionSet(COUNTRY_CACHE_KEY, fallback);
+          return fallback;
+        })();
+      }
+
+      return countryPromise;
+    };
+
+    const mapCountryToRegion = (countryCode) => {
+      if (countryCode === 'CN') return 'cn';
+      if (countryCode === 'HK') return 'hk';
+      return 'unsupported';
+    };
+
+    const countryLabel = (countryCode) => {
+      if (countryCode === 'CN') return 'China';
+      if (countryCode === 'HK') return 'HongKong';
+      return countryCode || 'Unknown';
+    };
+
+    const setRegionState = (root, region, source, countryCode = '') => {
+      const statusEyebrow = root.querySelector('[data-reward-status-eyebrow]');
+      const statusTitle = root.querySelector('[data-reward-status-title]');
+      const statusDescription = root.querySelector('[data-reward-status-description]');
+      const resetButton = root.querySelector('[data-reward-reset]');
+      const regionButtons = Array.from(root.querySelectorAll('[data-reward-region-option]'));
+      const regionPanels = Array.from(root.querySelectorAll('[data-reward-region-panel]'));
+      const activeButton = regionButtons.find((button) => button.dataset.rewardRegionOption === region);
+      const activeLabel = activeButton?.dataset.rewardRegionLabel || '';
+
+      regionButtons.forEach((button) => {
+        const isActive = button.dataset.rewardRegionOption === region;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+
+      regionPanels.forEach((panel) => {
+        const isActive = panel.dataset.rewardRegionPanel === region;
+        panel.hidden = !isActive;
+        panel.classList.toggle('is-active', isActive);
+      });
+
+      if (statusEyebrow instanceof HTMLElement) {
+        statusEyebrow.textContent = source === 'manual' ? '手动选择' : root.dataset.autoLabel || '按 IP 推荐';
+      }
+
+      if (statusTitle instanceof HTMLElement) {
+        if (region === 'unsupported') {
+          statusTitle.textContent = root.dataset.unsupportedTitle || '该地区暂不支援打赏';
+        } else if (source === 'manual') {
+          statusTitle.textContent = `已手动切换到 ${activeLabel} 区`;
+        } else {
+          statusTitle.textContent = `当前按 IP 推荐 ${activeLabel} 区`;
+        }
+      }
+
+      if (statusDescription instanceof HTMLElement) {
+        if (region === 'unsupported') {
+          statusDescription.textContent = root.dataset.unsupportedDescription || '该地区暂不支援打赏';
+        } else if (source === 'manual') {
+          statusDescription.textContent = root.dataset.manualDescription || '如果你的 IP 与实际地区不符，可以手动切换地区。';
+        } else if (countryCode) {
+          statusDescription.textContent = `检测到你的 IP 地区为 ${countryLabel(countryCode)}，已优先展示 ${activeLabel} 区的打赏方式。`;
+        } else {
+          statusDescription.textContent = root.dataset.autoDescription || '将优先根据你的 IP 默认展示地区化打赏方式。';
+        }
+      }
+
+      if (resetButton instanceof HTMLElement) {
+        resetButton.hidden = source !== 'manual';
+      }
+
+      root.dataset.rewardActiveRegion = region;
+      root.dataset.rewardSource = source;
+    };
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+
+      const geoEndpoint = root.dataset.geoEndpoint || 'https://ipapi.co/json/';
+      const storageKey = root.dataset.storageKey || 'shijianus-reward-region';
+      const regionButtons = Array.from(root.querySelectorAll('[data-reward-region-option]'));
+      const resetButton = root.querySelector('[data-reward-reset]');
+
+      const applyAutoState = async () => {
+        const statusTitle = root.querySelector('[data-reward-status-title]');
+        const statusDescription = root.querySelector('[data-reward-status-description]');
+
+        if (statusTitle instanceof HTMLElement) statusTitle.textContent = '正在识别你的地区';
+        if (statusDescription instanceof HTMLElement) {
+          statusDescription.textContent = root.dataset.autoDescription || '将优先根据你的 IP 默认展示地区化打赏方式。';
+        }
+
+        const countryCode = await detectCountryCode(geoEndpoint);
+        setRegionState(root, mapCountryToRegion(countryCode), 'auto', countryCode);
+      };
+
+      regionButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const region = button.dataset.rewardRegionOption;
+          if (!region) return;
+          safeLocalSet(storageKey, region);
+          setRegionState(root, region, 'manual');
+        });
+      });
+
+      if (resetButton instanceof HTMLElement) {
+        resetButton.addEventListener('click', () => {
+          safeLocalRemove(storageKey);
+          applyAutoState();
+        });
+      }
+
+      const savedRegion = safeLocalGet(storageKey);
+      if (savedRegion === 'cn' || savedRegion === 'hk') {
+        setRegionState(root, savedRegion, 'manual');
+        return;
+      }
+
+      applyAutoState();
+    });
+  })();
+</script>
