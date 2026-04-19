@@ -246,12 +246,24 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
 
   <div class="author-content">
     <div class="author-content-item single reward" id="about-reward">
-      <div class="author-content-item-tips">支持</div>
-      <span class="author-content-item-title">打赏与支持</span>
-      <div class="about-reward__summary">
-        <p>{siteConfig.support.reward.summary}</p>
+      <div class="about-reward__head">
+        <div class="about-reward__copy">
+          <div class="author-content-item-tips">支持</div>
+          <span class="author-content-item-title">打赏与支持</span>
+          <div class="about-reward__summary">
+            <p>{siteConfig.support.reward.summary}</p>
+          </div>
+        </div>
+        <div class="support-panel-actions support-panel-actions--page">
+          <a class="support-panel-link" href={siteConfig.support.reward.historyHref}>{siteConfig.support.reward.historyLabel}</a>
+          <span class="support-panel-note">{siteConfig.post.copyright.rewardNote}</span>
+        </div>
       </div>
       <RewardRegionPanel variant="page" />
+      <div class="about-reward__list-head">
+        <strong>支持记录</strong>
+        <p>文章页和关于页共用同一套地区化支持入口，这里保留统一的记录视图。</p>
+      </div>
       <div class="reward-list-all">
         {about.rewards.map((item) => (
           <div class="reward-list-item">

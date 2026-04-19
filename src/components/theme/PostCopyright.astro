@@ -73,7 +73,14 @@ const sharePlatforms = siteConfig.support.share.platforms;
   <div class="post-tools">
     <div class="post-tools-left">
       <div class="rewardLeftButton">
-        <button type="button" class="reward-link-button" data-panel-trigger="reward">
+        <button
+          type="button"
+          class="reward-link-button"
+          data-panel-trigger="reward"
+          aria-expanded="false"
+          aria-controls="post-tools-panel-reward"
+          aria-haspopup="dialog"
+        >
           <Heart class="post-tools__icon" aria-hidden="true" />
           <span>{rewardLabel}</span>
         </button>
@@ -90,7 +97,15 @@ const sharePlatforms = siteConfig.support.share.platforms;
     </div>
 
     <div class="shareRight">
-      <button type="button" class="share-button" title={siteConfig.support.share.qrcodeLabel} data-panel-trigger="wechat">
+      <button
+        type="button"
+        class="share-button"
+        title={siteConfig.support.share.qrcodeLabel}
+        data-panel-trigger="wechat"
+        aria-expanded="false"
+        aria-controls="post-tools-panel-wechat"
+        aria-haspopup="dialog"
+      >
         <Smartphone class="post-tools__icon" aria-hidden="true" />
         <span>扫码</span>
       </button>
@@ -108,7 +123,7 @@ const sharePlatforms = siteConfig.support.share.platforms;
   </div>
 
   <div class="post-tools-panels">
-    <div class="post-floating-panel" data-panel="reward" hidden>
+    <div class="post-floating-panel" id="post-tools-panel-reward" data-panel="reward" role="dialog" aria-label={rewardLabel} hidden>
       <div class="post-floating-panel__head">
         <div>
           <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
@@ -120,13 +135,20 @@ const sharePlatforms = siteConfig.support.share.platforms;
       </div>
       <p class="post-floating-panel__summary">{siteConfig.support.reward.summary}</p>
       <RewardRegionPanel variant="panel" />
-      <div class="post-floating-panel__footer">
-        <a href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
-        <span>{rewardNote}</span>
+      <div class="post-floating-panel__footer support-panel-actions">
+        <a class="support-panel-link" href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
+        <span class="support-panel-note">{rewardNote}</span>
       </div>
     </div>
 
-    <div class="post-floating-panel" data-panel="wechat" hidden>
+    <div
+      class="post-floating-panel"
+      id="post-tools-panel-wechat"
+      data-panel="wechat"
+      role="dialog"
+      aria-label={siteConfig.support.share.qrcodeLabel}
+      hidden
+    >
       <div class="post-floating-panel__head">
         <div>
           <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
@@ -179,8 +201,13 @@ const sharePlatforms = siteConfig.support.share.platforms;
     <div class="tag_share">
       <div class="post-meta__box">
         <div class="post-meta__box__heading">
+          <span class="post-meta__box__eyebrow">{siteConfig.support.share.title}</span>
           <span class="post-meta__box__title">{copyrightTitle}</span>
           <p>{rewardDescription}</p>
+        </div>
+        <div class="post-meta__box__actions support-panel-actions">
+          <a class="support-panel-link" href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
+          <span class="support-panel-note">{rewardNote}</span>
         </div>
 
         <div class="post-meta__box__category-list">
@@ -217,7 +244,6 @@ const sharePlatforms = siteConfig.support.share.platforms;
         ))}
       </div>
     </div>
-    <p class="post-share-actions__note">{rewardNote}</p>
   </div>
 </section>
 
@@ -260,6 +286,9 @@ const sharePlatforms = siteConfig.support.share.platforms;
       const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
       const status = section.querySelector('.post-tools__status');
       const panels = Array.from(section.querySelectorAll('[data-panel]')).filter((node) => node instanceof HTMLElement);
+      const panelControllers = Array.from(
+        section.querySelectorAll('[data-panel-trigger], [data-share-platform="wechat"]'),
+      ).filter((node) => node instanceof HTMLElement);
       let statusTimer = 0;
 
       const setStatus = (message) => {
@@ -272,20 +301,37 @@ const sharePlatforms = siteConfig.support.share.platforms;
         }, 2200);
       };
 
+      const syncPanelControllers = (activePanel = '') => {
+        panelControllers.forEach((control) => {
+          const panelName =
+            control.getAttribute('data-panel-trigger') || (control.getAttribute('data-share-platform') === 'wechat' ? 'wechat' : '');
+          if (!panelName) return;
+          control.setAttribute('aria-expanded', String(activePanel === panelName));
+        });
+      };
+
       const closePanels = () => {
         panels.forEach((panel) => {
           panel.hidden = true;
           panel.classList.remove('is-open');
         });
+        syncPanelControllers();
       };
 
       const togglePanel = (name) => {
+        const targetPanel = panels.find((panel) => panel.dataset.panel === name);
+        const shouldOpen = Boolean(targetPanel && targetPanel.hidden);
+
         panels.forEach((panel) => {
-          const shouldOpen = panel.dataset.panel === name && panel.hidden;
-          panel.hidden = !shouldOpen;
-          panel.classList.toggle('is-open', shouldOpen);
+          const isActive = shouldOpen && panel.dataset.panel === name;
+          panel.hidden = !isActive;
+          panel.classList.toggle('is-open', isActive);
         });
+
+        syncPanelControllers(shouldOpen ? name : '');
       };
+
+      syncPanelControllers();
 
       const buildShareUrl = (platform) => {
         const encodedUrl = encodeURIComponent(permalink);
@@ -401,6 +447,11 @@ const sharePlatforms = siteConfig.support.share.platforms;
 
       window.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') closePanels();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Node)) return;
+        if (!section.contains(event.target)) closePanels();
       });
     });
   })();
