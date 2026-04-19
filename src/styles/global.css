@@ -1781,26 +1781,29 @@ html.theme-ready body.theme-body #footer {
 #category-bar {
   display: flex;
   align-items: center;
-  min-height: 48px;
-  padding: 8px;
+  min-height: 58px;
+  padding: 10px 12px;
   overflow: hidden;
-  border: var(--style-border-always);
-  border-radius: var(--radius-md);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-border);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, rgba(255, 255, 255, 0.32)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--theme-main) 8%, transparent), transparent 28%);
+  box-shadow: 0 18px 34px -30px rgba(14, 20, 36, 0.34);
 }
 
 #catalog-bar {
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 8px;
+  gap: 10px;
 }
 
 #catalog-list {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 2px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -1814,27 +1817,35 @@ html.theme-ready body.theme-body #footer {
 .catalog-more {
   display: inline-flex;
   align-items: center;
-  height: 32px;
-  padding: 0 14px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
-  background: var(--secondbg);
+  background: color-mix(in srgb, var(--secondbg) 86%, transparent);
   color: var(--font-color);
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
+  transition:
+    background 0.28s ease,
+    color 0.28s ease,
+    border-color 0.28s ease,
+    transform 0.28s ease;
 }
 
 .catalog-list-item.is-active a,
 .catalog-list-item a:hover,
 .category-bar-next:hover,
 .catalog-more:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 28%, transparent);
   background: var(--theme-main);
   color: var(--white);
+  transform: translateY(-1px);
 }
 
 .category-bar-next {
   justify-content: center;
-  min-width: 32px;
+  min-width: 36px;
 }
 
 .catalog-more {
@@ -1852,25 +1863,30 @@ html.theme-ready body.theme-body #footer {
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 18em;
+  min-height: 19rem;
   overflow: hidden;
-  border: var(--style-border-always);
-  border-radius: var(--radius-md);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-border);
-  transition: all 0.3s ease 0s;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 97%, rgba(255, 255, 255, 0.3)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--theme-main) 7%, transparent), transparent 26%);
+  box-shadow: 0 20px 40px -34px rgba(14, 20, 36, 0.34);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 #recent-posts > .recent-post-item:hover {
-  border: var(--style-border-hover);
-  box-shadow: var(--shadow-main);
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-main) 56%, var(--card-border));
+  box-shadow: 0 26px 52px -38px color-mix(in srgb, var(--theme-main) 22%, rgba(14, 20, 36, 0.58));
+  transform: translateY(-4px);
 }
 
 #recent-posts > .recent-post-item .post_cover {
   position: relative;
   display: block;
-  width: 70%;
+  width: 58%;
   height: 100%;
   overflow: hidden;
 }
@@ -1888,41 +1904,56 @@ html.theme-ready body.theme-body #footer {
 }
 
 #recent-posts > .recent-post-item:hover img.post_bg {
-  filter: brightness(0.82);
-  transform: scale(1.03);
+  filter: brightness(0.86);
+  transform: scale(1.04);
   transition: 0.3s ease-in-out;
 }
 
 #recent-posts > .recent-post-item > .recent-post-info {
   position: relative;
-  display: inline-block;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 14px;
   width: 100%;
-  height: 174px;
-  padding: 0;
+  height: 100%;
+  padding: 24px 28px 22px;
   overflow: hidden;
   cursor: pointer;
 }
 
 #recent-posts > .recent-post-item .recent-post-info-top {
-  position: relative;
+  display: grid;
+  gap: 12px;
   width: 100%;
-  padding: 0 32px;
-  transition: 0.3s;
 }
 
 #recent-posts > .recent-post-item .recent-post-info-top-tips {
   display: flex;
-  min-height: 22px;
-  margin-top: 20px;
+  align-items: center;
+  min-height: 0;
   gap: 8px;
 }
 
 #recent-posts > .recent-post-item .newPost,
 #recent-posts > .recent-post-item .unvisited-post {
-  position: relative;
-  display: flex;
-  color: var(--secondtext);
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--secondbg) 82%, transparent);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+#recent-posts > .recent-post-item .newPost {
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
+  color: var(--theme-main);
 }
 
 #recent-posts > .recent-post-item .article-title {
@@ -1931,9 +1962,9 @@ html.theme-ready body.theme-body #footer {
   margin: 0;
   overflow: hidden;
   color: var(--font-color);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
-  line-height: 30px;
+  line-height: 1.38;
   transition: 0.3s;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1944,15 +1975,11 @@ html.theme-ready body.theme-body #footer {
 }
 
 #recent-posts > .recent-post-item > .recent-post-info > .article-meta-wrap {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+  position: static;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 32px;
+  gap: 6px;
+  width: auto;
   color: var(--font-color);
   font-size: 0.7rem;
   transition: 0.3s;
@@ -1961,7 +1988,7 @@ html.theme-ready body.theme-body #footer {
 #recent-posts > .recent-post-item .post-meta-date {
   overflow: hidden;
   color: var(--font-color);
-  font-size: 0.875rem;
+  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1969,8 +1996,10 @@ html.theme-ready body.theme-body #footer {
 #recent-posts > .recent-post-item .article-meta {
   overflow: hidden;
   color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 #recent-posts > .recent-post-item .article-meta-label {
@@ -1983,36 +2012,41 @@ html.theme-ready body.theme-body #footer {
 }
 
 #recent-posts > .recent-post-item > .recent-post-info > .content {
-  position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 58px;
+  position: static;
   display: -webkit-box;
   margin: 0;
   overflow: hidden;
   color: var(--secondtext);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.78;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
 }
 
 .post-card-tags {
-  position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 22px;
+  position: static;
   display: flex;
   flex-wrap: wrap;
+  margin-top: auto;
   gap: 6px;
-  opacity: 0;
-  transform: translateY(8px);
+  opacity: 1;
   transition: 0.3s;
 }
 
-#recent-posts > .recent-post-item:hover .post-card-tags {
-  opacity: 1;
-  transform: translateY(0);
+:root[data-theme='dark'][data-background='starfield'] body[data-type='home'] #category-bar,
+:root[data-theme='dark'][data-background='starfield'] body[data-type='home'] #recent-posts > .recent-post-item {
+  border-color: color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 84%, #0d1528), color-mix(in srgb, var(--card-bg) 94%, #050811)),
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--theme-main) 12%, transparent), transparent 34%);
+}
+
+:root[data-theme='dark'][data-background='starfield'] body[data-type='home'] #category-bar {
+  box-shadow: 0 26px 44px -38px rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme='dark'][data-background='starfield'] body[data-type='home'] #recent-posts > .recent-post-item {
+  box-shadow: 0 26px 48px -36px rgba(0, 0, 0, 0.72);
 }
 
 #aside-content {
