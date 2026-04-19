@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
+import PostNav from '../../components/theme/PostNav.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
@@ -37,6 +38,9 @@ const { Content, headings } = await render(entry);
 const relatedPosts = getRelatedPosts(allPosts, entry, 3);
 const sidebarData = createSidebarData(allPosts, headings);
 sidebarData.recentPosts = allPosts.filter((post) => post.id !== entry.id);
+const postIndex = allPosts.findIndex((post) => post.id === entry.id);
+const previousPost = postIndex > 0 ? allPosts[postIndex - 1] : null;
+const nextPost = postIndex >= 0 && postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null;
 
 const wordCount = estimateWordCount(entry);
 const meta = [
@@ -98,6 +102,8 @@ const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)
       tags={entry.data.tags}
     />
   )}
+
+  <PostNav previousPost={previousPost} nextPost={nextPost} />
 
   {siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
     <RelatedPosts

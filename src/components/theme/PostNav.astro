@@ -1,0 +1,60 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+import { formatDisplayDate } from '../../lib/theme';
+
+interface Props {
+  previousPost?: CollectionEntry<'posts'> | null;
+  nextPost?: CollectionEntry<'posts'> | null;
+}
+
+const { previousPost = null, nextPost = null } = Astro.props;
+
+const items = [
+  previousPost && {
+    post: previousPost,
+    label: '上一篇',
+    hint: '较新文章',
+  },
+  nextPost && {
+    post: nextPost,
+    label: '下一篇',
+    hint: '较早文章',
+  },
+].filter(Boolean) as {
+  post: CollectionEntry<'posts'>;
+  label: string;
+  hint: string;
+}[];
+---
+
+{items.length > 0 && (
+  <section class="postNav">
+    <div class="postNav__head">
+      <div class="postNav__heading">
+        <p class="eyebrow">阅读导航</p>
+        <h2 class="postNav__title">上一篇 / 下一篇</h2>
+      </div>
+      <div class="postNav__meta">
+        <span>{items.length} 个跳转入口</span>
+      </div>
+    </div>
+
+    <div class="postNav-list" style={`--post-nav-columns:${items.length};`}>
+      {items.map(({ post, label, hint }) => (
+        <a class="postNav-card" href={getPostPath(post)}>
+          <img src={resolveCover(post)} alt={resolveCoverAlt(post)} loading="lazy" />
+          <span class="postNav-card__edge">{label}</span>
+          <div class="postNav-card__content">
+            <div class="postNav-card__meta">
+              <span class="postNav-card__hint">{hint}</span>
+              <span class="postNav-card__date">{formatDisplayDate(post.data.pubDate)}</span>
+            </div>
+            <div class="postNav-card__title">{post.data.title}</div>
+            <div class="postNav-card__category">{resolveCategory(post)}</div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+)}
