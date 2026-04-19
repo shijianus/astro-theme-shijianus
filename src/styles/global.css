@@ -1672,6 +1672,103 @@ html.theme-ready body.theme-body #footer {
   line-height: 1.4;
 }
 
+:root[data-theme='dark'] .topGroup__stack-back {
+  border-color: rgba(122, 145, 198, 0.18);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.76), rgba(9, 13, 22, 0.86)),
+    radial-gradient(circle at 80% 18%, rgba(79, 114, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 24% 82%, rgba(242, 185, 75, 0.12), transparent 26%);
+  box-shadow: 0 22px 34px -26px rgba(0, 0, 0, 0.62);
+}
+
+:root[data-theme='dark'] .topGroup .todayCard {
+  border-color: rgba(128, 150, 212, 0.2);
+  background:
+    linear-gradient(180deg, rgba(17, 24, 38, 0.6), rgba(7, 10, 18, 0.18)),
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.08), transparent 22%);
+  box-shadow: 0 30px 42px -24px rgba(0, 0, 0, 0.68);
+}
+
+:root[data-theme='dark'] .topGroup .todayCard::after {
+  background:
+    linear-gradient(180deg, rgba(6, 10, 18, 0.06), rgba(6, 10, 18, 0.2) 26%, rgba(5, 8, 16, 0.88) 100%),
+    radial-gradient(circle at 82% 18%, rgba(166, 210, 255, 0.15), transparent 24%);
+}
+
+:root[data-theme='dark'] .todayCard__panel-label {
+  background: rgba(8, 14, 26, 0.34);
+  color: rgba(255, 248, 231, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme='dark'] .topGroup .todayCard-tips {
+  color: rgba(255, 248, 231, 0.74);
+}
+
+:root[data-theme='dark'] .topGroup .todayCard-info p {
+  color: rgba(226, 232, 248, 0.72);
+}
+
+:root[data-theme='dark'] .topGroup .banner-button {
+  background: rgba(9, 14, 26, 0.34);
+}
+
+:root[data-theme='dark'] .todayCard__footer {
+  border-top-color: rgba(255, 255, 255, 0.11);
+  color: rgba(215, 223, 242, 0.62);
+}
+
+:root[data-theme='dark'] .topGroup .recent-post-item {
+  border-color: rgba(122, 145, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(16, 22, 36, 0.88), rgba(10, 14, 24, 0.96)),
+    radial-gradient(circle at 80% 0, rgba(79, 114, 255, 0.1), transparent 24%);
+  box-shadow: 0 18px 28px -24px rgba(0, 0, 0, 0.62);
+}
+
+:root[data-theme='dark'] .topGroup span.recent-post-top-text {
+  background: rgba(7, 12, 24, 0.8);
+  color: rgba(255, 247, 227, 0.95);
+}
+
+:root[data-theme='dark'] .topGroup .recent-post-item:hover img {
+  filter: brightness(0.72);
+}
+
+:root[data-theme='dark'] .top-post-card__eyebrow,
+:root[data-theme='dark'] .top-post-card__meta {
+  color: rgba(209, 217, 235, 0.64);
+}
+
+:root[data-theme='dark'][data-background='starfield'] .topGroup__stack-back {
+  border-color: rgba(117, 143, 218, 0.22);
+  background:
+    linear-gradient(180deg, rgba(12, 18, 30, 0.74), rgba(6, 10, 18, 0.9)),
+    radial-gradient(circle at 82% 16%, rgba(103, 148, 255, 0.24), transparent 30%),
+    radial-gradient(circle at 18% 84%, rgba(242, 185, 75, 0.12), transparent 26%);
+}
+
+:root[data-theme='dark'][data-background='starfield'] .topGroup .todayCard {
+  border-color: rgba(123, 151, 232, 0.22);
+  background:
+    linear-gradient(180deg, rgba(10, 16, 28, 0.5), rgba(4, 7, 14, 0.18)),
+    radial-gradient(circle at 80% 16%, rgba(166, 210, 255, 0.13), transparent 24%);
+  box-shadow: 0 34px 46px -24px rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme='dark'][data-background='starfield'] .topGroup .todayCard::after {
+  background:
+    linear-gradient(180deg, rgba(7, 11, 20, 0.04), rgba(7, 11, 20, 0.18) 26%, rgba(4, 7, 14, 0.92) 100%),
+    radial-gradient(circle at 82% 16%, rgba(144, 198, 255, 0.18), transparent 26%);
+}
+
+:root[data-theme='dark'][data-background='starfield'] .topGroup .recent-post-item {
+  border-color: rgba(117, 143, 218, 0.18);
+  background:
+    linear-gradient(180deg, rgba(13, 19, 31, 0.9), rgba(7, 10, 18, 0.98)),
+    radial-gradient(circle at 84% 0, rgba(79, 114, 255, 0.14), transparent 24%);
+}
+
 .home-feed-head {
   animation: slide-in 0.6s 0.25s backwards;
 }
