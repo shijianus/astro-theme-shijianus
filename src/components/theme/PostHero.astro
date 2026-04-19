@@ -8,6 +8,14 @@ interface Props {
 }
 
 const { title, image, imageAlt, badges = [], meta = [] } = Astro.props;
+const metaItems = meta.map((item) => {
+  const [label, ...rest] = item.split(' ');
+
+  return {
+    label,
+    value: rest.join(' ') || item,
+  };
+});
 ---
 
 <section class="post-hero">
@@ -24,12 +32,18 @@ const { title, image, imageAlt, badges = [], meta = [] } = Astro.props;
       </div>
     )}
 
-    <h1>{title}</h1>
+    <div class="post-hero__title-block">
+      <span class="post-hero__eyebrow">post overview</span>
+      <h1>{title}</h1>
+    </div>
 
-    {meta.length > 0 && (
-      <div class="post-hero__meta">
-        {meta.map((item) => (
-          <span>{item}</span>
+    {metaItems.length > 0 && (
+      <div class="post-hero__meta-grid">
+        {metaItems.map((item) => (
+          <div class="post-hero__meta-card">
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
         ))}
       </div>
     )}

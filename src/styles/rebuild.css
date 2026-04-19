@@ -73,13 +73,12 @@ body[data-type='tag-detail'] .page-main {
   justify-content: center;
   gap: 18px;
   min-height: 420px;
-  max-width: 860px;
+  max-width: 940px;
   padding: 112px 56px 110px;
   animation: post-info-slide-in 0.6s 0.16s backwards;
 }
 
-.post-hero__badges,
-.post-hero__meta {
+.post-hero__badges {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 10px;
@@ -104,6 +103,27 @@ body[data-type='tag-detail'] .page-main {
   color: var(--theme-main);
 }
 
+.post-hero__title-block {
+  display: grid;
+  gap: 12px;
+}
+
+.post-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+
 .post-hero h1 {
   margin: 0;
   color: var(--white);
@@ -113,9 +133,40 @@ body[data-type='tag-detail'] .page-main {
   text-shadow: 0 14px 42px rgba(0, 0, 0, 0.24);
 }
 
-.post-hero__meta span {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 13px;
+.post-hero__meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 840px;
+}
+
+.post-hero__meta-card {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+  padding: 16px 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08)),
+    rgba(15, 20, 30, 0.24);
+  box-shadow: 0 18px 34px -28px rgba(9, 12, 18, 0.34);
+  backdrop-filter: blur(14px);
+}
+
+.post-hero__meta-card span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.post-hero__meta-card strong {
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .post-hero__waves {
@@ -4455,12 +4506,31 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
     text-align: center;
   }
 
+  .post-hero__title-block {
+    justify-items: center;
+  }
+
   .post-hero h1 {
     font-size: 1.75rem;
   }
 
-  .post-hero__meta span {
-    font-size: 11px;
+  .post-hero__meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .post-hero__meta-card {
+    min-height: 84px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .post-hero__meta-card span {
+    font-size: 10px;
+  }
+
+  .post-hero__meta-card strong {
+    font-size: 0.92rem;
   }
 
   .post-hero__image {
