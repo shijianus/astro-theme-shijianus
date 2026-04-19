@@ -224,6 +224,11 @@ export function PostComments({
   });
   const providerMountRef = useRef<HTMLDivElement>(null);
   const providerCleanupRef = useRef<(() => void) | null>(null);
+  const providerShellSummary = selectedExternalProvider
+    ? remoteProvider
+      ? `当前页面已经切换到 ${getProviderName(selectedExternalProvider)} 外接评论模式，真实评论流会直接挂载到右侧区域，本地评论板不会同时渲染。`
+      : `当前页面已经切换到 ${getProviderName(selectedExternalProvider)} 外接评论模式，本地评论板不会同时渲染；补齐 provider 参数后，真实评论流会直接挂载到右侧区域。`
+    : '';
   const localBoardSummary = cloudflareEnabled
     ? '当前以本地评论板作为主交互层，提交后会立即写入本地状态，并继续同步到 Cloudflare 评论接口，方便保持本地 DB 测试和真实评论流的接近感。'
     : '当前以本地评论板作为主交互层，在浏览器内保留留言、预览和输入状态，用来继续对齐评论区的布局、交互和反馈。';
@@ -483,7 +488,21 @@ export function PostComments({
           <div className="comment-provider-shell__intro">
             <span className="comment-surface__eyebrow">external comment provider</span>
             <h3>{getProviderName(selectedExternalProvider)}</h3>
-            <p>当前页面已经切换到外接评论模式，本地评论板不会同时渲染。补全 provider 参数后，会直接挂载真实评论流。</p>
+            <p>{providerShellSummary}</p>
+            <div className="comment-provider-shell__status-grid">
+              <div className="comment-provider-shell__status-card">
+                <span>当前模式</span>
+                <strong>外接评论</strong>
+              </div>
+              <div className="comment-provider-shell__status-card">
+                <span>接入状态</span>
+                <strong>{remoteProvider ? getExternalProviderStatusLabel(providerStatus) : '等待配置'}</strong>
+              </div>
+              <div className="comment-provider-shell__status-card">
+                <span>渲染策略</span>
+                <strong>单模式挂载</strong>
+              </div>
+            </div>
             <div className="comment-surface__tips">
               <span>{getExternalProviderStatusLabel(providerStatus)}</span>
               <span>{getProviderName(selectedExternalProvider)}</span>
@@ -492,6 +511,12 @@ export function PostComments({
           </div>
 
           <div className="comment-provider-shell__card">
+            <div className="comment-provider-shell__card-head">
+              <span className="comment-provider-shell__eyebrow">provider mount</span>
+              <span className="comment-provider-shell__mount-note">
+                {remoteProvider ? '真实评论流会直接渲染在此区域' : '等待补齐 provider 参数'}
+              </span>
+            </div>
             <div className={`comment-provider-shell__status is-${providerStatus}`}>
               {providerStatus === 'loading' && `正在加载 ${getProviderName(selectedExternalProvider)}...`}
               {providerStatus === 'ready' && `${getProviderName(selectedExternalProvider)} 已加载`}
@@ -501,8 +526,14 @@ export function PostComments({
             <div ref={providerMountRef} className="comment-provider-shell__mount">
               {!remoteProvider && (
                 <div className="comment-provider-shell__placeholder">
+                  <span className="comment-provider-shell__eyebrow">setup required</span>
                   <strong>{getProviderName(selectedExternalProvider)} 配置尚未补全</strong>
                   <p>补齐仓库、分类或服务端参数后，这里会直接挂载外接评论系统，不再同时显示本地评论板。</p>
+                  <div className="comment-provider-shell__placeholder-meta">
+                    <span>外接模式</span>
+                    <span>等待配置</span>
+                    <span>不回落到本地评论板</span>
+                  </div>
                 </div>
               )}
             </div>
