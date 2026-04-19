@@ -14,14 +14,20 @@ const { posts, eyebrow, title } = Astro.props;
 
 <section class="relatedPosts">
   <div class="relatedPosts__head">
-    <p class="eyebrow">{eyebrow}</p>
-    <h2 class="relatedPosts__title">{title}</h2>
+    <div class="relatedPosts__heading">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 class="relatedPosts__title">{title}</h2>
+    </div>
+    <div class="relatedPosts__meta">
+      <span>{posts.length} 篇延伸阅读</span>
+    </div>
   </div>
 
   <div class="relatedPosts-list">
-    {posts.map((post) => (
+    {posts.map((post, index) => (
       <a class="relatedPosts-item" href={getPostPath(post)}>
         <img src={resolveCover(post)} alt={resolveCoverAlt(post)} loading="lazy" />
+        <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
         <div class="content">
           <div class="date">{formatDisplayDate(post.data.pubDate)}</div>
           <div class="title">{post.data.title}</div>
