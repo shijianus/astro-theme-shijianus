@@ -1120,6 +1120,37 @@ body[data-type='tag-detail'] .page-main {
   overflow: hidden;
 }
 
+body[data-type='post'] :is(.postNav, .relatedPosts, #post-comment) {
+  isolation: isolate;
+  scroll-margin-top: 108px;
+}
+
+body[data-type='post'] :is(.postNav, .relatedPosts, #post-comment)::before {
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-main) 24%, var(--card-border)) 18%, color-mix(in srgb, var(--theme-main) 10%, var(--card-border)) 82%, transparent);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+body[data-type='post'] .postNav + .relatedPosts,
+body[data-type='post'] .relatedPosts + #post-comment {
+  margin-top: 18px;
+}
+
+body[data-type='post'] main.page-main > script + astro-island {
+  display: block;
+  margin-top: 18px;
+}
+
+body[data-type='post'] main.page-main > astro-island > #post-comment {
+  margin-top: 0;
+}
+
 .postNav__head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1279,6 +1310,10 @@ body[data-type='tag-detail'] .page-main {
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 84%, #0d1528), color-mix(in srgb, var(--card-bg) 96%, #050811)),
     radial-gradient(circle at 100% 0, color-mix(in srgb, var(--theme-main) 12%, transparent), transparent 34%);
   box-shadow: 0 28px 48px -40px rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme='dark'][data-background='starfield'] body[data-type='post'] :is(.postNav, .relatedPosts, #post-comment)::before {
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-main) 34%, rgba(255, 255, 255, 0.12)) 18%, color-mix(in srgb, var(--theme-main) 14%, rgba(255, 255, 255, 0.06)) 82%, transparent);
 }
 
 :root[data-theme='dark'][data-background='starfield'] body[data-type='post'] .postNav__meta {
@@ -4028,6 +4063,11 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
     grid-template-columns: minmax(0, 1fr);
   }
 
+  body[data-type='post'] :is(.postNav, .relatedPosts, #post-comment)::before {
+    left: 18px;
+    right: 18px;
+  }
+
   #post-comment .comment-head {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -4076,6 +4116,15 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
     gap: 20px;
     padding: 24px 18px;
     border-radius: 24px;
+  }
+
+  body[data-type='post'] .postNav + .relatedPosts,
+  body[data-type='post'] .relatedPosts + #post-comment {
+    margin-top: 16px;
+  }
+
+  body[data-type='post'] main.page-main > script + astro-island {
+    margin-top: 16px;
   }
 
   .postNav__head {
