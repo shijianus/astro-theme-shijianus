@@ -66,15 +66,15 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
         </div>
 
         <div id="random-hover">
-          <span class="random-hover__icon-wrap">
-            <span class="random-hover__icon">{topDeck.hoverMonogram}</span>
-          </span>
-          <span class="random-hover__copy">
-            <span class="bannerText">
-              <span>{topDeck.hoverActionLabel}</span>
-              <span class="bannerText__arrow">→</span>
+          <span class="random-hover__lead">
+            <span class="random-hover__icon" aria-hidden="true">{topDeck.hoverMonogram}</span>
+            <span class="random-hover__body">
+              <span class="bannerText">
+                <span class="bannerText__label">{topDeck.hoverActionLabel}</span>
+                <span class="bannerText__arrow" aria-hidden="true">→</span>
+              </span>
+              <span class="random-hover__hint">{topDeck.hoverActionHint}</span>
             </span>
-            <span class="random-hover__hint">{topDeck.hoverActionHint}</span>
           </span>
         </div>
       </a>

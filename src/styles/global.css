@@ -1100,50 +1100,44 @@ html.theme-ready body.theme-body #footer {
   position: absolute;
   inset: 0;
   z-index: 2;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 0 2.25rem;
+  padding: 0 2.2rem 0 1.1rem;
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 96%, #0c1222), color-mix(in srgb, var(--theme-deep) 82%, #05070d)),
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.12), transparent 22%);
   color: var(--white);
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease, padding-left 0.4s ease, background 0.4s ease;
+  transition: opacity 0.35s ease, padding-left 0.35s ease, background 0.35s ease;
 }
 
 #random-banner:hover #random-hover {
-  padding-left: 2.6rem;
+  padding-left: 2rem;
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 86%, #06101f), color-mix(in srgb, var(--theme-deep) 76%, #04070f)),
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.12), transparent 22%);
   opacity: 1;
-  transform: translateY(0);
   backdrop-filter: blur(15px);
 }
 
-.random-hover__icon-wrap {
-  display: inline-flex;
+.random-hover__lead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  width: 92px;
-  height: 92px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  gap: clamp(14px, 2vw, 24px);
+  min-width: 0;
+  max-width: min(100%, 34rem);
 }
 
 .random-hover__icon {
-  font-size: clamp(2.8rem, 4vw, 4rem);
+  font-size: clamp(4.1rem, 5.6vw, 5.9rem);
   font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1;
+  letter-spacing: -0.08em;
+  line-height: 0.85;
+  text-shadow: 0 14px 30px rgba(7, 13, 28, 0.2);
 }
 
-.random-hover__copy {
+.random-hover__body {
   display: grid;
   gap: 10px;
   min-width: 0;
@@ -1151,43 +1145,58 @@ html.theme-ready body.theme-body #footer {
 
 .bannerText {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
   max-width: 100%;
-  font-size: clamp(2rem, 3vw, 3rem);
+  min-width: 0;
+}
+
+.bannerText__label {
+  display: block;
+  max-width: 10ch;
+  font-size: clamp(2.1rem, 3.1vw, 3.15rem);
   font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 0.94;
+  text-wrap: balance;
 }
 
 .bannerText__arrow {
-  margin-left: 0;
-  font-size: clamp(2rem, 3.2vw, 3.2rem);
+  flex: 0 0 auto;
+  font-size: clamp(2.1rem, 3vw, 3.1rem);
   line-height: 1;
+  transform: translateY(-0.06em);
 }
 
 .random-hover__hint {
-  max-width: 28ch;
+  max-width: 24ch;
   color: rgba(255, 255, 255, 0.78);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.5;
-  white-space: normal;
 }
 
 @media screen and (max-width: 1320px) {
-  #random-hover {
-    gap: 16px;
+  .random-hover__lead {
+    gap: 14px;
+    max-width: 27rem;
   }
 
-  .random-hover__icon-wrap {
-    width: 76px;
-    height: 76px;
-    border-radius: 24px;
+  .random-hover__icon {
+    font-size: clamp(3.6rem, 4.8vw, 4.6rem);
+  }
+
+  .bannerText__label {
+    max-width: 9ch;
+    font-size: clamp(1.9rem, 2.7vw, 2.55rem);
+  }
+
+  .bannerText__arrow {
+    font-size: clamp(1.9rem, 2.6vw, 2.5rem);
   }
 
   .random-hover__hint {
-    max-width: 22ch;
+    max-width: 20ch;
+    font-size: 13px;
   }
 }
 
