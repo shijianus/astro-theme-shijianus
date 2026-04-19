@@ -586,18 +586,23 @@ export function PostComments({
 
           <div className="comment-thread">
             {comments.length > 0 ? (
-              comments.map((comment) => (
+              comments.map((comment, index) => (
                 <article className="comment-thread__item" key={comment.id}>
                   <div className="comment-thread__avatar">{comment.name.slice(0, 1).toUpperCase()}</div>
                   <div className="comment-thread__content">
-                    <div className="comment-thread__meta">
-                      <strong>{comment.name}</strong>
-                      <time>{new Date(comment.createdAt).toLocaleString('zh-CN')}</time>
-                      {comment.website && (
-                        <a href={comment.website} target="_blank" rel="noreferrer">
-                          {comment.website.replace(/^https?:\/\//, '')}
-                        </a>
-                      )}
+                    <div className="comment-thread__head">
+                      <div className="comment-thread__author">
+                        <strong>{comment.name}</strong>
+                        {comment.website && (
+                          <a className="comment-thread__site" href={comment.website} target="_blank" rel="noreferrer">
+                            {comment.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        )}
+                      </div>
+                      <div className="comment-thread__meta">
+                        <span className="comment-thread__floor">NO.{String(index + 1).padStart(2, '0')}</span>
+                        <time>{new Date(comment.createdAt).toLocaleString('zh-CN')}</time>
+                      </div>
                     </div>
                     <div className="comment-thread__body">
                       {comment.message.split(/\n+/).map((item) => (
@@ -612,6 +617,7 @@ export function PostComments({
                 <span className="comment-thread__eyebrow">be the first reply</span>
                 <strong>{emptyTitle}</strong>
                 <p>{cloudflareEnabled ? '第一条留言会先出现在这里，并继续尝试同步到 Cloudflare。' : emptySummary}</p>
+                <span className="comment-thread__empty-note">支持昵称、站点链接和多段留言预览。</span>
               </div>
             )}
           </div>
