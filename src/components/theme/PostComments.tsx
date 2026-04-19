@@ -538,12 +538,25 @@ export function PostComments({
 
             <div className="comment-form-card">
               <div className="comment-form-card__row">
-                <input value={form.name} onChange={onFieldChange('name')} placeholder="Nickname" />
-                <input value={form.email} onChange={onFieldChange('email')} placeholder="Email" />
-                <input value={form.website} onChange={onFieldChange('website')} placeholder="Website" />
+                <label className="comment-form-card__field">
+                  <span className="comment-form-card__label">昵称</span>
+                  <input value={form.name} onChange={onFieldChange('name')} placeholder="Nickname" />
+                </label>
+                <label className="comment-form-card__field">
+                  <span className="comment-form-card__label">邮箱</span>
+                  <input value={form.email} onChange={onFieldChange('email')} placeholder="Email" />
+                </label>
+                <label className="comment-form-card__field">
+                  <span className="comment-form-card__label">站点</span>
+                  <input value={form.website} onChange={onFieldChange('website')} placeholder="Website" />
+                </label>
               </div>
 
               <div className="comment-form-card__editor">
+                <div className="comment-form-card__editor-head">
+                  <span className="comment-form-card__label">留言内容</span>
+                  <span className="comment-form-card__hint">支持 Ctrl / Command + Enter 快速发送</span>
+                </div>
                 <textarea
                   value={form.message}
                   onChange={onFieldChange('message')}
@@ -558,7 +571,7 @@ export function PostComments({
               </div>
 
               <div className="comment-form-card__footer">
-                <span>{remaining}/{LIMIT}</span>
+                <span className="comment-form-card__counter">{remaining}/{LIMIT}</span>
                 <div className="comment-form-card__actions">
                   <button type="button" className={preview ? 'is-active' : ''} onClick={() => setPreview((value) => !value)}>
                     {previewLabel}
@@ -571,7 +584,10 @@ export function PostComments({
 
               {preview && (
                 <div className="comment-preview">
-                  <strong>{form.name || 'Preview'}</strong>
+                  <div className="comment-preview__head">
+                    <span className="comment-preview__eyebrow">live preview</span>
+                    <strong>{form.name || 'Preview'}</strong>
+                  </div>
                   <div className="comment-preview__body">
                     {previewParagraphs.length > 0 ? (
                       previewParagraphs.map((item) => <p key={item}>{item}</p>)
