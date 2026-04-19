@@ -162,6 +162,11 @@ function resolveRemoteProvider(integration: CommentsIntegrationConfig): ScriptPr
   return null;
 }
 
+function resolveSelectedExternalProvider(provider: CommentProvider): ScriptProvider | null {
+  if (provider === 'giscus' || provider === 'waline' || provider === 'twikoo') return provider;
+  return null;
+}
+
 function getProviderName(provider: RemoteProvider | null) {
   if (provider === 'cloudflare') return 'Cloudflare';
   if (provider === 'giscus') return 'Giscus';
@@ -175,6 +180,13 @@ function getCloudflareSyncLabel(status: ProviderStatus) {
   if (status === 'loading') return '正在同步';
   if (status === 'error') return '同步异常，已保留本地记录';
   return '等待同步';
+}
+
+function getExternalProviderStatusLabel(status: ProviderStatus) {
+  if (status === 'ready') return '外接评论已挂载';
+  if (status === 'loading') return '正在接入';
+  if (status === 'error') return '接入失败';
+  return '等待接入';
 }
 
 export function PostComments({
@@ -196,9 +208,10 @@ export function PostComments({
       ? integration.cloudflare.apiBase.replace(/\/$/, '')
       : '';
   const cloudflareEnabled = cloudflareApiBase.length > 0;
+  const selectedExternalProvider = resolveSelectedExternalProvider(integration.provider);
   const remoteProvider = resolveRemoteProvider(integration);
+  const localBoardEnabled = !selectedExternalProvider;
   const [providerStatus, setProviderStatus] = useState<ProviderStatus>('idle');
-  const [viewMode, setViewMode] = useState<'provider' | 'local'>(remoteProvider ? 'provider' : 'local');
   const [cloudflareStatus, setCloudflareStatus] = useState<ProviderStatus>(cloudflareEnabled ? 'loading' : 'idle');
   const [comments, setComments] = useState<StoredComment[]>([]);
   const [storageReady, setStorageReady] = useState(false);
@@ -213,9 +226,7 @@ export function PostComments({
   const providerCleanupRef = useRef<(() => void) | null>(null);
   const localBoardSummary = cloudflareEnabled
     ? '当前以本地评论板作为主交互层，提交后会立即写入本地状态，并继续同步到 Cloudflare 评论接口，方便保持本地 DB 测试和真实评论流的接近感。'
-    : remoteProvider
-      ? `当前保留本地评论板作为开发基线，同时兼容 ${getProviderName(remoteProvider)} 外链挂载，用来继续对齐评论区结构、状态和交互节奏。`
-      : '当前以本地评论板作为主交互层，在浏览器内保留留言、预览和输入状态，用来继续对齐评论区的布局、交互和反馈。';
+    : '当前以本地评论板作为主交互层，在浏览器内保留留言、预览和输入状态，用来继续对齐评论区的布局、交互和反馈。';
   const localBoardTips = [...tips];
 
   if (cloudflareEnabled) {
@@ -224,11 +235,13 @@ export function PostComments({
     localBoardTips.push('本地 DB 测试中');
   }
 
-  if (remoteProvider) {
-    localBoardTips.push(`${getProviderName(remoteProvider)} · 外链兼容已预留`);
-  }
-
   useEffect(() => {
+    if (!localBoardEnabled) {
+      setComments([]);
+      setStorageReady(false);
+      return;
+    }
+
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (!raw) {
@@ -244,17 +257,17 @@ export function PostComments({
     } finally {
       setStorageReady(true);
     }
-  }, [storageKey]);
+  }, [localBoardEnabled, storageKey]);
 
   useEffect(() => {
-    if (!storageReady) return;
+    if (!localBoardEnabled || !storageReady) return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(comments));
     } catch {}
-  }, [comments, storageKey, storageReady]);
+  }, [comments, localBoardEnabled, storageKey, storageReady]);
 
   useEffect(() => {
-    if (!cloudflareEnabled) return;
+    if (!localBoardEnabled || !cloudflareEnabled) return;
 
     let cancelled = false;
 
@@ -279,10 +292,10 @@ export function PostComments({
     return () => {
       cancelled = true;
     };
-  }, [cloudflareApiBase, cloudflareEnabled, slug]);
+  }, [cloudflareApiBase, cloudflareEnabled, localBoardEnabled, slug]);
 
   useEffect(() => {
-    if (!remoteProvider || viewMode !== 'provider' || !providerMountRef.current) return;
+    if (!selectedExternalProvider || !providerMountRef.current) return;
 
     let cancelled = false;
     const mountNode = providerMountRef.current;
@@ -291,6 +304,12 @@ export function PostComments({
       providerCleanupRef.current?.();
       providerCleanupRef.current = null;
       mountNode.innerHTML = '';
+
+      if (!remoteProvider) {
+        setProviderStatus('idle');
+        return;
+      }
+
       setProviderStatus('loading');
 
       try {
@@ -357,7 +376,6 @@ export function PostComments({
       } catch {
         if (cancelled) return;
         setProviderStatus('error');
-        setViewMode('local');
       }
     };
 
@@ -368,7 +386,7 @@ export function PostComments({
       providerCleanupRef.current?.();
       providerCleanupRef.current = null;
     };
-  }, [integration, remoteProvider, viewMode]);
+  }, [integration, remoteProvider, selectedExternalProvider]);
 
   const remaining = LIMIT - form.message.length;
   const canSubmit = form.name.trim().length > 0 && form.message.trim().length > 0;
@@ -433,19 +451,19 @@ export function PostComments({
     setPreview(false);
   };
 
-  const commentStatusLabel = cloudflareEnabled
-    ? `${getProviderName('cloudflare')} / ${getCloudflareSyncLabel(cloudflareStatus)} · ${comments.length} 条记录`
-    : remoteProvider
-      ? `${getProviderName(remoteProvider)} / 外链评论入口已兼容 · ${comments.length} 条记录`
-      : `本地评论板 · ${comments.length} 条记录`;
+  const commentStatusLabel = localBoardEnabled
+    ? cloudflareEnabled
+      ? `本地评论板 / ${getCloudflareSyncLabel(cloudflareStatus)} · ${comments.length} 条记录`
+      : `本地评论板 / 浏览器存储 · ${comments.length} 条记录`
+    : `${getProviderName(selectedExternalProvider)} / ${getExternalProviderStatusLabel(providerStatus)}`;
 
   return (
     <section
       id="post-comment"
       data-comment-provider={integration.provider}
-      data-comment-adapter={remoteProvider ?? 'none'}
-      data-comment-view={viewMode}
-      data-comment-sync={cloudflareEnabled ? cloudflareStatus : providerStatus}
+      data-comment-adapter={selectedExternalProvider ?? 'none'}
+      data-comment-view={localBoardEnabled ? 'local' : 'provider'}
+      data-comment-sync={localBoardEnabled ? (cloudflareEnabled ? cloudflareStatus : 'idle') : providerStatus}
     >
       <div className="comment-head">
         <div className="comment-head__intro">
@@ -457,49 +475,37 @@ export function PostComments({
           <span className="comment-randomInfo">
             {policyLabel} ✅ {notice}
           </span>
-
-          {remoteProvider && (
-            <div className="comment-mode-tabs" role="tablist" aria-label="Comment mode">
-              <button
-                type="button"
-                className={viewMode === 'provider' ? 'is-active' : ''}
-                onClick={() => setViewMode('provider')}
-              >
-                {getProviderName(remoteProvider)}
-              </button>
-              <button
-                type="button"
-                className={viewMode === 'local' ? 'is-active' : ''}
-                onClick={() => setViewMode('local')}
-              >
-                本地评论板
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
-      {viewMode === 'provider' && remoteProvider ? (
+      {!localBoardEnabled && selectedExternalProvider ? (
         <div className="comment-provider-shell">
           <div className="comment-provider-shell__intro">
-            <span className="comment-surface__eyebrow">comment adapter</span>
-            <h3>{getProviderName(remoteProvider)}</h3>
-            <p>当前页面已经兼容真实评论系统挂载位，同时保留本地评论板，方便继续做本地 DB 测试和安知鱼式评论区对齐。</p>
+            <span className="comment-surface__eyebrow">external comment provider</span>
+            <h3>{getProviderName(selectedExternalProvider)}</h3>
+            <p>当前页面已经切换到外接评论模式，本地评论板不会同时渲染。补全 provider 参数后，会直接挂载真实评论流。</p>
             <div className="comment-surface__tips">
-              <span>{providerStatus === 'loading' ? '加载中' : providerStatus === 'ready' ? '已挂载' : '准备中'}</span>
-              <span>{getProviderName(remoteProvider)}</span>
-              <span>本地评论板已保留</span>
+              <span>{getExternalProviderStatusLabel(providerStatus)}</span>
+              <span>{getProviderName(selectedExternalProvider)}</span>
+              <span>单模式接入</span>
             </div>
           </div>
 
           <div className="comment-provider-shell__card">
             <div className={`comment-provider-shell__status is-${providerStatus}`}>
-              {providerStatus === 'loading' && `正在加载 ${getProviderName(remoteProvider)}...`}
-              {providerStatus === 'ready' && `${getProviderName(remoteProvider)} 已加载`}
-              {providerStatus === 'error' && `${getProviderName(remoteProvider)} 加载失败，可切回本地评论板`}
-              {providerStatus === 'idle' && `等待挂载 ${getProviderName(remoteProvider)}`}
+              {providerStatus === 'loading' && `正在加载 ${getProviderName(selectedExternalProvider)}...`}
+              {providerStatus === 'ready' && `${getProviderName(selectedExternalProvider)} 已加载`}
+              {providerStatus === 'error' && `${getProviderName(selectedExternalProvider)} 接入失败，请检查 provider 参数`}
+              {providerStatus === 'idle' && `等待接入 ${getProviderName(selectedExternalProvider)}`}
             </div>
-            <div ref={providerMountRef} className="comment-provider-shell__mount" />
+            <div ref={providerMountRef} className="comment-provider-shell__mount">
+              {!remoteProvider && (
+                <div className="comment-provider-shell__placeholder">
+                  <strong>{getProviderName(selectedExternalProvider)} 配置尚未补全</strong>
+                  <p>补齐仓库、分类或服务端参数后，这里会直接挂载外接评论系统，不再同时显示本地评论板。</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (

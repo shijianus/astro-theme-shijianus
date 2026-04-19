@@ -1783,6 +1783,30 @@ body[data-type='tag-detail'] .page-main {
   min-height: 240px;
 }
 
+.comment-provider-shell__placeholder {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  justify-items: start;
+  min-height: 240px;
+  padding: 20px;
+  border: 1px dashed color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+}
+
+.comment-provider-shell__placeholder strong {
+  color: var(--font-color);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.comment-provider-shell__placeholder p {
+  margin: 0;
+  color: var(--secondtext);
+  line-height: 1.75;
+}
+
 .comment-provider-shell__mount .giscus,
 .comment-provider-shell__mount .wl-container,
 .comment-provider-shell__mount .tk-comments-container {
@@ -1999,7 +2023,8 @@ body[data-type='tag-detail'] .page-main {
 }
 
 :root[data-theme='dark'][data-background='starfield'] body[data-type='post'] .comment-surface__tips span,
-:root[data-theme='dark'][data-background='starfield'] body[data-type='post'] .comment-thread__eyebrow {
+:root[data-theme='dark'][data-background='starfield'] body[data-type='post'] .comment-thread__eyebrow,
+:root[data-theme='dark'][data-background='starfield'] body[data-type='post'] .comment-provider-shell__placeholder {
   border-color: color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 84%, #121a30), color-mix(in srgb, var(--card-bg) 96%, #090d18));
@@ -4163,15 +4188,6 @@ body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .
 
   #post-comment .comment-head__meta {
     margin-left: 0;
-  }
-
-  #post-comment .comment-mode-tabs {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  #post-comment .comment-mode-tabs button {
-    flex: 1 1 0;
   }
 
   #about-page .author-box {
