@@ -27,8 +27,13 @@ export function TocObserver() {
 
     if (headings.length === 0) return;
 
-    for (const entry of headings) {
+    for (const [index, entry] of headings.entries()) {
+      const depth = entry.link.dataset.depth ?? '2';
+      const tocIndex = String(index + 1).padStart(2, '0');
+
       entry.element.dataset.tocHeading = 'true';
+      entry.element.dataset.tocDepth = depth;
+      entry.element.dataset.tocIndex = tocIndex;
       entry.element.classList.add('article-heading-anchor');
 
       const existingAnchor = entry.element.querySelector<HTMLAnchorElement>(':scope > .article-heading-anchor__jump');
@@ -37,6 +42,7 @@ export function TocObserver() {
         anchor.href = `#${entry.id}`;
         anchor.className = 'article-heading-anchor__jump';
         anchor.setAttribute('aria-label', `跳转到 ${entry.element.textContent?.trim() ?? entry.id}`);
+        anchor.dataset.tocIndex = tocIndex;
         anchor.textContent = '#';
         entry.element.appendChild(anchor);
       }
@@ -77,6 +83,7 @@ export function TocObserver() {
       if (active?.id && active.id !== activeId) {
         activeId = active.id;
         active.link.scrollIntoView({ block: 'nearest' });
+        tocCard.dataset.activeHeading = active.id;
       }
     };
 
@@ -99,7 +106,9 @@ export function TocObserver() {
       const element = document.getElementById(id);
       if (!element) return;
       event.preventDefault();
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const scrollMarginTop = Number.parseFloat(window.getComputedStyle(element).scrollMarginTop || '0');
+      const top = Math.max(0, window.scrollY + element.getBoundingClientRect().top - (Number.isFinite(scrollMarginTop) ? scrollMarginTop : 0));
+      window.scrollTo({ top, behavior: 'smooth' });
       window.history.replaceState(null, '', `#${id}`);
       scheduleUpdate();
     };
@@ -117,6 +126,8 @@ export function TocObserver() {
       for (const entry of headings) {
         entry.element.classList.remove('is-toc-active', 'article-heading-anchor');
         delete entry.element.dataset.tocHeading;
+        delete entry.element.dataset.tocDepth;
+        delete entry.element.dataset.tocIndex;
         const anchor = entry.element.querySelector(':scope > .article-heading-anchor__jump');
         anchor?.remove();
       }

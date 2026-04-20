@@ -2725,6 +2725,7 @@ html.theme-ready body.theme-body #footer {
   max-height: 420px;
   margin-top: 16px;
   overflow-y: auto;
+  scroll-padding: 10px 0 14px;
 }
 
 #card-toc .toc-link {
@@ -2738,7 +2739,11 @@ html.theme-ready body.theme-body #footer {
   color: var(--secondtext);
   font-size: 13px;
   line-height: 1.5;
-  transition: 0.3s;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease;
 }
 
 #card-toc .toc-index {
@@ -2783,6 +2788,10 @@ html.theme-ready body.theme-body #footer {
   color: var(--white);
 }
 
+#card-toc .toc-link.active {
+  transform: translateX(4px);
+}
+
 #card-toc .toc-link:hover .toc-index,
 #card-toc .toc-link.active .toc-index {
   color: rgba(255, 255, 255, 0.72);
@@ -2791,6 +2800,7 @@ html.theme-ready body.theme-body #footer {
 #card-toc .toc-link.is-nested {
   margin-left: 12px;
   color: var(--text-muted);
+  opacity: 0.94;
 }
 
 .page-hero {
@@ -2901,8 +2911,12 @@ html.theme-ready body.theme-body #footer {
 .article-body :where(h2, h3, h4)[data-toc-heading='true'] {
   display: flex;
   align-items: center;
+  gap: 12px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.article-body :where(h2, h3, h4)[data-toc-heading='true'][data-toc-depth='3'] {
   gap: 10px;
-  transition: color 0.2s ease;
 }
 
 .article-body :where(h2, h3, h4)[data-toc-heading='true']::before {
@@ -2916,6 +2930,12 @@ html.theme-ready body.theme-body #footer {
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
+.article-body :where(h2, h3, h4)[data-toc-heading='true'][data-toc-depth='3']::before {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--theme-main) 8%, transparent);
+}
+
 .article-body :where(h2, h3, h4)[data-toc-heading='true'].is-toc-active::before,
 .article-body :where(h2, h3, h4)[data-toc-heading='true']:target::before {
   background: var(--theme-main);
@@ -2926,26 +2946,45 @@ html.theme-ready body.theme-body #footer {
 .article-body :where(h2, h3, h4)[data-toc-heading='true'].is-toc-active,
 .article-body :where(h2, h3, h4)[data-toc-heading='true']:target {
   color: color-mix(in srgb, var(--theme-main) 82%, var(--font-color));
+  transform: translateX(2px);
 }
 
 .article-body .article-heading-anchor__jump {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
+  gap: 5px;
+  min-width: 44px;
   height: 28px;
+  padding: 0 10px;
   border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
   border-radius: 999px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.18)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
     color-mix(in srgb, var(--theme-main) 3%, var(--secondbg));
   color: var(--theme-main);
-  font-size: 13px;
+  font-size: 0;
   font-weight: 800;
   line-height: 1;
   opacity: 0;
   transform: translateX(-4px);
   transition: 0.2s ease;
+}
+
+.article-body .article-heading-anchor__jump::before {
+  content: attr(data-toc-index);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.article-body .article-heading-anchor__jump::after {
+  content: "#";
+  color: var(--theme-main);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .article-body :where(h2, h3, h4)[data-toc-heading='true']:hover .article-heading-anchor__jump,
