@@ -2912,7 +2912,7 @@ html.theme-ready body.theme-body #footer {
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
 }
 
 .article-body :where(h2, h3, h4)[data-toc-heading='true'][data-toc-depth='3'] {
@@ -2947,6 +2947,7 @@ html.theme-ready body.theme-body #footer {
 .article-body :where(h2, h3, h4)[data-toc-heading='true']:target {
   color: color-mix(in srgb, var(--theme-main) 82%, var(--font-color));
   transform: translateX(2px);
+  text-shadow: 0 10px 24px color-mix(in srgb, var(--theme-main) 16%, transparent);
 }
 
 .article-body .article-heading-anchor__jump {
@@ -2967,7 +2968,7 @@ html.theme-ready body.theme-body #footer {
   font-weight: 800;
   line-height: 1;
   opacity: 0;
-  transform: translateX(-4px);
+  transform: translateX(-4px) scale(0.96);
   transition: 0.2s ease;
 }
 
@@ -2991,7 +2992,7 @@ html.theme-ready body.theme-body #footer {
 .article-body :where(h2, h3, h4)[data-toc-heading='true'].is-toc-active .article-heading-anchor__jump,
 .article-body :where(h2, h3, h4)[data-toc-heading='true']:target .article-heading-anchor__jump {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
 }
 
 .article-body h2 {

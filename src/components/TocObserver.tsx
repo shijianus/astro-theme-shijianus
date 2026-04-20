@@ -49,6 +49,8 @@ export function TocObserver() {
     }
 
     const percentage = tocCard.querySelector<HTMLElement>('.toc-percentage');
+    const currentTitle = tocCard.querySelector<HTMLElement>('.toc-current__title');
+    const currentMeta = tocCard.querySelector<HTMLElement>('.toc-current__meta');
     let activeId = '';
     let frame = 0;
 
@@ -84,6 +86,18 @@ export function TocObserver() {
         activeId = active.id;
         active.link.scrollIntoView({ block: 'nearest' });
         tocCard.dataset.activeHeading = active.id;
+      }
+
+      if (active) {
+        const activeIndex = headings.findIndex((entry) => entry.id === active.id);
+        const activeCount = activeIndex >= 0 ? String(activeIndex + 1).padStart(2, '0') : '00';
+        const totalCount = String(headings.length).padStart(2, '0');
+        const headingDepth = active.link.dataset.depth ?? active.element.dataset.tocDepth ?? '2';
+        const headingText =
+          active.link.querySelector<HTMLElement>('.toc-text')?.textContent?.trim() ?? active.element.textContent?.trim() ?? active.id;
+
+        if (currentTitle) currentTitle.textContent = headingText;
+        if (currentMeta) currentMeta.textContent = `H${headingDepth} · ${activeCount}/${totalCount}`;
       }
     };
 
