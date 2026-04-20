@@ -25,18 +25,36 @@ export function TocObserver() {
       })
       .filter((entry): entry is { id: string; element: HTMLElement; link: HTMLAnchorElement } => Boolean(entry));
 
+    if (headings.length === 0) return;
+
+    for (const entry of headings) {
+      entry.element.dataset.tocHeading = 'true';
+      entry.element.classList.add('article-heading-anchor');
+
+      const existingAnchor = entry.element.querySelector<HTMLAnchorElement>(':scope > .article-heading-anchor__jump');
+      if (!existingAnchor) {
+        const anchor = document.createElement('a');
+        anchor.href = `#${entry.id}`;
+        anchor.className = 'article-heading-anchor__jump';
+        anchor.setAttribute('aria-label', `跳转到 ${entry.element.textContent?.trim() ?? entry.id}`);
+        anchor.textContent = '#';
+        entry.element.appendChild(anchor);
+      }
+    }
+
     const percentage = tocCard.querySelector<HTMLElement>('.toc-percentage');
     let activeId = '';
     let frame = 0;
 
     const update = () => {
+      const activationOffset = Math.min(220, Math.max(152, window.innerHeight * 0.18));
       const articleRect = article.getBoundingClientRect();
       const articleProgress = Math.round(
         Math.min(
           100,
           Math.max(
             0,
-            ((Math.max(0, -articleRect.top + 120) / Math.max(1, articleRect.height - window.innerHeight * 0.55)) * 100),
+            ((Math.max(0, -articleRect.top + activationOffset) / Math.max(1, articleRect.height - window.innerHeight * 0.2)) * 100),
           ),
         ),
       );
@@ -46,13 +64,14 @@ export function TocObserver() {
 
       let active = headings[0];
       for (const entry of headings) {
-        if (entry.element.getBoundingClientRect().top <= 132) active = entry;
+        if (entry.element.getBoundingClientRect().top <= activationOffset) active = entry;
       }
 
       for (const entry of headings) {
         const isActive = entry.id === active?.id;
         entry.link.classList.toggle('active', isActive);
         entry.link.setAttribute('aria-current', isActive ? 'true' : 'false');
+        entry.element.classList.toggle('is-toc-active', isActive);
       }
 
       if (active?.id && active.id !== activeId) {
@@ -73,10 +92,34 @@ export function TocObserver() {
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
 
+    const onClick = (event: Event) => {
+      const target = event.target instanceof HTMLElement ? event.target.closest<HTMLAnchorElement>('.toc-link, .article-heading-anchor__jump') : null;
+      if (!target?.hash) return;
+      const id = decodeHash(target.hash);
+      const element = document.getElementById(id);
+      if (!element) return;
+      event.preventDefault();
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.history.replaceState(null, '', `#${id}`);
+      scheduleUpdate();
+    };
+
+    tocCard.addEventListener('click', onClick);
+    article.addEventListener('click', onClick);
+
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', scheduleUpdate);
       window.removeEventListener('resize', scheduleUpdate);
+      tocCard.removeEventListener('click', onClick);
+      article.removeEventListener('click', onClick);
+
+      for (const entry of headings) {
+        entry.element.classList.remove('is-toc-active', 'article-heading-anchor');
+        delete entry.element.dataset.tocHeading;
+        const anchor = entry.element.querySelector(':scope > .article-heading-anchor__jump');
+        anchor?.remove();
+      }
     };
   }, []);
 

@@ -111,6 +111,7 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
         <div class="item-headline">
           <Sparkles class="aside-title-icon" aria-hidden="true" />
           <span>文章目录</span>
+          <span class="toc-count">{headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3).length} 节</span>
           <span class="toc-percentage"></span>
         </div>
         <div class="toc-progress" aria-hidden="true">
@@ -118,16 +119,20 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
         </div>
         <div class="toc-content">
           {headings
-            .filter((heading) => heading.depth <= 3)
+            .filter((heading) => heading.depth >= 2 && heading.depth <= 3)
             .map((heading, index) => (
               <a
                 href={`#${heading.slug}`}
                 class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}
                 data-depth={heading.depth}
+                data-heading-id={heading.slug}
                 aria-current="false"
               >
                 <span class="toc-index">{String(index + 1).padStart(2, '0')}</span>
-                <span class="toc-text">{heading.text}</span>
+                <span class="toc-text-group">
+                  <span class="toc-text">{heading.text}</span>
+                  <span class="toc-depth">H{heading.depth}</span>
+                </span>
               </a>
             ))}
         </div>

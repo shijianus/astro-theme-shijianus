@@ -2468,6 +2468,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   justify-content: space-between;
 }
 
+#card-toc .toc-count,
 #card-toc .toc-percentage {
   display: inline-flex;
   align-items: center;
@@ -2481,6 +2482,10 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   color: var(--theme-main);
   font-size: 12px;
   font-weight: 800;
+}
+
+#card-toc .toc-count {
+  color: var(--text-muted);
 }
 
 #card-toc .toc-progress {
@@ -2539,6 +2544,13 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
 #card-toc .toc-link.active {
   border-color: color-mix(in srgb, var(--theme-main) 28%, var(--card-border));
   box-shadow: var(--shadow-main);
+}
+
+#card-toc .toc-link.active .toc-depth,
+#card-toc .toc-link:hover .toc-depth {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--white);
+  opacity: 1;
 }
 
 @keyframes post-hero-wave {
