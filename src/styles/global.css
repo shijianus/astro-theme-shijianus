@@ -2894,38 +2894,70 @@ html.theme-ready body.theme-body #footer {
 }
 
 .article-body blockquote {
-  margin: 1rem 0;
-  padding: 0.5rem 0.8rem;
-  border: var(--style-border-always);
-  border-radius: var(--radius-sm);
-  background: var(--secondbg);
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem 1rem 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-main) 4%, transparent), transparent 180px),
+    color-mix(in srgb, var(--card-bg) 94%, var(--secondbg));
   color: var(--secondtext);
+  box-shadow: 0 18px 30px -28px rgba(14, 20, 36, 0.22);
+}
+
+.article-body blockquote::before {
+  content: "“";
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  color: color-mix(in srgb, var(--theme-main) 34%, transparent);
+  font-size: 2.4rem;
+  line-height: 1;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.article-body blockquote > * {
+  position: relative;
+  z-index: 1;
 }
 
 .article-body code {
-  border-radius: 4px;
-  background: var(--secondbg);
-  padding: 0.16rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 8%, var(--card-border));
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.16)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
+  padding: 0.18rem 0.52rem;
   color: var(--theme-red);
   font-size: 0.92em;
+  font-weight: 600;
   font-family: var(--font-mono);
 }
 
 .article-body pre {
   overflow-x: auto;
-  border: var(--style-border-always);
-  border-radius: var(--radius-sm);
-  background: var(--secondbg);
-  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.2)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 3%, var(--secondbg));
+  padding: 1.05rem 1.15rem;
+  box-shadow: 0 18px 32px -30px rgba(14, 20, 36, 0.24);
 }
 
 .article-body .code-block-shell {
   overflow: hidden;
-  margin: 1rem 0;
-  border: var(--style-border-always);
-  border-radius: var(--radius-sm);
-  background: var(--secondbg);
-  box-shadow: var(--shadow-border);
+  margin: 1.25rem 0;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.2)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 3%, var(--secondbg));
+  box-shadow: 0 18px 32px -30px rgba(14, 20, 36, 0.24);
 }
 
 .article-body .code-block-toolbar {
@@ -2933,10 +2965,12 @@ html.theme-ready body.theme-body #footer {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  min-height: 42px;
-  padding: 0 12px;
-  border-bottom: var(--style-border-always);
-  background: color-mix(in srgb, var(--card-bg) 76%, var(--secondbg));
+  min-height: 46px;
+  padding: 0 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.16)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
 }
 
 .article-body .code-block-lights {
@@ -2979,8 +3013,9 @@ html.theme-ready body.theme-body #footer {
   min-width: 52px;
   height: 28px;
   padding: 0 10px;
-  border-radius: var(--radius-sm);
-  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-bg) 96%, rgba(255, 255, 255, 0.2));
   color: var(--font-color);
   font-size: 12px;
   font-weight: 800;
@@ -3003,6 +3038,8 @@ html.theme-ready body.theme-body #footer {
 
 .article-body pre code {
   background: transparent;
+  border: 0;
+  border-radius: 0;
   padding: 0;
 }
 
@@ -3012,8 +3049,10 @@ html.theme-ready body.theme-body #footer {
   align-items: center;
   gap: 1rem;
   margin: -20px -24px 0;
-  border-bottom: var(--style-border-always);
-  background: var(--secondbg);
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.16)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
   padding: 0.95rem 1rem;
 }
 
@@ -3053,6 +3092,34 @@ html.theme-ready body.theme-body #footer {
 .code-window__body {
   overflow-x: auto;
   padding: 1rem;
+}
+
+.article-body figure {
+  display: grid;
+  gap: 10px;
+  margin: 1.45rem 0;
+}
+
+.article-body figure img {
+  margin-bottom: 0;
+}
+
+.article-body figcaption {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  min-height: 30px;
+  max-width: min(100%, 72ch);
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.18)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .site-footer {
