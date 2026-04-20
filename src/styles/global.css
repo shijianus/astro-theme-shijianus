@@ -3029,10 +3029,27 @@ html.theme-ready body.theme-body #footer {
 
 .article-body a {
   color: var(--theme-main);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--theme-main) 34%, transparent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .article-body a:hover {
-  text-decoration: underline;
+  color: color-mix(in srgb, var(--theme-main) 82%, var(--font-color));
+  text-decoration-color: currentColor;
+  background-color: color-mix(in srgb, var(--theme-main) 10%, transparent);
+}
+
+.article-body a:focus-visible {
+  outline: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
 .article-body blockquote {
@@ -3100,6 +3117,16 @@ html.theme-ready body.theme-body #footer {
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.2)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
     color-mix(in srgb, var(--theme-main) 3%, var(--secondbg));
   box-shadow: 0 18px 32px -30px rgba(14, 20, 36, 0.24);
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.article-body .code-block-shell:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-main) 22%, var(--card-border));
+  box-shadow: 0 22px 36px -28px color-mix(in srgb, var(--theme-main) 18%, rgba(14, 20, 36, 0.32));
 }
 
 .article-body .code-block-toolbar {
@@ -3161,7 +3188,12 @@ html.theme-ready body.theme-body #footer {
   color: var(--font-color);
   font-size: 12px;
   font-weight: 800;
-  transition: 0.2s;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .article-body .code-copy-button:hover,
@@ -3169,6 +3201,25 @@ html.theme-ready body.theme-body #footer {
   background: var(--theme-main);
   color: var(--white);
   box-shadow: var(--shadow-main);
+}
+
+.article-body .code-copy-button:hover {
+  transform: translateY(-1px);
+}
+
+.article-body .code-copy-button.copy-failed,
+.article-body .code-copy-button[data-copy-state='error'] {
+  border-color: color-mix(in srgb, var(--theme-red) 42%, var(--card-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-red) 22%, rgba(255, 255, 255, 0.12)), color-mix(in srgb, var(--theme-red) 12%, transparent)),
+    color-mix(in srgb, var(--card-bg) 90%, var(--secondbg));
+  color: color-mix(in srgb, var(--theme-red) 88%, var(--font-color));
+  box-shadow: 0 14px 24px -20px color-mix(in srgb, var(--theme-red) 28%, rgba(14, 20, 36, 0.32));
+}
+
+.article-body .code-copy-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
 .article-body .code-block-shell pre {
@@ -3242,8 +3293,26 @@ html.theme-ready body.theme-body #footer {
   margin: 1.45rem 0;
 }
 
+.article-body figure:has(img:hover) figcaption,
+.article-body figure:has(img:focus-visible) figcaption {
+  border-color: color-mix(in srgb, var(--theme-main) 22%, var(--card-border));
+  color: color-mix(in srgb, var(--theme-main) 74%, var(--font-color));
+}
+
 .article-body figure img {
   margin-bottom: 0;
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    filter 0.24s ease;
+  cursor: zoom-in;
+}
+
+.article-body figure img:hover,
+.article-body figure img:focus-visible {
+  transform: translateY(-2px);
+  filter: saturate(1.04) brightness(1.02);
+  box-shadow: 0 24px 40px -30px color-mix(in srgb, var(--theme-main) 16%, rgba(14, 20, 36, 0.28));
 }
 
 .article-body figcaption {

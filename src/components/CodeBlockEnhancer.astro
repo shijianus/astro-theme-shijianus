@@ -54,6 +54,7 @@
         button.className = 'code-copy-button';
         button.type = 'button';
         button.title = '复制代码';
+        button.dataset.copyState = 'idle';
         buttonText.textContent = '复制';
 
         lights.innerHTML = '<i></i><i></i><i></i>';
@@ -64,13 +65,36 @@
         pre.parentNode?.insertBefore(shell, pre);
         shell.append(toolbar, pre);
 
+        let resetTimer = 0;
+
         button.addEventListener('click', async () => {
           const copied = await copyText(code?.textContent ?? pre.textContent ?? '');
-          if (!copied) return;
-          button.classList.add('copied');
-          buttonText.textContent = '已复制';
-          window.setTimeout(() => {
+          window.clearTimeout(resetTimer);
+
+          if (!copied) {
             button.classList.remove('copied');
+            button.classList.add('copy-failed');
+            button.dataset.copyState = 'error';
+            button.title = '复制失败';
+            buttonText.textContent = '失败';
+            resetTimer = window.setTimeout(() => {
+              button.classList.remove('copy-failed');
+              button.dataset.copyState = 'idle';
+              button.title = '复制代码';
+              buttonText.textContent = '复制';
+            }, 1800);
+            return;
+          }
+
+          button.classList.remove('copy-failed');
+          button.classList.add('copied');
+          button.dataset.copyState = 'success';
+          button.title = '已复制代码';
+          buttonText.textContent = '已复制';
+          resetTimer = window.setTimeout(() => {
+            button.classList.remove('copied');
+            button.dataset.copyState = 'idle';
+            button.title = '复制代码';
             buttonText.textContent = '复制';
           }, 1800);
         });
