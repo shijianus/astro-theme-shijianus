@@ -26,6 +26,8 @@ export function TocObserver() {
       .filter((entry): entry is { id: string; element: HTMLElement; link: HTMLAnchorElement } => Boolean(entry));
 
     const percentage = tocCard.querySelector<HTMLElement>('.toc-percentage');
+    let activeId = '';
+    let frame = 0;
 
     const update = () => {
       const articleRect = article.getBoundingClientRect();
@@ -40,6 +42,7 @@ export function TocObserver() {
       );
 
       if (percentage) percentage.textContent = `${articleProgress}%`;
+      tocCard.style.setProperty('--toc-progress', `${articleProgress}%`);
 
       let active = headings[0];
       for (const entry of headings) {
@@ -47,19 +50,33 @@ export function TocObserver() {
       }
 
       for (const entry of headings) {
-        entry.link.classList.toggle('active', entry.id === active?.id);
+        const isActive = entry.id === active?.id;
+        entry.link.classList.toggle('active', isActive);
+        entry.link.setAttribute('aria-current', isActive ? 'true' : 'false');
       }
 
-      active?.link.scrollIntoView({ block: 'nearest' });
+      if (active?.id && active.id !== activeId) {
+        activeId = active.id;
+        active.link.scrollIntoView({ block: 'nearest' });
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        update();
+      });
     };
 
     update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
 
     return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
     };
   }, []);
 

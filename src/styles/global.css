@@ -2721,20 +2721,39 @@ html.theme-ready body.theme-body #footer {
 
 #card-toc .toc-content {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   max-height: 420px;
-  margin-top: 14px;
+  margin-top: 16px;
   overflow-y: auto;
 }
 
 #card-toc .toc-link {
-  display: block;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 18px;
   color: var(--secondtext);
   font-size: 13px;
   line-height: 1.5;
   transition: 0.3s;
+}
+
+#card-toc .toc-index {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#card-toc .toc-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 #card-toc .toc-link:hover,
@@ -2743,8 +2762,13 @@ html.theme-ready body.theme-body #footer {
   color: var(--white);
 }
 
+#card-toc .toc-link:hover .toc-index,
+#card-toc .toc-link.active .toc-index {
+  color: rgba(255, 255, 255, 0.72);
+}
+
 #card-toc .toc-link.is-nested {
-  margin-left: 14px;
+  margin-left: 12px;
   color: var(--text-muted);
 }
 

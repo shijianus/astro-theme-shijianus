@@ -2469,30 +2469,75 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
 }
 
 #card-toc .toc-percentage {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.18)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
   color: var(--theme-main);
   font-size: 12px;
   font-weight: 800;
 }
 
+#card-toc .toc-progress {
+  position: relative;
+  height: 6px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--secondbg));
+  overflow: hidden;
+}
+
+#card-toc .toc-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--toc-progress, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--theme-main) 82%, rgba(255, 255, 255, 0.12)), color-mix(in srgb, var(--theme-main) 56%, rgba(15, 20, 30, 0.08)));
+  box-shadow: 0 12px 18px -14px color-mix(in srgb, var(--theme-main) 42%, rgba(14, 20, 36, 0.42));
+  transition: width 0.22s ease;
+}
+
 #card-toc .toc-link {
   position: relative;
-  padding-left: 12px;
+  padding-left: 14px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.16)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
+    color-mix(in srgb, var(--theme-main) 2%, var(--secondbg));
 }
 
 #card-toc .toc-link::before {
   position: absolute;
   top: 50%;
   left: 0;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
+  width: 3px;
+  height: calc(100% - 14px);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 32%, transparent);
   content: "";
-  opacity: 0.42;
   transform: translateY(-50%);
 }
 
+#card-toc .toc-link[data-depth='2'] {
+  box-shadow: 0 16px 28px -32px rgba(14, 20, 36, 0.14);
+}
+
+#card-toc .toc-link.is-nested {
+  padding-left: 16px;
+}
+
+#card-toc .toc-link.is-nested::before {
+  width: 2px;
+  left: 2px;
+}
+
 #card-toc .toc-link.active {
+  border-color: color-mix(in srgb, var(--theme-main) 28%, var(--card-border));
   box-shadow: var(--shadow-main);
 }
 

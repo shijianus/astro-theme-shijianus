@@ -113,16 +113,25 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
           <span>文章目录</span>
           <span class="toc-percentage"></span>
         </div>
+        <div class="toc-progress" aria-hidden="true">
+          <span class="toc-progress__bar"></span>
+        </div>
         <div class="toc-content">
           {headings
             .filter((heading) => heading.depth <= 3)
-            .map((heading) => (
-              <a href={`#${heading.slug}`} class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}>
+            .map((heading, index) => (
+              <a
+                href={`#${heading.slug}`}
+                class={`toc-link ${heading.depth === 3 ? 'is-nested' : ''}`}
+                data-depth={heading.depth}
+                aria-current="false"
+              >
+                <span class="toc-index">{String(index + 1).padStart(2, '0')}</span>
                 <span class="toc-text">{heading.text}</span>
               </a>
             ))}
         </div>
-        <TocObserver client:visible />
+        <TocObserver client:load />
       </section>
     )}
 
