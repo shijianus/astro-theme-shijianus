@@ -5,10 +5,12 @@ import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
 import { ThemeUniverse } from '../components/ThemeUniverse';
+import LocaleRuntime from '../components/LocaleRuntime.astro';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import Sidebar from '../components/theme/Sidebar.astro';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
+import { getCommentsProviderLabel, hasConfiguredCommentDatabase } from '../lib/comment-integration';
 import type { SidebarData } from '../lib/theme';
 import '../styles/global.css';
 import '../styles/rebuild.css';
@@ -61,6 +63,27 @@ const overlayFeatures = {
   rightClickMenu: siteConfig.theme.features.rightClickMenu,
   particles: siteConfig.theme.features.particles,
 };
+
+const consolePanel = {
+  enabled: siteConfig.theme.consolePanel.enabled,
+  defaultOpen: siteConfig.theme.consolePanel.defaultOpen,
+  disabledNotice: siteConfig.theme.consolePanel.disabledNotice,
+};
+
+const commentsEnabled = hasConfiguredCommentDatabase(siteConfig.integrations.comments);
+const accountPanel = {
+  enabled: commentsEnabled,
+  providerLabel: getCommentsProviderLabel(siteConfig.integrations.comments),
+  title: siteConfig.post.comments.accountTitle,
+  summary: siteConfig.post.comments.accountSummary,
+  disabledNotice: siteConfig.post.comments.disabledNotice,
+  loginHint: siteConfig.post.comments.loginHint,
+};
+
+const bodyClasses = ['theme-body'];
+if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaultOpen) {
+  bodyClasses.push('theme-overlay-open');
+}
 ---
 
 <!doctype html>
@@ -69,6 +92,7 @@ const overlayFeatures = {
   data-theme={siteConfig.theme.defaultMode}
   data-aside="expanded"
   data-background={siteConfig.theme.background.defaultMode}
+  data-locale-variant={siteConfig.site.locale}
 >
   <head>
     <meta charset="UTF-8" />
@@ -76,9 +100,24 @@ const overlayFeatures = {
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title} | {siteConfig.site.title}</title>
+    <slot name="head" />
+    <script is:inline>
+      (() => {
+        try {
+          const savedVariant = window.localStorage.getItem('shijianus-locale-variant');
+          const localeVariant = savedVariant === 'zh-Hant' ? 'zh-Hant' : 'zh-CN';
+          document.documentElement.dataset.localeVariant = localeVariant;
+          document.documentElement.lang = localeVariant;
+        } catch {
+          document.documentElement.dataset.localeVariant = 'zh-CN';
+          document.documentElement.lang = 'zh-CN';
+        }
+      })();
+    </script>
   </head>
-  <body class="theme-body" data-type={pageType}>
+  <body class:list={bodyClasses} data-type={pageType}>
     {siteConfig.theme.features.loadingScreen && (
       <LoadingScreen brandName={siteConfig.site.name} avatar={siteConfig.site.author.avatar} />
     )}
@@ -88,13 +127,14 @@ const overlayFeatures = {
 
     <div class="page" id="body-wrap">
       <SiteHeader
-        client:idle
+        client:load
         brandName={siteConfig.site.name}
         domainLabel={siteConfig.site.domainLabel}
         currentPath={Astro.url.pathname}
         primary={siteConfig.navigation.primary}
         utility={siteConfig.navigation.utility}
         quickActions={siteConfig.navigation.quickActions}
+        showCenterConsoleTrigger={siteConfig.theme.features.centerConsole}
       />
 
       <main id="blog-container">
@@ -128,7 +168,7 @@ const overlayFeatures = {
         backgroundModes={siteConfig.theme.background.modes}
       />
       <ThemeOverlays
-        client:idle
+        client:load
         brandName={siteConfig.site.name}
         authorName={siteConfig.site.author.name}
         authorMotto={siteConfig.site.author.motto}
@@ -143,8 +183,54 @@ const overlayFeatures = {
         defaultBackground={siteConfig.theme.background.defaultMode}
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
+        consolePanel={consolePanel}
+        accountPanel={accountPanel}
       />
+      <LocaleRuntime />
       <CodeBlockEnhancer />
     </div>
+
+    <script is:inline>
+      (() => {
+        const isInteractiveTarget = (target) => {
+          return target instanceof HTMLElement && Boolean(target.closest('a, button, input, textarea, select, summary, details, [data-ignore-card-link]'));
+        };
+
+        const getElementTarget = (target) => {
+          if (target instanceof HTMLElement) return target;
+          if (target instanceof Node) return target.parentElement;
+          return null;
+        };
+
+        const navigateFromCard = (card) => {
+          const href = card?.dataset?.cardLink;
+          if (!href) return;
+          window.location.href = href;
+        };
+
+        document.addEventListener('click', (event) => {
+          const target = getElementTarget(event.target);
+          if (!(target instanceof HTMLElement)) return;
+          if (window.getSelection?.()?.toString()) return;
+          if (isInteractiveTarget(target)) return;
+
+          const card = target.closest('[data-card-link]');
+          if (!(card instanceof HTMLElement)) return;
+          navigateFromCard(card);
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          const target = getElementTarget(event.target);
+          if (!(target instanceof HTMLElement)) return;
+          if (isInteractiveTarget(target) && !target.matches('[data-card-link]')) return;
+
+          const card = target.closest('[data-card-link]');
+          if (!(card instanceof HTMLElement)) return;
+          event.preventDefault();
+          navigateFromCard(card);
+        });
+      })();
+    </script>
   </body>
 </html>

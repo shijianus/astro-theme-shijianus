@@ -9,8 +9,13 @@ import {
   syncAside,
   type AsideState,
   type ThemeMode,
-  writeStorage,
 } from '../lib/client-theme';
+import {
+  applyLocaleVariant,
+  readStoredLocaleVariant,
+  toggleLocaleVariant,
+  type LocaleVariant,
+} from '../lib/client-locale';
 type BackgroundMode = {
   id: string;
   label: string;
@@ -33,7 +38,7 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
   const [background, setBackground] = useState(defaultBackground);
-  const [localeVariant, setLocaleVariant] = useState<'zh-CN' | 'zh-Hant'>('zh-CN');
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
@@ -73,15 +78,13 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
         { defaultBackground, darkBackground },
         savedBackgroundSource,
       );
-    const savedLocaleVariant =
-      (readStorage('shijianus-locale-variant') as 'zh-CN' | 'zh-Hant' | null) ?? 'zh-CN';
+    const savedLocaleVariant = readStoredLocaleVariant();
 
     root.dataset.theme = savedTheme;
     root.dataset.aside = savedAside;
     root.dataset.background = savedBackground;
     root.dataset.backgroundSource = savedBackgroundSource;
-    root.dataset.localeVariant = savedLocaleVariant;
-    root.lang = savedLocaleVariant;
+    applyLocaleVariant(savedLocaleVariant, { persist: false, translate: false });
 
     setTheme(savedTheme);
     setAside(savedAside);
@@ -95,6 +98,10 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
     const onBackgroundChange = (event: Event) => {
       const customEvent = event as CustomEvent<string>;
       setBackground(customEvent.detail ?? defaultBackground);
+    };
+    const onLocaleChange = (event: Event) => {
+      const customEvent = event as CustomEvent<LocaleVariant>;
+      setLocaleVariant(customEvent.detail ?? readStoredLocaleVariant());
     };
 
     const onScroll = () => {
@@ -121,11 +128,13 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+      window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
     };
   }, [darkBackground, defaultBackground]);
 
@@ -139,26 +148,21 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
         <button
           type="button"
           id="translateLink"
-          title={localeVariant === 'zh-CN' ? '切换为繁体语境' : '切换为简体语境'}
-          onClick={() => {
-            const nextVariant = localeVariant === 'zh-CN' ? 'zh-Hant' : 'zh-CN';
-            document.documentElement.dataset.localeVariant = nextVariant;
-            document.documentElement.lang = nextVariant;
-            writeStorage('shijianus-locale-variant', nextVariant);
-            setLocaleVariant(nextVariant);
-          }}
+          title={localeVariant === 'zh-CN' ? '切换 shijianus 为繁体语境' : '切换 shijianus 为简体语境'}
+          aria-label={localeVariant === 'zh-CN' ? '切换 shijianus 为繁体中文' : '切换 shijianus 为简体中文'}
+          onClick={() => setLocaleVariant(toggleLocaleVariant(localeVariant))}
         >
           <Languages className="rightside-icon" aria-hidden="true" />
         </button>
 
-        <button type="button" id="background-mode" title={`切换背景：${currentBackground?.label ?? background}`} onClick={cycleBackground}>
+        <button type="button" id="background-mode" title={`切换 shijianus 背景：${currentBackground?.label ?? background}`} onClick={cycleBackground}>
           <Sparkles className="rightside-icon" aria-hidden="true" />
         </button>
 
                 <button
                   type="button"
                   id="darkmode"
-                  title="Switch Display Mode"
+                  title="Switch shijianus Display Mode"
                   onClick={() => {
                     const nextTheme = theme === 'dark' ? 'light' : 'dark';
                     const nextBackground = applyThemeWithBackground(nextTheme, {
@@ -179,7 +183,7 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
         <button
           type="button"
           id="hide-aside-btn"
-          title="Toggle Sidebar"
+          title="Toggle shijianus Sidebar"
           onClick={() => {
             const nextAside = aside === 'expanded' ? 'collapsed' : 'expanded';
             syncAside(nextAside);
@@ -198,7 +202,7 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
         <button
           type="button"
           id="rightside-config"
-          title="Setting"
+          title="shijianus setting"
           onClick={() => setConfigOpen((value) => !value)}
           className={configOpen ? 'is-active' : ''}
         >

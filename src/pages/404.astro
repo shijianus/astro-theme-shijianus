@@ -1,22 +1,46 @@
 ---
+import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import PageHero from '../components/theme/PageHero.astro';
+import { getPostPath, resolveCover, resolveCoverAlt, sortPostsByDate } from '../lib/content';
+
+const posts = sortPostsByDate(await getCollection('posts')).slice(0, 4);
 ---
 
 <BlogLayout title="404" showAside={false} pageType="404">
-  <Fragment slot="hero">
-    <PageHero
-      eyebrow="404"
-      title="这条路还没有被记录下来"
-      summary="你可以回到首页继续浏览，或者直接进入归档查看现有文章。"
-      image="/media/shijianus/network.jpg"
-      imageAlt="404 background"
-      meta={['Not Found']}
-    />
-  </Fragment>
+  <section class="error-box">
+    <div id="error-wrap">
+      <div class="error-content theme-card">
+        <div class="error-media">
+          <img src="/media/anzhiyu/friend_404.gif" alt="404 animation" loading="eager" decoding="async" />
+        </div>
 
-  <section class="theme-card flex flex-wrap gap-3">
-    <a href="/" class="theme-button">返回首页</a>
-    <a href="/archives/" class="theme-button theme-button--ghost">查看归档</a>
+        <div class="error-info">
+          <p class="error-eyebrow">404 / Not Found</p>
+          <h1 class="error_title">404</h1>
+          <p class="error_subtitle">这条路还没有被记录下来</p>
+          <p class="error-summary">返回首页继续浏览，或者直接从最近更新进入现有文章，不把读者留在死路里。</p>
+          <div class="error-actions">
+            <a href="/" class="theme-button">返回首页</a>
+            <a href="/archives/" class="theme-button theme-button--ghost">查看归档</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {posts.length > 0 && (
+      <div class="error-feed">
+        {posts.map((entry) => (
+          <article class="error-feed__item theme-card theme-card--interactive">
+            <a class="error-feed__thumb" href={getPostPath(entry)}>
+              <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
+            </a>
+            <div class="error-feed__body">
+              <a href={getPostPath(entry)}>{entry.data.title}</a>
+              <time datetime={entry.data.pubDate.toISOString()}>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
   </section>
 </BlogLayout>

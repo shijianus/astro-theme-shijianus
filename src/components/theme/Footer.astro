@@ -1,19 +1,31 @@
 ---
-import { Archive, BookOpenText, Github, House, Link2, Mail, MessageCircleMore, Rss, Tags, UserRound } from 'lucide-react';
+import {
+  Archive,
+  BookOpen,
+  Github,
+  Home,
+  Link2,
+  Mail,
+  MessageCircle,
+  Rss,
+  Tags,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { siteConfig } from '../../config/site';
 
-const iconMap = {
+const iconMap: Record<string, LucideIcon> = {
   github: Github,
   mail: Mail,
   archive: Archive,
   tags: Tags,
   about: UserRound,
-  home: House,
+  home: Home,
   rss: Rss,
   link: Link2,
-  book: BookOpenText,
-  message: MessageCircleMore,
-} as const;
+  book: BookOpen,
+  message: MessageCircle,
+};
 ---
 
 <footer id="footer" class="site-footer">
@@ -22,7 +34,7 @@ const iconMap = {
       {siteConfig.theme.features.footerSocialBar && (
         <div id="footer_deal">
           {siteConfig.footer.socialBar.left.map((item) => {
-            const Icon = iconMap[item.icon ?? 'home'];
+            const Icon = iconMap[item.icon ?? 'home'] ?? Home;
             return (
               <a
                 class="deal_link"
@@ -31,7 +43,7 @@ const iconMap = {
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noreferrer' : undefined}
               >
-                <Icon class="footer-deal-icon" aria-hidden="true" />
+                <Icon className="footer-deal-icon" aria-hidden="true" />
               </a>
             );
           })}
@@ -41,7 +53,7 @@ const iconMap = {
           </button>
 
           {siteConfig.footer.socialBar.right.map((item) => {
-            const Icon = iconMap[item.icon ?? 'home'];
+            const Icon = iconMap[item.icon ?? 'home'] ?? Home;
             return (
               <a
                 class="deal_link"
@@ -50,7 +62,7 @@ const iconMap = {
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noreferrer' : undefined}
               >
-                <Icon class="footer-deal-icon" aria-hidden="true" />
+                <Icon className="footer-deal-icon" aria-hidden="true" />
               </a>
             );
           })}
@@ -103,16 +115,21 @@ const iconMap = {
         </div>
       </div>
       <div class="footer-bar-right">
-        {siteConfig.footer.links.map((item) => (
-          <a
-            class="footer-bar-link"
-            href={item.href}
-            target={item.external ? '_blank' : undefined}
-            rel={item.external ? 'noreferrer' : undefined}
-          >
-            {item.label}
-          </a>
-        ))}
+        {siteConfig.footer.links.map((item) => {
+          const Icon = iconMap[item.icon ?? 'home'] ?? Home;
+          return (
+            <a
+              class="footer-bar-link footer-bar-link--icon"
+              href={item.href}
+              title={item.label}
+              aria-label={item.label}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noreferrer' : undefined}
+            >
+              <Icon className="footer-bar-link__icon" aria-hidden="true" />
+            </a>
+          );
+        })}
       </div>
     </div>
   </div>

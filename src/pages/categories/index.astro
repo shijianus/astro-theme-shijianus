@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectCategories, sortPostsByDate } from '../../lib/content';
+import { collectCategories, getCategoryPath, sortPostsByDate } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
@@ -41,8 +41,8 @@ const latestEntry = posts[0];
       <div class="tag-cloud-list is-center">
         <div id="tag">
           <div class="category-lists" id="tag-page-tags">
-            {sortedCategories.map((item) => (
-              <a href={`/categories/${item.slug}/`}>
+            {sortedCategories.map((item, index) => (
+              <a href={getCategoryPath(item.slug)} style={`--tag-index:${index};`}>
                 <span class="tags-punctuation">#</span>
                 {item.label}
                 <span class="tagsPageCount">{item.count}</span>

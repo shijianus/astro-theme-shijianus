@@ -1,0 +1,205 @@
+<script is:inline>
+  (() => {
+    const articles = document.querySelectorAll('[data-content-features]');
+    if (!articles.length) return;
+
+    const hashText = async (value) => {
+      if (!window.crypto?.subtle) return '';
+      const encoded = new TextEncoder().encode(value);
+      const digest = await window.crypto.subtle.digest('SHA-256', encoded);
+      return Array.from(new Uint8Array(digest))
+        .map((item) => item.toString(16).padStart(2, '0'))
+        .join('');
+    };
+
+    const createSpoiler = (text) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'spoiler-mask';
+      button.setAttribute('aria-pressed', 'false');
+      button.setAttribute('aria-label', '点击显示剧透内容');
+      button.textContent = text;
+      button.addEventListener('click', () => {
+        button.classList.add('is-visible');
+        button.setAttribute('aria-pressed', 'true');
+      }, { once: true });
+      return button;
+    };
+
+    const createHiddenInline = (password, text) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'hidden-inline-lock';
+      button.setAttribute('aria-label', password ? '输入密码显示隐藏内容' : '点击显示隐藏内容');
+      button.textContent = password ? '隐藏内容' : text;
+      button.addEventListener('click', () => {
+        if (password) {
+          const input = window.prompt('输入密码以显示隐藏内容');
+          if (input !== password) return;
+        }
+        button.textContent = text;
+        button.classList.add('is-visible');
+      });
+      return button;
+    };
+
+    const transformTextNode = (node) => {
+      const value = node.nodeValue || '';
+      const pattern = /(\|\|([^|]+)\|\|)|%%(?:password:([^|%]+)\|)?([^%]+)%%/g;
+      if (!pattern.test(value)) return;
+      pattern.lastIndex = 0;
+
+      const fragment = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+
+      while ((match = pattern.exec(value))) {
+        if (match.index > lastIndex) {
+          fragment.append(document.createTextNode(value.slice(lastIndex, match.index)));
+        }
+
+        if (match[2]) {
+          fragment.append(createSpoiler(match[2]));
+        } else {
+          fragment.append(createHiddenInline(match[3] || '', match[4] || ''));
+        }
+
+        lastIndex = pattern.lastIndex;
+      }
+
+      if (lastIndex < value.length) {
+        fragment.append(document.createTextNode(value.slice(lastIndex)));
+      }
+
+      node.parentNode?.replaceChild(fragment, node);
+    };
+
+    const enhanceInlineFeatures = (article) => {
+      if (article.dataset.contentEnhanced === 'true') return;
+      article.dataset.contentEnhanced = 'true';
+
+      const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent) return NodeFilter.FILTER_REJECT;
+          if (parent.closest('pre, code, kbd, script, style, textarea, .spoiler-mask, .hidden-inline-lock, .content-access-panel')) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return /(\|\|[^|]+\|\|)|%%(?:password:[^|%]+\|)?[^%]+%%/.test(node.nodeValue || '')
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        },
+      });
+
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(transformTextNode);
+    };
+
+    const parseList = (value) =>
+      (value || '')
+        .split(',')
+        .map((item) => item.trim().toUpperCase())
+        .filter(Boolean);
+
+    const fetchVisitor = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/', { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('ip lookup failed');
+        return await response.json();
+      } catch {
+        return null;
+      }
+    };
+
+    const buildAccessPanel = (article, message) => {
+      const panel = document.createElement('section');
+      panel.className = 'content-access-panel';
+      panel.innerHTML = `
+        <span class="content-access-panel__eyebrow">protected content</span>
+        <h2>这篇文章需要解锁后阅读</h2>
+        <p>${message || '作者为这篇文章设置了访问条件。'}</p>
+        <form class="content-access-panel__form">
+          <input type="password" autocomplete="current-password" placeholder="输入文章密码" />
+          <button type="submit">解锁文章</button>
+        </form>
+        <div class="content-access-panel__status" aria-live="polite"></div>
+      `;
+      article.prepend(panel);
+      return panel;
+    };
+
+    const unlockArticle = (article) => {
+      article.dataset.accessLocked = 'false';
+      article.querySelector('.content-access-panel')?.remove();
+      enhanceInlineFeatures(article);
+    };
+
+    articles.forEach((article) => {
+      if (!(article instanceof HTMLElement)) return;
+
+      const passwordHash = article.dataset.accessPasswordHash || '';
+      const blockedCountries = parseList(article.dataset.accessBlockedCountries);
+      const blockedIps = parseList(article.dataset.accessBlockedIps);
+      const hasGate = Boolean(passwordHash || blockedCountries.length || blockedIps.length);
+
+      if (!hasGate) {
+        enhanceInlineFeatures(article);
+        return;
+      }
+
+      article.dataset.accessLocked = 'true';
+      const panel = buildAccessPanel(article, article.dataset.accessMessage || '');
+      const form = panel.querySelector('.content-access-panel__form');
+      const input = panel.querySelector('input');
+      const status = panel.querySelector('.content-access-panel__status');
+
+      const setStatus = (message, state = '') => {
+        if (!(status instanceof HTMLElement)) return;
+        status.textContent = message;
+        status.dataset.state = state;
+      };
+
+      const verifyVisitor = async () => {
+        if (!blockedCountries.length && !blockedIps.length) return true;
+        setStatus('正在确认访问条件...');
+        const visitor = await fetchVisitor();
+        if (!visitor) {
+          setStatus('暂时无法确认访问条件，请稍后重试。', 'error');
+          return false;
+        }
+
+        const country = typeof visitor.country_code === 'string' ? visitor.country_code.toUpperCase() : '';
+        const ip = typeof visitor.ip === 'string' ? visitor.ip.toUpperCase() : '';
+        if ((country && blockedCountries.includes(country)) || (ip && blockedIps.includes(ip))) {
+          panel.classList.add('is-denied');
+          form?.setAttribute('hidden', '');
+          setStatus('当前网络环境不可访问这篇文章。', 'error');
+          return false;
+        }
+        return true;
+      };
+
+      void (async () => {
+        const visitorAllowed = await verifyVisitor();
+        if (!visitorAllowed) return;
+        if (!passwordHash) {
+          unlockArticle(article);
+          return;
+        }
+        setStatus('请输入文章密码继续阅读。');
+      })();
+
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!(input instanceof HTMLInputElement)) return;
+        const nextHash = await hashText(input.value);
+        if (nextHash && nextHash === passwordHash) {
+          unlockArticle(article);
+          return;
+        }
+        setStatus('密码不正确。', 'error');
+      });
+    });
+  })();
+</script>

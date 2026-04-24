@@ -1,5 +1,7 @@
 ---
+import { createHash } from 'node:crypto';
 import { getCollection, render } from 'astro:content';
+import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
 import PostNav from '../../components/theme/PostNav.astro';
@@ -10,13 +12,15 @@ import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
   estimateReadingMinutes,
   estimateWordCount,
+  getCategoryPath,
   getRelatedPosts,
+  getTagPath,
   resolveCategory,
   resolveCover,
   resolveCoverAlt,
-  resolveGroup,
   sortPostsByDate,
 } from '../../lib/content';
+import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
 import { createSidebarData } from '../../lib/theme';
 
 export async function getStaticPaths() {
@@ -43,14 +47,65 @@ const previousPost = postIndex > 0 ? allPosts[postIndex - 1] : null;
 const nextPost = postIndex >= 0 && postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null;
 
 const wordCount = estimateWordCount(entry);
+const formatHeroDate = (date: Date) => {
+  return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
+};
+const category = resolveCategory(entry);
+const isOriginal = entry.data.author.trim().toLowerCase() === siteConfig.site.author.name.trim().toLowerCase();
+const originalBadge = siteConfig.post.hero.detectOriginalTag ? [isOriginal ? '原创' : '转载'] : [];
+const scannedTags = [...new Set(entry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
+const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length);
+const badges = [...originalBadge, ...scannedTags.slice(0, tagLimit)];
+const heroImage = resolveCover(entry);
+const heroImageAlt = resolveCoverAlt(entry);
+const heroImageUrl = new URL(heroImage, siteConfig.site.url);
+const heroImageOrigin = heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
 const meta = [
-  `发表于 ${entry.data.pubDate.toLocaleDateString('zh-CN')}`,
-  `更新于 ${entry.data.pubDate.toLocaleDateString('zh-CN')}`,
-  `字数 ${wordCount.toLocaleString('zh-CN')}`,
-  `阅读 ${estimateReadingMinutes(entry)} 分钟`,
-];
-
-const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)];
+  { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(entry.data.pubDate), icon: 'calendar' as const },
+  entry.data.updatedDate && {
+    label: siteConfig.post.hero.metaLabels.updated,
+    value: formatHeroDate(entry.data.updatedDate),
+    icon: 'refresh' as const,
+  },
+  { label: siteConfig.post.hero.metaLabels.category, value: category, icon: 'folder' as const },
+  { label: siteConfig.post.hero.metaLabels.words, value: wordCount.toLocaleString('zh-CN'), icon: 'file' as const },
+  { label: siteConfig.post.hero.metaLabels.reading, value: `${estimateReadingMinutes(entry)} min`, icon: 'clock' as const },
+  { label: siteConfig.post.hero.metaLabels.views, value: '0 次', runtime: 'views' as const, icon: 'eye' as const },
+  { label: siteConfig.post.hero.metaLabels.dwell, value: '0 min', runtime: 'dwell' as const, icon: 'timer' as const },
+].filter(Boolean) as {
+  label: string;
+  value: string;
+  runtime?: 'views' | 'dwell';
+  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
+}[];
+const access = entry.data.access;
+const accessPasswordHash = access?.passwordHash ?? (access?.password ? createHash('sha256').update(access.password).digest('hex') : '');
+const accessBlockedCountries = access?.blockedCountries?.map((item) => item.toUpperCase()).join(',') ?? '';
+const accessBlockedIps = access?.blockedIps?.map((item) => item.toUpperCase()).join(',') ?? '';
+const hasAccessGate = Boolean(accessPasswordHash || accessBlockedCountries || accessBlockedIps);
+const commentsEnabled = hasConfiguredCommentDatabase(siteConfig.integrations.comments);
+sidebarData.postContext = {
+  title: entry.data.title,
+  summary: entry.data.description,
+  category: {
+    label: category,
+    href: getCategoryPath(category),
+  },
+  meta: [
+    `${siteConfig.post.hero.metaLabels.published} ${formatHeroDate(entry.data.pubDate)}`,
+    `${wordCount.toLocaleString('zh-CN')} 字`,
+    `${estimateReadingMinutes(entry)} min`,
+  ],
+  tags: scannedTags.slice(0, 8).map((tag) => ({
+    label: tag,
+    href: getTagPath(tag),
+  })),
+  actions: [
+    ...(commentsEnabled ? [{ label: '跳到评论', href: '#post-comment', kind: 'comment' as const }] : []),
+    { label: '支持作者', href: '/about/#about-reward', kind: 'reward' as const },
+    { label: '查看归档', href: '/archives/', kind: 'archive' as const },
+  ],
+};
 ---
 
 <BlogLayout
@@ -59,20 +114,44 @@ const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)
   sidebarData={sidebarData}
   pageType="post"
 >
+  <Fragment slot="head">
+    {heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
+    <link
+      rel="preload"
+      as="image"
+      href={heroImage}
+      crossorigin={heroImageOrigin ? 'anonymous' : undefined}
+    />
+  </Fragment>
+
   <Fragment slot="hero">
     <PostHero
+      slug={entry.id}
       title={entry.data.title}
-      image={resolveCover(entry)}
-      imageAlt={resolveCoverAlt(entry)}
+      summary={entry.data.description ?? siteConfig.post.hero.summaryFallback}
+      image={heroImage}
+      imageAlt={heroImageAlt}
+      fallbackImage={siteConfig.post.hero.fallbackImage}
       badges={badges}
       meta={meta}
+      runtimeMetrics={siteConfig.post.hero.runtimeMetrics}
     />
   </Fragment>
 
   <section id="post" class="post-page-shell">
-    <article id="article-container" class="theme-card article-body post-content">
+    <article
+      id="article-container"
+      class="theme-card article-body post-content"
+      data-content-features
+      data-access-locked={hasAccessGate ? 'true' : undefined}
+      data-access-password-hash={accessPasswordHash || undefined}
+      data-access-blocked-countries={accessBlockedCountries || undefined}
+      data-access-blocked-ips={accessBlockedIps || undefined}
+      data-access-message={access?.message ?? undefined}
+    >
       <Content />
     </article>
+    <ContentFeatureEnhancer />
   </section>
 
   {siteConfig.theme.features.postCopyright && (
@@ -82,7 +161,7 @@ const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)
       authorName={siteConfig.site.author.name}
       authorRole={siteConfig.site.author.role}
       authorAvatar={siteConfig.site.author.avatar}
-      badge={siteConfig.post.copyright.badge}
+      badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
       copyrightTitle={siteConfig.post.copyright.title}
       notice={siteConfig.post.copyright.notice}
       copyLabel={siteConfig.post.copyright.copyLabel}
@@ -98,7 +177,7 @@ const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)
       copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
       shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
       shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
-      category={resolveCategory(entry)}
+      category={category}
       tags={entry.data.tags}
     />
   )}
@@ -113,18 +192,20 @@ const badges = ['原创', resolveCategory(entry), ...entry.data.tags.slice(0, 2)
     />
   )}
 
-  <PostComments
-    client:visible
-    slug={entry.id}
-    title={entry.data.title}
-    heading={siteConfig.post.comments.title}
-    policyLabel={siteConfig.post.comments.policyLabel}
-    notice={siteConfig.post.comments.notice}
-    submitLabel={siteConfig.post.comments.submitLabel}
-    previewLabel={siteConfig.post.comments.previewLabel}
-    emptyTitle={siteConfig.post.comments.emptyTitle}
-    emptySummary={siteConfig.post.comments.emptySummary}
-    tips={siteConfig.post.comments.tips}
-    integration={siteConfig.integrations.comments}
-  />
+  {commentsEnabled && (
+    <PostComments
+      client:only="react"
+      slug={entry.id}
+      title={entry.data.title}
+      heading={siteConfig.post.comments.title}
+      policyLabel={siteConfig.post.comments.policyLabel}
+      notice={siteConfig.post.comments.notice}
+      submitLabel={siteConfig.post.comments.submitLabel}
+      previewLabel={siteConfig.post.comments.previewLabel}
+      emptyTitle={siteConfig.post.comments.emptyTitle}
+      emptySummary={siteConfig.post.comments.emptySummary}
+      tips={siteConfig.post.comments.tips}
+      integration={siteConfig.integrations.comments}
+    />
+  )}
 </BlogLayout>

@@ -16,6 +16,7 @@ export function TocObserver() {
 
     const links = Array.from(tocCard.querySelectorAll<HTMLAnchorElement>('.toc-link'));
     if (links.length === 0) return;
+    const tocContent = tocCard.querySelector<HTMLElement>('.toc-content');
 
     const headings = links
       .map((link) => {
@@ -54,6 +55,21 @@ export function TocObserver() {
     let activeId = '';
     let frame = 0;
 
+    const keepActiveLinkVisible = (link: HTMLAnchorElement) => {
+      if (!tocContent || tocContent.matches(':hover') || tocContent.contains(document.activeElement)) return;
+
+      const contentRect = tocContent.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      const topInset = contentRect.top + 12;
+      const bottomInset = contentRect.bottom - 12;
+
+      if (linkRect.top < topInset) {
+        tocContent.scrollTop -= topInset - linkRect.top;
+      } else if (linkRect.bottom > bottomInset) {
+        tocContent.scrollTop += linkRect.bottom - bottomInset;
+      }
+    };
+
     const update = () => {
       const activationOffset = Math.min(220, Math.max(152, window.innerHeight * 0.18));
       const articleRect = article.getBoundingClientRect();
@@ -84,8 +100,8 @@ export function TocObserver() {
 
       if (active?.id && active.id !== activeId) {
         activeId = active.id;
-        active.link.scrollIntoView({ block: 'nearest' });
         tocCard.dataset.activeHeading = active.id;
+        keepActiveLinkVisible(active.link);
       }
 
       if (active) {
@@ -112,6 +128,8 @@ export function TocObserver() {
     update();
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(article);
 
     const onClick = (event: Event) => {
       const target = event.target instanceof HTMLElement ? event.target.closest<HTMLAnchorElement>('.toc-link, .article-heading-anchor__jump') : null;
@@ -132,6 +150,7 @@ export function TocObserver() {
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
       window.removeEventListener('scroll', scheduleUpdate);
       window.removeEventListener('resize', scheduleUpdate);
       tocCard.removeEventListener('click', onClick);

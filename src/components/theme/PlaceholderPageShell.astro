@@ -1,0 +1,42 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  statusLabel: string;
+  notes: string[];
+}
+
+const { eyebrow, title, summary, statusLabel, notes } = Astro.props;
+---
+
+<section class="placeholder-page">
+  <div class="placeholder-page__hero theme-card">
+    <div class="placeholder-page__copy">
+      <span class="placeholder-page__eyebrow">{eyebrow}</span>
+      <h1>{title}</h1>
+      <p>{summary}</p>
+      <div class="placeholder-page__actions">
+        <a href="/" class="theme-button">返回首页</a>
+        <a href="/archives/" class="theme-button theme-button--ghost">查看归档</a>
+      </div>
+    </div>
+
+    <div class="placeholder-page__status">
+      <img src="/media/anzhiyu/friend_404.gif" alt={title} loading="eager" decoding="async" />
+      <div class="placeholder-page__status-copy">
+        <strong>{statusLabel}</strong>
+        <span>当前页面已预留完成，后续内容可以直接在这个路由上继续扩展。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="placeholder-page__notes theme-card">
+    {notes.map((note) => (
+      <article class="placeholder-page__note">
+        <span class="placeholder-page__note-index" aria-hidden="true"></span>
+        <p>{note}</p>
+      </article>
+    ))}
+  </div>
+</section>

@@ -1,5 +1,18 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { CommentProvider } from '../../config/site';
+import {
+  createDemoLocalThread,
+  createCommentId,
+  createPresetCommentIdentity,
+  getCommentInitials,
+  normaliseComment,
+  readCommentIdentity,
+  readLocalThread,
+  writeCommentIdentity,
+  type CommentIdentity,
+  type CommentStatus,
+  type StoredComment,
+} from '../../lib/comment-client';
 
 type CommentsIntegrationConfig = Readonly<{
   provider: CommentProvider;
@@ -41,152 +54,26 @@ type PostCommentsProps = {
   integration: CommentsIntegrationConfig;
 };
 
-type StoredComment = {
-  id: string;
-  name: string;
-  email: string;
-  website: string;
-  message: string;
-  createdAt: string;
-};
-
 type CommentForm = {
-  name: string;
-  email: string;
-  website: string;
   message: string;
 };
-
-type ProviderStatus = 'idle' | 'loading' | 'ready' | 'error';
-type RemoteProvider = Exclude<CommentProvider, 'local'>;
-type ScriptProvider = Exclude<CommentProvider, 'local' | 'cloudflare'>;
-
-type WalineGlobal = {
-  init: (options: Record<string, unknown>) => { destroy?: () => void } | void;
-};
-
-type TwikooGlobal = {
-  init: (options: Record<string, unknown>) => { destroy?: () => void } | void;
-};
-
-declare global {
-  interface Window {
-    Waline?: WalineGlobal;
-    twikoo?: TwikooGlobal;
-  }
-}
 
 const LIMIT = 500;
-const scriptCache = new Map<string, Promise<void>>();
-const styleCache = new Map<string, Promise<void>>();
 
-function normaliseWebsite(value: string) {
-  if (!value) return '';
-  if (/^https?:\/\//i.test(value)) return value;
-  return `https://${value}`;
-}
-
-function loadScript(src: string) {
-  const cached = scriptCache.get(src);
-  if (cached) return cached;
-
-  const promise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
-    if (existing?.dataset.loaded === 'true') {
-      resolve();
-      return;
-    }
-
-    const script = existing ?? document.createElement('script');
-    script.src = src;
-    script.async = true;
-    script.defer = true;
-
-    script.addEventListener('load', () => {
-      script.dataset.loaded = 'true';
-      resolve();
-    }, { once: true });
-
-    script.addEventListener('error', () => {
-      scriptCache.delete(src);
-      reject(new Error(`Failed to load script: ${src}`));
-    }, { once: true });
-
-    if (!existing) document.head.appendChild(script);
-  });
-
-  scriptCache.set(src, promise);
-  return promise;
-}
-
-function loadStyle(href: string) {
-  const cached = styleCache.get(href);
-  if (cached) return cached;
-
-  const promise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLLinkElement>(`link[href="${href}"]`);
-    if (existing?.dataset.loaded === 'true') {
-      resolve();
-      return;
-    }
-
-    const link = existing ?? document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-
-    link.addEventListener('load', () => {
-      link.dataset.loaded = 'true';
-      resolve();
-    }, { once: true });
-
-    link.addEventListener('error', () => {
-      styleCache.delete(href);
-      reject(new Error(`Failed to load style: ${href}`));
-    }, { once: true });
-
-    if (!existing) document.head.appendChild(link);
-  });
-
-  styleCache.set(href, promise);
-  return promise;
-}
-
-function resolveRemoteProvider(integration: CommentsIntegrationConfig): ScriptProvider | null {
-  if (integration.provider === 'giscus') {
-    const { repo, repoId, category, categoryId } = integration.giscus;
-    if (repo && repoId && category && categoryId) return 'giscus';
+function formatCommentTime(value: string) {
+  try {
+    return new Date(value).toLocaleString('zh-CN');
+  } catch {
+    return value;
   }
-
-  if (integration.provider === 'waline' && integration.waline.serverURL) return 'waline';
-  if (integration.provider === 'twikoo' && integration.twikoo.envId) return 'twikoo';
-  return null;
 }
 
-function resolveSelectedExternalProvider(provider: CommentProvider): ScriptProvider | null {
-  if (provider === 'giscus' || provider === 'waline' || provider === 'twikoo') return provider;
-  return null;
+function renderParagraphs(comment: StoredComment) {
+  return comment.message.split(/\n+/).map((item) => item.trim()).filter(Boolean);
 }
 
-function getProviderName(provider: RemoteProvider | null) {
-  if (provider === 'cloudflare') return 'Cloudflare';
-  if (provider === 'giscus') return 'Giscus';
-  if (provider === 'waline') return 'Waline';
-  if (provider === 'twikoo') return 'Twikoo';
-  return 'Local';
-}
-
-function getCloudflareSyncLabel(status: ProviderStatus) {
-  if (status === 'ready') return '远端同步已连接';
-  if (status === 'loading') return '正在同步';
-  if (status === 'error') return '同步异常，已保留本地记录';
-  return '等待同步';
-}
-
-function getExternalProviderStatusLabel(status: ProviderStatus) {
-  if (status === 'ready') return '外接评论已挂载';
-  if (status === 'loading') return '正在接入';
-  if (status === 'error') return '接入失败';
-  return '等待接入';
+function emitThreadChange() {
+  window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
 }
 
 export function PostComments({
@@ -207,89 +94,68 @@ export function PostComments({
     integration.provider === 'cloudflare' && integration.cloudflare.apiBase
       ? integration.cloudflare.apiBase.replace(/\/$/, '')
       : '';
-  const cloudflareEnabled = cloudflareApiBase.length > 0;
-  const selectedExternalProvider = resolveSelectedExternalProvider(integration.provider);
-  const remoteProvider = resolveRemoteProvider(integration);
-  const localBoardEnabled = !selectedExternalProvider;
-  const [providerStatus, setProviderStatus] = useState<ProviderStatus>('idle');
-  const [cloudflareStatus, setCloudflareStatus] = useState<ProviderStatus>(cloudflareEnabled ? 'loading' : 'idle');
+  const canSync = cloudflareApiBase.length > 0;
+  const localTestingEnabled = integration.provider === 'local' || integration.fallback === 'local';
+
+  const [identity, setIdentity] = useState<CommentIdentity | null>(null);
   const [comments, setComments] = useState<StoredComment[]>([]);
   const [storageReady, setStorageReady] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [form, setForm] = useState<CommentForm>({
-    name: '',
-    email: '',
-    website: '',
-    message: '',
-  });
-  const providerMountRef = useRef<HTMLDivElement>(null);
-  const providerCleanupRef = useRef<(() => void) | null>(null);
-  const providerShellSummary = selectedExternalProvider
-    ? remoteProvider
-      ? `当前页面已经切换到 ${getProviderName(selectedExternalProvider)} 外接评论模式，真实评论流会直接挂载到右侧区域，本地评论板不会同时渲染。`
-      : `当前页面已经切换到 ${getProviderName(selectedExternalProvider)} 外接评论模式，本地评论板不会同时渲染；补齐 provider 参数后，真实评论流会直接挂载到右侧区域。`
-    : '';
-  const localBoardSummary = cloudflareEnabled
-    ? '当前以本地评论板作为主交互层，提交后会立即写入本地状态，并继续同步到 Cloudflare 评论接口，方便保持本地 DB 测试和真实评论流的接近感。'
-    : '当前以本地评论板作为主交互层，在浏览器内保留留言、预览和输入状态，用来继续对齐评论区的布局、交互和反馈。';
-  const localBoardTips = [...tips];
+  const [form, setForm] = useState<CommentForm>({ message: '' });
+  const [replyTargetId, setReplyTargetId] = useState('');
+  const [quoteTargetId, setQuoteTargetId] = useState('');
+  const [noticeText, setNoticeText] = useState('');
 
-  if (cloudflareEnabled) {
-    localBoardTips.push(`Cloudflare · ${getCloudflareSyncLabel(cloudflareStatus)}`);
-  } else {
-    localBoardTips.push('本地 DB 测试中');
-  }
+  const isAdmin = identity?.role === 'admin';
+  const replyTarget = comments.find((comment) => comment.id === replyTargetId) ?? null;
+  const quoteTarget = comments.find((comment) => comment.id === quoteTargetId) ?? null;
+  const remaining = LIMIT - form.message.length;
+  const canSubmit = Boolean(identity && form.message.trim().length > 0);
 
   useEffect(() => {
-    if (!localBoardEnabled) {
-      setComments([]);
-      setStorageReady(false);
-      return;
-    }
+    const syncIdentity = () => {
+      setIdentity(readCommentIdentity());
+    };
 
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (!raw) {
-        setStorageReady(true);
-        return;
-      }
-      const parsed = JSON.parse(raw) as StoredComment[];
-      if (Array.isArray(parsed)) setComments(parsed);
-    } catch {
-      try {
-        window.localStorage.removeItem(storageKey);
-      } catch {}
-    } finally {
-      setStorageReady(true);
-    }
-  }, [localBoardEnabled, storageKey]);
+    syncIdentity();
+    setComments(readLocalThread(slug));
+    setStorageReady(true);
+
+    const onAccountChange = (event: Event) => {
+      const detail = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
+      setIdentity(detail);
+    };
+
+    window.addEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
+    window.addEventListener('storage', syncIdentity);
+
+    return () => {
+      window.removeEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
+      window.removeEventListener('storage', syncIdentity);
+    };
+  }, [slug]);
 
   useEffect(() => {
-    if (!localBoardEnabled || !storageReady) return;
+    if (!storageReady) return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(comments));
+      emitThreadChange();
     } catch {}
-  }, [comments, localBoardEnabled, storageKey, storageReady]);
+  }, [comments, storageKey, storageReady]);
 
   useEffect(() => {
-    if (!localBoardEnabled || !cloudflareEnabled) return;
-
+    if (!canSync) return;
     let cancelled = false;
 
     const boot = async () => {
-      setCloudflareStatus('loading');
-
       try {
         const response = await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`);
-        if (!response.ok) throw new Error(`Cloudflare comments GET failed: ${response.status}`);
+        if (!response.ok) throw new Error(`comments GET failed: ${response.status}`);
         const payload = (await response.json()) as { comments?: StoredComment[] };
-        if (cancelled) return;
-        if (Array.isArray(payload.comments)) setComments(payload.comments);
-        setCloudflareStatus('ready');
-      } catch {
-        if (cancelled) return;
-        setCloudflareStatus('error');
-      }
+        if (cancelled || !Array.isArray(payload.comments)) return;
+        const nextComments = payload.comments.map(normaliseComment).filter(Boolean) as StoredComment[];
+        if (nextComments.length) setComments(nextComments);
+      } catch {}
     };
 
     void boot();
@@ -297,398 +163,446 @@ export function PostComments({
     return () => {
       cancelled = true;
     };
-  }, [cloudflareApiBase, cloudflareEnabled, localBoardEnabled, slug]);
+  }, [canSync, cloudflareApiBase, slug]);
 
-  useEffect(() => {
-    if (!selectedExternalProvider || !providerMountRef.current) return;
+  const commentsById = useMemo(() => new Map(comments.map((comment) => [comment.id, comment])), [comments]);
+  const childComments = useMemo(() => {
+    const buckets = new Map<string, StoredComment[]>();
 
-    let cancelled = false;
-    const mountNode = providerMountRef.current;
+    for (const comment of comments) {
+      if (!comment.parentId) continue;
+      const bucket = buckets.get(comment.parentId) ?? [];
+      bucket.push(comment);
+      buckets.set(comment.parentId, bucket);
+    }
 
-    const boot = async () => {
-      providerCleanupRef.current?.();
-      providerCleanupRef.current = null;
-      mountNode.innerHTML = '';
+    return buckets;
+  }, [comments]);
 
-      if (!remoteProvider) {
-        setProviderStatus('idle');
-        return;
-      }
-
-      setProviderStatus('loading');
-
-      try {
-        if (remoteProvider === 'giscus') {
-          await new Promise<void>((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://giscus.app/client.js';
-            script.async = true;
-            script.crossOrigin = 'anonymous';
-            script.setAttribute('data-repo', integration.giscus.repo);
-            script.setAttribute('data-repo-id', integration.giscus.repoId);
-            script.setAttribute('data-category', integration.giscus.category);
-            script.setAttribute('data-category-id', integration.giscus.categoryId);
-            script.setAttribute('data-mapping', integration.giscus.mapping || 'pathname');
-            script.setAttribute('data-strict', '0');
-            script.setAttribute('data-reactions-enabled', '1');
-            script.setAttribute('data-emit-metadata', '0');
-            script.setAttribute('data-input-position', 'top');
-            script.setAttribute('data-theme', integration.giscus.theme || 'light');
-            script.setAttribute('data-lang', 'zh-CN');
-            script.addEventListener('load', () => resolve(), { once: true });
-            script.addEventListener('error', () => reject(new Error('Giscus failed to load')), { once: true });
-            mountNode.appendChild(script);
-          });
-        }
-
-        if (remoteProvider === 'waline') {
-          await Promise.all([
-            loadStyle('https://unpkg.com/@waline/client@v3/dist/waline.css'),
-            loadScript('https://unpkg.com/@waline/client@v3/dist/waline.js'),
-          ]);
-
-          const waline = window.Waline;
-          if (!waline?.init) throw new Error('Waline init unavailable');
-          const instance = waline.init({
-            el: mountNode,
-            serverURL: integration.waline.serverURL,
-            lang: integration.waline.lang || 'zh-CN',
-            path: window.location.pathname,
-            pageSize: integration.waline.pageSize || 10,
-          });
-          providerCleanupRef.current = () => instance?.destroy?.();
-        }
-
-        if (remoteProvider === 'twikoo') {
-          await loadScript('https://cdn.staticfile.org/twikoo/1.6.44/twikoo.all.min.js');
-          const twikoo = window.twikoo;
-          if (!twikoo?.init) throw new Error('Twikoo init unavailable');
-          const instance = twikoo.init({
-            envId: integration.twikoo.envId,
-            region: integration.twikoo.region || undefined,
-            el: mountNode,
-            path: window.location.pathname,
-            lang: integration.twikoo.lang || 'zh-CN',
-          });
-          providerCleanupRef.current = () => instance?.destroy?.();
-        }
-
-        if (!cancelled) {
-          window.setTimeout(() => {
-            if (!cancelled) setProviderStatus('ready');
-          }, 180);
-        }
-      } catch {
-        if (cancelled) return;
-        setProviderStatus('error');
-      }
-    };
-
-    boot();
-
-    return () => {
-      cancelled = true;
-      providerCleanupRef.current?.();
-      providerCleanupRef.current = null;
-    };
-  }, [integration, remoteProvider, selectedExternalProvider]);
-
-  const remaining = LIMIT - form.message.length;
-  const canSubmit = form.name.trim().length > 0 && form.message.trim().length > 0;
+  const rootComments = useMemo(() => {
+    return comments
+      .filter((comment) => !comment.parentId)
+      .sort((left, right) => {
+        if (left.status === 'pinned' && right.status !== 'pinned') return -1;
+        if (right.status === 'pinned' && left.status !== 'pinned') return 1;
+        return new Date(right.createdAt).valueOf() - new Date(left.createdAt).valueOf();
+      });
+  }, [comments]);
 
   const previewParagraphs = useMemo(
     () => form.message.split(/\n+/).map((item) => item.trim()).filter(Boolean),
     [form.message],
   );
 
-  const onFieldChange =
-    (field: keyof CommentForm) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const nextValue = field === 'message' ? event.target.value.slice(0, LIMIT) : event.target.value;
-      setForm((current) => ({ ...current, [field]: nextValue }));
-    };
+  const requestAccount = () => {
+    setNoticeText('需要先创建一个账号后才能评论。');
+    window.dispatchEvent(new CustomEvent('shijianus:comment-account-required'));
+  };
+
+  const usePresetAccount = (role: 'admin' | 'reader') => {
+    const preset = createPresetCommentIdentity(role);
+    writeCommentIdentity(preset);
+    setNoticeText(
+      role === 'admin'
+        ? '已切换到管理员测试账号。建议先验证置顶、限制、编辑、删除、追评和引用流程。'
+        : '已切换到读者测试账号。现在可以复查普通访客的评论、点赞和追评体验。',
+    );
+  };
+
+  const loadDemoComments = () => {
+    const demoComments = createDemoLocalThread(slug);
+
+    setComments((current) => {
+      const demoIds = new Set(demoComments.map((comment) => comment.id));
+      const preservedComments = current.filter((comment) => !demoIds.has(comment.id));
+      return [...demoComments, ...preservedComments];
+    });
+    setReplyTargetId('');
+    setQuoteTargetId('');
+    setPreview(false);
+    setNoticeText('已填充演示评论。推荐先使用管理员测试账号走完整套管理动作。');
+  };
+
+  const clearLocalComments = () => {
+    if (comments.length === 0) {
+      setNoticeText('当前文章还没有本地评论可清空。');
+      return;
+    }
+
+    if (!window.confirm('确认清空当前文章的本地评论线程吗？')) return;
+
+    setComments([]);
+    setReplyTargetId('');
+    setQuoteTargetId('');
+    setPreview(false);
+    setNoticeText('当前文章的本地评论线程已清空。');
+  };
+
+  const syncComment = async (entry: StoredComment) => {
+    if (!canSync) return;
+    try {
+      await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          title,
+          ...entry,
+        }),
+      });
+    } catch {}
+  };
 
   const submit = async () => {
+    if (!identity) {
+      requestAccount();
+      return;
+    }
+
     if (!canSubmit) return;
 
     const entry: StoredComment = {
-      id: `${Date.now()}`,
-      name: form.name.trim(),
-      email: form.email.trim(),
-      website: normaliseWebsite(form.website.trim()),
+      id: createCommentId('comment'),
+      authorId: identity.id,
+      name: identity.name,
+      email: identity.email,
+      website: identity.website,
+      avatar: identity.avatar,
       message: form.message.trim(),
       createdAt: new Date().toISOString(),
+      parentId: replyTargetId || undefined,
+      quoteId: quoteTargetId || undefined,
+      likes: [],
+      status: 'published',
     };
 
-    if (cloudflareEnabled) {
-      setCloudflareStatus('loading');
-
-      try {
-        const response = await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            slug,
-            title,
-            name: entry.name,
-            email: entry.email,
-            website: entry.website,
-            message: entry.message,
-          }),
-        });
-
-        if (!response.ok) throw new Error(`Cloudflare comments POST failed: ${response.status}`);
-        const payload = (await response.json()) as { comment?: StoredComment };
-        const savedComment = payload.comment ?? entry;
-        setComments((current) => [savedComment, ...current.filter((item) => item.id !== savedComment.id)]);
-        setCloudflareStatus('ready');
-      } catch {
-        setComments((current) => [entry, ...current]);
-        setCloudflareStatus('error');
-      }
-    } else {
-      setComments((current) => [entry, ...current]);
-    }
-
-    setForm({ name: '', email: '', website: '', message: '' });
+    setComments((current) => [entry, ...current]);
+    setForm({ message: '' });
     setPreview(false);
+    setReplyTargetId('');
+    setQuoteTargetId('');
+    setNoticeText(replyTarget ? `已回复 @${replyTarget.name}。` : '评论已发布。');
+    await syncComment(entry);
   };
 
-  const commentStatusLabel = localBoardEnabled
-    ? cloudflareEnabled
-      ? `本地评论板 / ${getCloudflareSyncLabel(cloudflareStatus)} · ${comments.length} 条记录`
-      : `本地评论板 / 浏览器存储 · ${comments.length} 条记录`
-    : `${getProviderName(selectedExternalProvider)} / ${getExternalProviderStatusLabel(providerStatus)}`;
-  const commentHeadSummary = localBoardEnabled
-    ? cloudflareEnabled
-      ? '当前以本地评论板作为唯一评论入口，留言会先进入本地测试流，再继续尝试同步到 Cloudflare。'
-      : '当前以本地评论板作为唯一评论入口，留言、预览和浏览器存储会保留完整的作者化输入体验。'
-    : `当前以 ${getProviderName(selectedExternalProvider)} 作为唯一评论入口，本地评论板不会同时渲染。`;
-  const commentHeadTags = localBoardEnabled
-    ? ['单模式评论', cloudflareEnabled ? '本地 DB + Cloudflare' : '浏览器存储']
-    : ['单模式评论', `${getProviderName(selectedExternalProvider)} 挂载`];
+  const updateComment = (id: string, updater: (comment: StoredComment) => StoredComment) => {
+    setComments((current) => current.map((comment) => (comment.id === id ? updater(comment) : comment)));
+  };
 
-  return (
-    <section
-      id="post-comment"
-      data-comment-provider={integration.provider}
-      data-comment-adapter={selectedExternalProvider ?? 'none'}
-      data-comment-view={localBoardEnabled ? 'local' : 'provider'}
-      data-comment-sync={localBoardEnabled ? (cloudflareEnabled ? cloudflareStatus : 'idle') : providerStatus}
-    >
-      <div className="comment-head">
-        <div className="comment-head__intro">
-          <span className="comment-head__eyebrow">reader feedback</span>
-          <div className="comment-head__title-block">
-            <span className="comment-headline">{heading}</span>
-            <p className="comment-head__summary">{commentHeadSummary}</p>
-          </div>
-          <div className="comment-head__chips">
-            {commentHeadTags.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
+  const toggleLike = (comment: StoredComment) => {
+    if (!identity) {
+      requestAccount();
+      return;
+    }
+
+    updateComment(comment.id, (current) => {
+      const liked = current.likes.includes(identity.id);
+      return {
+        ...current,
+        likes: liked ? current.likes.filter((item) => item !== identity.id) : [...current.likes, identity.id],
+      };
+    });
+  };
+
+  const startReply = (comment: StoredComment) => {
+    if (!identity) {
+      requestAccount();
+      return;
+    }
+
+    setReplyTargetId(comment.id);
+    setQuoteTargetId('');
+    setForm((current) => ({
+      message: current.message.trim().length ? current.message : `@${comment.name} `,
+    }));
+  };
+
+  const startQuote = (comment: StoredComment) => {
+    if (!identity) {
+      requestAccount();
+      return;
+    }
+
+    setQuoteTargetId(comment.id);
+    setReplyTargetId(comment.id);
+    setForm((current) => ({
+      message: current.message.trim().length ? current.message : `@${comment.name} `,
+    }));
+  };
+
+  const editComment = (comment: StoredComment) => {
+    if (!identity || (comment.authorId !== identity.id && !isAdmin)) return;
+    const nextMessage = window.prompt('修改评论内容', comment.message);
+    if (!nextMessage?.trim()) return;
+    updateComment(comment.id, (current) => ({
+      ...current,
+      message: nextMessage.trim().slice(0, LIMIT),
+      updatedAt: new Date().toISOString(),
+    }));
+  };
+
+  const deleteComment = (comment: StoredComment) => {
+    if (!identity || (comment.authorId !== identity.id && !isAdmin)) return;
+    const confirmed = window.confirm('确认删除这条评论及其追评？');
+    if (!confirmed) return;
+
+    const collectIds = (targetId: string, bucket = new Set<string>()) => {
+      bucket.add(targetId);
+      for (const child of childComments.get(targetId) ?? []) collectIds(child.id, bucket);
+      return bucket;
+    };
+
+    const removing = collectIds(comment.id);
+    setComments((current) => current.filter((item) => !removing.has(item.id)));
+  };
+
+  const setAdminStatus = (comment: StoredComment, status: CommentStatus) => {
+    if (!isAdmin) return;
+    updateComment(comment.id, (current) => ({
+      ...current,
+      status: current.status === status ? 'published' : status,
+      updatedAt: new Date().toISOString(),
+    }));
+  };
+
+  const renderComment = (comment: StoredComment, depth = 0) => {
+    const canManage = Boolean(identity && (identity.id === comment.authorId || isAdmin));
+    const liked = Boolean(identity && comment.likes.includes(identity.id));
+    const isLimited = comment.status === 'limited' && !canManage;
+    const quote = comment.quoteId ? commentsById.get(comment.quoteId) : null;
+    const children = childComments.get(comment.id) ?? [];
+
+    return (
+      <article className={`comment-thread__item depth-${Math.min(depth, 2)} ${comment.status === 'pinned' ? 'is-pinned' : ''}`} key={comment.id}>
+        <div className="comment-thread__avatar">
+          {comment.avatar ? <img src={comment.avatar} alt={comment.name} loading="lazy" /> : <span>{getCommentInitials(comment.name)}</span>}
         </div>
-        <div className="comment-head__meta">
-          <div className="comment-head__meta-card">
-            <span className="comment-head__status">{commentStatusLabel}</span>
-            <div className="comment-randomInfo comment-head__policy">
-              <span className="comment-head__policy-label">{policyLabel}</span>
-              <p className="comment-head__policy-note">{notice}</p>
+        <div className="comment-thread__content">
+          <div className="comment-thread__head">
+            <div className="comment-thread__author">
+              <strong>{comment.name}</strong>
+              {comment.website && (
+                <a className="comment-thread__site" href={comment.website} target="_blank" rel="noreferrer">
+                  {comment.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+              {comment.status === 'pinned' && <span className="comment-thread__badge">已置顶</span>}
+              {comment.status === 'limited' && <span className="comment-thread__badge is-muted">受限</span>}
+            </div>
+            <div className="comment-thread__meta">
+              <time>{formatCommentTime(comment.createdAt)}</time>
+              {comment.updatedAt && <span>已编辑</span>}
             </div>
           </div>
+
+          {quote && !isLimited && (
+            <blockquote className="comment-thread__quote">
+              <span>引用 @{quote.name}</span>
+              <p>{quote.message.slice(0, 96)}</p>
+            </blockquote>
+          )}
+
+          <div className="comment-thread__body">
+            {isLimited ? (
+              <p>这条评论当前只对作者本人和管理员可见。</p>
+            ) : (
+              renderParagraphs(comment).map((item) => <p key={`${comment.id}-${item}`}>{item}</p>)
+            )}
+          </div>
+
+          <div className="comment-thread__actions">
+            <button type="button" className={liked ? 'is-active' : ''} onClick={() => toggleLike(comment)}>
+              喜欢 {comment.likes.length}
+            </button>
+            <button type="button" onClick={() => startReply(comment)}>
+              追评
+            </button>
+            <button type="button" onClick={() => startQuote(comment)}>
+              引用
+            </button>
+            {canManage && (
+              <button type="button" onClick={() => editComment(comment)}>
+                编辑
+              </button>
+            )}
+            {canManage && (
+              <button type="button" onClick={() => deleteComment(comment)}>
+                删除
+              </button>
+            )}
+            {isAdmin && (
+              <button type="button" className={comment.status === 'pinned' ? 'is-active' : ''} onClick={() => setAdminStatus(comment, 'pinned')}>
+                置顶
+              </button>
+            )}
+            {isAdmin && (
+              <button type="button" className={comment.status === 'limited' ? 'is-danger' : ''} onClick={() => setAdminStatus(comment, 'limited')}>
+                限制
+              </button>
+            )}
+          </div>
+
+          {children.length > 0 && (
+            <div className="comment-thread__children">
+              {children
+                .sort((left, right) => new Date(left.createdAt).valueOf() - new Date(right.createdAt).valueOf())
+                .map((child) => renderComment(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      </article>
+    );
+  };
+
+  return (
+    <section id="post-comment" data-comment-provider="managed" data-comment-view={identity ? 'member' : 'guest'}>
+      <div className="comment-toolbar">
+        <div className="comment-toolbar__copy">
+          <span className="comment-toolbar__eyebrow">shijianus comments</span>
+          <strong>{heading}</strong>
+          <small>{comments.length} 条公开评论</small>
+        </div>
+        <div className="comment-toolbar__status-note">
+          <p>
+            {identity
+              ? `${identity.name} 已登录，账号资料与提醒统一在 shijianus console 中维护。`
+              : '当前未登录，评论输入保持灰色锁定；点击输入区后会提示你先创建账号。'}
+          </p>
+          {localTestingEnabled && (
+            <div className="comment-toolbar__testing">
+              <div className="comment-toolbar__testing-copy">
+                <span className="comment-toolbar__testing-label">本地测试快捷入口</span>
+                <small>推荐先使用管理员测试账号，再切换读者账号复查普通访客视角。</small>
+              </div>
+              <div className="comment-toolbar__testing-actions">
+                <button type="button" onClick={() => usePresetAccount('admin')}>
+                  使用管理员测试账号
+                </button>
+                <button type="button" onClick={() => usePresetAccount('reader')}>
+                  使用读者测试账号
+                </button>
+                <button type="button" onClick={loadDemoComments}>
+                  填充演示评论
+                </button>
+                <button type="button" onClick={clearLocalComments}>
+                  清空本地评论
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {!localBoardEnabled && selectedExternalProvider ? (
-        <div className="comment-provider-shell">
-          <div className="comment-provider-shell__intro">
-            <span className="comment-surface__eyebrow">external comment provider</span>
-            <h3>{getProviderName(selectedExternalProvider)}</h3>
-            <p>{providerShellSummary}</p>
-            <div className="comment-provider-shell__status-grid">
-              <div className="comment-provider-shell__status-card">
-                <span>当前模式</span>
-                <strong>外接评论</strong>
-              </div>
-              <div className="comment-provider-shell__status-card">
-                <span>接入状态</span>
-                <strong>{remoteProvider ? getExternalProviderStatusLabel(providerStatus) : '等待配置'}</strong>
-              </div>
-              <div className="comment-provider-shell__status-card">
-                <span>渲染策略</span>
-                <strong>单模式挂载</strong>
-              </div>
+      <div className="comment-wrap">
+        <div className="comment-form-card comment-form-card--compact">
+          {(replyTarget || quoteTarget) && (
+            <div className="comment-reply-context">
+              {replyTarget && <span>追评 @{replyTarget.name}</span>}
+              {quoteTarget && <span>引用 @{quoteTarget.name}</span>}
+              <button
+                type="button"
+                onClick={() => {
+                  setReplyTargetId('');
+                  setQuoteTargetId('');
+                }}
+              >
+                取消
+              </button>
             </div>
-            <div className="comment-surface__tips">
-              <span>{getExternalProviderStatusLabel(providerStatus)}</span>
-              <span>{getProviderName(selectedExternalProvider)}</span>
-              <span>单模式接入</span>
+          )}
+
+          <div className="comment-form-card__editor">
+            <div className="comment-form-card__editor-head">
+              <span className="comment-form-card__label">留言内容</span>
+              <span className="comment-form-card__hint">{identity ? '支持 Ctrl / Command + Enter 快速发送' : '点击后前往控制台创建账号'}</span>
+            </div>
+            <textarea
+              value={form.message}
+              readOnly={!identity}
+              aria-disabled={!identity}
+              className={!identity ? 'is-locked' : ''}
+              onClick={() => {
+                if (!identity) requestAccount();
+              }}
+              onFocus={() => {
+                if (!identity) requestAccount();
+              }}
+              onChange={(event) => setForm({ message: event.target.value.slice(0, LIMIT) })}
+              onKeyDown={(event) => {
+                if (!identity && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault();
+                  requestAccount();
+                  return;
+                }
+
+                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                  event.preventDefault();
+                  void submit();
+                }
+              }}
+              placeholder={identity ? `围绕《${title}》留下你的想法...` : '需要一个账号后才能评论'}
+            />
+          </div>
+
+          <div className="comment-form-card__footer">
+            <span className="comment-form-card__counter">{remaining}/{LIMIT}</span>
+            <div className="comment-form-card__actions">
+              <button
+                type="button"
+                className={preview ? 'is-active' : ''}
+                onClick={() => {
+                  if (!identity) {
+                    requestAccount();
+                    return;
+                  }
+                  setPreview((value) => !value);
+                }}
+              >
+                {previewLabel}
+              </button>
+              <button
+                type="button"
+                className={`is-primary ${!identity ? 'is-disabled' : ''}`}
+                onClick={() => void submit()}
+                aria-disabled={!identity || !canSubmit}
+              >
+                {submitLabel}
+              </button>
             </div>
           </div>
 
-          <div className="comment-provider-shell__card">
-            <div className="comment-provider-shell__card-head">
-              <span className="comment-provider-shell__eyebrow">provider mount</span>
-              <span className="comment-provider-shell__mount-note">
-                {remoteProvider ? '真实评论流会直接渲染在此区域' : '等待补齐 provider 参数'}
-              </span>
+          {noticeText && <div className="comment-inline-notice">{noticeText}</div>}
+
+          {preview && (
+            <div className="comment-preview">
+              <div className="comment-preview__head">
+                <span className="comment-preview__eyebrow">preview</span>
+                <strong>{identity?.name || 'Preview'}</strong>
+              </div>
+              <div className="comment-preview__body">
+                {previewParagraphs.length > 0 ? (
+                  previewParagraphs.map((item) => <p key={item}>{item}</p>)
+                ) : (
+                  <p>输入内容后会在这里预览。</p>
+                )}
+              </div>
             </div>
-            <div className={`comment-provider-shell__status is-${providerStatus}`}>
-              {providerStatus === 'loading' && `正在加载 ${getProviderName(selectedExternalProvider)}...`}
-              {providerStatus === 'ready' && `${getProviderName(selectedExternalProvider)} 已加载`}
-              {providerStatus === 'error' && `${getProviderName(selectedExternalProvider)} 接入失败，请检查 provider 参数`}
-              {providerStatus === 'idle' && `等待接入 ${getProviderName(selectedExternalProvider)}`}
-            </div>
-            <div ref={providerMountRef} className="comment-provider-shell__mount">
-              {!remoteProvider && (
-                <div className="comment-provider-shell__placeholder">
-                  <span className="comment-provider-shell__eyebrow">setup required</span>
-                  <strong>{getProviderName(selectedExternalProvider)} 配置尚未补全</strong>
-                  <p>补齐仓库、分类或服务端参数后，这里会直接挂载外接评论系统，不再同时显示本地评论板。</p>
-                  <div className="comment-provider-shell__placeholder-meta">
-                    <span>外接模式</span>
-                    <span>等待配置</span>
-                    <span>不回落到本地评论板</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
-      ) : (
-        <div className="comment-wrap">
-          <div className="comment-surface">
-            <div className="comment-surface__intro">
-              <span className="comment-surface__eyebrow">local comment board</span>
-              <h3>围绕《{title}》继续讨论</h3>
-              <p>{localBoardSummary}</p>
-              <div className="comment-surface__status-grid">
-                <div className="comment-surface__status-card">
-                  <span>当前模式</span>
-                  <strong>本地评论板</strong>
-                </div>
-                <div className="comment-surface__status-card">
-                  <span>同步状态</span>
-                  <strong>{cloudflareEnabled ? getCloudflareSyncLabel(cloudflareStatus) : '浏览器存储'}</strong>
-                </div>
-                <div className="comment-surface__status-card">
-                  <span>测试路径</span>
-                  <strong>{cloudflareEnabled ? '本地 DB + Cloudflare' : '本地留言记录'}</strong>
-                </div>
-              </div>
-              <div className="comment-surface__tips">
-                {localBoardTips.map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
-              </div>
+
+        <div className="comment-thread comment-thread--scrollable">
+          {rootComments.length > 0 ? (
+            rootComments.map((comment) => renderComment(comment))
+          ) : (
+            <div className="comment-thread__empty">
+              <span className="comment-thread__eyebrow">public comments</span>
+              <strong>{emptyTitle}</strong>
+              <p>{emptySummary}</p>
+              <span className="comment-thread__empty-note">账号准备好后就能发布第一条评论。</span>
             </div>
-
-            <div className="comment-form-card">
-              <div className="comment-form-card__row">
-                <label className="comment-form-card__field">
-                  <span className="comment-form-card__label">昵称</span>
-                  <input value={form.name} onChange={onFieldChange('name')} placeholder="Nickname" />
-                </label>
-                <label className="comment-form-card__field">
-                  <span className="comment-form-card__label">邮箱</span>
-                  <input value={form.email} onChange={onFieldChange('email')} placeholder="Email" />
-                </label>
-                <label className="comment-form-card__field">
-                  <span className="comment-form-card__label">站点</span>
-                  <input value={form.website} onChange={onFieldChange('website')} placeholder="Website" />
-                </label>
-              </div>
-
-              <div className="comment-form-card__editor">
-                <div className="comment-form-card__editor-head">
-                  <span className="comment-form-card__label">留言内容</span>
-                  <span className="comment-form-card__hint">支持 Ctrl / Command + Enter 快速发送</span>
-                </div>
-                <textarea
-                  value={form.message}
-                  onChange={onFieldChange('message')}
-                  onKeyDown={(event) => {
-                    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                      event.preventDefault();
-                      submit();
-                    }
-                  }}
-                  placeholder="留下你的想法..."
-                />
-              </div>
-
-              <div className="comment-form-card__footer">
-                <span className="comment-form-card__counter">{remaining}/{LIMIT}</span>
-                <div className="comment-form-card__actions">
-                  <button type="button" className={preview ? 'is-active' : ''} onClick={() => setPreview((value) => !value)}>
-                    {previewLabel}
-                  </button>
-                  <button type="button" className="is-primary" onClick={() => void submit()} disabled={!canSubmit}>
-                    {submitLabel}
-                  </button>
-                </div>
-              </div>
-
-              {preview && (
-                <div className="comment-preview">
-                  <div className="comment-preview__head">
-                    <span className="comment-preview__eyebrow">live preview</span>
-                    <strong>{form.name || 'Preview'}</strong>
-                  </div>
-                  <div className="comment-preview__body">
-                    {previewParagraphs.length > 0 ? (
-                      previewParagraphs.map((item) => <p key={item}>{item}</p>)
-                    ) : (
-                      <p>输入内容后会在这里预览。</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="comment-thread">
-            {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <article className="comment-thread__item" key={comment.id}>
-                  <div className="comment-thread__avatar">{comment.name.slice(0, 1).toUpperCase()}</div>
-                  <div className="comment-thread__content">
-                    <div className="comment-thread__head">
-                      <div className="comment-thread__author">
-                        <strong>{comment.name}</strong>
-                        {comment.website && (
-                          <a className="comment-thread__site" href={comment.website} target="_blank" rel="noreferrer">
-                            {comment.website.replace(/^https?:\/\//, '')}
-                          </a>
-                        )}
-                      </div>
-                      <div className="comment-thread__meta">
-                        <span className="comment-thread__floor">NO.{String(index + 1).padStart(2, '0')}</span>
-                        <time>{new Date(comment.createdAt).toLocaleString('zh-CN')}</time>
-                      </div>
-                    </div>
-                    <div className="comment-thread__body">
-                      {comment.message.split(/\n+/).map((item) => (
-                        <p key={`${comment.id}-${item}`}>{item}</p>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="comment-thread__empty">
-                <span className="comment-thread__eyebrow">be the first reply</span>
-                <strong>{emptyTitle}</strong>
-                <p>{cloudflareEnabled ? '第一条留言会先出现在这里，并继续尝试同步到 Cloudflare。' : emptySummary}</p>
-                <span className="comment-thread__empty-note">支持昵称、站点链接和多段留言预览。</span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }

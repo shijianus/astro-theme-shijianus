@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { sortPostsByDate } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = sortPostsByDate(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout title="友链计划" showAside={false} pageType="page" sidebarData={sidebarData}>
+  <PlaceholderPageShell
+    eyebrow="shijianus / friends"
+    title="友链计划"
+    summary="友链页先作为正常入口存在，后续可以放精选站点、合作计划、推荐阅读清单或申请说明，不再让导航点进去就是空白。"
+    statusLabel="友链资料待补齐"
+    notes={[
+      '后续可直接扩展成正式友链页，也可以继续细分成申请页和推荐页。',
+      '当前视觉和交互已经对齐主题主站，不会出现独立的临时页面风格。',
+      '如果创作者暂时没有内容，这里仍然会保持一个明确的“正在建设中”状态。',
+    ]}
+  />
+</BlogLayout>

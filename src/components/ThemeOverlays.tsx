@@ -1,14 +1,19 @@
 import React, { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Bell,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  AlertCircle,
   Clipboard,
   Copy,
   ExternalLink,
+  Languages,
+  LogOut,
   MoonStar,
   PanelRightClose,
   PanelRightOpen,
+  Save,
   Sparkles,
   RefreshCw,
   Search,
@@ -16,6 +21,16 @@ import {
   Tags,
   X,
 } from 'lucide-react';
+import {
+  createCommentId,
+  getCommentInitials,
+  normaliseAvatar,
+  normaliseWebsite,
+  readAllLocalThreads,
+  readCommentIdentity,
+  writeCommentIdentity,
+  type CommentIdentity,
+} from '../lib/comment-client';
 import {
   applyThemeWithBackground,
   markBackgroundAsManual,
@@ -26,6 +41,7 @@ import {
   type AsideState,
   type ThemeMode,
 } from '../lib/client-theme';
+import { readStoredLocaleVariant, toggleLocaleVariant, type LocaleVariant } from '../lib/client-locale';
 
 type NavItem = {
   label: string;
@@ -83,6 +99,19 @@ type ThemeOverlaysProps = {
   defaultBackground: string;
   darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
+  consolePanel: {
+    enabled: boolean;
+    defaultOpen: boolean;
+    disabledNotice: string;
+  };
+  accountPanel: {
+    enabled: boolean;
+    providerLabel: string;
+    title: string;
+    summary: string;
+    disabledNotice: string;
+    loginHint: string;
+  };
 };
 
 function isEditableTarget(target: EventTarget | null) {
@@ -109,13 +138,27 @@ export function ThemeOverlays({
   defaultBackground,
   darkBackground,
   backgroundModes,
+  consolePanel,
+  accountPanel,
 }: ThemeOverlaysProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [consoleOpen, setConsoleOpen] = useState(features.centerConsole && consolePanel.enabled && consolePanel.defaultOpen);
+  const [consoleNoticeOpen, setConsoleNoticeOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
   const [background, setBackground] = useState(defaultBackground);
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const [account, setAccount] = useState<CommentIdentity | null>(null);
+  const [accountForm, setAccountForm] = useState({
+    name: '',
+    email: '',
+    website: '',
+    avatar: '',
+  });
+  const [accountNotice, setAccountNotice] = useState('');
+  const [commentThreadVersion, setCommentThreadVersion] = useState(0);
+  const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [rightMenu, setRightMenu] = useState<{ open: boolean; x: number; y: number; selectedText: string }>({
     open: false,
     x: 0,
@@ -146,12 +189,108 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
+  const accountNotifications = useMemo(() => {
+    if (!accountPanel.enabled || !account) return [];
+
+    return readAllLocalThreads()
+      .filter((comment) => {
+        if (comment.authorId === account.id) return false;
+        return comment.message.includes(`@${account.name}`);
+      })
+      .sort((left, right) => new Date(right.createdAt).valueOf() - new Date(left.createdAt).valueOf())
+      .slice(0, 6);
+  }, [account, accountPanel.enabled, commentThreadVersion]);
+
   const cycleBackground = () => {
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
     const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
     markBackgroundAsManual(nextBackground);
     setBackground(nextBackground);
   };
+
+  useEffect(() => {
+    const syncAccount = () => {
+      if (!accountPanel.enabled) {
+        setAccount(null);
+        setAccountForm({
+          name: '',
+          email: '',
+          website: '',
+          avatar: '',
+        });
+        setAccountNeedsAttention(false);
+        return;
+      }
+
+      const next = readCommentIdentity();
+      setAccount(next);
+      setAccountForm({
+        name: next?.name ?? '',
+        email: next?.email ?? '',
+        website: next?.website ?? '',
+        avatar: next?.avatar ?? '',
+      });
+    };
+
+    const onAccountChange = (event: Event) => {
+      if (!accountPanel.enabled) {
+        setAccount(null);
+        setAccountForm({
+          name: '',
+          email: '',
+          website: '',
+          avatar: '',
+        });
+        setAccountNeedsAttention(false);
+        return;
+      }
+
+      const next = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
+      setAccount(next);
+      setAccountForm({
+        name: next?.name ?? '',
+        email: next?.email ?? '',
+        website: next?.website ?? '',
+        avatar: next?.avatar ?? '',
+      });
+      setAccountNeedsAttention(false);
+    };
+
+    const onAccountRequired = () => {
+      setConsoleNoticeOpen(false);
+      setSearchOpen(false);
+      setConsoleOpen(true);
+      setAccountNotice(accountPanel.enabled ? accountPanel.loginHint : accountPanel.disabledNotice);
+      setAccountNeedsAttention(accountPanel.enabled);
+    };
+
+    const onThreadChange = () => {
+      setCommentThreadVersion((value) => value + 1);
+    };
+
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key) return;
+      if (event.key === 'shijianus-comment-account' || event.key === 'shijianus-comment-identity') {
+        syncAccount();
+      }
+      if (event.key.startsWith('shijianus-comments:')) {
+        setCommentThreadVersion((value) => value + 1);
+      }
+    };
+
+    syncAccount();
+    window.addEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
+    window.addEventListener('shijianus:comment-account-required', onAccountRequired);
+    window.addEventListener('shijianus:comment-thread-change', onThreadChange);
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.removeEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
+      window.removeEventListener('shijianus:comment-account-required', onAccountRequired);
+      window.removeEventListener('shijianus:comment-thread-change', onThreadChange);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [accountPanel.disabledNotice, accountPanel.enabled, accountPanel.loginHint]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -184,9 +323,23 @@ export function ThemeOverlays({
     setTheme(savedTheme);
     setAside(savedAside);
     setBackground(savedBackground);
+    setLocaleVariant(readStoredLocaleVariant());
 
-    const openSearch = () => setSearchOpen(true);
-    const openConsole = () => setConsoleOpen(true);
+    const openSearch = () => {
+      setConsoleNoticeOpen(false);
+      setSearchOpen(true);
+    };
+    const openConsole = () => {
+      if (!features.centerConsole) return;
+      if (!consolePanel.enabled) {
+        setSearchOpen(false);
+        setConsoleOpen(false);
+        setConsoleNoticeOpen(true);
+        return;
+      }
+      setConsoleNoticeOpen(false);
+      setConsoleOpen(true);
+    };
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<ThemeMode>;
       setTheme(customEvent.detail ?? 'light');
@@ -194,6 +347,10 @@ export function ThemeOverlays({
     const onBackgroundChange = (event: Event) => {
       const customEvent = event as CustomEvent<string>;
       setBackground(customEvent.detail ?? defaultBackground);
+    };
+    const onLocaleChange = (event: Event) => {
+      const customEvent = event as CustomEvent<LocaleVariant>;
+      setLocaleVariant(customEvent.detail ?? readStoredLocaleVariant());
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && features.searchPanel) {
@@ -205,6 +362,7 @@ export function ThemeOverlays({
       if (event.key === 'Escape') {
         setSearchOpen(false);
         setConsoleOpen(false);
+        setConsoleNoticeOpen(false);
         setRightMenu((menu) => ({ ...menu, open: false }));
       }
     };
@@ -226,6 +384,7 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:open-console', openConsole);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('contextmenu', onContextMenu);
     window.addEventListener('click', closeRightMenu);
@@ -235,21 +394,22 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:open-console', openConsole);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+      window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('click', closeRightMenu);
     };
-  }, [darkBackground, defaultBackground, features.rightClickMenu, features.searchPanel]);
+  }, [consolePanel.enabled, darkBackground, defaultBackground, features.centerConsole, features.rightClickMenu, features.searchPanel]);
 
   useEffect(() => {
-    document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen);
+    document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen || consoleNoticeOpen);
 
     if (searchOpen) {
       window.setTimeout(() => searchInputRef.current?.focus(), 30);
     } else {
       setQuery('');
     }
-  }, [searchOpen, consoleOpen]);
+  }, [consoleNoticeOpen, searchOpen, consoleOpen]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -265,6 +425,47 @@ export function ThemeOverlays({
     const nextAside = aside === 'expanded' ? 'collapsed' : 'expanded';
     syncAside(nextAside);
     setAside(nextAside);
+  };
+
+  const saveAccount = () => {
+    if (!accountPanel.enabled) {
+      setAccountNotice(accountPanel.disabledNotice);
+      return;
+    }
+
+    const name = accountForm.name.trim();
+    if (!name) {
+      setAccountNotice('请先填写昵称。');
+      setAccountNeedsAttention(true);
+      return;
+    }
+
+    const nextAccount: CommentIdentity = {
+      id: account?.id ?? createCommentId('user'),
+      name,
+      email: accountForm.email.trim(),
+      website: normaliseWebsite(accountForm.website.trim()),
+      avatar: normaliseAvatar(accountForm.avatar),
+      role: account?.role ?? 'reader',
+    };
+
+    writeCommentIdentity(nextAccount);
+    setAccount(nextAccount);
+    setAccountNotice('shijianus account 已更新。');
+    setAccountNeedsAttention(false);
+  };
+
+  const clearAccount = () => {
+    writeCommentIdentity(null);
+    setAccount(null);
+    setAccountForm({
+      name: '',
+      email: '',
+      website: '',
+      avatar: '',
+    });
+    setAccountNotice('当前账号已退出，评论将恢复只读。');
+    setAccountNeedsAttention(false);
   };
 
   const copyText = async (value: string) => {
@@ -367,7 +568,7 @@ export function ThemeOverlays({
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
           <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="Close console" />
           <div className="console-card-group" role="dialog" aria-modal="true" aria-label="Theme console">
-            <div className="console-card-group-left">
+            <div className="console-card-group-left console-card-group-left--stack">
               <section className="console-card console-profile">
                 <p className="author-content-item-tips">{brandName} console</p>
                 <h2 className="author-content-item-title">{authorName}</h2>
@@ -391,9 +592,155 @@ export function ThemeOverlays({
                   </span>
                 </div>
               </section>
+
+              <section
+                className={`console-card console-account ${accountNeedsAttention ? 'is-attention' : ''} ${accountPanel.enabled ? '' : 'is-disabled'}`}
+              >
+                <div className="console-card__head">
+                  <div>
+                    <p className="author-content-item-tips">{accountPanel.title}</p>
+                    <h2 className="author-content-item-title">{account ? account.name : '评论账号'}</h2>
+                  </div>
+                  <span className="console-card__head-badge">
+                    <Bell aria-hidden="true" />
+                    <strong>{accountNotifications.length}</strong>
+                  </span>
+                </div>
+
+                <p>{accountPanel.enabled ? accountPanel.summary : accountPanel.disabledNotice}</p>
+
+                <div className="console-account__identity">
+                  <div className="console-account__avatar">
+                    {accountForm.avatar ? (
+                      <img src={accountForm.avatar} alt={accountForm.name || account?.name || brandName} loading="lazy" />
+                    ) : (
+                      <span>{getCommentInitials(accountForm.name || account?.name || brandName)}</span>
+                    )}
+                  </div>
+                  <div className="console-account__status-grid">
+                    <span>
+                      <small>状态</small>
+                      <strong>{account ? '已登录' : '访客'}</strong>
+                    </span>
+                    <span>
+                      <small>权限</small>
+                      <strong>{account?.role === 'admin' ? '管理员' : '普通读者'}</strong>
+                    </span>
+                    <span>
+                      <small>接入</small>
+                      <strong>{accountPanel.enabled ? accountPanel.providerLabel : '未连接'}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                {accountPanel.enabled ? (
+                  <div className="console-account__form">
+                    <label className="console-account__field">
+                      <span>昵称</span>
+                      <input
+                        value={accountForm.name}
+                        onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))}
+                        placeholder="shijianus reader"
+                      />
+                    </label>
+                    <label className="console-account__field">
+                      <span>邮箱</span>
+                      <input
+                        value={accountForm.email}
+                        onChange={(event) => setAccountForm((current) => ({ ...current, email: event.target.value }))}
+                        placeholder="name@example.com"
+                      />
+                    </label>
+                    <label className="console-account__field">
+                      <span>站点</span>
+                      <input
+                        value={accountForm.website}
+                        onChange={(event) => setAccountForm((current) => ({ ...current, website: event.target.value }))}
+                        placeholder="https://example.com"
+                      />
+                    </label>
+                    <label className="console-account__field">
+                      <span>头像链接</span>
+                      <input
+                        value={accountForm.avatar}
+                        onChange={(event) => setAccountForm((current) => ({ ...current, avatar: event.target.value }))}
+                        placeholder="https://..."
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="console-account__empty">
+                    <AlertCircle aria-hidden="true" />
+                    <span>{accountPanel.providerLabel}</span>
+                    <strong>评论数据库未接入</strong>
+                    <p>{accountPanel.disabledNotice}</p>
+                  </div>
+                )}
+
+                {accountNotice && <div className="console-account__notice">{accountNotice}</div>}
+
+                <div className="console-account__actions">
+                  {account && accountPanel.enabled && (
+                    <button type="button" className="theme-icon-button theme-button--ghost" onClick={clearAccount}>
+                      <LogOut aria-hidden="true" />
+                      <span>退出</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="theme-icon-button"
+                    onClick={saveAccount}
+                    disabled={!accountPanel.enabled}
+                    title={accountPanel.enabled ? '保存评论账号' : accountPanel.disabledNotice}
+                  >
+                    <Save aria-hidden="true" />
+                    <span>{account ? '更新账号' : '创建账号'}</span>
+                  </button>
+                </div>
+              </section>
             </div>
 
             <div className="console-card-group-right">
+              <section className="console-card console-notifications">
+                <div className="console-card__head">
+                  <div>
+                    <p className="author-content-item-tips">提醒中心</p>
+                    <h2 className="author-content-item-title">通知与提示</h2>
+                  </div>
+                  <span className="console-card__head-badge">
+                    <Bell aria-hidden="true" />
+                    <strong>{accountNotifications.length}</strong>
+                  </span>
+                </div>
+
+                {account && accountNotifications.length > 0 ? (
+                  <div className="console-notification-list">
+                    {accountNotifications.map((comment) => (
+                      <article className="console-notification-item" key={comment.id}>
+                        <div className="console-notification-item__avatar">
+                          {comment.avatar ? (
+                            <img src={comment.avatar} alt={comment.name} loading="lazy" />
+                          ) : (
+                            <span>{getCommentInitials(comment.name)}</span>
+                          )}
+                        </div>
+                        <div className="console-notification-item__body">
+                          <strong>{comment.name}</strong>
+                          <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
+                          <p>{comment.message.slice(0, 90)}</p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="console-notification-empty">
+                    <Bell aria-hidden="true" />
+                    <strong>{account ? '还没有新的提醒' : '保存账号后这里会显示提醒'}</strong>
+                    <p>{account ? '当有人 @ 你时，这里会集中展示提醒。' : accountPanel.loginHint}</p>
+                  </div>
+                )}
+              </section>
+
               <section className="console-card tags">
                 <p className="author-content-item-tips">Interests</p>
                 <h2 className="author-content-item-title">标签与入口</h2>
@@ -445,6 +792,37 @@ export function ThemeOverlays({
         </section>
       )}
 
+      {features.centerConsole && !consolePanel.enabled && (
+        <section className={`theme-search console-notice ${consoleNoticeOpen ? 'show' : ''}`} aria-hidden={!consoleNoticeOpen}>
+          <button
+            type="button"
+            className="search-mask"
+            onClick={() => setConsoleNoticeOpen(false)}
+            aria-label="Close console notice"
+          />
+          <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label="Console notice">
+            <div className="search-dialog__head">
+              <div>
+                <p className="eyebrow">Console access</p>
+                <h2>控制台暂不可用</h2>
+              </div>
+              <button
+                type="button"
+                className="theme-icon-button theme-button--ghost"
+                onClick={() => setConsoleNoticeOpen(false)}
+                aria-label="Close console notice"
+              >
+                <X className="overlay-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="console-notice-dialog__body">
+              <p>{consolePanel.disabledNotice}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {features.rightClickMenu && (
         <>
           <div id="rightmenu-mask" className={rightMenu.open ? 'show' : ''} aria-hidden="true" />
@@ -485,6 +863,15 @@ export function ThemeOverlays({
               <button type="button" className="rightMenu-item" onClick={toggleTheme}>
                 {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
                 <span>{theme === 'dark' ? '浅色模式' : '深色模式'}</span>
+              </button>
+              <button
+                type="button"
+                id="menu-translate"
+                className="rightMenu-item"
+                onClick={() => setLocaleVariant(toggleLocaleVariant(localeVariant))}
+              >
+                <Languages aria-hidden="true" />
+                <span>{localeVariant === 'zh-CN' ? '切换为繁体中文' : '切换为简体中文'}</span>
               </button>
             </div>
 

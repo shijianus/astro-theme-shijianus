@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import PostCard from '../../components/theme/PostCard.astro';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectCategories, resolveCategory, slugifySegment, sortPostsByDate } from '../../lib/content';
+import { collectCategories, getCategoryPath, resolveCategory, slugifySegment, sortPostsByDate } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
 export async function getStaticPaths() {
@@ -40,7 +40,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
             <a href="/categories/" style="--taxonomy-accent:#5b8cff;">
               <span>#全部分类</span>
             </a>
-            <a href={`/categories/${slugifySegment(categoryLabel)}/`} style="--taxonomy-accent:#5b8cff;">
+            <a href={getCategoryPath(categoryLabel)} style="--taxonomy-accent:#5b8cff;">
               <span>#{categoryLabel}</span>
               <sup>{currentPosts.length}</sup>
             </a>

@@ -1,13 +1,25 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowUp, Dice5, ExternalLink, House, Menu, MoonStar, Search, SunMedium, X } from 'lucide-react';
-import { siteConfig } from '../config/site';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Archive,
+  ArrowUp,
+  ChevronDown,
+  Dice5,
+  ExternalLink,
+  FolderKanban,
+  House,
+  Menu,
+  MoonStar,
+  Search,
+  SunMedium,
+  Tags,
+  UserRound,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
+import { siteConfig, type SiteNavItem } from '../config/site';
 import { applyThemeWithBackground, readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 
-type NavItem = {
-  label: string;
-  href: string;
-  external?: boolean;
-};
+type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children'>;
 
 type SiteHeaderProps = {
   brandName: string;
@@ -16,6 +28,7 @@ type SiteHeaderProps = {
   primary: NavItem[];
   utility: NavItem[];
   quickActions: NavItem[];
+  showCenterConsoleTrigger: boolean;
 };
 
 function isActive(currentPath: string, href: string) {
@@ -31,6 +44,14 @@ function openCenterConsole() {
   window.dispatchEvent(new CustomEvent('shijianus:open-console'));
 }
 
+const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> = {
+  home: House,
+  archive: Archive,
+  category: FolderKanban,
+  tags: Tags,
+  about: UserRound,
+};
+
 export function SiteHeader({
   brandName,
   domainLabel,
@@ -38,13 +59,23 @@ export function SiteHeader({
   primary,
   utility,
   quickActions,
+  showCenterConsoleTrigger,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [scrolled, setScrolled] = useState(false);
+  const consolePressRef = useRef({
+    armed: false,
+    pointerId: -1,
+    x: 0,
+    y: 0,
+  });
 
   const activeLabel = useMemo(() => {
-    return primary.find((item) => isActive(currentPath, item.href))?.label ?? domainLabel;
+    return (
+      primary.find((item) => isActive(currentPath, item.href) || item.children?.some((child) => isActive(currentPath, child.href)))?.label ??
+      domainLabel
+    );
   }, [currentPath, domainLabel, primary]);
 
   const randomAction = quickActions[0] ?? primary[0];
@@ -113,6 +144,66 @@ export function SiteHeader({
     setMenuOpen(false);
   }, [currentPath]);
 
+  useEffect(() => {
+    const resetConsolePress = () => {
+      consolePressRef.current = {
+        armed: false,
+        pointerId: -1,
+        x: 0,
+        y: 0,
+      };
+    };
+
+    window.addEventListener('blur', resetConsolePress);
+    document.addEventListener('visibilitychange', resetConsolePress);
+    return () => {
+      window.removeEventListener('blur', resetConsolePress);
+      document.removeEventListener('visibilitychange', resetConsolePress);
+    };
+  }, []);
+
+  const handleConsolePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    consolePressRef.current = {
+      armed: true,
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    };
+  };
+
+  const handleConsolePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const distance = Math.hypot(event.clientX - consolePressRef.current.x, event.clientY - consolePressRef.current.y);
+    if (distance > 8) {
+      consolePressRef.current.armed = false;
+    }
+  };
+
+  const handleConsolePointerCancel = () => {
+    consolePressRef.current.armed = false;
+  };
+
+  const handleConsolePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const trigger = event.currentTarget;
+    const { clientX, clientY } = event;
+    const shouldOpen =
+      consolePressRef.current.armed &&
+      consolePressRef.current.pointerId === event.pointerId &&
+      Math.hypot(clientX - consolePressRef.current.x, clientY - consolePressRef.current.y) <= 8;
+
+    consolePressRef.current.armed = false;
+    if (!shouldOpen) return;
+
+    window.requestAnimationFrame(() => {
+      if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+      const releaseTarget = document.elementFromPoint(clientX, clientY);
+      if (!(releaseTarget instanceof Node) || !trigger.contains(releaseTarget)) return;
+      openCenterConsole();
+    });
+  };
+
   return (
     <header id="page-header" className={`site-header not-top-img ${scrolled ? 'nav-fixed nav-visible' : ''}`}>
       <nav id="nav" aria-label="Main navigation">
@@ -134,29 +225,89 @@ export function SiteHeader({
 
           <div id="menus">
             <div className="menus_items">
-              {primary.map((item) => (
-                <div key={item.href} className="menus_item">
-                  <a
-                    href={item.href}
-                    className={`site-page ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
-                  >
-                    {item.label}
-                  </a>
-                </div>
-              ))}
+              {primary.map((item) => {
+                const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
+                const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
+
+                return (
+                  <div key={item.href} className={`menus_item ${item.children && item.children.length > 1 ? 'has-children' : ''}`}>
+                    <div className="site-page-shell">
+                      <a
+                        href={item.href}
+                        className={`site-page ${itemActive ? 'is-active' : ''}`}
+                        data-subtitle={item.description}
+                      >
+                        <span className="site-page__icon-wrap" aria-hidden="true">
+                          <NavIcon className="site-page__icon" />
+                        </span>
+                        <span className="site-page__label">{item.label}</span>
+                        {item.children && item.children.length > 1 && <ChevronDown className="site-page__chevron" aria-hidden="true" />}
+                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
+                        <span className="site-page__flyout" aria-hidden="true">
+                          <span>{item.description ?? item.label}</span>
+                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
+                        </span>
+                      </a>
+
+                      {item.children && item.children.length > 1 && (
+                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`}>
+                          {item.children.slice(0, 3).map((child) => {
+                            const ChildIcon = navIconMap[child.icon ?? 'home'] ?? House;
+                            return (
+                              <a
+                                key={child.href}
+                                href={child.href}
+                                className={`site-page-submenu__item ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
+                                role="menuitem"
+                              >
+                                <ChildIcon className="site-page-submenu__icon" aria-hidden="true" />
+                                <span className="site-page-submenu__copy">
+                                  <strong>{child.label}</strong>
+                                  <small>{child.description ?? item.description ?? item.label}</small>
+                                </span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           <div id="nav-right">
-            <div className="nav-button" id="center-console-button">
-              <button type="button" className="site-page center-console-trigger" onClick={openCenterConsole} title="Console">
-                <span className="console-trigger-bars" aria-hidden="true">
-                  <span className="left" />
-                  <span className="center" />
-                  <span className="right" />
-                </span>
-              </button>
-            </div>
+            {showCenterConsoleTrigger && (
+              <div className="nav-button" id="center-console-button">
+                <button
+                  type="button"
+                  className="site-page center-console-trigger"
+                  title={`${brandName} console`}
+                  aria-haspopup="dialog"
+                  onPointerDown={handleConsolePointerDown}
+                  onPointerMove={handleConsolePointerMove}
+                  onPointerLeave={handleConsolePointerCancel}
+                  onPointerCancel={handleConsolePointerCancel}
+                  onPointerUp={handleConsolePointerUp}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openCenterConsole();
+                    }
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                  }}
+                >
+                  <span className="console-trigger-bars" aria-hidden="true">
+                    <span className="left" />
+                    <span className="center" />
+                    <span className="right" />
+                  </span>
+                </button>
+              </div>
+            )}
 
             <div className="nav-button" id="randomPost_button">
               <a className="site-page" href={randomAction.href} onClick={goRandom} title={randomAction.label}>
@@ -165,7 +316,7 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="search-button">
-              <button type="button" className="site-page" onClick={openSearchPanel} title="Search">
+              <button type="button" className="site-page" onClick={openSearchPanel} title={`${brandName} search`}>
                 <Search className="nav-icon" aria-hidden="true" />
               </button>
             </div>
@@ -182,7 +333,7 @@ export function SiteHeader({
                   });
                   setTheme(nextTheme);
                 }}
-                title="Display Mode"
+                title={`${brandName} display mode`}
               >
                 {theme === 'dark' ? (
                   <SunMedium className="nav-icon" aria-hidden="true" />
@@ -197,7 +348,7 @@ export function SiteHeader({
                 type="button"
                 className="totopbtn site-page"
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                title="Back To Top"
+                title={`${brandName} back to top`}
               >
                 <ArrowUp className="nav-icon" aria-hidden="true" />
               </button>
@@ -222,13 +373,31 @@ export function SiteHeader({
         <div className="site-mobile-panel">
           <nav className="site-mobile-panel__group" aria-label="Mobile navigation">
             {primary.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
-              >
-                {item.label}
-              </a>
+              <div key={item.href} className="site-mobile-link-group">
+                <a
+                  href={item.href}
+                  className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
+                >
+                  {(() => {
+                    const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
+                    return <NavIcon className="site-mobile-link__icon" aria-hidden="true" />;
+                  })()}
+                  {item.label}
+                </a>
+                {item.children && item.children.length > 1 && (
+                  <div className="site-mobile-sublinks">
+                    {item.children.slice(0, 3).map((child) => (
+                      <a
+                        key={child.href}
+                        href={child.href}
+                        className={`site-mobile-sublink ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
 

@@ -1,4 +1,5 @@
 ---
+import { EyeOff } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 
 interface Props {
@@ -85,15 +86,38 @@ const reward = siteConfig.support.reward;
                   </div>
                 </div>
 
-                <div class="reward-channel-card__qr reward-channel-card__qr--static">
+                <button
+                  type="button"
+                  class:list={[
+                    'reward-channel-card__qr',
+                    'reward-channel-card__qr--interactive',
+                    channel.qrHidden && 'is-spoiler',
+                  ]}
+                  data-reward-qr
+                  data-qr-hidden={channel.qrHidden ? 'true' : 'false'}
+                  data-reward-click-notice={channel.clickNotice}
+                  aria-label={channel.revealLabel ?? `${channel.label} 二维码`}
+                  aria-pressed={channel.qrHidden ? 'false' : 'true'}
+                >
                   <img src={channel.qrImageSrc} alt={`${region.label} / ${channel.label} 打赏二维码`} loading="lazy" decoding="async" />
-                </div>
+                  {channel.qrHidden && (
+                    <span class="reward-channel-card__spoiler">
+                      <EyeOff className="reward-channel-card__spoiler-icon" aria-hidden="true" />
+                      <strong>{channel.revealLabel ?? '点击显示二维码'}</strong>
+                    </span>
+                  )}
+                </button>
 
                 <div class="reward-channel-card__link reward-channel-card__link--static">
                   直接扫码打赏
                 </div>
 
                 {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
+                {channel.clickNotice && (
+                  <p class="reward-channel-card__notice" data-reward-channel-notice hidden>
+                    {channel.clickNotice}
+                  </p>
+                )}
               </article>
             ))}
           </div>
@@ -151,6 +175,7 @@ const reward = siteConfig.support.reward;
 
       if (locale.includes('zh-cn') || timezone === 'Asia/Shanghai') return 'CN';
       if (locale.includes('zh-hk') || timezone === 'Asia/Hong_Kong') return 'HK';
+      if (locale.includes('en-gb') || timezone === 'Europe/London') return 'GB';
       return '';
     };
 
@@ -186,12 +211,14 @@ const reward = siteConfig.support.reward;
     const mapCountryToRegion = (countryCode) => {
       if (countryCode === 'CN') return 'cn';
       if (countryCode === 'HK') return 'hk';
+      if (countryCode === 'GB' || countryCode === 'UK') return 'uk';
       return 'unsupported';
     };
 
     const countryLabel = (countryCode) => {
       if (countryCode === 'CN') return 'China';
       if (countryCode === 'HK') return 'HongKong';
+      if (countryCode === 'GB' || countryCode === 'UK') return 'UK';
       return countryCode || 'Unknown';
     };
 
@@ -258,6 +285,7 @@ const reward = siteConfig.support.reward;
       const storageKey = root.dataset.storageKey || 'shijianus-reward-region';
       const regionButtons = Array.from(root.querySelectorAll('[data-reward-region-option]'));
       const resetButton = root.querySelector('[data-reward-reset]');
+      const qrButtons = Array.from(root.querySelectorAll('[data-reward-qr]'));
 
       const applyAutoState = async () => {
         const statusTitle = root.querySelector('[data-reward-status-title]');
@@ -281,6 +309,26 @@ const reward = siteConfig.support.reward;
         });
       });
 
+      qrButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          if (!(button instanceof HTMLElement)) return;
+          const card = button.closest('.reward-channel-card');
+          const notice = card?.querySelector('[data-reward-channel-notice]');
+
+          if (button.dataset.qrHidden === 'true') {
+            button.dataset.qrHidden = 'false';
+            button.classList.remove('is-spoiler');
+            button.classList.add('is-revealed');
+            button.setAttribute('aria-pressed', 'true');
+          }
+
+          if (notice instanceof HTMLElement) {
+            notice.hidden = false;
+            notice.classList.add('is-visible');
+          }
+        });
+      });
+
       if (resetButton instanceof HTMLElement) {
         resetButton.addEventListener('click', () => {
           safeLocalRemove(storageKey);
@@ -289,7 +337,7 @@ const reward = siteConfig.support.reward;
       }
 
       const savedRegion = safeLocalGet(storageKey);
-      if (savedRegion === 'cn' || savedRegion === 'hk') {
+      if (savedRegion === 'cn' || savedRegion === 'hk' || savedRegion === 'uk') {
         setRegionState(root, savedRegion, 'manual');
         return;
       }

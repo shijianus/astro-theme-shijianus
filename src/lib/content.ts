@@ -6,6 +6,18 @@ export function getPostPath(entry: Pick<PostEntry, 'id'>) {
   return `/posts/${entry.id}/`;
 }
 
+export function encodePathSegment(value: string) {
+  return encodeURIComponent(value).replace(/%20/g, '-');
+}
+
+export function getCategoryPath(labelOrSlug: string) {
+  return `/categories/${encodePathSegment(slugifySegment(labelOrSlug))}/`;
+}
+
+export function getTagPath(labelOrSlug: string) {
+  return `/tags/${encodePathSegment(slugifySegment(labelOrSlug))}/`;
+}
+
 export function sortPostsByDate(posts: PostEntry[]) {
   return [...posts]
     .filter((entry) => !entry.data.draft)

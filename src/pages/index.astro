@@ -4,7 +4,7 @@ import HomeHero from '../components/theme/HomeHero.astro';
 import PostCard from '../components/theme/PostCard.astro';
 import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { collectCategories, getFeaturedPosts, sortPostsByDate } from '../lib/content';
+import { collectCategories, getCategoryPath, getFeaturedPosts, sortPostsByDate } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
 const posts = sortPostsByDate(await getCollection('posts'));
@@ -27,7 +27,7 @@ const categoryRail = siteConfig.home.categoryRail;
             <div class="catalog-list-item is-active"><a href="/">{categoryRail.homeLabel}</a></div>
             {categories.map((item) => (
               <div class="catalog-list-item">
-                <a href={`/categories/${item.slug}/`}>{item.label}</a>
+                <a href={getCategoryPath(item.slug)}>{item.label}</a>
               </div>
             ))}
           </div>

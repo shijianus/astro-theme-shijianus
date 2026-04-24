@@ -8,7 +8,7 @@ type Star = {
   alpha: number;
   drift: number;
   glow: number;
-  tint: 'white' | 'blue' | 'gold';
+  tint: 'white' | 'blue' | 'gold' | 'cyan' | 'green' | 'rose';
 };
 
 type ShootingStar = {
@@ -20,9 +20,10 @@ type ShootingStar = {
   alpha: number;
 };
 
-type UniverseMode = 'starfield' | 'nebula' | 'aurora';
+type UniverseMode = 'starfield' | 'nebula' | 'aurora' | 'light-grid' | 'light-clean';
 
-const ACTIVE_BACKGROUNDS = new Set<UniverseMode>(['starfield', 'nebula', 'aurora']);
+const ACTIVE_DARK_BACKGROUNDS = new Set<UniverseMode>(['starfield', 'nebula', 'aurora']);
+const ACTIVE_LIGHT_BACKGROUNDS = new Set(['grid', 'clean']);
 
 function isUniverseActive() {
   return getUniverseMode() !== null;
@@ -30,9 +31,16 @@ function isUniverseActive() {
 
 function getUniverseMode(): UniverseMode | null {
   const root = document.documentElement;
-  if (root.dataset.theme !== 'dark') return null;
   const background = root.dataset.background;
-  return ACTIVE_BACKGROUNDS.has(background as UniverseMode) ? (background as UniverseMode) : null;
+  if (root.dataset.theme === 'dark') {
+    return ACTIVE_DARK_BACKGROUNDS.has(background as UniverseMode) ? (background as UniverseMode) : null;
+  }
+
+  if (root.dataset.theme === 'light' && ACTIVE_LIGHT_BACKGROUNDS.has(background || '')) {
+    return background === 'clean' ? 'light-clean' : 'light-grid';
+  }
+
+  return null;
 }
 
 function randomBetween(min: number, max: number) {
@@ -41,9 +49,17 @@ function randomBetween(min: number, max: number) {
 
 function sampleTint(mode: UniverseMode): Star['tint'] {
   const roll = Math.random();
+  if (isLightMode(mode)) {
+    if (roll > 0.84) return 'rose';
+    if (roll > 0.64) return 'gold';
+    if (roll > 0.38) return 'green';
+    return 'blue';
+  }
+
   if (mode === 'starfield') {
     if (roll > 0.88) return 'gold';
-    if (roll > 0.56) return 'blue';
+    if (roll > 0.7) return 'cyan';
+    if (roll > 0.46) return 'blue';
     return 'white';
   }
 
@@ -58,7 +74,14 @@ function sampleTint(mode: UniverseMode): Star['tint'] {
 function colorForTint(tint: Star['tint'], alpha: number) {
   if (tint === 'blue') return `rgba(166, 210, 255, ${alpha})`;
   if (tint === 'gold') return `rgba(255, 223, 167, ${alpha})`;
+  if (tint === 'cyan') return `rgba(166, 245, 255, ${alpha})`;
+  if (tint === 'green') return `rgba(78, 191, 154, ${alpha})`;
+  if (tint === 'rose') return `rgba(255, 126, 126, ${alpha})`;
   return `rgba(255, 255, 255, ${alpha})`;
+}
+
+function isLightMode(mode: UniverseMode) {
+  return mode === 'light-grid' || mode === 'light-clean';
 }
 
 export function ThemeUniverse() {
@@ -79,35 +102,61 @@ export function ThemeUniverse() {
     let shootingStars: ShootingStar[] = [];
 
     const createStar = (mode: UniverseMode): Star => {
+      const lightMode = isLightMode(mode);
       const depth = Math.random();
-      const radiusBase = mode === 'starfield' ? randomBetween(0.4, 2.5) : mode === 'nebula' ? randomBetween(0.45, 2.2) : randomBetween(0.5, 1.9);
-      const radius = radiusBase * (0.72 + depth * (mode === 'starfield' ? 1.25 : 0.95));
-      const speedBase = mode === 'starfield' ? randomBetween(0.025, 0.18) : mode === 'nebula' ? randomBetween(0.018, 0.12) : randomBetween(0.016, 0.09);
+      const radiusBase = lightMode
+        ? randomBetween(0.9, mode === 'light-grid' ? 3.1 : 2.4)
+        : mode === 'starfield'
+          ? randomBetween(0.32, 2.7)
+          : mode === 'nebula'
+            ? randomBetween(0.45, 2.2)
+            : randomBetween(0.5, 1.9);
+      const radius = radiusBase * (0.66 + depth * (mode === 'starfield' ? 1.35 : 0.95));
+      const speedBase = lightMode
+        ? randomBetween(0.012, mode === 'light-grid' ? 0.09 : 0.055)
+        : mode === 'starfield'
+          ? randomBetween(0.018, 0.22)
+          : mode === 'nebula'
+            ? randomBetween(0.018, 0.12)
+            : randomBetween(0.016, 0.09);
 
       return {
         x: randomBetween(0, width),
         y: randomBetween(0, height),
         radius,
         speed: speedBase * (0.6 + depth * 0.95),
-        alpha: randomBetween(mode === 'starfield' ? 0.4 : 0.3, 1),
-        drift: randomBetween(-0.025, 0.025) * (mode === 'starfield' ? 1.2 : 0.75),
-        glow: depth > (mode === 'starfield' ? 0.58 : 0.72) ? randomBetween(0.16, mode === 'starfield' ? 0.42 : 0.3) : 0,
+        alpha: lightMode ? randomBetween(0.12, mode === 'light-grid' ? 0.38 : 0.24) : randomBetween(mode === 'starfield' ? 0.4 : 0.3, 1),
+        drift: lightMode ? randomBetween(-0.08, 0.08) : randomBetween(-0.035, 0.035) * (mode === 'starfield' ? 1.35 : 0.75),
+        glow: lightMode
+          ? depth > 0.62
+            ? randomBetween(0.04, 0.14)
+            : 0
+          : depth > (mode === 'starfield' ? 0.5 : 0.72)
+            ? randomBetween(0.16, mode === 'starfield' ? 0.5 : 0.3)
+            : 0,
         tint: sampleTint(mode),
       };
     };
 
     const populate = () => {
       const mode = getUniverseMode();
-      const density = mode === 'starfield' ? 9_000 : mode === 'nebula' ? 11_500 : 13_500;
-      const minimum = mode === 'starfield' ? 180 : mode === 'nebula' ? 140 : 110;
       if (!mode) {
         stars = [];
         shootingStars = [];
         return;
       }
-      const densityAdjusted = mode === 'starfield' ? 7_000 : density;
-      const minimumAdjusted = mode === 'starfield' ? 240 : minimum;
-      const count = Math.max(minimumAdjusted, Math.floor((width * height) / densityAdjusted));
+
+      const density = isLightMode(mode)
+        ? mode === 'light-grid'
+          ? 13_000
+          : 18_000
+        : mode === 'starfield'
+          ? 5_400
+          : mode === 'nebula'
+            ? 11_500
+            : 13_500;
+      const minimum = isLightMode(mode) ? (mode === 'light-grid' ? 90 : 62) : mode === 'starfield' ? 340 : mode === 'nebula' ? 140 : 110;
+      const count = Math.max(minimum, Math.floor((width * height) / density));
       stars = Array.from({ length: count }, () => createStar(mode));
       shootingStars = [];
       lastShootingAt = performance.now();
@@ -125,7 +174,25 @@ export function ThemeUniverse() {
       populate();
     };
 
-    const drawBackgroundGlow = (mode: UniverseMode) => {
+    const drawBackgroundGlow = (mode: UniverseMode, tick: number) => {
+      if (isLightMode(mode)) {
+        const drift = Math.sin(tick * 0.00022) * width * 0.04;
+        const morning = context.createRadialGradient(width * 0.16 + drift, height * 0.12, 0, width * 0.16 + drift, height * 0.12, width * 0.42);
+        morning.addColorStop(0, 'rgba(255, 190, 112, 0.12)');
+        morning.addColorStop(1, 'rgba(255, 190, 112, 0)');
+        context.fillStyle = morning;
+        context.fillRect(0, 0, width, height);
+
+        const air = context.createLinearGradient(width * 0.06, height * 0.86, width * 0.96, height * 0.12);
+        air.addColorStop(0, 'rgba(66, 90, 239, 0)');
+        air.addColorStop(0.42, mode === 'light-grid' ? 'rgba(66, 90, 239, 0.045)' : 'rgba(78, 191, 154, 0.035)');
+        air.addColorStop(0.72, 'rgba(255, 174, 80, 0.038)');
+        air.addColorStop(1, 'rgba(66, 90, 239, 0)');
+        context.fillStyle = air;
+        context.fillRect(0, 0, width, height);
+        return;
+      }
+
       context.fillStyle = mode === 'starfield' ? 'rgba(3, 8, 18, 0.72)' : mode === 'nebula' ? 'rgba(8, 10, 24, 0.58)' : 'rgba(5, 12, 26, 0.52)';
       context.fillRect(0, 0, width, height);
 
@@ -175,17 +242,20 @@ export function ThemeUniverse() {
       }
     };
 
-    const drawStar = (star: Star, tick: number) => {
+    const drawStar = (star: Star, tick: number, mode: UniverseMode) => {
+      const lightMode = isLightMode(mode);
       const twinkle = (Math.sin((tick + star.x) * 0.0025) + 1) / 2;
-      const alpha = Math.max(0.24, Math.min(1, star.alpha * (0.52 + twinkle * 0.56)));
+      const alpha = lightMode
+        ? Math.max(0.08, Math.min(0.42, star.alpha * (0.62 + twinkle * 0.42)))
+        : Math.max(0.24, Math.min(1, star.alpha * (0.52 + twinkle * 0.56)));
 
       if (star.glow > 0) {
-        const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * 4.8);
-        glow.addColorStop(0, colorForTint(star.tint, star.glow * 0.68));
+        const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * (lightMode ? 8.5 : 4.8));
+        glow.addColorStop(0, colorForTint(star.tint, star.glow * (lightMode ? 0.55 : 0.68)));
         glow.addColorStop(1, colorForTint(star.tint, 0));
         context.beginPath();
         context.fillStyle = glow;
-        context.arc(star.x, star.y, star.radius * 4.8, 0, Math.PI * 2);
+        context.arc(star.x, star.y, star.radius * (lightMode ? 8.5 : 4.8), 0, Math.PI * 2);
         context.fill();
       }
 
@@ -193,6 +263,15 @@ export function ThemeUniverse() {
       context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
       context.fillStyle = colorForTint(star.tint, alpha);
       context.fill();
+
+      if (lightMode) {
+        context.beginPath();
+        context.arc(star.x, star.y, star.radius * 2.8, 0, Math.PI * 2);
+        context.strokeStyle = colorForTint(star.tint, alpha * 0.16);
+        context.lineWidth = 1;
+        context.stroke();
+        return;
+      }
 
       if (star.radius > 1.7) {
         context.beginPath();
@@ -202,17 +281,39 @@ export function ThemeUniverse() {
       }
     };
 
+    const drawLightConstellations = (tick: number) => {
+      const maxDistance = Math.min(150, Math.max(92, width * 0.09));
+      const stride = Math.max(2, Math.floor(stars.length / 54));
+
+      context.lineWidth = 1;
+      for (let i = 0; i < stars.length; i += stride) {
+        const first = stars[i];
+        const second = stars[i + stride];
+        if (!first || !second) continue;
+
+        const distance = Math.hypot(first.x - second.x, first.y - second.y);
+        if (distance > maxDistance) continue;
+
+        const pulse = (Math.sin(tick * 0.001 + first.x * 0.02) + 1) / 2;
+        context.beginPath();
+        context.moveTo(first.x, first.y);
+        context.lineTo(second.x, second.y);
+        context.strokeStyle = colorForTint(first.tint, (1 - distance / maxDistance) * (0.035 + pulse * 0.035));
+        context.stroke();
+      }
+    };
+
     const maybeSpawnShootingStar = (now: number, mode: UniverseMode) => {
-      const cooldown = mode === 'starfield' ? 1500 : mode === 'nebula' ? 3400 : 4800;
-      const maxConcurrent = mode === 'starfield' ? 2 : 1;
+      const cooldown = mode === 'starfield' ? 980 : mode === 'nebula' ? 3400 : 4800;
+      const maxConcurrent = mode === 'starfield' ? 3 : 1;
       if (shootingStars.length >= maxConcurrent) return;
       if (now - lastShootingAt < cooldown + Math.random() * cooldown) return;
       lastShootingAt = now;
       shootingStars.push({
         x: randomBetween(width * 0.2, width * 0.88),
         y: randomBetween(-40, height * 0.32),
-        length: randomBetween(mode === 'starfield' ? 120 : 90, mode === 'starfield' ? 240 : 160),
-        speed: randomBetween(mode === 'starfield' ? 11 : 8, mode === 'starfield' ? 18 : 12),
+        length: randomBetween(mode === 'starfield' ? 140 : 90, mode === 'starfield' ? 280 : 160),
+        speed: randomBetween(mode === 'starfield' ? 13 : 8, mode === 'starfield' ? 22 : 12),
         angle: Math.PI / 3.2,
         alpha: randomBetween(0.65, 0.95),
       });
@@ -241,7 +342,7 @@ export function ThemeUniverse() {
 
     const render = (tick: number) => {
       const mode = getUniverseMode();
-      canvas.style.opacity = mode ? '1' : '0';
+      canvas.style.opacity = mode ? (isLightMode(mode) ? '0.62' : '1') : '0';
       if (!mode) {
         context.clearRect(0, 0, width, height);
         frameId = window.requestAnimationFrame(render);
@@ -249,7 +350,8 @@ export function ThemeUniverse() {
       }
 
       context.clearRect(0, 0, width, height);
-      drawBackgroundGlow(mode);
+      drawBackgroundGlow(mode, tick);
+      if (isLightMode(mode)) drawLightConstellations(tick);
 
       stars.forEach((star) => {
         star.x += star.drift;
@@ -260,11 +362,13 @@ export function ThemeUniverse() {
         }
         if (star.x > width + 2) star.x = -2;
         if (star.x < -2) star.x = width + 2;
-        drawStar(star, tick);
+        drawStar(star, tick, mode);
       });
 
-      maybeSpawnShootingStar(tick, mode);
-      drawShootingStars();
+      if (!isLightMode(mode)) {
+        maybeSpawnShootingStar(tick, mode);
+        drawShootingStars();
+      }
       frameId = window.requestAnimationFrame(render);
     };
 

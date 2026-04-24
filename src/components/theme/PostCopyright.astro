@@ -1,7 +1,22 @@
 ---
-import { Heart, Link2, ScrollText, Share2, Smartphone } from 'lucide-react';
+import {
+  Copy,
+  Facebook,
+  HeartHandshake,
+  History,
+  Linkedin,
+  Mail,
+  MessageCircle,
+  QrCode,
+  Radio,
+  Send,
+  Share2,
+  Sparkles,
+  Twitter,
+  type LucideIcon,
+} from 'lucide-react';
 import { siteConfig } from '../../config/site';
-import { slugifySegment } from '../../lib/content';
+import { getCategoryPath, getTagPath } from '../../lib/content';
 import QrCodeImage from './QrCodeImage.astro';
 import RewardRegionPanel from './RewardRegionPanel.astro';
 
@@ -57,8 +72,25 @@ const {
   shareFallbackLabel,
 } = Astro.props;
 
-const categoryHref = `/categories/${slugifySegment(category)}/`;
-const sharePlatforms = siteConfig.support.share.platforms;
+const categoryHref = getCategoryPath(category);
+const shareIconMap: Partial<Record<string, LucideIcon>> = {
+  native: Share2,
+  copy: Copy,
+  wechat: QrCode,
+  x: Twitter,
+  facebook: Facebook,
+  threads: MessageCircle,
+  linkedin: Linkedin,
+  weibo: Radio,
+  telegram: Send,
+  reddit: MessageCircle,
+  qq: MessageCircle,
+  email: Mail,
+};
+const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) => ({
+  ...platform,
+  Icon: shareIconMap[platform.id] ?? Share2,
+}));
 ---
 
 <section
@@ -70,110 +102,6 @@ const sharePlatforms = siteConfig.support.share.platforms;
   data-share-done={shareDoneLabel}
   data-share-fallback={shareFallbackLabel}
 >
-  <div class="post-tools">
-    <div class="post-tools-left">
-      <div class="rewardLeftButton">
-        <button
-          type="button"
-          class="reward-link-button"
-          data-panel-trigger="reward"
-          aria-expanded="false"
-          aria-controls="post-tools-panel-reward"
-          aria-haspopup="dialog"
-        >
-          <Heart class="post-tools__icon" aria-hidden="true" />
-          <span>{rewardLabel}</span>
-        </button>
-        <a class="reward-link-button" href={modeHref}>
-          <ScrollText class="post-tools__icon" aria-hidden="true" />
-          <span>{modeLabel}</span>
-        </a>
-      </div>
-
-      <div class="post-tools__about">
-        <span class="post-tools__about-title">{aboutTitle}</span>
-        <p>{modeDescription}</p>
-      </div>
-    </div>
-
-    <div class="shareRight">
-      <button
-        type="button"
-        class="share-button"
-        title={siteConfig.support.share.qrcodeLabel}
-        data-panel-trigger="wechat"
-        aria-expanded="false"
-        aria-controls="post-tools-panel-wechat"
-        aria-haspopup="dialog"
-      >
-        <Smartphone class="post-tools__icon" aria-hidden="true" />
-        <span>扫码</span>
-      </button>
-      <button type="button" class="share-button" title={copyLabel} data-tool="copy">
-        <Link2 class="post-tools__icon" aria-hidden="true" />
-        <span>{copyLabel}</span>
-      </button>
-      <button type="button" class="share-button" title={shareLabel} data-tool="share">
-        <Share2 class="post-tools__icon" aria-hidden="true" />
-        <span>{shareLabel}</span>
-      </button>
-    </div>
-
-    <div class="post-tools__status" aria-live="polite"></div>
-  </div>
-
-  <div class="post-tools-panels">
-    <div class="post-floating-panel" id="post-tools-panel-reward" data-panel="reward" role="dialog" aria-label={rewardLabel} hidden>
-      <div class="post-floating-panel__head">
-        <div>
-          <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
-          <strong>{rewardLabel}</strong>
-        </div>
-        <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
-          ×
-        </button>
-      </div>
-      <p class="post-floating-panel__summary">{siteConfig.support.reward.summary}</p>
-      <RewardRegionPanel variant="panel" />
-      <div class="post-floating-panel__footer support-panel-actions">
-        <a class="support-panel-link" href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
-        <span class="support-panel-note">{rewardNote}</span>
-      </div>
-    </div>
-
-    <div
-      class="post-floating-panel"
-      id="post-tools-panel-wechat"
-      data-panel="wechat"
-      role="dialog"
-      aria-label={siteConfig.support.share.qrcodeLabel}
-      hidden
-    >
-      <div class="post-floating-panel__head">
-        <div>
-          <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
-          <strong>WeChat / Mobile Share</strong>
-        </div>
-        <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
-          ×
-        </button>
-      </div>
-      <p class="post-floating-panel__summary">{siteConfig.support.share.qrcodeDescription}</p>
-      <div class="post-share-qrcode">
-        <div class="post-share-qrcode__image">
-          <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
-        </div>
-        <div class="post-share-qrcode__meta">
-          <strong>{title}</strong>
-          <p>扫码后可在 WeChat、移动端浏览器或另一台设备上直接打开本文。</p>
-          <button type="button" class="post-share-qrcode__action" data-tool="copy">
-            {copyLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="post-copyright">
     <div class="copyright-cc-box">©</div>
     <div class="post-copyright__author_box">
@@ -195,21 +123,69 @@ const sharePlatforms = siteConfig.support.share.platforms;
     <div class="post-copyright__notice">
       <span class="post-copyright-info">{notice}</span>
     </div>
+
+    <div class="post-copyright__support">
+      <div class="post-copyright__support-copy">
+        <span class="post-copyright__support-eyebrow">{siteConfig.support.reward.title}</span>
+        <strong>{rewardLabel}</strong>
+        <p>{siteConfig.support.reward.summary}</p>
+      </div>
+      <div class="post-copyright__support-actions support-panel-actions">
+        <div class="support-panel-popover" data-support-popover>
+          <button
+            type="button"
+            class="support-panel-link support-panel-link--icon"
+            data-panel-trigger="reward"
+            aria-expanded="false"
+            aria-controls="post-tools-panel-reward"
+          >
+            <HeartHandshake className="support-panel-link__icon" aria-hidden="true" />
+            <span class="support-panel-link__copy">
+              <strong>{rewardLabel}</strong>
+              <small>请作者喝杯饮料</small>
+            </span>
+          </button>
+
+          <div
+            class="post-floating-panel post-floating-panel--popover"
+            id="post-tools-panel-reward"
+            data-panel="reward"
+            role="region"
+            aria-label={rewardLabel}
+            hidden
+          >
+            <div class="post-floating-panel__head">
+              <div>
+                <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
+                <strong>{rewardLabel}</strong>
+              </div>
+              <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+                ×
+              </button>
+            </div>
+            <p class="post-floating-panel__summary">如果这篇文章帮你省下了时间，顺手支持一下，就能让我继续把 shijianus 做成长期维护的内容系统。</p>
+            <RewardRegionPanel variant="panel" />
+          </div>
+        </div>
+
+        <a class="support-panel-link support-panel-link--icon support-panel-link--secondary" href={rewardHref}>
+          <History className="support-panel-link__icon" aria-hidden="true" />
+          <span class="support-panel-link__copy">
+            <strong>{siteConfig.support.reward.historyLabel}</strong>
+            <small>看看已经收到的心意</small>
+          </span>
+        </a>
+        <span class="support-panel-note">
+          <Sparkles className="support-panel-note__icon" aria-hidden="true" />
+          <span>{rewardNote}</span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <div class="post-tools-right">
     <div class="tag_share">
       <div class="post-meta__box">
-        <div class="post-meta__box__heading">
-          <span class="post-meta__box__eyebrow">{siteConfig.support.share.title}</span>
-          <span class="post-meta__box__title">{copyrightTitle}</span>
-          <p>{rewardDescription}</p>
-        </div>
-        <div class="post-meta__box__actions support-panel-actions">
-          <a class="support-panel-link" href={rewardHref}>{siteConfig.support.reward.historyLabel}</a>
-          <span class="support-panel-note">{rewardNote}</span>
-        </div>
-
         <div class="post-meta__box__category-list">
           <a href={categoryHref} class="post-meta__box__categoryes">
             <span class="categoryes-punctuation">#</span>
@@ -220,7 +196,7 @@ const sharePlatforms = siteConfig.support.share.platforms;
         {tags.length > 0 && (
           <div class="post-meta__box__tag-list">
             {tags.map((tag) => (
-              <a href={`/tags/${slugifySegment(tag)}/`} class="post-meta__box__tags">
+              <a href={getTagPath(tag)} class="post-meta__box__tags">
                 <span class="tags-punctuation">#</span>
                 {tag}
               </a>
@@ -229,19 +205,62 @@ const sharePlatforms = siteConfig.support.share.platforms;
         )}
       </div>
 
-      <div class="post-share-grid">
-        {sharePlatforms.map((platform) => (
-          <button
-            type="button"
-            class="post-share-grid__item"
-            style={`--platform-accent:${platform.accent};`}
-            data-share-platform={platform.id}
-          >
-            <span class="post-share-grid__badge">{platform.shortLabel}</span>
-            <strong>{platform.label}</strong>
-            <span>{platform.description}</span>
+      <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
+        <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
+        <div class="post-share-grid">
+          {enabledSharePlatforms.map((platform) => {
+            const PlatformIcon = platform.Icon;
+            const tooltip = `${platform.label} · ${platform.description}`;
+            return (
+              <button
+                type="button"
+                class="post-share-grid__item"
+                style={`--platform-accent:${platform.accent};`}
+                data-share-platform={platform.id}
+                data-tooltip={tooltip}
+                aria-label={tooltip}
+              >
+                <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+    <div class="post-tools__status" aria-live="polite"></div>
+    <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="Close panels"></button>
+    <div class="post-tools-panels">
+      <div
+        class="post-floating-panel post-floating-panel--share"
+        id="post-tools-panel-wechat"
+        data-panel="wechat"
+        role="region"
+        aria-label={siteConfig.support.share.qrcodeLabel}
+        hidden
+      >
+        <div class="post-floating-panel__head">
+          <div>
+            <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
+            <strong>WeChat / Mobile Share</strong>
+          </div>
+          <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+            ×
           </button>
-        ))}
+        </div>
+        <p class="post-floating-panel__summary">{siteConfig.support.share.qrcodeDescription}</p>
+        <div class="post-share-qrcode">
+          <div class="post-share-qrcode__image">
+            <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
+          </div>
+          <div class="post-share-qrcode__meta">
+            <strong>{title}</strong>
+            <p>如果这篇文章帮你省下了时间，扫码后就能在另一台设备上继续阅读，或顺手把它分享给朋友。</p>
+            <button type="button" class="post-share-qrcode__action" data-tool="copy">
+              {copyLabel}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -285,7 +304,9 @@ const sharePlatforms = siteConfig.support.share.platforms;
       const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
       const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
       const status = section.querySelector('.post-tools__status');
+      const backdrop = section.querySelector('[data-panel-backdrop]');
       const panels = Array.from(section.querySelectorAll('[data-panel]')).filter((node) => node instanceof HTMLElement);
+      const rewardPopovers = Array.from(section.querySelectorAll('[data-support-popover]')).filter((node) => node instanceof HTMLElement);
       const panelControllers = Array.from(
         section.querySelectorAll('[data-panel-trigger], [data-share-platform="wechat"]'),
       ).filter((node) => node instanceof HTMLElement);
@@ -315,23 +336,50 @@ const sharePlatforms = siteConfig.support.share.platforms;
           panel.hidden = true;
           panel.classList.remove('is-open');
         });
+        if (backdrop instanceof HTMLElement) {
+          backdrop.hidden = true;
+          backdrop.classList.remove('is-open');
+        }
         syncPanelControllers();
+      };
+
+      const openPanel = (name) => {
+        panels.forEach((panel) => {
+          const isActive = panel.dataset.panel === name;
+          panel.hidden = !isActive;
+          panel.classList.toggle('is-open', isActive);
+        });
+        if (backdrop instanceof HTMLElement) {
+          backdrop.hidden = false;
+          backdrop.classList.add('is-open');
+        }
+
+        syncPanelControllers(name);
       };
 
       const togglePanel = (name) => {
         const targetPanel = panels.find((panel) => panel.dataset.panel === name);
         const shouldOpen = Boolean(targetPanel && targetPanel.hidden);
 
-        panels.forEach((panel) => {
-          const isActive = shouldOpen && panel.dataset.panel === name;
-          panel.hidden = !isActive;
-          panel.classList.toggle('is-open', isActive);
-        });
-
-        syncPanelControllers(shouldOpen ? name : '');
+        if (shouldOpen) {
+          openPanel(name);
+        } else {
+          closePanels();
+        }
       };
 
       syncPanelControllers();
+
+      rewardPopovers.forEach((popover) => {
+        popover.addEventListener('mouseenter', () => {
+          openPanel('reward');
+        });
+
+        popover.addEventListener('mouseleave', () => {
+          const activeReward = panels.find((panel) => panel.dataset.panel === 'reward' && !panel.hidden);
+          if (activeReward) closePanels();
+        });
+      });
 
       const buildShareUrl = (platform) => {
         const encodedUrl = encodeURIComponent(permalink);
@@ -344,7 +392,7 @@ const sharePlatforms = siteConfig.support.share.platforms;
           case 'facebook':
             return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
           case 'threads':
-            return `https://threads.com/intent/post?text=${combined}`;
+            return `https://www.threads.net/intent/post?text=${combined}`;
           case 'linkedin':
             return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
           case 'telegram':
@@ -374,13 +422,17 @@ const sharePlatforms = siteConfig.support.share.platforms;
           const panelName = button.getAttribute('data-panel-trigger');
           if (!panelName) return;
           togglePanel(panelName);
-          setStatus(panelName === 'reward' ? '已打开支持二维码面板' : '已打开扫码分享面板');
+          setStatus(panelName === 'reward' ? '已切换打赏面板' : '已切换扫码分享面板');
         });
       });
 
       section.querySelectorAll('[data-panel-close]').forEach((button) => {
         button.addEventListener('click', () => closePanels());
       });
+
+      if (backdrop instanceof HTMLElement) {
+        backdrop.addEventListener('click', () => closePanels());
+      }
 
       section.querySelectorAll('[data-tool="share"]').forEach((button) => {
         button.addEventListener('click', async () => {

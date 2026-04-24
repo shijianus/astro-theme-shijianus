@@ -38,6 +38,27 @@ export type SidebarHeading = {
   text: string;
 };
 
+export type SidebarPostContextAction = {
+  label: string;
+  href: string;
+  kind: 'comment' | 'reward' | 'archive';
+};
+
+export type SidebarPostContext = {
+  title: string;
+  summary?: string;
+  category: {
+    label: string;
+    href: string;
+  };
+  meta: string[];
+  tags: Array<{
+    label: string;
+    href: string;
+  }>;
+  actions: SidebarPostContextAction[];
+};
+
 export type SidebarData = {
   recentPosts: CollectionEntry<'posts'>[];
   tags: SidebarTag[];
@@ -48,6 +69,7 @@ export type SidebarData = {
   totalTags: number;
   totalReadingMinutes: number;
   headings?: SidebarHeading[];
+  postContext?: SidebarPostContext;
 };
 
 type PostEntry = CollectionEntry<'posts'>;

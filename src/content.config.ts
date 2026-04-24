@@ -6,6 +6,7 @@ const postsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     pubDate: z.date(),
+    updatedDate: z.date().optional(),
     description: z.string().optional(),
     author: z.string().default('shijianus'),
     image: z.object({
@@ -18,6 +19,13 @@ const postsCollection = defineCollection({
     group: z.string().optional(),
     cover: z.string().optional(),
     coverAlt: z.string().optional(),
+    access: z.object({
+      password: z.string().optional(),
+      passwordHash: z.string().optional(),
+      blockedCountries: z.array(z.string()).default([]),
+      blockedIps: z.array(z.string()).default([]),
+      message: z.string().optional(),
+    }).optional(),
     featured: z.boolean().default(false),
     sticky: z.number().int().default(0),
     draft: z.boolean().default(false),

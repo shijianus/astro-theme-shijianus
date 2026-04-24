@@ -1,26 +1,64 @@
 ---
+import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, type LucideIcon } from 'lucide-react';
+
+type PostHeroMetaItem = {
+  label: string;
+  value: string;
+  runtime?: 'views' | 'dwell';
+  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
+};
+
 interface Props {
+  slug: string;
   title: string;
+  summary?: string;
   image: string;
   imageAlt: string;
+  fallbackImage: string;
   badges?: string[];
-  meta?: string[];
+  meta?: PostHeroMetaItem[];
+  runtimeMetrics?: boolean;
 }
 
-const { title, image, imageAlt, badges = [], meta = [] } = Astro.props;
-const metaItems = meta.map((item) => {
-  const [label, ...rest] = item.split(' ');
+const {
+  slug,
+  title,
+  summary = '',
+  image,
+  imageAlt,
+  fallbackImage,
+  badges = [],
+  meta = [],
+  runtimeMetrics = true,
+} = Astro.props;
 
-  return {
-    label,
-    value: rest.join(' ') || item,
-  };
-});
+const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
+  calendar: CalendarDays,
+  refresh: RefreshCw,
+  folder: FolderOpen,
+  file: FileText,
+  clock: Clock3,
+  eye: Eye,
+  timer: TimerReset,
+};
 ---
 
-<section class="post-hero">
+<section
+  class="post-hero"
+  data-post-hero
+  data-post-slug={slug}
+  data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
+>
   <div class="post-hero__cover">
-    <img src={image} alt={imageAlt} class="post-hero__image" loading="eager" />
+    <img
+      src={image}
+      alt={imageAlt}
+      class="post-hero__image"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      data-image-fallback={fallbackImage}
+    />
     <div class="post-hero__overlay"></div>
   </div>
   <div class="post-hero__inner">
@@ -33,17 +71,25 @@ const metaItems = meta.map((item) => {
     )}
 
     <div class="post-hero__title-block">
-      <span class="post-hero__eyebrow">post overview</span>
       <h1>{title}</h1>
+      {summary && <p class="post-hero__lede">{summary}</p>}
     </div>
 
-    {metaItems.length > 0 && (
+    {meta.length > 0 && (
       <div class="post-hero__meta-grid">
-        {metaItems.map((item) => (
-          <div class="post-hero__meta-card">
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
+        {meta.map((item) => (
+          <span class="post-hero__meta-item" data-runtime-meta={item.runtime ?? undefined}>
+            {item.icon && (
+              <span class="post-hero__meta-icon" aria-hidden="true">
+                {(() => {
+                  const MetaIcon = heroMetaIconMap[item.icon];
+                  return <MetaIcon className="post-hero__meta-icon-svg" aria-hidden="true" />;
+                })()}
+              </span>
+            )}
+            <span class="post-hero__meta-label">{item.label}</span>
+            <strong class="post-hero__meta-value">{item.value}</strong>
+          </span>
         ))}
       </div>
     )}
@@ -63,3 +109,81 @@ const metaItems = meta.map((item) => {
     </svg>
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const roots = document.querySelectorAll('[data-post-hero]');
+    if (!roots.length) return;
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      if (root.dataset.runtimeMetrics !== 'true') return;
+
+      const slug = root.dataset.postSlug;
+      if (!slug) return;
+
+      const viewedKey = `shijianus-post-viewed:${slug}`;
+      const viewKey = `shijianus-post-views:${slug}`;
+      const dwellKey = `shijianus-post-dwell:${slug}`;
+      const viewsNode = root.querySelector('[data-runtime-meta="views"] .post-hero__meta-value');
+      const dwellNode = root.querySelector('[data-runtime-meta="dwell"] .post-hero__meta-value');
+      const image = root.querySelector('.post-hero__image');
+      const fallback = image instanceof HTMLElement ? image.getAttribute('data-image-fallback') || '' : '';
+
+      const safeSessionGet = (key) => {
+        try {
+          return window.sessionStorage.getItem(key);
+        } catch {
+          return null;
+        }
+      };
+
+      const safeSessionSet = (key, value) => {
+        try {
+          window.sessionStorage.setItem(key, value);
+        } catch {}
+      };
+
+      if (!safeSessionGet(viewedKey)) {
+        const nextViews = Number(safeSessionGet(viewKey) || '0') + 1;
+        safeSessionSet(viewKey, String(nextViews));
+        safeSessionSet(viewedKey, '1');
+      }
+
+      if (viewsNode instanceof HTMLElement) {
+        viewsNode.textContent = `${Number(safeSessionGet(viewKey) || '0')} 次`;
+      }
+
+      let dwellSeconds = Number(safeSessionGet(dwellKey) || '0');
+      const renderDwell = () => {
+        if (!(dwellNode instanceof HTMLElement)) return;
+        const minutes = Math.max(0, Math.floor(dwellSeconds / 60));
+        dwellNode.textContent = `${minutes} min`;
+      };
+
+      renderDwell();
+
+      const timer = window.setInterval(() => {
+        if (document.visibilityState !== 'visible') return;
+        dwellSeconds += 1;
+        safeSessionSet(dwellKey, String(dwellSeconds));
+        renderDwell();
+      }, 1000);
+
+      if (image instanceof HTMLImageElement && fallback) {
+        image.addEventListener('error', () => {
+          if (image.src.endsWith(fallback)) return;
+          image.src = fallback;
+        });
+      }
+
+      window.addEventListener(
+        'pagehide',
+        () => {
+          window.clearInterval(timer);
+        },
+        { once: true },
+      );
+    });
+  })();
+</script>
