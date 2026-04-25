@@ -1,4 +1,5 @@
 ---
+import { BookOpenText, Boxes, CodeXml, Compass, type LucideIcon } from 'lucide-react';
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
@@ -19,6 +20,12 @@ const showcase = siteConfig.home.hero.showcase;
 const showcaseTiles = [...showcase.tiles, ...showcase.tiles];
 const topDeck = siteConfig.home.hero.topDeck;
 const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
+const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon> = {
+  boxes: Boxes,
+  code: CodeXml,
+  book: BookOpenText,
+  compass: Compass,
+};
 ---
 
 <section id="home_top" aria-label="Home highlight modules">
@@ -79,19 +86,22 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
         </div>
       </a>
 
-      <div class="categoryGroup" aria-label="Featured categories">
-        {categoryItems.map((item) => (
-          <div class="categoryItem">
-            <a class={`categoryButton ${item.accent}`} href={item.href}>
-              <span class="categoryButtonCopy">
-                <span class="categoryButtonText">{item.label}</span>
-                <span class="categoryButtonDesc">{item.description}</span>
-              </span>
-              <span class="categoryButtonIcon">{item.label.slice(0, 2)}</span>
-            </a>
-          </div>
-        ))}
-      </div>
+        <div class="categoryGroup" aria-label="Featured categories">
+          {categoryItems.map((item) => {
+            const CategoryIcon = categoryIconMap[item.icon];
+            return (
+              <div class="categoryItem">
+                <a class={`categoryButton ${item.accent}`} href={item.href}>
+                  <span class="categoryButtonCopy">
+                    <span class="categoryButtonText">{item.label}</span>
+                    <span class="categoryButtonDesc">{item.description}</span>
+                  </span>
+                  <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
+                </a>
+              </div>
+            );
+          })}
+        </div>
 
       {mobileFocusPost && (
         <article class="home-mobile-focus-card">

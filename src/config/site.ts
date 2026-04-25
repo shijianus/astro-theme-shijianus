@@ -33,6 +33,7 @@ export type HomeCategory = {
   description: string;
   href: string;
   accent: 'signal' | 'teal' | 'lime' | 'slate';
+  icon: 'boxes' | 'code' | 'book' | 'compass';
 };
 
 export type HomeStatusCard = {
@@ -338,10 +339,10 @@ export const siteConfig = {
       ],
     },
     categories: [
-      { label: '系统设计', description: '架构判断与演进记录', href: '/categories/系统设计/', accent: 'signal' },
-      { label: '前端工程', description: '界面、组件和体验实现', href: '/categories/前端工程/', accent: 'teal' },
-      { label: '学习笔记', description: '课程、实验与思考', href: '/categories/学习笔记/', accent: 'lime' },
-      { label: '产品观察', description: '工具、写作与产品判断', href: '/categories/产品观察/', accent: 'slate' },
+      { label: '系统设计', description: '架构判断与演进记录', href: '/categories/系统设计/', accent: 'signal', icon: 'boxes' },
+      { label: '前端工程', description: '界面、组件和体验实现', href: '/categories/前端工程/', accent: 'teal', icon: 'code' },
+      { label: '学习笔记', description: '课程、实验与思考', href: '/categories/学习笔记/', accent: 'lime', icon: 'book' },
+      { label: '产品观察', description: '工具、写作与产品判断', href: '/categories/产品观察/', accent: 'slate', icon: 'compass' },
     ] satisfies HomeCategory[],
     categoryRail: {
       homeLabel: '首页',
