@@ -8,7 +8,16 @@ import { ProfileWidget } from '../ProfileWidget';
 
 interface Props extends SidebarData {
   pageType?: string;
+  asideId?: string;
 }
+
+type TocHeading = Props['headings'][number];
+type TocNode = {
+  heading: TocHeading;
+  index: number;
+  level: number;
+  children: TocNode[];
+};
 
 const {
   recentPosts,
@@ -22,23 +31,55 @@ const {
   headings = [],
   postContext,
   pageType = 'page',
+  asideId = 'aside-content',
 } = Astro.props;
 
-const isPostPage = pageType === 'post';
+const isPostTocPage = pageType === 'post' || pageType === 'post-toc';
+const isPostSecondaryPage = pageType === 'post-secondary';
+const isPostPage = isPostTocPage || isPostSecondaryPage;
 const isHomePage = pageType === 'home';
 const utilityOnlyPageTypes = new Set(['home', 'page']);
-const tocHeadings = headings.filter((heading) => heading.depth >= 1 && heading.depth <= 4);
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
+const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
+const tocTree = (() => {
+  const roots: TocNode[] = [];
+  const stack: TocNode[] = [];
+
+  tocHeadings.forEach((heading, index) => {
+    const node: TocNode = {
+      heading,
+      index,
+      level: Math.max(0, heading.depth - tocBaseDepth),
+      children: [],
+    };
+
+    while (stack.length > 0 && stack[stack.length - 1]!.heading.depth >= heading.depth) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      roots.push(node);
+    } else {
+      stack[stack.length - 1]!.children.push(node);
+    }
+
+    stack.push(node);
+  });
+
+  return roots;
+})();
 const showUtilityAside = utilityOnlyPageTypes.has(pageType);
-const showPostAsideFeed = isPostPage;
+const showPostAsideFeed = isPostSecondaryPage;
 const showRecentPosts = recentPosts.length > 0 && !isHomePage && (showUtilityAside || showPostAsideFeed);
-const showToc = isPostPage && siteConfig.theme.features.postToc && tocHeadings.length > 0;
+const showToc = isPostTocPage && siteConfig.theme.features.postToc && tocHeadings.length > 0;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage && !isPostPage && showUtilityAside;
 const showFeatureCard = pageType === 'home' && siteConfig.theme.features.asideFeatureCard;
 const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && (showUtilityAside || showPostAsideFeed);
 const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && (showUtilityAside || showPostAsideFeed);
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isPostPage && (isHomePage || showUtilityAside);
 const postContextData = isPostPage ? postContext : undefined;
-const showPostContext = Boolean(postContextData);
+const showPostContext = isPostSecondaryPage && Boolean(postContextData);
+const showStickyLayout = showToc || showPostContext || showRecentPosts || showTags || showArchives || showWebInfo;
 const runtimeDays = Math.max(
   1,
   Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
@@ -47,9 +88,38 @@ const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString(
 const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
 const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const renderTocNodes = (nodes: TocNode[]) =>
+  nodes
+    .map((node) => {
+      const indexLabel = String(node.index + 1).padStart(2, '0');
+      const childrenMarkup = node.children.length > 0 ? `<ol class="toc-list toc-list--child">${renderTocNodes(node.children)}</ol>` : '';
+
+      return `
+        <li class="toc-item toc-item--depth-${node.heading.depth}" style="--toc-level:${node.level};">
+          <a href="#${escapeHtml(node.heading.slug)}" class="toc-link" data-depth="${node.heading.depth}" data-heading-id="${escapeHtml(node.heading.slug)}" aria-current="false">
+            <span class="toc-index">${indexLabel}</span>
+            <span class="toc-text-group">
+              <span class="toc-text">${escapeHtml(node.heading.text)}</span>
+              <span class="toc-depth">H${node.heading.depth}</span>
+            </span>
+          </a>
+          ${childrenMarkup}
+        </li>
+      `;
+    })
+    .join('');
 ---
 
-<div class="aside-content" id="aside-content">
+<div class="aside-content" id={asideId}>
   {!isPostPage && siteConfig.theme.features.asideAuthor && (
     <ProfileWidget
       name={siteConfig.site.author.name}
@@ -117,7 +187,7 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
     </section>
   )}
 
-  <div class="sticky_layout">
+  {showStickyLayout && <div class="sticky_layout">
     {showToc && (
       <section class="card-widget" id="card-toc">
         <div class="item-headline">
@@ -137,22 +207,9 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
           </div>
         </div>
         <div class="toc-content">
-          {tocHeadings
-            .map((heading, index) => (
-              <a
-                href={`#${heading.slug}`}
-                class={`toc-link ${heading.depth > 2 ? 'is-nested' : ''}`}
-                data-depth={heading.depth}
-                data-heading-id={heading.slug}
-                aria-current="false"
-              >
-                <span class="toc-index">{String(index + 1).padStart(2, '0')}</span>
-                <span class="toc-text-group">
-                  <span class="toc-text">{heading.text}</span>
-                  <span class="toc-depth">H{heading.depth}</span>
-                </span>
-              </a>
-            ))}
+          <ol class="toc-list">
+            <Fragment set:html={renderTocNodes(tocTree)} />
+          </ol>
         </div>
         <TocObserver client:only="react" />
       </section>
@@ -201,7 +258,7 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
       <section class="card-widget card-recent-post">
         <div class="item-headline">
           <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-          <span>{isPostPage ? '继续阅读' : '最近文章'}</span>
+          <span>{isPostSecondaryPage ? '继续阅读' : '最近文章'}</span>
         </div>
         <div class="aside-list">
           {recentPosts.slice(0, 5).map((entry) => (
@@ -223,7 +280,7 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
       <section class="card-widget card-tags">
         <div class="item-headline">
           <Tags className="aside-title-icon" aria-hidden="true" />
-          <span>{isPostPage ? '相关标签' : '标签'}</span>
+          <span>{isPostSecondaryPage ? '相关标签' : '标签'}</span>
         </div>
         <div class="card-tag-cloud">
           {tags.slice(0, 24).map((tag) => (
@@ -240,7 +297,7 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
       <section class="card-widget card-archives">
         <div class="item-headline">
           <Archive className="aside-title-icon" aria-hidden="true" />
-          <span>{isPostPage ? '时间线' : '归档'}</span>
+          <span>{isPostSecondaryPage ? '时间线' : '归档'}</span>
         </div>
         <ul class="card-archive-list">
           {archives.slice(0, 8).map((item) => (
@@ -327,5 +384,5 @@ const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateS
         </div>
       </section>
     )}
-  </div>
+  </div>}
 </div>

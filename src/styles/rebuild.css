@@ -11096,3 +11096,367 @@ body[data-type='home'] .categoryItem:focus-within .categoryButton.lime .category
     width: min(100vw - 24px, 296px);
   }
 }
+
+/* 2026-04-25 group 2: toc tree, aligned secondary aside, and compact share/support tools */
+
+body[data-type='post'] .post-layout-row--support .post-layout-row__aside {
+  padding-top: 64px;
+}
+
+body[data-type='post'] #post-toc-aside #card-toc {
+  position: sticky;
+  top: 78px;
+  height: auto;
+  min-height: 0;
+  max-height: calc(100vh - 96px);
+}
+
+body[data-type='post'] #post-toc-aside #card-toc .toc-content {
+  margin-top: 14px;
+  padding-right: 4px;
+  max-height: calc(100vh - 252px);
+  overflow: auto;
+}
+
+#card-toc .toc-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#card-toc .toc-list--child {
+  margin-top: 4px;
+}
+
+#card-toc .toc-item {
+  position: relative;
+  display: grid;
+  gap: 4px;
+}
+
+#card-toc .toc-item::before {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: calc(10px + var(--toc-level, 0) * 12px);
+  width: 1px;
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  content: "";
+  opacity: 0.78;
+}
+
+#card-toc .toc-item > .toc-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px 8px calc(18px + var(--toc-level, 0) * 12px);
+  border-radius: 14px;
+  color: var(--secondtext);
+  background: transparent;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
+}
+
+#card-toc .toc-item.is-active > .toc-link {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow:
+    inset 3px 0 0 rgba(255, 255, 255, 0.34),
+    0 18px 28px -24px rgba(14, 20, 36, 0.46);
+}
+
+#card-toc .toc-item.is-active-branch > .toc-link {
+  background: color-mix(in srgb, var(--theme-main) 7%, var(--card-bg));
+  color: var(--font-color);
+}
+
+#card-toc .toc-item.is-active-branch::before,
+#card-toc .toc-item.is-active::before {
+  background: color-mix(in srgb, var(--theme-main) 42%, var(--card-border));
+}
+
+#card-toc .toc-item--depth-3 > .toc-link {
+  font-size: 12.5px;
+}
+
+#card-toc .toc-item--depth-4 > .toc-link {
+  font-size: 12px;
+}
+
+#card-toc .toc-item--depth-4 > .toc-link .toc-depth {
+  opacity: 0.64;
+}
+
+body[data-type='post'] .post-tools-right {
+  padding: 16px 18px;
+  border-radius: 18px;
+}
+
+body[data-type='post'] .tag_share {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 18px;
+  flex-wrap: wrap;
+}
+
+body[data-type='post'] .post-meta__box {
+  flex: 1 1 280px;
+}
+
+body[data-type='post'] .post-share-actions {
+  flex: 1 1 520px;
+  justify-items: end;
+  gap: 10px;
+}
+
+body[data-type='post'] .post-share-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+body[data-type='post'] .post-share-grid__item {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+}
+
+body[data-type='post'] .post-share-grid__surface {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+body[data-type='post'] .post-share-grid__label {
+  display: inline-flex;
+  align-items: center;
+  color: currentColor;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body[data-type='post'] .post-share-grid__icon,
+body[data-type='post'] .post-share-grid__item svg {
+  width: 15px;
+  height: 15px;
+}
+
+body[data-type='post'] .post-copyright__support-actions {
+  justify-content: flex-start;
+}
+
+body[data-type='post'] .support-panel-link--icon {
+  min-width: 182px;
+}
+
+body[data-type='post'] .post-floating-panel--popover,
+body[data-type='post'] .post-tools-panels .post-floating-panel {
+  position: fixed !important;
+  top: var(--floating-panel-top, 92px);
+  left: var(--floating-panel-left, 50vw);
+  right: auto;
+  width: min(560px, calc(100vw - 24px), 50vw);
+  max-width: calc(100vw - 24px);
+  max-height: min(72vh, 760px);
+  overflow: auto;
+  transform: translate3d(0, 8px, 0);
+}
+
+body[data-type='post'] .post-tools-panels .post-floating-panel {
+  width: min(468px, calc(100vw - 24px), 46vw);
+}
+
+body[data-type='post'] .post-floating-panel--popover[data-placement='top'],
+body[data-type='post'] .post-tools-panels .post-floating-panel[data-placement='top'] {
+  transform-origin: center bottom;
+}
+
+body[data-type='post'] .post-floating-panel--popover[data-placement='bottom'],
+body[data-type='post'] .post-tools-panels .post-floating-panel[data-placement='bottom'] {
+  transform-origin: center top;
+}
+
+body[data-type='post'] .post-floating-panel--popover .post-floating-panel__summary {
+  display: none;
+}
+
+.reward-region-panel--panel {
+  gap: 12px;
+}
+
+.reward-region-panel--panel .reward-region-panel__layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.reward-region-panel--panel .reward-region-panel__selector-shell {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.reward-region-panel--panel .reward-region-panel__selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reward-region-panel--panel .reward-region-panel__option {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+}
+
+.reward-region-panel--panel .reward-region-panel__option-short {
+  min-width: 34px;
+  min-height: 24px;
+}
+
+.reward-region-panel--panel .reward-region-panel__option-copy small {
+  display: none;
+}
+
+.reward-region-panel--panel .reward-region-panel__option-copy strong {
+  font-size: 12px;
+}
+
+.reward-region-panel--panel .reward-region-panel__content {
+  min-width: 0;
+}
+
+.reward-region-panel--panel .reward-region-panel__region {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  gap: 10px;
+}
+
+.reward-region-panel--panel .reward-region-panel__region-head {
+  align-items: center;
+  padding: 0 2px;
+}
+
+.reward-region-panel--panel .reward-region-panel__region-head strong {
+  font-size: 14px;
+}
+
+.reward-region-panel--panel .reward-channel-grid--region {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(178px, 1fr);
+  grid-template-columns: none;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.reward-region-panel--panel .reward-channel-card {
+  min-width: 178px;
+  padding: 12px;
+  border-radius: 16px;
+}
+
+.reward-region-panel--panel .reward-channel-card__meta {
+  gap: 8px;
+}
+
+.reward-region-panel--panel .reward-channel-card__meta strong {
+  font-size: 13px;
+}
+
+.reward-region-panel--panel .reward-channel-card__qr {
+  padding: 8px;
+}
+
+.reward-region-panel--panel .reward-channel-card__qr img {
+  max-width: 152px;
+}
+
+.reward-region-panel--panel .reward-channel-card__notice {
+  margin: 0;
+  color: var(--secondtext);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image {
+  padding: 12px;
+}
+
+body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
+  width: 176px;
+  height: 176px;
+}
+
+@media (max-width: 1100px) {
+  body[data-type='post'] .post-layout-row--support .post-layout-row__aside {
+    padding-top: 0;
+  }
+
+  body[data-type='post'] #post-toc-aside #card-toc {
+    position: static;
+    max-height: none;
+  }
+
+  body[data-type='post'] #post-toc-aside #card-toc .toc-content {
+    max-height: min(50vh, 520px);
+  }
+
+  body[data-type='post'] .post-share-actions {
+    justify-items: start;
+  }
+
+  body[data-type='post'] .post-share-grid {
+    justify-content: flex-start;
+  }
+
+  body[data-type='post'] .post-floating-panel--popover,
+  body[data-type='post'] .post-tools-panels .post-floating-panel {
+    width: min(calc(100vw - 24px), 560px);
+  }
+}
+
+@media (max-width: 768px) {
+  body[data-type='post'] .post-share-grid__surface {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+
+  .reward-region-panel--panel .reward-channel-grid--region {
+    grid-auto-columns: minmax(164px, 1fr);
+  }
+
+  body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

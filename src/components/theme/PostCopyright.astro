@@ -23,6 +23,7 @@ import RewardRegionPanel from './RewardRegionPanel.astro';
 interface Props {
   permalink: string;
   title: string;
+  summary?: string;
   authorName: string;
   authorRole: string;
   authorAvatar: string;
@@ -49,6 +50,7 @@ interface Props {
 const {
   permalink,
   title,
+  summary = '',
   authorName,
   authorRole,
   authorAvatar,
@@ -97,6 +99,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
   class="post-copyright-block"
   data-post-tools
   data-title={title}
+  data-summary={summary}
   data-permalink={permalink}
   data-copy-done={copyDoneLabel}
   data-share-done={shareDoneLabel}
@@ -220,7 +223,10 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
                 data-tooltip={tooltip}
                 aria-label={tooltip}
               >
-                <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
+                <span class="post-share-grid__surface" aria-hidden="true">
+                  <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
+                  <span class="post-share-grid__label">{platform.label}</span>
+                </span>
               </button>
             );
           })}
@@ -300,6 +306,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
 
       const permalink = section.dataset.permalink ?? window.location.href;
       const title = section.dataset.title ?? document.title;
+      const summary = section.dataset.summary?.trim() ?? '';
       const copyDone = section.dataset.copyDone ?? '链接已复制';
       const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
       const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
@@ -331,80 +338,158 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         });
       };
 
-      const closePanels = () => {
-        panels.forEach((panel) => {
-          panel.hidden = true;
-          panel.classList.remove('is-open');
-        });
-        if (backdrop instanceof HTMLElement) {
-          backdrop.hidden = true;
-          backdrop.classList.remove('is-open');
-        }
-        syncPanelControllers();
+      const isPopoverPanel = (name) => name === 'reward';
+      const panelAnchors = new Map();
+      let rewardCloseTimer = 0;
+
+      const clearRewardCloseTimer = () => {
+        window.clearTimeout(rewardCloseTimer);
+        rewardCloseTimer = 0;
       };
 
-      const openPanel = (name) => {
+      const getActivePanel = () => panels.find((panel) => !panel.hidden)?.dataset.panel ?? '';
+
+      const positionPanel = (panel, anchor) => {
+        if (!(panel instanceof HTMLElement) || !(anchor instanceof HTMLElement)) return;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const margin = 12;
+        const previousVisibility = panel.style.visibility;
+        const previousPointerEvents = panel.style.pointerEvents;
+        const previousOpacity = panel.style.opacity;
+        const previousTransform = panel.style.transform;
+
+        panel.style.visibility = 'hidden';
+        panel.style.pointerEvents = 'none';
+        panel.style.opacity = '0';
+        panel.style.transform = 'none';
+
+        const panelRect = panel.getBoundingClientRect();
+        const anchorRect = anchor.getBoundingClientRect();
+        const panelWidth = Math.min(panelRect.width || panel.offsetWidth || 0, viewportWidth - margin * 2);
+        const panelHeight = Math.min(panelRect.height || panel.offsetHeight || 0, viewportHeight - margin * 2);
+        const centerX = anchorRect.left + anchorRect.width / 2;
+        const left = Math.max(margin, Math.min(centerX - panelWidth / 2, viewportWidth - panelWidth - margin));
+        const spaceAbove = anchorRect.top - margin;
+        const spaceBelow = viewportHeight - anchorRect.bottom - margin;
+        const placeTop = spaceAbove > spaceBelow && spaceAbove > panelHeight;
+        const top = placeTop
+          ? Math.max(margin, anchorRect.top - panelHeight - 12)
+          : Math.max(margin, Math.min(anchorRect.bottom + 12, viewportHeight - panelHeight - margin));
+
+        panel.style.setProperty('--floating-panel-left', `${left}px`);
+        panel.style.setProperty('--floating-panel-top', `${top}px`);
+        panel.dataset.placement = placeTop ? 'top' : 'bottom';
+        panel.style.visibility = previousVisibility;
+        panel.style.pointerEvents = previousPointerEvents;
+        panel.style.opacity = previousOpacity;
+        panel.style.transform = previousTransform;
+      };
+
+      const renderPanelState = (activePanel = '') => {
+        let showBackdrop = false;
+
         panels.forEach((panel) => {
-          const isActive = panel.dataset.panel === name;
+          const panelName = panel.dataset.panel ?? '';
+          const isActive = panelName === activePanel;
           panel.hidden = !isActive;
           panel.classList.toggle('is-open', isActive);
+          if (isActive && !isPopoverPanel(panelName)) {
+            showBackdrop = true;
+          }
         });
+
         if (backdrop instanceof HTMLElement) {
-          backdrop.hidden = false;
-          backdrop.classList.add('is-open');
+          backdrop.hidden = !showBackdrop;
+          backdrop.classList.toggle('is-open', showBackdrop);
         }
 
-        syncPanelControllers(name);
+        syncPanelControllers(activePanel);
+
+        if (activePanel) {
+          const activeElement = panels.find((panel) => panel.dataset.panel === activePanel);
+          const activeAnchor = panelAnchors.get(activePanel);
+          if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
+            window.requestAnimationFrame(() => {
+              positionPanel(activeElement, activeAnchor);
+            });
+          }
+        }
       };
 
-      const togglePanel = (name) => {
-        const targetPanel = panels.find((panel) => panel.dataset.panel === name);
-        const shouldOpen = Boolean(targetPanel && targetPanel.hidden);
+      const closePanels = () => {
+        clearRewardCloseTimer();
+        renderPanelState();
+      };
 
-        if (shouldOpen) {
-          openPanel(name);
-        } else {
-          closePanels();
-        }
+      const openPanel = (name, anchor) => {
+        clearRewardCloseTimer();
+        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
+        renderPanelState(name);
+      };
+
+      const togglePanel = (name, anchor) => {
+        const currentPanel = getActivePanel();
+        clearRewardCloseTimer();
+        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
+        renderPanelState(currentPanel === name ? '' : name);
+      };
+
+      const queueRewardClose = (delay = 150) => {
+        clearRewardCloseTimer();
+        rewardCloseTimer = window.setTimeout(() => {
+          if (getActivePanel() === 'reward') {
+            renderPanelState();
+          }
+        }, delay);
       };
 
       syncPanelControllers();
 
       rewardPopovers.forEach((popover) => {
-        popover.addEventListener('mouseenter', () => {
-          openPanel('reward');
+        const trigger = popover.querySelector('[data-panel-trigger="reward"]');
+        popover.addEventListener('pointerenter', () => {
+          clearRewardCloseTimer();
+          openPanel('reward', trigger);
         });
 
-        popover.addEventListener('mouseleave', () => {
-          const activeReward = panels.find((panel) => panel.dataset.panel === 'reward' && !panel.hidden);
-          if (activeReward) closePanels();
+        popover.addEventListener('pointerleave', () => {
+          queueRewardClose();
         });
       });
 
       const buildShareUrl = (platform) => {
         const encodedUrl = encodeURIComponent(permalink);
         const encodedTitle = encodeURIComponent(title);
-        const combined = encodeURIComponent(`${title} ${permalink}`);
+        const shortSummary = summary.slice(0, 120).trim();
+        const shareText = `${title}${shortSummary ? `\n${shortSummary}` : ''}`;
+        const shareParagraph = `${title}${shortSummary ? `\n\n${shortSummary}` : ''}\n${permalink}`;
+        const encodedSummary = encodeURIComponent(shortSummary);
+        const encodedShareText = encodeURIComponent(shareText);
+        const encodedShareParagraph = encodeURIComponent(shareParagraph);
+        const encodedFacebookQuote = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
+        const encodedRedditTitle = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
 
         switch (platform) {
           case 'x':
-            return `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+            return `https://twitter.com/intent/tweet?text=${encodedShareText}&url=${encodedUrl}`;
           case 'facebook':
-            return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedFacebookQuote}`;
           case 'threads':
-            return `https://www.threads.net/intent/post?text=${combined}`;
+            return `https://www.threads.net/intent/post?text=${encodedShareParagraph}`;
           case 'linkedin':
             return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
           case 'telegram':
-            return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+            return `https://t.me/share/url?url=${encodedUrl}&text=${encodedShareText}`;
           case 'reddit':
-            return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`;
+            return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedRedditTitle}`;
           case 'weibo':
-            return `https://service.weibo.com/share/share.php?title=${encodedTitle}&url=${encodedUrl}`;
+            return `https://service.weibo.com/share/share.php?title=${encodedShareText}&url=${encodedUrl}`;
           case 'qq':
-            return `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}`;
+            return `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}&summary=${encodedSummary}`;
           case 'email':
-            return `mailto:?subject=${encodedTitle}&body=${encodeURIComponent(`${title}\n${permalink}`)}`;
+            return `mailto:?subject=${encodedTitle}&body=${encodedShareParagraph}`;
           default:
             return '';
         }
@@ -421,7 +506,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         button.addEventListener('click', () => {
           const panelName = button.getAttribute('data-panel-trigger');
           if (!panelName) return;
-          togglePanel(panelName);
+          togglePanel(panelName, button);
           setStatus(panelName === 'reward' ? '已切换打赏面板' : '已切换扫码分享面板');
         });
       });
@@ -479,7 +564,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
           }
 
           if (platform === 'wechat') {
-            togglePanel('wechat');
+            togglePanel('wechat', button);
             setStatus('已打开扫码分享面板');
             return;
           }
@@ -497,9 +582,21 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         });
       });
 
+      const repositionActivePanel = () => {
+        const activePanelName = getActivePanel();
+        if (!activePanelName) return;
+        const activeElement = panels.find((panel) => panel.dataset.panel === activePanelName);
+        const activeAnchor = panelAnchors.get(activePanelName);
+        if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
+          positionPanel(activeElement, activeAnchor);
+        }
+      };
+
       window.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') closePanels();
       });
+      window.addEventListener('resize', repositionActivePanel);
+      window.addEventListener('scroll', repositionActivePanel, { passive: true });
 
       document.addEventListener('click', (event) => {
         if (!(event.target instanceof Node)) return;

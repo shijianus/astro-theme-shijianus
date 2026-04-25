@@ -8,6 +8,7 @@ interface Props {
 
 const { variant = 'page' } = Astro.props;
 const reward = siteConfig.support.reward;
+const isPanel = variant === 'panel';
 ---
 
 <div
@@ -22,21 +23,25 @@ const reward = siteConfig.support.reward;
   data-unsupported-title={reward.detect.unsupportedTitle}
   data-unsupported-description={reward.detect.unsupportedDescription}
 >
-  <div class="reward-region-panel__status">
-    <span class="reward-region-panel__eyebrow" data-reward-status-eyebrow>{reward.detect.autoLabel}</span>
-    <strong data-reward-status-title>正在识别你的地区</strong>
-    <p data-reward-status-description>{reward.detect.autoDescription}</p>
-    <button type="button" class="reward-region-panel__reset" data-reward-reset hidden>
-      {reward.detect.resetLabel}
-    </button>
-  </div>
+  {!isPanel && (
+    <div class="reward-region-panel__status">
+      <span class="reward-region-panel__eyebrow" data-reward-status-eyebrow>{reward.detect.autoLabel}</span>
+      <strong data-reward-status-title>正在识别你的地区</strong>
+      <p data-reward-status-description>{reward.detect.autoDescription}</p>
+      <button type="button" class="reward-region-panel__reset" data-reward-reset hidden>
+        {reward.detect.resetLabel}
+      </button>
+    </div>
+  )}
 
   <div class="reward-region-panel__layout">
     <aside class="reward-region-panel__selector-shell" aria-label={reward.detect.switchLabel}>
-      <div class="reward-region-panel__selector-head">
-        <span>{reward.detect.switchLabel}</span>
-        <p>{reward.detect.manualDescription}</p>
-      </div>
+      {!isPanel && (
+        <div class="reward-region-panel__selector-head">
+          <span>{reward.detect.switchLabel}</span>
+          <p>{reward.detect.manualDescription}</p>
+        </div>
+      )}
       <div class="reward-region-panel__selector">
         {reward.regions.map((region) => (
           <button
@@ -71,7 +76,7 @@ const reward = siteConfig.support.reward;
             <div>
               <span class="reward-region-panel__region-eyebrow">{region.shortLabel}</span>
               <strong>{region.label}</strong>
-              <p>{region.description}</p>
+              {!isPanel && <p>{region.description}</p>}
             </div>
           </div>
 
@@ -82,7 +87,7 @@ const reward = siteConfig.support.reward;
                   <span class="reward-channel-card__short">{channel.shortLabel}</span>
                   <div>
                     <strong>{channel.label}</strong>
-                    <p>{channel.description}</p>
+                    {!isPanel && <p>{channel.description}</p>}
                   </div>
                 </div>
 
@@ -108,11 +113,15 @@ const reward = siteConfig.support.reward;
                   )}
                 </button>
 
-                <div class="reward-channel-card__link reward-channel-card__link--static">
-                  直接扫码打赏
-                </div>
+                {!isPanel && (
+                  <>
+                    <div class="reward-channel-card__link reward-channel-card__link--static">
+                      直接扫码打赏
+                    </div>
 
-                {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
+                    {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
+                  </>
+                )}
                 {channel.clickNotice && (
                   <p class="reward-channel-card__notice" data-reward-channel-notice hidden>
                     {channel.clickNotice}

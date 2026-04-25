@@ -4,6 +4,7 @@ import { getCollection, render } from 'astro:content';
 import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
+import Sidebar from '../../components/theme/Sidebar.astro';
 import PostNav from '../../components/theme/PostNav.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
 import { PostComments } from '../../components/theme/PostComments';
@@ -39,6 +40,7 @@ if (!entry) {
 }
 
 const { Content, headings } = await render(entry);
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
 const relatedPosts = getRelatedPosts(allPosts, entry, 3);
 const sidebarData = createSidebarData(allPosts, headings);
 sidebarData.recentPosts = allPosts.filter((post) => post.id !== entry.id);
@@ -84,6 +86,7 @@ const accessBlockedCountries = access?.blockedCountries?.map((item) => item.toUp
 const accessBlockedIps = access?.blockedIps?.map((item) => item.toUpperCase()).join(',') ?? '';
 const hasAccessGate = Boolean(accessPasswordHash || accessBlockedCountries || accessBlockedIps);
 const commentsEnabled = hasConfiguredCommentDatabase(siteConfig.integrations.comments);
+const hasTocAside = siteConfig.theme.features.postToc && tocHeadings.length > 0;
 sidebarData.postContext = {
   title: entry.data.title,
   summary: entry.data.description,
@@ -106,6 +109,7 @@ sidebarData.postContext = {
     { label: '查看归档', href: '/archives/', kind: 'archive' as const },
   ],
 };
+const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentPosts.length || sidebarData.tags.length || sidebarData.archives.length);
 ---
 
 <BlogLayout
@@ -113,6 +117,7 @@ sidebarData.postContext = {
   description={entry.data.description}
   sidebarData={sidebarData}
   pageType="post"
+  showAside={false}
 >
   <Fragment slot="head">
     {heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
@@ -138,74 +143,97 @@ sidebarData.postContext = {
     />
   </Fragment>
 
-  <section id="post" class="post-page-shell">
-    <article
-      id="article-container"
-      class="theme-card article-body post-content"
-      data-content-features
-      data-access-locked={hasAccessGate ? 'true' : undefined}
-      data-access-password-hash={accessPasswordHash || undefined}
-      data-access-blocked-countries={accessBlockedCountries || undefined}
-      data-access-blocked-ips={accessBlockedIps || undefined}
-      data-access-message={access?.message ?? undefined}
-    >
-      <Content />
-    </article>
-    <ContentFeatureEnhancer />
-  </section>
+  <div class="post-layout-stack">
+    <section class:list={['post-layout-row', 'post-layout-row--article', !hasTocAside && 'post-layout-row--single']}>
+      <div class="post-layout-row__main">
+        <section id="post" class="post-page-shell">
+          <article
+            id="article-container"
+            class="theme-card article-body post-content"
+            data-content-features
+            data-access-locked={hasAccessGate ? 'true' : undefined}
+            data-access-password-hash={accessPasswordHash || undefined}
+            data-access-blocked-countries={accessBlockedCountries || undefined}
+            data-access-blocked-ips={accessBlockedIps || undefined}
+            data-access-message={access?.message ?? undefined}
+          >
+            <Content />
+          </article>
+          <ContentFeatureEnhancer />
+        </section>
+      </div>
 
-  {siteConfig.theme.features.postCopyright && (
-    <PostCopyright
-      permalink={Astro.url.href}
-      title={entry.data.title}
-      authorName={siteConfig.site.author.name}
-      authorRole={siteConfig.site.author.role}
-      authorAvatar={siteConfig.site.author.avatar}
-      badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
-      copyrightTitle={siteConfig.post.copyright.title}
-      notice={siteConfig.post.copyright.notice}
-      copyLabel={siteConfig.post.copyright.copyLabel}
-      rewardLabel={siteConfig.post.copyright.rewardLabel}
-      rewardNote={siteConfig.post.copyright.rewardNote}
-      aboutTitle={siteConfig.post.tools.aboutTitle}
-      modeHref={siteConfig.post.tools.modeHref}
-      modeLabel={siteConfig.post.tools.modeLabel}
-      modeDescription={siteConfig.post.tools.modeDescription}
-      shareLabel={siteConfig.post.tools.shareLabel}
-      rewardHref={siteConfig.post.tools.rewardHref}
-      rewardDescription={siteConfig.post.tools.rewardDescription}
-      copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
-      shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
-      shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
-      category={category}
-      tags={entry.data.tags}
-    />
-  )}
+      {hasTocAside && (
+        <aside class="post-layout-row__aside post-layout-row__aside--toc">
+          <Sidebar {...sidebarData} pageType="post-toc" asideId="post-toc-aside" />
+        </aside>
+      )}
+    </section>
 
-  <PostNav previousPost={previousPost} nextPost={nextPost} />
+    <section class:list={['post-layout-row', 'post-layout-row--support', !hasSecondaryAside && 'post-layout-row--single']}>
+      <div class="post-layout-row__main">
+        {siteConfig.theme.features.postCopyright && (
+          <PostCopyright
+            permalink={Astro.url.href}
+            title={entry.data.title}
+            summary={entry.data.description ?? ''}
+            authorName={siteConfig.site.author.name}
+            authorRole={siteConfig.site.author.role}
+            authorAvatar={siteConfig.site.author.avatar}
+            badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
+            copyrightTitle={siteConfig.post.copyright.title}
+            notice={siteConfig.post.copyright.notice}
+            copyLabel={siteConfig.post.copyright.copyLabel}
+            rewardLabel={siteConfig.post.copyright.rewardLabel}
+            rewardNote={siteConfig.post.copyright.rewardNote}
+            aboutTitle={siteConfig.post.tools.aboutTitle}
+            modeHref={siteConfig.post.tools.modeHref}
+            modeLabel={siteConfig.post.tools.modeLabel}
+            modeDescription={siteConfig.post.tools.modeDescription}
+            shareLabel={siteConfig.post.tools.shareLabel}
+            rewardHref={siteConfig.post.tools.rewardHref}
+            rewardDescription={siteConfig.post.tools.rewardDescription}
+            copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
+            shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
+            shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
+            category={category}
+            tags={entry.data.tags}
+          />
+        )}
 
-  {siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
-    <RelatedPosts
-      posts={relatedPosts}
-      eyebrow={siteConfig.post.related.eyebrow}
-      title={siteConfig.post.related.title}
-    />
-  )}
+        <PostNav previousPost={previousPost} nextPost={nextPost} />
 
-  {commentsEnabled && (
-    <PostComments
-      client:only="react"
-      slug={entry.id}
-      title={entry.data.title}
-      heading={siteConfig.post.comments.title}
-      policyLabel={siteConfig.post.comments.policyLabel}
-      notice={siteConfig.post.comments.notice}
-      submitLabel={siteConfig.post.comments.submitLabel}
-      previewLabel={siteConfig.post.comments.previewLabel}
-      emptyTitle={siteConfig.post.comments.emptyTitle}
-      emptySummary={siteConfig.post.comments.emptySummary}
-      tips={siteConfig.post.comments.tips}
-      integration={siteConfig.integrations.comments}
-    />
-  )}
+        {siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
+          <RelatedPosts
+            posts={relatedPosts}
+            eyebrow={siteConfig.post.related.eyebrow}
+            title={siteConfig.post.related.title}
+          />
+        )}
+
+        {commentsEnabled && (
+          <PostComments
+            client:only="react"
+            slug={entry.id}
+            title={entry.data.title}
+            heading={siteConfig.post.comments.title}
+            policyLabel={siteConfig.post.comments.policyLabel}
+            notice={siteConfig.post.comments.notice}
+            submitLabel={siteConfig.post.comments.submitLabel}
+            previewLabel={siteConfig.post.comments.previewLabel}
+            emptyTitle={siteConfig.post.comments.emptyTitle}
+            emptySummary={siteConfig.post.comments.emptySummary}
+            tips={siteConfig.post.comments.tips}
+            integration={siteConfig.integrations.comments}
+          />
+        )}
+      </div>
+
+      {hasSecondaryAside && (
+        <aside class="post-layout-row__aside post-layout-row__aside--secondary">
+          <Sidebar {...sidebarData} pageType="post-secondary" asideId="post-secondary-aside" />
+        </aside>
+      )}
+    </section>
+  </div>
 </BlogLayout>

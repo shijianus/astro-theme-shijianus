@@ -12,6 +12,8 @@ export function TocObserver() {
   useEffect(() => {
     const tocCard = document.getElementById('card-toc');
     const article = document.getElementById('article-container');
+    const postShell =
+      document.querySelector<HTMLElement>('.post-layout-row--article .post-page-shell') ?? document.getElementById('post');
     if (!tocCard || !article) return;
 
     const links = Array.from(tocCard.querySelectorAll<HTMLAnchorElement>('.toc-link'));
@@ -22,9 +24,10 @@ export function TocObserver() {
       .map((link) => {
         const id = decodeHash(link.hash);
         const element = document.getElementById(id);
-        return element ? { id, element, link } : null;
+        const item = link.closest<HTMLElement>('.toc-item');
+        return element ? { id, element, link, item } : null;
       })
-      .filter((entry): entry is { id: string; element: HTMLElement; link: HTMLAnchorElement } => Boolean(entry));
+      .filter((entry): entry is { id: string; element: HTMLElement; link: HTMLAnchorElement; item: HTMLElement | null } => Boolean(entry));
 
     if (headings.length === 0) return;
 
@@ -93,9 +96,19 @@ export function TocObserver() {
 
       for (const entry of headings) {
         const isActive = entry.id === active?.id;
+        entry.item?.classList.remove('is-active', 'is-active-branch');
         entry.link.classList.toggle('active', isActive);
         entry.link.setAttribute('aria-current', isActive ? 'true' : 'false');
         entry.element.classList.toggle('is-toc-active', isActive);
+      }
+
+      if (active?.item) {
+        active.item.classList.add('is-active');
+        let parent = active.item.parentElement?.closest<HTMLElement>('.toc-item');
+        while (parent) {
+          parent.classList.add('is-active-branch');
+          parent = parent.parentElement?.closest<HTMLElement>('.toc-item');
+        }
       }
 
       if (active?.id && active.id !== activeId) {
@@ -130,6 +143,7 @@ export function TocObserver() {
     window.addEventListener('resize', scheduleUpdate);
     const resizeObserver = new ResizeObserver(scheduleUpdate);
     resizeObserver.observe(article);
+    if (postShell && postShell !== article) resizeObserver.observe(postShell);
 
     const onClick = (event: Event) => {
       const target = event.target instanceof HTMLElement ? event.target.closest<HTMLAnchorElement>('.toc-link, .article-heading-anchor__jump') : null;
@@ -158,6 +172,7 @@ export function TocObserver() {
 
       for (const entry of headings) {
         entry.element.classList.remove('is-toc-active', 'article-heading-anchor');
+        entry.item?.classList.remove('is-active', 'is-active-branch');
         delete entry.element.dataset.tocHeading;
         delete entry.element.dataset.tocDepth;
         delete entry.element.dataset.tocIndex;
