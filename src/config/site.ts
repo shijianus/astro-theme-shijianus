@@ -663,7 +663,7 @@ export const siteConfig = {
       submitLabel: '发送',
       previewLabel: '预览',
       emptyTitle: '还没有公开评论',
-      emptySummary: '留下第一条反馈，评论会保存在当前浏览器中，方便本地预览评论区外观与交互。',
+      emptySummary: '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
       tips: ['理性交流', '就事论事', '欢迎补充资料'],
       accountTitle: 'shijianus account',
       accountSummary: '头像、昵称、提醒与评论身份统一收在 shijianus console 里，文章页只保留输入区与公开评论流。',

@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { CommentProvider } from '../../config/site';
 import {
-  createDemoLocalThread,
   createCommentId,
-  createPresetCommentIdentity,
   getCommentInitials,
   normaliseComment,
   readCommentIdentity,
   readLocalThread,
-  writeCommentIdentity,
   type CommentIdentity,
   type CommentStatus,
   type StoredComment,
@@ -95,12 +92,10 @@ export function PostComments({
       ? integration.cloudflare.apiBase.replace(/\/$/, '')
       : '';
   const canSync = cloudflareApiBase.length > 0;
-  const localTestingEnabled = integration.provider === 'local' || integration.fallback === 'local';
 
   const [identity, setIdentity] = useState<CommentIdentity | null>(null);
   const [comments, setComments] = useState<StoredComment[]>([]);
   const [storageReady, setStorageReady] = useState(false);
-  const [preview, setPreview] = useState(false);
   const [form, setForm] = useState<CommentForm>({ message: '' });
   const [replyTargetId, setReplyTargetId] = useState('');
   const [quoteTargetId, setQuoteTargetId] = useState('');
@@ -189,53 +184,9 @@ export function PostComments({
       });
   }, [comments]);
 
-  const previewParagraphs = useMemo(
-    () => form.message.split(/\n+/).map((item) => item.trim()).filter(Boolean),
-    [form.message],
-  );
-
   const requestAccount = () => {
     setNoticeText('需要先创建一个账号后才能评论。');
     window.dispatchEvent(new CustomEvent('shijianus:comment-account-required'));
-  };
-
-  const usePresetAccount = (role: 'admin' | 'reader') => {
-    const preset = createPresetCommentIdentity(role);
-    writeCommentIdentity(preset);
-    setNoticeText(
-      role === 'admin'
-        ? '已切换到管理员测试账号。建议先验证置顶、限制、编辑、删除、追评和引用流程。'
-        : '已切换到读者测试账号。现在可以复查普通访客的评论、点赞和追评体验。',
-    );
-  };
-
-  const loadDemoComments = () => {
-    const demoComments = createDemoLocalThread(slug);
-
-    setComments((current) => {
-      const demoIds = new Set(demoComments.map((comment) => comment.id));
-      const preservedComments = current.filter((comment) => !demoIds.has(comment.id));
-      return [...demoComments, ...preservedComments];
-    });
-    setReplyTargetId('');
-    setQuoteTargetId('');
-    setPreview(false);
-    setNoticeText('已填充演示评论。推荐先使用管理员测试账号走完整套管理动作。');
-  };
-
-  const clearLocalComments = () => {
-    if (comments.length === 0) {
-      setNoticeText('当前文章还没有本地评论可清空。');
-      return;
-    }
-
-    if (!window.confirm('确认清空当前文章的本地评论线程吗？')) return;
-
-    setComments([]);
-    setReplyTargetId('');
-    setQuoteTargetId('');
-    setPreview(false);
-    setNoticeText('当前文章的本地评论线程已清空。');
   };
 
   const syncComment = async (entry: StoredComment) => {
@@ -278,7 +229,6 @@ export function PostComments({
 
     setComments((current) => [entry, ...current]);
     setForm({ message: '' });
-    setPreview(false);
     setReplyTargetId('');
     setQuoteTargetId('');
     setNoticeText(replyTarget ? `已回复 @${replyTarget.name}。` : '评论已发布。');
@@ -462,35 +412,9 @@ export function PostComments({
           <strong>{heading}</strong>
           <small>{comments.length} 条公开评论</small>
         </div>
-        <div className="comment-toolbar__status-note">
-          <p>
-            {identity
-              ? `${identity.name} 已登录，账号资料与提醒统一在 shijianus console 中维护。`
-              : '当前未登录，评论输入保持灰色锁定；点击输入区后会提示你先创建账号。'}
-          </p>
-          {localTestingEnabled && (
-            <div className="comment-toolbar__testing">
-              <div className="comment-toolbar__testing-copy">
-                <span className="comment-toolbar__testing-label">本地测试快捷入口</span>
-                <small>推荐先使用管理员测试账号，再切换读者账号复查普通访客视角。</small>
-              </div>
-              <div className="comment-toolbar__testing-actions">
-                <button type="button" onClick={() => usePresetAccount('admin')}>
-                  使用管理员测试账号
-                </button>
-                <button type="button" onClick={() => usePresetAccount('reader')}>
-                  使用读者测试账号
-                </button>
-                <button type="button" onClick={loadDemoComments}>
-                  填充演示评论
-                </button>
-                <button type="button" onClick={clearLocalComments}>
-                  清空本地评论
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <p className="comment-toolbar__status-note">
+          {identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在 shijianus console 中创建评论账号。'}
+        </p>
       </div>
 
       <div className="comment-wrap">
@@ -516,6 +440,7 @@ export function PostComments({
               <span className="comment-form-card__label">留言内容</span>
               <span className="comment-form-card__hint">{identity ? '支持 Ctrl / Command + Enter 快速发送' : '点击后前往控制台创建账号'}</span>
             </div>
+            <p className="comment-form-card__notice">{notice}</p>
             <textarea
               value={form.message}
               readOnly={!identity}
@@ -546,51 +471,24 @@ export function PostComments({
 
           <div className="comment-form-card__footer">
             <span className="comment-form-card__counter">{remaining}/{LIMIT}</span>
-            <div className="comment-form-card__actions">
-              <button
-                type="button"
-                className={preview ? 'is-active' : ''}
-                onClick={() => {
-                  if (!identity) {
-                    requestAccount();
-                    return;
-                  }
-                  setPreview((value) => !value);
-                }}
-              >
-                {previewLabel}
-              </button>
-              <button
-                type="button"
-                className={`is-primary ${!identity ? 'is-disabled' : ''}`}
-                onClick={() => void submit()}
-                aria-disabled={!identity || !canSubmit}
-              >
-                {submitLabel}
-              </button>
-            </div>
+            <button
+              type="button"
+              className={`is-primary ${!identity ? 'is-disabled' : ''}`}
+              onClick={() => void submit()}
+              aria-disabled={!identity || !canSubmit}
+            >
+              {submitLabel}
+            </button>
           </div>
 
           {noticeText && <div className="comment-inline-notice">{noticeText}</div>}
-
-          {preview && (
-            <div className="comment-preview">
-              <div className="comment-preview__head">
-                <span className="comment-preview__eyebrow">preview</span>
-                <strong>{identity?.name || 'Preview'}</strong>
-              </div>
-              <div className="comment-preview__body">
-                {previewParagraphs.length > 0 ? (
-                  previewParagraphs.map((item) => <p key={item}>{item}</p>)
-                ) : (
-                  <p>输入内容后会在这里预览。</p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="comment-thread comment-thread--scrollable">
+          <div className="comment-thread__header">
+            <strong>公开评论</strong>
+            <span>{tips.join(' / ')}</span>
+          </div>
           {rootComments.length > 0 ? (
             rootComments.map((comment) => renderComment(comment))
           ) : (
