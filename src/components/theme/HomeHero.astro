@@ -1,5 +1,5 @@
 ---
-import { BookOpenText, Boxes, CodeXml, Compass, type LucideIcon } from 'lucide-react';
+import { BookOpen, Boxes, CodeXml, Compass, type LucideIcon } from 'lucide-react';
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
@@ -23,7 +23,7 @@ const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0
 const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon> = {
   boxes: Boxes,
   code: CodeXml,
-  book: BookOpenText,
+  book: BookOpen,
   compass: Compass,
 };
 ---

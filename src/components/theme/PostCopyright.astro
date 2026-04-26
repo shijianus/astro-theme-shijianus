@@ -340,10 +340,18 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       const isPopoverPanel = (name) => name === 'reward';
       const panelAnchors = new Map();
       let rewardCloseTimer = 0;
+      let pinnedPopoverPanel = '';
 
       const clearRewardCloseTimer = () => {
         window.clearTimeout(rewardCloseTimer);
         rewardCloseTimer = 0;
+      };
+
+      const syncPinnedPopover = (name = '') => {
+        pinnedPopoverPanel = name;
+        rewardPopovers.forEach((popover) => {
+          popover.dataset.pinned = String(name === 'reward');
+        });
       };
 
       const getActivePanel = () => panels.find((panel) => !panel.hidden)?.dataset.panel ?? '';
@@ -392,6 +400,10 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       };
 
       const renderPanelState = (activePanel = '') => {
+        if (activePanel !== 'reward' && pinnedPopoverPanel) {
+          syncPinnedPopover();
+        }
+
         let showBackdrop = false;
 
         panels.forEach((panel) => {
@@ -424,23 +436,36 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
 
       const closePanels = () => {
         clearRewardCloseTimer();
+        syncPinnedPopover();
         renderPanelState();
       };
 
-      const openPanel = (name, anchor) => {
+      const openPanel = (name, anchor, options = {}) => {
         clearRewardCloseTimer();
         if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
+        if (options.pinned && isPopoverPanel(name)) {
+          syncPinnedPopover(name);
+        }
         renderPanelState(name);
       };
 
-      const togglePanel = (name, anchor) => {
+      const togglePanel = (name, anchor, options = {}) => {
         const currentPanel = getActivePanel();
         clearRewardCloseTimer();
         if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
+
+        if (options.pinned && isPopoverPanel(name)) {
+          const nextOpen = !(currentPanel === name && pinnedPopoverPanel === name);
+          syncPinnedPopover(nextOpen ? name : '');
+          renderPanelState(nextOpen ? name : '');
+          return;
+        }
+
         renderPanelState(currentPanel === name ? '' : name);
       };
 
       const queueRewardClose = (delay = 150) => {
+        if (pinnedPopoverPanel === 'reward') return;
         clearRewardCloseTimer();
         rewardCloseTimer = window.setTimeout(() => {
           if (getActivePanel() === 'reward') {
@@ -456,7 +481,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         const panel = popover.querySelector('[data-panel="reward"]');
         popover.addEventListener('pointerenter', () => {
           clearRewardCloseTimer();
-          openPanel('reward', trigger);
+          if (pinnedPopoverPanel !== 'reward') openPanel('reward', trigger);
         });
 
         popover.addEventListener('pointerleave', () => {
@@ -516,11 +541,21 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       });
 
       section.querySelectorAll('[data-panel-trigger]').forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (event) => {
           const panelName = button.getAttribute('data-panel-trigger');
           if (!panelName) return;
+
+          if (panelName === 'reward') {
+            event.preventDefault();
+            event.stopPropagation();
+            const willOpen = !(getActivePanel() === 'reward' && pinnedPopoverPanel === 'reward');
+            togglePanel(panelName, button, { pinned: true });
+            setStatus(willOpen ? '已固定打赏面板' : '已关闭打赏面板');
+            return;
+          }
+
           togglePanel(panelName, button);
-          setStatus(panelName === 'reward' ? '已切换打赏面板' : '已切换扫码分享面板');
+          setStatus('已切换扫码分享面板');
         });
       });
 

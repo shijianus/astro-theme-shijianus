@@ -39,7 +39,7 @@ const isPostSecondaryPage = pageType === 'post-secondary';
 const isPostPage = isPostTocPage || isPostSecondaryPage;
 const isHomePage = pageType === 'home';
 const utilityOnlyPageTypes = new Set(['home', 'page']);
-const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
 const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
 const tocTree = (() => {
   const roots: TocNode[] = [];

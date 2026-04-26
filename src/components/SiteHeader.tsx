@@ -47,8 +47,16 @@ function openCenterConsole() {
   window.dispatchEvent(new CustomEvent('shijianus:open-console'));
 }
 
+function closeCenterConsole() {
+  window.dispatchEvent(new CustomEvent('shijianus:close-console'));
+}
+
 function openNotificationPanel() {
   window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+}
+
+function closeNotificationPanel() {
+  window.dispatchEvent(new CustomEvent('shijianus:close-notifications'));
 }
 
 const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> = {
@@ -72,6 +80,8 @@ export function SiteHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenuHref, setOpenSubmenuHref] = useState<string | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [scrolled, setScrolled] = useState(false);
   const consolePressRef = useRef({
@@ -185,6 +195,7 @@ export function SiteHeader({
   useEffect(() => {
     if (!showNotificationTrigger) {
       setNotificationCount(0);
+      setNotificationOpen(false);
       return;
     }
 
@@ -221,6 +232,26 @@ export function SiteHeader({
       window.removeEventListener('shijianus:comment-thread-change', syncNotifications);
     };
   }, [showNotificationTrigger]);
+
+  useEffect(() => {
+    const onConsoleVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setConsoleOpen(Boolean(customEvent.detail));
+    };
+
+    const onNotificationVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setNotificationOpen(Boolean(customEvent.detail));
+    };
+
+    window.addEventListener('shijianus:console-visibility', onConsoleVisibility as EventListener);
+    window.addEventListener('shijianus:notification-visibility', onNotificationVisibility as EventListener);
+
+    return () => {
+      window.removeEventListener('shijianus:console-visibility', onConsoleVisibility as EventListener);
+      window.removeEventListener('shijianus:notification-visibility', onNotificationVisibility as EventListener);
+    };
+  }, []);
 
   const clearSubmenuCloseTimer = () => {
     if (submenuCloseTimerRef.current !== null) {
@@ -283,6 +314,10 @@ export function SiteHeader({
       if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
       const releaseTarget = document.elementFromPoint(clientX, clientY);
       if (!(releaseTarget instanceof Node) || !trigger.contains(releaseTarget)) return;
+      if (consoleOpen) {
+        closeCenterConsole();
+        return;
+      }
       openCenterConsole();
     });
   };
@@ -385,9 +420,12 @@ export function SiteHeader({
               <div className="nav-button" id="center-console-button">
                 <button
                   type="button"
-                  className="site-page center-console-trigger"
+                  className={`site-page center-console-trigger ${consoleOpen ? 'is-active' : ''}`}
                   title={`${brandName} console`}
                   aria-haspopup="dialog"
+                  aria-expanded={consoleOpen}
+                  aria-pressed={consoleOpen}
+                  data-state={consoleOpen ? 'open' : 'closed'}
                   onPointerDown={handleConsolePointerDown}
                   onPointerMove={handleConsolePointerMove}
                   onPointerLeave={handleConsolePointerCancel}
@@ -396,6 +434,10 @@ export function SiteHeader({
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
+                      if (consoleOpen) {
+                        closeCenterConsole();
+                        return;
+                      }
                       openCenterConsole();
                     }
                   }}
@@ -416,11 +458,20 @@ export function SiteHeader({
               <div className="nav-button" id="notification-button">
                 <button
                   type="button"
-                  className="site-page notification-trigger"
+                  className={`site-page notification-trigger ${notificationOpen ? 'is-active' : ''}`}
                   title={`${brandName} notifications`}
                   aria-haspopup="dialog"
                   aria-label={`${brandName} notifications`}
-                  onClick={openNotificationPanel}
+                  aria-expanded={notificationOpen}
+                  aria-pressed={notificationOpen}
+                  data-state={notificationOpen ? 'open' : 'closed'}
+                  onClick={() => {
+                    if (notificationOpen) {
+                      closeNotificationPanel();
+                      return;
+                    }
+                    openNotificationPanel();
+                  }}
                 >
                   <Bell className="nav-icon" aria-hidden="true" />
                   {notificationCount > 0 && <span className="notification-trigger__badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}

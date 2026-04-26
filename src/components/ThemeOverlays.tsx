@@ -330,13 +330,14 @@ export function ThemeOverlays({
     const openSearch = () => {
       setNotificationOpen(false);
       setConsoleNoticeOpen(false);
+      setConsoleOpen(false);
       setSearchOpen(true);
     };
     const openConsole = () => {
       if (!features.centerConsole) return;
       setNotificationOpen(false);
+      setSearchOpen(false);
       if (!consolePanel.enabled) {
-        setSearchOpen(false);
         setConsoleOpen(false);
         setConsoleNoticeOpen(true);
         return;
@@ -344,12 +345,19 @@ export function ThemeOverlays({
       setConsoleNoticeOpen(false);
       setConsoleOpen(true);
     };
+    const closeConsole = () => {
+      setConsoleOpen(false);
+      setConsoleNoticeOpen(false);
+    };
     const openNotifications = () => {
       if (!accountPanel.enabled) return;
       setConsoleNoticeOpen(false);
       setSearchOpen(false);
       setConsoleOpen(false);
       setNotificationOpen(true);
+    };
+    const closeNotifications = () => {
+      setNotificationOpen(false);
     };
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<ThemeMode>;
@@ -394,7 +402,9 @@ export function ThemeOverlays({
 
     window.addEventListener('shijianus:open-search', openSearch);
     window.addEventListener('shijianus:open-console', openConsole);
+    window.addEventListener('shijianus:close-console', closeConsole);
     window.addEventListener('shijianus:open-notifications', openNotifications);
+    window.addEventListener('shijianus:close-notifications', closeNotifications);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
@@ -405,7 +415,9 @@ export function ThemeOverlays({
     return () => {
       window.removeEventListener('shijianus:open-search', openSearch);
       window.removeEventListener('shijianus:open-console', openConsole);
+      window.removeEventListener('shijianus:close-console', closeConsole);
       window.removeEventListener('shijianus:open-notifications', openNotifications);
+      window.removeEventListener('shijianus:close-notifications', closeNotifications);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
       window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
@@ -417,6 +429,9 @@ export function ThemeOverlays({
 
   useEffect(() => {
     document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen || consoleNoticeOpen || notificationOpen);
+
+    window.dispatchEvent(new CustomEvent('shijianus:console-visibility', { detail: consoleOpen }));
+    window.dispatchEvent(new CustomEvent('shijianus:notification-visibility', { detail: notificationOpen }));
 
     if (searchOpen) {
       window.setTimeout(() => searchInputRef.current?.focus(), 30);

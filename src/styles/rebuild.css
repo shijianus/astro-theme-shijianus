@@ -10446,8 +10446,48 @@ body[data-type='home'] .categoryItem:focus-within .categoryButtonIcon {
   transform: none;
 }
 
+.center-console-trigger.is-active {
+  color: var(--white) !important;
+  background: var(--font-color) !important;
+  box-shadow: 0 16px 30px -20px rgba(15, 23, 42, 0.42);
+}
+
+.center-console-trigger.is-active .console-trigger-bars span {
+  height: calc(var(--trigger-size) / 4.5);
+  background: var(--white);
+}
+
+:root[data-theme='dark'] .center-console-trigger.is-active .console-trigger-bars span {
+  background: #111827;
+}
+
+.center-console-trigger.is-active .console-trigger-bars .left {
+  width: 100%;
+  transform: rotate(-45deg);
+}
+
+.center-console-trigger.is-active .console-trigger-bars .center {
+  width: 0;
+  opacity: 0;
+}
+
+.center-console-trigger.is-active .console-trigger-bars .right {
+  width: 100%;
+  transform: rotate(45deg);
+}
+
 #notification-button .notification-trigger {
   position: relative;
+}
+
+.notification-trigger.is-active {
+  color: var(--white) !important;
+  background: var(--theme-main) !important;
+  box-shadow: 0 16px 30px -20px color-mix(in srgb, var(--theme-main) 52%, rgba(15, 23, 42, 0.42));
+}
+
+.notification-trigger.is-active .nav-icon {
+  color: var(--white);
 }
 
 .notification-trigger__badge {
@@ -14372,4 +14412,126 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* 2026-04-25 final polish: category hover fidelity, deep TOC support, reward popover pinning */
+
+body[data-type='home'] .categoryButton.lime > svg.categoryButtonIcon {
+  right: 8px;
+  width: 94px;
+  height: 94px;
+  stroke-width: 1.8;
+  transform-origin: 64% 50%;
+}
+
+body[data-type='home'] .categoryItem:hover .categoryButton > svg.categoryButtonIcon,
+body[data-type='home'] .categoryItem:focus-within .categoryButton > svg.categoryButtonIcon,
+body[data-type='home'] .categoryButton:hover > svg.categoryButtonIcon,
+body[data-type='home'] .categoryButton:focus-visible > svg.categoryButtonIcon {
+  opacity: 0.82;
+  filter: blur(0);
+  transform: translateY(-50%) rotate(0deg) scale(0.74) !important;
+}
+
+body[data-type='home'] .categoryItem:hover .categoryButton.lime > svg.categoryButtonIcon,
+body[data-type='home'] .categoryItem:focus-within .categoryButton.lime > svg.categoryButtonIcon,
+body[data-type='home'] .categoryButton.lime:hover > svg.categoryButtonIcon,
+body[data-type='home'] .categoryButton.lime:focus-visible > svg.categoryButtonIcon {
+  transform: translateY(-50%) rotate(0deg) scale(0.72) !important;
+}
+
+body[data-type='post'] .support-panel-popover[data-pinned='true'] .support-panel-link--icon {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  box-shadow: 0 18px 30px -26px color-mix(in srgb, var(--theme-main) 34%, rgba(15, 23, 42, 0.38));
+}
+
+#card-toc .toc-item--depth-5 > .toc-link,
+#card-toc .toc-item--depth-6 > .toc-link {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+#card-toc .toc-item--depth-5 > .toc-link .toc-index,
+#card-toc .toc-item--depth-6 > .toc-link .toc-index,
+#card-toc .toc-item--depth-5 > .toc-link .toc-depth,
+#card-toc .toc-item--depth-6 > .toc-link .toc-depth {
+  opacity: 0.7;
+}
+
+.article-body :where(h2, h3, h4, h5, h6)[data-toc-heading='true'] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.article-body :where(h5, h6)[data-toc-heading='true'] {
+  gap: 8px;
+}
+
+.article-body :where(h4, h5, h6)[data-toc-heading='true']::before {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--theme-main) 8%, transparent);
+}
+
+.article-body :where(h5, h6)[data-toc-heading='true']::before {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-main) 8%, transparent);
+}
+
+.article-body h5 {
+  margin-top: 1.45rem;
+  color: var(--font-color);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.article-body h6 {
+  margin-top: 1.2rem;
+  color: color-mix(in srgb, var(--font-color) 82%, var(--text-muted));
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.55;
+  text-transform: uppercase;
+}
+
+.article-body.post-content mark {
+  padding: 0 0.32em;
+  border-radius: 0.38em;
+  background: color-mix(in srgb, var(--theme-yellow) 22%, rgba(255, 233, 132, 0.72));
+  color: color-mix(in srgb, var(--font-color) 92%, #6a4b00);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.article-body.post-content :is(sup, sub) {
+  color: var(--text-muted);
+  font-size: 0.78em;
+  font-weight: 700;
+}
+
+/* 2026-04-25 overlay trigger state sync */
+
+.center-console-trigger.is-active .console-trigger-bars .left,
+.center-console-trigger.is-active .console-trigger-bars .right {
+  top: 50% !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: 0 !important;
+  width: 100% !important;
+}
+
+.center-console-trigger.is-active .console-trigger-bars .left {
+  transform: translateY(-50%) rotate(-45deg) !important;
+}
+
+.center-console-trigger.is-active .console-trigger-bars .right {
+  transform: translateY(-50%) rotate(45deg) !important;
+}
+
+.center-console-trigger.is-active .console-trigger-bars .center {
+  transform: translateY(-50%) scaleX(0) !important;
 }

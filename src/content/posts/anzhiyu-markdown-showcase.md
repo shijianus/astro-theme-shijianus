@@ -50,6 +50,11 @@ tags: ["Astro", "Markdown", "主题重构", "UI", "Study"]
   <span style="font-family: 'Courier New', monospace; font-size: 0.96em;">const typographyMode = "editorial + geek";</span>
 </p>
 
+<div class="article-note-card article-note-card--accent">
+  <strong>特殊格式组合压测</strong>
+  <p>这一块同时覆盖 <mark>高亮标记</mark>、<kbd>键位</kbd>、`inline code`、不同字重与原生 HTML，目的是确认正文增强不是只在单一内容形态下成立。</p>
+</div>
+
 ### 隐藏内容与剧透
 
 当前主题已经支持几种前端增强型的内联内容：
@@ -98,6 +103,14 @@ tags: ["Astro", "Markdown", "主题重构", "UI", "Study"]
 #### 第二层分组：H4 密度测试
 
 这一段后面会继续补一批 H4，目的是让目录出现更明显的深层节点，进一步观察压缩缩进是否仍然可读。
+
+##### 第三层补充：H5 路径压缩
+
+这一层用来确认目录在继续深入时，不会因为层级增加就把可点击区域压缩得过窄。也就是说，**层级变深，不代表交互面积可以变小**。
+
+###### 第四层末级：H6 锚点试验
+
+如果你在右侧目录里仍然能看清这一级的位置，而且点击后锚点跳转准确、当前路径高亮稳定，那么更深一级的标题扫描就已经补齐了。
 
 #### 第二层分组：额外节点 A
 

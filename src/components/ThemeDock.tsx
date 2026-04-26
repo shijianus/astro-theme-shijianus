@@ -3,6 +3,7 @@ import {
   Archive,
   ArrowUp,
   Dice5,
+  FolderTree,
   Languages,
   ListTree,
   MessageCircle,
@@ -14,6 +15,7 @@ import {
   Share2,
   Sparkles,
   SunMedium,
+  Tags,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -254,7 +256,8 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
     return [
       { id: 'search', label: '搜索内容', detail: '全文索引与筛选', Icon: Search, onClick: openSearch },
       { id: 'archives', label: '文章归档', detail: '查看完整时间线', Icon: Archive, href: '/archives/' },
-      { id: 'comments', label: '评论入口', detail: '文章页中自动跳转', Icon: MessageCircle, onClick: jumpToComments },
+      { id: 'categories', label: '分类入口', detail: '按主题浏览全部文章', Icon: FolderTree, href: '/categories/' },
+      { id: 'tags', label: '标签入口', detail: '快速切到关键词聚合', Icon: Tags, href: '/tags/' },
       { id: 'random', label: '随便逛逛', detail: '随机进入一篇文章', Icon: Dice5, onClick: goRandom },
       { id: 'top', label: '回到顶部', detail: '返回当前页面开头', Icon: ArrowUp, onClick: jumpToTop },
     ];
@@ -271,8 +274,8 @@ export function ThemeDock({ defaultBackground, darkBackground, backgroundModes }
         <div className="shijianus-devbar-panel__head">
           <div>
             <span className="shijianus-devbar-panel__eyebrow">shijianus</span>
-            <strong>blog bar</strong>
-            <p>{pageType === 'post' ? '文章快捷入口与阅读操作' : '博客级快捷入口与页面操作'}</p>
+            <strong>blog workbench</strong>
+            <p>{pageType === 'post' ? '文章阅读、目录、评论与分享入口' : '面向博客浏览的分类、标签与归档入口'}</p>
           </div>
           <button type="button" className="shijianus-devbar-panel__close" onClick={() => setDevBarOpen(false)} aria-label="Close dev bar">
             <X className="rightside-icon" aria-hidden="true" />

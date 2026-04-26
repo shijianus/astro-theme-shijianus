@@ -32,6 +32,7 @@ This repository currently serves both as the theme workbench and the example sit
 git clone https://github.com/shijianus/astro-theme-shijianus.git
 cd astro-theme-shijianus
 npm install
+npm start
 npm run dev
 ```
 
@@ -41,6 +42,7 @@ The local dev server binds to `0.0.0.0`, so it can be opened from other devices 
 
 | Command | Purpose |
 | --- | --- |
+| `npm start` | Start the Astro dev server on `0.0.0.0`. Default entrypoint for platforms that expect a `start` script. |
 | `npm run dev` | Start the Astro dev server on `0.0.0.0`. |
 | `npm run build` | Build the static site into `dist/`. |
 | `npm run preview` | Preview the production build locally. |
