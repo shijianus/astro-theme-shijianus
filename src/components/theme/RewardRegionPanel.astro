@@ -35,7 +35,7 @@ const isPanel = variant === 'panel';
   )}
 
   <div class="reward-region-panel__layout">
-    <aside class="reward-region-panel__selector-shell" aria-label={reward.detect.switchLabel}>
+    <aside class:list={['reward-region-panel__selector-shell', isPanel && 'reward-region-panel__selector-shell--panel']} aria-label={reward.detect.switchLabel}>
       {!isPanel && (
         <div class="reward-region-panel__selector-head">
           <span>{reward.detect.switchLabel}</span>
@@ -54,7 +54,7 @@ const isPanel = variant === 'panel';
             <span class="reward-region-panel__option-short">{region.shortLabel}</span>
             <span class="reward-region-panel__option-copy">
               <strong>{region.label}</strong>
-              <small>{region.description}</small>
+              {!isPanel && <small>{region.description}</small>}
             </span>
           </button>
         ))}
@@ -80,9 +80,9 @@ const isPanel = variant === 'panel';
             </div>
           </div>
 
-          <div class="reward-channel-grid reward-channel-grid--region">
+          <div class:list={['reward-channel-grid', 'reward-channel-grid--region', isPanel && 'reward-channel-grid--panel']}>
             {region.channels.map((channel) => (
-              <article class="reward-channel-card reward-channel-card--region" style={`--channel-accent:${channel.accent};`}>
+              <article class:list={['reward-channel-card', 'reward-channel-card--region', isPanel && 'reward-channel-card--panel']} style={`--channel-accent:${channel.accent};`}>
                 <div class="reward-channel-card__meta">
                   <span class="reward-channel-card__short">{channel.shortLabel}</span>
                   <div>

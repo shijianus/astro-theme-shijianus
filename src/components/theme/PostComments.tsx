@@ -406,19 +406,17 @@ export function PostComments({
 
   return (
     <section id="post-comment" data-comment-provider="managed" data-comment-view={identity ? 'member' : 'guest'}>
-      <div className="comment-toolbar">
-        <div className="comment-toolbar__copy">
-          <span className="comment-toolbar__eyebrow">shijianus comments</span>
-          <strong>{heading}</strong>
-          <small>{comments.length} 条公开评论</small>
-        </div>
-        <p className="comment-toolbar__status-note">
-          {identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在 shijianus console 中创建评论账号。'}
-        </p>
-      </div>
-
-      <div className="comment-wrap">
+      <div className="comment-wrap comment-wrap--stacked">
         <div className="comment-form-card comment-form-card--compact">
+          <div className="comment-form-card__publish-head">
+            <div className="comment-form-card__publish-copy">
+              <span className="comment-toolbar__eyebrow">shijianus comments</span>
+              <strong>{heading}</strong>
+              <small>{identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在 shijianus console 中创建评论账号。'}</small>
+            </div>
+            <span className="comment-form-card__publish-count">{comments.length} 条公开评论</span>
+          </div>
+
           {(replyTarget || quoteTarget) && (
             <div className="comment-reply-context">
               {replyTarget && <span>追评 @{replyTarget.name}</span>}
@@ -484,21 +482,24 @@ export function PostComments({
           {noticeText && <div className="comment-inline-notice">{noticeText}</div>}
         </div>
 
-        <div className="comment-thread comment-thread--scrollable">
-          <div className="comment-thread__header">
+        <div className="comment-thread-shell">
+          <div className="comment-thread-shell__head">
             <strong>公开评论</strong>
-            <span>{tips.join(' / ')}</span>
+            <small>固定高度展示，可直接滚动浏览全部内容</small>
           </div>
-          {rootComments.length > 0 ? (
-            rootComments.map((comment) => renderComment(comment))
-          ) : (
-            <div className="comment-thread__empty">
-              <span className="comment-thread__eyebrow">public comments</span>
-              <strong>{emptyTitle}</strong>
-              <p>{emptySummary}</p>
-              <span className="comment-thread__empty-note">账号准备好后就能发布第一条评论。</span>
-            </div>
-          )}
+
+          <div className="comment-thread comment-thread--scrollable">
+            {rootComments.length > 0 ? (
+              rootComments.map((comment) => renderComment(comment))
+            ) : (
+              <div className="comment-thread__empty">
+                <span className="comment-thread__eyebrow">public comments</span>
+                <strong>{emptyTitle}</strong>
+                <p>{emptySummary}</p>
+                <span className="comment-thread__empty-note">账号准备好后就能发布第一条评论。</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>

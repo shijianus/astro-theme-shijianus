@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
   ArrowUp,
+  Bell,
   ChevronDown,
   Dice5,
   ExternalLink,
@@ -17,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
+import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { applyThemeWithBackground, readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 
 type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children'>;
@@ -29,6 +31,7 @@ type SiteHeaderProps = {
   utility: NavItem[];
   quickActions: NavItem[];
   showCenterConsoleTrigger: boolean;
+  showNotificationTrigger: boolean;
 };
 
 function isActive(currentPath: string, href: string) {
@@ -42,6 +45,10 @@ function openSearchPanel() {
 
 function openCenterConsole() {
   window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+}
+
+function openNotificationPanel() {
+  window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
 }
 
 const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> = {
@@ -60,8 +67,11 @@ export function SiteHeader({
   utility,
   quickActions,
   showCenterConsoleTrigger,
+  showNotificationTrigger,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openSubmenuHref, setOpenSubmenuHref] = useState<string | null>(null);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [scrolled, setScrolled] = useState(false);
   const consolePressRef = useRef({
@@ -70,6 +80,7 @@ export function SiteHeader({
     x: 0,
     y: 0,
   });
+  const submenuCloseTimerRef = useRef<number | null>(null);
 
   const activeLabel = useMemo(() => {
     return (
@@ -142,6 +153,7 @@ export function SiteHeader({
 
   useEffect(() => {
     setMenuOpen(false);
+    setOpenSubmenuHref(null);
   }, [currentPath]);
 
   useEffect(() => {
@@ -161,6 +173,77 @@ export function SiteHeader({
       document.removeEventListener('visibilitychange', resetConsolePress);
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (submenuCloseTimerRef.current !== null) {
+        window.clearTimeout(submenuCloseTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showNotificationTrigger) {
+      setNotificationCount(0);
+      return;
+    }
+
+    const syncNotifications = () => {
+      const account = readCommentIdentity();
+      if (!account) {
+        setNotificationCount(0);
+        return;
+      }
+
+      const count = readAllLocalThreads().filter((comment) => {
+        if (comment.authorId === account.id) return false;
+        return comment.message.includes(`@${account.name}`);
+      }).length;
+
+      setNotificationCount(Math.max(0, Math.min(count, 99)));
+    };
+
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key) return;
+      if (event.key === 'shijianus-comment-account' || event.key === 'shijianus-comment-identity' || event.key.startsWith('shijianus-comments:')) {
+        syncNotifications();
+      }
+    };
+
+    syncNotifications();
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('shijianus:comment-account-change', syncNotifications as EventListener);
+    window.addEventListener('shijianus:comment-thread-change', syncNotifications);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('shijianus:comment-account-change', syncNotifications as EventListener);
+      window.removeEventListener('shijianus:comment-thread-change', syncNotifications);
+    };
+  }, [showNotificationTrigger]);
+
+  const clearSubmenuCloseTimer = () => {
+    if (submenuCloseTimerRef.current !== null) {
+      window.clearTimeout(submenuCloseTimerRef.current);
+      submenuCloseTimerRef.current = null;
+    }
+  };
+
+  const openSubmenu = (href: string) => {
+    clearSubmenuCloseTimer();
+    setOpenSubmenuHref(href);
+  };
+
+  const queueSubmenuClose = (href?: string, delay = 140) => {
+    clearSubmenuCloseTimer();
+    submenuCloseTimerRef.current = window.setTimeout(() => {
+      setOpenSubmenuHref((current) => {
+        if (!href || current === href) return null;
+        return current;
+      });
+      submenuCloseTimerRef.current = null;
+    }, delay);
+  };
 
   const handleConsolePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
@@ -228,20 +311,42 @@ export function SiteHeader({
               {primary.map((item) => {
                 const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
                 const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
+                const hasChildren = Boolean(item.children && item.children.length > 1);
+                const submenuOpen = hasChildren && openSubmenuHref === item.href;
 
                 return (
-                  <div key={item.href} className={`menus_item ${item.children && item.children.length > 1 ? 'has-children' : ''}`}>
+                  <div
+                    key={item.href}
+                    className={`menus_item ${hasChildren ? 'has-children' : ''} ${submenuOpen ? 'is-open' : ''}`}
+                    onPointerEnter={() => {
+                      if (hasChildren) openSubmenu(item.href);
+                    }}
+                    onPointerLeave={() => {
+                      if (hasChildren) queueSubmenuClose(item.href);
+                    }}
+                    onFocus={() => {
+                      if (hasChildren) openSubmenu(item.href);
+                    }}
+                    onBlur={(event) => {
+                      if (!hasChildren) return;
+                      const relatedTarget = event.relatedTarget;
+                      if (relatedTarget instanceof Node && event.currentTarget.contains(relatedTarget)) return;
+                      queueSubmenuClose(item.href, 0);
+                    }}
+                  >
                     <div className="site-page-shell">
                       <a
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
                         data-subtitle={item.description}
+                        aria-haspopup={hasChildren ? 'menu' : undefined}
+                        aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         <span className="site-page__icon-wrap" aria-hidden="true">
                           <NavIcon className="site-page__icon" />
                         </span>
                         <span className="site-page__label">{item.label}</span>
-                        {item.children && item.children.length > 1 && <ChevronDown className="site-page__chevron" aria-hidden="true" />}
+                        {hasChildren && <ChevronDown className="site-page__chevron" aria-hidden="true" />}
                         {item.description && <span className="site-page__subtitle">{item.description}</span>}
                         <span className="site-page__flyout" aria-hidden="true">
                           <span>{item.description ?? item.label}</span>
@@ -249,8 +354,8 @@ export function SiteHeader({
                         </span>
                       </a>
 
-                      {item.children && item.children.length > 1 && (
-                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`}>
+                      {hasChildren && (
+                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
                           {item.children.slice(0, 3).map((child) => {
                             const ChildIcon = navIconMap[child.icon ?? 'home'] ?? House;
                             return (
@@ -259,12 +364,10 @@ export function SiteHeader({
                                 href={child.href}
                                 className={`site-page-submenu__item ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
                                 role="menuitem"
+                                title={child.description ?? child.label}
                               >
                                 <ChildIcon className="site-page-submenu__icon" aria-hidden="true" />
-                                <span className="site-page-submenu__copy">
-                                  <strong>{child.label}</strong>
-                                  <small>{child.description ?? item.description ?? item.label}</small>
-                                </span>
+                                <span className="site-page-submenu__label">{child.label}</span>
                               </a>
                             );
                           })}
@@ -305,6 +408,22 @@ export function SiteHeader({
                     <span className="center" />
                     <span className="right" />
                   </span>
+                </button>
+              </div>
+            )}
+
+            {showNotificationTrigger && (
+              <div className="nav-button" id="notification-button">
+                <button
+                  type="button"
+                  className="site-page notification-trigger"
+                  title={`${brandName} notifications`}
+                  aria-haspopup="dialog"
+                  aria-label={`${brandName} notifications`}
+                  onClick={openNotificationPanel}
+                >
+                  <Bell className="nav-icon" aria-hidden="true" />
+                  {notificationCount > 0 && <span className="notification-trigger__badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
                 </button>
               </div>
             )}

@@ -166,7 +166,6 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
                 ×
               </button>
             </div>
-            <p class="post-floating-panel__summary">如果这篇文章帮你省下了时间，顺手支持一下，就能让我继续把 shijianus 做成长期维护的内容系统。</p>
             <RewardRegionPanel variant="panel" />
           </div>
         </div>
@@ -254,7 +253,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
             ×
           </button>
         </div>
-        <p class="post-floating-panel__summary">{siteConfig.support.share.qrcodeDescription}</p>
+        <p class="post-floating-panel__summary">扫码后可在手机继续阅读，也可以直接转发给正在使用 WeChat 的朋友。</p>
         <div class="post-share-qrcode">
           <div class="post-share-qrcode__image">
             <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
@@ -355,11 +354,15 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         const margin = 12;
+        const preferredWidth = panel.dataset.panel === 'reward'
+          ? Math.max(320, Math.min(560, Math.round(viewportWidth * 0.48)))
+          : Math.max(320, Math.min(460, Math.round(viewportWidth * 0.44)));
         const previousVisibility = panel.style.visibility;
         const previousPointerEvents = panel.style.pointerEvents;
         const previousOpacity = panel.style.opacity;
         const previousTransform = panel.style.transform;
 
+        panel.style.setProperty('--floating-panel-width', `${preferredWidth}px`);
         panel.style.visibility = 'hidden';
         panel.style.pointerEvents = 'none';
         panel.style.opacity = '0';
@@ -367,7 +370,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
 
         const panelRect = panel.getBoundingClientRect();
         const anchorRect = anchor.getBoundingClientRect();
-        const panelWidth = Math.min(panelRect.width || panel.offsetWidth || 0, viewportWidth - margin * 2);
+        const panelWidth = Math.min(panelRect.width || panel.offsetWidth || preferredWidth, viewportWidth - margin * 2);
         const panelHeight = Math.min(panelRect.height || panel.offsetHeight || 0, viewportHeight - margin * 2);
         const centerX = anchorRect.left + anchorRect.width / 2;
         const left = Math.max(margin, Math.min(centerX - panelWidth / 2, viewportWidth - panelWidth - margin));
@@ -378,6 +381,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
           ? Math.max(margin, anchorRect.top - panelHeight - 12)
           : Math.max(margin, Math.min(anchorRect.bottom + 12, viewportHeight - panelHeight - margin));
 
+        panel.style.setProperty('--floating-panel-width', `${panelWidth}px`);
         panel.style.setProperty('--floating-panel-left', `${left}px`);
         panel.style.setProperty('--floating-panel-top', `${top}px`);
         panel.dataset.placement = placeTop ? 'top' : 'bottom';
@@ -449,12 +453,21 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
 
       rewardPopovers.forEach((popover) => {
         const trigger = popover.querySelector('[data-panel-trigger="reward"]');
+        const panel = popover.querySelector('[data-panel="reward"]');
         popover.addEventListener('pointerenter', () => {
           clearRewardCloseTimer();
           openPanel('reward', trigger);
         });
 
         popover.addEventListener('pointerleave', () => {
+          queueRewardClose();
+        });
+
+        panel?.addEventListener('pointerenter', () => {
+          clearRewardCloseTimer();
+        });
+
+        panel?.addEventListener('pointerleave', () => {
           queueRewardClose();
         });
       });
@@ -523,7 +536,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         button.addEventListener('click', async () => {
           if (navigator.share) {
             try {
-              await navigator.share({ title, url: permalink });
+              await navigator.share({ title, text: summary, url: permalink });
               setStatus(shareDone);
               return;
             } catch (error) {
@@ -550,7 +563,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
           if (platform === 'native') {
             if (navigator.share) {
               try {
-                await navigator.share({ title, url: permalink });
+                await navigator.share({ title, text: summary, url: permalink });
                 setStatus(shareDone);
                 return;
               } catch (error) {

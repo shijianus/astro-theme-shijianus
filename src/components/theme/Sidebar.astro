@@ -104,7 +104,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
       const childrenMarkup = node.children.length > 0 ? `<ol class="toc-list toc-list--child">${renderTocNodes(node.children)}</ol>` : '';
 
       return `
-        <li class="toc-item toc-item--depth-${node.heading.depth}" style="--toc-level:${node.level};">
+        <li class="toc-item toc-item--depth-${node.heading.depth} toc-item--level-${node.level}" style="--toc-level:${node.level};">
           <a href="#${escapeHtml(node.heading.slug)}" class="toc-link" data-depth="${node.heading.depth}" data-heading-id="${escapeHtml(node.heading.slug)}" aria-current="false">
             <span class="toc-index">${indexLabel}</span>
             <span class="toc-text-group">

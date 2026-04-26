@@ -144,6 +144,7 @@ export function ThemeOverlays({
   const [searchOpen, setSearchOpen] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(features.centerConsole && consolePanel.enabled && consolePanel.defaultOpen);
   const [consoleNoticeOpen, setConsoleNoticeOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [aside, setAside] = useState<AsideState>('expanded');
@@ -258,6 +259,7 @@ export function ThemeOverlays({
 
     const onAccountRequired = () => {
       setConsoleNoticeOpen(false);
+      setNotificationOpen(false);
       setSearchOpen(false);
       setConsoleOpen(true);
       setAccountNotice(accountPanel.enabled ? accountPanel.loginHint : accountPanel.disabledNotice);
@@ -326,11 +328,13 @@ export function ThemeOverlays({
     setLocaleVariant(readStoredLocaleVariant());
 
     const openSearch = () => {
+      setNotificationOpen(false);
       setConsoleNoticeOpen(false);
       setSearchOpen(true);
     };
     const openConsole = () => {
       if (!features.centerConsole) return;
+      setNotificationOpen(false);
       if (!consolePanel.enabled) {
         setSearchOpen(false);
         setConsoleOpen(false);
@@ -339,6 +343,13 @@ export function ThemeOverlays({
       }
       setConsoleNoticeOpen(false);
       setConsoleOpen(true);
+    };
+    const openNotifications = () => {
+      if (!accountPanel.enabled) return;
+      setConsoleNoticeOpen(false);
+      setSearchOpen(false);
+      setConsoleOpen(false);
+      setNotificationOpen(true);
     };
     const onThemeChange = (event: Event) => {
       const customEvent = event as CustomEvent<ThemeMode>;
@@ -363,6 +374,7 @@ export function ThemeOverlays({
         setSearchOpen(false);
         setConsoleOpen(false);
         setConsoleNoticeOpen(false);
+        setNotificationOpen(false);
         setRightMenu((menu) => ({ ...menu, open: false }));
       }
     };
@@ -382,6 +394,7 @@ export function ThemeOverlays({
 
     window.addEventListener('shijianus:open-search', openSearch);
     window.addEventListener('shijianus:open-console', openConsole);
+    window.addEventListener('shijianus:open-notifications', openNotifications);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
@@ -392,6 +405,7 @@ export function ThemeOverlays({
     return () => {
       window.removeEventListener('shijianus:open-search', openSearch);
       window.removeEventListener('shijianus:open-console', openConsole);
+      window.removeEventListener('shijianus:open-notifications', openNotifications);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
       window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
@@ -399,17 +413,17 @@ export function ThemeOverlays({
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('click', closeRightMenu);
     };
-  }, [consolePanel.enabled, darkBackground, defaultBackground, features.centerConsole, features.rightClickMenu, features.searchPanel]);
+  }, [accountPanel.enabled, consolePanel.enabled, darkBackground, defaultBackground, features.centerConsole, features.rightClickMenu, features.searchPanel]);
 
   useEffect(() => {
-    document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen || consoleNoticeOpen);
+    document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen || consoleNoticeOpen || notificationOpen);
 
     if (searchOpen) {
       window.setTimeout(() => searchInputRef.current?.focus(), 30);
     } else {
       setQuery('');
     }
-  }, [consoleNoticeOpen, searchOpen, consoleOpen]);
+  }, [consoleNoticeOpen, notificationOpen, searchOpen, consoleOpen]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -701,46 +715,6 @@ export function ThemeOverlays({
             </div>
 
             <div className="console-card-group-right">
-              <section className="console-card console-notifications">
-                <div className="console-card__head">
-                  <div>
-                    <p className="author-content-item-tips">提醒中心</p>
-                    <h2 className="author-content-item-title">通知与提示</h2>
-                  </div>
-                  <span className="console-card__head-badge">
-                    <Bell aria-hidden="true" />
-                    <strong>{accountNotifications.length}</strong>
-                  </span>
-                </div>
-
-                {account && accountNotifications.length > 0 ? (
-                  <div className="console-notification-list">
-                    {accountNotifications.map((comment) => (
-                      <article className="console-notification-item" key={comment.id}>
-                        <div className="console-notification-item__avatar">
-                          {comment.avatar ? (
-                            <img src={comment.avatar} alt={comment.name} loading="lazy" />
-                          ) : (
-                            <span>{getCommentInitials(comment.name)}</span>
-                          )}
-                        </div>
-                        <div className="console-notification-item__body">
-                          <strong>{comment.name}</strong>
-                          <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
-                          <p>{comment.message.slice(0, 90)}</p>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="console-notification-empty">
-                    <Bell aria-hidden="true" />
-                    <strong>{account ? '还没有新的提醒' : '保存账号后这里会显示提醒'}</strong>
-                    <p>{account ? '当有人 @ 你时，这里会集中展示提醒。' : accountPanel.loginHint}</p>
-                  </div>
-                )}
-              </section>
-
               <section className="console-card tags">
                 <p className="author-content-item-tips">Interests</p>
                 <h2 className="author-content-item-title">标签与入口</h2>
@@ -788,6 +762,77 @@ export function ThemeOverlays({
             <button type="button" className="console-btn-item" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="回到顶部">
               <ArrowUp aria-hidden="true" />
             </button>
+          </div>
+        </section>
+      )}
+
+      {accountPanel.enabled && (
+        <section className={`theme-notification-overlay ${notificationOpen ? 'show' : ''}`} aria-hidden={!notificationOpen}>
+          <button
+            type="button"
+            className="theme-notification-overlay__mask"
+            onClick={() => setNotificationOpen(false)}
+            aria-label="Close notifications"
+          />
+          <div className="theme-notification-drawer" role="dialog" aria-modal="true" aria-label="Notifications">
+            <div className="theme-notification-drawer__head">
+              <div>
+                <p className="eyebrow">Notifications</p>
+                <h2>提醒中心</h2>
+              </div>
+              <button
+                type="button"
+                className="theme-icon-button theme-button--ghost"
+                onClick={() => setNotificationOpen(false)}
+                aria-label="Close notifications"
+              >
+                <X className="overlay-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="theme-notification-drawer__summary">
+              <div className="theme-notification-drawer__summary-avatar">
+                {account?.avatar ? (
+                  <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
+                ) : (
+                  <span>{getCommentInitials(account?.name || brandName)}</span>
+                )}
+              </div>
+              <div className="theme-notification-drawer__summary-copy">
+                <strong>{account ? `${account.name} 的提醒` : '登录后这里会显示提醒'}</strong>
+                <p>{account ? `当前共 ${accountNotifications.length} 条 @ 提醒。` : accountPanel.loginHint}</p>
+              </div>
+            </div>
+
+            {account && accountNotifications.length > 0 ? (
+              <div className="console-notification-list theme-notification-drawer__list">
+                {accountNotifications.map((comment) => {
+                  const href = comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment';
+                  return (
+                    <a className="console-notification-item theme-notification-drawer__item" href={href} key={comment.id}>
+                      <div className="console-notification-item__avatar">
+                        {comment.avatar ? (
+                          <img src={comment.avatar} alt={comment.name} loading="lazy" />
+                        ) : (
+                          <span>{getCommentInitials(comment.name)}</span>
+                        )}
+                      </div>
+                      <div className="console-notification-item__body">
+                        <strong>{comment.name}</strong>
+                        <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
+                        <p>{comment.message.slice(0, 120)}</p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="console-notification-empty theme-notification-drawer__empty">
+                <Bell aria-hidden="true" />
+                <strong>{account ? '还没有新的提醒' : '保存账号后这里会显示提醒'}</strong>
+                <p>{account ? '当有人 @ 你时，这里会像收件箱一样集中展示。' : accountPanel.loginHint}</p>
+              </div>
+            )}
           </div>
         </section>
       )}
