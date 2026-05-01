@@ -302,7 +302,7 @@ const showSupportSection =
 
         {commentsEnabled && (
           <PostComments
-            client:only="react"
+            client:visible
             slug={entry.id}
             title={publicFacingTitle}
             heading={siteConfig.post.comments.title}
