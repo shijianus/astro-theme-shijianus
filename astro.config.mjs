@@ -3,9 +3,12 @@ import { defineConfig } from 'astro/config';
 
 import react from '@astrojs/react';
 import node from '@astrojs/node';
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcssVite from '@tailwindcss/vite'; // Renamed to avoid conflict with postcss plugin
 import mdx from '@astrojs/mdx';
 import remarkGfm from 'remark-gfm';
+// import tailwindcss from 'tailwindcss'; // REMOVED: PostCSS plugin is @tailwindcss/postcss
+import autoprefixer from 'autoprefixer';
+import tailwindPostcss from '@tailwindcss/postcss'; // ADDED: Correct PostCSS plugin
 
 // https://astro.build/config
 const buildTarget = process.env.BLOG_BUILD_TARGET === 'static' ? 'static' : 'server';
@@ -32,12 +35,12 @@ export default defineConfig({
     remarkPlugins: [remarkGfm],
   },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcssVite()], // Use the vite plugin here
     css: {
       postcss: {
         plugins: [
-          require('tailwindcss'),
-          require('autoprefixer'),
+          tailwindPostcss(), // Use the correct postcss plugin here
+          autoprefixer(),
         ],
       },
     },
@@ -49,3 +52,4 @@ export default defineConfig({
     },
   },
 });
+
