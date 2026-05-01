@@ -9,7 +9,7 @@
     "start": "astro dev --host 0.0.0.0",
     "dev": "astro dev --host 0.0.0.0",
     "preview:host": "astro preview --host 0.0.0.0",
-    "build": "astro build",
+    "build": "BLOG_BUILD_TARGET=static PUBLIC_STATIC_EXPORT=1 astro build",
     "build:static": "BLOG_BUILD_TARGET=static PUBLIC_STATIC_EXPORT=1 astro build",
     "clean": "node scripts/clean.mjs",
     "build:clean": "npm run clean && npm run build",
