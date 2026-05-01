@@ -4,6 +4,7 @@ import {
   collectCategories,
   collectTags,
   estimateReadingMinutes,
+  getPublicPosts,
   resolveCategory,
   sortPostsByDate,
 } from './content';
@@ -74,11 +75,17 @@ export type SidebarData = {
 
 type PostEntry = CollectionEntry<'posts'>;
 
-export function createSidebarData(posts: PostEntry[], headings: SidebarHeading[] = []): SidebarData {
-  const sortedPosts = sortPostsByDate(posts);
-  const tags = collectTags(sortedPosts);
-  const archives = collectArchives(sortedPosts);
-  const categories = collectCategories(sortedPosts);
+export function createSidebarData(
+  posts: PostEntry[],
+  headings: SidebarHeading[] = [],
+  options: {
+    includeProtected?: boolean;
+  } = {},
+): SidebarData {
+  const sortedPosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
+  const tags = collectTags(sortedPosts, { includeProtected: options.includeProtected });
+  const archives = collectArchives(sortedPosts, { includeProtected: options.includeProtected });
+  const categories = collectCategories(sortedPosts, { includeProtected: options.includeProtected });
   const totalReadingMinutes = sortedPosts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
 
   return {
@@ -94,10 +101,11 @@ export function createSidebarData(posts: PostEntry[], headings: SidebarHeading[]
   };
 }
 
-export function groupPostsByYear(posts: PostEntry[]) {
+export function groupPostsByYear(posts: PostEntry[], options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
   const postsByYear = new Map<number, PostEntry[]>();
 
-  for (const post of sortPostsByDate(posts)) {
+  for (const post of sourcePosts) {
     const year = post.data.pubDate.getFullYear();
     const bucket = postsByYear.get(year) ?? [];
     bucket.push(post);
@@ -108,9 +116,10 @@ export function groupPostsByYear(posts: PostEntry[]) {
 }
 
 export function getLatestByCategory(posts: PostEntry[]) {
+  const sourcePosts = getPublicPosts(posts);
   const latestByCategory = new Map<string, string>();
 
-  for (const post of sortPostsByDate(posts)) {
+  for (const post of sourcePosts) {
     const key = resolveCategory(post);
     if (!latestByCategory.has(key)) latestByCategory.set(key, post.data.title);
   }

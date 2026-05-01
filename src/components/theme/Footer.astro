@@ -49,7 +49,20 @@ const iconMap: Record<string, LucideIcon> = {
           })}
 
           <button type="button" class="footer_mini_logo" title="返回顶部" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
-            <img alt={siteConfig.site.author.name} src={siteConfig.site.author.avatar} />
+            <span class="footer_mini_logo__media">
+              <video
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster={siteConfig.site.author.avatar}
+                aria-hidden="true"
+              >
+                <source src={siteConfig.footer.miniLogoVideo} type="video/mp4" />
+              </video>
+              <img alt={siteConfig.site.author.name} src={siteConfig.site.author.avatar} />
+            </span>
           </button>
 
           {siteConfig.footer.socialBar.right.map((item) => {

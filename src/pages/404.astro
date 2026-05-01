@@ -1,9 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPostPath, resolveCover, resolveCoverAlt, sortPostsByDate } from '../lib/content';
+import { getDisplayPostTitle, getPostPath, getPublicPosts, resolveDisplayCover, resolveDisplayCoverAlt } from '../lib/content';
 
-const posts = sortPostsByDate(await getCollection('posts')).slice(0, 4);
+const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
 ---
 
 <BlogLayout title="404" showAside={false} pageType="404">
@@ -32,10 +32,10 @@ const posts = sortPostsByDate(await getCollection('posts')).slice(0, 4);
         {posts.map((entry) => (
           <article class="error-feed__item theme-card theme-card--interactive">
             <a class="error-feed__thumb" href={getPostPath(entry)}>
-              <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
+              <img src={resolveDisplayCover(entry, true)} alt={resolveDisplayCoverAlt(entry, true)} loading="lazy" />
             </a>
             <div class="error-feed__body">
-              <a href={getPostPath(entry)}>{entry.data.title}</a>
+              <a href={getPostPath(entry)}>{getDisplayPostTitle(entry, true)}</a>
               <time datetime={entry.data.pubDate.toISOString()}>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
             </div>
           </article>

@@ -1,0 +1,89 @@
+---
+interface Props {
+  pageType?: string;
+}
+
+const { pageType = 'page' } = Astro.props;
+---
+
+<script is:inline define:vars={{ pageType }}>
+  (() => {
+    const supportedPageTypes = new Set(['home', 'post']);
+    if (!supportedPageTypes.has(pageType)) return;
+
+    const controllerKey = '__SHIJIANUS_STICKY_SIDEBAR__';
+    window[controllerKey]?.destroy?.();
+
+    const resolveHeaderOffset = () => {
+      const storedHeight = Number.parseFloat(
+        document.documentElement.style.getPropertyValue('--site-header-height') ||
+          window.getComputedStyle(document.documentElement).getPropertyValue('--site-header-height') ||
+          '0',
+      );
+      const header = document.getElementById('page-header');
+      const headerHeight = storedHeight || header?.getBoundingClientRect().height || 60;
+      return Math.round(headerHeight + 14);
+    };
+
+    const resolveSurfaces = () => {
+      const selectors = [
+        'body[data-type="home"] .feature-panel-recent .aside-list',
+        'body[data-type="post"] #card-toc .toc-content',
+        'body[data-type="post"] #post-secondary-aside .card-recent-post .aside-list',
+      ];
+
+      return selectors
+        .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+        .filter((surface) => surface instanceof HTMLElement);
+    };
+
+    const syncSurface = (surface) => {
+      if (!(surface instanceof HTMLElement)) return;
+      const hasOverflow = surface.scrollHeight - surface.clientHeight > 6;
+      const atTop = surface.scrollTop <= 4;
+      const atBottom = surface.scrollTop + surface.clientHeight >= surface.scrollHeight - 4;
+      surface.dataset.overflowTop = hasOverflow && !atTop ? 'true' : 'false';
+      surface.dataset.overflowBottom = hasOverflow && !atBottom ? 'true' : 'false';
+    };
+
+    const syncAll = () => {
+      document.documentElement.style.setProperty('--sticky-column-top', `${resolveHeaderOffset()}px`);
+      resolveSurfaces().forEach(syncSurface);
+    };
+
+    const cleanupCallbacks = [];
+    const resizeObserver = new ResizeObserver(() => syncAll());
+
+    resolveSurfaces().forEach((surface) => {
+      if (surface.dataset.scrollObserverBound === 'true') return;
+      surface.dataset.scrollObserverBound = 'true';
+
+      const onScroll = () => syncSurface(surface);
+      surface.addEventListener('scroll', onScroll, { passive: true });
+      resizeObserver.observe(surface);
+
+      cleanupCallbacks.push(() => {
+        surface.removeEventListener('scroll', onScroll);
+        resizeObserver.unobserve(surface);
+        delete surface.dataset.scrollObserverBound;
+      });
+    });
+
+    syncAll();
+    window.addEventListener('load', syncAll);
+    window.addEventListener('resize', syncAll);
+    window.addEventListener('scroll', syncAll, { passive: true });
+    window.addEventListener('orientationchange', syncAll);
+
+    const destroy = () => {
+      resizeObserver.disconnect();
+      cleanupCallbacks.forEach((callback) => callback());
+      window.removeEventListener('load', syncAll);
+      window.removeEventListener('resize', syncAll);
+      window.removeEventListener('scroll', syncAll);
+      window.removeEventListener('orientationchange', syncAll);
+    };
+
+    window[controllerKey] = { destroy };
+  })();
+</script>

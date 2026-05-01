@@ -20,10 +20,12 @@ type ShootingStar = {
   alpha: number;
 };
 
-type UniverseMode = 'starfield' | 'nebula' | 'aurora' | 'light-grid' | 'light-clean';
+type UniverseMode = 'starfield' | 'nebula' | 'aurora' | 'light-grid' | 'light-clean' | 'light-daybreak';
 
 const ACTIVE_DARK_BACKGROUNDS = new Set<UniverseMode>(['starfield', 'nebula', 'aurora']);
-const ACTIVE_LIGHT_BACKGROUNDS = new Set(['grid', 'clean']);
+const ACTIVE_LIGHT_BACKGROUNDS = new Set(['daybreak', 'grid', 'clean']);
+const MAX_DEVICE_PIXEL_RATIO = 1.5;
+const UNIVERSE_FRAME_INTERVAL = 1000 / 24;
 
 function isUniverseActive() {
   return getUniverseMode() !== null;
@@ -37,7 +39,9 @@ function getUniverseMode(): UniverseMode | null {
   }
 
   if (root.dataset.theme === 'light' && ACTIVE_LIGHT_BACKGROUNDS.has(background || '')) {
-    return background === 'clean' ? 'light-clean' : 'light-grid';
+    if (background === 'clean') return 'light-clean';
+    if (background === 'daybreak') return 'light-daybreak';
+    return 'light-grid';
   }
 
   return null;
@@ -81,7 +85,21 @@ function colorForTint(tint: Star['tint'], alpha: number) {
 }
 
 function isLightMode(mode: UniverseMode) {
-  return mode === 'light-grid' || mode === 'light-clean';
+  return mode === 'light-grid' || mode === 'light-clean' || mode === 'light-daybreak';
+}
+
+function shouldAnimateUniverse(reducedMotionQuery?: MediaQueryList) {
+  if (document.visibilityState !== 'visible') return false;
+  if (window.innerWidth < 960) return false;
+  if ((reducedMotionQuery ?? window.matchMedia('(prefers-reduced-motion: reduce)')).matches) return false;
+
+  const navigatorWithConnection = navigator as Navigator & {
+    connection?: {
+      saveData?: boolean;
+    };
+  };
+
+  return !navigatorWithConnection.connection?.saveData;
 }
 
 export function ThemeUniverse() {
@@ -98,14 +116,16 @@ export function ThemeUniverse() {
     let width = 0;
     let height = 0;
     let lastShootingAt = 0;
+    let lastFrameAt = 0;
     let stars: Star[] = [];
     let shootingStars: ShootingStar[] = [];
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const createStar = (mode: UniverseMode): Star => {
       const lightMode = isLightMode(mode);
       const depth = Math.random();
       const radiusBase = lightMode
-        ? randomBetween(0.9, mode === 'light-grid' ? 3.1 : 2.4)
+        ? randomBetween(0.9, mode === 'light-grid' ? 3.1 : mode === 'light-daybreak' ? 2.8 : 2.4)
         : mode === 'starfield'
           ? randomBetween(0.32, 2.7)
           : mode === 'nebula'
@@ -113,7 +133,7 @@ export function ThemeUniverse() {
             : randomBetween(0.5, 1.9);
       const radius = radiusBase * (0.66 + depth * (mode === 'starfield' ? 1.35 : 0.95));
       const speedBase = lightMode
-        ? randomBetween(0.012, mode === 'light-grid' ? 0.09 : 0.055)
+        ? randomBetween(0.012, mode === 'light-grid' ? 0.09 : mode === 'light-daybreak' ? 0.072 : 0.055)
         : mode === 'starfield'
           ? randomBetween(0.018, 0.22)
           : mode === 'nebula'
@@ -148,24 +168,37 @@ export function ThemeUniverse() {
 
       const density = isLightMode(mode)
         ? mode === 'light-grid'
-          ? 13_000
-          : 18_000
+          ? 17_000
+          : mode === 'light-daybreak'
+            ? 19_500
+          : 22_000
         : mode === 'starfield'
-          ? 5_400
+          ? 7_400
           : mode === 'nebula'
-            ? 11_500
-            : 13_500;
-      const minimum = isLightMode(mode) ? (mode === 'light-grid' ? 90 : 62) : mode === 'starfield' ? 340 : mode === 'nebula' ? 140 : 110;
+            ? 14_500
+            : 16_500;
+      const minimum = isLightMode(mode)
+        ? mode === 'light-grid'
+          ? 64
+          : mode === 'light-daybreak'
+            ? 54
+            : 44
+        : mode === 'starfield'
+          ? 240
+          : mode === 'nebula'
+            ? 96
+            : 80;
       const count = Math.max(minimum, Math.floor((width * height) / density));
       stars = Array.from({ length: count }, () => createStar(mode));
       shootingStars = [];
       lastShootingAt = performance.now();
+      lastFrameAt = 0;
     };
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
@@ -178,18 +211,34 @@ export function ThemeUniverse() {
       if (isLightMode(mode)) {
         const drift = Math.sin(tick * 0.00022) * width * 0.04;
         const morning = context.createRadialGradient(width * 0.16 + drift, height * 0.12, 0, width * 0.16 + drift, height * 0.12, width * 0.42);
-        morning.addColorStop(0, 'rgba(255, 190, 112, 0.12)');
+        morning.addColorStop(0, mode === 'light-daybreak' ? 'rgba(255, 171, 92, 0.16)' : 'rgba(255, 190, 112, 0.12)');
         morning.addColorStop(1, 'rgba(255, 190, 112, 0)');
         context.fillStyle = morning;
         context.fillRect(0, 0, width, height);
 
         const air = context.createLinearGradient(width * 0.06, height * 0.86, width * 0.96, height * 0.12);
         air.addColorStop(0, 'rgba(66, 90, 239, 0)');
-        air.addColorStop(0.42, mode === 'light-grid' ? 'rgba(66, 90, 239, 0.045)' : 'rgba(78, 191, 154, 0.035)');
-        air.addColorStop(0.72, 'rgba(255, 174, 80, 0.038)');
+        air.addColorStop(
+          0.42,
+          mode === 'light-grid'
+            ? 'rgba(66, 90, 239, 0.045)'
+            : mode === 'light-daybreak'
+              ? 'rgba(60, 154, 255, 0.052)'
+              : 'rgba(78, 191, 154, 0.035)',
+        );
+        air.addColorStop(0.72, mode === 'light-daybreak' ? 'rgba(255, 138, 93, 0.052)' : 'rgba(255, 174, 80, 0.038)');
         air.addColorStop(1, 'rgba(66, 90, 239, 0)');
         context.fillStyle = air;
         context.fillRect(0, 0, width, height);
+
+        if (mode === 'light-daybreak') {
+          const horizon = context.createLinearGradient(0, height * 0.62, 0, height);
+          horizon.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          horizon.addColorStop(0.52, 'rgba(255, 208, 152, 0.05)');
+          horizon.addColorStop(1, 'rgba(126, 175, 255, 0.1)');
+          context.fillStyle = horizon;
+          context.fillRect(0, 0, width, height);
+        }
         return;
       }
 
@@ -303,6 +352,66 @@ export function ThemeUniverse() {
       }
     };
 
+    const drawDarkConstellations = (tick: number) => {
+      const anchors = stars.filter((star) => star.radius > 1.25).slice(0, 90);
+      const maxDistance = Math.min(170, Math.max(110, width * 0.12));
+
+      context.lineWidth = 1;
+      for (let index = 0; index < anchors.length; index += 1) {
+        const first = anchors[index];
+        if (!first) continue;
+
+        let closest: Star | null = null;
+        let closestDistance = Number.POSITIVE_INFINITY;
+
+        for (let nextIndex = index + 1; nextIndex < anchors.length; nextIndex += 1) {
+          const candidate = anchors[nextIndex];
+          if (!candidate) continue;
+          const distance = Math.hypot(first.x - candidate.x, first.y - candidate.y);
+          if (distance >= closestDistance || distance > maxDistance) continue;
+          closest = candidate;
+          closestDistance = distance;
+        }
+
+        if (!closest || !Number.isFinite(closestDistance)) continue;
+        const pulse = (Math.sin(tick * 0.00085 + first.x * 0.015 + first.y * 0.006) + 1) / 2;
+
+        context.beginPath();
+        context.moveTo(first.x, first.y);
+        context.lineTo(closest.x, closest.y);
+        context.strokeStyle = colorForTint(first.tint, (1 - closestDistance / maxDistance) * (0.03 + pulse * 0.05));
+        context.stroke();
+      }
+    };
+
+    const drawDaybreakBands = (tick: number) => {
+      const firstBand = context.createLinearGradient(width * 0.08, height * 0.78, width * 0.92, height * 0.24);
+      firstBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      firstBand.addColorStop(0.34, 'rgba(255, 205, 145, 0.03)');
+      firstBand.addColorStop(0.54, 'rgba(92, 166, 255, 0.05)');
+      firstBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      context.save();
+      context.globalAlpha = 0.9;
+      context.translate(Math.sin(tick * 0.00011) * width * 0.02, 0);
+      context.fillStyle = firstBand;
+      context.fillRect(0, 0, width, height);
+      context.restore();
+
+      context.beginPath();
+      context.strokeStyle = 'rgba(255, 177, 119, 0.08)';
+      context.lineWidth = 1.25;
+      context.moveTo(width * 0.04, height * 0.68);
+      context.bezierCurveTo(
+        width * 0.24,
+        height * (0.56 + Math.sin(tick * 0.00022) * 0.02),
+        width * 0.62,
+        height * (0.78 + Math.cos(tick * 0.00018) * 0.02),
+        width * 0.96,
+        height * 0.64,
+      );
+      context.stroke();
+    };
+
     const maybeSpawnShootingStar = (now: number, mode: UniverseMode) => {
       const cooldown = mode === 'starfield' ? 980 : mode === 'nebula' ? 3400 : 4800;
       const maxConcurrent = mode === 'starfield' ? 3 : 1;
@@ -319,7 +428,7 @@ export function ThemeUniverse() {
       });
     };
 
-    const drawShootingStars = () => {
+    const drawShootingStars = (delta: number) => {
       shootingStars = shootingStars.filter((shootingStar) => shootingStar.alpha > 0.04 && shootingStar.y < height + 80);
       shootingStars.forEach((shootingStar) => {
         const endX = shootingStar.x - Math.cos(shootingStar.angle) * shootingStar.length;
@@ -334,28 +443,40 @@ export function ThemeUniverse() {
         context.strokeStyle = gradient;
         context.lineWidth = 1.8;
         context.stroke();
-        shootingStar.x += shootingStar.speed;
-        shootingStar.y += shootingStar.speed * 0.58;
-        shootingStar.alpha *= 0.965;
+        shootingStar.x += shootingStar.speed * delta;
+        shootingStar.y += shootingStar.speed * 0.58 * delta;
+        shootingStar.alpha *= Math.pow(0.965, delta);
       });
     };
 
     const render = (tick: number) => {
       const mode = getUniverseMode();
       canvas.style.opacity = mode ? (isLightMode(mode) ? '0.62' : '1') : '0';
-      if (!mode) {
+      if (!mode || !shouldAnimateUniverse(reducedMotionQuery)) {
+        lastFrameAt = 0;
         context.clearRect(0, 0, width, height);
         frameId = window.requestAnimationFrame(render);
         return;
       }
 
+      if (lastFrameAt && tick - lastFrameAt < UNIVERSE_FRAME_INTERVAL) {
+        frameId = window.requestAnimationFrame(render);
+        return;
+      }
+
+      const delta = lastFrameAt ? Math.min(2.4, (tick - lastFrameAt) / 16.67) : 1;
+      lastFrameAt = tick;
+
       context.clearRect(0, 0, width, height);
       drawBackgroundGlow(mode, tick);
-      if (isLightMode(mode)) drawLightConstellations(tick);
+      if (isLightMode(mode)) {
+        drawLightConstellations(tick);
+        if (mode === 'light-daybreak') drawDaybreakBands(tick);
+      }
 
       stars.forEach((star) => {
-        star.x += star.drift;
-        star.y += star.speed;
+        star.x += star.drift * delta;
+        star.y += star.speed * delta;
         if (star.y > height + 2) {
           star.y = -2;
           star.x = randomBetween(0, width);
@@ -366,8 +487,9 @@ export function ThemeUniverse() {
       });
 
       if (!isLightMode(mode)) {
+        drawDarkConstellations(tick);
         maybeSpawnShootingStar(tick, mode);
-        drawShootingStars();
+        drawShootingStars(delta);
       }
       frameId = window.requestAnimationFrame(render);
     };
@@ -389,10 +511,23 @@ export function ThemeUniverse() {
       attributeFilter: ['data-theme', 'data-background'],
     });
 
+    const handleVisibilityOrMotionChange = () => {
+      lastFrameAt = 0;
+      if (!shouldAnimateUniverse(reducedMotionQuery)) {
+        context.clearRect(0, 0, width, height);
+        return;
+      }
+      resize();
+    };
+
     window.addEventListener('resize', resize, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityOrMotionChange);
+    reducedMotionQuery.addEventListener('change', handleVisibilityOrMotionChange);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibilityOrMotionChange);
+      reducedMotionQuery.removeEventListener('change', handleVisibilityOrMotionChange);
       window.cancelAnimationFrame(frameId);
     };
   }, []);

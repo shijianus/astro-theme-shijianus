@@ -1,24 +1,57 @@
 ---
 import { getCollection } from 'astro:content';
-import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { sortPostsByDate } from '../lib/content';
+import TelegramWidgetCard from '../components/theme/TelegramWidgetCard.astro';
+import { siteConfig } from '../config/site';
+import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 ---
 
-<BlogLayout title="友链计划" showAside={false} pageType="page" sidebarData={sidebarData}>
-  <PlaceholderPageShell
-    eyebrow="shijianus / friends"
-    title="友链计划"
-    summary="友链页先作为正常入口存在，后续可以放精选站点、合作计划、推荐阅读清单或申请说明，不再让导航点进去就是空白。"
-    statusLabel="友链资料待补齐"
-    notes={[
-      '后续可直接扩展成正式友链页，也可以继续细分成申请页和推荐页。',
-      '当前视觉和交互已经对齐主题主站，不会出现独立的临时页面风格。',
-      '如果创作者暂时没有内容，这里仍然会保持一个明确的“正在建设中”状态。',
-    ]}
-  />
+<BlogLayout title="友链与社群" pageType="page" sidebarData={sidebarData}>
+  <section class="friends-page">
+    <header class="friends-page__hero theme-card">
+      <div class="friends-page__hero-copy">
+        <span class="friends-page__eyebrow">友链 / 社群</span>
+        <h1>友链与社群入口</h1>
+        <p>
+          这里不再保留空白占位，而是直接把互链说明、社群二维码和后续交流路径放成可用页面。
+          如果你希望接收更新通知、参与小范围测试，或讨论互链合作，可以优先从这里进入。
+        </p>
+        <div class="friends-page__actions">
+          <a class="theme-button" href={siteConfig.aside.telegramWidget.href} target="_blank" rel="noreferrer">加入 Telegram</a>
+          <a class="theme-button theme-button--ghost" href="/about/">查看站点说明</a>
+        </div>
+      </div>
+
+      <TelegramWidgetCard id="friends-page-telegram" className="friends-page__telegram" />
+    </header>
+
+    <div class="friends-page__grid">
+      <section class="friends-page__panel theme-card">
+        <span class="friends-page__panel-eyebrow">交换建议</span>
+        <h2>适合互链的站点</h2>
+        <ul class="friends-page__list">
+          <li>内容持续维护，能稳定访问，不是短期测试页。</li>
+          <li>有明确作者信息、归档结构和基本页面说明。</li>
+          <li>风格可以不同，但至少要保证阅读体验和基础可访问性。</li>
+        </ul>
+      </section>
+
+      <section class="friends-page__panel theme-card">
+        <span class="friends-page__panel-eyebrow">联系路径</span>
+        <h2>优先通过 TG 联系</h2>
+        <p>海外读者和合作站点优先通过 TG 频道或群组联系，后续更新、测试通知和互链整理都会先在这里同步。</p>
+        <p>如果你只想留言，也可以直接在任意文章评论区附上站点地址和简介。</p>
+      </section>
+
+      <section class="friends-page__panel theme-card">
+        <span class="friends-page__panel-eyebrow">当前状态</span>
+        <h2>现在已经是正式入口</h2>
+        <p>这个页面已经从占位态切到正式可扩展页面，后续只需要继续补充互链清单、申请格式和推荐站点，不需要再拆结构。</p>
+      </section>
+    </div>
+  </section>
 </BlogLayout>

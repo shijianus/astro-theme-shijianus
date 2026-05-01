@@ -122,7 +122,7 @@ export function createPresetCommentIdentity(role: CommentRole): CommentIdentity 
 
   return {
     id: isAdmin ? 'shijianus-local-admin' : 'shijianus-local-reader',
-    name: isAdmin ? 'shijianus admin' : 'shijianus reader',
+    name: isAdmin ? '站点管理员' : '站点读者',
     email: isAdmin ? 'admin@local.shijianus.test' : 'reader@local.shijianus.test',
     website: isAdmin ? 'https://github.com/shijianus' : '',
     avatar: '',
@@ -152,7 +152,7 @@ export function createDemoLocalThread(slug: string): StoredComment[] {
     {
       id: `demo-root-${slug}-observer`,
       authorId: observerId,
-      name: 'layout observer',
+      name: '布局观察者',
       email: 'observer@local.shijianus.test',
       website: '',
       avatar: '',
@@ -164,11 +164,11 @@ export function createDemoLocalThread(slug: string): StoredComment[] {
     {
       id: `demo-reply-${slug}-observer`,
       authorId: observerId,
-      name: 'layout observer',
+      name: '布局观察者',
       email: 'observer@local.shijianus.test',
       website: '',
       avatar: '',
-      message: '@shijianus reader 同意。建议先载入演示评论，再切换管理员账号验证整套交互是否顺手。',
+      message: '@站点读者 同意。建议先载入演示评论，再切换管理员账号验证整套交互是否顺手。',
       createdAt: new Date(now - 1000 * 60 * 12).toISOString(),
       parentId: `demo-root-${slug}-reader`,
       quoteId: `demo-root-${slug}-reader`,

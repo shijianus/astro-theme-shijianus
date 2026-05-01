@@ -1,14 +1,18 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../../config/site';
 import {
   estimateReadingMinutes,
-  getExcerpt,
+  getDisplayPostCategory,
+  getDisplayPostGroup,
+  getDisplayPostSummary,
+  getDisplayPostTitle,
   getCategoryPath,
   getPostPath,
+  hasPostAccess,
   resolveCategory,
-  resolveCover,
-  resolveCoverAlt,
-  resolveGroup,
+  resolveDisplayCover,
+  resolveDisplayCoverAlt,
 } from '../../lib/content';
 import { formatDisplayDate } from '../../lib/theme';
 
@@ -22,6 +26,13 @@ const { entry, index = 0 } = Astro.props;
 const href = getPostPath(entry);
 const reverse = index % 2 === 1;
 const metaDate = formatDisplayDate(entry.data.pubDate);
+const isProtected = hasPostAccess(entry);
+const displayTitle = getDisplayPostTitle(entry);
+const displayExcerpt = getDisplayPostSummary(entry, 190);
+const displayBadge = isProtected ? '受限' : entry.data.featured ? '推荐' : '';
+const displayCategory = getDisplayPostCategory(entry);
+const displayGroup = getDisplayPostGroup(entry);
+const readMoreLabel = isProtected ? '验证后阅读' : '继续阅读';
 ---
 
 <article
@@ -29,45 +40,50 @@ const metaDate = formatDisplayDate(entry.data.pubDate);
   data-card-link={href}
   tabindex="0"
   role="link"
-  aria-label={entry.data.title}
+  aria-label={displayTitle}
 >
-  <a href={href} class={`post_cover ${reverse ? 'right right_radius' : 'left_radius'}`} title={entry.data.title}>
+  <a href={href} class={`post_cover ${reverse ? 'right right_radius' : 'left_radius'}`} title={displayTitle}>
     <img
-      src={resolveCover(entry)}
-      alt={resolveCoverAlt(entry)}
+      src={resolveDisplayCover(entry)}
+      alt={resolveDisplayCoverAlt(entry)}
       class="post_bg"
       loading="lazy"
+      data-fallback-src={siteConfig.post.hero.fallbackImage}
     />
   </a>
 
   <div class="recent-post-info" data-card-link={href}>
     <div class="recent-post-info-top" data-card-link={href}>
       <div class="recent-post-info-top-tips">
-        {entry.data.featured && <span class="newPost">Recommend</span>}
-        <a class="unvisited-post" href={href}>Unread</a>
+        {displayBadge && <span class="newPost">{displayBadge}</span>}
+        <a class="unvisited-post" href={href}>{readMoreLabel}</a>
       </div>
 
-      <a href={href} class="article-title" title={entry.data.title}>
-        {entry.data.title}
+      <a href={href} class="article-title" title={displayTitle}>
+        {displayTitle}
       </a>
     </div>
 
     <div class="article-meta-wrap" data-card-link={href}>
       <span class="post-meta-date">
-        <span class="article-meta-label">Created</span>
+        <span class="article-meta-label">发布于</span>
         <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
       </span>
       <span class="article-meta">
-        <a href={getCategoryPath(resolveCategory(entry))} class="article-meta-link">
-          {resolveCategory(entry)}
-        </a>
+        {isProtected ? (
+          <span>{displayCategory}</span>
+        ) : (
+          <a href={getCategoryPath(resolveCategory(entry))} class="article-meta-link">
+            {displayCategory}
+          </a>
+        )}
         <span class="article-meta-separator">/</span>
-        <span>{resolveGroup(entry)}</span>
+        <span>{displayGroup}</span>
         <span class="article-meta-separator">/</span>
-        <span>{estimateReadingMinutes(entry)} min</span>
+        <span>{estimateReadingMinutes(entry)} 分钟</span>
       </span>
     </div>
 
-    <p class="content" data-card-link={href}>{getExcerpt(entry, 190)}</p>
+    <p class="content" data-card-link={href}>{displayExcerpt}</p>
   </div>
 </article>

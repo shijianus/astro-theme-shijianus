@@ -23,7 +23,7 @@ export function isCommentsIntegrationEnabled(integration: CommentsConfig) {
 }
 
 export function getCommentsProviderLabel(integration: CommentsConfig) {
-  if (integration.provider === 'local') return 'shijianus comments';
+  if (integration.provider === 'local') return '本地评论存储';
   if (integration.provider === 'cloudflare') return 'Cloudflare Comments';
   if (integration.provider === 'giscus') return 'Giscus';
   if (integration.provider === 'waline') return 'Waline';

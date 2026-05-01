@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
 import { formatDisplayDate } from '../../lib/theme';
 
@@ -43,7 +44,12 @@ const items = [
     <div class="postNav-list" style={`--post-nav-columns:${items.length};`}>
       {items.map(({ post, label, hint }) => (
         <a class="postNav-card" href={getPostPath(post)}>
-          <img src={resolveCover(post)} alt={resolveCoverAlt(post)} loading="lazy" />
+          <img
+            src={resolveCover(post)}
+            alt={resolveCoverAlt(post)}
+            loading="lazy"
+            data-fallback-src={siteConfig.post.hero.fallbackImage}
+          />
           <span class="postNav-card__edge">{label}</span>
           <div class="postNav-card__content">
             <div class="postNav-card__meta">

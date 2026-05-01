@@ -1,11 +1,11 @@
 ---
-title: "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容与代码展示"
+title: "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块"
 pubDate: 2026-04-25
 updatedDate: 2026-04-25
-description: "一篇专门用于压测 shijianus 文章扫描、目录层级、GFM、隐藏内容、特殊格式和代码展示的长示例文章。"
+description: "一篇专门用于压测文章扫描、目录层级、GFM、隐藏内容、特殊格式、媒体展示与常见内容块的长示例文章。"
 author: "shijianus"
 category: "前端工程"
-group: "Markdown Showcase"
+group: "Markdown 示例"
 cover: "/media/shijianus/workbench.jpg"
 coverAlt: "markdown showcase desk"
 featured: true
@@ -15,7 +15,7 @@ tags: ["Astro", "Markdown", "主题重构", "UI", "Study"]
 
 # 这是一篇专门用来验收主题能力的长文章
 
-这篇文章不是普通随笔，而是用来集中验证 `shijianus` 当前文章页是否已经真正接近安知鱼主题阅读体验的一次总检。它会同时覆盖 **文章头图扫描**、**分类与标签识别**、**目录层级映射**、**代码块增强**、**GFM 表格与任务列表**、**隐藏内容**、**特殊字体与格式**、**长段落滚动表现** 等内容。
+这篇文章不是普通随笔，而是用来集中验证当前文章页是否已经真正接近安知鱼主题阅读体验的一次总检。它会同时覆盖 **文章头图扫描**、**分类与标签识别**、**目录层级映射**、**代码块增强**、**GFM 表格与任务列表**、**隐藏内容**、**特殊字体与格式**、**媒体展示**、**内容块组合** 与 **长段落滚动表现**。
 
 如果这些能力能够在同一篇文章里稳定出现，而且目录、分享、评论、侧栏、打赏与整体阅读路径都没有散架，那么这套主题才算真的进入可交付阶段。
 
@@ -61,9 +61,10 @@ tags: ["Astro", "Markdown", "主题重构", "UI", "Study"]
 
 - 剧透遮罩：||这是一段会在点击后显示的剧透文本，用来确认按钮化遮罩已经正确扫描。||
 - 直接点击显示：%%这里是一段隐藏提示，点击后会展开。%%
-- 密码显示：%%password:shijianus|这是一段需要输入密码后才会显示的内容。%%
 
-如果这一段的三个交互都正常，说明正文增强脚本已经与 Markdown 渲染保持一致，没有把普通文本节点误伤到 `code`、`pre` 或其他受保护元素。
+这一层现在只保留前端可见性增强，不再提供“前端密码隐藏”这种容易被误认为安全能力的写法。真正需要密码访问时，应使用文章 frontmatter 里的服务端访问控制。
+
+如果这一段的两个交互都正常，说明正文增强脚本已经与 Markdown 渲染保持一致，没有把普通文本节点误伤到 `code`、`pre` 或其他受保护元素。
 
 ## 目录层级压测
 
@@ -230,6 +231,71 @@ npm run preview -- --host 0.0.0.0
 脚注也是长文很常见的结构，现在用它来测试 GFM 脚注能力是否已经生效。[^toc]
 
 [^toc]: 这里的脚注文本会被放到文章底部，用来验证脚注编号、跳转和正文间距。
+
+## 媒体与嵌入补充
+
+如果要把这篇文章当成主题总检，还需要把正文里的媒体块一起压一遍：
+
+<figure>
+  <video src="/media/shijianus/avatar-dynamic.mp4" poster="/media/shijianus/default-cover.jpg" muted loop playsinline controls></video>
+  <figcaption>本地视频 + poster，用来确认正文媒体在不同宽度下仍然稳定收束。</figcaption>
+</figure>
+
+<figure>
+  <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80" alt="远程图床示例" />
+  <figcaption>远程图床图片，用来确认跨域资源与正文留白不会互相打架。</figcaption>
+</figure>
+
+如果远程资源失效，正文增强脚本会把它们回退到默认占位图，而不是留下破损空框。
+
+## 常见内容块等价演示
+
+这一节不再只测基础 Markdown，而是补齐一些日常博客主题里最常见、也最容易在迁移时丢失的内容块。这里使用原生 HTML 和当前主题样式做等价演示，重点验证排版、间距和响应式，而不是绑定某个旧主题的私有语法。
+
+<div class="article-demo-stack">
+  <div class="article-demo-tabs">
+    <div class="article-demo-tabs__nav">
+      <span>标签面板</span>
+      <span>步骤说明</span>
+      <span>适配结论</span>
+    </div>
+    <div class="article-demo-tabs__panel">
+      这一组模拟常见的 tabs / btns 内容区，验证按钮化信息块在正文里是否仍有足够层次，同时不会把正文节奏打断。
+    </div>
+  </div>
+
+  <div class="article-demo-timeline">
+    <div class="article-demo-timeline__item">
+      <strong>阶段一：结构对齐</strong>
+      <span>先把文章页、首页、目录与固定侧栏的骨架拉齐，确保读者不会在评论区或页脚前失去导航。</span>
+    </div>
+    <div class="article-demo-timeline__item">
+      <strong>阶段二：交互收口</strong>
+      <span>清理重复按钮，把分享、语言、账号和设置分别放到更明确的位置，避免互相抢空间。</span>
+    </div>
+    <div class="article-demo-timeline__item">
+      <strong>阶段三：内容回填</strong>
+      <span>补媒体、隐藏内容、二维码、站点卡片与长文压测，保证真正写长文时不会散架。</span>
+    </div>
+  </div>
+
+  <div class="article-demo-gallery">
+    <img src="/media/shijianus/workbench.jpg" alt="工作台画面" />
+    <img src="/media/shijianus/hero.jpg" alt="首页头图区块" />
+    <img src="/media/shijianus/tg-group.jpg" alt="二维码与长图测试" />
+  </div>
+
+  <div class="article-demo-links">
+    <div class="article-demo-link-card">
+      <strong>站点卡片</strong>
+      <span>等价于常见的 site-card / link-card，验证卡片化链接在正文里是否仍能保持足够点击面积。</span>
+    </div>
+    <div class="article-demo-link-card">
+      <strong>媒体卡片</strong>
+      <span>配合图床、二维码和视频封面测试，确认不同尺寸内容不会把正文宽度和留白节奏打乱。</span>
+    </div>
+  </div>
+</div>
 
 ## 长段落滚动压测
 

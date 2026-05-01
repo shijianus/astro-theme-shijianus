@@ -1,10 +1,10 @@
 ---
 title: "Markdown 扫描与展示能力全量示例"
 pubDate: 2026-04-25
-description: "用一篇长文把 shijianus 当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。"
+description: "用一篇长文把当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。"
 author: "shijianus"
 category: "系统设计"
-group: "Markdown Showcase"
+group: "Markdown 示例"
 cover: "/media/shijianus/system.jpg"
 coverAlt: "markdown showcase board"
 tags: ["Markdown", "Astro", "Config", "UI", "主题重构"]
@@ -75,7 +75,7 @@ sticky: 4
 - 这是一个 `行内代码`
 - 这是一个 `参数名`
 - 这是一个 ||需要点击后才显示的 spoiler||
-- 这是一个 %%password:shijianus|需要输入密码后才显示的隐藏内容%%
+- 这是一个 %%password:24680|需要输入密码后才显示的隐藏内容%%
 
 ### 强调与节奏
 

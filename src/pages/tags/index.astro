@@ -2,10 +2,10 @@
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectTags, getTagPath, sortPostsByDate } from '../../lib/content';
+import { collectTags, getPublicPosts, getTagPath } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const tags = collectTags(posts);
 const sortedTags = [...tags].sort(
   (left, right) => right.label.length - left.label.length || right.count - left.count || left.label.localeCompare(right.label),
@@ -18,7 +18,7 @@ const latestEntry = posts[0];
   <section class="taxonomy-page taxonomy-page--tags">
     <div class="taxonomy-index-card theme-card" style="--taxonomy-accent:#ff7d55;">
       <header class="taxonomy-index-card__head">
-        <p class="taxonomy-index-card__eyebrow">Tag Index</p>
+        <p class="taxonomy-index-card__eyebrow">标签索引</p>
         <div class="taxonomy-index-card__title">
           <h1>{siteConfig.pages.tags.title}</h1>
           <p>

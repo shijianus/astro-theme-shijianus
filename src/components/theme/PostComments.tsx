@@ -187,6 +187,7 @@ export function PostComments({
   const requestAccount = () => {
     setNoticeText('需要先创建一个账号后才能评论。');
     window.dispatchEvent(new CustomEvent('shijianus:comment-account-required'));
+    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: '评论前需要先创建账号' } }));
   };
 
   const syncComment = async (entry: StoredComment) => {
@@ -232,6 +233,7 @@ export function PostComments({
     setReplyTargetId('');
     setQuoteTargetId('');
     setNoticeText(replyTarget ? `已回复 @${replyTarget.name}。` : '评论已发布。');
+    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: replyTarget ? `已回复 @${replyTarget.name}` : '评论已发布' } }));
     await syncComment(entry);
   };
 
@@ -410,9 +412,9 @@ export function PostComments({
         <div className="comment-form-card comment-form-card--compact">
           <div className="comment-form-card__publish-head">
             <div className="comment-form-card__publish-copy">
-              <span className="comment-toolbar__eyebrow">shijianus comments</span>
+              <span className="comment-toolbar__eyebrow">公开评论</span>
               <strong>{heading}</strong>
-              <small>{identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在 shijianus console 中创建评论账号。'}</small>
+              <small>{identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在账号中心创建评论身份。'}</small>
             </div>
             <span className="comment-form-card__publish-count">{comments.length} 条公开评论</span>
           </div>
@@ -436,7 +438,7 @@ export function PostComments({
           <div className="comment-form-card__editor">
             <div className="comment-form-card__editor-head">
               <span className="comment-form-card__label">留言内容</span>
-              <span className="comment-form-card__hint">{identity ? '支持 Ctrl / Command + Enter 快速发送' : '点击后前往控制台创建账号'}</span>
+              <span className="comment-form-card__hint">{identity ? '支持 Ctrl / Command + Enter 快速发送' : '点击后前往账号中心创建身份'}</span>
             </div>
             <p className="comment-form-card__notice">{notice}</p>
             <textarea
@@ -493,7 +495,7 @@ export function PostComments({
               rootComments.map((comment) => renderComment(comment))
             ) : (
               <div className="comment-thread__empty">
-                <span className="comment-thread__eyebrow">public comments</span>
+                <span className="comment-thread__eyebrow">公开评论</span>
                 <strong>{emptyTitle}</strong>
                 <p>{emptySummary}</p>
                 <span className="comment-thread__empty-note">账号准备好后就能发布第一条评论。</span>

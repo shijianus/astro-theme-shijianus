@@ -1,0 +1,64 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCategoryPath } from '../../lib/content';
+import type { HomeCategoryRail } from '../../config/site';
+import PostCard from './PostCard.astro';
+import HomePagination from './HomePagination.astro';
+
+interface Props {
+  posts: CollectionEntry<'posts'>[];
+  currentPage: number;
+  lastPage: number;
+  categories: Array<{
+    label: string;
+    slug: string;
+    count: number;
+  }>;
+  categoryRail: HomeCategoryRail;
+}
+
+const {
+  posts,
+  currentPage,
+  lastPage,
+  categories,
+  categoryRail,
+} = Astro.props;
+---
+
+<section
+  id="recent-posts"
+  class="recent-posts"
+  data-feed-page={currentPage}
+  data-feed-pages={lastPage}
+>
+  <div id="categoryBar">
+    <div class="category-bar" id="category-bar">
+      <div id="catalog-bar">
+        <div id="catalog-list">
+          <div class="catalog-list-item is-active"><a href="/">{categoryRail.homeLabel}</a></div>
+          {categories.map((item) => (
+            <div class="catalog-list-item">
+              <a href={getCategoryPath(item.slug)}>{item.label}</a>
+            </div>
+          ))}
+        </div>
+        <button
+          class="category-bar-next"
+          type="button"
+          onclick="document.getElementById('catalog-list')?.scrollBy({ left: 180, behavior: 'smooth' })"
+          aria-label={categoryRail.nextLabel}
+        >
+          »
+        </button>
+        <a class="catalog-more" href="/categories/">{categoryRail.moreLabel}</a>
+      </div>
+    </div>
+  </div>
+
+  {posts.map((entry, index) => (
+    <PostCard entry={entry} index={index} />
+  ))}
+
+  <HomePagination currentPage={currentPage} lastPage={lastPage} />
+</section>

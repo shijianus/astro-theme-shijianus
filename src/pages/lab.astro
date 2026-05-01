@@ -2,23 +2,23 @@
 import { getCollection } from 'astro:content';
 import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { sortPostsByDate } from '../lib/content';
+import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 ---
 
 <BlogLayout title="实验室" showAside={false} pageType="page" sidebarData={sidebarData}>
   <PlaceholderPageShell
-    eyebrow="shijianus / lab"
+    eyebrow="实验 / 模块"
     title="实验室"
     summary="这里会放进尚未正式并入主站导航的试验模块，例如新的页面编排、交互手势、文章小工具和视觉原型。"
     statusLabel="实验模块整理中"
     notes={[
       '优先放不影响主阅读流的功能实验，再决定是否升级成正式页面。',
       '占位页已经预留好路径和风格，后续只需要补内容，不必重新搭导航。',
-      '这里的页面语义和品牌命名已经统一到 shijianus 主题体系里。',
+      '这里的页面语义和入口关系已经统一进整站主题体系，后续只需要继续填内容。',
     ]}
   />
 </BlogLayout>

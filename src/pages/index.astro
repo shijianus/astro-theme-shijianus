@@ -1,17 +1,19 @@
 ---
 import { getCollection } from 'astro:content';
+import HomeFeed from '../components/theme/HomeFeed.astro';
 import HomeHero from '../components/theme/HomeHero.astro';
-import PostCard from '../components/theme/PostCard.astro';
 import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { collectCategories, getCategoryPath, getFeaturedPosts, sortPostsByDate } from '../lib/content';
+import { collectCategories, getFeaturedPosts, getPublicPosts } from '../lib/content';
+import { getHomeFeedPage, resolveHomeFeedPageSize } from '../lib/home-feed';
 import { createSidebarData } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const featuredPosts = getFeaturedPosts(posts, 4);
 const categories = collectCategories(posts);
 const sidebarData = createSidebarData(posts);
 const categoryRail = siteConfig.home.categoryRail;
+const homeFeed = getHomeFeedPage(posts, 1, resolveHomeFeedPageSize(siteConfig.home.feed.pageSize));
 ---
 
 <BlogLayout title="首页" sidebarData={sidebarData} pageType="home">
@@ -19,33 +21,11 @@ const categoryRail = siteConfig.home.categoryRail;
     <HomeHero featuredPosts={featuredPosts} latestPosts={posts} />
   </Fragment>
 
-  <section id="recent-posts" class="recent-posts">
-    <div id="categoryBar">
-      <div class="category-bar" id="category-bar">
-        <div id="catalog-bar">
-          <div id="catalog-list">
-            <div class="catalog-list-item is-active"><a href="/">{categoryRail.homeLabel}</a></div>
-            {categories.map((item) => (
-              <div class="catalog-list-item">
-                <a href={getCategoryPath(item.slug)}>{item.label}</a>
-              </div>
-            ))}
-          </div>
-          <button
-            class="category-bar-next"
-            type="button"
-            onclick="document.getElementById('catalog-list')?.scrollBy({ left: 180, behavior: 'smooth' })"
-            aria-label={categoryRail.nextLabel}
-          >
-            »
-          </button>
-          <a class="catalog-more" href="/categories/">{categoryRail.moreLabel}</a>
-        </div>
-      </div>
-    </div>
-
-    {posts.map((entry, index) => (
-      <PostCard entry={entry} index={index} />
-    ))}
-  </section>
+  <HomeFeed
+    posts={homeFeed.posts}
+    currentPage={homeFeed.currentPage}
+    lastPage={homeFeed.lastPage}
+    categories={categories}
+    categoryRail={categoryRail}
+  />
 </BlogLayout>

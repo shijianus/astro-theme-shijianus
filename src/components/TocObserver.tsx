@@ -12,8 +12,6 @@ export function TocObserver() {
   useEffect(() => {
     const tocCard = document.getElementById('card-toc');
     const article = document.getElementById('article-container');
-    const postShell =
-      document.querySelector<HTMLElement>('.post-layout-row--article .post-page-shell') ?? document.getElementById('post');
     if (!tocCard || !article) return;
 
     const links = Array.from(tocCard.querySelectorAll<HTMLAnchorElement>('.toc-link'));
@@ -76,6 +74,12 @@ export function TocObserver() {
     const update = () => {
       const activationOffset = Math.min(220, Math.max(152, window.innerHeight * 0.18));
       const articleRect = article.getBoundingClientRect();
+      const pinState =
+        articleRect.top > activationOffset
+          ? 'entering'
+          : articleRect.bottom <= Math.max(180, window.innerHeight * 0.34)
+            ? 'leaving'
+            : 'reading';
       const articleProgress = Math.round(
         Math.min(
           100,
@@ -86,6 +90,7 @@ export function TocObserver() {
         ),
       );
 
+      tocCard.dataset.pinState = pinState;
       if (percentage) percentage.textContent = `${articleProgress}%`;
       tocCard.style.setProperty('--toc-progress', `${articleProgress}%`);
 
@@ -143,7 +148,7 @@ export function TocObserver() {
     window.addEventListener('resize', scheduleUpdate);
     const resizeObserver = new ResizeObserver(scheduleUpdate);
     resizeObserver.observe(article);
-    if (postShell && postShell !== article) resizeObserver.observe(postShell);
+    resizeObserver.observe(tocCard);
 
     const onClick = (event: Event) => {
       const target = event.target instanceof HTMLElement ? event.target.closest<HTMLAnchorElement>('.toc-link, .article-heading-anchor__jump') : null;

@@ -2,10 +2,10 @@
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectCategories, getCategoryPath, sortPostsByDate } from '../../lib/content';
+import { collectCategories, getCategoryPath, getPublicPosts } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const categories = collectCategories(posts);
 const sortedCategories = [...categories].sort(
   (left, right) => right.label.length - left.label.length || right.count - left.count || left.label.localeCompare(right.label),
@@ -18,7 +18,7 @@ const latestEntry = posts[0];
   <section class="taxonomy-page taxonomy-page--categories">
     <div class="taxonomy-index-card theme-card" style="--taxonomy-accent:#5b8cff;">
       <header class="taxonomy-index-card__head">
-        <p class="taxonomy-index-card__eyebrow">Category Index</p>
+        <p class="taxonomy-index-card__eyebrow">分类索引</p>
         <div class="taxonomy-index-card__title">
           <h1>{siteConfig.pages.categories.title}</h1>
           <p>

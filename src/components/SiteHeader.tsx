@@ -1,17 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
-  ArrowUp,
-  Bell,
-  ChevronDown,
-  Dice5,
   ExternalLink,
   FolderKanban,
   House,
   Menu,
-  MoonStar,
-  Search,
-  SunMedium,
   Tags,
   UserRound,
   X,
@@ -19,7 +12,7 @@ import {
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
-import { applyThemeWithBackground, readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
+import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 
 type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children'>;
 
@@ -37,10 +30,6 @@ type SiteHeaderProps = {
 function isActive(currentPath: string, href: string) {
   if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
-}
-
-function openSearchPanel() {
-  window.dispatchEvent(new CustomEvent('shijianus:open-search'));
 }
 
 function openCenterConsole() {
@@ -82,14 +71,7 @@ export function SiteHeader({
   const [notificationCount, setNotificationCount] = useState(0);
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [scrolled, setScrolled] = useState(false);
-  const consolePressRef = useRef({
-    armed: false,
-    pointerId: -1,
-    x: 0,
-    y: 0,
-  });
   const submenuCloseTimerRef = useRef<number | null>(null);
 
   const activeLabel = useMemo(() => {
@@ -99,23 +81,10 @@ export function SiteHeader({
     );
   }, [currentPath, domainLabel, primary]);
 
-  const randomAction = quickActions[0] ?? primary[0];
-  const goRandom = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    const candidates = quickActions.length > 0 ? quickActions : primary;
-    const next = candidates[Math.floor(Math.random() * candidates.length)] ?? randomAction;
-    if (!next) return;
-    if (next.external) {
-      window.open(next.href, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    window.location.href = next.href;
-  };
-
   useEffect(() => {
     const root = document.documentElement;
     const savedTheme =
-      (readStorage('shijianus-theme') as 'light' | 'dark' | null) ??
+      readStorage('shijianus-theme') ??
       (root.dataset.theme as 'light' | 'dark' | undefined) ??
       'light';
     const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
@@ -140,24 +109,39 @@ export function SiteHeader({
     root.dataset.theme = savedTheme;
     root.dataset.background = savedBackground;
     root.dataset.backgroundSource = savedBackgroundSource;
-    setTheme(savedTheme);
 
-    const onThemeChange = (event: Event) => {
-      const customEvent = event as CustomEvent<'light' | 'dark'>;
-      setTheme(customEvent.detail ?? 'light');
+    const syncHeaderMetrics = () => {
+      const header = document.getElementById('page-header');
+      const headerHeight = Math.round(header?.getBoundingClientRect().height ?? 60);
+      document.documentElement.style.setProperty('--site-header-height', `${headerHeight}px`);
+    };
+
+    let frame = 0;
+    let lastScrolled = window.scrollY > 24;
+
+    const updateScrolledState = () => {
+      frame = 0;
+      const nextScrolled = window.scrollY > 24;
+      if (nextScrolled === lastScrolled) return;
+      lastScrolled = nextScrolled;
+      setScrolled(nextScrolled);
+      window.requestAnimationFrame(syncHeaderMetrics);
     };
 
     const onScroll = () => {
-      setScrolled(window.scrollY > 24);
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateScrolledState);
     };
 
-    onScroll();
+    setScrolled(lastScrolled);
+    syncHeaderMetrics();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
+    window.addEventListener('resize', syncHeaderMetrics);
 
     return () => {
+      if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
+      window.removeEventListener('resize', syncHeaderMetrics);
     };
   }, []);
 
@@ -165,24 +149,6 @@ export function SiteHeader({
     setMenuOpen(false);
     setOpenSubmenuHref(null);
   }, [currentPath]);
-
-  useEffect(() => {
-    const resetConsolePress = () => {
-      consolePressRef.current = {
-        armed: false,
-        pointerId: -1,
-        x: 0,
-        y: 0,
-      };
-    };
-
-    window.addEventListener('blur', resetConsolePress);
-    document.addEventListener('visibilitychange', resetConsolePress);
-    return () => {
-      window.removeEventListener('blur', resetConsolePress);
-      document.removeEventListener('visibilitychange', resetConsolePress);
-    };
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -276,55 +242,9 @@ export function SiteHeader({
     }, delay);
   };
 
-  const handleConsolePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0) return;
-    event.preventDefault();
-    consolePressRef.current = {
-      armed: true,
-      pointerId: event.pointerId,
-      x: event.clientX,
-      y: event.clientY,
-    };
-  };
-
-  const handleConsolePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const distance = Math.hypot(event.clientX - consolePressRef.current.x, event.clientY - consolePressRef.current.y);
-    if (distance > 8) {
-      consolePressRef.current.armed = false;
-    }
-  };
-
-  const handleConsolePointerCancel = () => {
-    consolePressRef.current.armed = false;
-  };
-
-  const handleConsolePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const trigger = event.currentTarget;
-    const { clientX, clientY } = event;
-    const shouldOpen =
-      consolePressRef.current.armed &&
-      consolePressRef.current.pointerId === event.pointerId &&
-      Math.hypot(clientX - consolePressRef.current.x, clientY - consolePressRef.current.y) <= 8;
-
-    consolePressRef.current.armed = false;
-    if (!shouldOpen) return;
-
-    window.requestAnimationFrame(() => {
-      if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
-      const releaseTarget = document.elementFromPoint(clientX, clientY);
-      if (!(releaseTarget instanceof Node) || !trigger.contains(releaseTarget)) return;
-      if (consoleOpen) {
-        closeCenterConsole();
-        return;
-      }
-      openCenterConsole();
-    });
-  };
-
   return (
     <header id="page-header" className={`site-header not-top-img ${scrolled ? 'nav-fixed nav-visible' : ''}`}>
-      <nav id="nav" aria-label="Main navigation">
+      <nav id="nav" aria-label="主导航">
         <div id="nav-group">
           <span id="blog_name">
             <a id="site-name" href="/" accessKey="h" aria-label={brandName}>
@@ -381,7 +301,6 @@ export function SiteHeader({
                           <NavIcon className="site-page__icon" />
                         </span>
                         <span className="site-page__label">{item.label}</span>
-                        {hasChildren && <ChevronDown className="site-page__chevron" aria-hidden="true" />}
                         {item.description && <span className="site-page__subtitle">{item.description}</span>}
                         <span className="site-page__flyout" aria-hidden="true">
                           <span>{item.description ?? item.label}</span>
@@ -421,34 +340,24 @@ export function SiteHeader({
                 <button
                   type="button"
                   className={`site-page center-console-trigger ${consoleOpen ? 'is-active' : ''}`}
-                  title={`${brandName} console`}
+                  title="控制台"
+                  aria-label="控制台"
                   aria-haspopup="dialog"
                   aria-expanded={consoleOpen}
                   aria-pressed={consoleOpen}
                   data-state={consoleOpen ? 'open' : 'closed'}
-                  onPointerDown={handleConsolePointerDown}
-                  onPointerMove={handleConsolePointerMove}
-                  onPointerLeave={handleConsolePointerCancel}
-                  onPointerCancel={handleConsolePointerCancel}
-                  onPointerUp={handleConsolePointerUp}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      if (consoleOpen) {
-                        closeCenterConsole();
-                        return;
-                      }
-                      openCenterConsole();
+                  onClick={() => {
+                    if (consoleOpen) {
+                      closeCenterConsole();
+                      return;
                     }
-                  }}
-                  onClick={(event) => {
-                    event.preventDefault();
+                    openCenterConsole();
                   }}
                 >
-                  <span className="console-trigger-bars" aria-hidden="true">
-                    <span className="left" />
-                    <span className="center" />
-                    <span className="right" />
+                  <span className="styles-module__b9M_Xa__consoleLabel" aria-hidden="true">
+                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--left" />
+                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--center" />
+                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--right" />
                   </span>
                 </button>
               </div>
@@ -459,9 +368,9 @@ export function SiteHeader({
                 <button
                   type="button"
                   className={`site-page notification-trigger ${notificationOpen ? 'is-active' : ''}`}
-                  title={`${brandName} notifications`}
+                  title="账号"
                   aria-haspopup="dialog"
-                  aria-label={`${brandName} notifications`}
+                  aria-label="账号"
                   aria-expanded={notificationOpen}
                   aria-pressed={notificationOpen}
                   data-state={notificationOpen ? 'open' : 'closed'}
@@ -473,63 +382,18 @@ export function SiteHeader({
                     openNotificationPanel();
                   }}
                 >
-                  <Bell className="nav-icon" aria-hidden="true" />
+                  <UserRound className="nav-icon" aria-hidden="true" />
                   {notificationCount > 0 && <span className="notification-trigger__badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
                 </button>
               </div>
             )}
-
-            <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href={randomAction.href} onClick={goRandom} title={randomAction.label}>
-                <Dice5 className="nav-icon" aria-hidden="true" />
-              </a>
-            </div>
-
-            <div className="nav-button" id="search-button">
-              <button type="button" className="site-page" onClick={openSearchPanel} title={`${brandName} search`}>
-                <Search className="nav-icon" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="nav-button" id="display-mode-button">
-              <button
-                type="button"
-                className="site-page"
-                onClick={() => {
-                  const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                  applyThemeWithBackground(nextTheme, {
-                    defaultBackground: siteConfig.theme.background.defaultMode,
-                    darkBackground: siteConfig.theme.background.darkMode,
-                  });
-                  setTheme(nextTheme);
-                }}
-                title={`${brandName} display mode`}
-              >
-                {theme === 'dark' ? (
-                  <SunMedium className="nav-icon" aria-hidden="true" />
-                ) : (
-                  <MoonStar className="nav-icon" aria-hidden="true" />
-                )}
-              </button>
-            </div>
-
-            <div className="nav-button" id="nav-totop">
-              <button
-                type="button"
-                className="totopbtn site-page"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                title={`${brandName} back to top`}
-              >
-                <ArrowUp className="nav-icon" aria-hidden="true" />
-              </button>
-            </div>
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
               <button
                 type="button"
                 className="site-page"
                 onClick={() => setMenuOpen((value) => !value)}
-                aria-label="Toggle navigation"
+                aria-label="展开导航菜单"
                 aria-expanded={menuOpen}
               >
                 {menuOpen ? <X className="nav-icon" aria-hidden="true" /> : <Menu className="nav-icon" aria-hidden="true" />}
@@ -541,7 +405,7 @@ export function SiteHeader({
 
       {menuOpen && (
         <div className="site-mobile-panel">
-          <nav className="site-mobile-panel__group" aria-label="Mobile navigation">
+          <nav className="site-mobile-panel__group" aria-label="移动端导航">
             {primary.map((item) => (
               <div key={item.href} className="site-mobile-link-group">
                 <a

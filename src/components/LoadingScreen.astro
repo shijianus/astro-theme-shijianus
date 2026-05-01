@@ -43,8 +43,10 @@ const { brandName, avatar } = Astro.props;
       } catch {}
     };
     const firstVisit = !hasSeenLoader();
-    const minimumDuration = firstVisit ? 3400 : 420;
-    const removeDelay = firstVisit ? 580 : 280;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const compactViewport = window.innerWidth < 540;
+    const minimumDuration = prefersReducedMotion ? 0 : firstVisit ? (compactViewport ? 920 : 1280) : 180;
+    const removeDelay = firstVisit ? 260 : 140;
 
     const preloadVisuals = () => {
       const candidates = Array.from(

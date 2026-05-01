@@ -1,10 +1,10 @@
 ---
-title: "shijianus theme reboot log"
+title: "主题重构启动记录"
 pubDate: 2026-04-02
 description: "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。"
 author: "shijianus"
 category: "前端工程"
-group: "Astro Migration"
+group: "迁移记录"
 cover: "/media/shijianus/frontend.jpg"
 coverAlt: "frontend workspace"
 featured: true
@@ -14,7 +14,7 @@ tags: ["Astro", "Tailwind", "主题重构"]
 
 # 为什么要重做
 
-之前的实现最大的问题不是功能少，而是结构不清楚。页面上混杂了试验性的品牌、风格和局部组件，最终既不像原主题，也没有形成 `shijianus` 自己的秩序。
+之前的实现最大的问题不是功能少，而是结构不清楚。页面上混杂了试验性的品牌、风格和局部组件，最终既不像原主题，也没有形成自己的秩序。
 
 ## 这次重构的判断
 

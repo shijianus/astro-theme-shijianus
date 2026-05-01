@@ -1,18 +1,15 @@
 import React, { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  UserRound,
   Bell,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  AlertCircle,
   Clipboard,
   Copy,
   ExternalLink,
-  Languages,
   LogOut,
   MoonStar,
-  PanelRightClose,
-  PanelRightOpen,
   Save,
   Sparkles,
   RefreshCw,
@@ -21,6 +18,7 @@ import {
   Tags,
   X,
 } from 'lucide-react';
+import { siteConfig } from '../config/site';
 import {
   createCommentId,
   getCommentInitials,
@@ -37,11 +35,9 @@ import {
   readStorage,
   resolveBackgroundSource,
   resolveInitialBackground,
-  syncAside,
-  type AsideState,
   type ThemeMode,
 } from '../lib/client-theme';
-import { readStoredLocaleVariant, toggleLocaleVariant, type LocaleVariant } from '../lib/client-locale';
+import { applyLocaleVariant, readStoredLocaleVariant, type LocaleVariant } from '../lib/client-locale';
 
 type NavItem = {
   label: string;
@@ -99,6 +95,7 @@ type ThemeOverlaysProps = {
   defaultBackground: string;
   darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
+  pageType: string;
   consolePanel: {
     enabled: boolean;
     defaultOpen: boolean;
@@ -106,6 +103,7 @@ type ThemeOverlaysProps = {
   };
   accountPanel: {
     enabled: boolean;
+    remoteConnected: boolean;
     providerLabel: string;
     title: string;
     summary: string;
@@ -138,6 +136,7 @@ export function ThemeOverlays({
   defaultBackground,
   darkBackground,
   backgroundModes,
+  pageType: initialPageType,
   consolePanel,
   accountPanel,
 }: ThemeOverlaysProps) {
@@ -147,10 +146,10 @@ export function ThemeOverlays({
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
-  const [aside, setAside] = useState<AsideState>('expanded');
   const [background, setBackground] = useState(defaultBackground);
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
   const [account, setAccount] = useState<CommentIdentity | null>(null);
+  const [pageType, setPageType] = useState(initialPageType || 'page');
   const [accountForm, setAccountForm] = useState({
     name: '',
     email: '',
@@ -166,7 +165,14 @@ export function ThemeOverlays({
     y: 0,
     selectedText: '',
   });
+  const [activityMessage, setActivityMessage] = useState('');
+  const [activityVisible, setActivityVisible] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const activityTimerRef = useRef<number | null>(null);
+  const lastActivityRef = useRef({
+    message: '',
+    at: 0,
+  });
 
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => ({
@@ -191,7 +197,7 @@ export function ThemeOverlays({
   }, [posts, query]);
 
   const accountNotifications = useMemo(() => {
-    if (!accountPanel.enabled || !account) return [];
+    if (!account) return [];
 
     return readAllLocalThreads()
       .filter((comment) => {
@@ -200,7 +206,12 @@ export function ThemeOverlays({
       })
       .sort((left, right) => new Date(right.createdAt).valueOf() - new Date(left.createdAt).valueOf())
       .slice(0, 6);
-  }, [account, accountPanel.enabled, commentThreadVersion]);
+  }, [account, commentThreadVersion]);
+
+  const emitActivity = (message: string) => {
+    if (!message.trim()) return;
+    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+  };
 
   const cycleBackground = () => {
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
@@ -211,18 +222,6 @@ export function ThemeOverlays({
 
   useEffect(() => {
     const syncAccount = () => {
-      if (!accountPanel.enabled) {
-        setAccount(null);
-        setAccountForm({
-          name: '',
-          email: '',
-          website: '',
-          avatar: '',
-        });
-        setAccountNeedsAttention(false);
-        return;
-      }
-
       const next = readCommentIdentity();
       setAccount(next);
       setAccountForm({
@@ -234,18 +233,6 @@ export function ThemeOverlays({
     };
 
     const onAccountChange = (event: Event) => {
-      if (!accountPanel.enabled) {
-        setAccount(null);
-        setAccountForm({
-          name: '',
-          email: '',
-          website: '',
-          avatar: '',
-        });
-        setAccountNeedsAttention(false);
-        return;
-      }
-
       const next = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
       setAccount(next);
       setAccountForm({
@@ -259,11 +246,11 @@ export function ThemeOverlays({
 
     const onAccountRequired = () => {
       setConsoleNoticeOpen(false);
-      setNotificationOpen(false);
       setSearchOpen(false);
-      setConsoleOpen(true);
-      setAccountNotice(accountPanel.enabled ? accountPanel.loginHint : accountPanel.disabledNotice);
-      setAccountNeedsAttention(accountPanel.enabled);
+      setConsoleOpen(false);
+      setNotificationOpen(true);
+      setAccountNotice(accountPanel.loginHint);
+      setAccountNeedsAttention(true);
     };
 
     const onThreadChange = () => {
@@ -292,18 +279,16 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:comment-thread-change', onThreadChange);
       window.removeEventListener('storage', onStorage);
     };
-  }, [accountPanel.disabledNotice, accountPanel.enabled, accountPanel.loginHint]);
+  }, [accountPanel.loginHint]);
 
   useEffect(() => {
     const root = document.documentElement;
+    setPageType(document.body?.dataset.type ?? initialPageType ?? 'page');
     const savedTheme =
       (readStorage('shijianus-theme') as ThemeMode | null) ??
       (root.dataset.theme as ThemeMode | undefined) ??
       'light';
-    const savedAside =
-      (readStorage('shijianus-aside') as AsideState | null) ??
-      (root.dataset.aside as AsideState | undefined) ??
-      'expanded';
+    const savedAside = readStorage('shijianus-aside') ?? root.dataset.aside ?? 'expanded';
     const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
     const savedBackgroundSource = resolveBackgroundSource(
       storedBackground,
@@ -323,7 +308,6 @@ export function ThemeOverlays({
     root.dataset.background = savedBackground;
     root.dataset.backgroundSource = savedBackgroundSource;
     setTheme(savedTheme);
-    setAside(savedAside);
     setBackground(savedBackground);
     setLocaleVariant(readStoredLocaleVariant());
 
@@ -350,7 +334,6 @@ export function ThemeOverlays({
       setConsoleNoticeOpen(false);
     };
     const openNotifications = () => {
-      if (!accountPanel.enabled) return;
       setConsoleNoticeOpen(false);
       setSearchOpen(false);
       setConsoleOpen(false);
@@ -425,7 +408,7 @@ export function ThemeOverlays({
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('click', closeRightMenu);
     };
-  }, [accountPanel.enabled, consolePanel.enabled, darkBackground, defaultBackground, features.centerConsole, features.rightClickMenu, features.searchPanel]);
+  }, [consolePanel.enabled, darkBackground, defaultBackground, features.centerConsole, features.rightClickMenu, features.searchPanel, initialPageType]);
 
   useEffect(() => {
     document.body.classList.toggle('theme-overlay-open', searchOpen || consoleOpen || consoleNoticeOpen || notificationOpen);
@@ -440,6 +423,48 @@ export function ThemeOverlays({
     }
   }, [consoleNoticeOpen, notificationOpen, searchOpen, consoleOpen]);
 
+  useEffect(() => {
+    const showActivity = (message: string) => {
+      if (!message.trim()) return;
+      lastActivityRef.current = {
+        message,
+        at: Date.now(),
+      };
+      setActivityMessage(message);
+      setActivityVisible(true);
+      if (activityTimerRef.current !== null) {
+        window.clearTimeout(activityTimerRef.current);
+      }
+      activityTimerRef.current = window.setTimeout(() => {
+        setActivityVisible(false);
+        activityTimerRef.current = null;
+      }, 5000);
+    };
+
+    const onActivity = (event: Event) => {
+      const detail = (event as CustomEvent<{ message?: string } | string>).detail;
+      const message = typeof detail === 'string' ? detail : detail?.message ?? '';
+      showActivity(message);
+    };
+
+    const onCopy = () => {
+      const { at, message } = lastActivityRef.current;
+      if (Date.now() - at < 350 && message.includes('复制')) return;
+      showActivity('已复制当前内容');
+    };
+
+    window.addEventListener('shijianus:activity', onActivity as EventListener);
+    document.addEventListener('copy', onCopy);
+
+    return () => {
+      window.removeEventListener('shijianus:activity', onActivity as EventListener);
+      document.removeEventListener('copy', onCopy);
+      if (activityTimerRef.current !== null) {
+        window.clearTimeout(activityTimerRef.current);
+      }
+    };
+  }, []);
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     const nextBackground = applyThemeWithBackground(nextTheme, {
@@ -448,20 +473,10 @@ export function ThemeOverlays({
     });
     setTheme(nextTheme);
     setBackground(nextBackground);
-  };
-
-  const toggleAside = () => {
-    const nextAside = aside === 'expanded' ? 'collapsed' : 'expanded';
-    syncAside(nextAside);
-    setAside(nextAside);
+    emitActivity(nextTheme === 'dark' ? '已切换为深色模式' : '已切换为浅色模式');
   };
 
   const saveAccount = () => {
-    if (!accountPanel.enabled) {
-      setAccountNotice(accountPanel.disabledNotice);
-      return;
-    }
-
     const name = accountForm.name.trim();
     if (!name) {
       setAccountNotice('请先填写昵称。');
@@ -480,8 +495,9 @@ export function ThemeOverlays({
 
     writeCommentIdentity(nextAccount);
     setAccount(nextAccount);
-    setAccountNotice('shijianus account 已更新。');
+    setAccountNotice(account ? '账号资料已更新。' : '账号已创建。');
     setAccountNeedsAttention(false);
+    emitActivity(account ? '已更新账号资料' : '已创建评论账号');
   };
 
   const clearAccount = () => {
@@ -495,7 +511,24 @@ export function ThemeOverlays({
     });
     setAccountNotice('当前账号已退出，评论将恢复只读。');
     setAccountNeedsAttention(false);
+    emitActivity('已退出当前账号');
   };
+
+  const selectLocale = (nextLocale: LocaleVariant) => {
+    const applied = applyLocaleVariant(nextLocale);
+    setLocaleVariant(applied);
+    emitActivity(
+      applied === 'zh-Hant'
+        ? '已切换为繁體中文'
+        : applied === 'en'
+          ? '已切换为英文界面'
+          : '已切换为简体中文',
+    );
+  };
+
+  const accountAccessLabel = account ? '已登录' : '访客';
+  const accountBridgeLabel = accountPanel.remoteConnected ? accountPanel.providerLabel : '本地身份';
+  const accountBridgeNote = accountPanel.remoteConnected ? `当前已接入 ${accountPanel.providerLabel}。` : accountPanel.disabledNotice;
 
   const copyText = async (value: string) => {
     if (!value) return false;
@@ -524,6 +557,26 @@ export function ThemeOverlays({
     }
   };
 
+  const scrollToSelector = (selector: string, message: string) => {
+    const target = document.querySelector<HTMLElement>(selector);
+    if (!target) {
+      emitActivity('当前页面暂时没有这个入口');
+      return;
+    }
+
+    const headerHeight = Number.parseFloat(
+      document.documentElement.style.getPropertyValue('--site-header-height') ||
+        window.getComputedStyle(document.documentElement).getPropertyValue('--site-header-height') ||
+        '0',
+    );
+    const offset = Math.max(72, Math.round(headerHeight || 72) + 18);
+    const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
+    setConsoleOpen(false);
+    setConsoleNoticeOpen(false);
+    window.scrollTo({ top, behavior: 'smooth' });
+    emitActivity(message);
+  };
+
   return (
     <>
       {features.particles && (
@@ -546,16 +599,21 @@ export function ThemeOverlays({
         </div>
       )}
 
+      <div className={`theme-activity-bar ${activityVisible ? 'show' : ''}`} aria-live="polite">
+        <span className="theme-activity-bar__label">提示</span>
+        <strong>{activityMessage}</strong>
+      </div>
+
       {features.searchPanel && (
         <section id="local-search" className={`theme-search ${searchOpen ? 'show' : ''}`} aria-hidden={!searchOpen}>
-          <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label="Close search" />
-          <div className="search-dialog" role="dialog" aria-modal="true" aria-label="Search posts">
+          <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板" />
+          <div className="search-dialog" role="dialog" aria-modal="true" aria-label="站内搜索">
             <div className="search-dialog__head">
               <div>
-                <p className="eyebrow">Search</p>
+                <p className="eyebrow">站内搜索</p>
                 <h2>{brandName} 内容索引</h2>
               </div>
-              <button type="button" className="theme-icon-button theme-button--ghost" onClick={() => setSearchOpen(false)} aria-label="Close search">
+              <button type="button" className="theme-icon-button theme-button--ghost" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板">
                 <X className="overlay-icon" aria-hidden="true" />
               </button>
             </div>
@@ -575,7 +633,7 @@ export function ThemeOverlays({
               {filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
                   <a className="search-result-item" href={post.href} key={post.href}>
-                    <img src={post.cover} alt="" loading="lazy" />
+                    <img src={post.cover} alt="" loading="lazy" data-fallback-src={siteConfig.post.hero.fallbackImage} />
                     <span className="search-result-item__content">
                       <span className="search-result-item__meta">
                         {post.category} / {post.date}
@@ -595,11 +653,11 @@ export function ThemeOverlays({
 
       {features.centerConsole && (
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
-          <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="Close console" />
-          <div className="console-card-group" role="dialog" aria-modal="true" aria-label="Theme console">
+          <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="关闭控制台" />
+          <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
             <div className="console-card-group-left console-card-group-left--stack">
               <section className="console-card console-profile">
-                <p className="author-content-item-tips">{brandName} console</p>
+                <p className="author-content-item-tips">控制台</p>
                 <h2 className="author-content-item-title">{authorName}</h2>
                 <p>{authorMotto}</p>
                 <div className="console-stat-grid">
@@ -622,116 +680,77 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              <section
-                className={`console-card console-account ${accountNeedsAttention ? 'is-attention' : ''} ${accountPanel.enabled ? '' : 'is-disabled'}`}
-              >
+              <section className="console-card console-shortcuts">
                 <div className="console-card__head">
-                  <div>
-                    <p className="author-content-item-tips">{accountPanel.title}</p>
-                    <h2 className="author-content-item-title">{account ? account.name : '评论账号'}</h2>
-                  </div>
-                  <span className="console-card__head-badge">
-                    <Bell aria-hidden="true" />
-                    <strong>{accountNotifications.length}</strong>
-                  </span>
+                <div>
+                  <p className="author-content-item-tips">快捷入口</p>
+                  <h2 className="author-content-item-title">页面动作</h2>
+                </div>
+                <span className="console-card__head-badge">{pageType === 'post' ? '文章页' : '站点页'}</span>
+              </div>
+
+                <p>目录、搜索、背景、回顶和主要跳转统一收进这里，页面右侧不再堆放重复一级按钮。</p>
+
+                <div className="console-shortcuts__grid">
+                  {quickActions.slice(0, 2).map((item) => (
+                    <a className="console-shortcuts__item" href={item.href} key={item.href}>
+                      <strong>{item.label}</strong>
+                      <small>{item.href}</small>
+                    </a>
+                  ))}
+                  {navItems.slice(0, 4).map((item) => (
+                    <a className="console-shortcuts__item" href={item.href} key={item.href}>
+                      <strong>{item.label}</strong>
+                      <small>{item.external ? '外部链接' : item.href}</small>
+                    </a>
+                  ))}
                 </div>
 
-                <p>{accountPanel.enabled ? accountPanel.summary : accountPanel.disabledNotice}</p>
-
-                <div className="console-account__identity">
-                  <div className="console-account__avatar">
-                    {accountForm.avatar ? (
-                      <img src={accountForm.avatar} alt={accountForm.name || account?.name || brandName} loading="lazy" />
-                    ) : (
-                      <span>{getCommentInitials(accountForm.name || account?.name || brandName)}</span>
-                    )}
-                  </div>
-                  <div className="console-account__status-grid">
-                    <span>
-                      <small>状态</small>
-                      <strong>{account ? '已登录' : '访客'}</strong>
-                    </span>
-                    <span>
-                      <small>权限</small>
-                      <strong>{account?.role === 'admin' ? '管理员' : '普通读者'}</strong>
-                    </span>
-                    <span>
-                      <small>接入</small>
-                      <strong>{accountPanel.enabled ? accountPanel.providerLabel : '未连接'}</strong>
-                    </span>
-                  </div>
-                </div>
-
-                {accountPanel.enabled ? (
-                  <div className="console-account__form">
-                    <label className="console-account__field">
-                      <span>昵称</span>
-                      <input
-                        value={accountForm.name}
-                        onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))}
-                        placeholder="shijianus reader"
-                      />
-                    </label>
-                    <label className="console-account__field">
-                      <span>邮箱</span>
-                      <input
-                        value={accountForm.email}
-                        onChange={(event) => setAccountForm((current) => ({ ...current, email: event.target.value }))}
-                        placeholder="name@example.com"
-                      />
-                    </label>
-                    <label className="console-account__field">
-                      <span>站点</span>
-                      <input
-                        value={accountForm.website}
-                        onChange={(event) => setAccountForm((current) => ({ ...current, website: event.target.value }))}
-                        placeholder="https://example.com"
-                      />
-                    </label>
-                    <label className="console-account__field">
-                      <span>头像链接</span>
-                      <input
-                        value={accountForm.avatar}
-                        onChange={(event) => setAccountForm((current) => ({ ...current, avatar: event.target.value }))}
-                        placeholder="https://..."
-                      />
-                    </label>
-                  </div>
-                ) : (
-                  <div className="console-account__empty">
-                    <AlertCircle aria-hidden="true" />
-                    <span>{accountPanel.providerLabel}</span>
-                    <strong>评论数据库未接入</strong>
-                    <p>{accountPanel.disabledNotice}</p>
+                {pageType === 'post' && (
+                  <div className="console-shortcuts__section">
+                    <span className="console-shortcuts__section-label">文章入口</span>
+                    <div className="console-shortcuts__grid console-shortcuts__grid--actions">
+                      <button
+                        type="button"
+                        className="console-shortcuts__item console-shortcuts__item--action"
+                        onClick={() => scrollToSelector('#post-toc-aside #card-toc', '已定位到文章目录')}
+                      >
+                        <strong>文章目录</strong>
+                        <small>直接跳到当前目录侧栏</small>
+                      </button>
+                      <button
+                        type="button"
+                        className="console-shortcuts__item console-shortcuts__item--action"
+                        onClick={() => scrollToSelector('.post-share-actions', '已定位到分享区域')}
+                      >
+                        <strong>分享区域</strong>
+                        <small>只保留分享入口，不再混入重复标签</small>
+                      </button>
+                      <button
+                        type="button"
+                        className="console-shortcuts__item console-shortcuts__item--action"
+                        onClick={() => scrollToSelector('#post-comment', '已定位到评论区')}
+                      >
+                        <strong>评论区</strong>
+                        <small>快速下滑到公开评论与输入区</small>
+                      </button>
+                      <button
+                        type="button"
+                        className="console-shortcuts__item console-shortcuts__item--action"
+                        onClick={() => scrollToSelector('.post-layout-row--support', '已定位到文章工具区')}
+                      >
+                        <strong>文章工具</strong>
+                        <small>跳到打赏、分享与继续阅读入口</small>
+                      </button>
+                    </div>
                   </div>
                 )}
-
-                {accountNotice && <div className="console-account__notice">{accountNotice}</div>}
-
-                <div className="console-account__actions">
-                  {account && accountPanel.enabled && (
-                    <button type="button" className="theme-icon-button theme-button--ghost" onClick={clearAccount}>
-                      <LogOut aria-hidden="true" />
-                      <span>退出</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className="theme-icon-button"
-                    onClick={saveAccount}
-                    disabled={!accountPanel.enabled}
-                    title={accountPanel.enabled ? '保存评论账号' : accountPanel.disabledNotice}
-                  >
-                    <Save aria-hidden="true" />
-                    <span>{account ? '更新账号' : '创建账号'}</span>
-                  </button>
-                </div>
               </section>
             </div>
 
             <div className="console-card-group-right">
               <section className="console-card tags">
-                <p className="author-content-item-tips">Interests</p>
+                <p className="author-content-item-tips">标签索引</p>
                 <h2 className="author-content-item-title">标签与入口</h2>
                 <div className="card-tag-cloud">
                   {tags.slice(0, 18).map((tag) => (
@@ -761,96 +780,220 @@ export function ThemeOverlays({
             </div>
           </div>
 
-          <div className="button-group" aria-label="Console controls">
+          <div className="button-group" aria-label="控制台快捷操作">
             <button type="button" className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`} onClick={toggleTheme} title="切换深浅色">
               {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
             </button>
-            <button type="button" className="console-btn-item" onClick={toggleAside} title="切换侧栏">
-              {aside === 'expanded' ? <PanelRightClose aria-hidden="true" /> : <PanelRightOpen aria-hidden="true" />}
-            </button>
-            <button type="button" className="console-btn-item" onClick={() => setSearchOpen(true)} title="打开搜索">
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
+                setConsoleOpen(false);
+                setConsoleNoticeOpen(false);
+                setSearchOpen(true);
+                emitActivity('已打开站内搜索');
+              }}
+              title="打开搜索"
+            >
               <Search aria-hidden="true" />
             </button>
-            <button type="button" className="console-btn-item" onClick={cycleBackground} title="切换背景">
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
+                cycleBackground();
+                emitActivity('已切换页面背景');
+              }}
+              title="切换背景"
+            >
               <Sparkles aria-hidden="true" />
             </button>
-            <button type="button" className="console-btn-item" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="回到顶部">
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                emitActivity('已回到页面顶部');
+              }}
+              title="回到顶部"
+            >
               <ArrowUp aria-hidden="true" />
             </button>
           </div>
         </section>
       )}
 
-      {accountPanel.enabled && (
-        <section className={`theme-notification-overlay ${notificationOpen ? 'show' : ''}`} aria-hidden={!notificationOpen}>
-          <button
-            type="button"
-            className="theme-notification-overlay__mask"
-            onClick={() => setNotificationOpen(false)}
-            aria-label="Close notifications"
-          />
-          <div className="theme-notification-drawer" role="dialog" aria-modal="true" aria-label="Notifications">
-            <div className="theme-notification-drawer__head">
+      <section className={`theme-account-overlay ${notificationOpen ? 'show' : ''}`} aria-hidden={!notificationOpen}>
+        <button
+          type="button"
+          className="theme-account-overlay__mask"
+          onClick={() => setNotificationOpen(false)}
+          aria-label="关闭账号面板"
+        />
+        <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label="账号面板">
+            <div className="theme-account-drawer__head">
               <div>
-                <p className="eyebrow">Notifications</p>
-                <h2>提醒中心</h2>
+                <p className="eyebrow">账号</p>
+                <h2>账号中心</h2>
               </div>
-              <button
-                type="button"
-                className="theme-icon-button theme-button--ghost"
-                onClick={() => setNotificationOpen(false)}
-                aria-label="Close notifications"
-              >
-                <X className="overlay-icon" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="theme-notification-drawer__summary">
-              <div className="theme-notification-drawer__summary-avatar">
-                {account?.avatar ? (
-                  <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
-                ) : (
-                  <span>{getCommentInitials(account?.name || brandName)}</span>
-                )}
-              </div>
-              <div className="theme-notification-drawer__summary-copy">
-                <strong>{account ? `${account.name} 的提醒` : '登录后这里会显示提醒'}</strong>
-                <p>{account ? `当前共 ${accountNotifications.length} 条 @ 提醒。` : accountPanel.loginHint}</p>
-              </div>
-            </div>
-
-            {account && accountNotifications.length > 0 ? (
-              <div className="console-notification-list theme-notification-drawer__list">
-                {accountNotifications.map((comment) => {
-                  const href = comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment';
-                  return (
-                    <a className="console-notification-item theme-notification-drawer__item" href={href} key={comment.id}>
-                      <div className="console-notification-item__avatar">
-                        {comment.avatar ? (
-                          <img src={comment.avatar} alt={comment.name} loading="lazy" />
-                        ) : (
-                          <span>{getCommentInitials(comment.name)}</span>
-                        )}
-                      </div>
-                      <div className="console-notification-item__body">
-                        <strong>{comment.name}</strong>
-                        <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
-                        <p>{comment.message.slice(0, 120)}</p>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="console-notification-empty theme-notification-drawer__empty">
-                <Bell aria-hidden="true" />
-                <strong>{account ? '还没有新的提醒' : '保存账号后这里会显示提醒'}</strong>
-                <p>{account ? '当有人 @ 你时，这里会像收件箱一样集中展示。' : accountPanel.loginHint}</p>
-              </div>
-            )}
+            <button
+              type="button"
+              className="theme-icon-button theme-button--ghost"
+              onClick={() => setNotificationOpen(false)}
+              aria-label="关闭账号面板"
+            >
+              <X className="overlay-icon" aria-hidden="true" />
+            </button>
           </div>
-        </section>
-      )}
+
+          <div className="theme-account-drawer__summary">
+            <div className="theme-account-drawer__summary-avatar">
+              {account?.avatar ? (
+                <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
+              ) : (
+                <span>{getCommentInitials(account?.name || brandName)}</span>
+              )}
+            </div>
+            <div className="theme-account-drawer__summary-copy">
+              <strong>{account ? account.name : '尚未登录'}</strong>
+              <p>{account ? `${accountAccessLabel} · ${accountBridgeLabel}` : accountPanel.summary}</p>
+            </div>
+            <div className="theme-account-drawer__summary-badge">
+              <Bell aria-hidden="true" />
+              <strong>{accountNotifications.length}</strong>
+              <small>@ 提醒</small>
+            </div>
+          </div>
+
+          <div className="theme-account-drawer__body">
+            <section className={`theme-account-panel ${accountNeedsAttention ? 'is-attention' : ''}`}>
+              <div className="theme-account-panel__head">
+                <div>
+                  <p className="author-content-item-tips">{accountPanel.title}</p>
+                  <h3>{account ? '更新资料' : '登录 / 注册'}</h3>
+                </div>
+                <span>{accountBridgeLabel}</span>
+              </div>
+
+              <p>{accountBridgeNote}</p>
+
+              <div className="theme-account-panel__form">
+                <label className="theme-account-panel__field">
+                  <span>昵称</span>
+                  <input
+                    value={accountForm.name}
+                    onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))}
+                    placeholder="输入公开显示的昵称"
+                  />
+                </label>
+                <label className="theme-account-panel__field">
+                  <span>邮箱</span>
+                  <input
+                    value={accountForm.email}
+                    onChange={(event) => setAccountForm((current) => ({ ...current, email: event.target.value }))}
+                    placeholder="name@example.com"
+                  />
+                </label>
+                <label className="theme-account-panel__field">
+                  <span>个人站点</span>
+                  <input
+                    value={accountForm.website}
+                    onChange={(event) => setAccountForm((current) => ({ ...current, website: event.target.value }))}
+                    placeholder="https://example.com"
+                  />
+                </label>
+                <label className="theme-account-panel__field">
+                  <span>头像链接</span>
+                  <input
+                    value={accountForm.avatar}
+                    onChange={(event) => setAccountForm((current) => ({ ...current, avatar: event.target.value }))}
+                    placeholder="https://..."
+                  />
+                </label>
+              </div>
+
+              {accountNotice && <div className="theme-account-panel__notice">{accountNotice}</div>}
+
+              <div className="theme-account-panel__actions">
+                {account && (
+                  <button type="button" className="theme-icon-button theme-button--ghost" onClick={clearAccount}>
+                    <LogOut aria-hidden="true" />
+                    <span>退出</span>
+                  </button>
+                )}
+                <button type="button" className="theme-icon-button" onClick={saveAccount}>
+                  <Save aria-hidden="true" />
+                  <span>{account ? '保存更新' : '创建账号'}</span>
+                </button>
+              </div>
+            </section>
+
+            <section className="theme-account-panel theme-account-panel--notifications">
+              <div className="theme-account-panel__head">
+                <div>
+                  <p className="author-content-item-tips">提醒</p>
+                  <h3>@ 与回复</h3>
+                </div>
+                <span>{accountNotifications.length}</span>
+              </div>
+
+              {account && accountNotifications.length > 0 ? (
+                <div className="console-notification-list theme-account-panel__notification-list">
+                  {accountNotifications.map((comment) => {
+                    const href = comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment';
+                    return (
+                      <a className="console-notification-item theme-account-panel__notification-item" href={href} key={comment.id}>
+                        <div className="console-notification-item__avatar">
+                          {comment.avatar ? (
+                            <img src={comment.avatar} alt={comment.name} loading="lazy" />
+                          ) : (
+                            <span>{getCommentInitials(comment.name)}</span>
+                          )}
+                        </div>
+                        <div className="console-notification-item__body">
+                          <strong>{comment.name}</strong>
+                          <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
+                          <p>{comment.message.slice(0, 120)}</p>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="console-notification-empty theme-account-panel__notification-empty">
+                  <UserRound aria-hidden="true" />
+                  <strong>{account ? '暂时没有新的提醒' : '创建账号后这里会显示提醒'}</strong>
+                  <p>{account ? '当有人在评论里 @ 你时，这里会集中显示最新记录。' : accountPanel.loginHint}</p>
+                </div>
+              )}
+            </section>
+
+            <section className="theme-account-panel">
+              <div className="theme-account-panel__head">
+                <div>
+                  <p className="author-content-item-tips">偏好</p>
+                  <h3>界面语言</h3>
+                </div>
+                <span>{localeVariant === 'zh-CN' ? '简体' : localeVariant === 'zh-Hant' ? '繁體' : 'EN'}</span>
+              </div>
+
+              <p>语言切换独立放到账号面板里，避免和控制台、分享或评论操作混在一起。</p>
+
+              <div className="theme-account-panel__locale-actions" role="group" aria-label="界面语言">
+                <button type="button" className={localeVariant === 'zh-CN' ? 'is-active' : ''} onClick={() => selectLocale('zh-CN')}>
+                  简体中文
+                </button>
+                <button type="button" className={localeVariant === 'zh-Hant' ? 'is-active' : ''} onClick={() => selectLocale('zh-Hant')}>
+                  繁體中文
+                </button>
+                <button type="button" className={localeVariant === 'en' ? 'is-active' : ''} onClick={() => selectLocale('en')}>
+                  English
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
 
       {features.centerConsole && !consolePanel.enabled && (
         <section className={`theme-search console-notice ${consoleNoticeOpen ? 'show' : ''}`} aria-hidden={!consoleNoticeOpen}>
@@ -858,19 +1001,19 @@ export function ThemeOverlays({
             type="button"
             className="search-mask"
             onClick={() => setConsoleNoticeOpen(false)}
-            aria-label="Close console notice"
+            aria-label="关闭控制台提示"
           />
-          <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label="Console notice">
+          <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label="控制台提示">
             <div className="search-dialog__head">
               <div>
-                <p className="eyebrow">Console access</p>
+                <p className="eyebrow">控制台</p>
                 <h2>控制台暂不可用</h2>
               </div>
               <button
                 type="button"
                 className="theme-icon-button theme-button--ghost"
                 onClick={() => setConsoleNoticeOpen(false)}
-                aria-label="Close console notice"
+                aria-label="关闭控制台提示"
               >
                 <X className="overlay-icon" aria-hidden="true" />
               </button>
@@ -890,7 +1033,7 @@ export function ThemeOverlays({
             id="rightMenu"
             className={rightMenu.open ? 'show' : ''}
             style={{ left: rightMenu.x, top: rightMenu.y }}
-            aria-label="Context menu"
+            aria-label="右键菜单"
           >
             <div className="rightMenu-group rightMenu-small">
               <button type="button" className="rightMenu-item" onClick={() => window.history.back()} title="后退">
@@ -908,30 +1051,40 @@ export function ThemeOverlays({
             </div>
 
             <div className="rightMenu-group rightMenu-line">
-              <button type="button" className="rightMenu-item" onClick={() => copyText(rightMenu.selectedText || document.title)}>
+              <button
+                type="button"
+                className="rightMenu-item"
+                onClick={async () => {
+                  if (await copyText(rightMenu.selectedText || document.title)) emitActivity('已复制选中文本');
+                }}
+              >
                 <Copy aria-hidden="true" />
                 <span>复制选中文本</span>
               </button>
-              <button type="button" className="rightMenu-item" onClick={() => copyText(window.location.href)}>
+              <button
+                type="button"
+                className="rightMenu-item"
+                onClick={async () => {
+                  if (await copyText(window.location.href)) emitActivity('已复制当前地址');
+                }}
+              >
                 <Clipboard aria-hidden="true" />
                 <span>复制地址</span>
               </button>
-              <button type="button" className="rightMenu-item" onClick={() => setSearchOpen(true)}>
+              <button
+                type="button"
+                className="rightMenu-item"
+                onClick={() => {
+                  setSearchOpen(true);
+                  emitActivity('已打开站内搜索');
+                }}
+              >
                 <Search aria-hidden="true" />
                 <span>站内搜索</span>
               </button>
               <button type="button" className="rightMenu-item" onClick={toggleTheme}>
                 {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
                 <span>{theme === 'dark' ? '浅色模式' : '深色模式'}</span>
-              </button>
-              <button
-                type="button"
-                id="menu-translate"
-                className="rightMenu-item"
-                onClick={() => setLocaleVariant(toggleLocaleVariant(localeVariant))}
-              >
-                <Languages aria-hidden="true" />
-                <span>{localeVariant === 'zh-CN' ? '切换为繁体中文' : '切换为简体中文'}</span>
               </button>
             </div>
 

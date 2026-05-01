@@ -2,6 +2,12 @@ import type { CollectionEntry } from 'astro:content';
 
 type PostEntry = CollectionEntry<'posts'>;
 
+export const PROTECTED_POST_TITLE = '受限文章';
+export const PROTECTED_POST_SUMMARY = '这篇文章设置了访问条件，需完成验证后才会展示正文。';
+export const PROTECTED_POST_CATEGORY = '受限内容';
+export const PROTECTED_POST_GROUP = '验证后可读';
+export const PROTECTED_POST_COVER = '/media/shijianus/default-cover.jpg';
+
 export function getPostPath(entry: Pick<PostEntry, 'id'>) {
   return `/posts/${entry.id}/`;
 }
@@ -37,11 +43,55 @@ export function resolveGroup(entry: PostEntry) {
 }
 
 export function resolveCover(entry: PostEntry) {
-  return entry.data.cover ?? entry.data.image?.url ?? '/media/shijianus/hero.jpg';
+  return entry.data.cover ?? entry.data.coverVideoPoster ?? entry.data.image?.url ?? PROTECTED_POST_COVER;
 }
 
 export function resolveCoverAlt(entry: PostEntry) {
   return entry.data.coverAlt ?? entry.data.image?.alt ?? entry.data.title;
+}
+
+export function resolveCoverVideo(entry: PostEntry) {
+  return entry.data.coverVideo ?? '';
+}
+
+export function hasPostAccess(entry: PostEntry) {
+  return Boolean(entry.data.access);
+}
+
+export function isProtectedPost(entry: PostEntry) {
+  return hasPostAccess(entry);
+}
+
+export function getPublicPosts(posts: PostEntry[]) {
+  return sortPostsByDate(posts).filter((entry) => !hasPostAccess(entry));
+}
+
+export function getDisplayPostTitle(entry: PostEntry, revealProtected = false) {
+  return revealProtected || !hasPostAccess(entry) ? entry.data.title : PROTECTED_POST_TITLE;
+}
+
+export function getDisplayPostCategory(entry: PostEntry, revealProtected = false) {
+  return revealProtected || !hasPostAccess(entry) ? resolveCategory(entry) : PROTECTED_POST_CATEGORY;
+}
+
+export function getDisplayPostGroup(entry: PostEntry, revealProtected = false) {
+  return revealProtected || !hasPostAccess(entry) ? resolveGroup(entry) : PROTECTED_POST_GROUP;
+}
+
+export function getDisplayPostSummary(entry: PostEntry, maxLength = 170, revealProtected = false) {
+  if (revealProtected || !hasPostAccess(entry)) {
+    return getExcerpt(entry, maxLength);
+  }
+
+  return PROTECTED_POST_SUMMARY;
+}
+
+export function resolveDisplayCover(entry: PostEntry, revealProtected = false) {
+  return revealProtected || !hasPostAccess(entry) ? resolveCover(entry) : PROTECTED_POST_COVER;
+}
+
+export function resolveDisplayCoverAlt(entry: PostEntry, revealProtected = false) {
+  return revealProtected || !hasPostAccess(entry) ? resolveCoverAlt(entry) : PROTECTED_POST_TITLE;
 }
 
 export function getExcerpt(entry: PostEntry, maxLength = 170) {
@@ -72,10 +122,11 @@ export function slugifySegment(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
-export function collectCategories(posts: PostEntry[]) {
+export function collectCategories(posts: PostEntry[], options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
   const categories = new Map<string, { label: string; slug: string; count: number }>();
 
-  for (const post of sortPostsByDate(posts)) {
+  for (const post of sourcePosts) {
     const label = resolveCategory(post);
     const current = categories.get(label);
     categories.set(label, {
@@ -88,10 +139,11 @@ export function collectCategories(posts: PostEntry[]) {
   return [...categories.values()].sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
 }
 
-export function collectTags(posts: PostEntry[]) {
+export function collectTags(posts: PostEntry[], options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
   const tags = new Map<string, { label: string; slug: string; count: number }>();
 
-  for (const post of sortPostsByDate(posts)) {
+  for (const post of sourcePosts) {
     for (const tag of post.data.tags) {
       const current = tags.get(tag);
       tags.set(tag, {
@@ -105,10 +157,11 @@ export function collectTags(posts: PostEntry[]) {
   return [...tags.values()].sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
 }
 
-export function collectArchives(posts: PostEntry[]) {
+export function collectArchives(posts: PostEntry[], options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
   const archives = new Map<string, { year: number; month: number; label: string; count: number }>();
 
-  for (const post of sortPostsByDate(posts)) {
+  for (const post of sourcePosts) {
     const year = post.data.pubDate.getFullYear();
     const month = post.data.pubDate.getMonth() + 1;
     const key = `${year}-${month}`;
@@ -129,17 +182,19 @@ export function collectArchives(posts: PostEntry[]) {
   });
 }
 
-export function getFeaturedPosts(posts: PostEntry[], limit = 4) {
-  return sortPostsByDate(posts)
+export function getFeaturedPosts(posts: PostEntry[], limit = 4, options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
+  return sourcePosts
     .filter((entry) => entry.data.featured || (entry.data.sticky ?? 0) > 0)
     .slice(0, limit);
 }
 
-export function getRelatedPosts(posts: PostEntry[], current: PostEntry, limit = 3) {
+export function getRelatedPosts(posts: PostEntry[], current: PostEntry, limit = 3, options: { includeProtected?: boolean } = {}) {
+  const sourcePosts = options.includeProtected ? sortPostsByDate(posts) : getPublicPosts(posts);
   const currentCategory = resolveCategory(current);
   const currentTags = new Set(current.data.tags);
 
-  return sortPostsByDate(posts)
+  return sourcePosts
     .filter((entry) => entry.id !== current.id)
     .map((entry) => {
       let score = 0;

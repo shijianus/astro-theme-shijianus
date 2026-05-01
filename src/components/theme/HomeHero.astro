@@ -2,7 +2,7 @@
 import { BookOpen, Boxes, CodeXml, Compass, type LucideIcon } from 'lucide-react';
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
-import { getExcerpt, getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+import { getExcerpt, getPostPath, hasPostAccess, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
 
 interface Props {
   featuredPosts: CollectionEntry<'posts'>[];
@@ -11,8 +11,10 @@ interface Props {
 
 const { featuredPosts, latestPosts } = Astro.props;
 
-const topPosts = (featuredPosts.length > 0 ? featuredPosts : latestPosts).slice(0, 6);
-const todayPost = topPosts[0] ?? latestPosts[0];
+const visibleFeaturedPosts = featuredPosts.filter((entry) => !hasPostAccess(entry));
+const visibleLatestPosts = latestPosts.filter((entry) => !hasPostAccess(entry));
+const topPosts = (visibleFeaturedPosts.length > 0 ? visibleFeaturedPosts : visibleLatestPosts).slice(0, 6);
+const todayPost = topPosts[0] ?? visibleLatestPosts[0];
 const stackPosts = topPosts.slice(0, 3);
 const mobileFocusPost = topPosts[0] ?? todayPost;
 const categoryItems = siteConfig.home.categories.slice(0, 3);
@@ -28,7 +30,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 };
 ---
 
-<section id="home_top" aria-label="Home highlight modules">
+<section id="home_top" aria-label="首页重点内容">
   <input id="today-card-toggle" class="today-card-toggle" type="checkbox" aria-hidden="true" />
 
   <div class="home-top-notice">
@@ -86,7 +88,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
         </div>
       </a>
 
-        <div class="categoryGroup" aria-label="Featured categories">
+        <div class="categoryGroup" aria-label="首页分类入口">
           {categoryItems.map((item) => {
             const CategoryIcon = categoryIconMap[item.icon];
             return (
@@ -106,7 +108,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       {mobileFocusPost && (
         <article class="home-mobile-focus-card">
           <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
-            <img src={resolveCover(mobileFocusPost)} alt={resolveCoverAlt(mobileFocusPost)} loading="eager" />
+            <img
+              src={resolveCover(mobileFocusPost)}
+              alt={resolveCoverAlt(mobileFocusPost)}
+              loading="eager"
+              data-fallback-src={siteConfig.post.hero.fallbackImage}
+            />
             <span class="home-mobile-focus-card__body">
               <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
             </span>
@@ -130,6 +137,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               src={resolveCover(entry)}
               alt={resolveCoverAlt(entry)}
               loading={index === 0 ? 'eager' : 'lazy'}
+              data-fallback-src={siteConfig.post.hero.fallbackImage}
             />
           </a>
           <div class="recent-post-info" data-card-link={getPostPath(entry)}>
@@ -151,7 +159,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
               <p>{getExcerpt(todayPost, 90)}</p>
             </div>
-            <img class="todayCard-cover" src={resolveCover(todayPost)} alt={resolveCoverAlt(todayPost)} loading="eager" />
+            <img
+              class="todayCard-cover"
+              src={resolveCover(todayPost)}
+              alt={resolveCoverAlt(todayPost)}
+              loading="eager"
+              data-fallback-src={siteConfig.post.hero.fallbackImage}
+            />
           </a>
           <div class="banner-button-group">
             <label class="banner-button" for="today-card-toggle">

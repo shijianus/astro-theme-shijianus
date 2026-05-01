@@ -9,12 +9,20 @@ interface Props {
 const { variant = 'page' } = Astro.props;
 const reward = siteConfig.support.reward;
 const isPanel = variant === 'panel';
+const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
+const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
+const geoEndpoint =
+  reward.geoEndpoint.startsWith('/') && runtimeApiBase
+    ? `${runtimeApiBase}${reward.geoEndpoint}`
+    : reward.geoEndpoint;
+const usdtAddress = process.env.SUPPORT_USDT_ADDRESS?.trim() || '';
+const usdtNetwork = process.env.SUPPORT_USDT_NETWORK?.trim() || 'USDT / TRC20';
 ---
 
 <div
   class:list={['reward-region-panel', `reward-region-panel--${variant}`]}
   data-reward-regions
-  data-geo-endpoint={reward.geoEndpoint}
+  data-geo-endpoint={geoEndpoint}
   data-storage-key={reward.storageKey}
   data-auto-label={reward.detect.autoLabel}
   data-auto-description={reward.detect.autoDescription}
@@ -22,6 +30,14 @@ const isPanel = variant === 'panel';
   data-reset-label={reward.detect.resetLabel}
   data-unsupported-title={reward.detect.unsupportedTitle}
   data-unsupported-description={reward.detect.unsupportedDescription}
+  data-more-channels-label={reward.detect.moreChannelsLabel}
+  data-less-channels-label={reward.detect.lessChannelsLabel}
+  data-crypto-blocked-title={reward.detect.cryptoBlockedTitle}
+  data-crypto-blocked-description={reward.detect.cryptoBlockedDescription}
+  data-modal-confirm-label={reward.detect.modalConfirmLabel}
+  data-modal-dismiss-label={reward.detect.modalDismissLabel}
+  data-usdt-address={usdtAddress}
+  data-usdt-network={usdtNetwork}
 >
   {!isPanel && (
     <div class="reward-region-panel__status">
@@ -70,68 +86,107 @@ const isPanel = variant === 'panel';
         </div>
       </section>
 
-      {reward.regions.map((region) => (
-        <section class="reward-region-panel__region" data-reward-region-panel={region.id} hidden>
-          <div class="reward-region-panel__region-head">
-            <div>
-              <span class="reward-region-panel__region-eyebrow">{region.shortLabel}</span>
-              <strong>{region.label}</strong>
-              {!isPanel && <p>{region.description}</p>}
+      {reward.regions.map((region) => {
+        const hasExtraChannels = region.channels.some((channel) => channel.priority === 'extra');
+        return (
+          <section class="reward-region-panel__region" data-reward-region-panel={region.id} data-extra-expanded="false" hidden>
+            <div class="reward-region-panel__region-head">
+              <div>
+                <span class="reward-region-panel__region-eyebrow">{region.shortLabel}</span>
+                <strong>{region.label}</strong>
+                {!isPanel && <p>{region.description}</p>}
+              </div>
+              <p class="reward-region-panel__advisory" data-reward-region-advisory hidden></p>
             </div>
-          </div>
 
-          <div class:list={['reward-channel-grid', 'reward-channel-grid--region', isPanel && 'reward-channel-grid--panel']}>
-            {region.channels.map((channel) => (
-              <article class:list={['reward-channel-card', 'reward-channel-card--region', isPanel && 'reward-channel-card--panel']} style={`--channel-accent:${channel.accent};`}>
-                <div class="reward-channel-card__meta">
-                  <span class="reward-channel-card__short">{channel.shortLabel}</span>
-                  <div>
-                    <strong>{channel.label}</strong>
-                    {!isPanel && <p>{channel.description}</p>}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  class:list={[
-                    'reward-channel-card__qr',
-                    'reward-channel-card__qr--interactive',
-                    channel.qrHidden && 'is-spoiler',
-                  ]}
-                  data-reward-qr
-                  data-qr-hidden={channel.qrHidden ? 'true' : 'false'}
-                  data-reward-click-notice={channel.clickNotice}
-                  aria-label={channel.revealLabel ?? `${channel.label} 二维码`}
-                  aria-pressed={channel.qrHidden ? 'false' : 'true'}
+            <div class:list={['reward-channel-grid', 'reward-channel-grid--region', isPanel && 'reward-channel-grid--panel']}>
+              {region.channels.map((channel) => (
+                <article
+                  class:list={['reward-channel-card', 'reward-channel-card--region', isPanel && 'reward-channel-card--panel']}
+                  style={`--channel-accent:${channel.accent};`}
+                  data-reward-channel-card
+                  data-reward-channel-id={channel.id}
+                  data-reward-priority={channel.priority ?? 'primary'}
+                  data-reward-availability={channel.availability ?? 'always'}
                 >
-                  <img src={channel.qrImageSrc} alt={`${region.label} / ${channel.label} 打赏二维码`} loading="lazy" decoding="async" />
-                  {channel.qrHidden && (
-                    <span class="reward-channel-card__spoiler">
-                      <EyeOff className="reward-channel-card__spoiler-icon" aria-hidden="true" />
-                      <strong>{channel.revealLabel ?? '点击显示二维码'}</strong>
-                    </span>
-                  )}
-                </button>
-
-                {!isPanel && (
-                  <>
-                    <div class="reward-channel-card__link reward-channel-card__link--static">
-                      直接扫码打赏
+                  <div class="reward-channel-card__meta">
+                    <span class="reward-channel-card__short">{channel.shortLabel}</span>
+                    <div>
+                      <strong>{channel.label}</strong>
+                      {!isPanel && <p>{channel.description}</p>}
                     </div>
+                  </div>
 
-                    {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
-                  </>
-                )}
-                {channel.clickNotice && (
-                  <p class="reward-channel-card__notice" data-reward-channel-notice hidden>
-                    {channel.clickNotice}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
-        </section>
-      ))}
+                  <button
+                    type="button"
+                    class:list={[
+                      'reward-channel-card__qr',
+                      'reward-channel-card__qr--interactive',
+                      (channel.qrHidden || channel.gate === 'modal') && 'is-spoiler',
+                    ]}
+                    data-reward-qr
+                    data-qr-hidden={channel.qrHidden || channel.gate === 'modal' ? 'true' : 'false'}
+                    data-reward-gate={channel.gate ?? 'direct'}
+                    data-reward-click-notice={channel.clickNotice ?? ''}
+                    data-reward-click-title={channel.clickNoticeTitle ?? channel.label}
+                    data-reward-reveal-label={channel.revealLabel ?? `${channel.label} 二维码`}
+                    data-reward-wallet-network={channel.walletNetwork ?? ''}
+                    aria-label={channel.revealLabel ?? `${channel.label} 二维码`}
+                    aria-pressed={channel.qrHidden || channel.gate === 'modal' ? 'false' : 'true'}
+                  >
+                    <img src={channel.qrImageSrc} alt={`${region.label} / ${channel.label} 打赏二维码`} loading="lazy" decoding="async" />
+                    {(channel.qrHidden || channel.gate === 'modal') && (
+                      <span class="reward-channel-card__spoiler">
+                        <EyeOff className="reward-channel-card__spoiler-icon" aria-hidden="true" />
+                        <strong>{channel.revealLabel ?? '点击显示二维码'}</strong>
+                      </span>
+                    )}
+                  </button>
+
+                  {!isPanel && <div class="reward-channel-card__link reward-channel-card__link--static">直接扫码打赏</div>}
+                  {channel.note && <p class="reward-channel-card__note">{channel.note}</p>}
+                  <p class="reward-channel-card__notice" data-reward-channel-notice hidden></p>
+
+                  <div class="reward-channel-card__wallet" data-reward-wallet hidden>
+                    <span class="reward-channel-card__wallet-label">钱包地址</span>
+                    <code data-reward-wallet-address></code>
+                    <div class="reward-channel-card__wallet-actions">
+                      <span data-reward-wallet-network>{channel.walletNetwork ?? usdtNetwork}</span>
+                      <button type="button" data-reward-copy-wallet>复制地址</button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {hasExtraChannels && (
+              <button type="button" class="reward-region-panel__more" data-reward-more-toggle>
+                {reward.detect.moreChannelsLabel}
+              </button>
+            )}
+          </section>
+        );
+      })}
+    </div>
+  </div>
+
+  <div class="reward-channel-modal" data-reward-modal hidden>
+    <button type="button" class="reward-channel-modal__backdrop" data-reward-modal-close aria-label="关闭弹窗"></button>
+    <div class="reward-channel-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="reward-modal-title">
+      <div class="reward-channel-modal__head">
+        <span>安全提醒</span>
+        <button type="button" data-reward-modal-close aria-label="关闭弹窗">×</button>
+      </div>
+      <strong id="reward-modal-title" data-reward-modal-title></strong>
+      <p data-reward-modal-body></p>
+      <div class="reward-channel-modal__actions">
+        <button type="button" class="reward-channel-modal__secondary" data-reward-modal-close>
+          {reward.detect.modalDismissLabel}
+        </button>
+        <button type="button" class="reward-channel-modal__primary" data-reward-modal-confirm>
+          {reward.detect.modalConfirmLabel}
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -141,8 +196,8 @@ const isPanel = variant === 'panel';
     const roots = document.querySelectorAll('[data-reward-regions]');
     if (!roots.length) return;
 
-    const COUNTRY_CACHE_KEY = 'shijianus-reward-country';
-    let countryPromise = null;
+    const COUNTRY_CACHE_KEY = 'shijianus-reward-geo-state';
+    let geoPromise = null;
 
     const safeSessionGet = (key) => {
       try {
@@ -178,80 +233,203 @@ const isPanel = variant === 'panel';
       } catch {}
     };
 
-    const fallbackCountryCode = () => {
-      const locale = (navigator.language || '').toLowerCase();
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-
-      if (locale.includes('zh-cn') || timezone === 'Asia/Shanghai') return 'CN';
-      if (locale.includes('zh-hk') || timezone === 'Asia/Hong_Kong') return 'HK';
-      if (locale.includes('en-gb') || timezone === 'Europe/London') return 'GB';
-      return '';
+    const getDeviceId = () => {
+      const key = 'shijianus-device-id';
+      const saved = safeLocalGet(key);
+      if (saved) return saved;
+      const created = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      safeLocalSet(key, created);
+      return created;
     };
 
-    const detectCountryCode = async (endpoint) => {
-      const cached = safeSessionGet(COUNTRY_CACHE_KEY);
-      if (cached) return cached;
+    const fallbackGeoState = () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const language = navigator.language || '';
+      const rewardRegion =
+        timezone === 'Asia/Shanghai' || language.toLowerCase().includes('zh-cn')
+          ? 'cn'
+          : timezone === 'Asia/Hong_Kong' || language.toLowerCase().includes('zh-hk')
+            ? 'hk'
+            : timezone === 'Europe/London' || language.toLowerCase().includes('en-gb')
+              ? 'uk'
+              : 'unsupported';
 
-      if (!countryPromise) {
-        countryPromise = (async () => {
+      return {
+        ok: true,
+        rewardRegion,
+        regionLabel: rewardRegion === 'cn' ? '中国大陆' : rewardRegion === 'hk' ? '中国香港' : rewardRegion === 'uk' ? '英国' : '暂不支援',
+        confidence: 'low',
+        riskLevel: rewardRegion === 'unsupported' ? 'high' : 'medium',
+        recommendation: {
+          primaryChannelId:
+            rewardRegion === 'cn'
+              ? 'alipay-cn'
+              : rewardRegion === 'hk'
+                ? 'alipay-hk'
+                : rewardRegion === 'uk'
+                  ? 'paypal-hk-uk'
+                  : '',
+          secondaryChannelIds:
+            rewardRegion === 'cn'
+              ? ['weixin-pay-cn']
+              : rewardRegion === 'hk'
+                ? ['wechat-pay-hk']
+                : rewardRegion === 'uk'
+                  ? ['paypal-uk']
+                  : [],
+          collapsedChannelIds:
+            rewardRegion === 'cn'
+              ? ['paypal-cn']
+              : rewardRegion === 'hk'
+                ? ['paypal-hk']
+                : rewardRegion === 'uk'
+                  ? ['trustwallet-usdt']
+                  : [],
+        },
+        ip: {
+          countryCode: '',
+          countryLabel: '未知地区',
+          source: 'fallback',
+          asn: '',
+          asName: '',
+          asDomain: '',
+        },
+        signals: {
+          hintRegion: rewardRegion,
+          ipRegion: 'unsupported',
+          headerRegion: 'unsupported',
+          topScore: 0,
+          runnerUpScore: 0,
+        },
+        profile: {
+          timezone,
+          timezoneOffsetMinutes: new Date().getTimezoneOffset(),
+          language,
+          primaryLanguage: (navigator.languages || [language])[0] || language,
+          languages: navigator.languages || [],
+          locale: document.documentElement.lang || '',
+          platform: navigator.platform || '',
+          webrtcSupported: Boolean(window.RTCPeerConnection),
+          mismatchReasons: [],
+        },
+        crypto: {
+          allowed: false,
+          address: '',
+          network: '',
+          blockedReason: '',
+        },
+      };
+    };
+
+    const detectGeoState = async (endpoint) => {
+      const cached = safeSessionGet(COUNTRY_CACHE_KEY);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {}
+      }
+
+      if (!geoPromise) {
+        geoPromise = (async () => {
+          const payload = {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            timezoneOffsetMinutes: new Date().getTimezoneOffset(),
+            language: navigator.language || '',
+            languages: navigator.languages || [],
+            locale: document.documentElement.lang || navigator.language || '',
+            platform: navigator.platform || '',
+            userAgent: navigator.userAgent || '',
+            deviceId: getDeviceId(),
+            webrtcSupported: Boolean(window.RTCPeerConnection),
+          };
+
           try {
             const response = await fetch(endpoint, {
-              headers: { Accept: 'application/json' },
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Shijianus-Device-Id': payload.deviceId,
+              },
+              body: JSON.stringify(payload),
             });
             if (!response.ok) throw new Error(`geo lookup failed: ${response.status}`);
-
-            const payload = await response.json();
-            const countryCode = typeof payload.country_code === 'string' ? payload.country_code.toUpperCase() : '';
-            if (countryCode) {
-              safeSessionSet(COUNTRY_CACHE_KEY, countryCode);
-              return countryCode;
-            }
-          } catch {}
-
-          const fallback = fallbackCountryCode();
-          if (fallback) safeSessionSet(COUNTRY_CACHE_KEY, fallback);
-          return fallback;
+            const nextState = await response.json();
+            safeSessionSet(COUNTRY_CACHE_KEY, JSON.stringify(nextState));
+            return nextState;
+          } catch {
+            const fallback = fallbackGeoState();
+            safeSessionSet(COUNTRY_CACHE_KEY, JSON.stringify(fallback));
+            return fallback;
+          }
         })();
       }
 
-      return countryPromise;
+      return geoPromise;
     };
 
-    const mapCountryToRegion = (countryCode) => {
-      if (countryCode === 'CN') return 'cn';
-      if (countryCode === 'HK') return 'hk';
-      if (countryCode === 'GB' || countryCode === 'UK') return 'uk';
-      return 'unsupported';
+    const setPanelExpanded = (panel, expanded) => {
+      panel.dataset.extraExpanded = expanded ? 'true' : 'false';
+      panel.querySelectorAll('[data-reward-channel-card]').forEach((card) => {
+        if (!(card instanceof HTMLElement)) return;
+        if ((card.dataset.rewardPriority || 'primary') !== 'extra') return;
+        card.hidden = !expanded;
+      });
+      const toggle = panel.querySelector('[data-reward-more-toggle]');
+      if (toggle instanceof HTMLElement) {
+        const root = panel.closest('[data-reward-regions]');
+        toggle.textContent = expanded
+          ? root?.dataset.lessChannelsLabel || '收起附加方式'
+          : root?.dataset.moreChannelsLabel || '展开更多方式';
+      }
     };
 
-    const countryLabel = (countryCode) => {
-      if (countryCode === 'CN') return 'China';
-      if (countryCode === 'HK') return 'HongKong';
-      if (countryCode === 'GB' || countryCode === 'UK') return 'UK';
-      return countryCode || 'Unknown';
+    const revealCard = (card, root, geoState) => {
+      if (!(card instanceof HTMLElement)) return;
+      const qrButton = card.querySelector('[data-reward-qr]');
+      const notice = card.querySelector('[data-reward-channel-notice]');
+      const wallet = card.querySelector('[data-reward-wallet]');
+      const walletAddressNode = card.querySelector('[data-reward-wallet-address]');
+      const walletNetworkNode = card.querySelector('[data-reward-wallet-network]');
+
+      if (qrButton instanceof HTMLElement) {
+        qrButton.dataset.qrHidden = 'false';
+        qrButton.classList.remove('is-spoiler');
+        qrButton.classList.add('is-revealed');
+        qrButton.setAttribute('aria-pressed', 'true');
+      }
+
+      if (notice instanceof HTMLElement) {
+        const gate = qrButton instanceof HTMLElement ? qrButton.dataset.rewardGate || 'direct' : 'direct';
+        const clickNotice = qrButton instanceof HTMLElement ? qrButton.dataset.rewardClickNotice || '' : '';
+        notice.textContent = gate === 'modal'
+          ? ''
+          : clickNotice || card.querySelector('.reward-channel-card__note')?.textContent || '';
+        notice.hidden = !notice.textContent;
+      }
+
+      if (wallet instanceof HTMLElement) {
+        const channelId = card.dataset.rewardChannelId || '';
+        const address = channelId === 'trustwallet-usdt' ? geoState.crypto?.address || root.dataset.usdtAddress || '' : '';
+        if (address && walletAddressNode instanceof HTMLElement) {
+          walletAddressNode.textContent = address;
+          wallet.hidden = false;
+          if (walletNetworkNode instanceof HTMLElement) {
+            walletNetworkNode.textContent = geoState.crypto?.network || root.dataset.usdtNetwork || '';
+          }
+        }
+      }
     };
 
-    const setRegionState = (root, region, source, countryCode = '') => {
+    const setStatus = (root, region, source, geoState) => {
       const statusEyebrow = root.querySelector('[data-reward-status-eyebrow]');
       const statusTitle = root.querySelector('[data-reward-status-title]');
       const statusDescription = root.querySelector('[data-reward-status-description]');
       const resetButton = root.querySelector('[data-reward-reset]');
-      const regionButtons = Array.from(root.querySelectorAll('[data-reward-region-option]'));
-      const regionPanels = Array.from(root.querySelectorAll('[data-reward-region-panel]'));
-      const activeButton = regionButtons.find((button) => button.dataset.rewardRegionOption === region);
-      const activeLabel = activeButton?.dataset.rewardRegionLabel || '';
-
-      regionButtons.forEach((button) => {
-        const isActive = button.dataset.rewardRegionOption === region;
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-pressed', String(isActive));
-      });
-
-      regionPanels.forEach((panel) => {
-        const isActive = panel.dataset.rewardRegionPanel === region;
-        panel.hidden = !isActive;
-        panel.classList.toggle('is-active', isActive);
-      });
+      const activeButton = root.querySelector(`[data-reward-region-option="${region}"]`);
+      const activeLabel = activeButton instanceof HTMLElement ? activeButton.dataset.rewardRegionLabel || '' : '';
 
       if (statusEyebrow instanceof HTMLElement) {
         statusEyebrow.textContent = source === 'manual' ? '手动选择' : root.dataset.autoLabel || '按 IP 推荐';
@@ -261,97 +439,273 @@ const isPanel = variant === 'panel';
         if (region === 'unsupported') {
           statusTitle.textContent = root.dataset.unsupportedTitle || '该地区暂不支援打赏';
         } else if (source === 'manual') {
-          statusTitle.textContent = `已手动切换到 ${activeLabel} 区`;
+          statusTitle.textContent = `已切换到 ${activeLabel} 区`;
         } else {
-          statusTitle.textContent = `当前按 IP 推荐 ${activeLabel} 区`;
+          statusTitle.textContent = `当前推荐 ${activeLabel} 区`;
         }
       }
 
       if (statusDescription instanceof HTMLElement) {
         if (region === 'unsupported') {
           statusDescription.textContent = root.dataset.unsupportedDescription || '该地区暂不支援打赏';
-        } else if (source === 'manual') {
-          statusDescription.textContent = root.dataset.manualDescription || '如果你的 IP 与实际地区不符，可以手动切换地区。';
-        } else if (countryCode) {
-          statusDescription.textContent = `检测到你的 IP 地区为 ${countryLabel(countryCode)}，已优先展示 ${activeLabel} 区的打赏方式。`;
         } else {
-          statusDescription.textContent = root.dataset.autoDescription || '将优先根据你的 IP 默认展示地区化打赏方式。';
+          const ipLabel = geoState?.ip?.countryLabel || geoState?.regionLabel || '未知地区';
+          const carrier = geoState?.ip?.asName ? ` · 网络：${geoState.ip.asName}` : '';
+          const riskLabel = geoState?.riskLevel === 'high' ? '高风险' : geoState?.riskLevel === 'medium' ? '中风险' : '低风险';
+          const mismatch = Array.isArray(geoState?.profile?.mismatchReasons) && geoState.profile.mismatchReasons.length > 0
+            ? ` 当前环境存在地区冲突，已自动收紧高风险渠道。`
+            : '';
+          statusDescription.textContent =
+            source === 'manual'
+              ? `${root.dataset.manualDescription || '你可以按需手动切换地区。'} 当前检测地区：${ipLabel}${carrier}，风控 ${riskLabel}。${mismatch}`.trim()
+              : `检测地区：${ipLabel}${carrier}，置信度 ${geoState?.confidence || 'low'}，风控 ${riskLabel}。${mismatch}`.trim();
         }
       }
 
       if (resetButton instanceof HTMLElement) {
         resetButton.hidden = source !== 'manual';
       }
+    };
 
-      root.dataset.rewardActiveRegion = region;
-      root.dataset.rewardSource = source;
+    const applyChannelEligibility = (root, region, geoState) => {
+      const recommendation = geoState?.rewardRegion === region
+        ? geoState?.recommendation
+        : region === 'cn'
+          ? { primaryChannelId: 'alipay-cn', secondaryChannelIds: ['weixin-pay-cn'] }
+          : region === 'hk'
+            ? { primaryChannelId: 'alipay-hk', secondaryChannelIds: ['wechat-pay-hk'] }
+            : region === 'uk'
+              ? {
+                primaryChannelId: 'paypal-hk-uk',
+                secondaryChannelIds: geoState?.crypto?.allowed ? ['trustwallet-usdt'] : ['paypal-uk'],
+              }
+              : { primaryChannelId: '', secondaryChannelIds: [] };
+
+      root.querySelectorAll('[data-reward-region-panel]').forEach((panel) => {
+        if (!(panel instanceof HTMLElement)) return;
+        const advisory = panel.querySelector('[data-reward-region-advisory]');
+        if (advisory instanceof HTMLElement) {
+          advisory.hidden = true;
+          advisory.textContent = '';
+        }
+
+        panel.querySelectorAll('[data-reward-channel-card]').forEach((card) => {
+          if (!(card instanceof HTMLElement)) return;
+          const qrButton = card.querySelector('[data-reward-qr]');
+          const notice = card.querySelector('[data-reward-channel-notice]');
+          const availability = card.dataset.rewardAvailability || 'always';
+          const isCrypto = availability === 'crypto-eligible-only';
+          const isEligible = !isCrypto || Boolean(geoState?.crypto?.allowed);
+          const channelId = card.dataset.rewardChannelId || '';
+          const recommendedId = recommendation?.primaryChannelId || '';
+          const secondaryIds = Array.isArray(recommendation?.secondaryChannelIds)
+            ? recommendation.secondaryChannelIds
+            : [];
+
+          card.classList.toggle('is-disabled', !isEligible);
+          card.classList.toggle('is-recommended', channelId === recommendedId);
+          card.classList.toggle('is-secondary', secondaryIds.includes(channelId));
+          card.dataset.rewardBlockedReason = !isEligible
+            ? geoState?.crypto?.blockedReason || root.dataset.cryptoBlockedDescription || '当前环境不可展示此渠道。'
+            : '';
+          if (qrButton instanceof HTMLButtonElement) {
+            qrButton.setAttribute('aria-disabled', String(!isEligible));
+          }
+
+          if (!isEligible && notice instanceof HTMLElement) {
+            notice.hidden = false;
+            notice.textContent = geoState?.crypto?.blockedReason
+              || root.dataset.cryptoBlockedDescription
+              || '当前环境不可展示此渠道。';
+          } else if (notice instanceof HTMLElement && !qrButton?.classList.contains('is-revealed')) {
+            notice.hidden = true;
+            notice.textContent = '';
+          }
+        });
+
+        const extraExpanded = panel.dataset.extraExpanded === 'true';
+        setPanelExpanded(panel, extraExpanded);
+      });
+
+      const activePanel = root.querySelector(`[data-reward-region-panel="${region}"]`);
+      const advisory = activePanel?.querySelector('[data-reward-region-advisory]');
+      if (advisory instanceof HTMLElement) {
+        const reasons = Array.isArray(geoState?.profile?.mismatchReasons) ? geoState.profile.mismatchReasons : [];
+        const messages = [];
+        if (geoState?.riskLevel === 'high' || geoState?.riskLevel === 'medium') {
+          messages.push('当前环境已启用更严格的支付方式收紧规则。');
+        }
+        if (region === 'uk' && !geoState?.crypto?.allowed) {
+          messages.push(
+            geoState?.crypto?.blockedReason
+              || root.dataset.cryptoBlockedDescription
+              || '当前环境不展示加密钱包。',
+          );
+        }
+        if (reasons.length > 0) {
+          messages.push(reasons.join('；'));
+        }
+
+        advisory.hidden = messages.length === 0;
+        advisory.textContent = messages.join(' ');
+      }
     };
 
     roots.forEach((root) => {
       if (!(root instanceof HTMLElement)) return;
 
-      const geoEndpoint = root.dataset.geoEndpoint || 'https://ipapi.co/json/';
+      const geoEndpoint = root.dataset.geoEndpoint || '/api/geo-risk';
       const storageKey = root.dataset.storageKey || 'shijianus-reward-region';
       const regionButtons = Array.from(root.querySelectorAll('[data-reward-region-option]'));
       const resetButton = root.querySelector('[data-reward-reset]');
-      const qrButtons = Array.from(root.querySelectorAll('[data-reward-qr]'));
+      const modal = root.querySelector('[data-reward-modal]');
+      const modalTitle = root.querySelector('[data-reward-modal-title]');
+      const modalBody = root.querySelector('[data-reward-modal-body]');
+      const modalConfirm = root.querySelector('[data-reward-modal-confirm]');
+      const modalCloseButtons = root.querySelectorAll('[data-reward-modal-close]');
+      let pendingModalState = null;
+      let currentGeoState = fallbackGeoState();
 
-      const applyAutoState = async () => {
-        const statusTitle = root.querySelector('[data-reward-status-title]');
-        const statusDescription = root.querySelector('[data-reward-status-description]');
+      const setActiveRegion = (region, source) => {
+        regionButtons.forEach((button) => {
+          if (!(button instanceof HTMLElement)) return;
+          const isActive = button.dataset.rewardRegionOption === region;
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-pressed', String(isActive));
+        });
 
-        if (statusTitle instanceof HTMLElement) statusTitle.textContent = '正在识别你的地区';
-        if (statusDescription instanceof HTMLElement) {
-          statusDescription.textContent = root.dataset.autoDescription || '将优先根据你的 IP 默认展示地区化打赏方式。';
+        root.querySelectorAll('[data-reward-region-panel]').forEach((panel) => {
+          if (!(panel instanceof HTMLElement)) return;
+          const isActive = panel.dataset.rewardRegionPanel === region;
+          panel.hidden = !isActive;
+          panel.classList.toggle('is-active', isActive);
+        });
+
+        setStatus(root, region, source, currentGeoState);
+        applyChannelEligibility(root, region, currentGeoState);
+        root.dataset.rewardActiveRegion = region;
+        root.dataset.rewardSource = source;
+      };
+
+      const openModal = ({ card = null, title = '', body = '', allowReveal = false }) => {
+        if (!(modal instanceof HTMLElement)) return;
+        if (modalTitle instanceof HTMLElement) modalTitle.textContent = title || '使用提醒';
+        if (modalBody instanceof HTMLElement) modalBody.textContent = body || '确认后继续显示该渠道。';
+        pendingModalState = { card, allowReveal };
+        if (modalConfirm instanceof HTMLElement) {
+          modalConfirm.hidden = !allowReveal;
         }
+        modal.hidden = false;
+        document.body.classList.add('reward-modal-open');
+      };
 
-        const countryCode = await detectCountryCode(geoEndpoint);
-        setRegionState(root, mapCountryToRegion(countryCode), 'auto', countryCode);
+      const closeModal = () => {
+        if (!(modal instanceof HTMLElement)) return;
+        pendingModalState = null;
+        modal.hidden = true;
+        document.body.classList.remove('reward-modal-open');
+      };
+
+      const handleQrClick = (card) => {
+        if (!(card instanceof HTMLElement)) return;
+        const qrButton = card.querySelector('[data-reward-qr]');
+        if (!(qrButton instanceof HTMLElement)) return;
+        if (card.classList.contains('is-disabled')) {
+          openModal({
+            title: root.dataset.cryptoBlockedTitle || '当前环境不展示加密钱包',
+            body: card.dataset.rewardBlockedReason || root.dataset.cryptoBlockedDescription || '当前环境不可展示此渠道。',
+            allowReveal: false,
+          });
+          return;
+        }
+        const gate = qrButton.dataset.rewardGate || 'direct';
+        const needsModal = gate === 'modal' || Boolean(qrButton.dataset.rewardClickNotice);
+        if (needsModal && qrButton.dataset.qrHidden === 'true') {
+          openModal({
+            card,
+            title: qrButton.dataset.rewardClickTitle || '',
+            body: qrButton.dataset.rewardClickNotice || '',
+            allowReveal: true,
+          });
+          return;
+        }
+        revealCard(card, root, currentGeoState);
       };
 
       regionButtons.forEach((button) => {
         button.addEventListener('click', () => {
-          const region = button.dataset.rewardRegionOption;
+          const region = button instanceof HTMLElement ? button.dataset.rewardRegionOption : '';
           if (!region) return;
           safeLocalSet(storageKey, region);
-          setRegionState(root, region, 'manual');
+          setActiveRegion(region, 'manual');
         });
       });
 
-      qrButtons.forEach((button) => {
+      root.querySelectorAll('[data-reward-qr]').forEach((button) => {
         button.addEventListener('click', () => {
-          if (!(button instanceof HTMLElement)) return;
-          const card = button.closest('.reward-channel-card');
-          const notice = card?.querySelector('[data-reward-channel-notice]');
-
-          if (button.dataset.qrHidden === 'true') {
-            button.dataset.qrHidden = 'false';
-            button.classList.remove('is-spoiler');
-            button.classList.add('is-revealed');
-            button.setAttribute('aria-pressed', 'true');
-          }
-
-          if (notice instanceof HTMLElement) {
-            notice.hidden = false;
-            notice.classList.add('is-visible');
-          }
+          const card = button.closest('[data-reward-channel-card]');
+          handleQrClick(card);
         });
       });
+
+      root.querySelectorAll('[data-reward-copy-wallet]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const card = button.closest('[data-reward-channel-card]');
+          const addressNode = card?.querySelector('[data-reward-wallet-address]');
+          const value = addressNode?.textContent?.trim() || '';
+          if (!value) return;
+          try {
+            await navigator.clipboard.writeText(value);
+            const notice = card?.querySelector('[data-reward-channel-notice]');
+            if (notice instanceof HTMLElement) {
+              notice.hidden = false;
+              notice.textContent = '钱包地址已复制。';
+            }
+          } catch {}
+        });
+      });
+
+      root.querySelectorAll('[data-reward-more-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const panel = button.closest('[data-reward-region-panel]');
+          if (!(panel instanceof HTMLElement)) return;
+          const expanded = panel.dataset.extraExpanded === 'true';
+          setPanelExpanded(panel, !expanded);
+        });
+      });
+
+      modalCloseButtons.forEach((button) => {
+        button.addEventListener('click', closeModal);
+      });
+
+      if (modalConfirm instanceof HTMLElement) {
+        modalConfirm.addEventListener('click', () => {
+          if (pendingModalState?.allowReveal && pendingModalState.card) {
+            revealCard(pendingModalState.card, root, currentGeoState);
+          }
+          closeModal();
+        });
+      }
 
       if (resetButton instanceof HTMLElement) {
-        resetButton.addEventListener('click', () => {
+        resetButton.addEventListener('click', async () => {
           safeLocalRemove(storageKey);
-          applyAutoState();
+          currentGeoState = await detectGeoState(geoEndpoint);
+          setActiveRegion(currentGeoState.rewardRegion || 'unsupported', 'auto');
         });
       }
 
-      const savedRegion = safeLocalGet(storageKey);
-      if (savedRegion === 'cn' || savedRegion === 'hk' || savedRegion === 'uk') {
-        setRegionState(root, savedRegion, 'manual');
-        return;
-      }
+      const boot = async () => {
+        currentGeoState = await detectGeoState(geoEndpoint);
+        const savedRegion = safeLocalGet(storageKey);
+        if (savedRegion === 'cn' || savedRegion === 'hk' || savedRegion === 'uk') {
+          setActiveRegion(savedRegion, 'manual');
+          return;
+        }
+        setActiveRegion(currentGeoState.rewardRegion || 'unsupported', 'auto');
+      };
 
-      applyAutoState();
+      boot();
     });
   })();
 </script>

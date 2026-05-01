@@ -2,11 +2,13 @@
 import { getCollection } from 'astro:content';
 import PostCard from '../../components/theme/PostCard.astro';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectCategories, getCategoryPath, resolveCategory, slugifySegment, sortPostsByDate } from '../../lib/content';
+import { collectCategories, getCategoryPath, getPublicPosts, resolveCategory, slugifySegment } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
-  const posts = sortPostsByDate(await getCollection('posts'));
+  const posts = getPublicPosts(await getCollection('posts'));
   const categories = collectCategories(posts);
 
   return categories.map((item) => ({
@@ -16,7 +18,7 @@ export async function getStaticPaths() {
 }
 
 const { categoryLabel } = Astro.props;
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const currentPosts = posts.filter((entry) => slugifySegment(resolveCategory(entry)) === slugifySegment(categoryLabel));
 const sidebarData = createSidebarData(posts);
 const latestEntry = currentPosts[0];
@@ -30,7 +32,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
     <div class="taxonomy-shell">
       <header class="taxonomy-hero-card taxonomy-hero-card--category-detail theme-card" style="--taxonomy-accent:#5b8cff;">
         <div class="taxonomy-hero-card__content">
-          <p class="eyebrow">Category Detail</p>
+          <p class="eyebrow">分类详情</p>
           <h1>{categoryLabel}</h1>
           <p class="taxonomy-hero-card__summary">
             当前分类下共有 {currentPosts.length} 篇文章，沿用统一文章卡片顺序展开。
@@ -65,7 +67,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
 
       <section class="taxonomy-section-card taxonomy-section-card--detail" style="--taxonomy-accent:#5b8cff;">
         <div class="taxonomy-section-card__head">
-          <p class="eyebrow">Category Posts</p>
+          <p class="eyebrow">分类文章</p>
           <h2>该分类下的文章</h2>
           <p>继续使用站内统一卡片体系，便于和首页、归档页保持一致阅读节奏。</p>
         </div>

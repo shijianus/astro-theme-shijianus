@@ -116,14 +116,20 @@ export type AboutReward = {
 export type CommentProvider = 'local' | 'cloudflare' | 'giscus' | 'waline' | 'twikoo';
 
 export type RewardChannel = {
+  id: string;
   label: string;
   shortLabel: string;
   description: string;
   qrImageSrc: string;
   note?: string;
+  priority?: 'primary' | 'secondary' | 'extra';
+  gate?: 'direct' | 'spoiler' | 'modal';
   qrHidden?: boolean;
   revealLabel?: string;
   clickNotice?: string;
+  clickNoticeTitle?: string;
+  availability?: 'always' | 'crypto-eligible-only';
+  walletNetwork?: string;
   accent: string;
 };
 
@@ -165,10 +171,10 @@ export const siteConfig = {
     url: siteOrigin,
     domainLabel: 'shijian.us',
     locale: 'zh-CN',
-    description: '用 Astro、React 和 Tailwind 构建一套高信息密度、强作者感、可长期维护的个人博客主题。',
+    description: '用 Astro、React 和 Tailwind 搭建一套高信息密度、重阅读体验、能长期维护的个人博客。',
     author: {
       name: 'shijianus',
-      role: 'Builder / Student / Generalist',
+      role: '构建者 / 学生 / 通才型实践者',
       motto: '内容优先，结构优先，长期可维护。',
       bio: '记录构建、实验、写作和日常技术判断，把博客做成一个真正能持续生长的内容系统。',
       email: 'hello@shijian.us',
@@ -181,9 +187,10 @@ export const siteConfig = {
   theme: {
     defaultMode: 'light',
     background: {
-      defaultMode: 'grid',
+      defaultMode: 'daybreak',
       darkMode: 'starfield',
       modes: [
+        { id: 'daybreak', label: '晨光背景' },
         { id: 'grid', label: '网格背景' },
         { id: 'starfield', label: '星空背景' },
         { id: 'nebula', label: '星云背景' },
@@ -228,11 +235,11 @@ export const siteConfig = {
   },
   navigation: {
     primary: [
-      { label: '首页', href: '/', description: 'shijianus home', icon: 'home' },
+      { label: '首页', href: '/', description: '回到首页', icon: 'home' },
       {
         label: '归档',
         href: '/archives/',
-        description: 'shijianus archive',
+        description: '时间线总览',
         icon: 'archive',
         children: [
           { label: '全部文章', href: '/archives/', description: '时间线总览', icon: 'archive' },
@@ -243,7 +250,7 @@ export const siteConfig = {
       {
         label: '分类',
         href: '/categories/',
-        description: 'shijianus categories',
+        description: '按主题浏览文章',
         icon: 'category',
         children: [
           { label: '全部分类', href: '/categories/', description: '分类总览与入口', icon: 'category' },
@@ -254,23 +261,23 @@ export const siteConfig = {
       {
         label: '标签',
         href: '/tags/',
-        description: 'shijianus tags',
+        description: '关键词索引',
         icon: 'tags',
         children: [
           { label: '全部标签', href: '/tags/', description: '标签索引与聚合入口', icon: 'tags' },
           { label: 'Astro', href: '/tags/astro/', description: 'Astro 相关内容', icon: 'book' },
-          { label: '主题重构', href: '/tags/主题重构/', description: 'shijianus theme rebuild', icon: 'rss' },
+          { label: '主题重构', href: '/tags/主题重构/', description: '界面与结构重建记录', icon: 'rss' },
         ],
       },
       {
         label: '关于',
         href: '/about/',
-        description: 'shijianus pages',
+        description: '作者与站点说明',
         icon: 'about',
         children: [
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'about' },
           { label: '实验室', href: '/lab/', description: '界面与功能的试验场', icon: 'book' },
-          { label: '友链计划', href: '/friends/', description: '预留中的扩展页面', icon: 'link' },
+          { label: '友链与社群', href: '/friends/', description: '互链、社群与交流入口', icon: 'link' },
         ],
       },
     ] satisfies SiteNavItem[],
@@ -285,12 +292,12 @@ export const siteConfig = {
   },
   home: {
     hero: {
-      badge: 'Theme System',
-      eyebrow: 'shijianus / writing system',
+      badge: '主题系统',
+      eyebrow: '写作系统 / 持续构建',
       title: '把研究、开发和生活折叠成可读的记录',
       emphasis: '在高信息密度里保留阅读秩序',
       summary:
-        '用更稳定的首页结构、交互节奏和作者感，把所有数据、组件和配置都收束到适合 shijianus 的 Astro 体系里。',
+        '用更稳定的首页结构、交互节奏和作者表达，把数据、组件和配置收束成一套更适合长期维护的 Astro 体系。',
       showcase: {
         eyebrow: 'shijian.us',
         leadTop: '内容优先',
@@ -320,12 +327,12 @@ export const siteConfig = {
       primaryCta: { label: '开始阅读', href: '/archives/' },
       secondaryCta: { label: '关于主题', href: '/about/' },
       image: '/media/shijianus/hero.jpg',
-      imageAlt: 'shijianus theme hero background',
+      imageAlt: '博客首页头图',
       chips: ['Astro 6', 'React 19', 'Tailwind 4', 'Config First'],
       stats: [
-        { label: 'Theme Core', value: 'SSR + Islands', detail: '内容和交互分层清晰' },
-        { label: 'UI Target', value: 'Editorial System', detail: '首页与文章页持续打磨' },
-        { label: 'Delivery', value: 'Local now / API later', detail: '数据源未来可替换' },
+        { label: '核心结构', value: 'SSR + Islands', detail: '内容和交互边界清晰' },
+        { label: '界面目标', value: '编辑式阅读系统', detail: '首页与文章页持续精修' },
+        { label: '演进方向', value: '本地优先 / 可接远端', detail: '数据源后续可替换' },
       ] satisfies HeroStat[],
       skillFlow: [
         'Astro',
@@ -351,8 +358,8 @@ export const siteConfig = {
     } satisfies HomeCategoryRail,
     statusCards: [
       { title: '当前阶段', value: 'UI 精修中', detail: '先把首页、文章页和侧栏系统做完整' },
-      { title: '实现原则', value: 'Config Surface', detail: '所有区块有明确配置入口' },
-      { title: '长期方向', value: 'API Ready', detail: '远程数据接入不重写模板' },
+      { title: '实现原则', value: '配置先行', detail: '所有区块都有明确配置入口' },
+      { title: '长期方向', value: '随时接远端', detail: '远程数据接入不需要重写模板' },
     ] satisfies HomeStatusCard[],
     announcement: {
       eyebrow: '本次重构',
@@ -383,20 +390,32 @@ export const siteConfig = {
       },
     ] satisfies HomeSpotlight[],
     feed: {
-      eyebrow: 'Latest Writing',
+      eyebrow: '最新发布',
       title: '近期更新',
       summary: '保留强结构文章流和明显封面卡片，用更稳定的元信息层次提高扫描效率。',
+      pageSize: 6,
     },
   },
   aside: {
     stack: ['Astro', 'React', 'Tailwind', 'MDX', 'Content Collections'],
     announcement:
-      '这里会继续同步 shijianus 主题的重构进度，优先把首页、侧栏、文章页和基础交互动效做成完整、可长期维护的版本。',
+      '这里会继续同步当前重构进度，优先把首页、侧栏、文章页和基础交互动效做成完整、稳定、可长期维护的版本。',
     featureCard: {
       eyebrow: '界面状态',
-      title: '继续打磨真实可用的交互手感',
-      summary: '这一步优先收口侧栏、footer、首屏进入过渡和卡片交互，再继续处理页面级细节。',
-      chips: ['入场动画', '侧栏面板', 'Footer', 'Hover 动效'],
+      title: '继续打磨真实可用的阅读与交互手感',
+      summary: '这一轮优先收口侧栏系统、目录固定、首页分页、控制台按钮和页脚头像，再继续处理页面级细节。',
+      chips: ['目录固定', '首页分页', '控制台', '动态头像'],
+    },
+    telegramWidget: {
+      title: 'Telegram',
+      subtitle: '加入 chronoral 社群',
+      summary: '海外更新、测试通知和小范围交流入口。',
+      qrImage: '/media/shijianus/tg-group.jpg',
+      href: 'https://t.me/chronoral',
+      handle: '@chronoral',
+      ctaLabel: '加入',
+      backLabel: '扫码加入',
+      note: '悬停翻面查看二维码，点击直接跳转 Telegram。',
     },
     notes: [
       '配置先于样式，保证每个模块都能被开关和替换。',
@@ -404,8 +423,8 @@ export const siteConfig = {
       '交互只在需要时 Hydrate，内容结构保持 Astro 驱动。',
     ],
     status: [
-      { title: 'Theme Status', value: 'Rebuilding', detail: '共享壳层、首页、文章页同步重做' },
-      { title: 'Interface Tone', value: 'Editorial + Geek', detail: '强化作者感，但不牺牲阅读性' },
+      { title: '主题状态', value: '持续重构中', detail: '共享壳层、首页、文章页同步重做' },
+      { title: '界面语气', value: '克制但有手感', detail: '强化作者感，但不牺牲阅读性' },
     ] satisfies HomeStatusCard[],
   },
   footer: {
@@ -414,6 +433,7 @@ export const siteConfig = {
     badges: ['Astro', 'React', 'Tailwind', 'TypeScript', 'MDX'],
     quote: '把博客当成长期维护的软件来做。',
     customText: '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。',
+    miniLogoVideo: '/media/shijianus/avatar-dynamic.mp4',
     socialBar: {
       left: [
         { label: 'GitHub', href: 'https://github.com/shijianus', external: true, icon: 'github' },
@@ -431,7 +451,7 @@ export const siteConfig = {
     runtime: {
       label: '运行状态',
       workLabel: '持续维护中',
-      workDetail: 'shijianus 正在同步首页、文章页、页脚、按钮反馈与交互动效',
+      workDetail: '目前正在同步打磨首页、文章页、页脚、按钮反馈与交互动效。',
     },
     links: [
       { label: 'GitHub', href: 'https://github.com/shijianus', external: true, icon: 'github' },
@@ -486,108 +506,172 @@ export const siteConfig = {
   support: {
     reward: {
       title: '打赏作者',
-      summary: '文章页和关于页共用同一套地区化打赏配置。当前开放 China、HongKong 与 UK 三个区域，默认优先根据访问 IP 推荐合适的打赏方式，并允许手动切换。',
+      summary: '文章页和关于页共用同一套地区化打赏配置。当前开放中国大陆、中国香港与英国三个区域，会优先按访问地区、时区与语言画像推荐方式；高风险渠道会先弹窗提醒并按当前环境收紧，加密钱包只会在高置信度的英国访问环境下展示。',
       historyLabel: '查看支持记录',
       historyHref: '/about/#about-reward',
-      geoEndpoint: 'https://ipapi.co/json/',
+      geoEndpoint: '/api/geo-risk',
       storageKey: 'shijianus-reward-region',
       detect: {
         regionLabel: '打赏地区',
         autoLabel: '按 IP 推荐',
-        autoDescription: '将优先根据你的 IP 默认展示 China、HongKong 或 UK 区的打赏方式。',
+        autoDescription: '将优先根据访问地区、时区和语言环境推荐中国大陆、中国香港或英国区的打赏方式。',
         switchLabel: '切换地区',
-        manualDescription: '如果你的 IP 与实际地区不符，可以在右侧直接切换地区。',
+        manualDescription: '如果识别到的地区和你的实际情况不一致，可以在右侧手动切换；但跨区渠道与加密钱包仍会按当前环境继续校验。',
         resetLabel: '恢复按 IP 推荐',
         unsupportedTitle: '该地区暂不支援打赏',
-        unsupportedDescription: '当前仅开放 China、HongKong 与 UK 三个打赏区。如果你的实际地区在这些区域内，请手动切换。',
+        unsupportedDescription: '当前仅开放中国大陆、中国香港与英国三个打赏区。如果你的实际地区在这些范围内，请手动切换。',
+        moreChannelsLabel: '展开更多方式',
+        lessChannelsLabel: '收起附加方式',
+        cryptoBlockedTitle: '当前环境不展示加密钱包',
+        cryptoBlockedDescription: '检测到当前网络或设备画像存在地区冲突，已主动关闭 USDT 钱包展示。若你处于中国大陆环境，即使通过海外节点访问，也不会显示该渠道。',
+        modalConfirmLabel: '继续查看',
+        modalDismissLabel: '暂不显示',
       },
       regions: [
         {
           id: 'cn',
-          label: 'China',
+          label: '中国大陆',
           shortLabel: 'CN',
           description: '中国大陆区打赏方式',
           ipCountryCodes: ['CN'],
           channels: [
             {
-              label: 'Weixin Pay',
-              shortLabel: 'WX',
-              description: '推荐中国大陆用户使用微信扫一扫直接打赏。',
-              qrImageSrc: '/media/shijianus/support/weixin-pay-cn.jpg',
-              note: '请使用微信扫一扫。',
-              accent: '#07c160',
-            },
-            {
-              label: 'Alipay',
+              id: 'alipay-cn',
+              label: 'Alipay CN',
               shortLabel: 'ALI',
-              description: '适合使用支付宝的中国大陆用户。',
+              description: '中国大陆默认推荐渠道，适合直接用支付宝扫一扫打赏。',
               qrImageSrc: '/media/shijianus/support/alipay-cn.jpg',
               note: '请使用支付宝扫一扫。',
+              priority: 'primary',
+              gate: 'direct',
               accent: '#1677ff',
             },
             {
+              id: 'weixin-pay-cn',
+              label: 'Weixin Pay',
+              shortLabel: 'WX',
+              description: '中国大陆次选渠道，适合使用微信扫一扫直接打赏。',
+              qrImageSrc: '/media/shijianus/support/weixin-pay-cn.jpg',
+              note: '请使用微信扫一扫。',
+              priority: 'secondary',
+              gate: 'direct',
+              accent: '#07c160',
+            },
+            {
+              id: 'paypal-cn',
               label: 'PayPal CN',
               shortLabel: 'PP-CN',
               description: '适合需要使用 PayPal 且确认以 CNY 汇款的中国大陆用户。',
               qrImageSrc: '/media/shijianus/support/paypal-cn.jpg',
               note: '点击二维码会显示币种提醒。',
+              priority: 'extra',
+              gate: 'modal',
+              clickNoticeTitle: 'PayPal CN 使用提醒',
               clickNotice:
-                '请确定汇款使用的币种是 CNY；如可选择，仍更推荐使用 Alipay。若你准备使用非 CNY 币种，尤其是 HKD 或 GBP，请优先汇款 HKD 至我的 HongKong 区 PayPal。',
+                '请确定汇款使用的币种是 CNY；如可选择，仍更推荐使用 Alipay。若你准备使用非 CNY 币种，尤其是 HKD 或 GBP，请优先汇款 HKD 至我的中国香港区 PayPal。',
               accent: '#0070ba',
             },
           ] satisfies RewardChannel[],
         },
         {
           id: 'hk',
-          label: 'HongKong',
+          label: '中国香港',
           shortLabel: 'HK',
-          description: 'HongKong 区打赏方式',
+          description: '中国香港区打赏方式',
           ipCountryCodes: ['HK'],
           channels: [
             {
-              label: 'WeChat Pay HK',
-              shortLabel: 'WX-HK',
-              description: '适合 HongKong 区用户使用 WeChat Pay HK 打赏。',
-              qrImageSrc: '/media/shijianus/support/wechat-pay-hk.jpg',
-              note: '请使用 WeChat Pay HK 扫码。',
-              accent: '#00c26f',
-            },
-            {
+              id: 'alipay-hk',
               label: 'Alipay HK',
               shortLabel: 'ALI-HK',
-              description: '适合 HongKong 区用户使用 Alipay HK 打赏。',
+              description: '中国香港默认推荐渠道，适合使用 Alipay HK 扫码打赏。',
               qrImageSrc: '/media/shijianus/support/alipay-hk.jpg',
               note: '请使用 Alipay HK 扫码。',
+              priority: 'primary',
+              gate: 'direct',
               accent: '#7b61ff',
             },
             {
+              id: 'paypal-hk',
               label: 'PayPal HK',
               shortLabel: 'PP-HK',
-              description: '适合 HongKong 区或需要使用 HKD 的 PayPal 用户。',
+              description: '中国香港与跨区支付的主推荐渠道，优先按 HKD 汇款。',
               qrImageSrc: '/media/shijianus/support/paypal-hk.jpg',
               note: '推荐以 HKD 汇款。',
+              priority: 'extra',
+              gate: 'modal',
               qrHidden: true,
               revealLabel: '点击显示 PayPal HK 二维码',
+              clickNoticeTitle: 'PayPal HK 使用提醒',
+              clickNotice: '建议优先选择 HKD 汇款；若你的钱包或银行卡会产生跨币种手续费，建议在付款前先确认换汇与手续费规则。',
               accent: '#003087',
+            },
+            {
+              id: 'wechat-pay-hk',
+              label: 'WeChat Pay HK',
+              shortLabel: 'WX-HK',
+              description: '中国香港次选渠道，适合使用 WeChat Pay HK 扫码。',
+              qrImageSrc: '/media/shijianus/support/wechat-pay-hk.jpg',
+              note: '请使用 WeChat Pay HK 扫码。',
+              priority: 'secondary',
+              gate: 'direct',
+              accent: '#00c26f',
             },
           ] satisfies RewardChannel[],
         },
         {
           id: 'uk',
-          label: 'UK',
+          label: '英国',
           shortLabel: 'UK',
-          description: 'UK 区打赏方式',
+          description: '英国区与国际支付方式',
           ipCountryCodes: ['GB'],
           channels: [
             {
+              id: 'paypal-hk-uk',
+              label: 'PayPal HK',
+              shortLabel: 'PP-HK',
+              description: '英国区默认推荐渠道，优先使用中国香港区 PayPal 汇款，通常比部分跨区路径更稳。',
+              qrImageSrc: '/media/shijianus/support/paypal-hk.jpg',
+              note: '建议优先使用 HKD 汇款。',
+              priority: 'primary',
+              gate: 'modal',
+              qrHidden: true,
+              revealLabel: '点击显示 PayPal HK 二维码',
+              clickNoticeTitle: 'PayPal HK 使用提醒',
+              clickNotice: '若你位于英国或欧洲，建议先确认 PayPal 的换汇成本；当 GBP 费率不理想时，可以优先使用 HKD 汇款到 PayPal HK。',
+              accent: '#003087',
+            },
+            {
+              id: 'paypal-uk',
               label: 'PayPal UK',
               shortLabel: 'PP-UK',
-              description: '适合 UK 区或需要使用 GBP 的 PayPal 用户。',
+              description: '英国本地渠道，适合已经确认要使用 GBP 的用户。',
               qrImageSrc: '/media/shijianus/support/paypal-uk.jpg',
-              note: '如果跨区付款手续费较高，建议改用 HongKong 区 PayPal 并以 HKD 汇款。',
+              note: '如果跨区付款手续费较高，建议改用中国香港区 PayPal 并以 HKD 汇款。',
+              priority: 'extra',
+              gate: 'modal',
               qrHidden: true,
               revealLabel: '点击显示 PayPal UK 二维码',
+              clickNoticeTitle: 'PayPal UK 使用提醒',
+              clickNotice: '如果付款方或收款方的换汇成本偏高，建议退回 PayPal HK 路径；此渠道更适合明确需要使用 GBP 的场景。',
               accent: '#012169',
+            },
+            {
+              id: 'trustwallet-usdt',
+              label: 'Trust Wallet / USDT',
+              shortLabel: 'USDT',
+              description: '仅在高置信度的非中国大陆访问环境下显示，用于加密货币打赏。',
+              qrImageSrc: '/media/shijianus/support/trust-wallet.jpg',
+              note: '仅支持在确认网络与币种后继续。',
+              priority: 'extra',
+              gate: 'modal',
+              qrHidden: true,
+              revealLabel: '点击显示 USDT 钱包地址',
+              clickNoticeTitle: 'USDT 钱包使用提醒',
+              clickNotice: '继续前请确认你使用的是正确的链路与网络，建议仅在你完全理解转账不可逆、手续费和币种风险时再继续。',
+              availability: 'crypto-eligible-only',
+              walletNetwork: 'USDT',
+              accent: '#18c58f',
             },
           ] satisfies RewardChannel[],
         },
@@ -597,11 +681,11 @@ export const siteConfig = {
       title: '分享这篇文章',
       summary: '保留系统分享，同时补齐国际平台和本地平台的显式分享入口。',
       qrcodeLabel: '扫码分享',
-      qrcodeDescription: '使用 WeChat 或手机扫码，直接在另一台设备上打开当前页面。',
+      qrcodeDescription: '使用手机扫码，直接在另一台设备上打开当前页面。',
       platforms: [
         { id: 'native', label: '系统分享', shortLabel: 'SYS', description: '唤起系统分享面板', accent: '#425AEF' },
         { id: 'copy', label: '复制链接', shortLabel: 'COPY', description: '复制当前文章链接', accent: '#111827' },
-        { id: 'wechat', label: 'WeChat', shortLabel: 'WX', description: '通过二维码分享到微信', accent: '#07c160' },
+        { id: 'wechat', label: '二维码', shortLabel: 'QR', description: '通过二维码在移动端继续阅读', accent: '#07c160' },
         { id: 'x', label: 'X', shortLabel: 'X', description: '分享到 X', accent: '#111111' },
         { id: 'facebook', label: 'Facebook', shortLabel: 'FB', description: '分享到 Facebook', accent: '#1877f2' },
         { id: 'threads', label: 'Threads', shortLabel: 'TH', description: '分享到 Threads', accent: '#101010' },
@@ -610,7 +694,7 @@ export const siteConfig = {
         { id: 'reddit', label: 'Reddit', shortLabel: 'RD', description: '分享到 Reddit', accent: '#ff4500' },
         { id: 'weibo', label: 'Weibo', shortLabel: 'WB', description: '分享到微博', accent: '#e6162d' },
         { id: 'qq', label: 'QQ', shortLabel: 'QQ', description: '分享到 QQ', accent: '#12b7f5' },
-        { id: 'email', label: 'Email', shortLabel: 'MAIL', description: '通过邮件分享', accent: '#7c3aed' },
+        { id: 'email', label: '邮件', shortLabel: 'MAIL', description: '通过邮件分享', accent: '#7c3aed' },
       ] satisfies SharePlatform[],
     },
   },
@@ -619,7 +703,7 @@ export const siteConfig = {
       detectOriginalTag: true,
       maxTags: 10,
       runtimeMetrics: true,
-      fallbackImage: '/media/shijianus/hero.jpg',
+      fallbackImage: '/media/shijianus/default-cover.jpg',
       summaryFallback: '文章头图、标签和元信息会从 Markdown 自动扫描，小字部分按模板规则收束展示。',
       metaLabels: {
         published: '发表于',
@@ -647,7 +731,7 @@ export const siteConfig = {
       badge: '原创',
       title: '转载或引用请保留出处',
       notice:
-        '本文属于 shijianus 的长期写作记录。允许分享与引用，但请保留原文链接、作者署名，并避免脱离上下文的片段搬运。',
+        '本文属于长期维护中的写作记录。允许分享与引用，但请保留原文链接、作者署名，并避免脱离上下文的片段搬运。',
       copyLabel: '复制链接',
       rewardLabel: '打赏作者',
       rewardNote: '感谢你赐予我继续写下去的动力。',
@@ -665,10 +749,10 @@ export const siteConfig = {
       emptyTitle: '还没有公开评论',
       emptySummary: '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
       tips: ['理性交流', '就事论事', '欢迎补充资料'],
-      accountTitle: 'shijianus account',
-      accountSummary: '头像、昵称、提醒与评论身份统一收在 shijianus console 里，文章页只保留输入区与公开评论流。',
-      disabledNotice: '当前没有接入评论数据库，评论区默认不会显示；控制台里的 account 仅保留为空壳入口，接入 Cloudflare、Waline、Twikoo 或 Giscus 后才会真正启用。',
-      loginHint: '未登录时评论输入会保持灰色锁定，点击后会提示你先创建一个账号。',
+      accountTitle: '账号中心',
+      accountSummary: '头像、昵称、提醒和评论身份都统一收在独立账号面板里，文章页只保留输入区和公开评论流。',
+      disabledNotice: '当前没有接入外部评论数据库，账号面板仍可保存本地身份，后续接入远端后会自动复用。',
+      loginHint: '未登录时评论输入会保持灰色锁定，点击后会提示你先创建一个本地账号。',
     },
   },
   pages: {
@@ -678,7 +762,7 @@ export const siteConfig = {
       floatingTagsLeft: ['内容优先创作者', '长期维护者', '体验洁癖'],
       floatingTagsRight: ['构建系统', '前端工程', '写作记录'],
       helloTips: '你好，很高兴认识你',
-      helloLead: '我叫 shijianus',
+      helloLead: '你好，我在这里写作与构建',
       helloDescription: '学生 / 开发者 / 写作者 / 系统整理者',
       siteTips: {
         tips: '追求',

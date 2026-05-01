@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import HomeFeed from '../../components/theme/HomeFeed.astro';
+import HomeHero from '../../components/theme/HomeHero.astro';
+import { siteConfig } from '../../config/site';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { collectCategories, getFeaturedPosts, getPublicPosts } from '../../lib/content';
+import { getHomeFeedPage, resolveHomeFeedPageSize } from '../../lib/home-feed';
+import { createSidebarData } from '../../lib/theme';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = getPublicPosts(await getCollection('posts'));
+  const pageSize = resolveHomeFeedPageSize(siteConfig.home.feed.pageSize);
+  const lastPage = Math.max(1, Math.ceil(posts.length / pageSize));
+
+  return Array.from({ length: Math.max(0, lastPage - 1) }, (_, index) => ({
+    params: { page: String(index + 2) },
+  }));
+}
+
+const requestedPage = Number.parseInt(Astro.params.page ?? '1', 10);
+
+if (!Number.isFinite(requestedPage) || requestedPage < 2) {
+  throw new Error(`Invalid home page number: ${Astro.params.page ?? 'undefined'}`);
+}
+
+const posts = getPublicPosts(await getCollection('posts'));
+const featuredPosts = getFeaturedPosts(posts, 4);
+const categories = collectCategories(posts);
+const sidebarData = createSidebarData(posts);
+const categoryRail = siteConfig.home.categoryRail;
+const homeFeed = getHomeFeedPage(posts, requestedPage, resolveHomeFeedPageSize(siteConfig.home.feed.pageSize));
+---
+
+<BlogLayout title={`首页 · 第 ${homeFeed.currentPage} 页`} sidebarData={sidebarData} pageType="home">
+  <Fragment slot="hero">
+    <HomeHero featuredPosts={featuredPosts} latestPosts={posts} />
+  </Fragment>
+
+  <HomeFeed
+    posts={homeFeed.posts}
+    currentPage={homeFeed.currentPage}
+    lastPage={homeFeed.lastPage}
+    categories={categories}
+    categoryRail={categoryRail}
+  />
+</BlogLayout>

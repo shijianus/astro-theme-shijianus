@@ -2,16 +2,16 @@
 import { getCollection } from 'astro:content';
 import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { sortPostsByDate } from '../lib/content';
+import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 ---
 
 <BlogLayout title="主题路线" showAside={false} pageType="page" sidebarData={sidebarData}>
   <PlaceholderPageShell
-    eyebrow="shijianus / roadmap"
+    eyebrow="专题 / 路线"
     title="主题路线"
     summary="这里预留给专题整理、系列文章索引和模板升级路线。当前先占住这个入口，后续再把结构化内容逐步填进来。"
     statusLabel="路线图整理中"

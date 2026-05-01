@@ -2,11 +2,13 @@
 import { getCollection } from 'astro:content';
 import PostCard from '../../components/theme/PostCard.astro';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { collectTags, getTagPath, slugifySegment, sortPostsByDate } from '../../lib/content';
+import { collectTags, getPublicPosts, getTagPath, slugifySegment } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
-  const posts = sortPostsByDate(await getCollection('posts'));
+  const posts = getPublicPosts(await getCollection('posts'));
   const tags = collectTags(posts);
 
   return tags.map((item) => ({
@@ -16,7 +18,7 @@ export async function getStaticPaths() {
 }
 
 const { tagLabel } = Astro.props;
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const currentPosts = posts.filter((entry) => entry.data.tags.some((tag) => slugifySegment(tag) === slugifySegment(tagLabel)));
 const sidebarData = createSidebarData(posts);
 const latestEntry = currentPosts[0];
@@ -30,7 +32,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
     <div class="taxonomy-shell">
       <header class="taxonomy-hero-card taxonomy-hero-card--tag-detail theme-card" style="--taxonomy-accent:#ff7d55;">
         <div class="taxonomy-hero-card__content">
-          <p class="eyebrow">Tag Detail</p>
+          <p class="eyebrow">标签详情</p>
           <h1>#{tagLabel}</h1>
           <p class="taxonomy-hero-card__summary">
             当前标签下共有 {currentPosts.length} 篇文章，沿用统一文章卡片顺序展开。
@@ -65,7 +67,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
 
       <section class="taxonomy-section-card taxonomy-section-card--detail" style="--taxonomy-accent:#ff7d55;">
         <div class="taxonomy-section-card__head">
-          <p class="eyebrow">Tag Posts</p>
+          <p class="eyebrow">标签文章</p>
           <h2>该标签下的文章</h2>
           <p>继续使用站内统一卡片体系，方便和首页、归档页保持一致阅读节奏。</p>
         </div>

@@ -1,0 +1,56 @@
+---
+import { ArrowUpRight, Send } from 'lucide-react';
+import { siteConfig } from '../../config/site';
+import QrCodeImage from './QrCodeImage.astro';
+
+interface Props {
+  id?: string;
+  className?: string;
+}
+
+const {
+  id = 'card-telegram',
+  className = '',
+} = Astro.props;
+
+const telegram = siteConfig.aside.telegramWidget;
+---
+
+<section class:list={['card-widget', 'anzhiyu-right-widget', 'card-telegram', className]} id={id}>
+  <a class="card-telegram__link" href={telegram.href} target="_blank" rel="noreferrer" data-ignore-card-link>
+    <div class="card-telegram__flip">
+      <div class="card-telegram__face card-telegram__face--front">
+        <span class="card-telegram__badge" aria-hidden="true">
+          <Send className="card-telegram__badge-icon" />
+        </span>
+
+        <span class="card-telegram__copy">
+          <span class="card-telegram__eyebrow">{telegram.title}</span>
+          <strong>{telegram.subtitle}</strong>
+          <span class="card-telegram__summary">{telegram.summary}</span>
+        </span>
+
+        <span class="card-telegram__cta" aria-hidden="true">
+          <span>{telegram.ctaLabel}</span>
+          <ArrowUpRight className="card-telegram__cta-icon" />
+        </span>
+      </div>
+
+      <div class="card-telegram__face card-telegram__face--back">
+        <span class="card-telegram__qr-shell">
+          <QrCodeImage value={telegram.href} alt={`${telegram.title} QR code`} size={74} fgColor="#128cdd" bgColor="#ffffff" />
+        </span>
+
+        <span class="card-telegram__meta">
+          <span class="card-telegram__eyebrow">{telegram.backLabel}</span>
+          <strong>{telegram.handle}</strong>
+          <span class="card-telegram__note">{telegram.note}</span>
+        </span>
+
+        <span class="card-telegram__plane" aria-hidden="true">
+          <Send className="card-telegram__plane-icon" />
+        </span>
+      </div>
+    </div>
+  </a>
+</section>

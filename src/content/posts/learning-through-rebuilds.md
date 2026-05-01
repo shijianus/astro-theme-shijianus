@@ -4,7 +4,7 @@ pubDate: 2026-04-13
 description: "重构一个已有主题时，最有价值的不是复制外观，而是理解它为什么这样组织信息。"
 author: "shijianus"
 category: "学习笔记"
-group: "Study Log"
+group: "学习记录"
 cover: "/media/shijianus/network.jpg"
 coverAlt: "network grid"
 tags: ["Study", "Refactor", "Astro"]

@@ -4,7 +4,7 @@ pubDate: 2026-04-08
 description: "真正方便后续接 API 的方式，不是先写请求，而是先把页面依赖的数据形状稳定下来。"
 author: "shijianus"
 category: "系统设计"
-group: "Config Contracts"
+group: "配置契约"
 cover: "/media/shijianus/system.jpg"
 coverAlt: "system board"
 featured: true

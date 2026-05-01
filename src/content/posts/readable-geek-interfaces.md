@@ -4,7 +4,7 @@ pubDate: 2026-04-11
 description: "技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。"
 author: "shijianus"
 category: "产品观察"
-group: "Interaction Notes"
+group: "交互观察"
 cover: "/media/shijianus/workbench.jpg"
 coverAlt: "developer desk"
 featured: true

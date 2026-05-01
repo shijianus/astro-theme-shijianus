@@ -2,10 +2,10 @@
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPostPath, resolveCategory, resolveCover, resolveCoverAlt, sortPostsByDate } from '../lib/content';
+import { getDisplayPostTitle, getPostPath, getPublicPosts, resolveCategory, resolveDisplayCover, resolveDisplayCoverAlt } from '../lib/content';
 import { createSidebarData, formatCompactDate, groupPostsByYear } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 const years = groupPostsByYear(posts);
 const latestEntry = posts[0];
@@ -19,7 +19,7 @@ let articleIndex = 0;
     <div class="archive-shell">
       <header class="archive-hero-card theme-card">
         <div class="archive-hero-card__content">
-          <p class="eyebrow">Archive Timeline</p>
+          <p class="eyebrow">归档时间线</p>
           <h1 class="article-sort-title">
             {siteConfig.pages.archives.title}
             <span> - {posts.length}</span>
@@ -60,10 +60,10 @@ let articleIndex = 0;
                 return (
                   <article class="article-sort-item">
                     <a class="article-sort-item-img" href={getPostPath(entry)}>
-                      <img src={resolveCover(entry)} alt={resolveCoverAlt(entry)} loading="lazy" />
+                      <img src={resolveDisplayCover(entry, true)} alt={resolveDisplayCoverAlt(entry, true)} loading="lazy" />
                     </a>
                     <div class="article-sort-item-info">
-                      <a class="article-sort-item-title" href={getPostPath(entry)}>{entry.data.title}</a>
+                      <a class="article-sort-item-title" href={getPostPath(entry)}>{getDisplayPostTitle(entry, true)}</a>
                       <div class="article-meta-wrap">
                         <span class="article-sort-item-time">
                           <time datetime={entry.data.pubDate.toISOString()}>{formatCompactDate(entry.data.pubDate)}</time>

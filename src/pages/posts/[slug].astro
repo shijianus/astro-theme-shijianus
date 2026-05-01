@@ -1,7 +1,7 @@
 ---
-import { createHash } from 'node:crypto';
 import { getCollection, render } from 'astro:content';
 import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
+import AiSummaryPanel from '../../components/theme/AiSummaryPanel.astro';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
 import Sidebar from '../../components/theme/Sidebar.astro';
@@ -13,9 +13,11 @@ import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
   estimateReadingMinutes,
   estimateWordCount,
-  getCategoryPath,
+  getPublicPosts,
   getRelatedPosts,
-  getTagPath,
+  PROTECTED_POST_CATEGORY,
+  PROTECTED_POST_SUMMARY,
+  PROTECTED_POST_TITLE,
   resolveCategory,
   resolveCover,
   resolveCoverAlt,
@@ -23,98 +25,153 @@ import {
 } from '../../lib/content';
 import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
 import { createSidebarData } from '../../lib/theme';
+import { evaluatePostAccess, getAccessPasswordHash, verifyAccessPassword } from '../../lib/access-control';
+
+export const prerender = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
+const STATIC_EXPORT = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
 
 export async function getStaticPaths() {
+  if (import.meta.env.PUBLIC_STATIC_EXPORT !== '1') return [];
   const posts = await getCollection('posts');
-  return posts.map((entry) => ({
-    params: { slug: entry.id },
+  return posts.map((post) => ({
+    params: { slug: post.id },
   }));
 }
 
 const { slug } = Astro.params;
 const allPosts = sortPostsByDate(await getCollection('posts'));
+const publicPosts = getPublicPosts(allPosts);
 const entry = allPosts.find((post) => post.id === slug);
 
 if (!entry) {
   throw new Error(`Post not found: ${slug}`);
 }
 
-const { Content, headings } = await render(entry);
-const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
-const relatedPosts = getRelatedPosts(allPosts, entry, 3);
-const sidebarData = createSidebarData(allPosts, headings);
-sidebarData.recentPosts = allPosts.filter((post) => post.id !== entry.id);
-const postIndex = allPosts.findIndex((post) => post.id === entry.id);
-const previousPost = postIndex > 0 ? allPosts[postIndex - 1] : null;
-const nextPost = postIndex >= 0 && postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null;
+const access = entry.data.access;
+const accessPasswordHash = getAccessPasswordHash(access);
+const accessCookieName = accessPasswordHash ? `shijianus-post-access:${entry.id}` : '';
+let unlockErrorMessage = '';
+
+if (!STATIC_EXPORT && Astro.request.method.toUpperCase() === 'POST' && accessPasswordHash) {
+  const formData = await Astro.request.formData();
+  const submittedPassword = String(formData.get('post-password') ?? '').trim();
+
+  if (verifyAccessPassword(access, submittedPassword)) {
+    Astro.cookies.set(
+      accessCookieName,
+      (await evaluatePostAccess({
+        slug: entry.id,
+        access,
+        headers: Astro.request.headers,
+      })).cookieValue,
+      {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: Astro.url.protocol === 'https:',
+        path: `/posts/${entry.id}/`,
+        maxAge: 60 * 60 * 8,
+      },
+    );
+
+    return Astro.redirect(Astro.url.pathname, 303);
+  }
+
+  unlockErrorMessage = '密码不正确，请重试。';
+}
+
+const accessState = STATIC_EXPORT
+  ? await evaluatePostAccess({
+      slug: entry.id,
+      access,
+      headers: new Headers(),
+      cookieValue: undefined,
+    })
+  : await evaluatePostAccess({
+      slug: entry.id,
+      access,
+      headers: Astro.request.headers,
+      cookieValue: accessCookieName ? Astro.cookies.get(accessCookieName)?.value : undefined,
+    });
+const isUnlocked = accessState.unlocked;
+const publicFacingTitle = isUnlocked ? entry.data.title : PROTECTED_POST_TITLE;
+const publicFacingDescription = isUnlocked ? entry.data.description ?? siteConfig.post.hero.summaryFallback : PROTECTED_POST_SUMMARY;
+
+let Content:
+  | (Awaited<ReturnType<typeof render>>['Content'])
+  | null = null;
+let headings: Awaited<ReturnType<typeof render>>['headings'] = [];
+
+if (isUnlocked) {
+  const rendered = await render(entry);
+  Content = rendered.Content;
+  headings = rendered.headings;
+}
+
+const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 3) : [];
+const sidebarData = createSidebarData(publicPosts, headings);
+sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
+const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
+const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
+const nextPost = publicPostIndex >= 0 && publicPostIndex < publicPosts.length - 1 ? publicPosts[publicPostIndex + 1] : null;
 
 const wordCount = estimateWordCount(entry);
+type HeroMetaItem = {
+  label: string;
+  value: string;
+  runtime?: 'views' | 'dwell';
+  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
+};
 const formatHeroDate = (date: Date) => {
   return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
 };
 const category = resolveCategory(entry);
+const publicCategory = isUnlocked ? category : PROTECTED_POST_CATEGORY;
 const isOriginal = entry.data.author.trim().toLowerCase() === siteConfig.site.author.name.trim().toLowerCase();
 const originalBadge = siteConfig.post.hero.detectOriginalTag ? [isOriginal ? '原创' : '转载'] : [];
 const scannedTags = [...new Set(entry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
 const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length);
-const badges = [...originalBadge, ...scannedTags.slice(0, tagLimit)];
-const heroImage = resolveCover(entry);
-const heroImageAlt = resolveCoverAlt(entry);
+const badges = isUnlocked ? [...originalBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
+const heroImage = isUnlocked ? resolveCover(entry) : siteConfig.post.hero.fallbackImage;
+const heroImageAlt = isUnlocked ? resolveCoverAlt(entry) : PROTECTED_POST_TITLE;
 const heroImageUrl = new URL(heroImage, siteConfig.site.url);
 const heroImageOrigin = heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
-const meta = [
+const publicMeta = [
   { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(entry.data.pubDate), icon: 'calendar' as const },
   entry.data.updatedDate && {
     label: siteConfig.post.hero.metaLabels.updated,
     value: formatHeroDate(entry.data.updatedDate),
     icon: 'refresh' as const,
   },
-  { label: siteConfig.post.hero.metaLabels.category, value: category, icon: 'folder' as const },
+].filter(Boolean);
+const fullMeta = [
+  ...publicMeta,
+  { label: siteConfig.post.hero.metaLabels.category, value: publicCategory, icon: 'folder' as const },
   { label: siteConfig.post.hero.metaLabels.words, value: wordCount.toLocaleString('zh-CN'), icon: 'file' as const },
-  { label: siteConfig.post.hero.metaLabels.reading, value: `${estimateReadingMinutes(entry)} min`, icon: 'clock' as const },
+  { label: siteConfig.post.hero.metaLabels.reading, value: `${estimateReadingMinutes(entry)} 分钟`, icon: 'clock' as const },
   { label: siteConfig.post.hero.metaLabels.views, value: '0 次', runtime: 'views' as const, icon: 'eye' as const },
-  { label: siteConfig.post.hero.metaLabels.dwell, value: '0 min', runtime: 'dwell' as const, icon: 'timer' as const },
-].filter(Boolean) as {
-  label: string;
-  value: string;
-  runtime?: 'views' | 'dwell';
-  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
-}[];
-const access = entry.data.access;
-const accessPasswordHash = access?.passwordHash ?? (access?.password ? createHash('sha256').update(access.password).digest('hex') : '');
-const accessBlockedCountries = access?.blockedCountries?.map((item) => item.toUpperCase()).join(',') ?? '';
-const accessBlockedIps = access?.blockedIps?.map((item) => item.toUpperCase()).join(',') ?? '';
-const hasAccessGate = Boolean(accessPasswordHash || accessBlockedCountries || accessBlockedIps);
-const commentsEnabled = hasConfiguredCommentDatabase(siteConfig.integrations.comments);
-const hasTocAside = siteConfig.theme.features.postToc && tocHeadings.length > 0;
-sidebarData.postContext = {
-  title: entry.data.title,
-  summary: entry.data.description,
-  category: {
-    label: category,
-    href: getCategoryPath(category),
-  },
-  meta: [
-    `${siteConfig.post.hero.metaLabels.published} ${formatHeroDate(entry.data.pubDate)}`,
-    `${wordCount.toLocaleString('zh-CN')} 字`,
-    `${estimateReadingMinutes(entry)} min`,
-  ],
-  tags: scannedTags.slice(0, 8).map((tag) => ({
-    label: tag,
-    href: getTagPath(tag),
-  })),
-  actions: [
-    ...(commentsEnabled ? [{ label: '跳到评论', href: '#post-comment', kind: 'comment' as const }] : []),
-    { label: '支持作者', href: '/about/#about-reward', kind: 'reward' as const },
-    { label: '查看归档', href: '/archives/', kind: 'archive' as const },
-  ],
-};
-const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentPosts.length || sidebarData.tags.length || sidebarData.archives.length);
+  { label: siteConfig.post.hero.metaLabels.dwell, value: '0 分钟', runtime: 'dwell' as const, icon: 'timer' as const },
+];
+const meta = (isUnlocked ? fullMeta : publicMeta) as HeroMetaItem[];
+const commentsEnabled = isUnlocked && hasConfiguredCommentDatabase(siteConfig.integrations.comments);
+const hasTocAside = isUnlocked && siteConfig.theme.features.postToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
+
+const hasSecondaryAside = Boolean(siteConfig.aside.telegramWidget || sidebarData.recentPosts.length);
+const heroSummary = isUnlocked
+  ? entry.data.description ?? siteConfig.post.hero.summaryFallback
+  : accessState.denialReason || '这篇文章设置了访问条件，完成验证后才会展示正文。';
+const showSupportSection =
+  isUnlocked &&
+  (siteConfig.theme.features.postCopyright ||
+    previousPost !== null ||
+    nextPost !== null ||
+    relatedPosts.length > 0 ||
+    commentsEnabled ||
+    hasSecondaryAside);
 ---
 
 <BlogLayout
-  title={entry.data.title}
-  description={entry.data.description}
+  title={publicFacingTitle}
+  description={publicFacingDescription}
   sidebarData={sidebarData}
   pageType="post"
   showAside={false}
@@ -132,14 +189,16 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
   <Fragment slot="hero">
     <PostHero
       slug={entry.id}
-      title={entry.data.title}
-      summary={entry.data.description ?? siteConfig.post.hero.summaryFallback}
+      title={publicFacingTitle}
+      summary={heroSummary}
       image={heroImage}
       imageAlt={heroImageAlt}
+      video={entry.data.coverVideo}
+      videoPoster={entry.data.coverVideoPoster ?? heroImage}
       fallbackImage={siteConfig.post.hero.fallbackImage}
       badges={badges}
       meta={meta}
-      runtimeMetrics={siteConfig.post.hero.runtimeMetrics}
+      runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
     />
   </Fragment>
 
@@ -150,16 +209,47 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
           <article
             id="article-container"
             class="theme-card article-body post-content"
-            data-content-features
-            data-access-locked={hasAccessGate ? 'true' : undefined}
-            data-access-password-hash={accessPasswordHash || undefined}
-            data-access-blocked-countries={accessBlockedCountries || undefined}
-            data-access-blocked-ips={accessBlockedIps || undefined}
-            data-access-message={access?.message ?? undefined}
+            data-content-features={isUnlocked ? 'true' : undefined}
           >
-            <Content />
+            {isUnlocked && (
+              <AiSummaryPanel
+                slug={entry.id}
+                title={publicFacingTitle}
+                summary={entry.data.description ?? ''}
+                url={Astro.url.href}
+                related={relatedPosts.map((post) => ({
+                  title: post.data.title,
+                  href: `/posts/${post.id}/`,
+                }))}
+              />
+            )}
+            {isUnlocked && Content ? (
+              <Content />
+            ) : (
+              <section class="content-access-panel content-access-panel--server">
+                <span class="content-access-panel__eyebrow">访问验证</span>
+                <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
+                <p>{unlockErrorMessage || accessState.denialReason}</p>
+                {accessState.requiresPassword && accessState.locationAllowed && (
+                  <form method="post" class="content-access-panel__form">
+                    <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
+                    <button type="submit">解锁文章</button>
+                  </form>
+                )}
+                {!accessState.locationAllowed && (
+                  <div class="content-access-panel__status" data-state="error">
+                    已根据当前请求地址与地区策略拦截访问。
+                  </div>
+                )}
+                {unlockErrorMessage && (
+                  <div class="content-access-panel__status" data-state="error">
+                    {unlockErrorMessage}
+                  </div>
+                )}
+              </section>
+            )}
           </article>
-          <ContentFeatureEnhancer />
+          {isUnlocked && <ContentFeatureEnhancer />}
         </section>
       </div>
 
@@ -170,12 +260,13 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
       )}
     </section>
 
-    <section class:list={['post-layout-row', 'post-layout-row--support', !hasSecondaryAside && 'post-layout-row--single']}>
+    {showSupportSection && (
+      <section class:list={['post-layout-row', 'post-layout-row--support', !hasSecondaryAside && 'post-layout-row--single']}>
       <div class="post-layout-row__main">
         {siteConfig.theme.features.postCopyright && (
           <PostCopyright
             permalink={Astro.url.href}
-            title={entry.data.title}
+            title={publicFacingTitle}
             summary={entry.data.description ?? ''}
             authorName={siteConfig.site.author.name}
             authorRole={siteConfig.site.author.role}
@@ -196,8 +287,6 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
             copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
             shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
             shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
-            category={category}
-            tags={entry.data.tags}
           />
         )}
 
@@ -215,7 +304,7 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
           <PostComments
             client:only="react"
             slug={entry.id}
-            title={entry.data.title}
+            title={publicFacingTitle}
             heading={siteConfig.post.comments.title}
             policyLabel={siteConfig.post.comments.policyLabel}
             notice={siteConfig.post.comments.notice}
@@ -234,6 +323,7 @@ const hasSecondaryAside = Boolean(sidebarData.postContext || sidebarData.recentP
           <Sidebar {...sidebarData} pageType="post-secondary" asideId="post-secondary-aside" />
         </aside>
       )}
-    </section>
+      </section>
+    )}
   </div>
 </BlogLayout>

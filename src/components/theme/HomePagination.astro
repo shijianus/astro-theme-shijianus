@@ -1,0 +1,86 @@
+---
+import { buildHomePageUrl, getHomePaginationItems } from '../../lib/home-feed';
+
+interface Props {
+  currentPage: number;
+  lastPage: number;
+}
+
+const { currentPage, lastPage } = Astro.props;
+const items = getHomePaginationItems(currentPage, lastPage);
+---
+
+{lastPage > 1 && (
+  <nav id="home-pagination" class="theme-card home-pagination" aria-label="首页分页">
+    <div class="home-pagination__summary">
+      <span class="home-pagination__eyebrow">文章分页</span>
+      <strong>第 {currentPage} / {lastPage} 页</strong>
+    </div>
+
+    <div class="home-pagination__numbers" aria-label="页码">
+      {items.map((item) =>
+        item === 'ellipsis' ? (
+          <details class="home-pagination__jump">
+            <summary class="home-pagination__ellipsis" aria-label="快速跳转页码">…</summary>
+            <form class="home-pagination__jump-form" data-home-pagination-jump data-max-page={lastPage}>
+              <label>
+                <span>跳转到</span>
+                <input type="number" min="1" max={lastPage} inputmode="numeric" placeholder={`1-${lastPage}`} required />
+              </label>
+              <button type="submit">前往</button>
+            </form>
+          </details>
+        ) : item === currentPage ? (
+          <span class="home-pagination__number is-active" aria-current="page">
+            {item}
+          </span>
+        ) : (
+          <a class="home-pagination__number" href={buildHomePageUrl(item)}>
+            {item}
+          </a>
+        ),
+      )}
+    </div>
+
+    <div class="home-pagination__actions">
+      {currentPage > 1 ? (
+        <a class="home-pagination__edge" href={buildHomePageUrl(currentPage - 1)} rel="prev">
+          上页
+        </a>
+      ) : (
+        <span class="home-pagination__edge is-disabled" aria-disabled="true">上页</span>
+      )}
+
+      {currentPage < lastPage ? (
+        <a class="home-pagination__edge" href={buildHomePageUrl(currentPage + 1)} rel="next">
+          下页
+        </a>
+      ) : (
+        <span class="home-pagination__edge is-disabled" aria-disabled="true">下页</span>
+      )}
+    </div>
+  </nav>
+)}
+
+<script is:inline>
+  (() => {
+    const forms = document.querySelectorAll('[data-home-pagination-jump]');
+    if (forms.length === 0) return;
+
+    forms.forEach((form) => {
+      if (!(form instanceof HTMLFormElement)) return;
+      if (form.dataset.bound === 'true') return;
+      form.dataset.bound = 'true';
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const maxPage = Number.parseInt(form.dataset.maxPage || '1', 10);
+        const input = form.querySelector('input');
+        if (!(input instanceof HTMLInputElement)) return;
+        const requestedPage = Number.parseInt(input.value || '1', 10);
+        const nextPage = Math.min(Math.max(1, requestedPage), Math.max(1, maxPage));
+        window.location.href = nextPage <= 1 ? '/' : `/page/${nextPage}/`;
+      });
+    });
+  })();
+</script>

@@ -4,7 +4,7 @@ pubDate: 2026-04-16
 description: "首页第一屏如果先服务阅读路径，而不是先展示一堆功能入口，主题通常会更稳。"
 author: "shijianus"
 category: "前端工程"
-group: "Homepage Systems"
+group: "首页结构"
 cover: "/media/shijianus/hero.jpg"
 coverAlt: "theme hero background"
 tags: ["Homepage", "Content Strategy", "UI"]

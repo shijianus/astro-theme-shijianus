@@ -35,6 +35,10 @@
     };
 
     const enhanceCodeBlocks = () => {
+      const emitActivity = (message) => {
+        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+      };
+
       document.querySelectorAll('.article-body pre').forEach((pre) => {
         if (!(pre instanceof HTMLElement) || pre.dataset.enhanced === 'true') return;
 
@@ -77,6 +81,7 @@
             button.dataset.copyState = 'error';
             button.title = '复制失败';
             buttonText.textContent = '失败';
+            emitActivity('代码复制失败');
             resetTimer = window.setTimeout(() => {
               button.classList.remove('copy-failed');
               button.dataset.copyState = 'idle';
@@ -91,6 +96,7 @@
           button.dataset.copyState = 'success';
           button.title = '已复制代码';
           buttonText.textContent = '已复制';
+          emitActivity('已复制代码块');
           resetTimer = window.setTimeout(() => {
             button.classList.remove('copied');
             button.dataset.copyState = 'idle';

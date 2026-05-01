@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "shijianus-blog",
+  "compatibility_date": "2026-04-27",
+  "pages_build_output_dir": "dist",
+  "observability": {
+    "enabled": true
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "shijianus-blog-db",
+      "database_id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f",
+      "preview_database_id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

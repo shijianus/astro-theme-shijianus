@@ -2,18 +2,18 @@
 import { getCollection } from 'astro:content';
 import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { sortPostsByDate } from '../lib/content';
+import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
 
-const posts = sortPostsByDate(await getCollection('posts'));
+const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 ---
 
 <BlogLayout title="站点状态" showAside={false} pageType="page" sidebarData={sidebarData}>
   <PlaceholderPageShell
-    eyebrow="shijianus / status"
+    eyebrow="运行 / 状态"
     title="站点状态"
-    summary="这个页面预留给运行状态、重构里程碑、页面完成度和后续路线图，让读者能直接看到当前主题还在做什么。"
+    summary="这个页面预留给运行状态、重构里程碑、页面完成度和后续路线图，让读者能直接看到当前站点还在做什么。"
     statusLabel="状态面板待接入"
     notes={[
       '之后可以直接接入运行时间、构建状态、评论数据库与访问统计。',

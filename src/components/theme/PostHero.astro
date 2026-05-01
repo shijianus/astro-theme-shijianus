@@ -14,6 +14,8 @@ interface Props {
   summary?: string;
   image: string;
   imageAlt: string;
+  video?: string;
+  videoPoster?: string;
   fallbackImage: string;
   badges?: string[];
   meta?: PostHeroMetaItem[];
@@ -26,6 +28,8 @@ const {
   summary = '',
   image,
   imageAlt,
+  video = '',
+  videoPoster = image,
   fallbackImage,
   badges = [],
   meta = [],
@@ -50,15 +54,31 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
   data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
 >
   <div class="post-hero__cover">
-    <img
-      src={image}
-      alt={imageAlt}
-      class="post-hero__image"
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      data-image-fallback={fallbackImage}
-    />
+    {video ? (
+      <video
+        src={video}
+        poster={videoPoster}
+        class="post-hero__video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        data-video-fallback={fallbackImage}
+      >
+        <track kind="captions" />
+      </video>
+    ) : (
+      <img
+        src={image}
+        alt={imageAlt}
+        class="post-hero__image"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        data-image-fallback={fallbackImage}
+      />
+    )}
     <div class="post-hero__overlay"></div>
   </div>
   <div class="post-hero__inner">
@@ -117,6 +137,31 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
 
     roots.forEach((root) => {
       if (!(root instanceof HTMLElement)) return;
+      const image = root.querySelector('.post-hero__image');
+      const video = root.querySelector('.post-hero__video');
+      const fallback = image instanceof HTMLElement ? image.getAttribute('data-image-fallback') || '' : '';
+      const videoFallback = video instanceof HTMLElement ? video.getAttribute('data-video-fallback') || '' : '';
+
+      if (image instanceof HTMLImageElement && fallback) {
+        image.addEventListener('error', () => {
+          if (image.src.endsWith(fallback)) return;
+          image.src = fallback;
+        });
+      }
+
+      if (video instanceof HTMLVideoElement && videoFallback) {
+        video.addEventListener('error', () => {
+          const nextImage = document.createElement('img');
+          nextImage.src = videoFallback;
+          nextImage.alt = document.title;
+          nextImage.className = 'post-hero__image post-hero__image--fallback';
+          nextImage.setAttribute('loading', 'eager');
+          nextImage.setAttribute('decoding', 'async');
+          nextImage.setAttribute('fetchpriority', 'high');
+          video.replaceWith(nextImage);
+        }, { once: true });
+      }
+
       if (root.dataset.runtimeMetrics !== 'true') return;
 
       const slug = root.dataset.postSlug;
@@ -127,8 +172,6 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
       const dwellKey = `shijianus-post-dwell:${slug}`;
       const viewsNode = root.querySelector('[data-runtime-meta="views"] .post-hero__meta-value');
       const dwellNode = root.querySelector('[data-runtime-meta="dwell"] .post-hero__meta-value');
-      const image = root.querySelector('.post-hero__image');
-      const fallback = image instanceof HTMLElement ? image.getAttribute('data-image-fallback') || '' : '';
 
       const safeSessionGet = (key) => {
         try {
@@ -158,7 +201,7 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
       const renderDwell = () => {
         if (!(dwellNode instanceof HTMLElement)) return;
         const minutes = Math.max(0, Math.floor(dwellSeconds / 60));
-        dwellNode.textContent = `${minutes} min`;
+        dwellNode.textContent = `${minutes} 分钟`;
       };
 
       renderDwell();
@@ -169,13 +212,6 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
         safeSessionSet(dwellKey, String(dwellSeconds));
         renderDwell();
       }, 1000);
-
-      if (image instanceof HTMLImageElement && fallback) {
-        image.addEventListener('error', () => {
-          if (image.src.endsWith(fallback)) return;
-          image.src = fallback;
-        });
-      }
 
       window.addEventListener(
         'pagehide',

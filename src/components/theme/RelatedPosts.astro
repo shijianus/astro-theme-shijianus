@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
 import { formatDisplayDate } from '../../lib/theme';
 
@@ -26,7 +27,12 @@ const { posts, eyebrow, title } = Astro.props;
   <div class="relatedPosts-list">
     {posts.map((post, index) => (
       <a class="relatedPosts-item" href={getPostPath(post)}>
-        <img src={resolveCover(post)} alt={resolveCoverAlt(post)} loading="lazy" />
+        <img
+          src={resolveCover(post)}
+          alt={resolveCoverAlt(post)}
+          loading="lazy"
+          data-fallback-src={siteConfig.post.hero.fallbackImage}
+        />
         <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
         <div class="content">
           <div class="date">{formatDisplayDate(post.data.pubDate)}</div>

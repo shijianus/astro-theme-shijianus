@@ -1,0 +1,294 @@
+---
+import { siteConfig } from '../../config/site';
+
+interface RelatedItem {
+  title: string;
+  href: string;
+}
+
+interface Props {
+  slug: string;
+  title: string;
+  summary?: string;
+  url: string;
+  related?: RelatedItem[];
+}
+
+const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
+const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
+const apiBase = runtimeApiBase ? `${runtimeApiBase}/api` : '/api';
+const { slug, title, summary = '', url, related = [] } = Astro.props;
+const introText = `${siteConfig.site.author.name} 在这里持续写作与构建，重点关注长期可维护的博客系统、界面交互和内容结构。`;
+---
+
+<section
+  class="shijianus-ai-summary"
+  data-ai-summary
+  data-api-base={apiBase}
+  data-slug={slug}
+  data-title={title}
+  data-summary={summary}
+  data-url={url}
+  data-intro={introText}
+  data-related={JSON.stringify(related)}
+>
+  <div class="shijianus-ai-summary__head">
+    <div class="shijianus-ai-summary__title">
+      <span class="shijianus-ai-summary__icon" aria-hidden="true">AI</span>
+      <div>
+        <strong>AI-摘要</strong>
+        <small>立体科幻风格摘要卡片 · shijianus AI</small>
+      </div>
+    </div>
+    <div class="shijianus-ai-summary__meta">
+      <div class="shijianus-ai-summary__meta-copy">
+        <span data-ai-badge>待生成</span>
+        <small data-ai-status>进入视区后自动生成</small>
+      </div>
+      <button type="button" data-ai-refresh aria-label="重新生成摘要">↻</button>
+    </div>
+  </div>
+
+  <div class="shijianus-ai-summary__screen">
+    <div class="shijianus-ai-summary__grid" aria-hidden="true"></div>
+    <div class="shijianus-ai-summary__hud" aria-hidden="true">
+      <span>SUMMARY CORE</span>
+      <span>SHIJIANUS AI</span>
+    </div>
+    <p class="shijianus-ai-summary__output" data-ai-output>AI 初始化中...</p>
+  </div>
+
+  <div class="shijianus-ai-summary__actions">
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="intro">介绍自己</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="summary">生成本文简介</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="related">推荐相关文章</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="top">回到顶部</button>
+  </div>
+
+  <div class="shijianus-ai-summary__related" data-ai-related hidden></div>
+</section>
+
+<script is:inline>
+  (() => {
+    const roots = document.querySelectorAll('[data-ai-summary]');
+    if (!roots.length) return;
+
+    const getDeviceId = () => {
+      const key = 'shijianus-device-id';
+      try {
+        const saved = window.localStorage.getItem(key);
+        if (saved) return saved;
+        const created = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        window.localStorage.setItem(key, created);
+        return created;
+      } catch {
+        return `device-${Date.now()}`;
+      }
+    };
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const typeInto = (node, value) => {
+      if (!(node instanceof HTMLElement)) return;
+      const cursor = '<span class="shijianus-ai-summary__cursor"></span>';
+      let index = 0;
+      const text = value.trim();
+      if (!text) {
+        node.textContent = '';
+        return;
+      }
+      if (prefersReducedMotion || text.length > 140) {
+        node.textContent = text;
+        return;
+      }
+      const runId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      node.dataset.typeRunId = runId;
+      node.innerHTML = '';
+      const step = text.length > 72 ? 3 : 2;
+
+      const tick = () => {
+        if (node.dataset.typeRunId !== runId) return;
+        index = Math.min(text.length, index + step);
+        node.innerHTML = `${text.slice(0, index)}${index < text.length ? cursor : ''}`;
+        if (index < text.length) {
+          window.setTimeout(tick, /[,.，。！？!?\n]/.test(text.charAt(index - 1)) ? 48 : 24);
+        }
+      };
+
+      tick();
+    };
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      const output = root.querySelector('[data-ai-output]');
+      const badge = root.querySelector('[data-ai-badge]');
+      const status = root.querySelector('[data-ai-status]');
+      const relatedBox = root.querySelector('[data-ai-related]');
+      const refreshButton = root.querySelector('[data-ai-refresh]');
+      const apiBase = root.dataset.apiBase || '/api';
+      const slug = root.dataset.slug || '';
+      const title = root.dataset.title || document.title;
+      const summary = root.dataset.summary || '';
+      const url = root.dataset.url || window.location.href;
+      const intro = root.dataset.intro || '';
+      const cacheKey = `shijianus-ai-summary:${slug}`;
+      let isLoading = false;
+
+      const setBadge = (value) => {
+        if (badge instanceof HTMLElement) badge.textContent = value;
+      };
+
+      const setStatus = (value) => {
+        if (status instanceof HTMLElement) status.textContent = value;
+      };
+
+      const renderRelated = () => {
+        if (!(relatedBox instanceof HTMLElement)) return;
+        let items = [];
+        try {
+          items = JSON.parse(root.dataset.related || '[]');
+        } catch {}
+
+        if (!Array.isArray(items) || items.length === 0) {
+          relatedBox.hidden = true;
+          typeInto(output, '当前没有可推荐的相关文章，建议直接返回首页继续浏览最新内容。');
+          setBadge('本地推荐');
+          setStatus('未发现更多相关文章');
+          return;
+        }
+
+        relatedBox.innerHTML = items
+          .slice(0, 3)
+          .map((item, index) => `<a href="${item.href}"><span>${String(index + 1).padStart(2, '0')}</span><strong>${item.title}</strong></a>`)
+          .join('');
+        relatedBox.hidden = false;
+        typeInto(output, '这里先把与你当前文章最相关的三个入口摆出来，适合顺着主题继续读，不打断当前的阅读节奏。');
+        setBadge('本地推荐');
+        setStatus('基于当前文章索引推荐');
+      };
+
+      const fetchSummary = async (force = false) => {
+        if (isLoading) return;
+        relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+        if (!force) {
+          try {
+            const cached = window.sessionStorage.getItem(cacheKey);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              typeInto(output, parsed.summary || cached);
+              setBadge(parsed.model || '缓存结果');
+              setStatus(parsed.provider ? `会话缓存 · ${parsed.provider}` : '会话缓存');
+              return;
+            }
+          } catch {}
+        }
+
+        const article = document.querySelector('#article-container');
+        const content = article?.textContent?.replace(/\s+/g, ' ').trim() || '';
+        if (!content) {
+          typeInto(output, '当前文章正文尚未准备好，暂时无法生成摘要。');
+          setBadge('正文缺失');
+          setStatus('等待正文挂载完成');
+          return;
+        }
+
+        isLoading = true;
+        setBadge('生成中');
+        setStatus(force ? '正在强制刷新摘要' : '正在请求摘要服务');
+        if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = true;
+        typeInto(output, '正在整理文章结构、提炼核心信息，并生成一段更适合快速浏览的摘要...');
+
+        try {
+          const response = await fetch(`${apiBase}/ai-summary`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'X-Shijianus-Device-Id': getDeviceId(),
+            },
+            body: JSON.stringify({ slug, title, summary, url, content }),
+          });
+          const payload = await response.json();
+          if (!response.ok || !payload?.summary) {
+            const resetSuffix = payload?.resetAt ? ` resetAt=${payload.resetAt}` : '';
+            throw new Error(`${payload?.error || `summary failed: ${response.status}`}${resetSuffix}`);
+          }
+
+          const result = {
+            summary: payload.summary,
+            provider: payload.provider || '',
+            model: payload.model || '',
+          };
+          window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
+          typeInto(output, result.summary);
+          setBadge(result.model || result.provider || 'AI 完成');
+          setStatus(payload.cached ? '命中服务端缓存' : `来自 ${result.provider || 'AI'} 的新摘要`);
+        } catch (error) {
+          let message = '当前摘要服务已进入冷却或额度保护，请稍后再试。若你刚连续刷新过多次，这通常是风控正在生效。';
+          let statusMessage = '稍后重试';
+          if (error instanceof Error && /429/.test(error.message)) {
+            try {
+              const resetAt = Number.parseInt(error.message.split('resetAt=')[1] || '', 10);
+              if (Number.isFinite(resetAt)) {
+                const retrySeconds = Math.max(1, Math.ceil(resetAt - Date.now() / 1000));
+                message = `当前摘要服务正处于额度保护中，请约 ${retrySeconds} 秒后再试。为避免滥用，同一设备和同一出口 IP 都有独立的分钟/小时限制。`;
+                statusMessage = `冷却中 · ${retrySeconds}s`;
+              }
+            } catch {}
+          }
+          typeInto(output, message);
+          setBadge('稍后重试');
+          setStatus(statusMessage);
+        } finally {
+          isLoading = false;
+          if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = false;
+        }
+      };
+
+      root.querySelectorAll('[data-ai-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (!(button instanceof HTMLElement)) return;
+          const action = button.dataset.aiAction;
+          if (action === 'intro') {
+            relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+            typeInto(output, intro);
+            setBadge('站点介绍');
+            setStatus('作者与站点介绍');
+            return;
+          }
+          if (action === 'summary') {
+            void fetchSummary(true);
+            return;
+          }
+          if (action === 'related') {
+            renderRelated();
+            return;
+          }
+          if (action === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            typeInto(output, '已经把阅读视角拉回顶部；如果你想重新看一次文章头图、摘要和核心元信息，现在就是最短路径。');
+            setBadge('导航动作');
+            setStatus('已回到页面顶部');
+          }
+        });
+      });
+
+      refreshButton?.addEventListener('click', () => {
+        try {
+          window.sessionStorage.removeItem(cacheKey);
+        } catch {}
+        void fetchSummary(true);
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        observer.disconnect();
+        void fetchSummary(false);
+      }, { threshold: 0.18 });
+
+      observer.observe(root);
+    });
+  })();
+</script>

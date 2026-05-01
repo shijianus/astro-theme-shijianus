@@ -70,11 +70,11 @@ export function ProfileWidget({
             <p className="author-info__desc">{role}</p>
           </a>
 
-          <div className="card-info-social-icons is-center" aria-label="Author links">
+          <div className="card-info-social-icons is-center" aria-label="作者链接">
             <a className="social-icon" href="https://github.com/shijianus" target="_blank" rel="noreferrer" title="GitHub">
               <Github aria-hidden="true" />
             </a>
-            <a className="social-icon" href={`mailto:${email}`} title="Email">
+            <a className="social-icon" href={`mailto:${email}`} title="邮箱">
               <Mail aria-hidden="true" />
             </a>
           </div>

@@ -16,7 +16,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { siteConfig } from '../../config/site';
-import { getCategoryPath, getTagPath } from '../../lib/content';
 import QrCodeImage from './QrCodeImage.astro';
 import RewardRegionPanel from './RewardRegionPanel.astro';
 
@@ -33,8 +32,6 @@ interface Props {
   copyLabel: string;
   rewardLabel: string;
   rewardNote: string;
-  category: string;
-  tags: string[];
   aboutTitle: string;
   modeHref: string;
   modeLabel: string;
@@ -60,8 +57,6 @@ const {
   copyLabel,
   rewardLabel,
   rewardNote,
-  category,
-  tags,
   aboutTitle,
   modeHref,
   modeLabel,
@@ -73,8 +68,6 @@ const {
   shareDoneLabel,
   shareFallbackLabel,
 } = Astro.props;
-
-const categoryHref = getCategoryPath(category);
 const shareIconMap: Partial<Record<string, LucideIcon>> = {
   native: Share2,
   copy: Copy,
@@ -162,7 +155,7 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
                 <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
                 <strong>{rewardLabel}</strong>
               </div>
-              <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+              <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭打赏面板">
                 ×
               </button>
             </div>
@@ -186,55 +179,38 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
   </div>
 
   <div class="post-tools-right">
-    <div class="tag_share">
-      <div class="post-meta__box">
-        <div class="post-meta__box__category-list">
-          <a href={categoryHref} class="post-meta__box__categoryes">
-            <span class="categoryes-punctuation">#</span>
-            {category}
-          </a>
-        </div>
+    <div class="post-meta__box post-meta__box--compact">
+      <span class="post-meta__box__hint">这里不再重复展示分类、标签和继续阅读入口，右侧只保留分享动作，避免与正文信息冲突。</span>
+      <span class="post-meta__box__hint">{siteConfig.support.share.summary}</span>
+    </div>
 
-        {tags.length > 0 && (
-          <div class="post-meta__box__tag-list">
-            {tags.map((tag) => (
-              <a href={getTagPath(tag)} class="post-meta__box__tags">
-                <span class="tags-punctuation">#</span>
-                {tag}
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
-        <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
-        <div class="post-share-grid">
-          {enabledSharePlatforms.map((platform) => {
-            const PlatformIcon = platform.Icon;
-            const tooltip = `${platform.label} · ${platform.description}`;
-            return (
-              <button
-                type="button"
-                class="post-share-grid__item"
-                style={`--platform-accent:${platform.accent};`}
-                data-share-platform={platform.id}
-                data-tooltip={tooltip}
-                aria-label={tooltip}
-              >
-                <span class="post-share-grid__surface" aria-hidden="true">
-                  <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
-                  <span class="post-share-grid__label">{platform.label}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
+    <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
+      <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
+      <div class="post-share-grid">
+        {enabledSharePlatforms.map((platform) => {
+          const PlatformIcon = platform.Icon;
+          const tooltip = `${platform.label} · ${platform.description}`;
+          return (
+            <button
+              type="button"
+              class="post-share-grid__item"
+              style={`--platform-accent:${platform.accent};`}
+              data-share-platform={platform.id}
+              data-tooltip={tooltip}
+              aria-label={tooltip}
+            >
+              <span class="post-share-grid__surface" aria-hidden="true">
+                <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
+                <span class="post-share-grid__label">{platform.label}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
 
     <div class="post-tools__status" aria-live="polite"></div>
-    <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="Close panels"></button>
+    <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="关闭分享面板"></button>
     <div class="post-tools-panels">
       <div
         class="post-floating-panel post-floating-panel--share"
@@ -247,20 +223,20 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         <div class="post-floating-panel__head">
           <div>
             <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
-            <strong>WeChat / Mobile Share</strong>
+            <strong>跨设备打开</strong>
           </div>
-          <button type="button" class="post-floating-panel__close" data-panel-close aria-label="Close">
+          <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭二维码面板">
             ×
           </button>
         </div>
-        <p class="post-floating-panel__summary">扫码后可在手机继续阅读，也可以直接转发给正在使用 WeChat 的朋友。</p>
+        <p class="post-floating-panel__summary">扫码后可在手机或平板直接打开当前文章，也可以把这个页面快速转到另一台设备上。</p>
         <div class="post-share-qrcode">
           <div class="post-share-qrcode__image">
             <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
           </div>
           <div class="post-share-qrcode__meta">
             <strong>{title}</strong>
-            <p>如果这篇文章帮你省下了时间，扫码后就能在另一台设备上继续阅读，或顺手把它分享给朋友。</p>
+            <p>如果这篇文章对你有帮助，扫码后可以在另一台设备上直接打开，或者顺手把它转给朋友。</p>
             <button type="button" class="post-share-qrcode__action" data-tool="copy">
               {copyLabel}
             </button>
@@ -318,11 +294,16 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       ).filter((node) => node instanceof HTMLElement);
       let statusTimer = 0;
 
+      const emitActivity = (message) => {
+        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+      };
+
       const setStatus = (message) => {
         if (!(status instanceof HTMLElement)) return;
         window.clearTimeout(statusTimer);
         status.textContent = message;
         status.classList.add('is-visible');
+        emitActivity(message);
         statusTimer = window.setTimeout(() => {
           status.classList.remove('is-visible');
         }, 2200);
