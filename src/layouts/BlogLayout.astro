@@ -176,7 +176,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
       />
-      <MusicPocket client:event="click" apiBase={musicApiBase} />
+      <MusicPocket client:visible apiBase={musicApiBase} />
       <ThemeOverlays
         client:idle
         brandName={siteConfig.site.name}
