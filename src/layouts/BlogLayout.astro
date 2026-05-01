@@ -178,7 +178,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
       />
       <MusicPocket client:visible apiBase={musicApiBase} />
       <ThemeOverlays
-        client:idle
+        client:visible
         brandName={siteConfig.site.name}
         authorName={siteConfig.site.author.name}
         authorMotto={siteConfig.site.author.motto}
@@ -189,7 +189,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         quickActions={siteConfig.navigation.quickActions}
         stats={overlayStats}
         features={overlayFeatures}
-        particleCount={siteConfig.theme.motion.heroParticles}
+        particleCount={siteConfig.post.hero.motionParticles}
         defaultBackground={siteConfig.theme.background.defaultMode}
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
