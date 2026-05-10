@@ -25,6 +25,8 @@ type SiteHeaderProps = {
   quickActions: NavItem[];
   showCenterConsoleTrigger: boolean;
   showNotificationTrigger: boolean;
+  isAccountEnabled: boolean;
+  hasDatabase: boolean;
 };
 
 function isActive(currentPath: string, href: string) {
@@ -48,6 +50,10 @@ function closeNotificationPanel() {
   window.dispatchEvent(new CustomEvent('shijianus:close-notifications'));
 }
 
+function openAccountPanel() {
+  window.dispatchEvent(new CustomEvent('shijianus:open-account'));
+}
+
 const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> = {
   home: House,
   archive: Archive,
@@ -65,13 +71,18 @@ export function SiteHeader({
   quickActions,
   showCenterConsoleTrigger,
   showNotificationTrigger,
+  isAccountEnabled,
+  hasDatabase,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenuHref, setOpenSubmenuHref] = useState<string | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const submenuCloseTimerRef = useRef<number | null>(null);
 
   const activeLabel = useMemo(() => {
@@ -122,9 +133,17 @@ export function SiteHeader({
     const updateScrolledState = () => {
       frame = 0;
       const nextScrolled = window.scrollY > 24;
-      if (nextScrolled === lastScrolled) return;
-      lastScrolled = nextScrolled;
-      setScrolled(nextScrolled);
+      
+      const documentElement = document.documentElement;
+      const scrollable = documentElement.scrollHeight - window.innerHeight;
+      const nextProgress = scrollable <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((window.scrollY / scrollable) * 100)));
+      
+      setProgress(nextProgress);
+
+      if (nextScrolled !== lastScrolled) {
+        lastScrolled = nextScrolled;
+        setScrolled(nextScrolled);
+      }
       window.requestAnimationFrame(syncHeaderMetrics);
     };
 
@@ -138,10 +157,44 @@ export function SiteHeader({
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', syncHeaderMetrics);
 
+    const onThemeChange = (event: Event) => {
+      const customEvent = event as CustomEvent<'light' | 'dark'>;
+      setTheme(customEvent.detail);
+    };
+    window.addEventListener('shijianus:theme-change', onThemeChange as EventListener);
+
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', syncHeaderMetrics);
+      window.removeEventListener('shijianus:theme-change', onThemeChange as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onConsoleVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setConsoleOpen(Boolean(customEvent.detail));
+    };
+
+    const onNotificationVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setNotificationOpen(Boolean(customEvent.detail));
+    };
+
+    const onAccountVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setAccountOpen(Boolean(customEvent.detail));
+    };
+
+    window.addEventListener('shijianus:console-visibility', onConsoleVisibility as EventListener);
+    window.addEventListener('shijianus:notification-visibility', onNotificationVisibility as EventListener);
+    window.addEventListener('shijianus:account-visibility', onAccountVisibility as EventListener);
+
+    return () => {
+      window.removeEventListener('shijianus:console-visibility', onConsoleVisibility as EventListener);
+      window.removeEventListener('shijianus:notification-visibility', onNotificationVisibility as EventListener);
+      window.removeEventListener('shijianus:account-visibility', onAccountVisibility as EventListener);
     };
   }, []);
 
@@ -335,69 +388,123 @@ export function SiteHeader({
           </div>
 
           <div id="nav-right">
+            {isAccountEnabled && (
+              <div className="nav-button" id="nav-account">
+                <a 
+                  className={`site-page ${accountOpen ? 'is-active' : ''}`} 
+                  href="#" 
+                  title="个人中心"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openAccountPanel();
+                  }}
+                >
+                  <i className="anzhiyufont anzhiyu-icon-user" aria-hidden="true" />
+                </a>
+              </div>
+            )}
+
+            <div className="nav-button" id="nav-notification">
+              <a 
+                className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
+                href="#" 
+                title="通知中心"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (notificationOpen) {
+                    closeNotificationPanel();
+                  } else {
+                    openNotificationPanel();
+                  }
+                }}
+              >
+                <i className="anzhiyufont anzhiyu-icon-bell" aria-hidden="true" />
+                {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
+              </a>
+            </div>
+
+            <div className="nav-button" id="search-button">
+              <a 
+                className="site-page social-icon search" 
+                href="#" 
+                title="搜索" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent('shijianus:open-search'));
+                }}
+              >
+                <i className="anzhiyufont anzhiyu-icon-magnifying-glass" aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className="nav-button" id="nav-theme-toggle">
+              <a className="site-page" href="#" title="切换主题" onClick={(e) => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
+              }}>
+                <i className={`anzhiyufont ${theme === 'dark' ? 'anzhiyu-icon-sun' : 'anzhiyu-icon-moon'}`} aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className="nav-button" id="randomPost_button">
+              <a className="site-page" href="#" title="随机文章" onClick={(e) => {
+                e.preventDefault();
+                const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
+                if (randomAction) window.location.href = randomAction.href;
+              }}>
+                <i className="anzhiyufont anzhiyu-icon-dice" aria-hidden="true" />
+              </a>
+            </div>
+
             {showCenterConsoleTrigger && (
               <div className="nav-button" id="center-console-button">
-                <button
-                  type="button"
-                  className={`site-page center-console-trigger ${consoleOpen ? 'is-active' : ''}`}
+                <input id="center-console-checkbox" type="checkbox" checked={consoleOpen} onChange={() => {}} hidden />
+                <label
+                  className={`widget ${consoleOpen ? 'is-active' : ''}`}
+                  htmlFor="center-console-checkbox"
                   title="控制台"
-                  aria-label="控制台"
-                  aria-haspopup="dialog"
-                  aria-expanded={consoleOpen}
-                  aria-pressed={consoleOpen}
-                  data-state={consoleOpen ? 'open' : 'closed'}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (consoleOpen) {
                       closeCenterConsole();
-                      return;
+                    } else {
+                      openCenterConsole();
                     }
-                    openCenterConsole();
                   }}
                 >
-                  <span className="styles-module__b9M_Xa__consoleLabel" aria-hidden="true">
-                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--left" />
-                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--center" />
-                    <i className="styles-module__b9M_Xa__consoleLabelLine styles-module__b9M_Xa__consoleLabelLine--right" />
-                  </span>
-                </button>
+                  <i className="left" />
+                  <i className="widget center" />
+                  <i className="widget right" />
+                </label>
               </div>
             )}
 
-            {showNotificationTrigger && (
-              <div className="nav-button" id="notification-button">
-                <button
-                  type="button"
-                  className={`site-page notification-trigger ${notificationOpen ? 'is-active' : ''}`}
-                  title="账号"
-                  aria-haspopup="dialog"
-                  aria-label="账号"
-                  aria-expanded={notificationOpen}
-                  aria-pressed={notificationOpen}
-                  data-state={notificationOpen ? 'open' : 'closed'}
-                  onClick={() => {
-                    if (notificationOpen) {
-                      closeNotificationPanel();
-                      return;
-                    }
-                    openNotificationPanel();
-                  }}
-                >
-                  <UserRound className="nav-icon" aria-hidden="true" />
-                  {notificationCount > 0 && <span className="notification-trigger__badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
-                </button>
-              </div>
-            )}
+            <div className="nav-button" id="nav-totop">
+              <a
+                className="totopbtn"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
+                <span id="percent">{progress}</span>
+              </a>
+            </div>
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
-              <button
-                type="button"
+              <a
                 className="site-page"
-                onClick={() => setMenuOpen((value) => !value)}
-                aria-label="展开导航菜单"
-                aria-expanded={menuOpen}
+                href="#"
+                title="切换菜单"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMenuOpen(!menuOpen);
+                }}
               >
-                {menuOpen ? <X className="nav-icon" aria-hidden="true" /> : <Menu className="nav-icon" aria-hidden="true" />}
-              </button>
+                <i className="anzhiyufont anzhiyu-icon-bars" aria-hidden="true" />
+              </a>
             </div>
           </div>
         </div>
