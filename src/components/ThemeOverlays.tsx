@@ -194,9 +194,8 @@ export function ThemeOverlays({
     }
   }, [commentThreadVersion]);
 
-  // Calculate activity grid data (GitHub style, starting from a fixed past date up to today)
   const activityData = useMemo(() => {
-    // We'll show exactly 26 weeks (182 days) ending at the last Saturday or today's week
+    // End exactly at today in PST
     const now = new Date();
     const pstOffset = 8 * 3600000;
     const today = new Date(now.getTime() - pstOffset);
@@ -204,24 +203,25 @@ export function ThemeOverlays({
     
     const data = [];
     const weeksToShow = 26;
-    const totalDays = weeksToShow * 7;
+    const totalSlots = weeksToShow * 7;
     
+    // Start from the Sunday of the week 26 weeks ago
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - totalDays + (7 - today.getDay() - 1));
+    startDate.setDate(today.getDate() - totalSlots + (7 - today.getDay() - 1));
 
-    for (let i = 0; i < totalDays; i++) {
+    for (let i = 0; i < totalSlots; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
       
       if (currentDate > today) {
-        data.push(null);
+        data.push(null); // Future
         continue;
       }
 
       const postsOnDate = posts.filter(p => new Date(p.date).toDateString() === currentDate.toDateString());
       const interactionLevel = Math.floor(Math.random() * 2); 
       const level = postsOnDate.length > 0 ? Math.min(4, postsOnDate.length + 1) : interactionLevel > 0 ? 1 : 0;
-      const sparkle = level > 2 ? 0.4 + (level * 0.1) : 0;
+      const sparkle = level >= 3 ? 0.4 + (level * 0.1) : 0;
 
       data.push({
         date: currentDate.toLocaleDateString('zh-CN'),
@@ -251,12 +251,14 @@ export function ThemeOverlays({
 
   const siteStats = useMemo(() => {
     return [
-      { label: '本站字数', value: `${(stats.readingMinutes * 312).toLocaleString()} 字` },
-      { label: '建站天数', value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天` },
+      { label: '本站总字数', value: `${(stats.readingMinutes * 312).toLocaleString()} 字` },
+      { label: '安全运行', value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天` },
       { label: '最后推送', value: posts[0]?.date || '今天' },
-      { label: '当前版本', value: 'v2.5.0-shijianus' },
-      { label: '活跃层级', value: 'Lv.4 Maintainer' },
-      { label: '内容密度', value: 'High Activity' },
+      { label: '版本协议', value: 'v2.6.0-shijianus' },
+      { label: '活跃等级', value: 'Maintainer Lv.4' },
+      { label: '内容密度', value: 'High Density' },
+      { label: '全站阅读', value: `${stats.readingMinutes} min` },
+      { label: '系统架构', value: 'Astro Edge' },
     ];
   }, [stats, posts]);
 
