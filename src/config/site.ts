@@ -191,10 +191,13 @@ export const siteConfig = {
       darkMode: 'starfield',
       modes: [
         { id: 'daybreak', label: '晨光背景' },
+        { id: 'twilight', label: '黄昏背景' },
+        { id: 'snow', label: '落雪背景' },
         { id: 'grid', label: '网格背景' },
         { id: 'starfield', label: '星空背景' },
         { id: 'nebula', label: '星云背景' },
         { id: 'aurora', label: '极光背景' },
+        { id: 'matrix', label: '赛博矩阵' },
         { id: 'clean', label: '纯净背景' },
       ],
     },
@@ -410,12 +413,18 @@ export const siteConfig = {
       title: 'Telegram',
       subtitle: '加入 chronoral 社群',
       summary: '海外更新、测试通知和小范围交流入口。',
-      qrImage: '/media/shijianus/tg-group.jpg',
+      qrImage: '/media/shijianus/@chronoral.tg.jpg',
       href: 'https://t.me/chronoral',
       handle: '@chronoral',
       ctaLabel: '加入',
       backLabel: '扫码加入',
       note: '悬停翻面查看二维码，点击直接跳转 Telegram。',
+      qrCrop: {
+        enable: false,
+        scale: 1.5,
+        offsetX: '0px',
+        offsetY: '0px'
+      }
     },
     notes: [
       '配置先于样式，保证每个模块都能被开关和替换。',

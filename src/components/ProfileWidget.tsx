@@ -1,5 +1,4 @@
 import React, { type CSSProperties } from 'react';
-import { Github, Mail } from 'lucide-react';
 
 type ProfileWidgetProps = {
   name: string;
@@ -40,7 +39,7 @@ export function ProfileWidget({
     <section className="card-widget card-info profile-card" style={style}>
       <div className="card-content">
         <div id="author-info__sayhi">{statusLabel}</div>
-
+        
         <div className="author-info-avatar">
           <img src={avatar} alt={name} className="avatar-img" />
           <span className="author-status" aria-hidden="true">
@@ -66,16 +65,15 @@ export function ProfileWidget({
 
         <div className="author-info__bottom-group">
           <a className="author-info__bottom-group-left" href="/about/" title={name}>
-            <h2 className="author-info__name">{name}</h2>
-            <p className="author-info__desc">{role}</p>
+            <h1 className="author-info__name">{name}</h1>
+            <div className="author-info__desc">{role}</div>
           </a>
-
           <div className="card-info-social-icons is-center" aria-label="作者链接">
             <a className="social-icon" href="https://github.com/shijianus" target="_blank" rel="noreferrer" title="GitHub">
-              <Github aria-hidden="true" />
+              <i className="anzhiyufont anzhiyu-icon-github" aria-hidden="true" />
             </a>
             <a className="social-icon" href={`mailto:${email}`} title="邮箱">
-              <Mail aria-hidden="true" />
+              <i className="anzhiyufont anzhiyu-icon-envelope" aria-hidden="true" />
             </a>
           </div>
         </div>

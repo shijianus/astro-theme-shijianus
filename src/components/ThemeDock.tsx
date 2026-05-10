@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUp, MoonStar, Palette, PanelRightClose, PanelRightOpen, Settings2, SunMedium } from 'lucide-react';
 import {
   applyThemeWithBackground,
-  markBackgroundAsManual,
   readStorage,
   syncAside,
   type ThemeMode,
@@ -17,9 +15,11 @@ type ThemeDockProps = {
   defaultBackground: string;
   darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
+  pageType?: string;
 };
 
 function calculateProgress() {
+  if (typeof document === 'undefined') return 0;
   const documentElement = document.documentElement;
   const scrollable = documentElement.scrollHeight - window.innerHeight;
   if (scrollable <= 0) return 0;
@@ -28,16 +28,19 @@ function calculateProgress() {
 
 export function ThemeDock(_props: ThemeDockProps) {
   const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [asideCollapsed, setAsideCollapsed] = useState(false);
   const [background, setBackground] = useState(_props.defaultBackground);
+  const [panelHidden, setPanelHidden] = useState(true);
   const progressRef = useRef(0);
-  const visibleRef = useRef(false);
+
+  const isPost = _props.pageType === 'post';
 
   const emitActivity = (message: string) => {
-    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+    }
   };
 
   useEffect(() => {
@@ -63,14 +66,20 @@ export function ThemeDock(_props: ThemeDockProps) {
       setBackground(detail || _props.defaultBackground);
     };
 
+    const onToggleTheme = () => {
+      toggleTheme();
+    };
+
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+    window.addEventListener('shijianus:toggle-theme', onToggleTheme);
 
     return () => {
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+      window.removeEventListener('shijianus:toggle-theme', onToggleTheme);
     };
-  }, [_props.defaultBackground]);
+  }, [_props.defaultBackground, theme]); // Added theme to deps for toggleTheme closure
 
   useEffect(() => {
     let frame = 0;
@@ -78,16 +87,10 @@ export function ThemeDock(_props: ThemeDockProps) {
     const syncDockState = () => {
       frame = 0;
       const nextProgress = Math.round(calculateProgress());
-      const nextVisible = window.scrollY > 120;
 
       if (nextProgress !== progressRef.current) {
         progressRef.current = nextProgress;
         setProgress(nextProgress);
-      }
-
-      if (nextVisible !== visibleRef.current) {
-        visibleRef.current = nextVisible;
-        setVisible(nextVisible);
       }
     };
 
@@ -126,34 +129,58 @@ export function ThemeDock(_props: ThemeDockProps) {
     emitActivity(nextAside === 'collapsed' ? '已收起侧栏' : '已展开侧栏');
   };
 
-  const cycleBackground = () => {
-    const currentIndex = Math.max(0, _props.backgroundModes.findIndex((mode) => mode.id === background));
-    const nextBackground = _props.backgroundModes[(currentIndex + 1) % _props.backgroundModes.length]?.id ?? _props.defaultBackground;
-    markBackgroundAsManual(nextBackground);
+  const toggleBackground = () => {
+    if (!_props.backgroundModes.length) return;
+    const currentIndex = _props.backgroundModes.findIndex(mode => mode.id === background);
+    const nextIndex = (currentIndex + 1) % _props.backgroundModes.length;
+    const nextBackground = _props.backgroundModes[nextIndex].id;
+    
+    document.documentElement.dataset.background = nextBackground;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('shijianus-background', nextBackground);
+    }
     setBackground(nextBackground);
-    emitActivity(`已切换背景：${_props.backgroundModes[(currentIndex + 1) % _props.backgroundModes.length]?.label ?? nextBackground}`);
+    emitActivity(`已切换背景：${_props.backgroundModes[nextIndex].label}`);
   };
 
   return (
-    <div
-      id="rightside"
-      className={visible ? 'is-visible' : ''}
+    <div 
+      id="rightside" 
+      className={`${configOpen ? 'config-open' : ''} ${panelHidden ? '' : 'panel-out'}`} 
+      onMouseEnter={() => {
+        if (panelHidden) setPanelHidden(false);
+      }}
     >
       <div id="rightside-config-hide" className={configOpen ? 'show' : ''}>
-        <button
-          type="button"
-          id="darkmode"
-          title={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
-          aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
-          className={theme === 'dark' ? 'is-active' : ''}
-          onClick={toggleTheme}
-        >
-          {theme === 'dark' ? <SunMedium className="rightside-icon" aria-hidden="true" /> : <MoonStar className="rightside-icon" aria-hidden="true" />}
-        </button>
+        {isPost && (
+          <>
+            <button
+              type="button"
+              id="mobile-toc-button"
+              className="close"
+              title="目录"
+              aria-label="目录"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('shijianus:toggle-mobile-toc'));
+              }}
+            >
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
 
-        <button type="button" id="background-mode" title="切换背景" aria-label="切换背景" onClick={cycleBackground}>
-          <Palette className="rightside-icon" aria-hidden="true" />
-        </button>
+            <a id="to_comment" href="#post-comment" title="直达评论" aria-label="直达评论">
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </a>
+          </>
+        )}
 
         <button
           type="button"
@@ -163,7 +190,36 @@ export function ThemeDock(_props: ThemeDockProps) {
           className={asideCollapsed ? 'is-active' : ''}
           onClick={toggleAside}
         >
-          {asideCollapsed ? <PanelRightOpen className="rightside-icon" aria-hidden="true" /> : <PanelRightClose className="rightside-icon" aria-hidden="true" />}
+          <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 0 : 1, transform: asideCollapsed ? 'scale(0.5)' : 'scale(1)' }}
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <path d="M15 3v18" />
+              <path d="m8 9 3 3-3 3" />
+            </svg>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 1 : 0, transform: asideCollapsed ? 'scale(1)' : 'scale(0.5)' }}
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <path d="M15 3v18" />
+              <path d="m10 15-3-3 3-3" />
+            </svg>
+          </div>
         </button>
       </div>
 
@@ -171,18 +227,152 @@ export function ThemeDock(_props: ThemeDockProps) {
         <button
           type="button"
           id="rightside-config"
-          title="边栏设置"
-          aria-label="边栏设置"
+          title="设置"
+          aria-label="设置"
           aria-expanded={configOpen}
           className={configOpen ? 'is-active' : ''}
           onClick={() => setConfigOpen((value) => !value)}
         >
-          <Settings2 className="rightside-icon" aria-hidden="true" />
+          <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 0 : 1, transform: configOpen ? 'scale(0.5) rotate(-90deg)' : 'scale(1) rotate(0)' }}
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 1 : 0, transform: configOpen ? 'scale(1) rotate(0)' : 'scale(0.5) rotate(90deg)' }}
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
         </button>
 
-        <button type="button" id="go-up" title="回到顶部" aria-label="回到顶部" onClick={jumpToTop}>
-          <ArrowUp className="rightside-icon" aria-hidden="true" />
-          <span id="percent">{Math.round(progress)}</span>
+        <button
+          type="button"
+          id="darkmode"
+          title={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+          aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+          className={theme === 'dark' ? 'is-active' : ''}
+          onClick={toggleTheme}
+        >
+          <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'dark' ? 0 : 1, transform: theme === 'dark' ? 'scale(0.5) rotate(-45deg)' : 'scale(1) rotate(0)' }}
+            >
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'dark' ? 1 : 0, transform: theme === 'dark' ? 'scale(1) rotate(0)' : 'scale(0) rotate(45deg)' }}
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          id="background-mode"
+          title="切换背景"
+          aria-label="切换背景"
+          onClick={toggleBackground}
+        >
+          <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+            <svg 
+              className="rightside-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s', transform: `rotate(${(progress || 0) * 3.6}deg)` }}
+            >
+              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+            </svg>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          id="hide-rightside-btn"
+          title="隐藏选单"
+          aria-label="隐藏选单"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setPanelHidden(true); 
+            setConfigOpen(false); 
+          }}
+        >
+          <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          id="go-up"
+          title="回到顶部"
+          aria-label="回到顶部"
+          onClick={jumpToTop}
+          className={progress > 0 ? 'show' : ''}
+          style={{ 
+            opacity: progress > 0 ? 1 : 0, 
+            visibility: progress > 0 ? 'visible' : 'hidden',
+            height: progress > 0 ? '35px' : '0',
+            marginTop: progress > 0 ? '0' : '-4px',
+            padding: progress > 0 ? '' : '0',
+            border: progress > 0 ? '' : 'none',
+            overflow: 'hidden',
+            transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+          }}
+        >
+          <span id="percent" style={{ position: 'absolute', right: '2px', bottom: '1px', fontSize: '9px', fontWeight: 800 }}>{progress}</span>
+          <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
         </button>
       </div>
     </div>

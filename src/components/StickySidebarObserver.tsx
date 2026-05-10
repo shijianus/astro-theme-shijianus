@@ -31,7 +31,7 @@ function resolveTargets(pageType: string) {
   const targets: StickyTarget[] = [];
 
   if (pageType === 'home') {
-    const boundary = document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts');
+    const boundary = document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ?? document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
     const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
 
     if (boundary && card) {
@@ -46,7 +46,8 @@ function resolveTargets(pageType: string) {
   if (pageType === 'post') {
     const tocBoundary =
       document.querySelector<HTMLElement>('.post-layout-row--article #article-container') ??
-      document.querySelector<HTMLElement>('.post-layout-row--article .post-layout-row__main');
+      document.querySelector<HTMLElement>('.post-layout-row--article .post-layout-row__main') ??
+      document.querySelector<HTMLElement>('.page-main');
     const tocCard = document.querySelector<HTMLElement>('#post-toc-aside #card-toc');
 
     if (tocBoundary && tocCard) {

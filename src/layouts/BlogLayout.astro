@@ -5,13 +5,18 @@ import { SiteHeader } from '../components/SiteHeader';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
 import { ThemeUniverse } from '../components/ThemeUniverse';
+import { StickySidebarObserver } from '../components/StickySidebarObserver';
 import LocaleRuntime from '../components/LocaleRuntime.astro';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import { MusicPocket } from '../components/theme/MusicPocket';
 import Sidebar from '../components/theme/Sidebar.astro';
 import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
-import { getCommentsProviderLabel, hasConfiguredCommentDatabase } from '../lib/comment-integration';
+import {
+  getCommentsProviderLabel,
+  hasConfiguredCommentDatabase,
+  isRemoteDatabaseConfigured,
+} from '../lib/comment-integration';
 import type { SidebarData } from '../lib/theme';
 import '../styles/global.css';
 import '../styles/rebuild.css';
@@ -74,6 +79,7 @@ const consolePanel = {
 };
 
 const commentsEnabled = hasConfiguredCommentDatabase(siteConfig.integrations.comments);
+const remoteDbConfigured = isRemoteDatabaseConfigured(siteConfig.integrations.comments);
 const remoteCommentConnected = siteConfig.integrations.comments.provider !== 'local' && commentsEnabled;
 const accountPanel = {
   enabled: true,
@@ -110,6 +116,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title} | {siteConfig.site.title}</title>
+    <link rel="stylesheet" href="https://unpkg.com/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css" />
     <slot name="head" />
     <script is:inline>
       (() => {
@@ -144,6 +151,8 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         quickActions={siteConfig.navigation.quickActions}
         showCenterConsoleTrigger={siteConfig.theme.features.centerConsole}
         showNotificationTrigger={true}
+        isAccountEnabled={remoteDbConfigured && accountPanel.enabled}
+        hasDatabase={commentsEnabled}
       />
 
       <main id="blog-container">
@@ -175,6 +184,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         defaultBackground={siteConfig.theme.background.defaultMode}
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
+        pageType={pageType}
       />
       <MusicPocket client:visible apiBase={musicApiBase} />
       <ThemeOverlays
@@ -199,6 +209,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
       />
       <LocaleRuntime />
       <CodeBlockEnhancer />
+      <StickySidebarObserver pageType={pageType} client:load />
     </div>
 
     <script is:inline>

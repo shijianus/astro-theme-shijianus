@@ -10,7 +10,7 @@ import {
 } from '../../lib/content';
 import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
-import TelegramWidgetCard from './TelegramWidgetCard.astro';
+import PromoWidgetCard from './PromoWidgetCard.astro';
 
 interface Props extends SidebarData {
   pageType?: string;
@@ -79,13 +79,13 @@ const showUtilityAside = utilityOnlyPageTypes.has(pageType);
 const showPostAsideFeed = isPostSecondaryPage;
 const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtilityAside || isPostSecondaryPage);
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
-const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage && !isAnyPostPage && showUtilityAside;
+const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed && showUtilityAside;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed && showUtilityAside;
-const showWebInfo = siteConfig.theme.features.asideWebInfo && !isAnyPostPage && !isHomePage && showUtilityAside;
-const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostSecondaryPage);
-const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostTocPage && !isPostSecondaryPage;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
+const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
+const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
+const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
 const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
 const runtimeDays = Math.max(
@@ -106,22 +106,19 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
-const renderTocNodes = (nodes: TocNode[]) =>
-  nodes
-    .map((node) => {
-      const indexLabel = String(node.index + 1).padStart(2, '0');
-      const childrenMarkup = node.children.length > 0 ? `<ol class="toc-list toc-list--child">${renderTocNodes(node.children)}</ol>` : '';
-
+const renderTocNodes = (headings: TocHeading[]) =>
+  headings
+    .map((heading, index) => {
+      const indexLabel = String(index + 1).padStart(2, '0');
+      const level = Math.max(0, heading.depth - tocBaseDepth);
       return `
-        <li class="toc-item toc-item--depth-${node.heading.depth} toc-item--level-${node.level}" style="--toc-level:${node.level};">
-          <a href="#${escapeHtml(node.heading.slug)}" class="toc-link" data-depth="${node.heading.depth}" data-heading-id="${escapeHtml(node.heading.slug)}" aria-current="false">
+        <li class="toc-item" style="--toc-level:${level};">
+          <a href="#${escapeHtml(heading.slug)}" class="toc-link" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
             <span class="toc-index">${indexLabel}</span>
             <span class="toc-text-group">
-              <span class="toc-text">${escapeHtml(node.heading.text)}</span>
-              <span class="toc-depth">H${node.heading.depth}</span>
+              <span class="toc-text">${escapeHtml(heading.text)}</span>
             </span>
           </a>
-          ${childrenMarkup}
         </li>
       `;
     })
@@ -162,7 +159,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
   )}
 
   {showTelegramCard && !isPostSecondaryPage && (
-    <TelegramWidgetCard id="card-telegram" />
+    <PromoWidgetCard id="card-telegram" platform="telegram" />
   )}
 
   {showCategories && (
@@ -208,7 +205,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </div>
         <div class="toc-content">
           <ol class="toc-list">
-            <Fragment set:html={renderTocNodes(tocTree)} />
+            <Fragment set:html={renderTocNodes(tocHeadings)} />
           </ol>
         </div>
       </section>
@@ -461,7 +458,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
   )}
 
   {isPostSecondaryPage && showTelegramCard && (
-    <TelegramWidgetCard id="card-telegram-post" className="card-telegram--post" />
+    <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
   )}
 
   {isPostSecondaryPage && showRecentPosts && (

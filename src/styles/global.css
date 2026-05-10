@@ -762,7 +762,7 @@ html.theme-ready body.theme-body #footer {
 
 #blog-container {
   width: 100%;
-  padding-top: 12px;
+  padding-top: var(--site-header-height, 60px);
 }
 
 .page-shell__hero {
@@ -3700,20 +3700,22 @@ html.theme-ready body.theme-body #footer {
 
 #rightside {
   position: fixed;
-  right: 8px;
+  right: 0;
   bottom: 20px;
   z-index: 80;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
-  opacity: 0;
-  transform: translateX(48px);
-  transition: 0.3s;
+  opacity: 1;
+  transform: translateX(calc(100% - 10px));
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 10px 8px 10px 20px;
 }
 
-#rightside.is-visible {
-  opacity: 1;
+#rightside:hover,
+#rightside.panel-out,
+#rightside.config-open {
   transform: translateX(0);
 }
 
@@ -3737,7 +3739,7 @@ html.theme-ready body.theme-body #footer {
 }
 
 #rightside #rightside-config-hide.show {
-  max-height: 210px;
+  max-height: 250px;
   opacity: 1;
   transform: translateY(0);
 }

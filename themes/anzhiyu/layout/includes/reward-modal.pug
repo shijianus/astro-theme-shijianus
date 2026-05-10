@@ -1,0 +1,13 @@
+#dynamic-reward-modal.anzhiyu-modal(style="display: none;")
+  .anzhiyu-modal-content
+    .anzhiyu-modal-header
+      span.close-button(onclick="anzhiyu.hideDynamicRewardModal()") &times;
+      h2=_p('reward.select_payment_method', 'Select Payment Method')
+    .anzhiyu-modal-body
+      #payment-options-container
+        // Payment options will be dynamically loaded here by JS
+        .loading-spinner
+          i.anzhiyufont.anzhiyu-icon-spinner.fa-spin
+          span Loading payment options...
+    .anzhiyu-modal-footer
+      p=_p('reward.more_info_about_payments', 'More info about payment methods.')

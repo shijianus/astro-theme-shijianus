@@ -140,13 +140,6 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               data-fallback-src={siteConfig.post.hero.fallbackImage}
             />
           </a>
-          <div class="recent-post-info" data-card-link={getPostPath(entry)}>
-            <span class="top-post-card__eyebrow" data-card-link={getPostPath(entry)}>{topDeck.panelLabel}</span>
-            <a class="article-title" href={getPostPath(entry)} title={entry.data.title}>
-              {entry.data.title}
-            </a>
-            <span class="top-post-card__meta" data-card-link={getPostPath(entry)}>{resolveCategory(entry)}</span>
-          </div>
         </article>
       ))}
 

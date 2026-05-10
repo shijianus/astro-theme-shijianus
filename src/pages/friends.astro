@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import TelegramWidgetCard from '../components/theme/TelegramWidgetCard.astro';
+import PromoWidgetCard from '../components/theme/PromoWidgetCard.astro';
 import { siteConfig } from '../config/site';
 import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
@@ -26,7 +26,7 @@ const sidebarData = createSidebarData(posts);
         </div>
       </div>
 
-      <TelegramWidgetCard id="friends-page-telegram" className="friends-page__telegram" />
+      <PromoWidgetCard id="friends-page-telegram" platform="telegram" className="friends-page__telegram" />
     </header>
 
     <div class="friends-page__grid">

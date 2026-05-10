@@ -8,7 +8,8 @@ type Star = {
   alpha: number;
   drift: number;
   glow: number;
-  tint: 'white' | 'blue' | 'gold' | 'cyan' | 'green' | 'rose';
+  tint: 'white' | 'blue' | 'gold' | 'cyan' | 'green' | 'rose' | 'neon';
+  char?: string; // For matrix
 };
 
 type ShootingStar = {
@@ -20,10 +21,12 @@ type ShootingStar = {
   alpha: number;
 };
 
-type UniverseMode = 'starfield' | 'nebula' | 'aurora' | 'light-grid' | 'light-clean' | 'light-daybreak';
+type UniverseMode = 
+  | 'starfield' | 'nebula' | 'aurora' | 'matrix'
+  | 'light-grid' | 'light-clean' | 'light-daybreak' | 'light-twilight' | 'light-snow';
 
-const ACTIVE_DARK_BACKGROUNDS = new Set<UniverseMode>(['starfield', 'nebula', 'aurora']);
-const ACTIVE_LIGHT_BACKGROUNDS = new Set(['daybreak', 'grid', 'clean']);
+const ACTIVE_DARK_BACKGROUNDS = new Set<string>(['starfield', 'nebula', 'aurora', 'matrix']);
+const ACTIVE_LIGHT_BACKGROUNDS = new Set<string>(['daybreak', 'grid', 'clean', 'twilight', 'snow']);
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
 const UNIVERSE_FRAME_INTERVAL = 1000 / 24;
 
@@ -35,12 +38,14 @@ function getUniverseMode(): UniverseMode | null {
   const root = document.documentElement;
   const background = root.dataset.background;
   if (root.dataset.theme === 'dark') {
-    return ACTIVE_DARK_BACKGROUNDS.has(background as UniverseMode) ? (background as UniverseMode) : null;
+    return ACTIVE_DARK_BACKGROUNDS.has(background || '') ? (background as UniverseMode) : null;
   }
 
   if (root.dataset.theme === 'light' && ACTIVE_LIGHT_BACKGROUNDS.has(background || '')) {
     if (background === 'clean') return 'light-clean';
     if (background === 'daybreak') return 'light-daybreak';
+    if (background === 'twilight') return 'light-twilight';
+    if (background === 'snow') return 'light-snow';
     return 'light-grid';
   }
 
@@ -53,6 +58,9 @@ function randomBetween(min: number, max: number) {
 
 function sampleTint(mode: UniverseMode): Star['tint'] {
   const roll = Math.random();
+  if (mode === 'matrix') return 'neon';
+  if (mode === 'light-snow') return 'white';
+
   if (isLightMode(mode)) {
     if (roll > 0.84) return 'rose';
     if (roll > 0.64) return 'gold';
@@ -61,9 +69,9 @@ function sampleTint(mode: UniverseMode): Star['tint'] {
   }
 
   if (mode === 'starfield') {
-    if (roll > 0.88) return 'gold';
-    if (roll > 0.7) return 'cyan';
-    if (roll > 0.46) return 'blue';
+    if (roll > 0.95) return 'gold';
+    if (roll > 0.85) return 'cyan';
+    if (roll > 0.60) return 'blue';
     return 'white';
   }
 
@@ -81,11 +89,12 @@ function colorForTint(tint: Star['tint'], alpha: number) {
   if (tint === 'cyan') return `rgba(166, 245, 255, ${alpha})`;
   if (tint === 'green') return `rgba(78, 191, 154, ${alpha})`;
   if (tint === 'rose') return `rgba(255, 126, 126, ${alpha})`;
+  if (tint === 'neon') return `rgba(0, 255, 65, ${alpha})`;
   return `rgba(255, 255, 255, ${alpha})`;
 }
 
 function isLightMode(mode: UniverseMode) {
-  return mode === 'light-grid' || mode === 'light-clean' || mode === 'light-daybreak';
+  return mode.startsWith('light-');
 }
 
 function shouldAnimateUniverse(reducedMotionQuery?: MediaQueryList) {
@@ -121,40 +130,49 @@ export function ThemeUniverse() {
     let shootingStars: ShootingStar[] = [];
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+    const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+
     const createStar = (mode: UniverseMode): Star => {
       const lightMode = isLightMode(mode);
       const depth = Math.random();
-      const radiusBase = lightMode
-        ? randomBetween(0.9, mode === 'light-grid' ? 3.1 : mode === 'light-daybreak' ? 2.8 : 2.4)
-        : mode === 'starfield'
-          ? randomBetween(0.32, 2.7)
-          : mode === 'nebula'
-            ? randomBetween(0.45, 2.2)
-            : randomBetween(0.5, 1.9);
-      const radius = radiusBase * (0.66 + depth * (mode === 'starfield' ? 1.35 : 0.95));
-      const speedBase = lightMode
-        ? randomBetween(0.012, mode === 'light-grid' ? 0.09 : mode === 'light-daybreak' ? 0.072 : 0.055)
-        : mode === 'starfield'
-          ? randomBetween(0.018, 0.22)
-          : mode === 'nebula'
-            ? randomBetween(0.018, 0.12)
-            : randomBetween(0.016, 0.09);
+      
+      let radiusBase = 1.0;
+      let speedBase = 0.05;
+      
+      if (mode === 'matrix') {
+        radiusBase = randomBetween(4, 8); // font size base
+        speedBase = randomBetween(0.1, 0.4);
+      } else if (mode === 'light-snow') {
+        radiusBase = randomBetween(1.2, 4.0);
+        speedBase = randomBetween(0.08, 0.25);
+      } else if (lightMode) {
+        radiusBase = randomBetween(0.9, mode === 'light-grid' ? 3.1 : 2.5);
+        speedBase = randomBetween(0.012, 0.08);
+      } else if (mode === 'starfield') {
+        radiusBase = Math.pow(Math.random(), 3) * 1.5 + 0.1; // realistic star sizes
+        speedBase = randomBetween(0.005, 0.05); // very slow drift
+      } else {
+        radiusBase = randomBetween(0.3, 2.2);
+        speedBase = randomBetween(0.015, 0.12);
+      }
+      
+      const radius = radiusBase * (0.66 + depth * 1.2);
+      
+      let char;
+      if (mode === 'matrix') {
+         char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+      }
 
       return {
         x: randomBetween(0, width),
         y: randomBetween(0, height),
         radius,
         speed: speedBase * (0.6 + depth * 0.95),
-        alpha: lightMode ? randomBetween(0.12, mode === 'light-grid' ? 0.38 : 0.24) : randomBetween(mode === 'starfield' ? 0.4 : 0.3, 1),
-        drift: lightMode ? randomBetween(-0.08, 0.08) : randomBetween(-0.035, 0.035) * (mode === 'starfield' ? 1.35 : 0.75),
-        glow: lightMode
-          ? depth > 0.62
-            ? randomBetween(0.04, 0.14)
-            : 0
-          : depth > (mode === 'starfield' ? 0.5 : 0.72)
-            ? randomBetween(0.16, mode === 'starfield' ? 0.5 : 0.3)
-            : 0,
+        alpha: mode === 'matrix' ? randomBetween(0.2, 0.9) : (lightMode ? randomBetween(0.12, 0.38) : randomBetween(0.15, 0.95)),
+        drift: mode === 'matrix' ? 0 : (lightMode ? randomBetween(-0.05, 0.05) : randomBetween(-0.01, 0.01)),
+        glow: mode === 'matrix' ? 0 : (depth > 0.8 ? randomBetween(0.1, 0.4) : 0),
         tint: sampleTint(mode),
+        char,
       };
     };
 
@@ -166,28 +184,26 @@ export function ThemeUniverse() {
         return;
       }
 
-      const density = isLightMode(mode)
-        ? mode === 'light-grid'
-          ? 17_000
-          : mode === 'light-daybreak'
-            ? 19_500
-          : 22_000
-        : mode === 'starfield'
-          ? 7_400
-          : mode === 'nebula'
-            ? 14_500
-            : 16_500;
-      const minimum = isLightMode(mode)
-        ? mode === 'light-grid'
-          ? 64
-          : mode === 'light-daybreak'
-            ? 54
-            : 44
-        : mode === 'starfield'
-          ? 240
-          : mode === 'nebula'
-            ? 96
-            : 80;
+      let density = 15000;
+      let minimum = 50;
+
+      if (mode === 'matrix') {
+        density = 8000;
+        minimum = 80;
+      } else if (mode === 'light-snow') {
+        density = 9000;
+        minimum = 60;
+      } else if (mode === 'starfield') {
+        density = 5000; // more stars
+        minimum = 300;
+      } else if (isLightMode(mode)) {
+        density = 18000;
+        minimum = 60;
+      } else {
+        density = 12000;
+        minimum = 100;
+      }
+      
       const count = Math.max(minimum, Math.floor((width * height) / density));
       stars = Array.from({ length: count }, () => createStar(mode));
       shootingStars = [];
@@ -209,6 +225,25 @@ export function ThemeUniverse() {
 
     const drawBackgroundGlow = (mode: UniverseMode, tick: number) => {
       if (isLightMode(mode)) {
+        if (mode === 'light-twilight') {
+          const twilight = context.createLinearGradient(0, 0, 0, height);
+          twilight.addColorStop(0, 'rgba(255, 238, 224, 0.4)');
+          twilight.addColorStop(0.4, 'rgba(255, 212, 194, 0.15)');
+          twilight.addColorStop(1, 'rgba(255, 246, 240, 0)');
+          context.fillStyle = twilight;
+          context.fillRect(0, 0, width, height);
+          return;
+        }
+
+        if (mode === 'light-snow') {
+          const snowbg = context.createLinearGradient(0, 0, 0, height);
+          snowbg.addColorStop(0, 'rgba(220, 235, 255, 0.2)');
+          snowbg.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          context.fillStyle = snowbg;
+          context.fillRect(0, 0, width, height);
+          return;
+        }
+
         const drift = Math.sin(tick * 0.00022) * width * 0.04;
         const morning = context.createRadialGradient(width * 0.16 + drift, height * 0.12, 0, width * 0.16 + drift, height * 0.12, width * 0.42);
         morning.addColorStop(0, mode === 'light-daybreak' ? 'rgba(255, 171, 92, 0.16)' : 'rgba(255, 190, 112, 0.12)');
@@ -218,87 +253,101 @@ export function ThemeUniverse() {
 
         const air = context.createLinearGradient(width * 0.06, height * 0.86, width * 0.96, height * 0.12);
         air.addColorStop(0, 'rgba(66, 90, 239, 0)');
-        air.addColorStop(
-          0.42,
-          mode === 'light-grid'
-            ? 'rgba(66, 90, 239, 0.045)'
-            : mode === 'light-daybreak'
-              ? 'rgba(60, 154, 255, 0.052)'
-              : 'rgba(78, 191, 154, 0.035)',
-        );
+        air.addColorStop(0.42, mode === 'light-grid' ? 'rgba(66, 90, 239, 0.045)' : 'rgba(60, 154, 255, 0.052)');
         air.addColorStop(0.72, mode === 'light-daybreak' ? 'rgba(255, 138, 93, 0.052)' : 'rgba(255, 174, 80, 0.038)');
         air.addColorStop(1, 'rgba(66, 90, 239, 0)');
         context.fillStyle = air;
         context.fillRect(0, 0, width, height);
-
-        if (mode === 'light-daybreak') {
-          const horizon = context.createLinearGradient(0, height * 0.62, 0, height);
-          horizon.addColorStop(0, 'rgba(255, 255, 255, 0)');
-          horizon.addColorStop(0.52, 'rgba(255, 208, 152, 0.05)');
-          horizon.addColorStop(1, 'rgba(126, 175, 255, 0.1)');
-          context.fillStyle = horizon;
-          context.fillRect(0, 0, width, height);
-        }
         return;
       }
 
-      context.fillStyle = mode === 'starfield' ? 'rgba(3, 8, 18, 0.72)' : mode === 'nebula' ? 'rgba(8, 10, 24, 0.58)' : 'rgba(5, 12, 26, 0.52)';
+      if (mode === 'matrix') {
+        const dark = context.createLinearGradient(0, 0, 0, height);
+        dark.addColorStop(0, 'rgba(0, 10, 5, 0.85)');
+        dark.addColorStop(1, 'rgba(0, 15, 5, 0.6)');
+        context.fillStyle = dark;
+        context.fillRect(0, 0, width, height);
+        return;
+      }
+
+      // Deeper black for starfield
+      context.fillStyle = mode === 'starfield' ? 'rgba(1, 3, 8, 0.9)' : mode === 'nebula' ? 'rgba(8, 10, 24, 0.58)' : 'rgba(5, 12, 26, 0.52)';
       context.fillRect(0, 0, width, height);
 
       const first = context.createRadialGradient(width * 0.18, height * 0.16, 0, width * 0.18, height * 0.16, width * 0.36);
-      first.addColorStop(0, mode === 'aurora' ? 'rgba(66, 190, 255, 0.12)' : 'rgba(61, 122, 255, 0.18)');
+      first.addColorStop(0, mode === 'aurora' ? 'rgba(66, 190, 255, 0.12)' : 'rgba(61, 122, 255, 0.08)');
       first.addColorStop(1, 'rgba(61, 122, 255, 0)');
       context.fillStyle = first;
       context.fillRect(0, 0, width, height);
 
       const second = context.createRadialGradient(width * 0.82, height * 0.18, 0, width * 0.82, height * 0.18, width * 0.24);
-      second.addColorStop(0, mode === 'nebula' ? 'rgba(140, 104, 255, 0.16)' : 'rgba(242, 185, 75, 0.15)');
+      second.addColorStop(0, mode === 'nebula' ? 'rgba(140, 104, 255, 0.16)' : 'rgba(242, 185, 75, 0.06)');
       second.addColorStop(1, 'rgba(242, 185, 75, 0)');
       context.fillStyle = second;
       context.fillRect(0, 0, width, height);
 
       if (mode === 'starfield') {
-        const band = context.createLinearGradient(width * 0.08, height * 0.78, width * 0.92, height * 0.24);
+        // Realistic Milky Way band
+        const band = context.createLinearGradient(0, height * 0.9, width, height * 0.1);
         band.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        band.addColorStop(0.36, 'rgba(255, 255, 255, 0.03)');
-        band.addColorStop(0.49, 'rgba(137, 196, 255, 0.085)');
-        band.addColorStop(0.58, 'rgba(255, 222, 173, 0.048)');
+        band.addColorStop(0.3, 'rgba(40, 50, 100, 0.04)');
+        band.addColorStop(0.5, 'rgba(100, 150, 255, 0.09)');
+        band.addColorStop(0.7, 'rgba(60, 40, 100, 0.04)');
         band.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        context.save();
+        context.globalAlpha = 0.6;
+        context.globalCompositeOperation = 'screen';
         context.fillStyle = band;
         context.fillRect(0, 0, width, height);
-
-        const horizon = context.createLinearGradient(0, height * 0.72, 0, height);
-        horizon.addColorStop(0, 'rgba(8, 16, 30, 0)');
-        horizon.addColorStop(1, 'rgba(6, 10, 20, 0.4)');
-        context.fillStyle = horizon;
-        context.fillRect(0, 0, width, height);
-
-        const cornerGlow = context.createRadialGradient(width * 0.78, height * 0.72, 0, width * 0.78, height * 0.72, width * 0.34);
-        cornerGlow.addColorStop(0, 'rgba(84, 138, 255, 0.11)');
-        cornerGlow.addColorStop(1, 'rgba(84, 138, 255, 0)');
-        context.fillStyle = cornerGlow;
-        context.fillRect(0, 0, width, height);
+        context.restore();
       }
 
       if (mode === 'aurora') {
-        const ribbon = context.createLinearGradient(width * 0.1, 0, width * 0.85, height);
-        ribbon.addColorStop(0, 'rgba(0, 255, 184, 0)');
-        ribbon.addColorStop(0.4, 'rgba(0, 255, 184, 0.05)');
-        ribbon.addColorStop(0.65, 'rgba(96, 165, 250, 0.08)');
-        ribbon.addColorStop(1, 'rgba(0, 255, 184, 0)');
-        context.fillStyle = ribbon;
-        context.fillRect(0, 0, width, height);
+        const time = tick * 0.0005;
+        const cp1x = width * 0.25 + Math.sin(time) * 100;
+        const cp1y = height * 0.4 + Math.cos(time * 0.8) * 100;
+        const cp2x = width * 0.75 + Math.cos(time * 1.1) * 100;
+        const cp2y = height * 0.6 + Math.sin(time * 0.9) * 100;
+
+        context.beginPath();
+        context.moveTo(-100, height * 0.8);
+        context.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, width + 100, height * 0.2);
+        
+        context.lineWidth = 120;
+        const gradient = context.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, 'rgba(0, 255, 128, 0.15)');
+        gradient.addColorStop(0.5, 'rgba(0, 200, 255, 0.18)');
+        gradient.addColorStop(1, 'rgba(150, 0, 255, 0.1)');
+        
+        context.strokeStyle = gradient;
+        context.globalCompositeOperation = 'screen';
+        context.filter = 'blur(40px)';
+        context.stroke();
+        context.filter = 'none';
+        context.globalCompositeOperation = 'source-over';
       }
     };
 
     const drawStar = (star: Star, tick: number, mode: UniverseMode) => {
-      const lightMode = isLightMode(mode);
-      const twinkle = (Math.sin((tick + star.x) * 0.0025) + 1) / 2;
-      const alpha = lightMode
-        ? Math.max(0.08, Math.min(0.42, star.alpha * (0.62 + twinkle * 0.42)))
-        : Math.max(0.24, Math.min(1, star.alpha * (0.52 + twinkle * 0.56)));
+      if (mode === 'matrix') {
+        context.font = `${Math.max(10, star.radius * 2)}px monospace`;
+        context.fillStyle = colorForTint(star.tint, star.alpha);
+        context.fillText(star.char || '0', star.x, star.y);
+        
+        // randomly change char
+        if (Math.random() < 0.05) {
+           star.char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        }
+        return;
+      }
 
-      if (star.glow > 0) {
+      const lightMode = isLightMode(mode);
+      const twinkle = mode === 'starfield' ? (Math.sin((tick + star.x * 10) * 0.001) + 1) / 2 : (Math.sin((tick + star.x) * 0.0025) + 1) / 2;
+      const alpha = lightMode
+        ? Math.max(0.08, Math.min(0.6, star.alpha * (0.62 + twinkle * 0.42)))
+        : Math.max(0.1, Math.min(1, star.alpha * (0.6 + twinkle * 0.4)));
+
+      if (star.glow > 0 && mode !== 'starfield') {
         const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * (lightMode ? 8.5 : 4.8));
         glow.addColorStop(0, colorForTint(star.tint, star.glow * (lightMode ? 0.55 : 0.68)));
         glow.addColorStop(1, colorForTint(star.tint, 0));
@@ -312,146 +361,48 @@ export function ThemeUniverse() {
       context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
       context.fillStyle = colorForTint(star.tint, alpha);
       context.fill();
-
-      if (lightMode) {
-        context.beginPath();
-        context.arc(star.x, star.y, star.radius * 2.8, 0, Math.PI * 2);
-        context.strokeStyle = colorForTint(star.tint, alpha * 0.16);
-        context.lineWidth = 1;
-        context.stroke();
-        return;
-      }
-
-      if (star.radius > 1.7) {
-        context.beginPath();
-        context.arc(star.x, star.y, Math.max(0.7, star.radius * 0.34), 0, Math.PI * 2);
-        context.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        context.fill();
-      }
-    };
-
-    const drawLightConstellations = (tick: number) => {
-      const maxDistance = Math.min(150, Math.max(92, width * 0.09));
-      const stride = Math.max(2, Math.floor(stars.length / 54));
-
-      context.lineWidth = 1;
-      for (let i = 0; i < stars.length; i += stride) {
-        const first = stars[i];
-        const second = stars[i + stride];
-        if (!first || !second) continue;
-
-        const distance = Math.hypot(first.x - second.x, first.y - second.y);
-        if (distance > maxDistance) continue;
-
-        const pulse = (Math.sin(tick * 0.001 + first.x * 0.02) + 1) / 2;
-        context.beginPath();
-        context.moveTo(first.x, first.y);
-        context.lineTo(second.x, second.y);
-        context.strokeStyle = colorForTint(first.tint, (1 - distance / maxDistance) * (0.035 + pulse * 0.035));
-        context.stroke();
-      }
-    };
-
-    const drawDarkConstellations = (tick: number) => {
-      const anchors = stars.filter((star) => star.radius > 1.25).slice(0, 90);
-      const maxDistance = Math.min(170, Math.max(110, width * 0.12));
-
-      context.lineWidth = 1;
-      for (let index = 0; index < anchors.length; index += 1) {
-        const first = anchors[index];
-        if (!first) continue;
-
-        let closest: Star | null = null;
-        let closestDistance = Number.POSITIVE_INFINITY;
-
-        for (let nextIndex = index + 1; nextIndex < anchors.length; nextIndex += 1) {
-          const candidate = anchors[nextIndex];
-          if (!candidate) continue;
-          const distance = Math.hypot(first.x - candidate.x, first.y - candidate.y);
-          if (distance >= closestDistance || distance > maxDistance) continue;
-          closest = candidate;
-          closestDistance = distance;
-        }
-
-        if (!closest || !Number.isFinite(closestDistance)) continue;
-        const pulse = (Math.sin(tick * 0.00085 + first.x * 0.015 + first.y * 0.006) + 1) / 2;
-
-        context.beginPath();
-        context.moveTo(first.x, first.y);
-        context.lineTo(closest.x, closest.y);
-        context.strokeStyle = colorForTint(first.tint, (1 - closestDistance / maxDistance) * (0.03 + pulse * 0.05));
-        context.stroke();
-      }
-    };
-
-    const drawDaybreakBands = (tick: number) => {
-      const firstBand = context.createLinearGradient(width * 0.08, height * 0.78, width * 0.92, height * 0.24);
-      firstBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
-      firstBand.addColorStop(0.34, 'rgba(255, 205, 145, 0.03)');
-      firstBand.addColorStop(0.54, 'rgba(92, 166, 255, 0.05)');
-      firstBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      context.save();
-      context.globalAlpha = 0.9;
-      context.translate(Math.sin(tick * 0.00011) * width * 0.02, 0);
-      context.fillStyle = firstBand;
-      context.fillRect(0, 0, width, height);
-      context.restore();
-
-      context.beginPath();
-      context.strokeStyle = 'rgba(255, 177, 119, 0.08)';
-      context.lineWidth = 1.25;
-      context.moveTo(width * 0.04, height * 0.68);
-      context.bezierCurveTo(
-        width * 0.24,
-        height * (0.56 + Math.sin(tick * 0.00022) * 0.02),
-        width * 0.62,
-        height * (0.78 + Math.cos(tick * 0.00018) * 0.02),
-        width * 0.96,
-        height * 0.64,
-      );
-      context.stroke();
     };
 
     const maybeSpawnShootingStar = (now: number, mode: UniverseMode) => {
-      const cooldown = mode === 'starfield' ? 980 : mode === 'nebula' ? 3400 : 4800;
-      const maxConcurrent = mode === 'starfield' ? 3 : 1;
+      const cooldown = mode === 'starfield' ? 2500 : mode === 'nebula' ? 3400 : 4800;
+      const maxConcurrent = mode === 'starfield' ? 2 : 1;
       if (shootingStars.length >= maxConcurrent) return;
       if (now - lastShootingAt < cooldown + Math.random() * cooldown) return;
       lastShootingAt = now;
       shootingStars.push({
         x: randomBetween(width * 0.2, width * 0.88),
         y: randomBetween(-40, height * 0.32),
-        length: randomBetween(mode === 'starfield' ? 140 : 90, mode === 'starfield' ? 280 : 160),
-        speed: randomBetween(mode === 'starfield' ? 13 : 8, mode === 'starfield' ? 22 : 12),
+        length: randomBetween(mode === 'starfield' ? 80 : 90, mode === 'starfield' ? 160 : 160),
+        speed: randomBetween(mode === 'starfield' ? 20 : 8, mode === 'starfield' ? 35 : 12),
         angle: Math.PI / 3.2,
         alpha: randomBetween(0.65, 0.95),
       });
     };
 
     const drawShootingStars = (delta: number) => {
-      shootingStars = shootingStars.filter((shootingStar) => shootingStar.alpha > 0.04 && shootingStar.y < height + 80);
-      shootingStars.forEach((shootingStar) => {
-        const endX = shootingStar.x - Math.cos(shootingStar.angle) * shootingStar.length;
-        const endY = shootingStar.y - Math.sin(shootingStar.angle) * shootingStar.length;
-        const gradient = context.createLinearGradient(shootingStar.x, shootingStar.y, endX, endY);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.alpha})`);
-        gradient.addColorStop(0.2, `rgba(164, 210, 255, ${shootingStar.alpha * 0.72})`);
+      shootingStars = shootingStars.filter((s) => s.alpha > 0.04 && s.y < height + 80);
+      shootingStars.forEach((s) => {
+        const endX = s.x - Math.cos(s.angle) * s.length;
+        const endY = s.y - Math.sin(s.angle) * s.length;
+        const gradient = context.createLinearGradient(s.x, s.y, endX, endY);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${s.alpha})`);
+        gradient.addColorStop(0.2, `rgba(164, 210, 255, ${s.alpha * 0.72})`);
         gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
         context.beginPath();
-        context.moveTo(shootingStar.x, shootingStar.y);
+        context.moveTo(s.x, s.y);
         context.lineTo(endX, endY);
         context.strokeStyle = gradient;
-        context.lineWidth = 1.8;
+        context.lineWidth = 1.2;
         context.stroke();
-        shootingStar.x += shootingStar.speed * delta;
-        shootingStar.y += shootingStar.speed * 0.58 * delta;
-        shootingStar.alpha *= Math.pow(0.965, delta);
+        s.x += s.speed * delta;
+        s.y += s.speed * 0.58 * delta;
+        s.alpha *= Math.pow(0.92, delta);
       });
     };
 
     const render = (tick: number) => {
       const mode = getUniverseMode();
-      canvas.style.opacity = mode ? (isLightMode(mode) ? '0.62' : '1') : '0';
+      canvas.style.opacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
       if (!mode || !shouldAnimateUniverse(reducedMotionQuery)) {
         lastFrameAt = 0;
         context.clearRect(0, 0, width, height);
@@ -469,28 +420,29 @@ export function ThemeUniverse() {
 
       context.clearRect(0, 0, width, height);
       drawBackgroundGlow(mode, tick);
-      if (isLightMode(mode)) {
-        drawLightConstellations(tick);
-        if (mode === 'light-daybreak') drawDaybreakBands(tick);
-      }
 
       stars.forEach((star) => {
         star.x += star.drift * delta;
+        
+        if (mode === 'light-snow') {
+           star.x += Math.sin(tick * 0.001 + star.y * 0.01) * 0.5 * delta;
+        }
+
         star.y += star.speed * delta;
-        if (star.y > height + 2) {
-          star.y = -2;
+        if (star.y > height + 20) {
+          star.y = -20;
           star.x = randomBetween(0, width);
         }
-        if (star.x > width + 2) star.x = -2;
-        if (star.x < -2) star.x = width + 2;
+        if (star.x > width + 20) star.x = -20;
+        if (star.x < -20) star.x = width + 20;
         drawStar(star, tick, mode);
       });
 
-      if (!isLightMode(mode)) {
-        drawDarkConstellations(tick);
+      if (!isLightMode(mode) && mode !== 'matrix') {
         maybeSpawnShootingStar(tick, mode);
         drawShootingStars(delta);
       }
+      
       frameId = window.requestAnimationFrame(render);
     };
 
@@ -502,7 +454,6 @@ export function ThemeUniverse() {
         context.clearRect(0, 0, width, height);
         return;
       }
-
       populate();
     });
 
@@ -532,5 +483,5 @@ export function ThemeUniverse() {
     };
   }, []);
 
-  return <canvas id="universe" ref={canvasRef} aria-hidden="true" />;
+  return <canvas id="universe" ref={canvasRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: -1 }} />;
 }

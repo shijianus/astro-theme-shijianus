@@ -84,12 +84,14 @@ body[data-type='post'] #content-inner.layout {
 }
 
 body[data-type='post'] .page-aside {
+  width: 320px;
   align-self: stretch;
 }
 
 body[data-type='post'] .page-aside__sticky {
   position: sticky;
   top: 78px;
+  transition: top 0.3s;
 }
 
 body[data-type='post'] #aside-content {
@@ -630,8 +632,9 @@ body[data-type='home'] .topGroup .todayCard {
   }
 
   body[data-type='post'] .page-aside {
-    display: none;
-  }
+  width: 320px;
+  align-self: stretch;
+}
 
   .post-tools,
   .post-tools-left {
@@ -5743,12 +5746,14 @@ body[data-type='post'] #content-inner.layout {
 }
 
 body[data-type='post'] .page-aside {
-  align-self: start;
+  width: 320px;
+  align-self: stretch;
 }
 
 body[data-type='post'] .page-aside__sticky {
   position: sticky;
   top: 78px;
+  transition: top 0.3s;
 }
 
 body[data-type='post'] #aside-content {
@@ -6118,8 +6123,9 @@ body[data-type='tag-detail'] .taxonomy-page {
   }
 
   body[data-type='post'] .page-aside {
-    display: none;
-  }
+  width: 320px;
+  align-self: stretch;
+}
 
   .post-tools,
   .post-tools-left {
@@ -6127,14 +6133,16 @@ body[data-type='tag-detail'] .taxonomy-page {
   }
 }
 
-/* Post sidebar should extend the original AnZhiYu pattern: TOC stays sticky, other cards remain available. */
+/* Post sidebar should extend the original shijianus pattern: TOC stays sticky, other cards remain available. */
 body[data-type='post'] .page-aside {
+  width: 320px;
   align-self: stretch;
 }
 
 body[data-type='post'] .page-aside__sticky {
-  position: static;
-  top: auto;
+  position: sticky;
+  top: 78px;
+  transition: top 0.3s;
 }
 
 body[data-type='post'] #aside-content > :not(.sticky_layout),
@@ -6514,11 +6522,12 @@ body[data-type='post'] #card-toc .toc-content {
   }
 }
 
-/* UI alignment pass: reduce duplicate sidebar content, restore AnZhiYu-like motion,
+/* UI alignment pass: reduce duplicate sidebar content, restore shijianus-like motion,
    and keep TOC/reward/share panels in a guidance role instead of stealing control. */
 body[data-type='home'] .page-aside__sticky {
   position: sticky;
-  top: 80px;
+  top: 78px;
+  transition: top 0.3s;
 }
 
 .card-webinfo .webinfo-panel {
@@ -6657,12 +6666,13 @@ body[data-type='post'] .page-main {
 
 body[data-type='post'] .page-aside {
   width: 320px;
-  align-self: start;
+  align-self: stretch;
 }
 
 body[data-type='post'] .page-aside__sticky {
   position: sticky;
   top: 78px;
+  transition: top 0.3s;
 }
 
 body[data-type='post'] #aside-content {
@@ -7179,7 +7189,7 @@ body[data-type='404'] .error-feed__body time {
 }
 
 /* 2026-04 alignment patch: prioritize clear hierarchy, passive TOC guidance,
-   icon-only article actions, and AnZhiYu-like category motion. */
+   icon-only article actions, and shijianus-like category motion. */
 .card-webinfo .webinfo-workboard__head {
   align-items: flex-start;
 }
@@ -7818,12 +7828,14 @@ body[data-type='post'] .page-main {
 }
 
 body[data-type='post'] .page-aside {
-  width: 340px;
+  width: 320px;
+  align-self: stretch;
 }
 
 body[data-type='post'] .page-aside__sticky {
   position: sticky;
   top: 78px;
+  transition: top 0.3s;
 }
 
 body[data-type='post'] #aside-content {
@@ -8663,8 +8675,9 @@ body[data-type='post'] #card-toc .toc-content {
 
   body[data-type='post'] .page-main,
   body[data-type='post'] .page-aside {
-    width: 100%;
-  }
+  width: 320px;
+  align-self: stretch;
+}
 
   .post-floating-panel--popover {
     width: min(860px, calc(100vw - 24px));
@@ -9461,7 +9474,8 @@ body[data-type='post'] .post-page-shell .post-content {
 }
 
 body[data-type='post'] .page-aside {
-  width: clamp(328px, 24vw, 356px);
+  width: 320px;
+  align-self: stretch;
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
@@ -9836,9 +9850,8 @@ body[data-type='post'] .post-share-grid__item svg {
   }
 }
 
-/* Final alignment pass: anzhiyu-like top categories, resilient hover panels, and post two-stage aside layout. */
+/* Final alignment pass: shijianus-like top categories, resilient hover panels, and post two-stage aside layout. */
 
-body[data-type='post'] #content-inner.layout,
 :root[data-aside='collapsed'] body[data-type='post'] #content-inner.layout {
   grid-template-columns: minmax(0, 1fr) !important;
   max-width: min(1500px, calc(100vw - 20px));
@@ -9855,13 +9868,14 @@ body[data-type='post'] .post-layout-stack {
   gap: 28px;
 }
 
-body[data-type='post'] .post-layout-row {
+body[data-type='post'] .post-layout-row,
+body[data-type='post'] #content-inner.layout {
   display: grid;
-  grid-template-columns: minmax(0, min(1020px, calc(100vw - 430px))) clamp(328px, 24vw, 356px);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
   align-items: start;
   width: 100%;
-  max-width: min(1500px, calc(100vw - 36px));
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -11174,14 +11188,14 @@ body[data-type='post'] #card-toc .toc-list--child {
 
 body[data-type='post'] #card-toc .toc-item {
   position: relative;
-  padding-left: calc(var(--toc-level, 0) * 12px);
+  padding: 8px 10px 8px 22px;
 }
 
 body[data-type='post'] #card-toc .toc-item:not(.toc-item--level-0)::before {
   position: absolute;
   top: 10px;
   bottom: 10px;
-  left: calc(var(--toc-level, 0) * 12px - 5px);
+  left: 10px;
   width: 1px;
   background: color-mix(in srgb, var(--card-border) 78%, transparent);
   content: "";
@@ -11798,14 +11812,14 @@ body[data-type='post'] #card-toc .toc-list--child {
 
 body[data-type='post'] #card-toc .toc-item {
   position: relative;
-  padding-left: calc(var(--toc-level, 0) * 12px);
+  padding: 8px 10px 8px 22px;
 }
 
 body[data-type='post'] #card-toc .toc-item:not(.toc-item--level-0)::before {
   position: absolute;
   top: 10px;
   bottom: 10px;
-  left: calc(var(--toc-level, 0) * 12px - 6px);
+  left: 10px;
   width: 1px;
   background: color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
   content: "";
@@ -12824,7 +12838,7 @@ body[data-type='post'] #post-toc-aside #card-toc.is-static-layout {
   align-items: start;
   gap: 10px;
   min-height: 38px;
-  padding: 8px 12px 8px calc(12px + var(--toc-level, 0) * 14px);
+  padding: 8px 10px 8px 22px;
   border-radius: 14px;
   color: var(--secondtext);
   font-size: 13px;
@@ -12839,7 +12853,7 @@ body[data-type='post'] #post-toc-aside #card-toc.is-static-layout {
 #card-toc .toc-item > .toc-link::before {
   position: absolute;
   top: 12px;
-  left: calc(10px + var(--toc-level, 0) * 14px);
+  left: 10px;
   width: 4px;
   height: calc(100% - 24px);
   border-radius: 999px;
@@ -13194,7 +13208,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  left: calc(11px + var(--toc-level, 0) * 12px);
+  left: 10px;
   width: 1px;
   background: color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
   content: "";
@@ -13204,7 +13218,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
 #card-toc .toc-item > .toc-link {
   position: relative;
   min-height: 0;
-  padding: 8px 10px 8px calc(22px + var(--toc-level, 0) * 12px);
+  padding: 8px 10px 8px 22px;
   border-radius: 14px;
   color: var(--secondtext);
 }
@@ -13212,7 +13226,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
 #card-toc .toc-item > .toc-link::before {
   position: absolute;
   top: 50%;
-  left: calc(7px + var(--toc-level, 0) * 12px);
+  left: 10px;
   width: 8px;
   height: 8px;
   border-radius: 999px;
@@ -13819,7 +13833,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
   position: absolute;
   top: 10px;
   bottom: 10px;
-  left: calc(10px + var(--toc-level, 0) * 12px);
+  left: 10px;
   width: 1px;
   background: color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
   content: "";
@@ -13833,7 +13847,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
   align-items: start;
   gap: 10px;
   min-height: 40px;
-  padding: 8px 10px 8px calc(18px + var(--toc-level, 0) * 12px);
+  padding: 8px 10px 8px 22px;
   border-radius: 14px;
   color: var(--secondtext);
   background: transparent;
@@ -14545,9 +14559,9 @@ body[data-type='post'] .support-panel-popover[data-pinned='true'] .support-panel
   }
 
   body:not([data-type='post']) .page-aside {
-    width: 320px;
-    align-self: start;
-  }
+  width: 320px;
+  align-self: stretch;
+}
 }
 
 body[data-type='post'] #post-toc-aside {
@@ -14661,4 +14675,37 @@ body[data-type='home'] #home-pagination {
     justify-items: center;
     text-align: center;
   }
+}
+
+
+#card-toc .toc-item > .toc-link {
+  font-size: calc(14px - var(--toc-level, 0) * 1px) !important;
+  font-weight: calc(600 - var(--toc-level, 0) * 50) !important;
+}
+#card-toc .toc-content::-webkit-scrollbar {
+  display: none !important;
+}
+#card-toc .toc-content {
+  scrollbar-width: none !important;
+}
+
+
+body[data-type='home'] .categoryItem {
+  transition: flex 0.4s ease, width 0.4s ease, background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease !important;
+}
+body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
+  flex: 1 1 20%;
+}
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
+  flex: 1 1 50% !important;
+}
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
+  transform: rotate(0deg) scale(1.1) !important;
+  opacity: 0.8 !important;
+  right: 15px !important;
+  transition: transform 0.4s ease, opacity 0.4s ease, right 0.4s ease !important;
+}
+body[data-type='home'] .categoryItem .categoryButtonIcon {
+  transition: transform 0.4s ease, opacity 0.4s ease, right 0.4s ease !important;
+  transform: rotate(15deg) scale(1) !important;
 }

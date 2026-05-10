@@ -1,0 +1,18 @@
+// Music Search Modal
+#music-search-modal.anzhiyu-modal(style="display: none;")
+  .anzhiyu-modal-content
+    .anzhiyu-modal-header
+      span.close-button(onclick="anzhiyu.hideMusicSearchModal()") &times;
+      h2 Music Search
+    .anzhiyu-modal-body
+      .music-search-input-group
+        input#musicSearchInput(type="text" placeholder="Search song, artist, or album...")
+        button#musicSearchButton(onclick="anzhiyu.searchMusic()")
+          i.anzhiyufont.anzhiyu-icon-search
+      .music-search-results#musicSearchResults
+        // Search results will be dynamically loaded here
+      .loading-spinner#musicSearchLoadingSpinner(style="display: none;")
+        i.anzhiyufont.anzhiyu-icon-spinner.fa-spin
+        span Searching...
+    .anzhiyu-modal-footer
+      button#playRandomMusicButton(onclick="anzhiyu.playRandomMusic()") Play Random Music

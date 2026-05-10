@@ -1,0 +1,18 @@
+- let faceImg = theme.aside.card_telegram.face
+- let backFaceImg = theme.aside.card_telegram.backFace
+- let link = theme.aside.card_telegram.link
+if theme.aside.card_telegram.enable
+  .card-widget.anzhiyu-right-widget#card-telegram(onclick=`window.open("${link}", "_blank")`)
+    #flip-wrapper
+      #flip-content
+        .face
+          // Telegram invitation front image
+          .telegram-info
+            img.telegram-face-img(src=faceImg alt="Telegram Invitation")
+            .telegram-text
+              i.anzhiyufont.anzhiyu-icon-telegram.telegram-icon
+              span 加入我们的Telegram群组
+        .back.face
+          // Telegram QR code back image
+          .telegram-qr
+            img.telegram-qr-img(src=backFaceImg alt="Telegram QR Code")

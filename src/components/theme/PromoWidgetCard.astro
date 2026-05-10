@@ -1,0 +1,504 @@
+---
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  id?: string;
+  className?: string;
+  platform?: 'telegram' | 'wechat' | 'facebook' | 'whatsapp';
+  config?: {
+    href: string;
+    qrImage: string;
+    title: string;
+    subtitle: string;
+    backTitle?: string;
+    backSubtitle?: string;
+    qrCrop?: {
+      enable: boolean;
+      scale?: number;
+      offsetX?: string;
+      offsetY?: string;
+    };
+  };
+}
+
+const {
+  id = 'promo-widget',
+  className = '',
+  platform = 'telegram',
+} = Astro.props;
+
+const defaultCopy = {
+  telegram: {
+    title: 'Telegram',
+    subtitle: '专注隐私传播。海外更新、测试第一时间获取。',
+    backTitle: '扫码加入',
+    backSubtitle: '无缝安全交流'
+  },
+  wechat: {
+    title: 'WeChat',
+    subtitle: '微信公众号。快人一步获取最新文章与动态。',
+    backTitle: '扫一扫关注',
+    backSubtitle: '不错过精彩内容'
+  },
+  facebook: {
+    title: 'Facebook',
+    subtitle: '开放社群。加入我们，结识千万同好畅所欲言。',
+    backTitle: '扫码关注主页',
+    backSubtitle: '探索更多可能'
+  },
+  whatsapp: {
+    title: 'WhatsApp',
+    subtitle: '快捷简单安全。即刻加入，随时保持密切联系。',
+    backTitle: '扫码添加联系',
+    backSubtitle: '开启即时通讯'
+  }
+};
+
+// Fallback to siteConfig.aside.telegramWidget if telegram is selected and no config is provided
+const platformConfigs = {
+  telegram: {
+    href: siteConfig.aside.telegramWidget?.href || '#',
+    qrImage: siteConfig.aside.telegramWidget?.qrImage || '',
+    title: siteConfig.aside.telegramWidget?.title || defaultCopy.telegram.title,
+    subtitle: defaultCopy.telegram.subtitle,
+    backTitle: defaultCopy.telegram.backTitle,
+    backSubtitle: defaultCopy.telegram.backSubtitle,
+    iconPath: 'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'
+  },
+  wechat: {
+    href: '#', 
+    qrImage: '',
+    title: defaultCopy.wechat.title,
+    subtitle: defaultCopy.wechat.subtitle,
+    backTitle: defaultCopy.wechat.backTitle,
+    backSubtitle: defaultCopy.wechat.backSubtitle,
+    iconPath: 'M17.333 11.333c0-3.313-3.284-6-7.333-6S2.667 8.02 2.667 11.333c0 1.84 1.01 3.486 2.63 4.545l-.697 2.121 2.502-1.252c.904.254 1.88.386 2.9.386 4.049 0 7.331-2.687 7.331-6zm-9.333-1.333a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5.333 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm8 4c0-2.576-2.537-4.667-5.667-4.667-.113 0-.223.006-.333.013.432.842.667 1.776.667 2.766 0 3.864-3.731 7-8.333 7-.53 0-1.045-.038-1.543-.109 1.155 1.583 3.324 2.664 5.876 2.664.815 0 1.595-.106 2.324-.31l2.001 1.002-.558-1.697c1.296-.847 2.103-2.163 2.103-3.636zm-3.666-.667a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0zm-4.334 0a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0z'
+  },
+  whatsapp: {
+    href: '#',
+    qrImage: '',
+    title: defaultCopy.whatsapp.title,
+    subtitle: defaultCopy.whatsapp.subtitle,
+    backTitle: defaultCopy.whatsapp.backTitle,
+    backSubtitle: defaultCopy.whatsapp.backSubtitle,
+    iconPath: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01a1.096 1.096 0 0 0-.792.371c-.297.322-1.139 1.114-1.139 2.716s1.164 3.146 1.337 3.37c.173.223 2.302 3.518 5.577 4.935 2.187.947 2.923.8 3.541.748.723-.06 2.303-.941 2.625-1.849.322-.909.322-1.688.223-1.849-.099-.161-.371-.247-.669-.396zM12 21.6A9.6 9.6 0 0 1 3.731 16.7l-1.312 4.79 4.908-1.288A9.553 9.553 0 0 1 12 21.6c5.3 0 9.6-4.3 9.6-9.6S17.3 2.4 12 2.4 2.4 6.7 2.4 12c0 1.676.433 3.25 1.196 4.593L2.4 21.6l5.132-1.35A9.57 9.57 0 0 0 12 21.6z'
+  },
+  facebook: {
+    href: '#',
+    qrImage: '',
+    title: defaultCopy.facebook.title,
+    subtitle: defaultCopy.facebook.subtitle,
+    backTitle: defaultCopy.facebook.backTitle,
+    backSubtitle: defaultCopy.facebook.backSubtitle,
+    iconPath: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'
+  }
+};
+
+const finalConfig = Astro.props.config || platformConfigs[platform];
+const iconPath = platformConfigs[platform].iconPath;
+
+const isCropEnabled = finalConfig.qrCrop?.enable ?? false;
+const qrScale = isCropEnabled ? (finalConfig.qrCrop?.scale || 1.0) : 1.0;
+const qrOffsetX = isCropEnabled ? (finalConfig.qrCrop?.offsetX || '0px') : '0px';
+const qrOffsetY = isCropEnabled ? (finalConfig.qrCrop?.offsetY || '0px') : '0px';
+
+// JSON encode the themes to pass them safely to the client script
+const themesJson = JSON.stringify({
+  telegram: [
+    { bg: 'linear-gradient(135deg, #1cb5e0 0%, #000851 100%)', textLight: '#89f7fe', badgeBg: 'rgba(28, 181, 224, 0.3)', badgeText: '#89f7fe' },
+    { bg: 'linear-gradient(to right, #00c6ff 0%, #0072ff 100%)', textLight: '#e0c3fc', badgeBg: 'rgba(0, 198, 255, 0.3)', badgeText: '#e0c3fc' },
+    { bg: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)', textLight: '#fdfbfb', badgeBg: 'rgba(79, 172, 254, 0.3)', badgeText: '#fff' }
+  ],
+  wechat: [
+    { bg: 'linear-gradient(135deg, #07c160 0%, #036b35 100%)', textLight: '#d4fc79', badgeBg: 'rgba(7, 193, 96, 0.4)', badgeText: '#d4fc79' },
+    { bg: 'linear-gradient(to right, #11998e 0%, #38ef7d 100%)', textLight: '#fdfbfb', badgeBg: 'rgba(56, 239, 125, 0.3)', badgeText: '#fff' },
+    { bg: 'linear-gradient(to right, #00b09b 0%, #96c93d 100%)', textLight: '#e2ebf0', badgeBg: 'rgba(0, 176, 155, 0.3)', badgeText: '#e2ebf0' }
+  ],
+  whatsapp: [
+    { bg: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)', textLight: '#d4fc79', badgeBg: 'rgba(37, 211, 102, 0.4)', badgeText: '#d4fc79' },
+    { bg: 'linear-gradient(to right, #11998e 0%, #38ef7d 100%)', textLight: '#fdfbfb', badgeBg: 'rgba(17, 153, 142, 0.4)', badgeText: '#fff' },
+    { bg: 'linear-gradient(to right, #00b09b 0%, #96c93d 100%)', textLight: '#e2ebf0', badgeBg: 'rgba(0, 176, 155, 0.4)', badgeText: '#e2ebf0' }
+  ],
+  facebook: [
+    { bg: 'linear-gradient(135deg, #1877f2 0%, #0e458e 100%)', textLight: '#a1c4fd', badgeBg: 'rgba(24, 119, 242, 0.4)', badgeText: '#a1c4fd' },
+    { bg: 'linear-gradient(to right, #3a7bd5 0%, #3a6073 100%)', textLight: '#e2ebf0', badgeBg: 'rgba(58, 123, 213, 0.4)', badgeText: '#e2ebf0' },
+    { bg: 'linear-gradient(to right, #2b5876 0%, #4e4376 100%)', textLight: '#fdfbfb', badgeBg: 'rgba(78, 67, 118, 0.4)', badgeText: '#fff' }
+  ]
+});
+---
+
+<div class:list={['card-widget promo-widget', className]} id={id}>
+  <div id="flip-wrapper" data-platform={platform} data-themes={themesJson}>
+    <div id="flip-content">
+      
+      <!-- Front Face -->
+      <div class="face front-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
+        <!-- Theme Toggle Button (stops propagation to avoid opening link) -->
+        <button class="theme-toggle-btn" aria-label="切换色调" onclick="event.stopPropagation(); window.togglePromoTheme(this)">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          </svg>
+        </button>
+
+        <!-- Artistic Background Watermark Icon -->
+        <div class="promo-watermark">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d={iconPath} />
+          </svg>
+        </div>
+
+        <div class="promo-content">
+          <div class="promo-icon">
+            <svg viewBox="0 0 24 24" width="42" height="42" fill="currentColor">
+              <path d={iconPath} />
+            </svg>
+          </div>
+          <div class="promo-text">
+            <div class="promo-title-wrapper">
+              <span class="promo-title">{finalConfig.title}</span>
+              <span class="promo-badge">OFFICIAL</span>
+            </div>
+            <div class="promo-subtitle">{finalConfig.subtitle}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back Face -->
+      <div class="back face back-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
+        <div class="promo-back-grid">
+          <div class="promo-back-info">
+            <div class="promo-back-title">{finalConfig.backTitle}</div>
+            <div class="promo-back-subtitle">{finalConfig.backSubtitle}</div>
+            <div class="promo-cta-wrapper">
+              <span class="promo-cta-btn">立即加入 &rarr;</span>
+            </div>
+          </div>
+          <div class="promo-qr-container">
+            <img src={finalConfig.qrImage} alt={`${finalConfig.title} QR Code`} style={`transform: scale(${qrScale}) translate(${qrOffsetX}, ${qrOffsetY});`} />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  window.togglePromoTheme = function(btn) {
+    const wrapper = btn.closest('#flip-wrapper');
+    if (!wrapper) return;
+    
+    const platform = wrapper.getAttribute('data-platform');
+    const themesStr = wrapper.getAttribute('data-themes');
+    if (!platform || !themesStr) return;
+
+    try {
+      const themes = JSON.parse(themesStr);
+      const platformThemes = themes[platform];
+      if (!platformThemes || platformThemes.length === 0) return;
+
+      let currentIndex = parseInt(wrapper.getAttribute('data-theme-idx') || '0', 10);
+      currentIndex = (currentIndex + 1) % platformThemes.length;
+      
+      const theme = platformThemes[currentIndex];
+      wrapper.style.setProperty('--promo-bg-gradient', theme.bg);
+      wrapper.style.setProperty('--promo-text-light', theme.textLight);
+      wrapper.style.setProperty('--promo-badge-bg', theme.badgeBg);
+      wrapper.style.setProperty('--promo-badge-text', theme.badgeText);
+      wrapper.setAttribute('data-theme-idx', currentIndex.toString());
+    } catch(e) {
+      console.error('Failed to parse promo themes', e);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#flip-wrapper').forEach(wrapper => {
+      const platform = wrapper.getAttribute('data-platform');
+      const themesStr = wrapper.getAttribute('data-themes');
+      if (platform && themesStr) {
+        try {
+          const themes = JSON.parse(themesStr);
+          if (themes[platform] && themes[platform].length > 0) {
+            const theme = themes[platform][0];
+            wrapper.style.setProperty('--promo-bg-gradient', theme.bg);
+            wrapper.style.setProperty('--promo-text-light', theme.textLight);
+            wrapper.style.setProperty('--promo-badge-bg', theme.badgeBg);
+            wrapper.style.setProperty('--promo-badge-text', theme.badgeText);
+          }
+        } catch (e) {}
+      }
+    });
+  });
+</script>
+
+<style>
+  .promo-widget {
+    display: block !important;
+    padding: 0 !important;
+    border: none;
+    height: 120px;
+    border-radius: 12px;
+    box-shadow: var(--card-box-shadow);
+    color: #fff;
+    overflow: visible;
+    margin-bottom: 1rem;
+  }
+  
+  :global([data-theme="dark"]) .promo-widget {
+    background: transparent;
+    border: none;
+  }
+
+  #flip-wrapper {
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    /* Defaults */
+    --promo-bg-gradient: linear-gradient(135deg, #1cb5e0 0%, #000851 100%);
+    --promo-text-light: #89f7fe;
+    --promo-badge-bg: rgba(28, 181, 224, 0.3);
+    --promo-badge-text: #89f7fe;
+  }
+  
+  #flip-content {
+    width: 100%;
+    height: 100%;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+  }
+  
+  .face {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    border-radius: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    background-image: var(--promo-bg-gradient);
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .theme-toggle-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+  }
+  
+  .theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+
+  .promo-watermark {
+    position: absolute;
+    right: -25px;
+    bottom: -25px;
+    width: 130px;
+    height: 130px;
+    opacity: 0.12;
+    z-index: 0;
+    pointer-events: none;
+    transform: rotate(-15deg);
+  }
+
+  .promo-watermark svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .front-face {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  
+  .promo-content {
+    display: flex;
+    align-items: center;
+    padding: 0 1.2rem;
+    gap: 1rem;
+    width: 100%;
+    z-index: 2;
+  }
+  
+  .promo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+  
+  .promo-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .promo-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .promo-title {
+    font-weight: 800;
+    font-size: 1.2rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .promo-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--promo-badge-bg);
+    color: var(--promo-badge-text);
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  
+  .promo-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.95;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    font-weight: 400;
+    color: var(--promo-text-light);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .back-face {
+    -webkit-transform: rotateY(180deg) !important;
+    transform: rotateY(180deg) !important;
+    background-image: var(--promo-bg-gradient) !important; 
+    display: block !important; /* using grid internally */
+  }
+  
+  .promo-back-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 80px !important; /* Strictly left-right */
+    align-items: center !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0.8rem 1rem !important;
+    box-sizing: border-box !important;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 12px;
+  }
+
+  .promo-back-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    color: #fff;
+    text-align: left;
+  }
+
+  .promo-back-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    color: var(--promo-text-light);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .promo-back-subtitle {
+    font-size: 0.75rem;
+    color: #fff;
+    opacity: 0.9;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .promo-cta-wrapper {
+    display: flex;
+  }
+
+  .promo-cta-btn {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    background: linear-gradient(to right, #fff, var(--promo-text-light));
+    color: #111;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .promo-widget:hover .promo-cta-btn {
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+  }
+
+  .promo-qr-container {
+    width: 80px !important;
+    height: 80px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px;
+    background: #fff; 
+    padding: 3px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .promo-qr-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    transform-origin: center !important;
+    border-radius: 4px;
+    display: block !important;
+  }
+
+  .promo-widget:hover #flip-content {
+    -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+  }
+</style>

@@ -18,6 +18,21 @@ export function hasConfiguredCommentDatabase(integration: CommentsConfig) {
   return false;
 }
 
+export function isRemoteDatabaseConfigured(integration: CommentsConfig) {
+  if (integration.provider === 'cloudflare') return Boolean(integration.cloudflare.apiBase.trim());
+  if (integration.provider === 'giscus') {
+    return Boolean(
+      integration.giscus.repo.trim() &&
+      integration.giscus.repoId.trim() &&
+      integration.giscus.category.trim() &&
+      integration.giscus.categoryId.trim(),
+    );
+  }
+  if (integration.provider === 'waline') return Boolean(integration.waline.serverURL.trim());
+  if (integration.provider === 'twikoo') return Boolean(integration.twikoo.envId.trim());
+  return false;
+}
+
 export function isCommentsIntegrationEnabled(integration: CommentsConfig) {
   return hasConfiguredCommentDatabase(integration);
 }

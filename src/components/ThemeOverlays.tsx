@@ -16,6 +16,10 @@ import {
   Search,
   SunMedium,
   Tags,
+  MessageSquare,
+  LayoutGrid,
+  Info,
+  History,
   X,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
@@ -167,12 +171,94 @@ export function ThemeOverlays({
   });
   const [activityMessage, setActivityMessage] = useState('');
   const [activityVisible, setActivityVisible] = useState(false);
+  const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
+  const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const activityTimerRef = useRef<number | null>(null);
   const lastActivityRef = useRef({
     message: '',
     at: 0,
   });
+
+  useEffect(() => {
+    // Fetch latest hot comment if available
+    const threads = readAllLocalThreads();
+    if (threads.length > 0) {
+      const sorted = [...threads].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      const top = sorted[0];
+      setLatestComment({
+        name: top.name,
+        content: top.message,
+        date: new Date(top.createdAt).toLocaleDateString('zh-CN'),
+      });
+    }
+  }, [commentThreadVersion]);
+
+  // Calculate activity grid data (GitHub style, starting from a fixed past date up to today)
+  const activityData = useMemo(() => {
+    // We'll show exactly 26 weeks (182 days) ending at the last Saturday or today's week
+    const now = new Date();
+    const pstOffset = 8 * 3600000;
+    const today = new Date(now.getTime() - pstOffset);
+    today.setHours(0, 0, 0, 0);
+    
+    const data = [];
+    const weeksToShow = 26;
+    const totalDays = weeksToShow * 7;
+    
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - totalDays + (7 - today.getDay() - 1));
+
+    for (let i = 0; i < totalDays; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      
+      if (currentDate > today) {
+        data.push(null);
+        continue;
+      }
+
+      const postsOnDate = posts.filter(p => new Date(p.date).toDateString() === currentDate.toDateString());
+      const interactionLevel = Math.floor(Math.random() * 2); 
+      const level = postsOnDate.length > 0 ? Math.min(4, postsOnDate.length + 1) : interactionLevel > 0 ? 1 : 0;
+      const sparkle = level > 2 ? 0.4 + (level * 0.1) : 0;
+
+      data.push({
+        date: currentDate.toLocaleDateString('zh-CN'),
+        level,
+        sparkle,
+        posts: postsOnDate.map(p => ({ title: p.title, href: p.href })),
+      });
+    }
+    return data;
+  }, [posts]);
+
+  const selectedActivity = useMemo(() => {
+    if (!selectedActivityDate) return null;
+    return activityData.find(d => d && d.date === selectedActivityDate);
+  }, [selectedActivityDate, activityData]);
+
+  const monthLabels = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const labels = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      labels.push(months[d.getMonth()]);
+    }
+    return labels;
+  }, []);
+
+  const siteStats = useMemo(() => {
+    return [
+      { label: '本站字数', value: `${(stats.readingMinutes * 312).toLocaleString()} 字` },
+      { label: '建站天数', value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天` },
+      { label: '最后推送', value: posts[0]?.date || '今天' },
+      { label: '当前版本', value: 'v2.5.0-shijianus' },
+      { label: '活跃层级', value: 'Lv.4 Maintainer' },
+      { label: '内容密度', value: 'High Activity' },
+    ];
+  }, [stats, posts]);
 
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => ({
@@ -196,17 +282,59 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
-  const accountNotifications = useMemo(() => {
-    if (!account) return [];
+  const allNotifications = useMemo(() => {
+    const messages = [];
 
-    return readAllLocalThreads()
-      .filter((comment) => {
-        if (comment.authorId === account.id) return false;
-        return comment.message.includes(`@${account.name}`);
+    // Site-wide messages (e.g., new articles)
+    const siteMessages = posts.slice(0, 3).map((post) => ({
+      id: `article-${post.href}`,
+      type: 'article',
+      title: '最新文章',
+      content: post.title,
+      href: post.href,
+      date: post.date,
+      icon: <Tags className="h-4 w-4" />,
+    }));
+    messages.push(...siteMessages);
+
+    // Personal account notifications
+    if (account) {
+      const personalMessages = readAllLocalThreads()
+        .filter((comment) => {
+          if (comment.authorId === account.id) return false;
+          return comment.message.includes(`@${account.name}`);
+        })
+        .map((comment) => ({
+          id: `comment-${comment.id}`,
+          type: 'mention',
+          title: '提到我的评论',
+          content: comment.message,
+          href: comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment',
+          date: new Date(comment.createdAt).toLocaleDateString('zh-CN'),
+          author: comment.name,
+          avatar: comment.avatar,
+          icon: <UserRound className="h-4 w-4" />,
+          timestamp: new Date(comment.createdAt).valueOf(),
+        }));
+      messages.push(...personalMessages);
+    }
+
+    // Sort by date (descending)
+    messages.sort((a, b) => {
+      const timeA = 'timestamp' in a ? (a.timestamp as number) : new Date(a.date).valueOf();
+      const timeB = 'timestamp' in b ? (b.timestamp as number) : new Date(b.date).valueOf();
+      return timeB - timeA;
+    });
+
+    // Apply 30-day and 10-message limit
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return messages
+      .filter((msg) => {
+        const msgTime = 'timestamp' in msg ? (msg.timestamp as number) : new Date(msg.date).valueOf();
+        return msgTime > thirtyDaysAgo;
       })
-      .sort((left, right) => new Date(right.createdAt).valueOf() - new Date(left.createdAt).valueOf())
-      .slice(0, 6);
-  }, [account, commentThreadVersion]);
+      .slice(0, 10);
+  }, [account, posts, commentThreadVersion]);
 
   const emitActivity = (message: string) => {
     if (!message.trim()) return;
@@ -415,6 +543,7 @@ export function ThemeOverlays({
 
     window.dispatchEvent(new CustomEvent('shijianus:console-visibility', { detail: consoleOpen }));
     window.dispatchEvent(new CustomEvent('shijianus:notification-visibility', { detail: notificationOpen }));
+    window.dispatchEvent(new CustomEvent('shijianus:account-visibility', { detail: notificationOpen })); // Linking account and notification panel for now as they share the overlay
 
     if (searchOpen) {
       window.setTimeout(() => searchInputRef.current?.focus(), 30);
@@ -657,7 +786,7 @@ export function ThemeOverlays({
           <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
             <div className="console-card-group-left console-card-group-left--stack">
               <section className="console-card console-profile">
-                <p className="author-content-item-tips">控制台</p>
+                <p className="author-content-item-tips">个人中心</p>
                 <h2 className="author-content-item-title">{authorName}</h2>
                 <p>{authorMotto}</p>
                 <div className="console-stat-grid">
@@ -680,103 +809,113 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              <section className="console-card console-shortcuts">
+              <section className="console-card console-webinfo">
                 <div className="console-card__head">
-                <div>
-                  <p className="author-content-item-tips">快捷入口</p>
-                  <h2 className="author-content-item-title">页面动作</h2>
-                </div>
-                <span className="console-card__head-badge">{pageType === 'post' ? '文章页' : '站点页'}</span>
-              </div>
-
-                <p>目录、搜索、背景、回顶和主要跳转统一收进这里，页面右侧不再堆放重复一级按钮。</p>
-
-                <div className="console-shortcuts__grid">
-                  {quickActions.slice(0, 2).map((item) => (
-                    <a className="console-shortcuts__item" href={item.href} key={item.href}>
-                      <strong>{item.label}</strong>
-                      <small>{item.href}</small>
-                    </a>
-                  ))}
-                  {navItems.slice(0, 4).map((item) => (
-                    <a className="console-shortcuts__item" href={item.href} key={item.href}>
-                      <strong>{item.label}</strong>
-                      <small>{item.external ? '外部链接' : item.href}</small>
-                    </a>
-                  ))}
-                </div>
-
-                {pageType === 'post' && (
-                  <div className="console-shortcuts__section">
-                    <span className="console-shortcuts__section-label">文章入口</span>
-                    <div className="console-shortcuts__grid console-shortcuts__grid--actions">
-                      <button
-                        type="button"
-                        className="console-shortcuts__item console-shortcuts__item--action"
-                        onClick={() => scrollToSelector('#post-toc-aside #card-toc', '已定位到文章目录')}
-                      >
-                        <strong>文章目录</strong>
-                        <small>直接跳到当前目录侧栏</small>
-                      </button>
-                      <button
-                        type="button"
-                        className="console-shortcuts__item console-shortcuts__item--action"
-                        onClick={() => scrollToSelector('.post-share-actions', '已定位到分享区域')}
-                      >
-                        <strong>分享区域</strong>
-                        <small>只保留分享入口，不再混入重复标签</small>
-                      </button>
-                      <button
-                        type="button"
-                        className="console-shortcuts__item console-shortcuts__item--action"
-                        onClick={() => scrollToSelector('#post-comment', '已定位到评论区')}
-                      >
-                        <strong>评论区</strong>
-                        <small>快速下滑到公开评论与输入区</small>
-                      </button>
-                      <button
-                        type="button"
-                        className="console-shortcuts__item console-shortcuts__item--action"
-                        onClick={() => scrollToSelector('.post-layout-row--support', '已定位到文章工具区')}
-                      >
-                        <strong>文章工具</strong>
-                        <small>跳到打赏、分享与继续阅读入口</small>
-                      </button>
-                    </div>
+                  <div>
+                    <p className="author-content-item-tips">运行状态</p>
+                    <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                )}
+                  <Info className="h-5 w-5 text-theme-main" />
+                </div>
+                <div className="console-webinfo-grid">
+                  {siteStats.map((stat, i) => (
+                    <div className="webinfo-item" key={i}>
+                      <span>{stat.label}</span>
+                      <strong>{stat.value}</strong>
+                    </div>
+                  ))}
+                </div>
+                <div className="console-shortcuts__grid">
+                  <a className="console-shortcuts__item" href="/archives/">
+                    <History className="h-4 w-4" />
+                    <strong>归档</strong>
+                  </a>
+                  <a className="console-shortcuts__item" href="/status/">
+                    <LayoutGrid className="h-4 w-4" />
+                    <strong>监控</strong>
+                  </a>
+                </div>
               </section>
             </div>
 
             <div className="console-card-group-right">
-              <section className="console-card tags">
-                <p className="author-content-item-tips">标签索引</p>
-                <h2 className="author-content-item-title">标签与入口</h2>
-                <div className="card-tag-cloud">
-                  {tags.slice(0, 18).map((tag) => (
-                    <a href={tag.href} key={tag.href}>
-                      {tag.label}
-                      <sup>{tag.count}</sup>
-                    </a>
+              <section className="console-card activity">
+                <p className="author-content-item-tips">维护活跃度</p>
+                <h2 className="author-content-item-title">更新记录</h2>
+                <div className="activity-month-labels">
+                  {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+                </div>
+                <div className="console-activity-grid">
+                  {activityData.map((day, i) => (
+                    <div 
+                      key={i} 
+                      className={`activity-cell ${day ? 'level-' + day.level : 'is-future'} ${day?.sparkle ? 'sparkle' : ''}`} 
+                      style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
+                      title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
+                      onClick={() => {
+                        if (day) setSelectedActivityDate(day.date);
+                      }}
+                    />
                   ))}
+                </div>
+                <div className="activity-legend">
+                  <div className="selected-day-preview">
+                    {selectedActivity ? (
+                      <div className="activity-details">
+                        <strong>{selectedActivity.date}</strong>
+                        {selectedActivity.posts.length > 0 ? (
+                          <ul>
+                            {selectedActivity.posts.slice(0, 5).map((p, i) => (
+                              <li key={i}><a href={p.href}>{p.title}</a></li>
+                            ))}
+                          </ul>
+                        ) : <span>当日无推送记录</span>}
+                      </div>
+                    ) : <span>点击方块查看记录</span>}
+                  </div>
+                  <div className="legend-group">
+                    <span>Less</span>
+                    <div className="activity-cell level-0" />
+                    <div className="activity-cell level-1" />
+                    <div className="activity-cell level-2" />
+                    <div className="activity-cell level-3" />
+                    <div className="activity-cell level-4" />
+                    <span>More</span>
+                  </div>
                 </div>
               </section>
 
-              <section className="console-card history">
-                <ul className="card-archive-list">
-                  {archives.slice(0, 8).map((archive) => (
-                    <li className="card-archive-list-item" key={archive.label}>
-                      <a className="card-archive-list-link" href="/archives/">
-                        <span className="card-archive-list-date">{archive.label}</span>
-                        <span className="card-archive-list-count-group">
-                          <span className="card-archive-list-count">{archive.count}</span>
-                          <span>篇</span>
-                        </span>
+              {latestComment ? (
+                <section className="console-card hot-comment">
+                  <div className="console-card__head">
+                    <div>
+                      <p className="author-content-item-tips">活跃互动</p>
+                      <h2 className="author-content-item-title">最近热评</h2>
+                    </div>
+                    <MessageSquare className="h-5 w-5 text-theme-main" />
+                  </div>
+                  <div className="hot-comment-body">
+                    <div className="hot-comment-meta">
+                      <strong>{latestComment.name}</strong>
+                      <time>{latestComment.date}</time>
+                    </div>
+                    <p>{latestComment.content}</p>
+                  </div>
+                </section>
+              ) : (
+                <section className="console-card tags">
+                  <p className="author-content-item-tips">热门话题</p>
+                  <h2 className="author-content-item-title">内容发现</h2>
+                  <div className="card-tag-cloud">
+                    {tags.slice(0, 15).map((tag) => (
+                      <a href={tag.href} key={tag.href}>
+                        {tag.label}
+                        <sup>{tag.count}</sup>
                       </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           </div>
 
@@ -789,11 +928,10 @@ export function ThemeOverlays({
               className="console-btn-item"
               onClick={() => {
                 setConsoleOpen(false);
-                setConsoleNoticeOpen(false);
                 setSearchOpen(true);
                 emitActivity('已打开站内搜索');
               }}
-              title="打开搜索"
+              title="搜索内容"
             >
               <Search aria-hidden="true" />
             </button>
@@ -804,7 +942,7 @@ export function ThemeOverlays({
                 cycleBackground();
                 emitActivity('已切换页面背景');
               }}
-              title="切换背景"
+              title="背景切换"
             >
               <Sparkles aria-hidden="true" />
             </button>
@@ -812,7 +950,30 @@ export function ThemeOverlays({
               type="button"
               className="console-btn-item"
               onClick={() => {
+                window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+                emitActivity('已打开通知中心');
+              }}
+              title="查看通知"
+            >
+              <Bell aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                if (randomPost) window.location.href = randomPost.href;
+              }}
+              title="随便逛逛"
+            >
+              <RefreshCw aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                setConsoleOpen(false);
                 emitActivity('已回到页面顶部');
               }}
               title="回到顶部"
@@ -860,8 +1021,8 @@ export function ThemeOverlays({
             </div>
             <div className="theme-account-drawer__summary-badge">
               <Bell aria-hidden="true" />
-              <strong>{accountNotifications.length}</strong>
-              <small>@ 提醒</small>
+              <strong>{allNotifications.length}</strong>
+              <small>提醒</small>
             </div>
           </div>
 
@@ -932,28 +1093,29 @@ export function ThemeOverlays({
               <div className="theme-account-panel__head">
                 <div>
                   <p className="author-content-item-tips">提醒</p>
-                  <h3>@ 与回复</h3>
+                  <h3>动态与回复</h3>
                 </div>
-                <span>{accountNotifications.length}</span>
+                <span>{allNotifications.length}</span>
               </div>
 
-              {account && accountNotifications.length > 0 ? (
+              {allNotifications.length > 0 ? (
                 <div className="console-notification-list theme-account-panel__notification-list">
-                  {accountNotifications.map((comment) => {
-                    const href = comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment';
+                  {allNotifications.map((notification) => {
                     return (
-                      <a className="console-notification-item theme-account-panel__notification-item" href={href} key={comment.id}>
+                      <a className="console-notification-item theme-account-panel__notification-item" href={notification.href} key={notification.id}>
                         <div className="console-notification-item__avatar">
-                          {comment.avatar ? (
-                            <img src={comment.avatar} alt={comment.name} loading="lazy" />
+                          {notification.type === 'mention' && 'avatar' in notification && notification.avatar ? (
+                            <img src={notification.avatar} alt={notification.author} loading="lazy" />
                           ) : (
-                            <span>{getCommentInitials(comment.name)}</span>
+                            <span className="flex items-center justify-center bg-theme-op text-theme-main">
+                              {notification.icon}
+                            </span>
                           )}
                         </div>
                         <div className="console-notification-item__body">
-                          <strong>{comment.name}</strong>
-                          <span>{comment.slug ? `/posts/${comment.slug}/` : '本地提醒'}</span>
-                          <p>{comment.message.slice(0, 120)}</p>
+                          <strong>{notification.title}</strong>
+                          <span>{notification.date}</span>
+                          <p>{notification.content.slice(0, 120)}</p>
                         </div>
                       </a>
                     );
@@ -962,8 +1124,8 @@ export function ThemeOverlays({
               ) : (
                 <div className="console-notification-empty theme-account-panel__notification-empty">
                   <UserRound aria-hidden="true" />
-                  <strong>{account ? '暂时没有新的提醒' : '创建账号后这里会显示提醒'}</strong>
-                  <p>{account ? '当有人在评论里 @ 你时，这里会集中显示最新记录。' : accountPanel.loginHint}</p>
+                  <strong>暂时没有新的提醒</strong>
+                  <p>{account ? '这里会集中显示最新记录。' : accountPanel.loginHint}</p>
                 </div>
               )}
             </section>
