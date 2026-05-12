@@ -372,7 +372,7 @@ export function SiteHeader({
                     openAccountPanel();
                   }}
                 >
-                  <i className="anzhiyufont anzhiyu-icon-user" aria-hidden="true" />
+                  <i className="shijianusfont shijianus-icon-user" aria-hidden="true" />
                 </a>
               </div>
             )}
@@ -391,7 +391,7 @@ export function SiteHeader({
                   }
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-bell" aria-hidden="true" />
+                <i className="shijianusfont shijianus-icon-bell" aria-hidden="true" />
                 {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
               </a>
             </div>
@@ -406,7 +406,7 @@ export function SiteHeader({
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-magnifying-glass" aria-hidden="true" />
+                <i className="shijianusfont shijianus-icon-magnifying-glass" aria-hidden="true" />
               </a>
             </div>
 
@@ -415,7 +415,7 @@ export function SiteHeader({
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
               }}>
-                <i className={`anzhiyufont ${theme === 'dark' ? 'anzhiyu-icon-sun' : 'anzhiyu-icon-moon'}`} aria-hidden="true" />
+                <i className={`shijianusfont ${theme === 'dark' ? 'shijianus-icon-sun' : 'shijianus-icon-moon'}`} aria-hidden="true" />
               </a>
             </div>
 
@@ -425,7 +425,7 @@ export function SiteHeader({
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <i className="anzhiyufont anzhiyu-icon-dice" aria-hidden="true" />
+                <i className="shijianusfont shijianus-icon-dice" aria-hidden="true" />
               </a>
             </div>
 
@@ -445,9 +445,11 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <i className="left" />
-                  <i className="widget center" />
-                  <i className="widget right" />
+                  <div className="widget-inner">
+                    <i className="left" />
+                    <i className="widget center" />
+                    <i className="widget right" />
+                  </div>
                 </label>
               </div>
             )}
@@ -461,8 +463,8 @@ export function SiteHeader({
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
                 <span id="percent">{progress}</span>
+                <i className="shijianusfont shijianus-icon-arrow-up" aria-hidden="true" />
               </a>
             </div>
 
@@ -476,7 +478,7 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-bars" aria-hidden="true" />
+                <i className="shijianusfont shijianus-icon-bars" aria-hidden="true" />
               </a>
             </div>
           </div>

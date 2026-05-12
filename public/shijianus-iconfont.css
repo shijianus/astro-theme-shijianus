@@ -1,0 +1,30 @@
+@font-face {
+  font-family: "shijianusfont";
+  src: url('https://unpkg.com/anzhiyu-theme-static@1.1.9/icon/font_2508400_fpn9ui60u6q.woff2?t=1690446183540') format('woff2'),
+       url('https://unpkg.com/anzhiyu-theme-static@1.1.9/icon/font_2508400_fpn9ui60u6q.woff?t=1690446183540') format('woff'),
+       url('https://unpkg.com/anzhiyu-theme-static@1.1.9/icon/font_2508400_fpn9ui60u6q.ttf?t=1690446183540') format('truetype');
+}
+
+.shijianusfont {
+  font-family: "shijianusfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.shijianus-icon-user::before { content: "\e624"; }
+.shijianus-icon-bell::before { content: "\e66f"; }
+.shijianus-icon-magnifying-glass::before { content: "\e63b"; }
+.shijianus-icon-sun::before { content: "\e64d"; }
+.shijianus-icon-moon::before { content: "\e63e"; }
+.shijianus-icon-dice::before { content: "\e629"; }
+.shijianus-icon-arrow-up::before { content: "\e633"; }
+.shijianus-icon-house-chimney::before { content: "\e61a"; }
+.shijianus-icon-box-archive::before { content: "\e626"; }
+.shijianus-icon-tags::before { content: "\e642"; }
+.shijianus-icon-circle-info::before { content: "\e646"; }
+.shijianus-icon-link::before { content: "\e61f"; }
+.shijianus-icon-rss::before { content: "\e64b"; }
+.shijianus-icon-github::before { content: "\e64e"; }
+.shijianus-icon-envelope::before { content: "\e61c"; }

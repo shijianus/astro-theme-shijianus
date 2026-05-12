@@ -786,139 +786,135 @@ export function ThemeOverlays({
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
           <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="关闭控制台" />
           <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
-            <div className="console-card-group-left console-card-group-left--stack">
-              <section className="console-card console-profile">
-                <p className="author-content-item-tips">个人中心</p>
-                <h2 className="author-content-item-title">{authorName}</h2>
-                <p>{authorMotto}</p>
-                <div className="console-stat-grid">
-                  <span>
-                    <strong>{stats.posts}</strong>
-                    <small>文章</small>
-                  </span>
-                  <span>
-                    <strong>{stats.categories}</strong>
-                    <small>分类</small>
-                  </span>
-                  <span>
-                    <strong>{stats.tags}</strong>
-                    <small>标签</small>
-                  </span>
-                  <span>
-                    <strong>{stats.readingMinutes}m</strong>
-                    <small>阅读</small>
-                  </span>
-                </div>
-              </section>
+            <section className="console-card console-profile">
+              <p className="author-content-item-tips">个人中心</p>
+              <h2 className="author-content-item-title">{authorName}</h2>
+              <p>{authorMotto}</p>
+              <div className="console-stat-grid">
+                <span>
+                  <strong>{stats.posts}</strong>
+                  <small>文章</small>
+                </span>
+                <span>
+                  <strong>{stats.categories}</strong>
+                  <small>分类</small>
+                </span>
+                <span>
+                  <strong>{stats.tags}</strong>
+                  <small>标签</small>
+                </span>
+                <span>
+                  <strong>{stats.readingMinutes}m</strong>
+                  <small>阅读</small>
+                </span>
+              </div>
+            </section>
 
-              <section className="console-card console-webinfo">
+            <section className="console-card console-webinfo">
+              <div className="console-card__head">
+                <div>
+                  <p className="author-content-item-tips">运行状态</p>
+                  <h2 className="author-content-item-title">站点概览</h2>
+                </div>
+                <Info className="h-5 w-5 text-theme-main" />
+              </div>
+              <div className="console-webinfo-grid">
+                {siteStats.map((stat, i) => (
+                  <div className="webinfo-item" key={i}>
+                    <span>{stat.label}</span>
+                    <strong>{stat.value}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="console-shortcuts__grid">
+                <a className="console-shortcuts__item" href="/archives/">
+                  <History className="h-4 w-4" />
+                  <strong>归档</strong>
+                </a>
+                <a className="console-shortcuts__item" href="/status/">
+                  <LayoutGrid className="h-4 w-4" />
+                  <strong>监控</strong>
+                </a>
+              </div>
+            </section>
+
+            <section className="console-card activity">
+              <p className="author-content-item-tips">维护活跃度</p>
+              <h2 className="author-content-item-title">更新记录</h2>
+              <div className="activity-month-labels">
+                {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+              </div>
+              <div className="console-activity-grid">
+                {activityData.map((day, i) => (
+                  <div 
+                    key={i} 
+                    className={`activity-cell ${day ? 'level-' + day.level : 'is-future'} ${day?.sparkle ? 'sparkle' : ''}`} 
+                    style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
+                    title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
+                    onClick={() => {
+                      if (day) setSelectedActivityDate(day.date);
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="activity-legend">
+                <div className="selected-day-preview">
+                  {selectedActivity ? (
+                    <div className="activity-details">
+                      <strong>{selectedActivity.date}</strong>
+                      {selectedActivity.posts.length > 0 ? (
+                        <ul>
+                          {selectedActivity.posts.slice(0, 5).map((p, i) => (
+                            <li key={i}><a href={p.href}>{p.title}</a></li>
+                          ))}
+                        </ul>
+                      ) : <span>当日无推送记录</span>}
+                    </div>
+                  ) : <span>点击方块查看记录</span>}
+                </div>
+                <div className="legend-group">
+                  <span>Less</span>
+                  <div className="activity-cell level-0" />
+                  <div className="activity-cell level-1" />
+                  <div className="activity-cell level-2" />
+                  <div className="activity-cell level-3" />
+                  <div className="activity-cell level-4" />
+                  <span>More</span>
+                </div>
+              </div>
+            </section>
+
+            {latestComment ? (
+              <section className="console-card hot-comment">
                 <div className="console-card__head">
                   <div>
-                    <p className="author-content-item-tips">运行状态</p>
-                    <h2 className="author-content-item-title">站点概览</h2>
+                    <p className="author-content-item-tips">活跃互动</p>
+                    <h2 className="author-content-item-title">最近热评</h2>
                   </div>
-                  <Info className="h-5 w-5 text-theme-main" />
+                  <MessageSquare className="h-5 w-5 text-theme-main" />
                 </div>
-                <div className="console-webinfo-grid">
-                  {siteStats.map((stat, i) => (
-                    <div className="webinfo-item" key={i}>
-                      <span>{stat.label}</span>
-                      <strong>{stat.value}</strong>
-                    </div>
-                  ))}
-                </div>
-                <div className="console-shortcuts__grid">
-                  <a className="console-shortcuts__item" href="/archives/">
-                    <History className="h-4 w-4" />
-                    <strong>归档</strong>
-                  </a>
-                  <a className="console-shortcuts__item" href="/status/">
-                    <LayoutGrid className="h-4 w-4" />
-                    <strong>监控</strong>
-                  </a>
+                <div className="hot-comment-body">
+                  <div className="hot-comment-meta">
+                    <strong>{latestComment.name}</strong>
+                    <time>{latestComment.date}</time>
+                  </div>
+                  <p>{latestComment.content}</p>
                 </div>
               </section>
-            </div>
-
-            <div className="console-card-group-right">
-              <section className="console-card activity">
-                <p className="author-content-item-tips">维护活跃度</p>
-                <h2 className="author-content-item-title">更新记录</h2>
-                <div className="activity-month-labels">
-                  {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
-                </div>
-                <div className="console-activity-grid">
-                  {activityData.map((day, i) => (
-                    <div 
-                      key={i} 
-                      className={`activity-cell ${day ? 'level-' + day.level : 'is-future'} ${day?.sparkle ? 'sparkle' : ''}`} 
-                      style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
-                      title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
-                      onClick={() => {
-                        if (day) setSelectedActivityDate(day.date);
-                      }}
-                    />
+            ) : (
+              <section className="console-card tags">
+                <p className="author-content-item-tips">热门话题</p>
+                <h2 className="author-content-item-title">内容发现</h2>
+                <div className="card-tag-cloud">
+                  {tags.slice(0, 15).map((tag) => (
+                    <a href={tag.href} key={tag.href}>
+                      {tag.label}
+                      <sup>{tag.count}</sup>
+                    </a>
                   ))}
                 </div>
-                <div className="activity-legend">
-                  <div className="selected-day-preview">
-                    {selectedActivity ? (
-                      <div className="activity-details">
-                        <strong>{selectedActivity.date}</strong>
-                        {selectedActivity.posts.length > 0 ? (
-                          <ul>
-                            {selectedActivity.posts.slice(0, 5).map((p, i) => (
-                              <li key={i}><a href={p.href}>{p.title}</a></li>
-                            ))}
-                          </ul>
-                        ) : <span>当日无推送记录</span>}
-                      </div>
-                    ) : <span>点击方块查看记录</span>}
-                  </div>
-                  <div className="legend-group">
-                    <span>Less</span>
-                    <div className="activity-cell level-0" />
-                    <div className="activity-cell level-1" />
-                    <div className="activity-cell level-2" />
-                    <div className="activity-cell level-3" />
-                    <div className="activity-cell level-4" />
-                    <span>More</span>
-                  </div>
-                </div>
               </section>
-
-              {latestComment ? (
-                <section className="console-card hot-comment">
-                  <div className="console-card__head">
-                    <div>
-                      <p className="author-content-item-tips">活跃互动</p>
-                      <h2 className="author-content-item-title">最近热评</h2>
-                    </div>
-                    <MessageSquare className="h-5 w-5 text-theme-main" />
-                  </div>
-                  <div className="hot-comment-body">
-                    <div className="hot-comment-meta">
-                      <strong>{latestComment.name}</strong>
-                      <time>{latestComment.date}</time>
-                    </div>
-                    <p>{latestComment.content}</p>
-                  </div>
-                </section>
-              ) : (
-                <section className="console-card tags">
-                  <p className="author-content-item-tips">热门话题</p>
-                  <h2 className="author-content-item-title">内容发现</h2>
-                  <div className="card-tag-cloud">
-                    {tags.slice(0, 15).map((tag) => (
-                      <a href={tag.href} key={tag.href}>
-                        {tag.label}
-                        <sup>{tag.count}</sup>
-                      </a>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="button-group" aria-label="控制台快捷操作">
