@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Archive, ArrowUp, Dice5, ExternalLink, FolderKanban, House, Menu, MoonStar, Search, SunMedium, Tags, UserRound, X, type LucideIcon } from 'lucide-react';
+import { ExternalLink, House, type LucideIcon } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
@@ -44,13 +44,21 @@ function openAccountPanel() {
   window.dispatchEvent(new CustomEvent('shijianus:open-account'));
 }
 
-const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> = {
-  home: House,
-  archive: Archive,
-  category: FolderKanban,
-  tags: Tags,
-  about: UserRound,
+const navIconMap: Record<string, string> = {
+  home: 'anzhiyu-icon-house-chimney',
+  archive: 'anzhiyu-icon-box-archive',
+  category: 'anzhiyu-icon-shapes',
+  tags: 'anzhiyu-icon-tags',
+  about: 'anzhiyu-icon-circle-info',
+  book: 'anzhiyu-icon-book',
+  rss: 'anzhiyu-icon-rss',
+  link: 'anzhiyu-icon-link',
 };
+
+function renderNavIcon(iconName: string | undefined, className: string) {
+  const iconClass = navIconMap[iconName ?? 'home'] ?? 'anzhiyu-icon-house-chimney';
+  return <i className={`anzhiyufont ${iconClass} ${className}`} aria-hidden="true" />;
+}
 
 export function SiteHeader({
   brandName,
@@ -70,10 +78,46 @@ export function SiteHeader({
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [isReadMode, setIsReadMode] = useState(false);
+  const [isTraditional, setIsTraditional] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const submenuCloseTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedVariant = window.localStorage.getItem('shijianus-locale-variant');
+      setIsTraditional(savedVariant === 'zh-Hant');
+
+      const savedReadMode = document.body.classList.contains('read-mode');
+      setIsReadMode(savedReadMode);
+    } catch (e) {
+      console.error('Failed to load initial states:', e);
+    }
+  }, []);
+
+  const toggleLanguage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const next = !isTraditional;
+    setIsTraditional(next);
+    const variant = next ? 'zh-Hant' : 'zh-CN';
+    window.localStorage.setItem('shijianus-locale-variant', variant);
+    document.documentElement.dataset.localeVariant = variant;
+    document.documentElement.lang = variant;
+    window.location.reload();
+  };
+
+  const toggleReadMode = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const next = !isReadMode;
+    setIsReadMode(next);
+    if (next) {
+      document.body.classList.add('read-mode');
+    } else {
+      document.body.classList.remove('read-mode');
+    }
+  };
 
   const activeLabel = useMemo(() => {
     return (
@@ -324,7 +368,7 @@ export function SiteHeader({
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         <span className="site-page__icon-wrap" aria-hidden="true">
-                          <NavIcon className="site-page__icon" />
+                          {renderNavIcon(item.icon, 'site-page__icon')}
                         </span>
                         <span className="site-page__label">{item.label}</span>
                         {item.description && <span className="site-page__subtitle">{item.description}</span>}
@@ -337,7 +381,6 @@ export function SiteHeader({
                       {hasChildren && (
                         <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
                           {item.children.slice(0, 3).map((child) => {
-                            const ChildIcon = navIconMap[child.icon ?? 'home'] ?? House;
                             return (
                               <a
                                 key={child.href}
@@ -346,7 +389,7 @@ export function SiteHeader({
                                 role="menuitem"
                                 title={child.description ?? child.label}
                               >
-                                <ChildIcon className="site-page-submenu__icon" aria-hidden="true" />
+                                {renderNavIcon(child.icon, 'site-page-submenu__icon')}
                                 <span className="site-page-submenu__label">{child.label}</span>
                               </a>
                             );
@@ -372,29 +415,43 @@ export function SiteHeader({
                     openAccountPanel();
                   }}
                 >
-                  <i className="shijianusfont shijianus-icon-user" aria-hidden="true" />
+                  <i className="anzhiyufont anzhiyu-icon-user" aria-hidden="true" />
                 </a>
               </div>
             )}
 
-            <div className="nav-button" id="nav-notification">
-              <a 
-                className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
-                href="#" 
-                title="通知中心"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (notificationOpen) {
-                    closeNotificationPanel();
-                  } else {
-                    openNotificationPanel();
-                  }
-                }}
-              >
-                <i className="shijianusfont shijianus-icon-bell" aria-hidden="true" />
-                {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
+            <div className="nav-button" id="nav-translate">
+              <a className="site-page" href="#" title="简繁转换" onClick={toggleLanguage}>
+                <i className="anzhiyufont anzhiyu-icon-language" aria-hidden="true" />
               </a>
             </div>
+
+            <div className="nav-button" id="nav-readmode">
+              <a className="site-page" href="#" title="阅读模式" onClick={toggleReadMode}>
+                <i className="anzhiyufont anzhiyu-icon-book-open" aria-hidden="true" />
+              </a>
+            </div>
+
+            {showNotificationTrigger && (
+              <div className="nav-button" id="nav-notification">
+                <a 
+                  className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
+                  href="#" 
+                  title="通知中心"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (notificationOpen) {
+                      closeNotificationPanel();
+                    } else {
+                      openNotificationPanel();
+                    }
+                  }}
+                >
+                  <i className="anzhiyufont anzhiyu-icon-bell" aria-hidden="true" />
+                  {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
+                </a>
+              </div>
+            )}
 
             <div className="nav-button" id="search-button">
               <a 
@@ -406,7 +463,7 @@ export function SiteHeader({
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
                 }}
               >
-                <i className="shijianusfont shijianus-icon-magnifying-glass" aria-hidden="true" />
+                <i className="anzhiyufont anzhiyu-icon-magnifying-glass" aria-hidden="true" />
               </a>
             </div>
 
@@ -415,7 +472,7 @@ export function SiteHeader({
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
               }}>
-                <i className={`shijianusfont ${theme === 'dark' ? 'shijianus-icon-sun' : 'shijianus-icon-moon'}`} aria-hidden="true" />
+                <i className={`anzhiyufont ${theme === 'dark' ? 'anzhiyu-icon-sun' : 'anzhiyu-icon-moon'}`} aria-hidden="true" />
               </a>
             </div>
 
@@ -425,7 +482,7 @@ export function SiteHeader({
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <i className="shijianusfont shijianus-icon-dice" aria-hidden="true" />
+                <i className="anzhiyufont anzhiyu-icon-dice" aria-hidden="true" />
               </a>
             </div>
 
@@ -464,7 +521,7 @@ export function SiteHeader({
                 }}
               >
                 <span id="percent">{progress}</span>
-                <i className="shijianusfont shijianus-icon-arrow-up" aria-hidden="true" />
+                <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
               </a>
             </div>
 
@@ -478,7 +535,7 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <i className="shijianusfont shijianus-icon-bars" aria-hidden="true" />
+                <i className="anzhiyufont anzhiyu-icon-bars" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -494,10 +551,7 @@ export function SiteHeader({
                   href={item.href}
                   className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
                 >
-                  {(() => {
-                    const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
-                    return <NavIcon className="site-mobile-link__icon" aria-hidden="true" />;
-                  })()}
+                  {renderNavIcon(item.icon, 'site-mobile-link__icon')}
                   {item.label}
                 </a>
                 {item.children && item.children.length > 1 && (

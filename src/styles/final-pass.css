@@ -475,19 +475,25 @@
   position: absolute;
   font-size: 11px;
   font-weight: 800;
+  opacity: 1;
+  transform: scale(1);
+  transition: 0.3s ease;
+}
+
+#nav-totop i {
   opacity: 0;
   transform: scale(0.6);
-  transition: 0.3s;
+  transition: 0.3s ease;
 }
 
 #nav-totop:hover #percent {
-  opacity: 1;
-  transform: scale(1);
+  opacity: 0;
+  transform: scale(0.6);
 }
 
 #nav-totop:hover i {
-  opacity: 0;
-  transform: scale(0.6);
+  opacity: 1;
+  transform: scale(1);
 }
 
 #nav-totop .totopbtn:hover {
@@ -498,6 +504,78 @@
 #nav-right .nav-button i {
   font-size: 16px;
   transition: 0.3s;
+}
+
+/* center-console-button bars alignment and animation */
+#center-console-button .widget-inner {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 14px;
+}
+
+#center-console-button .widget-inner i {
+  position: absolute;
+  left: 50%;
+  display: block;
+  height: 2px;
+  background: var(--font-color);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: transform 0.28s ease, width 0.28s ease, opacity 0.28s ease, top 0.28s ease, background-color 0.28s ease;
+}
+
+#center-console-button .widget-inner .left {
+  top: 1px;
+  width: 18px;
+}
+
+#center-console-button .widget-inner .center {
+  top: 6px;
+  width: 12px;
+}
+
+#center-console-button .widget-inner .right {
+  top: 11px;
+  width: 18px;
+}
+
+#center-console-button:hover .widget-inner .left,
+#center-console-button:hover .widget-inner .right {
+  width: 14px;
+}
+
+#center-console-button:hover .widget-inner .center {
+  width: 18px;
+}
+
+#center-console-button .widget.is-active {
+  background: var(--theme-main);
+}
+
+#center-console-button .widget.is-active .widget-inner i {
+  background: var(--white);
+}
+
+#center-console-button .widget.is-active .widget-inner .left {
+  top: 6px;
+  width: 12px;
+  transform: translateX(-50%) rotate(45deg) translate(-2px, -2px);
+}
+
+#center-console-button .widget.is-active .widget-inner .center {
+  opacity: 0;
+  width: 0;
+}
+
+#center-console-button .widget.is-active .widget-inner .right {
+  top: 6px;
+  width: 12px;
+  transform: translateX(-50%) rotate(-45deg) translate(-2px, 2px);
+}
+
+:root[data-theme='dark'] #center-console-button .widget.is-active .widget-inner i {
+  background: #111827;
 }
 
 #nav-notification {
