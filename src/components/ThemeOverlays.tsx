@@ -271,11 +271,23 @@ export function ThemeOverlays({
   const siteStats = useMemo(() => {
     return [
       { label: '本站总字数', value: `${(stats.readingMinutes * 312).toLocaleString()} 字` },
-      { label: '安全运行', value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天` },
+      { 
+        label: '安全运行', 
+        value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天`,
+        tooltip: '自 2024-01-01 以来稳定运行'
+      },
       { label: '最后推送', value: posts[0]?.date || '今天' },
       { label: '版本协议', value: 'v2.6.0-shijianus' },
-      { label: '活跃等级', value: 'Maintainer Lv.4' },
-      { label: '内容密度', value: 'High Density' },
+      { 
+        label: '活跃等级', 
+        value: 'Maintainer Lv.4',
+        tooltip: '基于近期更新频率计算的活跃等级'
+      },
+      { 
+        label: '内容密度', 
+        value: 'High Density',
+        tooltip: '站点信息密度评级：极高'
+      },
       { label: '全站阅读', value: `${stats.readingMinutes} min` },
       { label: '系统架构', value: 'Astro Edge' },
     ];
@@ -805,147 +817,145 @@ export function ThemeOverlays({
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
           <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="关闭控制台" />
           <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
-            <section className="console-card console-profile">
-              <p className="author-content-item-tips">个人中心</p>
-              <h2 className="author-content-item-title">{authorName}</h2>
-              <p>{authorMotto}</p>
-              <div className="console-stat-grid">
-                <span>
-                  <strong>{stats.posts}</strong>
-                  <small>文章</small>
-                </span>
-                <span>
-                  <strong>{stats.categories}</strong>
-                  <small>分类</small>
-                </span>
-                <span>
-                  <strong>{stats.tags}</strong>
-                  <small>标签</small>
-                </span>
-                <span>
-                  <strong>{stats.readingMinutes}m</strong>
-                  <small>阅读</small>
-                </span>
-              </div>
-            </section>
-
-            <section className="console-card console-webinfo">
-              <div className="console-card__head">
-                <div>
-                  <p className="author-content-item-tips">运行状态</p>
-                  <h2 className="author-content-item-title">站点概览</h2>
+            <div className="console-card-group-left">
+              <section className="console-card console-profile">
+                <p className="author-content-item-tips">个人中心</p>
+                <h2 className="author-content-item-title">{authorName}</h2>
+                <p>{authorMotto}</p>
+                <div className="console-stat-grid">
+                  <span>
+                    <strong>{stats.posts}</strong>
+                    <small>文章</small>
+                  </span>
+                  <span>
+                    <strong>{stats.categories}</strong>
+                    <small>分类</small>
+                  </span>
+                  <span>
+                    <strong>{stats.tags}</strong>
+                    <small>标签</small>
+                  </span>
+                  <span>
+                    <strong>{stats.readingMinutes}m</strong>
+                    <small>阅读</small>
+                  </span>
                 </div>
-                <Info className="h-5 w-5 text-theme-main" />
-              </div>
-              <div className="console-webinfo-grid">
-                {siteStats.map((stat, i) => (
-                  <div className="webinfo-item" key={i}>
-                    <span>{stat.label}</span>
-                    <strong>{stat.value}</strong>
+              </section>
+
+              <section className="console-card console-webinfo">
+                <div className="console-card__head">
+                  <div>
+                    <p className="author-content-item-tips">运行状态</p>
+                    <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                ))}
-              </div>
-              <div className="console-shortcuts__grid">
-                <a className="console-shortcuts__item" href="/archives/">
-                  <History className="h-4 w-4" />
-                  <strong>归档</strong>
-                </a>
-                <a className="console-shortcuts__item" href="/status/">
-                  <LayoutGrid className="h-4 w-4" />
-                  <strong>监控</strong>
-                </a>
-              </div>
-            </section>
-
-            <section className="console-card activity">
-              <div className="console-card__head">
-                <div>
-                  <p className="author-content-item-tips">shijianus 活跃度</p>
-                  <h2 className="author-content-item-title">更新记录</h2>
+                  <Info className="h-5 w-5 text-theme-main" />
                 </div>
-                <div className="legend-group">
-                  <span>Less</span>
-                  <div className="activity-cell level-0" />
-                  <div className="activity-cell level-1" />
-                  <div className="activity-cell level-2" />
-                  <div className="activity-cell level-3" />
-                  <div className="activity-cell level-4" />
-                  <span>More</span>
-                </div>
-              </div>
-              <div className="activity-month-labels">
-                {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
-              </div>
-              <div className="console-activity-grid">
-                <div className="activity-weekday-labels">
-                  <span>Mon</span>
-                  <span>Wed</span>
-                  <span>Fri</span>
-                </div>
-                {activityData.map((day, i) => (
-                  <div 
-                    key={i} 
-                    className={`activity-cell level-${day?.level ?? 0} ${day?.sparkle ? 'sparkle' : ''}`} 
-                    style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
-                    title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
-                    onClick={() => {
-                      if (day) {
-                        setSelectedActivityDate(day.date);
-                        setSelectedActivityPage(1);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="activity-details-footer">
-                <div className="selected-day-preview">
-                  {selectedActivity ? (
-                    <div className="activity-details">
-                      <div className="activity-details__head">
-                        <strong>{selectedActivity.date}</strong>
-                        {activityPagination.total > 1 && (
-                          <div className="activity-pagination">
-                            <button 
-                              disabled={activityPagination.current === 1}
-                              onClick={() => setSelectedActivityPage(p => Math.max(1, p - 1))}
-                            >
-                              <ArrowLeft className="h-3 w-3" />
-                            </button>
-                            <span>{activityPagination.current} / {activityPagination.total}</span>
-                            <button 
-                              disabled={activityPagination.current === activityPagination.total}
-                              onClick={() => setSelectedActivityPage(p => Math.min(activityPagination.total, p + 1))}
-                            >
-                              <ArrowRight className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
+                <p className="webinfo-description">实时监控并展示各项核心指标，确保数据透明可追溯。</p>
+                <div className="console-webinfo-grid">
+                  {siteStats.map((stat, i) => (
+                    <div className="webinfo-item" key={i}>
+                      <div className="webinfo-item-label">
+                        <span>{stat.label}</span>
+                        {stat.tooltip && <Info size={12} className="info-icon" data-tooltip={stat.tooltip} />}
                       </div>
-                      {activityPagination.items.length > 0 ? (
-                        <ul>
-                          {activityPagination.items.map((p, i) => (
-                            <li key={i}><a href={p.href}>{p.title}</a></li>
-                          ))}
-                        </ul>
-                      ) : <span className="no-activity-text">当日无推送记录</span>}
+                      <strong>{stat.value}</strong>
                     </div>
-                  ) : <span className="activity-hint-text">点击方块查看记录</span>}
+                  ))}
                 </div>
-              </div>
-            </section>
+              </section>
+            </div>
 
-            <section className="console-card tags">
-              <p className="author-content-item-tips">热门话题</p>
-              <h2 className="author-content-item-title">内容发现</h2>
-              <div className="card-tag-cloud" style={{ fontSize: tagData.fontSize }}>
-                {tagData.items.map((tag) => (
-                  <a href={tag.href} key={tag.href}>
-                    {tag.label}
-                    <sup>{tag.count}</sup>
-                  </a>
-                ))}
-              </div>
-            </section>
+            <div className="console-card-group-right">
+              <section className="console-card tags">
+                <p className="author-content-item-tips">热门话题</p>
+                <h2 className="author-content-item-title">内容发现</h2>
+                <div className="card-tag-cloud" style={{ fontSize: tagData.fontSize }}>
+                  {tagData.items.map((tag) => (
+                    <a href={tag.href} key={tag.href}>
+                      {tag.label}
+                      <sup>{tag.count}</sup>
+                    </a>
+                  ))}
+                </div>
+              </section>
+
+              <section className="console-card activity">
+                <div className="console-card__head">
+                  <div>
+                    <p className="author-content-item-tips">shijianus 活跃度</p>
+                    <h2 className="author-content-item-title">更新记录</h2>
+                  </div>
+                  <div className="legend-group">
+                    <span>Less</span>
+                    <div className="activity-cell level-0" />
+                    <div className="activity-cell level-1" />
+                    <div className="activity-cell level-2" />
+                    <div className="activity-cell level-3" />
+                    <div className="activity-cell level-4" />
+                    <span>More</span>
+                  </div>
+                </div>
+                <div className="activity-month-labels">
+                  {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+                </div>
+                <div className="console-activity-grid">
+                  <div className="activity-weekday-labels">
+                    <span>Mon</span>
+                    <span>Wed</span>
+                    <span>Fri</span>
+                  </div>
+                  {activityData.map((day, i) => (
+                    <div 
+                      key={i} 
+                      className={`activity-cell level-${day?.level ?? 0} ${day?.sparkle ? 'sparkle' : ''}`} 
+                      style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
+                      title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
+                      onClick={() => {
+                        if (day) {
+                          setSelectedActivityDate(day.date);
+                          setSelectedActivityPage(1);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="activity-details-footer">
+                  <div className="selected-day-preview">
+                    {selectedActivity ? (
+                      <div className="activity-details">
+                        <div className="activity-details__head">
+                          <strong>{selectedActivity.date}</strong>
+                          {activityPagination.total > 1 && (
+                            <div className="activity-pagination">
+                              <button 
+                                disabled={activityPagination.current === 1}
+                                onClick={() => setSelectedActivityPage(p => Math.max(1, p - 1))}
+                              >
+                                <ArrowLeft className="h-3 w-3" />
+                              </button>
+                              <span>{activityPagination.current} / {activityPagination.total}</span>
+                              <button 
+                                disabled={activityPagination.current === activityPagination.total}
+                                onClick={() => setSelectedActivityPage(p => Math.min(activityPagination.total, p + 1))}
+                              >
+                                <ArrowRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {activityPagination.items.length > 0 ? (
+                          <ul>
+                            {activityPagination.items.map((p, i) => (
+                              <li key={i}><a href={p.href}>{p.title}</a></li>
+                            ))}
+                          </ul>
+                        ) : <span className="no-activity-text">当日无推送记录</span>}
+                      </div>
+                    ) : <span className="activity-hint-text">点击方块查看记录</span>}
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
 
           <div className="button-group" aria-label="控制台快捷操作">
