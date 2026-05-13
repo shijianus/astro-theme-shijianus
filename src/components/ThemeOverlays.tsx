@@ -173,6 +173,7 @@ export function ThemeOverlays({
   const [activityVisible, setActivityVisible] = useState(false);
   const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
   const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
+  const [selectedActivityPage, setSelectedActivityPage] = useState(1);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const activityTimerRef = useRef<number | null>(null);
   const lastActivityRef = useRef({
@@ -195,33 +196,30 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
-    // End exactly at today in PST
     const now = new Date();
-    const pstOffset = 8 * 3600000;
-    const today = new Date(now.getTime() - pstOffset);
-    today.setHours(0, 0, 0, 0);
+    // Today in PST/Local
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     const data = [];
-    const weeksToShow = 26;
-    const totalSlots = weeksToShow * 7;
+    const weeksToShow = 52;
+    // We want the bottom-rightmost cell to be today.
+    // GitHub grid is vertical weeks: Sun to Sat.
+    // To make today bottom-right, we find how many days to fill until the end of the current week (Sat).
+    // But the user said "Today must be the bottom-rightmost cell", which means we end exactly at today.
     
-    // Start from the Sunday of the week 26 weeks ago
+    const totalSlots = weeksToShow * 7;
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - totalSlots + (7 - today.getDay() - 1));
+    startDate.setDate(today.getDate() - totalSlots + 1);
 
     for (let i = 0; i < totalSlots; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
       
-      if (currentDate > today) {
-        data.push(null); // Future
-        continue;
-      }
-
       const postsOnDate = posts.filter(p => new Date(p.date).toDateString() === currentDate.toDateString());
-      const interactionLevel = Math.floor(Math.random() * 2); 
+      // Higher density simulation for demo/empty sites, plus actual post counts
+      const interactionLevel = (currentDate.getTime() % 7 === 0 || currentDate.getTime() % 13 === 0) ? Math.floor(Math.random() * 2) : 0; 
       const level = postsOnDate.length > 0 ? Math.min(4, postsOnDate.length + 1) : interactionLevel > 0 ? 1 : 0;
-      const sparkle = level >= 3 ? 0.4 + (level * 0.1) : 0;
+      const sparkle = level >= 3 ? 0.3 + (level * 0.1) : 0;
 
       data.push({
         date: currentDate.toLocaleDateString('zh-CN'),
@@ -238,16 +236,37 @@ export function ThemeOverlays({
     return activityData.find(d => d && d.date === selectedActivityDate);
   }, [selectedActivityDate, activityData]);
 
+  const activityPagination = useMemo(() => {
+    if (!selectedActivity || selectedActivity.posts.length <= 3) return { total: 1, current: 1, items: selectedActivity?.posts || [] };
+    const total = Math.ceil(selectedActivity.posts.length / 3);
+    const start = (selectedActivityPage - 1) * 3;
+    return {
+      total,
+      current: selectedActivityPage,
+      items: selectedActivity.posts.slice(start, start + 3),
+    };
+  }, [selectedActivity, selectedActivityPage]);
+
   const monthLabels = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const labels = [];
     const now = new Date();
-    for (let i = 5; i >= 0; i--) {
+    // 12 months for 52 weeks
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       labels.push(months[d.getMonth()]);
     }
     return labels;
   }, []);
+
+  const tagData = useMemo(() => {
+    const subset = tags.slice(0, 50);
+    const count = subset.length;
+    // Dynamic font size: <=5 tags -> 13px, 50 tags -> 10px. Linear interpolation.
+    // fontSize = 13 - (count - 5) * (3 / 45) if count > 5
+    const fontSize = count <= 5 ? 13 : Math.max(10, 13 - (count - 5) * (3 / 45));
+    return { items: subset, fontSize: `${fontSize.toFixed(1)}px` };
+  }, [tags]);
 
   const siteStats = useMemo(() => {
     return [
@@ -839,38 +858,10 @@ export function ThemeOverlays({
             </section>
 
             <section className="console-card activity">
-              <p className="author-content-item-tips">维护活跃度</p>
-              <h2 className="author-content-item-title">更新记录</h2>
-              <div className="activity-month-labels">
-                {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
-              </div>
-              <div className="console-activity-grid">
-                {activityData.map((day, i) => (
-                  <div 
-                    key={i} 
-                    className={`activity-cell ${day ? 'level-' + day.level : 'is-future'} ${day?.sparkle ? 'sparkle' : ''}`} 
-                    style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
-                    title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
-                    onClick={() => {
-                      if (day) setSelectedActivityDate(day.date);
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="activity-legend">
-                <div className="selected-day-preview">
-                  {selectedActivity ? (
-                    <div className="activity-details">
-                      <strong>{selectedActivity.date}</strong>
-                      {selectedActivity.posts.length > 0 ? (
-                        <ul>
-                          {selectedActivity.posts.slice(0, 5).map((p, i) => (
-                            <li key={i}><a href={p.href}>{p.title}</a></li>
-                          ))}
-                        </ul>
-                      ) : <span>当日无推送记录</span>}
-                    </div>
-                  ) : <span>点击方块查看记录</span>}
+              <div className="console-card__head">
+                <div>
+                  <p className="author-content-item-tips">shijianus 活跃度</p>
+                  <h2 className="author-content-item-title">更新记录</h2>
                 </div>
                 <div className="legend-group">
                   <span>Less</span>
@@ -882,39 +873,79 @@ export function ThemeOverlays({
                   <span>More</span>
                 </div>
               </div>
+              <div className="activity-month-labels">
+                {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+              </div>
+              <div className="console-activity-grid">
+                <div className="activity-weekday-labels">
+                  <span>Mon</span>
+                  <span>Wed</span>
+                  <span>Fri</span>
+                </div>
+                {activityData.map((day, i) => (
+                  <div 
+                    key={i} 
+                    className={`activity-cell level-${day?.level ?? 0} ${day?.sparkle ? 'sparkle' : ''}`} 
+                    style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
+                    title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
+                    onClick={() => {
+                      if (day) {
+                        setSelectedActivityDate(day.date);
+                        setSelectedActivityPage(1);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="activity-details-footer">
+                <div className="selected-day-preview">
+                  {selectedActivity ? (
+                    <div className="activity-details">
+                      <div className="activity-details__head">
+                        <strong>{selectedActivity.date}</strong>
+                        {activityPagination.total > 1 && (
+                          <div className="activity-pagination">
+                            <button 
+                              disabled={activityPagination.current === 1}
+                              onClick={() => setSelectedActivityPage(p => Math.max(1, p - 1))}
+                            >
+                              <ArrowLeft className="h-3 w-3" />
+                            </button>
+                            <span>{activityPagination.current} / {activityPagination.total}</span>
+                            <button 
+                              disabled={activityPagination.current === activityPagination.total}
+                              onClick={() => setSelectedActivityPage(p => Math.min(activityPagination.total, p + 1))}
+                            >
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {activityPagination.items.length > 0 ? (
+                        <ul>
+                          {activityPagination.items.map((p, i) => (
+                            <li key={i}><a href={p.href}>{p.title}</a></li>
+                          ))}
+                        </ul>
+                      ) : <span className="no-activity-text">当日无推送记录</span>}
+                    </div>
+                  ) : <span className="activity-hint-text">点击方块查看记录</span>}
+                </div>
+              </div>
             </section>
 
-            {latestComment ? (
-              <section className="console-card hot-comment">
-                <div className="console-card__head">
-                  <div>
-                    <p className="author-content-item-tips">活跃互动</p>
-                    <h2 className="author-content-item-title">最近热评</h2>
-                  </div>
-                  <MessageSquare className="h-5 w-5 text-theme-main" />
-                </div>
-                <div className="hot-comment-body">
-                  <div className="hot-comment-meta">
-                    <strong>{latestComment.name}</strong>
-                    <time>{latestComment.date}</time>
-                  </div>
-                  <p>{latestComment.content}</p>
-                </div>
-              </section>
-            ) : (
-              <section className="console-card tags">
-                <p className="author-content-item-tips">热门话题</p>
-                <h2 className="author-content-item-title">内容发现</h2>
-                <div className="card-tag-cloud">
-                  {tags.slice(0, 15).map((tag) => (
-                    <a href={tag.href} key={tag.href}>
-                      {tag.label}
-                      <sup>{tag.count}</sup>
-                    </a>
-                  ))}
-                </div>
-              </section>
-            )}
+            <section className="console-card tags">
+              <p className="author-content-item-tips">热门话题</p>
+              <h2 className="author-content-item-title">内容发现</h2>
+              <div className="card-tag-cloud" style={{ fontSize: tagData.fontSize }}>
+                {tagData.items.map((tag) => (
+                  <a href={tag.href} key={tag.href}>
+                    {tag.label}
+                    <sup>{tag.count}</sup>
+                  </a>
+                ))}
+              </div>
+            </section>
           </div>
 
           <div className="button-group" aria-label="控制台快捷操作">
