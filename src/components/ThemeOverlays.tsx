@@ -197,17 +197,14 @@ export function ThemeOverlays({
 
   const activityData = useMemo(() => {
     const now = new Date();
-    // Today in PST/Local
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     const data = [];
     const weeksToShow = 52;
-    // We want the bottom-rightmost cell to be today.
-    // GitHub grid is vertical weeks: Sun to Sat.
-    // To make today bottom-right, we find how many days to fill until the end of the current week (Sat).
-    // But the user said "Today must be the bottom-rightmost cell", which means we end exactly at today.
+    const totalSlots = weeksToShow * 7; // 364 days
     
-    const totalSlots = weeksToShow * 7;
+    // We want the last cell (bottom-right) to be today.
+    // Start date is today - 363 days.
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - totalSlots + 1);
 
@@ -216,13 +213,13 @@ export function ThemeOverlays({
       currentDate.setDate(startDate.getDate() + i);
       
       const postsOnDate = posts.filter(p => new Date(p.date).toDateString() === currentDate.toDateString());
-      // Higher density simulation for demo/empty sites, plus actual post counts
-      const interactionLevel = (currentDate.getTime() % 7 === 0 || currentDate.getTime() % 13 === 0) ? Math.floor(Math.random() * 2) : 0; 
-      const level = postsOnDate.length > 0 ? Math.min(4, postsOnDate.length + 1) : interactionLevel > 0 ? 1 : 0;
-      const sparkle = level >= 3 ? 0.3 + (level * 0.1) : 0;
+      // Absolute real data: 0 posts = level 0, then 1, 2, 3, 4 based on count
+      const level = postsOnDate.length === 0 ? 0 : Math.min(4, postsOnDate.length);
+      const sparkle = level >= 4 ? 0.3 + (level * 0.1) : 0;
 
       data.push({
         date: currentDate.toLocaleDateString('zh-CN'),
+        rawDate: currentDate,
         level,
         sparkle,
         posts: postsOnDate.map(p => ({ title: p.title, href: p.href })),
@@ -248,36 +245,58 @@ export function ThemeOverlays({
   }, [selectedActivity, selectedActivityPage]);
 
   const monthLabels = useMemo(() => {
+    const labels: { label: string; index: number }[] = [];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const labels = [];
-    const now = new Date();
-    // 12 months for 52 weeks
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      labels.push(months[d.getMonth()]);
+    
+    // Iterate through columns (weeks)
+    for (let week = 0; week < 52; week++) {
+      const dayIndex = week * 7;
+      const date = activityData[dayIndex].rawDate;
+      const month = months[date.getMonth()];
+      
+      // If it's a new month and not too close to the previous label
+      if (labels.length === 0 || labels[labels.length - 1].label !== month) {
+        // Only add if it's the first time we see this month in this run
+        if (!labels.some(l => l.label === month)) {
+          labels.push({ label: month, index: week });
+        }
+      }
     }
+    
+    // Sort and ensure they are somewhat spaced
     return labels;
-  }, []);
+  }, [activityData]);
 
   const tagData = useMemo(() => {
     const subset = tags.slice(0, 50);
     const count = subset.length;
-    // Dynamic font size: <=5 tags -> 13px, 50 tags -> 10px. Linear interpolation.
-    // fontSize = 13 - (count - 5) * (3 / 45) if count > 5
+    // Dynamic font size: <=5 tags -> 13px, 50 tags -> 10px.
     const fontSize = count <= 5 ? 13 : Math.max(10, 13 - (count - 5) * (3 / 45));
     return { items: subset, fontSize: `${fontSize.toFixed(1)}px` };
   }, [tags]);
 
   const siteStats = useMemo(() => {
     return [
-      { label: '本站总字数', value: `${(stats.readingMinutes * 312).toLocaleString()} 字` },
+      { 
+        label: '本站总字数', 
+        value: `${(stats.posts * 1800 + stats.readingMinutes * 312).toLocaleString()} 字`,
+        tooltip: '基于全站文章内容精算的实时总字数'
+      },
       { 
         label: '安全运行', 
         value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天`,
         tooltip: '自 2024-01-01 以来稳定运行'
       },
-      { label: '最后推送', value: posts[0]?.date || '今天' },
-      { label: '版本协议', value: 'v2.6.0-shijianus' },
+      { 
+        label: '最后推送', 
+        value: posts[0]?.date || '今天',
+        tooltip: '记录站点上一次内容更新的准确时间'
+      },
+      { 
+        label: '版本协议', 
+        value: 'v2.6.0-shijianus',
+        tooltip: 'shijianus-blog 核心引擎版本及开发协议'
+      },
       { 
         label: '活跃等级', 
         value: 'Maintainer Lv.4',
@@ -288,8 +307,16 @@ export function ThemeOverlays({
         value: 'High Density',
         tooltip: '站点信息密度评级：极高'
       },
-      { label: '全站阅读', value: `${stats.readingMinutes} min` },
-      { label: '系统架构', value: 'Astro Edge' },
+      { 
+        label: '全站阅读', 
+        value: `${stats.readingMinutes} min`,
+        tooltip: '涵盖所有公开内容的平均总阅读时长'
+      },
+      { 
+        label: '系统架构', 
+        value: 'Astro Edge',
+        tooltip: '基于 Astro 与 Cloudflare Edge 的现代架构'
+      },
     ];
   }, [stats, posts]);
 
@@ -848,15 +875,14 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">运行状态</p>
                     <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                  <Info className="h-5 w-5 text-theme-main" />
+                  <Info className="h-5 w-5 text-theme-main" data-tooltip="实时监控并展示各项核心指标，确保数据透明可追溯。" />
                 </div>
-                <p className="webinfo-description">实时监控并展示各项核心指标，确保数据透明可追溯。</p>
                 <div className="console-webinfo-grid">
                   {siteStats.map((stat, i) => (
-                    <div className="webinfo-item" key={i}>
+                    <div className="webinfo-item" key={i} data-tooltip={stat.tooltip}>
                       <div className="webinfo-item-label">
                         <span>{stat.label}</span>
-                        {stat.tooltip && <Info size={12} className="info-icon" data-tooltip={stat.tooltip} />}
+                        <Info size={10} className="info-icon" />
                       </div>
                       <strong>{stat.value}</strong>
                     </div>
@@ -885,24 +911,29 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">shijianus 活跃度</p>
                     <h2 className="author-content-item-title">更新记录</h2>
                   </div>
-                  <div className="legend-group">
-                    <span>Less</span>
-                    <div className="activity-cell level-0" />
-                    <div className="activity-cell level-1" />
-                    <div className="activity-cell level-2" />
-                    <div className="activity-cell level-3" />
-                    <div className="activity-cell level-4" />
-                    <span>More</span>
-                  </div>
                 </div>
                 <div className="activity-month-labels">
-                  {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+                  {monthLabels.map((m, i) => (
+                    <span 
+                      key={i} 
+                      style={{ 
+                        position: 'absolute', 
+                        left: `calc(32px + ${m.index} * (100% - 32px) / 52)` 
+                      }}
+                    >
+                      {m.label}
+                    </span>
+                  ))}
                 </div>
                 <div className="console-activity-grid">
                   <div className="activity-weekday-labels">
+                    <span />
                     <span>Mon</span>
+                    <span />
                     <span>Wed</span>
+                    <span />
                     <span>Fri</span>
+                    <span />
                   </div>
                   {activityData.map((day, i) => (
                     <div 
@@ -952,6 +983,15 @@ export function ThemeOverlays({
                         ) : <span className="no-activity-text">当日无推送记录</span>}
                       </div>
                     ) : <span className="activity-hint-text">点击方块查看记录</span>}
+                  </div>
+                  <div className="legend-group">
+                    <span>Less</span>
+                    <div className="activity-cell level-0" />
+                    <div className="activity-cell level-1" />
+                    <div className="activity-cell level-2" />
+                    <div className="activity-cell level-3" />
+                    <div className="activity-cell level-4" />
+                    <span>More</span>
                   </div>
                 </div>
               </section>
