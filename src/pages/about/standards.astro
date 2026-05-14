@@ -1,0 +1,73 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { getCollection } from 'astro:content';
+import { createSidebarData } from '../../lib/theme';
+import { getPublicPosts } from '../../lib/content';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout title="站点评级标准" showAside={true} sidebarData={sidebarData}>
+  <article class="theme-card article-body post-content" style="padding: 40px; margin-top: 20px;">
+    <h1>shijianus 站点评级标准</h1>
+    
+    <p class="description" style="color: var(--text-muted); font-size: 1.1em; margin-bottom: 2em;">
+      本页面旨在公开展示 shijianus 博客的运营透明度指标与内容产出质量标准。
+    </p>
+
+    <section style="margin-bottom: 3em;">
+      <h2 id="maintainer-level" style="border-bottom: 2px solid var(--theme-op); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+        活跃等级 (Maintainer Level)
+      </h2>
+      <p>活跃等级基于过去 30 天内站点的代码提交与内容更新频率进行动态计算：</p>
+      <ul style="list-style: none; padding-left: 0;">
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px;">
+          <strong style="min-width: 60px; color: var(--text-muted);">Lv.0</strong> 
+          <span>游民 (30天内无提交)</span>
+        </li>
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px;">
+          <strong style="min-width: 60px; color: var(--theme-main);">Lv.1</strong> 
+          <span>观察者 (30天内 1-2 次提交)</span>
+        </li>
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px;">
+          <strong style="min-width: 60px; color: var(--theme-main);">Lv.2</strong> 
+          <span>建设者 (30天内 3-5 次提交)</span>
+        </li>
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px;">
+          <strong style="min-width: 60px; color: var(--theme-main);">Lv.3</strong> 
+          <span>核心维护 (30天内 6-10 次提交)</span>
+        </li>
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px;">
+          <strong style="min-width: 60px; color: var(--theme-main); text-shadow: 0 0 10px var(--theme-op);">Lv.4</strong> 
+          <span>狂热极客 (30天内 &gt;10 次提交)</span>
+        </li>
+      </ul>
+    </section>
+
+    <section style="margin-bottom: 3em;">
+      <h2 id="content-density" style="border-bottom: 2px solid var(--theme-op); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+        内容密度 (Content Density)
+      </h2>
+      <p>内容密度反映了站点文章的深度、结构完整性与信息含金量：</p>
+      <div style="display: grid; gap: 1.5rem; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem; background: var(--secondbg); border-radius: 12px; border: var(--style-border-always);">
+          <h3 style="margin-top: 0; color: var(--text-muted); font-size: 1rem; margin-bottom: 0.5rem;">Low Density</h3>
+          <p style="margin: 0; font-size: 0.95rem;">大量短图文、碎碎念或缺乏结构化的记录。主要用于快速同步状态。</p>
+        </div>
+        <div style="padding: 1.5rem; background: var(--secondbg); border-radius: 12px; border: var(--style-border-always);">
+          <h3 style="margin-top: 0; color: var(--theme-main); font-size: 1rem; margin-bottom: 0.5rem;">Standard</h3>
+          <p style="margin: 0; font-size: 0.95rem;">单篇平均 1000 字左右。包含明确的主题、逻辑阐述与必要的图文辅助。</p>
+        </div>
+        <div style="padding: 1.5rem; background: var(--theme-op); border-radius: 12px; border: 1px solid var(--theme-main);">
+          <h3 style="margin-top: 0; color: var(--theme-main); font-size: 1rem; margin-bottom: 0.5rem;">High Density</h3>
+          <p style="margin: 0; font-size: 0.95rem;">单篇平均 &gt; 2000 字。包含深度技术分析、详实的基准测试、系统架构图或多维度的判断推导。这是 shijianus 追求的核心标准。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px dashed var(--style-border-color); color: var(--text-muted); font-size: 0.85rem;">
+      最后更新于：2026年5月14日
+    </footer>
+  </article>
+</BlogLayout>

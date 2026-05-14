@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import AboutDashboard from '../components/theme/AboutDashboard.astro';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout title="关于" showAside={false} pageType="about" sidebarData={sidebarData}>
+  <AboutDashboard
+    stats={{
+      posts: sidebarData.totalPosts,
+      categories: sidebarData.totalCategories,
+      tags: sidebarData.totalTags,
+      readingMinutes: sidebarData.totalReadingMinutes,
+    }}
+  />
+</BlogLayout>
