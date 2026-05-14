@@ -933,6 +933,15 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">shijianus 活跃度</p>
                     <h2 className="author-content-item-title">更新记录</h2>
                   </div>
+                  <div className="legend-group">
+                    <span>Less</span>
+                    <div className="activity-cell level-0" />
+                    <div className="activity-cell level-1" />
+                    <div className="activity-cell level-2" />
+                    <div className="activity-cell level-3" />
+                    <div className="activity-cell level-4" />
+                    <span>More</span>
+                  </div>
                 </div>
                 <div className="activity-month-labels">
                   {monthLabels.map((m, i) => (
@@ -1010,14 +1019,6 @@ export function ThemeOverlays({
                         ) : <span className="no-activity-text">当日无推送记录</span>}
                       </div>
                     ) : <span className="activity-hint-text">点击方块查看记录</span>}
-                  </div>
-                  <div className="legend-group">                    <span>Less</span>
-                    <div className="activity-cell level-0" />
-                    <div className="activity-cell level-1" />
-                    <div className="activity-cell level-2" />
-                    <div className="activity-cell level-3" />
-                    <div className="activity-cell level-4" />
-                    <span>More</span>
                   </div>
                 </div>
               </section>

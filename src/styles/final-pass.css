@@ -318,7 +318,7 @@
 .activity-month-labels {
   position: relative;
   height: 18px;
-  margin-top: 4px;
+  margin-top: 20px;
   font-size: 10px;
   color: var(--text-muted);
   font-family: monospace;
@@ -368,13 +368,12 @@
 .activity-cell.level-4 { background: #39d353 !important; }
 
 .activity-details-footer {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: var(--style-border-always);
-  min-height: 80px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .selected-day-preview {
@@ -2293,12 +2292,12 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     margin: 0 !important;
 }
 
-/* 1. 强制底部详情区为 Flex 布局，把图例推向右下角 */
+/* 1. 让底部详情区自然排列，不再强制推到底部 */
 #console .activity .activity-details-footer {
     display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-end !important;
-    margin-top: auto !important; /* 把 footer 始终推到卡片最底部 */
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 24px !important; 
     padding-top: 16px !important;
     border-top: 1px solid var(--style-border-color) !important;
 }
@@ -2308,9 +2307,11 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     flex: 1 1 auto !important;
 }
 
-/* 3. 锁定图例大小与位置，防止被挤压 */
+/* 3. 锁定图例位置，使其在头部表现自然 */
+#console .activity .console-card__head {
+    align-items: center !important;
+}
 #console .activity .legend-group {
     flex: 0 0 auto !important;
     margin-top: 0 !important;
-    padding-bottom: 4px !important;
 }
