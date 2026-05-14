@@ -102,7 +102,7 @@
   color: var(--text-muted);
 }
 
-.legend-group .activity-cell { width: 10px; height: 10px; cursor: default; }
+.legend-group .activity-cell { width: 12px; height: 12px; cursor: default; }
 
 /* WebInfo UI Optimization - High Density */
 .webinfo-description {
@@ -398,8 +398,8 @@
 
 /* Tags Module - High Density Adaptive */
 .console-card.tags {
-  min-height: 240px;
-  max-height: 320px;
+  min-height: 260px;
+  max-height: 340px;
   overflow: hidden;
   flex: 0 0 auto;
 }
@@ -410,8 +410,9 @@
   scrollbar-width: none;
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 8px 10px 10px 10px;
   margin-top: 4px;
 }
 
@@ -420,7 +421,7 @@
 }
 
 .card-tag-cloud a {
-  padding: 4px 10px;
+  padding: 4px 8px;
   background: var(--secondbg);
   border-radius: 6px;
   border: var(--style-border-always);
@@ -449,10 +450,10 @@
 }
 
 .activity .legend-group .activity-cell {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   cursor: default;
-  min-width: 11px;
+  min-width: 12px;
 }
 
 
