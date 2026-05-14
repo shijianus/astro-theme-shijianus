@@ -2301,3 +2301,24 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     transform: scale(1.2);
     color: var(--theme-main) !important;
 }
+
+/* 物理像素级强制对齐补丁 */
+#console .console-card-group-left, 
+#console .console-card-group-right {
+    height: 480px !important; /* 强制写死一个固定高度，防止根据内容乱撑 */
+    justify-content: space-between !important;
+}
+
+/* 强制上方的两张卡片（Profile 和 Tags）高度一致 */
+#console .console-profile, 
+#console .tags {
+    height: 180px !important;
+    flex: 0 0 180px !important;
+}
+
+/* 强制下方的两张卡片（Webinfo 和 Activity）吃掉所有剩余空间并高度绝对一致 */
+#console .console-webinfo, 
+#console .activity {
+    height: calc(100% - 180px - 16px) !important; /* 总高度 - 顶部卡片高度 - gap */
+    flex: 1 1 auto !important;
+}
