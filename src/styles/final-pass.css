@@ -249,8 +249,14 @@
 
 #console.show .console-card-group {
   opacity: 1;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, calc(-50% - 20px)) !important;
   pointer-events: auto;
+  max-height: calc(100vh - 200px) !important;
+}
+
+/* 按钮组乖乖固定在屏幕偏下方，脱离卡片区域 */
+#console .button-group {
+    bottom: 40px !important; 
 }
 
 .console-card-group-left,
@@ -2215,11 +2221,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* 补丁 2：拯救热力图右侧“撞墙”留白 */
 #console .activity {
     padding-right: 32px !important; /* 强制给右侧留出呼吸空间 */
-}
-
-/* 补丁 3：拯救掉出屏幕的底部控制按钮 */
-#console .button-group {
-    bottom: 24px !important; /* 恢复到底部正常位置 */
 }
 
 /* 补丁 4：强制左右两列底部绝对平齐 */
