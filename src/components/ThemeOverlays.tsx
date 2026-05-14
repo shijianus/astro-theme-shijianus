@@ -196,8 +196,11 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
+    // Force UTC+8 (Beijing Time) for consistent global display
+    const utc8Offset = 8 * 60; // minutes
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const utcNow = new Date(now.getTime() + (now.getTimezoneOffset() + utc8Offset) * 60000);
+    const today = new Date(utcNow.getFullYear(), utcNow.getMonth(), utcNow.getDate());
     const dayOfWeek = today.getDay(); // 0 for Sunday
     
     const weeksToShow = 52;
@@ -887,7 +890,9 @@ export function ThemeOverlays({
                     <div className="webinfo-item" key={i} data-tooltip={stat.tooltip}>
                       <div className="webinfo-item-label">
                         <span>{stat.label}</span>
-                        <Info size={10} className="info-icon" />
+                        <a href="/about/standards" className="info-icon-link">
+                          <Info size={10} className="info-icon" />
+                        </a>
                       </div>
                       <strong>{stat.value}</strong>
                     </div>
