@@ -408,7 +408,7 @@
   min-height: 80px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 
 .selected-day-preview {
@@ -508,7 +508,7 @@
   min-height: 260px;
   max-height: 340px;
   overflow: hidden;
-  flex: 0 0 auto;
+  flex: 0 0 240px;
 }
 
 .card-tag-cloud {
