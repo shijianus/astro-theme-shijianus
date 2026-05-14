@@ -309,12 +309,14 @@ export function ThemeOverlays({
       { 
         label: '活跃等级', 
         value: 'Maintainer Lv.4',
-        tooltip: '基于近期更新频率计算的活跃等级'
+        tooltip: '基于近期更新频率计算的活跃等级',
+        href: '/about/standards'
       },
       { 
         label: '内容密度', 
         value: 'High Density',
-        tooltip: '站点信息密度评级：极高'
+        tooltip: '站点信息密度评级：极高',
+        href: '/about/standards'
       },
       { 
         label: '全站阅读', 
@@ -890,10 +892,17 @@ export function ThemeOverlays({
                   {siteStats.map((stat, i) => (
                     <div className="webinfo-item" key={i} data-tooltip={stat.tooltip}>
                       <div className="webinfo-item-label">
-                        <span>{stat.label}</span>
-                        <a href="/about/standards" className="info-icon-link">
-                          <Info size={10} className="info-icon" />
-                        </a>
+                        {stat.href ? (
+                          <a href={stat.href}>
+                            <span>{stat.label}</span>
+                            <Info size={10} className="info-icon" />
+                          </a>
+                        ) : (
+                          <>
+                            <span>{stat.label}</span>
+                            <Info size={10} className="info-icon" />
+                          </>
+                        )}
                       </div>
                       <strong>{stat.value}</strong>
                     </div>
@@ -936,30 +945,32 @@ export function ThemeOverlays({
                     </span>
                   ))}
                 </div>
-                <div className="console-activity-grid">
-                  <div className="activity-weekday-labels">
-                    <span />
-                    <span>Mon</span>
-                    <span />
-                    <span>Wed</span>
-                    <span />
-                    <span>Fri</span>
-                    <span />
+                <div className="activity-grid-container">
+                  <div className="console-activity-grid">
+                    <div className="activity-weekday-labels">
+                      <span />
+                      <span>Mon</span>
+                      <span />
+                      <span>Wed</span>
+                      <span />
+                      <span>Fri</span>
+                      <span />
+                    </div>
+                    {activityData.map((day, i) => (
+                      <div 
+                        key={i} 
+                        className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
+                        style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                        title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
+                        onClick={() => {
+                          if (day) {
+                            setSelectedActivityDate(day.date);
+                            setSelectedActivityPage(1);
+                          }
+                        }}
+                      />
+                    ))}
                   </div>
-                  {activityData.map((day, i) => (
-                    <div 
-                      key={i} 
-                      className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
-                      style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
-                      title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
-                      onClick={() => {
-                        if (day) {
-                          setSelectedActivityDate(day.date);
-                          setSelectedActivityPage(1);
-                        }
-                      }}
-                    />
-                  ))}
                 </div>
                 <div className="activity-details-footer">
                   <div className="selected-day-preview">

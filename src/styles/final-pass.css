@@ -2232,3 +2232,28 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     flex: 1 1 auto !important;
     height: 100% !important;
 }
+
+/* 任务 1：拯救热力图右侧“撞墙”问题 */
+#console .activity-grid-container {
+    padding-right: 20px !important;
+}
+#console .activity-month-labels {
+    padding-right: 20px !important;
+}
+
+/* 任务 2：增加点击视觉反馈 */
+#console .webinfo-item a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+#console .webinfo-item a:hover {
+    color: var(--theme-main) !important;
+}
+#console .webinfo-item a:hover .info-icon {
+    transform: scale(1.2);
+    color: var(--theme-main) !important;
+}
