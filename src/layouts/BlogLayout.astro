@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
 import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
@@ -17,7 +18,7 @@ import {
   hasConfiguredCommentDatabase,
   isRemoteDatabaseConfigured,
 } from '../lib/comment-integration';
-import type { SidebarData } from '../lib/theme';
+import { type SidebarData, createSidebarData } from '../lib/theme';
 import '../styles/global.css';
 import '../styles/rebuild.css';
 import '../styles/final-pass.css';
@@ -39,30 +40,32 @@ const {
   pageType = 'page',
 } = Astro.props;
 
-const overlayPosts =
-  sidebarData?.recentPosts.map((entry) => ({
-    title: entry.data.title,
-    href: getPostPath(entry),
-    description: getExcerpt(entry, 96),
-    category: resolveCategory(entry),
-    cover: resolveCover(entry),
-    date: entry.data.pubDate.toLocaleDateString('zh-CN'),
-  })) ?? [];
+// Fetch global data for overlays to ensure they are populated on all routes
+const allPosts = await getCollection('posts');
+const globalData = createSidebarData(allPosts);
 
-const overlayTags =
-  sidebarData?.tags.map((tag) => ({
-    label: tag.label,
-    href: `/tags/${tag.slug}/`,
-    count: tag.count,
-  })) ?? [];
+const overlayPosts = globalData.recentPosts.map((entry) => ({
+  title: entry.data.title,
+  href: getPostPath(entry),
+  description: getExcerpt(entry, 96),
+  category: resolveCategory(entry),
+  cover: resolveCover(entry),
+  date: entry.data.pubDate.toLocaleDateString('zh-CN'),
+}));
 
-const overlayArchives = sidebarData?.archives ?? [];
+const overlayTags = globalData.tags.map((tag) => ({
+  label: tag.label,
+  href: `/tags/${tag.slug}/`,
+  count: tag.count,
+}));
+
+const overlayArchives = globalData.archives;
 
 const overlayStats = {
-  posts: sidebarData?.totalPosts ?? 0,
-  categories: sidebarData?.totalCategories ?? 0,
-  tags: sidebarData?.totalTags ?? 0,
-  readingMinutes: sidebarData?.totalReadingMinutes ?? 0,
+  posts: globalData.totalPosts,
+  categories: globalData.totalCategories,
+  tags: globalData.totalTags,
+  readingMinutes: globalData.totalReadingMinutes,
 };
 
 const overlayFeatures = {
