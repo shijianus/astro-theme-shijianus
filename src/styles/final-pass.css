@@ -262,89 +262,45 @@
 }
 
 #console .console-card {
-  padding: 12px 16px;
-  background: var(--card-bg);
-  border: var(--style-border-always);
-  border-radius: 20px;
-  box-shadow: var(--shadow-border);
-  display: flex;
-  flex-direction: column;
-  transition: 0.3s;
+    padding: 16px 20px !important;
+    background: var(--card-bg);
+    border: var(--style-border-always);
+    border-radius: 20px;
+    box-shadow: var(--shadow-border);
+    display: flex;
+    flex-direction: column;
+    transition: 0.3s;
 }
 
-#console .console-profile {
-  min-height: auto !important;
-  flex: 0 0 auto;
+/* 2. 修复 Webinfo 下方的说明文本重叠问题 */
+#console .webinfo-description {
+    display: block !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    margin-top: 4px !important;
+    margin-bottom: 16px !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
 }
 
-#console .console-profile p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  line-height: 1.4;
+/* 3. 修复 2x2 网格内版本号换行难看的问题 */
+#console .webinfo-item {
+    padding: 8px !important;
+    gap: 4px !important;
+    border-radius: 10px;
+    background: var(--secondbg);
+    border: var(--style-border-always);
+    display: flex;
+    flex-direction: column;
+    justify-content: center !important;
+    transition: 0.2s;
 }
-
-#console .console-stat-grid {
-  margin-top: 10px;
-  gap: 4px;
-}
-
-#console .console-stat-grid span {
-  padding: 4px 8px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#console .console-stat-grid strong {
-  font-size: 15px;
-  line-height: 1.1;
-}
-
-#console .console-stat-grid small {
-  font-size: 10px;
-  opacity: 0.8;
-}
-
-/* Ensure Webinfo and Activity align at the bottom */
-.console-card.console-webinfo, 
-.console-card.activity {
-  flex: 1;
-  min-height: 0;
-}
-
-.console-card.console-webinfo {
-  margin-top: 0;
-}
-
-.console-webinfo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.webinfo-item {
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: var(--secondbg);
-  border: var(--style-border-always);
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-  transition: 0.2s;
-}
-
-.webinfo-item:hover {
-  background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
-  border-color: var(--theme-main);
-  box-shadow: var(--shadow-theme);
-}
-
-.webinfo-item strong {
-  color: var(--font-color);
-  font-size: 12px;
-  font-family: var(--font-family-mono);
+#console .webinfo-item strong {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important; /* 允许过长的版本号优雅换行 */
+    color: var(--font-color);
+    font-family: var(--font-family-mono);
 }
 
 /* Activity Grid - High Density */
