@@ -160,7 +160,8 @@
   height: 10px;
   color: var(--theme-main);
   opacity: 0.6;
-  cursor: help;
+  position: relative !important;
+  cursor: help !important;
 }
 
 /* 解除卡片对气泡的截断封印 */
@@ -168,9 +169,10 @@
     position: relative !important;
 }
 
-#console .console-card {
+#console .console-card-group-left, #console .console-card {
     overflow: visible !important;
 }
+
 /* 强行覆盖气泡主体 */
 [data-tooltip]::before {
     content: attr(data-tooltip) !important;
@@ -184,15 +186,16 @@
     border-radius: 8px !important;
     font-size: 12px !important;
     width: max-content !important;
-    max-width: 200px !important;
-    white-space: normal !important;
+    max-width: 160px !important; /* 缩小最大宽度防止触碰边界 */
+    white-space: pre-wrap !important;
+    text-align: center !important;
     word-break: break-all !important;
     border: 1px solid #444 !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
     z-index: 999999 !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    transition: opacity 0.2s ease !important;
+    transition: opacity 0.15s ease !important; /* 去除 all 避免重绘卡顿 */
 }
 /* 向下的小三角尾巴 */
 [data-tooltip]::after {
@@ -207,7 +210,7 @@
     z-index: 999999 !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    transition: opacity 0.2s ease !important;
+    transition: opacity 0.15s ease !important;
 }
 [data-tooltip]:hover::before, [data-tooltip]:hover::after {
     opacity: 1 !important;
@@ -380,19 +383,20 @@
   font-family: monospace;
 }
 
-.activity-cell {
+#console .activity-cell {
   width: 13px;
   height: 13px;
   border-radius: 2px;
   background: #161b22;
   cursor: pointer;
-  transition: 0.2s;
+  transition: opacity 0.1s ease !important; /* 仅保留透明度动画，去掉 transform 缩放和 box-shadow */
 }
 
-.activity-cell:hover {
-  outline: 2px solid var(--theme-main);
+#console .activity-cell:hover {
+  opacity: 0.8 !important;
+  transform: none !important; /* 严禁 hover 时放大，极度消耗性能 */
+  outline: 1px solid rgba(255,255,255,0.2) !important;
   z-index: 2;
-  transform: scale(1.15);
 }
 
 .activity-cell.level-0 { background: #161b22 !important; }

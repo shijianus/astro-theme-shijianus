@@ -891,17 +891,17 @@ export function ThemeOverlays({
                 </div>
                 <div className="console-webinfo-grid">
                   {siteStats.map((stat, i) => (
-                    <div className="webinfo-item" key={i} data-tooltip={stat.tooltip}>
+                    <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">
                         {stat.href ? (
                           <a href={stat.href}>
                             <span>{stat.label}</span>
-                            <Info size={10} className="info-icon" />
+                            <Info size={10} className="info-icon" data-tooltip={stat.tooltip} />
                           </a>
                         ) : (
                           <>
                             <span>{stat.label}</span>
-                            <Info size={10} className="info-icon" />
+                            <Info size={10} className="info-icon" data-tooltip={stat.tooltip} />
                           </>
                         )}
                       </div>
@@ -939,7 +939,7 @@ export function ThemeOverlays({
                       key={i} 
                       style={{ 
                         position: 'absolute', 
-                        left: `calc(40px + ${m.index} * (100% - 40px) / 52)` 
+                        left: `calc(32px + ${m.index * 12}px)` 
                       }}
                     >
                       {m.label}
