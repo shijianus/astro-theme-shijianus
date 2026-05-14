@@ -74,6 +74,71 @@
 
 /* Console Layout - Redefined below in Step 1 refactor */
 
+/* 抛弃左右两列包裹，直接让 4 个卡片成为 Grid 子元素 */
+#console .console-card-group-left, 
+#console .console-card-group-right {
+    display: contents !important; 
+}
+
+#console .console-card-group {
+    display: grid !important;
+    grid-template-columns: 260px minmax(0, 1fr) !important;
+    grid-template-rows: max-content 1fr !important;
+    gap: 16px !important;
+    width: min(1200px, 92vw) !important;
+    max-height: calc(100vh - 160px) !important;
+    
+    /* 保持定位与动画基础 */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, calc(-50% + 20px)) !important;
+    opacity: 0 !important;
+    z-index: 5 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+}
+
+@media (max-width: 860px) {
+  #console .console-card-group {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto !important;
+    width: 90vw;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto !important;
+    padding: 10px;
+    gap: 12px;
+  }
+}
+
+#console.show .console-card-group {
+  opacity: 1 !important;
+  transform: translate(-50%, calc(-50% - 20px)) !important;
+  pointer-events: auto !important;
+  max-height: calc(100vh - 200px) !important;
+}
+
+#console .console-card {
+    background: var(--card-bg) !important;
+    border: var(--style-border-always) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important; /* 确保气泡不截断 */
+    height: auto !important; /* 核心：让 Grid 自动分配高度 */
+    min-height: 0 !important;
+}
+
+/* 严丝合缝对号入座，Grid 会自动保证同行等高！ */
+#console .console-profile { grid-column: 1; grid-row: 1; }
+#console .tags { grid-column: 2; grid-row: 1; }
+#console .console-webinfo { grid-column: 1; grid-row: 2; }
+#console .activity { grid-column: 2; grid-row: 2; }
+
+/* 底部按钮安全距离 */
+#console .button-group { bottom: 40px !important; }
 
 /* Activity Grid - GitHub Style Compact & Detailed */
 .legend-group {
@@ -195,77 +260,7 @@
     opacity: 1 !important;
 }
 
-/* 1. 外层容器：使用 Grid 划分左右两列，align-items: stretch 保证两列总高度永远一致！ */
-#console .console-card-group {
-    display: grid !important;
-    grid-template-columns: 260px minmax(0, 1fr) !important;
-    gap: 16px !important;
-    width: min(1200px, 92vw) !important;
-    align-items: stretch !important; 
-    
-    /* 保持定位与动画基础 */
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, calc(-50% + 20px)) !important;
-    opacity: 0 !important;
-    z-index: 5 !important;
-    max-height: calc(100vh - 160px) !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-    transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
-}
 
-@media (max-width: 860px) {
-  #console .console-card-group {
-    grid-template-columns: 1fr;
-    width: 90vw;
-    max-height: calc(90vh - 100px);
-    overflow-y: auto;
-    padding: 10px;
-    gap: 12px;
-  }
-}
-
-#console.show .console-card-group {
-  opacity: 1;
-  transform: translate(-50%, calc(-50% - 20px)) !important;
-  pointer-events: auto;
-  max-height: calc(100vh - 200px) !important;
-}
-
-/* 按钮组乖乖固定在屏幕偏下方，脱离卡片区域 */
-#console .button-group {
-    bottom: 40px !important; 
-}
-
-/* 2. 左右列包装器：恢复为正常的 Flex 垂直列 */
-#console .console-card-group-left,
-#console .console-card-group-right {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    height: 100% !important;
-}
-
-/* 3. 基础卡片样式重置，清理高度毒瘤 */
-#console .console-card {
-    background: var(--card-bg) !important;
-    border: var(--style-border-always) !important;
-    border-radius: 16px !important;
-    padding: 20px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: auto !important; 
-    min-height: 0 !important;
-    overflow: visible !important; /* 保证气泡不被截断 */
-}
-
-/* 4. 终极对齐魔法：让左右列最下方的卡片（Webinfo 和 Activity）伸展以吸收所有剩余高度 */
-#console .console-card.console-webinfo,
-#console .console-card.activity {
-    flex: 1 1 auto !important; 
-}
 
 /* 2. 修复 Webinfo 下方的说明文本重叠问题 */
 #console .webinfo-description {
