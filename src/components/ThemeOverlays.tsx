@@ -198,19 +198,14 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
-    // Force UTC+8 (Beijing Time) for consistent global display
-    const utc8Offset = 8 * 60; // minutes
     const now = new Date();
-    const utcNow = new Date(now.getTime() + (now.getTimezoneOffset() + utc8Offset) * 60000);
-    const today = new Date(utcNow.getFullYear(), utcNow.getMonth(), utcNow.getDate());
-    const dayOfWeek = today.getDay(); // 0 for Sunday
-    
-    const weeksToShow = 52;
-    const totalSlots = weeksToShow * 7;
-    
-    // Start from the Sunday of the week 51 weeks before the current week
+    const utc8Time = now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000);
+    const today = new Date(utc8Time);
+    today.setHours(0, 0, 0, 0);
+
+    const totalSlots = 52 * 7;
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - dayOfWeek - (weeksToShow - 1) * 7);
+    startDate.setDate(today.getDate() - today.getDay() - (51 * 7));
 
     const data = [];
     for (let i = 0; i < totalSlots; i++) {
@@ -897,15 +892,15 @@ export function ThemeOverlays({
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">
                         {stat.href ? (
-                          <a href={stat.href}>
+                          <a href={stat.href} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>{stat.label}</span>
-                            <Info size={10} className="info-icon" data-tooltip={stat.tooltip} />
+                            <Info className="info-icon" data-tooltip={stat.tooltip} size={12} />
                           </a>
                         ) : (
-                          <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>{stat.label}</span>
-                            <Info size={10} className="info-icon" data-tooltip={stat.tooltip} />
-                          </>
+                            <Info className="info-icon" data-tooltip={stat.tooltip} size={12} />
+                          </div>
                         )}
                       </div>
                       <strong>{stat.value}</strong>
@@ -930,19 +925,14 @@ export function ThemeOverlays({
               </section>
 
               <section className="console-card activity">
-                <div className="console-card__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="console-card__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <p className="author-content-item-tips">shijianus 活跃度</p>
                     <h2 className="author-content-item-title">更新记录</h2>
                   </div>
-                  <div className="legend-group">
-                    <span>Less</span>
-                    <div className="activity-cell level-0" />
-                    <div className="activity-cell level-1" />
-                    <div className="activity-cell level-2" />
-                    <div className="activity-cell level-3" />
-                    <div className="activity-cell level-4" />
-                    <span>More</span>
+                  <div className="legend-group" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Less</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>More</span>
                   </div>
                 </div>
                 <div className="activity-month-labels">
