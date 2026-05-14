@@ -2219,7 +2219,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 /* 补丁 3：拯救掉出屏幕的底部控制按钮 */
 #console .button-group {
-    bottom: 80px !important; /* 大幅上提按钮位置 */
+    bottom: 24px !important; /* 恢复到底部正常位置 */
 }
 
 /* 补丁 4：强制左右两列底部绝对平齐 */
@@ -2266,19 +2266,29 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     align-items: stretch !important;
 }
 
-/* 2. 恢复左右两列的 Flex 物理包裹，恢复卡片间的 16px 间距 */
+/* 1. 强制给左列和右列设定最小高度和正确 Flex 属性 */
 #console .console-card-group-left, 
 #console .console-card-group-right {
     display: flex !important;
     flex-direction: column !important;
     gap: 16px !important;
+    height: 100% !important; 
 }
 
-/* 3. 强迫下方的 Webinfo 和 Activity 吃满剩余高度，实现底边绝对平齐 */
+/* 2. 拔除可能导致塌陷的 height: 100% 或 min-height: 100% */
+#console .console-profile {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+}
+
 #console .console-card.console-webinfo, 
 #console .console-card.activity {
+    height: auto !important;
     flex: 1 1 auto !important;
-    height: 100% !important;
+    min-height: 280px !important; /* 强制给一个兜底高度，绝对不允许塌陷消失！ */
+    display: flex !important;
+    flex-direction: column !important;
     margin: 0 !important;
 }
 
