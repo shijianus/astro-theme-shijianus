@@ -2281,3 +2281,25 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     height: 100% !important;
     margin: 0 !important;
 }
+
+/* 1. 强制底部详情区为 Flex 布局，把图例推向右下角 */
+#console .activity .activity-details-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin-top: auto !important; /* 把 footer 始终推到卡片最底部 */
+    padding-top: 16px !important;
+    border-top: 1px solid var(--style-border-color) !important;
+}
+
+/* 2. 让左侧操作记录占据主空间 */
+#console .activity .selected-day-preview {
+    flex: 1 1 auto !important;
+}
+
+/* 3. 锁定图例大小与位置，防止被挤压 */
+#console .activity .legend-group {
+    flex: 0 0 auto !important;
+    margin-top: 0 !important;
+    padding-bottom: 4px !important;
+}
