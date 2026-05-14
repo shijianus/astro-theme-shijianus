@@ -928,7 +928,7 @@ export function ThemeOverlays({
               </section>
 
               <section className="console-card activity">
-                <div className="console-card__head">
+                <div className="console-card__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p className="author-content-item-tips">shijianus 活跃度</p>
                     <h2 className="author-content-item-title">更新记录</h2>
@@ -949,7 +949,7 @@ export function ThemeOverlays({
                       key={i} 
                       style={{ 
                         position: 'absolute', 
-                        left: `calc(32px + ${m.index * 12}px)` 
+                        left: `calc(28px + ${m.index * 14}px)` 
                       }}
                     >
                       {m.label}
