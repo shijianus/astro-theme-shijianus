@@ -163,54 +163,54 @@
   cursor: help;
 }
 
-/* Tooltip System - Improved Visibility & Position */
+/* 解除卡片对气泡的截断封印 */
 [data-tooltip] {
-  position: relative;
+    position: relative !important;
 }
 
+#console .console-card {
+    overflow: visible !important;
+}
+/* 强行覆盖气泡主体 */
 [data-tooltip]::before {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 125% !important;
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  padding: 8px 12px !important;
-  background: var(--card-bg) !important;
-  color: var(--font-color) !important;
-  font-size: 12px !important;
-  line-height: 1.5 !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--theme-main) !important;
-  white-space: normal !important;
-  word-break: break-all !important;
-  width: max-content !important;
-  max-width: 180px !important;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-theme) !important;
-  z-index: 99999 !important;
-  text-align: left !important;
+    content: attr(data-tooltip) !important;
+    position: absolute !important;
+    bottom: calc(100% + 10px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: #1e1e20 !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    width: max-content !important;
+    max-width: 200px !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+    border: 1px solid #444 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
+    z-index: 999999 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease !important;
 }
-
+/* 向下的小三角尾巴 */
 [data-tooltip]::after {
-  content: "";
-  position: absolute;
-  bottom: 118%;
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  border: 6px solid transparent;
-  border-top-color: var(--theme-main);
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 99999 !important;
+    content: '' !important;
+    position: absolute !important;
+    bottom: calc(100% + 4px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-width: 6px 6px 0 !important;
+    border-style: solid !important;
+    border-color: #1e1e20 transparent transparent transparent !important;
+    z-index: 999999 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease !important;
 }
-
-[data-tooltip]:hover::before,
-[data-tooltip]:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+[data-tooltip]:hover::before, [data-tooltip]:hover::after {
+    opacity: 1 !important;
 }
 
 /* Console Layout - Precision Alignment & Centering */
@@ -2211,3 +2211,24 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #card-toc .toc-link { padding-left: 12px !important; }
 
 .topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
+
+/* 补丁 2：拯救热力图右侧“撞墙”留白 */
+#console .activity {
+    padding-right: 32px !important; /* 强制给右侧留出呼吸空间 */
+}
+
+/* 补丁 3：拯救掉出屏幕的底部控制按钮 */
+#console .button-group {
+    bottom: 80px !important; /* 大幅上提按钮位置 */
+}
+
+/* 补丁 4：强制左右两列底部绝对平齐 */
+.console-card-group-left, .console-card-group-right {
+    display: flex !important;
+    flex-direction: column !important;
+}
+/* 强迫下方的两个模块吸收所有剩余高度，实现底边对齐 */
+.console-card.console-webinfo, .console-card.activity {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+}
