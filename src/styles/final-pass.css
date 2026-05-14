@@ -563,6 +563,46 @@
   min-width: 13px;
 }
 
+#console .console-stat-grid span {
+    gap: 0 !important;
+    justify-content: center !important;
+    padding: 8px !important;
+}#console .console-stat-grid strong {
+    margin-bottom: 2px !important;
+    line-height: 1 !important;
+    font-size: 18px !important;
+}#console .console-stat-grid small {
+    margin-top: 0 !important;
+    line-height: 1 !important;
+}#console .webinfo-item {
+    gap: 2px !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+}
+
+[data-tooltip]::before {
+    bottom: calc(100% + 8px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: #1e1e20 !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+}[data-tooltip]::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: calc(100% + 3px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-width: 5px 5px 0 !important;
+    border-style: solid !important;
+    border-color: #1e1e20 transparent transparent transparent !important;
+    z-index: 999999 !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+}[data-tooltip]:hover::before, [data-tooltip]:hover::after {
+    opacity: 1 !important;
+}
+
 
 /* Button Group - Minimalist & Detached */
 #console .button-group {

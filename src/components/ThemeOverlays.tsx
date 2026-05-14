@@ -22,6 +22,7 @@ import {
   History,
   X,
   GitCommit,
+  FileText,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
