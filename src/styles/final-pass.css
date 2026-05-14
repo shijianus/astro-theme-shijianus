@@ -115,7 +115,7 @@
 .console-webinfo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 12px;
 }
 
 .webinfo-item {
@@ -281,24 +281,26 @@
 /* 2. 修复 Webinfo 下方的说明文本重叠问题 */
 #console .webinfo-description {
     display: block !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
     line-height: 1.5 !important;
-    margin-top: 4px !important;
+    margin-top: 8px !important;
     margin-bottom: 16px !important;
     white-space: normal !important;
-    word-break: keep-all !important;
+    word-break: break-word !important;
+    color: var(--text-muted) !important;
+    opacity: 0.8;
 }
 
 /* 3. 修复 2x2 网格内版本号换行难看的问题 */
 #console .webinfo-item {
-    padding: 8px !important;
-    gap: 4px !important;
-    border-radius: 10px;
+    padding: 12px 14px !important;
+    gap: 6px !important;
+    border-radius: 12px;
     background: var(--secondbg);
     border: var(--style-border-always);
     display: flex;
     flex-direction: column;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     transition: 0.2s;
 }
 #console .webinfo-item strong {
@@ -539,10 +541,6 @@
 }#console .console-stat-grid small {
     margin-top: 0 !important;
     line-height: 1 !important;
-}#console .webinfo-item {
-    gap: 2px !important;
-    justify-content: center !important;
-    padding: 6px 10px !important;
 }
 
 [data-tooltip]::before {
