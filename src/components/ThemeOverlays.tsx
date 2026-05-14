@@ -930,49 +930,58 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">shijianus 活跃度</p>
                     <h2 className="author-content-item-title">更新记录</h2>
                   </div>
-                  <div className="legend-group" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Less</span>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>More</span>
-                  </div>
-                </div>
-                <div className="activity-month-labels">
-                  {monthLabels.map((m, i) => (
-                    <span 
-                      key={i} 
-                      style={{ 
-                        position: 'absolute', 
-                        left: `calc(28px + ${m.index * 14}px)` 
-                      }}
-                    >
-                      {m.label}
-                    </span>
-                  ))}
                 </div>
                 <div className="activity-grid-container">
-                  <div className="console-activity-grid">
-                    <div className="activity-weekday-labels">
-                      <span />
-                      <span>Mon</span>
-                      <span />
-                      <span>Wed</span>
-                      <span />
-                      <span>Fri</span>
-                      <span />
+                  <div style={{ minWidth: 'max-content' }}>
+                    <div className="activity-month-labels">
+                      {monthLabels.map((m, i) => (
+                        <span 
+                          key={i} 
+                          style={{ 
+                            position: 'absolute', 
+                            left: `calc(28px + ${m.index * 14}px)` 
+                          }}
+                        >
+                          {m.label}
+                        </span>
+                      ))}
                     </div>
-                    {activityData.map((day, i) => (
-                      <div 
-                        key={i} 
-                        className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
-                        style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
-                        title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
-                        onClick={() => {
-                          if (day) {
-                            setSelectedActivityDate(day.date);
-                            setSelectedActivityPage(1);
-                          }
-                        }}
-                      />
-                    ))}
+                    <div className="console-activity-grid">
+                      <div className="activity-weekday-labels">
+                        <span />
+                        <span>Mon</span>
+                        <span />
+                        <span>Wed</span>
+                        <span />
+                        <span>Fri</span>
+                        <span />
+                      </div>
+                      {activityData.map((day, i) => (
+                        <div 
+                          key={i} 
+                          className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
+                          style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                          data-tooltip={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined}
+                          onClick={() => {
+                            if (day) {
+                              setSelectedActivityDate(day.date);
+                              setSelectedActivityPage(1);
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="activity-legend-footer" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '8px' }}>
+                      <div className="legend-group">
+                        <span>Less</span>
+                        <div className="activity-cell level-0" />
+                        <div className="activity-cell level-1" />
+                        <div className="activity-cell level-2" />
+                        <div className="activity-cell level-3" />
+                        <div className="activity-cell level-4" />
+                        <span>More</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="activity-details-footer">
