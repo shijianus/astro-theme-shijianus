@@ -286,10 +286,12 @@ export function ThemeOverlays({
   }, [tags]);
 
   const siteStats = useMemo(() => {
+    const sPosts = stats?.posts ?? 0;
+    const sReading = stats?.readingMinutes ?? 0;
     return [
       { 
         label: '本站总字数', 
-        value: `${(stats.posts * 1800 + stats.readingMinutes * 312).toLocaleString()} 字`,
+        value: `${(sPosts * 1800 + sReading * 312).toLocaleString()} 字`,
         tooltip: '基于全站文章内容精算的实时总字数'
       },
       { 
@@ -299,7 +301,7 @@ export function ThemeOverlays({
       },
       { 
         label: '最后推送', 
-        value: posts[0]?.date || '今天',
+        value: posts?.[0]?.date || '今天',
         tooltip: '记录站点上一次内容更新的准确时间'
       },
       { 
@@ -311,17 +313,17 @@ export function ThemeOverlays({
         label: '活跃等级', 
         value: 'Maintainer Lv.4',
         tooltip: '基于近期更新频率计算的活跃等级',
-        href: '/about/standards'
+        href: '/standards'
       },
       { 
         label: '内容密度', 
         value: 'High Density',
         tooltip: '站点信息密度评级：极高',
-        href: '/about/standards'
+        href: '/standards'
       },
       { 
         label: '全站阅读', 
-        value: `${stats.readingMinutes} min`,
+        value: `${sReading} min`,
         tooltip: '涵盖所有公开内容的平均总阅读时长'
       },
       { 

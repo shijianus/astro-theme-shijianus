@@ -62,10 +62,10 @@ const overlayTags = globalData.tags.map((tag) => ({
 const overlayArchives = globalData.archives;
 
 const overlayStats = {
-  posts: globalData.totalPosts,
-  categories: globalData.totalCategories,
-  tags: globalData.totalTags,
-  readingMinutes: globalData.totalReadingMinutes,
+  posts: globalData.totalPosts ?? 0,
+  categories: globalData.totalCategories ?? 0,
+  tags: globalData.totalTags ?? 0,
+  readingMinutes: globalData.totalReadingMinutes ?? 0,
 };
 
 const overlayFeatures = {

@@ -1,0 +1,23 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="站点评级标准">
+  <article class="theme-card article-body post-content" style="padding: 40px; margin-top: 20px;">
+    <h1>shijianus 站点评级标准</h1>
+    <h2 id="maintainer-level">活跃等级 (Maintainer Level)</h2>
+    <ul>
+      <li><strong>Lv.0:</strong> 游民 (30天内无提交)</li>
+      <li><strong>Lv.1:</strong> 观察者 (30天内 1-2 次提交)</li>
+      <li><strong>Lv.2:</strong> 建设者 (30天内 3-5 次提交)</li>
+      <li><strong>Lv.3:</strong> 核心维护 (30天内 6-10 次提交)</li>
+      <li><strong>Lv.4:</strong> 狂热极客 (30天内 >10 次提交)</li>
+    </ul>
+    <h2 id="content-density">内容密度 (Content Density)</h2>
+    <ul>
+      <li><strong>Low Density:</strong> 大量短图文或碎碎念</li>
+      <li><strong>Standard:</strong> 单篇平均 1000 字左右</li>
+      <li><strong>High Density:</strong> 单篇平均 > 2000 字，包含深度技术分析、图表和系统架构图。</li>
+    </ul>
+  </article>
+</BlogLayout>
