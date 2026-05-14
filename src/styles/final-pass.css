@@ -314,7 +314,6 @@
 /* Activity Grid - High Density */
 .console-card.activity {
   position: relative;
-  min-height: 300px;
 }
 
 .activity-month-labels {
@@ -472,10 +471,9 @@
 
 /* Tags Module - High Density Adaptive */
 .console-card.tags {
-  min-height: 260px;
-  max-height: 340px;
+  min-height: 200px;
   overflow: hidden;
-  flex: 0 0 240px;
+  flex: 0 0 auto;
 }
 
 .card-tag-cloud {
@@ -2228,7 +2226,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* 强迫下方的两个模块吸收所有剩余高度，实现底边对齐 */
 .console-card.console-webinfo, .console-card.activity {
     flex: 1 1 auto !important;
-    height: 100% !important;
 }
 
 /* 任务 1：拯救热力图右侧“撞墙”问题 */
@@ -2284,7 +2281,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #console .console-card.activity {
     height: auto !important;
     flex: 1 1 auto !important;
-    min-height: 280px !important; /* 强制给一个兜底高度，绝对不允许塌陷消失！ */
+    min-height: 0 !important; 
     display: flex !important;
     flex-direction: column !important;
     margin: 0 !important;
