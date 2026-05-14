@@ -2302,37 +2302,26 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     color: var(--theme-main) !important;
 }
 
-/* 1. 消除左右列包裹层的物理存在，让四个卡片直接变成外层 Grid 的子元素 */
-#console .console-card-group-left, 
-#console .console-card-group-right {
-    display: contents !important;
-}
-
-/* 2. 将外层容器打造为 2x2 的完美网格 */
+/* 1. 外层容器恢复为两列 Grid，稍微加宽左侧防止文字被挤碎 */
 #console .console-card-group {
     display: grid !important;
-    grid-template-columns: 240px 1fr !important; /* 左列极窄，右列极宽 */
-    grid-template-rows: max-content 1fr !important; /* 上行高度跟随内容（Tags），下行吃掉所有剩余空间 */
+    grid-template-columns: 260px 1fr !important;
     gap: 16px !important;
-    height: auto !important;
-    max-height: calc(100vh - 160px) !important;
-    align-items: stretch !important; /* 强制所有卡片填满自己所在的网格 */
+    align-items: stretch !important;
 }
 
-/* 3. 擦除之前所有的定高毒瘤，释放热力图空间 */
-#console .console-card {
-    height: auto !important;
-    min-height: 0 !important;
-    flex: none !important;
+/* 2. 恢复左右两列的 Flex 物理包裹，恢复卡片间的 16px 间距 */
+#console .console-card-group-left, 
+#console .console-card-group-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
 }
 
-/* 4. 将四个卡片严丝合缝地对号入座 */
-#console .console-profile { grid-column: 1; grid-row: 1; }
-#console .tags { grid-column: 2; grid-row: 1; }
-#console .console-webinfo { grid-column: 1; grid-row: 2; }
-#console .activity { grid-column: 2; grid-row: 2; }
-
-/* 5. 确保热力图底部图例依然贴底对齐 */
-#console .activity .activity-details-footer {
-    margin-top: auto !important;
+/* 3. 强迫下方的 Webinfo 和 Activity 吃满剩余高度，实现底边绝对平齐 */
+#console .console-card.console-webinfo, 
+#console .console-card.activity {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    margin: 0 !important;
 }
