@@ -21,6 +21,7 @@ import {
   Info,
   History,
   X,
+  GitCommit,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -968,14 +969,14 @@ export function ThemeOverlays({
                           <strong>{selectedActivity.date}</strong>
                           {activityPagination.total > 1 && (
                             <div className="activity-pagination">
-                              <button 
+                              <button
                                 disabled={activityPagination.current === 1}
                                 onClick={() => setSelectedActivityPage(p => Math.max(1, p - 1))}
                               >
                                 <ArrowLeft className="h-3 w-3" />
                               </button>
                               <span>{activityPagination.current} / {activityPagination.total}</span>
-                              <button 
+                              <button
                                 disabled={activityPagination.current === activityPagination.total}
                                 onClick={() => setSelectedActivityPage(p => Math.min(activityPagination.total, p + 1))}
                               >
@@ -985,17 +986,19 @@ export function ThemeOverlays({
                           )}
                         </div>
                         {activityPagination.items.length > 0 ? (
-                          <ul>
+                          <ul className="activity-details-list">
                             {activityPagination.items.map((p, i) => (
-                              <li key={i}><a href={p.href}>{p.title}</a></li>
+                              <li key={i}>
+                                <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
+                                <a href={p.href}>{p.title}</a>
+                              </li>
                             ))}
                           </ul>
                         ) : <span className="no-activity-text">当日无推送记录</span>}
                       </div>
                     ) : <span className="activity-hint-text">点击方块查看记录</span>}
                   </div>
-                  <div className="legend-group">
-                    <span>Less</span>
+                  <div className="legend-group">                    <span>Less</span>
                     <div className="activity-cell level-0" />
                     <div className="activity-cell level-1" />
                     <div className="activity-cell level-2" />
