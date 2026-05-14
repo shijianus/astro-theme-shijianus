@@ -163,7 +163,7 @@
   cursor: help;
 }
 
-/* Tooltip System */
+/* Tooltip System - Improved Visibility & Position */
 [data-tooltip] {
   position: relative;
 }
@@ -171,20 +171,26 @@
 [data-tooltip]::before {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: 150%;
+  bottom: 130% !important;
   left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  padding: 6px 10px;
-  background: var(--font-color);
-  color: var(--card-bg);
-  font-size: 11px;
-  border-radius: 6px;
-  white-space: nowrap;
+  transform: translateX(-50%) translateY(4px);
+  padding: 8px 12px !important;
+  background: var(--card-bg) !important;
+  color: var(--font-color) !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--theme-main) !important;
+  white-space: normal !important;
+  word-break: break-all !important;
+  width: max-content !important;
+  max-width: 220px !important;
   opacity: 0;
   pointer-events: none;
-  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-border);
-  z-index: 1000;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-theme) !important;
+  z-index: 9999 !important;
+  text-align: left !important;
 }
 
 [data-tooltip]:hover::before {
@@ -195,9 +201,9 @@
 /* Console Layout - Precision Alignment & Centering */
 #console .console-card-group {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 260px 1fr;
   gap: 16px;
-  width: min(1200px, calc(100vw - 40px));
+  width: min(1200px, 92vw);
   position: fixed;
   top: 50%;
   left: 50%;
@@ -205,11 +211,22 @@
   opacity: 0;
   z-index: 5;
   height: auto;
-  max-height: calc(100vh - 180px);
+  max-height: calc(100vh - 160px);
   align-items: stretch;
   overflow: hidden;
   pointer-events: none;
   transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@media (max-width: 860px) {
+  #console .console-card-group {
+    grid-template-columns: 1fr;
+    width: 90vw;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+    padding: 10px;
+    gap: 12px;
+  }
 }
 
 #console.show .console-card-group {
@@ -227,7 +244,7 @@
 }
 
 #console .console-card {
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: var(--card-bg);
   border: var(--style-border-always);
   border-radius: 20px;
@@ -249,21 +266,26 @@
 }
 
 #console .console-stat-grid {
-  margin-top: 12px;
+  margin-top: 10px;
   gap: 4px;
 }
 
 #console .console-stat-grid span {
-  padding: 6px 10px;
-  border-radius: 12px;
+  padding: 4px 8px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 #console .console-stat-grid strong {
-  font-size: 16px;
-  line-height: 1.2;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+#console .console-stat-grid small {
+  font-size: 10px;
+  opacity: 0.8;
 }
 
 /* Ensure Webinfo and Activity align at the bottom */
@@ -280,18 +302,18 @@
 .console-webinfo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  margin-top: 10px;
+  gap: 4px;
+  margin-top: 8px;
 }
 
 .webinfo-item {
-  padding: 8px 10px;
-  border-radius: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
   background: var(--secondbg);
   border: var(--style-border-always);
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0px;
   transition: 0.2s;
 }
 
@@ -299,25 +321,24 @@
   background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
   border-color: var(--theme-main);
   box-shadow: var(--shadow-theme);
-  transform: translateY(-2px);
 }
 
 .webinfo-item strong {
   color: var(--font-color);
-  font-size: 13px;
+  font-size: 12px;
   font-family: var(--font-family-mono);
 }
 
 /* Activity Grid - High Density */
 .console-card.activity {
   position: relative;
-  min-height: 340px;
+  min-height: 300px;
 }
 
 .activity-month-labels {
   position: relative;
-  height: 20px;
-  margin-top: 6px;
+  height: 18px;
+  margin-top: 4px;
   font-size: 10px;
   color: var(--text-muted);
   font-family: monospace;
@@ -345,12 +366,12 @@
 }
 
 .activity-cell {
-  aspect-ratio: 1 / 1;
+  width: 11px;
+  height: 11px;
   border-radius: 2px;
-  background: var(--secondbg);
+  background: #161b22;
   cursor: pointer;
   transition: 0.2s;
-  min-width: 11px;
 }
 
 .activity-cell:hover {
@@ -359,31 +380,26 @@
   transform: scale(1.15);
 }
 
-.activity-cell.level-0 { background: #161b22; }
-.activity-cell.level-1 { background: #0e4429; }
-.activity-cell.level-2 { background: #006d32; }
-.activity-cell.level-3 { background: #26a641; }
-.activity-cell.level-4 { background: #39d353; }
-
-.activity-cell.sparkle {
-  box-shadow: 0 0 10px #ff5252;
-  animation: activity-pulse 2s infinite ease-in-out;
-}
+.activity-cell.level-0 { background: #161b22 !important; }
+.activity-cell.level-1 { background: #0e4429 !important; }
+.activity-cell.level-2 { background: #006d32 !important; }
+.activity-cell.level-3 { background: #26a641 !important; }
+.activity-cell.level-4 { background: #39d353 !important; }
 
 .activity-details-footer {
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: var(--style-border-always);
-  min-height: 60px;
+  min-height: 50px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 }
 
 /* Tags Module - High Density Adaptive */
 .console-card.tags {
-  min-height: 280px;
-  max-height: 380px;
+  min-height: 240px;
+  max-height: 320px;
   overflow: hidden;
   flex: 0 0 auto;
 }
@@ -394,9 +410,9 @@
   scrollbar-width: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px 14px;
-  margin-top: 8px;
+  gap: 6px;
+  padding: 8px 10px;
+  margin-top: 4px;
 }
 
 .card-tag-cloud::-webkit-scrollbar {
@@ -404,14 +420,15 @@
 }
 
 .card-tag-cloud a {
-  padding: 6px 12px;
+  padding: 4px 10px;
   background: var(--secondbg);
-  border-radius: 10px;
+  border-radius: 6px;
   border: var(--style-border-always);
   color: var(--font-color);
   text-decoration: none;
   transition: 0.2s;
   white-space: nowrap;
+  font-size: 12px;
 }
 
 .card-tag-cloud a:hover {
@@ -426,7 +443,7 @@
 .activity .legend-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-size: 10px;
   color: var(--text-muted);
 }
@@ -437,6 +454,7 @@
   cursor: default;
   min-width: 11px;
 }
+
 
 /* Button Group - Minimalist & Detached */
 #console .button-group {

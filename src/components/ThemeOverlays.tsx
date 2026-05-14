@@ -198,30 +198,38 @@ export function ThemeOverlays({
   const activityData = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayOfWeek = today.getDay(); // 0 for Sunday
     
-    const data = [];
     const weeksToShow = 52;
-    const totalSlots = weeksToShow * 7; // 364 days
+    const totalSlots = weeksToShow * 7;
     
-    // We want the last cell (bottom-right) to be today.
-    // Start date is today - 363 days.
+    // Start from the Sunday of the week 51 weeks before the current week
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - totalSlots + 1);
+    startDate.setDate(today.getDate() - dayOfWeek - (weeksToShow - 1) * 7);
 
+    const data = [];
     for (let i = 0; i < totalSlots; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
       
-      const postsOnDate = posts.filter(p => new Date(p.date).toDateString() === currentDate.toDateString());
-      // Absolute real data: 0 posts = level 0, then 1, 2, 3, 4 based on count
+      if (currentDate > today) {
+        data.push(null);
+        continue;
+      }
+
+      const postsOnDate = posts.filter(p => {
+        const d = new Date(p.date);
+        return d.getFullYear() === currentDate.getFullYear() && 
+               d.getMonth() === currentDate.getMonth() && 
+               d.getDate() === currentDate.getDate();
+      });
+      
       const level = postsOnDate.length === 0 ? 0 : Math.min(4, postsOnDate.length);
-      const sparkle = level >= 4 ? 0.3 + (level * 0.1) : 0;
 
       data.push({
         date: currentDate.toLocaleDateString('zh-CN'),
         rawDate: currentDate,
         level,
-        sparkle,
         posts: postsOnDate.map(p => ({ title: p.title, href: p.href })),
       });
     }
@@ -248,22 +256,19 @@ export function ThemeOverlays({
     const labels: { label: string; index: number }[] = [];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Iterate through columns (weeks)
     for (let week = 0; week < 52; week++) {
       const dayIndex = week * 7;
-      const date = activityData[dayIndex].rawDate;
+      const dayData = activityData[dayIndex];
+      if (!dayData) continue;
+      
+      const date = dayData.rawDate;
       const month = months[date.getMonth()];
       
-      // If it's a new month and not too close to the previous label
       if (labels.length === 0 || labels[labels.length - 1].label !== month) {
-        // Only add if it's the first time we see this month in this run
-        if (!labels.some(l => l.label === month)) {
-          labels.push({ label: month, index: week });
-        }
+        labels.push({ label: month, index: week });
       }
     }
     
-    // Sort and ensure they are somewhat spaced
     return labels;
   }, [activityData]);
 
@@ -918,7 +923,7 @@ export function ThemeOverlays({
                       key={i} 
                       style={{ 
                         position: 'absolute', 
-                        left: `calc(32px + ${m.index} * (100% - 32px) / 52)` 
+                        left: `calc(40px + ${m.index} * (100% - 40px) / 52)` 
                       }}
                     >
                       {m.label}
@@ -938,8 +943,8 @@ export function ThemeOverlays({
                   {activityData.map((day, i) => (
                     <div 
                       key={i} 
-                      className={`activity-cell level-${day?.level ?? 0} ${day?.sparkle ? 'sparkle' : ''}`} 
-                      style={day ? ({ '--sparkle-opacity': day.sparkle } as CSSProperties) : {}}
+                      className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
+                      style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
                       title={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : ''}` : ''}
                       onClick={() => {
                         if (day) {
