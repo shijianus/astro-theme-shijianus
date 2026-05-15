@@ -2,51 +2,91 @@
 import BlogLayout from '../layouts/BlogLayout.astro';
 ---
 
-<BlogLayout showAside={false} title="站点指标白皮书">
-  <article class="theme-card article-body post-content" style="padding: 40px; margin-top: 20px;">
-    <h1>站点运行指标与内容评估标准</h1>
+<BlogLayout showAside={false} title="站点指标评估标准">
+  <article class="theme-card article-body post-content" style="padding: 40px; margin: 40px auto; max-width: 860px;">
+    <h1>站点运行指标与评估基准 (ISO-Standard)</h1>
     
     <section>
-      <h2 id="maintainer-score">A. 活跃等级 (Maintainer Score - MS) 算法文档</h2>
-      <p>本站的活跃等级并非简单的静态标签，而是基于<strong>时间衰减算法 (Time Decay Algorithm)</strong> 的动态评分系统，旨在客观反映系统维护者的实时投入强度。</p>
+      <h2 id="maintainer-status">A. 维护状态等级 (Maintainer Status)</h2>
+      <p>本站的维护状态由定量数据驱动，考核指标涵盖：总产出数量、更新频率及系统稳定性。评级标准如下：</p>
       
-      <div style="background: rgba(var(--theme-main-rgb), 0.05); padding: 20px; border-radius: 8px; font-family: monospace; margin: 20px 0; border: 1px solid var(--theme-border);">
-        <strong>MS 核心公式示例：</strong><br/>
-        MS = (近期 30 天 Post 数量 × 1.5) + (代码 Commits / 10) - (休眠天数 × 0.2)
-      </div>
-
-      <h3 id="ms-levels">段位定义：</h3>
-      <ul>
-        <li><strong>Lv.0 (游民 / 休眠状态)：</strong> 系统处于长周期静默，仅维持基础运行，无实质内容产出。</li>
-        <li><strong>Lv.1 (Observer / 观察者)：</strong> 偶发性输入，主要进行微小的样式修正或零散的记录。</li>
-        <li><strong>Lv.2 (Builder / 建设者)：</strong> 稳定的系统搭建期，周均产出具有结构性的内容或功能模块。</li>
-        <li><strong>Lv.3 (Core / 核心维护)：</strong> 高频、高质量的持续迭代，系统架构与内容深度处于同步演进状态。</li>
-        <li><strong>Lv.4 (Geek / 狂热极客)：</strong> 内容与代码达到系统级深度。不仅有高频产出，且具有持续的架构输出与技术推导。</li>
-      </ul>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--theme-border);">
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">等级 (Status)</th>
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">量化阈值 (Quantitative Thresholds)</th>
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">定义说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Status 0</strong></td>
+            <td style="padding: 12px;">Total Posts &lt; 5 或 Update Gap &gt; 90d</td>
+            <td style="padding: 12px;">Inactive / 站点处于长周期静默状态</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Status 1</strong></td>
+            <td style="padding: 12px;">Total Posts ≥ 5 且 Update Gap ≤ 30d</td>
+            <td style="padding: 12px;">Active / 具备基础内容的活跃站点</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Status 2</strong></td>
+            <td style="padding: 12px;">Total Posts ≥ 20 且 Monthly Updates ≥ 2</td>
+            <td style="padding: 12px;">Steady / 持续性建设，具备结构化沉淀</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Status 3</strong></td>
+            <td style="padding: 12px;">Total Posts ≥ 50 且 Total Reading &gt; 500m</td>
+            <td style="padding: 12px;">Core / 核心资产规模化，系统架构趋于成熟</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Status 4</strong></td>
+            <td style="padding: 12px;">Total Posts ≥ 100 且 Weekly Updates ≥ 1</td>
+            <td style="padding: 12px;">Advanced / 高频、高质量、全天候维护状态</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
-    <hr style="border: 0; border-top: 1px solid var(--theme-border); margin: 40px 0;" />
+    <section style="margin-top: 40px;">
+      <h2 id="information-density">B. 内容密度评估标准 (Information Density)</h2>
+      <p>内容密度用于评估单篇文本的有效信息容量。核心指标：单篇平均有效字符数 (Words per Post)。</p>
 
-    <section>
-      <h2 id="content-density">B. 内容密度 (Content Density - CD) 评估文档</h2>
-      <p>内容密度是衡量站点<strong>“有效信息熵”</strong>的核心标准，用于区分碎片化信息与系统化知识。</p>
-
-      <div style="background: rgba(var(--theme-main-rgb), 0.05); padding: 20px; border-radius: 8px; font-family: monospace; margin: 20px 0; border: 1px solid var(--theme-border);">
-        <strong>CD 核心公式示例：</strong><br/>
-        CD = (Total_Words + Code_Snippets * 50 + Formula_Count * 100) / Total_Posts
-      </div>
-
-      <h3 id="cd-levels">密度等级定义：</h3>
-      <ul>
-        <li><strong>Low (轻量流)：</strong> 均篇短文本、碎片化思考或纯图集，信息熵较低，适合快速浏览。</li>
-        <li><strong>Standard (标准流)：</strong> 结构完整的图文排版，具备清晰的叙述逻辑与背景支撑。</li>
-        <li><strong>High (高密度)：</strong> 含有深度技术推导、复杂的系统架构图或大规模代码分析的硬核文本。</li>
-        <li><strong>Ultra High (极高密度)：</strong> 单篇需要沉浸式阅读 > 15 分钟。通常为针对某一领域的系统级专著或长篇技术白皮书。</li>
-      </ul>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--theme-border);">
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">密度等级 (Density)</th>
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">平均字数区间 (Avg. Words)</th>
+            <th style="text-align: left; padding: 12px; background: rgba(var(--theme-main-rgb), 0.05);">分类定义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Level 1 (Low)</strong></td>
+            <td style="padding: 12px;">Words &lt; 800</td>
+            <td style="padding: 12px;">碎片化记录 / 瞬时感悟与简报</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Level 2 (Standard)</strong></td>
+            <td style="padding: 12px;">800 ≤ Words ≤ 1500</td>
+            <td style="padding: 12px;">结构化文本 / 具备完整论述逻辑的常规内容</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Level 3 (High)</strong></td>
+            <td style="padding: 12px;">1500 &lt; Words ≤ 3000</td>
+            <td style="padding: 12px;">深度文档 / 包含技术推导或系统性复盘</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--theme-border);">
+            <td style="padding: 12px;"><strong>Level 4 (Ultra)</strong></td>
+            <td style="padding: 12px;">Words &gt; 3000</td>
+            <td style="padding: 12px;">专著级内容 / 系统性、架构性深度说明文档</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
-    <section style="margin-top: 40px; font-style: italic; opacity: 0.8;">
-      <p>* 以上算法与标准将随站点架构的演进而持续优化，确保评价体系的专业性与公正性。</p>
+    <section style="margin-top: 40px; border-top: 1px solid var(--theme-border); padding-top: 20px; font-size: 0.9em; opacity: 0.7;">
+      <p>注：所有量化指标均由 Astro 系统后台实时算力得出，排除代码片段权重后计算。评估标准将作为站点长期演进的客观度量衡。</p>
     </section>
   </article>
 </BlogLayout>
