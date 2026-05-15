@@ -286,16 +286,17 @@ export function ThemeOverlays({
     const sReading = stats?.readingMinutes ?? 0;
     const sWords = stats?.totalWords ?? 0;
 
-    // FIND TRUE LATEST POST DATE (Ignoring sticky sorting if any)
+    // DYNAMIC DATA ACTUALIZATION ENGINE (憲法 V3 合規版)
+    // 1. FIND TRUE LATEST POST DATE (Ignoring sticky sorting)
     const sortedByDate = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const latestPost = sortedByDate[0];
 
-    // CALCULATE REAL UPTIME
+    // 2. CALCULATE REAL UPTIME
     const startDate = new Date('2024-01-01');
     const today = new Date();
     const uptimeDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    // DYNAMIC ACTIVE LEVEL (30 DAYS POSTS)
+    // 3. DYNAMIC ACTIVE LEVEL (POSTS IN LAST 30 DAYS)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
     const recentPostCount = posts.filter(p => new Date(p.date) >= thirtyDaysAgo).length;
@@ -306,7 +307,7 @@ export function ThemeOverlays({
     else if (recentPostCount >= 3) activeLevel = 'Status 2';
     else if (recentPostCount >= 1) activeLevel = 'Status 1';
 
-    // DYNAMIC CONTENT DENSITY (AVG WORDS)
+    // 4. DYNAMIC CONTENT DENSITY (AVG WORDS PER POST)
     const avgWords = sPosts > 0 ? sWords / sPosts : 0;
     let densityLevel = 'Level 1 (Low)';
     if (avgWords > 3000) densityLevel = 'Level 4 (Ultra)';
@@ -317,12 +318,12 @@ export function ThemeOverlays({
       {
         label: '本站总字数',
         value: `${sWords.toLocaleString()} 字`,
-        tooltip: '基于全站 Markdown 节点精算的真实总字数'
+        tooltip: '基于全站 Markdown 节点物理扫描精算的实时总字数'
       },
       {
         label: '安全运行天数',
         value: `${uptimeDays} 天`,
-        tooltip: '自 2024-01-01 以来稳定运行'
+        tooltip: '自 2024-01-01 以来稳定运行的物理时长记录'
       },
       {
         label: '最后推送',
@@ -339,13 +340,13 @@ export function ThemeOverlays({
       {
         label: '活跃等级',
         value: activeLevel,
-        tooltip: `基于近30天内发布文章数量(${recentPostCount}篇)计算的活跃等级`,
+        tooltip: `基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`,
         href: '/standards'
       },
       {
         label: '内容密度',
         value: densityLevel,
-        tooltip: `基于全站平均单篇字数(${Math.round(avgWords)})计算的内容密度评级`,
+        tooltip: `基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`,
         href: '/standards'
       },
       {
