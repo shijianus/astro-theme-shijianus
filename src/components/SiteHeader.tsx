@@ -435,7 +435,7 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <Bell className="h-4 w-4" aria-hidden="true" />
+                  <Bell size={18} strokeWidth={2} style={{ color: 'var(--font-color)' }} aria-hidden="true" />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>

@@ -32,7 +32,33 @@
   border-radius: 18px;
 }
 
+#nav-group {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  justify-content: space-between !important;
+}
+
+#menus {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  position: relative !important;
+  margin: 0 auto !important;
+}
+
+#menus .menus_items {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
 #nav-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  margin-left: auto !important;
 }
 
 #menus .site-page {
@@ -609,6 +635,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 50% !important;
+  overflow: visible !important;
 }
 
 #nav-right .nav-button + .nav-button {
@@ -714,28 +741,29 @@
   transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 50% !important;
   z-index: 100;
+  overflow: visible !important;
 }
 
 #center-console-button .widget-inner {
   width: 100%;
   height: 100%;
+  position: relative !important;
 }
 
 #center-console-button .widget i {
   position: absolute;
-  background: var(--font-color);
+  background: var(--font-color) !important;
   border-radius: calc(var(--icon-size) * 0.15);
   transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   inset: 0;
   margin: auto;
-  right: auto;
   width: calc(var(--icon-size) / 3);
   height: calc(var(--icon-size) / 3.5);
   transform: translateY(calc(var(--icon-size) / 4));
 }
 
 #center-console-button .widget .left {
-  width: 100%;
+  width: 100% !important;
   transform: translateY(calc(var(--icon-size) / -4));
 }
 
@@ -751,23 +779,23 @@
 }
 
 #center-console-button .widget:hover i {
-  background: var(--white);
+  background: var(--white) !important;
 }
 
 #center-console-button .widget:hover .left {
-  width: calc(var(--icon-size) / 2.2);
-  transform: translateY(calc(var(--icon-size) / -4)) translateX(2px);
+  width: calc(var(--icon-size) / 2.2) !important;
+  transform: translateY(calc(var(--icon-size) / -4)) translateX(2px) !important;
 }
 
 #center-console-button .widget:hover .widget.center {
   opacity: 0.5;
-  width: calc(var(--icon-size) / 2.2);
+  width: calc(var(--icon-size) / 2.2) !important;
 }
 
 #center-console-button .widget:hover .widget.right {
-  width: calc(var(--icon-size) / 2.2);
-  height: calc(var(--icon-size) / 1.1); /* VERTICAL TALL BAR */
-  transform: translateY(0);
+  width: calc(var(--icon-size) / 2.2) !important;
+  height: calc(var(--icon-size) / 1.1) !important; /* VERTICAL TALL BAR */
+  transform: translateY(0) !important;
 }
 
 /* Active State - Precision X */
