@@ -53,11 +53,14 @@ const navIconMap: Record<string, string> = {
   book: 'anzhiyu-icon-book',
   rss: 'anzhiyu-icon-rss',
   link: 'anzhiyu-icon-link',
+  message: 'anzhiyu-icon-comment-dots',
+  github: 'anzhiyu-icon-github',
+  mail: 'anzhiyu-icon-envelope',
 };
 
-function renderNavIcon(iconName: string | undefined, className: string) {
+function renderNavIcon(iconName: string | undefined, className: string = '') {
   const iconClass = navIconMap[iconName ?? 'home'] ?? 'anzhiyu-icon-house-chimney';
-  return <i className={`anzhiyufont ${iconClass} ${className}`} aria-hidden="true" />;
+  return <i className={`anzhiyufont ${iconClass} ${className}`.trim()} aria-hidden="true" />;
 }
 
 export function SiteHeader({
@@ -342,7 +345,7 @@ export function SiteHeader({
                 return (
                   <div
                     key={item.href}
-                    className={`menus_item ${hasChildren ? 'has-children' : ''} ${submenuOpen ? 'is-open' : ''}`}
+                    className={`menus_item ${submenuOpen ? 'is-open' : ''}`}
                     onPointerEnter={() => {
                       if (hasChildren) openSubmenu(item.href);
                     }}
@@ -367,20 +370,13 @@ export function SiteHeader({
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
-                        <span className="site-page__icon-wrap" aria-hidden="true">
-                          {renderNavIcon(item.icon, 'site-page__icon')}
-                        </span>
-                        <span className="site-page__label">{item.label}</span>
-                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
+                        {renderNavIcon(item.icon, 'site-page__icon')}
+                        <span> {item.label}</span>
                       </a>
 
                       {hasChildren && (
                         <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
-                          {item.children.slice(0, 3).map((child) => {
+                          {item.children.map((child) => {
                             return (
                               <a
                                 key={child.href}
@@ -390,7 +386,7 @@ export function SiteHeader({
                                 title={child.description ?? child.label}
                               >
                                 {renderNavIcon(child.icon, 'site-page-submenu__icon')}
-                                <span className="site-page-submenu__label">{child.label}</span>
+                                <span> {child.label}</span>
                               </a>
                             );
                           })}

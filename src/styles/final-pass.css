@@ -700,7 +700,7 @@
 }
 
 /* Pixel-Perfect Anzhiyu Console Trigger Replication */
-#center-console-button .widget {
+#nav-right .widget {
   --icon-size: 1.375rem;
   position: relative;
   display: flex !important;
@@ -716,12 +716,8 @@
   z-index: 100;
 }
 
-#center-console-button .widget-inner {
-  width: 100%;
-  height: 100%;
-}
 
-#center-console-button .widget i {
+#nav-right .widget i {
   position: absolute;
   background: var(--font-color);
   border-radius: calc(var(--icon-size) * 0.15);
@@ -734,63 +730,63 @@
   transform: translateY(calc(var(--icon-size) / 4));
 }
 
-#center-console-button .widget .left {
+#nav-right .widget .left {
   width: 100%;
   transform: translateY(calc(var(--icon-size) / -4));
 }
 
-#center-console-button .widget .widget.right {
+#nav-right .widget .widget.right {
   left: auto;
   right: 0;
   width: calc(var(--icon-size) / 1.8);
 }
 
 /* Hover State - Dynamic Transformation */
-#center-console-button .widget:hover {
+#nav-right .widget:hover {
   background: var(--theme-main);
 }
 
-#center-console-button .widget:hover i {
+#nav-right .widget:hover i {
   background: var(--white);
 }
 
-#center-console-button .widget:hover .left {
+#nav-right .widget:hover .left {
   width: calc(var(--icon-size) / 2.2);
   transform: translateY(calc(var(--icon-size) / -4)) translateX(2px);
 }
 
-#center-console-button .widget:hover .widget.center {
+#nav-right .widget:hover .widget.center {
   opacity: 0.5;
   width: calc(var(--icon-size) / 2.2);
 }
 
-#center-console-button .widget:hover .widget.right {
+#nav-right .widget:hover .widget.right {
   width: calc(var(--icon-size) / 2.2);
   height: calc(var(--icon-size) / 1.1); /* VERTICAL TALL BAR */
   transform: translateY(0);
 }
 
 /* Active State - Precision X */
-#center-console-button .widget.is-active {
+#nav-right .widget.is-active {
   background: var(--font-color) !important;
 }
 
-#center-console-button .widget.is-active i {
+#nav-right .widget.is-active i {
   background: var(--white) !important;
   height: calc(var(--icon-size) / 5);
 }
 
-#center-console-button .widget.is-active .left {
+#nav-right .widget.is-active .left {
   width: 100% !important;
   transform: rotate(-45deg) !important;
 }
 
-#center-console-button .widget.is-active .widget.center {
+#nav-right .widget.is-active .widget.center {
   width: 0 !important;
   opacity: 0;
 }
 
-#center-console-button .widget.is-active .widget.right {
+#nav-right .widget.is-active .widget.right {
   width: 100% !important;
   transform: rotate(45deg) !important;
 }
