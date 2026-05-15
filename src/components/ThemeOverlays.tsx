@@ -885,15 +885,22 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">运行状态</p>
                     <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                  <Info className="h-5 w-5 text-theme-main info-icon" data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。" />
+                  <div data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。">
+                    <Info className="h-5 w-5 text-theme-main info-icon" />
+                  </div>
                 </div>
                 <p className="webinfo-description">数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。</p>
                 <div className="console-webinfo-grid">
                   {[
-                    ...siteStats,
-                    { label: '构建驱动', value: 'Astro / Vite', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染。' },
-                    { label: '样式底层', value: 'Tailwind CSS', tooltip: '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系。' },
-                    { label: '部署网络', value: 'Vercel / CF', tooltip: '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发。' },
+                    ...siteStats.map(s => {
+                      if (s.label === '最后推送') {
+                        return { ...s, tooltip: '系统实时检索的全站最新内容或特性的精确时间戳。' };
+                      }
+                      return s;
+                    }),
+                    { label: '构建引擎', value: 'Astro / Vite', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染，支持高度优化的分块策略。' },
+                    { label: '样式底层', value: 'Tailwind CSS', tooltip: '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系，具备极高的运行时性能优势。' },
+                    { label: '部署节点', value: 'Vercel / CF', tooltip: '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发与无服务器函数响应。' },
                     { label: '运行反馈', value: '< 50ms', tooltip: '极致优化的边缘预渲染与资源调度，确保首屏加载与交互响应均低于感知阈值。' },
                   ].map((stat, i) => (
                     <div className="webinfo-item" key={i}>
