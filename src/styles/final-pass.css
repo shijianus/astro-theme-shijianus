@@ -74,19 +74,11 @@
 
 /* Console Layout - Redefined below in Step 1 refactor */
 
-/* 抛弃左右两列包裹，直接让 4 个卡片成为 Grid 子元素 */
-#console .console-card-group-left, 
-#console .console-card-group-right {
-    display: contents !important; 
-}
-
 #console .console-card-group {
     display: grid !important;
-    grid-template-columns: 260px minmax(0, 1fr) !important;
-    grid-template-rows: max-content 1fr !important;
-    gap: 16px !important;
-    width: min(1200px, 92vw) !important;
-    max-height: calc(100vh - 160px) !important;
+    grid-template-columns: 240px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: min(1120px, calc(100vw - 40px)) !important;
     
     /* 保持定位与动画基础 */
     position: fixed !important;
@@ -98,17 +90,25 @@
     overflow: hidden !important;
     pointer-events: none !important;
     transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+    max-height: calc(100vh - 160px) !important;
+}
+
+#console .console-card-group-left, 
+#console .console-card-group-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    height: 100% !important;
 }
 
 @media (max-width: 860px) {
   #console .console-card-group {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto !important;
-    width: 90vw;
-    max-height: calc(90vh - 100px);
+    grid-template-columns: 1fr !important;
+    width: 90vw !important;
+    max-height: calc(90vh - 100px) !important;
     overflow-y: auto !important;
-    padding: 10px;
-    gap: 12px;
+    padding: 10px !important;
+    gap: 12px !important;
   }
 }
 
@@ -116,26 +116,28 @@
   opacity: 1 !important;
   transform: translate(-50%, calc(-50% - 20px)) !important;
   pointer-events: auto !important;
-  max-height: calc(100vh - 200px) !important;
 }
 
 #console .console-card {
     background: var(--card-bg) !important;
     border: var(--style-border-always) !important;
-    border-radius: 16px !important;
-    padding: 20px !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important; /* 确保气泡不截断 */
-    height: auto !important; /* 核心：让 Grid 自动分配高度 */
+    overflow: visible !important;
+    height: auto !important;
     min-height: 0 !important;
 }
 
-/* 严丝合缝对号入座，Grid 会自动保证同行等高！ */
-#console .console-profile { grid-column: 1; grid-row: 1; }
-#console .tags { grid-column: 2; grid-row: 1; }
-#console .console-webinfo { grid-column: 1; grid-row: 2; }
-#console .activity { grid-column: 2; grid-row: 2; }
+/* Ensure bottom cards stretch to align bottom edges */
+#console .console-webinfo, #console .activity {
+    flex-grow: 1 !important;
+}
+
+#console .console-profile h2 { margin-bottom: 2px !important; font-size: 1.25rem !important; }
+#console .console-profile p { font-size: 11px !important; line-height: 1.4 !important; opacity: 0.8; }
+#console .console-stat-grid { margin-top: 8px !important; }
 
 /* 底部按钮安全距离 */
 #console .button-group { bottom: 40px !important; }
@@ -156,24 +158,26 @@
   display: block !important;
   font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 8px !important;
 }
 
 .console-webinfo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 8px !important; /* Reduced from 12px */
 }
 
 .webinfo-item {
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 6px 10px !important; /* Reduced padding */
+  border-radius: 8px !important;
   background: var(--secondbg);
   border: var(--style-border-always);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2px !important;
+  justify-content: center !important;
   transition: 0.2s;
+  min-height: 48px !important;
 }
 
 .webinfo-item:hover {
@@ -189,7 +193,7 @@
 }
 
 .webinfo-item span { 
-  font-size: 10px; 
+  font-size: 9px !important; /* Reduced from 10px */
   font-weight: 700; 
   color: var(--text-muted); 
   text-transform: uppercase;
@@ -197,9 +201,10 @@
 }
 
 .webinfo-item strong { 
-  font-size: 13px; 
+  font-size: 12px !important; /* Reduced from 13/14px */
   color: var(--font-color);
   font-family: var(--font-family-mono);
+  line-height: 1.1 !important;
 }
 
 .info-icon { position: relative !important; cursor: pointer !important; }
@@ -220,38 +225,7 @@
 
 
 
-/* 2. 修复 Webinfo 下方的说明文本重叠问题 */
-#console .webinfo-description {
-    display: block !important;
-    font-size: 11px !important;
-    line-height: 1.5 !important;
-    margin-top: 8px !important;
-    margin-bottom: 16px !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    color: var(--text-muted) !important;
-    opacity: 0.8;
-}
 
-/* 3. 修复 2x2 网格内版本号换行难看的问题 */
-#console .webinfo-item {
-    padding: 12px 14px !important;
-    gap: 6px !important;
-    border-radius: 12px;
-    background: var(--secondbg);
-    border: var(--style-border-always);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start !important;
-    transition: 0.2s;
-}
-#console .webinfo-item strong {
-    font-size: 14px !important;
-    line-height: 1.2 !important;
-    word-break: break-word !important; /* 允许过长的版本号优雅换行 */
-    color: var(--font-color);
-    font-family: var(--font-family-mono);
-}
 
 /* Activity Grid - High Density */
 .console-card.activity {
@@ -383,7 +357,7 @@
 
 /* Tags Module - High Density Adaptive */
 .console-card.tags {
-  min-height: 200px;
+  min-height: 120px;
   overflow: hidden;
   flex: 0 0 auto;
 }
@@ -443,14 +417,15 @@
 #console .console-stat-grid span {
     gap: 0 !important;
     justify-content: center !important;
-    padding: 8px !important;
+    padding: 4px !important; /* Reduced from 8px */
 }#console .console-stat-grid strong {
     margin-bottom: 2px !important;
     line-height: 1 !important;
-    font-size: 18px !important;
+    font-size: 14px !important; /* Reduced from 18px */
 }#console .console-stat-grid small {
     margin-top: 0 !important;
     line-height: 1 !important;
+    font-size: 10px !important;
 }
 
 [data-tooltip]::before {
@@ -585,76 +560,98 @@
   transition: 0.3s;
 }
 
-/* center-console-button bars alignment and animation */
-#center-console-button .widget-inner {
+/* Pixel-Perfect Anzhiyu Console Trigger Replication */
+#center-console-button .widget {
+  --icon-size: 1.375rem;
   position: relative;
-  display: block;
-  width: 18px;
-  height: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: var(--radius-full);
+  z-index: 100;
 }
 
-#center-console-button .widget-inner i {
+#center-console-button .widget-inner {
+  width: 100%;
+  height: 100%;
+}
+
+#center-console-button .widget i {
   position: absolute;
-  left: 50%;
-  display: block;
-  height: 2px;
   background: var(--font-color);
-  border-radius: 999px;
-  transform: translateX(-50%);
-  transition: transform 0.28s ease, width 0.28s ease, opacity 0.28s ease, top 0.28s ease, background-color 0.28s ease;
+  border-radius: calc(var(--icon-size) * 0.15);
+  transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  inset: 0;
+  margin: auto;
+  right: auto;
+  width: calc(var(--icon-size) / 3);
+  height: calc(var(--icon-size) / 3.5);
+  transform: translateY(calc(var(--icon-size) / 4));
 }
 
-#center-console-button .widget-inner .left {
-  top: 1px;
-  width: 18px;
+#center-console-button .widget .left {
+  width: 100%;
+  transform: translateY(calc(var(--icon-size) / -4));
 }
 
-#center-console-button .widget-inner .center {
-  top: 6px;
-  width: 12px;
+#center-console-button .widget .widget.right {
+  left: auto;
+  right: 0;
+  width: calc(var(--icon-size) / 1.8);
 }
 
-#center-console-button .widget-inner .right {
-  top: 11px;
-  width: 18px;
-}
-
-#center-console-button:hover .widget-inner .left,
-#center-console-button:hover .widget-inner .right {
-  width: 14px;
-}
-
-#center-console-button:hover .widget-inner .center {
-  width: 18px;
-}
-
-#center-console-button .widget.is-active {
+/* Hover State - Dynamic Transformation */
+#center-console-button .widget:hover {
   background: var(--theme-main);
 }
 
-#center-console-button .widget.is-active .widget-inner i {
+#center-console-button .widget:hover i {
   background: var(--white);
 }
 
-#center-console-button .widget.is-active .widget-inner .left {
-  top: 6px;
-  width: 12px;
-  transform: translateX(-50%) rotate(45deg) translate(-2px, -2px);
+#center-console-button .widget:hover .left {
+  width: calc(var(--icon-size) / 2.2);
+  transform: translateY(calc(var(--icon-size) / -4)) translateX(2px);
 }
 
-#center-console-button .widget.is-active .widget-inner .center {
+#center-console-button .widget:hover .widget.center {
+  opacity: 0.5;
+  width: calc(var(--icon-size) / 2.2);
+}
+
+#center-console-button .widget:hover .widget.right {
+  width: calc(var(--icon-size) / 2.2);
+  height: calc(var(--icon-size) / 1.1); /* VERTICAL TALL BAR */
+  transform: translateY(0);
+}
+
+/* Active State - Precision X */
+#center-console-button .widget.is-active {
+  background: var(--font-color) !important;
+}
+
+#center-console-button .widget.is-active i {
+  background: var(--white) !important;
+  height: calc(var(--icon-size) / 5);
+}
+
+#center-console-button .widget.is-active .left {
+  width: 100% !important;
+  transform: rotate(-45deg) !important;
+}
+
+#center-console-button .widget.is-active .widget.center {
+  width: 0 !important;
   opacity: 0;
-  width: 0;
 }
 
-#center-console-button .widget.is-active .widget-inner .right {
-  top: 6px;
-  width: 12px;
-  transform: translateX(-50%) rotate(-45deg) translate(-2px, 2px);
-}
-
-:root[data-theme='dark'] #center-console-button .widget.is-active .widget-inner i {
-  background: #111827;
+#center-console-button .widget.is-active .widget.right {
+  width: 100% !important;
+  transform: rotate(45deg) !important;
 }
 
 #nav-notification {
