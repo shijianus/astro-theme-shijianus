@@ -283,6 +283,16 @@ export function ThemeOverlays({
   const siteStats = useMemo(() => {
     const sPosts = stats?.posts ?? 0;
     const sReading = stats?.readingMinutes ?? 0;
+
+    // FIND TRUE LATEST POST DATE (Ignoring sticky sorting if any)
+    const sortedByDate = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const latestPost = sortedByDate[0];
+
+    // CALCULATE REAL UPTIME
+    const startDate = new Date('2024-01-01');
+    const today = new Date();
+    const uptimeDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
     return [
       {
         label: '本站总字数',
@@ -291,14 +301,14 @@ export function ThemeOverlays({
       },
       {
         label: '安全运行天数',
-        value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天`,
+        value: `${uptimeDays} 天`,
         tooltip: '自 2024-01-01 以来稳定运行'
       },
       {
         label: '最后推送',
-        value: posts?.[0]?.date || '今天',
-        href: posts?.[0]?.href,
-        tooltip: '系统实时检索的全站最新内容或特性更新的精确时间戳与直达路由。'
+        value: latestPost?.date || '今天',
+        href: latestPost?.href,
+        tooltip: '系统实时检索的全站最新内容或特性的精确时间戳。'
       },
       {
         label: '版本协议',
@@ -885,19 +895,17 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">运行状态</p>
                     <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                  <div data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。">
+                  <div 
+                    data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。"
+                    style={{ position: 'relative', cursor: 'pointer', overflow: 'visible' }}
+                  >
                     <Info className="h-5 w-5 text-theme-main info-icon" />
                   </div>
                 </div>
                 <p className="webinfo-description">数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。</p>
                 <div className="console-webinfo-grid">
                   {[
-                    ...siteStats.map(s => {
-                      if (s.label === '最后推送') {
-                        return { ...s, tooltip: '系统实时检索的全站最新内容或特性的精确时间戳。' };
-                      }
-                      return s;
-                    }),
+                    ...siteStats,
                     { label: '构建引擎', value: 'Astro / Vite', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染，支持高度优化的分块策略。' },
                     { label: '样式底层', value: 'Tailwind CSS', tooltip: '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系，具备极高的运行时性能优势。' },
                     { label: '部署节点', value: 'Vercel / CF', tooltip: '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发与无服务器函数响应。' },
@@ -906,12 +914,19 @@ export function ThemeOverlays({
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">
                         {stat.href ? (
-                          <a href={stat.href} data-tooltip={stat.tooltip} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <a 
+                            href={stat.href} 
+                            data-tooltip={stat.tooltip} 
+                            style={{ position: 'relative', cursor: 'pointer', overflow: 'visible', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
                             <span>{stat.label}</span>
                             <Info className="info-icon" size={12} />
                           </a>
                         ) : (
-                          <div data-tooltip={stat.tooltip} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div 
+                            data-tooltip={stat.tooltip} 
+                            style={{ position: 'relative', cursor: 'pointer', overflow: 'visible', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
                             <span>{stat.label}</span>
                             <Info className="info-icon" size={12} />
                           </div>
