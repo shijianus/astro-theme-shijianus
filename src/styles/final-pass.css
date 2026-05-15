@@ -72,19 +72,22 @@
   opacity: 1 !important;
 }
 
-/* Console Layout - Redefined below in Step 1 refactor */
+/* Console Layout - Elastic Geometry Refactor */
 
 #console .console-card-group {
-    display: grid !important;
-    grid-template-columns: 300px 820px !important;
-    grid-template-rows: 320px 360px !important;
-    gap: 16px !important;
+    --console-gap: 16px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: var(--console-gap) !important;
+    align-items: stretch !important;
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 1136px !important;
-    height: 696px !important;
+    width: min(1200px, 94vw) !important;
+    height: auto !important;
+    min-height: 600px !important;
+    max-height: 85vh !important;
     opacity: 0 !important;
     z-index: 100 !important;
     overflow: visible !important;
@@ -92,19 +95,36 @@
     transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
 }
 
-#console .console-card-group-left, 
+#console .console-card-group-left {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--console-gap) !important;
+    width: max-content !important;
+    flex-shrink: 0 !important;
+}
+
 #console .console-card-group-right {
-    display: contents !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--console-gap) !important;
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 
 @media (max-width: 860px) {
   #console .console-card-group {
-    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
     width: 90vw !important;
     max-height: calc(90vh - 100px) !important;
     overflow-y: auto !important;
     padding: 10px !important;
     gap: 12px !important;
+    height: auto !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  #console .console-card-group-left {
+    width: 100% !important;
   }
 }
 
@@ -115,7 +135,6 @@
 }
 
 #console .console-card {
-    height: 100% !important;
     margin: 0 !important;
     background: var(--card-bg) !important;
     border: var(--style-border-always) !important;
@@ -132,10 +151,24 @@
     z-index: 200 !important;
 }
 
-#console .console-profile { grid-column: 1; grid-row: 1; }
-#console .tags { grid-column: 2; grid-row: 1; }
-#console .console-webinfo { grid-column: 1; grid-row: 2; }
-#console .activity { grid-column: 2; grid-row: 2; }
+#console .console-profile {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+#console .console-webinfo {
+    flex: 1 0 auto !important;
+}
+
+#console .tags {
+    flex: 1.5 0 auto !important; /* Prioritize space for ~50 tags */
+    min-height: 300px !important;
+}
+
+#console .activity {
+    flex: 1 0 auto !important;
+}
 
 #console .console-profile h2 { font-size: 1.6rem !important; margin-bottom: 8px !important; }
 #console .console-profile p { font-size: 13px !important; line-height: 1.5 !important; opacity: 0.9; }
@@ -390,7 +423,7 @@
 
 /* Tags Module - High Density Adaptive */
 .console-card.tags {
-  height: 100% !important;
+  height: auto !important;
 }
 
 .card-tag-cloud {
@@ -2148,25 +2181,13 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     padding-right: 32px !important; /* 强制给右侧留出呼吸空间 */
 }
 
-/* 补丁 4：强制左右两列底部绝对平齐 */
-.console-card-group-left, .console-card-group-right {
-    display: flex !important;
-    flex-direction: column !important;
-}
-/* 强迫下方的两个模块吸收所有剩余高度，实现底边对齐 */
-.console-card.console-webinfo, .console-card.activity {
-    flex: 1 1 auto !important;
-}
-
-/* 任务 1：拯救热力图右侧“撞墙”问题 */
-#console .activity-grid-container {
-    padding-right: 20px !important;
-}
+/* Activity Heatmap Grid Padding Fix */
+#console .activity-grid-container,
 #console .activity-month-labels {
     padding-right: 20px !important;
 }
 
-/* 任务 2：增加点击视觉反馈 */
+/* Webinfo Item Interaction */
 #console .webinfo-item a {
     display: flex;
     align-items: center;
