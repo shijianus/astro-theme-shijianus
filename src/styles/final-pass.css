@@ -76,29 +76,25 @@
 
 #console .console-card-group {
     display: grid !important;
-    grid-template-columns: 240px minmax(0, 1fr) !important;
-    gap: 12px !important;
-    width: min(1120px, calc(100vw - 40px)) !important;
-    
-    /* 保持定位与动画基础 */
+    grid-template-columns: 300px 820px !important;
+    grid-template-rows: 320px 360px !important;
+    gap: 16px !important;
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
-    transform: translate(-50%, calc(-50% + 20px)) !important;
+    transform: translate(-50%, -50%) !important;
+    width: 1136px !important;
+    height: 696px !important;
     opacity: 0 !important;
-    z-index: 5 !important;
-    overflow: visible !important; /* CRITICAL: Allow tooltips to escape */
+    z-index: 100 !important;
+    overflow: visible !important;
     pointer-events: none !important;
     transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
-    max-height: calc(100vh - 160px) !important;
 }
 
 #console .console-card-group-left, 
 #console .console-card-group-right {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    height: 100% !important;
+    display: contents !important; 
 }
 
 @media (max-width: 860px) {
@@ -119,38 +115,38 @@
 }
 
 #console .console-card {
+    height: 100% !important;
+    margin: 0 !important;
     background: var(--card-bg) !important;
     border: var(--style-border-always) !important;
-    border-radius: 14px !important;
-    padding: 14px !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: visible !important; 
-    height: auto !important;
-    min-height: 0 !important;
     position: relative !important;
     transition: z-index 0s !important;
 }
 
 #console .console-card:hover {
-    z-index: 200 !important; /* CRITICAL: Ensure tooltip is on top of other cards */
+    z-index: 200 !important;
 }
 
-/* Ensure bottom cards stretch to align bottom edges */
-#console .console-webinfo, #console .activity {
-    flex-grow: 1 !important;
-}
+#console .console-profile { grid-column: 1; grid-row: 1; }
+#console .tags { grid-column: 2; grid-row: 1; }
+#console .console-webinfo { grid-column: 1; grid-row: 2; }
+#console .activity { grid-column: 2; grid-row: 2; }
 
-#console .console-profile h2 { margin-bottom: 2px !important; font-size: 1.25rem !important; }
-#console .console-profile p { font-size: 11px !important; line-height: 1.4 !important; opacity: 0.8; }
-#console .console-stat-grid { margin-top: 8px !important; }
+#console .console-profile h2 { font-size: 1.6rem !important; margin-bottom: 8px !important; }
+#console .console-profile p { font-size: 13px !important; line-height: 1.5 !important; opacity: 0.9; }
+#console .console-stat-grid { margin-top: 20px !important; }
 
 /* Activity Heatmap - Precision GitHub Refactor */
 #console .activity-grid-container { 
     overflow: visible !important; 
-    margin-top: 12px !important;
+    margin-top: 20px !important;
     display: flex !important;
-    justify-content: center !important; /* CENTER THE GRID */
+    justify-content: center !important;
 }
 
 #console .console-activity-grid { 
@@ -392,70 +388,51 @@
     cursor: not-allowed !important;
 }
 
-/* Tags and Activity balance optimization */
+/* Tags Module - High Density Adaptive */
 .console-card.tags {
-  min-height: 140px !important;
-  flex: 1.2 0 auto !important;
-}
-
-.console-card.activity {
-  flex: 1 0 auto !important;
-  margin-top: 8px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important; /* Anchor top items */
+  height: 100% !important;
 }
 
 .card-tag-cloud {
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 6px;
-  padding: 8px 10px 10px 10px;
-  margin-top: 4px;
-}
-
-.card-tag-cloud::-webkit-scrollbar {
-  display: none;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-content: flex-start !important;
+  gap: 8px !important;
+  padding: 10px 0 !important;
+  margin-top: 10px !important;
 }
 
 .card-tag-cloud a {
-  padding: 4px 8px;
-  background: var(--secondbg);
-  border-radius: 6px;
-  border: var(--style-border-always);
-  color: var(--font-color);
-  text-decoration: none;
-  transition: 0.2s;
-  white-space: nowrap;
-  font-size: 12px;
+  padding: 5px 10px !important;
+  background: var(--secondbg) !important;
+  border-radius: 8px !important;
+  border: var(--style-border-always) !important;
+  color: var(--font-color) !important;
+  text-decoration: none !important;
+  transition: 0.2s !important;
+  font-size: 13px !important;
 }
 
 .card-tag-cloud a:hover {
-  background: var(--theme-main);
-  color: var(--white);
-  border-color: var(--theme-main);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-theme);
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
 }
 
 /* Legend in Footer */
 .activity .legend-group {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  color: var(--text-muted);
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-size: 10px !important;
 }
 
 .activity .legend-group .activity-cell {
-  width: 13px;
-  height: 13px;
-  cursor: default;
-  min-width: 13px;
+  width: 12px !important;
+  height: 12px !important;
+  cursor: default !important;
 }
 
 #console .console-stat-grid span {
