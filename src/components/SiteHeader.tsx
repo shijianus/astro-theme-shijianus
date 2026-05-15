@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, House, type LucideIcon } from 'lucide-react';
+import { ExternalLink, House, Bell, type LucideIcon } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
@@ -434,8 +434,9 @@ export function SiteHeader({
                       openNotificationPanel();
                     }
                   }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <i className="anzhiyufont anzhiyu-icon-bell" aria-hidden="true" />
+                  <Bell className="h-4 w-4" aria-hidden="true" />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>
@@ -498,7 +499,7 @@ export function SiteHeader({
               </div>
             )}
 
-            <div className="nav-button" id="nav-totop">
+            <div className={`nav-button ${scrolled ? 'show' : ''}`} id="nav-totop">
               <a
                 className="totopbtn"
                 href="#"
