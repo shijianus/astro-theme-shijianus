@@ -160,13 +160,13 @@
     display: flex !important; 
     flex-direction: column !important; 
     justify-content: space-between !important; 
-    padding-right: 4px !important; 
+    padding-right: 2px !important; 
     font-size: 9px !important; 
     color: var(--text-muted) !important; 
     font-family: monospace !important; 
     line-height: 11px !important; 
     height: 95px !important; 
-    user-select: none !important;
+    padding-top: 2px !important;
 }
 
 #console .activity-month-labels {
@@ -176,9 +176,9 @@
     color: var(--text-muted) !important;
     font-family: monospace !important;
     position: relative !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 6px !important;
     padding-left: 28px !important;
-    user-select: none !important;
+    width: max-content !important;
 }
 
 #console .activity-cell { 
@@ -191,18 +191,18 @@
 #console .activity-cell:hover { opacity: 0.7 !important; transform: none !important; }
 
 /* GitHub Dark Mode Colors - Authentic Flat Palette */
-#console .activity-cell.level-0 { background: #161b22 !important; border: 1px solid rgba(255,255,255,0.03) !important; }
-#console .activity-cell.level-1 { background: #0e4429 !important; border: none !important; }
-#console .activity-cell.level-2 { background: #006d32 !important; border: none !important; }
-#console .activity-cell.level-3 { background: #26a641 !important; border: none !important; }
-#console .activity-cell.level-4 { background: #39d353 !important; border: none !important; }
+#console .activity-cell.level-0 { background: #161b22 !important; border: 1px solid rgba(255,255,255,0.02) !important; }
+#console .activity-cell.level-1 { background: #0e4429 !important; }
+#console .activity-cell.level-2 { background: #006d32 !important; }
+#console .activity-cell.level-3 { background: #26a641 !important; }
+#console .activity-cell.level-4 { background: #39d353 !important; }
 
 /* Perfect Isolated Tooltip */
 [data-tooltip] { position: relative !important; cursor: pointer !important; }
 [data-tooltip]::before {
     content: attr(data-tooltip) !important;
     position: absolute !important; 
-    bottom: calc(100% + 10px) !important; 
+    bottom: calc(100% + 12px) !important; 
     left: 50% !important; 
     transform: translateX(-50%) !important;
     background: #1e1e20 !important; 
@@ -219,13 +219,13 @@
     opacity: 0 !important; 
     pointer-events: none !important; 
     transition: opacity 0.1s !important; 
-    z-index: 999999 !important;
+    z-index: 1000000 !important;
 }
 
 [data-tooltip]::after {
     content: '' !important; 
     position: absolute !important; 
-    bottom: calc(100% + 4px) !important; 
+    bottom: calc(100% + 6px) !important; 
     left: 50% !important; 
     transform: translateX(-50%) !important;
     border-width: 6px 6px 0 !important; 
@@ -234,7 +234,7 @@
     opacity: 0 !important; 
     pointer-events: none !important; 
     transition: opacity 0.1s !important; 
-    z-index: 999999 !important;
+    z-index: 1000000 !important;
 }
 
 [data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1 !important; }
