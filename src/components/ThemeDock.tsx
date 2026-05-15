@@ -43,6 +43,7 @@ export function ThemeDock(_props: ThemeDockProps) {
   const progressRef = useRef(0);
 
   const isPost = _props.pageType === 'post';
+  const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
 
   const emitActivity = (message: string) => {
     if (typeof window !== 'undefined') {
@@ -197,7 +198,7 @@ export function ThemeDock(_props: ThemeDockProps) {
         }}
       >
         <div id="rightside-config-hide" className={configOpen ? 'show' : ''}>
-          {isPost && (
+          {isPost && !isDoc && (
             <>
               <button
                 type="button"
