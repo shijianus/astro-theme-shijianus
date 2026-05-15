@@ -261,104 +261,13 @@ export function ThemeDock(_props: ThemeDockProps) {
 
           <button
             type="button"
-            id="hide-aside-btn"
-            title={asideCollapsed ? '展开侧栏' : '收起侧栏'}
-            aria-label={asideCollapsed ? '展开侧栏' : '收起侧栏'}
-            className={asideCollapsed ? 'is-active' : ''}
-            onClick={toggleAside}
-          >
-            <div style={{ position: 'relative', width: '16px', height: '16px' }}>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 0 : 1, transform: asideCollapsed ? 'scale(0.5)' : 'scale(1)' }}
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <path d="M15 3v18" />
-                <path d="m8 9 3 3-3 3" />
-              </svg>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 1 : 0, transform: asideCollapsed ? 'scale(1)' : 'scale(0.5)' }}
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <path d="M15 3v18" />
-                <path d="m10 15-3-3 3-3" />
-              </svg>
-            </div>
-          </button>
-        </div>
-
-        <div id="rightside-config-show">
-          <button
-            type="button"
-            id="rightside-config"
-            title="设置"
-            aria-label="设置"
-            aria-expanded={configOpen}
-            className={configOpen ? 'is-active' : ''}
-            onClick={() => setConfigOpen((value) => !value)}
-          >
-            <div style={{ position: 'relative', width: '16px', height: '16px' }}>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 0 : 1, transform: configOpen ? 'scale(0.5) rotate(-90deg)' : 'scale(1) rotate(0)' }}
-              >
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 1 : 0, transform: configOpen ? 'scale(1) rotate(0)' : 'scale(0.5) rotate(90deg)' }}
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </div>
-          </button>
-
-          <button
-            type="button"
             id="darkmode"
             title={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
             aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
-            className={theme === 'dark' ? 'is-active' : ''}
             onClick={toggleTheme}
           >
             <div style={{ position: 'relative', width: '16px', height: '16px' }}>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'dark' ? 0 : 1, transform: theme === 'dark' ? 'scale(0.5) rotate(-45deg)' : 'scale(1) rotate(0)' }}
-              >
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'light' ? 1 : 0, transform: `scale(${theme === 'light' ? 1 : 0}) rotate(0)` }}>
                 <circle cx="12" cy="12" r="5"></circle>
                 <line x1="12" y1="1" x2="12" y2="3"></line>
                 <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -369,16 +278,7 @@ export function ThemeDock(_props: ThemeDockProps) {
                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
               </svg>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'dark' ? 1 : 0, transform: theme === 'dark' ? 'scale(1) rotate(0)' : 'scale(0) rotate(45deg)' }}
-              >
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: theme === 'dark' ? 1 : 0, transform: `scale(${theme === 'dark' ? 1 : 0.5}) rotate(${theme === 'dark' ? 0 : 45}deg)` }}>
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
               </svg>
             </div>
@@ -392,16 +292,7 @@ export function ThemeDock(_props: ThemeDockProps) {
             onClick={toggleBackground}
           >
             <div style={{ position: 'relative', width: '16px', height: '16px' }}>
-              <svg 
-                className="rightside-icon" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s', transform: `rotate(${(progress || 0) * 3.6}deg)` }}
-              >
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s', transform: 'rotate(0deg)' }}>
                 <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
                 <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
                 <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
@@ -411,36 +302,66 @@ export function ThemeDock(_props: ThemeDockProps) {
             </div>
           </button>
 
+          {siteConfig.theme.aside.enable && (
+            <button
+              type="button"
+              id="hide-aside-btn"
+              title={asideCollapsed ? '展开侧栏' : '收起侧栏'}
+              aria-label={asideCollapsed ? '展开侧栏' : '收起侧栏'}
+              onClick={toggleAside}
+              className={asideCollapsed ? 'collapsed' : ''}
+            >
+              <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+                <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 0 : 1, transform: `scale(${asideCollapsed ? 0.5 : 1})` }}>
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                  <path d="M15 3v18"></path>
+                  <path d="m8 9 3 3-3 3"></path>
+                </svg>
+                <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.2s, opacity 0.2s', opacity: asideCollapsed ? 1 : 0, transform: `scale(${asideCollapsed ? 1 : 0.5})` }}>
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                  <path d="M15 3v18"></path>
+                  <path d="m10 15-3-3 3-3"></path>
+                </svg>
+              </div>
+            </button>
+          )}
+        </div>
+
+        <div id="rightside-config-show">
           <button
             type="button"
-            id="hide-rightside-btn"
-            title="隐藏选单"
-            aria-label="隐藏选单"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setPanelHidden(true); 
-              setConfigOpen(false); 
-            }}
+            id="rightside-config"
+            title="设置"
+            aria-label="设置"
+            aria-expanded={configOpen}
+            className={configOpen ? 'is-active' : ''}
+            onClick={() => setConfigOpen(!configOpen)}
           >
-            <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
+            <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 0 : 1, transform: `scale(${configOpen ? 0.5 : 1}) rotate(0)` }}>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s, opacity 0.3s', opacity: configOpen ? 1 : 0, transform: `scale(${configOpen ? 1 : 0.5}) rotate(90deg)` }}>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
           </button>
-
           <button
             type="button"
             id="go-up"
             title="回到顶部"
             aria-label="回到顶部"
             onClick={jumpToTop}
-            className={progress > 0 ? 'show' : ''}
+            className={scrolled ? 'show' : ''}
             style={{ 
-              opacity: progress > 0 ? 1 : 0, 
-              visibility: progress > 0 ? 'visible' : 'hidden',
-              height: progress > 0 ? '35px' : '0',
-              marginTop: progress > 0 ? '0' : '-4px',
-              padding: progress > 0 ? '' : '0',
-              border: progress > 0 ? '' : 'none',
+              opacity: scrolled ? 1 : 0, 
+              visibility: scrolled ? 'visible' : 'hidden',
+              height: scrolled ? '48px' : '0',
+              marginTop: scrolled ? '0' : '-4px',
+              padding: scrolled ? '' : '0',
+              border: scrolled ? '' : 'none',
               overflow: 'hidden',
               transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
             }}

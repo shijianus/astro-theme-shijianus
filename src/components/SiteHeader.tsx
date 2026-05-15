@@ -113,33 +113,6 @@ export function SiteHeader({
 
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
 
-    const savedTheme =
-      readStorage('shijianus-theme') ??
-      (root.dataset.theme as 'light' | 'dark' | undefined) ??
-      'light';
-    const storedBackground = readStorage('shijianus-background') ?? root.dataset.background ?? null;
-    const savedBackgroundSource = resolveBackgroundSource(
-      storedBackground,
-      readStorage('shijianus-background-source') ?? root.dataset.backgroundSource ?? null,
-      {
-        defaultBackground: siteConfig.theme.background.defaultMode,
-        darkBackground: siteConfig.theme.background.darkMode,
-      },
-    );
-    const savedBackground = resolveInitialBackground(
-      savedTheme,
-      storedBackground,
-      {
-        defaultBackground: siteConfig.theme.background.defaultMode,
-        darkBackground: siteConfig.theme.background.darkMode,
-      },
-      savedBackgroundSource,
-    );
-
-    root.dataset.theme = savedTheme;
-    root.dataset.background = savedBackground;
-    root.dataset.backgroundSource = savedBackgroundSource;
-
     const syncHeaderMetrics = () => {
       const header = document.getElementById('page-header');
       const headerHeight = Math.round(header?.getBoundingClientRect().height ?? 60);
@@ -187,14 +160,6 @@ export function SiteHeader({
     setMenuOpen(false);
     setOpenSubmenuHref(null);
   }, [currentPath]);
-
-  useEffect(() => {
-    return () => {
-      if (submenuCloseTimerRef.current !== null) {
-        window.clearTimeout(submenuCloseTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!showNotificationTrigger) {
@@ -298,14 +263,6 @@ export function SiteHeader({
             </a>
           </span>
 
-          <div className="mask-name-container">
-            <div id="name-container">
-              <a id="page-name" href="#blog-container">
-                {activeLabel}
-              </a>
-            </div>
-          </div>
-
           <div id="menus">
             <div className="menus_items">
               {primary.map((item) => {
@@ -313,8 +270,8 @@ export function SiteHeader({
                 const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
                 const hasChildren = Boolean(item.children && item.children.length > 0);
                 const submenuOpen = hasChildren && openSubmenuHref === item.href;
-
                 const [zhLabel, enLabel] = item.label.split(' | ');
+
                 return (
                   <div
                     key={item.href}
@@ -341,17 +298,11 @@ export function SiteHeader({
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
                         data-subtitle={item.description}
                         data-en={enLabel}
-                        aria-haspopup={hasChildren ? 'menu' : undefined}
-                        aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         <span className="site-page__icon-wrap" aria-hidden="true">
                           <NavIcon className="site-page__icon" size={16} />
                         </span>
                         <span className="site-page__label">{zhLabel}</span>
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
                       </a>
 
                       {hasChildren && (
@@ -472,10 +423,9 @@ export function SiteHeader({
 
             {showCenterConsoleTrigger && (
               <div className="nav-button" id="center-console-button">
-                <input id="center-console-checkbox" type="checkbox" checked={consoleOpen} onChange={() => {}} hidden />
-                <label
-                  className={`widget ${consoleOpen ? 'is-active' : ''}`}
-                  htmlFor="center-console-checkbox"
+                <a
+                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
+                  href="#"
                   title="控制台"
                   onClick={(e) => {
                     e.preventDefault();
@@ -486,10 +436,12 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <i className="left" />
-                  <i className="widget center" />
-                  <i className="widget right" />
-                </label>
+                  <div className="widget-inner">
+                    <i className="left" />
+                    <i className="widget center" />
+                    <i className="widget right" />
+                  </div>
+                </a>
               </div>
             )}
 
@@ -556,29 +508,6 @@ export function SiteHeader({
               </div>
             ))}
           </nav>
-
-          <div className="site-mobile-panel__group">
-            {quickActions.map((item) => (
-              <a key={item.href} href={item.href} className="site-mobile-link">
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="site-mobile-panel__group">
-            {utility.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noreferrer' : undefined}
-                className="site-mobile-link"
-              >
-                <span>{item.label}</span>
-                {item.external && <ExternalLink className="h-3.5 w-3.5" />}
-              </a>
-            ))}
-          </div>
         </div>
       )}
     </header>

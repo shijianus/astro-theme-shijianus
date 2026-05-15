@@ -4,11 +4,7 @@
 }
 
 #menus .site-page__chevron,
-#rightside-config,
 #rightside-config-close,
-#background-mode,
-#darkmode,
-#hide-aside-btn,
 #shijianus-devbar,
 #shijianus-devbar-panel,
 #rightside-config-hide,
@@ -22,53 +18,57 @@
 }
 
 #rightside {
-  right: 20px !important;
-  transition: opacity 0.26s ease, transform 0.26s ease, bottom 0.26s ease;
+  position: fixed !important;
+  right: 40px !important;
+  bottom: 40px !important;
+  z-index: 100 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
 #rightside-config-show {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
-#go-up {
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+#rightside button,
+#rightside a {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--card-bg) !important;
+  border: var(--style-border-always) !important;
+  color: var(--font-color) !important;
+  transition: 0.3s !important;
+  cursor: pointer !important;
+  position: relative !important;
+  padding: 0 !important;
 }
 
 #nav-group {
   display: grid !important;
-  grid-template-columns: 140px 1fr auto !important; /* Locked Zones */
+  grid-template-columns: 200px 1fr 250px !important; /* Isolated Zones */
   align-items: center !important;
   width: 100% !important;
   position: relative !important;
-  padding: 0 10px !important;
 }
 
 #blog_name {
   grid-column: 1 !important;
   justify-self: start !important;
-  flex-shrink: 0 !important;
-  z-index: 10 !important;
-  position: relative !important;
-}
-
-.mask-name-container {
-  display: none !important;
 }
 
 #menus {
   grid-column: 2 !important;
-  justify-self: center !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 100% !important;
-  margin: 0 !important;
-  z-index: 5 !important;
-  min-width: 0 !important;
   position: relative !important;
 }
 
@@ -80,52 +80,53 @@
 }
 
 #menus .menus_item {
-  white-space: nowrap !important;
+  width: 110px !important; /* Uniform Width */
   flex-shrink: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 
 #menus .site-page {
-  min-height: 56px;
   display: flex !important;
-  flex-direction: column !important; /* Vertical Stack for density */
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 0 6px !important;
-  gap: 0 !important;
-}
-
-#menus .site-page__label {
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  line-height: 1.1 !important;
+  height: 56px !important;
+  padding: 0 !important;
+  gap: 4px !important; /* Gap between ZH and EN */
 }
 
 #menus .site-page__icon-wrap {
-  display: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 16px !important;
+  margin-bottom: 2px !important;
 }
 
-/* Custom Creative Label Subtitle */
+#menus .site-page__label {
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
 #menus .site-page::after {
   content: attr(data-en) !important;
   font-size: 9px !important;
   font-weight: 700 !important;
   opacity: 0.6 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
+  letter-spacing: 0.5px !important;
   display: block !important;
   line-height: 1 !important;
-  margin-top: -2px !important;
 }
 
 #nav-right {
   grid-column: 3 !important;
-  justify-self: end !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  flex-shrink: 0 !important;
-  z-index: 10 !important;
-  position: relative !important;
+  margin-left: auto !important;
 }
 
 #nav-right .nav-button {
@@ -134,8 +135,8 @@
   justify-content: center !important;
   width: 35px !important;
   height: 35px !important;
-  margin: 0 !important;
   padding: 0 !important;
+  margin: 0 !important;
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 50% !important;
@@ -146,43 +147,19 @@
   margin-left: 8px !important;
 }
 
-#nav-right .nav-button .site-page {
-  padding: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 50% !important;
-}
-
-#nav-right .nav-button .site-page:hover {
-  background: var(--theme-main);
-  color: var(--white) !important;
-}
-
 #nav-totop {
-  position: relative;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   width: 0 !important;
   margin-left: 0 !important;
-  padding: 0 !important;
   opacity: 0 !important;
-  transform: scale(0) !important;
   overflow: hidden !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 #nav-totop.show {
   width: 35px !important;
   margin-left: 8px !important;
   opacity: 1 !important;
-  transform: scale(1) !important;
-  pointer-events: auto;
+  pointer-events: auto !important;
 }
 
 #nav-totop .totopbtn {
@@ -191,11 +168,18 @@
   justify-content: center !important;
   width: 100% !important;
   height: 100% !important;
-  border-radius: 50% !important;
-  transition: 0.3s;
+  position: relative !important;
 }
 
-/* Back to Top Hover Swap Logic */
+#nav-totop #percent {
+  position: relative !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  transition: all 0.3s ease !important;
+}
+
 #nav-totop svg {
   position: absolute !important;
   opacity: 0 !important;
@@ -203,142 +187,63 @@
   transition: all 0.3s ease !important;
 }
 
-#nav-totop #percent {
-  position: relative !important;
-  opacity: 1 !important;
-  transform: scale(1) !important;
-  transition: all 0.3s ease !important;
-  font-size: 11px !important;
-  font-weight: 800 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+#nav-totop:hover svg { opacity: 1 !important; transform: scale(1) !important; }
+#nav-totop:hover #percent { opacity: 0 !important; transform: scale(0.6) !important; }
 
-#nav-totop:hover svg {
-  opacity: 1 !important;
-  transform: scale(1) !important;
-}
-
-#nav-totop:hover #percent {
-  opacity: 0 !important;
-  transform: scale(0.6) !important;
-}
-
-#nav-totop .totopbtn:hover {
-  background: var(--theme-main);
-  color: var(--white) !important;
-}
-
-#nav-right .nav-button i {
-  font-size: 16px;
-  transition: 0.3s;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Pixel-Perfect Anzhiyu Console Trigger Replication (73841b8 Baseline) */
-#center-console-button.nav-button {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
+/* Historical Console Button (73841b8 Baseline) */
 #center-console-button .widget {
   --icon-size: 1.375rem;
   position: relative;
+  width: 35px !important;
+  height: 35px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 35px !important;
-  height: 35px !important;
-  margin: 0 !important;
-  padding: 0 !important;
   cursor: pointer;
   transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 0 !important; /* Boundary-free */
-  z-index: 100;
-  overflow: visible !important;
 }
 
 #center-console-button .widget-inner {
   width: 100%;
   height: 100%;
-  position: relative !important;
+  position: relative;
 }
 
 #center-console-button .widget i {
   position: absolute;
-  background: var(--font-color) !important;
-  border-radius: 1px !important;
+  background: var(--font-color);
+  border-radius: calc(var(--icon-size) * 0.15);
   transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   inset: 0;
   margin: auto;
-  height: 2px !important; /* Thinner for precision */
+  width: calc(var(--icon-size) / 3);
+  height: calc(var(--icon-size) / 3.5);
+  transform: translateY(calc(var(--icon-size) / 4));
 }
 
 #center-console-button .widget .left {
-  width: 20px !important;
-  transform: translateY(-5px) !important;
-}
-
-#center-console-button .widget .widget.center {
-  width: 4px !important;
-  height: 4px !important;
-  border-radius: 50% !important;
-  left: -8px !important;
-  transform: translateY(5px) !important;
+  width: 100%;
+  transform: translateY(calc(var(--icon-size) / -4));
 }
 
 #center-console-button .widget .widget.right {
-  left: 6px !important;
-  right: auto !important;
-  width: 10px !important;
-  transform: translateY(5px) !important;
+  left: auto;
+  right: 0;
+  width: calc(var(--icon-size) / 1.8);
 }
 
-/* Hover State - Dynamic Transformation */
-#center-console-button .widget:hover i {
-  background: var(--theme-main) !important;
-}
+#center-console-button .widget:hover { background: var(--theme-main); border-radius: 50% !important; }
+#center-console-button .widget:hover i { background: var(--white); }
+#center-console-button .widget:hover .left { width: 50%; transform: translateY(-6px) translateX(4px); }
+#center-console-button .widget:hover .widget.center { opacity: 0.5; width: 50%; }
+#center-console-button .widget:hover .widget.right { width: 50%; height: 80%; transform: translateY(0); }
 
-#center-console-button .widget:hover .left {
-  width: 14px !important;
-  transform: translateY(-5px) translateX(2px) !important;
-}
-
-#center-console-button .widget:hover .widget.center {
-  opacity: 0.5;
-}
-
-#center-console-button .widget:hover .widget.right {
-  width: 14px !important;
-  height: 20px !important; /* VERTICAL TALL BAR */
-  transform: translateY(0) !important;
-  left: 8px !important;
-}
-
-/* Active State - Precision X */
-#center-console-button .widget.is-active i {
-  background: var(--theme-main) !important;
-  height: 3px !important;
-}
-
-#center-console-button .widget.is-active .left {
-  width: 22px !important;
-  transform: rotate(-45deg) !important;
-}
-
-#center-console-button .widget.is-active .widget.center {
-  width: 0 !important;
-  opacity: 0;
-}
-
-#center-console-button .widget.is-active .widget.right {
-  width: 22px !important;
-  transform: rotate(45deg) !important;
-  left: 0 !important;
+/* Overlays & Alerts - Fixed Positioning only */
+.theme-account-overlay,
+.theme-activity-bar {
+  position: fixed !important;
+  z-index: 2000 !important;
+  pointer-events: auto !important;
 }
 
 #nav-notification .nav-button__badge {
@@ -350,12 +255,12 @@
   border-radius: 8px;
   min-width: 16px;
   height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   font-size: 10px;
-  position: absolute;
-  pointer-events: none;
+  position: absolute !important;
+  pointer-events: none !important;
 }
 
 #page-header.nav-fixed {
@@ -368,5 +273,139 @@
   transform: translateY(0) !important;
   opacity: 1 !important;
 }
+
+/* Console Layout - Elastic Geometry Refactor */
+
+#console .console-card-group {
+    --console-gap: 16px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: var(--console-gap) !important;
+    align-items: stretch !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(1200px, 94vw) !important;
+    height: auto !important;
+    min-height: 600px !important;
+    max-height: 90vh !important; 
+    opacity: 0 !important;
+    z-index: 100 !important;
+    overflow: visible !important;
+    pointer-events: none !important;
+    transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+}
+
+#console .console-card-group-left {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--console-gap) !important;
+    width: max-content !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
+}
+
+#console .console-card-group-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--console-gap) !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: visible !important; 
+}
+
+@media (max-width: 860px) {
+  #console .console-card-group {
+    flex-direction: column !important;
+    width: 90vw !important;
+    max-height: calc(90vh - 100px) !important;
+    overflow-y: auto !important; 
+    padding: 10px !important;
+    gap: 12px !important;
+    height: auto !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+#console.show .console-card-group {
+  opacity: 1 !important;
+  transform: translate(-50%, calc(-50% - 20px)) !important;
+  pointer-events: auto !important;
+}
+
+#console .console-card {
+    margin: 0 !important;
+    background: var(--card-bg) !important;
+    border: var(--style-border-always) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important; 
+    position: relative !important;
+}
+
+#console .console-card:hover {
+    z-index: 1000 !important;
+}
+
+/* Activity Heatmap GitHub Refactor */
+#console .activity-grid-container { 
+    display: flex !important; 
+    justify-content: center !important;
+    margin-top: 24px !important;
+    overflow: visible !important; 
+}
+
+#console .activity-cell.level-0 { background: #161b22 !important; border: 1px solid rgba(255,255,255,0.02) !important; }
+#console .activity-cell.level-1 { background: #0e4429 !important; }
+#console .activity-cell.level-2 { background: #006d32 !important; }
+#console .activity-cell.level-3 { background: #26a641 !important; }
+#console .activity-cell.level-4 { background: #39d353 !important; }
+
+/* Perfect Isolated Tooltip */
+[data-tooltip] { position: relative !important; cursor: pointer !important; }
+[data-tooltip]:hover { z-index: 999999 !important; }
+[data-tooltip]::before {
+    content: attr(data-tooltip) !important;
+    position: absolute !important; 
+    bottom: calc(100% + 12px) !important; 
+    left: 50% !important; 
+    transform: translateX(-50%) !important;
+    background: #1e1e20 !important; 
+    color: #fff !important; 
+    border: 1px solid #444 !important;
+    padding: 6px 10px !important; 
+    border-radius: 6px !important; 
+    font-size: 11px !important;
+    width: max-content !important; 
+    max-width: 240px !important; 
+    white-space: pre-wrap !important; 
+    text-align: center !important;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.6) !important;
+    opacity: 0 !important; 
+    pointer-events: none !important; 
+    transition: opacity 0.1s !important; 
+    z-index: 999999 !important;
+}
+
+[data-tooltip]::after {
+    content: '' !important; 
+    position: absolute !important; 
+    bottom: calc(100% + 6px) !important; 
+    left: 50% !important; 
+    transform: translateX(-50%) !important;
+    border-width: 6px 6px 0 !important; 
+    border-style: solid !important; 
+    border-color: #1e1e20 transparent transparent transparent !important;
+    opacity: 0 !important; 
+    pointer-events: none !important; 
+    transition: opacity 0.1s !important; 
+    z-index: 999999 !important;
+}
+
+[data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1 !important; }
 
 /* End of UI Rescue */
