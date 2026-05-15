@@ -884,9 +884,9 @@ export function ThemeOverlays({
                     <p className="author-content-item-tips">运行状态</p>
                     <h2 className="author-content-item-title">站点概览</h2>
                   </div>
-                  <Info className="h-5 w-5 text-theme-main" data-tooltip="实时监控并展示各项核心指标，确保数据透明可追溯。" />
+                  <Info className="h-5 w-5 text-theme-main info-icon" data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。" />
                 </div>
-                <p className="webinfo-description">实时监控并展示各项核心指标，确保数据透明可追溯。</p>
+                <p className="webinfo-description">数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。</p>
                 <div className="console-webinfo-grid">
                   {[
                     ...siteStats,

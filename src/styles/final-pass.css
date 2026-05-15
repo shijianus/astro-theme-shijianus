@@ -318,20 +318,21 @@
 .console-webinfo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px !important;
+  gap: 12px !important;
+  margin-top: 8px !important;
 }
 
 .webinfo-item {
-  padding: 6px 10px !important;
+  padding: 10px 12px !important;
   border-radius: 8px !important;
   background: var(--secondbg);
   border: var(--style-border-always);
   display: flex;
   flex-direction: column;
-  gap: 2px !important;
+  gap: 4px !important;
   justify-content: center !important;
   transition: 0.2s;
-  min-height: 48px !important;
+  min-height: 56px !important;
 }
 
 .webinfo-item:hover {
@@ -343,6 +344,13 @@
 .webinfo-item-label { display: flex; align-items: center; gap: 4px; }
 .webinfo-item span { font-size: 9px !important; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .webinfo-item strong { font-size: 12px !important; color: var(--font-color); font-family: var(--font-family-mono); line-height: 1.1 !important; }
+
+/* Tooltip Fix for SVG Icons */
+.info-icon {
+    overflow: visible !important;
+    position: relative !important;
+    cursor: pointer !important;
+}
 
 /* Remove any bottom scrollbars or lines */
 #console .activity-grid-container::-webkit-scrollbar { display: none !important; }
