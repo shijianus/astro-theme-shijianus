@@ -288,15 +288,39 @@
 #console .activity-legend-footer { border: none !important; margin-top: 8px !important; }
 
 .activity-details-footer {
-  margin-top: 8px !important;
-  padding-top: 8px !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
   border-top: var(--style-border-always);
+  height: 124px !important; /* FIXED HEIGHT: Locks the bottom area */
+  min-height: 124px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.selected-day-preview {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .activity-details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  height: 100% !important;
+}
+
+.activity-details__head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 4px !important;
+}
+
+.activity-details__head strong {
+    font-size: 13px !important;
+    color: var(--font-color) !important;
 }
 
 .activity-details-list {
@@ -306,11 +330,12 @@
   list-style: none !important;
   padding: 0 !important;
   margin: 0 !important;
+  flex: 1 !important;
 }
 
 .activity-details-list li {
   display: flex !important;
-  align-items: flex-start !important; /* Visual top-align for icons */
+  align-items: flex-start !important;
   gap: 8px !important;
   font-size: 12px !important;
   line-height: 1.4 !important;
@@ -335,19 +360,50 @@
   white-space: nowrap !important;
 }
 
-.activity-details-list a:hover {
-  color: var(--theme-main) !important;
+.no-activity-text,
+.activity-hint-text {
+  font-size: 12px !important;
+  color: var(--text-muted) !important;
+  font-style: italic !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0.7 !important;
+}
+
+.activity-pagination {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 11px !important;
+}
+
+.activity-pagination button {
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    background: var(--secondbg) !important;
+    border: var(--style-border-always) !important;
+    cursor: pointer !important;
+}
+
+.activity-pagination button:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
 }
 
 /* Tags and Activity balance optimization */
 .console-card.tags {
   min-height: 140px !important;
-  flex: 1.2 0 auto !important; /* Allow tags to grow more than activity */
+  flex: 1.2 0 auto !important;
 }
 
 .console-card.activity {
   flex: 1 0 auto !important;
   margin-top: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important; /* Anchor top items */
 }
 
 .card-tag-cloud {
