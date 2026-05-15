@@ -857,7 +857,7 @@ export function ThemeOverlays({
               <section className="console-card console-profile">
                 <p className="author-content-item-tips">个人中心</p>
                 <h2 className="author-content-item-title">{authorName}</h2>
-                <p>{authorMotto}</p>
+                <p>始于极简，构筑坚实；内容为核，长期演进。</p>
                 <div className="console-stat-grid">
                   <span>
                     <strong>{stats.posts}</strong>
@@ -888,7 +888,13 @@ export function ThemeOverlays({
                 </div>
                 <p className="webinfo-description">实时监控并展示各项核心指标，确保数据透明可追溯。</p>
                 <div className="console-webinfo-grid">
-                  {siteStats.map((stat, i) => (
+                  {[
+                    ...siteStats,
+                    { label: '构建引擎', value: 'Vite / Astro', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架' },
+                    { label: '部署节点', value: 'Cloudflare Edge', tooltip: '全球分布式边缘网络高速分发' },
+                    { label: '色彩协议', value: 'Dark Mode API', tooltip: '遵循现代标准的深色模式色彩协议' },
+                    { label: '响应耗时', value: '< 50ms', tooltip: '极致优化的首屏加载与响应速度' },
+                  ].map((stat, i) => (
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">
                         {stat.href ? (
