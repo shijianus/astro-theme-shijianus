@@ -87,7 +87,7 @@
     width: min(1200px, 94vw) !important;
     height: auto !important;
     min-height: 600px !important;
-    max-height: 85vh !important;
+    max-height: 90vh !important; /* Increased from 85vh to accommodate more metrics */
     opacity: 0 !important;
     z-index: 100 !important;
     overflow: visible !important;
@@ -101,6 +101,7 @@
     gap: var(--console-gap) !important;
     width: max-content !important;
     flex-shrink: 0 !important;
+    overflow: visible !important;
 }
 
 #console .console-card-group-right {
@@ -161,16 +162,16 @@
 }
 
 #console .console-webinfo {
-    flex: 1 0 auto !important;
+    flex: 1 1 auto !important;
 }
 
 #console .tags {
-    flex: 1.5 0 auto !important; /* Prioritize space for ~50 tags */
+    flex: 1.5 1 auto !important; /* Prioritize space for ~50 tags */
     min-height: 300px !important;
 }
 
 #console .activity {
-    flex: 1 0 auto !important;
+    flex: 1 1 auto !important;
     overflow: visible !important;
 }
 
@@ -323,7 +324,7 @@
 }
 
 .webinfo-item {
-  padding: 10px 12px !important;
+  padding: 8px 12px !important; /* Slightly reduced vertical padding */
   border-radius: 8px !important;
   background: var(--secondbg);
   border: var(--style-border-always);
@@ -332,7 +333,16 @@
   gap: 4px !important;
   justify-content: center !important;
   transition: 0.2s;
-  min-height: 56px !important;
+  min-height: 0 !important; /* Remove hard min-height to allow elastic shrinking */
+}
+
+.webinfo-item-label > a,
+.webinfo-item-label > div {
+    position: relative !important;
+    cursor: help !important;
+    display: inline-flex !important; /* Ensure it wraps the content for tooltip positioning */
+    align-items: center;
+    gap: 4px;
 }
 
 .webinfo-item:hover {
@@ -345,11 +355,10 @@
 .webinfo-item span { font-size: 9px !important; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .webinfo-item strong { font-size: 12px !important; color: var(--font-color); font-family: var(--font-family-mono); line-height: 1.1 !important; }
 
-/* Tooltip Fix for SVG Icons */
+/* Tooltip Fix for SVG Icons - Restored and moved to parents */
 .info-icon {
     overflow: visible !important;
     position: relative !important;
-    cursor: pointer !important;
 }
 
 /* Remove any bottom scrollbars or lines */

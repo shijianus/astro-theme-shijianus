@@ -898,14 +898,14 @@ export function ThemeOverlays({
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">
                         {stat.href ? (
-                          <a href={stat.href} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <a href={stat.href} data-tooltip={stat.tooltip} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>{stat.label}</span>
-                            <Info className="info-icon" data-tooltip={stat.tooltip} size={12} />
+                            <Info className="info-icon" size={12} />
                           </a>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div data-tooltip={stat.tooltip} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>{stat.label}</span>
-                            <Info className="info-icon" data-tooltip={stat.tooltip} size={12} />
+                            <Info className="info-icon" size={12} />
                           </div>
                         )}
                       </div>
