@@ -4,6 +4,7 @@ import {
   collectCategories,
   collectTags,
   estimateReadingMinutes,
+  estimateWordCount,
   getPublicPosts,
   resolveCategory,
   sortPostsByDate,
@@ -69,6 +70,7 @@ export type SidebarData = {
   totalCategories: number;
   totalTags: number;
   totalReadingMinutes: number;
+  totalWords: number;
   headings?: SidebarHeading[];
   postContext?: SidebarPostContext;
 };
@@ -87,6 +89,7 @@ export function createSidebarData(
   const archives = collectArchives(sortedPosts, { includeProtected: options.includeProtected });
   const categories = collectCategories(sortedPosts, { includeProtected: options.includeProtected });
   const totalReadingMinutes = sortedPosts.reduce((total, entry) => total + estimateReadingMinutes(entry), 0);
+  const totalWords = sortedPosts.reduce((total, entry) => total + estimateWordCount(entry), 0);
 
   return {
     recentPosts: sortedPosts,
@@ -97,6 +100,7 @@ export function createSidebarData(
     totalCategories: categories.length,
     totalTags: tags.length,
     totalReadingMinutes,
+    totalWords,
     headings,
   };
 }

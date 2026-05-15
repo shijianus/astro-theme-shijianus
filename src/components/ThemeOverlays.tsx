@@ -90,6 +90,7 @@ type ThemeOverlaysProps = {
     categories: number;
     tags: number;
     readingMinutes: number;
+    totalWords: number;
   };
   features: {
     searchPanel: boolean;
@@ -283,6 +284,7 @@ export function ThemeOverlays({
   const siteStats = useMemo(() => {
     const sPosts = stats?.posts ?? 0;
     const sReading = stats?.readingMinutes ?? 0;
+    const sWords = stats?.totalWords ?? 0;
 
     // FIND TRUE LATEST POST DATE (Ignoring sticky sorting if any)
     const sortedByDate = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -293,11 +295,29 @@ export function ThemeOverlays({
     const today = new Date();
     const uptimeDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
+    // DYNAMIC ACTIVE LEVEL (30 DAYS POSTS)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    const recentPostCount = posts.filter(p => new Date(p.date) >= thirtyDaysAgo).length;
+    
+    let activeLevel = 'Status 0';
+    if (recentPostCount > 8) activeLevel = 'Status 4';
+    else if (recentPostCount >= 5) activeLevel = 'Status 3';
+    else if (recentPostCount >= 3) activeLevel = 'Status 2';
+    else if (recentPostCount >= 1) activeLevel = 'Status 1';
+
+    // DYNAMIC CONTENT DENSITY (AVG WORDS)
+    const avgWords = sPosts > 0 ? sWords / sPosts : 0;
+    let densityLevel = 'Level 1 (Low)';
+    if (avgWords > 3000) densityLevel = 'Level 4 (Ultra)';
+    else if (avgWords > 1500) densityLevel = 'Level 3 (High)';
+    else if (avgWords > 800) densityLevel = 'Level 2 (Standard)';
+
     return [
       {
         label: '本站总字数',
-        value: `${(sPosts * 1800 + sReading * 312).toLocaleString()} 字`,
-        tooltip: '基于全站文章内容精算的实时总字数'
+        value: `${sWords.toLocaleString()} 字`,
+        tooltip: '基于全站 Markdown 节点精算的真实总字数'
       },
       {
         label: '安全运行天数',
@@ -318,14 +338,14 @@ export function ThemeOverlays({
       },
       {
         label: '活跃等级',
-        value: 'Maintainer Lv.4',
-        tooltip: '基于近期更新频率计算的活跃等级',
+        value: activeLevel,
+        tooltip: `基于近30天内发布文章数量(${recentPostCount}篇)计算的活跃等级`,
         href: '/standards'
       },
       {
         label: '内容密度',
-        value: 'High Density',
-        tooltip: '站点信息密度评级：极高',
+        value: densityLevel,
+        tooltip: `基于全站平均单篇字数(${Math.round(avgWords)})计算的内容密度评级`,
         href: '/standards'
       },
       {
