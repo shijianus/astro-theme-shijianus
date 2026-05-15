@@ -125,10 +125,15 @@
     padding: 14px !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important; /* Allow tooltip escape */
+    overflow: visible !important; 
     height: auto !important;
     min-height: 0 !important;
     position: relative !important;
+    transition: z-index 0s !important;
+}
+
+#console .console-card:hover {
+    z-index: 200 !important; /* CRITICAL: Ensure tooltip is on top of other cards */
 }
 
 /* Ensure bottom cards stretch to align bottom edges */
@@ -142,9 +147,10 @@
 
 /* Activity Heatmap - Precision GitHub Refactor */
 #console .activity-grid-container { 
-    overflow-x: visible !important; 
-    margin-top: 8px !important;
-    padding-bottom: 2px !important;
+    overflow: visible !important; 
+    margin-top: 12px !important;
+    display: flex !important;
+    justify-content: center !important; /* CENTER THE GRID */
 }
 
 #console .console-activity-grid { 
@@ -285,53 +291,63 @@
   margin-top: 8px !important;
   padding-top: 8px !important;
   border-top: var(--style-border-always);
-  display: flex;
-  flex-direction: column;
-  gap: 4px !important;
 }
 
 .activity-details {
   display: flex;
   flex-direction: column;
-  gap: 4px !important;
+  gap: 6px !important;
+}
+
+.activity-details-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .activity-details-list li {
-  gap: 6px !important;
+  display: flex !important;
+  align-items: flex-start !important; /* Visual top-align for icons */
+  gap: 8px !important;
   font-size: 12px !important;
+  line-height: 1.4 !important;
+  color: var(--font-color) !important;
 }
 
 .activity-commit-icon {
-  color: var(--theme-main);
-  opacity: 0.8;
+  color: var(--theme-main) !important;
+  opacity: 0.9 !important;
+  flex-shrink: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-top: 2px !important;
 }
 
 .activity-details-list a {
-  color: var(--font-color);
-  text-decoration: none;
-  transition: 0.2s;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 300px;
+  color: inherit !important;
+  text-decoration: none !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 .activity-details-list a:hover {
-  color: var(--theme-main);
+  color: var(--theme-main) !important;
 }
 
-.no-activity-text,
-.activity-hint-text {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* Tags Module - High Density Adaptive */
+/* Tags and Activity balance optimization */
 .console-card.tags {
-  min-height: 120px;
-  overflow: hidden;
-  flex: 0 0 auto;
+  min-height: 140px !important;
+  flex: 1.2 0 auto !important; /* Allow tags to grow more than activity */
+}
+
+.console-card.activity {
+  flex: 1 0 auto !important;
+  margin-top: 8px !important;
 }
 
 .card-tag-cloud {
