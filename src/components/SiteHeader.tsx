@@ -12,6 +12,7 @@ import {
   Archive,
   FolderKanban,
   Tags,
+  MessageSquare,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -64,6 +65,10 @@ const navIconMap: Partial<Record<NonNullable<SiteNavItem['icon']>, LucideIcon>> 
   category: FolderKanban,
   tags: Tags,
   about: UserRound,
+  link: ExternalLink,
+  rss: MoonStar,
+  message: MessageSquare,
+  book: FolderKanban,
 };
 
 export function SiteHeader({
@@ -306,9 +311,10 @@ export function SiteHeader({
               {primary.map((item) => {
                 const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
                 const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
-                const hasChildren = Boolean(item.children && item.children.length > 1);
+                const hasChildren = Boolean(item.children && item.children.length > 0);
                 const submenuOpen = hasChildren && openSubmenuHref === item.href;
 
+                const [zhLabel, enLabel] = item.label.split(' | ');
                 return (
                   <div
                     key={item.href}
@@ -334,13 +340,14 @@ export function SiteHeader({
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
                         data-subtitle={item.description}
+                        data-en={enLabel}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         <span className="site-page__icon-wrap" aria-hidden="true">
                           <NavIcon className="site-page__icon" size={16} />
                         </span>
-                        <span className="site-page__label">{item.label}</span>
+                        <span className="site-page__label">{zhLabel}</span>
                         <span className="site-page__flyout" aria-hidden="true">
                           <span>{item.description ?? item.label}</span>
                           <small>{itemActive ? '当前页面' : '进入栏目'}</small>
@@ -349,7 +356,7 @@ export function SiteHeader({
 
                       {hasChildren && (
                         <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
-                          {item.children.map((child) => {
+                          {item.children?.map((child) => {
                             const ChildIcon = navIconMap[child.icon ?? 'home'] ?? House;
                             return (
                               <a
@@ -497,7 +504,7 @@ export function SiteHeader({
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <ArrowUp size={16} strokeWidth={2.5} style={{ color: 'var(--font-color)' }} aria-hidden="true" />
-                <span id="percent" style={{ bottom: '2px', fontSize: '9px' }}>{progress}</span>
+                <span id="percent">{progress}</span>
               </a>
             </div>
 
@@ -533,7 +540,7 @@ export function SiteHeader({
                   })()}
                   {item.label}
                 </a>
-                {item.children && item.children.length > 1 && (
+                {item.children && item.children.length > 0 && (
                   <div className="site-mobile-sublinks">
                     {item.children.map((child) => (
                       <a
