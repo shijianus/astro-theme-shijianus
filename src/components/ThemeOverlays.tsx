@@ -932,14 +932,14 @@ export function ThemeOverlays({
                   </div>
                 </div>
                 <div className="activity-grid-container">
-                  <div style={{ minWidth: 'max-content' }}>
+                  <div style={{ minWidth: 'max-content', position: 'relative' }}>
                     <div className="activity-month-labels">
                       {monthLabels.map((m, i) => (
                         <span 
                           key={i} 
                           style={{ 
                             position: 'absolute', 
-                            left: `calc(28px + ${m.index * 14}px)` 
+                            left: `calc(${m.index * 14}px)` 
                           }}
                         >
                           {m.label}
@@ -971,14 +971,14 @@ export function ThemeOverlays({
                         />
                       ))}
                     </div>
-                    <div className="activity-legend-footer" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '8px' }}>
+                    <div className="activity-legend-footer" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '4px' }}>
                       <div className="legend-group">
                         <span>Less</span>
-                        <div className="activity-cell level-0" />
-                        <div className="activity-cell level-1" />
-                        <div className="activity-cell level-2" />
-                        <div className="activity-cell level-3" />
-                        <div className="activity-cell level-4" />
+                        <div className="activity-cell level-0" style={{ margin: '0 2px' }} />
+                        <div className="activity-cell level-1" style={{ margin: '0 2px' }} />
+                        <div className="activity-cell level-2" style={{ margin: '0 2px' }} />
+                        <div className="activity-cell level-3" style={{ margin: '0 2px' }} />
+                        <div className="activity-cell level-4" style={{ margin: '0 2px' }} />
                         <span>More</span>
                       </div>
                     </div>
