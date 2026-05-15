@@ -600,25 +600,19 @@
 }
 
 #nav-right .nav-button {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 35px !important;
-  height: 35px !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
   transition: 0.3s;
 }
 
 #nav-right .nav-button .site-page {
   padding: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  width: 100%;
+  height: 100%;
   border-radius: var(--radius-full);
 }
 
@@ -632,17 +626,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 0;
-  opacity: 0;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-#nav-totop.show {
-  width: 35px;
-  opacity: 1;
 }
 
 #nav-totop .totopbtn {
@@ -694,13 +677,11 @@
 #center-console-button .widget {
   --icon-size: 1.375rem;
   position: relative;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: 35px !important;
-  height: 35px !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
   transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: var(--radius-full);
