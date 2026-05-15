@@ -941,21 +941,21 @@ export function ThemeOverlays({
                   </div>
                 </div>
                 <div className="activity-grid-container">
-                  <div style={{ minWidth: 'max-content', position: 'relative' }}>
+                  <div className="heatmap-internal-wrapper">
                     <div className="activity-month-labels">
                       {monthLabels.map((m, i) => (
                         <span 
                           key={i} 
+                          className="month-label"
                           style={{ 
-                            position: 'absolute', 
-                            left: `calc(${m.index * 14}px)` 
+                            left: `${m.index * 14}px` 
                           }}
                         >
                           {m.label}
                         </span>
                       ))}
                     </div>
-                    <div className="console-activity-grid">
+                    <div className="heatmap-grid-row">
                       <div className="activity-weekday-labels">
                         <span />
                         <span>Mon</span>
@@ -965,20 +965,22 @@ export function ThemeOverlays({
                         <span>Fri</span>
                         <span />
                       </div>
-                      {activityData.map((day, i) => (
-                        <div 
-                          key={i} 
-                          className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
-                          style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
-                          data-tooltip={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined}
-                          onClick={() => {
-                            if (day) {
-                              setSelectedActivityDate(day.date);
-                              setSelectedActivityPage(1);
-                            }
-                          }}
-                        />
-                      ))}
+                      <div className="console-activity-grid">
+                        {activityData.map((day, i) => (
+                          <div 
+                            key={i} 
+                            className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
+                            style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                            data-tooltip={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined}
+                            onClick={() => {
+                              if (day) {
+                                setSelectedActivityDate(day.date);
+                                setSelectedActivityPage(1);
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

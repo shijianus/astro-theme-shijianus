@@ -180,45 +180,66 @@
 
 /* Activity Heatmap - Precision GitHub Refactor */
 #console .activity-grid-container { 
-    overflow: visible !important; 
-    margin-top: 20px !important;
-    display: flex !important;
+    display: flex !important; 
     justify-content: center !important;
+    margin-top: 24px !important;
+    overflow: visible !important; 
 }
 
-#console .console-activity-grid { 
-    display: grid !important; 
-    grid-template-columns: 28px repeat(52, 11px) !important; 
-    grid-template-rows: repeat(7, 11px) !important; 
-    grid-auto-flow: column !important; 
-    gap: 3px !important; 
+#console .heatmap-internal-wrapper {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+
+#console .activity-month-labels {
+    height: 18px !important;
+    position: relative !important;
+    margin-bottom: 6px !important;
+    margin-left: 32px !important; /* weekday-labels(24px) + gap(8px) */
+    font-size: 9px !important;
+    color: var(--text-muted) !important;
+    font-family: monospace !important;
+    overflow: visible !important;
+}
+
+#console .month-label {
+    position: absolute !important;
+    white-space: nowrap !important;
+}
+
+#console .heatmap-grid-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
     overflow: visible !important;
 }
 
 #console .activity-weekday-labels { 
-    grid-row: span 7 !important; 
     display: flex !important; 
     flex-direction: column !important; 
     justify-content: space-between !important; 
-    padding-right: 2px !important; 
+    width: 24px !important; 
+    height: 95px !important; /* (7 rows * 11px) + (6 gaps * 3px) */
     font-size: 9px !important; 
     color: var(--text-muted) !important; 
     font-family: monospace !important; 
-    line-height: 11px !important; 
-    height: 95px !important; 
-    padding-top: 2px !important;
 }
 
-#console .activity-month-labels {
+#console .activity-weekday-labels span {
+    height: 11px !important;
+    line-height: 11px !important;
     display: flex !important;
-    height: 18px !important;
-    font-size: 9px !important;
-    color: var(--text-muted) !important;
-    font-family: monospace !important;
-    position: relative !important;
-    margin-bottom: 6px !important;
-    padding-left: 28px !important;
-    width: max-content !important;
+    align-items: center !important;
+}
+
+#console .console-activity-grid { 
+    display: grid !important; 
+    grid-template-rows: repeat(7, 11px) !important; 
+    grid-auto-flow: column !important; 
+    gap: 3px !important; 
     overflow: visible !important;
 }
 
@@ -2187,17 +2208,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #card-toc .toc-link { padding-left: 12px !important; }
 
 .topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
-
-/* 补丁 2：拯救热力图右侧“撞墙”留白 */
-#console .activity {
-    padding-right: 32px !important; /* 强制给右侧留出呼吸空间 */
-}
-
-/* Activity Heatmap Grid Padding Fix */
-#console .activity-grid-container,
-#console .activity-month-labels {
-    padding-right: 20px !important;
-}
 
 /* Webinfo Item Interaction */
 #console .webinfo-item a {
