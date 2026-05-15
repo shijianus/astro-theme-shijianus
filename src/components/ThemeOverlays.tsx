@@ -284,51 +284,52 @@ export function ThemeOverlays({
     const sPosts = stats?.posts ?? 0;
     const sReading = stats?.readingMinutes ?? 0;
     return [
-      { 
-        label: '本站总字数', 
+      {
+        label: '本站总字数',
         value: `${(sPosts * 1800 + sReading * 312).toLocaleString()} 字`,
         tooltip: '基于全站文章内容精算的实时总字数'
       },
-      { 
-        label: '安全运行', 
+      {
+        label: '安全运行天数',
         value: `${Math.floor((Date.now() - new Date('2024-01-01').valueOf()) / 86400000)} 天`,
         tooltip: '自 2024-01-01 以来稳定运行'
       },
-      { 
-        label: '最后推送', 
+      {
+        label: '最后推送',
         value: posts?.[0]?.date || '今天',
-        tooltip: '记录站点上一次内容更新的准确时间'
+        href: posts?.[0]?.href,
+        tooltip: '系统实时检索的全站最新内容或特性更新的精确时间戳与直达路由。'
       },
-      { 
-        label: '版本协议', 
+      {
+        label: '版本协议',
         value: 'v2.6.0-shijianus',
-        tooltip: 'shijianus-blog 核心引擎版本及开发协议'
+        tooltip: 'shijianus-blog 核心引擎版本及开发协议',
+        href: '/version'
       },
-      { 
-        label: '活跃等级', 
+      {
+        label: '活跃等级',
         value: 'Maintainer Lv.4',
         tooltip: '基于近期更新频率计算的活跃等级',
         href: '/standards'
       },
-      { 
-        label: '内容密度', 
+      {
+        label: '内容密度',
         value: 'High Density',
         tooltip: '站点信息密度评级：极高',
         href: '/standards'
       },
-      { 
-        label: '全站阅读', 
+      {
+        label: '全站阅读',
         value: `${sReading} min`,
         tooltip: '涵盖所有公开内容的平均总阅读时长'
       },
-      { 
-        label: '系统架构', 
+      {
+        label: '系统架构',
         value: 'Astro Edge',
-        tooltip: '基于 Astro 与 Cloudflare Edge 的现代架构'
+        tooltip: '基于 Astro 核心引擎与 Edge Functions 的现代响应式架构',
       },
     ];
   }, [stats, posts]);
-
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => ({
       left: `${(index * 37) % 100}%`,
@@ -890,10 +891,10 @@ export function ThemeOverlays({
                 <div className="console-webinfo-grid">
                   {[
                     ...siteStats,
-                    { label: '构建引擎', value: 'Vite / Astro', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架' },
-                    { label: '部署节点', value: 'Cloudflare Edge', tooltip: '全球分布式边缘网络高速分发' },
-                    { label: '色彩协议', value: 'Dark Mode API', tooltip: '遵循现代标准的深色模式色彩协议' },
-                    { label: '响应耗时', value: '< 50ms', tooltip: '极致优化的首屏加载与响应速度' },
+                    { label: '构建驱动', value: 'Astro / Vite', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染。' },
+                    { label: '样式底层', value: 'Tailwind CSS', tooltip: '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系。' },
+                    { label: '部署网络', value: 'Vercel / CF', tooltip: '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发。' },
+                    { label: '运行反馈', value: '< 50ms', tooltip: '极致优化的边缘预渲染与资源调度，确保首屏加载与交互响应均低于感知阈值。' },
                   ].map((stat, i) => (
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">

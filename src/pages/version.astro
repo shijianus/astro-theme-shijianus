@@ -1,0 +1,54 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="版本与开源协议">
+  <article class="theme-card article-body post-content" style="padding: 40px; margin-top: 20px;">
+    <h1>shijianus 版本协议与架构定义</h1>
+    
+    <section>
+      <h2 id="semver">1. 语义化版本 (Semantic Versioning)</h2>
+      <p>本站遵循标准的语义化版本控制规范。当前主版本号：<strong>v2.6.0</strong>。</p>
+      <ul>
+        <li><strong>MAJOR (2):</strong> 核心架构重构。代表从传统静态生成向边缘混合计算（Edge Computing）架构的跨越。</li>
+        <li><strong>MINOR (6):</strong> 特性增强。引入了动态控制台、实时数据监控、及全屏沉浸式技术文档体系。</li>
+        <li><strong>PATCH (0):</strong> 补丁修复。针对 UI 逻辑、性能瓶颈及跨端兼容性的持续迭代。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 id="license">2. EpoCanvas / shijianus 主题协议</h2>
+      <p>shijianus-blog 及其核心主题 <strong>EpoCanvas</strong> 声明如下：</p>
+      <div style="background: rgba(var(--theme-main-rgb), 0.1); border-left: 4px solid var(--theme-main); padding: 15px; margin: 20px 0;">
+        <p><strong>授权级别：私人独占 / 专有授权</strong></p>
+        <p>当前版本的 UI 逻辑、样式引擎及交互协议归作者 shijianus 所有。未经许可，禁止任何形式的镜像克隆或商业化二次包装。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 id="dependencies">3. 核心依赖链路 (Dependency Stack)</h2>
+      <p>本站基于以下硬核技术栈构建，确保系统的高可用性与可扩展性：</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--theme-border);">
+            <th style="text-align: left; padding: 10px;">驱动包</th>
+            <th style="text-align: left; padding: 10px;">版本</th>
+            <th style="text-align: left; padding: 10px;">功能定位</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding: 10px;">Astro Engine</td><td style="padding: 10px;">^6.1.3</td><td style="padding: 10px;">核心构建与路由解耦</td></tr>
+          <tr><td style="padding: 10px;">React Stack</td><td style="padding: 10px;">^19.2.4</td><td style="padding: 10px;">复杂交互逻辑与状态管理</td></tr>
+          <tr><td style="padding: 10px;">Tailwind Engine</td><td style="padding: 10px;">^4.2.2</td><td style="padding: 10px;">原子级样式引擎</td></tr>
+          <tr><td style="padding: 10px;">Lucide Icons</td><td style="padding: 10px;">^0.460.0</td><td style="padding: 10px;">矢量视觉协议标识</td></tr>
+          <tr><td style="padding: 10px;">Remark/MDX</td><td style="padding: 10px;">^5.0.3</td><td style="padding: 10px;">高密度内容解析层</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 id="architecture">4. 基础设施白皮书</h2>
+      <p>系统运行于全球分布式边缘节点（Edge Runtime），通过智能路由分发（Anycast）实现首屏毫秒级响应。每一行代码均经过严格的构建时检查，确保在不同终端下的视觉一致性。</p>
+    </section>
+  </article>
+</BlogLayout>
