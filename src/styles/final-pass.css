@@ -44,6 +44,10 @@
   z-index: 10 !important;
 }
 
+.mask-name-container {
+  display: none !important;
+}
+
 #menus {
   position: absolute !important;
   left: 50% !important;
@@ -78,7 +82,7 @@
 }
 
 #page-header.nav-fixed #name-container {
-  max-width: min(220px, 16vw);
+  display: none !important;
 }
 
 #page-name {
@@ -690,29 +694,34 @@
   transition: 0.3s;
 }
 
-#nav-totop #percent {
-  position: absolute;
-  font-size: 11px;
-  font-weight: 800;
-  opacity: 1;
-  transform: scale(1);
-  transition: 0.3s ease;
+/* Back to Top Hover Swap Logic */
+#nav-totop svg {
+  position: absolute !important;
+  opacity: 0 !important;
+  transform: scale(0.6) !important;
+  transition: all 0.3s ease !important;
 }
 
-#nav-totop i {
-  opacity: 0;
-  transform: scale(0.6);
-  transition: 0.3s ease;
+#nav-totop #percent {
+  position: relative !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  transition: all 0.3s ease !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#nav-totop:hover svg {
+  opacity: 1 !important;
+  transform: scale(1) !important;
 }
 
 #nav-totop:hover #percent {
-  opacity: 0;
-  transform: scale(0.6);
-}
-
-#nav-totop:hover i {
-  opacity: 1;
-  transform: scale(1);
+  opacity: 0 !important;
+  transform: scale(0.6) !important;
 }
 
 #nav-totop .totopbtn:hover {
@@ -741,7 +750,7 @@
   padding: 0 !important;
   cursor: pointer;
   transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 50% !important;
+  border-radius: 5px !important; /* Square-ish but rounded, standard for Anzhiyu */
   z-index: 100;
   overflow: visible !important;
 }
