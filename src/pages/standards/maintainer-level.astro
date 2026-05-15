@@ -1,0 +1,26 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="Maintainer Level Metrics">
+  <article class="theme-card article-body post-content" style="max-width: 1400px; width: 95vw; margin: 40px auto; padding: 40px;">
+    <h1>Maintainer Level Metrics</h1>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--theme-border);">
+            <th style="text-align: left; padding: 12px;">指标类型 (Metric)</th>
+            <th style="text-align: left; padding: 12px;">推荐阈值 (Recommended)</th>
+            <th style="text-align: left; padding: 12px;">硬性限制 (Hard Limit)</th>
+            <th style="text-align: left; padding: 12px;">影响范围 (Scope)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">API 响应延迟 (API Latency)</td><td style="padding: 12px;">&lt; 50ms</td><td style="padding: 12px;">&lt; 150ms</td><td style="padding: 12px;">边缘函数, 评论服务</td></tr>
+          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">打包产物体积 (Bundle Size)</td><td style="padding: 12px;">&lt; 150KB</td><td style="padding: 12px;">&lt; 300KB</td><td style="padding: 12px;">全站首屏渲染</td></tr>
+          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">LCP (Largest Contentful Paint)</td><td style="padding: 12px;">&lt; 1.2s</td><td style="padding: 12px;">&lt; 2.5s</td><td style="padding: 12px;">用户首屏体验</td></tr>
+          <tr><td style="padding: 12px;">组件重渲染 (Re-renders)</td><td style="padding: 12px;">1 (Initial)</td><td style="padding: 12px;">3 (Max)</td><td style="padding: 12px;">交互响应速率</td></tr>
+        </tbody>
+    </table>
+  </article>
+</BlogLayout>

@@ -238,25 +238,25 @@ export function ThemeDock(_props: ThemeDockProps) {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
               </a>
+
+              <button
+                type="button"
+                id="translate"
+                title="切换语言"
+                aria-label="切换语言"
+                onClick={handleToggleLocale}
+              >
+                <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 8 6 6"></path>
+                  <path d="m4 14 6-6 2-3"></path>
+                  <path d="M2 5h12"></path>
+                  <path d="M7 2h1"></path>
+                  <path d="m22 22-5-10-5 10"></path>
+                  <path d="M14 18h6"></path>
+                </svg>
+              </button>
             </>
           )}
-
-          <button
-            type="button"
-            id="translate"
-            title="切换语言"
-            aria-label="切换语言"
-            onClick={handleToggleLocale}
-          >
-            <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m5 8 6 6"></path>
-              <path d="m4 14 6-6 2-3"></path>
-              <path d="M2 5h12"></path>
-              <path d="M7 2h1"></path>
-              <path d="m22 22-5-10-5 10"></path>
-              <path d="M14 18h6"></path>
-            </svg>
-          </button>
 
           <button
             type="button"

@@ -420,18 +420,6 @@ export function SiteHeader({
               </div>
             )}
 
-            <div className="nav-button" id="nav-translate">
-              <a className="site-page" href="#" title="简繁转换" onClick={toggleLanguage}>
-                <i className="anzhiyufont anzhiyu-icon-language" aria-hidden="true" />
-              </a>
-            </div>
-
-            <div className="nav-button" id="nav-readmode">
-              <a className="site-page" href="#" title="阅读模式" onClick={toggleReadMode}>
-                <i className="anzhiyufont anzhiyu-icon-book-open" aria-hidden="true" />
-              </a>
-            </div>
-
             {showNotificationTrigger && (
               <div className="nav-button" id="nav-notification">
                 <a 
@@ -488,10 +476,9 @@ export function SiteHeader({
 
             {showCenterConsoleTrigger && (
               <div className="nav-button" id="center-console-button">
-                <input id="center-console-checkbox" type="checkbox" checked={consoleOpen} onChange={() => {}} hidden />
-                <label
-                  className={`widget ${consoleOpen ? 'is-active' : ''}`}
-                  htmlFor="center-console-checkbox"
+                <a
+                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
+                  href="#"
                   title="控制台"
                   onClick={(e) => {
                     e.preventDefault();
@@ -507,7 +494,7 @@ export function SiteHeader({
                     <i className="widget center" />
                     <i className="widget right" />
                   </div>
-                </label>
+                </a>
               </div>
             )}
 

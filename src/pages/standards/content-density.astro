@@ -1,0 +1,26 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="Content Density Specifications">
+  <article class="theme-card article-body post-content" style="max-width: 1400px; width: 95vw; margin: 40px auto; padding: 40px;">
+    <h1>Content Density Specifications</h1>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--theme-border);">
+            <th style="text-align: left; padding: 12px;">元素类型 (Element)</th>
+            <th style="text-align: left; padding: 12px;">内边距 (Padding)</th>
+            <th style="text-align: left; padding: 12px;">外边距 (Margin)</th>
+            <th style="text-align: left; padding: 12px;">字体尺寸 (Font Size)</th>
+            <th style="text-align: left; padding: 12px;">行高 (Line Height)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">标准正文 (Standard Text)</td><td style="padding: 12px;">p-4 (16px)</td><td style="padding: 12px;">m-2 (8px)</td><td style="padding: 12px;">16px</td><td style="padding: 12px;">1.6</td></tr>
+          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">数据表格 (Data Table)</td><td style="padding: 12px;">p-2 (8px)</td><td style="padding: 12px;">m-1 (4px)</td><td style="padding: 12px;">14px</td><td style="padding: 12px;">1.4</td></tr>
+          <tr><td style="padding: 12px;">控制台/代码块 (Code Block)</td><td style="padding: 12px;">p-3 (12px)</td><td style="padding: 12px;">m-2 (8px)</td><td style="padding: 12px;">13px</td><td style="padding: 12px;">1.5</td></tr>
+        </tbody>
+    </table>
+  </article>
+</BlogLayout>
