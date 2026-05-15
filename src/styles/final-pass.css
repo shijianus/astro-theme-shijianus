@@ -255,78 +255,23 @@
 #console .activity-cell.level-4 { background: #39d353 !important; }
 
 .activity-details-footer {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
   border-top: var(--style-border-always);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.selected-day-preview {
-  flex: 1;
+  gap: 4px !important;
 }
 
 .activity-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.activity-details__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.activity-pagination {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.activity-pagination button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: var(--secondbg);
-  border: var(--style-border-always);
-  color: var(--font-color);
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.activity-pagination button:hover:not(:disabled) {
-  background: var(--theme-main);
-  color: var(--white);
-  border-color: var(--theme-main);
-}
-
-.activity-pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.activity-details-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  gap: 4px !important;
 }
 
 .activity-details-list li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--font-color);
+  gap: 6px !important;
+  font-size: 12px !important;
 }
 
 .activity-commit-icon {
