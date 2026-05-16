@@ -33,6 +33,63 @@
 }
 
 #nav-right {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  z-index: 10 !important;
+}
+
+#nav-right .nav-button {
+  margin-left: 0 !important;
+}
+
+#nav-right .nav-button + .nav-button {
+  margin-left: 0 !important;
+}
+
+#menus {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  height: 60px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+#menus .menus_items {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  pointer-events: auto !important;
+}
+
+#nav-totop {
+  position: relative;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  transform: scale(0) !important;
+  overflow: hidden !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  pointer-events: none;
+}
+
+#nav-totop.show {
+  display: flex !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  pointer-events: auto;
 }
 
 #menus .site-page {
@@ -612,7 +669,7 @@
 }
 
 #nav-right .nav-button + .nav-button {
-  margin-left: 8px !important;
+  margin-left: 0 !important;
 }
 
 #nav-right .nav-button .site-page {
@@ -629,29 +686,6 @@
 #nav-right .nav-button .site-page:hover {
   background: var(--theme-main);
   color: var(--white) !important;
-}
-
-#nav-totop {
-  position: relative;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 0 !important;
-  margin-left: 0 !important;
-  padding: 0 !important;
-  opacity: 0 !important;
-  transform: scale(0) !important;
-  overflow: hidden !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  pointer-events: none;
-}
-
-#nav-totop.show {
-  width: 35px !important;
-  margin-left: 8px !important;
-  opacity: 1 !important;
-  transform: scale(1) !important;
-  pointer-events: auto;
 }
 
 #nav-totop .totopbtn {
