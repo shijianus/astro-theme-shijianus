@@ -181,8 +181,6 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         </div>
       </main>
 
-      <Footer stats={overlayStats} />
-
       <ThemeDock
         client:visible
         defaultBackground={siteConfig.theme.background.defaultMode}
@@ -211,6 +209,8 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         consolePanel={consolePanel}
         accountPanel={accountPanel}
       />
+
+      <Footer stats={overlayStats} />
       <LocaleRuntime />
       <CodeBlockEnhancer />
       <StickySidebarObserver pageType={pageType} client:load />
