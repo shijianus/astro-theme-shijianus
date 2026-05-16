@@ -2380,3 +2380,29 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 }
 
 
+
+
+/* 1. 彻底隐藏导致中心重叠的遮罩名字容器 */
+.mask-name-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+}
+
+/* 2. 强制左侧的站点 Logo 永远停留在左侧，绝对禁止飘到中间 */
+#nav-group #blog_name {
+  position: absolute !important;
+  left: 20px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 3. 稍微调大中英文的呼吸间隙（满足用户需求） */
+.site-page__bilingual-stack {
+  gap: 6px !important;
+}
+
