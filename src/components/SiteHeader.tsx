@@ -47,12 +47,13 @@ function openAccountPanel() {
 const navIconMap: Record<string, string> = {
   home: 'anzhiyu-icon-house-chimney',
   archive: 'anzhiyu-icon-box-archive',
-  category: 'anzhiyu-icon-shapes',
+  category: 'anzhiyu-icon-folder-open',
   tags: 'anzhiyu-icon-tags',
   about: 'anzhiyu-icon-circle-info',
   book: 'anzhiyu-icon-book',
   rss: 'anzhiyu-icon-rss',
   link: 'anzhiyu-icon-link',
+  message: 'anzhiyu-icon-comment-dots',
 };
 
 function renderNavIcon(iconName: string | undefined, className: string) {
@@ -335,8 +336,7 @@ export function SiteHeader({
             <div className="menus_items">
               {primary.map((item) => {
                 const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
-                const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
-                const hasChildren = Boolean(item.children && item.children.length > 1);
+                const hasChildren = Boolean(item.children && item.children.length > 0);
                 const submenuOpen = hasChildren && openSubmenuHref === item.href;
 
                 return (
@@ -363,7 +363,6 @@ export function SiteHeader({
                       <a
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
-                        data-subtitle={item.description}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
@@ -371,23 +370,18 @@ export function SiteHeader({
                           {renderNavIcon(item.icon, 'site-page__icon')}
                         </span>
                         <span className="site-page__label">{item.label}</span>
-                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
                       </a>
 
                       {hasChildren && (
                         <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
-                          {item.children.slice(0, 3).map((child) => {
+                          {item.children?.map((child) => {
                             return (
                               <a
                                 key={child.href}
                                 href={child.href}
                                 className={`site-page-submenu__item ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
                                 role="menuitem"
-                                title={child.description ?? child.label}
+                                title={child.label}
                               >
                                 {renderNavIcon(child.icon, 'site-page-submenu__icon')}
                                 <span className="site-page-submenu__label">{child.label}</span>
@@ -435,7 +429,7 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <Bell className="h-4 w-4" aria-hidden="true" />
+                  <Bell className="site-page__icon" aria-hidden="true" style={{ width: '18px', height: '18px' }} />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>
@@ -489,10 +483,10 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <div className="widget-inner">
-                    <i className="left" />
-                    <i className="widget center" />
-                    <i className="widget right" />
+                  <div className="console-hamburger">
+                    <span className="line top" />
+                    <span className="line center" />
+                    <span className="line bottom" />
                   </div>
                 </a>
               </div>
