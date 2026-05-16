@@ -363,19 +363,16 @@ export function SiteHeader({
                       <a
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
-                        data-subtitle={item.description}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         <span className="site-page__icon-wrap" aria-hidden="true">
                           {renderNavIcon(item.icon, 'site-page__icon')}
                         </span>
-                        <span className="site-page__label">{item.label}</span>
-                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
+                        <div className="site-page__bilingual-stack">
+                          <span className="site-page__bilingual-label">{item.label}</span>
+                          {item.description && <span className="site-page__bilingual-desc">{item.description}</span>}
+                        </div>
                       </a>
 
                       {hasChildren && (
