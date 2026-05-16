@@ -2293,3 +2293,90 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   transform: translate(-50%, -50%);
 }
 
+
+
+/* 1. 绝对居中主菜单 */
+#menus {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  height: 100% !important;
+  align-items: center !important;
+}
+
+#menus .menus_items {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+}
+
+#menus .menus_item {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+/* 2. 彻底歼灭下拉框小尖角和幽灵伪元素 */
+#menus .menus_item::before,
+#menus .menus_item::after,
+#menus .menus_item > a::before,
+#menus .menus_item > a::after,
+.site-page-submenu::before,
+.site-page-submenu::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+}
+
+/* 3. 完美的垂直下拉分支卡片 */
+.site-page-submenu {
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(10px) !important;
+  background: var(--card-bg) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  padding: 8px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 140px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  z-index: 999 !important;
+}
+
+/* Hover 触发平滑弹出 */
+#menus .menus_item:hover .site-page-submenu {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(-50%) translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+/* 下拉子项样式 */
+.site-page-submenu__item {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 16px !important;
+  gap: 8px !important;
+  color: var(--font-color) !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  background: transparent !important;
+}
+
+.site-page-submenu__item:hover {
+  background: var(--theme-main) !important;
+  color: #fff !important;
+}
+
+

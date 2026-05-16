@@ -363,19 +363,16 @@ export function SiteHeader({
                       <a
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
-                        data-subtitle={item.description}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
-                        <span className="site-page__icon-wrap" aria-hidden="true">
+                        <span className="site-page__icon-wrap" aria-hidden="true" style={{ display: 'flex', alignItems: 'center' }}>
                           {renderNavIcon(item.icon, 'site-page__icon')}
                         </span>
-                        <span className="site-page__label">{item.label}</span>
-                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
+                        <div className="site-page__bilingual-stack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', lineHeight: '1.1', marginLeft: '6px' }}>
+                          <span className="site-page__bilingual-label" style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.label}</span>
+                          {item.description && <span className="site-page__bilingual-desc" style={{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{item.description}</span>}
+                        </div>
                       </a>
 
                       {hasChildren && (
