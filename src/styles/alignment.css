@@ -9,6 +9,7 @@
   max-width: 1400px !important;
   margin: 0 auto !important;
   padding: 0 20px !important;
+  position: relative !important;
 }
 
 #blog_name {
@@ -25,9 +26,6 @@
   flex: 1 1 auto !important;
   display: flex !important;
   justify-content: center !important;
-  position: relative !important;
-  height: 60px !important;
-  min-width: 0 !important;
 }
 
 #nav-right {
@@ -36,53 +34,6 @@
   align-items: center !important;
   gap: 10px !important;
   margin-left: 20px !important;
-}
-
-.menus_items {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 20px !important;
-}
-
-#menus .site-page {
-  display: flex !important;
-  align-items: center !important;
-  padding: 0 12px !important;
-  height: 48px !important;
-  border-radius: 10px !important;
-  background: transparent !important;
-  color: var(--font-color) !important;
-  transition: all 0.2s ease !important;
-}
-
-#menus .site-page.is-active {
-  background: color-mix(in srgb, var(--theme-main) 12%, transparent) !important;
-  color: var(--theme-main) !important;
-}
-
-.site-page__label {
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: inherit !important;
-}
-
-/* Ensure only label and icon are visible in menus */
-#menus .site-page__icon-wrap {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-right: 8px !important;
-}
-
-#menus .site-page__icon {
-  display: block !important;
-  font-size: 16px !important;
-  color: inherit !important;
-}
-
-.site-page__label {
-  display: block !important;
 }
 
 /* Nuke all ghosting/extra elements */
@@ -98,36 +49,6 @@
 .site-page__text {
   display: none !important;
   content: none !important;
-}
-
-/* Console Hamburger - Perfected */
-#center-console-button .console-hamburger {
-  width: 18px !important;
-  height: 12px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-}
-
-#center-console-button .line {
-  width: 100% !important;
-  height: 2px !important;
-  background-color: var(--font-color) !important;
-  border-radius: 1px !important;
-}
-
-#center-console-button a.is-active .line.top {
-  transform: translateY(5px) rotate(45deg) !important;
-  background-color: var(--theme-main) !important;
-}
-
-#center-console-button a.is-active .line.center {
-  opacity: 0 !important;
-}
-
-#center-console-button a.is-active .line.bottom {
-  transform: translateY(-5px) rotate(-45deg) !important;
-  background-color: var(--theme-main) !important;
 }
 
 #menus .site-page__chevron {

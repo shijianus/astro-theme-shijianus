@@ -35,21 +35,160 @@
 #nav-right {
 }
 
-#menus .site-page {
-  min-height: 56px;
+/* Logo Morphing Animation */
+#site-name {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 35px;
+  overflow: hidden;
 }
 
-#menus .menus_item.has-children > .site-page-shell > .site-page::after {
+.site-logo__text,
+.site-logo__icon {
   position: absolute;
-  right: 10px;
-  top: 11px;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-main) 55%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-main) 12%, transparent);
-  content: "";
-  opacity: 0.92;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.site-logo__text {
+  opacity: 1;
+  transform: translateY(0);
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.site-logo__icon {
+  opacity: 0;
+  transform: translateY(20px);
+  width: 22px !important;
+  height: 22px !important;
+}
+
+#site-name:hover .site-logo__text {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+#site-name:hover .site-logo__icon {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Absolute Menu Centering & Stacking */
+#nav-group {
+  position: static !important; /* Allow #menus to center relative to #nav or #page-header */
+}
+
+#nav {
+  position: relative !important;
+}
+
+#menus {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: auto !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  z-index: 1 !important;
+}
+
+.menus_items {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 28px !important;
+  align-items: center !important;
+}
+
+.site-page__text-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1.1 !important;
+}
+
+.site-page__label {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: var(--font-color) !important;
+  display: block !important;
+}
+
+.site-page__description {
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  opacity: 0.5 !important;
+  text-transform: uppercase !important;
+  margin-top: 2px !important;
+  letter-spacing: 0.05em !important;
+  color: var(--font-color) !important;
+  display: block !important;
+}
+
+#nav-right {
+  margin-left: auto !important;
+  z-index: 2 !important;
+}
+
+#blog_name {
+  z-index: 2 !important;
+}
+
+/* Hamburger Proportions (35x35 trigger, 16x12 bars, 2px lines) */
+#center-console-button .site-page {
+  width: 35px !important;
+  height: 35px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+}
+
+.console-trigger-bars {
+  width: 16px !important;
+  height: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.console-trigger-bars .line {
+  width: 100% !important;
+  height: 2px !important;
+  background: var(--font-color) !important;
+  border-radius: 2px !important;
+  transition: all 0.3s ease !important;
+}
+
+#center-console-button .is-active .line.left {
+  transform: translateY(5px) rotate(45deg) !important;
+}
+
+#center-console-button .is-active .line.center {
+  opacity: 0 !important;
+}
+
+#center-console-button .is-active .line.right {
+  transform: translateY(-5px) rotate(-45deg) !important;
+}
+
+#center-console-button .is-active .line {
+  background: var(--theme-main) !important;
+}
+
+/* Nuke Chevrons & Legacy Alignments */
+#menus .site-page::after,
+#menus .site-page__chevron {
+  display: none !important;
 }
 
 #page-header.nav-fixed #name-container {

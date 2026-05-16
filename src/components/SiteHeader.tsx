@@ -319,18 +319,10 @@ export function SiteHeader({
         <div id="nav-group">
           <span id="blog_name">
             <a id="site-name" href="/" accessKey="h" aria-label={brandName}>
-              <span className="title">{brandName}</span>
-              <House className="site-name__icon" aria-hidden="true" />
+              <span className="site-logo__text">{brandName}</span>
+              <House className="site-logo__icon" aria-hidden="true" />
             </a>
           </span>
-
-          <div className="mask-name-container">
-            <div id="name-container">
-              <a id="page-name" href="#blog-container">
-                {activeLabel}
-              </a>
-            </div>
-          </div>
 
           <div id="menus">
             <div className="menus_items">
@@ -366,10 +358,10 @@ export function SiteHeader({
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
-                        <span className="site-page__icon-wrap" aria-hidden="true">
-                          {renderNavIcon(item.icon, 'site-page__icon')}
-                        </span>
-                        <span className="site-page__label">{item.label}</span>
+                        <div className="site-page__text-stack">
+                          <span className="site-page__label">{item.label}</span>
+                          <span className="site-page__description">{item.description}</span>
+                        </div>
                       </a>
 
                       {hasChildren && (
@@ -483,10 +475,10 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <div className="console-hamburger">
-                    <span className="line top" />
+                  <div className="console-trigger-bars">
+                    <span className="line left" />
                     <span className="line center" />
-                    <span className="line bottom" />
+                    <span className="line right" />
                   </div>
                 </a>
               </div>
