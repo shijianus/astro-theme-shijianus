@@ -2282,3 +2282,14 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 /* End of Console Layout Refactor Step 1 */
 
+#page-header {
+  position: relative;
+}
+
+#menus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
