@@ -84,10 +84,9 @@
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: min(1200px, 94vw) !important;
-    height: auto !important;
-    min-height: 600px !important;
-    max-height: 90vh !important; /* Increased from 85vh to accommodate more metrics */
+    width: min(1100px, 90vw) !important;
+    height: 720px !important;
+    max-height: 90vh !important;
     opacity: 0 !important;
     z-index: 100 !important;
     overflow: visible !important;
@@ -99,7 +98,7 @@
     display: flex !important;
     flex-direction: column !important;
     gap: var(--console-gap) !important;
-    width: max-content !important;
+    width: 260px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
 }
@@ -110,25 +109,22 @@
     gap: var(--console-gap) !important;
     flex: 1 !important;
     min-width: 0 !important;
-    overflow: visible !important; /* Tooltip bypass */
+    overflow: visible !important;
 }
 
 @media (max-width: 860px) {
   #console .console-card-group {
     flex-direction: column !important;
     width: 90vw !important;
+    height: auto !important;
     max-height: calc(90vh - 100px) !important;
-    overflow-y: auto !important; /* Allow scroll on mobile only */
+    overflow-y: auto !important;
     padding: 10px !important;
     gap: 12px !important;
-    height: auto !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
   }
   #console .console-card-group-left,
   #console .console-card-group-right {
     width: 100% !important;
-    overflow: visible !important;
   }
 }
 
@@ -152,7 +148,7 @@
 }
 
 #console .console-card:hover {
-    z-index: 1000 !important; /* Ensure hovered card is above others */
+    z-index: 1000 !important;
 }
 
 #console .console-profile {
@@ -166,8 +162,8 @@
 }
 
 #console .tags {
-    flex: 1.5 1 auto !important; /* Prioritize space for ~50 tags */
-    min-height: 300px !important;
+    flex: 0 0 360px !important;
+    min-height: 0 !important;
 }
 
 #console .activity {
@@ -178,6 +174,120 @@
 #console .console-profile h2 { font-size: 1.6rem !important; margin-bottom: 8px !important; }
 #console .console-profile p { font-size: 13px !important; line-height: 1.5 !important; opacity: 0.9; }
 #console .console-stat-grid { margin-top: 20px !important; }
+
+/* Global FAB (Floating Action Button) Unification */
+#rightside > div > button,
+#rightside > div > a,
+#nav-right .nav-button,
+#go-up {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  border: var(--style-border-always) !important;
+  background: var(--card-bg) !important;
+  box-shadow: var(--shadow-border) !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+}
+
+#rightside > div > button:hover,
+#rightside > div > a:hover,
+#nav-right .nav-button:hover,
+#go-up:hover {
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
+  box-shadow: var(--shadow-theme) !important;
+  transform: translateY(-2px) !important;
+}
+
+#nav-totop .totopbtn {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nav-totop #percent {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+#nav-totop:hover #percent {
+  opacity: 0 !important;
+}
+
+#nav-totop:hover i {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+#nav-totop i {
+  position: absolute !important;
+  opacity: 0 !important;
+  transform: translateY(10px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Morphing Console Button Logic */
+#center-console-button label {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#center-console-button .widget-inner {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  transition: 0.3s !important;
+}
+
+#center-console-button .widget.is-active .widget-inner {
+  gap: 0 !important;
+}
+
+#center-console-button i {
+  width: 16px !important;
+  height: 2px !important;
+  background: currentColor !important;
+  display: block !important;
+  transition: 0.3s !important;
+  border-radius: 2px !important;
+}
+
+#center-console-button .widget.is-active .left {
+  transform: translateY(2px) rotate(45deg) !important;
+}
+
+#center-console-button .widget.is-active .widget.center {
+  opacity: 0 !important;
+  transform: scale(0) !important;
+}
+
+#center-console-button .widget.is-active .widget.right {
+  transform: translateY(-2px) rotate(-45deg) !important;
+}
+
+/* Smooth Back-to-Top fade */
+#nav-totop {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s ease !important;
+}
+
+#nav-totop.show {
+  opacity: 1;
+  visibility: visible;
+}
 
 /* Activity Heatmap - Precision GitHub Refactor */
 #console .activity-grid-container { 

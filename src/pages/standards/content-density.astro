@@ -1,0 +1,75 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="内容密度评估基准 (Content Density Standard)" pageType="document">
+  <article class="theme-card article-body post-content" style="max-width: 1400px; width: 95vw; margin: 40px auto; padding: 60px 80px; border-radius: 24px;">
+    <h1>内容密度评估基准 (Content Density Standard)</h1>
+
+    <div style="background: rgba(var(--theme-main-rgb), 0.1); border-left: 4px solid var(--theme-main); padding: 15px; margin: 20px 0;">
+      <p><strong>协议版本</strong>: v2.1.0-RC | <strong>执行域</strong>: 编译期内容解析器 | <strong>文档类型</strong>: 质量审计规范</p>
+    </div>
+
+    <section>
+      <h2>1. IDI 计算模型 (Information Density Index)</h2>
+      <p>内容密度评估旨在剔除“AI 八股文”与低价值的水分扩充。系统在构建期会对非结构化文本进行 AST 解析，提取核心信息单元，通过 <strong>信息密度指数 (IDI)</strong> 进行量化：</p>
+      
+      <div style="background: var(--secondbg); padding: 25px; border-radius: 8px; margin: 20px 0; border: 1px dashed var(--card-border);">
+        <code style="font-size: 1.4rem; color: var(--theme-main); display: block; margin-bottom: 10px;">IDI = (W * 0.15 + K * 25 + M * 10) / (1 + log10(R + 1))</code>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">W: Effective Words | K: Knowledge Nodes | M: Media Assets | R: Redundancy Ratio</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">密度等级</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">IDI 阈值</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">知识节点 (K) 要求</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">冗余率 (R) 限制</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">典型文本形态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>LEVEL 1: Sparse</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">&lt; 200</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">K &ge; 1</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">R &lt; 0.50</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">碎片化随笔、链接收藏 (Linklog)、短评。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>LEVEL 2: Standard</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">200 - 500</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">K &ge; 5</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">R &lt; 0.30</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">结构化项目记录、问题修复复盘、工具链配置指南。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>LEVEL 3: Professional</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">500 - 1000</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">K &ge; 15</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">R &lt; 0.15</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">深度方案设计、源码级分析、系统架构推演。要求包含逻辑闭环。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>LEVEL 4: Authoritative</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">&gt; 1000</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">K &ge; 40</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">R &lt; 0.05</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">行业综述、官方标准协议、具备出版价值的系列白皮书。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. 质量控制红线 (Quality Control Redlines)</h2>
+      <p>任何提交至系统的内容，如果触发以下红线规则，将被强制降级或阻断发布：</p>
+      <ul>
+        <li><strong>零信息开头</strong>：文章前 200 字内未出现任何有效的专有名词或问题定义（典型的 AI 寒暄语特征），直接降低一个 Level。</li>
+        <li><strong>无解释代码块</strong>：贴出超过 50 行的代码块但缺乏逐段或核心逻辑解析，代码块将被判定为“凑字数”，从有效字数 <code>W</code> 中剔除。</li>
+        <li><strong>极高冗余率惩罚</strong>：当 <code>R &gt; 0.5</code>，即使总字数达标，系统也将在 UI 上标注 <code>[低密度警告]</code>。</li>
+      </ul>
+    </section>
+  </article>
+</BlogLayout>

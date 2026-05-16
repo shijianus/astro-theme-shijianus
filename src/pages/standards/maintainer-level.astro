@@ -1,0 +1,72 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+---
+
+<BlogLayout showAside={false} title="站点维护与运营评级协议 (Maintainer Level Specification)" pageType="document">
+  <article class="theme-card article-body post-content" style="max-width: 1400px; width: 95vw; margin: 40px auto; padding: 60px 80px; border-radius: 24px;">
+    <h1>站点维护与运营评级协议 (Maintainer Level Specification)</h1>
+
+    <div style="background: rgba(var(--theme-main-rgb), 0.1); border-left: 4px solid var(--theme-main); padding: 15px; margin: 20px 0;">
+      <p><strong>协议版本</strong>: v3.0.0-STABLE | <strong>执行域</strong>: 全局审计系统 | <strong>文档类型</strong>: 核心架构规范</p>
+    </div>
+
+    <section>
+      <h2>1. 多维状态评估矩阵 (Multi-dimensional Evaluation Matrix)</h2>
+      <p>本协议定义了用于量化站点生命周期健康度的“维护者等级（Maintainer Level）”。评估并非单一维度的频率统计，而是综合了<strong>发文频次（Frequency）</strong>、<strong>单篇知识负载（Reading Duration）</strong>与<strong>长期一致性（Long-term Consistency Weight）</strong>的动态平衡模型。</p>
+      
+      <p>系统拒绝低价值的高频刷榜行为。一篇深度达 30 分钟阅读时长的架构复盘，在权重上等效于 5 篇常规的碎片化随笔。此外，连续 12 个月维持稳定产出的“长期一致性”将提供最高 <code>1.5x</code> 的全局加权乘数。</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">等级标识</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">准入阈值 (ML Score)</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">基础频次要求</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">深度负载要求</th>
+            <th style="border: 1px solid var(--card-border); padding: 15px; background: var(--secondbg);">系统资源调配权限</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>Level 0: Hibernation</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">&lt; 10.0</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">更新停滞 &gt; 180 天</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">N/A</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">降级进入低功耗静态归档模式，剥夺动态计算资源。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>Level 1: Recovery</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">10.0 - 45.0</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">季度内具备有效提交</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">均篇阅读 &gt; 3 分钟</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">恢复基础 CDN 缓存与标准路由索引。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>Level 2: Standard</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">45.0 - 120.0</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">月度稳定产出 &ge; 2 篇</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">均篇阅读 &gt; 8 分钟</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">获得首页完整展示位与关联推荐权重。</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid var(--card-border); padding: 15px;"><strong>Level 3: Professional</strong></td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">&gt; 120.0</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">长期一致性加持（连更 &ge; 6个月）</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">核心白皮书或架构规范 &ge; 3 篇</td>
+            <td style="border: 1px solid var(--card-border); padding: 15px;">激活最高级渲染优先级、全局搜索深度分析与定制级知识图谱。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. 衰减与惩罚机制 (Degradation Calculus)</h2>
+      <p>为了对抗信息熵增，本协议内置了严格的半衰期计算模型：</p>
+      <ul>
+        <li><strong>自然衰减</strong>：自最近一次 Level 2 级以上的深度文章发布起，每跨越 30 天的静默期，总分 <code>ML Score</code> 将遭遇 <code>0.85</code> 的衰减惩罚。</li>
+        <li><strong>注水惩罚</strong>：若审计系统在连续的产出中检测到极高的代码模板复用率或无效文字凑数（有效负载比 &lt; 15%），将触发硬性阻断，当前周期产出分清零，并暂时冻结等级提升通道。</li>
+      </ul>
+      <p>通过这套双向制衡的算力模型，站点将保持高度的技术纯粹性与知识沉淀的持续性。</p>
+    </section>
+  </article>
+</BlogLayout>
