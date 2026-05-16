@@ -53,6 +53,14 @@ const navIconMap: Record<string, string> = {
   book: 'anzhiyu-icon-book',
   rss: 'anzhiyu-icon-rss',
   link: 'anzhiyu-icon-link',
+  flask: 'anzhiyu-icon-flask',
+  music: 'anzhiyu-icon-music',
+  video: 'anzhiyu-icon-video',
+  user: 'anzhiyu-icon-user',
+  'chart-bar': 'anzhiyu-icon-chart-bar',
+  compass: 'anzhiyu-icon-compass',
+  'circle-info': 'anzhiyu-icon-circle-info',
+  message: 'anzhiyu-icon-comments',
 };
 
 function renderNavIcon(iconName: string | undefined, className: string) {
@@ -370,12 +378,10 @@ export function SiteHeader({
                         <span className="site-page__icon-wrap" aria-hidden="true">
                           {renderNavIcon(item.icon, 'site-page__icon')}
                         </span>
-                        <span className="site-page__label">{item.label}</span>
-                        {item.description && <span className="site-page__subtitle">{item.description}</span>}
-                        <span className="site-page__flyout" aria-hidden="true">
-                          <span>{item.description ?? item.label}</span>
-                          <small>{itemActive ? '当前页面' : '进入栏目'}</small>
-                        </span>
+                        <div className="site-page__text-group">
+                          <span className="site-page__label">{item.label}</span>
+                          {item.description && <span className="site-page__subtitle">{item.description}</span>}
+                        </div>
                       </a>
 
                       {hasChildren && (

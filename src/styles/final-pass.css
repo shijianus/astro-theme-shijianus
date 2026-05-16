@@ -2293,3 +2293,164 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   transform: translate(-50%, -50%);
 }
 
+
+
+/* --- Step 2: Dual-Language Menu & Centering Reconstruction --- */
+
+/* 1. Hide centered conflict container */
+.mask-name-container {
+  display: none !important;
+}
+
+/* 2. Lock Logo to left */
+#nav-group #blog_name {
+  position: absolute !important;
+  left: 20px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+}
+
+/* 3. Absolutely center #menus */
+#menus {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#menus .menus_items {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 16px !important;
+  height: 100% !important;
+  align-items: center !important;
+}
+
+/* 4. Dual-language typography and spacing */
+#menus .site-page {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 16px !important;
+  height: auto !important;
+  min-height: 44px !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  border-radius: 12px !important;
+}
+
+#menus .site-page:hover {
+  background: var(--theme-op) !important;
+  color: var(--theme-main) !important;
+}
+
+#menus .site-page__text-group {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important; /* Strict gap between CN and EN */
+  line-height: 1.1 !important;
+}
+
+#menus .site-page__label {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--font-color) !important;
+}
+
+#menus .site-page__subtitle {
+  display: block !important;
+  font-size: 9px !important;
+  text-transform: uppercase !important;
+  opacity: 0.6 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  color: var(--font-color) !important;
+}
+
+/* 5. "Exorcism" of pseudo-elements and ghost backgrounds */
+#menus .menus_item,
+#menus .site-page-shell,
+#menus .site-page,
+#menus .site-page__icon-wrap,
+#menus .site-page__label,
+#menus .site-page__subtitle {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+/* Specifically kill pseudo-elements that create boxes/arrows/ghost text, including data-subtitle */
+#menus *[data-subtitle]::after,
+#menus *[data-subtitle]::before,
+#menus .site-page::after,
+#menus .site-page::before,
+#menus .site-page-shell::after,
+#menus .site-page-shell::before,
+#menus .menus_item::after,
+#menus .menus_item::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+/* 6. Vertical Submenu Remodeling */
+.site-page-submenu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(10px) !important;
+  background: var(--card-bg) !important;
+  border: var(--style-border-always) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-nav) !important;
+  padding: 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 180px !important;
+  gap: 4px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+  backdrop-filter: blur(12px) !important;
+  z-index: 100 !important;
+}
+
+.menus_item:hover .site-page-submenu,
+.menus_item.is-open .site-page-submenu {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+.site-page-submenu__item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  color: var(--font-color) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+.site-page-submenu__item:hover {
+  background: var(--theme-op) !important;
+  color: var(--theme-main) !important;
+}
+
+/* 7. Icon adjustments */
+#menus .site-page__icon {
+  font-size: 16px !important;
+}
