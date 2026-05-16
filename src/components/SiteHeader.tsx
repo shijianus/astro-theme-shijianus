@@ -432,7 +432,7 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <Bell className="h-4 w-4" aria-hidden="true" />
+                  <Bell className="h-4 w-4" style={{ color: 'var(--font-color)' }} aria-hidden="true" />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>
@@ -474,7 +474,7 @@ export function SiteHeader({
             {showCenterConsoleTrigger && (
               <div className="nav-button" id="center-console-button">
                 <a
-                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
+                  className={`site-page center-console-trigger ${consoleOpen ? 'is-active' : ''}`}
                   href="#"
                   title="控制台"
                   onClick={(e) => {
@@ -485,11 +485,12 @@ export function SiteHeader({
                       openCenterConsole();
                     }
                   }}
+                  style={{ width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
                 >
-                  <div className="widget-inner">
-                    <i className="left" />
-                    <i className="widget center" />
-                    <i className="widget right" />
+                  <div className="console-trigger-bars" style={{ width: '16px', height: '12px', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <span className="bar top-bar" style={{ width: '100%', height: '2px', background: 'var(--font-color)', transition: 'transform 0.3s ease, background 0.3s ease', borderRadius: '2px', transformOrigin: 'center' }}></span>
+                    <span className="bar mid-bar" style={{ width: '100%', height: '2px', background: 'var(--font-color)', transition: 'opacity 0.3s ease', borderRadius: '2px' }}></span>
+                    <span className="bar bot-bar" style={{ width: '100%', height: '2px', background: 'var(--font-color)', transition: 'transform 0.3s ease, background 0.3s ease', borderRadius: '2px', transformOrigin: 'center' }}></span>
                   </div>
                 </a>
               </div>

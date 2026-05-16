@@ -2406,3 +2406,25 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   gap: 6px !important;
 }
 
+
+
+/* 汉堡按钮 Hover 态 */
+#center-console-button .center-console-trigger:hover .bar {
+  background: var(--theme-main) !important;
+}
+
+/* 汉堡按钮激活态 -> 变 X */
+#center-console-button .center-console-trigger.is-active .top-bar {
+  transform: translateY(5px) rotate(45deg) !important;
+  background: var(--theme-main) !important;
+}
+
+#center-console-button .center-console-trigger.is-active .mid-bar {
+  opacity: 0 !important;
+}
+
+#center-console-button .center-console-trigger.is-active .bot-bar {
+  transform: translateY(-5px) rotate(-45deg) !important;
+  background: var(--theme-main) !important;
+}
+
