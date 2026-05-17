@@ -4805,7 +4805,7 @@ body[data-type='home'] .home-feed-head {
   align-items: center;
   gap: 12px;
   height: 48px;
-  margin: 0 auto 24px;
+  margin: 0 0 24px 0;
   padding: 0 12px 0 6px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
