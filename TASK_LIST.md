@@ -1,23 +1,22 @@
-# 首页比例纠偏与底层 CSS 穿透修复 (Deep Layout & Specificity Fixes)
+# 首页顽疾清除与底层 DOM 穿透 (Root-Cause Eradication Phase)
 
 > **⚠️ AI 执行须知**：
-> 上一轮修改完全没有在 UI 上生效！这次你必须深挖 DOM 树和优先级。每完成一步，将 `[ ]` 改为 `[x]`。
+> 上一轮你的修改在前端真实渲染中**全部失效**！原因是存在 CSS 优先级冲突或父级 Wrapper 阻挡。本次必须从 DOM 结构和 `:root` 变量入手，彻底根治。每解决一个，打一个 `[x]`。
 
-## 阶段一：消灭右侧导航栏幽灵占位 (Nav Totop Zero-Footprint)
-- [x] **Task 1.1**：审查 `nav-totop` 的隐藏状态。如果它没有 `.show` 类名，必须通过 CSS 彻底抹除其物理体积。不仅仅是 `opacity: 0`，必须包含 `width: 0 !important; margin: 0 !important; padding: 0 !important; transform: scale(0) !important; display: none;` （或彻底的隐藏方式），确保左侧按钮【瞬间贴合】右边缘，不留任何空隙！
+## 阶段一：彻底剥夺 nav-totop 父级物理空间
+- [x] **Task 1.1**：审查 `SiteHeader.tsx` 或对应布局组件。`nav-totop` 按钮外部是否包裹着 `<div className="nav-button">`？如果是，你必须将隐藏逻辑（`width: 0`, `padding: 0`, `margin: 0`）应用到**它的父级容器**上，或者通过 React 状态直接在 DOM 层控制它的显隐（不满足条件直接 return null），确保右侧按钮列绝对靠紧！
 
-## 阶段二：通知栏与正文主体的像素级对齐 (Notice Bar Alignment)
-- [x] **Task 2.1**：使用 MCP (Puppeteer) 分析首页内容区（如 `.layout`, `#recent-posts`, 或包裹卡片的父网格）的 `max-width` 和左侧坐标。
-- [x] **Task 2.2**：强制让 `.home-top-notice` 继承相同的容器宽度限制或使用相同的左右 Margin，确保它的左边缘与下方的 `categoryItem` 或 `random-hover` 卡片的左边缘绝对对齐，形成一条完美的垂直基准线。
+## 阶段二：通知栏与卡片网格的父级上下文对齐
+- [x] **Task 2.1**：审查 `.home-top-notice` 和下方的 `.swiper_container_card` / `categoryGroup`。它们是否在同一个拥有 `padding` 或 `max-width` 的父级中？
+- [x] **Task 2.2**：必须将 `.home-top-notice` 的父级限制与卡片网格完全拉齐，或者直接在 JSX 中将通知栏移动到与分类卡片同级的 Grid/Flex 容器内，从物理 DOM 层面保证它们的左边缘在同一条线上。
 
-## 阶段三：卡片比例与高级 Hover 动画纠偏 (Hero Cards Proportion & Hover)
-- [x] **Task 3.1**：修正 `random-hover` 和分类卡片网格的尺寸比例。查阅安知鱼标准布局，确保 `random-hover` 占据合理的网格空间（如 6:4 或 7:3 的视觉比例），不再显得拥挤或不协调。
-- [x] **Task 3.2**：注入安知鱼级别的高级弹性动效。对卡片父级添加 `transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s;`，悬停时实现明显的 `translateY(-4px)` 与阴影扩散，确保动画不生硬。
+## 阶段三：控制台深色热力图颜色特权覆写
+- [x] **Task 3.1**：你上次写的深色模式选择器失效了。请使用最高特权：`:root[data-theme='dark'] #console .activity-cell` 或者直接在 React 组件中根据主题状态内联注入深蓝到亮蓝的 `style={{ backgroundColor: ... }}`，确保科技蓝调 100% 生效覆盖原有绿色。
 
-## 阶段四：热力图深层穿透 (Heatmap SVG/Fill Override)
-- [x] **Task 4.1**：审查控制台热力图的实际 DOM。如果热力图方块是 SVG `<rect>`，你需要修改的是 `fill` 属性而不是 `background-color`！使用深色模式限定符 `[data-theme='dark']`，精准覆写 Level 1-4 的科技蓝调色阶。
+## 阶段四：Logo 悬停微交互与卡片弹态
+- [x] **Task 4.1**：实现 `#site-name`（shijianus文字）在 hover 时平滑隐藏，并原位浮现出 Home 图标的交互（过渡 0.3s）。
+- [x] **Task 4.2**：确保 `random-hover` 和 `categoryItem` 的 Hover 放大效果（`transform: translateY(-4px) scale(1.02)`）没有被其他文件（如 `rebuild.css`）中的旧代码覆盖。使用清理冲突或 `!important` 保驾护航。
 
-## 阶段五：验证与固化 (Verification & Commit)
-- [x] **Task 5.1 - 控制台计算打印**：在终端打印出你提取到的热力图 DOM 元素类型（是 div 还是 svg rect）以及你应用的准确 CSS 属性。
-- [x] **Task 5.2 - 截图取证**：1. 隐藏 `nav-totop` 时，右侧按钮紧贴屏幕边缘的截图；2. 通知栏和下方卡片完美左对齐的截图。
-- [x] **Task 5.3 - 最终提交**：执行 `git commit -am "fix(home): enforce strict component alignment, fix nav footprint and penetrate heatmap colors"`。
+## 阶段五：人工级真实性验证
+- [x] **Task 5.1**：调用 MCP 截图。不仅要截局部，必须全屏截图证明右侧按钮【真的右移了】、通知栏【真的左对齐了】。
+- [x] **Task 5.2**：提交代码 `git commit -am "fix(home): eradicate parent wrapper footprint, enforce DOM-level alignment and apply strict dark heatmap"`。

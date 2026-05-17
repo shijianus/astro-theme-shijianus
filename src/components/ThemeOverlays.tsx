@@ -1043,7 +1043,17 @@ export function ThemeOverlays({
                           <div 
                             key={i} 
                             className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
-                            style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                            style={day ? (
+                              theme === 'dark' && day.level > 0 ? {
+                                backgroundColor: 
+                                  day.level === 1 ? '#0a3069' :
+                                  day.level === 2 ? '#1f6feb' :
+                                  day.level === 3 ? '#388bfd' : '#58a6ff'
+                              } : theme === 'dark' && day.level === 0 ? {
+                                backgroundColor: '#12121c',
+                                border: '1px solid rgba(255,255,255,0.05)'
+                              } : {}
+                            ) : { visibility: 'hidden', pointerEvents: 'none' }}
                             data-tooltip={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined}
                             onClick={() => {
                               if (day) {

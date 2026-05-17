@@ -33,14 +33,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 <section id="home_top" aria-label="首页重点内容">
   <input id="today-card-toggle" class="today-card-toggle" type="checkbox" aria-hidden="true" />
 
-  <div class="home-top-notice">
-    <span class="home-top-notice__label">{siteConfig.home.announcement.eyebrow}</span>
-    <p>{siteConfig.home.announcement.summary}</p>
-    <a href={siteConfig.home.announcement.href}>{siteConfig.home.announcement.linkLabel}</a>
-  </div>
-
   <div class="swiper_container_card">
     <div id="bannerGroup">
+      <div class="home-top-notice">
+        <span class="home-top-notice__label">{siteConfig.home.announcement.eyebrow}</span>
+        <p>{siteConfig.home.announcement.summary}</p>
+        <a href={siteConfig.home.announcement.href}>{siteConfig.home.announcement.linkLabel}</a>
+      </div>
+
       <a id="random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'}>
         <div class="random-banner__content">
           <span class="random-banner__eyebrow">{showcase.eyebrow}</span>

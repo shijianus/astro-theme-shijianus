@@ -369,8 +369,10 @@ export function SiteHeader({
         <div id="nav-group">
           <span id="blog_name">
             <a id="site-name" href="/" accessKey="h" aria-label={brandName}>
-              <span className="title">{brandName}</span>
-              <House className="site-name__icon" aria-hidden="true" />
+              <div className="logo-hover-container">
+                <span className="logo-text">{brandName}</span>
+                <House className="logo-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
+              </div>
             </a>
           </span>
 
@@ -575,19 +577,21 @@ export function SiteHeader({
               </div>
             )}
 
-            <div className={`nav-button ${scrolled ? 'show' : ''}`} id="nav-totop">
-              <a
-                className="totopbtn"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                <span id="percent">{progress}</span>
-                <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
-              </a>
-            </div>
+            {scrolled && (
+              <div className="nav-button show" id="nav-totop">
+                <a
+                  className="totopbtn"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  <span id="percent">{progress}</span>
+                  <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
+                </a>
+              </div>
+            )}
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
               <a
