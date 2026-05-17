@@ -39,97 +39,99 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     <a href={siteConfig.home.announcement.href}>{siteConfig.home.announcement.linkLabel}</a>
   </div>
 
-  <div class="swiper_container_card">
-    <div id="bannerGroup">
-      <a id="random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'}>
-        <div class="random-banner__content">
-          <span class="random-banner__eyebrow">{showcase.eyebrow}</span>
-          <span class="random-banner__title">
-            <span>{showcase.leadTop}</span>
-            <span>{showcase.leadBottom}</span>
-          </span>
-          <span class="random-banner__domain">{showcase.foot}</span>
-        </div>
-
-        <div id="skills-tags-group-all" aria-hidden="true">
-          <div class="tags-group-wrapper">
-            {showcaseTiles.map((item, index) => (
-              <span class="tags-group-icon-pair" style={`--delay:${index * 0.12}s;`}>
-                <span class={`tags-group-icon is-${item.accent}`}>
-                  <span class="tags-group-icon__short">{item.short}</span>
-                  <span class="tags-group-icon__label">{item.label}</span>
-                </span>
-              </span>
-            ))}
-          </div>
-          <div class="tags-group-wrapper tags-group-wrapper--offset">
-            {showcaseTiles.slice().reverse().map((item, index) => (
-              <span class="tags-group-icon-pair" style={`--delay:${index * 0.1}s;`}>
-                <span class={`tags-group-icon is-${item.accent}`}>
-                  <span class="tags-group-icon__short">{item.short}</span>
-                  <span class="tags-group-icon__label">{item.label}</span>
-                </span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div id="random-hover">
-          <span class="random-hover__lead">
-            <span class="random-hover__icon" aria-hidden="true">{topDeck.hoverMonogram}</span>
-            <span class="random-hover__body">
-              <span class="bannerText">
-                <span class="bannerText__label">{topDeck.hoverActionLabel}</span>
-                <span class="bannerText__arrow" aria-hidden="true">→</span>
-              </span>
-              <span class="random-hover__hint">{topDeck.hoverActionHint}</span>
+  <div class="hero-layout-v2" style="display: flex; height: 380px; gap: 20px; align-items: stretch; width: 100%;">
+    <div class="hero-left-col" style="flex: 6.5; display: flex; flex-direction: column; gap: 20px; min-width: 0;">
+      <div class="hero-main-card" style="flex: 1; border-radius: 16px; overflow: hidden; position: relative;">
+        <a class="hero-random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'} style="display: block; width: 100%; height: 100%;">
+          <div class="random-banner__content">
+            <span class="random-banner__eyebrow">{showcase.eyebrow}</span>
+            <span class="random-banner__title">
+              <span>{showcase.leadTop}</span>
+              <span>{showcase.leadBottom}</span>
             </span>
-          </span>
-        </div>
-      </a>
+            <span class="random-banner__domain">{showcase.foot}</span>
+          </div>
 
-        <div class="categoryGroup" aria-label="首页分类入口">
-          {categoryItems.map((item) => {
-            const CategoryIcon = categoryIconMap[item.icon];
-            return (
-              <div class="categoryItem">
-                <a class={`categoryButton ${item.accent}`} href={item.href}>
-                  <span class="categoryButtonCopy">
-                    <span class="categoryButtonText">{item.label}</span>
-                    <span class="categoryButtonDesc">{item.description}</span>
+          <div class="skills-tags-group-all" aria-hidden="true">
+            <div class="tags-group-wrapper">
+              {showcaseTiles.map((item, index) => (
+                <span class="tags-group-icon-pair" style={`--delay:${index * 0.12}s;`}>
+                  <span class={`tags-group-icon is-${item.accent}`}>
+                    <span class="tags-group-icon__short">{item.short}</span>
+                    <span class="tags-group-icon__label">{item.label}</span>
                   </span>
-                  <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
-                </a>
-              </div>
-            );
-          })}
-        </div>
+                </span>
+              ))}
+            </div>
+            <div class="tags-group-wrapper tags-group-wrapper--offset">
+              {showcaseTiles.slice().reverse().map((item, index) => (
+                <span class="tags-group-icon-pair" style={`--delay:${index * 0.1}s;`}>
+                  <span class={`tags-group-icon is-${item.accent}`}>
+                    <span class="tags-group-icon__short">{item.short}</span>
+                    <span class="tags-group-icon__label">{item.label}</span>
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
 
-      {mobileFocusPost && (
-        <article class="home-mobile-focus-card">
-          <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
-            <img
-              src={resolveCover(mobileFocusPost)}
-              alt={resolveCoverAlt(mobileFocusPost)}
-              loading="eager"
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-            />
-            <span class="home-mobile-focus-card__body">
-              <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
+          <div class="random-hover">
+            <span class="random-hover__lead">
+              <span class="random-hover__icon" aria-hidden="true">{topDeck.hoverMonogram}</span>
+              <span class="random-hover__body">
+                <span class="bannerText">
+                  <span class="bannerText__label">{topDeck.hoverActionLabel}</span>
+                  <span class="bannerText__arrow" aria-hidden="true">→</span>
+                </span>
+                <span class="random-hover__hint">{topDeck.hoverActionHint}</span>
+              </span>
             </span>
-          </a>
-        </article>
-      )}
+          </div>
+        </a>
+
+        {mobileFocusPost && (
+          <article class="hero-mobile-focus-card" style="display: none;">
+            <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
+              <img
+                src={resolveCover(mobileFocusPost)}
+                alt={resolveCoverAlt(mobileFocusPost)}
+                loading="eager"
+                data-fallback-src={siteConfig.post.hero.fallbackImage}
+              />
+              <span class="home-mobile-focus-card__body">
+                <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
+              </span>
+            </a>
+          </article>
+        )}
+      </div>
+
+      <div class="hero-category-group" style="height: 100px; display: flex; gap: 20px;">
+        {categoryItems.map((item) => {
+          const CategoryIcon = categoryIconMap[item.icon];
+          return (
+            <div class="hero-category-item" style="flex: 1; border-radius: 12px; overflow: hidden; position: relative;">
+              <a class={`categoryButton ${item.accent}`} href={item.href} style="display: flex; height: 100%; align-items: center; justify-content: space-between; padding: 15px; text-decoration: none;">
+                <span class="categoryButtonCopy">
+                  <span class="categoryButtonText">{item.label}</span>
+                  <span class="categoryButtonDesc">{item.description}</span>
+                </span>
+                <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
+              </a>
+            </div>
+          );
+        })}
+      </div>
     </div>
 
-    <div class="topGroup">
-      <div class="topGroup__stack" aria-hidden="true">
-        <span class="topGroup__stack-back topGroup__stack-back--one"></span>
-        <span class="topGroup__stack-back topGroup__stack-back--two"></span>
+    <div class="hero-right-col" style="flex: 3.5; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 16px; overflow: hidden; position: relative; min-width: 0;">
+      <div class="hero-top-group-stack" aria-hidden="true">
+        <span class="hero-top-group-stack-back hero-top-group-stack-back--one"></span>
+        <span class="hero-top-group-stack-back hero-top-group-stack-back--two"></span>
       </div>
 
       {stackPosts.map((entry, index) => (
-        <article class="recent-post-item top-post-card" data-card-link={getPostPath(entry)} tabindex="0" role="link" aria-label={entry.data.title}>
+        <article class="hero-recent-post-item hero-top-post-card" data-card-link={getPostPath(entry)} tabindex="0" role="link" aria-label={entry.data.title}>
           <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
             <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
             <img
@@ -144,9 +146,9 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       ))}
 
       {todayPost && (
-        <article class="todayCard">
+        <article class="hero-today-card" style="width: 100%; height: 100%; position: relative;">
           <div class="todayCard__panel-label">{topDeck.panelLabel}</div>
-          <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title}>
+          <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title} style="display: block; width: 100%; height: 100%;">
             <div class="todayCard-info">
               <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
               <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
@@ -158,6 +160,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               alt={resolveCoverAlt(todayPost)}
               loading="eager"
               data-fallback-src={siteConfig.post.hero.fallbackImage}
+              style="width: 100%; height: 100%; object-fit: cover;"
             />
           </a>
           <div class="banner-button-group">
