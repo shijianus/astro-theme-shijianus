@@ -1,22 +1,18 @@
-# 首页顽疾清除与底层 DOM 穿透 (Root-Cause Eradication Phase)
+# 首页 Hero 区域专项重构 (Phase 1: categoryGroup & Hero Cards)
 
 > **⚠️ AI 执行须知**：
-> 上一轮你的修改在前端真实渲染中**全部失效**！原因是存在 CSS 优先级冲突或父级 Wrapper 阻挡。本次必须从 DOM 结构和 `:root` 变量入手，彻底根治。每解决一个，打一个 `[x]`。
+> 本次任务【仅限】修复首页顶部的卡片布局（`categoryGroup`, `categoryItem`, `random-hover` 等）。绝不允许触碰代码库中的其他无关功能！完成一步打一个 `[x]`。
 
-## 阶段一：彻底剥夺 nav-totop 父级物理空间
-- [x] **Task 1.1**：审查 `SiteHeader.tsx` 或对应布局组件。`nav-totop` 按钮外部是否包裹着 `<div className="nav-button">`？如果是，你必须将隐藏逻辑（`width: 0`, `padding: 0`, `margin: 0`）应用到**它的父级容器**上，或者通过 React 状态直接在 DOM 层控制它的显隐（不满足条件直接 return null），确保右侧按钮列绝对靠紧！
+## 阶段一：卡片网格比例与结构重塑 (Grid & Proportion)
+- [ ] **Task 1.1 - 重构 categoryGroup 布局**：精准定位 `categoryGroup` 容器。必须强制其采用标准的 CSS Grid 布局（如 PC 端 `grid-template-columns: repeat(3, 1fr)`），并设置完美的卡片间距（`gap: 12px` 到 `16px`），消除原有的错位或大小不一。
+- [ ] **Task 1.2 - 协调左右区块比例**：审查包含 `random-hover` (大横幅卡片) 和 `categoryGroup` (分类小卡片组) 的父级容器（如 `swiper_container_card` 或 `bannerGroup` / `topGroup`）。利用 Flex 或 Grid 将左右比例严格约束在安知鱼标准的 7:3 左右，确保视觉重心的平衡。
 
-## 阶段二：通知栏与卡片网格的父级上下文对齐
-- [x] **Task 2.1**：审查 `.home-top-notice` 和下方的 `.swiper_container_card` / `categoryGroup`。它们是否在同一个拥有 `padding` 或 `max-width` 的父级中？
-- [x] **Task 2.2**：必须将 `.home-top-notice` 的父级限制与卡片网格完全拉齐，或者直接在 JSX 中将通知栏移动到与分类卡片同级的 Grid/Flex 容器内，从物理 DOM 层面保证它们的左边缘在同一条线上。
+## 阶段二：安知鱼专属“呼吸感”悬停动效 (Breathing Hover Physics)
+- [ ] **Task 2.1 - 物理引擎级缓动过渡**：为所有卡片（`.categoryItem` 和 `#random-hover`）的基础状态注入统一的高级过渡曲线：`transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;`。
+- [ ] **Task 2.2 - 上浮与阴影扩散**：在 `:hover` 状态下，严格加入 `transform: translateY(-4px) scale(1.015);`，并配合深邃的悬浮阴影扩散，拒绝僵硬的瞬间位移。
+- [ ] **Task 2.3 - 内部 Icon 联动微动效**：如果卡片内部存在 Icon（`.categoryButtonIcon` 或类似元素），在父级卡片 `:hover` 时，必须让内部图标产生极其轻微的放大（如 `scale(1.1)`）或位移反馈，拉满交互密度。
 
-## 阶段三：控制台深色热力图颜色特权覆写
-- [x] **Task 3.1**：你上次写的深色模式选择器失效了。请使用最高特权：`:root[data-theme='dark'] #console .activity-cell` 或者直接在 React 组件中根据主题状态内联注入深蓝到亮蓝的 `style={{ backgroundColor: ... }}`，确保科技蓝调 100% 生效覆盖原有绿色。
-
-## 阶段四：Logo 悬停微交互与卡片弹态
-- [x] **Task 4.1**：实现 `#site-name`（shijianus文字）在 hover 时平滑隐藏，并原位浮现出 Home 图标的交互（过渡 0.3s）。
-- [x] **Task 4.2**：确保 `random-hover` 和 `categoryItem` 的 Hover 放大效果（`transform: translateY(-4px) scale(1.02)`）没有被其他文件（如 `rebuild.css`）中的旧代码覆盖。使用清理冲突或 `!important` 保驾护航。
-
-## 阶段五：人工级真实性验证
-- [x] **Task 5.1**：调用 MCP 截图。不仅要截局部，必须全屏截图证明右侧按钮【真的右移了】、通知栏【真的左对齐了】。
-- [x] **Task 5.2**：提交代码 `git commit -am "fix(home): eradicate parent wrapper footprint, enforce DOM-level alignment and apply strict dark heatmap"`。
+## 阶段三：单点验证与固化 (Verification & Commit)
+- [ ] **Task 3.1 - 静态比例截图**：调用 MCP 截取首页首屏。必须证明左右区块比例完美，`categoryGroup` 形成整齐的 3 列网格。
+- [ ] **Task 3.2 - 悬停动效捕捉**：调用 Puppeteer 将鼠标强行 Hover 到其中一个分类卡片上并截图，证明它发生了平滑的上浮放大。
+- [ ] **Task 3.3 - 阶段性独立提交**：所有框打钩后，执行 `git commit -am "feat(home): phase 1 - perfect categoryGroup grid proportions and advanced hover physics"`。
