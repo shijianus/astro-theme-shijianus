@@ -801,7 +801,7 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--card-border) !important;
   box-shadow: var(--shadow-border) !important;
-  margin-left: 0 !important;
+  margin: 1.5rem 0 1rem 0 !important; /* Added top margin for gap */
   padding-left: 0 !important;
   transition: all 0.3s ease;
 }
@@ -817,6 +817,7 @@
 /* Hero Cards Interaction */
 body[data-type='home'] .categoryItem {
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s, flex 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  aspect-ratio: 1 / 1.1; /* Prevent distortion */
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
@@ -1984,25 +1985,62 @@ body[data-type='post'] #post-comment {
 }
 
 body[data-type='home'] #bannerGroup {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: calc(100% - 600px - 2.2rem);
-  height: 340px;
+  display: grid;
+  grid-template-columns: 7fr 3fr; /* 7:3 ratio */
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+  height: 348px;
 }
 
 body[data-type='home'] .categoryGroup {
-  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   width: 100%;
-  min-width: 200px;
-  max-width: none;
+  height: 100%;
   gap: 10px;
 }
 
-body[data-type='home'] .categoryItem,
-body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within),
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  flex: 1 1 0;
+body[data-type='home'] .categoryItem {
+  flex: 1;
+  min-height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+body[data-type='home'] .categoryButton {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px 18px;
+  border: none !important;
+  box-shadow: var(--shadow-border) !important;
+}
+
+body[data-type='home'] .categoryButtonCopy {
+  z-index: 2;
+  pointer-events: none;
+}
+
+body[data-type='home'] .categoryButtonIcon {
+  position: absolute !important;
+  right: -5px !important;
+  bottom: -5px !important;
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 3rem !important;
+  opacity: 0.15 !important;
+  z-index: 1;
+  transition: transform 0.3s ease, opacity 0.3s ease !important;
+}
+
+body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
+  opacity: 0.4 !important;
+  transform: scale(1.1) rotate(-5deg);
 }
 
 body[data-type='home'] .page-aside {
@@ -2342,42 +2380,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #card-toc .toc-link { padding-left: 12px !important; }
 
 .topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
-se {
-  animation: none !important;
-}
-
-body[data-type='post'] :is(.post-hero__badge, .post-hero__eyebrow, .post-hero__meta-card),
-body[data-type='post'] #post-comment .comment-thread__header {
-  backdrop-filter: none !important;
-}
-
-body[data-type='post'] :is(.post-hero__meta-card, #post-toc-aside #card-toc, #post-secondary-aside .card-recent-post),
-body[data-type='home'] .recent-post-item {
-  box-shadow: none !important;
-}
-
-body[data-type='post'] #card-toc .toc-item > .toc-link,
-body[data-type='post'] #card-toc .toc-item.is-active > .toc-link,
-body[data-type='post'] #card-toc .toc-item > .toc-link.active {
-  transform: none !important;
-  box-shadow: none !important;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    opacity 0.16s ease !important;
-}
-
-/* TOC override for simple alignment and font sizes */
-#card-toc .toc-item { padding-left: 0 !important; }
-#card-toc .toc-item::before { display: none !important; }
-#card-toc .toc-item > .toc-link::before { display: none !important; }
-#card-toc .toc-level-0 > .toc-link { font-size: 14px !important; font-weight: 600; }
-#card-toc .toc-level-1 > .toc-link { font-size: 13px !important; font-weight: 500; opacity: 0.95; }
-#card-toc .toc-level-2 > .toc-link { font-size: 12px !important; font-weight: 400; opacity: 0.9; }
-#card-toc .toc-level-3 > .toc-link { font-size: 11px !important; font-weight: 400; opacity: 0.85; }
-#card-toc .toc-link { padding-left: 12px !important; }
-
-.topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
 
 /* Webinfo Item Interaction */
 #console .webinfo-item a {
@@ -2399,20 +2401,66 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* End of Console Layout Refactor Step 1 */
 
 #page-header {
-  position: relative;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100 !important;
+  height: 60px;
+  background: var(--card-bg);
+  transition: transform 0.3s ease;
 }
 
-[data-theme='dark'] #page-header.nav-fixed #nav {
-  background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+#blog-container {
+  padding-top: calc(var(--site-header-height, 60px) + 20px) !important;
 }
 
-#menus {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+/* Home Polish - Notice Bar & Alignment */
+.home-top-notice {
+  background: var(--card-bg-none) !important;
+  background-color: color-mix(in srgb, var(--card-bg) 60%, transparent) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--shadow-border) !important;
+  margin: 0 0 1.5rem 0 !important;
+  padding: 12px 20px !important;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.home-top-notice p {
+  margin: 0 12px !important;
+}
+
+/* Today Card Full Coverage */
+.topGroup .todayCard {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  z-index: 5 !important;
+  border-radius: 26px !important;
+}
+
+.topGroup .todayCard-link {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+}
+
+.topGroup .todayCard-cover {
+  z-index: -1 !important;
+}
+
+/* Fix category distortion */
+body[data-type='home'] .categoryItem {
+  height: calc((100% - 20px) / 3) !important;
+  min-height: 90px;
+  flex: none !important;
 }
 
 
