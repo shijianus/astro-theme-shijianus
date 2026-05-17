@@ -36,7 +36,37 @@
 }
 
 #menus .site-page {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 14px !important;
   min-height: 56px;
+  color: var(--font-color);
+  text-decoration: none;
+  position: relative;
+  white-space: nowrap !important;
+}
+
+.site-page__bilingual-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1.1 !important;
+  min-width: 0;
+}
+
+.site-page__label {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.site-page__subtitle {
+  font-size: 9px !important;
+  text-transform: uppercase !important;
+  opacity: 0.6 !important;
+  letter-spacing: 0.05em !important;
 }
 
 #menus .menus_item.has-children > .site-page-shell > .site-page::after {
@@ -607,7 +637,7 @@
   margin: 0 !important;
   padding: 0 !important;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease !important;
   border-radius: 50% !important;
 }
 
@@ -642,7 +672,7 @@
   opacity: 0 !important;
   transform: scale(0) !important;
   overflow: hidden !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   pointer-events: none;
 }
 
@@ -699,100 +729,48 @@
   transition: 0.3s;
 }
 
-/* Pixel-Perfect Anzhiyu Console Trigger Replication */
-#center-console-button .widget {
-  --icon-size: 1.375rem;
-  position: relative;
+/* Modern Hamburger Morphing Animation */
+#center-console-button .hamburger-container {
+  width: 16px !important;
+  height: 12px !important;
   display: flex !important;
-  justify-content: center !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
   align-items: center !important;
-  width: 35px !important;
-  height: 35px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  cursor: pointer;
-  transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 50% !important;
-  z-index: 100;
+  cursor: pointer !important;
+  transition: transform 0.3s ease !important;
 }
 
-#center-console-button .widget-inner {
-  width: 100%;
-  height: 100%;
-}
-
-#center-console-button .widget i {
-  position: absolute;
-  background: var(--font-color);
-  border-radius: calc(var(--icon-size) * 0.15);
-  transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  inset: 0;
-  margin: auto;
-  right: auto;
-  width: calc(var(--icon-size) / 3);
-  height: calc(var(--icon-size) / 3.5);
-  transform: translateY(calc(var(--icon-size) / 4));
-}
-
-#center-console-button .widget .left {
-  width: 100%;
-  transform: translateY(calc(var(--icon-size) / -4));
-}
-
-#center-console-button .widget .widget.right {
-  left: auto;
-  right: 0;
-  width: calc(var(--icon-size) / 1.8);
-}
-
-/* Hover State - Dynamic Transformation */
-#center-console-button .widget:hover {
-  background: var(--theme-main);
-}
-
-#center-console-button .widget:hover i {
-  background: var(--white);
-}
-
-#center-console-button .widget:hover .left {
-  width: calc(var(--icon-size) / 2.2);
-  transform: translateY(calc(var(--icon-size) / -4)) translateX(2px);
-}
-
-#center-console-button .widget:hover .widget.center {
-  opacity: 0.5;
-  width: calc(var(--icon-size) / 2.2);
-}
-
-#center-console-button .widget:hover .widget.right {
-  width: calc(var(--icon-size) / 2.2);
-  height: calc(var(--icon-size) / 1.1); /* VERTICAL TALL BAR */
-  transform: translateY(0);
-}
-
-/* Active State - Precision X */
-#center-console-button .widget.is-active {
-  background: var(--font-color) !important;
-}
-
-#center-console-button .widget.is-active i {
-  background: var(--white) !important;
-  height: calc(var(--icon-size) / 5);
-}
-
-#center-console-button .widget.is-active .left {
+#center-console-button .hamburger-line {
   width: 100% !important;
-  transform: rotate(-45deg) !important;
+  height: 2px !important;
+  background-color: var(--font-color) !important;
+  border-radius: 2px !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.2s ease, 
+              background-color 0.3s ease !important;
+  transform-origin: center !important;
 }
 
-#center-console-button .widget.is-active .widget.center {
-  width: 0 !important;
-  opacity: 0;
+/* Hover State */
+#center-console-button:hover .hamburger-line {
+  background-color: var(--theme-main) !important;
 }
 
-#center-console-button .widget.is-active .widget.right {
-  width: 100% !important;
-  transform: rotate(45deg) !important;
+/* Active State (X Morph) */
+#center-console-button .site-page.is-active .line-top {
+  transform: translateY(5px) rotate(45deg) !important;
+  background-color: var(--theme-main) !important;
+}
+
+#center-console-button .site-page.is-active .line-center {
+  opacity: 0 !important;
+  transform: scaleX(0) !important;
+}
+
+#center-console-button .site-page.is-active .line-bottom {
+  transform: translateY(-5px) rotate(-45deg) !important;
+  background-color: var(--theme-main) !important;
 }
 
 #nav-notification {
@@ -2338,11 +2316,12 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #menus .site-page {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  justify-content: center !important;
+  gap: 6px !important;
   padding: 8px 16px !important;
   height: auto !important;
   min-height: 44px !important;
-  transition: all 0.3s ease !important;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease, background-color 0.3s ease !important;
   position: relative !important;
   border-radius: 12px !important;
 }
@@ -2352,28 +2331,37 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   color: var(--theme-main) !important;
 }
 
-#menus .site-page__text-group {
+#menus .site-page__icon-wrap {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#menus .site-page__bilingual-stack {
   display: flex !important;
   flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 4px !important; /* Strict gap between CN and EN */
-  line-height: 1.1 !important;
+  align-items: center !important;
+  gap: 2px !important; /* Tight gap for stack */
+  line-height: 1 !important;
 }
 
 #menus .site-page__label {
-  font-size: 14px !important;
-  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
   color: var(--font-color) !important;
+  white-space: nowrap !important;
 }
 
 #menus .site-page__subtitle {
   display: block !important;
   font-size: 9px !important;
   text-transform: uppercase !important;
-  opacity: 0.6 !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.05em !important;
+  opacity: 0.5 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
   color: var(--font-color) !important;
+  white-space: nowrap !important;
 }
 
 /* 5. "Exorcism" of pseudo-elements and ghost backgrounds */
@@ -2404,26 +2392,32 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   background: none !important;
 }
 
-/* 6. Vertical Submenu Remodeling */
+/* 6. Horizontal Capsule Submenu Remodeling */
 .site-page-submenu {
   position: absolute !important;
-  top: calc(100% + 10px) !important;
+  top: calc(100% + 12px) !important;
   left: 50% !important;
   transform: translateX(-50%) translateY(10px) !important;
-  background: var(--card-bg) !important;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
   border: var(--style-border-always) !important;
-  border-radius: 16px !important;
+  border-radius: 50px !important; /* Strict Capsule Shape */
   box-shadow: var(--shadow-nav) !important;
-  padding: 10px !important;
+  padding: 10px 24px !important;
   display: flex !important;
-  flex-direction: column !important;
-  min-width: 180px !important;
-  gap: 4px !important;
+  flex-direction: row !important; /* Horizontal Layout */
+  flex-wrap: nowrap !important; /* Prevent vertical collapse */
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: auto !important;
+  gap: 12px !important;
   opacity: 0 !important;
   visibility: hidden !important;
-  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
-  backdrop-filter: blur(12px) !important;
+  white-space: nowrap !important; /* Enforce single line */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
   z-index: 100 !important;
+  will-change: transform, opacity !important;
+  overflow: hidden !important; /* Clip any inner overflow */
 }
 
 .menus_item:hover .site-page-submenu,
@@ -2435,19 +2429,20 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 .site-page-submenu__item {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
-  gap: 12px !important;
-  padding: 10px 14px !important;
-  border-radius: 10px !important;
+  gap: 8px !important;
+  padding: 8px 16px !important;
+  border-radius: 30px !important; /* Match capsule aesthetic */
   color: var(--font-color) !important;
   text-decoration: none !important;
-  transition: all 0.2s ease !important;
-  white-space: nowrap !important;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease !important;
 }
 
 .site-page-submenu__item:hover {
-  background: var(--theme-op) !important;
-  color: var(--theme-main) !important;
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* 7. Icon adjustments */

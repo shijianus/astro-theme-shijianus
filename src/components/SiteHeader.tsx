@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, House, Bell, type LucideIcon } from 'lucide-react';
+import { 
+  ExternalLink, House, Bell, Music, FlaskConical, LayoutGrid, 
+  Archive, Tags, Info, Book, Rss, Link as LinkIcon, Video, 
+  User, ChartBar, Compass, MessageCircle, ChevronDown,
+  type LucideIcon 
+} from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
@@ -44,7 +49,26 @@ function openAccountPanel() {
   window.dispatchEvent(new CustomEvent('shijianus:open-account'));
 }
 
-const navIconMap: Record<string, string> = {
+const lucideIconMap: Record<string, LucideIcon> = {
+  home: House,
+  archive: Archive,
+  category: LayoutGrid,
+  tags: Tags,
+  about: Info,
+  book: Book,
+  rss: Rss,
+  link: LinkIcon,
+  flask: FlaskConical,
+  music: Music,
+  video: Video,
+  user: User,
+  'chart-bar': ChartBar,
+  compass: Compass,
+  'circle-info': Info,
+  message: MessageCircle,
+};
+
+const anzhiyuIconMap: Record<string, string> = {
   home: 'anzhiyu-icon-house-chimney',
   archive: 'anzhiyu-icon-box-archive',
   category: 'anzhiyu-icon-shapes',
@@ -63,9 +87,24 @@ const navIconMap: Record<string, string> = {
   message: 'anzhiyu-icon-comments',
 };
 
+const forceLucideIcons = ['flask', 'video', 'compass', 'category', 'chart-bar', 'circle-info'];
+
 function renderNavIcon(iconName: string | undefined, className: string) {
-  const iconClass = navIconMap[iconName ?? 'home'] ?? 'anzhiyu-icon-house-chimney';
-  return <i className={`anzhiyufont ${iconClass} ${className}`} aria-hidden="true" />;
+  const name = iconName ?? 'home';
+  const LucideIcon = lucideIconMap[name] || House;
+  const anzhiyuClass = anzhiyuIconMap[name];
+  
+  const useLucide = !anzhiyuClass || forceLucideIcons.includes(name);
+
+  return (
+    <span className={`site-page__icon-wrap ${className}`} aria-hidden="true" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      {useLucide ? (
+        <LucideIcon size={16} strokeWidth={2.25} />
+      ) : (
+        <i className={`anzhiyufont ${anzhiyuClass}`} style={{ fontSize: 'inherit' }} />
+      )}
+    </span>
+  );
 }
 
 export function SiteHeader({
@@ -343,7 +382,6 @@ export function SiteHeader({
             <div className="menus_items">
               {primary.map((item) => {
                 const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
-                const NavIcon = navIconMap[item.icon ?? 'home'] ?? House;
                 const hasChildren = Boolean(item.children && item.children.length > 1);
                 const submenuOpen = hasChildren && openSubmenuHref === item.href;
 
@@ -375,10 +413,8 @@ export function SiteHeader({
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
-                        <span className="site-page__icon-wrap" aria-hidden="true">
-                          {renderNavIcon(item.icon, 'site-page__icon')}
-                        </span>
-                        <div className="site-page__text-group">
+                        {renderNavIcon(item.icon, 'site-page__icon')}
+                        <div className="site-page__bilingual-stack">
                           <span className="site-page__label">{item.label}</span>
                           {item.description && <span className="site-page__subtitle">{item.description}</span>}
                         </div>
@@ -440,8 +476,9 @@ export function SiteHeader({
                       openNotificationPanel();
                     }
                   }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <Bell className="h-4 w-4" aria-hidden="true" />
+                  <Bell size={18} strokeWidth={2.5} aria-hidden="true" />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>
@@ -495,10 +532,10 @@ export function SiteHeader({
                     }
                   }}
                 >
-                  <div className="widget-inner">
-                    <i className="left" />
-                    <i className="widget center" />
-                    <i className="widget right" />
+                  <div className="hamburger-container">
+                    <span className="hamburger-line line-top" />
+                    <span className="hamburger-line line-center" />
+                    <span className="hamburger-line line-bottom" />
                   </div>
                 </a>
               </div>
