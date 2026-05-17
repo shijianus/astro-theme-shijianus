@@ -88,70 +88,29 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
         </div>
       </a>
 
-        <div class="categoryGroup" aria-label="首页分类入口">
-          {categoryItems.map((item) => {
-            const CategoryIcon = categoryIconMap[item.icon];
-            return (
-              <div class="categoryItem">
-                <a class={`categoryButton ${item.accent}`} href={item.href}>
-                  <span class="categoryButtonCopy">
-                    <span class="categoryButtonText">{item.label}</span>
-                    <span class="categoryButtonDesc">{item.description}</span>
-                  </span>
-                  <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
-                </a>
-              </div>
-            );
-          })}
-        </div>
-
-      {mobileFocusPost && (
-        <article class="home-mobile-focus-card">
-          <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
-            <img
-              src={resolveCover(mobileFocusPost)}
-              alt={resolveCoverAlt(mobileFocusPost)}
-              loading="eager"
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-            />
-            <span class="home-mobile-focus-card__body">
-              <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
-            </span>
-          </a>
-        </article>
-      )}
+      <div class="categoryGroup" aria-label="首页分类入口">
+        {categoryItems.map((item) => {
+          const CategoryIcon = categoryIconMap[item.icon];
+          return (
+            <div class="categoryItem">
+              <a class={`categoryButton ${item.accent}`} href={item.href}>
+                <span class="categoryButtonCopy">
+                  <span class="categoryButtonText">{item.label}</span>
+                  <span class="categoryButtonDesc">{item.description}</span>
+                </span>
+                <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
+              </a>
+            </div>
+          );
+        })}
+      </div>
     </div>
 
     <div class="topGroup">
-      <div class="topGroup__stack" aria-hidden="true">
-        <span class="topGroup__stack-back topGroup__stack-back--one"></span>
-        <span class="topGroup__stack-back topGroup__stack-back--two"></span>
-      </div>
-
-      {stackPosts.map((entry, index) => (
-        <article class="recent-post-item top-post-card" data-card-link={getPostPath(entry)} tabindex="0" role="link" aria-label={entry.data.title}>
-          <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
-            <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
-            <img
-              class="post_bg"
-              src={resolveCover(entry)}
-              alt={resolveCoverAlt(entry)}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-            />
-          </a>
-        </article>
-      ))}
-
       {todayPost && (
         <article class="todayCard">
           <div class="todayCard__panel-label">{topDeck.panelLabel}</div>
           <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title}>
-            <div class="todayCard-info">
-              <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
-              <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
-              <p>{getExcerpt(todayPost, 90)}</p>
-            </div>
             <img
               class="todayCard-cover"
               src={resolveCover(todayPost)}
@@ -159,16 +118,16 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               loading="eager"
               data-fallback-src={siteConfig.post.hero.fallbackImage}
             />
+            <div class="todayCard-info">
+              <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
+              <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
+            </div>
           </a>
           <div class="banner-button-group">
             <label class="banner-button" for="today-card-toggle">
-              <span class="banner-button__icon">+</span>
-              <span class="banner-button-text">{topDeck.toggleLabel}</span>
+              <span class="banner-button-text">{topDeck.panelAction}</span>
+              <span class="banner-button__icon" aria-hidden="true">→</span>
             </label>
-          </div>
-          <div class="todayCard__footer">
-            <span>{topDeck.panelFootnote}</span>
-            <span>{topDeck.panelAction}</span>
           </div>
         </article>
       )}

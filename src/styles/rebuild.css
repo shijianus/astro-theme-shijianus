@@ -259,78 +259,234 @@ body[data-type='post'] #card-toc .toc-content {
   font-weight: 800;
 }
 
+/* --- Hero Section Refactor V2 --- */
 body[data-type='home'] .swiper_container_card {
-  height: 348px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+  width: 100% !important;
+  height: 380px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
 }
 
 body[data-type='home'] #bannerGroup {
-  gap: 14px;
-  height: 348px;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 6.5 !important;
+  height: 100% !important;
+  gap: 20px !important;
+  min-width: 0;
 }
 
 body[data-type='home'] #random-banner {
-  height: calc(76% - 7px);
-  border-radius: 24px;
+  display: flex !important;
+  flex: 1 !important;
+  height: auto !important;
+  margin-bottom: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: #0d1117 !important;
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4) !important;
+  position: relative;
+  overflow: hidden;
 }
 
-body[data-type='home'] .categoryGroup {
+body[data-type='home'] .random-banner__content {
+  position: relative;
+  z-index: 2;
+  width: 50%;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 12px;
 }
 
+body[data-type='home'] .random-banner__title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.1;
+}
+
+body[data-type='home'] .random-banner__eyebrow {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body[data-type='home'] .categoryGroup {
+  display: flex !important;
+  height: 100px !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
+
 body[data-type='home'] .categoryItem {
-  overflow: visible;
-  border-radius: 22px;
-  box-shadow: none;
+  flex: 1 !important;
+  height: 100% !important;
+  border-radius: 16px !important;
+  overflow: hidden;
 }
 
 body[data-type='home'] .categoryButton {
-  isolation: isolate;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 22px;
-  background-position: 0 50%;
-  background-size: 220% 220%;
-  box-shadow: 0 16px 30px -24px rgba(17, 24, 39, 0.5);
-  transform: translateZ(0);
-}
-
-body[data-type='home'] .categoryButton::before {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  content: "";
-  border-radius: inherit;
-  background:
-    linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.28), transparent),
-    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.24), transparent 24%);
-  opacity: 0;
-  transform: translateX(-38%);
-  transition: opacity 0.28s ease, transform 0.42s ease;
-}
-
-body[data-type='home'] .categoryItem:hover .categoryButton {
-  background-position: 100% 50%;
-  filter: saturate(1.1);
-  transform: translateY(-5px) scale(1.02);
-}
-
-body[data-type='home'] .categoryItem:hover .categoryButton::before {
-  opacity: 1;
-  transform: translateX(0);
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px !important;
+  height: 100% !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-size: 200% 200%;
 }
 
 body[data-type='home'] .topGroup {
-  height: 348px;
+  display: flex !important;
+  flex: 3.5 !important;
+  height: 100% !important;
+  min-width: 0;
+  position: relative;
 }
 
 body[data-type='home'] .topGroup .todayCard {
-  width: 600px;
-  margin-left: 0;
-  border-radius: 24px;
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: #0d1117 !important;
+  overflow: hidden;
 }
+
+body[data-type='home'] .todayCard-link {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+  z-index: 2;
+  text-decoration: none;
+}
+
+body[data-type='home'] .todayCard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 48px; /* Room for capsule button */
+}
+
+body[data-type='home'] .todayCard-tips {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+body[data-type='home'] .todayCard-title {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+body[data-type='home'] .banner-button-group {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  z-index: 3;
+}
+
+body[data-type='home'] .banner-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px !important;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+body[data-type='home'] .banner-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+body[data-type='home'] .todayCard-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  transition: transform 1.2s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+body[data-type='home'] .todayCard:hover .todayCard-cover {
+  transform: scale(1.08);
+}
+
+body[data-type='home'] .todayCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.4) 55%, transparent 100%);
+}
+
+@media screen and (max-width: 992px) {
+  body[data-type='home'] .swiper_container_card {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 16px !important;
+  }
+
+  body[data-type='home'] #bannerGroup,
+  body[data-type='home'] .topGroup {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  body[data-type='home'] #random-banner {
+    height: 260px !important;
+  }
+
+  body[data-type='home'] .categoryGroup {
+    height: auto !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  body[data-type='home'] .categoryItem {
+    height: 84px !important;
+  }
+
+  body[data-type='home'] .topGroup .todayCard {
+    height: 320px !important;
+  }
+}
+/* --- End Hero Section Refactor V2 --- */
 
 .post-tools {
   grid-template-columns: minmax(0, 1fr) auto;
@@ -4892,23 +5048,7 @@ body[data-type='home'] #categoryBar {
   margin-bottom: 0;
 }
 
-body[data-type='home'] .topGroup .todayCard,
-body[data-type='home'] .topGroup .recent-post-item,
-body[data-type='home'] #random-banner,
-body[data-type='home'] .categoryButton {
-  border-radius: 18px;
-}
-
-body[data-type='home'] .topGroup .todayCard::after {
-  background:
-    linear-gradient(180deg, rgba(8, 12, 22, 0.08), rgba(8, 12, 22, 0.68)),
-    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.18), transparent 28%);
-}
-
-body[data-type='home'] .topGroup .todayCard-title {
-  font-size: 1.6rem;
-  line-height: 1.18;
-}
+/* Hero styles moved to the refactor block at the top */
 
 body[data-type='home'] #recent-posts > .recent-post-item {
   min-height: 286px;
@@ -6002,28 +6142,9 @@ body[data-type='post'] #card-toc .toc-content {
   margin-bottom: 12px;
 }
 
-body[data-type='home'] .swiper_container_card {
-  display: flex;
-  gap: 18px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
+/* Redundant swiper_container_card styles removed */
 
-body[data-type='home'] #bannerGroup,
-body[data-type='home'] .topGroup {
-  min-width: 0;
-}
-
-body[data-type='home'] #bannerGroup {
-  flex: 1 1 calc(100% - 640px);
-  width: auto;
-}
-
-body[data-type='home'] .topGroup {
-  flex: 0 0 calc(600px + 1.5rem);
-  width: calc(600px + 1.5rem);
-}
+/* Redundant bannerGroup and topGroup styles removed */
 
 body[data-type='home'] #random-banner #skills-tags-group-all {
   right: 0;
