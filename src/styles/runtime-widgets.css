@@ -695,6 +695,87 @@
   }
 }
 
+#keyboard-tips {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  z-index: 999;
+  background: color-mix(in srgb, var(--card-bg) 75%, transparent);
+  border-radius: 12px;
+  border: var(--style-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transform: translateZ(0);
+  pointer-events: none;
+  box-shadow: var(--shadow-border);
+  opacity: 0;
+  transition: 0.3s;
+  visibility: hidden;
+}
+
+#keyboard-tips.show {
+  opacity: 1;
+  visibility: visible;
+  transition: 0.1s;
+}
+
+#keyboard-tips .keyboardTitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#keyboard-tips .keybordList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#keyboard-tips .keybordItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#keyboard-tips .keyGroup {
+  display: flex;
+  align-items: center;
+  width: 90px;
+}
+
+#keyboard-tips .key {
+  padding: 0.25em 0.5em;
+  font-family: var(--font-mono);
+  background-color: var(--card-btn-bg);
+  color: var(--font-color);
+  border: 1px solid var(--line-strong);
+  border-bottom: 2px solid var(--line-strong);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#keyboard-tips .keyContent {
+  color: var(--font-color);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  #keyboard-tips {
+    display: none !important;
+  }
+}
+
 @media (max-width: 720px) {
   .shijianus-music-pocket {
     left: 0.75rem;

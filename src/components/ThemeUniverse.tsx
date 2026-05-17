@@ -370,17 +370,17 @@ export function ThemeUniverse() {
       if (now - lastShootingAt < cooldown + Math.random() * cooldown) return;
       lastShootingAt = now;
       shootingStars.push({
-        x: randomBetween(width * 0.2, width * 0.88),
-        y: randomBetween(-40, height * 0.32),
+        x: randomBetween(-100, width * 0.6),
+        y: randomBetween(height * 0.4, height + 100),
         length: randomBetween(mode === 'starfield' ? 80 : 90, mode === 'starfield' ? 160 : 160),
         speed: randomBetween(mode === 'starfield' ? 20 : 8, mode === 'starfield' ? 35 : 12),
-        angle: Math.PI / 3.2,
+        angle: -Math.PI / 4, // ↗ direction
         alpha: randomBetween(0.65, 0.95),
       });
     };
 
     const drawShootingStars = (delta: number) => {
-      shootingStars = shootingStars.filter((s) => s.alpha > 0.04 && s.y < height + 80);
+      shootingStars = shootingStars.filter((s) => s.alpha > 0.04 && s.x < width + 100 && s.y > -100);
       shootingStars.forEach((s) => {
         const endX = s.x - Math.cos(s.angle) * s.length;
         const endY = s.y - Math.sin(s.angle) * s.length;
@@ -394,8 +394,8 @@ export function ThemeUniverse() {
         context.strokeStyle = gradient;
         context.lineWidth = 1.2;
         context.stroke();
-        s.x += s.speed * delta;
-        s.y += s.speed * 0.58 * delta;
+        s.x += s.speed * Math.cos(s.angle) * delta;
+        s.y += s.speed * Math.sin(s.angle) * delta;
         s.alpha *= Math.pow(0.92, delta);
       });
     };
@@ -422,19 +422,22 @@ export function ThemeUniverse() {
       drawBackgroundGlow(mode, tick);
 
       stars.forEach((star) => {
-        star.x += star.drift * delta;
+        star.x += star.speed * 0.5 * delta; // drift right
+        star.y -= star.speed * delta; // move up
         
+        if (star.y < -20) {
+          star.y = height + 20;
+          star.x = randomBetween(-20, width);
+        }
+        if (star.x > width + 20) {
+          star.x = -20;
+          star.y = randomBetween(0, height + 20);
+        }
+
         if (mode === 'light-snow') {
            star.x += Math.sin(tick * 0.001 + star.y * 0.01) * 0.5 * delta;
         }
 
-        star.y += star.speed * delta;
-        if (star.y > height + 20) {
-          star.y = -20;
-          star.x = randomBetween(0, width);
-        }
-        if (star.x > width + 20) star.x = -20;
-        if (star.x < -20) star.x = width + 20;
         drawStar(star, tick, mode);
       });
 

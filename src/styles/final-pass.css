@@ -33,6 +33,42 @@
 }
 
 #nav-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#nav-right .nav-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  margin: 0 !important;
+}
+
+#nav-right .nav-button a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 8px !important;
+  border-radius: 10px !important;
+  transition: all 0.25s ease !important;
+}
+
+#nav-right .nav-button a:hover {
+  background: var(--theme-op) !important;
+}
+
+#nav-right .nav-button i {
+  font-size: 16px !important;
+  margin: 0 !important;
+}
+
+#nav-totop {
+  transition: all 0.4s cubic-bezier(0.42, 0, 0.3, 1.1) !important;
 }
 
 #menus .site-page__subtitle {
@@ -2289,6 +2325,12 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 #page-header {
   position: relative;
+}
+
+[data-theme='dark'] #page-header.nav-fixed #nav {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 #menus {

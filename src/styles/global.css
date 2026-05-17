@@ -61,7 +61,7 @@
 }
 
 :root[data-theme='dark'] {
-  --global-bg: #18171d;
+  --global-bg: #0d0d14;
   --theme-main: #f2b94b;
   --theme-deep: #0076e5;
   --theme-op: #f2b94b23;
@@ -74,19 +74,19 @@
   --text-soft: #a1a2b8;
   --text-muted: #a1a2b8;
   --secondtext: #a1a2b8;
-  --background: #18171d;
-  --card-bg: #1d1e22;
-  --secondbg: #21232a;
-  --card-btn-bg: #30343f;
-  --card-border: #42444a;
-  --line: #42444a;
-  --line-strong: #585b64;
-  --maskbg: rgba(0, 0, 0, 0.6);
-  --maskbgdeep: rgba(0, 0, 0, 0.85);
-  --scrollbar-color: rgba(200, 200, 223, 0.4);
-  --shadow-nav: 0 5px 20px rgba(28, 28, 28, 0.4);
-  --shadow-card: 0 3px 8px 6px rgba(0, 0, 0, 0.16);
-  --shadow-card-hover: 0 3px 8px 6px rgba(0, 0, 0, 0.28);
+  --background: #0d0d14;
+  --card-bg: #12121c;
+  --secondbg: #181825;
+  --card-btn-bg: #252535;
+  --card-border: #252535;
+  --line: #252535;
+  --line-strong: #363645;
+  --maskbg: rgba(0, 0, 0, 0.75);
+  --maskbgdeep: rgba(0, 0, 0, 0.92);
+  --scrollbar-color: rgba(200, 200, 223, 0.2);
+  --shadow-nav: 0 5px 20px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 3px 8px 6px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 3px 8px 6px rgba(0, 0, 0, 0.35);
   --surface: var(--card-bg);
   --surface-soft: var(--secondbg);
   --surface-strong: var(--card-bg);
