@@ -88,23 +88,6 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
         </div>
       </a>
 
-        <div class="categoryGroup" aria-label="首页分类入口">
-          {categoryItems.map((item) => {
-            const CategoryIcon = categoryIconMap[item.icon];
-            return (
-              <div class="categoryItem">
-                <a class={`categoryButton ${item.accent}`} href={item.href}>
-                  <span class="categoryButtonCopy">
-                    <span class="categoryButtonText">{item.label}</span>
-                    <span class="categoryButtonDesc">{item.description}</span>
-                  </span>
-                  <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
-                </a>
-              </div>
-            );
-          })}
-        </div>
-
       {mobileFocusPost && (
         <article class="home-mobile-focus-card">
           <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
@@ -123,6 +106,23 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     </div>
 
     <div class="topGroup">
+      <div class="categoryGroup" aria-label="首页分类入口">
+        {categoryItems.map((item) => {
+          const CategoryIcon = categoryIconMap[item.icon];
+          return (
+            <div class="categoryItem">
+              <a class={`categoryButton ${item.accent}`} href={item.href}>
+                <span class="categoryButtonCopy">
+                  <span class="categoryButtonText">{item.label}</span>
+                  <span class="categoryButtonDesc">{item.description}</span>
+                </span>
+                <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
+              </a>
+            </div>
+          );
+        })}
+      </div>
+
       <div class="topGroup__stack" aria-hidden="true">
         <span class="topGroup__stack-back topGroup__stack-back--one"></span>
         <span class="topGroup__stack-back topGroup__stack-back--two"></span>

@@ -2595,3 +2595,150 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #menus .site-page__icon {
   font-size: 16px !important;
 }
+
+/* Phase 1: Hero Section Strict Refactor - Ultimate Overrides */
+body[data-type='home'] #blog-container .swiper_container_card {
+  display: flex !important;
+  gap: 14px !important;
+  height: 480px !important; /* Increased height to accommodate stacked categories and posts */
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-type='home'] #blog-container #bannerGroup {
+  flex: 7 1 0% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  height: 100% !important;
+}
+
+body[data-type='home'] #blog-container #random-banner {
+  display: flex !important;
+  flex: 1 !important; /* Take full height of bannerGroup */
+  height: auto !important;
+  border-radius: 24px !important;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease !important;
+}
+
+body[data-type='home'] #blog-container #random-banner:hover {
+  transform: translateY(-5px) scale(1.005) !important;
+  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.3) !important;
+}
+
+body[data-type='home'] #blog-container .topGroup {
+  flex: 3 1 0% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  min-width: 320px !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+body[data-type='home'] #blog-container .topGroup > *:not(.categoryGroup):not(.todayCard) {
+  display: none !important; /* Hide stack and extra posts to focus on categories + todayCard */
+}
+
+body[data-type='home'] #blog-container .categoryGroup {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+  height: auto !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+body[data-type='home'] #blog-container .todayCard {
+  position: relative !important;
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  min-height: 0 !important; /* Allow shrinking */
+  border-radius: 20px !important;
+}
+
+body[data-type='home'] #blog-container .categoryItem {
+  position: relative !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1 !important; /* Make them square in the grid */
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease !important;
+  margin: 0 !important;
+}
+
+body[data-type='home'] #blog-container .categoryItem:hover {
+  transform: translateY(-4px) scale(1.04) !important;
+  box-shadow: 0 10px 24px -8px rgba(0,0,0,0.25) !important;
+}
+
+body[data-type='home'] #blog-container .categoryButton {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 8px !important;
+  isolation: isolate !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: inherit !important;
+}
+
+body[data-type='home'] #blog-container .categoryButtonCopy {
+  z-index: 1 !important;
+}
+
+body[data-type='home'] #blog-container .categoryButtonText {
+  display: block !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+body[data-type='home'] #blog-container .categoryButtonDesc {
+  display: none !important; /* Hide desc in small cards */
+}
+
+body[data-type='home'] #blog-container .categoryButtonIcon {
+  position: absolute !important;
+  right: -12px !important;
+  bottom: -12px !important;
+  z-index: 0 !important;
+  width: 72px !important;
+  height: 72px !important;
+  opacity: 0.12 !important;
+  transform: scale(2.2) rotate(-12deg) !important;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease !important;
+}
+
+body[data-type='home'] #blog-container .categoryItem:hover .categoryButtonIcon {
+  opacity: 0.34 !important;
+  transform: scale(2.5) rotate(-4deg) translate3d(-8px, -4px, 0) !important;
+}
+
+body[data-type='home'] #blog-container .topGroup .todayCard {
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 22px !important;
+  flex: 1 !important; /* Occupy remaining space */
+}
+
+@media (max-width: 1024px) {
+  body[data-type='home'] #blog-container .swiper_container_card {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  body[data-type='home'] #blog-container #bannerGroup,
+  body[data-type='home'] #blog-container .topGroup {
+    flex: none !important;
+    width: 100% !important;
+  }
+  body[data-type='home'] #blog-container #random-banner {
+    height: 240px !important;
+  }
+}
