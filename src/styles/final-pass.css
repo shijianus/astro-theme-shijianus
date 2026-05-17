@@ -1348,12 +1348,7 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   font: inherit;
 }
 
-body[data-type='home'] #bannerGroup {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(12.8rem, 17vw, 14.2rem);
-  gap: 12px;
-  align-items: stretch;
-}
+/* Removed redundant grid definition */
 
 body[data-type='home'] #random-hover {
   min-width: 0;
@@ -1983,13 +1978,7 @@ body[data-type='post'] #post-comment {
   border-radius: 18px;
 }
 
-body[data-type='home'] #bannerGroup {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: calc(100% - 600px - 2.2rem);
-  height: 340px;
-}
+/* Removed second redundant definition */
 
 body[data-type='home'] .categoryGroup {
   flex: 0 0 auto;
