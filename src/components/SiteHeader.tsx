@@ -414,9 +414,13 @@ export function SiteHeader({
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         {renderNavIcon(item.icon, 'site-page__icon')}
-                        <div className="site-page__bilingual-stack">
-                          <span className="site-page__label">{item.label}</span>
-                          {item.description && <span className="site-page__subtitle">{item.description}</span>}
+                        <div className="site-page__bilingual-stack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minWidth: '40px', gap: '0px', marginTop: '1px' }}>
+                          <span className="site-page__label" style={{ letterSpacing: '2px', marginRight: '-2px', fontSize: '13px', fontWeight: 700, lineHeight: 1.2 }}>{item.label}</span>
+                          {item.description && (
+                            <span className="site-page__subtitle" style={{ letterSpacing: '3px', marginRight: '-3px', fontSize: '8px', fontWeight: 600, opacity: 0.7, lineHeight: 1, marginTop: '1px' }}>
+                              {item.description}
+                            </span>
+                          )}
                         </div>
                       </a>
 

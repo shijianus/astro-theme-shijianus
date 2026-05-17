@@ -2378,18 +2378,20 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   margin: 0 !important;
 }
 
-/* Specifically kill pseudo-elements that create boxes/arrows/ghost text, including data-subtitle */
-#menus *[data-subtitle]::after,
-#menus *[data-subtitle]::before,
-#menus .site-page::after,
-#menus .site-page::before,
-#menus .site-page-shell::after,
-#menus .site-page-shell::before,
-#menus .menus_item::after,
-#menus .menus_item::before {
+/* Specifically kill ALL pseudo-elements that create boxes/arrows/ghost text */
+#menus *::after,
+#menus *::before {
   content: none !important;
   display: none !important;
   background: none !important;
+  background-image: none !important;
+}
+
+#menus .site-page::after,
+#menus .site-page::before,
+#menus .site-page-shell::after,
+#menus .site-page-shell::before {
+  display: none !important;
 }
 
 /* 6. Horizontal Capsule Submenu Remodeling */

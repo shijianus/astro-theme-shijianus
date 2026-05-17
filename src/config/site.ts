@@ -241,7 +241,7 @@ export const siteConfig = {
       {
         label: '文章',
         href: '/archives/',
-        description: 'ARTICLES',
+        description: 'ART',
         icon: 'book',
         children: [
           { label: '全部文章', href: '/archives/', description: '时间线总览', icon: 'archive' },
@@ -252,7 +252,7 @@ export const siteConfig = {
       {
         label: '友邻',
         href: '/friends/',
-        description: 'FRIENDS',
+        description: 'FRD',
         icon: 'link',
         children: [
           { label: '友人帐', href: '/friends/', description: '互链、社群与交流入口', icon: 'link' },
@@ -263,7 +263,7 @@ export const siteConfig = {
       {
         label: '工坊',
         href: '/lab/',
-        description: 'LABS',
+        description: 'LAB',
         icon: 'flask',
         children: [
           { label: '实验田', href: '/lab/', description: '界面与功能的试验场', icon: 'flask' },
@@ -274,7 +274,7 @@ export const siteConfig = {
       {
         label: '关于',
         href: '/about/',
-        description: 'ABOUT',
+        description: 'ABT',
         icon: 'circle-info',
         children: [
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
