@@ -80,14 +80,18 @@ const anzhiyuIconMap: Record<string, string> = {
   flask: 'anzhiyu-icon-flask',
   music: 'anzhiyu-icon-music',
   video: 'anzhiyu-icon-video',
-  user: 'anzhiyu-icon-user',
+  user: 'anzhiyu-icon-anzhiyu',
   'chart-bar': 'anzhiyu-icon-chart-bar',
   compass: 'anzhiyu-icon-compass',
   'circle-info': 'anzhiyu-icon-circle-info',
   message: 'anzhiyu-icon-comments',
 };
 
-const forceLucideIcons = ['flask', 'video', 'compass', 'category', 'chart-bar', 'circle-info'];
+const forceLucideIcons = [
+  'home', 'archive', 'category', 'tags', 'about', 'book', 
+  'rss', 'link', 'flask', 'music', 'video', 'user', 
+  'chart-bar', 'compass', 'circle-info', 'message'
+];
 
 function renderNavIcon(iconName: string | undefined, className: string) {
   const name = iconName ?? 'home';
@@ -414,10 +418,36 @@ export function SiteHeader({
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
                         {renderNavIcon(item.icon, 'site-page__icon')}
-                        <div className="site-page__bilingual-stack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minWidth: '40px', gap: '0px', marginTop: '1px' }}>
-                          <span className="site-page__label" style={{ letterSpacing: '2px', marginRight: '-2px', fontSize: '13px', fontWeight: 700, lineHeight: 1.2 }}>{item.label}</span>
+                        <div className="site-page__bilingual-stack" style={{ 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          textAlign: 'center', 
+                          minWidth: '32px', 
+                          gap: '0px'
+                        }}>
+                          <span className="site-page__label" style={{ 
+                            letterSpacing: '4px', 
+                            marginRight: '-4px', 
+                            fontSize: '14px', 
+                            fontWeight: 700, 
+                            lineHeight: 1.1,
+                            display: 'block'
+                          }}>
+                            {item.label}
+                          </span>
                           {item.description && (
-                            <span className="site-page__subtitle" style={{ letterSpacing: '3px', marginRight: '-3px', fontSize: '8px', fontWeight: 600, opacity: 0.7, lineHeight: 1, marginTop: '1px' }}>
+                            <span className="site-page__subtitle" style={{ 
+                              letterSpacing: '2.5px', 
+                              marginRight: '-2.5px', 
+                              fontSize: '9px', 
+                              fontWeight: 600, 
+                              opacity: 0.8, 
+                              lineHeight: 1, 
+                              marginTop: '2px',
+                              display: 'block'
+                            }}>
                               {item.description}
                             </span>
                           )}

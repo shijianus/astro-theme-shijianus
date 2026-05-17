@@ -508,6 +508,7 @@ html.theme-ready body.theme-body #footer {
 }
 
 #site-name {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,22 +516,42 @@ html.theme-ready body.theme-body #footer {
   padding: 0 12px;
   border-radius: var(--radius-full);
   color: var(--font-color);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 35px;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  min-width: 100px;
 }
 
 #site-name .title {
+  position: relative;
   display: block;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
+  opacity: 1;
+  transition: all 0.3s ease;
+  z-index: 1;
 }
 
-.site-name__icon {
-  width: 16px;
-  height: 16px;
-  margin-left: 7px;
+#site-name .site-name__icon {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+#site-name:hover .title {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+#site-name:hover .site-name__icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
 #site-name:hover,
@@ -539,6 +560,7 @@ html.theme-ready body.theme-body #footer {
 #display-mode-button .site-page:hover {
   background: var(--theme-main);
   color: var(--white);
+  box-shadow: var(--shadow-theme);
 }
 
 .mask-name-container {

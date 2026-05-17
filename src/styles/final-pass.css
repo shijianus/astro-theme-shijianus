@@ -35,17 +35,42 @@
 #nav-right {
 }
 
+#menus .site-page__subtitle {
+  position: static !important;
+  opacity: 1 !important;
+  transform: none !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 2px !important;
+  display: block !important;
+  pointer-events: auto !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+}
+
 #menus .site-page {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 10px !important;
-  padding: 0 14px !important;
-  min-height: 56px;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 0 16px !important;
+  height: 48px !important; /* Increased height for better coverage */
+  border-radius: 12px !important;
   color: var(--font-color);
   text-decoration: none;
   position: relative;
   white-space: nowrap !important;
+  transition: all 0.3s ease !important;
+}
+
+.site-page__icon-wrap {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 .site-page__bilingual-stack {
@@ -53,8 +78,10 @@
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  line-height: 1.1 !important;
-  min-width: 0;
+  line-height: 1 !important;
+  min-width: 32px !important;
+  gap: 0 !important;
+  position: relative !important;
 }
 
 .site-page__label {
