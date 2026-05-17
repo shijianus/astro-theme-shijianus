@@ -1,24 +1,23 @@
-# 顶栏收尾、深色美学与全局微交互重构 (Dark Aesthetics & Micro-interactions)
+# 首页布局精雕、卡片动效与控制台数据接入 (Home Polish & Console Data)
 
 > **⚠️ AI 执行须知**：
-> 在执行本次会话的任何代码修改后，你必须同步更新此文件。将完成的任务从 `[ ]` 修改为 `[x]`。提交代码前，确保所有任务均已打钩！
+> 每次代码修改后，必须同步更新此文件，将完成的任务从 `[ ]` 修改为 `[x]`。全部打钩后方可提交！
 
-## 阶段一：纯粹的极暗科技美学 (Deep Dark Mode Palette)
-- [x] **Task 1.1 - 重塑暗黑色彩体系**：修改深色模式下的 CSS 变量。将主导航栏（`aria-label="主导航"` 相关的 `#page-header` 等）的背景色改为极低透明度或极黑的颜色（如近乎纯黑配合高斯模糊）。将网页主背景（Body 级）改为与之有肉眼可见区分度、但依然极度深邃的冷调灰黑色（消除土灰感，提升科技感）。
+## 阶段一：导航栏收尾与即刻通知栏极简对齐 (Header & Notice Bar)
+- [x] **Task 1.1 - `nav-totop` 物理空间剥夺**：修改 CSS。当回到顶部按钮隐藏时，不仅要 `opacity: 0`，还必须让其 `width: 0`, `min-width: 0`, `margin: 0`, `padding: 0`，使其旁边的按钮平滑右移，完全占领右侧边缘。
+- [x] **Task 1.2 - 通知栏极致瘦身与对齐**：彻底移除 `.home-top-notice` 廉价的渐变、边框和臃肿阴影。调整其 `margin-left` 或 Flex 对齐方式，使其左边缘与正下方的内容卡片网格达到**绝对像素级对齐**。
 
-## 阶段二：安知鱼专属粒子星空背景 (Particle & Comet Animation)
-- [x] **Task 2.1 - 星空背景架构**：在全局布局（如 `BlogLayout.astro` 或类似顶层组件）中注入 `<canvas>` 节点或专属背景组件，用于绘制深色模式专属的动态背景。
-- [x] **Task 2.2 - 物理运动轨迹实现**：编写动画逻辑（Canvas 或 CSS 动画）。实现大量带有微弱发光/半透明效果的随机粒子，统一呈 **向右上方 (↗)** 缓慢漂浮移动。
-- [x] **Task 2.3 - 彗星拖尾特效**：在粒子流中，偶尔随机生成向右上方极速划过的“流星/彗星”拖尾特效。注意控制亮度，绝不能喧宾夺主影响正文阅读。
+## 阶段二：安知鱼专属卡片交互动效 (Hero Cards Interaction)
+- [x] **Task 2.1 - `categoryItem` 动效复刻**：优化首页分类卡片的比例。注入安知鱼标准的 Hover 交互：鼠标悬停时，卡片整体产生平滑的轻微放大（`transform: scale(...)`），且内部图标产生相应的位移或放大反馈。
+- [x] **Task 2.2 - `random-hover` 交互同步**：对 `id="random-hover"` 相关的卡片应用同等水准的布局比例 optimization 与悬浮弹性动效，彻底消除僵硬感。
 
-## 阶段三：顶部通知栏重构与右侧按钮精调 (Notice Bar & Right Nav)
-- [x] **Task 3.1 - 右侧按钮间距修复**：精调 `#nav-totop` 等右侧功能按钮的布局。确保它们在 Flex 容器中垂直居中、间距（Gap/Margin）一致，并修复部分截图暴露的溢出或不对齐问题。
-- [x] **Task 3.2 - 通知栏 (home-top-notice) 瘦身**：重构类似“安知鱼即刻”的顶部通知滚动栏。摒弃当前臃肿膨胀的 UI 结构，将其改造为极极简、单行、平滑滚动的精致轮播条（精简 Padding 和高度，提升 UI 美感）。
+## 阶段三：星空背景隔离与控制台热力图调优 (Background & Console UX)
+- [x] **Task 3.1 - 背景层级与隔离修复**：修复上一步星空背景带来的瑕疵。确保背景 Canvas 的 `z-index` 在最底层，使用 `pointer-events: none` 防止点击穿透阻挡，且确保它**绝对不影响**其他任何背景样式。
+- [x] **Task 3.2 - 热力图蓝调暗黑重构**：修改控制台 (Console) 中的热力图（贡献图）CSS 颜色映射。在 `[data-theme='dark']` 状态下，将其绿色色阶替换为极具科技感的**冷调深蓝到亮蓝的色阶**。
 
-## 阶段四：全局快捷键面板 (Shift Shortcuts Modal)
-- [x] **Task 4.1 - MCP 机制探明**：使用 MCP 查阅 `github.com/anzhiyu-c/hexo-theme-anzhiyu` 源码，明确其快捷键提示框的激活机制与 DOM 结构。
-- [x] **Task 4.2 - 事件监听与面板注入**：在 React/Astro 的顶层注入键盘监听事件（如监听 `Shift` 键按下）。当触发时，在屏幕左上角顺滑弹出快捷键指令提示框（UI 需包含半透明磨砂背景和规整的键位说明）。
+## 阶段四：控制台无损数据框架接入 (Data Sync Architecture)
+- [x] **Task 4.1 - 无损数据获取骨架**：在不破坏现有前端 UI 和 DOM 结构的前提下，为控制台（站点概览、最新更新等）编写状态管理或数据 Fetch 的占位逻辑/Hooks。确保后续接入真实 API 时 UI 依然稳定渲染。
 
 ## 阶段五：验证与固化 (Verification & Commit)
-- [x] **Task 5.1 - 截图取证**：调用 Puppeteer 获取深色模式全屏截图（需体现星空背景和极暗色彩）、右侧重构后的精简通知栏截图、以及按下 Shift 后弹出的快捷键面板截图。
-- [x] **Task 5.2 - 最终提交**：执行 `git commit -am "feat(ux): implement deep dark aesthetics, particle background, refined notice bar and shortcut modal"`。
+- [x] **Task 5.1 - 截图取证**：获取三张截图：1. 通知栏与下方内容对齐的左侧局部图；2. 隐藏 `nav-totop` 时顶部右侧全部靠右的截图；3. 深色模式下蓝调热力图的截图。
+- [x] **Task 5.2 - 最终提交**：执行 `git commit -am "feat(home): polish notice bar alignment, hero cards interaction, blue heatmap and dynamic data skeleton"`。

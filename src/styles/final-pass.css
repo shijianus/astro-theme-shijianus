@@ -730,17 +730,19 @@
   align-items: center !important;
   justify-content: center !important;
   width: 0 !important;
-  margin-left: 0 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
   padding: 0 !important;
   opacity: 0 !important;
   transform: scale(0) !important;
   overflow: hidden !important;
-  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   pointer-events: none;
 }
 
 #nav-totop.show {
   width: 35px !important;
+  min-width: 35px !important;
   margin-left: 8px !important;
   opacity: 1 !important;
   transform: scale(1) !important;
@@ -791,6 +793,79 @@
   font-size: 16px;
   transition: 0.3s;
 }
+
+/* Home Polish - Notice Bar & Alignment */
+.home-top-notice {
+  background: var(--card-bg-none) !important;
+  background-color: color-mix(in srgb, var(--card-bg) 60%, transparent) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--shadow-border) !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  transition: all 0.3s ease;
+}
+
+.home-top-notice::before {
+  display: none !important;
+}
+
+.home-top-notice__label {
+  box-shadow: none !important;
+}
+
+/* Hero Cards Interaction */
+body[data-type='home'] .categoryItem {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s, flex 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: var(--shadow-card-hover) !important;
+  z-index: 2;
+}
+
+body[data-type='home'] #random-banner {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s !important;
+}
+
+body[data-type='home'] #random-banner:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+body[data-type='home'] .categoryButtonIcon {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important;
+}
+
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
+  transform: rotate(0deg) translate3d(-8px, -2px, 0) scale(1.2) !important;
+  opacity: 0.9 !important;
+}
+
+/* Blue Heatmap Re-theme for Dark Mode */
+[data-theme='dark'] #console .activity-cell.level-0 { background: #12121c !important; border: 1px solid rgba(255,255,255,0.05) !important; }
+[data-theme='dark'] #console .activity-cell.level-1 { background: #0a3069 !important; }
+[data-theme='dark'] #console .activity-cell.level-2 { background: #1f6feb !important; }
+[data-theme='dark'] #console .activity-cell.level-3 { background: #388bfd !important; }
+[data-theme='dark'] #console .activity-cell.level-4 { background: #58a6ff !important; }
+
+#console .activity-cell {
+  border-radius: 3px !important;
+  transition: 0.2s ease;
+}
+
+#console .activity-cell:hover {
+  transform: scale(1.2);
+  z-index: 2;
+  box-shadow: 0 0 12px var(--theme-main);
+}
+
+#console .activity-cell.level-0 { background: #ebedf0 !important; border: 1px solid rgba(0,0,0,0.02) !important; }
+#console .activity-cell.level-1 { background: #9be9a8 !important; }
+#console .activity-cell.level-2 { background: #40c463 !important; }
+#console .activity-cell.level-3 { background: #30a14e !important; }
+#console .activity-cell.level-4 { background: #216e39 !important; }
 
 /* Modern Hamburger Morphing Animation */
 #center-console-button .hamburger-container {

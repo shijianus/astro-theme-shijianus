@@ -166,12 +166,35 @@ export function ThemeOverlays({
   const [accountNotice, setAccountNotice] = useState('');
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
+  const [syncStats, setSyncStats] = useState(stats);
+  const [activityRecords, setActivityRecords] = useState<{ date: string; level: number; posts: { title: string; href: string }[] }[]>([]);
   const [rightMenu, setRightMenu] = useState<{ open: boolean; x: number; y: number; selectedText: string }>({
     open: false,
     x: 0,
     y: 0,
     selectedText: '',
   });
+
+  // Data Sync Framework Placeholder
+  useEffect(() => {
+    if (!consoleOpen) return;
+
+    const syncConsoleData = async () => {
+      try {
+        // Future API endpoint: const response = await fetch('/api/console/data');
+        // const data = await response.json();
+        // setSyncStats(data.stats);
+        // setActivityRecords(data.activity);
+        
+        // Currently using static mock data structure for stability
+        setSyncStats(stats);
+      } catch (error) {
+        console.error('Failed to sync console data:', error);
+      }
+    };
+
+    syncConsoleData();
+  }, [consoleOpen, stats]);
   const [activityMessage, setActivityMessage] = useState('');
   const [activityVisible, setActivityVisible] = useState(false);
   const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
@@ -282,9 +305,9 @@ export function ThemeOverlays({
   }, [tags]);
 
   const siteStats = useMemo(() => {
-    const sPosts = stats?.posts ?? 0;
-    const sReading = stats?.readingMinutes ?? 0;
-    const sWords = stats?.totalWords ?? 0;
+    const sPosts = syncStats?.posts ?? 0;
+    const sReading = syncStats?.readingMinutes ?? 0;
+    const sWords = syncStats?.totalWords ?? 0;
 
     // DYNAMIC DATA ACTUALIZATION ENGINE (憲法 V3 合規版)
     // 1. FIND TRUE LATEST POST DATE (Ignoring sticky sorting)
