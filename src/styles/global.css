@@ -788,7 +788,7 @@ html.theme-ready body.theme-body #footer {
 }
 
 .page-shell__hero {
-  margin: 0;
+  margin: 14px 0 0 0;
 }
 
 #content-inner.layout {
@@ -968,7 +968,7 @@ html.theme-ready body.theme-body #footer {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: calc(100% - 600px - 2.2rem);
+  width: calc(100% - 600px - 2rem);
   height: 340px;
 }
 
@@ -1242,7 +1242,6 @@ html.theme-ready body.theme-body #footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
   width: 100%;
   min-width: 200px;
   height: 24%;
@@ -1250,36 +1249,75 @@ html.theme-ready body.theme-body #footer {
 }
 
 .categoryItem {
-  flex: 1 1 0;
-  width: auto;
+  width: calc(100% / 3 - 0.33rem);
   height: 100%;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  box-shadow: 0 14px 26px -20px rgba(21, 39, 88, 0.24);
-  transition: transform 0.28s ease, box-shadow 0.28s ease;
+  border-radius: 12px;
+  transition: all 0.6s cubic-bezier(0.65, 0.15, 0.37, 1.19);
 }
 
 .categoryItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 34px -22px rgba(21, 39, 88, 0.34);
+  width: 50%;
 }
 
 .categoryButton {
   position: relative;
-  display: grid;
-  align-content: end;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  padding: 18px 18px 16px;
+  border-radius: 12px;
+  padding: 15px 21px;
   color: var(--white);
-  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.categoryButton:after {
+  position: absolute;
+  top: 47px;
+  left: 21px;
+  width: 1rem;
+  height: 2px;
+  background: var(--white);
+  border-radius: 1px;
+  content: "";
+}
+
+.categoryButtonText {
+  font-size: 1.1rem;
   font-weight: 700;
   line-height: 1;
-  text-align: left;
-  transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.28s ease;
+}
+
+.categoryButtonDesc {
+  display: none;
+}
+
+.categoryButtonIcon {
+  position: absolute;
+  top: 20%;
+  right: 0;
+  width: 100px;
+  height: auto;
+  color: var(--white);
+  filter: blur(2px);
+  font-size: 5rem;
+  opacity: 0.2;
+  text-align: center;
+  transform: scale(1) rotate(15deg);
+  transition: 0.3s;
+}
+
+.categoryItem:hover .categoryButtonIcon {
+  top: 15%;
+  filter: blur(0);
+  font-size: 2.5rem;
+  opacity: 0.8;
+  transform: scale(1.03);
+  transition: 0.8s;
 }
 
 .categoryButton.signal {
@@ -1314,56 +1352,6 @@ html.theme-ready body.theme-body #footer {
   background: linear-gradient(to right, #099e74, #0ea4a4);
 }
 
-.categoryButton::after {
-  position: absolute;
-  top: 16px;
-  left: 18px;
-  width: 22px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--white);
-  opacity: 0.88;
-  content: "";
-}
-
-.categoryButtonText {
-  position: relative;
-  z-index: 1;
-  padding-top: 14px;
-  font-size: 15px;
-  line-height: 1.2;
-}
-
-.categoryButtonDesc {
-  position: relative;
-  z-index: 1;
-  max-width: 16ch;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.categoryButtonIcon {
-  position: absolute;
-  right: -8px;
-  bottom: -4px;
-  width: 112px;
-  color: rgba(255, 255, 255, 0.82);
-  opacity: 0.2;
-  filter: blur(0);
-  font-size: 4.1rem;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-  transform: rotate(12deg);
-  transition: transform 0.28s ease, opacity 0.28s ease;
-}
-
-.categoryItem:hover .categoryButtonIcon {
-  opacity: 0.36;
-  transform: rotate(8deg) translateY(-3px);
-}
-
 .topGroup {
   position: relative;
   display: flex;
@@ -1372,41 +1360,6 @@ html.theme-ready body.theme-body #footer {
   width: calc(600px + 1.5rem);
   height: 340px;
   isolation: isolate;
-}
-
-.topGroup__stack {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.topGroup__stack-back {
-  position: absolute;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(243, 246, 255, 0.88)),
-    radial-gradient(circle at 80% 20%, rgba(66, 90, 239, 0.12), transparent 26%);
-  box-shadow: 0 18px 30px -24px rgba(34, 48, 92, 0.36);
-}
-
-.topGroup__stack-back--one {
-  top: 18px;
-  left: 18px;
-  width: calc(600px - 10px);
-  height: calc(100% - 24px);
-  opacity: 0.44;
-  transform: rotate(-1.2deg);
-}
-
-.topGroup__stack-back--two {
-  top: 8px;
-  left: 10px;
-  width: calc(600px + 2px);
-  height: calc(100% - 12px);
-  opacity: 0.68;
-  transform: rotate(0.9deg);
 }
 
 .topGroup .todayCard {
@@ -1420,24 +1373,44 @@ html.theme-ready body.theme-body #footer {
   margin-left: 0.5rem;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
-  border-radius: 26px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(9, 13, 24, 0.12));
+  border-radius: 12px;
+  background: var(--card-bg);
   box-shadow: 0 24px 40px -22px rgba(14, 20, 36, 0.42);
   cursor: pointer;
   pointer-events: all;
-  transition: transform 0.28s ease, box-shadow 0.28s ease;
+  transition: opacity 0.3s ease, transform 0.28s ease, box-shadow 0.28s ease;
 }
 
-.today-card-toggle:checked ~ .swiper_container_card .todayCard {
+.topGroup .todayCard .todayCard-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  transition: 0.3s;
+  background: var(--secondbg);
+  border-radius: 12px;
+}
+
+.topGroup .todayCard .todayCard-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+.today-card-toggle:not(:checked) ~ .swiper_container_card .topGroup .recent-post-item:nth-child(2) {
   opacity: 0;
   pointer-events: none;
 }
 
-.topGroup .todayCard-link {
-  position: absolute;
-  inset: 0;
-  color: var(--white);
+.today-card-toggle:checked ~ .swiper_container_card .todayCard {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 .topGroup .todayCard::after {
@@ -1475,7 +1448,7 @@ html.theme-ready body.theme-body #footer {
 
 .topGroup .todayCard-info {
   position: absolute;
-  bottom: 74px;
+  bottom: 2rem;
   left: 2rem;
   z-index: 2;
   display: grid;
@@ -1495,7 +1468,7 @@ html.theme-ready body.theme-body #footer {
 
 .topGroup .todayCard-title {
   color: var(--white);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
   text-wrap: balance;
@@ -1509,27 +1482,14 @@ html.theme-ready body.theme-body #footer {
   line-height: 1.72;
 }
 
-.topGroup .todayCard-cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  width: 100%;
-  height: 100%;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  transition: 0.3s;
-}
-
 .topGroup .todayCard:hover .todayCard-cover {
   transform: scale(1.06);
 }
 
 .topGroup .banner-button-group {
   position: absolute;
-  right: 1.35rem;
-  bottom: 1.2rem;
+  right: 2rem;
+  bottom: 2rem;
   z-index: 4;
   display: flex;
   transition: 0.3s;
@@ -1594,12 +1554,12 @@ html.theme-ready body.theme-body #footer {
   align-items: flex-start;
   width: 200px;
   min-width: 200px;
-  height: 160px !important;
-  max-height: 160px;
+  height: 164px !important;
+  max-height: 164px;
   margin: 0 0 0.5rem 0.5rem;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--theme-main) 9%, var(--card-border));
-  border-radius: 22px;
+  border-radius: 12px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 94%, rgba(255, 255, 255, 0.28)), color-mix(in srgb, var(--card-bg) 100%, transparent));
   box-shadow: 0 14px 28px -24px rgba(14, 20, 36, 0.34);
@@ -1678,7 +1638,7 @@ html.theme-ready body.theme-body #footer {
   overflow: hidden;
   padding: 0 !important;
   color: var(--font-color);
-  font-size: 0.96rem !important;
+  font-size: 1rem !important;
   font-weight: 800;
   line-height: 1.38;
   -webkit-box-orient: vertical;
@@ -1693,15 +1653,6 @@ html.theme-ready body.theme-body #footer {
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.4;
-}
-
-:root[data-theme='dark'] .topGroup__stack-back {
-  border-color: rgba(122, 145, 198, 0.18);
-  background:
-    linear-gradient(180deg, rgba(18, 24, 38, 0.76), rgba(9, 13, 22, 0.86)),
-    radial-gradient(circle at 80% 18%, rgba(79, 114, 255, 0.18), transparent 28%),
-    radial-gradient(circle at 24% 82%, rgba(242, 185, 75, 0.12), transparent 26%);
-  box-shadow: 0 22px 34px -26px rgba(0, 0, 0, 0.62);
 }
 
 :root[data-theme='dark'] .topGroup .todayCard {
@@ -1761,14 +1712,6 @@ html.theme-ready body.theme-body #footer {
 :root[data-theme='dark'] .top-post-card__eyebrow,
 :root[data-theme='dark'] .top-post-card__meta {
   color: rgba(209, 217, 235, 0.64);
-}
-
-:root[data-theme='dark'][data-background='starfield'] .topGroup__stack-back {
-  border-color: rgba(117, 143, 218, 0.22);
-  background:
-    linear-gradient(180deg, rgba(12, 18, 30, 0.74), rgba(6, 10, 18, 0.9)),
-    radial-gradient(circle at 82% 16%, rgba(103, 148, 255, 0.24), transparent 30%),
-    radial-gradient(circle at 18% 84%, rgba(242, 185, 75, 0.12), transparent 26%);
 }
 
 :root[data-theme='dark'][data-background='starfield'] .topGroup .todayCard {
@@ -4580,7 +4523,6 @@ body[data-type='home'] .page-aside {
     height: auto;
   }
 
-  .topGroup__stack,
   .topGroup .todayCard {
     display: none;
   }
@@ -4653,7 +4595,6 @@ body[data-type='home'] .page-aside {
     display: none !important;
   }
 
-  .topGroup__stack,
   .todayCard__footer {
     display: none;
   }

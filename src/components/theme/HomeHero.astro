@@ -15,7 +15,7 @@ const visibleFeaturedPosts = featuredPosts.filter((entry) => !hasPostAccess(entr
 const visibleLatestPosts = latestPosts.filter((entry) => !hasPostAccess(entry));
 const topPosts = (visibleFeaturedPosts.length > 0 ? visibleFeaturedPosts : visibleLatestPosts).slice(0, 6);
 const todayPost = topPosts[0] ?? visibleLatestPosts[0];
-const stackPosts = topPosts.slice(0, 3);
+const stackPosts = topPosts.slice(0, 6);
 const mobileFocusPost = topPosts[0] ?? todayPost;
 const categoryItems = siteConfig.home.categories.slice(0, 3);
 const showcase = siteConfig.home.hero.showcase;
@@ -123,11 +123,6 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     </div>
 
     <div class="topGroup">
-      <div class="topGroup__stack" aria-hidden="true">
-        <span class="topGroup__stack-back topGroup__stack-back--one"></span>
-        <span class="topGroup__stack-back topGroup__stack-back--two"></span>
-      </div>
-
       {stackPosts.map((entry, index) => (
         <article class="recent-post-item top-post-card" data-card-link={getPostPath(entry)} tabindex="0" role="link" aria-label={entry.data.title}>
           <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
@@ -150,7 +145,6 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
             <div class="todayCard-info">
               <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
               <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
-              <p>{getExcerpt(todayPost, 90)}</p>
             </div>
             <img
               class="todayCard-cover"
@@ -165,10 +159,6 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               <span class="banner-button__icon">+</span>
               <span class="banner-button-text">{topDeck.toggleLabel}</span>
             </label>
-          </div>
-          <div class="todayCard__footer">
-            <span>{topDeck.panelFootnote}</span>
-            <span>{topDeck.panelAction}</span>
           </div>
         </article>
       )}
