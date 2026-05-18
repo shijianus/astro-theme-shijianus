@@ -260,7 +260,10 @@ body[data-type='post'] #card-toc .toc-content {
 }
 
 body[data-type='home'] .swiper_container_card {
-  height: 348px;
+  display: flex;
+  align-items: stretch; /* 核心：强制左侧栏和右侧栏保持绝对像素级同高 */
+  gap: 20px; /* 锁定间距 */
+  height: 380px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -269,7 +272,7 @@ body[data-type='home'] .swiper_container_card {
 
 body[data-type='home'] #bannerGroup {
   gap: 14px;
-  height: 348px;
+  height: 100%;
 }
 
 body[data-type='home'] #random-banner {
@@ -323,14 +326,59 @@ body[data-type='home'] .categoryItem:hover .categoryButton::before {
 }
 
 body[data-type='home'] .topGroup {
-  height: 348px;
+  position: relative;
+  border-radius: 16px; /* 全局统一圆角 */
+  overflow: hidden; /* 核心：像盖子一样，暴力裁剪掉所有溢出该边界的多余内容和泄露内容！ */
+  display: flex; /* 为内部拉伸做准备 */
+  flex-direction: column;
+  height: 100%;
 }
 
 body[data-type='home'] .topGroup .todayCard {
+  flex: 1;
   width: 600px;
+  height: 100%;
   margin-left: 0;
-  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 16px;
+  position: relative;
 }
+
+body[data-type='home'] .topGroup .todayCard-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  text-decoration: none;
+}
+
+body[data-type='home'] .topGroup .todayCard-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 保证图片在不拉伸变形的情况下填满容器，不留白边 */
+  z-index: 1; /* 置于底层 */
+}
+
+body[data-type='home'] .topGroup .todayCard-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 30px; /* 增加充裕的Padding呼吸感 */
+  background: linear-gradient(180deg, rgba(13, 17, 23, 0), rgba(13, 17, 23, 0.95) 80%); /* 渐变遮罩 */
+  z-index: 2; /* 置于图片上方 */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 文字行间距 */
+  color: #fff;
+}
+
 
 .post-tools {
   grid-template-columns: minmax(0, 1fr) auto;
