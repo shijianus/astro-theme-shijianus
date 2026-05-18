@@ -327,7 +327,7 @@ body[data-type='home'] .topGroup {
 }
 
 body[data-type='home'] .topGroup .todayCard {
-  width: 600px;
+  width: 100%;
   margin-left: 0;
   border-radius: 24px;
 }
@@ -6004,25 +6004,25 @@ body[data-type='post'] #card-toc .toc-content {
 
 body[data-type='home'] .swiper_container_card {
   display: flex;
-  gap: 18px;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
   border: 0;
   background: transparent;
   box-shadow: none;
 }
 
-body[data-type='home'] #bannerGroup,
-body[data-type='home'] .topGroup {
-  min-width: 0;
-}
-
 body[data-type='home'] #bannerGroup {
-  flex: 1 1 calc(100% - 640px);
+  flex: 6 1 0%;
+  min-width: 0;
   width: auto;
 }
 
 body[data-type='home'] .topGroup {
-  flex: 0 0 calc(600px + 1.5rem);
-  width: calc(600px + 1.5rem);
+  flex: 4 1 0%;
+  min-width: 0;
+  width: auto;
 }
 
 body[data-type='home'] #random-banner #skills-tags-group-all {
