@@ -14683,22 +14683,77 @@ body[data-type='home'] #home-pagination {
 }
 
 
+/* 2026-05-17: Banner Group vertical layout & category interaction overhaul */
+body[data-type='home'] #bannerGroup {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 16px !important; /* 锁定上下两大块的间距 */
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+body[data-type='home'] #random-banner {
+  flex: 1 1 0% !important; /* 核心：让其自动填满除去底部按钮外的所有高度 */
+  height: auto !important;
+  min-height: 0 !important;
+  border-radius: 16px !important; /* 统一圆角 */
+  overflow: hidden !important;
+  position: relative !important;
+  margin-bottom: 0 !important;
+}
+
+body[data-type='home'] .categoryGroup {
+  flex: 0 0 96px !important; /* 核心：锁死高度约为 96px，确保按钮呈完美的圆角矩形 */
+  height: 96px !important;
+  min-height: 96px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 16px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  animation: none !important;
+}
+
 body[data-type='home'] .categoryItem {
-  transition: flex 0.4s ease, width 0.4s ease, background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease !important;
+  flex: 1 !important; /* 等宽平分 3 个按钮 */
+  height: 100% !important;
+  border-radius: 16px !important; /* 标志性大圆角 */
+  position: relative !important;
+  overflow: hidden !important;
+  /* 注入交互动画基础属性 */
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  will-change: transform !important;
+  margin: 0 !important;
+}
+
+/* 悬浮上浮特效 */
+body[data-type='home'] .categoryItem:hover {
+  transform: translateY(-4px) !important; /* 悬浮时向上移动 4px */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important; /* 悬浮时增加底部阴影 */
+}
+
+/* Ensure inner button follows radius and doesn't conflict */
+body[data-type='home'] .categoryItem .categoryButton {
+  border-radius: 16px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  transform: none !important;
+  transition: background-position 0.3s ease !important;
+  padding: 16px 20px !important;
+}
+
+/* Disable existing hover effects and icon shifts that conflict with the clean AnZhiYu style */
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
+  flex: 1 !important;
 }
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-  flex: 1 1 20%;
-}
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  flex: 1 1 50% !important;
+  flex: 1 !important;
 }
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
-  transform: rotate(0deg) scale(1.1) !important;
-  opacity: 0.8 !important;
-  right: 15px !important;
-  transition: transform 0.4s ease, opacity 0.4s ease, right 0.4s ease !important;
+  transform: rotate(12deg) scale(1.1) !important;
+  opacity: 0.3 !important;
+  transition: transform 0.3s ease, opacity 0.3s ease !important;
 }
-body[data-type='home'] .categoryItem .categoryButtonIcon {
-  transition: transform 0.4s ease, opacity 0.4s ease, right 0.4s ease !important;
-  transform: rotate(15deg) scale(1) !important;
-}
+
