@@ -14726,17 +14726,17 @@ body[data-type='home'] .categoryGroup .categoryItem {
   transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
 }
 
-/* 核心特效：当前悬停的按钮横向拉长，并微微上浮 */
+/* --- 1. 放大悬停卡片的拉伸倍数 --- */
 body[data-type='home'] .categoryGroup .categoryItem:hover {
-  flex: 2 1 0% !important; /* 放大比例，使其变宽 */
+  flex: 2.5 1 0% !important; /* 从 1.35 大幅提升到 2.5，恢复原版夸张的展开效果 */
   transform: translateY(-4px) !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
   z-index: 2 !important;
 }
 
-/* 核心特效：容器被悬停时，未被悬停的兄弟按钮被挤压变窄 */
+/* --- 2. 强化兄弟卡片的挤压收缩 --- */
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-  flex: 0.8 1 0% !important; /* 缩小比例 */
+  flex: 0.5 1 0% !important; /* 进一步压缩未悬停的卡片，给展开的卡片让出巨大空间 */
   transform: translateY(0) !important;
 }
 
