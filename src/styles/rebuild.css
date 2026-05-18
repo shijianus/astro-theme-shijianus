@@ -14683,77 +14683,71 @@ body[data-type='home'] #home-pagination {
 }
 
 
-/* 2026-05-17: Banner Group vertical layout & category interaction overhaul */
+/* --- 1. 左侧主父容器强制排版 --- */
 body[data-type='home'] #bannerGroup {
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important;
-  gap: 16px !important; /* 锁定上下两大块的间距 */
+  justify-content: flex-start !important;
+  gap: 16px !important;
   height: 100% !important;
-  min-height: 0 !important;
 }
 
+/* --- 2. 顶部主卡片 (a标签强制容器化) --- */
 body[data-type='home'] #random-banner {
-  flex: 1 1 0% !important; /* 核心：让其自动填满除去底部按钮外的所有高度 */
+  flex: 1 1 0% !important;
   height: auto !important;
   min-height: 0 !important;
-  border-radius: 16px !important; /* 统一圆角 */
+  display: flex !important; /* 致命错误修复：a标签必须设为flex或block才能撑满内部 */
+  flex-direction: column !important;
+  border-radius: 16px !important;
   overflow: hidden !important;
-  position: relative !important;
-  margin-bottom: 0 !important;
+  margin: 0 !important;
 }
 
+/* --- 3. 底部按钮组外壳 (强制锁死 96px) --- */
 body[data-type='home'] .categoryGroup {
-  flex: 0 0 96px !important; /* 核心：锁死高度约为 96px，确保按钮呈完美的圆角矩形 */
+  flex: 0 0 96px !important;
   height: 96px !important;
   min-height: 96px !important;
   display: flex !important;
   flex-direction: row !important;
   gap: 16px !important;
-  width: 100% !important;
   margin: 0 !important;
-  padding: 0 !important;
-  animation: none !important;
 }
 
-body[data-type='home'] .categoryItem {
-  flex: 1 !important; /* 等宽平分 3 个按钮 */
+/* --- 4. 分类按钮本体 (彻底杀死旧的手风琴特效) --- */
+body[data-type='home'] .categoryGroup .categoryItem {
+  flex: 1 1 0% !important; /* 强制永远等宽 */
   height: 100% !important;
-  border-radius: 16px !important; /* 标志性大圆角 */
-  position: relative !important;
-  overflow: hidden !important;
-  /* 注入交互动画基础属性 */
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-  will-change: transform !important;
   margin: 0 !important;
-}
-
-/* 悬浮上浮特效 */
-body[data-type='home'] .categoryItem:hover {
-  transform: translateY(-4px) !important; /* 悬浮时向上移动 4px */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important; /* 悬浮时增加底部阴影 */
-}
-
-/* Ensure inner button follows radius and doesn't conflict */
-body[data-type='home'] .categoryItem .categoryButton {
   border-radius: 16px !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  transform: none !important;
-  transition: background-position 0.3s ease !important;
-  padding: 16px 20px !important;
+  overflow: hidden !important;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease !important;
 }
 
-/* Disable existing hover effects and icon shifts that conflict with the clean AnZhiYu style */
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  flex: 1 !important;
+/* 彻底禁用旧主题的 Hover 宽度剧变干扰 */
+body[data-type='home'] .categoryGroup:hover .categoryItem,
+body[data-type='home'] .categoryGroup .categoryItem:hover,
+body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
+  flex: 1 1 0% !important;
+  width: auto !important;
 }
-body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-  flex: 1 !important;
+
+/* --- 5. 按钮内部实际触发区强制填满 --- */
+body[data-type='home'] .categoryItem .categoryButton {
+  display: flex !important;
+  height: 100% !important;
+  width: 100% !important;
+  border-radius: 16px !important;
+  align-items: center !important;
+  padding: 0 20px !important;
 }
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
-  transform: rotate(12deg) scale(1.1) !important;
-  opacity: 0.3 !important;
-  transition: transform 0.3s ease, opacity 0.3s ease !important;
+
+/* --- 6. 还原清爽的上浮动画 --- */
+body[data-type='home'] .categoryGroup .categoryItem:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  z-index: 2 !important;
 }
+
 
