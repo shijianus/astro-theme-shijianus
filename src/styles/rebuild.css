@@ -14704,50 +14704,75 @@ body[data-type='home'] #random-banner {
   margin: 0 !important;
 }
 
-/* --- 1. 压低底部分类按钮组的高度 --- */
+/* --- 1. 压低底部分类按钮组高度 --- */
 body[data-type='home'] .categoryGroup {
-  flex: 0 0 76px !important; /* 将高度从 96px 进一步压缩到 76px（或 80px），使其更窄 */
+  flex: 0 0 76px !important; 
   height: 76px !important;
   min-height: 76px !important;
   display: flex !important;
   flex-direction: row !important;
   gap: 16px !important;
   margin: 0 !important;
+  overflow: hidden !important;
 }
 
-/* --- 2. 恢复手风琴交互特效与基础质感 --- */
+/* --- 2. 恢复夸张的安知鱼原版拉伸倍数 --- */
 body[data-type='home'] .categoryGroup .categoryItem {
-  flex: 1 1 0% !important; /* 默认状态等宽 */
+  flex: 1 1 0% !important; /* 默认平分 */
   height: 100% !important;
   margin: 0 !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  /* 恢复 flex 宽度的平滑过渡，配合 transform 上浮 */
   transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
 }
 
-/* --- 1. 放大悬停卡片的拉伸倍数 --- */
+/* 核心特效：2.5 倍疯狂拉伸 */
 body[data-type='home'] .categoryGroup .categoryItem:hover {
-  flex: 2.5 1 0% !important; /* 从 1.35 大幅提升到 2.5，恢复原版夸张的展开效果 */
+  flex: 2.5 1 0% !important; 
   transform: translateY(-4px) !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
   z-index: 2 !important;
 }
 
-/* --- 2. 强化兄弟卡片的挤压收缩 --- */
+/* 核心特效：极限挤压兄弟卡片 */
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-  flex: 0.5 1 0% !important; /* 进一步压缩未悬停的卡片，给展开的卡片让出巨大空间 */
+  flex: 0.5 1 0% !important; 
   transform: translateY(0) !important;
 }
 
-/* 确保内部按钮容器不会阻挡拉伸 */
+/* --- 3. 彻底修复内部排版与强制单行截断 --- */
 body[data-type='home'] .categoryItem .categoryButton {
   display: flex !important;
-  height: 100% !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  padding: 0 20px !important; 
   width: 100% !important;
-  border-radius: 16px !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 修复：分割线与标题紧紧贴合，超长显示省略号 */
+body[data-type='home'] .categoryItem .categoryButtonCopy {
+  display: flex !important;
   align-items: center !important;
-  padding: 0 20px !important;
+  justify-content: flex-start !important;
+  gap: 8px !important; /* 强制分割线与标题间距 */
+  white-space: nowrap !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 修复：描述文本绝不换行，超长显示省略号 */
+body[data-type='home'] .categoryItem .categoryButtonDesc {
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  width: 100% !important;
+  margin-top: 4px !important;
+  opacity: 0.8 !important;
 }
 
 
