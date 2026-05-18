@@ -178,107 +178,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 </section>
 
 <style is:global>
-  /* 彻底屏蔽旧版的 ::after 幽灵线 */
-  body[data-type='home'] .categoryButton::after,
-  body[data-type='home'] .categoryButton::before {
-    display: none !important;
-    content: none !important;
-  }
-
-  /* 修正内容区对齐：居中聚拢、向左靠齐 */
-  body[data-type='home'] .categoryItem-content {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    justify-content: center !important; 
-    padding: 12px 14px !important; /* Compressed padding */
-    height: auto !important;
-    min-height: 100% !important;
-    box-sizing: border-box !important;
-    z-index: 2 !important;
-    position: relative !important;
-    pointer-events: none !important;
-    min-width: 0 !important;
-    width: 100% !important;
-    background: transparent !important;
-  }
-
-  body[data-type='home'] .categoryButton {
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 100% !important;
-    position: relative !important;
-    text-decoration: none !important;
-    padding: 0 !important;
-    transition: background 0.3s ease !important;
-    overflow: hidden !important;
-    border-radius: 12px !important;
-  }
-
-  /* 分割线样式：原址替换，并推开下方的介绍文本 */
-  body[data-type='home'] .categoryItem-content .divider {
-    width: 24px !important;
-    height: 3px !important;
-    background-color: currentColor !important;
-    border-radius: 2px !important;
-    margin-top: 0 !important;
-    margin-bottom: 4px !important; /* Reduced margin to pull description up */
-    opacity: 0.8 !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* 标题样式：紧贴分割线 */
-  body[data-type='home'] .categoryButtonText {
-    font-size: 1.15rem !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    margin-bottom: 4px !important; /* 与分割线保持极近距离 */
-    white-space: normal !important;
-    overflow: visible !important;
-    width: 100% !important;
-    text-align: left !important;
-    display: block !important;
-  }
-
-  /* Remove any existing pseudo-element dividers */
-  body[data-type='home'] .categoryButtonText::after {
-    display: none !important;
-  }
-
-  /* Default full text visibility, no truncation */
-  body[data-type='home'] .categoryButtonDesc {
-    font-size: 0.85rem !important;
-    opacity: 0.8 !important;
-    display: block !important;
-    overflow: visible !important;
-    line-height: 1.4 !important;
-    width: 100% !important;
-    text-align: left !important;
-    white-space: normal !important;
-    word-break: break-all !important;
-  }
-
-  /* Compressed State allows full text visibility */
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
-    /* No line clamp restriction */
-  }
-
-  /* Flex/Grid Elastic Hover Interaction */
-  body[data-type='home'] #bannerGroup {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  /* 注意：严格保留对 .categoryGroup 的正确 Flex 设置，删除里面的 min-width 硬编码！ */
+  /* 强力覆盖外部 rebuild.css 和 final-pass.css 的冲突样式 */
+  
   body[data-type='home'] .categoryGroup {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 10px !important;
+    gap: 8px !important; /* 压缩间隙至安知鱼标准 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -288,43 +194,118 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryItem {
-    flex: 1 1 0% !important;
-    min-width: 90px !important; /* Threshold to prevent vertical character stacking */
+    flex: 1 1 0% !important; /* 强制弹性拉伸，撑满容器 */
+    min-width: 0 !important;
     transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
-    overflow: visible !important;
+    overflow: visible !important; /* 确保内容不被截断 */
     border-radius: 12px !important;
-    height: auto !important;
     position: relative !important;
+    transform: none !important;
   }
 
-  body[data-type='home'] .categoryItem:hover {
+  /* Hover 状态下卡片拉伸比例 */
+  body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
+    flex: 3 1 0% !important;
     transform: translateY(-2px) scale(1.01) !important;
     box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
     z-index: 10 !important;
   }
 
-  body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 4 1 0% !important; /* Exaggerated expansion */
-  }
-
+  /* 非 Hover 卡片在组悬停时自动压缩 */
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.4 1 0% !important; /* Exaggerated compression */
-    min-width: 80px !important; /* Allow deeper compression but keep readable */
+    flex: 0.6 1 0% !important;
+    opacity: 0.8 !important;
   }
 
+  body[data-type='home'] .categoryButton {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 76px !important;
+    position: relative !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    background-size: cover !important;
+    transition: background 0.3s ease !important;
+  }
+
+  /* 彻底屏蔽伪元素产生的各种干扰线 */
+  body[data-type='home'] .categoryButton::before,
+  body[data-type='home'] .categoryButton::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* 内容容器：消除不必要的间距 */
+  body[data-type='home'] .categoryItem-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important; 
+    padding: 12px 16px !important; /* 压缩内边距 */
+    height: 100% !important;
+    width: 100% !important;
+    z-index: 2 !important;
+    position: relative !important;
+    pointer-events: none !important;
+  }
+
+  /* 标题：保持原样，禁止截断 */
+  body[data-type='home'] .categoryButtonText {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important; /* 紧贴分割线 */
+    white-space: nowrap !important;
+    overflow: visible !important;
+    color: currentColor !important;
+  }
+
+  /* 分割线：上移定位的核心 */
+  body[data-type='home'] .categoryItem-content .divider {
+    width: 20px !important;
+    height: 3px !important;
+    background-color: currentColor !important;
+    border-radius: 2px !important;
+    margin: 4px 0 !important; /* 极小的上下边距，实现内容紧凑上移 */
+    opacity: 0.6 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 描述文本：绝对禁止省略号，保证多行完整展示 */
+  body[data-type='home'] .categoryButtonDesc {
+    font-size: 0.8rem !important;
+    opacity: 0.85 !important;
+    line-height: 1.3 !important;
+    white-space: normal !important; /* 允许换行 */
+    word-break: break-all !important;
+    overflow: visible !important; /* 禁止溢出隐藏 */
+    display: block !important;
+    -webkit-line-clamp: none !important; /* 清除 Tailwind 或外部 line-clamp */
+    text-overflow: clip !important;
+    width: 100% !important;
+  }
+
+  /* 图标：保持在底层作为装饰 */
   body[data-type='home'] .categoryButtonIcon {
     position: absolute !important;
-    right: 8px !important;
-    bottom: -15px !important;
-    opacity: 0.15 !important;
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease !important;
+    right: -10px !important;
+    bottom: -10px !important;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0.12 !important;
+    transform: rotate(15deg) !important;
+    transition: transform 0.4s ease, opacity 0.4s ease !important;
     z-index: 1 !important;
-    width: 70px !important;
-    height: 70px !important;
   }
 
   body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
-    transform: translate(-5px, -5px) rotate(-15deg) !important;
     opacity: 0.25 !important;
+    transform: rotate(0deg) scale(1.1) translate(-5px, -5px) !important;
   }
 </style>
