@@ -826,6 +826,8 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
 }
 
 body[data-type='home'] #random-banner {
+  flex: 1;
+  min-height: 0;
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s !important;
 }
 
@@ -1349,10 +1351,10 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 }
 
 body[data-type='home'] #bannerGroup {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(12.8rem, 17vw, 14.2rem);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: stretch;
+  height: 100%;
 }
 
 body[data-type='home'] #random-hover {
@@ -1405,11 +1407,12 @@ body[data-type='home'] .random-hover__hint {
 }
 
 body[data-type='home'] .categoryGroup {
-  flex: 0 0 clamp(12.8rem, 17vw, 14.2rem);
-  width: clamp(12.8rem, 17vw, 14.2rem);
-  min-width: 0;
-  max-width: 14.2rem;
-  gap: 9px;
+  display: flex;
+  height: 100px;
+  flex: 0 0 100px;
+  width: 100%;
+  max-width: none;
+  gap: 12px;
 }
 
 body[data-type='home'] .categoryItem {
@@ -1876,7 +1879,7 @@ body[data-type='post'] #post-comment {
 
 @media (max-width: 1199px) {
   body[data-type='home'] #bannerGroup {
-    grid-template-columns: minmax(0, 1fr);
+    width: auto;
   }
 
   body[data-type='home'] .categoryGroup {
@@ -1983,27 +1986,9 @@ body[data-type='post'] #post-comment {
   border-radius: 18px;
 }
 
-body[data-type='home'] #bannerGroup {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: calc(100% - 600px - 2.2rem);
-  height: 340px;
-}
 
-body[data-type='home'] .categoryGroup {
-  flex: 0 0 auto;
-  width: 100%;
-  min-width: 200px;
-  max-width: none;
-  gap: 10px;
-}
+/* Removed forced width/height on #bannerGroup and redundant categoryGroup styles */
 
-body[data-type='home'] .categoryItem,
-body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within),
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  flex: 1 1 0;
-}
 
 body[data-type='home'] .page-aside {
   align-self: start;
@@ -2227,19 +2212,8 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-
   max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
 }
 
+
 @media (max-width: 1199px) {
-  body[data-type='home'] #bannerGroup {
-    display: flex;
-    flex-direction: column;
-    width: auto;
-    height: auto;
-  }
-
-  body[data-type='home'] .categoryGroup {
-    display: flex !important;
-    flex-direction: column;
-  }
-
   body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent),
   body[data-type='home'] .card-feature-panel--overview {
     position: static !important;
