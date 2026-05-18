@@ -14702,3 +14702,114 @@ body[data-type='home'] .categoryItem .categoryButtonIcon {
   transition: transform 0.4s ease, opacity 0.4s ease, right 0.4s ease !important;
   transform: rotate(15deg) scale(1) !important;
 }
+
+/* ------------------------------------------------------------------------- */
+/* FIX: Page Hero Alignment & Card Encapsulation (Mandatory Grid Match)      */
+/* ------------------------------------------------------------------------- */
+
+@media screen and (min-width: 1201px) {
+  body[data-type='home'] .swiper_container_card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    gap: 20px !important; /* Strictly match global.css grid gap */
+    width: 100% !important;
+    height: 380px !important; /* Reference height */
+  }
+
+  body[data-type='home'] #bannerGroup {
+    flex: 1 1 0% !important;
+    width: auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  body[data-type='home'] .topGroup {
+    flex: 0 0 300px !important; /* Strictly match sidebar width */
+    width: 300px !important;
+    min-width: 300px !important;
+    height: 100% !important;
+    position: relative !important;
+    border-radius: 16px !important;
+    overflow: hidden !important; /* Force encapsulation */
+  }
+}
+
+/* TodayCard Encapsulation & Visual Fixes */
+body[data-type='home'] .topGroup .todayCard {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-link {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-cover {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  z-index: 1 !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-info {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  padding: 24px 20px !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%) !important;
+  color: #fff !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-tips {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  opacity: 0.8 !important;
+  margin-bottom: 4px !important;
+  letter-spacing: 0.05em !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  line-height: 1.4 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+body[data-type='home'] .topGroup .todayCard-info p {
+  font-size: 0.9rem !important;
+  opacity: 0.85 !important;
+  margin: 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Hide stacked cards and stack-backs to ensure absolute alignment and encapsulation */
+body[data-type='home'] .topGroup .recent-post-item,
+body[data-type='home'] .topGroup .topGroup__stack {
+  display: none !important;
+}
