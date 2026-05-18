@@ -94,10 +94,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
             return (
               <div class="categoryItem">
                 <a class={`categoryButton ${item.accent}`} href={item.href}>
-                  <span class="categoryButtonCopy">
+                  <div class="categoryItem-content">
+                    <div class="divider"></div>
                     <span class="categoryButtonText">{item.label}</span>
                     <span class="categoryButtonDesc">{item.description}</span>
-                  </span>
+                  </div>
                   <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
                 </a>
               </div>
@@ -175,3 +176,114 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     </div>
   </div>
 </section>
+
+<style is:global>
+  /* Base Compound Left Alignment */
+  body[data-type='home'] .categoryItem-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+    z-index: 2 !important;
+    position: relative !important;
+    pointer-events: none !important;
+    min-width: 0 !important; /* Important for flex text truncation */
+    width: 100% !important;
+  }
+  
+  body[data-type='home'] .categoryButton {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+  }
+
+  body[data-type='home'] .categoryItem-content .divider {
+    width: 24px;
+    height: 3px;
+    background-color: currentColor;
+    border-radius: 2px;
+    margin-bottom: 6px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  body[data-type='home'] .categoryButtonText {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Default 1 line truncation */
+  body[data-type='home'] .categoryButtonDesc {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    width: 100%;
+    text-align: left;
+    word-break: break-word;
+    transition: -webkit-line-clamp 0.3s ease;
+  }
+
+  /* Compressed State allows 2 lines */
+  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
+    -webkit-line-clamp: 2;
+  }
+
+  /* Flex/Grid Elastic Hover Interaction */
+  body[data-type='home'] .categoryGroup {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  body[data-type='home'] .categoryItem {
+    flex: 1 1 0% !important;
+    min-width: 80px !important;
+    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.28s ease, box-shadow 0.28s ease !important;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
+    flex: 1.8 1 0% !important;
+  }
+
+  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
+    flex: 0.7 1 0% !important;
+  }
+
+  body[data-type='home'] .categoryButtonIcon {
+    position: absolute;
+    right: 8px;
+    bottom: -15px;
+    font-size: 4rem;
+    opacity: 0.15;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+    z-index: 1;
+    width: 70px;
+    height: 70px;
+  }
+
+  body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
+    transform: scale(1.1) translate(-5px, -5px) rotate(-15deg);
+    opacity: 0.25;
+  }
+</style>
