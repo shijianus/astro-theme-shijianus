@@ -94,10 +94,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
             return (
               <div class="categoryItem">
                 <a class={`categoryButton ${item.accent}`} href={item.href}>
-                  <span class="categoryButtonCopy">
+                  <div class="categoryItem-content">
+                    <div class="divider"></div>
                     <span class="categoryButtonText">{item.label}</span>
                     <span class="categoryButtonDesc">{item.description}</span>
-                  </span>
+                  </div>
                   <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
                 </a>
               </div>
@@ -175,3 +176,101 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     </div>
   </div>
 </section>
+
+<style is:global>
+  /* 基础复构体左对齐 */
+  body[data-type='home'] .categoryItem-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 14px 16px;
+    height: 100%;
+    box-sizing: border-box;
+    z-index: 2;
+    position: relative;
+    pointer-events: none;
+  }
+  
+  body[data-type='home'] .categoryButton {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+  }
+
+  body[data-type='home'] .categoryItem-content .divider {
+    width: 24px;
+    height: 3px;
+    background-color: currentColor;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  body[data-type='home'] .categoryButtonText {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  /* 默认1行截断 */
+  body[data-type='home'] .categoryButtonDesc {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    transition: -webkit-line-clamp 0.3s ease;
+  }
+
+  /* 挤压状态下允许2行 */
+  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
+    -webkit-line-clamp: 2;
+  }
+
+  /* 交互弹性伸缩动画逻辑 */
+  body[data-type='home'] .categoryGroup {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+  }
+
+  body[data-type='home'] .categoryItem {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.28s ease, box-shadow 0.28s ease !important;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
+    flex: 1.6 1 0% !important;
+  }
+
+  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
+    flex: 0.7 1 0% !important;
+  }
+
+  body[data-type='home'] .categoryButtonIcon {
+    position: absolute;
+    right: 12px;
+    bottom: -10px;
+    font-size: 4rem;
+    opacity: 0.2;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    z-index: 1;
+    width: 64px;
+    height: 64px;
+  }
+
+  body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
+    transform: scale(1.1) rotate(-10deg);
+    opacity: 0.3;
+  }
+</style>
