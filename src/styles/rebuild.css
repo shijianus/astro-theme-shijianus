@@ -14704,36 +14704,43 @@ body[data-type='home'] #random-banner {
   margin: 0 !important;
 }
 
-/* --- 3. 底部按钮组外壳 (强制锁死 96px) --- */
+/* --- 1. 压低底部分类按钮组的高度 --- */
 body[data-type='home'] .categoryGroup {
-  flex: 0 0 96px !important;
-  height: 96px !important;
-  min-height: 96px !important;
+  flex: 0 0 76px !important; /* 将高度从 96px 进一步压缩到 76px（或 80px），使其更窄 */
+  height: 76px !important;
+  min-height: 76px !important;
   display: flex !important;
   flex-direction: row !important;
   gap: 16px !important;
   margin: 0 !important;
 }
 
-/* --- 4. 分类按钮本体 (彻底杀死旧的手风琴特效) --- */
+/* --- 2. 恢复手风琴交互特效与基础质感 --- */
 body[data-type='home'] .categoryGroup .categoryItem {
-  flex: 1 1 0% !important; /* 强制永远等宽 */
+  flex: 1 1 0% !important; /* 默认状态等宽 */
   height: 100% !important;
   margin: 0 !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease !important;
+  /* 恢复 flex 宽度的平滑过渡，配合 transform 上浮 */
+  transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
 }
 
-/* 彻底禁用旧主题的 Hover 宽度剧变干扰 */
-body[data-type='home'] .categoryGroup:hover .categoryItem,
-body[data-type='home'] .categoryGroup .categoryItem:hover,
+/* 核心特效：当前悬停的按钮横向拉长，并微微上浮 */
+body[data-type='home'] .categoryGroup .categoryItem:hover {
+  flex: 2 1 0% !important; /* 放大比例，使其变宽 */
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  z-index: 2 !important;
+}
+
+/* 核心特效：容器被悬停时，未被悬停的兄弟按钮被挤压变窄 */
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-  flex: 1 1 0% !important;
-  width: auto !important;
+  flex: 0.8 1 0% !important; /* 缩小比例 */
+  transform: translateY(0) !important;
 }
 
-/* --- 5. 按钮内部实际触发区强制填满 --- */
+/* 确保内部按钮容器不会阻挡拉伸 */
 body[data-type='home'] .categoryItem .categoryButton {
   display: flex !important;
   height: 100% !important;
@@ -14741,13 +14748,6 @@ body[data-type='home'] .categoryItem .categoryButton {
   border-radius: 16px !important;
   align-items: center !important;
   padding: 0 20px !important;
-}
-
-/* --- 6. 还原清爽的上浮动画 --- */
-body[data-type='home'] .categoryGroup .categoryItem:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
-  z-index: 2 !important;
 }
 
 
