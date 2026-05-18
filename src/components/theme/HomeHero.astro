@@ -95,8 +95,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               <div class="categoryItem">
                 <a class={`categoryButton ${item.accent}`} href={item.href}>
                   <div class="categoryItem-content">
-                    <div class="divider"></div>
                     <span class="categoryButtonText">{item.label}</span>
+                    <div class="divider"></div>
                     <span class="categoryButtonDesc">{item.description}</span>
                   </div>
                   <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
@@ -178,112 +178,152 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 </section>
 
 <style is:global>
-  /* Base Compound Left Alignment */
+  /* 彻底屏蔽旧版的 ::after 幽灵线 */
+  body[data-type='home'] .categoryButton::after,
+  body[data-type='home'] .categoryButton::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* 修正内容区对齐：居中聚拢、向左靠齐 */
   body[data-type='home'] .categoryItem-content {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    justify-content: center !important;
-    padding: 10px 14px !important;
+    justify-content: center !important; 
+    padding: 16px 18px !important; /* 确保距离上下边界有足够距离，左侧留出呼吸感 */
     height: 100% !important;
     box-sizing: border-box !important;
     z-index: 2 !important;
     position: relative !important;
     pointer-events: none !important;
-    min-width: 0 !important; /* Important for flex text truncation */
+    min-width: 0 !important;
     width: 100% !important;
+    background: transparent !important;
   }
-  
+
   body[data-type='home'] .categoryButton {
-    display: block !important;
+    display: flex !important;
+    align-items: center !important;
     width: 100% !important;
     height: 100% !important;
     position: relative !important;
     text-decoration: none !important;
     padding: 0 !important;
+    transform: none !important;
+    transition: background 0.3s ease !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
   }
 
+  /* 分割线样式：原址替换，并推开下方的介绍文本 */
   body[data-type='home'] .categoryItem-content .divider {
-    width: 24px;
-    height: 3px;
-    background-color: currentColor;
-    border-radius: 2px;
-    margin-bottom: 6px;
-    opacity: 0.8;
-    flex-shrink: 0;
+    width: 24px !important;
+    height: 3px !important;
+    background-color: currentColor !important;
+    border-radius: 2px !important;
+    margin-top: 0 !important;
+    margin-bottom: 8px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 */
+    opacity: 0.8 !important;
+    flex-shrink: 0 !important;
   }
 
+  /* 标题样式：紧贴分割线 */
   body[data-type='home'] .categoryButtonText {
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    text-align: left;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 4px !important; /* 与分割线保持极近距离 */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+    text-align: left !important;
+    display: block !important;
+  }
+
+  /* Remove any existing pseudo-element dividers */
+  body[data-type='home'] .categoryButtonText::after {
+    display: none !important;
   }
 
   /* Default 1 line truncation */
   body[data-type='home'] .categoryButtonDesc {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-    width: 100%;
-    text-align: left;
-    word-break: break-word;
-    transition: -webkit-line-clamp 0.3s ease;
+    font-size: 0.85rem !important;
+    opacity: 0.8 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+    transition: -webkit-line-clamp 0.3s ease !important;
   }
 
-  /* Compressed State allows 2 lines */
+  /* Compressed State allows 2 lines to ensure content visibility in narrow space */
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2 !important;
   }
 
   /* Flex/Grid Elastic Hover Interaction */
+  body[data-type='home'] #bannerGroup {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* 注意：严格保留对 .categoryGroup 的正确 Flex 设置，删除里面的 min-width 硬编码！ */
   body[data-type='home'] .categoryGroup {
     display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
     gap: 12px !important;
     width: 100% !important;
+    height: 76px !important;
+    align-items: stretch !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body[data-type='home'] .categoryItem {
     flex: 1 1 0% !important;
-    min-width: 80px !important;
+    min-width: 90px !important; /* Threshold to prevent vertical character stacking */
     transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.28s ease, box-shadow 0.28s ease !important;
-    overflow: hidden;
-    border-radius: 12px;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    transform: none !important; /* Strictly no scale/zoom */
+    height: 100% !important;
+    position: relative !important;
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 1.8 1 0% !important;
+    flex: 4 1 0% !important; /* Exaggerated expansion */
+    transform: none !important; /* Strictly no scale */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.7 1 0% !important;
+    flex: 0.4 1 0% !important; /* Exaggerated compression */
+    min-width: 80px !important; /* Allow deeper compression but keep readable */
   }
 
   body[data-type='home'] .categoryButtonIcon {
-    position: absolute;
-    right: 8px;
-    bottom: -15px;
-    font-size: 4rem;
-    opacity: 0.15;
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
-    z-index: 1;
-    width: 70px;
-    height: 70px;
+    position: absolute !important;
+    right: 8px !important;
+    bottom: -15px !important;
+    opacity: 0.15 !important;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease !important;
+    z-index: 1 !important;
+    width: 70px !important;
+    height: 70px !important;
   }
 
   body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
-    transform: scale(1.1) translate(-5px, -5px) rotate(-15deg);
-    opacity: 0.25;
+    transform: translate(-5px, -5px) rotate(-15deg) !important;
+    opacity: 0.25 !important;
   }
 </style>
