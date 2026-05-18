@@ -327,7 +327,7 @@ body[data-type='home'] .topGroup {
 }
 
 body[data-type='home'] .topGroup .todayCard {
-  width: 600px;
+  width: 100%;
   margin-left: 0;
   border-radius: 24px;
 }
