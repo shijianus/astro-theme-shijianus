@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { background: #000; margin: 0; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    
+    /* Mocked site variables */
+    :root {
+      --white: #fff;
+      --font-color: #fff;
+    }
+
+    /* The new CSS to test */
+    body[data-type='home'] .categoryButtonCopy {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      transition: opacity 0.22s ease;
+      width: 100%;
+    }
+
+    body[data-type='home'] .categoryButtonText {
+      flex: 0 0 auto;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.98rem;
+      line-height: 1;
+    }
+
+    body[data-type='home'] .categoryDivider {
+      flex: 0 0 auto;
+      width: 1px;
+      height: 12px;
+      background-color: rgba(255, 255, 255, 0.15);
+      margin: 0 10px;
+    }
+
+    body[data-type='home'] .categoryButtonDesc {
+      flex: 1 1 auto;
+      min-width: 0;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85em;
+      line-height: 1.4;
+      transition: opacity 0.22s ease;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Structural support for the test */
+    .categoryGroup { width: 400px; display: flex; gap: 12px; }
+    .categoryItem { flex: 1; min-width: 0; }
+    .categoryButton { display: flex; align-items: center; padding: 15px 13px; background: #1a1a1a; text-decoration: none; border-radius: 12px; position: relative; }
+  </style>
+</head>
+<body data-type="home">
+  <h3>Normal Case</h3>
+  <div class="categoryGroup">
+    <div class="categoryItem" id="normal">
+      <a class="categoryButton" href="#">
+        <span class="categoryButtonCopy">
+          <span class="categoryButtonText">学习笔记</span>
+          <span class="categoryDivider"></span>
+          <span class="categoryButtonDesc">课程、实验与思考</span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 50px;">Compressed Case (Truncation Test)</h3>
+  <div class="categoryGroup" style="width: 200px;">
+    <div class="categoryItem" id="compressed">
+      <a class="categoryButton" href="#">
+        <span class="categoryButtonCopy">
+          <span class="categoryButtonText">学习笔记</span>
+          <span class="categoryDivider"></span>
+          <span class="categoryButtonDesc">这是一个非常长的描述文本，旨在测试在宽度极度压缩的情况下是否能够正确折行并截断到两行。超出两行的部分应该显示省略号。</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
