@@ -96,6 +96,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                 <a class={`categoryButton ${item.accent}`} href={item.href}>
                   <span class="categoryButtonCopy">
                     <span class="categoryButtonText">{item.label}</span>
+                    <span class="categoryDivider"></span>
                     <span class="categoryButtonDesc">{item.description}</span>
                   </span>
                   <CategoryIcon className="categoryButtonIcon" aria-hidden="true" />
