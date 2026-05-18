@@ -223,7 +223,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     background-color: currentColor !important;
     border-radius: 2px !important;
     margin-top: 0 !important;
-    margin-bottom: 8px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 */
+    margin-bottom: 4px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 */
     opacity: 0.8 !important;
     flex-shrink: 0 !important;
   }
@@ -247,26 +247,18 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: none !important;
   }
 
-  /* Default 1 line truncation */
+  /* Removing truncation */
   body[data-type='home'] .categoryButtonDesc {
     font-size: 0.85rem !important;
     opacity: 0.8 !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 1 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
     line-height: 1.4 !important;
     width: 100% !important;
     text-align: left !important;
     white-space: normal !important;
     word-break: break-all !important;
-    transition: -webkit-line-clamp 0.3s ease !important;
-  }
-
-  /* Compressed State allows 2 lines to ensure content visibility in narrow space */
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
-    -webkit-line-clamp: 2 !important;
+    margin-top: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   /* Flex/Grid Elastic Hover Interaction */
@@ -282,7 +274,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 12px !important;
+    gap: 8px !important;
     width: 100% !important;
     height: 76px !important;
     align-items: stretch !important;
@@ -292,23 +284,26 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem {
     flex: 1 1 0% !important;
-    min-width: 90px !important; /* Threshold to prevent vertical character stacking */
-    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.28s ease, box-shadow 0.28s ease !important;
+    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
     overflow: hidden !important;
     border-radius: 12px !important;
-    transform: none !important; /* Strictly no scale/zoom */
     height: 100% !important;
     position: relative !important;
   }
 
+  body[data-type='home'] .categoryItem:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    z-index: 10 !important;
+  }
+
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 4 1 0% !important; /* Exaggerated expansion */
-    transform: none !important; /* Strictly no scale */
+    flex: 3 1 0% !important; /* Exaggerated expansion */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.4 1 0% !important; /* Exaggerated compression */
-    min-width: 80px !important; /* Allow deeper compression but keep readable */
+    flex: 0.6 1 0% !important; /* Exaggerated compression */
+    opacity: 0.8 !important;
   }
 
   body[data-type='home'] .categoryButtonIcon {
