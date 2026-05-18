@@ -14716,13 +14716,14 @@ body[data-type='home'] .categoryGroup {
   overflow: hidden !important;
 }
 
-/* --- 2. 恢复夸张的安知鱼原版拉伸倍数 --- */
+/* --- 1. 赋予卡片极限被压缩的权利 --- */
 body[data-type='home'] .categoryGroup .categoryItem {
   flex: 1 1 0% !important; /* 默认平分 */
   height: 100% !important;
   margin: 0 !important;
   border-radius: 16px !important;
   overflow: hidden !important;
+  min-width: 0 !important; /* 致命关键：打破 flex 默认防挤压机制 */
   transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
 }
 
@@ -14740,39 +14741,56 @@ body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
   transform: translateY(0) !important;
 }
 
-/* --- 3. 彻底修复内部排版与强制单行截断 --- */
+/* --- 2. 修复按钮内部 Flex 容器容器 --- */
 body[data-type='home'] .categoryItem .categoryButton {
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: flex-start !important;
-  padding: 0 20px !important; 
+  padding: 0 16px !important; 
   width: 100% !important;
   height: 100% !important;
+  min-width: 0 !important; /* 致命关键 */
+  box-sizing: border-box !important;
   overflow: hidden !important;
 }
 
-/* 修复：分割线与标题紧紧贴合，超长显示省略号 */
+/* --- 3. 修复标题与分割线，强制单行不换行 --- */
 body[data-type='home'] .categoryItem .categoryButtonCopy {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: 8px !important; /* 强制分割线与标题间距 */
-  white-space: nowrap !important;
+  gap: 6px !important; /* 修复分割线间距 */
   width: 100% !important;
+  min-width: 0 !important; /* 致命关键 */
+  white-space: nowrap !important; /* 绝对禁止换行 */
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
-/* 修复：描述文本绝不换行，超长显示省略号 */
-body[data-type='home'] .categoryItem .categoryButtonDesc {
-  display: block !important;
-  white-space: nowrap !important;
+/* 确保标题内的文字缩略 */
+body[data-type='home'] .categoryItem .categoryButtonCopy > span {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* --- 4. 修复描述文本 --- */
+body[data-type='home'] .categoryItem .categoryButtonDesc {
+  display: block !important;
   width: 100% !important;
+  min-width: 0 !important; /* 致命关键 */
+  white-space: nowrap !important; /* 绝对禁止换行 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; /* 显示省略号 */
   margin-top: 4px !important;
   opacity: 0.8 !important;
+}
+
+/* --- 5. 防止图标被挤压变形 (若有图标) --- */
+body[data-type='home'] .categoryItem .categoryButtonIcon,
+body[data-type='home'] .categoryItem .tags-group-icon {
+  flex-shrink: 0 !important; /* 保证图标在极端挤压下依然保持正圆/方块 */
 }
 
 
