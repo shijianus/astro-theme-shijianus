@@ -1350,10 +1350,30 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   font: inherit;
 }
 
+body[data-type='home'] .swiper_container_card {
+  display: flex;
+  gap: 20px;
+  height: 372px; /* Restore global height to ensure consistency */
+  align-items: stretch;
+}
+
 body[data-type='home'] #bannerGroup {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 6.5;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+}
+
+body[data-type='home'] .topGroup {
+  display: flex;
+  flex-flow: row wrap;
+  align-content: space-between;
+  flex: 3.5;
+  min-width: 0;
+  width: auto;
   height: 100%;
 }
 
