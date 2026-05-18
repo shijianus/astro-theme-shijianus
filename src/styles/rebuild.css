@@ -260,6 +260,10 @@ body[data-type='post'] #card-toc .toc-content {
 }
 
 body[data-type='home'] .swiper_container_card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 20px;
   height: 348px;
   padding: 0;
   border: 0;
@@ -268,6 +272,9 @@ body[data-type='home'] .swiper_container_card {
 }
 
 body[data-type='home'] #bannerGroup {
+  flex: 6;
+  min-width: 0;
+  width: auto;
   gap: 14px;
   height: 348px;
 }
@@ -323,11 +330,14 @@ body[data-type='home'] .categoryItem:hover .categoryButton::before {
 }
 
 body[data-type='home'] .topGroup {
+  flex: 4;
+  min-width: 0;
+  width: auto;
   height: 348px;
 }
 
 body[data-type='home'] .topGroup .todayCard {
-  width: 600px;
+  width: 100%;
   margin-left: 0;
   border-radius: 24px;
 }
