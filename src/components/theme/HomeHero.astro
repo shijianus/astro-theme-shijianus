@@ -274,7 +274,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 2px !important; /* 极简卡片间距 */
+    justify-content: flex-start !important; /* 强制所有元素向左对齐排布 */
+    gap: 1px !important; /* 极简卡片间距 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -290,6 +291,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     border-radius: 12px !important;
     height: auto !important;
     position: relative !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   body[data-type='home'] .categoryItem:hover {
@@ -303,7 +306,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.25 1 0% !important; /* 极限压缩 */
+    flex: 0.2 1 0% !important; /* 极限压缩 */
     opacity: 0.8 !important;
   }
 
