@@ -191,7 +191,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: center !important; 
-    padding: 8px 12px !important; /* 确保距离上下边界有足够距离，左侧留出呼吸感 - 已极致紧凑 */
+    padding: 8px 12px 8px 8px !important; /* 确保距离上下边界有足够距离，左侧极致贴近 */
     height: auto !important;
     box-sizing: border-box !important;
     z-index: 2 !important;
@@ -235,7 +235,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     line-height: 1.2 !important;
     margin-bottom: 2px !important; /* 与分割线保持极近距离 */
     white-space: nowrap !important; /* 标题绝对锁定 */
-    min-width: max-content !important;
+    min-width: 90px !important;
     overflow: visible !important;
     width: 100% !important;
     text-align: left !important;
@@ -274,7 +274,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 4px !important; /* 极简卡片间距 */
+    gap: 2px !important; /* 极简卡片间距 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -299,12 +299,22 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 4 1 0% !important; /* 大幅度弹性拉伸 */
+    flex: 6 1 0% !important; /* 大幅度弹性拉伸 */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.5 1 0% !important; /* 极限压缩 */
+    flex: 0.25 1 0% !important; /* 极限压缩 */
     opacity: 0.8 !important;
+  }
+
+  /* 挤压态下文本自适应容灾 */
+  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
+    font-size: 0.85em !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
   }
 
   body[data-type='home'] .categoryButtonIcon {
