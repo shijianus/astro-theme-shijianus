@@ -315,13 +315,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     flex: 2.5 1 0% !important; /* 适度拉伸，不再过度掠夺空间 */
   }
 
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
+  body[data-type='home'] .categoryGroup:has(.categoryItem:hover) .categoryItem:not(:hover) {
     flex: 0.9 1 0% !important; /* 提升压缩下限 */
     opacity: 0.8 !important;
   }
 
   /* 挤压态下文本自适应容灾：去除省略号，实现纯净两行展示 */
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
+  body[data-type='home'] .categoryGroup:has(.categoryItem:hover) .categoryItem:not(:hover) .categoryButtonDesc {
     display: block !important;
     white-space: normal !important;
     word-wrap: break-word !important;
