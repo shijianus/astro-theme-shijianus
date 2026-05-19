@@ -300,7 +300,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     position: relative !important;
     margin: 0 !important;
     box-sizing: border-box !important;
-    min-width: 0 !important;
+    min-width: 140px !important; /* 物理底线，确保标题不被挤压 */
     max-width: none !important;
     min-height: 0 !important;
   }
@@ -312,22 +312,23 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 4 1 0% !important; /* 主卡片占据绝对主导权 */
+    flex: 2.5 1 0% !important; /* 适度拉伸，不再过度掠夺空间 */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.8 1 0% !important; /* 剩余分配给副卡片 */
+    flex: 0.9 1 0% !important; /* 提升压缩下限 */
     opacity: 0.8 !important;
   }
 
-  /* 挤压态下文本自适应容灾 */
+  /* 挤压态下文本自适应容灾：去除省略号，实现纯净两行展示 */
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) .categoryButtonDesc {
-    font-size: 0.85em !important;
+    display: block !important;
     white-space: normal !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
+    word-wrap: break-word !important;
+    line-height: 1.4 !important;
+    max-height: 2.8em !important; /* 精准锁定 2 行高度 (1.4 * 2) */
     overflow: hidden !important;
+    font-size: 0.85em !important;
   }
 
   body[data-type='home'] .categoryButtonIcon {
