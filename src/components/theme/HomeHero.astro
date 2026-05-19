@@ -200,6 +200,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     min-width: 0 !important;
     width: 100% !important;
     background: transparent !important;
+    overflow: hidden !important; /* 防止内容撑破 */
   }
 
   body[data-type='home'] .categoryButton {
@@ -276,8 +277,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: flex-start !important; /* 强制所有元素向左对齐排布 */
-    gap: 1px !important; /* 极简卡片间距 */
+    justify-content: space-between !important; /* 强制两端对齐，锁死边缘 */
+    gap: 4px !important; /* 极简卡片间距 (固定2个4px) */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -288,9 +289,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem {
     display: flex !important;
-    flex: 1 1 0% !important;
-    transition: flex 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important; /* 夸张流畅的贝塞尔曲线 */
-    overflow: visible !important;
+    flex: none !important;
+    width: calc((100% - 8px) / 3) !important; /* 100% 总宽度减去 2 个 4px 的间隙，平分给 3 个卡片 */
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important; /* 夸张流畅的贝塞尔曲线 */
+    overflow: hidden !important; /* 文本层级彻底防暴走 */
     border-radius: 12px !important;
     height: auto !important;
     position: relative !important;
@@ -307,11 +309,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 6 1 0% !important; /* 大幅度弹性拉伸 */
+    width: 60% !important; /* 主卡片占据 60% 绝对空间 */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.2 1 0% !important; /* 极限压缩 */
+    width: calc(20% - 4px) !important; /* 剩余 40% 减去 8px 间隙，平分给两个副卡片 */
     opacity: 0.8 !important;
   }
 
