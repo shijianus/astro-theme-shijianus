@@ -217,6 +217,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     transition: background 0.3s ease !important;
     overflow: hidden !important;
     border-radius: 12px !important;
+    max-width: none !important;
+    min-width: 0 !important;
   }
 
   /* 分割线样式：原址替换，并推开下方的介绍文本 */
@@ -289,9 +291,9 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem {
     display: flex !important;
-    flex: none !important;
-    width: calc((100% - 16px) / 3) !important; /* 100% 总宽度减去 2 个 8px 的间隙，平分给 3 个卡片 */
-    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important; /* 动画过渡只针对宽度，确保帧同步 */
+    flex: 1 1 0% !important;
+    width: auto !important;
+    transition: flex 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
     overflow: hidden !important; /* 文本层级彻底防暴走 */
     border-radius: 12px !important;
     height: auto !important;
@@ -299,6 +301,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     margin: 0 !important;
     box-sizing: border-box !important;
     min-width: 0 !important;
+    max-width: none !important;
     min-height: 0 !important;
   }
 
@@ -309,11 +312,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    width: 60% !important; /* 主卡片占据 60% 绝对空间 */
+    flex: 4 1 0% !important; /* 主卡片占据绝对主导权 */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    width: calc(20% - 8px) !important; /* 数学闭环验证：60% + (20%-8px) + (20%-8px) + 16px = 100% */
+    flex: 0.8 1 0% !important; /* 剩余分配给副卡片 */
     opacity: 0.8 !important;
   }
 
