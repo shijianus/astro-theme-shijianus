@@ -277,8 +277,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: space-between !important; /* 强制两端对齐，锁死边缘 */
-    gap: 2px !important; /* 极简卡片间距 (固定2个2px) */
+    justify-content: flex-start !important; /* 彻底禁止浏览器在动画期间动态调节间隙 */
+    gap: 8px !important; /* 扩大间隙，保留呼吸感 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -290,8 +290,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   body[data-type='home'] .categoryItem {
     display: flex !important;
     flex: none !important;
-    width: calc((100% - 4px) / 3) !important; /* 100% 总宽度减去 2 个 2px 的间隙，平分给 3 个卡片 */
-    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important; /* 夸张流畅的贝塞尔曲线 */
+    width: calc((100% - 16px) / 3) !important; /* 100% 总宽度减去 2 个 8px 的间隙，平分给 3 个卡片 */
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important; /* 动画过渡只针对宽度，确保帧同步 */
     overflow: hidden !important; /* 文本层级彻底防暴走 */
     border-radius: 12px !important;
     height: auto !important;
@@ -313,7 +313,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    width: calc(20% - 2px) !important; /* 剩余 40% 减去 4px 间隙，平分给两个副卡片 */
+    width: calc(20% - 8px) !important; /* 数学闭环验证：60% + (20%-8px) + (20%-8px) + 16px = 100% */
     opacity: 0.8 !important;
   }
 
