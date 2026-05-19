@@ -13,7 +13,7 @@ import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import { MusicPocket } from '../components/theme/MusicPocket';
 import Sidebar from '../components/theme/Sidebar.astro';
-import { getExcerpt, getPostPath, resolveCategory, resolveCover } from '../lib/content';
+import { getExcerpt, getPostPath, resolveCategory, resolveCover, estimateWordCount, estimateReadingMinutes } from '../lib/content';
 import {
   getCommentsProviderLabel,
   hasConfiguredCommentDatabase,
@@ -43,7 +43,35 @@ const {
 
 // Fetch global data for overlays to ensure they are populated on all routes
 const allPosts = await getCollection('posts');
-const globalData = createSidebarData(allPosts);
+
+// Data slimming: map posts to essential fields to reduce payload and memory usage
+const slimPosts = allPosts.map((post) => {
+  // We MUST calculate these before we lose the body
+  const wordCount = estimateWordCount(post);
+  const readingMinutes = estimateReadingMinutes(post);
+  
+  return {
+    ...post,
+    body: post.data.description || '', // Drop full body
+    data: {
+      ...post.data,
+      wordCount, // Pass these along if createSidebarData can use them, 
+      readingMinutes, // but SidebarData doesn't natively support them in CollectionEntry.
+    }
+  };
+});
+
+// Since createSidebarData recalculates metrics from the body, 
+// and we just emptied the body, we should probably calculate the totals here 
+// and pass them to Sidebar or modify createSidebarData.
+
+// Actually, let's just calculate the totals here and override globalData.
+const totalReadingMinutes = allPosts.reduce((acc, post) => acc + estimateReadingMinutes(post), 0);
+const totalWords = allPosts.reduce((acc, post) => acc + estimateWordCount(post), 0);
+
+const globalData = createSidebarData(slimPosts as any);
+globalData.totalReadingMinutes = totalReadingMinutes;
+globalData.totalWords = totalWords;
 
 const overlayPosts = globalData.recentPosts.map((entry) => ({
   title: entry.data.title,
@@ -147,7 +175,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
 
     <div class="page" id="body-wrap">
       <SiteHeader
-        client:load
+        client:idle
         brandName={siteConfig.site.name}
         domainLabel={siteConfig.site.domainLabel}
         currentPath={Astro.url.pathname}
@@ -193,7 +221,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
       />
       <MusicPocket client:visible apiBase={musicApiBase} />
       <ThemeOverlays
-        client:visible
+        client:idle
         brandName={siteConfig.site.name}
         authorName={siteConfig.site.author.name}
         authorMotto={siteConfig.site.author.motto}
@@ -214,8 +242,8 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
       />
       <LocaleRuntime />
       <CodeBlockEnhancer />
-      <StickySidebarObserver pageType={pageType} client:load />
-      <ShortcutPanel client:load />
+      <StickySidebarObserver pageType={pageType} client:idle />
+      <ShortcutPanel client:idle />
     </div>
 
     <script is:inline>

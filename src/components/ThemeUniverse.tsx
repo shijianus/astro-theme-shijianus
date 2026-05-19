@@ -98,8 +98,9 @@ function isLightMode(mode: UniverseMode) {
 }
 
 function shouldAnimateUniverse(reducedMotionQuery?: MediaQueryList) {
+  if (typeof window === 'undefined') return false;
   if (document.visibilityState !== 'visible') return false;
-  if (window.innerWidth < 960) return false;
+  if (window.innerWidth < 768) return false;
   if ((reducedMotionQuery ?? window.matchMedia('(prefers-reduced-motion: reduce)')).matches) return false;
 
   const navigatorWithConnection = navigator as Navigator & {
@@ -122,6 +123,7 @@ export function ThemeUniverse() {
     if (!context) return;
 
     let frameId = 0;
+    let isLooping = false;
     let width = 0;
     let height = 0;
     let lastShootingAt = 0;
@@ -221,6 +223,10 @@ export function ThemeUniverse() {
       canvas.style.height = `${height}px`;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       populate();
+
+      if (shouldAnimateUniverse(reducedMotionQuery) && !isLooping) {
+        frameId = window.requestAnimationFrame(render);
+      }
     };
 
     const drawBackgroundGlow = (mode: UniverseMode, tick: number) => {
@@ -403,13 +409,15 @@ export function ThemeUniverse() {
     const render = (tick: number) => {
       const mode = getUniverseMode();
       canvas.style.opacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
+      
       if (!mode || !shouldAnimateUniverse(reducedMotionQuery)) {
         lastFrameAt = 0;
+        isLooping = false;
         context.clearRect(0, 0, width, height);
-        frameId = window.requestAnimationFrame(render);
         return;
       }
 
+      isLooping = true;
       if (lastFrameAt && tick - lastFrameAt < UNIVERSE_FRAME_INTERVAL) {
         frameId = window.requestAnimationFrame(render);
         return;
@@ -450,7 +458,9 @@ export function ThemeUniverse() {
     };
 
     resize();
-    frameId = window.requestAnimationFrame(render);
+    if (shouldAnimateUniverse(reducedMotionQuery)) {
+      frameId = window.requestAnimationFrame(render);
+    }
 
     const observer = new MutationObserver(() => {
       if (!isUniverseActive()) {
@@ -458,6 +468,9 @@ export function ThemeUniverse() {
         return;
       }
       populate();
+      if (shouldAnimateUniverse(reducedMotionQuery) && !isLooping) {
+        frameId = window.requestAnimationFrame(render);
+      }
     });
 
     observer.observe(document.documentElement, {
@@ -468,6 +481,7 @@ export function ThemeUniverse() {
     const handleVisibilityOrMotionChange = () => {
       lastFrameAt = 0;
       if (!shouldAnimateUniverse(reducedMotionQuery)) {
+        isLooping = false;
         context.clearRect(0, 0, width, height);
         return;
       }
