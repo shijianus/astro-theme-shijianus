@@ -191,7 +191,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: center !important; 
-    padding: 12px 14px !important; /* 确保距离上下边界有足够距离，左侧留出呼吸感 */
+    padding: 8px 12px !important; /* 确保距离上下边界有足够距离，左侧留出呼吸感 - 已极致紧凑 */
     height: auto !important;
     box-sizing: border-box !important;
     z-index: 2 !important;
@@ -223,7 +223,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     background-color: currentColor !important;
     border-radius: 2px !important;
     margin-top: 0 !important;
-    margin-bottom: 4px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 */
+    margin-bottom: 2px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 - 缩小空隙 */
     opacity: 0.8 !important;
     flex-shrink: 0 !important;
   }
@@ -233,8 +233,9 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     font-size: 1.15rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
-    margin-bottom: 4px !important; /* 与分割线保持极近距离 */
-    white-space: normal !important;
+    margin-bottom: 2px !important; /* 与分割线保持极近距离 */
+    white-space: nowrap !important; /* 标题绝对锁定 */
+    min-width: max-content !important;
     overflow: visible !important;
     width: 100% !important;
     text-align: left !important;
@@ -273,7 +274,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 8px !important;
+    gap: 4px !important; /* 极简卡片间距 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
@@ -284,7 +285,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem {
     flex: 1 1 0% !important;
-    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
+    transition: flex 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important; /* 夸张流畅的贝塞尔曲线 */
     overflow: visible !important;
     border-radius: 12px !important;
     height: auto !important;
@@ -298,11 +299,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:hover {
-    flex: 3 1 0% !important; /* Exaggerated expansion */
+    flex: 4 1 0% !important; /* 大幅度弹性拉伸 */
   }
 
   body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-    flex: 0.6 1 0% !important; /* Exaggerated compression */
+    flex: 0.5 1 0% !important; /* 极限压缩 */
     opacity: 0.8 !important;
   }
 
@@ -311,14 +312,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     right: 8px !important;
     bottom: -15px !important;
     opacity: 0.15 !important;
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease !important;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease !important;
     z-index: 1 !important;
     width: 70px !important;
     height: 70px !important;
   }
 
   body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
-    transform: translate(-5px, -5px) rotate(-15deg) !important;
+    transform: translate(-5px, -5px) rotate(-15deg) scale(1.1) !important; /* 产生相应的位移或放大反馈 */
     opacity: 0.25 !important;
   }
 </style>
