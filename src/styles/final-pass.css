@@ -1407,26 +1407,31 @@ body[data-type='home'] .random-hover__hint {
 }
 
 body[data-type='home'] .categoryGroup {
-  display: flex;
-  height: 100px;
-  flex: 0 0 100px;
-  width: 100%;
-  max-width: none;
-  gap: 12px;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  height: 76px !important;
+  width: 100% !important;
+  max-width: none !important;
+  gap: 2px !important;
+  margin: 0 !important;
 }
 
 body[data-type='home'] .categoryItem {
-  min-width: 0;
+  flex: none !important;
+  width: calc((100% - 4px) / 3) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
   transform: translate3d(0, 0, 0);
-  transition: flex 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-  flex: 0.96 1 0;
+  width: calc(20% - 2px) !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  flex: 1.08 1 0;
+  width: 60% !important;
   transform: translateY(-1px);
 }
 

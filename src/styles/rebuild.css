@@ -14711,24 +14711,27 @@ body[data-type='home'] .categoryGroup {
   min-height: 76px !important;
   display: flex !important;
   flex-direction: row !important;
-  gap: 16px !important;
+  justify-content: space-between !important;
+  gap: 2px !important;
   margin: 0 !important;
 }
 
 /* --- 2. 恢复手风琴交互特效与基础质感 --- */
 body[data-type='home'] .categoryGroup .categoryItem {
-  flex: 1 1 0% !important; /* 默认状态等宽 */
+  flex: none !important; /* 剥夺 Flex 动态分配权 */
+  width: calc((100% - 4px) / 3) !important;
   height: 100% !important;
   margin: 0 !important;
   border-radius: 16px !important;
   overflow: hidden !important;
+  box-sizing: border-box !important;
   /* 恢复 flex 宽度的平滑过渡，配合 transform 上浮 */
-  transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
 }
 
 /* 核心特效：当前悬停的按钮横向拉长，并微微上浮 */
 body[data-type='home'] .categoryGroup .categoryItem:hover {
-  flex: 2 1 0% !important; /* 放大比例，使其变宽 */
+  width: 60% !important;
   transform: translateY(-4px) !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
   z-index: 2 !important;
