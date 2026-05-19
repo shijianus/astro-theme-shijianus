@@ -14736,7 +14736,7 @@ body[data-type='home'] .categoryGroup .categoryItem:hover {
 
 /* 核心特效：容器被悬停时，未被悬停的兄弟按钮被挤压变窄 */
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover) {
-  width: calc(20% - 4px) !important; /* 缩小比例 */
+  width: calc(20% - 2px) !important; /* 缩小比例 */
   transform: translateY(0) !important;
 }
 
