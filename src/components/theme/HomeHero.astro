@@ -204,12 +204,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryButton {
     display: flex !important;
+    flex: 1 1 100% !important; /* Force fill parent */
     align-items: center !important;
     width: 100% !important;
     height: 100% !important;
     position: relative !important;
     text-decoration: none !important;
     padding: 0 !important;
+    margin: 0 !important;
     transform: none !important;
     transition: background 0.3s ease !important;
     overflow: hidden !important;
@@ -285,6 +287,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .categoryItem {
+    display: flex !important;
     flex: 1 1 0% !important;
     transition: flex 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease, box-shadow 0.3s ease !important; /* 夸张流畅的贝塞尔曲线 */
     overflow: visible !important;
@@ -293,6 +296,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     position: relative !important;
     margin: 0 !important;
     box-sizing: border-box !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
   }
 
   body[data-type='home'] .categoryItem:hover {
