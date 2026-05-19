@@ -280,12 +280,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     justify-content: flex-start !important; /* 彻底禁止浏览器在动画期间动态调节间隙 */
-    gap: 8px !important; /* 扩大间隙，保留呼吸感 */
+    gap: 0 !important; /* 彻底消除物理盲区，防止 Hover 状态在间隙中丢失 */
+    margin: 0 -4px !important; /* 抵消子项的透明边框，确保外边距对齐 */
     width: 100% !important;
     height: auto !important;
     min-height: 76px !important;
     align-items: stretch !important;
-    margin: 0 !important;
     padding: 0 !important;
   }
 
@@ -303,6 +303,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     min-width: 140px !important; /* 物理底线，确保标题不被挤压 */
     max-width: none !important;
     min-height: 0 !important;
+    /* 核心修复：无缝感应区方案 */
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    background-clip: padding-box !important; /* 极其重要：确保背景不渲染到透明边框下，从而伪造出 8px 视觉间隙 */
   }
 
   body[data-type='home'] .categoryItem:hover {
