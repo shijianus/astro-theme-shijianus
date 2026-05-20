@@ -357,52 +357,37 @@
 #console .activity-cell.level-3 { background: #26a641 !important; }
 #console .activity-cell.level-4 { background: #39d353 !important; }
 
-/* Perfect Isolated Tooltip - Unified System */
+/* Perfect Isolated Tooltip - Minimalist Unified System */
 [data-tooltip] { position: relative !important; cursor: pointer !important; }
 [data-tooltip]:hover { z-index: 999999 !important; }
 
 [data-tooltip]::before {
     content: attr(data-tooltip) !important;
     position: absolute !important; 
-    top: calc(100% + 12px) !important; 
+    top: calc(100% + 8px) !important; 
     left: 50% !important; 
     transform: translateX(-50%) translateY(-4px) !important;
-    background: #1e1e20 !important; 
-    color: #fff !important; 
-    border: 1px solid #444 !important;
-    padding: 6px 10px !important; 
+    background: var(--card-bg, #f8f9fa) !important; 
+    color: var(--font-color, #2d3748) !important; 
+    border: 1px solid var(--card-border, rgba(0,0,0,0.08)) !important;
+    padding: 5px 10px !important; 
     border-radius: 6px !important; 
     font-size: 11px !important;
+    font-weight: 500 !important;
     width: max-content !important; 
     max-width: 240px !important; 
     white-space: pre-wrap !important; 
     text-align: center !important;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.6) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
     opacity: 0 !important; 
     visibility: hidden !important;
     pointer-events: none !important; 
     transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease !important;
     z-index: 999999 !important;
+    backdrop-filter: blur(8px) !important;
 }
 
-[data-tooltip]::after {
-    content: '' !important; 
-    position: absolute !important; 
-    top: calc(100% + 6px) !important; 
-    left: 50% !important; 
-    transform: translateX(-50%) translateY(-4px) !important;
-    border-width: 0 6px 6px 6px !important; 
-    border-style: solid !important; 
-    border-color: transparent transparent #1e1e20 transparent !important;
-    opacity: 0 !important; 
-    visibility: hidden !important;
-    pointer-events: none !important; 
-    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease !important;
-    z-index: 999999 !important;
-}
-
-[data-tooltip]:hover::before, 
-[data-tooltip]:hover::after { 
+[data-tooltip]:hover::before { 
     opacity: 1 !important; 
     visibility: visible !important;
     transform: translateX(-50%) translateY(0) !important;
