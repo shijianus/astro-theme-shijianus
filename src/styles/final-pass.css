@@ -364,9 +364,9 @@
 [data-tooltip]::before {
     content: attr(data-tooltip) !important;
     position: absolute !important; 
-    bottom: calc(100% + 12px) !important; 
+    top: calc(100% + 12px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) translateY(4px) !important;
+    transform: translateX(-50%) translateY(-4px) !important;
     background: #1e1e20 !important; 
     color: #fff !important; 
     border: 1px solid #444 !important;
@@ -388,12 +388,12 @@
 [data-tooltip]::after {
     content: '' !important; 
     position: absolute !important; 
-    bottom: calc(100% + 6px) !important; 
+    top: calc(100% + 6px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) translateY(4px) !important;
-    border-width: 6px 6px 0 !important; 
+    transform: translateX(-50%) translateY(-4px) !important;
+    border-width: 0 6px 6px 6px !important; 
     border-style: solid !important; 
-    border-color: #1e1e20 transparent transparent transparent !important;
+    border-color: transparent transparent #1e1e20 transparent !important;
     opacity: 0 !important; 
     visibility: hidden !important;
     pointer-events: none !important; 
@@ -718,7 +718,6 @@
   min-width: 36px !important;
   height: 36px !important;
   opacity: 1 !important;
-  overflow: hidden !important;
   white-space: nowrap !important;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
   transform-origin: right center !important;
@@ -733,6 +732,7 @@
   padding: 0 !important;
   margin-left: -8px !important;
   opacity: 0 !important;
+  overflow: hidden !important;
   pointer-events: none !important;
   border: none !important;
 }
