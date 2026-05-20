@@ -598,6 +598,7 @@ export function SiteHeader({
               <a
                 className="totopbtn"
                 href="#"
+                title="回到顶部"
                 onClick={(e) => {
                   e.preventDefault();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
