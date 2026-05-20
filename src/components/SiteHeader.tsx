@@ -580,7 +580,7 @@ export function SiteHeader({
               </div>
             )}
 
-            <div className={`nav-button ${scrolled ? 'show' : ''}`} id="nav-totop">
+            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''}`} id="nav-totop">
               <a
                 className="totopbtn"
                 href="#"
@@ -589,8 +589,8 @@ export function SiteHeader({
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                <span id="percent">{progress}</span>
-                <ArrowUp size={18} strokeWidth={2.5} aria-hidden="true" />
+                <span className="percent-text" id="percent">{progress}</span>
+                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
 

@@ -67,9 +67,7 @@
   margin: 0 !important;
 }
 
-#nav-totop {
-  transition: all 0.4s cubic-bezier(0.42, 0, 0.3, 1.1) !important;
-}
+
 
 #menus .site-page__subtitle {
   position: static !important;
@@ -724,32 +722,29 @@
   color: var(--white) !important;
 }
 
-#nav-totop {
+.back-to-top-btn {
   position: relative;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  width: 36px;
+  height: 36px;
+  opacity: 1;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  cursor: pointer;
+}
+
+.back-to-top-btn.at-top {
   width: 0 !important;
-  min-width: 0 !important;
-  margin: 0 !important;
   padding: 0 !important;
+  margin: 0 !important;
   opacity: 0 !important;
-  transform: scale(0) !important;
-  overflow: hidden !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   pointer-events: none;
+  border: none !important;
 }
 
-#nav-totop.show {
-  width: 35px !important;
-  min-width: 35px !important;
-  margin-left: 8px !important;
-  opacity: 1 !important;
-  transform: scale(1) !important;
-  pointer-events: auto;
-}
-
-#nav-totop .totopbtn {
+.back-to-top-btn .totopbtn {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -759,34 +754,34 @@
   transition: 0.3s;
 }
 
-#nav-totop #percent {
-  position: absolute;
-  font-size: 11px;
-  font-weight: 800;
-  opacity: 1;
-  transform: scale(1);
-  transition: 0.3s ease;
+.back-to-top-btn .percent-text {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: bold;
 }
 
-#nav-totop i {
-  opacity: 0;
-  transform: scale(0.6);
-  transition: 0.3s ease;
+.back-to-top-btn .arrow-icon {
+  display: none;
 }
 
-#nav-totop:hover #percent {
-  opacity: 0;
-  transform: scale(0.6);
+.back-to-top-btn:hover .percent-text {
+  display: none;
 }
 
-#nav-totop:hover i {
-  opacity: 1;
-  transform: scale(1);
+.back-to-top-btn:hover .arrow-icon {
+  display: block;
+  animation: floatUp 0.8s infinite;
 }
 
-#nav-totop .totopbtn:hover {
+.back-to-top-btn .totopbtn:hover {
   background: var(--theme-main);
   color: var(--white) !important;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
 }
 
 #nav-right .nav-button i {
