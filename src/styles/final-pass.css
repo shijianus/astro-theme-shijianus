@@ -35,6 +35,8 @@
 #nav-right {
   display: flex !important;
   align-items: center !important;
+  justify-content: flex-end !important;
+  margin-left: auto !important;
   gap: 8px !important;
 }
 
@@ -732,6 +734,7 @@
   opacity: 1;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  transform-origin: right center !important;
   cursor: pointer;
 }
 
