@@ -37,7 +37,13 @@
   align-items: center !important;
   justify-content: flex-end !important;
   margin-left: auto !important;
-  gap: 8px !important;
+  gap: 0 !important;
+}
+
+#nav-right > div + div,
+#nav-right > section + section {
+  margin-left: 8px !important;
+  transition: margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
 #nav-right .nav-button {
@@ -704,9 +710,7 @@
   border-radius: 50% !important;
 }
 
-#nav-right .nav-button + .nav-button {
-  margin-left: 8px !important;
-}
+
 
 #nav-right .nav-button .site-page {
   padding: 0 !important;
@@ -729,20 +733,24 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 36px;
-  height: 36px;
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px !important;
   opacity: 1;
   overflow: hidden;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease !important;
+  transition: max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease !important;
   transform-origin: right center !important;
   cursor: pointer;
 }
 
 .back-to-top-btn.at-top {
+  max-width: 0 !important;
   width: 0 !important;
   min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
   padding: 0 !important;
-  margin: 0 0 0 -8px !important;
+  margin-left: 0 !important;
   opacity: 0 !important;
   pointer-events: none;
   border: none !important;
