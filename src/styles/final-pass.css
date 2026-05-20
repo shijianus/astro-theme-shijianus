@@ -357,15 +357,16 @@
 #console .activity-cell.level-3 { background: #26a641 !important; }
 #console .activity-cell.level-4 { background: #39d353 !important; }
 
-/* Perfect Isolated Tooltip */
+/* Perfect Isolated Tooltip - Unified System */
 [data-tooltip] { position: relative !important; cursor: pointer !important; }
 [data-tooltip]:hover { z-index: 999999 !important; }
+
 [data-tooltip]::before {
     content: attr(data-tooltip) !important;
     position: absolute !important; 
     bottom: calc(100% + 12px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) !important;
+    transform: translateX(-50%) translateY(4px) !important;
     background: #1e1e20 !important; 
     color: #fff !important; 
     border: 1px solid #444 !important;
@@ -378,8 +379,9 @@
     text-align: center !important;
     box-shadow: 0 8px 16px rgba(0,0,0,0.6) !important;
     opacity: 0 !important; 
+    visibility: hidden !important;
     pointer-events: none !important; 
-    transition: opacity 0.1s !important; 
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease !important;
     z-index: 999999 !important;
 }
 
@@ -388,17 +390,23 @@
     position: absolute !important; 
     bottom: calc(100% + 6px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) !important;
+    transform: translateX(-50%) translateY(4px) !important;
     border-width: 6px 6px 0 !important; 
     border-style: solid !important; 
     border-color: #1e1e20 transparent transparent transparent !important;
     opacity: 0 !important; 
+    visibility: hidden !important;
     pointer-events: none !important; 
-    transition: opacity 0.1s !important; 
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease !important;
     z-index: 999999 !important;
 }
 
-[data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1 !important; }
+[data-tooltip]:hover::before, 
+[data-tooltip]:hover::after { 
+    opacity: 1 !important; 
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(0) !important;
+}
 
 /* WebInfo UI Optimization - High Density */
 #console .console-webinfo .console-card__head {
@@ -632,30 +640,6 @@
     font-size: 10px !important;
     opacity: 0.7;
 }
-
-[data-tooltip]::before {
-    bottom: calc(100% + 8px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    background: #1e1e20 !important;
-    color: #fff !important;
-    border: 1px solid #333 !important;
-}[data-tooltip]::after {
-    content: '' !important;
-    position: absolute !important;
-    bottom: calc(100% + 3px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    border-width: 5px 5px 0 !important;
-    border-style: solid !important;
-    border-color: #1e1e20 transparent transparent transparent !important;
-    z-index: 999999 !important;
-    opacity: 0 !important;
-    transition: opacity 0.2s ease !important;
-}[data-tooltip]:hover::before, [data-tooltip]:hover::after {
-    opacity: 1 !important;
-}
-
 
 /* Button Group - Minimalist & Detached */
 #console .button-group {
