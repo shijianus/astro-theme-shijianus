@@ -127,7 +127,7 @@ const iconMap: Record<string, LucideIcon> = {
           </div>
         </div>
       </div>
-      <div class="footer-bar-right">
+      <div class="footer-bar-right" style="display: none !important;">
         {siteConfig.footer.links.map((item) => {
           const Icon = iconMap[item.icon ?? 'home'] ?? Home;
           return (

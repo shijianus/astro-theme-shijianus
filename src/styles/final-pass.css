@@ -4,60 +4,263 @@
 }
 
 #menus .site-page__chevron,
-#rightside-config,
 #rightside-config-close,
-#background-mode,
-#darkmode,
-#hide-aside-btn,
 #shijianus-devbar,
 #shijianus-devbar-panel,
-#rightside-config-hide {
+#rightside-config-hide,
+.mask-name-container,
+#name-container,
+#page-name {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 #rightside {
-  right: 20px !important;
-  transition: opacity 0.26s ease, transform 0.26s ease, bottom 0.26s ease;
+  position: fixed !important;
+  right: 40px !important;
+  bottom: 40px !important;
+  z-index: 100 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
 #rightside-config-show {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
-#go-up {
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+#rightside button,
+#rightside a {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--card-bg) !important;
+  border: var(--style-border-always) !important;
+  color: var(--font-color) !important;
+  transition: 0.3s !important;
+  cursor: pointer !important;
+  position: relative !important;
+  padding: 0 !important;
 }
 
-#nav-right {
+#nav-group {
+  display: grid !important;
+  grid-template-columns: 200px 1fr 250px !important; /* Isolated Zones */
+  align-items: center !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+#blog_name {
+  grid-column: 1 !important;
+  justify-self: start !important;
+}
+
+#menus {
+  grid-column: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+#menus .menus_items {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+#menus .menus_item {
+  width: 110px !important; /* Uniform Width */
+  flex-shrink: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 
 #menus .site-page {
-  min-height: 56px;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 56px !important;
+  padding: 0 !important;
+  gap: 4px !important; /* Gap between ZH and EN */
 }
 
-#menus .menus_item.has-children > .site-page-shell > .site-page::after {
+#menus .site-page__icon-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 16px !important;
+  margin-bottom: 2px !important;
+}
+
+#menus .site-page__label {
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+#menus .site-page::after {
+  content: attr(data-en) !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  opacity: 0.6 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  display: block !important;
+  line-height: 1 !important;
+}
+
+#nav-right {
+  grid-column: 3 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  margin-left: auto !important;
+}
+
+#nav-right .nav-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50% !important;
+  overflow: visible !important;
+}
+
+#nav-right .nav-button + .nav-button {
+  margin-left: 8px !important;
+}
+
+#nav-totop {
+  width: 0 !important;
+  margin-left: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+#nav-totop.show {
+  width: 35px !important;
+  margin-left: 8px !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#nav-totop .totopbtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+#nav-totop #percent {
+  position: relative !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  transition: all 0.3s ease !important;
+}
+
+#nav-totop svg {
+  position: absolute !important;
+  opacity: 0 !important;
+  transform: scale(0.6) !important;
+  transition: all 0.3s ease !important;
+}
+
+#nav-totop:hover svg { opacity: 1 !important; transform: scale(1) !important; }
+#nav-totop:hover #percent { opacity: 0 !important; transform: scale(0.6) !important; }
+
+/* Historical Console Button (73841b8 Baseline) */
+#center-console-button .widget {
+  --icon-size: 1.375rem;
+  position: relative;
+  width: 35px !important;
+  height: 35px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  cursor: pointer;
+  transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#center-console-button .widget-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#center-console-button .widget i {
   position: absolute;
-  right: 10px;
-  top: 11px;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-main) 55%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-main) 12%, transparent);
-  content: "";
-  opacity: 0.92;
+  background: var(--font-color);
+  border-radius: calc(var(--icon-size) * 0.15);
+  transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  inset: 0;
+  margin: auto;
+  width: calc(var(--icon-size) / 3);
+  height: calc(var(--icon-size) / 3.5);
+  transform: translateY(calc(var(--icon-size) / 4));
 }
 
-#page-header.nav-fixed #name-container {
-  max-width: min(220px, 16vw);
+#center-console-button .widget .left {
+  width: 100%;
+  transform: translateY(calc(var(--icon-size) / -4));
 }
 
-#page-name {
-  font-size: 13px;
+#center-console-button .widget .widget.right {
+  left: auto;
+  right: 0;
+  width: calc(var(--icon-size) / 1.8);
+}
+
+#center-console-button .widget:hover { background: var(--theme-main); border-radius: 50% !important; }
+#center-console-button .widget:hover i { background: var(--white); }
+#center-console-button .widget:hover .left { width: 50%; transform: translateY(-6px) translateX(4px); }
+#center-console-button .widget:hover .widget.center { opacity: 0.5; width: 50%; }
+#center-console-button .widget:hover .widget.right { width: 50%; height: 80%; transform: translateY(0); }
+
+/* Overlays & Alerts - Fixed Positioning only */
+.theme-account-overlay,
+.theme-activity-bar {
+  position: fixed !important;
+  z-index: 2000 !important;
+  pointer-events: auto !important;
+}
+
+#nav-notification .nav-button__badge {
+  top: 2px;
+  right: 2px;
+  background: #ff5252;
+  color: #fff;
+  font-weight: 800;
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 10px;
+  position: absolute !important;
+  pointer-events: none !important;
 }
 
 #page-header.nav-fixed {
@@ -86,7 +289,7 @@
     width: min(1200px, 94vw) !important;
     height: auto !important;
     min-height: 600px !important;
-    max-height: 90vh !important; /* Increased from 85vh to accommodate more metrics */
+    max-height: 90vh !important; 
     opacity: 0 !important;
     z-index: 100 !important;
     overflow: visible !important;
@@ -109,7 +312,7 @@
     gap: var(--console-gap) !important;
     flex: 1 !important;
     min-width: 0 !important;
-    overflow: visible !important; /* Tooltip bypass */
+    overflow: visible !important; 
 }
 
 @media (max-width: 860px) {
@@ -117,17 +320,12 @@
     flex-direction: column !important;
     width: 90vw !important;
     max-height: calc(90vh - 100px) !important;
-    overflow-y: auto !important; /* Allow scroll on mobile only */
+    overflow-y: auto !important; 
     padding: 10px !important;
     gap: 12px !important;
     height: auto !important;
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
-  }
-  #console .console-card-group-left,
-  #console .console-card-group-right {
-    width: 100% !important;
-    overflow: visible !important;
   }
 }
 
@@ -147,38 +345,13 @@
     flex-direction: column !important;
     overflow: visible !important; 
     position: relative !important;
-    transition: z-index 0s !important;
 }
 
 #console .console-card:hover {
-    z-index: 1000 !important; /* Ensure hovered card is above others */
+    z-index: 1000 !important;
 }
 
-#console .console-profile {
-    height: auto !important;
-    min-height: 0 !important;
-    flex: 0 0 auto !important;
-}
-
-#console .console-webinfo {
-    flex: 1 1 auto !important;
-}
-
-#console .tags {
-    flex: 1.5 1 auto !important; /* Prioritize space for ~50 tags */
-    min-height: 300px !important;
-}
-
-#console .activity {
-    flex: 1 1 auto !important;
-    overflow: visible !important;
-}
-
-#console .console-profile h2 { font-size: 1.6rem !important; margin-bottom: 8px !important; }
-#console .console-profile p { font-size: 13px !important; line-height: 1.5 !important; opacity: 0.9; }
-#console .console-stat-grid { margin-top: 20px !important; }
-
-/* Activity Heatmap - Precision GitHub Refactor */
+/* Activity Heatmap GitHub Refactor */
 #console .activity-grid-container { 
     display: flex !important; 
     justify-content: center !important;
@@ -186,78 +359,6 @@
     overflow: visible !important; 
 }
 
-#console .heatmap-internal-wrapper {
-    display: inline-flex !important;
-    flex-direction: column !important;
-    position: relative !important;
-    overflow: visible !important;
-}
-
-#console .activity-month-labels {
-    height: 18px !important;
-    position: relative !important;
-    margin-bottom: 6px !important;
-    margin-left: 32px !important; /* weekday-labels(24px) + gap(8px) */
-    font-size: 9px !important;
-    color: var(--text-muted) !important;
-    font-family: monospace !important;
-    overflow: visible !important;
-}
-
-#console .month-label {
-    position: absolute !important;
-    white-space: nowrap !important;
-}
-
-#console .heatmap-grid-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-    overflow: visible !important;
-}
-
-#console .activity-weekday-labels { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    justify-content: space-between !important; 
-    width: 24px !important; 
-    height: 95px !important; /* (7 rows * 11px) + (6 gaps * 3px) */
-    font-size: 9px !important; 
-    color: var(--text-muted) !important; 
-    font-family: monospace !important; 
-}
-
-#console .activity-weekday-labels span {
-    height: 11px !important;
-    line-height: 11px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-#console .console-activity-grid { 
-    display: grid !important; 
-    grid-template-rows: repeat(7, 11px) !important; 
-    grid-auto-flow: column !important; 
-    gap: 3px !important; 
-    overflow: visible !important;
-}
-
-#console .activity-cell { 
-    width: 11px !important; 
-    height: 11px !important; 
-    border-radius: 2px !important; 
-    transition: none !important;
-    position: relative !important;
-}
-
-#console .activity-cell:hover { 
-    opacity: 0.7 !important; 
-    transform: none !important;
-    z-index: 999999 !important;
-}
-
-/* GitHub Dark Mode Colors - Authentic Flat Palette */
 #console .activity-cell.level-0 { background: #161b22 !important; border: 1px solid rgba(255,255,255,0.02) !important; }
 #console .activity-cell.level-1 { background: #0e4429 !important; }
 #console .activity-cell.level-2 { background: #006d32 !important; }
@@ -307,6 +408,7 @@
 
 [data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1 !important; }
 
+<<<<<<< HEAD
 /* WebInfo UI Optimization - High Density */
 #console .console-webinfo .console-card__head {
   margin-bottom: 12px !important;
@@ -2293,3 +2395,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   transform: translate(-50%, -50%);
 }
 
+=======
+/* End of UI Rescue */
+>>>>>>> 26f15cbaa3121350b6c64c2666017894c444fb81

@@ -239,6 +239,7 @@ export const siteConfig = {
   navigation: {
     primary: [
       {
+<<<<<<< HEAD
         label: '文章',
         href: '/archives/',
         description: 'ARTICLES',
@@ -269,17 +270,57 @@ export const siteConfig = {
           { label: '实验田', href: '/lab/', description: '界面与功能的试验场', icon: 'flask' },
           { label: '留声机', href: '/lab/', description: '音乐播放器', icon: 'music' },
           { label: '放映室', href: '/lab/', description: '视频播放器', icon: 'video' },
+=======
+        label: '主站 | LOGOS',
+        href: '/archives/',
+        description: '全站内容分发与知识索引',
+        icon: 'archive',
+        children: [
+          { label: '归档', href: '/archives/', description: '物理时间线总览', icon: 'archive' },
+          { label: '分类', href: '/categories/', description: '知识维度聚类', icon: 'category' },
+          { label: '标签', href: '/tags/', description: '原子级关键词索引', icon: 'tags' },
         ],
       },
       {
-        label: '关于',
+        label: '私宅 | ADYTUM',
+        href: '/friends/',
+        description: '独立于主站的私人连接与社群空间',
+        icon: 'link',
+        children: [
+          { label: '友链', href: '/friends/', description: '互链、社群与交流入口', icon: 'link' },
+          { label: '动态', href: '/tags/', description: '全网动态聚合', icon: 'rss' },
+          { label: '留言', href: '/friends/#comments', description: '物理回响空间', icon: 'message' },
+        ],
+      },
+      {
+        label: '工坊 | ERGON',
+        href: '/lab/',
+        description: '开发专案、实验性服务与工具集成',
+        icon: 'book',
+        children: [
+          { label: '实验室', href: '/lab/', description: '界面与功能的试验场', icon: 'book' },
+          { label: '工具集', href: '/roadmap/', description: '生产力工具集成', icon: 'book' },
+>>>>>>> 26f15cbaa3121350b6c64c2666017894c444fb81
+        ],
+      },
+      {
+        label: '溯源 | META',
         href: '/about/',
+<<<<<<< HEAD
         description: 'ABOUT',
         icon: 'circle-info',
         children: [
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
           { label: '站点状态', href: '/status/', description: '查看当前重构进度', icon: 'chart-bar' },
           { label: '主题路线', href: '/roadmap/', description: '尚在整理中的专题入口', icon: 'compass' },
+=======
+        description: '系统架构、开发标准与作者自述',
+        icon: 'about',
+        children: [
+          { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'about' },
+          { label: '开发标准', href: '/standards/', description: '本站物理构建标准', icon: 'book' },
+          { label: '版本协议', href: '/version/', description: '核心引擎协议', icon: 'rss' },
+>>>>>>> 26f15cbaa3121350b6c64c2666017894c444fb81
         ],
       },
     ] satisfies SiteNavItem[],
