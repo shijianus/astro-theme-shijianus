@@ -733,15 +733,16 @@
   height: 36px;
   opacity: 1;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease !important;
   transform-origin: right center !important;
   cursor: pointer;
 }
 
 .back-to-top-btn.at-top {
   width: 0 !important;
+  min-width: 0 !important;
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 0 0 0 -8px !important;
   opacity: 0 !important;
   pointer-events: none;
   border: none !important;

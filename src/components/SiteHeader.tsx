@@ -580,20 +580,6 @@ export function SiteHeader({
               </div>
             )}
 
-            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''}`} id="nav-totop">
-              <a
-                className="totopbtn"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                <span className="percent-text" id="percent">{progress}</span>
-                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
-              </a>
-            </div>
-
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
               <a
                 className="site-page"
@@ -605,6 +591,20 @@ export function SiteHeader({
                 }}
               >
                 <Menu size={18} strokeWidth={2.5} aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''}`} id="nav-totop">
+              <a
+                className="totopbtn"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                <span className="percent-text" id="percent">{progress}</span>
+                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
           </div>
