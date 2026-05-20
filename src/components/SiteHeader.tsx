@@ -3,6 +3,7 @@ import {
   ExternalLink, House, Bell, Music, FlaskConical, LayoutGrid, 
   Archive, Tags, Info, Book, Rss, Link as LinkIcon, Video, 
   User, ChartBar, Compass, MessageCircle, ChevronDown,
+  Search, SunMedium, MoonStar, Dices, ArrowUp, Menu,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -491,7 +492,7 @@ export function SiteHeader({
                     openAccountPanel();
                   }}
                 >
-                  <i className="anzhiyufont anzhiyu-icon-user" aria-hidden="true" />
+                  <User size={18} strokeWidth={2.5} aria-hidden="true" />
                 </a>
               </div>
             )}
@@ -528,7 +529,7 @@ export function SiteHeader({
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-magnifying-glass" aria-hidden="true" />
+                <Search size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
 
@@ -537,7 +538,11 @@ export function SiteHeader({
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
               }}>
-                <i className={`anzhiyufont ${theme === 'dark' ? 'anzhiyu-icon-sun' : 'anzhiyu-icon-moon'}`} aria-hidden="true" />
+                {theme === 'dark' ? (
+                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
+                ) : (
+                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
+                )}
               </a>
             </div>
 
@@ -547,7 +552,7 @@ export function SiteHeader({
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <i className="anzhiyufont anzhiyu-icon-dice" aria-hidden="true" />
+                <Dices size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
 
@@ -585,7 +590,7 @@ export function SiteHeader({
                 }}
               >
                 <span id="percent">{progress}</span>
-                <i className="anzhiyufont anzhiyu-icon-arrow-up" aria-hidden="true" />
+                <ArrowUp size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
 
@@ -599,7 +604,7 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <i className="anzhiyufont anzhiyu-icon-bars" aria-hidden="true" />
+                <Menu size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
           </div>
