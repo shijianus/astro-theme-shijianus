@@ -798,7 +798,7 @@
 .home-top-notice {
   width: 100% !important;
   max-width: none !important;
-  margin: 0 0 16px !important;
+  margin: 14px 0 10px !important;
   padding: 0 16px !important;
   height: 44px !important;
   display: flex !important;
@@ -810,10 +810,16 @@
   box-shadow: none !important;
   transition: all 0.3s ease;
   overflow: hidden;
+  cursor: pointer;
 }
 
 [data-theme='light'] .home-top-notice {
   background: rgba(0, 0, 0, 0.6) !important; /* Keep it dark for geek feel even in light mode */
+}
+
+.home-top-notice:hover {
+  border-color: var(--theme-main, #f39c12) !important;
+  box-shadow: 0 0 12px rgba(243, 156, 18, 0.2) !important;
 }
 
 .home-top-notice::before {
@@ -838,10 +844,16 @@
   margin: 0 16px !important;
   color: #eee !important;
   font-size: 0.9rem !important;
+  text-align: center !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 44px !important;
+  transition: color 0.3s ease;
+}
+
+.home-top-notice:hover p {
+  color: var(--theme-main, #f39c12) !important;
 }
 
 .home-top-notice a {
