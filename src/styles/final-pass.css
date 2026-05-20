@@ -725,26 +725,28 @@
 }
 
 .back-to-top-btn {
-  position: relative;
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 36px;
-  height: 36px;
-  opacity: 1;
-  overflow: hidden;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease !important;
+  width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  opacity: 1 !important;
+  overflow: hidden !important;
+  transition: max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), margin-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease !important;
   transform-origin: right center !important;
   cursor: pointer;
 }
 
 .back-to-top-btn.at-top {
+  max-width: 0 !important;
   width: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
-  margin: 0 0 0 -8px !important;
+  margin-left: -8px !important;
   opacity: 0 !important;
-  pointer-events: none;
+  pointer-events: none !important;
   border: none !important;
 }
 
