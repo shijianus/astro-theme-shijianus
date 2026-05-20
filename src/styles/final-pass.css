@@ -1487,29 +1487,37 @@ body[data-type='home'] .random-hover__hint {
 body[data-type='home'] .categoryGroup {
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;
-  height: 76px !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  margin: 0 -4px !important;
   width: 100% !important;
+  height: auto !important;
+  min-height: 76px !important;
   max-width: none !important;
-  gap: 2px !important;
-  margin: 0 !important;
+  align-items: stretch !important;
+  padding: 0 !important;
 }
 
 body[data-type='home'] .categoryItem {
-  flex: none !important;
-  width: calc((100% - 4px) / 3) !important;
-  min-width: 0 !important;
+  display: flex !important;
+  flex: 1 1 0% !important;
+  width: auto !important;
+  min-width: 140px !important;
   box-sizing: border-box !important;
   transform: translate3d(0, 0, 0);
-  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: flex 1.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
+  border-left: 4px solid transparent !important;
+  border-right: 4px solid transparent !important;
+  background-clip: padding-box !important;
 }
 
 body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-  width: calc(20% - 2px) !important;
+  flex: 0.9 1 0% !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
-  width: 60% !important;
+  flex: 2.5 1 0% !important;
   transform: translateY(-1px);
 }
 
