@@ -1099,8 +1099,8 @@ export function ThemeOverlays({
             </div>
           </div>
 
-          <div className="button-group" aria-label="控制台快捷操作">
-            <button type="button" className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`} onClick={toggleTheme} title="切换深浅色">
+          <div className="button-group" aria-label="控制台快捷操作" data-button-style="anzhiyu">
+            <button type="button" className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`} onClick={toggleTheme} data-tooltip="切换深浅色">
               {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
             </button>
             <button
@@ -1111,7 +1111,7 @@ export function ThemeOverlays({
                 setSearchOpen(true);
                 emitActivity('已打开站内搜索');
               }}
-              title="搜索内容"
+              data-tooltip="搜索内容"
             >
               <Search aria-hidden="true" />
             </button>
@@ -1122,7 +1122,7 @@ export function ThemeOverlays({
                 cycleBackground();
                 emitActivity('已切换页面背景');
               }}
-              title="背景切换"
+              data-tooltip="背景切换"
             >
               <Sparkles aria-hidden="true" />
             </button>
@@ -1133,7 +1133,7 @@ export function ThemeOverlays({
                 window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
                 emitActivity('已打开通知中心');
               }}
-              title="查看通知"
+              data-tooltip="查看通知"
             >
               <Bell aria-hidden="true" />
             </button>
@@ -1144,7 +1144,7 @@ export function ThemeOverlays({
                 const randomPost = posts[Math.floor(Math.random() * posts.length)];
                 if (randomPost) window.location.href = randomPost.href;
               }}
-              title="随便逛逛"
+              data-tooltip="随便逛逛"
             >
               <RefreshCw aria-hidden="true" />
             </button>
@@ -1156,7 +1156,7 @@ export function ThemeOverlays({
                 setConsoleOpen(false);
                 emitActivity('已回到页面顶部');
               }}
-              title="回到顶部"
+              data-tooltip="回到顶部"
             >
               <ArrowUp aria-hidden="true" />
             </button>

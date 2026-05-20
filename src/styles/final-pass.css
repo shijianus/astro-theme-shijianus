@@ -38,35 +38,6 @@
   gap: 8px !important;
 }
 
-#nav-right .nav-button {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  margin: 0 !important;
-}
-
-#nav-right .nav-button a {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  padding: 0 8px !important;
-  border-radius: 10px !important;
-  transition: all 0.25s ease !important;
-}
-
-#nav-right .nav-button a:hover {
-  background: var(--theme-op) !important;
-}
-
-#nav-right .nav-button i {
-  font-size: 16px !important;
-  margin: 0 !important;
-}
-
 #nav-totop {
   transition: all 0.4s cubic-bezier(0.42, 0, 0.3, 1.1) !important;
 }
@@ -365,21 +336,23 @@
     position: absolute !important; 
     bottom: calc(100% + 12px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) !important;
-    background: #1e1e20 !important; 
+    transform: translateX(-50%) translateY(8px) scale(0.9) !important;
+    background: rgba(30, 30, 32, 0.9) !important; 
+    backdrop-filter: blur(8px) !important;
     color: #fff !important; 
-    border: 1px solid #444 !important;
-    padding: 6px 10px !important; 
-    border-radius: 6px !important; 
-    font-size: 11px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 6px 12px !important; 
+    border-radius: 4px !important; 
+    font-size: 10px !important;
+    font-weight: bold !important;
     width: max-content !important; 
     max-width: 240px !important; 
     white-space: pre-wrap !important; 
     text-align: center !important;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.6) !important;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4) !important;
     opacity: 0 !important; 
     pointer-events: none !important; 
-    transition: opacity 0.1s !important; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
     z-index: 999999 !important;
 }
 
@@ -388,17 +361,25 @@
     position: absolute !important; 
     bottom: calc(100% + 6px) !important; 
     left: 50% !important; 
-    transform: translateX(-50%) !important;
+    transform: translateX(-50%) translateY(8px) !important;
     border-width: 6px 6px 0 !important; 
     border-style: solid !important; 
-    border-color: #1e1e20 transparent transparent transparent !important;
+    border-color: rgba(30, 30, 32, 0.9) transparent transparent transparent !important;
     opacity: 0 !important; 
     pointer-events: none !important; 
-    transition: opacity 0.1s !important; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
     z-index: 999999 !important;
 }
 
-[data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1 !important; }
+[data-tooltip]:hover::before {
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) !important;
+}
 
 /* WebInfo UI Optimization - High Density */
 #console .console-webinfo .console-card__head {
@@ -675,40 +656,55 @@
 #console .console-btn-item {
   width: 48px !important;
   height: 48px !important;
-  border-radius: 50% !important; /* Circular for independent look */
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   background: var(--card-bg-op) !important;
   backdrop-filter: blur(10px);
   border: var(--style-border-always) !important;
   box-shadow: var(--shadow-border) !important;
   color: var(--font-color);
-  transition: 0.3s;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  cursor: pointer;
 }
 
-#console .console-btn-item:hover {
+#console .button-group[data-button-style='anzhiyu'] .console-btn-item {
+  background: rgba(128, 128, 128, 0.1) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#console .button-group[data-button-style='anzhiyu'] .console-btn-item:hover {
   background: var(--theme-main) !important;
   color: var(--white) !important;
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-theme);
+  transform: scale(1.1) rotate(10deg) !important;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3) !important;
 }
 
+#console .console-btn-item i, #console .console-btn-item svg {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+/* Nav Button Variants */
 #nav-right .nav-button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 35px !important;
-  height: 35px !important;
   margin: 0 !important;
   padding: 0 !important;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease !important;
+}
+
+/* Classic Mode (Default/Legacy) */
+#nav-right[data-button-style='classic'] .nav-button {
+  width: 35px !important;
+  height: 35px !important;
+  transition: all 0.3s ease !important;
   border-radius: 50% !important;
 }
 
-#nav-right .nav-button + .nav-button {
-  margin-left: 8px !important;
-}
-
-#nav-right .nav-button .site-page {
+#nav-right[data-button-style='classic'] .nav-button .site-page {
   padding: 0 !important;
   margin: 0 !important;
   width: 100% !important;
@@ -719,9 +715,44 @@
   border-radius: 50% !important;
 }
 
-#nav-right .nav-button .site-page:hover {
+#nav-right[data-button-style='classic'] .nav-button .site-page:hover {
   background: var(--theme-main);
   color: var(--white) !important;
+}
+
+/* AnZhiYu Mode (Geek/High-Feedback) */
+#nav-right[data-button-style='anzhiyu'] .nav-button {
+  width: 36px !important;
+  height: 36px !important;
+  background: rgba(128, 128, 128, 0.1) !important;
+  border-radius: 50% !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  position: relative;
+}
+
+#nav-right[data-button-style='anzhiyu'] .nav-button .site-page {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  color: var(--font-color) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+#nav-right[data-button-style='anzhiyu'] .nav-button:hover {
+  background: var(--theme-main, #f39c12) !important;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3) !important;
+}
+
+#nav-right[data-button-style='anzhiyu'] .nav-button:hover .site-page {
+  color: #fff !important;
+  transform: scale(1.1) rotate(10deg);
+}
+
+#nav-right .nav-button + .nav-button {
+  margin-left: 8px !important;
 }
 
 #nav-totop {

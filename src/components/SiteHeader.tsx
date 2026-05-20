@@ -480,13 +480,13 @@ export function SiteHeader({
             </div>
           </div>
 
-          <div id="nav-right">
+          <div id="nav-right" data-button-style="anzhiyu">
             {isAccountEnabled && (
               <div className="nav-button" id="nav-account">
                 <a 
                   className={`site-page ${accountOpen ? 'is-active' : ''}`} 
                   href="#" 
-                  title="个人中心"
+                  data-tooltip="个人中心"
                   onClick={(e) => {
                     e.preventDefault();
                     openAccountPanel();
@@ -502,7 +502,7 @@ export function SiteHeader({
                 <a 
                   className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
                   href="#" 
-                  title="通知中心"
+                  data-tooltip="通知中心"
                   onClick={(e) => {
                     e.preventDefault();
                     if (notificationOpen) {
@@ -523,7 +523,7 @@ export function SiteHeader({
               <a 
                 className="site-page social-icon search" 
                 href="#" 
-                title="搜索" 
+                data-tooltip="搜索" 
                 onClick={(e) => {
                   e.preventDefault();
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
@@ -534,7 +534,7 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" title="切换主题" onClick={(e) => {
+              <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
               }}>
@@ -547,7 +547,7 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href="#" title="随机文章" onClick={(e) => {
+              <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
                 e.preventDefault();
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
@@ -561,7 +561,7 @@ export function SiteHeader({
                 <a
                   className={`site-page ${consoleOpen ? 'is-active' : ''}`}
                   href="#"
-                  title="控制台"
+                  data-tooltip="控制台"
                   onClick={(e) => {
                     e.preventDefault();
                     if (consoleOpen) {
@@ -584,6 +584,7 @@ export function SiteHeader({
               <a
                 className="totopbtn"
                 href="#"
+                data-tooltip="回到顶部"
                 onClick={(e) => {
                   e.preventDefault();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -598,7 +599,7 @@ export function SiteHeader({
               <a
                 className="site-page"
                 href="#"
-                title="切换菜单"
+                data-tooltip="切换菜单"
                 onClick={(e) => {
                   e.preventDefault();
                   setMenuOpen(!menuOpen);
