@@ -939,7 +939,6 @@ html.theme-ready body.theme-body #footer {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1.5rem 0.45rem;
-  overflow: hidden;
   animation: slide-in 0.6s 0.1s backwards;
 }
 
