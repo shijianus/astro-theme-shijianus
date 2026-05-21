@@ -941,50 +941,106 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 #console .activity-cell.level-3 { background: #30a14e !important; }
 #console .activity-cell.level-4 { background: #216e39 !important; }
 
-/* Modern Hamburger Morphing Animation */
-#center-console-button .hamburger-container {
-  width: 16px !important;
-  height: 12px !important;
+/* New Anzhiyu Center Console Matrix Icon & Deformation */
+.nav-console-btn-anzhiyu {
   display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
   align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important; /* 严格对齐相邻按钮 */
+  margin: 0 !important;
+  padding: 0 !important;
   cursor: pointer !important;
-  transition: transform 0.3s ease !important;
+  position: relative !important;
 }
 
-#center-console-button .hamburger-line {
+.nav-console-btn-anzhiyu .site-page {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: 100% !important;
-  height: 2px !important;
-  background-color: var(--font-color) !important;
+  height: 100% !important;
+  color: var(--font-color) !important;
+}
+
+/* 矩阵画板与默认状态 (一长，一点，一短) */
+.anzhiyu-matrix-icon {
+  position: relative !important;
+  width: 18px !important;
+  height: 14px !important;
+}
+
+.matrix-line {
+  position: absolute !important;
+  background: currentColor !important;
   border-radius: 2px !important;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.2s ease, 
-              background-color 0.3s ease !important;
-  transform-origin: center !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
-/* Hover State */
-#center-console-button:hover .hamburger-line {
-  background-color: var(--theme-main) !important;
+/* 第一层：顶部粗长实线 */
+.line-1 { top: 0; left: 0; width: 100%; height: 3px; }
+/* 第二层左：粗白点 */
+.line-2 { bottom: 0; left: 0; width: 4px; height: 3px; }
+/* 第二层右：短实线 */
+.line-3 { bottom: 0; right: 0; width: 10px; height: 3px; }
+
+/* 悬停/动作状态形变 (两条短横线 + 一条垂直长线) */
+/* 顶层线变短 */
+.nav-console-btn-anzhiyu a:hover .line-1, 
+.nav-console-btn-anzhiyu a.is-active .line-1 {
+  width: 7px !important;
+}
+/* 底层点变灰且拉长成短线 */
+.nav-console-btn-anzhiyu a:hover .line-2, 
+.nav-console-btn-anzhiyu a.is-active .line-2 {
+  width: 7px !important; 
+  background: rgba(150, 150, 150, 0.8) !important;
+}
+/* 底层短线翻转为靠右的垂直长实线 */
+.nav-console-btn-anzhiyu a:hover .line-3, 
+.nav-console-btn-anzhiyu a.is-active .line-3 {
+  width: 3px !important; 
+  height: 100% !important; 
+  top: 0 !important; 
+  right: 0 !important; 
+  bottom: auto !important;
 }
 
-/* Active State (X Morph) */
-#center-console-button .site-page.is-active .line-top {
-  transform: translateY(5px) rotate(45deg) !important;
-  background-color: var(--theme-main) !important;
+/* Isolated Mini Tooltip for Console */
+[data-mini-tooltip] { 
+  position: relative !important; 
 }
 
-#center-console-button .site-page.is-active .line-center {
+[data-mini-tooltip]::before {
+  content: attr(data-mini-tooltip) !important;
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(-4px) !important;
+  background: rgba(240, 240, 240, 0.95) !important;
+  color: #333 !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
   opacity: 0 !important;
-  transform: scaleX(0) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: all 0.3s ease !important;
+  z-index: 999999 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
-#center-console-button .site-page.is-active .line-bottom {
-  transform: translateY(-5px) rotate(-45deg) !important;
-  background-color: var(--theme-main) !important;
+[data-mini-tooltip]:hover::before {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(-50%) translateY(0) !important;
 }
 
+[data-theme='dark'] [data-mini-tooltip]::before {
+  background: rgba(45, 45, 45, 0.95) !important;
+  color: #eee !important;
+}
 #nav-notification {
   position: relative;
 }
