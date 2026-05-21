@@ -673,6 +673,73 @@
   border-radius: 50% !important;
 }
 
+/* --- Anzhiyu Style Center Console Button (Experimental) --- */
+.nav-console-btn-anzhiyu {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important; /* 精准对齐相邻按钮 */
+  height: 35px !important; /* 精准对齐相邻按钮 */
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  background: transparent !important; /* 无界范式：绝对透明 */
+  border: none !important; /* 无界范式：无边框 */
+  box-shadow: none !important; /* 无界范式：无投影 */
+  position: relative !important;
+}
+
+.nav-console-btn-anzhiyu .site-page {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  transition: opacity 0.2s ease, color 0.2s ease !important;
+  color: var(--font-color) !important;
+}
+
+.nav-console-btn-anzhiyu .site-page:hover {
+  opacity: 0.7 !important; /* 极其克制的悬停反馈 */
+  background: transparent !important; /* 确保悬停也不产生背景 */
+}
+
+.nav-console-btn-anzhiyu .site-page.is-active {
+  color: var(--theme-main) !important;
+  opacity: 1 !important;
+}
+
+/* Minimalist Experimental Tooltip for Center Console */
+[data-mini-tooltip] {
+  position: relative !important;
+}
+
+[data-mini-tooltip]::before {
+  content: attr(data-mini-tooltip) !important;
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(-5px) !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: #fff !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: all 0.2s ease !important;
+  z-index: 10000 !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+[data-mini-tooltip]:hover::before {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
 #nav-right .nav-button + .nav-button {
   margin-left: 8px !important;
 }

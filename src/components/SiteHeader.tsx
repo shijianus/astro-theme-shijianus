@@ -557,27 +557,49 @@ export function SiteHeader({
             </div>
 
             {showCenterConsoleTrigger && (
-              <div className="nav-button" id="center-console-button">
-                <a
-                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
-                  href="#"
-                  data-tooltip="控制台"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (consoleOpen) {
-                      closeCenterConsole();
-                    } else {
-                      openCenterConsole();
-                    }
-                  }}
-                >
-                  <div className="hamburger-container">
-                    <span className="hamburger-line line-top" />
-                    <span className="hamburger-line line-center" />
-                    <span className="hamburger-line line-bottom" />
-                  </div>
-                </a>
-              </div>
+              <>
+                {/* Original center-console-button preserved for reference */}
+                {/*
+                <div className="nav-button" id="center-console-button">
+                  <a
+                    className={`site-page ${consoleOpen ? 'is-active' : ''}`}
+                    href="#"
+                    data-tooltip="控制台"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (consoleOpen) {
+                        closeCenterConsole();
+                      } else {
+                        openCenterConsole();
+                      }
+                    }}
+                  >
+                    <div className="hamburger-container">
+                      <span className="hamburger-line line-top" />
+                      <span className="hamburger-line line-center" />
+                      <span className="hamburger-line line-bottom" />
+                    </div>
+                  </a>
+                </div>
+                */}
+                <div className="nav-console-btn-anzhiyu" id="center-console-button">
+                  <a
+                    className={`site-page ${consoleOpen ? 'is-active' : ''}`}
+                    href="#"
+                    data-mini-tooltip="中控台"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (consoleOpen) {
+                        closeCenterConsole();
+                      } else {
+                        openCenterConsole();
+                      }
+                    }}
+                  >
+                    <LayoutGrid size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </a>
+                </div>
+              </>
             )}
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
