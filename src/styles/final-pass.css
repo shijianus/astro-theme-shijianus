@@ -836,23 +836,22 @@
 }
 
 .home-top-notice a {
-  color: var(--theme-main, #f39c12) !important;
-  background: transparent !important;
-  font-size: 0.85rem !important;
-  font-weight: bold !important;
+  width: 28px !important;
+  height: 28px !important;
   display: flex !important;
   align-items: center !important;
-  padding: 0 !important;
-  height: auto !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #eee !important;
   margin-left: auto;
-  transition: transform 0.3s ease !important;
+  transition: all 0.3s ease !important;
 }
 
 .home-top-notice a:hover {
-  background: transparent !important;
-  transform: translateX(3px);
-  color: var(--theme-main, #f39c12) !important;
-  opacity: 0.8;
+  background: var(--theme-main, #f39c12) !important;
+  color: #fff !important;
+  transform: translateX(3px) !important;
 }
 
 /* Ensure mobile alignment and consistency */
@@ -867,7 +866,7 @@
   }
   
   .home-top-notice a {
-    display: none !important; /* Hide 'more' on very small screens to save space */
+    display: flex !important; /* Show the icon button even on mobile as it is compact */
   }
 }
 
