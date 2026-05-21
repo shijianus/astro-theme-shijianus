@@ -942,67 +942,38 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 #console .activity-cell.level-4 { background: #216e39 !important; }
 
 /* ==========================================================================
-   Anzhiyu Native UI Reconstruction & Staggered Interaction System
+   Anzhiyu Theme Master Console - Ultimate Geometric Morphing Fix
    ========================================================================== */
 
-/* 1. 触发按钮：强力清洗背景色块污染，严守物理对齐 */
+/* 1. 独立类名：严守 35px 组件栅格，强力清洗全局 hover/active 黄色方块污染 */
 .nav-console-btn-anzhiyu {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 35px !important;
-  height: 35px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: relative !important;
-  cursor: pointer !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  width: 35px !important; height: 35px !important; margin: 0 !important; padding: 0 !important;
+  position: relative !important; cursor: pointer !important;
   background: transparent !important;
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
-
 .nav-console-btn-anzhiyu .site-page {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  color: var(--font-color) !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  width: 100% !important; height: 100% !important; color: var(--font-color) !important;
+  background: transparent !important; box-shadow: none !important;
   border-radius: 50% !important;
 }
-
-/* 按钮交互：悬停放大，按下缩小反馈 */
-.nav-console-btn-anzhiyu:hover {
-  transform: scale(1.1) !important;
-}
-.nav-console-btn-anzhiyu:active {
-  transform: scale(0.95) !important;
-}
-
-/* 强力清洗 active / hover 状态下的全局黄色高亮块 */
 .nav-console-btn-anzhiyu .site-page:hover,
 .nav-console-btn-anzhiyu .site-page.is-active {
-  background: transparent !important;
-  color: var(--font-color) !important;
-  box-shadow: none !important;
+  background: transparent !important; color: var(--font-color) !important; box-shadow: none !important;
 }
 
-/* 2. 矩阵画板：22x14 精准像素比例 */
+/* 2. 矩阵定尺寸画板（防塌陷与形变基准坐标轴） */
 .anzhiyu-matrix-icon {
-  position: relative !important;
-  display: block !important;
-  width: 22px !important;
-  height: 14px !important;
+  position: relative !important; display: block !important;
+  width: 22px !important; height: 14px !important;
   pointer-events: none !important;
 }
 
-/* 3. 线条原子属性：大幅加粗至 4px，顺滑数值过渡 (严禁 Scale) */
+/* 3. 线条骨架共性：统一加粗至 4px，全量物理属性可连续计算过渡 */
 .matrix-line {
-  position: absolute !important;
-  background-color: currentColor !important;
-  height: 4px !important;
-  border-radius: 2px !important;
+  position: absolute !important; background-color: currentColor !important;
+  height: 4px !important; border-radius: 2px !important;
   transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
               height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
               top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
@@ -1010,103 +981,45 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
               background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
-/* 默认静态坐标：上长 (22px)，下左点 (4px)，下右线 (14px) */
+/* 4. 默认静态物理坐标系 (点4 + 距4 + 线14 = 全宽22) */
 .line-1 { top: 0 !important; left: 0 !important; width: 22px !important; }
 .line-2 { top: 10px !important; left: 0 !important; width: 4px !important; opacity: 1 !important; }
 .line-3 { top: 10px !important; right: 0 !important; width: 14px !important; }
 
-/* 悬停与激活态形变：物理数值平滑生长 */
+/* 5. 悬停与激活态连贯形变（线收缩、点拉长、轴向垂直平滑生长） */
+/* 状态①：顶层长线平滑向左缩短为 10px */
 .nav-console-btn-anzhiyu .site-page:hover .line-1,
 .nav-console-btn-anzhiyu .site-page.is-active .line-1 {
   width: 10px !important;
 }
+/* 状态②：底层左点向右延伸至 10px 短线，同时优雅降低透明度，变为极具层次感的浅灰色 */
 .nav-console-btn-anzhiyu .site-page:hover .line-2,
 .nav-console-btn-anzhiyu .site-page.is-active .line-2 {
   width: 10px !important;
   opacity: 0.4 !important;
 }
+/* 状态③：底层右线抛弃平面逻辑，向顶部逆向生长扩散，完美化为高 14px、宽 4px 的垂直长实线，并点亮为主色 */
 .nav-console-btn-anzhiyu .site-page:hover .line-3,
 .nav-console-btn-anzhiyu .site-page.is-active .line-3 {
   top: 0 !important;
   width: 4px !important;
   height: 14px !important;
-  background-color: var(--theme-main) !important;
+  background-color: var(--theme-main, #f39c12) !important;
 }
 
-/* 4. 专属隔离 Tooltip */
+/* 6. 独立实验性控制台微提示 Tooltip (浅灰扁平，彻底隔离) */
 [data-mini-tooltip] { position: relative !important; }
 [data-mini-tooltip]::before {
-  content: attr(data-mini-tooltip) !important;
-  position: absolute !important;
-  top: calc(100% + 10px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) translateY(3px) !important;
-  background: rgba(240, 240, 240, 0.95) !important;
-  color: #333 !important;
-  padding: 4px 10px !important;
-  border-radius: 4px !important;
-  font-size: 11px !important;
-  white-space: nowrap !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: all 0.25s ease-out !important;
-  z-index: 999999 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  content: attr(data-mini-tooltip) !important; position: absolute !important;
+  top: calc(100% + 10px) !important; left: 50% !important; transform: translateX(-50%) translateY(-4px) !important;
+  background: var(--card-bg, #f3f4f6) !important; color: var(--font-color, #333) !important;
+  padding: 4px 10px !important; border-radius: 4px !important; font-size: 11px !important; white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important; z-index: 99999 !important;
 }
 [data-mini-tooltip]:hover::before {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateX(-50%) translateY(0) !important;
-}
-
-/* 5. 全局背景 Veils 遮罩与毛玻璃 */
-#console .console-mask {
-  background: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(12px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  transition: opacity 0.4s ease !important;
-}
-
-/* 6. 面板展开：右上角源点扇形发散 */
-#console {
-  z-index: 99999 !important;
-}
-#console .console-card-group {
-  transform-origin: top right !important;
-  transform: scale(0.8) translateY(20px) !important;
-  opacity: 0 !important;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-#console.show .console-card-group {
-  transform: scale(1) translateY(0) !important;
-  opacity: 1 !important;
-}
-
-/* 7. 菜单内容：瀑布流逐级坠落 (Staggered Animation) */
-#console.show .console-card-group-left > *,
-#console.show .console-card-group-right > *,
-#console.show .button-group {
-  animation: waterfallFadeIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) both !important;
-}
-
-/* 阶梯编排延迟 */
-#console.show .console-profile { animation-delay: 0.1s !important; }
-#console.show .console-webinfo { animation-delay: 0.15s !important; }
-#console.show .tags { animation-delay: 0.2s !important; }
-#console.show .activity { animation-delay: 0.25s !important; }
-#console.show .button-group { animation-delay: 0.3s !important; }
-
-@keyframes waterfallFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  opacity: 1 !important; visibility: visible !important; transform: translateX(-50%) translateY(0) !important;
 }
 
 #nav-notification {

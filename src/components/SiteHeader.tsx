@@ -556,56 +556,6 @@ export function SiteHeader({
               </a>
             </div>
 
-            {/* 
-            {/* 
-            {showCenterConsoleTrigger && (
-              <div className="nav-button" id="center-console-button">
-                <a
-                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
-                  href="#"
-                  data-tooltip="控制台"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (consoleOpen) {
-                      closeCenterConsole();
-                    } else {
-                      openCenterConsole();
-                    }
-                  }}
-                >
-                  <div className="hamburger-container">
-                    <span className="hamburger-line line-top" />
-                    <span className="hamburger-line line-center" />
-                    <span className="hamburger-line line-bottom" />
-                  </div>
-                </a>
-              </div>
-            )}
-            */}
-
-            {/* 像素级复刻安知鱼无界中控台按钮 */}
-            {showCenterConsoleTrigger && (
-              <div className="nav-console-btn-anzhiyu" id="center-console-button">
-                <a
-                  className={`site-page ${consoleOpen ? 'is-active' : ''}`}
-                  href="#"
-                  data-mini-tooltip="中控台"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    consoleOpen ? closeCenterConsole() : openCenterConsole();
-                  }}
-                >
-                  <div className="anzhiyu-matrix-icon">
-                    <span className="matrix-line line-1"></span>
-                    <span className="matrix-line line-2"></span>
-                    <span className="matrix-line line-3"></span>
-                  </div>
-                </a>
-              </div>
-            )}
-            */}
-
-            {/* 像素级复刻安知鱼无界中控台按钮 */}
             {showCenterConsoleTrigger && (
               <div className="nav-console-btn-anzhiyu" id="center-console-button">
                 <a
