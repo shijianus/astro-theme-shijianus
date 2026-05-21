@@ -857,6 +857,18 @@
   transform: translateX(3px) !important;
 }
 
+.home-top-notice a.notice-more-btn svg {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* Ensure mobile alignment and consistency */
 @media screen and (max-width: 768px) {
   .home-top-notice {
