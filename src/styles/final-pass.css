@@ -788,8 +788,8 @@
   border-radius: 12px !important;
   box-shadow: none !important;
   transition: all 0.3s ease;
-  overflow: hidden;
   cursor: pointer;
+  position: relative;
 }
 
 [data-theme='light'] .home-top-notice {
@@ -835,7 +835,7 @@
   color: var(--theme-main, #f39c12) !important;
 }
 
-.home-top-notice a {
+.home-top-notice a.notice-more-btn {
   width: 28px !important;
   height: 28px !important;
   display: flex !important;
@@ -848,7 +848,7 @@
   transition: all 0.3s ease !important;
 }
 
-.home-top-notice a:hover {
+.home-top-notice a.notice-more-btn:hover {
   background: var(--theme-main, #f39c12) !important;
   color: #fff !important;
   transform: translateX(3px) !important;
@@ -865,7 +865,7 @@
     margin-bottom: 16px !important;
   }
   
-  .home-top-notice a {
+  .home-top-notice a.notice-more-btn {
     display: flex !important; /* Show the icon button even on mobile as it is compact */
   }
 }
