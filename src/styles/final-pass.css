@@ -941,48 +941,73 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 #console .activity-cell.level-3 { background: #30a14e !important; }
 #console .activity-cell.level-4 { background: #216e39 !important; }
 
-/* Modern Hamburger Morphing Animation */
-#center-console-button .hamburger-container {
-  width: 16px !important;
-  height: 12px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  cursor: pointer !important;
-  transition: transform 0.3s ease !important;
+/* ==========================================================================
+   Anzhiyu Native Style Center Console Button Remodeling
+   ========================================================================== */
+
+.nav-console-btn-anzhiyu {
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  width: 35px !important; height: 35px !important; /* 精准对齐相邻 nav-button */
+  margin: 0 !important; padding: 0 !important; position: relative !important; cursor: pointer !important;
+  background: transparent !important; /* 斩断全局高亮色块污染 */
+}
+.nav-console-btn-anzhiyu .site-page {
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  width: 100% !important; height: 100% !important; color: var(--font-color) !important;
+  background: transparent !important; box-shadow: none !important;
+}
+.nav-console-btn-anzhiyu .site-page:hover,
+.nav-console-btn-anzhiyu .site-page.is-active {
+  background: transparent !important; color: var(--font-color) !important; box-shadow: none !important;
 }
 
-#center-console-button .hamburger-line {
-  width: 100% !important;
-  height: 2px !important;
-  background-color: var(--font-color) !important;
-  border-radius: 2px !important;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.2s ease, 
-              background-color 0.3s ease !important;
-  transform-origin: center !important;
+/* 矩阵画板与线条过渡逻辑 (依据 themes/anheyu 真实源码数据调整) */
+.anzhiyu-matrix-icon {
+  position: relative !important; display: block !important;
+  width: 22px !important; height: 14px !important;
+}
+.matrix-line {
+  position: absolute !important; background-color: currentColor !important;
+  height: 4px !important; border-radius: 2px !important;
+  transition: width 0.3s ease-in-out, height 0.3s ease-in-out, top 0.3s ease-in-out, opacity 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
 }
 
-/* Hover State */
-#center-console-button:hover .hamburger-line {
-  background-color: var(--theme-main) !important;
+/* 默认静态坐标：上长 (22px)，下左点 (4px)，下右线 (14px) */
+.line-1 { top: 0 !important; left: 0 !important; width: 22px !important; }
+.line-2 { top: 10px !important; left: 0 !important; width: 4px !important; opacity: 1 !important; }
+.line-3 { top: 10px !important; right: 0 !important; width: 14px !important; }
+
+/* 悬停与激活态形变（三阶段物理形变） */
+.nav-console-btn-anzhiyu .site-page:hover .line-1,
+.nav-console-btn-anzhiyu .site-page.is-active .line-1 {
+  width: 10px !important;
+}
+.nav-console-btn-anzhiyu .site-page:hover .line-2,
+.nav-console-btn-anzhiyu .site-page.is-active .line-2 {
+  width: 10px !important;
+  opacity: 0.4 !important; /* 优雅变灰 */
+}
+.nav-console-btn-anzhiyu .site-page:hover .line-3,
+.nav-console-btn-anzhiyu .site-page.is-active .line-3 {
+  top: 0 !important;
+  width: 4px !important;
+  height: 14px !important;
+  background-color: var(--theme-main, #f39c12) !important;
 }
 
-/* Active State (X Morph) */
-#center-console-button .site-page.is-active .line-top {
-  transform: translateY(5px) rotate(45deg) !important;
-  background-color: var(--theme-main) !important;
+/* 专属实验性中控台极简 Tooltip */
+[data-mini-tooltip] { position: relative !important; }
+[data-mini-tooltip]::before {
+  content: attr(data-mini-tooltip) !important; position: absolute !important;
+  top: calc(100% + 10px) !important; left: 50% !important; transform: translateX(-50%) translateY(-4px) !important;
+  background: var(--card-bg, #f3f4f6) !important; color: var(--font-color, #333) !important;
+  padding: 4px 10px !important; border-radius: 4px !important; font-size: 11px !important; white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important; z-index: 99999 !important;
 }
-
-#center-console-button .site-page.is-active .line-center {
-  opacity: 0 !important;
-  transform: scaleX(0) !important;
-}
-
-#center-console-button .site-page.is-active .line-bottom {
-  transform: translateY(-5px) rotate(-45deg) !important;
-  background-color: var(--theme-main) !important;
+[data-mini-tooltip]:hover::before {
+  opacity: 1 !important; visibility: visible !important; transform: translateX(-50%) translateY(0) !important;
 }
 
 #nav-notification {
