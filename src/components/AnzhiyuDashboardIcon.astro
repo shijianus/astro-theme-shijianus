@@ -15,8 +15,8 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
   <button class="icon-button" aria-label="中控台">
     <div class="icon-container">
       <span class="shape top-bar"></span>
-      <span class="shape bottom-left-dot"></span>
-      <span class="shape bottom-right-bar"></span>
+      <span class="shape mid-bar"></span>
+      <span class="shape bottom-bar"></span>
     </div>
   </button>
 </div>
@@ -32,8 +32,21 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     margin-left: 0.5rem;
     cursor: pointer;
     z-index: 50;
+    border-radius: var(--radius-full);
+    transition: all 0.3s ease;
   }
   
+  .anzhiyu-dashboard-icon:hover,
+  .anzhiyu-dashboard-icon.is-active {
+    background: var(--theme-main);
+    color: var(--white);
+  }
+  
+  .anzhiyu-dashboard-icon:hover .shape,
+  .anzhiyu-dashboard-icon.is-active .shape {
+    background: var(--white);
+  }
+
   .icon-button {
     width: 100%;
     height: 100%;
@@ -48,54 +61,66 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
   }
   
   .icon-container {
-    --icon-size: 22px;
+    --icon-size: 18px;
+    --stroke-width: 2px;
     position: relative;
     width: var(--icon-size);
     height: var(--icon-size);
-    transition: 1s;
+    transition: 0.4s var(--animation-on);
   }
   
   .shape {
     background: var(--font-color, currentColor);
     position: absolute;
-    border-radius: calc(var(--icon-size) * 0.15);
-    transition: 0.5s;
+    border-radius: 999px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     inset: 0;
     margin: auto;
-    right: auto;
-    width: calc(var(--icon-size) / 3);
-    height: calc(var(--icon-size) / 3);
-    transform: translateY(calc(var(--icon-size) / 4));
+    width: 100%;
+    height: var(--stroke-width);
   }
   
   .top-bar {
-    width: 100%;
-    transform: translateY(calc(var(--icon-size) / -4));
+    transform: translateY(-6px);
   }
   
-  .bottom-right-bar {
-    left: auto;
-    right: 0;
-    width: calc(var(--icon-size) / 2);
+  .mid-bar {
+    transform: translateY(0);
+  }
+  
+  .bottom-bar {
+    transform: translateY(6px);
   }
   
   /* Hover and active states - NO ROTATION! */
+  /* Left Dots + Right Vertical Bar */
+  
   .anzhiyu-dashboard-icon:hover .top-bar,
   .anzhiyu-dashboard-icon.is-active .top-bar {
-    width: calc(var(--icon-size) / 2.5);
+    width: 4px;
+    height: 4px;
+    transform: translate(-6px, -5px);
+    opacity: 0.7;
   }
   
-  .anzhiyu-dashboard-icon:hover .bottom-left-dot,
-  .anzhiyu-dashboard-icon.is-active .bottom-left-dot {
-    opacity: 0.5;
-    width: calc(var(--icon-size) / 2.5);
+  .anzhiyu-dashboard-icon:hover .mid-bar,
+  .anzhiyu-dashboard-icon.is-active .mid-bar {
+    width: 4px;
+    height: 4px;
+    transform: translate(-6px, 5px);
+    opacity: 0.7;
   }
   
-  .anzhiyu-dashboard-icon:hover .bottom-right-bar,
-  .anzhiyu-dashboard-icon.is-active .bottom-right-bar {
-    width: calc(var(--icon-size) / 2.5);
-    height: calc(var(--icon-size) / 1.15);
-    transform: none; /* Reset translateY for centering */
+  .anzhiyu-dashboard-icon:hover .bottom-bar,
+  .anzhiyu-dashboard-icon.is-active .bottom-bar {
+    width: 3px;
+    height: 100%;
+    transform: translate(6px, 0);
+  }
+
+  /* Transition refinement */
+  .anzhiyu-dashboard-icon:hover .icon-container {
+    transform: scale(0.95);
   }
 </style>
 

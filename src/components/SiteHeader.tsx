@@ -493,7 +493,7 @@ export function SiteHeader({
                     openAccountPanel();
                   }}
                 >
-                  <User size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <User size={18} strokeWidth={2.8} aria-hidden="true" />
                 </a>
               </div>
             )}
@@ -514,7 +514,7 @@ export function SiteHeader({
                   }}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <Bell size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <Bell size={18} strokeWidth={2.8} aria-hidden="true" />
                   {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
                 </a>
               </div>
@@ -530,33 +530,32 @@ export function SiteHeader({
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
                 }}
               >
-                <Search size={18} strokeWidth={2.5} aria-hidden="true" />
-              </a>
-            </div>
+                <Search size={18} strokeWidth={2.8} aria-hidden="true" />
+                </a>
+                </div>
 
-            <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
+                <div className="nav-button" id="nav-theme-toggle">
+                <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
-              }}>
+                }}>
                 {theme === 'dark' ? (
-                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <SunMedium size={18} strokeWidth={2.8} aria-hidden="true" />
                 ) : (
-                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <MoonStar size={18} strokeWidth={2.8} aria-hidden="true" />
                 )}
-              </a>
-            </div>
+                </a>
+                </div>
 
-            <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
+                <div className="nav-button" id="randomPost_button">
+                <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
                 e.preventDefault();
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
-              }}>
-                <Dices size={18} strokeWidth={2.5} aria-hidden="true" />
-              </a>
-            </div>
-
+                }}>
+                <Dices size={18} strokeWidth={2.8} aria-hidden="true" />
+                </a>
+                </div>
 
 
             {/* === 安知鱼纯正血统：3线矩阵中控台按钮 === */}
@@ -598,7 +597,7 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <Menu size={18} strokeWidth={2.5} aria-hidden="true" />
+                <Menu size={18} strokeWidth={2.8} aria-hidden="true" />
               </a>
             </div>
 
@@ -613,7 +612,7 @@ export function SiteHeader({
                 }}
               >
                 <span className="percent-text" id="percent">{progress}</span>
-                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
+                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.8} aria-hidden="true" />
               </a>
             </div>
           </div>

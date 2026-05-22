@@ -62,22 +62,40 @@
 }
 
 .center-console-trigger,
-.notification-trigger {
+.notification-trigger,
+#nav-right .nav-button .site-page {
   position: relative;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
-  min-height: 46px;
-  padding: 0;
+  width: 35px !important;
+  min-width: 35px !important;
+  height: 35px !important;
+  min-height: 35px !important;
+  padding: 0 !important;
   border: 0;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-  box-shadow: var(--shadow-border);
+  border-radius: var(--radius-full) !important;
+  background: transparent;
   isolation: isolate;
   line-height: 1;
+  transition: all 0.3s ease;
+}
+
+#nav-right .nav-button .site-page:hover,
+#nav-right .nav-button .site-page.is-active {
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
+}
+
+.center-console-trigger,
+.notification-trigger {
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  min-height: 35px;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  box-shadow: var(--shadow-border);
+  border-radius: 12px !important;
 }
 
 .center-console-trigger:is(:hover, :focus-visible),
