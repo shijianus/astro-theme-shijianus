@@ -362,17 +362,17 @@
    ========================================================== */
 
 /* 1. 基础定位 (所有 Tooltip 宿主必须具备) */
-[data-tooltip], [data-anzhiyu-tooltip] { 
+[data-tooltip], [data-shijianus-tooltip] { 
     position: relative !important; 
     cursor: pointer !important; 
 }
-[data-tooltip]:hover, [data-anzhiyu-tooltip]:hover { 
+[data-tooltip]:hover, [data-shijianus-tooltip]:hover { 
     z-index: 999999 !important; 
 }
 
 /* 2. 核心视觉池 (共用高保真皮肤，绝对对齐安知鱼) */
 [data-tooltip]::before,
-[data-anzhiyu-tooltip]::after {
+[data-shijianus-tooltip]::after {
     position: absolute !important;
     top: 100% !important;
     left: 50% !important;
@@ -407,14 +407,14 @@
 [data-tooltip]:not(.tooltip-classic)::before {
     content: attr(data-tooltip) !important;
 }
-[data-anzhiyu-tooltip]::after {
-    content: attr(data-anzhiyu-tooltip) !important;
+[data-shijianus-tooltip]::after {
+    content: attr(data-shijianus-tooltip) !important;
 }
 
 /* 4. 统一 Hover 浮现动画 (无旋转) */
 [data-tooltip]:not(.tooltip-classic):hover::before,
-[data-anzhiyu-tooltip]:hover::after,
-.anzhiyu-dashboard-icon.is-active::after {
+[data-shijianus-tooltip]:hover::after,
+.shijianus-dashboard-icon.is-active::after {
     opacity: 1 !important;
     visibility: visible !important;
     transform: translateX(-50%) translateY(8px) !important;
@@ -732,26 +732,26 @@
    ========================================== */
 
 /* 1. 图标线条基础动效 (Hover 变色) */
-.nav-console-btn-anzhiyu:hover .matrix-line {
+.nav-console-btn-shijianus:hover .matrix-line {
   background-color: var(--theme-main) !important;
 }
 
 /* 2. 激活状态：3线丝滑形变为 "X" 关闭按钮 */
-.nav-console-btn-anzhiyu button.is-active .line-1 {
+.nav-console-btn-shijianus button.is-active .line-1 {
   transform: translateY(5px) rotate(45deg);
   background-color: var(--theme-main) !important;
 }
-.nav-console-btn-anzhiyu button.is-active .line-2 {
+.nav-console-btn-shijianus button.is-active .line-2 {
   opacity: 0;
   transform: translateX(-10px);
 }
-.nav-console-btn-anzhiyu button.is-active .line-3 {
+.nav-console-btn-shijianus button.is-active .line-3 {
   transform: translateY(-5px) rotate(-45deg);
   background-color: var(--theme-main) !important;
 }
 
 /* 3. 极简悬浮 Tooltip (已统一在 [data-tooltip] 系统中) */
-.nav-console-btn-anzhiyu {
+.nav-console-btn-shijianus {
   position: relative !important;
 }
 

@@ -70,10 +70,10 @@ export function ProfileWidget({
           </a>
           <div className="card-info-social-icons is-center" aria-label="作者链接">
             <a className="social-icon" href="https://github.com/shijianus" target="_blank" rel="noreferrer" title="GitHub">
-              <i className="anzhiyufont anzhiyu-icon-github" aria-hidden="true" />
+              <i className="shijianusfont shijianus-icon-github" aria-hidden="true" />
             </a>
             <a className="social-icon" href={`mailto:${email}`} title="邮箱">
-              <i className="anzhiyufont anzhiyu-icon-envelope" aria-hidden="true" />
+              <i className="shijianusfont shijianus-icon-envelope" aria-hidden="true" />
             </a>
           </div>
         </div>

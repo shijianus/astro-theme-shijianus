@@ -23,6 +23,7 @@ type SiteHeaderProps = {
   showNotificationTrigger: boolean;
   isAccountEnabled: boolean;
   hasDatabase: boolean;
+  consoleIcon?: React.ReactNode;
 };
 
 function isActive(currentPath: string, href: string) {
@@ -69,23 +70,23 @@ const lucideIconMap: Record<string, LucideIcon> = {
   message: MessageCircle,
 };
 
-const anzhiyuIconMap: Record<string, string> = {
-  home: 'anzhiyu-icon-house-chimney',
-  archive: 'anzhiyu-icon-box-archive',
-  category: 'anzhiyu-icon-shapes',
-  tags: 'anzhiyu-icon-tags',
-  about: 'anzhiyu-icon-circle-info',
-  book: 'anzhiyu-icon-book',
-  rss: 'anzhiyu-icon-rss',
-  link: 'anzhiyu-icon-link',
-  flask: 'anzhiyu-icon-flask',
-  music: 'anzhiyu-icon-music',
-  video: 'anzhiyu-icon-video',
-  user: 'anzhiyu-icon-anzhiyu',
-  'chart-bar': 'anzhiyu-icon-chart-bar',
-  compass: 'anzhiyu-icon-compass',
-  'circle-info': 'anzhiyu-icon-circle-info',
-  message: 'anzhiyu-icon-comments',
+const shijianusIconMap: Record<string, string> = {
+  home: 'shijianus-icon-house-chimney',
+  archive: 'shijianus-icon-box-archive',
+  category: 'shijianus-icon-shapes',
+  tags: 'shijianus-icon-tags',
+  about: 'shijianus-icon-circle-info',
+  book: 'shijianus-icon-book',
+  rss: 'shijianus-icon-rss',
+  link: 'shijianus-icon-link',
+  flask: 'shijianus-icon-flask',
+  music: 'shijianus-icon-music',
+  video: 'shijianus-icon-video',
+  user: 'shijianus-icon-shijianus',
+  'chart-bar': 'shijianus-icon-chart-bar',
+  compass: 'shijianus-icon-compass',
+  'circle-info': 'shijianus-icon-circle-info',
+  message: 'shijianus-icon-comments',
 };
 
 const forceLucideIcons = [
@@ -97,20 +98,38 @@ const forceLucideIcons = [
 function renderNavIcon(iconName: string | undefined, className: string) {
   const name = iconName ?? 'home';
   const LucideIcon = lucideIconMap[name] || House;
-  const anzhiyuClass = anzhiyuIconMap[name];
+  const shijianusClass = shijianusIconMap[name];
   
-  const useLucide = !anzhiyuClass || forceLucideIcons.includes(name);
+  const useLucide = !shijianusClass || forceLucideIcons.includes(name);
 
   return (
     <span className={`site-page__icon-wrap ${className}`} aria-hidden="true" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
       {useLucide ? (
-        <LucideIcon size={16} strokeWidth={2.25} />
+        <LucideIcon size={16} strokeWidth={3.0} />
       ) : (
-        <i className={`anzhiyufont ${anzhiyuClass}`} style={{ fontSize: 'inherit' }} />
+        <i className={`shijianusfont ${shijianusClass}`} style={{ fontSize: 'inherit' }} />
       )}
     </span>
   );
 }
+
+const ShijianusDashboardIconReact = ({ isOpen, onClick }: { isOpen: boolean; onClick: (e: React.MouseEvent) => void }) => {
+  return (
+    <div 
+      className={`shijianus-dashboard-icon w-[35px] h-[35px] flex items-center justify-center ml-2 first:ml-0 cursor-pointer z-50 ${isOpen ? 'is-active' : ''}`}
+      onClick={onClick}
+      data-shijianus-tooltip="中控台"
+    >
+      <button className="w-full h-full flex items-center justify-center bg-transparent border-none outline-none p-0 cursor-pointer" aria-label="中控台">
+        <div className="icon-container relative w-[22px] h-[22px] transition-all duration-1000">
+          <span className={`shape top-bar absolute inset-0 m-auto right-auto bg-[var(--font-color)] rounded-[3.3px] transition-all duration-500 h-[7.3px] ${isOpen ? 'w-[8.8px]' : 'w-full'} -translate-y-[5.5px]`}></span>
+          <span className={`shape bottom-left-dot absolute inset-0 m-auto right-auto bg-[var(--font-color)] rounded-[3.3px] transition-all duration-500 w-[7.3px] h-[7.3px] translate-y-[5.5px] ${isOpen ? 'opacity-50 w-[8.8px]' : ''}`}></span>
+          <span className={`shape bottom-right-bar absolute inset-0 m-auto right-auto bg-[var(--font-color)] rounded-[3.3px] transition-all duration-500 w-[11px] h-[7.3px] translate-y-[5.5px] left-auto right-0 ${isOpen ? 'w-[8.8px] h-[19.1px] translate-y-0' : ''}`}></span>
+        </div>
+      </button>
+    </div>
+  );
+};
 
 export function SiteHeader({
   brandName,
@@ -481,11 +500,11 @@ export function SiteHeader({
             </div>
           </div>
 
-          <div id="nav-right">
+          <div id="nav-right" className="flex items-center">
             {isAccountEnabled && (
-              <div className="nav-button" id="nav-account">
+              <div className="nav-button w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1" id="nav-account">
                 <a 
-                  className={`site-page ${accountOpen ? 'is-active' : ''}`} 
+                  className={`site-page ${accountOpen ? 'is-active' : ''} w-full h-full flex items-center justify-center`} 
                   href="#" 
                   title="个人中心"
                   onClick={(e) => {
@@ -493,15 +512,15 @@ export function SiteHeader({
                     openAccountPanel();
                   }}
                 >
-                  <User size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <User size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
                 </a>
               </div>
             )}
 
             {showNotificationTrigger && (
-              <div className="nav-button" id="nav-notification">
+              <div className="nav-button w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1" id="nav-notification">
                 <a 
-                  className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
+                  className={`site-page ${notificationOpen ? 'is-active' : ''} w-full h-full flex items-center justify-center relative`} 
                   href="#" 
                   data-tooltip="通知中心"
                   onClick={(e) => {
@@ -512,17 +531,16 @@ export function SiteHeader({
                       openNotificationPanel();
                     }
                   }}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <Bell size={18} strokeWidth={2.5} aria-hidden="true" />
-                  {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
+                  <Bell size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
+                  {notificationCount > 0 && <span className="nav-button__badge absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full px-1 min-w-[15px] h-[15px] flex items-center justify-center">{notificationCount}</span>}
                 </a>
               </div>
             )}
 
-            <div className="nav-button" id="search-button">
+            <div className="nav-button w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1" id="search-button">
               <a 
-                className="site-page social-icon search" 
+                className="site-page social-icon search w-full h-full flex items-center justify-center" 
                 href="#" 
                 data-tooltip="搜索" 
                 onClick={(e) => {
@@ -530,67 +548,47 @@ export function SiteHeader({
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
                 }}
               >
-                <Search size={18} strokeWidth={2.5} aria-hidden="true" />
+                <Search size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
               </a>
             </div>
 
-            <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
+            <div className="nav-button w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1" id="nav-theme-toggle">
+              <a className="site-page w-full h-full flex items-center justify-center" href="#" data-tooltip="切换主题" onClick={(e) => {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
               }}>
                 {theme === 'dark' ? (
-                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <SunMedium size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
                 ) : (
-                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
+                  <MoonStar size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
                 )}
               </a>
             </div>
 
-            <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
+            <div className="nav-button w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1" id="randomPost_button">
+              <a className="site-page w-full h-full flex items-center justify-center" href="#" data-tooltip="随机文章" onClick={(e) => {
                 e.preventDefault();
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <Dices size={18} strokeWidth={2.5} aria-hidden="true" />
+                <Dices size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
               </a>
             </div>
 
-
-
-            {/* === 安知鱼纯正血统：3线矩阵中控台按钮 === */}
+            {/* === 强制渲染高保真中控台图标 (React版) === */}
             {showCenterConsoleTrigger && (
-              <>
-                {consoleIcon ? (
-                  consoleIcon
-                ) : (
-                  /* 老版本备份保留（不默认使用） */
-                  <div 
-                    className="nav-console-btn-anzhiyu relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
-                    id="center-console-button"
-                    data-anzhiyu-tooltip="中控台"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      consoleOpen ? closeCenterConsole() : openCenterConsole();
-                    }}
-                  >
-                    <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
-                      {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
-                      <div className="anzhiyu-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
-                        <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                        <span className="matrix-line line-2 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                        <span className="matrix-line line-3 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </>
+              <ShijianusDashboardIconReact 
+                isOpen={consoleOpen} 
+                onClick={(e) => {
+                  e.preventDefault();
+                  consoleOpen ? closeCenterConsole() : openCenterConsole();
+                }}
+              />
             )}
 
-            <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
+            <div id="toggle-menu" className={`${menuOpen ? 'is-open' : ''} w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1`}>
               <a
-                className="site-page"
+                className="site-page w-full h-full flex items-center justify-center"
                 href="#"
                 data-tooltip="切换菜单"
                 onClick={(e) => {
@@ -598,13 +596,13 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <Menu size={18} strokeWidth={2.5} aria-hidden="true" />
+                <Menu size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
               </a>
             </div>
 
-            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''}`} id="nav-totop">
+            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''} w-[35px] h-[35px] flex items-center justify-center rounded-lg hover:bg-[var(--theme-main)] transition-all mx-1`} id="nav-totop">
               <a
-                className="totopbtn"
+                className="totopbtn w-full h-full flex items-center justify-center relative"
                 href="#"
                 data-tooltip="回到顶部"
                 onClick={(e) => {
@@ -612,8 +610,8 @@ export function SiteHeader({
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                <span className="percent-text" id="percent">{progress}</span>
-                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
+                <span className="percent-text absolute text-[10px] font-bold" id="percent">{progress}</span>
+                <ArrowUp className="arrow-icon" size={18} strokeWidth={3} aria-hidden="true" className="text-[var(--font-color)]" />
               </a>
             </div>
           </div>

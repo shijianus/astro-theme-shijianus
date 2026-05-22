@@ -4831,3 +4831,64 @@ body[data-type='home'] .page-aside {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Custom Icon Animations for nav-right */
+@keyframes shake-bell {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-15deg); }
+  60% { transform: rotate(10deg); }
+  80% { transform: rotate(-10deg); }
+}
+
+@keyframes roll-dice {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes nod-user {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes spin-search {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(15deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes spin-theme {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes wiggle-menu {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+#nav-notification:hover .nav-icon, #nav-notification:hover svg {
+  animation: shake-bell 0.5s ease-in-out;
+}
+
+#randomPost_button:hover .nav-icon, #randomPost_button:hover svg {
+  animation: roll-dice 0.6s ease-in-out;
+}
+
+#nav-account:hover .nav-icon, #nav-account:hover svg {
+  animation: nod-user 0.4s ease-in-out;
+}
+
+#search-button:hover .nav-icon, #search-button:hover svg {
+  animation: spin-search 0.5s ease-in-out;
+}
+
+#nav-theme-toggle:hover .nav-icon, #nav-theme-toggle:hover svg {
+  animation: spin-theme 1s linear infinite;
+}
+
+#toggle-menu:hover .nav-icon, #toggle-menu:hover svg {
+  animation: wiggle-menu 0.4s ease-in-out;
+}

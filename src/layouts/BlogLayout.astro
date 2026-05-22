@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
 import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
-import AnzhiyuDashboardIcon from '../components/AnzhiyuDashboardIcon.astro';
+import ShijianusDashboardIcon from '../components/ShijianusDashboardIcon.astro';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
 import { ThemeUniverse } from '../components/ThemeUniverse';
@@ -150,7 +150,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title} | {siteConfig.site.title}</title>
-    <link rel="stylesheet" href="https://unpkg.com/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css" />
+    <link rel="stylesheet" href="/shijianus-iconfont.css" />
     <slot name="head" />
     <script is:inline>
       (() => {
@@ -188,7 +188,8 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         isAccountEnabled={remoteDbConfigured && accountPanel.enabled}
         hasDatabase={commentsEnabled}
       >
-        <AnzhiyuDashboardIcon slot="consoleIcon" />
+        {/* High-fidelity console icon injection */}
+        <ShijianusDashboardIcon slot="consoleIcon" />
       </SiteHeader>
 
       <main id="blog-container">
