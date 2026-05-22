@@ -69,23 +69,23 @@ const lucideIconMap: Record<string, LucideIcon> = {
   message: MessageCircle,
 };
 
-const anzhiyuIconMap: Record<string, string> = {
-  home: 'anzhiyu-icon-house-chimney',
-  archive: 'anzhiyu-icon-box-archive',
-  category: 'anzhiyu-icon-shapes',
-  tags: 'anzhiyu-icon-tags',
-  about: 'anzhiyu-icon-circle-info',
-  book: 'anzhiyu-icon-book',
-  rss: 'anzhiyu-icon-rss',
-  link: 'anzhiyu-icon-link',
-  flask: 'anzhiyu-icon-flask',
-  music: 'anzhiyu-icon-music',
-  video: 'anzhiyu-icon-video',
-  user: 'anzhiyu-icon-anzhiyu',
-  'chart-bar': 'anzhiyu-icon-chart-bar',
-  compass: 'anzhiyu-icon-compass',
-  'circle-info': 'anzhiyu-icon-circle-info',
-  message: 'anzhiyu-icon-comments',
+const shijianusIconMap: Record<string, string> = {
+  home: 'shijianus-icon-house-chimney',
+  archive: 'shijianus-icon-box-archive',
+  category: 'shijianus-icon-shapes',
+  tags: 'shijianus-icon-tags',
+  about: 'shijianus-icon-circle-info',
+  book: 'shijianus-icon-book',
+  rss: 'shijianus-icon-rss',
+  link: 'shijianus-icon-link',
+  flask: 'shijianus-icon-flask',
+  music: 'shijianus-icon-music',
+  video: 'shijianus-icon-video',
+  user: 'shijianus-icon-shijianus',
+  'chart-bar': 'shijianus-icon-chart-bar',
+  compass: 'shijianus-icon-compass',
+  'circle-info': 'shijianus-icon-circle-info',
+  message: 'shijianus-icon-comments',
 };
 
 const forceLucideIcons = [
@@ -97,16 +97,16 @@ const forceLucideIcons = [
 function renderNavIcon(iconName: string | undefined, className: string) {
   const name = iconName ?? 'home';
   const LucideIcon = lucideIconMap[name] || House;
-  const anzhiyuClass = anzhiyuIconMap[name];
+  const shijianusClass = shijianusIconMap[name];
   
-  const useLucide = !anzhiyuClass || forceLucideIcons.includes(name);
+  const useLucide = !shijianusClass || forceLucideIcons.includes(name);
 
   return (
     <span className={`site-page__icon-wrap ${className}`} aria-hidden="true" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
       {useLucide ? (
         <LucideIcon size={16} strokeWidth={2.25} />
       ) : (
-        <i className={`anzhiyufont ${anzhiyuClass}`} style={{ fontSize: 'inherit' }} />
+        <i className={`shijianusfont ${shijianusClass}`} style={{ fontSize: 'inherit' }} />
       )}
     </span>
   );
@@ -567,9 +567,9 @@ export function SiteHeader({
                 ) : (
                   /* 老版本备份保留（不默认使用） */
                   <div 
-                    className="nav-console-btn-anzhiyu relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
+                    className="nav-console-btn-shijianus relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
                     id="center-console-button"
-                    data-anzhiyu-tooltip="中控台"
+                    data-shijianus-tooltip="中控台"
                     onClick={(e) => {
                       e.preventDefault();
                       consoleOpen ? closeCenterConsole() : openCenterConsole();
@@ -577,7 +577,7 @@ export function SiteHeader({
                   >
                     <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
                       {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
-                      <div className="anzhiyu-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
+                      <div className="shijianus-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
                         <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
                         <span className="matrix-line line-2 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
                         <span className="matrix-line line-3 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>

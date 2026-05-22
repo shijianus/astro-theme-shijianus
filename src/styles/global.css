@@ -4821,6 +4821,64 @@ body[data-type='home'] .page-aside {
   }
 }
 
+/* Shijianus Nav Right Button Hover Animations */
+@keyframes shijianus-shake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+  100% { transform: rotate(0deg); }
+}
+#nav-notification:hover svg {
+  animation: shijianus-shake 0.4s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes shijianus-dice-throw {
+  0% { transform: rotate(0deg) scale(1) translateY(0); }
+  25% { transform: rotate(120deg) scale(1.2) translateY(-4px); }
+  50% { transform: rotate(240deg) scale(1) translateY(0); }
+  75% { transform: rotate(300deg) scale(1.1) translateY(-2px); }
+  100% { transform: rotate(360deg) scale(1) translateY(0); }
+}
+#randomPost_button:hover svg {
+  animation: shijianus-dice-throw 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes shijianus-user-wave {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.05); }
+}
+#nav-account:hover svg {
+  animation: shijianus-user-wave 0.5s ease-in-out infinite;
+}
+
+@keyframes shijianus-search-pulse {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  75% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+#search-button:hover svg {
+  animation: shijianus-search-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes shijianus-theme-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
+}
+#nav-theme-toggle:hover svg {
+  animation: shijianus-theme-spin 0.4s ease-out forwards;
+}
+
+@keyframes shijianus-menu-expand {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+#toggle-menu:hover svg {
+  animation: shijianus-menu-expand 0.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
