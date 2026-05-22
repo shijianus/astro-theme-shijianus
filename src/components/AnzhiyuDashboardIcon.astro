@@ -98,46 +98,44 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     transform: none; /* Reset translateY for centering */
   }
 
-  /* Tooltip styling based on Anzhiyu theme */
+  /* Tooltip styling - HIGH FIDELITY UNIFIED STANDARD (Strict Anzhiyu Style) */
   .anzhiyu-dashboard-icon::after {
     content: attr(data-anzhiyu-tooltip);
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(8px);
+    transform: translateX(-50%) translateY(12px);
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     
-    /* Anzhiyu Specific Visuals */
-    background: var(--anzhiyu-maskbgdeep, rgba(255, 255, 255, 0.8));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    color: var(--anzhiyu-fontcolor, #363636);
-    border: var(--style-border, 1px solid rgba(255, 255, 255, 0.2));
-    box-shadow: var(--anzhiyu-shadow-border, 0 8px 16px -4px rgba(0, 0, 0, 0.1));
-    border-radius: 8px; /* Classic Anzhiyu border radius */
+    /* Anzhiyu Visual Identity */
+    background: rgba(25, 25, 25, 0.9) !important; /* Pure Dark for contrast */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
     
     font-size: 12px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     white-space: nowrap;
     line-height: 1.2;
     z-index: 1000;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    font-weight: bold;
+    transition: 
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.3s;
+    font-weight: 500;
   }
   
-  :global([data-theme="dark"]) .anzhiyu-dashboard-icon::after {
-    background: var(--anzhiyu-maskbgdeep, rgba(0, 0, 0, 0.6));
-    color: var(--anzhiyu-fontcolor, #F7F7FA);
-    border: var(--style-border, 1px solid rgba(255, 255, 255, 0.1));
-    box-shadow: var(--anzhiyu-shadow-border, 0 8px 16px -4px rgba(0, 0, 0, 0.4));
-  }
-
-  /* Tooltip Hover state */
+  /* Tooltip Hover state - Gentle float up */
   .anzhiyu-dashboard-icon:hover::after,
   .anzhiyu-dashboard-icon.is-active::after {
     opacity: 1;
-    transform: translateX(-50%) translateY(4px);
+    visibility: visible;
+    transform: translateX(-50%) translateY(8px);
   }
 </style>
 

@@ -361,36 +361,42 @@
 [data-tooltip] { position: relative !important; cursor: pointer !important; }
 [data-tooltip]:hover { z-index: 999999 !important; }
 
-[data-tooltip]::before {
+[data-tooltip]::before,
+[data-anzhiyu-tooltip]::after {
     content: attr(data-tooltip) !important;
     position: absolute !important; 
-    top: calc(100% + 8px) !important; 
+    top: 100% !important; 
     left: 50% !important; 
-    transform: translateX(-50%) translateY(-4px) !important;
-    background: var(--card-bg, #f3f4f6) !important;
-    color: var(--font-color, #333) !important;
-    border: 1px solid var(--card-border, rgba(0,0,0,0.08)) !important;
+    transform: translateX(-50%) translateY(12px) !important;
+    background: rgba(25, 25, 25, 0.9) !important; 
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-radius: 6px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-    font-weight: normal !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;
+    font-weight: 500 !important;
     padding: 6px 12px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     width: max-content !important; 
     max-width: 240px !important; 
-    white-space: pre-wrap !important; 
+    white-space: pre !important; 
     text-align: center !important;
     opacity: 0 !important; 
     visibility: hidden !important;
     pointer-events: none !important; 
-    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease !important;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s !important;
     z-index: 999999 !important;
-    backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(12px) !important;
 }
 
-[data-tooltip]:hover::before { 
+[data-anzhiyu-tooltip]::after {
+    content: attr(data-anzhiyu-tooltip) !important;
+}
+
+[data-tooltip]:hover::before,
+[data-anzhiyu-tooltip]:hover::after { 
     opacity: 1 !important; 
     visibility: visible !important;
-    transform: translateX(-50%) translateY(0) !important;
+    transform: translateX(-50%) translateY(8px) !important;
 }
 
 /* WebInfo UI Optimization - High Density */
@@ -700,31 +706,9 @@
   background-color: var(--theme-main) !important;
 }
 
-/* 3. 极简悬浮 Tooltip (纯伪元素驱动) */
-.nav-console-btn-anzhiyu::after {
-  content: attr(data-anzhiyu-tooltip);
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  opacity: 0;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.85); /* 绝对纯正的透明黑 */
-  color: #ffffff;
-  font-size: 12px;
-  padding: 5px 8px;
-  border-radius: 5px;
-  white-space: nowrap;
-  line-height: 1;
-  z-index: 1000;
-  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: none !important;
-}
-
-/* Tooltip 悬停上浮就位 */
-.nav-console-btn-anzhiyu:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(4px);
+/* 3. 极简悬浮 Tooltip (已统一在 [data-tooltip] 系统中) */
+.nav-console-btn-anzhiyu {
+  position: relative !important;
 }
 
 #nav-right .nav-button .site-page {
