@@ -4,6 +4,7 @@ import {
   Archive, Tags, Info, Book, Rss, Link as LinkIcon, Video, 
   User, ChartBar, Compass, MessageCircle, ChevronDown,
   Search, SunMedium, MoonStar, Dices, ArrowUp, Menu,
+  Dice1, Dice2, Dice3, Dice4, Dice5, Dice6,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -136,6 +137,46 @@ export function SiteHeader({
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [diceFace, setDiceFace] = useState(0); // 0 means default Dices icon
+  const [isRollingDice, setIsRollingDice] = useState(false);
+  const diceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startDiceRoll = () => {
+    if (isRollingDice) return;
+    setIsRollingDice(true);
+    let count = 0;
+    const maxCount = 10;
+    
+    if (diceTimerRef.current) clearInterval(diceTimerRef.current);
+    
+    diceTimerRef.current = setInterval(() => {
+      setDiceFace(Math.floor(Math.random() * 6) + 1);
+      count++;
+      if (count >= maxCount) {
+        if (diceTimerRef.current) clearInterval(diceTimerRef.current);
+        setIsRollingDice(false);
+      }
+    }, 80);
+  };
+
+  const resetDice = () => {
+    if (diceTimerRef.current) clearInterval(diceTimerRef.current);
+    setIsRollingDice(false);
+    setDiceFace(0);
+  };
+
+  const DiceIcon = useMemo(() => {
+    switch (diceFace) {
+      case 1: return Dice1;
+      case 2: return Dice2;
+      case 3: return Dice3;
+      case 4: return Dice4;
+      case 5: return Dice5;
+      case 6: return Dice6;
+      default: return Dices;
+    }
+  }, [diceFace]);
+
   const submenuCloseTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -547,13 +588,13 @@ export function SiteHeader({
               </a>
             </div>
 
-            <div className="nav-button" id="randomPost_button">
+            <div className="nav-button" id="randomPost_button" onMouseEnter={startDiceRoll} onMouseLeave={resetDice}>
               <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
                 e.preventDefault();
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <Dices size={18} strokeWidth={2.5} aria-hidden="true" />
+                <DiceIcon size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
 
