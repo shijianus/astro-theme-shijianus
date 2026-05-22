@@ -677,6 +677,56 @@
   margin-left: 8px !important;
 }
 
+/* ==========================================
+   安知鱼范式：中控台 3线矩阵动效与 Tooltip
+   ========================================== */
+
+/* 1. 图标线条基础动效 (Hover 变色) */
+.nav-console-btn-anzhiyu:hover .matrix-line {
+  background-color: var(--theme-main) !important;
+}
+
+/* 2. 激活状态：3线丝滑形变为 "X" 关闭按钮 */
+.nav-console-btn-anzhiyu button.is-active .line-1 {
+  transform: translateY(5px) rotate(45deg);
+  background-color: var(--theme-main) !important;
+}
+.nav-console-btn-anzhiyu button.is-active .line-2 {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+.nav-console-btn-anzhiyu button.is-active .line-3 {
+  transform: translateY(-5px) rotate(-45deg);
+  background-color: var(--theme-main) !important;
+}
+
+/* 3. 极简悬浮 Tooltip (纯伪元素驱动) */
+.nav-console-btn-anzhiyu::after {
+  content: attr(data-anzhiyu-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.85); /* 绝对纯正的透明黑 */
+  color: #ffffff;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  line-height: 1;
+  z-index: 1000;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: none !important;
+}
+
+/* Tooltip 悬停上浮就位 */
+.nav-console-btn-anzhiyu:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(4px);
+}
+
 #nav-right .nav-button .site-page {
   padding: 0 !important;
   margin: 0 !important;
@@ -941,108 +991,6 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 #console .activity-cell.level-3 { background: #30a14e !important; }
 #console .activity-cell.level-4 { background: #216e39 !important; }
 
-/* New Anzhiyu Center Console Matrix Icon & Precise Deformation v2 */
-.nav-console-btn-anzhiyu {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 35px !important;
-  height: 35px !important; /* 严格对齐相邻按钮 */
-  margin: 0 !important;
-  padding: 0 !important;
-  cursor: pointer !important;
-  position: relative !important;
-}
-
-.nav-console-btn-anzhiyu .site-page {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  color: var(--font-color) !important;
-}
-
-/* 拓宽并加粗画板基准 */
-.anzhiyu-matrix-icon {
-  position: relative !important;
-  width: 22px !important;
-  height: 14px !important;
-}
-
-.matrix-line {
-  position: absolute !important;
-  background-color: currentColor !important;
-  height: 4px !important; /* 关键：加粗线条 */
-  border-radius: 2px !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-
-/* 默认状态分布 */
-/* 顶层：长实线 */
-.line-1 { top: 0; left: 0; width: 100%; }
-/* 底层左：粗白点 */
-.line-2 { bottom: 0; left: 0; width: 6px; }
-/* 底层右：短实线 (6 + 12 + 4间距 = 22) */
-.line-3 { bottom: 0; right: 0; width: 12px; }
-
-/* 悬停与激活态形变（极其关键的物理变化） */
-/* 顶层：缩短为 12px */
-.nav-console-btn-anzhiyu a:hover .line-1,
-.nav-console-btn-anzhiyu a.is-active .line-1 {
-  width: 12px !important;
-}
-/* 底层左：粗白点拉长为 12px 的短线，并变为明显的浅灰色 */
-.nav-console-btn-anzhiyu a:hover .line-2,
-.nav-console-btn-anzhiyu a.is-active .line-2 {
-  width: 12px !important;
-  opacity: 0.4 !important; /* 变灰短线 */
-}
-/* 底层右：水平短线翻转为靠右的垂直实线 */
-.nav-console-btn-anzhiyu a:hover .line-3,
-.nav-console-btn-anzhiyu a.is-active .line-3 {
-  width: 4px !important;
-  height: 100% !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: auto !important;
-}
-
-/* Isolated Mini Tooltip for Console */
-[data-mini-tooltip] { 
-  position: relative !important; 
-}
-
-[data-mini-tooltip]::before {
-  content: attr(data-mini-tooltip) !important;
-  position: absolute !important;
-  top: calc(100% + 10px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) translateY(-4px) !important;
-  background: rgba(240, 240, 240, 0.95) !important;
-  color: #333 !important;
-  padding: 4px 8px !important;
-  border-radius: 4px !important;
-  font-size: 11px !important;
-  white-space: nowrap !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: all 0.3s ease !important;
-  z-index: 999999 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-}
-
-[data-mini-tooltip]:hover::before {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateX(-50%) translateY(0) !important;
-}
-
-[data-theme='dark'] [data-mini-tooltip]::before {
-  background: rgba(45, 45, 45, 0.95) !important;
-  color: #eee !important;
-}
 #nav-notification {
   position: relative;
 }
