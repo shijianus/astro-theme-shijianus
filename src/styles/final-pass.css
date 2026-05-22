@@ -358,56 +358,73 @@
 #console .activity-cell.level-4 { background: #39d353 !important; }
 
 /* ==========================================================
-   Dual-Track Tooltip System
-   Model A: Anzhiyu High-Fidelity (Global Default)
-   Model B: Classic/Native (Opt-in via .tooltip-classic)
+   Dual-Track Tooltip System (High-Fidelity Unified Standard)
    ========================================================== */
 
-/* Base positioning for all tooltips */
-[data-tooltip] { position: relative !important; cursor: pointer !important; }
-[data-tooltip]:hover { z-index: 999999 !important; }
-
-/* Model A: Anzhiyu High-Fidelity (Default) */
-[data-tooltip]::before,
-[data-anzhiyu-tooltip]::after {
-    content: attr(data-tooltip) !important;
-    position: absolute !important; 
-    top: 100% !important; 
-    left: 50% !important; 
-    transform: translateX(-50%) translateY(12px) !important;
-    background: rgba(25, 25, 25, 0.9) !important; 
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 6px !important;
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;
-    font-weight: 500 !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    width: max-content !important; 
-    max-width: 240px !important; 
-    white-space: pre !important; 
-    text-align: center !important;
-    opacity: 0 !important; 
-    visibility: hidden !important;
-    pointer-events: none !important; 
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s !important;
-    z-index: 999999 !important;
-    backdrop-filter: blur(12px) !important;
+/* 1. 基础定位 (所有 Tooltip 宿主必须具备) */
+[data-tooltip], [data-anzhiyu-tooltip] { 
+    position: relative !important; 
+    cursor: pointer !important; 
+}
+[data-tooltip]:hover, [data-anzhiyu-tooltip]:hover { 
+    z-index: 999999 !important; 
 }
 
+/* 2. 核心视觉池 (共用高保真皮肤，绝对对齐安知鱼) */
+[data-tooltip]::before,
+[data-anzhiyu-tooltip]::after {
+    position: absolute !important;
+    top: 100% !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(12px) !important;
+    
+    /* 高保真安知鱼视觉参数 */
+    background: rgba(25, 25, 25, 0.9) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;
+    border-radius: 6px !important;
+    
+    /* 排版参数 */
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    
+    /* 隐藏状态 */
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s !important;
+    z-index: 999999 !important;
+}
+
+/* 3. 精准读取对应文本 (解决文本丢失的致命 Bug) */
+[data-tooltip]:not(.tooltip-classic)::before {
+    content: attr(data-tooltip) !important;
+}
 [data-anzhiyu-tooltip]::after {
     content: attr(data-anzhiyu-tooltip) !important;
 }
 
-[data-tooltip]:hover::before,
-[data-anzhiyu-tooltip]:hover::after { 
-    opacity: 1 !important; 
+/* 4. 统一 Hover 浮现动画 (无旋转) */
+[data-tooltip]:not(.tooltip-classic):hover::before,
+[data-anzhiyu-tooltip]:hover::after,
+.anzhiyu-dashboard-icon.is-active::after {
+    opacity: 1 !important;
     visibility: visible !important;
     transform: translateX(-50%) translateY(8px) !important;
 }
 
-/* Model B: Classic/Native (Opt-in via .tooltip-classic) */
+/* ==========================================================
+   Model B: Classic/Native (Opt-in via .tooltip-classic)
+   ========================================================== */
 .tooltip-classic[data-tooltip]::before {
+    content: attr(data-tooltip) !important;
     background: var(--card-bg, #f3f4f6) !important;
     color: var(--font-color, #333) !important;
     border: 1px solid var(--card-border, rgba(0,0,0,0.08)) !important;
@@ -415,10 +432,14 @@
     font-weight: normal !important;
     font-size: 11px !important;
     backdrop-filter: blur(8px) !important;
-    transform: translateX(-50%) translateY(-4px) !important; /* Original classic transition */
+    -webkit-backdrop-filter: blur(8px) !important;
+    transform: translateX(-50%) translateY(-4px) !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
 }
-
 .tooltip-classic[data-tooltip]:hover::before {
+    opacity: 1 !important;
+    visibility: visible !important;
     transform: translateX(-50%) translateY(0) !important;
 }
 
