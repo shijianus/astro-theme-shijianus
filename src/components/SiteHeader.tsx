@@ -141,48 +141,89 @@ export function SiteHeader({
   const [isRollingDice, setIsRollingDice] = useState(false);
   const [diceRotation, setDiceRotation] = useState({ x: 0, y: 0 });
   const [isHopping, setIsHopping] = useState(false);
-  const diceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const cubeRef = useRef<HTMLDivElement>(null);
+  const diceTumbleTimerRef = useRef<number | null>(null);
 
   const startDiceRoll = () => {
     if (isRollingDice) return;
     setIsRollingDice(true);
     setIsHopping(true);
     
-    // Randomize final result
-    const result = Math.floor(Math.random() * 6) + 1;
+    const cube = cubeRef.current;
+    if (!cube) return;
+
+    // Randomize duration and intensity for each throw
+    const duration = 1800 + Math.random() * 800;
+    const startTime = performance.now();
     
-    // Physics-based landing angles
-    const faceAngles: Record<number, { x: number, y: number }> = {
-      1: { x: 0, y: 0 },
-      2: { x: 0, y: -90 },
-      3: { x: 0, y: -180 },
-      4: { x: 0, y: 90 },
-      5: { x: -90, y: 0 },
-      6: { x: 90, y: 0 }
+    // Initial random speeds for the chaotic tumble
+    const vx = 12 + Math.random() * 15;
+    const vy = 12 + Math.random() * 15;
+    const vz = 5 + Math.random() * 10;
+    
+    let rx = diceRotation.x;
+    let ry = diceRotation.y;
+    let rz = 0;
+
+    const tumble = (time: number) => {
+      const elapsed = time - startTime;
+      const progress = elapsed / duration;
+      
+      if (progress < 1) {
+        // Cubic ease-out for a natural deceleration feel
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentVx = vx * (1 - easeOut);
+        const currentVy = vy * (1 - easeOut);
+        const currentVz = vz * (1 - easeOut);
+        
+        rx += currentVx;
+        ry += currentVy;
+        rz += currentVz;
+        
+        cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+        diceTumbleTimerRef.current = requestAnimationFrame(tumble);
+      } else {
+        // Landing phase: choose result and calculate snap angles
+        const result = Math.floor(Math.random() * 6) + 1;
+        setDiceFace(result);
+        
+        const faceAngles: Record<number, { x: number, y: number }> = {
+          1: { x: 0, y: 0 },
+          2: { x: 0, y: -90 },
+          3: { x: 0, y: -180 },
+          4: { x: 0, y: 90 },
+          5: { x: -90, y: 0 },
+          6: { x: 90, y: 0 }
+        };
+        
+        // Find nearest 360-aligned snap position for the result face
+        const snapX = Math.round(rx / 360) * 360 + faceAngles[result].x;
+        const snapY = Math.round(ry / 360) * 360 + faceAngles[result].y;
+        
+        cube.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        cube.style.transform = `rotateX(${snapX}deg) rotateY(${snapY}deg) rotateZ(0deg)`;
+        
+        setDiceRotation({ x: snapX, y: snapY });
+        setIsRollingDice(false);
+      }
     };
-
-    // Add multiple random full spins (720 to 1440 degrees) for the "tumbling" feel
-    const extraSpinsX = (Math.floor(Math.random() * 3) + 2) * 360;
-    const extraSpinsY = (Math.floor(Math.random() * 3) + 2) * 360;
     
-    const targetX = faceAngles[result].x + extraSpinsX;
-    const targetY = faceAngles[result].y + extraSpinsY;
-
-    setDiceRotation({ x: targetX, y: targetY });
-    setDiceFace(result);
-
-    // Stop hopping after a short burst
-    setTimeout(() => setIsHopping(false), 400);
+    cube.style.transition = 'none';
+    diceTumbleTimerRef.current = requestAnimationFrame(tumble);
     
-    // Rolling state ends when transition finishes (aligned with CSS 1.2s)
-    setTimeout(() => setIsRollingDice(false), 1200);
+    setTimeout(() => setIsHopping(false), 500);
   };
 
   const resetDice = () => {
+    if (diceTumbleTimerRef.current) cancelAnimationFrame(diceTumbleTimerRef.current);
     setIsRollingDice(false);
     setIsHopping(false);
     setDiceFace(0);
     setDiceRotation({ x: 0, y: 0 });
+    if (cubeRef.current) {
+      cubeRef.current.style.transition = 'none';
+      cubeRef.current.style.transform = 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)';
+    }
   };
 
   const DiceCube = () => {
@@ -193,10 +234,8 @@ export function SiteHeader({
     return (
       <div className="shijianus-dice-container">
         <div 
+          ref={cubeRef}
           className={`shijianus-dice-cube ${isHopping ? 'is-hopping' : ''}`}
-          style={{ 
-            transform: `rotateX(${diceRotation.x}deg) rotateY(${diceRotation.y}deg)` 
-          }}
         >
           <div className="shijianus-dice-face face-1"><Dice1 size={18} strokeWidth={2} /></div>
           <div className="shijianus-dice-face face-2"><Dice2 size={18} strokeWidth={2} /></div>

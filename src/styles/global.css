@@ -4834,11 +4834,11 @@ body[data-type='home'] .page-aside {
   transform-origin: top center;
 }
 
-/* Shijianus 3D Dice Cube Animations - Physics Driven */
+/* Shijianus 3D Dice Cube Animations - Physics Tumble */
 .shijianus-dice-container {
-  width: 22px;
-  height: 22px;
-  perspective: 600px;
+  width: 24px;
+  height: 24px;
+  perspective: 800px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4849,8 +4849,7 @@ body[data-type='home'] .page-aside {
   height: 18px;
   position: relative;
   transform-style: preserve-3d;
-  /* Smooth transition for the settle effect */
-  transition: transform 1.2s cubic-bezier(0.15, 0.9, 0.35, 1);
+  will-change: transform;
 }
 
 .shijianus-dice-face {
@@ -4863,7 +4862,9 @@ body[data-type='home'] .page-aside {
   backface-visibility: hidden;
   box-sizing: border-box;
   color: var(--font-color);
-  background: transparent;
+  background: rgba(128, 128, 128, 0.05); /* Very subtle body tint */
+  border: 0.5px solid rgba(var(--font-color-rgb, 128, 128, 128), 0.15); /* Subtle wireframe edge */
+  border-radius: 2px;
 }
 
 /* Base face positions */
@@ -4876,11 +4877,11 @@ body[data-type='home'] .page-aside {
 
 @keyframes shijianus-cube-hop {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px) scale(1.1); }
+  50% { transform: translateY(-8px) scale(1.1); }
 }
 
 .shijianus-dice-cube.is-hopping {
-  animation: shijianus-cube-hop 0.4s ease-out;
+  animation: shijianus-cube-hop 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes shijianus-user-wave {
