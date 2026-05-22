@@ -4834,15 +4834,14 @@ body[data-type='home'] .page-aside {
   transform-origin: top center;
 }
 
-/* Shijianus 3D Dice Cube Animations - Refined */
+/* Shijianus 3D Dice Cube Animations - Physics Driven */
 .shijianus-dice-container {
-  width: 20px;
-  height: 20px;
-  perspective: 1000px;
+  width: 22px;
+  height: 22px;
+  perspective: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
 }
 
 .shijianus-dice-cube {
@@ -4850,7 +4849,8 @@ body[data-type='home'] .page-aside {
   height: 18px;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Smooth transition for the settle effect */
+  transition: transform 1.2s cubic-bezier(0.15, 0.9, 0.35, 1);
 }
 
 .shijianus-dice-face {
@@ -4860,13 +4860,13 @@ body[data-type='home'] .page-aside {
   display: flex;
   align-items: center;
   justify-content: center;
-  backface-visibility: hidden; /* Prevent seeing through the cube in a messy way */
+  backface-visibility: hidden;
   box-sizing: border-box;
   color: var(--font-color);
-  background: transparent; /* Remove the clashing plate */
+  background: transparent;
 }
 
-/* Face positions - keeping it tight */
+/* Base face positions */
 .face-1 { transform: rotateY(0deg) translateZ(9px); }
 .face-2 { transform: rotateY(90deg) translateZ(9px); }
 .face-3 { transform: rotateY(180deg) translateZ(9px); }
@@ -4874,27 +4874,14 @@ body[data-type='home'] .page-aside {
 .face-5 { transform: rotateX(90deg) translateZ(9px); }
 .face-6 { transform: rotateX(-90deg) translateZ(9px); }
 
-/* Realistic Tumble Animation */
-@keyframes shijianus-cube-tumble {
-  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(0); }
-  20% { transform: rotateX(180deg) rotateY(90deg) rotateZ(45deg) translateY(-4px); }
-  40% { transform: rotateX(360deg) rotateY(180deg) rotateZ(90deg) translateY(0); }
-  60% { transform: rotateX(540deg) rotateY(270deg) rotateZ(135deg) translateY(-2px); }
-  80% { transform: rotateX(630deg) rotateY(315deg) rotateZ(160deg) translateY(0); }
-  100% { transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg) translateY(0); }
+@keyframes shijianus-cube-hop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px) scale(1.1); }
 }
 
-.shijianus-dice-cube.is-rolling {
-  animation: shijianus-cube-tumble 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+.shijianus-dice-cube.is-hopping {
+  animation: shijianus-cube-hop 0.4s ease-out;
 }
-
-/* Result positions - Top-down view aligned to navbar */
-.shijianus-dice-cube[data-face="1"] { transform: rotateY(0deg); }
-.shijianus-dice-cube[data-face="2"] { transform: rotateY(-90deg); }
-.shijianus-dice-cube[data-face="3"] { transform: rotateY(-180deg); }
-.shijianus-dice-cube[data-face="4"] { transform: rotateY(90deg); }
-.shijianus-dice-cube[data-face="5"] { transform: rotateX(-90deg); }
-.shijianus-dice-cube[data-face="6"] { transform: rotateX(90deg); }
 
 @keyframes shijianus-user-wave {
   0%, 100% { transform: translateY(0) scale(1); }

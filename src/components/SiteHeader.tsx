@@ -139,46 +139,51 @@ export function SiteHeader({
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [diceFace, setDiceFace] = useState(0); // 0 means default Dices icon
   const [isRollingDice, setIsRollingDice] = useState(false);
+  const [diceRotation, setDiceRotation] = useState({ x: 0, y: 0 });
+  const [isHopping, setIsHopping] = useState(false);
   const diceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startDiceRoll = () => {
     if (isRollingDice) return;
     setIsRollingDice(true);
-    let count = 0;
-    const maxCount = 15; // Increased for longer rolling effect
+    setIsHopping(true);
     
-    if (diceTimerRef.current) clearInterval(diceTimerRef.current);
+    // Randomize final result
+    const result = Math.floor(Math.random() * 6) + 1;
     
-    diceTimerRef.current = setInterval(() => {
-      // Rapidly change face for visual "noise" during roll
-      setDiceFace(Math.floor(Math.random() * 6) + 1);
-      count++;
-      if (count >= maxCount) {
-        if (diceTimerRef.current) clearInterval(diceTimerRef.current);
-        // Final result landing
-        setDiceFace(Math.floor(Math.random() * 6) + 1);
-        setIsRollingDice(false);
-      }
-    }, 60); // Faster flicking during roll
+    // Physics-based landing angles
+    const faceAngles: Record<number, { x: number, y: number }> = {
+      1: { x: 0, y: 0 },
+      2: { x: 0, y: -90 },
+      3: { x: 0, y: -180 },
+      4: { x: 0, y: 90 },
+      5: { x: -90, y: 0 },
+      6: { x: 90, y: 0 }
+    };
+
+    // Add multiple random full spins (720 to 1440 degrees) for the "tumbling" feel
+    const extraSpinsX = (Math.floor(Math.random() * 3) + 2) * 360;
+    const extraSpinsY = (Math.floor(Math.random() * 3) + 2) * 360;
+    
+    const targetX = faceAngles[result].x + extraSpinsX;
+    const targetY = faceAngles[result].y + extraSpinsY;
+
+    setDiceRotation({ x: targetX, y: targetY });
+    setDiceFace(result);
+
+    // Stop hopping after a short burst
+    setTimeout(() => setIsHopping(false), 400);
+    
+    // Rolling state ends when transition finishes (aligned with CSS 1.2s)
+    setTimeout(() => setIsRollingDice(false), 1200);
   };
 
   const resetDice = () => {
-    if (diceTimerRef.current) clearInterval(diceTimerRef.current);
     setIsRollingDice(false);
+    setIsHopping(false);
     setDiceFace(0);
+    setDiceRotation({ x: 0, y: 0 });
   };
-
-  const DiceIcon = useMemo(() => {
-    switch (diceFace) {
-      case 1: return Dice1;
-      case 2: return Dice2;
-      case 3: return Dice3;
-      case 4: return Dice4;
-      case 5: return Dice5;
-      case 6: return Dice6;
-      default: return Dices;
-    }
-  }, [diceFace]);
 
   const DiceCube = () => {
     if (diceFace === 0 && !isRollingDice) {
@@ -188,8 +193,10 @@ export function SiteHeader({
     return (
       <div className="shijianus-dice-container">
         <div 
-          className={`shijianus-dice-cube ${isRollingDice ? 'is-rolling' : ''}`}
-          data-face={diceFace}
+          className={`shijianus-dice-cube ${isHopping ? 'is-hopping' : ''}`}
+          style={{ 
+            transform: `rotateX(${diceRotation.x}deg) rotateY(${diceRotation.y}deg)` 
+          }}
         >
           <div className="shijianus-dice-face face-1"><Dice1 size={18} strokeWidth={2} /></div>
           <div className="shijianus-dice-face face-2"><Dice2 size={18} strokeWidth={2} /></div>
