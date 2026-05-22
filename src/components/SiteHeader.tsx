@@ -145,18 +145,21 @@ export function SiteHeader({
     if (isRollingDice) return;
     setIsRollingDice(true);
     let count = 0;
-    const maxCount = 10;
+    const maxCount = 15; // Increased for longer rolling effect
     
     if (diceTimerRef.current) clearInterval(diceTimerRef.current);
     
     diceTimerRef.current = setInterval(() => {
+      // Rapidly change face for visual "noise" during roll
       setDiceFace(Math.floor(Math.random() * 6) + 1);
       count++;
       if (count >= maxCount) {
         if (diceTimerRef.current) clearInterval(diceTimerRef.current);
+        // Final result landing
+        setDiceFace(Math.floor(Math.random() * 6) + 1);
         setIsRollingDice(false);
       }
-    }, 80);
+    }, 60); // Faster flicking during roll
   };
 
   const resetDice = () => {
@@ -188,12 +191,12 @@ export function SiteHeader({
           className={`shijianus-dice-cube ${isRollingDice ? 'is-rolling' : ''}`}
           data-face={diceFace}
         >
-          <div className="shijianus-dice-face face-1"><Dice1 size={14} strokeWidth={2.5} /></div>
-          <div className="shijianus-dice-face face-2"><Dice2 size={14} strokeWidth={2.5} /></div>
-          <div className="shijianus-dice-face face-3"><Dice3 size={14} strokeWidth={2.5} /></div>
-          <div className="shijianus-dice-face face-4"><Dice4 size={14} strokeWidth={2.5} /></div>
-          <div className="shijianus-dice-face face-5"><Dice5 size={14} strokeWidth={2.5} /></div>
-          <div className="shijianus-dice-face face-6"><Dice6 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-1"><Dice1 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-2"><Dice2 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-3"><Dice3 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-4"><Dice4 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-5"><Dice5 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-6"><Dice6 size={18} strokeWidth={2} /></div>
         </div>
       </div>
     );
