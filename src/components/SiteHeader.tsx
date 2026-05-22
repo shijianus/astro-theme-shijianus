@@ -150,7 +150,11 @@ export function SiteHeader({
     setIsHopping(true);
     
     const cube = cubeRef.current;
-    if (!cube) return;
+    if (!cube) {
+      // Fallback if ref is somehow still not ready, though it should be now
+      setIsRollingDice(false);
+      return;
+    }
 
     // 1. Random result (1-6)
     const result = Math.floor(Math.random() * 6) + 1;
@@ -160,21 +164,20 @@ export function SiteHeader({
     let ry = diceRotation.y;
     let rz = diceRotation.z;
     
-    // Initial random chaotic velocities
-    let vx = 18 + Math.random() * 12;
-    let vy = 18 + Math.random() * 12;
-    let vz = 10 + Math.random() * 10;
+    // Much higher initial velocities for chaotic tumbling
+    let vx = 25 + Math.random() * 20;
+    let vy = 25 + Math.random() * 20;
+    let vz = 15 + Math.random() * 15;
     
-    const friction = 0.965; // Air resistance simulation
+    const friction = 0.975; 
     const startTime = performance.now();
-    const minRollTime = 1300; // Minimum time spent tumbling
+    const minRollTime = 1500 + Math.random() * 1000; // Randomized duration
 
     const animate = (time: number) => {
       rx += vx;
       ry += vy;
       rz += vz;
       
-      // Decay velocity
       vx *= friction;
       vy *= friction;
       vz *= friction;
@@ -183,11 +186,9 @@ export function SiteHeader({
         cubeRef.current.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
       }
 
-      // Continue tumbling until velocity is low and minimum time has passed
-      if (vx > 0.3 || vy > 0.3 || (time - startTime < minRollTime)) {
+      if (vx > 0.5 || vy > 0.5 || (time - startTime < minRollTime)) {
         diceTumbleTimerRef.current = requestAnimationFrame(animate);
       } else {
-        // 3. Landing and snapping logic
         const faceAngles: Record<number, { x: number, y: number }> = {
           1: { x: 0, y: 0 },
           2: { x: 0, y: -90 },
@@ -197,29 +198,25 @@ export function SiteHeader({
           6: { x: 90, y: 0 }
         };
         
-        // Find the nearest 360-degree aligned landing spot for the target face
         const finalX = Math.round(rx / 360) * 360 + faceAngles[result].x;
         const finalY = Math.round(ry / 360) * 360 + faceAngles[result].y;
         
-        // Smoothly snap to final face
         if (cubeRef.current) {
-          cubeRef.current.style.transition = 'transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+          cubeRef.current.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
           cubeRef.current.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg)`;
         }
         
-        // Update state to persist the result and keep React in sync
         setTimeout(() => {
           setDiceFace(result);
           setDiceRotation({ x: finalX, y: finalY, z: 0 });
           setIsRollingDice(false);
-        }, 700);
+        }, 800);
       }
     };
 
     cube.style.transition = 'none';
     diceTumbleTimerRef.current = requestAnimationFrame(animate);
-    
-    setTimeout(() => setIsHopping(false), 500);
+    setTimeout(() => setIsHopping(false), 600);
   };
 
   const resetDice = () => {
@@ -235,10 +232,6 @@ export function SiteHeader({
   };
 
   const DiceCube = () => {
-    if (diceFace === 0 && !isRollingDice) {
-      return <Dices size={18} strokeWidth={2.5} aria-hidden="true" />;
-    }
-    
     return (
       <div className="shijianus-dice-container">
         <div 
@@ -248,7 +241,9 @@ export function SiteHeader({
             transform: `rotateX(${diceRotation.x}deg) rotateY(${diceRotation.y}deg) rotateZ(${diceRotation.z}deg)`
           }}
         >
-          <div className="shijianus-dice-face face-1"><Dice1 size={18} strokeWidth={2} /></div>
+          <div className="shijianus-dice-face face-1">
+            {diceFace === 0 && !isRollingDice ? <Dices size={18} strokeWidth={2.5} /> : <Dice1 size={18} strokeWidth={2} />}
+          </div>
           <div className="shijianus-dice-face face-2"><Dice2 size={18} strokeWidth={2} /></div>
           <div className="shijianus-dice-face face-3"><Dice3 size={18} strokeWidth={2} /></div>
           <div className="shijianus-dice-face face-4"><Dice4 size={18} strokeWidth={2} /></div>
