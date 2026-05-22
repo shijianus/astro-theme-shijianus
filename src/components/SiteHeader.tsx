@@ -683,6 +683,8 @@ export function SiteHeader({
                   <div className="cloud-particle p1"></div>
                   <div className="cloud-particle p2"></div>
                   <div className="cloud-particle p3"></div>
+                  <div className="cloud-particle p4"></div>
+                  <div className="cloud-particle p5"></div>
                 </div>
                 {theme === 'dark' ? (
                   <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />

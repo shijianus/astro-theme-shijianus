@@ -4920,7 +4920,7 @@ body[data-type='home'] .page-aside {
   animation: shijianus-menu-expand 0.5s ease-in-out infinite;
 }
 
-/* Shijianus Cloud Transition for Theme Toggle */
+/* Shijianus Realistic Cloud Transition */
 .shijianus-cloud-transition {
   position: absolute;
   top: 0;
@@ -4928,38 +4928,45 @@ body[data-type='home'] .page-aside {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: blur(1.5px); /* Soften the cloud edges */
 }
 
 .cloud-particle {
   position: absolute;
-  background: #f0f0f0; /* Default cloud color */
+  background: #ffffff;
   border-radius: 50%;
   opacity: 0;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(0);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: scale(0) translate(0, 0);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
 :root[data-theme='dark'] .cloud-particle {
-  background: #444; /* Darker clouds for dark mode switch */
+  background: #666; /* Stormy clouds for dark mode switch */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
-.p1 { width: 14px; height: 14px; margin-left: -8px; margin-top: -2px; }
-.p2 { width: 12px; height: 12px; margin-left: 6px; margin-top: -4px; }
-.p3 { width: 10px; height: 10px; margin-left: 0px; margin-top: 6px; }
+/* Fluffy composite shape */
+.p1 { width: 20px; height: 20px; left: -4px; top: -4px; transition-delay: 0s; }
+.p2 { width: 16px; height: 16px; left: 8px; top: -2px; transition-delay: 0.03s; }
+.p3 { width: 18px; height: 18px; left: -6px; top: 6px; transition-delay: 0.06s; }
+.p4 { width: 14px; height: 14px; left: 4px; top: 10px; transition-delay: 0.09s; }
+.p5 { width: 12px; height: 12px; left: 10px; top: 4px; transition-delay: 0.12s; }
 
 .shijianus-cloud-transition.is-active .cloud-particle {
   opacity: 1;
-  transform: scale(2.5); /* Scale up to cover icon */
+  transform: scale(2.2); /* Expand to cover completely */
 }
 
-/* Scattering animation when dispersing */
+/* Drifting away animation */
 .shijianus-cloud-transition:not(.is-active) .cloud-particle {
   opacity: 0;
-  transform: scale(0) translate(20px, -20px);
+  transform: scale(0.5) translate(40px, -15px);
+  filter: blur(4px);
 }
 
 @media (prefers-reduced-motion: reduce) {
