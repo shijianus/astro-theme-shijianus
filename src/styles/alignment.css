@@ -29,6 +29,19 @@
   font-size: 13px;
 }
 
+/* 强制约束导航栏右侧所有交互按钮的容器，确保高保真图标完美居中，不出现高低错位 */
+#nav-right .nav-button,
+.anzhiyu-dashboard-icon-wrapper {
+    width: 35px !important;
+    height: 35px !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 8px !important; /* 安知鱼圆角规范 */
+    margin: 0 4px !important;
+    transition: background-color 0.3s ease;
+}
+
 :root[data-theme='light'][data-background='daybreak'] #web_bg {
   background:
     radial-gradient(circle at 12% 12%, rgba(255, 204, 124, 0.3), transparent 22%),
