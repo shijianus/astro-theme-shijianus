@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
 import LoadingScreen from '../components/LoadingScreen.astro';
 import { SiteHeader } from '../components/SiteHeader';
+import AnzhiyuDashboardIcon from '../components/AnzhiyuDashboardIcon.astro';
 import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
 import { ThemeUniverse } from '../components/ThemeUniverse';
@@ -186,7 +187,9 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
         showNotificationTrigger={true}
         isAccountEnabled={remoteDbConfigured && accountPanel.enabled}
         hasDatabase={commentsEnabled}
-      />
+      >
+        <AnzhiyuDashboardIcon slot="consoleIcon" />
+      </SiteHeader>
 
       <main id="blog-container">
         {Astro.slots.has('hero') && (

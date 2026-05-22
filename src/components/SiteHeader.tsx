@@ -123,6 +123,7 @@ export function SiteHeader({
   showNotificationTrigger,
   isAccountEnabled,
   hasDatabase,
+  consoleIcon,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenuHref, setOpenSubmenuHref] = useState<string | null>(null);
@@ -560,24 +561,31 @@ export function SiteHeader({
 
             {/* === 安知鱼纯正血统：3线矩阵中控台按钮 === */}
             {showCenterConsoleTrigger && (
-              <div 
-                className="nav-console-btn-anzhiyu relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer" 
-                id="center-console-button"
-                data-anzhiyu-tooltip="中控台"
-                onClick={(e) => {
-                  e.preventDefault();
-                  consoleOpen ? closeCenterConsole() : openCenterConsole();
-                }}
-              >
-                <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
-                  {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
-                  <div className="anzhiyu-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
-                    <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                    <span className="matrix-line line-2 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                    <span className="matrix-line line-3 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
+              <>
+                {consoleIcon ? (
+                  consoleIcon
+                ) : (
+                  /* 老版本备份保留（不默认使用） */
+                  <div 
+                    className="nav-console-btn-anzhiyu relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
+                    id="center-console-button"
+                    data-anzhiyu-tooltip="中控台"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      consoleOpen ? closeCenterConsole() : openCenterConsole();
+                    }}
+                  >
+                    <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
+                      {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
+                      <div className="anzhiyu-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
+                        <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
+                        <span className="matrix-line line-2 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
+                        <span className="matrix-line line-3 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
+                      </div>
+                    </button>
                   </div>
-                </button>
-              </div>
+                )}
+              </>
             )}
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>

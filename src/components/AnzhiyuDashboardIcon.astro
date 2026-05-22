@@ -1,0 +1,127 @@
+---
+export interface Props {
+  className?: string;
+  id?: string;
+}
+
+const { className = '', id = 'center-console-button-astro' } = Astro.props;
+---
+
+<div 
+  class={`anzhiyu-dashboard-icon ${className}`} 
+  id={id}
+  data-anzhiyu-tooltip="中控台"
+>
+  <button class="icon-button" aria-label="中控台">
+    <div class="icon-container">
+      <span class="shape top-bar"></span>
+      <span class="shape bottom-left-dot"></span>
+      <span class="shape bottom-right-bar"></span>
+    </div>
+  </button>
+</div>
+
+<style>
+  .anzhiyu-dashboard-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    z-index: 50;
+  }
+  
+  .icon-button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .icon-container {
+    --icon-size: 22px;
+    position: relative;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    transition: 1s;
+  }
+  
+  .shape {
+    background: var(--font-color, currentColor);
+    position: absolute;
+    border-radius: calc(var(--icon-size) * 0.15);
+    transition: 0.5s;
+    inset: 0;
+    margin: auto;
+    right: auto;
+    width: calc(var(--icon-size) / 3);
+    height: calc(var(--icon-size) / 3);
+    transform: translateY(calc(var(--icon-size) / 4));
+  }
+  
+  .top-bar {
+    width: 100%;
+    transform: translateY(calc(var(--icon-size) / -4));
+  }
+  
+  .bottom-right-bar {
+    left: auto;
+    right: 0;
+    width: calc(var(--icon-size) / 2);
+  }
+  
+  /* Hover and active states - NO ROTATION! */
+  .anzhiyu-dashboard-icon:hover .top-bar,
+  .anzhiyu-dashboard-icon.is-active .top-bar {
+    width: calc(var(--icon-size) / 2.5);
+  }
+  
+  .anzhiyu-dashboard-icon:hover .bottom-left-dot,
+  .anzhiyu-dashboard-icon.is-active .bottom-left-dot {
+    opacity: 0.5;
+    width: calc(var(--icon-size) / 2.5);
+  }
+  
+  .anzhiyu-dashboard-icon:hover .bottom-right-bar,
+  .anzhiyu-dashboard-icon.is-active .bottom-right-bar {
+    width: calc(var(--icon-size) / 2.5);
+    height: calc(var(--icon-size) / 1.15);
+    transform: none; /* Reset translateY for centering */
+  }
+</style>
+
+<script>
+  // Add listener for multiple instances if needed, though usually just one
+  document.querySelectorAll('.anzhiyu-dashboard-icon').forEach((wrapper) => {
+    let consoleOpen = false;
+    
+    // Sync state from window events
+    window.addEventListener('shijianus:console-visibility', ((event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      consoleOpen = Boolean(customEvent.detail);
+      if (consoleOpen) {
+        wrapper.classList.add('is-active');
+      } else {
+        wrapper.classList.remove('is-active');
+      }
+    }) as EventListener);
+
+    wrapper.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (consoleOpen) {
+        window.dispatchEvent(new CustomEvent('shijianus:close-console'));
+      } else {
+        window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+      }
+    });
+  });
+</script>
