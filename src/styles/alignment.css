@@ -1265,3 +1265,20 @@ body[data-type='post'] #post-comment {
     right: 14px !important;
   }
 }
+
+/* 强制约束导航栏右侧所有交互按钮的容器，确保高保真图标完美居中，杜绝高低错位 */
+#nav-right .nav-button .site-page,
+.center-console-trigger,
+.anzhiyu-dashboard-icon-wrapper,
+.anzhiyu-dashboard-icon {
+    width: 35px !important;
+    height: 35px !important;
+    min-width: 35px !important;
+    min-height: 35px !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border-radius: 8px !important; /* 安知鱼圆角规范 */
+    margin: 0 4px !important;
+}

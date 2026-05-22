@@ -482,111 +482,108 @@ export function SiteHeader({
           </div>
 
           <div id="nav-right">
-            {isAccountEnabled && (
-              <div className="nav-button" id="nav-account">
-                <a 
-                  className={`site-page ${accountOpen ? 'is-active' : ''}`} 
-                  href="#" 
-                  title="个人中心"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    openAccountPanel();
-                  }}
-                >
-                  <User size={18} strokeWidth={2.5} aria-hidden="true" />
+            {/* Set A: 经典极细套餐 (Classic Line Set - 默认隐藏/隔离) */}
+            <div className="classic-icon-set hidden" style={{ display: 'none' }}>
+              {isAccountEnabled && (
+                <div className="nav-button" id="nav-account-classic">
+                  <a className="site-page" href="#" onClick={(e) => { e.preventDefault(); openAccountPanel(); }}>
+                    <User size={18} strokeWidth={1.5} aria-hidden="true" />
+                  </a>
+                </div>
+              )}
+              {showNotificationTrigger && (
+                <div className="nav-button" id="nav-notification-classic">
+                  <a className="site-page" href="#" onClick={(e) => { e.preventDefault(); openNotificationPanel(); }}>
+                    <Bell size={18} strokeWidth={1.5} aria-hidden="true" />
+                  </a>
+                </div>
+              )}
+              <div className="nav-button" id="search-button-classic">
+                <a className="site-page search" href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('shijianus:open-search')); }}>
+                  <Search size={18} strokeWidth={1.5} aria-hidden="true" />
                 </a>
               </div>
-            )}
-
-            {showNotificationTrigger && (
-              <div className="nav-button" id="nav-notification">
-                <a 
-                  className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
-                  href="#" 
-                  data-tooltip="通知中心"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (notificationOpen) {
-                      closeNotificationPanel();
-                    } else {
-                      openNotificationPanel();
-                    }
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <Bell size={18} strokeWidth={2.5} aria-hidden="true" />
-                  {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
-                </a>
-              </div>
-            )}
-
-            <div className="nav-button" id="search-button">
-              <a 
-                className="site-page social-icon search" 
-                href="#" 
-                data-tooltip="搜索" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.dispatchEvent(new CustomEvent('shijianus:open-search'));
-                }}
-              >
-                <Search size={18} strokeWidth={2.5} aria-hidden="true" />
-              </a>
             </div>
 
-            <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
-                e.preventDefault();
-                window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
-              }}>
-                {theme === 'dark' ? (
-                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
-                ) : (
-                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
-                )}
-              </a>
-            </div>
-
-            <div className="nav-button" id="randomPost_button">
-              <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
-                e.preventDefault();
-                const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
-                if (randomAction) window.location.href = randomAction.href;
-              }}>
-                <Dices size={18} strokeWidth={2.5} aria-hidden="true" />
-              </a>
-            </div>
-
-
-
-            {/* === 安知鱼纯正血统：3线矩阵中控台按钮 === */}
-            {showCenterConsoleTrigger && (
-              <>
-                {consoleIcon ? (
-                  consoleIcon
-                ) : (
-                  /* 老版本备份保留（不默认使用） */
-                  <div 
-                    className="nav-console-btn-anzhiyu relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
-                    id="center-console-button"
-                    data-anzhiyu-tooltip="中控台"
+            {/* Set B: 安知鱼高保真套餐 (Anzhiyu High-Fi Set - 全局默认) */}
+            <div className="anzhiyu-hifi-set flex items-center">
+              {isAccountEnabled && (
+                <div className="nav-button" id="nav-account">
+                  <a 
+                    className={`site-page ${accountOpen ? 'is-active' : ''}`} 
+                    href="#" 
+                    title="个人中心"
                     onClick={(e) => {
                       e.preventDefault();
-                      consoleOpen ? closeCenterConsole() : openCenterConsole();
+                      openAccountPanel();
                     }}
                   >
-                    <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
-                      {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
-                      <div className="anzhiyu-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
-                        <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                        <span className="matrix-line line-2 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                        <span className="matrix-line line-3 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+                    <User size={18} strokeWidth={3.0} aria-hidden="true" />
+                  </a>
+                </div>
+              )}
+
+              {showNotificationTrigger && (
+                <div className="nav-button" id="nav-notification">
+                  <a 
+                    className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
+                    href="#" 
+                    data-tooltip="通知中心"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (notificationOpen) {
+                        closeNotificationPanel();
+                      } else {
+                        openNotificationPanel();
+                      }
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Bell size={18} strokeWidth={3.0} aria-hidden="true" />
+                    {notificationCount > 0 && <span className="nav-button__badge">{notificationCount}</span>}
+                  </a>
+                </div>
+              )}
+
+              <div className="nav-button" id="search-button">
+                <a 
+                  className="site-page social-icon search" 
+                  href="#" 
+                  data-tooltip="搜索" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent('shijianus:open-search'));
+                  }}
+                >
+                  <Search size={18} strokeWidth={3.0} aria-hidden="true" />
+                </a>
+              </div>
+
+              <div className="nav-button" id="nav-theme-toggle">
+                <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
+                }}>
+                  {theme === 'dark' ? (
+                    <SunMedium size={18} strokeWidth={3.0} aria-hidden="true" />
+                  ) : (
+                    <MoonStar size={18} strokeWidth={3.0} aria-hidden="true" />
+                  )}
+                </a>
+              </div>
+
+              <div className="nav-button" id="randomPost_button">
+                <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
+                  e.preventDefault();
+                  const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
+                  if (randomAction) window.location.href = randomAction.href;
+                }}>
+                  <Dices size={18} strokeWidth={3.0} aria-hidden="true" />
+                </a>
+              </div>
+
+              {showCenterConsoleTrigger && consoleIcon}
+            </div>
 
             <div id="toggle-menu" className={menuOpen ? 'is-open' : ''}>
               <a
@@ -598,7 +595,7 @@ export function SiteHeader({
                   setMenuOpen(!menuOpen);
                 }}
               >
-                <Menu size={18} strokeWidth={2.5} aria-hidden="true" />
+                <Menu size={18} strokeWidth={3.0} aria-hidden="true" />
               </a>
             </div>
 
@@ -613,7 +610,7 @@ export function SiteHeader({
                 }}
               >
                 <span className="percent-text" id="percent">{progress}</span>
-                <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
+                <ArrowUp className="arrow-icon" size={18} strokeWidth={3.0} aria-hidden="true" />
               </a>
             </div>
           </div>
