@@ -164,16 +164,18 @@ export function SiteHeader({
     let ry = diceRotation.y;
     let rz = diceRotation.z;
     
-    // Much higher initial velocities for chaotic tumbling
-    let vx = 25 + Math.random() * 20;
-    let vy = 25 + Math.random() * 20;
-    let vz = 15 + Math.random() * 15;
+    // Chaotic high-speed velocities
+    let vx = 30 + Math.random() * 20;
+    let vy = 30 + Math.random() * 20;
+    let vz = 20 + Math.random() * 20;
     
-    const friction = 0.975; 
+    const friction = 0.985; // Less resistance to keep it fast
     const startTime = performance.now();
-    const minRollTime = 1500 + Math.random() * 1000; // Randomized duration
+    const rollDuration = 1200 + Math.random() * 600; // Snappy total time
 
     const animate = (time: number) => {
+      const elapsed = time - startTime;
+      
       rx += vx;
       ry += vy;
       rz += vz;
@@ -183,12 +185,13 @@ export function SiteHeader({
       vz *= friction;
 
       if (cubeRef.current) {
-        cubeRef.current.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+        cubeRef.current.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(1)`;
       }
 
-      if (vx > 0.5 || vy > 0.5 || (time - startTime < minRollTime)) {
+      if (elapsed < rollDuration) {
         diceTumbleTimerRef.current = requestAnimationFrame(animate);
       } else {
+        // 3. Landing and Zoom logic
         const faceAngles: Record<number, { x: number, y: number }> = {
           1: { x: 0, y: 0 },
           2: { x: 0, y: -90 },
@@ -198,19 +201,21 @@ export function SiteHeader({
           6: { x: 90, y: 0 }
         };
         
+        // Snap to nearest 360-degree aligned landing
         const finalX = Math.round(rx / 360) * 360 + faceAngles[result].x;
         const finalY = Math.round(ry / 360) * 360 + faceAngles[result].y;
         
         if (cubeRef.current) {
-          cubeRef.current.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-          cubeRef.current.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg)`;
+          // Snappy transition with a prominent SCALE-UP for the result
+          cubeRef.current.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          cubeRef.current.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg) scale(1.35)`;
         }
         
         setTimeout(() => {
           setDiceFace(result);
           setDiceRotation({ x: finalX, y: finalY, z: 0 });
           setIsRollingDice(false);
-        }, 800);
+        }, 600);
       }
     };
 
