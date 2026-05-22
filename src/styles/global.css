@@ -4920,6 +4920,48 @@ body[data-type='home'] .page-aside {
   animation: shijianus-menu-expand 0.5s ease-in-out infinite;
 }
 
+/* Shijianus Cloud Transition for Theme Toggle */
+.shijianus-cloud-transition {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cloud-particle {
+  position: absolute;
+  background: #f0f0f0; /* Default cloud color */
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0);
+}
+
+:root[data-theme='dark'] .cloud-particle {
+  background: #444; /* Darker clouds for dark mode switch */
+}
+
+.p1 { width: 14px; height: 14px; margin-left: -8px; margin-top: -2px; }
+.p2 { width: 12px; height: 12px; margin-left: 6px; margin-top: -4px; }
+.p3 { width: 10px; height: 10px; margin-left: 0px; margin-top: 6px; }
+
+.shijianus-cloud-transition.is-active .cloud-particle {
+  opacity: 1;
+  transform: scale(2.5); /* Scale up to cover icon */
+}
+
+/* Scattering animation when dispersing */
+.shijianus-cloud-transition:not(.is-active) .cloud-particle {
+  opacity: 0;
+  transform: scale(0) translate(20px, -20px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

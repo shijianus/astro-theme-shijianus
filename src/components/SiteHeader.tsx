@@ -137,6 +137,26 @@ export function SiteHeader({
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [showClouds, setShowClouds] = useState(false);
+
+  const handleThemeToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (showClouds) return; // Prevent double clicks
+    
+    setShowClouds(true);
+    
+    // Step 1: Clouds cover (0.4s)
+    // Step 2: Toggle theme in the middle of cover
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
+    }, 400);
+    
+    // Step 3: Clouds disperse after switch
+    setTimeout(() => {
+      setShowClouds(false);
+    }, 1000);
+  };
+
   const [diceFace, setDiceFace] = useState(0); // 0 means default Dices icon
   const [isRollingDice, setIsRollingDice] = useState(false);
   const [diceRotation, setDiceRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -658,10 +678,12 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={(e) => {
-                e.preventDefault();
-                window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
-              }}>
+              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden' }}>
+                <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`}>
+                  <div className="cloud-particle p1"></div>
+                  <div className="cloud-particle p2"></div>
+                  <div className="cloud-particle p3"></div>
+                </div>
                 {theme === 'dark' ? (
                   <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
                 ) : (
