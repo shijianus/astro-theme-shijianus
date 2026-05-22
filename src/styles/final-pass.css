@@ -357,10 +357,17 @@
 #console .activity-cell.level-3 { background: #26a641 !important; }
 #console .activity-cell.level-4 { background: #39d353 !important; }
 
-/* Perfect Isolated Tooltip - Minimalist Unified System */
+/* ==========================================================
+   Dual-Track Tooltip System
+   Model A: Anzhiyu High-Fidelity (Global Default)
+   Model B: Classic/Native (Opt-in via .tooltip-classic)
+   ========================================================== */
+
+/* Base positioning for all tooltips */
 [data-tooltip] { position: relative !important; cursor: pointer !important; }
 [data-tooltip]:hover { z-index: 999999 !important; }
 
+/* Model A: Anzhiyu High-Fidelity (Default) */
 [data-tooltip]::before,
 [data-anzhiyu-tooltip]::after {
     content: attr(data-tooltip) !important;
@@ -397,6 +404,22 @@
     opacity: 1 !important; 
     visibility: visible !important;
     transform: translateX(-50%) translateY(8px) !important;
+}
+
+/* Model B: Classic/Native (Opt-in via .tooltip-classic) */
+.tooltip-classic[data-tooltip]::before {
+    background: var(--card-bg, #f3f4f6) !important;
+    color: var(--font-color, #333) !important;
+    border: 1px solid var(--card-border, rgba(0,0,0,0.08)) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    font-weight: normal !important;
+    font-size: 11px !important;
+    backdrop-filter: blur(8px) !important;
+    transform: translateX(-50%) translateY(-4px) !important; /* Original classic transition */
+}
+
+.tooltip-classic[data-tooltip]:hover::before {
+    transform: translateX(-50%) translateY(0) !important;
 }
 
 /* WebInfo UI Optimization - High Density */
