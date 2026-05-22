@@ -177,6 +177,28 @@ export function SiteHeader({
     }
   }, [diceFace]);
 
+  const DiceCube = () => {
+    if (diceFace === 0 && !isRollingDice) {
+      return <Dices size={18} strokeWidth={2.5} aria-hidden="true" />;
+    }
+    
+    return (
+      <div className="shijianus-dice-container">
+        <div 
+          className={`shijianus-dice-cube ${isRollingDice ? 'is-rolling' : ''}`}
+          data-face={diceFace}
+        >
+          <div className="shijianus-dice-face face-1"><Dice1 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-2"><Dice2 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-3"><Dice3 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-4"><Dice4 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-5"><Dice5 size={14} strokeWidth={2.5} /></div>
+          <div className="shijianus-dice-face face-6"><Dice6 size={14} strokeWidth={2.5} /></div>
+        </div>
+      </div>
+    );
+  };
+
   const submenuCloseTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -594,7 +616,7 @@ export function SiteHeader({
                 const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
                 if (randomAction) window.location.href = randomAction.href;
               }}>
-                <DiceIcon size={18} strokeWidth={2.5} aria-hidden="true" />
+                <DiceCube />
               </a>
             </div>
 
