@@ -5,6 +5,7 @@ import {
   User, ChartBar, Compass, MessageCircle, ChevronDown,
   Search, SunMedium, MoonStar, Dices, ArrowUp, Menu,
   Dice1, Dice2, Dice3, Dice4, Dice5, Dice6,
+  Cloud,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -678,19 +679,32 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden' }}>
-                <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`}>
+              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* 1. Cloud interaction on hover - multiple clouds */}
+                <div className="nav-theme-hover-clouds">
+                  <Cloud className="cloud-item c1" size={14} fill="currentColor" />
+                  <Cloud className="cloud-item c2" size={12} fill="currentColor" />
+                  <Cloud className="cloud-item c3" size={10} fill="currentColor" />
+                </div>
+
+                {/* 2. Theme Transition Wrapper for Arc Movement */}
+                <div className="theme-icon-wrapper">
+                  <div className={`theme-icon-item sun-icon ${theme === 'dark' ? 'is-active' : 'is-inactive'}`}>
+                    <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </div>
+                  <div className={`theme-icon-item moon-icon ${theme === 'light' ? 'is-active' : 'is-inactive'}`}>
+                    <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </div>
+                </div>
+
+                {/* Legacy cloud transition overlay - kept for compatibility if needed but hidden by default */}
+                <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`} style={{ display: 'none' }}>
                   <div className="cloud-particle p1"></div>
                   <div className="cloud-particle p2"></div>
                   <div className="cloud-particle p3"></div>
                   <div className="cloud-particle p4"></div>
                   <div className="cloud-particle p5"></div>
                 </div>
-                {theme === 'dark' ? (
-                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
-                ) : (
-                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
-                )}
               </a>
             </div>
 
