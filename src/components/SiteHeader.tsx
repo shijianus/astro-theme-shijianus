@@ -5,6 +5,7 @@ import {
   User, ChartBar, Compass, MessageCircle, ChevronDown,
   Search, SunMedium, MoonStar, Dices, ArrowUp, Menu,
   Dice1, Dice2, Dice3, Dice4, Dice5, Dice6,
+  Cloud,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -678,7 +679,7 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="nav-theme-toggle">
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden' }}>
+              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`}>
                   <div className="cloud-particle p1"></div>
                   <div className="cloud-particle p2"></div>
@@ -686,11 +687,23 @@ export function SiteHeader({
                   <div className="cloud-particle p4"></div>
                   <div className="cloud-particle p5"></div>
                 </div>
-                {theme === 'dark' ? (
-                  <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
-                ) : (
-                  <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
-                )}
+
+                {/* New Hover Clouds Interaction */}
+                <div className="nav-theme-clouds-container">
+                  <Cloud className="cloud-icon c1" size={14} fill="currentColor" />
+                  <Cloud className="cloud-icon c2" size={12} fill="currentColor" />
+                  <Cloud className="cloud-icon c3" size={10} fill="currentColor" />
+                </div>
+
+                {/* Arc Transition Icon Wrapper */}
+                <div className="theme-icon-animation-wrapper">
+                  <div className={`theme-icon-slot sun-slot ${theme === 'dark' ? 'is-active' : 'is-inactive'}`}>
+                    <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </div>
+                  <div className={`theme-icon-slot moon-slot ${theme === 'light' ? 'is-active' : 'is-inactive'}`}>
+                    <MoonStar size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </div>
+                </div>
               </a>
             </div>
 
