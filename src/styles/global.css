@@ -4977,11 +4977,11 @@ body[data-type='home'] .page-aside {
 .c2 { bottom: -5px; right: -12px; transform: scale(0.4) translate(25px, 15px); }
 .c3 { top: 3px; right: -8px; transform: scale(0.3) translate(20px, -10px); }
 
-#nav-theme-toggle:hover .c1 { opacity: 1; transform: scale(1.3) translate(10px, 6px); transition-delay: 0.05s; }
-#nav-theme-toggle:hover .c2 { opacity: 0.95; transform: scale(1.1) translate(-12px, -4px); transition-delay: 0.15s; }
-#nav-theme-toggle:hover .c3 { opacity: 0.9; transform: scale(1.0) translate(-8px, 2px); transition-delay: 0.25s; }
+#nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c1 { opacity: 1; transform: scale(1.3) translate(10px, 6px); transition-delay: 0.05s; }
+#nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c2 { opacity: 0.95; transform: scale(1.1) translate(-12px, -4px); transition-delay: 0.15s; }
+#nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c3 { opacity: 0.9; transform: scale(1.0) translate(-8px, 2px); transition-delay: 0.25s; }
 
-#nav-theme-toggle:hover .theme-icon-animation-wrapper {
+#nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .theme-icon-animation-wrapper {
   filter: blur(1px);
   transform: translateY(6px) scale(0.6);
   opacity: 0.2;
