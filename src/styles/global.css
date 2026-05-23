@@ -4904,19 +4904,13 @@ body[data-type='home'] .page-aside {
 
 /* Theme Toggle Arc Transitions (Sunset/Sunrise) */
 @keyframes shijianus-theme-arc-exit {
-  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-  25% { transform: translate(12px, 4px) rotate(45deg); opacity: 0.9; }
-  50% { transform: translate(24px, 16px) rotate(90deg); opacity: 0.6; }
-  75% { transform: translate(32px, 32px) rotate(135deg); opacity: 0.3; }
-  100% { transform: translate(40px, 50px) rotate(180deg); opacity: 0; }
+  0% { transform: rotate(0deg); opacity: 1; }
+  100% { transform: rotate(110deg); opacity: 0; }
 }
 
 @keyframes shijianus-theme-arc-enter {
-  0% { transform: translate(-40px, 50px) rotate(-180deg); opacity: 0; }
-  25% { transform: translate(-32px, 32px) rotate(-135deg); opacity: 0.3; }
-  50% { transform: translate(-24px, 16px) rotate(-90deg); opacity: 0.6; }
-  75% { transform: translate(-12px, 4px) rotate(-45deg); opacity: 0.9; }
-  100% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  0% { transform: rotate(-110deg); opacity: 0; }
+  100% { transform: rotate(0deg); opacity: 1; }
 }
 
 .theme-icon-animation-wrapper {
@@ -4939,17 +4933,18 @@ body[data-type='home'] .page-aside {
   justify-content: center;
   width: 18px;
   height: 18px;
+  transform-origin: 50% 40px; /* Origin below the icon to create a natural smooth arc */
 }
 
 .theme-icon-slot.is-active {
-  animation: shijianus-theme-arc-enter 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  animation-delay: 1.5s;
+  animation: shijianus-theme-arc-enter 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0.9s; /* Slight overlap for better continuity */
   opacity: 0; /* Ensures it is hidden before entering */
   z-index: 2;
 }
 
 .theme-icon-slot.is-inactive {
-  animation: shijianus-theme-arc-exit 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: shijianus-theme-arc-exit 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
   z-index: 1;
   pointer-events: none;
 }
