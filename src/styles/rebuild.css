@@ -14754,3 +14754,43 @@ body[data-type='home'] .categoryItem .categoryButton {
 }
 
 
+
+/* --- [2026-05-24] Sidebar Collapse & Space Allocation Fix --- */
+/* Ensure that when the sidebar is collapsed, the main content area 
+   properly expands to occupy the released space across all relevant page types. */
+
+:root[data-aside='collapsed'] .page-aside {
+  display: none !important;
+}
+
+:root[data-aside='collapsed'] #content-inner.layout {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Post page expansion */
+:root[data-aside='collapsed'] body[data-type='post'] #content-inner.layout {
+  max-width: 1380px !important;
+}
+
+:root[data-aside='collapsed'] body[data-type='post'] .page-main {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Home page expansion */
+:root[data-aside='collapsed'] body[data-type='home'] #content-inner.layout {
+  max-width: 1400px !important;
+}
+
+:root[data-aside='collapsed'] body[data-type='home'] .page-main {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* General page expansion (fallback) */
+:root[data-aside='collapsed'] .page-main {
+  width: 100% !important;
+  max-width: none !important;
+}
