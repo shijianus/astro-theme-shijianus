@@ -139,23 +139,43 @@ export function SiteHeader({
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [showClouds, setShowClouds] = useState(false);
+  const [transitionKey, setTransitionKey] = useState(0);
+  const [hoverSuppressed, setHoverSuppressed] = useState(false);
+  const themeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const cloudTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleThemeToggle = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (showClouds) return; // Prevent double clicks
+    
+    // Clear any existing timers for a clean restart
+    if (themeTimerRef.current) clearTimeout(themeTimerRef.current);
+    if (cloudTimerRef.current) clearTimeout(cloudTimerRef.current);
+
+    // If already in transition, increment key to force-reset animations (instant completion of previous)
+    if (showClouds) {
+      setTransitionKey(prev => prev + 1);
+    }
     
     setShowClouds(true);
+    setHoverSuppressed(true); // Suppress hover until mouse leaves and enters again
     
-    // Step 1: Clouds cover (0.4s)
-    // Step 2: Toggle theme in the middle of cover
-    setTimeout(() => {
+    // Step 1: Clouds cover and background switch
+    themeTimerRef.current = setTimeout(() => {
       window.dispatchEvent(new CustomEvent('shijianus:toggle-theme'));
-    }, 400);
+    }, 350); // Slightly faster to match accelerated icons
     
-    // Step 3: Clouds disperse after switch
-    setTimeout(() => {
+    // Step 2: Clouds disperse
+    cloudTimerRef.current = setTimeout(() => {
       setShowClouds(false);
-    }, 1000);
+    }, 850);
+  };
+
+  const handleToggleMouseEnter = () => {
+    setHoverSuppressed(false);
+  };
+
+  const handleToggleMouseLeave = () => {
+    setHoverSuppressed(false);
   };
 
   const [diceFace, setDiceFace] = useState(0); // 0 means default Dices icon
@@ -678,7 +698,7 @@ export function SiteHeader({
               </a>
             </div>
 
-            <div className="nav-button" id="nav-theme-toggle">
+            <div className="nav-button" id="nav-theme-toggle" onMouseEnter={handleToggleMouseEnter} onMouseLeave={handleToggleMouseLeave} data-hover-suppressed={hoverSuppressed}>
               <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`}>
                   <div className="cloud-particle p1"></div>
@@ -696,7 +716,7 @@ export function SiteHeader({
                 </div>
 
                 {/* Arc Transition Icon Wrapper */}
-                <div className="theme-icon-animation-wrapper">
+                <div className="theme-icon-animation-wrapper" key={transitionKey}>
                   <div className={`theme-icon-slot sun-slot ${theme === 'dark' ? 'is-active' : 'is-inactive'}`}>
                     <SunMedium size={18} strokeWidth={2.5} aria-hidden="true" />
                   </div>
