@@ -2688,3 +2688,42 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #menus .site-page__icon {
   font-size: 16px !important;
 }
+
+/* ==================================================== */
+/* 侧边栏粘性悬浮 - 终极轨道强制打通补丁 */
+/* ==================================================== */
+
+/* 1. 强制外层侧边栏占满网格/Flex高度 */
+.page-aside {
+  align-self: stretch !important;
+}
+
+/* 2. 强制所有中间包裹层继承 100% 高度，铺设滑动轨道 */
+.page-aside__sticky,
+#aside-content {
+  height: 100% !important;
+  min-height: 100% !important;
+  display: block !important; 
+}
+
+/* 3. 释放 Sticky 元素并配置粘性参数 */
+#aside-content .sticky_layout {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  height: max-content !important; /* 绝对禁止被 100% 污染拉伸 */
+  padding-bottom: 20px !important; /* 防止底部贴得太死 */
+  transition: top 0.3s ease !important;
+}
+
+/* 4. 移动端安全释放 */
+@media screen and (max-width: 900px) {
+  .page-aside__sticky,
+  #aside-content {
+    height: auto !important;
+  }
+  #aside-content .sticky_layout {
+    position: static !important;
+  }
+}
+/* ==================================================== */
