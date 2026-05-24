@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; padding: 0; }
+  .grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+  .main { background: #fee; height: 2000px; }
+  
+  .page-aside { display: block; align-self: stretch; background: #eef; }
+  .page-aside__sticky { position: relative; height: 100%; display: block; }
+  #aside-content { width: 300px; height: 100%; border: 2px solid red; display: block; }
+  
+  .top-item { height: 200px; background: #ccf; margin-bottom: 20px; }
+  .sticky_layout { position: sticky; top: 80px; height: max-content; background: #cfc; }
+  
+  .card { padding: 10px; border: 1px solid black; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="main">Main (2000px)</div>
+    <div class="page-aside">
+      <div class="page-aside__sticky">
+        <div id="aside-content">
+          <div class="top-item">Top (200px)</div>
+          <div class="sticky_layout">
+            <div class="card">
+              Sticky Card (300px)<br><br><br><br>End
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="height: 1000px; background: #ddd;">Footer</div>
+</body>
+</html>

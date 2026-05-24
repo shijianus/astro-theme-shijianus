@@ -1602,17 +1602,13 @@ body[data-type='home'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='home'] .page-aside__sticky,
-body[data-type='home'] #aside-content .sticky_layout--utility {
+body[data-type='home'] .page-aside__sticky {
   position: static;
   min-height: 0;
   align-self: stretch;
 }
 
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky !important;
-  top: var(--site-header-height, 60px) !important;
-  max-height: calc(100vh - var(--site-header-height, 60px) - 20px);
   display: flex;
   flex-direction: column;
   padding: 16px 18px 12px;
@@ -2110,10 +2106,9 @@ body[data-type='post'] #post-comment {
 
 
 body[data-type='home'] .page-aside {
-  align-self: start;
+  align-self: stretch;
 }
 
-body[data-type='home'] .page-aside__sticky,
 body[data-type='home'] #aside-content {
   display: grid;
   gap: 20px;
@@ -2121,13 +2116,10 @@ body[data-type='home'] #aside-content {
 }
 
 body[data-type='home'] #aside-content .sticky_layout--utility {
-  position: static;
   min-height: 0;
 }
 
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky !important;
-  top: var(--sticky-column-top, 88px) !important;
   min-height: 0;
   max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
   overflow: hidden;
@@ -2334,7 +2326,7 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-
 
 @media (max-width: 1199px) {
   body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent),
-  body[data-type='home'] .card-feature-panel--overview {
+  body[data-type='home'] .sticky_layout {
     position: static !important;
   }
 
@@ -2688,3 +2680,40 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 #menus .site-page__icon {
   font-size: 16px !important;
 }
+
+/* --- STICKY TRACK HOTFIX --- */
+/* DOM Path: .page-aside -> .page-aside__sticky -> #aside-content -> .sticky_layout */
+
+/* 1. Ensure sidebar shell stretches in Grid context */
+.page-aside {
+  align-self: stretch !important;
+  min-height: 100% !important;
+}
+
+/* 2. Propagate track height down to the inner container */
+.page-aside__sticky,
+#aside-content {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+/* 3. Configure the actual sticky element */
+#aside-content .sticky_layout {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  height: max-content !important; /* Crucial: prevent stretch from inheriting height: 100% */
+  margin-bottom: 20px !important; /* Consistent spacing */
+  transition: top 0.3s ease !important;
+  will-change: transform, top !important;
+}
+
+/* 4. Mobile defensive release (downgrade sticky) */
+@media screen and (max-width: 900px) {
+  #aside-content .sticky_layout {
+    position: static !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+  }
+}
+/* --------------------------- */

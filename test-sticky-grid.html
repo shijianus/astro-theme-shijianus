@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; padding: 0; }
+  .grid-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+  .main { background: #fee; height: 2000px; }
+  
+  .aside-content { 
+    height: 100%; border: 2px solid red; 
+    display: grid; align-content: start; gap: 20px;
+  }
+  
+  .top-item { height: 200px; background: #ccf; }
+  .sticky { position: sticky; top: 80px; height: max-content; background: #cfc; }
+</style>
+</head>
+<body>
+  <div class="grid-layout">
+    <div class="main">Main (2000px)</div>
+    <div class="aside-content">
+      <div class="top-item">Top</div>
+      <div class="sticky">Sticky (slides within row?)</div>
+    </div>
+  </div>
+  <div style="height: 1000px;">Footer</div>
+</body>
+</html>

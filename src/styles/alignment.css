@@ -657,12 +657,9 @@ body[data-type='home'] .page-aside__sticky {
 
 body[data-type='home'] #aside-content .sticky_layout--utility {
   min-height: 0;
-  position: static;
 }
 
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky;
-  top: var(--sticky-column-top, 88px);
   min-height: var(--sticky-card-height, calc(100vh - 116px));
   max-height: var(--sticky-card-height, calc(100vh - 116px));
   display: flex;
