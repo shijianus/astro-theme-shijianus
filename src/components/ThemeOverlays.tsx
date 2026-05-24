@@ -907,6 +907,18 @@ export function ThemeOverlays({
       {features.centerConsole && (
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
           <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="关闭控制台" />
+          
+          {/* === 安知鱼纯正血统：中控台独立关闭按钮 (映射对齐) === */}
+          <button 
+            type="button" 
+            className="console-close-btn" 
+            onClick={() => setConsoleOpen(false)} 
+            aria-label="关闭中控台"
+            title="关闭 (Esc)"
+          >
+            <X size={20} strokeWidth={3} />
+          </button>
+
           <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
             <div className="console-card-group-left">
               <section className="console-card console-profile">

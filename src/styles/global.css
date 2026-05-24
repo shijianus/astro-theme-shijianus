@@ -470,26 +470,6 @@ html.theme-ready body.theme-body #footer {
   transition: all 0.5s ease 0s;
 }
 
-#page-header.console-open {
-  z-index: 10000;
-}
-
-#page-header.console-open #nav {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
-}
-
-#page-header.console-open #nav-group > *:not(#nav-right) {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#page-header.console-open #nav-right > *:not(.shijianus-dashboard-icon) {
-  opacity: 0;
-  pointer-events: none;
-}
-
 #page-header #nav {
   position: relative;
   display: flex;
@@ -4104,6 +4084,34 @@ body[data-type='home'] .page-aside {
 #console.show {
   opacity: 1;
   pointer-events: auto;
+}
+
+#console .console-close-btn {
+  position: fixed;
+  top: 12.5px;
+  right: 36px;
+  width: 35px;
+  height: 35px;
+  background: var(--anzhiyu-main, #4259ef);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  z-index: 10001;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(66, 89, 239, 0.3);
+}
+
+#console .console-close-btn:hover {
+  transform: rotate(90deg) scale(1.1);
+  background: var(--anzhiyu-main-op, #5a6ff3);
+}
+
+#console .console-close-btn:active {
+  transform: scale(0.9);
 }
 
 #console .console-card-group {
