@@ -14755,66 +14755,71 @@ body[data-type='home'] .categoryItem .categoryButton {
 
 
 
-/* --- [2026-05-24] Sidebar Collapse & Space Allocation Fix (Smooth Version) --- */
-/* Ensure that when the sidebar is collapsed, the main content area 
-   properly expands to occupy the released space across all relevant page types. */
+/* --- [2026-05-24] Sidebar Collapse & Space Allocation Fix (Precise Target) --- */
+/* Target exact post-layout-row and content-inner classes to ensure no whitespace remains. */
 
-#content-inner.layout {
+/* 1. Reset/Override previous broad attempts and set up transitions */
+#content-inner.layout,
+.post-layout-row {
   transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               gap 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-aside {
+.page-aside,
+.post-layout-row__aside {
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
-:root[data-aside='collapsed'] .page-aside {
-  display: block !important; /* Override global display: none */
+/* 2. Precise collapsed state for Post Layout Row */
+:root[data-aside='collapsed'] body[data-type='post'] .post-layout-row {
+  grid-template-columns: minmax(0, 1fr) 0px !important;
+  gap: 0 !important;
+  max-width: 1400px !important;
+}
+
+:root[data-aside='collapsed'] body[data-type='post'] .post-layout-row__main {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+:root[data-aside='collapsed'] body[data-type='post'] .post-layout-row__aside {
+  display: block !important;
   width: 0 !important;
   min-width: 0 !important;
   opacity: 0 !important;
   transform: translateX(20px);
   visibility: hidden !important;
   pointer-events: none !important;
+  margin: 0 !important;
 }
 
+/* 3. Precise collapsed state for Home/General Layout */
 :root[data-aside='collapsed'] #content-inner.layout {
   grid-template-columns: minmax(0, 1fr) 0px !important;
   gap: 0 !important;
-}
-
-/* Post page expansion */
-:root[data-aside='collapsed'] body[data-type='post'] #content-inner.layout {
-  max-width: 1380px !important;
-}
-
-:root[data-aside='collapsed'] body[data-type='post'] .page-main {
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Home page expansion */
-:root[data-aside='collapsed'] body[data-type='home'] #content-inner.layout {
   max-width: 1400px !important;
 }
 
-:root[data-aside='collapsed'] body[data-type='home'] .page-main {
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* General page expansion (fallback) */
 :root[data-aside='collapsed'] .page-main {
   width: 100% !important;
   max-width: none !important;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+:root[data-aside='collapsed'] .page-aside {
+  display: block !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
+  transform: translateX(20px);
+  visibility: hidden !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+}
+
