@@ -1,4 +1,4 @@
-import React, { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   UserRound,
   Bell,
@@ -182,7 +182,7 @@ export function ThemeOverlays({
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (consoleOpen) {
       updateCloseBtnPosition();
       window.addEventListener('resize', updateCloseBtnPosition);
