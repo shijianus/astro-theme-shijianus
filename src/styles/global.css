@@ -4959,6 +4959,12 @@ body[data-type='home'] .page-aside {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+/* Hide hover clouds entirely when the switching transition is active */
+#nav-theme-toggle:has(.shijianus-cloud-transition.is-active) .nav-theme-clouds-container {
+  opacity: 0 !important;
 }
 
 .cloud-icon {
@@ -4977,9 +4983,17 @@ body[data-type='home'] .page-aside {
 .c2 { bottom: -5px; right: -12px; transform: scale(0.4) translate(25px, 15px); }
 .c3 { top: 3px; right: -8px; transform: scale(0.3) translate(20px, -10px); }
 
+/* Regular hover effects, only when not switching */
 #nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c1 { opacity: 1; transform: scale(1.3) translate(10px, 6px); transition-delay: 0.05s; }
 #nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c2 { opacity: 0.95; transform: scale(1.1) translate(-12px, -4px); transition-delay: 0.15s; }
 #nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .c3 { opacity: 0.9; transform: scale(1.0) translate(-8px, 2px); transition-delay: 0.25s; }
+
+/* Ensure icon wrapper stays clear and non-scaled during switching animation, even if hovered */
+#nav-theme-toggle:has(.shijianus-cloud-transition.is-active) .theme-icon-animation-wrapper {
+  filter: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
 
 #nav-theme-toggle:hover:not(:has(.shijianus-cloud-transition.is-active)) .theme-icon-animation-wrapper {
   filter: blur(1px);
