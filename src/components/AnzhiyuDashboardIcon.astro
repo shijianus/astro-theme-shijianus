@@ -14,9 +14,14 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
 >
   <button class="icon-button" aria-label="中控台">
     <div class="icon-container">
-      <span class="shape top-bar"></span>
-      <span class="shape bottom-left-dot"></span>
-      <span class="shape bottom-right-bar"></span>
+      <div class="matrix-icon">
+        <span class="shape top-bar"></span>
+        <span class="shape bottom-left-dot"></span>
+        <span class="shape bottom-right-bar"></span>
+      </div>
+      <div class="close-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </div>
     </div>
   </button>
 </div>
@@ -32,6 +37,13 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     margin-left: 0.5rem;
     cursor: pointer;
     z-index: 50;
+    transition: all 0.3s ease;
+  }
+
+  .shijianus-dashboard-icon.is-active {
+    background: var(--anzhiyu-main, #4259ef);
+    border-radius: 50%;
+    color: white !important;
   }
   
   .icon-button {
@@ -45,6 +57,7 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     outline: none;
     padding: 0;
     cursor: pointer;
+    color: inherit;
   }
   
   .icon-container {
@@ -52,11 +65,34 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     position: relative;
     width: var(--icon-size);
     height: var(--icon-size);
-    transition: 1s;
+  }
+
+  .matrix-icon, .close-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .close-icon {
+    opacity: 0;
+    transform: scale(0.5) rotate(-90deg);
+  }
+
+  .is-active .matrix-icon {
+    opacity: 0;
+    transform: scale(0.5) rotate(90deg);
+  }
+
+  .is-active .close-icon {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
   }
   
   .shape {
-    background: var(--font-color, currentColor);
+    background: currentColor;
     position: absolute;
     border-radius: calc(var(--icon-size) * 0.15);
     transition: 0.5s;
@@ -79,23 +115,20 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
     width: calc(var(--icon-size) / 2);
   }
   
-  /* Hover and active states - NO ROTATION! */
-  .shijianus-dashboard-icon:hover .top-bar,
-  .shijianus-dashboard-icon.is-active .top-bar {
+  /* Hover states */
+  .shijianus-dashboard-icon:not(.is-active):hover .top-bar {
     width: calc(var(--icon-size) / 2.5);
   }
   
-  .shijianus-dashboard-icon:hover .bottom-left-dot,
-  .shijianus-dashboard-icon.is-active .bottom-left-dot {
+  .shijianus-dashboard-icon:not(.is-active):hover .bottom-left-dot {
     opacity: 0.5;
     width: calc(var(--icon-size) / 2.5);
   }
   
-  .shijianus-dashboard-icon:hover .bottom-right-bar,
-  .shijianus-dashboard-icon.is-active .bottom-right-bar {
+  .shijianus-dashboard-icon:not(.is-active):hover .bottom-right-bar {
     width: calc(var(--icon-size) / 2.5);
     height: calc(var(--icon-size) / 1.15);
-    transform: none; /* Reset translateY for centering */
+    transform: none;
   }
 </style>
 

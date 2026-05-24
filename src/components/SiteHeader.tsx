@@ -530,7 +530,7 @@ export function SiteHeader({
   };
 
   return (
-    <header id="page-header" className={`site-header not-top-img nav-fixed nav-visible`}>
+    <header id="page-header" className={`site-header not-top-img nav-fixed nav-visible ${consoleOpen ? 'console-open' : ''}`}>
       <nav id="nav" aria-label="主导航">
         <div id="nav-group">
           <span id="blog_name">

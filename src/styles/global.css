@@ -470,6 +470,26 @@ html.theme-ready body.theme-body #footer {
   transition: all 0.5s ease 0s;
 }
 
+#page-header.console-open {
+  z-index: 10000;
+}
+
+#page-header.console-open #nav {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+#page-header.console-open #nav-group > *:not(#nav-right) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#page-header.console-open #nav-right > *:not(.shijianus-dashboard-icon) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 #page-header #nav {
   position: relative;
   display: flex;
