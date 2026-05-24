@@ -1,4 +1,4 @@
-import React, { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   UserRound,
   Bell,
@@ -167,6 +167,33 @@ export function ThemeOverlays({
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [syncStats, setSyncStats] = useState(stats);
+  const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
+
+  const updateCloseBtnPosition = useCallback(() => {
+    const trigger = document.querySelector('.shijianus-dashboard-icon');
+    if (trigger) {
+      const rect = trigger.getBoundingClientRect();
+      setCloseBtnStyle({
+        top: `${rect.top}px`,
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (consoleOpen) {
+      updateCloseBtnPosition();
+      window.addEventListener('resize', updateCloseBtnPosition);
+      window.addEventListener('scroll', updateCloseBtnPosition);
+    }
+    return () => {
+      window.removeEventListener('resize', updateCloseBtnPosition);
+      window.removeEventListener('scroll', updateCloseBtnPosition);
+    };
+  }, [consoleOpen, updateCloseBtnPosition]);
+
   const [activityRecords, setActivityRecords] = useState<{ date: string; level: number; posts: { title: string; href: string }[] }[]>([]);
   const [rightMenu, setRightMenu] = useState<{ open: boolean; x: number; y: number; selectedText: string }>({
     open: false,
@@ -915,6 +942,13 @@ export function ThemeOverlays({
             onClick={() => setConsoleOpen(false)} 
             aria-label="关闭中控台"
             title="关闭 (Esc)"
+            style={{ 
+              position: 'fixed', 
+              margin: 0, 
+              padding: 0, 
+              boxSizing: 'border-box',
+              ...closeBtnStyle 
+            }}
           >
             <X size={20} strokeWidth={3} />
           </button>

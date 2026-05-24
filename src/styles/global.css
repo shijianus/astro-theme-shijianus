@@ -4091,11 +4091,6 @@ body[data-type='home'] .page-aside {
 }
 
 #console .console-close-btn {
-  position: fixed;
-  top: 12.5px;
-  right: var(--nav-padding-x);
-  width: 35px;
-  height: 35px;
   background: var(--theme-main, var(--anzhiyu-main, #4259ef));
   color: #fff;
   border-radius: 50%;
