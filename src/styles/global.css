@@ -470,6 +470,10 @@ html.theme-ready body.theme-body #footer {
   transition: all 0.5s ease 0s;
 }
 
+:root {
+  --nav-padding-x: 36px;
+}
+
 #page-header #nav {
   position: relative;
   display: flex;
@@ -477,7 +481,7 @@ html.theme-ready body.theme-body #footer {
   justify-content: center;
   width: 100%;
   height: 60px;
-  padding: 0 36px;
+  padding: 0 var(--nav-padding-x);
   background: transparent;
   box-shadow: none;
   transition: 0.3s;
@@ -4089,10 +4093,10 @@ body[data-type='home'] .page-aside {
 #console .console-close-btn {
   position: fixed;
   top: 12.5px;
-  right: 36px;
+  right: var(--nav-padding-x);
   width: 35px;
   height: 35px;
-  background: var(--anzhiyu-main, #4259ef);
+  background: var(--theme-main, var(--anzhiyu-main, #4259ef));
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -4543,8 +4547,11 @@ body[data-type='home'] .page-aside {
 }
 
 @media screen and (max-width: 1200px) {
+  :root {
+    --nav-padding-x: 20px;
+  }
   #page-header #nav {
-    padding: 0 20px;
+    padding: 0 var(--nav-padding-x);
   }
 
   #content-inner.layout {
@@ -4625,6 +4632,9 @@ body[data-type='home'] .page-aside {
 }
 
 @media screen and (max-width: 900px) {
+  :root {
+    --nav-padding-x: 16px;
+  }
   #menus {
     display: none;
   }
@@ -4638,7 +4648,7 @@ body[data-type='home'] .page-aside {
   }
 
   #page-header #nav {
-    padding: 0 16px;
+    padding: 0 var(--nav-padding-x);
   }
 
   #name-container {
