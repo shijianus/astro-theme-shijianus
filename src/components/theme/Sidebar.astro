@@ -128,6 +128,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
 <div class="aside-content" id={asideId}>
   {showAuthorCard && (
     <ProfileWidget
+      client:load
       name={siteConfig.site.author.name}
       role={siteConfig.site.author.role}
       motto={siteConfig.site.author.motto}
