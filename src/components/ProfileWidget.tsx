@@ -51,10 +51,7 @@ export function ProfileWidget({
           onClick={() => setSayHiIndex((prev) => (prev + 1) % sayHiPhrases.length)}
           className="author-info__sayhi"
         >
-          <span className="sayhi-inner">
-            <span className="sayhi-text">{sayHiPhrases[sayHiIndex]}</span>
-            <span className="sayhi-hint">➔</span>
-          </span>
+          <span className="sayhi-text">{sayHiPhrases[sayHiIndex]}</span>
         </div>
         
         <div className="author-info-avatar">
@@ -102,7 +99,7 @@ export function ProfileWidget({
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.048-.32 13.58.099 18.057a.082.072 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.419-2.157 2.419z" fill="currentColor"/></svg>
             </a>
             <a className="social-icon" href="https://threads.net/@techshijian" target="_blank" rel="noreferrer" title="Threads">
-              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12c0 3.59-1.026 6.376-3.048 8.283-1.842 1.763-4.408 2.727-6.992 2.727-3.076 0-5.69-2.18-5.69-5.128 0-2.73 2.148-4.76 5.613-4.76.623 0 1.258.077 1.83.18V11.23c0-1.897-.954-2.846-2.718-2.846-1.127 0-2.032.55-2.617 1.6l-1.923-1.2C7.29 7.15 8.784 6.2 10.748 6.2c3.21 0 5.092 1.94 5.092 5.03v5.438c0 1.025.565 1.54 1.128 1.54a1.86 1.86 0 0 0 1.05-.347c.616-.48.975-1.282.975-2.31V12.01c0-4.82-3.23-8.01-8.23-8.01C5.744 4.0 2.23 7.23 2.23 12.01s3.514 8.01 8.524 8.01c1.23 0 2.41-.154 3.538-.46l.667 2.05A12.01 12.01 0 0 1 12 24zm-1.854-7.538c-.974 0-1.59.513-1.59 1.41 0 .975.692 1.488 1.59 1.488.744 0 1.487-.307 2.128-.871v-2.18c-.615-.128-1.41-.218-2.128-.218z" fill="currentColor"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M14.28 10.363a4.01 4.01 0 0 0-4.01 4.01c0 2.213 1.8 4.01 4.01 4.01s4.01-1.797 4.01-4.01-1.8-4.01-4.01-4.01zm0 6.183a2.176 2.176 0 1 1 0-4.35 2.176 2.176 0 0 1 0 4.35zM12 0a12 12 0 1 0 12 12A12.014 12.014 0 0 0 12 0zm7.11 14.373c0 3.1-2.14 5.318-5.32 5.318-1.576 0-3.136-.547-4.144-1.616l1.246-1.353c.677.712 1.706 1.1 2.83 1.1 1.854 0 3.036-1.196 3.036-3.036v-1.135c-.604.863-1.63 1.393-2.903 1.393-2.585 0-4.383-2.073-4.383-4.636 0-2.586 1.8-4.637 4.383-4.637a4.137 4.137 0 0 1 2.903 1.373v-1.1h2.348zm-2.348-4.01c0-1.874-1.144-3.036-3.036-3.036-1.874 0-3.036 1.162-3.036 3.036s1.162 3.036 3.036 3.036c1.892 0 3.036-1.162 3.036-3.036z" fill="currentColor"/></svg>
             </a>
           </div>
         </div>
@@ -145,26 +142,29 @@ export function ProfileWidget({
           flex-direction: column;
           justify-content: center;
           align-items: flex-start;
-          height: 100%;
-          padding: 2.5rem 1.5rem;
+          padding: 0 1.5rem;
           opacity: 0;
           transition: 0.3s;
           pointer-events: none;
           position: absolute;
-          inset: 0;
+          top: 3.2rem;
+          bottom: 6rem;
+          left: 0;
+          right: 0;
           text-align: left;
         }
         .profile-card:hover .author-info__description {
           opacity: 1;
         }
         .author-info__description-text {
-          font-size: 0.95rem;
-          line-height: 1.6;
+          font-size: 0.92rem;
+          line-height: 1.7;
           color: rgba(255, 255, 255, 0.95);
           font-weight: 500;
         }
         .author-info__description-text p {
           margin: 0;
+          white-space: normal;
         }
         .author-info__sayhi {
           z-index: 30;
@@ -181,26 +181,17 @@ export function ProfileWidget({
           background: rgba(255, 255, 255, 0.12);
           border-radius: 20px;
           backdrop-filter: blur(4px);
-          transition: 0.3s;
+          transition: transform 0.3s, background 0.3s;
           user-select: none;
-        }
-        .sayhi-inner {
-          display: flex;
-          align-items: center;
-          gap: 6px;
           white-space: nowrap;
         }
         .author-info__sayhi:hover {
           background: rgba(255, 255, 255, 0.2);
-          transform: translateX(-50%) scale(1.05);
+          transform: translateX(-50%) translateY(-3px);
         }
         .sayhi-text {
           font-size: 12px;
           color: var(--white);
-        }
-        .sayhi-hint {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.6);
         }
         .author-info__bottom-group {
           position: absolute;
@@ -245,6 +236,8 @@ export function ProfileWidget({
           width: 100%;
           line-height: 1.3;
           white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
         }
         .desc-role {
           opacity: 0;
