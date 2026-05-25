@@ -31,10 +31,10 @@ export function ProfileWidget({
   const [sayHiIndex, setSayHiIndex] = useState(0);
 
   const sayHiPhrases = [
-    "✨ 欢迎探索 ➔",
-    "💡 纯粹技术干货",
-    "🚀 拓展数字边境",
-    "🧬 跨界折腾记录",
+    "✨ 欢迎探索 💡",
+    "💡 技术干货 ✖️ 避坑指南",
+    "🚀 拓展数字边境 🛡️",
+    "🧬 跨界折腾记录 🐧",
     "☕ 愿对你有启发",
   ];
 
@@ -52,13 +52,14 @@ export function ProfileWidget({
           onClick={() => setSayHiIndex((prev) => (prev + 1) % sayHiPhrases.length)}
           className="author-info__sayhi"
         >
-          {sayHiPhrases[sayHiIndex]}
+          <span className="sayhi-text">{sayHiPhrases[sayHiIndex]}</span>
+          <span className="sayhi-hint">➔</span>
         </div>
         
         <div className="author-info-avatar">
           <img src={avatar} alt={name} className="avatar-img" />
           <div className="author-status" aria-hidden="true">
-            <span>🟢</span>
+            <span className="status-emoji">💻</span>
           </div>
         </div>
 
@@ -72,11 +73,11 @@ export function ProfileWidget({
           <a className="author-info__bottom-group-left" href="/about/" title={name}>
             <div className="author-info__name">{name}</div>
             <div className="author-info__desc">
-              <span className="desc-motto">{motto}</span>
-              <span className="desc-role">{role}</span>
+              <div className="desc-motto">{motto}</div>
+              <div className="desc-role">{role}</div>
             </div>
           </a>
-          <div className="card-info-social-icons is-center" aria-label="作者链接">
+          <div className="card-info-social-icons" aria-label="作者链接">
             <a className="social-icon" href={`mailto:${email}`} title="Email">
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/></svg>
             </a>
@@ -99,7 +100,7 @@ export function ProfileWidget({
       <style dangerouslySetInnerHTML={{ __html: `
         .author-info-avatar {
           position: absolute;
-          top: 50%;
+          top: 42%;
           left: 50%;
           transform: translate(-50%, -50%);
           margin: 0;
@@ -111,7 +112,6 @@ export function ProfileWidget({
           transform: translate(-50%, -50%) scale(0);
         }
         .author-status {
-          font-size: 14px;
           background: var(--white);
           border-radius: 50%;
           width: 28px;
@@ -123,17 +123,25 @@ export function ProfileWidget({
           right: 0;
           bottom: 0;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+        .status-emoji {
+          font-size: 14px;
+          line-height: 1;
         }
         .author-info__description {
           display: flex;
           flex-direction: column;
           justify-content: center;
-          align-items: flex-start;
+          align-items: center;
           height: 100%;
           padding: 2rem 1.2rem;
           opacity: 0;
           transition: 0.3s;
           pointer-events: none;
+          text-align: center;
+          position: absolute;
+          inset: 0;
         }
         .profile-card:hover .author-info__description {
           opacity: 1;
@@ -145,26 +153,68 @@ export function ProfileWidget({
           font-weight: 500;
         }
         .author-info__sayhi {
-          margin-bottom: 2.5rem !important;
           z-index: 10;
-          position: relative;
+          position: absolute;
+          top: 1.2rem;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+          width: fit-content;
+          padding: 2px 12px;
+          background: rgba(255, 255, 255, 0.12);
+          border-radius: 20px;
+          backdrop-filter: blur(4px);
+          transition: 0.3s;
+          user-select: none;
+        }
+        .author-info__sayhi:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateX(-50%) scale(1.05);
+        }
+        .sayhi-text {
+          font-size: 12px;
+          color: var(--white);
+        }
+        .sayhi-hint {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.6);
         }
         .author-info__bottom-group {
-          position: relative;
+          position: absolute;
+          bottom: 1rem;
+          left: 1rem;
+          right: 1rem;
           z-index: 20;
           pointer-events: auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 12px;
+        }
+        .author-info__bottom-group-left {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
         .author-info__name {
           font-size: 1.4rem;
-          font-weight: 800;
+          font-weight: 900;
           color: var(--white);
+          line-height: 1.1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .author-info__desc {
           font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.8);
-          margin-top: 2px;
+          color: rgba(255, 255, 255, 0.85);
           position: relative;
-          height: 1.2em;
+          min-height: 2.8em; /* Allow 2 lines */
         }
         .desc-motto, .desc-role {
           transition: opacity 0.3s, transform 0.3s;
@@ -172,13 +222,12 @@ export function ProfileWidget({
           left: 0;
           top: 0;
           width: 100%;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          line-height: 1.3;
         }
         .desc-role {
           opacity: 0;
           transform: translateY(10px);
+          font-weight: 500;
         }
         .profile-card:hover .desc-motto {
           opacity: 0;
@@ -188,16 +237,24 @@ export function ProfileWidget({
           opacity: 1;
           transform: translateY(0);
         }
+        .card-info-social-icons {
+          display: grid;
+          grid-template-columns: repeat(3, 30px);
+          gap: 6px;
+          direction: rtl;
+          flex-shrink: 0;
+        }
         .card-info-social-icons .social-icon svg {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           display: flex;
           align-items: center;
           justify-content: center;
           background: rgba(255, 255, 255, 0.15);
           border-radius: 8px;
-          padding: 7px;
+          padding: 6px;
           transition: 0.3s;
+          color: var(--white);
         }
         .card-info-social-icons .social-icon:hover svg {
           background: var(--white);
