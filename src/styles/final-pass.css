@@ -2727,3 +2727,41 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   }
 }
 /* ==================================================== */
+/* 2026-05-25: Align hero section to full width and center main layout */
+/* Task A: Center the main layout area */
+#content-inner.layout,
+.post-layout-row {
+  max-width: 1400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Task B: Force Hero Section to full width (100vw) */
+.page-shell__hero,
+.post-hero {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  left: 0 !important;
+  right: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure single column when aside is not present (fixes centering on home/other pages) */
+#content-inner.layout:not(.page-grid--with-aside) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Mobile responsive adjustments */
+@media screen and (max-width: 1400px) {
+  #content-inner.layout,
+  .post-layout-row {
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
