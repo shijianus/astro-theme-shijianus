@@ -14756,56 +14756,61 @@ body[data-type='home'] .categoryItem .categoryButton {
 
 
 /* --- [2026-05-24] Sidebar Collapse & Space Allocation Fix (Precise Target) --- */
-/* Target exact post-layout-row and content-inner classes to ensure no whitespace remains. */
+/* Target exact post-layout-row and aside classes to ensure no whitespace remains. */
+/* WARNING: DO NOT apply grid-template-columns: 0px to #content-inner on post pages! */
 
-/* 1. Reset/Override previous broad attempts and set up transitions */
-#content-inner.layout,
+/* 1. Global CSS Variables override for final-pass.css if applicable */
+:root[data-aside='collapsed'] {
+  --post-aside-width: 0px !important;
+  --post-layout-gap: 0px !important;
+}
+
+/* 2. Set up transitions for layout rows and aside elements */
 .post-layout-row {
   transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              gap 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              gap 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-aside,
 .post-layout-row__aside {
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+              margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden !important;
 }
 
-/* 2. Precise collapsed state for Post Layout Row */
+/* 3. Precise collapsed state for Post Layout Row */
 :root[data-aside='collapsed'] body[data-type='post'] .post-layout-row {
   grid-template-columns: minmax(0, 1fr) 0px !important;
   gap: 0 !important;
-  max-width: 1400px !important;
+  /* We DO NOT force max-width 1400px here because final-pass and specific media queries handle it */
 }
 
 :root[data-aside='collapsed'] body[data-type='post'] .post-layout-row__main {
   width: 100% !important;
   max-width: none !important;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root[data-aside='collapsed'] body[data-type='post'] .post-layout-row__aside {
   display: block !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0 !important;
   transform: translateX(20px);
   visibility: hidden !important;
   pointer-events: none !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* 3. Precise collapsed state for Home/General Layout */
-:root[data-aside='collapsed'] #content-inner.layout {
-  grid-template-columns: minmax(0, 1fr) 0px !important;
-  gap: 0 !important;
-  max-width: 1400px !important;
-}
-
+/* 4. General page expansion (fallback for home, etc.) */
 :root[data-aside='collapsed'] .page-main {
   width: 100% !important;
   max-width: none !important;
@@ -14816,10 +14821,12 @@ body[data-type='home'] .categoryItem .categoryButton {
   display: block !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0 !important;
   transform: translateX(20px);
   visibility: hidden !important;
   pointer-events: none !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
