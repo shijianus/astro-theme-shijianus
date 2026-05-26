@@ -168,6 +168,47 @@ export function ProfileWidget({
           background-size: 400% 400%, 100% 100%, cover !important;
           animation: gradient-pan 20s ease infinite !important;
         }
+        
+        /* 美化 card-content 并增加动态感 */
+        .profile-card .card-content {
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(15px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .profile-card:hover .card-content {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+          box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-card .card-content::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -150%;
+          width: 80%;
+          height: 100%;
+          background: linear-gradient(
+            to right,
+            transparent,
+            rgba(255, 255, 255, 0.15),
+            transparent
+          );
+          transform: skewX(-25deg);
+          animation: sweep 8s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 10;
+        }
+
+        @keyframes sweep {
+          0% { left: -150%; }
+          30% { left: 150%; }
+          100% { left: 150%; }
+        }
+
         .author-info-avatar {
           position: absolute;
           top: 42%;
@@ -176,7 +217,43 @@ export function ProfileWidget({
           margin: 0;
           transition: cubic-bezier(.69,.39,0,1.21) .3s;
           pointer-events: none;
+          z-index: 2;
         }
+
+        /* 移动的光晕效果 */
+        .author-info-avatar::before {
+          content: "";
+          position: absolute;
+          inset: -8px;
+          border-radius: 50%;
+          background: conic-gradient(
+            from 0deg,
+            #425aef, #9d50ff, #358bff, #722ed1, #425aef
+          );
+          animation: avatar-rotate 4s linear infinite;
+          z-index: -1;
+          filter: blur(10px);
+          opacity: 0.8;
+          transition: 0.3s;
+        }
+
+        /* 辅助光晕增强层 */
+        .author-info-avatar::after {
+          content: "";
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(2px);
+          z-index: -1;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes avatar-rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
         .profile-card:hover .author-info-avatar {
           opacity: 0;
           transform: translate(-50%, -50%) scale(0);
