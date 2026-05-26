@@ -156,17 +156,12 @@ export function ProfileWidget({
       
       <style dangerouslySetInnerHTML={{ __html: `
         .profile-card::before {
-          background: 
-            linear-gradient(-45deg, 
-              rgba(66, 90, 239, 0.9), 
-              rgba(157, 80, 255, 0.9), 
-              rgba(53, 139, 255, 0.9), 
-              rgba(114, 46, 209, 0.9)
-            ),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
+          background:
+            linear-gradient(180deg, rgba(66, 90, 239, 0.3), rgba(157, 78, 221, 0.4), rgba(66, 90, 239, 0.3)),
+            linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(9, 14, 28, 0.5)),
             var(--profile-cover) center center / cover no-repeat !important;
-          background-size: 400% 400%, 100% 100%, cover !important;
-          animation: gradient-pan 20s ease infinite !important;
+          background-size: 100% 200%, 100% 100%, cover !important;
+          animation: gradient-swap-vertical 8s ease-in-out infinite alternate !important;
         }
         .author-info-avatar {
           position: absolute;
