@@ -81,9 +81,9 @@ export function ProfileWidget({
 
         <div className="author-info__description">
           <div className="author-info__description-text">
-            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("分享系统重构、Zero Trust 架构与数字边境的探索指南。")}</p>
-            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("游走于碳基生命与硅基代码的交界，**提炼极客向的折腾日记与实用技巧**。")}</p>
-            <p>{renderMarkdown("专注前沿技术落地，记录从灵光一现到工程化实践。期冀这些文字能为热爱探索的行者提供些许坐标参考。")}</p>
+            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("分享系统重配、架构设计与网络工程的**真实折腾记录**。不盲目追求宏大叙事，仅保留纯粹的技术细节与避坑指南。")}</p>
+            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("常年游走于各种数字边境，将零碎的灵感与代码片段打包进专属的*外脑知识库*。坚信技术应当用来解决实际问题。")}</p>
+            <p>{renderMarkdown("随笔与教程可能略显碎片化，有时甚至带着 [未完待续](draft) 的草稿标记。但希望能为路过此地的访客提供些许切实的参考。")}</p>
           </div>
         </div>
 
@@ -162,15 +162,15 @@ export function ProfileWidget({
         .author-info__description {
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-start;
           align-items: center;
-          padding: 0 1.5rem;
+          padding: 3.5rem 1.5rem 0 1.5rem;
           opacity: 0;
           transition: 0.3s;
           pointer-events: none;
           position: absolute;
-          top: 3.2rem;
-          bottom: 6rem;
+          top: 0;
+          bottom: 6.5rem;
           left: 0;
           right: 0;
           overflow: hidden;
