@@ -52,14 +52,13 @@ export function ProfileWidget({
     "☕ 愿对你有启发",
   ];
 
-  // Bio logic
+  // Bio content optimization: exactly 81 chars, 2 paragraphs
   const rawBio = `深耕系统重构与网络工程领域的**真实折腾记录**。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。\n持续构筑*外脑知识库*，期冀这些极客向的碎片随笔，能提供些许实战参考。`;
 
   let paragraphs = rawBio.split('\n').map(p => p.trim()).filter(Boolean);
 
-  // Warnings and limits logic
+  // Limits logic
   const rawLen = paragraphs.join('').replace(/(\*\*|\*|\[|\]|\(.*?\))/g, '').length;
-  
   console.info('💡 [TIP] 排版提示：经过计算，2段式最多容纳 85 字。');
   console.info('💡 [TIP] 排版提示：经过计算，1段式最多容纳 102 字。');
 
@@ -67,7 +66,7 @@ export function ProfileWidget({
     console.warn(`⚠️ [WARN] 推荐使用两段文字进行介绍，当前段落数：${paragraphs.length}`);
   }
   if (rawLen > 80 && rawLen <= 120) {
-    console.warn(`⚠️ [WARN] 软性限制：当前字数为 ${rawLen} 字，建议控制在 80 字左右以获取最佳观感。`);
+    console.warn(`⚠️ [WARN] 软性限制：当前简介字数为 ${rawLen} 字，建议控制在 80 字左右以获取最佳观感。`);
   }
   if (rawLen > 120) {
     console.error(`🚨 [WARN] 硬性限制：当前字数 (${rawLen}) 超过 120 字，将被强制截断！`);
@@ -84,6 +83,9 @@ export function ProfileWidget({
 
   return (
     <section className={`card-widget card-info profile-card ${variantClass}`} style={style}>
+      {/* Dynamic Background Layers */}
+      <div className="profile-card-bg-animated"></div>
+      
       <div className="card-content">
         <div className="author-info__sayhi-wrap">
           <div 
@@ -98,6 +100,7 @@ export function ProfileWidget({
         </div>
         
         <div className="author-info-avatar">
+          <div className="avatar-halo"></div>
           <img src={avatar} alt={name} className="avatar-img" />
           <div className="author-status" aria-hidden="true">
             <span className="status-emoji">💻</span>
@@ -145,7 +148,7 @@ export function ProfileWidget({
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.048-.32 13.58.099 18.057a.082.072 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.419-2.157 2.419z" fill="currentColor"/></svg>
             </a>
             <a className="social-icon" href="https://threads.net/@techshijian" target="_blank" rel="noreferrer" title="Threads: techshijian">
-              <svg viewBox="0 0 16 16" width="18" height="18"><path d="M6.321 6.016c-.27-.18-1.166-.802-1.166-.802.756-1.081 1.753-1.502 3.132-1.502.975 0 1.803.327 2.394.948s.928 1.509 1.005 2.644q.492.207.905.484c1.109.745 1.719 1.86 1.719 3.137 0 2.716-2.226 5.075-6.256 5.075C4.594 16 1 13.987 1 7.994 1 2.034 4.482 0 8.044 0 9.69 0 13.55.243 15 5.036l-1.36.353C12.516 1.974 10.163 1.43 8.006 1.43c-3.565 0-5.582 2.171-5.582 6.79 0 4.143 2.254 6.343 5.63 6.343 2.777 0 4.847-1.443 4.847-3.556 0-1.438-1.208-2.127-1.27-2.127-.236 1.234-.868 3.31-3.644 3.31-1.618 0-3.013-1.118-3.013-2.582 0-2.09 1.984-2.847 3.55-2.847.586 0 1.294.04 1.663.114 0-.637-.54-1.728-1.9-1.728-1.25 0-1.566.405-1.967.868ZM8.716 8.19c-2.04 0-2.304.87-2.304 1.416 0 .878 1.043 1.168 1.6 1.168 1.02 0 2.067-.282 2.232-2.423a6.2 6.2 0 0 0-1.528-.161" fill="currentColor"/></svg>
+              <svg viewBox="0 0 16 16" width="18" height="18"><path d="M14.28 10.363a4.01 4.01 0 0 0-4.01 4.01c0 2.213 1.8 4.01 4.01 4.01s4.01-1.797 4.01-4.01-1.8-4.01-4.01-4.01zm0 6.183a2.176 2.176 0 1 1 0-4.35 2.176 2.176 0 0 1 0 4.35zM12 0a12 12 0 1 0 12 12A12.014 12.014 0 0 0 12 0zm7.11 14.373c0 3.1-2.14 5.318-5.32 5.318-1.576 0-3.136-.547-4.144-1.616l1.246-1.353c.677.712 1.706 1.1 2.83 1.1 1.854 0 3.036-1.196 3.036-3.036v-1.135c-.604.863-1.63 1.393-2.903 1.393-2.585 0-4.383-2.073-4.383-4.636 0-2.586 1.8-4.637 4.383-4.637a4.137 4.137 0 0 1 2.903 1.373v-1.1h2.348zm-2.348-4.01c0-1.874-1.144-3.036-3.036-3.036-1.874 0-3.036 1.162-3.036 3.036s1.162 3.036 3.036 3.036c1.892 0 3.036-1.162 3.036-3.036z" fill="currentColor"/></svg>
             </a>
             <a className="social-icon" href="https://line.me/ti/p/kd-GMazFE9" target="_blank" rel="noreferrer" title="Line: exine">
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" fill="currentColor"/></svg>
@@ -155,18 +158,35 @@ export function ProfileWidget({
       </div>
       
       <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes bg-evolution {
+          0%, 100% {
+            background-position: 0% 0%;
+          }
+          50% {
+            background-position: 100% 100%;
+          }
+        }
+        @keyframes halo-rotate {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .profile-card {
+          overflow: hidden;
+        }
         .profile-card::before {
           background: 
             linear-gradient(-45deg, 
               rgba(66, 90, 239, 0.9), 
               rgba(157, 80, 255, 0.9), 
               rgba(53, 139, 255, 0.9), 
-              rgba(114, 46, 209, 0.9)
+              rgba(114, 46, 209, 0.9),
+              rgba(66, 90, 239, 0.9)
             ),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
             var(--profile-cover) center center / cover no-repeat !important;
-          background-size: 400% 400%, 100% 100%, cover !important;
-          animation: gradient-pan 20s ease infinite !important;
+          background-size: 400% 400%, cover !important;
+          background-blend-mode: overlay;
+          animation: bg-evolution 15s ease-in-out infinite !important;
+          opacity: 1;
         }
         .author-info-avatar {
           position: absolute;
@@ -176,6 +196,26 @@ export function ProfileWidget({
           margin: 0;
           transition: cubic-bezier(.69,.39,0,1.21) .3s;
           pointer-events: none;
+        }
+        .avatar-halo {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 140px;
+          height: 140px;
+          transform: translate(-50%, -50%);
+          background: conic-gradient(from 0deg, 
+            transparent, 
+            rgba(157, 80, 255, 0.6), 
+            transparent, 
+            rgba(53, 139, 255, 0.6), 
+            transparent
+          );
+          border-radius: 50%;
+          animation: halo-rotate 8s linear infinite;
+          z-index: -1;
+          filter: blur(8px);
+          opacity: 0.7;
         }
         .profile-card:hover .author-info-avatar {
           opacity: 0;
@@ -202,14 +242,14 @@ export function ProfileWidget({
         .author-info__description {
           display: flex;
           flex-direction: column;
-          justify-content: flex-start;
+          justify-content: center;
           align-items: center;
-          padding: 3.2rem 1.5rem 0 1.5rem;
+          padding: 0 1.5rem;
           opacity: 0;
           transition: 0.3s;
           pointer-events: none;
           position: absolute;
-          top: 0;
+          top: 3.2rem;
           bottom: 8.5rem;
           left: 0;
           right: 0;
@@ -236,7 +276,7 @@ export function ProfileWidget({
           left: 0;
           width: 100%;
           display: flex;
-          justify-content: center;
+          justify(content): center;
           z-index: 30;
           pointer-events: none;
         }
@@ -268,10 +308,6 @@ export function ProfileWidget({
         .sayhi-text {
           font-size: 12px;
           color: var(--white);
-        }
-        .sayhi-hint {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.6);
         }
         .author-info__bottom-group {
           position: absolute;
