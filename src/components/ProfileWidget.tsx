@@ -158,23 +158,24 @@ export function ProfileWidget({
         .profile-card::before {
           background: 
             linear-gradient(-45deg, 
-              rgba(66, 90, 239, 0.9), 
-              rgba(157, 80, 255, 0.9), 
-              rgba(53, 139, 255, 0.9), 
-              rgba(114, 46, 209, 0.9)
+              rgba(66, 90, 239, 0.6), 
+              rgba(157, 80, 255, 0.6), 
+              rgba(53, 139, 255, 0.6), 
+              rgba(114, 46, 209, 0.6)
             ),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
+            linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)),
             var(--profile-cover) center center / cover no-repeat !important;
           background-size: 400% 400%, 100% 100%, cover !important;
           animation: gradient-pan 20s ease infinite !important;
+          opacity: 0.92; /* 整体微调透明度，让底色略微透出 */
         }
         
         /* 美化 card-content 并增加动态感 */
         .profile-card .card-content {
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(15px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.08); /* 0.9 左右的透明感 */
+          backdrop-filter: blur(20px) saturate(190%);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
