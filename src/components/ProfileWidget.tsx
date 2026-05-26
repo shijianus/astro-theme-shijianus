@@ -158,56 +158,49 @@ export function ProfileWidget({
         .profile-card {
           position: relative;
           overflow: hidden;
-          background-color: #111 !important;
+          background-image: var(--profile-cover) !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-repeat: no-repeat !important;
           z-index: 1;
-          border: none !important;
         }
 
-        /* 第一层：底图 */
+        /* 动态光晕层：极致轻薄，只提供色彩流动感 */
         .profile-card::before {
           content: "";
           position: absolute;
           inset: 0;
-          background-image: var(--profile-cover);
-          background-size: cover;
-          background-position: center;
-          z-index: 0;
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* 第二层：动态渐变遮罩 */
-        .profile-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
           background-image: linear-gradient(-45deg, 
-            rgba(66, 90, 239, 0.3), 
-            rgba(157, 80, 255, 0.3), 
-            rgba(53, 139, 255, 0.3), 
-            rgba(114, 46, 209, 0.3)
+            rgba(66, 90, 239, 0.15), 
+            rgba(157, 80, 255, 0.15), 
+            rgba(53, 139, 255, 0.15), 
+            rgba(114, 46, 209, 0.15)
           );
           background-size: 400% 400%;
-          animation: profile-gradient-pan 15s ease infinite !important;
-          z-index: 1;
+          animation: profile-bg-animate 12s ease infinite !important;
+          z-index: 0;
           pointer-events: none;
-          opacity: 0.8;
         }
 
-        @keyframes profile-gradient-pan {
+        @keyframes profile-bg-animate {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+
+        .profile-card::after {
+          display: none !important;
+        }
         
-        /* 第三层：磨砂玻璃内容层 */
+        /* 极致透明磨砂层：0.8 左右的透明感，让底图清晰显示 */
         .profile-card .card-content {
           position: relative;
-          z-index: 2; /* 确保在所有伪元素之上 */
+          z-index: 2;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.02) !important;
-          backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          background: rgba(0, 0, 0, 0.25) !important; /* 暗色半透背景，保证文字可读性 */
+          backdrop-filter: blur(8px) saturate(160%); /* 降低模糊度让底图更可见 */
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          transition: all 0.5s ease;
           min-height: 340px;
         }
         
