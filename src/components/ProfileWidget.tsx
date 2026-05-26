@@ -155,28 +155,60 @@ export function ProfileWidget({
       </div>
       
       <style dangerouslySetInnerHTML={{ __html: `
+        .profile-card {
+          position: relative;
+          overflow: hidden;
+          background-color: #111 !important;
+          z-index: 1;
+          border: none !important;
+        }
+
+        /* 第一层：底图 */
         .profile-card::before {
-          background: 
-            linear-gradient(-45deg, 
-              rgba(66, 90, 239, 0.6), 
-              rgba(157, 80, 255, 0.6), 
-              rgba(53, 139, 255, 0.6), 
-              rgba(114, 46, 209, 0.6)
-            ),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)),
-            var(--profile-cover) center center / cover no-repeat !important;
-          background-size: 400% 400%, 100% 100%, cover !important;
-          animation: gradient-pan 20s ease infinite !important;
-          opacity: 0.92; /* 整体微调透明度，让底色略微透出 */
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: var(--profile-cover);
+          background-size: cover;
+          background-position: center;
+          z-index: 0;
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 第二层：动态渐变遮罩 */
+        .profile-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: linear-gradient(-45deg, 
+            rgba(66, 90, 239, 0.3), 
+            rgba(157, 80, 255, 0.3), 
+            rgba(53, 139, 255, 0.3), 
+            rgba(114, 46, 209, 0.3)
+          );
+          background-size: 400% 400%;
+          animation: profile-gradient-pan 15s ease infinite !important;
+          z-index: 1;
+          pointer-events: none;
+          opacity: 0.8;
+        }
+
+        @keyframes profile-gradient-pan {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
         
-        /* 美化 card-content 并增加动态感 */
+        /* 第三层：磨砂玻璃内容层 */
         .profile-card .card-content {
+          position: relative;
+          z-index: 2; /* 确保在所有伪元素之上 */
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.08); /* 0.9 左右的透明感 */
-          backdrop-filter: blur(20px) saturate(190%);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.02) !important;
+          backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          min-height: 340px;
         }
         
         .profile-card:hover .card-content {
