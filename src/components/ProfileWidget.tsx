@@ -1,6 +1,7 @@
 import React, { type CSSProperties, useState } from 'react';
 
 const renderMarkdown = (text: string) => {
+  // Support bold and italic, but output plain text for brackets/links naturally
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
@@ -17,7 +18,7 @@ type ProfileWidgetProps = {
   name: string;
   role: string;
   motto: string;
-  bio: string;
+  bio?: string;
   avatar: string;
   cover: string;
   statusLabel: string;
@@ -36,6 +37,7 @@ export function ProfileWidget({
   name,
   role,
   motto,
+  bio,
   avatar,
   cover,
   email,
@@ -50,6 +52,26 @@ export function ProfileWidget({
     "🧬 跨界折腾记录 🐧",
     "☕ 愿对你有启发",
   ];
+
+  // Bio logic
+  const rawBio = `🛠️ 沉迷架构与网络工程的日常折腾，热衷将抽象概念转化为落地实践。拒绝空泛大词，这里仅分享**真实的避坑指南与硬核干货**。\n🌌 游走于硅基代码边缘，持续构筑数字知识库。期冀这些带有温度的碎片化随笔，能为探索者提供些许**灵感启迪与实战参考**。`;
+
+  let paragraphs = rawBio.split('\n').map(p => p.trim()).filter(Boolean);
+
+  // Warnings and limits logic
+  const rawLen = paragraphs.join('').replace(/(\*\*|\*|\[|\]|\(.*?\))/g, '').length;
+  if (paragraphs.length !== 2) {
+    console.warn('⚠️ [ProfileWidget] 推荐使用两段文字进行介绍，当前段落数：', paragraphs.length);
+  }
+  if (rawLen > 80 && rawLen <= 120) {
+    console.info(`ℹ️ [ProfileWidget] 简介字数为 ${rawLen} 字 (软性建议不超过 80 字)`);
+  }
+  if (rawLen > 120) {
+    console.error(`🚨 [ProfileWidget] 简介字数 (${rawLen}) 超过 120 字硬性限制，将被强制截断！`);
+    paragraphs = [paragraphs.join(' ').substring(0, 117) + '...'];
+  } else {
+    paragraphs = paragraphs.slice(0, 2);
+  }
 
   const style = {
     '--profile-cover': `url(${cover})`,
@@ -81,9 +103,9 @@ export function ProfileWidget({
 
         <div className="author-info__description">
           <div className="author-info__description-text">
-            <p style={{ marginBottom: '0.4rem' }}>{renderMarkdown("分享架构设计与网络工程的**真实折腾记录**。")}</p>
-            <p style={{ marginBottom: '0.4rem' }}>{renderMarkdown("常年游走于数字边境，维护专属的*外脑知识库*。")}</p>
-            <p>{renderMarkdown("希望这些碎片化随笔，能为探索者提供些许参考。")}</p>
+            {paragraphs.map((p, i) => (
+              <p key={i}>{renderMarkdown(p)}</p>
+            ))}
           </div>
         </div>
 
@@ -162,15 +184,15 @@ export function ProfileWidget({
         .author-info__description {
           display: flex;
           flex-direction: column;
-          justify-content: flex-start;
-          align-items: center;
-          padding: 3.5rem 1.5rem 0 1.5rem;
+          justify-content: center;
+          align-items: flex-start;
+          padding: 0 1.5rem;
           opacity: 0;
           transition: 0.3s;
           pointer-events: none;
           position: absolute;
-          top: 0;
-          bottom: 7.5rem;
+          top: 3.5rem;
+          bottom: 8rem;
           left: 0;
           right: 0;
           overflow: hidden;
@@ -179,8 +201,11 @@ export function ProfileWidget({
           opacity: 1;
         }
         .author-info__description-text {
-          font-size: 0.92rem;
-          line-height: 1.7;
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          font-size: 0.9rem;
+          line-height: 1.6;
           color: rgba(255, 255, 255, 0.95);
           font-weight: 500;
           text-align: left;
