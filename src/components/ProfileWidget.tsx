@@ -155,6 +155,19 @@ export function ProfileWidget({
       </div>
       
       <style dangerouslySetInnerHTML={{ __html: `
+        .profile-card::before {
+          background: 
+            linear-gradient(-45deg, 
+              rgba(66, 90, 239, 0.5), 
+              rgba(157, 80, 255, 0.4), 
+              rgba(53, 139, 255, 0.5), 
+              rgba(114, 46, 209, 0.4)
+            ),
+            linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
+            var(--profile-cover) center center / cover no-repeat !important;
+          background-size: 400% 400%, 100% 100%, cover !important;
+          animation: gradient-pan 20s ease infinite !important;
+        }
         .author-info-avatar {
           position: absolute;
           top: 42%;
