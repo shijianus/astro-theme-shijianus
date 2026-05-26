@@ -81,9 +81,9 @@ export function ProfileWidget({
 
         <div className="author-info__description">
           <div className="author-info__description-text">
-            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("分享系统重配、架构设计与网络工程的**真实折腾记录**。不盲目追求宏大叙事，仅保留纯粹的技术细节与避坑指南。")}</p>
-            <p style={{ marginBottom: '0.8rem' }}>{renderMarkdown("常年游走于各种数字边境，将零碎的灵感与代码片段打包进专属的*外脑知识库*。坚信技术应当用来解决实际问题。")}</p>
-            <p>{renderMarkdown("随笔与教程可能略显碎片化，有时甚至带着 [未完待续](draft) 的草稿标记。但希望能为路过此地的访客提供些许切实的参考。")}</p>
+            <p style={{ marginBottom: '0.4rem' }}>{renderMarkdown("分享架构设计与网络工程的**真实折腾记录**。")}</p>
+            <p style={{ marginBottom: '0.4rem' }}>{renderMarkdown("常年游走于数字边境，维护专属的*外脑知识库*。")}</p>
+            <p>{renderMarkdown("希望这些碎片化随笔，能为探索者提供些许参考。")}</p>
           </div>
         </div>
 
@@ -170,7 +170,7 @@ export function ProfileWidget({
           pointer-events: none;
           position: absolute;
           top: 0;
-          bottom: 6.5rem;
+          bottom: 7.5rem;
           left: 0;
           right: 0;
           overflow: hidden;
