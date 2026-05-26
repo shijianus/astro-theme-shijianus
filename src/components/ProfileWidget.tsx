@@ -158,10 +158,10 @@ export function ProfileWidget({
         .profile-card::before {
           background: 
             linear-gradient(-45deg, 
-              rgba(66, 90, 239, 0.7), 
-              rgba(157, 80, 255, 0.7), 
-              rgba(53, 139, 255, 0.7), 
-              rgba(114, 46, 209, 0.7)
+              rgba(66, 90, 239, 0.6), 
+              rgba(157, 80, 255, 0.6), 
+              rgba(53, 139, 255, 0.6), 
+              rgba(114, 46, 209, 0.6)
             ),
             linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
             var(--profile-cover) center center / cover no-repeat !important;
