@@ -155,18 +155,45 @@ export function ProfileWidget({
       </div>
       
       <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes bg-evolution {
+          0%, 100% {
+            background-position: 0% 0%;
+            filter: hue-rotate(0deg);
+          }
+          50% {
+            background-position: 100% 100%;
+            filter: hue-rotate(15deg);
+          }
+        }
+        @keyframes halo-pulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.1); }
+        }
         .profile-card::before {
           background: 
             linear-gradient(-45deg, 
               rgba(66, 90, 239, 0.9), 
-              rgba(157, 80, 255, 0.9), 
+              rgba(157, 80, 255, 0.85), 
               rgba(53, 139, 255, 0.9), 
+              rgba(114, 46, 209, 0.85),
+              rgba(66, 90, 239, 0.9),
+              rgba(53, 139, 255, 0.9),
+              rgba(157, 80, 255, 0.85),
               rgba(114, 46, 209, 0.9)
             ),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)),
             var(--profile-cover) center center / cover no-repeat !important;
-          background-size: 400% 400%, 100% 100%, cover !important;
-          animation: gradient-pan 20s ease infinite !important;
+          background-size: 400% 400%, cover !important;
+          animation: bg-evolution 15s ease-in-out infinite !important;
+          z-index: -1;
+        }
+        .profile-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at center, rgba(157, 80, 255, 0.15) 0%, transparent 70%);
+          animation: halo-pulse 8s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 0;
         }
         .author-info-avatar {
           position: absolute;
