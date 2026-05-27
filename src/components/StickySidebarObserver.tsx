@@ -32,13 +32,13 @@ function resolveTargets(pageType: string) {
 
   if (pageType === 'home') {
     const boundary = document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ?? document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
-    const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
+    const card = document.querySelector<HTMLElement>('body[data-type="home"] .sticky_layout--utility');
 
     if (boundary && card) {
       targets.push({
         boundary,
         card,
-        minHeight: 420,
+        minHeight: 480,
       });
     }
   }

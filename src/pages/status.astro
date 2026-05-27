@@ -1,24 +1,162 @@
 ---
 import { getCollection } from 'astro:content';
-import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPublicPosts } from '../lib/content';
+import { getPublicPosts, estimateWordCount, estimateReadingMinutes } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
+import { siteConfig } from '../config/site';
 
-const posts = getPublicPosts(await getCollection('posts'));
+const allPosts = await getCollection('posts');
+const posts = getPublicPosts(allPosts);
 const sidebarData = createSidebarData(posts);
+
+const totalReadingMinutes = allPosts.reduce((acc, post) => acc + estimateReadingMinutes(post), 0);
+const totalWords = allPosts.reduce((acc, post) => acc + estimateWordCount(post), 0);
+
+const runtimeDays = Math.max(
+  1,
+  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
+);
+const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN').replaceAll('/', '.');
+const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
+const latestPublishedAt = posts[0]?.data.pubDate ?? null;
+const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
+
+const stats = {
+  posts: sidebarData.totalPosts ?? 0,
+  categories: sidebarData.totalCategories ?? 0,
+  tags: sidebarData.totalTags ?? 0,
+  readingMinutes: totalReadingMinutes,
+  totalWords: totalWords,
+};
 ---
 
 <BlogLayout title="站点状态" showAside={false} pageType="page" sidebarData={sidebarData}>
-  <PlaceholderPageShell
-    eyebrow="运行 / 状态"
-    title="站点状态"
-    summary="这个页面预留给运行状态、重构里程碑、页面完成度和后续路线图，让读者能直接看到当前站点还在做什么。"
-    statusLabel="状态面板待接入"
-    notes={[
-      '之后可以直接接入运行时间、构建状态、评论数据库与访问统计。',
-      '现在先把路径、布局和导航层级固定下来，避免以后再拆菜单。',
-      '占位页借用 404 的建设中语义，但本身已经是正式可访问页面。',
-    ]}
-  />
+  <div class="status-page-content">
+    <section class="card-widget card-webinfo-full">
+      <div class="item-headline">
+        <i class="anzhiyufont anzhiyu-icon-chart-line"></i>
+        <span>站点状态</span>
+      </div>
+      
+      <div class="webinfo-panel">
+        <div class="workboard-panel webinfo-workboard">
+          <div class="webinfo-workboard__head">
+            <div class="workboard-status">
+              <span class="workboard-dot" aria-hidden="true"></span>
+              <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+              <strong>{siteConfig.footer.runtime.workLabel}</strong>
+            </div>
+            <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+          </div>
+          <p>{siteConfig.footer.runtime.workDetail}</p>
+          
+          <div class="webinfo-highlight-grid">
+            <article class="webinfo-highlight-card webinfo-highlight-card--primary">
+              <span>站点运行</span>
+              <strong>{runtimeDays} 天</strong>
+              <small>起始于 {startedAtLabel}</small>
+            </article>
+            <article class="webinfo-highlight-card">
+              <span>最近更新</span>
+              <strong>{latestPublishedLabel}</strong>
+              <small>内容仍在持续整理</small>
+            </article>
+            <article class="webinfo-highlight-card">
+              <span>当前阶段</span>
+              <strong>{currentPhase}</strong>
+              <small>优先修正阅读与侧栏体验</small>
+            </article>
+          </div>
+          
+          <div class="workboard-chip-list">
+            <span>{siteConfig.footer.runtime.workLabel}</span>
+            <span>{siteConfig.site.author.statusLabel}</span>
+            <span>{siteConfig.home.announcement.eyebrow}</span>
+          </div>
+        </div>
+
+        <div class="webinfo webinfo-grid">
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">文章总数</span>
+            </div>
+            <div class="item-count">{stats.posts}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">分类总数</span>
+            </div>
+            <div class="item-count">{stats.categories}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">标签总数</span>
+            </div>
+            <div class="item-count">{stats.tags}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">全站字数</span>
+            </div>
+            <div class="item-count">{stats.totalWords}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <span class="item-name">阅读总量</span>
+            </div>
+            <div class="item-count">{stats.readingMinutes} 分钟</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-widget status-details">
+      <div class="item-headline">
+        <i class="anzhiyufont anzhiyu-icon-info-circle"></i>
+        <span>运行详情</span>
+      </div>
+      <div class="status-notes">
+        <p>这个页面展示了站点的实时运行数据和开发进度。</p>
+        <ul>
+          <li>接入运行时间、构建状态、评论数据库与访问统计。</li>
+          <li>路径、布局和导航层级已基本固定。</li>
+          <li>持续优化的 UI/UX 体验，对标 Anheyu 主题。</li>
+        </ul>
+      </div>
+    </section>
+  </div>
 </BlogLayout>
+
+<style>
+  .status-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 0;
+  }
+  
+  .card-webinfo-full {
+    padding: 2rem !important;
+  }
+  
+  .webinfo-panel {
+    margin-top: 1.5rem;
+  }
+  
+  .status-notes {
+    margin-top: 1rem;
+    line-height: 1.6;
+    color: var(--anzhiyu-secondtext);
+  }
+  
+  .status-notes ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+  }
+  
+  .status-notes li {
+    margin-bottom: 0.4rem;
+  }
+</style>

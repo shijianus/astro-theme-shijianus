@@ -1609,17 +1609,16 @@ body[data-type='home'] #aside-content .sticky_layout--utility {
   align-self: stretch;
 }
 
-body[data-type='home'] .card-feature-panel--overview {
+body[data-type='home'] .sticky_layout--utility {
   position: sticky !important;
   top: var(--site-header-height, 60px) !important;
   max-height: calc(100vh - var(--site-header-height, 60px) - 20px);
   display: flex;
   flex-direction: column;
-  padding: 16px 18px 12px;
   overflow-y: auto;
 }
 
-body[data-type='home'] .card-feature-panel--overview.is-static-layout {
+body[data-type='home'] .sticky_layout--utility.is-static-layout {
   position: static !important;
   min-height: auto;
   max-height: none;
