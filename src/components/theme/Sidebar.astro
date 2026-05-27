@@ -84,6 +84,9 @@ const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCa
 const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
 const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
 const showWebInfo = false;
+const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
+const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
+const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives;
 const runtimeDays = Math.max(
   1,
