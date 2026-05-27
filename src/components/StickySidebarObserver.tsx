@@ -57,17 +57,6 @@ function resolveTargets(pageType: string) {
         minHeight: 360,
       });
     }
-
-    const secondaryBoundary = document.querySelector<HTMLElement>('.post-layout-row--support') ?? tocBoundary;
-    const secondaryCard = document.querySelector<HTMLElement>('#post-secondary-aside .sticky_layout--utility');
-
-    if (secondaryBoundary && secondaryCard) {
-      targets.push({
-        boundary: secondaryBoundary,
-        card: secondaryCard,
-        minHeight: 320,
-      });
-    }
   }
 
   return targets;

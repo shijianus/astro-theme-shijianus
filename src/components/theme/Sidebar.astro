@@ -17,14 +17,6 @@ interface Props extends SidebarData {
   asideId?: string;
 }
 
-type TocHeading = Props['headings'][number];
-type TocNode = {
-  heading: TocHeading;
-  index: number;
-  level: number;
-  children: TocNode[];
-};
-
 const {
   recentPosts,
   tags,
@@ -42,7 +34,6 @@ const {
 const isPostPage = pageType === 'post';
 const isPostTocPage = pageType === 'post-toc';
 const isPostSecondaryPage = pageType === 'post-secondary';
-const isAnyPostPage = isPostPage || isPostTocPage || isPostSecondaryPage;
 const isHomePage = pageType === 'home';
 const utilityOnlyPageTypes = new Set(['home', 'page', 'post-secondary']);
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
@@ -54,41 +45,12 @@ const formattedArchives = archives.slice(0, 12).map((item) => {
   const monthLabel = date.toLocaleDateString('zh-CN', { month: 'long' });
   return {
     ...item,
-    formattedMonth: `${monthLabel} ${item.year}`,
+    formattedMonth: monthLabel,
+    fullYear: item.year,
   };
 });
 
-const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
-const tocTree = (() => {
-  const roots: TocNode[] = [];
-  const stack: TocNode[] = [];
-
-  tocHeadings.forEach((heading, index) => {
-    const node: TocNode = {
-      heading,
-      index,
-      level: Math.max(0, heading.depth - tocBaseDepth),
-      children: [],
-    };
-
-    while (stack.length > 0 && stack[stack.length - 1]!.heading.depth >= heading.depth) {
-      stack.pop();
-    }
-
-    if (stack.length === 0) {
-      roots.push(node);
-    } else {
-      stack[stack.length - 1]!.children.push(node);
-    }
-
-    stack.push(node);
-  });
-
-  return roots;
-})();
-
 const showUtilityAside = utilityOnlyPageTypes.has(pageType);
-const showPostAsideFeed = isPostSecondaryPage;
 const showRecentPosts = recentPostEntries.length > 0 && (isHomePage || isPostSecondaryPage || showUtilityAside);
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
@@ -109,7 +71,6 @@ const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString(
 const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
 const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
-const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
 
 const escapeHtml = (value: string) =>
   value
@@ -119,18 +80,15 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
-const renderTocNodes = (headings: TocHeading[]) =>
+const renderTocNodes = (headings: any[]) =>
   headings
     .map((heading, index) => {
       const indexLabel = String(index + 1).padStart(2, '0');
-      const level = Math.max(0, heading.depth - tocBaseDepth);
       return `
-        <li class="toc-item" style="--toc-level:${level};">
-          <a href="#${escapeHtml(heading.slug)}" class="toc-link" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
+        <li class="toc-item" style="--toc-level:${Math.max(0, heading.depth - 2)};">
+          <a href="#${escapeHtml(heading.slug)}" class="toc-link" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}">
             <span class="toc-index">${indexLabel}</span>
-            <span class="toc-text-group">
-              <span class="toc-text">${escapeHtml(heading.text)}</span>
-            </span>
+            <span class="toc-text">${escapeHtml(heading.text)}</span>
           </a>
         </li>
       `;
@@ -141,8 +99,8 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
   const baseSize = 0.85;
   const maxSize = 1.35;
   const fontSize = (baseSize + (maxSize - baseSize) * item.weight).toFixed(2);
-  const opacity = (0.5 + 0.5 * item.weight).toFixed(2);
-  return `font-size: ${fontSize}rem; opacity: ${opacity};`;
+  const opacity = (0.55 + 0.45 * item.weight).toFixed(2);
+  return `font-size: ${fontSize}rem; opacity: ${opacity}; background: transparent !important; padding: 0 !important; border: none !important; box-shadow: none !important;`;
 };
 ---
 
@@ -213,17 +171,6 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
           <ListTree className="aside-title-icon" aria-hidden="true" />
           <span>文章目录</span>
           <span class="toc-count">{tocHeadings.length} 节</span>
-          <span class="toc-percentage"></span>
-        </div>
-        <div class="toc-progress" aria-hidden="true">
-          <span class="toc-progress__bar"></span>
-        </div>
-        <div class="toc-current" aria-live="polite">
-          <span class="toc-current__eyebrow">当前定位</span>
-          <div class="toc-current__body">
-            <strong class="toc-current__title">等待进入正文</strong>
-            <span class="toc-current__meta">H2 · 00/00</span>
-          </div>
         </div>
         <div class="toc-content">
           <ol class="toc-list">
@@ -235,7 +182,7 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
   )}
 
   {showStickyUtilityLayout && !isPostTocPage && (
-    <div class:list={["sticky_layout", isHomePage ? "sticky_layout--home" : "sticky_layout--utility"]}>
+    <div id="anzhiyu-aside-sticky" class="sticky_layout aside-sticky-tail">
       {showHomeOverview && (
         <section class="card-widget card-feature-panel card-feature-panel--overview">
           <div class="card-content">
@@ -253,89 +200,32 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
                 <div class="webinfo-workboard__head">
                   <div class="workboard-status">
                     <span class="workboard-dot" aria-hidden="true"></span>
-                    <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
                     <strong>{siteConfig.footer.runtime.workLabel}</strong>
                   </div>
                   <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
                 </div>
-                <p>{siteConfig.footer.runtime.workDetail}</p>
                 <div class="webinfo-highlight-grid">
                   <article class="webinfo-highlight-card webinfo-highlight-card--primary">
                     <span>站点运行</span>
                     <strong>{runtimeDays} 天</strong>
-                    <small>起始于 {startedAtLabel}</small>
                   </article>
-                  <article class="webinfo-highlight-card">
-                    <span>最近更新</span>
-                    <strong>{latestPublishedLabel}</strong>
-                    <small>内容仍在持续整理</small>
-                  </article>
-                  <article class="webinfo-highlight-card">
-                    <span>当前阶段</span>
-                    <strong>{currentPhase}</strong>
-                    <small>优先修正阅读与侧栏体验</small>
-                  </article>
-                </div>
-                <div class="workboard-chip-list">
-                  <span>{siteConfig.footer.runtime.workLabel}</span>
-                  <span>{siteConfig.site.author.statusLabel}</span>
-                  <span>{siteConfig.home.announcement.eyebrow}</span>
                 </div>
               </div>
 
-              <div class="webinfo webinfo-list">
+              <div class="webinfo-list">
                 <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">文章总数</span>
-                  </div>
+                  <div class="item-name">文章总数</div>
                   <div class="item-count">{totalPosts}</div>
                 </div>
                 <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">分类总数</span>
-                  </div>
-                  <div class="item-count">{totalCategories}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">标签总数</span>
-                  </div>
+                  <div class="item-name">标签总数</div>
                   <div class="item-count">{totalTags}</div>
                 </div>
                 <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">阅读总量</span>
-                  </div>
+                  <div class="item-name">阅读总量</div>
                   <div class="item-count">{totalReadingMinutes} 分钟</div>
                 </div>
               </div>
-
-              {isHomePage && featurePanelRecentPosts.length > 0 && (
-                <div class="feature-panel-recent">
-                  <div class="item-headline item-headline--embedded">
-                    <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                    <span>最新发布</span>
-                  </div>
-                  <div class="aside-list">
-                    {featurePanelRecentPosts.map((entry) => (
-                      <a href={getPostPath(entry)} class="aside-list-item">
-                        <span class="thumbnail">
-                          <img
-                            src={resolveDisplayCover(entry, true)}
-                            alt={getDisplayPostTitle(entry, true)}
-                            loading="lazy"
-                            data-fallback-src={siteConfig.post.hero.fallbackImage}
-                          />
-                        </span>
-                        <span class="content">
-                          <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                          <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </section>
@@ -351,12 +241,7 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
             {recentPostEntries.slice(0, 6).map((entry) => (
               <a href={getPostPath(entry)} class="aside-list-item">
                 <span class="thumbnail">
-                  <img
-                    src={resolveDisplayCover(entry, true)}
-                    alt={getDisplayPostTitle(entry, true)}
-                    loading="lazy"
-                    data-fallback-src={siteConfig.post.hero.fallbackImage}
-                  />
+                  <img src={resolveDisplayCover(entry, true)} alt={getDisplayPostTitle(entry, true)} loading="lazy" />
                 </span>
                 <span class="content">
                   <span class="title">{getDisplayPostTitle(entry, true)}</span>
@@ -391,19 +276,15 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
             <Archive className="aside-title-icon" aria-hidden="true" />
             <span>归档</span>
           </div>
-          <ul class="card-archive-list">
+          <div class="card-archive-grid">
             {formattedArchives.map((item) => (
-              <li class="card-archive-list-item">
-                <a class="card-archive-list-link" href="/archives/">
-                  <span class="card-archive-list-date">{item.formattedMonth}</span>
-                  <span class="card-archive-list-count-group">
-                    <span class="card-archive-list-count">{item.count}</span>
-                    <span>篇</span>
-                  </span>
-                </a>
-              </li>
+              <a class="archive-grid-item" href="/archives/">
+                <span class="archive-month">{item.formattedMonth}</span>
+                <span class="archive-year">{item.fullYear}</span>
+                <span class="archive-count">{item.count} 篇</span>
+              </a>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
@@ -413,65 +294,18 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
             <Info className="aside-title-icon" aria-hidden="true" />
             <span>站点信息</span>
           </div>
-          <div class="webinfo-panel">
-            <div class="workboard-panel webinfo-workboard">
-              <div class="webinfo-workboard__head">
-                <div class="workboard-status">
-                  <span class="workboard-dot" aria-hidden="true"></span>
-                  <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                  <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                </div>
-                <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-              </div>
-              <p>{siteConfig.footer.runtime.workDetail}</p>
-              <div class="webinfo-highlight-grid">
-                <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                  <span>站点运行</span>
-                  <strong>{runtimeDays} 天</strong>
-                  <small>起始于 {startedAtLabel}</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>最近更新</span>
-                  <strong>{latestPublishedLabel}</strong>
-                  <small>内容仍在持续整理</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>当前阶段</span>
-                  <strong>{currentPhase}</strong>
-                  <small>优先修正阅读与侧栏体验</small>
-                </article>
-              </div>
-              <div class="workboard-chip-list">
-                <span>{siteConfig.footer.runtime.workLabel}</span>
-                <span>{siteConfig.site.author.statusLabel}</span>
-                <span>{siteConfig.home.announcement.eyebrow}</span>
-              </div>
+          <div class="webinfo-list">
+            <div class="webinfo-item">
+              <div class="item-name">文章总数</div>
+              <div class="item-count">{totalPosts}</div>
             </div>
-            <div class="webinfo webinfo-list">
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">文章总数</span>
-                </div>
-                <div class="item-count">{totalPosts}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">分类总数</span>
-                </div>
-                <div class="item-count">{totalCategories}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">标签总数</span>
-                </div>
-                <div class="item-count">{totalTags}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">阅读时长</span>
-                </div>
-                <div class="item-count">{totalReadingMinutes} 分钟</div>
-              </div>
+            <div class="webinfo-item">
+              <div class="item-name">运行时间</div>
+              <div class="item-count">{runtimeDays} 天</div>
+            </div>
+            <div class="webinfo-item">
+              <div class="item-name">阅读时长</div>
+              <div class="item-count">{totalReadingMinutes} 分钟</div>
             </div>
           </div>
         </section>
@@ -484,83 +318,160 @@ const getTagStyle = (item: WeightedTaxonomyItem) => {
   )}
 </div>
 
-<style>
-  .card-tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 12px;
-    padding: 0.4rem 0.2rem;
+<style is:inline>
+  /* Use is:inline to bypass Astro scoping and guarantee override */
+  
+  #anzhiyu-aside-sticky {
+    position: sticky !important;
+    top: 80px;
+    z-index: 10;
+    transition: top 0.3s ease;
   }
 
-  .card-tag-cloud a {
-    position: relative;
-    color: var(--font-color);
-    text-decoration: none;
-    transition: all 0.22s ease;
-    white-space: nowrap;
+  .aside-content .card-widget {
+    background: var(--card-bg) !important;
+    color: var(--font-color) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 12px !important;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-border) !important;
   }
 
-  .card-tag-cloud a:hover {
+  /* Tag Cloud */
+  .aside-content .card-tag-cloud {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+    justify-content: flex-start !important;
+    padding: 0.4rem 0.2rem !important;
+  }
+
+  .aside-content .card-tag-cloud a {
+    color: var(--font-color) !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    transition: color 0.2s ease, opacity 0.2s ease !important;
+    white-space: nowrap !important;
+  }
+
+  .aside-content .card-tag-cloud a:hover {
     color: var(--theme-main) !important;
     opacity: 1 !important;
-    transform: scale(1.1);
   }
 
-  .card-tag-cloud sup {
-    margin-left: 2px;
-    font-size: 0.65em;
-    opacity: 0.6;
+  .aside-content .card-tag-cloud sup {
+    display: inline-block !important;
+    margin-left: 1px !important;
+    font-size: 0.65em !important;
+    opacity: 0.5 !important;
+    vertical-align: super !important;
+    border: none !important;
+    background: transparent !important;
   }
 
-  .webinfo-list {
-    display: grid;
-    gap: 0;
-    margin-top: 1rem;
-    border-top: 1px dashed rgba(255, 255, 255, 0.16);
-    padding-top: 1rem;
+  /* Archives Grid */
+  .aside-content .card-archive-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    margin-top: 0.8rem !important;
   }
 
-  :root[data-theme='light'] .webinfo-list {
-    border-top-color: rgba(0, 0, 0, 0.08);
+  .aside-content .archive-grid-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.8rem !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
   }
 
-  .webinfo-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 2.8rem;
-    padding: 0.4rem 0;
+  :root[data-theme='light'] .aside-content .archive-grid-item {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0, 0, 0, 0.05) !important;
   }
 
-  .webinfo-item-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--secondtext);
-    font-size: 0.92rem;
+  .aside-content .archive-grid-item:hover {
+    background: var(--theme-main) !important;
+    color: #fff !important;
+    border-color: transparent !important;
   }
 
-  .item-count {
-    color: var(--font-color);
-    font-weight: 700;
-    font-size: 1rem;
+  .aside-content .archive-month { font-size: 0.75rem !important; opacity: 0.7 !important; }
+  .aside-content .archive-year { font-size: 0.65rem !important; opacity: 0.4 !important; }
+  .aside-content .archive-count { font-size: 1.1rem !important; font-weight: 700 !important; }
+
+  .aside-content .archive-grid-item:hover :is(.archive-month, .archive-year, .archive-count) {
+    color: #fff !important;
+    opacity: 1 !important;
   }
 
-  .card-archive-list-date {
-    font-size: 0.82rem !important;
-    color: var(--secondtext);
-    margin-bottom: 2px;
+  /* WebInfo List */
+  .aside-content .webinfo-list {
+    margin-top: 1rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
   }
 
-  .card-archive-list-count {
-    font-size: 1.25rem !important;
-    font-weight: 800 !important;
+  :root[data-theme='light'] .aside-content .webinfo-list {
+    border-top-color: rgba(0, 0, 0, 0.1) !important;
   }
 
-  .card-archive-list-count-group span:last-child {
-    font-size: 0.85rem;
-    margin-left: 4px;
-    opacity: 0.7;
+  .aside-content .webinfo-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 0.9rem !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
   }
+
+  .aside-content .item-name { color: var(--secondtext) !important; font-weight: normal !important; }
+  .aside-content .item-count { color: var(--font-color) !important; font-weight: 700 !important; }
 </style>
+
+<script is:inline>
+  (() => {
+    const aside = document.getElementById('anzhiyu-aside-sticky');
+    if (!aside) return;
+
+    const updateSticky = () => {
+      const height = aside.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const header = document.getElementById('page-header');
+      const headerHeight = header ? header.offsetHeight : 60;
+      const padding = 20;
+
+      if (height + headerHeight + padding < viewportHeight) {
+        aside.style.top = (headerHeight + padding) + 'px';
+      } else {
+        aside.style.top = (viewportHeight - height - padding) + 'px';
+      }
+    };
+
+    window.addEventListener('scroll', updateSticky, { passive: true });
+    window.addEventListener('resize', updateSticky, { passive: true });
+    
+    // Initial runs
+    updateSticky();
+    setTimeout(updateSticky, 100);
+    setTimeout(updateSticky, 1000);
+    
+    if (window.ResizeObserver) {
+      new ResizeObserver(updateSticky).observe(aside);
+    }
+  })();
+</script>

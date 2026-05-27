@@ -742,8 +742,6 @@ body[data-type='post'] .post-layout-row__aside #post-secondary-aside {
 }
 
 body[data-type='post'] .post-layout-row__aside .sticky_layout {
-  position: static !important;
-  top: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;

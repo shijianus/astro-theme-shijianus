@@ -10037,7 +10037,6 @@ body[data-type='post'] #post-secondary-aside > :not(.sticky_layout) {
 }
 
 body[data-type='post'] #post-secondary-aside .sticky_layout {
-  position: static !important;
   display: grid;
   gap: 16px;
 }
