@@ -11,6 +11,7 @@ import {
 import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
 import PromoWidgetCard from './PromoWidgetCard.astro';
+import MetricMatrix from './MetricMatrix.astro';
 
 interface Props extends SidebarData {
   pageType?: string;
@@ -215,47 +216,12 @@ const renderTocNodes = (headings: TocHeading[]) =>
   {showStickyUtilityLayout && !isPostSecondaryPage && !isPostTocPage && (
     <div class="sticky_layout sticky_layout--utility">
       {showHomeOverview && (
-        <section class="card-widget card-feature-panel card-feature-panel--overview">
-          <div class="card-content">
-            <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
-            <h3>{siteConfig.aside.featureCard.title}</h3>
-            <p>{siteConfig.aside.featureCard.summary}</p>
-            <div class="feature-card__chips">
-              {siteConfig.aside.featureCard.chips.map((item) => (
-                <span>{item}</span>
-              ))}
-            </div>
-
-            <div class="webinfo-panel">
-              {isHomePage && featurePanelRecentPosts.length > 0 && (
-                <div class="feature-panel-recent">
-                  <div class="item-headline item-headline--embedded">
-                    <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                    <span>最新发布</span>
-                  </div>
-                  <div class="aside-list">
-                    {featurePanelRecentPosts.map((entry) => (
-                      <a href={getPostPath(entry)} class="aside-list-item">
-                        <span class="thumbnail">
-                          <img
-                            src={resolveDisplayCover(entry, true)}
-                            alt={getDisplayPostTitle(entry, true)}
-                            loading="lazy"
-                            data-fallback-src={siteConfig.post.hero.fallbackImage}
-                          />
-                        </span>
-                        <span class="content">
-                          <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                          <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
+        <MetricMatrix
+          totalPosts={totalPosts}
+          totalCategories={totalCategories}
+          totalTags={totalTags}
+          runtimeDays={runtimeDays}
+        />
       )}
 
       {showRecentPosts && (

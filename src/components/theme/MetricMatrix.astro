@@ -1,0 +1,144 @@
+---
+import { FileText, FolderOpen, Hash, Timer } from 'lucide-react';
+
+interface Props {
+  totalPosts: number;
+  totalCategories: number;
+  totalTags: number;
+  runtimeDays: number;
+}
+
+const { totalPosts, totalCategories, totalTags, runtimeDays } = Astro.props;
+
+const metrics = [
+  {
+    label: '文章数',
+    value: totalPosts,
+    unit: '篇',
+    icon: FileText,
+    gradient: 'linear-gradient(215deg, #4584ff 0%, #cf0db9 100%)',
+    bg: '#425AEF'
+  },
+  {
+    label: '分类数',
+    value: totalCategories,
+    unit: '个',
+    icon: FolderOpen,
+    gradient: 'linear-gradient(120deg, #5b27ff 0, #00d4ff 100%)',
+    bg: '#5b27ff'
+  },
+  {
+    label: '标签数',
+    value: totalTags,
+    unit: '个',
+    icon: Hash,
+    gradient: 'linear-gradient(120deg, #358bff 0, #15c6ff 100%)',
+    bg: '#358bff'
+  },
+  {
+    label: '运行天数',
+    value: runtimeDays,
+    unit: '天',
+    icon: Timer,
+    gradient: 'linear-gradient(120deg, #7b61ff 0, #358bff 100%)',
+    bg: '#7b61ff'
+  }
+];
+---
+
+<div class="metric-matrix">
+  {metrics.map((item) => (
+    <div class="metric-card" style={`--metric-gradient: ${item.gradient}; --metric-bg: ${item.bg}`}>
+      <div class="metric-card__content">
+        <div class="metric-card__label">{item.label}</div>
+        <div class="metric-card__value-group">
+          <span class="metric-card__value">{item.value}</span>
+          <span class="metric-card__unit">{item.unit}</span>
+        </div>
+      </div>
+      <item.icon className="metric-card__icon" aria-hidden="true" />
+    </div>
+  ))}
+</div>
+
+<style>
+  .metric-matrix {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .metric-card {
+    position: relative;
+    padding: 1rem;
+    border-radius: 12px;
+    background: var(--metric-bg);
+    background-image: var(--metric-gradient);
+    color: #fff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.65, 0.15, 0.37, 1.19);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.1);
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .metric-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.15);
+  }
+
+  .metric-card__content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .metric-card__label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+  }
+
+  .metric-card__value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+
+  .metric-card__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-card__unit {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .metric-card__icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    width: 60px;
+    height: 60px;
+    opacity: 0.15;
+    transform: rotate(15deg);
+    transition: all 0.5s ease;
+    pointer-events: none;
+  }
+
+  .metric-card:hover .metric-card__icon {
+    opacity: 0.3;
+    transform: scale(1.1) rotate(10deg);
+  }
+
+  /* Dark mode overrides if needed, but the blue cards should stay colored */
+  :root[data-theme='dark'] .metric-card {
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+</style>
