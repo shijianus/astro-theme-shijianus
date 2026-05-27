@@ -172,25 +172,27 @@ export function ProfileWidget({
           background-size: cover;
           background-position: center;
           z-index: 0;
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0.85;
+          pointer-events: none;
+          transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 第二层：动态渐变遮罩 */
+        /* 第二层：动态渐变遮罩 - 优化为蓝紫色中性调 */
         .profile-card::after {
           content: "";
           position: absolute;
           inset: 0;
           background-image: linear-gradient(-45deg, 
-            rgba(66, 90, 239, 0.3), 
-            rgba(157, 80, 255, 0.3), 
-            rgba(53, 139, 255, 0.3), 
-            rgba(114, 46, 209, 0.3)
+            rgba(135, 206, 250, 0.35),  /* 天蓝色 */
+            rgba(186, 154, 255, 0.35),  /* 浅蓝紫色 */
+            rgba(216, 180, 254, 0.35),  /* 浅紫色 */
+            rgba(165, 180, 252, 0.35)   /* 中性蓝紫 */
           );
           background-size: 400% 400%;
-          animation: profile-gradient-pan 15s ease infinite !important;
+          animation: profile-gradient-pan 12s ease infinite !important;
           z-index: 1;
           pointer-events: none;
-          opacity: 0.8;
+          opacity: 0.9;
         }
 
         @keyframes profile-gradient-pan {
@@ -202,19 +204,19 @@ export function ProfileWidget({
         /* 第三层：磨砂玻璃内容层 */
         .profile-card .card-content {
           position: relative;
-          z-index: 2; /* 确保在所有伪元素之上 */
+          z-index: 2;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.02) !important;
-          backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(20px) saturate(170%) brightness(1.1);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
           min-height: 340px;
         }
         
         .profile-card:hover .card-content {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.3);
-          box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05);
         }
 
         .profile-card .card-content::after {
@@ -227,11 +229,11 @@ export function ProfileWidget({
           background: linear-gradient(
             to right,
             transparent,
-            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0.1),
             transparent
           );
           transform: skewX(-25deg);
-          animation: sweep 8s ease-in-out infinite;
+          animation: sweep 10s ease-in-out infinite;
           pointer-events: none;
           z-index: 10;
         }
@@ -251,40 +253,52 @@ export function ProfileWidget({
           transition: cubic-bezier(.69,.39,0,1.21) .3s;
           pointer-events: none;
           z-index: 2;
+          filter: drop-shadow(0 0 12px rgba(186, 154, 255, 0.5));
         }
 
-        /* 移动的光晕效果 */
+        /* 优化后的光晕效果 - 更加真实且动态 */
         .author-info-avatar::before {
           content: "";
           position: absolute;
-          inset: -8px;
+          inset: -10px;
           border-radius: 50%;
           background: conic-gradient(
             from 0deg,
-            #425aef, #9d50ff, #358bff, #722ed1, #425aef
+            #87CEFA, #B39DDB, #8A2BE2, #9370DB, #87CEFA
           );
-          animation: avatar-rotate 4s linear infinite;
+          animation: avatar-rotate 6s linear infinite, avatar-glow-breath 4s ease-in-out infinite;
           z-index: -1;
-          filter: blur(10px);
-          opacity: 0.8;
+          filter: blur(12px);
+          opacity: 0.7;
           transition: 0.3s;
         }
 
-        /* 辅助光晕增强层 */
+        /* 动态呼吸光感层 */
         .author-info-avatar::after {
           content: "";
           position: absolute;
-          inset: -4px;
+          inset: -5px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(2px);
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(4px);
           z-index: -1;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          animation: avatar-border-glow 4s ease-in-out infinite;
         }
 
         @keyframes avatar-rotate {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        @keyframes avatar-glow-breath {
+          0%, 100% { opacity: 0.6; filter: blur(12px) brightness(1); }
+          50% { opacity: 0.85; filter: blur(16px) brightness(1.2); }
+        }
+
+        @keyframes avatar-border-glow {
+          0%, 100% { border-color: rgba(255, 255, 255, 0.4); box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+          50% { border-color: rgba(255, 255, 255, 0.8); box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
         }
 
         .profile-card:hover .author-info-avatar {
