@@ -1270,11 +1270,12 @@ body[data-type='post'] #post-comment {
 .card-utility-group {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1rem !important;
+  gap: 1.5rem !important;
+  padding: 20px 24px !important;
 }
 
 .card-utility-separator {
-  margin: 0.5rem 0 !important;
+  margin: 0 !important;
   border: none !important;
   border-top: 1px dashed var(--anzhiyu-theme-op) !important;
   width: 100% !important;
@@ -1287,6 +1288,131 @@ body[data-type='post'] #post-comment {
   border: none !important;
   background: none !important;
   margin-top: 0 !important;
+}
+
+/* Texture: Archives Grid */
+#aside-content .card-archives ul.card-archive-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#aside-content .card-archives .card-archive-list-item {
+  width: 100%;
+  flex: 0 0 48%;
+}
+
+#aside-content .card-archives .card-archive-list-link {
+  border-radius: var(--anzhiyu-border-radius, 8px);
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  border: var(--style-border);
+  padding: 6px 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+#aside-content .card-archives .card-archive-list-link:hover {
+  color: var(--anzhiyu-white);
+  background-color: var(--anzhiyu-theme);
+  border-color: transparent;
+  box-shadow: var(--anzhiyu-shadow-theme);
+}
+
+#aside-content .card-archives .card-archive-list-date {
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+#aside-content .card-archives .card-archive-list-count-group {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+#aside-content .card-archives .card-archive-list-count {
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+/* Texture: Tag Cloud */
+#aside-content .card-tag-cloud {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+#aside-content .card-tag-cloud a {
+  color: var(--anzhiyu-fontcolor);
+  padding: 2px 8px;
+  margin: 4px;
+  border-radius: 8px;
+  border: var(--style-border-always);
+  background: var(--anzhiyu-card-bg);
+  font-size: 14px !important;
+  transition: all 0.3s;
+}
+
+#aside-content .card-tag-cloud a:hover {
+  background: var(--anzhiyu-theme);
+  color: var(--anzhiyu-white) !important;
+  box-shadow: var(--anzhiyu-shadow-theme);
+}
+
+#aside-content .card-tag-cloud a sup {
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+/* Texture: Item Headline Icons */
+.item-headline {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.item-headline .shijianusfont {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* Hover effects for all sidebar widgets */
+#aside-content .card-widget:hover {
+  border-color: var(--anzhiyu-theme);
+  box-shadow: var(--anzhiyu-shadow-theme);
+}
+
+/* Webinfo Link Button */
+.webinfo-link-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--anzhiyu-secondbg);
+  border-radius: 8px;
+  border: var(--style-border);
+  color: var(--anzhiyu-fontcolor);
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 12px;
+  transition: 0.3s;
+}
+
+.webinfo-link-btn:hover {
+  background: var(--anzhiyu-theme);
+  color: var(--anzhiyu-white);
+  border-color: transparent;
+  box-shadow: var(--anzhiyu-shadow-theme);
 }
 
 #aside-content .card-utility-group .item-headline {

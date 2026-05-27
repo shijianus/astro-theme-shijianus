@@ -34,77 +34,52 @@ const stats = {
   <div class="status-page-content">
     <section class="card-widget card-webinfo-full">
       <div class="item-headline">
-        <i class="anzhiyufont anzhiyu-icon-chart-line"></i>
+        <span class="shijianusfont shijianus-icon-circle-info" aria-hidden="true"></span>
         <span>站点状态</span>
       </div>
       
       <div class="webinfo-panel">
-        <div class="workboard-panel webinfo-workboard">
-          <div class="webinfo-workboard__head">
-            <div class="workboard-status">
-              <span class="workboard-dot" aria-hidden="true"></span>
-              <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-              <strong>{siteConfig.footer.runtime.workLabel}</strong>
-            </div>
-            <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-label">建站天数</div>
+            <div class="status-value">{runtimeDays} 天</div>
           </div>
-          <p>{siteConfig.footer.runtime.workDetail}</p>
-          
-          <div class="webinfo-highlight-grid">
-            <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-              <span>站点运行</span>
-              <strong>{runtimeDays} 天</strong>
-              <small>起始于 {startedAtLabel}</small>
-            </article>
-            <article class="webinfo-highlight-card">
-              <span>最近更新</span>
-              <strong>{latestPublishedLabel}</strong>
-              <small>内容仍在持续整理</small>
-            </article>
-            <article class="webinfo-highlight-card">
-              <span>当前阶段</span>
-              <strong>{currentPhase}</strong>
-              <small>优先修正阅读与侧栏体验</small>
-            </article>
+          <div class="status-item">
+            <div class="status-label">文章总数</div>
+            <div class="status-value">{stats.posts} 篇</div>
           </div>
-          
-          <div class="workboard-chip-list">
-            <span>{siteConfig.footer.runtime.workLabel}</span>
-            <span>{siteConfig.site.author.statusLabel}</span>
-            <span>{siteConfig.home.announcement.eyebrow}</span>
+          <div class="status-item">
+            <div class="status-label">全站字数</div>
+            <div class="status-value">{Math.round(stats.totalWords / 1000) / 10}W 字</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">阅读时长</div>
+            <div class="status-value">{stats.readingMinutes} 分钟</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">分类数目</div>
+            <div class="status-value">{stats.categories} 个</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">标签数目</div>
+            <div class="status-value">{stats.tags} 个</div>
           </div>
         </div>
 
-        <div class="webinfo webinfo-grid">
+        <hr class="card-utility-separator" style="margin: 2rem 0 !important;" />
+
+        <div class="status-list">
           <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">文章总数</span>
-            </div>
-            <div class="item-count">{stats.posts}</div>
+            <div class="item-name">最后更新时间 :</div>
+            <div class="item-count">{latestPublishedLabel}</div>
           </div>
           <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">分类总数</span>
-            </div>
-            <div class="item-count">{stats.categories}</div>
+            <div class="item-name">始于 :</div>
+            <div class="item-count">{startedAtLabel}</div>
           </div>
           <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">标签总数</span>
-            </div>
-            <div class="item-count">{stats.tags}</div>
-          </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">全站字数</span>
-            </div>
-            <div class="item-count">{stats.totalWords}</div>
-          </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <span class="item-name">阅读总量</span>
-            </div>
-            <div class="item-count">{stats.readingMinutes} 分钟</div>
+            <div class="item-name">当前阶段 :</div>
+            <div class="item-count">{currentPhase}</div>
           </div>
         </div>
       </div>
@@ -112,7 +87,7 @@ const stats = {
 
     <section class="card-widget status-details">
       <div class="item-headline">
-        <i class="anzhiyufont anzhiyu-icon-info-circle"></i>
+        <span class="shijianusfont shijianus-icon-box-archive" aria-hidden="true"></span>
         <span>运行详情</span>
       </div>
       <div class="status-notes">
@@ -132,31 +107,101 @@ const stats = {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 2rem 0;
   }
   
   .card-webinfo-full {
-    padding: 2rem !important;
+    background: var(--anzhiyu-card-bg);
+    border: var(--style-border-always);
+    box-shadow: var(--anzhiyu-shadow-border);
+    border-radius: 12px;
+    padding: 2rem 2.5rem !important;
   }
   
-  .webinfo-panel {
-    margin-top: 1.5rem;
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .status-label {
+    font-size: 13px;
+    color: var(--anzhiyu-secondtext);
+  }
+  
+  .status-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--anzhiyu-fontcolor);
+    line-height: 1;
+  }
+  
+  .status-list {
+    margin-top: 1rem;
+  }
+  
+  .webinfo-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--anzhiyu-theme-op);
+  }
+  
+  .webinfo-item:last-child {
+    border-bottom: none;
+  }
+  
+  .item-name {
+    color: var(--anzhiyu-secondtext);
+  }
+  
+  .item-count {
+    font-weight: 700;
+    color: var(--anzhiyu-fontcolor);
+  }
+  
+  .item-headline {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .item-headline .shijianusfont {
+    margin-right: 10px;
+    font-size: 1.4rem;
   }
   
   .status-notes {
-    margin-top: 1rem;
-    line-height: 1.6;
+    margin-top: 0;
+    line-height: 1.8;
     color: var(--anzhiyu-secondtext);
   }
   
   .status-notes ul {
-    margin-top: 0.5rem;
+    margin-top: 0.8rem;
     padding-left: 1.5rem;
   }
   
   .status-notes li {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .status-details {
+    padding: 2rem 2.5rem !important;
+    background: var(--anzhiyu-card-bg);
+    border: var(--style-border-always);
+    box-shadow: var(--anzhiyu-shadow-border);
+    border-radius: 12px;
   }
 </style>

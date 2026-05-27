@@ -1,5 +1,4 @@
 ---
-import { Archive, FolderOpen, ListTree, Megaphone, Tags } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import {
   getCategoryPath,
@@ -149,7 +148,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
   {showAnnouncement && (
     <section class="card-widget card-announcement">
       <div class="item-headline">
-        <Megaphone className="aside-title-icon" aria-hidden="true" />
+        <span class="shijianusfont shijianus-icon-bell" aria-hidden="true"></span>
         <span>公告</span>
       </div>
       <div class="announcement_content">
@@ -165,7 +164,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
   {showCategories && (
     <section class="card-widget card-categories">
       <div class="item-headline">
-        <FolderOpen className="aside-title-icon" aria-hidden="true" />
+        <span class="shijianusfont shijianus-icon-house-chimney" aria-hidden="true"></span>
         <span>分类</span>
       </div>
       <ul class="card-category-list">
@@ -188,7 +187,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
     <div class="sticky_layout sticky_layout--toc">
       <section class="card-widget" id="card-toc">
         <div class="item-headline">
-          <ListTree className="aside-title-icon" aria-hidden="true" />
+          <span class="shijianusfont shijianus-icon-box-archive" aria-hidden="true"></span>
           <span>文章目录</span>
           <span class="toc-count">{tocHeadings.length} 节</span>
           <span class="toc-percentage"></span>
@@ -227,32 +226,11 @@ const renderTocNodes = (headings: TocHeading[]) =>
             </div>
 
             <div class="webinfo-panel">
-              {isHomePage && featurePanelRecentPosts.length > 0 && (
-                <div class="feature-panel-recent">
-                  <div class="item-headline item-headline--embedded">
-                    <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                    <span>最新发布</span>
-                  </div>
-                  <div class="aside-list">
-                    {featurePanelRecentPosts.map((entry) => (
-                      <a href={getPostPath(entry)} class="aside-list-item">
-                        <span class="thumbnail">
-                          <img
-                            src={resolveDisplayCover(entry, true)}
-                            alt={getDisplayPostTitle(entry, true)}
-                            loading="lazy"
-                            data-fallback-src={siteConfig.post.hero.fallbackImage}
-                          />
-                        </span>
-                        <span class="content">
-                          <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                          <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <a href="/status/" class="webinfo-link-btn">
+                <span class="shijianusfont shijianus-icon-circle-info" aria-hidden="true"></span>
+                <span>本站资讯</span>
+                <span class="shijianusfont shijianus-icon-arrow-up" style="transform: rotate(90deg); margin-left: auto;"></span>
+              </a>
             </div>
           </div>
         </section>
@@ -261,8 +239,8 @@ const renderTocNodes = (headings: TocHeading[]) =>
       {showRecentPosts && (
         <section class="card-widget card-recent-post">
           <div class="item-headline">
-            <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-            <span>最新发布</span>
+            <span class="shijianusfont shijianus-icon-dice" aria-hidden="true"></span>
+            <span>最近发布</span>
           </div>
           <div class="aside-list">
             {recentPostEntries.slice(0, 6).map((entry) => (
@@ -290,7 +268,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
           {showTags && (
             <div class="card-tags">
               <div class="item-headline">
-                <Tags className="aside-title-icon" aria-hidden="true" />
+                <span class="shijianusfont shijianus-icon-tags" aria-hidden="true"></span>
                 <span>标签</span>
               </div>
               <div class="card-tag-cloud">
@@ -309,7 +287,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
           {showArchives && (
             <div class="card-archives">
               <div class="item-headline">
-                <Archive className="aside-title-icon" aria-hidden="true" />
+                <span class="shijianusfont shijianus-icon-box-archive" aria-hidden="true"></span>
                 <span>归档</span>
               </div>
               <ul class="card-archive-list">
@@ -340,28 +318,28 @@ const renderTocNodes = (headings: TocHeading[]) =>
     <div class="sticky_layout sticky_layout--recent">
       <section class="card-widget card-recent-post">
         <div class="item-headline">
-          <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-          <span>最新发布</span>
+          <span class="shijianusfont shijianus-icon-dice" aria-hidden="true"></span>
+          <span>最近发布</span>
         </div>
-        <div class="aside-list">
-          {recentPostEntries.slice(0, 6).map((entry) => (
-            <a href={getPostPath(entry)} class="aside-list-item">
-              <span class="thumbnail">
-                <img
-                  src={resolveDisplayCover(entry, true)}
-                  alt={getDisplayPostTitle(entry, true)}
-                  loading="lazy"
-                  data-fallback-src={siteConfig.post.hero.fallbackImage}
-                />
-              </span>
-              <span class="content">
-                <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
+          <div class="aside-list">
+            {recentPostEntries.slice(0, 6).map((entry) => (
+              <a href={getPostPath(entry)} class="aside-list-item">
+                <span class="thumbnail">
+                  <img
+                    src={resolveDisplayCover(entry, true)}
+                    alt={getDisplayPostTitle(entry, true)}
+                    loading="lazy"
+                    data-fallback-src={siteConfig.post.hero.fallbackImage}
+                  />
+                </span>
+                <span class="content">
+                  <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                  <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
     </div>
   )}
 </div>
