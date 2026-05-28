@@ -81,8 +81,8 @@ const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtil
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !showPostAsideFeed;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !showPostAsideFeed;
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
 const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
 const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
@@ -97,6 +97,13 @@ const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.au
 const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
 const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
+
+const weightedTags = tags.slice(0, 24).map((tag, index) => {
+  // Use a simple weighting based on count relative to max count for visual variety
+  const maxCount = Math.max(...tags.map(t => t.count));
+  const weight = tag.count / maxCount;
+  return { ...tag, weight };
+});
 
 const escapeHtml = (value: string) =>
   value
@@ -245,14 +252,14 @@ const renderTocNodes = (headings: TocHeading[]) =>
                     <small>起始于 {startedAtLabel}</small>
                   </article>
                   <article class="webinfo-highlight-card">
-                    <span>最近更新</span>
-                    <strong>{latestPublishedLabel}</strong>
-                    <small>内容仍在持续整理</small>
+                    <span>文章总数</span>
+                    <strong>{totalPosts} 篇</strong>
+                    <small>最近更新 {latestPublishedLabel}</small>
                   </article>
                   <article class="webinfo-highlight-card">
-                    <span>当前阶段</span>
-                    <strong>{currentPhase}</strong>
-                    <small>优先修正阅读与侧栏体验</small>
+                    <span>分类总数</span>
+                    <strong>{totalCategories} 个</strong>
+                    <small>当前阶段 {currentPhase}</small>
                   </article>
                 </div>
                 <div class="workboard-chip-list">
@@ -263,18 +270,6 @@ const renderTocNodes = (headings: TocHeading[]) =>
               </div>
 
               <div class="webinfo webinfo-grid">
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">文章总数</span>
-                  </div>
-                  <div class="item-count">{totalPosts}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">分类总数</span>
-                  </div>
-                  <div class="item-count">{totalCategories}</div>
-                </div>
                 <div class="webinfo-item">
                   <div class="webinfo-item-title">
                     <span class="item-name">标签总数</span>
@@ -354,12 +349,23 @@ const renderTocNodes = (headings: TocHeading[]) =>
             <span>标签</span>
           </div>
           <div class="card-tag-cloud">
-            {tags.slice(0, 24).map((tag) => (
-              <a href={getTagPath(tag.slug)}>
-                {tag.label}
-                <sup>{tag.count}</sup>
-              </a>
-            ))}
+            {weightedTags.map((tag) => {
+              const fontSize = 0.85 + tag.weight * 0.45;
+              const opacity = 0.65 + tag.weight * 0.35;
+              return (
+                <a 
+                  href={getTagPath(tag.slug)} 
+                  style={{ 
+                    fontSize: `${fontSize}rem`,
+                    opacity: opacity,
+                    fontWeight: tag.weight > 0.6 ? 700 : 500
+                  }}
+                >
+                  {tag.label}
+                  <sup>{tag.count}</sup>
+                </a>
+              );
+            })}
           </div>
         </section>
       )}
