@@ -1,7 +1,11 @@
 ---
 import { Archive, FolderOpen, Info, ListTree, Megaphone, Tags } from 'lucide-react';
+import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import {
+  collectArchives,
+  collectTags,
+  estimateWordCount,
   getCategoryPath,
   getDisplayPostTitle,
   getPostPath,
@@ -38,6 +42,39 @@ const {
   pageType = 'page',
   asideId = 'aside-content',
 } = Astro.props;
+
+// Fetch real data for widgets
+const allPosts = await getCollection('posts');
+const publicPosts = allPosts.filter((p) => !p.data.draft);
+const sortedPosts = publicPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const realTotalPosts = sortedPosts.length;
+const realTotalWords = sortedPosts.reduce((acc, post) => acc + estimateWordCount(post), 0);
+const realTotalWordsK = (realTotalWords / 1000).toFixed(1);
+
+const realTags = collectTags(sortedPosts, { includeProtected: true });
+const realArchives = collectArchives(sortedPosts, { includeProtected: true });
+
+const siteStartDate = new Date('2021-03-31T16:00:00.000Z');
+const realRuntimeDays = Math.max(
+  1,
+  Math.floor((Date.now() - siteStartDate.getTime()) / 86_400_000),
+);
+
+const monthNames = [
+  '一月',
+  '二月',
+  '三月',
+  '四月',
+  '五月',
+  '六月',
+  '七月',
+  '八月',
+  '九月',
+  '十月',
+  '十一月',
+  '十二月',
+];
 
 const isPostPage = pageType === 'post';
 const isPostTocPage = pageType === 'post-toc';
@@ -349,108 +386,73 @@ const renderTocNodes = (headings: TocHeading[]) =>
 
       {showTags && (
         <section class="card-widget card-tags">
-          <div class="item-headline">
-            <Tags className="aside-title-icon" aria-hidden="true" />
-            <span>标签</span>
-          </div>
+          <div class="item-headline" />
           <div class="card-tag-cloud">
-            {tags.slice(0, 24).map((tag) => (
-              <a href={getTagPath(tag.slug)}>
-                {tag.label}
-                <sup>{tag.count}</sup>
+            {realTags.slice(0, 24).map((tag) => (
+              <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.9 + tag.count * 0.05)}rem;`}>
+                {tag.label}<sup>{tag.count}</sup>
               </a>
             ))}
           </div>
         </section>
+        <hr />
       )}
 
       {showArchives && (
         <section class="card-widget card-archives">
           <div class="item-headline">
-            <Archive className="aside-title-icon" aria-hidden="true" />
-            <span>归档</span>
+            <i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span>
+            <a class="card-more-btn" href="/archives/" title="查看更多">
+              <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
+            </a>
           </div>
           <ul class="card-archive-list">
-            {archives.slice(0, 8).map((item) => (
+            {realArchives.slice(0, 8).map((item) => (
               <li class="card-archive-list-item">
-                <a class="card-archive-list-link" href="/archives/">
-                  <span class="card-archive-list-date">{item.label}</span>
-                  <span class="card-archive-list-count-group">
+                <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
+                  <span class="card-archive-list-date">
+                    {monthNames[item.month - 1]} {item.year}
+                  </span>
+                  <div class="card-archive-list-count-group">
                     <span class="card-archive-list-count">{item.count}</span>
                     <span>篇</span>
-                  </span>
+                  </div>
                 </a>
               </li>
             ))}
           </ul>
         </section>
+        <hr />
       )}
 
       {showWebInfo && (
         <section class="card-widget card-webinfo">
           <div class="item-headline">
-            <Info className="aside-title-icon" aria-hidden="true" />
-            <span>站点信息</span>
+            <i class="anzhiyufont anzhiyu-icon-chart-line"></i><span>网站资讯</span>
           </div>
-          <div class="webinfo-panel">
-            <div class="workboard-panel webinfo-workboard">
-              <div class="webinfo-workboard__head">
-                <div class="workboard-status">
-                  <span class="workboard-dot" aria-hidden="true"></span>
-                  <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                  <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                </div>
-                <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+          <div class="webinfo">
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
+                <div class="item-name">文章总数 :</div>
               </div>
-              <p>{siteConfig.footer.runtime.workDetail}</p>
-              <div class="webinfo-highlight-grid">
-                <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                  <span>站点运行</span>
-                  <strong>{runtimeDays} 天</strong>
-                  <small>起始于 {startedAtLabel}</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>最近更新</span>
-                  <strong>{latestPublishedLabel}</strong>
-                  <small>内容仍在持续整理</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>当前阶段</span>
-                  <strong>{currentPhase}</strong>
-                  <small>优先修正阅读与侧栏体验</small>
-                </article>
+              <div class="item-count">{realTotalPosts}</div>
+            </div>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
+                <div class="item-name">建站天数 :</div>
               </div>
-              <div class="workboard-chip-list">
-                <span>{siteConfig.footer.runtime.workLabel}</span>
-                <span>{siteConfig.site.author.statusLabel}</span>
-                <span>{siteConfig.home.announcement.eyebrow}</span>
+              <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
+                {realRuntimeDays} 天
               </div>
             </div>
-            <div class="webinfo webinfo-grid">
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">文章总数</span>
-                </div>
-                <div class="item-count">{totalPosts}</div>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-font"></i>
+                <div class="item-name">全站字数 :</div>
               </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">分类总数</span>
-                </div>
-                <div class="item-count">{totalCategories}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">标签总数</span>
-                </div>
-                <div class="item-count">{totalTags}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">阅读时长</span>
-                </div>
-                <div class="item-count">{totalReadingMinutes} 分钟</div>
-              </div>
+              <div class="item-count">{realTotalWordsK}k</div>
             </div>
           </div>
         </section>
