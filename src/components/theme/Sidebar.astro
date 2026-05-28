@@ -229,10 +229,10 @@ const renderTocNodes = (headings: TocHeading[]) =>
     </div>
   )}
 
-  {showStickyUtilityLayout && !isPostSecondaryPage && !isPostTocPage && (
+  {(!isPostTocPage && !isPostSecondaryPage) && (
     <div class="sticky_layout sticky_layout--utility">
       {showHomeOverview && (
-        <section class="card-widget card-feature-panel card-feature-panel--overview">
+        <section class="card-widget card-feature-panel card-feature-panel--overview is-sticky-active">
           <div class="card-content">
             <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
             <h3>{siteConfig.aside.featureCard.title}</h3>
@@ -336,104 +336,97 @@ const renderTocNodes = (headings: TocHeading[]) =>
         </section>
       )}
 
-      {showRecentPosts && (
-        <section class="card-widget card-recent-post">
-          <div class="item-headline">
-            <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-            <span>最新发布</span>
-          </div>
-          <div class="aside-list">
-            {recentPostEntries.slice(0, 6).map((entry) => (
-              <a href={getPostPath(entry)} class="aside-list-item">
-                <span class="thumbnail">
-                  <img
-                    src={resolveDisplayCover(entry, true)}
-                    alt={getDisplayPostTitle(entry, true)}
-                    loading="lazy"
-                    data-fallback-src={siteConfig.post.hero.fallbackImage}
-                  />
-                </span>
-                <span class="content">
-                  <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                  <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
+      <section class="card-widget card-tags">
+        <div class="item-headline"></div>
+        <div class="card-tag-cloud">
+          {realTags.slice(0, 40).map((tag) => (
+            <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
+              {tag.label}<sup>{tag.count}</sup>
+            </a>
+          ))}
+        </div>
+      </section>
+      <hr />
 
-      {showTags && (
+      <section class="card-widget card-archives">
+        <div class="item-headline">
+          <i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span>
+          <a class="card-more-btn" href="/archives/" title="查看更多">
+            <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
+          </a>
+        </div>
+        <ul class="card-archive-list">
+          {realArchives.slice(0, 8).map((item) => (
+            <li class="card-archive-list-item">
+              <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
+                <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
+                <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <hr />
+
+      <section class="card-widget card-webinfo">
+        <div class="item-headline">
+          <i class="anzhiyufont anzhiyu-icon-chart-line"></i><span>网站资讯</span>
+        </div>
+        <div class="webinfo">
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
+              <div class="item-name">文章总数 :</div>
+            </div>
+            <div class="item-count">{realTotalPosts}</div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
+              <div class="item-name">建站天数 :</div>
+            </div>
+            <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
+              {realRuntimeDays} 天
+            </div>
+          </div>
+          <div class="webinfo-item">
+            <div class="webinfo-item-title">
+              <i class="anzhiyufont anzhiyu-icon-font"></i>
+              <div class="item-name">全站字数 :</div>
+            </div>
+            <div class="item-count">{realTotalWordsK}k</div>
+          </div>
+        </div>
+      </section>
+
+      {showRecentPosts && (
         <>
-          <section class="card-widget card-tags">
-            <div class="item-headline"></div>
-            <div class="card-tag-cloud">
-              {realTags.slice(0, 40).map((tag) => (
-                <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
-                  {tag.label}<sup>{tag.count}</sup>
+          <hr />
+          <section class="card-widget card-recent-post">
+            <div class="item-headline">
+              <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+              <span>最新发布</span>
+            </div>
+            <div class="aside-list">
+              {recentPostEntries.slice(0, 6).map((entry) => (
+                <a href={getPostPath(entry)} class="aside-list-item">
+                  <span class="thumbnail">
+                    <img
+                      src={resolveDisplayCover(entry, true)}
+                      alt={getDisplayPostTitle(entry, true)}
+                      loading="lazy"
+                      data-fallback-src={siteConfig.post.hero.fallbackImage}
+                    />
+                  </span>
+                  <span class="content">
+                    <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                    <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                  </span>
                 </a>
               ))}
             </div>
           </section>
-          <hr />
         </>
-      )}
-
-      {showArchives && (
-        <>
-          <section class="card-widget card-archives">
-            <div class="item-headline">
-              <i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span>
-              <a class="card-more-btn" href="/archives/" title="查看更多">
-                <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
-              </a>
-            </div>
-            <ul class="card-archive-list">
-              {realArchives.slice(0, 8).map((item) => (
-                <li class="card-archive-list-item">
-                  <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
-                    <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
-                    <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-          <hr />
-        </>
-      )}
-
-      {showWebInfo && (
-        <section class="card-widget card-webinfo">
-          <div class="item-headline">
-            <i class="anzhiyufont anzhiyu-icon-chart-line"></i><span>网站资讯</span>
-          </div>
-          <div class="webinfo">
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
-                <div class="item-name">文章总数 :</div>
-              </div>
-              <div class="item-count">{realTotalPosts}</div>
-            </div>
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
-                <div class="item-name">建站天数 :</div>
-              </div>
-              <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
-                {realRuntimeDays} 天
-              </div>
-            </div>
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-font"></i>
-                <div class="item-name">全站字数 :</div>
-              </div>
-              <div class="item-count">{realTotalWordsK}k</div>
-            </div>
-          </div>
-        </section>
       )}
     </div>
   )}
