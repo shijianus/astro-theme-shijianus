@@ -55,6 +55,12 @@ const realRuntimeDays = Math.max(
   Math.floor((Date.now() - new Date('2021-03-31T16:00:00.000Z').valueOf()) / 86_400_000),
 );
 
+console.log("=== Sidebar Data Debug ===", {
+  tagsCount: realTags?.length || 0,
+  archivesCount: realArchives?.length || 0,
+  posts: realTotalPosts || 0
+});
+
 const isPostPage = pageType === 'post';
 const isPostTocPage = pageType === 'post-toc';
 const isPostSecondaryPage = pageType === 'post-secondary';
@@ -464,3 +470,17 @@ const renderTocNodes = (headings: TocHeading[]) =>
     </div>
   )}
 </div>
+
+<style is:global>
+#aside-content .sticky_layout--utility .card-widget.card-tags,
+#aside-content .sticky_layout--utility .card-widget.card-archives,
+#aside-content .sticky_layout--utility .card-widget.card-webinfo {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    position: relative !important;
+    margin-top: 1rem !important;
+    pointer-events: auto !important;
+}
+</style>
