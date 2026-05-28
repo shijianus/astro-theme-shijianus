@@ -118,20 +118,17 @@ const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtil
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
-const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
+const showTags = siteConfig.theme.features.asideTags && realTags.length > 0;
+const showArchives = siteConfig.theme.features.asideArchives && realArchives.length > 0;
+const showWebInfo = siteConfig.theme.features.asideWebInfo;
 const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
 const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
 const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
-const runtimeDays = Math.max(
-  1,
-  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
-);
-const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN').replaceAll('/', '.');
+const runtimeDays = realRuntimeDays;
+const startedAtLabel = siteStartDate.toLocaleDateString('zh-CN').replaceAll('/', '.');
 const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
-const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
+const latestPublishedAt = sortedPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
 const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
 
@@ -250,8 +247,8 @@ const renderTocNodes = (headings: TocHeading[]) =>
     </div>
   )}
 
-  {showStickyUtilityLayout && !isPostSecondaryPage && !isPostTocPage && (
-    <div class="sticky_layout sticky_layout--utility">
+  {showStickyUtilityLayout && !isPostTocPage && (
+    <div class:list={['sticky_layout', isPostSecondaryPage ? 'sticky_layout--recent' : 'sticky_layout--utility']}>
       {showHomeOverview && (
         <section class="card-widget card-feature-panel card-feature-panel--overview">
           <div class="card-content">
@@ -464,32 +461,5 @@ const renderTocNodes = (headings: TocHeading[]) =>
     <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
   )}
 
-  {isPostSecondaryPage && showRecentPosts && (
-    <div class="sticky_layout sticky_layout--recent">
-      <section class="card-widget card-recent-post">
-        <div class="item-headline">
-          <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-          <span>最新发布</span>
-        </div>
-        <div class="aside-list">
-          {recentPostEntries.slice(0, 6).map((entry) => (
-            <a href={getPostPath(entry)} class="aside-list-item">
-              <span class="thumbnail">
-                <img
-                  src={resolveDisplayCover(entry, true)}
-                  alt={getDisplayPostTitle(entry, true)}
-                  loading="lazy"
-                  data-fallback-src={siteConfig.post.hero.fallbackImage}
-                />
-              </span>
-              <span class="content">
-                <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
-    </div>
-  )}
+
 </div>
