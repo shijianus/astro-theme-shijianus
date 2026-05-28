@@ -386,75 +386,58 @@ const renderTocNodes = (headings: TocHeading[]) =>
         </section>
       )}
 
-      {showWebInfo && (
-        <section class="card-widget card-webinfo">
-          <div class="item-headline">
-            <Info className="aside-title-icon" aria-hidden="true" />
-            <span>站点信息</span>
-          </div>
-          <div class="webinfo-panel">
-            <div class="workboard-panel webinfo-workboard">
-              <div class="webinfo-workboard__head">
-                <div class="workboard-status">
-                  <span class="workboard-dot" aria-hidden="true"></span>
-                  <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                  <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                </div>
-                <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-              </div>
-              <p>{siteConfig.footer.runtime.workDetail}</p>
-              <div class="webinfo-highlight-grid">
-                <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                  <span>站点运行</span>
-                  <strong>{runtimeDays} 天</strong>
-                  <small>起始于 {startedAtLabel}</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>最近更新</span>
-                  <strong>{latestPublishedLabel}</strong>
-                  <small>内容仍在持续整理</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>当前阶段</span>
-                  <strong>{currentPhase}</strong>
-                  <small>优先修正阅读与侧栏体验</small>
-                </article>
-              </div>
-              <div class="workboard-chip-list">
-                <span>{siteConfig.footer.runtime.workLabel}</span>
-                <span>{siteConfig.site.author.statusLabel}</span>
-                <span>{siteConfig.home.announcement.eyebrow}</span>
-              </div>
+  {showWebInfo && (
+    <section class="card-widget card-webinfo anzhiyu-gradient-card">
+      <div class="item-headline">
+        <Info className="aside-title-icon" aria-hidden="true" />
+        <span>站点信息</span>
+      </div>
+      <div class="webinfo-panel">
+        <div class="workboard-panel webinfo-workboard">
+          <div class="webinfo-workboard__head">
+            <div class="workboard-status">
+              <span class="workboard-dot" aria-hidden="true"></span>
+              <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+              <strong>{siteConfig.footer.runtime.workLabel}</strong>
             </div>
-            <div class="webinfo webinfo-grid">
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">文章总数</span>
-                </div>
-                <div class="item-count">{totalPosts}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">分类总数</span>
-                </div>
-                <div class="item-count">{totalCategories}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">标签总数</span>
-                </div>
-                <div class="item-count">{totalTags}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">阅读时长</span>
-                </div>
-                <div class="item-count">{totalReadingMinutes} 分钟</div>
-              </div>
-            </div>
+            <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
           </div>
-        </section>
-      )}
+          <div class="webinfo-highlight-grid">
+            <article class="webinfo-highlight-card webinfo-highlight-card--primary">
+              <div class="highlight-item-label">站点运行</div>
+              <div class="highlight-item-value">{runtimeDays} 天</div>
+              <div class="highlight-item-footer">起始于 {startedAtLabel}</div>
+            </article>
+            <article class="webinfo-highlight-card">
+              <div class="highlight-item-label">文章总数</div>
+              <div class="highlight-item-value">{totalPosts}</div>
+              <div class="highlight-item-footer">篇</div>
+            </article>
+            <article class="webinfo-highlight-card">
+              <div class="highlight-item-label">分类总数</div>
+              <div class="highlight-item-value">{totalCategories}</div>
+              <div class="highlight-item-footer">个</div>
+            </article>
+          </div>
+          <div class="workboard-chip-list">
+            <span>{siteConfig.footer.runtime.workLabel}</span>
+            <span>{siteConfig.site.author.statusLabel}</span>
+            <span>{siteConfig.home.announcement.eyebrow}</span>
+          </div>
+        </div>
+        <div class="webinfo-grid-simple">
+          <div class="webinfo-item">
+            <span class="item-name">标签总数 :</span>
+            <span class="item-count">{totalTags}</span>
+          </div>
+          <div class="webinfo-item">
+            <span class="item-name">阅读总量 :</span>
+            <span class="item-count">{totalReadingMinutes} 分钟</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
     </div>
   )}
 

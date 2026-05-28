@@ -1,0 +1,113 @@
+/* Anzhiyu Aside Gradient Card Styles */
+.anzhiyu-gradient-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--anzhiyu-card-bg, #fff);
+  border: none !important;
+  box-shadow: var(--anzhiyu-shadow-black, 0 0 12px 4px rgba(0, 0, 0, 0.05)) !important;
+}
+
+.anzhiyu-gradient-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(-25deg, #18c58f, #4584ff, #18c58f, #4584ff);
+  background-size: 400%;
+  z-index: 0;
+  opacity: 0.9;
+  animation: anzhiyu-gradient-pan 15s ease infinite;
+}
+
+@keyframes anzhiyu-gradient-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.anzhiyu-gradient-card .card-content,
+.anzhiyu-gradient-card .item-headline,
+.anzhiyu-gradient-card .webinfo-panel {
+  position: relative;
+  z-index: 1;
+  color: #fff !important;
+}
+
+.anzhiyu-gradient-card .item-headline {
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+}
+
+.anzhiyu-gradient-card .aside-title-icon {
+  color: #fff !important;
+}
+
+.anzhiyu-gradient-card .workboard-status strong,
+.anzhiyu-gradient-card .webinfo-workboard__since,
+.anzhiyu-gradient-card .webinfo-highlight-card span,
+.anzhiyu-gradient-card .webinfo-highlight-card strong,
+.anzhiyu-gradient-card .webinfo-highlight-card small {
+  color: #fff !important;
+}
+
+.anzhiyu-gradient-card .webinfo-highlight-card {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  padding: 10px;
+}
+
+.anzhiyu-gradient-card .highlight-item-label {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.anzhiyu-gradient-card .highlight-item-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 2px 0;
+}
+
+.anzhiyu-gradient-card .highlight-item-footer {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.anzhiyu-gradient-card .workboard-chip-list span {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.anzhiyu-gradient-card .webinfo-grid-simple {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.anzhiyu-gradient-card .webinfo-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 0 5px;
+}
+
+.anzhiyu-gradient-card .item-count {
+  font-weight: 700;
+}
+
+/* Sticky Layout Enhancements */
+.sticky_layout {
+  position: sticky;
+  top: 80px; /* Offset for header */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-aside__sticky {
+  height: 100%;
+}
