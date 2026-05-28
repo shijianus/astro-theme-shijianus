@@ -1,29 +1,23 @@
 ---
-import { Archive, FolderOpen, Info, ListTree, Megaphone, Tags } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import {
-  getCategoryPath,
   getDisplayPostTitle,
   getPostPath,
-  getTagPath,
   resolveDisplayCover,
 } from '../../lib/content';
 import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
 import PromoWidgetCard from './PromoWidgetCard.astro';
+import AnzhiyuCardStats from './AnzhiyuCardStats.astro';
+import AnzhiyuCardCategories from './AnzhiyuCardCategories.astro';
+import AnzhiyuCardTags from './AnzhiyuCardTags.astro';
+import AnzhiyuCardArchives from './AnzhiyuCardArchives.astro';
+import AnzhiyuCardWebInfo from './AnzhiyuCardWebInfo.astro';
 
 interface Props extends SidebarData {
   pageType?: string;
   asideId?: string;
 }
-
-type TocHeading = Props['headings'][number];
-type TocNode = {
-  heading: TocHeading;
-  index: number;
-  level: number;
-  children: TocNode[];
-};
 
 const {
   recentPosts,
@@ -34,6 +28,7 @@ const {
   totalCategories,
   totalTags,
   totalReadingMinutes,
+  totalWords,
   headings = [],
   pageType = 'page',
   asideId = 'aside-content',
@@ -42,61 +37,26 @@ const {
 const isPostPage = pageType === 'post';
 const isPostTocPage = pageType === 'post-toc';
 const isPostSecondaryPage = pageType === 'post-secondary';
-const isAnyPostPage = isPostPage || isPostTocPage || isPostSecondaryPage;
 const isHomePage = pageType === 'home';
 const utilityOnlyPageTypes = new Set(['home', 'page']);
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
 const recentPostEntries = recentPosts;
-const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
-const tocTree = (() => {
-  const roots: TocNode[] = [];
-  const stack: TocNode[] = [];
 
-  tocHeadings.forEach((heading, index) => {
-    const node: TocNode = {
-      heading,
-      index,
-      level: Math.max(0, heading.depth - tocBaseDepth),
-      children: [],
-    };
-
-    while (stack.length > 0 && stack[stack.length - 1]!.heading.depth >= heading.depth) {
-      stack.pop();
-    }
-
-    if (stack.length === 0) {
-      roots.push(node);
-    } else {
-      stack[stack.length - 1]!.children.push(node);
-    }
-
-    stack.push(node);
-  });
-
-  return roots;
-})();
 const showUtilityAside = utilityOnlyPageTypes.has(pageType);
-const showPostAsideFeed = isPostSecondaryPage;
 const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtilityAside || isPostSecondaryPage);
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage;
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
 const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
 const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
 const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
-const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
-const runtimeDays = Math.max(
-  1,
-  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
-);
-const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN').replaceAll('/', '.');
-const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
+const showStickyUtilityLayout = showRecentPosts || showTags || showArchives || showWebInfo;
+
 const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
-const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
 
 const escapeHtml = (value: string) =>
   value
@@ -106,11 +66,11 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
-const renderTocNodes = (headings: TocHeading[]) =>
+const renderTocNodes = (headings: any[]) =>
   headings
     .map((heading, index) => {
       const indexLabel = String(index + 1).padStart(2, '0');
-      const level = Math.max(0, heading.depth - tocBaseDepth);
+      const level = Math.max(0, heading.depth - 2);
       return `
         <li class="toc-item" style="--toc-level:${level};">
           <a href="#${escapeHtml(heading.slug)}" class="toc-link" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
@@ -150,7 +110,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
   {showAnnouncement && (
     <section class="card-widget card-announcement">
       <div class="item-headline">
-        <Megaphone className="aside-title-icon" aria-hidden="true" />
+        <i class="anzhiyufont anzhiyu-icon-megaphone" aria-hidden="true"></i>
         <span>公告</span>
       </div>
       <div class="announcement_content">
@@ -164,32 +124,14 @@ const renderTocNodes = (headings: TocHeading[]) =>
   )}
 
   {showCategories && (
-    <section class="card-widget card-categories">
-      <div class="item-headline">
-        <FolderOpen className="aside-title-icon" aria-hidden="true" />
-        <span>分类</span>
-      </div>
-      <ul class="card-category-list">
-        {categories.slice(0, 8).map((item) => (
-          <li class="card-category-list-item">
-            <a class="card-category-list-link" href={getCategoryPath(item.slug)}>
-              <span class="card-category-list-name">{item.label}</span>
-              <span class="card-category-list-count-group">
-                <span class="card-category-list-count">{item.count}</span>
-                <span>篇</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <AnzhiyuCardCategories categories={categories} />
   )}
 
   {showToc && (
     <div class="sticky_layout sticky_layout--toc">
       <section class="card-widget" id="card-toc">
         <div class="item-headline">
-          <ListTree className="aside-title-icon" aria-hidden="true" />
+          <i class="anzhiyufont anzhiyu-icon-list-ul" aria-hidden="true"></i>
           <span>文章目录</span>
           <span class="toc-count">{tocHeadings.length} 节</span>
           <span class="toc-percentage"></span>
@@ -213,257 +155,18 @@ const renderTocNodes = (headings: TocHeading[]) =>
     </div>
   )}
 
-  {showStickyUtilityLayout && !isPostSecondaryPage && !isPostTocPage && (
-    <div class="sticky_layout sticky_layout--utility">
-      {showHomeOverview && (
-        <section class="card-widget card-feature-panel card-feature-panel--overview">
-          <div class="card-content">
-            <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
-            <h3>{siteConfig.aside.featureCard.title}</h3>
-            <p>{siteConfig.aside.featureCard.summary}</p>
-            <div class="feature-card__chips">
-              {siteConfig.aside.featureCard.chips.map((item) => (
-                <span>{item}</span>
-              ))}
-            </div>
+  <div class="sticky_layout sticky_layout--utility">
+    {showHomeOverview && (
+      <AnzhiyuCardStats
+        totalPosts={totalPosts}
+        totalCategories={totalCategories}
+        totalTags={totalTags}
+        totalReadingMinutes={totalReadingMinutes}
+        latestPublishedLabel={latestPublishedLabel}
+      />
+    )}
 
-            <div class="webinfo-panel">
-              <div class="workboard-panel webinfo-workboard">
-                <div class="webinfo-workboard__head">
-                  <div class="workboard-status">
-                    <span class="workboard-dot" aria-hidden="true"></span>
-                    <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                    <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                  </div>
-                  <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-                </div>
-                <p>{siteConfig.footer.runtime.workDetail}</p>
-                <div class="webinfo-highlight-grid">
-                  <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                    <span>站点运行</span>
-                    <strong>{runtimeDays} 天</strong>
-                    <small>起始于 {startedAtLabel}</small>
-                  </article>
-                  <article class="webinfo-highlight-card">
-                    <span>最近更新</span>
-                    <strong>{latestPublishedLabel}</strong>
-                    <small>内容仍在持续整理</small>
-                  </article>
-                  <article class="webinfo-highlight-card">
-                    <span>当前阶段</span>
-                    <strong>{currentPhase}</strong>
-                    <small>优先修正阅读与侧栏体验</small>
-                  </article>
-                </div>
-                <div class="workboard-chip-list">
-                  <span>{siteConfig.footer.runtime.workLabel}</span>
-                  <span>{siteConfig.site.author.statusLabel}</span>
-                  <span>{siteConfig.home.announcement.eyebrow}</span>
-                </div>
-              </div>
-
-              <div class="webinfo webinfo-grid">
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">文章总数</span>
-                  </div>
-                  <div class="item-count">{totalPosts}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">分类总数</span>
-                  </div>
-                  <div class="item-count">{totalCategories}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">标签总数</span>
-                  </div>
-                  <div class="item-count">{totalTags}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">阅读总量</span>
-                  </div>
-                  <div class="item-count">{totalReadingMinutes} 分钟</div>
-                </div>
-              </div>
-
-              {isHomePage && featurePanelRecentPosts.length > 0 && (
-                <div class="feature-panel-recent">
-                  <div class="item-headline item-headline--embedded">
-                    <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                    <span>最新发布</span>
-                  </div>
-                  <div class="aside-list">
-                    {featurePanelRecentPosts.map((entry) => (
-                      <a href={getPostPath(entry)} class="aside-list-item">
-                        <span class="thumbnail">
-                          <img
-                            src={resolveDisplayCover(entry, true)}
-                            alt={getDisplayPostTitle(entry, true)}
-                            loading="lazy"
-                            data-fallback-src={siteConfig.post.hero.fallbackImage}
-                          />
-                        </span>
-                        <span class="content">
-                          <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                          <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {showRecentPosts && (
-        <section class="card-widget card-recent-post">
-          <div class="item-headline">
-            <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-            <span>最新发布</span>
-          </div>
-          <div class="aside-list">
-            {recentPostEntries.slice(0, 6).map((entry) => (
-              <a href={getPostPath(entry)} class="aside-list-item">
-                <span class="thumbnail">
-                  <img
-                    src={resolveDisplayCover(entry, true)}
-                    alt={getDisplayPostTitle(entry, true)}
-                    loading="lazy"
-                    data-fallback-src={siteConfig.post.hero.fallbackImage}
-                  />
-                </span>
-                <span class="content">
-                  <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                  <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {showTags && (
-        <section class="card-widget card-tags">
-          <div class="item-headline">
-            <Tags className="aside-title-icon" aria-hidden="true" />
-            <span>标签</span>
-          </div>
-          <div class="card-tag-cloud">
-            {tags.slice(0, 24).map((tag) => (
-              <a href={getTagPath(tag.slug)}>
-                {tag.label}
-                <sup>{tag.count}</sup>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {showArchives && (
-        <section class="card-widget card-archives">
-          <div class="item-headline">
-            <Archive className="aside-title-icon" aria-hidden="true" />
-            <span>归档</span>
-          </div>
-          <ul class="card-archive-list">
-            {archives.slice(0, 8).map((item) => (
-              <li class="card-archive-list-item">
-                <a class="card-archive-list-link" href="/archives/">
-                  <span class="card-archive-list-date">{item.label}</span>
-                  <span class="card-archive-list-count-group">
-                    <span class="card-archive-list-count">{item.count}</span>
-                    <span>篇</span>
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {showWebInfo && (
-        <section class="card-widget card-webinfo">
-          <div class="item-headline">
-            <Info className="aside-title-icon" aria-hidden="true" />
-            <span>站点信息</span>
-          </div>
-          <div class="webinfo-panel">
-            <div class="workboard-panel webinfo-workboard">
-              <div class="webinfo-workboard__head">
-                <div class="workboard-status">
-                  <span class="workboard-dot" aria-hidden="true"></span>
-                  <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                  <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                </div>
-                <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-              </div>
-              <p>{siteConfig.footer.runtime.workDetail}</p>
-              <div class="webinfo-highlight-grid">
-                <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                  <span>站点运行</span>
-                  <strong>{runtimeDays} 天</strong>
-                  <small>起始于 {startedAtLabel}</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>最近更新</span>
-                  <strong>{latestPublishedLabel}</strong>
-                  <small>内容仍在持续整理</small>
-                </article>
-                <article class="webinfo-highlight-card">
-                  <span>当前阶段</span>
-                  <strong>{currentPhase}</strong>
-                  <small>优先修正阅读与侧栏体验</small>
-                </article>
-              </div>
-              <div class="workboard-chip-list">
-                <span>{siteConfig.footer.runtime.workLabel}</span>
-                <span>{siteConfig.site.author.statusLabel}</span>
-                <span>{siteConfig.home.announcement.eyebrow}</span>
-              </div>
-            </div>
-            <div class="webinfo webinfo-grid">
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">文章总数</span>
-                </div>
-                <div class="item-count">{totalPosts}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">分类总数</span>
-                </div>
-                <div class="item-count">{totalCategories}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">标签总数</span>
-                </div>
-                <div class="item-count">{totalTags}</div>
-              </div>
-              <div class="webinfo-item">
-                <div class="webinfo-item-title">
-                  <span class="item-name">阅读时长</span>
-                </div>
-                <div class="item-count">{totalReadingMinutes} 分钟</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-    </div>
-  )}
-
-  {isPostSecondaryPage && showTelegramCard && (
-    <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
-  )}
-
-  {isPostSecondaryPage && showRecentPosts && (
-    <div class="sticky_layout sticky_layout--recent">
+    {showRecentPosts && (
       <section class="card-widget card-recent-post">
         <div class="item-headline">
           <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
@@ -488,6 +191,27 @@ const renderTocNodes = (headings: TocHeading[]) =>
           ))}
         </div>
       </section>
-    </div>
+    )}
+
+    {showTags && (
+      <AnzhiyuCardTags tags={tags} />
+    )}
+
+    {showArchives && (
+      <AnzhiyuCardArchives archives={archives} />
+    )}
+
+    {showWebInfo && (
+      <AnzhiyuCardWebInfo
+        totalPosts={totalPosts}
+        totalWords={totalWords}
+        totalReadingMinutes={totalReadingMinutes}
+      />
+    )}
+  </div>
+
+  {isPostSecondaryPage && showTelegramCard && (
+    <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
   )}
 </div>
+

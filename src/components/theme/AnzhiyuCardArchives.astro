@@ -1,0 +1,60 @@
+---
+import { Archive } from 'lucide-react';
+
+interface Props {
+  archives: Array<{
+    label: string;
+    count: number;
+  }>;
+}
+
+const { archives } = Astro.props;
+---
+
+<section class="card-widget card-archives">
+  <div class="item-headline">
+    <Archive className="aside-title-icon" aria-hidden="true" />
+    <span>归档</span>
+  </div>
+  <ul class="card-archive-list">
+    {archives.slice(0, 8).map((item) => (
+      <li class="card-archive-list-item">
+        <a class="card-archive-list-link" href="/archives/">
+          <span class="card-archive-list-date">{item.label}</span>
+          <span class="card-archive-list-count-group">
+            <span class="card-archive-list-count">{item.count}</span>
+            <span>篇</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .card-archive-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card-archive-list-item a {
+    display: flex;
+    flex-direction: row;
+    padding: 3px 10px;
+    color: var(--font-color);
+    transition: all .2s;
+    text-decoration: none;
+  }
+  .card-archive-list-item a:hover {
+    background-color: var(--text-bg-hover);
+    border-radius: 8px;
+  }
+  .card-archive-list-date {
+    flex: 1;
+  }
+  .card-archive-list-count-group {
+    margin-left: 8px;
+    color: var(--text-muted);
+    font-size: 0.9em;
+  }
+</style>

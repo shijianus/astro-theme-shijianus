@@ -1,0 +1,50 @@
+---
+import { Tags } from 'lucide-react';
+import { getTagPath } from '../../lib/content';
+
+interface Props {
+  tags: Array<{
+    label: string;
+    slug: string;
+    count: number;
+  }>;
+}
+
+const { tags } = Astro.props;
+---
+
+<section class="card-widget card-tags">
+  <div class="item-headline">
+    <Tags className="aside-title-icon" aria-hidden="true" />
+    <span>标签</span>
+  </div>
+  <div class="card-tag-cloud">
+    {tags.slice(0, 40).map((tag) => (
+      <a href={getTagPath(tag.slug)} style={`font-size: 0.95rem; color: var(--font-color);`}>
+        {tag.label}
+        <sup>{tag.count}</sup>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .card-tag-cloud {
+    padding: 10px 5px;
+  }
+  .card-tag-cloud a {
+    display: inline-block;
+    padding: 0 8px;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .card-tag-cloud a:hover {
+    color: var(--theme-main) !important;
+    transform: scale(1.1);
+  }
+  .card-tag-cloud a sup {
+    margin-left: 2px;
+    font-size: 0.7em;
+    color: var(--text-muted);
+  }
+</style>

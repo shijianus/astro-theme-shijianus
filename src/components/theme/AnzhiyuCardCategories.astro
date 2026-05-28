@@ -1,0 +1,65 @@
+---
+import { FolderOpen } from 'lucide-react';
+import { getCategoryPath } from '../../lib/content';
+
+interface Props {
+  categories: Array<{
+    label: string;
+    slug: string;
+    count: number;
+  }>;
+}
+
+const { categories } = Astro.props;
+---
+
+<section class="card-widget card-categories">
+  <div class="item-headline">
+    <FolderOpen className="aside-title-icon" aria-hidden="true" />
+    <span>分类</span>
+  </div>
+  <ul class="card-category-list">
+    {categories.slice(0, 8).map((item) => (
+      <li class="card-category-list-item">
+        <a class="card-category-list-link" href={getCategoryPath(item.slug)}>
+          <span class="card-category-list-name">{item.label}</span>
+          <span class="card-category-list-count-group">
+            <span class="card-category-list-count">{item.count}</span>
+            <span>篇</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .card-category-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card-category-list-item a {
+    display: flex;
+    flex-direction: row;
+    padding: 3px 10px;
+    color: var(--font-color);
+    transition: all .2s;
+    text-decoration: none;
+  }
+  .card-category-list-item a:hover {
+    background-color: var(--text-bg-hover);
+    border-radius: 8px;
+  }
+  .card-category-list-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card-category-list-count-group {
+    margin-left: 8px;
+    color: var(--text-muted);
+    font-size: 0.9em;
+  }
+</style>

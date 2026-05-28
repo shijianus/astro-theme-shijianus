@@ -1,0 +1,97 @@
+---
+import { Info } from 'lucide-react';
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  totalPosts: number;
+  totalWords: number;
+  totalReadingMinutes: number;
+  lastPushDate?: string;
+}
+
+const { totalPosts, totalWords, totalReadingMinutes, lastPushDate } = Astro.props;
+
+const runtimeDays = Math.max(
+  1,
+  Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
+);
+---
+
+<section class="card-widget card-webinfo">
+  <div class="item-headline">
+    <Info className="aside-title-icon" aria-hidden="true" />
+    <span>站点信息</span>
+  </div>
+  <div class="webinfo">
+    <div class="webinfo-item">
+      <div class="webinfo-item-title">
+        <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
+        <div class="item-name">文章总数 :</div>
+      </div>
+      <div class="item-count">{totalPosts}</div>
+    </div>
+    <div class="webinfo-item">
+      <div class="webinfo-item-title">
+        <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
+        <div class="item-name">运行天数 :</div>
+      </div>
+      <div class="item-count" id="runtimeshow">{runtimeDays} 天</div>
+    </div>
+    <div class="webinfo-item">
+      <div class="webinfo-item-title">
+        <i class="anzhiyufont anzhiyu-icon-font"></i>
+        <div class="item-name">全站字数 :</div>
+      </div>
+      <div class="item-count">{totalWords}</div>
+    </div>
+    <div class="webinfo-item">
+      <div class="webinfo-item-title">
+        <i class="anzhiyufont anzhiyu-icon-universal-access"></i>
+        <div class="item-name">本站访客数 :</div>
+      </div>
+      <div class="item-count" id="busuanzi_value_site_uv">--</div>
+    </div>
+    <div class="webinfo-item">
+      <div class="webinfo-item-title">
+        <i class="anzhiyufont anzhiyu-icon-square-poll-vertical"></i>
+        <div class="item-name">本站总访问量 :</div>
+      </div>
+      <div class="item-count" id="busuanzi_value_site_pv">--</div>
+    </div>
+    {lastPushDate && (
+      <div class="webinfo-item">
+        <div class="webinfo-item-title">
+          <i class="anzhiyufont anzhiyu-icon-hourglass-start"></i>
+          <div class="item-name">最后更新时间 :</div>
+        </div>
+        <div class="item-count" id="last-push-date">{lastPushDate}</div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .card-webinfo .item-headline {
+    display: none;
+  }
+  .webinfo .webinfo-item {
+    display: flex;
+    align-items: center;
+    padding: 2px 10px 0;
+    justify-content: space-between;
+  }
+  .webinfo .webinfo-item-title {
+    display: flex;
+    align-items: center;
+  }
+  .webinfo .webinfo-item-title i {
+    line-height: 2;
+    margin-right: 6px;
+    width: 16px;
+    text-align: center;
+  }
+  .webinfo .item-name {
+    flex: 1;
+    padding-right: 20px;
+  }
+</style>
