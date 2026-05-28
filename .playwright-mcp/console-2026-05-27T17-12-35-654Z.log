@@ -1,0 +1,82 @@
+[     962ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4322/node_modules/.vite/deps/chunk-UTQ67KV7.js?v=ae26cf90:20102
+[     981ms] [INFO] 💡 [TIP] 排版提示：经过计算，2段式最多容纳 85 字。 @ http://localhost:4322/src/components/ProfileWidget.tsx:46
+[     982ms] [INFO] 💡 [TIP] 排版提示：经过计算，1段式最多容纳 102 字。 @ http://localhost:4322/src/components/ProfileWidget.tsx:47
+[    1659ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  <ThemeOverlays brandName="shijianus" authorName="shijianus" authorMotto="内容优先，结构优先，..." posts={[...]} tags={[...]} ...>
+    <div>
+    <section id="local-search" className={"theme-se..."} aria-hidden={true}>
+      <button>
+      <div className="search-dialog" role="dialog" aria-modal="true" aria-label="站内搜索">
+        <div>
+        <label>
+        <div className="search-res...">
+          <a className="search-res..." href="/posts/anz...">
+            <img
+              src="/media/shijianus/workbench.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+          <a className="search-res..." href="/posts/mar...">
+            <img
+              src="/media/shijianus/system.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+          <a className="search-res..." href="/posts/hel...">
+            <img
+              src="/media/shijianus/frontend.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+          <a className="search-res..." href="/posts/med...">
+            <img
+              src="/media/shijianus/workbench.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+          <a className="search-res..." href="/posts/api...">
+            <img
+              src="/media/shijianus/system.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+          <a className="search-res..." href="/posts/rea...">
+            <img
+              src="/media/shijianus/workbench.jpg"
+              alt=""
+              loading="lazy"
+              data-fallback-src="/media/shijianus/default-cover.jpg"
+-             data-fallback-bound="true"
+            >
+            ...
+    ...
+ @ http://localhost:4322/node_modules/.vite/deps/chunk-UTQ67KV7.js?v=ae26cf90:4072
+[    2334ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /lab/ @ http://localhost:4322/node_modules/.vite/deps/chunk-UTQ67KV7.js?v=ae26cf90:4924
+[    2334ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /lab/ @ http://localhost:4322/node_modules/.vite/deps/chunk-UTQ67KV7.js?v=ae26cf90:4924
+[   81131ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:4322/@vite/client:1596
