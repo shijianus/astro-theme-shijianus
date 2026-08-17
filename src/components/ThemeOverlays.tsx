@@ -186,7 +186,7 @@ export function ThemeOverlays({
     if (consoleOpen) {
       updateCloseBtnPosition();
       window.addEventListener('resize', updateCloseBtnPosition);
-      window.addEventListener('scroll', updateCloseBtnPosition);
+      window.addEventListener('scroll', updateCloseBtnPosition, { passive: true });
     }
     return () => {
       window.removeEventListener('resize', updateCloseBtnPosition);

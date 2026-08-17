@@ -109,7 +109,6 @@ html {
   overflow-y: overlay;
   background: var(--global-bg);
   color: var(--font-color);
-  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-color) transparent;
 }
@@ -495,7 +494,7 @@ html.theme-ready body.theme-body #footer {
   background: color-mix(in srgb, var(--card-bg) 86%, transparent);
   border-bottom: var(--style-border-always);
   box-shadow: var(--shadow-nav);
-  backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(160%) blur(10px);
 }
 
 #nav-group {
@@ -2881,7 +2880,7 @@ html.theme-ready body.theme-body #footer {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(6px);
 }
 
 .media-list-item {
@@ -3423,7 +3422,7 @@ html.theme-ready body.theme-body #footer {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 92%, rgba(255, 255, 255, 0.9)), color-mix(in srgb, var(--card-bg) 98%, #f8fbff));
   box-shadow: 0 -16px 40px -34px rgba(34, 56, 110, 0.24);
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
 }
 
 .footer-main-shell::before {

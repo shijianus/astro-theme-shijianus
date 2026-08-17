@@ -186,24 +186,24 @@ export function ThemeUniverse() {
         return;
       }
 
-      let density = 15000;
-      let minimum = 50;
+      let density = 20000;
+      let minimum = 40;
 
       if (mode === 'matrix') {
-        density = 8000;
-        minimum = 80;
+        density = 11000;
+        minimum = 60;
       } else if (mode === 'light-snow') {
-        density = 9000;
-        minimum = 60;
-      } else if (mode === 'starfield') {
-        density = 5000; // more stars
-        minimum = 300;
-      } else if (isLightMode(mode)) {
-        density = 18000;
-        minimum = 60;
-      } else {
         density = 12000;
-        minimum = 100;
+        minimum = 50;
+      } else if (mode === 'starfield') {
+        density = 8000;
+        minimum = 150;
+      } else if (isLightMode(mode)) {
+        density = 24000;
+        minimum = 50;
+      } else {
+        density = 16000;
+        minimum = 80;
       }
       
       const count = Math.max(minimum, Math.floor((width * height) / density));
@@ -406,6 +406,15 @@ export function ThemeUniverse() {
       });
     };
 
+    let isScrolling = false;
+    let scrollPauseTimer = 0;
+
+    const onScrollPause = () => {
+      isScrolling = true;
+      if (scrollPauseTimer) window.clearTimeout(scrollPauseTimer);
+      scrollPauseTimer = window.setTimeout(() => { isScrolling = false; }, 200);
+    };
+
     const render = (tick: number) => {
       const mode = getUniverseMode();
       canvas.style.opacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
@@ -418,6 +427,13 @@ export function ThemeUniverse() {
       }
 
       isLooping = true;
+
+      // Skip rendering during scroll to avoid competing with compositor
+      if (isScrolling) {
+        frameId = window.requestAnimationFrame(render);
+        return;
+      }
+
       if (lastFrameAt && tick - lastFrameAt < UNIVERSE_FRAME_INTERVAL) {
         frameId = window.requestAnimationFrame(render);
         return;
@@ -461,6 +477,7 @@ export function ThemeUniverse() {
     if (shouldAnimateUniverse(reducedMotionQuery)) {
       frameId = window.requestAnimationFrame(render);
     }
+    window.addEventListener('scroll', onScrollPause, { passive: true });
 
     const observer = new MutationObserver(() => {
       if (!isUniverseActive()) {
@@ -494,8 +511,10 @@ export function ThemeUniverse() {
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', onScrollPause);
       document.removeEventListener('visibilitychange', handleVisibilityOrMotionChange);
       reducedMotionQuery.removeEventListener('change', handleVisibilityOrMotionChange);
+      if (scrollPauseTimer) window.clearTimeout(scrollPauseTimer);
       window.cancelAnimationFrame(frameId);
     };
   }, []);

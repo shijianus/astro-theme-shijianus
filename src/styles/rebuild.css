@@ -34,7 +34,7 @@ body[data-type='post'] #content-inner.layout {
   pointer-events: none;
   transform: translate(-50%, -4px);
   transition: opacity 0.2s ease, transform 0.2s ease;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(4px);
 }
 
 #menus .site-page:hover .site-page__subtitle,
@@ -759,7 +759,7 @@ body[data-type='tag-detail'] .page-main {
   color: rgba(255, 255, 255, 0.9);
   font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
 }
 
 .post-hero__badge.is-primary {
@@ -815,7 +815,7 @@ body[data-type='tag-detail'] .page-main {
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08)),
     rgba(15, 20, 30, 0.24);
   box-shadow: 0 18px 34px -28px rgba(9, 12, 18, 0.34);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(6px);
 }
 
 .post-hero__meta-card span {
@@ -2047,7 +2047,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(4px);
 }
 
 .postNav-card__content {
@@ -2078,7 +2078,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   color: rgba(255, 255, 255, 0.78);
   font-size: 11px;
   font-weight: 700;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(4px);
 }
 
 .postNav-card__title {
@@ -2235,7 +2235,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(4px);
 }
 
 .relatedPosts-item .content {
@@ -2260,7 +2260,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   color: rgba(255, 255, 255, 0.78);
   font-size: 11px;
   font-weight: 700;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(4px);
 }
 
 .relatedPosts-item .title {
@@ -7538,7 +7538,7 @@ body[data-type='404'] .error-info {
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(8px);
 }
 
 #menus .menus_item.has-children:hover .site-page-submenu,
@@ -10588,7 +10588,7 @@ body[data-type='home'] .categoryItem:focus-within .categoryButtonIcon {
   transform: translateY(-10px) scale(0.98);
   transform-origin: top right;
   transition: transform 0.22s ease;
-  backdrop-filter: blur(22px);
+  backdrop-filter: blur(12px);
 }
 
 .theme-notification-overlay.show .theme-notification-drawer {
@@ -10698,7 +10698,7 @@ body[data-type='home'] .categoryItem:focus-within .categoryButtonIcon {
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(8px);
 }
 
 #shijianus-devbar-panel.show {

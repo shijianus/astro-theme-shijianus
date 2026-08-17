@@ -405,7 +405,7 @@ export function SiteHeader({
         lastScrolled = nextScrolled;
         setScrolled(nextScrolled);
       }
-      window.requestAnimationFrame(syncHeaderMetrics);
+      syncHeaderMetrics();
     };
 
     const onScroll = () => {

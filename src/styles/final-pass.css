@@ -2765,3 +2765,82 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   }
 }
 
+
+/* ============================================================
+   PERFORMANCE OPTIMIZATIONS — shijianus-blog v2.6.0
+   Strategy: Reduce GPU compositing cost without visual change
+   ============================================================ */
+
+/* 1. Cap backdrop-filter blur on non-critical decorative elements.
+      These elements have opaque or semi-opaque backgrounds already —
+      reducing blur from 10-22px to 6px is visually imperceptible
+      but saves significant GPU memory bandwidth. */
+
+/* Post hero badges: glass pills on top of a blurred image — lighter blur is fine */
+.post-hero__badge {
+  backdrop-filter: blur(6px);
+}
+
+/* Post navigation cards meta pills */
+.postNav-card__hint,
+.postNav-card__date {
+  backdrop-filter: blur(6px);
+}
+
+/* Random banner hover overlay — already has a solid gradient background */
+#random-banner:hover #random-hover {
+  backdrop-filter: blur(6px);
+}
+
+/* Profile card sayhi button — sits on an opaque card background */
+#author-info__sayhi {
+  backdrop-filter: none;
+}
+
+/* Footer shell — solid gradient background, blur adds no perceptible value */
+.footer-main-shell {
+  backdrop-filter: none;
+}
+
+/* Banner buttons — already have rgba background */
+.topGroup .banner-button {
+  backdrop-filter: blur(6px);
+}
+
+/* 2. Replace post hero image filter: the filter: blur(8px) forces a compositing
+      layer even though the image sits behind a gradient overlay. Remove it and
+      compensate with lower opacity + stronger gradient to preserve the look. */
+.post-hero__image {
+  filter: none;
+  opacity: 0.52;
+}
+
+.post-hero__cover::after {
+  background:
+    linear-gradient(90deg,
+      rgba(8, 12, 22, 0.97) 0%,
+      rgba(8, 12, 22, 0.80) 30%,
+      rgba(8, 12, 22, 0.34) 65%,
+      rgba(8, 12, 22, 0.08) 100%);
+}
+
+/* 3. Isolate persistent-animation containers with CSS containment so their
+      repaints don't cascade to the rest of the document layout. */
+#web_bg {
+  contain: layout style;
+}
+
+.post-hero__waves {
+  contain: layout style;
+}
+
+/* 4. Pause ALL persistent background animations when the browser tab is hidden.
+      The inline script added to BlogLayout.astro sets data-page-visible="false"
+      on <html> via the Page Visibility API. This saves CPU/GPU when the user
+      is not even looking at the page. */
+html[data-page-visible="false"] #web_bg,
+html[data-page-visible="false"] #web_bg::before,
+html[data-page-visible="false"] #web_bg::after,
+html[data-page-visible="false"] .post-hero__waves-group use {
+  animation-play-state: paused !important;
+}

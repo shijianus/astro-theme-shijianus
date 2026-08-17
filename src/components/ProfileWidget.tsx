@@ -60,17 +60,7 @@ export function ProfileWidget({
   // Warnings and limits logic
   const rawLen = paragraphs.join('').replace(/(\*\*|\*|\[|\]|\(.*?\))/g, '').length;
   
-  console.info('💡 [TIP] 排版提示：经过计算，2段式最多容纳 85 字。');
-  console.info('💡 [TIP] 排版提示：经过计算，1段式最多容纳 102 字。');
-
-  if (paragraphs.length !== 2) {
-    console.warn(`⚠️ [WARN] 推荐使用两段文字进行介绍，当前段落数：${paragraphs.length}`);
-  }
-  if (rawLen > 80 && rawLen <= 120) {
-    console.warn(`⚠️ [WARN] 软性限制：当前字数为 ${rawLen} 字，建议控制在 80 字左右以获取最佳观感。`);
-  }
   if (rawLen > 120) {
-    console.error(`🚨 [WARN] 硬性限制：当前字数 (${rawLen}) 超过 120 字，将被强制截断！`);
     paragraphs = [paragraphs.join(' ').substring(0, 117) + '...'];
   } else {
     paragraphs = paragraphs.slice(0, 2);
