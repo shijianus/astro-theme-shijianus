@@ -98,7 +98,7 @@
   text-decoration: none;
   position: relative;
   white-space: nowrap !important;
-  transition: all 0.3s ease !important;
+  transition: background-color 0.25s ease, color 0.25s ease !important;
 }
 
 .site-page__icon-wrap {
@@ -865,7 +865,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
-  transition: all 0.3s ease;
+  /* 自身无 :hover 规则，不需要 transition */
   cursor: pointer;
   position: relative;
   overflow: visible !important; /* Force overflow visible to release Tooltip */
@@ -926,7 +926,7 @@
   margin-left: auto;
   position: relative !important;
   z-index: 10 !important;
-  transition: all 0.3s ease !important;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease !important;
 }
 
 .home-top-notice a.notice-more-btn:hover {
@@ -1814,6 +1814,8 @@ body[data-type='post'] :is(#post-toc-aside #card-toc, #post-secondary-aside .car
   flex-direction: column;
   padding: 12px 14px 10px;
   box-sizing: border-box;
+  /* 仅过渡 max-height（高度可能动态变化），其他属性不需要监视 */
+  transition: max-height 0.3s ease;
 }
 
 body[data-type='post'] #card-toc .item-headline,
@@ -1822,14 +1824,15 @@ body[data-type='post'] #post-secondary-aside .card-recent-post .item-headline {
   min-width: 0;
   margin-left: 0;
   padding-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-body[data-type='post'] #card-toc .toc-progress {
-  margin: 0 0 6px;
-}
-
-body[data-type='post'] #card-toc .toc-current {
-  margin: 0 0 6px;
+body[data-type='post'] #card-toc .item-headline__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 body[data-type='post'] #card-toc .toc-content,
@@ -1846,12 +1849,57 @@ body[data-type='post'] #post-secondary-aside .card-recent-post .aside-list {
 }
 
 body[data-type='post'] #card-toc .toc-link {
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
+  display: block;
   width: 100%;
-  min-width: 0;
+  padding: 6px 8px 6px calc(8px + var(--toc-level, 0) * 14px);
+  border-radius: 12px;
+  border-left: 0 solid transparent;
+  /* active 状态改变: color + border-left + font-weight，精确过渡避免监视所有属性 */
+  transition: color 0.2s ease, border-left-width 0.2s ease, border-color 0.2s ease,
+              font-weight 0.2s ease, background-color 0.2s ease;
+  color: var(--font-color, #4c4948);
+  line-height: 1.2;
+}
+
+body[data-type='post'] #card-toc .toc-index {
+  display: none;
+}
+
+body[data-type='post'] #card-toc .toc-link.active {
+  line-height: 1.2;
+  border-radius: 12px;
+  border-left: 3px solid var(--theme-main);
+  background-color: transparent;
+  color: var(--theme-main);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+body[data-type='post'] #card-toc .toc-link:not(.active) span {
+  opacity: 0.7;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+body[data-type='post'] #card-toc:hover .toc-link:not(.active) span {
+  opacity: 1;
+}
+
+body[data-type='post'] #card-toc .toc-link:not(.active) span:hover {
+  color: var(--theme-main);
+}
+
+body[data-type='post'] #card-toc .toc-item.is-active-branch > .toc-link {
+  color: var(--theme-main);
+}
+
+body[data-type='post'] #card-toc .toc-child {
+  display: none;
+}
+
+body[data-type='post'] #card-toc .toc-item.is-active > .toc-child,
+body[data-type='post'] #card-toc .toc-item.is-active-branch > .toc-child {
+  display: block;
 }
 
 body[data-type='post'] #card-toc .toc-text-group,
@@ -1889,7 +1937,6 @@ body[data-type='post'] #card-toc .toc-percentage {
 
 body[data-type='post'] #card-toc .toc-item {
   padding-inline-start: 0 !important;
-  font-size: calc(0.95rem - var(--toc-level, 0) * 0.05rem);
 }
 
 body[data-type='post'] #card-toc .toc-content::-webkit-scrollbar {
@@ -2314,7 +2361,7 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-
 
 body[data-type='post'] :is(#post-toc-aside #card-toc, #post-secondary-aside .card-recent-post) {
   min-height: 0;
-  height: auto;
+  height: var(--sticky-card-height, auto);
   max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
 }
 
@@ -2326,7 +2373,7 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-
 
 body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-static-layout :is(#card-toc, .card-recent-post),
 body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-sticky-active :is(#card-toc, .card-recent-post) {
-  height: auto;
+  height: var(--sticky-card-height, auto);
   min-height: 0;
   max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
 }

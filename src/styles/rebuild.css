@@ -88,11 +88,7 @@ body[data-type='post'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='post'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='post'] 
 
 body[data-type='post'] #aside-content {
   width: 320px;
@@ -3147,24 +3143,12 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   justify-content: space-between;
 }
 
-#card-toc .toc-count,
 #card-toc .toc-percentage {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.18)), color-mix(in srgb, var(--card-bg) 100%, transparent)),
-    color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
-  color: var(--theme-main);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-#card-toc .toc-count {
-  color: var(--text-muted);
+  float: right;
+  margin-top: -9px;
+  color: #a9a9a9;
+  font-style: italic;
+  font-size: 140%;
 }
 
 #card-toc .toc-progress {
@@ -5743,11 +5727,7 @@ body[data-type='post'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='post'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='post'] 
 
 body[data-type='post'] #aside-content {
   width: 320px;
@@ -6132,11 +6112,7 @@ body[data-type='post'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='post'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='post'] 
 
 body[data-type='post'] #aside-content > :not(.sticky_layout),
 body[data-type='post'] #aside-content .sticky_layout > .card-widget:not(#card-toc) {
@@ -6144,8 +6120,7 @@ body[data-type='post'] #aside-content .sticky_layout > .card-widget:not(#card-to
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
-  position: sticky;
-  top: 78px;
+  
   display: grid;
   align-content: start;
 }
@@ -6517,11 +6492,7 @@ body[data-type='post'] #card-toc .toc-content {
 
 /* UI alignment pass: reduce duplicate sidebar content, restore shijianus-like motion,
    and keep TOC/reward/share panels in a guidance role instead of stealing control. */
-body[data-type='home'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='home'] 
 
 .card-webinfo .webinfo-panel {
   gap: 16px;
@@ -6662,11 +6633,7 @@ body[data-type='post'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='post'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='post'] 
 
 body[data-type='post'] #aside-content {
   width: 100%;
@@ -7825,11 +7792,7 @@ body[data-type='post'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='post'] .page-aside__sticky {
-  position: sticky;
-  top: 78px;
-  transition: top 0.3s;
-}
+body[data-type='post'] 
 
 body[data-type='post'] #aside-content {
   width: 100%;
@@ -9910,7 +9873,7 @@ body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget 
   border-radius: 26px;
   background: var(--card-bg);
   box-shadow: var(--shadow-border);
-  transition: all 0.3s;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget:hover {
@@ -10016,8 +9979,7 @@ body[data-type='post'] #post-toc-aside #card-toc {
   max-height: none;
   padding: 20px 22px;
   border-radius: 26px;
-  position: sticky;
-  top: 78px;
+  
 }
 
 body[data-type='post'] #post-toc-aside #card-toc.is-static-layout {
@@ -10963,7 +10925,9 @@ body[data-type='home'] .categoryButton > svg.categoryButtonIcon {
   stroke-width: 1.6;
   transform: translateY(-46%) rotate(15deg) scale(1) !important;
   transform-origin: 70% 50%;
-  transition: all 0.8s cubic-bezier(0.39, 0.575, 0.565, 1);
+  transition: opacity 0.8s cubic-bezier(0.39, 0.575, 0.565, 1),
+              filter 0.8s cubic-bezier(0.39, 0.575, 0.565, 1),
+              transform 0.8s cubic-bezier(0.39, 0.575, 0.565, 1);
 }
 
 body[data-type='home'] .categoryButton.lime > svg.categoryButtonIcon {
@@ -11151,8 +11115,7 @@ body[data-type='post'] .post-layout-row--support .post-layout-row__aside {
 }
 
 body[data-type='post'] #post-toc-aside #card-toc {
-  position: sticky;
-  top: 78px;
+  
   min-height: 0;
   height: auto;
   max-height: calc(100vh - 96px);
@@ -11774,8 +11737,7 @@ body[data-type='post'] #post-toc-aside .sticky_layout {
 }
 
 body[data-type='post'] #post-toc-aside #card-toc {
-  position: sticky;
-  top: 78px;
+  
   min-height: 0;
   max-height: calc(100vh - 96px);
   height: auto;
@@ -12787,8 +12749,7 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
 /* 2026-04-25 group 2: toc tree, support panels, and compact share tools */
 
 body[data-type='post'] #post-toc-aside #card-toc {
-  position: sticky;
-  top: 78px;
+  
   height: auto;
   min-height: 0;
   max-height: calc(100vh - 96px);
@@ -12802,8 +12763,7 @@ body[data-type='post'] #post-toc-aside #card-toc .toc-content {
 }
 
 body[data-type='post'] #post-toc-aside #card-toc.is-static-layout {
-  position: sticky;
-  top: 78px;
+  
 }
 
 #card-toc .toc-list {
@@ -13163,8 +13123,7 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
 
 body[data-type='post'] #post-toc-aside #card-toc,
 body[data-type='post'] #post-toc-aside #card-toc.is-static-layout {
-  position: sticky;
-  top: 78px;
+  
   height: auto;
   min-height: 0;
   max-height: calc(100vh - 92px);
@@ -13790,8 +13749,7 @@ body[data-type='post'] .post-layout-row--support .post-layout-row__aside {
 }
 
 body[data-type='post'] #post-toc-aside #card-toc {
-  position: sticky;
-  top: 78px;
+  
   height: auto;
   min-height: 0;
   max-height: calc(100vh - 96px);
@@ -14672,8 +14630,6 @@ body[data-type='home'] #home-pagination {
 
 
 #card-toc .toc-item > .toc-link {
-  font-size: calc(14px - var(--toc-level, 0) * 1px) !important;
-  font-weight: calc(600 - var(--toc-level, 0) * 50) !important;
 }
 #card-toc .toc-content::-webkit-scrollbar {
   display: none !important;

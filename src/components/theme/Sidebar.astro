@@ -526,29 +526,29 @@ const renderTocNodes = (headings: TocHeading[]) =>
   }
 
   
+  /* 用 opacity 代替 filter:blur 实现"非焦点淡化"效果：
+     opacity 走 GPU 合成层，无 repaint；
+     filter:blur 在文字元素上强制 software rasterization，开销极高 */
   #card-toc .toc-link {
-    transition: filter 0.3s ease, color 0.2s ease-in-out;
-    filter: blur(clamp(0px, calc(var(--dist, 0) * 0.5px), 2px));
+    transition: opacity 0.25s ease, color 0.2s ease;
+    opacity: 0.55;
   }
   
-  /* Clear all blur on hover */
+  /* 悬停 TOC 时恢复所有链接全不透明（无 repaint，仅合成层更新） */
   #card-toc .toc-content:hover .toc-link {
-    filter: blur(0px) !important;
+    opacity: 1 !important;
   }
   
-  #card-toc .toc-content::-webkit-scrollbar {
-    display: none !important;
-  }
-  
-  #card-toc .toc-link {
-    transition: color 0.3s ease, font-weight 0.3s ease, background-color 0.3s ease;
-  }
-  
-  body[data-type='post'] .aside-content #card-toc .toc-link.active,
+  /* 激活项全不透明 */
   #card-toc .toc-link.active {
-    color: var(--theme-color, #49b1f5) !important;
-    font-weight: 600 !important;
+    opacity: 1 !important;
   }
+  
+  /* 激活项周围两侧的链接略微淡化（用 JS 通过 --dist 控制，此处保底） */
+  #card-toc .toc-link:not(.active) {
+    opacity: 0.55;
+  }
+
 
   @media screen and (max-width: 1200px) {
     .page-aside {
@@ -594,38 +594,13 @@ const renderTocNodes = (headings: TocHeading[]) =>
 
     const setActive = (activeId) => {
       let currentActive = null;
-      let activeIndex = links.findIndex(link => {
-        let hash = '';
-        try { hash = decodeURIComponent(link.hash.replace(/^#/, '')); }
-        catch (e) { hash = link.hash.replace(/^#/, ''); }
-        return hash === activeId;
-      });
-
-      let clearStart = activeIndex - 2;
-      let clearEnd = activeIndex + 2;
-      if (clearStart < 0) {
-        clearEnd += Math.abs(clearStart);
-        clearStart = 0;
-      }
-      if (clearEnd >= links.length) {
-        clearStart -= (clearEnd - (links.length - 1));
-        clearEnd = links.length - 1;
-      }
-
-      links.forEach((link, idx) => {
+      links.forEach((link) => {
         link.classList.remove('active');
         let parent = link.parentElement;
         while(parent && parent.classList.contains('toc-item')) {
           parent.classList.remove('active');
           parent = parent.parentElement.closest('.toc-item');
         }
-        
-        let dist = 0;
-        if (activeIndex !== -1) {
-          if (idx < clearStart) dist = clearStart - idx;
-          else if (idx > clearEnd) dist = idx - clearEnd;
-        }
-        link.style.setProperty('--dist', dist);
       });
 
       const activeEntry = headings.find(h => h.id === activeId);
