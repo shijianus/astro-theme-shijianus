@@ -135,8 +135,8 @@ export function SiteHeader({
   const [accountOpen, setAccountOpen] = useState(false);
   const [isReadMode, setIsReadMode] = useState(false);
   const [isTraditional, setIsTraditional] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const progressElRef = useRef<HTMLSpanElement | null>(null);
+  const totopBtnRef = useRef<HTMLDivElement | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [showClouds, setShowClouds] = useState(false);
   const [transitionKey, setTransitionKey] = useState(0);
@@ -389,22 +389,19 @@ export function SiteHeader({
     };
 
     let frame = 0;
-    let lastScrolled = window.scrollY > 24;
 
     const updateScrolledState = () => {
       frame = 0;
-      const nextScrolled = window.scrollY > 24;
-      
       const documentElement = document.documentElement;
       const scrollable = documentElement.scrollHeight - window.innerHeight;
       const nextProgress = scrollable <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((window.scrollY / scrollable) * 100)));
-      
-      setProgress(nextProgress);
 
-      if (nextScrolled !== lastScrolled) {
-        lastScrolled = nextScrolled;
-        setScrolled(nextScrolled);
-      }
+      // 直接操作 DOM，不走 React setState/re-render 路径
+      const percentEl = progressElRef.current;
+      const totopBtn = totopBtnRef.current;
+      if (percentEl) percentEl.textContent = String(nextProgress);
+      if (totopBtn) totopBtn.classList.toggle('at-top', nextProgress === 0);
+
       syncHeaderMetrics();
     };
 
@@ -413,7 +410,6 @@ export function SiteHeader({
       frame = window.requestAnimationFrame(updateScrolledState);
     };
 
-    setScrolled(lastScrolled);
     syncHeaderMetrics();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', syncHeaderMetrics);
@@ -782,7 +778,7 @@ export function SiteHeader({
               </a>
             </div>
 
-            <div className={`nav-button back-to-top-btn ${progress === 0 ? 'at-top' : ''}`} id="nav-totop">
+            <div className="nav-button back-to-top-btn at-top" id="nav-totop" ref={totopBtnRef}>
               <a
                 className="totopbtn"
                 href="#"
@@ -792,7 +788,7 @@ export function SiteHeader({
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                <span className="percent-text" id="percent">{progress}</span>
+                <span className="percent-text" id="percent" ref={progressElRef}>0</span>
                 <ArrowUp className="arrow-icon" size={18} strokeWidth={2.5} aria-hidden="true" />
               </a>
             </div>
