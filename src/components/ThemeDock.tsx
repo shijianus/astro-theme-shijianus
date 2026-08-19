@@ -32,7 +32,10 @@ function calculateProgress() {
 }
 
 export function ThemeDock(_props: ThemeDockProps) {
-  const [progress, setProgress] = useState(0);
+  /* progress 改为 DOM ref 直写，避免每帧 setProgress 触发 re-render */
+  const dockProgressElRef = useRef<HTMLSpanElement | null>(null);
+  const dockRotateSvgRef = useRef<SVGSVGElement | null>(null);
+  const dockGoUpBtnRef = useRef<HTMLButtonElement | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [asideCollapsed, setAsideCollapsed] = useState(false);
@@ -40,7 +43,6 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [panelHidden, setPanelHidden] = useState(true);
   const [readMode, setReadMode] = useState(false);
   const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
-  const progressRef = useRef(0);
 
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
@@ -102,14 +104,30 @@ export function ThemeDock(_props: ThemeDockProps) {
 
   useEffect(() => {
     let frame = 0;
+    let lastProgress = -1;
 
     const syncDockState = () => {
       frame = 0;
       const nextProgress = Math.round(calculateProgress());
+      if (nextProgress === lastProgress) return;
+      lastProgress = nextProgress;
 
-      if (nextProgress !== progressRef.current) {
-        progressRef.current = nextProgress;
-        setProgress(nextProgress);
+      // 直接操作 DOM，不走 React setState/re-render
+      const percentEl = dockProgressElRef.current;
+      const rotateSvg = dockRotateSvgRef.current;
+      const goUpBtn = dockGoUpBtnRef.current;
+
+      if (percentEl) percentEl.textContent = String(nextProgress);
+      if (rotateSvg) rotateSvg.style.transform = `rotate(${nextProgress * 3.6}deg)`;
+      if (goUpBtn) {
+        const show = nextProgress > 0;
+        goUpBtn.className = show ? 'show' : '';
+        goUpBtn.style.opacity = show ? '1' : '0';
+        goUpBtn.style.visibility = show ? 'visible' : 'hidden';
+        goUpBtn.style.height = show ? '35px' : '0';
+        goUpBtn.style.marginTop = show ? '0' : '-4px';
+        goUpBtn.style.padding = show ? '' : '0';
+        goUpBtn.style.border = show ? '' : 'none';
       }
     };
 
@@ -400,7 +418,8 @@ export function ThemeDock(_props: ThemeDockProps) {
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
-                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s', transform: `rotate(${(progress || 0) * 3.6}deg)` }}
+                style={{ position: 'absolute', top: 0, left: 0, transition: 'transform 0.3s', transform: 'rotate(0deg)' }}
+                ref={dockRotateSvgRef}
               >
                 <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
                 <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
@@ -433,19 +452,19 @@ export function ThemeDock(_props: ThemeDockProps) {
             title="回到顶部"
             aria-label="回到顶部"
             onClick={jumpToTop}
-            className={progress > 0 ? 'show' : ''}
+            ref={dockGoUpBtnRef}
             style={{ 
-              opacity: progress > 0 ? 1 : 0, 
-              visibility: progress > 0 ? 'visible' : 'hidden',
-              height: progress > 0 ? '35px' : '0',
-              marginTop: progress > 0 ? '0' : '-4px',
-              padding: progress > 0 ? '' : '0',
-              border: progress > 0 ? '' : 'none',
+              opacity: 0,
+              visibility: 'hidden',
+              height: '0',
+              marginTop: '-4px',
+              padding: '0',
+              border: 'none',
               overflow: 'hidden',
-              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              transition: 'opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), height 0.3s, visibility 0.3s'
             }}
           >
-            <span id="percent" style={{ position: 'absolute', right: '2px', bottom: '1px', fontSize: '9px', fontWeight: 800 }}>{progress}</span>
+            <span id="percent" style={{ position: 'absolute', right: '2px', bottom: '1px', fontSize: '9px', fontWeight: 800 }} ref={dockProgressElRef}>0</span>
             <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="19" x2="12" y2="5"></line>
               <polyline points="5 12 12 5 19 12"></polyline>

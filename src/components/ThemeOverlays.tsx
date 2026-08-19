@@ -201,6 +201,9 @@ export function ThemeOverlays({
     y: 0,
     selectedText: '',
   });
+  // 用 ref 追踪 open 状态，让 closeRightMenu 可在未打开时 early-return，
+  // 避免每次点击都触发整个 ThemeOverlays re-render
+  const rightMenuOpenRef = useRef(false);
 
   // Data Sync Framework Placeholder
   useEffect(() => {
@@ -653,6 +656,7 @@ export function ThemeOverlays({
       event.preventDefault();
       const selectedText = window.getSelection()?.toString().trim() ?? '';
 
+      rightMenuOpenRef.current = true;
       setRightMenu({
         open: true,
         x: clampPosition(event.clientX, 180, window.innerWidth),
@@ -660,7 +664,12 @@ export function ThemeOverlays({
         selectedText,
       });
     };
-    const closeRightMenu = () => setRightMenu((menu) => ({ ...menu, open: false }));
+    const closeRightMenu = () => {
+      // 菜单未打开时直接 return，避免每次点击都触发 ThemeOverlays re-render
+      if (!rightMenuOpenRef.current) return;
+      rightMenuOpenRef.current = false;
+      setRightMenu((menu) => ({ ...menu, open: false }));
+    };
 
     window.addEventListener('shijianus:open-search', openSearch);
     window.addEventListener('shijianus:open-console', openConsole);
