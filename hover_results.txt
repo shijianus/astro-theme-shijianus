@@ -1,0 +1,389 @@
+
+--- alignment.css ---
+.center-console-trigger:is(:hover, :focus-visible),
+.notification-trigger:is(:hover, :focus-visible) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-main);
+}
+
+--- alignment.css ---
+.console-shortcuts__item:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-main) 18%, transparent);
+  box-shadow: var(--shadow-main);
+}
+
+--- final-pass.css ---
+.webinfo-item:hover {
+  background: var(--card-bg);
+  border-color: var(--theme-main);
+  box-shadow: var(--shadow-theme);
+}
+
+--- final-pass.css ---
+#console .console-btn-item:hover {
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-theme);
+}
+
+--- final-pass.css ---
+.home-top-notice:hover {
+  border-color: var(--theme-main, #f39c12) !important;
+  box-shadow: 0 0 12px rgba(243, 156, 18, 0.2) !important;
+}
+
+--- final-pass.css ---
+body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: var(--shadow-card-hover) !important;
+  z-index: 2;
+}
+
+--- final-pass.css ---
+body[data-type='home'] #random-banner:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+--- final-pass.css ---
+#console .activity-cell:hover {
+  transform: scale(1.2);
+  z-index: 2;
+  box-shadow: 0 0 12px var(--theme-main);
+}
+
+--- final-pass.css ---
+.console-shortcuts__item:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-main) 18%, transparent);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+#site-name:hover,
+#nav .site-page:hover,
+#toggle-menu:hover .site-page,
+#display-mode-button .site-page:hover {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-theme);
+}
+
+--- global.css ---
+.theme-card:hover,
+.surface-panel:hover,
+.theme-card--interactive:hover {
+  border: var(--style-border-hover);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- global.css ---
+#random-banner:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 36%, var(--card-border));
+  box-shadow: 0 18px 36px -20px rgba(38, 56, 110, 0.32);
+  transform: translateY(-2px);
+}
+
+--- global.css ---
+.categoryItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px -22px rgba(21, 39, 88, 0.34);
+}
+
+--- global.css ---
+.topGroup .todayCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 28px 44px -24px rgba(14, 20, 36, 0.48);
+}
+
+--- global.css ---
+.topGroup .recent-post-item:hover {
+  border: var(--style-border-hover);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- global.css ---
+:is(#recent-posts, .taxonomy-post-list) > .recent-post-item:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 56%, var(--card-border));
+  box-shadow: 0 26px 52px -38px color-mix(in srgb, var(--theme-main) 22%, rgba(14, 20, 36, 0.58));
+  transform: translateY(-4px);
+}
+
+--- global.css ---
+:is(#recent-posts, .taxonomy-post-list) > .recent-post-item:hover img.post_bg {
+  filter: brightness(0.86);
+  transform: scale(1.04);
+  transition: 0.3s ease-in-out;
+}
+
+--- global.css ---
+#aside-content .card-widget:hover {
+  border: var(--style-border-hover);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+.card-archive-list-link:hover,
+.card-category-list-link:hover {
+  border-color: transparent;
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+.article-body .code-block-shell:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-main) 22%, var(--card-border));
+  box-shadow: 0 22px 36px -28px color-mix(in srgb, var(--theme-main) 18%, rgba(14, 20, 36, 0.32));
+}
+
+--- global.css ---
+.article-body .code-copy-button:hover,
+.article-body .code-copy-button.copied {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+.article-body figure img:hover,
+.article-body figure img:focus-visible {
+  transform: translateY(-2px);
+  filter: saturate(1.04) brightness(1.02);
+  box-shadow: 0 24px 40px -30px color-mix(in srgb, var(--theme-main) 16%, rgba(14, 20, 36, 0.28));
+}
+
+--- global.css ---
+.footer_mini_logo:hover {
+  transform: rotate(360deg) scale(1.08);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+#rightside > div > button:hover,
+#rightside > div > a:hover,
+#rightside > div > button.is-active {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+.search-result-item:hover {
+  border: var(--style-border-hover);
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- global.css ---
+#console .console-btn-item:hover,
+#console .console-btn-item.on {
+  border-color: var(--theme-main);
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- global.css ---
+#rightMenu:hover {
+  border: var(--style-border-hover);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+#rightMenu .rightMenu-item:hover {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- global.css ---
+#nav-theme-toggle:hover:not([data-hover-suppressed="true"]):not(:has(.shijianus-cloud-transition.is-active)) .c1 {
+  opacity: 1; transform: scale(1.3) translate(10px, 6px); transition-delay: 0.05s;
+}
+
+--- global.css ---
+#nav-theme-toggle:hover:not([data-hover-suppressed="true"]):not(:has(.shijianus-cloud-transition.is-active)) .c2 {
+  opacity: 0.95; transform: scale(1.1) translate(-12px, -4px); transition-delay: 0.1s;
+}
+
+--- global.css ---
+#nav-theme-toggle:hover:not([data-hover-suppressed="true"]):not(:has(.shijianus-cloud-transition.is-active)) .c3 {
+  opacity: 0.9; transform: scale(1.0) translate(-8px, 2px); transition-delay: 0.15s;
+}
+
+--- rebuild.css ---
+.post-tool-icon-button:hover,
+.share-button:hover,
+.post-share-grid__item:hover {
+  border-color: transparent;
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+.reward-link-button:hover {
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- rebuild.css ---
+.share-button:hover {
+  border-color: var(--theme-main);
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+}
+
+--- rebuild.css ---
+.reward-region-panel__option:hover,
+.reward-region-panel__option.is-active {
+  border-color: color-mix(in srgb, var(--theme-main) 42%, var(--card-border));
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+.post-share-grid__item:hover {
+  border-color: var(--platform-accent);
+  background: color-mix(in srgb, var(--platform-accent) 10%, var(--card-bg));
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+.postNav-card:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 28%, var(--card-border));
+  box-shadow: 0 24px 40px -28px color-mix(in srgb, var(--theme-main) 26%, rgba(14, 20, 36, 0.42));
+  transform: translateY(-3px);
+}
+
+--- rebuild.css ---
+.relatedPosts-item:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 28%, var(--card-border));
+  box-shadow: 0 24px 40px -28px color-mix(in srgb, var(--theme-main) 26%, rgba(14, 20, 36, 0.42));
+  transform: translateY(-3px);
+}
+
+--- rebuild.css ---
+.comment-surface:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 30%, var(--card-border));
+  box-shadow: 0 26px 46px -34px color-mix(in srgb, var(--theme-main) 22%, rgba(14, 20, 36, 0.42));
+}
+
+--- rebuild.css ---
+.comment-thread__item:hover {
+  border-color: var(--theme-main);
+  box-shadow: var(--shadow-main);
+}
+
+--- rebuild.css ---
+.taxonomy-index-card #tag-page-tags a:hover {
+  transform: translateY(-3px);
+  background: var(--taxonomy-accent, var(--theme-main));
+  color: var(--white);
+  border-color: transparent;
+  box-shadow: 0 20px 34px -24px color-mix(in srgb, var(--taxonomy-accent, var(--theme-main)) 36%, rgba(14, 20, 36, 0.42));
+}
+
+--- rebuild.css ---
+.taxonomy-cloud--categories a:hover {
+  background: var(--taxonomy-accent);
+  color: var(--white);
+  border-color: transparent;
+  box-shadow: 0 18px 32px -24px color-mix(in srgb, var(--taxonomy-accent, var(--theme-main)) 34%, rgba(14, 20, 36, 0.4));
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+.taxonomy-grid__item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-main);
+}
+
+--- rebuild.css ---
+.article-sort-item:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 30%, var(--card-border));
+  box-shadow: 0 24px 38px -28px color-mix(in srgb, var(--theme-main) 26%, rgba(14, 20, 36, 0.42));
+  transform: translateY(-3px);
+}
+
+--- rebuild.css ---
+.post-tool-icon-button:hover,
+.share-button:hover,
+.post-share-grid__item:hover {
+  border-color: transparent;
+  background: var(--theme-main);
+  color: var(--white);
+  box-shadow: var(--shadow-main);
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+body[data-type='home'] .categoryItem:focus-within .categoryButton,
+body[data-type='home'] .categoryItem:hover .categoryButton {
+  background-position: 100% 50%;
+  transform: translateY(-4px);
+  box-shadow: 0 24px 42px -30px rgba(14, 20, 36, 0.4);
+}
+
+--- rebuild.css ---
+body[data-type='home'] .categoryItem:focus-within .categoryButton,
+body[data-type='home'] .categoryItem:hover .categoryButton {
+  background-position: 100% 50%;
+  box-shadow: 0 24px 42px -30px rgba(14, 20, 36, 0.42);
+  transform: translateY(-2px);
+}
+
+--- rebuild.css ---
+#menus .site-page-submenu__item:hover,
+#menus .site-page-submenu__item.is-active {
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-main) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+--- rebuild.css ---
+#post-comment .comment-toolbar__testing-actions button:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 40%, var(--card-border));
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  color: var(--theme-main);
+  transform: translateY(-1px);
+  box-shadow: var(--theme-shadow-soft);
+}
+
+--- rebuild.css ---
+body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget:hover {
+  border: var(--style-border-hover);
+  box-shadow: var(--shadow-main);
+}
+
+--- rebuild.css ---
+body[data-type='post'] .post-share-grid__item:hover .post-share-grid__surface {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--platform-accent) 94%, black 6%);
+  color: var(--white);
+  box-shadow: 0 14px 26px -20px color-mix(in srgb, var(--platform-accent) 46%, rgba(15, 23, 42, 0.42));
+  transform: translateY(-1px);
+}
+
+--- rebuild.css ---
+body[data-type='home'] .categoryGroup .categoryItem:hover {
+  width: 60% !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  z-index: 2 !important;
+}
+Total: 52

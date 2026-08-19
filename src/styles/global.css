@@ -1560,7 +1560,7 @@ html.theme-ready body.theme-body #footer {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
   color: var(--white);
-  backdrop-filter: saturate(180%) blur(20px);
+  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
   cursor: pointer;
   transition: 0.3s;
 }

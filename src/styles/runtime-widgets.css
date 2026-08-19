@@ -706,8 +706,8 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
+  /* [PERF] -webkit-backdrop-filter: blur(20px); */
   transform: translateZ(0);
   pointer-events: none;
   box-shadow: var(--shadow-border);

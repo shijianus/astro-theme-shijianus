@@ -157,7 +157,7 @@
   position: fixed;
   top: 0;
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
+  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
   border-bottom: var(--style-border-always);
   box-shadow: var(--shadow-nav);
   transform: translateY(0) !important;
@@ -381,7 +381,7 @@
     /* 高保真安知鱼视觉参数 */
     background: rgba(25, 25, 25, 0.9) !important;
     /* [PERF] backdrop-filter: blur(16px) !important; */
-    -webkit-backdrop-filter: blur(16px) !important;
+    /* [PERF] -webkit-backdrop-filter: blur(16px) !important; */
     color: #ffffff !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;
@@ -432,7 +432,7 @@
     font-weight: normal !important;
     font-size: 11px !important;
     /* [PERF] backdrop-filter: blur(8px) !important; */
-    -webkit-backdrop-filter: blur(8px) !important;
+    /* [PERF] -webkit-backdrop-filter: blur(8px) !important; */
     transform: translateX(-50%) translateY(-4px) !important;
     border-radius: 4px !important;
     padding: 4px 8px !important;
