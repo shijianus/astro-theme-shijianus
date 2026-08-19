@@ -172,7 +172,7 @@ export function ThemeUniverse() {
         speed: speedBase * (0.6 + depth * 0.95),
         alpha: mode === 'matrix' ? randomBetween(0.2, 0.9) : (lightMode ? randomBetween(0.12, 0.38) : randomBetween(0.15, 0.95)),
         drift: mode === 'matrix' ? 0 : (lightMode ? randomBetween(-0.05, 0.05) : randomBetween(-0.01, 0.01)),
-        glow: mode === 'matrix' ? 0 : (depth > 0.8 ? randomBetween(0.1, 0.4) : 0),
+        glow: mode === 'matrix' ? 0 : (lightMode ? (depth > 0.8 ? randomBetween(0.1, 0.4) : 0) : (depth > 0.92 ? randomBetween(0.1, 0.4) : 0)),
         tint: sampleTint(mode),
         char,
       };
@@ -196,8 +196,8 @@ export function ThemeUniverse() {
         density = 12000;
         minimum = 50;
       } else if (mode === 'starfield') {
-        density = 8000;
-        minimum = 150;
+        density = 14000;
+        minimum = 100;
       } else if (isLightMode(mode)) {
         density = 24000;
         minimum = 50;
@@ -302,7 +302,6 @@ export function ThemeUniverse() {
         band.addColorStop(1, 'rgba(255, 255, 255, 0)');
         context.save();
         context.globalAlpha = 0.6;
-        context.globalCompositeOperation = 'screen';
         context.fillStyle = band;
         context.fillRect(0, 0, width, height);
         context.restore();
@@ -319,7 +318,6 @@ export function ThemeUniverse() {
         context.moveTo(-100, height * 0.8);
         context.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, width + 100, height * 0.2);
         
-        context.lineWidth = 120;
         const gradient = context.createLinearGradient(0, 0, width, height);
         gradient.addColorStop(0, 'rgba(0, 255, 128, 0.15)');
         gradient.addColorStop(0.5, 'rgba(0, 200, 255, 0.18)');
@@ -327,9 +325,21 @@ export function ThemeUniverse() {
         
         context.strokeStyle = gradient;
         context.globalCompositeOperation = 'screen';
-        context.filter = 'blur(40px)';
+        
+        // Replace blur with layered strokes
+        context.lineWidth = 140;
+        context.globalAlpha = 0.3;
         context.stroke();
-        context.filter = 'none';
+        
+        context.lineWidth = 80;
+        context.globalAlpha = 0.6;
+        context.stroke();
+        
+        context.lineWidth = 30;
+        context.globalAlpha = 1.0;
+        context.stroke();
+        
+        context.globalAlpha = 1.0;
         context.globalCompositeOperation = 'source-over';
       }
     };
