@@ -10,6 +10,7 @@ type Star = {
   glow: number;
   tint: 'white' | 'blue' | 'gold' | 'cyan' | 'green' | 'rose' | 'neon';
   char?: string; // For matrix
+  cachedGlow?: CanvasGradient;
 };
 
 type ShootingStar = {
@@ -213,6 +214,8 @@ export function ThemeUniverse() {
       lastFrameAt = 0;
     };
 
+    let cachedGradients: Record<string, CanvasGradient> = {};
+
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
@@ -222,6 +225,7 @@ export function ThemeUniverse() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cachedGradients = {};
       populate();
 
       if (shouldAnimateUniverse(reducedMotionQuery) && !isLooping) {
@@ -232,20 +236,26 @@ export function ThemeUniverse() {
     const drawBackgroundGlow = (mode: UniverseMode, tick: number) => {
       if (isLightMode(mode)) {
         if (mode === 'light-twilight') {
-          const twilight = context.createLinearGradient(0, 0, 0, height);
-          twilight.addColorStop(0, 'rgba(255, 238, 224, 0.4)');
-          twilight.addColorStop(0.4, 'rgba(255, 212, 194, 0.15)');
-          twilight.addColorStop(1, 'rgba(255, 246, 240, 0)');
-          context.fillStyle = twilight;
+          if (!cachedGradients.twilight) {
+            const twilight = context.createLinearGradient(0, 0, 0, height);
+            twilight.addColorStop(0, 'rgba(255, 238, 224, 0.4)');
+            twilight.addColorStop(0.4, 'rgba(255, 212, 194, 0.15)');
+            twilight.addColorStop(1, 'rgba(255, 246, 240, 0)');
+            cachedGradients.twilight = twilight;
+          }
+          context.fillStyle = cachedGradients.twilight;
           context.fillRect(0, 0, width, height);
           return;
         }
 
         if (mode === 'light-snow') {
-          const snowbg = context.createLinearGradient(0, 0, 0, height);
-          snowbg.addColorStop(0, 'rgba(220, 235, 255, 0.2)');
-          snowbg.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          context.fillStyle = snowbg;
+          if (!cachedGradients.snowbg) {
+            const snowbg = context.createLinearGradient(0, 0, 0, height);
+            snowbg.addColorStop(0, 'rgba(220, 235, 255, 0.2)');
+            snowbg.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            cachedGradients.snowbg = snowbg;
+          }
+          context.fillStyle = cachedGradients.snowbg;
           context.fillRect(0, 0, width, height);
           return;
         }
@@ -257,21 +267,27 @@ export function ThemeUniverse() {
         context.fillStyle = morning;
         context.fillRect(0, 0, width, height);
 
-        const air = context.createLinearGradient(width * 0.06, height * 0.86, width * 0.96, height * 0.12);
-        air.addColorStop(0, 'rgba(66, 90, 239, 0)');
-        air.addColorStop(0.42, mode === 'light-grid' ? 'rgba(66, 90, 239, 0.045)' : 'rgba(60, 154, 255, 0.052)');
-        air.addColorStop(0.72, mode === 'light-daybreak' ? 'rgba(255, 138, 93, 0.052)' : 'rgba(255, 174, 80, 0.038)');
-        air.addColorStop(1, 'rgba(66, 90, 239, 0)');
-        context.fillStyle = air;
+        if (!cachedGradients.air) {
+          const air = context.createLinearGradient(width * 0.06, height * 0.86, width * 0.96, height * 0.12);
+          air.addColorStop(0, 'rgba(66, 90, 239, 0)');
+          air.addColorStop(0.42, mode === 'light-grid' ? 'rgba(66, 90, 239, 0.045)' : 'rgba(60, 154, 255, 0.052)');
+          air.addColorStop(0.72, mode === 'light-daybreak' ? 'rgba(255, 138, 93, 0.052)' : 'rgba(255, 174, 80, 0.038)');
+          air.addColorStop(1, 'rgba(66, 90, 239, 0)');
+          cachedGradients.air = air;
+        }
+        context.fillStyle = cachedGradients.air;
         context.fillRect(0, 0, width, height);
         return;
       }
 
       if (mode === 'matrix') {
-        const dark = context.createLinearGradient(0, 0, 0, height);
-        dark.addColorStop(0, 'rgba(0, 10, 5, 0.85)');
-        dark.addColorStop(1, 'rgba(0, 15, 5, 0.6)');
-        context.fillStyle = dark;
+        if (!cachedGradients.matrixDark) {
+          const dark = context.createLinearGradient(0, 0, 0, height);
+          dark.addColorStop(0, 'rgba(0, 10, 5, 0.85)');
+          dark.addColorStop(1, 'rgba(0, 15, 5, 0.6)');
+          cachedGradients.matrixDark = dark;
+        }
+        context.fillStyle = cachedGradients.matrixDark;
         context.fillRect(0, 0, width, height);
         return;
       }
@@ -280,29 +296,37 @@ export function ThemeUniverse() {
       context.fillStyle = mode === 'starfield' ? 'rgba(1, 3, 8, 0.9)' : mode === 'nebula' ? 'rgba(8, 10, 24, 0.58)' : 'rgba(5, 12, 26, 0.52)';
       context.fillRect(0, 0, width, height);
 
-      const first = context.createRadialGradient(width * 0.18, height * 0.16, 0, width * 0.18, height * 0.16, width * 0.36);
-      first.addColorStop(0, mode === 'aurora' ? 'rgba(66, 190, 255, 0.12)' : 'rgba(61, 122, 255, 0.08)');
-      first.addColorStop(1, 'rgba(61, 122, 255, 0)');
-      context.fillStyle = first;
+      if (!cachedGradients.firstDark) {
+        const first = context.createRadialGradient(width * 0.18, height * 0.16, 0, width * 0.18, height * 0.16, width * 0.36);
+        first.addColorStop(0, mode === 'aurora' ? 'rgba(66, 190, 255, 0.12)' : 'rgba(61, 122, 255, 0.08)');
+        first.addColorStop(1, 'rgba(61, 122, 255, 0)');
+        cachedGradients.firstDark = first;
+      }
+      context.fillStyle = cachedGradients.firstDark;
       context.fillRect(0, 0, width, height);
 
-      const second = context.createRadialGradient(width * 0.82, height * 0.18, 0, width * 0.82, height * 0.18, width * 0.24);
-      second.addColorStop(0, mode === 'nebula' ? 'rgba(140, 104, 255, 0.16)' : 'rgba(242, 185, 75, 0.06)');
-      second.addColorStop(1, 'rgba(242, 185, 75, 0)');
-      context.fillStyle = second;
+      if (!cachedGradients.secondDark) {
+        const second = context.createRadialGradient(width * 0.82, height * 0.18, 0, width * 0.82, height * 0.18, width * 0.24);
+        second.addColorStop(0, mode === 'nebula' ? 'rgba(140, 104, 255, 0.16)' : 'rgba(242, 185, 75, 0.06)');
+        second.addColorStop(1, 'rgba(242, 185, 75, 0)');
+        cachedGradients.secondDark = second;
+      }
+      context.fillStyle = cachedGradients.secondDark;
       context.fillRect(0, 0, width, height);
 
       if (mode === 'starfield') {
-        // Realistic Milky Way band
-        const band = context.createLinearGradient(0, height * 0.9, width, height * 0.1);
-        band.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        band.addColorStop(0.3, 'rgba(40, 50, 100, 0.04)');
-        band.addColorStop(0.5, 'rgba(100, 150, 255, 0.09)');
-        band.addColorStop(0.7, 'rgba(60, 40, 100, 0.04)');
-        band.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        if (!cachedGradients.milkyWay) {
+          const band = context.createLinearGradient(0, height * 0.9, width, height * 0.1);
+          band.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          band.addColorStop(0.3, 'rgba(40, 50, 100, 0.04)');
+          band.addColorStop(0.5, 'rgba(100, 150, 255, 0.09)');
+          band.addColorStop(0.7, 'rgba(60, 40, 100, 0.04)');
+          band.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          cachedGradients.milkyWay = band;
+        }
         context.save();
         context.globalAlpha = 0.6;
-        context.fillStyle = band;
+        context.fillStyle = cachedGradients.milkyWay;
         context.fillRect(0, 0, width, height);
         context.restore();
       }
@@ -318,12 +342,15 @@ export function ThemeUniverse() {
         context.moveTo(-100, height * 0.8);
         context.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, width + 100, height * 0.2);
         
-        const gradient = context.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, 'rgba(0, 255, 128, 0.15)');
-        gradient.addColorStop(0.5, 'rgba(0, 200, 255, 0.18)');
-        gradient.addColorStop(1, 'rgba(150, 0, 255, 0.1)');
+        if (!cachedGradients.auroraGradient) {
+          const gradient = context.createLinearGradient(0, 0, width, height);
+          gradient.addColorStop(0, 'rgba(0, 255, 128, 0.15)');
+          gradient.addColorStop(0.5, 'rgba(0, 200, 255, 0.18)');
+          gradient.addColorStop(1, 'rgba(150, 0, 255, 0.1)');
+          cachedGradients.auroraGradient = gradient;
+        }
         
-        context.strokeStyle = gradient;
+        context.strokeStyle = cachedGradients.auroraGradient;
         context.globalCompositeOperation = 'screen';
         
         // Replace blur with layered strokes
@@ -364,13 +391,19 @@ export function ThemeUniverse() {
         : Math.max(0.1, Math.min(1, star.alpha * (0.6 + twinkle * 0.4)));
 
       if (star.glow > 0 && mode !== 'starfield') {
-        const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * (lightMode ? 8.5 : 4.8));
-        glow.addColorStop(0, colorForTint(star.tint, star.glow * (lightMode ? 0.55 : 0.68)));
-        glow.addColorStop(1, colorForTint(star.tint, 0));
+        if (!star.cachedGlow) {
+          const glow = context.createRadialGradient(0, 0, 0, 0, 0, star.radius * (lightMode ? 8.5 : 4.8));
+          glow.addColorStop(0, colorForTint(star.tint, star.glow * (lightMode ? 0.55 : 0.68)));
+          glow.addColorStop(1, colorForTint(star.tint, 0));
+          star.cachedGlow = glow;
+        }
+        context.save();
+        context.translate(star.x, star.y);
         context.beginPath();
-        context.fillStyle = glow;
-        context.arc(star.x, star.y, star.radius * (lightMode ? 8.5 : 4.8), 0, Math.PI * 2);
+        context.fillStyle = star.cachedGlow;
+        context.arc(0, 0, star.radius * (lightMode ? 8.5 : 4.8), 0, Math.PI * 2);
         context.fill();
+        context.restore();
       }
 
       context.beginPath();
@@ -398,18 +431,27 @@ export function ThemeUniverse() {
     const drawShootingStars = (delta: number) => {
       shootingStars = shootingStars.filter((s) => s.alpha > 0.04 && s.x < width + 100 && s.y > -100);
       shootingStars.forEach((s) => {
-        const endX = s.x - Math.cos(s.angle) * s.length;
-        const endY = s.y - Math.sin(s.angle) * s.length;
-        const gradient = context.createLinearGradient(s.x, s.y, endX, endY);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${s.alpha})`);
-        gradient.addColorStop(0.2, `rgba(164, 210, 255, ${s.alpha * 0.72})`);
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        if (!(s as any).cachedGradient) {
+          const dx = -Math.cos(s.angle) * s.length;
+          const dy = -Math.sin(s.angle) * s.length;
+          const gradient = context.createLinearGradient(0, 0, dx, dy);
+          gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
+          gradient.addColorStop(0.2, `rgba(164, 210, 255, 0.72)`);
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          (s as any).cachedGradient = gradient;
+        }
+
+        context.save();
+        context.translate(s.x, s.y);
+        context.globalAlpha = s.alpha;
         context.beginPath();
-        context.moveTo(s.x, s.y);
-        context.lineTo(endX, endY);
-        context.strokeStyle = gradient;
+        context.moveTo(0, 0);
+        context.lineTo(-Math.cos(s.angle) * s.length, -Math.sin(s.angle) * s.length);
+        context.strokeStyle = (s as any).cachedGradient;
         context.lineWidth = 1.2;
         context.stroke();
+        context.restore();
+
         s.x += s.speed * Math.cos(s.angle) * delta;
         s.y += s.speed * Math.sin(s.angle) * delta;
         s.alpha *= Math.pow(0.92, delta);
