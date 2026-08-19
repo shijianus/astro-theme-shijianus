@@ -380,7 +380,7 @@
     
     /* 高保真安知鱼视觉参数 */
     background: rgba(25, 25, 25, 0.9) !important;
-    backdrop-filter: blur(16px) !important;
+    /* [PERF] backdrop-filter: blur(16px) !important; */
     -webkit-backdrop-filter: blur(16px) !important;
     color: #ffffff !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -431,7 +431,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
     font-weight: normal !important;
     font-size: 11px !important;
-    backdrop-filter: blur(8px) !important;
+    /* [PERF] backdrop-filter: blur(8px) !important; */
     -webkit-backdrop-filter: blur(8px) !important;
     transform: translateX(-50%) translateY(-4px) !important;
     border-radius: 4px !important;
@@ -696,7 +696,7 @@
   height: 48px !important;
   border-radius: 50% !important; /* Circular for independent look */
   background: var(--card-bg-op) !important;
-  backdrop-filter: blur(10px);
+  /* [PERF] backdrop-filter: blur(10px); */
   border: var(--style-border-always) !important;
   box-shadow: var(--shadow-border) !important;
   color: var(--font-color);
@@ -861,7 +861,7 @@
   display: flex !important;
   align-items: center !important;
   background: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(10px) !important;
+  /* [PERF] backdrop-filter: blur(10px) !important; */
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
@@ -1067,7 +1067,7 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   pointer-events: none;
   transform: translate(-50%, -10px);
   transition: opacity 0.26s ease, transform 0.26s ease;
-  backdrop-filter: blur(16px);
+  /* [PERF] backdrop-filter: blur(16px); */
 }
 
 .theme-activity-bar.show {
@@ -1135,7 +1135,7 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   transform: translateX(100%);
   transition: transform 0.28s ease;
   overflow: auto;
-  backdrop-filter: blur(18px);
+  /* [PERF] backdrop-filter: blur(18px); */
 }
 
 .theme-account-overlay.show .theme-account-drawer {
@@ -1473,7 +1473,7 @@ body[data-type='home'] #random-hover {
 body[data-type='home'] #random-banner:hover #random-hover {
   padding-left: 28px;
   background: color-mix(in srgb, var(--theme-main) 78%, transparent);
-  backdrop-filter: blur(16px);
+  /* [PERF] backdrop-filter: blur(16px); */
 }
 
 body[data-type='home'] .random-hover__lead {
@@ -2700,7 +2700,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   visibility: hidden !important;
   white-space: nowrap !important; /* Enforce single line */
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important;
-  backdrop-filter: blur(20px) !important;
+  /* [PERF] backdrop-filter: blur(20px) !important; */
   z-index: 100 !important;
   will-change: transform, opacity !important;
   overflow: hidden !important; /* Clip any inner overflow */
@@ -2825,18 +2825,18 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 /* Post hero badges: glass pills on top of a blurred image — lighter blur is fine */
 .post-hero__badge {
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 /* Post navigation cards meta pills */
 .postNav-card__hint,
 .postNav-card__date {
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 /* Random banner hover overlay — already has a solid gradient background */
 #random-banner:hover #random-hover {
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 /* Profile card sayhi button — sits on an opaque card background */
@@ -2851,7 +2851,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 /* Banner buttons — already have rgba background */
 .topGroup .banner-button {
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 /* 2. Replace post hero image filter: the filter: blur(8px) forces a compositing

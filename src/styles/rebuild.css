@@ -34,7 +34,7 @@ body[data-type='post'] #content-inner.layout {
   pointer-events: none;
   transform: translate(-50%, -4px);
   transition: opacity 0.2s ease, transform 0.2s ease;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 #menus .site-page:hover .site-page__subtitle,
@@ -755,7 +755,7 @@ body[data-type='tag-detail'] .page-main {
   color: rgba(255, 255, 255, 0.9);
   font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 .post-hero__badge.is-primary {
@@ -781,7 +781,7 @@ body[data-type='tag-detail'] .page-main {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  backdrop-filter: blur(10px);
+  /* [PERF] backdrop-filter: blur(10px); */
 }
 
 .post-hero h1 {
@@ -811,7 +811,7 @@ body[data-type='tag-detail'] .page-main {
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08)),
     rgba(15, 20, 30, 0.24);
   box-shadow: 0 18px 34px -28px rgba(9, 12, 18, 0.34);
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 .post-hero__meta-card span {
@@ -2043,7 +2043,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 .postNav-card__content {
@@ -2074,7 +2074,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   color: rgba(255, 255, 255, 0.78);
   font-size: 11px;
   font-weight: 700;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 .postNav-card__title {
@@ -2231,7 +2231,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 .relatedPosts-item .content {
@@ -2256,7 +2256,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   color: rgba(255, 255, 255, 0.78);
   font-size: 11px;
   font-weight: 700;
-  backdrop-filter: blur(4px);
+  /* [PERF] backdrop-filter: blur(4px); */
 }
 
 .relatedPosts-item .title {
@@ -2609,7 +2609,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   border-radius: 24px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, rgba(255, 255, 255, 0.2)), color-mix(in srgb, var(--card-bg) 100%, transparent));
-  backdrop-filter: blur(10px);
+  /* [PERF] backdrop-filter: blur(10px); */
   box-shadow: 0 18px 34px -30px rgba(14, 20, 36, 0.24);
 }
 
@@ -3676,7 +3676,7 @@ body[data-type='post'] main.page-main > astro-island > #post-comment {
   padding: 12px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
+  /* [PERF] backdrop-filter: blur(12px); */
 }
 
 .about-statistic__grid strong {
@@ -6205,7 +6205,7 @@ body[data-type='post'] #card-toc .toc-content {
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-  backdrop-filter: blur(16px);
+  /* [PERF] backdrop-filter: blur(16px); */
 }
 
 #menus .site-page__flyout span {
@@ -6304,7 +6304,7 @@ body[data-type='post'] #card-toc .toc-content {
   background: color-mix(in srgb, var(--channel-accent) 12%, rgba(255, 255, 255, 0.82));
   color: color-mix(in srgb, var(--channel-accent) 78%, #111827);
   text-align: center;
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
@@ -7505,7 +7505,7 @@ body[data-type='404'] .error-info {
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
-  backdrop-filter: blur(8px);
+  /* [PERF] backdrop-filter: blur(8px); */
 }
 
 #menus .menus_item.has-children:hover .site-page-submenu,
@@ -7754,7 +7754,7 @@ body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08)),
     rgba(15, 20, 30, 0.2);
-  backdrop-filter: blur(12px);
+  /* [PERF] backdrop-filter: blur(12px); */
 }
 
 .post-hero__meta-label,
@@ -9591,7 +9591,7 @@ body[data-type='post'] .post-tools-overlay-backdrop {
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.22s ease, visibility 0.22s ease;
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 body[data-type='post'] .post-tools-overlay-backdrop[hidden] {
@@ -10550,7 +10550,7 @@ body[data-type='home'] .categoryItem:focus-within .categoryButtonIcon {
   transform: translateY(-10px) scale(0.98);
   transform-origin: top right;
   transition: transform 0.22s ease;
-  backdrop-filter: blur(12px);
+  /* [PERF] backdrop-filter: blur(12px); */
 }
 
 .theme-notification-overlay.show .theme-notification-drawer {
@@ -10660,7 +10660,7 @@ body[data-type='home'] .categoryItem:focus-within .categoryButtonIcon {
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
-  backdrop-filter: blur(8px);
+  /* [PERF] backdrop-filter: blur(8px); */
 }
 
 #shijianus-devbar-panel.show {
@@ -13553,7 +13553,7 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
   margin-bottom: 12px;
   padding: 0 4px 10px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 98%, transparent), color-mix(in srgb, var(--card-bg) 82%, transparent));
-  backdrop-filter: blur(10px);
+  /* [PERF] backdrop-filter: blur(10px); */
 }
 
 #post-comment .comment-thread__header strong {

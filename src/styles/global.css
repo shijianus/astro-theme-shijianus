@@ -1164,7 +1164,7 @@ html.theme-ready body.theme-body #footer {
     linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 86%, #06101f), color-mix(in srgb, var(--theme-deep) 76%, #04070f)),
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.12), transparent 22%);
   opacity: 1;
-  backdrop-filter: blur(15px);
+  /* [PERF] backdrop-filter: blur(15px); */
 }
 
 .random-hover__lead {
@@ -1485,7 +1485,7 @@ html.theme-ready body.theme-body #footer {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  backdrop-filter: blur(18px);
+  /* [PERF] backdrop-filter: blur(18px); */
 }
 
 .topGroup .todayCard-info {
@@ -1663,7 +1663,7 @@ html.theme-ready body.theme-body #footer {
   color: var(--white);
   font-size: 11px;
   font-weight: 800;
-  backdrop-filter: blur(14px);
+  /* [PERF] backdrop-filter: blur(14px); */
   transition: background 0.28s ease, transform 0.28s ease;
 }
 
@@ -2230,7 +2230,7 @@ html.theme-ready body.theme-body #footer {
   color: var(--white);
   font-size: 12px;
   line-height: 1.8;
-  backdrop-filter: blur(12px);
+  /* [PERF] backdrop-filter: blur(12px); */
   user-select: none;
   transition: 0.3s;
 }
@@ -2883,7 +2883,7 @@ html.theme-ready body.theme-body #footer {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(6px);
+  /* [PERF] backdrop-filter: blur(6px); */
 }
 
 .media-list-item {
