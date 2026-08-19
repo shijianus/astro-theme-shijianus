@@ -785,18 +785,6 @@ body[data-type='post'] #post-secondary-aside .card-recent-post .item-headline {
   margin-left: 0;
 }
 
-body[data-type='post'] #card-toc .toc-current {
-  margin: 6px 0 8px;
-}
-
-body[data-type='post'] #card-toc[data-pin-state='entering'] .toc-current__title {
-  opacity: 0.78;
-}
-
-body[data-type='post'] #card-toc[data-pin-state='leaving'] .toc-current {
-  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
-}
-
 body[data-type='post'] #card-toc .toc-content,
 body[data-type='post'] #post-secondary-aside .card-recent-post .aside-list {
   flex: 1 1 auto;
