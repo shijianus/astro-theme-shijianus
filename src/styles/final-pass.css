@@ -2544,7 +2544,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 [data-theme='dark'] #page-header.nav-fixed #nav {
   background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: saturate(180%) blur(20px);
+  /* [PERF-DOUBLE] backdrop-filter: saturate(180%) blur(20px); */
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 

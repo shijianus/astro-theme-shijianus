@@ -496,7 +496,7 @@ html.theme-ready body.theme-body #footer {
   background: color-mix(in srgb, var(--card-bg) 86%, transparent);
   border-bottom: var(--style-border-always);
   box-shadow: var(--shadow-nav);
-  backdrop-filter: saturate(160%) blur(10px);
+  /* [PERF-DOUBLE] backdrop-filter: saturate(160%) blur(10px); */
 }
 
 #nav-group {
