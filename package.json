@@ -52,6 +52,7 @@
     "autoprefixer": "^10.5.0",
     "playwright": "^1.62.1",
     "postcss": "^8.5.13",
+    "puppeteer": "^25.8.0",
     "wrangler": "^4.85.0"
   }
 }
