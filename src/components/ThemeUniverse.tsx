@@ -419,10 +419,12 @@ export function ThemeUniverse() {
       const mode = getUniverseMode();
       canvas.style.opacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
       
-      if (!mode || !shouldAnimateUniverse(reducedMotionQuery)) {
+      if (!mode || !shouldAnimateUniverse(reducedMotionQuery) || !isIntersecting) {
         lastFrameAt = 0;
         isLooping = false;
-        context.clearRect(0, 0, width, height);
+        if (!mode || !shouldAnimateUniverse(reducedMotionQuery)) {
+          context.clearRect(0, 0, width, height);
+        }
         return;
       }
 
@@ -485,7 +487,7 @@ export function ThemeUniverse() {
         return;
       }
       populate();
-      if (shouldAnimateUniverse(reducedMotionQuery) && !isLooping) {
+      if (shouldAnimateUniverse(reducedMotionQuery) && isIntersecting && !isLooping) {
         frameId = window.requestAnimationFrame(render);
       }
     });
@@ -495,11 +497,25 @@ export function ThemeUniverse() {
       attributeFilter: ['data-theme', 'data-background'],
     });
 
+    let isIntersecting = true;
+    const sentinel = document.getElementById('universe-sentinel');
+    let io: IntersectionObserver | null = null;
+    if (sentinel) {
+      io = new IntersectionObserver(([entry]) => {
+        isIntersecting = entry.isIntersecting;
+        if (isIntersecting && !isLooping && shouldAnimateUniverse(reducedMotionQuery)) {
+          lastFrameAt = 0;
+          frameId = window.requestAnimationFrame(render);
+        }
+      });
+      io.observe(sentinel);
+    }
+
     const handleVisibilityOrMotionChange = () => {
       lastFrameAt = 0;
-      if (!shouldAnimateUniverse(reducedMotionQuery)) {
+      if (!shouldAnimateUniverse(reducedMotionQuery) || !isIntersecting) {
         isLooping = false;
-        context.clearRect(0, 0, width, height);
+        // Do not clear the context here to avoid flicker if it resumes
         return;
       }
       resize();
@@ -510,6 +526,7 @@ export function ThemeUniverse() {
     reducedMotionQuery.addEventListener('change', handleVisibilityOrMotionChange);
     return () => {
       observer.disconnect();
+      if (io) io.disconnect();
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScrollPause);
       document.removeEventListener('visibilitychange', handleVisibilityOrMotionChange);
@@ -519,5 +536,10 @@ export function ThemeUniverse() {
     };
   }, []);
 
-  return <canvas id="universe" ref={canvasRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: -1 }} />;
+  return (
+    <>
+      <div id="universe-sentinel" style={{ position: 'absolute', top: 0, left: 0, width: '1px', height: '100vh', pointerEvents: 'none', visibility: 'hidden' }} />
+      <canvas id="universe" ref={canvasRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: -1 }} />
+    </>
+  );
 }
