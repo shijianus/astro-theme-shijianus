@@ -29,3 +29,9 @@ functions/generated/
 
 # jetbrains setting folder
 .idea/
+
+# Debug & Screenshots
+*-screenshot*.png
+verification-screenshots/
+__pycache__/
+*.pyc

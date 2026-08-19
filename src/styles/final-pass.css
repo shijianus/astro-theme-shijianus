@@ -1534,7 +1534,7 @@ body[data-type='home'] .categoryItem {
   min-width: 140px !important;
   box-sizing: border-box !important;
   transform: translate3d(0, 0, 0);
-  transition: flex 1.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
+  transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease !important;
   border-left: 4px solid transparent !important;
   border-right: 4px solid transparent !important;
   background-clip: padding-box !important;

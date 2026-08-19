@@ -526,12 +526,10 @@ const renderTocNodes = (headings: TocHeading[]) =>
   }
 
   
-  /* 用 opacity 代替 filter:blur 实现"非焦点淡化"效果：
-     opacity 走 GPU 合成层，无 repaint；
-     filter:blur 在文字元素上强制 software rasterization，开销极高 */
+  /* 用纯 CSS class 分档位实现渐变聚焦，替代耗性能的 JS 计算与 blur */
   #card-toc .toc-link {
     transition: opacity 0.25s ease, color 0.2s ease;
-    opacity: 0.55;
+    opacity: 0.25; /* 基础透明度最低 */
   }
   
   /* 悬停 TOC 时恢复所有链接全不透明（无 repaint，仅合成层更新） */
@@ -539,15 +537,11 @@ const renderTocNodes = (headings: TocHeading[]) =>
     opacity: 1 !important;
   }
   
-  /* 激活项全不透明 */
-  #card-toc .toc-link.active {
-    opacity: 1 !important;
-  }
-  
-  /* 激活项周围两侧的链接略微淡化（用 JS 通过 --dist 控制，此处保底） */
-  #card-toc .toc-link:not(.active) {
-    opacity: 0.55;
-  }
+  /* 激活项及临近项的分档透明度 */
+  #card-toc .toc-link.active { opacity: 1 !important; }
+  #card-toc .toc-link.dist-1 { opacity: 0.8 !important; }
+  #card-toc .toc-link.dist-2 { opacity: 0.55 !important; }
+  #card-toc .toc-link.dist-3 { opacity: 0.4 !important; }
 
 
   @media screen and (max-width: 1200px) {
@@ -566,6 +560,11 @@ const renderTocNodes = (headings: TocHeading[]) =>
     height: 100%;
   }
   
+  body[data-type='post'] .post-layout-row__aside .sticky_layout {
+    overflow: visible !important;
+    overflow-x: visible !important;
+  }
+
   body[data-type='post'] #content-inner.layout {
     overflow: visible !important;
     overflow-x: visible !important;
@@ -594,25 +593,37 @@ const renderTocNodes = (headings: TocHeading[]) =>
 
     const setActive = (activeId) => {
       let currentActive = null;
-      links.forEach((link) => {
-        link.classList.remove('active');
+      let activeIndex = -1;
+      
+      // 首先找出激活项的索引
+      activeIndex = headings.findIndex(h => h.id === activeId);
+
+      links.forEach((link, index) => {
+        // 清理所有相关类
+        link.classList.remove('active', 'dist-1', 'dist-2', 'dist-3');
         let parent = link.parentElement;
         while(parent && parent.classList.contains('toc-item')) {
           parent.classList.remove('active');
           parent = parent.parentElement.closest('.toc-item');
         }
-      });
-
-      const activeEntry = headings.find(h => h.id === activeId);
-      if (activeEntry) {
-        activeEntry.link.classList.add('active');
-        currentActive = activeEntry.link;
-        let parent = activeEntry.link.parentElement;
-        while(parent && parent.classList.contains('toc-item')) {
-          parent.classList.add('active');
-          parent = parent.parentElement.closest('.toc-item');
+        
+        // 计算索引差并添加分档类
+        if (activeIndex !== -1) {
+          const dist = Math.abs(index - activeIndex);
+          if (dist === 0) {
+            link.classList.add('active');
+            currentActive = link;
+            // 激活父级
+            let p = link.parentElement;
+            while(p && p.classList.contains('toc-item')) {
+              p.classList.add('active');
+              p = p.parentElement.closest('.toc-item');
+            }
+          } else if (dist <= 3) {
+            link.classList.add(`dist-${dist}`);
+          }
         }
-      }
+      });
 
       if (currentActive && tocContent) {
         const contentRect = tocContent.getBoundingClientRect();
