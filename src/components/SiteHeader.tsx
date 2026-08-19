@@ -393,16 +393,24 @@ export function SiteHeader({
     const updateScrolledState = () => {
       frame = 0;
       const documentElement = document.documentElement;
-      const scrollable = documentElement.scrollHeight - window.innerHeight;
-      const nextProgress = scrollable <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((window.scrollY / scrollable) * 100)));
+      
+      // READS
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const scrollHeight = documentElement.scrollHeight;
+      
+      const scrollable = scrollHeight - windowHeight;
+      const nextProgress = scrollable <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((scrollY / scrollable) * 100)));
 
-      // 直接操作 DOM，不走 React setState/re-render 路径
+      // WRITES
       const percentEl = progressElRef.current;
       const totopBtn = totopBtnRef.current;
       if (percentEl) percentEl.textContent = String(nextProgress);
       if (totopBtn) totopBtn.classList.toggle('at-top', nextProgress === 0);
 
-      syncHeaderMetrics();
+      // syncHeaderMetrics reads getBoundingClientRect which causes Layout Thrashing if called after DOM writes.
+      // We only need to sync it on resize or when crossing the 0 progress boundary (since header shrinks when scrolled).
+      // Alternatively, we can just not do it on every scroll frame.
     };
 
     const onScroll = () => {
