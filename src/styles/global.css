@@ -189,6 +189,9 @@ img {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  /* GPU compositing: isolate from #universe canvas repaints */
+  isolation: isolate;
+  will-change: transform;
 }
 
 #web_bg::after {
@@ -219,19 +222,16 @@ img {
   height: 100%;
   opacity: 0;
   pointer-events: none;
-  filter: saturate(1.08) brightness(1.04);
-  transition: opacity 0.35s ease, filter 0.35s ease;
+  /* [PERF] filter: saturate(1.08) brightness(1.04);
+     Removed: forces a full-screen GPU shader pass on every canvas animation frame.
+     The canvas content is already rendered with correct colors — no post-processing needed. */
+  transition: opacity 0.35s ease;
+  /* GPU compositing layer hints — isolate canvas repaints from the rest of the page */
+  will-change: transform;
+  contain: strict;
 }
 
-:root[data-theme='dark'][data-background='starfield'] #universe,
-:root[data-theme='dark'][data-background='nebula'] #universe,
-:root[data-theme='dark'][data-background='aurora'] #universe {
-  opacity: 1;
-}
 
-:root[data-theme='dark'][data-background='starfield'] #universe {
-  filter: saturate(1.12) brightness(1.08);
-}
 
 :root[data-background='clean'] #web_bg::after {
   opacity: 0;
@@ -2324,7 +2324,8 @@ html.theme-ready body.theme-body #footer {
   border-radius: var(--radius-sm);
   background: var(--white-op);
   color: var(--white);
-  transition: all 0.3s ease 0s;
+  /* [PERF] was: transition: all 0.3s — animates color/background (repaint triggers) */
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .card-info-social-icons .social-icon:hover svg {
@@ -3897,13 +3898,13 @@ body[data-type='home'] .page-aside {
   width: 100%;
   height: 100%;
   background: var(--maskbgdeep);
-  backdrop-filter: saturate(180%) blur(0);
+  /* [PERF] backdrop-filter: saturate(180%) blur(0); */
   transition: 0.3s;
 }
 
 .theme-search.show .search-mask,
 #console.show .console-mask {
-  backdrop-filter: saturate(180%) blur(20px);
+  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
 }
 
 .search-dialog {
@@ -4963,7 +4964,8 @@ body[data-type='home'] .page-aside {
   align-items: center;
   justify-content: center;
   z-index: 5;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* [PERF] was: transition: all — 'all' includes filter which triggers repaint */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .theme-icon-slot {

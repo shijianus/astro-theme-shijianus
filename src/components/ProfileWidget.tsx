@@ -195,7 +195,7 @@ export function ProfileWidget({
           z-index: 2; /* 确保在所有伪元素之上 */
           overflow: hidden;
           background: rgba(255, 255, 255, 0.02) !important;
-          backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
+          /* [PERF] backdrop-filter: blur(18px) saturate(180%) brightness(1.05); */
           border: 1px solid rgba(255, 255, 255, 0.1);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
           min-height: 340px;
@@ -267,7 +267,7 @@ export function ProfileWidget({
           inset: -4px;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(2px);
+          /* [PERF] backdrop-filter: blur(2px) */;
           z-index: -1;
           border: 1px solid rgba(255, 255, 255, 0.3);
         }
@@ -349,7 +349,7 @@ export function ProfileWidget({
           padding: 2px 12px;
           background: rgba(255, 255, 255, 0.12);
           border-radius: 20px;
-          backdrop-filter: blur(4px);
+          /* [PERF] backdrop-filter: blur(4px) */;
           transition: transform 0.3s, background 0.3s;
           user-select: none;
           white-space: nowrap;
@@ -469,7 +469,7 @@ export function ProfileWidget({
         }
         .profile-card.is-glass {
           background: rgba(255, 255, 255, 0.1) !important;
-          backdrop-filter: blur(10px);
+          /* [PERF] backdrop-filter: blur(10px) */;
         }
         .profile-card.is-solid {
           background: var(--card-bg) !important;

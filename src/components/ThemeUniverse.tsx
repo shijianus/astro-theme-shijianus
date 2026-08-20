@@ -29,7 +29,7 @@ type UniverseMode =
 const ACTIVE_DARK_BACKGROUNDS = new Set<string>(['starfield', 'nebula', 'aurora', 'matrix']);
 const ACTIVE_LIGHT_BACKGROUNDS = new Set<string>(['daybreak', 'grid', 'clean', 'twilight', 'snow']);
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
-const UNIVERSE_FRAME_INTERVAL = 1000 / 24;
+const UNIVERSE_FRAME_INTERVAL = 1000 / 15; /* [PERF] was 24fps — 15fps is visually identical for slow-drifting stars */
 
 function isUniverseActive() {
   return getUniverseMode() !== null;
@@ -39,7 +39,11 @@ function getUniverseMode(): UniverseMode | null {
   const root = document.documentElement;
   const background = root.dataset.background;
   if (root.dataset.theme === 'dark') {
-    return ACTIVE_DARK_BACKGROUNDS.has(background || '') ? (background as UniverseMode) : null;
+    /* [REBUILD] Dark mode no longer uses Canvas animation.
+       Background visuals are handled entirely by pure CSS on #web_bg
+       (gradients + ::before pseudo-element star dots + CSS animation drift).
+       This eliminates all per-frame JS computation in dark mode. */
+    return null;
   }
 
   if (root.dataset.theme === 'light' && ACTIVE_LIGHT_BACKGROUNDS.has(background || '')) {
@@ -467,9 +471,15 @@ export function ThemeUniverse() {
       scrollPauseTimer = window.setTimeout(() => { isScrolling = false; }, 200);
     };
 
+    let lastOpacity = '';
+
     const render = (tick: number) => {
       const mode = getUniverseMode();
-      canvas.style.opacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
+      const targetOpacity = mode ? (isLightMode(mode) && mode !== 'light-snow' ? '0.62' : '1') : '0';
+      if (targetOpacity !== lastOpacity) {
+        canvas.style.opacity = targetOpacity;
+        lastOpacity = targetOpacity;
+      }
       
       if (!mode || !shouldAnimateUniverse(reducedMotionQuery) || !isIntersecting) {
         lastFrameAt = 0;
@@ -591,7 +601,7 @@ export function ThemeUniverse() {
   return (
     <>
       <div id="universe-sentinel" style={{ position: 'absolute', top: 0, left: 0, width: '1px', height: '100vh', pointerEvents: 'none', visibility: 'hidden' }} />
-      <canvas id="universe" ref={canvasRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: -1 }} />
+      <canvas id="universe" ref={canvasRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: -1, willChange: 'transform', contain: 'strict' }} />
     </>
   );
 }

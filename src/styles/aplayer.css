@@ -162,8 +162,8 @@
 #nav-music.playing .aplayer {
   background: var(--shijianus-main);
   border: var(--style-border-hover);
-  backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: blur(20px);
+  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
+  /* [PERF] backdrop-filter: blur(20px); */
   transform: translateZ(0);
 }
 

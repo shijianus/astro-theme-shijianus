@@ -589,7 +589,7 @@
   border: 1px solid rgba(32, 72, 148, 0.14);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 18px 34px -24px rgba(6, 28, 58, 0.44);
-  backdrop-filter: blur(16px);
+  /* [PERF] backdrop-filter: blur(16px); */
 }
 
 .shijianus-music-pocket.is-playing .shijianus-music-pocket__toggle {
