@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { Clock, Calendar } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import {
   estimateReadingMinutes,
@@ -19,9 +20,10 @@ import { formatDisplayDate } from '../../lib/theme';
 interface Props {
   entry: CollectionEntry<'posts'>;
   index?: number;
+  isFocus?: boolean;
 }
 
-const { entry, index = 0 } = Astro.props;
+const { entry, index = 0, isFocus = false } = Astro.props;
 
 const href = getPostPath(entry);
 const reverse = index % 2 === 1;
@@ -33,57 +35,99 @@ const displayBadge = isProtected ? '受限' : entry.data.featured ? '推荐' : '
 const displayCategory = getDisplayPostCategory(entry);
 const displayGroup = getDisplayPostGroup(entry);
 const readMoreLabel = isProtected ? '验证后阅读' : '继续阅读';
+
+// Generate a deterministic color class based on category name
+function getCategoryColor(category: string) {
+  const colors = [
+    'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30',
+    'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30',
+    'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
+    'text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30',
+    'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-900/30',
+    'text-cyan-600 bg-cyan-50 dark:text-cyan-400 dark:bg-cyan-900/30',
+  ];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+const categoryColorClass = getCategoryColor(displayCategory);
 ---
 
 <article
-  class={`recent-post-item lastestpost-item ${reverse ? 'is-reverse' : ''}`}
+  class={`group relative flex flex-col ${isFocus ? 'md:col-span-2 md:flex-row' : (reverse ? 'md:flex-row-reverse' : 'md:flex-row')} bg-white dark:bg-[#121212] rounded-2xl shadow-sm border border-transparent dark:border-white/5 hover:shadow-2xl hover:-translate-y-1 hover:border-theme-main/50 transition-all duration-300 active:scale-[0.97] overflow-hidden`}
   data-card-link={href}
   tabindex="0"
   role="link"
   aria-label={displayTitle}
 >
-  <a href={href} class={`post_cover ${reverse ? 'right right_radius' : 'left_radius'}`} title={displayTitle}>
+  <a href={href} class={`relative block w-full ${isFocus ? 'md:w-1/2 md:h-auto' : 'md:w-[45%] md:h-full'} h-56 overflow-hidden bg-gray-200 dark:bg-gray-800 animate-pulse`} title={displayTitle}>
     <img
       src={resolveDisplayCover(entry)}
       alt={resolveDisplayCoverAlt(entry)}
-      class="post_bg"
-      loading="lazy"
+      class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      loading={index < 4 ? "eager" : "lazy"}
       data-fallback-src={siteConfig.post.hero.fallbackImage}
+      onload="this.parentElement.classList.remove('animate-pulse')"
+      onerror="this.src=this.dataset.fallbackSrc; this.parentElement.classList.remove('animate-pulse');"
     />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    {displayBadge && (
+      <div class="absolute top-4 left-4 z-10">
+        <span class="px-3 py-1 text-xs font-medium rounded-full bg-theme-main text-white shadow-sm">
+          {displayBadge}
+        </span>
+      </div>
+    )}
   </a>
 
-  <div class="recent-post-info" data-card-link={href}>
-    <div class="recent-post-info-top" data-card-link={href}>
-      <div class="recent-post-info-top-tips">
-        {displayBadge && <span class="newPost">{displayBadge}</span>}
-        <a class="unvisited-post" href={href}>{readMoreLabel}</a>
-      </div>
-
-      <a href={href} class="article-title" title={displayTitle}>
-        {displayTitle}
-      </a>
-    </div>
-
-    <div class="article-meta-wrap" data-card-link={href}>
-      <span class="post-meta-date">
-        <span class="article-meta-label">发布于</span>
-        <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
-      </span>
-      <span class="article-meta">
+  <div class={`flex flex-col justify-between flex-1 p-6 sm:p-8 ${isFocus ? 'md:p-10' : ''}`}>
+    <div>
+      <div class="flex items-center gap-3 mb-4">
         {isProtected ? (
-          <span>{displayCategory}</span>
+          <span class={`px-3 py-1 text-xs font-medium rounded-full ${categoryColorClass}`}>
+            {displayCategory}
+          </span>
         ) : (
-          <a href={getCategoryPath(resolveCategory(entry))} class="article-meta-link">
+          <a href={getCategoryPath(resolveCategory(entry))} class={`px-3 py-1 text-xs font-medium rounded-full transition-opacity hover:opacity-80 ${categoryColorClass}`}>
             {displayCategory}
           </a>
         )}
-        <span class="article-meta-separator">/</span>
-        <span>{displayGroup}</span>
-        <span class="article-meta-separator">/</span>
-        <span>{estimateReadingMinutes(entry)} 分钟</span>
-      </span>
+        <span class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+          <Clock size={12} />
+          {estimateReadingMinutes(entry)} 分钟
+        </span>
+        <span class="text-xs text-gray-400 dark:text-gray-500 hidden sm:flex items-center gap-1">
+          <Calendar size={12} />
+          <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
+        </span>
+      </div>
+
+      <a href={href} class={`block font-bold text-gray-800 dark:text-gray-100 group-hover:text-theme-main transition-colors duration-300 mb-3 line-clamp-2 ${isFocus ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`} title={displayTitle}>
+        {displayTitle}
+      </a>
+
+      <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4">
+        {displayExcerpt}
+      </p>
     </div>
 
-    <p class="content" data-card-link={href}>{displayExcerpt}</p>
+    <div class="flex items-center justify-between mt-auto">
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+          {displayGroup}
+        </span>
+      </div>
+      <a href={href} class="inline-flex items-center gap-1 text-sm font-medium text-theme-main hover:text-theme-deep transition-colors">
+        {readMoreLabel}
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1">
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
   </div>
 </article>
