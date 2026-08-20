@@ -118,26 +118,7 @@ body[data-type='post'] #card-toc .toc-content {
   scrollbar-width: thin;
 }
 
-#card-toc .toc-link[data-depth='1'] {
-  margin-top: 2px;
-  background: color-mix(in srgb, var(--theme-main) 7%, transparent);
-  font-weight: 900;
-}
 
-#card-toc .toc-link[data-depth='3'] {
-  padding-left: 18px;
-}
-
-#card-toc .toc-link[data-depth='4'] {
-  padding-left: 30px;
-  opacity: 0.86;
-}
-
-#card-toc .toc-link.active {
-  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
-  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
-  box-shadow: inset 3px 0 0 var(--theme-main);
-}
 
 .article-body.post-content strong {
   padding: 0 0.22em;

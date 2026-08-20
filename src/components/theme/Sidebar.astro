@@ -128,19 +128,21 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
-const renderTocNodes = (headings: TocHeading[]) =>
-  headings
-    .map((heading, index) => {
+const renderTocNodes = (nodes: TocNode[]) =>
+  nodes
+    .map((node) => {
+      const { heading, index, level, children } = node;
       const indexLabel = String(index + 1).padStart(2, '0');
-      const level = Math.max(0, heading.depth - tocBaseDepth);
+      const childrenHtml = children.length > 0 ? `<ol class="toc-child-list">${renderTocNodes(children)}</ol>` : '';
       return `
         <li class="toc-item" style="--toc-level:${level};">
-          <a href="#${escapeHtml(heading.slug)}" class="toc-link" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
+          <a href="#${escapeHtml(heading.slug)}" class="toc-link level-${level}" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
             <span class="toc-index">${indexLabel}</span>
             <span class="toc-text-group">
               <span class="toc-text">${escapeHtml(heading.text)}</span>
             </span>
           </a>
+          ${childrenHtml}
         </li>
       `;
     })
@@ -221,7 +223,7 @@ const renderTocNodes = (headings: TocHeading[]) =>
         </div>
         <div class="toc-content">
           <ol class="toc-list">
-            <Fragment set:html={renderTocNodes(tocHeadings)} />
+            <Fragment set:html={renderTocNodes(tocTree)} />
           </ol>
         </div>
       </section>
@@ -517,31 +519,107 @@ const renderTocNodes = (headings: TocHeading[]) =>
 
 
   #card-toc .item-headline,
-  #card-toc .toc-content,
-  #card-toc .toc-list,
-  #card-toc .toc-item,
-  #card-toc .toc-link {
+  #card-toc .toc-content {
     margin: 0 !important;
     padding: 0 !important;
   }
 
   
-  /* 用纯 CSS class 分档位实现渐变聚焦，替代耗性能的 JS 计算与 blur */
+  /* Nested Hierarchy Styles */
+  #card-toc .toc-list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+  
+  #card-toc .toc-child-list {
+    margin: 0 0 0 6px !important;
+    padding: 0 0 0 12px !important;
+    list-style: none !important;
+    border-left: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent) !important;
+  }
+
+  #card-toc .toc-item {
+    margin: 2px 0 !important;
+    padding: 0 !important;
+  }
+
   #card-toc .toc-link {
-    transition: opacity 0.25s ease, color 0.2s ease;
-    opacity: 0.25; /* 基础透明度最低 */
+    display: flex !important;
+    align-items: center !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #card-toc .toc-text-group {
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
   
-  /* 悬停 TOC 时恢复所有链接全不透明（无 repaint，仅合成层更新） */
-  #card-toc .toc-content:hover .toc-link {
-    opacity: 1 !important;
+  #card-toc .toc-text {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #card-toc .toc-link:hover {
+    background-color: color-mix(in srgb, var(--font-color) 5%, transparent) !important;
+  }
+
+  /* Level 0 (H2) */
+  #card-toc .toc-link.level-0 {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--font-color) !important;
+  }
+
+  /* Level 1 (H3) */
+  #card-toc .toc-link.level-1 {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: color-mix(in srgb, var(--font-color) 85%, transparent) !important;
+  }
+
+  /* Level 2+ (H4+) */
+  #card-toc .toc-link.level-2,
+  #card-toc .toc-link.level-3,
+  #card-toc .toc-link.level-4 {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    color: color-mix(in srgb, var(--font-color) 65%, transparent) !important;
+  }
+
+  /* Active highlighting (Current Item) */
+  #card-toc .toc-link.active {
+    background-color: color-mix(in srgb, var(--theme-main) 12%, transparent) !important;
+    color: var(--theme-main) !important;
+    font-weight: 700 !important;
+    border-left: 3px solid var(--theme-main) !important;
   }
   
-  /* 激活项及临近项的分档透明度 */
-  #card-toc .toc-link.active { opacity: 1 !important; }
-  #card-toc .toc-link.dist-1 { opacity: 0.8 !important; }
-  #card-toc .toc-link.dist-2 { opacity: 0.55 !important; }
-  #card-toc .toc-link.dist-3 { opacity: 0.4 !important; }
+  /* Parent path weak highlighting */
+  #card-toc .toc-item.active > .toc-link:not(.active) {
+    color: color-mix(in srgb, var(--theme-main) 70%, var(--font-color)) !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Small dot for parent path */
+  #card-toc .toc-item.active > .toc-link:not(.active)::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 4px !important;
+    height: 4px !important;
+    border-radius: 50% !important;
+    background-color: var(--theme-main) !important;
+    margin-right: 6px !important;
+    flex-shrink: 0 !important;
+  }
 
 
   @media screen and (max-width: 1200px) {
