@@ -6,9 +6,9 @@ const { chromium } = require('playwright');
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   
   console.log("Navigating to home page...");
-  const response = await page.goto('http://localhost:4321/');
+  const response = await page.goto('http://localhost:4323/');
   if (!response || response.status() !== 200) {
-    console.log("Failed to load page, make sure dev server is running on port 4321");
+    console.log("Failed to load page, make sure dev server is running on port 4323");
   }
   
   // wait for render
