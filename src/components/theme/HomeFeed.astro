@@ -28,11 +28,11 @@ const {
 
 <section
   id="recent-posts"
-  class="recent-posts"
+  class="recent-posts flex flex-col w-full"
   data-feed-page={currentPage}
   data-feed-pages={lastPage}
 >
-  <div id="categoryBar">
+  <div id="categoryBar" class="mb-4">
     <div class="category-bar" id="category-bar">
       <div id="catalog-bar">
         <div id="catalog-list">
@@ -56,9 +56,15 @@ const {
     </div>
   </div>
 
-  {posts.map((entry, index) => (
-    <PostCard entry={entry} index={index} />
-  ))}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 w-full">
+    {posts.map((entry, index) => {
+      // Determine if it should be a focus card (first item on first page, and featured or sticky)
+      const isFocus = currentPage === 1 && index === 0 && Boolean(entry.data.featured || (entry.data.sticky ?? 0) > 0);
+      return <PostCard entry={entry} index={index} isFocus={isFocus} />;
+    })}
+  </div>
 
-  <HomePagination currentPage={currentPage} lastPage={lastPage} />
+  <div class="mt-8">
+    <HomePagination currentPage={currentPage} lastPage={lastPage} />
+  </div>
 </section>
