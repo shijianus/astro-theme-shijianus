@@ -35,3 +35,4 @@ functions/generated/
 verification-screenshots/
 __pycache__/
 *.pyc
+trace_*.json
