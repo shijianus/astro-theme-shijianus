@@ -137,7 +137,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
       return `
         <li class="toc-item" style="--toc-level:${level};">
           <a href="#${escapeHtml(heading.slug)}" class="toc-link level-${level}" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}" aria-current="false">
-            <span class="toc-index">${indexLabel}</span>
             <span class="toc-text-group">
               <span class="toc-text">${escapeHtml(heading.text)}</span>
             </span>
@@ -533,92 +532,89 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
   
   #card-toc .toc-child-list {
-    margin: 0 0 0 6px !important;
-    padding: 0 0 0 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     list-style: none !important;
-    border-left: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent) !important;
+    border-left: none !important;
   }
 
   #card-toc .toc-item {
-    margin: 2px 0 !important;
+    margin: 4px 0 !important;
     padding: 0 !important;
+  }
+
+  /* Add extra space before top-level items (H2) for breathing room, except the first one */
+  #card-toc .toc-list > .toc-item + .toc-item {
+    margin-top: 14px !important;
   }
 
   #card-toc .toc-link {
     display: flex !important;
     align-items: center !important;
-    padding: 6px 8px !important;
-    border-radius: 6px !important;
+    padding: 4px 0 !important;
     text-decoration: none !important;
-    transition: background-color 0.2s ease, color 0.2s ease !important;
+    transition: color 0.2s ease, font-weight 0.2s ease !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    border-left: none !important;
+    background: transparent !important;
   }
 
   #card-toc .toc-text-group {
     flex: 1 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    line-height: 1.4 !important;
   }
   
   #card-toc .toc-text {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    display: inline !important;
   }
 
   #card-toc .toc-link:hover {
-    background-color: color-mix(in srgb, var(--font-color) 5%, transparent) !important;
+    color: var(--theme-main) !important;
+    background-color: transparent !important;
   }
 
   /* Level 0 (H2) */
   #card-toc .toc-link.level-0 {
-    font-size: 14px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
     color: var(--font-color) !important;
+    padding-left: 4px !important;
   }
 
   /* Level 1 (H3) */
   #card-toc .toc-link.level-1 {
     font-size: 13px !important;
     font-weight: 500 !important;
-    color: color-mix(in srgb, var(--font-color) 85%, transparent) !important;
+    color: color-mix(in srgb, var(--font-color) 80%, transparent) !important;
+    padding-left: 12px !important;
   }
 
   /* Level 2+ (H4+) */
   #card-toc .toc-link.level-2,
   #card-toc .toc-link.level-3,
-  #card-toc .toc-link.level-4 {
-    font-size: 12px !important;
+  #card-toc .toc-link.level-4,
+  #card-toc .toc-link.level-5 {
+    font-size: 11.5px !important;
     font-weight: 400 !important;
-    color: color-mix(in srgb, var(--font-color) 65%, transparent) !important;
+    color: color-mix(in srgb, var(--font-color) 62%, transparent) !important;
+    padding-left: 20px !important;
   }
 
   /* Active highlighting (Current Item) */
   #card-toc .toc-link.active {
-    background-color: color-mix(in srgb, var(--theme-main) 12%, transparent) !important;
     color: var(--theme-main) !important;
     font-weight: 700 !important;
-    border-left: 3px solid var(--theme-main) !important;
+    background-color: transparent !important;
+    border-left: none !important;
   }
   
-  /* Parent path weak highlighting */
-  #card-toc .toc-item.active > .toc-link:not(.active) {
-    color: color-mix(in srgb, var(--theme-main) 70%, var(--font-color)) !important;
-    font-weight: 600 !important;
-  }
-  
-  /* Small dot for parent path */
-  #card-toc .toc-item.active > .toc-link:not(.active)::before {
-    content: '' !important;
-    display: inline-block !important;
-    width: 4px !important;
-    height: 4px !important;
-    border-radius: 50% !important;
-    background-color: var(--theme-main) !important;
-    margin-right: 6px !important;
-    flex-shrink: 0 !important;
+  /* Reset pseudo elements just in case */
+  #card-toc .toc-item::before,
+  #card-toc .toc-item::after,
+  #card-toc .toc-link::before,
+  #card-toc .toc-link::after {
+    display: none !important;
   }
 
 
