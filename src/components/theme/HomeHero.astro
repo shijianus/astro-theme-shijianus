@@ -297,8 +297,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex: 1 1 0% !important;
     width: auto !important;
-    /* 缓速伸展动效：延展至 2.0s 优雅舒缓展开，保留完整弹性曲线与动画逻辑 */
-    transition: flex 2s cubic-bezier(0.65, 0.15, 0.37, 1.19), transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+    /* 核心动效：纯单调平滑缓动曲线，杜绝过冲反弹，确保悬停即拉伸、解除悬停即时无延时回缩 */
+    transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+                box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
     overflow: hidden !important;
     border-radius: 12px !important;
     height: auto !important;
@@ -315,23 +317,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem:hover,
   body[data-type='home'] .categoryItem:focus-within {
+    flex: 1.85 1 0% !important; /* 仅作用于当前悬停元素，其余卡片由 flexbox 自然均摊压缩，杜绝二次突变 */
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16) !important;
     z-index: 10 !important;
   }
 
-  body[data-type='home'] .categoryGroup:hover .categoryItem:hover,
-  body[data-type='home'] .categoryGroup:focus-within .categoryItem:focus-within {
-    flex: 1.85 1 0% !important; /* 优雅舒缓拉伸，比例与 Hexo 保持协调 */
-  }
-
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-    flex: 0.95 1 0% !important;
-    opacity: 0.9 !important;
-  }
-
-  /* 挤压态下文本自适应容灾：去除省略号，实现纯净两行展示 */
-  body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) .categoryButtonDesc {
+  /* 介绍文本展示 */
+  body[data-type='home'] .categoryButtonDesc {
     display: block !important;
     white-space: normal !important;
     word-wrap: break-word !important;
@@ -341,14 +334,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     font-size: 0.85em !important;
   }
 
-  /* categoryButton & 按钮背景渐变平滑流动优化 (2s 同步) */
+  /* categoryButton & 按钮背景渐变平滑流动优化 */
   body[data-type='home'] .categoryButton {
     background-size: 200% 100% !important;
     background-position: 0% 50% !important;
-    transition: background 2s cubic-bezier(0.39, 0.575, 0.565, 1),
-                background-position 2s cubic-bezier(0.39, 0.575, 0.565, 1),
-                transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1),
-                box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+    transition: background 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+                background-position 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+                box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
   }
 
   body[data-type='home'] .categoryItem:hover .categoryButton,
@@ -384,7 +377,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     right: 8px !important;
     bottom: -15px !important;
     opacity: 0.18 !important;
-    transition: transform 2s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 1.5s ease, filter 1.5s ease !important;
+    transition: transform 1.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.2s ease, filter 1.2s ease !important;
     z-index: 1 !important;
     width: 70px !important;
     height: 70px !important;

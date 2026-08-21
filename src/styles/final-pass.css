@@ -966,7 +966,7 @@
 
 /* Hero Cards Interaction */
 body[data-type='home'] .categoryItem {
-  transition: flex 2s cubic-bezier(0.65, 0.15, 0.37, 1.19), transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+  transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
@@ -978,7 +978,7 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
 body[data-type='home'] #random-banner {
   flex: 1;
   min-height: 0;
-  transition: transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 1.5s ease !important;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s ease !important;
 }
 
 body[data-type='home'] #random-banner:hover {
@@ -987,7 +987,7 @@ body[data-type='home'] #random-banner:hover {
 }
 
 body[data-type='home'] .categoryButtonIcon {
-  transition: transform 2s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 1.5s ease, filter 1.5s ease !important;
+  transition: transform 1.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.2s ease, filter 1.2s ease !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
@@ -1535,15 +1535,10 @@ body[data-type='home'] .categoryItem {
   min-width: 140px !important;
   box-sizing: border-box !important;
   transform: translate3d(0, 0, 0);
-  transition: flex 2s cubic-bezier(0.65, 0.15, 0.37, 1.19), transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+  transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
   border-left: 4px solid transparent !important;
   border-right: 4px solid transparent !important;
   background-clip: padding-box !important;
-}
-
-body[data-type='home'] .categoryGroup:hover .categoryItem:not(:hover):not(:focus-within) {
-  flex: 0.95 1 0% !important;
-  opacity: 0.9 !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
@@ -1554,10 +1549,10 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
 body[data-type='home'] .categoryButton {
   background-size: 200% 100% !important;
   background-position: 0% 50% !important;
-  transition: background 2s cubic-bezier(0.39, 0.575, 0.565, 1),
-              background-position 2s cubic-bezier(0.39, 0.575, 0.565, 1),
-              transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1),
-              box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+  transition: background 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+              background-position 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButton {
@@ -1575,7 +1570,7 @@ body[data-type='home'] .categoryButtonDesc {
   font-size: 0.85rem;
   line-height: 1.4;
   opacity: 0.88;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.2s ease;
 }
 
 body[data-type='home'] .categoryButtonIcon {
@@ -1586,7 +1581,7 @@ body[data-type='home'] .categoryButtonIcon {
   opacity: 0.18;
   filter: blur(0.5px);
   transform: rotate(0deg) translate3d(0, 0, 0);
-  transition: transform 2s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 1.5s ease, filter 1.5s ease !important;
+  transition: transform 1.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.2s ease, filter 1.2s ease !important;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
