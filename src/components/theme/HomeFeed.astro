@@ -28,7 +28,7 @@ const {
 
 <section
   id="recent-posts"
-  class="recent-posts"
+  class="recent-posts flex flex-col gap-5"
   data-feed-page={currentPage}
   data-feed-pages={lastPage}
 >
@@ -56,9 +56,11 @@ const {
     </div>
   </div>
 
-  {posts.map((entry, index) => (
-    <PostCard entry={entry} index={index} />
-  ))}
+  <div class="recent-posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {posts.map((entry, index) => (
+      <PostCard entry={entry} index={index} />
+    ))}
+  </div>
 
   <HomePagination currentPage={currentPage} lastPage={lastPage} />
 </section>

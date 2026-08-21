@@ -4844,16 +4844,13 @@ body[data-type='home'] .home-feed-head {
 
 body[data-type='home'] #recent-posts {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 18px;
-  align-items: stretch;
 }
 
 body[data-type='home'] #categoryBar {
   width: 100%;
-  flex-basis: 100%;
-  grid-column: 1 / -1;
   margin-bottom: 0;
 }
 
@@ -4875,64 +4872,8 @@ body[data-type='home'] .topGroup .todayCard-title {
   line-height: 1.18;
 }
 
-body[data-type='home'] #recent-posts > .recent-post-item {
-  min-height: 286px;
-}
-
-body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .content {
-  -webkit-line-clamp: 3;
-}
-
 .home-mobile-focus-card {
   display: none;
-}
-
-@media screen and (min-width: 1201px) {
-  body[data-type='home'] #recent-posts > .recent-post-item {
-    width: auto;
-    height: auto !important;
-    min-height: 0;
-    margin-top: 0;
-    flex-direction: column;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item:not(:first-child) {
-    margin-top: 0;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item .post_cover,
-  body[data-type='home'] #recent-posts > .recent-post-item .post_cover.right {
-    order: 0;
-    width: 100%;
-    height: 236px;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item .post_cover img.post_bg {
-    border-radius: 26px 26px 0 0;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info {
-    min-height: 0;
-    height: auto;
-    padding: 22px 24px 20px;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item .recent-post-info-top {
-    padding-top: 0;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item .article-title {
-    font-size: 1.22rem;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item > .recent-post-info > .content {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-  }
-
-  body[data-type='home'] #recent-posts > .recent-post-item .post-card-tags {
-    display: flex;
-  }
 }
 
 @media screen and (max-width: 1200px) {

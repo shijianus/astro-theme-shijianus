@@ -2429,32 +2429,6 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 }
 
 .topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
-se {
-  animation: none !important;
-}
-
-body[data-type='post'] :is(.post-hero__badge, .post-hero__eyebrow, .post-hero__meta-card),
-body[data-type='post'] #post-comment .comment-thread__header {
-  backdrop-filter: none !important;
-}
-
-body[data-type='post'] :is(.post-hero__meta-card, #post-toc-aside #card-toc, #post-secondary-aside .card-recent-post),
-body[data-type='home'] .recent-post-item {
-  box-shadow: none !important;
-}
-
-body[data-type='post'] #card-toc .toc-item > .toc-link,
-body[data-type='post'] #card-toc .toc-item.is-active > .toc-link,
-body[data-type='post'] #card-toc .toc-item > .toc-link.active {
-  transform: none !important;
-  box-shadow: none !important;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    opacity 0.16s ease !important;
-}
-
-.topGroup .recent-post-item .post_cover { height: 100% !important; border-radius: inherit; }
 
 /* Webinfo Item Interaction */
 #console .webinfo-item a {
