@@ -297,8 +297,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex: 1 1 0% !important;
     width: auto !important;
-    /* 学习 Hexo-theme-anzhiyu 核心动效：0.8s cubic-bezier(0.65, 0.15, 0.37, 1.19) 弹性平滑展开 */
-    transition: flex 0.8s cubic-bezier(0.65, 0.15, 0.37, 1.19), transform 0.6s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 0.6s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+    /* 缓速伸展动效：延展至 2.0s 优雅舒缓展开，保留完整弹性曲线与动画逻辑 */
+    transition: flex 2s cubic-bezier(0.65, 0.15, 0.37, 1.19), transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1), box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
     overflow: hidden !important;
     border-radius: 12px !important;
     height: auto !important;
@@ -341,14 +341,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     font-size: 0.85em !important;
   }
 
-  /* categoryButton & 按钮背景渐变平滑流动优化 */
+  /* categoryButton & 按钮背景渐变平滑流动优化 (2s 同步) */
   body[data-type='home'] .categoryButton {
     background-size: 200% 100% !important;
     background-position: 0% 50% !important;
-    transition: background 0.8s cubic-bezier(0.39, 0.575, 0.565, 1),
-                background-position 0.8s cubic-bezier(0.39, 0.575, 0.565, 1),
-                transform 0.6s cubic-bezier(0.39, 0.575, 0.565, 1),
-                box-shadow 0.6s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+    transition: background 2s cubic-bezier(0.39, 0.575, 0.565, 1),
+                background-position 2s cubic-bezier(0.39, 0.575, 0.565, 1),
+                transform 1.5s cubic-bezier(0.39, 0.575, 0.565, 1),
+                box-shadow 1.5s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
   }
 
   body[data-type='home'] .categoryItem:hover .categoryButton,
@@ -384,7 +384,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     right: 8px !important;
     bottom: -15px !important;
     opacity: 0.18 !important;
-    transition: transform 0.8s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 0.6s ease, filter 0.6s ease !important;
+    transition: transform 2s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 1.5s ease, filter 1.5s ease !important;
     z-index: 1 !important;
     width: 70px !important;
     height: 70px !important;
