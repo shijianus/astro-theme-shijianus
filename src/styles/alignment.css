@@ -596,49 +596,36 @@ body[data-type='home'] .categoryItem {
 }
 
 body[data-type='home'] .categoryButton {
-  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 14px 13px;
-}
-
-body[data-type='home'] .categoryButtonCopy {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.22s ease, opacity 0.22s ease;
 }
 
 body[data-type='home'] .categoryButtonText {
   padding-top: 0;
   transform: translate3d(0, 0, 0);
-  transition: transform 0.22s ease, letter-spacing 0.22s ease;
+  transition: transform 0.6s cubic-bezier(0.39, 0.575, 0.565, 1);
 }
 
 body[data-type='home'] .categoryButtonDesc {
   max-width: none;
   transform: translate3d(0, 0, 0);
-  transition: transform 0.22s ease, opacity 0.22s ease;
+  transition: transform 0.6s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 0.6s ease;
 }
 
 body[data-type='home'] .categoryButtonIcon {
-  right: 2px;
-  bottom: 6px;
-  width: 44px;
-  opacity: 0.26;
-  filter: none;
-  transform: rotate(8deg) translate3d(0, 0, 0) scale(1);
-  transition: transform 0.22s ease, opacity 0.22s ease;
-}
-
-body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonCopy {
-  transform: translate3d(0, -1px, 0);
+  right: 8px;
+  bottom: -15px;
+  width: 70px;
+  height: 70px;
+  opacity: 0.18;
+  filter: blur(0.5px);
+  transform: rotate(0deg) translate3d(0, 0, 0) scale(1);
+  transition: transform 0.8s cubic-bezier(0.39, 0.575, 0.565, 1), opacity 0.6s ease, filter 0.6s ease;
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIcon {
-  opacity: 0.4;
-  transform: rotate(8deg) translate3d(0, -1px, 0) scale(1);
+  opacity: 0.38;
+  filter: blur(0);
+  transform: translate3d(-6px, -4px, 0) rotate(-6deg) scale(1.08);
 }
 
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonText,
