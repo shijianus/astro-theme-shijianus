@@ -29,7 +29,7 @@ const isProtected = hasPostAccess(entry);
 const isSticky = Boolean(entry.data.sticky && entry.data.sticky > 0);
 const isFeatured = Boolean(entry.data.featured);
 const displayTitle = getDisplayPostTitle(entry);
-const displayExcerpt = getDisplayPostSummary(entry, 160);
+const displayExcerpt = getDisplayPostSummary(entry, 100);
 const displayBadge = isSticky ? '置顶' : isProtected ? '受限' : isFeatured ? '推荐' : '';
 const displayCategory = getDisplayPostCategory(entry);
 const categorySlug = resolveCategory(entry);
@@ -47,8 +47,8 @@ const readingTime = estimateReadingMinutes(entry);
   role="link"
   aria-label={displayTitle}
 >
-  <!-- 顶部精简高度封面图容器 (固定高度控制视觉占比) -->
-  <div class="hexo-card-cover relative h-[180px] md:h-[200px] w-full overflow-hidden bg-[var(--secondbg,#f7f7f9)]">
+  <!-- 顶部精简高度封面图容器 (占卡片 40%-45% 高度) -->
+  <div class="hexo-card-cover relative h-[140px] sm:h-[150px] w-full overflow-hidden bg-[var(--secondbg,#f7f7f9)]">
     {coverSrc ? (
       <img
         src={coverSrc}
@@ -59,17 +59,17 @@ const readingTime = estimateReadingMinutes(entry);
       />
     ) : (
       <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
-        <span class="text-2xl font-light tracking-widest text-[var(--theme-main,#425aef)] opacity-70 select-none">
+        <span class="text-xl font-light tracking-widest text-[var(--theme-main,#425aef)] opacity-70 select-none">
           {displayCategory || 'POST'}
         </span>
       </div>
     )}
 
     <!-- 顶部角标区 (置顶/推荐/受限 + 分类) -->
-    <div class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-none">
+    <div class="absolute top-2 left-2 z-20 flex flex-wrap items-center gap-1 pointer-events-none">
       {displayBadge && (
         <span
-          class={`rounded-md px-2 py-0.5 text-[11px] font-bold text-white shadow-sm pointer-events-auto ${
+          class={`rounded px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm pointer-events-auto ${
             isSticky
               ? 'bg-amber-500'
               : isProtected
@@ -83,7 +83,7 @@ const readingTime = estimateReadingMinutes(entry);
       {displayCategory && (
         <a
           href={getCategoryPath(categorySlug)}
-          class="rounded-md bg-black/50 hover:bg-black/75 px-2.5 py-0.5 text-[11px] font-medium text-white backdrop-blur-md transition-colors pointer-events-auto"
+          class="rounded bg-black/50 hover:bg-black/75 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-md transition-colors pointer-events-auto"
           data-ignore-card-link
         >
           {displayCategory}
@@ -92,34 +92,34 @@ const readingTime = estimateReadingMinutes(entry);
     </div>
   </div>
 
-  <!-- 卡片内容区域 (内边距 p-5，对齐安知鱼适度间距) -->
-  <div class="hexo-card-body flex flex-1 flex-col p-5">
-    <!-- 标题：完整展示，行高字号舒适 -->
-    <h2 class="mb-2 text-[17px] font-semibold leading-snug text-[var(--text-strong,#363636)] transition-colors duration-200 group-hover:text-[var(--theme-main,#425aef)]">
+  <!-- 卡片内容区域 (内边距 p-3.5 sm:p-4，紧凑高密度) -->
+  <div class="hexo-card-body flex flex-1 flex-col p-3.5 sm:p-4">
+    <!-- 标题：15px，2 行截断 -->
+    <h2 class="mb-1.5 text-[15px] font-semibold leading-snug text-[var(--text-strong,#363636)] transition-colors duration-200 group-hover:text-[var(--theme-main,#425aef)] line-clamp-2">
       {displayTitle}
     </h2>
 
-    <!-- 摘要描述：适度换行，阅读感更强 -->
+    <!-- 摘要描述：12.5px，2 行截断 -->
     {displayExcerpt && (
-      <p class="mb-4 text-xs leading-relaxed text-[var(--text-soft,rgba(60,60,67,0.8))] line-clamp-3">
+      <p class="mb-3 text-[12.5px] leading-relaxed text-[var(--text-soft,rgba(60,60,67,0.8))] line-clamp-2">
         {displayExcerpt}
       </p>
     )}
 
-    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐，支持多个标签展示，暗色模式跟随主题变量) -->
-    <div class="hexo-card-footer mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-[var(--line,#e3e8f7)] pt-3.5 text-[11px] text-[var(--text-muted,#858585)]">
-      <div class="flex items-center gap-1.5 shrink-0">
+    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐，11px 紧凑展示) -->
+    <div class="hexo-card-footer mt-auto flex flex-wrap items-center justify-between gap-1.5 border-t border-[var(--line,#e3e8f7)] pt-2.5 text-[11px] text-[var(--text-muted,#858585)]">
+      <div class="flex items-center gap-1 shrink-0">
         <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
         <span>·</span>
         <span>{readingTime} 分钟</span>
       </div>
 
       {tags.length > 0 && (
-        <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex flex-wrap items-center gap-1">
           {tags.map((tag) => (
             <a
               href={getTagPath(tag)}
-              class="relative z-20 rounded-md bg-[var(--card-btn-bg,#edf0f7)] hover:bg-[var(--theme-op,#4259ef23)] hover:text-[var(--theme-main,#425aef)] px-2 py-0.5 text-[var(--text-soft,#475569)] transition-colors"
+              class="relative z-20 rounded bg-[var(--card-btn-bg,#edf0f7)] hover:bg-[var(--theme-op,#4259ef23)] hover:text-[var(--theme-main,#425aef)] px-1.5 py-0.5 text-[10.5px] text-[var(--text-soft,#475569)] transition-colors"
               data-ignore-card-link
             >
               #{tag}
