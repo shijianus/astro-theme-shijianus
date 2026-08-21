@@ -26,18 +26,18 @@ const isNew = index === 0;
 const category = getDisplayPostCategory(entry);
 const cover = resolveDisplayCover(entry);
 const tags = entry.data.tags ?? [];
-const summary = getDisplayPostSummary(entry, 100);
+const summary = getDisplayPostSummary(entry, 80);
 
 const pubDateIso = entry.data.pubDate.toISOString();
 const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
 ---
 
 <div
-  class="group recent-post-item relative rounded-2xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+  class="group recent-post-item relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
   onclick={`location.href='${link}'`}
 >
-  <!-- 封面图区域：缩小比例 (约 16/7.5)，视觉更紧凑，避免抢占过大面积 -->
-  <div class="aspect-[16/7.5] w-full overflow-hidden relative bg-[var(--secondbg)] shrink-0">
+  <!-- 封面图区域：比例精简至 16/5.8 (或 h-36/h-40)，进一步压缩纵向高度，增大一屏容积比 -->
+  <div class="h-32 sm:h-36 w-full overflow-hidden relative bg-[var(--secondbg)] shrink-0">
     {cover ? (
       <img
         class="object-cover w-full h-full transition-all duration-500 group-hover:scale-105 group-hover:brightness-[0.92]"
@@ -48,21 +48,21 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
       />
     ) : (
       <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
-        <span class="text-xs font-semibold text-[var(--text-soft)] tracking-wider opacity-60 uppercase select-none">
+        <span class="text-[11px] font-semibold text-[var(--text-soft)] tracking-wider opacity-60 uppercase select-none">
           {category || siteConfig.site.title}
         </span>
       </div>
     )}
   </div>
 
-  <!-- 信息内容区域：层级对齐 AnZhiYu 规范 -->
-  <div class="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-2.5">
-    <div class="flex flex-col gap-2">
+  <!-- 信息内容区域：紧凑排版，提升单屏 2x2 呈现率 -->
+  <div class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5">
+    <div class="flex flex-col gap-1.5">
       <!-- 顶部 Tips 栏：置顶、分类、最新、未读状态 -->
-      <div class="flex items-center flex-wrap gap-2 text-xs">
+      <div class="flex items-center flex-wrap gap-1.5 text-xs">
         {isSticky && (
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-white bg-[#ff7242] shadow-xs text-[11px]">
-            <i class="anzhiyufont anzhiyu-icon-thumbtack text-[10px]"></i>
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-bold text-white bg-[#ff7242] shadow-xs text-[10px]">
+            <i class="anzhiyufont anzhiyu-icon-thumbtack text-[9px]"></i>
             <span>置顶</span>
           </span>
         )}
@@ -70,7 +70,7 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
         {category && (
           <a
             href={getCategoryPath(category)}
-            class="text-[12px] font-medium text-[var(--text-soft)] hover:text-[var(--theme-main)] transition-colors"
+            class="text-[11px] font-medium text-[var(--text-soft)] hover:text-[var(--theme-main)] transition-colors"
             onclick="event.stopPropagation();"
           >
             {category}
@@ -78,50 +78,50 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
         )}
 
         {isNew && !isSticky && (
-          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-[var(--theme-op)] text-[var(--theme-main)]">
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--theme-op)] text-[var(--theme-main)]">
             最新
           </span>
         )}
 
-        <span class="unvisited-post text-[11px] text-[var(--text-muted)] opacity-70 ml-auto group-hover:opacity-100 transition-opacity">
+        <span class="unvisited-post text-[10px] text-[var(--text-muted)] opacity-65 ml-auto group-hover:opacity-100 transition-opacity">
           未读
         </span>
       </div>
 
-      <!-- 文章标题：字号更舒展，行高适中 -->
+      <!-- 文章标题：两行截断，字号 15px~16px -->
       <a
         href={link}
-        class="text-[17px] sm:text-[18px] font-bold line-clamp-2 leading-snug text-[var(--font-color)] group-hover:text-[var(--theme-main)] transition-colors"
+        class="text-[15px] sm:text-[16px] font-bold line-clamp-2 leading-snug text-[var(--font-color)] group-hover:text-[var(--theme-main)] transition-colors"
       >
         {title}
       </a>
 
-      <!-- 摘要文字：补充轻量简介，充实文本展示面积 -->
+      <!-- 摘要文字：单行或精简两行，让卡片高度大幅收拢 -->
       {summary && (
-        <p class="text-[13px] line-clamp-2 leading-relaxed text-[var(--text-soft)] opacity-85 m-0">
+        <p class="text-[12px] line-clamp-1 sm:line-clamp-2 leading-relaxed text-[var(--text-soft)] opacity-80 m-0">
           {summary}
         </p>
       )}
     </div>
 
     <!-- 底部 Meta 区域：日期与标签 -->
-    <div class="flex items-center justify-between gap-2 pt-2 border-t border-[var(--card-border)]/60 mt-auto">
-      <div class="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-        <i class="anzhiyufont anzhiyu-icon-calendar-days text-[13px] opacity-75"></i>
-        <time datetime={pubDateIso} class="text-[12px]">
+    <div class="flex items-center justify-between gap-1.5 pt-1.5 border-t border-[var(--card-border)]/50 mt-auto">
+      <div class="flex items-center gap-1 text-[11px] text-[var(--text-muted)]">
+        <i class="anzhiyufont anzhiyu-icon-calendar-days text-[12px] opacity-75"></i>
+        <time datetime={pubDateIso} class="text-[11px]">
           {pubDateFormatted}
         </time>
       </div>
 
       {tags.length > 0 && (
-        <div class="flex items-center flex-wrap gap-1.5 justify-end">
-          {tags.slice(0, 3).map((tag) => (
+        <div class="flex items-center flex-wrap gap-1 justify-end">
+          {tags.slice(0, 2).map((tag) => (
             <a
               href={getTagPath(tag)}
-              class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[var(--tag-bg)] text-[var(--tag-text)] hover:bg-[var(--theme-op)] hover:text-[var(--theme-main)] transition-colors"
+              class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] bg-[var(--tag-bg)] text-[var(--tag-text)] hover:bg-[var(--theme-op)] hover:text-[var(--theme-main)] transition-colors"
               onclick="event.stopPropagation();"
             >
-              <span class="opacity-50">#</span>
+              <span class="opacity-40">#</span>
               <span>{tag}</span>
             </a>
           ))}
