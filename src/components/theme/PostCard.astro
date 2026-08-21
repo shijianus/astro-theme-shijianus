@@ -41,14 +41,14 @@ const readingTime = estimateReadingMinutes(entry);
 ---
 
 <article
-  class="hexo-post-card group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-[var(--card-bg,#fff)] shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-[var(--theme-main,#3b82f6)] dark:border-slate-800/80 dark:bg-slate-900/80 dark:hover:border-blue-500/60"
+  class="hexo-post-card group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--card-border,#e3e8f7)] bg-[var(--card-bg,#fff)] shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-[var(--theme-main,#425aef)]"
   data-card-link={href}
   tabindex="0"
   role="link"
   aria-label={displayTitle}
 >
   <!-- 顶部精简高度封面图容器 (固定高度控制视觉占比) -->
-  <div class="hexo-card-cover relative h-[180px] md:h-[200px] w-full overflow-hidden bg-slate-100 dark:bg-slate-800/80">
+  <div class="hexo-card-cover relative h-[180px] md:h-[200px] w-full overflow-hidden bg-[var(--secondbg,#f7f7f9)]">
     {coverSrc ? (
       <img
         src={coverSrc}
@@ -58,8 +58,8 @@ const readingTime = estimateReadingMinutes(entry);
         data-fallback-src={siteConfig.post.hero.fallbackImage}
       />
     ) : (
-      <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-pink-950/40">
-        <span class="text-2xl font-light tracking-widest text-indigo-400/60 dark:text-indigo-400/40 select-none">
+      <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+        <span class="text-2xl font-light tracking-widest text-[var(--theme-main,#425aef)] opacity-70 select-none">
           {displayCategory || 'POST'}
         </span>
       </div>
@@ -74,7 +74,7 @@ const readingTime = estimateReadingMinutes(entry);
               ? 'bg-amber-500'
               : isProtected
               ? 'bg-rose-500/90'
-              : 'bg-[var(--theme-main,#3b82f6)]'
+              : 'bg-[var(--theme-main,#425aef)]'
           }`}
         >
           {displayBadge}
@@ -95,19 +95,19 @@ const readingTime = estimateReadingMinutes(entry);
   <!-- 卡片内容区域 (内边距 p-5，对齐安知鱼适度间距) -->
   <div class="hexo-card-body flex flex-1 flex-col p-5">
     <!-- 标题：完整展示，行高字号舒适 -->
-    <h2 class="mb-2 text-[17px] font-semibold leading-snug text-slate-800 transition-colors duration-200 group-hover:text-[var(--theme-main,#3b82f6)] dark:text-slate-100 dark:group-hover:text-blue-400">
+    <h2 class="mb-2 text-[17px] font-semibold leading-snug text-[var(--text-strong,#363636)] transition-colors duration-200 group-hover:text-[var(--theme-main,#425aef)]">
       {displayTitle}
     </h2>
 
     <!-- 摘要描述：适度换行，阅读感更强 -->
     {displayExcerpt && (
-      <p class="mb-4 text-xs leading-relaxed text-slate-500 line-clamp-3 dark:text-slate-400">
+      <p class="mb-4 text-xs leading-relaxed text-[var(--text-soft,rgba(60,60,67,0.8))] line-clamp-3">
         {displayExcerpt}
       </p>
     )}
 
-    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐，支持多个标签展示) -->
-    <div class="hexo-card-footer mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3.5 text-[11px] text-slate-400 dark:border-slate-800/80 dark:text-slate-500">
+    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐，支持多个标签展示，暗色模式跟随主题变量) -->
+    <div class="hexo-card-footer mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-[var(--line,#e3e8f7)] pt-3.5 text-[11px] text-[var(--text-muted,#858585)]">
       <div class="flex items-center gap-1.5 shrink-0">
         <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
         <span>·</span>
@@ -119,13 +119,13 @@ const readingTime = estimateReadingMinutes(entry);
           {tags.map((tag) => (
             <a
               href={getTagPath(tag)}
-              class="relative z-20 rounded bg-slate-100 hover:bg-slate-200 px-2 py-0.5 text-slate-600 transition-colors dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400"
+              class="relative z-20 rounded-md bg-[var(--card-btn-bg,#edf0f7)] hover:bg-[var(--theme-op,#4259ef23)] hover:text-[var(--theme-main,#425aef)] px-2 py-0.5 text-[var(--text-soft,#475569)] transition-colors"
               data-ignore-card-link
             >
               #{tag}
             </a>
           ))}
-          {hasMoreTags && <span class="text-slate-400">…</span>}
+          {hasMoreTags && <span class="text-[var(--text-muted,#858585)]">…</span>}
         </div>
       )}
     </div>
