@@ -35,7 +35,8 @@ const displayCategory = getDisplayPostCategory(entry);
 const categorySlug = resolveCategory(entry);
 const coverSrc = resolveDisplayCover(entry);
 const coverAlt = resolveDisplayCoverAlt(entry);
-const primaryTag = entry.data.tags?.[0];
+const tags = (entry.data.tags ?? []).slice(0, 3);
+const hasMoreTags = (entry.data.tags ?? []).length > 3;
 const readingTime = estimateReadingMinutes(entry);
 ---
 
@@ -65,7 +66,7 @@ const readingTime = estimateReadingMinutes(entry);
     )}
 
     <!-- 顶部角标区 (置顶/推荐/受限 + 分类) -->
-    <div class="absolute top-2.5 left-2.5 z-20 flex flex-wrap items-center gap-1.5 pointer-events-none">
+    <div class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-none">
       {displayBadge && (
         <span
           class={`rounded-md px-2 py-0.5 text-[11px] font-bold text-white shadow-sm pointer-events-auto ${
@@ -82,7 +83,7 @@ const readingTime = estimateReadingMinutes(entry);
       {displayCategory && (
         <a
           href={getCategoryPath(categorySlug)}
-          class="rounded-md bg-black/50 hover:bg-black/75 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-md transition-colors pointer-events-auto"
+          class="rounded-md bg-black/50 hover:bg-black/75 px-2.5 py-0.5 text-[11px] font-medium text-white backdrop-blur-md transition-colors pointer-events-auto"
           data-ignore-card-link
         >
           {displayCategory}
@@ -91,9 +92,9 @@ const readingTime = estimateReadingMinutes(entry);
     </div>
   </div>
 
-  <!-- 卡片内容区域 -->
-  <div class="hexo-card-body flex flex-1 flex-col p-4">
-    <!-- 标题：完整展示多行，不硬截断 -->
+  <!-- 卡片内容区域 (内边距 p-5，对齐安知鱼适度间距) -->
+  <div class="hexo-card-body flex flex-1 flex-col p-5">
+    <!-- 标题：完整展示，行高字号舒适 -->
     <h2 class="mb-2 text-[17px] font-semibold leading-snug text-slate-800 transition-colors duration-200 group-hover:text-[var(--theme-main,#3b82f6)] dark:text-slate-100 dark:group-hover:text-blue-400">
       {displayTitle}
     </h2>
@@ -105,22 +106,27 @@ const readingTime = estimateReadingMinutes(entry);
       </p>
     )}
 
-    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐) -->
-    <div class="hexo-card-footer mt-auto flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-400 dark:border-slate-800/80 dark:text-slate-500">
-      <div class="flex items-center gap-1.5">
+    <!-- 底部细行元信息 (使用 mt-auto 吸底对齐，支持多个标签展示) -->
+    <div class="hexo-card-footer mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3.5 text-[11px] text-slate-400 dark:border-slate-800/80 dark:text-slate-500">
+      <div class="flex items-center gap-1.5 shrink-0">
         <time datetime={entry.data.pubDate.toISOString()}>{metaDate}</time>
         <span>·</span>
         <span>{readingTime} 分钟</span>
       </div>
 
-      {primaryTag && (
-        <a
-          href={getTagPath(primaryTag)}
-          class="relative z-20 rounded bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 text-slate-600 transition-colors dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400"
-          data-ignore-card-link
-        >
-          #{primaryTag}
-        </a>
+      {tags.length > 0 && (
+        <div class="flex flex-wrap items-center gap-1.5">
+          {tags.map((tag) => (
+            <a
+              href={getTagPath(tag)}
+              class="relative z-20 rounded bg-slate-100 hover:bg-slate-200 px-2 py-0.5 text-slate-600 transition-colors dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400"
+              data-ignore-card-link
+            >
+              #{tag}
+            </a>
+          ))}
+          {hasMoreTags && <span class="text-slate-400">…</span>}
+        </div>
       )}
     </div>
   </div>
