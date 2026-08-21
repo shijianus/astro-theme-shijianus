@@ -2412,8 +2412,7 @@ body[data-type='post'] #post-comment .comment-thread__header {
   backdrop-filter: none !important;
 }
 
-body[data-type='post'] :is(.post-hero__meta-card, #post-toc-aside #card-toc, #post-secondary-aside .card-recent-post),
-body[data-type='home'] .recent-post-item {
+body[data-type='post'] :is(.post-hero__meta-card, #post-toc-aside #card-toc, #post-secondary-aside .card-recent-post) {
   box-shadow: none !important;
 }
 

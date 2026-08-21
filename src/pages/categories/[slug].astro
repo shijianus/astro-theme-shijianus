@@ -72,7 +72,7 @@ const earliestYear = earliestEntry?.data.pubDate.getFullYear();
           <p>继续使用站内统一卡片体系，便于和首页、归档页保持一致阅读节奏。</p>
         </div>
 
-        <div class="taxonomy-post-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+        <div id="recent-posts" class="recent-posts">
           {currentPosts.map((entry, index) => (
             <PostCard entry={entry} index={index} />
           ))}

@@ -78,8 +78,8 @@ body, html, #content-inner {
   --text-soft: #a1a2b8;
   --text-muted: #a1a2b8;
   --secondtext: #a1a2b8;
-  --background: #0d0d14;
-  --card-bg: #12121c;
+  --card-bg: #121212;
+  --anzhiyu-card-bg: #121212;
   --secondbg: #181825;
   --card-btn-bg: #252535;
   --card-border: #252535;
@@ -1805,6 +1805,285 @@ html.theme-ready body.theme-body #footer {
 
 .home-feed-head {
   animation: slide-in 0.6s 0.25s backwards;
+}
+
+/* -------------------------------------------------------------------------- */
+/* AnZhiYu Upstream Source: #recent-posts and .recent-post-item styles        */
+/* Sources:                                                                   */
+/* - layout/includes/mixins/post-ui.pug                                       */
+/* - source/css/_page/homepage.styl                                           */
+/* - source/css/_extra/anzhiyu/custom.css                                     */
+/* - source/css/_layout/nav.styl                                              */
+/* -------------------------------------------------------------------------- */
+
+#recent-posts {
+  width: 100%;
+}
+
+#recent-posts > .recent-post-item:not(:first-child) {
+  margin-top: 20px;
+  animation: slide-in 0.6s 0.4s backwards;
+  will-change: transform;
+}
+
+#recent-posts > .recent-post-item:not(:first-child):active {
+  transform: scale(0.97);
+}
+
+#recent-posts > .recent-post-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: hidden;
+  height: 18em;
+  position: relative;
+  border-radius: 12px;
+  box-shadow: var(--shadow-border, 0 8px 16px -4px #2c2d300c);
+  border: var(--style-border, 1px solid var(--card-border, #e3e8f7));
+  background: var(--card-bg, #fff);
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.3s ease 0s;
+}
+
+:root[data-theme='dark'] #recent-posts > .recent-post-item,
+[data-theme="dark"] #recent-posts > .recent-post-item {
+  background: #121212 !important;
+  background-color: #121212 !important;
+}
+
+#recent-posts .recent-post-item:hover {
+  border: var(--style-border-hover, 1px solid var(--theme-main, #425aef));
+}
+
+#recent-posts .recent-post-item:hover .recent-post-info .article-title {
+  color: var(--theme-main, #425aef);
+}
+
+#recent-posts .recent-post-item:hover img.post_bg {
+  filter: brightness(0.82) !important;
+  transform: scale(1.03) !important;
+  transition: 0.3s ease-in-out;
+}
+
+#recent-posts .recent-post-item .post_cover {
+  overflow: hidden;
+  width: 70%;
+  height: 200px;
+}
+
+#recent-posts .recent-post-item .post_cover.right {
+  order: 1;
+}
+
+#recent-posts .recent-post-item .post_cover a {
+  display: flex;
+  height: 100%;
+}
+
+#recent-posts .recent-post-item .post_cover img.post_bg {
+  border-radius: 0px;
+  height: 100%;
+  width: 100%;
+  transition: all 0.6s ease 0s;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+#recent-posts .recent-post-item > .recent-post-info {
+  height: 174px;
+  width: 100%;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  display: inline-block;
+  overflow: hidden;
+  margin-top: 0px;
+}
+
+#recent-posts .recent-post-item > .recent-post-info.no-cover {
+  width: 100%;
+}
+
+#recent-posts .recent-post-item > .recent-post-info.no-cover:hover {
+  color: var(--theme-main, #425aef);
+}
+
+#recent-posts .recent-post-item .recent-post-info-top {
+  position: relative;
+  transition: 0.3s;
+  padding: 0 32px;
+  width: 100%;
+}
+
+#recent-posts .recent-post-item .recent-post-info-top-tips {
+  display: flex;
+  margin-top: 20px;
+}
+
+#recent-posts .recent-post-item .sticky-warp {
+  line-height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+#recent-posts .recent-post-item .sticky-warp .sticky {
+  color: #FF7242;
+  font-size: 12px;
+}
+
+#recent-posts .recent-post-item .article-categories-original {
+  display: flex;
+  color: var(--secondtext, rgba(60, 60, 67, 0.8));
+  font-size: 0.75rem;
+  position: relative;
+  margin-right: 8px;
+}
+
+#recent-posts .recent-post-item .newPost {
+  display: flex;
+  color: var(--secondtext, rgba(60, 60, 67, 0.8));
+  font-size: 0.75rem;
+  position: relative;
+  margin-right: 8px;
+}
+
+#recent-posts .recent-post-item .unvisited-post {
+  display: flex;
+  color: var(--secondtext, rgba(60, 60, 67, 0.8));
+  font-size: 0.75rem;
+  position: relative;
+}
+
+#recent-posts .recent-post-item .unvisited-post:visited {
+  color: var(--card-bg, #fff);
+}
+
+#recent-posts .recent-post-item .article-title {
+  font-size: 20px;
+  -webkit-line-clamp: 2;
+  line-height: 30px;
+  margin-top: 0;
+  font-weight: 700;
+  color: var(--font-color, #363636);
+  margin-bottom: 0;
+  width: 100%;
+  transition: 0.3s;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap {
+  color: var(--font-color, #363636);
+  font-size: 0.7rem;
+  position: absolute;
+  padding: 0 32px;
+  transition: 0.3s;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 100%;
+  left: 0;
+  flex-direction: row-reverse;
+  align-items: center;
+  bottom: 30px;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap .article-meta {
+  margin: 0 8px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap > .post-meta-date {
+  color: var(--font-color, #363636);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap i {
+  margin: 0 4px 0 0;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap .article-meta-separator {
+  margin: 0 6px;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap a {
+  color: #858585;
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap a span {
+  pointer-events: none;
+}
+
+#recent-posts .recent-post-item .article-meta-wrap a:hover {
+  color: var(--theme-main, #425aef);
+}
+
+#recent-posts .recent-post-item > .recent-post-info > .content {
+  transition: all 0.3s ease 0s;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.4;
+  color: var(--secondtext, rgba(60, 60, 67, 0.8));
+  margin-top: 0.5rem;
+  font-size: 14px;
+  opacity: 0;
+  height: 0;
+}
+
+@media screen and (max-width: 768px) {
+  #recent-posts > .recent-post-item:not(:first-child) {
+    margin: 20px 0 0;
+  }
+
+  #recent-posts > .recent-post-item {
+    flex-direction: column;
+    height: auto;
+    box-shadow: none !important;
+  }
+
+  #recent-posts > .recent-post-item.lastestpost-item {
+    margin-top: 10px !important;
+  }
+
+  #recent-posts .recent-post-item .post_cover {
+    width: 100%;
+    height: 200px;
+  }
+
+  #recent-posts .recent-post-item .post_cover.right {
+    order: 0;
+  }
+
+  #recent-posts .recent-post-item > .recent-post-info {
+    width: 100%;
+    min-height: 140px;
+  }
+
+  #recent-posts .recent-post-item > .recent-post-info.no-cover {
+    padding: 30px 20px;
+  }
+
+  #recent-posts .recent-post-item .recent-post-info .article-title {
+    font-size: 19px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  #recent-posts .recent-post-item .article-meta-wrap > .post-meta-date {
+    font-size: 13px;
+  }
 }
 
 #categoryBar {

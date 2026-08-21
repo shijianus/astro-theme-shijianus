@@ -26,9 +26,9 @@ const {
 } = Astro.props;
 ---
 
-<section
+<div
   id="recent-posts"
-  class="recent-posts flex flex-col gap-5"
+  class="recent-posts"
   data-feed-page={currentPage}
   data-feed-pages={lastPage}
 >
@@ -45,22 +45,21 @@ const {
         </div>
         <button
           class="category-bar-next"
+          id="category-bar-next"
           type="button"
           onclick="document.getElementById('catalog-list')?.scrollBy({ left: 180, behavior: 'smooth' })"
           aria-label={categoryRail.nextLabel}
         >
-          »
+          <i class="anzhiyufont anzhiyu-icon-angle-double-right"></i>
         </button>
         <a class="catalog-more" href="/categories/">{categoryRail.moreLabel}</a>
       </div>
     </div>
   </div>
 
-  <div class="recent-posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
-    {posts.map((entry, index) => (
-      <PostCard entry={entry} index={index} />
-    ))}
-  </div>
+  {posts.map((entry, index) => (
+    <PostCard entry={entry} index={index} isLatest={currentPage === 1 && index === 0} />
+  ))}
 
   <HomePagination currentPage={currentPage} lastPage={lastPage} />
-</section>
+</div>

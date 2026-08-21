@@ -4842,11 +4842,8 @@ body[data-type='home'] .home-feed-head {
   color: var(--white);
 }
 
-body[data-type='home'] #recent-posts {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+#recent-posts {
+  width: 100%;
 }
 
 body[data-type='home'] #categoryBar {
@@ -7742,12 +7739,10 @@ body[data-type='post'] #card-toc .toc-content {
   margin: 0 auto;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item[data-card-link],
 .topGroup .recent-post-item[data-card-link] {
   cursor: pointer;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item[data-card-link]:focus-visible,
 .topGroup .recent-post-item[data-card-link]:focus-visible {
   outline: none;
   border-color: color-mix(in srgb, var(--theme-main) 56%, var(--card-border));
@@ -8737,19 +8732,16 @@ body[data-type='home'] .categoryItem:hover .categoryButtonIcon {
   opacity: 0.84;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item,
 .topGroup .recent-post-item {
   cursor: pointer;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item > .recent-post-info,
 .topGroup .recent-post-info {
   align-self: stretch;
   min-height: 100%;
   cursor: pointer;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item > .recent-post-info > *,
 .topGroup .recent-post-info > * {
   position: relative;
   z-index: 1;
@@ -9257,7 +9249,6 @@ body[data-type='home'] .categoryButtonIcon {
   opacity: 0.72;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item > .recent-post-info,
 .topGroup .recent-post-item > .recent-post-info {
   display: grid;
   align-content: stretch;
@@ -9266,7 +9257,6 @@ body[data-type='home'] .categoryButtonIcon {
   cursor: pointer;
 }
 
-:is(#recent-posts, .taxonomy-post-list) > .recent-post-item > .recent-post-info > .content,
 .topGroup .recent-post-item > .recent-post-info > .top-post-card__meta {
   margin-top: auto;
 }
