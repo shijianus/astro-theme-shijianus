@@ -13,10 +13,9 @@ import { formatDisplayDate } from '../../lib/theme';
 interface Props {
   entry: CollectionEntry<'posts'>;
   index?: number;
-  isLatest?: boolean;
 }
 
-const { entry, index = 0, isLatest = false } = Astro.props;
+const { entry, index = 0 } = Astro.props;
 
 const link = getPostPath(entry);
 const title = getDisplayPostTitle(entry);
@@ -25,75 +24,64 @@ const category = getDisplayPostCategory(entry);
 const cover = resolveDisplayCover(entry);
 const tags = entry.data.tags ?? [];
 
-// In hexo-theme-anzhiyu post-ui.pug:
-// position = theme.cover.position
-// leftOrRight = position === 'both' ? (index % 2 == 0 ? 'left' : 'right') : position
-const leftOrRight = index % 2 === 0 ? 'left' : 'right';
-const noCover = !cover;
-
 const pubDateIso = entry.data.pubDate.toISOString();
 const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
 ---
 
 <div
-  class={`recent-post-item ${index === 0 && isLatest ? 'lastestpost-item' : ''}`}
+  class="group relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
   onclick={`location.href='${link}'`}
 >
-  {cover && (
-    <div class={`post_cover ${leftOrRight}`}>
-      <a href={link} title={title} style="display: flex; height: 100%;">
-        <img
-          class="post_bg"
-          src={cover}
-          alt={title}
-          style="pointer-events: none;"
-          loading="lazy"
-          onerror={`this.onerror=null;this.src='${siteConfig.post.hero.fallbackImage}'`}
-        />
+  <div class="aspect-[16/10] w-full overflow-hidden relative bg-[var(--secondbg)]">
+    {cover ? (
+      <img
+        class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+        src={cover}
+        alt={title}
+        loading="lazy"
+        onerror={`this.onerror=null;this.src='${siteConfig.post.hero.fallbackImage}'`}
+      />
+    ) : (
+      <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+        <span class="text-sm font-medium text-[var(--text-soft)] opacity-60 select-none">
+          {category || siteConfig.site.title}
+        </span>
+      </div>
+    )}
+
+    {isSticky && (
+      <div class="absolute top-2 left-2 z-10 flex items-center gap-1 rounded bg-[#FF7242] px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+        <i class="anzhiyufont anzhiyu-icon-thumbtack"></i>
+        <span>置顶</span>
+      </div>
+    )}
+  </div>
+
+  <div class="p-3 flex flex-col gap-1.5 flex-1 justify-between">
+    <div>
+      <a
+        href={link}
+        class="text-[15px] font-semibold line-clamp-2 leading-snug text-[var(--font-color)] hover:text-[var(--theme-main)] transition-colors"
+      >
+        {title}
       </a>
     </div>
-  )}
 
-  <div class={`recent-post-info ${noCover ? 'no-cover' : ''}`}>
-    <div class="recent-post-info-top">
-      <div class="recent-post-info-top-tips">
-        {isSticky && (
-          <span class="article-meta sticky-warp">
-            <i class="anzhiyufont anzhiyu-icon-thumbtack sticky"></i>
-            <span class="sticky">置顶</span>
-          </span>
-        )}
-        {category && (
-          <div class="article-categories-original">{category}</div>
-        )}
-        {isLatest && <span class="newPost">最新</span>}
-        <a class="unvisited-post" href={link} title={title}>未读</a>
+    <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1 mt-auto">
+      <div class="flex flex-wrap gap-1.5 items-center">
+        {tags.map((tag) => (
+          <a
+            href={getTagPath(tag)}
+            class="px-2 py-0.5 rounded-full text-[11px] bg-[var(--tag-bg)] text-[var(--tag-text)] hover:bg-[var(--theme-op)] hover:text-[var(--theme-main)] transition-colors"
+            onclick="event.stopPropagation();"
+          >
+            {tag}
+          </a>
+        ))}
       </div>
-      <a class="article-title" href={link} title={title}>{title}</a>
-    </div>
-
-    <div class="article-meta-wrap">
-      <span class="post-meta-date">
-        <i class="anzhiyufont anzhiyu-icon-calendar-days" style="font-size: 15px; display: none;"></i>
-        <time datetime={pubDateIso} title={`发表于 ${pubDateFormatted}`}>{pubDateFormatted}</time>
-      </span>
-
-      {tags.length > 0 && (
-        <span class="article-meta tags">
-          {tags.map((tag) => (
-            <a
-              href={getTagPath(tag)}
-              class="article-meta__tags"
-              onclick="event.stopPropagation();"
-            >
-              <span>
-                <i class="anzhiyufont anzhiyu-icon-hashtag"></i>
-                {tag}
-              </span>
-            </a>
-          ))}
-        </span>
-      )}
+      <time datetime={pubDateIso} class="text-[11px] text-neutral-400 shrink-0">
+        {pubDateFormatted}
+      </time>
     </div>
   </div>
 </div>
