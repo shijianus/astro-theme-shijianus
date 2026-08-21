@@ -29,7 +29,7 @@ const isProtected = hasPostAccess(entry);
 const isSticky = Boolean(entry.data.sticky && entry.data.sticky > 0);
 const isFeatured = Boolean(entry.data.featured);
 const displayTitle = getDisplayPostTitle(entry);
-const displayExcerpt = getDisplayPostSummary(entry, 110);
+const displayExcerpt = getDisplayPostSummary(entry, 160);
 const displayBadge = isSticky ? '置顶' : isProtected ? '受限' : isFeatured ? '推荐' : '';
 const displayCategory = getDisplayPostCategory(entry);
 const categorySlug = resolveCategory(entry);
@@ -93,14 +93,14 @@ const readingTime = estimateReadingMinutes(entry);
 
   <!-- 卡片内容区域 -->
   <div class="hexo-card-body flex flex-1 flex-col p-4">
-    <!-- 标题：最多 2 行，超出省略号 -->
-    <h2 class="mb-1.5 text-base font-semibold leading-snug text-slate-800 transition-colors duration-200 group-hover:text-[var(--theme-main,#3b82f6)] line-clamp-2 dark:text-slate-100 dark:group-hover:text-blue-400">
+    <!-- 标题：完整展示多行，不硬截断 -->
+    <h2 class="mb-2 text-[17px] font-semibold leading-snug text-slate-800 transition-colors duration-200 group-hover:text-[var(--theme-main,#3b82f6)] dark:text-slate-100 dark:group-hover:text-blue-400">
       {displayTitle}
     </h2>
 
-    <!-- 摘要描述：最多 2 行，细字灰色 -->
+    <!-- 摘要描述：适度换行，阅读感更强 -->
     {displayExcerpt && (
-      <p class="mb-4 text-xs leading-relaxed text-slate-500 line-clamp-2 dark:text-slate-400">
+      <p class="mb-4 text-xs leading-relaxed text-slate-500 line-clamp-3 dark:text-slate-400">
         {displayExcerpt}
       </p>
     )}
