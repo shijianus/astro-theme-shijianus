@@ -47,8 +47,8 @@ const readingTime = estimateReadingMinutes(entry);
   role="link"
   aria-label={displayTitle}
 >
-  <!-- 顶部 16:9 封面图容器 -->
-  <div class="hexo-card-cover relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800/80">
+  <!-- 顶部精简高度封面图容器 (固定高度控制视觉占比) -->
+  <div class="hexo-card-cover relative h-[180px] md:h-[200px] w-full overflow-hidden bg-slate-100 dark:bg-slate-800/80">
     {coverSrc ? (
       <img
         src={coverSrc}
