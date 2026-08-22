@@ -15,12 +15,20 @@ const visibleFeaturedPosts = featuredPosts.filter((entry) => !hasPostAccess(entr
 const visibleLatestPosts = latestPosts.filter((entry) => !hasPostAccess(entry));
 const topPosts = (visibleFeaturedPosts.length > 0 ? visibleFeaturedPosts : visibleLatestPosts).slice(0, 6);
 const todayPost = topPosts[0] ?? visibleLatestPosts[0];
-const stackPosts = topPosts.slice(0, 3);
+const stackPosts = topPosts.slice(0, 6);
 const mobileFocusPost = topPosts[0] ?? todayPost;
 const categoryItems = siteConfig.home.categories.slice(0, 3);
 const showcase = siteConfig.home.hero.showcase;
 const showcaseTiles = [...showcase.tiles, ...showcase.tiles];
 const topDeck = siteConfig.home.hero.topDeck;
+const todayCardConfig = topDeck.todayCard ?? {
+  tips: siteConfig.home.announcement.eyebrow,
+  title: todayPost ? todayPost.data.title : siteConfig.home.announcement.title,
+  href: todayPost ? getPostPath(todayPost) : siteConfig.home.announcement.href,
+  cover: todayPost ? resolveCover(todayPost) : siteConfig.post.hero.fallbackImage,
+  coverAlt: todayPost ? resolveCoverAlt(todayPost) : '推荐封面',
+};
+const isExternalTodayCard = Boolean(topDeck.todayCard?.href && /^https?:\/\//i.test(topDeck.todayCard.href));
 const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
 const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon> = {
   boxes: Boxes,
@@ -134,46 +142,57 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       </div>
 
       {stackPosts.map((entry, index) => (
-        <article class="recent-post-item top-post-card" data-card-link={getPostPath(entry)} tabindex="0" role="link" aria-label={entry.data.title}>
-          <a class="post_cover" href={getPostPath(entry)} title={entry.data.title}>
-            <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
-            <img
-              class="post_bg"
-              src={resolveCover(entry)}
-              alt={resolveCoverAlt(entry)}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-            />
-          </a>
-        </article>
+        <div class="recent-post-item" data-card-link={getPostPath(entry)}>
+          <div class="post_cover left_radius">
+            <a href={getPostPath(entry)} title={entry.data.title}>
+              <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
+              <img
+                class="post_bg"
+                src={resolveCover(entry)}
+                alt={resolveCoverAlt(entry)}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                data-fallback-src={siteConfig.post.hero.fallbackImage}
+              />
+            </a>
+          </div>
+          <div class="recent-post-info">
+            <a class="article-title" href={getPostPath(entry)} title={entry.data.title}>
+              {entry.data.title}
+            </a>
+          </div>
+        </div>
       ))}
 
-      {todayPost && (
+      {todayCardConfig && (
         <article class="todayCard">
-          <div class="todayCard__panel-label">{topDeck.panelLabel}</div>
-          <a class="todayCard-link" href={getPostPath(todayPost)} aria-label={todayPost.data.title}>
+          <a
+            class="todayCard-link"
+            href={todayCardConfig.href}
+            target={isExternalTodayCard ? '_blank' : undefined}
+            rel={isExternalTodayCard ? 'noopener noreferrer' : undefined}
+            aria-label={todayCardConfig.title}
+          >
             <div class="todayCard-info">
-              <div class="todayCard-tips">{siteConfig.home.announcement.eyebrow}</div>
-              <div class="todayCard-title">{siteConfig.home.announcement.title}</div>
-              <p>{getExcerpt(todayPost, 90)}</p>
+              <div class="todayCard-tips">{todayCardConfig.tips}</div>
+              <div class="todayCard-title">{todayCardConfig.title}</div>
             </div>
             <img
               class="todayCard-cover"
-              src={resolveCover(todayPost)}
-              alt={resolveCoverAlt(todayPost)}
+              src={todayCardConfig.cover}
+              alt={todayCardConfig.coverAlt ?? todayCardConfig.title}
               loading="eager"
               data-fallback-src={siteConfig.post.hero.fallbackImage}
             />
           </a>
           <div class="banner-button-group">
-            <label class="banner-button" for="today-card-toggle">
-              <span class="banner-button__icon">+</span>
+            <label class="banner-button" for="today-card-toggle" aria-label={topDeck.toggleLabel}>
+              <svg class="banner-button__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 16 16 12 12 8"></polyline>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
               <span class="banner-button-text">{topDeck.toggleLabel}</span>
             </label>
-          </div>
-          <div class="todayCard__footer">
-            <span>{topDeck.panelFootnote}</span>
-            <span>{topDeck.panelAction}</span>
           </div>
         </article>
       )}
@@ -276,6 +295,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
   }
 
   /* 注意：严格保留对 .categoryGroup 的正确 Flex 设置 */
@@ -283,14 +304,15 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: flex-start !important;
-    gap: 0 !important;
-    margin: 0 -4px !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    min-height: 76px !important;
+    height: 80px !important;
+    min-height: 80px !important;
     align-items: stretch !important;
     padding: 0 !important;
+    box-sizing: border-box !important;
   }
 
   body[data-type='home'] .categoryItem {
@@ -307,11 +329,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     position: relative !important;
     margin: 0 !important;
     box-sizing: border-box !important;
-    min-width: 140px !important;
+    min-width: 0 !important;
     max-width: none !important;
     min-height: 0 !important;
-    border-left: 4px solid transparent !important;
-    border-right: 4px solid transparent !important;
+    border: none !important;
     background-clip: padding-box !important;
   }
 
@@ -389,5 +410,58 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     transform: translate(-6px, -4px) rotate(-6deg) scale(1.08) !important;
     opacity: 0.38 !important;
     filter: blur(0);
+  }
+
+  /* topGroup 卡组尺寸与图片适配 */
+  body[data-type='home'] .topGroup .recent-post-item {
+    width: calc((100% - 1rem) / 3) !important;
+    min-width: 0 !important;
+    height: 164px !important;
+    margin: 0 !important;
+  }
+
+  body[data-type='home'] .topGroup {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    align-content: space-between !important;
+  }
+
+  body[data-type='home'] .topGroup .recent-post-item .post_cover {
+    width: 100% !important;
+    height: 100px !important;
+    min-height: 100px !important;
+    position: relative !important;
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  body[data-type='home'] .topGroup .recent-post-item .post_cover a {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+  }
+
+  body[data-type='home'] .topGroup .recent-post-item .post_cover img {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100px !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+
+  body[data-type='home'] .topGroup .recent-post-item .recent-post-info {
+    padding: 8px 10px !important;
+  }
+
+  body[data-type='home'] .topGroup .recent-post-item .article-title {
+    font-size: 0.85rem !important;
+    line-height: 1.3 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
   }
 </style>

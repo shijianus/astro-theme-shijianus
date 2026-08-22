@@ -1,0 +1,496 @@
+[
+  {
+    "routeName": "home",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": {
+      "top": 60,
+      "height": 437.1875
+    },
+    "contentRect": {
+      "top": 513.1875,
+      "width": 1400
+    },
+    "asideData": [
+      {
+        "id": "aside-content",
+        "widgetCount": 4,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "card-announcement",
+            "gap": 16
+          },
+          {
+            "from": "card-announcement",
+            "to": "promo-widget",
+            "gap": 16
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-feature-panel card-feature-panel--overview",
+            "gap": 16
+          }
+        ]
+      }
+    ],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "post-markdown",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": {
+      "top": 60,
+      "height": 629.375
+    },
+    "contentRect": {
+      "top": 689.375,
+      "width": 1400
+    },
+    "asideData": [
+      {
+        "id": "post-layout-row__aside post-layout-row__aside--toc",
+        "widgetCount": 4,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "promo-widget",
+            "gap": 16
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-categories",
+            "gap": 16
+          },
+          {
+            "from": "card-categories",
+            "to": "card-toc",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-toc-aside",
+        "widgetCount": 4,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "promo-widget",
+            "gap": 16
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-categories",
+            "gap": 16
+          },
+          {
+            "from": "card-categories",
+            "to": "card-toc",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-layout-row__aside post-layout-row__aside--secondary",
+        "widgetCount": 2,
+        "gaps": [
+          {
+            "from": "promo-widget card-telegram--post",
+            "to": "card-recent-post",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-secondary-aside",
+        "widgetCount": 2,
+        "gaps": [
+          {
+            "from": "promo-widget card-telegram--post",
+            "to": "card-recent-post",
+            "gap": 16
+          }
+        ]
+      }
+    ],
+    "postSectionGaps": [
+      {
+        "from": "RelatedPosts",
+        "to": "Comments",
+        "gap": 38
+      },
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "post-content",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": {
+      "top": 60,
+      "height": 494.6875
+    },
+    "contentRect": {
+      "top": 554.6875,
+      "width": 1400
+    },
+    "asideData": [
+      {
+        "id": "post-layout-row__aside post-layout-row__aside--toc",
+        "widgetCount": 4,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "promo-widget",
+            "gap": 16
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-categories",
+            "gap": 16
+          },
+          {
+            "from": "card-categories",
+            "to": "card-toc",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-toc-aside",
+        "widgetCount": 4,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "promo-widget",
+            "gap": 16
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-categories",
+            "gap": 16
+          },
+          {
+            "from": "card-categories",
+            "to": "card-toc",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-layout-row__aside post-layout-row__aside--secondary",
+        "widgetCount": 2,
+        "gaps": [
+          {
+            "from": "promo-widget card-telegram--post",
+            "to": "card-recent-post",
+            "gap": 16
+          }
+        ]
+      },
+      {
+        "id": "post-secondary-aside",
+        "widgetCount": 2,
+        "gaps": [
+          {
+            "from": "promo-widget card-telegram--post",
+            "to": "card-recent-post",
+            "gap": 16
+          }
+        ]
+      }
+    ],
+    "postSectionGaps": [
+      {
+        "from": "RelatedPosts",
+        "to": "Comments",
+        "gap": 38
+      },
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "archives",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "categories-index",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "category-single",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "tags-index",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "tag-single",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "about",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 60,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "friends",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 80,
+      "width": 1400
+    },
+    "asideData": [
+      {
+        "id": "aside-content",
+        "widgetCount": 7,
+        "gaps": [
+          {
+            "from": "card-info profile-card",
+            "to": "promo-widget",
+            "gap": 0
+          },
+          {
+            "from": "promo-widget",
+            "to": "card-categories",
+            "gap": 0
+          },
+          {
+            "from": "card-categories",
+            "to": "card-tags",
+            "gap": 0
+          },
+          {
+            "from": "card-tags",
+            "to": "card-archives",
+            "gap": 16
+          },
+          {
+            "from": "card-archives",
+            "to": "card-webinfo",
+            "gap": 16
+          },
+          {
+            "from": "card-webinfo",
+            "to": "card-recent-post",
+            "gap": 16
+          }
+        ]
+      }
+    ],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [
+      {
+        "type": "SIDEBAR_ZERO_GAP",
+        "detail": "Gap between card-widget card-info profile-card  and card-widget promo-widget is only 0px"
+      },
+      {
+        "type": "SIDEBAR_ZERO_GAP",
+        "detail": "Gap between card-widget promo-widget and card-widget card-categories is only 0px"
+      },
+      {
+        "type": "SIDEBAR_ZERO_GAP",
+        "detail": "Gap between card-widget card-categories and card-widget card-tags is only 0px"
+      }
+    ],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "lab",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 80,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "roadmap",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 80,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  },
+  {
+    "routeName": "status",
+    "docWidth": 1440,
+    "scrollWidth": 1440,
+    "headerHeight": 60,
+    "heroRect": null,
+    "contentRect": {
+      "top": 80,
+      "width": 1400
+    },
+    "asideData": [],
+    "postSectionGaps": [
+      {
+        "from": "MainContent",
+        "to": "Footer",
+        "gap": 64
+      }
+    ],
+    "issues": [],
+    "mobileIssues": []
+  }
+]

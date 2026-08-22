@@ -335,97 +335,103 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </section>
       )}
 
-      <section class="card-widget card-tags">
-        <div class="item-headline"></div>
-        <div class="card-tag-cloud">
-          {realTags.slice(0, 40).map((tag) => (
-            <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
-              {tag.label}<sup>{tag.count}</sup>
-            </a>
-          ))}
-        </div>
-      </section>
-      <hr />
-
-      <section class="card-widget card-archives">
-        <div class="item-headline">
-          <i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span>
-          <a class="card-more-btn" href="/archives/" title="查看更多">
-            <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
-          </a>
-        </div>
-        <ul class="card-archive-list">
-          {realArchives.slice(0, 8).map((item) => (
-            <li class="card-archive-list-item">
-              <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
-                <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
-                <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
+      {showTags && (
+        <section class="card-widget card-tags">
+          <div class="item-headline">
+            <Tags className="aside-title-icon" aria-hidden="true" />
+            <span>标签</span>
+          </div>
+          <div class="card-tag-cloud">
+            {realTags.slice(0, 40).map((tag) => (
+              <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
+                {tag.label}<sup>{tag.count}</sup>
               </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <hr />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section class="card-widget card-webinfo">
-        <div class="item-headline">
-          <i class="anzhiyufont anzhiyu-icon-chart-line"></i><span>网站资讯</span>
-        </div>
-        <div class="webinfo">
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
-              <div class="item-name">文章总数 :</div>
-            </div>
-            <div class="item-count">{realTotalPosts}</div>
+      {showArchives && (
+        <section class="card-widget card-archives">
+          <div class="item-headline">
+            <Archive className="aside-title-icon" aria-hidden="true" />
+            <span>归档</span>
+            <a class="card-more-btn" href="/archives/" title="查看更多">
+              <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
+            </a>
           </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
-              <div class="item-name">建站天数 :</div>
+          <ul class="card-archive-list">
+            {realArchives.slice(0, 8).map((item) => (
+              <li class="card-archive-list-item">
+                <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
+                  <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
+                  <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {showWebInfo && (
+        <section class="card-widget card-webinfo">
+          <div class="item-headline">
+            <Info className="aside-title-icon" aria-hidden="true" />
+            <span>网站资讯</span>
+          </div>
+          <div class="webinfo">
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
+                <div class="item-name">文章总数 :</div>
+              </div>
+              <div class="item-count">{realTotalPosts}</div>
             </div>
-            <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
-              {realRuntimeDays} 天
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
+                <div class="item-name">建站天数 :</div>
+              </div>
+              <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
+                {realRuntimeDays} 天
+              </div>
+            </div>
+            <div class="webinfo-item">
+              <div class="webinfo-item-title">
+                <i class="anzhiyufont anzhiyu-icon-font"></i>
+                <div class="item-name">全站字数 :</div>
+              </div>
+              <div class="item-count">{realTotalWordsK}k</div>
             </div>
           </div>
-          <div class="webinfo-item">
-            <div class="webinfo-item-title">
-              <i class="anzhiyufont anzhiyu-icon-font"></i>
-              <div class="item-name">全站字数 :</div>
-            </div>
-            <div class="item-count">{realTotalWordsK}k</div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {showRecentPosts && (
-        <>
-          <hr />
-          <section class="card-widget card-recent-post">
-            <div class="item-headline">
-              <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-              <span>最新发布</span>
-            </div>
-            <div class="aside-list">
-              {recentPostEntries.slice(0, 6).map((entry) => (
-                <a href={getPostPath(entry)} class="aside-list-item">
-                  <span class="thumbnail">
-                    <img
-                      src={resolveDisplayCover(entry, true)}
-                      alt={getDisplayPostTitle(entry, true)}
-                      loading="lazy"
-                      data-fallback-src={siteConfig.post.hero.fallbackImage}
-                    />
-                  </span>
-                  <span class="content">
-                    <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                    <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                  </span>
-                </a>
-              ))}
-            </div>
-          </section>
-        </>
+        <section class="card-widget card-recent-post">
+          <div class="item-headline">
+            <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+            <span>最新发布</span>
+          </div>
+          <div class="aside-list">
+            {recentPostEntries.slice(0, 6).map((entry) => (
+              <a href={getPostPath(entry)} class="aside-list-item">
+                <span class="thumbnail">
+                  <img
+                    src={resolveDisplayCover(entry, true)}
+                    alt={getDisplayPostTitle(entry, true)}
+                    loading="lazy"
+                    data-fallback-src={siteConfig.post.hero.fallbackImage}
+                  />
+                </span>
+                <span class="content">
+                  <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                  <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
     </>
   )}
@@ -464,28 +470,29 @@ const renderTocNodes = (nodes: TocNode[]) =>
 </div>
 
 <style is:global>
-#aside-content .sticky_layout--utility .card-widget.card-tags,
-#aside-content .sticky_layout--utility .card-widget.card-archives,
-#aside-content .sticky_layout--utility .card-widget.card-webinfo {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    position: relative !important;
-    margin-top: 1rem !important;
-    pointer-events: auto !important;
-}
-  body[data-type='post'] .aside-content .sticky_layout,
+  #aside-content .card-widget {
+    margin-top: 20px !important;
+  }
+  
+  #aside-content > .card-widget:first-child {
+    margin-top: 0 !important;
+  }
+
   .sticky_layout {
-    position: sticky !important;
     position: -webkit-sticky !important;
-    top: calc(var(--header-offset, 80px) + 16px) !important;
+    position: sticky !important;
+    top: calc(var(--header-offset, 80px) + 20px) !important;
     transition: top 0.3s;
     align-self: flex-start;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--header-offset, 80px) - 32px) !important;
+    height: auto !important;
     max-height: calc(100vh - var(--header-offset, 80px) - 32px) !important;
+    margin-top: 20px !important;
+  }
+
+  #aside-content > .sticky_layout:first-child {
+    margin-top: 0 !important;
   }
   
   .sticky_layout > .card-widget:not(#card-toc) {
@@ -493,17 +500,14 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
   
   #card-toc {
-    flex: 1 1 auto !important;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
+    padding: 20px 24px !important;
+    border-radius: 12px !important;
   }
   
-  body[data-type='post'] .aside-content #card-toc .toc-content,
   #card-toc .toc-content {
-    flex: 1 1 auto !important;
     min-height: 0;
     overflow-y: auto !important;
     scrollbar-width: none !important;

@@ -1458,14 +1458,22 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
 }
 
 body[data-type='home'] #bannerGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  height: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 body[data-type='home'] #random-hover {
-  min-width: 0;
+  min-width: 0 !important;
+  position: absolute !important;
+  inset: -1px !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: inherit !important;
+  box-sizing: border-box !important;
   flex: 1 1 auto;
   align-items: center;
   padding: 24px 28px;
@@ -1517,30 +1525,35 @@ body[data-type='home'] .categoryGroup {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
-  justify-content: flex-start !important;
-  gap: 0 !important;
-  margin: 0 -4px !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin: 0 !important;
   width: 100% !important;
   height: auto !important;
   min-height: 76px !important;
   max-width: none !important;
   align-items: stretch !important;
   padding: 0 !important;
+  box-sizing: border-box !important;
 }
 
+body[data-type='home'] .categoryGroup .categoryItem,
 body[data-type='home'] .categoryItem {
   display: flex !important;
   flex: 1 1 0% !important;
   width: auto !important;
-  min-width: 140px !important;
+  min-width: 0 !important;
+  max-width: none !important;
   box-sizing: border-box !important;
   transform: translate3d(0, 0, 0);
   transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
-  border-left: 4px solid transparent !important;
-  border-right: 4px solid transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
   background-clip: padding-box !important;
 }
 
+body[data-type='home'] .categoryGroup .categoryItem:is(:hover, :focus-within),
 body[data-type='home'] .categoryItem:is(:hover, :focus-within) {
   flex: 1.85 1 0% !important;
   transform: translateY(-2px) !important;
@@ -1762,20 +1775,22 @@ body[data-type='post'] .post-layout-row__aside #post-secondary-aside {
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
 }
 
 body[data-type='post'] .post-layout-row__aside .sticky_layout {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
   width: 100%;
+  margin-top: 0 !important;
 }
 
 body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget {
-  margin-top: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   border-radius: 22px;
 }
 
@@ -1783,10 +1798,11 @@ body[data-type='post'] .card-telegram,
 body[data-type='post'] .card-telegram--post {
   padding: 0 !important;
   overflow: hidden;
+  margin: 0 !important;
 }
 
 body[data-type='post'] .card-telegram--post {
-  margin-bottom: 8px;
+  margin-bottom: 0 !important;
 }
 
 body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent) {
@@ -2056,8 +2072,28 @@ body[data-type='post'] #post-comment {
 }
 
 @media (max-width: 768px) {
+  #menus {
+    display: none !important;
+  }
+
+  #toggle-menu {
+    display: flex !important;
+  }
+
   body[data-type='home'] .categoryGroup {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+  }
+
+  body[data-type='home'] .categoryGroup .categoryItem,
+  body[data-type='home'] .categoryItem {
+    width: 100% !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    flex: none !important;
   }
 
   body[data-type='home'] .categoryButtonCopy {
@@ -2111,14 +2147,25 @@ body[data-type='home'] .page-aside {
 
 body[data-type='home'] .page-aside__sticky,
 body[data-type='home'] #aside-content {
-  display: grid;
-  gap: 20px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
   align-content: start;
 }
 
+body[data-type='home'] #aside-content .card-widget,
+#aside-content .card-widget {
+  margin: 0 !important;
+}
+
+#aside-content .sticky_layout,
 body[data-type='home'] #aside-content .sticky_layout--utility {
   position: static;
   min-height: 0;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
 }
 
 body[data-type='home'] .card-feature-panel--overview {
@@ -2292,39 +2339,22 @@ body[data-type='home'] .feature-panel-recent .aside-list {
 }
 
 body[data-type='post'] #post-secondary-aside {
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 body[data-type='post'] .card-telegram--post {
-  margin-bottom: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
-body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent) {
+body[data-type='post'] :is(#post-toc-aside .sticky_layout, #post-secondary-aside .sticky_layout) {
   position: sticky !important;
-  top: var(--sticky-column-top, 88px) !important;
+  top: calc(var(--header-offset, 80px) + 20px) !important;
   min-height: 0;
-  max-height: none;
+  max-height: calc(100vh - var(--header-offset, 80px) - 32px);
   align-self: start;
-  transform: none !important;
-}
-
-body[data-type='post'] :is(#post-toc-aside #card-toc, #post-secondary-aside .card-recent-post) {
-  min-height: 0;
-  height: var(--sticky-card-height, auto);
-  max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
-}
-
-body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-static-layout,
-body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-sticky-active {
-  min-height: 0;
-  max-height: none;
-}
-
-body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-static-layout :is(#card-toc, .card-recent-post),
-body[data-type='post'] :is(#post-toc-aside .sticky_layout--toc, #post-secondary-aside .sticky_layout--recent).is-sticky-active :is(#card-toc, .card-recent-post) {
-  height: var(--sticky-card-height, auto);
-  min-height: 0;
-  max-height: calc(100vh - var(--sticky-column-top, 88px) - 18px);
 }
 
 
@@ -2475,19 +2505,27 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   z-index: 10 !important;
 }
 
-/* 3. Absolutely center #menus */
-#menus {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: auto !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* 3. Absolutely center #menus on desktop */
+@media screen and (min-width: 769px) {
+  #menus {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #menus {
+    display: none !important;
+  }
 }
 
 #menus .menus_items {
@@ -2647,21 +2685,41 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   align-self: stretch !important;
 }
 
-/* 2. 强制所有中间包裹层继承 100% 高度，铺设滑动轨道 */
+/* 2. 侧边栏及所有卡片容器统一标准化 Flex 布局 */
 .page-aside__sticky,
-#aside-content {
-  height: 100% !important;
+#aside-content,
+#post-toc-aside,
+#post-secondary-aside {
   min-height: 100% !important;
-  display: block !important; 
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+#aside-content > astro-island,
+#post-toc-aside > astro-island,
+#post-secondary-aside > astro-island,
+.page-aside__sticky > astro-island {
+  display: contents !important;
+}
+
+:is(#aside-content, #post-toc-aside, #post-secondary-aside, .page-aside__sticky) .card-widget {
+  margin: 0 !important;
 }
 
 /* 3. 释放 Sticky 元素并配置粘性参数 */
-#aside-content .sticky_layout {
+#aside-content .sticky_layout,
+#post-toc-aside .sticky_layout,
+#post-secondary-aside .sticky_layout {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: var(--sticky-column-top, 80px) !important;
   height: max-content !important; /* 绝对禁止被 100% 污染拉伸 */
-  padding-bottom: 20px !important; /* 防止底部贴得太死 */
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
   transition: top 0.3s ease !important;
 }
 
@@ -2670,6 +2728,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   .page-aside__sticky,
   #aside-content {
     height: auto !important;
+    min-height: 0 !important;
   }
   #aside-content .sticky_layout {
     position: static !important;

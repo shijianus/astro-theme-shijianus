@@ -73,6 +73,13 @@ export type HeroTopDeck = {
   panelLabel: string;
   panelAction: string;
   panelFootnote: string;
+  todayCard?: {
+    tips: string;
+    title: string;
+    href: string;
+    cover: string;
+    coverAlt?: string;
+  };
 };
 
 export type HomeCategoryRail = {
@@ -325,6 +332,13 @@ export const siteConfig = {
         panelLabel: '本次重构',
         panelAction: '更多推荐',
         panelFootnote: '推荐卡组会在这里继续展开',
+        todayCard: {
+          tips: '创意工坊',
+          title: 'EpoCanvas',
+          href: 'https://epocanvas.com',
+          cover: 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png',
+          coverAlt: 'EpoCanvas 创意画布',
+        },
       } satisfies HeroTopDeck,
       primaryCta: { label: '开始阅读', href: '/archives/' },
       secondaryCta: { label: '关于主题', href: '/about/' },
