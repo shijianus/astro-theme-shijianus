@@ -18,29 +18,46 @@ async function main() {
   await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 15000 });
   await page.waitForTimeout(1000);
 
-  // 1. Capture unified layout
+  // 1. Capture unified layout top
   await page.screenshot({ path: 'scripts/verify_node2_layout.png', fullPage: false });
 
-  // 2. Scroll down a bit and capture mid
+  // 2. Scroll down mid
   await page.evaluate(() => window.scrollBy(0, 600));
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node2_scroll.png', fullPage: false });
 
-  // 3. Toggle read mode
+  // 3. Scroll to bottom (copyright & tags & related)
+  await page.evaluate(() => {
+    const el = document.querySelector('.post-copyright') || document.querySelector('.relatedPosts');
+    if (el) el.scrollIntoView();
+  });
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: 'scripts/verify_node2_bottom.png', fullPage: false });
+
+  // 4. Dark mode normal layout
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark';
+    window.scrollTo(0, 400);
+  });
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: 'scripts/verify_node2_dark.png', fullPage: false });
+
+  // 5. Toggle read mode
   await page.evaluate(() => {
     document.body.classList.add('read-mode');
+    document.documentElement.dataset.theme = 'light';
   });
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node2_readmode.png', fullPage: false });
 
-  // 4. Dark mode + Read mode
+  // 6. Dark mode + Read mode
   await page.evaluate(() => {
     document.documentElement.dataset.theme = 'dark';
   });
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node2_readmode_dark.png', fullPage: false });
 
-  console.log('Node 2 verification screenshots captured successfully!');
+  console.log('All Node 2 verification screenshots captured successfully!');
   await browser.close();
   server.kill();
   process.exit(0);

@@ -99,15 +99,15 @@ const tocTree = (() => {
 })();
 const showUtilityAside = utilityOnlyPageTypes.has(pageType);
 const showPostAsideFeed = isPostSecondaryPage;
-const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtilityAside || isPostSecondaryPage);
+const showRecentPosts = recentPostEntries.length > 0 && !isHomePage;
 const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
-const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
+const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage && !isPostPage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage;
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
-const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
-const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
+const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside);
+const showAuthorCard = siteConfig.theme.features.asideAuthor;
 const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
 const runtimeDays = Math.max(
