@@ -107,11 +107,13 @@ if (isUnlocked) {
 }
 
 const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 6) : [];
-const sidebarData = createSidebarData(publicPosts, headings);
-sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
 const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
 const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
 const nextPost = publicPostIndex >= 0 && publicPostIndex < publicPosts.length - 1 ? publicPosts[publicPostIndex + 1] : null;
+const sidebarData = createSidebarData(publicPosts, headings);
+sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
+sidebarData.previousPost = previousPost;
+sidebarData.nextPost = nextPost;
 
 const wordCount = estimateWordCount(entry);
 type HeroMetaItem = {

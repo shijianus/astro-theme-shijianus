@@ -73,6 +73,8 @@ export type SidebarData = {
   totalWords: number;
   headings?: SidebarHeading[];
   postContext?: SidebarPostContext;
+  previousPost?: CollectionEntry<'posts'> | null;
+  nextPost?: CollectionEntry<'posts'> | null;
 };
 
 type PostEntry = CollectionEntry<'posts'>;

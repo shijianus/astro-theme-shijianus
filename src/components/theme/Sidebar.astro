@@ -1,5 +1,5 @@
 ---
-import { Archive, FolderOpen, Info, ListTree, Megaphone, Tags } from 'lucide-react';
+import { Archive, Compass, FolderOpen, Info, ListTree, Megaphone, Tags } from 'lucide-react';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import {
@@ -41,6 +41,8 @@ const {
   headings = [],
   pageType = 'page',
   asideId = 'aside-content',
+  previousPost = null,
+  nextPost = null,
 } = Astro.props;
 
 // Fetch real data for dynamic widgets
@@ -108,7 +110,7 @@ const showArchives = siteConfig.theme.features.asideArchives && archives.length 
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage && !isPostPage;
 const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || isPostPage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
 const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
-const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
+const showAnnouncement = siteConfig.theme.features.asideStatus && isHomePage;
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
 const runtimeDays = Math.max(
   1,
@@ -430,6 +432,29 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 </span>
               </a>
             ))}
+          </div>
+        </section>
+      )}
+
+      {isPostPage && (previousPost || nextPost) && (
+        <section class="card-widget card-post-nav">
+          <div class="item-headline">
+            <Compass className="aside-title-icon" aria-hidden="true" />
+            <span>文章导航</span>
+          </div>
+          <div class="aside-post-nav-list">
+            {previousPost && (
+              <a href={getPostPath(previousPost)} class="aside-post-nav-item aside-post-nav-item--prev">
+                <span class="nav-direction">上一篇</span>
+                <span class="nav-title">{previousPost.data.title}</span>
+              </a>
+            )}
+            {nextPost && (
+              <a href={getPostPath(nextPost)} class="aside-post-nav-item aside-post-nav-item--next">
+                <span class="nav-direction">下一篇</span>
+                <span class="nav-title">{nextPost.data.title}</span>
+              </a>
+            )}
           </div>
         </section>
       )}

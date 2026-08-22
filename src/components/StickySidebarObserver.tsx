@@ -48,13 +48,13 @@ function resolveTargets(pageType: string) {
       document.querySelector<HTMLElement>('#article-container') ??
       document.querySelector<HTMLElement>('#post') ??
       document.querySelector<HTMLElement>('.page-main');
-    const tocCard = document.querySelector<HTMLElement>('#aside-content #card-toc, #card-toc');
+    const stickyLayout = document.querySelector<HTMLElement>('#aside-content .sticky_layout');
 
-    if (tocBoundary && tocCard) {
+    if (tocBoundary && stickyLayout) {
       targets.push({
         boundary: tocBoundary,
-        card: tocCard,
-        minHeight: 360,
+        card: stickyLayout,
+        minHeight: 280,
       });
     }
   }
@@ -119,7 +119,6 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
       });
     };
 
-
     const update = () => {
       // 1. Gather all Reads (Batch Reads)
       const topOffset = resolveHeaderOffset();
@@ -129,7 +128,7 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
       const isMobile = window.matchMedia('(max-width: 1199px)').matches;
       
       const targetStates = targets.map(({ boundary, card, minHeight }) => {
-        if (isMobile) return { card, isMobile: true };
+        if (isMobile) return { card, boundary, isMobile: true, boundaryHeight: 0, contentHeight: 0, minHeight, beforePinDistance: 0, remainingAfterPin: 0, surfaceData: [] };
 
         const boundaryRect = boundary.getBoundingClientRect();
         const boundaryHeight = Math.max(boundary.offsetHeight, boundary.scrollHeight, 220);
@@ -148,6 +147,7 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
 
         return {
           card,
+          boundary,
           isMobile: false,
           boundaryHeight,
           contentHeight,
@@ -162,9 +162,10 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
       document.documentElement.style.setProperty('--sticky-column-top', `${topOffset}px`);
 
       targetStates.forEach(state => {
-        const { card, isMobile } = state;
+        const { card, boundary, isMobile } = state;
         if (isMobile) {
           card.style.removeProperty('--sticky-card-height');
+          card.style.transform = 'none';
           card.dataset.stickyState = 'static';
           card.classList.remove('is-sticky-active');
           card.classList.add('is-static-layout');
@@ -180,37 +181,37 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
           surfaceData
         } = state;
 
-        const stickyHeight = Math.min(viewportHeight, Math.max(minHeight, contentHeight));
-        const staticHeight = Math.min(boundaryHeight, Math.max(minHeight, contentHeight));
         const hasEnoughBoundary = boundaryHeight > Math.max(200, minHeight * 0.72);
-
         let stickyState = 'reading';
-        let computedHeight = stickyHeight;
 
         if (!hasEnoughBoundary) {
           stickyState = 'static';
-          computedHeight = staticHeight;
+          card.style.transform = 'none';
         } else if (beforePinDistance > 0) {
           stickyState = 'entering';
-          computedHeight = clamp(viewportHeight - beforePinDistance, 140, stickyHeight);
-        } else if (remainingAfterPin < stickyHeight) {
+          card.style.transform = 'none';
+        } else if (remainingAfterPin < contentHeight) {
           stickyState = 'leaving';
-          computedHeight = clamp(remainingAfterPin, 140, stickyHeight);
+          const offset = Math.round(remainingAfterPin - contentHeight);
+          card.style.transform = `translateY(${offset}px)`;
         } else {
           stickyState = 'reading';
-          computedHeight = stickyHeight;
+          card.style.transform = 'none';
         }
 
-        const isFullyPinned = computedHeight >= stickyHeight - 3;
-        if (stickyState !== 'static' && isFullyPinned && beforePinDistance <= 6 && remainingAfterPin >= stickyHeight - 3) {
-          stickyState = 'reading';
-        }
-
-        card.style.setProperty('--sticky-card-height', `${Math.round(computedHeight)}px`);
         card.dataset.stickyState = stickyState;
-        card.dataset.stickyFull = isFullyPinned ? 'true' : 'false';
         card.classList.toggle('is-static-layout', stickyState === 'static');
         card.classList.toggle('is-sticky-active', stickyState === 'reading' || stickyState === 'leaving');
+
+        // Update reading progress bar and percentage
+        if (pageType === 'post' && boundaryHeight > 0) {
+          const totalScrollable = Math.max(1, boundaryHeight - window.innerHeight);
+          const currentProgress = clamp(Math.round((-beforePinDistance / totalScrollable) * 100), 0, 100);
+          const percentEl = document.querySelector<HTMLElement>('#card-toc .toc-percentage');
+          const progressBar = document.querySelector<HTMLElement>('#card-toc .toc-progress__bar');
+          if (percentEl) percentEl.textContent = `${currentProgress}%`;
+          if (progressBar) progressBar.style.width = `${currentProgress}%`;
+        }
 
         // Apply surface writes
         const allowTopFade = stickyState === 'reading';

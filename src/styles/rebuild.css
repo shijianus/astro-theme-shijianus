@@ -14891,5 +14891,94 @@ html[data-readmode='true'] #content-inner.layout {
   box-sizing: border-box !important;
 }
 
+/* Card Post Navigation (Previous/Next inside Sticky Layout) */
+#aside-content .card-post-nav {
+  padding: 20px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+}
+
+#aside-content .card-post-nav .item-headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+#aside-content .card-post-nav .aside-post-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#aside-content .card-post-nav .aside-post-nav-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+#aside-content .card-post-nav .aside-post-nav-item:hover {
+  background: color-mix(in srgb, var(--theme-main, #425aef) 12%, transparent);
+  transform: translateX(4px);
+}
+
+#aside-content .card-post-nav .nav-direction {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-main, #425aef);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#aside-content .card-post-nav .nav-title {
+  font-size: 13px;
+  color: var(--font-color);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Card TOC Progress Bar & Percentage */
+#aside-content #card-toc .item-headline {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
+}
+
+#aside-content #card-toc .toc-percentage {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--theme-main, #425aef) !important;
+  margin-left: auto !important;
+}
+
+#aside-content #card-toc .toc-progress {
+  width: 100% !important;
+  height: 3px !important;
+  background: color-mix(in srgb, var(--font-color) 8%, transparent) !important;
+  border-radius: 3px !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+}
+
+#aside-content #card-toc .toc-progress__bar {
+  display: block !important;
+  height: 100% !important;
+  width: 0% !important;
+  background: var(--theme-main, #425aef) !important;
+  border-radius: 3px !important;
+  transition: width 0.1s ease-out !important;
+}
+
+
 
 
