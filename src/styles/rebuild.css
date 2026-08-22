@@ -15004,3 +15004,72 @@ html[data-readmode='true'] #content-inner.layout {
 
 
 
+
+/* =========================================================
+   Node-1 · Task-5: #post 默认透明，阅读模式填充
+   参考 hexo-theme-anzhiyu 高级感透明背景设计
+   ========================================================= */
+
+/* 文章正文容器：去除卡片背景，改为透明 */
+.article-body.post-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* #post 本身也是透明容器，各子区块自己管理卡片样式 */
+#post.post-page-shell {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 文章正文区：给正文段落一个统一阅读卡片 */
+#article-container {
+  padding: 36px 44px 44px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-main) 5%, transparent), transparent 180px),
+    color-mix(in srgb, var(--card-bg) 82%, transparent);
+  box-shadow: 0 20px 40px -32px rgba(14, 20, 36, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* 阅读模式：#post 填充不透明背景 */
+body.read-mode #post.post-page-shell,
+html[data-readmode='true'] #post.post-page-shell {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 20px !important;
+  padding: 2rem !important;
+}
+
+:root[data-theme='dark'] body.read-mode #post.post-page-shell,
+:root[data-theme='dark'] html[data-readmode='true'] #post.post-page-shell {
+  background: #18171d !important;
+  border-color: #2c2c36 !important;
+}
+
+/* 阅读模式下正文卡片也透明，统一由 #post 控制 */
+body.read-mode #article-container,
+html[data-readmode='true'] #article-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+@media (max-width: 768px) {
+  #article-container {
+    padding: 24px 20px 28px;
+    border-radius: 20px;
+  }
+}
