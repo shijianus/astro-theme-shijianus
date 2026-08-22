@@ -5623,9 +5623,9 @@ body[data-type='post'] #aside-content {
   width: 320px;
 }
 
-body[data-type='post'] #aside-content > :not(.sticky_layout),
-body[data-type='post'] #aside-content .sticky_layout > .card-widget:not(#card-toc) {
-  display: none !important;
+body[data-type='post'] #aside-content > :not(.sticky_layout):not(script):not(style),
+body[data-type='post'] #aside-content .sticky_layout > .card-widget {
+  display: block;
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
@@ -6529,9 +6529,9 @@ body[data-type='post'] #aside-content {
   width: 100%;
 }
 
-body[data-type='post'] #aside-content > :not(.sticky_layout),
-body[data-type='post'] #aside-content .sticky_layout > .card-widget:not(#card-toc) {
-  display: none !important;
+body[data-type='post'] #aside-content > :not(.sticky_layout):not(script):not(style),
+body[data-type='post'] #aside-content .sticky_layout > .card-widget {
+  display: block;
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
@@ -14667,4 +14667,146 @@ body[data-type='home'] .categoryItem .categoryButton {
   margin: 0 !important;
   padding: 0 !important;
 }
+
+/* ==========================================================================
+   ASTRO POST UNIFIED LAYOUT & READMODE SYSTEM (Node 1)
+   ========================================================================== */
+
+/* 1. Post Container Unified Layout */
+body[data-type='post'] #content-inner.layout {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 20px 15px !important;
+  gap: 20px !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='post'] .page-main {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 320px) !important;
+  width: 100% !important;
+}
+
+body[data-type='post'] .page-aside {
+  width: 300px !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 1200px) {
+  body[data-type='post'] #content-inner.layout {
+    flex-direction: column !important;
+  }
+  body[data-type='post'] .page-main {
+    max-width: 100% !important;
+  }
+  body[data-type='post'] .page-aside {
+    width: 100% !important;
+  }
+}
+
+/* 2. Unified #post Card with High-End Transparent/Glass Tone */
+#post {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2rem 2.2rem 1.8rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--card-border, rgba(255, 255, 255, 0.15)) 80%, transparent);
+  box-shadow: var(--card-shadow, 0 8px 24px rgba(0, 0, 0, 0.05));
+  background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, max-width 0.3s ease;
+}
+
+:root[data-theme='dark'] #post {
+  background: color-mix(in srgb, var(--card-bg) 75%, transparent);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+/* Article Container Inside #post - Reset nested card styling */
+#post #article-container.post-content {
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Post Child Spacing & Order */
+#post > :not(:first-child) {
+  margin-top: 1.8rem;
+}
+
+#post > #article-container {
+  margin-top: 1.2rem;
+}
+
+#post > .post-copyright {
+  margin-top: 2.2rem;
+}
+
+#post > .post-tools-right {
+  margin-top: 1.2rem;
+}
+
+#post > #pagination.pagination-post {
+  margin-top: 2rem;
+}
+
+#post > .relatedPosts {
+  margin-top: 2rem;
+}
+
+#post > #post-comment {
+  margin-top: 2.2rem;
+}
+
+/* 3. Read Mode (#readmode / body.read-mode) - Solid Fill & Focused Width */
+body.read-mode #post,
+html[data-readmode='true'] #post,
+#post.readmode {
+  background: #ffffff !important;
+  color: #1f2d3d !important;
+  border-color: #e3e8f7 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+  max-width: 880px !important;
+  margin: 0 auto !important;
+  padding: 2.5rem 3rem !important;
+}
+
+:root[data-theme='dark'] body.read-mode #post,
+:root[data-theme='dark'] html[data-readmode='true'] #post,
+:root[data-theme='dark'] #post.readmode {
+  background: #18171d !important;
+  color: #dfdfdf !important;
+  border-color: #2c2c36 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.read-mode .page-aside,
+html[data-readmode='true'] .page-aside,
+body.read-mode #aside-content,
+html[data-readmode='true'] #aside-content {
+  display: none !important;
+}
+
+body.read-mode .page-main,
+html[data-readmode='true'] .page-main {
+  max-width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+body.read-mode #content-inner.layout,
+html[data-readmode='true'] #content-inner.layout {
+  justify-content: center !important;
+}
+
 
