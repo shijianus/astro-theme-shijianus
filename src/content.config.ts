@@ -33,6 +33,8 @@ const postsCollection = defineCollection({
     featured: z.boolean().default(false),
     sticky: z.number().int().default(0),
     draft: z.boolean().default(false),
+    outdateDays: z.number().optional(),
+    expireDays: z.number().optional(),
   }),
 });
 

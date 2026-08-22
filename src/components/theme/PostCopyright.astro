@@ -1,20 +1,4 @@
 ---
-import {
-  Copy,
-  Facebook,
-  HeartHandshake,
-  History,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  QrCode,
-  Radio,
-  Send,
-  Share2,
-  Sparkles,
-  Twitter,
-  type LucideIcon,
-} from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import QrCodeImage from './QrCodeImage.astro';
 import RewardRegionPanel from './RewardRegionPanel.astro';
@@ -68,568 +52,231 @@ const {
   shareDoneLabel,
   shareFallbackLabel,
 } = Astro.props;
-const shareIconMap: Partial<Record<string, LucideIcon>> = {
-  native: Share2,
-  copy: Copy,
-  wechat: QrCode,
-  x: Twitter,
-  facebook: Facebook,
-  threads: MessageCircle,
-  linkedin: Linkedin,
-  weibo: Radio,
-  telegram: Send,
-  reddit: MessageCircle,
-  qq: MessageCircle,
-  email: Mail,
-};
-const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) => ({
-  ...platform,
-  Icon: shareIconMap[platform.id] ?? Share2,
-}));
+
+const encodedTitle = encodeURIComponent(title);
+const encodedUrl = encodeURIComponent(permalink);
+const weiboShareUrl = `https://service.weibo.com/share/share.php?title=${encodedTitle}&url=${encodedUrl}`;
+const qqShareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}&summary=${encodeURIComponent(summary)}`;
+const xShareUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+const telegramShareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
 ---
 
-<section
-  class="post-copyright-block"
-  data-post-tools
-  data-title={title}
-  data-summary={summary}
+<div
+  class="post-copyright"
+  data-post-copyright
   data-permalink={permalink}
+  data-title={title}
   data-copy-done={copyDoneLabel}
-  data-share-done={shareDoneLabel}
-  data-share-fallback={shareFallbackLabel}
 >
-  <div class="post-copyright">
-    <div class="copyright-cc-box">©</div>
-    <div class="post-copyright__author_box">
-      <a class="post-copyright__author_img" href="/about/" title={authorName}>
-        <img class="post-copyright__author_img_back" src={authorAvatar} alt={authorName} loading="lazy" />
-        <img class="post-copyright__author_img_front" src={authorAvatar} alt={authorName} loading="lazy" />
-      </a>
-      <div class="post-copyright__author_name">{authorName}</div>
-      <div class="post-copyright__author_desc">{authorRole}</div>
-    </div>
+  <div class="copyright-cc-box">
+    <i class="anzhiyufont anzhiyu-icon-copyright"></i>
+  </div>
 
-    <div class="post-copyright__post__info">
-      <a class="post-copyright__original" href={permalink}>{badge}</a>
-      <button type="button" class="post-copyright-title" data-tool="copy" title={copyLabel}>
-        <span>{title}</span>
-      </button>
-    </div>
+  <div class="post-copyright__author_box">
+    <a class="post-copyright__author_img" href="/about/" title={authorName}>
+      <img class="post-copyright__author_img_back" src={authorAvatar} alt={authorName} loading="lazy" />
+      <img class="post-copyright__author_img_front" src={authorAvatar} alt={authorName} loading="lazy" />
+    </a>
+    <div class="post-copyright__author_name">{authorName}</div>
+    <div class="post-copyright__author_desc">{authorRole}</div>
+  </div>
 
-    <div class="post-copyright__notice">
-      <span class="post-copyright-info">{notice}</span>
+  <div class="post-copyright__post__info">
+    <a class="post-copyright__original" href={permalink}>{badge}</a>
+    <a class="post-copyright__title" href={permalink} title={title}>{title}</a>
+    <div class="post-copyright__link">
+      <a href={permalink} title={title}>{permalink}</a>
     </div>
+  </div>
 
-    <div class="post-copyright__support">
-      <div class="post-copyright__support-copy">
-        <span class="post-copyright__support-eyebrow">{siteConfig.support.reward.title}</span>
-        <strong>{rewardLabel}</strong>
-        <p>{siteConfig.support.reward.summary}</p>
+  <div class="post-copyright__notice">
+    <span class="post-copyright-info">
+      本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="/">{authorName}</a>！
+    </span>
+  </div>
+
+  <div class="post-tools" id="post-tools">
+    <div class="post-tools-left">
+      <div class="reward-link mode">
+        <button
+          type="button"
+          class="reward-link-button reward-button-square"
+          data-reward-trigger
+          title={rewardLabel}
+          aria-expanded="false"
+        >
+          <svg class="reward-btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+          </svg>
+          <span>{rewardLabel}</span>
+        </button>
       </div>
-      <div class="post-copyright__support-actions support-panel-actions">
-        <div class="support-panel-popover" data-support-popover>
-          <button
-            type="button"
-            class="support-panel-link support-panel-link--icon"
-            data-panel-trigger="reward"
-            aria-expanded="false"
-            aria-controls="post-tools-panel-reward"
-          >
-            <HeartHandshake className="support-panel-link__icon" aria-hidden="true" />
-            <span class="support-panel-link__copy">
-              <strong>{rewardLabel}</strong>
-              <small>请作者喝杯饮料</small>
-            </span>
-          </button>
+    </div>
 
-          <div
-            class="post-floating-panel post-floating-panel--popover"
-            id="post-tools-panel-reward"
-            data-panel="reward"
-            role="region"
-            aria-label={rewardLabel}
-            hidden
-          >
-            <div class="post-floating-panel__head">
-              <div>
-                <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
-                <strong>{rewardLabel}</strong>
-              </div>
-              <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭打赏面板">
-                ×
-              </button>
-            </div>
-            <RewardRegionPanel variant="panel" />
-          </div>
-        </div>
-
-        <a class="support-panel-link support-panel-link--icon support-panel-link--secondary" href={rewardHref}>
-          <History className="support-panel-link__icon" aria-hidden="true" />
-          <span class="support-panel-link__copy">
-            <strong>{siteConfig.support.reward.historyLabel}</strong>
-            <small>看看已经收到的心意</small>
-          </span>
+    <div class="shareRight">
+      <div class="share-link mobile">
+        <button type="button" class="share-button" data-share-wechat title="手机扫码阅读" aria-label="手机扫码阅读">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+      </div>
+      <div class="share-link weibo">
+        <a class="share-button" target="_blank" rel="noopener noreferrer" href={weiboShareUrl} title="分享到微博" aria-label="分享到微博">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M10.07 19.86c-4.45 0-8.07-2.61-8.07-5.83 0-1.68 1.01-3.21 2.68-4.32 2.21-1.46 5.16-1.57 7.23-.26.65.41 1.15.93 1.5 1.51 1.77-.33 3.32.22 3.97 1.4.78 1.42-.08 3.19-2.02 4.41-1.48.94-3.32 1.49-5.29 1.49zm-.06-1.6c3.08 0 5.48-1.58 5.48-3.6 0-1.89-2.14-3.08-4.99-3.08-3.02 0-5.41 1.63-5.41 3.59 0 1.94 2.33 3.09 4.92 3.09zm8.56-8.24c-.45-.14-.7-.63-.56-1.08.43-1.37-.15-2.85-1.45-3.69-.4-.26-.51-.8-.25-1.2.26-.4.8-.51 1.2-.25 1.83 1.19 2.64 3.27 2.04 5.2-.14.45-.63.7-1.08.56z"></path>
+          </svg>
         </a>
-        <span class="support-panel-note">
-          <Sparkles className="support-panel-note__icon" aria-hidden="true" />
-          <span>{rewardNote}</span>
-        </span>
+      </div>
+      <div class="share-link qq">
+        <a class="share-button" target="_blank" rel="noopener noreferrer" href={qqShareUrl} title="分享到QQ" aria-label="分享到QQ">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 2.17.7 4.18 1.89 5.82L3 22l4.35-.87C8.89 21.68 10.39 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"></path>
+          </svg>
+        </a>
+      </div>
+      <div class="share-link telegram">
+        <a class="share-button" target="_blank" rel="noopener noreferrer" href={telegramShareUrl} title="分享到Telegram" aria-label="分享到Telegram">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </a>
+      </div>
+      <div class="share-link twitter">
+        <a class="share-button" target="_blank" rel="noopener noreferrer" href={xShareUrl} title="分享到X" aria-label="分享到X">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+          </svg>
+        </a>
+      </div>
+      <div class="share-link copyurl">
+        <button type="button" class="share-button" id="post-share-url" data-share-copy title={copyLabel} aria-label={copyLabel}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="post-tools-right">
-    <div class="post-meta__box post-meta__box--compact">
-      <span class="post-meta__box__hint">这里不再重复展示分类、标签和继续阅读入口，右侧只保留分享动作，避免与正文信息冲突。</span>
-      <span class="post-meta__box__hint">{siteConfig.support.share.summary}</span>
+  <!-- Popover panels -->
+  <div class="post-copyright-popover post-copyright-popover--reward" data-reward-popover hidden>
+    <div class="post-copyright-popover__head">
+      <span class="post-copyright-popover__title">打赏作者</span>
+      <button type="button" class="post-copyright-popover__close" data-reward-close aria-label="关闭打赏面板">×</button>
     </div>
+    <RewardRegionPanel variant="panel" />
+  </div>
 
-    <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
-      <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
-      <div class="post-share-grid">
-        {enabledSharePlatforms.map((platform) => {
-          const PlatformIcon = platform.Icon;
-          const tooltip = `${platform.label} · ${platform.description}`;
-          return (
-            <button
-              type="button"
-              class="post-share-grid__item"
-              style={`--platform-accent:${platform.accent};`}
-              data-share-platform={platform.id}
-              data-tooltip={tooltip}
-              aria-label={tooltip}
-            >
-              <span class="post-share-grid__surface" aria-hidden="true">
-                <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
-                <span class="post-share-grid__label">{platform.label}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+  <div class="post-copyright-popover post-copyright-popover--wechat" data-wechat-popover hidden>
+    <div class="post-copyright-popover__head">
+      <span class="post-copyright-popover__title">使用手机访问</span>
+      <button type="button" class="post-copyright-popover__close" data-wechat-close aria-label="关闭二维码面板">×</button>
     </div>
-
-    <div class="post-tools__status" aria-live="polite"></div>
-    <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="关闭分享面板"></button>
-    <div class="post-tools-panels">
-      <div
-        class="post-floating-panel post-floating-panel--share"
-        id="post-tools-panel-wechat"
-        data-panel="wechat"
-        role="region"
-        aria-label={siteConfig.support.share.qrcodeLabel}
-        hidden
-      >
-        <div class="post-floating-panel__head">
-          <div>
-            <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
-            <strong>跨设备打开</strong>
-          </div>
-          <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭二维码面板">
-            ×
-          </button>
-        </div>
-        <p class="post-floating-panel__summary">扫码后可在手机或平板直接打开当前文章，也可以把这个页面快速转到另一台设备上。</p>
-        <div class="post-share-qrcode">
-          <div class="post-share-qrcode__image">
-            <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
-          </div>
-          <div class="post-share-qrcode__meta">
-            <strong>{title}</strong>
-            <p>如果这篇文章对你有帮助，扫码后可以在另一台设备上直接打开，或者顺手把它转给朋友。</p>
-            <button type="button" class="post-share-qrcode__action" data-tool="copy">
-              {copyLabel}
-            </button>
-          </div>
-        </div>
-      </div>
+    <div class="post-share-qrcode-body">
+      <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={180} fgColor="#111827" />
+      <p class="post-share-qrcode-tip">手机扫一扫在移动端继续阅读</p>
     </div>
   </div>
-</section>
+</div>
 
 <script is:inline>
   (() => {
-    const sections = document.querySelectorAll('[data-post-tools]');
-    if (sections.length === 0) return;
+    const copyrightBlocks = document.querySelectorAll('[data-post-copyright]');
+    if (!copyrightBlocks.length) return;
 
-    const copyText = async (value) => {
+    const copyText = async (text) => {
       try {
         if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(value);
+          await navigator.clipboard.writeText(text);
           return true;
         }
       } catch {}
-
       try {
-        const textarea = document.createElement('textarea');
-        textarea.value = value;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'absolute';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
+        const input = document.createElement('textarea');
+        input.value = text;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
         document.execCommand('copy');
-        textarea.remove();
+        document.body.removeChild(input);
         return true;
       } catch {
         return false;
       }
     };
 
-    sections.forEach((section) => {
-      if (!(section instanceof HTMLElement)) return;
+    copyrightBlocks.forEach((block) => {
+      if (!(block instanceof HTMLElement)) return;
 
-      const permalink = section.dataset.permalink ?? window.location.href;
-      const title = section.dataset.title ?? document.title;
-      const summary = section.dataset.summary?.trim() ?? '';
-      const copyDone = section.dataset.copyDone ?? '链接已复制';
-      const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
-      const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
-      const status = section.querySelector('.post-tools__status');
-      const backdrop = section.querySelector('[data-panel-backdrop]');
-      const panels = Array.from(section.querySelectorAll('[data-panel]')).filter((node) => node instanceof HTMLElement);
-      const rewardPopovers = Array.from(section.querySelectorAll('[data-support-popover]')).filter((node) => node instanceof HTMLElement);
-      const panelControllers = Array.from(
-        section.querySelectorAll('[data-panel-trigger], [data-share-platform="wechat"]'),
-      ).filter((node) => node instanceof HTMLElement);
-      let statusTimer = 0;
+      const permalink = block.dataset.permalink || window.location.href;
+      const copyDone = block.dataset.copyDone || '已复制当前页面链接';
+      const rewardTrigger = block.querySelector('[data-reward-trigger]');
+      const rewardPopover = block.querySelector('[data-reward-popover]');
+      const rewardClose = block.querySelector('[data-reward-close]');
+      const wechatTrigger = block.querySelector('[data-share-wechat]');
+      const wechatPopover = block.querySelector('[data-wechat-popover]');
+      const wechatClose = block.querySelector('[data-wechat-close]');
+      const copyBtn = block.querySelector('[data-share-copy]');
 
-      const emitActivity = (message) => {
-        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+      const showToast = (msg) => {
+        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: msg } }));
       };
 
-      const setStatus = (message) => {
-        if (!(status instanceof HTMLElement)) return;
-        window.clearTimeout(statusTimer);
-        status.textContent = message;
-        status.classList.add('is-visible');
-        emitActivity(message);
-        statusTimer = window.setTimeout(() => {
-          status.classList.remove('is-visible');
-        }, 2200);
-      };
-
-      const syncPanelControllers = (activePanel = '') => {
-        panelControllers.forEach((control) => {
-          const panelName =
-            control.getAttribute('data-panel-trigger') || (control.getAttribute('data-share-platform') === 'wechat' ? 'wechat' : '');
-          if (!panelName) return;
-          control.setAttribute('aria-expanded', String(activePanel === panelName));
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          await copyText(permalink);
+          showToast(copyDone);
         });
-      };
-
-      const isPopoverPanel = (name) => name === 'reward';
-      const panelAnchors = new Map();
-      let rewardCloseTimer = 0;
-      let pinnedPopoverPanel = '';
-
-      const clearRewardCloseTimer = () => {
-        window.clearTimeout(rewardCloseTimer);
-        rewardCloseTimer = 0;
-      };
-
-      const syncPinnedPopover = (name = '') => {
-        pinnedPopoverPanel = name;
-        rewardPopovers.forEach((popover) => {
-          popover.dataset.pinned = String(name === 'reward');
-        });
-      };
-
-      const getActivePanel = () => panels.find((panel) => !panel.hidden)?.dataset.panel ?? '';
-
-      const positionPanel = (panel, anchor) => {
-        if (!(panel instanceof HTMLElement) || !(anchor instanceof HTMLElement)) return;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const margin = 12;
-        const preferredWidth = panel.dataset.panel === 'reward'
-          ? Math.max(320, Math.min(560, Math.round(viewportWidth * 0.48)))
-          : Math.max(320, Math.min(460, Math.round(viewportWidth * 0.44)));
-        const previousVisibility = panel.style.visibility;
-        const previousPointerEvents = panel.style.pointerEvents;
-        const previousOpacity = panel.style.opacity;
-        const previousTransform = panel.style.transform;
-
-        panel.style.setProperty('--floating-panel-width', `${preferredWidth}px`);
-        panel.style.visibility = 'hidden';
-        panel.style.pointerEvents = 'none';
-        panel.style.opacity = '0';
-        panel.style.transform = 'none';
-
-        const panelRect = panel.getBoundingClientRect();
-        const anchorRect = anchor.getBoundingClientRect();
-        const panelWidth = Math.min(panelRect.width || panel.offsetWidth || preferredWidth, viewportWidth - margin * 2);
-        const panelHeight = Math.min(panelRect.height || panel.offsetHeight || 0, viewportHeight - margin * 2);
-        const centerX = anchorRect.left + anchorRect.width / 2;
-        const left = Math.max(margin, Math.min(centerX - panelWidth / 2, viewportWidth - panelWidth - margin));
-        const spaceAbove = anchorRect.top - margin;
-        const spaceBelow = viewportHeight - anchorRect.bottom - margin;
-        const placeTop = spaceAbove > spaceBelow && spaceAbove > panelHeight;
-        const top = placeTop
-          ? Math.max(margin, anchorRect.top - panelHeight - 12)
-          : Math.max(margin, Math.min(anchorRect.bottom + 12, viewportHeight - panelHeight - margin));
-
-        panel.style.setProperty('--floating-panel-width', `${panelWidth}px`);
-        panel.style.setProperty('--floating-panel-left', `${left}px`);
-        panel.style.setProperty('--floating-panel-top', `${top}px`);
-        panel.dataset.placement = placeTop ? 'top' : 'bottom';
-        panel.style.visibility = previousVisibility;
-        panel.style.pointerEvents = previousPointerEvents;
-        panel.style.opacity = previousOpacity;
-        panel.style.transform = previousTransform;
-      };
-
-      const renderPanelState = (activePanel = '') => {
-        if (activePanel !== 'reward' && pinnedPopoverPanel) {
-          syncPinnedPopover();
-        }
-
-        let showBackdrop = false;
-
-        panels.forEach((panel) => {
-          const panelName = panel.dataset.panel ?? '';
-          const isActive = panelName === activePanel;
-          panel.hidden = !isActive;
-          panel.classList.toggle('is-open', isActive);
-          if (isActive && !isPopoverPanel(panelName)) {
-            showBackdrop = true;
-          }
-        });
-
-        if (backdrop instanceof HTMLElement) {
-          backdrop.hidden = !showBackdrop;
-          backdrop.classList.toggle('is-open', showBackdrop);
-        }
-
-        syncPanelControllers(activePanel);
-
-        if (activePanel) {
-          const activeElement = panels.find((panel) => panel.dataset.panel === activePanel);
-          const activeAnchor = panelAnchors.get(activePanel);
-          if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
-            window.requestAnimationFrame(() => {
-              positionPanel(activeElement, activeAnchor);
-            });
-          }
-        }
-      };
-
-      const closePanels = () => {
-        clearRewardCloseTimer();
-        syncPinnedPopover();
-        renderPanelState();
-      };
-
-      const openPanel = (name, anchor, options = {}) => {
-        clearRewardCloseTimer();
-        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
-        if (options.pinned && isPopoverPanel(name)) {
-          syncPinnedPopover(name);
-        }
-        renderPanelState(name);
-      };
-
-      const togglePanel = (name, anchor, options = {}) => {
-        const currentPanel = getActivePanel();
-        clearRewardCloseTimer();
-        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
-
-        if (options.pinned && isPopoverPanel(name)) {
-          const nextOpen = !(currentPanel === name && pinnedPopoverPanel === name);
-          syncPinnedPopover(nextOpen ? name : '');
-          renderPanelState(nextOpen ? name : '');
-          return;
-        }
-
-        renderPanelState(currentPanel === name ? '' : name);
-      };
-
-      const queueRewardClose = (delay = 150) => {
-        if (pinnedPopoverPanel === 'reward') return;
-        clearRewardCloseTimer();
-        rewardCloseTimer = window.setTimeout(() => {
-          if (getActivePanel() === 'reward') {
-            renderPanelState();
-          }
-        }, delay);
-      };
-
-      syncPanelControllers();
-
-      rewardPopovers.forEach((popover) => {
-        const trigger = popover.querySelector('[data-panel-trigger="reward"]');
-        const panel = popover.querySelector('[data-panel="reward"]');
-        popover.addEventListener('pointerenter', () => {
-          clearRewardCloseTimer();
-          if (pinnedPopoverPanel !== 'reward') openPanel('reward', trigger);
-        });
-
-        popover.addEventListener('pointerleave', () => {
-          queueRewardClose();
-        });
-
-        panel?.addEventListener('pointerenter', () => {
-          clearRewardCloseTimer();
-        });
-
-        panel?.addEventListener('pointerleave', () => {
-          queueRewardClose();
-        });
-      });
-
-      const buildShareUrl = (platform) => {
-        const encodedUrl = encodeURIComponent(permalink);
-        const encodedTitle = encodeURIComponent(title);
-        const shortSummary = summary.slice(0, 120).trim();
-        const shareText = `${title}${shortSummary ? `\n${shortSummary}` : ''}`;
-        const shareParagraph = `${title}${shortSummary ? `\n\n${shortSummary}` : ''}\n${permalink}`;
-        const encodedSummary = encodeURIComponent(shortSummary);
-        const encodedShareText = encodeURIComponent(shareText);
-        const encodedShareParagraph = encodeURIComponent(shareParagraph);
-        const encodedFacebookQuote = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
-        const encodedRedditTitle = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
-
-        switch (platform) {
-          case 'x':
-            return `https://twitter.com/intent/tweet?text=${encodedShareText}&url=${encodedUrl}`;
-          case 'facebook':
-            return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedFacebookQuote}`;
-          case 'threads':
-            return `https://www.threads.net/intent/post?text=${encodedShareParagraph}`;
-          case 'linkedin':
-            return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-          case 'telegram':
-            return `https://t.me/share/url?url=${encodedUrl}&text=${encodedShareText}`;
-          case 'reddit':
-            return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedRedditTitle}`;
-          case 'weibo':
-            return `https://service.weibo.com/share/share.php?title=${encodedShareText}&url=${encodedUrl}`;
-          case 'qq':
-            return `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}&summary=${encodedSummary}`;
-          case 'email':
-            return `mailto:?subject=${encodedTitle}&body=${encodedShareParagraph}`;
-          default:
-            return '';
-        }
-      };
-
-      section.querySelectorAll('[data-tool="copy"]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          const copied = await copyText(permalink);
-          if (copied) setStatus(copyDone);
-        });
-      });
-
-      section.querySelectorAll('[data-panel-trigger]').forEach((button) => {
-        button.addEventListener('click', (event) => {
-          const panelName = button.getAttribute('data-panel-trigger');
-          if (!panelName) return;
-
-          if (panelName === 'reward') {
-            event.preventDefault();
-            event.stopPropagation();
-            const willOpen = !(getActivePanel() === 'reward' && pinnedPopoverPanel === 'reward');
-            togglePanel(panelName, button, { pinned: true });
-            setStatus(willOpen ? '已固定打赏面板' : '已关闭打赏面板');
-            return;
-          }
-
-          togglePanel(panelName, button);
-          setStatus('已切换扫码分享面板');
-        });
-      });
-
-      section.querySelectorAll('[data-panel-close]').forEach((button) => {
-        button.addEventListener('click', () => closePanels());
-      });
-
-      if (backdrop instanceof HTMLElement) {
-        backdrop.addEventListener('click', () => closePanels());
       }
 
-      section.querySelectorAll('[data-tool="share"]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          if (navigator.share) {
-            try {
-              await navigator.share({ title, text: summary, url: permalink });
-              setStatus(shareDone);
-              return;
-            } catch (error) {
-              if (error instanceof DOMException && error.name === 'AbortError') return;
-            }
-          }
-
-          const copied = await copyText(permalink);
-          if (copied) setStatus(shareFallback);
+      if (rewardTrigger && rewardPopover) {
+        rewardTrigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = rewardPopover.hidden;
+          rewardPopover.hidden = !isHidden;
+          if (wechatPopover) wechatPopover.hidden = true;
+          rewardTrigger.setAttribute('aria-expanded', String(!isHidden));
         });
-      });
+      }
 
-      section.querySelectorAll('[data-share-platform]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          const platform = button.getAttribute('data-share-platform');
-          if (!platform) return;
-
-          if (platform === 'copy') {
-            const copied = await copyText(permalink);
-            if (copied) setStatus(copyDone);
-            return;
-          }
-
-          if (platform === 'native') {
-            if (navigator.share) {
-              try {
-                await navigator.share({ title, text: summary, url: permalink });
-                setStatus(shareDone);
-                return;
-              } catch (error) {
-                if (error instanceof DOMException && error.name === 'AbortError') return;
-              }
-            }
-
-            const copied = await copyText(permalink);
-            if (copied) setStatus(shareFallback);
-            return;
-          }
-
-          if (platform === 'wechat') {
-            togglePanel('wechat', button);
-            setStatus('已打开扫码分享面板');
-            return;
-          }
-
-          const shareUrl = buildShareUrl(platform);
-          if (!shareUrl) return;
-
-          closePanels();
-          if (platform === 'email') {
-            window.location.href = shareUrl;
-          } else {
-            window.open(shareUrl, '_blank', 'noopener,noreferrer,width=860,height=720');
-          }
-          setStatus('已打开对应平台分享窗口');
+      if (rewardClose && rewardPopover) {
+        rewardClose.addEventListener('click', () => {
+          rewardPopover.hidden = true;
+          if (rewardTrigger) rewardTrigger.setAttribute('aria-expanded', 'false');
         });
-      });
+      }
 
-      const repositionActivePanel = () => {
-        const activePanelName = getActivePanel();
-        if (!activePanelName) return;
-        const activeElement = panels.find((panel) => panel.dataset.panel === activePanelName);
-        const activeAnchor = panelAnchors.get(activePanelName);
-        if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
-          positionPanel(activeElement, activeAnchor);
+      if (wechatTrigger && wechatPopover) {
+        wechatTrigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = wechatPopover.hidden;
+          wechatPopover.hidden = !isHidden;
+          if (rewardPopover) rewardPopover.hidden = true;
+        });
+      }
+
+      if (wechatClose && wechatPopover) {
+        wechatClose.addEventListener('click', () => {
+          wechatPopover.hidden = true;
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        if (rewardPopover && !rewardPopover.hidden && !rewardPopover.contains(e.target) && e.target !== rewardTrigger) {
+          rewardPopover.hidden = true;
+          if (rewardTrigger) rewardTrigger.setAttribute('aria-expanded', 'false');
         }
-      };
-
-      window.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') closePanels();
-      });
-      window.addEventListener('resize', repositionActivePanel);
-      window.addEventListener('scroll', repositionActivePanel, { passive: true });
-
-      document.addEventListener('click', (event) => {
-        if (!(event.target instanceof Node)) return;
-        if (!section.contains(event.target)) closePanels();
+        if (wechatPopover && !wechatPopover.hidden && !wechatPopover.contains(e.target) && e.target !== wechatTrigger) {
+          wechatPopover.hidden = true;
+        }
       });
     });
   })();

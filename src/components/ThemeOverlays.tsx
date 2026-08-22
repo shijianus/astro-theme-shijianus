@@ -727,8 +727,13 @@ export function ThemeOverlays({
       activityTimerRef.current = window.setTimeout(() => {
         setActivityVisible(false);
         activityTimerRef.current = null;
-      }, 5000);
+      }, 2200);
     };
+
+    if (typeof window !== 'undefined') {
+      (window as any).anzhiyu = (window as any).anzhiyu || {};
+      (window as any).anzhiyu.snackbarShow = (text: string) => showActivity(text);
+    }
 
     const onActivity = (event: Event) => {
       const detail = (event as CustomEvent<{ message?: string } | string>).detail;
@@ -888,9 +893,8 @@ export function ThemeOverlays({
         </div>
       )}
 
-      <div className={`theme-activity-bar ${activityVisible ? 'show' : ''}`} aria-live="polite">
-        <span className="theme-activity-bar__label">提示</span>
-        <strong>{activityMessage}</strong>
+      <div className={`snackbar-container snackbar-css snackbar-pos top-center ${activityVisible ? 'snackbar-show' : ''}`} aria-live="polite">
+        <p>{activityMessage}</p>
       </div>
 
       {features.searchPanel && (

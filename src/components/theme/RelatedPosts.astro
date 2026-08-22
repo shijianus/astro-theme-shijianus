@@ -2,43 +2,47 @@
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
-import { formatDisplayDate } from '../../lib/theme';
 
 interface Props {
   posts: CollectionEntry<'posts'>[];
-  eyebrow: string;
-  title: string;
+  eyebrow?: string;
+  title?: string;
 }
 
-const { posts, eyebrow, title } = Astro.props;
+const { posts, eyebrow = '相关推荐', title = '喜欢这篇文章的人也看了' } = Astro.props;
+
+const formatPostDate = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 ---
 
-<section class="relatedPosts">
-  <div class="relatedPosts__head">
-    <div class="relatedPosts__heading">
-      <p class="eyebrow">{eyebrow}</p>
-      <h2 class="relatedPosts__title">{title}</h2>
+{posts.length > 0 && (
+  <div class="relatedPosts">
+    <div class="headline">
+      <i class="anzhiyufont anzhiyu-icon-thumbs-up fa-fw"></i>
+      <span>{title}</span>
     </div>
-    <div class="relatedPosts__meta">
-      <span>{posts.length} 篇延伸阅读</span>
-    </div>
-  </div>
-
-  <div class="relatedPosts-list">
-    {posts.map((post, index) => (
-      <a class="relatedPosts-item" href={getPostPath(post)}>
-        <img
-          src={resolveCover(post)}
-          alt={resolveCoverAlt(post)}
-          loading="lazy"
-          data-fallback-src={siteConfig.post.hero.fallbackImage}
-        />
-        <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
-        <div class="content">
-          <div class="date">{formatDisplayDate(post.data.pubDate)}</div>
-          <div class="title">{post.data.title}</div>
+    <div class="relatedPosts-list">
+      {posts.map((post) => (
+        <div>
+          <a href={getPostPath(post)} title={post.data.title}>
+            <img
+              class="cover"
+              src={resolveCover(post)}
+              alt={resolveCoverAlt(post)}
+              loading="lazy"
+              data-fallback-src={siteConfig.post.hero.fallbackImage}
+            />
+            <div class="content is-center">
+              <div class="date">
+                <i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i>
+                <span>{formatPostDate(post.data.pubDate)}</span>
+              </div>
+              <div class="title">{post.data.title}</div>
+            </div>
+          </a>
         </div>
-      </a>
-    ))}
+      ))}
+    </div>
   </div>
-</section>
+)}
