@@ -4,6 +4,7 @@ import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astr
 import AiSummaryPanel from '../../components/theme/AiSummaryPanel.astro';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
+import Sidebar from '../../components/theme/Sidebar.astro';
 import PostNav from '../../components/theme/PostNav.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
 import { PostComments } from '../../components/theme/PostComments';
@@ -106,7 +107,7 @@ if (isUnlocked) {
   headings = rendered.headings;
 }
 
-const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 6) : [];
+const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 3) : [];
 const sidebarData = createSidebarData(publicPosts, headings);
 sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
 const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
@@ -154,19 +155,18 @@ const meta = (isUnlocked ? fullMeta : publicMeta) as HeroMetaItem[];
 const commentsEnabled = isUnlocked && hasConfiguredCommentDatabase(siteConfig.integrations.comments);
 const hasTocAside = isUnlocked && siteConfig.theme.features.postToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
 
-const tagCounts: Record<string, number> = {};
-publicPosts.forEach((post) => {
-  post.data.tags.forEach((tag) => {
-    const trimmed = tag.trim();
-    if (trimmed) {
-      tagCounts[trimmed] = (tagCounts[trimmed] || 0) + 1;
-    }
-  });
-});
-
+const hasSecondaryAside = Boolean(siteConfig.aside.telegramWidget || sidebarData.recentPosts.length);
 const heroSummary = isUnlocked
   ? entry.data.description ?? siteConfig.post.hero.summaryFallback
   : accessState.denialReason || '这篇文章设置了访问条件，完成验证后才会展示正文。';
+const showSupportSection =
+  isUnlocked &&
+  (siteConfig.theme.features.postCopyright ||
+    previousPost !== null ||
+    nextPost !== null ||
+    relatedPosts.length > 0 ||
+    commentsEnabled ||
+    hasSecondaryAside);
 ---
 
 <BlogLayout
@@ -174,7 +174,7 @@ const heroSummary = isUnlocked
   description={publicFacingDescription}
   sidebarData={sidebarData}
   pageType="post"
-  showAside={hasTocAside || sidebarData.recentPosts.length > 0}
+  showAside={false}
 >
   <Fragment slot="head">
     {heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
@@ -202,126 +202,128 @@ const heroSummary = isUnlocked
     />
   </Fragment>
 
-  <section id="post" class="post post-page-shell">
-    {isUnlocked && (
-      <AiSummaryPanel
-        slug={entry.id}
-        title={publicFacingTitle}
-        summary={entry.data.description ?? ''}
-        url={Astro.url.href}
-        related={relatedPosts.map((post) => ({
-          title: post.data.title,
-          href: `/posts/${post.id}/`,
-        }))}
-      />
-    )}
-
-    <article
-      id="article-container"
-      class="article-body post-content"
-      data-content-features={isUnlocked ? 'true' : undefined}
-    >
-      {isUnlocked && Content ? (
-        <Content />
-      ) : (
-        <section class="content-access-panel content-access-panel--server">
-          <span class="content-access-panel__eyebrow">访问验证</span>
-          <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
-          <p>{unlockErrorMessage || accessState.denialReason}</p>
-          {accessState.requiresPassword && accessState.locationAllowed && (
-            <form method="post" class="content-access-panel__form">
-              <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
-              <button type="submit">解锁文章</button>
-            </form>
-          )}
-          {!accessState.locationAllowed && (
-            <div class="content-access-panel__status" data-state="error">
-              已根据当前请求地址与地区策略拦截访问。
-            </div>
-          )}
-          {unlockErrorMessage && (
-            <div class="content-access-panel__status" data-state="error">
-              {unlockErrorMessage}
-            </div>
-          )}
+  <div class="post-layout-stack">
+    <section class:list={['post-layout-row', 'post-layout-row--article', !hasTocAside && 'post-layout-row--single']}>
+      <div class="post-layout-row__main">
+        <section id="post" class="post-page-shell">
+          <article
+            id="article-container"
+            class="theme-card article-body post-content"
+            data-content-features={isUnlocked ? 'true' : undefined}
+          >
+            {isUnlocked && (
+              <AiSummaryPanel
+                slug={entry.id}
+                title={publicFacingTitle}
+                summary={entry.data.description ?? ''}
+                url={Astro.url.href}
+                related={relatedPosts.map((post) => ({
+                  title: post.data.title,
+                  href: `/posts/${post.id}/`,
+                }))}
+              />
+            )}
+            {isUnlocked && Content ? (
+              <Content />
+            ) : (
+              <section class="content-access-panel content-access-panel--server">
+                <span class="content-access-panel__eyebrow">访问验证</span>
+                <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
+                <p>{unlockErrorMessage || accessState.denialReason}</p>
+                {accessState.requiresPassword && accessState.locationAllowed && (
+                  <form method="post" class="content-access-panel__form">
+                    <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
+                    <button type="submit">解锁文章</button>
+                  </form>
+                )}
+                {!accessState.locationAllowed && (
+                  <div class="content-access-panel__status" data-state="error">
+                    已根据当前请求地址与地区策略拦截访问。
+                  </div>
+                )}
+                {unlockErrorMessage && (
+                  <div class="content-access-panel__status" data-state="error">
+                    {unlockErrorMessage}
+                  </div>
+                )}
+              </section>
+            )}
+          </article>
+          {isUnlocked && <ContentFeatureEnhancer />}
         </section>
-      )}
-    </article>
-
-    {isUnlocked && <ContentFeatureEnhancer />}
-
-    {isUnlocked && siteConfig.theme.features.postCopyright && (
-      <PostCopyright
-        permalink={Astro.url.href}
-        title={publicFacingTitle}
-        summary={entry.data.description ?? ''}
-        authorName={siteConfig.site.author.name}
-        authorRole={siteConfig.site.author.role}
-        authorAvatar={siteConfig.site.author.avatar}
-        badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
-        copyrightTitle={siteConfig.post.copyright.title}
-        notice={siteConfig.post.copyright.notice}
-        copyLabel={siteConfig.post.copyright.copyLabel}
-        rewardLabel={siteConfig.post.copyright.rewardLabel}
-        rewardNote={siteConfig.post.copyright.rewardNote}
-        aboutTitle={siteConfig.post.tools.aboutTitle}
-        modeHref={siteConfig.post.tools.modeHref}
-        modeLabel={siteConfig.post.tools.modeLabel}
-        modeDescription={siteConfig.post.tools.modeDescription}
-        shareLabel={siteConfig.post.tools.shareLabel}
-        rewardHref={siteConfig.post.tools.rewardHref}
-        rewardDescription={siteConfig.post.tools.rewardDescription}
-        copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
-        shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
-        shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
-      />
-    )}
-
-    {isUnlocked && scannedTags.length > 0 && (
-      <div class="post-tools-right">
-        <div class="tag_share">
-          <div class="post-meta__box">
-            <div class="post-meta__box__tag-list">
-              {scannedTags.map((tag) => (
-                <a class="post-meta__box__tags" href={`/tags/${encodeURIComponent(tag.toLowerCase())}/`}>
-                  <span class="tags-punctuation"><i class="anzhiyufont anzhiyu-icon-tag"></i></span>
-                  {tag}
-                  <span class="tagsPageCount">{tagCounts[tag] || 1}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
-    )}
 
-    {isUnlocked && (
-      <PostNav previousPost={previousPost} nextPost={nextPost} />
-    )}
+      {hasTocAside && (
+        <aside class="post-layout-row__aside post-layout-row__aside--toc">
+          <Sidebar {...sidebarData} pageType="post-toc" asideId="post-toc-aside" />
+        </aside>
+      )}
+    </section>
 
-    {isUnlocked && siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
-      <RelatedPosts
-        posts={relatedPosts}
-        eyebrow={siteConfig.post.related.eyebrow}
-        title={siteConfig.post.related.title}
-      />
-    )}
+    {showSupportSection && (
+      <section class:list={['post-layout-row', 'post-layout-row--support', !hasSecondaryAside && 'post-layout-row--single']}>
+      <div class="post-layout-row__main">
+        {siteConfig.theme.features.postCopyright && (
+          <PostCopyright
+            permalink={Astro.url.href}
+            title={publicFacingTitle}
+            summary={entry.data.description ?? ''}
+            authorName={siteConfig.site.author.name}
+            authorRole={siteConfig.site.author.role}
+            authorAvatar={siteConfig.site.author.avatar}
+            badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
+            copyrightTitle={siteConfig.post.copyright.title}
+            notice={siteConfig.post.copyright.notice}
+            copyLabel={siteConfig.post.copyright.copyLabel}
+            rewardLabel={siteConfig.post.copyright.rewardLabel}
+            rewardNote={siteConfig.post.copyright.rewardNote}
+            aboutTitle={siteConfig.post.tools.aboutTitle}
+            modeHref={siteConfig.post.tools.modeHref}
+            modeLabel={siteConfig.post.tools.modeLabel}
+            modeDescription={siteConfig.post.tools.modeDescription}
+            shareLabel={siteConfig.post.tools.shareLabel}
+            rewardHref={siteConfig.post.tools.rewardHref}
+            rewardDescription={siteConfig.post.tools.rewardDescription}
+            copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
+            shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
+            shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
+          />
+        )}
 
-    {commentsEnabled && (
-      <PostComments
-        client:visible
-        slug={entry.id}
-        title={publicFacingTitle}
-        heading={siteConfig.post.comments.title}
-        policyLabel={siteConfig.post.comments.policyLabel}
-        notice={siteConfig.post.comments.notice}
-        submitLabel={siteConfig.post.comments.submitLabel}
-        previewLabel={siteConfig.post.comments.previewLabel}
-        emptyTitle={siteConfig.post.comments.emptyTitle}
-        emptySummary={siteConfig.post.comments.emptySummary}
-        tips={siteConfig.post.comments.tips}
-        integration={siteConfig.integrations.comments}
-      />
+        <PostNav previousPost={previousPost} nextPost={nextPost} />
+
+        {siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
+          <RelatedPosts
+            posts={relatedPosts}
+            eyebrow={siteConfig.post.related.eyebrow}
+            title={siteConfig.post.related.title}
+          />
+        )}
+
+        {commentsEnabled && (
+          <PostComments
+            client:visible
+            slug={entry.id}
+            title={publicFacingTitle}
+            heading={siteConfig.post.comments.title}
+            policyLabel={siteConfig.post.comments.policyLabel}
+            notice={siteConfig.post.comments.notice}
+            submitLabel={siteConfig.post.comments.submitLabel}
+            previewLabel={siteConfig.post.comments.previewLabel}
+            emptyTitle={siteConfig.post.comments.emptyTitle}
+            emptySummary={siteConfig.post.comments.emptySummary}
+            tips={siteConfig.post.comments.tips}
+            integration={siteConfig.integrations.comments}
+          />
+        )}
+      </div>
+
+      {hasSecondaryAside && (
+        <aside class="post-layout-row__aside post-layout-row__aside--secondary">
+          <Sidebar {...sidebarData} pageType="post-secondary" asideId="post-secondary-aside" />
+        </aside>
+      )}
+      </section>
     )}
-  </section>
+  </div>
 </BlogLayout>

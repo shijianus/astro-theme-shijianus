@@ -18,151 +18,277 @@ const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
 const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
 const apiBase = runtimeApiBase ? `${runtimeApiBase}/api` : '/api';
 const { slug, title, summary = '', url, related = [] } = Astro.props;
-
-const introTemplates = [
-  `我是 ${siteConfig.site.author.name}，一名热衷于系统重构、前端架构与硬核折腾的开发者。在这里分享真实实战与避坑指南。`,
-  `你好！欢迎来到我的数字花园。我关注高可维护性架构、现代 Web 体验与底层系统设计。`,
-  `这里记录了从 0 到 1 的技术探索。拒绝宏大叙事，只保留经过实践检验的技术总结与极客灵感。`,
-  `我是本站作者，喜欢用代码构建清晰、优雅且具长生命周期的数字作品。感谢你的阅读与驻足。`,
-  `探索数字边境，构筑外脑知识库。希望这里的每一篇文字与源码，都能为你带来启发与实效。`
-];
+const introText = `${siteConfig.site.author.name} 在这里持续写作与构建，重点关注长期可维护的博客系统、界面交互和内容结构。`;
 ---
 
-<div
-  class="post-ai-description"
+<section
+  class="shijianus-ai-summary"
   data-ai-summary
   data-api-base={apiBase}
   data-slug={slug}
   data-title={title}
   data-summary={summary}
   data-url={url}
-  data-intros={JSON.stringify(introTemplates)}
+  data-intro={introText}
   data-related={JSON.stringify(related)}
 >
-  <div class="ai-title">
-    <div class="ai-title-left">
-      <svg class="ai-gpt-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-      <span class="ai-title-text">AI-摘要</span>
-      <button type="button" class="ai-toggle-btn" id="ai-Toggle" title="切换模式">切换</button>
+  <div class="shijianus-ai-summary__head">
+    <div class="shijianus-ai-summary__title">
+      <span class="shijianus-ai-summary__icon" aria-hidden="true">AI</span>
+      <div>
+        <strong>AI-摘要</strong>
+        <small>立体科幻风格摘要卡片 · shijianus AI</small>
+      </div>
     </div>
-    <div class="ai-title-right">
-      <button type="button" class="ai-refresh-btn" data-ai-refresh title="刷新摘要">
-        <i class="anzhiyufont anzhiyu-icon-arrow-rotate-right"></i>
-      </button>
-      <div id="ai-tag">Shijianus GPT</div>
+    <div class="shijianus-ai-summary__meta">
+      <div class="shijianus-ai-summary__meta-copy">
+        <span data-ai-badge>待生成</span>
+        <small data-ai-status>进入视区后自动生成</small>
+      </div>
+      <button type="button" data-ai-refresh aria-label="重新生成摘要">↻</button>
     </div>
   </div>
 
-  <div class="ai-explanation" data-ai-output>
-    {summary || '正在准备 AI 摘要，可点击下方按钮体验快速导读或相关推荐～'}
+  <div class="shijianus-ai-summary__screen">
+    <div class="shijianus-ai-summary__grid" aria-hidden="true"></div>
+    <div class="shijianus-ai-summary__hud" aria-hidden="true">
+      <span>SUMMARY CORE</span>
+      <span>SHIJIANUS AI</span>
+    </div>
+    <p class="shijianus-ai-summary__output" data-ai-output>AI 初始化中...</p>
   </div>
 
-  <div class="ai-btn-box">
-    <div class="ai-btn-item" data-ai-action="intro">介绍自己 🙈</div>
-    <div class="ai-btn-item" data-ai-action="summary">生成本文简介 👋</div>
-    <div class="ai-btn-item" data-ai-action="related">推荐相关文章 📖</div>
-    <a class="ai-btn-item" href="/">前往主页 🏠</a>
+  <div class="shijianus-ai-summary__actions">
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="intro">介绍自己</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="summary">生成本文简介</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="related">推荐相关文章</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="top">回到顶部</button>
   </div>
 
-  <div class="ai-related-box" data-ai-related hidden></div>
-</div>
+  <div class="shijianus-ai-summary__related" data-ai-related hidden></div>
+</section>
 
 <script is:inline>
   (() => {
     const roots = document.querySelectorAll('[data-ai-summary]');
     if (!roots.length) return;
 
-    roots.forEach((root) => {
-      if (!(root instanceof HTMLElement)) return;
-      if (root.dataset.aiBound === 'true') return;
-      root.dataset.aiBound = 'true';
-
-      const outputEl = root.querySelector('[data-ai-output]');
-      const refreshBtn = root.querySelector('[data-ai-refresh]');
-      const toggleBtn = root.querySelector('#ai-Toggle');
-      const relatedBox = root.querySelector('[data-ai-related]');
-      const actionBtns = root.querySelectorAll('[data-ai-action]');
-
-      const defaultSummary = root.dataset.summary || '这篇文章介绍了系统架构设计与实现技巧，旨在帮助读者更好地理解与实践。';
-      let intros = [];
-      let related = [];
+    const getDeviceId = () => {
+      const key = 'shijianus-device-id';
       try {
-        intros = JSON.parse(root.dataset.intros || '[]');
-      } catch {}
-      try {
-        related = JSON.parse(root.dataset.related || '[]');
-      } catch {}
+        const saved = window.localStorage.getItem(key);
+        if (saved) return saved;
+        const created = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        window.localStorage.setItem(key, created);
+        return created;
+      } catch {
+        return `device-${Date.now()}`;
+      }
+    };
 
-      let currentIntroIndex = 0;
-      let isTyping = false;
-      let typingTimer = null;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      const typeText = (text) => {
-        if (!outputEl) return;
-        if (typingTimer) clearInterval(typingTimer);
-        outputEl.textContent = '';
-        let i = 0;
-        isTyping = true;
-        typingTimer = setInterval(() => {
-          if (i < text.length) {
-            outputEl.textContent += text.charAt(i);
-            i++;
-          } else {
-            clearInterval(typingTimer);
-            isTyping = false;
-          }
-        }, 18);
+    const typeInto = (node, value) => {
+      if (!(node instanceof HTMLElement)) return;
+      const cursor = '<span class="shijianus-ai-summary__cursor"></span>';
+      let index = 0;
+      const text = value.trim();
+      if (!text) {
+        node.textContent = '';
+        return;
+      }
+      if (prefersReducedMotion || text.length > 140) {
+        node.textContent = text;
+        return;
+      }
+      const runId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      node.dataset.typeRunId = runId;
+      node.innerHTML = '';
+      const step = text.length > 72 ? 3 : 2;
+
+      const tick = () => {
+        if (node.dataset.typeRunId !== runId) return;
+        index = Math.min(text.length, index + step);
+        node.innerHTML = `${text.slice(0, index)}${index < text.length ? cursor : ''}`;
+        if (index < text.length) {
+          window.setTimeout(tick, /[,.，。！？!?\n]/.test(text.charAt(index - 1)) ? 48 : 24);
+        }
       };
 
-      actionBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const action = btn.getAttribute('data-ai-action');
-          if (relatedBox) relatedBox.hidden = true;
+      tick();
+    };
 
-          if (action === 'intro') {
-            if (intros.length > 0) {
-              const text = intros[currentIntroIndex % intros.length];
-              currentIntroIndex++;
-              typeText(text);
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      const output = root.querySelector('[data-ai-output]');
+      const badge = root.querySelector('[data-ai-badge]');
+      const status = root.querySelector('[data-ai-status]');
+      const relatedBox = root.querySelector('[data-ai-related]');
+      const refreshButton = root.querySelector('[data-ai-refresh]');
+      const apiBase = root.dataset.apiBase || '/api';
+      const slug = root.dataset.slug || '';
+      const title = root.dataset.title || document.title;
+      const summary = root.dataset.summary || '';
+      const url = root.dataset.url || window.location.href;
+      const intro = root.dataset.intro || '';
+      const cacheKey = `shijianus-ai-summary:${slug}`;
+      let isLoading = false;
+
+      const setBadge = (value) => {
+        if (badge instanceof HTMLElement) badge.textContent = value;
+      };
+
+      const setStatus = (value) => {
+        if (status instanceof HTMLElement) status.textContent = value;
+      };
+
+      const renderRelated = () => {
+        if (!(relatedBox instanceof HTMLElement)) return;
+        let items = [];
+        try {
+          items = JSON.parse(root.dataset.related || '[]');
+        } catch {}
+
+        if (!Array.isArray(items) || items.length === 0) {
+          relatedBox.hidden = true;
+          typeInto(output, '当前没有可推荐的相关文章，建议直接返回首页继续浏览最新内容。');
+          setBadge('本地推荐');
+          setStatus('未发现更多相关文章');
+          return;
+        }
+
+        relatedBox.innerHTML = items
+          .slice(0, 3)
+          .map((item, index) => `<a href="${item.href}"><span>${String(index + 1).padStart(2, '0')}</span><strong>${item.title}</strong></a>`)
+          .join('');
+        relatedBox.hidden = false;
+        typeInto(output, '这里先把与你当前文章最相关的三个入口摆出来，适合顺着主题继续读，不打断当前的阅读节奏。');
+        setBadge('本地推荐');
+        setStatus('基于当前文章索引推荐');
+      };
+
+      const fetchSummary = async (force = false) => {
+        if (isLoading) return;
+        relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+        if (!force) {
+          try {
+            const cached = window.sessionStorage.getItem(cacheKey);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              typeInto(output, parsed.summary || cached);
+              setBadge(parsed.model || '缓存结果');
+              setStatus(parsed.provider ? `会话缓存 · ${parsed.provider}` : '会话缓存');
+              return;
             }
-          } else if (action === 'summary') {
-            typeText(defaultSummary);
-          } else if (action === 'related') {
-            if (related.length > 0) {
-              typeText(`为你推荐以下 ${related.length} 篇相关文章：`);
-              if (relatedBox) {
-                relatedBox.hidden = false;
-                relatedBox.innerHTML = related.map((r, idx) => `
-                  <a href="${r.href}" class="ai-related-item">
-                    <span class="ai-related-index">${idx + 1}.</span>
-                    <span class="ai-related-title">${r.title}</span>
-                  </a>
-                `).join('');
+          } catch {}
+        }
+
+        const article = document.querySelector('#article-container');
+        const content = article?.textContent?.replace(/\s+/g, ' ').trim() || '';
+        if (!content) {
+          typeInto(output, '当前文章正文尚未准备好，暂时无法生成摘要。');
+          setBadge('正文缺失');
+          setStatus('等待正文挂载完成');
+          return;
+        }
+
+        isLoading = true;
+        setBadge('生成中');
+        setStatus(force ? '正在强制刷新摘要' : '正在请求摘要服务');
+        if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = true;
+        typeInto(output, '正在整理文章结构、提炼核心信息，并生成一段更适合快速浏览的摘要...');
+
+        try {
+          const response = await fetch(`${apiBase}/ai-summary`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'X-Shijianus-Device-Id': getDeviceId(),
+            },
+            body: JSON.stringify({ slug, title, summary, url, content }),
+          });
+          const payload = await response.json();
+          if (!response.ok || !payload?.summary) {
+            const resetSuffix = payload?.resetAt ? ` resetAt=${payload.resetAt}` : '';
+            throw new Error(`${payload?.error || `summary failed: ${response.status}`}${resetSuffix}`);
+          }
+
+          const result = {
+            summary: payload.summary,
+            provider: payload.provider || '',
+            model: payload.model || '',
+          };
+          window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
+          typeInto(output, result.summary);
+          setBadge(result.model || result.provider || 'AI 完成');
+          setStatus(payload.cached ? '命中服务端缓存' : `来自 ${result.provider || 'AI'} 的新摘要`);
+        } catch (error) {
+          let message = '当前摘要服务已进入冷却或额度保护，请稍后再试。若你刚连续刷新过多次，这通常是风控正在生效。';
+          let statusMessage = '稍后重试';
+          if (error instanceof Error && /429/.test(error.message)) {
+            try {
+              const resetAt = Number.parseInt(error.message.split('resetAt=')[1] || '', 10);
+              if (Number.isFinite(resetAt)) {
+                const retrySeconds = Math.max(1, Math.ceil(resetAt - Date.now() / 1000));
+                message = `当前摘要服务正处于额度保护中，请约 ${retrySeconds} 秒后再试。为避免滥用，同一设备和同一出口 IP 都有独立的分钟/小时限制。`;
+                statusMessage = `冷却中 · ${retrySeconds}s`;
               }
-            } else {
-              typeText('暂无更多关联文章，欢迎前往主页或标签页探索更多内容～');
-            }
+            } catch {}
+          }
+          typeInto(output, message);
+          setBadge('稍后重试');
+          setStatus(statusMessage);
+        } finally {
+          isLoading = false;
+          if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = false;
+        }
+      };
+
+      root.querySelectorAll('[data-ai-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (!(button instanceof HTMLElement)) return;
+          const action = button.dataset.aiAction;
+          if (action === 'intro') {
+            relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+            typeInto(output, intro);
+            setBadge('站点介绍');
+            setStatus('作者与站点介绍');
+            return;
+          }
+          if (action === 'summary') {
+            void fetchSummary(true);
+            return;
+          }
+          if (action === 'related') {
+            renderRelated();
+            return;
+          }
+          if (action === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            typeInto(output, '已经把阅读视角拉回顶部；如果你想重新看一次文章头图、摘要和核心元信息，现在就是最短路径。');
+            setBadge('导航动作');
+            setStatus('已回到页面顶部');
           }
         });
       });
 
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-          typeText(defaultSummary);
-        });
-      }
+      refreshButton?.addEventListener('click', () => {
+        try {
+          window.sessionStorage.removeItem(cacheKey);
+        } catch {}
+        void fetchSummary(true);
+      });
 
-      if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-          if (intros.length > 0) {
-            const text = intros[currentIntroIndex % intros.length];
-            currentIntroIndex++;
-            typeText(text);
-          }
-        });
-      }
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        observer.disconnect();
+        void fetchSummary(false);
+      }, { threshold: 0.18 });
+
+      observer.observe(root);
     });
   })();
 </script>

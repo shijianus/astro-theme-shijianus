@@ -45,10 +45,10 @@ function resolveTargets(pageType: string) {
 
   if (pageType === 'post') {
     const tocBoundary =
-      document.querySelector<HTMLElement>('#article-container') ??
-      document.querySelector<HTMLElement>('#post') ??
+      document.querySelector<HTMLElement>('.post-layout-row--article #article-container') ??
+      document.querySelector<HTMLElement>('.post-layout-row--article .post-layout-row__main') ??
       document.querySelector<HTMLElement>('.page-main');
-    const tocCard = document.querySelector<HTMLElement>('#aside-content #card-toc, #card-toc');
+    const tocCard = document.querySelector<HTMLElement>('#post-toc-aside #card-toc');
 
     if (tocBoundary && tocCard) {
       targets.push({
