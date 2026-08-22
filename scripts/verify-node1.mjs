@@ -11,31 +11,34 @@ async function main() {
 
   console.log('Launching browser for Node 1 verification...');
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
 
   const targetUrl = 'http://localhost:4321/posts/anzhiyu-markdown-showcase/';
   console.log('Navigating to', targetUrl);
   await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 15000 });
   await page.waitForTimeout(1000);
 
-  // 1. Capture unified layout top
-  await page.screenshot({ path: 'scripts/verify_node1_layout.png', fullPage: false });
+  // 1. Top layout
+  await page.screenshot({ path: 'scripts/verify_node1_top.png', fullPage: false });
 
-  // 2. Scroll down mid to see aside content in full
-  await page.evaluate(() => window.scrollBy(0, 400));
+  // 2. Scroll mid (TOC active & sticky)
+  await page.evaluate(() => window.scrollBy(0, 1100));
   await page.waitForTimeout(500);
-  await page.screenshot({ path: 'scripts/verify_node1_scroll.png', fullPage: false });
+  await page.screenshot({ path: 'scripts/verify_node1_mid.png', fullPage: false });
 
-  // 3. Scroll down further to see sticky toc and recent posts
-  await page.evaluate(() => window.scrollBy(0, 700));
+  // 3. Scroll to bottom
+  await page.evaluate(() => {
+    const el = document.querySelector('.post-copyright') || document.querySelector('.relatedPosts');
+    if (el) el.scrollIntoView();
+  });
   await page.waitForTimeout(500);
-  await page.screenshot({ path: 'scripts/verify_node1_sticky.png', fullPage: false });
+  await page.screenshot({ path: 'scripts/verify_node1_bottom.png', fullPage: false });
 
-  // 4. Toggle read mode in light theme
+  // 4. Read mode in light theme
   await page.evaluate(() => {
     document.body.classList.add('read-mode');
     document.documentElement.dataset.theme = 'light';
-    window.scrollTo(0, 300);
+    window.scrollTo(0, 400);
   });
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node1_readmode_light.png', fullPage: false });

@@ -5629,17 +5629,16 @@ body[data-type='post'] #aside-content .sticky_layout > .card-widget {
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
-  position: static;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
 }
 
 body[data-type='post'] #card-toc {
   display: flex;
   flex-direction: column;
-  height: var(--toc-card-height, auto);
-  min-height: min(56vh, 560px);
-  max-height: calc(100vh - 96px);
-  padding: 18px 16px 16px;
-  border-radius: 22px;
+  height: auto;
+  border-radius: 12px;
 }
 
 body[data-type='post'] #card-toc .toc-content {
@@ -6535,9 +6534,12 @@ body[data-type='post'] #aside-content .sticky_layout > .card-widget {
 }
 
 body[data-type='post'] #aside-content .sticky_layout {
-  position: static;
-  display: grid;
-  gap: 0;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 body[data-type='post'] .post-page-shell .post-content {
@@ -6547,9 +6549,7 @@ body[data-type='post'] .post-page-shell .post-content {
 
 body[data-type='post'] #card-toc {
   min-height: 0;
-  max-height: calc(100vh - 104px);
-  padding: 20px;
-  border-radius: 30px;
+  border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border));
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--theme-main) 6%, transparent), transparent 180px),
@@ -14808,5 +14808,88 @@ body.read-mode #content-inner.layout,
 html[data-readmode='true'] #content-inner.layout {
   justify-content: center !important;
 }
+
+/* 4. Unified Aside Content & Card Widget Standardization */
+#aside-content {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+}
+
+#aside-content .card-widget {
+  position: relative !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--card-bg) 85%, transparent) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border, rgba(255, 255, 255, 0.15)) 80%, transparent) !important;
+  box-shadow: var(--card-shadow, 0 8px 24px rgba(0, 0, 0, 0.05)) !important;
+  padding: 20px !important;
+  margin: 0 !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease !important;
+}
+
+:root[data-theme='dark'] #aside-content .card-widget {
+  background: color-mix(in srgb, var(--card-bg) 75%, transparent) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Internal padding resets for special container widgets */
+#aside-content .profile-card,
+#aside-content .card-info,
+#aside-content .promo-widget,
+#aside-content #card-telegram {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* Sticky layout container for TOC + Recent Posts */
+#aside-content .sticky_layout {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 80px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 10 !important;
+  transition: top 0.3s ease !important;
+}
+
+#aside-content .sticky_layout > .card-widget {
+  margin-bottom: 0 !important;
+}
+
+/* Card TOC Exact Harmonization */
+#aside-content #card-toc {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 120px) !important;
+  padding: 20px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+}
+
+#aside-content #card-toc .toc-content {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 240px) !important;
+  padding-right: 4px !important;
+  scrollbar-width: thin !important;
+}
+
+/* Card Recent Post Exact Harmonization */
+#aside-content .card-recent-post {
+  padding: 20px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+}
+
 
 
