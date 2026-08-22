@@ -183,7 +183,7 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
     )}
 
     <div id="web_bg" aria-hidden="true"></div>
-    <ThemeUniverse client:visible />
+    {pageType === 'home' && <ThemeUniverse client:visible />}
 
     <div class="page" id="body-wrap">
       <SiteHeader
