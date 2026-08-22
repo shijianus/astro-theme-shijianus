@@ -1,7 +1,6 @@
 ---
 title: "主题重构启动记录"
-pubDate: 2024-04-02
-outdateDays: 100
+pubDate: 2026-04-02
 description: "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。"
 author: "shijianus"
 category: "前端工程"

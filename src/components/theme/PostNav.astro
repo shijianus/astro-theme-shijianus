@@ -1,7 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
-import { getPostPath, resolveCover } from '../../lib/content';
+import { getPostPath, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+import { formatDisplayDate } from '../../lib/theme';
 
 interface Props {
   previousPost?: CollectionEntry<'posts'> | null;
@@ -9,77 +10,57 @@ interface Props {
 }
 
 const { previousPost = null, nextPost = null } = Astro.props;
+
+const items = [
+  previousPost && {
+    post: previousPost,
+    label: '上一篇',
+    hint: '较新文章',
+  },
+  nextPost && {
+    post: nextPost,
+    label: '下一篇',
+    hint: '较早文章',
+  },
+].filter(Boolean) as {
+  post: CollectionEntry<'posts'>;
+  label: string;
+  hint: string;
+}[];
 ---
 
-{(previousPost || nextPost) && (
-  <nav class="pagination-post" id="pagination">
-    {previousPost && (
-      <div class:list={['prev-post', !nextPost && 'pull-full']}>
-        <a href={getPostPath(previousPost)} title={previousPost.data.title}>
+{items.length > 0 && (
+  <section class="postNav">
+    <div class="postNav__head">
+      <div class="postNav__heading">
+        <p class="eyebrow">阅读导航</p>
+        <h2 class="postNav__title">上一篇 / 下一篇</h2>
+      </div>
+      <div class="postNav__meta">
+        <span>{items.length} 个跳转入口</span>
+      </div>
+    </div>
+
+    <div class="postNav-list" style={`--post-nav-columns:${items.length};`}>
+      {items.map(({ post, label, hint }) => (
+        <a class="postNav-card" href={getPostPath(post)}>
           <img
-            class="prev-cover"
-            src={resolveCover(previousPost)}
-            alt={`上一篇：${previousPost.data.title}`}
+            src={resolveCover(post)}
+            alt={resolveCoverAlt(post)}
             loading="lazy"
             data-fallback-src={siteConfig.post.hero.fallbackImage}
           />
-          <div class="pagination-info">
-            <div class="label">上一篇</div>
-            <div class="prev_info">{previousPost.data.title}</div>
+          <span class="postNav-card__edge">{label}</span>
+          <div class="postNav-card__content">
+            <div class="postNav-card__meta">
+              <span class="postNav-card__hint">{hint}</span>
+              <span class="postNav-card__date">{formatDisplayDate(post.data.pubDate)}</span>
+            </div>
+            <div class="postNav-card__title">{post.data.title}</div>
+            <div class="postNav-card__category">{resolveCategory(post)}</div>
           </div>
         </a>
-      </div>
-    )}
-    {nextPost && (
-      <div class:list={['next-post', !previousPost && 'pull-full']}>
-        <a href={getPostPath(nextPost)} title={nextPost.data.title}>
-          <img
-            class="next-cover"
-            src={resolveCover(nextPost)}
-            alt={`下一篇：${nextPost.data.title}`}
-            loading="lazy"
-            data-fallback-src={siteConfig.post.hero.fallbackImage}
-          />
-          <div class="pagination-info">
-            <div class="label">下一篇</div>
-            <div class="next_info">{nextPost.data.title}</div>
-          </div>
-        </a>
-      </div>
-    )}
-  </nav>
+      ))}
+    </div>
+  </section>
 )}
-
-{nextPost && (
-  <div class="floating-next-post" id="floating-next-post" data-floating-next>
-    <a href={getPostPath(nextPost)} class="floating-next-post__inner">
-      <div class="floating-next-post__label">下一篇推荐</div>
-      <div class="floating-next-post__title">{nextPost.data.title}</div>
-    </a>
-  </div>
-)}
-
-<script is:inline>
-  (() => {
-    const floating = document.getElementById('floating-next-post');
-    const pagination = document.getElementById('pagination');
-    const comment = document.getElementById('post-comment');
-    if (!floating) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          floating.classList.add('is-visible');
-        } else {
-          // If we scroll way back up
-          if (window.scrollY < (document.documentElement.scrollHeight * 0.4)) {
-            floating.classList.remove('is-visible');
-          }
-        }
-      });
-    }, { rootMargin: '0px 0px -10% 0px' });
-
-    if (pagination) observer.observe(pagination);
-    else if (comment) observer.observe(comment);
-  })();
-</script>

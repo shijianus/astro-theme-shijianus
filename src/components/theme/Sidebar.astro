@@ -98,16 +98,17 @@ const tocTree = (() => {
   return roots;
 })();
 const showUtilityAside = utilityOnlyPageTypes.has(pageType);
-const showRecentPosts = recentPostEntries.length > 0 && !isHomePage;
-const showToc = isPostPage && siteConfig.theme.features.postToc && tocHeadings.length > 0;
-const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage && !isPostPage;
+const showPostAsideFeed = isPostSecondaryPage;
+const showRecentPosts = recentPostEntries.length > 0 && !isHomePage && (showUtilityAside || isPostSecondaryPage);
+const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
+const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !isPostPage;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !isPostPage;
-const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage && !isPostPage;
-const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && !isPostPage;
-const showAuthorCard = siteConfig.theme.features.asideAuthor;
-const showAnnouncement = siteConfig.theme.features.asideStatus;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !showPostAsideFeed;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !showPostAsideFeed;
+const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage;
+const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
+const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
+const showAnnouncement = siteConfig.theme.features.asideStatus && (isHomePage || isPostPage);
 const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
 const runtimeDays = Math.max(
   1,
@@ -406,7 +407,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </section>
       )}
 
-      {showRecentPosts && !isPostPage && (
+      {showRecentPosts && (
         <section class="card-widget card-recent-post">
           <div class="item-headline">
             <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
@@ -435,31 +436,35 @@ const renderTocNodes = (nodes: TocNode[]) =>
     </>
   )}
 
-  {isPostPage && showRecentPosts && (
-    <section class="card-widget card-recent-post">
-      <div class="item-headline">
-        <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-        <span>最新发布</span>
-      </div>
-      <div class="aside-list">
-        {recentPostEntries.slice(0, 6).map((entry) => (
-          <a href={getPostPath(entry)} class="aside-list-item">
-            <span class="thumbnail">
-              <img
-                src={resolveDisplayCover(entry, true)}
-                alt={getDisplayPostTitle(entry, true)}
-                loading="lazy"
-                data-fallback-src={siteConfig.post.hero.fallbackImage}
-              />
-            </span>
-            <span class="content">
-              <span class="title">{getDisplayPostTitle(entry, true)}</span>
-              <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-            </span>
-          </a>
-        ))}
-      </div>
-    </section>
+  {isPostSecondaryPage && showTelegramCard && (
+    <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
+  )}
+
+  {isPostSecondaryPage && showRecentPosts && (
+      <section class="card-widget card-recent-post">
+        <div class="item-headline">
+          <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+          <span>最新发布</span>
+        </div>
+        <div class="aside-list">
+          {recentPostEntries.slice(0, 6).map((entry) => (
+            <a href={getPostPath(entry)} class="aside-list-item">
+              <span class="thumbnail">
+                <img
+                  src={resolveDisplayCover(entry, true)}
+                  alt={getDisplayPostTitle(entry, true)}
+                  loading="lazy"
+                  data-fallback-src={siteConfig.post.hero.fallbackImage}
+                />
+              </span>
+              <span class="content">
+                <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
   )}
   </div>
 </div>
