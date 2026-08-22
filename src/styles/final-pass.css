@@ -2688,8 +2688,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* 2. 侧边栏及所有卡片容器统一标准化 Flex 布局 */
 .page-aside__sticky,
 #aside-content,
-#post-toc-aside,
-#post-secondary-aside {
+.post-aside-tracks {
   min-height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
@@ -2697,36 +2696,38 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 }
 
 #aside-content > astro-island,
-#post-toc-aside > astro-island,
-#post-secondary-aside > astro-island,
 .page-aside__sticky > astro-island {
   display: contents !important;
 }
 
-:is(#aside-content, #post-toc-aside, #post-secondary-aside, .page-aside__sticky) .card-widget {
+:is(#aside-content, .page-aside__sticky, .post-aside-tracks) .card-widget {
   margin: 0 !important;
 }
 
 /* 3. 释放 Sticky 元素并配置粘性参数 */
-#aside-content .sticky_layout,
-#post-toc-aside .sticky_layout,
-#post-secondary-aside .sticky_layout {
+#aside-content .sticky_layout {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: var(--sticky-column-top, 80px) !important;
-  height: max-content !important; /* 绝对禁止被 100% 污染拉伸 */
+  height: max-content !important;
   margin: 0 !important;
   padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 16px !important;
-  transition: top 0.3s ease !important;
+  transition: top 0.25s ease !important;
+}
+
+/* Post Aside Card Widgets */
+#aside-content #card-recent-post {
+  display: block !important;
 }
 
 /* 4. 移动端安全释放 */
 @media screen and (max-width: 900px) {
   .page-aside__sticky,
-  #aside-content {
+  #aside-content,
+  .post-aside-tracks {
     height: auto !important;
     min-height: 0 !important;
   }

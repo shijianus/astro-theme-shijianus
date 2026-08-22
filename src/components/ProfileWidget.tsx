@@ -151,6 +151,7 @@ export function ProfileWidget({
           background-color: #111 !important;
           z-index: 1;
           border: none !important;
+          min-height: 360px !important;
         }
 
         /* 第一层：底图 */
@@ -198,7 +199,9 @@ export function ProfileWidget({
           backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          min-height: 340px;
+          min-height: 360px !important;
+          height: 100% !important;
+          box-sizing: border-box !important;
         }
         
         .profile-card:hover .card-content {

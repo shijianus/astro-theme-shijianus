@@ -8,7 +8,6 @@ import { ThemeDock } from '../components/ThemeDock';
 import { ThemeOverlays } from '../components/ThemeOverlays';
 import { ThemeUniverse } from '../components/ThemeUniverse';
 import { ShortcutPanel } from '../components/ShortcutPanel';
-import { StickySidebarObserver } from '../components/StickySidebarObserver';
 import LocaleRuntime from '../components/LocaleRuntime.astro';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
@@ -256,9 +255,10 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
       />
       <LocaleRuntime />
       <CodeBlockEnhancer />
-      <StickySidebarObserver pageType={pageType} client:idle />
       <ShortcutPanel client:idle />
     </div>
+
+    <script src="../scripts/sticky-sidebar.ts"></script>
 
     <script is:inline>
       (() => {

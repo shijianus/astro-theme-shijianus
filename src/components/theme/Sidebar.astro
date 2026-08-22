@@ -57,18 +57,8 @@ const realRuntimeDays = Math.max(
   Math.floor((Date.now() - new Date('2021-03-31T16:00:00.000Z').valueOf()) / 86_400_000),
 );
 
-console.log("=== Sidebar Data Debug ===", {
-  tagsCount: realTags?.length || 0,
-  archivesCount: realArchives?.length || 0,
-  posts: realTotalPosts || 0
-});
-
 const isPostPage = pageType === 'post';
-const isPostTocPage = pageType === 'post-toc';
-const isPostSecondaryPage = pageType === 'post-secondary';
-const isAnyPostPage = isPostPage || isPostTocPage || isPostSecondaryPage;
 const isHomePage = pageType === 'home';
-const utilityOnlyPageTypes = new Set(['home', 'page']);
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
 const recentPostEntries = recentPosts;
 const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
@@ -99,19 +89,19 @@ const tocTree = (() => {
 
   return roots;
 })();
-const showUtilityAside = utilityOnlyPageTypes.has(pageType);
-const showPostAsideFeed = isPostSecondaryPage;
+
 const showRecentPosts = recentPostEntries.length > 0 && !isHomePage;
-const showToc = (isPostPage || isPostTocPage) && siteConfig.theme.features.postToc && tocHeadings.length > 0;
+const showToc = isPostPage && siteConfig.theme.features.postToc && tocHeadings.length > 0;
+const isShortToc = showToc && tocHeadings.length <= 6;
 const showCategories = siteConfig.theme.features.asideCategories && categories.length > 0 && !isHomePage;
 const showHomeOverview = isHomePage && (siteConfig.theme.features.asideFeatureCard || siteConfig.theme.features.asideWebInfo);
-const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !isPostPage && !showPostAsideFeed;
-const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !isPostPage && !showPostAsideFeed;
+const showTags = siteConfig.theme.features.asideTags && tags.length > 0 && !isHomePage && !isPostPage;
+const showArchives = siteConfig.theme.features.asideArchives && archives.length > 0 && !isHomePage && !isPostPage;
 const showWebInfo = siteConfig.theme.features.asideWebInfo && !isHomePage && !isPostPage;
-const showTelegramCard = Boolean(siteConfig.aside.telegramWidget) && (isHomePage || isPostPage || showUtilityAside || isPostTocPage || isPostSecondaryPage);
-const showAuthorCard = siteConfig.theme.features.asideAuthor && !isPostSecondaryPage;
+const showTelegramCard = Boolean(siteConfig.aside.telegramWidget);
+const showAuthorCard = siteConfig.theme.features.asideAuthor;
 const showAnnouncement = siteConfig.theme.features.asideStatus && isHomePage;
-const showStickyUtilityLayout = showHomeOverview || showRecentPosts || showTags || showArchives || showWebInfo;
+
 const runtimeDays = Math.max(
   1,
   Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
@@ -121,6 +111,7 @@ const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.au
 const latestPublishedAt = recentPosts[0]?.data.pubDate ?? null;
 const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
 const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
+const postRecentPosts = recentPostEntries.slice(0, 3);
 
 const escapeHtml = (value: string) =>
   value
@@ -134,7 +125,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
   nodes
     .map((node) => {
       const { heading, index, level, children } = node;
-      const indexLabel = String(index + 1).padStart(2, '0');
       const childrenHtml = children.length > 0 ? `<ol class="toc-child-list">${renderTocNodes(children)}</ol>` : '';
       return `
         <li class="toc-item" style="--toc-level:${level};">
@@ -150,7 +140,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
     .join('');
 ---
 
-<div class="aside-content" id={asideId}>
+<div class="aside-content" id={asideId} data-toc-compact={isShortToc ? 'true' : 'false'}>
   {showAuthorCard && (
     <ProfileWidget
       client:visible
@@ -172,251 +162,37 @@ const renderTocNodes = (nodes: TocNode[]) =>
     />
   )}
 
-  {showAnnouncement && (
-    <section class="card-widget card-announcement">
-      <div class="item-headline">
-        <Megaphone className="aside-title-icon" aria-hidden="true" />
-        <span>公告</span>
-      </div>
-      <div class="announcement_content">
-        <p>{siteConfig.aside.announcement}</p>
-      </div>
-    </section>
-  )}
-
-  {showTelegramCard && !isPostSecondaryPage && (
-    <PromoWidgetCard id="card-telegram" platform="telegram" />
-  )}
-
-  {showCategories && (
-    <section class="card-widget card-categories">
-      <div class="item-headline">
-        <FolderOpen className="aside-title-icon" aria-hidden="true" />
-        <span>分类</span>
-      </div>
-      <ul class="card-category-list">
-        {categories.slice(0, 8).map((item) => (
-          <li class="card-category-list-item">
-            <a class="card-category-list-link" href={getCategoryPath(item.slug)}>
-              <span class="card-category-list-name">{item.label}</span>
-              <span class="card-category-list-count-group">
-                <span class="card-category-list-count">{item.count}</span>
-                <span>篇</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-
-  <div class="sticky_layout">
-  {showToc && (
-      <section class="card-widget" id="card-toc">
-        <div class="item-headline">
-          <ListTree className="aside-title-icon" aria-hidden="true" />
-          <span>文章目录</span>
-          <span class="toc-count">{tocHeadings.length} 节</span>
-          <span class="toc-percentage"></span>
-        </div>
-        <div class="toc-progress" aria-hidden="true">
-          <span class="toc-progress__bar"></span>
-        </div>
-        <div class="toc-content">
-          <ol class="toc-list">
-            <Fragment set:html={renderTocNodes(tocTree)} />
-          </ol>
-        </div>
-      </section>
-  )}
-
-  {(!isPostTocPage && !isPostSecondaryPage) && (
-    <>
-      {showHomeOverview && (
-        <section class="card-widget card-feature-panel card-feature-panel--overview is-sticky-active">
-          <div class="card-content">
-            <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
-            <h3>{siteConfig.aside.featureCard.title}</h3>
-            <p>{siteConfig.aside.featureCard.summary}</p>
-            <div class="feature-card__chips">
-              {siteConfig.aside.featureCard.chips.map((item) => (
-                <span>{item}</span>
-              ))}
-            </div>
-
-            <div class="webinfo-panel">
-              <div class="workboard-panel webinfo-workboard">
-                <div class="webinfo-workboard__head">
-                  <div class="workboard-status">
-                    <span class="workboard-dot" aria-hidden="true"></span>
-                    <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                    <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                  </div>
-                  <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
-                </div>
-                <p>{siteConfig.footer.runtime.workDetail}</p>
-                <div class="webinfo-highlight-grid">
-                  <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                    <span>站点运行</span>
-                    <strong>{runtimeDays} 天</strong>
-                    <small>起始于 {startedAtLabel}</small>
-                  </article>
-                  <article class="webinfo-highlight-card">
-                    <span>最近更新</span>
-                    <strong>{latestPublishedLabel}</strong>
-                    <small>内容仍在持续整理</small>
-                  </article>
-                  <article class="webinfo-highlight-card">
-                    <span>当前阶段</span>
-                    <strong>{currentPhase}</strong>
-                    <small>优先修正阅读与侧栏体验</small>
-                  </article>
-                </div>
-                <div class="workboard-chip-list">
-                  <span>{siteConfig.footer.runtime.workLabel}</span>
-                  <span>{siteConfig.site.author.statusLabel}</span>
-                  <span>{siteConfig.home.announcement.eyebrow}</span>
-                </div>
-              </div>
-
-              <div class="webinfo webinfo-grid">
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">文章总数</span>
-                  </div>
-                  <div class="item-count">{totalPosts}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">分类总数</span>
-                  </div>
-                  <div class="item-count">{totalCategories}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">标签总数</span>
-                  </div>
-                  <div class="item-count">{totalTags}</div>
-                </div>
-                <div class="webinfo-item">
-                  <div class="webinfo-item-title">
-                    <span class="item-name">阅读总量</span>
-                  </div>
-                  <div class="item-count">{totalReadingMinutes} 分钟</div>
-                </div>
-              </div>
-
-              {isHomePage && featurePanelRecentPosts.length > 0 && (
-                <div class="feature-panel-recent">
-                  <div class="item-headline item-headline--embedded">
-                    <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                    <span>最新发布</span>
-                  </div>
-                  <div class="aside-list">
-                    {featurePanelRecentPosts.map((entry) => (
-                      <a href={getPostPath(entry)} class="aside-list-item">
-                        <span class="thumbnail">
-                          <img
-                            src={resolveDisplayCover(entry, true)}
-                            alt={getDisplayPostTitle(entry, true)}
-                            loading="lazy"
-                            data-fallback-src={siteConfig.post.hero.fallbackImage}
-                          />
-                        </span>
-                        <span class="content">
-                          <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                          <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {showTags && (
-        <section class="card-widget card-tags">
+  {isPostPage ? (
+    <div class="sticky_layout" id="post-sticky-layout">
+      {/* 1. Article TOC Card (Tracks headings in #article-container) */}
+      {showToc && (
+        <section class="card-widget" id="card-toc">
           <div class="item-headline">
-            <Tags className="aside-title-icon" aria-hidden="true" />
-            <span>标签</span>
+            <ListTree className="aside-title-icon" aria-hidden="true" />
+            <span>文章目录</span>
+            <span class="toc-count">{tocHeadings.length} 节</span>
+            <span class="toc-percentage">0%</span>
           </div>
-          <div class="card-tag-cloud">
-            {realTags.slice(0, 40).map((tag) => (
-              <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
-                {tag.label}<sup>{tag.count}</sup>
-              </a>
-            ))}
+          <div class="toc-progress" aria-hidden="true">
+            <span class="toc-progress__bar"></span>
           </div>
-        </section>
-      )}
-
-      {showArchives && (
-        <section class="card-widget card-archives">
-          <div class="item-headline">
-            <Archive className="aside-title-icon" aria-hidden="true" />
-            <span>归档</span>
-            <a class="card-more-btn" href="/archives/" title="查看更多">
-              <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
-            </a>
-          </div>
-          <ul class="card-archive-list">
-            {realArchives.slice(0, 8).map((item) => (
-              <li class="card-archive-list-item">
-                <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
-                  <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
-                  <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {showWebInfo && (
-        <section class="card-widget card-webinfo">
-          <div class="item-headline">
-            <Info className="aside-title-icon" aria-hidden="true" />
-            <span>网站资讯</span>
-          </div>
-          <div class="webinfo">
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
-                <div class="item-name">文章总数 :</div>
-              </div>
-              <div class="item-count">{realTotalPosts}</div>
-            </div>
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
-                <div class="item-name">建站天数 :</div>
-              </div>
-              <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
-                {realRuntimeDays} 天
-              </div>
-            </div>
-            <div class="webinfo-item">
-              <div class="webinfo-item-title">
-                <i class="anzhiyufont anzhiyu-icon-font"></i>
-                <div class="item-name">全站字数 :</div>
-              </div>
-              <div class="item-count">{realTotalWordsK}k</div>
-            </div>
+          <div class="toc-content">
+            <ol class="toc-list">
+              <Fragment set:html={renderTocNodes(tocTree)} />
+            </ol>
           </div>
         </section>
       )}
 
+      {/* 2. Recent Posts (Singleton: exactly 3 posts, attached beneath TOC when short) */}
       {showRecentPosts && (
-        <section class="card-widget card-recent-post">
+        <section class="card-widget card-recent-post" id="card-recent-post">
           <div class="item-headline">
             <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
             <span>最新发布</span>
           </div>
           <div class="aside-list">
-            {recentPostEntries.slice(0, 6).map((entry) => (
+            {postRecentPosts.map((entry) => (
               <a href={getPostPath(entry)} class="aside-list-item">
                 <span class="thumbnail">
                   <img
@@ -436,93 +212,389 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </section>
       )}
 
-      {isPostPage && (previousPost || nextPost) && (
-        <section class="card-widget card-post-nav">
+      {/* 3. Telegram Push */}
+      {showTelegramCard && (
+        <PromoWidgetCard id="card-telegram" platform="telegram" className="card-telegram--post" />
+      )}
+
+      {/* 4. Categories Card (Refined 2-column list, proportional and elegant) */}
+      {showCategories && (
+        <section class="card-widget card-categories" id="card-categories">
           <div class="item-headline">
-            <Compass className="aside-title-icon" aria-hidden="true" />
-            <span>文章导航</span>
+            <FolderOpen className="aside-title-icon" aria-hidden="true" />
+            <span>分类</span>
           </div>
-          <div class="aside-post-nav-list">
-            {previousPost && (
-              <a href={getPostPath(previousPost)} class="aside-post-nav-item aside-post-nav-item--prev">
-                <span class="nav-direction">上一篇</span>
-                <span class="nav-title">{previousPost.data.title}</span>
-              </a>
-            )}
-            {nextPost && (
-              <a href={getPostPath(nextPost)} class="aside-post-nav-item aside-post-nav-item--next">
-                <span class="nav-direction">下一篇</span>
-                <span class="nav-title">{nextPost.data.title}</span>
-              </a>
-            )}
+          <ul class="card-category-list">
+            {categories.slice(0, 6).map((item) => (
+              <li class="card-category-list-item">
+                <a class="card-category-list-link" href={getCategoryPath(item.slug)}>
+                  <span class="card-category-list-name">{item.label}</span>
+                  <span class="card-category-list-count-group">
+                    <span class="card-category-list-count">{item.count}</span>
+                    <span>篇</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  ) : (
+    /* Non-Post Pages Layout */
+    <>
+      {showAnnouncement && (
+        <section class="card-widget card-announcement">
+          <div class="item-headline">
+            <Megaphone className="aside-title-icon" aria-hidden="true" />
+            <span>公告</span>
+          </div>
+          <div class="announcement_content">
+            <p>{siteConfig.aside.announcement}</p>
           </div>
         </section>
       )}
+
+      {showTelegramCard && (
+        <PromoWidgetCard id="card-telegram" platform="telegram" />
+      )}
+
+      {showCategories && (
+        <section class="card-widget card-categories">
+          <div class="item-headline">
+            <FolderOpen className="aside-title-icon" aria-hidden="true" />
+            <span>分类</span>
+          </div>
+          <ul class="card-category-list">
+            {categories.slice(0, 8).map((item) => (
+              <li class="card-category-list-item">
+                <a class="card-category-list-link" href={getCategoryPath(item.slug)}>
+                  <span class="card-category-list-name">{item.label}</span>
+                  <span class="card-category-list-count-group">
+                    <span class="card-category-list-count">{item.count}</span>
+                    <span>篇</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div class="sticky_layout">
+        {showHomeOverview && (
+          <section class="card-widget card-feature-panel card-feature-panel--overview is-sticky-active">
+            <div class="card-content">
+              <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
+              <h3>{siteConfig.aside.featureCard.title}</h3>
+              <p>{siteConfig.aside.featureCard.summary}</p>
+              <div class="feature-card__chips">
+                {siteConfig.aside.featureCard.chips.map((item) => (
+                  <span>{item}</span>
+                ))}
+              </div>
+
+              <div class="webinfo-panel">
+                <div class="workboard-panel webinfo-workboard">
+                  <div class="webinfo-workboard__head">
+                    <div class="workboard-status">
+                      <span class="workboard-dot" aria-hidden="true"></span>
+                      <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
+                      <strong>{siteConfig.footer.runtime.workLabel}</strong>
+                    </div>
+                    <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+                  </div>
+                  <p>{siteConfig.footer.runtime.workDetail}</p>
+                  <div class="webinfo-highlight-grid">
+                    <article class="webinfo-highlight-card webinfo-highlight-card--primary">
+                      <span>站点运行</span>
+                      <strong>{runtimeDays} 天</strong>
+                      <small>起始于 {startedAtLabel}</small>
+                    </article>
+                    <article class="webinfo-highlight-card">
+                      <span>最近更新</span>
+                      <strong>{latestPublishedLabel}</strong>
+                      <small>内容仍在持续整理</small>
+                    </article>
+                    <article class="webinfo-highlight-card">
+                      <span>当前阶段</span>
+                      <strong>{currentPhase}</strong>
+                      <small>优先修正阅读与侧栏体验</small>
+                    </article>
+                  </div>
+                  <div class="workboard-chip-list">
+                    <span>{siteConfig.footer.runtime.workLabel}</span>
+                    <span>{siteConfig.site.author.statusLabel}</span>
+                    <span>{siteConfig.home.announcement.eyebrow}</span>
+                  </div>
+                </div>
+
+                <div class="webinfo webinfo-grid">
+                  <div class="webinfo-item">
+                    <div class="webinfo-item-title">
+                      <span class="item-name">文章总数</span>
+                    </div>
+                    <div class="item-count">{totalPosts}</div>
+                  </div>
+                  <div class="webinfo-item">
+                    <div class="webinfo-item-title">
+                      <span class="item-name">分类总数</span>
+                    </div>
+                    <div class="item-count">{totalCategories}</div>
+                  </div>
+                  <div class="webinfo-item">
+                    <div class="webinfo-item-title">
+                      <span class="item-name">标签总数</span>
+                    </div>
+                    <div class="item-count">{totalTags}</div>
+                  </div>
+                  <div class="webinfo-item">
+                    <div class="webinfo-item-title">
+                      <span class="item-name">阅读总量</span>
+                    </div>
+                    <div class="item-count">{totalReadingMinutes} 分钟</div>
+                  </div>
+                </div>
+
+                {isHomePage && featurePanelRecentPosts.length > 0 && (
+                  <div class="feature-panel-recent">
+                    <div class="item-headline item-headline--embedded">
+                      <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+                      <span>最新发布</span>
+                    </div>
+                    <div class="aside-list">
+                      {featurePanelRecentPosts.map((entry) => (
+                        <a href={getPostPath(entry)} class="aside-list-item">
+                          <span class="thumbnail">
+                            <img
+                              src={resolveDisplayCover(entry, true)}
+                              alt={getDisplayPostTitle(entry, true)}
+                              loading="lazy"
+                              data-fallback-src={siteConfig.post.hero.fallbackImage}
+                            />
+                          </span>
+                          <span class="content">
+                            <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                            <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {showTags && (
+          <section class="card-widget card-tags">
+            <div class="item-headline">
+              <Tags className="aside-title-icon" aria-hidden="true" />
+              <span>标签</span>
+            </div>
+            <div class="card-tag-cloud">
+              {realTags.slice(0, 40).map((tag) => (
+                <a href={getTagPath(tag.slug)} style={`font-size: ${Math.min(1.2, 0.95 + tag.count * 0.05)}rem;`}>
+                  {tag.label}<sup>{tag.count}</sup>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {showArchives && (
+          <section class="card-widget card-archives">
+            <div class="item-headline">
+              <Archive className="aside-title-icon" aria-hidden="true" />
+              <span>归档</span>
+              <a class="card-more-btn" href="/archives/" title="查看更多">
+                <i class="anzhiyufont anzhiyu-icon-angle-right"></i>
+              </a>
+            </div>
+            <ul class="card-archive-list">
+              {realArchives.slice(0, 8).map((item) => (
+                <li class="card-archive-list-item">
+                  <a class="card-archive-list-link" href={`/archives/${item.year}/${String(item.month).padStart(2, '0')}/`}>
+                    <span class="card-archive-list-date">{new Date(item.year, item.month - 1).toLocaleDateString('zh-CN', { month: 'long', year: 'numeric' })}</span>
+                    <div class="card-archive-list-count-group"><span class="card-archive-list-count">{item.count}</span><span>篇</span></div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {showWebInfo && (
+          <section class="card-widget card-webinfo">
+            <div class="item-headline">
+              <Info className="aside-title-icon" aria-hidden="true" />
+              <span>网站资讯</span>
+            </div>
+            <div class="webinfo">
+              <div class="webinfo-item">
+                <div class="webinfo-item-title">
+                  <i class="anzhiyufont anzhiyu-icon-file-lines"></i>
+                  <div class="item-name">文章总数 :</div>
+                </div>
+                <div class="item-count">{realTotalPosts}</div>
+              </div>
+              <div class="webinfo-item">
+                <div class="webinfo-item-title">
+                  <i class="anzhiyufont anzhiyu-icon-stopwatch"></i>
+                  <div class="item-name">建站天数 :</div>
+                </div>
+                <div class="item-count" id="runtimeshow" data-publishdate="2021-03-31T16:00:00.000Z">
+                  {realRuntimeDays} 天
+                </div>
+              </div>
+              <div class="webinfo-item">
+                <div class="webinfo-item-title">
+                  <i class="anzhiyufont anzhiyu-icon-font"></i>
+                  <div class="item-name">全站字数 :</div>
+                </div>
+                <div class="item-count">{realTotalWordsK}k</div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {showRecentPosts && (
+          <section class="card-widget card-recent-post">
+            <div class="item-headline">
+              <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+              <span>最新发布</span>
+            </div>
+            <div class="aside-list">
+              {recentPostEntries.slice(0, 6).map((entry) => (
+                <a href={getPostPath(entry)} class="aside-list-item">
+                  <span class="thumbnail">
+                    <img
+                      src={resolveDisplayCover(entry, true)}
+                      alt={getDisplayPostTitle(entry, true)}
+                      loading="lazy"
+                      data-fallback-src={siteConfig.post.hero.fallbackImage}
+                    />
+                  </span>
+                  <span class="content">
+                    <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                    <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </>
   )}
-
-  {isPostSecondaryPage && showTelegramCard && (
-    <PromoWidgetCard id="card-telegram-post" platform="telegram" className="card-telegram--post" />
-  )}
-
-  {isPostSecondaryPage && showRecentPosts && (
-      <section class="card-widget card-recent-post">
-        <div class="item-headline">
-          <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-          <span>最新发布</span>
-        </div>
-        <div class="aside-list">
-          {recentPostEntries.slice(0, 6).map((entry) => (
-            <a href={getPostPath(entry)} class="aside-list-item">
-              <span class="thumbnail">
-                <img
-                  src={resolveDisplayCover(entry, true)}
-                  alt={getDisplayPostTitle(entry, true)}
-                  loading="lazy"
-                  data-fallback-src={siteConfig.post.hero.fallbackImage}
-                />
-              </span>
-              <span class="content">
-                <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
-  )}
-  </div>
 </div>
 
 <style is:global>
-  #aside-content .card-widget {
-    margin-top: 20px !important;
+  #aside-content {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
   }
-  
-  #aside-content > .card-widget:first-child {
-    margin-top: 0 !important;
+
+  #aside-content .card-widget {
+    margin: 0 !important;
+    position: relative;
+    border-radius: 12px;
+  }
+
+  .post-aside-tracks {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .sticky_layout {
     position: -webkit-sticky !important;
     position: sticky !important;
-    top: 80px !important;
-    transition: top 0.3s;
+    top: var(--sticky-column-top, 80px) !important;
+    transition: top 0.25s ease;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     height: auto !important;
-    margin-top: 20px !important;
+    width: 100%;
+    margin: 0 !important;
   }
 
-  #aside-content > .sticky_layout:first-child {
-    margin-top: 0 !important;
-  }
-  
-  .sticky_layout > .card-widget:not(#card-toc) {
+  .sticky_layout > .card-widget {
     flex-shrink: 0;
   }
-  
+
+  /* Refined Categories Card in Post Sidebar */
+  .card-categories {
+    padding: 18px 20px !important;
+  }
+  .card-categories .item-headline {
+    margin: 0 0 10px 0 !important;
+    font-size: 14px !important;
+  }
+  .card-categories .card-category-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+  .card-categories .card-category-list-item {
+    width: 100% !important;
+    flex: 0 0 calc(50% - 4px) !important;
+    box-sizing: border-box !important;
+  }
+  .card-categories .card-category-list-link {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 8px 10px !important;
+    border: var(--style-border-always) !important;
+    border-radius: 8px !important;
+    color: var(--font-color) !important;
+    transition: all 0.25s ease !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+    background: color-mix(in srgb, var(--card-bg, #fff) 80%, var(--font-color) 4%) !important;
+  }
+  .card-categories .card-category-list-link:hover {
+    border-color: transparent !important;
+    background: var(--theme-main, #425aef) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-main, #425aef) 30%, transparent) !important;
+    transform: translateY(-1px) !important;
+  }
+  .card-categories .card-category-list-name {
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+  }
+  .card-categories .card-category-list-count-group {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 2px !important;
+    line-height: 1 !important;
+  }
+  .card-categories .card-category-list-count {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+  }
+  .card-categories .card-category-list-count-group span:last-child {
+    font-size: 11px !important;
+    opacity: 0.7 !important;
+  }
+
   #card-toc {
     display: flex !important;
     flex-direction: column !important;
@@ -530,6 +602,48 @@ const renderTocNodes = (nodes: TocNode[]) =>
     border-radius: 12px !important;
     height: auto !important;
     box-sizing: border-box !important;
+  }
+
+  #card-toc .item-headline {
+    margin: 0 0 12px 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  #card-toc .item-headline span:nth-child(2) {
+    flex: 1;
+  }
+
+  #card-toc .toc-count {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-right: 8px;
+  }
+
+  #card-toc .toc-percentage {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--theme-main, #425aef);
+  }
+
+  #card-toc .toc-progress {
+    position: relative;
+    width: 100%;
+    height: 3px;
+    background: color-mix(in srgb, var(--font-color) 10%, transparent);
+    border-radius: 3px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  #card-toc .toc-progress__bar {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--theme-main, #425aef);
+    border-radius: 3px;
+    transition: width 0.15s ease-out;
   }
   
   #card-toc .toc-content {
@@ -548,11 +662,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
   #card-toc .toc-content::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--font-color) 20%, transparent);
     border-radius: 4px;
-  }
-
-  #card-toc .item-headline {
-    margin: 0 0 12px 0 !important;
-    padding: 0 !important;
   }
   
   /* Nested Hierarchy Styles */
@@ -575,7 +684,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   #card-toc .toc-list > .toc-item + .toc-item {
-    margin-top: 6px !important;
+    margin-top: 5px !important;
   }
 
   #card-toc .toc-link {
@@ -588,6 +697,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
     box-sizing: border-box !important;
     border-radius: 8px !important;
     background: transparent !important;
+    line-height: 1.4 !important;
   }
 
   #card-toc .toc-text-group {
@@ -691,11 +801,32 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
     if (!headings.length) return;
 
+    // Smooth click handler for TOC links with header offset
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        let hash = '';
+        try {
+          hash = decodeURIComponent(link.hash.replace(/^#/, ''));
+        } catch (err) {
+          hash = link.hash.replace(/^#/, '');
+        }
+        const targetEl = document.getElementById(hash);
+        if (targetEl) {
+          const topOffset = 80;
+          const rect = targetEl.getBoundingClientRect();
+          const targetY = window.scrollY + rect.top - topOffset;
+          window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+          if (history.pushState) {
+            history.pushState(null, '', '#' + encodeURIComponent(hash));
+          }
+        }
+      });
+    });
+
     const setActive = (activeId) => {
       let currentActive = null;
-      let activeIndex = -1;
-      
-      activeIndex = headings.findIndex(h => h.id === activeId);
+      let activeIndex = headings.findIndex(h => h.id === activeId);
 
       links.forEach((link, index) => {
         link.classList.remove('active', 'dist-1', 'dist-2', 'dist-3');
@@ -731,7 +862,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
       }
     };
 
-    let activeId = headings[0].id;
+    let activeId = headings[0]?.id;
     const observer = new IntersectionObserver((entries) => {
       let intersectingEntry = null;
       entries.forEach(entry => {
@@ -746,10 +877,11 @@ const renderTocNodes = (nodes: TocNode[]) =>
     }, { rootMargin: '-80px 0px -70% 0px' });
     
     headings.forEach(h => observer.observe(h.el));
-    setActive(activeId);
+    if (activeId) setActive(activeId);
   }
 
   document.addEventListener('astro:page-load', initTocScrollSpy);
   document.addEventListener('DOMContentLoaded', initTocScrollSpy);
 </script>
+
 
