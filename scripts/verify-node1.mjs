@@ -2,31 +2,30 @@ import { chromium } from 'playwright';
 import { spawn } from 'child_process';
 
 async function main() {
-  console.log('Starting static server on dist folder...');
-  const server = spawn('python3', ['-m', 'http.server', '4321', '-d', 'dist'], {
-    stdio: 'pipe'
-  });
-
+  const server = spawn('python3', ['-m', 'http.server', '4321', '-d', 'dist'], { stdio: 'pipe' });
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  console.log('Launching browser for Node 1 verification...');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
 
   const targetUrl = 'http://localhost:4321/posts/anzhiyu-markdown-showcase/';
-  console.log('Navigating to', targetUrl);
   await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 15000 });
   await page.waitForTimeout(1000);
 
   // 1. Top layout
   await page.screenshot({ path: 'scripts/verify_node1_top.png', fullPage: false });
 
-  // 2. Scroll mid (TOC active & sticky)
+  // 2. Scroll mid 1 (TOC active heading at 1100px)
   await page.evaluate(() => window.scrollBy(0, 1100));
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node1_mid.png', fullPage: false });
 
-  // 3. Scroll to bottom
+  // 3. Scroll deep into post (e.g. 3500px) to see TOC active item change and progress bar update
+  await page.evaluate(() => window.scrollBy(0, 2400));
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: 'scripts/verify_node1_deep_scroll.png', fullPage: false });
+
+  // 4. Scroll to bottom
   await page.evaluate(() => {
     const el = document.querySelector('.post-copyright') || document.querySelector('.relatedPosts');
     if (el) el.scrollIntoView();
@@ -34,25 +33,9 @@ async function main() {
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'scripts/verify_node1_bottom.png', fullPage: false });
 
-  // 4. Read mode in light theme
-  await page.evaluate(() => {
-    document.body.classList.add('read-mode');
-    document.documentElement.dataset.theme = 'light';
-    window.scrollTo(0, 400);
-  });
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: 'scripts/verify_node1_readmode_light.png', fullPage: false });
-
-  // 5. Read mode in dark theme
-  await page.evaluate(() => {
-    document.documentElement.dataset.theme = 'dark';
-  });
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: 'scripts/verify_node1_readmode_dark.png', fullPage: false });
-
-  console.log('All Node 1 screenshots captured successfully!');
   await browser.close();
   server.kill();
+  console.log('Verification screenshots complete!');
   process.exit(0);
 }
 

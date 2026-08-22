@@ -506,13 +506,12 @@ const renderTocNodes = (nodes: TocNode[]) =>
   .sticky_layout {
     position: -webkit-sticky !important;
     position: sticky !important;
-    top: calc(var(--header-offset, 80px) + 20px) !important;
+    top: 80px !important;
     transition: top 0.3s;
-    align-self: flex-start;
     display: flex;
     flex-direction: column;
+    gap: 20px;
     height: auto !important;
-    max-height: calc(100vh - var(--header-offset, 80px) - 32px) !important;
     margin-top: 20px !important;
   }
 
@@ -525,33 +524,36 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
   
   #card-toc {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 20px !important;
     border-radius: 12px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
   }
   
   #card-toc .toc-content {
-    min-height: 0;
     overflow-y: auto !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-    margin-bottom: 0 !important;
-  }
-  
-  body[data-type='post'] #card-toc .toc-content::before,
-  body[data-type='post'] #card-toc .toc-content::after {
-    display: none !important;
-  }
-
-
-  #card-toc .item-headline,
-  #card-toc .toc-content {
+    max-height: calc(100vh - 280px) !important;
+    scrollbar-width: thin !important;
     margin: 0 !important;
     padding: 0 !important;
+    padding-right: 4px !important;
   }
 
+  #card-toc .toc-content::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  #card-toc .toc-content::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--font-color) 20%, transparent);
+    border-radius: 4px;
+  }
+
+  #card-toc .item-headline {
+    margin: 0 0 12px 0 !important;
+    padding: 0 !important;
+  }
   
   /* Nested Hierarchy Styles */
   #card-toc .toc-list {
@@ -568,55 +570,61 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   #card-toc .toc-item {
-    margin: 4px 0 !important;
+    margin: 3px 0 !important;
     padding: 0 !important;
   }
 
-  /* Add extra space before top-level items (H2) for breathing room, except the first one */
   #card-toc .toc-list > .toc-item + .toc-item {
-    margin-top: 14px !important;
+    margin-top: 6px !important;
   }
 
   #card-toc .toc-link {
     display: flex !important;
     align-items: center !important;
-    padding: 4px 0 !important;
+    padding: 6px 10px !important;
     text-decoration: none !important;
-    transition: color 0.2s ease, font-weight 0.2s ease !important;
+    transition: all 0.2s ease !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    border-left: none !important;
+    border-radius: 8px !important;
     background: transparent !important;
   }
 
   #card-toc .toc-text-group {
     flex: 1 !important;
     line-height: 1.4 !important;
+    min-width: 0 !important;
   }
   
   #card-toc .toc-text {
-    display: inline !important;
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: var(--font-color) !important;
   }
 
   #card-toc .toc-link:hover {
-    color: var(--theme-main) !important;
-    background-color: transparent !important;
+    color: var(--theme-main, #425aef) !important;
+    background-color: color-mix(in srgb, var(--theme-main, #425aef) 10%, transparent) !important;
+  }
+
+  #card-toc .toc-link:hover .toc-text {
+    color: var(--theme-main, #425aef) !important;
   }
 
   /* Level 0 (H2) */
   #card-toc .toc-link.level-0 {
-    font-size: 15px !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
-    color: var(--font-color) !important;
-    padding-left: 4px !important;
+    padding-left: 10px !important;
   }
 
   /* Level 1 (H3) */
   #card-toc .toc-link.level-1 {
-    font-size: 13px !important;
+    font-size: 12.5px !important;
     font-weight: 500 !important;
-    color: color-mix(in srgb, var(--font-color) 80%, transparent) !important;
-    padding-left: 12px !important;
+    padding-left: 20px !important;
   }
 
   /* Level 2+ (H4+) */
@@ -624,21 +632,26 @@ const renderTocNodes = (nodes: TocNode[]) =>
   #card-toc .toc-link.level-3,
   #card-toc .toc-link.level-4,
   #card-toc .toc-link.level-5 {
-    font-size: 11.5px !important;
+    font-size: 12px !important;
     font-weight: 400 !important;
-    color: color-mix(in srgb, var(--font-color) 62%, transparent) !important;
-    padding-left: 20px !important;
+    padding-left: 28px !important;
   }
 
   /* Active highlighting (Current Item) */
-  #card-toc .toc-link.active {
-    color: var(--theme-main) !important;
+  #card-toc .toc-link.active,
+  #card-toc .toc-item.is-active > .toc-link {
+    color: #ffffff !important;
     font-weight: 700 !important;
-    background-color: transparent !important;
-    border-left: none !important;
+    background: var(--theme-main, #425aef) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-main, #425aef) 30%, transparent) !important;
+  }
+
+  #card-toc .toc-link.active .toc-text,
+  #card-toc .toc-item.is-active > .toc-link .toc-text {
+    color: #ffffff !important;
   }
   
-  /* Reset pseudo elements just in case */
+  /* Reset pseudo elements */
   #card-toc .toc-item::before,
   #card-toc .toc-item::after,
   #card-toc .toc-link::before,
@@ -646,26 +659,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
     display: none !important;
   }
 
-
   @media screen and (max-width: 1200px) {
     .page-aside {
       display: none !important;
     }
-  }
-
-  body[data-type='post'] .post-layout-row__aside {
-    overflow: visible !important;
-    align-self: stretch !important;
-    height: 100%;
-  }
-  
-  body[data-type='post'] .post-layout-row__aside .aside-content {
-    height: 100%;
-  }
-  
-  body[data-type='post'] .post-layout-row__aside .sticky_layout {
-    overflow: visible !important;
-    overflow-x: visible !important;
   }
 
   body[data-type='post'] #content-inner.layout {
@@ -698,32 +695,26 @@ const renderTocNodes = (nodes: TocNode[]) =>
       let currentActive = null;
       let activeIndex = -1;
       
-      // 首先找出激活项的索引
       activeIndex = headings.findIndex(h => h.id === activeId);
 
       links.forEach((link, index) => {
-        // 清理所有相关类
         link.classList.remove('active', 'dist-1', 'dist-2', 'dist-3');
         let parent = link.parentElement;
         while(parent && parent.classList.contains('toc-item')) {
-          parent.classList.remove('active');
-          parent = parent.parentElement.closest('.toc-item');
+          parent.classList.remove('active', 'is-active');
+          parent = parent.parentElement?.closest('.toc-item');
         }
         
-        // 计算索引差并添加分档类
         if (activeIndex !== -1) {
           const dist = Math.abs(index - activeIndex);
           if (dist === 0) {
             link.classList.add('active');
             currentActive = link;
-            // 激活父级
             let p = link.parentElement;
             while(p && p.classList.contains('toc-item')) {
-              p.classList.add('active');
-              p = p.parentElement.closest('.toc-item');
+              p.classList.add('active', 'is-active');
+              p = p.parentElement?.closest('.toc-item');
             }
-          } else if (dist <= 3) {
-            link.classList.add(`dist-${dist}`);
           }
         }
       });
@@ -760,24 +751,5 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
   document.addEventListener('astro:page-load', initTocScrollSpy);
   document.addEventListener('DOMContentLoaded', initTocScrollSpy);
-</script>
-
-<script is:inline>
-  function adjustTocFlex() {
-    const tocCards = document.querySelectorAll('#card-toc');
-    tocCards.forEach(card => {
-      const tocList = card.querySelector('.toc-list');
-      if (tocList) {
-        if (tocList.scrollHeight < 250) {
-          card.style.setProperty('flex', '0 1 auto', 'important');
-        } else {
-          card.style.setProperty('flex', '1 1 auto', 'important');
-        }
-      }
-    });
-  }
-  adjustTocFlex();
-  document.addEventListener('astro:page-load', adjustTocFlex);
-  window.addEventListener('resize', adjustTocFlex);
 </script>
 

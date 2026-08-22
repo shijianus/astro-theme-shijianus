@@ -14619,6 +14619,11 @@ body[data-type='home'] .categoryItem .categoryButton {
               visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible !important;
+}
+
+:root[data-aside='collapsed'] .page-aside,
+:root[data-aside='collapsed'] .post-layout-row__aside {
   overflow: hidden !important;
 }
 
@@ -14673,6 +14678,11 @@ body[data-type='home'] .categoryItem .categoryButton {
    ========================================================================== */
 
 /* 1. Post Container Unified Layout */
+html.theme-ready body.theme-body #content-inner,
+body[data-type='post'] #content-inner.layout {
+  transform: none !important;
+}
+
 body[data-type='post'] #content-inner.layout {
   display: flex !important;
   justify-content: center !important;
@@ -14694,6 +14704,18 @@ body[data-type='post'] .page-main {
 body[data-type='post'] .page-aside {
   width: 300px !important;
   flex-shrink: 0 !important;
+  align-self: stretch !important;
+  display: block !important;
+  overflow: visible !important;
+}
+
+body[data-type='post'] .page-aside__sticky,
+body[data-type='post'] #aside-content {
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
 }
 
 @media (max-width: 1200px) {
