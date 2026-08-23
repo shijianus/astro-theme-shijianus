@@ -14847,11 +14847,9 @@ html[data-readmode='true'] #content-inner.layout {
   overflow: hidden !important;
 }
 
-/* Sticky layout container for TOC + Recent Posts */
+/* Sticky layout container for Dual Track Architecture */
 #aside-content .sticky_layout {
-  position: -webkit-sticky !important;
-  position: sticky !important;
-  top: 80px !important;
+  position: relative !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 20px !important;
@@ -14859,28 +14857,50 @@ html[data-readmode='true'] #content-inner.layout {
   margin: 0 !important;
   padding: 0 !important;
   z-index: 10 !important;
-  transition: top 0.3s ease !important;
 }
 
-#aside-content .sticky_layout > .card-widget {
+#aside-content .aside-track {
+  position: relative !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#aside-content .aside-sticky-box {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  width: 100% !important;
+  z-index: 10 !important;
+}
+
+#aside-content .card-widget {
   margin-bottom: 0 !important;
 }
 
-/* Card TOC Exact Harmonization */
+/* Card TOC Exact Harmonization (b8f2436) */
 #aside-content #card-toc {
   display: flex !important;
   flex-direction: column !important;
-  max-height: calc(100vh - 120px) !important;
-  padding: 20px !important;
+  padding: 20px 24px !important;
   border-radius: 12px !important;
   box-sizing: border-box !important;
 }
 
+#aside-content[data-toc-type='long'] #card-toc {
+  max-height: calc(100vh - var(--sticky-column-top, 80px) - 32px) !important;
+}
+
 #aside-content #card-toc .toc-content {
   overflow-y: auto !important;
-  max-height: calc(100vh - 240px) !important;
-  padding-right: 4px !important;
-  scrollbar-width: thin !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+#aside-content #card-toc .toc-content::-webkit-scrollbar {
+  display: none !important;
 }
 
 /* Card Recent Post Exact Harmonization */
@@ -14890,67 +14910,14 @@ html[data-readmode='true'] #content-inner.layout {
   box-sizing: border-box !important;
 }
 
-/* Card Post Navigation (Previous/Next inside Sticky Layout) */
-#aside-content .card-post-nav {
-  padding: 20px !important;
-  border-radius: 12px !important;
-  box-sizing: border-box !important;
-}
-
-#aside-content .card-post-nav .item-headline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-#aside-content .card-post-nav .aside-post-nav-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-#aside-content .card-post-nav .aside-post-nav-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--font-color) 4%, transparent);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-#aside-content .card-post-nav .aside-post-nav-item:hover {
-  background: color-mix(in srgb, var(--theme-main, #425aef) 12%, transparent);
-  transform: translateX(4px);
-}
-
-#aside-content .card-post-nav .nav-direction {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--theme-main, #425aef);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-#aside-content .card-post-nav .nav-title {
-  font-size: 13px;
-  color: var(--font-color);
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Card TOC Progress Bar & Percentage */
 #aside-content #card-toc .item-headline {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   margin-bottom: 8px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
 }
 
 #aside-content #card-toc .toc-percentage {
@@ -14977,6 +14944,7 @@ html[data-readmode='true'] #content-inner.layout {
   border-radius: 3px !important;
   transition: width 0.1s ease-out !important;
 }
+
 
 
 
