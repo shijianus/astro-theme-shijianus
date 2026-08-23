@@ -164,7 +164,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
   {isPostPage ? (
     <div class="sticky_layout" id="post-sticky-layout">
-      {/* 1. Track: Article TOC (+ Companion Recent Posts for Short TOC) */}
+      {/* 1. Track: Article TOC */}
       <div class="aside-track aside-track--toc" id="aside-track-toc">
         <div class="aside-sticky-box" id="aside-sticky-box-toc">
           {showToc && (
@@ -173,7 +173,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 <ListTree className="aside-title-icon" aria-hidden="true" />
                 <span>文章目录</span>
                 <span class="toc-count">{tocHeadings.length} 节</span>
-                <span class="toc-percentage">0%</span>
+                <span class="toc-percentage"></span>
               </div>
               <div class="toc-progress" aria-hidden="true">
                 <span class="toc-progress__bar"></span>
@@ -185,34 +185,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
               </div>
             </section>
           )}
-
-          {/* For Short TOC: Recent Posts attached beneath TOC during article reading */}
-          {showRecentPosts && isShortToc && (
-            <section class="card-widget card-recent-post card-recent-post--short-toc" id="card-recent-post-short">
-              <div class="item-headline">
-                <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                <span>最新发布</span>
-              </div>
-              <div class="aside-list">
-                {postRecentPosts.map((entry) => (
-                  <a href={getPostPath(entry)} class="aside-list-item">
-                    <span class="thumbnail">
-                      <img
-                        src={resolveDisplayCover(entry, true)}
-                        alt={getDisplayPostTitle(entry, true)}
-                        loading="lazy"
-                        data-fallback-src={siteConfig.post.hero.fallbackImage}
-                      />
-                    </span>
-                    <span class="content">
-                      <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                      <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
         </div>
       </div>
 
@@ -220,7 +192,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
       <div class="aside-track aside-track--support" id="aside-track-support">
         <div class="aside-sticky-box" id="aside-sticky-box-support">
           {showRecentPosts && (
-            <section class="card-widget card-recent-post card-recent-post--support" id="card-recent-post">
+            <section class="card-widget card-recent-post" id="card-recent-post">
               <div class="item-headline">
                 <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
                 <span>最新发布</span>
@@ -588,7 +560,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
     flex-direction: column;
     padding: 20px 24px !important;
     border-radius: 12px !important;
-    box-sizing: border-box !important;
   }
 
   #aside-content[data-toc-type='long'] #card-toc {
@@ -603,10 +574,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
     margin-bottom: 0 !important;
   }
   
-  #card-toc .toc-content::-webkit-scrollbar {
-    display: none !important;
-  }
-  
   body[data-type='post'] #card-toc .toc-content::before,
   body[data-type='post'] #card-toc .toc-content::after {
     display: none !important;
@@ -616,50 +583,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
   #card-toc .toc-content {
     margin: 0 !important;
     padding: 0 !important;
-  }
-  
-  #card-toc .item-headline {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    margin-bottom: 8px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-  }
-
-  #card-toc .item-headline span:nth-child(2) {
-    flex: 1;
-  }
-
-  #card-toc .toc-count {
-    font-size: 12px;
-    opacity: 0.7;
-    margin-right: 8px;
-  }
-
-  #card-toc .toc-percentage {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--theme-main, #425aef);
-    margin-left: auto;
-  }
-
-  #card-toc .toc-progress {
-    width: 100% !important;
-    height: 3px !important;
-    background: color-mix(in srgb, var(--font-color) 8%, transparent) !important;
-    border-radius: 3px !important;
-    margin-bottom: 12px !important;
-    overflow: hidden !important;
-  }
-
-  #card-toc .toc-progress__bar {
-    display: block !important;
-    height: 100% !important;
-    width: 0% !important;
-    background: var(--theme-main, #425aef) !important;
-    border-radius: 3px !important;
-    transition: width 0.1s ease-out !important;
   }
   
   /* Nested Hierarchy Styles - Exact b8f2436 */
@@ -705,11 +628,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
   
   #card-toc .toc-text {
     display: inline !important;
-    color: inherit !important;
   }
 
   #card-toc .toc-link:hover {
-    color: var(--theme-main, #425aef) !important;
+    color: var(--theme-main) !important;
     background-color: transparent !important;
   }
 
@@ -740,24 +662,12 @@ const renderTocNodes = (nodes: TocNode[]) =>
     padding-left: 20px !important;
   }
 
-  /* Active highlighting (Current Item) - Exact b8f2436 */
+  /* Active highlighting (Current Item) */
   #card-toc .toc-link.active {
-    color: var(--theme-main, #425aef) !important;
+    color: var(--theme-main) !important;
     font-weight: 700 !important;
     background-color: transparent !important;
     border-left: none !important;
-  }
-
-  #card-toc .toc-item.is-active > .toc-link {
-    color: var(--theme-main, #425aef) !important;
-    font-weight: 700 !important;
-    background-color: transparent !important;
-    border-left: none !important;
-  }
-
-  #card-toc .toc-link.active .toc-text,
-  #card-toc .toc-item.is-active > .toc-link .toc-text {
-    color: var(--theme-main, #425aef) !important;
   }
   
   /* Reset pseudo elements just in case */
@@ -896,7 +806,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
         link.classList.remove('active', 'dist-1', 'dist-2', 'dist-3');
         let parent = link.parentElement;
         while(parent && parent.classList.contains('toc-item')) {
-          parent.classList.remove('active', 'is-active');
+          parent.classList.remove('active');
           parent = parent.parentElement?.closest('.toc-item');
         }
         
@@ -907,9 +817,11 @@ const renderTocNodes = (nodes: TocNode[]) =>
             currentActive = link;
             let p = link.parentElement;
             while(p && p.classList.contains('toc-item')) {
-              p.classList.add('active', 'is-active');
+              p.classList.add('active');
               p = p.parentElement?.closest('.toc-item');
             }
+          } else if (dist <= 3) {
+            link.classList.add(`dist-${dist}`);
           }
         }
       });
@@ -948,4 +860,21 @@ const renderTocNodes = (nodes: TocNode[]) =>
   document.addEventListener('DOMContentLoaded', initTocScrollSpy);
 </script>
 
-
+<script is:inline>
+  function adjustTocFlex() {
+    const tocCards = document.querySelectorAll('#card-toc');
+    tocCards.forEach(card => {
+      const tocList = card.querySelector('.toc-list');
+      if (tocList) {
+        if (tocList.scrollHeight < 250) {
+          card.style.setProperty('flex', '0 1 auto', 'important');
+        } else {
+          card.style.setProperty('flex', '1 1 auto', 'important');
+        }
+      }
+    });
+  }
+  adjustTocFlex();
+  document.addEventListener('astro:page-load', adjustTocFlex);
+  window.addEventListener('resize', adjustTocFlex);
+</script>

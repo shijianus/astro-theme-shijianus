@@ -60,56 +60,6 @@ function updateHomeSticky(topOffset: number, isMobile: boolean) {
   syncScrollableOverflow(card);
 }
 
-function updateTocHighlight(topOffset: number) {
-  const headings = Array.from(
-    document.querySelectorAll<HTMLElement>(
-      '#article-container h2, #article-container h3, #article-container h4, #article-container h5, #article-container h6'
-    )
-  );
-  if (headings.length === 0) return;
-
-  let activeIndex = -1;
-  for (let i = 0; i < headings.length; i++) {
-    const heading = headings[i]!;
-    const top = heading.getBoundingClientRect().top;
-    if (top <= topOffset + 80) {
-      activeIndex = i;
-    } else {
-      break;
-    }
-  }
-
-  if (activeIndex === -1 && headings.length > 0) {
-    activeIndex = 0;
-  }
-
-  const tocLinks = Array.from(document.querySelectorAll<HTMLElement>('#card-toc .toc-link'));
-  const tocItems = Array.from(document.querySelectorAll<HTMLElement>('#card-toc .toc-item'));
-  let currentActive: HTMLElement | null = null;
-
-  tocLinks.forEach((link, idx) => {
-    const isActive = idx === activeIndex;
-    link.classList.toggle('active', isActive);
-    link.setAttribute('aria-current', isActive ? 'true' : 'false');
-    if (isActive) currentActive = link;
-  });
-
-  tocItems.forEach((item, idx) => {
-    item.classList.toggle('is-active', idx === activeIndex);
-  });
-
-  const tocContent = document.querySelector<HTMLElement>('#card-toc .toc-content');
-  if (currentActive && tocContent) {
-    const contentRect = tocContent.getBoundingClientRect();
-    const linkRect = (currentActive as HTMLElement).getBoundingClientRect();
-    if (linkRect.top < contentRect.top) {
-      tocContent.scrollTop -= (contentRect.top - linkRect.top + 20);
-    } else if (linkRect.bottom > contentRect.bottom) {
-      tocContent.scrollTop += (linkRect.bottom - contentRect.bottom + 20);
-    }
-  }
-}
-
 function updatePostSticky(topOffset: number, isMobile: boolean) {
   const aside = document.getElementById('aside-content');
   const post = document.getElementById('post');
@@ -138,10 +88,11 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   }
 
   // Dynamic compact vs long TOC check
+  let isCompact = false;
   if (cardToc) {
     const tocListEl = cardToc.querySelector<HTMLElement>('.toc-list');
     const tocItems = cardToc.querySelectorAll<HTMLElement>('.toc-item');
-    const isCompact = tocItems.length <= 6 || (tocListEl && tocListEl.scrollHeight < 260);
+    isCompact = tocItems.length <= 6 || Boolean(tocListEl && tocListEl.scrollHeight < 260);
     aside.dataset.tocType = isCompact ? 'short' : 'long';
   }
 
@@ -168,8 +119,10 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     const minTocH = stickyBoxToc ? stickyBoxToc.offsetHeight : 150;
     const minSupH = stickyBoxSupport ? stickyBoxSupport.offsetHeight : 150;
 
-    // Track TOC height: from trackTocTop to top of .post-copyright-block
-    const targetTocHeight = Math.max(minTocH, Math.round(docCopyrightTop - docTrackTocTop - gap));
+    // Track TOC height: from trackTocTop to top of .post-copyright-block (or minTocH for compact)
+    const targetTocHeight = isCompact
+      ? minTocH
+      : Math.max(minTocH, Math.round(docCopyrightTop - docTrackTocTop - gap));
     
     // Track Support height: from end of Track TOC + gap to bottom of page-main
     const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - (docTrackTocTop + targetTocHeight + gap)));
@@ -192,8 +145,6 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     if (percentEl) percentEl.textContent = `${currentProgress}%`;
     if (progressBar) progressBar.style.width = `${currentProgress}%`;
   }
-
-  updateTocHighlight(topOffset);
 }
 
 export function initStickySidebar() {
