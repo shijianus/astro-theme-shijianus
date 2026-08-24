@@ -223,33 +223,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
       {/* 3. Track: Support Sticky Group (TG Push, Categories). Starts at copyright only. */}
       <div class="aside-track aside-track--support" id="aside-track-support">
         <div class="aside-sticky-box" id="aside-sticky-box-support">
-          {showRecentPosts && (
-            <section class="card-widget card-recent-post card-recent-post--support" id="card-recent-post-support" aria-hidden="true">
-              <div class="item-headline">
-                <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
-                <span>最新发布</span>
-              </div>
-              <div class="aside-list">
-                {postRecentPosts.map((entry) => (
-                  <a href={getPostPath(entry)} class="aside-list-item" tabindex="-1">
-                    <span class="thumbnail">
-                      <img
-                        src={resolveDisplayCover(entry, true)}
-                        alt={getDisplayPostTitle(entry, true)}
-                        loading="lazy"
-                        data-fallback-src={siteConfig.post.hero.fallbackImage}
-                      />
-                    </span>
-                    <span class="content">
-                      <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                      <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
-
           {showTelegramCard && (
             <PromoWidgetCard id="card-telegram" platform="telegram" className="card-telegram--post" />
           )}

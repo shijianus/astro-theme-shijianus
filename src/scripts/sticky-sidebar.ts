@@ -72,8 +72,6 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const stickyBoxToc = document.getElementById('aside-sticky-box-toc');
   const trackRecent = document.getElementById('aside-track-recent');
   const stickyBoxRecent = document.getElementById('aside-sticky-box-recent');
-  const recentCard = document.getElementById('card-recent-post');
-  const supportRecentCard = document.getElementById('card-recent-post-support');
   const trackSupport = document.getElementById('aside-track-support');
   const stickyBoxSupport = document.getElementById('aside-sticky-box-support');
   const stickyLayout = document.getElementById('post-sticky-layout');
@@ -86,15 +84,10 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
       track.style.minHeight = '0px';
       track.style.height = 'auto';
       track.style.marginTop = '0px';
+      track.style.paddingTop = '0px';
     });
     stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
     stickyBoxSupport?.style.removeProperty('top');
-    recentCard?.removeAttribute('data-promoted');
-    recentCard?.removeAttribute('data-suppressed');
-    recentCard?.setAttribute('aria-hidden', 'false');
-    recentCard?.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => link.removeAttribute('tabindex'));
-    supportRecentCard?.setAttribute('data-promoted', 'false');
-    supportRecentCard?.setAttribute('aria-hidden', 'true');
     return;
   }
 
@@ -153,40 +146,8 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const tocHeight = stickyBoxToc?.offsetHeight ?? 0;
   const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
   const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
-  const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
-  const copyrightAtHeader = docCopyrightTop - docScrollY <= topOffset + 1;
-  // The handoff is based on the recent card's own bottom edge. The card remains
-  // in its natural sticky track until that edge reaches the header line, then
-  // the copyright-track copy takes over at exactly the same y-position.
-  const recentNaturalTop = docCopyrightTop - docScrollY - recentHeight;
-  const recentHandoffActive = isCompact && recentNaturalTop <= topOffset + 1;
-  const promoteRecent = !isCompact && copyrightAtHeader;
-  const suppressRecent = false;
-
-  stickyBoxRecent?.style.setProperty('--recent-sticky-top', `${Math.round(recentStickyTop)}px`);
-
-  if (supportRecentCard) {
-    const supportRecentVisible = promoteRecent || recentHandoffActive;
-    supportRecentCard.dataset.promoted = supportRecentVisible ? 'true' : 'false';
-    supportRecentCard.setAttribute('aria-hidden', supportRecentVisible ? 'false' : 'true');
-    supportRecentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
-      if (supportRecentVisible) link.removeAttribute('tabindex');
-      else link.tabIndex = -1;
-    });
-  }
-  if (recentCard) {
-    recentCard.dataset.promoted = promoteRecent || recentHandoffActive ? 'true' : 'false';
-    recentCard.dataset.suppressed = suppressRecent ? 'true' : 'false';
-    recentCard.setAttribute('aria-hidden', promoteRecent || recentHandoffActive || suppressRecent ? 'true' : 'false');
-    recentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
-      if (promoteRecent || recentHandoffActive || suppressRecent) link.tabIndex = -1;
-      else link.removeAttribute('tabindex');
-    });
-  }
-
-  if (stickyBoxSupport) {
-    stickyBoxSupport.style.setProperty('--support-sticky-top', `${Math.round(topOffset)}px`);
-  }
+  const supportPadding = !isCompact && recentHeight > 0 ? recentHeight + gap : 0;
+  trackSupport.style.paddingTop = `${Math.round(supportPadding)}px`;
 
   // TOC termination is tied to the article's bottom, not the copyright card.
   // For a sticky child this means its track must end at articleBottom.
@@ -196,45 +157,53 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
 
   if (trackRecent && stickyBoxRecent && recentHeight > 0) {
     const docTrackRecentFlowTop = docTrackTocTop + targetTocHeight + gap;
-    // Short TOCs fill the otherwise empty column immediately below the TOC;
-    // long TOCs retain the established copyright-time entry point.
+    // Keep one physical recent card for the whole post. Its track starts below
+    // a short TOC, then continues through the copyright handoff so CSS sticky
+    // can move the same card continuously in both scroll directions.
     const targetRecentTop = isCompact
       ? docTrackTocTop + tocHeight + gap
       : docCopyrightTop;
     const recentMarginTop = Math.round(targetRecentTop - docTrackRecentFlowTop);
 
     trackRecent.style.marginTop = `${recentMarginTop}px`;
-    // Keep the recent card sticky until the lower support group takes over at
-    // copyright. Its track bridges the mapped interval without changing flow.
     const targetRecentHeight = Math.max(
       recentHeight,
-      Math.round(docCopyrightTop - targetRecentTop),
+      Math.round(docPostBottom - targetRecentTop),
     );
     trackRecent.style.minHeight = `${targetRecentHeight}px`;
     trackRecent.style.height = `${targetRecentHeight}px`;
-    trackRecent.dataset.stickyMode = isCompact ? 'short-preload' : 'copyright';
+    trackRecent.dataset.stickyMode = isCompact ? 'short-continuous' : 'copyright-continuous';
+
+    const recentBoundaryTop = docCopyrightTop - docScrollY - recentHeight;
+    const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
+    const recentDesiredTop = Math.max(topOffset, Math.min(recentStickyTop, recentBoundaryTop));
+    stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(recentDesiredTop)}px`);
   } else if (trackRecent) {
     trackRecent.style.marginTop = '0px';
     trackRecent.style.minHeight = '0px';
     trackRecent.style.height = '0px';
   }
 
-  // TG/category cards have one and only one activation baseline: copyright.
-  // The negative overlap compensates for the recent track so both groups can
-  // share the same sticky moment while remaining visually stacked.
+  // TG/category cards keep their copyright baseline. Their sticky top is
+  // mapped to the moving recent card's bottom, so TG travels upward with it
+  // instead of jumping when the two groups exchange control.
   const recentTrackTop = trackRecent
     ? (isCompact ? docTrackTocTop + tocHeight + gap : docCopyrightTop)
     : docTrackTocTop + targetTocHeight + gap;
   const recentTrackHeight = trackRecent
-    ? Math.max(recentHeight, Math.round(docCopyrightTop - recentTrackTop))
+    ? Math.max(recentHeight, Math.round(docPostBottom - recentTrackTop))
     : 0;
   const supportFlowTop = recentTrackTop + recentTrackHeight + gap;
   trackSupport.style.marginTop = `${Math.round(docCopyrightTop - supportFlowTop)}px`;
+  const recentBoundaryTop = docCopyrightTop - docScrollY - recentHeight;
+  const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
+  const recentDesiredTop = Math.max(topOffset, Math.min(recentStickyTop, recentBoundaryTop));
+  stickyBoxSupport?.style.setProperty('--support-sticky-top', `${Math.round(recentDesiredTop + recentHeight + gap)}px`);
   // Extend the support track so its bottom edge resolves against the post
   // shell's bottom, preserving synchronized end-of-column behaviour.
   const targetSupportHeight = Math.max(
     supportHeight,
-    Math.round(docPostBottom - docCopyrightTop),
+    Math.round(docPostBottom - docCopyrightTop + supportPadding),
   );
   trackSupport.style.minHeight = `${targetSupportHeight}px`;
   trackSupport.style.height = `${targetSupportHeight}px`;
@@ -288,7 +257,6 @@ export function initStickySidebar() {
     document.getElementById('aside-sticky-box-toc'),
     document.getElementById('aside-sticky-box-recent'),
     document.getElementById('aside-sticky-box-support'),
-    document.getElementById('card-recent-post-support'),
     document.getElementById('recent-posts'),
   ].filter((el): el is HTMLElement => Boolean(el));
 

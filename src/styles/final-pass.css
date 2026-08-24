@@ -2765,31 +2765,6 @@ body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-supp
   top: var(--support-sticky-top, var(--sticky-column-top, 80px)) !important;
 }
 
-body[data-type='post'] #card-recent-post-support {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.16s ease, visibility 0.16s ease;
-}
-
-body[data-type='post'] #card-recent-post-support[data-promoted='true'] {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-body[data-type='post'] #card-recent-post[data-promoted='true'] {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
-body[data-type='post'] #card-recent-post[data-suppressed='true'] {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
 @media screen and (max-width: 1199px) {
   body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box {
     position: static !important;
@@ -2800,9 +2775,6 @@ body[data-type='post'] #card-recent-post[data-suppressed='true'] {
     top: auto !important;
   }
 
-  body[data-type='post'] #card-recent-post-support {
-    display: none !important;
-  }
 }
 /* ==================================================== */
 /* 2026-05-25: Align hero section to full width and center main layout */
