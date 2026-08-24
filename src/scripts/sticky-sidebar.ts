@@ -120,25 +120,36 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     const minTocH = stickyBoxToc ? stickyBoxToc.offsetHeight : 150;
     const minSupH = stickyBoxSupport ? stickyBoxSupport.offsetHeight : 150;
 
-    // Keep enough track space below the TOC for the sticky card to remain
-    // visible all the way to the copyright boundary. The support track then
-    // overlaps that extra card-height space so its cards still begin exactly
-    // at the copyright block.
+    // The TOC sticky card sticks at topOffset; its bottom is at topOffset + minTocH.
+    // We want support cards to become sticky exactly when the TOC card's BOTTOM edge
+    // reaches the copyright block's top edge — i.e., when:
+    //   viewport(tocBottom) = viewport(copyrightTop)
+    //   topOffset + minTocH = copyrightTop_in_viewport
+    //
+    // For the support track's sticky trigger to fire at that same scroll position,
+    // the support track's absolute top must be at:
+    //   docSupportTrackTop = docCopyrightTop - minTocH
+    //
+    // Support track follows TOC track in DOM (no gap between tracks in layout).
+    // TOC track ends at: docTrackTocTop + targetTocHeight = docCopyrightTop - gap + minTocH
+    // So: marginTop = (docCopyrightTop - minTocH) - (docCopyrightTop - gap + minTocH)
+    //               = gap - 2 * minTocH
     const targetTocHeight = Math.max(
       minTocH,
       Math.round(docCopyrightTop - docTrackTocTop - gap + minTocH),
     );
-    
-    // Keep the support track ending at the existing page-main boundary while
-    // its negative overlap places the cards at the copyright boundary.
-    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - docCopyrightTop));
+
+    // Support track height: from its start (docCopyrightTop - minTocH) to docMainBottom.
+    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - docCopyrightTop + minTocH));
 
     trackToc.style.minHeight = `${targetTocHeight}px`;
     trackToc.style.height = `${targetTocHeight}px`;
 
     trackSupport.style.minHeight = `${targetSupportHeight}px`;
     trackSupport.style.height = `${targetSupportHeight}px`;
-    trackSupport.style.marginTop = `${-minTocH}px`;
+    // marginTop = gap - 2*minTocH: pulls support track up so its absolute top
+    // lands at docCopyrightTop - minTocH (TOC-bottom-aligned trigger point).
+    trackSupport.style.marginTop = `${gap - 2 * minTocH}px`;
   }
 
   // Reading progress percentage & progress bar
