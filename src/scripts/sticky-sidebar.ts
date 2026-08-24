@@ -89,6 +89,12 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     });
     stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
     stickyBoxSupport?.style.removeProperty('top');
+    recentCard?.removeAttribute('data-promoted');
+    recentCard?.removeAttribute('data-suppressed');
+    recentCard?.setAttribute('aria-hidden', 'false');
+    recentCard?.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => link.removeAttribute('tabindex'));
+    supportRecentCard?.setAttribute('data-promoted', 'false');
+    supportRecentCard?.setAttribute('aria-hidden', 'true');
     return;
   }
 
