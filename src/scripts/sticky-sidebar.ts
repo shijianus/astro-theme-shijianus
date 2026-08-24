@@ -153,10 +153,14 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const tocHeight = stickyBoxToc?.offsetHeight ?? 0;
   const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
   const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
-  const promoteRecent = docCopyrightTop - docScrollY <= topOffset + 1;
   const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
   const recentCanFit = !isCompact || (docArticleBottom - docScrollY >= recentStickyTop + recentHeight);
-  const suppressRecent = isCompact && !promoteRecent && !recentCanFit;
+  const copyrightAtHeader = docCopyrightTop - docScrollY <= topOffset + 1;
+  // Once the TOC no longer has room for the early recent card, promote the
+  // second copy at the copyright track immediately. This keeps the card
+  // continuous while the TOC is releasing instead of creating a blank gap.
+  const promoteRecent = copyrightAtHeader || (isCompact && !recentCanFit);
+  const suppressRecent = false;
 
   stickyBoxRecent?.style.setProperty('--recent-sticky-top', `${Math.round(recentStickyTop)}px`);
 
