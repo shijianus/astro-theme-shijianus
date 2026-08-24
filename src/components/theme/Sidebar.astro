@@ -513,13 +513,16 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   .sticky_layout {
-    position: relative !important;
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: var(--sticky-column-top, 80px) !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 20px !important;
     width: 100%;
     margin: 0 !important;
     padding: 0 !important;
+    z-index: 10 !important;
   }
 
   /* Aside Tracks for Post Page */
@@ -529,24 +532,12 @@ const renderTocNodes = (nodes: TocNode[]) =>
     box-sizing: border-box !important;
   }
 
-  .aside-track--toc {
-    min-height: 120px;
-  }
-
-  .aside-track--support {
-    min-height: 120px;
-  }
-
   .aside-sticky-box {
-    position: -webkit-sticky !important;
-    position: sticky !important;
-    top: var(--sticky-column-top, 80px) !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 20px !important;
     width: 100% !important;
     z-index: 10 !important;
-    transition: top 0.25s ease;
   }
   
   .aside-sticky-box > .card-widget:not(#card-toc) {
@@ -560,6 +551,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
     flex-direction: column;
     padding: 20px 24px !important;
     border-radius: 12px !important;
+    border-bottom: 2px solid #ff0000 !important; /* Visual audit marker: TOC bottom edge */
   }
 
   #aside-content[data-toc-type='long'] #card-toc {
