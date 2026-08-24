@@ -2761,6 +2761,10 @@ body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-rece
   top: var(--recent-sticky-top, var(--sticky-column-top, 80px)) !important;
 }
 
+body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-support {
+  top: var(--support-sticky-top, var(--sticky-column-top, 80px)) !important;
+}
+
 body[data-type='post'] #card-recent-post-support {
   visibility: hidden;
   opacity: 0;

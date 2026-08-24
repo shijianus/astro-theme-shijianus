@@ -154,32 +154,38 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
   const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
   const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
-  const recentCanFit = !isCompact || (docArticleBottom - docScrollY >= recentStickyTop + recentHeight);
   const copyrightAtHeader = docCopyrightTop - docScrollY <= topOffset + 1;
-  // Once the TOC no longer has room for the early recent card, promote the
-  // second copy at the copyright track immediately. This keeps the card
-  // continuous while the TOC is releasing instead of creating a blank gap.
-  const promoteRecent = copyrightAtHeader || (isCompact && !recentCanFit);
+  // The handoff is based on the recent card's own bottom edge. The card remains
+  // in its natural sticky track until that edge reaches the header line, then
+  // the copyright-track copy takes over at exactly the same y-position.
+  const recentNaturalTop = docCopyrightTop - docScrollY - recentHeight;
+  const recentHandoffActive = isCompact && recentNaturalTop <= topOffset + 1;
+  const promoteRecent = !isCompact && copyrightAtHeader;
   const suppressRecent = false;
 
   stickyBoxRecent?.style.setProperty('--recent-sticky-top', `${Math.round(recentStickyTop)}px`);
 
   if (supportRecentCard) {
-    supportRecentCard.dataset.promoted = promoteRecent ? 'true' : 'false';
-    supportRecentCard.setAttribute('aria-hidden', promoteRecent ? 'false' : 'true');
+    const supportRecentVisible = promoteRecent || recentHandoffActive;
+    supportRecentCard.dataset.promoted = supportRecentVisible ? 'true' : 'false';
+    supportRecentCard.setAttribute('aria-hidden', supportRecentVisible ? 'false' : 'true');
     supportRecentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
-      if (promoteRecent) link.removeAttribute('tabindex');
+      if (supportRecentVisible) link.removeAttribute('tabindex');
       else link.tabIndex = -1;
     });
   }
   if (recentCard) {
-    recentCard.dataset.promoted = promoteRecent ? 'true' : 'false';
+    recentCard.dataset.promoted = promoteRecent || recentHandoffActive ? 'true' : 'false';
     recentCard.dataset.suppressed = suppressRecent ? 'true' : 'false';
-    recentCard.setAttribute('aria-hidden', promoteRecent || suppressRecent ? 'true' : 'false');
+    recentCard.setAttribute('aria-hidden', promoteRecent || recentHandoffActive || suppressRecent ? 'true' : 'false');
     recentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
-      if (promoteRecent || suppressRecent) link.tabIndex = -1;
+      if (promoteRecent || recentHandoffActive || suppressRecent) link.tabIndex = -1;
       else link.removeAttribute('tabindex');
     });
+  }
+
+  if (stickyBoxSupport) {
+    stickyBoxSupport.style.setProperty('--support-sticky-top', `${Math.round(topOffset)}px`);
   }
 
   // TOC termination is tied to the article's bottom, not the copyright card.
