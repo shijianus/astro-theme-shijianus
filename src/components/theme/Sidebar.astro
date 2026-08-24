@@ -565,6 +565,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
   #aside-content[data-toc-type='long'] #card-toc {
     max-height: calc(100vh - var(--sticky-column-top, 80px) - 32px) !important;
   }
+
+  #aside-content[data-toc-type='long'] #card-toc .toc-content {
+    max-height: none !important;
+  }
   
   #card-toc .toc-content {
     min-height: 0;

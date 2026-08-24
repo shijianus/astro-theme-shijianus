@@ -83,6 +83,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     if (trackSupport) {
       trackSupport.style.minHeight = '0px';
       trackSupport.style.height = 'auto';
+      trackSupport.style.marginTop = '0px';
     }
     return;
   }
@@ -119,19 +120,25 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     const minTocH = stickyBoxToc ? stickyBoxToc.offsetHeight : 150;
     const minSupH = stickyBoxSupport ? stickyBoxSupport.offsetHeight : 150;
 
-    // Track TOC height: from trackTocTop to top of .post-copyright-block (or minTocH for compact)
-    const targetTocHeight = isCompact
-      ? minTocH
-      : Math.max(minTocH, Math.round(docCopyrightTop - docTrackTocTop - gap));
+    // Keep enough track space below the TOC for the sticky card to remain
+    // visible all the way to the copyright boundary. The support track then
+    // overlaps that extra card-height space so its cards still begin exactly
+    // at the copyright block.
+    const targetTocHeight = Math.max(
+      minTocH,
+      Math.round(docCopyrightTop - docTrackTocTop - gap + minTocH),
+    );
     
-    // Track Support height: from end of Track TOC + gap to bottom of page-main
-    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - (docTrackTocTop + targetTocHeight + gap)));
+    // Keep the support track ending at the existing page-main boundary while
+    // its negative overlap places the cards at the copyright boundary.
+    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - docCopyrightTop));
 
     trackToc.style.minHeight = `${targetTocHeight}px`;
     trackToc.style.height = `${targetTocHeight}px`;
 
     trackSupport.style.minHeight = `${targetSupportHeight}px`;
     trackSupport.style.height = `${targetSupportHeight}px`;
+    trackSupport.style.marginTop = `${-minTocH}px`;
   }
 
   // Reading progress percentage & progress bar
