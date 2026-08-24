@@ -14849,9 +14849,7 @@ html[data-readmode='true'] #content-inner.layout {
 
 /* Sticky layout container for Dual Track Architecture */
 #aside-content .sticky_layout {
-  position: -webkit-sticky !important;
-  position: sticky !important;
-  top: var(--sticky-column-top, 80px) !important;
+  position: relative !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 20px !important;
@@ -14868,6 +14866,9 @@ html[data-readmode='true'] #content-inner.layout {
 }
 
 #aside-content .aside-sticky-box {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 20px !important;
@@ -14877,14 +14878,6 @@ html[data-readmode='true'] #content-inner.layout {
 
 #aside-content .card-widget {
   margin-bottom: 0 !important;
-}
-
-/* Visual audit markers for TOC termination inspection */
-#card-toc {
-  border-bottom: 2px solid #ff0000 !important;
-}
-.post-copyright-block {
-  border-top: 2px solid #ff0000 !important;
 }
 
 /* Card TOC Exact Harmonization (b8f2436) */

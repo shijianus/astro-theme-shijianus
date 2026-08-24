@@ -68,15 +68,14 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const pageMain = document.querySelector<HTMLElement>('.page-main');
   const cardToc = document.getElementById('card-toc');
   
-  const stickyLayout = document.getElementById('post-sticky-layout');
   const trackToc = document.getElementById('aside-track-toc');
+  const stickyBoxToc = document.getElementById('aside-sticky-box-toc');
   const trackSupport = document.getElementById('aside-track-support');
   const stickyBoxSupport = document.getElementById('aside-sticky-box-support');
 
-  if (!aside || !stickyLayout) return;
+  if (!aside) return;
 
   if (isMobile) {
-    stickyLayout.style.transform = 'none';
     if (trackToc) {
       trackToc.style.minHeight = '0px';
       trackToc.style.height = 'auto';
@@ -89,7 +88,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     return;
   }
 
-  // Dynamic compact vs long TOC check using real DOM measurement
+  // Dynamic compact vs long TOC check
   let isCompact = false;
   if (cardToc) {
     const tocListEl = cardToc.querySelector<HTMLElement>('.toc-list');
@@ -98,51 +97,49 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     aside.dataset.tocType = isCompact ? 'short' : 'long';
   }
 
-  const copyrightEl = copyrightBlock || articleContainer;
+  // Calculate track bounding constraints
+  const docScrollY = window.scrollY;
   const mainEl = pageMain ?? post;
-  if (!copyrightEl || !mainEl) return;
+  
+  if (mainEl && trackToc && trackSupport) {
+    const mainRect = mainEl.getBoundingClientRect();
+    const docMainBottom = mainRect.bottom + docScrollY;
 
-  // Clear any legacy manual inline track heights and margins
-  if (trackToc && trackToc.style.height && trackToc.style.height !== 'auto') {
-    trackToc.style.minHeight = '0px';
-    trackToc.style.height = 'auto';
+    const copyrightRect = copyrightBlock?.getBoundingClientRect();
+    const articleRect = articleContainer?.getBoundingClientRect();
+    
+    // docCopyrightTop is the top of .post-copyright-block (the termination line of TOC)
+    const docCopyrightTop = copyrightRect
+      ? (copyrightRect.top + docScrollY)
+      : (articleRect ? (articleRect.bottom + docScrollY) : (docMainBottom - 500));
+
+    const trackTocRect = trackToc.getBoundingClientRect();
+    const docTrackTocTop = trackTocRect.top + docScrollY;
+
+    const gap = 20;
+    const minTocH = stickyBoxToc ? stickyBoxToc.offsetHeight : 150;
+    const minSupH = stickyBoxSupport ? stickyBoxSupport.offsetHeight : 150;
+
+    // Keep enough track space below the TOC for the sticky card to remain
+    // visible all the way to the copyright boundary. The support track then
+    // overlaps that extra card-height space so its cards still begin exactly
+    // at the copyright block.
+    const targetTocHeight = Math.max(
+      minTocH,
+      Math.round(docCopyrightTop - docTrackTocTop - gap + minTocH),
+    );
+    
+    // Keep the support track ending at the existing page-main boundary while
+    // its negative overlap places the cards at the copyright boundary.
+    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - docCopyrightTop));
+
+    trackToc.style.minHeight = `${targetTocHeight}px`;
+    trackToc.style.height = `${targetTocHeight}px`;
+
+    trackSupport.style.minHeight = `${targetSupportHeight}px`;
+    trackSupport.style.height = `${targetSupportHeight}px`;
+    trackSupport.style.marginTop = `${-minTocH}px`;
   }
-  if (trackSupport && trackSupport.style.marginTop && trackSupport.style.marginTop !== '0px') {
-    trackSupport.style.minHeight = '0px';
-    trackSupport.style.height = 'auto';
-    trackSupport.style.marginTop = '0px';
-  }
-
-  // Direct bounding rects of real DOM elements
-  const copyrightRect = copyrightEl.getBoundingClientRect();
-  const mainRect = mainEl.getBoundingClientRect();
-  const tocHeight = cardToc ? cardToc.offsetHeight : 0;
-  const supportHeight = stickyBoxSupport ? stickyBoxSupport.offsetHeight : (trackSupport ? trackSupport.offsetHeight : 450);
-  const gap = 20;
-
-  // Transition trigger: When TOC card's bottom edge reaches copyright block's top edge.
-  // In sticky state at topOffset, TOC bottom in viewport is (topOffset + tocHeight).
-  // When copyrightRect.top <= (topOffset + tocHeight), TOC bottom has reached copyright block.
-  const tocBottomThreshold = topOffset + tocHeight;
-  let offset = 0;
-
-  if (cardToc && tocHeight > 0) {
-    if (copyrightRect.top < tocBottomThreshold) {
-      const maxShift = -(tocHeight + gap);
-      const tocShift = copyrightRect.top - tocBottomThreshold;
-      offset = Math.max(maxShift, tocShift);
-    }
-  }
-
-  // Bottom boundary constraint: Align categories flush with page-main bottom
-  const currentSupportTop = topOffset + Math.max(0, (tocHeight + gap) + offset);
-  const currentSupportBottom = currentSupportTop + supportHeight;
-  if (mainRect.bottom < currentSupportBottom) {
-    const bottomCorrection = mainRect.bottom - currentSupportBottom;
-    offset += bottomCorrection;
-  }
-
-  stickyLayout.style.transform = offset === 0 ? 'none' : `translateY(${Math.round(offset)}px)`;
 
   // Reading progress percentage & progress bar
   if (articleContainer) {
@@ -181,22 +178,6 @@ export function initStickySidebar() {
     });
   };
 
-  // IntersectionObserver to observe copyright block and main column boundary crossings
-  const intersectionObserver = new IntersectionObserver(
-    () => {
-      scheduleUpdate();
-    },
-    {
-      root: null,
-      threshold: [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0],
-    }
-  );
-
-  const copyrightBlock = document.querySelector('.post-copyright-block');
-  const pageMain = document.querySelector('.page-main') || document.getElementById('post');
-  if (copyrightBlock) intersectionObserver.observe(copyrightBlock);
-  if (pageMain) intersectionObserver.observe(pageMain);
-
   const resizeObserver = new ResizeObserver(() => scheduleUpdate());
   const elementsToObserve = [
     document.getElementById('article-container'),
@@ -204,8 +185,7 @@ export function initStickySidebar() {
     document.querySelector('.post-copyright-block'),
     document.querySelector('.page-main'),
     document.getElementById('aside-content'),
-    document.getElementById('post-sticky-layout'),
-    document.getElementById('card-toc'),
+    document.getElementById('aside-sticky-box-toc'),
     document.getElementById('aside-sticky-box-support'),
     document.getElementById('recent-posts'),
   ].filter((el): el is HTMLElement => Boolean(el));
