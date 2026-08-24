@@ -2735,6 +2735,71 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
     position: static !important;
   }
 }
+
+/* Post sidebar track mapping: each card owns its sticky boundary. */
+body[data-type='post'] #aside-content #post-sticky-layout {
+  position: relative !important;
+  top: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-self: stretch !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout > .aside-track {
+  position: relative !important;
+  flex: 0 0 auto !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  transition: none !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-recent {
+  top: var(--recent-sticky-top, var(--sticky-column-top, 80px)) !important;
+}
+
+body[data-type='post'] #card-recent-post-support {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, visibility 0.16s ease;
+}
+
+body[data-type='post'] #card-recent-post-support[data-promoted='true'] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body[data-type='post'] #card-recent-post[data-promoted='true'] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-type='post'] #card-recent-post[data-suppressed='true'] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media screen and (max-width: 1199px) {
+  body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box {
+    position: static !important;
+    top: auto !important;
+  }
+
+  body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-recent {
+    top: auto !important;
+  }
+
+  body[data-type='post'] #card-recent-post-support {
+    display: none !important;
+  }
+}
 /* ==================================================== */
 /* 2026-05-25: Align hero section to full width and center main layout */
 /* Task A: Center the main layout area */

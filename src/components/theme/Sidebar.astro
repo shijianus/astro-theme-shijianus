@@ -188,10 +188,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </div>
       </div>
 
-      {/* 2. Track: Support Sticky Group (Recent Posts, TG Push, Categories) */}
-      <div class="aside-track aside-track--support" id="aside-track-support">
-        <div class="aside-sticky-box" id="aside-sticky-box-support">
-          {showRecentPosts && (
+      {/* 2. Track: Recent posts. It can sit under a short TOC before the copyright line. */}
+      {showRecentPosts && (
+        <div class="aside-track aside-track--recent" id="aside-track-recent">
+          <div class="aside-sticky-box" id="aside-sticky-box-recent">
             <section class="card-widget card-recent-post" id="card-recent-post">
               <div class="item-headline">
                 <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
@@ -200,6 +200,38 @@ const renderTocNodes = (nodes: TocNode[]) =>
               <div class="aside-list">
                 {postRecentPosts.map((entry) => (
                   <a href={getPostPath(entry)} class="aside-list-item">
+                    <span class="thumbnail">
+                      <img
+                        src={resolveDisplayCover(entry, true)}
+                        alt={getDisplayPostTitle(entry, true)}
+                        loading="lazy"
+                        data-fallback-src={siteConfig.post.hero.fallbackImage}
+                      />
+                    </span>
+                    <span class="content">
+                      <span class="title">{getDisplayPostTitle(entry, true)}</span>
+                      <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Track: Support Sticky Group (TG Push, Categories). Starts at copyright only. */}
+      <div class="aside-track aside-track--support" id="aside-track-support">
+        <div class="aside-sticky-box" id="aside-sticky-box-support">
+          {showRecentPosts && (
+            <section class="card-widget card-recent-post card-recent-post--support" id="card-recent-post-support" aria-hidden="true">
+              <div class="item-headline">
+                <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+                <span>最新发布</span>
+              </div>
+              <div class="aside-list">
+                {postRecentPosts.map((entry) => (
+                  <a href={getPostPath(entry)} class="aside-list-item" tabindex="-1">
                     <span class="thumbnail">
                       <img
                         src={resolveDisplayCover(entry, true)}
@@ -530,6 +562,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   .aside-track--toc {
+    min-height: 120px;
+  }
+
+  .aside-track--recent {
     min-height: 120px;
   }
 

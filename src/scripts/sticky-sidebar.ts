@@ -67,83 +67,167 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const copyrightBlock = document.querySelector<HTMLElement>('.post-copyright-block');
   const pageMain = document.querySelector<HTMLElement>('.page-main');
   const cardToc = document.getElementById('card-toc');
-  
+
   const trackToc = document.getElementById('aside-track-toc');
   const stickyBoxToc = document.getElementById('aside-sticky-box-toc');
+  const trackRecent = document.getElementById('aside-track-recent');
+  const stickyBoxRecent = document.getElementById('aside-sticky-box-recent');
+  const recentCard = document.getElementById('card-recent-post');
+  const supportRecentCard = document.getElementById('card-recent-post-support');
   const trackSupport = document.getElementById('aside-track-support');
   const stickyBoxSupport = document.getElementById('aside-sticky-box-support');
+  const stickyLayout = document.getElementById('post-sticky-layout');
 
   if (!aside) return;
 
   if (isMobile) {
-    if (trackToc) {
-      trackToc.style.minHeight = '0px';
-      trackToc.style.height = 'auto';
-    }
-    if (trackSupport) {
-      trackSupport.style.minHeight = '0px';
-      trackSupport.style.height = 'auto';
-      trackSupport.style.marginTop = '0px';
-    }
+    [trackToc, trackRecent, trackSupport].forEach((track) => {
+      if (!track) return;
+      track.style.minHeight = '0px';
+      track.style.height = 'auto';
+      track.style.marginTop = '0px';
+    });
+    stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
+    stickyBoxSupport?.style.removeProperty('top');
     return;
   }
 
-  // Dynamic compact vs long TOC check
+  const mainEl = post ?? pageMain;
+  if (!mainEl || !trackToc || !trackSupport) return;
+
+  // Measure the natural flow first. Previous inline heights/margins can move
+  // the flex column while it is being resized (especially when the profile
+  // card hydrates); clearing them before the read prevents a one-frame drift.
+  [trackToc, trackRecent, trackSupport].forEach((track) => {
+    if (!track) return;
+    track.style.removeProperty('min-height');
+    track.style.removeProperty('height');
+    track.style.removeProperty('margin-top');
+  });
+
+  // A short TOC is defined by its real rendered footprint, not only heading count.
+  // This keeps the behaviour stable when typography or viewport dimensions change.
   let isCompact = false;
   if (cardToc) {
     const tocListEl = cardToc.querySelector<HTMLElement>('.toc-list');
     const tocItems = cardToc.querySelectorAll<HTMLElement>('.toc-item');
-    isCompact = tocItems.length <= 6 || Boolean(tocListEl && tocListEl.scrollHeight < 260);
+    const viewportColumnHeight = Math.max(320, window.innerHeight - topOffset);
+    const tocListHeight = tocListEl?.scrollHeight ?? cardToc.offsetHeight;
+    isCompact = tocItems.length <= 6 || tocListHeight <= viewportColumnHeight * 0.5;
     aside.dataset.tocType = isCompact ? 'short' : 'long';
+  } else {
+    aside.dataset.tocType = 'none';
   }
 
-  // Calculate track bounding constraints
+  // Read all geometry before writing styles. The three tracks then move as one
+  // mapped system, so the sidebar never lags behind the article column.
   const docScrollY = window.scrollY;
-  const mainEl = pageMain ?? post;
-  
-  if (mainEl && trackToc && trackSupport) {
-    const mainRect = mainEl.getBoundingClientRect();
-    const docMainBottom = mainRect.bottom + docScrollY;
+  const articleRect = articleContainer?.getBoundingClientRect();
+  const copyrightRect = copyrightBlock?.getBoundingClientRect();
+  const postRect = mainEl.getBoundingClientRect();
+  const trackTocRect = trackToc.getBoundingClientRect();
 
-    const copyrightRect = copyrightBlock?.getBoundingClientRect();
-    const articleRect = articleContainer?.getBoundingClientRect();
-    
-    // docCopyrightTop is the top of .post-copyright-block (the termination line of TOC)
-    const docCopyrightTop = copyrightRect
-      ? (copyrightRect.top + docScrollY)
-      : (articleRect ? (articleRect.bottom + docScrollY) : (docMainBottom - 500));
+  const docArticleBottom = articleRect
+    ? articleRect.bottom + docScrollY
+    : (copyrightRect ? copyrightRect.top + docScrollY : docScrollY);
+  const articleToCopyrightGap = articleRect && copyrightRect
+    ? Math.max(0, copyrightRect.top - articleRect.bottom)
+    : 0;
+  const docCopyrightTop = docArticleBottom + articleToCopyrightGap;
+  const docPostBottom = postRect.bottom + docScrollY;
 
-    const trackTocRect = trackToc.getBoundingClientRect();
-    const docTrackTocTop = trackTocRect.top + docScrollY;
+  const gap = Math.max(0, Number.parseFloat(stickyLayout ? getComputedStyle(stickyLayout).rowGap : '20') || 20);
+  const asideGap = Math.max(0, Number.parseFloat(getComputedStyle(aside).rowGap) || gap);
+  const profileRect = aside.querySelector<HTMLElement>('.profile-card')?.getBoundingClientRect();
+  const layoutRect = stickyLayout?.getBoundingClientRect();
+  const tocFlowTop = profileRect
+    ? profileRect.bottom + asideGap
+    : (layoutRect?.top ?? trackTocRect.top);
+  const docTrackTocTop = tocFlowTop + docScrollY;
+  const tocHeight = stickyBoxToc?.offsetHeight ?? 0;
+  const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
+  const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
+  const promoteRecent = docCopyrightTop - docScrollY <= topOffset + 1;
+  const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
+  const recentCanFit = !isCompact || (docArticleBottom - docScrollY >= recentStickyTop + recentHeight);
+  const suppressRecent = isCompact && !promoteRecent && !recentCanFit;
 
-    const gap = 20;
-    const minTocH = stickyBoxToc ? stickyBoxToc.offsetHeight : 150;
-    const minSupH = stickyBoxSupport ? stickyBoxSupport.offsetHeight : 150;
+  stickyBoxRecent?.style.setProperty('--recent-sticky-top', `${Math.round(recentStickyTop)}px`);
 
-    // Keep enough track space below the TOC for the sticky card to remain
-    // visible all the way to the copyright boundary. The support track then
-    // overlaps that extra card-height space so its cards still begin exactly
-    // at the copyright block.
-    const targetTocHeight = Math.max(
-      minTocH,
-      Math.round(docCopyrightTop - docTrackTocTop - gap + minTocH),
-    );
-    
-    // Keep the support track ending at the existing page-main boundary while
-    // its negative overlap places the cards at the copyright boundary.
-    const targetSupportHeight = Math.max(minSupH, Math.round(docMainBottom - docCopyrightTop));
-
-    trackToc.style.minHeight = `${targetTocHeight}px`;
-    trackToc.style.height = `${targetTocHeight}px`;
-
-    trackSupport.style.minHeight = `${targetSupportHeight}px`;
-    trackSupport.style.height = `${targetSupportHeight}px`;
-    trackSupport.style.marginTop = `${-minTocH}px`;
+  if (supportRecentCard) {
+    supportRecentCard.dataset.promoted = promoteRecent ? 'true' : 'false';
+    supportRecentCard.setAttribute('aria-hidden', promoteRecent ? 'false' : 'true');
+    supportRecentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
+      if (promoteRecent) link.removeAttribute('tabindex');
+      else link.tabIndex = -1;
+    });
   }
+  if (recentCard) {
+    recentCard.dataset.promoted = promoteRecent ? 'true' : 'false';
+    recentCard.dataset.suppressed = suppressRecent ? 'true' : 'false';
+    recentCard.setAttribute('aria-hidden', promoteRecent || suppressRecent ? 'true' : 'false');
+    recentCard.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
+      if (promoteRecent || suppressRecent) link.tabIndex = -1;
+      else link.removeAttribute('tabindex');
+    });
+  }
+
+  // TOC termination is tied to the article's bottom, not the copyright card.
+  // For a sticky child this means its track must end at articleBottom.
+  const targetTocHeight = Math.max(0, Math.round(docArticleBottom - docTrackTocTop));
+  trackToc.style.minHeight = `${targetTocHeight}px`;
+  trackToc.style.height = `${targetTocHeight}px`;
+
+  if (trackRecent && stickyBoxRecent && recentHeight > 0) {
+    const docTrackRecentFlowTop = docTrackTocTop + targetTocHeight + gap;
+    // Short TOCs fill the otherwise empty column immediately below the TOC;
+    // long TOCs retain the established copyright-time entry point.
+    const targetRecentTop = isCompact
+      ? docTrackTocTop + tocHeight + gap
+      : docCopyrightTop;
+    const recentMarginTop = Math.round(targetRecentTop - docTrackRecentFlowTop);
+
+    trackRecent.style.marginTop = `${recentMarginTop}px`;
+    // Keep the recent card sticky until the lower support group takes over at
+    // copyright. Its track bridges the mapped interval without changing flow.
+    const targetRecentHeight = Math.max(
+      recentHeight,
+      Math.round(docCopyrightTop - targetRecentTop),
+    );
+    trackRecent.style.minHeight = `${targetRecentHeight}px`;
+    trackRecent.style.height = `${targetRecentHeight}px`;
+    trackRecent.dataset.stickyMode = isCompact ? 'short-preload' : 'copyright';
+  } else if (trackRecent) {
+    trackRecent.style.marginTop = '0px';
+    trackRecent.style.minHeight = '0px';
+    trackRecent.style.height = '0px';
+  }
+
+  // TG/category cards have one and only one activation baseline: copyright.
+  // The negative overlap compensates for the recent track so both groups can
+  // share the same sticky moment while remaining visually stacked.
+  const recentTrackTop = trackRecent
+    ? (isCompact ? docTrackTocTop + tocHeight + gap : docCopyrightTop)
+    : docTrackTocTop + targetTocHeight + gap;
+  const recentTrackHeight = trackRecent
+    ? Math.max(recentHeight, Math.round(docCopyrightTop - recentTrackTop))
+    : 0;
+  const supportFlowTop = recentTrackTop + recentTrackHeight + gap;
+  trackSupport.style.marginTop = `${Math.round(docCopyrightTop - supportFlowTop)}px`;
+  // Extend the support track so its bottom edge resolves against the post
+  // shell's bottom, preserving synchronized end-of-column behaviour.
+  const targetSupportHeight = Math.max(
+    supportHeight,
+    Math.round(docPostBottom - docCopyrightTop),
+  );
+  trackSupport.style.minHeight = `${targetSupportHeight}px`;
+  trackSupport.style.height = `${targetSupportHeight}px`;
+
+  aside.dataset.tocTermination = 'article-bottom';
+  aside.dataset.supportActivation = 'copyright';
 
   // Reading progress percentage & progress bar
   if (articleContainer) {
-    const articleRect = articleContainer.getBoundingClientRect();
     const totalScrollable = Math.max(1, articleRect.height - window.innerHeight * 0.7);
     const scrolled = topOffset - articleRect.top;
     const currentProgress = Math.min(100, Math.max(0, Math.round((scrolled / totalScrollable) * 100)));
@@ -186,7 +270,9 @@ export function initStickySidebar() {
     document.querySelector('.page-main'),
     document.getElementById('aside-content'),
     document.getElementById('aside-sticky-box-toc'),
+    document.getElementById('aside-sticky-box-recent'),
     document.getElementById('aside-sticky-box-support'),
+    document.getElementById('card-recent-post-support'),
     document.getElementById('recent-posts'),
   ].filter((el): el is HTMLElement => Boolean(el));
 
