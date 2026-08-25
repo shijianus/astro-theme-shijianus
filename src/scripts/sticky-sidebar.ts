@@ -20,6 +20,85 @@ function syncScrollableOverflow(root: HTMLElement) {
   });
 }
 
+type RecentHandoffState = 'toc' | 'handoff' | 'support';
+
+// The recent card crosses two independently sticky groups on compact TOCs.
+// Keep the handoff state between animation frames so a direction reversal at
+// the copyright line cannot make the card snap back to the other group.
+let recentHandoffState: RecentHandoffState = 'toc';
+let recentHandoffDirection: 'up' | 'down' | 'idle' = 'idle';
+let previousPostScrollY: number | null = null;
+let recentHandoffPath = '';
+let recentHandoffCompact: boolean | null = null;
+
+function resolveRecentHandoff(
+  isCompact: boolean,
+  topOffset: number,
+  scrollY: number,
+  copyrightViewportTop: number,
+  tocGroupTop: number,
+  cardHeight: number,
+): { state: RecentHandoffState; direction: 'up' | 'down' | 'idle'; top: number } {
+  const path = window.location.pathname;
+  if (path !== recentHandoffPath) {
+    recentHandoffPath = path;
+    recentHandoffState = 'toc';
+    recentHandoffDirection = 'idle';
+    previousPostScrollY = scrollY;
+  }
+
+  if (recentHandoffCompact !== isCompact) {
+    recentHandoffCompact = isCompact;
+    recentHandoffState = 'toc';
+    recentHandoffDirection = 'idle';
+    previousPostScrollY = scrollY;
+  }
+
+  const delta = previousPostScrollY === null ? 0 : scrollY - previousPostScrollY;
+  if (delta > 0.5) recentHandoffDirection = 'down';
+  else if (delta < -0.5) recentHandoffDirection = 'up';
+  previousPostScrollY = scrollY;
+
+  if (!isCompact || cardHeight <= 0) {
+    recentHandoffState = 'toc';
+    return { state: recentHandoffState, direction: recentHandoffDirection, top: tocGroupTop };
+  }
+
+  const headerTop = topOffset;
+  const handoffStart = tocGroupTop + cardHeight;
+  const handoffEnd = headerTop + cardHeight;
+
+  // Establish a deterministic state after a restored/anchored page load.
+  if (recentHandoffDirection === 'idle') {
+    if (copyrightViewportTop <= handoffEnd) recentHandoffState = 'support';
+    else if (copyrightViewportTop <= handoffStart) recentHandoffState = 'handoff';
+    else recentHandoffState = 'toc';
+  } else if (recentHandoffDirection === 'down') {
+    if (recentHandoffState === 'toc' && copyrightViewportTop <= handoffStart) {
+      recentHandoffState = 'handoff';
+    }
+    if (recentHandoffState === 'handoff' && copyrightViewportTop <= handoffEnd) {
+      recentHandoffState = 'support';
+    }
+  } else if (recentHandoffDirection === 'up') {
+    if (recentHandoffState === 'support' && copyrightViewportTop >= handoffEnd) {
+      recentHandoffState = 'handoff';
+    }
+    if (recentHandoffState === 'handoff' && copyrightViewportTop >= handoffStart) {
+      recentHandoffState = 'toc';
+    }
+  }
+
+  const handoffTop = Math.max(headerTop, Math.min(tocGroupTop, copyrightViewportTop - cardHeight));
+  const top = recentHandoffState === 'toc'
+    ? tocGroupTop
+    : recentHandoffState === 'support'
+      ? headerTop
+      : handoffTop;
+
+  return { state: recentHandoffState, direction: recentHandoffDirection, top };
+}
+
 function updateHomeSticky(topOffset: number, isMobile: boolean) {
   const boundary =
     document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ??
@@ -88,6 +167,10 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     });
     stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
     stickyBoxSupport?.style.removeProperty('top');
+    recentHandoffState = 'toc';
+    recentHandoffDirection = 'idle';
+    previousPostScrollY = window.scrollY;
+    recentHandoffCompact = null;
     return;
   }
 
@@ -149,6 +232,22 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const supportPadding = !isCompact && recentHeight > 0 ? recentHeight + gap : 0;
   trackSupport.style.paddingTop = `${Math.round(supportPadding)}px`;
 
+  const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
+  const copyrightViewportTop = docCopyrightTop - docScrollY;
+  const handoff = resolveRecentHandoff(
+    isCompact,
+    topOffset,
+    docScrollY,
+    copyrightViewportTop,
+    recentStickyTop,
+    recentHeight,
+  );
+  const recentDesiredTop = isCompact
+    ? handoff.top
+    : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - recentHeight));
+  aside.dataset.recentHandoff = handoff.state;
+  aside.dataset.recentHandoffDirection = handoff.direction;
+
   // TOC termination is tied to the article's bottom, not the copyright card.
   // For a sticky child this means its track must end at articleBottom.
   const targetTocHeight = Math.max(0, Math.round(docArticleBottom - docTrackTocTop));
@@ -174,9 +273,6 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     trackRecent.style.height = `${targetRecentHeight}px`;
     trackRecent.dataset.stickyMode = isCompact ? 'short-continuous' : 'copyright-continuous';
 
-    const recentBoundaryTop = docCopyrightTop - docScrollY - recentHeight;
-    const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
-    const recentDesiredTop = Math.max(topOffset, Math.min(recentStickyTop, recentBoundaryTop));
     stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(recentDesiredTop)}px`);
   } else if (trackRecent) {
     trackRecent.style.marginTop = '0px';
@@ -195,9 +291,6 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     : 0;
   const supportFlowTop = recentTrackTop + recentTrackHeight + gap;
   trackSupport.style.marginTop = `${Math.round(docCopyrightTop - supportFlowTop)}px`;
-  const recentBoundaryTop = docCopyrightTop - docScrollY - recentHeight;
-  const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
-  const recentDesiredTop = Math.max(topOffset, Math.min(recentStickyTop, recentBoundaryTop));
   stickyBoxSupport?.style.setProperty('--support-sticky-top', `${Math.round(recentDesiredTop + recentHeight + gap)}px`);
   // Extend the support track so its bottom edge resolves against the post
   // shell's bottom, preserving synchronized end-of-column behaviour.
