@@ -31,6 +31,20 @@ let previousPostScrollY: number | null = null;
 let recentHandoffPath = '';
 let recentHandoffCompact: boolean | null = null;
 
+interface PostStickyGeometry {
+  isCompact: boolean;
+  docTrackTocTop: number;
+  docArticleBottom: number;
+  docCopyrightTop: number;
+  docPostBottom: number;
+  gap: number;
+  tocHeight: number;
+  recentHeight: number;
+  supportHeight: number;
+}
+
+let cachedPostGeometry: PostStickyGeometry | null = null;
+
 function resolveRecentHandoff(
   isCompact: boolean,
   topOffset: number,
@@ -139,6 +153,99 @@ function updateHomeSticky(topOffset: number, isMobile: boolean) {
   syncScrollableOverflow(card);
 }
 
+function syncPostScrollPosition(topOffset: number, isMobile: boolean) {
+  if (isMobile || !cachedPostGeometry) return;
+
+  const aside = document.getElementById('aside-content');
+  const articleContainer = document.getElementById('article-container');
+  const trackToc = document.getElementById('aside-track-toc');
+  const copyrightBlock = document.querySelector<HTMLElement>('.post-copyright-block');
+  const stickyBoxToc = document.getElementById('aside-sticky-box-toc');
+  const stickyBoxRecent = document.getElementById('aside-sticky-box-recent');
+  const stickyBoxSupport = document.getElementById('aside-sticky-box-support');
+  const geometry = cachedPostGeometry;
+  if (!aside || !stickyBoxRecent || geometry.recentHeight <= 0) return;
+
+  const docScrollY = window.scrollY;
+  const articleRect = articleContainer?.getBoundingClientRect();
+  const postRect = document.getElementById('post')?.getBoundingClientRect();
+  const currentArticleBottom = articleRect
+    ? articleRect.bottom + docScrollY
+    : geometry.docArticleBottom;
+  const currentPostBottom = postRect
+    ? postRect.bottom + docScrollY
+    : geometry.docPostBottom;
+  const currentTocHeight = stickyBoxToc?.offsetHeight ?? geometry.tocHeight;
+  const currentRecentHeight = stickyBoxRecent.offsetHeight;
+  const currentSupportHeight = stickyBoxSupport?.offsetHeight ?? geometry.supportHeight;
+
+  // Images/fonts can settle after the first layout pass. Refresh only the
+  // document coordinates in-place here; rebuilding track heights during a
+  // scroll would trigger scroll anchoring and create a second visible jump.
+  geometry.docArticleBottom = currentArticleBottom;
+  geometry.docPostBottom = currentPostBottom;
+  geometry.docTrackTocTop = trackToc
+    ? trackToc.getBoundingClientRect().top + docScrollY
+    : geometry.docTrackTocTop;
+  geometry.docCopyrightTop = copyrightBlock
+    ? copyrightBlock.getBoundingClientRect().top + docScrollY
+    : geometry.docArticleBottom;
+  geometry.tocHeight = currentTocHeight;
+  geometry.recentHeight = currentRecentHeight;
+  geometry.supportHeight = currentSupportHeight;
+
+  const copyrightViewportTop = geometry.docCopyrightTop - docScrollY;
+  const recentStickyTop = geometry.isCompact
+    ? topOffset + geometry.tocHeight + geometry.gap
+    : topOffset;
+  const handoff = resolveRecentHandoff(
+    geometry.isCompact,
+    topOffset,
+    docScrollY,
+    copyrightViewportTop,
+    recentStickyTop,
+    geometry.recentHeight,
+  );
+
+  let recentDesiredTop = geometry.isCompact
+    ? handoff.top
+    : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - geometry.recentHeight));
+
+  if (geometry.isCompact) {
+    // Keep the recent card below the TOC's current lower edge. This is a pure
+    // scroll mapping and does not touch track heights, so it cannot trigger a
+    // second layout pass while the user is scrolling.
+    const tocTrackTopViewport = geometry.docTrackTocTop - docScrollY;
+    const tocTrackBottomViewport = geometry.docArticleBottom - docScrollY;
+    const tocStickyTop = Math.min(
+      Math.max(tocTrackTopViewport, topOffset),
+      tocTrackBottomViewport - geometry.tocHeight,
+    );
+    recentDesiredTop = Math.max(
+      recentDesiredTop,
+      tocStickyTop + geometry.tocHeight + geometry.gap,
+    );
+  }
+
+  stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(recentDesiredTop)}px`);
+  stickyBoxSupport?.style.setProperty(
+    '--support-sticky-top',
+    `${Math.round(recentDesiredTop + geometry.recentHeight + geometry.gap)}px`,
+  );
+  aside.dataset.recentHandoff = handoff.state;
+  aside.dataset.recentHandoffDirection = handoff.direction;
+
+  if (articleRect) {
+    const totalScrollable = Math.max(1, articleRect.height - window.innerHeight * 0.7);
+    const scrolled = topOffset - articleRect.top;
+    const currentProgress = Math.min(100, Math.max(0, Math.round((scrolled / totalScrollable) * 100)));
+    const percentEl = document.querySelector<HTMLElement>('#card-toc .toc-percentage');
+    const progressBar = document.querySelector<HTMLElement>('#card-toc .toc-progress__bar');
+    if (percentEl) percentEl.textContent = `${currentProgress}%`;
+    if (progressBar) progressBar.style.width = `${currentProgress}%`;
+  }
+}
+
 function updatePostSticky(topOffset: number, isMobile: boolean) {
   const aside = document.getElementById('aside-content');
   const post = document.getElementById('post');
@@ -171,6 +278,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     recentHandoffDirection = 'idle';
     previousPostScrollY = window.scrollY;
     recentHandoffCompact = null;
+    cachedPostGeometry = null;
     return;
   }
 
@@ -329,6 +437,18 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   trackSupport.style.minHeight = `${targetSupportHeight}px`;
   trackSupport.style.height = `${targetSupportHeight}px`;
 
+  cachedPostGeometry = {
+    isCompact,
+    docTrackTocTop,
+    docArticleBottom,
+    docCopyrightTop,
+    docPostBottom,
+    gap,
+    tocHeight,
+    recentHeight,
+    supportHeight,
+  };
+
   aside.dataset.tocTermination = 'article-bottom';
   aside.dataset.supportActivation = 'copyright';
 
@@ -346,9 +466,12 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
 
 export function initStickySidebar() {
   let frame = 0;
+  let scrollIdleTimer = 0;
+  let scrollSyncActive = false;
 
   const update = () => {
     const pageType = document.body.getAttribute('data-type') || 'page';
+    if (pageType !== 'post') cachedPostGeometry = null;
     const topOffset = resolveHeaderOffset();
     const isMobile = window.matchMedia('(max-width: 1199px)').matches;
     document.documentElement.style.setProperty('--sticky-column-top', `${topOffset}px`);
@@ -361,11 +484,39 @@ export function initStickySidebar() {
   };
 
   const scheduleUpdate = () => {
+    if (scrollSyncActive) return;
     if (frame) return;
     frame = window.requestAnimationFrame(() => {
       frame = 0;
       update();
     });
+  };
+
+  // Native scrolling moves the article and CSS-sticky TOC before the next
+  // paint. The compact-post recent card also has a scroll-derived top value;
+  // waiting for rAF leaves one visible frame where the main column has moved
+  // but that card still uses its previous position. Update post geometry in
+  // the scroll event itself so both columns consume the same scroll sample.
+  const handleScroll = () => {
+    const pageType = document.body.getAttribute('data-type') || 'page';
+    const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+    if (pageType === 'post' && !isMobile) {
+      scrollSyncActive = true;
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => {
+        scrollSyncActive = false;
+        scheduleUpdate();
+      }, 120);
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+      const topOffset = resolveHeaderOffset();
+      if (cachedPostGeometry) syncPostScrollPosition(topOffset, false);
+      else update();
+      return;
+    }
+    scheduleUpdate();
   };
 
   const resizeObserver = new ResizeObserver(() => scheduleUpdate());
@@ -384,7 +535,7 @@ export function initStickySidebar() {
   elementsToObserve.forEach((el) => resizeObserver.observe(el));
 
   window.addEventListener('load', scheduleUpdate);
-  window.addEventListener('scroll', scheduleUpdate, { passive: true });
+  window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', scheduleUpdate);
   document.addEventListener('astro:page-load', scheduleUpdate);
 
