@@ -230,6 +230,10 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
   const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
   const supportPadding = !isCompact && recentHeight > 0 ? recentHeight + gap : 0;
+  // The recent track must finish before the support group on every post type.
+  // Reserving that lower group at the track boundary keeps the two sticky
+  // cards separated when the post shell itself reaches its bottom edge.
+  const recentTrackReserve = supportHeight > 0 ? supportHeight + gap : 0;
   trackSupport.style.paddingTop = `${Math.round(supportPadding)}px`;
 
   const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
@@ -243,7 +247,23 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     recentHeight,
   );
   const recentDesiredTop = isCompact
-    ? handoff.top
+    // The lower edge of the TOC is the clearance boundary. The previous
+    // top-edge check let the recent card rise while the TOC was still leaving
+    // its track, which caused overlap near the article end. Keep at least one
+    // layout gap between the two physical cards.
+    ? Math.max(
+      handoff.top,
+      (() => {
+        const tocTrackTopViewport = docTrackTocTop - docScrollY;
+        const tocTrackBottomViewport = docArticleBottom - docScrollY;
+        const tocNaturalTop = tocTrackTopViewport;
+        const tocStickyTop = Math.min(
+          Math.max(tocNaturalTop, topOffset),
+          tocTrackBottomViewport - tocHeight,
+        );
+        return tocStickyTop + tocHeight + gap;
+      })(),
+    )
     : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - recentHeight));
   aside.dataset.recentHandoff = handoff.state;
   aside.dataset.recentHandoffDirection = handoff.direction;
@@ -267,7 +287,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     trackRecent.style.marginTop = `${recentMarginTop}px`;
     const targetRecentHeight = Math.max(
       recentHeight,
-      Math.round(docPostBottom - targetRecentTop),
+      Math.round(docPostBottom - targetRecentTop - recentTrackReserve),
     );
     trackRecent.style.minHeight = `${targetRecentHeight}px`;
     trackRecent.style.height = `${targetRecentHeight}px`;
@@ -287,10 +307,18 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     ? (isCompact ? docTrackTocTop + tocHeight + gap : docCopyrightTop)
     : docTrackTocTop + targetTocHeight + gap;
   const recentTrackHeight = trackRecent
-    ? Math.max(recentHeight, Math.round(docPostBottom - recentTrackTop))
+    ? Math.max(recentHeight, Math.round(docPostBottom - recentTrackTop - recentTrackReserve))
     : 0;
   const supportFlowTop = recentTrackTop + recentTrackHeight + gap;
   trackSupport.style.marginTop = `${Math.round(docCopyrightTop - supportFlowTop)}px`;
+  // The support track is never allowed to begin above the copyright baseline.
+  // A small flex settling correction prevents TG/category cards from becoming
+  // active a frame early while the article/sidebar columns are hydrating.
+  const supportTrackDocTop = trackSupport.getBoundingClientRect().top + docScrollY;
+  if (supportTrackDocTop < docCopyrightTop - 0.5) {
+    const currentMargin = Number.parseFloat(trackSupport.style.marginTop) || 0;
+    trackSupport.style.marginTop = `${Math.round(currentMargin + docCopyrightTop - supportTrackDocTop)}px`;
+  }
   stickyBoxSupport?.style.setProperty('--support-sticky-top', `${Math.round(recentDesiredTop + recentHeight + gap)}px`);
   // Extend the support track so its bottom edge resolves against the post
   // shell's bottom, preserving synchronized end-of-column behaviour.
