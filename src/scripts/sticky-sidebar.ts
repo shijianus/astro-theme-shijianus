@@ -113,6 +113,64 @@ function resolveRecentHandoff(
   return { state: recentHandoffState, direction: recentHandoffDirection, top };
 }
 
+/**
+ * Resolve the compact-mode recent-card top from the TOC's *resolved* lower
+ * edge. Before the TOC reaches the sticky offset, keep the card at its natural
+ * flow position so a late font/image measurement can never push it downward
+ * and make it appear to flash in from below. Once the TOC is sticky, the live
+ * lower edge becomes the collision boundary and the fixed layout gap is kept
+ * in both scroll directions.
+ */
+function resolveCompactRecentTop({
+  topOffset,
+  gap,
+  tocBox,
+}: {
+  topOffset: number;
+  gap: number;
+  tocBox: HTMLElement | null;
+}) {
+  if (!tocBox) return topOffset;
+
+  const tocRect = tocBox.getBoundingClientRect();
+  if (!Number.isFinite(tocRect.top) || !Number.isFinite(tocRect.bottom)) {
+    return topOffset;
+  }
+
+  // Read the rendered track gap at the point of use. During hydration the
+  // cached geometry can briefly contain the pre-font/pre-CSS value (often
+  // 32px while the settled layout is 16px), which would place the first
+  // recent card too low and look like it flashed in from below.
+  const layout = tocBox.closest<HTMLElement>('.sticky_layout');
+  const renderedGap = layout
+    ? Number.parseFloat(getComputedStyle(layout).rowGap)
+    : Number.NaN;
+  const pairGap = Number.isFinite(renderedGap) ? Math.max(0, renderedGap) : gap;
+  // Before the TOC reaches the sticky offset the two cards are already in the
+  // same document flow. Returning a large, document-derived top value here
+  // would make CSS sticky push the recent card down for one frame while the
+  // profile/font measurements settle (the "flash in from below" artefact).
+  // The returned threshold is the natural pair top in that phase, so CSS
+  // sticky does not allow the recent card to cross the TOC's lower edge.
+  const tocIsSticky = tocRect.top <= topOffset + 0.5;
+
+  // Once the TOC is pinned, its *lower* edge is the collision lock. Checking
+  // the bottom edge as well as the top edge is important while the TOC leaves
+  // its track: after its bottom crosses the header offset it no longer
+  // occupies the viewport and the recent card may settle back to the header.
+  const tocCollisionTop = tocIsSticky && tocRect.bottom > topOffset + 0.5
+    ? tocRect.bottom + pairGap
+    : topOffset;
+
+  // Keep the sticky threshold at the pair's natural top before the TOC pins.
+  // This makes the browser enforce the clearance during the same native
+  // scroll sample in which the TOC reaches `topOffset`; waiting for a scroll
+  // listener would leave a one-frame overlap at that boundary.
+  const naturalPairTop = topOffset + tocRect.height + pairGap;
+
+  return Math.max(topOffset, tocIsSticky ? tocCollisionTop : naturalPairTop);
+}
+
 function updateHomeSticky(topOffset: number, isMobile: boolean) {
   const boundary =
     document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ??
@@ -212,19 +270,17 @@ function syncPostScrollPosition(topOffset: number, isMobile: boolean) {
     : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - geometry.recentHeight));
 
   if (geometry.isCompact) {
-    // Keep the recent card below the TOC's current lower edge. This is a pure
-    // scroll mapping and does not touch track heights, so it cannot trigger a
-    // second layout pass while the user is scrolling.
-    const tocTrackTopViewport = geometry.docTrackTocTop - docScrollY;
-    const tocTrackBottomViewport = geometry.docArticleBottom - docScrollY;
-    const tocStickyTop = Math.min(
-      Math.max(tocTrackTopViewport, topOffset),
-      tocTrackBottomViewport - geometry.tocHeight,
-    );
-    recentDesiredTop = Math.max(
-      recentDesiredTop,
-      tocStickyTop + geometry.tocHeight + geometry.gap,
-    );
+    // The TOC is a sticky child, so its live lower edge is the only reliable
+    // collision boundary while it is leaving the article track. Using the
+    // cached track coordinates here introduced a one-frame lag (the recent
+    // card could briefly move up before the TOC had finished moving). Read
+    // the resolved card rect from this same scroll sample instead and keep a
+    // constant gap until the TOC has fully cleared the sticky offset.
+    recentDesiredTop = resolveCompactRecentTop({
+      topOffset,
+      gap: geometry.gap,
+      tocBox: stickyBoxToc,
+    });
   }
 
   stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(recentDesiredTop)}px`);
@@ -273,7 +329,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
       track.style.paddingTop = '0px';
     });
     stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
-    stickyBoxSupport?.style.removeProperty('top');
+    stickyBoxSupport?.style.removeProperty('--support-sticky-top');
     recentHandoffState = 'toc';
     recentHandoffDirection = 'idle';
     previousPostScrollY = window.scrollY;
@@ -284,6 +340,14 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
 
   const mainEl = post ?? pageMain;
   if (!mainEl || !trackToc || !trackSupport) return;
+
+  // Start every full geometry pass from the natural flow. Keeping the
+  // previous scroll-derived `top` while tracks are being remeasured lets a
+  // stale value push the recent card below its TOC for one frame (especially
+  // while the profile card or web fonts hydrate). The final sticky offsets are
+  // written again after the tracks settle below, before the browser paints.
+  stickyBoxRecent?.style.removeProperty('--recent-sticky-top');
+  stickyBoxSupport?.style.removeProperty('--support-sticky-top');
 
   // Measure the natural flow first. Previous inline heights/margins can move
   // the flex column while it is being resized (especially when the profile
@@ -299,11 +363,13 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   // This keeps the behaviour stable when typography or viewport dimensions change.
   let isCompact = false;
   if (cardToc) {
-    const tocListEl = cardToc.querySelector<HTMLElement>('.toc-list');
-    const tocItems = cardToc.querySelectorAll<HTMLElement>('.toc-item');
     const viewportColumnHeight = Math.max(320, window.innerHeight - topOffset);
-    const tocListHeight = tocListEl?.scrollHeight ?? cardToc.offsetHeight;
-    isCompact = tocItems.length <= 6 || tocListHeight <= viewportColumnHeight * 0.5;
+    // Compactness follows the rendered card footprint. Heading count and list
+    // scrollHeight can disagree with the actual padded card (especially after
+    // fonts settle), which would make the two sticky groups switch modes at
+    // different times and cause a visible flash in the recent card.
+    const tocCardHeight = cardToc.offsetHeight;
+    isCompact = tocCardHeight > 0 && tocCardHeight <= viewportColumnHeight * 0.5;
     aside.dataset.tocType = isCompact ? 'short' : 'long';
   } else {
     aside.dataset.tocType = 'none';
@@ -355,23 +421,15 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     recentHeight,
   );
   const recentDesiredTop = isCompact
-    // The lower edge of the TOC is the clearance boundary. The previous
-    // top-edge check let the recent card rise while the TOC was still leaving
-    // its track, which caused overlap near the article end. Keep at least one
-    // layout gap between the two physical cards.
-    ? Math.max(
-      handoff.top,
-      (() => {
-        const tocTrackTopViewport = docTrackTocTop - docScrollY;
-        const tocTrackBottomViewport = docArticleBottom - docScrollY;
-        const tocNaturalTop = tocTrackTopViewport;
-        const tocStickyTop = Math.min(
-          Math.max(tocNaturalTop, topOffset),
-          tocTrackBottomViewport - tocHeight,
-        );
-        return tocStickyTop + tocHeight + gap;
-      })(),
-    )
+    // Use the resolved TOC lower edge for both the initial pairing and the
+    // article-end lock. This keeps the two cards adjacent from the moment
+    // they enter the sticky viewport and prevents the recent card from
+    // appearing from below while the TOC is still moving.
+    ? resolveCompactRecentTop({
+      topOffset,
+      gap,
+      tocBox: stickyBoxToc,
+    })
     : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - recentHeight));
   aside.dataset.recentHandoff = handoff.state;
   aside.dataset.recentHandoffDirection = handoff.direction;
@@ -437,9 +495,28 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   trackSupport.style.minHeight = `${targetSupportHeight}px`;
   trackSupport.style.height = `${targetSupportHeight}px`;
 
+  // Re-read the track origin after all inline heights/margins have been
+  // applied. Profile/media hydration can change the sidebar flow by a few
+  // pixels during this pass; caching the pre-write coordinate would make the
+  // first recent-card top start below its natural position until the next
+  // scroll event.
+  const resolvedTrackTocTop = trackToc.getBoundingClientRect().top + docScrollY;
+  if (isCompact && stickyBoxRecent) {
+    const settledRecentTop = resolveCompactRecentTop({
+      topOffset,
+      gap,
+      tocBox: stickyBoxToc,
+    });
+    stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(settledRecentTop)}px`);
+    stickyBoxSupport?.style.setProperty(
+      '--support-sticky-top',
+      `${Math.round(settledRecentTop + recentHeight + gap)}px`,
+    );
+  }
+
   cachedPostGeometry = {
     isCompact,
-    docTrackTocTop,
+    docTrackTocTop: resolvedTrackTocTop,
     docArticleBottom,
     docCopyrightTop,
     docPostBottom,

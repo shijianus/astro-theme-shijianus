@@ -1,0 +1,812 @@
+- generic [active] [ref=e1]:
+  - paragraph [ref=e18]: shijianus
+  - generic [ref=e20]:
+    - banner [ref=e22]:
+      - navigation "主导航" [ref=e23]:
+        - generic [ref=e24]:
+          - link "shijianus" [ref=e26] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e32]:
+            - link "文章 ART" [ref=e35] [cursor=pointer]:
+              - /url: /archives/
+              - generic [ref=e39]:
+                - generic [ref=e40]: 文章
+                - generic [ref=e41]: ART
+            - link "友邻 FRD" [ref=e44] [cursor=pointer]:
+              - /url: /friends/
+              - generic [ref=e49]:
+                - generic [ref=e50]: 友邻
+                - generic [ref=e51]: FRD
+            - link "工坊 LAB" [ref=e54] [cursor=pointer]:
+              - /url: /lab/
+              - generic [ref=e58]:
+                - generic [ref=e59]: 工坊
+                - generic [ref=e60]: LAB
+            - link "关于 ABT" [ref=e63] [cursor=pointer]:
+              - /url: /about/
+              - generic [ref=e67]:
+                - generic [ref=e68]: 关于
+                - generic [ref=e69]: ABT
+          - generic [ref=e70]:
+            - link [ref=e72] [cursor=pointer]:
+              - /url: "#"
+            - link [ref=e77] [cursor=pointer]:
+              - /url: "#"
+            - link [ref=e82] [cursor=pointer]:
+              - /url: "#"
+            - link [ref=e88] [cursor=pointer]:
+              - /url: "#"
+            - button "中控台" [ref=e118] [cursor=pointer]
+            - generic:
+              - link "0":
+                - /url: "#"
+    - main [ref=e123]:
+      - generic [ref=e125]:
+        - img "frontend workspace" [ref=e127]
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: 原创
+            - generic [ref=e132]: Astro
+            - generic [ref=e133]: Tailwind
+            - generic [ref=e134]: 主题重构
+          - generic [ref=e135]:
+            - heading "主题重构启动记录" [level=1] [ref=e136]
+            - paragraph [ref=e137]: 第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - generic [ref=e143]: 发表于
+              - strong [ref=e144]: 04/01/26
+            - generic [ref=e145]:
+              - generic [ref=e149]: 分类
+              - strong [ref=e150]: 前端工程
+            - generic [ref=e151]:
+              - generic [ref=e156]: 字数
+              - strong [ref=e157]: "403"
+            - generic [ref=e158]:
+              - generic [ref=e163]: 阅读
+              - strong [ref=e164]: 2 分钟
+            - generic [ref=e165]:
+              - generic [ref=e170]: 浏览
+              - strong [ref=e171]: 1 次
+            - generic [ref=e172]:
+              - generic [ref=e177]: 停留
+              - strong [ref=e178]: 0 分钟
+      - generic [ref=e179]:
+        - main [ref=e180]:
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - generic [ref=e183]:
+                - generic [ref=e184]:
+                  - generic [ref=e185]: AI
+                  - generic [ref=e186]:
+                    - strong [ref=e187]: AI-摘要
+                    - text: 立体科幻风格摘要卡片 · shijianus AI
+                - generic [ref=e188]:
+                  - generic [ref=e189]:
+                    - generic [ref=e190]: 稍后重试
+                    - generic [ref=e191]: 稍后重试
+                  - button "重新生成摘要" [ref=e192] [cursor=pointer]: ↻
+              - generic [ref=e193]:
+                - generic:
+                  - generic: SUMMARY CORE
+                  - generic: SHIJIANUS AI
+                - paragraph [ref=e194]: 当前摘要服务已进入冷
+              - generic [ref=e196]:
+                - button "介绍自己" [ref=e197] [cursor=pointer]
+                - button "生成本文简介" [ref=e198] [cursor=pointer]
+                - button "推荐相关文章" [ref=e199] [cursor=pointer]
+                - button "回到顶部" [ref=e200] [cursor=pointer]
+            - article [ref=e201]:
+              - heading "为什么要重做" [level=1] [ref=e202]
+              - paragraph [ref=e203]: 之前的实现最大的问题不是功能少，而是结构不清楚。页面上混杂了试验性的品牌、风格和局部组件，最终既不像原主题，也没有形成自己的秩序。
+              - heading "这次重构的判断" [level=2] [ref=e204]
+              - paragraph [ref=e205]: 这次的主题重构有两个前提：
+              - list [ref=e206]:
+                - listitem [ref=e207]: 保留原主题强结构首页、侧栏模块和卡片体系的优点。
+                - listitem [ref=e208]: 把实现方式完全切换到 Astro + React + Tailwind 的内容优先架构。
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - generic [ref=e215]: TS
+                  - button "复制" [ref=e216] [cursor=pointer]
+                - code [ref=e219]:
+                  - generic [ref=e220]: "const themeContract = {"
+                  - generic [ref=e221]: "brand: 'shijianus',"
+                  - generic [ref=e222]: "runtime: 'Astro Islands',"
+                  - generic [ref=e223]: "interaction: ['loading', 'copy-code', 'comments', 'dock'],"
+                  - generic [ref=e224]: "};"
+              - heading "首页应该先解决什么" [level=2] [ref=e225]
+              - paragraph [ref=e226]: 首页不是宣传页，它首先是一张信息地图。读者进入第一页，需要很快看见：
+              - list [ref=e227]:
+                - listitem [ref=e228]: 品牌与作者身份
+                - listitem [ref=e229]: 当前有哪些主要分类
+                - listitem [ref=e230]: 最近有哪些值得读的文章
+                - listitem [ref=e231]: 侧栏里还能继续往哪里走
+              - heading "之后的方向" [level=2] [ref=e232]
+              - paragraph [ref=e233]: 后续所有板块都会围绕同一个目标继续调整：让这套主题既有技术感，又不会把普通读者挡在门外。
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic: © ©
+                - generic [ref=e236]:
+                  - link [ref=e237] [cursor=pointer]:
+                    - /url: /about/
+                    - img "shijianus" [ref=e238]
+                    - img "shijianus" [ref=e239]
+                  - generic [ref=e240]: shijianus
+                  - generic [ref=e241]: 构建者 / 学生 / 通才型实践者
+                - generic [ref=e242]:
+                  - link "原创" [ref=e243] [cursor=pointer]:
+                    - /url: http://localhost:4321/posts/hello-world/
+                  - button "主题重构启动记录" [ref=e244] [cursor=pointer]
+                - generic [ref=e246]: 本文属于长期维护中的写作记录。允许分享与引用，但请保留原文链接、作者署名，并避免脱离上下文的片段搬运。
+                - generic [ref=e248]:
+                  - generic [ref=e249]:
+                    - generic [ref=e250]: 打赏作者
+                    - strong [ref=e251]: 打赏作者
+                    - paragraph [ref=e252]: 文章页和关于页共用同一套地区化打赏配置。当前开放中国大陆、中国香港与英国三个区域，会优先按访问地区、时区与语言画像推荐方式；高风险渠道会先弹窗提醒并按当前环境收紧，加密钱包只会在高置信度的英国访问环境下展示。
+                  - generic [ref=e253]:
+                    - button "打赏作者 请作者喝杯饮料" [ref=e255] [cursor=pointer]:
+                      - generic [ref=e261]:
+                        - strong [ref=e262]: 打赏作者
+                        - generic [ref=e263]: 请作者喝杯饮料
+                    - link "查看支持记录 看看已经收到的心意" [ref=e264] [cursor=pointer]:
+                      - /url: /about/#about-reward
+                      - generic [ref=e269]:
+                        - strong [ref=e270]: 查看支持记录
+                        - generic [ref=e271]: 看看已经收到的心意
+                    - generic [ref=e272]: 感谢你赐予我继续写下去的动力。
+              - generic [ref=e276]:
+                - generic [ref=e277]:
+                  - generic [ref=e278]: 这里不再重复展示分类、标签和继续阅读入口，右侧只保留分享动作，避免与正文信息冲突。
+                  - generic [ref=e279]: 保留系统分享，同时补齐国际平台和本地平台的显式分享入口。
+                - generic "分享这篇文章" [ref=e280]:
+                  - generic [ref=e282]:
+                    - button "系统分享 · 唤起系统分享面板" [ref=e283] [cursor=pointer]
+                    - button "复制链接 · 复制当前文章链接" [ref=e291] [cursor=pointer]
+                    - button "二维码 · 通过二维码在移动端继续阅读" [ref=e296] [cursor=pointer]
+                    - button "X · 分享到 X" [ref=e304] [cursor=pointer]
+                    - button "Facebook · 分享到 Facebook" [ref=e308] [cursor=pointer]
+                    - button "Threads · 分享到 Threads" [ref=e312] [cursor=pointer]
+                    - button "LinkedIn · 分享到 LinkedIn" [ref=e316] [cursor=pointer]
+                    - button "Telegram · 分享到 Telegram" [ref=e322] [cursor=pointer]
+                    - button "Reddit · 分享到 Reddit" [ref=e327] [cursor=pointer]
+                    - button "Weibo · 分享到微博" [ref=e331] [cursor=pointer]
+                    - button "QQ · 分享到 QQ" [ref=e339] [cursor=pointer]
+                    - button "邮件 · 通过邮件分享" [ref=e343] [cursor=pointer]
+            - generic [ref=e352]:
+              - link " Astro 5" [ref=e353] [cursor=pointer]:
+                - /url: /tags/astro/
+                - generic [ref=e354]: 
+                - text: Astro
+                - generic [ref=e356]: "5"
+              - link " Tailwind 1" [ref=e357] [cursor=pointer]:
+                - /url: /tags/tailwind/
+                - generic [ref=e358]: 
+                - text: Tailwind
+                - generic [ref=e360]: "1"
+              - link " 主题重构 4" [ref=e361] [cursor=pointer]:
+                - /url: /tags/%E4%B8%BB%E9%A2%98%E9%87%8D%E6%9E%84/
+                - generic [ref=e362]: 
+                - text: 主题重构
+                - generic [ref=e364]: "4"
+            - generic [ref=e365]:
+              - generic [ref=e366]:
+                - generic [ref=e367]:
+                  - paragraph [ref=e368]: 阅读导航
+                  - heading "上一篇 / 下一篇" [level=2] [ref=e369]
+                - generic [ref=e370]: 2 个跳转入口
+              - generic [ref=e372]:
+                - link "markdown showcase board 上一篇 较新文章 2026年4月24日 Markdown 扫描与展示能力全量示例 系统设计" [ref=e373] [cursor=pointer]:
+                  - /url: /posts/markdown-scan-showcase/
+                  - img "markdown showcase board" [ref=e374]
+                  - generic [ref=e375]: 上一篇
+                  - generic [ref=e376]:
+                    - generic [ref=e377]:
+                      - generic [ref=e378]: 较新文章
+                      - generic [ref=e379]: 2026年4月24日
+                    - generic [ref=e380]: Markdown 扫描与展示能力全量示例
+                    - generic [ref=e381]: 系统设计
+                - link "封面与媒体适配实验室 下一篇 较早文章 2026年4月25日 封面、图床与视频适配实验室 前端工程" [ref=e382] [cursor=pointer]:
+                  - /url: /posts/media-capability-lab/
+                  - img "封面与媒体适配实验室" [ref=e383]
+                  - generic [ref=e384]: 下一篇
+                  - generic [ref=e385]:
+                    - generic [ref=e386]:
+                      - generic [ref=e387]: 较早文章
+                      - generic [ref=e388]: 2026年4月25日
+                    - generic [ref=e389]: 封面、图床与视频适配实验室
+                    - generic [ref=e390]: 前端工程
+            - generic [ref=e391]:
+              - generic [ref=e392]:
+                - generic [ref=e393]:
+                  - paragraph [ref=e394]: 相关文章
+                  - heading "继续阅读" [level=2] [ref=e395]
+                - generic [ref=e396]: 6 篇延伸阅读
+              - generic [ref=e398]:
+                - link "封面与媒体适配实验室 01 2026年4月25日 封面、图床与视频适配实验室" [ref=e399] [cursor=pointer]:
+                  - /url: /posts/media-capability-lab/
+                  - img "封面与媒体适配实验室" [ref=e400]
+                  - generic [ref=e401]: "01"
+                  - generic [ref=e402]:
+                    - generic [ref=e403]: 2026年4月25日
+                    - generic [ref=e404]: 封面、图床与视频适配实验室
+                - link "markdown showcase desk 02 2026年4月24日 安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块" [ref=e405] [cursor=pointer]:
+                  - /url: /posts/anzhiyu-markdown-showcase/
+                  - img "markdown showcase desk" [ref=e406]
+                  - generic [ref=e407]: "02"
+                  - generic [ref=e408]:
+                    - generic [ref=e409]: 2026年4月24日
+                    - generic [ref=e410]: 安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块
+                - link "markdown showcase board 03 2026年4月24日 Markdown 扫描与展示能力全量示例" [ref=e411] [cursor=pointer]:
+                  - /url: /posts/markdown-scan-showcase/
+                  - img "markdown showcase board" [ref=e412]
+                  - generic [ref=e413]: "03"
+                  - generic [ref=e414]:
+                    - generic [ref=e415]: 2026年4月24日
+                    - generic [ref=e416]: Markdown 扫描与展示能力全量示例
+                - link "theme hero background 04 2026年4月15日 内容优先的首页，为什么比功能堆叠更耐用" [ref=e417] [cursor=pointer]:
+                  - /url: /posts/content-first-homepage/
+                  - img "theme hero background" [ref=e418]
+                  - generic [ref=e419]: "04"
+                  - generic [ref=e420]:
+                    - generic [ref=e421]: 2026年4月15日
+                    - generic [ref=e422]: 内容优先的首页，为什么比功能堆叠更耐用
+                - link "network grid 05 2026年4月12日 通过重构来学习，比单纯临摹更有效" [ref=e423] [cursor=pointer]:
+                  - /url: /posts/learning-through-rebuilds/
+                  - img "network grid" [ref=e424]
+                  - generic [ref=e425]: "05"
+                  - generic [ref=e426]:
+                    - generic [ref=e427]: 2026年4月12日
+                    - generic [ref=e428]: 通过重构来学习，比单纯临摹更有效
+                - link "developer desk 06 2026年4月10日 极客感界面为什么更需要可读性" [ref=e429] [cursor=pointer]:
+                  - /url: /posts/readable-geek-interfaces/
+                  - img "developer desk" [ref=e430]
+                  - generic [ref=e431]: "06"
+                  - generic [ref=e432]:
+                    - generic [ref=e433]: 2026年4月10日
+                    - generic [ref=e434]: 极客感界面为什么更需要可读性
+            - generic [ref=e437]:
+              - generic [ref=e438]:
+                - generic [ref=e439]:
+                  - generic [ref=e440]:
+                    - generic [ref=e441]: 公开评论
+                    - strong [ref=e442]: 评论
+                    - generic [ref=e443]: 点击输入区后会在账号中心创建评论身份。
+                  - generic [ref=e444]: 0 条公开评论
+                - generic [ref=e445]:
+                  - generic [ref=e446]:
+                    - generic [ref=e447]: 留言内容
+                    - generic [ref=e448]: 点击后前往账号中心创建身份
+                  - paragraph [ref=e449]: 你无需删除空行，直接评论即可保留最佳展示效果。
+                  - textbox "需要一个账号后才能评论" [disabled] [ref=e450] [cursor=pointer]
+                - generic [ref=e451]:
+                  - generic [ref=e452]: 500/500
+                  - button "发送" [disabled] [ref=e453] [cursor=pointer]
+              - generic [ref=e454]:
+                - generic [ref=e455]:
+                  - strong [ref=e456]: 公开评论
+                  - generic [ref=e457]: 固定高度展示，可直接滚动浏览全部内容
+                - generic [ref=e459]:
+                  - generic [ref=e460]: 公开评论
+                  - strong [ref=e461]: 还没有公开评论
+                  - paragraph [ref=e462]: 留下第一条反馈后，评论会直接出现在下方的公开评论流中。
+                  - generic [ref=e463]: 账号准备好后就能发布第一条评论。
+        - complementary [ref=e464]:
+          - generic [ref=e466]:
+            - generic [ref=e469]:
+              - generic: ✨ 欢迎探索 💡
+              - generic:
+                - img "shijianus"
+                - generic: 💻
+              - generic:
+                - generic:
+                  - paragraph:
+                    - text: 深耕系统重构与网络工程领域的
+                    - strong: 真实折腾记录
+                    - text: 。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。
+                  - paragraph:
+                    - text: 持续构筑
+                    - emphasis: 外脑知识库
+                    - text: ，期冀这些极客向的碎片随笔，能提供些许实战参考。
+              - generic [ref=e473]:
+                - link "shijianus 内容优先，结构优先，长期可维护。 构建者 / 学生 / 通才型实践者" [ref=e474] [cursor=pointer]:
+                  - /url: /about/
+                  - generic [ref=e475]: shijianus
+                  - generic [ref=e476]:
+                    - generic [ref=e477]: 内容优先，结构优先，长期可维护。
+                    - generic [ref=e478]: 构建者 / 学生 / 通才型实践者
+                - generic "作者链接" [ref=e479] [cursor=pointer]:
+                  - 'link "Email: shijianus@epocanvas.com" [ref=e480]':
+                    - /url: mailto:hello@shijian.us
+                  - 'link "GitHub: shijianus" [ref=e483]':
+                    - /url: https://github.com/shijianus
+                  - 'link "Telegram: shijianus" [ref=e486]':
+                    - /url: https://t.me/shijianus
+                  - 'link "Bilibili: KevinSparks" [ref=e489]':
+                    - /url: https://b23.tv/OKblMqS
+                  - 'link "YouTube: techshijian" [ref=e492]':
+                    - /url: https://youtube.com/@techshijian
+                  - 'link "Instagram: techshijian" [ref=e495]':
+                    - /url: https://instagram.com/techshijian
+                  - 'link "Discord: techshijian" [ref=e498]':
+                    - /url: https://discord.com/users/techshijian
+                  - 'link "Threads: techshijian" [ref=e501]':
+                    - /url: https://threads.net/@techshijian
+                  - 'link "Line: exine" [ref=e504]':
+                    - /url: https://line.me/ti/p/kd-GMazFE9
+            - generic [ref=e507]:
+              - generic [ref=e510]:
+                - generic [ref=e511]:
+                  - generic [ref=e515]: 文章目录
+                  - generic [ref=e516]: 3 节
+                - list [ref=e519]:
+                  - listitem [ref=e520]:
+                    - link "这次重构的判断" [ref=e521] [cursor=pointer]:
+                      - /url: "#这次重构的判断"
+                  - listitem [ref=e524]:
+                    - link "首页应该先解决什么" [ref=e525] [cursor=pointer]:
+                      - /url: "#首页应该先解决什么"
+                  - listitem [ref=e528]:
+                    - link "之后的方向" [ref=e529] [cursor=pointer]:
+                      - /url: "#之后的方向"
+              - generic [ref=e534]:
+                - generic [ref=e535]:
+                  - generic [ref=e536]: "N"
+                  - generic [ref=e537]: 最新发布
+                - generic [ref=e538]:
+                  - link "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块 安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块 2026/4/24" [ref=e539] [cursor=pointer]:
+                    - /url: /posts/anzhiyu-markdown-showcase/
+                    - img "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块" [ref=e541]
+                    - generic [ref=e542]:
+                      - generic [ref=e543]: 安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块
+                      - time [ref=e544]: 2026/4/24
+                  - link "Markdown 扫描与展示能力全量示例 Markdown 扫描与展示能力全量示例 2026/4/24" [ref=e545] [cursor=pointer]:
+                    - /url: /posts/markdown-scan-showcase/
+                    - img "Markdown 扫描与展示能力全量示例" [ref=e547]
+                    - generic [ref=e548]:
+                      - generic [ref=e549]: Markdown 扫描与展示能力全量示例
+                      - time [ref=e550]: 2026/4/24
+                  - link "封面、图床与视频适配实验室 封面、图床与视频适配实验室 2026/4/25" [ref=e551] [cursor=pointer]:
+                    - /url: /posts/media-capability-lab/
+                    - img "封面、图床与视频适配实验室" [ref=e553]
+                    - generic [ref=e554]:
+                      - generic [ref=e555]: 封面、图床与视频适配实验室
+                      - time [ref=e556]: 2026/4/25
+              - generic [ref=e558]:
+                - generic [ref=e561]:
+                  - generic [ref=e562] [cursor=pointer]:
+                    - button "切换色调" [ref=e563]
+                    - generic [ref=e570]:
+                      - generic [ref=e571]:
+                        - generic [ref=e572]: Telegram
+                        - generic [ref=e573]: OFFICIAL
+                      - generic [ref=e574]: 专注隐私传播。海外更新、测试第一时间获取。
+                  - generic [ref=e576] [cursor=pointer]:
+                    - generic [ref=e577]:
+                      - generic [ref=e578]: 扫码加入
+                      - generic [ref=e579]: 无缝安全交流
+                      - generic [ref=e580]: 立即加入 →
+                    - img "Telegram QR Code" [ref=e583]
+                - generic [ref=e584]:
+                  - generic [ref=e585]: 分类
+                  - list [ref=e589]:
+                    - listitem [ref=e590]:
+                      - link "前端工程 4 篇" [ref=e591] [cursor=pointer]:
+                        - /url: /categories/%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B/
+                        - generic [ref=e592]: 前端工程
+                        - generic [ref=e593]:
+                          - generic [ref=e594]: "4"
+                          - generic [ref=e595]: 篇
+                    - listitem [ref=e596]:
+                      - link "系统设计 2 篇" [ref=e597] [cursor=pointer]:
+                        - /url: /categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/
+                        - generic [ref=e598]: 系统设计
+                        - generic [ref=e599]:
+                          - generic [ref=e600]: "2"
+                          - generic [ref=e601]: 篇
+                    - listitem [ref=e602]:
+                      - link "产品观察 1 篇" [ref=e603] [cursor=pointer]:
+                        - /url: /categories/%E4%BA%A7%E5%93%81%E8%A7%82%E5%AF%9F/
+                        - generic [ref=e604]: 产品观察
+                        - generic [ref=e605]:
+                          - generic [ref=e606]: "1"
+                          - generic [ref=e607]: 篇
+                    - listitem [ref=e608]:
+                      - link "学习笔记 1 篇" [ref=e609] [cursor=pointer]:
+                        - /url: /categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/
+                        - generic [ref=e610]: 学习笔记
+                        - generic [ref=e611]:
+                          - generic [ref=e612]: "1"
+                          - generic [ref=e613]: 篇
+    - contentinfo [ref=e614]:
+      - generic [ref=e616]:
+        - generic [ref=e617]:
+          - link "GitHub" [ref=e618] [cursor=pointer]:
+            - /url: https://github.com/shijianus
+          - link "邮箱" [ref=e622] [cursor=pointer]:
+            - /url: mailto:hello@shijian.us
+          - link "归档" [ref=e626] [cursor=pointer]:
+            - /url: /archives/
+          - link "标签" [ref=e630] [cursor=pointer]:
+            - /url: /tags/
+          - button [ref=e635] [cursor=pointer]:
+            - img "shijianus" [ref=e638]
+          - link "关于" [ref=e639] [cursor=pointer]:
+            - /url: /about/
+          - link "首页" [ref=e643] [cursor=pointer]:
+            - /url: /
+          - link "动态" [ref=e647] [cursor=pointer]:
+            - /url: /tags/
+          - link "链接" [ref=e652] [cursor=pointer]:
+            - /url: /categories/
+        - generic [ref=e656]: 保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。
+        - generic [ref=e657]:
+          - generic [ref=e658]:
+            - generic [ref=e659]: 服务
+            - generic [ref=e661]:
+              - link "首页" [ref=e662] [cursor=pointer]:
+                - /url: /
+              - link "归档" [ref=e663] [cursor=pointer]:
+                - /url: /archives/
+              - link "分类" [ref=e664] [cursor=pointer]:
+                - /url: /categories/
+          - generic [ref=e665]:
+            - generic [ref=e666]: 主题
+            - generic [ref=e668]:
+              - link "设计对齐" [ref=e669] [cursor=pointer]:
+                - /url: /about/
+              - link "重构进度" [ref=e670] [cursor=pointer]:
+                - /url: /archives/
+              - link "内容系统" [ref=e671] [cursor=pointer]:
+                - /url: /tags/
+          - generic [ref=e672]:
+            - generic [ref=e673]: 导航
+            - generic [ref=e675]:
+              - link "最新文章" [ref=e676] [cursor=pointer]:
+                - /url: /archives/
+              - link "系统设计" [ref=e677] [cursor=pointer]:
+                - /url: /categories/系统设计/
+              - link "前端工程" [ref=e678] [cursor=pointer]:
+                - /url: /categories/前端工程/
+          - generic [ref=e679]:
+            - generic [ref=e680]: 协议
+            - generic [ref=e682]:
+              - link "隐私说明" [ref=e683] [cursor=pointer]:
+                - /url: /about/#about-reward
+              - link "版权说明" [ref=e684] [cursor=pointer]:
+                - /url: /about/
+              - link "使用条款" [ref=e685] [cursor=pointer]:
+                - /url: /tags/
+          - generic [ref=e686]:
+            - generic [ref=e687]: 友链
+            - generic [ref=e689]:
+              - link "Astro" [ref=e690] [cursor=pointer]:
+                - /url: https://astro.build/
+              - link "Tailwind" [ref=e691] [cursor=pointer]:
+                - /url: https://tailwindcss.com/
+              - link "React" [ref=e692] [cursor=pointer]:
+                - /url: https://react.dev/
+              - link "MDN" [ref=e693] [cursor=pointer]:
+                - /url: https://developer.mozilla.org/
+        - paragraph [ref=e694]:
+          - generic [ref=e695]: Astro
+          - generic [ref=e696]: React
+          - generic [ref=e697]: Tailwind
+          - generic [ref=e698]: TypeScript
+          - generic [ref=e699]: MDX
+      - generic [ref=e701]:
+        - generic [ref=e703]:
+          - generic [ref=e704]:
+            - text: © 2020 - 2026 By
+            - link "shijianus" [ref=e705] [cursor=pointer]:
+              - /url: /
+          - generic [ref=e706]: 把博客当成长期维护的软件来做。
+        - generic [ref=e707]:
+          - link "GitHub" [ref=e708] [cursor=pointer]:
+            - /url: https://github.com/shijianus
+          - link "归档" [ref=e712] [cursor=pointer]:
+            - /url: /archives/
+          - link "标签" [ref=e716] [cursor=pointer]:
+            - /url: /tags/
+          - link "关于" [ref=e721] [cursor=pointer]:
+            - /url: /about/
+    - generic [ref=e726]:
+      - generic:
+        - button "阅读模式"
+        - button "目录"
+        - link "直达评论":
+          - /url: "#post-comment"
+        - button "切换语言"
+        - button "收起侧栏"
+      - generic [ref=e727]:
+        - button "设置" [ref=e728] [cursor=pointer]
+        - button "切换到深色模式" [ref=e736] [cursor=pointer]
+        - button "切换背景" [ref=e744] [cursor=pointer]
+        - button "隐藏选单" [ref=e752] [cursor=pointer]
+    - button "打开背景音乐面板" [ref=e757] [cursor=pointer]:
+      - generic:
+        - strong: shijianus radio
+        - generic: 随机播放 / 点歌
+    - generic [ref=e762]:
+      - generic:
+        - generic: 提示
+        - strong
+      - generic:
+        - button
+        - dialog:
+          - generic:
+            - generic:
+              - paragraph: 站内搜索
+              - heading [level=2]: shijianus 内容索引
+            - button
+          - generic:
+            - textbox:
+              - /placeholder: 搜索标题、摘要或分类
+            - generic: Ctrl K
+          - generic:
+            - link:
+              - /url: /posts/anzhiyu-markdown-showcase/
+              - generic:
+                - generic: 前端工程 / 2026/4/24
+                - strong: 安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块
+                - generic: 一篇专门用于压测文章扫描、目录层级、GFM、隐藏内容、特殊格式、媒体展示与常见内容块的长示例文章。
+            - link:
+              - /url: /posts/markdown-scan-showcase/
+              - generic:
+                - generic: 系统设计 / 2026/4/24
+                - strong: Markdown 扫描与展示能力全量示例
+                - generic: 用一篇长文把当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。
+            - link:
+              - /url: /posts/hello-world/
+              - generic:
+                - generic: 前端工程 / 2026/4/1
+                - strong: 主题重构启动记录
+                - generic: 第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。
+            - link:
+              - /url: /posts/media-capability-lab/
+              - generic:
+                - generic: 前端工程 / 2026/4/25
+                - strong: 封面、图床与视频适配实验室
+                - generic: 集中验证文章头图、远程图床、本地资源、视频封面、失效回退和不同宽度下的媒体展示效果。
+            - link:
+              - /url: /posts/api-ready-theme-contracts/
+              - generic:
+                - generic: 系统设计 / 2026/4/7
+                - strong: 把主题配置做成可接 API 的契约
+                - generic: 真正方便后续接 API 的方式，不是先写请求，而是先把页面依赖的数据形状稳定下来。
+            - link:
+              - /url: /posts/readable-geek-interfaces/
+              - generic:
+                - generic: 产品观察 / 2026/4/10
+                - strong: 极客感界面为什么更需要可读性
+                - generic: 技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。
+      - generic:
+        - button
+        - button
+        - dialog:
+          - generic:
+            - generic:
+              - paragraph: 个人中心
+              - heading [level=2]: shijianus
+              - paragraph: 始于极简，构筑坚实；内容为核，长期演进。
+              - generic:
+                - generic:
+                  - strong: "8"
+                  - generic: 文章
+                - generic:
+                  - strong: "4"
+                  - generic: 分类
+                - generic:
+                  - strong: "16"
+                  - generic: 标签
+                - generic:
+                  - strong: 55m
+                  - generic: 阅读
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: 运行状态
+                  - heading [level=2]: 站点概览
+              - paragraph: 数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。
+              - generic:
+                - generic:
+                  - generic: 本站总字数
+                  - strong: 12,379 字
+                - generic:
+                  - generic: 安全运行天数
+                  - strong: 968 天
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /posts/media-capability-lab/
+                      - generic: 最后推送
+                  - strong: 2026/4/25
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /version
+                      - generic: 版本协议
+                  - strong: v2.6.0-shijianus
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /standards
+                      - generic: 活跃等级
+                  - strong: Status 0
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /standards
+                      - generic: 内容密度
+                  - strong: Level 3 (High)
+                - generic:
+                  - generic: 全站阅读
+                  - strong: 55 min
+                - generic:
+                  - generic: 系统架构
+                  - strong: Astro Edge
+                - generic:
+                  - generic: 构建引擎
+                  - strong: Astro / Vite
+                - generic:
+                  - generic: 样式底层
+                  - strong: Tailwind CSS
+                - generic:
+                  - generic: 部署节点
+                  - strong: Vercel / CF
+                - generic:
+                  - generic: 运行反馈
+                  - strong: < 50ms
+          - generic:
+            - generic:
+              - paragraph: 热门话题
+              - heading [level=2]: 内容发现
+              - generic:
+                - link:
+                  - /url: /tags/astro/
+                  - text: Astro
+                - link:
+                  - /url: /tags/主题重构/
+                  - text: 主题重构
+                - link:
+                  - /url: /tags/markdown/
+                  - text: Markdown
+                - link:
+                  - /url: /tags/ui/
+                  - text: UI
+                - link:
+                  - /url: /tags/config/
+                  - text: Config
+                - link:
+                  - /url: /tags/study/
+                  - text: Study
+                - link:
+                  - /url: /tags/api/
+                  - text: API
+                - link:
+                  - /url: /tags/architecture/
+                  - text: Architecture
+                - link:
+                  - /url: /tags/blog-theme/
+                  - text: Blog Theme
+                - link:
+                  - /url: /tags/content-strategy/
+                  - text: Content Strategy
+                - link:
+                  - /url: /tags/homepage/
+                  - text: Homepage
+                - link:
+                  - /url: /tags/refactor/
+                  - text: Refactor
+                - link:
+                  - /url: /tags/tailwind/
+                  - text: Tailwind
+                - link:
+                  - /url: /tags/ux/
+                  - text: UX
+                - link:
+                  - /url: /tags/visual-system/
+                  - text: Visual System
+                - link:
+                  - /url: /tags/媒体适配/
+                  - text: 媒体适配
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: shijianus 活跃度
+                  - heading [level=2]: 更新记录
+                - generic:
+                  - generic: Less
+                  - generic: More
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Aug
+                    - generic: Sep
+                    - generic: Oct
+                    - generic: Nov
+                    - generic: Dec
+                    - generic: Jan
+                    - generic: Feb
+                    - generic: Mar
+                    - generic: Apr
+                    - generic: May
+                    - generic: Jun
+                    - generic: Jul
+                    - generic: Aug
+                  - generic:
+                    - generic:
+                      - generic: Mon
+                      - generic: Wed
+                      - generic: Fri
+              - generic: 点击方块查看记录
+        - generic:
+          - button [ref=e763] [cursor=pointer]
+          - button [ref=e766] [cursor=pointer]
+          - button [ref=e770] [cursor=pointer]
+          - button [ref=e773] [cursor=pointer]
+          - button [ref=e777] [cursor=pointer]
+          - button [ref=e783] [cursor=pointer]
+      - generic:
+        - button
+        - dialog:
+          - generic:
+            - generic:
+              - paragraph: 账号
+              - heading [level=2]: 账号中心
+            - button
+          - generic:
+            - generic: S
+            - generic:
+              - strong: 尚未登录
+              - paragraph: 头像、昵称、提醒和评论身份都统一收在独立账号面板里，文章页只保留输入区和公开评论流。
+            - generic:
+              - strong: "0"
+              - generic: 提醒
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: 账号中心
+                  - heading [level=3]: 登录 / 注册
+                - generic: 本地身份
+              - paragraph: 当前没有接入外部评论数据库，账号面板仍可保存本地身份，后续接入远端后会自动复用。
+              - generic:
+                - generic:
+                  - generic: 昵称
+                  - textbox:
+                    - /placeholder: 输入公开显示的昵称
+                - generic:
+                  - generic: 邮箱
+                  - textbox:
+                    - /placeholder: name@example.com
+                - generic:
+                  - generic: 个人站点
+                  - textbox:
+                    - /placeholder: https://example.com
+                - generic:
+                  - generic: 头像链接
+                  - textbox:
+                    - /placeholder: https://...
+              - generic:
+                - button:
+                  - generic: 创建账号
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: 提醒
+                  - heading [level=3]: 动态与回复
+                - generic: "0"
+              - generic:
+                - strong: 暂时没有新的提醒
+                - paragraph: 未登录时评论输入会保持灰色锁定，点击后会提示你先创建一个本地账号。
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: 偏好
+                  - heading [level=3]: 界面语言
+                - generic: 简体
+              - paragraph: 语言切换独立放到账号面板里，避免和控制台、分享或评论操作混在一起。
+              - group:
+                - button: 简体中文
+                - button: 繁體中文
+                - button: English
