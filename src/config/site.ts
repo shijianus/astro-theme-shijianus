@@ -759,7 +759,7 @@ export const siteConfig = {
       rewardNote: '感谢你赐予我继续写下去的动力。',
     },
     related: {
-      eyebrow: '相关文章',
+      eyebrow: '喜欢这篇文章的人也看了',
       title: '继续阅读',
     },
     comments: {

@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { siteConfig } from '../../config/site';
+import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
+
+interface Props {
+  nextPost?: CollectionEntry<'posts'> | null;
+}
+
+const { nextPost = null } = Astro.props;
+---
+
+{nextPost && (
+  <>
+    <span class="pagination-sentinel" data-pagination-sentinel aria-hidden="true"></span>
+    <nav id="pagination" class="pagination-post" data-end-pagination data-slug={nextPost.id} aria-label="下一篇文章">
+      <a class="next-post" href={getPostPath(nextPost)} rel="next">
+        <img
+          class="next-cover"
+          src={resolveCover(nextPost)}
+          alt={resolveCoverAlt(nextPost)}
+          loading="lazy"
+          data-fallback-src={siteConfig.post.hero.fallbackImage}
+        />
+        <span class="pagination-info">
+          <span class="label">下一篇</span>
+          <strong class="next-info">{nextPost.data.title}</strong>
+        </span>
+        <span class="next-post-arrow" aria-hidden="true">→</span>
+      </a>
+      <button type="button" class="pagination-close" data-pagination-close aria-label="关闭下一篇推荐">×</button>
+    </nav>
+  </>
+)}
+
+<script is:inline>
+  (() => {
+    const roots = document.querySelectorAll('[data-end-pagination]');
+    if (!roots.length) return;
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      const post = root.closest('#post');
+      const sentinel = post?.querySelector('[data-pagination-sentinel]');
+      const closeButton = root.querySelector('[data-pagination-close]');
+      const storageKey = `shijianus-pagination-dismissed:${root.dataset.slug || window.location.pathname}`;
+      let dismissed = false;
+
+      try {
+        dismissed = window.sessionStorage.getItem(storageKey) === 'true';
+      } catch {}
+
+      if (dismissed) {
+        root.dataset.dismissed = 'true';
+        return;
+      }
+
+      // Keep the popup out of filtered content layers so fixed positioning is
+      // relative to the viewport rather than the article's containing block.
+      document.body.appendChild(root);
+
+      const show = () => {
+        if (root.dataset.dismissed === 'true') return;
+        root.classList.add('is-visible');
+      };
+
+      closeButton?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        root.classList.remove('is-visible');
+        root.dataset.dismissed = 'true';
+        try {
+          window.sessionStorage.setItem(storageKey, 'true');
+        } catch {}
+      });
+
+      if (!(sentinel instanceof HTMLElement) || !('IntersectionObserver' in window)) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 180) show();
+        }, { passive: true });
+        return;
+      }
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            show();
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '0px 0px 18% 0px', threshold: 0.01 },
+      );
+      observer.observe(sentinel);
+    });
+  })();
+</script>

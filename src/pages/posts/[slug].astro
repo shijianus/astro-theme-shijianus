@@ -4,8 +4,8 @@ import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astr
 import AiSummaryPanel from '../../components/theme/AiSummaryPanel.astro';
 import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
-import PostNav from '../../components/theme/PostNav.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
+import PostEndRecommendation from '../../components/theme/PostEndRecommendation.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
@@ -297,10 +297,6 @@ const heroSummary = isUnlocked
       </div>
     )}
 
-    {isUnlocked && (
-      <PostNav previousPost={previousPost} nextPost={nextPost} />
-    )}
-
     {isUnlocked && siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
       <RelatedPosts
         posts={relatedPosts}
@@ -308,6 +304,8 @@ const heroSummary = isUnlocked
         title={siteConfig.post.related.title}
       />
     )}
+
+    {isUnlocked && <PostEndRecommendation nextPost={nextPost} />}
 
     {commentsEnabled && (
       <PostComments
