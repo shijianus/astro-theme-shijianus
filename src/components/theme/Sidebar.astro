@@ -15,7 +15,6 @@ import {
 import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
 import PromoWidgetCard from './PromoWidgetCard.astro';
-import PostNav from './PostNav.astro';
 
 interface Props extends SidebarData {
   pageType?: string;
@@ -218,9 +217,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
               </div>
             </section>
 
-            {isPostPage && (previousPost || nextPost) && (
-              <PostNav previousPost={previousPost} nextPost={nextPost} />
-            )}
           </div>
         </div>
       )}
