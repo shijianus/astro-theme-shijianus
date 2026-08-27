@@ -85,6 +85,78 @@
   backdrop-filter: none !important;
 }
 
+/* Article surface: keep the Hexo-style single #post panel while preserving
+   independent right-column widgets and clear section rhythm. */
+body[data-type='post'] #post {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  padding: 32px 40px 28px !important;
+}
+
+body[data-type='post'] #post #article-container.post-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] #post > :is(.post-tools-right, .postNav, .relatedPosts) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] #post > .post-tools-right {
+  padding: 16px 0 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent) !important;
+}
+
+body[data-type='post'] #post > .relatedPosts {
+  padding: 20px 0 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent) !important;
+}
+
+body[data-type='post'] #post > .postNav {
+  margin-top: 0 !important;
+}
+
+body[data-type='post'] #aside-content .postNav {
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border)) !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
+  box-shadow: var(--shadow-border) !important;
+}
+
+body[data-type='post'] #aside-content .postNav__head {
+  margin-bottom: 12px !important;
+}
+
+body[data-type='post'] #aside-content .postNav__title {
+  font-size: 15px !important;
+}
+
+body[data-type='post'] #aside-content .postNav-list {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+body[data-type='post'] #aside-content .postNav-card {
+  min-height: 96px !important;
+}
+
+@media (max-width: 1199px) {
+  body[data-type='post'] #post {
+    padding: 24px 20px !important;
+  }
+}
+
 #menus .site-page {
   display: flex !important;
   flex-direction: row !important;
