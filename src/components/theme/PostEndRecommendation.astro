@@ -13,7 +13,7 @@ const { nextPost = null } = Astro.props;
 {nextPost && (
   <>
     <span class="pagination-sentinel" data-pagination-sentinel aria-hidden="true"></span>
-    <nav id="pagination" class="pagination-post" data-end-pagination data-slug={nextPost.id} aria-label="下一篇文章">
+    <nav id="pagination" class="pagination-post" data-end-pagination data-slug={nextPost.id} aria-label="接着读下一篇文章">
       <a class="next-post" href={getPostPath(nextPost)} rel="next">
         <img
           class="next-cover"
@@ -23,12 +23,12 @@ const { nextPost = null } = Astro.props;
           data-fallback-src={siteConfig.post.hero.fallbackImage}
         />
         <span class="pagination-info">
-          <span class="label">下一篇</span>
+          <span class="label">接着读</span>
           <strong class="next-info">{nextPost.data.title}</strong>
         </span>
         <span class="next-post-arrow" aria-hidden="true">→</span>
       </a>
-      <button type="button" class="pagination-close" data-pagination-close aria-label="关闭下一篇推荐">×</button>
+      <button type="button" class="pagination-close" data-pagination-close aria-label="收起这条推荐">×</button>
     </nav>
   </>
 )}
@@ -45,6 +45,9 @@ const { nextPost = null } = Astro.props;
       const closeButton = root.querySelector('[data-pagination-close]');
       const storageKey = `shijianus-pagination-dismissed:${root.dataset.slug || window.location.pathname}`;
       let dismissed = false;
+      let hasScrolled = false;
+      let frame = 0;
+      let exitTimer = 0;
 
       try {
         dismissed = window.sessionStorage.getItem(storageKey) === 'true';
@@ -61,36 +64,66 @@ const { nextPost = null } = Astro.props;
 
       const show = () => {
         if (root.dataset.dismissed === 'true') return;
+        window.clearTimeout(exitTimer);
+        root.classList.remove('is-exiting');
         root.classList.add('is-visible');
+      };
+
+      const hideAfterComments = () => {
+        if (!root.classList.contains('is-visible')) return;
+        root.classList.remove('is-visible');
+        root.classList.add('is-exiting');
+        window.clearTimeout(exitTimer);
+        exitTimer = window.setTimeout(() => {
+          root.classList.remove('is-exiting');
+        }, 360);
+      };
+
+      const update = () => {
+        frame = 0;
+        if (root.dataset.dismissed === 'true' || !(sentinel instanceof HTMLElement)) return;
+
+        const sentinelTop = sentinel.getBoundingClientRect().top;
+        const comments = document.getElementById('post-comment');
+        // The comments section is followed by the site footer, so waiting for
+        // its bottom to leave the viewport would be unreachable on short pages.
+        // Once its top has crossed the viewport, the reader has moved beyond
+        // the recommendation zone and the popup can leave the screen.
+        const commentsPassed = comments instanceof HTMLElement && comments.getBoundingClientRect().top <= 0;
+        const reachedArticleEnd = hasScrolled && window.scrollY > 48 && sentinelTop <= window.innerHeight * 0.9;
+
+        if (commentsPassed) {
+          hideAfterComments();
+          return;
+        }
+
+        if (reachedArticleEnd) show();
+      };
+
+      const scheduleUpdate = () => {
+        if (frame === 0) frame = window.requestAnimationFrame(update);
       };
 
       closeButton?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        root.classList.remove('is-visible');
+        root.classList.remove('is-visible', 'is-exiting');
         root.dataset.dismissed = 'true';
         try {
           window.sessionStorage.setItem(storageKey, 'true');
         } catch {}
       });
 
-      if (!(sentinel instanceof HTMLElement) || !('IntersectionObserver' in window)) {
-        window.addEventListener('scroll', () => {
-          if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 180) show();
-        }, { passive: true });
-        return;
-      }
+      if (!(sentinel instanceof HTMLElement)) return;
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            show();
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '0px 0px 18% 0px', threshold: 0.01 },
-      );
-      observer.observe(sentinel);
+      window.addEventListener('scroll', () => {
+        hasScrolled = true;
+        scheduleUpdate();
+      }, { passive: true });
+      window.addEventListener('resize', scheduleUpdate, { passive: true });
+
+      // Do not evaluate on load: restored scroll positions should still wait
+      // for a real reader scroll before showing the recommendation.
     });
   })();
 </script>

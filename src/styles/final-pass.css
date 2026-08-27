@@ -276,7 +276,7 @@ body[data-type='post'] #pagination.pagination-post {
   opacity: 0;
   pointer-events: none;
   transform: translateY(16px) scale(0.97);
-  transition: opacity 0.24s ease, transform 0.24s ease;
+  transition: opacity 0.24s ease, transform 0.32s cubic-bezier(0.22, 0.7, 0.2, 1);
   backdrop-filter: blur(14px) saturate(130%);
   -webkit-backdrop-filter: blur(14px) saturate(130%);
 }
@@ -285,6 +285,12 @@ body[data-type='post'] #pagination.pagination-post.is-visible {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);
+}
+
+body[data-type='post'] #pagination.pagination-post.is-exiting {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(calc(100% + 32px), 0, 0);
 }
 
 body[data-type='post'] #pagination.pagination-post[data-dismissed='true'] {
@@ -372,11 +378,47 @@ body[data-type='post'] #pagination .pagination-close:hover {
   color: var(--font-color);
 }
 
+/* Keep the existing icon language while giving article controls one shared
+   rhythm. The circular share actions remain circular by design. */
+body[data-type='post'] #post :is(.post-copyright__original, .post-copyright-title, .post-meta__box__tags, .post-meta__box__categoryes) {
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+body[data-type='post'] #post .post-copyright-title {
+  padding: 4px 8px !important;
+  border-radius: 8px;
+  line-height: 1.35;
+}
+
+body[data-type='post'] #post .post-copyright-title:focus-visible,
+body[data-type='post'] #post .support-panel-link:focus-visible,
+body[data-type='post'] #post .post-share-grid__item:focus-visible,
+body[data-type='post'] #pagination .pagination-close:focus-visible {
+  outline: 2px solid var(--theme-main);
+  outline-offset: 3px;
+}
+
+body[data-type='post'] #post .post-copyright__support .support-panel-link--icon {
+  height: 42px;
+  box-sizing: border-box;
+}
+
 @media (max-width: 600px) {
   body[data-type='post'] #pagination.pagination-post {
     right: 16px;
     bottom: 16px;
     width: calc(100vw - 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-type='post'] #pagination.pagination-post {
+    transition: opacity 0.15s ease;
+  }
+
+  body[data-type='post'] #pagination.pagination-post.is-exiting {
+    transform: translateY(0);
   }
 }
 
