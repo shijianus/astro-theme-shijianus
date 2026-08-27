@@ -166,12 +166,23 @@ export function ThemeUniverse() {
          char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
       }
 
+      // Concentrate the quietest points along the lower-left edge and let the
+      // field become denser toward the upper-right direction of travel.
+      const concentration = Math.random();
+      const x = Math.sqrt(concentration) * width;
+      const y = (1 - Math.sqrt(Math.random())) * height;
+      const upperRightBias = Math.max(0.18, Math.min(1, (x / Math.max(width, 1) + 1 - y / Math.max(height, 1)) / 2));
+
       return {
-        x: randomBetween(0, width),
-        y: randomBetween(0, height),
+        x,
+        y,
         radius,
         speed: speedBase * (0.6 + depth * 0.95),
-        alpha: mode === 'matrix' ? randomBetween(0.2, 0.9) : (lightMode ? randomBetween(0.12, 0.38) : randomBetween(0.15, 0.95)),
+        alpha: mode === 'matrix'
+          ? randomBetween(0.2, 0.9)
+          : (lightMode
+            ? randomBetween(0.08, 0.18) + upperRightBias * randomBetween(0.08, 0.24)
+            : randomBetween(0.1, 0.32) + upperRightBias * randomBetween(0.18, 0.64)),
         drift: mode === 'matrix' ? 0 : (lightMode ? randomBetween(-0.05, 0.05) : randomBetween(-0.01, 0.01)),
         glow: mode === 'matrix' ? 0 : (lightMode ? (depth > 0.8 ? randomBetween(0.1, 0.4) : 0) : (depth > 0.92 ? randomBetween(0.1, 0.4) : 0)),
         tint: sampleTint(mode),
