@@ -557,6 +557,18 @@ const renderTocNodes = (nodes: TocNode[]) =>
     z-index: 10 !important;
     transition: top 0.25s ease;
   }
+
+  /* The TOC owns the upper edge of the short-TOC pair. During a reverse
+   * scroll the browser can paint one native sticky frame before the scroll
+   * synchroniser receives its event; keep that frame visually ordered as the
+   * TOC-above-recent stack even while the geometry is being reconciled. */
+  body[data-type='post'] #aside-content #aside-sticky-box-toc {
+    z-index: 20 !important;
+  }
+
+  body[data-type='post'] #aside-content #aside-sticky-box-recent {
+    z-index: 10 !important;
+  }
   
   .aside-sticky-box > .card-widget:not(#card-toc) {
     flex-shrink: 0;

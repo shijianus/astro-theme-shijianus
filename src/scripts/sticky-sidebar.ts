@@ -45,6 +45,43 @@ interface PostStickyGeometry {
 
 let cachedPostGeometry: PostStickyGeometry | null = null;
 
+interface TocViewportRect {
+  top: number;
+  bottom: number;
+  height: number;
+}
+
+/**
+ * Predict the TOC's sticky rectangle for the current scroll sample. Scroll
+ * events run before the browser recalculates CSS-sticky positions, so reading
+ * getBoundingClientRect() in that callback can return the previous frame. The
+ * track and article document coordinates are stable; projecting them against
+ * the new scrollY gives the same rectangle the browser will settle on, with no
+ * one-frame lag for the recent-card collision lock.
+ */
+function resolveTocViewportRect({
+  topOffset,
+  scrollY,
+  trackTop,
+  articleBottom,
+  tocHeight,
+}: {
+  topOffset: number;
+  scrollY: number;
+  trackTop: number;
+  articleBottom: number;
+  tocHeight: number;
+}): TocViewportRect | null {
+  if (![topOffset, scrollY, trackTop, articleBottom, tocHeight].every(Number.isFinite) || tocHeight <= 0) {
+    return null;
+  }
+
+  const naturalTop = trackTop - scrollY;
+  const trackEndTop = articleBottom - scrollY - tocHeight;
+  const top = Math.min(Math.max(naturalTop, topOffset), trackEndTop);
+  return { top, bottom: top + tocHeight, height: tocHeight };
+}
+
 function resolveRecentHandoff(
   isCompact: boolean,
   topOffset: number,
@@ -125,14 +162,16 @@ function resolveCompactRecentTop({
   topOffset,
   gap,
   tocBox,
+  tocViewport,
 }: {
   topOffset: number;
   gap: number;
   tocBox: HTMLElement | null;
+  tocViewport?: TocViewportRect | null;
 }) {
   if (!tocBox) return topOffset;
 
-  const tocRect = tocBox.getBoundingClientRect();
+  const tocRect = tocViewport ?? tocBox.getBoundingClientRect();
   if (!Number.isFinite(tocRect.top) || !Number.isFinite(tocRect.bottom)) {
     return topOffset;
   }
@@ -154,12 +193,17 @@ function resolveCompactRecentTop({
   // sticky does not allow the recent card to cross the TOC's lower edge.
   const tocIsSticky = tocRect.top <= topOffset + 0.5;
 
-  // Once the TOC is pinned, its *lower* edge is the collision lock. Checking
-  // the bottom edge as well as the top edge is important while the TOC leaves
-  // its track: after its bottom crosses the header offset it no longer
-  // occupies the viewport and the recent card may settle back to the header.
-  const tocCollisionTop = tocIsSticky && tocRect.bottom > topOffset + 0.5
-    ? tocRect.bottom + pairGap
+  // Once the TOC is pinned, its *lower* edge is the collision lock. The bottom
+  // edge must be considered as soon as it re-enters the viewport (not only
+  // after it crosses the header offset): during an upward scroll the TOC can
+  // occupy the 0..topOffset band while the recent card is still at the header,
+  // which was the one-frame overlap reported on short posts.
+  const tocNearStickyBoundary = tocRect.top >= topOffset - 10;
+  const tocCollisionTop = tocIsSticky && tocRect.bottom > 0.5
+    ? Math.max(
+      tocRect.bottom + pairGap,
+      tocNearStickyBoundary ? topOffset + tocRect.height + pairGap : topOffset,
+    )
     : topOffset;
 
   // Keep the sticky threshold at the pair's natural top before the TOC pins.
@@ -276,10 +320,18 @@ function syncPostScrollPosition(topOffset: number, isMobile: boolean) {
     // card could briefly move up before the TOC had finished moving). Read
     // the resolved card rect from this same scroll sample instead and keep a
     // constant gap until the TOC has fully cleared the sticky offset.
+    const projectedToc = resolveTocViewportRect({
+      topOffset,
+      scrollY: docScrollY,
+      trackTop: geometry.docTrackTocTop,
+      articleBottom: geometry.docArticleBottom,
+      tocHeight: geometry.tocHeight,
+    });
     recentDesiredTop = resolveCompactRecentTop({
       topOffset,
       gap: geometry.gap,
       tocBox: stickyBoxToc,
+      tocViewport: projectedToc,
     });
   }
 
@@ -420,6 +472,15 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     recentStickyTop,
     recentHeight,
   );
+  const projectedToc = isCompact
+    ? resolveTocViewportRect({
+      topOffset,
+      scrollY: docScrollY,
+      trackTop: docTrackTocTop,
+      articleBottom: docArticleBottom,
+      tocHeight,
+    })
+    : null;
   const recentDesiredTop = isCompact
     // Use the resolved TOC lower edge for both the initial pairing and the
     // article-end lock. This keeps the two cards adjacent from the moment
@@ -429,6 +490,7 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
       topOffset,
       gap,
       tocBox: stickyBoxToc,
+      tocViewport: projectedToc,
     })
     : Math.max(topOffset, Math.min(recentStickyTop, copyrightViewportTop - recentHeight));
   aside.dataset.recentHandoff = handoff.state;
@@ -502,10 +564,18 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   // scroll event.
   const resolvedTrackTocTop = trackToc.getBoundingClientRect().top + docScrollY;
   if (isCompact && stickyBoxRecent) {
+    const settledToc = resolveTocViewportRect({
+      topOffset,
+      scrollY: docScrollY,
+      trackTop: resolvedTrackTocTop,
+      articleBottom: docArticleBottom,
+      tocHeight,
+    });
     const settledRecentTop = resolveCompactRecentTop({
       topOffset,
       gap,
       tocBox: stickyBoxToc,
+      tocViewport: settledToc,
     });
     stickyBoxRecent.style.setProperty('--recent-sticky-top', `${Math.round(settledRecentTop)}px`);
     stickyBoxSupport?.style.setProperty(
@@ -543,8 +613,32 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
 
 export function initStickySidebar() {
   let frame = 0;
+  let scrollFrame = 0;
   let scrollIdleTimer = 0;
   let scrollSyncActive = false;
+  let lastFrameScrollY: number | null = null;
+
+  const syncScrollFrame = () => {
+    scrollFrame = 0;
+    const pageType = document.body.getAttribute('data-type') || 'page';
+    if (pageType !== 'post' || window.matchMedia('(max-width: 1199px)').matches || !cachedPostGeometry) {
+      lastFrameScrollY = window.scrollY;
+      return;
+    }
+    const currentScrollY = window.scrollY;
+    if (lastFrameScrollY !== currentScrollY) {
+      lastFrameScrollY = currentScrollY;
+      syncPostScrollPosition(resolveHeaderOffset(), false);
+    }
+    // Keep the observer alive only while a desktop post has a measured
+    // geometry cache. Home/page routes and mobile layouts pay no per-frame
+    // cost, and a route change naturally stops the loop on the next tick.
+    scrollFrame = window.requestAnimationFrame(syncScrollFrame);
+  };
+
+  const ensureScrollFrame = () => {
+    if (!scrollFrame) scrollFrame = window.requestAnimationFrame(syncScrollFrame);
+  };
 
   const update = () => {
     const pageType = document.body.getAttribute('data-type') || 'page';
@@ -557,6 +651,16 @@ export function initStickySidebar() {
       updateHomeSticky(topOffset, isMobile);
     } else if (pageType === 'post') {
       updatePostSticky(topOffset, isMobile);
+    }
+
+    // Astro view transitions can swap a non-post page for a post without a
+    // native scroll event. In that case the rAF observer may have stopped on
+    // the previous route before this pass measured the new post geometry;
+    // restart it now so the first scroll sample cannot lag the TOC sticky
+    // position.
+    if (pageType === 'post' && !isMobile && cachedPostGeometry) {
+      lastFrameScrollY = window.scrollY;
+      ensureScrollFrame();
     }
   };
 
@@ -589,8 +693,11 @@ export function initStickySidebar() {
         frame = 0;
       }
       const topOffset = resolveHeaderOffset();
-      if (cachedPostGeometry) syncPostScrollPosition(topOffset, false);
-      else update();
+      if (cachedPostGeometry) {
+        syncPostScrollPosition(topOffset, false);
+        lastFrameScrollY = window.scrollY;
+        ensureScrollFrame();
+      } else update();
       return;
     }
     scheduleUpdate();
@@ -617,6 +724,7 @@ export function initStickySidebar() {
   document.addEventListener('astro:page-load', scheduleUpdate);
 
   update();
+  ensureScrollFrame();
 }
 
 if (typeof window !== 'undefined') {
