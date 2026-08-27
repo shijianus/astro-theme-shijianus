@@ -404,6 +404,39 @@ body[data-type='post'] #post .post-copyright__support .support-panel-link--icon 
   box-sizing: border-box;
 }
 
+body[data-type='post'] #post .shijianus-ai-summary__actions {
+  align-items: center;
+}
+
+body[data-type='post'] #post .shijianus-ai-summary__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+body[data-type='post'] #post :is(.post-copyright__original, .post-copyright-title, .post-meta__box__tags, .post-meta__box__categoryes, .support-panel-link--icon) {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 1.25;
+}
+
+body[data-type='post'] #post :is(.post-copyright__original, .post-meta__box__tags, .post-meta__box__categoryes) {
+  padding-block: 4px;
+}
+
+body[data-type='post'] #post :is(.post-copyright-title, .support-panel-link--icon):disabled,
+body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
 @media (max-width: 600px) {
   body[data-type='post'] #pagination.pagination-post {
     right: 16px;
