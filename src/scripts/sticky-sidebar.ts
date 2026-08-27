@@ -456,10 +456,14 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   const recentHeight = stickyBoxRecent?.offsetHeight ?? 0;
   const supportHeight = stickyBoxSupport?.offsetHeight ?? 0;
   const supportPadding = !isCompact && recentHeight > 0 ? recentHeight + gap : 0;
-  // The recent track must finish before the support group on every post type.
-  // Reserving that lower group at the track boundary keeps the two sticky
-  // cards separated when the post shell itself reaches its bottom edge.
+  // Reserve the support card in the recent track so the two groups never
+  // collide while the recent card is handing off. The support track itself
+  // still owns the post's exact lower boundary below.
   const recentTrackReserve = supportHeight > 0 ? supportHeight + gap : 0;
+  // The sticky offset clears the recent card once it reaches the header. Before
+  // that point, keep the same visual separation in normal document flow.
+  // This padding is included in the fixed track height below, so it cannot
+  // extend the support boundary past #post.
   trackSupport.style.paddingTop = `${Math.round(supportPadding)}px`;
 
   const recentStickyTop = isCompact ? topOffset + tocHeight + gap : topOffset;
@@ -551,11 +555,22 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   // Extend the support track so its bottom edge resolves against the post
   // shell's bottom, preserving synchronized end-of-column behaviour.
   const targetSupportHeight = Math.max(
-    supportHeight,
-    Math.round(docPostBottom - docCopyrightTop + supportPadding),
+    supportHeight + supportPadding,
+    Math.round(docPostBottom - docCopyrightTop),
   );
   trackSupport.style.minHeight = `${targetSupportHeight}px`;
   trackSupport.style.height = `${targetSupportHeight}px`;
+
+  // Flex gaps and hydrated card dimensions can move the support track after
+  // its first margin calculation. Reconcile the final document coordinate so
+  // its top is exactly the copyright baseline and its fixed height terminates
+  // at the same #post bottom as the main column.
+  const settledSupportTop = trackSupport.getBoundingClientRect().top + docScrollY;
+  const supportTopCorrection = docCopyrightTop - settledSupportTop;
+  if (Math.abs(supportTopCorrection) > 0.5) {
+    const currentMargin = Number.parseFloat(trackSupport.style.marginTop) || 0;
+    trackSupport.style.marginTop = `${Math.round(currentMargin + supportTopCorrection)}px`;
+  }
 
   // Re-read the track origin after all inline heights/margins have been
   // applied. Profile/media hydration can change the sidebar flow by a few
@@ -595,6 +610,39 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     recentHeight,
     supportHeight,
   };
+
+  const reconcileSupportBoundary = () => {
+    const liveCopyright = copyrightBlock?.getBoundingClientRect();
+    const livePost = mainEl.getBoundingClientRect();
+    const liveSupport = trackSupport.getBoundingClientRect();
+    if (!liveCopyright || !Number.isFinite(liveSupport.top)) return;
+
+    const liveCopyrightTop = liveCopyright.top + window.scrollY;
+    const livePostBottom = livePost.bottom + window.scrollY;
+    const liveSupportTop = liveSupport.top + window.scrollY;
+    const topCorrection = liveCopyrightTop - liveSupportTop;
+    if (Math.abs(topCorrection) > 0.5) {
+      const currentMargin = Number.parseFloat(trackSupport.style.marginTop) || 0;
+      trackSupport.style.marginTop = `${Math.round(currentMargin + topCorrection)}px`;
+    }
+
+    const settledHeight = Math.max(
+      supportHeight + supportPadding,
+      Math.round(livePostBottom - liveCopyrightTop),
+    );
+    if (Math.abs(trackSupport.getBoundingClientRect().height - settledHeight) > 0.5) {
+      trackSupport.style.minHeight = `${settledHeight}px`;
+      trackSupport.style.height = `${settledHeight}px`;
+    }
+  };
+
+  // A late island/font pass can settle the flex column after this function
+  // returns. Run the same boundary check after layout has been committed so
+  // short and long TOCs share one exact support termination line.
+  window.requestAnimationFrame(() => {
+    reconcileSupportBoundary();
+    window.requestAnimationFrame(reconcileSupportBoundary);
+  });
 
   aside.dataset.tocTermination = 'article-bottom';
   aside.dataset.supportActivation = 'copyright';
@@ -725,6 +773,15 @@ export function initStickySidebar() {
 
   update();
   ensureScrollFrame();
+
+  // Islands and late-loaded media can settle the post shell just after the
+  // initial pass. Re-measure on the next two frames (and once after a short
+  // hydration window) so the support track cannot retain a stale bottom line.
+  window.requestAnimationFrame(() => {
+    scheduleUpdate();
+    window.requestAnimationFrame(scheduleUpdate);
+  });
+  window.setTimeout(scheduleUpdate, 320);
 }
 
 if (typeof window !== 'undefined') {

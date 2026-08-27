@@ -3181,6 +3181,53 @@ body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-supp
   top: var(--support-sticky-top, var(--sticky-column-top, 80px)) !important;
 }
 
+/* Keep the support column inside the same horizontal and vertical boundary as
+   the post shell. The promo face is absolutely positioned by design, so its
+   containing boxes must own the clipping and width contract explicitly. */
+body[data-type='post'] #aside-content #post-sticky-layout > .aside-track,
+body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box,
+body[data-type='post'] #aside-content #post-sticky-layout .card-widget {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #card-telegram,
+body[data-type='post'] #aside-content #post-sticky-layout #card-telegram .promo-widget {
+  position: relative !important;
+  overflow: hidden !important;
+  align-self: stretch !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #card-telegram .face.front-face {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #card-categories {
+  position: relative !important;
+  align-self: stretch !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #card-categories .item-headline {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+body[data-type='post'] #aside-content #post-sticky-layout #card-categories .aside-title-icon {
+  flex: 0 0 auto !important;
+}
+
 @media screen and (max-width: 1199px) {
   body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box {
     position: static !important;
