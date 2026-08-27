@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from '../../config/site';
+import { Bot } from 'lucide-react';
 
 interface RelatedItem {
   title: string;
@@ -18,7 +19,9 @@ const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
 const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
 const apiBase = runtimeApiBase ? `${runtimeApiBase}/api` : '/api';
 const { slug, title, summary = '', url, related = [] } = Astro.props;
-const introText = `${siteConfig.site.author.name} 在这里持续写作与构建，重点关注长期可维护的博客系统、界面交互和内容结构。`;
+const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
+  template.replaceAll('{author}', siteConfig.site.author.name),
+);
 ---
 
 <section
@@ -29,15 +32,18 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
   data-title={title}
   data-summary={summary}
   data-url={url}
-  data-intro={introText}
+  data-intro={introTemplates[0]}
+  data-intro-templates={JSON.stringify(introTemplates)}
+  data-ai-unavailable={siteConfig.post.ai.unavailableMessage}
+  data-related-empty={siteConfig.post.ai.relatedEmptyMessage}
   data-related={JSON.stringify(related)}
 >
   <div class="shijianus-ai-summary__head">
     <div class="shijianus-ai-summary__title">
-      <span class="shijianus-ai-summary__icon" aria-hidden="true">AI</span>
+      <span class="shijianus-ai-summary__icon" aria-hidden="true"><Bot size={22} strokeWidth={1.8} /></span>
       <div>
         <strong>AI-摘要</strong>
-        <small>立体科幻风格摘要卡片 · shijianus AI</small>
+        <small>文章速览与站点导览 · shijianus AI</small>
       </div>
     </div>
     <div class="shijianus-ai-summary__meta">
@@ -45,7 +51,7 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
         <span data-ai-badge>待生成</span>
         <small data-ai-status>进入视区后自动生成</small>
       </div>
-      <button type="button" data-ai-refresh aria-label="重新生成摘要">↻</button>
+      <button type="button" data-ai-refresh aria-label="重新生成摘要" title="重新生成摘要">↻</button>
     </div>
   </div>
 
@@ -55,7 +61,7 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
       <span>SUMMARY CORE</span>
       <span>SHIJIANUS AI</span>
     </div>
-    <p class="shijianus-ai-summary__output" data-ai-output>AI 初始化中...</p>
+    <p class="shijianus-ai-summary__output" data-ai-output>选择一个入口，先从这里认识文章或作者。</p>
   </div>
 
   <div class="shijianus-ai-summary__actions">
@@ -133,6 +139,13 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
       const summary = root.dataset.summary || '';
       const url = root.dataset.url || window.location.href;
       const intro = root.dataset.intro || '';
+      const unavailableMessage = root.dataset.aiUnavailable || '这次没有接通摘要服务，先用文章自带的简介继续读吧。过一会儿再试，通常就能恢复。';
+      const relatedEmptyMessage = root.dataset.relatedEmpty || '当前还没有找到合适的延伸阅读，可以先回到首页看看最近更新。';
+      let introTemplates = [];
+      try {
+        const parsed = JSON.parse(root.dataset.introTemplates || '[]');
+        if (Array.isArray(parsed)) introTemplates = parsed.filter((item) => typeof item === 'string' && item.trim());
+      } catch {}
       const cacheKey = `shijianus-ai-summary:${slug}`;
       let isLoading = false;
 
@@ -153,16 +166,24 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
 
         if (!Array.isArray(items) || items.length === 0) {
           relatedBox.hidden = true;
-          typeInto(output, '当前没有可推荐的相关文章，建议直接返回首页继续浏览最新内容。');
+          typeInto(output, relatedEmptyMessage);
           setBadge('本地推荐');
           setStatus('未发现更多相关文章');
           return;
         }
 
-        relatedBox.innerHTML = items
-          .slice(0, 3)
-          .map((item, index) => `<a href="${item.href}"><span>${String(index + 1).padStart(2, '0')}</span><strong>${item.title}</strong></a>`)
-          .join('');
+        relatedBox.replaceChildren();
+        items.slice(0, 3).forEach((item, index) => {
+          if (!item || typeof item.title !== 'string' || typeof item.href !== 'string') return;
+          const link = document.createElement('a');
+          link.href = item.href;
+          const number = document.createElement('span');
+          number.textContent = String(index + 1).padStart(2, '0');
+          const itemTitle = document.createElement('strong');
+          itemTitle.textContent = item.title;
+          link.append(number, itemTitle);
+          relatedBox.append(link);
+        });
         relatedBox.hidden = false;
         typeInto(output, '这里先把与你当前文章最相关的三个入口摆出来，适合顺着主题继续读，不打断当前的阅读节奏。');
         setBadge('本地推荐');
@@ -226,15 +247,15 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
           setBadge(result.model || result.provider || 'AI 完成');
           setStatus(payload.cached ? '命中服务端缓存' : `来自 ${result.provider || 'AI'} 的新摘要`);
         } catch (error) {
-          let message = '当前摘要服务已进入冷却或额度保护，请稍后再试。若你刚连续刷新过多次，这通常是风控正在生效。';
-          let statusMessage = '稍后重试';
+          let message = unavailableMessage;
+          let statusMessage = '暂时离线';
           if (error instanceof Error && /429/.test(error.message)) {
             try {
               const resetAt = Number.parseInt(error.message.split('resetAt=')[1] || '', 10);
               if (Number.isFinite(resetAt)) {
                 const retrySeconds = Math.max(1, Math.ceil(resetAt - Date.now() / 1000));
-                message = `当前摘要服务正处于额度保护中，请约 ${retrySeconds} 秒后再试。为避免滥用，同一设备和同一出口 IP 都有独立的分钟/小时限制。`;
-                statusMessage = `冷却中 · ${retrySeconds}s`;
+                message = `摘要服务正在喘口气，大约 ${retrySeconds} 秒后再试就好。你也可以先点“介绍自己”或“推荐相关文章”。`;
+                statusMessage = `稍后可重试 · ${retrySeconds}s`;
               }
             } catch {}
           }
@@ -253,7 +274,9 @@ const introText = `${siteConfig.site.author.name} 在这里持续写作与构建
           const action = button.dataset.aiAction;
           if (action === 'intro') {
             relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
-            typeInto(output, intro);
+            const options = introTemplates.length > 0 ? introTemplates : [intro];
+            const selected = options[Math.floor(Math.random() * options.length)] || intro;
+            typeInto(output, selected);
             setBadge('站点介绍');
             setStatus('作者与站点介绍');
             return;

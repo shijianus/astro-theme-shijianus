@@ -213,6 +213,13 @@
   letter-spacing: 0.08em;
 }
 
+.shijianus-ai-summary__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: #a9ddff;
+  filter: drop-shadow(0 0 0.7rem rgba(122, 215, 255, 0.45));
+}
+
 .shijianus-ai-summary__title strong {
   display: block;
   font-size: 1.02rem;
@@ -242,11 +249,22 @@
 }
 
 .shijianus-ai-summary__meta button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
   border: 0;
+  border-radius: 0.75rem;
   background: transparent;
   color: rgba(235, 244, 255, 0.9);
   font-size: 1rem;
   cursor: pointer;
+}
+
+.shijianus-ai-summary__meta button:hover,
+.shijianus-ai-summary__meta button:focus-visible {
+  background: rgba(122, 215, 255, 0.12);
+  color: #b8e9ff;
 }
 
 .shijianus-ai-summary__screen {
@@ -314,6 +332,7 @@
 }
 
 .shijianus-ai-summary__action {
+  min-height: 2.5rem;
   border: 1px solid rgba(102, 154, 235, 0.18);
   background: rgba(255, 255, 255, 0.06);
   color: rgba(236, 245, 255, 0.92);
@@ -321,6 +340,18 @@
   padding: 0.62rem 0.95rem;
   font: inherit;
   cursor: pointer;
+}
+
+.shijianus-ai-summary__action:hover,
+.shijianus-ai-summary__action:focus-visible {
+  border-color: rgba(122, 215, 255, 0.56);
+  background: rgba(122, 215, 255, 0.14);
+  color: #ffffff;
+}
+
+.shijianus-ai-summary :is(button, a):focus-visible {
+  outline: 2px solid #7ad7ff;
+  outline-offset: 3px;
 }
 
 .shijianus-ai-summary__related {
