@@ -106,9 +106,133 @@ body[data-type='post'] #post #article-container.post-content {
   box-shadow: none !important;
 }
 
+body[data-type='post'] #post > *,
+body[data-type='post'] #post .post-copyright-block,
+body[data-type='post'] #post .post-copyright {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+body[data-type='post'] #post .post-copyright-block,
+body[data-type='post'] #post .post-copyright {
+  width: 100% !important;
+}
+
 body[data-type='post'] #post > :is(.post-tools-right, .postNav, .relatedPosts) {
   border: 0 !important;
   border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] #post .post-copyright__share {
+  display: grid !important;
+  gap: 12px !important;
+  margin: 16px 0 0 !important;
+  padding: 14px 0 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 78%, transparent) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-actions {
+  display: grid !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  flex: none !important;
+  justify-items: start !important;
+  gap: 10px !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-grid {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  max-width: none !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-grid__item {
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-grid__surface {
+  display: grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 86%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--card-bg) 86%, transparent) !important;
+  color: var(--font-color) !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-grid__item:hover .post-share-grid__surface {
+  border-color: var(--platform-accent) !important;
+  background: var(--platform-accent) !important;
+  color: var(--white) !important;
+  transform: translateY(-2px) !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-share-grid__label {
+  display: none !important;
+}
+
+body[data-type='post'] #post .post-copyright__share .post-tools-panels {
+  position: static !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+body[data-type='post'] #post .post-copyright__support {
+  margin-top: 16px !important;
+  padding-top: 16px !important;
+}
+
+body[data-type='post'] #post .post-copyright__support-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+body[data-type='post'] #post .post-copyright__support .support-panel-link--icon {
+  min-width: 0 !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 42%, var(--card-border)) !important;
+  border-radius: 8px !important;
+  background: color-mix(in srgb, var(--theme-main) 14%, var(--card-bg)) !important;
+}
+
+body[data-type='post'] #post .post-copyright__support .support-panel-link--icon:first-child {
+  border-color: color-mix(in srgb, var(--theme-main) 58%, var(--card-border)) !important;
+  background: var(--theme-main) !important;
+  color: var(--white) !important;
+}
+
+body[data-type='post'] #post .post-copyright__support .support-panel-link--icon:first-child:hover {
+  background: color-mix(in srgb, var(--theme-main) 78%, #111827) !important;
+}
+
+body[data-type='post'] #post > .post-tags-row {
+  margin-top: 18px !important;
+  padding: 12px 0 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent) !important;
   background: transparent !important;
   box-shadow: none !important;
 }

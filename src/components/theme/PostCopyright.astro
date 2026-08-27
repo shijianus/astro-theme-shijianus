@@ -2,7 +2,6 @@
 import {
   Copy,
   Facebook,
-  HeartHandshake,
   History,
   Linkedin,
   Mail,
@@ -120,6 +119,69 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       <span class="post-copyright-info">{notice}</span>
     </div>
 
+    <div class="post-tools-right post-copyright__share">
+      <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
+        <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
+        <div class="post-share-grid">
+          {enabledSharePlatforms.map((platform) => {
+            const PlatformIcon = platform.Icon;
+            const tooltip = `${platform.label} · ${platform.description}`;
+            return (
+              <button
+                type="button"
+                class="post-share-grid__item"
+                style={`--platform-accent:${platform.accent};`}
+                data-share-platform={platform.id}
+                data-tooltip={tooltip}
+                aria-label={tooltip}
+              >
+                <span class="post-share-grid__surface" aria-hidden="true">
+                  <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
+                  <span class="post-share-grid__label">{platform.label}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div class="post-tools__status" aria-live="polite"></div>
+      <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="关闭分享面板"></button>
+      <div class="post-tools-panels">
+        <div
+          class="post-floating-panel post-floating-panel--share"
+          id="post-tools-panel-wechat"
+          data-panel="wechat"
+          role="region"
+          aria-label={siteConfig.support.share.qrcodeLabel}
+          hidden
+        >
+          <div class="post-floating-panel__head">
+            <div>
+              <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
+              <strong>跨设备打开</strong>
+            </div>
+            <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭二维码面板">
+              ×
+            </button>
+          </div>
+          <p class="post-floating-panel__summary">扫码后可在手机或平板直接打开当前文章，也可以把这个页面快速转到另一台设备上。</p>
+          <div class="post-share-qrcode">
+            <div class="post-share-qrcode__image">
+              <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
+            </div>
+            <div class="post-share-qrcode__meta">
+              <strong>{title}</strong>
+              <p>如果这篇文章对你有帮助，扫码后可以在另一台设备上直接打开，或者顺手把它转给朋友。</p>
+              <button type="button" class="post-share-qrcode__action" data-tool="copy">
+                {copyLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="post-copyright__support">
       <div class="post-copyright__support-copy">
         <span class="post-copyright__support-eyebrow">{siteConfig.support.reward.title}</span>
@@ -135,10 +197,10 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
             aria-expanded="false"
             aria-controls="post-tools-panel-reward"
           >
-            <HeartHandshake className="support-panel-link__icon" aria-hidden="true" />
+            <QrCode className="support-panel-link__icon" aria-hidden="true" />
             <span class="support-panel-link__copy">
               <strong>{rewardLabel}</strong>
-              <small>请作者喝杯饮料</small>
+              <small>打开打赏二维码</small>
             </span>
           </button>
 
@@ -174,74 +236,6 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
           <Sparkles className="support-panel-note__icon" aria-hidden="true" />
           <span>{rewardNote}</span>
         </span>
-      </div>
-    </div>
-  </div>
-
-  <div class="post-tools-right">
-    <div class="post-meta__box post-meta__box--compact">
-      <span class="post-meta__box__hint">这里不再重复展示分类、标签和继续阅读入口，右侧只保留分享动作，避免与正文信息冲突。</span>
-      <span class="post-meta__box__hint">{siteConfig.support.share.summary}</span>
-    </div>
-
-    <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
-      <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
-      <div class="post-share-grid">
-        {enabledSharePlatforms.map((platform) => {
-          const PlatformIcon = platform.Icon;
-          const tooltip = `${platform.label} · ${platform.description}`;
-          return (
-            <button
-              type="button"
-              class="post-share-grid__item"
-              style={`--platform-accent:${platform.accent};`}
-              data-share-platform={platform.id}
-              data-tooltip={tooltip}
-              aria-label={tooltip}
-            >
-              <span class="post-share-grid__surface" aria-hidden="true">
-                <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
-                <span class="post-share-grid__label">{platform.label}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    <div class="post-tools__status" aria-live="polite"></div>
-    <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="关闭分享面板"></button>
-    <div class="post-tools-panels">
-      <div
-        class="post-floating-panel post-floating-panel--share"
-        id="post-tools-panel-wechat"
-        data-panel="wechat"
-        role="region"
-        aria-label={siteConfig.support.share.qrcodeLabel}
-        hidden
-      >
-        <div class="post-floating-panel__head">
-          <div>
-            <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
-            <strong>跨设备打开</strong>
-          </div>
-          <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭二维码面板">
-            ×
-          </button>
-        </div>
-        <p class="post-floating-panel__summary">扫码后可在手机或平板直接打开当前文章，也可以把这个页面快速转到另一台设备上。</p>
-        <div class="post-share-qrcode">
-          <div class="post-share-qrcode__image">
-            <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
-          </div>
-          <div class="post-share-qrcode__meta">
-            <strong>{title}</strong>
-            <p>如果这篇文章对你有帮助，扫码后可以在另一台设备上直接打开，或者顺手把它转给朋友。</p>
-            <button type="button" class="post-share-qrcode__action" data-tool="copy">
-              {copyLabel}
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
