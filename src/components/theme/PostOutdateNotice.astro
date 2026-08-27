@@ -1,0 +1,44 @@
+---
+import { AlertTriangle, CalendarClock } from 'lucide-react';
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  referenceDate: Date;
+  configuredDays?: number;
+}
+
+const { referenceDate, configuredDays } = Astro.props;
+const systemDays = Math.max(1, Math.floor(siteConfig.post.outdate.systemDays));
+const articleDays = typeof configuredDays === 'number' && Number.isFinite(configuredDays)
+  ? Math.max(1, Math.floor(configuredDays))
+  : null;
+const thresholdDays = Math.min(systemDays, articleDays ?? systemDays);
+const ageDays = Math.max(0, Math.floor((Date.now() - referenceDate.valueOf()) / 86_400_000));
+const shouldShow = ageDays >= thresholdDays;
+const thresholdSource = articleDays !== null && articleDays <= systemDays ? '文章设定' : '站点规则';
+const dateLabel = referenceDate.toLocaleDateString('zh-CN');
+---
+
+{shouldShow && (
+  <aside
+    class="post-outdate-notice"
+    role="note"
+    data-post-outdate
+    data-age-days={ageDays}
+    data-threshold-days={thresholdDays}
+  >
+    <span class="post-outdate-notice__icon" aria-hidden="true">
+      <AlertTriangle size={20} strokeWidth={1.8} />
+    </span>
+    <div class="post-outdate-notice__copy">
+      <strong>这篇记录可能需要重新核对</strong>
+      <p>
+        内容距今约 {ageDays} 天（{dateLabel}），已达到 {thresholdDays} 天的{thresholdSource}提醒线。阅读时可以把它当作当时的判断，关键结论请再确认一次。
+      </p>
+    </div>
+    <span class="post-outdate-notice__meta" aria-label={`提醒阈值 ${thresholdDays} 天`}>
+      <CalendarClock size={15} aria-hidden="true" />
+      {thresholdDays} 天
+    </span>
+  </aside>
+)}

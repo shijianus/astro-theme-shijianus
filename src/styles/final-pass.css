@@ -1438,6 +1438,46 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   line-height: 1.45;
 }
 
+/* Hexo-style snackbar host: the node is portaled into #name-container, but
+   remains fixed so it never changes the header or page flow. */
+#name-container:has(.snackbar-container) {
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.mask-name-container:has(.snackbar-container) {
+  display: flex !important;
+  pointer-events: none;
+}
+
+.mask-name-container:has(.snackbar-container) #page-name {
+  display: none !important;
+}
+
+#page-header:has(.snackbar-container) {
+  transform: none !important;
+}
+
+.snackbar-container.snackbar-css.snackbar-pos.top-center {
+  position: fixed !important;
+  top: calc(var(--site-header-height, 60px) + 10px) !important;
+  left: 50% !important;
+  z-index: 120 !important;
+  display: inline-flex !important;
+  width: max-content;
+  min-width: min(360px, calc(100vw - 32px));
+  max-width: min(560px, calc(100vw - 32px));
+  box-sizing: border-box;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -10px);
+}
+
+.snackbar-container.snackbar-css.snackbar-pos.top-center.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .theme-account-overlay {
   position: fixed;
   inset: 0;

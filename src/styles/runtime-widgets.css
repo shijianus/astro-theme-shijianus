@@ -378,6 +378,84 @@
   letter-spacing: 0.08em;
 }
 
+.post-outdate-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.8rem;
+  margin: 1.25rem 0 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid color-mix(in srgb, #d97706 28%, var(--card-border));
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, #f59e0b 8%, var(--card-bg));
+  color: var(--font-color);
+}
+
+.post-outdate-notice__icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #b45309;
+}
+
+.post-outdate-notice__copy {
+  min-width: 0;
+}
+
+.post-outdate-notice__copy strong {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.post-outdate-notice__copy p {
+  margin: 0.25rem 0 0;
+  color: var(--secondtext);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.post-outdate-notice__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.75rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #f59e0b 12%, var(--secondbg));
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .post-outdate-notice {
+  border-color: color-mix(in srgb, #fbbf24 30%, var(--card-border));
+  background: color-mix(in srgb, #f59e0b 10%, var(--card-bg));
+}
+
+:root[data-theme='dark'] .post-outdate-notice__icon {
+  color: #fbbf24;
+}
+
+:root[data-theme='dark'] .post-outdate-notice__meta {
+  color: #fcd34d;
+}
+
+@media (max-width: 600px) {
+  .post-outdate-notice {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .post-outdate-notice__meta {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 .shijianus-music-pocket {
   position: fixed;
   right: 1rem;

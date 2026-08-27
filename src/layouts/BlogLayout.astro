@@ -302,6 +302,22 @@ if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaul
 
     <script is:inline>
       (() => {
+        const moveSnackbarToName = () => {
+          const host = document.getElementById('name-container');
+          const snackbar = document.querySelector('.snackbar-container.snackbar-css.snackbar-pos');
+          if (!host || !snackbar || snackbar.parentElement === host) return;
+          host.appendChild(snackbar);
+        };
+
+        moveSnackbarToName();
+        const observer = new MutationObserver(moveSnackbarToName);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.setTimeout(() => observer.disconnect(), 12000);
+      })();
+    </script>
+
+    <script is:inline>
+      (() => {
         const isInteractiveTarget = (target) => {
           return target instanceof HTMLElement && Boolean(target.closest('a, button, input, textarea, select, summary, details, [data-ignore-card-link]'));
         };

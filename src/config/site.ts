@@ -758,6 +758,9 @@ export const siteConfig = {
       rewardLabel: '打赏作者',
       rewardNote: '感谢你赐予我继续写下去的动力。',
     },
+    outdate: {
+      systemDays: 365,
+    },
     ai: {
       unavailableMessage: '这次没有接通摘要服务，先用文章自带的简介继续读吧。过一会儿再试，通常就能恢复。',
       relatedEmptyMessage: '当前还没有找到合适的延伸阅读，可以先回到首页看看最近更新。',

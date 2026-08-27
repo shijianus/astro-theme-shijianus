@@ -231,11 +231,20 @@ export function ThemeOverlays({
   const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
   const [selectedActivityPage, setSelectedActivityPage] = useState(1);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const activityBarRef = useRef<HTMLDivElement>(null);
   const activityTimerRef = useRef<number | null>(null);
   const lastActivityRef = useRef({
     message: '',
     at: 0,
   });
+
+  useEffect(() => {
+    const activityBar = activityBarRef.current;
+    const nameContainer = document.getElementById('name-container');
+    if (activityBar && nameContainer && activityBar.parentElement !== nameContainer) {
+      nameContainer.appendChild(activityBar);
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch latest hot comment if available
@@ -888,7 +897,11 @@ export function ThemeOverlays({
         </div>
       )}
 
-      <div className={`theme-activity-bar ${activityVisible ? 'show' : ''}`} aria-live="polite">
+      <div
+        ref={activityBarRef}
+        className={`theme-activity-bar snackbar-container snackbar-css snackbar-pos top-center ${activityVisible ? 'show' : ''}`}
+        aria-live="polite"
+      >
         <span className="theme-activity-bar__label">提示</span>
         <strong>{activityMessage}</strong>
       </div>

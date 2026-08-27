@@ -6,6 +6,7 @@ import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
 import PostEndRecommendation from '../../components/theme/PostEndRecommendation.astro';
+import PostOutdateNotice from '../../components/theme/PostOutdateNotice.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
 import BlogLayout from '../../layouts/BlogLayout.astro';
@@ -251,6 +252,13 @@ const heroSummary = isUnlocked
     </article>
 
     {isUnlocked && <ContentFeatureEnhancer />}
+
+    {isUnlocked && (
+      <PostOutdateNotice
+        referenceDate={entry.data.updatedDate ?? entry.data.pubDate}
+        configuredDays={entry.data.outdateDays ?? entry.data.validDays}
+      />
+    )}
 
     {isUnlocked && siteConfig.theme.features.postCopyright && (
       <PostCopyright
