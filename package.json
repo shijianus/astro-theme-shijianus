@@ -24,6 +24,9 @@
     "repo:remote": "node scripts/repo-remote.mjs",
     "repo:push": "node scripts/repo-push.mjs",
     "repo:publish": "node scripts/repo-publish.mjs",
+    "brand": "node scripts/brand-banner.mjs",
+    "test:brand": "node scripts/brand-banner.mjs",
+    "test": "node scripts/brand-banner.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

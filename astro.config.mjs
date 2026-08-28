@@ -12,6 +12,28 @@ import tailwindPostcss from '@tailwindcss/postcss'; // ADDED: Correct PostCSS pl
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { printBrandBanner } from './scripts/brand-banner.mjs';
+
+function epocanvasBrandIntegration() {
+  let hasPrinted = false;
+  return {
+    name: 'epocanvas-brand-banner',
+    hooks: {
+      'astro:server:setup': () => {
+        if (!hasPrinted) {
+          hasPrinted = true;
+          printBrandBanner();
+        }
+      },
+      'astro:server:start': () => {
+        if (!hasPrinted) {
+          hasPrinted = true;
+          printBrandBanner();
+        }
+      },
+    },
+  };
+}
 
 // https://astro.build/config
 const buildTarget = process.env.BLOG_BUILD_TARGET === 'static' ? 'static' : 'server';
@@ -33,7 +55,7 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  integrations: [react(), mdx()],
+  integrations: [epocanvasBrandIntegration(), react(), mdx()],
   markdown: {
     remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],
