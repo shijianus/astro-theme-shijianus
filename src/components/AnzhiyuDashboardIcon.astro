@@ -12,7 +12,7 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
   id={id}
   data-shijianus-tooltip="中控台"
 >
-  <button class="icon-button" aria-label="中控台">
+  <button class="icon-button" type="button" aria-label="中控台">
     <div class="icon-container">
       <span class="shape top-bar"></span>
       <span class="shape bottom-left-dot"></span>
@@ -106,28 +106,37 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
 </style>
 
 <script>
-  // Add listener for multiple instances if needed, though usually just one
-  document.querySelectorAll('.shijianus-dashboard-icon').forEach((wrapper) => {
-    let consoleOpen = false;
-    
-    // Sync state from window events
-    window.addEventListener('shijianus:console-visibility', ((event: Event) => {
-      const customEvent = event as CustomEvent<boolean>;
-      consoleOpen = Boolean(customEvent.detail);
+  // Use event delegation on document to avoid timing issues with React client:idle hydration.
+  // The .shijianus-dashboard-icon lives inside the SiteHeader React island which hydrates
+  // asynchronously — direct querySelectorAll at DOMContentLoaded may miss it or get stale refs.
+  
+  let consoleOpen = false;
+
+  // Sync console state from the visibility event broadcast by ThemeOverlays
+  window.addEventListener('shijianus:console-visibility', ((event: Event) => {
+    const customEvent = event as CustomEvent<boolean>;
+    consoleOpen = Boolean(customEvent.detail);
+    // Update all dashboard icon active states
+    document.querySelectorAll('.shijianus-dashboard-icon').forEach((wrapper) => {
       if (consoleOpen) {
         wrapper.classList.add('is-active');
       } else {
         wrapper.classList.remove('is-active');
       }
-    }) as EventListener);
-
-    wrapper.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (consoleOpen) {
-        window.dispatchEvent(new CustomEvent('shijianus:close-console'));
-      } else {
-        window.dispatchEvent(new CustomEvent('shijianus:open-console'));
-      }
     });
+  }) as EventListener);
+
+  // Use event delegation: listen on document, check if click target is inside dashboard icon
+  document.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+    const wrapper = target.closest('.shijianus-dashboard-icon');
+    if (!wrapper) return;
+    e.preventDefault();
+    if (consoleOpen) {
+      window.dispatchEvent(new CustomEvent('shijianus:close-console'));
+    } else {
+      window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+    }
   });
 </script>

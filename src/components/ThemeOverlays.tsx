@@ -684,6 +684,8 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:open-console', openConsole);
     window.addEventListener('shijianus:close-console', closeConsole);
     window.addEventListener('shijianus:open-notifications', openNotifications);
+    // shijianus:open-account is dispatched by SiteHeader account button → maps to notification/account overlay
+    window.addEventListener('shijianus:open-account', openNotifications);
     window.addEventListener('shijianus:close-notifications', closeNotifications);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
@@ -697,6 +699,7 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:open-console', openConsole);
       window.removeEventListener('shijianus:close-console', closeConsole);
       window.removeEventListener('shijianus:open-notifications', openNotifications);
+      window.removeEventListener('shijianus:open-account', openNotifications);
       window.removeEventListener('shijianus:close-notifications', closeNotifications);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);

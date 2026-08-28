@@ -25,6 +25,8 @@ type SiteHeaderProps = {
   showNotificationTrigger: boolean;
   isAccountEnabled: boolean;
   hasDatabase: boolean;
+  /** Named slot from Astro — renders the center console trigger icon (e.g. AnzhiyuDashboardIcon) */
+  consoleIcon?: React.ReactNode;
 };
 
 function isActive(currentPath: string, href: string) {
