@@ -23,6 +23,13 @@ const postsCollection = defineCollection({
     coverAlt: z.string().optional(),
     coverVideo: z.string().optional(),
     coverVideoPoster: z.string().optional(),
+    postFormat: z.enum(['standard', 'aside', 'status', 'quote', 'gallery', 'video', 'audio', 'link', 'chat', 'image']).default('standard').optional(),
+    markup: z.string().optional(),
+    toc: z.boolean().default(true).optional(),
+    hideToc: z.boolean().default(false).optional(),
+    math: z.boolean().default(false).optional(),
+    mermaid: z.boolean().default(false).optional(),
+    series: z.string().optional(),
     access: z.object({
       password: z.string().optional(),
       passwordHash: z.string().optional(),

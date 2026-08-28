@@ -111,7 +111,8 @@ const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 6) : [];
 const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
 const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
 const nextPost = publicPostIndex >= 0 && publicPostIndex < publicPosts.length - 1 ? publicPosts[publicPostIndex + 1] : null;
-const sidebarData = createSidebarData(publicPosts, headings);
+const hasTocAside = isUnlocked && siteConfig.theme.features.postToc && entry.data.toc !== false && !entry.data.hideToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
+const sidebarData = createSidebarData(publicPosts, hasTocAside ? headings : []);
 sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
 sidebarData.previousPost = previousPost;
 sidebarData.nextPost = nextPost;
@@ -130,9 +131,21 @@ const category = resolveCategory(entry);
 const publicCategory = isUnlocked ? category : PROTECTED_POST_CATEGORY;
 const isOriginal = entry.data.author.trim().toLowerCase() === siteConfig.site.author.name.trim().toLowerCase();
 const originalBadge = siteConfig.post.hero.detectOriginalTag ? [isOriginal ? '原创' : '转载'] : [];
+const formatLabels: Record<string, string> = {
+  aside: '便签',
+  status: '动态',
+  quote: '语录',
+  gallery: '画廊',
+  video: '视频',
+  audio: '音频',
+  link: '链接',
+  chat: '对话',
+  image: '相片',
+};
+const formatBadge = entry.data.postFormat && entry.data.postFormat !== 'standard' ? [formatLabels[entry.data.postFormat] || entry.data.postFormat] : [];
 const scannedTags = [...new Set(entry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
-const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length);
-const badges = isUnlocked ? [...originalBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
+const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length - formatBadge.length);
+const badges = isUnlocked ? [...originalBadge, ...formatBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
 const heroImage = isUnlocked ? resolveCover(entry) : siteConfig.post.hero.fallbackImage;
 const heroImageAlt = isUnlocked ? resolveCoverAlt(entry) : PROTECTED_POST_TITLE;
 const heroImageUrl = new URL(heroImage, siteConfig.site.url);
@@ -155,7 +168,6 @@ const fullMeta = [
 ];
 const meta = (isUnlocked ? fullMeta : publicMeta) as HeroMetaItem[];
 const commentsEnabled = isUnlocked && hasConfiguredCommentDatabase(siteConfig.integrations.comments);
-const hasTocAside = isUnlocked && siteConfig.theme.features.postToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
 
 const tagCounts: Record<string, number> = {};
 publicPosts.forEach((post) => {
