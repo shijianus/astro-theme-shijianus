@@ -744,7 +744,9 @@ html.theme-ready body.theme-body #footer {
 #rightside > div > button:active,
 #rightside > div > a:active,
 .categoryButton:active,
-
+#recent-posts > .recent-post-item:active {
+  transform: scale(0.97);
+}
 
 #toggle-menu {
   display: none;
