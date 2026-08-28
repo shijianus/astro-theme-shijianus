@@ -41,19 +41,46 @@
 
       document.querySelectorAll('.article-body pre').forEach((pre) => {
         if (!(pre instanceof HTMLElement) || pre.dataset.enhanced === 'true') return;
+        if (pre.closest('.mermaid-diagram-wrap, .katex-display, .no-code-enhance')) return;
 
         const code = pre.querySelector('code');
+        const langStr = getLanguage(pre, code);
+        if (langStr === 'MERMAID') return; // Handled by mermaid enhancer
+
+        pre.dataset.enhanced = 'true';
+
+        // Check diff lines in code
+        if (code) {
+          const lines = code.innerHTML.split('\n');
+          let hasDiff = false;
+          const processed = lines.map((line) => {
+            if (/^\s*\+\s|^\s*\/\/\s*\[!code \+\+\]/.test(line) || line.includes('class="line inserted"')) {
+              hasDiff = true;
+              return `<span class="diff-add">${line.replace(/\/\/\s*\[!code \+\+\]/, '')}</span>`;
+            }
+            if (/^\s*-\s|^\s*\/\/\s*\[!code --\]/.test(line) || line.includes('class="line deleted"')) {
+              hasDiff = true;
+              return `<span class="diff-remove">${line.replace(/\/\/\s*\[!code --\]/, '')}</span>`;
+            }
+            return line;
+          });
+          if (hasDiff) {
+            code.innerHTML = processed.join('\n');
+          }
+        }
+
         const shell = document.createElement('div');
         const toolbar = document.createElement('div');
         const lights = document.createElement('span');
+        const metaWrap = document.createElement('div');
         const lang = document.createElement('span');
         const button = document.createElement('button');
         const buttonText = document.createElement('span');
 
-        pre.dataset.enhanced = 'true';
         shell.className = 'code-block-shell';
         toolbar.className = 'code-block-toolbar';
         lights.className = 'code-block-lights';
+        metaWrap.className = 'code-block-meta';
         lang.className = 'code-block-lang';
         button.className = 'code-copy-button';
         button.type = 'button';
@@ -62,17 +89,50 @@
         buttonText.textContent = '复制';
 
         lights.innerHTML = '<i></i><i></i><i></i>';
-        lang.textContent = getLanguage(pre, code);
+        lang.textContent = langStr;
+        metaWrap.append(lang);
+
+        button.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
         button.append(buttonText);
-        toolbar.append(lights, lang, button);
+        toolbar.append(lights, metaWrap, button);
 
         pre.parentNode?.insertBefore(shell, pre);
-        shell.append(toolbar, pre);
+
+        // Long code block collapse support
+        const lineCount = (code?.textContent || pre.textContent || '').split('\n').length;
+        if (lineCount > 22) {
+          const collapseWrap = document.createElement('div');
+          collapseWrap.className = 'code-collapse-wrap';
+          const mask = document.createElement('div');
+          mask.className = 'code-collapse-mask';
+          const expandBtn = document.createElement('button');
+          expandBtn.type = 'button';
+          expandBtn.className = 'code-expand-btn';
+          expandBtn.innerHTML = `<span>展开全部代码 (${lineCount} 行)</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+          expandBtn.addEventListener('click', () => {
+            const isExpanded = collapseWrap.classList.toggle('is-expanded');
+            if (isExpanded) {
+              expandBtn.innerHTML = `<span>收起代码</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`;
+            } else {
+              expandBtn.innerHTML = `<span>展开全部代码 (${lineCount} 行)</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+              shell.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          });
+
+          mask.append(expandBtn);
+          collapseWrap.append(pre, mask);
+          shell.append(toolbar, collapseWrap);
+        } else {
+          shell.append(toolbar, pre);
+        }
 
         let resetTimer = 0;
 
         button.addEventListener('click', async () => {
-          const copied = await copyText(code?.textContent ?? pre.textContent ?? '');
+          const rawText = code?.textContent ?? pre.textContent ?? '';
+          const cleanedText = rawText.replace(/^\+\s/gm, '').replace(/^-\s/gm, '');
+          const copied = await copyText(cleanedText);
           window.clearTimeout(resetTimer);
 
           if (!copied) {

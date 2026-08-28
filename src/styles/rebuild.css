@@ -14079,27 +14079,9 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
 }
 
 .article-body.post-content table {
-  display: block;
   width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-  white-space: nowrap;
-}
-
-.article-body.post-content table thead th {
-  color: var(--font-color);
-  font-weight: 800;
-}
-
-.article-body.post-content table :is(th, td) {
-  padding: 0.78rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
-  text-align: left;
-}
-
-.article-body.post-content table tbody tr:nth-child(2n) {
-  background: color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .article-body.post-content ul:has(input[type='checkbox']) {

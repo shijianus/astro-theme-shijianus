@@ -10,6 +10,9 @@ import remarkGfm from 'remark-gfm';
 import autoprefixer from 'autoprefixer';
 import tailwindPostcss from '@tailwindcss/postcss'; // ADDED: Correct PostCSS plugin
 
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
 // https://astro.build/config
 const buildTarget = process.env.BLOG_BUILD_TARGET === 'static' ? 'static' : 'server';
 const isStaticBuild = buildTarget === 'static';
@@ -32,7 +35,15 @@ export default defineConfig({
   },
   integrations: [react(), mdx()],
   markdown: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkMath],
+    rehypePlugins: [rehypeKatex],
+    shikiConfig: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark-dimmed',
+      },
+      wrap: false,
+    },
   },
   vite: {
     plugins: [tailwindcssVite()], // Use the vite plugin here
