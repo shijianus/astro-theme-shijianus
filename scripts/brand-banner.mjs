@@ -1,7 +1,7 @@
 import process from 'node:process';
 
 // Embedded Encrypted Brand Manifest Payload
-const _0xeb1 = "IXgseGB4aHRsdGp4dngqeGB4Hyo1GTs0LDspeHZ4KXhgeCkyMzAzOzQvKXh2eC94YHgyLi4qKWB1dT8qNTk7NCw7KXQ5NTd4dng7KC5reGABeHp6enoFBQUFBQV6enp6enp6enp6enp6BQUFBQUFenp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp4dnh6enp1egUFBQV1BQUFenoFBQUFenp6dXoFBQUFdQUFBXoFBQUFBXoFenp6BQUFBQUFegUFBQUFBXp6enp6eHZ4enp1egUFdXp1egUFegYGdXoFBXoGBnp1enV6enp1egUFejp1egUFegYGeiZ6dXp1egUFejp1egUFBXV6enp6enh2eHp1enUFBQV1enUFdXp1enUFdXp1dXp1BQUFdXp1BXV6dXp1enV6dXomdXp1enUFdXpyBQV6enN6enp6enp4dnh1BQUFBQV1enQFBQV1BgYFBQUFdXoGBgUFBQV1BgYFBXYFdQV1enUFdSYFBQV1BgYFBXYFdQUFBQV1enp6enp6enh2eHp6enp6dQV1enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp4B3Z4OyguaHhgAXh6enoFBQUFBXoFBXp6BQV6enp6egUFegUFBXp6enoFenp6BQV6egUFenoFBQUFBXh2eHp6dXoFBQV1dXp1enV6dXp1enV6dXp1enp6Jnp6dXomenV6dXp1enV6dXp1egUFBXV4dnh6egYGBQV6BgZ1enUFdXp1enV6dXp1enV6dSZ6Jnp1enomdXp1enV6dXp1enUGBgUFegYGenh2eHoFBQV1enV6BQV6enV6dXp1BXV6dXoFBQV6JnV6dSZ6enV6dXp1BXV6dQUFBXV6dXp4dnh1BQUFBXUFdXp1BXUFdQYGBQUFBXUFdXp6JgV1BXV6JgV1enoGBgUFBQV1dQUFBQV1enp4B3Z4OWt4YAFsdmtiaHZoa2gHdng5aHhgAWhrbXZtanZoaWMHdng5aXhgAWNjdmtqaHZobmsHJw==";
+const _0xeb1 = "IXgseGB4aHRsdGp4dngqeGB4Hyo1GTs0LDspeHZ4KXhgeCkyMzAzOzQvKXh2eC94YHgyLi4qKWB1dT8qNTk7NCw7KXQ5NTd4dng7KC5reGABeHp6enoFBQUFBQV6enp6enp6enp6enp6BQUFBQUFenp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp4dnh6enp1egUFBQV1BQUFenoFBQUFenp6dXoFBQUFdQUFBXoFBQUFBXoFenp6BQUFBQUFegUFBQUFBXp6enp6eHZ4enp1egUFdXp1egUFegYGdXoFBXoGBnp1enV6enp1egUFejp1egUFegYGeiZ6dXp1egUFejp1egUFBXV6enp6enh2eHp1enUFBQV1enUFdXp1enUFdXp1dXp1BQUFdXp1BXV6dXp1enV6dXomdXp1enUFdXpyBQV6enN6enp6enp4dnh1BQUFBQV1enQFBQV1BgYFBQUFdXoGBgUFBQV1BgYFBXYFdQV1enUFdSYFBQV1BgYFBXYFdQUFBQV1enp6enp6enh2eHp6enp6dQV1enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp4B3Z4OyguaHhgAXh6enp6enp6erjM0rjM2nq4zNJ6uMzSerjM0nq4zMu4zMu4zNJ6uMzSerjM3rjM2rjM0nq4zNK4zN64zMu4zNJ6uMzSuMzLuMzSerjM0rjM2np6epjtenp6G3oIehl6EnoTeg56H3oZeg56D3oIeh94dnh6enp6enp6erjM3rjM0nq4zNK4zNq4zNJ6uMzSerjM0rjM3rjM0nq4zNJ6uMzSuMzauMzSerjM0rjMy7jM2rjM0nq4zNq4zN64zNp6uMzeuMzSenp6mO16enosemh6dHpsenR6angHdng5a3hgAWx2a2JodmhraAd2eDloeGABaGttdm1qdmhpYwd2eDlpeGABb2x2a2JjdmhuYgd2eDlueGABa2xidmJvdmhubQcn";
 const _0xkey = 0x5A;
 
 /**
@@ -29,15 +29,13 @@ export function getBrandManifest() {
         "     /_/                                                     "
       ],
       art2: [
-        "   _____ __  __     __ ___    _   __  __  _____",
-        "  / ___// / / / / / / /   |  / | / / / / / / ___/",
-        "  \\__ \\/ /_/ / / / / / /| | /  |/ / / / / /\\__ \\ ",
-        " ___/ / __  / / /_/ / ___ |/ /|  / / /_/ /___/ / ",
-        "/____/_/ /_/_/\\____/_/  |_/_/ |_/  \\____//____/  "
+        "        █▀ █ █ █ ░░█ █ ▄▀█ █▄░█ █░█ █▀   ·   A R C H I T E C T U R E",
+        "        ▄█ █▀█ █ █▄█ █ █▀█ █░▀█ ▀▄▀ ▄█   ·   v 2 . 6 . 0"
       ],
-      c1: [6, 182, 212],
-      c2: [217, 70, 239],
-      c3: [99, 102, 241],
+      c1: [6, 182, 212],   // Cyan #06B6D4
+      c2: [217, 70, 239],  // Fuchsia #D946EF
+      c3: [56, 189, 248],  // Sky Blue #38BDF8
+      c4: [168, 85, 247],  // Purple #A855F7
     };
   }
 }
@@ -111,7 +109,7 @@ export function generateBrandBanner(options = {}) {
     : epoCanvasArt;
 
   const coloredShijian = isColor
-    ? colorize2D(shijianusArt, manifest.c3, manifest.c2)
+    ? colorize2D(shijianusArt, manifest.c3, manifest.c4 || manifest.c2)
     : shijianusArt;
 
   const lines = [];
