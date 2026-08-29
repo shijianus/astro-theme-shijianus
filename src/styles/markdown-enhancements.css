@@ -659,15 +659,23 @@ details.admonition-details .details-content {
   margin: 1.8rem 0;
   padding: 1.6rem 1.4rem;
   text-align: center;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 2px dashed color-mix(in srgb, var(--theme-main) 35%, var(--card-border));
   background: color-mix(in srgb, var(--theme-main) 5%, var(--card-bg));
   transition: all 0.25s ease;
+  position: relative;
 }
 
 .article-encrypted-box:hover {
   border-color: var(--theme-main);
-  box-shadow: 0 6px 20px -4px color-mix(in srgb, var(--theme-main) 15%, transparent);
+  box-shadow: 0 6px 24px -4px color-mix(in srgb, var(--theme-main) 18%, transparent);
+}
+
+.encrypted-box__level-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
 }
 
 .encrypted-box__icon {
@@ -683,8 +691,8 @@ details.admonition-details .details-content {
 }
 
 .encrypted-box__title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: var(--font-color);
   margin-bottom: 0.4rem;
 }
@@ -692,16 +700,16 @@ details.admonition-details .details-content {
 .encrypted-box__desc {
   font-size: 0.9rem;
   color: var(--text-muted);
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto 1.1rem auto;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .encrypted-box__btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.4rem;
+  padding: 0.6rem 1.5rem;
   font-size: 0.92rem;
   font-weight: 700;
   border-radius: 30px;
@@ -736,6 +744,544 @@ details.admonition-details .details-content {
   border-style: solid;
   border-color: #10b981;
   background: color-mix(in srgb, #10b981 6%, var(--card-bg));
+}
+
+/* Level 2: Mask Protection Toolbar & Modes */
+.encrypted-mask-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
+}
+
+.mask-toolbar__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--font-color);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mask-toolbar__buttons {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.mask-btn {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  background: var(--card-bg);
+  color: var(--font-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mask-btn:hover,
+.mask-btn.is-active {
+  background: var(--theme-main);
+  color: #ffffff;
+  border-color: var(--theme-main);
+}
+
+.encrypted-masked-body {
+  transition: filter 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+  position: relative;
+  border-radius: 8px;
+  padding: 0.4rem;
+}
+
+/* Mask mode 1: Gaussian Blur (Default) */
+.encrypted-masked-body.mask-blur {
+  filter: blur(6px);
+  user-select: none;
+  cursor: pointer;
+}
+.encrypted-masked-body.mask-blur:hover {
+  filter: blur(0px);
+}
+
+/* Mask mode 2: Mosaic */
+.encrypted-masked-body.mask-mosaic {
+  filter: blur(12px) contrast(180%);
+  user-select: none;
+  cursor: pointer;
+}
+.encrypted-masked-body.mask-mosaic:hover {
+  filter: none;
+}
+
+/* Mask mode 3: Spoiler */
+.encrypted-masked-body.mask-spoiler {
+  background: color-mix(in srgb, var(--font-color) 85%, transparent);
+  color: transparent !important;
+  user-select: none;
+  cursor: pointer;
+}
+.encrypted-masked-body.mask-spoiler * {
+  color: transparent !important;
+}
+.encrypted-masked-body.mask-spoiler:hover {
+  background: transparent;
+  color: inherit !important;
+}
+.encrypted-masked-body.mask-spoiler:hover * {
+  color: inherit !important;
+}
+
+/* Mask mode 4: Fully Revealed */
+.encrypted-masked-body.mask-reveal {
+  filter: none;
+}
+
+/* Level 3: Viewport Auto-Lock Indicator & Alert */
+.encrypted-level3-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  margin-bottom: 0.8rem;
+}
+
+.security-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: securityPulse 1.8s infinite;
+}
+
+@keyframes securityPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.encrypted-relock-notice {
+  display: none;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 0.8rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.article-encrypted-box.was-relocked .encrypted-relock-notice {
+  display: block;
+}
+
+/* ================================================================
+   EXTERNAL ENCRYPT GATE — Full-Screen Route Gate
+   Shown when visiting an encrypted URL variant (/posts/slug--xtoken/)
+   ================================================================ */
+
+/* Article content is blurred when gate is active */
+#article-container[data-gate-locked] {
+  filter: blur(12px) brightness(0.6);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+/* Gate overlay — full viewport */
+.ext-encrypt-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.ext-encrypt-gate.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ext-encrypt-gate.is-unlocking {
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+
+.ext-encrypt-gate__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(18px) saturate(0.6);
+  -webkit-backdrop-filter: blur(18px) saturate(0.6);
+}
+
+/* Card */
+.ext-encrypt-gate__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  padding: 2.4rem 2rem;
+  border-radius: 24px;
+  background: var(--card-bg, #fff);
+  border: 1.5px solid color-mix(in srgb, #8b5cf6 22%, var(--card-border, #e5e7eb));
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(139, 92, 246, 0.1);
+  text-align: center;
+  transform: scale(0.92) translateY(20px);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ext-encrypt-gate.is-active .ext-encrypt-gate__card {
+  transform: scale(1) translateY(0);
+}
+
+.ext-encrypt-gate__card.is-shaking {
+  animation: extGateShake 0.42s ease;
+}
+
+@keyframes extGateShake {
+  0%, 100% { transform: scale(1) translateX(0); }
+  20%, 60%  { transform: scale(1) translateX(-9px); }
+  40%, 80%  { transform: scale(1) translateX(9px); }
+}
+
+.ext-encrypt-gate__icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  display: block;
+  animation: extGateIconPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes extGateIconPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(139,92,246,0.5)); }
+}
+
+.ext-encrypt-gate__badge {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.ext-encrypt-gate__title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--font-color, #111);
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.ext-encrypt-gate__hint {
+  font-size: 0.9rem;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.75;
+  margin: 0 0 1.4rem;
+}
+
+.ext-encrypt-gate__field {
+  margin-bottom: 0.6rem;
+}
+
+.ext-encrypt-gate__input {
+  width: 100%;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--card-border, #e5e7eb);
+  background: var(--secondbg, #f9fafb);
+  color: var(--font-color, #111);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.ext-encrypt-gate__input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.ext-encrypt-gate__error {
+  color: #ef4444;
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  animation: extGateFadeIn 0.2s ease;
+}
+
+@keyframes extGateFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ext-encrypt-gate__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.ext-encrypt-gate__cancel {
+  padding: 0.65rem 1.3rem;
+  border-radius: 30px;
+  border: 1.5px solid var(--card-border, #e5e7eb);
+  background: transparent;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ext-encrypt-gate__cancel:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.ext-encrypt-gate__submit {
+  padding: 0.65rem 1.6rem;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.38);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+}
+
+.ext-encrypt-gate__submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(139, 92, 246, 0.5);
+}
+
+.ext-encrypt-gate__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ext-encrypt-gate__footer {
+  margin-top: 1.2rem;
+  font-size: 0.78rem;
+  color: var(--text-muted, #9ca3af);
+  opacity: 0.75;
+}
+
+/* ================================================================
+   "进入加密版本" ENTRY BANNER
+   Shown at the bottom of normal articles that have an encrypted URL
+   ================================================================ */
+
+.ext-encrypt-entry-banner {
+  margin-top: 2.5rem;
+  border-radius: 18px;
+  border: 1.5px dashed color-mix(in srgb, #8b5cf6 45%, var(--card-border, #e5e7eb));
+  background: linear-gradient(135deg,
+    color-mix(in srgb, #8b5cf6 6%, var(--card-bg, #fff)),
+    color-mix(in srgb, #6366f1 5%, var(--secondbg, #f9fafb)));
+  padding: 1.3rem 1.5rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.ext-encrypt-entry-banner:hover {
+  border-color: #8b5cf6;
+  border-style: solid;
+  box-shadow: 0 8px 24px -8px rgba(139, 92, 246, 0.2);
+}
+
+.ext-encrypt-entry-banner__inner {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.ext-encrypt-entry-banner__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ext-encrypt-entry-banner__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.ext-encrypt-entry-banner__label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  margin-bottom: 0.2rem;
+}
+
+.ext-encrypt-entry-banner__desc {
+  font-size: 0.84rem;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.5;
+}
+
+.ext-encrypt-entry-banner__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ext-encrypt-entry-banner__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+  color: #fff;
+}
+
+/* External Link Decrypt Gate (外联分段加密卡片) */
+
+.article-external-decrypt-gate {
+  margin: 2.2rem 0;
+  padding: 1.8rem 1.6rem;
+  border-radius: 20px;
+  border: 2px solid color-mix(in srgb, #8b5cf6 40%, var(--card-border));
+  background: linear-gradient(145deg, color-mix(in srgb, #8b5cf6 6%, var(--card-bg)), color-mix(in srgb, var(--theme-main) 6%, var(--secondbg)));
+  position: relative;
+  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.15);
+  transition: all 0.25s ease;
+}
+
+.article-external-decrypt-gate:hover {
+  border-color: #8b5cf6;
+  box-shadow: 0 14px 36px -8px rgba(139, 92, 246, 0.25);
+}
+
+.external-gate__header {
+  margin-bottom: 1.2rem;
+}
+
+.external-gate__badge {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.external-gate__title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--font-color);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.external-gate__desc {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.external-gate__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.external-gate__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.external-gate__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(139, 92, 246, 0.5);
+}
+
+.external-gate__btn-alt {
+  padding: 0.65rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.external-gate__decrypted-payload {
+  display: none;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed color-mix(in srgb, #8b5cf6 35%, var(--card-border));
+  animation: decryptReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.article-external-decrypt-gate.is-unlocked .external-gate__actions {
+  display: none;
+}
+
+.article-external-decrypt-gate.is-unlocked .external-gate__decrypted-payload {
+  display: block;
+}
+
+.decrypted-payload-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 1.2rem;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.payload-timestamp {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+  font-family: var(--font-mono, monospace);
 }
 
 @keyframes decryptReveal {
@@ -1210,66 +1756,168 @@ details.admonition-details .details-content {
 /* --------------------------------------------------------------------------
    13. Inline Rich Typography & Badges
    -------------------------------------------------------------------------- */
+/* All mark tags base & yellow */
 mark,
-.mark-yellow {
-  background: rgba(254, 240, 138, 0.7);
-  color: #1e293b;
-  padding: 0.12em 0.35em;
+.mark-yellow,
+.article-body mark.mark-yellow,
+.article-body.post-content mark.mark-yellow,
+.article-body.post-content mark:not([class*="mark-"]) {
+  background: rgba(254, 240, 138, 0.75);
+  color: #854d0e;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
   border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 :root[data-theme='dark'] mark,
-:root[data-theme='dark'] .mark-yellow {
-  background: rgba(234, 179, 8, 0.35);
+:root[data-theme='dark'] .mark-yellow,
+:root[data-theme='dark'] .article-body mark.mark-yellow,
+:root[data-theme='dark'] .article-body.post-content mark.mark-yellow,
+:root[data-theme='dark'] .article-body.post-content mark:not([class*="mark-"]) {
+  background: rgba(234, 179, 8, 0.28);
   color: #fef08a;
 }
 
-.mark-green {
-  background: rgba(167, 243, 208, 0.7);
-  color: #064e3b;
-  padding: 0.12em 0.35em;
+/* Green mark */
+.mark-green,
+.article-body mark.mark-green,
+.article-body.post-content mark.mark-green {
+  background: rgba(187, 247, 208, 0.75);
+  color: #166534;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
   border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-:root[data-theme='dark'] .mark-green {
-  background: rgba(16, 185, 129, 0.35);
-  color: #a7f3d0;
+:root[data-theme='dark'] .mark-green,
+:root[data-theme='dark'] .article-body mark.mark-green,
+:root[data-theme='dark'] .article-body.post-content mark.mark-green {
+  background: rgba(34, 197, 94, 0.28);
+  color: #86efac;
 }
 
-.mark-blue {
-  background: rgba(191, 219, 254, 0.7);
-  color: #1e3a8a;
-  padding: 0.12em 0.35em;
+/* Blue mark */
+.mark-blue,
+.article-body mark.mark-blue,
+.article-body.post-content mark.mark-blue {
+  background: rgba(191, 219, 254, 0.75);
+  color: #1e40af;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
   border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-:root[data-theme='dark'] .mark-blue {
-  background: rgba(59, 130, 246, 0.35);
-  color: #bfdbfe;
+:root[data-theme='dark'] .mark-blue,
+:root[data-theme='dark'] .article-body mark.mark-blue,
+:root[data-theme='dark'] .article-body.post-content mark.mark-blue {
+  background: rgba(59, 130, 246, 0.28);
+  color: #93c5fd;
 }
 
-.mark-pink {
-  background: rgba(251, 207, 232, 0.7);
-  color: #831843;
-  padding: 0.12em 0.35em;
+/* Pink mark */
+.mark-pink,
+.article-body mark.mark-pink,
+.article-body.post-content mark.mark-pink {
+  background: rgba(251, 207, 232, 0.75);
+  color: #9d174d;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
   border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-:root[data-theme='dark'] .mark-pink {
-  background: rgba(236, 72, 153, 0.35);
-  color: #fbcfe8;
+:root[data-theme='dark'] .mark-pink,
+:root[data-theme='dark'] .article-body mark.mark-pink,
+:root[data-theme='dark'] .article-body.post-content mark.mark-pink {
+  background: rgba(236, 72, 153, 0.28);
+  color: #f472b6;
 }
 
-.mark-purple {
-  background: rgba(233, 213, 255, 0.7);
-  color: #581c87;
-  padding: 0.12em 0.35em;
+/* Purple mark */
+.mark-purple,
+.article-body mark.mark-purple,
+.article-body.post-content mark.mark-purple {
+  background: rgba(233, 213, 255, 0.75);
+  color: #6b21a8;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
   border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-:root[data-theme='dark'] .mark-purple {
-  background: rgba(168, 85, 247, 0.35);
-  color: #e9d5ff;
+:root[data-theme='dark'] .mark-purple,
+:root[data-theme='dark'] .article-body mark.mark-purple,
+:root[data-theme='dark'] .article-body.post-content mark.mark-purple {
+  background: rgba(168, 85, 247, 0.28);
+  color: #d8b4fe;
+}
+
+/* Orange mark */
+.mark-orange,
+.article-body mark.mark-orange,
+.article-body.post-content mark.mark-orange {
+  background: rgba(254, 215, 170, 0.75);
+  color: #9a3412;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+:root[data-theme='dark'] .mark-orange,
+:root[data-theme='dark'] .article-body mark.mark-orange,
+:root[data-theme='dark'] .article-body.post-content mark.mark-orange {
+  background: rgba(249, 115, 22, 0.28);
+  color: #fdba74;
+}
+
+/* Red mark */
+.mark-red,
+.article-body mark.mark-red,
+.article-body.post-content mark.mark-red {
+  background: rgba(254, 202, 202, 0.75);
+  color: #991b1b;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+:root[data-theme='dark'] .mark-red,
+:root[data-theme='dark'] .article-body mark.mark-red,
+:root[data-theme='dark'] .article-body.post-content mark.mark-red {
+  background: rgba(239, 68, 68, 0.28);
+  color: #fca5a5;
+}
+
+/* Cyan mark */
+.mark-cyan,
+.article-body mark.mark-cyan,
+.article-body.post-content mark.mark-cyan {
+  background: rgba(165, 243, 252, 0.75);
+  color: #155e75;
+  padding: 0.12em 0.38em;
+  margin: 0 0.12em;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+:root[data-theme='dark'] .mark-cyan,
+:root[data-theme='dark'] .article-body mark.mark-cyan,
+:root[data-theme='dark'] .article-body.post-content mark.mark-cyan {
+  background: rgba(6, 182, 212, 0.28);
+  color: #67e8f9;
 }
 
 u.u-wavy {
@@ -1303,6 +1951,36 @@ u.u-dashed {
 .badge-orange { background: rgba(249, 115, 22, 0.14); color: #f97316; }
 .badge-pink { background: rgba(236, 72, 153, 0.14); color: #ec4899; }
 .badge-zinc { background: rgba(100, 116, 139, 0.14); color: #64748b; }
+
+/* --------------------------------------------------------------------------
+   13.1 Ruby & Multilingual Phonetic Typography
+   -------------------------------------------------------------------------- */
+ruby {
+  display: inline-flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  vertical-align: bottom;
+  margin: 0 0.2em;
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+ruby rt {
+  display: block;
+  font-size: 0.64em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--theme-main);
+  text-align: center;
+  user-select: none;
+  margin-bottom: 0.22em;
+  font-family: inherit;
+}
+
+:root[data-theme='dark'] ruby rt {
+  color: color-mix(in srgb, var(--theme-main) 78%, #a5b4fc);
+}
 
 /* --------------------------------------------------------------------------
    14. Post Page Shell & General Cleanups

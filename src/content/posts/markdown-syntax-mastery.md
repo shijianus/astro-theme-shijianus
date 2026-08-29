@@ -300,7 +300,7 @@ export default defineConfig({
 
 本博客提供超越普通 Markdown 的 **局部内容密码保护机制**。无需刷新页面，点击即可唤起高颜值安知鱼毛玻璃密码输入对话框！
 
-<div class="article-encrypted-box" data-password="shijianus2026" data-hint="💡 验证提示：演示密钥请直接输入 shijianus2026">
+<div class="article-encrypted-box" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 验证提示：演示密钥请直接输入 shijianus2026">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__icon">🔒</div>
     <div class="encrypted-box__title">此段落为受保护的加密内容</div>
@@ -480,12 +480,16 @@ export default defineConfig({
 
 ## 十一、富文本行内语法扩展（Inline Typography）
 
-- **多彩高亮标记**：
+- **多彩高亮标记（HTML 形式与语法糖）**：
   - <mark class="mark-yellow">黄色高亮（重点标注）</mark>
   - <mark class="mark-green">绿色高亮（成功推荐）</mark>
   - <mark class="mark-blue">蓝色高亮（信息线索）</mark>
   - <mark class="mark-pink">粉色高亮（设计灵感）</mark>
   - <mark class="mark-purple">紫色高亮（深度原理）</mark>
+  - <mark class="mark-orange">橙色高亮（操作预警）</mark>
+  - <mark class="mark-red">红色高亮（风险警示）</mark>
+  - <mark class="mark-cyan">青色高亮（网络协议）</mark>
+  - ==快捷语法糖：green:绿色高亮== 与 ==purple:紫色高亮==
 - **个性下划线**：
   - <u class="u-wavy">波浪强调下划线（Wavy Underline）</u>
   - <u class="u-dashed">虚线注重下划线（Dashed Underline）</u>

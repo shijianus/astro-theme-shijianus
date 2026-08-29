@@ -26,6 +26,7 @@ import {
 import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
 import { createSidebarData } from '../../lib/theme';
 import { evaluatePostAccess, getAccessPasswordHash, verifyAccessPassword } from '../../lib/access-control';
+import { buildEncryptedSlug, parseEncryptedSlug, verifyEncryptedSlug } from '../../lib/external-encrypt';
 
 export const prerender = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
 const STATIC_EXPORT = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
@@ -33,21 +34,61 @@ const STATIC_EXPORT = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
 export async function getStaticPaths() {
   if (import.meta.env.PUBLIC_STATIC_EXPORT !== '1') return [];
   const posts = await getCollection('posts');
-  return posts.map((post) => ({
+  const paths = posts.map((post) => ({
     params: { slug: post.id },
   }));
+  // Also generate encrypted slug routes for posts with externalEncrypt
+  for (const post of posts) {
+    if (post.data.externalEncrypt?.hash) {
+      paths.push({
+        params: { slug: buildEncryptedSlug(post.id, post.data.externalEncrypt.hash) },
+      });
+    }
+  }
+  return paths;
 }
 
 const { slug } = Astro.params;
 const allPosts = sortPostsByDate(await getCollection('posts'));
 const publicPosts = getPublicPosts(allPosts);
-const entry = allPosts.find((post) => post.id === slug);
+
+// -------------------------------------------------------
+// Detect whether this is an encrypted slug variant
+// e.g. "my-post--x7a3f2cb94e01d8" → originalSlug = "my-post"
+// -------------------------------------------------------
+const encryptedParsed = parseEncryptedSlug(slug ?? '');
+const isEncryptedRoute = Boolean(encryptedParsed);
+
+let entry = allPosts.find((post) => post.id === slug);
+let encryptedEntry = null; // the matching post for an encrypted slug
+let encryptedRouteValid = false;
+
+if (isEncryptedRoute && encryptedParsed) {
+  // Find the post whose encrypted slug matches
+  encryptedEntry = allPosts.find((post) => {
+    const hash = post.data.externalEncrypt?.hash;
+    if (!hash) return false;
+    return verifyEncryptedSlug(slug ?? '', hash);
+  });
+  if (encryptedEntry) {
+    encryptedRouteValid = true;
+    entry = encryptedEntry; // use the original post's data for rendering
+  }
+}
 
 if (!entry) {
   throw new Error(`Post not found: ${slug}`);
 }
 
-const access = entry.data.access;
+// If this is a valid encrypted route, the page shows a full-screen gate.
+// The gate is 100% client-side: correct password → show content; cancel → back to original URL.
+const extEnc = entry.data.externalEncrypt;
+const originalSlugForEncrypted = encryptedParsed?.originalSlug ?? entry.id;
+const normalPostUrl = `/posts/${originalSlugForEncrypted}/`;
+
+// Prepare the inline-encrypted article content (rendered server-side, initially hidden)
+// For encrypted routes: always render content (hidden behind gate)
+const access = isEncryptedRoute ? undefined : entry.data.access;
 const accessPasswordHash = getAccessPasswordHash(access);
 const accessCookieName = accessPasswordHash ? `shijianus-post-access:${entry.id}` : '';
 let unlockErrorMessage = '';
@@ -92,7 +133,10 @@ const accessState = STATIC_EXPORT
       headers: Astro.request.headers,
       cookieValue: accessCookieName ? Astro.cookies.get(accessCookieName)?.value : undefined,
     });
-const isUnlocked = accessState.unlocked;
+
+// For encrypted routes: always treat as "unlocked" at server-side
+// (content is rendered but hidden by the client-side password gate)
+const isUnlocked = isEncryptedRoute ? encryptedRouteValid : accessState.unlocked;
 const publicFacingTitle = isUnlocked ? entry.data.title : PROTECTED_POST_TITLE;
 const publicFacingDescription = isUnlocked ? entry.data.description ?? siteConfig.post.hero.summaryFallback : PROTECTED_POST_SUMMARY;
 
@@ -263,7 +307,18 @@ const heroSummary = isUnlocked
       )}
     </article>
 
-    {isUnlocked && <ContentFeatureEnhancer />}
+    {isUnlocked && <ContentFeatureEnhancer
+      externalEncryptData={isEncryptedRoute && extEnc ? {
+        hash: extEnc.hash,
+        hint: extEnc.hint ?? '',
+        normalPostUrl,
+        isEncryptedRoute: true,
+      } : undefined}
+      showEncryptButton={!isEncryptedRoute && !!extEnc?.showButton && !!extEnc?.hash ? {
+        href: buildEncryptedSlug(entry.id, extEnc.hash),
+        title: extEnc.title ?? entry.data.title,
+      } : undefined}
+    />}
 
     {isUnlocked && (
       <PostOutdateNotice
@@ -345,3 +400,4 @@ const heroSummary = isUnlocked
     )}
   </div>
 </BlogLayout>
+

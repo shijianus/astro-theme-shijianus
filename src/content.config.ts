@@ -42,6 +42,12 @@ const postsCollection = defineCollection({
     featured: z.boolean().default(false),
     sticky: z.number().int().default(0),
     draft: z.boolean().default(false),
+    externalEncrypt: z.object({
+      hash: z.string(),            // SHA-256 of the password (hex, 64 chars)
+      hint: z.string().optional(), // Optional hint shown in the gate UI
+      showButton: z.boolean().default(true), // Whether to render the "enter encrypted version" button in the normal article
+      title: z.string().optional(), // Custom title for the gate (default: article title)
+    }).optional(),
   }),
 });
 

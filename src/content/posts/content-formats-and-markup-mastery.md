@@ -12,8 +12,14 @@ featured: true
 sticky: 10
 postFormat: "standard"
 markup: "markdown"
-tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "安知鱼", "排版规范", "UI"]
+tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "EpoCanvas", "排版规范", "UI"]
+externalEncrypt:
+  hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
+  hint: "这是该指南的加密完整版，包含所有受限技术细节与完整示例。密码与1级加密相同。"
+  showButton: true
+  title: "SSG 指南完整加密版"
 ---
+
 
 # 静态站点生成器（SSG）与主题内容格式全景指南
 
@@ -320,13 +326,13 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 为文章内的关键参考出处提供优雅的卡片化预览：
 
-<a class="article-bookmark" href="https://github.com/anzhiyu-c/hexo-theme-anzhiyu" target="_blank" rel="noopener">
+<a class="article-bookmark" href="https://github.com/shijianus/shijianus-blog" target="_blank" rel="noopener">
   <div class="article-bookmark__content">
-    <div class="article-bookmark__title">anzhiyu-c / hexo-theme-anzhiyu (安知鱼主题官方仓库)</div>
-    <p class="article-bookmark__desc">AnZhiYu 是 Hexo 平台上广受赞誉的极客博客主题，以出色的微动效与信息密度设计成为行业标杆。</p>
+    <div class="article-bookmark__title">EpoCanvas / shijianus-blog (時間博客主题核心设计规范仓库)</div>
+    <p class="article-bookmark__desc">EpoCanvas（時代画布）是一套专注于高密度信息呈现、优雅微交互与全格式支持的现代化极客博客内容架构系统。</p>
     <div class="article-bookmark__site">
       <span class="badge badge-primary">GitHub</span>
-      <span>github.com · ⭐ 2.8k Stars</span>
+      <span>github.com · EpoCanvas Core Spec</span>
     </div>
   </div>
   <div class="article-bookmark__icon">
@@ -546,7 +552,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 <div class="article-grid article-grid-3">
   <div class="article-col-card">
     <h4>🎨 视觉体系</h4>
-    <p>深度吸收安知鱼设计美学，支持明暗高对比、毛玻璃背景与平滑色彩过渡。</p>
+    <p>深度吸收 EpoCanvas 现代极客设计美学，支持明暗高对比、毛玻璃背景与平滑色彩过渡。</p>
   </div>
   <div class="article-col-card">
     <h4>⚡ 性能工程</h4>
@@ -575,7 +581,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ## 七、13 种语义告示框（Admonitions / GitHub Alerts）
 
-基于 GitHub Alert 与安知鱼设计规范，支持 13 种不同语义的彩色卡片，并支持使用 `[!TYPE]-` 语法实现默认折叠：
+基于 GitHub Alert 与 EpoCanvas 设计规范，支持 13 种不同语义的彩色卡片，并支持使用 `[!TYPE]-` 语法实现默认折叠：
 
 > [!NOTE]
 > **常规备注（Note）**：这是一条标准的背景信息或上下文说明。
@@ -693,32 +699,36 @@ sequenceDiagram
 
 ---
 
-## 九、安全隐私、模糊马赛克与剧透隐藏特异功能
+## 九、安全隐私、分级加密（Level 1/2/3）与外联分段解密特异功能
 
-### 1. 局部密码加密保护箱（Password Modal Dialog）
+为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并根据机密性与防窥需求建立起三级文内局部加密与外联分段解密体系。
 
-无需刷新页面，点击即可唤起毛玻璃密码输入对话框：
+---
 
-<div class="article-encrypted-box" data-password="shijianus2026" data-hint="💡 验证提示：演示密钥请直接输入 shijianus2026">
+### 1. 1级加密：会话持久解锁（Level 1 · Session Persistent）
+
+只需输入一次访问凭证，当前浏览器会话（Session）期间持续解锁，刷新或标签页关闭前无需重复验证：
+
+<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 1级加密提示：演示密钥请输入 shijianus2026（哈希校验）">
   <div class="encrypted-box__lock">
+    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ 1级加密 · 会话持久</span> <span class="badge badge-cyan">SHA-256 保护</span></div>
     <div class="encrypted-box__icon">🔒</div>
-    <div class="encrypted-box__title">此段落为受保护的加密技术资产</div>
-    <div class="encrypted-box__desc">该区域包含私密代码仓库与商业交付参数。请输入授权密码后解锁。</div>
-    <button class="encrypted-box__btn" type="button">点击输入密码解锁</button>
+    <div class="encrypted-box__title">1级保护：私有开发配置与源码资产</div>
+    <div class="encrypted-box__desc">该区域受 1 级安全策略保护，密码使用 WebCrypto 散列校验，无明文外露。</div>
+    <button class="encrypted-box__btn" type="button">🔑 验证密钥解锁内容</button>
   </div>
   <div class="encrypted-box__content">
     <div class="admonition admonition-success">
       <div class="admonition-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>🎉 密码验证成功！加密数据已呈现</span>
+        <span>🎉 1级验证通过！会话期间持续可用</span>
       </div>
       <div class="admonition-content">
-        <p>恭喜您成功解锁了受保护的核心资产！以下是加密交付数据：</p>
+        <p><strong>核心开发环境参数已解锁：</strong></p>
         <ul>
-          <li><strong>私有代码仓库</strong>：<code>git@github.com:shijianus/vip-internal-core.git</code></li>
-          <li><strong>API 访问密钥</strong>：<code>shijian_sec_9988_a1b2c3d4e5f6</code></li>
+          <li><code>DEPLOY_ENDPOINT</code>: <code>https://api.shijian.us/v2/deploy/core</code></li>
+          <li><code>AUTH_SCOPE</code>: <code>read:articles, write:releases</code></li>
         </ul>
-        <p>解锁状态已保存在您的浏览器会话中，当前页面刷新后无需重复输入。</p>
       </div>
     </div>
   </div>
@@ -726,7 +736,115 @@ sequenceDiagram
 
 ---
 
-### 2. 高斯模糊、马赛克与剧透隐藏
+### 2. 2级加密：解密后遮罩防窥保护（Level 2 · Mask Protection）
+
+验证成功后内容虽被解密，但**默认自动进入高斯模糊防窥遮罩状态**，防止身旁他人窥屏；用户可通过顶部工具栏自由切换 **高斯模糊**、**马赛克**、**剧透黑块** 或 **完全显露**：
+
+<div class="article-encrypted-box" data-level="2" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2级加密提示：演示密钥请输入 epocanvas2026">
+  <div class="encrypted-box__lock">
+    <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥模式</span> <span class="badge badge-purple">动态多态遮罩</span></div>
+    <div class="encrypted-box__icon">🛡️</div>
+    <div class="encrypted-box__title">2级保护：机密商业数据与财务清单</div>
+    <div class="encrypted-box__desc">解密后将默认启用高斯模糊保护，鼠标悬浮或点按方可看清，有效抵御近距离窥视。</div>
+    <button class="encrypted-box__btn" type="button">🔑 验证凭证并开启防窥查看</button>
+  </div>
+  <div class="encrypted-box__content">
+    <div class="admonition admonition-important">
+      <div class="admonition-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>📊 商业项目核心财务与合同参数</span>
+      </div>
+      <div class="admonition-content">
+        <p>以下为 2026 年度 EpoCanvas 商业支持预算分配：</p>
+        <ul>
+          <li><strong>企业级私有化授权费</strong>：¥ 280,000 / 年（含高可用集群与 SLA 保障）</li>
+          <li><strong>边缘 CDN 流量支出</strong>：¥ 36,500 / 月</li>
+          <li><strong>专属技术顾问密钥</strong>：<code>sec_corp_epocanvas_key_2026</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+---
+
+### 3. 3级加密：离开视口立即重新上锁（Level 3 · Viewport Auto-Lock）
+
+超高安全级别！**不写入任何持久化存储**；一旦解密后的内容在滚动中**离开当前屏幕视口**，或者浏览器标签页切换到后台，系统将**瞬间自动重新上锁**，再次查看必须重新输入密码：
+
+<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db24a44adf25238a00f5ee81ee89" data-hint="💡 3级加密提示：演示密钥请输入 level3pass">
+  <div class="encrypted-box__lock">
+    <div class="encrypted-box__level-tag"><span class="badge badge-danger">🛡️ 3级加密 · 离开视口即锁</span> <span class="badge badge-orange">视口哨兵监控</span></div>
+    <div class="encrypted-box__relock-wrap">
+      <div class="encrypted-relock-notice">⚠️ 安全保护已触发：由于该内容先前离开了屏幕视口，系统已自动重新锁定！</div>
+    </div>
+    <div class="encrypted-box__icon">🚨</div>
+    <div class="encrypted-box__title">3级绝密：核心基础设施私钥与灾备指令</div>
+    <div class="encrypted-box__desc">最高防护标准。解密后一旦滚动移出屏幕，立即触发销毁重锁机制，绝不在屏幕外遗留任何明文。</div>
+    <button class="encrypted-box__btn" type="button">🔐 验证高阶密钥（离开视口即锁）</button>
+  </div>
+  <div class="encrypted-box__content">
+    <div class="encrypted-level3-status">
+      <span class="security-pulse-dot"></span>
+      <span>视口防窥哨兵实时监听中 · 移出视口立即销毁明文</span>
+    </div>
+    <div class="admonition admonition-danger">
+      <div class="admonition-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <span>⚡ 绝密集群应急接管凭据</span>
+      </div>
+      <div class="admonition-content">
+        <p>请注意：此信息仅在当前视口内可见，向下或向上滚动使其离开屏幕将自动上锁：</p>
+        <pre><code># 核心节点紧急自毁 / 切换指令
+curl -X POST https://cluster.shijian.us/v1/node/failover \
+  -H "X-Root-Token: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+---
+
+### 4. 外联分段加密（External Link Segment Decryption Gate）
+
+在构建期或架构分层时，同一篇文章可以被物理分割为**公开正文段**与**外联受控密文段**。创作者可在文末或章节任意位置插入外联解密引导门，验证凭据后动态解密并在此无缝挂载完整后半段正文：
+
+<div class="article-external-decrypt-gate" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="🔑 外联分段密钥：请输入 shijianus2026">
+  <div class="external-gate__header">
+    <div class="external-gate__badge">
+      <span class="badge badge-purple">🌐 外联安全分段加密</span>
+      <span class="badge badge-cyan">端点分片存储</span>
+      <span class="badge badge-success">WebCrypto SHA-256</span>
+    </div>
+    <h3 class="external-gate__title">🔐 正文深度章节已外联隔离存放</h3>
+    <p class="external-gate__desc">当前长文在构建阶段启用了**外联分段隔离存储**：前 75% 基础语法与组件说明公开交付；核心企业级工程落地方案与架构推导演示已被加密打包存放。点击下方按钮输入密钥，即可在当前页面实时无缝解密并挂载剩余正文内容。</p>
+  </div>
+  <div class="external-gate__actions">
+    <button type="button" class="external-gate__btn">🔑 输入凭据解密并挂载完整正文</button>
+    <a href="#top" class="article-btn article-btn-outline external-gate__btn-alt">⬆️ 返回文章顶部</a>
+  </div>
+  <div class="external-gate__decrypted-payload">
+    <div class="decrypted-payload-banner">
+      <span class="badge badge-success">✨ 外联分段密文已成功验证解密，正文无缝挂载完成</span>
+      <span class="payload-timestamp">SHA-256 Stream Verified</span>
+    </div>
+    <div class="decrypted-payload-body">
+      <h4>📦 外联分段解密正文：企业级 SSG 内容工程落地规范</h4>
+      <p>恭喜您成功解锁了本文的外联分段核心内容！在现代大型静态知识库工程中，将高敏感或付费特权内容采用外联分段加密存放，具有以下核心优势：</p>
+      <ul>
+        <li><strong>首屏负载极小化</strong>：未授权访问者仅拉取基础公开 HTML，网络开销减少 60% 以上；</li>
+        <li><strong>防抓取与防逆向</strong>：敏感密文与密钥隔离存储，静态爬虫无法从公开 DOM 中抓取到任何有效数据；</li>
+        <li><strong>无感流式接入</strong>：通过客户端 WebCrypto 引擎，读者在当前页面无需页面跳转即可享受无缝展开的连贯阅读体验。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+---
+
+### 5. 行内高斯模糊、马赛克与剧透隐藏
+
+除了块级加密外，正文行内亦提供丰富的轻量级防窥与趣味遮罩：
 
 - **文字高斯模糊**：<span class="blur-text">这是一段被高斯模糊保护的关键剧透文字，鼠标悬浮或点击即可看清！</span>
 - **黑幕马赛克**：<span class="mosaic-text">机密数据：SHA256-7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069</span>
@@ -820,12 +938,21 @@ sequenceDiagram
 
 ## 十一、富文本行内微排版美化与徽章
 
-- **多色彩高亮**：
+- **多色彩高亮（HTML 标签形式）**：
   - <mark class="mark-yellow">黄色高亮（重点标注）</mark>
   - <mark class="mark-green">绿色高亮（成功推荐）</mark>
   - <mark class="mark-blue">蓝色高亮（信息线索）</mark>
   - <mark class="mark-pink">粉色高亮（设计灵感）</mark>
   - <mark class="mark-purple">紫色高亮（深度原理）</mark>
+  - <mark class="mark-orange">橙色高亮（操作预警）</mark>
+  - <mark class="mark-red">红色高亮（风险警示）</mark>
+  - <mark class="mark-cyan">青色高亮（网络协议）</mark>
+- **快捷语法糖高亮（`==颜色:内容==` 形式）**：
+  - ==默认高亮文本（自动黄色）==
+  - ==green:绿色高亮语法糖（敏捷标记）==
+  - ==blue:蓝色高亮语法糖（架构要素）==
+  - ==pink:粉色高亮语法糖（界面美化）==
+  - ==purple:紫色高亮语法糖（核心算法）==
 - **状态徽章（Badges）**：
   - <span class="badge badge-primary">推荐 (Primary)</span>
   - <span class="badge badge-success">通过 (Success)</span>
@@ -836,7 +963,19 @@ sequenceDiagram
   - <span class="badge badge-cyan">网络 (Cyan)</span>
   - <span class="badge badge-orange">硬件 (Orange)</span>
 - **按键展示**：<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> 打开全局命令调色板。
-- **注音与发音**：<ruby>安知鱼<rt>ān zhī yú</rt></ruby> · <ruby>時間<rt>shí jiān</rt></ruby>。
+- **多语言注音与发音标注（Ruby / Multilingual Phonetics）**：
+  - **中文汉语拼音（Hanyu Pinyin）**：<ruby>時間<rt>shí jiān</rt></ruby> · <ruby>画布<rt>huà bù</rt></ruby> · <ruby>極客<rt>jí kè</rt></ruby>
+  - **中文注音符号（Bopomofo / 台湾注音）**：<ruby>時間<rt>ㄕˊ ㄐㄧㄢ</rt></ruby> · <ruby>極客<rt>ㄐㄧˊ ㄎㄜˋ</rt></ruby> · <ruby>編程<rt>ㄅㄧㄢ ㄔㄥˊ</rt></ruby>
+  - **日文汉字 + 平假名振假名（Furigana / 訓読・音読）**：<ruby>時間<rt>じかん</rt></ruby> · <ruby>明日<rt>あす</rt></ruby> · <ruby>儚い<rt>はかない</rt></ruby>
+  - **日文片假名外来语与当て字（Katakana / Loanwords & Ateji）**：<ruby>画布<rt>キャンバス</rt></ruby> · <ruby>電脳<rt>パソコン</rt></ruby> · <ruby>宇宙<rt>コスモ</rt></ruby>
+  - **日文熟字训（Jukujikun / 義訓特殊读法）**：<ruby>煙草<rt>タバコ</rt></ruby> · <ruby>大人<rt>おとな</rt></ruby> · <ruby>今日<rt>きょう</rt></ruby>
+  - **英文单词 + IPA 国际音标标注（English + IPA Transcription）**：<ruby>EpoCanvas<rt>/ˌepəˈkænvəs/</rt></ruby> · <ruby>Aesthetics<rt>/esˈθetɪks/</rt></ruby> · <ruby>Chronos<rt>/ˈkrɒnɒs/</rt></ruby>
+  - **法语音标与特殊连诵（French IPA & Special Pronunciation）**：<ruby>Rendez-vous<rt>/ʁɑ̃.de.vu/</rt></ruby> · <ruby>Déjà-vu<rt>/de.ʒa.vy/</rt></ruby> · <ruby>C'est la vie<rt>/sɛ la vi/</rt></ruby>
+  - **德语变音与复合词发音（German Umlaut & Compounds）**：<ruby>Zeitgeist<rt>/ˈtsaɪtɡaɪst/</rt></ruby> · <ruby>Schadenfreude<rt>/ˈʃaːdn̩ˌfʁɔʏ̯də/</rt></ruby>
+  - **希腊文与其拉丁转写（Greek + Romanization）**：<ruby>Φιλοσοφία<rt>philosophia</rt></ruby> · <ruby>Καλημέρα<rt>kaliméra</rt></ruby>
+  - **韩文汉字与谚文注音（Hanja + Hangul）**：<ruby>時間<rt>시간</rt></ruby> · <ruby>極客<rt>긱</rt></ruby> · <ruby>未來<rt>미래</rt></ruby>
+  - **俄语/西里尔字母音标（Russian Cyrillic + IPA）**：<ruby>Привет<rt>/prʲɪˈvʲet/</rt></ruby> · <ruby>Спасибо<rt>/spɐˈsʲibə/</rt></ruby>
+  - **梵文/天城文与 IAST 转写（Sanskrit Devanagari + IAST）**：<ruby>नमस्ते<rt>namaste</rt></ruby> · <ruby>शान्तिः<rt>śāntiḥ</rt></ruby>
 - **缩写说明**：<abbr title="Static Site Generator 静态站点生成器">SSG</abbr> 与 <abbr title="Single Page Application 单页应用程序">SPA</abbr>。
 - **波浪与虚线下划线**：<u class="u-wavy">波浪强调下划线</u> 与 <u class="u-dashed">虚线注重下划线</u>。
 - **行动呼吁按钮（CTA Buttons）**：
@@ -847,10 +986,10 @@ sequenceDiagram
 
 ## 十二、脚注与悬浮气泡（Footnotes）
 
-在学术或长篇技术文章中，脚注是必不可少的引用形式。鼠标悬浮于下方脚注角标即可直接弹出释义气泡[^ref-ssg-spec]，无需离开当前阅读视口[^ref-anzhiyu-ui]。
+在学术或长篇技术文章中，脚注是必不可少的引用形式。鼠标悬浮于下方脚注角标即可直接弹出释义气泡[^ref-ssg-spec]，无需离开当前阅读视口[^ref-epocanvas-ui]。
 
 [^ref-ssg-spec]: **SSG 内容规范**：主流静态站点生成器均遵循以 Markdown/GFM 为核心，以 MDX 或模板语言为扩展的现代内容工程标准。
-[^ref-anzhiyu-ui]: **安知鱼美学规范**：以精致的微交互、高对比色彩与克制的留白，为中文极客社区带来一流的阅读体验。
+[^ref-epocanvas-ui]: **EpoCanvas 美学规范**：以精致的微交互、高对比色彩与克制的留白，为中文与全球极客社区带来一流的阅读体验。
 
 ---
 

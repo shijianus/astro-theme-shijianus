@@ -80,7 +80,7 @@ graph LR
 
 ## 4. 安全密码解密与高斯模糊
 
-<div class="article-encrypted-box" data-password="shijianus2026" data-hint="💡 验证提示：演示密钥请直接输入 shijianus2026">
+<div class="article-encrypted-box" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 验证提示：演示密钥请直接输入 shijianus2026">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__icon">🔒</div>
     <div class="encrypted-box__title">受保护加密资产</div>

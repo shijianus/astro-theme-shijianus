@@ -98,11 +98,18 @@ body[data-type='post'] #card-toc .toc-content {
   font-weight: 900;
 }
 
-.article-body.post-content mark {
-  padding: 0.08em 0.34em;
-  border-radius: 0.42em;
-  background: color-mix(in srgb, var(--theme-yellow) 42%, transparent);
-  color: var(--font-color);
+.article-body.post-content mark:not([class*='mark-']) {
+  padding: 0.12em 0.38em;
+  border-radius: 0.38em;
+  background: rgba(254, 240, 138, 0.75);
+  color: #854d0e;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+:root[data-theme='dark'] .article-body.post-content mark:not([class*='mark-']) {
+  background: rgba(234, 179, 8, 0.28);
+  color: #fef08a;
 }
 
 .article-body.post-content :not(pre) > code {
@@ -14305,11 +14312,9 @@ body[data-type='post'] .support-panel-popover[data-pinned='true'] .support-panel
   text-transform: uppercase;
 }
 
-.article-body.post-content mark {
-  padding: 0 0.32em;
+.article-body.post-content mark:not([class*='mark-']) {
+  padding: 0.12em 0.38em;
   border-radius: 0.38em;
-  background: color-mix(in srgb, var(--theme-yellow) 22%, rgba(255, 233, 132, 0.72));
-  color: color-mix(in srgb, var(--font-color) 92%, #6a4b00);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }

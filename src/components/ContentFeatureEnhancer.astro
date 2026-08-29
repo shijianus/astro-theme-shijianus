@@ -1,5 +1,326 @@
+---
+interface Props {
+  externalEncryptData?: {
+    hash: string;
+    hint: string;
+    normalPostUrl: string;
+    isEncryptedRoute: boolean;
+  };
+  showEncryptButton?: {
+    href: string;   // the encrypted slug (without /posts/ prefix)
+    title: string;  // article title
+  };
+}
+
+const { externalEncryptData, showEncryptButton } = Astro.props;
+---
 <script is:inline>
   (() => {
+    // =========================================================
+    // MODULE-LEVEL SINGLETON STATE
+    // These are initialized ONCE and persist across Astro page
+    // transitions. They must NOT be re-created on astro:page-load.
+    // =========================================================
+    let _modalInitialized = false;
+    let _currentActiveTarget = null;
+    let _modalOverlay = null;
+    let _modalInput = null;
+    let _modalError = null;
+    let _modalHint = null;
+    let _modalCard = null;
+    let _modalLevelTag = null;
+
+    // -------------------------------------------------------
+    // SHA-256 — works in both secure (HTTPS/localhost) and
+    // non-secure (plain HTTP) contexts.
+    // crypto.subtle is only available in secure contexts;
+    // we fall back to a pure-JS implementation for plain HTTP.
+    // -------------------------------------------------------
+
+    // Pure-JS SHA-256 (RFC 6234 compliant, no dependencies)
+    const _sha256Pure = (() => {
+      const K = new Uint32Array([
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+      ]);
+      const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+      return (str) => {
+        const msg = new TextEncoder().encode(str);
+        const len = msg.length;
+        const bitLen = len * 8;
+        // Pad message
+        const padLen = ((len + 9 + 63) & ~63);
+        const padded = new Uint8Array(padLen);
+        padded.set(msg);
+        padded[len] = 0x80;
+        new DataView(padded.buffer).setUint32(padLen - 4, bitLen >>> 0, false);
+        // Initial hash values
+        let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a;
+        let h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+        const w = new Uint32Array(64);
+        for (let i = 0; i < padLen; i += 64) {
+          const dv = new DataView(padded.buffer, i, 64);
+          for (let j = 0; j < 16; j++) w[j] = dv.getUint32(j * 4, false);
+          for (let j = 16; j < 64; j++) {
+            const s0 = rotr(w[j-15],7) ^ rotr(w[j-15],18) ^ (w[j-15] >>> 3);
+            const s1 = rotr(w[j-2],17) ^ rotr(w[j-2],19) ^ (w[j-2] >>> 10);
+            w[j] = (w[j-16] + s0 + w[j-7] + s1) >>> 0;
+          }
+          let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+          for (let j = 0; j < 64; j++) {
+            const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+            const ch = (e & f) ^ (~e & g);
+            const tmp1 = (h + S1 + ch + K[j] + w[j]) >>> 0;
+            const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+            const maj = (a & b) ^ (a & c) ^ (b & c);
+            const tmp2 = (S0 + maj) >>> 0;
+            h=g; g=f; f=e; e=(d + tmp1) >>> 0;
+            d=c; c=b; b=a; a=(tmp1 + tmp2) >>> 0;
+          }
+          h0=(h0+a)>>>0; h1=(h1+b)>>>0; h2=(h2+c)>>>0; h3=(h3+d)>>>0;
+          h4=(h4+e)>>>0; h5=(h5+f)>>>0; h6=(h6+g)>>>0; h7=(h7+h)>>>0;
+        }
+        return [h0,h1,h2,h3,h4,h5,h6,h7]
+          .map(v => v.toString(16).padStart(8,'0')).join('');
+      };
+    })();
+
+    const computeSha256 = async (str) => {
+      // Prefer Web Crypto (only available in secure contexts: HTTPS or localhost)
+      if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+        try {
+          const enc = new TextEncoder();
+          const buf = await crypto.subtle.digest('SHA-256', enc.encode(str));
+          return Array.from(new Uint8Array(buf))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('');
+        } catch (_) {
+          // fall through to pure-JS
+        }
+      }
+      // Fallback: pure-JS SHA-256 (works on plain HTTP / non-secure contexts)
+      return _sha256Pure(str);
+    };
+
+    // -------------------------------------------------------
+    // Modal initialization (runs exactly once per DOM lifetime)
+    // -------------------------------------------------------
+    const initModal = () => {
+      if (_modalInitialized) return;
+      _modalInitialized = true;
+
+      _modalOverlay = document.querySelector('.encrypted-modal-overlay');
+      if (!_modalOverlay) {
+        _modalOverlay = document.createElement('div');
+        _modalOverlay.className = 'encrypted-modal-overlay';
+        _modalOverlay.innerHTML = `
+          <div class="encrypted-modal-card">
+            <div class="encrypted-modal__icon">🔐</div>
+            <div class="encrypted-modal__level-tag" style="margin-bottom:0.5rem;"></div>
+            <h3 class="encrypted-modal__title">验证安全访问凭证</h3>
+            <p class="encrypted-modal__hint">该部分为受保护加密内容，请输入密码进行校验。</p>
+            <input type="password" class="encrypted-modal__input" placeholder="输入访问密钥 / 密码" autocomplete="current-password" />
+            <div class="encrypted-modal__error" style="display:none;color:#ef4444;font-size:0.84rem;font-weight:600;margin-bottom:0.8rem;">凭证校验失败，请重新输入</div>
+            <div class="encrypted-modal__actions">
+              <button type="button" class="encrypted-modal__cancel">取消</button>
+              <button type="button" class="encrypted-modal__submit">验证并解密</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(_modalOverlay);
+      }
+
+      _modalInput = _modalOverlay.querySelector('.encrypted-modal__input');
+      _modalError = _modalOverlay.querySelector('.encrypted-modal__error');
+      _modalHint = _modalOverlay.querySelector('.encrypted-modal__hint');
+      _modalCard = _modalOverlay.querySelector('.encrypted-modal-card');
+      _modalLevelTag = _modalOverlay.querySelector('.encrypted-modal__level-tag');
+      const modalCancel = _modalOverlay.querySelector('.encrypted-modal__cancel');
+      const modalSubmit = _modalOverlay.querySelector('.encrypted-modal__submit');
+
+      const closeModal = () => {
+        _modalOverlay.classList.remove('is-open');
+        _modalInput.value = '';
+        _modalError.style.display = 'none';
+        _modalCard.classList.remove('is-shaking');
+        _currentActiveTarget = null;
+      };
+
+      const handlePasswordSubmit = async () => {
+        if (!_currentActiveTarget) return;
+        const enteredPass = _modalInput.value.trim();
+        if (!enteredPass) return;
+
+        const expectedHash = _currentActiveTarget.dataset.hash;
+        const fallbackPass = _currentActiveTarget.dataset.password;
+        let isMatch = false;
+
+        if (expectedHash) {
+          const inputHash = await computeSha256(enteredPass);
+          isMatch = inputHash.toLowerCase() === expectedHash.toLowerCase();
+        } else if (fallbackPass) {
+          isMatch = enteredPass === fallbackPass;
+        } else {
+          // Default fallback hash for shijianus2026
+          const inputHash = await computeSha256(enteredPass);
+          isMatch = inputHash.toLowerCase() === 'd7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351';
+        }
+
+        if (isMatch) {
+          const target = _currentActiveTarget;
+          const isGate = target.classList.contains('article-external-decrypt-gate');
+          const level = target.dataset.level || '1';
+
+          target.classList.add('is-unlocked');
+          target.classList.remove('was-relocked');
+
+          if (isGate) {
+            // Use gateId as the session key for gates
+            const gateId = target.dataset.gateId;
+            if (gateId) sessionStorage.setItem(`unlocked-${gateId}`, 'true');
+          } else {
+            // For encrypted boxes
+            const boxId = target.dataset.boxId;
+            if (level === '1' || level === '2') {
+              if (boxId) sessionStorage.setItem(`unlocked-${boxId}`, 'true');
+            }
+            if (level === '2') {
+              setupMaskToolbar(target);
+            }
+            if (level === '3') {
+              // Level 3: no session persistence, auto-lock is already watching
+              // (observer already attached on init — do nothing extra)
+            }
+          }
+
+          closeModal();
+          window.dispatchEvent(
+            new CustomEvent('shijianus:activity', {
+              detail: { message: `🔓 ${isGate ? '外联分段密文已解密挂载' : `${level}级加密内容已解锁`}` },
+            })
+          );
+        } else {
+          _modalError.style.display = 'block';
+          _modalCard.classList.remove('is-shaking');
+          void _modalCard.offsetWidth;
+          _modalCard.classList.add('is-shaking');
+          _modalInput.select();
+        }
+      };
+
+      modalSubmit.addEventListener('click', handlePasswordSubmit);
+      modalCancel.addEventListener('click', closeModal);
+      _modalOverlay.addEventListener('click', (e) => {
+        if (e.target === _modalOverlay) closeModal();
+      });
+      _modalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handlePasswordSubmit();
+        if (e.key === 'Escape') closeModal();
+      });
+    };
+
+    // -------------------------------------------------------
+    // Helper: open modal and set active target
+    // -------------------------------------------------------
+    const openModal = (target, levelTag, hint) => {
+      _currentActiveTarget = target;
+      if (_modalHint) _modalHint.textContent = hint;
+      if (_modalLevelTag) _modalLevelTag.innerHTML = levelTag;
+      if (_modalError) _modalError.style.display = 'none';
+      if (_modalInput) _modalInput.value = '';
+      _modalOverlay.classList.add('is-open');
+      setTimeout(() => _modalInput?.focus(), 50);
+    };
+
+    // -------------------------------------------------------
+    // Helper: Mask toolbar for Level 2
+    // -------------------------------------------------------
+    const setupMaskToolbar = (box) => {
+      const content = box.querySelector('.encrypted-box__content');
+      if (!content || content.dataset.maskSetup === 'true') return;
+      content.dataset.maskSetup = 'true';
+
+      let toolbar = content.querySelector('.encrypted-mask-toolbar');
+      let body = content.querySelector('.encrypted-masked-body');
+
+      if (!toolbar) {
+        toolbar = document.createElement('div');
+        toolbar.className = 'encrypted-mask-toolbar';
+        toolbar.innerHTML = `
+          <span class="mask-toolbar__label">🔒 遮罩防窥保护中：</span>
+          <div class="mask-toolbar__buttons">
+            <button type="button" class="mask-btn is-active" data-mask="blur">🌫️ 高斯模糊</button>
+            <button type="button" class="mask-btn" data-mask="mosaic">🏁 马赛克</button>
+            <button type="button" class="mask-btn" data-mask="spoiler">⬛ 剧透遮罩</button>
+            <button type="button" class="mask-btn" data-mask="reveal">👁️ 显露正文</button>
+          </div>
+        `;
+
+        if (!body) {
+          body = document.createElement('div');
+          body.className = 'encrypted-masked-body mask-blur';
+          while (content.firstChild) {
+            body.appendChild(content.firstChild);
+          }
+          content.appendChild(toolbar);
+          content.appendChild(body);
+        } else {
+          content.insertBefore(toolbar, body);
+          body.classList.add('mask-blur');
+        }
+      }
+
+      const buttons = toolbar.querySelectorAll('.mask-btn');
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          buttons.forEach((b) => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          const maskType = btn.dataset.mask || 'blur';
+          body.className = `encrypted-masked-body mask-${maskType}`;
+        });
+      });
+    };
+
+    // -------------------------------------------------------
+    // Helper: Level 3 auto-lock observer
+    // -------------------------------------------------------
+    const setupLevel3AutoLock = (box) => {
+      if (box.dataset.observerAttached === 'true') return;
+      box.dataset.observerAttached = 'true';
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting && box.classList.contains('is-unlocked')) {
+            box.classList.remove('is-unlocked');
+            box.classList.add('was-relocked');
+            window.dispatchEvent(
+              new CustomEvent('shijianus:activity', {
+                detail: { message: '🔒 3级加密内容离开视口，已自动重新上锁' },
+              })
+            );
+          }
+        });
+      }, { threshold: 0.05 });
+
+      observer.observe(box);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && box.classList.contains('is-unlocked')) {
+          box.classList.remove('is-unlocked');
+          box.classList.add('was-relocked');
+        }
+      });
+    };
+
+    // -------------------------------------------------------
+    // Main per-page enhancement runner
+    // -------------------------------------------------------
     const initContentEnhancements = async () => {
       const articles = document.querySelectorAll('[data-content-features]');
       if (!articles.length) return;
@@ -43,7 +364,7 @@
             if (parent.closest('pre, code, kbd, script, style, textarea, .spoiler-mask, .hidden-inline-lock, .content-access-panel, .katex')) {
               return NodeFilter.FILTER_REJECT;
             }
-            return /(\|\|[^|]+\|\|)|%%[^%]+%%/.test(node.nodeValue || '')
+            return /(\|\|[^|]+\|\|)|%%[^%]+%%|==[^=]+==/.test(node.nodeValue || '')
               ? NodeFilter.FILTER_ACCEPT
               : NodeFilter.FILTER_REJECT;
           },
@@ -54,7 +375,7 @@
 
         nodes.forEach((node) => {
           const value = node.nodeValue || '';
-          const pattern = /(\|\|([^|]+)\|\|)|%%([^%]+)%%/g;
+          const pattern = /(\|\|([^|]+)\|\|)|%%([^%]+)%%|==(?:(yellow|green|blue|pink|purple|orange|red|cyan):)?([^=]+)==/g;
           const fragment = document.createDocumentFragment();
           let lastIndex = 0;
           let match;
@@ -65,8 +386,14 @@
             }
             if (match[2]) {
               fragment.append(createSpoiler(match[2]));
-            } else {
+            } else if (match[3]) {
               fragment.append(createHiddenInline(match[3] || ''));
+            } else if (match[5]) {
+              const mark = document.createElement('mark');
+              const color = (match[4] || 'yellow').toLowerCase();
+              mark.className = `mark-${color}`;
+              mark.textContent = match[5];
+              fragment.append(mark);
             }
             lastIndex = pattern.lastIndex;
           }
@@ -139,12 +466,10 @@
           const isDefaultOpen = match[2] === '+';
           let restContent = match[3].trim();
 
-          // Clean leading <br> or whitespace
           restContent = restContent.replace(/^(<br\s*\/?>|\n|\r)+/i, '').trim();
 
           let customTitle = defaultTitles[type] || type.toUpperCase();
 
-          // Check if restContent starts with <strong>Title</strong> or plaintext on first line
           const strongMatch = restContent.match(/^<strong>(.*?)<\/strong>[:：\s]*(.*)/is);
           if (strongMatch) {
             customTitle = strongMatch[1].trim();
@@ -252,7 +577,6 @@
           updatePanels();
         });
 
-        // Live calculation/demo selects
         article.querySelectorAll('.interactive-calc-select').forEach((calcWrap) => {
           if (calcWrap.dataset.calcBound === 'true') return;
           calcWrap.dataset.calcBound = 'true';
@@ -297,92 +621,68 @@
         });
       };
 
-      // 5. Password Modal Dialog & Encrypted Box
-      let modalOverlay = document.querySelector('.encrypted-modal-overlay');
-      if (!modalOverlay) {
-        modalOverlay = document.createElement('div');
-        modalOverlay.className = 'encrypted-modal-overlay';
-        modalOverlay.innerHTML = `
-          <div class="encrypted-modal-card">
-            <div class="encrypted-modal__icon">🔐</div>
-            <h3 class="encrypted-modal__title">验证访问密码</h3>
-            <p class="encrypted-modal__hint">该部分为受限内容，请输入正确密码解锁。</p>
-            <input type="password" class="encrypted-modal__input" placeholder="输入访问密钥 / 密码" />
-            <div class="encrypted-modal__error">密码错误，请重新输入</div>
-            <div class="encrypted-modal__actions">
-              <button type="button" class="encrypted-modal__cancel">取消</button>
-              <button type="button" class="encrypted-modal__submit">确认解密</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modalOverlay);
-      }
-
-      const modalInput = modalOverlay.querySelector('.encrypted-modal__input');
-      const modalError = modalOverlay.querySelector('.encrypted-modal__error');
-      const modalHint = modalOverlay.querySelector('.encrypted-modal__hint');
-      const modalCancel = modalOverlay.querySelector('.encrypted-modal__cancel');
-      const modalSubmit = modalOverlay.querySelector('.encrypted-modal__submit');
-      const modalCard = modalOverlay.querySelector('.encrypted-modal-card');
-      let currentActiveBox = null;
-
-      const closeModal = () => {
-        modalOverlay.classList.remove('is-open');
-        modalInput.value = '';
-        modalError.style.display = 'none';
-        modalCard.classList.remove('is-shaking');
-        currentActiveBox = null;
-      };
-
-      modalCancel?.addEventListener('click', closeModal);
-      modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) closeModal();
-      });
-
-      const handlePasswordSubmit = () => {
-        if (!currentActiveBox) return;
-        const targetPass = currentActiveBox.dataset.password || 'shijianus2026';
-        const enteredPass = modalInput.value.trim();
-
-        if (enteredPass === targetPass) {
-          currentActiveBox.classList.add('is-unlocked');
-          const boxId = currentActiveBox.dataset.boxId || `enc-${Date.now()}`;
-          currentActiveBox.dataset.boxId = boxId;
-          sessionStorage.setItem(`unlocked-${boxId}`, 'true');
-          closeModal();
-          window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: '🔓 加密内容已解锁' } }));
-        } else {
-          modalError.style.display = 'block';
-          modalCard.classList.remove('is-shaking');
-          void modalCard.offsetWidth; // Trigger reflow
-          modalCard.classList.add('is-shaking');
-          modalInput.select();
-        }
-      };
-
-      modalSubmit?.addEventListener('click', handlePasswordSubmit);
-      modalInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handlePasswordSubmit();
-        if (e.key === 'Escape') closeModal();
-      });
-
+      // 5. Encrypted Boxes & External Gates
       const enhanceEncryptedBoxes = (article) => {
+        // Ensure modal is initialized (singleton guard)
+        initModal();
+
+        // 5a. In-article encrypted boxes (Level 1, Level 2, Level 3)
         article.querySelectorAll('.article-encrypted-box').forEach((box, idx) => {
-          const boxId = box.dataset.boxId || `enc-box-${idx}`;
+          if (box.dataset.encBound === 'true') return;
+          box.dataset.encBound = 'true';
+
+          const level = box.dataset.level || '1';
+          const boxId = box.dataset.boxId || `enc-box-${level}-${idx}`;
           box.dataset.boxId = boxId;
 
-          if (sessionStorage.getItem(`unlocked-${boxId}`) === 'true') {
+          // Restore from session (Level 1 and 2 only)
+          if (level !== '3' && sessionStorage.getItem(`unlocked-${boxId}`) === 'true') {
             box.classList.add('is-unlocked');
+            if (level === '2') setupMaskToolbar(box);
+          }
+
+          // Level 3: always set up auto-lock observer
+          if (level === '3') {
+            setupLevel3AutoLock(box);
           }
 
           const btn = box.querySelector('.encrypted-box__btn');
-          btn?.addEventListener('click', () => {
-            currentActiveBox = box;
-            if (modalHint) {
-              modalHint.textContent = box.dataset.hint || '该部分为受限内容，请输入正确密码解锁。';
+          if (!btn) return;
+
+          btn.addEventListener('click', () => {
+            let levelTag = '';
+            if (level === '1') {
+              levelTag = '<span class="badge badge-success">🛡️ 1级加密 · 会话持久</span>';
+            } else if (level === '2') {
+              levelTag = '<span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥保护</span>';
+            } else if (level === '3') {
+              levelTag = '<span class="badge badge-danger">🛡️ 3级加密 · 视口防窥离开即锁</span>';
             }
-            modalOverlay.classList.add('is-open');
-            setTimeout(() => modalInput?.focus(), 50);
+            const hint = box.dataset.hint || '该部分为受限加密内容，请输入凭证解锁。';
+            openModal(box, levelTag, hint);
+          });
+        });
+
+        // 5b. External Decryption Gate (外联分段解密卡片)
+        article.querySelectorAll('.article-external-decrypt-gate').forEach((gate, idx) => {
+          if (gate.dataset.gateBound === 'true') return;
+          gate.dataset.gateBound = 'true';
+
+          const gateId = gate.dataset.gateId || `gate-${idx}`;
+          gate.dataset.gateId = gateId;
+
+          // Restore from session using gateId
+          if (sessionStorage.getItem(`unlocked-${gateId}`) === 'true') {
+            gate.classList.add('is-unlocked');
+          }
+
+          const btn = gate.querySelector('.external-gate__btn');
+          if (!btn) return;
+
+          btn.addEventListener('click', () => {
+            const hint = gate.dataset.hint || '请输入外联安全分段凭证以挂载密文正文。';
+            const levelTag = '<span class="badge badge-purple">🌐 外联分段安全解密</span> <span class="badge badge-cyan">端点分片存储</span>';
+            openModal(gate, levelTag, hint);
           });
         });
       };
@@ -421,6 +721,8 @@
       const enhanceLightbox = (article) => {
         article.querySelectorAll('img').forEach((img) => {
           if (img.closest('.site-header, .theme-dock, .article-lightbox, .profile-widget, .avatar-image, button')) return;
+          if (img.dataset.lightboxBound === 'true') return;
+          img.dataset.lightboxBound = 'true';
           img.style.cursor = 'zoom-in';
           img.addEventListener('click', () => {
             if (lightboxImg) lightboxImg.src = img.src;
@@ -440,6 +742,9 @@
 
       const enhanceFootnotes = (article) => {
         article.querySelectorAll('sup a[href*="fn-"], sup a[href*="user-content-fn-"], a[data-footnote-ref]').forEach((ref) => {
+          if (ref.dataset.footnoteBound === 'true') return;
+          ref.dataset.footnoteBound = 'true';
+
           ref.addEventListener('mouseenter', () => {
             const href = ref.getAttribute('href');
             if (!href || !href.startsWith('#')) return;
@@ -466,6 +771,8 @@
       // 8. Blur and Mosaic Toggles
       const enhanceBlurMosaic = (article) => {
         article.querySelectorAll('.blur-text, .mosaic-text').forEach((el) => {
+          if (el.dataset.blurBound === 'true') return;
+          el.dataset.blurBound = 'true';
           el.addEventListener('click', () => {
             el.classList.toggle('is-unblurred');
             el.classList.toggle('is-revealed');
@@ -473,12 +780,16 @@
         });
 
         article.querySelectorAll('.blur-image-wrap').forEach((wrap) => {
+          if (wrap.dataset.blurBound === 'true') return;
+          wrap.dataset.blurBound = 'true';
           wrap.addEventListener('click', () => {
             wrap.classList.toggle('is-unblurred');
           });
         });
 
         article.querySelectorAll('.hidden-box').forEach((box) => {
+          if (box.dataset.hiddenBound === 'true') return;
+          box.dataset.hiddenBound = 'true';
           const toggle = box.querySelector('.hidden-box__toggle');
           toggle?.addEventListener('click', () => {
             box.classList.toggle('is-open');
@@ -516,7 +827,6 @@
             if (!pre || pre.dataset.mermaidRendered === 'true') continue;
             pre.dataset.mermaidRendered = 'true';
 
-            // Clean code block if wrapped in shell
             const shell = pre.closest('.code-block-shell');
 
             const rawCode = (pre.querySelector('code')?.textContent || pre.textContent || '').trim();
@@ -559,6 +869,29 @@
       });
     };
 
+    // -------------------------------------------------------
+    // Astro page lifecycle hooks
+    // On astro:page-load (view transitions), the DOM changes
+    // so we re-run article enhancements, BUT the modal
+    // singleton (_modalInitialized) persists across navigations
+    // via the closure scope of this outer IIFE.
+    //
+    // However: astro:page-load replaces the DOM body, so the
+    // modal overlay is destroyed! We must reset _modalInitialized
+    // so it gets re-created on the new page.
+    // -------------------------------------------------------
+    document.addEventListener('astro:before-swap', () => {
+      // Reset modal state — it will be re-created on next page
+      _modalInitialized = false;
+      _currentActiveTarget = null;
+      _modalOverlay = null;
+      _modalInput = null;
+      _modalError = null;
+      _modalHint = null;
+      _modalCard = null;
+      _modalLevelTag = null;
+    });
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initContentEnhancements, { once: true });
     } else {
@@ -568,3 +901,222 @@
   })();
 </script>
 
+{/* ============================================================
+    FULL-SCREEN EXTERNAL ENCRYPT GATE
+    Rendered only when visiting an encrypted route URL.
+    The gate is a full-viewport overlay; correct password reveals
+    the article content beneath. Cancel → navigate to normal URL.
+    ============================================================ */}
+{externalEncryptData?.isEncryptedRoute && (
+  <div
+    id="ext-encrypt-gate"
+    class="ext-encrypt-gate"
+    data-hash={externalEncryptData.hash}
+    data-hint={externalEncryptData.hint}
+    data-fallback-url={externalEncryptData.normalPostUrl}
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="ext-encrypt-gate__backdrop"></div>
+    <div class="ext-encrypt-gate__card">
+      <div class="ext-encrypt-gate__icon">🔐</div>
+      <div class="ext-encrypt-gate__badge">
+        <span class="badge badge-purple">🌐 外联加密文章</span>
+        <span class="badge badge-cyan">端点隔离存储</span>
+      </div>
+      <h2 class="ext-encrypt-gate__title">验证访问凭证</h2>
+      <p class="ext-encrypt-gate__hint">{externalEncryptData.hint || '这是一篇加密文章，请输入访问密码继续阅读完整内容。'}</p>
+      <div class="ext-encrypt-gate__field">
+        <input
+          type="password"
+          id="ext-encrypt-gate__input"
+          class="ext-encrypt-gate__input"
+          placeholder="输入访问密钥 / 密码"
+          autocomplete="current-password"
+        />
+      </div>
+      <div class="ext-encrypt-gate__error" id="ext-encrypt-gate__error" hidden>
+        凭证校验失败，请重新输入
+      </div>
+      <div class="ext-encrypt-gate__actions">
+        <button type="button" class="ext-encrypt-gate__cancel" id="ext-encrypt-gate__cancel">
+          取消，返回原文
+        </button>
+        <button type="button" class="ext-encrypt-gate__submit" id="ext-encrypt-gate__submit">
+          🔓 验证并解密
+        </button>
+      </div>
+      <p class="ext-encrypt-gate__footer">
+        取消后将自动跳转至未加密版本
+      </p>
+    </div>
+  </div>
+  <div id="ext-encrypt-content-wrap" class="ext-encrypt-content-wrap" hidden>
+    <!-- Article content is visible but this wrapper is hidden until gate passes -->
+  </div>
+  <script is:inline>
+  // External encrypt gate client-side logic
+  (() => {
+    // Reuse the pure-JS SHA-256 from ContentFeatureEnhancer (already defined in this page)
+    // It's available as window._sha256Pure if we expose it — but since that IIFE runs first,
+    // we define a local version here for the gate.
+    const _gateSha256Pure = (() => {
+      const K = new Uint32Array([
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+      ]);
+      const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+      return (str) => {
+        const msg = new TextEncoder().encode(str);
+        const len = msg.length;
+        const bitLen = len * 8;
+        const padLen = ((len + 9 + 63) & ~63);
+        const padded = new Uint8Array(padLen);
+        padded.set(msg);
+        padded[len] = 0x80;
+        new DataView(padded.buffer).setUint32(padLen - 4, bitLen >>> 0, false);
+        let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a;
+        let h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+        const w = new Uint32Array(64);
+        for (let i = 0; i < padLen; i += 64) {
+          const dv = new DataView(padded.buffer, i, 64);
+          for (let j = 0; j < 16; j++) w[j] = dv.getUint32(j * 4, false);
+          for (let j = 16; j < 64; j++) {
+            const s0 = rotr(w[j-15],7) ^ rotr(w[j-15],18) ^ (w[j-15] >>> 3);
+            const s1 = rotr(w[j-2],17) ^ rotr(w[j-2],19) ^ (w[j-2] >>> 10);
+            w[j] = (w[j-16] + s0 + w[j-7] + s1) >>> 0;
+          }
+          let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+          for (let j = 0; j < 64; j++) {
+            const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+            const ch = (e & f) ^ (~e & g);
+            const tmp1 = (h + S1 + ch + K[j] + w[j]) >>> 0;
+            const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+            const maj = (a & b) ^ (a & c) ^ (b & c);
+            const tmp2 = (S0 + maj) >>> 0;
+            h=g; g=f; f=e; e=(d + tmp1) >>> 0;
+            d=c; c=b; b=a; a=(tmp1 + tmp2) >>> 0;
+          }
+          h0=(h0+a)>>>0; h1=(h1+b)>>>0; h2=(h2+c)>>>0; h3=(h3+d)>>>0;
+          h4=(h4+e)>>>0; h5=(h5+f)>>>0; h6=(h6+g)>>>0; h7=(h7+h)>>>0;
+        }
+        return [h0,h1,h2,h3,h4,h5,h6,h7].map(v => v.toString(16).padStart(8,'0')).join('');
+      };
+    })();
+
+    const gateHash = async (str) => {
+      if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+        try {
+          const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        } catch (_) {}
+      }
+      return _gateSha256Pure(str);
+    };
+
+    const gate = document.getElementById('ext-encrypt-gate');
+    if (!gate) return;
+
+    const expectedHash = gate.dataset.hash || '';
+    const fallbackUrl = gate.dataset.fallbackUrl || '/';
+    const input = document.getElementById('ext-encrypt-gate__input');
+    const errorEl = document.getElementById('ext-encrypt-gate__error');
+    const submitBtn = document.getElementById('ext-encrypt-gate__submit');
+    const cancelBtn = document.getElementById('ext-encrypt-gate__cancel');
+    const card = gate.querySelector('.ext-encrypt-gate__card');
+
+    // Hide the article content behind the gate until password is correct
+    document.getElementById('article-container')?.setAttribute('data-gate-locked', 'true');
+
+    const shakeCard = () => {
+      card.classList.remove('is-shaking');
+      void card.offsetWidth;
+      card.classList.add('is-shaking');
+    };
+
+    const goToFallback = () => {
+      window.location.href = fallbackUrl;
+    };
+
+    const handleSubmit = async () => {
+      const pass = input.value.trim();
+      if (!pass) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = '校验中…';
+
+      const inputHash = await gateHash(pass);
+      if (inputHash.toLowerCase() === expectedHash.toLowerCase()) {
+        // Correct — unlock the content
+        gate.classList.add('is-unlocking');
+        document.getElementById('article-container')?.removeAttribute('data-gate-locked');
+        sessionStorage.setItem(`shijianus-ext-gate:${window.location.pathname}`, 'unlocked');
+
+        setTimeout(() => {
+          gate.remove();
+          // Dispatch activity event
+          window.dispatchEvent(new CustomEvent('shijianus:activity', {
+            detail: { message: '🔓 外联加密文章已成功验证解锁' }
+          }));
+        }, 600);
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🔓 验证并解密';
+        errorEl.hidden = false;
+        shakeCard();
+        input.select();
+      }
+    };
+
+    // Check if already unlocked in this session
+    if (sessionStorage.getItem(`shijianus-ext-gate:${window.location.pathname}`) === 'unlocked') {
+      gate.remove();
+      document.getElementById('article-container')?.removeAttribute('data-gate-locked');
+    } else {
+      // Show gate
+      gate.classList.add('is-active');
+      setTimeout(() => input?.focus(), 200);
+    }
+
+    submitBtn.addEventListener('click', handleSubmit);
+    cancelBtn.addEventListener('click', goToFallback);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSubmit();
+      if (e.key === 'Escape') goToFallback();
+    });
+  })();
+  </script>
+)}
+
+{/* ============================================================
+    "进入加密版本" BUTTON
+    Shown in the normal article when showEncryptButton is set.
+    Navigates to the encrypted slug URL.
+    ============================================================ */}
+{showEncryptButton && (
+  <div class="ext-encrypt-entry-banner">
+    <div class="ext-encrypt-entry-banner__inner">
+      <div class="ext-encrypt-entry-banner__left">
+        <span class="ext-encrypt-entry-banner__icon">🔐</span>
+        <div>
+          <div class="ext-encrypt-entry-banner__label">存在加密扩展版本</div>
+          <div class="ext-encrypt-entry-banner__desc">
+            这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。
+          </div>
+        </div>
+      </div>
+      <a
+        href={`/posts/${showEncryptButton.href}/`}
+        class="ext-encrypt-entry-banner__btn"
+        aria-label={`进入加密版本：${showEncryptButton.title}`}
+      >
+        🔑 进入加密版本
+      </a>
+    </div>
+  </div>
+)}
