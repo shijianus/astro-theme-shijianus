@@ -195,52 +195,6 @@
   color: inherit;
 }
 
-.theme-activity-bar {
-  position: fixed;
-  top: calc(var(--site-header-height, 60px) + 8px);
-  left: 50%;
-  z-index: 120;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-width: min(360px, calc(100vw - 32px));
-  max-width: min(560px, calc(100vw - 32px));
-  padding: 12px 16px;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-  box-shadow: var(--shadow-main);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -10px);
-  transition: opacity 0.26s ease, transform 0.26s ease;
-  backdrop-filter: blur(16px);
-}
-
-.theme-activity-bar.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-.theme-activity-bar__label {
-  flex: 0 0 auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
-  color: var(--theme-main);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-.theme-activity-bar strong {
-  min-width: 0;
-  color: var(--font-color);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.45;
-}
-
 .theme-account-overlay {
   position: fixed;
   inset: 0;
@@ -1196,11 +1150,6 @@ body[data-type='post'] #post-comment {
 }
 
 @media (max-width: 900px) {
-  .theme-activity-bar {
-    top: 68px;
-    min-width: calc(100vw - 24px);
-  }
-
   body[data-type='home'] .categoryGroup {
     width: 100%;
     flex-basis: 100%;

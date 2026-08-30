@@ -44,7 +44,9 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
         src={cover}
         alt={title}
         loading="lazy"
-        onerror={`this.onerror=null;this.src='${siteConfig.post.hero.fallbackImage}'`}
+        data-fallback-src={siteConfig.post.hero.fallbackImage}
+        data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+        onerror={`if(this.dataset.failedOnce==='true'){this.onerror=null;this.src='${siteConfig.post.hero.remoteFallbackImage}'}else{this.dataset.failedOnce='true';this.src='${siteConfig.post.hero.fallbackImage}'}`}
       />
     ) : (
       <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">

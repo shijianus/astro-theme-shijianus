@@ -30,7 +30,7 @@ mermaid: false
       <div class="gallery-item__caption">架构设计中枢大屏</div>
     </div>
     <div class="gallery-item">
-      <img src="/media/shijianus/default-cover.jpg" alt="星河漫步封面视觉" />
+      <img src="/media/shijianus/default.png" alt="星河漫步封面视觉" />
       <div class="gallery-item__caption">星河漫步封面视觉</div>
     </div>
   </div>

@@ -282,6 +282,7 @@ const heroSummary = isUnlocked
       video={entry.data.coverVideo}
       videoPoster={entry.data.coverVideoPoster ?? heroImage}
       fallbackImage={siteConfig.post.hero.fallbackImage}
+      remoteFallbackImage={siteConfig.post.hero.remoteFallbackImage}
       badges={badges}
       meta={meta}
       runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}

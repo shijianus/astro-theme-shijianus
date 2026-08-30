@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
+import { siteConfig } from '../config/site';
 import { getDisplayPostTitle, getPostPath, getPublicPosts, resolveDisplayCover, resolveDisplayCoverAlt } from '../lib/content';
 
 const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
@@ -32,7 +33,13 @@ const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
         {posts.map((entry) => (
           <article class="error-feed__item theme-card theme-card--interactive">
             <a class="error-feed__thumb" href={getPostPath(entry)}>
-              <img src={resolveDisplayCover(entry, true)} alt={resolveDisplayCoverAlt(entry, true)} loading="lazy" />
+              <img
+                src={resolveDisplayCover(entry, true)}
+                alt={resolveDisplayCoverAlt(entry, true)}
+                loading="lazy"
+                data-fallback-src={siteConfig.post.hero.fallbackImage}
+                data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+              />
             </a>
             <div class="error-feed__body">
               <a href={getPostPath(entry)}>{getDisplayPostTitle(entry, true)}</a>

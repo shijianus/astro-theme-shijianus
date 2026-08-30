@@ -5,8 +5,10 @@ type PostEntry = CollectionEntry<'posts'>;
 export const PROTECTED_POST_TITLE = '受限文章';
 export const PROTECTED_POST_SUMMARY = '这篇文章设置了访问条件，需完成验证后才会展示正文。';
 export const PROTECTED_POST_CATEGORY = '受限内容';
-export const PROTECTED_POST_GROUP = '验证后可读';
-export const PROTECTED_POST_COVER = '/media/shijianus/default-cover.jpg';
+export const DEFAULT_POST_COVER = '/media/shijianus/default.png';
+export const REMOTE_FALLBACK_COVER =
+  'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
+export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
 export function getPostPath(entry: Pick<PostEntry, 'id'>) {
   return `/posts/${entry.id}/`;
@@ -43,7 +45,7 @@ export function resolveGroup(entry: PostEntry) {
 }
 
 export function resolveCover(entry: PostEntry) {
-  return entry.data.cover ?? entry.data.coverVideoPoster ?? entry.data.image?.url ?? PROTECTED_POST_COVER;
+  return entry.data.cover ?? entry.data.coverVideoPoster ?? entry.data.image?.url ?? DEFAULT_POST_COVER;
 }
 
 export function resolveCoverAlt(entry: PostEntry) {

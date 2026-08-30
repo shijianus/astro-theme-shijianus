@@ -21,6 +21,7 @@ const { nextPost = null } = Astro.props;
           alt={resolveCoverAlt(nextPost)}
           loading="lazy"
           data-fallback-src={siteConfig.post.hero.fallbackImage}
+          data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
         />
         <span class="pagination-info">
           <span class="label">接着读</span>

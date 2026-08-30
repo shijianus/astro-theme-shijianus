@@ -17,6 +17,7 @@ interface Props {
   video?: string;
   videoPoster?: string;
   fallbackImage: string;
+  remoteFallbackImage?: string;
   badges?: string[];
   meta?: PostHeroMetaItem[];
   runtimeMetrics?: boolean;
@@ -31,6 +32,7 @@ const {
   video = '',
   videoPoster = image,
   fallbackImage,
+  remoteFallbackImage = 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png',
   badges = [],
   meta = [],
   runtimeMetrics = true,
@@ -65,6 +67,7 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
         playsinline
         preload="metadata"
         data-video-fallback={fallbackImage}
+        data-video-remote-fallback={remoteFallbackImage}
       >
         <track kind="captions" />
       </video>
@@ -77,6 +80,7 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
         decoding="async"
         fetchpriority="high"
         data-image-fallback={fallbackImage}
+        data-remote-fallback={remoteFallbackImage}
       />
     )}
     <div class="post-hero__overlay"></div>
@@ -140,24 +144,40 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
       const image = root.querySelector('.post-hero__image');
       const video = root.querySelector('.post-hero__video');
       const fallback = image instanceof HTMLElement ? image.getAttribute('data-image-fallback') || '' : '';
+      const remoteFallback = image instanceof HTMLElement ? image.getAttribute('data-remote-fallback') || '' : '';
       const videoFallback = video instanceof HTMLElement ? video.getAttribute('data-video-fallback') || '' : '';
+      const videoRemoteFallback = video instanceof HTMLElement ? video.getAttribute('data-video-remote-fallback') || '' : '';
 
-      if (image instanceof HTMLImageElement && fallback) {
+      if (image instanceof HTMLImageElement) {
         image.addEventListener('error', () => {
-          if (image.src.endsWith(fallback)) return;
-          image.src = fallback;
+          if (image.dataset.fallbackTier === '1' || (fallback && image.src.endsWith(fallback))) {
+            if (remoteFallback && image.src !== remoteFallback) {
+              image.dataset.fallbackTier = '2';
+              image.src = remoteFallback;
+            }
+            return;
+          }
+          image.dataset.fallbackTier = '1';
+          if (fallback && !image.src.endsWith(fallback)) {
+            image.src = fallback;
+          } else if (remoteFallback) {
+            image.dataset.fallbackTier = '2';
+            image.src = remoteFallback;
+          }
         });
       }
 
-      if (video instanceof HTMLVideoElement && videoFallback) {
+      if (video instanceof HTMLVideoElement && (videoFallback || videoRemoteFallback)) {
         video.addEventListener('error', () => {
           const nextImage = document.createElement('img');
-          nextImage.src = videoFallback;
+          nextImage.src = videoFallback || videoRemoteFallback;
           nextImage.alt = document.title;
           nextImage.className = 'post-hero__image post-hero__image--fallback';
           nextImage.setAttribute('loading', 'eager');
           nextImage.setAttribute('decoding', 'async');
           nextImage.setAttribute('fetchpriority', 'high');
+          nextImage.setAttribute('data-image-fallback', videoFallback);
+          nextImage.setAttribute('data-remote-fallback', videoRemoteFallback);
           video.replaceWith(nextImage);
         }, { once: true });
       }

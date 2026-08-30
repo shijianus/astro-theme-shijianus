@@ -126,6 +126,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               alt={resolveCoverAlt(mobileFocusPost)}
               loading="eager"
               data-fallback-src={siteConfig.post.hero.fallbackImage}
+              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
             />
             <span class="home-mobile-focus-card__body">
               <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
@@ -152,6 +153,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                 alt={resolveCoverAlt(entry)}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 data-fallback-src={siteConfig.post.hero.fallbackImage}
+                data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
               />
             </a>
           </div>
@@ -182,6 +184,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               alt={todayCardConfig.coverAlt ?? todayCardConfig.title}
               loading="eager"
               data-fallback-src={siteConfig.post.hero.fallbackImage}
+              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
             />
           </a>
           <div class="banner-button-group">

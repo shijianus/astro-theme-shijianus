@@ -303,7 +303,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
       <div class="gallery-item__caption">系统架构设计大屏</div>
     </div>
     <div class="gallery-item">
-      <img src="/media/shijianus/default-cover.jpg" alt="星河漫游视觉封面" />
+      <img src="/media/shijianus/default.png" alt="星河漫游视觉封面" />
       <div class="gallery-item__caption">星河漫游视觉封面</div>
     </div>
   </div>
@@ -790,9 +790,9 @@ sequenceDiagram
 
 #### Markdown 编写规范与语法参考
 
-作者在编写文章时，只需使用标准的 ````mindmap` 或 ````markmap` 代码块，配合标准 Markdown 标题（`#`、`##`、`###`）或无序列表（`-`、`*`）即可：
+作者在编写文章时，只需使用标准的 ```` ```mindmap ```` 或 ```` ```markmap ```` 代码块，配合标准 Markdown 标题（`#`、`##`、`###`）或无序列表（`-`、`*`）即可：
 
-```markdown
+````markdown
 ```mindmap
 # 核心主题
 ## 一级分支 A
@@ -805,7 +805,7 @@ sequenceDiagram
 ### 二级分支 B1
 - 细分知识点 4
 ```
-```
+````
 
 ---
 

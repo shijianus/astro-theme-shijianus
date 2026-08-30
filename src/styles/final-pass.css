@@ -1425,90 +1425,147 @@ body[data-type='home'] .categoryItem:is(:hover, :focus-within) .categoryButtonIc
   right: 2px;
 }
 
-.theme-activity-bar {
-  position: fixed;
-  top: calc(var(--site-header-height, 60px) + 1px);
-  left: 50%;
-  z-index: 120;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-width: min(360px, calc(100vw - 32px));
-  max-width: min(560px, calc(100vw - 32px));
-  padding: 12px 16px;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-  box-shadow: var(--shadow-main);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -10px);
-  transition: opacity 0.26s ease, transform 0.26s ease;
-  /* [PERF] backdrop-filter: blur(16px); */
+/* ==========================================================================
+   Anzhiyu-Style Universal Top Snackbar Notification Bar (对应 id="nav" 顶部位置展示)
+   ========================================================================== */
+:root {
+  --anzhiyu-snackbar-time: 2000ms;
+  --site-snackbar-time: 2000ms;
 }
 
-.theme-activity-bar.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-.theme-activity-bar__label {
-  flex: 0 0 auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
-  color: var(--theme-main);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-.theme-activity-bar strong {
-  min-width: 0;
-  color: var(--font-color);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.45;
-}
-
-/* Hexo-style snackbar host: the node is portaled into #name-container, but
-   remains fixed so it never changes the header or page flow. */
-#name-container:has(.snackbar-container) {
-  overflow: visible !important;
-  transform: none !important;
-}
-
-.mask-name-container:has(.snackbar-container) {
-  display: flex !important;
-  pointer-events: none;
-}
-
-.mask-name-container:has(.snackbar-container) #page-name {
-  display: none !important;
-}
-
-#page-header:has(.snackbar-container) {
-  transform: none !important;
-}
-
+body .snackbar-container,
 .snackbar-container.snackbar-css.snackbar-pos.top-center {
   position: fixed !important;
-  top: calc(var(--site-header-height, 60px) + 10px) !important;
-  left: 50% !important;
-  z-index: 120 !important;
-  display: inline-flex !important;
-  width: max-content;
-  min-width: min(360px, calc(100vw - 32px));
-  max-width: min(560px, calc(100vw - 32px));
-  box-sizing: border-box;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -10px);
+  top: -70px !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  height: var(--site-header-height, 60px) !important;
+  background: var(--anzhiyu-main, var(--theme-main, #425aef)) !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 999999 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: none !important;
+  transition: top 0.3s ease, opacity 0.3s ease !important;
+  overflow: hidden !important;
+  cursor: pointer;
+  box-sizing: border-box !important;
+  padding: 0 20px !important;
 }
 
+/* 暗色调：采用纯正深蓝色 (Deep Midnight Blue) */
+:root[data-theme='dark'] body .snackbar-container,
+:root[data-theme='dark'] .snackbar-container.snackbar-css.snackbar-pos.top-center {
+  background: #131b2e !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+body .snackbar-container.show,
 .snackbar-container.snackbar-css.snackbar-pos.top-center.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
+  top: 0 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.snackbar-container p,
+.snackbar-container strong,
+.snackbar-container .snackbar-text {
+  font-weight: 700 !important;
+  text-align: center !important;
+  font-size: 1.1rem !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0.02em !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  z-index: 2 !important;
+  position: relative !important;
+  max-width: 85vw !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.snackbar-container .action {
+  color: #ffffff !important;
+  padding: 4px 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
+  transition: 0.3s ease !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+  position: relative !important;
+  background: transparent !important;
+  margin-left: 12px !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.snackbar-container .action:hover {
+  color: var(--anzhiyu-main, var(--theme-main, #425aef)) !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+:root[data-theme='dark'] .snackbar-container .action:hover {
+  color: #131b2e !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* ==========================================================================
+   安知鱼原生加载深浅变换层（2种相近颜色深浅自然过渡，无额外遮罩）
+   ========================================================================== */
+.snackbar-container::after {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: #ffffff;
+  opacity: 0.12;
+  content: "";
+  pointer-events: none;
+  will-change: transform;
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 1;
+}
+
+/* 暗色调：极微弱白光叠加，在深蓝底色上形成两种极其相近、自然分辨的深蓝 */
+:root[data-theme='dark'] .snackbar-container::after {
+  background: #ffffff;
+  opacity: 0.08;
+}
+
+.snackbar-container.show::after {
+  animation: snackbar-progress var(--anzhiyu-snackbar-time, var(--site-snackbar-time, 2000ms)) linear forwards;
+}
+
+@keyframes snackbar-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .theme-account-overlay {
@@ -2461,9 +2518,11 @@ body[data-type='post'] #post-comment {
 }
 
 @media (max-width: 900px) {
-  .theme-activity-bar {
-    min-width: calc(100vw - 24px);
-    max-width: calc(100vw - 24px);
+  .snackbar-container p,
+  .snackbar-container strong,
+  .snackbar-container .snackbar-text {
+    font-size: 0.92rem !important;
+    padding: 0 6px !important;
   }
 
   .theme-account-drawer {

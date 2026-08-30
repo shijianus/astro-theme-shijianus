@@ -45,7 +45,7 @@ tags: ["媒体适配", "Markdown", "主题重构", "Astro"]
 
 正文视频同样需要支持本地地址，并在不同设备上保持可控播放：
 
-<video src="/media/shijianus/avatar-dynamic.mp4" poster="/media/shijianus/default-cover.jpg" muted loop playsinline controls></video>
+<video src="/media/shijianus/avatar-dynamic.mp4" poster="/media/shijianus/default.png" muted loop playsinline controls></video>
 
 ## 没有 poster 的视频
 

@@ -237,7 +237,7 @@ npm run preview -- --host 0.0.0.0
 如果要把这篇文章当成主题总检，还需要把正文里的媒体块一起压一遍：
 
 <figure>
-  <video src="/media/shijianus/avatar-dynamic.mp4" poster="/media/shijianus/default-cover.jpg" muted loop playsinline controls></video>
+  <video src="/media/shijianus/avatar-dynamic.mp4" poster="/media/shijianus/default.png" muted loop playsinline controls></video>
   <figcaption>本地视频 + poster，用来确认正文媒体在不同宽度下仍然稳定收束。</figcaption>
 </figure>
 

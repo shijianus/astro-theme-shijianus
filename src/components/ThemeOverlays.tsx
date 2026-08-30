@@ -225,26 +225,10 @@ export function ThemeOverlays({
 
     syncConsoleData();
   }, [consoleOpen, stats]);
-  const [activityMessage, setActivityMessage] = useState('');
-  const [activityVisible, setActivityVisible] = useState(false);
   const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
   const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
   const [selectedActivityPage, setSelectedActivityPage] = useState(1);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const activityBarRef = useRef<HTMLDivElement>(null);
-  const activityTimerRef = useRef<number | null>(null);
-  const lastActivityRef = useRef({
-    message: '',
-    at: 0,
-  });
-
-  useEffect(() => {
-    const activityBar = activityBarRef.current;
-    const nameContainer = document.getElementById('name-container');
-    if (activityBar && nameContainer && activityBar.parentElement !== nameContainer) {
-      nameContainer.appendChild(activityBar);
-    }
-  }, []);
 
   useEffect(() => {
     // Fetch latest hot comment if available
@@ -724,48 +708,6 @@ export function ThemeOverlays({
     }
   }, [consoleNoticeOpen, notificationOpen, searchOpen, consoleOpen]);
 
-  useEffect(() => {
-    const showActivity = (message: string) => {
-      if (!message.trim()) return;
-      lastActivityRef.current = {
-        message,
-        at: Date.now(),
-      };
-      setActivityMessage(message);
-      setActivityVisible(true);
-      if (activityTimerRef.current !== null) {
-        window.clearTimeout(activityTimerRef.current);
-      }
-      activityTimerRef.current = window.setTimeout(() => {
-        setActivityVisible(false);
-        activityTimerRef.current = null;
-      }, 5000);
-    };
-
-    const onActivity = (event: Event) => {
-      const detail = (event as CustomEvent<{ message?: string } | string>).detail;
-      const message = typeof detail === 'string' ? detail : detail?.message ?? '';
-      showActivity(message);
-    };
-
-    const onCopy = () => {
-      const { at, message } = lastActivityRef.current;
-      if (Date.now() - at < 350 && message.includes('复制')) return;
-      showActivity('已复制当前内容');
-    };
-
-    window.addEventListener('shijianus:activity', onActivity as EventListener);
-    document.addEventListener('copy', onCopy);
-
-    return () => {
-      window.removeEventListener('shijianus:activity', onActivity as EventListener);
-      document.removeEventListener('copy', onCopy);
-      if (activityTimerRef.current !== null) {
-        window.clearTimeout(activityTimerRef.current);
-      }
-    };
-  }, []);
-
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     const nextBackground = applyThemeWithBackground(nextTheme, {
@@ -900,15 +842,6 @@ export function ThemeOverlays({
         </div>
       )}
 
-      <div
-        ref={activityBarRef}
-        className={`theme-activity-bar snackbar-container snackbar-css snackbar-pos top-center ${activityVisible ? 'show' : ''}`}
-        aria-live="polite"
-      >
-        <span className="theme-activity-bar__label">提示</span>
-        <strong>{activityMessage}</strong>
-      </div>
-
       {features.searchPanel && (
         <section id="local-search" className={`theme-search ${searchOpen ? 'show' : ''}`} aria-hidden={!searchOpen}>
           <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板" />
@@ -938,7 +871,23 @@ export function ThemeOverlays({
               {filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
                   <a className="search-result-item" href={post.href} key={post.href}>
-                    <img src={post.cover} alt="" loading="lazy" data-fallback-src={siteConfig.post.hero.fallbackImage} />
+                    <img
+                      src={post.cover}
+                      alt=""
+                      loading="lazy"
+                      data-fallback-src={siteConfig.post.hero.fallbackImage}
+                      data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.dataset.failed === '1') {
+                          target.src = siteConfig.post.hero.remoteFallbackImage;
+                          target.dataset.failed = '2';
+                        } else if (!target.dataset.failed) {
+                          target.dataset.failed = '1';
+                          target.src = siteConfig.post.hero.fallbackImage;
+                        }
+                      }}
+                    />
                     <span className="search-result-item__content">
                       <span className="search-result-item__meta">
                         {post.category} / {post.date}

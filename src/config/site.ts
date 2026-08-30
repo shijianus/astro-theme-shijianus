@@ -208,6 +208,15 @@ export const siteConfig = {
         { id: 'clean', label: '纯净背景' },
       ],
     },
+    snackbar: {
+      enable: true,
+      position: 'top-center',
+      duration: 2000,
+      minRecommendedDuration: 1500,
+      maxRecommendedDuration: 3500,
+      bgLight: '#425AEF',
+      bgDark: '#131B2E',
+    },
     consolePanel: {
       enabled: true,
       defaultOpen: false,
@@ -725,7 +734,9 @@ export const siteConfig = {
       detectOriginalTag: true,
       maxTags: 10,
       runtimeMetrics: true,
-      fallbackImage: '/media/shijianus/default-cover.jpg',
+      fallbackImage: '/media/shijianus/default.png',
+      remoteFallbackImage:
+        'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png',
       summaryFallback: '文章头图、标签和元信息会从 Markdown 自动扫描，小字部分按模板规则收束展示。',
       metaLabels: {
         published: '发表于',
@@ -935,3 +946,33 @@ export const siteConfig = {
 } as const;
 
 export type SiteConfig = typeof siteConfig;
+
+export type SiteSnackbarConfig = {
+  enable: boolean;
+  position: 'top-center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  duration: number;
+  minRecommendedDuration: number;
+  maxRecommendedDuration: number;
+  bgLight: string;
+  bgDark: string;
+};
+
+/**
+ * 校验并警告 Snackbar 提示持续时间配置
+ * 借鉴 hexo-theme-anzhiyu 的黄金加载区间 (1500ms - 3500ms，默认 2000ms)
+ */
+export function validateSnackbarConfig(config: typeof siteConfig.theme.snackbar): void {
+  if (!config?.enable) return;
+  const { duration, minRecommendedDuration, maxRecommendedDuration } = config;
+  if (duration < 1000) {
+    console.warn(
+      `[SiteConfig Warning] theme.snackbar.duration (${duration}ms) 过短（推荐 >= ${minRecommendedDuration}ms，默认 2000ms）。读者可能无法完整阅读交互提示内容。`
+    );
+  } else if (duration > 4000) {
+    console.warn(
+      `[SiteConfig Warning] theme.snackbar.duration (${duration}ms) 过长（推荐 <= ${maxRecommendedDuration}ms，默认 2000ms）。顶部导航栏提示停留过久可能遮挡重要导航与菜单交互。`
+    );
+  }
+}
+
+validateSnackbarConfig(siteConfig.theme.snackbar);

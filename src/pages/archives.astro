@@ -60,7 +60,13 @@ let articleIndex = 0;
                 return (
                   <article class="article-sort-item">
                     <a class="article-sort-item-img" href={getPostPath(entry)}>
-                      <img src={resolveDisplayCover(entry, true)} alt={resolveDisplayCoverAlt(entry, true)} loading="lazy" />
+                      <img
+                        src={resolveDisplayCover(entry, true)}
+                        alt={resolveDisplayCoverAlt(entry, true)}
+                        loading="lazy"
+                        data-fallback-src={siteConfig.post.hero.fallbackImage}
+                        data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                      />
                     </a>
                     <div class="article-sort-item-info">
                       <a class="article-sort-item-title" href={getPostPath(entry)}>{getDisplayPostTitle(entry, true)}</a>
