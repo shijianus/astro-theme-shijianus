@@ -6,13 +6,15 @@ interface Props {
     normalPostUrl: string;
     isEncryptedRoute: boolean;
   };
-  showEncryptButton?: {
-    href: string;   // the encrypted slug (without /posts/ prefix)
-    title: string;  // article title
-  };
+  /** Array of encrypted variant buttons (one per config with showButton:true) */
+  showEncryptButtons?: Array<{
+    href: string;   // full URL including /posts/ prefix
+    title: string;  // article/variant title
+    hint?: string;  // optional hint text
+  }>;
 }
 
-const { externalEncryptData, showEncryptButton } = Astro.props;
+const { externalEncryptData, showEncryptButtons } = Astro.props;
 ---
 <script is:inline>
   (() => {
@@ -150,6 +152,10 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
         _modalError.style.display = 'none';
         _modalCard.classList.remove('is-shaking');
         _currentActiveTarget = null;
+        // ── Restore scroll ──
+        document.documentElement.classList.remove('modal-scroll-locked');
+        document.body.classList.remove('modal-scroll-locked');
+        document.removeEventListener('touchmove', _modalPreventTouch);
       };
 
       const handlePasswordSubmit = async () => {
@@ -225,6 +231,12 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
       });
     };
 
+    // ── Modal touch-scroll prevention helper ──
+    const _modalPreventTouch = (e) => {
+      if (_modalCard && _modalCard.contains(e.target)) return;
+      e.preventDefault();
+    };
+
     // -------------------------------------------------------
     // Helper: open modal and set active target
     // -------------------------------------------------------
@@ -235,6 +247,10 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
       if (_modalError) _modalError.style.display = 'none';
       if (_modalInput) _modalInput.value = '';
       _modalOverlay.classList.add('is-open');
+      // ── Lock scroll while modal is open ──
+      document.documentElement.classList.add('modal-scroll-locked');
+      document.body.classList.add('modal-scroll-locked');
+      document.addEventListener('touchmove', _modalPreventTouch, { passive: false });
       setTimeout(() => _modalInput?.focus(), 50);
     };
 
@@ -246,45 +262,151 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
       if (!content || content.dataset.maskSetup === 'true') return;
       content.dataset.maskSetup = 'true';
 
-      let toolbar = content.querySelector('.encrypted-mask-toolbar');
-      let body = content.querySelector('.encrypted-masked-body');
+      // 1. Resolve mask protection mode (default: blur)
+      const maskMap = {
+        blur: 'blur',
+        gaussian: 'blur',
+        '高斯模糊': 'blur',
+        mosaic: 'mosaic',
+        '马赛克': 'mosaic',
+        spoiler: 'spoiler',
+        '剧透': 'spoiler',
+        '剧透遮罩': 'spoiler',
+        reveal: 'reveal',
+        none: 'reveal',
+        '无': 'reveal',
+        '显露': 'reveal',
+        '显露正文': 'reveal'
+      };
+      const rawMask = (box.dataset.mask || box.dataset.maskMode || box.dataset.maskType || '').trim().toLowerCase();
+      const currentMask = maskMap[rawMask] || 'blur';
 
-      if (!toolbar) {
+      // 2. Scan if author wrote a custom toolbar in Markdown DOM
+      let toolbar = content.querySelector('.encrypted-mask-toolbar');
+      const hasCustomToolbar = !!toolbar;
+
+      // 3. Resolve user selection switch (default: false unless custom toolbar or enabled)
+      const allowSelect = hasCustomToolbar ||
+                          box.dataset.allowSelect === 'true' ||
+                          box.dataset.allowSwitch === 'true' ||
+                          box.dataset.allowCustom === 'true' ||
+                          box.dataset.maskSelector === 'true' ||
+                          box.dataset.maskToolbar === 'true' ||
+                          box.dataset.toolbar === 'true';
+
+      // 4. Resolve whether toolbar is masked (default: true / inside masked body)
+      const isToolbarMasked = !(
+        box.dataset.toolbarMasked === 'false' ||
+        box.dataset.maskToolbarOutside === 'true' ||
+        box.dataset.toolbarOutside === 'true' ||
+        box.dataset.maskToolbar === 'false'
+      );
+
+      // 5. Generate default/custom options toolbar if allowSelect is true and no HTML toolbar was found
+      if (allowSelect && !toolbar) {
+        const optionDefs = {
+          blur: { mask: 'blur', label: '🌫️ 高斯模糊' },
+          mosaic: { mask: 'mosaic', label: '🏁 马赛克' },
+          spoiler: { mask: 'spoiler', label: '⬛ 剧透遮罩' },
+          reveal: { mask: 'reveal', label: '👁️ 显露正文' }
+        };
+
+        let optionsToRender = ['blur', 'mosaic', 'spoiler', 'reveal'];
+        if (box.dataset.maskOptions) {
+          const customOpts = box.dataset.maskOptions
+            .split(/[,|]/)
+            .map((s) => maskMap[s.trim().toLowerCase()] || s.trim().toLowerCase())
+            .filter((s) => optionDefs[s]);
+          if (customOpts.length > 0) {
+            optionsToRender = [...new Set(customOpts)];
+          }
+        }
+
         toolbar = document.createElement('div');
         toolbar.className = 'encrypted-mask-toolbar';
+        const labelText = box.dataset.toolbarLabel || '🔒 遮罩防窥保护中：';
+        const buttonsHtml = optionsToRender
+          .map((opt) => {
+            const def = optionDefs[opt] || { mask: opt, label: opt };
+            const isActive = opt === currentMask ? ' is-active' : '';
+            return `<button type="button" class="mask-btn${isActive}" data-mask="${def.mask}">${def.label}</button>`;
+          })
+          .join('');
+
         toolbar.innerHTML = `
-          <span class="mask-toolbar__label">🔒 遮罩防窥保护中：</span>
+          <span class="mask-toolbar__label">${labelText}</span>
           <div class="mask-toolbar__buttons">
-            <button type="button" class="mask-btn is-active" data-mask="blur">🌫️ 高斯模糊</button>
-            <button type="button" class="mask-btn" data-mask="mosaic">🏁 马赛克</button>
-            <button type="button" class="mask-btn" data-mask="spoiler">⬛ 剧透遮罩</button>
-            <button type="button" class="mask-btn" data-mask="reveal">👁️ 显露正文</button>
+            ${buttonsHtml}
           </div>
         `;
+      }
 
-        if (!body) {
-          body = document.createElement('div');
-          body.className = 'encrypted-masked-body mask-blur';
+      // 6. Wrap content into .encrypted-masked-body with appropriate mask class
+      let body = content.querySelector('.encrypted-masked-body');
+      if (!body) {
+        body = document.createElement('div');
+        body.className = `encrypted-masked-body mask-${currentMask}`;
+
+        if (toolbar && !isToolbarMasked) {
+          if (toolbar.parentElement === content) toolbar.remove();
           while (content.firstChild) {
             body.appendChild(content.firstChild);
           }
           content.appendChild(toolbar);
           content.appendChild(body);
         } else {
-          content.insertBefore(toolbar, body);
-          body.classList.add('mask-blur');
+          while (content.firstChild) {
+            body.appendChild(content.firstChild);
+          }
+          if (toolbar && body.firstChild !== toolbar) {
+            body.insertBefore(toolbar, body.firstChild);
+          }
+          content.appendChild(body);
+        }
+      } else {
+        body.classList.remove('mask-blur', 'mask-mosaic', 'mask-spoiler', 'mask-reveal');
+        body.classList.add(`mask-${currentMask}`);
+        if (toolbar) {
+          if (isToolbarMasked) {
+            if (toolbar.parentElement !== body || body.firstChild !== toolbar) {
+              body.insertBefore(toolbar, body.firstChild);
+            }
+          } else {
+            if (toolbar.parentElement !== content) {
+              content.insertBefore(toolbar, body);
+            }
+          }
         }
       }
 
-      const buttons = toolbar.querySelectorAll('.mask-btn');
-      buttons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          buttons.forEach((b) => b.classList.remove('is-active'));
-          btn.classList.add('is-active');
-          const maskType = btn.dataset.mask || 'blur';
-          body.className = `encrypted-masked-body mask-${maskType}`;
+      // 7. Bind click interactions to toolbar buttons
+      if (toolbar) {
+        const buttons = toolbar.querySelectorAll('.mask-btn, button[data-mask]');
+        let hasActive = false;
+        buttons.forEach((btn) => {
+          const btnMask = maskMap[(btn.dataset.mask || '').trim().toLowerCase()] || btn.dataset.mask;
+          if (btnMask === currentMask) {
+            btn.classList.add('is-active');
+            hasActive = true;
+          } else {
+            btn.classList.remove('is-active');
+          }
         });
-      });
+        if (!hasActive && buttons.length > 0) {
+          buttons[0].classList.add('is-active');
+        }
+
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            buttons.forEach((b) => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            const rawBtnMask = (btn.dataset.mask || 'blur').trim().toLowerCase();
+            const maskType = maskMap[rawBtnMask] || 'blur';
+            body.className = `encrypted-masked-body mask-${maskType}`;
+          });
+        });
+      }
     };
 
     // -------------------------------------------------------
@@ -1031,6 +1153,33 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
     const cancelBtn = document.getElementById('ext-encrypt-gate__cancel');
     const card = gate.querySelector('.ext-encrypt-gate__card');
 
+    // ── Scroll lock helpers ──────────────────────────────────────
+    // Saves and restores the scroll position so layout doesn't jump
+    let _savedScrollTop = 0;
+
+    const lockScroll = () => {
+      _savedScrollTop = window.scrollY || document.documentElement.scrollTop;
+      document.documentElement.classList.add('ext-gate-open');
+      document.body.classList.add('ext-gate-open');
+      // Prevent touch-based scroll on iOS
+      document.addEventListener('touchmove', _preventTouch, { passive: false });
+    };
+
+    const unlockScroll = () => {
+      document.documentElement.classList.remove('ext-gate-open');
+      document.body.classList.remove('ext-gate-open');
+      document.removeEventListener('touchmove', _preventTouch);
+      // Restore scroll position (CSS overflow:hidden moves scroll to 0)
+      window.scrollTo(0, _savedScrollTop);
+    };
+
+    const _preventTouch = (e) => {
+      // Allow scroll inside the gate card itself
+      if (gate.contains(e.target)) return;
+      e.preventDefault();
+    };
+    // ────────────────────────────────────────────────────────────
+
     // Hide the article content behind the gate until password is correct
     document.getElementById('article-container')?.setAttribute('data-gate-locked', 'true');
 
@@ -1041,6 +1190,7 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
     };
 
     const goToFallback = () => {
+      unlockScroll();
       window.location.href = fallbackUrl;
     };
 
@@ -1059,11 +1209,11 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
 
         setTimeout(() => {
           gate.remove();
-          // Dispatch activity event
+          unlockScroll();
           window.dispatchEvent(new CustomEvent('shijianus:activity', {
             detail: { message: '🔓 外联加密文章已成功验证解锁' }
           }));
-        }, 600);
+        }, 550);
       } else {
         submitBtn.disabled = false;
         submitBtn.textContent = '🔓 验证并解密';
@@ -1077,8 +1227,18 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
     if (sessionStorage.getItem(`shijianus-ext-gate:${window.location.pathname}`) === 'unlocked') {
       gate.remove();
       document.getElementById('article-container')?.removeAttribute('data-gate-locked');
+      // No scroll lock needed — gate is immediately removed
     } else {
-      // Show gate
+      // ── BODY TELEPORT ─────────────────────────────────────────────────────
+      // Move gate to <body> level to guarantee true fullscreen coverage
+      // regardless of any parent stacking contexts (position:relative, etc.)
+      if (gate.parentElement !== document.body) {
+        document.body.appendChild(gate);
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
+      // Show gate + lock scroll
+      lockScroll();
       gate.classList.add('is-active');
       setTimeout(() => input?.focus(), 200);
     }
@@ -1094,29 +1254,31 @@ const { externalEncryptData, showEncryptButton } = Astro.props;
 )}
 
 {/* ============================================================
-    "进入加密版本" BUTTON
-    Shown in the normal article when showEncryptButton is set.
-    Navigates to the encrypted slug URL.
+    ENCRYPTED VERSION ENTRY BUTTONS (多变体支持)
+    Shown in the normal article for each encrypted variant that
+    has showButton:true. Supports multiple encrypted variants.
     ============================================================ */}
-{showEncryptButton && (
-  <div class="ext-encrypt-entry-banner">
+{showEncryptButtons && showEncryptButtons.length > 0 && showEncryptButtons.map((btn, idx) => (
+  <div class="ext-encrypt-entry-banner" data-enc-idx={idx}>
     <div class="ext-encrypt-entry-banner__inner">
       <div class="ext-encrypt-entry-banner__left">
         <span class="ext-encrypt-entry-banner__icon">🔐</span>
         <div>
-          <div class="ext-encrypt-entry-banner__label">存在加密扩展版本</div>
+          <div class="ext-encrypt-entry-banner__label">
+            {showEncryptButtons.length > 1 ? `加密版本 ${idx + 1}` : '存在加密扩展版本'}
+          </div>
           <div class="ext-encrypt-entry-banner__desc">
-            这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。
+            {btn.hint || '这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。'}
           </div>
         </div>
       </div>
       <a
-        href={`/posts/${showEncryptButton.href}/`}
+        href={btn.href}
         class="ext-encrypt-entry-banner__btn"
-        aria-label={`进入加密版本：${showEncryptButton.title}`}
+        aria-label={`进入加密版本：${btn.title}`}
       >
         🔑 进入加密版本
       </a>
     </div>
   </div>
-)}
+))}

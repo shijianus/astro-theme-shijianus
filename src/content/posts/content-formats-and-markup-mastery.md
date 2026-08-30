@@ -12,12 +12,42 @@ featured: true
 sticky: 10
 postFormat: "standard"
 markup: "markdown"
-tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "EpoCanvas", "排版规范", "UI"]
-externalEncrypt:
-  hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
-  hint: "这是该指南的加密完整版，包含所有受限技术细节与完整示例。密码与1级加密相同。"
-  showButton: true
-  title: "SSG 指南完整加密版"
+tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "EpoCanvas", "排版规范", "UI", "Mindmap", "思维导图"]
+mermaid: true
+mindmap: true
+# ─────────────────────────────────────────────────────────────────────────────
+# Multiple encrypted variants demo (externalEncrypts array)
+# ─────────────────────────────────────────────────────────────────────────────
+externalEncrypts:
+  # ── Variant A: 哈希推导 Token（默认，后缀模式）────────────────────────────
+  # URL: /posts/content-formats-and-markup-mastery--x6c64b93324b386/
+  # 密码: shijianus2026
+  - id: "tier-1-full"
+    hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
+    hint: "这是该指南的加密完整版，包含所有受限技术细节与完整示例。密码与1级加密相同。"
+    showButton: true
+    title: "SSG 指南 · 完整加密版（Tier 1）"
+
+  # ── Variant B: 自定义 Token（后缀模式）────────────────────────────────────
+  # URL: /posts/content-formats-and-markup-mastery--xepocanvas2026ver/
+  # 密码: epocanvas2026
+  - id: "tier-2-epo"
+    hash: "f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07"
+    token: "epocanvas2026ver"
+    hint: "EpoCanvas 核心成员专属加密版，包含内部架构细节与完整设计规范。密码: epocanvas2026"
+    showButton: true
+    title: "SSG 指南 · EpoCanvas 成员专属版（Tier 2）"
+
+  # ── Variant C: 独立 URL（standalone 模式，不基于原文 slug 扩展）───────────
+  # URL: /posts/ssg-secret-annex/
+  # 密码: shijianus2026
+  # showButton: false → 秘密 URL，不在普通文章中显示入口按钮
+  - id: "standalone-annex"
+    hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
+    slug: "ssg-secret-annex"
+    hint: "这是一个独立 URL 的秘密附录，只有持有此链接的人才能访问。"
+    showButton: false
+    title: "SSG 秘密附录（独立 URL）"
 ---
 
 
@@ -635,7 +665,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-## 八、学术数学公式（KaTeX）与图表（Mermaid 11）
+## 八、学术数学公式（KaTeX）、架构图表（Mermaid 11）与动态思维导图（Markmap）
 
 ### 1. LaTeX 数学公式（Math）
 
@@ -699,6 +729,86 @@ sequenceDiagram
 
 ---
 
+### 3. 动态交互式思维导图（Markmap / Mindmap · 多向分支扩散）
+
+在长篇技术规范与系统架构梳理中，传统的静态列表难以直观呈现复杂的知识脉络。本主题全新实装 **Markmap 动态交互式思维导图引擎**，在文章主栏（`.post.post-page-shell`）中实现彻底的原生解析与交互增强：
+
+> [!TIP]
+> **多向分支扩散核心规则**：
+> 1. **默认单块保护空间**：默认状态下，思维导图仅展示 **1 块核心根节点**（Level 1），右侧附带折叠小圆点指示器；
+> 2. **点击展开多向分支**：点击根节点或任意子节点的小圆点，子分支将**平滑向外散开**；
+> 3. **工具栏全能操控**：支持 **放大 / 缩小 / 居中自适应 / 一键展开全部 / 一键收起单块 / 全屏沉浸式阅读 / 复制源码**；
+> 4. **画布拖拽与缩放**：按住鼠标左键可自由拖拽平移画布，滚动鼠标滚轮可缩放视野。
+
+#### 活体思维导图呈现：SSG 与主题内容格式生态全景
+
+```mindmap
+# 静态站点生成器与全格式内容生态架构
+## 静态编译核心
+### AST 语法转换管道
+- Unified / Remark GFM
+- Rehype Katex / MDX 拓展
+- Shiki 双主题代码语法高亮
+### 编译器与资源打包
+- Vite 6 极速热重载 (HMR)
+- Rollup 静态生成流水线
+- Tailwind CSS v4 与 PostCSS 管道
+## 动态交互与群岛体系
+### 混合组件群岛 Islands
+- React 19 Client Components
+- Astro Server-Side Islands
+- 会话状态保持 (SessionStorage / Crypto)
+### 现代视觉与动效系统
+- 动态背景引擎 (Aurora 极光 / Starfield 星空)
+- 毛玻璃卡片 Glassmorphism 规范
+- 响应式全端自适应布局 (PC / Pad / Mobile)
+## 格式全景与特异功能
+### 扩展文档规范对照
+- AsciiDoc (.adoc) 原生等效适配
+- Emacs Org-Mode (.org) 任务清单映射
+- reStructuredText (.rst) 指令转换
+### 富交互组件集
+- 交互式下拉框切换器 (Dropdown Switcher)
+- 互斥手风琴折叠卡片 (Accordion Groups)
+- 动态黑胶唱片音频播放器 (Vinyl Audio)
+### 安全隐私与分级加密
+- WebCrypto SHA-256 哈希校验 (无明文外露)
+- 1级会话持久解锁 (Session Persistent)
+- 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
+- 3级视口防窥离开即锁 (IntersectionObserver)
+- 外联分段解密端点隔离 (Standalone Token)
+## 动态图表与思维导图
+### 可视化渲染引擎
+- Mermaid 11 流程图与时序图
+- Markmap 动态多向分支思维导图
+- KaTeX 学术数学排版渲染
+### 交互与扩展特性
+- 默认单块折叠保护阅读视界
+- 点击节点触发多向分支层层散开
+- 缩放 / 平移 / 一键重置 / 全屏沉浸体验
+```
+
+#### Markdown 编写规范与语法参考
+
+作者在编写文章时，只需使用标准的 ````mindmap` 或 ````markmap` 代码块，配合标准 Markdown 标题（`#`、`##`、`###`）或无序列表（`-`、`*`）即可：
+
+```markdown
+```mindmap
+# 核心主题
+## 一级分支 A
+### 二级分支 A1
+- 细分知识点 1
+- 细分知识点 2
+### 二级分支 A2
+- 细分知识点 3
+## 一级分支 B
+### 二级分支 B1
+- 细分知识点 4
+```
+```
+
+---
+
 ## 九、安全隐私、分级加密（Level 1/2/3）与外联分段解密特异功能
 
 为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并根据机密性与防窥需求建立起三级文内局部加密与外联分段解密体系。
@@ -738,9 +848,12 @@ sequenceDiagram
 
 ### 2. 2级加密：解密后遮罩防窥保护（Level 2 · Mask Protection）
 
-验证成功后内容虽被解密，但**默认自动进入高斯模糊防窥遮罩状态**，防止身旁他人窥屏；用户可通过顶部工具栏自由切换 **高斯模糊**、**马赛克**、**剧透黑块** 或 **完全显露**：
+验证成功后内容虽被解密，但**默认自动进入高斯模糊防窥遮罩状态**（默认不显示切换栏，鼠标悬浮即可清晰查看），有效抵御近距离窥屏。
+- **开启工具栏**：配置 `data-allow-select="true"` 开启遮罩切换工具栏，**工具栏默认同样包含在遮罩内受保护**（鼠标悬浮时工具栏与正文一同清晰显露并可点击切换）；如需工具栏保持在遮罩外，可配置 `data-toolbar-masked="false"`；
+- **指定遮罩方式**：可通过 `data-mask="blur|mosaic|spoiler|reveal"` 强制指定遮罩模式；
+- **自定义设置栏**：支持在 Markdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式，或直接在正文中书写 `<div class="encrypted-mask-toolbar">` 结构，系统会自动扫描并激活自定义设置栏。
 
-<div class="article-encrypted-box" data-level="2" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2级加密提示：演示密钥请输入 epocanvas2026">
+<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2级加密提示：演示密钥请输入 epocanvas2026">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥模式</span> <span class="badge badge-purple">动态多态遮罩</span></div>
     <div class="encrypted-box__icon">🛡️</div>
@@ -993,8 +1106,181 @@ curl -X POST https://cluster.shijian.us/v1/node/failover \
 
 ---
 
+---
+
 ## 结语：构建面向未来的内容呈现系统
 
 通过本次全量升级与扩展，`shijianus-blog` 在主内容栏（`.article-body.post-content`）上实现了对主流 SSG 内容格式、WordPress Post Formats、交互式下拉框、手风琴折叠、LaTeX 公式、Mermaid 图表以及密码加密等特异功能的全景覆盖。
 
 无论是严谨的长篇技术论文，还是轻量的人文生活随笔，每一位创作者都能在这套系统中找到最契合的表达形态！
+
+<div class="enc-replace">
+<div class="enc-replace__normal">
+
+> 💡 这篇文章存在一个加密扩展版本，包含完整的技术内幕与实现细节。前往 [加密版本](/posts/content-formats-and-markup-mastery--x6c64b93324b386/) 输入密码后解锁阅读。
+
+</div>
+<div class="enc-replace__secret">
+
+> 🔓 **你正在阅读加密完整版。** 以下内容为仅对持有凭证的读者开放的技术内幕与拓展实验。
+
+</div>
+</div>
+
+---
+
+<div class="enc-only">
+
+## 十三、加密版专属 — 外联加密系统技术内幕
+
+> 🔐 **此章节仅在外联加密版本中可见。** 感谢你持有访问凭证！
+
+### 外联加密 URL Token 算法解析
+
+外联加密系统通过将密码的 SHA-256 哈希进行多段重组，生成一个在 URL 中看起来随机但实际上**确定性**（deterministic）的 14 字符 Token。
+
+具体算法（见 [`src/lib/external-encrypt.ts`](https://github.com/)）：
+
+```typescript
+export function deriveEncryptedToken(hash: string): string {
+  const h = hash.toLowerCase().trim();
+  // Part 1: 哈希的 4–9 位（6 chars）
+  const part1 = h.slice(4, 10);
+  // Part 2: 18–21 位逆序（4 chars）
+  const part2 = h.slice(18, 22).split('').reverse().join('');
+  // Part 3: 第 30 位 + 第 55 位（2 chars）
+  const part3 = h[30]! + h[55]!;
+  // Part 4: byte[0] XOR byte[63] → 2 hex chars
+  const byte0  = parseInt(h.slice(0, 2), 16);
+  const byte63 = parseInt(h.slice(62, 64), 16);
+  const part4  = (byte0 ^ byte63).toString(16).padStart(2, '0');
+  // 拼接顺序：p1 + p3 + p2 + p4 → 14 chars
+  return part1 + part3 + part2 + part4;
+}
+```
+
+对于密码 `shijianus2026`（SHA-256: `d7fb6c64b9aa44...`），推导结果：
+
+| 步骤 | 哈希取值 | 值 |
+|------|---------|-----|
+| Part 1 | `h[4..9]` | `6c64b9` |
+| Part 2 | `h[18..21]` 逆序 | `3324` |
+| Part 3 | `h[30] + h[55]` | `b3` |
+| Part 4 | `0xd7 XOR 0x51` | `86` |
+| **Token** | **part1+part3+part2+part4** | **`6c64b93324b386`** |
+
+最终加密 URL：`/posts/content-formats-and-markup-mastery--x6c64b93324b386/`
+
+### 内容标注体系完整参考
+
+系统提供 **4 个原语**供作者自由组合：
+
+| 类名 / 用法 | 普通版（正常 URL） | 加密版（已解锁） | 典型用途 |
+|------------|-----------------|----------------|---------|
+| `.enc-only` | ❌ 隐藏 | ✅ 显示 | 加密版独有内幕、奖励内容 |
+| `.enc-hidden` | ✅ 显示 | ❌ 隐藏 | 普通版的导流提示、版权声明 |
+| `.enc-replace__normal` | ✅ 显示 | ❌ 隐藏 | 公开版摘要 / 预告 |
+| `.enc-replace__secret` | ❌ 隐藏 | ✅ 显示 | 完整正文 / 真实数据 |
+| `.enc-redact` | 模糊遮挡 | ✅ 清晰显示 | 内联敏感词（价格、姓名…） |
+
+#### 快速上手示例
+
+**① 仅加密版可见的段落：**
+```html
+<div class="enc-only">
+这段文字只有访问加密版本后才能看到。
+</div>
+```
+
+**② 普通版可见、加密版隐藏：**
+```html
+<div class="enc-hidden">
+这段提示只在普通版中显示，引导读者前往加密版。
+</div>
+```
+
+**③ 两版内容互换（正文替换）：**
+```html
+<div class="enc-replace">
+  <div class="enc-replace__normal">
+  公开版：项目收益约 **×× 万元**（已打码）
+  </div>
+  <div class="enc-replace__secret">
+  加密版：项目实际收益为 **127 万元**，净利润率 38.6%。
+  </div>
+</div>
+```
+
+**④ 内联敏感词遮挡（enc-redact）：**
+```html
+接口密钥为 <span class="enc-redact">sk-abc123xyz789-prod</span>，请勿泄露。
+```
+普通版显示为模糊色块，加密版恢复明文。
+
+### 特殊玩法：完全不同的两篇文章
+
+由于加密版本实际上是独立的 URL 路由，理论上你可以通过大量 `enc-replace` 与 `enc-only` / `enc-hidden` 的组合，让两个版本的文章**在呈现上完全不同**：
+
+- 加密版可以有完全不同的标题锚点、图表、代码示例
+- 普通版只是一篇简短的「诱饵」，吸引读者获取密码
+- 加密版是真正的「彩蛋」文章
+- 还可以故意不在普通文章显示「进入加密版」按钮（设置 `showButton: false`），把加密 URL 作为秘密奖励只对特定读者分发
+
+</div>
+
+<div class="enc-only">
+
+---
+
+## 十四、加密版专属 — 各 SSG 加密兼容性完整测试矩阵
+
+> 🔐 **此表格仅在加密版中可见。**
+
+以下是经过实测的各 SSG 平台对加密系统的兼容性验证矩阵（截至 2026-08）：
+
+| 平台 | 静态部署 | SSR 部署 | `enc-only` CSS | 外联 URL | 内联弹窗 | 备注 |
+|------|---------|---------|---------------|---------|---------|------|
+| **Astro + node** | ⚠️ 需预渲染 | ✅ 完整支持 | ✅ | ✅ | ✅ | 当前平台 |
+| **Astro + static** | ✅ | — | ✅ | ✅ 需 getStaticPaths | ✅ | 推荐生产方案 |
+| **Next.js App** | ✅ | ✅ | ✅ | ✅ | ✅ | 需 `use client` |
+| **Nuxt 3** | ✅ | ✅ | ✅ | ✅ | ✅ | 适配 `data-route` |
+| **Hugo** | ✅ | — | ✅ 需手写 | ❌ | ✅ 内联 JS | URL 路由不原生支持 |
+| **Jekyll** | ✅ | — | ✅ | ❌ | ✅ | 同上 |
+
+**推荐部署方案（最优）：**
+- Astro `output: 'static'` + `getStaticPaths` 生成两套 slug
+- 部署至 Cloudflare Pages / Vercel（CDN 边缘缓存）
+- 全客户端解密，零服务器成本
+
+</div>
+
+---
+
+<div class="enc-only">
+
+## 附录：加密系统快速备忘卡
+
+```
+┌──────────────────────────────────────────────────────────┐
+│           shijianus-blog 外联加密系统备忘卡              │
+├─────────────────┬──────────────────┬────────────────────┤
+│ Frontmatter 字段 │ 类型             │ 说明               │
+├─────────────────┼──────────────────┼────────────────────┤
+│ hash            │ string (64 hex)  │ 密码的 SHA-256 哈希 │
+│ hint            │ string?          │ 凭证关卡提示文字   │
+│ showButton      │ boolean (默认 true)│ 是否展示入口按钮  │
+│ title           │ string?          │ 按钮标题           │
+├─────────────────┴──────────────────┴────────────────────┤
+│ CSS 原语                                                 │
+├──────────────────────────────────────────────────────────┤
+│ .enc-only           仅加密版可见                         │
+│ .enc-hidden         仅普通版可见                         │
+│ .enc-replace        透明包装器（display:contents）        │
+│ .enc-replace__normal  仅普通版内容                        │
+│ .enc-replace__secret  仅加密版内容                        │
+│ .enc-redact         模糊内联敏感词（加密版恢复明文）      │
+│ .enc-only-badge     可选：🔐 加密标记徽章                │
+└──────────────────────────────────────────────────────────┘
+```
+
+</div>

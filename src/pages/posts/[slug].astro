@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
 import AiSummaryPanel from '../../components/theme/AiSummaryPanel.astro';
 import PostHero from '../../components/theme/PostHero.astro';
@@ -26,7 +26,12 @@ import {
 import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
 import { createSidebarData } from '../../lib/theme';
 import { evaluatePostAccess, getAccessPasswordHash, verifyAccessPassword } from '../../lib/access-control';
-import { buildEncryptedSlug, parseEncryptedSlug, verifyEncryptedSlug } from '../../lib/external-encrypt';
+import {
+  buildEncryptedSlugMap,
+  findEncryptedRouteMatch,
+  getPostEncryptConfigs,
+  resolveConfigSlug,
+} from '../../lib/external-encrypt';
 
 export const prerender = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
 const STATIC_EXPORT = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
@@ -34,45 +39,56 @@ const STATIC_EXPORT = import.meta.env.PUBLIC_STATIC_EXPORT === '1';
 export async function getStaticPaths() {
   if (import.meta.env.PUBLIC_STATIC_EXPORT !== '1') return [];
   const posts = await getCollection('posts');
-  const paths = posts.map((post) => ({
-    params: { slug: post.id },
-  }));
-  // Also generate encrypted slug routes for posts with externalEncrypt
-  for (const post of posts) {
-    if (post.data.externalEncrypt?.hash) {
-      paths.push({
-        params: { slug: buildEncryptedSlug(post.id, post.data.externalEncrypt.hash) },
-      });
-    }
+  const existingPostIds = new Set(posts.map((p) => p.id));
+
+  const paths = posts.map((post) => ({ params: { slug: post.id } }));
+
+  // Build encrypted slug map with conflict detection
+  const { slugMap, warnings } = buildEncryptedSlugMap(posts, existingPostIds);
+
+  // Log any warnings (shows in build output)
+  for (const w of warnings) {
+    console.warn(`[ExternalEncrypt] ${w.type}: "${w.encryptedSlug}" → auto-resolved to "${w.autoResolvedTo}"`);
   }
+
+  // Add all encrypted slug routes
+  for (const encSlug of slugMap.keys()) {
+    paths.push({ params: { slug: encSlug } });
+  }
+
   return paths;
 }
 
 const { slug } = Astro.params;
 const allPosts = sortPostsByDate(await getCollection('posts'));
 const publicPosts = getPublicPosts(allPosts);
+const existingPostIds = new Set(allPosts.map((p) => p.id));
 
-// -------------------------------------------------------
-// Detect whether this is an encrypted slug variant
-// e.g. "my-post--x7a3f2cb94e01d8" → originalSlug = "my-post"
-// -------------------------------------------------------
-const encryptedParsed = parseEncryptedSlug(slug ?? '');
-const isEncryptedRoute = Boolean(encryptedParsed);
-
+// ── Normal post lookup ──────────────────────────────────────────────────────
 let entry = allPosts.find((post) => post.id === slug);
-let encryptedEntry = null; // the matching post for an encrypted slug
-let encryptedRouteValid = false;
 
-if (isEncryptedRoute && encryptedParsed) {
-  // Find the post whose encrypted slug matches
-  encryptedEntry = allPosts.find((post) => {
-    const hash = post.data.externalEncrypt?.hash;
-    if (!hash) return false;
-    return verifyEncryptedSlug(slug ?? '', hash);
-  });
-  if (encryptedEntry) {
-    encryptedRouteValid = true;
-    entry = encryptedEntry; // use the original post's data for rendering
+// ── Encrypted route lookup ──────────────────────────────────────────────────
+let matchedEncryptConfig = null;
+let isEncryptedRoute = false;
+let contentEntry = null; // if cross-article contentSlug is set, render this post instead
+
+if (!entry) {
+  // Not a normal post — try to find as encrypted route
+  const match = findEncryptedRouteMatch(slug ?? '', allPosts);
+  if (match) {
+    entry = match.post;
+    matchedEncryptConfig = match.config;
+    isEncryptedRoute = true;
+
+    // Cross-article content: load a different post's content
+    if (match.config.contentSlug) {
+      const crossEntry = allPosts.find((p) => p.id === match.config.contentSlug);
+      if (crossEntry) {
+        contentEntry = crossEntry;
+      } else {
+        console.warn(`[ExternalEncrypt] contentSlug "${match.config.contentSlug}" not found for post "${entry.id}"`);
+      }
+    }
   }
 }
 
@@ -80,11 +96,20 @@ if (!entry) {
   throw new Error(`Post not found: ${slug}`);
 }
 
-// If this is a valid encrypted route, the page shows a full-screen gate.
-// The gate is 100% client-side: correct password → show content; cancel → back to original URL.
-const extEnc = entry.data.externalEncrypt;
-const originalSlugForEncrypted = encryptedParsed?.originalSlug ?? entry.id;
-const normalPostUrl = `/posts/${originalSlugForEncrypted}/`;
+// The "source" post for content rendering
+// (could be the cross-article post, or the current post)
+const contentSourceEntry = contentEntry ?? entry;
+
+// For encrypted routes: normal post URL to navigate back to on cancel
+const normalPostUrl = isEncryptedRoute
+  ? `/posts/${entry.id}/`
+  : `/posts/${entry.id}/`;
+
+// Collect all encrypted configs for the NORMAL article
+// (used to build "enter encrypted version" buttons)
+const allEncryptConfigs = getPostEncryptConfigs(entry.data);
+
+// ──── End of encrypted route detection ─────────────────────────────────────
 
 // Prepare the inline-encrypted article content (rendered server-side, initially hidden)
 // For encrypted routes: always render content (hidden behind gate)
@@ -136,7 +161,7 @@ const accessState = STATIC_EXPORT
 
 // For encrypted routes: always treat as "unlocked" at server-side
 // (content is rendered but hidden by the client-side password gate)
-const isUnlocked = isEncryptedRoute ? encryptedRouteValid : accessState.unlocked;
+const isUnlocked = isEncryptedRoute ? true : accessState.unlocked;
 const publicFacingTitle = isUnlocked ? entry.data.title : PROTECTED_POST_TITLE;
 const publicFacingDescription = isUnlocked ? entry.data.description ?? siteConfig.post.hero.summaryFallback : PROTECTED_POST_SUMMARY;
 
@@ -146,7 +171,9 @@ let Content:
 let headings: Awaited<ReturnType<typeof render>>['headings'] = [];
 
 if (isUnlocked) {
-  const rendered = await render(entry);
+  // contentSourceEntry: normally the same as entry; for cross-article encrypted routes,
+  // this is the referenced post's entry
+  const rendered = await render(contentSourceEntry);
   Content = rendered.Content;
   headings = rendered.headings;
 }
@@ -279,6 +306,7 @@ const heroSummary = isUnlocked
       id="article-container"
       class="article-body post-content"
       data-content-features={isUnlocked ? 'true' : undefined}
+      data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
     >
       {isUnlocked && Content ? (
         <Content />
@@ -308,16 +336,21 @@ const heroSummary = isUnlocked
     </article>
 
     {isUnlocked && <ContentFeatureEnhancer
-      externalEncryptData={isEncryptedRoute && extEnc ? {
-        hash: extEnc.hash,
-        hint: extEnc.hint ?? '',
+      externalEncryptData={isEncryptedRoute && matchedEncryptConfig ? {
+        hash: matchedEncryptConfig.hash,
+        hint: matchedEncryptConfig.hint ?? '',
         normalPostUrl,
         isEncryptedRoute: true,
       } : undefined}
-      showEncryptButton={!isEncryptedRoute && !!extEnc?.showButton && !!extEnc?.hash ? {
-        href: buildEncryptedSlug(entry.id, extEnc.hash),
-        title: extEnc.title ?? entry.data.title,
-      } : undefined}
+      showEncryptButtons={!isEncryptedRoute && allEncryptConfigs.length > 0 ? (
+        allEncryptConfigs
+          .filter((c) => c.showButton !== false && c.hash)
+          .map((c) => ({
+            href: `/posts/${resolveConfigSlug(entry.id, c)}/`,
+            title: c.title ?? entry.data.title,
+            hint: c.hint ?? '',
+          }))
+      ) : undefined}
     />}
 
     {isUnlocked && (

@@ -41,11 +41,11 @@
 
       document.querySelectorAll('.article-body pre').forEach((pre) => {
         if (!(pre instanceof HTMLElement) || pre.dataset.enhanced === 'true') return;
-        if (pre.closest('.mermaid-diagram-wrap, .katex-display, .no-code-enhance')) return;
+        if (pre.closest('.mermaid-diagram-wrap, .mindmap-wrapper, .mindmap-container, .katex-display, .no-code-enhance')) return;
 
         const code = pre.querySelector('code');
         const langStr = getLanguage(pre, code);
-        if (langStr === 'MERMAID') return; // Handled by mermaid enhancer
+        if (langStr === 'MERMAID' || langStr === 'MINDMAP' || langStr === 'MARKMAP') return; // Handled by diagram enhancers
 
         pre.dataset.enhanced = 'true';
 

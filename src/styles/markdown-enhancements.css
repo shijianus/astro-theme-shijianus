@@ -831,12 +831,21 @@ details.admonition-details .details-content {
 .encrypted-masked-body.mask-spoiler * {
   color: transparent !important;
 }
+.encrypted-masked-body.mask-spoiler .encrypted-mask-toolbar {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
 .encrypted-masked-body.mask-spoiler:hover {
   background: transparent;
   color: inherit !important;
 }
 .encrypted-masked-body.mask-spoiler:hover * {
   color: inherit !important;
+}
+.encrypted-masked-body.mask-spoiler:hover .encrypted-mask-toolbar {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Mask mode 4: Fully Revealed */
@@ -889,9 +898,126 @@ details.admonition-details .details-content {
 }
 
 /* ================================================================
+   ENCRYPTED CONTENT ANNOTATION SYSTEM
+   — Three primitives for user-defined route-aware content:
+
+   1. .enc-only        → Only visible in the encrypted version
+   2. .enc-hidden      → Visible normally, hidden in encrypted version
+   3. .enc-replace     → Wrapper: contains .enc-replace__normal (normal only)
+                         and .enc-replace__secret (encrypted only)
+
+   Add data-route="normal" or data-route="encrypted" to #article-container
+   (set automatically by the page template based on URL).
+   ================================================================ */
+
+/* ── Default: both sections visible, JS/CSS takes over ── */
+.enc-only   { display: block; }
+.enc-hidden { display: block; }
+.enc-replace__normal { display: block; }
+.enc-replace__secret { display: block; }
+
+/* ── NORMAL route: hide encrypted-only content ── */
+#article-container[data-route="normal"] .enc-only { display: none !important; }
+#article-container[data-route="normal"] .enc-replace__secret { display: none !important; }
+
+/* ── ENCRYPTED route: hide normal-only content, show encrypted-only ── */
+#article-container[data-route="encrypted"] .enc-hidden { display: none !important; }
+#article-container[data-route="encrypted"] .enc-replace__normal { display: none !important; }
+
+/* ── Visual wrapper for enc-only sections (optional decoration) ── */
+.enc-only {
+  position: relative;
+}
+
+/* ── enc-replace wrapper: removes spacing collapse ── */
+.enc-replace {
+  display: contents; /* transparent wrapper, doesn't affect layout */
+}
+
+/* ── Encrypted content reveal animation (on encrypted route) ── */
+#article-container[data-route="encrypted"] .enc-only {
+  animation: encRevealFade 0.5s ease 0.1s both;
+}
+#article-container[data-route="encrypted"] .enc-replace__secret {
+  animation: encRevealFade 0.5s ease 0.1s both;
+}
+
+@keyframes encRevealFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Optional: visual "Encrypted" badge on enc-only sections ── */
+.enc-only-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12));
+  border: 1px solid rgba(139,92,246,0.3);
+  color: #8b5cf6;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+  white-space: nowrap;
+}
+
+/* ── Optional: enc-redact — blurred text placeholder in normal version ── */
+.enc-redact {
+  display: inline-block;
+  color: transparent;
+  background: linear-gradient(90deg, var(--text-muted, #9ca3af), var(--text-muted, #9ca3af));
+  border-radius: 3px;
+  user-select: none;
+  filter: blur(4px);
+  pointer-events: none;
+}
+#article-container[data-route="encrypted"] .enc-redact {
+  color: inherit;
+  background: none;
+  filter: none;
+  user-select: auto;
+  pointer-events: auto;
+}
+
+/* ================================================================
    EXTERNAL ENCRYPT GATE — Full-Screen Route Gate
    Shown when visiting an encrypted URL variant (/posts/slug--xtoken/)
    ================================================================ */
+
+/* ── Scroll lock when gate is active ── */
+/* Applied to <html> and <body> via JS: document.body.classList.add('ext-gate-open') */
+html.ext-gate-open,
+body.ext-gate-open {
+  overflow: hidden !important;
+  /* Prevent iOS momentum scroll */
+  overscroll-behavior: none !important;
+}
+
+/* Suppress any element that might bleed above the gate */
+body.ext-gate-open *:not(.ext-encrypt-gate):not(.ext-encrypt-gate *) {
+  /* Don't use !important here to avoid breaking layout; rely on z-index stacking */
+}
+
+/* Specifically suppress known high-z-index UI elements when gate is open */
+body.ext-gate-open .toc-aside,
+body.ext-gate-open .toc-sidebar,
+body.ext-gate-open [class*="toc-card"],
+body.ext-gate-open [class*="sidebar"],
+body.ext-gate-open #toc-aside,
+body.ext-gate-open .post-aside,
+body.ext-gate-open .post-sidebar,
+body.ext-gate-open header,
+body.ext-gate-open nav,
+body.ext-gate-open .site-header,
+body.ext-gate-open .nav-bar,
+body.ext-gate-open #site-nav {
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
 
 /* Article content is blurred when gate is active */
 #article-container[data-gate-locked] {
@@ -901,11 +1027,15 @@ details.admonition-details .details-content {
   transition: filter 0.5s ease, opacity 0.5s ease;
 }
 
-/* Gate overlay — full viewport */
+/* Gate overlay — TRUE fullscreen, above everything */
 .ext-encrypt-gate {
   position: fixed;
-  inset: 0;
-  z-index: 99999;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* max z-index: 2^31 - 1 */
+  z-index: 2147483647;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -913,6 +1043,8 @@ details.admonition-details .details-content {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  /* Prevent any scroll within the gate overlay itself */
+  overflow: hidden;
 }
 
 .ext-encrypt-gate.is-active {
@@ -1289,13 +1421,23 @@ details.admonition-details .details-content {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* ── Inline modal scroll lock ── */
+/* Applied by JS when a decrypt modal opens; removed on close */
+html.modal-scroll-locked,
+body.modal-scroll-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
 /* Password Modal Popup */
 .encrypted-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
+  /* Below ext-gate (2147483647) but above all page content */
+  z-index: 99998;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1303,6 +1445,8 @@ details.admonition-details .details-content {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
+  /* No scroll inside overlay */
+  overflow: hidden;
 }
 
 .encrypted-modal-overlay.is-open {
@@ -2866,4 +3010,379 @@ meter.article-meter {
   height: 14px;
   border-radius: 6px;
 }
+
+/* --------------------------------------------------------------------------
+   22. Dynamic Interactive Mindmap (Markmap) Card & Canvas Styles
+   -------------------------------------------------------------------------- */
+.mindmap-wrapper {
+  margin: 2rem 0;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--card-bg) 95%, var(--secondbg));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px -12px rgba(0, 0, 0, 0.08), 0 4px 16px -4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:root[data-theme='dark'] .mindmap-wrapper {
+  background: color-mix(in srgb, #0f172a 85%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--theme-main) 24%, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+}
+
+.mindmap-wrapper:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 35%, var(--card-border));
+}
+
+/* Mindmap Header */
+.mindmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
+  flex-wrap: wrap;
+}
+
+:root[data-theme='dark'] .mindmap-header {
+  background: color-mix(in srgb, var(--theme-main) 8%, rgba(15, 23, 42, 0.95));
+}
+
+.mindmap-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mindmap-header__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--font-color);
+  letter-spacing: -0.01em;
+}
+
+.mindmap-icon {
+  color: var(--theme-main);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--theme-main) 40%, transparent));
+}
+
+.mindmap-header__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mindmap-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--secondbg));
+  color: color-mix(in srgb, var(--font-color) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, transparent);
+}
+
+.mindmap-meta-pill .meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--theme-main);
+}
+
+.mindmap-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+}
+
+.mindmap-state-tag.is-collapsed {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+:root[data-theme='dark'] .mindmap-state-tag.is-collapsed {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.mindmap-state-tag.is-expanded {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+:root[data-theme='dark'] .mindmap-state-tag.is-expanded {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Toolbar Buttons */
+.mindmap-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mindmap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.65rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--card-bg) 80%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  color: var(--font-color);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.mindmap-btn:hover {
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--theme-main) 30%, var(--card-border));
+  color: var(--theme-main);
+  transform: translateY(-1px);
+}
+
+.mindmap-btn:active {
+  transform: translateY(0);
+}
+
+.mindmap-btn svg {
+  flex-shrink: 0;
+}
+
+.mindmap-btn--copy.is-copied {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+/* Canvas Area */
+.mindmap-canvas-container {
+  position: relative;
+  width: 100%;
+  height: var(--mindmap-height, 460px);
+  overflow: hidden;
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--theme-main) 3%, transparent) 0%, transparent 70%);
+  cursor: grab;
+}
+
+.mindmap-canvas-container:active {
+  cursor: grabbing;
+}
+
+.mindmap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Markmap SVG Styling */
+.mindmap-svg .markmap-node {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.mindmap-svg .markmap-node text {
+  font-family: inherit;
+  font-size: 13.5px;
+  fill: var(--font-color);
+  font-weight: 500;
+  transition: fill 0.2s ease;
+}
+
+:root[data-theme='dark'] .mindmap-svg .markmap-node text {
+  fill: #f1f5f9;
+}
+
+.mindmap-svg .markmap-node:hover text {
+  font-weight: 600;
+}
+
+.mindmap-svg .markmap-circle {
+  transition: r 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), stroke-width 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.mindmap-svg .markmap-circle:hover {
+  r: 7px;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-main) 70%, transparent));
+}
+
+.mindmap-svg .markmap-link {
+  stroke-width: 2.2px;
+  transition: stroke-width 0.2s ease, opacity 0.2s ease;
+}
+
+.mindmap-svg .markmap-foreign {
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--font-color);
+}
+
+:root[data-theme='dark'] .mindmap-svg .markmap-foreign {
+  color: #f1f5f9;
+}
+
+.mindmap-svg .markmap-foreign strong {
+  font-weight: 700;
+  color: var(--theme-main);
+}
+
+.mindmap-svg .markmap-foreign code {
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
+  font-family: monospace;
+}
+
+/* Floating Hint Pill */
+.mindmap-hint-pill {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--card-bg) 88%, var(--secondbg));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, var(--card-border));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--font-color) 85%, transparent);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .mindmap-hint-pill {
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mindmap-hint-pill.is-dismissed {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+}
+
+.mindmap-hint-pill .pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--theme-main);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--theme-main) 70%, transparent);
+  animation: mindmap-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes mindmap-pulse {
+  to {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* Mindmap Footer */
+.mindmap-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.76rem;
+  color: color-mix(in srgb, var(--font-color) 60%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--theme-main) 8%, var(--card-border));
+  background: color-mix(in srgb, var(--card-bg) 96%, var(--secondbg));
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mindmap-footer__guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mindmap-footer__brand {
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--theme-main) 80%, transparent);
+}
+
+/* Fullscreen Mode */
+.mindmap-wrapper.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.mindmap-wrapper.is-fullscreen .mindmap-canvas-container {
+  flex: 1 1 0% !important;
+  height: auto !important;
+}
+
+body.mindmap-fullscreen-active {
+  overflow: hidden !important;
+}
+
+@media (max-width: 768px) {
+  .mindmap-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+  .mindmap-toolbar {
+    width: 100%;
+    justify-content: space-between;
+    overflow-x: auto;
+  }
+  .mindmap-btn span {
+    display: none;
+  }
+  .mindmap-canvas-container {
+    height: 380px;
+  }
+}
+
 
