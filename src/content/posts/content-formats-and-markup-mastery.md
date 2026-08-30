@@ -823,19 +823,71 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ## 八、学术数学公式（KaTeX）、架构图表（Mermaid 11）与动态思维导图（Markmap）
 
-### 1. LaTeX 数学公式（Math）
+在展示型与示例型技术文档中，以 **「实际渲染效果 + 对应源码对照」**（双标签选项卡 Tabs）为核心呈现理念，不仅能让读者直观体验最终视觉与交互特性，更能方便开发者一键参考、复制并迁移至实际项目中。
 
-#### 行内公式
+---
+
+### 1. LaTeX 数学公式（KaTeX Math · 行内与块级多行推导）
+
+#### 行内公式（Inline Formula）
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
+<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 质能方程 $E = mc^2$，欧拉恒等式 $e^{i\pi} + 1 = 0$，高斯积分 $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$。
 
-#### 块级多行推导公式
+</div>
+<div class="article-tabs__panel">
+
+```latex
+质能方程 $E = mc^2$，欧拉恒等式 $e^{i\pi} + 1 = 0$，高斯积分 $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$。
+```
+
+</div>
+</div>
+</div>
+
+#### 块级多行推导公式 1：二阶动态系统拉普拉斯变换（Block Math · Single Equation）
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
+<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 $$
 \mathcal{L}\{\ddot{x}(t) + 2\zeta\omega_n\dot{x}(t) + \omega_n^2 x(t)\} = X(s)(s^2 + 2\zeta\omega_n s + \omega_n^2)
 $$
 
-麦克斯韦方程组（微分形式）：
+</div>
+<div class="article-tabs__panel">
+
+```latex
+$$
+\mathcal{L}\{\ddot{x}(t) + 2\zeta\omega_n\dot{x}(t) + \omega_n^2 x(t)\} = X(s)(s^2 + 2\zeta\omega_n s + \omega_n^2)
+$$
+```
+
+</div>
+</div>
+</div>
+
+#### 块级多行推导公式 2：麦克斯韦经典电磁方程组（Block Math · Multi-line Aligned）
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
+<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 $$
 \begin{aligned}
@@ -846,21 +898,82 @@ $$
 \end{aligned}
 $$
 
+</div>
+<div class="article-tabs__panel">
+
+```latex
+$$
+\begin{aligned}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\end{aligned}
+$$
+```
+
+</div>
+</div>
+</div>
+
 ---
 
-### 2. Mermaid 11 架构图表（Flowchart & Sequence）
+### 2. Mermaid 11 架构图表（Flowchart & Sequence · 流程图与时序图）
+
+#### ① 博客加密验证与内容渲染流程图（Flowchart TD）
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
+<button class="article-tabs__button" type="button">💻 Mermaid 源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 ```mermaid
-graph TD
+flowchart TD
     A[读者访问文章] --> B{文章是否加密?}
-    B -->|是| C[弹出毛玻璃密码对话框]
+    B -- 是 --> C[弹出毛玻璃密码对话框]
     C --> D{密码校验}
-    D -->|正确| E[解密并呈现正文]
-    D -->|错误| F[触发窗口震动与红字警示]
-    B -->|否| E
+    D -- 正确 --> E[解密并呈现正文]
+    D -- 错误 --> F[触发窗口震动与红字警示]
+    F -. 重新输入口令 .-> C
+    B -- 否 --> E
     E --> G[渲染 KaTeX 公式与 Mermaid 图表]
     G --> H[呈现完整沉浸式阅读体验]
 ```
+
+</div>
+<div class="article-tabs__panel">
+
+````markdown
+```mermaid
+flowchart TD
+    A[读者访问文章] --> B{文章是否加密?}
+    B -- 是 --> C[弹出毛玻璃密码对话框]
+    C --> D{密码校验}
+    D -- 正确 --> E[解密并呈现正文]
+    D -- 错误 --> F[触发窗口震动与红字警示]
+    F -. 重新输入口令 .-> C
+    B -- 否 --> E
+    E --> G[渲染 KaTeX 公式与 Mermaid 图表]
+    G --> H[呈现完整沉浸式阅读体验]
+```
+````
+
+</div>
+</div>
+</div>
+
+#### ② 客户端安全鉴权与解密时序图（Sequence Diagram）
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
+<button class="article-tabs__button" type="button">💻 Mermaid 源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 ```mermaid
 sequenceDiagram
@@ -883,6 +996,36 @@ sequenceDiagram
     end
 ```
 
+</div>
+<div class="article-tabs__panel">
+
+````markdown
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 读者 (User)
+    participant Browser as 客户端浏览器
+    participant PostPage as 文章渲染引擎
+    participant Security as 加密安全模块
+
+    User->>Browser: 点击受保护的加密内容
+    Browser->>PostPage: 唤起密码输入对话框
+    User->>Browser: 输入访问密钥
+    Browser->>Security: 校验口令 Hash
+    alt 验证成功
+        Security-->>Browser: 返回解锁令牌
+        Browser->>PostPage: 解密正文并平滑展示
+    else 验证失败
+        Security-->>Browser: 返回密码错误
+        Browser->>User: 触发窗口摇晃与红字警示
+    end
+```
+````
+
+</div>
+</div>
+</div>
+
 ---
 
 ### 3. 动态交互式思维导图（Markmap / Mindmap · 多向分支扩散）
@@ -897,6 +1040,14 @@ sequenceDiagram
 > 4. **画布拖拽与缩放**：按住鼠标左键可自由拖拽平移画布，滚动鼠标滚轮可缩放视野。
 
 #### 活体思维导图呈现：SSG 与主题内容格式生态全景
+
+<div class="article-tabs">
+<div class="article-tabs__nav">
+<button class="article-tabs__button is-active" type="button">🌟 交互导图呈现</button>
+<button class="article-tabs__button" type="button">💻 Mindmap 结构源码</button>
+</div>
+<div class="article-tabs__panels">
+<div class="article-tabs__panel is-active">
 
 ```mindmap
 # 静态站点生成器与全格式内容生态架构
@@ -943,6 +1094,61 @@ sequenceDiagram
 - 点击节点触发多向分支层层散开
 - 缩放 / 平移 / 一键重置 / 全屏沉浸体验
 ```
+
+</div>
+<div class="article-tabs__panel">
+
+````markdown
+```mindmap
+# 静态站点生成器与全格式内容生态架构
+## 静态编译核心
+### AST 语法转换管道
+- Unified / Remark GFM
+- Rehype Katex / MDX 拓展
+- Shiki 双主题代码语法高亮
+### 编译器与资源打包
+- Vite 6 极速热重载 (HMR)
+- Rollup 静态生成流水线
+- Tailwind CSS v4 与 PostCSS 管道
+## 动态交互与群岛体系
+### 混合组件群岛 Islands
+- React 19 Client Components
+- Astro Server-Side Islands
+- 会话状态保持 (SessionStorage / Crypto)
+### 现代视觉与动效系统
+- 动态背景引擎 (Aurora 极光 / Starfield 星空)
+- 毛玻璃卡片 Glassmorphism 规范
+- 响应式全端自适应布局 (PC / Pad / Mobile)
+## 格式全景与特异功能
+### 扩展文档规范对照
+- AsciiDoc (.adoc) 原生等效适配
+- Emacs Org-Mode (.org) 任务清单映射
+- reStructuredText (.rst) 指令转换
+### 富交互组件集
+- 交互式下拉框切换器 (Dropdown Switcher)
+- 互斥手风琴折叠卡片 (Accordion Groups)
+- 动态黑胶唱片音频播放器 (Vinyl Audio)
+### 安全隐私与分级加密
+- WebCrypto SHA-256 哈希校验 (无明文外露)
+- 1级会话持久解锁 (Session Persistent)
+- 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
+- 3级视口防窥离开即锁 (IntersectionObserver)
+- 外联分段解密端点隔离 (Standalone Token)
+## 动态图表与思维导图
+### 可视化渲染引擎
+- Mermaid 11 流程图与时序图
+- Markmap 动态多向分支思维导图
+- KaTeX 学术数学排版渲染
+### 交互与扩展特性
+- 默认单块折叠保护阅读视界
+- 点击节点触发多向分支层层散开
+- 缩放 / 平移 / 一键重置 / 全屏沉浸体验
+```
+````
+
+</div>
+</div>
+</div>
 
 #### Markdown 编写规范与语法参考
 

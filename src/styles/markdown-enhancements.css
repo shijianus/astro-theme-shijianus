@@ -532,12 +532,12 @@ details.admonition-details .details-content {
 .mermaid-diagram-wrap {
   position: relative;
   margin: 1.8rem 0;
-  padding: 1.5rem 1.25rem;
+  padding: 1.6rem 1.4rem;
   display: flex;
   justify-content: center;
   align-items: center;
   background: color-mix(in srgb, var(--card-bg) 96%, var(--secondbg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border));
   border-radius: 14px;
   overflow-x: auto;
   box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
@@ -549,53 +549,48 @@ details.admonition-details .details-content {
   font-family: inherit;
 }
 
-/* Edge Labels: No opaque fill, text cleanly beside/on lines */
+/* Fix text paragraphs inside Mermaid to prevent inheriting external paragraph margins and line breaks */
+.mermaid-diagram-wrap p,
+.mermaid-diagram-wrap .nodeLabel p,
+.mermaid-diagram-wrap .edgeLabel p,
+.mermaid-diagram-wrap foreignObject p,
+.mermaid-diagram-wrap .label p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.4 !important;
+  font-family: inherit !important;
+  display: inline !important;
+}
+
+/* Edge Labels: Clean elevated badge cards that never collide with lines */
 .mermaid-diagram-wrap .edgeLabel,
-.mermaid-diagram-wrap .edgeLabel rect,
 .mermaid-diagram-wrap .edgeLabel .label,
-.mermaid-diagram-wrap .edgeLabel span,
 .mermaid-diagram-wrap span.edgeLabel,
-.mermaid-diagram-wrap g.edgeLabel rect,
-.mermaid-diagram-wrap .edgeTerminals,
-.mermaid-diagram-wrap .edgeTerminals rect,
-.mermaid-diagram-wrap .labelBkg,
-.mermaid-diagram-wrap div.labelBkg,
-.mermaid-diagram-wrap .edgeLabel .labelBkg,
-.mermaid-diagram-wrap g.edgeLabel .labelBkg {
-  background: transparent !important;
-  background-color: transparent !important;
-  fill: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.mermaid-diagram-wrap g.edgeLabel rect,
-.mermaid-diagram-wrap .edgeLabel rect {
-  fill: transparent !important;
-  opacity: 0 !important;
-}
-
-.mermaid-diagram-wrap .edgeLabel .label,
-.mermaid-diagram-wrap .edgeLabel span,
-.mermaid-diagram-wrap .edgeLabel text,
-.mermaid-diagram-wrap .edgeLabel p {
+.mermaid-diagram-wrap .edgeLabel span {
   fill: var(--font-color) !important;
   color: var(--font-color) !important;
-  font-size: 0.86rem !important;
+  font-size: 0.84rem !important;
   font-weight: 600 !important;
-  padding: 0 4px !important;
-  background: transparent !important;
-  background-color: transparent !important;
+  line-height: 1.2 !important;
 }
 
-/* Node labels & KaTeX integration: prevent clipping or overflow collision */
+.mermaid-diagram-wrap .edgeLabel .labelBkg,
+.mermaid-diagram-wrap div.labelBkg,
+.mermaid-diagram-wrap .edgeLabel div.labelBkg,
+.mermaid-diagram-wrap g.edgeLabel rect,
+.mermaid-diagram-wrap .edgeLabel rect {
+  background: var(--card-bg, #ffffff) !important;
+  background-color: var(--card-bg, #ffffff) !important;
+  fill: var(--card-bg, #ffffff) !important;
+  opacity: 1 !important;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, var(--card-border)) !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Node labels & Shapes: strictly center text and prevent arbitrary clipping */
 .mermaid-diagram-wrap foreignObject {
-  overflow: visible !important;
-}
-
-.mermaid-diagram-wrap .basic.label-container,
-.mermaid-diagram-wrap .node.basic,
-.mermaid-diagram-wrap .node .label-container {
   overflow: visible !important;
 }
 
@@ -605,20 +600,19 @@ details.admonition-details .details-content {
   justify-content: center !important;
   text-align: center !important;
   line-height: 1.4 !important;
-  white-space: normal !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .mermaid-diagram-wrap .nodeLabel {
-  display: inline-block !important;
-  white-space: normal !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
   overflow: visible !important;
   line-height: 1.4 !important;
-  word-break: break-word !important;
-}
-
-.mermaid-diagram-wrap .node .basic.label-container,
-.mermaid-diagram-wrap .label-container {
-  overflow: visible !important;
+  word-break: keep-all !important;
 }
 
 .mermaid-diagram-wrap .node rect,
