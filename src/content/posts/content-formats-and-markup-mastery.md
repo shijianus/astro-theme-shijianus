@@ -1046,48 +1046,64 @@ sequenceDiagram
 
 ```mindmap
 # 静态站点生成器与全格式内容生态架构
-## 静态编译核心
+## 1. 静态编译核心流水线
 ### AST 语法转换管道
-- Unified / Remark GFM
-- Rehype Katex / MDX 拓展
-- Shiki 双主题代码语法高亮
+#### Markdown / MDX 语义解析流水线
+##### Unified / Remark 语法拓展
+- GFM 表格与删除线语法转换
+- 自动生成 Heading 锚点与 ID
+##### Markmap 交互式多向思维导图拓展
+- 递归 AST 树构建 (Transformer.transform)
+- D3 层次化弹性布局 (Flextree Algorithm)
+- 交互式折叠状态机 (payload.fold)
+- 动态调色板分支染色 (d3.scaleOrdinal)
+##### Rehype Katex 数学公式拓展
+- 行内公式与独立块公式解析
+- 宏定义支持与错误容错回退
+#### 代码高亮与静态着色器
+##### Shiki 双主题编译器
+- VSCode TextMate 语法规则解析
+- 浅色/深色模式双主题预渲染零水合
 ### 编译器与资源打包
-- Vite 6 极速热重载 (HMR)
-- Rollup 静态生成流水线
-- Tailwind CSS v4 与 PostCSS 管道
-## 动态交互与群岛体系
+#### Vite 6 极速热重载 (HMR)
+##### ESM 原生模块加载
+- 毫秒级按需编译与热更新
+#### Rollup 静态生成流水线
+##### 静态打包优化
+- 智能代码分块 (Code Splitting)
+- Tree-Shaking 冗余消除
+## 2. 动态交互与群岛体系
 ### 混合组件群岛 Islands
-- React 19 Client Components
-- Astro Server-Side Islands
+#### 客户端组件分岛挂载
+##### React 19 Client Components
+- 独立状态隔离与上下文通信
 - 会话状态保持 (SessionStorage / Crypto)
+##### Astro Server-Side Islands
+- 零运行时客户端 JS (Zero-JS by Default)
+- 按需激活交互岛屿 (client:visible)
 ### 现代视觉与动效系统
-- 动态背景引擎 (Aurora 极光 / Starfield 星空)
-- 毛玻璃卡片 Glassmorphism 规范
+#### 动态背景与渲染引擎
+##### Aurora 极光 / Starfield 星空
+- WebGL / Canvas 2D 硬件加速
+- 节能模式与视口离开自动暂停
+##### 毛玻璃卡片 Glassmorphism 规范
+- 动态高斯模糊与多重环境阴影
 - 响应式全端自适应布局 (PC / Pad / Mobile)
-## 格式全景与特异功能
+## 3. 格式全景与特异功能
 ### 扩展文档规范对照
-- AsciiDoc (.adoc) 原生等效适配
-- Emacs Org-Mode (.org) 任务清单映射
-- reStructuredText (.rst) 指令转换
+#### AsciiDoc (.adoc) 原生等效适配
+#### Emacs Org-Mode (.org) 任务清单映射
+#### reStructuredText (.rst) 指令转换
 ### 富交互组件集
-- 交互式下拉框切换器 (Dropdown Switcher)
-- 互斥手风琴折叠卡片 (Accordion Groups)
-- 动态黑胶唱片音频播放器 (Vinyl Audio)
+#### 交互式下拉框切换器 (Dropdown Switcher)
+#### 互斥手风琴折叠卡片 (Accordion Groups)
+#### 动态黑胶唱片音频播放器 (Vinyl Audio)
 ### 安全隐私与分级加密
-- WebCrypto SHA-256 哈希校验 (无明文外露)
-- 1级会话持久解锁 (Session Persistent)
-- 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
-- 3级视口防窥离开即锁 (IntersectionObserver)
-- 外联分段解密端点隔离 (Standalone Token)
-## 动态图表与思维导图
-### 可视化渲染引擎
-- Mermaid 11 流程图与时序图
-- Markmap 动态多向分支思维导图
-- KaTeX 学术数学排版渲染
-### 交互与扩展特性
-- 默认单块折叠保护阅读视界
-- 点击节点触发多向分支层层散开
-- 缩放 / 平移 / 一键重置 / 全屏沉浸体验
+#### WebCrypto SHA-256 哈希校验 (无明文外露)
+#### 1级会话持久解锁 (Session Persistent)
+#### 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
+#### 3级视口防窥离开即锁 (IntersectionObserver)
+#### 外联分段解密端点隔离 (Standalone Token)
 ```
 
 </div>
@@ -1096,48 +1112,64 @@ sequenceDiagram
 ````markdown
 ```mindmap
 # 静态站点生成器与全格式内容生态架构
-## 静态编译核心
+## 1. 静态编译核心流水线
 ### AST 语法转换管道
-- Unified / Remark GFM
-- Rehype Katex / MDX 拓展
-- Shiki 双主题代码语法高亮
+#### Markdown / MDX 语义解析流水线
+##### Unified / Remark 语法拓展
+- GFM 表格与删除线语法转换
+- 自动生成 Heading 锚点与 ID
+##### Markmap 交互式多向思维导图拓展
+- 递归 AST 树构建 (Transformer.transform)
+- D3 层次化弹性布局 (Flextree Algorithm)
+- 交互式折叠状态机 (payload.fold)
+- 动态调色板分支染色 (d3.scaleOrdinal)
+##### Rehype Katex 数学公式拓展
+- 行内公式与独立块公式解析
+- 宏定义支持与错误容错回退
+#### 代码高亮与静态着色器
+##### Shiki 双主题编译器
+- VSCode TextMate 语法规则解析
+- 浅色/深色模式双主题预渲染零水合
 ### 编译器与资源打包
-- Vite 6 极速热重载 (HMR)
-- Rollup 静态生成流水线
-- Tailwind CSS v4 与 PostCSS 管道
-## 动态交互与群岛体系
+#### Vite 6 极速热重载 (HMR)
+##### ESM 原生模块加载
+- 毫秒级按需编译与热更新
+#### Rollup 静态生成流水线
+##### 静态打包优化
+- 智能代码分块 (Code Splitting)
+- Tree-Shaking 冗余消除
+## 2. 动态交互与群岛体系
 ### 混合组件群岛 Islands
-- React 19 Client Components
-- Astro Server-Side Islands
+#### 客户端组件分岛挂载
+##### React 19 Client Components
+- 独立状态隔离与上下文通信
 - 会话状态保持 (SessionStorage / Crypto)
+##### Astro Server-Side Islands
+- 零运行时客户端 JS (Zero-JS by Default)
+- 按需激活交互岛屿 (client:visible)
 ### 现代视觉与动效系统
-- 动态背景引擎 (Aurora 极光 / Starfield 星空)
-- 毛玻璃卡片 Glassmorphism 规范
+#### 动态背景与渲染引擎
+##### Aurora 极光 / Starfield 星空
+- WebGL / Canvas 2D 硬件加速
+- 节能模式与视口离开自动暂停
+##### 毛玻璃卡片 Glassmorphism 规范
+- 动态高斯模糊与多重环境阴影
 - 响应式全端自适应布局 (PC / Pad / Mobile)
-## 格式全景与特异功能
+## 3. 格式全景与特异功能
 ### 扩展文档规范对照
-- AsciiDoc (.adoc) 原生等效适配
-- Emacs Org-Mode (.org) 任务清单映射
-- reStructuredText (.rst) 指令转换
+#### AsciiDoc (.adoc) 原生等效适配
+#### Emacs Org-Mode (.org) 任务清单映射
+#### reStructuredText (.rst) 指令转换
 ### 富交互组件集
-- 交互式下拉框切换器 (Dropdown Switcher)
-- 互斥手风琴折叠卡片 (Accordion Groups)
-- 动态黑胶唱片音频播放器 (Vinyl Audio)
+#### 交互式下拉框切换器 (Dropdown Switcher)
+#### 互斥手风琴折叠卡片 (Accordion Groups)
+#### 动态黑胶唱片音频播放器 (Vinyl Audio)
 ### 安全隐私与分级加密
-- WebCrypto SHA-256 哈希校验 (无明文外露)
-- 1级会话持久解锁 (Session Persistent)
-- 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
-- 3级视口防窥离开即锁 (IntersectionObserver)
-- 外联分段解密端点隔离 (Standalone Token)
-## 动态图表与思维导图
-### 可视化渲染引擎
-- Mermaid 11 流程图与时序图
-- Markmap 动态多向分支思维导图
-- KaTeX 学术数学排版渲染
-### 交互与扩展特性
-- 默认单块折叠保护阅读视界
-- 点击节点触发多向分支层层散开
-- 缩放 / 平移 / 一键重置 / 全屏沉浸体验
+#### WebCrypto SHA-256 哈希校验 (无明文外露)
+#### 1级会话持久解锁 (Session Persistent)
+#### 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
+#### 3级视口防窥离开即锁 (IntersectionObserver)
+#### 外联分段解密端点隔离 (Standalone Token)
 ```
 ````
 
@@ -1147,22 +1179,65 @@ sequenceDiagram
 
 #### Markdown 编写规范与语法参考
 
-作者在编写文章时，只需使用标准的 ```` ```mindmap ```` 或 ```` ```markmap ```` 代码块，配合标准 Markdown 标题（`#`、`##`、`###`）或无序列表（`-`、`*`）即可：
+本博客集成的 **Mindmap 渲染引擎** 基于 AST 递归解析与 D3 Flextree 弹性树布局，**原生支持无限层级扩展（Level 1 至 Level N）**，无任何深度上限限制。作者在编写文章时，可根据知识树的纵深复杂度选择以下书写规范：
+
+##### 1. 混合阶梯语法（推荐 1~6 层骨干 + 无限列表深层衍生）
+标准 Markdown 标题支持 6 级深度（`#` 至 `######`），在第 6 级以下可继续通过无序列表项（`-`、`*`）配合空格缩进无限向下衍生（Level 7、Level 8、Level 9...）：
 
 ````markdown
 ```mindmap
+# Level 1 核心主题 (H1)
+## Level 2 领域分支 (H2)
+### Level 3 子系统 (H3)
+#### Level 4 技术模块 (H4)
+##### Level 5 组件单元 (H5)
+###### Level 6 算法规范 (H6)
+- Level 7 细分执行细节 (List item)
+  - Level 8 子项参数 (Indent +2 spaces)
+    - Level 9 底层硬件原语 (Indent +4 spaces)
+```
+````
+
+##### 2. 纯列表无限缩进语法（推荐 6 层以上或极深知识树）
+如果不需要 Markdown 标题语义，或知识网络层级极深（例如分类树、概念演绎、AST 结构），可直接使用无序列表 `-` 并通过 2 或 4 个空格缩进表达**理论上无限深度**的多向分支：
+
+````markdown
+```mindmap
+- 🌐 根主题：计算机科学知识图谱 (Level 1)
+  - 🖥️ 软件系统工程 (Level 2)
+    - 📦 操作系统与内核 (Level 3)
+      - ⚙️ 进程与线程调度 (Level 4)
+        - 🔄 并发同步原语 (Level 5)
+          - 🔒 互斥锁与信号量 (Level 6)
+            - ⚡ 硬件级 CAS 原子指令 (Level 7)
+              - ⏱️ Cache Coherency MESI 协议 (Level 8)
+                - 🔬 内存屏障与流水线指令重排 (Level 9)
+```
+````
+
+##### 3. 内联高级参数控制（可选 JSON 头部）
+可在代码块第一行使用单行 JSON 对象定制导图的初态与外观尺寸：
+
+````markdown
+```mindmap
+{"initialExpandLevel": 2, "height": "560px", "title": "全栈工程架构全景"}
 # 核心主题
 ## 一级分支 A
 ### 二级分支 A1
 - 细分知识点 1
-- 细分知识点 2
-### 二级分支 A2
-- 细分知识点 3
-## 一级分支 B
-### 二级分支 B1
-- 细分知识点 4
 ```
 ````
+
+* **`initialExpandLevel`**：初始展开层级。`1` 为单块根节点折叠保护模式；`2` 为展开至骨干主干；`6` 为全量展开。
+* **`height`**：指定画布高度，如 `"480px"`、`"600px"`（默认 `"460px"`）。
+* **`title`**：自定义导图 Header 标题文字。
+
+##### 4. 交互特性与视口操作指引
+* **点击平滑下钻（Drill-down）**：点击带有呼吸光晕圆点或文本的节点，即可平滑展开/收起其下级多向分支；
+* **一键展开/收起**：工具栏提供 `⊞`（一键展开全部分支）与 `⊟`（一键恢复初始单块）；
+* **自适应居中（Fit View）**：点击 `🎯` 自动根据当前展开的所有节点计算最佳居中视野；
+* **全屏沉浸模式**：点击 `⛶` 展开至全屏独立画布（按 `Esc` 随时退出），获得无限横向探索空间；
+* **元数据实时感知**：Header 栏实时展示当前导图的总节点数与最大深度（例如 `53 个节点 · 6 层分支结构`）。
 
 ---
 
