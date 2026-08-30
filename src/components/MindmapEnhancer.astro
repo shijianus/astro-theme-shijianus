@@ -44,11 +44,12 @@
   };
 
   // Helper: Set fold state according to targetLevel
-  // targetLevel = 1: Root (depth 0) is visible, all depth >= 1 are folded (single block mode)
+  // targetLevel = 1: Root (depth 0) is folded (single block mode, children hidden until clicked)
+  // targetLevel = 2: Root (depth 0) unfolded, direct children (depth 1) folded
   const setFoldLevel = (node: any, currentDepth = 0, targetLevel = 1) => {
     if (!node) return;
     if (!node.payload) node.payload = {};
-    node.payload.fold = currentDepth >= targetLevel ? 1 : 0;
+    node.payload.fold = currentDepth >= (targetLevel - 1) ? 1 : 0;
     if (node.children && Array.isArray(node.children)) {
       for (const child of node.children) {
         setFoldLevel(child, currentDepth + 1, targetLevel);
@@ -71,21 +72,25 @@
   const initMindmaps = () => {
     // Select all mindmap code blocks or container elements
     const selectors = [
+      '.article-body .mindmap-container',
+      '.article-body .mindmap-block',
       '.article-body pre[data-language="mindmap"]',
       '.article-body pre[data-language="markmap"]',
       '.article-body pre:has(code.language-mindmap)',
       '.article-body pre:has(code.language-markmap)',
+      '.article-body pre.mindmap-block',
       '.article-body pre.mindmap',
       '.article-body pre.markmap',
-      '.article-body .mindmap-container',
       '.article-body markmap',
+      '[data-content-features] .mindmap-container',
+      '[data-content-features] .mindmap-block',
       '[data-content-features] pre[data-language="mindmap"]',
       '[data-content-features] pre[data-language="markmap"]',
       '[data-content-features] pre:has(code.language-mindmap)',
       '[data-content-features] pre:has(code.language-markmap)',
+      '[data-content-features] pre.mindmap-block',
       '[data-content-features] pre.mindmap',
       '[data-content-features] pre.markmap',
-      '[data-content-features] .mindmap-container',
     ];
 
     const mindmapBlocks = document.querySelectorAll<HTMLElement>(selectors.join(', '));
@@ -203,12 +208,9 @@
         </div>
       `;
 
-      // Replace pre or code-block shell with mindmap wrapper
-      if (shell) {
-        shell.parentNode?.replaceChild(wrapper, shell);
-      } else {
-        pre.parentNode?.replaceChild(wrapper, pre);
-      }
+      // Replace container, shell or pre with mindmap wrapper
+      const targetElement = pre.closest('.mindmap-container') || shell || pre;
+      targetElement.parentNode?.replaceChild(wrapper, targetElement);
 
       // Initialize Markmap SVG
       const svg = wrapper.querySelector<SVGElement>(`#${mindmapId}-svg`);
@@ -222,8 +224,9 @@
 
       const mm = Markmap.create(svg, {
         duration: 400,
+        autoFit: true,
         fitRatio: 0.92,
-        maxInitialScale: 2,
+        maxInitialScale: 1.8,
         initialExpandLevel: initialExpandLevel,
         zoom: true,
         pan: true,
@@ -240,7 +243,7 @@
       requestAnimationFrame(() => {
         setTimeout(() => {
           mm.fit();
-        }, 80);
+        }, 150);
       });
 
       // Hide hint pill on first interaction
@@ -250,11 +253,24 @@
         }
       };
 
-      svg.addEventListener('click', () => {
+      svg.addEventListener('click', (e) => {
         dismissHint();
-        if (stateTag) {
-          stateTag.textContent = '多向分支已展开';
-          stateTag.className = 'mindmap-state-tag is-expanded';
+        const target = e.target as HTMLElement | SVGElement;
+        const nodeGroup = target?.closest<SVGGElement>('.markmap-node');
+        if (nodeGroup) {
+          if (!target.closest('circle')) {
+            const datum = (nodeGroup as any).__data__;
+            if (datum) {
+              mm.toggleNode(datum);
+            }
+          }
+          setTimeout(() => {
+            mm.fit();
+          }, 450);
+          if (stateTag) {
+            stateTag.textContent = '多向分支已展开';
+            stateTag.className = 'mindmap-state-tag is-expanded';
+          }
         }
       });
       svg.addEventListener('wheel', dismissHint, { passive: true });
@@ -292,7 +308,9 @@
         dismissHint();
         unfoldAllNodes(root);
         mm.renderData(root);
-        mm.fit();
+        setTimeout(() => {
+          mm.fit();
+        }, 450);
         if (stateTag) {
           stateTag.textContent = '全部分支已展开';
           stateTag.className = 'mindmap-state-tag is-expanded';
@@ -307,7 +325,9 @@
         dismissHint();
         setFoldLevel(root, 0, 1);
         mm.renderData(root);
-        mm.fit();
+        setTimeout(() => {
+          mm.fit();
+        }, 450);
         if (stateTag) {
           stateTag.textContent = '单块已收起 · 点击展开多向分支';
           stateTag.className = 'mindmap-state-tag is-collapsed';

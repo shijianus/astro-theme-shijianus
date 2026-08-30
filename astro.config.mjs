@@ -35,6 +35,20 @@ function epocanvasBrandIntegration() {
   };
 }
 
+const mindmapLang = {
+  name: 'mindmap',
+  scopeName: 'source.mindmap',
+  displayName: 'Mindmap',
+  patterns: [{ include: 'source.gfm' }],
+};
+
+const markmapLang = {
+  name: 'markmap',
+  scopeName: 'source.markmap',
+  displayName: 'Markmap',
+  patterns: [{ include: 'source.gfm' }],
+};
+
 // https://astro.build/config
 const buildTarget = process.env.BLOG_BUILD_TARGET === 'static' ? 'static' : 'server';
 const isStaticBuild = buildTarget === 'static';
@@ -64,6 +78,18 @@ export default defineConfig({
         light: 'github-light',
         dark: 'github-dark-dimmed',
       },
+      langs: [mindmapLang, markmapLang],
+      transformers: [
+        {
+          pre(node) {
+            const lang = this.options?.lang;
+            if (lang === 'mindmap' || lang === 'markmap') {
+              node.properties['data-language'] = lang;
+              node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} mindmap-block`).trim();
+            }
+          },
+        },
+      ],
       wrap: false,
     },
   },
