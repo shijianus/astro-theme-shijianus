@@ -113,6 +113,20 @@ body[data-type='post'] #card-toc .toc-content {
   font-weight: 700 !important;
 }
 
+.article-body.post-content .audio-card__cover img,
+.article-body .audio-card__cover img {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
 .article-body.post-content mark:not([class*='mark-']) {
   padding: 0.12em 0.38em;
   border-radius: 0.38em;
