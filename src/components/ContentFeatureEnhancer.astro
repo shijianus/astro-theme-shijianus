@@ -444,7 +444,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     // Main per-page enhancement runner
     // -------------------------------------------------------
     const initContentEnhancements = async () => {
-      const articles = document.querySelectorAll('[data-content-features]');
+      const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container');
       if (!articles.length) return;
 
       // 1. Spoilers and Hidden Inline Text Nodes
@@ -604,6 +604,9 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
                 customTitle = possibleTitle;
                 restContent = restContent.slice(firstLineBreak).replace(/^(<br\s*\/?>|\n|\r)+/i, '').trim();
               }
+            } else if (restContent && (isCollapsible || bq.children.length > 1)) {
+              customTitle = restContent.replace(/^[:：\s]+/, '').trim();
+              restContent = '';
             }
           }
 
@@ -621,7 +624,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             if (isDefaultOpen) details.open = true;
 
             const summary = document.createElement('summary');
-            summary.innerHTML = `<span style="display:flex;align-items:center;gap:0.5rem;">${iconSvg}<span>${customTitle}</span></span><span class="summary-icon">▶</span>`;
+            summary.innerHTML = `<span class="admonition-summary-title" style="display:inline-flex;align-items:center;gap:0.55rem;min-width:0;">${iconSvg}<span class="admonition-title-text">${customTitle}</span></span><span class="summary-icon">▶</span>`;
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'details-content';
@@ -637,7 +640,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
             const header = document.createElement('div');
             header.className = 'admonition-title';
-            header.innerHTML = `${iconSvg}<span>${customTitle}</span>`;
+            header.innerHTML = `${iconSvg}<span class="admonition-title-text">${customTitle}</span>`;
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'admonition-content';
@@ -712,7 +715,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         });
       };
 
-      // 4.2 Single-Open Accordion Groups
+      // 4.2 Accordion Groups (Exclusive vs Multi-Expand)
       const enhanceAccordionGroups = (article) => {
         article.querySelectorAll('.article-accordion-group[data-single="true"]').forEach((group) => {
           if (group.dataset.accordionBound === 'true') return;
@@ -730,14 +733,87 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         });
       };
 
-      // 4.3 Audio Player Vinyl Disc Sync
+      // 4.3 Interactive Tutorial Task Lists & Progress Tracking
+      const enhanceInteractiveTasks = (article) => {
+        article.querySelectorAll('.article-task-tracker, .interactive-task-list-wrap').forEach((tracker) => {
+          if (tracker.dataset.taskBound === 'true') return;
+          tracker.dataset.taskBound = 'true';
+
+          const checkboxes = tracker.querySelectorAll('input[type="checkbox"]');
+          const progressBar = tracker.querySelector('.task-tracker__fill');
+          const countLabel = tracker.querySelector('.task-tracker__count');
+          const chainAlert = tracker.querySelector('.task-tracker__status-card');
+
+          const updateProgress = () => {
+            const total = checkboxes.length;
+            if (!total) return;
+            const checked = tracker.querySelectorAll('input[type="checkbox"]:checked').length;
+            const percent = Math.round((checked / total) * 100);
+
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (countLabel) countLabel.textContent = `${checked}/${total} 步骤已完成 (${percent}%)`;
+
+            checkboxes.forEach((cb) => {
+              const item = cb.closest('li, .task-checklist-item');
+              if (item) {
+                if (cb.checked) {
+                  item.classList.add('is-done');
+                } else {
+                  item.classList.remove('is-done');
+                }
+              }
+            });
+
+            if (chainAlert) {
+              if (checked === total) {
+                chainAlert.classList.remove('is-pending');
+                chainAlert.classList.add('is-completed');
+                chainAlert.innerHTML = `
+                  <div class="status-card__header">
+                    <span class="badge badge-success">🎉 全部前置检查已通过</span>
+                    <span style="font-weight:700;">部署流水线就绪</span>
+                  </div>
+                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">已确认完成本教程全部 4 个关键操作点！构建系统已自动解除发布锁，可立即执行 <code>npm run build && npx wrangler pages deploy</code> 极速上线 🚀</p>
+                `;
+              } else {
+                chainAlert.classList.remove('is-completed');
+                chainAlert.classList.add('is-pending');
+                chainAlert.innerHTML = `
+                  <div class="status-card__header">
+                    <span class="badge badge-warning">⏳ 待办就绪中</span>
+                    <span style="font-weight:700;">当前进度：${checked}/${total} (${percent}%)</span>
+                  </div>
+                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">请依次完成上方清单中打勾的每个步骤；当所有任务完成后，此处将实时连锁解锁生产发布指令。</p>
+                `;
+              }
+            }
+          };
+
+          checkboxes.forEach((cb) => {
+            cb.addEventListener('change', updateProgress);
+            cb.addEventListener('input', updateProgress);
+            cb.addEventListener('click', updateProgress);
+          });
+          updateProgress();
+        });
+      };
+
+      // 4.4 Audio Player Vinyl Disc Sync
       const enhanceAudioSync = (article) => {
         article.querySelectorAll('.article-audio-card').forEach((card) => {
           if (card.dataset.audioBound === 'true') return;
           card.dataset.audioBound = 'true';
           const audio = card.querySelector('audio');
           if (!audio) return;
-          audio.addEventListener('play', () => card.classList.add('is-playing'));
+          audio.addEventListener('play', () => {
+            // Pause all other audio on the page
+            document.querySelectorAll('audio').forEach((otherAudio) => {
+              if (otherAudio !== audio && !otherAudio.paused) {
+                otherAudio.pause();
+              }
+            });
+            card.classList.add('is-playing');
+          });
           audio.addEventListener('pause', () => card.classList.remove('is-playing'));
           audio.addEventListener('ended', () => card.classList.remove('is-playing'));
         });
@@ -941,6 +1017,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             theme: isDark ? 'dark' : 'default',
             securityLevel: 'loose',
             fontFamily: 'inherit',
+            flowchart: {
+              htmlLabels: true,
+              curve: 'basis',
+              padding: 15,
+            },
           });
 
           let counter = 0;
@@ -982,6 +1063,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         enhanceTabs(article);
         enhanceDropdowns(article);
         enhanceAccordionGroups(article);
+        enhanceInteractiveTasks(article);
         enhanceAudioSync(article);
         enhanceEncryptedBoxes(article);
         enhanceLightbox(article);
@@ -1282,3 +1364,67 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     </div>
   </div>
 ))}
+
+<script>
+  import mermaid from 'mermaid';
+
+  const initMermaidRenderer = async () => {
+    const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content');
+    if (!articles.length) return;
+
+    for (const article of articles) {
+      const mermaidPreBlocks = article.querySelectorAll<HTMLElement>(
+        'pre[data-language="mermaid"], pre:has(code.language-mermaid), pre:has(code[data-language="mermaid"]), pre.mermaid, code.language-mermaid'
+      );
+      if (!mermaidPreBlocks.length) continue;
+
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'inherit',
+        themeVariables: {
+          edgeLabelBackground: 'transparent',
+        },
+        flowchart: {
+          htmlLabels: true,
+          curve: 'basis',
+          padding: 15,
+        },
+      });
+
+      let counter = 0;
+      for (const block of mermaidPreBlocks) {
+        const pre = block.tagName === 'PRE' ? block : block.closest('pre');
+        if (!pre || (pre as HTMLElement).dataset.mermaidRendered === 'true') continue;
+        (pre as HTMLElement).dataset.mermaidRendered = 'true';
+
+        const shell = pre.closest('.code-block-shell');
+        const rawCode = (pre.querySelector('code')?.textContent || pre.textContent || '').trim();
+        const graphId = `mermaid-svg-${Date.now()}-${counter++}`;
+        const wrap = document.createElement('div');
+        wrap.className = 'mermaid-diagram-wrap';
+
+        try {
+          const { svg } = await mermaid.render(graphId, rawCode);
+          wrap.innerHTML = svg;
+          if (shell) {
+            shell.parentNode?.replaceChild(wrap, shell);
+          } else {
+            pre.parentNode?.replaceChild(wrap, pre);
+          }
+        } catch (err) {
+          console.warn('Mermaid render error:', err);
+        }
+      }
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMermaidRenderer, { once: true });
+  } else {
+    initMermaidRenderer();
+  }
+  document.addEventListener('astro:page-load', initMermaidRenderer);
+</script>

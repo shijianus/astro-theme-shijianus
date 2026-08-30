@@ -267,18 +267,19 @@ details.admonition-details summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 0.9rem 1.2rem;
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
   user-select: none;
-  background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
+  background: color-mix(in srgb, var(--callout-accent, var(--theme-main)) 8%, var(--card-bg));
   color: var(--font-color);
   transition: background-color 0.2s ease;
 }
 
 details.admonition-details summary:hover {
-  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  background: color-mix(in srgb, var(--callout-accent, var(--theme-main)) 13%, var(--card-bg));
 }
 
 details.admonition-details summary::marker,
@@ -286,8 +287,33 @@ details.admonition-details summary::-webkit-details-marker {
   display: none;
 }
 
+details.admonition-details summary svg,
+.admonition-summary-title svg {
+  width: 1.18rem !important;
+  height: 1.18rem !important;
+  flex-shrink: 0 !important;
+  color: var(--callout-accent, var(--theme-main));
+}
+
+.admonition-summary-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.admonition-title-text {
+  font-weight: 700;
+  color: var(--font-color);
+}
+
 details.admonition-details summary .summary-icon {
+  font-size: 0.82rem;
+  color: var(--theme-main);
+  opacity: 0.7;
   transition: transform 0.25s ease;
+  flex-shrink: 0;
 }
 
 details.admonition-details[open] summary .summary-icon {
@@ -296,7 +322,7 @@ details.admonition-details[open] summary .summary-icon {
 
 details.admonition-details .details-content {
   padding: 1.1rem 1.3rem;
-  border-top: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
+  border-top: 1px solid color-mix(in srgb, var(--callout-accent, var(--theme-main)) 14%, var(--card-border));
   font-size: 0.92rem;
   line-height: 1.7;
 }
@@ -501,7 +527,7 @@ details.admonition-details .details-content {
 }
 
 /* --------------------------------------------------------------------------
-   5. Mermaid Diagrams
+   5. Mermaid Diagrams (Mermaid 11 Enhanced Rendering & Styling)
    -------------------------------------------------------------------------- */
 .mermaid-diagram-wrap {
   position: relative;
@@ -520,6 +546,85 @@ details.admonition-details .details-content {
 .mermaid-diagram-wrap svg {
   max-width: 100%;
   height: auto;
+  font-family: inherit;
+}
+
+/* Edge Labels: No opaque fill, text cleanly beside/on lines */
+.mermaid-diagram-wrap .edgeLabel,
+.mermaid-diagram-wrap .edgeLabel rect,
+.mermaid-diagram-wrap .edgeLabel .label,
+.mermaid-diagram-wrap .edgeLabel span,
+.mermaid-diagram-wrap span.edgeLabel,
+.mermaid-diagram-wrap g.edgeLabel rect,
+.mermaid-diagram-wrap .edgeTerminals,
+.mermaid-diagram-wrap .edgeTerminals rect,
+.mermaid-diagram-wrap .labelBkg,
+.mermaid-diagram-wrap div.labelBkg,
+.mermaid-diagram-wrap .edgeLabel .labelBkg,
+.mermaid-diagram-wrap g.edgeLabel .labelBkg {
+  background: transparent !important;
+  background-color: transparent !important;
+  fill: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.mermaid-diagram-wrap g.edgeLabel rect,
+.mermaid-diagram-wrap .edgeLabel rect {
+  fill: transparent !important;
+  opacity: 0 !important;
+}
+
+.mermaid-diagram-wrap .edgeLabel .label,
+.mermaid-diagram-wrap .edgeLabel span,
+.mermaid-diagram-wrap .edgeLabel text,
+.mermaid-diagram-wrap .edgeLabel p {
+  fill: var(--font-color) !important;
+  color: var(--font-color) !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  padding: 0 4px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Node labels & KaTeX integration: prevent clipping or overflow collision */
+.mermaid-diagram-wrap foreignObject {
+  overflow: visible !important;
+}
+
+.mermaid-diagram-wrap .basic.label-container,
+.mermaid-diagram-wrap .node.basic,
+.mermaid-diagram-wrap .node .label-container {
+  overflow: visible !important;
+}
+
+.mermaid-diagram-wrap foreignObject > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+}
+
+.mermaid-diagram-wrap .nodeLabel {
+  display: inline-block !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  line-height: 1.4 !important;
+  word-break: break-word !important;
+}
+
+.mermaid-diagram-wrap .node .basic.label-container,
+.mermaid-diagram-wrap .label-container {
+  overflow: visible !important;
+}
+
+.mermaid-diagram-wrap .node rect,
+.mermaid-diagram-wrap .node polygon,
+.mermaid-diagram-wrap .node circle {
+  transition: all 0.2s ease;
 }
 
 /* --------------------------------------------------------------------------
@@ -1839,17 +1944,34 @@ body.modal-scroll-locked {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
   background: #000000;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.12);
 }
 
-.video-embed-card iframe {
+.video-embed-card iframe,
+.video-embed-card video {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: none;
   display: block;
+  object-fit: contain;
+  background: #000000;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4rem;
+  margin: 1.6rem 0;
+}
+
+@media (max-width: 768px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .embed-caption {
-  padding: 0.6rem 1rem;
+  padding: 0.65rem 1rem;
   background: color-mix(in srgb, var(--card-bg) 95%, var(--secondbg));
   font-size: 0.84rem;
   color: var(--text-muted);
@@ -1860,41 +1982,86 @@ body.modal-scroll-locked {
 .article-audio-card {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1.25rem;
   margin: 1.6rem 0;
-  padding: 1rem 1.3rem;
-  border-radius: 14px;
+  padding: 1.1rem 1.4rem;
+  border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border));
   background: color-mix(in srgb, var(--card-bg) 96%, var(--secondbg));
+  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+}
+
+.article-audio-card:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 25%, var(--card-border));
+  box-shadow: 0 6px 24px -4px color-mix(in srgb, var(--theme-main) 12%, transparent);
+}
+
+.audio-card__cover {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .audio-card__cover img {
-  width: 64px;
-  height: 64px;
-  border-radius: 10px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.4s ease;
+}
+
+.audio-card__cover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--card-bg);
+  border: 2px solid var(--theme-main);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.article-audio-card.is-playing .audio-card__cover img {
+  animation: spinVinyl 6s linear infinite;
 }
 
 .audio-card__info {
   flex: 1;
+  min-width: 0;
 }
 
 .audio-card__title {
   font-weight: 700;
   font-size: 0.98rem;
   color: var(--font-color);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .audio-card__author {
   font-size: 0.82rem;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
 }
 
 .audio-card__info audio {
   width: 100%;
-  height: 34px;
+  height: 36px;
+  border-radius: 8px;
 }
 
 /* --------------------------------------------------------------------------
@@ -2786,16 +2953,192 @@ select.article-select:focus {
   border-top-left-radius: 2px;
 }
 
+/* Default Right Reply Bubble: Green Theme (#10b981 / emerald) & customizable */
 .chat-message.chat-right .chat-bubble {
-  background: var(--theme-main);
+  background: var(--chat-reply-bg, #10b981);
   color: #ffffff;
-  border-color: var(--theme-main);
+  border-color: var(--chat-reply-bg, #10b981);
   border-top-right-radius: 2px;
+  box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.35);
 }
 
 .chat-message.chat-right .chat-bubble code {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+/* Custom class modifiers for chat bubbles */
+.chat-bubble-green,
+.chat-bubble.is-green {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #10b981 !important;
+}
+
+.chat-bubble-blue,
+.chat-bubble.is-blue {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+.chat-bubble-purple,
+.chat-bubble.is-purple {
+  background: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #8b5cf6 !important;
+}
+
+.chat-bubble-dark,
+.chat-bubble.is-dark {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Tutorial Task Tracker & Chained Progression Checklist
+   -------------------------------------------------------------------------- */
+.article-task-tracker {
+  margin: 1.8rem 0;
+  padding: 1.3rem 1.4rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border));
+  background: color-mix(in srgb, var(--card-bg) 96%, var(--secondbg));
+  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+}
+
+.task-tracker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.task-tracker__title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--font-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-tracker__count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 10%, transparent);
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+}
+
+.task-tracker__bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-border));
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+.task-tracker__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #10b981, var(--theme-main));
+  border-radius: 6px;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.task-checklist {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 0 1.2rem 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.task-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 8%, var(--card-border));
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.task-checklist-item:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 20%, var(--card-border));
+  transform: translateX(2px);
+}
+
+.task-checklist-item input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.2rem;
+  cursor: pointer;
+  accent-color: #10b981;
+  flex-shrink: 0;
+}
+
+.task-checklist-item.is-done {
+  background: color-mix(in srgb, #10b981 6%, var(--card-bg));
+  border-color: color-mix(in srgb, #10b981 25%, var(--card-border));
+}
+
+.task-checklist-item.is-done .task-item-label {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.task-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-item-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--font-color);
+  display: block;
+}
+
+.task-item-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+  line-height: 1.5;
+}
+
+.task-tracker__status-card {
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.task-tracker__status-card.is-pending {
+  background: color-mix(in srgb, #f59e0b 8%, var(--card-bg));
+  border: 1px dashed color-mix(in srgb, #f59e0b 30%, var(--card-border));
+}
+
+.task-tracker__status-card.is-completed {
+  background: color-mix(in srgb, #10b981 10%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, #10b981 35%, var(--card-border));
+  animation: pulseSuccess 1s ease;
+}
+
+@keyframes pulseSuccess {
+  0% { transform: scale(0.98); }
+  50% { transform: scale(1.01); }
+  100% { transform: scale(1); }
 }
 
 /* --------------------------------------------------------------------------

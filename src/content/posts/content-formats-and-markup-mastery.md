@@ -177,13 +177,67 @@ Org-mode 是 Emacs 用户进行知识管理、任务跟踪与文档编写的强�
 #+END_QUOTE
 ```
 
-**本主题中的 Markdown 等效呈现**：
+**本主题中的标准静态 GFM 任务清单呈现（只读状态）**：
 
 - [x] 修复表格与移动端溢出
 - [ ] 补全 Org-mode 语法转换器
 
 > [!QUOTE]
 > “Org-mode 不仅是格式，更是一种可执行的思维工作流。”
+
+#### 可交互式任务清单与联动进度条（Interactive Tutorial Checklist & Chained Progression）
+
+在技术教程、实战演练与部署指南中，传统的只读 `[ ]` 任务清单无法直观交互与记忆。本主题特别增设了**支持实时勾选与连锁状态联动的可交互清单（`.article-task-tracker`）**。读者每勾选一项，动态进度条将实时重新计算百分比，当全部关键步骤确认完毕后，还将**自动连锁解锁下游就绪指令**，非常适合用作教程的通关检查表：
+
+<div class="article-task-tracker" data-storage-key="content-format-tutorial-demo">
+  <div class="task-tracker__header">
+    <div class="task-tracker__title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>静态站点工程化上线部署前置检查清单（可交互实时打勾）</span>
+    </div>
+    <span class="task-tracker__count">1/4 步骤已完成 (25%)</span>
+  </div>
+  <div class="task-tracker__bar-wrap">
+    <div class="task-tracker__fill" style="width: 25%;"></div>
+  </div>
+  <ul class="task-checklist">
+    <li class="task-checklist-item is-done">
+      <input type="checkbox" checked id="chk-step-1" />
+      <div class="task-item-body">
+        <label for="chk-step-1" class="task-item-label">步骤 1：完成本地代码全量备份与 Git Commit</label>
+        <div class="task-item-desc">确认当前工作树干净，备份 Hash 记录至开发审计日志。</div>
+      </div>
+    </li>
+    <li class="task-checklist-item">
+      <input type="checkbox" id="chk-step-2" />
+      <div class="task-item-body">
+        <label for="chk-step-2" class="task-item-label">步骤 2：配置 Cloudflare Pages 静态构建管线</label>
+        <div class="task-item-desc">设置 <code>BLOG_BUILD_TARGET=static</code> 与 Node.js 20+ 运行时环境。</div>
+      </div>
+    </li>
+    <li class="task-checklist-item">
+      <input type="checkbox" id="chk-step-3" />
+      <div class="task-item-body">
+        <label for="chk-step-3" class="task-item-label">步骤 3：验证媒体资源与外部视频/音频内嵌</label>
+        <div class="task-item-desc">确保所有音频与视频单文件体积严格控制在 25MB 以内，满足 CDN 部署规范。</div>
+      </div>
+    </li>
+    <li class="task-checklist-item">
+      <input type="checkbox" id="chk-step-4" />
+      <div class="task-item-body">
+        <label for="chk-step-4" class="task-item-label">步骤 4：执行 Playwright 自动化视觉回归与烟测</label>
+        <div class="task-item-desc">验证 PC 端与移动端多分辨率下所有富媒体卡片与交互组件排版正常。</div>
+      </div>
+    </li>
+  </ul>
+  <div class="task-tracker__status-card is-pending">
+    <div class="status-card__header">
+      <span class="badge badge-warning">⏳ 待办就绪中</span>
+      <span style="font-weight:700;">当前进度：1/4 (25%)</span>
+    </div>
+    <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">请依次完成上方清单中打勾的每个步骤；当所有任务完成后，此处将实时连锁解锁生产发布指令。</p>
+  </div>
+</div>
 
 ---
 
@@ -326,27 +380,91 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ### 5. `video`（自适应视频播放卡片）
 
-支持 16:9 响应式比例、圆角边框与底栏说明，兼容 Bilibili、YouTube 及原生 MP4：
+支持 16:9 响应式比例、圆角边框与底栏说明，兼容 Bilibili、YouTube 及原生 MP4（单文件均控制在 25MB 以内，满足 Cloudflare Pages 静态部署规范）：
 
-<div class="video-embed-card">
-  <iframe src="https://player.bilibili.com/player.html?bvid=BV1xx411c7mD&page=1&high_quality=1&danmaku=0" allowfullscreen="true" loading="lazy"></iframe>
-  <div class="embed-caption">🎬 演示视频：现代前端主题工程架构与设计系统解析 (1080P 高清)</div>
+#### 外部视频内嵌（Bilibili & YouTube 双外链嵌入）
+
+<div class="video-grid">
+  <div class="video-embed-card">
+    <iframe src="https://player.bilibili.com/player.html?bvid=BV11k4y1T7kS&page=1&high_quality=1&danmaku=0" allowfullscreen="true" loading="lazy"></iframe>
+    <div class="embed-caption">🎬 Bilibili 外部内嵌演示：BV11k4y1T7kS (1080P 高清)</div>
+  </div>
+  <div class="video-embed-card">
+    <iframe src="https://www.youtube-nocookie.com/embed/21X5lGlDOfg" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+    <div class="embed-caption">🎬 YouTube 外部内嵌演示：NASA 空间站 4K 地球全景 (1080P/4K)</div>
+  </div>
+</div>
+
+#### 站内原生 MP4 视频内嵌对比（Native HTML5 Video Player）
+
+<div class="video-grid">
+  <div class="video-embed-card">
+    <video controls preload="metadata" playsinline>
+      <source src="/media/video/landscape_compressed.mp4" type="video/mp4" />
+      您的浏览器不支持 HTML5 视频播放。
+    </video>
+    <div class="embed-caption">🎥 本地原生内嵌视频 1：4K/1080P 超清风光演示 (体积 21.7MB · 符合 CF 规范)</div>
+  </div>
+  <div class="video-embed-card">
+    <video controls preload="metadata" playsinline>
+      <source src="/media/video/blue_archive_miracle.mp4" type="video/mp4" />
+      您的浏览器不支持 HTML5 视频播放。
+    </video>
+    <div class="embed-caption">🎥 本地原生内嵌视频 2：【蔚蓝档案】“奇迹的终始—我们的故事由我们来决定！” (体积 23.3MB)</div>
+  </div>
 </div>
 
 ---
 
 ### 6. `audio`（黑胶唱片旋转音乐卡片）
 
-内置 HTML5 音频控制器，并在播放时自动触发**黑胶唱片无级平滑旋转动效**：
+内置 HTML5 音频控制器，并在播放时自动触发**黑胶唱片无级平滑旋转动效**。支持多种主流音频格式（无损 FLAC、高码率 MP3、AAC/M4A），所有音频资源均可由 Cloudflare CDN 极速分发（单文件均不超过 25MB）：
+
+#### ① Shaun - Way Back Home（FLAC 无损音频格式 · 24.55MB）
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/shijianus/workbench.jpg" alt="唱片封面" />
+    <img src="/media/shijianus/geek-cover.jpg" alt="Shaun - Way Back Home 封面" />
   </div>
   <div class="audio-card__info">
-    <div class="audio-card__title">星河漫步 (Cyberpunk Ambient)</div>
-    <div class="audio-card__author">shijianus · 原创深度专注白噪音</div>
-    <audio controls preload="none" src="https://music.163.com/song/media/outer/url?id=186016.mp3"></audio>
+    <div class="audio-card__title">
+      <span>Way Back Home</span>
+      <span class="badge badge-purple">FLAC Lossless</span>
+    </div>
+    <div class="audio-card__author">Shaun (숀) · 无损音频 (FLAC / 44.1kHz 16-bit 961 kbps)</div>
+    <audio controls preload="metadata" src="/media/audio/WayBackHome.flac"></audio>
+  </div>
+</div>
+
+#### ② ヨルシカ (Yorushika) - 彼女は旅に出る（MP3 320Kbps 高清格式 · 8.41MB）
+
+<div class="article-audio-card">
+  <div class="audio-card__cover">
+    <img src="/media/shijianus/hero.jpg" alt="ヨルシカ - 彼女は旅に出る 封面" />
+  </div>
+  <div class="audio-card__info">
+    <div class="audio-card__title">
+      <span>彼女は旅に出る (She Leaves on a Journey)</span>
+      <span class="badge badge-success">320 Kbps MP3</span>
+    </div>
+    <div class="audio-card__author">ヨルシカ (Yorushika) · 高清立体声 (MP3 / 48kHz 320 kbps)</div>
+    <audio controls preload="metadata" src="/media/audio/彼女は旅に出る.mp3"></audio>
+  </div>
+</div>
+
+#### ③ すこっぷ feat. 初音ミク - アイロニ（M4A / AAC 格式 · 7.63MB）
+
+<div class="article-audio-card">
+  <div class="audio-card__cover">
+    <img src="/media/shijianus/workbench.jpg" alt="すこっぷ feat. 初音ミク - アイロニ 封面" />
+  </div>
+  <div class="audio-card__info">
+    <div class="audio-card__title">
+      <span>アイロニ (Irony / 讽刺)</span>
+      <span class="badge badge-cyan">M4A / AAC</span>
+    </div>
+    <div class="audio-card__author">すこっぷ feat. 初音ミク · AAC 音频 (M4A / 44.1kHz 260 kbps)</div>
+    <audio controls preload="metadata" src="/media/audio/アイロニ.m4a"></audio>
   </div>
 </div>
 
@@ -374,13 +492,13 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ### 8. `chat`（聊天气泡对话流 / Dialogue Stream）
 
-用于生动演示技术答辩、双人对话讨论或用户采访场景，支持左右气泡与行内代码：
+用于生动演示技术答辩、双人对话讨论或用户采访场景，支持左右气泡、行内代码与自定义气泡配色（默认提问方为经典白色气泡，回复方为护眼生动的极客绿色回答气泡）：
 
 <div class="article-chat">
   <div class="chat-message chat-left">
     <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="提问者" />
     <div class="chat-body">
-      <div class="chat-author">开发者小李 · 10:15</div>
+      <div class="chat-author">开发者 Léon Boven · 10:15</div>
       <div class="chat-bubble">
         你好！请问在 Astro 中实现 <code>KaTeX</code> 和 <code>Mermaid</code> 的静态渲染会不会拖慢前端页面加载速度？
       </div>
@@ -400,7 +518,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
   <div class="chat-message chat-left">
     <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="提问者" />
     <div class="chat-body">
-      <div class="chat-author">开发者小李 · 10:17</div>
+      <div class="chat-author">开发者 Léon Boven · 10:17</div>
       <div class="chat-bubble">
         太棒了！那我们现在就可以在 Markdown 里直接写 <code>$$ E=mc^2 $$</code> 了对吧？
       </div>
@@ -510,9 +628,9 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ## 六、手风琴折叠、选项卡与多栏排版（Collapsibles, Tabs & Columns）
 
-### 1. 互斥手风琴折叠组（Accordion Group）
+### 1. 互斥手风琴折叠组（Exclusive Accordion Group · 展开单项自动闭合其余项）
 
-展开其中一项时，同组内的其他展开项可自动联动响应：
+配置 `data-single="true"`。展开其中一项时，同组内的其他展开项将自动联动收起，保持页面整洁聚焦：
 
 <div class="article-accordion-group" data-single="true">
   <details class="article-accordion" open>
@@ -548,7 +666,45 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-### 2. 多标签选项卡（Interactive Tabs）
+### 2. 非互斥独立手风琴折叠组（Multi-Expand / Non-Exclusive Accordion Group · 允许多项同时展开）
+
+配置 `data-single="false"`（或默认多开模式）。读者可以自由展开多个或全部折叠项进行横向比对与深度阅读，不会因为展开新项目而关闭已开启的内容：
+
+<div class="article-accordion-group" data-single="false">
+  <details class="article-accordion" open>
+    <summary>
+      <span>🛠️ 架构模块 A：Markdown AST 语法编译器流水线</span>
+      <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
+    <div class="accordion-content">
+      <p>基于 Unified、Remark-math 与 Rehype-katex 架构，在编译构建阶段将 Markdown 语法树完全静态转化为标准语义 HTML 节点，并在 Node.js 端完成高亮和公式生成。</p>
+    </div>
+  </details>
+
+  <details class="article-accordion" open>
+    <summary>
+      <span>🎨 架构模块 B：EpoCanvas 动态视觉引擎与响应式系统</span>
+      <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
+    <div class="accordion-content">
+      <p>提供极光背景（Aurora）、星空视差（Starfield）、毛玻璃拟态（Glassmorphism）与多端响应式断点适配，无论在 4K 宽屏还是折叠屏手机上均呈现一致的美学体验。</p>
+    </div>
+  </details>
+
+  <details class="article-accordion">
+    <summary>
+      <span>🛡️ 架构模块 C：WebCrypto SHA-256 分级安全隔离体系</span>
+      <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
+    <div class="accordion-content">
+      <p>内置 1 级会话持久解锁、2 级防窥动态多态遮罩（高斯模糊/马赛克/剧透遮罩）、3 级视口哨兵离开即锁以及外联 URL 分片加密方案，彻底杜绝密码明文在 DOM 中的暴露。</p>
+    </div>
+  </details>
+</div>
+
+---
+
+### 3. 多标签选项卡（Interactive Tabs）
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
@@ -575,7 +731,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-### 3. 多栏网格布局系统（Multi-Column Grid）
+### 4. 多栏网格布局系统（Multi-Column Grid）
 
 #### 3 列等宽卡片网格
 
