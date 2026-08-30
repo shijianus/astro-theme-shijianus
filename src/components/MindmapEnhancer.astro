@@ -167,27 +167,25 @@
             </div>
           </div>
           <div class="mindmap-toolbar">
-            <button type="button" class="mindmap-btn mindmap-btn--zoom-in" title="放大视图 (+)">
+            <button type="button" class="mindmap-btn mindmap-btn--zoom-in" title="放大视图 (+)" aria-label="放大视图">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--zoom-out" title="缩小视图 (-)">
+            <button type="button" class="mindmap-btn mindmap-btn--zoom-out" title="缩小视图 (-)" aria-label="缩小视图">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--fit" title="自适应居中视图">
+            <button type="button" class="mindmap-btn mindmap-btn--fit" title="自适应居中视图" aria-label="自适应居中视图">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><polyline points="21 15 21 21 15 21"/><polyline points="3 9 3 3 9 3"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--expand-all" title="展开全部多向分支">
+            <button type="button" class="mindmap-btn mindmap-btn--expand-all" title="一键展开全部多向分支" aria-label="一键展开全部多向分支">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              <span>展开全部</span>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--collapse-all" title="收起至单块（恢复初始状态）">
+            <button type="button" class="mindmap-btn mindmap-btn--collapse-all" title="一键收起至单块（恢复初始状态）" aria-label="一键收起至单块">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              <span>收起单块</span>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--fullscreen" title="全屏沉浸式交互">
+            <button type="button" class="mindmap-btn mindmap-btn--fullscreen" title="全屏沉浸模式 (按 Esc 退出)" aria-label="全屏沉浸模式">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--copy" title="复制 Markdown 结构">
+            <button type="button" class="mindmap-btn mindmap-btn--copy" title="复制 Markdown 节点源码" aria-label="复制 Markdown 节点源码">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             </button>
           </div>
@@ -195,12 +193,12 @@
         <div class="mindmap-canvas-container">
           <svg class="mindmap-svg" id="${mindmapId}-svg"></svg>
           <div class="mindmap-hint-pill">
-            <span class="pulse-dot"></span> 默认仅展示单块核心 · 点击右侧圆点展开多向分支 · 按住拖拽平移 · 滚轮缩放
+            <span class="pulse-dot"></span> 默认仅展示单块核心 · 点击节点或圆点展开多向分支 · 按住拖拽平移 · 滚轮缩放
           </div>
         </div>
         <div class="mindmap-footer">
           <div class="mindmap-footer__guide">
-            <span class="guide-icon">💡</span> 点击带有小圆点的节点可向外层层散开，支持触控拖拽与多级折叠
+            <span class="guide-icon">💡</span> 点击节点或小圆点散开/收起分支 · 滚轮缩放 · 鼠标拖拽平移 · 工具栏支持居中/展开/全屏(Esc)
           </div>
           <div class="mindmap-footer__brand">
             <span>EpoCanvas Mindmap Engine</span>
@@ -223,7 +221,7 @@
       const colorScale = d3.scaleOrdinal(PALETTE);
 
       const mm = Markmap.create(svg, {
-        duration: 400,
+        duration: 350,
         autoFit: true,
         fitRatio: 0.92,
         maxInitialScale: 1.8,
@@ -253,20 +251,22 @@
         }
       };
 
+      // Sensitive click handler with expanded hit target
       svg.addEventListener('click', (e) => {
         dismissHint();
         const target = e.target as HTMLElement | SVGElement;
         const nodeGroup = target?.closest<SVGGElement>('.markmap-node');
         if (nodeGroup) {
-          if (!target.closest('circle')) {
-            const datum = (nodeGroup as any).__data__;
-            if (datum) {
+          const datum = (nodeGroup as any).__data__;
+          if (datum) {
+            // Toggle node directly if clicking text/line (where Markmap doesn't toggle natively)
+            if (!target.closest('circle')) {
               mm.toggleNode(datum);
             }
           }
           setTimeout(() => {
             mm.fit();
-          }, 450);
+          }, 380);
           if (stateTag) {
             stateTag.textContent = '多向分支已展开';
             stateTag.className = 'mindmap-state-tag is-expanded';
@@ -310,7 +310,7 @@
         mm.renderData(root);
         setTimeout(() => {
           mm.fit();
-        }, 450);
+        }, 380);
         if (stateTag) {
           stateTag.textContent = '全部分支已展开';
           stateTag.className = 'mindmap-state-tag is-expanded';
@@ -327,7 +327,7 @@
         mm.renderData(root);
         setTimeout(() => {
           mm.fit();
-        }, 450);
+        }, 380);
         if (stateTag) {
           stateTag.textContent = '单块已收起 · 点击展开多向分支';
           stateTag.className = 'mindmap-state-tag is-collapsed';
@@ -337,21 +337,64 @@
         }));
       });
 
-      fullscreenBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
+      // Robust Teleport Fullscreen (under #page-header, with Esc key exit)
+      let placeholder: Comment | null = null;
+
+      const toggleFullscreen = (forceState?: boolean) => {
         dismissHint();
-        const isFullscreen = wrapper.classList.toggle('is-fullscreen');
-        document.body.classList.toggle('mindmap-fullscreen-active', isFullscreen);
-        
-        fullscreenBtn.setAttribute('title', isFullscreen ? '退出全屏' : '全屏沉浸式交互');
-        fullscreenBtn.innerHTML = isFullscreen
-          ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>`
-          : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+        const willBeFullscreen = typeof forceState === 'boolean'
+          ? forceState
+          : !wrapper.classList.contains('is-fullscreen');
+
+        if (willBeFullscreen) {
+          if (!placeholder) {
+            placeholder = document.createComment(`mindmap-placeholder-${mindmapId}`);
+          }
+          wrapper.parentNode?.insertBefore(placeholder, wrapper);
+          document.body.appendChild(wrapper);
+          wrapper.classList.add('is-fullscreen');
+          document.body.classList.add('mindmap-fullscreen-active');
+          
+          fullscreenBtn?.setAttribute('title', '退出全屏 (Esc)');
+          fullscreenBtn?.setAttribute('aria-label', '退出全屏 (Esc)');
+          if (fullscreenBtn) {
+            fullscreenBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>`;
+          }
+          window.dispatchEvent(new CustomEvent('shijianus:activity', {
+            detail: { message: '⛶ 已进入全屏思维导图探索（按 Esc 键随时退出）' }
+          }));
+        } else {
+          wrapper.classList.remove('is-fullscreen');
+          document.body.classList.remove('mindmap-fullscreen-active');
+          if (placeholder && placeholder.parentNode) {
+            placeholder.parentNode.insertBefore(wrapper, placeholder);
+            placeholder.remove();
+            placeholder = null;
+          }
+          fullscreenBtn?.setAttribute('title', '全屏沉浸模式 (按 Esc 退出)');
+          fullscreenBtn?.setAttribute('aria-label', '全屏沉浸模式');
+          if (fullscreenBtn) {
+            fullscreenBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+          }
+        }
 
         setTimeout(() => {
           mm.fit();
-        }, 150);
+        }, 160);
+      };
+
+      fullscreenBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleFullscreen();
       });
+
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
+          e.preventDefault();
+          toggleFullscreen(false);
+        }
+      };
+      document.addEventListener('keydown', handleKeydown);
 
       copyBtn?.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -376,16 +419,6 @@
             copyBtn.classList.remove('is-copied');
           }, 1800);
         } catch (_) {}
-      });
-
-      // Handle ESC key to exit fullscreen
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && wrapper.classList.contains('is-fullscreen')) {
-          wrapper.classList.remove('is-fullscreen');
-          document.body.classList.remove('mindmap-fullscreen-active');
-          fullscreenBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
-          setTimeout(() => mm.fit(), 150);
-        }
       });
 
       // Handle window resize & orientation change
