@@ -801,13 +801,34 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         });
       };
 
-      // 4.4 Audio Player Vinyl Disc Sync
+      // 4.4 Audio Player Vinyl Disc Sync & Anti-Crawl Protection
       const enhanceAudioSync = (article) => {
-        article.querySelectorAll('.article-audio-card').forEach((card) => {
+        const audioCards = article.querySelectorAll('.article-audio-card');
+        if (audioCards.length > 0) {
+          console.warn('%c[Anti-Crawl / 版权保护] 站内音频受版权保护，已严格禁止直接拉取与下载。', 'color:#ef4444;font-weight:bold;font-size:12px;background:rgba(239,68,68,0.1);padding:4px 8px;border-radius:4px;');
+        }
+        audioCards.forEach((card) => {
           if (card.dataset.audioBound === 'true') return;
           card.dataset.audioBound = 'true';
+
+          // Image fallback to default.png
+          const img = card.querySelector('.audio-card__cover img');
+          if (img instanceof HTMLImageElement) {
+            img.addEventListener('error', () => {
+              if (img.src !== '/media/shijianus/default.png') {
+                img.src = '/media/shijianus/default.png';
+              }
+            });
+          }
+
           const audio = card.querySelector('audio');
           if (!audio) return;
+
+          // Prevent download attributes & context menu
+          audio.setAttribute('controlsList', 'nodownload');
+          audio.setAttribute('oncontextmenu', 'return false;');
+          card.addEventListener('contextmenu', (e) => e.preventDefault());
+
           audio.addEventListener('play', () => {
             // Pause all other audio on the page
             document.querySelectorAll('audio').forEach((otherAudio) => {
@@ -819,6 +840,32 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           });
           audio.addEventListener('pause', () => card.classList.remove('is-playing'));
           audio.addEventListener('ended', () => card.classList.remove('is-playing'));
+        });
+      };
+
+      // 4.5 Video Embed Protection & Native Controls
+      const enhanceVideos = (article) => {
+        article.querySelectorAll('.video-embed-card').forEach((card) => {
+          if (card.dataset.videoBound === 'true') return;
+          card.dataset.videoBound = 'true';
+
+          // Native video elements
+          const video = card.querySelector('video');
+          if (video instanceof HTMLVideoElement) {
+            video.setAttribute('controlsList', 'nodownload');
+            video.setAttribute('oncontextmenu', 'return false;');
+            video.setAttribute('playsinline', '');
+            card.addEventListener('contextmenu', (e) => e.preventDefault());
+          }
+
+          // Iframe elements
+          const iframe = card.querySelector('iframe');
+          if (iframe instanceof HTMLIFrameElement) {
+            if (!iframe.getAttribute('loading')) iframe.setAttribute('loading', 'lazy');
+            if (!iframe.getAttribute('allow')) {
+              iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+            }
+          }
         });
       };
 
@@ -1009,6 +1056,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         enhanceAccordionGroups(article);
         enhanceInteractiveTasks(article);
         enhanceAudioSync(article);
+        enhanceVideos(article);
         enhanceEncryptedBoxes(article);
         enhanceLightbox(article);
         enhanceFootnotes(article);

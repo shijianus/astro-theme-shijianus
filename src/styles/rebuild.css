@@ -98,6 +98,21 @@ body[data-type='post'] #card-toc .toc-content {
   font-weight: 900;
 }
 
+.article-body.post-content .article-dropdown-switcher strong,
+.article-body.post-content .article-dropdown-panel strong,
+.article-body.post-content .article-tabs strong,
+.article-body.post-content .article-audio-card strong,
+.article-body.post-content .video-embed-card strong,
+.article-body.post-content .code-block-shell strong,
+.article-body.post-content .article-task-tracker strong,
+.article-body.post-content pre strong {
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+  font-weight: 700 !important;
+}
+
 .article-body.post-content mark:not([class*='mark-']) {
   padding: 0.12em 0.38em;
   border-radius: 0.38em;

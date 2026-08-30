@@ -66,53 +66,53 @@ mermaid: false
 通过正文内的下拉菜单选择目标技术框架，下方的内容面板将自动同步切换：
 
 <div class="article-dropdown-switcher">
-<div class="article-dropdown-switcher__header">
-<div class="article-dropdown-switcher__title">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-<span>选择前端框架实现：</span>
-</div>
-<select class="article-select dropdown-switcher__select">
-<option value="react-code">⚛️ React 19 (Hooks)</option>
-<option value="vue-code">🟢 Vue 3.5 (Composition API)</option>
-<option value="astro-code">🚀 Astro 6 (Islands)</option>
-<option value="svelte-code">🟠 Svelte 5 (Runes)</option>
-</select>
-</div>
-<div class="article-dropdown-switcher__body">
-<div class="article-dropdown-panel is-active" data-panel="react-code">
-<p><strong>React 19 计数器代码：</strong></p>
-<pre class="no-code-enhance"><code class="language-tsx">import &#123; useState &#125; from 'react';
+  <div class="article-dropdown-switcher__header">
+    <div class="article-dropdown-switcher__title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+      <span>选择前端框架实现：</span>
+    </div>
+    <select class="article-select dropdown-switcher__select">
+      <option value="react-code">⚛️ React 19 (Hooks)</option>
+      <option value="vue-code">🟢 Vue 3.5 (Composition API)</option>
+      <option value="astro-code">🚀 Astro 6 (Islands)</option>
+      <option value="svelte-code">🟠 Svelte 5 (Runes)</option>
+    </select>
+  </div>
+  <div class="article-dropdown-switcher__body">
+    <div class="article-dropdown-panel is-active" data-panel="react-code">
+      <div class="article-dropdown-panel__title">⚛️ React 19 计数器代码：</div>
+      <pre class="no-code-enhance"><code class="language-tsx">import &#123; useState &#125; from 'react';
 
 export function Counter() &#123;
   const [count, setCount] = useState(0);
   return &lt;button onClick=&#123;() =&gt; setCount((c) =&gt; c + 1)&#125;&gt;Count: &#123;count&#125;&lt;/button&gt;;
 &#125;</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="vue-code">
-<p><strong>Vue 3.5 计数器代码：</strong></p>
-<pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
+    </div>
+    <div class="article-dropdown-panel" data-panel="vue-code">
+      <div class="article-dropdown-panel__title">🟢 Vue 3.5 计数器代码：</div>
+      <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
 import &#123; ref &#125; from 'vue';
 const count = ref(0);
 &lt;/script&gt;
 &lt;template&gt;
   &lt;button @click="count++"&gt;Count: &#123;&#123; count &#125;&#125;&lt;/button&gt;
 &lt;/template&gt;</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="astro-code">
-<p><strong>Astro 6 群岛组件代码：</strong></p>
-<pre class="no-code-enhance"><code class="language-astro">---
+    </div>
+    <div class="article-dropdown-panel" data-panel="astro-code">
+      <div class="article-dropdown-panel__title">🚀 Astro 6 群岛组件代码：</div>
+      <pre class="no-code-enhance"><code class="language-astro">---
 const &#123; label = "Astro 静态组件" &#125; = Astro.props;
 ---
 &lt;div class="astro-card"&gt;
   &lt;h3&gt;&#123;label&#125;&lt;/h3&gt;
 &lt;/div&gt;</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="svelte-code">
-<p><strong>Svelte 5 计数器代码：</strong></p>
-<pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
+    </div>
+    <div class="article-dropdown-panel" data-panel="svelte-code">
+      <div class="article-dropdown-panel__title">🟠 Svelte 5 计数器代码：</div>
+      <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
   let count = $state(0);
 &lt;/script&gt;
 &lt;button onclick=&#123;() =&gt; count++&#125;&gt;Count: &#123;count&#125;&lt;/button&gt;</code></pre>
-</div>
-</div>
+    </div>
+  </div>
 </div>

@@ -380,51 +380,49 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ### 5. `video`（自适应视频播放卡片）
 
-支持 16:9 响应式比例、圆角边框与底栏说明，兼容 Bilibili、YouTube 及原生 MP4（单文件均控制在 25MB 以内，满足 Cloudflare Pages 静态部署规范）：
+支持 16:9 响应式比例、圆角边框与底栏说明，单行独占一个完整横位展示。兼容 Bilibili、YouTube 外部代理式嵌入及站内原生 MP4（单文件均控制在 25MB 以内，满足 Cloudflare Pages 静态部署规范）：
 
-#### 外部视频内嵌（Bilibili & YouTube 双外链嵌入）
+#### 外部视频内嵌（Bilibili & YouTube 连结代理式嵌入 · 默认需读者翻到此处并点击开始播放）
 
-<div class="video-grid">
-  <div class="video-embed-card">
-    <iframe src="https://player.bilibili.com/player.html?bvid=BV11k4y1T7kS&page=1&high_quality=1&danmaku=0" allowfullscreen="true" loading="lazy"></iframe>
-    <div class="embed-caption">🎬 Bilibili 外部内嵌演示：BV11k4y1T7kS (1080P 高清)</div>
-  </div>
-  <div class="video-embed-card">
-    <iframe src="https://www.youtube-nocookie.com/embed/21X5lGlDOfg" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-    <div class="embed-caption">🎬 YouTube 外部内嵌演示：NASA 空间站 4K 地球全景 (1080P/4K)</div>
-  </div>
+<div class="video-embed-card" data-video-type="bilibili">
+  <iframe src="https://player.bilibili.com/player.html?bvid=BV11k4y1T7kS&page=1&high_quality=1&danmaku=0&autoplay=0" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" sandbox="allow-top-navigation-by-user-activation allow-same-origin allow-forms allow-scripts allow-popups"></iframe>
+  <div class="embed-caption">🎬 Bilibili 外部内嵌演示：BV11k4y1T7kS (1080P 高清 · 需翻至此处并点击播放)</div>
 </div>
 
-#### 站内原生 MP4 视频内嵌对比（Native HTML5 Video Player）
+<div class="video-embed-card" data-video-type="youtube">
+  <iframe src="https://www.youtube-nocookie.com/embed/LXb3EKWsInQ?autoplay=0&rel=0" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+  <div class="embed-caption">🎬 YouTube 外部内嵌演示：Costa Rica 4K 60fps HDR 演示 (1080P/4K · 真实有效 URL · 需翻至此处并点击播放)</div>
+</div>
 
-<div class="video-grid">
-  <div class="video-embed-card">
-    <video controls preload="metadata" playsinline>
-      <source src="/media/video/landscape_compressed.mp4" type="video/mp4" />
-      您的浏览器不支持 HTML5 视频播放。
-    </video>
-    <div class="embed-caption">🎥 本地原生内嵌视频 1：4K/1080P 超清风光演示 (体积 21.7MB · 符合 CF 规范)</div>
-  </div>
-  <div class="video-embed-card">
-    <video controls preload="metadata" playsinline>
-      <source src="/media/video/blue_archive_miracle.mp4" type="video/mp4" />
-      您的浏览器不支持 HTML5 视频播放。
-    </video>
-    <div class="embed-caption">🎥 本地原生内嵌视频 2：【蔚蓝档案】“奇迹的终始—我们的故事由我们来决定！” (体积 23.3MB)</div>
-  </div>
+#### 站内原生 MP4 视频内嵌（Native HTML5 Video Player · 支持倍速与画中画 · 默认禁用下载）
+
+<div class="video-embed-card">
+  <video controls controlsList="nodownload" preload="metadata" playsinline oncontextmenu="return false;">
+    <source src="/media/video/landscape_compressed.mp4" type="video/mp4" />
+    您的浏览器不支持 HTML5 视频播放。
+  </video>
+  <div class="embed-caption">🎥 本地原生内嵌视频 1：4K/1080P 超清风光演示 (体积 21.7MB · 支持倍速与画中画 · 已禁用直接下载)</div>
+</div>
+
+<div class="video-embed-card">
+  <video controls controlsList="nodownload" preload="metadata" playsinline oncontextmenu="return false;">
+    <source src="/media/video/blue_archive_miracle.mp4" type="video/mp4" />
+    您的浏览器不支持 HTML5 视频播放。
+  </video>
+  <div class="embed-caption">🎥 本地原生内嵌视频 2：【蔚蓝档案】“奇迹的终始—我们的故事由我们来决定！” (体积 23.3MB · 支持倍速与画中画 · 已禁用直接下载)</div>
 </div>
 
 ---
 
 ### 6. `audio`（黑胶唱片旋转音乐卡片）
 
-内置 HTML5 音频控制器，并在播放时自动触发**黑胶唱片无级平滑旋转动效**。支持多种主流音频格式（无损 FLAC、高码率 MP3、AAC/M4A），所有音频资源均可由 Cloudflare CDN 极速分发（单文件均不超过 25MB）：
+内置 HTML5 音频控制器，并在播放时自动触发**黑胶唱片无级平滑旋转动效**。所有唱片封面均采用真实匹配的官方高清专辑封面，支持多种主流音频格式（无损 FLAC、高码率 MP3、AAC/M4A），且已内置反爬与防下载保护：
 
 #### ① Shaun - Way Back Home（FLAC 无损音频格式 · 24.55MB）
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/shijianus/geek-cover.jpg" alt="Shaun - Way Back Home 封面" />
+    <img src="/media/audio/covers/way_back_home.jpg" alt="Shaun - Way Back Home 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
@@ -432,7 +430,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
       <span class="badge badge-purple">FLAC Lossless</span>
     </div>
     <div class="audio-card__author">Shaun (숀) · 无损音频 (FLAC / 44.1kHz 16-bit 961 kbps)</div>
-    <audio controls preload="metadata" src="/media/audio/WayBackHome.flac"></audio>
+    <audio controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;" src="/media/audio/WayBackHome.flac"></audio>
   </div>
 </div>
 
@@ -440,7 +438,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/shijianus/hero.jpg" alt="ヨルシカ - 彼女は旅に出る 封面" />
+    <img src="/media/audio/covers/kanojo_wa_tabi_ni_deru.jpg" alt="ヨルシカ - 彼女は旅に出る 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
@@ -448,7 +446,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
       <span class="badge badge-success">320 Kbps MP3</span>
     </div>
     <div class="audio-card__author">ヨルシカ (Yorushika) · 高清立体声 (MP3 / 48kHz 320 kbps)</div>
-    <audio controls preload="metadata" src="/media/audio/彼女は旅に出る.mp3"></audio>
+    <audio controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;" src="/media/audio/彼女は旅に出る.mp3"></audio>
   </div>
 </div>
 
@@ -456,7 +454,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/shijianus/workbench.jpg" alt="すこっぷ feat. 初音ミク - アイロニ 封面" />
+    <img src="/media/audio/covers/irony_scop.jpg" alt="すこっぷ feat. 初音ミク - アイロニ 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
@@ -464,7 +462,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
       <span class="badge badge-cyan">M4A / AAC</span>
     </div>
     <div class="audio-card__author">すこっぷ feat. 初音ミク · AAC 音频 (M4A / 44.1kHz 260 kbps)</div>
-    <audio controls preload="metadata" src="/media/audio/アイロニ.m4a"></audio>
+    <audio controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;" src="/media/audio/アイロニ.m4a"></audio>
   </div>
 </div>
 
@@ -537,66 +535,63 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 读者可以在下拉框中自由选择技术框架，正文面板将实时无刷新切换对应的内容与代码：
 
 <div class="article-dropdown-switcher">
-<div class="article-dropdown-switcher__header">
-<div class="article-dropdown-switcher__title">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-<span>请选择要查看的前端框架实现代码：</span>
-</div>
-<select class="article-select dropdown-switcher__select">
-<option value="react-tab">⚛️ React 19 (Hooks & TSX)</option>
-<option value="vue-tab">🟢 Vue 3.5 (Composition API)</option>
-<option value="astro-tab">🚀 Astro 6 (Island Component)</option>
-<option value="svelte-tab">🟠 Svelte 5 (Runes)</option>
-</select>
-</div>
-<div class="article-dropdown-switcher__body">
-<div class="article-dropdown-panel is-active" data-panel="react-tab">
-<p><strong>React 19 组件实现方式：</strong></p>
-<pre class="no-code-enhance"><code class="language-tsx">import { useState } from 'react';
-
+  <div class="article-dropdown-switcher__header">
+    <div class="article-dropdown-switcher__title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+      <span>请选择要查看的前端框架实现代码：</span>
+    </div>
+    <select class="article-select dropdown-switcher__select">
+      <option value="react-tab">⚛️ React 19 (Hooks & TSX)</option>
+      <option value="vue-tab">🟢 Vue 3.5 (Composition API)</option>
+      <option value="astro-tab">🚀 Astro 6 (Island Component)</option>
+      <option value="svelte-tab">🟠 Svelte 5 (Runes)</option>
+    </select>
+  </div>
+  <div class="article-dropdown-switcher__body">
+    <div class="article-dropdown-panel is-active" data-panel="react-tab">
+      <div class="article-dropdown-panel__title">⚛️ React 19 组件实现方式：</div>
+      <pre class="no-code-enhance"><code class="language-tsx">import { useState } from 'react';
 export function Counter() {
   const [count, setCount] = useState(0);
   return (
     &lt;button onClick={() =&gt; setCount((c) =&gt; c + 1)} className="btn-primary"&gt;
-      React 点击计数：{count}
+      React 点击计数：&#123;count&#125;
     &lt;/button&gt;
   );
 }</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="vue-tab">
-<p><strong>Vue 3.5 单文件组件实现方式：</strong></p>
-<pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
+    </div>
+    <div class="article-dropdown-panel" data-panel="vue-tab">
+      <div class="article-dropdown-panel__title">🟢 Vue 3.5 单文件组件实现方式：</div>
+      <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
 import { ref } from 'vue';
 const count = ref(0);
 &lt;/script&gt;
-
 &lt;template&gt;
   &lt;button @click="count++" class="btn-primary"&gt;
-    Vue 点击计数：{{ count }}
+    Vue 点击计数：&#123;&#123; count &#125;&#125;
   &lt;/button&gt;
 &lt;/template&gt;</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="astro-tab">
-<p><strong>Astro 6 零 JS 静态组件实现方式：</strong></p>
-<pre class="no-code-enhance"><code class="language-astro">---
+    </div>
+    <div class="article-dropdown-panel" data-panel="astro-tab">
+      <div class="article-dropdown-panel__title">🚀 Astro 6 零 JS 静态组件实现方式：</div>
+      <pre class="no-code-enhance"><code class="language-astro">---
 const { title = "Astro 极速群岛" } = Astro.props;
 ---
 &lt;div class="astro-island"&gt;
-  &lt;h3&gt;{title}&lt;/h3&gt;
+  &lt;h3&gt;&#123;title&#125;&lt;/h3&gt;
   &lt;p&gt;默认交付 0KB JavaScript，按需注水交互！&lt;/p&gt;
 &lt;/div&gt;</code></pre>
-</div>
-<div class="article-dropdown-panel" data-panel="svelte-tab">
-<p><strong>Svelte 5 Runes 实现方式：</strong></p>
-<pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
+    </div>
+    <div class="article-dropdown-panel" data-panel="svelte-tab">
+      <div class="article-dropdown-panel__title">🟠 Svelte 5 Runes 实现方式：</div>
+      <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
   let count = $state(0);
 &lt;/script&gt;
-
 &lt;button onclick={() =&gt; count++} class="btn-primary"&gt;
-  Svelte 点击计数：{count}
+  Svelte 点击计数：&#123;count&#125;
 &lt;/button&gt;</code></pre>
-</div>
-</div>
+    </div>
+  </div>
 </div>
 
 ---
