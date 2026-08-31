@@ -3416,3 +3416,208 @@ html[data-page-visible="false"] #web_bg::after,
 html[data-page-visible="false"] .post-hero__waves-group use {
   animation-play-state: paused !important;
 }
+
+/* ==========================================================================
+   TOC & Aside Sticky Box Refinements: Pure Bold + Blue Highlighting & Mobile Isolation
+   ========================================================================== */
+
+/* Base TOC link typography and non-active colors (Light Mode) */
+#card-toc .toc-link,
+#card-toc .toc-link .toc-text,
+#card-toc .toc-link .toc-text-group {
+  color: #334155 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+#card-toc .toc-link.level-0,
+#card-toc .toc-link.level-0 .toc-text {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+#card-toc .toc-link.level-1,
+#card-toc .toc-link.level-1 .toc-text {
+  color: #475569 !important;
+  font-weight: 400 !important;
+}
+
+#card-toc .toc-link.level-2,
+#card-toc .toc-link.level-2 .toc-text,
+#card-toc .toc-link.level-3,
+#card-toc .toc-link.level-3 .toc-text {
+  color: #64748b !important;
+  font-weight: 400 !important;
+}
+
+/* Dark Mode non-active TOC typography */
+:root[data-theme='dark'] #card-toc .toc-link,
+:root[data-theme='dark'] #card-toc .toc-link .toc-text,
+:root[data-theme='dark'] #card-toc .toc-link .toc-text-group {
+  color: #94a3b8 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+:root[data-theme='dark'] #card-toc .toc-link.level-0,
+:root[data-theme='dark'] #card-toc .toc-link.level-0 .toc-text {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+}
+
+:root[data-theme='dark'] #card-toc .toc-link.level-1,
+:root[data-theme='dark'] #card-toc .toc-link.level-1 .toc-text {
+  color: #cbd5e1 !important;
+  font-weight: 400 !important;
+}
+
+:root[data-theme='dark'] #card-toc .toc-link.level-2,
+:root[data-theme='dark'] #card-toc .toc-link.level-2 .toc-text,
+:root[data-theme='dark'] #card-toc .toc-link.level-3,
+:root[data-theme='dark'] #card-toc .toc-link.level-3 .toc-text {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+/* Hover state (Light & Dark) */
+#card-toc .toc-link:hover,
+#card-toc .toc-link:hover .toc-text,
+#card-toc .toc-link:hover .toc-text-group {
+  color: var(--theme-main, #425aef) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+:root[data-theme='dark'] #card-toc .toc-link:hover,
+:root[data-theme='dark'] #card-toc .toc-link:hover .toc-text,
+:root[data-theme='dark'] #card-toc .toc-link:hover .toc-text-group {
+  color: #6ba1ff !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Active item (Light Mode): Bold + Theme Blue (#425aef), strictly NO box/background/border */
+#card-toc .toc-link.active,
+#card-toc .toc-link.active .toc-text,
+#card-toc .toc-link.active .toc-text-group,
+body[data-type='post'] #card-toc .toc-link.active,
+body[data-type='post'] #card-toc .toc-link.active .toc-text {
+  color: var(--theme-main, #425aef) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-left: none !important;
+}
+
+/* Active item (Dark Mode): Bold + Electric Theme Blue (#6ba1ff / #4e73f8), strictly NO box */
+:root[data-theme='dark'] #card-toc .toc-link.active,
+:root[data-theme='dark'] #card-toc .toc-link.active .toc-text,
+:root[data-theme='dark'] #card-toc .toc-link.active .toc-text-group,
+:root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active,
+:root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active .toc-text {
+  color: #6ba1ff !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-left: none !important;
+}
+
+/* Enlarged emphasis for 1st level active items */
+#card-toc .toc-link.level-0.active,
+#card-toc .toc-link.level-0.active .toc-text,
+body[data-type='post'] #card-toc .toc-link.level-0.active,
+body[data-type='post'] #card-toc .toc-link.level-0.active .toc-text {
+  font-size: 16.5px !important;
+  font-weight: 800 !important;
+  transform: translateX(3px) scale(1.03) !important;
+  transform-origin: left center !important;
+}
+
+/* When filtered to Level 1 only (only 1st level titles showing), active item has prominent enlargement */
+#card-toc[data-depth-filter='1'] .toc-link.level-0.active,
+#card-toc[data-depth-filter='1'] .toc-link.level-0.active .toc-text,
+body[data-type='post'] #card-toc[data-depth-filter='1'] .toc-link.level-0.active,
+body[data-type='post'] #card-toc[data-depth-filter='1'] .toc-link.level-0.active .toc-text {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  transform: translateX(4px) scale(1.05) !important;
+  transform-origin: left center !important;
+}
+
+/* TOC button in Rightside config panel */
+#rightside-config-hide #mobile-toc-button {
+  display: inline-flex !important;
+  position: relative !important;
+}
+
+.dock-depth-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 1.5px 3.5px;
+  border-radius: 4px;
+  background: var(--theme-main, #425aef);
+  color: #ffffff;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-theme='dark'] .dock-depth-badge {
+  background: #6ba1ff;
+  color: #0f172a;
+}
+
+/* Micro-interactions & Visual Feedback for Rightside Dock Buttons */
+#rightside button,
+#rightside a {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#rightside button:active,
+#rightside a:active {
+  transform: scale(0.9) !important;
+}
+
+#rightside button.is-active,
+#rightside a.is-active {
+  color: var(--theme-main, #425aef) !important;
+}
+
+:root[data-theme='dark'] #rightside button.is-active,
+:root[data-theme='dark'] #rightside a.is-active {
+  color: #6ba1ff !important;
+}
+
+/* Comment section pulse animation */
+@keyframes target-pulse-anim {
+  0% {
+    box-shadow: 0 0 0 0 rgba(66, 90, 239, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(66, 90, 239, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(66, 90, 239, 0);
+  }
+}
+
+.target-pulse {
+  animation: target-pulse-anim 1.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border-radius: 12px;
+}
+
+
+
+

@@ -43,6 +43,7 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [panelHidden, setPanelHidden] = useState(true);
   const [readMode, setReadMode] = useState(false);
   const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
+  const [tocDepth, setTocDepth] = useState('all');
 
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
@@ -52,6 +53,21 @@ export function ThemeDock(_props: ThemeDockProps) {
       window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
     }
   };
+
+  useEffect(() => {
+    const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('shijianus-toc-depth-filter')) || 'all';
+    setTocDepth(saved);
+
+    const onDepthChanged = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail) setTocDepth(detail);
+    };
+
+    window.addEventListener('shijianus:toc-depth-changed', onDepthChanged as EventListener);
+    return () => {
+      window.removeEventListener('shijianus:toc-depth-changed', onDepthChanged as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -193,6 +209,59 @@ export function ThemeDock(_props: ThemeDockProps) {
     emitActivity(`已切换语言：${next === 'zh-CN' ? '简体中文' : next === 'zh-Hant' ? '繁體中文' : 'English'}`);
   };
 
+  const handleToggleTocDepth = () => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth <= 1200) {
+      window.dispatchEvent(new CustomEvent('shijianus:toggle-mobile-toc'));
+      emitActivity('已打开文章目录抽屉');
+      return;
+    }
+
+    const depthLevels = ['all', '1', '2', '3'];
+    const depthLabels: Record<string, string> = {
+      'all': '全部层级',
+      '1': '仅展示 1 级大纲',
+      '2': '展示至 2 级标题',
+      '3': '展示至 3 级标题',
+    };
+
+    const currentIndex = depthLevels.indexOf(tocDepth);
+    const nextIndex = (currentIndex + 1) % depthLevels.length;
+    const nextDepth = depthLevels[nextIndex]!;
+    setTocDepth(nextDepth);
+    window.dispatchEvent(new CustomEvent('shijianus:toggle-toc-depth'));
+    emitActivity(`已切换目录深度：${depthLabels[nextDepth] || '全部层级'}`);
+  };
+
+  const handleJumpToComment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const commentEl = document.getElementById('post-comment') || document.querySelector('.post-comment') || document.getElementById('vcomments');
+    if (commentEl) {
+      commentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      commentEl.classList.remove('target-pulse');
+      void (commentEl as HTMLElement).offsetWidth;
+      commentEl.classList.add('target-pulse');
+      emitActivity('已定位至评论区');
+    } else {
+      emitActivity('当前页面暂无评论区');
+    }
+  };
+
+  const handleToggleConfig = () => {
+    setConfigOpen((prev) => {
+      const next = !prev;
+      emitActivity(next ? '已展开快捷工具栏' : '已收起快捷工具栏');
+      return next;
+    });
+  };
+
+  const handleHideRightside = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPanelHidden(true);
+    setConfigOpen(false);
+    emitActivity('已收起快捷菜单（鼠标移至屏幕右侧可重新唤出）');
+  };
+
   return (
     <>
       {readMode && (
@@ -221,8 +290,8 @@ export function ThemeDock(_props: ThemeDockProps) {
               <button
                 type="button"
                 id="readmode"
-                title="阅读模式"
-                aria-label="阅读模式"
+                title={readMode ? '退出阅读模式' : '阅读模式'}
+                aria-label={readMode ? '退出阅读模式' : '阅读模式'}
                 className={readMode ? 'is-active' : ''}
                 onClick={handleToggleReadMode}
               >
@@ -235,12 +304,11 @@ export function ThemeDock(_props: ThemeDockProps) {
               <button
                 type="button"
                 id="mobile-toc-button"
-                className="close"
-                title="目录"
-                aria-label="目录"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('shijianus:toggle-mobile-toc'));
-                }}
+                className={`close ${tocDepth !== 'all' ? 'is-active' : ''}`}
+                title={`目录层级 (${tocDepth === 'all' ? '全部' : `${tocDepth}级`}) / 文章目录`}
+                aria-label="目录层级 / 文章目录"
+                onClick={handleToggleTocDepth}
+                style={{ position: 'relative' }}
               >
                 <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -250,9 +318,10 @@ export function ThemeDock(_props: ThemeDockProps) {
                   <line x1="3" y1="12" x2="3.01" y2="12"></line>
                   <line x1="3" y1="18" x2="3.01" y2="18"></line>
                 </svg>
+                <span className="dock-depth-badge">{tocDepth === 'all' ? '全' : `${tocDepth}级`}</span>
               </button>
 
-              <a id="to_comment" href="#post-comment" title="直达评论" aria-label="直达评论">
+              <a id="to_comment" href="#post-comment" title="直达评论" aria-label="直达评论" onClick={handleJumpToComment}>
                 <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
@@ -261,7 +330,7 @@ export function ThemeDock(_props: ThemeDockProps) {
               <button
                 type="button"
                 id="translate"
-                title="切换语言"
+                title={`切换语言 (当前: ${locale === 'zh-CN' ? '简' : locale === 'zh-Hant' ? '繁' : 'EN'})`}
                 aria-label="切换语言"
                 onClick={handleToggleLocale}
               >
@@ -322,11 +391,11 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="rightside-config"
-            title="设置"
-            aria-label="设置"
+            title={configOpen ? '收起设置' : '展开设置'}
+            aria-label={configOpen ? '收起设置' : '展开设置'}
             aria-expanded={configOpen}
             className={configOpen ? 'is-active' : ''}
-            onClick={() => setConfigOpen((value) => !value)}
+            onClick={handleToggleConfig}
           >
             <div style={{ position: 'relative', width: '16px', height: '16px' }}>
               <svg 
@@ -435,11 +504,7 @@ export function ThemeDock(_props: ThemeDockProps) {
             id="hide-rightside-btn"
             title="隐藏选单"
             aria-label="隐藏选单"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setPanelHidden(true); 
-              setConfigOpen(false); 
-            }}
+            onClick={handleHideRightside}
           >
             <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>

@@ -168,11 +168,20 @@ const renderTocNodes = (nodes: TocNode[]) =>
       <div class="aside-track aside-track--toc" id="aside-track-toc">
         <div class="aside-sticky-box" id="aside-sticky-box-toc">
           {showToc && (
-            <section class="card-widget" id="card-toc">
+            <section class="card-widget" id="card-toc" data-depth-filter="all">
               <div class="item-headline">
                 <ListTree className="aside-title-icon" aria-hidden="true" />
                 <span>文章目录</span>
                 <span class="toc-count">{tocHeadings.length} 节</span>
+                <button
+                  type="button"
+                  class="toc-depth-btn"
+                  id="toc-depth-btn"
+                  title="切换目录层级 (全部 / 1级 / 2级 / 3级)"
+                  aria-label="切换目录层级"
+                >
+                  <span class="toc-depth-btn__text">全部</span>
+                </button>
                 <span class="toc-percentage"></span>
               </div>
               <div class="toc-progress" aria-hidden="true">
@@ -659,44 +668,171 @@ const renderTocNodes = (nodes: TocNode[]) =>
     display: inline !important;
   }
 
-  #card-toc .toc-link:hover {
-    color: var(--theme-main) !important;
+  .toc-depth-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: 6px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
+    background: color-mix(in srgb, var(--font-color) 4%, transparent);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .toc-depth-btn:hover {
+    color: var(--theme-main, #425aef);
+    border-color: var(--theme-main, #425aef);
+    background: color-mix(in srgb, var(--theme-main, #425aef) 10%, transparent);
+  }
+
+  :root[data-theme='dark'] .toc-depth-btn {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: #e5e7eb;
+  }
+
+  :root[data-theme='dark'] .toc-depth-btn:hover {
+    color: #6ba1ff;
+    border-color: #6ba1ff;
+    background: rgba(107, 161, 255, 0.16);
+  }
+
+  /* Depth filtering rules */
+  #card-toc[data-depth-filter='1'] .toc-item:not([style*="--toc-level:0"]) {
+    display: none !important;
+  }
+  #card-toc[data-depth-filter='2'] .toc-item[style*="--toc-level:2"],
+  #card-toc[data-depth-filter='2'] .toc-item[style*="--toc-level:3"],
+  #card-toc[data-depth-filter='2'] .toc-item[style*="--toc-level:4"],
+  #card-toc[data-depth-filter='2'] .toc-item[style*="--toc-level:5"] {
+    display: none !important;
+  }
+  #card-toc[data-depth-filter='3'] .toc-item[style*="--toc-level:3"],
+  #card-toc[data-depth-filter='3'] .toc-item[style*="--toc-level:4"],
+  #card-toc[data-depth-filter='3'] .toc-item[style*="--toc-level:5"] {
+    display: none !important;
+  }
+
+  #card-toc .toc-link:hover,
+  #card-toc .toc-link:hover .toc-text,
+  #card-toc .toc-link:hover .toc-text-group {
+    color: var(--theme-main, #425aef) !important;
+    background-color: transparent !important;
+  }
+
+  :root[data-theme='dark'] #card-toc .toc-link:hover,
+  :root[data-theme='dark'] #card-toc .toc-link:hover .toc-text,
+  :root[data-theme='dark'] #card-toc .toc-link:hover .toc-text-group {
+    color: #6ba1ff !important;
     background-color: transparent !important;
   }
 
   /* Level 0 (H2) */
-  #card-toc .toc-link.level-0 {
+  #card-toc .toc-link.level-0,
+  #card-toc .toc-link.level-0 .toc-text {
     font-size: 15px !important;
     font-weight: 600 !important;
-    color: var(--font-color) !important;
+    color: var(--font-color, #0f172a) !important;
     padding-left: 4px !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), font-size 0.22s ease, color 0.2s ease !important;
   }
 
   /* Level 1 (H3) */
-  #card-toc .toc-link.level-1 {
+  #card-toc .toc-link.level-1,
+  #card-toc .toc-link.level-1 .toc-text {
     font-size: 13px !important;
-    font-weight: 500 !important;
-    color: color-mix(in srgb, var(--font-color) 80%, transparent) !important;
-    padding-left: 12px !important;
+    font-weight: 400 !important;
+    color: color-mix(in srgb, var(--font-color, #334155) 85%, transparent) !important;
+    padding-left: 14px !important;
   }
 
   /* Level 2+ (H4+) */
   #card-toc .toc-link.level-2,
+  #card-toc .toc-link.level-2 .toc-text,
   #card-toc .toc-link.level-3,
+  #card-toc .toc-link.level-3 .toc-text,
   #card-toc .toc-link.level-4,
   #card-toc .toc-link.level-5 {
     font-size: 11.5px !important;
     font-weight: 400 !important;
-    color: color-mix(in srgb, var(--font-color) 62%, transparent) !important;
-    padding-left: 20px !important;
+    color: color-mix(in srgb, var(--font-color, #475569) 70%, transparent) !important;
+    padding-left: 24px !important;
   }
 
-  /* Active highlighting (Current Item) */
-  #card-toc .toc-link.active {
-    color: var(--theme-main) !important;
+  :root[data-theme='dark'] #card-toc .toc-link.level-0,
+  :root[data-theme='dark'] #card-toc .toc-link.level-0 .toc-text {
+    color: #f1f5f9 !important;
+  }
+
+  :root[data-theme='dark'] #card-toc .toc-link.level-1,
+  :root[data-theme='dark'] #card-toc .toc-link.level-1 .toc-text {
+    color: #cbd5e1 !important;
+  }
+
+  :root[data-theme='dark'] #card-toc .toc-link.level-2,
+  :root[data-theme='dark'] #card-toc .toc-link.level-2 .toc-text,
+  :root[data-theme='dark'] #card-toc .toc-link.level-3,
+  :root[data-theme='dark'] #card-toc .toc-link.level-3 .toc-text {
+    color: #94a3b8 !important;
+  }
+
+  /* Active highlighting (Strictly Single Current Item) - Pure Bold & Theme Blue, zero box/frame */
+  #card-toc .toc-link.active,
+  #card-toc .toc-link.active .toc-text,
+  #card-toc .toc-link.active .toc-text-group,
+  body[data-type='post'] #card-toc .toc-link.active,
+  body[data-type='post'] #card-toc .toc-link.active .toc-text {
+    color: var(--theme-main, #425aef) !important;
     font-weight: 700 !important;
+    background: transparent !important;
     background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
     border-left: none !important;
+  }
+
+  :root[data-theme='dark'] #card-toc .toc-link.active,
+  :root[data-theme='dark'] #card-toc .toc-link.active .toc-text,
+  :root[data-theme='dark'] #card-toc .toc-link.active .toc-text-group,
+  :root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active,
+  :root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active .toc-text {
+    color: #6ba1ff !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-left: none !important;
+  }
+
+  /* Enlarged emphasis for 1st level active items */
+  #card-toc .toc-link.level-0.active,
+  #card-toc .toc-link.level-0.active .toc-text,
+  body[data-type='post'] #card-toc .toc-link.level-0.active,
+  body[data-type='post'] #card-toc .toc-link.level-0.active .toc-text {
+    font-size: 16.5px !important;
+    font-weight: 800 !important;
+    transform: translateX(3px) scale(1.03) !important;
+    transform-origin: left center !important;
+  }
+
+  /* When filtered to Level 1 only (only 1st level titles showing), active item has prominent enlargement */
+  #card-toc[data-depth-filter='1'] .toc-link.level-0.active,
+  #card-toc[data-depth-filter='1'] .toc-link.level-0.active .toc-text,
+  body[data-type='post'] #card-toc[data-depth-filter='1'] .toc-link.level-0.active,
+  body[data-type='post'] #card-toc[data-depth-filter='1'] .toc-link.level-0.active .toc-text {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    transform: translateX(4px) scale(1.05) !important;
+    transform-origin: left center !important;
   }
   
   /* Reset pseudo elements just in case */
@@ -789,7 +925,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
     const tocCard = document.getElementById('card-toc');
     if (!tocCard) return;
     const tocContent = tocCard.querySelector('.toc-content');
-    const links = Array.from(tocCard.querySelectorAll('.toc-link'));
+    const links = Array.from(tocCard.querySelectorAll('.toc-link')) as HTMLAnchorElement[];
     
     const headings = links.map(link => {
       let hash = '';
@@ -799,8 +935,9 @@ const renderTocNodes = (nodes: TocNode[]) =>
         hash = link.hash.replace(/^#/, '');
       }
       const el = document.getElementById(hash);
-      return { id: hash, el, link };
-    }).filter(h => h.el);
+      const depth = parseInt(link.getAttribute('data-depth') || '2', 10);
+      return { id: hash, el, link, depth };
+    }).filter((h): h is { id: string; el: HTMLElement; link: HTMLAnchorElement; depth: number } => Boolean(h.el));
 
     if (!headings.length) return;
 
@@ -823,42 +960,53 @@ const renderTocNodes = (nodes: TocNode[]) =>
           if (history.pushState) {
             history.pushState(null, '', '#' + encodeURIComponent(hash));
           }
+          setTimeout(updateActive, 100);
         }
       });
     });
 
-    const setActive = (activeId) => {
-      let currentActive = null;
-      let activeIndex = headings.findIndex(h => h.id === activeId);
+    const isLinkVisible = (link: HTMLElement) => {
+      const item = link.closest('.toc-item');
+      if (!item) return false;
+      return window.getComputedStyle(item).display !== 'none';
+    };
 
-      links.forEach((link, index) => {
-        link.classList.remove('active', 'dist-1', 'dist-2', 'dist-3');
-        let parent = link.parentElement;
-        while(parent && parent.classList.contains('toc-item')) {
-          parent.classList.remove('active');
-          parent = parent.parentElement?.closest('.toc-item');
+    const setActive = (targetHeading: { id: string; el: HTMLElement; link: HTMLAnchorElement; depth: number }) => {
+      let activeLink = targetHeading.link;
+
+      // If the targeted heading is hidden by depth filter, find the nearest visible ancestor or preceding visible item
+      if (!isLinkVisible(activeLink)) {
+        let parentItem = activeLink.closest('.toc-item')?.parentElement?.closest('.toc-item');
+        while (parentItem) {
+          const parentLink = parentItem.querySelector(':scope > .toc-link') as HTMLAnchorElement | null;
+          if (parentLink && isLinkVisible(parentLink)) {
+            activeLink = parentLink;
+            break;
+          }
+          parentItem = parentItem.parentElement?.closest('.toc-item');
         }
-        
-        if (activeIndex !== -1) {
-          const dist = Math.abs(index - activeIndex);
-          if (dist === 0) {
-            link.classList.add('active');
-            currentActive = link;
-            let p = link.parentElement;
-            while(p && p.classList.contains('toc-item')) {
-              p.classList.add('active');
-              p = p.parentElement?.closest('.toc-item');
+
+        if (!isLinkVisible(activeLink)) {
+          const idx = headings.findIndex(h => h.id === targetHeading.id);
+          for (let i = idx; i >= 0; i--) {
+            if (isLinkVisible(headings[i]!.link)) {
+              activeLink = headings[i]!.link;
+              break;
             }
-          } else if (dist <= 3) {
-            link.classList.add(`dist-${dist}`);
           }
         }
+      }
+
+      links.forEach((link) => {
+        const isMatch = link === activeLink;
+        link.classList.toggle('active', isMatch);
+        const item = link.closest('.toc-item');
+        if (item) item.classList.toggle('active', isMatch);
       });
 
-      if (currentActive && tocContent) {
+      if (activeLink && tocContent) {
         const contentRect = tocContent.getBoundingClientRect();
-        const linkRect = currentActive.getBoundingClientRect();
-        
+        const linkRect = activeLink.getBoundingClientRect();
         if (linkRect.top < contentRect.top) {
           tocContent.scrollTop -= (contentRect.top - linkRect.top + 20);
         } else if (linkRect.bottom > contentRect.bottom) {
@@ -867,26 +1015,108 @@ const renderTocNodes = (nodes: TocNode[]) =>
       }
     };
 
-    let activeId = headings[0]?.id;
-    const observer = new IntersectionObserver((entries) => {
-      let intersectingEntry = null;
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          intersectingEntry = entry;
-        }
-      });
-      if (intersectingEntry) {
-        activeId = intersectingEntry.target.id;
-        setActive(activeId);
+    const updateActive = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      const topOffset = 100;
+
+      // Bottom of page: activate last heading
+      if (scrollY + windowHeight >= docHeight - 40) {
+        setActive(headings[headings.length - 1]!);
+        return;
       }
-    }, { rootMargin: '-80px 0px -70% 0px' });
-    
-    headings.forEach(h => observer.observe(h.el));
-    if (activeId) setActive(activeId);
+
+      // Find last heading whose top has reached or passed topOffset
+      let current = headings[0]!;
+      for (let i = 0; i < headings.length; i++) {
+        const rect = headings[i]!.el.getBoundingClientRect();
+        if (rect.top <= topOffset) {
+          current = headings[i]!;
+        } else {
+          break;
+        }
+      }
+
+      setActive(current);
+    };
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateActive();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    window.addEventListener('shijianus:toc-depth-changed', () => {
+      setTimeout(updateActive, 40);
+    });
+
+    updateActive();
   }
 
-  document.addEventListener('astro:page-load', initTocScrollSpy);
-  document.addEventListener('DOMContentLoaded', initTocScrollSpy);
+  function initTocDepthFilter() {
+    const cardToc = document.getElementById('card-toc');
+    const depthBtn = document.getElementById('toc-depth-btn');
+    if (!cardToc) return;
+
+    const depthLevels = ['all', '1', '2', '3'];
+    const depthLabels: Record<string, string> = {
+      'all': '全部',
+      '1': '1级',
+      '2': '至2级',
+      '3': '至3级',
+    };
+
+    const savedDepth = localStorage.getItem('shijianus-toc-depth-filter') || 'all';
+    applyDepth(savedDepth);
+
+    const cycleDepth = () => {
+      const current = cardToc.getAttribute('data-depth-filter') || 'all';
+      const currentIndex = depthLevels.indexOf(current);
+      const nextIndex = (currentIndex + 1) % depthLevels.length;
+      const nextDepth = depthLevels[nextIndex]!;
+      applyDepth(nextDepth);
+      localStorage.setItem('shijianus-toc-depth-filter', nextDepth);
+    };
+
+    if (depthBtn) {
+      depthBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cycleDepth();
+      });
+    }
+
+    window.addEventListener('shijianus:toggle-toc-depth', () => {
+      cycleDepth();
+    });
+
+    function applyDepth(depth: string) {
+      if (!depthLevels.includes(depth)) depth = 'all';
+      cardToc.setAttribute('data-depth-filter', depth);
+      if (depthBtn) {
+        const labelEl = depthBtn.querySelector('.toc-depth-btn__text');
+        if (labelEl) {
+          labelEl.textContent = depthLabels[depth] || '全部';
+        }
+      }
+      window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: depth }));
+    }
+  }
+
+  function setupSidebarToc() {
+    initTocScrollSpy();
+    initTocDepthFilter();
+  }
+
+  document.addEventListener('astro:page-load', setupSidebarToc);
+  document.addEventListener('DOMContentLoaded', setupSidebarToc);
 </script>
 
 <script is:inline>

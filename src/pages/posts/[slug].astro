@@ -182,7 +182,7 @@ const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 6) : [];
 const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
 const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
 const nextPost = publicPostIndex >= 0 && publicPostIndex < publicPosts.length - 1 ? publicPosts[publicPostIndex + 1] : null;
-const hasTocAside = isUnlocked && siteConfig.theme.features.postToc && entry.data.toc !== false && !entry.data.hideToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
+const hasTocAside = !isEncryptedRoute && isUnlocked && siteConfig.theme.features.postToc && entry.data.toc !== false && !entry.data.hideToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
 const sidebarData = createSidebarData(publicPosts, hasTocAside ? headings : []);
 sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
 sidebarData.previousPost = previousPost;

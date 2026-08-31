@@ -2695,17 +2695,19 @@ html.theme-ready body.theme-body #footer {
 
 #card-toc .toc-link:hover,
 #card-toc .toc-link.active {
-  background: var(--theme-main);
-  color: var(--white);
+  background: transparent !important;
+  color: var(--theme-main, #425aef) !important;
 }
 
 #card-toc .toc-link.active {
-  transform: translateX(4px);
+  transform: none !important;
+  font-weight: 700 !important;
 }
 
-#card-toc .toc-link:hover .toc-index,
-#card-toc .toc-link.active .toc-index {
-  color: rgba(255, 255, 255, 0.72);
+#card-toc .toc-link:hover .toc-text,
+#card-toc .toc-link.active .toc-text {
+  color: var(--theme-main, #425aef) !important;
+  font-weight: 700 !important;
 }
 
 #card-toc .toc-link.is-nested {

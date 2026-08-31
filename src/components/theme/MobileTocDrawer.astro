@@ -1,0 +1,444 @@
+---
+import { ListTree, X } from 'lucide-react';
+import type { SidebarHeading } from '../../lib/theme';
+
+interface Props {
+  headings?: SidebarHeading[];
+}
+
+const { headings = [] } = Astro.props;
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
+const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
+
+type TocNode = {
+  heading: SidebarHeading;
+  level: number;
+  children: TocNode[];
+};
+
+const tocTree = (() => {
+  const roots: TocNode[] = [];
+  const stack: TocNode[] = [];
+
+  tocHeadings.forEach((heading) => {
+    const node: TocNode = {
+      heading,
+      level: Math.max(0, heading.depth - tocBaseDepth),
+      children: [],
+    };
+
+    while (stack.length > 0 && stack[stack.length - 1]!.heading.depth >= heading.depth) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      roots.push(node);
+    } else {
+      stack[stack.length - 1]!.children.push(node);
+    }
+
+    stack.push(node);
+  });
+
+  return roots;
+})();
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const renderMobileNodes = (nodes: TocNode[]): string =>
+  nodes
+    .map((node) => {
+      const { heading, level, children } = node;
+      const childrenHtml = children.length > 0 ? `<ol class="mobile-toc-child-list">${renderMobileNodes(children)}</ol>` : '';
+      return `
+        <li class="mobile-toc-item" style="--toc-level:${level};">
+          <a href="#${escapeHtml(heading.slug)}" class="mobile-toc-link level-${level}" data-depth="${heading.depth}" data-heading-id="${escapeHtml(heading.slug)}">
+            <span class="mobile-toc-text">${escapeHtml(heading.text)}</span>
+          </a>
+          ${childrenHtml}
+        </li>
+      `;
+    })
+    .join('');
+---
+
+{tocHeadings.length > 0 && (
+  <div id="mobile-toc-drawer" class="mobile-toc-drawer" aria-hidden="true" role="dialog" aria-label="移动端文章目录">
+    <div class="mobile-toc-backdrop" id="mobile-toc-backdrop"></div>
+    <div class="mobile-toc-sheet">
+      <div class="mobile-toc-header">
+        <div class="mobile-toc-title-group">
+          <ListTree className="mobile-toc-icon" aria-hidden="true" />
+          <span class="mobile-toc-title">文章目录</span>
+          <span class="mobile-toc-count">{tocHeadings.length} 节</span>
+        </div>
+        <button type="button" class="mobile-toc-close" id="mobile-toc-close" aria-label="关闭目录">
+          <X className="mobile-toc-close-icon" aria-hidden="true" />
+        </button>
+      </div>
+      <div class="mobile-toc-body">
+        <ol class="mobile-toc-list">
+          <Fragment set:html={renderMobileNodes(tocTree)} />
+        </ol>
+      </div>
+    </div>
+  </div>
+)}
+
+<style is:global>
+  .mobile-toc-drawer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 1200px) {
+    .mobile-toc-drawer {
+      display: block;
+    }
+  }
+
+  @media screen and (min-width: 1201px) {
+    .mobile-toc-drawer {
+      display: none !important;
+    }
+  }
+
+  .mobile-toc-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-toc-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 75vh;
+    background: var(--card-bg, #ffffff);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 1px solid var(--card-border, #e5e7eb);
+  }
+
+  :root[data-theme='dark'] .mobile-toc-sheet {
+    background: var(--card-bg, #18181b);
+    border-top-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .mobile-toc-drawer.open {
+    pointer-events: auto;
+  }
+
+  .mobile-toc-drawer.open .mobile-toc-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-toc-drawer.open .mobile-toc-sheet {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .mobile-toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--font-color, #1e293b) 10%, transparent);
+    flex-shrink: 0;
+  }
+
+  .mobile-toc-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-toc-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--theme-main, #425aef);
+  }
+
+  .mobile-toc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--font-color, #0f172a);
+  }
+
+  :root[data-theme='dark'] .mobile-toc-title {
+    color: #f8fafc;
+  }
+
+  .mobile-toc-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--font-color, #334155) 70%, transparent);
+    background: color-mix(in srgb, var(--font-color, #334155) 8%, transparent);
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-count {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .mobile-toc-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: color-mix(in srgb, var(--font-color, #334155) 8%, transparent);
+    color: var(--font-color, #334155);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-close {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+
+  .mobile-toc-close:hover {
+    background: color-mix(in srgb, var(--theme-main, #425aef) 15%, transparent);
+    color: var(--theme-main, #425aef);
+  }
+
+  .mobile-toc-close-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mobile-toc-body {
+    padding: 14px 20px 24px;
+    overflow-y: auto;
+    max-height: calc(75vh - 65px);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-toc-list,
+  .mobile-toc-child-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mobile-toc-item {
+    margin: 4px 0;
+  }
+
+  .mobile-toc-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    color: var(--font-color, #1e293b) !important;
+    background: transparent !important;
+    transition: color 0.18s ease, font-weight 0.18s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    -webkit-tap-highlight-color: transparent !important;
+    line-height: 1.4 !important;
+  }
+
+  .mobile-toc-link.level-0 {
+    font-size: 14.5px !important;
+    font-weight: 600 !important;
+    color: var(--font-color, #0f172a) !important;
+    padding-left: 10px !important;
+  }
+
+  .mobile-toc-link.level-1 {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    padding-left: 26px !important;
+    color: color-mix(in srgb, var(--font-color, #334155) 85%, transparent) !important;
+  }
+
+  .mobile-toc-link.level-2,
+  .mobile-toc-link.level-3 {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    padding-left: 40px !important;
+    color: color-mix(in srgb, var(--font-color, #475569) 70%, transparent) !important;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-link.level-0 {
+    color: #f8fafc !important;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-link.level-1 {
+    color: #cbd5e1 !important;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-link.level-2,
+  :root[data-theme='dark'] .mobile-toc-link.level-3 {
+    color: #94a3b8 !important;
+  }
+
+  /* Active highlight: bold text & blue color, NO selection box/background */
+  .mobile-toc-link.active {
+    color: var(--theme-main, #425aef) !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+  }
+
+  :root[data-theme='dark'] .mobile-toc-link.active {
+    color: #6ba1ff !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+  }
+
+  .mobile-toc-link:active {
+    background: color-mix(in srgb, var(--theme-main, #425aef) 8%, transparent) !important;
+  }
+</style>
+
+<script>
+  function initMobileTocDrawer() {
+    const drawer = document.getElementById('mobile-toc-drawer');
+    if (!drawer) return;
+
+    const backdrop = document.getElementById('mobile-toc-backdrop');
+    const closeBtn = document.getElementById('mobile-toc-close');
+    const links = Array.from(drawer.querySelectorAll<HTMLAnchorElement>('.mobile-toc-link'));
+
+    const openDrawer = () => {
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeDrawer = () => {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    const toggleDrawer = () => {
+      if (drawer.classList.contains('open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    };
+
+    // Toggle event from ThemeDock #mobile-toc-button
+    window.addEventListener('shijianus:toggle-mobile-toc', toggleDrawer);
+
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+    // Escape key closes drawer
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) {
+        closeDrawer();
+      }
+    });
+
+    // Link smooth scrolling + auto close
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeDrawer();
+
+        let hash = '';
+        try {
+          hash = decodeURIComponent(link.hash.replace(/^#/, ''));
+        } catch {
+          hash = link.hash.replace(/^#/, '');
+        }
+
+        const target = document.getElementById(hash);
+        if (target) {
+          const topOffset = 70;
+          const rect = target.getBoundingClientRect();
+          const targetY = window.scrollY + rect.top - topOffset;
+          window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+          if (history.pushState) {
+            history.pushState(null, '', '#' + encodeURIComponent(hash));
+          }
+        }
+      });
+    });
+
+    // Scroll spy for active item in mobile drawer
+    const headingElements = links
+      .map((link) => {
+        let hash = '';
+        try {
+          hash = decodeURIComponent(link.hash.replace(/^#/, ''));
+        } catch {
+          hash = link.hash.replace(/^#/, '');
+        }
+        const el = document.getElementById(hash);
+        return { id: hash, el, link };
+      })
+      .filter((h): h is { id: string; el: HTMLElement; link: HTMLAnchorElement } => Boolean(h.el));
+
+    if (headingElements.length > 0) {
+      const updateMobileActive = () => {
+        const topOffset = 90;
+        let current = headingElements[0]!;
+        for (let i = 0; i < headingElements.length; i++) {
+          const rect = headingElements[i]!.el.getBoundingClientRect();
+          if (rect.top <= topOffset) {
+            current = headingElements[i]!;
+          } else {
+            break;
+          }
+        }
+        links.forEach((l) => {
+          l.classList.toggle('active', l === current.link);
+        });
+      };
+
+      let ticking = false;
+      const onScroll = () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            updateMobileActive();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      updateMobileActive();
+    }
+  }
+
+  document.addEventListener('astro:page-load', initMobileTocDrawer);
+  document.addEventListener('DOMContentLoaded', initMobileTocDrawer);
+</script>
