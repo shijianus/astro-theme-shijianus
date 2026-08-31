@@ -488,15 +488,25 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ---
 
-### 8. `chat`（聊天气泡对话流 / Dialogue Stream）
+### 8. `chat`（聊天气泡对话流 / Organic Animated Dialogue Stream）
 
-用于生动演示技术答辩、双人对话讨论或用户采访场景，支持左右气泡、行内代码与自定义气泡配色（默认提问方为经典白色气泡，回复方为护眼生动的极客绿色回答气泡）：
+用于生动演示技术答辩、双人对话讨论或用户采访场景，支持左右气泡、行内代码、自定义配色以及**动态内容自适应打字动效、Web Audio 合成音效与动态头像（`footer_mini_logo__media`）**：
+* **静态模式（默认）**：`<div class="article-chat">` 保持轻量纯静态呈现，零 JS 开销；
+* **开启动态演示（参数控制）**：配置 `data-animate="true"`（或 `class="article-chat is-animated"`），系统将在**读者第一次滚动滑入该视口时自动触发基于字符长度与自然随机律决定的拟真时序打字动画与左右专属提示音**；
+* **非机械动态时序（Content-Length Aware Timing）**：系统根据发言长短智能决定打字中指示器时长（短句 380ms 闪烁发出，长技术段落 1000ms+ 打字思考），并在气泡间加入符合人类阅读判断的自然停顿与微频音效抖动；
+* **动态视频头像支援（`footer_mini_logo__media`）**：头像支持嵌入 MP4 微视频动效与静态兜底海报；
+* **单次触发与重载保障**：首次滑入触发后自动锁定，后续反复滚动不会重复触发打扰阅读；只有当用户刷新网页（F5）重新加载时才会重新就绪；同时提供右上角「↺ 重播」与「🔊/🔇 音效切换」微控栏。
 
-<div class="article-chat">
+<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="提问者" />
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
     <div class="chat-body">
-      <div class="chat-author">开发者 Léon Boven · 10:15</div>
+      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
         你好！请问在 Astro 中实现 <code>KaTeX</code> 和 <code>Mermaid</code> 的静态渲染会不会拖慢前端页面加载速度？
       </div>
@@ -504,9 +514,9 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="回答者" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
     <div class="chat-body">
-      <div class="chat-author">架构师 shijianus · 10:16</div>
+      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
         完全不会！因为 <code>remark-math</code> 和 <code>rehype-katex</code> 在构建期（Build-time）就已经把公式编译成了纯 HTML/MathML 字符串，浏览器端 <strong>0 JS 运行时负担</strong>；而 Mermaid 图表也是动态按需异步加载 ESM 模块，首屏极其轻快！⚡
       </div>
@@ -514,11 +524,51 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
   </div>
 
   <div class="chat-message chat-left">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="提问者" />
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
     <div class="chat-body">
-      <div class="chat-author">开发者 Léon Boven · 10:17</div>
+      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        太棒了！那我们现在就可以在 Markdown 里直接写 <code>$$ E=mc^2 $$</code> 了对吧？
+        太棒了！那我们在 Markdown 里直接写架构时序图和交互式单位换算器也是开箱即用的对吧？
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-message chat-right">
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <div class="chat-body">
+      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
+      <div class="chat-bubble">
+        对的！不仅双击放大与高清 SVG 导出已全量具备，单位换算器更是接入了<strong>实时联网外汇牌价同步</strong>与<strong>基准单位下拉切换</strong>，而且保证固定质量单位完整对称表达，所有度量均经过严谨测试！🚀
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-message chat-left">
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
+    <div class="chat-body">
+      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
+      <div class="chat-bubble">
+        收到！这个交互手感与根据消息长短变化的打字动画非常自然，我这就把团队的技术文档库升级上来！🎉
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-message chat-right">
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <div class="chat-body">
+      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
+      <div class="chat-bubble">
+        欢迎体验！后续如果遇到任何格式扩展或定制需求，随时在讨论区或 GitHub 交流探讨~ ✨
       </div>
     </div>
   </div>
@@ -596,7 +646,19 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-### 2. 交互式单位换算与规格下拉计算器（Interactive Calc Dropdown）
+### 2. 交互式多品类通用单位换算器（Universal Interactive Unit Converter · 基准下拉切换与实时汇率）
+
+支持用户在输入框中自由输入**任意基数数值**（默认值为 `1`，支持增减步进器与一键重置），并在不同品类（质量重量、国际汇率、数据存储、网络带宽、长度尺寸）之间即时无缝换算：
+* **动态可切换换算基准（Base Unit Dropdown）**：输入框右侧的基准单位支持下拉自由选择（例如在质量中可选择 `kg`、`g`、`lb`、`斤`、`oz`、`t` 等；在汇率中可选择 `USD`、`HKD`、`CNY`、`EUR`、`JPY`、`GBP` 等）。选择任一基准单位后，目标换算网格将**智能自动排除当前基准单位（彻底杜绝 1kg=1kg 冗余卡片）**，并以当前基准为分母即时重算所有目标单位；
+* **真实汇率波动联网接入（Live Forex API）**：切换至「💱 国际汇率」时，系统将自动异步请求服务端 `/api/exchange-rate` 并回退公共实时汇率接口，获取各大主流货币的最新实时牌价（右上角显示 `🟢 实时联网汇率已同步`）；在未联网或断网离线时自动无缝回退至内置基准比例（显示 `⚪ 离线基准汇率`），确保“实时”真正实时且离线体验坚如磐石；
+* **通用 API 便捷调用**：系统同时在全局暴露了 `window.shijianusAPI.fetchExchangeRates(base)` 辅助函数，方便文档内的任何自定义脚本即时调用实时牌价数据；
+* **快捷一键复制与等式推算**：每个换算卡片均提供一键复制按钮与高亮反馈，底部同步展示动态等式链推算摘要。
+
+<div class="interactive-unit-converter" data-default="1" data-title="🔄 交互式通用单位换算器（支持基准单位切换与实时汇率）"></div>
+
+---
+
+### 3. 规格参数与视频编码下拉推算器（Interactive Spec Calc Dropdown）
 
 选择不同选项时，右侧实时显示对应的技术指标与换算说明：
 
@@ -1243,27 +1305,32 @@ sequenceDiagram
 
 ## 九、安全隐私、分级加密（Level 1/2/3）与外联分段解密特异功能
 
-为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并根据机密性与防窥需求建立起三级文内局部加密与外联分段解密体系。
+为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并建立起三级文内局部加密与外联分段解密体系：
+* **默认安全重置规则（Zero Persistence on Reload）**：默认情况下，所有加密内容（1级、2级、3级及外联解密门）在**页面刷新（F5 / 重新加载）后都会坚决自动重置回上锁状态**，彻底避免页面刷新后保持裸露的安全隐患；
+* **开放性持久化参数（`data-persist`）**：为了满足特殊文档场景的开放性需求，可通过参数配置覆盖默认重置策略：
+  * `data-persist="session"`（或 `data-persist="true"`）：在当前标签页会话期间跨刷新保持解锁；
+  * `data-persist="local"`：在本地浏览器存储中持久记忆解锁状态；
+  * 默认未配置：纯内存生命周期，**页面刷新立即安全重置上锁**。
 
 ---
 
-### 1. 1级加密：会话持久解锁（Level 1 · Session Persistent）
+### 1. 1级加密：单页基础加密（Level 1 · Default Refresh Reset）
 
-只需输入一次访问凭证，当前浏览器会话（Session）期间持续解锁，刷新或标签页关闭前无需重复验证：
+输入一次访问凭证即可解锁阅读正文，默认刷新页面即刻自动重锁；若需跨刷新保持可在标签中加入 `data-persist="session"`：
 
-<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 1级加密提示：演示密钥请输入 shijianus2026（哈希校验）">
+<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 1级加密提示：演示密钥请输入 shijianus2026（哈希校验 · 刷新自动重锁）">
   <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ 1级加密 · 会话持久</span> <span class="badge badge-cyan">SHA-256 保护</span></div>
+    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ 1级加密 · 刷新自动重置</span> <span class="badge badge-cyan">SHA-256 保护</span></div>
     <div class="encrypted-box__icon">🔒</div>
     <div class="encrypted-box__title">1级保护：私有开发配置与源码资产</div>
-    <div class="encrypted-box__desc">该区域受 1 级安全策略保护，密码使用 WebCrypto 散列校验，无明文外露。</div>
+    <div class="encrypted-box__desc">该区域受 1 级安全策略保护，密码使用 WebCrypto 散列校验，无明文外露；刷新页面后将自动重锁。</div>
     <button class="encrypted-box__btn" type="button">🔑 验证密钥解锁内容</button>
   </div>
   <div class="encrypted-box__content">
     <div class="admonition admonition-success">
       <div class="admonition-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>🎉 1级验证通过！会话期间持续可用</span>
+        <span>🎉 1级验证通过！当前页面已解锁（刷新将自动安全重锁）</span>
       </div>
       <div class="admonition-content">
         <p><strong>核心开发环境参数已解锁：</strong></p>
@@ -1283,14 +1350,15 @@ sequenceDiagram
 验证成功后内容虽被解密，但**默认自动进入高斯模糊防窥遮罩状态**（默认不显示切换栏，鼠标悬浮即可清晰查看），有效抵御近距离窥屏。
 - **开启工具栏**：配置 `data-allow-select="true"` 开启遮罩切换工具栏，**工具栏默认同样包含在遮罩内受保护**（鼠标悬浮时工具栏与正文一同清晰显露并可点击切换）；如需工具栏保持在遮罩外，可配置 `data-toolbar-masked="false"`；
 - **指定遮罩方式**：可通过 `data-mask="blur|mosaic|spoiler|reveal"` 强制指定遮罩模式；
-- **自定义设置栏**：支持在 Markdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式，或直接在正文中书写 `<div class="encrypted-mask-toolbar">` 结构，系统会自动扫描并激活自定义设置栏。
+- **自定义设置栏**：支持在 Markdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式，或直接在正文中书写 `<div class="encrypted-mask-toolbar">` 结构，系统会自动扫描并激活自定义设置栏；
+- **刷新重置保障**：默认刷新页面后自动重锁。
 
 <div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2级加密提示：演示密钥请输入 epocanvas2026">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥模式</span> <span class="badge badge-purple">动态多态遮罩</span></div>
     <div class="encrypted-box__icon">🛡️</div>
     <div class="encrypted-box__title">2级保护：机密商业数据与财务清单</div>
-    <div class="encrypted-box__desc">解密后将默认启用高斯模糊保护，鼠标悬浮或点按方可看清，有效抵御近距离窥视。</div>
+    <div class="encrypted-box__desc">解密后将默认启用高斯模糊保护，鼠标悬浮或点按方可看清，有效抵御近距离窥视；页面刷新后自动重锁。</div>
     <button class="encrypted-box__btn" type="button">🔑 验证凭证并开启防窥查看</button>
   </div>
   <div class="encrypted-box__content">

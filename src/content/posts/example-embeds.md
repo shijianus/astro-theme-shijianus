@@ -80,13 +80,20 @@ mermaid: false
 
 ---
 
-## 四、双人聊天气泡对话流（Chat Dialogue）
+## 四、双人聊天气泡对话流（Organic Animated Dialogue Stream）
 
-<div class="article-chat">
+配置 `data-animate="true"` 开启真实打字时序发送动效、动态头像（`footer_mini_logo__media`）与专属提示音，首次滑入时触发：
+
+<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="提问者" />
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
     <div class="chat-body">
-      <div class="chat-author">开发者小李 · 10:15</div>
+      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
         你好！请问在 Astro 中实现 <code>KaTeX</code> 和 <code>Mermaid</code> 的静态渲染会不会拖慢前端页面加载速度？
       </div>
@@ -94,12 +101,34 @@ mermaid: false
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="回答者" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
     <div class="chat-body">
-      <div class="chat-author">架构师 shijianus · 10:16</div>
+      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
         完全不会！因为 <code>remark-math</code> 和 <code>rehype-katex</code> 在构建期（Build-time）就已经把公式编译成了纯 HTML/MathML 字符串，浏览器端 <strong>0 JS 运行时负担</strong>；而 Mermaid 图表也是动态按需异步加载 ESM 模块，首屏极其轻快！⚡
       </div>
     </div>
   </div>
+
+  <div class="chat-message chat-left">
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
+    <div class="chat-body">
+      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
+      <div class="chat-bubble">
+        太棒了！这个根据消息长短变化的打字动画和动态头像效果非常棒！🎉
+      </div>
+    </div>
+  </div>
 </div>
+
+---
+
+## 五、交互式单位与汇率高精度换算器（Interactive Unit Converter）
+
+<div class="interactive-unit-converter" data-default="1"></div>
+

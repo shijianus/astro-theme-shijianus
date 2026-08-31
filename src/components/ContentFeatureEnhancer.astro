@@ -32,6 +32,27 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     let _modalCard = null;
     let _modalLevelTag = null;
 
+    // In-memory unlocked set: destroyed upon page reload / refresh (F5)
+    // Default encryption behavior: all unlocked content resets on refresh unless data-persist="session|local|true" is explicitly set.
+    const _unlockedInMemory = new Set();
+
+    const checkIsUnlocked = (el, id) => {
+      if (!id) return false;
+      if (_unlockedInMemory.has(id)) return true;
+      const p = (el.dataset.persist || el.dataset.remember || '').trim().toLowerCase();
+      if (p === 'session' || p === 'true') {
+        return sessionStorage.getItem(`unlocked-${id}`) === 'true';
+      }
+      if (p === 'local') {
+        return localStorage.getItem(`unlocked-${id}`) === 'true';
+      }
+      // If no persistence configured, clean up legacy sessionStorage keys so refresh resets
+      try {
+        sessionStorage.removeItem(`unlocked-${id}`);
+      } catch (_) {}
+      return false;
+    };
+
     // -------------------------------------------------------
     // SHA-256 — works in both secure (HTTPS/localhost) and
     // non-secure (plain HTTP) contexts.
@@ -182,27 +203,32 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const target = _currentActiveTarget;
           const isGate = target.classList.contains('article-external-decrypt-gate');
           const level = target.dataset.level || '1';
+          const targetId = isGate ? target.dataset.gateId : target.dataset.boxId;
+          const p = (target.dataset.persist || target.dataset.remember || '').trim().toLowerCase();
 
           target.classList.add('is-unlocked');
           target.classList.remove('was-relocked');
 
-          if (isGate) {
-            // Use gateId as the session key for gates
-            const gateId = target.dataset.gateId;
-            if (gateId) sessionStorage.setItem(`unlocked-${gateId}`, 'true');
-          } else {
-            // For encrypted boxes
-            const boxId = target.dataset.boxId;
-            if (level === '1' || level === '2') {
-              if (boxId) sessionStorage.setItem(`unlocked-${boxId}`, 'true');
+          if (targetId) {
+            _unlockedInMemory.add(targetId);
+            if (level !== '3') {
+              if (p === 'session' || p === 'true') {
+                sessionStorage.setItem(`unlocked-${targetId}`, 'true');
+              } else if (p === 'local') {
+                localStorage.setItem(`unlocked-${targetId}`, 'true');
+              } else {
+                // Default: memory only, clean up any stale sessionStorage / localStorage keys
+                try { sessionStorage.removeItem(`unlocked-${targetId}`); } catch (_) {}
+                try { localStorage.removeItem(`unlocked-${targetId}`); } catch (_) {}
+              }
             }
-            if (level === '2') {
-              setupMaskToolbar(target);
-            }
-            if (level === '3') {
-              // Level 3: no session persistence, auto-lock is already watching
-              // (observer already attached on init — do nothing extra)
-            }
+          }
+
+          if (level === '2') {
+            setupMaskToolbar(target);
+          }
+          if (level === '3') {
+            // Level 3: auto-lock is watching viewport
           }
 
           closeModal();
@@ -718,6 +744,587 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         });
       };
 
+      // 4.15 Universal Interactive Unit Converter (多品类单位换算器 · 任意基准下拉切换与实时汇率联网)
+      const fetchLiveExchangeRates = async (base = 'USD') => {
+        const cacheKey = `shijianus_rates_${base}`;
+        const cacheTimeKey = `shijianus_rates_time_${base}`;
+        const now = Date.now();
+
+        try {
+          const cachedStr = sessionStorage.getItem(cacheKey);
+          const cachedTime = sessionStorage.getItem(cacheTimeKey);
+          if (cachedStr && cachedTime && (now - parseInt(cachedTime, 10)) < 1800000) {
+            return {
+              rates: JSON.parse(cachedStr),
+              isLive: true,
+              time: new Date(parseInt(cachedTime, 10)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+          }
+        } catch (_) {}
+
+        const endpoints = [
+          `/api/exchange-rate?base=${encodeURIComponent(base)}`,
+          `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`,
+        ];
+
+        for (const ep of endpoints) {
+          try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3500);
+            const res = await fetch(ep, { signal: controller.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.rates) {
+                try {
+                  sessionStorage.setItem(cacheKey, JSON.stringify(data.rates));
+                  sessionStorage.setItem(cacheTimeKey, now.toString());
+                } catch (_) {}
+                return {
+                  rates: data.rates,
+                  isLive: true,
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+              }
+            }
+          } catch (_) {}
+        }
+
+        return { rates: null, isLive: false, time: null };
+      };
+
+      // Expose globally for markdown scripts / API consumers
+      if (typeof window !== 'undefined') {
+        window.shijianusAPI = window.shijianusAPI || {};
+        window.shijianusAPI.fetchExchangeRates = fetchLiveExchangeRates;
+        window.shijianusFetchExchangeRates = fetchLiveExchangeRates;
+      }
+
+      const enhanceUnitConverters = (article) => {
+        const defaultCategories = {
+          weight: {
+            name: '质量重量',
+            icon: '⚖️',
+            defaultBase: 'kg',
+            units: [
+              { key: 'kg', label: '千克 (kg)', factor: 1, desc: '1 kg' },
+              { key: 'g', label: '克 (g)', factor: 1000, desc: '1 kg = 1,000 g' },
+              { key: 'lb', label: '磅 (lb)', factor: 2.20462262, desc: '1 kg ≈ 2.2046 lb' },
+              { key: 'jin', label: '市斤 (斤)', factor: 2, desc: '1 kg = 2 斤' },
+              { key: 'oz', label: '盎司 (oz)', factor: 35.27396195, desc: '1 kg ≈ 35.274 oz' },
+              { key: 't', label: '公吨 (t)', factor: 0.001, desc: '1 kg = 0.001 t' },
+              { key: 'mg', label: '毫克 (mg)', factor: 1000000, desc: '1 kg = 1,000,000 mg' },
+            ]
+          },
+          currency: {
+            name: '国际汇率',
+            icon: '💱',
+            defaultBase: 'USD',
+            isForex: true,
+            units: [
+              { key: 'USD', label: '美元 (USD $)', factor: 1.0, desc: '1 USD' },
+              { key: 'HKD', label: '港币 (HKD HK$)', factor: 7.80, desc: '1 USD ≈ 7.80 HK$' },
+              { key: 'CNY', label: '人民币 (CNY ¥)', factor: 7.24, desc: '1 USD ≈ 7.24 CNY' },
+              { key: 'EUR', label: '欧元 (EUR €)', factor: 0.92, desc: '1 USD ≈ 0.92 EUR' },
+              { key: 'JPY', label: '日元 (JPY ¥)', factor: 155.0, desc: '1 USD ≈ 155.0 JPY' },
+              { key: 'GBP', label: '英镑 (GBP £)', factor: 0.79, desc: '1 USD ≈ 0.79 GBP' },
+              { key: 'CAD', label: '加元 (CAD C$)', factor: 1.37, desc: '1 USD ≈ 1.37 CAD' },
+              { key: 'AUD', label: '澳元 (AUD A$)', factor: 1.52, desc: '1 USD ≈ 1.52 AUD' },
+              { key: 'SGD', label: '新加坡元 (SGD S$)', factor: 1.34, desc: '1 USD ≈ 1.34 SGD' },
+              { key: 'KRW', label: '韩元 (KRW ₩)', factor: 1375.0, desc: '1 USD ≈ 1375 KRW' },
+            ]
+          },
+          storage: {
+            name: '数据存储',
+            icon: '💾',
+            defaultBase: 'GB',
+            units: [
+              { key: 'GB', label: '千兆字节 (GB)', factor: 1, desc: '1 GB' },
+              { key: 'MB', label: '兆字节 (MB)', factor: 1024, desc: '1 GB = 1,024 MB' },
+              { key: 'KB', label: '千字节 (KB)', factor: 1048576, desc: '1 GB = 1,048,576 KB' },
+              { key: 'Bytes', label: '字节 (B)', factor: 1073741824, desc: '1 GB = 1,073,741,824 B' },
+              { key: 'TB', label: '太字节 (TB)', factor: 1 / 1024, desc: '1 GB ≈ 0.000976 TB' },
+              { key: 'PB', label: '拍字节 (PB)', factor: 1 / (1024 * 1024), desc: '1 GB ≈ 9.53e-7 PB' },
+            ]
+          },
+          bandwidth: {
+            name: '网络速率',
+            icon: '🚀',
+            defaultBase: 'Gbps',
+            units: [
+              { key: 'Gbps', label: '千兆带宽 (Gbps)', factor: 1, desc: '1 Gbps' },
+              { key: 'Mbps', label: '兆比特/秒 (Mbps)', factor: 1000, desc: '1 Gbps = 1,000 Mbps' },
+              { key: 'MB_s', label: '理论下载 (MB/s)', factor: 125, desc: '1 Gbps = 125.0 MB/s (八分之一理论下载峰值)' },
+              { key: 'Kbps', label: '千比特/秒 (Kbps)', factor: 1000000, desc: '1 Gbps = 1,000,000 Kbps' },
+              { key: 'KB_s', label: '下载速率 (KB/s)', factor: 125000, desc: '1 Gbps = 125,000 KB/s' },
+            ]
+          },
+          length: {
+            name: '长度尺寸',
+            icon: '📏',
+            defaultBase: 'm',
+            units: [
+              { key: 'm', label: '米 (m)', factor: 1, desc: '1 m' },
+              { key: 'cm', label: '厘米 (cm)', factor: 100, desc: '1 m = 100 cm' },
+              { key: 'mm', label: '毫米 (mm)', factor: 1000, desc: '1 m = 1,000 mm' },
+              { key: 'ft', label: '英尺 (ft)', factor: 3.2808399, desc: '1 m ≈ 3.2808 ft' },
+              { key: 'inch', label: '英寸 (in)', factor: 39.3700787, desc: '1 m ≈ 39.370 in' },
+              { key: 'km', label: '千米 (km)', factor: 0.001, desc: '1 m = 0.001 km' },
+              { key: 'chi', label: '市尺 (尺)', factor: 3, desc: '1 m = 3 尺' },
+            ]
+          }
+        };
+
+        const formatUnitValue = (num, isForex = false, unitKey = '') => {
+          if (isNaN(num)) return '0';
+          if (num === 0) return isForex ? '0.00' : '0';
+
+          // 💱 针对实时/汇率数据 (Forex / Real-time Fluctuating Data):
+          // 严格遵循金融货币计量规范：至多 2 位有效小数 (如 1 USD -> 7.84 HK$, 100 HKD -> 12.75 USD)
+          // 彻底杜绝 12.75442000 这样过度冗长、失真、非标准的有效位数
+          if (isForex) {
+            return new Intl.NumberFormat('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(num);
+          }
+
+          // ⚖️ 针对物理质量/存储/速率/长度等固定标准单位 (Fixed Physical Symmetrical Units):
+          // "完整的对称说完" - 保持固定换算比例的完整数学对称性，不人为粗暴截断
+          // 1. 若为精确整数或超高精度浮点整型 (如 1,000 g, 160 oz, 1,024 MB, 125 MB/s, 100 cm)
+          if (Math.abs(num - Math.round(num)) < 1e-9) {
+            return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Math.round(num));
+          }
+
+          // 2. 若数值极大 (>= 1e9) 或微量小值 (< 0.00001)
+          if (Math.abs(num) >= 1e9 || Math.abs(num) < 0.00001) {
+            return Number(num.toPrecision(7)).toString();
+          }
+
+          // 3. 常规物理小数值：保留完整有效位 (至多 8 位有效数字以消除浮点误差并对称表达完整定义)
+          const formattedStr = Number(num.toPrecision(8)).toString();
+          const parts = formattedStr.split('.');
+          parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          return parts.join('.');
+        };
+
+        article.querySelectorAll('.interactive-unit-converter, .unit-converter-box').forEach((box) => {
+          if (box.dataset.unitBound === 'true') return;
+          box.dataset.unitBound = 'true';
+
+          let customCategories = JSON.parse(JSON.stringify(defaultCategories));
+          if (box.dataset.rates) {
+            try {
+              const parsed = JSON.parse(box.dataset.rates);
+              const customUnits = Object.entries(parsed).map(([k, v]) => ({
+                key: k,
+                label: k,
+                factor: Number(v),
+                desc: `1 ${box.dataset.baseUnit || 'Base'} = ${v} ${k}`
+              }));
+              customCategories.custom = {
+                name: box.dataset.categoryName || '自定义换算',
+                icon: '⚡',
+                defaultBase: box.dataset.baseUnit || customUnits[0]?.key || 'Base',
+                units: customUnits
+              };
+            } catch (_) {}
+          }
+
+          let activeCatKey = box.dataset.category || (box.dataset.rates ? 'custom' : 'weight');
+          if (!customCategories[activeCatKey]) {
+            activeCatKey = Object.keys(customCategories)[0];
+          }
+
+          let activeBaseUnit = customCategories[activeCatKey].defaultBase || customCategories[activeCatKey].units[0]?.key || 'kg';
+
+          let currentVal = parseFloat(box.dataset.default || '1');
+          if (isNaN(currentVal)) currentVal = 1;
+
+          const title = box.dataset.title || '🔄 交互式通用单位换算器（支持基准单位切换与实时汇率）';
+          const catButtonsHtml = Object.entries(customCategories).map(([key, cat]) => {
+            const isActive = key === activeCatKey ? ' is-active' : '';
+            return `<button type="button" class="unit-cat-btn${isActive}" data-cat="${key}"><span>${cat.icon}</span> <span>${cat.name}</span></button>`;
+          }).join('');
+
+          box.innerHTML = `
+            <div class="unit-converter__header">
+              <div class="unit-converter__title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg>
+                <span>${title}</span>
+              </div>
+              <div class="unit-converter__categories">
+                ${catButtonsHtml}
+              </div>
+            </div>
+            <div class="unit-converter__input-row">
+              <div class="unit-input-label">
+                <span>🔢 输入数值：</span>
+              </div>
+              <div class="unit-input-group">
+                <button type="button" class="unit-step-btn unit-step-dec" aria-label="减少数值">−</button>
+                <input type="number" class="unit-calc-input" value="${currentVal}" step="any" placeholder="输入任意数字" />
+                <button type="button" class="unit-step-btn unit-step-inc" aria-label="增加数值">+</button>
+              </div>
+              <div class="unit-base-select-wrap">
+                <select class="unit-base-select" aria-label="选择换算基准单位"></select>
+                <span class="unit-base-select-chevron">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </span>
+              </div>
+              <span class="unit-rate-status-wrap"></span>
+              <button type="button" class="unit-reset-btn">↺ 重置为 1</button>
+            </div>
+            <div class="unit-results-grid"></div>
+            <div class="unit-formula-bar">
+              <span>📌 <strong>实时等式推算</strong>：</span>
+              <span class="unit-formula-text"></span>
+            </div>
+          `;
+
+          const inputEl = box.querySelector('.unit-calc-input');
+          const baseSelect = box.querySelector('.unit-base-select');
+          const rateStatusWrap = box.querySelector('.unit-rate-status-wrap');
+          const resultsGrid = box.querySelector('.unit-results-grid');
+          const formulaText = box.querySelector('.unit-formula-text');
+          const catButtons = box.querySelectorAll('.unit-cat-btn');
+          const decBtn = box.querySelector('.unit-step-dec');
+          const incBtn = box.querySelector('.unit-step-inc');
+          const resetBtn = box.querySelector('.unit-reset-btn');
+
+          const populateBaseSelect = () => {
+            const cat = customCategories[activeCatKey];
+            if (!cat || !baseSelect) return;
+
+            baseSelect.innerHTML = cat.units.map((u) => {
+              const selected = u.key === activeBaseUnit ? ' selected' : '';
+              return `<option value="${u.key}"${selected}>${u.label || u.key}</option>`;
+            }).join('');
+          };
+
+          const updateLiveForexIfApplicable = async () => {
+            const cat = customCategories[activeCatKey];
+            if (!cat || !cat.isForex) {
+              if (rateStatusWrap) rateStatusWrap.innerHTML = '';
+              return;
+            }
+
+            if (rateStatusWrap) {
+              rateStatusWrap.innerHTML = `<span class="unit-live-rate-pill"><span class="unit-live-rate-dot"></span> 汇率同步中…</span>`;
+            }
+
+            const liveRes = await fetchLiveExchangeRates('USD');
+            if (liveRes.isLive && liveRes.rates) {
+              // Update currency factors dynamically
+              cat.units.forEach((u) => {
+                if (u.key === 'USD') u.factor = 1.0;
+                else if (liveRes.rates[u.key]) {
+                  u.factor = liveRes.rates[u.key];
+                  u.desc = `1 USD ≈ ${formatUnitValue(u.factor, true, u.key)} ${u.key}`;
+                }
+              });
+
+              if (rateStatusWrap) {
+                rateStatusWrap.innerHTML = `<span class="unit-live-rate-pill"><span class="unit-live-rate-dot"></span> 🟢 实时联网汇率已同步 (${liveRes.time || '最新'})</span>`;
+              }
+              renderResults();
+            } else {
+              if (rateStatusWrap) {
+                rateStatusWrap.innerHTML = `<span class="unit-live-rate-pill is-offline"><span class="unit-live-rate-dot"></span> ⚪ 离线基准汇率</span>`;
+              }
+            }
+          };
+
+          const renderResults = () => {
+            const cat = customCategories[activeCatKey];
+            if (!cat) return;
+
+            let val = parseFloat(inputEl.value);
+            if (isNaN(val)) val = 0;
+
+            const isForex = !!cat.isForex;
+            const baseUnitDef = cat.units.find((u) => u.key === activeBaseUnit) || cat.units[0];
+            const baseFactor = baseUnitDef ? baseUnitDef.factor : 1;
+
+            // Target units excluding the currently chosen base unit to prevent 1kg = 1kg!
+            const targetUnits = cat.units.filter((u) => u.key !== activeBaseUnit);
+
+            if (resultsGrid) {
+              resultsGrid.innerHTML = targetUnits.map((u) => {
+                // Conversion relative to chosen base unit
+                const relativeFactor = u.factor / baseFactor;
+                const converted = val * relativeFactor;
+                const formatted = formatUnitValue(converted, isForex, u.key);
+                return `
+                  <div class="unit-result-card" data-val="${formatted}">
+                    <div class="unit-result-header">
+                      <span>${u.label}</span>
+                      <button type="button" class="unit-result-copy" title="复制结果" data-copy="${formatted} ${u.key}">📋 复制</button>
+                    </div>
+                    <div class="unit-result-val">${formatted}</div>
+                  </div>
+                `;
+              }).join('');
+
+              resultsGrid.querySelectorAll('.unit-result-copy').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                  const text = btn.dataset.copy || '';
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    btn.textContent = '✓ 已复制';
+                    btn.style.color = '#10b981';
+                    setTimeout(() => {
+                      btn.textContent = '📋 复制';
+                      btn.style.color = '';
+                    }, 1800);
+                  } catch (_) {}
+                });
+              });
+            }
+
+            if (formulaText) {
+              const baseFormatted = isForex ? formatUnitValue(val, true, baseUnitDef.key) : val.toString();
+              const summaryEquiv = targetUnits.slice(0, 4).map((u) => {
+                const relativeFactor = u.factor / baseFactor;
+                return `${formatUnitValue(val * relativeFactor, isForex, u.key)} ${u.key}`;
+              }).join(' = ');
+              formulaText.innerHTML = `<span class="unit-formula-badge">${baseFormatted} ${baseUnitDef.key}</span> = ${summaryEquiv}`;
+            }
+          };
+
+          const updateAll = () => {
+            populateBaseSelect();
+            renderResults();
+            updateLiveForexIfApplicable();
+          };
+
+          catButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+              catButtons.forEach((b) => b.classList.remove('is-active'));
+              btn.classList.add('is-active');
+              activeCatKey = btn.dataset.cat || 'weight';
+              activeBaseUnit = customCategories[activeCatKey].defaultBase || customCategories[activeCatKey].units[0]?.key || 'kg';
+              updateAll();
+            });
+          });
+
+          baseSelect?.addEventListener('change', () => {
+            activeBaseUnit = baseSelect.value;
+            renderResults();
+          });
+
+          inputEl?.addEventListener('input', renderResults);
+          inputEl?.addEventListener('change', renderResults);
+
+          decBtn?.addEventListener('click', () => {
+            let v = parseFloat(inputEl.value) || 0;
+            v = Math.max(0, v - (v > 10 ? 10 : 1));
+            inputEl.value = v.toString();
+            renderResults();
+          });
+
+          incBtn?.addEventListener('click', () => {
+            let v = parseFloat(inputEl.value) || 0;
+            v = v + (v >= 10 ? 10 : 1);
+            inputEl.value = v.toString();
+            renderResults();
+          });
+
+          resetBtn?.addEventListener('click', () => {
+            inputEl.value = '1';
+            renderResults();
+          });
+
+          updateAll();
+        });
+      };
+
+      // 4.16 Chat Dialogue Format with First-Scroll Triggered Sending Animation & Synthesized Audio
+      const playChatSound = (type = 'incoming') => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          if (!window._chatAudioCtx) {
+            window._chatAudioCtx = new AudioCtx();
+          }
+          const ctx = window._chatAudioCtx;
+          if (ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+          }
+
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          if (type === 'incoming') {
+            // Gentle incoming chime: C5 (523Hz) -> G5 (784Hz)
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.08);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.exponentialRampToValueAtTime(0.08, now + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+            osc.start(now);
+            osc.stop(now + 0.3);
+          } else {
+            // Outgoing pop/whoosh: F4 (349Hz) -> A5 (880Hz)
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(349.23, now);
+            osc.frequency.exponentialRampToValueAtTime(880.0, now + 0.06);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.exponentialRampToValueAtTime(0.07, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          }
+        } catch (_) {}
+      };
+
+      const enhanceChatDialogues = (article) => {
+        article.querySelectorAll('.article-chat, .chat-dialogue').forEach((chat) => {
+          if (chat.dataset.chatBound === 'true') return;
+          chat.dataset.chatBound = 'true';
+
+          // Animation is opt-in via data-animate="true" / data-animation="true" / class="is-animated"
+          const isAnimated = chat.dataset.animate === 'true' ||
+                             chat.dataset.animation === 'true' ||
+                             chat.classList.contains('is-animated');
+
+          if (!isAnimated) return;
+
+          chat.classList.add('chat-animated-container');
+          const messages = Array.from(chat.querySelectorAll('.chat-message'));
+          if (!messages.length) return;
+
+          let soundEnabled = chat.dataset.sound !== 'false';
+
+          let headerBar = chat.querySelector('.chat-header-bar');
+          if (!headerBar) {
+            headerBar = document.createElement('div');
+            headerBar.className = 'chat-header-bar';
+            headerBar.innerHTML = `
+              <div class="chat-header-left">
+                <span class="chat-header-dot"></span>
+                <span class="chat-header-title">实时对话模拟流</span>
+                <span class="badge badge-success chat-header-badge">首次滑入动效</span>
+              </div>
+              <div class="chat-header-actions">
+                <button type="button" class="chat-action-btn chat-sound-toggle" title="${soundEnabled ? '音效开启中' : '音效已静音'}">
+                  ${soundEnabled ? '🔊' : '🔇'}
+                </button>
+                <button type="button" class="chat-action-btn chat-replay-btn" title="重新演示发送动画">
+                  ↺ 重播
+                </button>
+              </div>
+            `;
+            chat.insertBefore(headerBar, chat.firstChild);
+
+            const soundBtn = headerBar.querySelector('.chat-sound-toggle');
+            soundBtn?.addEventListener('click', (e) => {
+              e.stopPropagation();
+              soundEnabled = !soundEnabled;
+              chat.dataset.sound = soundEnabled ? 'true' : 'false';
+              if (soundBtn) {
+                soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+                soundBtn.title = soundEnabled ? '音效开启中' : '音效已静音';
+              }
+              if (soundEnabled) playChatSound('incoming');
+            });
+
+            const replayBtn = headerBar.querySelector('.chat-replay-btn');
+            replayBtn?.addEventListener('click', (e) => {
+              e.stopPropagation();
+              playSequence();
+            });
+          }
+
+          // Initially hide messages for animation
+          messages.forEach((msg) => {
+            msg.classList.add('is-chat-hidden');
+            msg.classList.remove('is-chat-visible');
+          });
+
+          const playSequence = () => {
+            if (chat._chatTimers) {
+              chat._chatTimers.forEach((t) => clearTimeout(t));
+            }
+            chat._chatTimers = [];
+
+            messages.forEach((msg) => {
+              msg.classList.remove('is-chat-visible');
+              msg.classList.add('is-chat-hidden');
+            });
+
+            // Trigger autoplay on any video dynamic avatars
+            chat.querySelectorAll('video').forEach((v) => {
+              try { v.play().catch(() => {}); } catch (_) {}
+            });
+
+            let accumulatedDelay = 150;
+            let prevLen = 0;
+
+            messages.forEach((msg, idx) => {
+              const isRight = msg.classList.contains('chat-right');
+              const textContent = msg.querySelector('.chat-bubble')?.textContent?.trim() || '';
+              const textLen = textContent.length;
+
+              // 1. Inter-turn reading & thinking pause based on prior message complexity + natural human variance
+              const readingPause = idx === 0 ? 80 : (Math.min(520, Math.max(180, prevLen * 4.5)) + Math.floor(Math.random() * 140));
+
+              // 2. Realistic human typing simulation duration based on current message character count
+              // Short prompt: ~380-480ms; Medium response: ~650-850ms; Long technical explanation: ~1050-1350ms
+              const typingDuration = Math.min(1350, Math.max(360, Math.round(textLen * 8.2))) + (Math.floor(Math.random() * 120) - 60);
+
+              const startTypingAt = accumulatedDelay + readingPause;
+
+              const timer1 = setTimeout(() => {
+                const typingEl = document.createElement('div');
+                typingEl.className = `chat-typing-bubble ${isRight ? 'typing-right' : 'typing-left'}`;
+                typingEl.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+                msg.parentNode?.insertBefore(typingEl, msg);
+
+                if (chat.dataset.scrollable === 'true') {
+                  chat.scrollTop = chat.scrollHeight;
+                }
+
+                const timer2 = setTimeout(() => {
+                  typingEl.remove();
+                  msg.classList.remove('is-chat-hidden');
+                  msg.classList.add('is-chat-visible');
+                  if (soundEnabled) {
+                    playChatSound(isRight ? 'outgoing' : 'incoming');
+                  }
+                  if (chat.dataset.scrollable === 'true') {
+                    chat.scrollTop = chat.scrollHeight;
+                  }
+                }, typingDuration);
+
+                chat._chatTimers.push(timer2);
+              }, startTypingAt);
+
+              chat._chatTimers.push(timer1);
+              accumulatedDelay = startTypingAt + typingDuration + 80;
+              prevLen = textLen;
+            });
+          };
+
+          // IntersectionObserver triggers once on first scroll into view
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting && chat.dataset.chatTriggered !== 'true') {
+                chat.dataset.chatTriggered = 'true';
+                observer.unobserve(chat); // Unobserve immediately: never re-triggers on scroll
+                playSequence();
+              }
+            });
+          }, { threshold: 0.25, rootMargin: '0px 0px -40px 0px' });
+
+          observer.observe(chat);
+        });
+      };
+
       // 4.2 Accordion Groups (Exclusive vs Multi-Expand)
       const enhanceAccordionGroups = (article) => {
         article.querySelectorAll('.article-accordion-group[data-single="true"]').forEach((group) => {
@@ -883,8 +1490,8 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const boxId = box.dataset.boxId || `enc-box-${level}-${idx}`;
           box.dataset.boxId = boxId;
 
-          // Restore from session (Level 1 and 2 only)
-          if (level !== '3' && sessionStorage.getItem(`unlocked-${boxId}`) === 'true') {
+          // Check if already unlocked (in memory, or session/local storage if data-persist is enabled)
+          if (level !== '3' && checkIsUnlocked(box, boxId)) {
             box.classList.add('is-unlocked');
             if (level === '2') setupMaskToolbar(box);
           }
@@ -899,10 +1506,12 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           btn.addEventListener('click', () => {
             let levelTag = '';
+            const p = (box.dataset.persist || box.dataset.remember || '').trim().toLowerCase();
+            const persistNote = (p === 'session' || p === 'true') ? ' · 会话持久' : (p === 'local' ? ' · 本地持久' : ' · 刷新自动重置');
             if (level === '1') {
-              levelTag = '<span class="badge badge-success">🛡️ 1级加密 · 会话持久</span>';
+              levelTag = `<span class="badge badge-success">🛡️ 1级加密${persistNote}</span>`;
             } else if (level === '2') {
-              levelTag = '<span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥保护</span>';
+              levelTag = `<span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥保护${persistNote}</span>`;
             } else if (level === '3') {
               levelTag = '<span class="badge badge-danger">🛡️ 3级加密 · 视口防窥离开即锁</span>';
             }
@@ -919,8 +1528,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const gateId = gate.dataset.gateId || `gate-${idx}`;
           gate.dataset.gateId = gateId;
 
-          // Restore from session using gateId
-          if (sessionStorage.getItem(`unlocked-${gateId}`) === 'true') {
+          if (checkIsUnlocked(gate, gateId)) {
             gate.classList.add('is-unlocked');
           }
 
@@ -1185,6 +1793,8 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         enhanceAlerts(article);
         enhanceTabs(article);
         enhanceDropdowns(article);
+        enhanceUnitConverters(article);
+        enhanceChatDialogues(article);
         enhanceAccordionGroups(article);
         enhanceInteractiveTasks(article);
         enhanceAudioSync(article);
@@ -1208,7 +1818,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     // so it gets re-created on the new page.
     // -------------------------------------------------------
     document.addEventListener('astro:before-swap', () => {
-      // Reset modal state — it will be re-created on next page
+      // Reset modal state and non-persisted in-memory lock state
       _modalInitialized = false;
       _currentActiveTarget = null;
       _modalOverlay = null;
@@ -1217,6 +1827,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       _modalHint = null;
       _modalCard = null;
       _modalLevelTag = null;
+      _unlockedInMemory.clear();
     });
 
     if (document.readyState === 'loading') {
@@ -1410,7 +2021,19 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         // Correct — unlock the content
         gate.classList.add('is-unlocking');
         document.getElementById('article-container')?.removeAttribute('data-gate-locked');
-        sessionStorage.setItem(`shijianus-ext-gate:${window.location.pathname}`, 'unlocked');
+
+        window._gateUnlockedInMemory = window._gateUnlockedInMemory || new Set();
+        window._gateUnlockedInMemory.add(window.location.pathname);
+
+        const p = (gate.dataset.persist || gate.dataset.remember || '').trim().toLowerCase();
+        if (p === 'session' || p === 'true') {
+          sessionStorage.setItem(`shijianus-ext-gate:${window.location.pathname}`, 'unlocked');
+        } else if (p === 'local') {
+          localStorage.setItem(`shijianus-ext-gate:${window.location.pathname}`, 'unlocked');
+        } else {
+          try { sessionStorage.removeItem(`shijianus-ext-gate:${window.location.pathname}`); } catch (_) {}
+          try { localStorage.removeItem(`shijianus-ext-gate:${window.location.pathname}`); } catch (_) {}
+        }
 
         setTimeout(() => {
           gate.remove();
@@ -1428,8 +2051,23 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       }
     };
 
-    // Check if already unlocked in this session
-    if (sessionStorage.getItem(`shijianus-ext-gate:${window.location.pathname}`) === 'unlocked') {
+    // Check if already unlocked (Memory or Session/Local if data-persist enabled)
+    const checkGateIsUnlocked = () => {
+      const path = window.location.pathname;
+      if (window._gateUnlockedInMemory && window._gateUnlockedInMemory.has(path)) return true;
+      const p = (gate.dataset.persist || gate.dataset.remember || '').trim().toLowerCase();
+      if (p === 'session' || p === 'true') {
+        return sessionStorage.getItem(`shijianus-ext-gate:${path}`) === 'unlocked';
+      }
+      if (p === 'local') {
+        return localStorage.getItem(`shijianus-ext-gate:${path}`) === 'unlocked';
+      }
+      // Default: clean up any stale keys so refresh resets
+      try { sessionStorage.removeItem(`shijianus-ext-gate:${path}`); } catch (_) {}
+      return false;
+    };
+
+    if (checkGateIsUnlocked()) {
       gate.remove();
       document.getElementById('article-container')?.removeAttribute('data-gate-locked');
       // No scroll lock needed — gate is immediately removed
