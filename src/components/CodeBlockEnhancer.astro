@@ -25,6 +25,259 @@
       }
     };
 
+    const escapeHtml = (str) => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+
+    const unescapeHtml = (str) => {
+      return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#123;/g, '{')
+        .replace(/&#125;/g, '}')
+        .replace(/&#39;/g, "'")
+        .replace(/&apos;/g, "'");
+    };
+
+    const KEYWORDS_JS = new Set([
+      'import', 'export', 'from', 'default', 'as', 'const', 'let', 'var', 'function',
+      'return', 'if', 'else', 'switch', 'case', 'break', 'continue', 'for', 'while',
+      'do', 'try', 'catch', 'finally', 'throw', 'new', 'typeof', 'instanceof', 'in',
+      'of', 'async', 'await', 'yield', 'class', 'extends', 'implements', 'interface',
+      'type', 'enum', 'public', 'private', 'protected', 'readonly', 'static', 'override',
+      'abstract', 'void', 'any', 'unknown', 'never', 'symbol', 'bigint', 'this', 'super'
+    ]);
+
+    const BUILTINS_JS = new Set([
+      'useState', 'useEffect', 'useRef', 'useMemo', 'useCallback', 'useContext',
+      'useReducer', 'useId', 'useTransition', 'useDeferredValue', 'ref', 'computed',
+      'reactive', 'watch', 'watchEffect', 'onMounted', 'onUnmounted', '$state',
+      '$derived', '$effect', '$props', '$bindable', 'Astro', 'console', 'document',
+      'window', 'globalThis', 'Math', 'JSON', 'Promise', 'Object', 'Array', 'String',
+      'Number', 'Boolean', 'RegExp', 'Date', 'Error', 'Map', 'Set', 'WeakMap',
+      'WeakSet', 'Symbol', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
+      'fetch', 'Response', 'Request', 'Headers', 'CustomEvent', 'Event'
+    ]);
+
+    const LITERALS_JS = new Set(['true', 'false', 'null', 'undefined', 'NaN', 'Infinity']);
+
+    const highlightBash = (code) => {
+      const lines = code.split('\n');
+      return lines.map((line) => {
+        if (/^\s*#/.test(line)) {
+          return `<span class="tok-comment">${escapeHtml(line)}</span>`;
+        }
+
+        let result = '';
+        const tokenRegex = /(#[^\n]*)|("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')|(\$[a-zA-Z_0-9{}-]+)|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(@[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+|[a-zA-Z0-9_.-]+(?=\s|$))|(\|{1,2}|&&|>>?|<|2>&1|\\|;)|(\s+)|([^\s]+)/g;
+
+        let match;
+        let isCommandPosition = true;
+        let isSubcommandPosition = false;
+
+        while ((match = tokenRegex.exec(line)) !== null) {
+          const [full, comment, string, variable, flag, word, operator, space, other] = match;
+
+          if (comment) {
+            result += `<span class="tok-comment">${escapeHtml(comment)}</span>`;
+          } else if (string) {
+            result += `<span class="tok-string">${escapeHtml(string)}</span>`;
+            isCommandPosition = false;
+          } else if (variable) {
+            result += `<span class="tok-var">${escapeHtml(variable)}</span>`;
+            isCommandPosition = false;
+          } else if (flag) {
+            result += `<span class="tok-flag">${escapeHtml(flag)}</span>`;
+            isCommandPosition = false;
+          } else if (operator) {
+            result += `<span class="tok-operator">${escapeHtml(operator)}</span>`;
+            if (operator === '|' || operator === '||' || operator === '&&' || operator === ';') {
+              isCommandPosition = true;
+              isSubcommandPosition = false;
+            }
+          } else if (space) {
+            result += space;
+          } else if (word) {
+            if (isCommandPosition) {
+              result += `<span class="tok-cmd">${escapeHtml(word)}</span>`;
+              isCommandPosition = false;
+              if (['pnpm', 'npm', 'yarn', 'bun', 'git', 'docker', 'docker-compose', 'npx', 'wrangler', 'astro', 'cargo', 'go', 'pip', 'brew', 'apt', 'sudo', 'node'].includes(word.toLowerCase())) {
+                isSubcommandPosition = true;
+              }
+            } else if (isSubcommandPosition) {
+              if (['add', 'install', 'i', 'run', 'build', 'dev', 'start', 'preview', 'init', 'create', 'commit', 'push', 'pull', 'checkout', 'branch', 'merge', 'rebase', 'status', 'log', 'diff', 'config', 'set', 'get', 'remove', 'uninstall', 'update', 'upgrade', 'test', 'clean', 'pages', 'deploy', 'migrate', 'exec', 'ps', 'up', 'down', 'logs'].includes(word.toLowerCase())) {
+                result += `<span class="tok-subcmd">${escapeHtml(word)}</span>`;
+              } else if (word.startsWith('@') || word.includes('/')) {
+                result += `<span class="tok-pkg">${escapeHtml(word)}</span>`;
+              } else {
+                result += `<span class="tok-pkg">${escapeHtml(word)}</span>`;
+              }
+              isSubcommandPosition = false;
+            } else if (word.startsWith('@') || ['remark-math', 'rehype-katex', 'katex', 'mermaid', 'react', 'react-dom', 'lucide-react', 'tailwindcss', 'clsx', 'tailwind-merge', 'opencc-js', 'qrcode', 'maxmind'].includes(word)) {
+              result += `<span class="tok-pkg">${escapeHtml(word)}</span>`;
+            } else if (/^\d+$/.test(word)) {
+              result += `<span class="tok-number">${escapeHtml(word)}</span>`;
+            } else {
+              result += `<span class="tok-arg">${escapeHtml(word)}</span>`;
+            }
+          } else if (other) {
+            result += escapeHtml(other);
+          }
+        }
+        return result;
+      }).join('\n');
+    };
+
+    const highlightJsTsx = (code) => {
+      let result = '';
+      const tokenRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`(?:\\.|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(<\/?(?:[A-Za-z0-9_.-]+)|(?:\/>|>))|(\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b)|([a-zA-Z_$][a-zA-Z0-9_$]*)|(=>|===|!==|==|!=|<=|>=|&&|\|\||\+\+|--|\+|-|\*|\/|%|\?|:|\.\.\.|\.|,|;|\{|\}|\(|\)|\[|\]|=|<|>)/g;
+
+      let lastIndex = 0;
+      let match;
+
+      while ((match = tokenRegex.exec(code)) !== null) {
+        if (match.index > lastIndex) {
+          result += escapeHtml(code.slice(lastIndex, match.index));
+        }
+        lastIndex = tokenRegex.lastIndex;
+
+        const [full, comment, string, jsxTag, number, ident, punct] = match;
+
+        if (comment) {
+          result += `<span class="tok-comment">${escapeHtml(comment)}</span>`;
+        } else if (string) {
+          result += `<span class="tok-string">${escapeHtml(string)}</span>`;
+        } else if (jsxTag) {
+          if (jsxTag.startsWith('</')) {
+            const tagName = jsxTag.slice(2);
+            result += `&lt;/<span class="tok-tag">${escapeHtml(tagName)}</span>`;
+          } else if (jsxTag.startsWith('<')) {
+            const tagName = jsxTag.slice(1);
+            result += `&lt;<span class="tok-tag">${escapeHtml(tagName)}</span>`;
+          } else if (jsxTag === '/>') {
+            result += `/<span class="tok-operator">&gt;</span>`;
+          } else if (jsxTag === '>') {
+            result += `&gt;`;
+          }
+        } else if (number) {
+          result += `<span class="tok-number">${escapeHtml(number)}</span>`;
+        } else if (ident) {
+          if (KEYWORDS_JS.has(ident)) {
+            result += `<span class="tok-keyword">${escapeHtml(ident)}</span>`;
+          } else if (BUILTINS_JS.has(ident) || ident.startsWith('use') || ident.startsWith('$')) {
+            result += `<span class="tok-builtin">${escapeHtml(ident)}</span>`;
+          } else if (LITERALS_JS.has(ident)) {
+            result += `<span class="tok-bool">${escapeHtml(ident)}</span>`;
+          } else if (/^[A-Z][a-zA-Z0-9_$]*$/.test(ident)) {
+            result += `<span class="tok-type">${escapeHtml(ident)}</span>`;
+          } else {
+            const rest = code.slice(lastIndex);
+            if (/^\s*\(/.test(rest)) {
+              result += `<span class="tok-function">${escapeHtml(ident)}</span>`;
+            } else if (/^\s*=/.test(rest) && !/^\s*==/.test(rest) && !/^\s*=>/.test(rest)) {
+              result += `<span class="tok-prop">${escapeHtml(ident)}</span>`;
+            } else {
+              result += `<span class="tok-var">${escapeHtml(ident)}</span>`;
+            }
+          }
+        } else if (punct) {
+          if (['=>', '===', '!==', '==', '!=', '<=', '>=', '&&', '||', '+', '-', '*', '/', '?', ':', '='].includes(punct)) {
+            result += `<span class="tok-operator">${escapeHtml(punct)}</span>`;
+          } else {
+            result += `<span class="tok-punct">${escapeHtml(punct)}</span>`;
+          }
+        }
+      }
+
+      if (lastIndex < code.length) {
+        result += escapeHtml(code.slice(lastIndex));
+      }
+
+      return result;
+    };
+
+    const highlightTag = (tagStr) => {
+      return tagStr.replace(/(<\/?)([a-zA-Z0-9_:-]+)((?:\s+[a-zA-Z0-9_:@#.-]+(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)/g, (_, open, tag, attrs, close) => {
+        let highlightedAttrs = '';
+        if (attrs) {
+          highlightedAttrs = attrs.replace(/([a-zA-Z0-9_:@#.-]+)(?:(=)("[^"]*"|'[^']*'|[^\s>]+))?/g, (m, attrName, eq, attrVal) => {
+            let attrHtml = `<span class="tok-attr">${escapeHtml(attrName)}</span>`;
+            if (eq) {
+              attrHtml += `<span class="tok-operator">=</span>`;
+            }
+            if (attrVal) {
+              attrHtml += `<span class="tok-string">${escapeHtml(attrVal)}</span>`;
+            }
+            return attrHtml;
+          });
+        }
+        return `&lt;${open.includes('/') ? '/' : ''}<span class="tok-tag">${escapeHtml(tag)}</span>${highlightedAttrs}${close.includes('/') ? '/' : ''}&gt;`;
+      });
+    };
+
+    const highlightHtmlVueAstro = (code) => {
+      let result = '';
+      if (code.startsWith('---')) {
+        const secondFence = code.indexOf('---', 3);
+        if (secondFence !== -1) {
+          const frontmatter = code.slice(3, secondFence);
+          result += `<span class="tok-keyword">---</span>\n${highlightJsTsx(frontmatter.trim())}\n<span class="tok-keyword">---</span>\n`;
+          code = code.slice(secondFence + 3).trimStart();
+        }
+      }
+
+      const tagRegex = /(<!--[\s\S]*?-->)|(<script[^>]*>)([\s\S]*?)(<\/script>)|(<\/?[a-zA-Z0-9_:-]+)((?:\s+[a-zA-Z0-9_:@#.-]+(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|(\{\{[\s\S]*?\}\}|\{[a-zA-Z0-9_$.]+\})/g;
+
+      let lastIndex = 0;
+      let match;
+
+      while ((match = tagRegex.exec(code)) !== null) {
+        if (match.index > lastIndex) {
+          result += escapeHtml(code.slice(lastIndex, match.index));
+        }
+        lastIndex = tagRegex.lastIndex;
+
+        const [full, comment, scriptOpen, scriptBody, scriptClose, tagOpen, tagAttrs, tagClose, expr] = match;
+
+        if (comment) {
+          result += `<span class="tok-comment">${escapeHtml(comment)}</span>`;
+        } else if (scriptOpen) {
+          result += highlightTag(scriptOpen) + highlightJsTsx(scriptBody) + highlightTag(scriptClose);
+        } else if (tagOpen) {
+          result += highlightTag(tagOpen + (tagAttrs || '') + (tagClose || ''));
+        } else if (expr) {
+          result += `<span class="tok-expr">${highlightJsTsx(expr)}</span>`;
+        }
+      }
+
+      if (lastIndex < code.length) {
+        result += escapeHtml(code.slice(lastIndex));
+      }
+
+      return result;
+    };
+
+    const highlightCodeString = (rawCode, lang) => {
+      const l = (lang || '').toLowerCase();
+      if (l === 'bash' || l === 'sh' || l === 'zsh' || l === 'shell' || l === 'cmd' || l === 'terminal') {
+        return highlightBash(rawCode);
+      }
+      if (l === 'tsx' || l === 'jsx' || l === 'ts' || l === 'typescript' || l === 'js' || l === 'javascript') {
+        return highlightJsTsx(rawCode);
+      }
+      if (l === 'html' || l === 'vue' || l === 'astro' || l === 'svelte' || l === 'xml') {
+        return highlightHtmlVueAstro(rawCode);
+      }
+      // General fallback to JS/TSX style tokenization
+      return highlightJsTsx(rawCode);
+    };
+
     const getLanguage = (pre, code) => {
       const dataLanguage = pre.dataset.language || code?.dataset.language;
       if (dataLanguage) return dataLanguage.toUpperCase();
@@ -34,19 +287,72 @@
       return match?.[1]?.toUpperCase() ?? 'CODE';
     };
 
+    const attachEmbeddedCopyBtn = (pre, code) => {
+      if (pre.querySelector('.embedded-code-copy-btn')) return;
+
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.className = 'embedded-code-copy-btn';
+      copyBtn.title = '复制代码';
+      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>复制</span>`;
+
+      let resetTimer = 0;
+      copyBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const rawText = code?.textContent ?? pre.textContent ?? '';
+        const cleanedText = rawText.replace(/^\+\s/gm, '').replace(/^-\s/gm, '');
+        const copied = await copyText(cleanedText);
+        window.clearTimeout(resetTimer);
+
+        if (copied) {
+          copyBtn.classList.add('copied');
+          copyBtn.querySelector('span').textContent = '已复制';
+          window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: '已复制代码块' } }));
+          resetTimer = window.setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.querySelector('span').textContent = '复制';
+          }, 1800);
+        } else {
+          copyBtn.classList.add('copy-failed');
+          copyBtn.querySelector('span').textContent = '失败';
+          resetTimer = window.setTimeout(() => {
+            copyBtn.classList.remove('copy-failed');
+            copyBtn.querySelector('span').textContent = '复制';
+          }, 1800);
+        }
+      });
+
+      pre.appendChild(copyBtn);
+    };
+
     const enhanceCodeBlocks = () => {
       const emitActivity = (message) => {
         window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
       };
 
       document.querySelectorAll('.article-body pre').forEach((pre) => {
-        if (!(pre instanceof HTMLElement) || pre.dataset.enhanced === 'true') return;
-        if (pre.closest('.mermaid-diagram-wrap, .mindmap-wrapper, .mindmap-container, .katex-display, .no-code-enhance')) return;
+        if (!(pre instanceof HTMLElement)) return;
+        if (pre.closest('.mermaid-diagram-wrap, .mindmap-wrapper, .mindmap-container, .katex-display')) return;
 
         const code = pre.querySelector('code');
         const langStr = getLanguage(pre, code);
-        if (langStr === 'MERMAID' || langStr === 'MINDMAP' || langStr === 'MARKMAP') return; // Handled by diagram enhancers
+        if (langStr === 'MERMAID' || langStr === 'MINDMAP' || langStr === 'MARKMAP') return;
 
+        // 1. Client Syntax Highlighting for code blocks without Shiki spans
+        if (code && !code.querySelector('.line, .tok-keyword, .tok-cmd, .token')) {
+          const rawText = unescapeHtml(code.innerHTML || code.textContent || '');
+          const highlightedHtml = highlightCodeString(rawText, langStr);
+          code.innerHTML = highlightedHtml;
+        }
+
+        // 2. Embedded code blocks in tabs or dropdowns or .no-code-enhance
+        const isEmbedded = pre.closest('.article-tabs__panel, .article-dropdown-panel, .no-code-enhance') || pre.classList.contains('no-code-enhance');
+        if (isEmbedded) {
+          attachEmbeddedCopyBtn(pre, code);
+          return;
+        }
+
+        if (pre.dataset.enhanced === 'true') return;
         pre.dataset.enhanced = 'true';
 
         // Check diff lines in code

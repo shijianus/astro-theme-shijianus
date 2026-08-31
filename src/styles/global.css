@@ -2995,7 +2995,7 @@ html.theme-ready body.theme-body #footer {
   z-index: 1;
 }
 
-.article-body code {
+.article-body :not(pre) > code {
   border: 1px solid color-mix(in srgb, var(--theme-main) 8%, var(--card-border));
   border-radius: 999px;
   background:
@@ -3145,6 +3145,10 @@ html.theme-ready body.theme-body #footer {
   border: 0;
   border-radius: 0;
   padding: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
 }
 
 .code-window__toolbar {

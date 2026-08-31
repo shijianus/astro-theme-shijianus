@@ -82,7 +82,6 @@ mermaid: false
     <div class="article-dropdown-panel is-active" data-panel="react-code">
       <div class="article-dropdown-panel__title">⚛️ React 19 计数器代码：</div>
       <pre class="no-code-enhance"><code class="language-tsx">import &#123; useState &#125; from 'react';
-
 export function Counter() &#123;
   const [count, setCount] = useState(0);
   return &lt;button onClick=&#123;() =&gt; setCount((c) =&gt; c + 1)&#125;&gt;Count: &#123;count&#125;&lt;/button&gt;;
