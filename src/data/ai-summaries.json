@@ -1,0 +1,156 @@
+{
+  "access-control-lab": {
+    "title": "文章访问控制实验室",
+    "summary": "本文阐述了基于服务端判定的文章访问控制实现及验证要点。未解锁时正文、目录、摘要等不出现在 HTML，避免前端隐藏泄露；支持密码、IP、地区白名单/黑名单四类规则，推荐在 frontmatter 中仅保存 SHA‑256 passwordHash。输入正确密码后写入短时凭证，刷新后保持解锁状态，首页、列表、搜索等入口同样不泄露受限内容。通过锁页、解锁页及状态保持的烟雾测试，即可确认该机制已可投入使用。",
+    "model": "llama-3.3-70b-versatile",
+    "provider": "Chronral LLMGPT",
+    "generatedAt": "2026-08-31T13:14:07.823Z"
+  },
+  "anzhiyu-markdown-showcase": {
+    "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
+    "summary": "一篇专门用于压测文章扫描、目录层级、GFM、隐藏内容、特殊格式、媒体展示与常见内容块的长示例文章。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:15.377Z"
+  },
+  "api-ready-theme-contracts": {
+    "title": "把主题配置做成可接 API 的契约",
+    "summary": "作者主张在主题开发时先定义数据契约，将页面所需的数据形状固定，再通过统一的helper（文章排序、归档、分类、标签、相关文章推荐）抽象数据入口。这样，当数据源从本地Markdown切换至API，或接入自定义dashboard、外部搜索、远程摘要等服务时，只需更换数据提供层，UI组件无需改动，实现主题的可维护扩展。",
+    "model": "llama-3.3-70b-versatile",
+    "provider": "Chronral LLMGPT",
+    "generatedAt": "2026-08-31T13:14:21.793Z"
+  },
+  "content-first-homepage": {
+    "title": "内容优先的首页，为什么比功能堆叠更耐用",
+    "summary": "首页第一屏如果先服务阅读路径，而不是先展示一堆功能入口，主题通常会更稳。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:24.482Z"
+  },
+  "content-formats-and-markup-mastery": {
+    "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
+    "summary": "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流静态站点与博客系统的内容格式支持清单。从 Markdown、MDX、HTML、AsciiDoc、Org-mode、RST 到全量实装的 WordPress Post Formats、交互式下拉框切换器、手风琴折叠、KaTeX 数学公式、Mermaid 图表与密码加密特异功能。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:26.524Z"
+  },
+  "example-all-special-formats": {
+    "title": "示例：Astro 特殊格式与特异功能综合测试大全",
+    "summary": "一站式跑全所有 13 种 Callout、Post Formats、下拉框切换器、手风琴、密码解密、公式、图表与排版组件。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:28.253Z"
+  },
+  "example-callouts": {
+    "title": "示例：Callouts 告示框与提示卡完整展示",
+    "summary": "全面展示支持的 13 种 Callout 语义类型、默认展开/折叠版本与 Markdown 源码对比。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:29.370Z"
+  },
+  "example-code-enhancements": {
+    "title": "示例：代码块全量增强功能展示",
+    "summary": "全面展示 macOS 拟物交通灯控制条、语言徽章、增删 Diff、一键复制与超长折叠特性。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:32.668Z"
+  },
+  "example-details-collapse": {
+    "title": "示例：折叠面板、手风琴与下拉框格式展示",
+    "summary": "全面展示原生 details、手风琴折叠组、嵌套折叠与特殊的下拉框选择器组件。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:43.234Z"
+  },
+  "example-embeds": {
+    "title": "示例：富媒体嵌入、Post Formats 与聊天气泡展示",
+    "summary": "全面展示 WordPress 风格 Post Formats、视频/音频黑胶唱片、书签卡片与聊天气泡对话流。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:14:58.541Z"
+  },
+  "example-frontmatter-fields": {
+    "title": "示例：Front Matter 扩展字段与 Zod 验证展示",
+    "summary": "本文通过 src/content.config.ts 中的 Zod Schema，系统化列举并解释博客支持的 Front Matter 字段，包括 title、pubDate、updatedDate、description、author、tags、category、cover、coverAlt、featured、sticky、draft、postFormat、toc/hideToc、math、mermaid、series、access 等，明确其类型、默认值及在主题渲染、SEO、目录、数学公式、图表、系列关联和访问控制等场景的作用，帮助开发者快速配置、验证并利用这些元数据实现文章的精准展示和功能扩展。",
+    "model": "llama-3.3-70b-versatile",
+    "provider": "Chronral LLMGPT",
+    "generatedAt": "2026-08-31T13:15:04.465Z"
+  },
+  "example-gallery-figure": {
+    "title": "示例：图片画廊、拍立得相纸与灯箱展示",
+    "summary": "全面展示自适应图片画廊网格、人文拍立得相册与全屏无损图片灯箱功能。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:08.016Z"
+  },
+  "example-math": {
+    "title": "示例：KaTeX 数学公式渲染展示",
+    "summary": "全面展示基于 remark-math 与 rehype-katex 的行内公式与块级推导公式静态渲染。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:10.683Z"
+  },
+  "example-mermaid": {
+    "title": "示例：Mermaid 11 图表与可视化展示",
+    "summary": "全面展示 Mermaid 架构流程图、时序图、甘特图、统计饼图与 GitGraph 分支图。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:14.699Z"
+  },
+  "example-mindmap": {
+    "title": "示例：Markmap 动态交互式思维导图与无限层级扩展",
+    "summary": "全面展示基于 Markdown 的 Markmap 动态思维导图渲染，演示 6 层深度堆叠、无限层级扩展语法、默认单块折叠保护空间、点击节点多向扩散分支与全屏沉浸式交互。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:16.497Z"
+  },
+  "example-tabs": {
+    "title": "示例：多标签页与多代码版本切换展示",
+    "summary": "全面展示交互式 Tabs 标签页与基于下拉框的多语言代码切换器组件。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:18.961Z"
+  },
+  "hello-world": {
+    "title": "主题重构启动记录",
+    "summary": "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:22.775Z"
+  },
+  "learning-through-rebuilds": {
+    "title": "通过重构来学习，比单纯临摹更有效",
+    "summary": "重构一个已有主题时，最有价值的不是复制外观，而是理解它为什么这样组织信息。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:26.358Z"
+  },
+  "markdown-scan-showcase": {
+    "title": "Markdown 扫描与展示能力全量示例",
+    "summary": "用一篇长文把当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:27.549Z"
+  },
+  "markdown-syntax-mastery": {
+    "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版",
+    "summary": "专为本博客量身定制的 Markdown 终极参考手册与全景压测示范文章。涵盖基础排版、KaTeX 数学公式、Mermaid 绘图、安知鱼告示框、代码高亮折叠与 Diff、密码加密弹窗、高斯模糊与马赛克等全量功能。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:28.738Z"
+  },
+  "media-capability-lab": {
+    "title": "封面、图床与视频适配实验室",
+    "summary": "集中验证文章头图、远程图床、本地资源、视频封面、失效回退和不同宽度下的媒体展示效果。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:30.342Z"
+  },
+  "readable-geek-interfaces": {
+    "title": "极客感界面为什么更需要可读性",
+    "summary": "技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。",
+    "model": "primer-fallback",
+    "provider": "Chronral Primer",
+    "generatedAt": "2026-08-31T13:15:34.097Z"
+  }
+}

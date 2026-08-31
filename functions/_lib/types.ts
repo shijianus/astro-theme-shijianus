@@ -57,6 +57,11 @@ export type AppEnv = {
   AI_SUMMARY_CACHE_TTL_SECONDS?: string;
   SUPPORT_USDT_ADDRESS?: string;
   SUPPORT_USDT_NETWORK?: string;
+  GROQ_API_KEY?: string;
+  GROQ_MODEL?: string;
+  INSTANCE_AI_API_KEY?: string;
+  INSTANCE_AI_BASE_URL?: string;
+  INSTANCE_AI_MODEL?: string;
 };
 
 export type ProviderTokenState = {

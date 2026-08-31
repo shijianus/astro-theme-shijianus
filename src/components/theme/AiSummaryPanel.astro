@@ -1,6 +1,6 @@
 ---
 import { siteConfig } from '../../config/site';
-import { Bot } from 'lucide-react';
+import { Bot, RefreshCw, SlidersHorizontal, Sparkles } from 'lucide-react';
 
 interface RelatedItem {
   title: string;
@@ -10,7 +10,8 @@ interface RelatedItem {
 interface Props {
   slug: string;
   title: string;
-  summary?: string;
+  summary?: string; // PrimerAI (author-written in markdown)
+  staticSummary?: string; // LLMGPT (pre-baked Groq summary)
   url: string;
   related?: RelatedItem[];
 }
@@ -18,10 +19,14 @@ interface Props {
 const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
 const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
 const apiBase = runtimeApiBase ? `${runtimeApiBase}/api` : '/api';
-const { slug, title, summary = '', url, related = [] } = Astro.props;
-const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
-  template.replaceAll('{author}', siteConfig.site.author.name),
-);
+const { slug, title, summary = '', staticSummary = '', url, related = [] } = Astro.props;
+
+// Rich, detailed author introduction templates
+const detailedAuthorIntros = [
+  `${siteConfig.site.author.name}（时鉴）是一名通才型软件构建者、学生与长期内容写作者。专注于把博客当成可长期演进的软件系统来打造，技术栈涵盖 Astro、React、TypeScript、Tailwind、Cloudflare 与系统级工程设计。他崇尚“内容优先、结构优先、体验洁癖”，致力于在高信息密度中建立清晰秩序，把每一次技术重构与日常思考凝练为真实可读的实践档案。`,
+  `这里是 ${siteConfig.site.author.name} 的个人数字工坊与研究日志。作者坚持独立开发与深度记录，拒绝浮躁的形式堆砌，主张以工程化视角打磨每一个阅读细节、交互手感与数据契约。无论是在前端工程、系统设计还是产品观察领域，都保持着敬畏秩序与持续构建的初心，希望每一篇记录都能穿越时间，为读者提供扎实的参考价值。`,
+  `${siteConfig.site.author.name} 是一名偏好深度思考与动手实践的 INFJ / Builder。他将博客视为个人外脑与长期产品，持续打磨基于 SSR + Islands 架构的高性能个人站点。作者坚信“意图明确的构建远比一次性的热闹更重要”，在这里记录研究实验、技术架构判断与真实生活取舍，探索极客美学与极致可读性之间的完美平衡。`,
+];
 ---
 
 <section
@@ -30,45 +35,74 @@ const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
   data-api-base={apiBase}
   data-slug={slug}
   data-title={title}
-  data-summary={summary}
+  data-primer-summary={summary}
+  data-static-summary={staticSummary}
   data-url={url}
-  data-intro={introTemplates[0]}
-  data-intro-templates={JSON.stringify(introTemplates)}
+  data-intro-templates={JSON.stringify(detailedAuthorIntros)}
   data-ai-unavailable={siteConfig.post.ai.unavailableMessage}
   data-related-empty={siteConfig.post.ai.relatedEmptyMessage}
   data-related={JSON.stringify(related)}
 >
   <div class="shijianus-ai-summary__head">
-    <div class="shijianus-ai-summary__title">
-      <span class="shijianus-ai-summary__icon" aria-hidden="true"><Bot size={22} strokeWidth={1.8} /></span>
-      <div>
-        <strong>AI-摘要</strong>
-        <small>文章速览与站点导览 · shijianus AI</small>
-      </div>
+    <div class="shijianus-ai-summary__brand">
+      <span class="shijianus-ai-summary__icon" aria-hidden="true">
+        <Sparkles size={16} strokeWidth={2.2} />
+      </span>
+      <span class="shijianus-ai-summary__brand-title">Chronral 摘要</span>
+      <button
+        type="button"
+        class="shijianus-ai-summary__btn-icon"
+        data-ai-refresh
+        aria-label="重新生成 / 刷新摘要"
+        title="重新生成 / 刷新摘要 (Refresh Summary)"
+      >
+        <RefreshCw size={13} strokeWidth={2} />
+      </button>
     </div>
-    <div class="shijianus-ai-summary__meta">
-      <div class="shijianus-ai-summary__meta-copy">
-        <span data-ai-badge>待生成</span>
-        <small data-ai-status>进入视区后自动生成</small>
+
+    <div class="shijianus-ai-summary__controls">
+      <div class="shijianus-ai-summary__mode-pill" title="当前摘要模式 (Current AI Mode)">
+        <span class="shijianus-ai-summary__mode-dot"></span>
+        <span data-ai-mode-label>LLMGPT</span>
       </div>
-      <button type="button" data-ai-refresh aria-label="重新生成摘要" title="重新生成摘要">↻</button>
+      <button
+        type="button"
+        class="shijianus-ai-summary__btn-icon shijianus-ai-summary__btn-switch"
+        data-ai-switch-mode
+        aria-label="切换摘要引擎 (LLMGPT / InstanceAI / PrimerAI)"
+        title="切换摘要引擎 (LLMGPT / InstanceAI / PrimerAI)"
+      >
+        <SlidersHorizontal size={13} strokeWidth={2} />
+      </button>
     </div>
   </div>
 
   <div class="shijianus-ai-summary__screen">
-    <div class="shijianus-ai-summary__grid" aria-hidden="true"></div>
-    <div class="shijianus-ai-summary__hud" aria-hidden="true">
-      <span>SUMMARY CORE</span>
-      <span>SHIJIANUS AI</span>
-    </div>
-    <p class="shijianus-ai-summary__output" data-ai-output>选择一个入口，先从这里认识文章或作者。</p>
+    <p class="shijianus-ai-summary__output" data-ai-output>正在通过 Chronral 智能提炼文章核心信息...</p>
   </div>
 
   <div class="shijianus-ai-summary__actions">
-    <button type="button" class="shijianus-ai-summary__action" data-ai-action="intro">介绍自己</button>
-    <button type="button" class="shijianus-ai-summary__action" data-ai-action="summary">生成本文简介</button>
-    <button type="button" class="shijianus-ai-summary__action" data-ai-action="related">推荐相关文章</button>
-    <button type="button" class="shijianus-ai-summary__action" data-ai-action="top">回到顶部</button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="point" title="提炼核心论点与关键技术方案">
+      💡 核心论点
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="audience" title="分析目标受众与解决的问题">
+      🎯 适用读者
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="quick" title="30秒极速三句话概览">
+      ⏱️ 30秒速读
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="insight" title="实践启示与工程思考">
+      🧠 实践启示
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="intro" title="深入了解博主与站点理念">
+      👤 关于作者
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="related" title="AI 分析推荐理由并展开延伸阅读">
+      📚 推荐相关
+    </button>
+    <button type="button" class="shijianus-ai-summary__action" data-ai-action="top" title="平滑回到文章顶部">
+      🔝 回到顶部
+    </button>
   </div>
 
   <div class="shijianus-ai-summary__related" data-ai-related hidden></div>
@@ -96,68 +130,138 @@ const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const typeInto = (node, value) => {
+    const typeInto = (node, value, onComplete) => {
       if (!(node instanceof HTMLElement)) return;
       const cursor = '<span class="shijianus-ai-summary__cursor"></span>';
       let index = 0;
-      const text = value.trim();
+      const text = (value || '').trim();
       if (!text) {
         node.textContent = '';
+        if (onComplete) onComplete();
         return;
       }
-      if (prefersReducedMotion || text.length > 140) {
+      if (prefersReducedMotion || text.length > 280) {
         node.textContent = text;
+        if (onComplete) onComplete();
         return;
       }
       const runId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       node.dataset.typeRunId = runId;
       node.innerHTML = '';
-      const step = text.length > 72 ? 3 : 2;
+      const step = text.length > 100 ? 3 : 2;
 
       const tick = () => {
         if (node.dataset.typeRunId !== runId) return;
         index = Math.min(text.length, index + step);
         node.innerHTML = `${text.slice(0, index)}${index < text.length ? cursor : ''}`;
         if (index < text.length) {
-          window.setTimeout(tick, /[,.，。！？!?\n]/.test(text.charAt(index - 1)) ? 48 : 24);
+          window.setTimeout(tick, /[,.，。！？!?\n]/.test(text.charAt(index - 1)) ? 32 : 16);
+        } else if (onComplete) {
+          onComplete();
         }
       };
 
       tick();
     };
 
+    const SUPPORTED_MODELS = [
+      'kimi-k3',
+      'deepseek-v4-flash',
+      'gpt-oss-120b',
+      'gpt-oss-20b',
+      'deepseek-v4-pro',
+      'glm-5.2',
+    ];
+
+    const getRandomModel = () => {
+      return SUPPORTED_MODELS[Math.floor(Math.random() * SUPPORTED_MODELS.length)] || 'kimi-k3';
+    };
+
+    // 3 Primary Model Classes: LLMGPT (build-time static), InstanceAI (live with CoT thinking), PrimerAI (author markdown)
+    const MODES = [
+      { id: 'llmgpt', label: 'LLMGPT', desc: '离线预构建模型' },
+      { id: 'instance', label: 'InstanceAI', desc: '实时推演模型（支持思考链）' },
+      { id: 'primer', label: 'PrimerAI', desc: '作者自述摘要' },
+    ];
+
+    const get429ErrorMessage = (modeId) => {
+      if (modeId === 'primer') return '模型回报429!!!摘要生成失败!!!请检查PrimerAI服务是否正常!!!';
+      if (modeId === 'llmgpt') return '模型回报429!!!摘要生成失败!!!请检查LLMGPT服务是否正常!!!';
+      return '模型回报429!!!摘要生成失败!!!请检查InstanceAI服务是否正常!!!';
+    };
+
     roots.forEach((root) => {
       if (!(root instanceof HTMLElement)) return;
       const output = root.querySelector('[data-ai-output]');
-      const badge = root.querySelector('[data-ai-badge]');
-      const status = root.querySelector('[data-ai-status]');
+      const modeLabel = root.querySelector('[data-ai-mode-label]');
+      const switchBtn = root.querySelector('[data-ai-switch-mode]');
       const relatedBox = root.querySelector('[data-ai-related]');
       const refreshButton = root.querySelector('[data-ai-refresh]');
       const apiBase = root.dataset.apiBase || '/api';
       const slug = root.dataset.slug || '';
       const title = root.dataset.title || document.title;
-      const summary = root.dataset.summary || '';
+      const primerSummary = root.dataset.primerSummary || '';
+      const staticSummary = root.dataset.staticSummary || '';
       const url = root.dataset.url || window.location.href;
-      const intro = root.dataset.intro || '';
-      const unavailableMessage = root.dataset.aiUnavailable || '这次没有接通摘要服务，先用文章自带的简介继续读吧。过一会儿再试，通常就能恢复。';
       const relatedEmptyMessage = root.dataset.relatedEmpty || '当前还没有找到合适的延伸阅读，可以先回到首页看看最近更新。';
+
       let introTemplates = [];
       try {
         const parsed = JSON.parse(root.dataset.introTemplates || '[]');
-        if (Array.isArray(parsed)) introTemplates = parsed.filter((item) => typeof item === 'string' && item.trim());
+        if (Array.isArray(parsed) && parsed.length > 0) introTemplates = parsed;
       } catch {}
-      const cacheKey = `shijianus-ai-summary:${slug}`;
+
+      let authorIntroIndex = 0;
+      let currentModeIndex = 0; // 0: LLMGPT (default fast load), 1: InstanceAI, 2: PrimerAI
       let isLoading = false;
+      let activeAbortController = null;
+      let activeThinkingInterval = null;
 
-      const setBadge = (value) => {
-        if (badge instanceof HTMLElement) badge.textContent = value;
+      const cancelActiveRequest = () => {
+        if (activeThinkingInterval) {
+          window.clearInterval(activeThinkingInterval);
+          activeThinkingInterval = null;
+        }
+        if (activeAbortController) {
+          activeAbortController.abort();
+          activeAbortController = null;
+        }
+        isLoading = false;
+        if (refreshButton instanceof HTMLButtonElement) {
+          refreshButton.disabled = false;
+          refreshButton.classList.remove('is-spinning');
+        }
       };
 
-      const setStatus = (value) => {
-        if (status instanceof HTMLElement) status.textContent = value;
+      const finishRequest = () => {
+        if (activeThinkingInterval) {
+          window.clearInterval(activeThinkingInterval);
+          activeThinkingInterval = null;
+        }
+        activeAbortController = null;
+        isLoading = false;
+        if (refreshButton instanceof HTMLButtonElement) {
+          refreshButton.disabled = false;
+          refreshButton.classList.remove('is-spinning');
+        }
       };
 
-      const renderRelated = () => {
+      const setActiveAction = (actionName = null) => {
+        root.querySelectorAll('[data-ai-action]').forEach((btn) => {
+          if (btn instanceof HTMLElement) {
+            btn.classList.toggle('is-active', Boolean(actionName && btn.dataset.aiAction === actionName));
+          }
+        });
+      };
+
+      const setModeDisplay = (modeId) => {
+        const target = MODES.find((m) => m.id === modeId) || MODES[0];
+        if (modeLabel instanceof HTMLElement) {
+          modeLabel.textContent = target.label;
+        }
+      };
+
+      const renderRelatedDrawer = (reasonText = '') => {
         if (!(relatedBox instanceof HTMLElement)) return;
         let items = [];
         try {
@@ -167,8 +271,6 @@ const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
         if (!Array.isArray(items) || items.length === 0) {
           relatedBox.hidden = true;
           typeInto(output, relatedEmptyMessage);
-          setBadge('本地推荐');
-          setStatus('未发现更多相关文章');
           return;
         }
 
@@ -185,131 +287,248 @@ const introTemplates = siteConfig.post.ai.introTemplates.map((template) =>
           relatedBox.append(link);
         });
         relatedBox.hidden = false;
-        typeInto(output, '这里先把与你当前文章最相关的三个入口摆出来，适合顺着主题继续读，不打断当前的阅读节奏。');
-        setBadge('本地推荐');
-        setStatus('基于当前文章索引推荐');
+
+        const explanation =
+          reasonText ||
+          `已结合《${title}》的主题脉络为你精选最贴合的 3 个延伸阅读入口，顺着核心架构继续探索：`;
+        typeInto(output, explanation);
       };
 
-      const fetchSummary = async (force = false) => {
-        if (isLoading) return;
+      // Real live AI caller
+      const fetchLiveAi = async (params = {}) => {
+        cancelActiveRequest();
         relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
-        if (!force) {
-          try {
-            const cached = window.sessionStorage.getItem(cacheKey);
-            if (cached) {
-              const parsed = JSON.parse(cached);
-              typeInto(output, parsed.summary || cached);
-              setBadge(parsed.model || '缓存结果');
-              setStatus(parsed.provider ? `会话缓存 · ${parsed.provider}` : '会话缓存');
-              return;
-            }
-          } catch {}
-        }
 
         const article = document.querySelector('#article-container');
         const content = article?.textContent?.replace(/\s+/g, ' ').trim() || '';
         if (!content) {
-          typeInto(output, '当前文章正文尚未准备好，暂时无法生成摘要。');
-          setBadge('正文缺失');
-          setStatus('等待正文挂载完成');
+          typeInto(output, primerSummary || get429ErrorMessage(params.mode || 'instance'));
           return;
         }
 
         isLoading = true;
-        setBadge('生成中');
-        setStatus(force ? '正在强制刷新摘要' : '正在请求摘要服务');
-        if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = true;
-        typeInto(output, '正在整理文章结构、提炼核心信息，并生成一段更适合快速浏览的摘要...');
+        activeAbortController = new AbortController();
+        const currentController = activeAbortController;
+
+        if (refreshButton instanceof HTMLButtonElement) {
+          refreshButton.disabled = true;
+          refreshButton.classList.add('is-spinning');
+        }
+
+        const mode = params.mode || MODES[currentModeIndex].id;
+        const questionType = params.questionType || '';
+        const assignedModel = getRandomModel();
+        const isInstanceMode = mode === 'instance';
+
+        const startTime = Date.now();
+
+        // Only InstanceAI displays the 3~5s dynamic Thinking CoT preview
+        if (isInstanceMode && !params.skipThinking) {
+          const thinkingSteps = [
+            `正在调用 ${assignedModel} 思考...`,
+            `正在调用 ${assignedModel} 思考... 正在解析博文核心脉络与架构设计...`,
+            `正在调用 ${assignedModel} 思考... 提炼关键论点与技术方案要点...`,
+            `正在调用 ${assignedModel} 思考... 组织高信息密度结构并验证准确性...`,
+          ];
+
+          let stepIndex = 0;
+          if (output instanceof HTMLElement) {
+            output.innerHTML = `<span class="shijianus-ai-summary__thinking">${thinkingSteps[0]}</span>`;
+          }
+
+          activeThinkingInterval = window.setInterval(() => {
+            stepIndex = (stepIndex + 1) % thinkingSteps.length;
+            if (output instanceof HTMLElement && isLoading) {
+              output.innerHTML = `<span class="shijianus-ai-summary__thinking">${thinkingSteps[stepIndex]}</span>`;
+            }
+          }, 900);
+        } else if (params.mode === 'llmgpt' && questionType) {
+          if (output instanceof HTMLElement) {
+            output.textContent = '正在通过 LLMGPT 提炼回答...';
+          }
+        }
 
         try {
+          let relatedList = [];
+          try {
+            relatedList = JSON.parse(root.dataset.related || '[]');
+          } catch {}
+
           const response = await fetch(`${apiBase}/ai-summary`, {
             method: 'POST',
+            signal: currentController.signal,
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
               'X-Shijianus-Device-Id': getDeviceId(),
             },
-            body: JSON.stringify({ slug, title, summary, url, content }),
+            body: JSON.stringify({
+              slug,
+              title,
+              summary: primerSummary,
+              url,
+              content,
+              mode,
+              questionType,
+              related: relatedList,
+            }),
           });
+
           const payload = await response.json();
+          if (currentController.signal.aborted) return;
           if (!response.ok || !payload?.summary) {
-            const resetSuffix = payload?.resetAt ? ` resetAt=${payload.resetAt}` : '';
-            throw new Error(`${payload?.error || `summary failed: ${response.status}`}${resetSuffix}`);
+            throw new Error(payload?.error || `Request failed with ${response.status}`);
           }
 
-          const result = {
-            summary: payload.summary,
-            provider: payload.provider || '',
-            model: payload.model || '',
-          };
-          window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
-          typeInto(output, result.summary);
-          setBadge(result.model || result.provider || 'AI 完成');
-          setStatus(payload.cached ? '命中服务端缓存' : `来自 ${result.provider || 'AI'} 的新摘要`);
-        } catch (error) {
-          let message = unavailableMessage;
-          let statusMessage = '暂时离线';
-          if (error instanceof Error && /429/.test(error.message)) {
-            try {
-              const resetAt = Number.parseInt(error.message.split('resetAt=')[1] || '', 10);
-              if (Number.isFinite(resetAt)) {
-                const retrySeconds = Math.max(1, Math.ceil(resetAt - Date.now() / 1000));
-                message = `摘要服务正在喘口气，大约 ${retrySeconds} 秒后再试就好。你也可以先点“介绍自己”或“推荐相关文章”。`;
-                statusMessage = `稍后可重试 · ${retrySeconds}s`;
-              }
-            } catch {}
+          // In InstanceAI mode, ensure 2.5s thinking perception
+          if (isInstanceMode && !params.skipThinking) {
+            const elapsed = Date.now() - startTime;
+            const remainingWait = Math.max(0, 2500 - elapsed);
+            if (remainingWait > 0) {
+              await new Promise((r) => setTimeout(r, remainingWait));
+            }
           }
-          typeInto(output, message);
-          setBadge('稍后重试');
-          setStatus(statusMessage);
+
+          if (currentController.signal.aborted) return;
+          if (activeThinkingInterval) {
+            window.clearInterval(activeThinkingInterval);
+            activeThinkingInterval = null;
+          }
+
+          if (questionType === 'related_reason') {
+            renderRelatedDrawer(payload.summary);
+          } else {
+            typeInto(output, payload.summary);
+          }
+        } catch (error) {
+          if (currentController.signal.aborted) return;
+          if (activeThinkingInterval) {
+            window.clearInterval(activeThinkingInterval);
+            activeThinkingInterval = null;
+          }
+          if (questionType === 'related_reason') {
+            renderRelatedDrawer();
+          } else {
+            const fallbackText = primerSummary || get429ErrorMessage(mode);
+            typeInto(output, fallbackText);
+          }
         } finally {
-          isLoading = false;
-          if (refreshButton instanceof HTMLButtonElement) refreshButton.disabled = false;
+          if (activeAbortController === currentController) {
+            finishRequest();
+          }
         }
       };
 
+      const applyMode = (modeId, options = {}) => {
+        cancelActiveRequest();
+        setActiveAction(null); // Reset/cancel all action highlights on mode switch or summary refresh
+        relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+        setModeDisplay(modeId);
+
+        if (modeId === 'primer') {
+          if (primerSummary) {
+            typeInto(output, primerSummary);
+          } else {
+            typeInto(output, get429ErrorMessage('primer'));
+          }
+          return;
+        }
+
+        if (modeId === 'llmgpt') {
+          if (staticSummary && !options.force) {
+            typeInto(output, staticSummary);
+          } else if (staticSummary) {
+            typeInto(output, staticSummary);
+          } else if (primerSummary) {
+            typeInto(output, primerSummary);
+          } else {
+            typeInto(output, get429ErrorMessage('llmgpt'));
+          }
+          return;
+        }
+
+        if (modeId === 'instance') {
+          void fetchLiveAi({ mode: 'instance' });
+        }
+      };
+
+      // Switch mode button click (cycles LLMGPT -> InstanceAI -> PrimerAI)
+      switchBtn?.addEventListener('click', () => {
+        currentModeIndex = (currentModeIndex + 1) % MODES.length;
+        const nextMode = MODES[currentModeIndex].id;
+        applyMode(nextMode);
+      });
+
+      // Refresh button click (re-generates / resets summary for current mode)
+      refreshButton?.addEventListener('click', () => {
+        const mode = MODES[currentModeIndex].id;
+        applyMode(mode, { force: true });
+      });
+
+      // Action buttons (re-clicking same button re-triggers fresh generation)
       root.querySelectorAll('[data-ai-action]').forEach((button) => {
         button.addEventListener('click', () => {
           if (!(button instanceof HTMLElement)) return;
           const action = button.dataset.aiAction;
-          if (action === 'intro') {
-            relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
-            const options = introTemplates.length > 0 ? introTemplates : [intro];
-            const selected = options[Math.floor(Math.random() * options.length)] || intro;
-            typeInto(output, selected);
-            setBadge('站点介绍');
-            setStatus('作者与站点介绍');
-            return;
-          }
-          if (action === 'summary') {
-            void fetchSummary(true);
-            return;
-          }
-          if (action === 'related') {
-            renderRelated();
-            return;
-          }
+          if (!action) return;
+
           if (action === 'top') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            typeInto(output, '已经把阅读视角拉回顶部；如果你想重新看一次文章头图、摘要和核心元信息，现在就是最短路径。');
-            setBadge('导航动作');
-            setStatus('已回到页面顶部');
+            return;
+          }
+
+          setActiveAction(action);
+          const currentMode = MODES[currentModeIndex].id;
+
+          if (action === 'intro') {
+            cancelActiveRequest();
+            relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
+            authorIntroIndex = (authorIntroIndex + 1) % Math.max(1, introTemplates.length);
+            const selected =
+              introTemplates[authorIntroIndex] ||
+              introTemplates[0] ||
+              `${siteConfig.site.author.name} 在这里持续写作与构建，专注长期可维护的博客系统与工程实践。`;
+            typeInto(output, selected);
+            return;
+          }
+
+          if (action === 'related') {
+            if (currentMode === 'primer') {
+              renderRelatedDrawer();
+            } else {
+              void fetchLiveAi({
+                mode: currentMode,
+                questionType: 'related_reason',
+                skipThinking: currentMode !== 'instance',
+              });
+            }
+            return;
+          }
+
+          if (['point', 'audience', 'quick', 'insight'].includes(action)) {
+            if (currentMode === 'primer') {
+              if (primerSummary) {
+                typeInto(output, `【作者手记】${primerSummary}`);
+              } else {
+                typeInto(output, get429ErrorMessage('primer'));
+              }
+            } else {
+              void fetchLiveAi({
+                mode: currentMode,
+                questionType: action,
+                skipThinking: currentMode !== 'instance',
+              });
+            }
           }
         });
       });
 
-      refreshButton?.addEventListener('click', () => {
-        try {
-          window.sessionStorage.removeItem(cacheKey);
-        } catch {}
-        void fetchSummary(true);
-      });
-
+      // Intersection Observer for initial auto load (direct content loading)
       const observer = new IntersectionObserver((entries) => {
         if (!entries[0]?.isIntersecting) return;
         observer.disconnect();
-        void fetchSummary(false);
-      }, { threshold: 0.18 });
+        applyMode('llmgpt');
+      }, { threshold: 0.15 });
 
       observer.observe(root);
     });

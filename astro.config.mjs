@@ -35,6 +35,50 @@ function epocanvasBrandIntegration() {
   };
 }
 
+function chronralAiDevIntegration() {
+  return {
+    name: 'chronral-ai-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.url && (req.url === '/api/ai-summary' || req.url.startsWith('/api/ai-summary?')) && req.method === 'POST') {
+            try {
+              let bodyStr = '';
+              req.on('data', (chunk) => {
+                bodyStr += chunk;
+              });
+              req.on('end', async () => {
+                try {
+                  const payload = JSON.parse(bodyStr || '{}');
+                  const { processAiSummaryRequest } = await import('./src/lib/server-ai-summary.ts');
+                  const result = await processAiSummaryRequest(payload, {
+                    instanceAiBaseUrl: process.env.INSTANCE_AI_BASE_URL,
+                    instanceAiApiKey: process.env.INSTANCE_AI_API_KEY,
+                    instanceAiModel: process.env.INSTANCE_AI_MODEL,
+                    groqApiKey: process.env.GROQ_API_KEY,
+                    groqModel: process.env.GROQ_MODEL,
+                  });
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(200);
+                  res.end(JSON.stringify(result));
+                } catch (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(500);
+                  res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
+                }
+              });
+            } catch (err) {
+              next();
+            }
+          } else {
+            next();
+          }
+        });
+      },
+    },
+  };
+}
+
 const mindmapLang = {
   name: 'mindmap',
   scopeName: 'source.mindmap',
@@ -69,7 +113,7 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  integrations: [epocanvasBrandIntegration(), react(), mdx()],
+  integrations: [epocanvasBrandIntegration(), chronralAiDevIntegration(), react(), mdx()],
   markdown: {
     remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],

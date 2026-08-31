@@ -9,6 +9,7 @@ import PostEndRecommendation from '../../components/theme/PostEndRecommendation.
 import PostOutdateNotice from '../../components/theme/PostOutdateNotice.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
+import aiSummaries from '../../data/ai-summaries.json';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
   estimateReadingMinutes,
@@ -294,7 +295,8 @@ const heroSummary = isUnlocked
       <AiSummaryPanel
         slug={entry.id}
         title={publicFacingTitle}
-        summary={entry.data.description ?? ''}
+        summary={(entry.data as any).aiSummary || (entry.data as any).ai_summary || (entry.data as any).summary || entry.data.description || ''}
+        staticSummary={(aiSummaries as Record<string, { summary: string; model?: string }>)[entry.id]?.summary || ''}
         url={Astro.url.href}
         related={relatedPosts.map((post) => ({
           title: post.data.title,

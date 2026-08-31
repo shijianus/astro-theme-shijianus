@@ -406,6 +406,7 @@ body[data-type='post'] #post .post-copyright__support .support-panel-link--icon 
 
 body[data-type='post'] #post .shijianus-ai-summary__actions {
   align-items: center;
+  gap: 6px;
 }
 
 body[data-type='post'] #post .shijianus-ai-summary__action {
@@ -413,9 +414,9 @@ body[data-type='post'] #post .shijianus-ai-summary__action {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 40px;
-  padding: 0 14px;
-  font-size: 13px;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
   line-height: 1.25;
   white-space: nowrap;
 }

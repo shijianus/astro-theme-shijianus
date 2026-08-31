@@ -1,10 +1,17 @@
 import { sha256Hex } from '../_lib/hash';
 import { jsonResponse, optionsResponse, safeReadJson, numberFromEnv } from '../_lib/http';
+import { generateWithInstanceAi } from '../_lib/provider-instance-ai';
+import { generateWithGroq } from '../_lib/provider-groq';
 import { generateWithGemini } from '../_lib/provider-gemini';
 import { generateWithModelscope } from '../_lib/provider-modelscope';
 import { generateWithWorkersAi } from '../_lib/provider-workers-ai';
 import { enforceRateLimit, envLimit } from '../_lib/rate-limit';
-import { buildSummaryPrompt, normalizeArticleText, SUMMARY_SYSTEM_INSTRUCTION } from '../_lib/summary';
+import {
+  buildSummaryPrompt,
+  buildQuestionPrompt,
+  normalizeArticleText,
+  SUMMARY_SYSTEM_INSTRUCTION,
+} from '../_lib/summary';
 import type { AppEnv } from '../_lib/types';
 
 type SummaryRequest = {
@@ -13,6 +20,8 @@ type SummaryRequest = {
   url?: string;
   summary?: string;
   content?: string;
+  mode?: 'auto' | 'instance' | 'llmgpt' | 'question';
+  questionType?: string;
 };
 
 async function readCachedSummary(env: AppEnv, cacheKey: string) {
@@ -28,7 +37,7 @@ async function readCachedSummary(env: AppEnv, cacheKey: string) {
     if (!row?.summary) return null;
     return {
       summary: row.summary,
-      provider: row.provider || 'cache',
+      provider: row.provider || 'Chronral',
       model: row.model || 'cached',
     };
   } catch {
@@ -63,12 +72,12 @@ async function writeCachedSummary(
 
 export async function onRequestPost(context: { request: Request; env: AppEnv }) {
   const { request, env } = context;
-  const globalMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_MINUTE', 6);
-  const globalHourLimit = envLimit(env, 'AI_SUMMARY_PER_HOUR', 24);
-  const deviceMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_MINUTE', 4);
-  const deviceHourLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_HOUR', 12);
-  const ipMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_IP_MINUTE', 8);
-  const ipHourLimit = envLimit(env, 'AI_SUMMARY_PER_IP_HOUR', 30);
+  const globalMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_MINUTE', 10);
+  const globalHourLimit = envLimit(env, 'AI_SUMMARY_PER_HOUR', 40);
+  const deviceMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_MINUTE', 6);
+  const deviceHourLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_HOUR', 20);
+  const ipMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_IP_MINUTE', 12);
+  const ipHourLimit = envLimit(env, 'AI_SUMMARY_PER_IP_HOUR', 50);
 
   const globalMinuteRate = await enforceRateLimit({
     namespace: 'ai-summary-minute',
@@ -139,7 +148,7 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
       env,
       {
         ok: false,
-        error: 'AI summary is temporarily rate limited for this device or IP.',
+        error: 'Chronral 摘要服务请求频次较高，请稍候再试。',
         resetAt: failingRate?.resetAt || Math.floor(Date.now() / 1000) + 60,
       },
       { status: 429 },
@@ -152,29 +161,54 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
   const summary = body?.summary?.trim() || '';
   const content = normalizeArticleText(body?.content || '');
   const slug = body?.slug?.trim() || title;
+  const mode = body?.mode || 'auto';
+  const questionType = body?.questionType || '';
 
-  if (!title || !url || !content) {
-    return jsonResponse(request, env, { ok: false, error: 'Missing title, url, or content.' }, { status: 400 });
+  if (!title || !content) {
+    return jsonResponse(request, env, { ok: false, error: 'Missing title or content.' }, { status: 400 });
   }
 
-  const cacheKey = await sha256Hex([slug, title, summary, content].join('|'));
-  const cached = await readCachedSummary(env, cacheKey);
-  if (cached) {
-    return jsonResponse(request, env, {
-      ok: true,
-      cached: true,
-      provider: cached.provider,
-      model: cached.model,
-      summary: cached.summary,
-    });
+  const cacheKey = await sha256Hex([slug, title, summary, mode, questionType, content.slice(0, 1000)].join('|'));
+  
+  // Only use server D1 cache for non-instance and non-question requests, or when cached
+  if (mode !== 'instance') {
+    const cached = await readCachedSummary(env, cacheKey);
+    if (cached) {
+      return jsonResponse(request, env, {
+        ok: true,
+        cached: true,
+        provider: 'Chronral',
+        model: cached.model,
+        summary: cached.summary,
+      });
+    }
   }
 
-  const prompt = buildSummaryPrompt({ title, url, summary, content });
-  const geminiResult = await generateWithGemini(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
-  const modelscopeResult = geminiResult ? null : await generateWithModelscope(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
-  const aiResult = geminiResult
-    || modelscopeResult
-    || (await generateWithWorkersAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION));
+  const prompt = questionType
+    ? buildQuestionPrompt({ title, url, summary, content, questionType })
+    : buildSummaryPrompt({ title, url, summary, content });
+
+  let aiResult: { text: string; provider: string; model: string } | null = null;
+
+  if (mode === 'instance') {
+    aiResult = await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    if (!aiResult) {
+      aiResult = await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    }
+  } else if (mode === 'llmgpt') {
+    aiResult = await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    if (!aiResult) {
+      aiResult = await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    }
+  } else {
+    // auto or question
+    aiResult =
+      (await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
+      || (await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
+      || (await generateWithGemini(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
+      || (await generateWithModelscope(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
+      || (await generateWithWorkersAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION));
+  }
 
   if (!aiResult?.text) {
     return jsonResponse(
@@ -182,21 +216,22 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
       env,
       {
         ok: false,
-        error: 'All AI providers are unavailable right now. Please retry later.',
+        error: 'Chronral 摘要服务暂时离线，请稍后再试。',
       },
       { status: 503 },
     );
   }
 
   const ttlSeconds = numberFromEnv(env.AI_SUMMARY_CACHE_TTL_SECONDS, 60 * 60 * 24 * 7);
-  await writeCachedSummary(env, cacheKey, slug, aiResult.text, aiResult.provider, aiResult.model, ttlSeconds);
+  await writeCachedSummary(env, cacheKey, slug, aiResult.text, 'Chronral', aiResult.model, ttlSeconds);
 
   return jsonResponse(request, env, {
     ok: true,
     cached: false,
-    provider: aiResult.provider,
+    provider: 'Chronral',
     model: aiResult.model,
     summary: aiResult.text,
+    thinking: (aiResult as any).thinking || undefined,
   });
 }
 

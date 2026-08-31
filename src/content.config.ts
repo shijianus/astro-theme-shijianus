@@ -80,6 +80,9 @@ const postsCollection = defineCollection({
     outdateDays: z.number().int().positive().optional(),
     validDays: z.number().int().positive().optional(),
     description: z.string().optional(),
+    summary: z.string().optional(),
+    aiSummary: z.string().optional(),
+    ai_summary: z.string().optional(),
     author: z.string().default('shijianus'),
     image: z.object({
       url: z.string(),
