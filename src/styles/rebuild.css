@@ -14128,22 +14128,9 @@ body[data-type='post'] #post-tools-panel-wechat .post-share-qrcode__image img {
   accent-color: var(--theme-main);
 }
 
+/* Footnote styling harmonized with markdown-enhancements.css */
 .article-body.post-content .footnotes {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px dashed color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
-}
-
-.article-body.post-content .footnotes ol {
-  display: grid;
-  gap: 0.75rem;
-  padding-left: 1.2rem;
-}
-
-.article-body.post-content .footnote-backref {
-  margin-left: 0.35rem;
-  color: var(--theme-main);
-  font-weight: 800;
+  scroll-margin-top: 100px;
 }
 
 #post-comment {

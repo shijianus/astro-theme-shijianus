@@ -1851,29 +1851,283 @@ body.modal-scroll-locked {
 }
 
 /* --------------------------------------------------------------------------
-   11. Footnotes & Hover Tooltips
+   11. Footnotes, Backrefs & Hover Tooltips
    -------------------------------------------------------------------------- */
+/* Tooltip popover on hover */
 .footnote-tooltip-popover {
   position: fixed;
   z-index: 9998;
-  max-width: 320px;
+  max-width: 340px;
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card-bg) 95%, var(--secondbg));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, var(--card-border));
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08);
   color: var(--font-color);
   font-size: 0.85rem;
   line-height: 1.55;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transform: translateY(6px) scale(0.98);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footnote-tooltip-popover.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+}
+
+/* In-text footnote reference badge */
+.article-body sup,
+.post-content sup {
+  vertical-align: super;
+  font-size: 0.8em;
+  line-height: 0;
+  margin-left: 2px;
+  margin-right: 2px;
+  scroll-margin-top: 100px;
+}
+
+.article-body a[data-footnote-ref],
+.article-body sup a[href*="fn-"],
+.article-body sup a[href*="user-content-fn-"],
+.post-content a[data-footnote-ref],
+.post-content sup a[href*="fn-"],
+.post-content sup a[href*="user-content-fn-"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 24%, transparent);
+  text-decoration: none !important;
+  line-height: 1;
+  cursor: pointer;
+  scroll-margin-top: 100px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.article-body a[data-footnote-ref]:hover,
+.article-body sup a[href*="fn-"]:hover,
+.article-body sup a[href*="user-content-fn-"]:hover,
+.post-content a[data-footnote-ref]:hover,
+.post-content sup a[href*="fn-"]:hover,
+.post-content sup a[href*="user-content-fn-"]:hover {
+  background: var(--theme-main);
+  color: #ffffff !important;
+  border-color: var(--theme-main);
+  transform: translateY(-1px) scale(1.1);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-main) 35%, transparent);
+}
+
+/* Footnotes Section at Article Bottom */
+.article-body .footnotes,
+.article-body.post-content .footnotes,
+section[data-footnotes] {
+  margin: 3.5rem 0 2rem 0 !important;
+  padding: 1.4rem 1.6rem 1.6rem 1.6rem !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--card-bg) 88%, var(--secondbg)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border)) !important;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+  position: relative;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.article-body .footnotes:hover,
+section[data-footnotes]:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 28%, var(--card-border)) !important;
+  box-shadow: 0 6px 24px -4px color-mix(in srgb, var(--theme-main) 8%, rgba(0, 0, 0, 0.08));
+}
+
+.article-body .footnotes::before,
+section[data-footnotes]::before {
+  content: '📑 参考与注释 · Footnotes';
+  display: block;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--font-color);
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--theme-main) 20%, var(--card-border));
+  letter-spacing: 0.02em;
+}
+
+.article-body .footnotes #footnote-label,
+section[data-footnotes] #footnote-label,
+.article-body .footnotes .sr-only {
+  display: none !important;
+}
+
+.article-body .footnotes ol,
+.article-body.post-content .footnotes ol,
+section[data-footnotes] ol {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.9rem !important;
+  padding-left: 1.35rem !important;
+  margin: 0 !important;
+}
+
+.article-body .footnotes li,
+.article-body.post-content .footnotes li,
+section[data-footnotes] li {
+  font-size: 0.92rem !important;
+  line-height: 1.65 !important;
+  color: var(--font-color) !important;
+  scroll-margin-top: 100px !important;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2px 4px;
+}
+
+.article-body .footnotes li p,
+section[data-footnotes] li p {
+  margin: 0 !important;
+  display: inline;
+}
+
+/* Footnote Backref Callback Button (↩) */
+.article-body .data-footnote-backref,
+.article-body .footnote-backref,
+.article-body a[data-footnote-backref],
+.article-body.post-content .footnote-backref,
+.article-body.post-content .data-footnote-backref,
+section[data-footnotes] a[data-footnote-backref],
+section[data-footnotes] .data-footnote-backref {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 0.5rem !important;
+  padding: 1px 8px !important;
+  border-radius: 9999px !important;
+  font-size: 0.82rem !important;
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  color: var(--theme-main) !important;
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 26%, transparent) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  vertical-align: middle !important;
+  user-select: none;
+  gap: 4px;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--theme-main) 8%, transparent);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.article-body .data-footnote-backref:hover,
+.article-body .footnote-backref:hover,
+.article-body a[data-footnote-backref]:hover,
+.article-body.post-content .footnote-backref:hover,
+.article-body.post-content .data-footnote-backref:hover,
+section[data-footnotes] a[data-footnote-backref]:hover,
+section[data-footnotes] .data-footnote-backref:hover {
+  background: var(--theme-main) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main) !important;
+  transform: translateY(-1.5px) scale(1.08) !important;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--theme-main) 35%, transparent) !important;
+}
+
+.article-body .data-footnote-backref:active,
+.article-body .footnote-backref:active,
+section[data-footnotes] a[data-footnote-backref]:active {
+  transform: translateY(0) scale(0.95) !important;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--theme-main) 20%, transparent) !important;
+}
+
+.article-body .data-footnote-backref:focus-visible,
+section[data-footnotes] a[data-footnote-backref]:focus-visible {
+  outline: 2px solid var(--theme-main) !important;
+  outline-offset: 2px !important;
+}
+
+/* Fallback Scroll Margin for Anchors */
+[id^="user-content-fn"],
+[id^="fn-"],
+[id^="user-content-fnref"],
+[id^="fnref"],
+.footnotes li,
+sup[id],
+a[data-footnote-ref] {
+  scroll-margin-top: 100px !important;
+}
+
+/* High-Visibility Pulse Glow Animation on Rollback Target */
+@keyframes footnotePulseBadge {
+  0% {
+    background-color: var(--theme-main) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--theme-main) 80%, transparent) !important;
+    transform: scale(1.25) !important;
+  }
+  30% {
+    background-color: color-mix(in srgb, var(--theme-main) 50%, transparent) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 12px transparent !important;
+    transform: scale(1.12) !important;
+  }
+  60% {
+    background-color: color-mix(in srgb, var(--theme-main) 25%, var(--card-bg)) !important;
+    color: var(--theme-main) !important;
+    box-shadow: 0 0 0 6px transparent !important;
+    transform: scale(1.04) !important;
+  }
+  100% {
+    background-color: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg)) !important;
+    color: var(--theme-main) !important;
+    box-shadow: 0 0 0 0 transparent !important;
+    transform: scale(1) !important;
+  }
+}
+
+@keyframes footnotePulseLi {
+  0% {
+    background-color: color-mix(in srgb, var(--theme-main) 25%, transparent) !important;
+    border-left: 4px solid var(--theme-main) !important;
+    padding-left: 10px !important;
+    transform: translateX(4px) !important;
+    border-radius: 6px !important;
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--theme-main) 15%, transparent) !important;
+    border-left: 4px solid var(--theme-main) !important;
+    padding-left: 10px !important;
+    transform: translateX(2px) !important;
+    border-radius: 6px !important;
+  }
+  100% {
+    background-color: transparent !important;
+    border-left: 4px solid transparent !important;
+    padding-left: 4px !important;
+    transform: translateX(0) !important;
+    border-radius: 4px !important;
+  }
+}
+
+a[data-footnote-ref].footnote-target-active,
+sup.footnote-target-active,
+sup.footnote-target-active a,
+[id*="fnref"].footnote-target-active,
+[id*="fnref"].footnote-target-active a {
+  animation: footnotePulseBadge 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+  border-radius: 6px !important;
+}
+
+.footnotes li.footnote-target-active,
+section[data-footnotes] li.footnote-target-active {
+  animation: footnotePulseLi 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
 }
 
 /* --------------------------------------------------------------------------

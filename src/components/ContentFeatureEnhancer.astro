@@ -980,7 +980,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         });
       };
 
-      // 7. Footnotes Tooltips
+      // 7. Footnotes & Backrefs Interactivity & Smooth Rollback
       let footnoteTooltip = document.querySelector('.footnote-tooltip-popover');
       if (!footnoteTooltip) {
         footnoteTooltip = document.createElement('div');
@@ -988,16 +988,51 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         document.body.appendChild(footnoteTooltip);
       }
 
+      const getHeaderOffset = () => {
+        const header = document.querySelector('.site-header, #page-header, header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 60;
+        return headerHeight + 36; // 36px breathing room for reading context
+      };
+
+      const scrollToFootnoteTarget = (targetEl, highlightClass = 'footnote-target-active') => {
+        if (!targetEl) return;
+        const rect = targetEl.getBoundingClientRect();
+        const absoluteTop = rect.top + window.scrollY;
+        const targetScrollTop = Math.max(0, absoluteTop - getHeaderOffset());
+
+        window.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth',
+        });
+
+        // Trigger pulse highlight animation
+        targetEl.classList.remove(highlightClass);
+        void targetEl.offsetWidth; // Force DOM reflow to restart CSS animation
+        targetEl.classList.add(highlightClass);
+
+        setTimeout(() => {
+          targetEl.classList.remove(highlightClass);
+        }, 2500);
+      };
+
       const enhanceFootnotes = (article) => {
-        article.querySelectorAll('sup a[href*="fn-"], sup a[href*="user-content-fn-"], a[data-footnote-ref]').forEach((ref) => {
+        // A. In-text footnote reference links [^1]
+        const refSelector = 'sup a[href*="fn-"], sup a[href*="user-content-fn-"], a[data-footnote-ref], sup[id*="fnref"] a, [id*="fnref"] a';
+        article.querySelectorAll(refSelector).forEach((ref) => {
           if (ref.dataset.footnoteBound === 'true') return;
           ref.dataset.footnoteBound = 'true';
 
+          // Tooltip on Hover
           ref.addEventListener('mouseenter', () => {
             const href = ref.getAttribute('href');
             if (!href || !href.startsWith('#')) return;
             const targetId = href.slice(1);
-            const targetEl = document.getElementById(targetId) || document.getElementById(decodeURIComponent(targetId));
+            let targetEl = document.getElementById(targetId) || document.getElementById(decodeURIComponent(targetId));
+            if (!targetEl) {
+              try {
+                targetEl = article.querySelector(`[id="${CSS.escape(targetId)}"]`) || article.querySelector(`[id="${CSS.escape(decodeURIComponent(targetId))}"]`);
+              } catch (_) {}
+            }
             if (!targetEl) return;
 
             const text = targetEl.textContent?.replace(/↩.*/, '').trim() || '';
@@ -1012,6 +1047,76 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           ref.addEventListener('mouseleave', () => {
             footnoteTooltip.classList.remove('is-visible');
+          });
+
+          // Smooth jump to footnote definition at bottom
+          ref.addEventListener('click', (e) => {
+            const href = ref.getAttribute('href');
+            if (!href || !href.startsWith('#')) return;
+            const targetId = href.slice(1);
+            let targetEl = document.getElementById(targetId) || document.getElementById(decodeURIComponent(targetId));
+            if (!targetEl) {
+              try {
+                targetEl = article.querySelector(`[id="${CSS.escape(targetId)}"]`) || article.querySelector(`[id="${CSS.escape(decodeURIComponent(targetId))}"]`);
+              } catch (_) {}
+            }
+            if (!targetEl) return;
+
+            e.preventDefault();
+            footnoteTooltip.classList.remove('is-visible');
+            scrollToFootnoteTarget(targetEl, 'footnote-target-active');
+            try {
+              history.pushState(null, '', href);
+            } catch (_) {}
+          });
+        });
+
+        // B. Footnote backref buttons (↩) in the footer
+        const backrefSelector = '.footnotes a[data-footnote-backref], .data-footnote-backref, a[data-footnote-backref], .footnotes .footnote-backref, a.data-footnote-backref, .footnotes a[href*="fnref"], [data-footnotes] a[href*="fnref"]';
+        article.querySelectorAll(backrefSelector).forEach((backref) => {
+          if (backref.dataset.footnoteBackrefBound === 'true') return;
+          backref.dataset.footnoteBackrefBound = 'true';
+
+          // Set accessible attributes and tooltip text
+          if (!backref.getAttribute('title')) {
+            backref.setAttribute('title', '回到文章引用位置');
+          }
+          if (!backref.getAttribute('aria-label')) {
+            backref.setAttribute('aria-label', '回到文章引用位置');
+          }
+
+          backref.addEventListener('click', (e) => {
+            const href = backref.getAttribute('href');
+            if (!href || !href.startsWith('#')) return;
+            const targetId = href.slice(1);
+
+            let targetEl = document.getElementById(targetId) || document.getElementById(decodeURIComponent(targetId));
+            if (!targetEl) {
+              try {
+                targetEl = document.querySelector(`[id="${CSS.escape(targetId)}"]`) || document.querySelector(`[id="${CSS.escape(decodeURIComponent(targetId))}"]`);
+              } catch (_) {}
+            }
+            if (!targetEl) {
+              // Try finding the matching sup or a[data-footnote-ref]
+              targetEl = article.querySelector(`sup[id*="${targetId}"], a[id*="${targetId}"], a[href="#${targetId}"]`);
+            }
+
+            if (!targetEl) return;
+
+            e.preventDefault();
+            if (footnoteTooltip) {
+              footnoteTooltip.classList.remove('is-visible');
+            }
+
+            scrollToFootnoteTarget(targetEl, 'footnote-target-active');
+
+            try {
+              history.pushState(null, '', href);
+            } catch (_) {}
+
+            if (targetEl instanceof HTMLElement) {
+              targetEl.focus?.({ preventScroll: true });
+            }
           });
         });
       };
