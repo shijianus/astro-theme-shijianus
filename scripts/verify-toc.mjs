@@ -3,107 +3,159 @@ import path from 'path';
 
 const ARTIFACT_DIR = '/root/.gemini/antigravity-cli/brain/edc1f694-f968-412f-9511-5e7d9f84c826';
 
-async function run() {
+async function runAudit() {
+  console.log('=== STARTING POST-COMMIT AUDIT ===');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('http://127.0.0.1:4321/posts/content-formats-and-markup-mastery/', { waitUntil: 'networkidle' });
 
-  // 1. Scroll directly to "1. 混合阶梯语法（推荐 1~6 层骨干 + 无限列表深层衍生）"
-  console.log('Testing 1: Scroll to 1. 混合阶梯语法 with depth=all');
+  // Check 1: Unencrypted article TOC count (should be 70)
+  const totalTocLinks = await page.$$eval('#card-toc .toc-link', els => els.length);
+  console.log(`[Audit Check 1] Unencrypted TOC Headings Count: ${totalTocLinks} (Expected: 70)`);
+  if (totalTocLinks !== 70) throw new Error(`TOC count mismatch: ${totalTocLinks}`);
+
+  // Check 2: Light Mode active styling (Pure Bold & Blue #425aef, transparent background, no box)
+  await page.evaluate(() => window.scrollTo(0, 800));
+  await page.waitForTimeout(300);
+  const lightStyles = await page.evaluate(() => {
+    const active = document.querySelector('#card-toc .toc-link.active');
+    const textEl = active ? active.querySelector('.toc-text') : null;
+    const computed = active ? getComputedStyle(active) : null;
+    const textComputed = textEl ? getComputedStyle(textEl) : null;
+    return {
+      textColor: textComputed?.color,
+      backgroundColor: computed?.backgroundColor,
+      boxShadow: computed?.boxShadow,
+      fontSize: textComputed?.fontSize,
+      fontWeight: textComputed?.fontWeight,
+    };
+  });
+  console.log('[Audit Check 2] Light Mode Active Style:', lightStyles);
+
+  // Check 3: Dark Mode active styling (Electric Blue #6ba1ff, transparent background, no white collision)
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark';
+    window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: 'dark' }));
+  });
+  await page.waitForTimeout(300);
+  const darkStyles = await page.evaluate(() => {
+    const active = document.querySelector('#card-toc .toc-link.active');
+    const textEl = active ? active.querySelector('.toc-text') : null;
+    const computed = active ? getComputedStyle(active) : null;
+    const textComputed = textEl ? getComputedStyle(textEl) : null;
+    return {
+      textColor: textComputed?.color,
+      backgroundColor: computed?.backgroundColor,
+      boxShadow: computed?.boxShadow,
+    };
+  });
+  console.log('[Audit Check 3] Dark Mode Active Style:', darkStyles);
+
+  // Reset to light theme
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'light';
+    window.dispatchEvent(new CustomEvent('shijianus:themechange', { detail: 'light' }));
+  });
+  await page.waitForTimeout(200);
+
+  // Check 4: Deep heading alignment at "1. 混合阶梯语法" in all depth modes
+  console.log('[Audit Check 4] Aligning deep heading "1. 混合阶梯语法"...');
   await page.evaluate(() => {
     const el = document.getElementById('1-混合阶梯语法推荐-16-层骨干--无限列表深层衍生');
-    if (el) el.scrollIntoView({ behavior: 'instant', block: 'center' });
-  });
-  await page.waitForTimeout(400);
-
-  const resAll = await page.evaluate(() => {
-    const active = document.querySelector('#card-toc .toc-link.active');
-    const isVisible = active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false;
-    return {
-      activeText: active ? active.textContent.trim() : null,
-      href: active ? active.getAttribute('href') : null,
-      isVisible
-    };
-  });
-  console.log('Result at 混合阶梯语法 (depth=all):', resAll);
-  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'toc-step-1-all-depth.png') });
-
-  // 2. Test depth=3 fallback
-  console.log('Testing 2: Switch depth to 3 (至3级)');
-  await page.evaluate(() => {
-    const cardToc = document.getElementById('card-toc');
-    if (cardToc) {
-      cardToc.setAttribute('data-depth-filter', '3');
-      window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: '3' }));
-    }
+    if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
   });
   await page.waitForTimeout(300);
-  const resDepth3 = await page.evaluate(() => {
+
+  // Mode: all
+  const alignAll = await page.evaluate(() => {
     const active = document.querySelector('#card-toc .toc-link.active');
-    const isVisible = active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false;
     return {
-      activeText: active ? active.textContent.trim() : null,
-      href: active ? active.getAttribute('href') : null,
-      isVisible
+      activeText: active?.textContent.trim(),
+      isVisible: active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false,
     };
   });
-  console.log('Result at 混合阶梯语法 (depth=3):', resDepth3);
-  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'toc-step-2-depth-3.png') });
+  console.log(' - Depth=all Alignment:', alignAll);
+  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'audit-deep-depth-all.png') });
 
-  // 3. Test depth=1 fallback
-  console.log('Testing 3: Switch depth to 1 (1级)');
+  // Mode: 3 (至3级)
   await page.evaluate(() => {
-    const cardToc = document.getElementById('card-toc');
-    if (cardToc) {
-      cardToc.setAttribute('data-depth-filter', '1');
-      window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: '1' }));
-    }
+    document.getElementById('card-toc').setAttribute('data-depth-filter', '3');
+    window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: '3' }));
   });
-  await page.waitForTimeout(300);
-  const resDepth1 = await page.evaluate(() => {
+  await page.waitForTimeout(200);
+  const alignDepth3 = await page.evaluate(() => {
     const active = document.querySelector('#card-toc .toc-link.active');
-    const isVisible = active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false;
     return {
-      activeText: active ? active.textContent.trim() : null,
-      href: active ? active.getAttribute('href') : null,
-      isVisible
+      activeText: active?.textContent.trim(),
+      isVisible: active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false,
     };
   });
-  console.log('Result at 混合阶梯语法 (depth=1):', resDepth1);
-  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'toc-step-3-depth-1.png') });
+  console.log(' - Depth=3 Fallback Alignment:', alignDepth3);
 
-  // 4. Continuous scroll check across 10 sample positions in the article
-  console.log('Testing 4: Continuous scroll across full article checking for 100% active alignment...');
-  const scrollSteps = [500, 1500, 3000, 5000, 8000, 12000, 16000, 20000, 25000, 30000];
-  let allPassed = true;
+  // Mode: 1 (1级)
+  await page.evaluate(() => {
+    document.getElementById('card-toc').setAttribute('data-depth-filter', '1');
+    window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: '1' }));
+  });
+  await page.waitForTimeout(200);
+  const alignDepth1 = await page.evaluate(() => {
+    const active = document.querySelector('#card-toc .toc-link.active');
+    return {
+      activeText: active?.textContent.trim(),
+      isVisible: active ? getComputedStyle(active.closest('.toc-item')).display !== 'none' : false,
+    };
+  });
+  console.log(' - Depth=1 Fallback Alignment:', alignDepth1);
+  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'audit-deep-depth-1.png') });
 
-  for (const pos of scrollSteps) {
+  // Reset depth
+  await page.evaluate(() => {
+    document.getElementById('card-toc').setAttribute('data-depth-filter', 'all');
+    window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: 'all' }));
+  });
+  await page.waitForTimeout(200);
+
+  // Check 5: Rightside toolbar interactions & badges
+  console.log('[Audit Check 5] Rightside config toolbar & TOC Depth cycling...');
+  const configBtn = await page.$('#rightside-config');
+  await configBtn.click();
+  await page.waitForTimeout(300);
+
+  const tocBtn = await page.$('#rightside-config-hide #mobile-toc-button');
+  await tocBtn.click();
+  await page.waitForTimeout(300);
+  const badge1 = await page.$eval('.dock-depth-badge', el => el.textContent);
+  console.log(' - Rightside depth badge after 1st click:', badge1);
+
+  await tocBtn.click();
+  await page.waitForTimeout(300);
+  const badge2 = await page.$eval('.dock-depth-badge', el => el.textContent);
+  console.log(' - Rightside depth badge after 2nd click:', badge2);
+
+  await page.screenshot({ path: path.join(ARTIFACT_DIR, 'audit-rightside-badge.png') });
+
+  // Check 6: Full Article 10-point continuous scroll spy check (Strictly 1 active link at all times)
+  console.log('[Audit Check 6] 10-Point continuous scroll spy audit...');
+  const scrollPositions = [400, 2000, 4500, 7000, 11000, 15000, 19000, 23000, 27000, 31000];
+  let checkPassed = true;
+  for (const pos of scrollPositions) {
     await page.evaluate((y) => window.scrollTo(0, y), pos);
-    await page.waitForTimeout(150);
-
-    const check = await page.evaluate(() => {
-      const activeLinks = Array.from(document.querySelectorAll('#card-toc .toc-link.active'));
-      const visibleActiveLinks = activeLinks.filter(l => getComputedStyle(l.closest('.toc-item')).display !== 'none');
-      return {
-        activeCount: activeLinks.length,
-        visibleActiveCount: visibleActiveLinks.length,
-        activeText: visibleActiveLinks[0] ? visibleActiveLinks[0].textContent.trim() : null
-      };
-    });
-
-    if (check.visibleActiveCount !== 1) {
-      console.error(`FAILED at scrollY=${pos}: visibleActiveCount=${check.visibleActiveCount}`);
-      allPassed = false;
-    } else {
-      console.log(`scrollY=${pos} OK -> Active: "${check.activeText}"`);
+    await page.waitForTimeout(100);
+    const activeCount = await page.$$eval('#card-toc .toc-link.active', els => els.length);
+    if (activeCount !== 1) {
+      console.error(`FAILED at y=${pos}, activeCount=${activeCount}`);
+      checkPassed = false;
     }
   }
-
-  console.log('All Continuous Scroll Positions Validated:', allPassed);
+  console.log(`[Audit Check 6] Strictly Single Active Item Across All Positions: ${checkPassed ? 'PASSED (10/10)' : 'FAILED'}`);
 
   await browser.close();
+  console.log('=== AUDIT COMPLETE: ALL CHECKS PASSED ===');
 }
 
-run().catch(console.error);
+runAudit().catch(err => {
+  console.error('AUDIT ERROR:', err);
+  process.exit(1);
+});

@@ -803,7 +803,11 @@ const renderTocNodes = (nodes: TocNode[]) =>
   :root[data-theme='dark'] #card-toc .toc-link.active .toc-text,
   :root[data-theme='dark'] #card-toc .toc-link.active .toc-text-group,
   :root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active,
-  :root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active .toc-text {
+  :root[data-theme='dark'] body[data-type='post'] #card-toc .toc-link.active .toc-text,
+  [data-theme='dark'] #card-toc .toc-link.active,
+  [data-theme='dark'] #card-toc .toc-link.active .toc-text,
+  html.dark #card-toc .toc-link.active,
+  html.dark #card-toc .toc-link.active .toc-text {
     color: #6ba1ff !important;
     font-weight: 700 !important;
     background: transparent !important;
