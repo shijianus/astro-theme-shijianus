@@ -1065,6 +1065,20 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             e.preventDefault();
             footnoteTooltip.classList.remove('is-visible');
             scrollToFootnoteTarget(targetEl, 'footnote-target-active');
+
+            // Show top notification popup explaining jump to footnote
+            const refLabel = ref.textContent?.trim() || '';
+            const msg = refLabel ? `已跳转至页尾注释释义 [${refLabel}]` : '已跳转至页尾注释释义';
+            if (typeof window.snackbarShow === 'function') {
+              window.snackbarShow(msg, false, 2000);
+            } else if (typeof window.showToast === 'function') {
+              window.showToast(msg, 2000);
+            } else {
+              window.dispatchEvent(new CustomEvent('shijianus:activity', {
+                detail: { message: msg, duration: 2000 }
+              }));
+            }
+
             try {
               history.pushState(null, '', href);
             } catch (_) {}
@@ -1079,10 +1093,10 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           // Set accessible attributes and tooltip text
           if (!backref.getAttribute('title')) {
-            backref.setAttribute('title', '回到文章引用位置');
+            backref.setAttribute('title', '回到文章正文引用处');
           }
           if (!backref.getAttribute('aria-label')) {
-            backref.setAttribute('aria-label', '回到文章引用位置');
+            backref.setAttribute('aria-label', '回到文章正文引用处');
           }
 
           backref.addEventListener('click', (e) => {
@@ -1109,6 +1123,19 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             }
 
             scrollToFootnoteTarget(targetEl, 'footnote-target-active');
+
+            // Show top notification popup explaining rollback to body
+            const refLabel = targetEl.textContent?.trim() || '';
+            const msg = refLabel ? `已回到文章正文引用位置 [${refLabel}]` : '已回到文章正文引用位置';
+            if (typeof window.snackbarShow === 'function') {
+              window.snackbarShow(msg, false, 2000);
+            } else if (typeof window.showToast === 'function') {
+              window.showToast(msg, 2000);
+            } else {
+              window.dispatchEvent(new CustomEvent('shijianus:activity', {
+                detail: { message: msg, duration: 2000 }
+              }));
+            }
 
             try {
               history.pushState(null, '', href);
