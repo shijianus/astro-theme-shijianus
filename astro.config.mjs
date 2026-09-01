@@ -219,6 +219,59 @@ function stripeAndGeoDevIntegration() {
             }
             return;
           }
+          if (req.url && (req.url === '/api/record-blessing' || req.url.startsWith('/api/record-blessing?')) && req.method === 'POST') {
+            try {
+              let bodyStr = '';
+              req.on('data', (chunk) => {
+                bodyStr += chunk;
+              });
+              req.on('end', async () => {
+                try {
+                  const payload = JSON.parse(bodyStr || '{}');
+                  const amount = typeof payload?.amount === 'number' ? payload.amount : 500;
+                  const currency = (payload?.currency || 'usd').toLowerCase();
+                  const name = payload?.name?.trim() || '匿名支持者';
+                  const message = payload?.message?.trim() || '（支持作者，感谢创作！）';
+                  const clientCountry = payload?.country || 'GLOBAL';
+
+                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
+                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
+                  if (tgToken && tgChatId) {
+                    const formattedAmount = `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
+                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+                    const text = [
+                      `🎉 *收到新的博客赞赏与寄语祝福 (EpoCanvas)*`,
+                      `━━━━━━━━━━━━━━━━━━`,
+                      `💰 *赞赏金额*: \`${formattedAmount}\` *(支付已完成 ✓)*`,
+                      `👤 *赞赏者*: *${name.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}*`,
+                      `💬 *寄语祝福*: ${message.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}`,
+                      `🌍 *地区*: \`${clientCountry}\` (Dev Server)`,
+                      `💳 *支付通道*: Stripe Checkout`,
+                      `🆔 *订单标识*: \`${payload?.id || 'N/A'}\``,
+                      `🕒 *完成时间*: \`${nowStr}\``,
+                      `━━━━━━━━━━━━━━━━━━`,
+                    ].join('\n');
+                    fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'MarkdownV2' }),
+                    }).catch(() => {});
+                  }
+
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(200);
+                  res.end(JSON.stringify({ ok: true, message: 'Blessing recorded successfully' }));
+                } catch (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(500);
+                  res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
+                }
+              });
+            } catch (err) {
+              next();
+            }
+            return;
+          }
           next();
         });
       },

@@ -8,7 +8,7 @@ import {
   Globe,
   RefreshCw,
   AlertCircle,
-  X,
+  Sparkles,
 } from 'lucide-react';
 
 export type RegionKey = 'CN' | 'HK' | 'GB' | 'GLOBAL';
@@ -80,7 +80,6 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
   const [isManualOverride, setIsManualOverride] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<string>('');
-  const [isDetectingGeo, setIsDetectingGeo] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [popoverPos, setPopoverPos] = useState<'up' | 'down'>('up');
 
@@ -93,8 +92,6 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     if (isManualOverride) return;
 
     let isMounted = true;
-    setIsDetectingGeo(true);
-
     fetch('/api/geo-profile')
       .then((res) => {
         if (!res.ok) throw new Error('Geo API failed');
@@ -118,9 +115,6 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
       .catch(() => {
         if (!isMounted) return;
         setRegion('CN');
-      })
-      .finally(() => {
-        if (isMounted) setIsDetectingGeo(false);
       });
 
     return () => {
@@ -134,7 +128,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     const rect = containerRef.current.getBoundingClientRect();
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
-    const popoverHeight = popoverRef.current?.offsetHeight || 320;
+    const popoverHeight = popoverRef.current?.offsetHeight || 380;
 
     if (spaceAbove < popoverHeight + 20 || (spaceAbove < 260 && spaceBelow > spaceAbove)) {
       setPopoverPos('down');
@@ -172,7 +166,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     }, 2800);
   };
 
-  // PayPal click
+  // PayPal click: copy & open in new tab
   const handlePayPalClick = (url: string, regionLabel: string) => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).catch(() => {});
@@ -185,7 +179,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     }
   };
 
-  // USDT click
+  // USDT click: copy address
   const handleUsdtClick = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(arbitrumAddress).catch(() => {});
@@ -207,7 +201,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     showToast('已恢复自动 IP 地区识别');
   };
 
-  // Open the 2-step Stripe Modal
+  // Open the dedicated 2-step Stripe Modal
   const handleOpenStripeModal = () => {
     setIsPinned(false);
     setIsOpen(false);
@@ -245,7 +239,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const currentPaypalUrl =
     region === 'GB' ? (paypalUkMeUrl || paypalMeUrl) : paypalMeUrl;
 
-  // Event listener for opening post reward extension
+  // Listen for global open post reward extension event
   useEffect(() => {
     const handleTrigger = (e: CustomEvent<{ region?: RegionKey }>) => {
       if (e.detail?.region && ['CN', 'HK', 'GB', 'GLOBAL'].includes(e.detail.region)) {
@@ -306,16 +300,20 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
         <div
           ref={popoverRef}
           style={{ display: 'flex', flexDirection: 'column' }}
-          className={`reward-main is-pinned absolute z-[100] w-[310px] sm:w-max max-w-[calc(100vw-36px)] sm:max-w-[420px] transition-all animate-in fade-in duration-200 ${
+          className={`reward-main is-pinned z-[100] transition-all animate-in fade-in duration-200 max-sm:fixed max-sm:inset-x-3 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:max-h-[90vh] max-sm:w-auto max-sm:max-w-none sm:absolute ${
+            region === 'HK'
+              ? 'sm:w-[520px]'
+              : 'sm:w-[380px]'
+          } ${
             popoverPos === 'up'
-              ? 'bottom-[calc(100%+12px)] left-0'
-              : 'top-[calc(100%+12px)] left-0'
+              ? 'sm:bottom-[calc(100%+12px)] sm:left-0'
+              : 'sm:top-[calc(100%+12px)] sm:left-0'
           }`}
           role="region"
           aria-label="赞赏支持扩展栏"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="reward-all rounded-2xl bg-white dark:bg-[#13151b] backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 shadow-2xl p-3.5 sm:p-5 text-slate-800 dark:text-slate-100 flex flex-col space-y-3 sm:space-y-3.5">
+          <div className="reward-all rounded-2xl bg-white dark:bg-[#13151b] backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 shadow-2xl p-4 sm:p-5 text-slate-800 dark:text-slate-100 flex flex-col space-y-3.5 max-h-full overflow-y-auto">
             {/* 1. 卡片顶部标题与地区选择器 */}
             <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-100 dark:border-white/10">
               <div className="flex items-center gap-2">
@@ -327,7 +325,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                     赞赏支持作者
                   </div>
                   <div className="text-[10px] text-slate-400 dark:text-slate-500">
-                    请作者喝杯咖啡 ☕️
+                    如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️
                   </div>
                 </div>
               </div>
@@ -337,10 +335,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsRegionDropdownOpen(!isRegionDropdownOpen)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-[11px] font-semibold transition-colors cursor-pointer border border-slate-200/70 dark:border-white/10"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-[11px] font-semibold transition-colors cursor-pointer border border-slate-200/70 dark:border-white/10"
                 >
                   <span>{currentRegionMeta.flag}</span>
-                  <span className="truncate max-w-[65px]">{currentRegionMeta.label}</span>
+                  <span className="truncate max-w-[70px]">{currentRegionMeta.label}</span>
                   <ChevronDown className="w-3 h-3 opacity-60" />
                 </button>
 
@@ -389,10 +387,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
             {/* 2.1 中国大陆 (CN): 2张卡片 (微信 & 支付宝) */}
             {region === 'CN' && (
               <div className="space-y-2.5">
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   {/* 微信支付 */}
-                  <div className="flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-emerald-500/20 shadow-xs hover:border-emerald-500/40 transition-all">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs">
+                  <div className="flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-emerald-500/25 hover:border-emerald-500/50 shadow-xs hover:shadow-md transition-all">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs">
                       <img
                         src="/media/shijianus/support/weixin-pay-cn.jpg"
                         alt="微信支付二维码"
@@ -400,15 +398,15 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                      <WeChatIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <WeChatIcon className="w-4 h-4" />
                       <span>微信扫一扫</span>
                     </div>
                   </div>
 
                   {/* 支付宝 */}
-                  <div className="flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-blue-500/20 shadow-xs hover:border-blue-500/40 transition-all">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs">
+                  <div className="flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-blue-500/25 hover:border-blue-500/50 shadow-xs hover:shadow-md transition-all">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs">
                       <img
                         src="/media/shijianus/support/alipay-cn.jpg"
                         alt="支付宝二维码"
@@ -416,8 +414,8 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      <AlipayIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
+                      <AlipayIcon className="w-4 h-4" />
                       <span>支付宝扫一扫</span>
                     </div>
                   </div>
@@ -429,13 +427,13 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
               </div>
             )}
 
-            {/* 2.2 中国香港 (HK): 3张卡片 (WeChat HK, Alipay HK, PayPal HK) */}
+            {/* 2.2 中国香港 (HK): 3张宽敞卡片 (WeChat HK, Alipay HK, PayPal HK) */}
             {region === 'HK' && (
               <div className="space-y-2.5">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {/* WeChat Pay HK */}
-                  <div className="flex flex-col items-center p-2 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-emerald-500/20 shadow-xs">
-                    <div className="w-20 h-20 bg-white p-1 rounded-md flex items-center justify-center overflow-hidden shadow-2xs">
+                  <div className="flex flex-col items-center p-2 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-emerald-500/25 hover:border-emerald-500/50 shadow-xs hover:shadow-md transition-all">
+                    <div className="w-[82px] h-[82px] sm:w-[130px] sm:h-[130px] bg-white p-1.5 sm:p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs">
                       <img
                         src="/media/shijianus/support/wechat-pay-hk.jpg"
                         alt="WeChat Pay HK"
@@ -443,15 +441,15 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-1.5 flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 text-center">
-                      <WeChatIcon className="w-3 h-3 shrink-0" />
-                      <span className="truncate">WeChat HK</span>
+                    <div className="mt-1.5 sm:mt-2.5 flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 text-center">
+                      <WeChatIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
+                      <span>WeChat HK</span>
                     </div>
                   </div>
 
                   {/* Alipay HK */}
-                  <div className="flex flex-col items-center p-2 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-blue-500/20 shadow-xs">
-                    <div className="w-20 h-20 bg-white p-1 rounded-md flex items-center justify-center overflow-hidden shadow-2xs">
+                  <div className="flex flex-col items-center p-2 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-blue-500/25 hover:border-blue-500/50 shadow-xs hover:shadow-md transition-all">
+                    <div className="w-[82px] h-[82px] sm:w-[130px] sm:h-[130px] bg-white p-1.5 sm:p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs">
                       <img
                         src="/media/shijianus/support/alipay-hk.jpg"
                         alt="Alipay HK"
@@ -459,19 +457,19 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-1.5 flex items-center gap-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 text-center">
-                      <AlipayIcon className="w-3 h-3 shrink-0" />
-                      <span className="truncate">Alipay HK</span>
+                    <div className="mt-1.5 sm:mt-2.5 flex items-center gap-1 text-[11px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 text-center">
+                      <AlipayIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
+                      <span>Alipay HK</span>
                     </div>
                   </div>
 
-                  {/* PayPal HK (Clickable) */}
+                  {/* PayPal HK (High-End Card with Click to Copy & Jump) */}
                   <div
                     onClick={() => handlePayPalClick(paypalMeUrl, 'HK')}
-                    className="group flex flex-col items-center p-2 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-[#0070ba]/30 hover:border-[#0070ba] shadow-xs hover:shadow-sm transition-all cursor-pointer"
-                    title="点击跳转 PayPal HK 付款"
+                    className="group flex flex-col items-center p-2 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-[#0079C1]/30 hover:border-[#0079C1] shadow-xs hover:shadow-md hover:shadow-blue-500/10 transition-all cursor-pointer"
+                    title="点击扫码或跳转 PayPal HK 付款"
                   >
-                    <div className="w-20 h-20 bg-white p-1 rounded-md flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-[82px] h-[82px] sm:w-[130px] sm:h-[130px] bg-white p-1.5 sm:p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-[1.03] transition-transform">
                       <img
                         src="/media/shijianus/support/paypal-hk.jpg"
                         alt="PayPal HK"
@@ -479,9 +477,9 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-1.5 flex items-center gap-0.5 text-[10px] font-bold text-[#0070ba] dark:text-[#009cde] text-center">
-                      <PayPalIcon className="w-3 h-3 shrink-0" />
-                      <span className="truncate">PayPal HK ↗</span>
+                    <div className="mt-1.5 sm:mt-2.5 flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#0079C1] dark:text-[#38bdf8] text-center">
+                      <PayPalIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
+                      <span>PayPal HK ↗</span>
                     </div>
                   </div>
                 </div>
@@ -495,14 +493,14 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
             {/* 2.3 英国 (GB): PayPal UK + USDT Arbitrum + Stripe 按钮 */}
             {region === 'GB' && (
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* PayPal UK (Clickable) */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* PayPal UK (High-End Card) */}
                   <div
                     onClick={() => handlePayPalClick(paypalUkMeUrl || paypalMeUrl, 'UK')}
-                    className="group flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-[#0070ba]/30 hover:border-[#0070ba] shadow-xs hover:shadow-sm transition-all cursor-pointer"
-                    title="点击跳转 PayPal UK 付款"
+                    className="group flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-[#0079C1]/30 hover:border-[#0079C1] shadow-xs hover:shadow-md hover:shadow-blue-500/10 transition-all cursor-pointer"
+                    title="点击扫码或跳转 PayPal UK 付款"
                   >
-                    <div className="w-28 h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-[1.03] transition-transform">
                       <img
                         src="/media/shijianus/support/paypal-uk.jpg"
                         alt="PayPal UK"
@@ -510,8 +508,8 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#0070ba] dark:text-[#009cde]">
-                      <PayPalIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-[#0079C1] dark:text-[#38bdf8]">
+                      <PayPalIcon className="w-4 h-4" />
                       <span>PayPal (UK) ↗</span>
                     </div>
                   </div>
@@ -519,10 +517,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                   {/* USDT Arbitrum (Clickable to copy) */}
                   <div
                     onClick={handleUsdtClick}
-                    className="group flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-[#26A17B]/30 hover:border-[#26A17B] shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                    className="group flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-[#26A17B]/30 hover:border-[#26A17B] shadow-xs hover:shadow-md hover:shadow-emerald-500/10 transition-all cursor-pointer"
                     title="点击直接复制 USDT 钱包地址"
                   >
-                    <div className="w-28 h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-[1.03] transition-transform">
                       <img
                         src="/media/shijianus/support/0x00d52edc5230dD21F521D8396c68b84D576e6041_Arbitrum.jpg"
                         alt="USDT Arbitrum"
@@ -530,31 +528,31 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#26A17B] dark:text-emerald-400">
-                      <UsdtIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-[#26A17B] dark:text-emerald-400">
+                      <UsdtIcon className="w-4 h-4" />
                       <span>USDT (Arbitrum) 📋</span>
                     </div>
                   </div>
                 </div>
 
                 {/* USDT 提示信息 */}
-                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-500/20 text-[10px] text-amber-800 dark:text-amber-300 space-y-0.5">
+                <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
                   <div className="flex items-center gap-1 font-bold">
-                    <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                     <span>USDT 链路提示</span>
                   </div>
-                  <p className="text-amber-700 dark:text-amber-300/80 leading-tight">
-                    请使用 <strong className="underline">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
+                  <p className="text-amber-700 dark:text-amber-300/90 leading-tight">
+                    请使用 <strong className="underline font-bold">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
                   </p>
                 </div>
 
-                {/* Stripe 收银台入口 Button (点击唤起专属 UI 弹窗) */}
+                {/* Stripe 收银台入口 Button */}
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <CreditCard className="w-3.5 h-3.5" />
+                  <CreditCard className="w-4 h-4" />
                   <span>通过 Stripe 信用卡 / Apple Pay 赞赏 →</span>
                 </button>
               </div>
@@ -563,14 +561,14 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
             {/* 2.4 全球其它 (GLOBAL): PayPal Global + USDT Arbitrum + Stripe 按钮 */}
             {region === 'GLOBAL' && (
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* PayPal Global (Clickable) */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* PayPal Global (High-End Card) */}
                   <div
                     onClick={() => handlePayPalClick(paypalMeUrl, 'Global')}
-                    className="group flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-[#0070ba]/30 hover:border-[#0070ba] shadow-xs hover:shadow-sm transition-all cursor-pointer"
-                    title="点击跳转 PayPal 付款"
+                    className="group flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-[#0079C1]/30 hover:border-[#0079C1] shadow-xs hover:shadow-md hover:shadow-blue-500/10 transition-all cursor-pointer"
+                    title="点击扫码或跳转 PayPal 付款"
                   >
-                    <div className="w-28 h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-[1.03] transition-transform">
                       <img
                         src="/media/shijianus/support/paypal-hk.jpg"
                         alt="PayPal Global"
@@ -578,8 +576,8 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#0070ba] dark:text-[#009cde]">
-                      <PayPalIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-[#0079C1] dark:text-[#38bdf8]">
+                      <PayPalIcon className="w-4 h-4" />
                       <span>PayPal ↗</span>
                     </div>
                   </div>
@@ -587,10 +585,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                   {/* USDT Arbitrum (Clickable to copy) */}
                   <div
                     onClick={handleUsdtClick}
-                    className="group flex flex-col items-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-[#26A17B]/30 hover:border-[#26A17B] shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                    className="group flex flex-col items-center p-3 rounded-xl bg-slate-50/80 dark:bg-[#181b22] border border-[#26A17B]/30 hover:border-[#26A17B] shadow-xs hover:shadow-md hover:shadow-emerald-500/10 transition-all cursor-pointer"
                     title="点击直接复制 USDT 钱包地址"
                   >
-                    <div className="w-28 h-28 bg-white p-1.5 rounded-lg flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-[130px] h-[130px] bg-white p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-2xs group-hover:scale-[1.03] transition-transform">
                       <img
                         src="/media/shijianus/support/0x00d52edc5230dD21F521D8396c68b84D576e6041_Arbitrum.jpg"
                         alt="USDT Arbitrum"
@@ -598,50 +596,50 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                         loading="lazy"
                       />
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#26A17B] dark:text-emerald-400">
-                      <UsdtIcon className="w-3.5 h-3.5" />
+                    <div className="mt-2.5 flex items-center gap-1 text-xs font-bold text-[#26A17B] dark:text-emerald-400">
+                      <UsdtIcon className="w-4 h-4" />
                       <span>USDT (Arbitrum) 📋</span>
                     </div>
                   </div>
                 </div>
 
                 {/* USDT 提示信息 */}
-                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-500/20 text-[10px] text-amber-800 dark:text-amber-300 space-y-0.5">
+                <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
                   <div className="flex items-center gap-1 font-bold">
-                    <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                     <span>USDT 链路提示</span>
                   </div>
-                  <p className="text-amber-700 dark:text-amber-300/80 leading-tight">
-                    请使用 <strong className="underline">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
+                  <p className="text-amber-700 dark:text-amber-300/90 leading-tight">
+                    请使用 <strong className="underline font-bold">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
                   </p>
                 </div>
 
-                {/* Stripe 收银台入口 Button (点击唤起专属 UI 弹窗) */}
+                {/* Stripe 收银台入口 Button */}
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <CreditCard className="w-3.5 h-3.5" />
+                  <CreditCard className="w-4 h-4" />
                   <span>通过 Stripe 信用卡 / Apple Pay 赞赏 →</span>
                 </button>
               </div>
             )}
 
             {/* 3. 卡片底部信息 */}
-            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500">
-              <div className="flex items-center gap-1">
-                <Globe className="w-3 h-3 text-blue-500" />
+            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+              <div className="flex items-center gap-1 font-medium">
+                <Globe className="w-3.5 h-3.5 text-blue-500" />
                 <span>{isManualOverride ? `已选 ${currentRegionMeta.label}` : currentRegionMeta.label}</span>
               </div>
               <a
                 href="/status/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-0.5 transition-colors"
+                className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-0.5 transition-colors font-medium"
               >
                 <span>赞赏记录</span>
-                <ExternalLink className="w-2.5 h-2.5" />
+                <ExternalLink className="w-3 h-3" />
               </a>
             </div>
           </div>
@@ -650,8 +648,8 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
 
       {/* 浮动 Toast 提示 */}
       {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xl backdrop-blur-md flex items-center gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150 pointer-events-none">
-          <Check className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900 px-4 py-2 rounded-full text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150 pointer-events-none">
+          <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
           <span>{toastMsg}</span>
         </div>
       )}

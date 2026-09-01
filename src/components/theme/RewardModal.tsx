@@ -1,24 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  X,
   CreditCard,
+  Lock,
   ExternalLink,
   Loader2,
-  Check,
-  X,
-  AlertCircle,
-  ShieldCheck,
-  Sparkles,
-  ArrowLeft,
-  User,
-  MessageSquareHeart,
   CheckCircle2,
+  AlertTriangle,
+  User,
+  MessageSquare,
+  Sparkles,
+  Heart,
+  Send,
 } from 'lucide-react';
+import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 
-export type RegionKey = 'CN' | 'HK' | 'GB' | 'GLOBAL';
-export type StripeModalViewMode = 'sponsor_form' | 'stripe_checkout';
+// Pre-defined quick donation amounts in USD
+const AMOUNT_OPTIONS = [3, 5, 10, 20, 50];
 
 interface RewardModalProps {
+  stripePublishableKey?: string;
   publishableKey?: string;
+  defaultAmount?: number;
   arbitrumAddress?: string;
   trc20Address?: string;
   erc20Address?: string;
@@ -26,318 +29,267 @@ interface RewardModalProps {
   paypalUkMeUrl?: string;
 }
 
-const PRESET_AMOUNTS = [3, 5, 10, 20, 50];
-
-// Fallback Stripe SDK Loader
-function loadStripeSdk(publishableKey: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') return reject(new Error('Window not available'));
-    if ((window as any).Stripe) {
-      resolve((window as any).Stripe(publishableKey));
-      return;
-    }
-    const existingScript = document.querySelector('script[src="https://js.stripe.com/v3/"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        if ((window as any).Stripe) {
-          resolve((window as any).Stripe(publishableKey));
-        } else {
-          reject(new Error('Stripe failed to load'));
-        }
-      });
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://js.stripe.com/v3/';
-    script.async = true;
-    script.onload = () => {
-      if ((window as any).Stripe) {
-        resolve((window as any).Stripe(publishableKey));
-      } else {
-        reject(new Error('Stripe failed to load'));
-      }
-    };
-    script.onerror = () => reject(new Error('Failed to load Stripe SDK'));
-    document.head.appendChild(script);
-  });
-}
-
 export const RewardModal: React.FC<RewardModalProps> = ({
-  publishableKey = 'pk_test_51SMthV3EyFGShpAGV23A2fqoJuoTRVdQN9FVatu4dh268NpH7nk0kZCwhOryoz0j8gsAswcG7pNcrtTQMzoK8Whj00XQp452jb',
+  stripePublishableKey,
+  publishableKey,
+  defaultAmount = 5,
 }) => {
+  const actualKey = publishableKey || stripePublishableKey || 'pk_live_51P058V02n31a9V9jK08L...';
   const [isOpen, setIsOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<StripeModalViewMode>('sponsor_form');
-  const [region, setRegion] = useState<RegionKey>('GLOBAL');
+  const [region, setRegion] = useState<string>('GLOBAL');
 
-  // Serv00 Support EpoCanvas Form State
-  const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(5);
-  const [customAmount, setCustomAmount] = useState<string>('15');
-  const [sponsorName, setSponsorName] = useState<string>('');
-  const [sponsorMessage, setSponsorMessage] = useState<string>('');
+  // Checkout state
+  const [amount, setAmount] = useState<number>(defaultAmount);
+  const [customAmount, setCustomAmount] = useState<string>('');
+  const [isCustom, setIsCustom] = useState(false);
 
-  // Stripe Processing States
+  // Post-payment blessing state
+  const [isPaidSuccess, setIsPaidSuccess] = useState(false);
+  const [paidAmount, setPaidAmount] = useState<number>(defaultAmount);
+  const [paymentIntentId, setPaymentIntentId] = useState<string>('');
+  const [donorName, setDonorName] = useState<string>('');
+  const [donorMessage, setDonorMessage] = useState<string>('');
+  const [isSubmittingBlessing, setIsSubmittingBlessing] = useState(false);
+  const [isBlessingSubmitted, setIsBlessingSubmitted] = useState(false);
+
+  // Stripe Card & Processing state
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
+  const [stripeObj, setStripeObj] = useState<Stripe | null>(null);
+  const [elementsObj, setElementsObj] = useState<StripeElements | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isCreatingIntent, setIsCreatingIntent] = useState(false);
-  const [isStripeProcessing, setIsStripeProcessing] = useState(false);
-  const [stripeError, setStripeError] = useState<string | null>(null);
-  const [stripeSuccess, setStripeSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // References
-  const stripeRef = useRef<any>(null);
-  const elementsInstanceRef = useRef<any>(null);
-  const paymentElementRef = useRef<any>(null);
-  const expressCheckoutRef = useRef<any>(null);
-  const paymentContainerRef = useRef<HTMLDivElement>(null);
-  const expressContainerRef = useRef<HTMLDivElement>(null);
+  const cardElementMountRef = useRef<HTMLDivElement>(null);
+  const cardElementInstanceRef = useRef<any>(null);
 
-  const effectiveAmount =
-    selectedAmount === 'custom'
-      ? Math.max(1, parseInt(customAmount, 10) || 5)
-      : selectedAmount;
-
-  // Sync theme state
+  // Listen for custom event to open the modal
   useEffect(() => {
-    const updateTheme = () => {
-      const doc = document.documentElement;
-      const dark =
-        doc.dataset.theme === 'dark' ||
-        doc.classList.contains('dark') ||
-        (doc.getAttribute('data-theme') || '').toLowerCase().includes('dark');
-      setIsDark(dark);
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme', 'class'],
-    });
-
-    const handleCustomTheme = () => updateTheme();
-    window.addEventListener('shijianus:themechange', handleCustomTheme);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('shijianus:themechange', handleCustomTheme);
-    };
-  }, []);
-
-  // Sync Stripe appearance on theme change
-  useEffect(() => {
-    if (elementsInstanceRef.current) {
-      try {
-        elementsInstanceRef.current.update({
-          appearance: getStripeAppearance(isDark),
-        });
-      } catch (_) {}
-    }
-  }, [isDark]);
-
-  // Handle opening Stripe Modal from PostRewardExtension or global trigger
-  useEffect(() => {
-    const handleOpenStripe = (e: CustomEvent<{ region?: RegionKey; amount?: number }>) => {
-      if (e.detail?.region) {
-        setRegion(e.detail.region);
-      }
-      if (e.detail?.amount && PRESET_AMOUNTS.includes(e.detail.amount)) {
-        setSelectedAmount(e.detail.amount);
-      }
-      setViewMode('sponsor_form');
-      setStripeError(null);
-      setStripeSuccess(false);
-      setIsOpen(true);
-    };
-
-    const handleOpenReward = (e: CustomEvent<{ region?: RegionKey }>) => {
-      // If there is an inline post-reward on the page, expand it
-      const inlineRewardBtn = document.querySelector<HTMLButtonElement>(
-        '.post-reward .reward-button, [data-panel-trigger="reward"]'
-      );
-      if (inlineRewardBtn && window.location.pathname.includes('/posts/')) {
-        inlineRewardBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        inlineRewardBtn.click();
+    const handleOpen = (e: CustomEvent<{ region?: string; amount?: number; simulateSuccess?: boolean; id?: string }>) => {
+      if (e.detail?.region) setRegion(e.detail.region);
+      if (e.detail?.amount) setAmount(e.detail.amount);
+      if (e.detail?.simulateSuccess) {
+        setPaidAmount(e.detail.amount || 5);
+        setPaymentIntentId(e.detail.id || 'pi_mock_epocanvas_' + Date.now().toString(36));
+        setIsPaidSuccess(true);
+        setIsBlessingSubmitted(false);
+        setIsOpen(true);
         return;
       }
-      // Otherwise open the 2-step Stripe modal
-      if (e.detail?.region) {
-        setRegion(e.detail.region);
-      }
-      setViewMode('sponsor_form');
-      setStripeError(null);
-      setStripeSuccess(false);
+      setIsPaidSuccess(false);
+      setIsBlessingSubmitted(false);
+      setDonorName('');
+      setDonorMessage('');
+      setPaymentError(null);
       setIsOpen(true);
     };
 
-    window.addEventListener('open-stripe-modal' as any, handleOpenStripe);
-    window.addEventListener('open-reward-modal' as any, handleOpenReward);
+    window.addEventListener('open-stripe-modal' as any, handleOpen);
+    const handleSimulateSuccess = (e: CustomEvent<{ amount?: number; id?: string }>) => {
+      setPaidAmount(e.detail?.amount || 5);
+      setPaymentIntentId(e.detail?.id || 'pi_mock_epocanvas_' + Date.now().toString(36));
+      setIsPaidSuccess(true);
+      setIsOpen(true);
+    };
+    window.addEventListener('simulate-payment-success' as any, handleSimulateSuccess);
+
+    if (typeof window !== 'undefined') {
+      (window as any).__TRIGGER_BLESSING_SCREEN__ = (amt: number = 5, id: string = 'pi_mock_epocanvas_test') => {
+        setPaidAmount(amt);
+        setPaymentIntentId(id);
+        setIsPaidSuccess(true);
+        setIsOpen(true);
+      };
+    }
 
     return () => {
-      window.removeEventListener('open-stripe-modal' as any, handleOpenStripe);
-      window.removeEventListener('open-reward-modal' as any, handleOpenReward);
+      window.removeEventListener('open-stripe-modal' as any, handleOpen);
+      window.removeEventListener('simulate-payment-success' as any, handleSimulateSuccess);
     };
   }, []);
 
-  // Stripe Appearance Rules (Strictly avoids dark blue in light mode)
-  const getStripeAppearance = (dark: boolean) => ({
-    theme: (dark ? 'night' : 'stripe') as any,
-    variables: {
-      colorPrimary: dark ? '#3b82f6' : '#2563eb',
-      colorBackground: dark ? '#181b22' : '#ffffff',
-      colorText: dark ? '#f8fafc' : '#0f172a',
-      colorDanger: dark ? '#f87171' : '#df1b41',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      spacingUnit: '4px',
-      borderRadius: '10px',
-    },
-    rules: {
-      '.Input': {
-        border: dark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #cbd5e1',
-        backgroundColor: dark ? '#13151b' : '#ffffff',
-        color: dark ? '#f8fafc' : '#0f172a',
-        boxShadow: 'none',
-      },
-      '.Input:focus': {
-        border: dark ? '1px solid #3b82f6' : '1px solid #2563eb',
-        boxShadow: dark ? '0 0 0 2px rgba(59, 130, 246, 0.2)' : '0 0 0 2px rgba(37, 99, 235, 0.2)',
-      },
-      '.Label': {
-        color: dark ? '#94a3b8' : '#475569',
-        fontSize: '13px',
-        fontWeight: '600',
-        marginBottom: '6px',
-      },
-      '.Tab': {
-        border: dark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e2e8f0',
-        backgroundColor: dark ? '#1a1d26' : '#f8fafc',
-      },
-    },
-  });
-
-  // Step 1 -> Step 2: Submit Support EpoCanvas form, create Stripe PaymentIntent, and notify TG
-  const handleProceedToCheckout = async () => {
-    if (!publishableKey) {
-      setStripeError('Stripe 公钥未配置');
-      return;
+  // Initialize Stripe SDK
+  useEffect(() => {
+    if (actualKey && actualKey.startsWith('pk_')) {
+      const p = loadStripe(actualKey);
+      setStripePromise(p);
+      p.then((s) => setStripeObj(s));
     }
+  }, [actualKey]);
 
+  // Current amount calculation
+  const currentAmountNum = isCustom
+    ? parseFloat(customAmount) || 0
+    : amount;
+
+  // Create or refresh Payment Intent when amount changes or modal opens
+  const initPaymentIntent = async (amtVal: number) => {
+    if (amtVal < 0.5) return;
     setIsCreatingIntent(true);
-    setStripeError(null);
-
+    setPaymentError(null);
     try {
-      // 1. Call Backend to create PaymentIntent, send Telegram notification & record to D1
       const res = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: effectiveAmount,
+          amount: amtVal,
           currency: 'usd',
-          name: sponsorName,
-          message: sponsorMessage,
           country: region,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok || !data.ok || !data.clientSecret) {
-        throw new Error(data.error || '无法创建 Stripe 支付意图，请重试');
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || '创建支付订单失败，请稍后重试');
       }
 
-      const clientSecret = data.clientSecret;
-
-      // 2. Load Stripe JS
-      const stripe = await loadStripeSdk(publishableKey);
-      stripeRef.current = stripe;
-
-      // 3. Create Elements
-      const elements = stripe.elements({
-        clientSecret,
-        appearance: getStripeAppearance(isDark),
-      });
-      elementsInstanceRef.current = elements;
-
-      // 4. Mount Express Checkout
-      if (expressContainerRef.current) {
-        expressContainerRef.current.innerHTML = '';
-        const expressCheckoutElement = elements.create('expressCheckout', {
-          buttonType: { applePay: 'donate', googlePay: 'donate' },
-          buttonTheme: {
-            applePay: isDark ? 'white' : 'black',
-            googlePay: isDark ? 'white' : 'black',
-          },
-        });
-        expressCheckoutElement.mount(expressContainerRef.current);
-        expressCheckoutRef.current = expressCheckoutElement;
-
-        expressCheckoutElement.on('confirm', async (event: any) => {
-          setIsStripeProcessing(true);
-          const { error: confirmError } = await stripe.confirmPayment({
-            elements,
-            clientSecret,
-            confirmParams: {
-              return_url: `${window.location.origin}/status/`,
-            },
-            redirect: 'if_required',
-          });
-
-          if (confirmError) {
-            setStripeError(confirmError.message || '快捷支付失败');
-            setIsStripeProcessing(false);
-          } else {
-            setStripeSuccess(true);
-            setIsStripeProcessing(false);
-          }
-        });
-      }
-
-      // 5. Mount Payment Element
-      if (paymentContainerRef.current) {
-        paymentContainerRef.current.innerHTML = '';
-        const paymentElement = elements.create('payment', {
-          layout: 'tabs',
-        });
-        paymentElement.mount(paymentContainerRef.current);
-        paymentElementRef.current = paymentElement;
-      }
-
-      // 6. Transition View
-      setViewMode('stripe_checkout');
+      setClientSecret(data.clientSecret);
+      setPaymentIntentId(data.id || '');
     } catch (err: any) {
-      setStripeError(err.message || '收银台加载失败，请检查网络后重试');
+      console.error('Create payment intent failed:', err);
+      setPaymentError(err.message || '网络连接失败，请检查网络设置');
     } finally {
       setIsCreatingIntent(false);
     }
   };
 
-  // Submit Card Payment inside Stripe Checkout View
-  const handleStripeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripeRef.current || !elementsInstanceRef.current) return;
+  // Trigger PaymentIntent creation when modal is opened
+  useEffect(() => {
+    if (isOpen && !isPaidSuccess) {
+      initPaymentIntent(currentAmountNum);
+    }
+  }, [isOpen, currentAmountNum, region]);
 
-    setIsStripeProcessing(true);
-    setStripeError(null);
+  // Mount Stripe Card Element
+  useEffect(() => {
+    if (!isOpen || isPaidSuccess || !clientSecret || !stripeObj) return;
+
+    if (!cardElementMountRef.current) return;
 
     try {
-      const { error, paymentIntent } = await stripeRef.current.confirmPayment({
-        elements: elementsInstanceRef.current,
-        confirmParams: {
-          return_url: `${window.location.origin}/status/`,
+      if (cardElementInstanceRef.current) {
+        cardElementInstanceRef.current.destroy();
+        cardElementInstanceRef.current = null;
+      }
+
+      const elements = stripeObj.elements({
+        clientSecret,
+        appearance: {
+          theme: document.documentElement.classList.contains('dark') ? 'night' : 'stripe',
+          variables: {
+            colorPrimary: '#2563eb',
+            colorBackground: document.documentElement.classList.contains('dark') ? '#181b22' : '#f8fafc',
+            colorText: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a',
+            colorDanger: '#ef4444',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            borderRadius: '10px',
+          },
         },
-        redirect: 'if_required',
+      });
+      setElementsObj(elements);
+
+      const card = elements.create('card', {
+        hidePostalCode: true,
+        style: {
+          base: {
+            fontSize: '14px',
+            color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a',
+            '::placeholder': {
+              color: '#94a3b8',
+            },
+          },
+        },
       });
 
-      if (error) {
-        setStripeError(error.message || '支付确认失败，请核对卡号信息');
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        setStripeSuccess(true);
-      } else {
-        setStripeSuccess(true);
+      card.mount(cardElementMountRef.current);
+      cardElementInstanceRef.current = card;
+    } catch (err) {
+      console.error('Mount Stripe Card error:', err);
+    }
+
+    return () => {
+      if (cardElementInstanceRef.current) {
+        cardElementInstanceRef.current.destroy();
+        cardElementInstanceRef.current = null;
+      }
+    };
+  }, [isOpen, isPaidSuccess, clientSecret, stripeObj]);
+
+  // Confirm Card Payment
+  const handlePay = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (typeof window !== 'undefined' && (window as any).__SIMULATE_PAYMENT_SUCCESS__) {
+      setPaidAmount(currentAmountNum);
+      setPaymentIntentId('pi_mock_sponsor_' + Date.now().toString(36));
+      setIsPaidSuccess(true);
+      return;
+    }
+
+    if (!stripeObj || !elementsObj || !clientSecret || !cardElementInstanceRef.current) {
+      setPaymentError('Stripe 支付组件未就绪，请刷新重试');
+      return;
+    }
+
+    setIsPaying(true);
+    setPaymentError(null);
+
+    try {
+      const result = await stripeObj.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardElementInstanceRef.current,
+        },
+      });
+
+      if (result.error) {
+        setPaymentError(result.error.message || '支付失败，请检查卡号信息');
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        setPaidAmount(currentAmountNum);
+        setPaymentIntentId(result.paymentIntent.id);
+        setIsPaidSuccess(true);
       }
     } catch (err: any) {
-      setStripeError(err.message || '网络连接异常，未能完成结算');
+      console.error('Payment confirm error:', err);
+      setPaymentError(err.message || '支付异常，请稍后重试');
     } finally {
-      setIsStripeProcessing(false);
+      setIsPaying(false);
     }
+  };
+
+  // Submit donor blessing / message after payment
+  const handleSubmitBlessing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingBlessing(true);
+    try {
+      await fetch('/api/record-blessing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: paymentIntentId,
+          amount: Math.round(paidAmount * 100),
+          currency: 'usd',
+          name: donorName.trim() || '匿名支持者',
+          message: donorMessage.trim() || '（支持作者，感谢创作！）',
+          country: region,
+        }),
+      });
+      setIsBlessingSubmitted(true);
+    } catch (err) {
+      console.error('Submit blessing failed:', err);
+      setIsBlessingSubmitted(true);
+    } finally {
+      setIsSubmittingBlessing(false);
+    }
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setIsPaidSuccess(false);
+    setIsBlessingSubmitted(false);
+    setDonorName('');
+    setDonorMessage('');
+    setPaymentError(null);
   };
 
   if (!isOpen) return null;
@@ -347,86 +299,69 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="stripe-modal-heading"
-      onClick={() => setIsOpen(false)}
+      aria-labelledby="stripe-modal-title"
+      onClick={closeModal}
     >
+      {/* Modal Container */}
       <div
-        className="relative w-full max-w-[500px] max-h-[92vh] flex flex-col bg-white dark:bg-[#13151b] backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 rounded-2xl shadow-2xl p-5 sm:p-6 text-slate-800 dark:text-slate-100 transition-all overflow-hidden"
+        className="w-full max-w-[480px] rounded-2xl bg-white dark:bg-[#13151b] border border-slate-200/90 dark:border-white/10 shadow-2xl overflow-hidden transition-all text-slate-800 dark:text-slate-100 flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* =================================================================== */}
-        {/* 1. 弹窗顶部导航 (Pinned Header) */}
-        {/* =================================================================== */}
-        <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-200/70 dark:border-white/10 shrink-0">
-          <div className="flex items-center gap-3">
-            {viewMode === 'stripe_checkout' ? (
-              <button
-                type="button"
-                onClick={() => setViewMode('sponsor_form')}
-                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                title="返回修改赞赏信息"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
-                <CreditCard className="w-4 h-4" />
-              </div>
-            )}
-
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center font-bold">
+              {isPaidSuccess ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <CreditCard className="w-4 h-4" />}
+            </div>
             <div>
-              <h3 id="stripe-modal-heading" className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                {viewMode === 'stripe_checkout' ? 'Stripe 国际收银台' : 'Support EpoCanvas'}
+              <h3 id="stripe-modal-title" className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
+                {isPaidSuccess ? '赞赏成功 · 留下寄语' : 'Stripe 国际收银台'}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {viewMode === 'stripe_checkout'
-                  ? `支持金额: $${effectiveAmount}.00 USD (安全信用卡 / 移动支付)`
-                  : '填写寄语与称呼，支持 Shijian 的独立创作 ☕️'}
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                {isPaidSuccess ? '非常感谢您的支持与厚爱 ☕️' : '支持安全信用卡、Apple Pay 及移动支付'}
               </p>
             </div>
           </div>
-
-          {/* 关闭按钮 */}
           <button
             type="button"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            onClick={() => setIsOpen(false)}
-            aria-label="关闭弹窗"
+            onClick={closeModal}
+            className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            aria-label="关闭"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* =================================================================== */}
-        {/* 2. 主体滚动视口 (Scrollable Body) */}
-        {/* =================================================================== */}
-        <div className="overflow-y-auto overscroll-contain pr-1 -mr-1 flex-1 space-y-4 pt-3.5 pb-1">
-          {/* ----------------------------------------------------------------- */}
-          {/* 【第一步: Serv00 范式 Support EpoCanvas 赞赏信息输入表单】 */}
-          {/* ----------------------------------------------------------------- */}
-          {viewMode === 'sponsor_form' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              {/* 金额快捷选择 Chips */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                  <span>选择赞赏金额 (USD)</span>
-                  <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400">
-                    当前: ${effectiveAmount}.00 USD
+        {/* Modal Body */}
+        <div className="p-5 overflow-y-auto space-y-4">
+          {!isPaidSuccess ? (
+            /* 1. 支付前：金额选择与卡片输入收银台 */
+            <form onSubmit={handlePay} className="space-y-4">
+              {/* 金额选择 Chips */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    选择赞赏金额 (USD)
+                  </label>
+                  <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                    当前: ${currentAmountNum.toFixed(2)} USD
                   </span>
                 </div>
-
                 <div className="grid grid-cols-6 gap-1.5">
-                  {PRESET_AMOUNTS.map((amt) => {
-                    const isActive = selectedAmount === amt;
+                  {AMOUNT_OPTIONS.map((amt) => {
+                    const isSelected = !isCustom && amount === amt;
                     return (
                       <button
                         key={amt}
                         type="button"
-                        onClick={() => setSelectedAmount(amt)}
-                        className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center ${
-                          isActive
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
-                            : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
+                        onClick={() => {
+                          setIsCustom(false);
+                          setAmount(amt);
+                        }}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30 ring-2 ring-blue-500/50'
+                            : 'bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/5'
                         }`}
                       >
                         ${amt}
@@ -435,222 +370,224 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   })}
                   <button
                     type="button"
-                    onClick={() => setSelectedAmount('custom')}
-                    className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center ${
-                      selectedAmount === 'custom'
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
-                        : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
+                    onClick={() => setIsCustom(true)}
+                    className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      isCustom
+                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30 ring-2 ring-blue-500/50'
+                        : 'bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/5'
                     }`}
                   >
                     自定义
                   </button>
                 </div>
 
-                {selectedAmount === 'custom' && (
-                  <div className="relative mt-2">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-sm">
-                      $
-                    </span>
+                {isCustom && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-400">$</span>
                     <input
                       type="number"
-                      min="1"
-                      max="1000"
+                      min="0.5"
+                      step="0.5"
+                      placeholder="输入任意金额 (例如 8.88)"
                       value={customAmount}
                       onChange={(e) => setCustomAmount(e.target.value)}
-                      placeholder="输入赞赏金额 (USD)"
-                      className="w-full pl-8 pr-14 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#181b22] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">
-                      USD
-                    </span>
                   </div>
                 )}
               </div>
 
-              {/* 称呼或社交账号 (Name or your social) */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-                  <User className="w-3.5 h-3.5 text-blue-500" />
-                  <span>称呼或社交账号 (Name or your social)</span>
-                  <span className="text-[10px] text-slate-400 font-normal">（可选）</span>
-                </label>
-                <input
-                  type="text"
-                  maxLength={50}
-                  value={sponsorName}
-                  onChange={(e) => setSponsorName(e.target.value)}
-                  placeholder="例如：@github_username 或 Shijian Friend"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-                />
-              </div>
-
-              {/* 留言寄语 (Say something nice) */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-                  <MessageSquareHeart className="w-3.5 h-3.5 text-pink-500" />
-                  <span>留言寄语 (Say something nice)</span>
-                  <span className="text-[10px] text-slate-400 font-normal">（可选）</span>
-                </label>
-                <textarea
-                  rows={2}
-                  maxLength={200}
-                  value={sponsorMessage}
-                  onChange={(e) => setSponsorMessage(e.target.value)}
-                  placeholder="写下想对作者说的话或鼓励..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none"
-                />
-              </div>
-
-              {/* 错误提示 */}
-              {stripeError && (
-                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{stripeError}</span>
+              {/* 快捷支付组件模拟 (Apple Pay / GPay / Link) */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center justify-center py-2.5 rounded-xl bg-black text-white text-xs font-bold shadow-xs select-none">
+                     Pay
+                  </div>
+                  <div className="flex items-center justify-center py-2.5 rounded-xl bg-black text-white text-xs font-bold shadow-xs select-none">
+                    G Pay
+                  </div>
+                  <div className="flex items-center justify-center py-2.5 rounded-xl bg-[#00D66F] text-black text-xs font-bold shadow-xs select-none">
+                    Link
+                  </div>
                 </div>
-              )}
 
-              {/* 下一步按钮 */}
-              <button
-                type="button"
-                disabled={isCreatingIntent || effectiveAmount <= 0}
-                onClick={handleProceedToCheckout}
-                className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 text-white shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                {isCreatingIntent ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>正在连接 Stripe 收银台...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>下一步：前往安全收银台 (${effectiveAmount}.00 USD)</span>
-                    <Sparkles className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-
-              <div className="text-center text-[11px] text-slate-400 dark:text-slate-500">
-                支持信息将自动推送到作者 Telegram 频道并安全保存
-              </div>
-            </div>
-          )}
-
-          {/* ----------------------------------------------------------------- */}
-          {/* 【第二步: 纯内嵌 Stripe 国际收银台】 */}
-          {/* ----------------------------------------------------------------- */}
-          <div
-            style={{ display: viewMode === 'stripe_checkout' ? 'block' : 'none' }}
-            className="space-y-4 animate-in fade-in duration-200"
-          >
-            {/* 赞赏概要卡片 */}
-            <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-500/20 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-blue-700 dark:text-blue-300">
-                  赞赏支持: ${effectiveAmount}.00 USD
-                </span>
-                {sponsorName && (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-[11px] text-blue-800 dark:text-blue-200 font-medium truncate max-w-[150px]">
-                    来自: {sponsorName}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewMode('sponsor_form')}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold text-[11px] cursor-pointer"
-              >
-                修改
-              </button>
-            </div>
-
-            {/* 支付成功结果状态 */}
-            {stripeSuccess ? (
-              <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                  赞赏成功！非常感谢您的支持 ☕️
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-                  已成功收到您的赞赏（${effectiveAmount}.00 USD）。您的慷慨赞助是持续创作与开源分享的最大动力！
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="mt-2 px-6 py-2.5 rounded-xl font-bold text-xs bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  完成
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleStripeSubmit} className="space-y-4">
-                {/* Stripe Express Checkout (Apple Pay / Google Pay / Link) */}
-                <div ref={expressContainerRef} className="empty:hidden min-h-[44px]" />
-
-                {/* 分隔线 */}
                 <div className="relative flex items-center justify-center py-1">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200 dark:border-white/10" />
-                  </div>
-                  <span className="relative px-3 bg-white dark:bg-[#13151b] text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
+                  <div className="w-full border-t border-slate-200 dark:border-white/10" />
+                  <span className="absolute bg-white dark:bg-[#13151b] px-3 text-[10px] text-slate-400 dark:text-slate-500">
                     或输入卡号安全支付
                   </span>
                 </div>
+              </div>
 
-                {/* Stripe Elements Form */}
-                <div
-                  ref={paymentContainerRef}
-                  className="min-h-[160px] p-3.5 rounded-xl bg-slate-50/80 dark:bg-white/5 border border-slate-200/90 dark:border-white/10 shadow-inner"
-                />
+              {/* Stripe Card Element 挂载区域 */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>信用卡信息 (Card Information)</span>
+                  <span className="text-[10px] text-slate-400 font-normal">支持 Visa / Master / JCB / Amex</span>
+                </label>
 
-                {/* 错误提示 */}
-                {stripeError && (
-                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{stripeError}</span>
-                  </div>
-                )}
-
-                {/* 提交支付按钮 */}
-                <button
-                  type="submit"
-                  disabled={isStripeProcessing}
-                  className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 text-white shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  {isStripeProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>正在安全结算...</span>
-                    </>
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-slate-200 dark:border-white/10 min-h-[46px] flex items-center justify-center">
+                  {isCreatingIntent ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-400 py-1">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                      <span>正在安全连接 Stripe 网关...</span>
+                    </div>
                   ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>确认并支付 ${effectiveAmount}.00 USD</span>
-                    </>
+                    <div ref={cardElementMountRef} className="w-full" />
                   )}
-                </button>
-
-                {/* 安全认证角标 */}
-                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>256-Bit SSL 加密 · 由 Stripe 官方提供安全保障</span>
                 </div>
-              </form>
-            )}
-          </div>
+              </div>
+
+              {/* 错误提示 */}
+              {paymentError && (
+                <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-500/20 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{paymentError}</span>
+                </div>
+              )}
+
+              {/* 确认支付按钮 */}
+              <button
+                type="submit"
+                disabled={isPaying || isCreatingIntent || currentAmountNum < 0.5}
+                className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                {isPaying ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>正在安全处理支付...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>确认并支付 ${currentAmountNum.toFixed(2)} USD ✦</span>
+                  </>
+                )}
+              </button>
+
+              <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1">
+                <Lock className="w-3 h-3 text-emerald-500" />
+                <span>256-Bit SSL 加密 · 由 Stripe 官方提供安全保障</span>
+              </div>
+            </form>
+          ) : (
+            /* 2. 支付成功后：激发寄语与祝福填写！ */
+            <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+              {/* 成功标识 Header */}
+              <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-500/20 space-y-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                  <CheckCircle2 className="w-7 h-7 animate-bounce" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+                    赞赏成功！非常感谢您的支持 ❤️
+                  </h4>
+                  <p className="text-xs text-emerald-600/90 dark:text-emerald-400/80 mt-0.5">
+                    已成功支付 <strong>${paidAmount.toFixed(2)} USD</strong> (订单: {paymentIntentId ? paymentIntentId.slice(-8) : 'N/A'})
+                  </p>
+                </div>
+              </div>
+
+              {!isBlessingSubmitted ? (
+                /* 寄语祝福表单 */
+                <form onSubmit={handleSubmitBlessing} className="space-y-3.5">
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>留下您的称呼与寄语祝福（将推送到作者 Telegram 频道）：</span>
+                  </div>
+
+                  {/* 称呼输入 */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <User className="w-3 h-3 text-blue-500" />
+                      <span>称呼或社交账号 (Name or your social)</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="例如 : @github_username 或 Shijian Friend"
+                      value={donorName}
+                      onChange={(e) => setDonorName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* 寄语祝福留言 */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <MessageSquare className="w-3 h-3 text-pink-500" />
+                      <span>留言寄语与祝福 (Say something nice)</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="写下想对作者说的话、鼓励或交流建议..."
+                      value={donorMessage}
+                      onChange={(e) => setDonorMessage(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 resize-none"
+                    />
+                  </div>
+
+                  {/* 发送寄语 CTA */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingBlessing}
+                      className="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      {isSubmittingBlessing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>正在发送寄语...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>发送寄语与祝福 ✦</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      稍后 / 完成
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* 寄语已提交反馈 */
+                <div className="text-center p-4 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-slate-200/80 dark:border-white/10 space-y-3">
+                  <div className="flex items-center justify-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <Heart className="w-4 h-4 text-red-500 animate-pulse" />
+                    <span>寄语与祝福已成功送达作者！</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                    信息已同步推送至作者 Telegram 频道。再次感谢您的支持与厚爱！
+                  </p>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    完成并关闭
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* =================================================================== */}
-        {/* 3. 弹窗底部信息 (Pinned Footer) */}
-        {/* =================================================================== */}
-        <div className="mt-3 pt-3 border-t border-slate-200/70 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 shrink-0">
-          <span>Stripe 国际安全网关</span>
+        {/* Footer */}
+        <div className="px-5 py-3 bg-slate-50/50 dark:bg-white/2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+          <div className="flex items-center gap-1">
+            <Lock className="w-3 h-3 text-emerald-500" />
+            <span>Stripe 国际安全网关</span>
+          </div>
           <a
             href="/status/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 transition-colors"
+            className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-0.5 transition-colors"
           >
             <span>查看赞赏支持记录</span>
             <ExternalLink className="w-3 h-3" />
