@@ -389,6 +389,7 @@ body[data-type='post'] #post .share-qrcode .share-main {
 
 body[data-type='post'] #post .post-reward:hover .reward-main,
 body[data-type='post'] #post .post-reward .reward-main.is-pinned,
+body[data-type='post'] #post .post-reward[data-open='true'] .reward-main,
 body[data-type='post'] #post .share-link.mobile:hover .share-main,
 body[data-type='post'] #post .share-qrcode .share-main.is-pinned {
   display: flex !important;
@@ -418,13 +419,9 @@ body[data-type='post'] #post .share-qrcode .share-main.is-pinned {
 }
 
 body[data-type='post'] #post .reward-all {
-  border-radius: 14px !important;
+  border-radius: 16px !important;
   background: var(--card-bg) !important;
   border: 1px solid var(--card-border) !important;
-  padding: 0.85rem 0.95rem !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;

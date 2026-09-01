@@ -6,6 +6,20 @@ import {
 } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import QrCodeImage from './QrCodeImage.astro';
+import PostRewardExtension from './PostRewardExtension';
+
+const usdtArbitrumAddress =
+  import.meta.env.PUBLIC_USDT_ARBITRUM_ADDRESS ||
+  process.env.PUBLIC_USDT_ARBITRUM_ADDRESS ||
+  '0x00d52edc5230dD21F521D8396c68b84D576e6041';
+const paypalMeUrl =
+  import.meta.env.PUBLIC_PAYPAL_ME_URL ||
+  process.env.PUBLIC_PAYPAL_ME_URL ||
+  'https://www.paypal.com/paypalme/shijianus';
+const paypalUkMeUrl =
+  import.meta.env.PUBLIC_PAYPAL_UK_ME_URL ||
+  process.env.PUBLIC_PAYPAL_UK_ME_URL ||
+  'https://www.paypal.com/paypalme/shijianus';
 
 interface Props {
   permalink: string;
@@ -94,23 +108,17 @@ const needsMarquee = finalTitle.length > 25;
       </button>
     </div>
 
-    {/* 4. 安知鱼原生平铺单行工具栏（赞赏按钮融入 shareRight，无方框、无多余分割） */}
+    {/* 4. 安知鱼原生平铺单行工具栏（赞赏按钮融入 shareRight，吸附扩展栏直接平铺展示二维码，Stripe 唤起两步弹窗） */}
     <div class="post-tools">
       <div class="shareRight" data-share-container>
-        {/* 4.1 赞赏支持按钮（触发现代化地区路由与 Stripe/Crypto 扩展卡片） */}
-        <div class="share-link post-reward" data-reward-wrapper>
-          <button
-            type="button"
-            class="reward-button button--animated"
-            data-panel-trigger="reward"
-            data-open-reward-modal
-            aria-expanded="false"
-            title="赞赏支持作者"
-          >
-            <HeartHandshake className="reward-button__icon" aria-hidden="true" size={17} />
-            <span>{rewardLabel}</span>
-          </button>
-        </div>
+        {/* 4.1 赞赏支持扩展栏 */}
+        <PostRewardExtension
+          client:load
+          arbitrumAddress={usdtArbitrumAddress}
+          paypalMeUrl={paypalMeUrl}
+          paypalUkMeUrl={paypalUkMeUrl}
+          rewardLabel={rewardLabel}
+        />
 
         {/* 4.2 手机/微信二维码阅读按钮（悬停双向智能定位扩展卡片） */}
         <div class="share-link mobile" data-qr-wrapper>
@@ -564,16 +572,6 @@ const needsMarquee = finalTitle.length > 25;
       qrWrapper?.addEventListener('mouseenter', () => {
         computePopoverPosition(qrWrapper as HTMLElement, qrMain as HTMLElement);
       });
-
-      // 赞赏按钮点击唤起现代化地区路由打赏弹窗
-      const rewardBtn = rewardWrapper?.querySelector('button');
-      if (rewardBtn) {
-        rewardBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          window.dispatchEvent(new CustomEvent('open-reward-modal'));
-        });
-      }
 
       // 手机二维码按钮点击切换固定
       const qrBtn = qrWrapper?.querySelector('button');
