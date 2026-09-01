@@ -141,6 +141,10 @@ const stripePublishableKey =
   import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY ||
   process.env.PUBLIC_STRIPE_PUBLISHABLE_KEY ||
   '';
+const usdtArbitrumAddress =
+  import.meta.env.PUBLIC_USDT_ARBITRUM_ADDRESS ||
+  process.env.PUBLIC_USDT_ARBITRUM_ADDRESS ||
+  '0x00d52edc5230dD21F521D8396c68b84D576e6041';
 const usdtTrc20Address =
   import.meta.env.PUBLIC_USDT_TRC20_ADDRESS ||
   process.env.PUBLIC_USDT_TRC20_ADDRESS ||
@@ -290,6 +294,7 @@ const paypalUkMeUrl =
       <RewardModal
         client:load
         publishableKey={stripePublishableKey}
+        arbitrumAddress={usdtArbitrumAddress}
         trc20Address={usdtTrc20Address}
         erc20Address={usdtErc20Address}
         paypalMeUrl={paypalMeUrl}

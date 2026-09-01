@@ -79,6 +79,31 @@ function chronralAiDevIntegration() {
   };
 }
 
+import fs from 'fs';
+import path from 'path';
+
+function getEnvVar(key) {
+  if (process.env[key]) return process.env[key];
+  try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const eqIdx = trimmed.indexOf('=');
+          if (eqIdx !== -1) {
+            const k = trimmed.slice(0, eqIdx).trim();
+            const v = trimmed.slice(eqIdx + 1).trim();
+            if (k === key) return v;
+          }
+        }
+      }
+    }
+  } catch (_) {}
+  return '';
+}
+
 function stripeAndGeoDevIntegration() {
   return {
     name: 'stripe-geo-dev-middleware',
@@ -107,11 +132,14 @@ function stripeAndGeoDevIntegration() {
                   const payload = JSON.parse(bodyStr || '{}');
                   const rawAmount = typeof payload?.amount === 'number' ? payload.amount : 5;
                   const currency = (payload?.currency || 'usd').toLowerCase();
+                  const name = payload?.name?.trim() || '';
+                  const message = payload?.message?.trim() || '';
+                  const clientCountry = payload?.country || 'GLOBAL';
                   let amountInCents = Math.round(rawAmount >= 50 && Number.isInteger(rawAmount) ? rawAmount : rawAmount * 100);
                   if (amountInCents < 50) amountInCents = 50;
                   if (amountInCents > 100000) amountInCents = 100000;
 
-                  const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+                  const stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
                   if (!stripeSecretKey) {
                     res.setHeader('Content-Type', 'application/json');
                     res.writeHead(500);
@@ -122,7 +150,10 @@ function stripeAndGeoDevIntegration() {
                   params.set('amount', String(amountInCents));
                   params.set('currency', currency);
                   params.set('automatic_payment_methods[enabled]', 'true');
-                  params.set('description', 'shijianus blog sponsorship support');
+                  params.set('description', `Support EpoCanvas / shijianus blog (${name || 'Anonymous'})`);
+                  if (name) params.set('metadata[sponsor_name]', name);
+                  if (message) params.set('metadata[sponsor_message]', message);
+                  params.set('metadata[country]', clientCountry);
 
                   const stripeRes = await fetch('https://api.stripe.com/v1/payment_intents', {
                     method: 'POST',
@@ -139,6 +170,33 @@ function stripeAndGeoDevIntegration() {
                     res.end(JSON.stringify({ ok: false, error: data.error?.message || 'Stripe error' }));
                     return;
                   }
+
+                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
+                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
+                  if (tgToken && tgChatId) {
+                    const formattedAmount = `$${(amountInCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
+                    const sponsorName = name || '匿名支持者';
+                    const sponsorMsg = message || '（未留言）';
+                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+                    const text = [
+                      `🎉 *收到新的博客赞赏发起 (EpoCanvas)*`,
+                      `━━━━━━━━━━━━━━━━━━`,
+                      `💰 *赞赏金额*: \`${formattedAmount}\``,
+                      `👤 *赞赏者*: *${sponsorName.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}*`,
+                      `💬 *留言寄语*: ${sponsorMsg.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}`,
+                      `🌍 *地区*: \`${clientCountry}\` (Dev Server)`,
+                      `💳 *支付通道*: Stripe Checkout (Cards / Apple Pay / Google Pay)`,
+                      `🆔 *订单标识*: \`${data.id || 'N/A'}\``,
+                      `🕒 *提交时间*: \`${nowStr}\``,
+                      `━━━━━━━━━━━━━━━━━━`,
+                    ].join('\n');
+                    fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'MarkdownV2' }),
+                    }).catch(() => {});
+                  }
+
                   res.setHeader('Content-Type', 'application/json');
                   res.writeHead(200);
                   res.end(
