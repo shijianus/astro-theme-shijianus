@@ -15,29 +15,49 @@ import {
   ChevronDown,
   Globe,
   RefreshCw,
+  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 
-export type PaymentTab = 'card' | 'crypto' | 'paypal' | 'cn';
 export type RegionKey = 'CN' | 'HK' | 'GB' | 'GLOBAL';
+export type ViewMode = 'main' | 'stripe';
 
 interface RewardModalProps {
   publishableKey?: string;
   trc20Address?: string;
   erc20Address?: string;
   paypalMeUrl?: string;
-  defaultTab?: PaymentTab;
+  paypalUkMeUrl?: string;
 }
 
 const PRESET_AMOUNTS = [3, 5, 10];
 
 const REGION_OPTIONS: Array<{ key: RegionKey; label: string; flag: string; desc: string }> = [
   { key: 'CN', label: '中国大陆', flag: '🇨🇳', desc: '微信 / 支付宝 扫码赞赏' },
-  { key: 'HK', label: '中国香港', flag: '🇭🇰', desc: 'AlipayHK / WeChatHK / PayPal' },
-  { key: 'GB', label: '英国', flag: '🇬🇧', desc: 'PayPal / USDT 加密货币' },
-  { key: 'GLOBAL', label: '全球 (Stripe)', flag: '🌐', desc: '信用卡 / Apple Pay / Google Pay' },
+  { key: 'HK', label: '中国香港', flag: '🇭🇰', desc: '微信 / 支付宝 / PayPal HK' },
+  { key: 'GB', label: '英国', flag: '🇬🇧', desc: 'PayPal UK / Stripe / USDT' },
+  { key: 'GLOBAL', label: '全球其它地区', flag: '🌐', desc: 'Stripe / PayPal / USDT' },
 ];
 
 // Official brand SVG emblems (Complies with UI-UX Pro Max no-emoji icon standards)
+const WeChatIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path
+      d="M8.691 2.188C3.891 2.188 0 5.478 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.294.295a.34.34 0 0 0 .17-.05l1.92-1.11c.176-.102.383-.127.577-.07 1.05.31 2.18.48 3.35.48.33 0 .66-.014.99-.044a6.66 6.66 0 0 1-.29-1.956c0-3.66 3.49-6.63 7.79-6.63.29 0 .58.014.86.042C17.65 5.86 13.56 2.188 8.69 2.188zm-2.4 4.54a1.09 1.09 0 1 1 0 2.18 1.09 1.09 0 0 1 0-2.18zm5.09 0a1.09 1.09 0 1 1 0 2.18 1.09 1.09 0 0 1 0-2.18zm4.81 4.72c-3.69 0-6.69 2.54-6.69 5.67 0 1.72.9 3.27 2.33 4.32.13.09.21.25.17.41l-.3 1.15c-.01.05-.03.11-.03.17 0 .13.1.23.23.23.05 0 .09-.01.13-.04l1.5-.86c.14-.08.3-.1.45-.06.71.21 1.48.33 2.28.33 3.69 0 6.69-2.54 6.69-5.67s-3-5.67-6.69-5.67zm-2.22 3.55a.85.85 0 1 1 0 1.7.85.85 0 0 1 0-1.7zm3.96 0a.85.85 0 1 1 0 1.7.85.85 0 0 1 0-1.7z"
+      fill="#07C160"
+    />
+  </svg>
+);
+
+const AlipayIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path
+      d="M21.422 17.568c-1.78-1.077-3.957-2.094-5.328-2.613.82-1.92 1.423-4.04 1.706-6.313H21.5V6.75h-5.068C16.143 3.86 14.89 1.83 14.89 1.83l-2.02.94s1.082 1.684 1.393 3.98H8.5V4.75H6.25v2H1.5v1.892h10.457c-.244 1.785-.722 3.488-1.393 5.06-2.05-.733-4.467-1.332-6.527-.852-2.915.682-4.54 2.875-4.015 5.342.502 2.36 2.84 3.758 5.767 3.758 3.593 0 6.467-1.892 8.358-4.417 2.19 1.05 5.08 2.22 7.275 3.01l.957-1.975h-.95zM7.227 20.06c-2.08 0-3.69-.948-3.972-2.274-.298-1.405.578-2.628 2.378-3.05 1.63-.38 3.65.17 5.405.85-1.075 2.518-2.507 4.474-3.81 4.474z"
+      fill="#1677FF"
+    />
+  </svg>
+);
+
 const PayPalIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path
@@ -60,12 +80,14 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
+// Light & Dark Stripe Elements theme styling
 const getStripeAppearance = (isDark: boolean) => ({
   theme: (isDark ? 'night' : 'stripe') as any,
   variables: {
-    colorPrimary: '#3b82f6',
+    colorPrimary: '#2563eb',
     colorBackground: isDark ? '#181b22' : '#ffffff',
     colorText: isDark ? '#f8fafc' : '#0f172a',
+    colorTextSecondary: isDark ? '#94a3b8' : '#64748b',
     colorDanger: '#ef4444',
     fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     borderRadius: '12px',
@@ -73,15 +95,15 @@ const getStripeAppearance = (isDark: boolean) => ({
   },
   rules: {
     '.Input': {
-      backgroundColor: isDark ? '#12141a' : '#f8fafc',
+      backgroundColor: isDark ? '#12141a' : '#ffffff',
       border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid #e2e8f0',
-      boxShadow: 'none',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
       padding: '11px 14px',
       color: isDark ? '#f8fafc' : '#0f172a',
     },
     '.Input:focus': {
-      border: '1px solid #3b82f6',
-      boxShadow: '0 0 0 1.5px #3b82f6',
+      border: '1px solid #2563eb',
+      boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2)',
     },
     '.Tab': {
       backgroundColor: isDark ? '#12141a' : '#f8fafc',
@@ -89,15 +111,15 @@ const getStripeAppearance = (isDark: boolean) => ({
       color: isDark ? '#cbd5e1' : '#475569',
     },
     '.Tab--selected': {
-      border: '1.5px solid #3b82f6',
-      backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#eff6ff',
+      border: '1.5px solid #2563eb',
+      backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#eff6ff',
       color: isDark ? '#60a5fa' : '#2563eb',
     },
     '.Label': {
       fontSize: '12px',
       fontWeight: '600',
-      marginBottom: '5px',
-      color: isDark ? '#94a3b8' : '#475569',
+      marginBottom: '6px',
+      color: isDark ? '#cbd5e1' : '#334155',
     },
   },
 });
@@ -107,10 +129,10 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   trc20Address = '',
   erc20Address = '',
   paypalMeUrl = 'https://www.paypal.com/paypalme/shijianus',
-  defaultTab = 'card',
+  paypalUkMeUrl = 'https://www.paypal.com/paypalme/shijianus',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<PaymentTab>(defaultTab);
+  const [viewMode, setViewMode] = useState<ViewMode>('main');
 
   // Region & Geo metadata
   const [region, setRegion] = useState<RegionKey>('GLOBAL');
@@ -118,6 +140,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
   const [isDetectingGeo, setIsDetectingGeo] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<string>('');
+
+  // Sub-tabs for regions with multiple local channels
+  // For HK: 'cn' (WeChat/Alipay) | 'paypal'
+  // For GB: 'paypal' | 'crypto'
+  // For GLOBAL: 'paypal' | 'crypto'
+  const [hkSubTab, setHkSubTab] = useState<'cn' | 'paypal'>('cn');
+  const [intlSubTab, setIntlSubTab] = useState<'paypal' | 'crypto'>('paypal');
 
   // Amount Selection
   const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(5);
@@ -223,7 +252,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
       if (lang.includes('zh-cn') || tz === 'Asia/Shanghai') {
         applyGeoProfile({ country: 'CN', isMainland: true });
-      } else if (lang.includes('zh-hk') || tz === 'Asia/Hong_Kong') {
+      } else if (lang.includes('zh-hk') || tz === 'Asia/Hong_Kong' || tz === 'Asia/Macau') {
         applyGeoProfile({ country: 'HK' });
       } else if (lang.includes('en-gb') || tz === 'Europe/London') {
         applyGeoProfile({ country: 'GB' });
@@ -240,8 +269,6 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     setDetectedCountry(country);
     if (data.isMainland || country === 'CN') {
       setRegion('CN');
-      // Suggest CN tab for mainland visitors
-      setActiveTab((prev) => (prev === 'card' ? 'cn' : prev));
     } else if (country === 'HK' || country === 'MO') {
       setRegion('HK');
     } else if (country === 'GB' || country === 'UK') {
@@ -259,7 +286,6 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     if (saved && ['CN', 'HK', 'GB', 'GLOBAL'].includes(saved)) {
       setRegion(saved);
       setIsManualOverride(true);
-      if (saved === 'CN') setActiveTab('cn');
     } else {
       detectGeoLocation();
     }
@@ -274,6 +300,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       if (target) {
         e.preventDefault();
         e.stopPropagation();
+        setViewMode('main');
         setIsOpen(true);
       }
     };
@@ -283,21 +310,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({
         const targetRegion = e.detail.region as RegionKey;
         setRegion(targetRegion);
         setIsManualOverride(true);
-        if (targetRegion === 'CN') {
-          setActiveTab('cn');
-        } else if (targetRegion === 'HK') {
-          setActiveTab('paypal');
-        } else if (targetRegion === 'GB') {
-          setActiveTab('crypto');
-        } else {
-          setActiveTab('card');
-        }
         try {
           localStorage.setItem('shijianus-reward-region', targetRegion);
         } catch {}
       }
-      if (e.detail?.tab) {
-        setActiveTab(e.detail.tab);
+      if (e.detail?.viewMode) {
+        setViewMode(e.detail.viewMode);
+      } else {
+        setViewMode('main');
       }
       setIsOpen(true);
     };
@@ -326,6 +346,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     } else {
       document.body.classList.remove('overflow-hidden');
       setRegionDropdownOpen(false);
+      setViewMode('main');
     }
     return () => {
       document.body.classList.remove('overflow-hidden');
@@ -338,21 +359,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     setIsManualOverride(true);
     localStorage.setItem('shijianus-reward-region', newRegion);
     setRegionDropdownOpen(false);
-    if (newRegion === 'CN') {
-      setActiveTab('cn');
-    } else if (newRegion === 'HK') {
-      setActiveTab('paypal');
-    } else if (newRegion === 'GB') {
-      setActiveTab('crypto');
-    } else {
-      setActiveTab('card');
-    }
+    setViewMode('main');
   };
 
   const handleResetToAuto = () => {
     localStorage.removeItem('shijianus-reward-region');
     setIsManualOverride(false);
     setRegionDropdownOpen(false);
+    setViewMode('main');
     detectGeoLocation();
   };
 
@@ -400,7 +414,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     };
   }, []);
 
-  // Initialize Stripe Elements & Express Checkout
+  // Initialize Stripe Elements & Express Checkout (Always ready for Stripe view)
   useEffect(() => {
     if (!isOpen || paymentSuccess) return;
 
@@ -639,17 +653,8 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const currentRegionMeta = REGION_OPTIONS.find((r) => r.key === region) || REGION_OPTIONS[0];
   const currentCryptoAddress = cryptoNetwork === 'TRC20' ? trc20Address : erc20Address;
 
-  const TABS: Array<{
-    id: PaymentTab;
-    label: string;
-    shortLabel: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }> = [
-    { id: 'card', label: '银行卡 / 信用卡', shortLabel: '银行卡', icon: CreditCard },
-    { id: 'crypto', label: '加密货币 (USDT)', shortLabel: 'USDT', icon: UsdtIcon },
-    { id: 'paypal', label: 'PayPal', shortLabel: 'PayPal', icon: PayPalIcon },
-    { id: 'cn', label: '微信 / 支付宝', shortLabel: '微信·支付宝', icon: QrCode },
-  ];
+  // URLs for PayPal
+  const currentPaypalUrl = region === 'GB' ? (paypalUkMeUrl || paypalMeUrl) : paypalMeUrl;
 
   return (
     <div
@@ -660,86 +665,101 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="relative w-full max-w-[500px] max-h-[92vh] flex flex-col bg-white/95 dark:bg-[#13151b]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-2xl p-5 sm:p-6 text-slate-800 dark:text-slate-100 transition-all overflow-hidden"
+        className="relative w-full max-w-[500px] max-h-[92vh] flex flex-col bg-white dark:bg-[#13151b] backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 rounded-2xl shadow-2xl p-5 sm:p-6 text-slate-800 dark:text-slate-100 transition-all overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* =================================================================== */}
         {/* 1. 弹窗顶部导航 (Pinned Header) */}
         {/* =================================================================== */}
-        <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-200/60 dark:border-white/10 shrink-0">
+        <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-200/70 dark:border-white/10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
-              <HeartHandshake className="w-5 h-5" />
-            </div>
+            {viewMode === 'stripe' ? (
+              <button
+                type="button"
+                onClick={() => setViewMode('main')}
+                className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="返回其他支付方式"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+                <HeartHandshake className="w-5 h-5" />
+              </div>
+            )}
             <div>
               <h3 id="reward-modal-heading" className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                赞赏支持作者
+                {viewMode === 'stripe' ? 'Stripe 国际收银台' : '赞赏支持作者'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️
+                {viewMode === 'stripe'
+                  ? '安全信用卡 / 借记卡 / 移动支付通道'
+                  : '如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* 地区切换器 (可选快捷辅助) */}
-            <div className="relative">
-              <button
-                type="button"
-                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 transition-colors border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 cursor-pointer"
-                onClick={() => setRegionDropdownOpen(!regionDropdownOpen)}
-                title="切换推荐地区视图"
-              >
-                <span>{currentRegionMeta.flag}</span>
-                <span className="hidden sm:inline">{currentRegionMeta.label}</span>
-                <span className="sm:hidden">{currentRegionMeta.key}</span>
-                <ChevronDown className="w-3 h-3 opacity-70" />
-              </button>
+            {/* 地区切换器 (仅在主视图显示) */}
+            {viewMode === 'main' && (
+              <div className="relative">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 transition-colors border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 cursor-pointer"
+                  onClick={() => setRegionDropdownOpen(!regionDropdownOpen)}
+                  title="切换推荐地区视图"
+                >
+                  <span>{currentRegionMeta.flag}</span>
+                  <span className="hidden sm:inline">{currentRegionMeta.label}</span>
+                  <span className="sm:hidden">{currentRegionMeta.key}</span>
+                  <ChevronDown className="w-3 h-3 opacity-70" />
+                </button>
 
-              {regionDropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-56 rounded-xl bg-white dark:bg-[#1e222d] border border-slate-200 dark:border-white/15 shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    推荐支付地区视图
-                  </div>
-                  {REGION_OPTIONS.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer ${
-                        region === item.key
-                          ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
-                          : 'text-slate-700 dark:text-slate-300'
-                      }`}
-                      onClick={() => handleSelectRegion(item.key)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-base leading-none">{item.flag}</span>
-                        <div>
-                          <div>{item.label}</div>
-                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                            {item.desc}
+                {regionDropdownOpen && (
+                  <div className="absolute right-0 mt-1.5 w-60 rounded-xl bg-white dark:bg-[#1e222d] border border-slate-200 dark:border-white/15 shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      地区专属支付渠道
+                    </div>
+                    {REGION_OPTIONS.map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer ${
+                          region === item.key
+                            ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-900/20'
+                            : 'text-slate-700 dark:text-slate-300'
+                        }`}
+                        onClick={() => handleSelectRegion(item.key)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-base leading-none">{item.flag}</span>
+                          <div>
+                            <div>{item.label}</div>
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                              {item.desc}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {region === item.key && <Check className="w-3.5 h-3.5" />}
-                    </button>
-                  ))}
-
-                  {isManualOverride && (
-                    <div className="border-t border-slate-100 dark:border-white/10 mt-1 pt-1 px-1">
-                      <button
-                        type="button"
-                        className="w-full text-left px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 cursor-pointer"
-                        onClick={handleResetToAuto}
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                        <span>恢复自动检测地区</span>
+                        {region === item.key && <Check className="w-3.5 h-3.5" />}
                       </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                    ))}
+
+                    {isManualOverride && (
+                      <div className="border-t border-slate-100 dark:border-white/10 mt-1 pt-1 px-1">
+                        <button
+                          type="button"
+                          className="w-full text-left px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 cursor-pointer"
+                          onClick={handleResetToAuto}
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>恢复自动 IP 检测地区</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 关闭按钮 */}
             <button
@@ -757,145 +777,724 @@ export const RewardModal: React.FC<RewardModalProps> = ({
         {/* 2. 主体滚动容器 (Scrollable Viewport) */}
         {/* =================================================================== */}
         <div className="overflow-y-auto overscroll-contain pr-1 -mr-1 flex-1 space-y-4 pt-3.5 pb-1">
-          {/* 金额快捷选择器 (serv00 风格单选按钮组) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-              <span>赞赏金额 (USD)</span>
-              <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400">
-                当前: ${effectiveAmount}.00
-              </span>
-            </div>
+          {/* ================================================================= */}
+          {/* 【视图 A: 地区专属赞赏面板 (Main View)】 */}
+          {/* ================================================================= */}
+          {viewMode === 'main' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {/* ------------------------------------------------------------- */}
+              {/* A1: 中国大陆 (CN) —— 仅微信 / 支付宝 */}
+              {/* ------------------------------------------------------------- */}
+              {region === 'CN' && (
+                <div className="space-y-3.5">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    {/* 微信支付 */}
+                    <div className="flex flex-col items-center p-3 sm:p-4 rounded-xl bg-white dark:bg-[#181b22] border border-emerald-500/20 hover:border-emerald-500/40 transition-all shadow-xs">
+                      <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center border border-slate-100">
+                        <img
+                          src="/media/shijianus/support/weixin-pay-cn.jpg"
+                          alt="微信支付赞赏码"
+                          className="w-full h-full object-contain select-none"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <WeChatIcon className="w-3.5 h-3.5" />
+                        <span>微信扫一扫</span>
+                      </div>
+                    </div>
 
-            <div className="grid grid-cols-4 gap-2">
-              {PRESET_AMOUNTS.map((amt) => {
-                const isActive = selectedAmount === amt;
-                return (
-                  <button
-                    key={amt}
-                    data-amt={amt}
-                    type="button"
-                    style={
-                      isActive
-                        ? { backgroundColor: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }
-                        : {
-                            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
-                            color: isDark ? '#cbd5e1' : '#334155',
-                            borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1',
-                            borderWidth: '1px',
-                            borderStyle: 'solid',
-                          }
-                    }
-                    className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center gap-1 ${
-                      isActive
-                        ? '!bg-blue-600 !text-white !border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
-                        : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20'
-                    }`}
-                    onClick={() => setSelectedAmount(amt)}
-                  >
-                    <span>${amt}</span>
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                data-amt="custom"
-                style={
-                  selectedAmount === 'custom'
-                    ? { backgroundColor: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }
-                    : {
-                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
-                        color: isDark ? '#cbd5e1' : '#334155',
-                        borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1',
-                        borderWidth: '1px',
-                        borderStyle: 'solid',
-                      }
-                }
-                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center ${
-                  selectedAmount === 'custom'
-                    ? '!bg-blue-600 !text-white !border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
-                    : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20'
-                }`}
-                onClick={() => setSelectedAmount('custom')}
-              >
-                <span>自定义</span>
-              </button>
-            </div>
+                    {/* 支付宝 */}
+                    <div className="flex flex-col items-center p-3 sm:p-4 rounded-xl bg-white dark:bg-[#181b22] border border-blue-500/20 hover:border-blue-500/40 transition-all shadow-xs">
+                      <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center border border-slate-100">
+                        <img
+                          src="/media/shijianus/support/alipay-cn.jpg"
+                          alt="支付宝赞赏码"
+                          className="w-full h-full object-contain select-none"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                        <AlipayIcon className="w-3.5 h-3.5" />
+                        <span>支付宝扫一扫</span>
+                      </div>
+                    </div>
+                  </div>
 
-            {/* 自定义金额输入框 */}
-            {selectedAmount === 'custom' && (
-              <div className="flex items-center rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3 py-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all animate-in fade-in duration-150">
-                <span className="text-slate-400 font-bold text-sm mr-2 select-none">$</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="1000"
-                  step="1"
-                  value={customAmountStr}
-                  onChange={(e) => setCustomAmountStr(e.target.value)}
-                  placeholder="输入赞赏金额 (1 - 1000)"
-                  className="w-full bg-transparent text-sm font-semibold outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
-                />
-                <span className="text-xs text-slate-400 font-medium ml-2 select-none">USD</span>
-              </div>
-            )}
-          </div>
+                  <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1 leading-relaxed">
+                    手机端可截屏保存二维码，打开对应 App 扫一扫即可支持作者 ☕️
+                  </div>
+                </div>
+              )}
 
-          {/* Stripe Express Checkout 快捷入口 (自动识别 Apple Pay / Google Pay / Link 独立大按钮) */}
-          <div
-            ref={expressCheckoutContainerRef}
-            id="stripe-express-checkout-element"
-            className="w-full overflow-hidden"
-            style={{ display: hasExpressCheckout ? 'block' : 'none' }}
-          />
+              {/* ------------------------------------------------------------- */}
+              {/* A2: 中国香港 (HK) —— 微信 / 支付宝 / PayPal HK */}
+              {/* ------------------------------------------------------------- */}
+              {region === 'HK' && (
+                <div className="space-y-3.5">
+                  {/* 分段选择器 */}
+                  <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 gap-1">
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        hkSubTab === 'cn'
+                          ? 'bg-white dark:bg-[#1f242f] text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setHkSubTab('cn')}
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>微信 · 支付宝 HK</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        hkSubTab === 'paypal'
+                          ? 'bg-white dark:bg-[#1f242f] text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setHkSubTab('paypal')}
+                    >
+                      <PayPalIcon className="w-3.5 h-3.5" />
+                      <span>PayPal HK</span>
+                    </button>
+                  </div>
 
-          {hasExpressCheckout && (
-            <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
-              <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium select-none">
-                或选择以下支付渠道
-              </span>
-              <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                  {hkSubTab === 'cn' ? (
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 animate-in fade-in duration-150">
+                      {/* WeChat Pay HK */}
+                      <div className="flex flex-col items-center p-3 sm:p-4 rounded-xl bg-white dark:bg-[#181b22] border border-emerald-500/20 hover:border-emerald-500/40 transition-all shadow-xs">
+                        <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center border border-slate-100">
+                          <img
+                            src="/media/shijianus/support/wechat-pay-hk.jpg"
+                            alt="WeChat Pay HK 赞赏码"
+                            className="w-full h-full object-contain select-none"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          <WeChatIcon className="w-3.5 h-3.5" />
+                          <span>WeChat Pay HK</span>
+                        </div>
+                      </div>
+
+                      {/* Alipay HK */}
+                      <div className="flex flex-col items-center p-3 sm:p-4 rounded-xl bg-white dark:bg-[#181b22] border border-blue-500/20 hover:border-blue-500/40 transition-all shadow-xs">
+                        <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center border border-slate-100">
+                          <img
+                            src="/media/shijianus/support/alipay-hk.jpg"
+                            alt="Alipay HK 赞赏码"
+                            className="w-full h-full object-contain select-none"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                          <AlipayIcon className="w-3.5 h-3.5" />
+                          <span>Alipay HK</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* PayPal HK 独立展示区 */
+                    <div className="space-y-3.5 animate-in fade-in duration-150">
+                      <div className="p-4 rounded-xl bg-white dark:bg-[#181b22] border border-blue-500/20 space-y-3 shadow-xs">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <PayPalIcon className="w-4 h-4" />
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                              PayPal HK 扫码 / 直连付款
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
+                            推荐 HKD 结算
+                          </span>
+                        </div>
+
+                        {/* 点击 QR Code 跳转 */}
+                        <div className="flex flex-col items-center justify-center py-1">
+                          <a
+                            href={currentPaypalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative p-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 hover:border-blue-500 hover:shadow-md transition-all flex items-center justify-center cursor-pointer"
+                            title="点击前往 PayPal 官方付款页面"
+                          >
+                            <img
+                              src="/media/shijianus/support/paypal-hk.jpg"
+                              alt="PayPal HK 付款二维码"
+                              className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none group-hover:opacity-95 transition-opacity"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 rounded-2xl transition-colors flex items-end justify-center pb-2">
+                              <span className="text-[11px] font-semibold bg-slate-900/80 text-white px-2.5 py-1 rounded-full opacity-90 group-hover:opacity-100 flex items-center gap-1 shadow-sm">
+                                <span>点击打开链接</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </span>
+                            </div>
+                          </a>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                            支持直接扫码或点击上方二维码进入付款链接
+                          </span>
+                        </div>
+
+                        {/* 跳转按钮 */}
+                        <a
+                          href={currentPaypalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-[#0070ba] hover:bg-[#003087] text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <span>前往 PayPal.Me 付款支持</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* A3: 英国 (GB) —— PayPal UK + Stripe + 加密货币 (USDT) */}
+              {/* ------------------------------------------------------------- */}
+              {region === 'GB' && (
+                <div className="space-y-3.5">
+                  {/* Stripe 专属收银台入口按钮 (吸附入口卡片) */}
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50/40 to-blue-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-blue-950/20 border border-blue-200/80 dark:border-blue-500/30 shadow-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span>Stripe 国际收银台</span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-600 text-white rounded-md uppercase">
+                            Stripe
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          支持 Visa、Mastercard、Apple Pay 等原生结算
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('stripe')}
+                      className="px-3.5 py-2 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white shadow-md shadow-blue-500/25 flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0"
+                    >
+                      <span>进入收银台</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="relative flex py-0.5 items-center">
+                    <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                    <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium select-none">
+                      或使用以下渠道直接汇款
+                    </span>
+                    <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                  </div>
+
+                  {/* 分段选择器: PayPal UK vs USDT */}
+                  <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 gap-1">
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        intlSubTab === 'paypal'
+                          ? 'bg-white dark:bg-[#1f242f] text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setIntlSubTab('paypal')}
+                    >
+                      <PayPalIcon className="w-3.5 h-3.5" />
+                      <span>PayPal (UK)</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        intlSubTab === 'crypto'
+                          ? 'bg-white dark:bg-[#1f242f] text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setIntlSubTab('crypto')}
+                    >
+                      <UsdtIcon className="w-3.5 h-3.5" />
+                      <span>USDT 加密钱包</span>
+                    </button>
+                  </div>
+
+                  {/* PayPal UK 独立展示 */}
+                  {intlSubTab === 'paypal' && (
+                    <div className="p-4 rounded-xl bg-white dark:bg-[#181b22] border border-blue-500/20 space-y-3 shadow-xs animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <PayPalIcon className="w-4 h-4" />
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            PayPal UK 专属收款码
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
+                          支持 GBP 结算
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center py-1">
+                        <a
+                          href={currentPaypalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group relative p-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 hover:border-blue-500 hover:shadow-md transition-all flex items-center justify-center cursor-pointer"
+                          title="点击前往 PayPal UK 官方页面"
+                        >
+                          <img
+                            src="/media/shijianus/support/paypal-uk.jpg"
+                            alt="PayPal UK 付款二维码"
+                            className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none group-hover:opacity-95 transition-opacity"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 rounded-2xl transition-colors flex items-end justify-center pb-2">
+                            <span className="text-[11px] font-semibold bg-slate-900/80 text-white px-2.5 py-1 rounded-full opacity-90 group-hover:opacity-100 flex items-center gap-1 shadow-sm">
+                              <span>点击打开链接</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </a>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                          可直接扫码或点击上方二维码进入 PayPal UK 官方页面
+                        </span>
+                      </div>
+
+                      <a
+                        href={currentPaypalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-[#0070ba] hover:bg-[#003087] text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <span>前往 PayPal UK 付款支持</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
+
+                  {/* USDT 独立展示 */}
+                  {intlSubTab === 'crypto' && (
+                    <div className="space-y-3.5 animate-in fade-in duration-150">
+                      {/* 网络切换 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-[#26a17b] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                            ₮
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            USDT 冷钱包直接收款
+                          </span>
+                        </div>
+
+                        <div className="flex gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-white/10 text-xs font-semibold border border-slate-200/70 dark:border-white/10">
+                          <button
+                            type="button"
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
+                              cryptoNetwork === 'TRC20'
+                                ? 'bg-white dark:bg-[#1e222d] text-emerald-600 dark:text-emerald-400 shadow-sm font-bold'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                            onClick={() => setCryptoNetwork('TRC20')}
+                          >
+                            TRC20 (低费率)
+                          </button>
+                          <button
+                            type="button"
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
+                              cryptoNetwork === 'ERC20'
+                                ? 'bg-white dark:bg-[#1e222d] text-blue-600 dark:text-blue-400 shadow-sm font-bold'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                            onClick={() => setCryptoNetwork('ERC20')}
+                          >
+                            ERC20
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 二维码 */}
+                      <div className="flex flex-col items-center justify-center py-1">
+                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
+                          {cryptoQrDataUrl ? (
+                            <img
+                              src={cryptoQrDataUrl}
+                              alt={`USDT-${cryptoNetwork} 收款二维码`}
+                              className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none"
+                            />
+                          ) : (
+                            <div className="w-40 h-40 flex items-center justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                          打开 Web3 / USDT 钱包 App 扫一扫
+                        </span>
+                      </div>
+
+                      {/* 完整地址与复制 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span className="font-semibold">收款地址 ({cryptoNetwork})</span>
+                          <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                            {cryptoNetwork === 'TRC20' ? '⚡️ 波场 TRON 网络' : '⛓️ 以太坊 Ethereum 网络'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 focus-within:border-emerald-500 transition-colors">
+                          <code className="text-xs font-mono break-all text-slate-800 dark:text-slate-200 select-all leading-relaxed flex-1">
+                            {currentCryptoAddress}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(currentCryptoAddress, `USDT-${cryptoNetwork} 地址`)}
+                            className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/20 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
+                            title="复制完整地址"
+                          >
+                            {copiedAddress ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span className="text-emerald-600 dark:text-emerald-400">已复制</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>复制</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>
+                          请核对充币网络为 <strong>USDT-{cryptoNetwork}</strong>，充错网络资产将无法找回。
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* A4: 全球其它地区 (GLOBAL) —— Stripe + PayPal HK + USDT */}
+              {/* ------------------------------------------------------------- */}
+              {region === 'GLOBAL' && (
+                <div className="space-y-3.5">
+                  {/* Stripe 专属收银台入口按钮 */}
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50/40 to-blue-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-blue-950/20 border border-blue-200/80 dark:border-blue-500/30 shadow-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span>Stripe 国际收银台</span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-600 text-white rounded-md uppercase">
+                            Stripe
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          支持全球信用卡 / Apple Pay / Google Pay
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('stripe')}
+                      className="px-3.5 py-2 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white shadow-md shadow-blue-500/25 flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0"
+                    >
+                      <span>进入收银台</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="relative flex py-0.5 items-center">
+                    <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                    <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium select-none">
+                      或选择以下支付方式
+                    </span>
+                    <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                  </div>
+
+                  {/* 分段选择器: PayPal (HK) vs USDT */}
+                  <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 gap-1">
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        intlSubTab === 'paypal'
+                          ? 'bg-white dark:bg-[#1f242f] text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setIntlSubTab('paypal')}
+                    >
+                      <PayPalIcon className="w-3.5 h-3.5" />
+                      <span>PayPal</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                        intlSubTab === 'crypto'
+                          ? 'bg-white dark:bg-[#1f242f] text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                      onClick={() => setIntlSubTab('crypto')}
+                    >
+                      <UsdtIcon className="w-3.5 h-3.5" />
+                      <span>USDT 加密钱包</span>
+                    </button>
+                  </div>
+
+                  {/* PayPal (HK) 展示 */}
+                  {intlSubTab === 'paypal' && (
+                    <div className="p-4 rounded-xl bg-white dark:bg-[#181b22] border border-blue-500/20 space-y-3 shadow-xs animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <PayPalIcon className="w-4 h-4" />
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            PayPal 国际直连付款码
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
+                          全球主流币种直连
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center py-1">
+                        <a
+                          href={paypalMeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group relative p-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 hover:border-blue-500 hover:shadow-md transition-all flex items-center justify-center cursor-pointer"
+                          title="点击前往 PayPal 官方页面"
+                        >
+                          <img
+                            src="/media/shijianus/support/paypal-hk.jpg"
+                            alt="PayPal 付款二维码"
+                            className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none group-hover:opacity-95 transition-opacity"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 rounded-2xl transition-colors flex items-end justify-center pb-2">
+                            <span className="text-[11px] font-semibold bg-slate-900/80 text-white px-2.5 py-1 rounded-full opacity-90 group-hover:opacity-100 flex items-center gap-1 shadow-sm">
+                              <span>点击打开链接</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </a>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                          支持直接扫码或点击上方二维码进入付款链接
+                        </span>
+                      </div>
+
+                      <a
+                        href={paypalMeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-[#0070ba] hover:bg-[#003087] text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <span>前往 PayPal.Me 付款支持</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
+
+                  {/* USDT 展示 */}
+                  {intlSubTab === 'crypto' && (
+                    <div className="space-y-3.5 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-[#26a17b] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                            ₮
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            USDT 冷钱包直接收款
+                          </span>
+                        </div>
+
+                        <div className="flex gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-white/10 text-xs font-semibold border border-slate-200/70 dark:border-white/10">
+                          <button
+                            type="button"
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
+                              cryptoNetwork === 'TRC20'
+                                ? 'bg-white dark:bg-[#1e222d] text-emerald-600 dark:text-emerald-400 shadow-sm font-bold'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                            onClick={() => setCryptoNetwork('TRC20')}
+                          >
+                            TRC20 (低费率)
+                          </button>
+                          <button
+                            type="button"
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
+                              cryptoNetwork === 'ERC20'
+                                ? 'bg-white dark:bg-[#1e222d] text-blue-600 dark:text-blue-400 shadow-sm font-bold'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                            onClick={() => setCryptoNetwork('ERC20')}
+                          >
+                            ERC20
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center py-1">
+                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
+                          {cryptoQrDataUrl ? (
+                            <img
+                              src={cryptoQrDataUrl}
+                              alt={`USDT-${cryptoNetwork} 收款二维码`}
+                              className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none"
+                            />
+                          ) : (
+                            <div className="w-40 h-40 flex items-center justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                          打开 Web3 / USDT 钱包 App 扫一扫
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span className="font-semibold">收款地址 ({cryptoNetwork})</span>
+                          <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                            {cryptoNetwork === 'TRC20' ? '⚡️ 波场 TRON 网络' : '⛓️ 以太坊 Ethereum 网络'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 focus-within:border-emerald-500 transition-colors">
+                          <code className="text-xs font-mono break-all text-slate-800 dark:text-slate-200 select-all leading-relaxed flex-1">
+                            {currentCryptoAddress}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(currentCryptoAddress, `USDT-${cryptoNetwork} 地址`)}
+                            className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/20 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
+                            title="复制完整地址"
+                          >
+                            {copiedAddress ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span className="text-emerald-600 dark:text-emerald-400">已复制</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>复制</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>
+                          请核对充币网络为 <strong>USDT-{cryptoNetwork}</strong>，充错网络资产将无法找回。
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* =================================================================== */}
-          {/* 3. 支付渠道水平分段选择器 (Segmented Control / Tabs) */}
-          {/* =================================================================== */}
-          <div className="grid grid-cols-4 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 gap-1">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              const Icon = tab.icon;
-              return (
+          {/* ================================================================= */}
+          {/* 【视图 B: 专门的 Stripe 付款界面 (Dedicated Stripe Checkout)】 */}
+          {/* ================================================================= */}
+          <div
+            style={{ display: viewMode === 'stripe' ? 'block' : 'none' }}
+            className="space-y-4 animate-in fade-in duration-200"
+          >
+            {/* 金额快捷选择器 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                <span>赞赏金额 (USD)</span>
+                <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400">
+                  当前: ${effectiveAmount}.00
+                </span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                {PRESET_AMOUNTS.map((amt) => {
+                  const isActive = selectedAmount === amt;
+                  return (
+                    <button
+                      key={amt}
+                      data-amt={amt}
+                      type="button"
+                      onClick={() => setSelectedAmount(amt)}
+                      className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center gap-1 ${
+                        isActive
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
+                          : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      <span>${amt}</span>
+                    </button>
+                  );
+                })}
                 <button
-                  key={tab.id}
-                  data-tab={tab.id}
                   type="button"
-                  style={
-                    isActive
-                      ? { backgroundColor: isDark ? '#1e2430' : '#ffffff' }
-                      : undefined
-                  }
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer select-none ${
-                    isActive
-                      ? '!bg-white dark:!bg-[#1f242f] text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-white/10 font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/5'
+                  data-amt="custom"
+                  onClick={() => setSelectedAmount('custom')}
+                  className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center ${
+                    selectedAmount === 'custom'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 ring-2 ring-blue-500/20'
+                      : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline truncate">{tab.label}</span>
-                  <span className="sm:hidden truncate">{tab.shortLabel}</span>
+                  <span>自定义</span>
                 </button>
-              );
-            })}
-          </div>
+              </div>
 
-          {/* =================================================================== */}
-          {/* 4. 主视区动态切换内容 (Main Viewport) */}
-          {/* =================================================================== */}
+              {/* 自定义金额输入框 */}
+              {selectedAmount === 'custom' && (
+                <div className="flex items-center rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3 py-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all animate-in fade-in duration-150">
+                  <span className="text-slate-400 font-bold text-sm mr-2 select-none">$</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    value={customAmountStr}
+                    onChange={(e) => setCustomAmountStr(e.target.value)}
+                    placeholder="输入赞赏金额 (1 - 1000)"
+                    className="w-full bg-transparent text-sm font-semibold outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
+                  />
+                  <span className="text-xs text-slate-400 font-medium ml-2 select-none">USD</span>
+                </div>
+              )}
+            </div>
 
-          {/* 【Tab 1: 银行卡 / 信用卡 (Stripe)】 (保留 DOM 避免重新挂载) */}
-          <div style={{ display: activeTab === 'card' ? 'block' : 'none' }} className="space-y-3">
+            {/* Stripe Express Checkout 快捷入口 (Apple Pay / Google Pay) */}
+            <div
+              ref={expressCheckoutContainerRef}
+              id="stripe-express-checkout-element"
+              className="w-full overflow-hidden"
+              style={{ display: hasExpressCheckout ? 'block' : 'none' }}
+            />
+
+            {hasExpressCheckout && (
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+                <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium select-none">
+                  或直接输入卡号支付
+                </span>
+                <div className="flex-grow border-t border-slate-200/80 dark:border-white/10"></div>
+              </div>
+            )}
+
+            {/* 支付成功反馈 */}
             {paymentSuccess ? (
               <div className="py-8 px-4 text-center space-y-3 animate-in fade-in duration-200">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/10">
@@ -910,27 +1509,30 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 <button
                   type="button"
                   className="mt-2 px-5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                  onClick={() => setPaymentSuccess(false)}
+                  onClick={() => {
+                    setPaymentSuccess(false);
+                    setViewMode('main');
+                  }}
                 >
-                  再次赞赏 / 返回
+                  返回赞赏主界面
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleStripeSubmit} className="space-y-3">
+              <form onSubmit={handleStripeSubmit} className="space-y-3.5">
                 {stripeError && (
-                  <div className="p-3 rounded-xl bg-red-50/90 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-xs text-red-600 dark:text-red-400 flex items-start gap-2 animate-in fade-in duration-150">
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-xs text-red-600 dark:text-red-400 flex items-start gap-2 animate-in fade-in duration-150">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <div className="leading-relaxed">{stripeError}</div>
                   </div>
                 )}
 
-                {/* Stripe Payment Element 挂载区 */}
-                <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/90 dark:bg-[#181b22] border border-slate-200/80 dark:border-white/10 shadow-xs relative min-h-[160px]">
+                {/* Stripe Payment Element 挂载区 (浅色为纯白卡片，深色为暗色) */}
+                <div className="p-3.5 sm:p-4 rounded-xl bg-white dark:bg-[#181b22] border border-slate-200 dark:border-white/10 shadow-xs relative min-h-[160px]">
                   {stripeLoading && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-[#181b22]/80 backdrop-blur-xs rounded-xl z-10 space-y-2.5">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-[#181b22]/90 backdrop-blur-xs rounded-xl z-10 space-y-2.5">
                       <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
                       <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                        正在安全加载支付组件...
+                        正在安全加载 Stripe 支付组件...
                       </span>
                     </div>
                   )}
@@ -942,7 +1544,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 <button
                   type="submit"
                   disabled={isProcessingPayment || stripeLoading || !stripeReady}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   {isProcessingPayment ? (
                     <>
@@ -957,7 +1559,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   )}
                 </button>
 
-                {/* 安全与卡种角标 */}
+                {/* 安全认证与卡种说明 */}
                 <div className="pt-1 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
                   <div className="flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
@@ -974,214 +1576,12 @@ export const RewardModal: React.FC<RewardModalProps> = ({
               </form>
             )}
           </div>
-
-          {/* 【Tab 2: 加密货币 (USDT)】 */}
-          {activeTab === 'crypto' && (
-            <div className="space-y-3.5 animate-in fade-in duration-200">
-              {/* 网络切换标签 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#26a17b] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                    ₮
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    USDT 冷钱包直接收款
-                  </span>
-                </div>
-
-                <div className="flex p-0.5 rounded-lg bg-slate-100 dark:bg-white/10 text-xs font-semibold border border-slate-200/70 dark:border-white/10">
-                  <button
-                    type="button"
-                    style={
-                      cryptoNetwork === 'TRC20'
-                        ? { backgroundColor: isDark ? '#1e2430' : '#ffffff' }
-                        : undefined
-                    }
-                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
-                      cryptoNetwork === 'TRC20'
-                        ? '!bg-white dark:!bg-[#1e222d] text-emerald-600 dark:text-emerald-400 shadow-sm font-bold'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                    }`}
-                    onClick={() => setCryptoNetwork('TRC20')}
-                  >
-                    TRC20 (低手续费)
-                  </button>
-                  <button
-                    type="button"
-                    style={
-                      cryptoNetwork === 'ERC20'
-                        ? { backgroundColor: isDark ? '#1e2430' : '#ffffff' }
-                        : undefined
-                    }
-                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
-                      cryptoNetwork === 'ERC20'
-                        ? '!bg-white dark:!bg-[#1e222d] text-blue-600 dark:text-blue-400 shadow-sm font-bold'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                    }`}
-                    onClick={() => setCryptoNetwork('ERC20')}
-                  >
-                    ERC20
-                  </button>
-                </div>
-              </div>
-
-              {/* 高清居中二维码 (带白色安全边距卡片包裹) */}
-              <div className="flex flex-col items-center justify-center py-1">
-                <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200/80 dark:border-white/10 flex items-center justify-center">
-                  {cryptoQrDataUrl ? (
-                    <img
-                      src={cryptoQrDataUrl}
-                      alt={`USDT-${cryptoNetwork} 收款二维码`}
-                      className="w-40 h-40 sm:w-44 sm:h-44 object-contain rounded-lg select-none"
-                    />
-                  ) : (
-                    <div className="w-40 h-40 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-                    </div>
-                  )}
-                </div>
-                <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
-                  打开支持 Web3 / USDT 钱包 App 扫一扫
-                </span>
-              </div>
-
-              {/* 完整地址与复制按钮 */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span className="font-semibold">收款地址 ({cryptoNetwork})</span>
-                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
-                    {cryptoNetwork === 'TRC20' ? '⚡️ 波场 TRON 网络' : '⛓️ 以太坊 Ethereum 网络'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 focus-within:border-emerald-500 transition-colors">
-                  <code className="text-xs font-mono break-all text-slate-800 dark:text-slate-200 select-all leading-relaxed flex-1">
-                    {currentCryptoAddress}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(currentCryptoAddress, `USDT-${cryptoNetwork} 地址`)}
-                    className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/20 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
-                    title="复制完整地址"
-                  >
-                    {copiedAddress ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-emerald-600 dark:text-emerald-400">已复制</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>复制</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>
-                  请务必核对网络为 <strong>USDT-{cryptoNetwork}</strong>，充错网络将无法找回。
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* 【Tab 3: PayPal】 */}
-          {activeTab === 'paypal' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-slate-200/80 dark:border-white/10 space-y-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#003087] text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
-                    <PayPalIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">
-                      PayPal 国际赞赏 (原生直连)
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      支持全球主流币种（USD、GBP、EUR、HKD 等）直接汇款
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white dark:bg-black/20 p-3 rounded-lg border border-slate-200/60 dark:border-white/5 space-y-1.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                    <span>直连 PayPal.Me 专属通道</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    点击下方按钮将直接调起 PayPal 官方付款页面，无任何第三方中转，安全秒级到账。
-                  </p>
-                </div>
-
-                {/* 一键跳转按钮 */}
-                <a
-                  href={paypalMeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-[#0070ba] hover:bg-[#003087] active:bg-[#00246b] text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>前往 PayPal.Me 支持作者</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-
-              <div className="text-center text-[11px] text-slate-400 dark:text-slate-500">
-                如持有中国香港或英国卡，建议优先使用 HKD / GBP 结算以减少跨区换汇手续费。
-              </div>
-            </div>
-          )}
-
-          {/* 【Tab 4: 微信 / 支付宝】 */}
-          {activeTab === 'cn' && (
-            <div className="space-y-3.5 animate-in fade-in duration-200">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {/* 微信支付 */}
-                <div className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-emerald-500/20 hover:border-emerald-500/40 transition-all shadow-xs">
-                  <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center">
-                    <img
-                      src="/media/shijianus/support/weixin-pay-cn.jpg"
-                      alt="微信支付赞赏码"
-                      className="w-full h-full object-contain select-none"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>微信扫一扫</span>
-                  </div>
-                </div>
-
-                {/* 支付宝 */}
-                <div className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#181b22] border border-blue-500/20 hover:border-blue-500/40 transition-all shadow-xs">
-                  <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-xs overflow-hidden flex items-center justify-center">
-                    <img
-                      src="/media/shijianus/support/alipay-cn.jpg"
-                      alt="支付宝赞赏码"
-                      className="w-full h-full object-contain select-none"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
-                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                    <span>支付宝扫一扫</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
-                手机端可长按或截图保存二维码，打开对应 App 扫一扫即可。
-              </div>
-            </div>
-          )}
         </div>
 
         {/* =================================================================== */}
-        {/* 5. 弹窗底部版权与支持记录 (Pinned Footer) */}
+        {/* 3. 弹窗底部版权与支持记录 (Pinned Footer) */}
         {/* =================================================================== */}
-        <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 shrink-0">
+        <div className="mt-3 pt-3 border-t border-slate-200/70 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 shrink-0">
           <div className="flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-blue-500" />
             <span>
@@ -1189,7 +1589,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 ? `已按 ${currentRegionMeta.label} 优选`
                 : isDetectingGeo
                 ? '识别网络中...'
-                : `推荐区域: ${detectedCountry || currentRegionMeta.label}`}
+                : `推荐地区: ${detectedCountry ? `${detectedCountry} · ${currentRegionMeta.label}` : currentRegionMeta.label}`}
             </span>
           </div>
           <a
@@ -1206,7 +1606,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
 
       {/* 浮动 Toast 提示 */}
       {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/90 dark:bg-slate-100/95 text-white dark:text-slate-900 px-4 py-2 rounded-full text-xs font-semibold shadow-xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900 px-4 py-2 rounded-full text-xs font-semibold shadow-xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
           <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
           <span>{toastMsg}</span>
         </div>

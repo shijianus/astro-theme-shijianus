@@ -153,6 +153,10 @@ const paypalMeUrl =
   import.meta.env.PUBLIC_PAYPAL_ME_URL ||
   process.env.PUBLIC_PAYPAL_ME_URL ||
   'https://www.paypal.com/paypalme/shijianus';
+const paypalUkMeUrl =
+  import.meta.env.PUBLIC_PAYPAL_UK_ME_URL ||
+  process.env.PUBLIC_PAYPAL_UK_ME_URL ||
+  'https://www.paypal.com/paypalme/shijianus';
 ---
 
 <!doctype html>
@@ -289,6 +293,7 @@ const paypalMeUrl =
         trc20Address={usdtTrc20Address}
         erc20Address={usdtErc20Address}
         paypalMeUrl={paypalMeUrl}
+        paypalUkMeUrl={paypalUkMeUrl}
       />
     </div>
 
