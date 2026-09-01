@@ -514,8 +514,12 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           fields: {
             billingDetails: {
               name: 'auto',
-              email: 'auto',
+              email: 'never',
             },
+          },
+          wallets: {
+            applePay: 'never',
+            googlePay: 'never',
           },
           terms: {
             card: 'never',
@@ -773,7 +777,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                     style={
                       isActive
                         ? { backgroundColor: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }
-                        : undefined
+                        : {
+                            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
+                            color: isDark ? '#cbd5e1' : '#334155',
+                            borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                          }
                     }
                     className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center gap-1 ${
                       isActive
@@ -792,7 +802,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 style={
                   selectedAmount === 'custom'
                     ? { backgroundColor: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }
-                    : undefined
+                    : {
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
+                        color: isDark ? '#cbd5e1' : '#334155',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1',
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                      }
                 }
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer select-none flex items-center justify-center ${
                   selectedAmount === 'custom'
@@ -976,9 +992,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 <div className="flex p-0.5 rounded-lg bg-slate-100 dark:bg-white/10 text-xs font-semibold border border-slate-200/70 dark:border-white/10">
                   <button
                     type="button"
+                    style={
+                      cryptoNetwork === 'TRC20'
+                        ? { backgroundColor: isDark ? '#1e2430' : '#ffffff' }
+                        : undefined
+                    }
                     className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
                       cryptoNetwork === 'TRC20'
-                        ? 'bg-white dark:bg-[#1e222d] text-emerald-600 dark:text-emerald-400 shadow-xs font-bold'
+                        ? '!bg-white dark:!bg-[#1e222d] text-emerald-600 dark:text-emerald-400 shadow-sm font-bold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                     }`}
                     onClick={() => setCryptoNetwork('TRC20')}
@@ -987,9 +1008,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   </button>
                   <button
                     type="button"
+                    style={
+                      cryptoNetwork === 'ERC20'
+                        ? { backgroundColor: isDark ? '#1e2430' : '#ffffff' }
+                        : undefined
+                    }
                     className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
                       cryptoNetwork === 'ERC20'
-                        ? 'bg-white dark:bg-[#1e222d] text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                        ? '!bg-white dark:!bg-[#1e222d] text-blue-600 dark:text-blue-400 shadow-sm font-bold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                     }`}
                     onClick={() => setCryptoNetwork('ERC20')}

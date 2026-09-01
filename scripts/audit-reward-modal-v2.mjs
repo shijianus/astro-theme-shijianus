@@ -27,20 +27,20 @@ async function runAudit() {
     timeout: 30000,
   });
 
-  // Scroll to copyright section and find reward button
-  console.log('🖱️ Clicking [赞赏支持] trigger...');
-  const rewardBtn = await page.waitForSelector('[data-panel-trigger="reward"]', { timeout: 10000 });
-  await rewardBtn.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(400);
-  await rewardBtn.click();
-  await page.waitForTimeout(1000);
+  // Open modal via custom event
+  console.log('🖱️ Dispatching open-reward-modal event...');
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('open-reward-modal'));
+  });
 
-  const modal = page.locator('[role="dialog"]');
-  await modal.waitFor({ state: 'visible', timeout: 5000 });
+  const modal = page.locator('[aria-labelledby="reward-modal-heading"]');
+  await modal.waitFor({ state: 'visible', timeout: 10000 });
+  console.log('✅ Reward Modal opened successfully!');
 
   // 1. Default Tab: Card & Preset Amounts
   console.log('📸 01: Default Tab (Card & Preset Amounts)...');
-  await page.waitForTimeout(3000); // Wait for Stripe Elements to initialize
+  await page.waitForTimeout(3000); // Allow Stripe Elements to load
   await page.screenshot({ path: path.join(outDir, '01-tab-card-default.png') });
 
   // 2. Click Custom Amount button & input $50
@@ -48,7 +48,7 @@ async function runAudit() {
   const customAmtBtn = modal.locator('[data-amt="custom"]');
   if (await customAmtBtn.isVisible()) {
     await customAmtBtn.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400);
     const customInput = modal.locator('input[placeholder*="输入赞赏金额"]');
     if (await customInput.isVisible()) {
       await customInput.fill('50');
@@ -94,7 +94,7 @@ async function runAudit() {
   console.log('📸 07: Theme Toggle to Light Mode (Card Tab)...');
   const cardTabBtn = modal.locator('[data-tab="card"]');
   await cardTabBtn.click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
 
   await page.evaluate(() => {
     document.documentElement.dataset.theme = 'light';
@@ -120,13 +120,12 @@ async function runAudit() {
     waitUntil: 'networkidle',
   });
 
-  const mRewardBtn = await mobilePage.waitForSelector('[data-panel-trigger="reward"]', { timeout: 10000 });
-  await mRewardBtn.scrollIntoViewIfNeeded();
-  await mobilePage.waitForTimeout(400);
-  await mRewardBtn.click();
+  await mobilePage.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('open-reward-modal'));
+  });
   await mobilePage.waitForTimeout(3000);
 
-  const mModal = mobilePage.locator('[role="dialog"]');
+  const mModal = mobilePage.locator('[aria-labelledby="reward-modal-heading"]');
   await mModal.waitFor({ state: 'visible' });
   await mobilePage.screenshot({ path: path.join(outDir, '09-mobile-card-tab.png') });
 
