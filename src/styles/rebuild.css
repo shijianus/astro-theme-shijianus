@@ -1614,21 +1614,16 @@ body[data-type='tag-detail'] .page-main {
 
 .copyright-cc-box {
   position: absolute;
-  inset: 0;
-  overflow: hidden;
+  top: -24px;
+  right: -10px;
+  overflow: visible;
   pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
 .copyright-cc-box::after {
-  position: absolute;
-  top: -76px;
-  right: -20px;
-  color: var(--theme-main);
-  font-size: 8rem;
-  font-weight: 800;
-  line-height: 1;
-  content: "©";
-  opacity: 0.22;
+  display: none;
 }
 
 .post-copyright__author_box {

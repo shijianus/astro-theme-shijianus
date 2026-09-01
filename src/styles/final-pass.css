@@ -125,108 +125,700 @@ body[data-type='post'] #post > :is(.post-tools-right, .postNav, .relatedPosts) {
   box-shadow: none !important;
 }
 
-body[data-type='post'] #post .post-copyright__share {
-  display: grid !important;
-  gap: 12px !important;
-  margin: 16px 0 0 !important;
-  padding: 14px 0 0 !important;
-  border-right: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-radius: 0 !important;
-  border-top: 1px dashed color-mix(in srgb, var(--card-border) 78%, transparent) !important;
-  background: transparent !important;
-  box-shadow: none !important;
+body[data-type='post'] #post .post-copyright {
+  position: relative !important;
+  margin: 60px 0 24px !important;
+  padding: 2.4rem 1.6rem 1.4rem !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 16px !important;
+  background: var(--card-bg) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  overflow: visible !important;
 }
 
-body[data-type='post'] #post .post-copyright__share .post-share-actions {
-  display: grid !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  flex: none !important;
-  justify-items: start !important;
-  gap: 10px !important;
+body[data-type='post'] #post .copyright-cc-box {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 0 !important;
 }
 
-body[data-type='post'] #post .post-copyright__share .post-share-grid {
-  display: flex !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-start !important;
-  gap: 10px !important;
-  max-width: none !important;
-}
-
-body[data-type='post'] #post .post-copyright__share .post-share-grid__item {
-  width: 42px !important;
-  min-width: 42px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  background: transparent !important;
-}
-
-body[data-type='post'] #post .post-copyright__share .post-share-grid__surface {
-  display: grid !important;
-  place-items: center !important;
-  width: 42px !important;
-  height: 42px !important;
-  padding: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 86%, transparent) !important;
-  border-radius: 999px !important;
-  background: color-mix(in srgb, var(--card-bg) 86%, transparent) !important;
-  color: var(--font-color) !important;
-}
-
-body[data-type='post'] #post .post-copyright__share .post-share-grid__item:hover .post-share-grid__surface {
-  border-color: var(--platform-accent) !important;
-  background: var(--platform-accent) !important;
-  color: var(--white) !important;
-  transform: translateY(-2px) !important;
-}
-
-body[data-type='post'] #post .post-copyright__share .post-share-grid__label {
+body[data-type='post'] #post .copyright-cc-box::after {
   display: none !important;
 }
 
-body[data-type='post'] #post .post-copyright__share .post-tools-panels {
-  position: static !important;
-  width: 0 !important;
-  height: 0 !important;
+body[data-type='post'] #post .copyright-cc-symbol {
+  position: absolute !important;
+  top: -65px !important;
+  right: -25px !important;
+  font-size: 8.5rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: var(--theme-main) !important;
+  opacity: 0.12 !important;
+  display: block !important;
 }
 
-body[data-type='post'] #post .post-copyright__support {
-  margin-top: 16px !important;
-  padding-top: 16px !important;
+body[data-type='post'] #post .post-copyright__author_box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 2.1rem !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
-body[data-type='post'] #post .post-copyright__support-actions {
+body[data-type='post'] #post .post-copyright__author_img {
+  position: absolute !important;
+  top: -66px !important;
+  left: calc(50% - 33px) !important;
+  width: 66px !important;
+  height: 66px !important;
+  border-radius: 66px !important;
+  border: 3px solid var(--card-bg) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  overflow: hidden !important;
+  background: var(--card-bg) !important;
+  z-index: 2 !important;
+}
+
+body[data-type='post'] #post .post-copyright__author_name {
+  font-size: 1.18rem !important;
+  font-weight: 800 !important;
+  color: var(--font-color) !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+  margin-top: 14px !important;
+}
+
+body[data-type='post'] #post .post-copyright__author_desc {
+  font-size: 0.84rem !important;
+  color: var(--text-muted) !important;
+  margin-top: 4px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+}
+
+body[data-type='post'] #post .post-copyright__post__info {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body[data-type='post'] #post .post-copyright__original {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  background: var(--theme-main) !important;
+  color: #ffffff !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  flex-shrink: 0 !important;
+  text-decoration: none !important;
+}
+
+body[data-type='post'] #post .post-copyright-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  max-width: calc(100% - 55px) !important;
+  min-width: 0 !important;
+  padding: 2px 6px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--font-color) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
+}
+
+body[data-type='post'] #post .post-copyright-title:hover {
+  background: color-mix(in srgb, var(--theme-main) 12%, transparent) !important;
+  color: var(--theme-main) !important;
+}
+
+/* 标题平滑滚动左右展示（1次最多展示25字，不带...） */
+body[data-type='post'] #post .post-copyright-title__viewport {
+  max-width: 380px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+body[data-type='post'] #post .post-copyright-title__viewport.has-marquee {
+  mask-image: linear-gradient(to right, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+}
+
+body[data-type='post'] #post .post-copyright-title__text {
+  display: inline-block !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+}
+
+body[data-type='post'] #post .post-copyright-title__text.is-marquee {
+  animation: marqueeScroll 10s ease-in-out infinite alternate !important;
+  padding: 0 4px !important;
+}
+
+body[data-type='post'] #post .post-copyright-title:hover .post-copyright-title__text.is-marquee {
+  animation-play-state: paused !important;
+}
+
+@keyframes marqueeScroll {
+  0%, 18% {
+    transform: translateX(0);
+  }
+  82%, 100% {
+    transform: translateX(calc(-100% + 360px));
+  }
+}
+
+/* 4. 安知鱼原生平铺单行工具栏：删除多余方框，赞赏按钮融入 shareRight */
+body[data-type='post'] #post .post-tools {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 10px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+body[data-type='post'] #post .shareRight {
   display: flex !important;
   flex-wrap: wrap !important;
   align-items: center !important;
-  gap: 10px !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  width: 100% !important;
 }
 
-body[data-type='post'] #post .post-copyright__support .support-panel-link--icon {
-  min-width: 0 !important;
-  min-height: 42px !important;
-  padding: 0 12px !important;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 42%, var(--card-border)) !important;
+body[data-type='post'] #post .share-link {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+body[data-type='post'] #post .post-reward .reward-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 10px !important;
+  border: 0 !important;
+  background: linear-gradient(135deg, #ff5e62, #ff9966) !important;
+  color: #ffffff !important;
+  font-size: 0.86rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(255, 94, 98, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='post'] #post .post-reward .reward-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(255, 94, 98, 0.45) !important;
+  filter: brightness(1.05) !important;
+}
+
+body[data-type='post'] #post .reward-button__icon {
+  animation: pulse-heart 2s infinite ease-in-out !important;
+}
+
+/* 双向智能自适应定位：向上或向下展示扩展卡片 */
+body[data-type='post'] #post .reward-main,
+body[data-type='post'] #post .share-qrcode .share-main {
+  position: absolute !important;
+  z-index: 100 !important;
+  display: none !important;
+  width: max-content !important;
+  max-width: 92vw !important;
+  pointer-events: auto !important;
+}
+
+body[data-type='post'] #post .popover-up {
+  bottom: calc(100% + 10px) !important;
+  top: auto !important;
+  animation: popoverFadeInUp 0.22s ease-out !important;
+}
+
+body[data-type='post'] #post .popover-down {
+  top: calc(100% + 10px) !important;
+  bottom: auto !important;
+  animation: popoverFadeInDown 0.22s ease-out !important;
+}
+
+body[data-type='post'] #post .post-reward .reward-main {
+  left: 0 !important;
+  transform: none !important;
+}
+
+body[data-type='post'] #post .share-qrcode .share-main {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+body[data-type='post'] #post .post-reward:hover .reward-main,
+body[data-type='post'] #post .post-reward .reward-main.is-pinned,
+body[data-type='post'] #post .share-link.mobile:hover .share-main,
+body[data-type='post'] #post .share-qrcode .share-main.is-pinned {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+@keyframes popoverFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popoverFadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body[data-type='post'] #post .reward-all {
+  border-radius: 14px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  padding: 0.85rem 0.95rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+body[data-type='post'] #post .reward-title {
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  color: #ff5e62 !important;
+  margin-bottom: 0.6rem !important;
+  text-align: center !important;
+}
+
+body[data-type='post'] #post .reward-group {
+  display: flex !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+body[data-type='post'] #post .reward-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease !important;
+}
+
+body[data-type='post'] #post .reward-item:hover {
+  transform: translateY(-2px) !important;
+}
+
+body[data-type='post'] #post .reward-qr-box {
+  padding: 5px !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  border: 2px solid transparent !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+body[data-type='post'] #post .reward-qr-box--wechat {
+  border-color: #07c160 !important;
+}
+
+body[data-type='post'] #post .reward-qr-box--alipay {
+  border-color: #1677ff !important;
+}
+
+body[data-type='post'] #post .post-qr-code-img {
+  width: 105px !important;
+  height: 105px !important;
+  display: block !important;
+  border-radius: 6px !important;
+  object-fit: cover !important;
+}
+
+body[data-type='post'] #post .post-qr-code-desc {
+  font-size: 0.76rem !important;
+  font-weight: 600 !important;
+  color: var(--font-color) !important;
+  margin-top: 4px !important;
+}
+
+body[data-type='post'] #post .reward-main-btn {
+  margin-top: 10px !important;
+  padding: 5px 12px !important;
   border-radius: 8px !important;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--card-border) 40%, transparent) !important;
+  border: 1px solid var(--card-border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  color: var(--font-color) !important;
+  width: 100% !important;
+  transition: all 0.2s ease !important;
 }
 
-body[data-type='post'] #post .post-copyright__support .support-panel-link--icon:first-child {
-  border-color: color-mix(in srgb, var(--theme-main) 58%, var(--card-border)) !important;
+body[data-type='post'] #post .reward-main-btn:hover {
+  background: #ff5e62 !important;
+  color: #ffffff !important;
+  border-color: #ff5e62 !important;
+}
+
+body[data-type='post'] #post .reward-text {
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+}
+
+body[data-type='post'] #post .reward-dec {
+  font-size: 0.7rem !important;
+  opacity: 0.85 !important;
+  margin-top: 2px !important;
+  text-align: center !important;
+}
+
+body[data-type='post'] #post .post-share-btn--square {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  border: 1px solid color-mix(in srgb, var(--platform-accent) 35%, var(--card-border)) !important;
+  background: var(--platform-bg, color-mix(in srgb, var(--card-bg) 92%, transparent)) !important;
+  color: var(--platform-accent, var(--font-color)) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='post'] #post .post-share-btn--square:hover {
+  border-color: var(--platform-accent) !important;
+  background: var(--platform-accent) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--platform-accent) 40%, transparent) !important;
+}
+
+body[data-type='post'] #post .post-share-icon {
+  pointer-events: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* 地区画像精准控制平台展示 (最高特异性，确保生效) */
+body[data-type='post'] #post .post-copyright-block[data-detected-region='cn'] [data-platform-region='intl-tw-hk-jp'],
+body[data-type='post'] #post .post-copyright-block[data-detected-region='cn'] [data-platform-region='intl'] {
+  display: none !important;
+}
+
+body[data-type='post'] #post .post-copyright-block[data-detected-region='tw'] [data-platform-region='cn'],
+body[data-type='post'] #post .post-copyright-block[data-detected-region='tw'] [data-platform-region='cn-hk'] {
+  display: none !important; /* 台湾地区依规严格禁止小红书与微信/QQ/抖音等大陆专有平台 */
+}
+
+body[data-type='post'] #post .post-copyright-block[data-detected-region='hk'] [data-platform-region='cn'] {
+  display: none !important; /* 香港不展示 QQ/Qzone/B站等 */
+}
+
+body[data-type='post'] #post .post-copyright-block[data-detected-region='jp'] [data-platform-region='cn'],
+body[data-type='post'] #post .post-copyright-block[data-detected-region='jp'] [data-platform-region='cn-hk'] {
+  display: none !important;
+}
+
+body[data-type='post'] #post .post-copyright-block[data-detected-region='intl'] [data-platform-region='cn'],
+body[data-type='post'] #post .post-copyright-block[data-detected-region='intl'] [data-platform-region='cn-hk'] {
+  display: none !important;
+}
+
+body[data-type='post'] #post .share-main-all {
+  border-radius: 14px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  padding: 0.85rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  cursor: pointer !important;
+}
+
+body[data-type='post'] #post #qrcode img {
+  border-radius: 8px !important;
+  display: block !important;
+}
+
+/* 5. 卡片最底部：版权声明（完全对齐安知鱼，无下划线，悬停变色） */
+body[data-type='post'] #post .post-copyright__notice {
+  margin-top: 12px !important;
+  padding-top: 10px !important;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  color: var(--text-muted) !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body[data-type='post'] #post .post-copyright-info {
+  color: var(--text-muted) !important;
+}
+
+/* 绝对没有下划线！ */
+body[data-type='post'] #post .post-copyright-license-link,
+body[data-type='post'] #post .post-copyright-site-link {
+  color: inherit !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+  transition: color 0.2s ease !important;
+}
+
+/* 悬停时才平滑变色 */
+body[data-type='post'] #post .post-copyright-license-link:hover,
+body[data-type='post'] #post .post-copyright-site-link:hover {
+  color: var(--theme-main) !important;
+  text-decoration: none !important;
+}
+
+body[data-type='post'] #post .post-copyright-info {
+  color: var(--text-muted) !important;
+}
+
+/* 绝对没有下划线！ */
+body[data-type='post'] #post .post-copyright-license-link,
+body[data-type='post'] #post .post-copyright-site-link {
+  color: inherit !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+  transition: color 0.2s ease !important;
+}
+
+/* 悬停时才平滑变色 */
+body[data-type='post'] #post .post-copyright-license-link:hover,
+body[data-type='post'] #post .post-copyright-site-link:hover {
+  color: var(--theme-main) !important;
+  text-decoration: none !important;
+}
+
+body[data-type='post'] .post-tools-mask,
+.post-tools-mask {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 90 !important;
+  background: transparent !important;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+body[data-type='post'] .post-tools-overlay-backdrop[hidden],
+.post-tools-overlay-backdrop[hidden],
+body[data-type='post'] .post-tools-overlay-backdrop:not(.is-open),
+.post-tools-overlay-backdrop:not(.is-open) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body[data-type='post'] .post-tools-overlay-backdrop.is-open,
+.post-tools-overlay-backdrop.is-open {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.post-floating-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  width: min(480px, calc(100vw - 32px)) !important;
+  max-height: min(85vh, 760px) !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+  z-index: 1000 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28), 0 0 0 1px var(--card-border) !important;
+  background: var(--card-bg) !important;
+  color: var(--font-color) !important;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease !important;
+}
+
+.post-floating-panel[hidden] {
+  display: block !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -46%) scale(0.96) !important;
+}
+
+.post-floating-panel.is-open {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+body[data-type='post'] .post-floating-panel__head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--card-border) 80%, transparent) !important;
+}
+
+body[data-type='post'] .post-floating-panel__head-title {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body[data-type='post'] .post-floating-panel__eyebrow {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--theme-main) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+body[data-type='post'] .post-floating-panel__close {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  border: 0 !important;
+  background: color-mix(in srgb, var(--font-color) 8%, transparent) !important;
+  color: var(--font-color) !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease !important;
+}
+
+body[data-type='post'] .post-floating-panel__close:hover {
+  background: color-mix(in srgb, var(--font-color) 16%, transparent) !important;
+  transform: scale(1.08) !important;
+}
+
+body[data-type='post'] .post-share-qrcode {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 14px !important;
+  padding: 8px 0 !important;
+}
+
+body[data-type='post'] .post-share-qrcode__image {
+  padding: 10px !important;
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  display: inline-flex !important;
+}
+
+body[data-type='post'] .post-share-qrcode__image img {
+  display: block !important;
+  width: 180px !important;
+  height: 180px !important;
+}
+
+body[data-type='post'] .post-share-qrcode__meta strong {
+  display: block !important;
+  font-size: 0.95rem !important;
+  margin-bottom: 6px !important;
+  color: var(--font-color) !important;
+}
+
+body[data-type='post'] .post-share-qrcode__meta p {
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 12px !important;
+  line-height: 1.5 !important;
+}
+
+body[data-type='post'] .post-share-qrcode__action {
+  padding: 6px 18px !important;
+  border-radius: 8px !important;
   background: var(--theme-main) !important;
-  color: var(--white) !important;
+  color: #ffffff !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  border: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
 }
 
-body[data-type='post'] #post .post-copyright__support .support-panel-link--icon:first-child:hover {
-  background: color-mix(in srgb, var(--theme-main) 78%, #111827) !important;
+body[data-type='post'] .post-share-qrcode__action:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-main) 35%, transparent) !important;
 }
 
 body[data-type='post'] #post > .post-tags-row {

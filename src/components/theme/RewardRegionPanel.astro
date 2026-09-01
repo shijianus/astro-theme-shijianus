@@ -246,51 +246,72 @@ const usdtNetwork = process.env.SUPPORT_USDT_NETWORK?.trim() || 'USDT / TRC20';
 
     const fallbackGeoState = () => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-      const language = navigator.language || '';
-      const rewardRegion =
-        timezone === 'Asia/Shanghai' || language.toLowerCase().includes('zh-cn')
-          ? 'cn'
-          : timezone === 'Asia/Hong_Kong' || language.toLowerCase().includes('zh-hk')
-            ? 'hk'
-            : timezone === 'Europe/London' || language.toLowerCase().includes('en-gb')
-              ? 'uk'
-              : 'unsupported';
+      const language = (navigator.language || '').toLowerCase();
+      const languages = (navigator.languages || [language]).map((l) => l.toLowerCase());
+      const offsetMinutes = new Date().getTimezoneOffset(); // -480 for UTC+8
+
+      const isMainlandTimezone = [
+        'asia/shanghai',
+        'asia/chongqing',
+        'asia/urumqi',
+        'asia/harbin',
+        'asia/kashgar',
+      ].includes(timezone.toLowerCase()) || (offsetMinutes === -480 && !timezone.toLowerCase().includes('hong_kong') && !timezone.toLowerCase().includes('taipei') && !timezone.toLowerCase().includes('macau'));
+
+      const isMainlandLanguage =
+        language.startsWith('zh-cn') ||
+        language.startsWith('zh-hans') ||
+        language.startsWith('zh-sg') ||
+        languages.some((l) => l.startsWith('zh-cn') || l.startsWith('zh-hans'));
+
+      const isHkMoTimezone = ['asia/hong_kong', 'asia/macau'].includes(timezone.toLowerCase());
+      const isHkMoLanguage =
+        language.startsWith('zh-hk') ||
+        language.startsWith('zh-mo') ||
+        language.startsWith('zh-hant') ||
+        language.startsWith('yue') ||
+        languages.some((l) => l.startsWith('zh-hk') || l.startsWith('zh-mo') || l.startsWith('zh-hant'));
+
+      const isUkTimezone = ['europe/london', 'utc', 'gmt'].includes(timezone.toLowerCase());
+      const isUkLanguage = language.startsWith('en-gb') || languages.some((l) => l.startsWith('en-gb'));
+
+      let rewardRegion = 'unsupported';
+      if (isMainlandTimezone || isMainlandLanguage) {
+        rewardRegion = 'cn';
+      } else if (isHkMoTimezone || isHkMoLanguage) {
+        rewardRegion = 'hk';
+      } else if (isUkTimezone || isUkLanguage) {
+        rewardRegion = 'uk';
+      } else {
+        rewardRegion = language.startsWith('en') ? 'uk' : 'hk';
+      }
+
+      const isChinaEnvironment = isMainlandTimezone || isMainlandLanguage;
 
       return {
         ok: true,
         rewardRegion,
-        regionLabel: rewardRegion === 'cn' ? '中国大陆' : rewardRegion === 'hk' ? '中国香港' : rewardRegion === 'uk' ? '英国' : '暂不支援',
-        confidence: 'low',
-        riskLevel: rewardRegion === 'unsupported' ? 'high' : 'medium',
+        regionLabel: rewardRegion === 'cn' ? '中国大陆' : rewardRegion === 'hk' ? '中国香港 / 澳门' : rewardRegion === 'uk' ? '英国及国际' : '其他地区',
+        confidence: 'medium',
+        riskLevel: isChinaEnvironment ? 'low' : 'medium',
         recommendation: {
           primaryChannelId:
             rewardRegion === 'cn'
-              ? 'alipay-cn'
+              ? 'weixin-pay-cn'
               : rewardRegion === 'hk'
                 ? 'alipay-hk'
-                : rewardRegion === 'uk'
-                  ? 'paypal-hk-uk'
-                  : '',
+                : 'paypal-hk-uk',
           secondaryChannelIds:
             rewardRegion === 'cn'
-              ? ['weixin-pay-cn']
+              ? ['alipay-cn']
               : rewardRegion === 'hk'
-                ? ['wechat-pay-hk']
-                : rewardRegion === 'uk'
-                  ? ['paypal-uk']
-                  : [],
-          collapsedChannelIds:
-            rewardRegion === 'cn'
-              ? ['paypal-cn']
-              : rewardRegion === 'hk'
-                ? ['paypal-hk']
-                : rewardRegion === 'uk'
-                  ? ['trustwallet-usdt']
-                  : [],
+                ? ['wechat-pay-hk', 'paypal-hk']
+                : ['paypal-uk'],
+          collapsedChannelIds: [],
         },
         ip: {
           countryCode: '',
-          countryLabel: '未知地区',
+          countryLabel: isChinaEnvironment ? '中国大陆' : '网络访问',
           source: 'fallback',
           asn: '',
           asName: '',
@@ -298,27 +319,29 @@ const usdtNetwork = process.env.SUPPORT_USDT_NETWORK?.trim() || 'USDT / TRC20';
         },
         signals: {
           hintRegion: rewardRegion,
-          ipRegion: 'unsupported',
+          ipRegion: isChinaEnvironment ? 'cn' : 'unsupported',
           headerRegion: 'unsupported',
-          topScore: 0,
-          runnerUpScore: 0,
+          topScore: 5,
+          runnerUpScore: 2,
         },
         profile: {
           timezone,
-          timezoneOffsetMinutes: new Date().getTimezoneOffset(),
+          timezoneOffsetMinutes: offsetMinutes,
           language,
-          primaryLanguage: (navigator.languages || [language])[0] || language,
-          languages: navigator.languages || [],
+          primaryLanguage: language,
+          languages,
           locale: document.documentElement.lang || '',
           platform: navigator.platform || '',
           webrtcSupported: Boolean(window.RTCPeerConnection),
           mismatchReasons: [],
         },
         crypto: {
-          allowed: false,
+          allowed: !isChinaEnvironment && rewardRegion === 'uk',
           address: '',
           network: '',
-          blockedReason: '',
+          blockedReason: isChinaEnvironment
+            ? '当前设备处于中国大陆环境，已关闭加密钱包展示。'
+            : '',
         },
       };
     };
@@ -495,12 +518,20 @@ const usdtNetwork = process.env.SUPPORT_USDT_NETWORK?.trim() || 'USDT / TRC20';
           const notice = card.querySelector('[data-reward-channel-notice]');
           const availability = card.dataset.rewardAvailability || 'always';
           const isCrypto = availability === 'crypto-eligible-only';
-          const isEligible = !isCrypto || Boolean(geoState?.crypto?.allowed);
+          const isEligible = !isCrypto || (Boolean(geoState?.crypto?.allowed) && region === 'uk');
           const channelId = card.dataset.rewardChannelId || '';
           const recommendedId = recommendation?.primaryChannelId || '';
           const secondaryIds = Array.isArray(recommendation?.secondaryChannelIds)
             ? recommendation.secondaryChannelIds
             : [];
+
+          if (isCrypto && !isEligible) {
+            card.hidden = true;
+            card.style.display = 'none';
+          } else if (card.dataset.rewardPriority !== 'extra' || panel.dataset.extraExpanded === 'true') {
+            card.hidden = false;
+            card.style.display = '';
+          }
 
           card.classList.toggle('is-disabled', !isEligible);
           card.classList.toggle('is-recommended', channelId === recommendedId);

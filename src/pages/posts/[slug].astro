@@ -367,6 +367,8 @@ const heroSummary = isUnlocked
       <PostCopyright
         permalink={Astro.url.href}
         title={publicFacingTitle}
+        shortTitle={entry.data.shortTitle || entry.data.short_title}
+        cover={heroImage}
         summary={entry.data.description ?? ''}
         authorName={siteConfig.site.author.name}
         authorRole={siteConfig.site.author.role}

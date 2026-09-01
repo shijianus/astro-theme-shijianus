@@ -1,26 +1,17 @@
 ---
 import {
-  Copy,
-  Facebook,
-  History,
-  Linkedin,
+  HeartHandshake,
   Mail,
-  MessageCircle,
   QrCode,
-  Radio,
-  Send,
-  Share2,
-  Sparkles,
-  Twitter,
-  type LucideIcon,
 } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import QrCodeImage from './QrCodeImage.astro';
-import RewardRegionPanel from './RewardRegionPanel.astro';
 
 interface Props {
   permalink: string;
   title: string;
+  shortTitle?: string;
+  cover?: string;
   summary?: string;
   authorName: string;
   authorRole: string;
@@ -46,59 +37,44 @@ interface Props {
 const {
   permalink,
   title,
+  shortTitle = '',
+  cover = '',
   summary = '',
   authorName,
   authorRole,
   authorAvatar,
   badge,
-  copyrightTitle,
-  notice,
-  copyLabel,
-  rewardLabel,
-  rewardNote,
-  aboutTitle,
-  modeHref,
-  modeLabel,
-  modeDescription,
-  shareLabel,
-  rewardHref,
-  rewardDescription,
-  copyDoneLabel,
-  shareDoneLabel,
-  shareFallbackLabel,
+  rewardLabel = '赞赏支持',
+  rewardHref = '/about/#about-reward',
+  copyDoneLabel = '已复制到剪贴板',
+  shareDoneLabel = '已唤起系统分享',
+  shareFallbackLabel = '当前环境不支持系统分享，已复制链接',
 } = Astro.props;
-const shareIconMap: Partial<Record<string, LucideIcon>> = {
-  native: Share2,
-  copy: Copy,
-  wechat: QrCode,
-  x: Twitter,
-  facebook: Facebook,
-  threads: MessageCircle,
-  linkedin: Linkedin,
-  weibo: Radio,
-  telegram: Send,
-  reddit: MessageCircle,
-  qq: MessageCircle,
-  email: Mail,
-};
-const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) => ({
-  ...platform,
-  Icon: shareIconMap[platform.id] ?? Share2,
-}));
+
+const rawTitle = title || '';
+// 标题：如果 shortTitle 存在则用 shortTitle，否则使用完整 rawTitle（由 CSS marquee 左右滑动展示，1次可视25字，不加...）
+const finalTitle = shortTitle || rawTitle;
+const needsMarquee = finalTitle.length > 25;
 ---
 
 <section
   class="post-copyright-block"
   data-post-tools
-  data-title={title}
+  data-title={rawTitle}
   data-summary={summary}
   data-permalink={permalink}
+  data-cover={cover}
   data-copy-done={copyDoneLabel}
   data-share-done={shareDoneLabel}
   data-share-fallback={shareFallbackLabel}
 >
   <div class="post-copyright">
-    <div class="copyright-cc-box">©</div>
+    {/* 1. 右上角 1/4 艺术水印 © 符号（只露1/4且不超边界） */}
+    <div class="copyright-cc-box" aria-hidden="true">
+      <span class="copyright-cc-symbol">©</span>
+    </div>
+
+    {/* 2. 作者头像与座右铭（间距经过像素级精校，绝不遮挡名称） */}
     <div class="post-copyright__author_box">
       <a class="post-copyright__author_img" href="/about/" title={authorName}>
         <img class="post-copyright__author_img_back" src={authorAvatar} alt={authorName} loading="lazy" />
@@ -108,191 +84,437 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
       <div class="post-copyright__author_desc">{authorRole}</div>
     </div>
 
+    {/* 3. 原创标识与长标题（严格在同一行展示，文字不截断，>25字时左右循环滚动） */}
     <div class="post-copyright__post__info">
-      <a class="post-copyright__original" href={permalink}>{badge}</a>
-      <button type="button" class="post-copyright-title" data-tool="copy" title={copyLabel}>
-        <span>{title}</span>
+      <a class="post-copyright__original" href={permalink} title="文章原创标识">{badge}</a>
+      <button type="button" class="post-copyright-title" data-tool="copy" title={`点击复制完整标题与链接：${rawTitle}`}>
+        <div class:list={['post-copyright-title__viewport', needsMarquee && 'has-marquee']}>
+          <span class:list={['post-copyright-title__text', needsMarquee && 'is-marquee']}>{finalTitle}</span>
+        </div>
       </button>
     </div>
 
-    <div class="post-copyright__notice">
-      <span class="post-copyright-info">{notice}</span>
-    </div>
-
-    <div class="post-tools-right post-copyright__share">
-      <div class="post-share-actions" aria-label={siteConfig.support.share.title}>
-        <span class="post-share-actions__eyebrow">{siteConfig.support.share.title}</span>
-        <div class="post-share-grid">
-          {enabledSharePlatforms.map((platform) => {
-            const PlatformIcon = platform.Icon;
-            const tooltip = `${platform.label} · ${platform.description}`;
-            return (
-              <button
-                type="button"
-                class="post-share-grid__item"
-                style={`--platform-accent:${platform.accent};`}
-                data-share-platform={platform.id}
-                data-tooltip={tooltip}
-                aria-label={tooltip}
-              >
-                <span class="post-share-grid__surface" aria-hidden="true">
-                  <PlatformIcon className="post-share-grid__icon" aria-hidden="true" />
-                  <span class="post-share-grid__label">{platform.label}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div class="post-tools__status" aria-live="polite"></div>
-      <button type="button" class="post-tools-overlay-backdrop" data-panel-backdrop hidden aria-label="关闭分享面板"></button>
-      <div class="post-tools-panels">
-        <div
-          class="post-floating-panel post-floating-panel--share"
-          id="post-tools-panel-wechat"
-          data-panel="wechat"
-          role="region"
-          aria-label={siteConfig.support.share.qrcodeLabel}
-          hidden
-        >
-          <div class="post-floating-panel__head">
-            <div>
-              <span class="post-floating-panel__eyebrow">{siteConfig.support.share.qrcodeLabel}</span>
-              <strong>跨设备打开</strong>
-            </div>
-            <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭二维码面板">
-              ×
-            </button>
-          </div>
-          <p class="post-floating-panel__summary">扫码后可在手机或平板直接打开当前文章，也可以把这个页面快速转到另一台设备上。</p>
-          <div class="post-share-qrcode">
-            <div class="post-share-qrcode__image">
-              <QrCodeImage value={permalink} alt={`${title} 分享二维码`} size={198} fgColor="#111827" />
-            </div>
-            <div class="post-share-qrcode__meta">
-              <strong>{title}</strong>
-              <p>如果这篇文章对你有帮助，扫码后可以在另一台设备上直接打开，或者顺手把它转给朋友。</p>
-              <button type="button" class="post-share-qrcode__action" data-tool="copy">
-                {copyLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="post-copyright__support">
-      <div class="post-copyright__support-copy">
-        <span class="post-copyright__support-eyebrow">{siteConfig.support.reward.title}</span>
-        <strong>{rewardLabel}</strong>
-        <p>{siteConfig.support.reward.summary}</p>
-      </div>
-      <div class="post-copyright__support-actions support-panel-actions">
-        <div class="support-panel-popover" data-support-popover>
+    {/* 4. 安知鱼原生平铺单行工具栏（赞赏按钮融入 shareRight，无方框、无多余分割） */}
+    <div class="post-tools">
+      <div class="shareRight" data-share-container>
+        {/* 4.1 赞赏支持按钮（融入首位，悬停双向智能定位扩展卡片） */}
+        <div class="share-link post-reward" data-reward-wrapper>
           <button
             type="button"
-            class="support-panel-link support-panel-link--icon"
+            class="reward-button button--animated"
             data-panel-trigger="reward"
             aria-expanded="false"
-            aria-controls="post-tools-panel-reward"
+            aria-controls="reward-main-popover"
+            title="赞赏支持作者"
           >
-            <QrCode className="support-panel-link__icon" aria-hidden="true" />
-            <span class="support-panel-link__copy">
-              <strong>{rewardLabel}</strong>
-              <small>打开打赏二维码</small>
-            </span>
+            <HeartHandshake className="reward-button__icon" aria-hidden="true" size={17} />
+            <span>{rewardLabel}</span>
           </button>
 
-          <div
-            class="post-floating-panel post-floating-panel--popover"
-            id="post-tools-panel-reward"
-            data-panel="reward"
-            role="region"
-            aria-label={rewardLabel}
-            hidden
-          >
-            <div class="post-floating-panel__head">
-              <div>
-                <span class="post-floating-panel__eyebrow">{siteConfig.support.reward.title}</span>
-                <strong>{rewardLabel}</strong>
-              </div>
-              <button type="button" class="post-floating-panel__close" data-panel-close aria-label="关闭打赏面板">
-                ×
-              </button>
+          {/* 智能双向扩展打赏卡片 */}
+          <div class="reward-main popover-up" id="reward-main-popover" data-panel="reward" role="region" aria-label={rewardLabel}>
+            <div class="reward-all">
+              <span class="reward-title">感谢你赐予我继续写下去的动力</span>
+              <ul class="reward-group" data-reward-qr-group>
+                {/* 微信支付 */}
+                <li class="reward-item" data-channel="wechat" data-copy-qr-target data-qr-name="微信收款码" title="点击复制微信收款码">
+                  <div class="reward-qr-box reward-qr-box--wechat">
+                    <img src="/media/shijianus/support/weixin-pay-cn.jpg" alt="微信支付赞赏码" class="post-qr-code-img" />
+                  </div>
+                  <div class="post-qr-code-desc" data-wechat-label>微信支付</div>
+                </li>
+                {/* 支付宝 */}
+                <li class="reward-item" data-channel="alipay" data-copy-qr-target data-qr-name="支付宝收款码" title="点击复制支付宝收款码">
+                  <div class="reward-qr-box reward-qr-box--alipay">
+                    <img src="/media/shijianus/support/alipay-cn.jpg" alt="支付宝赞赏码" class="post-qr-code-img" />
+                  </div>
+                  <div class="post-qr-code-desc" data-alipay-label>支付宝</div>
+                </li>
+              </ul>
+              {/* 内嵌支持记录 */}
+              <a class="reward-main-btn" href={rewardHref} target="_blank" rel="noopener noreferrer" title="查看赞赏支持记录">
+                <span class="reward-text">赞赏支持记录</span>
+                <span class="reward-dec">如果觉得文章对你有启发，欢迎请作者喝杯咖啡 ☕</span>
+              </a>
             </div>
-            <RewardRegionPanel variant="panel" />
           </div>
         </div>
 
-        <a class="support-panel-link support-panel-link--icon support-panel-link--secondary" href={rewardHref}>
-          <History className="support-panel-link__icon" aria-hidden="true" />
-          <span class="support-panel-link__copy">
-            <strong>{siteConfig.support.reward.historyLabel}</strong>
-            <small>看看已经收到的心意</small>
-          </span>
-        </a>
-        <span class="support-panel-note">
-          <Sparkles className="support-panel-note__icon" aria-hidden="true" />
-          <span>{rewardNote}</span>
-        </span>
+        {/* 4.2 手机/微信二维码阅读按钮（悬停双向智能定位扩展卡片） */}
+        <div class="share-link mobile" data-qr-wrapper>
+          <div class="share-qrcode">
+            <button
+              type="button"
+              class="share-button post-share-btn--square post-share-btn--qr"
+              data-share-platform="wechat"
+              title="手机扫码阅读"
+              style="--platform-accent:#07c160; --platform-bg:rgba(7, 193, 96, 0.09);"
+            >
+              <QrCode className="post-share-icon" aria-hidden="true" size={17} />
+            </button>
+            <div class="share-main popover-up" id="share-qrcode-popover" data-panel="wechat" role="region" aria-label="手机访问">
+              <div class="share-main-all" data-copy-qr-target data-qr-name="文章二维码" title="点击直接将二维码图片复制到剪贴板">
+                <div id="qrcode">
+                  <QrCodeImage value={permalink} alt={`文章二维码: ${rawTitle}`} size={120} />
+                </div>
+                <div class="reward-dec">使用手机扫码（点击复制二维码）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4.3 复制链接（使用系统分享 icon 替换） */}
+        <div class="share-link copy" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="copy"
+            title="复制文章链接"
+            style="--platform-accent:#4b5563; --platform-bg:rgba(75, 85, 99, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.4 QQ (中国大陆特有) */}
+        <div class="share-link qq" data-platform-region="cn">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="qq"
+            title="分享到 QQ"
+            style="--platform-accent:#12b7f5; --platform-bg:rgba(18, 183, 245, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M824.8 613.2c-16-51.4-34.4-94.6-62.7-165.3C766.5 262.2 684.1 128 512 128S257.5 262.2 261.9 447.9c-28.3 70.7-46.7 113.9-62.7 165.3-24.1 77.4-4.4 119.3 22.4 121.6 27.7 2.4 46.4-33.7 46.4-33.7s-10.8 54.4 23.5 107.5c34.9 53.8 91.5 59.9 146.8 53.5 27.9 31.8 68.3 52 113.7 52 45.4 0 85.8-20.1 113.7-52 55.3 6.4 111.9 0.3 146.8-53.5 34.3-53.1 23.5-107.5 23.5-107.5s18.7 36.1 46.4 33.7c26.8-2.3 46.5-44.2 22.4-121.6z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.5 QQ 空间 (中国大陆特有) */}
+        <div class="share-link qzone" data-platform-region="cn">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="qzone"
+            title="分享到 QQ 空间"
+            style="--platform-accent:#f5a623; --platform-bg:rgba(245, 166, 35, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M512 64l138.9 281.4 310.6 45.1-224.7 219.1 53 309.4L512 773.1 234.2 919l53-309.4L62.5 390.5l310.6-45.1z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.6 哔哩哔哩 Bilibili (中国大陆特有) */}
+        <div class="share-link bilibili" data-platform-region="cn">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="bilibili"
+            title="分享到哔哩哔哩"
+            style="--platform-accent:#00aeec; --platform-bg:rgba(0, 174, 236, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M684.8 160l68.2-68.3a32 32 0 1 1 45.3 45.3l-59 59H832a96 96 0 0 1 96 96v448a96 96 0 0 1-96 96H192a96 96 0 0 1-96-96V292a96 96 0 0 1 96-96h92.7l-59-59a32 32 0 1 1 45.3-45.3L339.2 160h345.6zm147.2 128H192a32 32 0 0 0-32 32v448a32 32 0 0 0 32 32h640a32 32 0 0 0 32-32V320a32 32 0 0 0-32-32zM336 448a48 48 0 1 1 0 96 48 48 0 0 1 0-96zm352 0a48 48 0 1 1 0 96 48 48 0 0 1 0-96z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.7 新浪微博 (中国大陆特有) */}
+        <div class="share-link weibo" data-platform-region="cn">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="weibo"
+            title="分享到新浪微博"
+            style="--platform-accent:#e6162d; --platform-bg:rgba(230, 22, 45, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M410.7 749.6c-132.8 14-245.9-46.2-252.7-134.4-6.8-88.3 95.1-171.1 227.9-185.1 132.8-14 245.9 46.2 252.7 134.4 6.8 88.3-95.1 171.1-227.9 185.1zm-32-108.9c-8.9 14.5-28.7 20.8-44.2 14-15.5-6.8-20.8-24-11.9-38.5 8.9-14.5 28.7-20.8 44.2-14 15.5 6.8 20.8 24 11.9 38.5zm39.1-47.5c-3.4 5.7-11.2 8.2-17.3 5.5-6.1-2.7-8.2-9.4-4.8-15.1 3.4-5.7 11.2-8.2 17.3-5.5 6.1 2.7 8.2 9.4 4.8 15.1zm11.7-183.1c-16.1 3.4-23.7-11.9-20.4-23.7 9.8-35.3 4.2-64.8-16.9-88.1-34.7-38.2-102.5-38.6-159.2-14.8-15.3 6.4-32.2-4.7-29.2-20.8 3.8-20.8 24.6-26.7 42.8-31.4 78.8-20.3 172.9-12.7 220.8 39.8 31.8 34.8 38.1 79.7 23.3 129.4-3.8 12.7-18.2 17.8-29.2 17.8zM826.9 384c-12.7 0-23.7-9.3-25.4-22-6.8-50.8-28.8-97.5-63.6-132.2-34.7-34.7-81.4-56.8-132.2-63.6-14-1.7-23.7-14.4-22-28.4 1.7-14 14.4-23.7 28.4-22 62.7 8.5 120.3 35.6 163.6 78.8 43.2 43.2 70.3 100.8 78.8 163.6 1.7 12.7-7.6 24.6-20.3 25.4-2.5 0.4-4.9 0.4-7.3 0.4z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.8 小红书 / Rednote (大陆与港区展示，台湾依规屏蔽) */}
+        <div class="share-link rednote" data-platform-region="cn-hk">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="rednote"
+            title="分享到小红书 (Rednote)"
+            style="--platform-accent:#ff2442; --platform-bg:rgba(255, 36, 66, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M789.3 192c35.3 0 64 28.7 64 64v512c0 35.3-28.7 64-64 64H234.7c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64h554.6z m-160 149.3c-70.7 0-128 57.3-128 128 0 15.1 2.6 29.5 7.4 43-44.4-18.7-77.4-60.6-84.8-111.4-2.2-15.3-15.3-26.6-30.8-26.6-17.7 0-32 14.3-32 32 0 94.2 76.4 170.7 170.7 170.7 35.3 0 68.2-10.7 95.8-29.1 1.7 4.1 2.7 8.6 2.7 13.1 0 17.7-14.3 32-32 32H352c-17.7 0-32 14.3-32 32s14.3 32 32 32h245.3c53 0 96-43 96-96 0-21.7-7.2-41.8-19.4-57.9 49.3-22.1 83.4-71.9 83.4-129.8 0-70.7-57.3-128-128-128z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.9 抖音 / TikTok */}
+        <div class="share-link tiktok" data-platform-region="all-special">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="tiktok"
+            title="分享到抖音 / TikTok"
+            style="--platform-accent:#111111; --platform-bg:rgba(17, 17, 17, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M848 376.6c-70.8-8.8-128.5-56-153.2-119.8-5.8-15-9.3-31.1-10.4-47.8H536v516c0 66.3-53.7 120-120 120s-120-53.7-120-120 53.7-120 120-120c15.9 0 31 3.1 44.8 8.8V357.6c-14.4-3.7-29.5-5.6-44.8-5.6-148 0-268 120-268 268s120 268 268 268 268-120 268-268V434.6c67.2 47.9 149.2 76.1 237.6 77.4V378.2c-25.4-0.3-49.5-0.8-73.6-1.6z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.10 WhatsApp (国际、港澳台、日本热门) */}
+        <div class="share-link whatsapp" data-platform-region="intl-tw-hk-jp">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="whatsapp"
+            title="分享到 WhatsApp"
+            style="--platform-accent:#25d366; --platform-bg:rgba(37, 211, 102, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M512 64C264.6 64 64 264.6 64 512c0 86.8 24.8 168 67.8 236.8L64 960l217.2-66.8C348.6 934.8 428.2 960 512 960c247.4 0 448-200.6 448-448S759.4 64 512 64zm248.8 623.2c-10.4 29.4-52.2 55.4-84.6 62.4-22.2 4.8-51.2 8.6-148.6-29.8-124.6-49.2-205.2-176-211.4-184.2-6.2-8.2-50.4-67-50.4-128s32-91 43.4-103.4c11.4-12.4 24.8-15.6 33.2-15.6 8.4 0 16.8 0.2 24 0.6 7.6 0.4 17.8-2.8 27.8 21.2 10.4 25.2 35.6 87 38.6 93.4 3.2 6.4 5.2 13.8 1 22.2-4.2 8.4-6.4 13.8-12.6 21.2-6.4 7.4-13.4 16.4-19.2 22-6.4 6.2-13 12.8-5.6 25.6 7.4 12.8 33 54.4 70.8 88.2 48.6 43.2 89.6 56.6 102.4 63 12.8 6.4 20.2 5.4 27.6-3.2 7.4-8.6 32-37.4 40.6-50.2 8.6-12.8 17.2-10.6 28.8-6.4s73.8 34.8 86.4 41.2c12.6 6.4 21 9.6 24 14.8 3 5.4 3 31.2-7.4 60.6z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.11 LINE (港台、日本首选) */}
+        <div class="share-link line" data-platform-region="intl-tw-hk-jp">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="line"
+            title="分享到 LINE"
+            style="--platform-accent:#00c300; --platform-bg:rgba(0, 195, 0, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M512 96C264.6 96 64 254.4 64 450c0 114.6 68.8 216.4 175.4 279.4L203 884.2c-5.2 21.2 16.4 38.4 35.4 28.2l151.2-81.2c38.8 12.4 80 19.2 122.4 19.2 247.4 0 448-158.4 448-354S759.4 96 512 96zm-176 432h-64c-8.8 0-16-7.2-16-16V368c0-8.8 7.2-16 16-16s16 7.2 16 16v128h48c8.8 0 16 7.2 16 16s-7.2 16-16 16zm64-16V368c0-8.8 7.2-16 16-16s16 7.2 16 16v144c0 8.8-7.2 16-16 16s-16-7.2-16-16zm192 16h-48l-48-67.4V512c0 8.8-7.2 16-16 16s-16-7.2-16-16V368c0-8.8 7.2-16 16-16h48l48 67.4V368c0-8.8 7.2-16 16-16s16 7.2 16 16v144c0 8.8-7.2 16-16 16zm128-112h-48v24h48c8.8 0 16 7.2 16 16s-7.2 16-16 16h-64c-8.8 0-16-7.2-16-16V368c0-8.8 7.2-16 16-16h64c8.8 0 16 7.2 16 16s-7.2 16-16 16h-48v24h48c8.8 0 16 7.2 16 16s-7.2 16-16 16z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.12 Threads */}
+        <div class="share-link threads" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="threads"
+            title="分享到 Threads"
+            style="--platform-accent:#101010; --platform-bg:rgba(16, 16, 16, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="16" height="16" fill="currentColor">
+              <path d="M704.5 481.5c-4.4-4.8-9.4-9.3-15-13.4-3.1-41.5-22.1-73.4-56.5-95.2-30.8-19.5-69.5-26.6-115.1-21.2-44.5 5.3-81.8 22.7-111 51.6-32.9 32.5-50.9 76.5-50.9 123.9 0 47.5 18 91.5 50.9 124 30.6 30.3 70.3 47.8 117.8 51.5 43.1 3.4 83.2-7 119.3-30.8 29.8-19.6 49.3-48.4 58-85.7h-72.2c-7.3 22.1-20.9 38.6-40.4 49.2-22.8 12.4-49.3 14.8-78.6 7.1-32.4-8.5-55.5-28.7-65-60.2 27.6-6.4 58.7-10.7 93.3-13 47.3-3.1 87.7-11.2 120.2-24 18.2-7.2 33.3-16.7 45.2-28.8zm-186.2 36.3c-33.1 2.2-61.9 6.8-86.4 13.9 7.4-42.3 38.1-69.8 84.1-75.3 30.1-3.6 55.4 1 75.3 13.7 18 11.4 28.5 28.8 31.4 51.8-28.4 10.4-63.5 16.9-104.4-4.1z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.13 X (Twitter) */}
+        <div class="share-link x" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="x"
+            title="分享到 X"
+            style="--platform-accent:#0f1419; --platform-bg:rgba(15, 20, 25, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="16" height="16" fill="currentColor">
+              <path d="M802.7 160H659.8L514.4 349.9 378.1 160H160l242.3 336.8L160 864h142.9l156.4-204.6L610.1 864H864L607.7 508.2 802.7 160zm-119.8 637.2L282.7 221.8h78.4l399.8 575.4h-78z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.14 Facebook */}
+        <div class="share-link facebook" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="facebook"
+            title="分享到 Facebook"
+            style="--platform-accent:#1877f2; --platform-bg:rgba(24, 119, 242, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M720 160h-96c-106 0-192 86-192 192v96H304v128h128v320h128V576h112l16-128H560v-80c0-26.5 21.5-48 48-48h112V160z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.15 LinkedIn (专业人脉) */}
+        <div class="share-link linkedin" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="linkedin"
+            title="分享到 LinkedIn"
+            style="--platform-accent:#0a66c2; --platform-bg:rgba(10, 102, 194, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M233.4 384H106.6v480h126.8V384zM170 160c-42.4 0-76.6 34.2-76.6 76.6s34.2 76.6 76.6 76.6 76.6-34.2 76.6-76.6S212.4 160 170 160zM917.4 583.6c0-141.2-75.4-207.1-176.2-207.1-81.3 0-117.7 44.8-138 76.2V384H476.4v480h126.8V628.7c0-61.7 11.7-121.5 88.2-121.5 75.4 0 76.2 70.6 76.2 125.4V864h126.8V583.6h3z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.16 Reddit (国际极客) */}
+        <div class="share-link reddit" data-platform-region="intl">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="reddit"
+            title="分享到 Reddit"
+            style="--platform-accent:#ff4500; --platform-bg:rgba(255, 69, 0, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M896 512a80 80 0 0 0-136.6-56.5C695.1 411.3 607.7 384 512 384c-1.8 0-3.6 0-5.3.1L544 204.8l105.6 22.4a64 64 0 1 0 13.8-38.6l-128-27.2a32 32 0 0 0-37.8 24.6L456.6 388c-98.3 2.8-187.9 30.5-252 75.5A80 80 0 1 0 96 512c0 29.5 16 55.3 39.8 69.2C133.5 677.2 299.7 768 512 768s378.5-90.8 376.2-186.8c23.8-13.9 39.8-39.7 39.8-69.2zM336 480a48 48 0 1 1 0 96 48 48 0 0 1 0-96zm291.2 178.6c-34.4 34.4-89.8 45.4-115.2 45.4s-80.8-11-115.2-45.4a16 16 0 0 1 22.6-22.6c23.5 23.5 63.8 32 92.6 32s69.1-8.5 92.6-32a16 16 0 1 1 22.6 22.6zM688 576a48 48 0 1 1 0-96 48 48 0 0 1 0 96z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.17 Telegram */}
+        <div class="share-link telegram" data-platform-region="intl-tw-hk-jp">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="telegram"
+            title="分享到 Telegram"
+            style="--platform-accent:#229ed9; --platform-bg:rgba(34, 158, 217, 0.09);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="currentColor">
+              <path d="M918.6 142.4c-11.8-8.8-27.7-11.1-41.6-6L103.4 433.7c-17.9 6.7-29.4 23.9-28.8 43 0.6 19.1 13.2 35.5 31.4 40.9l198.8 59.4 81.3 249.2c4.4 13.5 15.6 23.5 29.6 26.5 14 3 28.6-1.5 38.6-11.9l118.9-123.6 200.7 151.7c11.2 8.5 26.2 10.7 39.4 5.9 13.2-4.8 22.8-16.1 25.1-30.1l118.9-700.8c2.4-14-3.9-28.2-14.7-36.9zM423.8 647.7l-45.7 47.6-43.1-132.1 391.2-259.9-302.4 344.4z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.18 Snapchat (欧美/年轻社交) */}
+        <div class="share-link snapchat" data-platform-region="intl">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="snapchat"
+            title="分享到 Snapchat"
+            style="--platform-accent:#fffc00; --platform-bg:rgba(255, 252, 0, 0.15);"
+          >
+            <svg class="post-share-icon post-share-svg" viewBox="0 0 1024 1024" width="17" height="17" fill="#333333">
+              <path d="M512 128c-148 0-216 108-216 232 0 68 32 108 52 128-12 12-44 12-68 8-16-2-32 12-28 28 8 36 44 48 80 48 12 0 20-4 28-8 12 36 36 68 76 84-48 24-116 52-164 64-16 4-24 20-16 36 12 28 64 48 120 48 16 0 32-2 48-6 24 32 64 48 108 48 40 0 76-12 96-32 20 20 56 32 96 32 44 0 84-16 108-48 16 4 32 6 48 6 56 0 108-20 120-48 8-16 0-32-16-36-48-12-116-40-164-64 40-16 64-48 76-84 8 4 16 8 28 8 36 0 72-12 80-48 4-16-12-30-28-28-24 4-56 4-68-8 20-20 52-60 52-128 0-124-68-232-216-232z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 4.19 邮件 */}
+        <div class="share-link email" data-platform-region="all">
+          <button
+            type="button"
+            class="share-button post-share-btn--square"
+            data-share-platform="email"
+            title="通过邮件分享"
+            style="--platform-accent:#7c3aed; --platform-bg:rgba(124, 58, 237, 0.09);"
+          >
+            <Mail className="post-share-icon" aria-hidden="true" size={17} />
+          </button>
+        </div>
       </div>
     </div>
+
+    {/* 5. 卡片最底部：版权声明（完全对齐安知鱼，无下划线，悬停变色） */}
+    <div class="post-copyright__notice">
+      <span class="post-copyright-info">
+        除特别声明外，本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href={siteConfig.site.url} class="post-copyright-site-link" title={authorName}>{authorName}</a> ！
+      </span>
+    </div>
   </div>
+
+  {/* 全局透明遮罩（点击外部收起 Pinned 固定卡片） */}
+  <div class="post-tools-mask" data-post-tools-mask style="display: none;"></div>
+  <div class="post-tools__status" role="status" aria-live="polite"></div>
 </section>
 
-<script is:inline>
+<script>
   (() => {
-    const sections = document.querySelectorAll('[data-post-tools]');
-    if (sections.length === 0) return;
+    const blocks = document.querySelectorAll('[data-post-tools]');
+    if (!blocks.length) return;
 
-    const copyText = async (value) => {
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(value);
-          return true;
-        }
-      } catch {}
+    blocks.forEach((block) => {
+      if (!(block instanceof HTMLElement)) return;
 
-      try {
-        const textarea = document.createElement('textarea');
-        textarea.value = value;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'absolute';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        textarea.remove();
-        return true;
-      } catch {
-        return false;
-      }
-    };
+      const status = block.querySelector('.post-tools__status');
+      const mask = block.querySelector('[data-post-tools-mask]');
+      const rewardWrapper = block.querySelector('[data-reward-wrapper]');
+      const qrWrapper = block.querySelector('[data-qr-wrapper]');
+      const rewardMain = block.querySelector('#reward-main-popover');
+      const qrMain = block.querySelector('#share-qrcode-popover');
 
-    sections.forEach((section) => {
-      if (!(section instanceof HTMLElement)) return;
-
-      const permalink = section.dataset.permalink ?? window.location.href;
-      const title = section.dataset.title ?? document.title;
-      const summary = section.dataset.summary?.trim() ?? '';
-      const copyDone = section.dataset.copyDone ?? '链接已复制';
-      const shareDone = section.dataset.shareDone ?? '已唤起系统分享';
-      const shareFallback = section.dataset.shareFallback ?? '当前环境不支持系统分享，已回退为复制链接';
-      const status = section.querySelector('.post-tools__status');
-      const backdrop = section.querySelector('[data-panel-backdrop]');
-      const panels = Array.from(section.querySelectorAll('[data-panel]')).filter((node) => node instanceof HTMLElement);
-      const rewardPopovers = Array.from(section.querySelectorAll('[data-support-popover]')).filter((node) => node instanceof HTMLElement);
-      const panelControllers = Array.from(
-        section.querySelectorAll('[data-panel-trigger], [data-share-platform="wechat"]'),
-      ).filter((node) => node instanceof HTMLElement);
       let statusTimer = 0;
+      let activePinned: 'reward' | 'wechat' | '' = '';
 
-      const emitActivity = (message) => {
+      // 智能地区画像识别
+      const detectRegion = (): 'cn' | 'hk' | 'tw' | 'jp' | 'intl' => {
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+          const lang = (navigator.language || '').toLowerCase();
+
+          if (tz.includes('Taipei') || lang === 'zh-tw') return 'tw';
+          if (tz.includes('Hong_Kong') || lang === 'zh-hk') return 'hk';
+          if (tz.includes('Tokyo') || lang.startsWith('ja')) return 'jp';
+          if (
+            tz.includes('Shanghai') ||
+            tz.includes('Chongqing') ||
+            tz.includes('Harbin') ||
+            tz.includes('Urumqi') ||
+            tz === 'PRC' ||
+            lang === 'zh-cn'
+          ) {
+            return 'cn';
+          }
+        } catch {
+          // fallback
+        }
+        return 'cn';
+      };
+
+      const userRegion = detectRegion();
+      block.setAttribute('data-detected-region', userRegion);
+
+      // 微信文案香港化
+      if (userRegion === 'hk') {
+        const qrBtn = block.querySelector('[data-share-platform="wechat"]');
+        if (qrBtn) qrBtn.setAttribute('title', 'WeChat 扫码阅读');
+        const rednoteBtn = block.querySelector('.share-link.rednote button');
+        if (rednoteBtn) rednoteBtn.setAttribute('title', '分享到 Rednote');
+      } else if (userRegion === 'cn') {
+        const tiktokBtn = block.querySelector('.share-link.tiktok button');
+        if (tiktokBtn) tiktokBtn.setAttribute('title', '分享到抖音');
+      }
+
+      // 双向智能定位：测量空间，向上即将触顶或空间不足时自动向下展示
+      const computePopoverPosition = (wrapper: HTMLElement | null, popover: HTMLElement | null) => {
+        if (!wrapper || !popover) return;
+        const rect = wrapper.getBoundingClientRect();
+        const popoverHeight = popover.offsetHeight || 280;
+        const spaceAbove = rect.top;
+        const spaceBelow = window.innerHeight - rect.bottom;
+
+        // 如果向上小于面板高度+25px，或者向上不足240px且向下空间更宽阔，自动向下展示
+        if (spaceAbove < popoverHeight + 25 || (spaceAbove < 240 && spaceBelow > spaceAbove)) {
+          popover.classList.remove('popover-up');
+          popover.classList.add('popover-down');
+        } else {
+          popover.classList.remove('popover-down');
+          popover.classList.add('popover-up');
+        }
+      };
+
+      const emitActivity = (message: string) => {
         window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
       };
 
-      const setStatus = (message) => {
+      const setStatus = (message: string) => {
         if (!(status instanceof HTMLElement)) return;
         window.clearTimeout(statusTimer);
         status.textContent = message;
@@ -303,327 +525,214 @@ const enabledSharePlatforms = siteConfig.support.share.platforms.map((platform) 
         }, 2200);
       };
 
-      const syncPanelControllers = (activePanel = '') => {
-        panelControllers.forEach((control) => {
-          const panelName =
-            control.getAttribute('data-panel-trigger') || (control.getAttribute('data-share-platform') === 'wechat' ? 'wechat' : '');
-          if (!panelName) return;
-          control.setAttribute('aria-expanded', String(activePanel === panelName));
-        });
-      };
-
-      const isPopoverPanel = (name) => name === 'reward';
-      const panelAnchors = new Map();
-      let rewardCloseTimer = 0;
-      let pinnedPopoverPanel = '';
-
-      const clearRewardCloseTimer = () => {
-        window.clearTimeout(rewardCloseTimer);
-        rewardCloseTimer = 0;
-      };
-
-      const syncPinnedPopover = (name = '') => {
-        pinnedPopoverPanel = name;
-        rewardPopovers.forEach((popover) => {
-          popover.dataset.pinned = String(name === 'reward');
-        });
-      };
-
-      const getActivePanel = () => panels.find((panel) => !panel.hidden)?.dataset.panel ?? '';
-
-      const positionPanel = (panel, anchor) => {
-        if (!(panel instanceof HTMLElement) || !(anchor instanceof HTMLElement)) return;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const margin = 12;
-        const preferredWidth = panel.dataset.panel === 'reward'
-          ? Math.max(320, Math.min(560, Math.round(viewportWidth * 0.48)))
-          : Math.max(320, Math.min(460, Math.round(viewportWidth * 0.44)));
-        const previousVisibility = panel.style.visibility;
-        const previousPointerEvents = panel.style.pointerEvents;
-        const previousOpacity = panel.style.opacity;
-        const previousTransform = panel.style.transform;
-
-        panel.style.setProperty('--floating-panel-width', `${preferredWidth}px`);
-        panel.style.visibility = 'hidden';
-        panel.style.pointerEvents = 'none';
-        panel.style.opacity = '0';
-        panel.style.transform = 'none';
-
-        const panelRect = panel.getBoundingClientRect();
-        const anchorRect = anchor.getBoundingClientRect();
-        const panelWidth = Math.min(panelRect.width || panel.offsetWidth || preferredWidth, viewportWidth - margin * 2);
-        const panelHeight = Math.min(panelRect.height || panel.offsetHeight || 0, viewportHeight - margin * 2);
-        const centerX = anchorRect.left + anchorRect.width / 2;
-        const left = Math.max(margin, Math.min(centerX - panelWidth / 2, viewportWidth - panelWidth - margin));
-        const spaceAbove = anchorRect.top - margin;
-        const spaceBelow = viewportHeight - anchorRect.bottom - margin;
-        const placeTop = spaceAbove > spaceBelow && spaceAbove > panelHeight;
-        const top = placeTop
-          ? Math.max(margin, anchorRect.top - panelHeight - 12)
-          : Math.max(margin, Math.min(anchorRect.bottom + 12, viewportHeight - panelHeight - margin));
-
-        panel.style.setProperty('--floating-panel-width', `${panelWidth}px`);
-        panel.style.setProperty('--floating-panel-left', `${left}px`);
-        panel.style.setProperty('--floating-panel-top', `${top}px`);
-        panel.dataset.placement = placeTop ? 'top' : 'bottom';
-        panel.style.visibility = previousVisibility;
-        panel.style.pointerEvents = previousPointerEvents;
-        panel.style.opacity = previousOpacity;
-        panel.style.transform = previousTransform;
-      };
-
-      const renderPanelState = (activePanel = '') => {
-        if (activePanel !== 'reward' && pinnedPopoverPanel) {
-          syncPinnedPopover();
-        }
-
-        let showBackdrop = false;
-
-        panels.forEach((panel) => {
-          const panelName = panel.dataset.panel ?? '';
-          const isActive = panelName === activePanel;
-          panel.hidden = !isActive;
-          panel.classList.toggle('is-open', isActive);
-          if (isActive && !isPopoverPanel(panelName)) {
-            showBackdrop = true;
-          }
-        });
-
-        if (backdrop instanceof HTMLElement) {
-          backdrop.hidden = !showBackdrop;
-          backdrop.classList.toggle('is-open', showBackdrop);
-        }
-
-        syncPanelControllers(activePanel);
-
-        if (activePanel) {
-          const activeElement = panels.find((panel) => panel.dataset.panel === activePanel);
-          const activeAnchor = panelAnchors.get(activePanel);
-          if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
-            window.requestAnimationFrame(() => {
-              positionPanel(activeElement, activeAnchor);
-            });
-          }
+      const closeAllPinned = () => {
+        activePinned = '';
+        rewardMain?.classList.remove('is-pinned');
+        qrMain?.classList.remove('is-pinned');
+        if (mask instanceof HTMLElement) {
+          mask.style.display = 'none';
         }
       };
 
-      const closePanels = () => {
-        clearRewardCloseTimer();
-        syncPinnedPopover();
-        renderPanelState();
-      };
-
-      const openPanel = (name, anchor, options = {}) => {
-        clearRewardCloseTimer();
-        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
-        if (options.pinned && isPopoverPanel(name)) {
-          syncPinnedPopover(name);
-        }
-        renderPanelState(name);
-      };
-
-      const togglePanel = (name, anchor, options = {}) => {
-        const currentPanel = getActivePanel();
-        clearRewardCloseTimer();
-        if (anchor instanceof HTMLElement) panelAnchors.set(name, anchor);
-
-        if (options.pinned && isPopoverPanel(name)) {
-          const nextOpen = !(currentPanel === name && pinnedPopoverPanel === name);
-          syncPinnedPopover(nextOpen ? name : '');
-          renderPanelState(nextOpen ? name : '');
-          return;
-        }
-
-        renderPanelState(currentPanel === name ? '' : name);
-      };
-
-      const queueRewardClose = (delay = 150) => {
-        if (pinnedPopoverPanel === 'reward') return;
-        clearRewardCloseTimer();
-        rewardCloseTimer = window.setTimeout(() => {
-          if (getActivePanel() === 'reward') {
-            renderPanelState();
-          }
-        }, delay);
-      };
-
-      syncPanelControllers();
-
-      rewardPopovers.forEach((popover) => {
-        const trigger = popover.querySelector('[data-panel-trigger="reward"]');
-        const panel = popover.querySelector('[data-panel="reward"]');
-        popover.addEventListener('pointerenter', () => {
-          clearRewardCloseTimer();
-          if (pinnedPopoverPanel !== 'reward') openPanel('reward', trigger);
+      if (mask instanceof HTMLElement) {
+        mask.addEventListener('click', () => {
+          closeAllPinned();
         });
-
-        popover.addEventListener('pointerleave', () => {
-          queueRewardClose();
-        });
-
-        panel?.addEventListener('pointerenter', () => {
-          clearRewardCloseTimer();
-        });
-
-        panel?.addEventListener('pointerleave', () => {
-          queueRewardClose();
-        });
-      });
-
-      const buildShareUrl = (platform) => {
-        const encodedUrl = encodeURIComponent(permalink);
-        const encodedTitle = encodeURIComponent(title);
-        const shortSummary = summary.slice(0, 120).trim();
-        const shareText = `${title}${shortSummary ? `\n${shortSummary}` : ''}`;
-        const shareParagraph = `${title}${shortSummary ? `\n\n${shortSummary}` : ''}\n${permalink}`;
-        const encodedSummary = encodeURIComponent(shortSummary);
-        const encodedShareText = encodeURIComponent(shareText);
-        const encodedShareParagraph = encodeURIComponent(shareParagraph);
-        const encodedFacebookQuote = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
-        const encodedRedditTitle = encodeURIComponent(shortSummary ? `${title} · ${shortSummary}` : title);
-
-        switch (platform) {
-          case 'x':
-            return `https://twitter.com/intent/tweet?text=${encodedShareText}&url=${encodedUrl}`;
-          case 'facebook':
-            return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedFacebookQuote}`;
-          case 'threads':
-            return `https://www.threads.net/intent/post?text=${encodedShareParagraph}`;
-          case 'linkedin':
-            return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-          case 'telegram':
-            return `https://t.me/share/url?url=${encodedUrl}&text=${encodedShareText}`;
-          case 'reddit':
-            return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedRedditTitle}`;
-          case 'weibo':
-            return `https://service.weibo.com/share/share.php?title=${encodedShareText}&url=${encodedUrl}`;
-          case 'qq':
-            return `https://connect.qq.com/widget/shareqq/index.html?url=${encodedUrl}&title=${encodedTitle}&summary=${encodedSummary}`;
-          case 'email':
-            return `mailto:?subject=${encodedTitle}&body=${encodedShareParagraph}`;
-          default:
-            return '';
-        }
-      };
-
-      section.querySelectorAll('[data-tool="copy"]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          const copied = await copyText(permalink);
-          if (copied) setStatus(copyDone);
-        });
-      });
-
-      section.querySelectorAll('[data-panel-trigger]').forEach((button) => {
-        button.addEventListener('click', (event) => {
-          const panelName = button.getAttribute('data-panel-trigger');
-          if (!panelName) return;
-
-          if (panelName === 'reward') {
-            event.preventDefault();
-            event.stopPropagation();
-            const willOpen = !(getActivePanel() === 'reward' && pinnedPopoverPanel === 'reward');
-            togglePanel(panelName, button, { pinned: true });
-            setStatus(willOpen ? '已固定打赏面板' : '已关闭打赏面板');
-            return;
-          }
-
-          togglePanel(panelName, button);
-          setStatus('已切换扫码分享面板');
-        });
-      });
-
-      section.querySelectorAll('[data-panel-close]').forEach((button) => {
-        button.addEventListener('click', () => closePanels());
-      });
-
-      if (backdrop instanceof HTMLElement) {
-        backdrop.addEventListener('click', () => closePanels());
       }
 
-      section.querySelectorAll('[data-tool="share"]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          if (navigator.share) {
-            try {
-              await navigator.share({ title, text: summary, url: permalink });
-              setStatus(shareDone);
-              return;
-            } catch (error) {
-              if (error instanceof DOMException && error.name === 'AbortError') return;
-            }
-          }
-
-          const copied = await copyText(permalink);
-          if (copied) setStatus(shareFallback);
-        });
-      });
-
-      section.querySelectorAll('[data-share-platform]').forEach((button) => {
-        button.addEventListener('click', async () => {
-          const platform = button.getAttribute('data-share-platform');
-          if (!platform) return;
-
-          if (platform === 'copy') {
-            const copied = await copyText(permalink);
-            if (copied) setStatus(copyDone);
-            return;
-          }
-
-          if (platform === 'native') {
-            if (navigator.share) {
-              try {
-                await navigator.share({ title, text: summary, url: permalink });
-                setStatus(shareDone);
-                return;
-              } catch (error) {
-                if (error instanceof DOMException && error.name === 'AbortError') return;
-              }
-            }
-
-            const copied = await copyText(permalink);
-            if (copied) setStatus(shareFallback);
-            return;
-          }
-
-          if (platform === 'wechat') {
-            togglePanel('wechat', button);
-            setStatus('已打开扫码分享面板');
-            return;
-          }
-
-          const shareUrl = buildShareUrl(platform);
-          if (!shareUrl) return;
-
-          closePanels();
-          if (platform === 'email') {
-            window.location.href = shareUrl;
+      // 复制文本到剪贴板
+      const copyText = async (text: string, successMessage: string) => {
+        try {
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
           } else {
-            window.open(shareUrl, '_blank', 'noopener,noreferrer,width=860,height=720');
+            const input = document.createElement('textarea');
+            input.value = text;
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
           }
-          setStatus('已打开对应平台分享窗口');
-        });
-      });
-
-      const repositionActivePanel = () => {
-        const activePanelName = getActivePanel();
-        if (!activePanelName) return;
-        const activeElement = panels.find((panel) => panel.dataset.panel === activePanelName);
-        const activeAnchor = panelAnchors.get(activePanelName);
-        if (activeElement instanceof HTMLElement && activeAnchor instanceof HTMLElement) {
-          positionPanel(activeElement, activeAnchor);
+          setStatus(successMessage);
+        } catch (err) {
+          console.warn('Copy failed:', err);
+          setStatus('复制失败，请手动复制');
         }
       };
 
-      window.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') closePanels();
-      });
-      window.addEventListener('resize', repositionActivePanel);
-      window.addEventListener('scroll', repositionActivePanel, { passive: true });
+      // 复制二维码图片到剪贴板
+      const copyQrImage = async (imgContainer: HTMLElement | null, fallbackUrl: string, name = '二维码') => {
+        try {
+          const img = imgContainer?.querySelector('img') || (imgContainer instanceof HTMLImageElement ? imgContainer : null);
+          if (img instanceof HTMLImageElement && navigator.clipboard && window.ClipboardItem) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 200;
+            canvas.height = img.naturalHeight || 200;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+              if (blob) {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                setStatus(`${name}已复制到剪贴板！`);
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Copy image to clipboard failed:', e);
+        }
+        await copyText(fallbackUrl, `${name}对应链接已复制！`);
+      };
 
-      document.addEventListener('click', (event) => {
-        if (!(event.target instanceof Node)) return;
-        if (!section.contains(event.target)) closePanels();
+      // 悬停动态计算方向
+      rewardWrapper?.addEventListener('mouseenter', () => {
+        computePopoverPosition(rewardWrapper as HTMLElement, rewardMain as HTMLElement);
+      });
+      qrWrapper?.addEventListener('mouseenter', () => {
+        computePopoverPosition(qrWrapper as HTMLElement, qrMain as HTMLElement);
+      });
+
+      // 赞赏按钮点击切换固定
+      const rewardBtn = rewardWrapper?.querySelector('button');
+      if (rewardBtn) {
+        rewardBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          computePopoverPosition(rewardWrapper as HTMLElement, rewardMain as HTMLElement);
+          if (activePinned === 'reward') {
+            closeAllPinned();
+          } else {
+            closeAllPinned();
+            activePinned = 'reward';
+            rewardMain?.classList.add('is-pinned');
+            if (mask instanceof HTMLElement) mask.style.display = 'block';
+            setStatus('已固定赞赏收款码');
+          }
+        });
+      }
+
+      // 手机二维码按钮点击切换固定
+      const qrBtn = qrWrapper?.querySelector('button');
+      if (qrBtn) {
+        qrBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          computePopoverPosition(qrWrapper as HTMLElement, qrMain as HTMLElement);
+          if (activePinned === 'wechat') {
+            closeAllPinned();
+          } else {
+            closeAllPinned();
+            activePinned = 'wechat';
+            qrMain?.classList.add('is-pinned');
+            if (mask instanceof HTMLElement) mask.style.display = 'block';
+            const permalink = block.dataset.permalink || window.location.href;
+            copyQrImage(qrMain instanceof HTMLElement ? qrMain : null, permalink, '文章二维码');
+          }
+        });
+      }
+
+      // 点击二维码图片直接复制
+      block.querySelectorAll('[data-copy-qr-target]').forEach((target) => {
+        target.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const name = target.getAttribute('data-qr-name') || '收款码';
+          const permalink = block.dataset.permalink || window.location.href;
+          copyQrImage(target instanceof HTMLElement ? target : null, permalink, name);
+        });
+      });
+
+      // 标题点击复制完整标题与文章链接
+      const titleBtn = block.querySelector('.post-copyright-title');
+      if (titleBtn) {
+        titleBtn.addEventListener('click', () => {
+          const permalink = block.dataset.permalink || window.location.href;
+          const fullTitle = block.dataset.title || document.title;
+          copyText(`${fullTitle} - ${permalink}`, '文章标题与链接已复制到剪贴板！');
+        });
+      }
+
+      // 各平台真实分享跳转与互动
+      const permalink = block.dataset.permalink || window.location.href;
+      const docTitle = block.dataset.title || document.title;
+      const shareUrl = encodeURIComponent(permalink);
+      const shareTitle = encodeURIComponent(docTitle);
+      const shareSummary = encodeURIComponent(block.dataset.summary || '');
+      const shareCover = encodeURIComponent(block.dataset.cover || '');
+
+      block.querySelectorAll('[data-share-platform]').forEach((button) => {
+        const platform = button.getAttribute('data-share-platform');
+        if (platform === 'wechat') return; // 二维码已单独处理
+
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+
+          switch (platform) {
+            case 'copy':
+              await copyText(permalink, '文章链接已复制到剪贴板！');
+              break;
+            case 'qq':
+              window.open(`https://connect.qq.com/widget/shareqq/index.html?url=${shareUrl}&title=${shareTitle}&summary=${shareSummary}&pics=${shareCover}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'qzone':
+              window.open(`https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=${shareUrl}&title=${shareTitle}&summary=${shareSummary}&pics=${shareCover}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'weibo':
+              window.open(`https://service.weibo.com/share/share.php?title=${shareTitle}&url=${shareUrl}&pic=${shareCover}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'bilibili':
+              window.open(`https://t.bilibili.com/?spm_id_from=333.999.0.0`, '_blank', 'noopener,noreferrer');
+              await copyText(`${docTitle} ${permalink}`, '标题与链接已复制，正在前往 B站动态分享！');
+              break;
+            case 'rednote':
+              await copyText(`${docTitle}\n${permalink}`, '图文标题与链接已复制，可直接粘贴到小红书 (Rednote)！');
+              break;
+            case 'tiktok':
+              await copyText(`${docTitle}\n${permalink}`, '标题与链接已复制，可前往发布分享！');
+              break;
+            case 'whatsapp':
+              window.open(`https://api.whatsapp.com/send?text=${shareTitle}%20${shareUrl}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'line':
+              window.open(`https://social-plugins.line.me/lineit/share?url=${shareUrl}&text=${shareTitle}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'x':
+              window.open(`https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'telegram':
+              window.open(`https://t.me/share/url?url=${shareUrl}&text=${shareTitle}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'facebook':
+              window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'threads':
+              window.open(`https://www.threads.net/intent/post?text=${shareTitle}%20${shareUrl}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'linkedin':
+              window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'reddit':
+              window.open(`https://www.reddit.com/submit?url=${shareUrl}&title=${shareTitle}`, '_blank', 'noopener,noreferrer');
+              break;
+            case 'snapchat':
+              await copyText(permalink, '文章链接已复制，可在 Snapchat 中发送给好友！');
+              break;
+            case 'email':
+              window.location.href = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
+              break;
+            default:
+              await copyText(permalink, '链接已复制');
+          }
+        });
+      });
+
+      // 全局 Esc 键
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAllPinned();
       });
     });
   })();
