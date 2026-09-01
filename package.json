@@ -34,6 +34,7 @@
     "@astrojs/mdx": "^5.0.3",
     "@astrojs/node": "^10.0.6",
     "@astrojs/react": "^5.0.2",
+    "@stripe/stripe-js": "^9.15.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.14",
@@ -63,6 +64,7 @@
     "playwright": "^1.62.1",
     "postcss": "^8.5.13",
     "puppeteer": "^25.8.0",
+    "simple-icons": "^16.29.0",
     "wrangler": "^4.85.0"
   }
 }

@@ -56,7 +56,11 @@ export type AppEnv = {
   AI_SUMMARY_PER_IP_HOUR?: string;
   AI_SUMMARY_CACHE_TTL_SECONDS?: string;
   SUPPORT_USDT_ADDRESS?: string;
+  SUPPORT_USDT_TRC20_ADDRESS?: string;
+  SUPPORT_USDT_ERC20_ADDRESS?: string;
   SUPPORT_USDT_NETWORK?: string;
+  STRIPE_SECRET_KEY?: string;
+  PUBLIC_STRIPE_PUBLISHABLE_KEY?: string;
   GROQ_API_KEY?: string;
   GROQ_MODEL?: string;
   INSTANCE_AI_API_KEY?: string;

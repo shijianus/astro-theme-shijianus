@@ -79,6 +79,95 @@ function chronralAiDevIntegration() {
   };
 }
 
+function stripeAndGeoDevIntegration() {
+  return {
+    name: 'stripe-geo-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.url && (req.url === '/api/geo-profile' || req.url.startsWith('/api/geo-profile?'))) {
+            const url = new URL(req.url, 'http://localhost');
+            const countryQuery = url.searchParams.get('country');
+            const cfCountry = req.headers['cf-ipcountry'];
+            const country = (countryQuery || cfCountry || 'GLOBAL').toString().toUpperCase();
+            const isMainland = country === 'CN';
+            res.setHeader('Content-Type', 'application/json');
+            res.writeHead(200);
+            res.end(JSON.stringify({ country, isMainland }));
+            return;
+          }
+          if (req.url && (req.url === '/api/create-payment-intent' || req.url.startsWith('/api/create-payment-intent?')) && req.method === 'POST') {
+            try {
+              let bodyStr = '';
+              req.on('data', (chunk) => {
+                bodyStr += chunk;
+              });
+              req.on('end', async () => {
+                try {
+                  const payload = JSON.parse(bodyStr || '{}');
+                  const rawAmount = typeof payload?.amount === 'number' ? payload.amount : 5;
+                  const currency = (payload?.currency || 'usd').toLowerCase();
+                  let amountInCents = Math.round(rawAmount >= 50 && Number.isInteger(rawAmount) ? rawAmount : rawAmount * 100);
+                  if (amountInCents < 50) amountInCents = 50;
+                  if (amountInCents > 100000) amountInCents = 100000;
+
+                  const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+                  if (!stripeSecretKey) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ ok: false, error: 'STRIPE_SECRET_KEY is not configured in environment.' }));
+                    return;
+                  }
+                  const params = new URLSearchParams();
+                  params.set('amount', String(amountInCents));
+                  params.set('currency', currency);
+                  params.set('automatic_payment_methods[enabled]', 'true');
+                  params.set('description', 'shijianus blog sponsorship support');
+
+                  const stripeRes = await fetch('https://api.stripe.com/v1/payment_intents', {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${stripeSecretKey}`,
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params.toString(),
+                  });
+                  const data = await stripeRes.json();
+                  if (!stripeRes.ok || data.error) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(400);
+                    res.end(JSON.stringify({ ok: false, error: data.error?.message || 'Stripe error' }));
+                    return;
+                  }
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(200);
+                  res.end(
+                    JSON.stringify({
+                      ok: true,
+                      clientSecret: data.client_secret,
+                      id: data.id,
+                      amount: amountInCents,
+                      currency,
+                    }),
+                  );
+                } catch (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(500);
+                  res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
+                }
+              });
+            } catch (err) {
+              next();
+            }
+            return;
+          }
+          next();
+        });
+      },
+    },
+  };
+}
+
 const mindmapLang = {
   name: 'mindmap',
   scopeName: 'source.mindmap',
@@ -113,7 +202,7 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  integrations: [epocanvasBrandIntegration(), chronralAiDevIntegration(), react(), mdx()],
+  integrations: [epocanvasBrandIntegration(), chronralAiDevIntegration(), stripeAndGeoDevIntegration(), react(), mdx()],
   markdown: {
     remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],

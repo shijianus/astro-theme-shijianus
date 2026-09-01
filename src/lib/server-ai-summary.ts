@@ -164,7 +164,7 @@ export async function processAiSummaryRequest(
   const instanceKey =
     envSecrets.instanceAiApiKey ||
     process.env.INSTANCE_AI_API_KEY ||
-    'sk-nIL1AqdSZqLplh7PhCIGlxUvVzQbefvzMzEtw5jz09ze0SbT';
+    '';
   const instanceBase = (
     envSecrets.instanceAiBaseUrl ||
     process.env.INSTANCE_AI_BASE_URL ||

@@ -43,7 +43,7 @@ export async function generateWithInstanceAi(
   systemInstruction: string,
 ): Promise<InstanceAiResult | null> {
   const baseUrl = (env.INSTANCE_AI_BASE_URL || 'https://ai.121628.xyz/v1').replace(/\/+$/, '');
-  const apiKey = env.INSTANCE_AI_API_KEY || 'sk-nIL1AqdSZqLplh7PhCIGlxUvVzQbefvzMzEtw5jz09ze0SbT';
+  const apiKey = env.INSTANCE_AI_API_KEY || '';
   if (!apiKey) return null;
 
   const shuffled = [...INSTANCE_MODELS_POOL].sort(() => Math.random() - 0.5);
