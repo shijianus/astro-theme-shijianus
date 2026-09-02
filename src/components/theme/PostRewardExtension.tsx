@@ -5,7 +5,6 @@ import {
   ExternalLink,
   Check,
   ChevronDown,
-  ChevronRight,
   Globe,
   RefreshCw,
   AlertCircle,
@@ -551,27 +550,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
-                  className="group relative w-full p-3 rounded-xl !bg-[#0f172a] hover:!bg-black active:scale-[0.99] dark:!bg-[#1c202a] dark:hover:!bg-[#242936] !text-white border border-slate-800 dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer"
-                  title="打开 Stripe 国际收银台进行安全支付"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-semibold text-white leading-tight flex items-center gap-1.5">
-                        <span>通过 Stripe 信用卡 / Apple Pay 赞赏</span>
-                      </div>
-                      <div className="text-[10px] text-slate-300 dark:text-slate-400 mt-0.5">
-                        支持 Visa, Mastercard, AMEX & Link
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-0.5 text-slate-300 group-hover:text-white group-hover:translate-x-0.5 transition-all text-xs font-medium">
-                    <span className="text-[11px]">收银台</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
+                  <CreditCard className="w-4 h-4" />
+                  <span>通过 Stripe 信用卡 / Apple Pay 赞赏 →</span>
                 </button>
               </div>
             )}
@@ -636,27 +618,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
-                  className="group relative w-full p-3 rounded-xl !bg-[#0f172a] hover:!bg-black active:scale-[0.99] dark:!bg-[#1c202a] dark:hover:!bg-[#242936] !text-white border border-slate-800 dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer"
-                  title="打开 Stripe 国际收银台进行安全支付"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 text-white shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-semibold text-white leading-tight flex items-center gap-1.5">
-                        <span>通过 Stripe 信用卡 / Apple Pay 赞赏</span>
-                      </div>
-                      <div className="text-[10px] text-slate-300 dark:text-slate-400 mt-0.5">
-                        支持 Visa, Mastercard, AMEX & Link
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-0.5 text-slate-300 group-hover:text-white group-hover:translate-x-0.5 transition-all text-xs font-medium">
-                    <span className="text-[11px]">收银台</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
+                  <CreditCard className="w-4 h-4" />
+                  <span>通过 Stripe 信用卡 / Apple Pay 赞赏 →</span>
                 </button>
               </div>
             )}
