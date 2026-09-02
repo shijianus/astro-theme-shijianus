@@ -354,7 +354,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
               {!isBlessingDone ? (
                 <form onSubmit={handleSubmitBlessing} className="space-y-4">
                   <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
                     留下您的寄语（将推送给作者）
                   </div>
                   <div className="space-y-1">
