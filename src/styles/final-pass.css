@@ -380,6 +380,22 @@ body[data-type='post'] #post .popover-down {
 body[data-type='post'] #post .post-reward .reward-main {
   left: 0 !important;
   transform: none !important;
+  width: var(--reward-popover-width, max-content) !important;
+}
+
+@media (max-width: 639px) {
+  body[data-type='post'] #post .post-reward .reward-main {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: 90vh !important;
+    z-index: 1000 !important;
+  }
 }
 
 body[data-type='post'] #post .share-qrcode .share-main {

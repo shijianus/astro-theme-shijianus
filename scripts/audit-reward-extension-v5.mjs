@@ -112,7 +112,7 @@ async function runAudit() {
   await page.evaluate(() => {
     const postTools = document.querySelector('.post-tools, [data-post-tools]');
     if (postTools) {
-      postTools.scrollIntoView({ behavior: 'instant', block: 'center' });
+      postTools.scrollIntoView({ behavior: 'instant', block: 'end' });
     }
   });
   await page.waitForTimeout(800);
@@ -178,14 +178,14 @@ async function runAudit() {
   });
 
   // --------------------------------------------------------------------------
-  // 5. GLOBAL View: Switch to GLOBAL
+  // 5. GLOBAL View: Switch to GLOBAL (Directly presents Stripe Checkout in .reward-main)
   // --------------------------------------------------------------------------
-  console.log('📸 5. Capturing GLOBAL Attached Extension...');
+  console.log('📸 5. Capturing GLOBAL Attached Extension (Directly integrates Stripe Checkout in .reward-main)...');
   const regionDropdownBtn3 = page.locator('.reward-main button').filter({ hasText: '🇬🇧' }).first();
   if (await regionDropdownBtn3.isVisible()) {
     await regionDropdownBtn3.click();
     await page.waitForTimeout(300);
-    const globalOption = page.locator('.reward-main button').filter({ hasText: '全球其它地区' }).first();
+    const globalOption = page.locator('.reward-main button').filter({ hasText: '全球 (Stripe)' }).first();
     await globalOption.click();
     await page.waitForTimeout(500);
   }
@@ -195,21 +195,27 @@ async function runAudit() {
   });
 
   // --------------------------------------------------------------------------
-  // 6. Stripe Modal: Click "通过 Stripe 信用卡 / Apple Pay 赞赏 →" to open modal
+  // 6. Stripe Checkout Details: Card input interaction inside .reward-main
   // --------------------------------------------------------------------------
-  console.log('📸 6. Opening Stripe Checkout Modal (Amount chips + Express Checkout + Card Element)...');
-  const stripeCtaBtn = page.locator('.reward-main button').filter({ hasText: '通过 Stripe 信用卡' }).first();
-  await stripeCtaBtn.click();
-  await page.waitForTimeout(600);
+  console.log('📸 6. Interacting with inline Stripe Checkout Form (Card number, Expiry, CVC)...');
+  const cardInput = page.locator('.reward-main input[placeholder="1234 1234 1234 1234"]').first();
+  if (await cardInput.isVisible()) {
+    await cardInput.fill('4242424242424242');
+    const expiryInput = page.locator('.reward-main input[placeholder="MM / YY"]').first();
+    await expiryInput.fill('1228');
+    const cvcInput = page.locator('.reward-main input[placeholder="CVC"]').first();
+    await cvcInput.fill('123');
+    await page.waitForTimeout(400);
+  }
 
   await page.screenshot({
     path: path.join(SCREENSHOT_DIR, '06-stripe-modal-checkout-light.png'),
   });
 
   // --------------------------------------------------------------------------
-  // 7. Stripe Modal: Dark Mode
+  // 7. Stripe Checkout: Dark Mode inside .reward-main
   // --------------------------------------------------------------------------
-  console.log('📸 7. Stripe Checkout Modal in Dark Mode...');
+  console.log('📸 7. Stripe Checkout in Dark Mode inside .reward-main...');
   await page.evaluate(() => {
     document.documentElement.classList.add('dark');
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -221,15 +227,15 @@ async function runAudit() {
   });
 
   // --------------------------------------------------------------------------
-  // 8. Post-Payment: Click Confirm & Pay -> Triggering Post-Payment Blessing Screen
+  // 8. Post-Payment: Click Pay -> Triggering In-Place Blessing Screen in .reward-main
   // --------------------------------------------------------------------------
-  console.log('📸 8. Clicking Confirm & Pay -> Triggering Post-Payment Blessing Screen...');
+  console.log('📸 8. Clicking Confirm & Pay -> Triggering In-Place Blessing Screen...');
   await page.evaluate(() => {
     document.documentElement.classList.remove('dark');
     document.documentElement.setAttribute('data-theme', 'light');
   });
 
-  const payBtn = page.locator('div[role="dialog"] button[type="submit"]').first();
+  const payBtn = page.locator('.reward-main button[type="submit"]').first();
   if (await payBtn.isVisible()) {
     await payBtn.click();
     await page.waitForTimeout(800);
@@ -243,10 +249,10 @@ async function runAudit() {
   // 9. Fill Blessing Form (Name + Message)
   // --------------------------------------------------------------------------
   console.log('📸 9. Filling Donor Blessing & Message...');
-  const nameInput = page.locator('input[placeholder*="@github_username"]').first();
+  const nameInput = page.locator('.reward-main input[placeholder*="@github_username"]').first();
   if (await nameInput.isVisible()) {
     await nameInput.fill('@shijian_sponsor');
-    const msgInput = page.locator('textarea[placeholder*="写下想对作者说的话"]').first();
+    const msgInput = page.locator('.reward-main textarea[placeholder*="写下想对作者说的话"]').first();
     await msgInput.fill('博客排版与内容太棒了，持续加油独立创作！☕️');
     await page.waitForTimeout(300);
   }
@@ -259,7 +265,7 @@ async function runAudit() {
   // 10. Submit Blessing -> Confirmation
   // --------------------------------------------------------------------------
   console.log('📸 10. Submitting Blessing...');
-  const sendBlessingBtn = page.locator('button').filter({ hasText: '发送寄语与祝福' }).first();
+  const sendBlessingBtn = page.locator('.reward-main button').filter({ hasText: '发送寄语与祝福' }).first();
   if (await sendBlessingBtn.isVisible()) {
     await sendBlessingBtn.click();
     await page.waitForTimeout(600);
@@ -306,17 +312,11 @@ async function runAudit() {
     path: path.join(SCREENSHOT_DIR, '12-mobile-hk-attached-extension.png'),
   });
 
-  // Mobile Stripe CTA -> Modal
-  const mStripeBtn = mobilePage.locator('.reward-main button').filter({ hasText: '通过 Stripe 信用卡' }).first();
-  if (await mStripeBtn.isVisible()) {
-    await mStripeBtn.click();
-    await mobilePage.waitForTimeout(600);
-  } else {
-    await mobilePage.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('open-stripe-modal', { detail: { region: 'GLOBAL', amount: 5 } }));
-    });
-    await mobilePage.waitForTimeout(600);
-  }
+  // Mobile GLOBAL Stripe Checkout directly inside .reward-main
+  await mobilePage.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('open-post-reward-extension', { detail: { region: 'GLOBAL' } }));
+  });
+  await mobilePage.waitForTimeout(500);
 
   await mobilePage.screenshot({
     path: path.join(SCREENSHOT_DIR, '13-mobile-stripe-modal.png'),
