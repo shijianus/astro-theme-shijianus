@@ -149,7 +149,7 @@ async function runAudit() {
   // 6. Click Stripe Launch Button -> Open Centered RewardModal (Stripe 收银台)
   // --------------------------------------------------------------------------
   console.log('📸 6. Clicking Launch Button to open centered Stripe Checkout Modal...');
-  const launchStripeBtn = page.locator('.reward-main button').filter({ hasText: 'Stripe 国际收银台' }).first();
+  const launchStripeBtn = page.locator('.reward-main button').filter({ hasText: '国际收银台' }).first();
   if (await launchStripeBtn.isVisible()) {
     await launchStripeBtn.click();
     await page.waitForTimeout(600);

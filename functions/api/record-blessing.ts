@@ -10,6 +10,15 @@ interface BlessingPayload {
   country?: string;
 }
 
+function sanitizeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 async function notifyTelegramBot(
   token: string,
   chatId: string,
@@ -28,36 +37,41 @@ async function notifyTelegramBot(
     const formattedAmount = data.amount
       ? `$${(data.amount / 100).toFixed(2)} ${(data.currency || 'USD').toUpperCase()}`
       : '已支付';
-    const sponsorName = data.name?.trim() ? data.name.trim() : '匿名支持者';
-    const sponsorMsg = data.message?.trim() ? data.message.trim() : '（支持作者，感谢创作！）';
-    const location = data.country ? data.country : 'GLOBAL';
+    const sponsorName = sanitizeHtml(data.name?.trim() ? data.name.trim() : '匿名支持者');
+    const sponsorMsg = sanitizeHtml(data.message?.trim() ? data.message.trim() : '（支持作者，感谢创作！）');
+    const location = sanitizeHtml(data.country ? data.country : 'GLOBAL');
+    const clientIp = sanitizeHtml(data.ip || 'Unknown');
     const nowStr = new Date().toLocaleString('zh-CN', {
       timeZone: 'Asia/Shanghai',
       hour12: false,
     });
 
     const text = [
-      `🎉 *收到新的博客赞赏与寄语祝福 (EpoCanvas)*`,
+      `🎉 <b>收到赞赏者的寄语祝福</b>`,
       `━━━━━━━━━━━━━━━━━━`,
-      `💰 *赞赏金额*: \`${formattedAmount}\` *(支付已完成 ✓)*`,
-      `👤 *赞赏者*: *${sponsorName.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}*`,
-      `💬 *寄语祝福*: ${sponsorMsg.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}`,
-      `🌍 *地区 / IP*: \`${location}\` (${data.ip || 'Unknown'})`,
-      `💳 *支付通道*: Stripe Checkout`,
-      `🆔 *订单标识*: \`${data.id || 'N/A'}\``,
-      `🕒 *完成时间*: \`${nowStr}\``,
+      `💰 <b>赞赏金额</b>: <code>${formattedAmount}</code> <i>(支付已完成 ✓)</i>`,
+      `👤 <b>赞赏者</b>: <b>${sponsorName}</b>`,
+      `💬 <b>寄语祝福</b>: ${sponsorMsg}`,
+      `🌍 <b>地区 / IP</b>: <code>${location}</code> (${clientIp})`,
+      `💳 <b>支付通道</b>: Stripe Checkout`,
+      `🆔 <b>订单标识</b>: <code>${sanitizeHtml(data.id || 'N/A')}</code>`,
+      `🕒 <b>完成时间</b>: <code>${nowStr}</code>`,
       `━━━━━━━━━━━━━━━━━━`,
     ].join('\n');
 
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
         text,
-        parse_mode: 'MarkdownV2',
+        parse_mode: 'HTML',
       }),
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Telegram blessing send error:', res.status, errText);
+    }
   } catch (tgErr) {
     console.error('Telegram notification error:', tgErr);
   }
@@ -88,15 +102,16 @@ async function updateD1Record(
           country TEXT,
           ip TEXT,
           status TEXT DEFAULT 'pending',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
       )
       .run();
 
     await db
       .prepare(
-        `INSERT OR REPLACE INTO sponsorships (id, amount, currency, name, message, country, ip, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'completed')`,
+        `INSERT OR REPLACE INTO sponsorships (id, amount, currency, name, message, country, ip, status, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)`,
       )
       .bind(
         data.id || `sp_${Date.now()}`,
@@ -137,8 +152,8 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
     (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
     '7963161588';
 
-  // Asynchronously notify TG bot & record to D1
-  notifyTelegramBot(tgToken, tgChatId, {
+  // MUST AWAIT so Cloudflare Pages worker does not terminate beforehand!
+  await notifyTelegramBot(tgToken, tgChatId, {
     id: payload?.id,
     amount: payload?.amount,
     currency: payload?.currency || 'USD',
@@ -146,10 +161,10 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
     message: payload?.message,
     country,
     ip: clientIp,
-  }).catch(() => {});
+  });
 
   if (env.DB) {
-    updateD1Record(env.DB, {
+    await updateD1Record(env.DB, {
       id: payload?.id || `sp_${Date.now()}`,
       amount: payload?.amount,
       currency: payload?.currency || 'USD',
@@ -157,7 +172,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       message: payload?.message,
       country,
       ip: clientIp,
-    }).catch(() => {});
+    });
   }
 
   return jsonResponse(request, env, {

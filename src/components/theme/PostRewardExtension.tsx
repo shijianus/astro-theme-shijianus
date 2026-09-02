@@ -534,37 +534,14 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
-                  <div className="flex items-center gap-1 font-bold">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>USDT 链路提示</span>
-                  </div>
-                  <p className="text-amber-700 dark:text-amber-300/90 leading-tight">
-                    请使用 <strong className="underline font-bold">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
-                  </p>
-                </div>
-
-                {/* 精工设计的 Stripe 收银台 Launch Button */}
+                {/* 方形的白色填充、蓝色字体的"国际收银台"按钮 */}
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  className="group relative w-full py-2.5 px-3.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-[#1a1d26] dark:hover:bg-[#222634] text-white shadow-md hover:shadow-xl transition-all flex items-center justify-between cursor-pointer border border-slate-800/80 dark:border-white/10 active:scale-[0.99]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-[#1a1d26] hover:bg-blue-50/80 dark:hover:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/50 shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 font-bold text-sm cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-bold text-white leading-tight">Stripe 国际收银台</div>
-                      <div className="text-[10px] text-slate-400 font-normal">
-                        支持信用卡 · Apple Pay · Google Pay · Link
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                    <span>打开收银台</span>
-                    <span className="text-sm font-bold">›</span>
-                  </div>
+                  <CreditCard className="w-4 h-4" />
+                  <span>国际收银台</span>
                 </button>
               </div>
             )}
@@ -612,37 +589,14 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
-                  <div className="flex items-center gap-1 font-bold">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>USDT 链路提示</span>
-                  </div>
-                  <p className="text-amber-700 dark:text-amber-300/90 leading-tight">
-                    请使用 <strong className="underline font-bold">Arbitrum</strong> 链路，汇错链路将导致资产丢失。
-                  </p>
-                </div>
-
-                {/* 精工设计的 Stripe 收银台 Launch Button */}
+                {/* 方形的白色填充、蓝色字体的"国际收银台"按钮 */}
                 <button
                   type="button"
                   onClick={handleOpenStripeModal}
-                  className="group relative w-full py-2.5 px-3.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-[#1a1d26] dark:hover:bg-[#222634] text-white shadow-md hover:shadow-xl transition-all flex items-center justify-between cursor-pointer border border-slate-800/80 dark:border-white/10 active:scale-[0.99]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-[#1a1d26] hover:bg-blue-50/80 dark:hover:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/50 shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 font-bold text-sm cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-bold text-white leading-tight">Stripe 国际收银台</div>
-                      <div className="text-[10px] text-slate-400 font-normal">
-                        支持信用卡 · Apple Pay · Google Pay · Link
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                    <span>打开收银台</span>
-                    <span className="text-sm font-bold">›</span>
-                  </div>
+                  <CreditCard className="w-4 h-4" />
+                  <span>国际收银台</span>
                 </button>
               </div>
             )}
