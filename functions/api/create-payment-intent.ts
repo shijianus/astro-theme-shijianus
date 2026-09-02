@@ -8,8 +8,6 @@ interface PaymentIntentPayload {
   message?: string;
   country?: string;
   paymentMethod?: string;
-  paymentMethodId?: string;
-  confirm?: boolean;
 }
 
 function sanitizeHtml(str: string): string {
@@ -46,10 +44,10 @@ async function notifyTelegramBot(
       timeZone: 'Asia/Shanghai',
       hour12: false,
     });
-    const payChannel = sanitizeHtml(data.paymentMethod || 'Stripe Checkout (Cards / Apple Pay / Google Pay)');
+    const payChannel = sanitizeHtml(data.paymentMethod || 'Stripe Checkout');
 
     const text = [
-      `🎉 <b>收到新的博客赞赏发起</b>`,
+      `🎉 <b>收到新的博客赞赏</b>`,
       `━━━━━━━━━━━━━━━━━━`,
       `💰 <b>赞赏金额</b>: <code>${formattedAmount}</code>`,
       `👤 <b>赞赏者</b>: <b>${sponsorName}</b>`,
@@ -94,7 +92,6 @@ async function recordInD1(
 ) {
   if (!db) return;
   try {
-    // Ensure table exists
     await db
       .prepare(
         `CREATE TABLE IF NOT EXISTS sponsorships (
@@ -151,12 +148,12 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   const message = payload?.message?.trim() || '';
   const clientCountry = payload?.country || request.headers.get('cf-ipcountry') || 'GLOBAL';
   const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
-  const paymentMethod = payload?.paymentMethod || 'Stripe Checkout';
+  const paymentMethod = payload?.paymentMethod || 'Stripe';
 
-  // Validate amount: support both dollar amount (e.g., 5 => 500 cents) or cents
+  // Validate amount: support dollar amount (e.g., 5 => 500 cents) or already in cents
   let amountInCents = Math.round(rawAmount >= 50 && Number.isInteger(rawAmount) ? rawAmount : rawAmount * 100);
   if (amountInCents < 50) {
-    amountInCents = 50; // Minimum $0.50
+    amountInCents = 50; // Minimum $0.50 per Stripe rules
   }
   if (amountInCents > 100000) {
     amountInCents = 100000; // Cap at $1000
@@ -177,11 +174,13 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   }
 
   try {
+    // Build standard PaymentIntent — automatic_payment_methods handles all methods
+    // Including cards, Apple Pay, Google Pay, Link, etc.
+    // Do NOT pass allow_redirects=never as it breaks many payment methods
     const params = new URLSearchParams();
     params.set('amount', String(amountInCents));
     params.set('currency', currency);
     params.set('automatic_payment_methods[enabled]', 'true');
-    params.set('automatic_payment_methods[allow_redirects]', 'never');
     params.set('description', `Support EpoCanvas / shijianus blog (${name || 'Anonymous'})`);
     if (name) {
       params.set('metadata[sponsor_name]', name);
@@ -190,23 +189,15 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       params.set('metadata[sponsor_message]', message);
     }
     params.set('metadata[country]', clientCountry);
-    params.set('metadata[payment_method]', paymentMethod);
-
-    // If confirm is requested or in test mode, confirm the PaymentIntent to trigger balance change
-    if (payload?.confirm) {
-      params.set('confirm', 'true');
-      if (stripeSecretKey.startsWith('sk_test_')) {
-        params.set('payment_method', payload?.paymentMethodId || 'pm_card_visa');
-      } else if (payload?.paymentMethodId) {
-        params.set('payment_method', payload.paymentMethodId);
-      }
-    }
+    params.set('metadata[payment_method_type]', paymentMethod);
+    params.set('metadata[source]', 'blog_reward_modal');
 
     const stripeRes = await fetch('https://api.stripe.com/v1/payment_intents', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${stripeSecretKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2025-06-30.basil',
       },
       body: params.toString(),
     });
@@ -219,6 +210,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       return jsonResponse(request, env, { ok: false, error: errorMsg }, { status: 400 });
     }
 
+    // Read TG credentials with priority: env binding > hardcoded fallback
     const tgToken =
       env.TELEGRAM_BOT_TOKEN ||
       (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN) ||
@@ -228,7 +220,8 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
       '7963161588';
 
-    // MUST AWAIT Telegram & D1 so Cloudflare Pages worker does not terminate beforehand!
+    // Notify TG immediately after PaymentIntent creation
+    // (actual payment confirmation should also trigger webhook in production)
     await notifyTelegramBot(tgToken, tgChatId, {
       amount: amountInCents,
       currency,
@@ -240,6 +233,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       paymentMethod,
     });
 
+    // Record in D1
     if (env.DB) {
       await recordInD1(env.DB, {
         id: data.id,
@@ -249,7 +243,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
         message,
         country: clientCountry,
         ip: clientIp,
-        status: data.status || 'created',
+        status: data.status || 'requires_payment_method',
       });
     }
 
