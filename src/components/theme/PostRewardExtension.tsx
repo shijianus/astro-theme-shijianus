@@ -407,6 +407,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                       icon={<AlipayIcon className="w-3.5 h-3.5" />}
                     />
                   </div>
+                  <StripeButton />
                   <div className="text-center text-[10px] text-slate-400 dark:text-slate-500">
                     手机端可长按或截图保存二维码扫码支持 ☕️
                   </div>
