@@ -49,8 +49,8 @@
 - [x] 线上真实环境 E2E Playwright 自动化验证脚本配置 (`ca261cd`)
 - [x] 全量配置加固与 Google Pay / Apple Pay 双重链路保障 (`55f3bed`)
 
-### Task 3: 自动化工作流与全量远端同步 (当前任务)
-- [x] 规范化 `AGENTS.md`，固化强制 Commit、Hash 打印、多端推送与线上 E2E 验收准则。
-- [ ] 推送所有分支与代码至 remote (`origin` 与 `cf`)：`git push --all`
-- [ ] 针对 `https://blog.epocanvas.com` 进行线上全链路 Playwright 交互测试（Google Pay / Apple Pay 国际收银台、TOC 等）。
-- [ ] 提交并打印本轮更新的 Commit Hash，完成交付。
+### Task 3: 自动化工作流与全量远端同步
+- [x] 规范化 `AGENTS.md`，固化强制 Commit、Hash 打印、多端推送与线上 E2E 验收准则 (`a560d09`)。
+- [x] 推送所有分支与代码至 remote (`origin` 与 `cf`)：`git push --all origin && git push cf main` 同步完成。
+- [x] 针对 `https://blog.epocanvas.com` 进行线上全链路 Playwright 交互测试（Google Pay / Apple Pay 国际收银台、多币种本地化定价、Stripe 内嵌安全结账、TOC 等完整测试通过）。
+- [x] 提交并打印全流程 Commit Hash，完成交付。
