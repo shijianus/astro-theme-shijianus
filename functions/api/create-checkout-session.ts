@@ -20,65 +20,6 @@ function sanitizeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-async function notifyTelegramBot(
-  token: string,
-  chatId: string,
-  data: {
-    amount: number;
-    currency: string;
-    name?: string;
-    message?: string;
-    country?: string;
-    ip?: string;
-    id?: string;
-    paymentMethod?: string;
-  },
-) {
-  if (!token || !chatId) return;
-  try {
-    const formattedAmount = ZERO_DECIMAL_CURRENCIES.has(data.currency)
-      ? `${data.amount} ${data.currency.toUpperCase()}`
-      : `${(data.amount / 100).toFixed(2)} ${data.currency.toUpperCase()}`;
-    const sponsorName = sanitizeHtml(data.name?.trim() ? data.name.trim() : '匿名支持者');
-    const sponsorMsg = sanitizeHtml(data.message?.trim() ? data.message.trim() : '（未留言）');
-    const location = sanitizeHtml(data.country ? data.country : 'GLOBAL');
-    const clientIp = sanitizeHtml(data.ip || 'Unknown');
-    const nowStr = new Date().toLocaleString('zh-CN', {
-      timeZone: 'Asia/Shanghai',
-      hour12: false,
-    });
-    const payChannel = sanitizeHtml(data.paymentMethod || 'Stripe Checkout Session');
-
-    const text = [
-      `🎉 <b>收到新的博客赞赏 (Checkout Session)</b>`,
-      `━━━━━━━━━━━━━━━━━━`,
-      `💰 <b>赞赏金额</b>: <code>${formattedAmount}</code>`,
-      `👤 <b>赞赏者</b>: <b>${sponsorName}</b>`,
-      `💬 <b>留言寄语</b>: ${sponsorMsg}`,
-      `🌍 <b>地区 / IP</b>: <code>${location}</code> (${clientIp})`,
-      `💳 <b>支付通道</b>: ${payChannel}`,
-      `🆔 <b>订单标识</b>: <code>${sanitizeHtml(data.id || 'N/A')}</code>`,
-      `🕒 <b>提交时间</b>: <code>${nowStr}</code>`,
-      `━━━━━━━━━━━━━━━━━━`,
-    ].join('\n');
-
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'HTML',
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Telegram API response error:', res.status, errText);
-    }
-  } catch (tgErr) {
-    console.error('Telegram notification error:', tgErr);
-  }
-}
 
 async function recordInD1(
   db: any,
@@ -208,17 +149,16 @@ export async function onRequest(context: {
   const stripeSecretKey =
     env.STRIPE_SECRET_KEY ||
     (typeof process !== 'undefined' && process.env?.STRIPE_SECRET_KEY) ||
-    atob('c2tfdGVzdF81MVNNdGhWM0V5RkdTaHBBR1NIeWx0R3NMNm1jUm4yaXV1cjMyZFo3UHNkT2x0RE16S3VsWmRUS0xJaE5jS1Y5eVN4aVlydjNDeENjVzE5OFBYc3ZJTGlHSTAwRkg5dlBmRnE=');
+    '';
 
-  const telegramToken =
-    env.TELEGRAM_BOT_TOKEN ||
-    (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN) ||
-    '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-
-  const telegramChatId =
-    env.TELEGRAM_CHAT_ID ||
-    (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
-    '7963161588';
+  if (!stripeSecretKey) {
+    return jsonResponse(
+      request,
+      env,
+      { ok: false, error: 'Stripe secret key is not configured in environment.' },
+      { status: 500 },
+    );
+  }
 
   try {
     const params = new URLSearchParams();

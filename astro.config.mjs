@@ -85,17 +85,19 @@ import path from 'path';
 function getEnvVar(key) {
   if (process.env[key]) return process.env[key];
   try {
-    const envPath = path.resolve(process.cwd(), '.env');
-    if (fs.existsSync(envPath)) {
-      const content = fs.readFileSync(envPath, 'utf8');
-      for (const line of content.split('\n')) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#')) {
-          const eqIdx = trimmed.indexOf('=');
-          if (eqIdx !== -1) {
-            const k = trimmed.slice(0, eqIdx).trim();
-            const v = trimmed.slice(eqIdx + 1).trim();
-            if (k === key) return v;
+    for (const file of ['.env', '.dev.vars']) {
+      const envPath = path.resolve(process.cwd(), file);
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        for (const line of content.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#')) {
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx !== -1) {
+              const k = trimmed.slice(0, eqIdx).trim();
+              const v = trimmed.slice(eqIdx + 1).trim().replace(/^["'](.*)["']$/, '$1');
+              if (k === key) return v;
+            }
           }
         }
       }
@@ -255,9 +257,7 @@ function stripeAndGeoDevIntegration() {
                     }
                   }
 
-                  const stripeSecretKey =
-                    getEnvVar('STRIPE_SECRET_KEY') ||
-                    atob('c2tfdGVzdF81MVNNdGhWM0V5RkdTaHBBR1NIeWx0R3NMNm1jUm4yaXV1cjMyZFo3UHNkT2x0RE16S3VsWmRUS0xJaE5jS1Y5eVN4aVlydjNDeENjVzE5OFBYc3ZJTGlHSTAwRkg5dlBmRnE=');
+                  const stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
                   if (!stripeSecretKey) {
                     res.setHeader('Content-Type', 'application/json');
                     res.writeHead(500);
@@ -339,8 +339,8 @@ function stripeAndGeoDevIntegration() {
                   const message = payload?.message?.trim() || '（支持作者，感谢创作！）';
                   const clientCountry = payload?.country || 'GLOBAL';
 
-                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
+                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN');
+                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID');
                   if (tgToken && tgChatId) {
                     const ZERO_DECIMAL_CURRENCIES = new Set(['bif','clp','djf','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
                     const formattedAmount = ZERO_DECIMAL_CURRENCIES.has(currency)

@@ -77,11 +77,11 @@ export async function onRequest(context: {
   const tgToken =
     env.TELEGRAM_BOT_TOKEN ||
     (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN) ||
-    '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
+    '';
   const tgChatId =
     env.TELEGRAM_CHAT_ID ||
     (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
-    '7963161588';
+    '';
 
   const notificationData: TelegramBlessingPayload = {
     id: payload?.id,
