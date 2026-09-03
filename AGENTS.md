@@ -60,7 +60,7 @@
 - [x] 多端全量同步至 `origin` 与 `cf` (`shijianus.github.io`) 仓库。
 - [x] 梳理 Apple Pay 在 Stripe Web 端展示的完整必要条件（Stripe 域名验证、Apple 硬件/Safari 沙盒、Apple Wallet 绑卡状态）并输出标准操作手册。
 
-### Task 6: Telegram 赞赏通知触发时机严格控制与自定义模板规则完善
+### Task 6: Telegram 赞赏通知触发时机严格控制与自定义模板规则完善 (`1de1926`)
 - [x] 严格限制 TG 发送时机：严禁在支付完成阶段（出现 `class="flex-1 overflow-y-auto"` 成功阶段）之前发送任何内容；全面清理 PaymentIntent/CheckoutSession 创建时的过早通知。
 - [x] 全面覆盖 `class="flex-1 overflow-y-auto"` 关闭的各类触发场景：
   1. 支持者未填写称呼/祝福（`class="space-y-2.5"` 为空）时关闭模态框（`modal_closed`）；
