@@ -856,14 +856,6 @@ body[data-type='post'] #post > .postNav {
   margin-top: 0 !important;
 }
 
-body[data-type='post'] .pagination-sentinel {
-  display: block;
-  width: 100%;
-  height: 1px;
-  margin: 0;
-  pointer-events: none;
-}
-
 body[data-type='post'] #pagination.pagination-post {
   position: fixed !important;
   right: 24px;
@@ -881,9 +873,14 @@ body[data-type='post'] #pagination.pagination-post {
   opacity: 0;
   pointer-events: none;
   transform: translateY(16px) scale(0.97);
-  transition: opacity 0.24s ease, transform 0.32s cubic-bezier(0.22, 0.7, 0.2, 1);
+  transition: opacity 0.24s ease, transform 0.32s cubic-bezier(0.22, 0.7, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   backdrop-filter: blur(14px) saturate(130%);
   -webkit-backdrop-filter: blur(14px) saturate(130%);
+}
+
+body[data-type='post'] #pagination.pagination-post:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 60%, var(--card-border));
+  box-shadow: 0 20px 45px -20px color-mix(in srgb, var(--theme-main) 25%, rgba(14, 20, 36, 0.55));
 }
 
 body[data-type='post'] #pagination.pagination-post.is-visible {
@@ -892,25 +889,21 @@ body[data-type='post'] #pagination.pagination-post.is-visible {
   transform: translateY(0) scale(1);
 }
 
-body[data-type='post'] #pagination.pagination-post.is-exiting {
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(calc(100% + 32px), 0, 0);
-}
-
 body[data-type='post'] #pagination.pagination-post[data-dismissed='true'] {
-  display: none;
+  display: none !important;
 }
 
 body[data-type='post'] #pagination .next-post {
   position: relative;
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
+  grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
-  min-height: 92px;
-  padding: 12px 42px 12px 12px;
+  min-height: 88px;
+  padding: 12px 34px 12px 12px;
   color: var(--font-color);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 body[data-type='post'] #pagination .next-cover {
@@ -918,6 +911,11 @@ body[data-type='post'] #pagination .next-cover {
   height: 68px;
   border-radius: 8px;
   object-fit: cover;
+  transition: transform 0.28s ease;
+}
+
+body[data-type='post'] #pagination .next-post:hover .next-cover {
+  transform: scale(1.04);
 }
 
 body[data-type='post'] #pagination .pagination-info {
@@ -940,28 +938,16 @@ body[data-type='post'] #pagination .next-info {
   overflow: hidden;
   color: var(--font-color);
   font-size: 13px;
-  line-height: 1.55;
+  font-weight: 600;
+  line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  transition: color 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-body[data-type='post'] #pagination .next-post-arrow {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--card-bg));
+body[data-type='post'] #pagination .next-post:hover .next-info,
+body[data-type='post'] #pagination .next-post:focus-visible .next-info {
   color: var(--theme-main);
-  font-size: 18px;
-  line-height: 1;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-body[data-type='post'] #pagination .next-post:hover .next-post-arrow {
-  background: var(--theme-main);
-  color: var(--white);
-  transform: translateX(3px);
 }
 
 body[data-type='post'] #pagination .pagination-close {
@@ -973,9 +959,13 @@ body[data-type='post'] #pagination .pagination-close {
   width: 24px;
   height: 24px;
   border-radius: 999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   color: var(--text-muted);
   font-size: 18px;
   line-height: 1;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 body[data-type='post'] #pagination .pagination-close:hover {
@@ -1054,10 +1044,6 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 @media (prefers-reduced-motion: reduce) {
   body[data-type='post'] #pagination.pagination-post {
     transition: opacity 0.15s ease;
-  }
-
-  body[data-type='post'] #pagination.pagination-post.is-exiting {
-    transform: translateY(0);
   }
 }
 

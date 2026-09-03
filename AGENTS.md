@@ -81,3 +81,10 @@
 - [x] 构建最新 Functions 运行时并全量部署至 Cloudflare Pages 生产边缘节点。
 - [x] 针对生产域名 `https://blog.epocanvas.com` 进行真实端到端 API 与浏览器交互审计，成功捕获生产端 `200 OK` 响应并触发 Telegram 机器人实时送达。
 
+### Task 9: 文章末尾下一篇推荐 (Pagination Post) 交互时机与视觉优化 (`1e3b30f`)
+- [x] 首次出现时机严格控制：仅当 `#post-comment` 评论区顶部滚动至与 `#nav` 主导航平齐时激活显示（`.is-visible`），往上回滚即时隐藏，下滑再次达到时重新展现。
+- [x] 视觉与超链接交互重构：移除 `.next-post-arrow` 箭头图标；右下角固定定位；悬浮高亮 `.pagination-info` 标题文字呈现超链接质感，点击整卡或文字直接平滑跳转下一篇文章。
+- [x] 终止位置与出屏判定：当 `#post-comment` 划出可视区域时自动隐藏 `.pagination-post`。
+- [x] 关闭状态生命周期控制：点击 `.pagination-close` (×) 按钮后立即收起并标记已关闭，在该次页面浏览过程中不再展示，直到用户刷新界面（F5/Reload）后才重置。
+- [x] 编写并执行自动化端到端测试套件（`scripts/verify-pagination-post.mjs`），全量验证出现位置、出屏隐藏、关闭后不重复展示及刷新后恢复逻辑。
+
