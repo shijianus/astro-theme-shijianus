@@ -12,7 +12,6 @@ import {
   Sparkles,
   Send,
   ChevronLeft,
-  ShieldCheck,
 } from 'lucide-react';
 
 /* ── Stripe lazy load ──────────────────────────────────────────────────────── */
@@ -183,6 +182,109 @@ const StripeWordmark: React.FC<{ className?: string }> = ({ className = 'h-3.5 w
   </svg>
 );
 
+const AppleIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-label="Apple Pay">
+    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+  </svg>
+);
+
+const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} viewBox="0 0 24 24" aria-label="Google Pay">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+  </svg>
+);
+
+const StripeLinkIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="Link by Stripe">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
+
+/* ── I18N Dictionary ───────────────────────────────────────────────────────── */
+type LocaleKey = 'zh-CN' | 'zh-Hant' | 'en';
+
+const I18N = {
+  'zh-CN': {
+    title: '赞赏支持',
+    checkoutTitle: '安全结账',
+    successTitle: '感谢支持',
+    subtitleAmount: '信用卡 · Apple Pay · Google Pay · Link',
+    subtitleCheckout: '由 Stripe 安全处理',
+    subtitleSuccess: '您的赞赏已成功送达 ❤️',
+    customPlaceholder: (min: string, max: string) => `自定义金额（${min} ~ ${max}）`,
+    minError: (min: string) => `最低金额为 ${min}（约等值 1 HKD）`,
+    maxError: (max: string) => `最高金额不能超过 ${max}（约等值 1,000 HKD）`,
+    continueBtn: (amt: string) => `继续 — ${amt}`,
+    processing: '处理中…',
+    connectingStripe: '正在连接 Stripe 安全收银台…',
+    successMsg: '赞赏成功，非常感谢！',
+    leaveBlessing: '留下您的寄语（将推送给作者）',
+    namePlaceholder: '称呼或社交账号（选填）',
+    msgPlaceholder: '写下想对作者说的话…（选填）',
+    sendBlessing: '发送寄语',
+    done: '完成',
+    blessingDelivered: '寄语已送达 ✨',
+    blessingDeliveredSub: '感谢每一次陪伴，这是创作最大的动力。',
+    privacyNote: '本站不存储任何支付卡号及隐私信息 · 结算由 Stripe 端到端加密处理',
+    securedBy: 'Secured by',
+    rewardRecords: '赞赏记录 ↗',
+  },
+  'zh-Hant': {
+    title: '讚賞支持',
+    checkoutTitle: '安全結賬',
+    successTitle: '感謝支持',
+    subtitleAmount: '信用卡 · Apple Pay · Google Pay · Link',
+    subtitleCheckout: '由 Stripe 安全處理',
+    subtitleSuccess: '您的讚賞已成功送達 ❤️',
+    customPlaceholder: (min: string, max: string) => `自訂金額（${min} ~ ${max}）`,
+    minError: (min: string) => `最低金額為 ${min}（約等值 1 HKD）`,
+    maxError: (max: string) => `最高金額不能超過 ${max}（約等值 1,000 HKD）`,
+    continueBtn: (amt: string) => `繼續 — ${amt}`,
+    processing: '處理中…',
+    connectingStripe: '正在連接 Stripe 安全收銀台…',
+    successMsg: '讚賞成功，非常感謝！',
+    leaveBlessing: '留下您的寄語（將推送給作者）',
+    namePlaceholder: '稱呼或社交帳號（選填）',
+    msgPlaceholder: '寫下想對作者說的話…（選填）',
+    sendBlessing: '發送寄語',
+    done: '完成',
+    blessingDelivered: '寄語已送達 ✨',
+    blessingDeliveredSub: '感謝每一次陪伴，這是創作最大的動力。',
+    privacyNote: '本站不儲存任何支付卡號及隱私資訊 · 結算由 Stripe 端到端加密處理',
+    securedBy: 'Secured by',
+    rewardRecords: '讚賞記錄 ↗',
+  },
+  'en': {
+    title: 'Support Creator',
+    checkoutTitle: 'Secure Checkout',
+    successTitle: 'Thank You',
+    subtitleAmount: 'Cards · Apple Pay · Google Pay · Link',
+    subtitleCheckout: 'Secured by Stripe',
+    subtitleSuccess: 'Your support has been received ❤️',
+    customPlaceholder: (min: string, max: string) => `Custom amount (${min} ~ ${max})`,
+    minError: (min: string) => `Minimum amount is ${min} (≈ 1 HKD)`,
+    maxError: (max: string) => `Maximum amount is ${max} (≈ 1,000 HKD)`,
+    continueBtn: (amt: string) => `Continue — ${amt}`,
+    processing: 'Processing…',
+    connectingStripe: 'Connecting to Stripe Checkout…',
+    successMsg: 'Payment successful, thank you!',
+    leaveBlessing: 'Leave a message (sent to author)',
+    namePlaceholder: 'Name or handle (optional)',
+    msgPlaceholder: 'Write a note to the author… (optional)',
+    sendBlessing: 'Send Message',
+    done: 'Done',
+    blessingDelivered: 'Message delivered ✨',
+    blessingDeliveredSub: 'Thank you for your support and encouragement!',
+    privacyNote: 'No card or personal data is stored · Processed securely via Stripe',
+    securedBy: 'Secured by',
+    rewardRecords: 'Donation Log ↗',
+  },
+};
+
 /* ── Props ─────────────────────────────────────────────────────────────────── */
 interface RewardModalProps {
   stripePublishableKey?: string;
@@ -207,6 +309,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
 
   const [country, setCountry]           = useState('');
   const [currencyConfig, setCurrencyConfig] = useState<CurrencyConfig>(DEFAULT_CONFIG);
+  const [localeVariant, setLocaleVariant]   = useState<LocaleKey>('zh-CN');
 
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [customAmount, setCustomAmount]     = useState('');
@@ -226,6 +329,8 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const [blessingDone, setBlessingDone]   = useState(false);
 
   const checkoutRef = useRef<HTMLDivElement>(null);
+  const checkoutInstanceRef = useRef<any>(null);
+  const pendingNotificationRef = useRef(false);
 
   /* current amount (derived) */
   const currentAmount = isCustomMode
@@ -238,15 +343,40 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     currentAmount > currencyConfig.max
   );
 
+  const t = I18N[localeVariant] || I18N['zh-CN'];
+
+  /* ── 0. Synchronize Locale Variant ────────────────────────────────────────── */
+  useEffect(() => {
+    const updateLocale = () => {
+      const v = (document.documentElement.dataset.localeVariant || 'zh-CN') as LocaleKey;
+      if (v === 'zh-Hant' || v === 'en') {
+        setLocaleVariant(v);
+      } else {
+        setLocaleVariant('zh-CN');
+      }
+    };
+    updateLocale();
+
+    const onLocaleChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const next = customEvent.detail as LocaleKey;
+      if (next === 'zh-Hant' || next === 'en') setLocaleVariant(next);
+      else setLocaleVariant('zh-CN');
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
+  }, []);
+
   /* ── 1. On mount: detect stripe_return + geo ──────────────────────────── */
   useEffect(() => {
-    // Detect return from Stripe Checkout
+    // Detect return from Stripe Checkout (fallback for external redirects)
     const params = new URLSearchParams(window.location.search);
     if (params.get('stripe_return') === '1') {
       const sid  = params.get('session_id') || '';
       const amt  = parseFloat(params.get('amount') || '0') || 5;
       setSessionId(sid);
       setPaidAmount(amt);
+      pendingNotificationRef.current = true;
       setStep('success');
       setIsOpen(true);
       const clean = new URL(window.location.href);
@@ -280,6 +410,12 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   useEffect(() => {
     const handle = (e: CustomEvent<{ region?: string; country?: string; amount?: number }>) => {
       resetState();
+      try {
+        const v = (document.documentElement.dataset.localeVariant || window.localStorage.getItem('shijianus-locale-variant') || 'zh-CN') as LocaleKey;
+        if (v === 'zh-Hant' || v === 'en') setLocaleVariant(v);
+        else setLocaleVariant('zh-CN');
+      } catch {}
+
       const targetCountry =
         e.detail?.country ||
         (e.detail?.region === 'CN'
@@ -317,7 +453,20 @@ export const RewardModal: React.FC<RewardModalProps> = ({
             ? stripe.createEmbeddedCheckoutPage
             : stripe.initEmbeddedCheckout;
         if (!initFn) throw new Error('Stripe embedded checkout is not supported in this environment');
-        checkout = await initFn.call(stripe, { clientSecret });
+        
+        checkout = await initFn.call(stripe, {
+          clientSecret,
+          onComplete: () => {
+            // 支付成功完成时：平滑销毁 Stripe 嵌入实例，就地展示寄语表单，绝不刷新整个页面！
+            try { checkout?.destroy(); } catch {}
+            checkoutInstanceRef.current = null;
+            pendingNotificationRef.current = true;
+            setPaidAmount(currentAmount);
+            setStep('success');
+          },
+        });
+        checkoutInstanceRef.current = checkout;
+
         if (!cancelled && checkoutRef.current) {
           checkout.mount(checkoutRef.current);
           // Watch for the Stripe iframe appearing, then fade the skeleton out
@@ -332,13 +481,11 @@ export const RewardModal: React.FC<RewardModalProps> = ({
               if (f) {
                 mo.disconnect();
                 f.addEventListener('load', markReady, { once: true });
-                // Fallback: iframe may already be loaded
                 setTimeout(markReady, 2500);
               }
             });
             mo.observe(host, { childList: true, subtree: true });
           }
-          // Hard fallback — never leave the skeleton up forever
           setTimeout(markReady, 6000);
         }
       } catch (e: any) {
@@ -348,9 +495,55 @@ export const RewardModal: React.FC<RewardModalProps> = ({
 
     return () => {
       cancelled = true;
-      checkout?.destroy();
+      try { checkout?.destroy(); } catch {}
+      checkoutInstanceRef.current = null;
     };
   }, [step, clientSecret, resolvedKey]);
+
+  /* ── 4. Unload / Close fallback for pending TG notification ───────────── */
+  const sendPendingNotification = (customName?: string, customMsg?: string) => {
+    if (!pendingNotificationRef.current || !sessionId) return;
+    pendingNotificationRef.current = false;
+    const finalName = (customName !== undefined ? customName : donorName).trim() || '匿名支持者';
+    const finalMsg = (customMsg !== undefined ? customMsg : donorMsg).trim() || '（用户未附带留言）';
+    const amt = Math.round(paidAmount * (ZERO_DECIMAL.has(currencyConfig.code) ? 1 : 100));
+    try {
+      fetch('/api/record-blessing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: sessionId,
+          amount: amt,
+          currency: currencyConfig.code,
+          name: finalName,
+          message: finalMsg,
+          country,
+        }),
+      }).catch(() => {});
+    } catch {}
+  };
+
+  useEffect(() => {
+    const onUnload = () => {
+      if (pendingNotificationRef.current && sessionId) {
+        pendingNotificationRef.current = false;
+        const amt = Math.round(paidAmount * (ZERO_DECIMAL.has(currencyConfig.code) ? 1 : 100));
+        const data = JSON.stringify({
+          id: sessionId,
+          amount: amt,
+          currency: currencyConfig.code,
+          name: donorName.trim() || '匿名支持者',
+          message: donorMsg.trim() || '（用户未附带留言）',
+          country,
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/record-blessing', new Blob([data], { type: 'application/json' }));
+        }
+      }
+    };
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+  }, [sessionId, paidAmount, currencyConfig, donorName, donorMsg, country]);
 
   /* ── Handlers ─────────────────────────────────────────────────────────── */
   const handleContinue = async () => {
@@ -364,7 +557,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       const res  = await fetch('/api/create-checkout-session', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ amount: currentAmount, currency: currencyConfig.code, country, returnUrl }),
+        body:    JSON.stringify({
+          amount: currentAmount,
+          currency: currencyConfig.code,
+          country,
+          locale: localeVariant,
+          returnUrl,
+        }),
       });
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
@@ -389,25 +588,15 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const handleBlessing = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      await fetch('/api/record-blessing', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          id:      sessionId,
-          amount:  Math.round(paidAmount * (ZERO_DECIMAL.has(currencyConfig.code) ? 1 : 100)),
-          currency: currencyConfig.code,
-          name:    donorName.trim() || '匿名支持者',
-          message: donorMsg.trim() || '',
-          country,
-        }),
-      });
-    } catch { /* silent */ }
+    sendPendingNotification(donorName, donorMsg);
     setBlessingDone(true);
     setIsSubmitting(false);
   };
 
   const resetState = () => {
+    if (step === 'success' && pendingNotificationRef.current) {
+      sendPendingNotification();
+    }
     setStep('amount');
     setClientSecret('');
     setCreateError('');
@@ -419,7 +608,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     setBlessingDone(false);
   };
 
-  const closeModal = () => { setIsOpen(false); resetState(); };
+  const closeModal = () => {
+    if (step === 'success' && pendingNotificationRef.current) {
+      sendPendingNotification();
+    }
+    setIsOpen(false);
+    resetState();
+  };
 
   const goBack = () => {
     setStep('amount');
@@ -464,14 +659,16 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-              {step === 'amount' ? '赞赏支持' : step === 'checkout' ? '安全结账' : '感谢支持'}
+              {step === 'amount' ? t.title : step === 'checkout' ? t.checkoutTitle : t.successTitle}
             </div>
-            <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-tight mt-px">
-              {step === 'amount'
-                ? '信用卡 · Apple Pay · Google Pay · Link'
-                : step === 'checkout'
-                ? `${fmtAmt(paidAmount, currencyConfig)} · 由 Stripe 安全处理`
-                : '您的赞赏已成功送达 ❤️'}
+            <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-tight mt-px flex items-center gap-1.5">
+              {step === 'amount' ? (
+                <span>{t.subtitleAmount}</span>
+              ) : step === 'checkout' ? (
+                `${fmtAmt(paidAmount, currencyConfig)} · ${t.subtitleCheckout}`
+              ) : (
+                t.subtitleSuccess
+              )}
             </div>
           </div>
           <button
@@ -494,9 +691,32 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 <div className="text-5xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                   {fmtAmt(currentAmount > 0 ? currentAmount : currencyConfig.amounts[1], currencyConfig)}
                 </div>
-                <div className="mt-1 text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
-                  {currencyConfig.code} ({currencyConfig.symbol})
+                <div className="mt-1 text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold flex items-center justify-center gap-1.5">
+                  <span>{currencyConfig.code} ({currencyConfig.symbol})</span>
                 </div>
+              </div>
+
+              {/* Supported payment methods badges */}
+              <div className="flex items-center justify-center flex-wrap gap-2.5 py-1.5 px-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                  <CreditCard className="w-3.5 h-3.5 text-violet-500" />
+                  <span>Card</span>
+                </span>
+                <span className="opacity-30">·</span>
+                <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                  <AppleIcon className="w-3.5 h-3.5 text-slate-900 dark:text-white" />
+                  <span>Apple Pay</span>
+                </span>
+                <span className="opacity-30">·</span>
+                <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                  <GoogleIcon className="w-3.5 h-3.5" />
+                  <span>Google Pay</span>
+                </span>
+                <span className="opacity-30">·</span>
+                <span className="flex items-center gap-1 font-semibold text-[#00D66F]">
+                  <StripeLinkIcon className="w-3.5 h-3.5 text-[#00D66F]" />
+                  <span>Link</span>
+                </span>
               </div>
 
               {/* Preset amounts — 6 presets in 3-column grid (2x3) */}
@@ -539,7 +759,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                     min={currencyConfig.min}
                     max={currencyConfig.max}
                     step={ZERO_DECIMAL.has(currencyConfig.code) ? 100 : (Number.isInteger(currencyConfig.amounts[0]) ? 1 : 0.5)}
-                    placeholder={`自定义金额（${fmtAmt(currencyConfig.min, currencyConfig)} ~ ${fmtAmt(currencyConfig.max, currencyConfig)}）`}
+                    placeholder={t.customPlaceholder(fmtAmt(currencyConfig.min, currencyConfig), fmtAmt(currencyConfig.max, currencyConfig))}
                     value={customAmount}
                     onFocus={() => setIsCustomMode(true)}
                     onChange={e => { setIsCustomMode(true); setCustomAmount(e.target.value); }}
@@ -554,8 +774,8 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 {isCustomMode && customAmount && isCustomInvalid && (
                   <div className="text-[11px] text-red-500 dark:text-red-400 px-1 font-medium">
                     {parseFloat(customAmount) < currencyConfig.min
-                      ? `最低金额为 ${fmtAmt(currencyConfig.min, currencyConfig)}（约等值 1 HKD）`
-                      : `最高金额不能超过 ${fmtAmt(currencyConfig.max, currencyConfig)}（约等值 1,000 HKD）`}
+                      ? t.minError(fmtAmt(currencyConfig.min, currencyConfig))
+                      : t.maxError(fmtAmt(currencyConfig.max, currencyConfig))}
                   </div>
                 )}
               </div>
@@ -587,7 +807,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   />
                 )}
                 {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isCreating ? '处理中…' : `继续 — ${fmtAmt(currentAmount > 0 ? currentAmount : currencyConfig.amounts[1], currencyConfig)}`}
+                {isCreating ? t.processing : t.continueBtn(fmtAmt(currentAmount > 0 ? currentAmount : currencyConfig.amounts[1], currencyConfig))}
               </button>
             </div>
           )}
@@ -618,7 +838,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   </div>
                   <div className="mt-auto pb-5 flex items-center justify-center gap-2 text-[11px] text-slate-400">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
-                    正在连接 Stripe 安全收银台…
+                    {t.connectingStripe}
                   </div>
                 </div>
                 {/* Stripe mounts here */}
@@ -645,7 +865,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                   <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">赞赏成功，非常感谢！</p>
+                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">{t.successMsg}</p>
                   {paidAmount > 0 && (
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
                       {fmtAmt(paidAmount, currencyConfig)} {currencyConfig.code.toUpperCase()}
@@ -659,19 +879,19 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                 <form onSubmit={handleBlessing} className="space-y-4">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                     <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-                    留下您的寄语（将推送给作者）
+                    {t.leaveBlessing}
                   </div>
                   <div className="space-y-2.5">
                     <input
                       type="text"
-                      placeholder="称呼或社交账号（选填）"
+                      placeholder={t.namePlaceholder}
                       value={donorName}
                       onChange={e => setDonorName(e.target.value)}
                       className="w-full px-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-[#1a1d26] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-400/40 transition"
                     />
                     <textarea
                       rows={3}
-                      placeholder="写下想对作者说的话…（选填）"
+                      placeholder={t.msgPlaceholder}
                       value={donorMsg}
                       onChange={e => setDonorMsg(e.target.value)}
                       className="w-full px-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-[#1a1d26] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-400/40 resize-none transition"
@@ -684,27 +904,27 @@ export const RewardModal: React.FC<RewardModalProps> = ({
                       className="flex-1 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                      发送寄语
+                      {t.sendBlessing}
                     </button>
                     <button
                       type="button"
                       onClick={closeModal}
                       className="px-5 py-3 rounded-xl bg-slate-100 dark:bg-white/[0.08] hover:bg-slate-200 dark:hover:bg-white/[0.14] text-slate-700 dark:text-slate-300 font-medium text-xs transition-colors cursor-pointer"
                     >
-                      完成
+                      {t.done}
                     </button>
                   </div>
                 </form>
               ) : (
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-center space-y-2">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">寄语已送达 ✨</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">感谢每一次陪伴，这是创作最大的动力。</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{t.blessingDelivered}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.blessingDeliveredSub}</p>
                   <button
                     type="button"
                     onClick={closeModal}
                     className="mt-2 px-8 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold cursor-pointer transition-colors hover:bg-slate-700 dark:hover:bg-slate-100"
                   >
-                    完成
+                    {t.done}
                   </button>
                 </div>
               )}
@@ -713,29 +933,33 @@ export const RewardModal: React.FC<RewardModalProps> = ({
         </div>
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
-        <div className="px-5 py-3 border-t border-slate-100 dark:border-white/[0.07] shrink-0 bg-slate-50/80 dark:bg-black/30 space-y-2">
-          {/* Security & Privacy Isolation Notice */}
-          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-500/8 dark:bg-emerald-500/10 border border-emerald-500/20 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-semibold text-emerald-800 dark:text-emerald-300">数据安全与隐私隔离说明：</span>
-              本站不收集、存储或与 EpoCanvas 分享任何支付卡号或敏感信息，所有结算数据均由 Stripe 国际收银台端到端加密安全处理。
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-0.5">
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-              <span className="font-medium">Secured by</span>
-              <StripeWordmark className="h-3.5 w-auto opacity-70 dark:opacity-50 text-[#635BFF] dark:text-slate-200" />
-            </div>
+        <div className="px-5 py-3 border-t border-slate-100 dark:border-white/[0.07] shrink-0 bg-slate-50/50 dark:bg-black/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <a
+              href="https://stripe.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors cursor-pointer group"
+              title="Stripe Official Security"
+            >
+              <span className="font-medium">{t.securedBy}</span>
+              <StripeWordmark className="h-3.5 w-auto opacity-70 group-hover:opacity-100 dark:opacity-50 dark:group-hover:opacity-80 text-[#635BFF] dark:text-slate-200 transition-opacity" />
+            </a>
             <a
               href="/status/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] font-medium text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[11px] font-medium text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors cursor-pointer"
             >
-              赞赏记录 ↗
+              {t.rewardRecords}
             </a>
+          </div>
+
+          {/* Concise, subtle single-line privacy note */}
+          <div className="text-center text-[10px] text-slate-400/80 dark:text-slate-500 leading-normal truncate">
+            {t.privacyNote}
           </div>
         </div>
       </div>

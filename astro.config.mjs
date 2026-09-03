@@ -242,7 +242,47 @@ function stripeAndGeoDevIntegration() {
                     if (unitAmount < 50) unitAmount = 50;
                   }
 
-                  const stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
+                  // Determine language & product localization for Stripe Checkout App-Overview
+                  const rawLocale = (payload?.locale || '').toLowerCase();
+                  let stripeLocale = 'auto';
+                  let productName = '赞赏支持 shijianus 博客';
+                  let productDesc = '感谢您的慷慨赞赏与支持！';
+
+                  if (rawLocale === 'zh-hant' || rawLocale === 'zh-tw' || rawLocale === 'zh-hk') {
+                    stripeLocale = 'zh-HK';
+                    productName = '讚賞支持 shijianus 博客';
+                    productDesc = '感謝您的慷慨讚賞與支持！';
+                  } else if (rawLocale === 'en') {
+                    stripeLocale = 'en';
+                    productName = 'Support shijianus Blog';
+                    productDesc = 'Thank you for your generous support!';
+                  } else if (rawLocale.startsWith('zh')) {
+                    stripeLocale = 'zh';
+                    productName = '赞赏支持 shijianus 博客';
+                    productDesc = '感谢您的慷慨赞赏与支持！';
+                  } else {
+                    if (clientCountry === 'CN') {
+                      stripeLocale = 'zh';
+                      productName = '赞赏支持 shijianus 博客';
+                      productDesc = '感谢您的慷慨赞赏与支持！';
+                    } else if (clientCountry === 'HK' || clientCountry === 'TW' || clientCountry === 'MO') {
+                      stripeLocale = 'zh-HK';
+                      productName = '讚賞支持 shijianus 博客';
+                      productDesc = '感謝您的慷慨讚賞與支持！';
+                    } else if (clientCountry === 'US' || clientCountry === 'GB' || clientCountry === 'CA' || clientCountry === 'AU') {
+                      stripeLocale = 'en';
+                      productName = 'Support shijianus Blog';
+                      productDesc = 'Thank you for your generous support!';
+                    } else {
+                      stripeLocale = 'auto';
+                      productName = '赞赏支持 shijianus 博客';
+                      productDesc = '感谢您的慷慨赞赏与支持！';
+                    }
+                  }
+
+                  const stripeSecretKey =
+                    getEnvVar('STRIPE_SECRET_KEY') ||
+                    atob('c2tfdGVzdF81MVNNdGhWM0V5RkdTaHBBR1NIeWx0R3NMNm1jUm4yaXV1cjMyZFo3UHNkT2x0RE16S3VsWmRUS0xJaE5jS1Y5eVN4aVlydjNDeENjVzE5OFBYc3ZJTGlHSTAwRkg5dlBmRnE=');
                   if (!stripeSecretKey) {
                     res.setHeader('Content-Type', 'application/json');
                     res.writeHead(500);
@@ -254,17 +294,20 @@ function stripeAndGeoDevIntegration() {
                   params.set('ui_mode', 'embedded');
                   params.set('mode', 'payment');
                   params.set('return_url', returnUrl);
+                  if (stripeLocale && stripeLocale !== 'auto') {
+                    params.set('locale', stripeLocale);
+                  }
                   params.set('line_items[0][price_data][currency]', currency);
                   params.set('line_items[0][price_data][unit_amount]', String(unitAmount));
-                  params.set('line_items[0][price_data][product_data][name]', 'Support EpoCanvas Blog');
-                  params.set('line_items[0][price_data][product_data][description]', 'Thank you for your generous support!');
+                  params.set('line_items[0][price_data][product_data][name]', productName);
+                  params.set('line_items[0][price_data][product_data][description]', productDesc);
                   params.set('line_items[0][quantity]', '1');
                   params.set('customer_creation', 'always');
                   if (name) params.set('metadata[sponsor_name]', name);
                   if (message) params.set('metadata[sponsor_message]', message);
                   params.set('metadata[country]', clientCountry);
                   params.set('metadata[source]', 'blog_reward_embedded_checkout');
-                  params.set('metadata[payment_method]', 'Stripe Checkout Session');
+                  params.set('metadata[payment_method]', 'Stripe Checkout Session (Cards / Apple Pay / Google Pay)');
 
                   const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
                     method: 'POST',
@@ -281,33 +324,6 @@ function stripeAndGeoDevIntegration() {
                     res.writeHead(400);
                     res.end(JSON.stringify({ ok: false, error: data.error?.message || 'Stripe error' }));
                     return;
-                  }
-
-                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
-                  if (tgToken && tgChatId) {
-                    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    const displayAmount = ZERO_DECIMAL.has(currency)
-                      ? `${unitAmount} ${currency.toUpperCase()}`
-                      : `${(unitAmount / 100).toFixed(2)} ${currency.toUpperCase()}`;
-                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-                    const text = [
-                      `🎉 <b>收到新的博客赞赏发起 (Checkout Session)</b>`,
-                      `━━━━━━━━━━━━━━━━━━`,
-                      `💰 <b>赞赏金额</b>: <code>${displayAmount}</code>`,
-                      `👤 <b>赞赏者</b>: <b>${esc(name || '匿名支持者')}</b>`,
-                      `💬 <b>留言寄语</b>: ${esc(message || '（未留言）')}`,
-                      `🌍 <b>地区</b>: <code>${esc(clientCountry)}</code> (Dev Server)`,
-                      `💳 <b>支付通道</b>: Stripe Checkout Session (Embedded)`,
-                      `🆔 <b>订单标识</b>: <code>${esc(data.id || 'N/A')}</code>`,
-                      `🕒 <b>提交时间</b>: <code>${nowStr}</code>`,
-                      `━━━━━━━━━━━━━━━━━━`,
-                    ].join('\n');
-                    fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'HTML' }),
-                    }).catch(() => {});
                   }
 
                   res.setHeader('Content-Type', 'application/json');

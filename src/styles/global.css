@@ -3973,13 +3973,26 @@ body[data-type='home'] .page-aside {
   align-items: center;
   justify-content: center;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: 0.3s ease-out;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
 }
 
 #console.show {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+}
+
+#console:not(.show) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#console:not(.show) * {
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 #console .console-close-btn {

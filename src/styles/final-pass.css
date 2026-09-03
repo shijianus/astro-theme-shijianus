@@ -1671,6 +1671,19 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   padding: 0 !important;
   border: none !important;
   box-shadow: none !important;
+  pointer-events: none;
+}
+
+#console.show .button-group {
+  pointer-events: auto;
+}
+
+#console:not(.show) .button-group,
+#console:not(.show) .console-btn-item {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 #console .console-btn-item {

@@ -573,7 +573,8 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 href="/status/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors font-medium"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors font-medium cursor-pointer"
               >
                 <span>赞赏记录</span>
                 <ExternalLink className="w-3 h-3" />

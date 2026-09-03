@@ -16,13 +16,9 @@ import {
   Search,
   SunMedium,
   Tags,
-  MessageSquare,
-  LayoutGrid,
   Info,
-  History,
   X,
   GitCommit,
-  FileText,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -1119,8 +1115,15 @@ export function ThemeOverlays({
             </div>
           </div>
 
-          <div className="button-group" aria-label="控制台快捷操作">
-            <button type="button" className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`} onClick={toggleTheme} title="切换深浅色">
+          <div className="button-group" aria-label="控制台快捷操作" style={{ pointerEvents: consoleOpen ? 'auto' : 'none' }}>
+            <button
+              type="button"
+              className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`}
+              onClick={toggleTheme}
+              title="切换深浅色"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
+            >
               {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
             </button>
             <button
@@ -1132,6 +1135,8 @@ export function ThemeOverlays({
                 emitActivity('已打开站内搜索');
               }}
               title="搜索内容"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
             >
               <Search aria-hidden="true" />
             </button>
@@ -1143,6 +1148,8 @@ export function ThemeOverlays({
                 emitActivity('已切换页面背景');
               }}
               title="背景切换"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
             >
               <Sparkles aria-hidden="true" />
             </button>
@@ -1154,6 +1161,8 @@ export function ThemeOverlays({
                 emitActivity('已打开通知中心');
               }}
               title="查看通知"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
             >
               <Bell aria-hidden="true" />
             </button>
@@ -1165,6 +1174,8 @@ export function ThemeOverlays({
                 if (randomPost) window.location.href = randomPost.href;
               }}
               title="随便逛逛"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
             >
               <RefreshCw aria-hidden="true" />
             </button>
@@ -1177,6 +1188,8 @@ export function ThemeOverlays({
                 emitActivity('已回到页面顶部');
               }}
               title="回到顶部"
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
             >
               <ArrowUp aria-hidden="true" />
             </button>

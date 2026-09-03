@@ -7,6 +7,7 @@ interface CheckoutSessionPayload {
   name?: string;
   message?: string;
   country?: string;
+  locale?: string;
   returnUrl?: string;
 }
 
@@ -166,6 +167,44 @@ export async function onRequest(context: {
     }
   }
 
+  // Determine language & product localization for Stripe Checkout App-Overview
+  const rawLocale = (payload?.locale || '').toLowerCase();
+  let stripeLocale = 'auto';
+  let productName = '赞赏支持 shijianus 博客';
+  let productDesc = '感谢您的慷慨赞赏与支持！';
+
+  if (rawLocale === 'zh-hant' || rawLocale === 'zh-tw' || rawLocale === 'zh-hk') {
+    stripeLocale = 'zh-HK';
+    productName = '讚賞支持 shijianus 博客';
+    productDesc = '感謝您的慷慨讚賞與支持！';
+  } else if (rawLocale === 'en') {
+    stripeLocale = 'en';
+    productName = 'Support shijianus Blog';
+    productDesc = 'Thank you for your generous support!';
+  } else if (rawLocale.startsWith('zh')) {
+    stripeLocale = 'zh';
+    productName = '赞赏支持 shijianus 博客';
+    productDesc = '感谢您的慷慨赞赏与支持！';
+  } else {
+    if (clientCountry === 'CN') {
+      stripeLocale = 'zh';
+      productName = '赞赏支持 shijianus 博客';
+      productDesc = '感谢您的慷慨赞赏与支持！';
+    } else if (clientCountry === 'HK' || clientCountry === 'TW' || clientCountry === 'MO') {
+      stripeLocale = 'zh-HK';
+      productName = '讚賞支持 shijianus 博客';
+      productDesc = '感謝您的慷慨讚賞與支持！';
+    } else if (clientCountry === 'US' || clientCountry === 'GB' || clientCountry === 'CA' || clientCountry === 'AU') {
+      stripeLocale = 'en';
+      productName = 'Support shijianus Blog';
+      productDesc = 'Thank you for your generous support!';
+    } else {
+      stripeLocale = 'auto';
+      productName = '赞赏支持 shijianus 博客';
+      productDesc = '感谢您的慷慨赞赏与支持！';
+    }
+  }
+
   const stripeSecretKey =
     env.STRIPE_SECRET_KEY ||
     (typeof process !== 'undefined' && process.env?.STRIPE_SECRET_KEY) ||
@@ -186,10 +225,13 @@ export async function onRequest(context: {
     params.set('ui_mode', 'embedded');
     params.set('mode', 'payment');
     params.set('return_url', returnUrl);
+    if (stripeLocale && stripeLocale !== 'auto') {
+      params.set('locale', stripeLocale);
+    }
     params.set('line_items[0][price_data][currency]', currency);
     params.set('line_items[0][price_data][unit_amount]', String(unitAmount));
-    params.set('line_items[0][price_data][product_data][name]', 'Support EpoCanvas Blog');
-    params.set('line_items[0][price_data][product_data][description]', 'Thank you for your generous support!');
+    params.set('line_items[0][price_data][product_data][name]', productName);
+    params.set('line_items[0][price_data][product_data][description]', productDesc);
     params.set('line_items[0][quantity]', '1');
     params.set('customer_creation', 'always');
     
@@ -197,7 +239,7 @@ export async function onRequest(context: {
     if (message) params.set('metadata[sponsor_message]', message);
     params.set('metadata[country]', clientCountry);
     params.set('metadata[source]', 'blog_reward_embedded_checkout');
-    params.set('metadata[payment_method]', 'Stripe Checkout Session');
+    params.set('metadata[payment_method]', 'Stripe Checkout Session (Cards / Apple Pay / Google Pay)');
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
@@ -217,40 +259,23 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: errorMsg }, { status: 400 });
     }
 
-    // Background side-effects (TG notify + D1) — keep alive via waitUntil so the
-    // clientSecret response returns immediately instead of waiting on the TG API
-    const sideEffects: Promise<unknown>[] = [
-      notifyTelegramBot(telegramToken, telegramChatId, {
+    // Record initial session in D1 if available (without sending TG notification yet)
+    if (env.DB) {
+      const d1Task = recordInD1(env.DB, {
+        id: data.id,
         amount: unitAmount,
         currency,
         name,
         message,
         country: clientCountry,
         ip: clientIp,
-        id: data.id,
-        paymentMethod: 'Stripe Checkout Session',
-      }),
-    ];
-
-    if (env.DB) {
-      sideEffects.push(
-        recordInD1(env.DB, {
-          id: data.id,
-          amount: unitAmount,
-          currency,
-          name,
-          message,
-          country: clientCountry,
-          ip: clientIp,
-          status: 'session_created',
-        }),
-      );
-    }
-
-    if (typeof context.waitUntil === 'function') {
-      context.waitUntil(Promise.all(sideEffects));
-    } else {
-      await Promise.all(sideEffects);
+        status: 'session_created',
+      });
+      if (typeof context.waitUntil === 'function') {
+        context.waitUntil(d1Task);
+      } else {
+        await d1Task;
+      }
     }
 
     return jsonResponse(request, env, {
