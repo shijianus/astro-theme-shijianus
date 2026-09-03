@@ -54,3 +54,9 @@
 - [x] 推送所有分支与代码至 remote (`origin` 与 `cf`)：`git push --all origin && git push cf main` 同步完成。
 - [x] 针对 `https://blog.epocanvas.com` 进行线上全链路 Playwright 交互测试（Google Pay / Apple Pay 国际收银台、多币种本地化定价、Stripe 内嵌安全结账、TOC 等完整测试通过）。
 - [x] 提交并打印全流程 Commit Hash，完成交付。
+
+### Task 4: Apple Pay 域名签名验证与 Stripe 支付链路全景排查
+- [x] 注入官方 Apple Pay Domain Association 验证文件 `public/.well-known/apple-developer-merchantid-domain-association` (`59f770b`)。
+- [x] 多端全量同步至 `origin` 与 `cf` (`shijianus.github.io`) 仓库。
+- [x] 梳理 Apple Pay 在 Stripe Web 端展示的完整必要条件（Stripe 域名验证、Apple 硬件/Safari 沙盒、Apple Wallet 绑卡状态）并输出标准操作手册。
+
