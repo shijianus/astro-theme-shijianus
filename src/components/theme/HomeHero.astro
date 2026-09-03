@@ -21,14 +21,20 @@ const categoryItems = siteConfig.home.categories.slice(0, 3);
 const showcase = siteConfig.home.hero.showcase;
 const showcaseTiles = [...showcase.tiles, ...showcase.tiles];
 const topDeck = siteConfig.home.hero.topDeck;
+const fallbackDefaultCover = siteConfig.post?.hero?.fallbackImage || '/media/shijianus/default.png';
 const todayCardConfig = topDeck.todayCard ?? {
   tips: siteConfig.home.announcement.eyebrow,
   title: todayPost ? todayPost.data.title : siteConfig.home.announcement.title,
   href: todayPost ? getPostPath(todayPost) : siteConfig.home.announcement.href,
-  cover: todayPost ? resolveCover(todayPost) : siteConfig.post.hero.fallbackImage,
+  cover: todayPost ? resolveCover(todayPost) : fallbackDefaultCover,
   coverAlt: todayPost ? resolveCoverAlt(todayPost) : '推荐封面',
 };
-const isExternalTodayCard = Boolean(topDeck.todayCard?.href && /^https?:\/\//i.test(topDeck.todayCard.href));
+const rawTodayCardCover = todayCardConfig?.cover;
+const todayCardCover =
+  rawTodayCardCover && typeof rawTodayCardCover === 'string' && rawTodayCardCover.trim().length > 0
+    ? rawTodayCardCover.trim()
+    : (todayPost ? resolveCover(todayPost) : fallbackDefaultCover);
+const isExternalTodayCard = Boolean(todayCardConfig?.href && /^https?:\/\//i.test(todayCardConfig.href));
 const randomHref = siteConfig.navigation.quickActions[0]?.href ?? (latestPosts[0] ? getPostPath(latestPosts[0]) : '/archives/');
 const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon> = {
   boxes: Boxes,
@@ -125,8 +131,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               src={resolveCover(mobileFocusPost)}
               alt={resolveCoverAlt(mobileFocusPost)}
               loading="eager"
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+              decoding="async"
+              data-fallback-src={fallbackDefaultCover}
+              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || fallbackDefaultCover}
+              onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackDefaultCover}')){this.src='${fallbackDefaultCover}';}else{this.onerror=null;}}else{this.onerror=null;}`}
             />
             <span class="home-mobile-focus-card__body">
               <span class="home-mobile-focus-card__title">{mobileFocusPost.data.title}</span>
@@ -152,8 +160,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                 src={resolveCover(entry)}
                 alt={resolveCoverAlt(entry)}
                 loading={index === 0 ? 'eager' : 'lazy'}
-                data-fallback-src={siteConfig.post.hero.fallbackImage}
-                data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                decoding="async"
+                data-fallback-src={fallbackDefaultCover}
+                data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || fallbackDefaultCover}
+                onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackDefaultCover}')){this.src='${fallbackDefaultCover}';}else{this.onerror=null;}}else{this.onerror=null;}`}
               />
             </a>
           </div>
@@ -180,11 +190,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
             </div>
             <img
               class="todayCard-cover"
-              src={todayCardConfig.cover}
+              src={todayCardCover}
               alt={todayCardConfig.coverAlt ?? todayCardConfig.title}
               loading="eager"
-              data-fallback-src={siteConfig.post.hero.fallbackImage}
-              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+              decoding="async"
+              data-fallback-src={fallbackDefaultCover}
+              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || fallbackDefaultCover}
+              onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackDefaultCover}')){this.src='${fallbackDefaultCover}';}else{this.onerror=null;}}else{this.onerror=null;}`}
             />
           </a>
           <div class="banner-button-group">

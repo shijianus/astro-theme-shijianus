@@ -128,7 +128,11 @@ async function updateD1Record(
   }
 }
 
-export async function onRequest(context: { request: Request; env: AppEnv }): Promise<Response> {
+export async function onRequest(context: {
+  request: Request;
+  env: AppEnv;
+  waitUntil?: (promise: Promise<unknown>) => void;
+}): Promise<Response> {
   const { request, env } = context;
 
   if (request.method === 'OPTIONS') {
@@ -152,27 +156,38 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
     (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
     '7963161588';
 
-  // MUST AWAIT so Cloudflare Pages worker does not terminate beforehand!
-  await notifyTelegramBot(tgToken, tgChatId, {
-    id: payload?.id,
-    amount: payload?.amount,
-    currency: payload?.currency || 'USD',
-    name: payload?.name,
-    message: payload?.message,
-    country,
-    ip: clientIp,
-  });
-
-  if (env.DB) {
-    await updateD1Record(env.DB, {
-      id: payload?.id || `sp_${Date.now()}`,
+  // Background tasks — keep alive via waitUntil so the response returns immediately
+  // (TG API can take seconds; blocking the response here froze the UI spinner)
+  const tasks: Promise<unknown>[] = [
+    notifyTelegramBot(tgToken, tgChatId, {
+      id: payload?.id,
       amount: payload?.amount,
       currency: payload?.currency || 'USD',
       name: payload?.name,
       message: payload?.message,
       country,
       ip: clientIp,
-    });
+    }),
+  ];
+
+  if (env.DB) {
+    tasks.push(
+      updateD1Record(env.DB, {
+        id: payload?.id || `sp_${Date.now()}`,
+        amount: payload?.amount,
+        currency: payload?.currency || 'USD',
+        name: payload?.name,
+        message: payload?.message,
+        country,
+        ip: clientIp,
+      }),
+    );
+  }
+
+  if (typeof context.waitUntil === 'function') {
+    context.waitUntil(Promise.all(tasks));
+  } else {
+    await Promise.all(tasks);
   }
 
   return jsonResponse(request, env, {

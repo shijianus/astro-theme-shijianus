@@ -214,8 +214,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
                         src={resolveDisplayCover(entry, true)}
                         alt={getDisplayPostTitle(entry, true)}
                         loading="lazy"
-                        data-fallback-src={siteConfig.post.hero.fallbackImage}
-                        data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                        decoding="async"
+                        data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+                        data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+                        onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
                       />
                     </span>
                     <span class="content">
@@ -392,8 +394,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
                               src={resolveDisplayCover(entry, true)}
                               alt={getDisplayPostTitle(entry, true)}
                               loading="lazy"
-                              data-fallback-src={siteConfig.post.hero.fallbackImage}
-                              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                              decoding="async"
+                              data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+                              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+                              onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
                             />
                           </span>
                           <span class="content">
@@ -496,8 +500,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
                       src={resolveDisplayCover(entry, true)}
                       alt={getDisplayPostTitle(entry, true)}
                       loading="lazy"
-                      data-fallback-src={siteConfig.post.hero.fallbackImage}
-                      data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage}
+                      decoding="async"
+                      data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+                      data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+                      onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
                     />
                   </span>
                   <span class="content">

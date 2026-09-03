@@ -70,11 +70,19 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
 );
 
 const StripeLogo: React.FC<{ className?: string }> = ({ className = 'h-4 w-auto' }) => (
-  <svg className={className} viewBox="0 0 60 25" fill="none" aria-label="Stripe">
-    <path
-      d="M5.45 10.22c0-.78.64-1.08 1.7-1.08 1.52 0 3.44.46 4.96 1.28V6.48c-1.66-.66-3.3-.92-4.96-.92C3.93 5.56 1.5 7.3 1.5 10.4c0 4.74 6.52 3.98 6.52 6.02 0 .92-.8 1.22-1.92 1.22-1.66 0-3.78-.68-5.46-1.6v3.98c1.86.8 3.74 1.14 5.46 1.14 4.16 0 7-2.06 7-5.22 0-5.12-6.65-4.2-6.65-5.72zm17.2 8.52V6.06h-4.06v16.58l4.06-3.9zm.32-12.52c0-1.16-.9-2.06-2.06-2.06-1.16 0-2.06.9-2.06 2.06 0 1.16.9 2.06 2.06 2.06 1.16 0 2.06-.9 2.06-2.06zM33.1 6c-1.64 0-2.7.78-3.3 1.32L29.6 6.3h-3.8v18.06l4.06-.86V21.4c.62.44 1.52 1.06 3.2 1.06 3.22 0 6.16-2.6 6.16-8.32C39.22 8.9 36.26 6 33.1 6zm-.72 12.86c-1.06 0-1.68-.38-2.12-.84v-6.6c.48-.52 1.12-.88 2.12-.88 1.62 0 2.74 1.82 2.74 4.16 0 2.38-1.1 4.16-2.74 4.16zm13.12-8.6c.84 0 1.26.58 1.44 1.58h-3.12c.2-1.06.82-1.58 1.68-1.58zm5.36 3.8c0-4.16-2.18-8.06-6.44-8.06-4.3 0-6.9 3.38-6.9 7.82 0 5.18 2.92 7.82 7.28 7.82 2.1 0 3.68-.46 4.88-1.24v-3.24c-1.2.82-2.58 1.28-4.32 1.28-1.7 0-3.2-.74-3.4-3.26h8.82c.02-.28.08-.82.08-1.12z"
-      fill="#635BFF"
-    />
+  <svg
+    viewBox="54 36 360 150"
+    fill="currentColor"
+    className={className}
+    aria-label="Stripe"
+  >
+    <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3 c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
+    <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3 c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1 c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
+    <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
+    <rect x="223.8" y="69.3" width="25.1" height="87.5" />
+    <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
+    <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135 c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
+    <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6 C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7 c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
   </svg>
 );
 
@@ -177,7 +185,15 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const handleOpenStripeModal = () => {
     setIsPinned(false);
     setIsOpen(false);
-    window.dispatchEvent(new CustomEvent('open-stripe-modal', { detail: { region, amount: 5 } }));
+    window.dispatchEvent(
+      new CustomEvent('open-stripe-modal', {
+        detail: {
+          region,
+          country: region === 'CN' ? 'CN' : region === 'HK' ? 'HK' : region === 'GB' ? 'GB' : undefined,
+          amount: 5,
+        },
+      })
+    );
   };
 
   const togglePinned = (e: React.MouseEvent) => {
@@ -245,25 +261,45 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
 
   /* ── Stripe / 国际收银台 Button ── */
   const StripeButton = () => (
-    <button
-      type="button"
-      onClick={handleOpenStripeModal}
-      className="w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-gradient-to-r from-[#635BFF] to-[#8B5CF6] hover:from-[#4f46e5] hover:to-[#7c3aed] text-white shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 active:scale-[0.99] transition-all cursor-pointer group"
-    >
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-          <CreditCard className="w-4.5 h-4.5" />
+    <div className="flex justify-center w-full">
+      <button
+        type="button"
+        onClick={handleOpenStripeModal}
+        className="relative w-full flex items-center justify-between px-3.5 py-3 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 ease-out bg-white dark:bg-[#181b22] text-slate-800 dark:text-slate-100 border border-slate-200/90 dark:border-white/10 shadow-sm hover:bg-[linear-gradient(115deg,#5A54FF_0%,#635BFF_35%,#8B5CF6_100%)] hover:text-white hover:border-transparent hover:shadow-[0_10px_28px_-8px_rgba(99,91,255,0.55)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#13151b]"
+      >
+        {/* sheen sweep on hover */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-[18deg] bg-gradient-to-r from-transparent via-white/25 to-transparent translate-x-[-120%] group-hover:translate-x-[420%] transition-transform duration-700 ease-out"
+        />
+
+        <div className="relative flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/10 group-hover:bg-white/20 ring-1 ring-slate-200/80 dark:ring-white/10 group-hover:ring-white/30 flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] group-hover:scale-105 transition-all duration-300 text-[#635BFF] dark:text-violet-400 group-hover:text-white">
+            <CreditCard className="w-[18px] h-[18px] drop-shadow-sm" />
+          </div>
+          <div className="text-left min-w-0">
+            <div className="text-xs sm:text-[13px] font-bold leading-tight tracking-[0.01em] flex items-center gap-1.5 whitespace-nowrap">
+              <span>Stripe 国际收银台</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-white/10 group-hover:bg-white/20 text-[#635BFF] dark:text-violet-300 group-hover:text-white ring-1 ring-violet-200 dark:ring-white/15 group-hover:ring-white/25 text-[9px] font-semibold tracking-wider uppercase transition-colors">
+                推荐
+              </span>
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 group-hover:text-white/80 mt-0.5 leading-none transition-colors truncate">
+              信用卡 · Apple Pay · Google Pay · Link
+            </div>
+          </div>
         </div>
-        <div className="text-left">
-          <div className="text-sm font-bold leading-tight">Stripe 国际收银台</div>
-          <div className="text-[11px] text-white/70 mt-0.5">信用卡 · Apple Pay · Google Pay · Link</div>
+
+        <div className="relative flex items-center gap-2 shrink-0 ml-1.5">
+          <span className="flex items-center px-1.5 py-1 rounded-lg bg-slate-100 dark:bg-white/5 group-hover:bg-white/15 ring-1 ring-slate-200/60 dark:ring-white/10 group-hover:ring-white/20 backdrop-blur-sm transition-colors text-[#635BFF] dark:text-white group-hover:text-white">
+            <StripeLogo className="h-3.5 w-auto" />
+          </span>
+          <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 group-hover:bg-white/25 ring-1 ring-slate-200/60 dark:ring-white/10 group-hover:ring-white/25 flex items-center justify-center text-slate-400 dark:text-slate-300 group-hover:text-white transition-colors duration-300">
+            <ChevronDown className="w-3 h-3 -rotate-90 group-hover:translate-x-0.5 transition-transform duration-300" />
+          </span>
         </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <StripeLogo className="h-4 w-auto opacity-80" />
-        <ChevronDown className="w-4 h-4 -rotate-90 opacity-60 group-hover:translate-x-0.5 transition-transform" />
-      </div>
-    </button>
+      </button>
+    </div>
   );
 
   return (

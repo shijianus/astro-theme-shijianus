@@ -219,6 +219,119 @@ function stripeAndGeoDevIntegration() {
             }
             return;
           }
+          if (req.url && (req.url === '/api/create-checkout-session' || req.url.startsWith('/api/create-checkout-session?')) && req.method === 'POST') {
+            try {
+              let bodyStr = '';
+              req.on('data', (chunk) => {
+                bodyStr += chunk;
+              });
+              req.on('end', async () => {
+                try {
+                  const payload = JSON.parse(bodyStr || '{}');
+                  const amount = typeof payload?.amount === 'number' ? payload.amount : 5;
+                  const currency = (payload?.currency || 'usd').toLowerCase();
+                  const name = payload?.name?.trim() || '';
+                  const message = payload?.message?.trim() || '';
+                  const clientCountry = payload?.country || 'GLOBAL';
+                  const returnUrl = payload?.returnUrl || 'http://localhost:4321/?stripe_return=1&session_id={CHECKOUT_SESSION_ID}';
+
+                  const ZERO_DECIMAL = new Set(['bif','clp','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
+                  let unitAmount = amount;
+                  if (!ZERO_DECIMAL.has(currency)) {
+                    unitAmount = Math.round(amount * 100);
+                    if (unitAmount < 50) unitAmount = 50;
+                  }
+
+                  const stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
+                  if (!stripeSecretKey) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ ok: false, error: 'STRIPE_SECRET_KEY is not configured in environment.' }));
+                    return;
+                  }
+
+                  const params = new URLSearchParams();
+                  params.set('ui_mode', 'embedded');
+                  params.set('mode', 'payment');
+                  params.set('return_url', returnUrl);
+                  params.set('line_items[0][price_data][currency]', currency);
+                  params.set('line_items[0][price_data][unit_amount]', String(unitAmount));
+                  params.set('line_items[0][price_data][product_data][name]', 'Support EpoCanvas Blog');
+                  params.set('line_items[0][price_data][product_data][description]', 'Thank you for your generous support!');
+                  params.set('line_items[0][quantity]', '1');
+                  params.set('customer_creation', 'always');
+                  if (name) params.set('metadata[sponsor_name]', name);
+                  if (message) params.set('metadata[sponsor_message]', message);
+                  params.set('metadata[country]', clientCountry);
+                  params.set('metadata[source]', 'blog_reward_embedded_checkout');
+                  params.set('metadata[payment_method]', 'Stripe Checkout Session');
+
+                  const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${stripeSecretKey}`,
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                      'Stripe-Version': '2025-06-30.basil',
+                    },
+                    body: params.toString(),
+                  });
+                  const data = await stripeRes.json();
+                  if (!stripeRes.ok || data.error) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(400);
+                    res.end(JSON.stringify({ ok: false, error: data.error?.message || 'Stripe error' }));
+                    return;
+                  }
+
+                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
+                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
+                  if (tgToken && tgChatId) {
+                    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const displayAmount = ZERO_DECIMAL.has(currency)
+                      ? `${unitAmount} ${currency.toUpperCase()}`
+                      : `${(unitAmount / 100).toFixed(2)} ${currency.toUpperCase()}`;
+                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+                    const text = [
+                      `🎉 <b>收到新的博客赞赏发起 (Checkout Session)</b>`,
+                      `━━━━━━━━━━━━━━━━━━`,
+                      `💰 <b>赞赏金额</b>: <code>${displayAmount}</code>`,
+                      `👤 <b>赞赏者</b>: <b>${esc(name || '匿名支持者')}</b>`,
+                      `💬 <b>留言寄语</b>: ${esc(message || '（未留言）')}`,
+                      `🌍 <b>地区</b>: <code>${esc(clientCountry)}</code> (Dev Server)`,
+                      `💳 <b>支付通道</b>: Stripe Checkout Session (Embedded)`,
+                      `🆔 <b>订单标识</b>: <code>${esc(data.id || 'N/A')}</code>`,
+                      `🕒 <b>提交时间</b>: <code>${nowStr}</code>`,
+                      `━━━━━━━━━━━━━━━━━━`,
+                    ].join('\n');
+                    fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'HTML' }),
+                    }).catch(() => {});
+                  }
+
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(200);
+                  res.end(
+                    JSON.stringify({
+                      ok: true,
+                      clientSecret: data.client_secret,
+                      sessionId: data.id,
+                      amount,
+                      currency,
+                    }),
+                  );
+                } catch (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.writeHead(500);
+                  res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
+                }
+              });
+            } catch (err) {
+              next();
+            }
+            return;
+          }
           if (req.url && (req.url === '/api/record-blessing' || req.url.startsWith('/api/record-blessing?')) && req.method === 'POST') {
             try {
               let bodyStr = '';

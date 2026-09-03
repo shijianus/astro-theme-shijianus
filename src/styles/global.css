@@ -146,14 +146,18 @@ a:hover {
   color: var(--theme-main);
 }
 
-button {
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
+/* 必须放在 @layer base 中：无层级的 button 重置会压过 Tailwind utilities 层，
+   导致按钮上的 px-*/py-*/bg-*/text-* 等工具类全部失效 */
+@layer base {
+  button {
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
 }
 
 img {
@@ -1437,7 +1441,8 @@ html.theme-ready body.theme-body #footer {
   border: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
   border-radius: 26px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(9, 13, 24, 0.12));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(9, 13, 24, 0.12)),
+    #181c27 url('/media/shijianus/default.png') center/cover no-repeat;
   box-shadow: 0 24px 40px -22px rgba(14, 20, 36, 0.42);
   cursor: pointer;
   pointer-events: all;
@@ -1544,7 +1549,8 @@ html.theme-ready body.theme-body #footer {
   height: 100%;
   object-fit: cover; /* 保证图片铺满不留白 */
   z-index: 1;
-  transition: 0.3s;
+  background: #181c27 url('/media/shijianus/default.png') center/cover no-repeat;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .topGroup .todayCard:hover .todayCard-cover {

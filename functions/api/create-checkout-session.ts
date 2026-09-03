@@ -35,7 +35,9 @@ async function notifyTelegramBot(
 ) {
   if (!token || !chatId) return;
   try {
-    const formattedAmount = `${data.amount} ${data.currency.toUpperCase()}`;
+    const formattedAmount = ZERO_DECIMAL_CURRENCIES.has(data.currency)
+      ? `${data.amount} ${data.currency.toUpperCase()}`
+      : `${(data.amount / 100).toFixed(2)} ${data.currency.toUpperCase()}`;
     const sponsorName = sanitizeHtml(data.name?.trim() ? data.name.trim() : '匿名支持者');
     const sponsorMsg = sanitizeHtml(data.message?.trim() ? data.message.trim() : '（未留言）');
     const location = sanitizeHtml(data.country ? data.country : 'GLOBAL');
@@ -132,7 +134,11 @@ async function recordInD1(
 
 const ZERO_DECIMAL_CURRENCIES = new Set(['bif','clp','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
 
-export async function onRequest(context: { request: Request; env: AppEnv }): Promise<Response> {
+export async function onRequest(context: {
+  request: Request;
+  env: AppEnv;
+  waitUntil?: (promise: Promise<unknown>) => void;
+}): Promise<Response> {
   const { request, env } = context;
 
   if (request.method === 'OPTIONS') {
@@ -211,37 +217,40 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       return jsonResponse(request, env, { ok: false, error: errorMsg }, { status: 400 });
     }
 
-    const tgToken =
-      env.TELEGRAM_BOT_TOKEN ||
-      (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN) ||
-      '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-    const tgChatId =
-      env.TELEGRAM_CHAT_ID ||
-      (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
-      '7963161588';
-
-    await notifyTelegramBot(tgToken, tgChatId, {
-      amount: unitAmount,
-      currency,
-      name,
-      message,
-      country: clientCountry,
-      ip: clientIp,
-      id: data.id,
-      paymentMethod: 'Stripe Checkout Session',
-    });
-
-    if (env.DB) {
-      await recordInD1(env.DB, {
-        id: data.id,
+    // Background side-effects (TG notify + D1) — keep alive via waitUntil so the
+    // clientSecret response returns immediately instead of waiting on the TG API
+    const sideEffects: Promise<unknown>[] = [
+      notifyTelegramBot(telegramToken, telegramChatId, {
         amount: unitAmount,
         currency,
         name,
         message,
         country: clientCountry,
         ip: clientIp,
-        status: 'session_created',
-      });
+        id: data.id,
+        paymentMethod: 'Stripe Checkout Session',
+      }),
+    ];
+
+    if (env.DB) {
+      sideEffects.push(
+        recordInD1(env.DB, {
+          id: data.id,
+          amount: unitAmount,
+          currency,
+          name,
+          message,
+          country: clientCountry,
+          ip: clientIp,
+          status: 'session_created',
+        }),
+      );
+    }
+
+    if (typeof context.waitUntil === 'function') {
+      context.waitUntil(Promise.all(sideEffects));
+    } else {
+      await Promise.all(sideEffects);
     }
 
     return jsonResponse(request, env, {

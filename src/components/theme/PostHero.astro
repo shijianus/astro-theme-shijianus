@@ -79,8 +79,10 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
         loading="eager"
         decoding="async"
         fetchpriority="high"
-        data-image-fallback={fallbackImage}
+        data-fallback-src={fallbackImage || '/media/shijianus/default.png'}
+        data-image-fallback={fallbackImage || '/media/shijianus/default.png'}
         data-remote-fallback={remoteFallbackImage}
+        onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackImage || '/media/shijianus/default.png'}')){this.src='${fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
       />
     )}
     <div class="post-hero__overlay"></div>
