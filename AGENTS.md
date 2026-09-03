@@ -75,3 +75,9 @@
 - [x] 严格限制所有敏感配置仅由环境变量 (`.env`, `.dev.vars`, Cloudflare Pages Environment Variables) 注入，若未配置则静默降级或报错提示，严禁在源码中写入任何真实/测试密钥。
 - [x] 新增 `.env.example` 规范模板，并在 `.gitignore` 中完善环境变量白名单与保护规则。
 - [x] 执行全局构建与编译验证，确保本地开发与生产端无任何敏感凭证泄漏。
+
+### Task 8: 生产端 (Cloudflare Pages) 新凭证部署与线上全链路验证 (`c6ce400`)
+- [x] 通过 Wrangler Secrets 批量同步加密上传新 `TELEGRAM_BOT_TOKEN`、`TELEGRAM_CHAT_ID` 与 `STRIPE_SECRET_KEY` 至 `shijianus-blog` 及 `shijianus-github-io` 生产环境变量池。
+- [x] 构建最新 Functions 运行时并全量部署至 Cloudflare Pages 生产边缘节点。
+- [x] 针对生产域名 `https://blog.epocanvas.com` 进行真实端到端 API 与浏览器交互审计，成功捕获生产端 `200 OK` 响应并触发 Telegram 机器人实时送达。
+
