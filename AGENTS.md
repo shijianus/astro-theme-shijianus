@@ -61,7 +61,7 @@
 - [x] 梳理 Apple Pay 在 Stripe Web 端展示的完整必要条件（Stripe 域名验证、Apple 硬件/Safari 沙盒、Apple Wallet 绑卡状态）并输出标准操作手册。
 
 ### Task 5: Stripe 内嵌收银台零刷新与原地寄语表单切换改造
-- [x] 在 `create-checkout-session`（Cloudflare Pages 生产与开发环境）中配置 `redirect_on_completion: 'if_required'`，消除支付完成后强制重定向跳转与页面硬刷新。
+- [x] 在 `create-checkout-session`（Cloudflare Pages 生产与开发环境）中配置 `redirect_on_completion: 'if_required'`，消除支付完成后强制重定向跳转与页面硬刷新 (`d0b10d3`)。
 - [x] 优化 `RewardModal` 中的 `onComplete` 生命周期回调，实现自动执行 `checkout.destroy()` 优雅销毁 Stripe 表单 DOM 并 0 秒原地平滑切换到寄语表单。
 - [x] 编写并执行全链路 Playwright E2E 自动化测试（`scratch/verify-no-redirect-live.cjs`），验证页面主框架导航增量严格为 0，零白屏、零刷新。
 
