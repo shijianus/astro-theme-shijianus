@@ -96,7 +96,7 @@ async function runTests() {
       };
     });
 
-    // 1. Scroll 200px before #post-comment meets #nav
+    // 1. Scroll 200px before #post-comment meets #nav (post-comment top is below nav)
     await page.evaluate((top) => window.scrollTo(0, top), metrics.commentTop - metrics.navBottom - 200);
     await new Promise(r => setTimeout(r, 100));
     isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
@@ -117,19 +117,33 @@ async function runTests() {
       throw new Error('Pagination is not positioned in bottom right corner');
     }
 
-    // 3. Scroll back UP (above #nav) - should hide
-    await page.evaluate((top) => window.scrollTo(0, top), metrics.commentTop - metrics.navBottom - 200);
+    // 3. Scroll further DOWN (e.g. deep into comments / footer) - should STAY visible
+    await page.evaluate((bottom) => window.scrollTo(0, bottom + 100), metrics.commentBottom);
     await new Promise(r => setTimeout(r, 100));
     isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
-    console.log(`Requirement 1/3 - Scrolled back UP (below nav / out of view downwards), is-visible: ${isVisible} (Expected: false)`);
-    if (isVisible) throw new Error('Should hide when scrolling back UP');
+    console.log(`Requirement 1/3 - Scrolled further DOWN past comments, is-visible: ${isVisible} (Expected: true)`);
+    if (!isVisible) throw new Error('SHOULD remain visible when scrolling further down past comments');
 
-    // 4. Scroll DOWN again to #post-comment - should reappear
+    // 4. Scroll UP into #post-comment (comment is in viewport, comment.top < window.innerHeight) - should STAY visible
+    await page.evaluate((top) => window.scrollTo(0, top - 300), metrics.commentTop);
+    await new Promise(r => setTimeout(r, 100));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    console.log(`Requirement 1/3 - Scrolled UP while #post-comment is still in viewport, is-visible: ${isVisible} (Expected: true)`);
+    if (!isVisible) throw new Error('SHOULD remain visible while #post-comment is still visible on screen');
+
+    // 5. Scroll UP until #post-comment completely exits the screen at the bottom ("向下从荧幕中消失")
+    await page.evaluate((top) => window.scrollTo(0, Math.max(0, top - 900)), metrics.commentTop);
+    await new Promise(r => setTimeout(r, 100));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    console.log(`Requirement 1/3 - Scrolled UP so #post-comment exits downwards from screen, is-visible: ${isVisible} (Expected: false)`);
+    if (isVisible) throw new Error('SHOULD hide when #post-comment exits downwards from screen');
+
+    // 6. Scroll DOWN again to #post-comment meeting #nav - should reappear
     await page.evaluate((top) => window.scrollTo(0, top), metrics.commentTop - metrics.navBottom + 20);
     await new Promise(r => setTimeout(r, 100));
     isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
-    console.log(`Requirement 1 - Scrolled DOWN again to #post-comment, is-visible: ${isVisible} (Expected: true)`);
-    if (!isVisible) throw new Error('Should reappear when scrolling back DOWN to #post-comment');
+    console.log(`Requirement 1 - Scrolled DOWN again to #post-comment meeting #nav, is-visible: ${isVisible} (Expected: true)`);
+    if (!isVisible) throw new Error('Should reappear when scrolling back DOWN to #post-comment meeting #nav');
 
     // 5. Requirement 4: Click close button
     console.log('Requirement 4 - Clicking .pagination-close...');

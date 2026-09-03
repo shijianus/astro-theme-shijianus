@@ -88,3 +88,9 @@
 - [x] 关闭状态生命周期控制：点击 `.pagination-close` (×) 按钮后立即收起并标记已关闭，在该次页面浏览过程中不再展示，直到用户刷新界面（F5/Reload）后才重置。
 - [x] 编写并执行自动化端到端测试套件（`scripts/verify-pagination-post.mjs`），全量验证出现位置、出屏隐藏、关闭后不重复展示及刷新后恢复逻辑。
 
+### Task 10: 文章末尾下一篇推荐 (Pagination Post) 自动消失时机精准优化 (`b837531`)
+- [x] 优化消失时机判定：进入评论区后持续保持显示，仅当用户向上滚动导致 `#post-comment` 完全向下移出屏幕底部（`commentRect.top >= viewportHeight`）时才自动隐藏。
+- [x] 优化二次激活机制：当 `#post-comment` 从底部移出消失后，若用户再次向下滚动并使 `#post-comment` 顶部与 `#nav` 平齐时重新激活。
+- [x] 自动化测试套件（`scripts/verify-pagination-post.mjs`）全量更新与端到端验证通过。
+
+

@@ -45,6 +45,7 @@ const { nextPost = null } = Astro.props;
 
         const closeButton = root.querySelector('[data-pagination-close]');
         let dismissed = false;
+        let active = false;
         let ticking = false;
 
         // Keep the popup out of filtered content layers so fixed positioning is
@@ -79,12 +80,19 @@ const { nextPost = null } = Astro.props;
           const commentRect = comments.getBoundingClientRect();
           const navRect = nav instanceof HTMLElement ? nav.getBoundingClientRect() : null;
           const navThreshold = navRect ? navRect.bottom : 60;
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-          // 1. post-comment top has scrolled up to meet the nav header (commentRect.top <= navThreshold)
-          // 2. post-comment has not scrolled completely past the top of the viewport (commentRect.bottom > 0)
-          const shouldBeVisible = commentRect.top <= navThreshold && commentRect.bottom > 0;
+          // 1. Trigger appearance when post-comment top scrolls up to meet or pass the nav header
+          if (commentRect.top <= navThreshold) {
+            active = true;
+          }
 
-          if (shouldBeVisible) {
+          // 2. Automatically disappear when post-comment moves downwards completely out of the viewport
+          if (commentRect.top >= viewportHeight) {
+            active = false;
+          }
+
+          if (active) {
             show();
           } else {
             hide();
@@ -102,6 +110,7 @@ const { nextPost = null } = Astro.props;
           event.preventDefault();
           event.stopPropagation();
           dismissed = true;
+          active = false;
           root.dataset.dismissed = 'true';
           hide();
         });
