@@ -225,6 +225,7 @@ export async function onRequest(context: {
     params.set('ui_mode', 'embedded');
     params.set('mode', 'payment');
     params.set('return_url', returnUrl);
+    params.set('redirect_on_completion', 'if_required');
     if (stripeLocale && stripeLocale !== 'auto') {
       params.set('locale', stripeLocale);
     }
