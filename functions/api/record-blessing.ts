@@ -1,93 +1,14 @@
 import type { AppEnv } from '../_lib/types';
 import { optionsResponse, jsonResponse, safeReadJson } from '../_lib/http';
-
-interface BlessingPayload {
-  id?: string;
-  amount?: number;
-  currency?: string;
-  name?: string;
-  message?: string;
-  country?: string;
-}
-
-function sanitizeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-async function notifyTelegramBot(
-  token: string,
-  chatId: string,
-  data: {
-    id?: string;
-    amount?: number;
-    currency?: string;
-    name?: string;
-    message?: string;
-    country?: string;
-    ip?: string;
-  },
-) {
-  if (!token || !chatId) return;
-  try {
-    const formattedAmount = data.amount
-      ? `$${(data.amount / 100).toFixed(2)} ${(data.currency || 'USD').toUpperCase()}`
-      : '已支付';
-    const sponsorName = sanitizeHtml(data.name?.trim() ? data.name.trim() : '匿名支持者');
-    const sponsorMsg = sanitizeHtml(data.message?.trim() ? data.message.trim() : '（支持作者，感谢创作！）');
-    const location = sanitizeHtml(data.country ? data.country : 'GLOBAL');
-    const clientIp = sanitizeHtml(data.ip || 'Unknown');
-    const nowStr = new Date().toLocaleString('zh-CN', {
-      timeZone: 'Asia/Shanghai',
-      hour12: false,
-    });
-
-    const text = [
-      `🎉 <b>收到赞赏者的寄语祝福</b>`,
-      `━━━━━━━━━━━━━━━━━━`,
-      `💰 <b>赞赏金额</b>: <code>${formattedAmount}</code> <i>(支付已完成 ✓)</i>`,
-      `👤 <b>赞赏者</b>: <b>${sponsorName}</b>`,
-      `💬 <b>寄语祝福</b>: ${sponsorMsg}`,
-      `🌍 <b>地区 / IP</b>: <code>${location}</code> (${clientIp})`,
-      `💳 <b>支付通道</b>: Stripe Checkout`,
-      `🆔 <b>订单标识</b>: <code>${sanitizeHtml(data.id || 'N/A')}</code>`,
-      `🕒 <b>完成时间</b>: <code>${nowStr}</code>`,
-      `━━━━━━━━━━━━━━━━━━`,
-    ].join('\n');
-
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'HTML',
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Telegram blessing send error:', res.status, errText);
-    }
-  } catch (tgErr) {
-    console.error('Telegram notification error:', tgErr);
-  }
-}
+import {
+  sendTelegramNotification,
+  type TelegramBlessingPayload,
+  ZERO_DECIMAL_CURRENCIES,
+} from '../_lib/telegram-config';
 
 async function updateD1Record(
   db: any,
-  data: {
-    id: string;
-    amount?: number;
-    currency?: string;
-    name?: string;
-    message?: string;
-    country?: string;
-    ip?: string;
-  },
+  data: TelegramBlessingPayload,
 ) {
   if (!db) return;
   try {
@@ -108,6 +29,12 @@ async function updateD1Record(
       )
       .run();
 
+    const cur = (data.currency || 'USD').toLowerCase();
+    const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(cur);
+    const humanAmount = typeof data.amount === 'number'
+      ? (isZeroDecimal ? data.amount : data.amount / 100)
+      : 5;
+
     await db
       .prepare(
         `INSERT OR REPLACE INTO sponsorships (id, amount, currency, name, message, country, ip, status, updated_at)
@@ -115,8 +42,8 @@ async function updateD1Record(
       )
       .bind(
         data.id || `sp_${Date.now()}`,
-        (data.amount || 500) / 100,
-        (data.currency || 'USD').toUpperCase(),
+        humanAmount,
+        cur.toUpperCase(),
         data.name || 'Anonymous',
         data.message || '',
         data.country || 'GLOBAL',
@@ -143,7 +70,7 @@ export async function onRequest(context: {
     return jsonResponse(request, env, { ok: false, error: 'Method Not Allowed' }, { status: 405 });
   }
 
-  const payload = await safeReadJson<BlessingPayload>(request);
+  const payload = await safeReadJson<TelegramBlessingPayload>(request);
   const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
   const country = payload?.country || request.headers.get('cf-ipcountry') || 'GLOBAL';
 
@@ -156,32 +83,26 @@ export async function onRequest(context: {
     (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
     '7963161588';
 
+  const notificationData: TelegramBlessingPayload = {
+    id: payload?.id,
+    amount: payload?.amount,
+    currency: payload?.currency || 'usd',
+    name: payload?.name,
+    message: payload?.message,
+    country,
+    ip: clientIp,
+    paymentMethod: payload?.paymentMethod || 'Stripe Checkout (Cards / Apple Pay / Google Pay / Link)',
+    trigger: payload?.trigger || 'modal_closed',
+    completedAt: payload?.completedAt || new Date(),
+  };
+
   // Background tasks — keep alive via waitUntil so the response returns immediately
-  // (TG API can take seconds; blocking the response here froze the UI spinner)
   const tasks: Promise<unknown>[] = [
-    notifyTelegramBot(tgToken, tgChatId, {
-      id: payload?.id,
-      amount: payload?.amount,
-      currency: payload?.currency || 'USD',
-      name: payload?.name,
-      message: payload?.message,
-      country,
-      ip: clientIp,
-    }),
+    sendTelegramNotification(tgToken, tgChatId, notificationData),
   ];
 
   if (env.DB) {
-    tasks.push(
-      updateD1Record(env.DB, {
-        id: payload?.id || `sp_${Date.now()}`,
-        amount: payload?.amount,
-        currency: payload?.currency || 'USD',
-        name: payload?.name,
-        message: payload?.message,
-        country,
-        ip: clientIp,
-      }),
-    );
+    tasks.push(updateD1Record(env.DB, notificationData));
   }
 
   if (typeof context.waitUntil === 'function') {

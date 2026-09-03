@@ -13,6 +13,7 @@ import {
   Send,
   ChevronLeft,
 } from 'lucide-react';
+import { telegramNotificationConfig } from '../../config/telegram';
 
 /* ── Stripe lazy load ──────────────────────────────────────────────────────── */
 let stripePromise: Promise<any> | null = null;
@@ -331,6 +332,17 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const checkoutRef = useRef<HTMLDivElement>(null);
   const checkoutInstanceRef = useRef<any>(null);
   const pendingNotificationRef = useRef(false);
+  const donorNameRef = useRef(donorName);
+  const donorMsgRef = useRef(donorMsg);
+  const sentSessionIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    donorNameRef.current = donorName;
+  }, [donorName]);
+
+  useEffect(() => {
+    donorMsgRef.current = donorMsg;
+  }, [donorMsg]);
 
   /* current amount (derived) */
   const currentAmount = isCustomMode
@@ -500,13 +512,23 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     };
   }, [step, clientSecret, resolvedKey]);
 
-  /* ── 4. Unload / Close fallback for pending TG notification ───────────── */
-  const sendPendingNotification = (customName?: string, customMsg?: string) => {
-    if (!pendingNotificationRef.current || !sessionId) return;
+  /* ── 4. Unload / Close / Timeout fallback for Telegram notification ─────── */
+  const sendPendingNotification = (
+    customName?: string,
+    customMsg?: string,
+    triggerReason: string = 'modal_closed',
+  ) => {
+    if (!sessionId || !pendingNotificationRef.current || sentSessionIdsRef.current.has(sessionId)) {
+      return;
+    }
+    // Mark as sent immediately to enforce strictly once-per-session delivery
     pendingNotificationRef.current = false;
-    const finalName = (customName !== undefined ? customName : donorName).trim() || '匿名支持者';
-    const finalMsg = (customMsg !== undefined ? customMsg : donorMsg).trim() || '（用户未附带留言）';
+    sentSessionIdsRef.current.add(sessionId);
+
+    const finalName = (customName !== undefined ? customName : donorNameRef.current).trim();
+    const finalMsg = (customMsg !== undefined ? customMsg : donorMsgRef.current).trim();
     const amt = Math.round(paidAmount * (ZERO_DECIMAL.has(currencyConfig.code) ? 1 : 100));
+
     try {
       fetch('/api/record-blessing', {
         method: 'POST',
@@ -518,32 +540,76 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           name: finalName,
           message: finalMsg,
           country,
+          paymentMethod: 'Stripe Checkout (Cards / Apple Pay / Google Pay / Link)',
+          trigger: triggerReason,
         }),
       }).catch(() => {});
     } catch {}
   };
 
   useEffect(() => {
-    const onUnload = () => {
-      if (pendingNotificationRef.current && sessionId) {
+    if (step !== 'success' || !sessionId) return;
+
+    // A. 30-Minute Safety Timeout (30min 兜底超时，未人为关闭也自动判定并发送)
+    const timeoutMinutes = telegramNotificationConfig.idleTimeoutMinutes || 30;
+    const timeoutTimer = setTimeout(() => {
+      sendPendingNotification(donorNameRef.current, donorMsgRef.current, 'idle_timeout_30m');
+    }, timeoutMinutes * 60 * 1000);
+
+    // B. Non-natural exit handler (刷新、关闭标签页、断网、切页面等非自然关闭)
+    const handleNonNaturalExit = () => {
+      if (sessionId && pendingNotificationRef.current && !sentSessionIdsRef.current.has(sessionId)) {
         pendingNotificationRef.current = false;
+        sentSessionIdsRef.current.add(sessionId);
+
         const amt = Math.round(paidAmount * (ZERO_DECIMAL.has(currencyConfig.code) ? 1 : 100));
-        const data = JSON.stringify({
+        const payload = JSON.stringify({
           id: sessionId,
           amount: amt,
           currency: currencyConfig.code,
-          name: donorName.trim() || '匿名支持者',
-          message: donorMsg.trim() || '（用户未附带留言）',
+          name: donorNameRef.current.trim(),
+          message: donorMsgRef.current.trim(),
           country,
+          paymentMethod: 'Stripe Checkout (Cards / Apple Pay / Google Pay / Link)',
+          trigger: 'page_unload',
         });
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon('/api/record-blessing', new Blob([data], { type: 'application/json' }));
+
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          navigator.sendBeacon('/api/record-blessing', new Blob([payload], { type: 'application/json' }));
+        } else {
+          try {
+            fetch('/api/record-blessing', {
+              method: 'POST',
+              keepalive: true,
+              headers: { 'Content-Type': 'application/json' },
+              body: payload,
+            }).catch(() => {});
+          } catch {}
         }
       }
     };
-    window.addEventListener('beforeunload', onUnload);
-    return () => window.removeEventListener('beforeunload', onUnload);
-  }, [sessionId, paidAmount, currencyConfig, donorName, donorMsg, country]);
+
+    window.addEventListener('beforeunload', handleNonNaturalExit);
+    window.addEventListener('pagehide', handleNonNaturalExit);
+
+    return () => {
+      clearTimeout(timeoutTimer);
+      window.removeEventListener('beforeunload', handleNonNaturalExit);
+      window.removeEventListener('pagehide', handleNonNaturalExit);
+    };
+  }, [step, sessionId, paidAmount, currencyConfig, country]);
+
+  // Esc key closure listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, step, sessionId]);
 
   /* ── Handlers ─────────────────────────────────────────────────────────── */
   const handleContinue = async () => {
@@ -588,14 +654,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const handleBlessing = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    sendPendingNotification(donorName, donorMsg);
+    sendPendingNotification(donorNameRef.current, donorMsgRef.current, 'form_submitted');
     setBlessingDone(true);
     setIsSubmitting(false);
   };
 
   const resetState = () => {
     if (step === 'success' && pendingNotificationRef.current) {
-      sendPendingNotification();
+      sendPendingNotification(donorNameRef.current, donorMsgRef.current, 'modal_closed');
     }
     setStep('amount');
     setClientSecret('');
@@ -610,7 +676,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
 
   const closeModal = () => {
     if (step === 'success' && pendingNotificationRef.current) {
-      sendPendingNotification();
+      sendPendingNotification(donorNameRef.current, donorMsgRef.current, 'modal_closed');
     }
     setIsOpen(false);
     resetState();

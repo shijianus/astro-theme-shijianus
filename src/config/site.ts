@@ -1,3 +1,5 @@
+import { telegramNotificationConfig } from './telegram';
+
 const siteOrigin = 'https://shijian.us';
 
 export type SiteNavIcon =
@@ -928,6 +930,7 @@ export const siteConfig = {
         lang: 'zh-CN',
       },
     },
+    telegram: telegramNotificationConfig,
   },
 } as const;
 

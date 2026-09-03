@@ -210,29 +210,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
       return jsonResponse(request, env, { ok: false, error: errorMsg }, { status: 400 });
     }
 
-    // Read TG credentials with priority: env binding > hardcoded fallback
-    const tgToken =
-      env.TELEGRAM_BOT_TOKEN ||
-      (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN) ||
-      '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-    const tgChatId =
-      env.TELEGRAM_CHAT_ID ||
-      (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID) ||
-      '7963161588';
-
-    // Notify TG immediately after PaymentIntent creation
-    // (actual payment confirmation should also trigger webhook in production)
-    await notifyTelegramBot(tgToken, tgChatId, {
-      amount: amountInCents,
-      currency,
-      name,
-      message,
-      country: clientCountry,
-      ip: clientIp,
-      id: data.id,
-      paymentMethod,
-    });
-
+    // PaymentIntent created — TG notification is strictly deferred until payment is completed and modal closes
     // Record in D1
     if (env.DB) {
       await recordInD1(env.DB, {

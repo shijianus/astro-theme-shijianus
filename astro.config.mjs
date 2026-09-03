@@ -171,32 +171,7 @@ function stripeAndGeoDevIntegration() {
                     return;
                   }
 
-                  const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
-                  const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
-                  if (tgToken && tgChatId) {
-                    const formattedAmount = `$${(amountInCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
-                    const sponsorName = name || '匿名支持者';
-                    const sponsorMsg = message || '（未留言）';
-                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-                    const text = [
-                      `🎉 *收到新的博客赞赏发起 (EpoCanvas)*`,
-                      `━━━━━━━━━━━━━━━━━━`,
-                      `💰 *赞赏金额*: \`${formattedAmount}\``,
-                      `👤 *赞赏者*: *${sponsorName.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}*`,
-                      `💬 *留言寄语*: ${sponsorMsg.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}`,
-                      `🌍 *地区*: \`${clientCountry}\` (Dev Server)`,
-                      `💳 *支付通道*: Stripe Checkout (Cards / Apple Pay / Google Pay)`,
-                      `🆔 *订单标识*: \`${data.id || 'N/A'}\``,
-                      `🕒 *提交时间*: \`${nowStr}\``,
-                      `━━━━━━━━━━━━━━━━━━`,
-                    ].join('\n');
-                    fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'MarkdownV2' }),
-                    }).catch(() => {});
-                  }
-
+                  // PaymentIntent created — TG notification is strictly deferred until payment is completed and modal closes
                   res.setHeader('Content-Type', 'application/json');
                   res.writeHead(200);
                   res.end(
@@ -367,24 +342,47 @@ function stripeAndGeoDevIntegration() {
                   const tgToken = getEnvVar('TELEGRAM_BOT_TOKEN') || '8690822896:AAH7WQiDPd_Y7Crpn8Hlt6_3w3g2pF5D1ZA';
                   const tgChatId = getEnvVar('TELEGRAM_CHAT_ID') || '7963161588';
                   if (tgToken && tgChatId) {
-                    const formattedAmount = `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
-                    const nowStr = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+                    const ZERO_DECIMAL_CURRENCIES = new Set(['bif','clp','djf','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
+                    const formattedAmount = ZERO_DECIMAL_CURRENCIES.has(currency)
+                      ? `${amount} ${currency.toUpperCase()}`
+                      : `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
+                    const pstFormatter = new Intl.DateTimeFormat('zh-CN', {
+                      timeZone: 'America/Los_Angeles',
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      hour12: false,
+                    });
+                    const pstTime = `${pstFormatter.format(new Date()).replace(/\//g, '-')} PST`;
+                    const triggerText = payload?.trigger === 'form_submitted'
+                      ? '用户提交寄语并完成 (form_submitted)'
+                      : payload?.trigger === 'page_unload'
+                      ? '页面卸载/刷新拦截触发 (page_unload)'
+                      : payload?.trigger === 'idle_timeout_30m'
+                      ? '30分钟兜底超时自动发送 (idle_timeout_30m)'
+                      : '模态框手动关闭触发 (modal_closed)';
+
+                    const sanitize = (s) => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     const text = [
-                      `🎉 *收到新的博客赞赏与寄语祝福 (EpoCanvas)*`,
+                      `🎉 <b>收到赞赏者的寄语祝福</b>`,
                       `━━━━━━━━━━━━━━━━━━`,
-                      `💰 *赞赏金额*: \`${formattedAmount}\` *(支付已完成 ✓)*`,
-                      `👤 *赞赏者*: *${name.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}*`,
-                      `💬 *寄语祝福*: ${message.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&')}`,
-                      `🌍 *地区*: \`${clientCountry}\` (Dev Server)`,
-                      `💳 *支付通道*: Stripe Checkout`,
-                      `🆔 *订单标识*: \`${payload?.id || 'N/A'}\``,
-                      `🕒 *完成时间*: \`${nowStr}\``,
+                      `💰 <b>赞赏金额</b>: <code>${formattedAmount}</code> <i>(支付已完成 ✓)</i>`,
+                      `👤 <b>赞赏者</b>: <b>${sanitize(name)}</b>`,
+                      `💬 <b>寄语祝福</b>: ${sanitize(message)}`,
+                      `🌍 <b>地区 / IP</b>: <code>${sanitize(clientCountry)}</code> (Dev Server)`,
+                      `💳 <b>支付通道</b>: ${sanitize(payload?.paymentMethod || 'Stripe Checkout (Cards / Apple Pay / Google Pay / Link)')}`,
+                      `🆔 <b>订单标识</b>: <code>${sanitize(payload?.id || 'N/A')}</code>`,
+                      `🕒 <b>完成时间</b>: <code>${pstTime}</code>`,
+                      `⚡️ <b>触发机制</b>: <code>${triggerText}</code>`,
                       `━━━━━━━━━━━━━━━━━━`,
                     ].join('\n');
                     fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'MarkdownV2' }),
+                      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'HTML' }),
                     }).catch(() => {});
                   }
 

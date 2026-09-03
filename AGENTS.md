@@ -60,9 +60,15 @@
 - [x] 多端全量同步至 `origin` 与 `cf` (`shijianus.github.io`) 仓库。
 - [x] 梳理 Apple Pay 在 Stripe Web 端展示的完整必要条件（Stripe 域名验证、Apple 硬件/Safari 沙盒、Apple Wallet 绑卡状态）并输出标准操作手册。
 
-### Task 5: Stripe 内嵌收银台零刷新与原地寄语表单切换改造
-- [x] 在 `create-checkout-session`（Cloudflare Pages 生产与开发环境）中配置 `redirect_on_completion: 'if_required'`，消除支付完成后强制重定向跳转与页面硬刷新 (`d0b10d3`)。
-- [x] 优化 `RewardModal` 中的 `onComplete` 生命周期回调，实现自动执行 `checkout.destroy()` 优雅销毁 Stripe 表单 DOM 并 0 秒原地平滑切换到寄语表单。
-- [x] 编写并执行全链路 Playwright E2E 自动化测试（`scratch/verify-no-redirect-live.cjs`），验证页面主框架导航增量严格为 0，零白屏、零刷新。
+### Task 6: Telegram 赞赏通知触发时机严格控制与自定义模板规则完善
+- [x] 严格限制 TG 发送时机：严禁在支付完成阶段（出现 `class="flex-1 overflow-y-auto"` 成功阶段）之前发送任何内容；全面清理 PaymentIntent/CheckoutSession 创建时的过早通知。
+- [x] 全面覆盖 `class="flex-1 overflow-y-auto"` 关闭的各类触发场景：
+  1. 支持者未填写称呼/祝福（`class="space-y-2.5"` 为空）时关闭模态框（`modal_closed`）；
+  2. 支持者填写称呼/祝福后提交或关闭（`form_submitted`）；
+  3. 非自然关闭场景（页面刷新、标签页关闭、断网等 `beforeunload`/`pagehide` 触发 `page_unload`）；
+  4. 30分钟兜底超时自动判定与发送机制（`idle_timeout_30m`）。
+- [x] 新增 Telegram 配置体系（`src/config/telegram.ts` 与 `functions/_lib/telegram-config.ts`），支持通过设置文件全量自定义通知内容，默认包含"赞赏金额"、"赞赏者"、"祝福"、"IP地址"、"支付通道"、"订单标识"、"完成时间(以太平洋时间为准并标注PST)"、"触发机制"等必备字段。
+- [x] 编写并执行自动化测试套件（`scratch/verify-tg-timing.cjs`），全量验证各场景触发机制、太平洋时间（PST）格式与幂等性保障。
+
 
 
