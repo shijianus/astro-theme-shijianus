@@ -95,9 +95,20 @@ const hasMedia = Boolean(image || video);
   <div class="post-hero__inner">
     {badges.length > 0 && (
       <div class="post-hero__badges">
-        {badges.map((item, index) => (
-          <span class:list={['post-hero__badge', index === 0 && 'is-primary']}>{item}</span>
-        ))}
+        {badges.map((item, index) => {
+          if (index === 0 && (item === '原创' || item === '转载' || item === '受限')) {
+            return <span class="post-hero__badge is-primary">{item}</span>;
+          }
+          const tagSlug = encodeURIComponent(
+            item.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')
+          );
+          return (
+            <a href={`/tags/${tagSlug}/`} class="post-hero__tag">
+              <span class="post-hero__tag-hash">#</span>
+              <span class="post-hero__tag-name">{item}</span>
+            </a>
+          );
+        })}
       </div>
     )}
 
@@ -108,19 +119,22 @@ const hasMedia = Boolean(image || video);
 
     {meta.length > 0 && (
       <div class="post-hero__meta-grid">
-        {meta.map((item) => (
-          <span class="post-hero__meta-item" data-runtime-meta={item.runtime ?? undefined}>
-            {item.icon && (
-              <span class="post-hero__meta-icon" aria-hidden="true">
-                {(() => {
-                  const MetaIcon = heroMetaIconMap[item.icon];
-                  return <MetaIcon className="post-hero__meta-icon-svg" aria-hidden="true" />;
-                })()}
-              </span>
-            )}
-            <span class="post-hero__meta-label">{item.label}</span>
-            <strong class="post-hero__meta-value">{item.value}</strong>
-          </span>
+        {meta.map((item, index) => (
+          <>
+            {index > 0 && <span class="post-hero__meta-dot" aria-hidden="true">•</span>}
+            <span class="post-hero__meta-item" data-runtime-meta={item.runtime ?? undefined}>
+              {item.icon && (
+                <span class="post-hero__meta-icon" aria-hidden="true">
+                  {(() => {
+                    const MetaIcon = heroMetaIconMap[item.icon];
+                    return <MetaIcon className="post-hero__meta-icon-svg" aria-hidden="true" />;
+                  })()}
+                </span>
+              )}
+              <span class="post-hero__meta-label">{item.label}</span>
+              <strong class="post-hero__meta-value">{item.value}</strong>
+            </span>
+          </>
         ))}
       </div>
     )}

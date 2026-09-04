@@ -6,8 +6,6 @@ description: "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordP
 author: "shijianus"
 category: "系统设计"
 group: "技术规范"
-cover: "/media/shijianus/workbench.jpg"
-coverAlt: "SSG & Theme Content Formats Master Guide"
 featured: true
 sticky: 10
 postFormat: "standard"

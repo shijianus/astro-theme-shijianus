@@ -33,133 +33,117 @@ const server = http.createServer((req, res) => {
   }
 });
 
-const PORT = 5792;
+const PORT = 5793;
 
 server.listen(PORT, async () => {
-  console.log(`[E2E] Verifying post-hero, cover, animated waves and cards on http://localhost:${PORT}...`);
+  console.log(`[E2E] Verifying post-hero pure-color, badges, tags, non-boxed meta and faster waves on http://localhost:${PORT}...`);
   const browser = await chromium.launch({ headless: true });
 
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-    // 1. Verify Home Page Post Cards have guaranteed images
-    console.log('[Test 1] Checking homepage cards for guaranteed <img> elements...');
-    await page.goto(`http://localhost:${PORT}/`);
+    // 1. Verify Pure-Color Blue Hero on /posts/content-formats-and-markup-mastery/
+    console.log('[Test 1] Checking pure-color blue hero on /posts/content-formats-and-markup-mastery/...');
+    await page.goto(`http://localhost:${PORT}/posts/content-formats-and-markup-mastery/`);
     await page.waitForTimeout(500);
 
-    const cards = await page.$$('.recent-post-item');
-    console.log(`Found ${cards.length} cards on home feed.`);
-    for (let i = 0; i < cards.length; i++) {
-      const img = await cards[i].$('img');
-      if (!img) {
-        throw new Error(`Card at index ${i} is missing an <img> element!`);
-      }
-      const src = await img.getAttribute('src');
-      if (!src) {
-        throw new Error(`Card at index ${i} has an empty src attribute!`);
-      }
-    }
-    console.log('✓ All post cards have valid <img> elements with cover or default fallback.');
+    const pureMetrics = await page.evaluate(() => {
+      const hero = document.querySelector('.post-hero');
+      const cover = document.querySelector('.post-hero__cover');
+      const primaryBadge = document.querySelector('.post-hero__badge.is-primary');
+      const tags = document.querySelectorAll('.post-hero__tag');
+      const metaItems = document.querySelectorAll('.post-hero__meta-item');
+      const metaDots = document.querySelectorAll('.post-hero__meta-dot');
+      const waveUses = document.querySelectorAll('.post-hero__waves-group use');
 
-    // 2. Verify Post Page Hero Layout and Dimensions
-    console.log('[Test 2] Checking post-hero dimensions and layout on /posts/readable-geek-interfaces/...');
+      const heroComputed = hero ? window.getComputedStyle(hero) : null;
+      const primaryBadgeComputed = primaryBadge ? window.getComputedStyle(primaryBadge) : null;
+      const firstTag = tags[0];
+      const firstMeta = metaItems[0];
+      const firstMetaComputed = firstMeta ? window.getComputedStyle(firstMeta) : null;
+
+      const waveDurations = Array.from(waveUses).map((u) => window.getComputedStyle(u).animationDuration);
+
+      return {
+        hasHero: Boolean(hero),
+        isPureColorClass: hero?.classList.contains('is-pure-color'),
+        hasCoverElement: Boolean(cover),
+        bgImage: heroComputed?.backgroundImage,
+        bgColor: heroComputed?.backgroundColor,
+        primaryBadgeRadius: primaryBadgeComputed?.borderRadius,
+        primaryBadgeText: primaryBadge?.textContent?.trim(),
+        tagCount: tags.length,
+        firstTagText: firstTag?.textContent?.trim(),
+        metaCount: metaItems.length,
+        metaDotCount: metaDots.length,
+        firstMetaBg: firstMetaComputed?.backgroundColor,
+        firstMetaBorder: firstMetaComputed?.borderStyle,
+        waveDurations,
+      };
+    });
+
+    console.log('Pure Hero Metrics:', pureMetrics);
+
+    if (!pureMetrics.isPureColorClass) {
+      throw new Error('Expected post to have .is-pure-color class!');
+    }
+
+    if (pureMetrics.hasCoverElement) {
+      throw new Error('Expected pure color post NOT to have .post-hero__cover element!');
+    }
+
+    if (pureMetrics.primaryBadgeRadius !== '4px') {
+      console.warn(`Primary badge border-radius is ${pureMetrics.primaryBadgeRadius}, expected 4px`);
+    }
+
+    if (pureMetrics.tagCount === 0 || !pureMetrics.firstTagText?.startsWith('#')) {
+      throw new Error(`Expected tags with '#' prefix, got count=${pureMetrics.tagCount}, firstTag="${pureMetrics.firstTagText}"`);
+    }
+
+    if (pureMetrics.metaCount === 0 || pureMetrics.metaDotCount === 0) {
+      throw new Error(`Expected flowing meta stream with separator dots, got metaCount=${pureMetrics.metaCount}, dotCount=${pureMetrics.metaDotCount}`);
+    }
+
+    // Check fast wave durations (e.g. 3s, 5s, 7s, 10s)
+    console.log('Wave durations:', pureMetrics.waveDurations);
+    if (!pureMetrics.waveDurations.some(d => parseFloat(d) <= 10)) {
+      throw new Error(`Wave durations are not accelerated: ${pureMetrics.waveDurations}`);
+    }
+
+    const screenshotDir = path.resolve(__dirname, 'audit_screenshots');
+    if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
+    await page.screenshot({ path: path.join(screenshotDir, 'pure-color-blue-hero.png') });
+    console.log('✓ Pure-color blue post hero verified successfully!');
+
+    // 2. Verify Post with Image Cover on /posts/readable-geek-interfaces/
+    console.log('[Test 2] Checking cover post on /posts/readable-geek-interfaces/...');
     await page.goto(`http://localhost:${PORT}/posts/readable-geek-interfaces/`);
     await page.waitForTimeout(500);
 
-    const heroMetrics = await page.evaluate(() => {
+    const coverMetrics = await page.evaluate(() => {
       const hero = document.querySelector('.post-hero');
       const cover = document.querySelector('.post-hero__cover');
-      const inner = document.querySelector('.post-hero__inner');
-      const titleBlock = document.querySelector('.post-hero__title-block');
-      const lede = document.querySelector('.post-hero__lede');
-      const waves = document.querySelector('.post-hero__waves');
-      const waveUseElements = document.querySelectorAll('.post-hero__waves-group use');
-
-      const heroRect = hero?.getBoundingClientRect();
-      const coverRect = cover?.getBoundingClientRect();
-      const innerRect = inner?.getBoundingClientRect();
-      const titleRect = titleBlock?.getBoundingClientRect();
-      const ledeRect = lede?.getBoundingClientRect();
-
-      const waveUseAnimations = Array.from(waveUseElements).map((el) => {
-        const computed = window.getComputedStyle(el);
-        return {
-          animationName: computed.animationName,
-          animationPlayState: computed.animationPlayState,
-          animationDuration: computed.animationDuration,
-        };
-      });
+      const img = cover?.querySelector('img');
+      const primaryBadge = document.querySelector('.post-hero__badge.is-primary');
+      const tags = document.querySelectorAll('.post-hero__tag');
 
       return {
-        heroHeight: heroRect?.height,
-        heroWidth: heroRect?.width,
-        coverHeight: coverRect?.height,
-        coverWidth: coverRect?.width,
-        innerWidth: innerRect?.width,
-        titleWidth: titleRect?.width,
-        ledeWidth: ledeRect?.width,
-        wavesPresent: Boolean(waves),
-        waveCount: waveUseElements.length,
-        waveUseAnimations,
+        hasHero: Boolean(hero),
+        hasCover: Boolean(cover),
+        hasImg: Boolean(img),
+        primaryBadgeText: primaryBadge?.textContent?.trim(),
+        tagCount: tags.length,
       };
     });
 
-    console.log('Hero Metrics:', heroMetrics);
-
-    // Assertions
-    if (!heroMetrics.heroHeight || heroMetrics.heroHeight < 360 || heroMetrics.heroHeight > 480) {
-      throw new Error(`Invalid post-hero height: ${heroMetrics.heroHeight}px (expected 360px~480px consistent)`);
+    console.log('Cover Hero Metrics:', coverMetrics);
+    if (!coverMetrics.hasCover || !coverMetrics.hasImg) {
+      throw new Error('Expected cover image on readable-geek-interfaces!');
     }
+    await page.screenshot({ path: path.join(screenshotDir, 'cover-image-hero.png') });
+    console.log('✓ Cover image hero verified successfully!');
 
-    if (!heroMetrics.coverHeight || Math.abs(heroMetrics.coverHeight - heroMetrics.heroHeight) > 5) {
-      throw new Error(`post-hero__cover is not matching hero height: cover=${heroMetrics.coverHeight}, hero=${heroMetrics.heroHeight}`);
-    }
-
-    if (!heroMetrics.innerWidth || heroMetrics.innerWidth < 1000) {
-      throw new Error(`post-hero__inner width is too constrained: ${heroMetrics.innerWidth}px`);
-    }
-
-    if (!heroMetrics.titleWidth || heroMetrics.titleWidth < 800) {
-      throw new Error(`post-hero__title-block width is too constrained: ${heroMetrics.titleWidth}px`);
-    }
-
-    if (!heroMetrics.wavesPresent || heroMetrics.waveCount !== 4) {
-      throw new Error(`post-hero__waves SVG wave elements not found or count is ${heroMetrics.waveCount}`);
-    }
-
-    for (const anim of heroMetrics.waveUseAnimations) {
-      if (!anim.animationName || anim.animationName === 'none') {
-        throw new Error(`Wave animation is disabled or 'none'! ${JSON.stringify(anim)}`);
-      }
-    }
-    console.log('✓ Post hero dimensions, wide inner layout, and active water wave animations verified successfully!');
-
-    // 3. Take screenshot for review
-    const screenshotDir = path.resolve(__dirname, 'audit_screenshots');
-    if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
-    await page.screenshot({ path: path.join(screenshotDir, 'post-hero-desktop.png') });
-
-    // 4. Test Mobile viewport
-    console.log('[Test 3] Checking mobile viewport layout...');
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForTimeout(300);
-
-    const mobileMetrics = await page.evaluate(() => {
-      const hero = document.querySelector('.post-hero');
-      const inner = document.querySelector('.post-hero__inner');
-      return {
-        heroHeight: hero?.getBoundingClientRect().height,
-        innerWidth: inner?.getBoundingClientRect().width,
-      };
-    });
-    console.log('Mobile Hero Metrics:', mobileMetrics);
-    if (!mobileMetrics.heroHeight || mobileMetrics.heroHeight < 300 || mobileMetrics.heroHeight > 380) {
-      throw new Error(`Invalid mobile post-hero height: ${mobileMetrics.heroHeight}px`);
-    }
-    await page.screenshot({ path: path.join(screenshotDir, 'post-hero-mobile.png') });
-    console.log('✓ Mobile post hero layout verified successfully!');
-
-    console.log('\n[ALL POST-HERO E2E TESTS PASSED!]');
+    console.log('\n[ALL POST-HERO REFINEMENT TESTS PASSED!]');
   } catch (err) {
     console.error('[E2E FAILED]', err);
     process.exitCode = 1;

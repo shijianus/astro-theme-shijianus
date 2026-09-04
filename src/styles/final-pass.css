@@ -3936,6 +3936,22 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   }
 }
 
+.post-hero.is-pure-color,
+.post-hero:not(:has(.post-hero__cover)) {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(26, 44, 153, 0.4) 0%, transparent 50%),
+    linear-gradient(135deg, #425aef 0%, #3047d9 50%, #2035be 100%) !important;
+}
+
+[data-theme='dark'] .post-hero.is-pure-color,
+[data-theme='dark'] .post-hero:not(:has(.post-hero__cover)) {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(66, 90, 239, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(20, 32, 95, 0.45) 0%, transparent 50%),
+    linear-gradient(135deg, #1b244d 0%, #121838 60%, #0c1026 100%) !important;
+}
+
 .post-hero__inner {
   max-width: 1400px !important;
   width: 100% !important;
@@ -3944,6 +3960,91 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
 .post-hero__title-block,
 .post-hero__lede {
   max-width: 100% !important;
+}
+
+.post-hero__badge.is-primary {
+  min-height: 22px !important;
+  padding: 1px 8px !important;
+  border-radius: 4px !important;
+  background: #ffffff !important;
+  color: var(--theme-main, #425aef) !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+}
+
+.post-hero__tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  padding: 2px 6px !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  border-radius: 4px !important;
+  transition: color 0.18s ease, background-color 0.18s ease !important;
+}
+
+.post-hero__tag:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.post-hero__tag-hash {
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+.post-hero__meta-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 4px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+}
+
+.post-hero__meta-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.post-hero__meta-dot {
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 10px !important;
+  user-select: none !important;
+}
+
+.post-hero__meta-icon-svg {
+  width: 13px !important;
+  height: 13px !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  stroke-width: 2.2 !important;
+}
+
+.post-hero__meta-label {
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.post-hero__meta-value {
+  color: #ffffff !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
 }
 
 /* Ensure single column when aside is not present (fixes centering on home/other pages) */
