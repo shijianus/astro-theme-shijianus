@@ -144,3 +144,13 @@
 - [x] 重构按钮高对比蓝色主题质感：将 `#rightside-config-show` 及 `#rightside` 全量操作按钮的背景明确固化为标志性蓝色（`#425aef`，深浅色模式一致保持高辨识度），搭配纯白高对比图标与文字（`#ffffff`），消除原本卡片白底灰字与下一篇卡片同色混淆的问题，杜绝误触。
 - [x] 优化微交互与悬浮动效：为蓝色按钮注入专属光泽阴影（`rgba(66, 90, 239, 0.4)`）、悬浮位移缩放动效（`transform: translateY(-2px) scale(1.05)`）以及激活收放态，提升整体 UI 质感与交互反馈。
 - [x] 编写并执行全平台自动化测试套件（`scripts/verify-rightside-dock.mjs`）：桌面大屏、标准屏、平板及移动端全视口验证通过（Overlap = false，Vertical Gap >= 40px，Button Bg = rgb(66, 90, 239)，Icon/Text Color = rgb(255, 255, 255)）。
+
+### Task 18: 文章评论区 (#post-comment) 安知鱼 UI 结构重构、无缝流式布局与前端交互优化
+- [x] 新增 `<hr class="custom-hr" />` 分割线：在文章正文/相关推荐与 `#post-comment` 间插入 2px 虚线分割线，还原安知鱼原生层次结构。
+- [x] 消除多层嵌套与过度圆角：移除 `#post-comment` 外层双层卡片和背景黑框（透明底色、直出排版），收敛所有输入框与按钮为精致 8px 方圆角。
+- [x] 深度还原 Anzhiyu Twikoo UI 结构：
+  1. `.comment-head`：头部包含“评论”大标题、一键“匿名评论”随机昵称生成、隐私政策提示与免删空行温馨提示框（`.comment-tips`）；
+  2. `.tk-submit`：三列响应式元信息输入框（昵称、邮箱、网址/QQ号自适应），头像实时预览（支持 QQ 头像与 Gravatar 回退），富文本 Textarea（支持 0/500 实时字数统计），主题蓝（`#425aef`）发送按钮；
+  3. `.tk-comments-container`：公开评论流包含专属徽章（博主/访客/置顶）、动态相对时间戳、点赞动效、回复/引用浮动面板与层级嵌套回复。
+- [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-post-comment.mjs`）：桌面端与移动端断言全部通过，包含虚线分割线、布局去卡片化、交互发布与响应式排版验证。
+

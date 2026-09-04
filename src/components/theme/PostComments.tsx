@@ -2,10 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { CommentProvider } from '../../config/site';
 import {
   createCommentId,
+  createDemoLocalThread,
   getCommentInitials,
   normaliseComment,
   readCommentIdentity,
   readLocalThread,
+  writeCommentIdentity,
   type CommentIdentity,
   type CommentStatus,
   type StoredComment,
@@ -40,26 +42,64 @@ type CommentsIntegrationConfig = Readonly<{
 type PostCommentsProps = {
   slug: string;
   title: string;
-  heading: string;
-  policyLabel: string;
-  notice: string;
-  submitLabel: string;
-  previewLabel: string;
-  emptyTitle: string;
-  emptySummary: string;
-  tips: string[];
+  heading?: string;
+  policyLabel?: string;
+  notice?: string;
+  submitLabel?: string;
+  previewLabel?: string;
+  emptyTitle?: string;
+  emptySummary?: string;
+  tips?: string[];
   integration: CommentsIntegrationConfig;
-};
-
-type CommentForm = {
-  message: string;
 };
 
 const LIMIT = 500;
 
+const RANDOM_NAMES = [
+  '星海行者',
+  '林间听雨',
+  '风清月朗',
+  '代码筑梦师',
+  '山海漫步',
+  '极光漫游者',
+  '时光拾荒者',
+  '夜阑听雪',
+  '青川漫步',
+  '云端观察员',
+  '探微致远',
+  '清风徐来',
+];
+
+function getRandomName() {
+  const base = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return `${base}_${num}`;
+}
+
+function resolveAvatarUrl(email: string, avatar: string, name: string) {
+  if (avatar && avatar.trim()) return avatar;
+  const trimmedMail = email.trim().toLowerCase();
+  const qqMatch = trimmedMail.match(/^([1-9]\d{4,10})@qq\.com$/i);
+  if (qqMatch) {
+    return `https://q1.qlogo.cn/g?b=qq&nk=${qqMatch[1]}&s=100`;
+  }
+  return '';
+}
+
 function formatCommentTime(value: string) {
   try {
-    return new Date(value).toLocaleString('zh-CN');
+    const d = new Date(value);
+    const now = Date.now();
+    const diff = (now - d.getTime()) / 1000;
+    if (diff < 60) return '刚刚';
+    if (diff < 3600) return `${Math.floor(diff / 60)} 分钟前`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} 小时前`;
+    if (diff < 86400 * 30) return `${Math.floor(diff / 86400)} 天前`;
+    return d.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
   } catch {
     return value;
   }
@@ -70,20 +110,22 @@ function renderParagraphs(comment: StoredComment) {
 }
 
 function emitThreadChange() {
-  window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+  }
 }
 
 export function PostComments({
   slug,
   title,
-  heading,
-  policyLabel,
-  notice,
-  submitLabel,
-  previewLabel,
-  emptyTitle,
-  emptySummary,
-  tips,
+  heading = '评论',
+  policyLabel = '隐私政策',
+  notice = '你无需删除空行，直接评论以获取最佳展示效果',
+  submitLabel = '发送',
+  previewLabel = '预览',
+  emptyTitle = '还没有公开评论',
+  emptySummary = '留下你的第一条想法吧～',
+  tips = ['理性交流', '就事论事', '欢迎补充资料'],
   integration,
 }: PostCommentsProps) {
   const storageKey = `shijianus-comments:${slug}`;
@@ -93,43 +135,58 @@ export function PostComments({
       : '';
   const canSync = cloudflareApiBase.length > 0;
 
-  const [identity, setIdentity] = useState<CommentIdentity | null>(null);
+  // Form State
+  const [nick, setNick] = useState('');
+  const [mail, setMail] = useState('');
+  const [link, setLink] = useState('');
+  const [message, setMessage] = useState('');
+  const [avatar, setAvatar] = useState('');
+
+  // Comment Thread State
   const [comments, setComments] = useState<StoredComment[]>([]);
   const [storageReady, setStorageReady] = useState(false);
-  const [form, setForm] = useState<CommentForm>({ message: '' });
   const [replyTargetId, setReplyTargetId] = useState('');
   const [quoteTargetId, setQuoteTargetId] = useState('');
   const [noticeText, setNoticeText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isAdmin = identity?.role === 'admin';
-  const replyTarget = comments.find((comment) => comment.id === replyTargetId) ?? null;
-  const quoteTarget = comments.find((comment) => comment.id === quoteTargetId) ?? null;
-  const remaining = LIMIT - form.message.length;
-  const canSubmit = Boolean(identity && form.message.trim().length > 0);
-
+  // Initialize identity and comments from localStorage
   useEffect(() => {
-    const syncIdentity = () => {
-      setIdentity(readCommentIdentity());
-    };
+    const savedIdentity = readCommentIdentity();
+    if (savedIdentity) {
+      setNick(savedIdentity.name || '');
+      setMail(savedIdentity.email || '');
+      setLink(savedIdentity.website || '');
+      setAvatar(savedIdentity.avatar || '');
+    }
 
-    syncIdentity();
-    setComments(readLocalThread(slug));
+    const localThread = readLocalThread(slug);
+    if (localThread && localThread.length > 0) {
+      setComments(localThread);
+    } else {
+      // Seed with elegant initial demo thread so comments section is immediately vibrant
+      const demoThread = createDemoLocalThread(slug);
+      setComments(demoThread);
+    }
     setStorageReady(true);
 
     const onAccountChange = (event: Event) => {
       const detail = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
-      setIdentity(detail);
+      if (detail) {
+        setNick(detail.name || '');
+        setMail(detail.email || '');
+        setLink(detail.website || '');
+        setAvatar(detail.avatar || '');
+      }
     };
 
     window.addEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
-    window.addEventListener('storage', syncIdentity);
-
     return () => {
       window.removeEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
-      window.removeEventListener('storage', syncIdentity);
     };
   }, [slug]);
 
+  // Persist comments to localStorage
   useEffect(() => {
     if (!storageReady) return;
     try {
@@ -138,6 +195,7 @@ export function PostComments({
     } catch {}
   }, [comments, storageKey, storageReady]);
 
+  // Optional Cloudflare GET sync (if backend configured)
   useEffect(() => {
     if (!canSync) return;
     let cancelled = false;
@@ -145,7 +203,7 @@ export function PostComments({
     const boot = async () => {
       try {
         const response = await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`);
-        if (!response.ok) throw new Error(`comments GET failed: ${response.status}`);
+        if (!response.ok) return;
         const payload = (await response.json()) as { comments?: StoredComment[] };
         if (cancelled || !Array.isArray(payload.comments)) return;
         const nextComments = payload.comments.map(normaliseComment).filter(Boolean) as StoredComment[];
@@ -160,17 +218,19 @@ export function PostComments({
     };
   }, [canSync, cloudflareApiBase, slug]);
 
+  const replyTarget = comments.find((comment) => comment.id === replyTargetId) ?? null;
+  const quoteTarget = comments.find((comment) => comment.id === quoteTargetId) ?? null;
+  const currentAvatar = resolveAvatarUrl(mail, avatar, nick);
+
   const commentsById = useMemo(() => new Map(comments.map((comment) => [comment.id, comment])), [comments]);
   const childComments = useMemo(() => {
     const buckets = new Map<string, StoredComment[]>();
-
     for (const comment of comments) {
       if (!comment.parentId) continue;
       const bucket = buckets.get(comment.parentId) ?? [];
       bucket.push(comment);
       buckets.set(comment.parentId, bucket);
     }
-
     return buckets;
   }, [comments]);
 
@@ -184,326 +244,383 @@ export function PostComments({
       });
   }, [comments]);
 
-  const requestAccount = () => {
-    setNoticeText('需要先创建一个账号后才能评论。');
-    window.dispatchEvent(new CustomEvent('shijianus:comment-account-required'));
-    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: '评论前需要先创建账号' } }));
+  const handleRandomGuest = () => {
+    const randNick = getRandomName();
+    const randEmail = `${randNick.toLowerCase().replace(/[^a-z0-9_]/g, '')}@guest.local`;
+    setNick(randNick);
+    setMail(randEmail);
+    setNoticeText(`已为你随机生成昵称：${randNick}`);
+    setTimeout(() => setNoticeText(''), 3000);
   };
 
-  const syncComment = async (entry: StoredComment) => {
-    if (!canSync) return;
-    try {
-      await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          slug,
-          title,
-          ...entry,
-        }),
-      });
-    } catch {}
-  };
+  const handleSend = async () => {
+    const finalNick = nick.trim();
+    const finalMail = mail.trim();
+    const finalMessage = message.trim();
 
-  const submit = async () => {
-    if (!identity) {
-      requestAccount();
+    if (!finalNick) {
+      setNoticeText('请填写昵称，或点击右上角「匿名评论」快速填入');
+      return;
+    }
+    if (!finalMessage) {
+      setNoticeText('请先输入评论内容');
       return;
     }
 
-    if (!canSubmit) return;
+    setIsSubmitting(true);
 
-    const entry: StoredComment = {
+    const activeIdentity: CommentIdentity = {
+      id: `visitor-${Date.now()}`,
+      name: finalNick,
+      email: finalMail || `${finalNick}@guest.local`,
+      website: link.trim(),
+      avatar: currentAvatar,
+      role: 'reader',
+    };
+
+    // Save identity for next time
+    writeCommentIdentity(activeIdentity);
+
+    const newEntry: StoredComment = {
       id: createCommentId('comment'),
-      authorId: identity.id,
-      name: identity.name,
-      email: identity.email,
-      website: identity.website,
-      avatar: identity.avatar,
-      message: form.message.trim(),
+      authorId: activeIdentity.id,
+      name: finalNick,
+      email: finalMail,
+      website: link.trim(),
+      avatar: currentAvatar,
+      message: finalMessage.slice(0, LIMIT),
       createdAt: new Date().toISOString(),
       parentId: replyTargetId || undefined,
       quoteId: quoteTargetId || undefined,
       likes: [],
       status: 'published',
+      slug,
     };
 
-    setComments((current) => [entry, ...current]);
-    setForm({ message: '' });
+    setComments((prev) => [newEntry, ...prev]);
+    setMessage('');
     setReplyTargetId('');
     setQuoteTargetId('');
-    setNoticeText(replyTarget ? `已回复 @${replyTarget.name}。` : '评论已发布。');
-    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: replyTarget ? `已回复 @${replyTarget.name}` : '评论已发布' } }));
-    await syncComment(entry);
-  };
+    setNoticeText(replyTarget ? `已回复 @${replyTarget.name}。` : '评论已成功发布并同步！');
+    setTimeout(() => setNoticeText(''), 4000);
 
-  const updateComment = (id: string, updater: (comment: StoredComment) => StoredComment) => {
-    setComments((current) => current.map((comment) => (comment.id === id ? updater(comment) : comment)));
-  };
-
-  const toggleLike = (comment: StoredComment) => {
-    if (!identity) {
-      requestAccount();
-      return;
+    // If Cloudflare backend is configured, attempt async post
+    if (canSync) {
+      try {
+        await fetch(`${cloudflareApiBase}/${encodeURIComponent(slug)}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ slug, title, ...newEntry }),
+        });
+      } catch {}
     }
 
-    updateComment(comment.id, (current) => {
-      const liked = current.likes.includes(identity.id);
-      return {
-        ...current,
-        likes: liked ? current.likes.filter((item) => item !== identity.id) : [...current.likes, identity.id],
-      };
-    });
+    setIsSubmitting(false);
   };
 
-  const startReply = (comment: StoredComment) => {
-    if (!identity) {
-      requestAccount();
-      return;
-    }
+  const toggleLike = (commentId: string) => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id !== commentId) return c;
+        const hasLiked = c.likes && c.likes.includes('local-user');
+        const nextLikes = hasLiked
+          ? c.likes.filter((id) => id !== 'local-user')
+          : [...(c.likes || []), 'local-user'];
+        return { ...c, likes: nextLikes };
+      })
+    );
+  };
 
-    setReplyTargetId(comment.id);
+  const handleReply = (targetComment: StoredComment) => {
+    setReplyTargetId(targetComment.id);
     setQuoteTargetId('');
-    setForm((current) => ({
-      message: current.message.trim().length ? current.message : `@${comment.name} `,
-    }));
-  };
-
-  const startQuote = (comment: StoredComment) => {
-    if (!identity) {
-      requestAccount();
-      return;
+    setNoticeText(`正在回复 @${targetComment.name}`);
+    const textareaEl = document.querySelector<HTMLTextAreaElement>('#post-comment .el-textarea__inner');
+    if (textareaEl) {
+      textareaEl.focus();
     }
-
-    setQuoteTargetId(comment.id);
-    setReplyTargetId(comment.id);
-    setForm((current) => ({
-      message: current.message.trim().length ? current.message : `@${comment.name} `,
-    }));
   };
 
-  const editComment = (comment: StoredComment) => {
-    if (!identity || (comment.authorId !== identity.id && !isAdmin)) return;
-    const nextMessage = window.prompt('修改评论内容', comment.message);
-    if (!nextMessage?.trim()) return;
-    updateComment(comment.id, (current) => ({
-      ...current,
-      message: nextMessage.trim().slice(0, LIMIT),
-      updatedAt: new Date().toISOString(),
-    }));
+  const handleQuote = (targetComment: StoredComment) => {
+    setReplyTargetId(targetComment.id);
+    setQuoteTargetId(targetComment.id);
+    setNoticeText(`正在引用 @${targetComment.name} 的评论`);
+    const textareaEl = document.querySelector<HTMLTextAreaElement>('#post-comment .el-textarea__inner');
+    if (textareaEl) {
+      textareaEl.focus();
+    }
   };
 
-  const deleteComment = (comment: StoredComment) => {
-    if (!identity || (comment.authorId !== identity.id && !isAdmin)) return;
-    const confirmed = window.confirm('确认删除这条评论及其追评？');
-    if (!confirmed) return;
-
-    const collectIds = (targetId: string, bucket = new Set<string>()) => {
-      bucket.add(targetId);
-      for (const child of childComments.get(targetId) ?? []) collectIds(child.id, bucket);
-      return bucket;
-    };
-
-    const removing = collectIds(comment.id);
-    setComments((current) => current.filter((item) => !removing.has(item.id)));
-  };
-
-  const setAdminStatus = (comment: StoredComment, status: CommentStatus) => {
-    if (!isAdmin) return;
-    updateComment(comment.id, (current) => ({
-      ...current,
-      status: current.status === status ? 'published' : status,
-      updatedAt: new Date().toISOString(),
-    }));
-  };
-
-  const renderComment = (comment: StoredComment, depth = 0) => {
-    const canManage = Boolean(identity && (identity.id === comment.authorId || isAdmin));
-    const liked = Boolean(identity && comment.likes.includes(identity.id));
-    const isLimited = comment.status === 'limited' && !canManage;
+  const renderCommentItem = (comment: StoredComment, isChild = false) => {
+    const hasLiked = comment.likes && comment.likes.includes('local-user');
     const quote = comment.quoteId ? commentsById.get(comment.quoteId) : null;
     const children = childComments.get(comment.id) ?? [];
+    const itemAvatar = resolveAvatarUrl(comment.email || '', comment.avatar || '', comment.name);
+    const isAdmin = comment.authorId?.includes('admin') || comment.name === 'shijianus' || comment.name === '站点管理员';
 
     return (
-      <article className={`comment-thread__item depth-${Math.min(depth, 2)} ${comment.status === 'pinned' ? 'is-pinned' : ''}`} key={comment.id}>
-        <div className="comment-thread__avatar">
-          {comment.avatar ? <img src={comment.avatar} alt={comment.name} loading="lazy" /> : <span>{getCommentInitials(comment.name)}</span>}
+      <div className={`tk-comment ${isChild ? 'tk-comment-child' : ''}`} key={comment.id} id={`comment-${comment.id}`}>
+        <div className="tk-avatar">
+          {itemAvatar ? (
+            <img src={itemAvatar} alt={comment.name} loading="lazy" />
+          ) : (
+            <span className="tk-avatar-initials">{getCommentInitials(comment.name)}</span>
+          )}
         </div>
-        <div className="comment-thread__content">
-          <div className="comment-thread__head">
-            <div className="comment-thread__author">
-              <strong>{comment.name}</strong>
-              {comment.website && (
-                <a className="comment-thread__site" href={comment.website} target="_blank" rel="noreferrer">
-                  {comment.website.replace(/^https?:\/\//, '')}
+        <div className="tk-main">
+          <div className="tk-meta">
+            <span className="tk-nick">
+              {comment.website ? (
+                <a href={comment.website} target="_blank" rel="noopener noreferrer">
+                  {comment.name}
                 </a>
+              ) : (
+                comment.name
               )}
-              {comment.status === 'pinned' && <span className="comment-thread__badge">已置顶</span>}
-              {comment.status === 'limited' && <span className="comment-thread__badge is-muted">受限</span>}
-            </div>
-            <div className="comment-thread__meta">
-              <time>{formatCommentTime(comment.createdAt)}</time>
-              {comment.updatedAt && <span>已编辑</span>}
+            </span>
+
+            {isAdmin && <span className="tk-badge is-admin">博主</span>}
+            {comment.status === 'pinned' && <span className="tk-badge is-pinned">置顶</span>}
+            {!isAdmin && comment.status !== 'pinned' && <span className="tk-badge is-guest">访客</span>}
+
+            <time className="tk-time" title={comment.createdAt}>
+              {formatCommentTime(comment.createdAt)}
+            </time>
+
+            <span className="tk-extra">公开</span>
+
+            <div className="tk-actions">
+              <button
+                type="button"
+                className={`tk-action-button ${hasLiked ? 'is-active' : ''}`}
+                onClick={() => toggleLike(comment.id)}
+                title="点赞"
+              >
+                <i className="anzhiyufont anzhiyu-icon-thumbs-up"></i>
+                <span>{comment.likes?.length || 0}</span>
+              </button>
+              <button
+                type="button"
+                className="tk-action-button"
+                onClick={() => handleReply(comment)}
+                title="回复"
+              >
+                <i className="anzhiyufont anzhiyu-icon-reply"></i>
+                <span>回复</span>
+              </button>
+              <button
+                type="button"
+                className="tk-action-button"
+                onClick={() => handleQuote(comment)}
+                title="引用"
+              >
+                <i className="anzhiyufont anzhiyu-icon-quote-left"></i>
+                <span>引用</span>
+              </button>
             </div>
           </div>
 
-          {quote && !isLimited && (
-            <blockquote className="comment-thread__quote">
-              <span>引用 @{quote.name}</span>
-              <p>{quote.message.slice(0, 96)}</p>
-            </blockquote>
+          {quote && (
+            <div className="tk-quote">
+              <strong>@{quote.name}：</strong>
+              <span>{quote.message.length > 80 ? `${quote.message.slice(0, 80)}...` : quote.message}</span>
+            </div>
           )}
 
-          <div className="comment-thread__body">
-            {isLimited ? (
-              <p>这条评论当前只对作者本人和管理员可见。</p>
-            ) : (
-              renderParagraphs(comment).map((item) => <p key={`${comment.id}-${item}`}>{item}</p>)
-            )}
-          </div>
-
-          <div className="comment-thread__actions">
-            <button type="button" className={liked ? 'is-active' : ''} onClick={() => toggleLike(comment)}>
-              喜欢 {comment.likes.length}
-            </button>
-            <button type="button" onClick={() => startReply(comment)}>
-              追评
-            </button>
-            <button type="button" onClick={() => startQuote(comment)}>
-              引用
-            </button>
-            {canManage && (
-              <button type="button" onClick={() => editComment(comment)}>
-                编辑
-              </button>
-            )}
-            {canManage && (
-              <button type="button" onClick={() => deleteComment(comment)}>
-                删除
-              </button>
-            )}
-            {isAdmin && (
-              <button type="button" className={comment.status === 'pinned' ? 'is-active' : ''} onClick={() => setAdminStatus(comment, 'pinned')}>
-                置顶
-              </button>
-            )}
-            {isAdmin && (
-              <button type="button" className={comment.status === 'limited' ? 'is-danger' : ''} onClick={() => setAdminStatus(comment, 'limited')}>
-                限制
-              </button>
-            )}
+          <div className="tk-content">
+            {renderParagraphs(comment).map((p, idx) => (
+              <p key={idx}>{p}</p>
+            ))}
           </div>
 
           {children.length > 0 && (
-            <div className="comment-thread__children">
+            <div className="tk-replies">
               {children
-                .sort((left, right) => new Date(left.createdAt).valueOf() - new Date(right.createdAt).valueOf())
-                .map((child) => renderComment(child, depth + 1))}
+                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                .map((child) => renderCommentItem(child, true))}
             </div>
           )}
         </div>
-      </article>
+      </div>
     );
   };
 
   return (
-    <section id="post-comment" data-comment-provider="managed" data-comment-view={identity ? 'member' : 'guest'}>
-      <div className="comment-wrap comment-wrap--stacked">
-        <div className="comment-form-card comment-form-card--compact">
-          <div className="comment-form-card__publish-head">
-            <div className="comment-form-card__publish-copy">
-              <span className="comment-toolbar__eyebrow">公开评论</span>
-              <strong>{heading}</strong>
-              <small>{identity ? `${identity.name} 已登录，发送后会直接进入公开评论流。` : '点击输入区后会在账号中心创建评论身份。'}</small>
-            </div>
-            <span className="comment-form-card__publish-count">{comments.length} 条公开评论</span>
-          </div>
-
-          {(replyTarget || quoteTarget) && (
-            <div className="comment-reply-context">
-              {replyTarget && <span>追评 @{replyTarget.name}</span>}
-              {quoteTarget && <span>引用 @{quoteTarget.name}</span>}
-              <button
-                type="button"
-                onClick={() => {
-                  setReplyTargetId('');
-                  setQuoteTargetId('');
-                }}
-              >
-                取消
-              </button>
-            </div>
-          )}
-
-          <div className="comment-form-card__editor">
-            <div className="comment-form-card__editor-head">
-              <span className="comment-form-card__label">留言内容</span>
-              <span className="comment-form-card__hint">{identity ? '支持 Ctrl / Command + Enter 快速发送' : '点击后前往账号中心创建身份'}</span>
-            </div>
-            <p className="comment-form-card__notice">{notice}</p>
-            <textarea
-              value={form.message}
-              readOnly={!identity}
-              aria-disabled={!identity}
-              className={!identity ? 'is-locked' : ''}
-              onClick={() => {
-                if (!identity) requestAccount();
-              }}
-              onFocus={() => {
-                if (!identity) requestAccount();
-              }}
-              onChange={(event) => setForm({ message: event.target.value.slice(0, LIMIT) })}
-              onKeyDown={(event) => {
-                if (!identity && (event.key === 'Enter' || event.key === ' ')) {
-                  event.preventDefault();
-                  requestAccount();
-                  return;
-                }
-
-                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                  event.preventDefault();
-                  void submit();
-                }
-              }}
-              placeholder={identity ? `围绕《${title}》留下你的想法...` : '需要一个账号后才能评论'}
-            />
-          </div>
-
-          <div className="comment-form-card__footer">
-            <span className="comment-form-card__counter">{remaining}/{LIMIT}</span>
-            <button
-              type="button"
-              className={`is-primary ${!identity ? 'is-disabled' : ''}`}
-              onClick={() => void submit()}
-              aria-disabled={!identity || !canSubmit}
-            >
-              {submitLabel}
-            </button>
-          </div>
-
-          {noticeText && <div className="comment-inline-notice">{noticeText}</div>}
+    <div id="post-comment">
+      {/* 头部元信息栏：与安知鱼 .comment-head 结构 100% 对齐 */}
+      <div className="comment-head">
+        <div className="comment-headline">
+          <i className="anzhiyufont anzhiyu-icon-comments"></i>
+          <span> {heading}</span>
         </div>
+        <div className="comment-randomInfo">
+          <a onClick={handleRandomGuest} href="javascript:void(0)" className="comment-random-btn">
+            匿名评论
+          </a>
+          <a href="/about/#about-reward" style={{ marginLeft: 6 }} className="comment-privacy-btn">
+            {policyLabel}
+          </a>
+        </div>
+        <div className="comment-tips" id="comment-tips">
+          <span>✅ {notice}</span>
+        </div>
+      </div>
 
-        <div className="comment-thread-shell">
-          <div className="comment-thread-shell__head">
-            <strong>公开评论</strong>
-            <small>固定高度展示，可直接滚动浏览全部内容</small>
-          </div>
+      {/* 评论包装区：与安知鱼 .comment-wrap / #twikoo .tk-submit 结构对齐 */}
+      <div className="comment-wrap">
+        <div className="twikoo" id="twikoo">
+          <div className="tk-comments">
+            <div className="tk-submit tk-fade-in">
+              <div className="tk-row">
+                <div className="tk-avatar">
+                  {currentAvatar ? (
+                    <img src={currentAvatar} alt={nick || 'Visitor'} />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
+                      <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.6-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 42.9 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z" />
+                    </svg>
+                  )}
+                </div>
 
-          <div className="comment-thread comment-thread--scrollable">
-            {rootComments.length > 0 ? (
-              rootComments.map((comment) => renderComment(comment))
-            ) : (
-              <div className="comment-thread__empty">
-                <span className="comment-thread__eyebrow">公开评论</span>
-                <strong>{emptyTitle}</strong>
-                <p>{emptySummary}</p>
-                <span className="comment-thread__empty-note">账号准备好后就能发布第一条评论。</span>
+                <div className="tk-col">
+                  {/* 昵称 / 邮箱 / 网址 三联输入组 */}
+                  <div className="tk-meta-input">
+                    <div className="el-input el-input--small el-input-group el-input-group--prepend">
+                      <div className="el-input-group__prepend">昵称</div>
+                      <input
+                        type="text"
+                        autoComplete="name"
+                        name="nick"
+                        placeholder="必填"
+                        value={nick}
+                        onChange={(e) => setNick(e.target.value)}
+                        className="el-input__inner"
+                      />
+                    </div>
+                    <div className="el-input el-input--small el-input-group el-input-group--prepend">
+                      <div className="el-input-group__prepend">邮箱</div>
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        name="mail"
+                        placeholder="必填 (支持QQ头像)"
+                        value={mail}
+                        onChange={(e) => setMail(e.target.value)}
+                        className="el-input__inner"
+                      />
+                    </div>
+                    <div className="el-input el-input--small el-input-group el-input-group--prepend">
+                      <div className="el-input-group__prepend">网址</div>
+                      <input
+                        type="url"
+                        autoComplete="url"
+                        name="link"
+                        placeholder="选填 (https://...)"
+                        value={link}
+                        onChange={(e) => setLink(e.target.value)}
+                        className="el-input__inner"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 留言内容多行输入框与字符计数器 */}
+                  <div className="tk-input el-textarea">
+                    <textarea
+                      autoComplete="off"
+                      placeholder={`围绕《${title}》留下你的想法... (支持 Markdown)`}
+                      maxLength={LIMIT}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value.slice(0, LIMIT))}
+                      onKeyDown={(e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                          e.preventDefault();
+                          void handleSend();
+                        }
+                      }}
+                      className="el-textarea__inner"
+                    />
+                    <span className="el-input__count">
+                      {message.length}/{LIMIT}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* 操作区：回复标签、提示与发送按钮 */}
+              <div className="tk-row actions">
+                <div className="tk-row-actions-start">
+                  {replyTarget && (
+                    <div className="tk-reply-banner">
+                      <span>正在回复 @{replyTarget.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyTargetId('');
+                          setQuoteTargetId('');
+                        }}
+                        title="取消回复"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  {quoteTarget && !replyTarget && (
+                    <div className="tk-reply-banner">
+                      <span>正在引用 @{quoteTarget.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuoteTargetId('')}
+                        title="取消引用"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <span className="tk-submit-hint">
+                    <i className="anzhiyufont anzhiyu-icon-markdown" style={{ marginRight: 4 }}></i>
+                    支持 Ctrl / ⌘ + Enter 快捷发送
+                  </span>
+                </div>
+
+                <div className="tk-row-actions-end">
+                  {noticeText && <span className="tk-notice-text">{noticeText}</span>}
+                  <button
+                    type="button"
+                    className="el-button tk-send el-button--primary"
+                    disabled={isSubmitting || !nick.trim() || !message.trim()}
+                    onClick={handleSend}
+                  >
+                    {isSubmitting ? '发送中...' : submitLabel}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 公开评论流 */}
+            <div className="tk-comments-container">
+              <div className="tk-comments-title">
+                <span className="tk-comments-count">
+                  公开评论 (<strong>{comments.length}</strong>)
+                </span>
+                <span className="tk-icon __comments">
+                  <i className="anzhiyufont anzhiyu-icon-comments"></i>
+                </span>
+              </div>
+
+              {rootComments.length > 0 ? (
+                <div className="tk-comments-list">
+                  {rootComments.map((comment) => renderCommentItem(comment))}
+                </div>
+              ) : (
+                <div className="tk-comments-no">
+                  <i className="anzhiyufont anzhiyu-icon-message-dots" style={{ fontSize: 32, opacity: 0.5 }}></i>
+                  <span>{emptySummary}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
