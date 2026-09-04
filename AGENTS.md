@@ -93,7 +93,7 @@
 - [x] 优化二次激活机制：当 `#post-comment` 从底部移出消失后，若用户再次向下滚动并使 `#post-comment` 顶部与 `#nav` 平齐时重新激活。
 - [x] 自动化测试套件（`scripts/verify-pagination-post.mjs`）全量更新与端到端验证通过。
 
-### Task 11: Telegram 推广翻转卡片 (flip-content) 3D 渲染与 QR-Code 回归修复
+### Task 11: Telegram 推广翻转卡片 (flip-content) 3D 渲染与 QR-Code 回归修复 (`f19554c`)
 - [x] 修复 3D 坐标空间扁平化缺陷：清除 `#flip-wrapper`、`#flip-content`、`.promo-widget` 及相关外部 CSS 中的 `overflow: hidden`，恢复标准 `transform-style: preserve-3d` 与 `perspective: 1000px`。
 - [x] 修复背面 QR-Code 渲染与翻转失效：为 `.front-face` 与 `.back-face` 精准配置 `-webkit-backface-visibility: hidden` 与 `transform: rotateY(...)`，确保正面与背面在旋转 180° 时精准交替，杜绝文字镜像反转或空白。
 - [x] 完善配置链路：在 `PromoWidgetCard.astro` 中打通 `siteConfig.aside.telegramWidget` 的全部字段（`subtitle`、`backLabel`、`summary`、`qrCrop`），确保二维码图片 (`@chronoral.tg.jpg`)、说明文本及加入按钮完整展示。
