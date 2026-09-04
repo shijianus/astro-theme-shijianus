@@ -21,12 +21,104 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
 };
 
+// In-memory test store for /api/comments during static test server run
+const testCommentsDb = new Map();
+
 function createStaticServer(distDir, port = 4322) {
   return new Promise((resolve) => {
-    const server = http.createServer((req, res) => {
-      let reqPath = decodeURIComponent(new URL(req.url, `http://localhost:${port}`).pathname);
-      let filePath = path.join(distDir, reqPath);
+    const server = http.createServer(async (req, res) => {
+      const parsedUrl = new URL(req.url, `http://localhost:${port}`);
+      let reqPath = decodeURIComponent(parsedUrl.pathname);
 
+      // Handle /api/comments endpoint in static test server
+      if (reqPath === '/api/comments') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Comment-Session-Token');
+
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204);
+          res.end();
+          return;
+        }
+
+        if (req.method === 'GET') {
+          const slug = parsedUrl.searchParams.get('slug') || '';
+          const list = Array.from(testCommentsDb.values())
+            .filter((c) => c.postSlug === slug && c.status !== 'deleted')
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, comments: list }));
+          return;
+        }
+
+        if (req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', () => {
+            const payload = JSON.parse(body || '{}');
+            const action = payload.action || 'create';
+
+            if (action === 'create') {
+              const id = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const sessionToken = payload.sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+              const newComment = {
+                id,
+                postSlug: payload.slug,
+                parentId: payload.parentId || null,
+                quoteId: payload.quoteId || null,
+                authorId: payload.authorId || `vis_${Date.now()}`,
+                authorName: payload.authorName || '访客',
+                authorAvatar: payload.authorAvatar || '',
+                authorWebsite: payload.authorWebsite || '',
+                authorRole: payload.authorRole || 'visitor',
+                message: payload.message,
+                likesCount: 0,
+                status: 'published',
+                createdAt: new Date().toISOString(),
+                sessionToken,
+              };
+              testCommentsDb.set(id, newComment);
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, comment: newComment, sessionToken }));
+              return;
+            }
+
+            if (action === 'edit') {
+              const item = testCommentsDb.get(payload.id);
+              if (!item) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Not found' }));
+                return;
+              }
+              item.message = payload.message;
+              item.updatedAt = new Date().toISOString();
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, message: 'Updated' }));
+              return;
+            }
+
+            if (action === 'delete') {
+              const item = testCommentsDb.get(payload.id);
+              if (item) item.status = 'deleted';
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, message: 'Deleted' }));
+              return;
+            }
+
+            if (action === 'like') {
+              const item = testCommentsDb.get(payload.id);
+              if (item) item.likesCount = (item.likesCount || 0) + 1;
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, likesCount: item?.likesCount || 1 }));
+              return;
+            }
+          });
+          return;
+        }
+      }
+
+      let filePath = path.join(distDir, reqPath);
       if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
         filePath = path.join(filePath, 'index.html');
       }
@@ -49,7 +141,7 @@ function createStaticServer(distDir, port = 4322) {
     });
 
     server.listen(port, () => {
-      console.log(`✅ Pure Node Static Server listening at http://localhost:${port}`);
+      console.log(`✅ Static Test Server listening at http://localhost:${port}`);
       resolve(server);
     });
   });
@@ -70,176 +162,151 @@ async function run() {
       timeout: 30000,
     });
 
-    // Scroll to #post-comment
-    console.log('📜 Scrolling to #post-comment to trigger visible hydration...');
+    console.log('📜 Scrolling to #post-comment...');
     await page.locator('#post-comment').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
     // 1. HR Separator Check
     const hrCheck = await page.evaluate(() => {
-      const postComment = document.querySelector('#post-comment');
-      if (!postComment) return { found: false, error: '#post-comment not found' };
-
-      const prev = postComment.previousElementSibling;
-      const hr = prev && prev.tagName === 'HR' ? prev : document.querySelector('hr.custom-hr');
+      const hr = document.querySelector('hr.custom-hr');
       const cs = hr ? window.getComputedStyle(hr) : null;
-
       return {
-        found: true,
-        hasHr: Boolean(hr),
-        hrTag: hr?.tagName,
-        hrClass: hr?.className,
+        found: Boolean(hr),
         borderTopStyle: cs?.borderTopStyle,
-        borderTopColor: cs?.borderTopColor,
         margin: cs?.margin,
       };
     });
-
     console.log('1. HR Separator Check:', JSON.stringify(hrCheck, null, 2));
 
-    // 2. #post-comment Outer Container Check (Ensuring no outer wrapper card or excessive radius)
-    const postCommentCheck = await page.evaluate(() => {
-      const el = document.querySelector('#post-comment');
-      if (!el) return null;
-      const cs = window.getComputedStyle(el);
+    // 2. Absence of tk-meta-input (no fake/redundant 3 input fields)
+    const metaInputCheck = await page.evaluate(() => {
+      const metaInput = document.querySelector('#post-comment .tk-meta-input');
       return {
-        display: cs.display,
-        background: cs.backgroundColor,
-        borderRadius: cs.borderRadius,
-        border: cs.border,
-        boxShadow: cs.boxShadow,
-        padding: cs.padding,
+        hasMetaInput: Boolean(metaInput),
       };
     });
+    console.log('2. tk-meta-input Check (should be false):', JSON.stringify(metaInputCheck, null, 2));
+    if (metaInputCheck.hasMetaInput) {
+      throw new Error('tk-meta-input should NOT exist!');
+    }
 
-    console.log('2. #post-comment Outer Layout Check:', JSON.stringify(postCommentCheck, null, 2));
-
-    // 3. .comment-head Check
-    const headCheck = await page.evaluate(() => {
-      const el = document.querySelector('#post-comment .comment-head');
-      if (!el) return null;
-      const headline = el.querySelector('.comment-headline');
-      const randomBtn = el.querySelector('.comment-random-btn');
-      const privacyBtn = el.querySelector('.comment-privacy-btn');
-      const tips = el.querySelector('.comment-tips');
-      return {
-        hasHead: true,
-        headlineText: headline?.textContent?.trim(),
-        hasRandomBtn: Boolean(randomBtn),
-        randomBtnText: randomBtn?.textContent?.trim(),
-        hasPrivacyBtn: Boolean(privacyBtn),
-        privacyBtnText: privacyBtn?.textContent?.trim(),
-        hasTips: Boolean(tips),
-        tipsText: tips?.textContent?.trim(),
-        tipsBg: tips ? window.getComputedStyle(tips).backgroundColor : null,
-      };
-    });
-
-    console.log('3. .comment-head Check:', JSON.stringify(headCheck, null, 2));
-
-    // 4. .tk-submit Form & Meta Inputs Check
-    const submitCheck = await page.evaluate(() => {
-      const nickGroup = document.querySelector('#post-comment .el-input-group:nth-child(1)');
-      const mailGroup = document.querySelector('#post-comment .el-input-group:nth-child(2)');
-      const linkGroup = document.querySelector('#post-comment .el-input-group:nth-child(3)');
-      const textarea = document.querySelector('#post-comment .el-textarea__inner');
-      const counter = document.querySelector('#post-comment .el-input__count');
+    // 3. Avatar & Textarea Alignment Check
+    const layoutCheck = await page.evaluate(() => {
+      const row = document.querySelector('#post-comment .tk-submit .tk-row');
+      const avatar = document.querySelector('#post-comment .tk-submit .tk-avatar');
+      const textarea = document.querySelector('#post-comment .tk-submit .el-textarea__inner');
+      const identity = document.querySelector('#post-comment .tk-user-identity');
       const sendBtn = document.querySelector('#post-comment .tk-send');
 
+      const avatarRect = avatar?.getBoundingClientRect();
+      const textareaRect = textarea?.getBoundingClientRect();
       const sendCs = sendBtn ? window.getComputedStyle(sendBtn) : null;
-      const inputCs = nickGroup ? window.getComputedStyle(nickGroup) : null;
 
       return {
-        hasNickGroup: Boolean(nickGroup),
-        nickLabel: nickGroup?.querySelector('.el-input-group__prepend')?.textContent?.trim(),
-        hasMailGroup: Boolean(mailGroup),
-        mailLabel: mailGroup?.querySelector('.el-input-group__prepend')?.textContent?.trim(),
-        hasLinkGroup: Boolean(linkGroup),
-        linkLabel: linkGroup?.querySelector('.el-input-group__prepend')?.textContent?.trim(),
-        inputBorderRadius: inputCs?.borderRadius,
+        hasRow: Boolean(row),
+        hasAvatar: Boolean(avatar),
         hasTextarea: Boolean(textarea),
-        placeholder: textarea?.getAttribute('placeholder'),
-        counterText: counter?.textContent?.trim(),
-        hasSendBtn: Boolean(sendBtn),
-        sendBtnText: sendBtn?.textContent?.trim(),
+        hasIdentity: Boolean(identity),
+        avatarTop: avatarRect?.top,
+        textareaTop: textareaRect?.top,
+        isHorizontallyAdjacent: (textareaRect?.left || 0) > (avatarRect?.right || 0),
         sendBtnBg: sendCs?.backgroundColor,
-        sendBtnColor: sendCs?.color,
         sendBtnRadius: sendCs?.borderRadius,
       };
     });
+    console.log('3. Form Layout & Alignment Check:', JSON.stringify(layoutCheck, null, 2));
 
-    console.log('4. .tk-submit Form Check:', JSON.stringify(submitCheck, null, 2));
-
-    // 5. Public Comments Stream Check
-    const streamCheck = await page.evaluate(() => {
-      const title = document.querySelector('#post-comment .tk-comments-title');
+    // 4. Zero Fake Data Check (initially 0 comments)
+    const initialCommentsCheck = await page.evaluate(() => {
+      const emptyBox = document.querySelector('#post-comment .tk-comments-no');
       const count = document.querySelector('#post-comment .tk-comments-count');
-      const comments = document.querySelectorAll('#post-comment .tk-comment');
-      const firstComment = comments[0];
-      const firstNick = firstComment?.querySelector('.tk-nick')?.textContent?.trim();
-      const firstBadge = firstComment?.querySelector('.tk-badge')?.textContent?.trim();
-      const firstTime = firstComment?.querySelector('.tk-time')?.textContent?.trim();
-      const firstActions = firstComment?.querySelectorAll('.tk-action-button');
-      const actionLabels = Array.from(firstActions || []).map((a) => a.textContent.trim());
-      const replies = document.querySelectorAll('#post-comment .tk-replies .tk-comment');
-
+      const items = document.querySelectorAll('#post-comment .tk-comment');
       return {
-        hasTitle: Boolean(title),
+        hasEmptyPlaceholder: Boolean(emptyBox),
+        emptyText: emptyBox?.textContent?.trim(),
         countText: count?.textContent?.trim(),
-        totalRenderedComments: comments.length,
-        firstNick,
-        firstBadge,
-        firstTime,
-        actionButtons: actionLabels,
-        repliesCount: replies.length,
+        totalRenderedComments: items.length,
       };
     });
+    console.log('4. Zero Fake Data Check (Fresh Start):', JSON.stringify(initialCommentsCheck, null, 2));
+    if (initialCommentsCheck.totalRenderedComments !== 0) {
+      throw new Error(`Expected 0 initial comments, but found ${initialCommentsCheck.totalRenderedComments}! Fake data must not exist.`);
+    }
 
-    console.log('5. Public Comments Stream Check:', JSON.stringify(streamCheck, null, 2));
-
-    // 6. Interactive Testing: Anonymous click & Submit new comment
-    console.log('6. Testing Interactive Commenting Flow...');
-    const initialCount = streamCheck.totalRenderedComments;
-
-    // Click anonymous random name
-    await page.click('#post-comment .comment-random-btn');
-    await page.waitForTimeout(300);
-    const nickVal = await page.$eval('#post-comment input[name="nick"]', (el) => el.value);
-    console.log(`   -> Generated Nickname: "${nickVal}"`);
-
-    // Type comment
-    await page.fill('#post-comment .el-textarea__inner', '这是一条测试 Anzhiyu 风格的公开评论。UI 优雅、无过度圆角、层次分明！');
-    const updatedCounter = await page.$eval('#post-comment .el-input__count', (el) => el.textContent);
-    console.log(`   -> Updated Counter: ${updatedCounter}`);
-
-    // Click Send
+    // 5. Visitor Comment Submission Flow
+    console.log('5. Submitting Real Visitor Comment...');
+    const testMessage = '这是访客在当前会话中发布的真实留言，依托 Cloudflare D1 存储。';
+    await page.fill('#post-comment .el-textarea__inner', testMessage);
     await page.click('#post-comment .tk-send');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(600);
 
-    const postSubmitCount = await page.$$eval('#post-comment .tk-comment', (els) => els.length);
-    console.log(`   -> Total comments after submit: ${postSubmitCount} (Initial: ${initialCount})`);
+    const postSubmitCheck = await page.evaluate(() => {
+      const count = document.querySelector('#post-comment .tk-comments-count');
+      const items = document.querySelectorAll('#post-comment .tk-comment');
+      const first = items[0];
+      const nick = first?.querySelector('.tk-nick')?.textContent?.trim();
+      const badge = first?.querySelector('.tk-badge')?.textContent?.trim();
+      const content = first?.querySelector('.tk-content')?.textContent?.trim();
+      const hasEditBtn = Boolean(first?.querySelector('.tk-action-edit'));
+      const hasDeleteBtn = Boolean(first?.querySelector('.tk-action-delete'));
 
-    const latestCommentText = await page.$eval(
-      '#post-comment .tk-comment:first-child .tk-content',
-      (el) => el.textContent.trim()
-    );
-    console.log(`   -> Newest comment content: "${latestCommentText}"`);
+      return {
+        countText: count?.textContent?.trim(),
+        totalRendered: items.length,
+        firstNick: nick,
+        firstBadge: badge,
+        firstContent: content,
+        hasEditBtn,
+        hasDeleteBtn,
+      };
+    });
+    console.log('   -> Post Submit Result:', JSON.stringify(postSubmitCheck, null, 2));
+    if (postSubmitCheck.totalRendered !== 1) {
+      throw new Error('Expected 1 comment after submission!');
+    }
+    if (!postSubmitCheck.hasEditBtn || !postSubmitCheck.hasDeleteBtn) {
+      throw new Error('Visitor should have edit/delete permission right after posting in current session!');
+    }
 
-    // 7. Mobile Viewport Check (375x812)
-    console.log('7. Testing Mobile Viewport (375x812)...');
+    // 6. Visitor Inline Edit Flow
+    console.log('6. Testing Visitor Inline Edit...');
+    await page.click('#post-comment .tk-action-edit');
+    await page.waitForTimeout(300);
+    const updatedMessage = '修改后的留言内容：格式严谨，权限受会话保护。';
+    await page.fill('#post-comment .tk-inline-edit textarea', updatedMessage);
+    await page.click('#post-comment .tk-btn-save');
+    await page.waitForTimeout(600);
+
+    const editedContent = await page.$eval('#post-comment .tk-content', (el) => el.textContent.trim());
+    console.log(`   -> Edited comment content in DOM: "${editedContent}"`);
+
+    // 7. Refresh Page to Test Environment Shift / Session Expiry
+    console.log('7. Refreshing Page (Simulating environment shift / new visitor session)...');
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.locator('#post-comment').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    const afterRefreshCheck = await page.evaluate(() => {
+      const items = document.querySelectorAll('#post-comment .tk-comment');
+      const first = items[0];
+      const hasEditBtn = Boolean(first?.querySelector('.tk-action-edit'));
+      const hasDeleteBtn = Boolean(first?.querySelector('.tk-action-delete'));
+      return {
+        totalRendered: items.length,
+        hasEditBtn,
+        hasDeleteBtn,
+      };
+    });
+    console.log('   -> After Refresh Qualification Check:', JSON.stringify(afterRefreshCheck, null, 2));
+    if (afterRefreshCheck.hasEditBtn || afterRefreshCheck.hasDeleteBtn) {
+      throw new Error('Visitor edit/delete permission should automatically expire after refresh/environment switch!');
+    }
+    console.log('   -> ✅ Confirmed: visitor edit/delete qualification automatically expired upon page refresh!');
+
+    // 8. Mobile Screenshot (375x812) & Desktop Screenshot (1440x900)
+    console.log('8. Taking Screenshots for Verification...');
     await page.setViewportSize({ width: 375, height: 812 });
     await page.waitForTimeout(300);
-
-    const mobileCheck = await page.evaluate(() => {
-      const metaInput = document.querySelector('#post-comment .tk-meta-input');
-      const cs = metaInput ? window.getComputedStyle(metaInput) : null;
-      return {
-        gridTemplateColumns: cs?.gridTemplateColumns,
-      };
-    });
-    console.log('   -> Mobile Meta Input Layout:', JSON.stringify(mobileCheck));
-
-    // Take screenshots
     await page.locator('#post-comment').screenshot({ path: 'scripts/post-comment-screenshot-mobile.png' });
     console.log('📸 Mobile Screenshot saved to scripts/post-comment-screenshot-mobile.png');
 
@@ -249,7 +316,7 @@ async function run() {
     console.log('📸 Desktop Screenshot saved to scripts/post-comment-screenshot-desktop.png');
 
     await browser.close();
-    console.log('🎉 ALL VERIFICATION CHECKS PASSED PERFECTLY!');
+    console.log('🎉 ALL COMMENT SYSTEM VERIFICATION CHECKS PASSED PERFECTLY!');
   } catch (err) {
     console.error('❌ Verification failed:', err);
     process.exitCode = 1;

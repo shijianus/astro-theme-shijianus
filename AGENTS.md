@@ -154,3 +154,14 @@
   3. `.tk-comments-container`：公开评论流包含专属徽章（博主/访客/置顶）、动态相对时间戳、点赞动效、回复/引用浮动面板与层级嵌套回复。
 - [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-post-comment.mjs`）：桌面端与移动端断言全部通过，包含虚线分割线、布局去卡片化、交互发布与响应式排版验证。
 
+### Task 19: 原生自建留言系统内嵌与 D1 数据库集成、访客会话权限与零虚假数据净化
+- [x] 全面禁止与清除虚假数据：彻底删除 `createDemoLocalThread` 与任何静态 mock 评论，保证线上环境严格只展示 D1 真实评论或优雅空状态（`0` 评论提示）。
+- [x] 表单与头像重构：移除 `.tk-meta-input` 三列输入框；头像与 Textarea 水平平齐对齐；头像与当前登录用户身份（`readCommentIdentity()` 及 `.theme-account-drawer__summary-avatar`）双向打通，未登录状态回退为默认访客徽章。
+- [x] Cloudflare D1 原生留言后端 API (`functions/api/comments.ts` & `migrations/0003_comments.sql`)：
+  1. `GET /api/comments?slug=...`：安全拉取真实已发布评论与回复树（隐藏 IP、Token 与邮箱等敏感信息）；
+  2. `POST /api/comments`：处理发表、点赞、编辑、删除、管理状态变更；新留言异步推送 Telegram 机器人通知；
+  3. 保留站长管理接口（`X-Admin-Token` 与状态变更 API）为后续账号中心开放打好底座。
+- [x] 访客临时会话权限机制：访客发表评论后在当前浏览器页面内存中持有临时凭证，可进行就地编辑（Inline Edit）与删除；一旦刷新页面（F5）或切换会话/浏览器环境，编辑/删除资格即刻自动失效。
+- [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-post-comment.mjs`），全量验证虚假数据为零、去元输入框、头像平齐、发布/编辑/会话刷新失效全链路。
+
+

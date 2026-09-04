@@ -20,8 +20,8 @@ export function withCors(request: Request, env: AppEnv, init?: HeadersInit) {
   const headers = new Headers(init);
   const origin = resolveOrigin(request, env);
   headers.set('Access-Control-Allow-Origin', origin);
-  headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Shijianus-Device-Id');
+  headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Shijianus-Device-Id, X-Comment-Session-Token, X-Admin-Token, Authorization');
   headers.set('Access-Control-Max-Age', '86400');
   headers.set('Vary', 'Origin');
   return headers;

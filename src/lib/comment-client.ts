@@ -1,5 +1,5 @@
-export type CommentRole = 'reader' | 'admin';
-export type CommentStatus = 'published' | 'pinned' | 'limited';
+export type CommentRole = 'reader' | 'admin' | 'visitor';
+export type CommentStatus = 'published' | 'pinned' | 'hidden' | 'deleted' | 'limited';
 
 export type CommentIdentity = {
   id: string;
@@ -8,6 +8,24 @@ export type CommentIdentity = {
   website: string;
   avatar: string;
   role: CommentRole;
+};
+
+export type BlogComment = {
+  id: string;
+  postSlug: string;
+  parentId?: string | null;
+  quoteId?: string | null;
+  authorId: string;
+  authorName: string;
+  authorEmail?: string;
+  authorAvatar?: string;
+  authorWebsite?: string;
+  authorRole: 'admin' | 'reader' | 'visitor';
+  message: string;
+  likesCount: number;
+  status: 'published' | 'pinned' | 'hidden' | 'deleted';
+  createdAt: string;
+  updatedAt?: string;
 };
 
 export type StoredComment = {
@@ -31,9 +49,11 @@ export const COMMENT_ACCOUNT_KEY = 'shijianus-comment-account';
 export const COMMENT_ACCOUNT_LEGACY_KEY = 'shijianus-comment-identity';
 export const COMMENT_THREAD_PREFIX = 'shijianus-comments:';
 
+export type VisitorEditPolicy = 'in_memory_until_refresh' | 'session' | 'disabled';
+export const DEFAULT_VISITOR_EDIT_POLICY: VisitorEditPolicy = 'in_memory_until_refresh';
+
 function safeParse<T>(value: string | null): T | null {
   if (!value) return null;
-
   try {
     return JSON.parse(value) as T;
   } catch {
@@ -82,7 +102,8 @@ export function normaliseComment(
   } satisfies StoredComment;
 }
 
-export function readCommentIdentity() {
+export function readCommentIdentity(): CommentIdentity | null {
+  if (typeof window === 'undefined') return null;
   try {
     const next = safeParse<CommentIdentity>(window.localStorage.getItem(COMMENT_ACCOUNT_KEY));
     if (next) return next;
@@ -103,6 +124,7 @@ export function readCommentIdentity() {
 }
 
 export function writeCommentIdentity(identity: CommentIdentity | null) {
+  if (typeof window === 'undefined') return;
   try {
     if (identity) {
       const payload = JSON.stringify(identity);
@@ -130,64 +152,18 @@ export function createPresetCommentIdentity(role: CommentRole): CommentIdentity 
   };
 }
 
-export function createDemoLocalThread(slug: string): StoredComment[] {
-  const admin = createPresetCommentIdentity('admin');
-  const reader = createPresetCommentIdentity('reader');
-  const observerId = 'shijianus-local-observer';
-  const now = Date.now();
-
-  return [
-    {
-      id: `demo-root-${slug}-reader`,
-      authorId: reader.id,
-      name: reader.name,
-      email: reader.email,
-      website: reader.website,
-      avatar: '',
-      message: '先用管理员账号测试一遍实际流程会更稳，尤其是置顶、限制、编辑、删除和追评这些管理动作。',
-      createdAt: new Date(now - 1000 * 60 * 40).toISOString(),
-      likes: [admin.id],
-      status: 'published',
-    },
-    {
-      id: `demo-root-${slug}-observer`,
-      authorId: observerId,
-      name: '布局观察者',
-      email: 'observer@local.shijianus.test',
-      website: '',
-      avatar: '',
-      message: '我更关心移动端排版，特别是评论区、文章头图和侧栏在手机上的折叠是否自然。',
-      createdAt: new Date(now - 1000 * 60 * 24).toISOString(),
-      likes: [],
-      status: 'published',
-    },
-    {
-      id: `demo-reply-${slug}-observer`,
-      authorId: observerId,
-      name: '布局观察者',
-      email: 'observer@local.shijianus.test',
-      website: '',
-      avatar: '',
-      message: '@站点读者 同意。建议先载入演示评论，再切换管理员账号验证整套交互是否顺手。',
-      createdAt: new Date(now - 1000 * 60 * 12).toISOString(),
-      parentId: `demo-root-${slug}-reader`,
-      quoteId: `demo-root-${slug}-reader`,
-      likes: [],
-      status: 'published',
-    },
-  ];
-}
-
-export function readLocalThread(slug: string) {
+export function readLocalThread(slug: string): StoredComment[] {
+  if (typeof window === 'undefined') return [];
   try {
     const parsed = safeParse<StoredComment[]>(window.localStorage.getItem(`${COMMENT_THREAD_PREFIX}${slug}`));
-    return Array.isArray(parsed) ? parsed.map(normaliseComment).filter(Boolean) as StoredComment[] : [];
+    return Array.isArray(parsed) ? (parsed.map(normaliseComment).filter(Boolean) as StoredComment[]) : [];
   } catch {
     return [];
   }
 }
 
-export function readAllLocalThreads() {
+export function readAllLocalThreads(): (StoredComment & { slug: string })[] {
+  if (typeof window === 'undefined') return [];
   try {
     return Object.keys(window.localStorage)
       .filter((key) => key.startsWith(COMMENT_THREAD_PREFIX))
@@ -204,5 +180,129 @@ export function readAllLocalThreads() {
 }
 
 export function getCommentInitials(name: string) {
-  return name.trim().slice(0, 1).toUpperCase() || 'U';
+  return name.trim().slice(0, 1).toUpperCase() || '访';
+}
+
+// ----------------------------------------------------
+// Real API Client Methods for Cloudflare D1 Backend
+// ----------------------------------------------------
+export async function fetchComments(slug: string): Promise<BlogComment[]> {
+  try {
+    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data && data.ok && Array.isArray(data.comments)) {
+      return data.comments;
+    }
+    return [];
+  } catch (err) {
+    console.warn('[CommentClient] Failed to fetch comments:', err);
+    return [];
+  }
+}
+
+export async function createComment(params: {
+  slug: string;
+  message: string;
+  parentId?: string | null;
+  quoteId?: string | null;
+  sessionToken?: string;
+  author?: CommentIdentity | null;
+}): Promise<{ ok: boolean; comment?: BlogComment; sessionToken?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(params.sessionToken ? { 'X-Comment-Session-Token': params.sessionToken } : {}),
+      },
+      body: JSON.stringify({
+        action: 'create',
+        slug: params.slug,
+        message: params.message,
+        parentId: params.parentId || undefined,
+        quoteId: params.quoteId || undefined,
+        sessionToken: params.sessionToken,
+        authorId: params.author?.id,
+        authorName: params.author?.name || '访客',
+        authorEmail: params.author?.email || '',
+        authorAvatar: params.author?.avatar || '',
+        authorWebsite: params.author?.website || '',
+        authorRole: params.author?.role || 'visitor',
+      }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接失败' };
+  }
+}
+
+export async function editComment(params: {
+  id: string;
+  message: string;
+  sessionToken: string;
+  adminToken?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(params.sessionToken ? { 'X-Comment-Session-Token': params.sessionToken } : {}),
+        ...(params.adminToken ? { 'X-Admin-Token': params.adminToken } : {}),
+      },
+      body: JSON.stringify({
+        action: 'edit',
+        id: params.id,
+        message: params.message,
+        sessionToken: params.sessionToken,
+        adminToken: params.adminToken,
+      }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接失败' };
+  }
+}
+
+export async function deleteComment(params: {
+  id: string;
+  sessionToken: string;
+  adminToken?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(params.sessionToken ? { 'X-Comment-Session-Token': params.sessionToken } : {}),
+        ...(params.adminToken ? { 'X-Admin-Token': params.adminToken } : {}),
+      },
+      body: JSON.stringify({
+        action: 'delete',
+        id: params.id,
+        sessionToken: params.sessionToken,
+        adminToken: params.adminToken,
+      }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接失败' };
+  }
+}
+
+export async function likeComment(id: string): Promise<{ ok: boolean; likesCount?: number }> {
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'like', id }),
+    });
+    return await res.json();
+  } catch {
+    return { ok: false };
+  }
 }
