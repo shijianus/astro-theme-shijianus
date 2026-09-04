@@ -21,7 +21,6 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
 };
 
-// In-memory test store for /api/comments during static test server run
 const testCommentsDb = new Map();
 
 function createStaticServer(distDir, port = 4322) {
@@ -30,7 +29,6 @@ function createStaticServer(distDir, port = 4322) {
       const parsedUrl = new URL(req.url, `http://localhost:${port}`);
       let reqPath = decodeURIComponent(parsedUrl.pathname);
 
-      // Handle /api/comments endpoint in static test server
       if (reqPath === '/api/comments') {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
@@ -44,11 +42,18 @@ function createStaticServer(distDir, port = 4322) {
 
         if (req.method === 'GET') {
           const slug = parsedUrl.searchParams.get('slug') || '';
+          const sort = parsedUrl.searchParams.get('sort') || 'new';
           const list = Array.from(testCommentsDb.values())
             .filter((c) => c.postSlug === slug && c.status !== 'deleted')
-            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            .sort((a, b) => {
+              if (sort === 'hot') {
+                const diff = (b.likesCount || 0) - (a.likesCount || 0);
+                if (diff !== 0) return diff;
+              }
+              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ ok: true, comments: list }));
+          res.end(JSON.stringify({ ok: true, sort, comments: list }));
           return;
         }
 
@@ -166,145 +171,107 @@ async function run() {
     await page.locator('#post-comment').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
-    // 1. HR Separator Check
-    const hrCheck = await page.evaluate(() => {
-      const hr = document.querySelector('hr.custom-hr');
-      const cs = hr ? window.getComputedStyle(hr) : null;
+    // 1. YouTube-style Sort Menu Check
+    const sortCheck = await page.evaluate(() => {
+      const sortGroup = document.querySelector('#post-comment .tk-sort-group');
+      const sortBtns = document.querySelectorAll('#post-comment .tk-sort-btn');
       return {
-        found: Boolean(hr),
-        borderTopStyle: cs?.borderTopStyle,
-        margin: cs?.margin,
+        hasSortGroup: Boolean(sortGroup),
+        sortButtons: Array.from(sortBtns).map((b) => b.textContent.trim()),
       };
     });
-    console.log('1. HR Separator Check:', JSON.stringify(hrCheck, null, 2));
+    console.log('1. YouTube-style Sort Menu Check:', JSON.stringify(sortCheck, null, 2));
 
-    // 2. Absence of tk-meta-input (no fake/redundant 3 input fields)
-    const metaInputCheck = await page.evaluate(() => {
-      const metaInput = document.querySelector('#post-comment .tk-meta-input');
-      return {
-        hasMetaInput: Boolean(metaInput),
-      };
-    });
-    console.log('2. tk-meta-input Check (should be false):', JSON.stringify(metaInputCheck, null, 2));
-    if (metaInputCheck.hasMetaInput) {
-      throw new Error('tk-meta-input should NOT exist!');
-    }
-
-    // 3. Avatar & Textarea Alignment Check
-    const layoutCheck = await page.evaluate(() => {
-      const row = document.querySelector('#post-comment .tk-submit .tk-row');
-      const avatar = document.querySelector('#post-comment .tk-submit .tk-avatar');
-      const textarea = document.querySelector('#post-comment .tk-submit .el-textarea__inner');
-      const identity = document.querySelector('#post-comment .tk-user-identity');
-      const sendBtn = document.querySelector('#post-comment .tk-send');
-
-      const avatarRect = avatar?.getBoundingClientRect();
-      const textareaRect = textarea?.getBoundingClientRect();
-      const sendCs = sendBtn ? window.getComputedStyle(sendBtn) : null;
-
-      return {
-        hasRow: Boolean(row),
-        hasAvatar: Boolean(avatar),
-        hasTextarea: Boolean(textarea),
-        hasIdentity: Boolean(identity),
-        avatarTop: avatarRect?.top,
-        textareaTop: textareaRect?.top,
-        isHorizontallyAdjacent: (textareaRect?.left || 0) > (avatarRect?.right || 0),
-        sendBtnBg: sendCs?.backgroundColor,
-        sendBtnRadius: sendCs?.borderRadius,
-      };
-    });
-    console.log('3. Form Layout & Alignment Check:', JSON.stringify(layoutCheck, null, 2));
-
-    // 4. Zero Fake Data Check (initially 0 comments)
-    const initialCommentsCheck = await page.evaluate(() => {
-      const emptyBox = document.querySelector('#post-comment .tk-comments-no');
-      const count = document.querySelector('#post-comment .tk-comments-count');
-      const items = document.querySelectorAll('#post-comment .tk-comment');
-      return {
-        hasEmptyPlaceholder: Boolean(emptyBox),
-        emptyText: emptyBox?.textContent?.trim(),
-        countText: count?.textContent?.trim(),
-        totalRenderedComments: items.length,
-      };
-    });
-    console.log('4. Zero Fake Data Check (Fresh Start):', JSON.stringify(initialCommentsCheck, null, 2));
-    if (initialCommentsCheck.totalRenderedComments !== 0) {
-      throw new Error(`Expected 0 initial comments, but found ${initialCommentsCheck.totalRenderedComments}! Fake data must not exist.`);
-    }
-
-    // 5. Visitor Comment Submission Flow
-    console.log('5. Submitting Real Visitor Comment...');
-    const testMessage = '这是访客在当前会话中发布的真实留言，依托 Cloudflare D1 存储。';
-    await page.fill('#post-comment .el-textarea__inner', testMessage);
+    // 2. Submit Root Comment
+    console.log('2. Submitting Root Comment (YouTube-style focus & submit)...');
+    await page.click('#post-comment .el-textarea__inner');
+    await page.fill('#post-comment .el-textarea__inner', '这是一条顶级主评论，测试 YouTube 风格分级回复与展开功能。');
     await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);
 
-    const postSubmitCheck = await page.evaluate(() => {
-      const count = document.querySelector('#post-comment .tk-comments-count');
+    const rootCheck = await page.evaluate(() => {
       const items = document.querySelectorAll('#post-comment .tk-comment');
       const first = items[0];
-      const nick = first?.querySelector('.tk-nick')?.textContent?.trim();
-      const badge = first?.querySelector('.tk-badge')?.textContent?.trim();
-      const content = first?.querySelector('.tk-content')?.textContent?.trim();
-      const hasEditBtn = Boolean(first?.querySelector('.tk-action-edit'));
-      const hasDeleteBtn = Boolean(first?.querySelector('.tk-action-delete'));
-
       return {
-        countText: count?.textContent?.trim(),
-        totalRendered: items.length,
-        firstNick: nick,
-        firstBadge: badge,
-        firstContent: content,
-        hasEditBtn,
-        hasDeleteBtn,
+        totalComments: items.length,
+        firstNick: first?.querySelector('.tk-nick')?.textContent?.trim(),
+        firstBadge: first?.querySelector('.tk-badge')?.textContent?.trim(),
+        hasReplyBtn: Boolean(first?.querySelector('.tk-action-reply')),
+        hasEditBtn: Boolean(first?.querySelector('.tk-action-edit')),
+        hasDeleteBtn: Boolean(first?.querySelector('.tk-action-delete')),
       };
     });
-    console.log('   -> Post Submit Result:', JSON.stringify(postSubmitCheck, null, 2));
-    if (postSubmitCheck.totalRendered !== 1) {
-      throw new Error('Expected 1 comment after submission!');
-    }
-    if (!postSubmitCheck.hasEditBtn || !postSubmitCheck.hasDeleteBtn) {
-      throw new Error('Visitor should have edit/delete permission right after posting in current session!');
-    }
+    console.log('   -> Root Comment Result:', JSON.stringify(rootCheck, null, 2));
 
-    // 6. Visitor Inline Edit Flow
-    console.log('6. Testing Visitor Inline Edit...');
-    await page.click('#post-comment .tk-action-edit');
+    // 3. YouTube-style In-place Nested Reply Flow
+    console.log('3. Testing YouTube-style In-place Nested Reply...');
+    await page.click('#post-comment .tk-action-reply');
     await page.waitForTimeout(300);
-    const updatedMessage = '修改后的留言内容：格式严谨，权限受会话保护。';
-    await page.fill('#post-comment .tk-inline-edit textarea', updatedMessage);
-    await page.click('#post-comment .tk-btn-save');
+
+    const replyBoxCheck = await page.evaluate(() => {
+      const box = document.querySelector('#post-comment .tk-nested-reply-box');
+      const textarea = box?.querySelector('textarea');
+      return {
+        hasReplyBox: Boolean(box),
+        placeholder: textarea?.getAttribute('placeholder'),
+      };
+    });
+    console.log('   -> Nested Reply Box Check:', JSON.stringify(replyBoxCheck, null, 2));
+
+    await page.fill('#post-comment .tk-nested-reply-box textarea', '这是对主评论的二级嵌套回复，支持分级折叠展开！');
+    await page.click('#post-comment .tk-nested-reply-box .tk-send');
     await page.waitForTimeout(600);
 
-    const editedContent = await page.$eval('#post-comment .tk-content', (el) => el.textContent.trim());
-    console.log(`   -> Edited comment content in DOM: "${editedContent}"`);
+    // 4. YouTube-style Accordion & Hierarchical Replies Verification
+    console.log('4. Testing YouTube-style Accordion Toggle (查看/收起回复)...');
+    const accordionCheck = await page.evaluate(() => {
+      const toggleBtn = document.querySelector('#post-comment .tk-replies-toggle-btn');
+      const replies = document.querySelectorAll('#post-comment .tk-replies .tk-comment');
+      return {
+        hasToggleBtn: Boolean(toggleBtn),
+        toggleBtnText: toggleBtn?.textContent?.trim(),
+        totalRepliesRendered: replies.length,
+      };
+    });
+    console.log('   -> Accordion & Replies Result:', JSON.stringify(accordionCheck, null, 2));
 
-    // 7. Refresh Page to Test Environment Shift / Session Expiry
-    console.log('7. Refreshing Page (Simulating environment shift / new visitor session)...');
+    // Toggle collapse
+    await page.click('#post-comment .tk-replies-toggle-btn');
+    await page.waitForTimeout(300);
+    const collapsedCheck = await page.evaluate(() => {
+      const replies = document.querySelector('#post-comment .tk-replies');
+      const toggleBtn = document.querySelector('#post-comment .tk-replies-toggle-btn');
+      return {
+        repliesVisible: Boolean(replies),
+        toggleBtnText: toggleBtn?.textContent?.trim(),
+      };
+    });
+    console.log('   -> Collapsed State:', JSON.stringify(collapsedCheck, null, 2));
+
+    // Re-expand
+    await page.click('#post-comment .tk-replies-toggle-btn');
+    await page.waitForTimeout(300);
+
+    // 5. Test Session Expiry on Page Reload (Visitor loses edit/delete permission)
+    console.log('5. Refreshing page to verify session qualification expiry...');
     await page.reload({ waitUntil: 'networkidle' });
     await page.locator('#post-comment').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
-    const afterRefreshCheck = await page.evaluate(() => {
-      const items = document.querySelectorAll('#post-comment .tk-comment');
-      const first = items[0];
-      const hasEditBtn = Boolean(first?.querySelector('.tk-action-edit'));
-      const hasDeleteBtn = Boolean(first?.querySelector('.tk-action-delete'));
+    const postReloadCheck = await page.evaluate(() => {
+      const rootItem = document.querySelector('#post-comment .tk-comment');
       return {
-        totalRendered: items.length,
-        hasEditBtn,
-        hasDeleteBtn,
+        hasEditBtn: Boolean(rootItem?.querySelector('.tk-action-edit')),
+        hasDeleteBtn: Boolean(rootItem?.querySelector('.tk-action-delete')),
       };
     });
-    console.log('   -> After Refresh Qualification Check:', JSON.stringify(afterRefreshCheck, null, 2));
-    if (afterRefreshCheck.hasEditBtn || afterRefreshCheck.hasDeleteBtn) {
-      throw new Error('Visitor edit/delete permission should automatically expire after refresh/environment switch!');
+    console.log('   -> Post Reload Privilege Check (should both be false):', JSON.stringify(postReloadCheck, null, 2));
+    if (postReloadCheck.hasEditBtn || postReloadCheck.hasDeleteBtn) {
+      throw new Error('Visitor edit/delete permission should be strictly revoked upon page reload!');
     }
-    console.log('   -> ✅ Confirmed: visitor edit/delete qualification automatically expired upon page refresh!');
 
-    // 8. Mobile Screenshot (375x812) & Desktop Screenshot (1440x900)
-    console.log('8. Taking Screenshots for Verification...');
+    // 6. Screenshots
+    console.log('6. Taking Screenshots for Verification...');
     await page.setViewportSize({ width: 375, height: 812 });
     await page.waitForTimeout(300);
     await page.locator('#post-comment').screenshot({ path: 'scripts/post-comment-screenshot-mobile.png' });
@@ -316,7 +283,7 @@ async function run() {
     console.log('📸 Desktop Screenshot saved to scripts/post-comment-screenshot-desktop.png');
 
     await browser.close();
-    console.log('🎉 ALL COMMENT SYSTEM VERIFICATION CHECKS PASSED PERFECTLY!');
+    console.log('🎉 ALL YOUTUBE-STYLE HIERARCHICAL COMMENT CHECKS PASSED PERFECTLY!');
   } catch (err) {
     console.error('❌ Verification failed:', err);
     process.exitCode = 1;

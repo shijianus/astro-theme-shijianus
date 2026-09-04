@@ -186,9 +186,9 @@ export function getCommentInitials(name: string) {
 // ----------------------------------------------------
 // Real API Client Methods for Cloudflare D1 Backend
 // ----------------------------------------------------
-export async function fetchComments(slug: string): Promise<BlogComment[]> {
+export async function fetchComments(slug: string, sort: 'hot' | 'new' = 'new'): Promise<BlogComment[]> {
   try {
-    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=${sort}`);
     if (!res.ok) return [];
     const data = await res.json();
     if (data && data.ok && Array.isArray(data.comments)) {

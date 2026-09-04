@@ -2799,6 +2799,43 @@ body[data-type='post'] hr.custom-hr {
   margin: 0 2px;
 }
 
+/* YouTube-style Sort Menu */
+#post-comment .tk-sort-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+#post-comment .tk-sort-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+#post-comment .tk-sort-btn:hover {
+  color: var(--theme-main, #425aef);
+  background: var(--theme-op);
+}
+
+#post-comment .tk-sort-btn.is-active {
+  color: var(--theme-main, #425aef);
+  font-weight: 700;
+  background: rgba(66, 90, 239, 0.1);
+}
+
+#post-comment .tk-sort-divider {
+  color: var(--text-muted);
+  opacity: 0.4;
+  font-size: 12px;
+}
+
 #post-comment .tk-comments-no {
   display: flex;
   flex-direction: column;
@@ -2831,6 +2868,12 @@ body[data-type='post'] hr.custom-hr {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+}
+
+#post-comment .tk-avatar-small {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 12px !important;
 }
 
 #post-comment .tk-main {
@@ -2885,6 +2928,12 @@ body[data-type='post'] hr.custom-hr {
   color: var(--text-muted);
 }
 
+#post-comment .tk-edited-mark {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 #post-comment .tk-content {
   font-size: 14px;
   line-height: 1.7;
@@ -2892,8 +2941,31 @@ body[data-type='post'] hr.custom-hr {
   word-break: break-word;
 }
 
+#post-comment .tk-content.is-clamped p {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 #post-comment .tk-content p {
   margin: 4px 0;
+}
+
+#post-comment .tk-expand-text-btn {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: var(--theme-main, #425aef);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 0;
+  margin-top: 2px;
+}
+
+#post-comment .tk-expand-text-btn:hover {
+  text-decoration: underline;
 }
 
 /* Action Toolbar for each comment */
@@ -2924,6 +2996,16 @@ body[data-type='post'] hr.custom-hr {
   background: var(--theme-op);
 }
 
+#post-comment .tk-action-btn.tk-action-like:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+#post-comment .tk-action-btn.tk-action-reply {
+  color: var(--theme-main, #425aef);
+  font-weight: 600;
+}
+
 #post-comment .tk-action-btn.tk-action-edit {
   color: var(--theme-main, #425aef);
   font-weight: 600;
@@ -2936,6 +3018,62 @@ body[data-type='post'] hr.custom-hr {
 
 #post-comment .tk-action-btn.tk-action-delete:hover {
   background: rgba(245, 108, 108, 0.12);
+}
+
+/* In-place Nested Reply Form (YouTube style) */
+#post-comment .tk-nested-reply-box {
+  margin: 10px 0 6px 0;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--card-bg) 60%, var(--secondbg));
+  border-radius: 8px;
+  border: var(--style-border-always);
+}
+
+#post-comment .tk-nested-reply-box .el-textarea__inner {
+  min-height: 60px;
+}
+
+#post-comment .tk-nested-reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+#post-comment .tk-send-small {
+  min-width: 70px !important;
+  height: 30px !important;
+  font-size: 12px !important;
+  padding: 0 14px !important;
+}
+
+/* YouTube-style Expandable Replies Accordion */
+#post-comment .tk-replies-section {
+  margin-top: 6px;
+}
+
+#post-comment .tk-replies-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--theme-main, #425aef) 8%, transparent);
+  border: none;
+  color: var(--theme-main, #425aef);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#post-comment .tk-replies-toggle-btn:hover {
+  background: color-mix(in srgb, var(--theme-main, #425aef) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+#post-comment .tk-toggle-icon {
+  font-size: 14px;
 }
 
 /* Inline Edit Block */
@@ -3002,6 +3140,10 @@ body[data-type='post'] hr.custom-hr {
 
 #post-comment .tk-replies .tk-comment {
   padding: 8px 0 0 0;
+  border-top: 1px dashed rgba(161, 172, 247, 0.1);
+}
+
+#post-comment .tk-replies .tk-comment:first-child {
   border-top: none;
 }
 

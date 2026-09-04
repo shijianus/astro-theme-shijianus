@@ -53,6 +53,7 @@ type PostCommentsProps = {
 };
 
 const LIMIT = 500;
+const LONG_TEXT_THRESHOLD = 240;
 
 function formatCommentTime(value: string) {
   try {
@@ -73,6 +74,17 @@ function formatCommentTime(value: string) {
   }
 }
 
+function isEdited(created: string, updated?: string) {
+  if (!updated) return false;
+  try {
+    const cTime = new Date(created).getTime();
+    const uTime = new Date(updated).getTime();
+    return uTime - cTime > 3000; // > 3 seconds difference
+  } catch {
+    return false;
+  }
+}
+
 export function PostComments({
   slug,
   title,
@@ -82,18 +94,37 @@ export function PostComments({
   submitLabel = '发送',
   previewLabel = '预览',
   emptyTitle = '还没有公开评论',
-  emptySummary = '留下你的第一条想法吧～',
+  emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
   tips = ['理性交流', '就事论事', '欢迎补充资料'],
   integration,
 }: PostCommentsProps) {
-  // Comment Thread State (strictly real data from Cloudflare D1 / API)
+  // Comments data state
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
-  const [replyTarget, setReplyTarget] = useState<BlogComment | null>(null);
-  const [quoteTarget, setQuoteTarget] = useState<BlogComment | null>(null);
+  const [sortOrder, setSortOrder] = useState<'hot' | 'new'>('new');
   const [noticeText, setNoticeText] = useState('');
+
+  // Main input state
+  const [mainMessage, setMainMessage] = useState('');
+  const [mainInputFocused, setMainInputFocused] = useState(false);
+
+  // In-place reply state (YouTube style: reply box opens right under the target comment)
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyingTargetAuthor, setReplyingTargetAuthor] = useState<string>('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
+
+  // In-place inline edit state
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingMessage, setEditingMessage] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Expanded replies state (YouTube style: set of root comment IDs whose replies are expanded)
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(() => new Set());
+
+  // Expanded long text state (set of comment IDs with text expanded)
+  const [expandedTexts, setExpandedTexts] = useState<Set<string>>(() => new Set());
 
   // Account identity synchronized with ThemeOverlays account center
   const [account, setAccount] = useState<CommentIdentity | null>(null);
@@ -101,11 +132,6 @@ export function PostComments({
   // In-memory visitor session tokens map: { commentId -> sessionToken }
   // Only valid during this browser page instance; refreshes/clears upon page reload / env switch
   const [visitorSessionTokens, setVisitorSessionTokens] = useState<Map<string, string>>(() => new Map());
-
-  // Inline editing state
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingMessage, setEditingMessage] = useState('');
-  const [savingEdit, setSavingEdit] = useState(false);
 
   // Synchronize account info from localStorage & listen for account changes
   useEffect(() => {
@@ -122,11 +148,11 @@ export function PostComments({
     };
   }, []);
 
-  // Fetch real comments on mount and when slug changes
-  const loadComments = async () => {
+  // Fetch real comments from D1 / API
+  const loadComments = async (sort = sortOrder) => {
     setLoading(true);
     try {
-      const data = await fetchComments(slug);
+      const data = await fetchComments(slug, sort);
       setComments(data);
     } catch (err) {
       console.warn('[PostComments] Load error:', err);
@@ -137,8 +163,8 @@ export function PostComments({
   };
 
   useEffect(() => {
-    loadComments();
-  }, [slug]);
+    loadComments(sortOrder);
+  }, [slug, sortOrder]);
 
   // Check if current user can edit/delete this comment
   const canManage = (comment: BlogComment) => {
@@ -153,9 +179,41 @@ export function PostComments({
     }
   };
 
-  // Handle Comment Submission
-  const handleSubmit = async () => {
-    const trimmed = message.trim();
+  // Toggle sort order
+  const handleSortToggle = (newSort: 'hot' | 'new') => {
+    if (newSort === sortOrder) return;
+    setSortOrder(newSort);
+  };
+
+  // Toggle replies accordion for a root comment (YouTube style)
+  const toggleReplies = (rootId: string) => {
+    setExpandedReplies((prev) => {
+      const next = new Set(prev);
+      if (next.has(rootId)) {
+        next.delete(rootId);
+      } else {
+        next.add(rootId);
+      }
+      return next;
+    });
+  };
+
+  // Toggle long text expand/collapse
+  const toggleLongText = (commentId: string) => {
+    setExpandedTexts((prev) => {
+      const next = new Set(prev);
+      if (next.has(commentId)) {
+        next.delete(commentId);
+      } else {
+        next.add(commentId);
+      }
+      return next;
+    });
+  };
+
+  // Handle Main Comment Submission
+  const handleMainSubmit = async () => {
+    const trimmed = mainMessage.trim();
     if (!trimmed) {
       setNoticeText('请填写评论内容');
       return;
@@ -172,13 +230,10 @@ export function PostComments({
       const res = await createComment({
         slug,
         message: trimmed,
-        parentId: replyTarget?.id || null,
-        quoteId: quoteTarget?.id || null,
         author: account,
       });
 
       if (res.ok && res.comment) {
-        // Record the visitor sessionToken in-memory for this page visit
         if (res.sessionToken && res.comment.id) {
           setVisitorSessionTokens((prev) => {
             const next = new Map(prev);
@@ -187,21 +242,65 @@ export function PostComments({
           });
         }
 
-        setMessage('');
-        setReplyTarget(null);
-        setQuoteTarget(null);
+        setMainMessage('');
+        setMainInputFocused(false);
         setNoticeText('评论已发布');
         setTimeout(() => setNoticeText(''), 3000);
 
-        // Refresh list
         await loadComments();
       } else {
         setNoticeText(res.error || '提交失败，请重试');
       }
-    } catch (err: any) {
+    } catch {
       setNoticeText('提交异常，请稍后重试');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Handle In-place Reply Submission (YouTube style)
+  const handleReplySubmit = async (rootCommentId: string, replyToName: string) => {
+    const trimmed = replyMessage.trim();
+    if (!trimmed) return;
+    if (trimmed.length > LIMIT) {
+      setNoticeText(`回复内容不能超过 ${LIMIT} 字`);
+      return;
+    }
+
+    setReplySubmitting(true);
+    try {
+      const res = await createComment({
+        slug,
+        message: trimmed,
+        parentId: rootCommentId,
+        author: account,
+      });
+
+      if (res.ok && res.comment) {
+        if (res.sessionToken && res.comment.id) {
+          setVisitorSessionTokens((prev) => {
+            const next = new Map(prev);
+            next.set(res.comment!.id, res.sessionToken!);
+            return next;
+          });
+        }
+
+        setReplyMessage('');
+        setReplyingToCommentId(null);
+        setReplyingTargetAuthor('');
+        // Automatically expand the replies section so user sees their reply
+        setExpandedReplies((prev) => new Set(prev).add(rootCommentId));
+        setNoticeText('回复已发布');
+        setTimeout(() => setNoticeText(''), 3000);
+
+        await loadComments();
+      } else {
+        setNoticeText(res.error || '回复失败');
+      }
+    } catch {
+      setNoticeText('回复异常，请重试');
+    } finally {
+      setReplySubmitting(false);
     }
   };
 
@@ -286,7 +385,7 @@ export function PostComments({
     }
   };
 
-  // Comment Tree hierarchy builder (root comments with nested replies)
+  // Build root comments and nested replies tree
   const commentTree = useMemo(() => {
     const roots: BlogComment[] = [];
     const replyMap = new Map<string, BlogComment[]>();
@@ -306,6 +405,7 @@ export function PostComments({
 
   return (
     <div id="post-comment">
+      {/* Header bar */}
       <div className="comment-head">
         <h3 className="comment-headline">
           <i className="anzhiyufont anzhiyu-icon-comments" aria-hidden="true"></i>
@@ -335,10 +435,10 @@ export function PostComments({
 
       <div className="comment-wrap">
         <div className="twikoo tk-comments">
-          {/* Submission Form without tk-meta-input */}
-          <div className="tk-submit">
+          {/* Main Comment Submission Box (YouTube + Anzhiyu style) */}
+          <div className={`tk-submit ${mainInputFocused || mainMessage.trim() ? 'is-expanded' : ''}`}>
             <div className="tk-row">
-              {/* tk-avatar: horizontally aligned with textarea, synced with account drawer */}
+              {/* Avatar synced with account drawer */}
               <div
                 className="tk-avatar theme-account-drawer__summary-avatar"
                 onClick={openAccountDrawer}
@@ -358,7 +458,7 @@ export function PostComments({
                 )}
               </div>
 
-              {/* Main Input Column */}
+              {/* Input column */}
               <div className="tk-col">
                 <div className="tk-user-identity">
                   <span className="tk-user-badge">
@@ -376,61 +476,76 @@ export function PostComments({
                 <div className="tk-input el-textarea">
                   <textarea
                     className="el-textarea__inner"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value.slice(0, LIMIT))}
-                    placeholder={`围绕《${title}》留下你的想法... (支持 Markdown)`}
-                    rows={4}
+                    value={mainMessage}
+                    onFocus={() => setMainInputFocused(true)}
+                    onChange={(e) => setMainMessage(e.target.value.slice(0, LIMIT))}
+                    placeholder={`围绕《${title}》发表公开评论... (支持 Markdown)`}
+                    rows={mainInputFocused || mainMessage.trim() ? 4 : 2}
                   />
                   <span className="el-input__count">
-                    {message.length}/{LIMIT}
+                    {mainMessage.length}/{LIMIT}
                   </span>
                 </div>
 
-                <div className="tk-row actions">
-                  <div className="tk-row-actions-start">
-                    {(replyTarget || quoteTarget) && (
-                      <div className="tk-reply-banner">
-                        <span>
-                          {replyTarget
-                            ? `回复 @${replyTarget.authorName}`
-                            : `引用 @${quoteTarget?.authorName}`}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReplyTarget(null);
-                            setQuoteTarget(null);
-                          }}
-                          aria-label="取消回复"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-                    <span className="tk-submit-hint">💡 支持 Markdown 语法与换行</span>
+                {/* Actions row - visible when focused or typing */}
+                {(mainInputFocused || mainMessage.trim().length > 0) && (
+                  <div className="tk-row actions">
+                    <div className="tk-row-actions-start">
+                      <span className="tk-submit-hint">💡 支持 Markdown 与换行</span>
+                    </div>
+                    <div className="tk-row-actions-end">
+                      {noticeText && <span className="tk-notice-text">{noticeText}</span>}
+                      <button
+                        type="button"
+                        className="tk-btn-cancel"
+                        onClick={() => {
+                          setMainMessage('');
+                          setMainInputFocused(false);
+                        }}
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="button"
+                        className="tk-send"
+                        disabled={submitting || !mainMessage.trim()}
+                        onClick={handleMainSubmit}
+                      >
+                        {submitting ? '发送中...' : submitLabel}
+                      </button>
+                    </div>
                   </div>
-                  <div className="tk-row-actions-end">
-                    {noticeText && <span className="tk-notice-text">{noticeText}</span>}
-                    <button
-                      type="button"
-                      className="tk-send"
-                      disabled={submitting || !message.trim()}
-                      onClick={handleSubmit}
-                    >
-                      {submitting ? '发送中...' : submitLabel}
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Real Public Comments Stream - strictly NO fake mock comments */}
+          {/* Public Comments Stream (YouTube-style sorting and tiered replies) */}
           <div className="tk-comments-container">
+            {/* Top Toolbar: Count & Sort Toggle */}
             <div className="tk-comments-title">
               <div className="tk-comments-count">
                 <span>公开评论</span>
                 <strong>({comments.length})</strong>
+              </div>
+
+              {/* YouTube-style Sort Menu */}
+              <div className="tk-sort-group">
+                <button
+                  type="button"
+                  className={`tk-sort-btn ${sortOrder === 'new' ? 'is-active' : ''}`}
+                  onClick={() => handleSortToggle('new')}
+                >
+                  ⏱️ 最新
+                </button>
+                <span className="tk-sort-divider">|</span>
+                <button
+                  type="button"
+                  className={`tk-sort-btn ${sortOrder === 'hot' ? 'is-active' : ''}`}
+                  onClick={() => handleSortToggle('hot')}
+                >
+                  🔥 最热
+                </button>
               </div>
             </div>
 
@@ -449,6 +564,11 @@ export function PostComments({
                   const replies = commentTree.replyMap.get(item.id) || [];
                   const isEditing = editingCommentId === item.id;
                   const isManageable = canManage(item);
+                  const isReplying = replyingToCommentId === item.id;
+                  const areRepliesExpanded = expandedReplies.has(item.id);
+                  const isTextExpanded = expandedTexts.has(item.id);
+                  const isLongText = item.message.length > LONG_TEXT_THRESHOLD;
+                  const edited = isEdited(item.createdAt, item.updatedAt);
 
                   return (
                     <div className="tk-comment" key={item.id} id={`comment-${item.id}`}>
@@ -487,6 +607,7 @@ export function PostComments({
                               : '访客'}
                           </span>
                           <time className="tk-time">{formatCommentTime(item.createdAt)}</time>
+                          {edited && <span className="tk-edited-mark">(已编辑)</span>}
                         </div>
 
                         {/* Content or Inline Edit */}
@@ -517,44 +638,47 @@ export function PostComments({
                             </div>
                           </div>
                         ) : (
-                          <div className="tk-content">
+                          <div className={`tk-content ${!isTextExpanded && isLongText ? 'is-clamped' : ''}`}>
                             {item.message.split(/\n+/).map((line, idx) => (
                               <p key={idx}>{line}</p>
                             ))}
+                            {isLongText && (
+                              <button
+                                type="button"
+                                className="tk-expand-text-btn"
+                                onClick={() => toggleLongText(item.id)}
+                              >
+                                {isTextExpanded ? '收起' : '...展开全文'}
+                              </button>
+                            )}
                           </div>
                         )}
 
-                        {/* Action Toolbar */}
+                        {/* Action Toolbar (YouTube style) */}
                         <div className="tk-actions-group">
                           <button
                             type="button"
-                            className="tk-action-btn"
+                            className="tk-action-btn tk-action-like"
                             onClick={() => handleLike(item.id)}
                             title="赞同这条想法"
                           >
-                            👍 {item.likesCount > 0 ? item.likesCount : '点赞'}
+                            👍 {item.likesCount > 0 ? item.likesCount : '赞'}
                           </button>
                           <button
                             type="button"
-                            className="tk-action-btn"
+                            className="tk-action-btn tk-action-reply"
                             onClick={() => {
-                              setReplyTarget(item);
-                              setQuoteTarget(null);
-                              document.querySelector('#post-comment')?.scrollIntoView({ behavior: 'smooth' });
+                              if (isReplying) {
+                                setReplyingToCommentId(null);
+                                setReplyingTargetAuthor('');
+                              } else {
+                                setReplyingToCommentId(item.id);
+                                setReplyingTargetAuthor(item.authorName);
+                                setReplyMessage('');
+                              }
                             }}
                           >
-                            回复
-                          </button>
-                          <button
-                            type="button"
-                            className="tk-action-btn"
-                            onClick={() => {
-                              setQuoteTarget(item);
-                              setReplyTarget(null);
-                              document.querySelector('#post-comment')?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                          >
-                            引用
+                            💬 回复
                           </button>
                           {isManageable && (
                             <>
@@ -566,122 +690,215 @@ export function PostComments({
                                   setEditingMessage(item.message);
                                 }}
                               >
-                                编辑
+                                ✏️ 编辑
                               </button>
                               <button
                                 type="button"
                                 className="tk-action-btn tk-action-delete"
                                 onClick={() => handleDelete(item.id)}
                               >
-                                删除
+                                🗑️ 删除
                               </button>
                             </>
                           )}
                         </div>
 
-                        {/* Replies */}
+                        {/* In-place Nested Reply Form (YouTube style) */}
+                        {isReplying && (
+                          <div className="tk-nested-reply-box">
+                            <div className="tk-row">
+                              <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
+                                {account?.avatar ? (
+                                  <img src={account.avatar} alt={account.name} />
+                                ) : (
+                                  <span>{getCommentInitials(account?.name || '访')}</span>
+                                )}
+                              </div>
+                              <div className="tk-col">
+                                <div className="tk-input el-textarea">
+                                  <textarea
+                                    className="el-textarea__inner"
+                                    value={replyMessage}
+                                    onChange={(e) => setReplyMessage(e.target.value.slice(0, LIMIT))}
+                                    placeholder={`回复 @${replyingTargetAuthor}...`}
+                                    rows={2}
+                                    autoFocus
+                                  />
+                                </div>
+                                <div className="tk-nested-reply-actions">
+                                  <button
+                                    type="button"
+                                    className="tk-btn-cancel"
+                                    onClick={() => {
+                                      setReplyingToCommentId(null);
+                                      setReplyingTargetAuthor('');
+                                      setReplyMessage('');
+                                    }}
+                                  >
+                                    取消
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="tk-send tk-send-small"
+                                    disabled={replySubmitting || !replyMessage.trim()}
+                                    onClick={() => handleReplySubmit(item.id, replyingTargetAuthor)}
+                                  >
+                                    {replySubmitting ? '发送中...' : '回复'}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* YouTube-style Expandable Replies Button (`▾ 查看 X 条回复` / `▴ 收起回复`) */}
                         {replies.length > 0 && (
-                          <div className="tk-replies">
-                            {replies.map((reply) => {
-                              const isReplyEditing = editingCommentId === reply.id;
-                              const isReplyManageable = canManage(reply);
+                          <div className="tk-replies-section">
+                            <button
+                              type="button"
+                              className="tk-replies-toggle-btn"
+                              onClick={() => toggleReplies(item.id)}
+                            >
+                              <span className="tk-toggle-icon">
+                                {areRepliesExpanded ? '▴' : '▾'}
+                              </span>
+                              <span>
+                                {areRepliesExpanded
+                                  ? `收起 ${replies.length} 条回复`
+                                  : `查看 ${replies.length} 条回复`}
+                              </span>
+                            </button>
 
-                              return (
-                                <div className="tk-comment" key={reply.id} id={`comment-${reply.id}`}>
-                                  <div className="tk-avatar theme-account-drawer__summary-avatar">
-                                    {reply.authorAvatar ? (
-                                      <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
-                                    ) : reply.authorRole === 'admin' ? (
-                                      <span className="tk-avatar-initials">博</span>
-                                    ) : reply.authorName && reply.authorName !== '访客' ? (
-                                      <span className="tk-avatar-initials">{getCommentInitials(reply.authorName)}</span>
-                                    ) : (
-                                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                      </svg>
-                                    )}
-                                  </div>
-                                  <div className="tk-main">
-                                    <div className="tk-row tk-meta">
-                                      <strong className="tk-nick">{reply.authorName}</strong>
-                                      <span
-                                        className={`tk-badge ${
-                                          reply.authorRole === 'admin' ? 'is-admin' : 'is-visitor'
-                                        }`}
-                                      >
-                                        {reply.authorRole === 'admin' ? '博主' : '访客'}
-                                      </span>
-                                      <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
-                                    </div>
+                            {/* Nested Replies Stream */}
+                            {areRepliesExpanded && (
+                              <div className="tk-replies">
+                                {replies.map((reply) => {
+                                  const isReplyEditing = editingCommentId === reply.id;
+                                  const isReplyManageable = canManage(reply);
+                                  const isReplyEdited = isEdited(reply.createdAt, reply.updatedAt);
+                                  const isReplyTextExpanded = expandedTexts.has(reply.id);
+                                  const isReplyLong = reply.message.length > LONG_TEXT_THRESHOLD;
 
-                                    {isReplyEditing ? (
-                                      <div className="tk-inline-edit">
-                                        <textarea
-                                          className="el-textarea__inner"
-                                          value={editingMessage}
-                                          onChange={(e) => setEditingMessage(e.target.value.slice(0, LIMIT))}
-                                          rows={3}
-                                        />
-                                        <div className="tk-inline-edit-actions">
-                                          <button
-                                            type="button"
-                                            className="tk-btn-save"
-                                            disabled={savingEdit || !editingMessage.trim()}
-                                            onClick={() => handleSaveEdit(reply.id)}
+                                  return (
+                                    <div className="tk-comment tk-comment-reply" key={reply.id} id={`comment-${reply.id}`}>
+                                      <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
+                                        {reply.authorAvatar ? (
+                                          <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
+                                        ) : reply.authorRole === 'admin' ? (
+                                          <span className="tk-avatar-initials">博</span>
+                                        ) : reply.authorName && reply.authorName !== '访客' ? (
+                                          <span className="tk-avatar-initials">{getCommentInitials(reply.authorName)}</span>
+                                        ) : (
+                                          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                          </svg>
+                                        )}
+                                      </div>
+
+                                      <div className="tk-main">
+                                        <div className="tk-row tk-meta">
+                                          <strong className="tk-nick">{reply.authorName}</strong>
+                                          <span
+                                            className={`tk-badge ${
+                                              reply.authorRole === 'admin' ? 'is-admin' : 'is-visitor'
+                                            }`}
                                           >
-                                            {savingEdit ? '保存中...' : '保存'}
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="tk-btn-cancel"
-                                            onClick={() => setEditingCommentId(null)}
-                                          >
-                                            取消
-                                          </button>
+                                            {reply.authorRole === 'admin' ? '博主' : '访客'}
+                                          </span>
+                                          <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
+                                          {isReplyEdited && <span className="tk-edited-mark">(已编辑)</span>}
                                         </div>
-                                      </div>
-                                    ) : (
-                                      <div className="tk-content">
-                                        {reply.message.split(/\n+/).map((line, idx) => (
-                                          <p key={idx}>{line}</p>
-                                        ))}
-                                      </div>
-                                    )}
 
-                                    <div className="tk-actions-group">
-                                      <button
-                                        type="button"
-                                        className="tk-action-btn"
-                                        onClick={() => handleLike(reply.id)}
-                                      >
-                                        👍 {reply.likesCount > 0 ? reply.likesCount : '点赞'}
-                                      </button>
-                                      {isReplyManageable && (
-                                        <>
+                                        {isReplyEditing ? (
+                                          <div className="tk-inline-edit">
+                                            <textarea
+                                              className="el-textarea__inner"
+                                              value={editingMessage}
+                                              onChange={(e) => setEditingMessage(e.target.value.slice(0, LIMIT))}
+                                              rows={2}
+                                            />
+                                            <div className="tk-inline-edit-actions">
+                                              <button
+                                                type="button"
+                                                className="tk-btn-save"
+                                                disabled={savingEdit || !editingMessage.trim()}
+                                                onClick={() => handleSaveEdit(reply.id)}
+                                              >
+                                                {savingEdit ? '保存中...' : '保存'}
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="tk-btn-cancel"
+                                                onClick={() => setEditingCommentId(null)}
+                                              >
+                                                取消
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className={`tk-content ${!isReplyTextExpanded && isReplyLong ? 'is-clamped' : ''}`}>
+                                            {reply.message.split(/\n+/).map((line, idx) => (
+                                              <p key={idx}>{line}</p>
+                                            ))}
+                                            {isReplyLong && (
+                                              <button
+                                                type="button"
+                                                className="tk-expand-text-btn"
+                                                onClick={() => toggleLongText(reply.id)}
+                                              >
+                                                {isReplyTextExpanded ? '收起' : '...展开全文'}
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        <div className="tk-actions-group">
                                           <button
                                             type="button"
-                                            className="tk-action-btn tk-action-edit"
+                                            className="tk-action-btn tk-action-like"
+                                            onClick={() => handleLike(reply.id)}
+                                          >
+                                            👍 {reply.likesCount > 0 ? reply.likesCount : '赞'}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="tk-action-btn tk-action-reply"
                                             onClick={() => {
-                                              setEditingCommentId(reply.id);
-                                              setEditingMessage(reply.message);
+                                              setReplyingToCommentId(item.id);
+                                              setReplyingTargetAuthor(reply.authorName);
+                                              setReplyMessage(`@${reply.authorName} `);
                                             }}
                                           >
-                                            编辑
+                                            💬 回复
                                           </button>
-                                          <button
-                                            type="button"
-                                            className="tk-action-btn tk-action-delete"
-                                            onClick={() => handleDelete(reply.id)}
-                                          >
-                                            删除
-                                          </button>
-                                        </>
-                                      )}
+                                          {isReplyManageable && (
+                                            <>
+                                              <button
+                                                type="button"
+                                                className="tk-action-btn tk-action-edit"
+                                                onClick={() => {
+                                                  setEditingCommentId(reply.id);
+                                                  setEditingMessage(reply.message);
+                                                }}
+                                              >
+                                                ✏️ 编辑
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="tk-action-btn tk-action-delete"
+                                                onClick={() => handleDelete(reply.id)}
+                                              >
+                                                🗑️ 删除
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

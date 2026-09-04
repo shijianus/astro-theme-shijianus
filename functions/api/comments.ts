@@ -78,20 +78,22 @@ function mapRowToClientComment(row: RawCommentRow) {
 
 async function sendTelegramCommentNotification(
   env: AppEnv,
-  data: { slug: string; authorName: string; message: string; ip: string; country: string; id: string }
+  data: { slug: string; authorName: string; message: string; ip: string; country: string; id: string; parentId?: string | null }
 ) {
   const token = env.TELEGRAM_BOT_TOKEN || (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN);
   const chatId = env.TELEGRAM_CHAT_ID || (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID);
   if (!token || !chatId) return;
 
+  const typeLabel = data.parentId ? '💬 文章回复通知' : '💬 文章新留言通知';
+
   const text = [
-    `💬 <b>博客新留言提醒</b>`,
+    `<b>${typeLabel}</b>`,
     `----------------------------------------`,
     `📝 <b>文章路径</b>: <code>/posts/${data.slug}/</code>`,
     `👤 <b>评论者</b>: <b>${data.authorName}</b>`,
-    `💬 <b>留言内容</b>:\n${data.message}`,
+    `💬 <b>内容</b>:\n${data.message}`,
     `🌍 <b>归属地/IP</b>: <code>${data.country}</code> (${data.ip || 'Unknown'})`,
-    `🆔 <b>评论编号</b>: <code>${data.id}</code>`,
+    `🆔 <b>评论编号</b>: <code>${data.id}</code>${data.parentId ? ` (回复 <code>${data.parentId}</code>)` : ''}`,
     `⏰ <b>时间</b>: <code>${new Date().toISOString()}</code>`,
     `----------------------------------------`,
   ].join('\n');
@@ -122,10 +124,12 @@ export async function onRequest(context: {
   const url = new URL(request.url);
 
   // ----------------------------------------------------
-  // GET: Fetch real comments for a post slug
+  // GET: Fetch real comments for a post slug (supports sort=hot|new)
   // ----------------------------------------------------
   if (method === 'GET') {
     const slug = url.searchParams.get('slug')?.trim();
+    const sort = (url.searchParams.get('sort') || 'new').toLowerCase();
+
     if (!slug) {
       return jsonResponse(request, env, { ok: false, error: 'Slug parameter is required' }, { status: 400 });
     }
@@ -133,21 +137,26 @@ export async function onRequest(context: {
     if (env.DB) {
       await ensureTable(env.DB);
       try {
+        const orderClause = sort === 'hot'
+          ? `ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, likes_count DESC, created_at DESC`
+          : `ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, created_at DESC`;
+
         const query = `
           SELECT id, post_slug, parent_id, quote_id, author_id, author_name, author_avatar, author_website, author_role, message, likes_count, status, created_at, updated_at
           FROM comments
           WHERE post_slug = ? AND status != 'deleted'
-          ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, created_at ASC
+          ${orderClause}
         `;
         const res = await env.DB.prepare(query).bind(slug).all<RawCommentRow>();
         const rows = res.results || [];
         return jsonResponse(request, env, {
           ok: true,
+          sort,
           comments: rows.map(mapRowToClientComment),
         });
       } catch (dbErr: any) {
         console.error('[Comments] DB query error:', dbErr);
-        return jsonResponse(request, env, { ok: true, comments: [] });
+        return jsonResponse(request, env, { ok: true, sort, comments: [] });
       }
     }
 
@@ -157,11 +166,15 @@ export async function onRequest(context: {
       .sort((a, b) => {
         if (a.status === 'pinned' && b.status !== 'pinned') return -1;
         if (b.status === 'pinned' && a.status !== 'pinned') return 1;
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        if (sort === 'hot') {
+          const diffLikes = (b.likes_count || 0) - (a.likes_count || 0);
+          if (diffLikes !== 0) return diffLikes;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       })
       .map(mapRowToClientComment);
 
-    return jsonResponse(request, env, { ok: true, comments: list });
+    return jsonResponse(request, env, { ok: true, sort, comments: list });
   }
 
   // ----------------------------------------------------
@@ -252,6 +265,7 @@ export async function onRequest(context: {
       ip: clientIp,
       country,
       id: commentId,
+      parentId,
     });
     if (typeof context.waitUntil === 'function') {
       context.waitUntil(bgTask);
@@ -264,7 +278,7 @@ export async function onRequest(context: {
     });
   }
 
-  // 2. EDIT COMMENT
+  // 2. EDIT COMMENT (Strict ownership check)
   if (action === 'edit') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     const message = (payload.message || '').trim();
@@ -291,7 +305,7 @@ export async function onRequest(context: {
       // Check sessionToken match or admin
       const isOwner = Boolean(sessionToken && row.session_token === sessionToken);
       if (!isOwner && !isAdmin) {
-        return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效' }, { status: 403 });
+        return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效（无法验证身份）' }, { status: 403 });
       }
 
       await env.DB.prepare(`
@@ -308,14 +322,14 @@ export async function onRequest(context: {
     }
     const isOwner = Boolean(sessionToken && item.session_token === sessionToken);
     if (!isOwner && !isAdmin) {
-      return jsonResponse(request, env, { ok: false, error: '无权修改此评论' }, { status: 403 });
+      return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效' }, { status: 403 });
     }
     item.message = message;
     item.updated_at = new Date().toISOString();
     return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
   }
 
-  // 3. DELETE COMMENT
+  // 3. DELETE COMMENT (Strict ownership check)
   if (action === 'delete') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     if (!id) {
