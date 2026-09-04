@@ -12,11 +12,11 @@ interface Props {
   slug: string;
   title: string;
   summary?: string;
-  image: string;
-  imageAlt: string;
+  image?: string;
+  imageAlt?: string;
   video?: string;
   videoPoster?: string;
-  fallbackImage: string;
+  fallbackImage?: string;
   remoteFallbackImage?: string;
   badges?: string[];
   meta?: PostHeroMetaItem[];
@@ -27,11 +27,11 @@ const {
   slug,
   title,
   summary = '',
-  image,
-  imageAlt,
+  image = '',
+  imageAlt = '',
   video = '',
   videoPoster = image,
-  fallbackImage,
+  fallbackImage = '/media/shijianus/default.png',
   remoteFallbackImage = 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png',
   badges = [],
   meta = [],
@@ -47,46 +47,51 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
   eye: Eye,
   timer: TimerReset,
 };
+
+const hasMedia = Boolean(image || video);
 ---
 
 <section
-  class="post-hero"
+  class:list={['post-hero', !hasMedia && 'is-pure-color']}
   data-post-hero
   data-post-slug={slug}
   data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
 >
-  <div class="post-hero__cover">
-    {video ? (
-      <video
-        src={video}
-        poster={videoPoster}
-        class="post-hero__video"
-        autoplay
-        muted
-        loop
-        playsinline
-        preload="metadata"
-        data-video-fallback={fallbackImage}
-        data-video-remote-fallback={remoteFallbackImage}
-      >
-        <track kind="captions" />
-      </video>
-    ) : (
-      <img
-        src={image}
-        alt={imageAlt}
-        class="post-hero__image"
-        loading="eager"
-        decoding="async"
-        fetchpriority="high"
-        data-fallback-src={fallbackImage || '/media/shijianus/default.png'}
-        data-image-fallback={fallbackImage || '/media/shijianus/default.png'}
-        data-remote-fallback={remoteFallbackImage}
-        onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackImage || '/media/shijianus/default.png'}')){this.src='${fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
-      />
-    )}
-    <div class="post-hero__overlay"></div>
-  </div>
+  {hasMedia && (
+    <div class="post-hero__cover">
+      {video ? (
+        <video
+          src={video}
+          poster={videoPoster}
+          class="post-hero__video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          data-video-fallback={fallbackImage}
+          data-video-remote-fallback={remoteFallbackImage}
+        >
+          <track kind="captions" />
+        </video>
+      ) : (
+        <img
+          src={image}
+          alt={imageAlt}
+          class="post-hero__image"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          data-fallback-src={fallbackImage || '/media/shijianus/default.png'}
+          data-image-fallback={fallbackImage || '/media/shijianus/default.png'}
+          data-remote-fallback={remoteFallbackImage}
+          onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${fallbackImage || '/media/shijianus/default.png'}')){this.src='${fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
+        />
+      )}
+      <div class="post-hero__overlay"></div>
+    </div>
+  )}
+
   <div class="post-hero__inner">
     {badges.length > 0 && (
       <div class="post-hero__badges">
@@ -122,7 +127,7 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
   </div>
 
   <div class="post-hero__waves" aria-hidden="true">
-    <svg class="post-hero__waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+    <svg class="post-hero__waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
       <defs>
         <path id="post-hero-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352Z"></path>
       </defs>

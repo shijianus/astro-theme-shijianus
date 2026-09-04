@@ -36,26 +36,17 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
   class="group recent-post-item relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
   onclick={`location.href='${link}'`}
 >
-  <!-- 封面图区域：比例精简至 16/5.8 (或 h-36/h-40)，进一步压缩纵向高度，增大一屏容积比 -->
   <div class="h-32 sm:h-36 w-full overflow-hidden relative bg-[var(--secondbg)] shrink-0">
-    {cover ? (
-      <img
-        class="object-cover w-full h-full transition-all duration-500 group-hover:scale-105 group-hover:brightness-[0.92]"
-        src={cover}
-        alt={title}
-        loading="lazy"
-        decoding="async"
-        data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
-        data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
-        onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
-      />
-    ) : (
-      <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
-        <span class="text-[11px] font-semibold text-[var(--text-soft)] tracking-wider opacity-60 uppercase select-none">
-          {category || siteConfig.site.title}
-        </span>
-      </div>
-    )}
+    <img
+      class="object-cover w-full h-full transition-all duration-500 group-hover:scale-105 group-hover:brightness-[0.92]"
+      src={cover || siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+      alt={title}
+      loading="lazy"
+      decoding="async"
+      data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+      data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+      onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
+    />
   </div>
 
   <!-- 信息内容区域：紧凑排版，提升单屏 2x2 呈现率 -->

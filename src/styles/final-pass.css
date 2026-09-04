@@ -3495,8 +3495,7 @@ body[data-type='post'] .post-layout-row--support {
 }
 
 body[data-type='post'] .post-hero__image {
-  filter: none !important;
-  opacity: 0.32;
+  opacity: 0.52;
 }
 
 body[data-type='post'] .post-hero__cover::after {
@@ -3504,8 +3503,7 @@ body[data-type='post'] .post-hero__cover::after {
     linear-gradient(90deg, rgba(17, 21, 30, 0.94) 0%, rgba(17, 21, 30, 0.82) 40%, rgba(17, 21, 30, 0.4) 74%, rgba(17, 21, 30, 0.12) 100%) !important;
 }
 
-body[data-type='post'] .post-hero__inner,
-body[data-type='post'] .post-hero__waves use {
+body[data-type='post'] .post-hero__inner {
   animation: none !important;
 }
 
@@ -3915,7 +3913,7 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   box-sizing: border-box !important;
 }
 
-/* Task B: Force Hero Section to full width (100vw) */
+/* Task B: Force Hero Section to full width (100vw) with consistent height */
 .page-shell__hero,
 .post-hero {
   width: 100vw !important;
@@ -3925,6 +3923,27 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
+  min-height: 380px !important;
+  height: clamp(380px, 32vw, 440px) !important;
+  max-height: 480px !important;
+}
+
+@media screen and (max-width: 768px) {
+  .page-shell__hero,
+  .post-hero {
+    min-height: 340px !important;
+    height: 340px !important;
+  }
+}
+
+.post-hero__inner {
+  max-width: 1400px !important;
+  width: 100% !important;
+}
+
+.post-hero__title-block,
+.post-hero__lede {
+  max-width: 100% !important;
 }
 
 /* Ensure single column when aside is not present (fixes centering on home/other pages) */

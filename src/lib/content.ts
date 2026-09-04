@@ -44,8 +44,12 @@ export function resolveGroup(entry: PostEntry) {
   return entry.data.group ?? 'General';
 }
 
+export function resolveExplicitCover(entry: PostEntry) {
+  return entry.data.cover || entry.data.coverVideoPoster || entry.data.image?.url || '';
+}
+
 export function resolveCover(entry: PostEntry) {
-  return entry.data.cover ?? entry.data.coverVideoPoster ?? entry.data.image?.url ?? DEFAULT_POST_COVER;
+  return resolveExplicitCover(entry) || DEFAULT_POST_COVER;
 }
 
 export function resolveCoverAlt(entry: PostEntry) {

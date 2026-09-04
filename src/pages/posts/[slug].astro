@@ -21,6 +21,7 @@ import {
   PROTECTED_POST_TITLE,
   resolveCategory,
   resolveCover,
+  resolveExplicitCover,
   resolveCoverAlt,
   sortPostsByDate,
 } from '../../lib/content';
@@ -218,10 +219,10 @@ const formatBadge = entry.data.postFormat && entry.data.postFormat !== 'standard
 const scannedTags = [...new Set(entry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
 const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length - formatBadge.length);
 const badges = isUnlocked ? [...originalBadge, ...formatBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
-const heroImage = isUnlocked ? resolveCover(entry) : siteConfig.post.hero.fallbackImage;
+const heroImage = isUnlocked ? resolveExplicitCover(entry) : '';
 const heroImageAlt = isUnlocked ? resolveCoverAlt(entry) : PROTECTED_POST_TITLE;
-const heroImageUrl = new URL(heroImage, siteConfig.site.url);
-const heroImageOrigin = heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
+const heroImageUrl = heroImage ? new URL(heroImage, siteConfig.site.url) : null;
+const heroImageOrigin = heroImageUrl && heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
 const publicMeta = [
   { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(entry.data.pubDate), icon: 'calendar' as const },
   entry.data.updatedDate && {
@@ -264,13 +265,15 @@ const heroSummary = isUnlocked
   showAside={true}
 >
   <Fragment slot="head">
-    {heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
-    <link
-      rel="preload"
-      as="image"
-      href={heroImage}
-      crossorigin={heroImageOrigin ? 'anonymous' : undefined}
-    />
+    {heroImage && heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
+    {heroImage && (
+      <link
+        rel="preload"
+        as="image"
+        href={heroImage}
+        crossorigin={heroImageOrigin ? 'anonymous' : undefined}
+      />
+    )}
   </Fragment>
 
   <Fragment slot="hero">
