@@ -105,7 +105,7 @@
 - [x] 激活底部水波纹动态 Parallax 动效（`post-hero-wave` 4层视差滚动动画），清除之前 `final-pass.css` 中的 `animation: none !important` 抑制，完美适配浅色与深色模式背景。
 - [x] 支持用户无封面图（纯色/渐变）优雅呈现：若文章未配置图片则不渲染 `<img>` 标签，平滑降级至高质感径向渐变背景；同时确保首页卡片（`PostCard.astro`）必须有图片且默认回退到 default 图片。
 - [x] 编写并执行 Playwright 自动化测试套件（`scripts/verify-post-hero-anzhiyu.mjs`），桌面与移动端 E2E 验证全量通过。
-### Task 13: 参考安知鱼 UI 深化 Post Hero 水波纹加速、纯色蓝色打底、方形徽标、#Tag 与流式 Meta 信息 (`HEAD`)
+### Task 13: 参考安知鱼 UI 深化 Post Hero 水波纹加速、纯色蓝色打底、方形徽标、#Tag 与流式 Meta 信息 (`f8276fa`)
 - [x] 水波纹流动速度加速：优化 `post-hero-wave` 4 层波浪动画周期至 3s/5s/7s/10s，增强视觉流动感与灵动性。
 - [x] 纯色/无背景蓝色打底：将 `/posts/content-formats-and-markup-mastery/` 设置为空背景，无封面图时自适应呈现安知鱼标志性径向与线性混合蓝底（`#425aef` 渐变系）。
 - [x] 原创/转载徽标方形圆角化：将 `.post-hero__badge.is-primary` 调整为 Anzhiyu 风格的方形小圆角（`border-radius: 4px`），白底蓝字高对比展现。
