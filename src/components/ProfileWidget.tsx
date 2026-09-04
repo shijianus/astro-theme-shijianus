@@ -349,9 +349,9 @@ export function ProfileWidget({
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          padding: 2px 12px;
+          padding: 2px 10px;
           background: rgba(255, 255, 255, 0.12);
-          border-radius: 20px;
+          border-radius: 6px;
           backdrop-filter: blur(4px);
           transition: transform 0.3s, background 0.3s;
           user-select: none;

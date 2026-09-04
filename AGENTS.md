@@ -121,10 +121,23 @@
   2. JS 运行时监听：在 `PostEndRecommendation.astro` 中注入 `MutationObserver` 与各全景事件监听器（`shijianus:open-console`、`shijianus:open-notifications`、`shijianus:open-search` 等），实现即开即隐、关闭后顺畅恢复。
 - [x] 自动化测试套件（`scripts/verify-pagination-post.mjs`）全量更新并通过：严格验证了中控台与账号中心开启时下一篇推荐的不可见性、不可点击性及关闭后的交互恢复。
 
-### Task 15: 中控台快捷按钮组 (.button-group) 下移与 Activity 卡片重叠冲突消除
+### Task 15: 中控台快捷按钮组 (.button-group) 下移与 Activity 卡片重叠冲突消除 (`691fdb0`)
 - [x] 下移 `.button-group` 浮动位置：将固定定位底距从 `bottom: 24px` / `42px` 调整为贴合边缘的 `bottom: 12px !important`，使快捷操作按钮自然锚定于视口底端。
 - [x] 重构 `.console-card-group` 垂直定位与最大高度：将激活展开时的位移由 `calc(-50% - 20px)` 优化为 `calc(-50% - 36px)`，并将最大高度从 `90vh` 严格约束为 `calc(100vh - 90px)`，彻底消除在笔记本/标准屏（1440x900、1366x768、1280x800 等）下 `.console-card.activity` 与 `.button-group` 的位置重合交错。
 - [x] 微调热力图容器与标签内边距：将 `.activity-grid-container` 的 `margin-top` 紧凑优化为 `14px`，确保所有主流分辨率下卡片与按钮保持至少 21px ~ 112px 的自然呼吸间距。
 - [x] 编写并执行自动化测试套件（`scripts/verify-console-buttons.mjs`）：覆盖 1080p、1440x900、1366x768、1280x800、平板与移动端各视口，全部验证通过（Overlap = false，Gap >= 21px）。
+
+### Task 16: 相关文章推荐 (.relatedPosts-item) 紧凑化与全局组件圆角收敛优化 (`3638aa0`)
+- [x] 相关推荐 (.relatedPosts-item) 紧凑化与小巧重构：将卡片高度从过高的 224px 优化为小巧紧凑的 155px（平板 140px / 移动端 130px）；网格间距由 14px 缩紧至 8px（移动端 6px）；将标题设为精致 2 行截断（`-webkit-line-clamp: 2`）。
+- [x] 消除过大 AI 味圆角：将 `.relatedPosts-item` 圆角由 24px 收敛至标准方圆角 8px；将 `.relatedPosts-item__index` 序号标与 `.date` 日期徽章由 999px 胶囊收敛至 4px 精致小方角。
+- [x] 全局组件圆角统一收敛：
+  1. 侧边栏卡片组（`#aside-content .card-widget`、`aside-sticky-box`、`#card-toc`、`.card-recent-post`、`.card-info`）：统一由 22px/26px/12px 收敛为 8px；
+  2. 推广翻转卡片（`#flip-content`、`.promo-widget`、`.face`、`.promo-back-grid`）：由 12px/20px 收敛为 8px，按钮收敛为 6px；
+  3. 分类卡片（`.card-categories`、`.card-category-list-link`）：由 8px/12px 收敛为 8px 及 6px；
+  4. 上下篇文章推荐（`.postNav`、`.postNav-card`）：由 24px/20px 收敛为 10px 及 8px，高度压缩至 155px；
+  5. 导航下拉菜单（`.site-page-submenu`、`.site-page-submenu__item`）：由 50px/30px 胶囊收敛为 8px 及 6px；
+  6. 账号中心与控制台面板（`.theme-account-drawer__summary`、`.theme-account-panel`、`.console-shortcuts__item`）：统一收敛为 10px 及 6px。
+- [x] 编写并执行自动化测试套件（`scripts/verify-compact-radius.mjs`）：桌面端、平板端及移动端全面通过（Item Height = 155px/140px/130px <= 165px，Radius = 8px <= 8px，Gap = 8px/6px <= 8px）。
+
 
 

@@ -40,9 +40,14 @@ body, html, #content-inner {
   --maskbg: rgba(255, 255, 255, 0.6);
   --maskbgdeep: rgba(255, 255, 255, 0.85);
   --scrollbar-color: rgba(60, 60, 67, 0.4);
-  --radius-sm: 8px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-full: 8px;
+  --anzhiyu-border-radius: 8px;
+  --card-border-radius: 8px;
   --style-border: 1px solid var(--card-border);
   --style-border-always: 1px solid var(--card-border);
   --style-border-hover: 1px solid var(--theme-main);

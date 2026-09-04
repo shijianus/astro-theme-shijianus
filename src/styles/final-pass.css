@@ -2260,7 +2260,7 @@ body .snackbar-container.show,
   align-items: center;
   padding: 18px 20px;
   border: var(--style-border-always);
-  border-radius: 22px;
+  border-radius: 10px;
   background: color-mix(in srgb, var(--secondbg) 72%, var(--card-bg));
 }
 
@@ -2313,7 +2313,7 @@ body .snackbar-container.show,
   gap: 4px;
   min-width: 90px;
   padding: 10px 12px;
-  border-radius: 18px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
   color: var(--theme-main);
 }
@@ -2341,7 +2341,7 @@ body .snackbar-container.show,
   gap: 14px;
   padding: 18px 20px;
   border: var(--style-border-always);
-  border-radius: 22px;
+  border-radius: 10px;
   background: var(--card-bg);
   box-shadow: var(--shadow-border);
 }
@@ -2436,7 +2436,7 @@ body .snackbar-container.show,
 }
 
 .theme-account-panel__notification-item {
-  border-radius: 18px;
+  border-radius: 6px;
 }
 
 .theme-account-panel__notification-empty {
@@ -2462,7 +2462,7 @@ body .snackbar-container.show,
   gap: 6px;
   padding: 14px;
   border: var(--style-border-always);
-  border-radius: 18px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--secondbg) 74%, var(--card-bg));
   transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
 }
@@ -2757,7 +2757,7 @@ body[data-type='home'] .feature-panel-recent .aside-list {
 body[data-type='home'] #home-pagination {
   gap: 14px;
   padding: 16px 20px;
-  border-radius: 20px;
+  border-radius: 10px;
 }
 
 body[data-type='home'] .home-pagination__numbers {
@@ -2887,7 +2887,7 @@ body[data-type='post'] .post-layout-row__aside .sticky_layout {
 body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  border-radius: 22px;
+  border-radius: 8px !important;
 }
 
 body[data-type='post'] .card-telegram,
@@ -2913,7 +2913,7 @@ body[data-type='post'] :is(#post-toc-aside #card-toc, #post-secondary-aside .car
   width: 100%;
   max-height: calc(100vh - var(--site-header-height, 60px) - 28px);
   overflow-y: auto;
-  border-radius: 22px;
+  border-radius: 8px !important;
   display: flex;
   flex-direction: column;
   padding: 12px 14px 10px;
@@ -3022,7 +3022,7 @@ body[data-type='post'] .post-meta__box--compact {
   display: grid;
   gap: 8px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 8px;
 }
 
 body[data-type='post'] .post-share-actions {
@@ -3232,7 +3232,7 @@ body[data-type='post'] #post-comment {
 #go-up {
   width: 48px;
   height: 48px;
-  border-radius: 18px;
+  border-radius: 8px;
 }
 
 
@@ -3424,7 +3424,7 @@ body[data-type='home'] .feature-panel-recent .aside-list {
   width: 74px;
   height: 74px;
   padding: 5px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 16px 28px -22px rgba(3, 17, 43, 0.5);
 }
@@ -3433,7 +3433,7 @@ body[data-type='home'] .feature-panel-recent .aside-list {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 body[data-type='post'] #post-secondary-aside {
@@ -3722,16 +3722,16 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   transform: translateX(-50%) translateY(10px) !important;
   background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
   border: var(--style-border-always) !important;
-  border-radius: 50px !important; /* Strict Capsule Shape */
+  border-radius: 8px !important;
   box-shadow: var(--shadow-nav) !important;
-  padding: 10px 24px !important;
+  padding: 8px 16px !important;
   display: flex !important;
   flex-direction: row !important; /* Horizontal Layout */
   flex-wrap: nowrap !important; /* Prevent vertical collapse */
   align-items: center !important;
   justify-content: center !important;
   min-width: auto !important;
-  gap: 12px !important;
+  gap: 10px !important;
   opacity: 0 !important;
   visibility: hidden !important;
   white-space: nowrap !important; /* Enforce single line */
@@ -3754,8 +3754,8 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   flex-direction: row !important;
   align-items: center !important;
   gap: 8px !important;
-  padding: 8px 16px !important;
-  border-radius: 30px !important; /* Match capsule aesthetic */
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
   color: var(--font-color) !important;
   text-decoration: none !important;
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease !important;
@@ -3798,6 +3798,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 
 :is(#aside-content, .page-aside__sticky, .post-aside-tracks) .card-widget {
   margin: 0 !important;
+  border-radius: 8px !important;
 }
 
 /* 3. 释放 Sticky 元素并配置粘性参数 */
