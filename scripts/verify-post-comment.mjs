@@ -213,12 +213,15 @@ async function run() {
       throw new Error('Redundant tips, user-identity, or actions-start still found in DOM!');
     }
 
-    // 2. Linuxdo Interaction Modes Tabs Check
+    // 2. Interaction Modes Tabs Check (Standard comment & Emoji; Boost is in replies)
     const modeTabsCheck = await page.evaluate(() => {
       const tabs = document.querySelectorAll('#post-comment .tk-mode-btn');
       return Array.from(tabs).map((t) => t.textContent.trim());
     });
-    console.log('2. Linuxdo Mode Tabs:', modeTabsCheck);
+    console.log('2. Mode Tabs in Main Input:', modeTabsCheck);
+    if (modeTabsCheck.includes('⚡ Boost (≤16字)')) {
+      throw new Error('Boost should not be in the top main input mode tabs!');
+    }
 
     // 3. Post a Standard Comment
     console.log('3. Submitting Standard Comment...');
@@ -226,22 +229,57 @@ async function run() {
     await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);
 
-    // 4. Post a ⚡ Boost Comment (<= 16 chars)
-    console.log('4. Submitting Linuxdo-style ⚡ Boost Comment...');
-    await page.click('#post-comment .tk-mode-btn:has-text("Boost")');
-    await page.waitForTimeout(300);
-    await page.fill('#post-comment .el-textarea__inner', '⚡ 极客美学大赞！');
-    await page.click('#post-comment .tk-send');
+    // 4. Test In-place Reply with Rocket Boost (<= 16 chars)
+    console.log('4. Testing Dedicated Rocket Boost Reply to Comment...');
+    // Click the rocket Boost action button on the first comment
+    const boostBtn = page.locator('#post-comment .tk-action-btn.tk-action-boost').first();
+    await boostBtn.click();
+    await page.waitForTimeout(400);
+
+    // Verify reply box opened in Boost mode
+    const isBoostModeOpen = await page.evaluate(() => {
+      const box = document.querySelector('#post-comment .tk-nested-reply-box.is-boost-mode');
+      const badge = document.querySelector('#post-comment .tk-reply-boost-badge');
+      return Boolean(box && badge);
+    });
+    console.log('   -> Boost Reply Mode Active:', isBoostModeOpen);
+    if (!isBoostModeOpen) {
+      throw new Error('Nested reply box failed to open in Boost mode upon clicking Rocket Boost button!');
+    }
+
+    // Fill Boost content (<= 16 chars) and submit
+    await page.fill('#post-comment .tk-nested-reply-box .el-textarea__inner', '🚀 极客美学大赞！');
+    await page.click('#post-comment .tk-nested-reply-box .tk-send.is-boost-btn');
     await page.waitForTimeout(600);
 
-    // 5. Post a Quick Emoji Reaction
-    console.log('5. Submitting Linuxdo-style Emoji Reaction...');
+    // 5. Test Default Reply Mode (Should default to normal reply, not boost)
+    console.log('5. Testing Default Reply Mode (Should NOT be boost by default)...');
+    const normalReplyBtn = page.locator('#post-comment .tk-action-btn.tk-action-reply').first();
+    await normalReplyBtn.click();
+    await page.waitForTimeout(400);
+
+    const isNormalReplyDefault = await page.evaluate(() => {
+      const box = document.querySelector('#post-comment .tk-nested-reply-box');
+      const isBoost = box?.classList.contains('is-boost-mode');
+      const hint = document.querySelector('#post-comment .tk-reply-hint-bar');
+      return Boolean(box && !isBoost && hint);
+    });
+    console.log('   -> Default Reply is Standard Comment (Not Boost):', isNormalReplyDefault);
+    if (!isNormalReplyDefault) {
+      throw new Error('Default reply mode must be normal reply, not boost!');
+    }
+    // Cancel the reply box
+    await page.click('#post-comment .tk-nested-reply-box .tk-btn-cancel');
+    await page.waitForTimeout(300);
+
+    // 6. Post a Quick Emoji Reaction
+    console.log('6. Submitting Linuxdo-style Emoji Reaction...');
     await page.click('#post-comment .tk-mode-btn:has-text("表情")');
     await page.waitForTimeout(300);
     await page.click('#post-comment .tk-quick-emoji-btn:has-text("🔥")');
     await page.waitForTimeout(600);
 
-    // 6. Verify Comments List & Geo Flag Badges
+    // 7. Verify Comments List & Geo Flag Badges
     const streamCheck = await page.evaluate(() => {
       const items = document.querySelectorAll('#post-comment .tk-comment');
       const commentsData = Array.from(items).map((el) => ({
@@ -253,7 +291,7 @@ async function run() {
       }));
       return commentsData;
     });
-    console.log('6. Stream Items with Geo & Boost:', JSON.stringify(streamCheck, null, 2));
+    console.log('7. Stream Items with Geo & Boost:', JSON.stringify(streamCheck, null, 2));
     if (streamCheck.length < 3) {
       throw new Error(`Expected at least 3 comments, got ${streamCheck.length}`);
     }

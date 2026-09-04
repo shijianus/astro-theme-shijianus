@@ -196,3 +196,16 @@
   3. 登录用户规则：支持自主选择是否公示归属地；
   4. 管理员特权：站长携带 `ADMIN_TOKEN` 可全景审计所有评论的原始 IP 与 User-Agent。
 - [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-post-comment.mjs`），全场景（冗余移除、三态发布、限流拦截、重复过滤、国旗展示、引用预览与渲染、移动端/桌面端视口）验证全量通过。
+
+### Task 22: 本地开发评论区 404 根除、火箭 Boost 回复交互优化与端到端全链路验证 (`add45dd`, `0020df1`)
+- [x] 根除本地开发评论接口 404 (非 JSON 响应) 缺陷 (`add45dd`):
+  1. 在 `astro.config.mjs` 中新增 `commentsDevIntegration` Vite 中间件，自动拦截开发环境 `/api/comments` 的全部 GET/POST/PUT/DELETE/OPTIONS 请求；
+  2. 修复 `functions/api/comments.ts` 中 `http.ts` 的原生 ESM 扩展名缺失问题，支持 Node 22 规范直引；
+  3. 引入开发模式数据本地落盘机制与开发环境免流保护，保障本地测试与重载时评论数据的持久化；
+  4. 强化 `src/lib/comment-client.ts` 友好错误提示，杜绝 raw HTML 抛错。
+- [x] 全面优化 Boost 交互与火箭图标 (`0020df1`):
+  1. 将 Boost 图标由闪电（`⚡`）全面升级为科技动感火箭图标（`Rocket` / `🚀`）；
+  2. 固化“默认回复不 Boost”的自然逻辑：主评论区仅保留标准评论（上限 500 字）与表情互动，移除根评论顶栏的 Boost Tab；
+  3. 深度打通“回复他人时发送 Boost”专属链路：在主评论与嵌套回复的操作条中新增 `🚀 Boost` 专属按钮；点击直接进入 16 字以内的火箭 Boost 回复状态；
+  4. 就地回复框引入极简模式切换：默认普通评论回复，支持一键切换为 Boost (≤16字) 模式，并提供高辨识度火箭光泽按钮与徽章。
+- [x] 编写并执行全流程自动化端到端测试与本地 Dev API 校验套件（`scripts/verify-dev-comments.mjs` & `scripts/verify-post-comment.mjs`），双重验证全部通过。
