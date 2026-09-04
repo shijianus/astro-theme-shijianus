@@ -99,7 +99,7 @@
 - [x] 完善配置链路：在 `PromoWidgetCard.astro` 中打通 `siteConfig.aside.telegramWidget` 的全部字段（`subtitle`、`backLabel`、`summary`、`qrCrop`），确保二维码图片 (`@chronoral.tg.jpg`)、说明文本及加入按钮完整展示。
 - [x] 编写并执行全流程自动化端到端测试（`scripts/verify-flip-content.mjs`），覆盖首页与文章页下的翻转交互、背面 QR 尺寸与可见性验证。
 
-### Task 12: 参考安知鱼 UI 优化 Post Hero 封面、横向排版扩展、动态水波纹与卡片图片保障
+### Task 12: 参考安知鱼 UI 优化 Post Hero 封面、横向排版扩展、动态水波纹与卡片图片保障 (`35e69f3`)
 - [x] 修复 `post-hero__cover` 与 `post-hero` 大小失控与无限扩张问题：固定高度 clamp(`380px`, `32vw`, `440px`)，将封面限制于绝对定位容器内，右侧艺术化倾斜角度展示，杜绝纵向无休止拉伸。
 - [x] 解除 `post-hero__inner`、`post-hero__title-block` 和 `post-hero__lede` 的狭窄字符限制（移除 `58ch`/`70ch` 约束），扩展到容器最大宽 1400px，赋予标题与副标题向右横向自适应扩展排版能力。
 - [x] 激活底部水波纹动态 Parallax 动效（`post-hero-wave` 4层视差滚动动画），清除之前 `final-pass.css` 中的 `animation: none !important` 抑制，完美适配浅色与深色模式背景。
