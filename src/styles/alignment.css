@@ -880,6 +880,7 @@ body[data-type='post'] #post-comment {
 
 #rightside {
   right: 20px !important;
+  bottom: 140px !important;
   transition: opacity 0.28s ease, transform 0.28s ease, bottom 0.28s ease;
 }
 
@@ -1188,5 +1189,6 @@ body[data-type='post'] #post-comment {
 
   #rightside {
     right: 14px !important;
+    bottom: 130px !important;
   }
 }

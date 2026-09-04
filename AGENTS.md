@@ -139,5 +139,8 @@
   6. 账号中心与控制台面板（`.theme-account-drawer__summary`、`.theme-account-panel`、`.console-shortcuts__item`）：统一收敛为 10px 及 6px。
 - [x] 编写并执行自动化测试套件（`scripts/verify-compact-radius.mjs`）：桌面端、平板端及移动端全面通过（Item Height = 155px/140px/130px <= 165px，Radius = 8px <= 8px，Gap = 8px/6px <= 8px）。
 
-
-
+### Task 17: 右侧边悬浮控制台 (#rightside / #rightside-config-show) 向上避让与蓝色高对比视觉重构
+- [x] 上移 `#rightside` 与 `#rightside-config-show` 浮动底距：将底距由 `bottom: 20px` 上调至 `bottom: 140px !important`（移动端 130px），彻底消除与底部文章下一篇推荐（`.pagination-post`，底距 24px + 高度 92px）在空间上的重叠与交互遮挡，保障超过 40px 的安全呼吸间距。
+- [x] 重构按钮高对比蓝色主题质感：将 `#rightside-config-show` 及 `#rightside` 全量操作按钮的背景明确固化为标志性蓝色（`#425aef`，深浅色模式一致保持高辨识度），搭配纯白高对比图标与文字（`#ffffff`），消除原本卡片白底灰字与下一篇卡片同色混淆的问题，杜绝误触。
+- [x] 优化微交互与悬浮动效：为蓝色按钮注入专属光泽阴影（`rgba(66, 90, 239, 0.4)`）、悬浮位移缩放动效（`transform: translateY(-2px) scale(1.05)`）以及激活收放态，提升整体 UI 质感与交互反馈。
+- [x] 编写并执行全平台自动化测试套件（`scripts/verify-rightside-dock.mjs`）：桌面大屏、标准屏、平板及移动端全视口验证通过（Overlap = false，Vertical Gap >= 40px，Button Bg = rgb(66, 90, 239)，Icon/Text Color = rgb(255, 255, 255)）。

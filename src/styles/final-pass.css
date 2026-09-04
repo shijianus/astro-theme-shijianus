@@ -17,19 +17,104 @@
 
 #rightside {
   right: 20px !important;
-  transition: opacity 0.26s ease, transform 0.26s ease, bottom 0.26s ease;
+  bottom: 140px !important;
+  z-index: 80 !important;
+  transition: opacity 0.26s ease, transform 0.26s ease, bottom 0.26s ease !important;
 }
 
 #rightside-config-show {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* #rightside-config-show 与 #rightside 按钮明确蓝色背景，防止被页面/下一篇推荐卡片同色混淆 */
+#rightside-config-show > button,
+#rightside-config-show > a,
+#rightside-config-hide > button,
+#rightside-config-hide > a,
+#rightside > div > button,
+#rightside > div > a {
+  background: #425aef !important;
+  background-color: #425aef !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 8px !important;
+}
+
+#rightside-config-show > button .rightside-icon,
+#rightside-config-show > button svg,
+#rightside-config-hide > button .rightside-icon,
+#rightside-config-hide > button svg,
+#rightside > div > button .rightside-icon,
+#rightside > div > button svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+#rightside-config-show > button svg path,
+#rightside-config-show > button svg line,
+#rightside-config-show > button svg polyline,
+#rightside-config-show > button svg circle,
+#rightside > div > button svg path,
+#rightside > div > button svg line,
+#rightside > div > button svg polyline,
+#rightside > div > button svg circle {
+  stroke: #ffffff !important;
+}
+
+#rightside-config-show > button svg circle[fill="currentColor"],
+#rightside > div > button svg circle[fill="currentColor"] {
+  fill: #ffffff !important;
+}
+
+#rightside #percent,
+#go-up #percent,
+#rightside-config-show #percent {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+#rightside-config-show > button:hover,
+#rightside-config-show > a:hover,
+#rightside-config-hide > button:hover,
+#rightside-config-hide > a:hover,
+#rightside > div > button:hover,
+#rightside > div > a:hover {
+  background: #3448c5 !important;
+  background-color: #3448c5 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.55) !important;
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+#rightside-config-show > button:active,
+#rightside-config-show > a:active,
+#rightside-config-hide > button:active,
+#rightside-config-hide > a:active,
+#rightside > div > button:active,
+#rightside > div > a:active {
+  transform: translateY(0) scale(0.92) !important;
+}
+
+#rightside-config-show > button.is-active,
+#rightside-config-show > a.is-active,
+#rightside-config-hide > button.is-active,
+#rightside-config-hide > a.is-active,
+#rightside > div > button.is-active,
+#rightside > div > a.is-active {
+  background: #2b3ca4 !important;
+  background-color: #2b3ca4 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 6px 18px rgba(66, 90, 239, 0.55) !important;
 }
 
 #go-up {
   width: 48px;
   height: 48px;
-  border-radius: 18px;
+  border-radius: 8px;
 }
 
 #nav-right {

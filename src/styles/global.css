@@ -3630,7 +3630,7 @@ html.theme-ready body.theme-body #footer {
 #rightside {
   position: fixed;
   right: 0;
-  bottom: 20px;
+  bottom: 140px;
   z-index: 80;
   display: flex;
   flex-direction: column;
@@ -3681,18 +3681,18 @@ html.theme-ready body.theme-body #footer {
   justify-content: center;
   width: 35px;
   height: 35px;
-  border-radius: 5px;
-  background: var(--card-bg);
-  color: var(--font-color);
-  box-shadow: var(--shadow-border);
+  border-radius: 8px;
+  background: var(--theme-main, #425aef);
+  color: var(--white, #ffffff);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--theme-main, #425aef) 40%, transparent);
   transition: 0.3s;
 }
 
 #rightside > div > button:hover,
 #rightside > div > a:hover,
 #rightside > div > button.is-active {
-  background: var(--theme-main);
-  color: var(--white);
+  background: color-mix(in srgb, var(--theme-main, #425aef) 85%, #000000);
+  color: var(--white, #ffffff);
   box-shadow: var(--shadow-main);
 }
 
@@ -4689,7 +4689,7 @@ body[data-type='home'] .page-aside {
 
   #rightside {
     right: 6px;
-    bottom: 16px;
+    bottom: 130px;
   }
 
   #rightside.is-near-footer {
