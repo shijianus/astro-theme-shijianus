@@ -176,7 +176,7 @@
   3. 访客在当前会话拥有所有权，刷新页面或切换环境后凭证失效（无法确认身份），自然失效编辑/删除权限。
 - [x] Playwright 真实浏览器全流程端到端测试套件（`scripts/verify-post-comment.mjs`）验证通过，桌面端与移动端断言全绿。
 
-### Task 21: 原生留言系统错误修复、多模态互动 (Linuxdo模式/Boost/表情/引用) 与防滥用访客IP归属地监管 (`6263664`)
+### Task 21: 原生留言系统错误修复、多模态互动 (Linuxdo模式/Boost/表情/引用) 与防滥用访客IP归属地监管 (`74cf5f7`)
 - [x] 彻底排查并根除 `Unexpected token '<', "<!DOCTYPE "... is not valid JSON` 报错：
   1. 在 `src/lib/comment-client.ts` 封装高鲁棒性 `safeFetchJson`，对响应内容类型严格做 `Content-Type: application/json` 前置校验，杜绝接收到 HTML 错误页时的 JSON 反序列化崩溃；
   2. 在 `functions/api/comments.ts` 全量补齐错误响应 JSON 头与格式化输出（状态码 400、403、429、500 等均输出标准 JSON 错误体）。
