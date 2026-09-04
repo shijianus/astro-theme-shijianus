@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Rocket } from 'lucide-react';
 import type { CommentProvider } from '../../config/site';
 import {
   fetchComments,
@@ -104,8 +105,8 @@ export function PostComments({
   const [sortOrder, setSortOrder] = useState<'hot' | 'new'>('new');
   const [noticeText, setNoticeText] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Linuxdo interaction mode: 'comment' | 'boost' | 'emoji'
-  const [activeMode, setActiveMode] = useState<PostType>('comment');
+  // Linuxdo interaction mode: 'comment' | 'emoji' (Boost is reserved for replying to others)
+  const [activeMode, setActiveMode] = useState<'comment' | 'emoji'>('comment');
 
   // Main input state
   const [mainMessage, setMainMessage] = useState('');
@@ -115,6 +116,7 @@ export function PostComments({
   // In-place reply state (YouTube style)
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [replyingTargetAuthor, setReplyingTargetAuthor] = useState<string>('');
+  const [replyMode, setReplyMode] = useState<'comment' | 'boost'>('comment');
   const [replyMessage, setReplyMessage] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
 
@@ -211,22 +213,16 @@ export function PostComments({
     });
   };
 
-  // Main Submission (Comment or Boost)
+  // Main Submission (Normal Comment)
   const handleMainSubmit = async () => {
     const trimmed = mainMessage.trim();
     if (!trimmed) {
-      showToast('请填写内容', 'error');
+      showToast('请填写评论内容', 'error');
       return;
     }
 
-    const currentLimit = activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
-    if (trimmed.length > currentLimit) {
-      showToast(
-        activeMode === 'boost'
-          ? `⚡ Boost 动态不能超过 ${BOOST_LIMIT} 字`
-          : `评论内容不能超过 ${COMMENT_LIMIT} 字`,
-        'error'
-      );
+    if (trimmed.length > COMMENT_LIMIT) {
+      showToast(`评论内容不能超过 ${COMMENT_LIMIT} 字`, 'error');
       return;
     }
 
@@ -236,7 +232,7 @@ export function PostComments({
       const res = await createComment({
         slug,
         message: trimmed,
-        postType: activeMode,
+        postType: 'comment',
         quote: quoteState,
         author: account,
       });
@@ -253,7 +249,7 @@ export function PostComments({
         setMainMessage('');
         setQuoteState(null);
         setMainInputFocused(false);
-        showToast(activeMode === 'boost' ? '⚡ Boost 动态已发布！' : '评论已成功发布！', 'success');
+        showToast('评论已成功发布！', 'success');
 
         await loadComments();
       } else {
@@ -297,12 +293,18 @@ export function PostComments({
     }
   };
 
-  // In-place Reply Submission
+  // In-place Reply Submission (Supports normal comment & 🚀 Boost modes)
   const handleReplySubmit = async (rootCommentId: string) => {
     const trimmed = replyMessage.trim();
     if (!trimmed) return;
-    if (trimmed.length > COMMENT_LIMIT) {
-      showToast(`回复内容不能超过 ${COMMENT_LIMIT} 字`, 'error');
+    const currentLimit = replyMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
+    if (trimmed.length > currentLimit) {
+      showToast(
+        replyMode === 'boost'
+          ? `🚀 Boost 回复不能超过 ${BOOST_LIMIT} 个字`
+          : `回复内容不能超过 ${COMMENT_LIMIT} 字`,
+        'error'
+      );
       return;
     }
 
@@ -311,6 +313,7 @@ export function PostComments({
       const res = await createComment({
         slug,
         message: trimmed,
+        postType: replyMode,
         parentId: rootCommentId,
         author: account,
       });
@@ -327,8 +330,9 @@ export function PostComments({
         setReplyMessage('');
         setReplyingToCommentId(null);
         setReplyingTargetAuthor('');
+        setReplyMode('comment'); // Always reset to default normal reply
         setExpandedReplies((prev) => new Set(prev).add(rootCommentId));
-        showToast('回复已成功发表！', 'success');
+        showToast(replyMode === 'boost' ? '🚀 Boost 回复已成功发表！' : '回复已成功发表！', 'success');
 
         await loadComments();
       } else {
@@ -492,14 +496,6 @@ export function PostComments({
                 </button>
                 <button
                   type="button"
-                  className={`tk-mode-btn ${activeMode === 'boost' ? 'is-active' : ''}`}
-                  onClick={() => setActiveMode('boost')}
-                  title="16字以内的快速动态/微言"
-                >
-                  ⚡ Boost (≤16字)
-                </button>
-                <button
-                  type="button"
                   className={`tk-mode-btn ${activeMode === 'emoji' ? 'is-active' : ''}`}
                   onClick={() => setActiveMode('emoji')}
                   title="多 Emoji 快捷表情互动"
@@ -535,7 +531,7 @@ export function PostComments({
               </div>
             )}
 
-            {/* Standard / Boost Input Area */}
+            {/* Standard Input Area */}
             {activeMode !== 'emoji' && (
               <div className="tk-row">
                 <div
@@ -571,22 +567,15 @@ export function PostComments({
 
                   <div className="tk-input el-textarea">
                     <textarea
-                      className={`el-textarea__inner ${activeMode === 'boost' ? 'is-boost-input' : ''}`}
+                      className="el-textarea__inner"
                       value={mainMessage}
                       onFocus={() => setMainInputFocused(true)}
-                      onChange={(e) => {
-                        const max = activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
-                        setMainMessage(e.target.value.slice(0, max));
-                      }}
-                      placeholder={
-                        activeMode === 'boost'
-                          ? `⚡ 发表 16 字以内的 Boost 快速动态...`
-                          : `围绕《${title}》发表公开评论... (支持 Markdown)`
-                      }
-                      rows={activeMode === 'boost' ? 2 : (mainInputFocused || mainMessage.trim() ? 4 : 2)}
+                      onChange={(e) => setMainMessage(e.target.value.slice(0, COMMENT_LIMIT))}
+                      placeholder={`围绕《${title}》发表公开评论... (支持 Markdown)`}
+                      rows={mainInputFocused || mainMessage.trim() ? 4 : 2}
                     />
                     <span className="el-input__count">
-                      {mainMessage.length}/{activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT}
+                      {mainMessage.length}/{COMMENT_LIMIT}
                     </span>
                   </div>
 
@@ -607,15 +596,11 @@ export function PostComments({
                         </button>
                         <button
                           type="button"
-                          className={`tk-send ${activeMode === 'boost' ? 'is-boost-btn' : ''}`}
+                          className="tk-send"
                           disabled={submitting || !mainMessage.trim()}
                           onClick={handleMainSubmit}
                         >
-                          {submitting
-                            ? '发送中...'
-                            : activeMode === 'boost'
-                            ? '⚡ 立即 Boost'
-                            : submitLabel}
+                          {submitting ? '发送中...' : submitLabel}
                         </button>
                       </div>
                     </div>
@@ -731,7 +716,12 @@ export function PostComments({
                           {item.ip && <span className="tk-admin-ip-badge">[{item.ip}]</span>}
 
                           {/* Boost Indicator Badge */}
-                          {isBoost && <span className="tk-boost-pill">⚡ Boost</span>}
+                          {isBoost && (
+                            <span className="tk-boost-pill">
+                              <Rocket size={11} className="tk-boost-icon" />
+                              <span>Boost</span>
+                            </span>
+                          )}
 
                           <time className="tk-time">{formatCommentTime(item.createdAt)}</time>
                           {edited && <span className="tk-edited-mark">(已编辑)</span>}
@@ -803,19 +793,40 @@ export function PostComments({
                           </button>
                           <button
                             type="button"
-                            className="tk-action-btn tk-action-reply"
+                            className={`tk-action-btn tk-action-reply ${isReplying && replyMode === 'comment' ? 'is-active' : ''}`}
                             onClick={() => {
-                              if (isReplying) {
+                              if (isReplying && replyMode === 'comment') {
                                 setReplyingToCommentId(null);
                                 setReplyingTargetAuthor('');
                               } else {
                                 setReplyingToCommentId(item.id);
                                 setReplyingTargetAuthor(item.authorName);
+                                setReplyMode('comment');
                                 setReplyMessage('');
                               }
                             }}
                           >
                             💬 回复
+                          </button>
+                          <button
+                            type="button"
+                            className={`tk-action-btn tk-action-boost ${isReplying && replyMode === 'boost' ? 'is-active' : ''}`}
+                            onClick={() => {
+                              if (isReplying && replyMode === 'boost') {
+                                setReplyingToCommentId(null);
+                                setReplyingTargetAuthor('');
+                                setReplyMode('comment');
+                              } else {
+                                setReplyingToCommentId(item.id);
+                                setReplyingTargetAuthor(item.authorName);
+                                setReplyMode('boost');
+                                setReplyMessage('');
+                              }
+                            }}
+                            title="发送 16 字以内的火箭 Boost 快速回复"
+                          >
+                            <Rocket size={13} className="tk-action-icon" />
+                            <span>Boost</span>
                           </button>
                           <button
                             type="button"
@@ -850,7 +861,7 @@ export function PostComments({
 
                         {/* In-place Nested Reply Form */}
                         {isReplying && (
-                          <div className="tk-nested-reply-box">
+                          <div className={`tk-nested-reply-box ${replyMode === 'boost' ? 'is-boost-mode' : ''}`}>
                             <div className="tk-row">
                               <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
                                 {account?.avatar ? (
@@ -860,15 +871,56 @@ export function PostComments({
                                 )}
                               </div>
                               <div className="tk-col">
+                                {/* Reply Mode Header & Toggle */}
+                                <div className="tk-reply-header-bar">
+                                  {replyMode === 'boost' ? (
+                                    <div className="tk-reply-boost-badge">
+                                      <Rocket size={12} className="tk-boost-icon" />
+                                      <span>火箭 Boost 回复模式 (≤16字)</span>
+                                      <button
+                                        type="button"
+                                        className="tk-reply-mode-toggle"
+                                        onClick={() => setReplyMode('comment')}
+                                        title="切换回普通 500 字回复"
+                                      >
+                                        切换为普通回复
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="tk-reply-hint-bar">
+                                      <span className="tk-reply-to-text">回复 <strong>@{replyingTargetAuthor}</strong></span>
+                                      <button
+                                        type="button"
+                                        className="tk-reply-mode-toggle tk-reply-mode-toggle-boost"
+                                        onClick={() => setReplyMode('boost')}
+                                        title="切换为 16 字快速火箭 Boost 回复"
+                                      >
+                                        <Rocket size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '3px' }} />
+                                        切换为 Boost (≤16字)
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
                                 <div className="tk-input el-textarea">
                                   <textarea
-                                    className="el-textarea__inner"
+                                    className={`el-textarea__inner ${replyMode === 'boost' ? 'is-boost-input' : ''}`}
                                     value={replyMessage}
-                                    onChange={(e) => setReplyMessage(e.target.value.slice(0, COMMENT_LIMIT))}
-                                    placeholder={`回复 @${replyingTargetAuthor}...`}
-                                    rows={2}
+                                    onChange={(e) => {
+                                      const limit = replyMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
+                                      setReplyMessage(e.target.value.slice(0, limit));
+                                    }}
+                                    placeholder={
+                                      replyMode === 'boost'
+                                        ? `🚀 发表 16 字以内的 Boost 快速回复 @${replyingTargetAuthor}...`
+                                        : `回复 @${replyingTargetAuthor}...`
+                                    }
+                                    rows={replyMode === 'boost' ? 2 : 3}
                                     autoFocus
                                   />
+                                  <span className="el-input__count">
+                                    {replyMessage.length}/{replyMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT}
+                                  </span>
                                 </div>
                                 <div className="tk-nested-reply-actions">
                                   <button
@@ -878,17 +930,27 @@ export function PostComments({
                                       setReplyingToCommentId(null);
                                       setReplyingTargetAuthor('');
                                       setReplyMessage('');
+                                      setReplyMode('comment');
                                     }}
                                   >
                                     取消
                                   </button>
                                   <button
                                     type="button"
-                                    className="tk-send tk-send-small"
+                                    className={`tk-send tk-send-small ${replyMode === 'boost' ? 'is-boost-btn' : ''}`}
                                     disabled={replySubmitting || !replyMessage.trim()}
                                     onClick={() => handleReplySubmit(item.id)}
                                   >
-                                    {replySubmitting ? '发送中...' : '回复'}
+                                    {replySubmitting
+                                      ? '发送中...'
+                                      : replyMode === 'boost'
+                                      ? (
+                                        <>
+                                          <Rocket size={12} style={{ marginRight: '4px' }} />
+                                          Boost
+                                        </>
+                                      )
+                                      : '回复'}
                                   </button>
                                 </div>
                               </div>
@@ -959,7 +1021,12 @@ export function PostComments({
                                           )}
 
                                           {reply.ip && <span className="tk-admin-ip-badge">[{reply.ip}]</span>}
-                                          {isReplyBoost && <span className="tk-boost-pill">⚡ Boost</span>}
+                                          {isReplyBoost && (
+                                            <span className="tk-boost-pill">
+                                              <Rocket size={11} className="tk-boost-icon" />
+                                              <span>Boost</span>
+                                            </span>
+                                          )}
 
                                           <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
                                           {isReplyEdited && <span className="tk-edited-mark">(已编辑)</span>}
@@ -1022,10 +1089,25 @@ export function PostComments({
                                             onClick={() => {
                                               setReplyingToCommentId(item.id);
                                               setReplyingTargetAuthor(reply.authorName);
+                                              setReplyMode('comment');
                                               setReplyMessage(`@${reply.authorName} `);
                                             }}
                                           >
                                             💬 回复
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="tk-action-btn tk-action-boost"
+                                            title="发送 16 字以内的火箭 Boost 快速回复"
+                                            onClick={() => {
+                                              setReplyingToCommentId(item.id);
+                                              setReplyingTargetAuthor(reply.authorName);
+                                              setReplyMode('boost');
+                                              setReplyMessage(`@${reply.authorName} `);
+                                            }}
+                                          >
+                                            <Rocket size={13} className="tk-action-icon" />
+                                            <span>Boost</span>
                                           </button>
                                           <button
                                             type="button"
