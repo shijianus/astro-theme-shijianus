@@ -4149,7 +4149,7 @@ body[data-type='home'] .page-aside {
 #console .button-group {
   position: absolute;
   right: 0;
-  bottom: 42px;
+  bottom: 12px;
   left: 0;
   z-index: 2;
   display: flex;

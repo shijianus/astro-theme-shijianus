@@ -1163,8 +1163,8 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     transform: translate(-50%, -50%) !important;
     width: min(1200px, 94vw) !important;
     height: auto !important;
-    min-height: 600px !important;
-    max-height: 90vh !important; /* Increased from 85vh to accommodate more metrics */
+    min-height: 0 !important;
+    max-height: calc(100vh - 90px) !important;
     opacity: 0 !important;
     z-index: 9999 !important;
     overflow: visible !important;
@@ -1211,7 +1211,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 
 #console.show .console-card-group {
   opacity: 1 !important;
-  transform: translate(-50%, calc(-50% - 20px)) !important;
+  transform: translate(-50%, calc(-50% - 36px)) !important;
   pointer-events: auto !important;
 }
 
@@ -1243,8 +1243,8 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 }
 
 #console .tags {
-    flex: 1.5 1 auto !important; /* Prioritize space for ~50 tags */
-    min-height: 300px !important;
+    flex: 1.2 1 auto !important;
+    min-height: 200px !important;
 }
 
 #console .activity {
@@ -1260,7 +1260,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 #console .activity-grid-container { 
     display: flex !important; 
     justify-content: center !important;
-    margin-top: 24px !important;
+    margin-top: 14px !important;
     overflow: visible !important; 
 }
 
@@ -1664,7 +1664,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 /* Button Group - Minimalist & Detached */
 #console .button-group {
   position: fixed;
-  bottom: 24px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999 !important;
