@@ -2875,7 +2875,7 @@ body[data-type='post'] :is(#post-toc-aside, #post-secondary-aside) .card-widget 
 body[data-type='post'] .card-telegram,
 body[data-type='post'] .card-telegram--post {
   padding: 0 !important;
-  overflow: hidden;
+  overflow: visible !important;
   margin: 0 !important;
 }
 
@@ -3272,7 +3272,7 @@ body[data-type='home'] .feature-panel-recent .aside-list {
 .card-telegram--post,
 .friends-page__telegram {
   padding: 0 !important;
-  overflow: hidden;
+  overflow: visible !important;
   border: none !important;
   background:
     radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2), transparent 24%),
@@ -3860,7 +3860,7 @@ body[data-type='post'] #aside-content #post-sticky-layout .card-widget {
 body[data-type='post'] #aside-content #post-sticky-layout #card-telegram,
 body[data-type='post'] #aside-content #post-sticky-layout #card-telegram .promo-widget {
   position: relative !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   align-self: stretch !important;
 }
 

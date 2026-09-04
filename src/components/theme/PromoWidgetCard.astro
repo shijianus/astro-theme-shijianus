@@ -54,15 +54,15 @@ const defaultCopy = {
   }
 };
 
-// Fallback to siteConfig.aside.telegramWidget if telegram is selected and no config is provided
 const platformConfigs = {
   telegram: {
     href: siteConfig.aside.telegramWidget?.href || '#',
     qrImage: siteConfig.aside.telegramWidget?.qrImage || '',
     title: siteConfig.aside.telegramWidget?.title || defaultCopy.telegram.title,
-    subtitle: defaultCopy.telegram.subtitle,
-    backTitle: defaultCopy.telegram.backTitle,
-    backSubtitle: defaultCopy.telegram.backSubtitle,
+    subtitle: siteConfig.aside.telegramWidget?.subtitle || defaultCopy.telegram.subtitle,
+    backTitle: siteConfig.aside.telegramWidget?.backLabel || defaultCopy.telegram.backTitle,
+    backSubtitle: siteConfig.aside.telegramWidget?.summary || defaultCopy.telegram.backSubtitle,
+    qrCrop: siteConfig.aside.telegramWidget?.qrCrop,
     iconPath: 'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'
   },
   wechat: {
@@ -245,7 +245,7 @@ const themesJson = JSON.stringify({
     border-radius: 12px;
     box-shadow: var(--card-box-shadow);
     color: #fff;
-    overflow: hidden !important;
+    overflow: visible !important;
     margin: 0 !important;
   }
   
@@ -263,8 +263,7 @@ const themesJson = JSON.stringify({
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
-    overflow: hidden;
-    border-radius: inherit;
+    border-radius: 12px;
     z-index: 1;
     /* Defaults */
     --promo-bg-gradient: linear-gradient(135deg, #1cb5e0 0%, #000851 100%);
@@ -280,7 +279,6 @@ const themesJson = JSON.stringify({
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
-    overflow: hidden;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -290,13 +288,15 @@ const themesJson = JSON.stringify({
   .face {
     position: absolute !important;
     inset: 0 !important;
-    width: auto !important;
-    height: auto !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
     box-sizing: border-box !important;
     -webkit-backface-visibility: hidden !important;
     backface-visibility: hidden !important;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
     border-radius: 12px;
     cursor: pointer;
     overflow: hidden;
@@ -349,6 +349,9 @@ const themesJson = JSON.stringify({
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
+    z-index: 2;
+    transform: rotateY(0deg) !important;
+    -webkit-transform: rotateY(0deg) !important;
   }
   
   .promo-content {
@@ -518,7 +521,9 @@ const themesJson = JSON.stringify({
     display: block !important;
   }
 
-  .promo-widget:hover #flip-content {
+  .promo-widget:hover #flip-content,
+  .promo-widget:focus-within #flip-content,
+  #flip-wrapper:hover #flip-content {
     -webkit-transform: rotateY(180deg);
     transform: rotateY(180deg);
   }
