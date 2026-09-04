@@ -407,6 +407,75 @@ function stripeAndGeoDevIntegration() {
   };
 }
 
+function commentsDevIntegration() {
+  return {
+    name: 'comments-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          const rawUrl = req.url || '';
+          if (rawUrl === '/api/comments' || rawUrl.startsWith('/api/comments?') || rawUrl.startsWith('/api/comments/')) {
+            try {
+              const protocol = req.socket?.encrypted ? 'https' : 'http';
+              const host = req.headers.host || 'localhost:4321';
+              const fullUrl = new URL(rawUrl, `${protocol}://${host}`);
+
+              const chunks = [];
+              for await (const chunk of req) {
+                chunks.push(chunk);
+              }
+              const bodyBuffer = Buffer.concat(chunks);
+              const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method || '') && bodyBuffer.length > 0;
+
+              const webHeaders = new Headers();
+              for (const [key, value] of Object.entries(req.headers)) {
+                if (Array.isArray(value)) {
+                  for (const v of value) webHeaders.append(key, v);
+                } else if (value !== undefined) {
+                  webHeaders.set(key, value);
+                }
+              }
+
+              const webReq = new Request(fullUrl.toString(), {
+                method: req.method,
+                headers: webHeaders,
+                body: hasBody ? bodyBuffer : undefined,
+              });
+
+              const { onRequest } = await import('./functions/api/comments.ts');
+              const webRes = await onRequest({
+                request: webReq,
+                env: {
+                  ...process.env,
+                  IS_DEV: 'true',
+                  TELEGRAM_BOT_TOKEN: getEnvVar('TELEGRAM_BOT_TOKEN'),
+                  TELEGRAM_CHAT_ID: getEnvVar('TELEGRAM_CHAT_ID'),
+                  ADMIN_TOKEN: getEnvVar('ADMIN_TOKEN'),
+                },
+              });
+
+              res.statusCode = webRes.status;
+              webRes.headers.forEach((val, key) => {
+                res.setHeader(key, val);
+              });
+              const resBody = await webRes.text();
+              res.end(resBody);
+              return;
+            } catch (err) {
+              console.error('[Dev Comments Middleware Error]:', err);
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.statusCode = 500;
+              res.end(JSON.stringify({ ok: false, error: err?.message || 'Dev comments middleware error' }));
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  };
+}
+
 const mindmapLang = {
   name: 'mindmap',
   scopeName: 'source.mindmap',
@@ -441,7 +510,14 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  integrations: [epocanvasBrandIntegration(), chronralAiDevIntegration(), stripeAndGeoDevIntegration(), react(), mdx()],
+  integrations: [
+    epocanvasBrandIntegration(),
+    chronralAiDevIntegration(),
+    stripeAndGeoDevIntegration(),
+    commentsDevIntegration(),
+    react(),
+    mdx(),
+  ],
   markdown: {
     remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],

@@ -1,5 +1,5 @@
 import type { AppEnv } from '../_lib/types';
-import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http';
+import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 
 interface RawCommentRow {
   id: string;
@@ -59,6 +59,35 @@ function resolveCountryInfo(countryCode: string) {
 
 // In-memory fallback store when running without D1 binding
 const memoryFallbackStore = new Map<string, RawCommentRow>();
+
+// Optional local dev persistence when running in Node dev server
+function syncDevStore(action: 'load' | 'save') {
+  if (typeof process === 'undefined' || !process.cwd || typeof process.versions?.node === 'undefined') return;
+  try {
+    const fs = (globalThis as any).__node_fs || require?.('node:fs');
+    const path = (globalThis as any).__node_path || require?.('node:path');
+    if (!fs || !path) return;
+    const storePath = path.resolve(process.cwd(), '.comments-dev.json');
+    if (action === 'load') {
+      if (fs.existsSync(storePath)) {
+        const raw = fs.readFileSync(storePath, 'utf8');
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          memoryFallbackStore.clear();
+          for (const item of list) {
+            memoryFallbackStore.set(item.id, item);
+          }
+        }
+      }
+    } else {
+      const list = Array.from(memoryFallbackStore.values());
+      fs.writeFileSync(storePath, JSON.stringify(list, null, 2), 'utf8');
+    }
+  } catch {}
+}
+
+// Preload local dev store if available
+syncDevStore('load');
 
 async function ensureTable(db: any) {
   if (!db || !db.prepare) return;
@@ -158,7 +187,7 @@ async function sendTelegramCommentNotification(
   const chatId = env.TELEGRAM_CHAT_ID || (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID);
   if (!token || !chatId) return;
 
-  const typeIcon = data.postType === 'boost' ? '⚡ Boost' : (data.parentId ? '💬 回复' : '💬 留言');
+  const typeIcon = data.postType === 'boost' ? '🚀 Boost' : (data.parentId ? '💬 回复' : '💬 留言');
   const countryInfo = resolveCountryInfo(data.country);
 
   const text = [
@@ -284,14 +313,16 @@ export async function onRequest(context: {
 
     // Boost limit check: <= 16 characters
     if (postType === 'boost' && rawMessage.length > 16) {
-      return jsonResponse(request, env, { ok: false, error: '⚡ Boost 动态内容不能超过 16 个字' }, { status: 400 });
+      return jsonResponse(request, env, { ok: false, error: '🚀 Boost 动态内容不能超过 16 个字' }, { status: 400 });
     }
     if (postType === 'comment' && rawMessage.length > 1000) {
       return jsonResponse(request, env, { ok: false, error: '评论内容不能超过 1000 字' }, { status: 400 });
     }
 
+    const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
+
     // Anti-abuse & Rate limiting for Visitors (1 hour window)
-    if (isVisitor) {
+    if (isVisitor && !isDev) {
       const oneHourAgo = Date.now() - 3600 * 1000;
 
       if (env.DB) {
@@ -420,6 +451,7 @@ export async function onRequest(context: {
       }
     } else {
       memoryFallbackStore.set(commentId, newRecord);
+      syncDevStore('save');
     }
 
     // Telegram notification in background
@@ -490,6 +522,7 @@ export async function onRequest(context: {
     }
     item.message = message;
     item.updated_at = new Date().toISOString();
+    syncDevStore('save');
     return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
   }
 
@@ -530,6 +563,7 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '无权删除此评论' }, { status: 403 });
     }
     item.status = 'deleted';
+    syncDevStore('save');
     return jsonResponse(request, env, { ok: true, message: '评论已删除' });
   }
 
@@ -552,6 +586,7 @@ export async function onRequest(context: {
     const item = memoryFallbackStore.get(id);
     if (item) {
       item.likes_count = (item.likes_count || 0) + 1;
+      syncDevStore('save');
       return jsonResponse(request, env, { ok: true, likesCount: item.likes_count });
     }
     return jsonResponse(request, env, { ok: true, likesCount: 1 });

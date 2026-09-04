@@ -38,3 +38,4 @@ scripts/audit_screenshots/
 __pycache__/
 *.pyc
 trace_*.json
+.comments-dev.json

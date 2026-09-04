@@ -77,6 +77,12 @@ async function safeFetchJson<T>(res: Response): Promise<{ ok: boolean; data?: T;
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     const text = await res.text();
+    if (res.status === 404) {
+      return {
+        ok: false,
+        error: '评论接口不存在或服务未就绪 (404 Not Found)，请确认本地开发环境正常运行',
+      };
+    }
     return {
       ok: false,
       error: `API 响应非 JSON 格式 (${res.status}): ${text.slice(0, 80)}`,
