@@ -198,7 +198,7 @@
 .theme-account-overlay {
   position: fixed;
   inset: 0;
-  z-index: 111;
+  z-index: 9998 !important;
   pointer-events: none;
 }
 
@@ -223,6 +223,7 @@
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 9999 !important;
   width: min(880px, calc(100vw - 24px));
   height: 100%;
   display: grid;

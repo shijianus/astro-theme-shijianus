@@ -693,7 +693,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   /* ── Render ───────────────────────────────────────────────────────────── */
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/55 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/55 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={closeModal}
     >
       <div

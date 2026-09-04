@@ -860,7 +860,7 @@ body[data-type='post'] #pagination.pagination-post {
   position: fixed !important;
   right: 24px;
   bottom: 24px;
-  z-index: 80;
+  z-index: 50 !important;
   display: block;
   width: min(360px, calc(100vw - 32px));
   height: auto;
@@ -891,6 +891,23 @@ body[data-type='post'] #pagination.pagination-post.is-visible {
 
 body[data-type='post'] #pagination.pagination-post[data-dismissed='true'] {
   display: none !important;
+}
+
+/* 顶层遮罩与控制中心/账号中心激活时，确保下一篇推荐组件绝对不浮于顶层并即时隐藏 */
+body.theme-overlay-open #pagination.pagination-post,
+body.reward-modal-open #pagination.pagination-post,
+body.modal-scroll-locked #pagination.pagination-post,
+body.ext-gate-open #pagination.pagination-post,
+body:has(#console.show) #pagination.pagination-post,
+body:has(.theme-account-overlay.show) #pagination.pagination-post,
+body:has(.theme-search.show) #pagination.pagination-post,
+body:has(.reward-channel-modal:not([hidden])) #pagination.pagination-post {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transform: translateY(16px) scale(0.95) !important;
+  z-index: -1 !important;
+  transition: opacity 0.12s ease, visibility 0.12s ease, transform 0.12s ease !important;
 }
 
 body[data-type='post'] #pagination .next-post {
@@ -1149,7 +1166,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     min-height: 600px !important;
     max-height: 90vh !important; /* Increased from 85vh to accommodate more metrics */
     opacity: 0 !important;
-    z-index: 100 !important;
+    z-index: 9999 !important;
     overflow: visible !important;
     pointer-events: none !important;
     transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
@@ -1650,7 +1667,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 100;
+  z-index: 9999 !important;
   display: flex;
   gap: 16px;
   background: transparent !important;
@@ -2176,7 +2193,7 @@ body .snackbar-container.show,
 .theme-account-overlay {
   position: fixed;
   inset: 0;
-  z-index: 111;
+  z-index: 9998 !important;
   pointer-events: none;
 }
 
@@ -2201,6 +2218,7 @@ body .snackbar-container.show,
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 9999 !important;
   width: min(880px, calc(100vw - 24px));
   height: 100%;
   display: grid;

@@ -145,6 +145,71 @@ async function runTests() {
     console.log(`Requirement 1 - Scrolled DOWN again to #post-comment meeting #nav, is-visible: ${isVisible} (Expected: true)`);
     if (!isVisible) throw new Error('Should reappear when scrolling back DOWN to #post-comment meeting #nav');
 
+    // =========================================================================
+    // NEW AUDIT: Layer & Priority Hierarchy Tests (Console, Account Drawer, Search)
+    // =========================================================================
+    console.log('\n--- Auditing Stacking Hierarchy with Overlays & Drawers ---');
+
+    // Test A: Center Console (shijianus-dashboard-icon / #console)
+    console.log('Testing Center Console hierarchy...');
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+    });
+    await new Promise(r => setTimeout(r, 350));
+
+    let consoleShow = await page.evaluate(() => document.querySelector('#console').classList.contains('show'));
+    let overlayOpen = await page.evaluate(() => document.body.classList.contains('theme-overlay-open'));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    let paginationOpacity = await page.evaluate(() => window.getComputedStyle(document.querySelector('#pagination.pagination-post')).opacity);
+    let consoleZIndex = await page.evaluate(() => parseInt(window.getComputedStyle(document.querySelector('#console .console-card-group')).zIndex, 10));
+    let paginationZIndex = await page.evaluate(() => parseInt(window.getComputedStyle(document.querySelector('#pagination.pagination-post')).zIndex, 10));
+
+    console.log(`Console open: ${consoleShow}, theme-overlay-open: ${overlayOpen}, pagination is-visible: ${isVisible}, opacity: ${paginationOpacity}`);
+    console.log(`Console z-index: ${consoleZIndex}, Pagination z-index: ${paginationZIndex}`);
+
+    if (!consoleShow) throw new Error('Console failed to open');
+    if (isVisible || paginationOpacity !== '0') throw new Error(`Pagination should NOT be visible while Console is open (opacity: ${paginationOpacity}, is-visible: ${isVisible})`);
+    if (consoleZIndex <= paginationZIndex) throw new Error(`Console z-index (${consoleZIndex}) must be higher than pagination (${paginationZIndex})`);
+
+    // Close Console
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:close-console'));
+    });
+    await new Promise(r => setTimeout(r, 350));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    console.log(`After Console closed, pagination is-visible restored: ${isVisible} (Expected: true)`);
+    if (!isVisible) throw new Error('Pagination should be restored after closing Console');
+
+    // Test B: Account Center Drawer (theme-account-drawer)
+    console.log('Testing Account Center Drawer hierarchy...');
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+    });
+    await new Promise(r => setTimeout(r, 350));
+
+    let accountShow = await page.evaluate(() => document.querySelector('.theme-account-overlay').classList.contains('show'));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    paginationOpacity = await page.evaluate(() => window.getComputedStyle(document.querySelector('#pagination.pagination-post')).opacity);
+    let accountZIndex = await page.evaluate(() => parseInt(window.getComputedStyle(document.querySelector('.theme-account-overlay')).zIndex, 10));
+
+    console.log(`Account Drawer open: ${accountShow}, pagination is-visible: ${isVisible}, opacity: ${paginationOpacity}`);
+    console.log(`Account Overlay z-index: ${accountZIndex}, Pagination z-index: ${paginationZIndex}`);
+
+    if (!accountShow) throw new Error('Account Drawer failed to open');
+    if (isVisible || paginationOpacity !== '0') throw new Error(`Pagination should NOT be visible while Account Drawer is open (opacity: ${paginationOpacity}, is-visible: ${isVisible})`);
+    if (accountZIndex <= paginationZIndex) throw new Error(`Account overlay z-index (${accountZIndex}) must be higher than pagination (${paginationZIndex})`);
+
+    // Close Account Center
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:close-notifications'));
+    });
+    await new Promise(r => setTimeout(r, 350));
+    isVisible = await page.evaluate(() => document.querySelector('#pagination.pagination-post').classList.contains('is-visible'));
+    console.log(`After Account Drawer closed, pagination is-visible restored: ${isVisible} (Expected: true)`);
+    if (!isVisible) throw new Error('Pagination should be restored after closing Account Drawer');
+
+    console.log('--- Stacking Hierarchy Audit Passed! ---\n');
+
     // 5. Requirement 4: Click close button
     console.log('Requirement 4 - Clicking .pagination-close...');
     await page.click('#pagination .pagination-close');

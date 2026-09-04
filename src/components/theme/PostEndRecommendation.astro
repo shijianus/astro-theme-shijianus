@@ -63,9 +63,24 @@ const { nextPost = null } = Astro.props;
           root.classList.remove('is-visible');
         };
 
+        const isOverlayOpen = () => {
+          return (
+            document.body.classList.contains('theme-overlay-open') ||
+            document.body.classList.contains('reward-modal-open') ||
+            document.body.classList.contains('modal-scroll-locked') ||
+            document.body.classList.contains('ext-gate-open') ||
+            Boolean(document.querySelector('.theme-account-overlay.show, #console.show, .theme-search.show'))
+          );
+        };
+
         const update = () => {
           ticking = false;
           if (dismissed) {
+            hide();
+            return;
+          }
+
+          if (isOverlayOpen()) {
             hide();
             return;
           }
@@ -117,6 +132,21 @@ const { nextPost = null } = Astro.props;
 
         window.addEventListener('scroll', scheduleUpdate, { passive: true });
         window.addEventListener('resize', scheduleUpdate, { passive: true });
+
+        // Listen to overlay open/close events to keep pagination strictly below or hidden
+        window.addEventListener('shijianus:console-visibility', scheduleUpdate);
+        window.addEventListener('shijianus:notification-visibility', scheduleUpdate);
+        window.addEventListener('shijianus:account-visibility', scheduleUpdate);
+        window.addEventListener('shijianus:open-console', scheduleUpdate);
+        window.addEventListener('shijianus:close-console', scheduleUpdate);
+        window.addEventListener('shijianus:open-notifications', scheduleUpdate);
+        window.addEventListener('shijianus:close-notifications', scheduleUpdate);
+        window.addEventListener('shijianus:open-search', scheduleUpdate);
+
+        const bodyObserver = new MutationObserver(() => {
+          scheduleUpdate();
+        });
+        bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
         // Initial check on load/mount
         scheduleUpdate();

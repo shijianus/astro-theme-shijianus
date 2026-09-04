@@ -113,3 +113,11 @@
 - [x] Meta 信息非方框式流式排布：重构 `.post-hero__meta-grid`，移除方框卡片容器与边框，采用点号（`•`）分隔的轻量透明流式文字流，还原安知鱼原生 post-info 精致质感。
 - [x] 自动化测试套件（`scripts/verify-post-hero-anzhiyu.mjs`）更新与 E2E 验证全量通过。
 
+### Task 14: 文章下一篇推荐 (Pagination Post) 层级修正与顶层中控台/账号中心绝对优先级保障
+- [x] 重构 Z-Index 全局层级阶梯：将 `#console` 中控台中心、`.theme-account-overlay`/`.theme-account-drawer` 账号中心、`.theme-search` 站内搜索、`RewardModal` 等顶层模态框统一固化至最高层级（`z-index: 9998 ~ 10005`）。
+- [x] 降级 `.pagination-post` 页面级浮动层级：将 `#pagination.pagination-post` 基础层级由 `z-index: 80` 调降至 `z-index: 50 !important`，确保严格位于所有导航、工具及遮罩层下方。
+- [x] 引入双重全自动状态感知与即时隐藏机制：
+  1. CSS 强力抑制：当页面激活 `body.theme-overlay-open`、`#console.show`、`.theme-account-overlay.show`、`body.reward-modal-open` 等任何顶层状态时，强制 `.pagination-post` 立即应用 `opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important;`；
+  2. JS 运行时监听：在 `PostEndRecommendation.astro` 中注入 `MutationObserver` 与各全景事件监听器（`shijianus:open-console`、`shijianus:open-notifications`、`shijianus:open-search` 等），实现即开即隐、关闭后顺畅恢复。
+- [x] 自动化测试套件（`scripts/verify-pagination-post.mjs`）全量更新并通过：严格验证了中控台与账号中心开启时下一篇推荐的不可见性、不可点击性及关闭后的交互恢复。
+
