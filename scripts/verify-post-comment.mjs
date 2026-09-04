@@ -32,7 +32,7 @@ function createStaticServer(distDir, port = 4322) {
       if (reqPath === '/api/comments') {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Comment-Session-Token');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Comment-Session-Token, X-Admin-Token');
 
         if (req.method === 'OPTIONS') {
           res.writeHead(204);
@@ -52,7 +52,7 @@ function createStaticServer(distDir, port = 4322) {
               }
               return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             });
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
           res.end(JSON.stringify({ ok: true, sort, comments: list }));
           return;
         }
@@ -65,6 +65,25 @@ function createStaticServer(distDir, port = 4322) {
             const action = payload.action || 'create';
 
             if (action === 'create') {
+              const rawMessage = (payload.message || '').trim();
+              const postType = payload.postType || 'comment';
+
+              // Duplicate check
+              const hasDup = Array.from(testCommentsDb.values()).some(
+                (c) => c.authorRole === 'visitor' && c.message === rawMessage && c.status !== 'deleted'
+              );
+              if (hasDup) {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ ok: false, error: '请勿在1小时内重复发表完全相同的评论内容' }));
+                return;
+              }
+
+              if (postType === 'boost' && rawMessage.length > 16) {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ ok: false, error: '⚡ Boost 动态内容不能超过 16 个字' }));
+                return;
+              }
+
               const id = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
               const sessionToken = payload.sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
               const newComment = {
@@ -72,19 +91,26 @@ function createStaticServer(distDir, port = 4322) {
                 postSlug: payload.slug,
                 parentId: payload.parentId || null,
                 quoteId: payload.quoteId || null,
+                quote: payload.quote || null,
+                postType,
                 authorId: payload.authorId || `vis_${Date.now()}`,
                 authorName: payload.authorName || '访客',
                 authorAvatar: payload.authorAvatar || '',
                 authorWebsite: payload.authorWebsite || '',
                 authorRole: payload.authorRole || 'visitor',
-                message: payload.message,
+                message: rawMessage,
                 likesCount: 0,
                 status: 'published',
                 createdAt: new Date().toISOString(),
                 sessionToken,
+                showLocation: true,
+                ipCountry: 'CN',
+                ipCountryName: '中国',
+                ipCountryFlag: '🇨🇳',
+                ipLocation: '中国',
               };
               testCommentsDb.set(id, newComment);
-              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({ ok: true, comment: newComment, sessionToken }));
               return;
             }
@@ -92,13 +118,13 @@ function createStaticServer(distDir, port = 4322) {
             if (action === 'edit') {
               const item = testCommentsDb.get(payload.id);
               if (!item) {
-                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
                 res.end(JSON.stringify({ ok: false, error: 'Not found' }));
                 return;
               }
               item.message = payload.message;
               item.updatedAt = new Date().toISOString();
-              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({ ok: true, message: 'Updated' }));
               return;
             }
@@ -106,7 +132,7 @@ function createStaticServer(distDir, port = 4322) {
             if (action === 'delete') {
               const item = testCommentsDb.get(payload.id);
               if (item) item.status = 'deleted';
-              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({ ok: true, message: 'Deleted' }));
               return;
             }
@@ -114,7 +140,7 @@ function createStaticServer(distDir, port = 4322) {
             if (action === 'like') {
               const item = testCommentsDb.get(payload.id);
               if (item) item.likesCount = (item.likesCount || 0) + 1;
-              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({ ok: true, likesCount: item?.likesCount || 1 }));
               return;
             }
@@ -171,107 +197,124 @@ async function run() {
     await page.locator('#post-comment').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
-    // 1. YouTube-style Sort Menu Check
-    const sortCheck = await page.evaluate(() => {
-      const sortGroup = document.querySelector('#post-comment .tk-sort-group');
-      const sortBtns = document.querySelectorAll('#post-comment .tk-sort-btn');
+    // 1. Redundant elements removal check
+    const redundantCheck = await page.evaluate(() => {
+      const tips = document.querySelector('#post-comment .comment-tips');
+      const identity = document.querySelector('#post-comment .tk-user-identity');
+      const actionsStart = document.querySelector('#post-comment .tk-row-actions-start');
       return {
-        hasSortGroup: Boolean(sortGroup),
-        sortButtons: Array.from(sortBtns).map((b) => b.textContent.trim()),
+        hasTips: Boolean(tips),
+        hasIdentity: Boolean(identity),
+        hasActionsStart: Boolean(actionsStart),
       };
     });
-    console.log('1. YouTube-style Sort Menu Check:', JSON.stringify(sortCheck, null, 2));
+    console.log('1. Redundant Elements Removal Check (all should be false):', JSON.stringify(redundantCheck, null, 2));
+    if (redundantCheck.hasTips || redundantCheck.hasIdentity || redundantCheck.hasActionsStart) {
+      throw new Error('Redundant tips, user-identity, or actions-start still found in DOM!');
+    }
 
-    // 2. Submit Root Comment
-    console.log('2. Submitting Root Comment (YouTube-style focus & submit)...');
-    await page.click('#post-comment .el-textarea__inner');
-    await page.fill('#post-comment .el-textarea__inner', '这是一条顶级主评论，测试 YouTube 风格分级回复与展开功能。');
+    // 2. Linuxdo Interaction Modes Tabs Check
+    const modeTabsCheck = await page.evaluate(() => {
+      const tabs = document.querySelectorAll('#post-comment .tk-mode-btn');
+      return Array.from(tabs).map((t) => t.textContent.trim());
+    });
+    console.log('2. Linuxdo Mode Tabs:', modeTabsCheck);
+
+    // 3. Post a Standard Comment
+    console.log('3. Submitting Standard Comment...');
+    await page.fill('#post-comment .el-textarea__inner', '这是一条标准的深度公开长评。');
     await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);
 
-    const rootCheck = await page.evaluate(() => {
-      const items = document.querySelectorAll('#post-comment .tk-comment');
-      const first = items[0];
-      return {
-        totalComments: items.length,
-        firstNick: first?.querySelector('.tk-nick')?.textContent?.trim(),
-        firstBadge: first?.querySelector('.tk-badge')?.textContent?.trim(),
-        hasReplyBtn: Boolean(first?.querySelector('.tk-action-reply')),
-        hasEditBtn: Boolean(first?.querySelector('.tk-action-edit')),
-        hasDeleteBtn: Boolean(first?.querySelector('.tk-action-delete')),
-      };
-    });
-    console.log('   -> Root Comment Result:', JSON.stringify(rootCheck, null, 2));
-
-    // 3. YouTube-style In-place Nested Reply Flow
-    console.log('3. Testing YouTube-style In-place Nested Reply...');
-    await page.click('#post-comment .tk-action-reply');
+    // 4. Post a ⚡ Boost Comment (<= 16 chars)
+    console.log('4. Submitting Linuxdo-style ⚡ Boost Comment...');
+    await page.click('#post-comment .tk-mode-btn:has-text("Boost")');
     await page.waitForTimeout(300);
-
-    const replyBoxCheck = await page.evaluate(() => {
-      const box = document.querySelector('#post-comment .tk-nested-reply-box');
-      const textarea = box?.querySelector('textarea');
-      return {
-        hasReplyBox: Boolean(box),
-        placeholder: textarea?.getAttribute('placeholder'),
-      };
-    });
-    console.log('   -> Nested Reply Box Check:', JSON.stringify(replyBoxCheck, null, 2));
-
-    await page.fill('#post-comment .tk-nested-reply-box textarea', '这是对主评论的二级嵌套回复，支持分级折叠展开！');
-    await page.click('#post-comment .tk-nested-reply-box .tk-send');
+    await page.fill('#post-comment .el-textarea__inner', '⚡ 极客美学大赞！');
+    await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);
 
-    // 4. YouTube-style Accordion & Hierarchical Replies Verification
-    console.log('4. Testing YouTube-style Accordion Toggle (查看/收起回复)...');
-    const accordionCheck = await page.evaluate(() => {
-      const toggleBtn = document.querySelector('#post-comment .tk-replies-toggle-btn');
-      const replies = document.querySelectorAll('#post-comment .tk-replies .tk-comment');
-      return {
-        hasToggleBtn: Boolean(toggleBtn),
-        toggleBtnText: toggleBtn?.textContent?.trim(),
-        totalRepliesRendered: replies.length,
-      };
-    });
-    console.log('   -> Accordion & Replies Result:', JSON.stringify(accordionCheck, null, 2));
-
-    // Toggle collapse
-    await page.click('#post-comment .tk-replies-toggle-btn');
+    // 5. Post a Quick Emoji Reaction
+    console.log('5. Submitting Linuxdo-style Emoji Reaction...');
+    await page.click('#post-comment .tk-mode-btn:has-text("表情")');
     await page.waitForTimeout(300);
-    const collapsedCheck = await page.evaluate(() => {
-      const replies = document.querySelector('#post-comment .tk-replies');
-      const toggleBtn = document.querySelector('#post-comment .tk-replies-toggle-btn');
-      return {
-        repliesVisible: Boolean(replies),
-        toggleBtnText: toggleBtn?.textContent?.trim(),
-      };
+    await page.click('#post-comment .tk-quick-emoji-btn:has-text("🔥")');
+    await page.waitForTimeout(600);
+
+    // 6. Verify Comments List & Geo Flag Badges
+    const streamCheck = await page.evaluate(() => {
+      const items = document.querySelectorAll('#post-comment .tk-comment');
+      const commentsData = Array.from(items).map((el) => ({
+        nick: el.querySelector('.tk-nick')?.textContent?.trim(),
+        badge: el.querySelector('.tk-badge')?.textContent?.trim(),
+        geo: el.querySelector('.tk-geo-badge')?.textContent?.trim(),
+        isBoost: Boolean(el.querySelector('.tk-boost-pill')),
+        content: el.querySelector('.tk-content')?.textContent?.trim(),
+      }));
+      return commentsData;
     });
-    console.log('   -> Collapsed State:', JSON.stringify(collapsedCheck, null, 2));
-
-    // Re-expand
-    await page.click('#post-comment .tk-replies-toggle-btn');
-    await page.waitForTimeout(300);
-
-    // 5. Test Session Expiry on Page Reload (Visitor loses edit/delete permission)
-    console.log('5. Refreshing page to verify session qualification expiry...');
-    await page.reload({ waitUntil: 'networkidle' });
-    await page.locator('#post-comment').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
-
-    const postReloadCheck = await page.evaluate(() => {
-      const rootItem = document.querySelector('#post-comment .tk-comment');
-      return {
-        hasEditBtn: Boolean(rootItem?.querySelector('.tk-action-edit')),
-        hasDeleteBtn: Boolean(rootItem?.querySelector('.tk-action-delete')),
-      };
-    });
-    console.log('   -> Post Reload Privilege Check (should both be false):', JSON.stringify(postReloadCheck, null, 2));
-    if (postReloadCheck.hasEditBtn || postReloadCheck.hasDeleteBtn) {
-      throw new Error('Visitor edit/delete permission should be strictly revoked upon page reload!');
+    console.log('6. Stream Items with Geo & Boost:', JSON.stringify(streamCheck, null, 2));
+    if (streamCheck.length < 3) {
+      throw new Error(`Expected at least 3 comments, got ${streamCheck.length}`);
+    }
+    const hasBoostPill = streamCheck.some((c) => c.isBoost);
+    const hasGeoFlag = streamCheck.every((c) => Boolean(c.geo));
+    if (!hasBoostPill || !hasGeoFlag) {
+      throw new Error('Boost pill or Geo Flag badge missing on visitor comments!');
     }
 
-    // 6. Screenshots
-    console.log('6. Taking Screenshots for Verification...');
+    // 7. Test Duplicate Comment Prevention
+    console.log('7. Testing Duplicate Comment Prevention for Visitors...');
+    await page.click('#post-comment .tk-mode-btn:has-text("评论")');
+    await page.waitForTimeout(300);
+    await page.fill('#post-comment .el-textarea__inner', '这是一条标准的深度公开长评。'); // identical to item 1
+    await page.click('#post-comment .tk-send');
+    await page.waitForTimeout(600);
+
+    const toastError = await page.evaluate(() => {
+      const toast = document.querySelector('#post-comment .tk-global-toast.is-error');
+      return toast?.textContent?.trim();
+    });
+    console.log('   -> Duplicate Rejection Toast:', toastError);
+    if (!toastError || !toastError.includes('重复')) {
+      throw new Error('Duplicate comment was not properly rejected!');
+    }
+
+    // 8. Test Quoted Reply
+    console.log('8. Testing Quoted Reply Flow...');
+    await page.locator('#post-comment .tk-action-quote').first().click();
+    await page.waitForTimeout(400);
+
+    const quotePreview = await page.evaluate(() => {
+      const card = document.querySelector('#post-comment .tk-quote-preview-card');
+      return card?.textContent?.trim();
+    });
+    console.log('   -> Quote Preview Card in Input:', quotePreview);
+    if (!quotePreview) {
+      throw new Error('Quote preview card did not appear!');
+    }
+
+    await page.fill('#post-comment .el-textarea__inner', '针对上面观点的补充讨论。');
+    await page.click('#post-comment .tk-send');
+    await page.waitForTimeout(600);
+
+    const quotedCommentInStream = await page.evaluate(() => {
+      const card = document.querySelector('#post-comment .tk-quote-display-card');
+      return card?.textContent?.trim();
+    });
+    console.log('   -> Rendered Quoted Card in Stream:', quotedCommentInStream);
+    if (!quotedCommentInStream) {
+      throw new Error('Quoted card did not render in comment stream!');
+    }
+
+    // 9. Screenshots
+    console.log('9. Taking Screenshots for Verification...');
+    await page.evaluate(() => {
+      const header = document.querySelector('#page-header');
+      if (header) header.style.display = 'none';
+      const pagination = document.querySelector('.pagination-post');
+      if (pagination) pagination.style.display = 'none';
+    });
     await page.setViewportSize({ width: 375, height: 812 });
     await page.waitForTimeout(300);
     await page.locator('#post-comment').screenshot({ path: 'scripts/post-comment-screenshot-mobile.png' });
@@ -283,7 +326,7 @@ async function run() {
     console.log('📸 Desktop Screenshot saved to scripts/post-comment-screenshot-desktop.png');
 
     await browser.close();
-    console.log('🎉 ALL YOUTUBE-STYLE HIERARCHICAL COMMENT CHECKS PASSED PERFECTLY!');
+    console.log('🎉 ALL ADVANCED INTERACTION & IP CHECKS PASSED PERFECTLY!');
   } catch (err) {
     console.error('❌ Verification failed:', err);
     process.exitCode = 1;

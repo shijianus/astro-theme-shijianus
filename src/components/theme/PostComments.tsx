@@ -10,6 +10,8 @@ import {
   getCommentInitials,
   type BlogComment,
   type CommentIdentity,
+  type CommentQuote,
+  type PostType,
 } from '../../lib/comment-client';
 
 type CommentsIntegrationConfig = Readonly<{
@@ -43,17 +45,18 @@ type PostCommentsProps = {
   title: string;
   heading?: string;
   policyLabel?: string;
-  notice?: string;
   submitLabel?: string;
   previewLabel?: string;
   emptyTitle?: string;
   emptySummary?: string;
-  tips?: string[];
   integration: CommentsIntegrationConfig;
 };
 
-const LIMIT = 500;
+const COMMENT_LIMIT = 500;
+const BOOST_LIMIT = 16;
 const LONG_TEXT_THRESHOLD = 240;
+
+const QUICK_EMOJIS = ['👍', '❤️', '🔥', '🚀', '💡', '🎉', '👏', '🤯', '☕', '✨'];
 
 function formatCommentTime(value: string) {
   try {
@@ -79,7 +82,7 @@ function isEdited(created: string, updated?: string) {
   try {
     const cTime = new Date(created).getTime();
     const uTime = new Date(updated).getTime();
-    return uTime - cTime > 3000; // > 3 seconds difference
+    return uTime - cTime > 3000;
   } catch {
     return false;
   }
@@ -90,50 +93,52 @@ export function PostComments({
   title,
   heading = '评论',
   policyLabel = '隐私政策',
-  notice = '你无需删除空行，直接评论以获取最佳展示效果',
   submitLabel = '发送',
-  previewLabel = '预览',
   emptyTitle = '还没有公开评论',
   emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
-  tips = ['理性交流', '就事论事', '欢迎补充资料'],
-  integration,
 }: PostCommentsProps) {
-  // Comments data state
+  // Comments data
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sortOrder, setSortOrder] = useState<'hot' | 'new'>('new');
-  const [noticeText, setNoticeText] = useState('');
+  const [noticeText, setNoticeText] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Linuxdo interaction mode: 'comment' | 'boost' | 'emoji'
+  const [activeMode, setActiveMode] = useState<PostType>('comment');
 
   // Main input state
   const [mainMessage, setMainMessage] = useState('');
   const [mainInputFocused, setMainInputFocused] = useState(false);
+  const [quoteState, setQuoteState] = useState<CommentQuote | null>(null);
 
-  // In-place reply state (YouTube style: reply box opens right under the target comment)
+  // In-place reply state (YouTube style)
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [replyingTargetAuthor, setReplyingTargetAuthor] = useState<string>('');
   const [replyMessage, setReplyMessage] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
 
-  // In-place inline edit state
+  // Inline edit state
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingMessage, setEditingMessage] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Expanded replies state (YouTube style: set of root comment IDs whose replies are expanded)
+  // Accordion state (set of expanded root comment IDs)
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(() => new Set());
-
-  // Expanded long text state (set of comment IDs with text expanded)
   const [expandedTexts, setExpandedTexts] = useState<Set<string>>(() => new Set());
 
-  // Account identity synchronized with ThemeOverlays account center
+  // Account identity
   const [account, setAccount] = useState<CommentIdentity | null>(null);
 
   // In-memory visitor session tokens map: { commentId -> sessionToken }
-  // Only valid during this browser page instance; refreshes/clears upon page reload / env switch
   const [visitorSessionTokens, setVisitorSessionTokens] = useState<Map<string, string>>(() => new Map());
 
-  // Synchronize account info from localStorage & listen for account changes
+  // Toast notification helper
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setNoticeText({ text, type });
+    setTimeout(() => setNoticeText(null), 3500);
+  };
+
   useEffect(() => {
     setAccount(readCommentIdentity());
 
@@ -148,7 +153,7 @@ export function PostComments({
     };
   }, []);
 
-  // Fetch real comments from D1 / API
+  // Fetch real comments
   const loadComments = async (sort = sortOrder) => {
     setLoading(true);
     try {
@@ -166,26 +171,22 @@ export function PostComments({
     loadComments(sortOrder);
   }, [slug, sortOrder]);
 
-  // Check if current user can edit/delete this comment
   const canManage = (comment: BlogComment) => {
     if (account?.role === 'admin') return true;
     return visitorSessionTokens.has(comment.id);
   };
 
-  // Open the global account drawer
   const openAccountDrawer = () => {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
     }
   };
 
-  // Toggle sort order
   const handleSortToggle = (newSort: 'hot' | 'new') => {
     if (newSort === sortOrder) return;
     setSortOrder(newSort);
   };
 
-  // Toggle replies accordion for a root comment (YouTube style)
   const toggleReplies = (rootId: string) => {
     setExpandedReplies((prev) => {
       const next = new Set(prev);
@@ -198,7 +199,6 @@ export function PostComments({
     });
   };
 
-  // Toggle long text expand/collapse
   const toggleLongText = (commentId: string) => {
     setExpandedTexts((prev) => {
       const next = new Set(prev);
@@ -211,25 +211,33 @@ export function PostComments({
     });
   };
 
-  // Handle Main Comment Submission
+  // Main Submission (Comment or Boost)
   const handleMainSubmit = async () => {
     const trimmed = mainMessage.trim();
     if (!trimmed) {
-      setNoticeText('请填写评论内容');
+      showToast('请填写内容', 'error');
       return;
     }
-    if (trimmed.length > LIMIT) {
-      setNoticeText(`评论内容不能超过 ${LIMIT} 字`);
+
+    const currentLimit = activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
+    if (trimmed.length > currentLimit) {
+      showToast(
+        activeMode === 'boost'
+          ? `⚡ Boost 动态不能超过 ${BOOST_LIMIT} 字`
+          : `评论内容不能超过 ${COMMENT_LIMIT} 字`,
+        'error'
+      );
       return;
     }
 
     setSubmitting(true);
-    setNoticeText('');
 
     try {
       const res = await createComment({
         slug,
         message: trimmed,
+        postType: activeMode,
+        quote: quoteState,
         author: account,
       });
 
@@ -243,27 +251,58 @@ export function PostComments({
         }
 
         setMainMessage('');
+        setQuoteState(null);
         setMainInputFocused(false);
-        setNoticeText('评论已发布');
-        setTimeout(() => setNoticeText(''), 3000);
+        showToast(activeMode === 'boost' ? '⚡ Boost 动态已发布！' : '评论已成功发布！', 'success');
 
         await loadComments();
       } else {
-        setNoticeText(res.error || '提交失败，请重试');
+        showToast(res.error || '提交失败，请重试', 'error');
       }
     } catch {
-      setNoticeText('提交异常，请稍后重试');
+      showToast('提交异常，请稍后重试', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Handle In-place Reply Submission (YouTube style)
-  const handleReplySubmit = async (rootCommentId: string, replyToName: string) => {
+  // Quick Emoji Reaction Post (Linuxdo style)
+  const handleQuickEmoji = async (emoji: string) => {
+    setSubmitting(true);
+    try {
+      const res = await createComment({
+        slug,
+        message: emoji,
+        postType: 'emoji',
+        author: account,
+      });
+
+      if (res.ok && res.comment) {
+        if (res.sessionToken && res.comment.id) {
+          setVisitorSessionTokens((prev) => {
+            const next = new Map(prev);
+            next.set(res.comment!.id, res.sessionToken!);
+            return next;
+          });
+        }
+        showToast(`表情互动 ${emoji} 已发送！`, 'success');
+        await loadComments();
+      } else {
+        showToast(res.error || '表情发送失败', 'error');
+      }
+    } catch {
+      showToast('发送异常，请稍后重试', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // In-place Reply Submission
+  const handleReplySubmit = async (rootCommentId: string) => {
     const trimmed = replyMessage.trim();
     if (!trimmed) return;
-    if (trimmed.length > LIMIT) {
-      setNoticeText(`回复内容不能超过 ${LIMIT} 字`);
+    if (trimmed.length > COMMENT_LIMIT) {
+      showToast(`回复内容不能超过 ${COMMENT_LIMIT} 字`, 'error');
       return;
     }
 
@@ -288,27 +327,25 @@ export function PostComments({
         setReplyMessage('');
         setReplyingToCommentId(null);
         setReplyingTargetAuthor('');
-        // Automatically expand the replies section so user sees their reply
         setExpandedReplies((prev) => new Set(prev).add(rootCommentId));
-        setNoticeText('回复已发布');
-        setTimeout(() => setNoticeText(''), 3000);
+        showToast('回复已成功发表！', 'success');
 
         await loadComments();
       } else {
-        setNoticeText(res.error || '回复失败');
+        showToast(res.error || '回复失败', 'error');
       }
     } catch {
-      setNoticeText('回复异常，请重试');
+      showToast('回复异常，请重试', 'error');
     } finally {
       setReplySubmitting(false);
     }
   };
 
-  // Handle Inline Edit Save
+  // Inline Edit Save
   const handleSaveEdit = async (commentId: string) => {
     const trimmed = editingMessage.trim();
     if (!trimmed) {
-      setNoticeText('修改内容不能为空');
+      showToast('修改内容不能为空', 'error');
       return;
     }
 
@@ -324,22 +361,21 @@ export function PostComments({
       if (res.ok) {
         setEditingCommentId(null);
         setEditingMessage('');
-        setNoticeText('评论修改成功');
-        setTimeout(() => setNoticeText(''), 3000);
+        showToast('评论修改成功！', 'success');
         await loadComments();
       } else {
-        setNoticeText(res.error || '修改失败');
+        showToast(res.error || '修改失败', 'error');
       }
     } catch {
-      setNoticeText('修改请求异常');
+      showToast('修改请求异常', 'error');
     } finally {
       setSavingEdit(false);
     }
   };
 
-  // Handle Comment Delete
+  // Delete Comment
   const handleDelete = async (commentId: string) => {
-    if (typeof window !== 'undefined' && !window.confirm('确定要删除这条评论吗？')) {
+    if (typeof window !== 'undefined' && !window.confirm('确定要删除这条内容吗？')) {
       return;
     }
 
@@ -356,18 +392,17 @@ export function PostComments({
           next.delete(commentId);
           return next;
         });
-        setNoticeText('评论已删除');
-        setTimeout(() => setNoticeText(''), 3000);
+        showToast('内容已删除', 'success');
         await loadComments();
       } else {
-        setNoticeText(res.error || '删除失败');
+        showToast(res.error || '删除失败', 'error');
       }
     } catch {
-      setNoticeText('删除请求异常');
+      showToast('删除请求异常', 'error');
     }
   };
 
-  // Handle Like
+  // Like
   const handleLike = async (commentId: string) => {
     try {
       const res = await likeComment(commentId);
@@ -385,7 +420,18 @@ export function PostComments({
     }
   };
 
-  // Build root comments and nested replies tree
+  // Trigger Quote
+  const handleQuoteClick = (item: BlogComment) => {
+    setQuoteState({
+      id: item.id,
+      authorName: item.authorName,
+      text: item.message.slice(0, 120),
+    });
+    setMainInputFocused(true);
+    document.querySelector('#post-comment')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Build comment tree
   const commentTree = useMemo(() => {
     const roots: BlogComment[] = [];
     const replyMap = new Map<string, BlogComment[]>();
@@ -405,7 +451,7 @@ export function PostComments({
 
   return (
     <div id="post-comment">
-      {/* Header bar */}
+      {/* Header bar without comment-tips */}
       <div className="comment-head">
         <h3 className="comment-headline">
           <i className="anzhiyufont anzhiyu-icon-comments" aria-hidden="true"></i>
@@ -428,108 +474,172 @@ export function PostComments({
             {policyLabel}
           </a>
         </div>
-        <div className="comment-tips">
-          <span>✅ {notice}</span>
-        </div>
       </div>
 
       <div className="comment-wrap">
         <div className="twikoo tk-comments">
-          {/* Main Comment Submission Box (YouTube + Anzhiyu style) */}
+          {/* Main Input Box with Linuxdo multi-mode interactions */}
           <div className={`tk-submit ${mainInputFocused || mainMessage.trim() ? 'is-expanded' : ''}`}>
-            <div className="tk-row">
-              {/* Avatar synced with account drawer */}
-              <div
-                className="tk-avatar theme-account-drawer__summary-avatar"
-                onClick={openAccountDrawer}
-                title={account ? `已登录: ${account.name} (点击修改资料)` : '当前为访客模式 (点击前往账号中心)'}
-                style={{ cursor: 'pointer' }}
-              >
-                {account?.avatar ? (
-                  <img src={account.avatar} alt={account.name} loading="lazy" />
-                ) : account?.name ? (
-                  <span className="tk-avatar-initials">{getCommentInitials(account.name)}</span>
-                ) : (
-                  <div className="tk-avatar-visitor-icon" title="访客">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                  </div>
-                )}
+            {/* Linuxdo Mode Switcher Bar */}
+            <div className="tk-mode-bar">
+              <div className="tk-mode-tabs">
+                <button
+                  type="button"
+                  className={`tk-mode-btn ${activeMode === 'comment' ? 'is-active' : ''}`}
+                  onClick={() => setActiveMode('comment')}
+                >
+                  💬 评论
+                </button>
+                <button
+                  type="button"
+                  className={`tk-mode-btn ${activeMode === 'boost' ? 'is-active' : ''}`}
+                  onClick={() => setActiveMode('boost')}
+                  title="16字以内的快速动态/微言"
+                >
+                  ⚡ Boost (≤16字)
+                </button>
+                <button
+                  type="button"
+                  className={`tk-mode-btn ${activeMode === 'emoji' ? 'is-active' : ''}`}
+                  onClick={() => setActiveMode('emoji')}
+                  title="多 Emoji 快捷表情互动"
+                >
+                  😀 表情互动
+                </button>
               </div>
 
-              {/* Input column */}
-              <div className="tk-col">
-                <div className="tk-user-identity">
-                  <span className="tk-user-badge">
-                    {account ? `🌟 ${account.name}` : '👤 访客 (未登录)'}
-                  </span>
-                  <button
-                    type="button"
-                    className="tk-user-switch-btn"
-                    onClick={openAccountDrawer}
-                  >
-                    {account ? '修改资料 / 切换账号' : '登录 / 注册'}
-                  </button>
-                </div>
-
-                <div className="tk-input el-textarea">
-                  <textarea
-                    className="el-textarea__inner"
-                    value={mainMessage}
-                    onFocus={() => setMainInputFocused(true)}
-                    onChange={(e) => setMainMessage(e.target.value.slice(0, LIMIT))}
-                    placeholder={`围绕《${title}》发表公开评论... (支持 Markdown)`}
-                    rows={mainInputFocused || mainMessage.trim() ? 4 : 2}
-                  />
-                  <span className="el-input__count">
-                    {mainMessage.length}/{LIMIT}
-                  </span>
-                </div>
-
-                {/* Actions row - visible when focused or typing */}
-                {(mainInputFocused || mainMessage.trim().length > 0) && (
-                  <div className="tk-row actions">
-                    <div className="tk-row-actions-start">
-                      <span className="tk-submit-hint">💡 支持 Markdown 与换行</span>
-                    </div>
-                    <div className="tk-row-actions-end">
-                      {noticeText && <span className="tk-notice-text">{noticeText}</span>}
-                      <button
-                        type="button"
-                        className="tk-btn-cancel"
-                        onClick={() => {
-                          setMainMessage('');
-                          setMainInputFocused(false);
-                        }}
-                      >
-                        取消
-                      </button>
-                      <button
-                        type="button"
-                        className="tk-send"
-                        disabled={submitting || !mainMessage.trim()}
-                        onClick={handleMainSubmit}
-                      >
-                        {submitting ? '发送中...' : submitLabel}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {account && (
+                <span className="tk-user-logged-pill" onClick={openAccountDrawer}>
+                  🌟 {account.name}
+                </span>
+              )}
             </div>
+
+            {/* Quick Emoji Reaction Tray (when emoji mode is active) */}
+            {activeMode === 'emoji' && (
+              <div className="tk-emoji-tray">
+                <span className="tk-emoji-tray-label">点击表情快速互动：</span>
+                <div className="tk-emoji-list">
+                  {QUICK_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className="tk-quick-emoji-btn"
+                      disabled={submitting}
+                      onClick={() => handleQuickEmoji(emoji)}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Standard / Boost Input Area */}
+            {activeMode !== 'emoji' && (
+              <div className="tk-row">
+                <div
+                  className="tk-avatar theme-account-drawer__summary-avatar"
+                  onClick={openAccountDrawer}
+                  title={account ? `已登录: ${account.name}` : '访客身份 (点击设置账号)'}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {account?.avatar ? (
+                    <img src={account.avatar} alt={account.name} loading="lazy" />
+                  ) : account?.name ? (
+                    <span className="tk-avatar-initials">{getCommentInitials(account.name)}</span>
+                  ) : (
+                    <div className="tk-avatar-visitor-icon" title="访客">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                <div className="tk-col">
+                  {/* Quoted Source Preview Box */}
+                  {quoteState && (
+                    <div className="tk-quote-preview-card">
+                      <div className="tk-quote-preview-meta">
+                        <span>🔗 引用 <strong>@{quoteState.authorName}</strong> 的评论：</span>
+                        <button type="button" onClick={() => setQuoteState(null)}>✕</button>
+                      </div>
+                      <p className="tk-quote-preview-text">{quoteState.text}</p>
+                    </div>
+                  )}
+
+                  <div className="tk-input el-textarea">
+                    <textarea
+                      className={`el-textarea__inner ${activeMode === 'boost' ? 'is-boost-input' : ''}`}
+                      value={mainMessage}
+                      onFocus={() => setMainInputFocused(true)}
+                      onChange={(e) => {
+                        const max = activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
+                        setMainMessage(e.target.value.slice(0, max));
+                      }}
+                      placeholder={
+                        activeMode === 'boost'
+                          ? `⚡ 发表 16 字以内的 Boost 快速动态...`
+                          : `围绕《${title}》发表公开评论... (支持 Markdown)`
+                      }
+                      rows={activeMode === 'boost' ? 2 : (mainInputFocused || mainMessage.trim() ? 4 : 2)}
+                    />
+                    <span className="el-input__count">
+                      {mainMessage.length}/{activeMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT}
+                    </span>
+                  </div>
+
+                  {/* Actions row without tk-row-actions-start */}
+                  {(mainInputFocused || mainMessage.trim().length > 0) && (
+                    <div className="tk-row actions tk-actions-end-only">
+                      <div className="tk-row-actions-end">
+                        <button
+                          type="button"
+                          className="tk-btn-cancel"
+                          onClick={() => {
+                            setMainMessage('');
+                            setQuoteState(null);
+                            setMainInputFocused(false);
+                          }}
+                        >
+                          取消
+                        </button>
+                        <button
+                          type="button"
+                          className={`tk-send ${activeMode === 'boost' ? 'is-boost-btn' : ''}`}
+                          disabled={submitting || !mainMessage.trim()}
+                          onClick={handleMainSubmit}
+                        >
+                          {submitting
+                            ? '发送中...'
+                            : activeMode === 'boost'
+                            ? '⚡ 立即 Boost'
+                            : submitLabel}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Global Notice Toast */}
+            {noticeText && (
+              <div className={`tk-global-toast is-${noticeText.type}`}>
+                {noticeText.type === 'success' ? '✅' : '⚠️'} {noticeText.text}
+              </div>
+            )}
           </div>
 
-          {/* Public Comments Stream (YouTube-style sorting and tiered replies) */}
+          {/* Public Comments Stream */}
           <div className="tk-comments-container">
-            {/* Top Toolbar: Count & Sort Toggle */}
             <div className="tk-comments-title">
               <div className="tk-comments-count">
                 <span>公开评论</span>
                 <strong>({comments.length})</strong>
               </div>
 
-              {/* YouTube-style Sort Menu */}
               <div className="tk-sort-group">
                 <button
                   type="button"
@@ -569,9 +679,10 @@ export function PostComments({
                   const isTextExpanded = expandedTexts.has(item.id);
                   const isLongText = item.message.length > LONG_TEXT_THRESHOLD;
                   const edited = isEdited(item.createdAt, item.updatedAt);
+                  const isBoost = item.postType === 'boost';
 
                   return (
-                    <div className="tk-comment" key={item.id} id={`comment-${item.id}`}>
+                    <div className={`tk-comment ${isBoost ? 'is-boost-card' : ''}`} key={item.id} id={`comment-${item.id}`}>
                       {/* Avatar */}
                       <div className="tk-avatar theme-account-drawer__summary-avatar">
                         {item.authorAvatar ? (
@@ -591,6 +702,8 @@ export function PostComments({
                       <div className="tk-main">
                         <div className="tk-row tk-meta">
                           <strong className="tk-nick">{item.authorName}</strong>
+
+                          {/* Role Badge */}
                           <span
                             className={`tk-badge ${
                               item.status === 'pinned'
@@ -606,9 +719,33 @@ export function PostComments({
                               ? '博主'
                               : '访客'}
                           </span>
+
+                          {/* Country / IP Location badge (Forced for visitors, optional for logged users) */}
+                          {item.ipCountryFlag && (
+                            <span className="tk-geo-badge" title={`来源地区: ${item.ipCountryName || item.ipLocation}`}>
+                              {item.ipCountryFlag} {item.ipCountryName || item.ipLocation}
+                            </span>
+                          )}
+
+                          {/* Admin only: raw IP display */}
+                          {item.ip && <span className="tk-admin-ip-badge">[{item.ip}]</span>}
+
+                          {/* Boost Indicator Badge */}
+                          {isBoost && <span className="tk-boost-pill">⚡ Boost</span>}
+
                           <time className="tk-time">{formatCommentTime(item.createdAt)}</time>
                           {edited && <span className="tk-edited-mark">(已编辑)</span>}
                         </div>
+
+                        {/* Quoted Source Card if present */}
+                        {item.quote && (
+                          <div className="tk-quote-display-card">
+                            <div className="tk-quote-display-author">
+                              <span>🔗 引用 <strong>@{item.quote.authorName}</strong>：</span>
+                            </div>
+                            <p className="tk-quote-display-text">{item.quote.text}</p>
+                          </div>
+                        )}
 
                         {/* Content or Inline Edit */}
                         {isEditing ? (
@@ -616,7 +753,7 @@ export function PostComments({
                             <textarea
                               className="el-textarea__inner"
                               value={editingMessage}
-                              onChange={(e) => setEditingMessage(e.target.value.slice(0, LIMIT))}
+                              onChange={(e) => setEditingMessage(e.target.value.slice(0, COMMENT_LIMIT))}
                               rows={3}
                             />
                             <div className="tk-inline-edit-actions">
@@ -638,7 +775,7 @@ export function PostComments({
                             </div>
                           </div>
                         ) : (
-                          <div className={`tk-content ${!isTextExpanded && isLongText ? 'is-clamped' : ''}`}>
+                          <div className={`tk-content ${isBoost ? 'is-boost-text' : ''} ${!isTextExpanded && isLongText ? 'is-clamped' : ''}`}>
                             {item.message.split(/\n+/).map((line, idx) => (
                               <p key={idx}>{line}</p>
                             ))}
@@ -654,7 +791,7 @@ export function PostComments({
                           </div>
                         )}
 
-                        {/* Action Toolbar (YouTube style) */}
+                        {/* Action Toolbar */}
                         <div className="tk-actions-group">
                           <button
                             type="button"
@@ -680,6 +817,14 @@ export function PostComments({
                           >
                             💬 回复
                           </button>
+                          <button
+                            type="button"
+                            className="tk-action-btn tk-action-quote"
+                            onClick={() => handleQuoteClick(item)}
+                            title="引用此条内容发表评论"
+                          >
+                            🔗 引用
+                          </button>
                           {isManageable && (
                             <>
                               <button
@@ -703,7 +848,7 @@ export function PostComments({
                           )}
                         </div>
 
-                        {/* In-place Nested Reply Form (YouTube style) */}
+                        {/* In-place Nested Reply Form */}
                         {isReplying && (
                           <div className="tk-nested-reply-box">
                             <div className="tk-row">
@@ -719,7 +864,7 @@ export function PostComments({
                                   <textarea
                                     className="el-textarea__inner"
                                     value={replyMessage}
-                                    onChange={(e) => setReplyMessage(e.target.value.slice(0, LIMIT))}
+                                    onChange={(e) => setReplyMessage(e.target.value.slice(0, COMMENT_LIMIT))}
                                     placeholder={`回复 @${replyingTargetAuthor}...`}
                                     rows={2}
                                     autoFocus
@@ -741,7 +886,7 @@ export function PostComments({
                                     type="button"
                                     className="tk-send tk-send-small"
                                     disabled={replySubmitting || !replyMessage.trim()}
-                                    onClick={() => handleReplySubmit(item.id, replyingTargetAuthor)}
+                                    onClick={() => handleReplySubmit(item.id)}
                                   >
                                     {replySubmitting ? '发送中...' : '回复'}
                                   </button>
@@ -751,7 +896,7 @@ export function PostComments({
                           </div>
                         )}
 
-                        {/* YouTube-style Expandable Replies Button (`▾ 查看 X 条回复` / `▴ 收起回复`) */}
+                        {/* YouTube-style Expandable Replies Accordion */}
                         {replies.length > 0 && (
                           <div className="tk-replies-section">
                             <button
@@ -769,7 +914,6 @@ export function PostComments({
                               </span>
                             </button>
 
-                            {/* Nested Replies Stream */}
                             {areRepliesExpanded && (
                               <div className="tk-replies">
                                 {replies.map((reply) => {
@@ -778,9 +922,10 @@ export function PostComments({
                                   const isReplyEdited = isEdited(reply.createdAt, reply.updatedAt);
                                   const isReplyTextExpanded = expandedTexts.has(reply.id);
                                   const isReplyLong = reply.message.length > LONG_TEXT_THRESHOLD;
+                                  const isReplyBoost = reply.postType === 'boost';
 
                                   return (
-                                    <div className="tk-comment tk-comment-reply" key={reply.id} id={`comment-${reply.id}`}>
+                                    <div className={`tk-comment tk-comment-reply ${isReplyBoost ? 'is-boost-card' : ''}`} key={reply.id} id={`comment-${reply.id}`}>
                                       <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
                                         {reply.authorAvatar ? (
                                           <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
@@ -805,6 +950,17 @@ export function PostComments({
                                           >
                                             {reply.authorRole === 'admin' ? '博主' : '访客'}
                                           </span>
+
+                                          {/* Geo Flag Badge */}
+                                          {reply.ipCountryFlag && (
+                                            <span className="tk-geo-badge" title={`来源地区: ${reply.ipCountryName || reply.ipLocation}`}>
+                                              {reply.ipCountryFlag} {reply.ipCountryName || reply.ipLocation}
+                                            </span>
+                                          )}
+
+                                          {reply.ip && <span className="tk-admin-ip-badge">[{reply.ip}]</span>}
+                                          {isReplyBoost && <span className="tk-boost-pill">⚡ Boost</span>}
+
                                           <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
                                           {isReplyEdited && <span className="tk-edited-mark">(已编辑)</span>}
                                         </div>
@@ -814,7 +970,7 @@ export function PostComments({
                                             <textarea
                                               className="el-textarea__inner"
                                               value={editingMessage}
-                                              onChange={(e) => setEditingMessage(e.target.value.slice(0, LIMIT))}
+                                              onChange={(e) => setEditingMessage(e.target.value.slice(0, COMMENT_LIMIT))}
                                               rows={2}
                                             />
                                             <div className="tk-inline-edit-actions">
@@ -836,7 +992,7 @@ export function PostComments({
                                             </div>
                                           </div>
                                         ) : (
-                                          <div className={`tk-content ${!isReplyTextExpanded && isReplyLong ? 'is-clamped' : ''}`}>
+                                          <div className={`tk-content ${isReplyBoost ? 'is-boost-text' : ''} ${!isReplyTextExpanded && isReplyLong ? 'is-clamped' : ''}`}>
                                             {reply.message.split(/\n+/).map((line, idx) => (
                                               <p key={idx}>{line}</p>
                                             ))}
@@ -870,6 +1026,13 @@ export function PostComments({
                                             }}
                                           >
                                             💬 回复
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="tk-action-btn tk-action-quote"
+                                            onClick={() => handleQuoteClick(reply)}
+                                          >
+                                            🔗 引用
                                           </button>
                                           {isReplyManageable && (
                                             <>

@@ -1,5 +1,6 @@
 export type CommentRole = 'reader' | 'admin' | 'visitor';
-export type CommentStatus = 'published' | 'pinned' | 'hidden' | 'deleted' | 'limited';
+export type CommentStatus = 'published' | 'pinned' | 'flagged' | 'deleted' | 'limited';
+export type PostType = 'comment' | 'boost' | 'emoji';
 
 export type CommentIdentity = {
   id: string;
@@ -10,11 +11,19 @@ export type CommentIdentity = {
   role: CommentRole;
 };
 
+export type CommentQuote = {
+  id: string;
+  authorName: string;
+  text: string;
+};
+
 export type BlogComment = {
   id: string;
   postSlug: string;
   parentId?: string | null;
   quoteId?: string | null;
+  quote?: CommentQuote | null;
+  postType: PostType;
   authorId: string;
   authorName: string;
   authorEmail?: string;
@@ -23,9 +32,15 @@ export type BlogComment = {
   authorRole: 'admin' | 'reader' | 'visitor';
   message: string;
   likesCount: number;
-  status: 'published' | 'pinned' | 'hidden' | 'deleted';
+  status: 'published' | 'pinned' | 'flagged' | 'deleted';
   createdAt: string;
   updatedAt?: string;
+  showLocation: boolean;
+  ipCountry?: string | null;
+  ipCountryName?: string | null;
+  ipCountryFlag?: string | null;
+  ipLocation?: string | null;
+  ip?: string;
 };
 
 export type StoredComment = {
@@ -49,15 +64,29 @@ export const COMMENT_ACCOUNT_KEY = 'shijianus-comment-account';
 export const COMMENT_ACCOUNT_LEGACY_KEY = 'shijianus-comment-identity';
 export const COMMENT_THREAD_PREFIX = 'shijianus-comments:';
 
-export type VisitorEditPolicy = 'in_memory_until_refresh' | 'session' | 'disabled';
-export const DEFAULT_VISITOR_EDIT_POLICY: VisitorEditPolicy = 'in_memory_until_refresh';
-
 function safeParse<T>(value: string | null): T | null {
   if (!value) return null;
   try {
     return JSON.parse(value) as T;
   } catch {
     return null;
+  }
+}
+
+async function safeFetchJson<T>(res: Response): Promise<{ ok: boolean; data?: T; error?: string }> {
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await res.text();
+    return {
+      ok: false,
+      error: `API 响应非 JSON 格式 (${res.status}): ${text.slice(0, 80)}`,
+    };
+  }
+  try {
+    const json = await res.json();
+    return { ok: res.ok, data: json };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'JSON 解析失败' };
   }
 }
 
@@ -189,10 +218,9 @@ export function getCommentInitials(name: string) {
 export async function fetchComments(slug: string, sort: 'hot' | 'new' = 'new'): Promise<BlogComment[]> {
   try {
     const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=${sort}`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (data && data.ok && Array.isArray(data.comments)) {
-      return data.comments;
+    const result = await safeFetchJson<{ ok: boolean; comments: BlogComment[] }>(res);
+    if (result.ok && result.data && Array.isArray(result.data.comments)) {
+      return result.data.comments;
     }
     return [];
   } catch (err) {
@@ -204,9 +232,12 @@ export async function fetchComments(slug: string, sort: 'hot' | 'new' = 'new'): 
 export async function createComment(params: {
   slug: string;
   message: string;
+  postType?: PostType;
   parentId?: string | null;
   quoteId?: string | null;
+  quote?: CommentQuote | null;
   sessionToken?: string;
+  showLocation?: boolean;
   author?: CommentIdentity | null;
 }): Promise<{ ok: boolean; comment?: BlogComment; sessionToken?: string; error?: string }> {
   try {
@@ -220,9 +251,12 @@ export async function createComment(params: {
         action: 'create',
         slug: params.slug,
         message: params.message,
+        postType: params.postType || 'comment',
         parentId: params.parentId || undefined,
         quoteId: params.quoteId || undefined,
+        quote: params.quote || undefined,
         sessionToken: params.sessionToken,
+        showLocation: params.showLocation,
         authorId: params.author?.id,
         authorName: params.author?.name || '访客',
         authorEmail: params.author?.email || '',
@@ -231,8 +265,12 @@ export async function createComment(params: {
         authorRole: params.author?.role || 'visitor',
       }),
     });
-    const data = await res.json();
-    return data;
+
+    const parsed = await safeFetchJson<{ ok: boolean; comment?: BlogComment; sessionToken?: string; error?: string }>(res);
+    if (!parsed.ok || !parsed.data) {
+      return { ok: false, error: parsed.error || (parsed.data as any)?.error || `请求失败 (${res.status})` };
+    }
+    return parsed.data;
   } catch (err: any) {
     return { ok: false, error: err?.message || '网络连接失败' };
   }
@@ -260,8 +298,12 @@ export async function editComment(params: {
         adminToken: params.adminToken,
       }),
     });
-    const data = await res.json();
-    return data;
+
+    const parsed = await safeFetchJson<{ ok: boolean; error?: string; message?: string }>(res);
+    if (!parsed.ok || !parsed.data) {
+      return { ok: false, error: parsed.error || (parsed.data as any)?.error || `修改失败 (${res.status})` };
+    }
+    return parsed.data;
   } catch (err: any) {
     return { ok: false, error: err?.message || '网络连接失败' };
   }
@@ -287,8 +329,12 @@ export async function deleteComment(params: {
         adminToken: params.adminToken,
       }),
     });
-    const data = await res.json();
-    return data;
+
+    const parsed = await safeFetchJson<{ ok: boolean; error?: string; message?: string }>(res);
+    if (!parsed.ok || !parsed.data) {
+      return { ok: false, error: parsed.error || (parsed.data as any)?.error || `删除失败 (${res.status})` };
+    }
+    return parsed.data;
   } catch (err: any) {
     return { ok: false, error: err?.message || '网络连接失败' };
   }
@@ -301,7 +347,8 @@ export async function likeComment(id: string): Promise<{ ok: boolean; likesCount
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'like', id }),
     });
-    return await res.json();
+    const parsed = await safeFetchJson<{ ok: boolean; likesCount?: number }>(res);
+    return parsed.data || { ok: false };
   } catch {
     return { ok: false };
   }

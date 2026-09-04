@@ -6,6 +6,8 @@ interface RawCommentRow {
   post_slug: string;
   parent_id: string | null;
   quote_id: string | null;
+  quote_source?: string;
+  post_type: 'comment' | 'boost' | 'emoji';
   author_id: string;
   author_name: string;
   author_email?: string;
@@ -14,10 +16,45 @@ interface RawCommentRow {
   author_role: 'admin' | 'reader' | 'visitor';
   message: string;
   session_token?: string;
+  ip?: string;
+  ip_country?: string;
+  ip_location?: string;
+  show_location: number;
+  user_agent?: string;
   likes_count: number;
-  status: 'published' | 'pinned' | 'hidden' | 'deleted';
+  status: 'published' | 'pinned' | 'flagged' | 'deleted';
   created_at: string;
   updated_at: string;
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  CN: '中国',
+  HK: '中国香港',
+  MO: '中国澳门',
+  TW: '中国台湾',
+  US: '美国',
+  JP: '日本',
+  KR: '韩国',
+  SG: '新加坡',
+  GB: '英国',
+  DE: '德国',
+  FR: '法国',
+  CA: '加拿大',
+  AU: '澳大利亚',
+  RU: '俄罗斯',
+  IN: '印度',
+  GLOBAL: '全球',
+};
+
+function resolveCountryInfo(countryCode: string) {
+  const code = (countryCode || 'GLOBAL').toUpperCase();
+  const name = COUNTRY_NAMES[code] || code;
+  let flag = '🌍';
+  if (code.length === 2 && code !== 'XX' && code !== 'ZZ') {
+    const codePoints = [...code].map((c) => 127397 + c.charCodeAt(0));
+    flag = String.fromCodePoint(...codePoints);
+  }
+  return { code, name, flag };
 }
 
 // In-memory fallback store when running without D1 binding
@@ -32,6 +69,8 @@ async function ensureTable(db: any) {
         post_slug TEXT NOT NULL,
         parent_id TEXT,
         quote_id TEXT,
+        quote_source TEXT DEFAULT '',
+        post_type TEXT DEFAULT 'comment',
         author_id TEXT NOT NULL,
         author_name TEXT NOT NULL,
         author_email TEXT DEFAULT '',
@@ -41,7 +80,9 @@ async function ensureTable(db: any) {
         message TEXT NOT NULL,
         session_token TEXT,
         ip TEXT,
-        ip_location TEXT,
+        ip_country TEXT DEFAULT 'GLOBAL',
+        ip_location TEXT DEFAULT '',
+        show_location INTEGER DEFAULT 1,
         user_agent TEXT,
         likes_count INTEGER DEFAULT 0,
         status TEXT DEFAULT 'published',
@@ -52,17 +93,33 @@ async function ensureTable(db: any) {
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments (post_slug);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments (created_at);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments (parent_id);`).run();
+    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON comments (ip, created_at);`).run();
   } catch (err) {
     console.error('[Comments] Table ensure error:', err);
   }
 }
 
-function mapRowToClientComment(row: RawCommentRow) {
+function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
+  const isVisitor = row.author_role === 'visitor';
+  const showLoc = isVisitor ? true : Boolean(row.show_location);
+  const countryInfo = resolveCountryInfo(row.ip_country || 'GLOBAL');
+
+  let quoteParsed = null;
+  if (row.quote_source) {
+    try {
+      quoteParsed = JSON.parse(row.quote_source);
+    } catch {
+      quoteParsed = null;
+    }
+  }
+
   return {
     id: row.id,
     postSlug: row.post_slug,
     parentId: row.parent_id,
     quoteId: row.quote_id,
+    quote: quoteParsed,
+    postType: row.post_type || 'comment',
     authorId: row.author_id,
     authorName: row.author_name || '访客',
     authorAvatar: row.author_avatar || '',
@@ -73,27 +130,45 @@ function mapRowToClientComment(row: RawCommentRow) {
     status: row.status || 'published',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    // Country & Location exposure rules
+    showLocation: showLoc,
+    ipCountry: showLoc || isAdmin ? countryInfo.code : null,
+    ipCountryName: showLoc || isAdmin ? countryInfo.name : null,
+    ipCountryFlag: showLoc || isAdmin ? countryInfo.flag : null,
+    ipLocation: showLoc || isAdmin ? (row.ip_location || countryInfo.name) : null,
+    // Raw IP is exclusively exposed to Admin
+    ip: isAdmin ? row.ip : undefined,
   };
 }
 
 async function sendTelegramCommentNotification(
   env: AppEnv,
-  data: { slug: string; authorName: string; message: string; ip: string; country: string; id: string; parentId?: string | null }
+  data: {
+    slug: string;
+    authorName: string;
+    message: string;
+    ip: string;
+    country: string;
+    id: string;
+    parentId?: string | null;
+    postType: string;
+  }
 ) {
   const token = env.TELEGRAM_BOT_TOKEN || (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN);
   const chatId = env.TELEGRAM_CHAT_ID || (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID);
   if (!token || !chatId) return;
 
-  const typeLabel = data.parentId ? '💬 文章回复通知' : '💬 文章新留言通知';
+  const typeIcon = data.postType === 'boost' ? '⚡ Boost' : (data.parentId ? '💬 回复' : '💬 留言');
+  const countryInfo = resolveCountryInfo(data.country);
 
   const text = [
-    `<b>${typeLabel}</b>`,
+    `<b>博客新互动提醒 (${typeIcon})</b>`,
     `----------------------------------------`,
-    `📝 <b>文章路径</b>: <code>/posts/${data.slug}/</code>`,
-    `👤 <b>评论者</b>: <b>${data.authorName}</b>`,
+    `📝 <b>文章</b>: <code>/posts/${data.slug}/</code>`,
+    `👤 <b>发言人</b>: <b>${data.authorName}</b>`,
     `💬 <b>内容</b>:\n${data.message}`,
-    `🌍 <b>归属地/IP</b>: <code>${data.country}</code> (${data.ip || 'Unknown'})`,
-    `🆔 <b>评论编号</b>: <code>${data.id}</code>${data.parentId ? ` (回复 <code>${data.parentId}</code>)` : ''}`,
+    `🌍 <b>来源地</b>: ${countryInfo.flag} <code>${countryInfo.name}</code> (${data.ip || 'Unknown'})`,
+    `🆔 <b>编号</b>: <code>${data.id}</code>${data.parentId ? ` (父级: <code>${data.parentId}</code>)` : ''}`,
     `⏰ <b>时间</b>: <code>${new Date().toISOString()}</code>`,
     `----------------------------------------`,
   ].join('\n');
@@ -122,6 +197,8 @@ export async function onRequest(context: {
   }
 
   const url = new URL(request.url);
+  const headerAdminToken = request.headers.get('X-Admin-Token') || request.headers.get('Authorization')?.replace('Bearer ', '');
+  const isAdmin = Boolean(env.ADMIN_TOKEN && headerAdminToken && headerAdminToken === env.ADMIN_TOKEN);
 
   // ----------------------------------------------------
   // GET: Fetch real comments for a post slug (supports sort=hot|new)
@@ -142,7 +219,9 @@ export async function onRequest(context: {
           : `ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, created_at DESC`;
 
         const query = `
-          SELECT id, post_slug, parent_id, quote_id, author_id, author_name, author_avatar, author_website, author_role, message, likes_count, status, created_at, updated_at
+          SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
+                 author_avatar, author_website, author_role, message, ip, ip_country, ip_location,
+                 show_location, likes_count, status, created_at, updated_at
           FROM comments
           WHERE post_slug = ? AND status != 'deleted'
           ${orderClause}
@@ -152,7 +231,7 @@ export async function onRequest(context: {
         return jsonResponse(request, env, {
           ok: true,
           sort,
-          comments: rows.map(mapRowToClientComment),
+          comments: rows.map((r) => mapRowToClientComment(r, isAdmin)),
         });
       } catch (dbErr: any) {
         console.error('[Comments] DB query error:', dbErr);
@@ -160,7 +239,7 @@ export async function onRequest(context: {
       }
     }
 
-    // In-memory fallback (when running standalone/preview without DB)
+    // In-memory fallback
     const list = Array.from(memoryFallbackStore.values())
       .filter((c) => c.post_slug === slug && c.status !== 'deleted')
       .sort((a, b) => {
@@ -172,48 +251,126 @@ export async function onRequest(context: {
         }
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       })
-      .map(mapRowToClientComment);
+      .map((r) => mapRowToClientComment(r, isAdmin));
 
     return jsonResponse(request, env, { ok: true, sort, comments: list });
   }
 
   // ----------------------------------------------------
-  // POST / PUT / DELETE: Actions (create, edit, delete, like, admin_manage)
+  // POST / PUT / DELETE Actions
   // ----------------------------------------------------
   const payload = (await safeReadJson<any>(request)) || {};
   const action = (payload.action || (method === 'PUT' ? 'edit' : method === 'DELETE' ? 'delete' : 'create')).toLowerCase();
   const headerSessionToken = request.headers.get('X-Comment-Session-Token');
-  const headerAdminToken = request.headers.get('X-Admin-Token') || request.headers.get('Authorization')?.replace('Bearer ', '');
   const sessionToken = payload.sessionToken || headerSessionToken || '';
   const adminToken = payload.adminToken || headerAdminToken || '';
+  const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '127.0.0.1';
+  const cfCountry = request.headers.get('cf-ipcountry') || 'GLOBAL';
 
-  // 1. CREATE COMMENT
+  // 1. CREATE COMMENT / BOOST / EMOJI
   if (action === 'create') {
     const slug = (payload.slug || url.searchParams.get('slug') || '').trim();
     const rawMessage = (payload.message || '').trim();
+    const postType = (payload.postType === 'boost' ? 'boost' : (payload.postType === 'emoji' ? 'emoji' : 'comment'));
+    const authorRole = payload.authorRole === 'admin' ? 'admin' : (payload.authorRole === 'reader' ? 'reader' : 'visitor');
+    const isVisitor = authorRole === 'visitor';
 
     if (!slug) {
       return jsonResponse(request, env, { ok: false, error: '文章标识 (slug) 不能为空' }, { status: 400 });
     }
     if (!rawMessage || rawMessage.length < 1) {
-      return jsonResponse(request, env, { ok: false, error: '评论内容不能为空' }, { status: 400 });
+      return jsonResponse(request, env, { ok: false, error: '内容不能为空' }, { status: 400 });
     }
-    if (rawMessage.length > 1000) {
+
+    // Boost limit check: <= 16 characters
+    if (postType === 'boost' && rawMessage.length > 16) {
+      return jsonResponse(request, env, { ok: false, error: '⚡ Boost 动态内容不能超过 16 个字' }, { status: 400 });
+    }
+    if (postType === 'comment' && rawMessage.length > 1000) {
       return jsonResponse(request, env, { ok: false, error: '评论内容不能超过 1000 字' }, { status: 400 });
+    }
+
+    // Anti-abuse & Rate limiting for Visitors (1 hour window)
+    if (isVisitor) {
+      const oneHourAgo = Date.now() - 3600 * 1000;
+
+      if (env.DB) {
+        await ensureTable(env.DB);
+        // A. Check for identical duplicate message in last 1 hour
+        const dupRow = await env.DB.prepare(`
+          SELECT id FROM comments
+          WHERE ip = ? AND message = ? AND created_at > datetime('now', '-1 hour') AND status != 'deleted'
+          LIMIT 1
+        `).bind(clientIp, rawMessage).first();
+
+        if (dupRow) {
+          return jsonResponse(request, env, {
+            ok: false,
+            error: '请勿在1小时内重复发表完全相同的评论内容',
+          }, { status: 400 });
+        }
+
+        // B. Rate limit: Max 3 normal comments per 1 hour per IP
+        if (postType === 'comment') {
+          const countRow = await env.DB.prepare(`
+            SELECT COUNT(*) as cnt FROM comments
+            WHERE ip = ? AND post_type = 'comment' AND created_at > datetime('now', '-1 hour') AND status != 'deleted'
+          `).bind(clientIp).first<{ cnt: number }>();
+
+          if (countRow && countRow.cnt >= 3) {
+            return jsonResponse(request, env, {
+              ok: false,
+              error: '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号',
+            }, { status: 429 });
+          }
+        }
+
+        // C. Rate limit: Max 5 Boosts per 1 hour per IP
+        if (postType === 'boost') {
+          const boostCountRow = await env.DB.prepare(`
+            SELECT COUNT(*) as cnt FROM comments
+            WHERE ip = ? AND post_type = 'boost' AND created_at > datetime('now', '-1 hour') AND status != 'deleted'
+          `).bind(clientIp).first<{ cnt: number }>();
+
+          if (boostCountRow && boostCountRow.cnt >= 5) {
+            return jsonResponse(request, env, {
+              ok: false,
+              error: '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试',
+            }, { status: 429 });
+          }
+        }
+      } else {
+        // Memory fallback rate limits
+        const recentFromIp = Array.from(memoryFallbackStore.values()).filter(
+          (c) => c.ip === clientIp && new Date(c.created_at).getTime() > oneHourAgo && c.status !== 'deleted'
+        );
+        const hasDup = recentFromIp.some((c) => c.message === rawMessage);
+        if (hasDup) {
+          return jsonResponse(request, env, { ok: false, error: '请勿在1小时内重复发表完全相同的评论内容' }, { status: 400 });
+        }
+        if (postType === 'comment' && recentFromIp.filter((c) => c.post_type === 'comment').length >= 3) {
+          return jsonResponse(request, env, { ok: false, error: '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号' }, { status: 429 });
+        }
+        if (postType === 'boost' && recentFromIp.filter((c) => c.post_type === 'boost').length >= 5) {
+          return jsonResponse(request, env, { ok: false, error: '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试' }, { status: 429 });
+        }
+      }
     }
 
     const commentId = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const effectiveSessionToken = sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
-    const authorName = (payload.authorName || '访客').trim().slice(0, 50);
-    const authorRole = payload.authorRole === 'admin' ? 'admin' : (payload.authorRole === 'reader' ? 'reader' : 'visitor');
+    const authorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
     const authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
     const authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
     const authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
     const authorId = (payload.authorId || `vis_${Date.now()}`).trim();
     const parentId = payload.parentId ? String(payload.parentId).trim() : null;
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
-    const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
-    const country = request.headers.get('cf-ipcountry') || 'GLOBAL';
+    const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 500) : '';
+    // Visitors are forced to show location (1), registered users can toggle
+    const showLocation = isVisitor ? 1 : (payload.showLocation === false ? 0 : 1);
+    const countryInfo = resolveCountryInfo(cfCountry);
+    const ipLocation = countryInfo.name;
     const userAgent = request.headers.get('user-agent') || '';
     const nowIso = new Date().toISOString();
 
@@ -222,6 +379,8 @@ export async function onRequest(context: {
       post_slug: slug,
       parent_id: parentId,
       quote_id: quoteId,
+      quote_source: quoteSource,
+      post_type: postType,
       author_id: authorId,
       author_name: authorName,
       author_email: authorEmail,
@@ -230,6 +389,11 @@ export async function onRequest(context: {
       author_role: authorRole,
       message: rawMessage,
       session_token: effectiveSessionToken,
+      ip: clientIp,
+      ip_country: cfCountry,
+      ip_location: ipLocation,
+      show_location: showLocation,
+      user_agent: userAgent,
       likes_count: 0,
       status: 'published',
       created_at: nowIso,
@@ -241,13 +405,14 @@ export async function onRequest(context: {
       try {
         await env.DB.prepare(`
           INSERT INTO comments (
-            id, post_slug, parent_id, quote_id, author_id, author_name, author_email,
-            author_avatar, author_website, author_role, message, session_token, ip, ip_location, user_agent, likes_count, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
+            author_email, author_avatar, author_website, author_role, message, session_token,
+            ip, ip_country, ip_location, show_location, user_agent, likes_count, status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
-          commentId, slug, parentId, quoteId, authorId, authorName, authorEmail,
-          authorAvatar, authorWebsite, authorRole, rawMessage, effectiveSessionToken,
-          clientIp, country, userAgent
+          commentId, slug, parentId, quoteId, quoteSource, postType, authorId, authorName,
+          authorEmail, authorAvatar, authorWebsite, authorRole, rawMessage, effectiveSessionToken,
+          clientIp, cfCountry, ipLocation, showLocation, userAgent
         ).run();
       } catch (insertErr: any) {
         console.error('[Comments] DB Insert error:', insertErr);
@@ -263,9 +428,10 @@ export async function onRequest(context: {
       authorName,
       message: rawMessage,
       ip: clientIp,
-      country,
+      country: cfCountry,
       id: commentId,
       parentId,
+      postType,
     });
     if (typeof context.waitUntil === 'function') {
       context.waitUntil(bgTask);
@@ -273,12 +439,12 @@ export async function onRequest(context: {
 
     return jsonResponse(request, env, {
       ok: true,
-      comment: mapRowToClientComment(newRecord),
+      comment: mapRowToClientComment(newRecord, false),
       sessionToken: effectiveSessionToken,
     });
   }
 
-  // 2. EDIT COMMENT (Strict ownership check)
+  // 2. EDIT COMMENT (Strict session verification)
   if (action === 'edit') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     const message = (payload.message || '').trim();
@@ -293,7 +459,7 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '评论内容不能超过 1000 字' }, { status: 400 });
     }
 
-    const isAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
+    const isAuthorizedAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
 
     if (env.DB) {
       await ensureTable(env.DB);
@@ -302,9 +468,8 @@ export async function onRequest(context: {
         return jsonResponse(request, env, { ok: false, error: '评论不存在或已被删除' }, { status: 404 });
       }
 
-      // Check sessionToken match or admin
       const isOwner = Boolean(sessionToken && row.session_token === sessionToken);
-      if (!isOwner && !isAdmin) {
+      if (!isOwner && !isAuthorizedAdmin) {
         return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效（无法验证身份）' }, { status: 403 });
       }
 
@@ -315,13 +480,12 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
     }
 
-    // Memory fallback
     const item = memoryFallbackStore.get(id);
     if (!item || item.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
     }
     const isOwner = Boolean(sessionToken && item.session_token === sessionToken);
-    if (!isOwner && !isAdmin) {
+    if (!isOwner && !isAuthorizedAdmin) {
       return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效' }, { status: 403 });
     }
     item.message = message;
@@ -329,14 +493,14 @@ export async function onRequest(context: {
     return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
   }
 
-  // 3. DELETE COMMENT (Strict ownership check)
+  // 3. DELETE COMMENT (Strict session verification)
   if (action === 'delete') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     if (!id) {
       return jsonResponse(request, env, { ok: false, error: '缺少评论 ID' }, { status: 400 });
     }
 
-    const isAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
+    const isAuthorizedAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
 
     if (env.DB) {
       await ensureTable(env.DB);
@@ -346,7 +510,7 @@ export async function onRequest(context: {
       }
 
       const isOwner = Boolean(sessionToken && row.session_token === sessionToken);
-      if (!isOwner && !isAdmin) {
+      if (!isOwner && !isAuthorizedAdmin) {
         return jsonResponse(request, env, { ok: false, error: '无权删除此评论或访客会话已失效' }, { status: 403 });
       }
 
@@ -357,13 +521,12 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: true, message: '评论已删除' });
     }
 
-    // Memory fallback
     const item = memoryFallbackStore.get(id);
     if (!item || item.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
     }
     const isOwner = Boolean(sessionToken && item.session_token === sessionToken);
-    if (!isOwner && !isAdmin) {
+    if (!isOwner && !isAuthorizedAdmin) {
       return jsonResponse(request, env, { ok: false, error: '无权删除此评论' }, { status: 403 });
     }
     item.status = 'deleted';
@@ -392,25 +555,6 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: true, likesCount: item.likes_count });
     }
     return jsonResponse(request, env, { ok: true, likesCount: 1 });
-  }
-
-  // 5. ADMIN MANAGE (Status change: pinned, hidden, etc.)
-  if (action === 'admin_manage') {
-    const isAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
-    if (!isAdmin) {
-      return jsonResponse(request, env, { ok: false, error: '未授权的管理操作' }, { status: 403 });
-    }
-    const id = (payload.id || '').trim();
-    const newStatus = payload.status || 'published';
-
-    if (env.DB) {
-      await ensureTable(env.DB);
-      await env.DB.prepare(`UPDATE comments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(newStatus, id).run();
-      return jsonResponse(request, env, { ok: true, message: '状态已更新' });
-    }
-    const item = memoryFallbackStore.get(id);
-    if (item) item.status = newStatus;
-    return jsonResponse(request, env, { ok: true, message: '状态已更新' });
   }
 
   return jsonResponse(request, env, { ok: false, error: 'Unsupported action' }, { status: 400 });
