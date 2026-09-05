@@ -41,6 +41,7 @@ import {
   readCommentIdentity,
   writeCommentIdentity,
   fetchAuthConfig,
+  exchangeEpomailCode,
   directEpomailLogin,
   loginLocalReader,
   logoutAuthAccount,
@@ -780,9 +781,46 @@ export function ThemeOverlays({
       if (cfg) setAuthConfig(cfg);
     });
 
-    const onWindowMessage = (event: MessageEvent) => {
+    const onWindowMessage = async (event: MessageEvent) => {
+      // 1. Direct authorization code from Epomail popup (authorize.vue sends EPOMAIL_OAUTH_SUCCESS)
+      if (event.data?.type === 'EPOMAIL_OAUTH_SUCCESS' && event.data.code) {
+        const code = event.data.code;
+        setIsAuthorizing(true);
+        setAuthStatusMessage({ type: 'info', text: '正在验证 Epomail 凭据并同步账号...' });
+        try {
+          const redirectUri = `${window.location.origin}/auth/callback`;
+          const result = await exchangeEpomailCode(code, redirectUri);
+          if (!result.ok || !result.user) {
+            throw new Error(result.error || 'OAuth 授权码交换失败');
+          }
+          setAccount(result.user);
+          setAccountForm({
+            name: result.user.name || '',
+            email: result.user.email || '',
+            website: result.user.website || '',
+            avatar: result.user.avatar || '',
+          });
+          setAuthStatusMessage({ type: 'success', text: `Epomail 授权登录成功！欢迎，${result.user.name}` });
+          emitActivity(`Epomail 授权登录: ${result.user.name}`);
+        } catch (err: any) {
+          console.error('[ThemeOverlays] EPOMAIL_OAUTH_SUCCESS exchange error:', err);
+          setAuthStatusMessage({ type: 'error', text: err?.message || 'Epomail 授权凭据交换失败，请重试' });
+        } finally {
+          setIsAuthorizing(false);
+        }
+        return;
+      }
+
+      // 2. Pre-exchanged identity from callback page popup (callback.astro sends EPOMAIL_AUTH_SUCCESS)
       if (event.data?.type === 'EPOMAIL_AUTH_SUCCESS' && event.data.user) {
         const user = event.data.user;
+        const token = event.data.token;
+        writeCommentIdentity(user);
+        if (token) {
+          try {
+            window.localStorage.setItem('shijianus-auth-token', token);
+          } catch {}
+        }
         setAccount(user);
         setAccountForm({
           name: user.name || '',
@@ -800,7 +838,7 @@ export function ThemeOverlays({
 
   const handleEpomailOAuth = () => {
     setIsAuthorizing(true);
-    setAuthStatusMessage(null);
+    setAuthStatusMessage({ type: 'info', text: '请在弹出的 Epomail 窗口中完成授权...' });
     try {
       sessionStorage.setItem('epomail_auth_return', window.location.href);
     } catch {}
@@ -813,7 +851,8 @@ export function ThemeOverlays({
       scope: 'openid profile email',
     };
 
-    const authUrl = `${cfg.authorizeUrl}?client_id=${encodeURIComponent(cfg.clientId)}&redirect_uri=${encodeURIComponent(cfg.redirectUri)}&response_type=code&scope=${encodeURIComponent(cfg.scope)}&state=blog_sso`;
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    const authUrl = `${cfg.authorizeUrl}?client_id=${encodeURIComponent(cfg.clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(cfg.scope)}&state=blog_sso`;
 
     const width = 600;
     const height = 700;
@@ -828,7 +867,12 @@ export function ThemeOverlays({
     if (!popup || popup.closed || typeof popup.closed === 'undefined') {
       window.location.href = authUrl;
     } else {
-      setIsAuthorizing(false);
+      const checkPopup = setInterval(() => {
+        if (!popup || popup.closed) {
+          clearInterval(checkPopup);
+          setIsAuthorizing(false);
+        }
+      }, 1000);
     }
   };
 

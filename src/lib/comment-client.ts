@@ -422,6 +422,47 @@ export async function fetchAuthConfig(): Promise<PublicAuthConfig | null> {
   }
 }
 
+export async function exchangeEpomailCode(
+  code: string,
+  redirectUri?: string
+): Promise<{ ok: boolean; user?: CommentIdentity; token?: string; error?: string }> {
+  try {
+    const defaultRedirect = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '';
+    const cleanRedirectUri = (redirectUri || defaultRedirect).replace(/\/+$/, '');
+    const res = await fetch('/api/auth/epomail/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, redirectUri: cleanRedirectUri }),
+    });
+    const data = (await res.json()) as any;
+    if (!res.ok || !data.ok || !data.user) {
+      return { ok: false, error: data?.error || 'OAuth 授权码交换失败' };
+    }
+    const token = data.token || '';
+    const identity: CommentIdentity = {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      avatar: data.user.avatar || '',
+      website: data.user.website || '',
+      role: data.user.role || 'reader',
+      provider: 'epomail',
+      token,
+      epomailUserId: data.user.externalId || data.user.id,
+      bio: data.user.bio,
+    };
+    writeCommentIdentity(identity);
+    if (token && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('shijianus-auth-token', token);
+      } catch {}
+    }
+    return { ok: true, user: identity, token };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络通信异常' };
+  }
+}
+
 export async function directEpomailLogin(credentials: {
   email: string;
   password?: string;

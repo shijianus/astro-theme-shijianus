@@ -37,6 +37,26 @@ function generateRandomHex(bytesCount = 16): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
+function decodeJwtPayload(jwt?: string): any {
+  if (!jwt || typeof jwt !== 'string') return null;
+  try {
+    const parts = jwt.split('.');
+    if (parts.length >= 2) {
+      let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      if (typeof atob === 'function') {
+        return JSON.parse(atob(base64));
+      }
+      if (typeof Buffer !== 'undefined') {
+        return JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
+      }
+    }
+  } catch {}
+  return null;
+}
+
 export function getEffectiveAuthConfig(env: AppEnv, requestUrl?: string) {
   let origin = 'https://blog.epocanvas.com';
   if (requestUrl) {
@@ -126,51 +146,72 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
   // Session duration: 14 days
   const expiresAt = new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString();
 
-  // Save in memory store
-  memoryUsers.set(user.id, user);
-  memorySessions.set(token, { userId: user.id, expiresAt });
+  let finalUserId = user.id;
 
   // Save in DB if available
   const db = resolveActiveDb(env);
   if (db) {
     await ensureAuthTables(db);
     try {
-      // Upsert user
-      await db.prepare(`
-        INSERT INTO users (id, email, name, avatar, website, role, provider, external_id, bio, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(id) DO UPDATE SET
-          name = excluded.name,
-          avatar = excluded.avatar,
-          website = excluded.website,
-          role = excluded.role,
-          provider = excluded.provider,
-          external_id = excluded.external_id,
-          updated_at = CURRENT_TIMESTAMP
-      `).bind(
-        user.id,
-        user.email,
-        user.name,
-        user.avatar || '',
-        user.website || '',
-        user.role || 'reader',
-        user.provider || 'epomail',
-        user.externalId || null,
-        user.bio || ''
-      ).run();
+      // 1. Check if user with this email already exists to preserve stable primary key ID
+      const existing = await db
+        .prepare('SELECT id FROM users WHERE email = ? LIMIT 1')
+        .bind(user.email)
+        .first<{ id: string }>();
 
-      // Insert session
+      if (existing?.id) {
+        finalUserId = existing.id;
+      }
+
+      // 2. Upsert user safely by email conflict
+      await db
+        .prepare(`
+          INSERT INTO users (id, email, name, avatar, website, role, provider, external_id, bio, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(email) DO UPDATE SET
+            name = excluded.name,
+            avatar = excluded.avatar,
+            website = excluded.website,
+            role = excluded.role,
+            provider = excluded.provider,
+            external_id = excluded.external_id,
+            bio = excluded.bio,
+            updated_at = CURRENT_TIMESTAMP
+        `)
+        .bind(
+          finalUserId,
+          user.email,
+          user.name,
+          user.avatar || '',
+          user.website || '',
+          user.role || 'reader',
+          user.provider || 'epomail',
+          user.externalId || null,
+          user.bio || ''
+        )
+        .run();
+
+      // 3. Insert session
       const sessionId = `sess_${generateRandomHex(16)}`;
-      await db.prepare(`
-        INSERT INTO user_sessions (id, user_id, token, expires_at)
-        VALUES (?, ?, ?, ?)
-      `).bind(sessionId, user.id, token, expiresAt).run();
+      await db
+        .prepare(`
+          INSERT INTO user_sessions (id, user_id, token, expires_at)
+          VALUES (?, ?, ?, ?)
+        `)
+        .bind(sessionId, finalUserId, token, expiresAt)
+        .run();
     } catch (err) {
       console.warn('[AuthService] DB session save failed, using memory store:', err);
     }
   }
 
-  return { token, user, expiresAt };
+  const finalUser: UserProfile = { ...user, id: finalUserId };
+
+  // Save in memory store
+  memoryUsers.set(finalUser.id, finalUser);
+  memorySessions.set(token, { userId: finalUser.id, expiresAt });
+
+  return { token, user: finalUser, expiresAt };
 }
 
 export async function getUserBySessionToken(token: string, env: AppEnv): Promise<UserProfile | null> {
@@ -247,6 +288,7 @@ export async function exchangeEpomailAuthorizationCode(
   requestUrl?: string
 ): Promise<AuthSession> {
   const config = getEffectiveAuthConfig(env, requestUrl);
+  const cleanRedirectUri = (redirectUri || config.epomail.redirectUri || '').replace(/\/+$/, '');
 
   let tokenData: any = null;
   let userInfo: any = null;
@@ -263,31 +305,57 @@ export async function exchangeEpomailAuthorizationCode(
         code,
         client_id: config.epomail.clientId,
         client_secret: config.epomail.clientSecret,
-        redirect_uri: redirectUri || config.epomail.redirectUri,
+        redirect_uri: cleanRedirectUri,
       }),
     });
 
     if (tokenRes.ok) {
       tokenData = await tokenRes.json();
-      if (tokenData.access_token) {
-        const userRes = await fetch(config.epomail.userInfoUrl, {
-          headers: {
-            Authorization: `Bearer ${tokenData.access_token}`,
-            Accept: 'application/json',
-          },
-        });
-        if (userRes.ok) {
-          userInfo = await userRes.json();
+      // 1. First parse id_token if present (OIDC standard)
+      if (tokenData?.id_token) {
+        const idClaims = decodeJwtPayload(tokenData.id_token);
+        if (idClaims && (idClaims.email || idClaims.sub)) {
+          userInfo = {
+            sub: idClaims.sub,
+            email: idClaims.email,
+            name: idClaims.name || idClaims.preferred_username,
+            picture: idClaims.picture || '',
+          };
         }
       }
+
+      // 2. Fallback to userInfoUrl if id_token claims were missing or need enrichment
+      if (tokenData?.access_token && (!userInfo || !userInfo.email)) {
+        try {
+          const userRes = await fetch(config.epomail.userInfoUrl, {
+            headers: {
+              Authorization: `Bearer ${tokenData.access_token}`,
+              Accept: 'application/json',
+            },
+          });
+          if (userRes.ok) {
+            const fetchedUser = await userRes.json();
+            userInfo = {
+              sub: fetchedUser.sub || userInfo?.sub,
+              email: fetchedUser.email || userInfo?.email,
+              name: fetchedUser.name || fetchedUser.preferred_username || userInfo?.name,
+              picture: fetchedUser.picture || fetchedUser.avatar || userInfo?.picture || '',
+            };
+          }
+        } catch (e) {
+          console.warn('[AuthService] UserInfo fetch warning:', e);
+        }
+      }
+    } else {
+      const errText = await tokenRes.text().catch(() => '');
+      console.warn(`[AuthService] Epomail token exchange HTTP ${tokenRes.status}:`, errText);
     }
   } catch (err) {
-    console.warn('[AuthService] Epomail online exchange failed, checking dev mode fallback:', err);
+    console.warn('[AuthService] Epomail online exchange network warning:', err);
   }
 
   // Fallback for local testing or simulated OAuth codes
   if (!userInfo) {
-    // If code has simulated payload or offline dev
     const fallbackId = `epomail_${code.substring(0, 12)}`;
     userInfo = {
       sub: fallbackId,
@@ -297,12 +365,15 @@ export async function exchangeEpomailAuthorizationCode(
     };
   }
 
-  const userEmail = userInfo.email || `${userInfo.sub}@epomail.bond`;
+  const userEmail = (userInfo.email || `${userInfo.sub}@epomail.bond`).toLowerCase();
   const userName = userInfo.name || userInfo.preferred_username || userEmail.split('@')[0];
   const userRole = (userEmail.startsWith('admin@') || userEmail.includes('shijian')) ? 'admin' : 'reader';
+  const deterministicId = userInfo.sub
+    ? `epo_u_${userInfo.sub}`
+    : `epo_u_${userEmail.replace(/[^a-z0-9]/g, '_')}`;
 
   const userProfile: UserProfile = {
-    id: `epo_u_${userInfo.sub || generateRandomHex(8)}`,
+    id: deterministicId,
     name: userName,
     email: userEmail,
     avatar: userInfo.picture || '',
@@ -387,7 +458,7 @@ export async function directEpomailAuthorize(
   const capitalizedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
 
   const fallbackUser: UserProfile = {
-    id: `epo_u_${generateRandomHex(8)}`,
+    id: `epo_u_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
     name: capitalizedName,
     email: cleanEmail,
     avatar: '',
@@ -415,7 +486,7 @@ export async function authenticateLocalReader(
     throw new Error('昵称不能为空');
   }
 
-  const userId = `local_u_${generateRandomHex(8)}`;
+  const userId = `local_u_${email ? email.replace(/[^a-z0-9]/g, '_') : generateRandomHex(8)}`;
   const role = (email.includes('admin') || name.includes('管理员')) ? 'admin' : 'reader';
 
   const user: UserProfile = {

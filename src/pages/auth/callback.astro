@@ -208,7 +208,7 @@ import BlogLayout from '../../layouts/BlogLayout.astro';
       }
 
       try {
-        const redirectUri = window.location.origin + window.location.pathname;
+        const redirectUri = `${window.location.origin}/auth/callback`;
         const res = await fetch('/api/auth/epomail/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -221,7 +221,7 @@ import BlogLayout from '../../layouts/BlogLayout.astro';
         }
 
         const user = json.user;
-        const token = json.token;
+        const token = json.token || '';
 
         // Construct CommentIdentity format
         const identity = {
@@ -233,14 +233,17 @@ import BlogLayout from '../../layouts/BlogLayout.astro';
           role: user.role || 'reader',
           provider: 'epomail',
           token: token,
-          epomailUserId: user.externalId,
+          epomailUserId: user.externalId || user.id,
+          bio: user.bio || '',
         };
 
         // Save to localStorage
         const payloadStr = JSON.stringify(identity);
         localStorage.setItem('shijianus-comment-account', payloadStr);
         localStorage.setItem('shijianus-comment-identity', payloadStr);
-        localStorage.setItem('shijianus-auth-token', token);
+        if (token) {
+          localStorage.setItem('shijianus-auth-token', token);
+        }
 
         // Dispatch account change event
         window.dispatchEvent(new CustomEvent('shijianus:comment-account-change', { detail: identity }));

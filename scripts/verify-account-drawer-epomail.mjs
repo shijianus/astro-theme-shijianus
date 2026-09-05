@@ -210,6 +210,30 @@ async function runVerification() {
       if (!guestPill?.includes('访客')) throw new Error('Logout failed to return to guest mode');
     }
 
+    // Test 7: EPOMAIL_OAUTH_SUCCESS window message handshake
+    console.log('7. Testing Popup Window Message Handshake (EPOMAIL_OAUTH_SUCCESS)...');
+    await desktopPage.evaluate(() => {
+      window.postMessage({
+        type: 'EPOMAIL_OAUTH_SUCCESS',
+        code: 'oauth_code_live_popup_test_999',
+        state: 'blog_sso'
+      }, '*');
+    });
+    await desktopPage.waitForTimeout(1000);
+
+    const postAuthPill = await desktopPage.textContent('.account-pill--epomail');
+    console.log('   -> Post-Message Hero Pill:', postAuthPill?.trim());
+    if (!postAuthPill?.includes('Epomail')) throw new Error('Hero pill did not update on EPOMAIL_OAUTH_SUCCESS');
+
+    const localStorageAccount = await desktopPage.evaluate(() => {
+      return localStorage.getItem('shijianus-comment-account');
+    });
+    console.log('   -> LocalStorage Account saved:', Boolean(localStorageAccount));
+    if (!localStorageAccount || !localStorageAccount.includes('epomail')) {
+      throw new Error('LocalStorage account not set on EPOMAIL_OAUTH_SUCCESS');
+    }
+    console.log('   ✅ EPOMAIL_OAUTH_SUCCESS postMessage handshake verified 100%!');
+
     await desktopPage.close();
 
     // Mobile Viewport Test (375x812)
