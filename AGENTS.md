@@ -322,3 +322,16 @@
   2. 验证 Epomail 官方授权页正确识别应用名称 `shijianus-blog` 并加载授权确认界面；
   3. 从博客生产端 `https://blog.epocanvas.com` 点击呼出账号抽屉，点击“使用 Epomail 一键授权登录”，Playwright 捕获弹窗并验证重定向至合法 Epomail OAuth 授权地址；
   4. 全流程端到端测试 100% PASS 通过。
+
+### Task 29: Epomail OAuth 授权完成握手修复、跨窗口 postMessage 兼容与 D1 唯一约束修复 (`6289e97`)
+- [x] 跨窗口授权完成握手与消息类型兼容：
+  1. 彻底解决 Epomail 授权点击“同意授权”后博客端未登录的根因：Epomail 授权页（`authorize.vue`）成功时向 `window.opener` 发送 `{ type: 'EPOMAIL_OAUTH_SUCCESS', code, state }` 并立即关闭弹窗，而博客端原本仅监听预先交换好的 `EPOMAIL_AUTH_SUCCESS`；
+  2. 在 `ThemeOverlays.tsx` 中新增对 `EPOMAIL_OAUTH_SUCCESS` 的双向消息监听，接收到 `code` 后自动通过 `exchangeEpomailCode` 向 `/api/auth/epomail/token` 发起异步交换；
+  3. 交换成功后调用 `writeCommentIdentity` 全局写入 `localStorage`（含 `shijianus-comment-account`、`shijianus-comment-identity` 与 `shijianus-auth-token`），触发 `shijianus:comment-account-change` 广播，同步更新顶部头像、账号抽屉与评论区发布身份。
+- [x] Cloudflare D1 用户唯一约束冲突 (`UNIQUE constraint failed: users.email`) 彻底根治：
+  1. 将原有 `epo_u_${randomHex}` 随机生成机制升级为基于 `sub` 或邮箱的稳定确定性 ID（`epo_u_${sub}` / `epo_u_${sanitized_email}`）；
+  2. 在 `createSessionForUser` 执行数据库操作前，优先检索已有 `email` 的记录，复用既有主键 ID，并将 SQL 冲突策略明确固化为 `ON CONFLICT(email) DO UPDATE SET ...`，彻底根除后续重复登录时的 SQLite 约束崩溃；
+  3. 在 `exchangeEpomailAuthorizationCode` 中引入 `decodeJwtPayload`，首选解析 OIDC 标准 `id_token` 获取可信声明，并清理 `redirect_uri` 末尾反斜杠。
+- [x] 自动化测试与全链路端到端审计：
+  1. 在 `scripts/verify-account-drawer-epomail.mjs` 中新增针对 `EPOMAIL_OAUTH_SUCCESS` 跨窗口 postMessage 握手测试，测试 100% PASS 通过；
+  2. 执行 `scripts/verify-live-epomail-oauth-dialog.mjs`，线上授权页面识别与博客端弹窗捕获全链路通过。
