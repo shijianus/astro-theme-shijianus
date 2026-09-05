@@ -335,3 +335,20 @@
 - [x] 自动化测试与全链路端到端审计：
   1. 在 `scripts/verify-account-drawer-epomail.mjs` 中新增针对 `EPOMAIL_OAUTH_SUCCESS` 跨窗口 postMessage 握手测试，测试 100% PASS 通过；
   2. 执行 `scripts/verify-live-epomail-oauth-dialog.mjs`，线上授权页面识别与博客端弹窗捕获全链路通过。
+
+### Task 30: Epomail 多实例防冒领安全加固、权威域名鉴权绑定与评论区会话管理鉴权 (`2834bf4`)
+- [x] 权威 Epomail 服务器 (`mail.epocanvas.com`) 唯一合法性绑定与防伪造防顶替：
+  1. 固化官方权威域名 `AUTHORITATIVE_EPOMAIL_DOMAIN = 'mail.epocanvas.com'`，实现 `isAuthoritativeEpomailServer` 严格域名校验；
+  2. 彻底封死开源 Epomail 自建实例冒领站长漏洞：第三方搭建的任何 Epomail OAuth 实例（哪怕伪造 `is_admin: true` 或管理员邮箱），一律强制降级为普通读者（`reader`），绝对杜绝赋予 `admin` 权限；
+  3. 兼容未来域名平滑迁移：当现有 `epomail.bond` 过期后，只需在 `mail.epocanvas.com` 官方 Worker 中配置新管理域名，博客端通过权威实例签发的 `id_token`（或 `/oauth/userinfo`）核验服务器端权威证明（`is_admin: true`），即可无感延续管理员身份，无需反复改动博客核心代码。
+- [x] 深度纵深防御 (Defense-in-Depth) 与身份降级保护：
+  1. 本地免密读者登录 (`POST /api/auth/local`) 无论传入何种昵称或邮箱，后端硬编码限制角色为 `reader`；
+  2. 会话创建 (`createSessionForUser`) 与反序列化 (`getUserBySessionToken`) 均施加兜底防护：非 `epomail` 认证渠道永远无法持有 `admin` 角色。
+- [x] 评论区 (`functions/api/comments.ts`) 安全加固与会话管理鉴权：
+  1. 评论发表 (`create`) 彻底切断匿名伪造 `authorRole: 'admin'` 漏洞，必须由 `getUserBySessionToken` 校验真实会话是否具备 `admin` 角色；
+  2. 评论编辑 (`edit`) 与删除 (`delete`) 全量接入管理员会话令牌识别，合法站长登录状态下可直接就地管理/删除任何评论，同时保留 `ADMIN_TOKEN` 兜底；
+  3. 普通读者与访客尝试删除他人评论时，服务端严格返回 HTTP 403 Forbidden。
+- [x] 自动化安全与端到端测试套件全绿通过：
+  1. 编写并执行专用安全单元测试套件 `scripts/verify-admin-spoofing-defense.mjs`，覆盖 4 大测试组（权威白名单、第三方防冒领、官方平滑迁移、纵深降级防御），断言 100% 全部通过；
+  2. 更新 `scripts/verify-account-drawer-epomail.mjs`，全量验证本地读者防冒领、未授权评论管理员身份降级拦截、非管理员删除 403 拒绝与站长会话删除通过，Playwright 桌面端与移动端 E2E 断言全部 PASS 通过。
+
