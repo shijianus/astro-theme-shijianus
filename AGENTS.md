@@ -301,8 +301,14 @@
   2. 采用极简三大 Tab 导航布局（`👤 登录 / 授权`、`🔔 站内提醒`、`⚙️ 偏好与架构`），彻底消除原有堆叠割裂的杂乱面板；
   3. 登录成功后动态激活 OAuth App 检查器卡片，清晰展示 App Client ID、权限 Scope 与联通状态；
   4. 偏好与架构 Tab 深度集成交互式数据流向图，直观展现 Cloudflare D1 (DB) 与 Epomail (USER_DB) 的解耦协同。
-- [x] 编写并执行全流程端到端自动化测试套件（`scripts/verify-account-drawer-epomail.mjs`）：
-  1. 后端 Auth API 全链路自动化校验（`/api/auth/config`、`/api/auth/epomail/authorize`、`/api/auth/user`、`/api/auth/logout` 均返回 200 OK）；
-  2. Playwright 桌面端 (1440x900) 深度交互测试：抽屉呼出、Tab 切换、外接方案授权、凭证提交、Hero 状态更新、App 检查器展示、架构图呈现与就地注销；
-  3. Playwright 移动端 (375x812) 视口断言：抽屉宽度严丝合缝（Width = 375px 无溢出），全场景断言 100% PASS 通过；
-  4. 全静态构建（`npm run build`）92 条路由 0 错误编译通过。
+- [x] 生产端 (Cloudflare Pages) 全量部署与 Playwright 线上真实全链路实证：
+  1. 远端 D1 数据库执行应用迁移 `0005_users.sql`，表与索引（`users`, `user_sessions`）毫秒级就绪；
+  2. 执行 `npm run cf:deploy`，全站 92 条页面及 Cloudflare Functions bundle 成功发布至生产边缘节点（`https://92860519.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com`）；
+  3. 编写并执行生产环境 Playwright 端到端深度审计套件（`scripts/verify-live-cf-account-drawer.mjs`）：
+     - 真实在线网络探测 `GET https://blog.epocanvas.com/api/auth/config` 返回 200 OK，包含 Epomail Client ID 与 Auth Mode；
+     - 启动无头 Chromium 访问真实域名 `https://blog.epocanvas.com`，全真点击呼出抽屉；
+     - 深度审计三大导航 Tab（登录/授权、站内提醒、偏好与架构），断言 Epomail 品牌卡、一键 OAuth 按钮、外接方案折叠展开与 3 项授权权限清单；
+     - 本地读者快速登记联动与就地注销，Hero 卡片胶囊动态即时切换；
+     - 移动端视口（375x812）断言无横向溢出，自适应响应式全绿；
+     - 生产环境真实端到端测试 100% PASS 通过。
+
