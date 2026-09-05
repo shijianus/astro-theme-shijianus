@@ -17,6 +17,7 @@ import {
   SunMedium,
   Tags,
   Info,
+  Quote,
   X,
   GitCommit,
 } from 'lucide-react';
@@ -1426,6 +1427,28 @@ export function ThemeOverlays({
             </div>
 
             <div className="rightMenu-group rightMenu-line">
+              {rightMenu.selectedText && (
+                <button
+                  type="button"
+                  className="rightMenu-item"
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent('shijianus:quote-post-text', {
+                        detail: {
+                          text: rightMenu.selectedText,
+                          url: window.location.pathname,
+                          title: document.title.replace(/\s*[-|_|—].*$/, '').trim(),
+                        },
+                      })
+                    );
+                    emitActivity('已将选中文本引用至评论区');
+                  }}
+                  title="将选中文本引用至评论区"
+                >
+                  <Quote aria-hidden="true" />
+                  <span>引用至评论区</span>
+                </button>
+              )}
               <button
                 type="button"
                 className="rightMenu-item"

@@ -288,44 +288,45 @@ async function runTests() {
       'Markdown 工具栏严格位于 tk-input el-textarea 评论输入框正上方'
     );
 
-    // 4. 验证工具栏必须具备的 12 个完整 button 元素
+    // 4. 验证工具栏必须具备的矢量 SVG button 元素并已彻底清除超链接与上传功能
     const langBtn = page.locator('#post-comment .tk-tb-btn-lang');
-    assert((await langBtn.count()) > 0, '包含贴文语言设置 button (🌐 语言 ▾)');
+    assert((await langBtn.count()) > 0 && (await langBtn.locator('svg').count()) > 0, '包含贴文语言设置 button (使用矢量 SVG 图标)');
 
     const boldBtn = page.locator('#post-comment .tk-tb-bold');
-    assert((await boldBtn.count()) > 0, '包含加粗 button (B)');
+    assert((await boldBtn.count()) > 0 && (await boldBtn.locator('svg').count()) > 0, '包含加粗 button (使用矢量 SVG 图标)');
 
     const italicBtn = page.locator('#post-comment .tk-tb-italic');
-    assert((await italicBtn.count()) > 0, '包含斜体 button (I)');
+    assert((await italicBtn.count()) > 0 && (await italicBtn.locator('svg').count()) > 0, '包含斜体 button (使用矢量 SVG 图标)');
 
     const headingBtn = page.locator('#post-comment .tk-tb-heading');
-    assert((await headingBtn.count()) > 0, '包含文字大小/标题 button (H)');
+    assert((await headingBtn.count()) > 0 && (await headingBtn.locator('svg').count()) > 0, '包含文字大小/标题 button (使用矢量 SVG 图标)');
 
-    const linkBtn = page.locator('#post-comment .tk-tb-btn[title*="超链接"]');
-    assert((await linkBtn.count()) > 0, '包含连结 button (🔗)');
+    const quoteBtn = page.locator('#post-comment .tk-tb-btn-quote');
+    assert((await quoteBtn.count()) > 0 && (await quoteBtn.locator('svg').count()) > 0, '包含块引用 button (使用矢量 SVG 图标)');
 
-    const quoteBtn = page.locator('#post-comment .tk-tb-btn[title*="块引用"]');
-    assert((await quoteBtn.count()) > 0, '包含块引用 button (❞)');
+    const codeBtn = page.locator('#post-comment .tk-tb-btn-code');
+    assert((await codeBtn.count()) > 0 && (await codeBtn.locator('svg').count()) > 0, '包含预初始化文字 button (使用矢量 SVG 图标)');
 
-    const codeBtn = page.locator('#post-comment .tk-tb-btn[title*="代码"]');
-    assert((await codeBtn.count()) > 0, '包含预初始化文字 button (</>)');
+    const listBtn = page.locator('#post-comment .tk-tb-btn-list');
+    assert((await listBtn.count()) > 0 && (await listBtn.locator('svg').count()) > 0, '包含清单 button (使用矢量 SVG 图标)');
 
-    const uploadBtn = page.locator('#post-comment .tk-tb-btn[title*="上传"]');
-    assert((await uploadBtn.count()) > 0, '包含上传 button (⬆️)');
-
-    const listBtn = page.locator('#post-comment .tk-tb-btn[title*="清单"]');
-    assert((await listBtn.count()) > 0, '包含清单 button (📋)');
-
-    const dirBtn = page.locator('#post-comment .tk-tb-btn[title*="排版书写方向"]');
-    assert((await dirBtn.count()) > 0, '包含切换方向 button (⇄)');
+    const dirBtn = page.locator('#post-comment .tk-tb-btn-direction');
+    assert((await dirBtn.count()) > 0 && (await dirBtn.locator('svg').count()) > 0, '包含切换方向 button (使用矢量 SVG 图标)');
 
     const emojiBtn = page.locator('#post-comment .tk-tb-emoji');
-    assert((await emojiBtn.count()) > 0, '包含 emoji 表情 button (😀)');
+    assert((await emojiBtn.count()) > 0 && (await emojiBtn.locator('svg').count()) > 0, '包含 emoji 表情 button (使用矢量 SVG 图标)');
 
     const optionsBtn = page.locator('#post-comment .tk-tb-options');
-    assert((await optionsBtn.count()) > 0, '包含选项下拉菜单 button (⚙️ 选项 ▾)');
+    assert((await optionsBtn.count()) > 0 && (await optionsBtn.locator('svg').count()) > 0, '包含选项下拉菜单 button (使用矢量 SVG 图标)');
 
-    // 5. 点击“选项”按钮，验证下拉菜单包含要求的 15 个扩展功能
+    // 验证严格删除超链接与上传服务 (db 纯文本轻量安全管理)
+    const linkBtn = page.locator('#post-comment .tk-tb-btn[title*="超链接"], #post-comment .tk-tb-btn[title*="连结"]');
+    assert((await linkBtn.count()) === 0, '为防外链风险，工具栏已彻底删除连结/超链接 button');
+
+    const uploadBtn = page.locator('#post-comment .tk-tb-btn[title*="上传"]');
+    assert((await uploadBtn.count()) === 0, '为保障纯文本轻量存储，工具栏已彻底删除上传 button');
+
+    // 5. 点击“选项”按钮，验证下拉菜单包含要求的 15 个扩展功能且全部具备专属 SVG 图标
     await optionsBtn.click();
     await page.waitForTimeout(200);
 
@@ -353,26 +354,81 @@ async function runTests() {
     for (const feat of expectedOptionFeatures) {
       const item = optionsPanel.locator(`button:has-text("${feat}")`);
       assert((await item.count()) > 0, `选项下拉包含项: [${feat}]`);
+      const svgInItem = await item.locator('svg.tk-dropdown-svg').count();
+      assert(svgInItem > 0, `选项 [${feat}] 拥有规范的矢量 SVG 图标`);
     }
 
-    // 6. 测试插入功能：点击“插入表格”和“模糊化剧透内容”
+    // 6. 测试复杂功能的 UI 弹窗编辑能力 (表格 UI 弹窗与投票 UI 弹窗)
+    const textareaEl = page.locator('#post-comment textarea.el-textarea__inner');
+
+    // (1) 测试插入表格 UI 弹窗
     const insertTableBtn = optionsPanel.locator('button:has-text("插入表格")');
     await insertTableBtn.click();
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(200);
 
-    const textareaEl = page.locator('#post-comment textarea.el-textarea__inner');
+    const tableModal = page.locator('.tk-tool-modal');
+    assert((await tableModal.count()) > 0, '点击“插入表格”成功呼出数据表格可视化配置弹窗');
+    const tableTitle = await tableModal.locator('.tk-tool-modal-title').textContent();
+    assert(tableTitle.includes('插入数据表格'), '弹窗标题正确展示为“插入数据表格”');
+
+    const confirmTableBtn = tableModal.locator('.tk-modal-btn-confirm');
+    await confirmTableBtn.click();
+    await page.waitForTimeout(200);
+
     let textVal = await textareaEl.inputValue();
-    assert(textVal.includes('| 标题 1 | 标题 2 | 标题 3 |'), '成功在输入框中插入标准 Markdown 表格');
+    assert(textVal.includes('| 标题 1 | 标题 2 | 标题 3 |'), '通过弹窗成功在输入框中插入标准 Markdown 表格');
 
-    // 再次点击选项，插入剧透内容
+    // (2) 测试建立投票 UI 弹窗
     await optionsBtn.click();
-    await page.waitForTimeout(100);
-    const spoilerBtn = page.locator('#post-comment .tk-options-dropdown button:has-text("模糊化剧透内容")');
-    await spoilerBtn.click();
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(150);
+    const pollBtn = page.locator('#post-comment .tk-options-dropdown button:has-text("建立投票")');
+    await pollBtn.click();
+    await page.waitForTimeout(200);
+
+    const pollModal = page.locator('.tk-tool-modal');
+    assert((await pollModal.count()) > 0, '点击“建立投票”成功呼出投票可视化配置弹窗');
+    await pollModal.locator('input.tk-modal-input').first().fill('你觉得新版评论系统好用吗？');
+    await pollModal.locator('.tk-modal-btn-confirm').click();
+    await page.waitForTimeout(200);
 
     textVal = await textareaEl.inputValue();
-    assert(textVal.includes('[spoiler]'), '成功在输入框中插入模糊化剧透内容标签');
+    assert(textVal.includes('[poll type=regular]') && textVal.includes('你觉得新版评论系统好用吗？'), '通过弹窗成功插入包含自定义主题的投票组件');
+
+    // (3) 测试模糊化剧透内容 UI 弹窗
+    await optionsBtn.click();
+    await page.waitForTimeout(150);
+    const spoilerBtn = page.locator('#post-comment .tk-options-dropdown button:has-text("模糊化剧透内容")');
+    await spoilerBtn.click();
+    await page.waitForTimeout(200);
+
+    const spoilerModal = page.locator('.tk-tool-modal');
+    assert((await spoilerModal.count()) > 0, '点击“模糊化剧透内容”成功呼出剧透打码弹窗');
+    await spoilerModal.locator('textarea.tk-modal-textarea').fill('这是关键剧情剧透');
+    await spoilerModal.locator('.tk-modal-btn-confirm').click();
+    await page.waitForTimeout(200);
+
+    textVal = await textareaEl.inputValue();
+    assert(textVal.includes('[spoiler]这是关键剧情剧透[/spoiler]'), '通过弹窗成功插入打码剧透标签');
+
+    // (4) 测试博文框选右键引用联动机制 (shijianus:quote-post-text)
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent('shijianus:quote-post-text', {
+          detail: {
+            text: '这是从文章正文中框选引用的高光论述。',
+            url: window.location.pathname,
+            title: '测试博文篇章',
+          },
+        })
+      );
+    });
+    await page.waitForTimeout(300);
+    textVal = await textareaEl.inputValue();
+    assert(
+      textVal.includes('> 引用自《测试博文篇章》：') &&
+      textVal.includes('这是从文章正文中框选引用的高光论述。'),
+      '正文右键“引用至评论区”成功跨组件联动将引文注入评论编辑区'
+    );
 
     // 7. 测试“👁️ 预览”切页与 Markdown 最终渲染格式
     await previewBtn.click();
@@ -466,7 +522,31 @@ async function runTests() {
     assert(newCountText === '12', `修改表情互动后总数更新为: ${newCountText}`);
     assert(await sampleLikeBtn.evaluate((el) => el.classList.contains('is-reacted')), '当前用户已表达 reaction，点赞按钮呈现高亮激活态 (.is-reacted)');
 
-    // 10. 后端 API 级鉴权测试：访客直接发 POST /api/comments like 必须返回 403
+    // 10. 验证 class="tk-actions-group" 操作按钮纯 SVG 矢量图标化且默认不展示文字
+    console.log('🎨 验证 tk-actions-group 纯 SVG 图标与 Tooltip 规范...');
+    const firstCommentActions = page.locator('#post-comment .tk-comment .tk-actions-group').first();
+
+    const replyBtn = firstCommentActions.locator('.tk-action-reply');
+    assert((await replyBtn.locator('svg.tk-action-svg').count()) > 0, '评论回复按钮采用 SVG 矢量图标');
+    assert((await replyBtn.textContent()).trim() === '', '评论回复按钮默认不展示中文文本');
+    assert((await replyBtn.getAttribute('title')).includes('回复'), '评论回复按钮提供清晰的 title tooltip');
+
+    const boostBtn = firstCommentActions.locator('.tk-action-boost');
+    assert((await boostBtn.locator('svg.tk-action-svg').count()) > 0, 'Boost 按钮采用 SVG 矢量图标');
+    assert((await boostBtn.textContent()).trim() === '', 'Boost 按钮默认不展示中文文本');
+    assert((await boostBtn.getAttribute('title')).includes('Boost'), 'Boost 按钮提供清晰的 title tooltip');
+
+    const quoteBtnItem = firstCommentActions.locator('.tk-action-quote');
+    assert((await quoteBtnItem.locator('svg.tk-action-svg').count()) > 0, '引用按钮采用 SVG 矢量图标');
+    assert((await quoteBtnItem.textContent()).trim() === '', '引用按钮默认不展示中文文本');
+    assert((await quoteBtnItem.getAttribute('title')).includes('引用'), '引用按钮提供清晰的 title tooltip');
+
+    // 11. 验证全局通知与 blog 主导航 (#nav) 上方的 #global-activity-bar 深度集成
+    console.log('🔔 验证评论提示信息与博客顶部主导航通知系统 (#nav #global-activity-bar) 打通...');
+    const topActivityBar = page.locator('#global-activity-bar');
+    assert((await topActivityBar.count()) > 0, '顶部全局通知条 #global-activity-bar 存在于页面结构中');
+
+    // 12. 后端 API 级鉴权测试：访客直接发 POST /api/comments like 必须返回 403
     console.log('🛡️ 验证后端 API 拒绝访客点赞请求...');
     const visitorLikeRes = await page.request.post(`http://localhost:${port}/api/comments`, {
       data: {
