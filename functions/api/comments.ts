@@ -1,5 +1,6 @@
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
+import { getUserBySessionToken } from '../_lib/auth-service.ts';
 
 interface RawCommentRow {
   id: string;
@@ -332,7 +333,17 @@ export async function onRequest(context: {
     const slug = (payload.slug || url.searchParams.get('slug') || '').trim();
     const rawMessage = (payload.message || '').trim();
     const postType = (payload.postType === 'boost' ? 'boost' : (payload.postType === 'emoji' ? 'emoji' : 'comment'));
-    const authorRole = payload.authorRole === 'admin' ? 'admin' : (payload.authorRole === 'reader' ? 'reader' : 'visitor');
+    let authorRole: 'admin' | 'reader' | 'visitor' = 'visitor';
+    if (sessionToken) {
+      const authUser = await getUserBySessionToken(sessionToken, env);
+      if (authUser) {
+        authorRole = authUser.role === 'admin' ? 'admin' : 'reader';
+      } else if (payload.authorRole === 'reader') {
+        authorRole = 'reader';
+      }
+    } else if (payload.authorRole === 'reader') {
+      authorRole = 'reader';
+    }
     const isVisitor = authorRole === 'visitor';
 
     if (!slug) {
@@ -523,7 +534,14 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '评论内容不能超过 1000 字' }, { status: 400 });
     }
 
-    const isAuthorizedAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
+    let isSessionAdmin = false;
+    if (sessionToken) {
+      const authUser = await getUserBySessionToken(sessionToken, env);
+      if (authUser && authUser.role === 'admin') {
+        isSessionAdmin = true;
+      }
+    }
+    const isAuthorizedAdmin = Boolean((env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
     if (env.DB) {
       await ensureTable(env.DB);
@@ -565,7 +583,14 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '缺少评论 ID' }, { status: 400 });
     }
 
-    const isAuthorizedAdmin = Boolean(env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN);
+    let isSessionAdmin = false;
+    if (sessionToken) {
+      const authUser = await getUserBySessionToken(sessionToken, env);
+      if (authUser && authUser.role === 'admin') {
+        isSessionAdmin = true;
+      }
+    }
+    const isAuthorizedAdmin = Boolean((env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
     if (env.DB) {
       await ensureTable(env.DB);

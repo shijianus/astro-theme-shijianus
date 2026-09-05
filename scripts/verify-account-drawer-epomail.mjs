@@ -87,6 +87,89 @@ async function runVerification() {
     if (logoutRes.status !== 200) throw new Error('Logout status: ' + logoutRes.status);
     console.log('   -> Logout successful');
 
+    console.log('5. POST /api/auth/local (Local Reader Anti-Spoofing Guard) ...');
+    const localRes = await fetch('http://127.0.0.1:4334/api/auth/local', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: '站长管理员 (Impersonator)',
+        email: 'admin@epocanvas.com',
+      }),
+    });
+    if (localRes.status !== 200) throw new Error('Local auth status: ' + localRes.status);
+    const localJson = await localRes.json();
+    console.log('   -> Local User Role:', localJson.user?.role);
+    if (localJson.user?.role !== 'reader') {
+      throw new Error(`SECURITY ALERT: Local reader received role '${localJson.user?.role}' instead of 'reader'!`);
+    }
+    console.log('   ✓ Local readers strictly restricted to reader role (admin claim rejected)');
+    const readerToken = localJson.token;
+
+    console.log('6. POST /api/comments (Unauthenticated authorRole=admin Spoofing Protection) ...');
+    const spoofCommentRes = await fetch('http://127.0.0.1:4334/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'create',
+        slug: 'security-test-post',
+        authorName: 'Fake Admin',
+        authorRole: 'admin', // Attack: trying to spoof admin role without valid admin session
+        message: 'This is an attack attempt to spoof admin badge.',
+      }),
+    });
+    if (spoofCommentRes.status !== 200) throw new Error('Comment API status: ' + spoofCommentRes.status);
+    const spoofJson = await spoofCommentRes.json();
+    console.log('   -> Spoofed Comment assigned role:', spoofJson.comment?.author_role);
+    if (spoofJson.comment?.author_role === 'admin') {
+      throw new Error('SECURITY ALERT: Unauthenticated comment succeeded in claiming admin role!');
+    }
+    console.log('   ✓ Unauthenticated admin spoofing rejected, downgraded to:', spoofJson.comment?.author_role);
+    const testCommentId = spoofJson.comment?.id;
+
+    console.log('7. POST /api/comments (Admin Session Moderation & Deletion) ...');
+    // Login again as legitimate Epomail admin
+    const adminLoginRes = await fetch('http://127.0.0.1:4334/api/auth/epomail/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@epomail.bond', password: 'test-admin-password' }),
+    });
+    const adminLoginJson = await adminLoginRes.json();
+    const adminSessionToken = adminLoginJson.token;
+
+    // First attempt: Non-admin reader attempts to delete someone else's comment -> MUST BE FORBIDDEN (403)
+    const unauthorizedDeleteRes = await fetch('http://127.0.0.1:4334/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-comment-session-token': readerToken,
+      },
+      body: JSON.stringify({
+        action: 'delete',
+        id: testCommentId,
+      }),
+    });
+    if (unauthorizedDeleteRes.status !== 403) {
+      throw new Error(`SECURITY ALERT: Non-admin delete returned ${unauthorizedDeleteRes.status}, expected 403 Forbidden!`);
+    }
+    console.log('   ✓ Non-admin session correctly rejected from deleting comments (403 Forbidden)');
+
+    // Second attempt: Genuine Epomail Admin attempts to delete -> MUST SUCCEED (200 OK)
+    const adminDeleteRes = await fetch('http://127.0.0.1:4334/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-comment-session-token': adminSessionToken,
+      },
+      body: JSON.stringify({
+        action: 'delete',
+        id: testCommentId,
+      }),
+    });
+    if (adminDeleteRes.status !== 200) throw new Error('Admin delete status: ' + adminDeleteRes.status);
+    const adminDeleteJson = await adminDeleteRes.json();
+    if (!adminDeleteJson.ok) throw new Error('Admin delete failed: ' + JSON.stringify(adminDeleteJson));
+    console.log('   ✓ Genuine Epomail Admin session successfully authorized to moderate & delete comment');
+
     // ----------------------------------------------------
     // PHASE 2: Playwright Browser End-to-End Testing
     // ----------------------------------------------------
@@ -257,8 +340,11 @@ async function runVerification() {
     await browser.close();
 
     console.log('\n🎉 ALL ACCOUNT DRAWER & EPOMAIL AUTH TESTS PASSED SUCCESSFULLY!');
+    process.exit(0);
   } finally {
-    devProc.kill('SIGTERM');
+    try {
+      devProc.kill('SIGKILL');
+    } catch {}
   }
 }
 

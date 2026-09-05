@@ -522,6 +522,8 @@ function authDevIntegration() {
                   EPOMAIL_CLIENT_SECRET: getEnvVar('EPOMAIL_CLIENT_SECRET'),
                   EPOMAIL_REDIRECT_URI: getEnvVar('EPOMAIL_REDIRECT_URI'),
                   ADMIN_TOKEN: getEnvVar('ADMIN_TOKEN'),
+                  ADMIN_EMAIL: getEnvVar('ADMIN_EMAIL'),
+                  EPOMAIL_AUTHORITATIVE_HOST: getEnvVar('EPOMAIL_AUTHORITATIVE_HOST'),
                 },
               });
 

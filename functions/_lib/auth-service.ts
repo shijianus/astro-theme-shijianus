@@ -24,6 +24,10 @@ const memoryUsers = new Map<string, UserProfile>();
 const memorySessions = new Map<string, { userId: string; expiresAt: string }>();
 
 // Preload default local admin/reader in memory for instant local dev
+// Authoritative Epomail Domain: Only mail.epocanvas.com is authorized to attest admin status
+export const AUTHORITATIVE_EPOMAIL_DOMAIN = 'mail.epocanvas.com';
+export const CANONICAL_ADMIN_EMAIL = 'admin@epomail.bond';
+
 const DEFAULT_EPOMAIL_CLIENT_ID = 'epo_live_shijianus_blog';
 const DEFAULT_EPOMAIL_CLIENT_SECRET = 'epo_sec_shijianus_blog_secret';
 const DEFAULT_EPOMAIL_BASE_URL = 'https://mail.epocanvas.com';
@@ -55,6 +59,74 @@ function decodeJwtPayload(jwt?: string): any {
     }
   } catch {}
   return null;
+}
+
+/**
+ * Validates whether the given base URL points to the authoritative Epomail server (mail.epocanvas.com).
+ * Any third-party, self-hosted, or rogue Epomail instances are considered non-authoritative.
+ */
+export function isAuthoritativeEpomailServer(baseUrl: string, env: AppEnv): boolean {
+  try {
+    const url = new URL(baseUrl);
+    const trustedHost = (env.EPOMAIL_AUTHORITATIVE_HOST || AUTHORITATIVE_EPOMAIL_DOMAIN).toLowerCase();
+    return url.hostname.toLowerCase() === trustedHost;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Strictly verifies whether an authenticated Epomail user qualifies for the 'admin' role.
+ * Security Rules:
+ * 1. The OAuth issuer MUST be the official mail.epocanvas.com instance (third-party instances NEVER get admin).
+ * 2. If id_token has an 'iss' claim, it must match mail.epocanvas.com.
+ * 3. The user must either have explicit server-attested admin privileges (is_admin: true or role: 'admin')
+ *    from mail.epocanvas.com, OR match the configured canonical admin email (e.g. admin@epomail.bond).
+ */
+export function verifyEpomailAdminPrivilege(options: {
+  baseUrl: string;
+  userEmail: string;
+  idClaims?: any;
+  userInfo?: any;
+  env: AppEnv;
+}): boolean {
+  // 1. MUST authenticate against the authoritative Epomail domain (mail.epocanvas.com)
+  if (!isAuthoritativeEpomailServer(options.baseUrl, options.env)) {
+    return false;
+  }
+
+  // 2. If id_token has an iss (issuer) claim, verify it points to the authoritative domain
+  if (options.idClaims?.iss) {
+    try {
+      const issUrl = new URL(options.idClaims.iss);
+      const trustedHost = (options.env.EPOMAIL_AUTHORITATIVE_HOST || AUTHORITATIVE_EPOMAIL_DOMAIN).toLowerCase();
+      if (issUrl.hostname.toLowerCase() !== trustedHost) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  const email = (options.userEmail || '').trim().toLowerCase();
+  if (!email) return false;
+
+  // 3. Cryptographically / server-attested admin flag from mail.epocanvas.com
+  const hasServerAdminAttestation = Boolean(
+    options.idClaims?.is_admin === true ||
+    options.idClaims?.role === 'admin' ||
+    options.userInfo?.is_admin === true ||
+    options.userInfo?.role === 'admin'
+  );
+
+  // 4. Primary canonical admin email (default 'admin@epomail.bond', or custom env.ADMIN_EMAIL)
+  const configuredAdminEmail = (options.env.ADMIN_EMAIL || CANONICAL_ADMIN_EMAIL).trim().toLowerCase();
+  const isCanonicalAdmin = email === configuredAdminEmail;
+
+  // Admin role is granted IF AND ONLY IF:
+  // - The request is authenticated by authoritative mail.epocanvas.com
+  // - AND (mail.epocanvas.com explicitly attests admin status OR it's the verified canonical admin email)
+  return hasServerAdminAttestation || isCanonicalAdmin;
 }
 
 export function getEffectiveAuthConfig(env: AppEnv, requestUrl?: string) {
@@ -146,6 +218,15 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
   // Session duration: 14 days
   const expiresAt = new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString();
 
+  // Security guard: Only epomail provider with verified authority can have 'admin' role.
+  // Local readers or any other providers are strictly downgrade-guarded to 'reader'.
+  let safeRole: 'admin' | 'reader' | 'visitor' = 'reader';
+  if (user.provider === 'epomail' && user.role === 'admin') {
+    safeRole = 'admin';
+  } else if (user.role === 'visitor') {
+    safeRole = 'visitor';
+  }
+
   let finalUserId = user.id;
 
   // Save in DB if available
@@ -184,7 +265,7 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
           user.name,
           user.avatar || '',
           user.website || '',
-          user.role || 'reader',
+          safeRole,
           user.provider || 'epomail',
           user.externalId || null,
           user.bio || ''
@@ -205,7 +286,7 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
     }
   }
 
-  const finalUser: UserProfile = { ...user, id: finalUserId };
+  const finalUser: UserProfile = { ...user, id: finalUserId, role: safeRole };
 
   // Save in memory store
   memoryUsers.set(finalUser.id, finalUser);
@@ -248,7 +329,7 @@ export async function getUserBySessionToken(token: string, env: AppEnv): Promise
           name: row.name,
           avatar: row.avatar || '',
           website: row.website || '',
-          role: row.role || 'reader',
+          role: (row.role === 'admin' && row.provider === 'epomail') ? 'admin' : (row.role === 'visitor' ? 'visitor' : 'reader'),
           provider: row.provider || 'epomail',
           externalId: row.external_id,
           bio: row.bio || '',
@@ -320,12 +401,15 @@ export async function exchangeEpomailAuthorizationCode(
             email: idClaims.email,
             name: idClaims.name || idClaims.preferred_username,
             picture: idClaims.picture || '',
+            is_admin: idClaims.is_admin,
+            role: idClaims.role,
+            iss: idClaims.iss,
           };
         }
       }
 
       // 2. Fallback to userInfoUrl if id_token claims were missing or need enrichment
-      if (tokenData?.access_token && (!userInfo || !userInfo.email)) {
+      if (tokenData?.access_token && (!userInfo || !userInfo.email || userInfo.is_admin === undefined)) {
         try {
           const userRes = await fetch(config.epomail.userInfoUrl, {
             headers: {
@@ -340,6 +424,9 @@ export async function exchangeEpomailAuthorizationCode(
               email: fetchedUser.email || userInfo?.email,
               name: fetchedUser.name || fetchedUser.preferred_username || userInfo?.name,
               picture: fetchedUser.picture || fetchedUser.avatar || userInfo?.picture || '',
+              is_admin: fetchedUser.is_admin ?? userInfo?.is_admin,
+              role: fetchedUser.role || userInfo?.role,
+              iss: fetchedUser.iss || userInfo?.iss,
             };
           }
         } catch (e) {
@@ -356,6 +443,10 @@ export async function exchangeEpomailAuthorizationCode(
 
   // Fallback for local testing or simulated OAuth codes
   if (!userInfo) {
+    const isDevMode = env.IS_DEV === 'true' || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development');
+    if (!isDevMode) {
+      throw new Error('Epomail OAuth 认证失败：授权码无效或无法连接到认证服务器');
+    }
     const fallbackId = `epomail_${code.substring(0, 12)}`;
     userInfo = {
       sub: fallbackId,
@@ -367,7 +458,16 @@ export async function exchangeEpomailAuthorizationCode(
 
   const userEmail = (userInfo.email || `${userInfo.sub}@epomail.bond`).toLowerCase();
   const userName = userInfo.name || userInfo.preferred_username || userEmail.split('@')[0];
-  const userRole = (userEmail.startsWith('admin@') || userEmail.includes('shijian')) ? 'admin' : 'reader';
+
+  const parsedIdClaims = tokenData?.id_token ? decodeJwtPayload(tokenData.id_token) : undefined;
+  const isAdmin = verifyEpomailAdminPrivilege({
+    baseUrl: config.epomail.baseUrl,
+    userEmail,
+    idClaims: parsedIdClaims || (userInfo.iss ? { iss: userInfo.iss, is_admin: userInfo.is_admin, role: userInfo.role } : undefined),
+    userInfo,
+    env,
+  });
+  const userRole: 'admin' | 'reader' = isAdmin ? 'admin' : 'reader';
   const deterministicId = userInfo.sub
     ? `epo_u_${userInfo.sub}`
     : `epo_u_${userEmail.replace(/[^a-z0-9]/g, '_')}`;
@@ -381,7 +481,7 @@ export async function exchangeEpomailAuthorizationCode(
     role: userRole,
     provider: 'epomail',
     externalId: String(userInfo.sub || ''),
-    bio: 'Epomail 认证身份',
+    bio: isAdmin ? 'Epomail 认证站长 (Administrator)' : 'Epomail 认证身份',
   };
 
   return createSessionForUser(userProfile, env);
@@ -408,15 +508,24 @@ export async function directEpomailAuthorize(
   let epomailUser: any = null;
 
   // 1. Try real Epomail API login if online
+  let onlineFailed = false;
+  let onlineErrorMsg = '';
+
   try {
-    const loginRes = await fetch(`${config.epomail.baseUrl}/login`, {
+    const loginRes = await fetch(`${config.epomail.baseUrl}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.trim(), password: password || '', code: code || '' }),
+    }).catch(async () => {
+      return fetch(`${config.epomail.baseUrl}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password: password || '', code: code || '' }),
+      });
     });
 
     if (loginRes.ok) {
-      const resJson = await loginRes.json() as any;
+      const resJson = (await loginRes.json()) as any;
       const token = resJson?.data?.token || resJson?.token;
       if (token) {
         // Authenticated! Now request authorize from Epomail
@@ -436,7 +545,7 @@ export async function directEpomailAuthorize(
         });
 
         if (authRes.ok) {
-          const authData = await authRes.json() as any;
+          const authData = (await authRes.json()) as any;
           const authCode = authData?.data?.code || authData?.code;
           if (authCode) {
             return exchangeEpomailAuthorizationCode(authCode, config.epomail.redirectUri, env, requestUrl);
@@ -444,21 +553,41 @@ export async function directEpomailAuthorize(
         }
         authenticated = true;
         epomailUser = { email: email.trim() };
+      } else if (resJson?.code !== 0 && (resJson?.message || resJson?.error)) {
+        onlineFailed = true;
+        onlineErrorMsg = resJson.message || resJson.error;
       }
+    } else {
+      onlineFailed = true;
+      const errBody = (await loginRes.json().catch(() => null)) as any;
+      onlineErrorMsg = errBody?.message || errBody?.error || `HTTP ${loginRes.status}`;
     }
   } catch (err) {
     console.warn('[AuthService] Direct Epomail online call failed:', err);
   }
 
-  // 2. Dev & Integration Fallback:
-  // If the admin/user provides a valid Epomail domain address or admin password
+  const isDevMode = env.IS_DEV === 'true' || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development');
+
+  if (onlineFailed && !isDevMode) {
+    throw new Error(`Epomail 授权失败: ${onlineErrorMsg || '邮箱或密码错误'}`);
+  }
+
+  // 2. Dev & Integration Fallback (Strictly confined to dev/test environments):
+  if (!isDevMode) {
+    throw new Error('无法连接到 Epomail 认证服务器，请使用 Epomail OAuth 网页授权登录');
+  }
+
   const cleanEmail = email.trim().toLowerCase();
-  const isAdmin = cleanEmail === 'admin@epomail.bond' || cleanEmail.startsWith('shijian') || cleanEmail.includes('admin');
+  const isAuthoritative = isAuthoritativeEpomailServer(config.epomail.baseUrl, env);
+  const configuredAdminEmail = (env.ADMIN_EMAIL || CANONICAL_ADMIN_EMAIL).trim().toLowerCase();
+  const isAdmin = isAuthoritative && cleanEmail === configuredAdminEmail;
+
   const namePart = cleanEmail.split('@')[0];
   const capitalizedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  const deterministicId = `epo_u_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`;
 
   const fallbackUser: UserProfile = {
-    id: `epo_u_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
+    id: deterministicId,
     name: capitalizedName,
     email: cleanEmail,
     avatar: '',
@@ -466,7 +595,7 @@ export async function directEpomailAuthorize(
     role: isAdmin ? 'admin' : 'reader',
     provider: 'epomail',
     externalId: `epomail_${cleanEmail}`,
-    bio: '已通过 Epomail 开放平台授权 (APP 外接方案)',
+    bio: isAdmin ? 'Epomail 认证站长 (APP 外接方案)' : '已通过 Epomail 开放平台授权 (APP 外接方案)',
   };
 
   return createSessionForUser(fallbackUser, env);
@@ -474,6 +603,7 @@ export async function directEpomailAuthorize(
 
 /**
  * Local / Visitor fast login or identity creation
+ * Note: Local readers are STRICTLY confined to the 'reader' role.
  */
 export async function authenticateLocalReader(
   data: { name: string; email: string; website?: string; avatar?: string },
@@ -487,7 +617,8 @@ export async function authenticateLocalReader(
   }
 
   const userId = `local_u_${email ? email.replace(/[^a-z0-9]/g, '_') : generateRandomHex(8)}`;
-  const role = (email.includes('admin') || name.includes('管理员')) ? 'admin' : 'reader';
+  // Local readers can NEVER possess the admin role!
+  const role: 'reader' = 'reader';
 
   const user: UserProfile = {
     id: userId,
