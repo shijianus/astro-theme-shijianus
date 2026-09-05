@@ -287,7 +287,7 @@
   1. 为 `functions/api/comments.ts` 引入模块级 `tableEnsured` 单例缓存，避免每个 Worker 实例在处理高频 GET/POST 请求时重复执行 5 次 DDL 检查，大幅降低 D1 请求开销与响应延迟；
   2. 保持纯本地 Node 开发环境下的 `.comments-dev.json` 文件持久化回退，确保本地热重载与离线调试数据不丢失。
 - [x] 执行本地 Dev API 自动化校验套件（`scripts/verify-dev-comments.mjs`）全绿通过，代码全量推送到 `origin` 与 `cf` 远端。
-### Task 27: 账号中心 (theme-account-drawer) 极简重构、Epomail OAuth 2.0 原生登录与单/双/托管 DB 架构落地
+### Task 27: 账号中心 (theme-account-drawer) 极简重构、Epomail OAuth 2.0 原生登录与单/双/托管 DB 架构落地 (`8eb62fa`)
 - [x] 基于 Epomail (`../epocanvas-mail`) 搭建原生第三方统一身份认证与授权机制：
   1. 支持 OAuth 2.0 标准授权码流程（Redirect Code Grant）与回调页面（`/auth/callback`），通过 `window.postMessage` 跨窗口无感握手；
   2. 实现“管理员 APP 外接方案授权”折叠交互面板：支持在抽屉内直接输入 Epomail 账号、密码及 TOTP 双因子凭证，就地完成应用授权握手与 Token 交换，并清晰公示授权权限清单（openid、profile、email、comments）；
