@@ -90,8 +90,10 @@ function syncDevStore(action: 'load' | 'save') {
 // Preload local dev store if available
 syncDevStore('load');
 
+let tableEnsured = false;
+
 async function ensureTable(db: any) {
-  if (!db || !db.prepare) return;
+  if (!db || !db.prepare || tableEnsured) return;
   try {
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS comments (
@@ -130,6 +132,7 @@ async function ensureTable(db: any) {
     try {
       await db.prepare(`ALTER TABLE comments ADD COLUMN reactions TEXT DEFAULT '{}';`).run();
     } catch {}
+    tableEnsured = true;
   } catch (err) {
     console.error('[Comments] Table ensure error:', err);
   }
