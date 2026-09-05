@@ -20,6 +20,16 @@ import {
   Quote,
   X,
   GitCommit,
+  CheckCircle2,
+  ShieldCheck,
+  Mail,
+  Lock,
+  Key,
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  Database,
+  Settings,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -30,7 +40,12 @@ import {
   readAllLocalThreads,
   readCommentIdentity,
   writeCommentIdentity,
+  fetchAuthConfig,
+  directEpomailLogin,
+  loginLocalReader,
+  logoutAuthAccount,
   type CommentIdentity,
+  type PublicAuthConfig,
 } from '../lib/comment-client';
 import {
   applyThemeWithBackground,
@@ -163,6 +178,12 @@ export function ThemeOverlays({
   const [accountNotice, setAccountNotice] = useState('');
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
+  const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('auth');
+  const [authConfig, setAuthConfig] = useState<PublicAuthConfig | null>(null);
+  const [epomailForm, setEpomailForm] = useState({ email: '', password: '', code: '' });
+  const [showDirectAppAuth, setShowDirectAppAuth] = useState(false);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [authStatusMessage, setAuthStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [syncStats, setSyncStats] = useState(stats);
   const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
 
@@ -754,6 +775,117 @@ export function ThemeOverlays({
     emitActivity('已退出当前账号');
   };
 
+  useEffect(() => {
+    fetchAuthConfig().then((cfg) => {
+      if (cfg) setAuthConfig(cfg);
+    });
+
+    const onWindowMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'EPOMAIL_AUTH_SUCCESS' && event.data.user) {
+        const user = event.data.user;
+        setAccount(user);
+        setAccountForm({
+          name: user.name || '',
+          email: user.email || '',
+          website: user.website || '',
+          avatar: user.avatar || '',
+        });
+        setAuthStatusMessage({ type: 'success', text: `Epomail 授权登录成功！欢迎，${user.name}` });
+        emitActivity(`Epomail 授权登录: ${user.name}`);
+      }
+    };
+    window.addEventListener('message', onWindowMessage);
+    return () => window.removeEventListener('message', onWindowMessage);
+  }, []);
+
+  const handleEpomailOAuth = () => {
+    setIsAuthorizing(true);
+    setAuthStatusMessage(null);
+    try {
+      sessionStorage.setItem('epomail_auth_return', window.location.href);
+    } catch {}
+
+    const cfg = authConfig?.epomail || {
+      baseUrl: 'https://mail.epocanvas.com',
+      clientId: 'epo_live_shijianus_blog',
+      authorizeUrl: 'https://mail.epocanvas.com/oauth/authorize',
+      redirectUri: `${window.location.origin}/auth/callback`,
+      scope: 'openid profile email',
+    };
+
+    const authUrl = `${cfg.authorizeUrl}?client_id=${encodeURIComponent(cfg.clientId)}&redirect_uri=${encodeURIComponent(cfg.redirectUri)}&response_type=code&scope=${encodeURIComponent(cfg.scope)}&state=blog_sso`;
+
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    const popup = window.open(
+      authUrl,
+      'EpomailOAuth',
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no`
+    );
+
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+      window.location.href = authUrl;
+    } else {
+      setIsAuthorizing(false);
+    }
+  };
+
+  const handleDirectEpomailSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!epomailForm.email.trim()) {
+      setAuthStatusMessage({ type: 'error', text: '请填写 Epomail 账号或邮箱' });
+      return;
+    }
+    setIsAuthorizing(true);
+    setAuthStatusMessage(null);
+
+    const res = await directEpomailLogin(epomailForm);
+    setIsAuthorizing(false);
+    if (res.ok && res.user) {
+      setAccount(res.user);
+      setAccountForm({
+        name: res.user.name,
+        email: res.user.email,
+        website: res.user.website || '',
+        avatar: res.user.avatar || '',
+      });
+      setAuthStatusMessage({ type: 'success', text: `Epomail 授权成功 (APP 外接方案)！欢迎，${res.user.name}` });
+      emitActivity(`Epomail 登录: ${res.user.name}`);
+    } else {
+      setAuthStatusMessage({ type: 'error', text: res.error || 'Epomail 授权验证失败，请重试' });
+    }
+  };
+
+  const handleLocalSave = async () => {
+    if (!accountForm.name.trim()) {
+      setAccountNotice('请先填写昵称');
+      setAccountNeedsAttention(true);
+      return;
+    }
+    setIsAuthorizing(true);
+    setAccountNeedsAttention(false);
+    const res = await loginLocalReader(accountForm);
+    setIsAuthorizing(false);
+    if (res.ok && res.user) {
+      setAccount(res.user);
+      setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
+      emitActivity('创建/更新本地身份');
+    } else {
+      setAuthStatusMessage({ type: 'error', text: res.error || '保存失败' });
+    }
+  };
+
+  const handleLogout = async () => {
+    await logoutAuthAccount(account?.token);
+    setAccount(null);
+    setAccountForm({ name: '', email: '', website: '', avatar: '' });
+    setEpomailForm({ email: '', password: '', code: '' });
+    setAuthStatusMessage({ type: 'info', text: '已退出登录并清除身份凭证' });
+    emitActivity('已退出账号');
+  };
+
   const selectLocale = (nextLocale: LocaleVariant) => {
     const applied = applyLocaleVariant(nextLocale);
     setLocaleVariant(applied);
@@ -1205,12 +1337,13 @@ export function ThemeOverlays({
           onClick={() => setNotificationOpen(false)}
           aria-label="关闭账号面板"
         />
-        <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label="账号面板">
-            <div className="theme-account-drawer__head">
-              <div>
-                <p className="eyebrow">账号</p>
-                <h2>账号中心</h2>
-              </div>
+        <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label="账号中心">
+          {/* 1. Header */}
+          <div className="theme-account-drawer__head">
+            <div>
+              <p className="eyebrow">EPOCANVAS IDENTITY · 账号与通知</p>
+              <h2>账号中心</h2>
+            </div>
             <button
               type="button"
               className="theme-icon-button theme-button--ghost"
@@ -1221,153 +1354,559 @@ export function ThemeOverlays({
             </button>
           </div>
 
-          <div className="theme-account-drawer__summary">
-            <div className="theme-account-drawer__summary-avatar">
+          {/* 2. Hero Summary Profile Card */}
+          <div className="account-hero-card">
+            <div className="account-hero-card__avatar">
               {account?.avatar ? (
                 <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
               ) : (
                 <span>{getCommentInitials(account?.name || brandName)}</span>
               )}
+              {account?.provider === 'epomail' && (
+                <span className="account-hero-card__badge-icon" title="Epomail 认证身份">
+                  ⚡
+                </span>
+              )}
             </div>
-            <div className="theme-account-drawer__summary-copy">
-              <strong>{account ? account.name : '尚未登录'}</strong>
-              <p>{account ? `${accountAccessLabel} · ${accountBridgeLabel}` : accountPanel.summary}</p>
-            </div>
-            <div className="theme-account-drawer__summary-badge">
-              <Bell aria-hidden="true" />
-              <strong>{allNotifications.length}</strong>
-              <small>提醒</small>
-            </div>
-          </div>
 
-          <div className="theme-account-drawer__body">
-            <section className={`theme-account-panel ${accountNeedsAttention ? 'is-attention' : ''}`}>
-              <div className="theme-account-panel__head">
-                <div>
-                  <p className="author-content-item-tips">{accountPanel.title}</p>
-                  <h3>{account ? '更新资料' : '登录 / 注册'}</h3>
-                </div>
-                <span>{accountBridgeLabel}</span>
-              </div>
-
-              <p>{accountBridgeNote}</p>
-
-              <div className="theme-account-panel__form">
-                <label className="theme-account-panel__field">
-                  <span>昵称</span>
-                  <input
-                    value={accountForm.name}
-                    onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))}
-                    placeholder="输入公开显示的昵称"
-                  />
-                </label>
-                <label className="theme-account-panel__field">
-                  <span>邮箱</span>
-                  <input
-                    value={accountForm.email}
-                    onChange={(event) => setAccountForm((current) => ({ ...current, email: event.target.value }))}
-                    placeholder="name@example.com"
-                  />
-                </label>
-                <label className="theme-account-panel__field">
-                  <span>个人站点</span>
-                  <input
-                    value={accountForm.website}
-                    onChange={(event) => setAccountForm((current) => ({ ...current, website: event.target.value }))}
-                    placeholder="https://example.com"
-                  />
-                </label>
-                <label className="theme-account-panel__field">
-                  <span>头像链接</span>
-                  <input
-                    value={accountForm.avatar}
-                    onChange={(event) => setAccountForm((current) => ({ ...current, avatar: event.target.value }))}
-                    placeholder="https://..."
-                  />
-                </label>
-              </div>
-
-              {accountNotice && <div className="theme-account-panel__notice">{accountNotice}</div>}
-
-              <div className="theme-account-panel__actions">
-                {account && (
-                  <button type="button" className="theme-icon-button theme-button--ghost" onClick={clearAccount}>
-                    <LogOut aria-hidden="true" />
-                    <span>退出</span>
-                  </button>
+            <div className="account-hero-card__info">
+              <div className="account-hero-card__name-row">
+                <strong>{account ? account.name : '尚未登录'}</strong>
+                {account?.provider === 'epomail' ? (
+                  <span className="account-pill account-pill--epomail">⚡ Epomail 认证</span>
+                ) : account ? (
+                  <span className="account-pill account-pill--local">本地读者</span>
+                ) : (
+                  <span className="account-pill account-pill--guest">访客模式</span>
                 )}
-                <button type="button" className="theme-icon-button" onClick={saveAccount}>
-                  <Save aria-hidden="true" />
-                  <span>{account ? '保存更新' : '创建账号'}</span>
+                {account?.role === 'admin' && (
+                  <span className="account-pill account-pill--admin">管理员</span>
+                )}
+              </div>
+              <p className="account-hero-card__desc">
+                {account?.email || (account ? '已绑定评论身份' : '登录后可保留公开评论身份、绑定头像与接收回复提醒')}
+              </p>
+            </div>
+
+            {account && (
+              <div className="account-hero-card__actions">
+                <button
+                  type="button"
+                  className="account-btn-icon"
+                  onClick={handleLogout}
+                  title="退出登录"
+                  aria-label="退出登录"
+                >
+                  <LogOut className="h-4 w-4" />
                 </button>
               </div>
-            </section>
+            )}
+          </div>
 
-            <section className="theme-account-panel theme-account-panel--notifications">
-              <div className="theme-account-panel__head">
-                <div>
-                  <p className="author-content-item-tips">提醒</p>
-                  <h3>动态与回复</h3>
+          {/* 3. Navigation Tabs */}
+          <div className="account-nav-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={accountTab === 'auth'}
+              className={`account-nav-tab ${accountTab === 'auth' ? 'is-active' : ''}`}
+              onClick={() => setAccountTab('auth')}
+            >
+              <UserRound className="h-4 w-4" />
+              <span>{account ? '账号资料' : '登录 / 授权'}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={accountTab === 'notifications'}
+              className={`account-nav-tab ${accountTab === 'notifications' ? 'is-active' : ''}`}
+              onClick={() => setAccountTab('notifications')}
+            >
+              <Bell className="h-4 w-4" />
+              <span>站内提醒</span>
+              {allNotifications.length > 0 && (
+                <span className="account-tab-badge">{allNotifications.length}</span>
+              )}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={accountTab === 'settings'}
+              className={`account-nav-tab ${accountTab === 'settings' ? 'is-active' : ''}`}
+              onClick={() => setAccountTab('settings')}
+            >
+              <Settings className="h-4 w-4" />
+              <span>偏好与架构</span>
+            </button>
+          </div>
+
+          {/* 4. Status Toast / Notice */}
+          {authStatusMessage && (
+            <div className={`account-toast-notice account-toast-notice--${authStatusMessage.type}`}>
+              {authStatusMessage.type === 'success' && <CheckCircle2 className="h-4 w-4 flex-shrink-0" />}
+              {authStatusMessage.type === 'error' && <Info className="h-4 w-4 flex-shrink-0" />}
+              <span>{authStatusMessage.text}</span>
+            </div>
+          )}
+
+          {/* 5. TAB 1: 账号与授权 / 个人资料 */}
+          {accountTab === 'auth' && (
+            <div className="account-tab-content">
+              {!account ? (
+                <>
+                  {/* Epomail 官方集成专区 */}
+                  <section className="account-card account-card--epomail">
+                    <div className="account-card__head">
+                      <div className="account-brand-header">
+                        <div className="epomail-badge-icon">
+                          <Mail className="h-5 w-5 text-theme-main" />
+                        </div>
+                        <div>
+                          <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
+                          <p className="account-card__subtitle">原生支持 epomail.bond / epomail.cyou 邮箱接入</p>
+                        </div>
+                      </div>
+                      <span className="account-tag-chip">推荐模式</span>
+                    </div>
+
+                    <p className="account-card__desc">
+                      本站采用 Epomail 用户托管方案，授权后将同步您的 Epomail 头像、邮箱与身份凭证，用于全站评论与消息提醒。
+                    </p>
+
+                    <button
+                      type="button"
+                      className="epomail-primary-login-btn"
+                      onClick={handleEpomailOAuth}
+                      disabled={isAuthorizing}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      <span>使用 Epomail 一键授权登录 (OAuth 2.0)</span>
+                    </button>
+
+                    {/* 管理员 APP 外接方案 / 抽屉内直接验证 */}
+                    <div className="direct-app-auth-accordion">
+                      <button
+                        type="button"
+                        className="direct-app-auth-toggle"
+                        onClick={() => setShowDirectAppAuth(!showDirectAppAuth)}
+                      >
+                        <span>或者使用管理员 APP 外接方案授权</span>
+                        {showDirectAppAuth ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </button>
+
+                      {showDirectAppAuth && (
+                        <form className="direct-app-auth-form" onSubmit={handleDirectEpomailSubmit}>
+                          <p className="direct-app-auth-intro">
+                            通过站内预置的 Epomail 开放平台客户端 (<code>{authConfig?.epomail.clientId || 'epo_live_shijianus_blog'}</code>) 直接完成身份校验与应用授权：
+                          </p>
+
+                          <div className="account-form-grid">
+                            <label className="account-field">
+                              <span>Epomail 邮箱</span>
+                              <div className="account-input-wrap">
+                                <Mail className="account-input-icon" />
+                                <input
+                                  type="email"
+                                  value={epomailForm.email}
+                                  onChange={(e) => setEpomailForm({ ...epomailForm, email: e.target.value })}
+                                  placeholder="例如: admin@epomail.bond"
+                                  required
+                                />
+                              </div>
+                            </label>
+
+                            <label className="account-field">
+                              <span>账户密码</span>
+                              <div className="account-input-wrap">
+                                <Lock className="account-input-icon" />
+                                <input
+                                  type="password"
+                                  value={epomailForm.password}
+                                  onChange={(e) => setEpomailForm({ ...epomailForm, password: e.target.value })}
+                                  placeholder="输入 Epomail 登录密码"
+                                />
+                              </div>
+                            </label>
+
+                            <label className="account-field account-field--full">
+                              <span>TOTP 动态验证码 (可选)</span>
+                              <div className="account-input-wrap">
+                                <Key className="account-input-icon" />
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  value={epomailForm.code}
+                                  onChange={(e) => setEpomailForm({ ...epomailForm, code: e.target.value })}
+                                  placeholder="如已开启双重认证，请输入 6 位动态验证码"
+                                />
+                              </div>
+                            </label>
+                          </div>
+
+                          <div className="auth-scope-box">
+                            <span className="auth-scope-title">该应用请求获取以下权限：</span>
+                            <ul className="auth-scope-list">
+                              <li>
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span>获取您的 Epomail 公开个人资料（姓名、头像与用户 ID）</span>
+                              </li>
+                              <li>
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span>验证邮箱所有权并绑定为本博客评论与回复作者</span>
+                              </li>
+                              <li>
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span>接收本博客文章评论 @ 与回复站内提醒</span>
+                              </li>
+                            </ul>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="direct-app-submit-btn"
+                            disabled={isAuthorizing}
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                            <span>{isAuthorizing ? '正在验证授权...' : '验证并接续授予权限'}</span>
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </section>
+
+                  {/* 本地读者与访客快速设定 */}
+                  <section className="account-card">
+                    <div className="account-card__head">
+                      <div>
+                        <h3 className="account-card__title">本地读者 / 访客快速设定</h3>
+                        <p className="account-card__subtitle">暂无 Epomail 账号？可直接保存昵称与邮箱参与讨论</p>
+                      </div>
+                    </div>
+
+                    <div className="account-form-grid">
+                      <label className="account-field">
+                        <span>显示昵称</span>
+                        <input
+                          type="text"
+                          value={accountForm.name}
+                          onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                          placeholder="输入公开显示的昵称"
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>通知邮箱</span>
+                        <input
+                          type="email"
+                          value={accountForm.email}
+                          onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
+                          placeholder="name@example.com"
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>个人网站 (选填)</span>
+                        <input
+                          type="url"
+                          value={accountForm.website}
+                          onChange={(e) => setAccountForm({ ...accountForm, website: e.target.value })}
+                          placeholder="https://example.com"
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>自定义头像链接 (选填)</span>
+                        <input
+                          type="url"
+                          value={accountForm.avatar}
+                          onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
+                          placeholder="https://..."
+                        />
+                      </label>
+                    </div>
+
+                    <div className="account-card__foot">
+                      <button
+                        type="button"
+                        className="account-btn-secondary"
+                        onClick={handleLocalSave}
+                        disabled={isAuthorizing}
+                      >
+                        <Save className="h-4 w-4" />
+                        <span>保存本地身份</span>
+                      </button>
+                    </div>
+                  </section>
+                </>
+              ) : (
+                <>
+                  {/* 已登录：资料展示与更新 */}
+                  <section className="account-card">
+                    <div className="account-card__head">
+                      <div>
+                        <h3 className="account-card__title">个人资料与身份设置</h3>
+                        <p className="account-card__subtitle">当前会话已建立，可在下方微调公开资料</p>
+                      </div>
+                      <span className="account-tag-chip account-tag-chip--active">已认证</span>
+                    </div>
+
+                    <div className="account-form-grid">
+                      <label className="account-field">
+                        <span>公开昵称</span>
+                        <input
+                          type="text"
+                          value={accountForm.name}
+                          onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                          placeholder="输入公开显示的昵称"
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>绑定邮箱</span>
+                        <input
+                          type="email"
+                          value={accountForm.email}
+                          disabled={account.provider === 'epomail'}
+                          onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
+                          placeholder="name@example.com"
+                          title={account.provider === 'epomail' ? 'Epomail 认证邮箱由开放平台同步' : ''}
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>个人网站</span>
+                        <input
+                          type="url"
+                          value={accountForm.website}
+                          onChange={(e) => setAccountForm({ ...accountForm, website: e.target.value })}
+                          placeholder="https://example.com"
+                        />
+                      </label>
+
+                      <label className="account-field">
+                        <span>头像图片链接</span>
+                        <input
+                          type="url"
+                          value={accountForm.avatar}
+                          onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
+                          placeholder="https://..."
+                        />
+                      </label>
+                    </div>
+
+                    <div className="account-card__foot">
+                      <button
+                        type="button"
+                        className="account-btn-danger"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>退出登录</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="account-btn-primary"
+                        onClick={handleLocalSave}
+                      >
+                        <Save className="h-4 w-4" />
+                        <span>保存资料修改</span>
+                      </button>
+                    </div>
+                  </section>
+
+                  {/* 开放平台应用对接审计面板 (OAuth App Inspector) */}
+                  <section className="account-card account-card--inspector">
+                    <div className="account-card__head">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-theme-main" />
+                        <h3 className="account-card__title">开放平台授权状态 (OAuth App Inspector)</h3>
+                      </div>
+                    </div>
+
+                    <div className="app-inspector-grid">
+                      <div className="inspector-item">
+                        <span className="inspector-label">对接应用</span>
+                        <span className="inspector-value font-mono">shijianus-blog</span>
+                      </div>
+                      <div className="inspector-item">
+                        <span className="inspector-label">认证提供方</span>
+                        <span className="inspector-value">EpoCanvas Mail (epocanvas-mail)</span>
+                      </div>
+                      <div className="inspector-item">
+                        <span className="inspector-label">客户端标识 (Client ID)</span>
+                        <span className="inspector-value font-mono">{authConfig?.epomail.clientId || 'epo_live_shijianus_blog'}</span>
+                      </div>
+                      <div className="inspector-item">
+                        <span className="inspector-label">授权范围 (Scopes)</span>
+                        <span className="inspector-value font-mono">openid profile email</span>
+                      </div>
+                      <div className="inspector-item">
+                        <span className="inspector-label">授权凭据状态</span>
+                        <span className="inspector-value text-emerald-500 font-bold flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5 inline" /> 已生效 (Active)
+                        </span>
+                      </div>
+                      <div className="inspector-item">
+                        <span className="inspector-label">用户唯一标识 (Sub)</span>
+                        <span className="inspector-value font-mono">{account.id}</span>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 6. TAB 2: 站内提醒 */}
+          {accountTab === 'notifications' && (
+            <div className="account-tab-content">
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div>
+                    <h3 className="account-card__title">站内提醒与消息</h3>
+                    <p className="account-card__subtitle">接收文章评论 @ 提及、回复与站点动态</p>
+                  </div>
+                  <span className="account-tag-chip">{allNotifications.length} 条</span>
                 </div>
-                <span>{allNotifications.length}</span>
-              </div>
 
-              {allNotifications.length > 0 ? (
-                <div className="console-notification-list theme-account-panel__notification-list">
-                  {allNotifications.map((notification) => {
-                    return (
-                      <a className="console-notification-item theme-account-panel__notification-item" href={notification.href} key={notification.id}>
-                        <div className="console-notification-item__avatar">
+                {allNotifications.length > 0 ? (
+                  <div className="account-notification-list">
+                    {allNotifications.map((notification) => (
+                      <a
+                        className="account-notification-item"
+                        href={notification.href}
+                        key={notification.id}
+                        onClick={() => setNotificationOpen(false)}
+                      >
+                        <div className="account-notification-avatar">
                           {notification.type === 'mention' && 'avatar' in notification && notification.avatar ? (
                             <img src={notification.avatar} alt={notification.author} loading="lazy" />
                           ) : (
-                            <span className="flex items-center justify-center bg-theme-op text-theme-main">
+                            <span className="notification-icon-wrap">
                               {notification.icon}
                             </span>
                           )}
                         </div>
-                        <div className="console-notification-item__body">
-                          <strong>{notification.title}</strong>
-                          <span>{notification.date}</span>
+                        <div className="account-notification-body">
+                          <div className="account-notification-title-row">
+                            <strong>{notification.title}</strong>
+                            <span className="account-notification-date">{notification.date}</span>
+                          </div>
                           <p>{notification.content.slice(0, 120)}</p>
                         </div>
                       </a>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="console-notification-empty theme-account-panel__notification-empty">
-                  <UserRound aria-hidden="true" />
-                  <strong>暂时没有新的提醒</strong>
-                  <p>{account ? '这里会集中显示最新记录。' : accountPanel.loginHint}</p>
-                </div>
-              )}
-            </section>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="account-empty-state">
+                    <UserRound className="h-10 w-10 text-theme-main/60" />
+                    <strong>暂时没有新的互动提醒</strong>
+                    <p>{account ? '当有读者在文章评论区回复你或 @ 你时，这里会实时呈现。' : '登录后可在被 @ 或被回复时第一时间收到站内提醒。'}</p>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
 
-            <section className="theme-account-panel">
-              <div className="theme-account-panel__head">
-                <div>
-                  <p className="author-content-item-tips">偏好</p>
-                  <h3>界面语言</h3>
+          {/* 7. TAB 3: 偏好设置与系统架构 */}
+          {accountTab === 'settings' && (
+            <div className="account-tab-content">
+              {/* 语言偏好 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">界面语言</h3>
+                  </div>
+                  <span className="account-tag-chip">
+                    {localeVariant === 'zh-CN' ? '简体中文' : localeVariant === 'zh-Hant' ? '繁體中文' : 'English'}
+                  </span>
                 </div>
-                <span>{localeVariant === 'zh-CN' ? '简体' : localeVariant === 'zh-Hant' ? '繁體' : 'EN'}</span>
-              </div>
 
-              <p>语言切换独立放到账号面板里，避免和控制台、分享或评论操作混在一起。</p>
+                <p className="account-card__desc">独立切换博客正文与系统界面的语言版本：</p>
 
-              <div className="theme-account-panel__locale-actions" role="group" aria-label="界面语言">
-                <button type="button" className={localeVariant === 'zh-CN' ? 'is-active' : ''} onClick={() => selectLocale('zh-CN')}>
-                  简体中文
-                </button>
-                <button type="button" className={localeVariant === 'zh-Hant' ? 'is-active' : ''} onClick={() => selectLocale('zh-Hant')}>
-                  繁體中文
-                </button>
-                <button type="button" className={localeVariant === 'en' ? 'is-active' : ''} onClick={() => selectLocale('en')}>
-                  English
-                </button>
-              </div>
-            </section>
-          </div>
+                <div className="account-locale-grid">
+                  <button
+                    type="button"
+                    className={`account-locale-btn ${localeVariant === 'zh-CN' ? 'is-active' : ''}`}
+                    onClick={() => selectLocale('zh-CN')}
+                  >
+                    简体中文
+                  </button>
+                  <button
+                    type="button"
+                    className={`account-locale-btn ${localeVariant === 'zh-Hant' ? 'is-active' : ''}`}
+                    onClick={() => selectLocale('zh-Hant')}
+                  >
+                    繁體中文
+                  </button>
+                  <button
+                    type="button"
+                    className={`account-locale-btn ${localeVariant === 'en' ? 'is-active' : ''}`}
+                    onClick={() => selectLocale('en')}
+                  >
+                    English
+                  </button>
+                </div>
+              </section>
+
+              {/* 博客数据库与账号系统架构说明 */}
+              <section className="account-card account-card--arch">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">系统架构与数据托管说明</h3>
+                  </div>
+                  <span className="account-tag-chip account-tag-chip--active">
+                    {authConfig?.mode === 'outsourced_epomail'
+                      ? 'Epomail 外包模式'
+                      : authConfig?.mode === 'dual_db'
+                      ? '双 DB 模式'
+                      : '单 DB 模式'}
+                  </span>
+                </div>
+
+                <div className="arch-flow-diagram">
+                  <div className="arch-node">
+                    <div className="arch-node__icon">💬</div>
+                    <strong>评论数据域</strong>
+                    <small>Cloudflare D1 (DB)</small>
+                    <span>评论流、点赞数、Quote引用</span>
+                  </div>
+
+                  <div className="arch-arrow">
+                    <span>OAuth 2.0 / SSO</span>
+                    <div className="arch-arrow-line"></div>
+                  </div>
+
+                  <div className="arch-node arch-node--highlight">
+                    <div className="arch-node__icon">⚡</div>
+                    <strong>用户身份域</strong>
+                    <small>Epomail (USER_DB)</small>
+                    <span>账号认证、密码、安全权限</span>
+                  </div>
+                </div>
+
+                <div className="arch-notes">
+                  <h4>💡 给博客开发者的架构适配指引：</h4>
+                  <ol>
+                    <li>
+                      <strong>外包 Epomail 模式（当前站长配置）</strong>：
+                      用户系统托管给 <code>../epocanvas-mail</code>，博客只需一个评论 D1 数据库 (<code>DB</code>)，通过 OAuth 开放平台安全互联。
+                    </li>
+                    <li>
+                      <strong>单 DB 模式（开箱即用推荐）</strong>：
+                      使用博客自带的 D1 数据库执行 <code>migrations/0005_users.sql</code>，用户与评论共享同个数据库。
+                    </li>
+                    <li>
+                      <strong>双 DB 模式（解耦分离）</strong>：
+                      在 Cloudflare Pages 绑定 <code>DB</code> (评论) 与 <code>USER_DB</code> (用户管理)，物理隔离业务数据。
+                    </li>
+                  </ol>
+                </div>
+              </section>
+            </div>
+          )}
         </div>
       </section>
 

@@ -910,7 +910,11 @@ export function PostComments({
             title="前往账号中心登录或设置个性化资料"
             style={{ cursor: 'pointer' }}
           >
-            {account && account.role !== 'visitor' ? `👤 ${account.name}` : '访客身份 (点击登录)'}
+            {account?.provider === 'epomail'
+              ? `⚡ ${account.name} (Epomail)`
+              : account && account.role !== 'visitor'
+              ? `👤 ${account.name}`
+              : '访客身份 (点击登录)'}
           </a>
           <a
             href="/about"

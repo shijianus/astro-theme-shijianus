@@ -9,6 +9,10 @@ export type CommentIdentity = {
   website: string;
   avatar: string;
   role: CommentRole;
+  provider?: 'epomail' | 'local' | 'visitor';
+  token?: string;
+  epomailUserId?: string | number;
+  bio?: string;
 };
 
 export type CommentQuote = {
@@ -388,3 +392,114 @@ export async function likeComment(params: {
     return { ok: false, error: err?.message || '网络连接失败' };
   }
 }
+
+export interface PublicAuthConfig {
+  ok: boolean;
+  mode: 'outsourced_epomail' | 'dual_db' | 'single_db';
+  providers: string[];
+  epomail: {
+    baseUrl: string;
+    clientId: string;
+    authorizeUrl: string;
+    redirectUri: string;
+    scope: string;
+  };
+  adminApp: {
+    appName: string;
+    appLogo: string;
+    description: string;
+    scopes: string[];
+  };
+}
+
+export async function fetchAuthConfig(): Promise<PublicAuthConfig | null> {
+  try {
+    const res = await fetch('/api/auth/config');
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function directEpomailLogin(credentials: {
+  email: string;
+  password?: string;
+  code?: string;
+}): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/epomail/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const data = (await res.json()) as any;
+    if (!res.ok || !data.ok || !data.user) {
+      return { ok: false, error: data?.error || 'Epomail 授权验证失败' };
+    }
+    const identity: CommentIdentity = {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      avatar: data.user.avatar || '',
+      website: data.user.website || '',
+      role: data.user.role || 'reader',
+      provider: 'epomail',
+      token: data.token,
+      epomailUserId: data.user.externalId,
+      bio: data.user.bio,
+    };
+    writeCommentIdentity(identity);
+    return { ok: true, user: identity };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接异常' };
+  }
+}
+
+export async function loginLocalReader(data: {
+  name: string;
+  email: string;
+  website?: string;
+  avatar?: string;
+}): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/local', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const resData = (await res.json()) as any;
+    if (!resData.ok || !resData.user) {
+      return { ok: false, error: resData?.error || '创建本地身份失败' };
+    }
+    const identity: CommentIdentity = {
+      id: resData.user.id,
+      name: resData.user.name,
+      email: resData.user.email,
+      avatar: resData.user.avatar || '',
+      website: resData.user.website || '',
+      role: resData.user.role || 'reader',
+      provider: 'local',
+      token: resData.token,
+    };
+    writeCommentIdentity(identity);
+    return { ok: true, user: identity };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接异常' };
+  }
+}
+
+export async function logoutAuthAccount(token?: string): Promise<boolean> {
+  try {
+    if (token) {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ token }),
+      });
+    }
+  } catch {}
+  writeCommentIdentity(null);
+  return true;
+}
+

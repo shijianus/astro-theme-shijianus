@@ -476,6 +476,77 @@ function commentsDevIntegration() {
   };
 }
 
+function authDevIntegration() {
+  return {
+    name: 'auth-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          const rawUrl = req.url || '';
+          if (rawUrl === '/api/auth' || rawUrl.startsWith('/api/auth?') || rawUrl.startsWith('/api/auth/')) {
+            try {
+              const protocol = req.socket?.encrypted ? 'https' : 'http';
+              const host = req.headers.host || 'localhost:4321';
+              const fullUrl = new URL(rawUrl, `${protocol}://${host}`);
+
+              const chunks = [];
+              for await (const chunk of req) {
+                chunks.push(chunk);
+              }
+              const bodyBuffer = Buffer.concat(chunks);
+              const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method || '') && bodyBuffer.length > 0;
+
+              const webHeaders = new Headers();
+              for (const [key, value] of Object.entries(req.headers)) {
+                if (Array.isArray(value)) {
+                  for (const v of value) webHeaders.append(key, v);
+                } else if (value !== undefined) {
+                  webHeaders.set(key, value);
+                }
+              }
+
+              const webReq = new Request(fullUrl.toString(), {
+                method: req.method,
+                headers: webHeaders,
+                body: hasBody ? bodyBuffer : undefined,
+              });
+
+              const { onRequest } = await import('./functions/api/auth.ts');
+              const webRes = await onRequest({
+                request: webReq,
+                env: {
+                  ...process.env,
+                  IS_DEV: 'true',
+                  EPOMAIL_BASE_URL: getEnvVar('EPOMAIL_BASE_URL'),
+                  EPOMAIL_CLIENT_ID: getEnvVar('EPOMAIL_CLIENT_ID'),
+                  EPOMAIL_CLIENT_SECRET: getEnvVar('EPOMAIL_CLIENT_SECRET'),
+                  EPOMAIL_REDIRECT_URI: getEnvVar('EPOMAIL_REDIRECT_URI'),
+                  ADMIN_TOKEN: getEnvVar('ADMIN_TOKEN'),
+                },
+              });
+
+              res.statusCode = webRes.status;
+              webRes.headers.forEach((val, key) => {
+                res.setHeader(key, val);
+              });
+              const resBody = await webRes.text();
+              res.end(resBody);
+              return;
+            } catch (err) {
+              console.error('[Dev Auth Middleware Error]:', err);
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.statusCode = 500;
+              res.end(JSON.stringify({ ok: false, error: err?.message || 'Dev auth middleware error' }));
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  };
+}
+
 const mindmapLang = {
   name: 'mindmap',
   scopeName: 'source.mindmap',
@@ -515,6 +586,7 @@ export default defineConfig({
     chronralAiDevIntegration(),
     stripeAndGeoDevIntegration(),
     commentsDevIntegration(),
+    authDevIntegration(),
     react(),
     mdx(),
   ],

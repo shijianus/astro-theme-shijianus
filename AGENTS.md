@@ -287,5 +287,22 @@
   1. 为 `functions/api/comments.ts` 引入模块级 `tableEnsured` 单例缓存，避免每个 Worker 实例在处理高频 GET/POST 请求时重复执行 5 次 DDL 检查，大幅降低 D1 请求开销与响应延迟；
   2. 保持纯本地 Node 开发环境下的 `.comments-dev.json` 文件持久化回退，确保本地热重载与离线调试数据不丢失。
 - [x] 执行本地 Dev API 自动化校验套件（`scripts/verify-dev-comments.mjs`）全绿通过，代码全量推送到 `origin` 与 `cf` 远端。
-
-
+### Task 27: 账号中心 (theme-account-drawer) 极简重构、Epomail OAuth 2.0 原生登录与单/双/托管 DB 架构落地
+- [x] 基于 Epomail (`../epocanvas-mail`) 搭建原生第三方统一身份认证与授权机制：
+  1. 支持 OAuth 2.0 标准授权码流程（Redirect Code Grant）与回调页面（`/auth/callback`），通过 `window.postMessage` 跨窗口无感握手；
+  2. 实现“管理员 APP 外接方案授权”折叠交互面板：支持在抽屉内直接输入 Epomail 账号、密码及 TOTP 双因子凭证，就地完成应用授权握手与 Token 交换，并清晰公示授权权限清单（openid、profile、email、comments）；
+  3. 支持免注册本地读者身份创建，与博客原有留言系统无缝打通。
+- [x] 单库 (Single DB) / 双库 (Dual DB) / 托管 (Outsourced Epomail) 三模数据库架构适配：
+  1. 托管模式 (Outsourced Mode，博主当前生产架构)：用户身份与鉴权全权交由 Epomail（`epocanvas-mail` / `USER_DB`）托管，博客专享评论库（`DB`），本地按需同步轻量用户与会话；
+  2. 单库模式 (Single DB，通用开源部署推荐)：`migrations/0005_users.sql` 定义 `users` 与 `user_sessions` 表，单 D1 库同时承载评论与用户表；
+  3. 双库模式 (Dual DB)：评论库 (`DB`) 与用户库 (`USER_DB`) 独立配置、解耦部署。
+- [x] 账号中心 (`class="theme-account-drawer"`) UI/UX 极致降噪与现代化重构：
+  1. 引入顶部 Hero 状态卡片：动态展示头像、实时在线光圈、昵称、邮箱与专属身份胶囊（`⚡ Epomail 认证` / `本地读者` / `访客模式`）；
+  2. 采用极简三大 Tab 导航布局（`👤 登录 / 授权`、`🔔 站内提醒`、`⚙️ 偏好与架构`），彻底消除原有堆叠割裂的杂乱面板；
+  3. 登录成功后动态激活 OAuth App 检查器卡片，清晰展示 App Client ID、权限 Scope 与联通状态；
+  4. 偏好与架构 Tab 深度集成交互式数据流向图，直观展现 Cloudflare D1 (DB) 与 Epomail (USER_DB) 的解耦协同。
+- [x] 编写并执行全流程端到端自动化测试套件（`scripts/verify-account-drawer-epomail.mjs`）：
+  1. 后端 Auth API 全链路自动化校验（`/api/auth/config`、`/api/auth/epomail/authorize`、`/api/auth/user`、`/api/auth/logout` 均返回 200 OK）；
+  2. Playwright 桌面端 (1440x900) 深度交互测试：抽屉呼出、Tab 切换、外接方案授权、凭证提交、Hero 状态更新、App 检查器展示、架构图呈现与就地注销；
+  3. Playwright 移动端 (375x812) 视口断言：抽屉宽度严丝合缝（Width = 375px 无溢出），全场景断言 100% PASS 通过；
+  4. 全静态构建（`npm run build`）92 条路由 0 错误编译通过。

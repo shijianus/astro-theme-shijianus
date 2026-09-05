@@ -70,6 +70,12 @@ export type AppEnv = {
   INSTANCE_AI_API_KEY?: string;
   INSTANCE_AI_BASE_URL?: string;
   INSTANCE_AI_MODEL?: string;
+  USER_DB?: D1DatabaseLike;
+  EPOMAIL_BASE_URL?: string;
+  EPOMAIL_CLIENT_ID?: string;
+  EPOMAIL_CLIENT_SECRET?: string;
+  EPOMAIL_REDIRECT_URI?: string;
+  ADMIN_TOKEN?: string;
 };
 
 export type ProviderTokenState = {

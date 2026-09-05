@@ -1,0 +1,279 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+---
+
+<BlogLayout title="Epomail 授权验证 · EpoCanvas" description="正在处理 Epomail 账号授权与身份验证...">
+  <main class="auth-callback-container">
+    <div class="auth-callback-card" id="callback-card">
+      <div class="auth-callback-brand">
+        <div class="brand-avatar epomail-logo">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+        </div>
+        <div class="brand-conn-line">
+          <div class="pulse-dot"></div>
+        </div>
+        <div class="brand-avatar blog-logo">
+          <img src="/logo.svg" alt="shijianus" width="32" height="32" />
+        </div>
+      </div>
+
+      <div class="auth-status-body" id="auth-status-body">
+        <div class="auth-spinner" id="auth-spinner"></div>
+        <h2 id="auth-title">正在完成 Epomail 安全授权</h2>
+        <p id="auth-desc">正在交换访问凭据并建立身份信任，请稍候...</p>
+      </div>
+
+      <div class="auth-actions" id="auth-actions" style="display: none;">
+        <button type="button" class="auth-btn-primary" id="btn-return">返回博客</button>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .auth-callback-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 200px);
+      padding: 32px 16px;
+    }
+
+    .auth-callback-card {
+      width: 100%;
+      max-width: 460px;
+      padding: 36px 32px;
+      border: var(--style-border-always);
+      border-radius: 12px;
+      background: var(--card-bg);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .auth-callback-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .brand-avatar {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+      color: var(--theme-main);
+      border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+    }
+
+    .brand-conn-line {
+      position: relative;
+      width: 60px;
+      height: 2px;
+      background: color-mix(in srgb, var(--theme-main) 25%, transparent);
+    }
+
+    .pulse-dot {
+      position: absolute;
+      top: -3px;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--theme-main);
+      box-shadow: 0 0 10px var(--theme-main);
+      animation: pulseMove 1.5s infinite linear;
+    }
+
+    @keyframes pulseMove {
+      0% { left: 0; opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { left: 52px; opacity: 0.2; }
+    }
+
+    .auth-status-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .auth-spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+      border-top-color: var(--theme-main);
+      border-radius: 50%;
+      animation: spin 0.8s infinite linear;
+      margin-bottom: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .auth-status-body h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--font-color);
+    }
+
+    .auth-status-body p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--secondtext);
+      line-height: 1.6;
+    }
+
+    .auth-actions {
+      margin-top: 24px;
+    }
+
+    .auth-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 24px;
+      border-radius: 8px;
+      background: var(--theme-main);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .auth-btn-primary:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+  </style>
+
+  <script is:inline>
+    (async function handleOAuthCallback() {
+      const titleEl = document.getElementById('auth-title');
+      const descEl = document.getElementById('auth-desc');
+      const spinnerEl = document.getElementById('auth-spinner');
+      const actionsEl = document.getElementById('auth-actions');
+      const returnBtn = document.getElementById('btn-return');
+
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const state = params.get('state') || '';
+      const error = params.get('error') || params.get('error_description');
+
+      function showError(msg) {
+        if (spinnerEl) spinnerEl.style.display = 'none';
+        if (titleEl) {
+          titleEl.textContent = '授权验证失败';
+          titleEl.style.color = '#ef4444';
+        }
+        if (descEl) descEl.textContent = msg || '未知错误，未能完成 Epomail 凭据交换。';
+        if (actionsEl) actionsEl.style.display = 'block';
+        if (returnBtn) {
+          returnBtn.onclick = () => {
+            window.location.href = '/';
+          };
+        }
+      }
+
+      function getReturnUrl() {
+        try {
+          const stored = sessionStorage.getItem('epomail_auth_return');
+          if (stored) {
+            sessionStorage.removeItem('epomail_auth_return');
+            return stored;
+          }
+        } catch {}
+        return '/';
+      }
+
+      if (error) {
+        showError('用户取消了授权或授权服务拒绝：' + error);
+        return;
+      }
+
+      if (!code) {
+        showError('未在回调参数中发现授权码 (Missing code parameter)');
+        return;
+      }
+
+      try {
+        const redirectUri = window.location.origin + window.location.pathname;
+        const res = await fetch('/api/auth/epomail/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, redirectUri }),
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.ok || !json.user) {
+          throw new Error(json?.error || 'Token exchange failed');
+        }
+
+        const user = json.user;
+        const token = json.token;
+
+        // Construct CommentIdentity format
+        const identity = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar || '',
+          website: user.website || '',
+          role: user.role || 'reader',
+          provider: 'epomail',
+          token: token,
+          epomailUserId: user.externalId,
+        };
+
+        // Save to localStorage
+        const payloadStr = JSON.stringify(identity);
+        localStorage.setItem('shijianus-comment-account', payloadStr);
+        localStorage.setItem('shijianus-comment-identity', payloadStr);
+        localStorage.setItem('shijianus-auth-token', token);
+
+        // Dispatch account change event
+        window.dispatchEvent(new CustomEvent('shijianus:comment-account-change', { detail: identity }));
+
+        // UI Success
+        if (spinnerEl) spinnerEl.style.display = 'none';
+        if (titleEl) {
+          titleEl.textContent = '授权成功！';
+          titleEl.style.color = '#10b981';
+        }
+        if (descEl) descEl.textContent = `欢迎回来，${user.name}！正在跳转...`;
+
+        // If in popup window, communicate with opener
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage(
+              { type: 'EPOMAIL_AUTH_SUCCESS', user: identity, token },
+              '*'
+            );
+            setTimeout(() => {
+              window.close();
+            }, 600);
+            return;
+          } catch (e) {}
+        }
+
+        // Redirect back
+        setTimeout(() => {
+          window.location.href = getReturnUrl();
+        }, 800);
+      } catch (err) {
+        showError(err?.message || '与服务器通信异常，请重试');
+      }
+    })();
+  </script>
+</BlogLayout>

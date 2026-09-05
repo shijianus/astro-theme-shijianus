@@ -152,7 +152,7 @@ a:hover {
 }
 
 /* 必须放在 @layer base 中：无层级的 button 重置会压过 Tailwind utilities 层，
-   导致按钮上的 px-*/py-*/bg-*/text-* 等工具类全部失效 */
+   导致按钮上的 px- / py- / bg- / text- 等工具类全部失效 */
 @layer base {
   button {
     padding: 0;
