@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Rocket,
   Languages,
@@ -32,6 +33,7 @@ import {
   Trash2,
   X,
   Plus,
+  Info,
 } from 'lucide-react';
 import type { CommentProvider } from '../../config/site';
 import {
@@ -221,9 +223,25 @@ export function PostComments({
     }
   };
 
+  const [mounted, setMounted] = useState(false);
+
   // Active modal for interactive UI configuration dialogs
   const [activeModal, setActiveModal] = useState<
-    'poll' | 'table' | 'details' | 'spoiler' | 'math' | 'scroll' | 'callout' | null
+    | 'poll'
+    | 'table'
+    | 'details'
+    | 'spoiler'
+    | 'math'
+    | 'scroll'
+    | 'callout'
+    | 'toc'
+    | 'mermaid'
+    | 'chart'
+    | 'graphviz'
+    | 'datetime'
+    | 'template'
+    | 'footnote'
+    | null
   >(null);
 
   // Modal form states
@@ -248,6 +266,27 @@ export function PostComments({
   const [modalCalloutType, setModalCalloutType] = useState<'note' | 'tip' | 'warning' | 'danger'>('note');
   const [modalCalloutTitle, setModalCalloutTitle] = useState('重点提示');
   const [modalCalloutContent, setModalCalloutContent] = useState('');
+
+  // Extended Modal States
+  const [modalTocIncludeHeaders, setModalTocIncludeHeaders] = useState(true);
+  const [modalTocDepth, setModalTocDepth] = useState(3);
+
+  const [modalMermaidType, setModalMermaidType] = useState<'flowchart' | 'sequence' | 'gantt' | 'class' | 'pie' | 'state'>('flowchart');
+  const [modalMermaidCode, setModalMermaidCode] = useState('');
+
+  const [modalChartType, setModalChartType] = useState<'bar' | 'line' | 'pie'>('bar');
+  const [modalChartCode, setModalChartCode] = useState('');
+
+  const [modalGraphvizType, setModalGraphvizType] = useState<'digraph' | 'graph'>('digraph');
+  const [modalGraphvizCode, setModalGraphvizCode] = useState('');
+
+  const [modalDatetimeFormat, setModalDatetimeFormat] = useState<'datetime' | 'date' | 'time'>('datetime');
+  const [modalDatetimeCustom, setModalDatetimeCustom] = useState('');
+
+  const [modalTemplateType, setModalTemplateType] = useState<'tech' | 'bug' | 'opinion'>('tech');
+
+  const [modalFootnoteId, setModalFootnoteId] = useState('1');
+  const [modalFootnoteContent, setModalFootnoteContent] = useState('');
 
   const openPollModal = () => {
     setModalPollQuestion('');
@@ -296,6 +335,74 @@ export function PostComments({
     setModalCalloutTitle('重点提示');
     setModalCalloutContent('');
     setActiveModal('callout');
+    setActiveDropdown(null);
+  };
+
+  const openTocModal = () => {
+    setModalTocIncludeHeaders(true);
+    setModalTocDepth(3);
+    setActiveModal('toc');
+    setActiveDropdown(null);
+  };
+
+  const openMermaidModal = (type: 'flowchart' | 'sequence' | 'gantt' | 'class' | 'pie' | 'state' = 'flowchart') => {
+    setModalMermaidType(type);
+    const presets: Record<string, string> = {
+      flowchart: `graph TD\n    A[开始 Start] --> B{判定条件};\n    B -->|满足条件| C[执行目标核心流程];\n    B -->|异常未通过| D[回滚并记录告警];\n    C --> E[结束 End];`,
+      sequence: `sequenceDiagram\n    autonumber\n    actor User as 用户\n    participant Gateway as 边缘网关\n    participant Service as 评论服务\n    participant DB as D1 数据库\n    User->>Gateway: 发起请求 POST /api/comments\n    Gateway->>Service: 鉴权与内容校验\n    Service->>DB: 事务安全持久化\n    DB-->>Service: 返回操作结果\n    Service-->>User: 200 OK 响应最新评论`,
+      gantt: `gantt\n    title 项目功能迭代推进计划\n    dateFormat YYYY-MM-DD\n    section UI规范\n    原型与规范打磨: 2026-09-01, 3d\n    section 交互与功能\n    居中弹窗与规则说明: 2026-09-04, 2d`,
+      class: `classDiagram\n    class CommentItem {\n        +String id\n        +String author\n        +String message\n        +Date createdAt\n        +renderMarkdown()\n    }`,
+      pie: `pie title 架构模块耗时占比\n    "Markdown 解析" : 35\n    "网络传输" : 25\n    "数据存储" : 20\n    "前端动效" : 20`,
+      state: `stateDiagram-v2\n    [*] --> 草稿态 Draft\n    草稿态 Draft --> 校验中 Validating: 提交发表\n    校验中 Validating --> 已发布 Published: 校验通过\n    校验中 Validating --> 错误态 Error: 校验失败\n    已发布 Published --> [*]`,
+    };
+    setModalMermaidCode(presets[type] || presets.flowchart);
+    setActiveModal('mermaid');
+    setActiveDropdown(null);
+  };
+
+  const openChartModal = (type: 'bar' | 'line' | 'pie' = 'bar') => {
+    setModalChartType(type);
+    const presets: Record<string, string> = {
+      bar: `{\n  "type": "bar",\n  "data": {\n    "labels": ["Q1", "Q2", "Q3", "Q4"],\n    "datasets": [{ "label": "活跃指标", "data": [120, 290, 480, 650] }]\n  }\n}`,
+      line: `{\n  "type": "line",\n  "data": {\n    "labels": ["01月", "02月", "03月", "04月", "05月", "06月"],\n    "datasets": [{ "label": "访问量趋势", "data": [1500, 2300, 4200, 3800, 6200, 8900] }]\n  }\n}`,
+      pie: `{\n  "type": "pie",\n  "data": {\n    "labels": ["前端交互", "边缘网关", "D1 存储", "第三方服务"],\n    "datasets": [{ "data": [40, 25, 20, 15] }]\n  }\n}`,
+    };
+    setModalChartCode(presets[type] || presets.bar);
+    setActiveModal('chart');
+    setActiveDropdown(null);
+  };
+
+  const openGraphvizModal = (type: 'digraph' | 'graph' = 'digraph') => {
+    setModalGraphvizType(type);
+    const presets: Record<string, string> = {
+      digraph: `digraph Architecture {\n  rankdir=LR;\n  node [shape=box, style=rounded];\n  Browser -> CloudflarePages [label="HTTPS"];\n  CloudflarePages -> WorkersAPI [label="Edge Functions"];\n  WorkersAPI -> D1Database [label="SQL Binding"];\n}`,
+      graph: `graph Cluster {\n  layout=neato;\n  NodeA -- NodeB;\n  NodeB -- NodeC;\n  NodeC -- NodeA;\n  NodeC -- NodeD;\n}`,
+    };
+    setModalGraphvizCode(presets[type] || presets.digraph);
+    setActiveModal('graphviz');
+    setActiveDropdown(null);
+  };
+
+  const openDatetimeModal = () => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const full = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    setModalDatetimeFormat('datetime');
+    setModalDatetimeCustom(full);
+    setActiveModal('datetime');
+    setActiveDropdown(null);
+  };
+
+  const openTemplateModal = (type: 'tech' | 'bug' | 'opinion' = 'tech') => {
+    setModalTemplateType(type);
+    setActiveModal('template');
+    setActiveDropdown(null);
+  };
+
+  const openFootnoteModal = () => {
+    setModalFootnoteId('1');
+    setModalFootnoteContent('');
+    setActiveModal('footnote');
     setActiveDropdown(null);
   };
 
@@ -348,9 +455,62 @@ export function PostComments({
       const markdown = `\n::: ${modalCalloutType} ${title}\n${content}\n:::\n`;
       insertMarkdown(markdown);
       showToast('已成功插入高光包装卡片');
+    } else if (activeModal === 'toc') {
+      let markdown = '\n[TOC]\n\n';
+      if (modalTocIncludeHeaders) {
+        markdown += `### 一、 背景与架构目标\n在此输入第一小节的核心论点...\n\n### 二、 核心技术实现细节\n在此输入第二小节的详细分析...\n\n### 三、 总结建议与展望\n在此输入总结结论...\n\n`;
+      }
+      insertMarkdown(markdown);
+      showToast('已成功插入目录导航标签 [TOC]');
+    } else if (activeModal === 'mermaid') {
+      const code = modalMermaidCode.trim() || 'graph TD;\n    A[开始] --> B[结束];';
+      const markdown = `\n\`\`\`mermaid\n${code}\n\`\`\`\n`;
+      insertMarkdown(markdown);
+      showToast('已成功插入 Mermaid 拓扑图表');
+    } else if (activeModal === 'chart') {
+      const code = modalChartCode.trim() || '{\n  "type": "bar",\n  "data": {}\n}';
+      const markdown = `\n\`\`\`chart\n${code}\n\`\`\`\n`;
+      insertMarkdown(markdown);
+      showToast('已成功插入 Build Chart 图表');
+    } else if (activeModal === 'graphviz') {
+      const code = modalGraphvizCode.trim() || 'digraph G {\n  A -> B;\n}';
+      const markdown = `\n\`\`\`graphviz\n${code}\n\`\`\`\n`;
+      insertMarkdown(markdown);
+      showToast('已成功插入 Graphviz 拓扑图');
+    } else if (activeModal === 'datetime') {
+      const val = modalDatetimeCustom.trim() || new Date().toISOString();
+      insertMarkdown(`[date=${val}] `);
+      showToast('已成功插入日期时间标记');
+    } else if (activeModal === 'template') {
+      const templates: Record<string, string> = {
+        tech: `### 💡 核心观点与设计方案\n在此简明扼要概括您的核心技术方案或核心论点...\n\n### 🔍 依据与量化分析\n1. **优势分析**：分析方案带来的性能提升或体验改善。\n2. **潜在风险**：针对边界异常或高并发下的应对策略。\n\n### 🎯 改进与落地建议\n- [ ] 建议步骤一：...\n- [ ] 建议步骤二：...\n`,
+        bug: `### ⚠️ 异常现象描述\n在此详细描述出现的非预期现象或错误提示...\n\n### 🖥️ 运行环境与复现步骤\n- **环境信息**：操作系统 / 浏览器版本\n- **复现步骤**：\n  1. 访问对应页面...\n  2. 点击某个交互按钮...\n  3. 观察控制台/页面显示...\n\n### 🪵 报错日志与初步排查\n\`\`\`bash\n在此粘贴相关报错堆栈或网络请求抓包\n\`\`\`\n\n### 💡 期望的正确行为\n说明理论上应该展现的正确效果或预期返回结果。\n`,
+        opinion: `### 🤝 认同之处\n非常赞同博文中关于这一视角的论述，特别是在...方面很有启发。\n\n### 🤔 补充视角与延伸思考\n从另一个角度来看，或许可以补充考虑以下几点：\n1. ...\n2. ...\n\n### 💬 交流请教\n对于...的实现细节，博主是否有进一步的实践经验分享？\n`,
+      };
+      insertMarkdown(`\n${templates[modalTemplateType] || templates.tech}\n`);
+      showToast('已成功插入论述范本');
+    } else if (activeModal === 'footnote') {
+      const fid = modalFootnoteId.trim() || '1';
+      const fcontent = modalFootnoteContent.trim() || '在此输入脚注参考说明与文献出处';
+      insertMarkdown(`[^${fid}]`, `\n\n[^${fid}]: ${fcontent}\n`);
+      showToast('已成功插入参考脚注');
     }
     setActiveModal(null);
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (activeModal && typeof document !== 'undefined') {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [activeModal]);
 
   useEffect(() => {
     setAccount(readCommentIdentity());
@@ -750,7 +910,7 @@ export function PostComments({
             title="前往账号中心登录或设置个性化资料"
             style={{ cursor: 'pointer' }}
           >
-            {account && account.role !== 'visitor' ? `👤 ${account.name}` : '⚙️ 访客身份 (点击登录)'}
+            {account && account.role !== 'visitor' ? `👤 ${account.name}` : '访客身份 (点击登录)'}
           </a>
           <a
             href="/about"
@@ -784,22 +944,6 @@ export function PostComments({
                 >
                   👁️ 预览
                 </button>
-              </div>
-
-              <div className="tk-mode-bar-right">
-                {account && account.role !== 'visitor' ? (
-                  <span className="tk-user-logged-pill" onClick={openAccountDrawer} title="已登录用户">
-                    🌟 {account.name}
-                  </span>
-                ) : (
-                  <span
-                    className="tk-visitor-status-pill"
-                    onClick={openAccountDrawer}
-                    title="访客可发表评论与Boost，点赞需登录"
-                  >
-                    访客模式 (限发评论/Boost)
-                  </span>
-                )}
               </div>
             </div>
 
@@ -844,15 +988,15 @@ export function PostComments({
                       <button
                         type="button"
                         className="tk-tb-btn tk-tb-btn-lang"
-                        title="设置回复语言"
+                        title="贴文语言：选择并插入指定语种区块"
+                        aria-label="贴文语言选择"
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown((prev) => (prev === 'lang' ? null : 'lang'));
                         }}
                       >
                         <Languages size={15} />
-                        <span>语言</span>
-                        <ChevronDown size={11} />
+                        <ChevronDown size={10} className="tk-tb-chevron" />
                       </button>
                       {activeDropdown === 'lang' && (
                         <div className="tk-dropdown-panel tk-lang-dropdown" onClick={(e) => e.stopPropagation()}>
@@ -867,8 +1011,15 @@ export function PostComments({
                                 showToast(`已插入 ${lang.label} 语言区块`);
                               }}
                             >
-                              <span>{lang.label}</span>
-                              <small>({lang.code})</small>
+                              <div className="tk-dropdown-item-content">
+                                <div className="tk-dropdown-icon-col">
+                                  <Languages size={14} className="tk-dropdown-svg" />
+                                </div>
+                                <div className="tk-dropdown-text-col">
+                                  <span className="tk-dropdown-label">{lang.label}</span>
+                                  <span className="tk-dropdown-desc">设置该区块为 {lang.code} 语种</span>
+                                </div>
+                              </div>
                             </button>
                           ))}
                         </div>
@@ -985,20 +1136,20 @@ export function PostComments({
 
                     <span className="tk-tb-divider" />
 
-                    {/* ⑩ 选项 (下拉包含 15 个高级拓展功能，含 UI 弹窗与 SVG 图标) */}
+                    {/* ⑩ 选项 (下拉包含 15 个高级拓展功能，含居中 UI 弹窗与 SVG 图标及注释文本) */}
                     <div className="tk-toolbar-item">
                       <button
                         type="button"
                         className="tk-tb-btn tk-tb-options"
-                        title="更多高级格式与插入选项"
+                        title="高级选项：插入表格、目录、图表与各类交互组件"
+                        aria-label="更多高级格式与插入选项"
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown((prev) => (prev === 'options' ? null : 'options'));
                         }}
                       >
                         <SlidersHorizontal size={15} />
-                        <span>选项</span>
-                        <ChevronDown size={11} />
+                        <ChevronDown size={10} className="tk-tb-chevron" />
                       </button>
                       {activeDropdown === 'options' && (
                         <div className="tk-dropdown-panel tk-options-dropdown" onClick={(e) => e.stopPropagation()}>
@@ -1020,10 +1171,15 @@ export function PostComments({
                               }
                             }}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Quote size={14} className="tk-dropdown-svg" />
-                              <span>引用贴文 (博文内容)</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Quote size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">引用贴文 (博文内容)</span>
+                                <span className="tk-dropdown-desc">引用当前博文选中文段或核心论述</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 2. 插入表格 (UI 弹窗) */}
@@ -1032,25 +1188,32 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openTableModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Table size={14} className="tk-dropdown-svg" />
-                              <span>插入表格</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Table size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入表格</span>
+                                <span className="tk-dropdown-desc">可视化行列配置，生成规范数据表格</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 3. 插入目录 */}
+                          {/* 3. 插入目录 (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown('\n[TOC]\n\n');
-                              showToast('已插入目录导航标签 [TOC]');
-                            }}
+                            onClick={() => openTocModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <ListOrdered size={14} className="tk-dropdown-svg" />
-                              <span>插入目录</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <ListOrdered size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入目录</span>
+                                <span className="tk-dropdown-desc">自动提取各级标题生成 [TOC] 树</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 4. 插入滚动内容 (UI 弹窗) */}
@@ -1059,44 +1222,49 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openScrollModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <ScrollText size={14} className="tk-dropdown-svg" />
-                              <span>插入滚动内容</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <ScrollText size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入滚动内容</span>
+                                <span className="tk-dropdown-desc">定高容器展示超长日志与排查数据</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 5. 插入 Mermaid chart */}
+                          {/* 5. 插入 Mermaid chart (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown(
-                                '```mermaid\ngraph TD;\n    A[开始] --> B{判断选择};\n    B -->|通过| C[执行流程];\n    B -->|拒绝| D[终止退出];\n```\n'
-                              );
-                              showToast('已插入 Mermaid 流程图代码块');
-                            }}
+                            onClick={() => openMermaidModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <GitFork size={14} className="tk-dropdown-svg" />
-                              <span>插入 Mermaid chart</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <GitFork size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入 Mermaid chart</span>
+                                <span className="tk-dropdown-desc">流程图、时序图、甘特图等拓扑绘制</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 6. 插入 Build Chart */}
+                          {/* 6. 插入 Build Chart (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown(
-                                '```chart\n{\n  "type": "bar",\n  "data": {\n    "labels": ["Q1", "Q2", "Q3", "Q4"],\n    "datasets": [{"label": "活跃度", "data": [15, 29, 45, 60]}]\n  }\n}\n```\n'
-                              );
-                              showToast('已插入图表配置块');
-                            }}
+                            onClick={() => openChartModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <BarChart3 size={14} className="tk-dropdown-svg" />
-                              <span>插入 Build Chart</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <BarChart3 size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入 Build Chart</span>
+                                <span className="tk-dropdown-desc">柱状图、折线图与饼图配置</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 7. 隐藏详细内容 (UI 弹窗) */}
@@ -1105,43 +1273,49 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openDetailsModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <ChevronRight size={14} className="tk-dropdown-svg" />
-                              <span>隐藏详细内容</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <ChevronRight size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">隐藏详细内容</span>
+                                <span className="tk-dropdown-desc">折叠收拢冗长细节与补充材料</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 8. 插入 Graphviz graph */}
+                          {/* 8. 插入 Graphviz graph (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown(
-                                '```graphviz\ndigraph G {\n  rankdir=LR;\n  节点A -> 节点B;\n  节点B -> 节点C;\n}\n```\n'
-                              );
-                              showToast('已插入 Graphviz 拓扑图');
-                            }}
+                            onClick={() => openGraphvizModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Share2 size={14} className="tk-dropdown-svg" />
-                              <span>插入 Graphviz graph</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Share2 size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入 Graphviz graph</span>
+                                <span className="tk-dropdown-desc">DOT 语言生成系统架构与状态流转</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 9. 插入日期/时间 */}
+                          {/* 9. 插入日期/时间 (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              const d = new Date().toLocaleString('zh-CN', { hour12: false });
-                              insertMarkdown(`[date=${d}] `);
-                              showToast('已插入当前时间');
-                            }}
+                            onClick={() => openDatetimeModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Clock size={14} className="tk-dropdown-svg" />
-                              <span>插入日期/时间</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Clock size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入日期/时间</span>
+                                <span className="tk-dropdown-desc">当前时间戳或自定义日期标记</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 10. 插入数学式 (UI 弹窗) */}
@@ -1150,42 +1324,49 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openMathModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Sigma size={14} className="tk-dropdown-svg" />
-                              <span>插入数学式</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Sigma size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入数学式</span>
+                                <span className="tk-dropdown-desc">KaTeX / LaTeX 标准数学公式渲染</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 11. 插入范本 */}
+                          {/* 11. 插入范本 (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown(
-                                '### 💡 核心观点\n\n### 🔍 依据与分析\n1. \n2. \n\n### 🎯 改进建议\n'
-                              );
-                              showToast('已插入论述范本');
-                            }}
+                            onClick={() => openTemplateModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <LayoutTemplate size={14} className="tk-dropdown-svg" />
-                              <span>插入范本</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <LayoutTemplate size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入范本</span>
+                                <span className="tk-dropdown-desc">技术研讨、Bug反馈与观点探讨预设</span>
+                              </div>
+                            </div>
                           </button>
 
-                          {/* 12. 新增脚注 */}
+                          {/* 12. 新增脚注 (UI 弹窗) */}
                           <button
                             type="button"
                             className="tk-dropdown-item"
-                            onClick={() => {
-                              insertMarkdown('论述观点[^1]\n\n[^1]: ', '', '脚注详细参考资料与说明');
-                              showToast('已插入参考脚注');
-                            }}
+                            onClick={() => openFootnoteModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Bookmark size={14} className="tk-dropdown-svg" />
-                              <span>新增脚注</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Bookmark size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">新增脚注</span>
+                                <span className="tk-dropdown-desc">正文引用标记与文末参考释义联动</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 13. 模糊化剧透内容 (UI 弹窗) */}
@@ -1194,10 +1375,15 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openSpoilerModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <EyeOff size={14} className="tk-dropdown-svg" />
-                              <span>模糊化剧透内容</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <EyeOff size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">模糊化剧透内容</span>
+                                <span className="tk-dropdown-desc">打码隐藏关键剧透，悬浮即显</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 14. 建立投票 (UI 弹窗) */}
@@ -1206,10 +1392,15 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openPollModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Vote size={14} className="tk-dropdown-svg" />
-                              <span>建立投票</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Vote size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">建立投票</span>
+                                <span className="tk-dropdown-desc">互动投票组件，支持单选与多选</span>
+                              </div>
+                            </div>
                           </button>
 
                           {/* 15. 套用包装格式 (UI 弹窗) */}
@@ -1218,10 +1409,15 @@ export function PostComments({
                             className="tk-dropdown-item"
                             onClick={() => openCalloutModal()}
                           >
-                            <span className="tk-dropdown-item-content">
-                              <Layers size={14} className="tk-dropdown-svg" />
-                              <span>套用包装格式</span>
-                            </span>
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <Layers size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">套用包装格式</span>
+                                <span className="tk-dropdown-desc">Note / Tip / Warning / Danger 高光卡片</span>
+                              </div>
+                            </div>
                           </button>
                         </div>
                       )}
@@ -1942,370 +2138,788 @@ export function PostComments({
         </div>
       </div>
 
-      {/* Interactive UI Configuration Modal Dialog for Complex Options */}
-      {activeModal && (
-        <div
-          className="tk-tool-modal-overlay"
-          onClick={() => setActiveModal(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="tk-tool-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="tk-tool-modal-header">
-              <h4 className="tk-tool-modal-title">
+      {/* Interactive UI Configuration Modal Dialog for Complex Options (Rendered via Portal strictly centered) */}
+      {mounted &&
+        activeModal &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="tk-tool-modal-overlay"
+            onClick={() => setActiveModal(null)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="tk-tool-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="tk-tool-modal-header">
+                <h4 className="tk-tool-modal-title">
+                  {activeModal === 'poll' && (
+                    <>
+                      <Vote size={16} /> 发起互动投票
+                    </>
+                  )}
+                  {activeModal === 'table' && (
+                    <>
+                      <Table size={16} /> 插入数据表格
+                    </>
+                  )}
+                  {activeModal === 'toc' && (
+                    <>
+                      <ListOrdered size={16} /> 插入目录导航 (TOC)
+                    </>
+                  )}
+                  {activeModal === 'details' && (
+                    <>
+                      <ChevronRight size={16} /> 插入折叠隐藏区块
+                    </>
+                  )}
+                  {activeModal === 'spoiler' && (
+                    <>
+                      <EyeOff size={16} /> 模糊化剧透内容
+                    </>
+                  )}
+                  {activeModal === 'math' && (
+                    <>
+                      <Sigma size={16} /> 插入 LaTeX 数学公式
+                    </>
+                  )}
+                  {activeModal === 'scroll' && (
+                    <>
+                      <ScrollText size={16} /> 插入滚动长内容
+                    </>
+                  )}
+                  {activeModal === 'callout' && (
+                    <>
+                      <Layers size={16} /> 套用包装格式卡片
+                    </>
+                  )}
+                  {activeModal === 'mermaid' && (
+                    <>
+                      <GitFork size={16} /> 插入 Mermaid 图表
+                    </>
+                  )}
+                  {activeModal === 'chart' && (
+                    <>
+                      <BarChart3 size={16} /> 插入 Build Chart 数据图表
+                    </>
+                  )}
+                  {activeModal === 'graphviz' && (
+                    <>
+                      <Share2 size={16} /> 插入 Graphviz 拓扑图
+                    </>
+                  )}
+                  {activeModal === 'datetime' && (
+                    <>
+                      <Clock size={16} /> 插入日期与时间
+                    </>
+                  )}
+                  {activeModal === 'template' && (
+                    <>
+                      <LayoutTemplate size={16} /> 插入结构化论述范本
+                    </>
+                  )}
+                  {activeModal === 'footnote' && (
+                    <>
+                      <Bookmark size={16} /> 新增参考脚注
+                    </>
+                  )}
+                </h4>
+                <button
+                  type="button"
+                  className="tk-tool-modal-close"
+                  onClick={() => setActiveModal(null)}
+                  title="关闭 (Esc)"
+                  aria-label="关闭"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="tk-tool-modal-body">
+                {/* 1. Poll Form */}
                 {activeModal === 'poll' && (
                   <>
-                    <Vote size={16} /> 建立互动投票
-                  </>
-                )}
-                {activeModal === 'table' && (
-                  <>
-                    <Table size={16} /> 插入数据表格
-                  </>
-                )}
-                {activeModal === 'details' && (
-                  <>
-                    <ChevronRight size={16} /> 插入折叠隐藏区块
-                  </>
-                )}
-                {activeModal === 'spoiler' && (
-                  <>
-                    <EyeOff size={16} /> 模糊化剧透内容
-                  </>
-                )}
-                {activeModal === 'math' && (
-                  <>
-                    <Sigma size={16} /> 插入 LaTeX 数学公式
-                  </>
-                )}
-                {activeModal === 'scroll' && (
-                  <>
-                    <ScrollText size={16} /> 插入滚动长内容
-                  </>
-                )}
-                {activeModal === 'callout' && (
-                  <>
-                    <Layers size={16} /> 套用包装格式卡片
-                  </>
-                )}
-              </h4>
-              <button
-                type="button"
-                className="tk-tool-modal-close"
-                onClick={() => setActiveModal(null)}
-                title="关闭 (Esc)"
-                aria-label="关闭"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="tk-tool-modal-body">
-              {/* 1. Poll Form */}
-              {activeModal === 'poll' && (
-                <>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">投票主题 / 问题：</label>
-                    <input
-                      type="text"
-                      className="tk-modal-input"
-                      value={modalPollQuestion}
-                      onChange={(e) => setModalPollQuestion(e.target.value)}
-                      placeholder="输入投票主题，例如：你如何看待这一实现方案？"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">投票选项：</label>
-                    <div className="tk-modal-options-list">
-                      {modalPollOptions.map((opt, idx) => (
-                        <div key={idx} className="tk-modal-opt-row">
-                          <span className="tk-modal-opt-idx">#{idx + 1}</span>
-                          <input
-                            type="text"
-                            className="tk-modal-input"
-                            value={opt}
-                            onChange={(e) => {
-                              const next = [...modalPollOptions];
-                              next[idx] = e.target.value;
-                              setModalPollOptions(next);
-                            }}
-                            placeholder={`选项 ${idx + 1}`}
-                          />
-                          {modalPollOptions.length > 2 && (
-                            <button
-                              type="button"
-                              className="tk-modal-btn-del"
-                              onClick={() => {
-                                setModalPollOptions(modalPollOptions.filter((_, i) => i !== idx));
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">互动投票机制与发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用标准 <code>[poll type=...]</code> 语法。支持单选或多选机制，发布后系统将渲染交互式投票选项。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">投票主题 / 问题：</label>
+                      <input
+                        type="text"
+                        className="tk-modal-input"
+                        value={modalPollQuestion}
+                        onChange={(e) => setModalPollQuestion(e.target.value)}
+                        placeholder="输入投票主题，例如：你如何看待这一技术方案？"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">投票选项：</label>
+                      <div className="tk-modal-options-list">
+                        {modalPollOptions.map((opt, idx) => (
+                          <div key={idx} className="tk-modal-opt-row">
+                            <span className="tk-modal-opt-idx">#{idx + 1}</span>
+                            <input
+                              type="text"
+                              className="tk-modal-input"
+                              value={opt}
+                              onChange={(e) => {
+                                const next = [...modalPollOptions];
+                                next[idx] = e.target.value;
+                                setModalPollOptions(next);
                               }}
-                              title="删除此项"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {modalPollOptions.length < 6 && (
-                      <button
-                        type="button"
-                        className="tk-modal-btn-add"
-                        onClick={() =>
-                          setModalPollOptions([...modalPollOptions, `选项 ${modalPollOptions.length + 1}`])
-                        }
-                      >
-                        <Plus size={13} /> 添加选项
-                      </button>
-                    )}
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">投票机制：</label>
-                    <div className="tk-modal-radio-group">
-                      <label className="tk-modal-radio">
-                        <input
-                          type="radio"
-                          name="pollType"
-                          value="regular"
-                          checked={modalPollType === 'regular'}
-                          onChange={() => setModalPollType('regular')}
-                        />
-                        <span>单选投票</span>
-                      </label>
-                      <label className="tk-modal-radio">
-                        <input
-                          type="radio"
-                          name="pollType"
-                          value="multiple"
-                          checked={modalPollType === 'multiple'}
-                          onChange={() => setModalPollType('multiple')}
-                        />
-                        <span>多选投票</span>
-                      </label>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* 2. Table Form */}
-              {activeModal === 'table' && (
-                <>
-                  <div className="tk-modal-row-grid">
-                    <div className="tk-modal-field">
-                      <label className="tk-modal-label">数据行数 (Rows)：</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        className="tk-modal-input"
-                        value={modalTableRows}
-                        onChange={(e) => setModalTableRows(Number(e.target.value))}
-                      />
+                              placeholder={`选项 ${idx + 1}`}
+                            />
+                            {modalPollOptions.length > 2 && (
+                              <button
+                                type="button"
+                                className="tk-modal-btn-del"
+                                onClick={() => {
+                                  setModalPollOptions(modalPollOptions.filter((_, i) => i !== idx));
+                                }}
+                                title="删除此项"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {modalPollOptions.length < 6 && (
+                        <button
+                          type="button"
+                          className="tk-modal-btn-add"
+                          onClick={() =>
+                            setModalPollOptions([...modalPollOptions, `选项 ${modalPollOptions.length + 1}`])
+                          }
+                        >
+                          <Plus size={13} /> 添加选项
+                        </button>
+                      )}
                     </div>
                     <div className="tk-modal-field">
-                      <label className="tk-modal-label">数据列数 (Cols)：</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={6}
-                        className="tk-modal-input"
-                        value={modalTableCols}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setModalTableCols(val);
-                          setModalTableHeaders((prev) =>
-                            Array.from({ length: val }, (_, i) => prev[i] || `标题 ${i + 1}`)
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">自定义各列标题：</label>
-                    <div className="tk-modal-table-headers-grid">
-                      {Array.from({ length: modalTableCols }, (_, i) => (
-                        <div key={i} className="tk-modal-header-item">
-                          <input
-                            type="text"
-                            className="tk-modal-input"
-                            value={modalTableHeaders[i] || `标题 ${i + 1}`}
-                            onChange={(e) => {
-                              const next = [...modalTableHeaders];
-                              next[i] = e.target.value;
-                              setModalTableHeaders(next);
-                            }}
-                            placeholder={`第 ${i + 1} 列标题`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* 3. Details Form */}
-              {activeModal === 'details' && (
-                <>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">折叠摘要 (标题)：</label>
-                    <input
-                      type="text"
-                      className="tk-modal-input"
-                      value={modalDetailsSummary}
-                      onChange={(e) => setModalDetailsSummary(e.target.value)}
-                      placeholder="例如：点击展开详细报错日志 / 排查细节"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">折叠展开内容：</label>
-                    <textarea
-                      className="tk-modal-textarea"
-                      rows={4}
-                      value={modalDetailsContent}
-                      onChange={(e) => setModalDetailsContent(e.target.value)}
-                      placeholder="在此处输入默认被隐藏的详细文本、数据或排查日志..."
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* 4. Spoiler Form */}
-              {activeModal === 'spoiler' && (
-                <div className="tk-modal-field">
-                  <label className="tk-modal-label">剧透打码文本：</label>
-                  <textarea
-                    className="tk-modal-textarea"
-                    rows={3}
-                    value={modalSpoilerText}
-                    onChange={(e) => setModalSpoilerText(e.target.value)}
-                    placeholder="输入需要打码模糊的内容，鼠标悬浮时才会清晰可见..."
-                    autoFocus
-                  />
-                </div>
-              )}
-
-              {/* 5. Math Form */}
-              {activeModal === 'math' && (
-                <>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">LaTeX 数学表达式：</label>
-                    <textarea
-                      className="tk-modal-textarea"
-                      rows={3}
-                      value={modalMathFormula}
-                      onChange={(e) => setModalMathFormula(e.target.value)}
-                      placeholder="例如：\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">快捷常用模板：</label>
-                    <div className="tk-modal-quick-math">
-                      <button type="button" onClick={() => setModalMathFormula('\\frac{a}{b}')}>分式 a/b</button>
-                      <button type="button" onClick={() => setModalMathFormula('\\sqrt{x}')}>平方根 √x</button>
-                      <button type="button" onClick={() => setModalMathFormula('\\sum_{i=1}^{n} x_i')}>求和 ∑</button>
-                      <button type="button" onClick={() => setModalMathFormula('\\int_{a}^{b} f(x)dx')}>定积分 ∫</button>
-                      <button type="button" onClick={() => setModalMathFormula('\\lim_{x \\to \\infty} f(x)')}>极限 lim</button>
-                      <button type="button" onClick={() => setModalMathFormula('\\begin{matrix} a & b \\\\ c & d \\end{matrix}')}>矩阵</button>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* 6. Scroll Form */}
-              {activeModal === 'scroll' && (
-                <>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">最大容器高度 (像素)：</label>
-                    <input
-                      type="number"
-                      min={80}
-                      max={600}
-                      step={20}
-                      className="tk-modal-input"
-                      value={modalScrollHeight}
-                      onChange={(e) => setModalScrollHeight(Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">长文本 / 日志内容：</label>
-                    <textarea
-                      className="tk-modal-textarea"
-                      rows={5}
-                      value={modalScrollContent}
-                      onChange={(e) => setModalScrollContent(e.target.value)}
-                      placeholder="输入将在定高容器中带滚动条展示的超长文本..."
-                      autoFocus
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* 7. Callout Form */}
-              {activeModal === 'callout' && (
-                <>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">包装卡片风格：</label>
-                    <div className="tk-modal-radio-group">
-                      {(['note', 'tip', 'warning', 'danger'] as const).map((type) => (
-                        <label key={type} className="tk-modal-radio">
+                      <label className="tk-modal-label">投票机制：</label>
+                      <div className="tk-modal-radio-group">
+                        <label className="tk-modal-radio">
                           <input
                             type="radio"
-                            name="calloutType"
-                            value={type}
-                            checked={modalCalloutType === type}
-                            onChange={() => setModalCalloutType(type)}
+                            name="pollType"
+                            value="regular"
+                            checked={modalPollType === 'regular'}
+                            onChange={() => setModalPollType('regular')}
                           />
-                          <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                          <span>单选投票 (Regular)</span>
                         </label>
-                      ))}
+                        <label className="tk-modal-radio">
+                          <input
+                            type="radio"
+                            name="pollType"
+                            value="multiple"
+                            checked={modalPollType === 'multiple'}
+                            onChange={() => setModalPollType('multiple')}
+                          />
+                          <span>多选投票 (Multiple)</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">卡片标题：</label>
-                    <input
-                      type="text"
-                      className="tk-modal-input"
-                      value={modalCalloutTitle}
-                      onChange={(e) => setModalCalloutTitle(e.target.value)}
-                      placeholder="输入卡片高光标题..."
-                    />
-                  </div>
-                  <div className="tk-modal-field">
-                    <label className="tk-modal-label">卡片主体内容：</label>
-                    <textarea
-                      className="tk-modal-textarea"
-                      rows={3}
-                      value={modalCalloutContent}
-                      onChange={(e) => setModalCalloutContent(e.target.value)}
-                      placeholder="输入卡片主体说明内容..."
-                      autoFocus
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
 
-            <div className="tk-tool-modal-footer">
-              <button
-                type="button"
-                className="tk-modal-btn tk-modal-btn-cancel"
-                onClick={() => setActiveModal(null)}
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                className="tk-modal-btn tk-modal-btn-confirm"
-                onClick={handleConfirmModal}
-              >
-                确认插入
-              </button>
+                {/* 2. Table Form */}
+                {activeModal === 'table' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">GFM 管道表格发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用标准 GitHub 表格语法（<code>| 表头 |</code> 与 <code>| --- |</code>）。在下方设定行列数及标题后，系统将自动生成规范网格，插入后可直接在编辑器中修改各单元格数据。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-row-grid">
+                      <div className="tk-modal-field">
+                        <label className="tk-modal-label">数据行数 (Rows)：</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          className="tk-modal-input"
+                          value={modalTableRows}
+                          onChange={(e) => setModalTableRows(Number(e.target.value))}
+                        />
+                      </div>
+                      <div className="tk-modal-field">
+                        <label className="tk-modal-label">数据列数 (Cols)：</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={6}
+                          className="tk-modal-input"
+                          value={modalTableCols}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setModalTableCols(val);
+                            setModalTableHeaders((prev) =>
+                              Array.from({ length: val }, (_, i) => prev[i] || `标题 ${i + 1}`)
+                            );
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">自定义各列标题：</label>
+                      <div className="tk-modal-table-headers-grid">
+                        {Array.from({ length: modalTableCols }, (_, i) => (
+                          <div key={i} className="tk-modal-header-item">
+                            <input
+                              type="text"
+                              className="tk-modal-input"
+                              value={modalTableHeaders[i] || `标题 ${i + 1}`}
+                              onChange={(e) => {
+                                const next = [...modalTableHeaders];
+                                next[i] = e.target.value;
+                                setModalTableHeaders(next);
+                              }}
+                              placeholder={`第 ${i + 1} 列标题`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">生成的表格结构实时预览：</label>
+                      <pre className="tk-modal-preview-box">
+{`| ${Array.from({ length: modalTableCols }, (_, i) => modalTableHeaders[i] || `标题 ${i + 1}`).join(' | ')} |
+| ${Array(modalTableCols).fill('---').join(' | ')} |
+${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: modalTableCols }, (_, c) => `数据 ${r + 1}-${c + 1}`).join(' | ')} |`).join('\n')}`}
+                      </pre>
+                    </div>
+                  </>
+                )}
+
+                {/* 3. TOC Form */}
+                {activeModal === 'toc' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">目录导航自动提取机制与发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用标准 <code>[TOC]</code> 语法标签。评论系统在渲染时，将自动抓取该条评论正文中的所有 Markdown 标题（<code># 一级</code>、<code>## 二级</code>、<code>### 三级</code>）并构建为具备平滑锚点跳转的树形导航。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">结构骨架选项：</label>
+                      <label className="tk-modal-radio" style={{ marginTop: '4px' }}>
+                        <input
+                          type="checkbox"
+                          checked={modalTocIncludeHeaders}
+                          onChange={(e) => setModalTocIncludeHeaders(e.target.checked)}
+                        />
+                        <span>附带示例小节分段标题（推荐勾选，一键生成规范章节结构）</span>
+                      </label>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">将插入的代码预览：</label>
+                      <pre className="tk-modal-preview-box">
+{modalTocIncludeHeaders
+  ? `[TOC]\n\n### 一、 背景与架构目标\n在此输入第一小节的核心论点...\n\n### 二、 核心技术实现细节\n在此输入第二小节的详细分析...\n\n### 三、 总结建议与展望\n在此输入总结结论...`
+  : `[TOC]`}
+                      </pre>
+                    </div>
+                  </>
+                )}
+
+                {/* 4. Mermaid Form */}
+                {activeModal === 'mermaid' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">Mermaid 图表矢量渲染与发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          使用 <code>```mermaid ... ```</code> 代码块包裹。系统在前端自动将其编译为高质量矢量 SVG 拓扑图。可点击下方按钮切换预设类型并按需修改代码。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">选择图表类型模版：</label>
+                      <div className="tk-modal-type-chips">
+                        {(['flowchart', 'sequence', 'gantt', 'class', 'pie', 'state'] as const).map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            className={`tk-modal-chip-btn ${modalMermaidType === t ? 'is-active' : ''}`}
+                            onClick={() => openMermaidModal(t)}
+                          >
+                            {t === 'flowchart' && '流程图 (Flowchart)'}
+                            {t === 'sequence' && '时序图 (Sequence)'}
+                            {t === 'gantt' && '甘特图 (Gantt)'}
+                            {t === 'class' && '类图 (Class)'}
+                            {t === 'pie' && '饼图 (Pie)'}
+                            {t === 'state' && '状态图 (State)'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">图表代码编辑 (可直接调整节点与文字)：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={7}
+                        value={modalMermaidCode}
+                        onChange={(e) => setModalMermaidCode(e.target.value)}
+                        placeholder="输入符合 Mermaid 语法的图表代码..."
+                        style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 5. Build Chart Form */}
+                {activeModal === 'chart' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">Build Chart 数据图表发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          使用 <code>```chart ... ```</code> 代码块包裹标准 JSON 配置。支持 <code>bar</code>（柱状图）、<code>line</code>（折线图）与 <code>pie</code>（饼图）。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">图表样式预设：</label>
+                      <div className="tk-modal-type-chips">
+                        {(['bar', 'line', 'pie'] as const).map((ct) => (
+                          <button
+                            key={ct}
+                            type="button"
+                            className={`tk-modal-chip-btn ${modalChartType === ct ? 'is-active' : ''}`}
+                            onClick={() => openChartModal(ct)}
+                          >
+                            {ct === 'bar' && '柱状图 (Bar)'}
+                            {ct === 'line' && '折线图 (Line)'}
+                            {ct === 'pie' && '饼图 (Pie)'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">JSON 图表配置：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={7}
+                        value={modalChartCode}
+                        onChange={(e) => setModalChartCode(e.target.value)}
+                        placeholder="输入标准 JSON 图表数据..."
+                        style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 6. Graphviz Form */}
+                {activeModal === 'graphviz' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">Graphviz 拓扑图发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 <code>```graphviz ... ```</code> 代码块，基于 DOT 描述语言。适合展示微服务架构关系、调用链路与状态转移。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">拓扑图类别：</label>
+                      <div className="tk-modal-type-chips">
+                        <button
+                          type="button"
+                          className={`tk-modal-chip-btn ${modalGraphvizType === 'digraph' ? 'is-active' : ''}`}
+                          onClick={() => openGraphvizModal('digraph')}
+                        >
+                          有向图 (Digraph - 带箭头)
+                        </button>
+                        <button
+                          type="button"
+                          className={`tk-modal-chip-btn ${modalGraphvizType === 'graph' ? 'is-active' : ''}`}
+                          onClick={() => openGraphvizModal('graph')}
+                        >
+                          无向图 (Graph - 关联群)
+                        </button>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">DOT 语法代码：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={6}
+                        value={modalGraphvizCode}
+                        onChange={(e) => setModalGraphvizCode(e.target.value)}
+                        placeholder="输入 DOT 拓扑语法代码..."
+                        style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 7. Details Form */}
+                {activeModal === 'details' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">折叠隐藏区块发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用原生 HTML5 <code>&lt;details&gt;</code> 与 <code>&lt;summary&gt;</code> 标签。用于收拢大段报错日志、长排查步骤或补充资料，保持评论流清爽。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">折叠摘要 (标题)：</label>
+                      <input
+                        type="text"
+                        className="tk-modal-input"
+                        value={modalDetailsSummary}
+                        onChange={(e) => setModalDetailsSummary(e.target.value)}
+                        placeholder="例如：点击展开详细报错日志 / 排查细节"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">折叠展开内容：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={5}
+                        value={modalDetailsContent}
+                        onChange={(e) => setModalDetailsContent(e.target.value)}
+                        placeholder="在此处输入默认被隐藏的详细文本、数据或排查日志..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 8. Spoiler Form */}
+                {activeModal === 'spoiler' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">模糊化剧透发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 <code>[spoiler]内容[/spoiler]</code> 语法。内容在评论区中默认以高斯模糊显示，读者将光标悬停在其上方即可清晰查看，避免非预期剧透。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">剧透打码文本：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={3}
+                        value={modalSpoilerText}
+                        onChange={(e) => setModalSpoilerText(e.target.value)}
+                        placeholder="输入需要打码模糊的内容，鼠标悬浮时才会清晰可见..."
+                        autoFocus
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 9. Math Form */}
+                {activeModal === 'math' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">LaTeX 数学公式发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 KaTeX 标准 <code>$$ 公式 $$</code> 块级语法。系统在前端自动渲染为高品质数学公式，支持微积分、分式、矩阵与求和等学术符号。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">LaTeX 数学表达式：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={3}
+                        value={modalMathFormula}
+                        onChange={(e) => setModalMathFormula(e.target.value)}
+                        placeholder="例如：\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">快捷常用模板：</label>
+                      <div className="tk-modal-quick-math">
+                        <button type="button" onClick={() => setModalMathFormula('\\frac{a}{b}')}>分式 a/b</button>
+                        <button type="button" onClick={() => setModalMathFormula('\\sqrt{x}')}>平方根 √x</button>
+                        <button type="button" onClick={() => setModalMathFormula('\\sum_{i=1}^{n} x_i')}>求和 ∑</button>
+                        <button type="button" onClick={() => setModalMathFormula('\\int_{a}^{b} f(x)dx')}>定积分 ∫</button>
+                        <button type="button" onClick={() => setModalMathFormula('\\lim_{x \\to \\infty} f(x)')}>极限 lim</button>
+                        <button type="button" onClick={() => setModalMathFormula('\\begin{matrix} a & b \\\\ c & d \\end{matrix}')}>矩阵</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* 10. Scroll Form */}
+                {activeModal === 'scroll' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">滚动容器发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用定高与内置滚动条（<code>overflow-y: auto</code>）限制超长文本的高度，防止几十行代码或日志拉长整个评论流。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">最大容器高度 (像素)：</label>
+                      <input
+                        type="number"
+                        min={80}
+                        max={600}
+                        step={20}
+                        className="tk-modal-input"
+                        value={modalScrollHeight}
+                        onChange={(e) => setModalScrollHeight(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">长文本 / 日志内容：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={5}
+                        value={modalScrollContent}
+                        onChange={(e) => setModalScrollContent(e.target.value)}
+                        placeholder="输入将在定高容器中带滚动条展示的超长文本..."
+                        autoFocus
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 11. Datetime Form */}
+                {activeModal === 'datetime' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">日期时间标记发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 <code>[date=YYYY-MM-DD HH:mm:ss]</code> 标签。用于在评论中标注关键排期、问题出现时间或更新节点，系统将自动高亮显示。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">快捷时间选择：</label>
+                      <div className="tk-modal-type-chips">
+                        <button
+                          type="button"
+                          className="tk-modal-chip-btn"
+                          onClick={() => {
+                            const now = new Date();
+                            const pad = (n: number) => String(n).padStart(2, '0');
+                            setModalDatetimeCustom(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`);
+                          }}
+                        >
+                          当前完整时间 (精确到秒)
+                        </button>
+                        <button
+                          type="button"
+                          className="tk-modal-chip-btn"
+                          onClick={() => {
+                            const now = new Date();
+                            const pad = (n: number) => String(n).padStart(2, '0');
+                            setModalDatetimeCustom(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+                          }}
+                        >
+                          当前日期 (YYYY-MM-DD)
+                        </button>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">时间值内容：</label>
+                      <input
+                        type="text"
+                        className="tk-modal-input"
+                        value={modalDatetimeCustom}
+                        onChange={(e) => setModalDatetimeCustom(e.target.value)}
+                        placeholder="例如：2026-09-05 12:00:00"
+                        autoFocus
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 12. Template Form */}
+                {activeModal === 'template' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">结构化论述范本发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          严谨的结构化评论能极大提高交流质量。选择适合当前话题的结构框架，一键插入并填入您的分析见解。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">选择范本场景：</label>
+                      <div className="tk-modal-type-chips">
+                        <button
+                          type="button"
+                          className={`tk-modal-chip-btn ${modalTemplateType === 'tech' ? 'is-active' : ''}`}
+                          onClick={() => setModalTemplateType('tech')}
+                        >
+                          💡 深度技术研讨 (观点/分析/建议)
+                        </button>
+                        <button
+                          type="button"
+                          className={`tk-modal-chip-btn ${modalTemplateType === 'bug' ? 'is-active' : ''}`}
+                          onClick={() => setModalTemplateType('bug')}
+                        >
+                          ⚠️ 异常/缺陷排查 (现象/环境/日志)
+                        </button>
+                        <button
+                          type="button"
+                          className={`tk-modal-chip-btn ${modalTemplateType === 'opinion' ? 'is-active' : ''}`}
+                          onClick={() => setModalTemplateType('opinion')}
+                        >
+                          🤝 观点探讨交流 (认同/视角/请教)
+                        </button>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">范本结构骨架预览：</label>
+                      <pre className="tk-modal-preview-box">
+{modalTemplateType === 'tech' && `### 💡 核心观点与设计方案\n在此简要概括您的核心技术方案或核心论点...\n\n### 🔍 依据与量化分析\n1. 优势分析：分析性能提升或体验改善。\n2. 潜在风险：应对边界异常或高并发。\n\n### 🎯 改进与落地建议\n- [ ] 建议步骤一：...\n- [ ] 建议步骤二：...`}
+{modalTemplateType === 'bug' && `### ⚠️ 异常现象描述\n在此详细描述出现的非预期现象或错误提示...\n\n### 🖥️ 运行环境与复现步骤\n- 环境信息：操作系统 / 浏览器版本\n- 复现步骤：...\n\n### 🪵 报错日志与初步排查\n\`\`\`bash\n在此粘贴报错堆栈\n\`\`\`\n\n### 💡 期望的正确行为\n说明理论上的正确效果。`}
+{modalTemplateType === 'opinion' && `### 🤝 认同之处\n非常赞同博文中关于这一视角的论述...\n\n### 🤔 补充视角与延伸思考\n从另一个角度来看，或许可以补充考虑以下几点：\n1. ...\n\n### 💬 交流请教\n对于...细节，博主是否有进一步经验分享？`}
+                      </pre>
+                    </div>
+                  </>
+                )}
+
+                {/* 13. Footnote Form */}
+                {activeModal === 'footnote' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">参考脚注联动发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 Markdown 标准脚注语法。将在正文光标位置插入引用标记 <code>[^标号]</code>，并在评论文末自动生成对应该标号的 <code>[^标号]: 详细注释内容</code>。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">脚注标识 (标号)：</label>
+                      <input
+                        type="text"
+                        className="tk-modal-input"
+                        value={modalFootnoteId}
+                        onChange={(e) => setModalFootnoteId(e.target.value)}
+                        placeholder="例如：1 或 ref"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">脚注详细注释与出处内容：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={3}
+                        value={modalFootnoteContent}
+                        onChange={(e) => setModalFootnoteContent(e.target.value)}
+                        placeholder="输入该脚注引用的文献出处、文档链接或补充说明..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 14. Callout Form */}
+                {activeModal === 'callout' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <Info size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">高光包装卡片发布规则</div>
+                        <div className="tk-modal-rule-text">
+                          采用 <code>::: note/tip/warning/danger 标题</code> 语法。评论区将渲染为带有对应语义主题色、左侧重点边框和图标的高光提示卡片。
+                        </div>
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">包装卡片风格：</label>
+                      <div className="tk-modal-radio-group">
+                        {(['note', 'tip', 'warning', 'danger'] as const).map((type) => (
+                          <label key={type} className="tk-modal-radio">
+                            <input
+                              type="radio"
+                              name="calloutType"
+                              value={type}
+                              checked={modalCalloutType === type}
+                              onChange={() => setModalCalloutType(type)}
+                            />
+                            <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">卡片标题：</label>
+                      <input
+                        type="text"
+                        className="tk-modal-input"
+                        value={modalCalloutTitle}
+                        onChange={(e) => setModalCalloutTitle(e.target.value)}
+                        placeholder="输入卡片高光标题..."
+                      />
+                    </div>
+                    <div className="tk-modal-field">
+                      <label className="tk-modal-label">卡片主体内容：</label>
+                      <textarea
+                        className="tk-modal-textarea"
+                        rows={3}
+                        value={modalCalloutContent}
+                        onChange={(e) => setModalCalloutContent(e.target.value)}
+                        placeholder="输入卡片主体说明内容..."
+                        autoFocus
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="tk-tool-modal-footer">
+                <button
+                  type="button"
+                  className="tk-modal-btn tk-modal-btn-cancel"
+                  onClick={() => setActiveModal(null)}
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  className="tk-modal-btn tk-modal-btn-confirm"
+                  onClick={handleConfirmModal}
+                >
+                  确认插入
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

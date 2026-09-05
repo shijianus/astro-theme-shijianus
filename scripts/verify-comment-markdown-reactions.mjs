@@ -410,7 +410,63 @@ async function runTests() {
     textVal = await textareaEl.inputValue();
     assert(textVal.includes('[spoiler]这是关键剧情剧透[/spoiler]'), '通过弹窗成功插入打码剧透标签');
 
+    // (A) 验证彻底删除 class="tk-mode-bar-right"
+    assert((await page.locator('#post-comment .tk-mode-bar-right').count()) === 0, '已彻底删除无用的 tk-mode-bar-right 提示内容');
+
+    // (B) 验证彻底移除 ⚙️ 图标
+    const visitorHeaderLink = page.locator('#post-comment .comment-randomInfo a').first();
+    const visitorHeaderText = (await visitorHeaderLink.textContent()) || '';
+    assert(!visitorHeaderText.includes('⚙️'), '已彻底清除访客身份中的 ⚙️ 图标');
+
+    // (C) 验证语言与选项按钮采用纯图标+指示箭头，去除生硬的“语言”与“选项”文字
+    const langBtnText = (await page.locator('#post-comment .tk-tb-btn-lang').textContent()).trim();
+    assert(!langBtnText.includes('语言'), '语言按钮采用纯图标+下拉指示，去除了“语言”文本');
+    const optBtnText = (await page.locator('#post-comment .tk-tb-options').textContent()).trim();
+    assert(!optBtnText.includes('选项'), '选项按钮采用纯图标+下拉指示，去除了“选项”文本');
+
+    // (D) 验证下拉菜单每项均配有专业注释文本解释 (.tk-dropdown-desc)
+    await optionsBtn.click();
+    await page.waitForTimeout(200);
+    const descCount = await page.locator('#post-comment .tk-options-dropdown .tk-dropdown-desc').count();
+    assert(descCount >= 15, '选项下拉菜单中的 15 个功能全部配有清晰的注释文本解释 (.tk-dropdown-desc)');
+
+    // (E) 测试插入目录 (TOC) UI 弹窗与发布规则展示
+    const tocBtn = page.locator('#post-comment .tk-options-dropdown button:has-text("插入目录")');
+    await tocBtn.click();
+    await page.waitForTimeout(200);
+
+    const tocModal = page.locator('.tk-tool-modal');
+    assert((await tocModal.count()) > 0, '点击“插入目录”成功呼出居中 UI 弹窗');
+    assert((await tocModal.locator('.tk-modal-rule-banner').count()) > 0, '目录弹窗顶部清晰展示 [TOC] 语法规则说明横幅');
+    assert((await page.evaluate(() => document.body.style.overflow)) === 'hidden', '弹窗激活时严格锁定 body 滚动，彻底杜绝滑块滑动问题');
+    await tocModal.locator('.tk-modal-btn-confirm').click();
+    await page.waitForTimeout(200);
+    textVal = await textareaEl.inputValue();
+    assert(textVal.includes('[TOC]'), '通过目录 UI 弹窗成功将 [TOC] 导航标签与结构注入输入框');
+
+    // (F) 测试插入 Mermaid 图表 UI 弹窗与发布规则展示
+    await optionsBtn.click();
+    await page.waitForTimeout(200);
+    const mermaidBtn = page.locator('#post-comment .tk-options-dropdown button:has-text("插入 Mermaid chart")');
+    await mermaidBtn.click();
+    await page.waitForTimeout(200);
+
+    const mermaidModal = page.locator('.tk-tool-modal');
+    assert((await mermaidModal.count()) > 0, '点击“插入 Mermaid chart”成功呼出居中 UI 弹窗');
+    assert((await mermaidModal.locator('.tk-modal-rule-banner').count()) > 0, 'Mermaid 弹窗清晰展示图表类型与发布规则说明');
+    // 切换为甘特图
+    await mermaidModal.locator('button:has-text("甘特图")').click();
+    await page.waitForTimeout(150);
+    await mermaidModal.locator('.tk-modal-btn-confirm').click();
+    await page.waitForTimeout(200);
+    textVal = await textareaEl.inputValue();
+    assert(textVal.includes('```mermaid') && textVal.includes('gantt'), '通过 Mermaid UI 弹窗成功插入甘特图代码块');
+
     // (4) 测试博文框选右键引用联动机制 (shijianus:quote-post-text)
+    // 重置输入框确保字数不溢出 COMMENT_LIMIT (500)
+    await textareaEl.fill('');
+    await page.waitForTimeout(100);
+
     await page.evaluate(() => {
       window.dispatchEvent(
         new CustomEvent('shijianus:quote-post-text', {
@@ -431,6 +487,10 @@ async function runTests() {
     );
 
     // 7. 测试“👁️ 预览”切页与 Markdown 最终渲染格式
+    // 插入包含表格和剧透的内容供预览测试
+    await textareaEl.fill('| 列 1 | 列 2 |\n| --- | --- |\n| 数据 1 | 数据 2 |\n\n[spoiler]这是关键剧情剧透[/spoiler]');
+    await page.waitForTimeout(150);
+
     await previewBtn.click();
     await page.waitForTimeout(200);
 
@@ -459,6 +519,8 @@ async function runTests() {
     await page.waitForTimeout(200);
 
     const sampleLikeBtn = page.locator('#post-comment .tk-action-like').first();
+    await sampleLikeBtn.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
     await sampleLikeBtn.click();
     await page.waitForTimeout(300);
 

@@ -254,4 +254,28 @@
 - [x] 自动化测试套件（`scripts/verify-comment-markdown-reactions.mjs`）更新并通过：
   桌面端与各视口下验证工具栏 SVG 图标、外链/上传彻底清理、15 项下拉选项 SVG 图标、数据表格/投票/剧透弹窗配置插入、右键引用联动、操作栏纯图标化与顶部主导航通知，断言全部 PASS 100% 通过。
 
+### Task 25: 评论区无用提示与齿轮清理、工具栏与下拉注释解释纯图标化、React Portal 居中弹窗与全量插入 UI 发布规则 (`0b95601`)
+- [x] 彻底清理评论区无用提示与杂乱元素：
+  1. 移除模式栏右侧冗余的无用提示内容 `class="tk-mode-bar-right"`；
+  2. 清理访客身份标签中生硬多余的 `⚙️` 图标，视觉回归纯净极简。
+- [x] 工具栏与下拉菜单视觉交互重构（纯图标 + 注释文本）：
+  1. 贴文语言选择按钮与高级选项按钮去除生硬的“语言”与“选项”汉字文本，改为现代化的纯 SVG 矢量图标配微型 chevron 下拉指示角标；
+  2. 下拉菜单面板采用标准双列布局：左列矢量 SVG 图标，右列主标题加清晰易懂的注释文本解释（`.tk-dropdown-desc`），彻底消除仅有晦涩标题的问题。
+- [x] 物理居中弹窗与背景滚动彻底锁定（基于 React createPortal）：
+  1. 解决原弹窗因父级容器包含块偏移导致的“虚化文章但看不到弹窗、需手动滚动页面寻找”缺陷，所有 14 类插入模态框统一使用 `createPortal` 挂载到 `document.body`；
+  2. 弹窗样式配置 `position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 100005 !important;`，确保永远绝对对齐在当前屏幕视口的正中心；
+  3. 弹窗呼出时自动执行 `document.body.style.overflow = 'hidden'`，关闭时自动恢复，彻底杜绝背景滑动。
+- [x] 全量补齐此前缺失的插入 UI 弹窗与语法发布规则展示：
+  1. 表格 (Table)：修复结构与预览，支持动态列数/行数、对齐方式并提供实时 GFM 管道表格字符结构预览；
+  2. 目录 (TOC)：弹出独立中心弹窗，展示 `[TOC]` 规则说明横幅与自适应预览；
+  3. Mermaid：提供包含 Flowchart、Sequence、Gantt、Class、State、Pie、Mindmap 等 7 大常用图表类型的快速切换选择卡与说明；
+  4. Build Chart：提供折线图、柱状图、饼图与雷达图模板配置 UI；
+  5. Graphviz：提供有向图 (Digraph) 与无向图 (Graph) 配置与语法规则提示；
+  6. 日期/时间 (Datetime)：提供原生 datetime-local 控件，一键插入当前时间或指定时间；
+  7. 论述范本 (Template)：提供“论点/论据/结论”、“技术方案评测对比”与“RFC 建议草案”结构化模板；
+  8. 脚注 (Footnote)：支持自定义脚注标识与解释内容，自动生成正文引用标号与底部脚注定义；
+  9. 投票 (Poll)、剧透 (Spoiler)、隐藏折叠 (Details)、数学公式 (Math)、长文本滚动 (Scroll) 与包装卡片 (Callout) 均全面统一为最新居中弹窗规范。
+- [x] 自动化测试套件（`scripts/verify-comment-markdown-reactions.mjs`）更新并通过：
+  全流程覆盖清理验证、纯图标工具栏、下拉注释解释、TOC 弹窗与规则说明、甘特图插入、Portal 物理居中与滚动锁定，所有断言 100% PASS 通过。
+
 
