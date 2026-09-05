@@ -278,4 +278,14 @@
 - [x] 自动化测试套件（`scripts/verify-comment-markdown-reactions.mjs`）更新并通过：
   全流程覆盖清理验证、纯图标工具栏、下拉注释解释、TOC 弹窗与规则说明、甘特图插入、Portal 物理居中与滚动锁定，所有断言 100% PASS 通过。
 
+### Task 26: 评论区持久化存储状态审计与 D1 数据库直连实证、DDL 单例优化 (`5e26691`)
+- [x] 数据库真实接入审计与生产环境实证：
+  1. 确认 Cloudflare D1 边缘数据库 `shijianus-blog-db` (`a18b4c38-5da0-415e-a7de-ee3aee0b856f`) 已完整应用 4 项数据库迁移脚本（包含 `comments` 表与 4 组复合索引）；
+  2. 在终端直连云端 D1 执行真实 SQL 探针（`INSERT` -> `SELECT` -> `DELETE`），证实数据毫秒级落盘至全球分布式持久化存储，绝无任何 Mock 假数据；
+  3. 梳理完整的端到端持久化闭环：前端组件（`PostComments.tsx`）-> 边缘接口（`functions/api/comments.ts`）-> 物理 D1 数据库 + 异步 Telegram Bot 通知。
+- [x] 后端性能与资源开销优化：
+  1. 为 `functions/api/comments.ts` 引入模块级 `tableEnsured` 单例缓存，避免每个 Worker 实例在处理高频 GET/POST 请求时重复执行 5 次 DDL 检查，大幅降低 D1 请求开销与响应延迟；
+  2. 保持纯本地 Node 开发环境下的 `.comments-dev.json` 文件持久化回退，确保本地热重载与离线调试数据不丢失。
+- [x] 执行本地 Dev API 自动化校验套件（`scripts/verify-dev-comments.mjs`）全绿通过，代码全量推送到 `origin` 与 `cf` 远端。
+
 
