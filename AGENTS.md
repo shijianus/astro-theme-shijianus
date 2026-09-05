@@ -311,4 +311,14 @@
      - 本地读者快速登记联动与就地注销，Hero 卡片胶囊动态即时切换；
      - 移动端视口（375x812）断言无横向溢出，自适应响应式全绿；
      - 生产环境真实端到端测试 100% PASS 通过。
-
+### Task 28: Epomail 默认 OAuth 验证 App 注入、生产 D1 数据落盘与授权弹窗真实实证
+- [x] Epomail 远端与代码库默认 OAuth App 注入 (`epocanvas-mail`):
+  1. 在 `epocanvas-mail` 生产 D1 数据库 (`epomail` / `542cbca1-fce5-41c5-93f2-c1d04fa919e8`) 的 `oauth_app` 表中插入官方默认客户端 `epo_live_shijianus_blog`；
+  2. 在 `mail-worker/src/service/oauth-app-service.js` 与 `mail-worker/src/init/init.js` 固化 `DEFAULT_OAUTH_APPS` 常量与自动种子 (Auto-seeding) 逻辑，确保即使库表重置或多环境迁移，默认应用永远自动装载；
+  3. 配置全量合法回调清单（含生产 `https://blog.epocanvas.com/auth/callback`、Pages 预览域、多别名域名及本地端口），构建并重新部署 `epomail` 生产 Worker 至 Cloudflare (`099db5ec-02fa-4d34-8bc0-880cde3cc310`)；
+  4. 同步将改动提交并推送到 `git@github.com:shijianus/epomail.git` (`67a1e78`)。
+- [x] Playwright 真实生产环境授权弹窗全链路审计 (`scripts/verify-live-epomail-oauth-dialog.mjs`):
+  1. 直连 `https://mail.epocanvas.com/oauth/authorize?client_id=epo_live_shijianus_blog...`，验证彻底根除 `未找到对应的 OAuth 应用 (Invalid client_id)` 报错；
+  2. 验证 Epomail 官方授权页正确识别应用名称 `shijianus-blog` 并加载授权确认界面；
+  3. 从博客生产端 `https://blog.epocanvas.com` 点击呼出账号抽屉，点击“使用 Epomail 一键授权登录”，Playwright 捕获弹窗并验证重定向至合法 Epomail OAuth 授权地址；
+  4. 全流程端到端测试 100% PASS 通过。
