@@ -32,6 +32,10 @@ export type BlogComment = {
   authorRole: 'admin' | 'reader' | 'visitor';
   message: string;
   likesCount: number;
+  reactions?: {
+    summary: Record<string, number>;
+    users: Record<string, string>;
+  };
   status: 'published' | 'pinned' | 'flagged' | 'deleted';
   createdAt: string;
   updatedAt?: string;
@@ -346,16 +350,41 @@ export async function deleteComment(params: {
   }
 }
 
-export async function likeComment(id: string): Promise<{ ok: boolean; likesCount?: number }> {
+export async function likeComment(params: {
+  id: string;
+  emoji?: string;
+  author?: CommentIdentity | null;
+}): Promise<{
+  ok: boolean;
+  likesCount?: number;
+  reactions?: { summary: Record<string, number>; users: Record<string, string> };
+  userReaction?: string | null;
+  error?: string;
+}> {
   try {
     const res = await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'like', id }),
+      body: JSON.stringify({
+        action: 'like',
+        id: params.id,
+        emoji: params.emoji || '👍',
+        authorId: params.author?.id,
+        authorRole: params.author?.role || 'visitor',
+      }),
     });
-    const parsed = await safeFetchJson<{ ok: boolean; likesCount?: number }>(res);
-    return parsed.data || { ok: false };
-  } catch {
-    return { ok: false };
+    const parsed = await safeFetchJson<{
+      ok: boolean;
+      likesCount?: number;
+      reactions?: { summary: Record<string, number>; users: Record<string, string> };
+      userReaction?: string | null;
+      error?: string;
+    }>(res);
+    if (!parsed.ok || !parsed.data) {
+      return { ok: false, error: parsed.error || (parsed.data as any)?.error || `请求失败 (${res.status})` };
+    }
+    return parsed.data;
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接失败' };
   }
 }

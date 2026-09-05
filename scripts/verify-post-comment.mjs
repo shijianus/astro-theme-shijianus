@@ -272,11 +272,13 @@ async function run() {
     await page.click('#post-comment .tk-nested-reply-box .tk-btn-cancel');
     await page.waitForTimeout(300);
 
-    // 6. Post a Quick Emoji Reaction
-    console.log('6. Submitting Linuxdo-style Emoji Reaction...');
-    await page.click('#post-comment .tk-mode-btn:has-text("表情")');
+    // 6. Post a Quick Emoji via Markdown Toolbar
+    console.log('6. Submitting Emoji via Markdown Toolbar...');
+    await page.click('#post-comment .tk-tb-emoji');
     await page.waitForTimeout(300);
-    await page.click('#post-comment .tk-quick-emoji-btn:has-text("🔥")');
+    await page.click('#post-comment .tk-emoji-cell-btn:has-text("🔥")');
+    await page.waitForTimeout(200);
+    await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);
 
     // 7. Verify Comments List & Geo Flag Badges
@@ -301,10 +303,8 @@ async function run() {
       throw new Error('Boost pill or Geo Flag badge missing on visitor comments!');
     }
 
-    // 7. Test Duplicate Comment Prevention
-    console.log('7. Testing Duplicate Comment Prevention for Visitors...');
-    await page.click('#post-comment .tk-mode-btn:has-text("评论")');
-    await page.waitForTimeout(300);
+    // 8. Test Duplicate Comment Prevention
+    console.log('8. Testing Duplicate Comment Prevention for Visitors...');
     await page.fill('#post-comment .el-textarea__inner', '这是一条标准的深度公开长评。'); // identical to item 1
     await page.click('#post-comment .tk-send');
     await page.waitForTimeout(600);

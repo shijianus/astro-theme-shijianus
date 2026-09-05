@@ -2526,7 +2526,7 @@ body[data-type='post'] hr.custom-hr {
   border-radius: 0;
 }
 
-/* Linuxdo Interaction Modes Bar */
+/* Modern Comment Bar: Edit & Preview Tabs + Visitor Status */
 #post-comment .tk-mode-bar {
   display: flex;
   align-items: center;
@@ -2536,21 +2536,21 @@ body[data-type='post'] hr.custom-hr {
   padding: 0 2px;
 }
 
-#post-comment .tk-mode-tabs {
+#post-comment .tk-editor-tabs {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   padding: 3px;
   background: color-mix(in srgb, var(--card-bg) 60%, var(--secondbg));
   border-radius: 8px;
   border: var(--style-border-always);
 }
 
-#post-comment .tk-mode-btn {
+#post-comment .tk-editor-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 6px;
   background: transparent;
   border: none;
@@ -2562,31 +2562,34 @@ body[data-type='post'] hr.custom-hr {
   transition: all 0.2s ease;
 }
 
-#post-comment .tk-mode-btn:hover {
+#post-comment .tk-editor-tab-btn:hover {
   color: var(--theme-main, #425aef);
 }
 
-#post-comment .tk-mode-btn.is-active {
+#post-comment .tk-editor-tab-btn.is-active {
   background: var(--theme-main, #425aef);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(66, 90, 239, 0.25);
 }
 
-@media screen and (max-width: 600px) {
-  #post-comment .tk-mode-tabs {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 2px;
-  }
-  #post-comment .tk-mode-btn {
-    flex: 1;
-    justify-content: center;
-    padding: 5px 6px;
-    font-size: 11.5px;
-    white-space: nowrap;
-  }
+#post-comment .tk-mode-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#post-comment .tk-visitor-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(140, 145, 160, 0.08);
+  border: 1px dashed rgba(140, 145, 160, 0.35);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 #post-comment .tk-user-logged-pill {
@@ -2603,47 +2606,366 @@ body[data-type='post'] hr.custom-hr {
   cursor: pointer;
 }
 
-/* Quick Emoji Tray */
-#post-comment .tk-emoji-tray {
+/* Linuxdo Style Complete Markdown Toolbar */
+#post-comment .tk-markdown-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--secondbg);
-  border-radius: 8px;
-  border: var(--style-border-always);
-}
-
-#post-comment .tk-emoji-tray-label {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-#post-comment .tk-emoji-list {
-  display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 3px;
+  padding: 4px 6px;
+  background: color-mix(in srgb, var(--card-bg) 75%, var(--secondbg));
+  border: var(--style-border-always);
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 10;
 }
 
-#post-comment .tk-quick-emoji-btn {
+#post-comment .tk-toolbar-item {
+  position: relative;
+}
+
+#post-comment .tk-tb-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--card-bg) 70%, var(--secondbg));
+  height: 28px;
+  min-width: 28px;
+  padding: 0 6px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--font-color);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+#post-comment .tk-tb-btn:hover {
+  background: rgba(66, 90, 239, 0.12);
+  color: var(--theme-main, #425aef);
+}
+
+#post-comment .tk-tb-btn.is-active {
+  background: var(--theme-main, #425aef);
+  color: #ffffff;
+}
+
+#post-comment .tk-tb-btn-lang {
+  font-size: 11.5px;
+  font-weight: 500;
+  gap: 2px;
+}
+
+#post-comment .tk-tb-options {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--theme-main, #425aef);
+  background: rgba(66, 90, 239, 0.06);
+}
+
+#post-comment .tk-tb-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--style-border-color, rgba(140, 145, 160, 0.2));
+  margin: 0 3px;
+}
+
+/* Toolbar Dropdowns */
+#post-comment .tk-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  min-width: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--card-bg);
   border: var(--style-border-always);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: blur(16px);
+}
+
+#post-comment .tk-options-dropdown {
+  min-width: 220px;
+  max-height: 320px;
+  right: 0;
+  left: auto;
+}
+
+#post-comment .tk-emoji-picker-dropdown {
+  min-width: 200px;
+}
+
+#post-comment .tk-dropdown-title {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--style-border-color, rgba(140, 145, 160, 0.15));
+  margin-bottom: 4px;
+}
+
+#post-comment .tk-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--font-color);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+#post-comment .tk-dropdown-item:hover {
+  background: rgba(66, 90, 239, 0.1);
+  color: var(--theme-main, #425aef);
+  transform: translateX(2px);
+}
+
+#post-comment .tk-dropdown-item small {
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+#post-comment .tk-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 2px;
+}
+
+#post-comment .tk-emoji-cell-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
-#post-comment .tk-quick-emoji-btn:hover:not(:disabled) {
-  transform: scale(1.15);
+#post-comment .tk-emoji-cell-btn:hover {
+  transform: scale(1.2);
+  background: rgba(66, 90, 239, 0.12);
+}
+
+/* Markdown Preview Container */
+#post-comment .tk-preview-container {
+  border: var(--style-border-always);
+  border-radius: 0 0 8px 8px;
+  background: var(--card-bg);
+  padding: 14px 16px;
+  min-height: 120px;
+  position: relative;
+}
+
+#post-comment .tk-preview-badge {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(66, 90, 239, 0.1);
+  color: var(--theme-main, #425aef);
+  pointer-events: none;
+}
+
+#post-comment .tk-preview-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Rendered Markdown Body */
+#post-comment .tk-markdown-body {
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--font-color);
+  word-break: break-word;
+}
+
+#post-comment .tk-markdown-body p {
+  margin: 0 0 8px 0;
+}
+
+#post-comment .tk-markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+#post-comment .tk-md-h {
+  margin: 10px 0 6px 0;
+  font-weight: 700;
+  color: var(--font-color);
+}
+
+#post-comment .tk-md-blockquote {
+  margin: 8px 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main, #425aef) 8%, transparent);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+#post-comment .tk-md-ul,
+#post-comment .tk-md-ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+#post-comment .tk-inline-code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(140, 145, 160, 0.14);
+  color: var(--theme-main, #425aef);
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#post-comment .tk-code-block {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  font-family: monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#post-comment .tk-table-wrapper {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+#post-comment .tk-md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+#post-comment .tk-md-table th,
+#post-comment .tk-md-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--style-border-color, rgba(140, 145, 160, 0.2));
+  text-align: left;
+}
+
+#post-comment .tk-md-table th {
+  background: rgba(66, 90, 239, 0.08);
+  font-weight: 700;
+}
+
+#post-comment .tk-spoiler {
+  filter: blur(5px);
+  background: rgba(140, 145, 160, 0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.25s ease, background 0.25s ease;
+}
+
+#post-comment .tk-spoiler:hover,
+#post-comment .tk-spoiler:focus {
+  filter: blur(0);
   background: rgba(66, 90, 239, 0.15);
-  border-color: var(--theme-main, #425aef);
+  color: var(--font-color);
+}
+
+#post-comment .tk-poll-card {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--theme-main, #425aef);
+  background: rgba(66, 90, 239, 0.04);
+}
+
+#post-comment .tk-poll-header {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--theme-main, #425aef);
+  margin-bottom: 8px;
+}
+
+#post-comment .tk-poll-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12.5px;
+}
+
+#post-comment .tk-poll-footer {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+#post-comment .tk-callout {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-left: 4px solid var(--theme-main, #425aef);
+  background: rgba(66, 90, 239, 0.07);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+}
+
+#post-comment .tk-details {
+  margin: 8px 0;
+  border: var(--style-border-always);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+#post-comment .tk-summary {
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--theme-main, #425aef);
+}
+
+#post-comment .tk-details-content {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--style-border-color, rgba(140, 145, 160, 0.2));
+}
+
+#post-comment .tk-chart-container {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #181825;
+  border: 1px solid rgba(66, 90, 239, 0.3);
+}
+
+#post-comment .tk-chart-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--theme-main, #425aef);
+  margin-bottom: 4px;
 }
 
 #post-comment .tk-row {
@@ -3184,6 +3506,103 @@ body[data-type='post'] hr.custom-hr {
 #post-comment .tk-action-btn.tk-action-like:hover {
   color: #ff6b6b;
   background: rgba(255, 107, 107, 0.1);
+}
+
+#post-comment .tk-action-btn.tk-action-like.is-reacted {
+  background: rgba(66, 90, 239, 0.12);
+  color: var(--theme-main, #425aef);
+  font-weight: 700;
+  border: 1px solid rgba(66, 90, 239, 0.25);
+}
+
+/* Rich Reaction Bubble & Top 3 Ranking Styles */
+#post-comment .tk-reaction-interactive-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+#post-comment .tk-reaction-display-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#post-comment .tk-reaction-emojis-top3 {
+  font-size: 13px;
+  letter-spacing: -1px;
+}
+
+#post-comment .tk-reaction-count-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--theme-main, #425aef);
+}
+
+#post-comment .tk-reaction-bubble-popup {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  padding: 6px 10px;
+  background: var(--card-bg);
+  border: var(--style-border-always);
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  backdrop-filter: blur(12px);
+  animation: tk-bubble-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+@keyframes tk-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#post-comment .tk-reaction-bubble-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-left: 2px;
+}
+
+#post-comment .tk-reaction-bubble-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#post-comment .tk-bubble-emoji-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease;
+}
+
+#post-comment .tk-bubble-emoji-btn:hover {
+  transform: scale(1.35);
+  background: rgba(66, 90, 239, 0.15);
+}
+
+#post-comment .tk-bubble-emoji-btn.is-current {
+  background: rgba(66, 90, 239, 0.2);
+  outline: 2px solid var(--theme-main, #425aef);
 }
 
 #post-comment .tk-action-btn.tk-action-reply {

@@ -22,6 +22,7 @@ interface RawCommentRow {
   show_location: number;
   user_agent?: string;
   likes_count: number;
+  reactions?: string;
   status: 'published' | 'pinned' | 'flagged' | 'deleted';
   created_at: string;
   updated_at: string;
@@ -114,6 +115,7 @@ async function ensureTable(db: any) {
         show_location INTEGER DEFAULT 1,
         user_agent TEXT,
         likes_count INTEGER DEFAULT 0,
+        reactions TEXT DEFAULT '{}',
         status TEXT DEFAULT 'published',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -123,6 +125,11 @@ async function ensureTable(db: any) {
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments (created_at);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments (parent_id);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON comments (ip, created_at);`).run();
+
+    // In case reactions column was missing in older schema
+    try {
+      await db.prepare(`ALTER TABLE comments ADD COLUMN reactions TEXT DEFAULT '{}';`).run();
+    } catch {}
   } catch (err) {
     console.error('[Comments] Table ensure error:', err);
   }
@@ -142,6 +149,26 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
     }
   }
 
+  let reactionsParsed: { summary: Record<string, number>; users: Record<string, string> } = {
+    summary: {},
+    users: {},
+  };
+  if (row.reactions) {
+    try {
+      const parsed = JSON.parse(row.reactions);
+      if (parsed && typeof parsed === 'object') {
+        reactionsParsed = {
+          summary: parsed.summary || {},
+          users: parsed.users || {},
+        };
+      }
+    } catch {}
+  }
+  const summaryTotal = Object.values(reactionsParsed.summary).reduce((a, b) => a + b, 0);
+  if (summaryTotal === 0 && (row.likes_count || 0) > 0) {
+    reactionsParsed.summary['👍'] = Number(row.likes_count);
+  }
+
   return {
     id: row.id,
     postSlug: row.post_slug,
@@ -155,7 +182,8 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
     authorWebsite: row.author_website || '',
     authorRole: row.author_role || 'visitor',
     message: row.message,
-    likesCount: Number(row.likes_count || 0),
+    likesCount: Number(row.likes_count || summaryTotal || 0),
+    reactions: reactionsParsed,
     status: row.status || 'published',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -250,7 +278,7 @@ export async function onRequest(context: {
         const query = `
           SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
                  author_avatar, author_website, author_role, message, ip, ip_country, ip_location,
-                 show_location, likes_count, status, created_at, updated_at
+                 show_location, likes_count, reactions, status, created_at, updated_at
           FROM comments
           WHERE post_slug = ? AND status != 'deleted'
           ${orderClause}
@@ -426,6 +454,7 @@ export async function onRequest(context: {
       show_location: showLocation,
       user_agent: userAgent,
       likes_count: 0,
+      reactions: '{}',
       status: 'published',
       created_at: nowIso,
       updated_at: nowIso,
@@ -438,8 +467,8 @@ export async function onRequest(context: {
           INSERT INTO comments (
             id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
             author_email, author_avatar, author_website, author_role, message, session_token,
-            ip, ip_country, ip_location, show_location, user_agent, likes_count, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ip, ip_country, ip_location, show_location, user_agent, likes_count, reactions, status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
           commentId, slug, parentId, quoteId, quoteSource, postType, authorId, authorName,
           authorEmail, authorAvatar, authorWebsite, authorRole, rawMessage, effectiveSessionToken,
@@ -567,29 +596,150 @@ export async function onRequest(context: {
     return jsonResponse(request, env, { ok: true, message: '评论已删除' });
   }
 
-  // 4. LIKE COMMENT
-  if (action === 'like') {
+  // 4. LIKE / REACTION (Only registered/logged users allowed, visitors strictly rejected)
+  if (action === 'like' || action === 'reaction') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     if (!id) {
       return jsonResponse(request, env, { ok: false, error: '缺少评论 ID' }, { status: 400 });
     }
 
-    if (env.DB) {
-      await ensureTable(env.DB);
-      await env.DB.prepare(`
-        UPDATE comments SET likes_count = likes_count + 1 WHERE id = ?
-      `).bind(id).run();
-      const updated = await env.DB.prepare(`SELECT likes_count FROM comments WHERE id = ?`).bind(id).first<{ likes_count: number }>();
-      return jsonResponse(request, env, { ok: true, likesCount: updated?.likes_count || 1 });
+    const authorRole = (payload.authorRole || 'visitor').toLowerCase();
+    const authorId = (payload.authorId || '').trim();
+
+    // 严禁访客点赞：访客无点赞与表情互动权限！
+    if (authorRole === 'visitor' || !authorId) {
+      return jsonResponse(request, env, {
+        ok: false,
+        error: '访客无点赞权限，仅注册/登录用户可点赞或进行表情互动',
+      }, { status: 403 });
     }
 
-    const item = memoryFallbackStore.get(id);
-    if (item) {
-      item.likes_count = (item.likes_count || 0) + 1;
-      syncDevStore('save');
-      return jsonResponse(request, env, { ok: true, likesCount: item.likes_count });
+    const targetEmoji = (payload.emoji || '👍').trim();
+
+    if (env.DB) {
+      await ensureTable(env.DB);
+      const row = await env.DB.prepare(
+        `SELECT id, likes_count, reactions FROM comments WHERE id = ?`
+      ).bind(id).first<{ id: string; likes_count: number; reactions?: string }>();
+
+      if (!row) {
+        return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
+      }
+
+      let rxData: { summary: Record<string, number>; users: Record<string, string> } = {
+        summary: {},
+        users: {},
+      };
+
+      if (row.reactions) {
+        try {
+          const p = JSON.parse(row.reactions);
+          if (p && typeof p === 'object') {
+            rxData = {
+              summary: p.summary || {},
+              users: p.users || {},
+            };
+          }
+        } catch {}
+      }
+
+      if (Object.keys(rxData.summary).length === 0 && (row.likes_count || 0) > 0) {
+        rxData.summary['👍'] = row.likes_count;
+      }
+
+      const existingUserEmoji = rxData.users[authorId];
+      let newUserEmoji: string | null = null;
+
+      if (existingUserEmoji === targetEmoji) {
+        // 用户再次点击相同表情 -> 取消表达
+        delete rxData.users[authorId];
+        rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
+        if (rxData.summary[targetEmoji] === 0) {
+          delete rxData.summary[targetEmoji];
+        }
+      } else {
+        // 用户切换表情或首次表达
+        if (existingUserEmoji && rxData.summary[existingUserEmoji]) {
+          rxData.summary[existingUserEmoji] = Math.max(0, rxData.summary[existingUserEmoji] - 1);
+          if (rxData.summary[existingUserEmoji] === 0) {
+            delete rxData.summary[existingUserEmoji];
+          }
+        }
+        rxData.users[authorId] = targetEmoji;
+        rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
+        newUserEmoji = targetEmoji;
+      }
+
+      const newTotalLikes = Object.values(rxData.summary).reduce((a, b) => a + b, 0);
+      const rxJson = JSON.stringify(rxData);
+
+      await env.DB.prepare(`
+        UPDATE comments SET likes_count = ?, reactions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      `).bind(newTotalLikes, rxJson, id).run();
+
+      return jsonResponse(request, env, {
+        ok: true,
+        likesCount: newTotalLikes,
+        reactions: rxData,
+        userReaction: newUserEmoji,
+      });
     }
-    return jsonResponse(request, env, { ok: true, likesCount: 1 });
+
+    // In-memory fallback for local dev
+    const item = memoryFallbackStore.get(id);
+    if (!item) {
+      return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
+    }
+
+    let rxData: { summary: Record<string, number>; users: Record<string, string> } = {
+      summary: {},
+      users: {},
+    };
+
+    if (item.reactions) {
+      try {
+        const p = JSON.parse(item.reactions);
+        if (p && typeof p === 'object') {
+          rxData = {
+            summary: p.summary || {},
+            users: p.users || {},
+          };
+        }
+      } catch {}
+    }
+
+    if (Object.keys(rxData.summary).length === 0 && (item.likes_count || 0) > 0) {
+      rxData.summary['👍'] = item.likes_count;
+    }
+
+    const existingUserEmoji = rxData.users[authorId];
+    let newUserEmoji: string | null = null;
+
+    if (existingUserEmoji === targetEmoji) {
+      delete rxData.users[authorId];
+      rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
+      if (rxData.summary[targetEmoji] === 0) delete rxData.summary[targetEmoji];
+    } else {
+      if (existingUserEmoji && rxData.summary[existingUserEmoji]) {
+        rxData.summary[existingUserEmoji] = Math.max(0, rxData.summary[existingUserEmoji] - 1);
+        if (rxData.summary[existingUserEmoji] === 0) delete rxData.summary[existingUserEmoji];
+      }
+      rxData.users[authorId] = targetEmoji;
+      rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
+      newUserEmoji = targetEmoji;
+    }
+
+    const newTotalLikes = Object.values(rxData.summary).reduce((a, b) => a + b, 0);
+    item.likes_count = newTotalLikes;
+    item.reactions = JSON.stringify(rxData);
+    syncDevStore('save');
+
+    return jsonResponse(request, env, {
+      ok: true,
+      likesCount: newTotalLikes,
+      reactions: rxData,
+      userReaction: newUserEmoji,
+    });
   }
 
   return jsonResponse(request, env, { ok: false, error: 'Unsupported action' }, { status: 400 });
