@@ -311,7 +311,7 @@
      - 本地读者快速登记联动与就地注销，Hero 卡片胶囊动态即时切换；
      - 移动端视口（375x812）断言无横向溢出，自适应响应式全绿；
      - 生产环境真实端到端测试 100% PASS 通过。
-### Task 28: Epomail 默认 OAuth 验证 App 注入、生产 D1 数据落盘与授权弹窗真实实证
+### Task 28: Epomail 默认 OAuth 验证 App 注入、生产 D1 数据落盘与授权弹窗真实实证 (`f54ebee`)
 - [x] Epomail 远端与代码库默认 OAuth App 注入 (`epocanvas-mail`):
   1. 在 `epocanvas-mail` 生产 D1 数据库 (`epomail` / `542cbca1-fce5-41c5-93f2-c1d04fa919e8`) 的 `oauth_app` 表中插入官方默认客户端 `epo_live_shijianus_blog`；
   2. 在 `mail-worker/src/service/oauth-app-service.js` 与 `mail-worker/src/init/init.js` 固化 `DEFAULT_OAUTH_APPS` 常量与自动种子 (Auto-seeding) 逻辑，确保即使库表重置或多环境迁移，默认应用永远自动装载；
