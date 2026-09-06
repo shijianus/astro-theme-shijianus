@@ -34,6 +34,12 @@ import {
   X,
   Plus,
   Info,
+  Image as ImageIcon,
+  Upload,
+  Link,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import type { CommentProvider } from '../../config/site';
 import {
@@ -44,6 +50,7 @@ import {
   likeComment,
   readCommentIdentity,
   getCommentInitials,
+  uploadCommentImage,
   type BlogComment,
   type CommentIdentity,
   type CommentQuote,
@@ -241,8 +248,18 @@ export function PostComments({
     | 'datetime'
     | 'template'
     | 'footnote'
+    | 'image'
     | null
   >(null);
+
+  // Image upload modal state
+  const [modalImageTab, setModalImageTab] = useState<'upload' | 'guide' | 'url'>('upload');
+  const [modalImageUrl, setModalImageUrl] = useState('');
+  const [modalImageAlt, setModalImageAlt] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isMainDragOver, setIsMainDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Modal form states
   const [modalPollQuestion, setModalPollQuestion] = useState('');
@@ -406,6 +423,107 @@ export function PostComments({
     setActiveDropdown(null);
   };
 
+  const openImageModal = (tab: 'upload' | 'guide' | 'url' = 'upload') => {
+    setModalImageTab(tab);
+    setModalImageUrl('');
+    setModalImageAlt('');
+    setUploadError(null);
+    setIsUploadingImage(false);
+    setActiveModal('image');
+    setActiveDropdown(null);
+  };
+
+  const handleImageFileSelect = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setUploadError('仅支持上传图片文件 (JPG, PNG, GIF, WebP, SVG, AVIF)');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('图片体积超过 10MB 上限');
+      return;
+    }
+    setIsUploadingImage(true);
+    setUploadError(null);
+    showToast('正在将图片上传至 Telegram 图床...', 'info', 3000);
+    try {
+      const res = await uploadCommentImage(file);
+      if (!res.ok || !res.url) {
+        setUploadError(res.error || '图片上传失败');
+        showToast(`上传失败: ${res.error || '未知错误'}`, 'error');
+      } else {
+        setModalImageUrl(res.url);
+        if (!modalImageAlt) {
+          const rawName = file.name.replace(/\.[^/.]+$/, '');
+          setModalImageAlt(rawName);
+        }
+        showToast('图片上传成功并已持久化至 Telegram！', 'success');
+      }
+    } catch (err: any) {
+      setUploadError(err?.message || '图片上传异常');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handlePasteOnInput = async (
+    e: React.ClipboardEvent<HTMLTextAreaElement>,
+    targetSetter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const items = e.clipboardData?.items;
+    if (!items || items.length === 0) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) continue;
+        showToast('检测到剪贴板图片，正在自动上传至 Telegram 图床...', 'info', 3500);
+        try {
+          const res = await uploadCommentImage(file);
+          if (res.ok && res.url) {
+            const mdSnippet = `\n![${file.name || 'image'}](${res.url})\n`;
+            targetSetter((prev) => prev + mdSnippet);
+            showToast('剪贴板图片已成功上传并插入！', 'success');
+          } else {
+            showToast(`图片上传失败: ${res.error || '未知错误'}`, 'error');
+          }
+        } catch (err: any) {
+          showToast(`图片上传异常: ${err?.message || '网络超时'}`, 'error');
+        }
+        return;
+      }
+    }
+  };
+
+  const handleDropOnInput = async (
+    e: React.DragEvent<HTMLTextAreaElement>,
+    targetSetter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    e.preventDefault();
+    setIsMainDragOver(false);
+    const files = e.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        showToast(`正在上传拖拽图片 ${file.name} 至 Telegram 图床...`, 'info', 3500);
+        try {
+          const res = await uploadCommentImage(file);
+          if (res.ok && res.url) {
+            const mdSnippet = `\n![${file.name || 'image'}](${res.url})\n`;
+            targetSetter((prev) => prev + mdSnippet);
+            showToast(`拖拽图片 ${file.name} 上传成功！`, 'success');
+          } else {
+            showToast(`图片上传失败: ${res.error || '未知错误'}`, 'error');
+          }
+        } catch (err: any) {
+          showToast(`图片上传异常: ${err?.message || '网络超时'}`, 'error');
+        }
+      }
+    }
+  };
+
   const handleConfirmModal = () => {
     if (activeModal === 'poll') {
       const q = modalPollQuestion.trim();
@@ -421,65 +539,58 @@ export function PostComments({
       const headers = Array.from({ length: cols }, (_, i) => modalTableHeaders[i]?.trim() || `列 ${i + 1}`);
       const headerLine = `| ${headers.join(' | ')} |`;
       const separatorLine = `| ${Array(cols).fill('---').join(' | ')} |`;
-      const dataLines = Array.from({ length: rows }, (_, r) =>
-        `| ${Array.from({ length: cols }, (_, c) => `数据 ${r + 1}-${c + 1}`).join(' | ')} |`
-      );
-      const markdown = `\n${headerLine}\n${separatorLine}\n${dataLines.join('\n')}\n`;
-      insertMarkdown(markdown);
+      const bodyLines = Array.from({ length: rows }, (_, r) => {
+        const cells = Array.from({ length: cols }, (_, c) => `数据 ${r + 1}-${c + 1}`);
+        return `| ${cells.join(' | ')} |`;
+      });
+      insertMarkdown(`\n${headerLine}\n${separatorLine}\n${bodyLines.join('\n')}\n`);
       showToast('已成功插入数据表格');
     } else if (activeModal === 'details') {
       const summary = modalDetailsSummary.trim() || '点击展开详细内容';
-      const content = modalDetailsContent.trim() || '在此输入详细补充内容...';
-      const markdown = `\n<details>\n<summary>${summary}</summary>\n\n${content}\n</details>\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入折叠隐藏区块');
+      const content = modalDetailsContent.trim() || '在此输入折叠区块详细内容...';
+      insertMarkdown(`\n<details>\n<summary>${summary}</summary>\n\n${content}\n</details>\n`);
+      showToast('已成功插入折叠区块');
     } else if (activeModal === 'spoiler') {
-      const text = modalSpoilerText.trim() || '此处为剧透内容，悬浮揭晓';
-      const markdown = `[spoiler]${text}[/spoiler]`;
-      insertMarkdown(markdown);
-      showToast('已成功插入剧透打码标签');
+      const text = modalSpoilerText.trim() || '剧透内容';
+      insertMarkdown(`[spoiler]${text}[/spoiler]`);
+      showToast('已成功插入剧透隐藏内容');
     } else if (activeModal === 'math') {
-      const formula = modalMathFormula.trim() || '\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}';
-      const markdown = `\n$$\n${formula}\n$$\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入 LaTeX 数学公式');
+      const formula = modalMathFormula.trim() || 'E = mc^2';
+      insertMarkdown(`\n$$\n${formula}\n$$\n`);
+      showToast('已成功插入 LaTeX 公式');
     } else if (activeModal === 'scroll') {
       const height = Math.max(80, Math.min(600, modalScrollHeight));
-      const content = modalScrollContent.trim() || '可滚动的详细日志或长文本区块...';
-      const markdown = `\n<div style="max-height: ${height}px; overflow-y: auto; padding: 8px; border: 1px dashed var(--theme-main);">\n${content}\n</div>\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入滚动内容区块');
+      const content = modalScrollContent.trim() || '在此输入定高滚动的长篇日志、排查记录或大量文本...';
+      insertMarkdown(`\n::: scroll height=${height}\n${content}\n:::\n`);
+      showToast('已成功插入滚动内容容器');
     } else if (activeModal === 'callout') {
-      const title = modalCalloutTitle.trim() || '重点提示';
-      const content = modalCalloutContent.trim() || '在这里编写高光强调的提示卡片内容...';
-      const markdown = `\n::: ${modalCalloutType} ${title}\n${content}\n:::\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入高光包装卡片');
+      const type = modalCalloutType || 'note';
+      const title = modalCalloutTitle.trim() ? ` ${modalCalloutTitle.trim()}` : '';
+      const content = modalCalloutContent.trim() || '在此输入高光卡片内容...';
+      insertMarkdown(`\n::: ${type}${title}\n${content}\n:::\n`);
+      showToast('已成功套用高光卡片格式');
     } else if (activeModal === 'toc') {
-      let markdown = '\n[TOC]\n\n';
-      if (modalTocIncludeHeaders) {
-        markdown += `### 一、 背景与架构目标\n在此输入第一小节的核心论点...\n\n### 二、 核心技术实现细节\n在此输入第二小节的详细分析...\n\n### 三、 总结建议与展望\n在此输入总结结论...\n\n`;
-      }
-      insertMarkdown(markdown);
-      showToast('已成功插入目录导航标签 [TOC]');
+      const depth = Math.max(1, Math.min(6, modalTocDepth));
+      const includeHeaders = modalTocIncludeHeaders ? ' headers=true' : '';
+      insertMarkdown(`\n[toc depth=${depth}${includeHeaders}]\n`);
+      showToast('已成功插入文章目录标记');
     } else if (activeModal === 'mermaid') {
-      const code = modalMermaidCode.trim() || 'graph TD;\n    A[开始] --> B[结束];';
-      const markdown = `\n\`\`\`mermaid\n${code}\n\`\`\`\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入 Mermaid 拓扑图表');
+      const code = modalMermaidCode.trim() || 'graph TD\n    A[开始] --> B[结束]';
+      insertMarkdown(`\n\`\`\`mermaid\n${code}\n\`\`\`\n`);
+      showToast('已成功插入 Mermaid 图表');
     } else if (activeModal === 'chart') {
-      const code = modalChartCode.trim() || '{\n  "type": "bar",\n  "data": {}\n}';
-      const markdown = `\n\`\`\`chart\n${code}\n\`\`\`\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入 Build Chart 图表');
+      const code = modalChartCode.trim() || '{\n  "type": "bar",\n  "data": { "labels": ["A", "B"], "datasets": [{ "data": [1, 2] }] }\n}';
+      insertMarkdown(`\n\`\`\`chart\n${code}\n\`\`\`\n`);
+      showToast('已成功插入 Build Chart');
     } else if (activeModal === 'graphviz') {
       const code = modalGraphvizCode.trim() || 'digraph G {\n  A -> B;\n}';
-      const markdown = `\n\`\`\`graphviz\n${code}\n\`\`\`\n`;
-      insertMarkdown(markdown);
-      showToast('已成功插入 Graphviz 拓扑图');
+      insertMarkdown(`\n\`\`\`graphviz\n${code}\n\`\`\`\n`);
+      showToast('已成功插入 Graphviz 拓扑');
     } else if (activeModal === 'datetime') {
-      const val = modalDatetimeCustom.trim() || new Date().toISOString();
-      insertMarkdown(`[date=${val}] `);
+      const format = modalDatetimeFormat;
+      const custom = modalDatetimeCustom.trim();
+      const val = custom || new Date().toISOString();
+      insertMarkdown(`[date=${val} format="${format}"]`);
       showToast('已成功插入日期时间标记');
     } else if (activeModal === 'template') {
       const templates: Record<string, string> = {
@@ -494,6 +605,14 @@ export function PostComments({
       const fcontent = modalFootnoteContent.trim() || '在此输入脚注参考说明与文献出处';
       insertMarkdown(`[^${fid}]`, `\n\n[^${fid}]: ${fcontent}\n`);
       showToast('已成功插入参考脚注');
+    } else if (activeModal === 'image') {
+      if (!modalImageUrl.trim()) {
+        showToast('请先选择并上传图片，或输入图片外部链接', 'error');
+        return;
+      }
+      const alt = modalImageAlt.trim() || '图片';
+      insertMarkdown(`\n![${alt}](${modalImageUrl.trim()})\n`);
+      showToast('已成功插入图片');
     }
     setActiveModal(null);
   };
@@ -1138,6 +1257,17 @@ export function PostComments({
                       )}
                     </div>
 
+                    {/* ⑩ 插入图片 */}
+                    <button
+                      type="button"
+                      className="tk-tb-btn tk-tb-image"
+                      title="插入图片 (支持本地上传、剪贴板粘贴与拖拽上传至 Telegram 图床)"
+                      aria-label="插入图片"
+                      onClick={() => openImageModal('upload')}
+                    >
+                      <ImageIcon size={15} />
+                    </button>
+
                     <span className="tk-tb-divider" />
 
                     {/* ⑩ 选项 (下拉包含 15 个高级拓展功能，含居中 UI 弹窗与 SVG 图标及注释文本) */}
@@ -1423,6 +1553,23 @@ export function PostComments({
                               </div>
                             </div>
                           </button>
+
+                          {/* 15. 插入图片与指南 (UI 弹窗) */}
+                          <button
+                            type="button"
+                            className="tk-dropdown-item"
+                            onClick={() => openImageModal('upload')}
+                          >
+                            <div className="tk-dropdown-item-content">
+                              <div className="tk-dropdown-icon-col">
+                                <ImageIcon size={15} className="tk-dropdown-svg" />
+                              </div>
+                              <div className="tk-dropdown-text-col">
+                                <span className="tk-dropdown-label">插入图片 / Telegram 图床</span>
+                                <span className="tk-dropdown-desc">本地上传、Ctrl+V 粘贴与拖拽上传托管</span>
+                              </div>
+                            </div>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1435,11 +1582,18 @@ export function PostComments({
                     <textarea
                       ref={textareaRef}
                       dir={textDirection}
-                      className="el-textarea__inner"
+                      className={`el-textarea__inner ${isMainDragOver ? 'is-drag-over' : ''}`}
                       value={mainMessage}
                       onFocus={() => setMainInputFocused(true)}
                       onChange={(e) => setMainMessage(e.target.value.slice(0, COMMENT_LIMIT))}
-                      placeholder={`围绕《${title}》发表公开评论... (支持 Markdown 丰富排版)`}
+                      onPaste={(e) => handlePasteOnInput(e, setMainMessage)}
+                      onDrop={(e) => handleDropOnInput(e, setMainMessage)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsMainDragOver(true);
+                      }}
+                      onDragLeave={() => setIsMainDragOver(false)}
+                      placeholder={`围绕《${title}》发表公开评论... (支持 Markdown 排版、图片快捷粘贴与拖拽上传)`}
                       rows={mainInputFocused || mainMessage.trim() ? 5 : 2}
                     />
                     <span className="el-input__count">
@@ -1626,6 +1780,8 @@ export function PostComments({
                               className="el-textarea__inner"
                               value={editingMessage}
                               onChange={(e) => setEditingMessage(e.target.value.slice(0, COMMENT_LIMIT))}
+                              onPaste={(e) => handlePasteOnInput(e, setEditingMessage)}
+                              onDrop={(e) => handleDropOnInput(e, setEditingMessage)}
                               rows={3}
                             />
                             <div className="tk-inline-edit-actions">
@@ -1844,6 +2000,8 @@ export function PostComments({
                                       const limit = replyMode === 'boost' ? BOOST_LIMIT : COMMENT_LIMIT;
                                       setReplyMessage(e.target.value.slice(0, limit));
                                     }}
+                                    onPaste={(e) => handlePasteOnInput(e, setReplyMessage)}
+                                    onDrop={(e) => handleDropOnInput(e, setReplyMessage)}
                                     placeholder={
                                       replyMode === 'boost'
                                         ? `🚀 发表 16 字以内的 Boost 快速回复 @${replyingTargetAuthor}...`
@@ -1974,6 +2132,8 @@ export function PostComments({
                                               className="el-textarea__inner"
                                               value={editingMessage}
                                               onChange={(e) => setEditingMessage(e.target.value.slice(0, COMMENT_LIMIT))}
+                                              onPaste={(e) => handlePasteOnInput(e, setEditingMessage)}
+                                              onDrop={(e) => handleDropOnInput(e, setEditingMessage)}
                                               rows={2}
                                             />
                                             <div className="tk-inline-edit-actions">
@@ -2224,6 +2384,11 @@ export function PostComments({
                   {activeModal === 'footnote' && (
                     <>
                       <Bookmark size={16} /> 新增参考脚注
+                    </>
+                  )}
+                  {activeModal === 'image' && (
+                    <>
+                      <ImageIcon size={16} /> 插入图片与 Telegram 图床托管
                     </>
                   )}
                 </h4>
@@ -2900,6 +3065,233 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                         autoFocus
                       />
                     </div>
+                  </>
+                )}
+
+                {/* 15. Image Upload & Host Form */}
+                {activeModal === 'image' && (
+                  <>
+                    <div className="tk-modal-rule-banner">
+                      <ImageIcon size={15} />
+                      <div>
+                        <div className="tk-modal-rule-title">官方 Telegram 图床托管与图片插入规则</div>
+                        <div className="tk-modal-rule-text">
+                          上传的文件将自动转存至官方 Telegram 永久图床 (<code>img.epocanvas.com</code>)，支持最大 10MB 的主流图片格式。在评论输入框中支持直接使用键盘 <code>Ctrl+V</code> / <code>Cmd+V</code> 快速粘贴截图，或直接拖拽图片入框。
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tab switch */}
+                    <div className="tk-modal-tabs-bar">
+                      <button
+                        type="button"
+                        className={`tk-modal-tab-btn ${modalImageTab === 'upload' ? 'is-active' : ''}`}
+                        onClick={() => setModalImageTab('upload')}
+                      >
+                        <Upload size={14} /> 本地上传
+                      </button>
+                      <button
+                        type="button"
+                        className={`tk-modal-tab-btn ${modalImageTab === 'guide' ? 'is-active' : ''}`}
+                        onClick={() => setModalImageTab('guide')}
+                      >
+                        <FileText size={14} /> 📋 粘贴与拖拽指南
+                      </button>
+                      <button
+                        type="button"
+                        className={`tk-modal-tab-btn ${modalImageTab === 'url' ? 'is-active' : ''}`}
+                        onClick={() => setModalImageTab('url')}
+                      >
+                        <Link size={14} /> 🔗 外部图片链接
+                      </button>
+                    </div>
+
+                    {/* Hidden file input */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/avif"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageFileSelect(file);
+                        e.target.value = '';
+                      }}
+                    />
+
+                    {modalImageTab === 'upload' && (
+                      <div className="tk-image-upload-tab-pane">
+                        {modalImageUrl ? (
+                          <div className="tk-uploaded-preview-card">
+                            <div className="tk-uploaded-preview-img-wrap">
+                              <img src={modalImageUrl} alt="上传预览" className="tk-uploaded-preview-img" />
+                            </div>
+                            <div className="tk-uploaded-preview-info">
+                              <div className="tk-uploaded-status-badge">
+                                <CheckCircle2 size={13} />
+                                <span>已成功转存至 Telegram CDN</span>
+                              </div>
+                              <div className="tk-uploaded-url-text" title={modalImageUrl}>
+                                {modalImageUrl}
+                              </div>
+                              <div className="tk-uploaded-actions">
+                                <button
+                                  type="button"
+                                  className="tk-uploaded-reselect-btn"
+                                  onClick={() => fileInputRef.current?.click()}
+                                >
+                                  重新选择
+                                </button>
+                                <button
+                                  type="button"
+                                  className="tk-uploaded-remove-btn"
+                                  onClick={() => {
+                                    setModalImageUrl('');
+                                    setModalImageAlt('');
+                                  }}
+                                >
+                                  清除
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            className={`tk-image-dropzone ${isUploadingImage ? 'is-uploading' : ''}`}
+                            onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const file = e.dataTransfer.files?.[0];
+                              if (file) handleImageFileSelect(file);
+                            }}
+                          >
+                            {isUploadingImage ? (
+                              <div className="tk-dropzone-loading">
+                                <div className="tk-dropzone-spinner" />
+                                <p className="tk-dropzone-loading-title">正在持久化至 Telegram 图床通道...</p>
+                                <p className="tk-dropzone-loading-desc">传输并解析中，请稍候</p>
+                              </div>
+                            ) : (
+                              <div className="tk-dropzone-content">
+                                <div className="tk-dropzone-icon-wrap">
+                                  <Upload size={24} className="tk-dropzone-icon" />
+                                </div>
+                                <p className="tk-dropzone-primary-text">
+                                  <strong>点击选择图片</strong> 或将图片拖放至此处
+                                </p>
+                                <p className="tk-dropzone-hint-text">
+                                  支持 JPG, PNG, GIF, WebP, SVG, AVIF (单个文件最高 10MB)
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {uploadError && (
+                          <div className="tk-upload-error-alert">
+                            <AlertCircle size={14} />
+                            <span>{uploadError}</span>
+                          </div>
+                        )}
+
+                        <div className="tk-modal-field" style={{ marginTop: '14px' }}>
+                          <label className="tk-modal-label">图片说明 / Alt (选填)：</label>
+                          <input
+                            type="text"
+                            className="tk-modal-input"
+                            value={modalImageAlt}
+                            onChange={(e) => setModalImageAlt(e.target.value)}
+                            placeholder="例如: 界面排查截图、架构拓扑流程"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {modalImageTab === 'guide' && (
+                      <div className="tk-image-guide-tab-pane">
+                        <div className="tk-guide-grid">
+                          <div className="tk-guide-card">
+                            <div className="tk-guide-card-head">
+                              <span className="tk-guide-step-badge">方法 1</span>
+                              <strong className="tk-guide-card-title">剪贴板直接粘贴 (快捷方便)</strong>
+                            </div>
+                            <p className="tk-guide-card-desc">
+                              使用截图工具 (如 Windows <code>Win + Shift + S</code> 或 Mac <code>Cmd + Shift + 4</code>) 截图后，在评论区任意输入框内直接按 <code>Ctrl + V</code> (Mac 为 <code>Cmd + V</code>)。
+                            </p>
+                            <div className="tk-guide-keyboard-row">
+                              <kbd className="tk-guide-kbd">Ctrl</kbd> + <kbd className="tk-guide-kbd">V</kbd>
+                              <span className="tk-guide-kbd-arrow">➜</span>
+                              <span className="tk-guide-kbd-result">自动上传并就地插入 Markdown 链接</span>
+                            </div>
+                          </div>
+
+                          <div className="tk-guide-card">
+                            <div className="tk-guide-card-head">
+                              <span className="tk-guide-step-badge">方法 2</span>
+                              <strong className="tk-guide-card-title">直接拖拽入框 (直观高效)</strong>
+                            </div>
+                            <p className="tk-guide-card-desc">
+                              从您的文件管理器、桌面或浏览器其他标签页，直接将图片文件拖放至下方评论输入区域，系统将自动识别并上传至 Telegram。
+                            </p>
+                          </div>
+
+                          <div className="tk-guide-card">
+                            <div className="tk-guide-card-head">
+                              <span className="tk-guide-step-badge">方法 3</span>
+                              <strong className="tk-guide-card-title">标准 Markdown 语法插入</strong>
+                            </div>
+                            <p className="tk-guide-card-desc">
+                              如果您已有外部 CDN 或图片直链，可随时书写标准格式：
+                            </p>
+                            <pre className="tk-guide-code"><code>![图片说明](https://...)</code></pre>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {modalImageTab === 'url' && (
+                      <div className="tk-image-url-tab-pane">
+                        <div className="tk-modal-field">
+                          <label className="tk-modal-label">图片直链 URL (必须为有效链接)：</label>
+                          <input
+                            type="url"
+                            className="tk-modal-input"
+                            value={modalImageUrl}
+                            onChange={(e) => setModalImageUrl(e.target.value)}
+                            placeholder="https://img.epocanvas.com/file/... 或 https://..."
+                            autoFocus
+                          />
+                        </div>
+                        <div className="tk-modal-field">
+                          <label className="tk-modal-label">图片说明 / Alt (选填)：</label>
+                          <input
+                            type="text"
+                            className="tk-modal-input"
+                            value={modalImageAlt}
+                            onChange={(e) => setModalImageAlt(e.target.value)}
+                            placeholder="输入简要图片描述..."
+                          />
+                        </div>
+                        {modalImageUrl && (
+                          <div className="tk-url-preview-box">
+                            <span className="tk-url-preview-label">外部预览：</span>
+                            <img
+                              src={modalImageUrl}
+                              alt={modalImageAlt || '预览'}
+                              className="tk-url-preview-img"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>

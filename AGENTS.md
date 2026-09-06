@@ -352,3 +352,35 @@
   1. 编写并执行专用安全单元测试套件 `scripts/verify-admin-spoofing-defense.mjs`，覆盖 4 大测试组（权威白名单、第三方防冒领、官方平滑迁移、纵深降级防御），断言 100% 全部通过；
   2. 更新 `scripts/verify-account-drawer-epomail.mjs`，全量验证本地读者防冒领、未授权评论管理员身份降级拦截、非管理员删除 403 拒绝与站长会话删除通过，Playwright 桌面端与移动端 E2E 断言全部 PASS 通过。
 
+### Task 31: 接入内部 Telegram 图床 API (img.epocanvas.com)、公开评论区图片上传/剪贴板粘贴/拖拽插入与账户中心头像自定义/恢复 Epomail 默认头像
+- [x] 后端图床代理中继 (`functions/api/upload-image.ts` 与 `astro.config.mjs`)：
+  1. 创建 `POST /api/upload-image` 边缘中继代理，支持 `multipart/form-data` 文件上传；
+  2. 严格校验文件 MIME 类型（JPG, PNG, GIF, WebP, SVG, AVIF）与文件大小上限（10MB）；
+  3. 服务端安全中继转发至官方 Telegram 图床 (`https://img.epocanvas.com/upload`)，凭证严格由环境变量 `IMAGE_HOST_TOKEN` 注入，杜绝向客户端暴露密钥；
+  4. 返回 `{ ok: true, code: 200, url, id, name, size, type }`；并在 `astro.config.mjs` 配置本地 Vite 中间件，实现平滑本地开发体验。
+- [x] 个人资料与头像持久化 API (`functions/api/auth.ts` & `functions/_lib/auth-service.ts`)：
+  1. 新增 `POST /api/auth/profile` 路由，基于会话令牌安全更新用户头像、昵称、网站与个人简介；
+  2. 在 `users` 表与内存缓存中安全更新 `avatar` 等字段并更新时间戳；
+  3. `src/lib/comment-client.ts` 新增 `uploadCommentImage()`、`updateAuthProfile()`，并在 `CommentIdentity` 中保留 `epomailAvatar` 以便一键恢复。
+- [x] 公开评论区图片全模态插入与上传指南 (`src/components/theme/PostComments.tsx`)：
+  1. 工具栏新增专属“插入图片”纯 SVG 图标按钮（`.tk-tb-image`），点击呼出居中配置弹窗；
+  2. 弹窗提供三大 Tab 面板：
+     - Tab 1: 本地上传（支持拖拽上传、点击选择图片文件、文件体积提示、上传中转动效果、成功即时预览卡片与清除按钮）；
+     - Tab 2: 剪贴板粘贴与拖拽指南（图文展示 `Ctrl + V` / `Cmd + V` 快捷键徽章与拖拽入框操作方法）；
+     - Tab 3: 外部图片链接（支持粘贴已有图片直链并实时提供预览）；
+  3. 评论输入框支持直接剪贴板粘贴（`onPaste` 监听自动识别图片并上传至 Telegram 插入 Markdown 语法）；
+  4. 评论输入框支持直接拖拽图片入框（`onDrop` 与 `onDragOver` 高亮边框动效，释放自动上传）；
+  5. 在二级嵌套回复框与就地编辑框全量打通图片粘贴与拖拽能力。
+- [x] 账户中心头像个性化设置与恢复 Epomail 官方头像 (`src/components/ThemeOverlays.tsx`)：
+  1. 重构账号抽屉中的头像管理模块（`.account-avatar-card-block`），圆形大头像预览与来源状态徽章（`⚡ Epomail 官方头像` vs `🎨 自定义专属头像` vs `默认头像`）；
+  2. 提供“上传新头像”按钮（点击唤起文件选择，直接上传至 Telegram 图床并即时应用保存）；
+  3. 针对 Epomail 授权用户，当头像被修改后动态展示“↺ 恢复 Epomail 默认头像”按钮，点击一键恢复最初从开放平台同步的官方头像；
+  4. 保留直链输入框以便用户手动粘贴图片链接；
+  5. 保存后通过事件总线实时广播，站内主导航头像、抽屉头像与评论区头像毫秒级同步。
+- [x] 样式打磨与 Markdown 评论图片响应式呈现 (`src/styles/rebuild.css`)：
+  1. 为 `.tk-md-img` 配置 8px 圆角、微阴影、最大高度约束与 zoom-in 手势放大微动效；
+  2. 输入框拖拽激活高亮态 `.is-drag-over`、弹窗 Tab 导航、Dropzone 上传区与键盘徽章精致样式全量补齐。
+- [x] 自动化端到端测试套件（`scripts/verify-image-upload-and-avatar.mjs`）全量执行通过：
+  覆盖真实 Telegram 图床上传中继、评论区工具栏按钮与弹窗、3 标签页切换与插入、剪贴板粘贴/拖拽响应、Markdown 图片样式、账户中心头像上传/自定义与 Epomail 恢复，24/24 项断言 100% PASS 通过。
+
+

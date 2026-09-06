@@ -76,6 +76,8 @@ export type AppEnv = {
   EPOMAIL_CLIENT_SECRET?: string;
   EPOMAIL_REDIRECT_URI?: string;
   ADMIN_TOKEN?: string;
+  IMAGE_HOST_URL?: string;
+  IMAGE_HOST_TOKEN?: string;
 };
 
 export type ProviderTokenState = {

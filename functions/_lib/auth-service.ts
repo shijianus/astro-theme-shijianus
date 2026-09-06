@@ -359,6 +359,50 @@ export async function invalidateSession(token: string, env: AppEnv): Promise<voi
   }
 }
 
+export async function updateUserProfile(
+  token: string,
+  updates: { name?: string; avatar?: string; website?: string; bio?: string },
+  env: AppEnv
+): Promise<UserProfile> {
+  const currentUser = await getUserBySessionToken(token, env);
+  if (!currentUser) {
+    throw new Error('未登录或会话已失效');
+  }
+
+  const updatedUser: UserProfile = {
+    ...currentUser,
+    name: updates.name !== undefined && updates.name.trim() ? updates.name.trim() : currentUser.name,
+    avatar: updates.avatar !== undefined ? updates.avatar.trim() : currentUser.avatar,
+    website: updates.website !== undefined ? updates.website.trim() : currentUser.website,
+    bio: updates.bio !== undefined ? updates.bio.trim() : currentUser.bio,
+  };
+
+  // Update in memory
+  memoryUsers.set(updatedUser.id, updatedUser);
+
+  // Update in DB if available
+  const db = resolveActiveDb(env);
+  if (db) {
+    try {
+      await db.prepare(`
+        UPDATE users
+        SET name = ?, avatar = ?, website = ?, bio = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(
+        updatedUser.name,
+        updatedUser.avatar,
+        updatedUser.website,
+        updatedUser.bio || '',
+        updatedUser.id
+      ).run();
+    } catch (err) {
+      console.warn('[AuthService] DB updateUserProfile error:', err);
+    }
+  }
+
+  return updatedUser;
+}
+
 /**
  * Exchange OAuth 2.0 Authorization Code with Epomail Provider
  */

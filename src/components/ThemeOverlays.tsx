@@ -30,6 +30,10 @@ import {
   ChevronUp,
   Database,
   Settings,
+  Camera,
+  RotateCcw,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -45,6 +49,8 @@ import {
   directEpomailLogin,
   loginLocalReader,
   logoutAuthAccount,
+  uploadCommentImage,
+  updateAuthProfile,
   type CommentIdentity,
   type PublicAuthConfig,
 } from '../lib/comment-client';
@@ -187,6 +193,7 @@ export function ThemeOverlays({
   const [authStatusMessage, setAuthStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [syncStats, setSyncStats] = useState(stats);
   const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
   const updateCloseBtnPosition = useCallback(() => {
     const trigger = document.querySelector('.shijianus-dashboard-icon');
@@ -902,6 +909,61 @@ export function ThemeOverlays({
     }
   };
 
+  const handleAvatarFileSelect = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setAuthStatusMessage({ type: 'error', text: '仅支持上传图片格式文件 (PNG, JPG, WebP, GIF, SVG)' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setAuthStatusMessage({ type: 'error', text: '头像文件不能超过 10MB' });
+      return;
+    }
+
+    setIsAuthorizing(true);
+    setAuthStatusMessage({ type: 'info', text: '正在上传新头像至 Telegram 图床...' });
+    try {
+      const res = await uploadCommentImage(file);
+      if (!res.ok || !res.url) {
+        setAuthStatusMessage({ type: 'error', text: res.error || '头像上传失败' });
+      } else {
+        const newAvatarUrl = res.url;
+        setAccountForm((prev) => ({ ...prev, avatar: newAvatarUrl }));
+        if (account) {
+          const updateRes = await updateAuthProfile({ avatar: newAvatarUrl });
+          if (updateRes.ok && updateRes.user) {
+            setAccount(updateRes.user);
+          }
+        }
+        setAuthStatusMessage({ type: 'success', text: '新头像已上传至 Telegram 图床并应用！' });
+        emitActivity('已上传并更新头像');
+      }
+    } catch (err: any) {
+      setAuthStatusMessage({ type: 'error', text: err?.message || '头像上传异常' });
+    } finally {
+      setIsAuthorizing(false);
+    }
+  };
+
+  const handleRestoreEpomailAvatar = async () => {
+    if (!account?.epomailAvatar) return;
+    const original = account.epomailAvatar;
+    setAccountForm((prev) => ({ ...prev, avatar: original }));
+    setIsAuthorizing(true);
+    try {
+      const updateRes = await updateAuthProfile({ avatar: original });
+      if (updateRes.ok && updateRes.user) {
+        setAccount(updateRes.user);
+      }
+      setAuthStatusMessage({ type: 'success', text: '已恢复默认 Epomail 官方头像' });
+      emitActivity('恢复默认 Epomail 官方头像');
+    } catch (err: any) {
+      setAuthStatusMessage({ type: 'error', text: err?.message || '恢复头像失败' });
+    } finally {
+      setIsAuthorizing(false);
+    }
+  };
+
   const handleLocalSave = async () => {
     if (!accountForm.name.trim()) {
       setAccountNotice('请先填写昵称');
@@ -910,14 +972,33 @@ export function ThemeOverlays({
     }
     setIsAuthorizing(true);
     setAccountNeedsAttention(false);
-    const res = await loginLocalReader(accountForm);
-    setIsAuthorizing(false);
-    if (res.ok && res.user) {
-      setAccount(res.user);
-      setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
-      emitActivity('创建/更新本地身份');
+
+    if (account) {
+      // Logged in user updating profile
+      const res = await updateAuthProfile({
+        name: accountForm.name,
+        avatar: accountForm.avatar,
+        website: accountForm.website,
+      });
+      setIsAuthorizing(false);
+      if (res.ok && res.user) {
+        setAccount(res.user);
+        setAuthStatusMessage({ type: 'success', text: '个人资料与头像已成功保存！' });
+        emitActivity('更新个人资料与头像');
+      } else {
+        setAuthStatusMessage({ type: 'error', text: res.error || '保存资料失败' });
+      }
     } else {
-      setAuthStatusMessage({ type: 'error', text: res.error || '保存失败' });
+      // Local reader registration
+      const res = await loginLocalReader(accountForm);
+      setIsAuthorizing(false);
+      if (res.ok && res.user) {
+        setAccount(res.user);
+        setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
+        emitActivity('创建/更新本地身份');
+      } else {
+        setAuthStatusMessage({ type: 'error', text: res.error || '保存失败' });
+      }
     }
   };
 
@@ -1496,6 +1577,19 @@ export function ThemeOverlays({
           {/* 5. TAB 1: 账号与授权 / 个人资料 */}
           {accountTab === 'auth' && (
             <div className="account-tab-content">
+              {/* 隐藏的头像文件选择框 */}
+              <input
+                type="file"
+                ref={avatarFileInputRef}
+                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/avif"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleAvatarFileSelect(file);
+                  e.target.value = '';
+                }}
+              />
+
               {!account ? (
                 <>
                   {/* Epomail 官方集成专区 */}
@@ -1659,13 +1753,26 @@ export function ThemeOverlays({
                       </label>
 
                       <label className="account-field">
-                        <span>自定义头像链接 (选填)</span>
-                        <input
-                          type="url"
-                          value={accountForm.avatar}
-                          onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                          placeholder="https://..."
-                        />
+                        <span>自定义头像 (选填)</span>
+                        <div className="account-input-wrap">
+                          <ImageIcon className="account-input-icon" />
+                          <input
+                            type="url"
+                            value={accountForm.avatar}
+                            onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
+                            placeholder="https://... 或点击右侧上传"
+                          />
+                          <button
+                            type="button"
+                            className="account-input-inline-btn"
+                            onClick={() => avatarFileInputRef.current?.click()}
+                            disabled={isAuthorizing}
+                            title="上传本地图片至 Telegram 图床"
+                          >
+                            <Upload className="h-3.5 w-3.5" />
+                            <span>上传</span>
+                          </button>
+                        </div>
                       </label>
                     </div>
 
@@ -1727,15 +1834,69 @@ export function ThemeOverlays({
                         />
                       </label>
 
-                      <label className="account-field">
-                        <span>头像图片链接</span>
-                        <input
-                          type="url"
-                          value={accountForm.avatar}
-                          onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                          placeholder="https://..."
-                        />
-                      </label>
+                      {/* 专属头像管理组件 */}
+                      <div className="account-avatar-card-block">
+                        <div className="account-avatar-card-inner">
+                          <div className="account-avatar-main-avatar">
+                            {accountForm.avatar ? (
+                              <img src={accountForm.avatar} alt="头像预览" className="account-avatar-img" />
+                            ) : (
+                              <span className="account-avatar-placeholder">{getCommentInitials(accountForm.name || '访')}</span>
+                            )}
+                          </div>
+                          <div className="account-avatar-info">
+                            <div className="account-avatar-status-badge-wrap">
+                              {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar === account.epomailAvatar ? (
+                                <span className="account-avatar-status-badge is-epomail">⚡ Epomail 官方头像</span>
+                              ) : accountForm.avatar ? (
+                                <span className="account-avatar-status-badge is-custom">🎨 自定义专属头像</span>
+                              ) : (
+                                <span className="account-avatar-status-badge is-default">默认头像</span>
+                              )}
+                            </div>
+                            <p className="account-avatar-tip">支持上传图片至 Telegram 图床，或使用直链与 Epomail 官方头像</p>
+                          </div>
+                        </div>
+
+                        <div className="account-avatar-btns-row">
+                          <button
+                            type="button"
+                            className="account-avatar-action-btn"
+                            onClick={() => avatarFileInputRef.current?.click()}
+                            disabled={isAuthorizing}
+                            title="选择本地图片上传至 Telegram 图床"
+                          >
+                            <Camera className="h-3.5 w-3.5" />
+                            <span>上传新头像</span>
+                          </button>
+
+                          {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar !== account.epomailAvatar && (
+                            <button
+                              type="button"
+                              className="account-avatar-action-btn is-restore"
+                              onClick={handleRestoreEpomailAvatar}
+                              disabled={isAuthorizing}
+                              title="恢复从 Epomail 授权同步的原始官方头像"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              <span>恢复 Epomail 默认头像</span>
+                            </button>
+                          )}
+                        </div>
+
+                        <label className="account-field" style={{ marginTop: '10px' }}>
+                          <span className="account-field-sublabel">自定义头像链接：</span>
+                          <div className="account-input-wrap">
+                            <ImageIcon className="account-input-icon" />
+                            <input
+                              type="url"
+                              value={accountForm.avatar}
+                              onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
+                              placeholder="https://img.epocanvas.com/file/... 或其他图片直链"
+                            />
+                          </div>
+                        </label>
+                      </div>
                     </div>
 
                     <div className="account-card__foot">

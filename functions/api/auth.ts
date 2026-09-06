@@ -8,6 +8,7 @@ import {
   invalidateSession,
   authenticateLocalReader,
   calculateUserLevel,
+  updateUserProfile,
 } from '../_lib/auth-service.ts';
 
 function extractSessionToken(request: Request, body?: any): string {
@@ -183,6 +184,43 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
       });
     } catch (err: any) {
       return jsonResponse(request, env, { ok: false, error: err?.message || '本地身份验证失败' }, { status: 400 });
+    }
+  }
+
+  // 7. POST /api/auth/profile (Update user profile - avatar, name, website, bio)
+  if (pathname === '/api/auth/profile' && request.method === 'POST') {
+    try {
+      const body = await safeReadJson<{
+        token?: string;
+        avatar?: string;
+        name?: string;
+        website?: string;
+        bio?: string;
+      }>(request);
+      const token = extractSessionToken(request, body);
+      if (!token) {
+        return jsonResponse(request, env, { ok: false, error: '未提供会话令牌 (Unauthorized)' }, { status: 401 });
+      }
+
+      const updatedUser = await updateUserProfile(
+        token,
+        {
+          avatar: body?.avatar,
+          name: body?.name,
+          website: body?.website,
+          bio: body?.bio,
+        },
+        env
+      );
+
+      return jsonResponse(request, env, {
+        ok: true,
+        user: updatedUser,
+        message: '个人资料已成功更新',
+      });
+    } catch (err: any) {
+      console.error('[Auth API] Update profile error:', err);
+      return jsonResponse(request, env, { ok: false, error: err?.message || '更新个人资料失败' }, { status: 400 });
     }
   }
 

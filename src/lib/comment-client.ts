@@ -12,6 +12,7 @@ export type CommentIdentity = {
   provider?: 'epomail' | 'local' | 'visitor';
   token?: string;
   epomailUserId?: string | number;
+  epomailAvatar?: string;
   bio?: string;
 };
 
@@ -439,6 +440,7 @@ export async function exchangeEpomailCode(
       return { ok: false, error: data?.error || 'OAuth 授权码交换失败' };
     }
     const token = data.token || '';
+    const epomailAvatar = data.user.avatar || '';
     const identity: CommentIdentity = {
       id: data.user.id,
       name: data.user.name,
@@ -449,6 +451,7 @@ export async function exchangeEpomailCode(
       provider: 'epomail',
       token,
       epomailUserId: data.user.externalId || data.user.id,
+      epomailAvatar,
       bio: data.user.bio,
     };
     writeCommentIdentity(identity);
@@ -478,6 +481,7 @@ export async function directEpomailLogin(credentials: {
     if (!res.ok || !data.ok || !data.user) {
       return { ok: false, error: data?.error || 'Epomail 授权验证失败' };
     }
+    const epomailAvatar = data.user.avatar || '';
     const identity: CommentIdentity = {
       id: data.user.id,
       name: data.user.name,
@@ -488,6 +492,7 @@ export async function directEpomailLogin(credentials: {
       provider: 'epomail',
       token: data.token,
       epomailUserId: data.user.externalId,
+      epomailAvatar,
       bio: data.user.bio,
     };
     writeCommentIdentity(identity);
@@ -542,5 +547,109 @@ export async function logoutAuthAccount(token?: string): Promise<boolean> {
   } catch {}
   writeCommentIdentity(null);
   return true;
+}
+
+export async function uploadCommentImage(file: File): Promise<{
+  ok: boolean;
+  url?: string;
+  id?: string;
+  name?: string;
+  size?: number;
+  type?: string;
+  error?: string;
+}> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await safeFetchJson<{
+      ok: boolean;
+      url: string;
+      id?: string;
+      name?: string;
+      size?: number;
+      type?: string;
+      error?: string;
+    }>(res);
+
+    if (!result.ok || !result.data?.ok || !result.data.url) {
+      return { ok: false, error: result.data?.error || result.error || '图片上传失败' };
+    }
+
+    return {
+      ok: true,
+      url: result.data.url,
+      id: result.data.id,
+      name: result.data.name,
+      size: result.data.size,
+      type: result.data.type,
+    };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '网络连接超时或图片上传异常' };
+  }
+}
+
+export async function updateAuthProfile(updates: {
+  avatar?: string;
+  name?: string;
+  website?: string;
+  bio?: string;
+}): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
+  try {
+    const current = readCommentIdentity();
+    const token = current?.token || (typeof window !== 'undefined' ? window.localStorage.getItem('shijianus-auth-token') : '');
+
+    let updatedIdentity: CommentIdentity | null = null;
+
+    if (token) {
+      try {
+        const res = await fetch('/api/auth/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updates),
+        });
+        const data = (await res.json()) as any;
+        if (res.ok && data.ok && data.user) {
+          updatedIdentity = {
+            ...current!,
+            name: data.user.name ?? current?.name ?? '',
+            avatar: data.user.avatar ?? current?.avatar ?? '',
+            website: data.user.website ?? current?.website ?? '',
+            bio: data.user.bio ?? current?.bio ?? '',
+            token,
+          };
+        }
+      } catch (err) {
+        console.warn('[CommentClient] Server profile update failed, falling back to local:', err);
+      }
+    }
+
+    if (!updatedIdentity && current) {
+      updatedIdentity = {
+        ...current,
+        name: updates.name !== undefined ? updates.name : current.name,
+        avatar: updates.avatar !== undefined ? updates.avatar : current.avatar,
+        website: updates.website !== undefined ? updates.website : current.website,
+        bio: updates.bio !== undefined ? updates.bio : current.bio,
+      };
+    }
+
+    if (updatedIdentity) {
+      writeCommentIdentity(updatedIdentity);
+      return { ok: true, user: updatedIdentity };
+    }
+
+    return { ok: false, error: '未找到有效登录会话' };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || '更新个人资料失败' };
+  }
 }
 
