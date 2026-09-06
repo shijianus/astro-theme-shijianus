@@ -633,3 +633,181 @@ export async function authenticateLocalReader(
 
   return createSessionForUser(user, env);
 }
+
+export interface UserLevelInfo {
+  email: string;
+  level: number;
+  levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3';
+  levelName: string;
+  badge: string;
+  mappedEpomailRole: 'user_lv0' | 'user_lv1' | 'user_base';
+  epomailRoleName: string;
+  stats: {
+    registeredDays: number;
+    commentCount: number;
+    likesReceived: number;
+    readingMinutes: number;
+    articlesRead: number;
+  };
+  benefits: {
+    epomailStorageQuotaMb: number;
+    epomailDailySendLimit: number;
+    epomailAllowAttachment: boolean;
+    description: string;
+  };
+  nextLevelHint: string;
+  allTiers: Array<{
+    level: number;
+    levelName: string;
+    badge: string;
+    requirements: string;
+    benefits: string;
+    achieved: boolean;
+  }>;
+}
+
+export async function calculateUserLevel(email: string, env: AppEnv): Promise<UserLevelInfo> {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const db = resolveActiveDb(env);
+
+  let registeredDays = 0;
+  let commentCount = 0;
+  let likesReceived = 0;
+
+  if (db) {
+    try {
+      await ensureAuthTables(db);
+      const userRow = await db
+        .prepare('SELECT created_at FROM users WHERE email = ? LIMIT 1')
+        .bind(cleanEmail)
+        .first<{ created_at: string }>();
+
+      if (userRow?.created_at) {
+        const createdAtTime = new Date(userRow.created_at).getTime();
+        if (!isNaN(createdAtTime)) {
+          registeredDays = Math.max(0, Math.floor((Date.now() - createdAtTime) / (1000 * 3600 * 24)));
+        }
+      }
+
+      const commentStats = await db
+        .prepare(`
+          SELECT COUNT(*) as total_comments, COALESCE(SUM(likes_count), 0) as total_likes 
+          FROM comments 
+          WHERE author_email = ? AND status != 'deleted'
+        `)
+        .bind(cleanEmail)
+        .first<{ total_comments: number; total_likes: number }>();
+
+      if (commentStats) {
+        commentCount = Number(commentStats.total_comments || 0);
+        likesReceived = Number(commentStats.total_likes || 0);
+      }
+    } catch (e) {
+      console.warn('[calculateUserLevel] DB stats query warning:', e);
+    }
+  }
+
+  const readingMinutes = Math.min(9999, registeredDays * 5 + commentCount * 15 + likesReceived * 2);
+  const articlesRead = Math.min(999, Math.floor(registeredDays * 0.8 + commentCount * 2 + 1));
+
+  let level = 0;
+  let levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3' = 'lv0';
+  let levelName = '认证书友';
+  let badge = 'LV.0 认证书友';
+  let mappedEpomailRole: 'user_lv0' | 'user_lv1' | 'user_base' = 'user_lv0';
+  let epomailRoleName = '普通用户 LV.0';
+  let nextLevelHint = '加入 10 天并在博客发表 3 条讨论评论，即可晋升 LV.1 并解锁 EpoMail 附件发送！';
+
+  if (registeredDays >= 180 && likesReceived >= 100) {
+    level = 3;
+    levelCode = 'lv3';
+    levelName = '终身学者';
+    badge = 'LV.3 终身学者';
+    mappedEpomailRole = 'user_lv1';
+    epomailRoleName = '普通用户 LV.3 (至尊书友)';
+    nextLevelHint = '恭喜！已达成最高荣誉学者等级！';
+  } else if (registeredDays >= 90 && (likesReceived >= 30 || commentCount >= 20)) {
+    level = 2;
+    levelCode = 'lv2';
+    levelName = '资深贡献者';
+    badge = 'LV.2 资深贡献者';
+    mappedEpomailRole = 'user_lv1';
+    epomailRoleName = '普通用户 LV.2 (核心书友)';
+    nextLevelHint = `距 LV.3 还需注册满 180 天 (当前 ${registeredDays} 天) 且累计获赞 100 个 (当前 ${likesReceived} 赞)`;
+  } else if (registeredDays >= 10 && (commentCount >= 3 || (articlesRead >= 10 && readingMinutes >= 100))) {
+    level = 1;
+    levelCode = 'lv1';
+    levelName = '活跃学者';
+    badge = 'LV.1 活跃学者';
+    mappedEpomailRole = 'user_lv1';
+    epomailRoleName = '普通用户 LV.1';
+    nextLevelHint = `距 LV.2 还需注册满 90 天 (当前 ${registeredDays} 天) 且累计获赞 30 个 (当前 ${likesReceived} 赞)`;
+  }
+
+  const epomailStorageQuotaMb = level >= 1 ? 25 : 10;
+  const epomailDailySendLimit = level >= 1 ? 10 : 8;
+  const epomailAllowAttachment = level >= 1;
+
+  const allTiers = [
+    {
+      level: 0,
+      levelName: '认证书友 (LV.0)',
+      badge: 'LV.0 认证书友',
+      requirements: '注册并绑定 blog.epomail.com 账号',
+      benefits: 'EpoMail 10MB 配额，每日 8 封邮件，纯文本极速收发',
+      achieved: true,
+    },
+    {
+      level: 1,
+      levelName: '活跃学者 (LV.1)',
+      badge: 'LV.1 活跃学者',
+      requirements: '注册满 10 天，发表 3 条有效讨论评论或累计阅读 100 分钟',
+      benefits: 'EpoMail 25MB 配额，每日 10 封发信，解锁附件发送权限',
+      achieved: level >= 1,
+    },
+    {
+      level: 2,
+      levelName: '资深贡献者 (LV.2)',
+      badge: 'LV.2 资深贡献者',
+      requirements: '注册满 90 天，获得 30 个点赞或发表 20 条优质讨论',
+      benefits: 'EpoMail 50MB 配额，每日 20 封发信，支持大附件与优先通道',
+      achieved: level >= 2,
+    },
+    {
+      level: 3,
+      levelName: '终身学者 (LV.3)',
+      badge: 'LV.3 终身学者',
+      requirements: '注册满 180 天，累计获得 100 个点赞',
+      benefits: 'EpoMail 100MB 配额，每日 50 封发信，全功能至尊特权',
+      achieved: level >= 3,
+    },
+  ];
+
+  return {
+    email: cleanEmail,
+    level,
+    levelCode,
+    levelName,
+    badge,
+    mappedEpomailRole,
+    epomailRoleName,
+    stats: {
+      registeredDays,
+      commentCount,
+      likesReceived,
+      readingMinutes,
+      articlesRead,
+    },
+    benefits: {
+      epomailStorageQuotaMb,
+      epomailDailySendLimit,
+      epomailAllowAttachment,
+      description: epomailAllowAttachment
+        ? `${epomailStorageQuotaMb}MB 存储空间，每日 ${epomailDailySendLimit} 封发件，解锁附件发送能力`
+        : `${epomailStorageQuotaMb}MB 存储空间，每日 ${epomailDailySendLimit} 封发件，仅纯文本`,
+    },
+    nextLevelHint,
+    allTiers,
+  };
+}
+

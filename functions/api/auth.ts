@@ -7,6 +7,7 @@ import {
   getUserBySessionToken,
   invalidateSession,
   authenticateLocalReader,
+  calculateUserLevel,
 } from '../_lib/auth-service.ts';
 
 function extractSessionToken(request: Request, body?: any): string {
@@ -99,6 +100,35 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
     }
   }
 
+  // 3.5 GET /api/auth/user-level (Query blog user activity level & mapped Epomail role)
+  if (pathname === '/api/auth/user-level' && request.method === 'GET') {
+    try {
+      let email = url.searchParams.get('email') || '';
+      if (!email) {
+        const token = extractSessionToken(request);
+        if (token) {
+          const sessionUser = await getUserBySessionToken(token, env);
+          if (sessionUser?.email) {
+            email = sessionUser.email;
+          }
+        }
+      }
+
+      if (!email) {
+        return jsonResponse(request, env, { ok: false, error: '缺少用户 email 参数或会话已失效' }, { status: 400 });
+      }
+
+      const levelInfo = await calculateUserLevel(email, env);
+      return jsonResponse(request, env, {
+        ok: true,
+        ...levelInfo,
+      });
+    } catch (err: any) {
+      console.error('[Auth API] Query user-level error:', err);
+      return jsonResponse(request, env, { ok: false, error: err?.message || '获取用户等级信息失败' }, { status: 500 });
+    }
+  }
+
   // 4. GET /api/auth/user (Current authenticated session profile)
   if (pathname === '/api/auth/user' && request.method === 'GET') {
     try {
@@ -112,7 +142,9 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
         return jsonResponse(request, env, { ok: false, error: '会话已过期或无效' }, { status: 401 });
       }
 
-      return jsonResponse(request, env, { ok: true, user });
+      const levelInfo = await calculateUserLevel(user.email, env);
+
+      return jsonResponse(request, env, { ok: true, user, levelInfo });
     } catch (err: any) {
       return jsonResponse(request, env, { ok: false, error: err?.message || '获取用户信息失败' }, { status: 500 });
     }
