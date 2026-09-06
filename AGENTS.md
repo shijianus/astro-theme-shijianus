@@ -352,7 +352,7 @@
   1. 编写并执行专用安全单元测试套件 `scripts/verify-admin-spoofing-defense.mjs`，覆盖 4 大测试组（权威白名单、第三方防冒领、官方平滑迁移、纵深降级防御），断言 100% 全部通过；
   2. 更新 `scripts/verify-account-drawer-epomail.mjs`，全量验证本地读者防冒领、未授权评论管理员身份降级拦截、非管理员删除 403 拒绝与站长会话删除通过，Playwright 桌面端与移动端 E2E 断言全部 PASS 通过。
 
-### Task 31: 接入内部 Telegram 图床 API (img.epocanvas.com)、公开评论区图片上传/剪贴板粘贴/拖拽插入与账户中心头像自定义/恢复 Epomail 默认头像
+### Task 31: 接入内部 Telegram 图床 API (img.epocanvas.com)、公开评论区图片上传/剪贴板粘贴/拖拽插入与账户中心头像自定义/恢复 Epomail 默认头像 (`b2792d5`)
 - [x] 后端图床代理中继 (`functions/api/upload-image.ts` 与 `astro.config.mjs`)：
   1. 创建 `POST /api/upload-image` 边缘中继代理，支持 `multipart/form-data` 文件上传；
   2. 严格校验文件 MIME 类型（JPG, PNG, GIF, WebP, SVG, AVIF）与文件大小上限（10MB）；
