@@ -389,4 +389,27 @@
   4. 账户中心抽屉与头像真实交互审计：验证 `.account-avatar-card-block` 头像卡片呈现、`⚡ Epomail 官方头像` 初始状态徽章、上传按钮、自定义直链输入、`🎨 自定义专属头像` 实时响应、`↺ 恢复 Epomail 默认头像` 动态出现与一键复原；
   5. 自动化测试 24/24 项生产断言 100% PASS 通过，已生成视觉审计截图存档。
 
+### Task 32: 评论区发言头像同步、点赞长按 Emoji 选框体验优化、地理旗帜与 i18n 规范、已编辑字符重叠修复与博主特权 IP 审计
+- [x] 发言头像与实际头像实时同步联动 (`src/components/theme/PostComments.tsx`)：
+  1. 访客发言框与回复框默认展示优雅的访客图标；
+  2. 用户在账户中心（ThemeOverlays）更新自定义头像后，发言输入框与评论流即时同步最新头像；
+  3. 博主 (admin) 身份未设置自定义头像时，自动优雅回退并使用博主官方真实头像（`/media/shijianus/avatar.jpg`）。
+- [x] 点赞留下 Emoji 长按切换选框交互优化 (`class="tk-reaction-interactive-wrapper"`)：
+  1. 修复长按松手时原生 click 导致选框闪退的根因：引入 `isLongPressTriggeredRef`，长按 260ms 呼出后松手阻止默认点击并保持选框稳定展开；
+  2. 点选选框内的目标 Emoji 后即刻完成更换并自动结束关闭选框；
+  3. 支持点击外部任意区域或按下 Escape 键自然关闭选框。
+- [x] 地理标识 `class="tk-geo-badge"` 国旗 Emoji 与 i18n 规范 (`src/lib/geo-names.ts` & `functions/api/comments.ts`)：
+  1. 全面采用标准格式：`[国旗 Emoji] [ISO 代码] [规范注释名称]`；
+  2. 严格遵循国际标准与用户定制规范：台湾使用青天白日满地红旗（🇹🇼）、代码 `TW`、支持多语言注释（如 `台湾` / `台灣` / `Taiwan`）；香港使用本地区旗（🇭🇰）、代码 `HK`、注释 `香港`（严禁添加 China，严禁改成 PRC 旗帜）；
+  3. 支持全球常见国家和地区 ISO 代码自动计算与 Emoji 旗帜解析。
+- [x] “已编辑”字符重叠视觉修复 (`class="tk-edited-mark"` & `src/styles/rebuild.css`)：
+  1. 修复“辑”字向右倾斜与右半角括号“)”发生视觉重合的问题；
+  2. 将结构解构为独立的 `.tk-edited-bracket`（设置 `font-style: normal`，消除倾斜导致的碰撞）与 `.tk-edited-text`（增加微字间距与右外边距），消除视觉挤压与重叠。
+- [x] 用户隐私开关与博主专属 IP 审计 (`src/components/ThemeOverlays.tsx` & `functions/api/comments.ts`)：
+  1. 账户中心无论是本地读者、注册用户还是在通用设置中，均提供“展示我的国家/地区旗帜与位置”Toggle 开关；
+  2. 普通读者与公众视角下真实原始 IP 数量严格为 0（绝对保密），且针对关闭位置展示的用户彻底隐藏地理旗帜；
+  3. 博主（携带管理员会话凭证）在国家旗帜旁边可查阅发言者的真实 IP（如 `[172.16.20.1]`），并对隐藏地理位置的用户保留全景审计特权。
+- [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-comment-geo-avatar-reactions.mjs`），所有 5 项核心问题端到端自动化测试全部 100% 验证通过。
+
+
 

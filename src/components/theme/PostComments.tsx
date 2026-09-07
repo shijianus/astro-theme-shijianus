@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Rocket,
@@ -51,6 +51,7 @@ import {
   readCommentIdentity,
   getCommentInitials,
   uploadCommentImage,
+  resolveGeoInfo,
   type BlogComment,
   type CommentIdentity,
   type CommentQuote,
@@ -212,6 +213,78 @@ export function PostComments({
   // Reaction picker hover/long-press popup state
   const [activeReactionPopupId, setActiveReactionPopupId] = useState<string | null>(null);
   const longPressTimerRef = useRef<any>(null);
+  const isLongPressTriggeredRef = useRef(false);
+
+  // Compute effective avatar for current user with full role fallback
+  const effectiveCurrentAvatar = useMemo(() => {
+    if (account?.avatar) {
+      return {
+        url: account.avatar,
+        name: account.name || '用户',
+        initials: getCommentInitials(account.name || '用'),
+        isVisitor: false,
+        role: account.role,
+      };
+    }
+    if (account?.role === 'admin') {
+      return {
+        url: '/media/shijianus/avatar.jpg',
+        name: account.name || 'shijianus',
+        initials: '博',
+        isVisitor: false,
+        role: 'admin',
+      };
+    }
+    if (account?.name && account?.role !== 'visitor') {
+      return {
+        url: '',
+        name: account.name,
+        initials: getCommentInitials(account.name),
+        isVisitor: false,
+        role: account.role,
+      };
+    }
+    return {
+      url: '',
+      name: '访客',
+      initials: '访',
+      isVisitor: true,
+      role: 'visitor',
+    };
+  }, [account]);
+
+  // Unified geo badge renderer supporting flag + code + i18n name + admin privileged IP display
+  const renderGeoBadge = (item: BlogComment) => {
+    const isCurrentAdmin = account?.role === 'admin' || Boolean(item.ip);
+    const canShowToVisitor = item.showLocation !== false && Boolean(item.ipCountryFlag || item.ipCountry);
+
+    if (!canShowToVisitor && !isCurrentAdmin) return null;
+    if (!item.ipCountry && !item.ipCountryFlag && !item.ipLocation) return null;
+
+    const currentLocale = (typeof document !== 'undefined' && document.documentElement.dataset.localeVariant) || 'zh-CN';
+    const geo = resolveGeoInfo(item.ipCountry || item.ipCountryName || 'GLOBAL', currentLocale);
+    const flag = geo.flag || item.ipCountryFlag || '🌐';
+    const code = geo.code !== 'GLOBAL' ? geo.code : '';
+    const name = geo.name || item.ipCountryName || item.ipLocation || '全球';
+
+    return (
+      <span
+        className="tk-geo-badge"
+        title={`来源地区: ${flag} ${geo.formatted}${isCurrentAdmin && item.ip ? ` (真实IP: ${item.ip})` : ''}`}
+      >
+        <span className="tk-geo-flag" role="img" aria-label={geo.code}>
+          {flag}
+        </span>
+        {code && <span className="tk-geo-code">{code}</span>}
+        <span className="tk-geo-name">{name}</span>
+        {isCurrentAdmin && item.ip && (
+          <span className="tk-admin-ip-tag" title="博主管理特权：查看真实IP">
+            {item.ip}
+          </span>
+        )}
+      </span>
+    );
+  };
 
   // Toast notification helper - dispatched directly to blog top #global-activity-bar at #nav
   const showToast = (text: string, type: 'success' | 'error' = 'success', duration = 3000) => {
@@ -631,12 +704,34 @@ export function PostComments({
     }
   }, [activeModal]);
 
+  // Fetch real comments with admin token capability for IP inspection
+  const loadComments = useCallback(async (sort = sortOrder) => {
+    setLoading(true);
+    try {
+      const currentIdentity = readCommentIdentity();
+      const token = currentIdentity?.token;
+      const data = await fetchComments(slug, sort, { token });
+      setComments(data);
+    } catch (err) {
+      console.warn('[PostComments] Load error:', err);
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, sortOrder]);
+
   useEffect(() => {
     setAccount(readCommentIdentity());
+
+    const syncAccountState = () => {
+      setAccount(readCommentIdentity());
+      void loadComments();
+    };
 
     const handleAccountChange = (event: Event) => {
       const detail = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
       setAccount(detail);
+      void loadComments();
     };
 
     const handleOutsideClick = (e: MouseEvent) => {
@@ -668,39 +763,30 @@ export function PostComments({
       if (e.key === 'Escape') {
         setActiveModal(null);
         setActiveDropdown(null);
+        setActiveReactionPopupId(null);
       }
     };
 
     window.addEventListener('shijianus:comment-account-change', handleAccountChange);
+    window.addEventListener('storage', syncAccountState);
+    window.addEventListener('focus', syncAccountState);
     document.addEventListener('click', handleOutsideClick);
     window.addEventListener('shijianus:quote-post-text', handleQuotePostText);
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('shijianus:comment-account-change', handleAccountChange);
+      window.removeEventListener('storage', syncAccountState);
+      window.removeEventListener('focus', syncAccountState);
       document.removeEventListener('click', handleOutsideClick);
       window.removeEventListener('shijianus:quote-post-text', handleQuotePostText);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [title]);
-
-  // Fetch real comments
-  const loadComments = async (sort = sortOrder) => {
-    setLoading(true);
-    try {
-      const data = await fetchComments(slug, sort);
-      setComments(data);
-    } catch (err) {
-      console.warn('[PostComments] Load error:', err);
-      setComments([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [title, loadComments]);
 
   useEffect(() => {
     loadComments(sortOrder);
-  }, [slug, sortOrder]);
+  }, [loadComments, sortOrder, account?.token, account?.role]);
 
   const canManage = (comment: BlogComment) => {
     if (account?.role === 'admin') return true;
@@ -970,19 +1056,29 @@ export function PostComments({
 
   // Reaction hover / long press management
   const triggerReactionPressStart = (commentId: string) => {
-    if (!account || account.role === 'visitor') {
-      return;
+    isLongPressTriggeredRef.current = false;
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
     }
     longPressTimerRef.current = setTimeout(() => {
+      isLongPressTriggeredRef.current = true;
       setActiveReactionPopupId(commentId);
-    }, 280);
+    }, 260);
   };
 
-  const triggerReactionPressEnd = (commentId: string) => {
+  const triggerReactionPressEnd = () => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
+  };
+
+  const handleReactionButtonClick = (commentId: string, currentReaction?: string) => {
+    if (isLongPressTriggeredRef.current) {
+      isLongPressTriggeredRef.current = false;
+      return;
+    }
+    handleLike(commentId, currentReaction || '👍');
   };
 
   // Trigger Quote
@@ -1075,13 +1171,17 @@ export function PostComments({
               <div
                 className="tk-avatar theme-account-drawer__summary-avatar"
                 onClick={openAccountDrawer}
-                title={account && account.role !== 'visitor' ? `已登录: ${account.name}` : '访客身份 (点击登录账号)'}
+                title={
+                  effectiveCurrentAvatar.isVisitor
+                    ? '访客身份 (点击登录账号/设置专属头像)'
+                    : `当前身份: ${effectiveCurrentAvatar.name} (${effectiveCurrentAvatar.role === 'admin' ? '博主' : '读者'})`
+                }
                 style={{ cursor: 'pointer' }}
               >
-                {account?.avatar ? (
-                  <img src={account.avatar} alt={account.name} loading="lazy" />
-                ) : account?.name && account?.role !== 'visitor' ? (
-                  <span className="tk-avatar-initials">{getCommentInitials(account.name)}</span>
+                {effectiveCurrentAvatar.url ? (
+                  <img src={effectiveCurrentAvatar.url} alt={effectiveCurrentAvatar.name} loading="lazy" />
+                ) : !effectiveCurrentAvatar.isVisitor ? (
+                  <span className="tk-avatar-initials">{effectiveCurrentAvatar.initials}</span>
                 ) : (
                   <div className="tk-avatar-visitor-icon" title="访客">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
@@ -1711,7 +1811,7 @@ export function PostComments({
                         {item.authorAvatar ? (
                           <img src={item.authorAvatar} alt={item.authorName} loading="lazy" />
                         ) : item.authorRole === 'admin' ? (
-                          <span className="tk-avatar-initials">博</span>
+                          <img src="/media/shijianus/avatar.jpg" alt={item.authorName} loading="lazy" />
                         ) : item.authorName && item.authorName !== '访客' ? (
                           <span className="tk-avatar-initials">{getCommentInitials(item.authorName)}</span>
                         ) : (
@@ -1744,13 +1844,7 @@ export function PostComments({
                           </span>
 
                           {/* Country / IP Location badge */}
-                          {item.ipCountryFlag && (
-                            <span className="tk-geo-badge" title={`来源地区: ${item.ipCountryName || item.ipLocation}`}>
-                              {item.ipCountryFlag} {item.ipCountryName || item.ipLocation}
-                            </span>
-                          )}
-
-                          {item.ip && <span className="tk-admin-ip-badge">[{item.ip}]</span>}
+                          {renderGeoBadge(item)}
 
                           {isBoost && (
                             <span className="tk-boost-pill">
@@ -1760,7 +1854,13 @@ export function PostComments({
                           )}
 
                           <time className="tk-time">{formatCommentTime(item.createdAt)}</time>
-                          {edited && <span className="tk-edited-mark">(已编辑)</span>}
+                          {edited && (
+                            <span className="tk-edited-mark">
+                              <span className="tk-edited-bracket">(</span>
+                              <span className="tk-edited-text">已编辑</span>
+                              <span className="tk-edited-bracket">)</span>
+                            </span>
+                          )}
                         </div>
 
                         {/* Quoted Source Card */}
@@ -1828,14 +1928,13 @@ export function PostComments({
                               type="button"
                               className={`tk-action-btn tk-action-like ${rxMeta.userReaction ? 'is-reacted' : ''}`}
                               onClick={() => {
-                                // Default like toggle
-                                handleLike(item.id, rxMeta.userReaction || '👍');
+                                handleReactionButtonClick(item.id, rxMeta.userReaction || '👍');
                               }}
                               onMouseDown={() => triggerReactionPressStart(item.id)}
-                              onMouseUp={() => triggerReactionPressEnd(item.id)}
-                              onMouseLeave={() => triggerReactionPressEnd(item.id)}
+                              onMouseUp={triggerReactionPressEnd}
+                              onMouseLeave={triggerReactionPressEnd}
                               onTouchStart={() => triggerReactionPressStart(item.id)}
-                              onTouchEnd={() => triggerReactionPressEnd(item.id)}
+                              onTouchEnd={triggerReactionPressEnd}
                               aria-label="点赞或长按互动"
                               title={
                                 rxMeta.totalCount > 0
@@ -1955,10 +2054,10 @@ export function PostComments({
                           <div className={`tk-nested-reply-box ${replyMode === 'boost' ? 'is-boost-mode' : ''}`}>
                             <div className="tk-row">
                               <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
-                                {account?.avatar ? (
-                                  <img src={account.avatar} alt={account.name} />
+                                {effectiveCurrentAvatar.url ? (
+                                  <img src={effectiveCurrentAvatar.url} alt={effectiveCurrentAvatar.name} />
                                 ) : (
-                                  <span>{getCommentInitials(account?.name || '访')}</span>
+                                  <span>{effectiveCurrentAvatar.initials}</span>
                                 )}
                               </div>
                               <div className="tk-col">
@@ -2087,7 +2186,7 @@ export function PostComments({
                                         {reply.authorAvatar ? (
                                           <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
                                         ) : reply.authorRole === 'admin' ? (
-                                          <span className="tk-avatar-initials">博</span>
+                                          <img src="/media/shijianus/avatar.jpg" alt={reply.authorName} loading="lazy" />
                                         ) : reply.authorName && reply.authorName !== '访客' ? (
                                           <span className="tk-avatar-initials">{getCommentInitials(reply.authorName)}</span>
                                         ) : (
@@ -2108,13 +2207,9 @@ export function PostComments({
                                             {reply.authorRole === 'admin' ? '博主' : '访客'}
                                           </span>
 
-                                          {reply.ipCountryFlag && (
-                                            <span className="tk-geo-badge" title={`来源地区: ${reply.ipCountryName || reply.ipLocation}`}>
-                                              {reply.ipCountryFlag} {reply.ipCountryName || reply.ipLocation}
-                                            </span>
-                                          )}
+                                          {/* Country / IP Location badge */}
+                                          {renderGeoBadge(reply)}
 
-                                          {reply.ip && <span className="tk-admin-ip-badge">[{reply.ip}]</span>}
                                           {isReplyBoost && (
                                             <span className="tk-boost-pill">
                                               <Rocket size={11} className="tk-boost-icon" />
@@ -2123,7 +2218,13 @@ export function PostComments({
                                           )}
 
                                           <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
-                                          {isReplyEdited && <span className="tk-edited-mark">(已编辑)</span>}
+                                          {isReplyEdited && (
+                                            <span className="tk-edited-mark">
+                                              <span className="tk-edited-bracket">(</span>
+                                              <span className="tk-edited-text">已编辑</span>
+                                              <span className="tk-edited-bracket">)</span>
+                                            </span>
+                                          )}
                                         </div>
 
                                         {isReplyEditing ? (
@@ -2178,12 +2279,12 @@ export function PostComments({
                                             <button
                                               type="button"
                                               className={`tk-action-btn tk-action-like ${replyRxMeta.userReaction ? 'is-reacted' : ''}`}
-                                              onClick={() => handleLike(reply.id, replyRxMeta.userReaction || '👍')}
+                                              onClick={() => handleReactionButtonClick(reply.id, replyRxMeta.userReaction || '👍')}
                                               onMouseDown={() => triggerReactionPressStart(reply.id)}
-                                              onMouseUp={() => triggerReactionPressEnd(reply.id)}
-                                              onMouseLeave={() => triggerReactionPressEnd(reply.id)}
+                                              onMouseUp={triggerReactionPressEnd}
+                                              onMouseLeave={triggerReactionPressEnd}
                                               onTouchStart={() => triggerReactionPressStart(reply.id)}
-                                              onTouchEnd={() => triggerReactionPressEnd(reply.id)}
+                                              onTouchEnd={triggerReactionPressEnd}
                                               title={
                                                 replyRxMeta.totalCount > 0
                                                   ? `互动详情: ${replyRxMeta.entries.map(([e, c]) => `${e} ${c}`).join(' ')}`

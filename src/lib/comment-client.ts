@@ -2,6 +2,8 @@ export type CommentRole = 'reader' | 'admin' | 'visitor';
 export type CommentStatus = 'published' | 'pinned' | 'flagged' | 'deleted' | 'limited';
 export type PostType = 'comment' | 'boost' | 'emoji';
 
+export { resolveGeoInfo, getFlagEmoji, type GeoItemInfo } from './geo-names';
+
 export type CommentIdentity = {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ export type CommentIdentity = {
   epomailUserId?: string | number;
   epomailAvatar?: string;
   bio?: string;
+  showLocation?: boolean;
 };
 
 export type CommentQuote = {
@@ -230,9 +233,23 @@ export function getCommentInitials(name: string) {
 // ----------------------------------------------------
 // Real API Client Methods for Cloudflare D1 Backend
 // ----------------------------------------------------
-export async function fetchComments(slug: string, sort: 'hot' | 'new' = 'new'): Promise<BlogComment[]> {
+export async function fetchComments(
+  slug: string,
+  sort: 'hot' | 'new' = 'new',
+  auth?: { token?: string; adminToken?: string }
+): Promise<BlogComment[]> {
   try {
-    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=${sort}`);
+    const headers: Record<string, string> = {};
+    if (auth?.adminToken) {
+      headers['X-Admin-Token'] = auth.adminToken;
+    }
+    if (auth?.token) {
+      headers['Authorization'] = `Bearer ${auth.token}`;
+      headers['X-Comment-Session-Token'] = auth.token;
+    }
+    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=${sort}`, {
+      headers,
+    });
     const result = await safeFetchJson<{ ok: boolean; comments: BlogComment[] }>(res);
     if (result.ok && result.data && Array.isArray(result.data.comments)) {
       return result.data.comments;
@@ -256,12 +273,29 @@ export async function createComment(params: {
   author?: CommentIdentity | null;
 }): Promise<{ ok: boolean; comment?: BlogComment; sessionToken?: string; error?: string }> {
   try {
+    const effectiveToken = params.sessionToken || params.author?.token;
+    const effectiveShowLocation =
+      params.showLocation !== undefined
+        ? params.showLocation
+        : params.author?.showLocation !== false;
+
+    // Fallback avatar for admin if missing
+    let effectiveAvatar = params.author?.avatar || '';
+    if (!effectiveAvatar && params.author?.role === 'admin') {
+      effectiveAvatar = '/media/shijianus/avatar.jpg';
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (effectiveToken) {
+      headers['X-Comment-Session-Token'] = effectiveToken;
+      headers['Authorization'] = `Bearer ${effectiveToken}`;
+    }
+
     const res = await fetch('/api/comments', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(params.sessionToken ? { 'X-Comment-Session-Token': params.sessionToken } : {}),
-      },
+      headers,
       body: JSON.stringify({
         action: 'create',
         slug: params.slug,
@@ -270,12 +304,12 @@ export async function createComment(params: {
         parentId: params.parentId || undefined,
         quoteId: params.quoteId || undefined,
         quote: params.quote || undefined,
-        sessionToken: params.sessionToken,
-        showLocation: params.showLocation,
+        sessionToken: effectiveToken,
+        showLocation: effectiveShowLocation,
         authorId: params.author?.id,
-        authorName: params.author?.name || '访客',
+        authorName: params.author?.name || (params.author?.role === 'admin' ? 'shijianus' : '访客'),
         authorEmail: params.author?.email || '',
-        authorAvatar: params.author?.avatar || '',
+        authorAvatar: effectiveAvatar,
         authorWebsite: params.author?.website || '',
         authorRole: params.author?.role || 'visitor',
       }),
@@ -599,6 +633,7 @@ export async function updateAuthProfile(updates: {
   name?: string;
   website?: string;
   bio?: string;
+  showLocation?: boolean;
 }): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
   try {
     const current = readCommentIdentity();
@@ -624,6 +659,7 @@ export async function updateAuthProfile(updates: {
             avatar: data.user.avatar ?? current?.avatar ?? '',
             website: data.user.website ?? current?.website ?? '',
             bio: data.user.bio ?? current?.bio ?? '',
+            showLocation: updates.showLocation !== undefined ? updates.showLocation : (current?.showLocation ?? true),
             token,
           };
         }
@@ -639,6 +675,7 @@ export async function updateAuthProfile(updates: {
         avatar: updates.avatar !== undefined ? updates.avatar : current.avatar,
         website: updates.website !== undefined ? updates.website : current.website,
         bio: updates.bio !== undefined ? updates.bio : current.bio,
+        showLocation: updates.showLocation !== undefined ? updates.showLocation : (current.showLocation ?? true),
       };
     }
 

@@ -181,6 +181,7 @@ export function ThemeOverlays({
     email: '',
     website: '',
     avatar: '',
+    showLocation: true,
   });
   const [accountNotice, setAccountNotice] = useState('');
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
@@ -530,6 +531,7 @@ export function ThemeOverlays({
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
+        showLocation: next?.showLocation !== false,
       });
     };
 
@@ -541,6 +543,7 @@ export function ThemeOverlays({
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
+        showLocation: next?.showLocation !== false,
       });
       setAccountNeedsAttention(false);
     };
@@ -760,6 +763,7 @@ export function ThemeOverlays({
       website: normaliseWebsite(accountForm.website.trim()),
       avatar: normaliseAvatar(accountForm.avatar),
       role: account?.role ?? 'reader',
+      showLocation: accountForm.showLocation,
     };
 
     writeCommentIdentity(nextAccount);
@@ -777,6 +781,7 @@ export function ThemeOverlays({
       email: '',
       website: '',
       avatar: '',
+      showLocation: true,
     });
     setAccountNotice('当前账号已退出，评论将恢复只读。');
     setAccountNeedsAttention(false);
@@ -979,6 +984,7 @@ export function ThemeOverlays({
         name: accountForm.name,
         avatar: accountForm.avatar,
         website: accountForm.website,
+        showLocation: accountForm.showLocation,
       });
       setIsAuthorizing(false);
       if (res.ok && res.user) {
@@ -992,20 +998,33 @@ export function ThemeOverlays({
       // Local reader registration
       const res = await loginLocalReader(accountForm);
       setIsAuthorizing(false);
-      if (res.ok && res.user) {
-        setAccount(res.user);
-        setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
-        emitActivity('创建/更新本地身份');
+      let nextUser = res.user;
+      if (!nextUser) {
+        // Fallback for local/offline environment
+        nextUser = {
+          id: createCommentId('local'),
+          name: accountForm.name.trim(),
+          email: accountForm.email.trim(),
+          website: normaliseWebsite(accountForm.website.trim()),
+          avatar: normaliseAvatar(accountForm.avatar.trim()),
+          role: 'reader',
+          provider: 'local',
+          showLocation: accountForm.showLocation,
+        };
       } else {
-        setAuthStatusMessage({ type: 'error', text: res.error || '保存失败' });
+        nextUser = { ...nextUser, showLocation: accountForm.showLocation };
       }
+      writeCommentIdentity(nextUser);
+      setAccount(nextUser);
+      setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
+      emitActivity('创建/更新本地身份');
     }
   };
 
   const handleLogout = async () => {
     await logoutAuthAccount(account?.token);
     setAccount(null);
-    setAccountForm({ name: '', email: '', website: '', avatar: '' });
+    setAccountForm({ name: '', email: '', website: '', avatar: '', showLocation: true });
     setEpomailForm({ email: '', password: '', code: '' });
     setAuthStatusMessage({ type: 'info', text: '已退出登录并清除身份凭证' });
     emitActivity('已退出账号');
@@ -1484,6 +1503,8 @@ export function ThemeOverlays({
             <div className="account-hero-card__avatar">
               {account?.avatar ? (
                 <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
+              ) : account?.role === 'admin' ? (
+                <img src="/media/shijianus/avatar.jpg" alt={account.name || brandName} loading="lazy" />
               ) : (
                 <span>{getCommentInitials(account?.name || brandName)}</span>
               )}
@@ -1774,6 +1795,33 @@ export function ThemeOverlays({
                           </button>
                         </div>
                       </label>
+
+                      {/* 隐私偏好：展示地理位置与国家/地区旗帜开关 */}
+                      <div className="account-toggle-field" style={{ marginTop: '14px', padding: '12px 14px', borderRadius: '8px', background: 'color-mix(in srgb, var(--theme-main, #425aef) 4%, var(--secondbg))', border: 'var(--style-border-always)' }}>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex flex-col gap-1" style={{ textAlign: 'left' }}>
+                            <span className="account-field-sublabel font-semibold text-sm flex items-center gap-1.5" style={{ margin: 0 }}>
+                              <Globe className="h-4 w-4 text-[var(--theme-main)]" />
+                              <span>展示我的国家/地区旗帜与位置</span>
+                            </span>
+                            <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                              开启后在评论区公开展示您发言时的国家/地区旗帜与注释；关闭后隐藏地理位置（博主仍保留管理审计视野）
+                            </span>
+                          </div>
+                          <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={accountForm.showLocation}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setAccountForm((prev) => ({ ...prev, showLocation: checked }));
+                              }}
+                            />
+                            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-main,#425aef)]"></div>
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="account-card__foot">
@@ -1896,6 +1944,37 @@ export function ThemeOverlays({
                             />
                           </div>
                         </label>
+
+                        {/* 隐私偏好：展示地理位置与国家/地区旗帜开关 */}
+                        <div className="account-toggle-field" style={{ marginTop: '14px', padding: '12px 14px', borderRadius: '8px', background: 'color-mix(in srgb, var(--theme-main, #425aef) 4%, var(--secondbg))', border: 'var(--style-border-always)' }}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-1" style={{ textAlign: 'left' }}>
+                              <span className="account-field-sublabel font-semibold text-sm flex items-center gap-1.5" style={{ margin: 0 }}>
+                                <Globe className="h-4 w-4 text-[var(--theme-main)]" />
+                                <span>展示我的国家/地区旗帜与位置</span>
+                              </span>
+                              <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                                开启后在评论区公开展示您发言时的国家/地区旗帜与注释；关闭后隐藏地理位置（博主仍保留管理审计视野）
+                              </span>
+                            </div>
+                            <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                              <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={accountForm.showLocation}
+                                onChange={async (e) => {
+                                  const checked = e.target.checked;
+                                  setAccountForm((prev) => ({ ...prev, showLocation: checked }));
+                                  if (account) {
+                                    await updateAuthProfile({ showLocation: checked });
+                                    setAccount((prev) => (prev ? { ...prev, showLocation: checked } : null));
+                                  }
+                                }}
+                              />
+                              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-main,#425aef)]"></div>
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -2052,6 +2131,55 @@ export function ThemeOverlays({
                   >
                     English
                   </button>
+                </div>
+              </section>
+
+              {/* 隐私偏好：地理位置与国家/地区旗帜展示 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">评论区隐私与地理偏好</h3>
+                  </div>
+                  <span className="account-tag-chip">
+                    {accountForm.showLocation ? '公开展示' : '隐藏位置'}
+                  </span>
+                </div>
+
+                <div className="account-toggle-field" style={{ padding: '12px 14px', borderRadius: '8px', background: 'color-mix(in srgb, var(--theme-main, #425aef) 4%, var(--secondbg))', border: 'var(--style-border-always)' }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1" style={{ textAlign: 'left' }}>
+                      <span className="account-field-sublabel font-semibold text-sm flex items-center gap-1.5" style={{ margin: 0 }}>
+                        <Globe className="h-4 w-4 text-[var(--theme-main)]" />
+                        <span>展示我的国家/地区旗帜与位置</span>
+                      </span>
+                      <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                        开启后在评论区公开展示您发言时的国家/地区旗帜与注释；关闭后隐藏地理位置（博主仍保留管理审计视野）
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={accountForm.showLocation}
+                        onChange={async (e) => {
+                          const checked = e.target.checked;
+                          setAccountForm((prev) => ({ ...prev, showLocation: checked }));
+                          if (account) {
+                            await updateAuthProfile({ showLocation: checked });
+                            setAccount((prev) => (prev ? { ...prev, showLocation: checked } : null));
+                          } else {
+                            const current = readCommentIdentity();
+                            if (current) {
+                              const updated = { ...current, showLocation: checked };
+                              writeCommentIdentity(updated);
+                            }
+                          }
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-main,#425aef)]"></div>
+                    </label>
+                  </div>
                 </div>
               </section>
 

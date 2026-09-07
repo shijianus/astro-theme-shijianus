@@ -29,34 +29,40 @@ interface RawCommentRow {
   updated_at: string;
 }
 
-const COUNTRY_NAMES: Record<string, string> = {
-  CN: '中国',
-  HK: '中国香港',
-  MO: '中国澳门',
-  TW: '中国台湾',
-  US: '美国',
-  JP: '日本',
-  KR: '韩国',
-  SG: '新加坡',
-  GB: '英国',
-  DE: '德国',
-  FR: '法国',
-  CA: '加拿大',
-  AU: '澳大利亚',
-  RU: '俄罗斯',
-  IN: '印度',
-  GLOBAL: '全球',
+const COUNTRY_NAMES: Record<string, { zh: string; en: string }> = {
+  TW: { zh: '台湾', en: 'Taiwan' },
+  HK: { zh: '香港', en: 'Hong Kong' },
+  MO: { zh: '澳门', en: 'Macau' },
+  CN: { zh: '中国大陆', en: 'China' },
+  US: { zh: '美国', en: 'United States' },
+  JP: { zh: '日本', en: 'Japan' },
+  KR: { zh: '韩国', en: 'South Korea' },
+  SG: { zh: '新加坡', en: 'Singapore' },
+  GB: { zh: '英国', en: 'United Kingdom' },
+  DE: { zh: '德国', en: 'Germany' },
+  FR: { zh: '法国', en: 'France' },
+  CA: { zh: '加拿大', en: 'Canada' },
+  AU: { zh: '澳大利亚', en: 'Australia' },
+  RU: { zh: '俄罗斯', en: 'Russia' },
+  IN: { zh: '印度', en: 'India' },
+  MY: { zh: '马来西亚', en: 'Malaysia' },
+  GLOBAL: { zh: '全球', en: 'Global' },
 };
 
 function resolveCountryInfo(countryCode: string) {
   const code = (countryCode || 'GLOBAL').toUpperCase();
-  const name = COUNTRY_NAMES[code] || code;
-  let flag = '🌍';
-  if (code.length === 2 && code !== 'XX' && code !== 'ZZ') {
+  const entry = COUNTRY_NAMES[code];
+  const name = entry?.zh || code;
+  const englishName = entry?.en || code;
+  let flag = '🌐';
+  if (code === 'TW') flag = '🇹🇼';
+  else if (code === 'HK') flag = '🇭🇰';
+  else if (code === 'MO') flag = '🇲🇴';
+  else if (code.length === 2 && code !== 'XX' && code !== 'ZZ') {
     const codePoints = [...code].map((c) => 127397 + c.charCodeAt(0));
     flag = String.fromCodePoint(...codePoints);
   }
-  return { code, name, flag };
+  return { code, name, englishName, flag };
 }
 
 // In-memory fallback store when running without D1 binding
@@ -181,8 +187,8 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
     quote: quoteParsed,
     postType: row.post_type || 'comment',
     authorId: row.author_id,
-    authorName: row.author_name || '访客',
-    authorAvatar: row.author_avatar || '',
+    authorName: row.author_name || (row.author_role === 'admin' ? 'shijianus' : '访客'),
+    authorAvatar: row.author_avatar || (row.author_role === 'admin' ? '/media/shijianus/avatar.jpg' : ''),
     authorWebsite: row.author_website || '',
     authorRole: row.author_role || 'visitor',
     message: row.message,
@@ -258,8 +264,20 @@ export async function onRequest(context: {
   }
 
   const url = new URL(request.url);
-  const headerAdminToken = request.headers.get('X-Admin-Token') || request.headers.get('Authorization')?.replace('Bearer ', '');
-  const isAdmin = Boolean(env.ADMIN_TOKEN && headerAdminToken && headerAdminToken === env.ADMIN_TOKEN);
+  const headerAdminToken = request.headers.get('X-Admin-Token');
+  const authHeader = request.headers.get('Authorization')?.replace('Bearer ', '');
+  const sessionTokenHeader = request.headers.get('X-Comment-Session-Token');
+  const candidateToken = headerAdminToken || authHeader || sessionTokenHeader;
+
+  let isAdmin = Boolean(env.ADMIN_TOKEN && candidateToken && candidateToken === env.ADMIN_TOKEN);
+  if (!isAdmin && candidateToken) {
+    try {
+      const authUser = await getUserBySessionToken(candidateToken, env);
+      if (authUser && authUser.role === 'admin') {
+        isAdmin = true;
+      }
+    } catch {}
+  }
 
   // ----------------------------------------------------
   // GET: Fetch real comments for a post slug (supports sort=hot|new)
@@ -324,9 +342,18 @@ export async function onRequest(context: {
   const action = (payload.action || (method === 'PUT' ? 'edit' : method === 'DELETE' ? 'delete' : 'create')).toLowerCase();
   const headerSessionToken = request.headers.get('X-Comment-Session-Token');
   const sessionToken = payload.sessionToken || headerSessionToken || '';
-  const adminToken = payload.adminToken || headerAdminToken || '';
-  const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '127.0.0.1';
-  const cfCountry = request.headers.get('cf-ipcountry') || 'GLOBAL';
+  const clientIp =
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    '127.0.0.1';
+  let cfCountry = (
+    request.headers.get('cf-ipcountry') ||
+    request.headers.get('x-country-code') ||
+    payload.clientCountry ||
+    url.searchParams.get('country') ||
+    'GLOBAL'
+  ).toUpperCase();
 
   // 1. CREATE COMMENT / BOOST / EMOJI
   if (action === 'create') {
@@ -433,7 +460,10 @@ export async function onRequest(context: {
     const commentId = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const effectiveSessionToken = sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
     const authorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
-    const authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
+    let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
+    if (!authorAvatar && authorRole === 'admin') {
+      authorAvatar = '/media/shijianus/avatar.jpg';
+    }
     const authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
     const authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
     const authorId = (payload.authorId || `vis_${Date.now()}`).trim();

@@ -3368,13 +3368,47 @@ body[data-type='post'] hr.custom-hr {
 #post-comment .tk-geo-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 1px 6px;
+  gap: 4px;
+  padding: 1.5px 7px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--card-bg) 60%, var(--secondbg));
   border: var(--style-border-always);
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+#post-comment .tk-geo-badge .tk-geo-flag {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+#post-comment .tk-geo-badge .tk-geo-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+#post-comment .tk-geo-badge .tk-geo-name {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+#post-comment .tk-geo-badge .tk-admin-ip-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 0.5px 4px;
+  border-radius: 3px;
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff6b6b;
+  font-size: 10.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
 }
 
@@ -3415,9 +3449,23 @@ body[data-type='post'] hr.custom-hr {
 }
 
 #post-comment .tk-edited-mark {
-  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
+  letter-spacing: 0.06em;
+  margin-left: 3px;
+}
+
+#post-comment .tk-edited-mark .tk-edited-text {
+  margin-right: 3px;
+}
+
+#post-comment .tk-edited-mark .tk-edited-bracket:last-child {
+  font-style: normal;
+  display: inline-block;
+  margin-left: 1px;
 }
 
 /* Quoted Source Card in Comment Stream */
