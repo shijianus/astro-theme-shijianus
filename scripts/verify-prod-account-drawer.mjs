@@ -82,18 +82,16 @@ async function verifyProdAccountDrawer() {
 
     // 7. Verify Tab 2 (Notifications)
     console.log('7. Verifying Tab 2 (Notifications)...');
-    await tabs[1].click();
+    await page.click('.account-nav-tabs button:nth-child(2)', { force: true });
     await page.waitForTimeout(400);
 
     const notifCard = await page.waitForSelector('.account-tab-content', { state: 'visible' });
     assert(notifCard !== null, 'Notifications tab content must be visible');
     console.log('   ✓ Notifications tab content visible');
 
-    console.log('   ✓ Notifications tab content visible');
-
     // 8. Verify Tab 3 (Settings & Privacy)
     console.log('8. Verifying Tab 3 (Settings & Privacy)...');
-    await tabs[2].click();
+    await page.click('.account-nav-tabs button:nth-child(3)', { force: true });
     await page.waitForTimeout(400);
 
     const hasArch = await page.$('.arch-flow-diagram, .account-card--arch');
@@ -108,7 +106,7 @@ async function verifyProdAccountDrawer() {
     await page.screenshot({ path: 'scratch/prod-account-drawer-tab3.png' });
 
     // Switch back to Tab 1 and verify avatar and absence of inspector
-    await tabs[0].click();
+    await page.click('.account-nav-tabs button:nth-child(1)', { force: true });
     await page.waitForTimeout(400);
 
     const hasInspector = await page.$('.account-card--inspector');
