@@ -446,3 +446,20 @@
   3. `scripts/verify-comment-geo-avatar-reactions.mjs`：5/5 项核心问题测试 100% 通过；
   4. `scripts/verify-prod-account-drawer.mjs`：生产端到端自动化验收通过，包含 hero 卡片高度 $\ge 80px$ 约束断言。
 - [x] 部署至 Cloudflare Pages 生产边缘节点并多端同步。
+
+### Task 34: 账号抽屉 (.theme-account-drawer) 基于产品经理与用户体验视角的深度重构与精简降噪 (`acfe250`)
+- [x] 严格遵循最小修改原则：确保全站其他组件与业务逻辑零变动，仅对 `class="theme-account-drawer"` 及其抽屉内部样式进行针对性优化。
+- [x] 彻底根除技术内幕与开发者细节外露 (Eliminate Developer Jargon Exposure)：
+  1. 彻底删除 Tab 3 中面向开发者的部署迁移指引（如 `migrations/0005_users.sql`、双 DB/单 DB 配置手册等），将其重塑为对普通读者极具安全感与信任感的“数据隔离与隐私安全保障 (Security Guarantee)”声明；
+  2. Tab 3 标签由生硬的“偏好与架构”重命名为契合用户直觉的“偏好设置”，专注语言版本切换与评论隐私展示控制；
+  3. 将 Tab 1 中突兀的“开放平台授权状态 (OAuth App Inspector)”收敛重塑为高规格安全凭据卡片（Security Pass），保留标准授权验证字段同时抹除调试杂音；
+  4. 将管理员直接授权表单收敛至底部的隐式折叠通道（“站长或开发者直接授权通道”），默认不干扰普通访客的浏览动线。
+- [x] 重塑感官体验与双模态评论身份接入 (Streamline Consumer UX & Dual-Mode Identity)：
+  1. 顶栏标识由内部代号 `EPOCANVAS IDENTITY` 调整为贴合读者的 `READER HUB · 读者中心`；
+  2. 优化顶部个人资料卡（Hero Card）：访客模式下展示温馨问候与读者头像（或已保存的本地昵称与头像），杜绝冰冷刺眼的“尚未登录”与占位空字符；
+  3. Tab 1 重构为清晰的“云端一键授权 (Epomail SSO)”与“免登录本地评论身份设定”双模态，辅以精致虚线分割器（`.account-divider`）；
+  4. 清理冗余重复开关：将散落多处的国家/地区旗帜开关统一规整为具有明确说明的高质感卡片组件（`.account-toggle-field` 与 `.theme-switch-slider`）。
+- [x] 自动化端到端测试全量通过：
+  1. `scripts/verify-account-drawer-epomail.mjs`：全套后端接口鉴权、OAuth 握手、Playwright 桌面端与移动端断言 100% 通过；
+  2. `scripts/verify-prod-account-drawer.mjs`：生产环境真实链路验证通过。
+
