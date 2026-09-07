@@ -463,3 +463,25 @@
   1. `scripts/verify-account-drawer-epomail.mjs`：全套后端接口鉴权、OAuth 握手、Playwright 桌面端与移动端断言 100% 通过；
   2. `scripts/verify-prod-account-drawer.mjs`：生产环境真实链路验证通过。
 
+### Task 35: 读者中心 (.theme-account-drawer) 真正站在用户视角的用户资料、交互常识与隐私声明深度修正 (`3b0b5a9`)
+- [x] 纠正虚假误导性 IP 说明，提供透明合规的管理目的声明：
+  1. 彻底删除“关闭后完全隐藏（绝不记录原始 IP）”等不实描述；
+  2. 真实透明地向读者说明：前台隐匿仅针对公开展出隐藏属地徽章（如国家/地区旗帜），出于社区反垃圾、网络安全与评论风控管理合规需要，系统后台仍会如实记录发件连接 IP 供站长及管理员核查，绝不对公众开放。
+- [x] 彻底根除用户完全不需要查看的底层技术卡片：
+  1. 彻底删除 `class="account-card account-card--inspector"`（安全授权凭证 / Security Pass / OAuth App Inspector）；
+  2. 彻底删除 `class="account-card account-card--arch"`（数据隔离与安全架构 / Security Guarantee / 数据库流程图）；
+  3. 清理全量无用 CSS 样式（`.app-inspector-grid`、`.arch-flow-diagram`、`.arch-notes` 等 500 余行代码）。
+- [x] 解决隐私与偏好设置重复问题（严格去重，仅保留单处）：
+  1. 彻底删除 Tab 1（身份设置 / 个人资料）中的隐私开关；
+  2. 将隐私与偏好统一收敛至 Tab 3（偏好设置），打造唯一清晰的“评论区隐私与显示偏好”专区。
+- [x] 头像修改交互重构为现代化原生常识 UX：
+  1. 彻底移除笨重冗余的 `class="account-avatar-card-block"` 独立面板；
+  2. 将头像更新能力直接集成到顶部 Hero 卡片的头像本身（`class="account-hero-card__avatar is-clickable"`）；
+  3. 悬浮时自动呼出“更换头像”磨砂质感半透明蒙版，右下角常驻精致相机徽标（`.account-hero-card__avatar-badge`），点击直接原生唤起图片文件选择器或触发图床上传；
+  4. 个人资料表单中保留极简直链输入框与一键“恢复 Epomail 官方头像”小按钮。
+- [x] 丰富读者在评论互动过程中的真实诉求功能：
+  1. 在 Tab 2 中新增“我的评论足迹”板块，实时读取并呈现用户发表的历史评论与所属文章，点击一键直达对应博文评论锚点。
+- [x] 自动化测试套件全量更新与通过：
+  1. `scripts/verify-account-drawer-epomail.mjs`：100% PASS（验证技术卡片消除、Tab 1 无重复开关、头像点击与相机标存在、Tab 3 合规 IP 说明、移动端与桌面端自适应）；
+  2. `scripts/verify-prod-account-drawer.mjs` & `scripts/verify-live-cf-account-drawer.mjs`：同步适配并通过。
+
