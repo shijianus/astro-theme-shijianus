@@ -437,11 +437,12 @@
   1. 提醒列表卡片注入悬浮轻微向右位移（`translateX(4px)`）与主题色高亮边框；
   2. 空状态设计升级，配备双层扩散光环的 Bell 专属插图；
   3. 语言切换与架构流程图（D1 评论域 vs Epomail 用户域）连线与卡片全面优化。
+- [x] 抽屉内部 Flex 伸缩与高度自适应加固 (`src/styles/final-pass.css`)：
+  1. 为 `.account-hero-card` 显式声明 `flex-shrink: 0; min-height: fit-content;`，根除在 flex-column 下因 `overflow: hidden` 默认 `min-height: 0` 导致的个人资料卡片被意外纵向挤压至 34px 的渲染缺陷；
+  2. 同步为 `.theme-account-drawer__head`、`.account-nav-tabs`、`.account-toast-notice` 及 `.account-tab-content` 配置 `flex-shrink: 0;`，确保内容完整舒展并由抽屉外层统一执行流畅滚动。
 - [x] 自动化端到端测试套件全量通过：
   1. `scripts/verify-account-drawer-epomail.mjs`：全量通过后端与桌面/移动端 UI 审计；
   2. `scripts/verify-image-upload-and-avatar.mjs`：24/24 项头像与图床测试 100% 通过；
-  3. `scripts/verify-comment-geo-avatar-reactions.mjs`：5/5 项核心问题测试 100% 通过。
+  3. `scripts/verify-comment-geo-avatar-reactions.mjs`：5/5 项核心问题测试 100% 通过；
+  4. `scripts/verify-prod-account-drawer.mjs`：生产端到端自动化验收通过，包含 hero 卡片高度 $\ge 80px$ 约束断言。
 - [x] 部署至 Cloudflare Pages 生产边缘节点并多端同步。
-
-
-
