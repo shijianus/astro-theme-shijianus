@@ -2873,31 +2873,56 @@ body .snackbar-container.show,
   transform: none;
 }
 
-/* Direct App Auth Accordion */
+/* Account Divider */
+.account-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 4px 0;
+  color: var(--secondtext);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.account-divider::before,
+.account-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent);
+}
+
+.account-divider span {
+  padding: 0 12px;
+  opacity: 0.85;
+}
+
+/* Direct App Auth Accordion (Discreet Admin/Developer Portal) */
 .direct-app-auth-accordion {
-  border-top: 1px dashed color-mix(in srgb, var(--card-border) 90%, transparent);
-  padding-top: 14px;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent);
+  padding-top: 10px;
+  margin-top: 2px;
 }
 
 .direct-app-auth-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
-  background: color-mix(in srgb, var(--secondbg) 60%, transparent);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: var(--theme-main);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--secondtext);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
 .direct-app-auth-toggle:hover {
-  background: color-mix(in srgb, var(--theme-main) 8%, var(--secondbg));
-  border-color: color-mix(in srgb, var(--theme-main) 20%, transparent);
+  color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 6%, transparent);
 }
 
 .direct-app-auth-form {
@@ -3407,22 +3432,84 @@ body .snackbar-container.show,
   border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
-.arch-notes h4 {
-  margin: 0;
-  font-size: 0.84rem;
-  color: var(--theme-main);
-  font-weight: 800;
-}
-
-.arch-notes ol {
-  margin: 0;
-  padding-left: 18px;
+.arch-trust-item {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   font-size: 0.8rem;
   color: var(--font-color);
-  line-height: 1.55;
+  line-height: 1.5;
+}
+
+.arch-trust-item strong {
+  color: var(--theme-main);
+}
+
+/* Custom Toggle Field */
+.account-toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
+  border: var(--style-border-always);
+  transition: all 0.2s ease;
+}
+
+.account-toggle-field__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.account-toggle-field__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--font-color);
+}
+
+.account-toggle-field__desc {
+  font-size: 0.74rem;
+  color: var(--secondtext);
+  line-height: 1.45;
+}
+
+.theme-switch-slider {
+  width: 40px;
+  height: 22px;
+  background: color-mix(in srgb, var(--font-color) 20%, transparent);
+  border-radius: 999px;
+  position: relative;
+  transition: background-color 0.22s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-switch-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.peer:checked ~ .theme-switch-slider {
+  background: var(--theme-main);
+}
+
+.peer:checked ~ .theme-switch-slider::after {
+  transform: translateX(18px);
 }
 
 /* Notifications in Drawer */
