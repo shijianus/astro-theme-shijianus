@@ -382,5 +382,11 @@
   2. 输入框拖拽激活高亮态 `.is-drag-over`、弹窗 Tab 导航、Dropzone 上传区与键盘徽章精致样式全量补齐。
 - [x] 自动化端到端测试套件（`scripts/verify-image-upload-and-avatar.mjs`）全量执行通过：
   覆盖真实 Telegram 图床上传中继、评论区工具栏按钮与弹窗、3 标签页切换与插入、剪贴板粘贴/拖拽响应、Markdown 图片样式、账户中心头像上传/自定义与 Epomail 恢复，24/24 项断言 100% PASS 通过。
+- [x] 生产端 (Cloudflare Pages `shijianus-blog`) 全量构建、边缘部署与真实生产链路验证 (`scripts/verify-prod-image-and-avatar.mjs`)：
+  1. 通过 `npm run cf:deploy` 成功编译 Astro 静态资源与 Pages Functions 运行时，全量推送部署至 Cloudflare Pages 生产边缘节点；
+  2. 真实生产环境 API 审计：`POST https://blog.epocanvas.com/api/upload-image` 真实上传图片成功持久化至 Telegram 图床 (`https://img.epocanvas.com/file/...`)，HTTP 200 响应；
+  3. 真实生产环境浏览器端到端审计：Playwright 访问 `https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`，验证控制台 0 报错、评论区 `#post-comment` 视口滚动唤醒水合、工具栏图标点击弹出居中模态框、三标签页切换（本地上传/剪贴板与拖拽指南/外部链接）、Markdown 图片自动插入输入框；
+  4. 账户中心抽屉与头像真实交互审计：验证 `.account-avatar-card-block` 头像卡片呈现、`⚡ Epomail 官方头像` 初始状态徽章、上传按钮、自定义直链输入、`🎨 自定义专属头像` 实时响应、`↺ 恢复 Epomail 默认头像` 动态出现与一键复原；
+  5. 自动化测试 24/24 项生产断言 100% PASS 通过，已生成视觉审计截图存档。
 
 
