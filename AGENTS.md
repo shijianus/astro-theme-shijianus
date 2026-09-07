@@ -411,7 +411,7 @@
   3. 博主（携带管理员会话凭证）在国家旗帜旁边可查阅发言者的真实 IP（如 `[172.16.20.1]`），并对隐藏地理位置的用户保留全景审计特权。
 - [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-comment-geo-avatar-reactions.mjs`），所有 5 项核心问题端到端自动化测试全部 100% 验证通过。
 
-### Task 33: 账号中心与通知中心 (.theme-account-drawer) UI/UX 全维度深度美化与规范化重构 (`94bea2c`)
+### Task 33: 账号中心与通知中心 (.theme-account-drawer) UI/UX 全维度深度美化与规范化重构 (`94bea2c`, `116f50c`)
 - [x] 抽屉容器与遮罩层质感全面升级 (`src/styles/final-pass.css`)：
   1. 遮罩层 `.theme-account-overlay__mask` 注入高饱和度磨砂玻璃模糊（`backdrop-filter: blur(12px) saturate(180%)`）与暗调柔和晕影，深浅色自适应；
   2. 抽屉本体 `.theme-account-drawer` 引入超清玻璃拟态（`backdrop-filter: blur(28px) saturate(190%)` 与 `color-mix(in srgb, var(--card-bg) 94%, transparent)`），边框微光投影与平滑弹簧曲线进入动效；
