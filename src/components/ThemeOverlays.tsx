@@ -28,7 +28,6 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
-  Database,
   Settings,
   Camera,
   RotateCcw,
@@ -509,6 +508,22 @@ export function ThemeOverlays({
       })
       .slice(0, 10);
   }, [account, posts, commentThreadVersion]);
+
+  const myRecentComments = useMemo(() => {
+    if (typeof window === 'undefined') return [];
+    const all = readAllLocalThreads();
+    const currentName = (account?.name || accountForm.name || '').trim().toLowerCase();
+    const currentEmail = (account?.email || accountForm.email || '').trim().toLowerCase();
+    if (!currentName && !currentEmail) return [];
+    return all
+      .filter((c) => {
+        const matchName = currentName && c.name?.trim().toLowerCase() === currentName;
+        const matchEmail = currentEmail && c.email?.trim().toLowerCase() === currentEmail;
+        return matchName || matchEmail;
+      })
+      .sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
+      .slice(0, 5);
+  }, [account, accountForm.name, accountForm.email, commentThreadVersion]);
 
   const emitActivity = (message: string) => {
     if (!message.trim()) return;
@@ -1503,7 +1518,20 @@ export function ThemeOverlays({
 
           {/* 2. Hero Summary Profile Card */}
           <div className="account-hero-card">
-            <div className="account-hero-card__avatar">
+            <div
+              className="account-hero-card__avatar is-clickable"
+              onClick={() => avatarFileInputRef.current?.click()}
+              title="点击更换头像 (支持选择本地图片上传)"
+              role="button"
+              tabIndex={0}
+              aria-label="点击更换头像"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  avatarFileInputRef.current?.click();
+                }
+              }}
+            >
               {account?.avatar ? (
                 <img src={account.avatar} alt={account.name || brandName} loading="lazy" />
               ) : account?.role === 'admin' ? (
@@ -1517,6 +1545,13 @@ export function ThemeOverlays({
               ) : (
                 <UserRound className="h-6 w-6 text-theme-main" />
               )}
+              <div className="account-hero-card__avatar-overlay">
+                <Camera className="h-4 w-4" />
+                <span>更换</span>
+              </div>
+              <span className="account-hero-card__avatar-badge" title="点击更换头像">
+                <Camera className="h-2.5 w-2.5" />
+              </span>
               {account?.provider === 'epomail' && (
                 <span className="account-hero-card__badge-icon" title="Epomail 认证身份">
                   ⚡
@@ -1753,14 +1788,14 @@ export function ThemeOverlays({
 
                   {/* 分割提示 */}
                   <div className="account-divider">
-                    <span>或免登录快速参与评论</span>
+                    <span>或设置免登录本地评论身份</span>
                   </div>
 
                   {/* 选项 B：免登录本地评论身份设定 */}
                   <section className="account-card">
                     <div className="account-card__head">
                       <div>
-                        <h3 className="account-card__title">本地评论昵称与偏好</h3>
+                        <h3 className="account-card__title">本地评论身份设置</h3>
                         <p className="account-card__subtitle">仅保存在当前浏览器，无需注册即可直接参与讨论</p>
                       </div>
                     </div>
@@ -1787,13 +1822,13 @@ export function ThemeOverlays({
                             type="email"
                             value={accountForm.email}
                             onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                            placeholder="用于接收回复提醒 (保密)"
+                            placeholder="用于接收回复提醒与头像匹配"
                           />
                         </div>
                       </label>
 
                       <label className="account-field">
-                        <span>个人网站 (选填)</span>
+                        <span>个人主页 / 网站 (选填)</span>
                         <div className="account-input-wrap">
                           <Globe className="account-input-icon" />
                           <input
@@ -1806,14 +1841,14 @@ export function ThemeOverlays({
                       </label>
 
                       <label className="account-field">
-                        <span>自定义头像 (选填)</span>
+                        <span>自定义头像直链 (选填)</span>
                         <div className="account-input-wrap">
                           <ImageIcon className="account-input-icon" />
                           <input
                             type="url"
                             value={accountForm.avatar}
                             onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                            placeholder="图片直链或点击上传"
+                            placeholder="图片直链，亦可直接点击上方头像上传"
                           />
                           <button
                             type="button"
@@ -1822,35 +1857,10 @@ export function ThemeOverlays({
                             disabled={isAuthorizing}
                             title="上传本地图片"
                           >
-                            <Upload className="h-3.5 w-3.5" />
+                            <Camera className="h-3.5 w-3.5" />
                             <span>上传</span>
                           </button>
                         </div>
-                      </label>
-                    </div>
-
-                    {/* 隐私偏好：展示地理位置与国家/地区旗帜开关 */}
-                    <div className="account-toggle-field">
-                      <div className="account-toggle-field__info">
-                        <span className="account-toggle-field__title">
-                          <Globe className="h-4 w-4 text-theme-main" />
-                          <span>展示国家/地区旗帜</span>
-                        </span>
-                        <span className="account-toggle-field__desc">
-                          在评论区公开展示您发言时的归属地旗帜；关闭后完全隐藏（绝不记录原始 IP）
-                        </span>
-                      </div>
-                      <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={accountForm.showLocation}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setAccountForm((prev) => ({ ...prev, showLocation: checked }));
-                          }}
-                        />
-                        <div className="theme-switch-slider"></div>
                       </label>
                     </div>
 
@@ -1873,8 +1883,8 @@ export function ThemeOverlays({
                   <section className="account-card">
                     <div className="account-card__head">
                       <div>
-                        <h3 className="account-card__title">个人资料与偏好</h3>
-                        <p className="account-card__subtitle">当前身份已生效，在此可更新评论昵称、头像与展示偏好</p>
+                        <h3 className="account-card__title">个人资料设置</h3>
+                        <p className="account-card__subtitle">已成功认证，在此可更新文章评论中公开展示的作者信息</p>
                       </div>
                       <span className="account-tag-chip account-tag-chip--active">已认证</span>
                     </div>
@@ -1909,7 +1919,7 @@ export function ThemeOverlays({
                       </label>
 
                       <label className="account-field">
-                        <span>个人网站</span>
+                        <span>个人主页 / 网站</span>
                         <div className="account-input-wrap">
                           <Globe className="account-input-icon" />
                           <input
@@ -1920,98 +1930,42 @@ export function ThemeOverlays({
                           />
                         </div>
                       </label>
-                    </div>
 
-                    {/* 专属头像管理组件 */}
-                    <div className="account-avatar-card-block">
-                      <div className="account-avatar-card-inner">
-                        <div className="account-avatar-main-avatar">
-                          {accountForm.avatar ? (
-                            <img src={accountForm.avatar} alt="头像预览" className="account-avatar-img" />
-                          ) : (
-                            <span className="account-avatar-placeholder">{getCommentInitials(accountForm.name || '读')}</span>
+                      <label className="account-field">
+                        <div className="flex items-center justify-between">
+                          <span>头像直链 (选填)</span>
+                          {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar !== account.epomailAvatar && (
+                            <button
+                              type="button"
+                              className="account-link-btn"
+                              onClick={handleRestoreEpomailAvatar}
+                              disabled={isAuthorizing}
+                              title="恢复 Epomail 官方头像"
+                            >
+                              <RotateCcw className="h-3 w-3 inline mr-1" />
+                              恢复官方头像
+                            </button>
                           )}
                         </div>
-                        <div className="account-avatar-info">
-                          <div className="account-avatar-status-badge-wrap">
-                            {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar === account.epomailAvatar ? (
-                              <span className="account-avatar-status-badge is-epomail">⚡ Epomail 官方头像</span>
-                            ) : accountForm.avatar ? (
-                              <span className="account-avatar-status-badge is-custom">🎨 自定义头像</span>
-                            ) : (
-                              <span className="account-avatar-status-badge is-default">默认头像</span>
-                            )}
-                          </div>
-                          <p className="account-avatar-tip">支持上传本地图片、指定图片直链或使用 Epomail 官方同步头像</p>
-                        </div>
-                      </div>
-
-                      <div className="account-avatar-btns-row">
-                        <button
-                          type="button"
-                          className="account-avatar-action-btn"
-                          onClick={() => avatarFileInputRef.current?.click()}
-                          disabled={isAuthorizing}
-                          title="选择本地图片上传"
-                        >
-                          <Camera className="h-3.5 w-3.5" />
-                          <span>上传新头像</span>
-                        </button>
-
-                        {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar !== account.epomailAvatar && (
-                          <button
-                            type="button"
-                            className="account-avatar-action-btn is-restore"
-                            onClick={handleRestoreEpomailAvatar}
-                            disabled={isAuthorizing}
-                            title="恢复 Epomail 官方头像"
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" />
-                            <span>恢复默认头像</span>
-                          </button>
-                        )}
-                      </div>
-
-                      <label className="account-field" style={{ marginTop: '10px' }}>
-                        <span className="account-field-sublabel">自定义头像链接：</span>
                         <div className="account-input-wrap">
                           <ImageIcon className="account-input-icon" />
                           <input
                             type="url"
                             value={accountForm.avatar}
                             onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                            placeholder="https://... 图片直链"
+                            placeholder="图片直链，亦可直接点击上方头像上传"
                           />
+                          <button
+                            type="button"
+                            className="account-input-inline-btn"
+                            onClick={() => avatarFileInputRef.current?.click()}
+                            disabled={isAuthorizing}
+                            title="选择本地图片上传"
+                          >
+                            <Camera className="h-3.5 w-3.5" />
+                            <span>上传</span>
+                          </button>
                         </div>
-                      </label>
-                    </div>
-
-                    {/* 隐私偏好：展示地理位置与国家/地区旗帜开关 */}
-                    <div className="account-toggle-field">
-                      <div className="account-toggle-field__info">
-                        <span className="account-toggle-field__title">
-                          <Globe className="h-4 w-4 text-theme-main" />
-                          <span>展示国家/地区旗帜</span>
-                        </span>
-                        <span className="account-toggle-field__desc">
-                          在评论区公开展示您发言时的归属地旗帜；关闭后完全隐藏（绝不记录原始 IP）
-                        </span>
-                      </div>
-                      <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={accountForm.showLocation}
-                          onChange={async (e) => {
-                            const checked = e.target.checked;
-                            setAccountForm((prev) => ({ ...prev, showLocation: checked }));
-                            if (account) {
-                              await updateAuthProfile({ showLocation: checked });
-                              setAccount((prev) => (prev ? { ...prev, showLocation: checked } : null));
-                            }
-                          }}
-                        />
-                        <div className="theme-switch-slider"></div>
                       </label>
                     </div>
 
@@ -2034,58 +1988,18 @@ export function ThemeOverlays({
                       </button>
                     </div>
                   </section>
-
-                  {/* 安全授权凭证信息 (OAuth App Inspector) */}
-                  <section className="account-card account-card--inspector">
-                    <div className="account-card__head">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5 text-theme-main" />
-                        <h3 className="account-card__title">安全授权凭证 (Security Pass)</h3>
-                      </div>
-                      <span className="account-tag-chip account-tag-chip--active">✓ 已生效</span>
-                    </div>
-
-                    <div className="app-inspector-grid">
-                      <div className="inspector-item">
-                        <span className="inspector-label">对接应用</span>
-                        <span className="inspector-value font-mono">shijianus-blog</span>
-                      </div>
-                      <div className="inspector-item">
-                        <span className="inspector-label">认证中心</span>
-                        <span className="inspector-value">EpoCanvas Mail</span>
-                      </div>
-                      <div className="inspector-item">
-                        <span className="inspector-label">客户端标识 (Client ID)</span>
-                        <span className="inspector-value font-mono">{authConfig?.epomail.clientId || 'epo_live_shijianus_blog'}</span>
-                      </div>
-                      <div className="inspector-item">
-                        <span className="inspector-label">授权范围 (Scopes)</span>
-                        <span className="inspector-value font-mono">openid profile email</span>
-                      </div>
-                      <div className="inspector-item">
-                        <span className="inspector-label">安全校验状态</span>
-                        <span className="inspector-value text-emerald-500 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5 inline" /> 已通过 OAuth 2.0 验证
-                        </span>
-                      </div>
-                      <div className="inspector-item">
-                        <span className="inspector-label">用户标识 (Sub)</span>
-                        <span className="inspector-value font-mono">{account.id}</span>
-                      </div>
-                    </div>
-                  </section>
                 </>
               )}
             </div>
           )}
 
-          {/* 6. TAB 2: 站内提醒 */}
+          {/* 6. TAB 2: 站内提醒与评论足迹 */}
           {accountTab === 'notifications' && (
             <div className="account-tab-content">
               <section className="account-card">
                 <div className="account-card__head">
                   <div>
-                    <h3 className="account-card__title">站内提醒与消息</h3>
+                    <h3 className="account-card__title">站内提醒与回复</h3>
                     <p className="account-card__subtitle">接收文章评论 @ 提及、回复与站点动态</p>
                   </div>
                   <span className="account-tag-chip">{allNotifications.length} 条</span>
@@ -2129,10 +2043,48 @@ export function ThemeOverlays({
                   </div>
                 )}
               </section>
+
+              {/* 我的评论足迹 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div>
+                    <h3 className="account-card__title">我的评论足迹</h3>
+                    <p className="account-card__subtitle">回顾您在各篇文章下发表的观点与互动</p>
+                  </div>
+                  <span className="account-tag-chip">{myRecentComments.length} 条记录</span>
+                </div>
+
+                {myRecentComments.length > 0 ? (
+                  <div className="account-my-comments-list">
+                    {myRecentComments.map((item) => (
+                      <a
+                        key={item.id}
+                        href={item.slug ? `/posts/${item.slug}/#comment-${item.id}` : '#'}
+                        className="account-my-comment-item"
+                        onClick={() => setNotificationOpen(false)}
+                      >
+                        <div className="account-my-comment-head">
+                          <span className="account-my-comment-post">
+                            {item.slug ? `文章：${item.slug}` : '博文评论'}
+                          </span>
+                          <span className="account-my-comment-date">
+                            {new Date(item.createdAt).toLocaleDateString('zh-CN')}
+                          </span>
+                        </div>
+                        <p className="account-my-comment-msg">{item.message}</p>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="account-empty-state account-empty-state--compact">
+                    <p>您尚未发表过评论，前往任意博文底部即可快速参与讨论交流。</p>
+                  </div>
+                )}
+              </section>
             </div>
           )}
 
-          {/* 7. TAB 3: 偏好设置与数据安全 */}
+          {/* 7. TAB 3: 偏好设置与隐私 (全站唯一偏好设置中心) */}
           {accountTab === 'settings' && (
             <div className="account-tab-content">
               {/* 语言偏好 */}
@@ -2174,7 +2126,7 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              {/* 隐私偏好：地理位置与国家/地区旗帜展示 */}
+              {/* 评论区隐私与偏好设置 (唯一保留处) */}
               <section className="account-card">
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
@@ -2182,7 +2134,7 @@ export function ThemeOverlays({
                     <h3 className="account-card__title">评论区隐私与显示偏好</h3>
                   </div>
                   <span className="account-tag-chip">
-                    {accountForm.showLocation ? '公开展示' : '隐藏位置'}
+                    {accountForm.showLocation ? '前台公开' : '前台隐藏'}
                   </span>
                 </div>
 
@@ -2190,10 +2142,10 @@ export function ThemeOverlays({
                   <div className="account-toggle-field__info">
                     <span className="account-toggle-field__title">
                       <Globe className="h-4 w-4 text-theme-main" />
-                      <span>展示国家/地区旗帜与位置</span>
+                      <span>前台展示国家/地区属地徽章</span>
                     </span>
                     <span className="account-toggle-field__desc">
-                      开启后在评论区公开展示您发言时的国家/地区旗帜与注释；关闭后隐藏地理位置（博主亦绝不记录原始 IP）
+                      开启后在评论区公开展出您发言时的国家/地区徽章（如 🇨🇳 中国·北京）；关闭后前台完全隐匿属地信息。
                     </span>
                   </div>
                   <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2219,56 +2171,13 @@ export function ThemeOverlays({
                     <div className="theme-switch-slider"></div>
                   </label>
                 </div>
-              </section>
 
-              {/* 数据隔离与安全架构保障 */}
-              <section className="account-card account-card--arch">
-                <div className="account-card__head">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">数据隔离与安全架构 (Security Guarantee)</h3>
-                  </div>
-                  <span className="account-tag-chip account-tag-chip--active">物理隔离保障</span>
-                </div>
-
-                <p className="account-card__desc">
-                  本博客严格遵循零信任与隐私优先设计，用户身份凭据与公开评论数据实行物理隔离：
-                </p>
-
-                <div className="arch-flow-diagram">
-                  <div className="arch-node">
-                    <div className="arch-node__icon">💬</div>
-                    <strong>评论数据域</strong>
-                    <small>Cloudflare D1 (DB)</small>
-                    <span>评论流、点赞数、Quote引用</span>
-                  </div>
-
-                  <div className="arch-arrow">
-                    <span>安全隔离 / SSO</span>
-                    <div className="arch-arrow-line"></div>
-                  </div>
-
-                  <div className="arch-node arch-node--highlight">
-                    <div className="arch-node__icon">⚡</div>
-                    <strong>用户身份域</strong>
-                    <small>Epomail (USER_DB)</small>
-                    <span>账号认证、密码、安全权限</span>
-                  </div>
-                </div>
-
-                <div className="arch-notes">
-                  <div className="arch-trust-item">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                    <span><strong>凭证物理隔离</strong>：密码与认证令牌由独立鉴权中心托管，博客前端与评论数据库绝不保存任何敏感凭证。</span>
-                  </div>
-                  <div className="arch-trust-item">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                    <span><strong>零真实 IP 追踪</strong>：系统绝不记录读者发言时的真实 IP 地址，地理标签基于 Cloudflare 边缘匿名解析。</span>
-                  </div>
-                  <div className="arch-trust-item">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                    <span><strong>数据主权归属</strong>：读者可随时在本地清理会话凭据或注销关联，评论身份拥有完全可控权。</span>
-                  </div>
+                {/* 真实合规的管理目的说明 (诚实透明，修正误导) */}
+                <div className="account-privacy-note">
+                  <Info className="h-4 w-4 text-theme-main flex-shrink-0 mt-0.5" />
+                  <span>
+                    特别说明：前台隐匿仅针对普通访客隐藏属地徽章。出于社区反垃圾、网络安全与评论风控管理合规需要，系统后台仍会如实记录发件连接 IP，仅站长与管理员后台可见，绝不对公众展示。
+                  </span>
                 </div>
               </section>
             </div>

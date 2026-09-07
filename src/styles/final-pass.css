@@ -2490,6 +2490,16 @@ body .snackbar-container.show,
   flex-shrink: 0;
 }
 
+.account-hero-card__avatar.is-clickable {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.account-hero-card__avatar.is-clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--theme-main), 0 8px 24px -2px rgba(66, 90, 239, 0.35);
+}
+
 .account-hero-card__avatar img {
   width: 100%;
   height: 100%;
@@ -2497,21 +2507,71 @@ body .snackbar-container.show,
   object-fit: cover;
 }
 
-.account-hero-card__badge-icon {
+.account-hero-card__avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.account-hero-card__avatar.is-clickable:hover .account-hero-card__avatar-overlay,
+.account-hero-card__avatar.is-clickable:focus-visible .account-hero-card__avatar-overlay {
+  opacity: 1;
+}
+
+.account-hero-card__avatar-badge {
   position: absolute;
   bottom: -2px;
   right: -2px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
+  background: var(--theme-main);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.account-hero-card__avatar.is-clickable:hover .account-hero-card__avatar-badge {
+  transform: scale(1.1);
+}
+
+.account-hero-card__badge-icon {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--card-bg);
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+  z-index: 4;
 }
 
 .account-hero-card__info {
@@ -3148,129 +3208,21 @@ body .snackbar-container.show,
   color: #fff;
 }
 
-/* Avatar Management Block */
-.account-avatar-card-block {
-  padding: 16px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
-  margin-top: 8px;
-}
-
-.account-avatar-card-inner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.account-avatar-main-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--theme-main);
-  background: var(--card-bg);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 20%, transparent), 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.account-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.account-avatar-placeholder {
-  font-size: 22px;
-  font-weight: 800;
+.account-link-btn {
+  background: none;
+  border: none;
   color: var(--theme-main);
-}
-
-.account-avatar-info {
-  flex: 1;
-}
-
-.account-avatar-status-badge-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.account-avatar-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 5px;
-}
-
-.account-avatar-status-badge.is-epomail {
-  background: color-mix(in srgb, var(--theme-main) 16%, transparent);
-  color: var(--theme-main);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 30%, transparent);
-}
-
-.account-avatar-status-badge.is-custom {
-  background: rgba(16, 185, 129, 0.15);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.account-avatar-status-badge.is-default {
-  background: color-mix(in srgb, var(--font-color) 8%, transparent);
-  color: var(--secondtext);
-  border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
-}
-
-.account-avatar-tip {
-  font-size: 11px;
-  color: var(--secondtext);
-  margin: 5px 0 0 0;
-  line-height: 1.45;
-}
-
-.account-avatar-btns-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.account-avatar-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 7px;
-  border: 1px solid var(--theme-main);
-  background: var(--theme-main);
-  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.15s ease;
 }
 
-.account-avatar-action-btn:hover:not(:disabled) {
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-
-.account-avatar-action-btn.is-restore {
-  background: transparent;
-  color: var(--theme-main);
-  border-color: color-mix(in srgb, var(--theme-main) 35%, transparent);
-}
-
-.account-avatar-action-btn.is-restore:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--theme-main) 10%, transparent);
+.account-link-btn:hover {
+  opacity: 0.8;
 }
 
 .account-input-inline-btn {
@@ -3296,153 +3248,87 @@ body .snackbar-container.show,
   transform: scale(1.02);
 }
 
-/* OAuth App Inspector */
-.account-card--inspector {
-  background: color-mix(in srgb, var(--secondbg) 40%, var(--card-bg));
-  border-color: color-mix(in srgb, var(--font-color) 12%, transparent);
-}
-
-.app-inspector-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.inspector-item {
+/* My Comments in Drawer */
+.account-my-comments-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.account-my-comment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
   border-radius: 8px;
-  background: var(--secondbg);
+  background: color-mix(in srgb, var(--secondbg) 60%, var(--card-bg));
   border: var(--style-border-always);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.inspector-label {
-  font-size: 0.72rem;
-  color: var(--secondtext);
+.account-my-comment-item:hover {
+  border-color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
+  transform: translateX(3px);
+}
+
+.account-my-comment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.account-my-comment-post {
+  font-size: 0.78rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.inspector-value {
-  font-size: 0.84rem;
-  color: var(--font-color);
+  color: var(--theme-main);
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* System Architecture Flow Diagram */
-.arch-flow-diagram {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 10px;
-  background: var(--secondbg);
-  border: var(--style-border-always);
-}
-
-.arch-node {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 4px;
-  padding: 12px 10px;
-  border-radius: 8px;
-  background: var(--card-bg);
-  border: var(--style-border-always);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-
-.arch-node:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.arch-node--highlight {
-  border-color: color-mix(in srgb, var(--theme-main) 40%, transparent);
-  box-shadow: 0 2px 12px rgba(66, 90, 239, 0.15);
-}
-
-.arch-node__icon {
-  font-size: 1.5rem;
-  margin-bottom: 2px;
-}
-
-.arch-node strong {
-  font-size: 0.88rem;
-  color: var(--font-color);
-  font-weight: 700;
-}
-
-.arch-node small {
-  font-size: 0.74rem;
-  color: var(--theme-main);
-  font-weight: 800;
-}
-
-.arch-node span {
+.account-my-comment-date {
   font-size: 0.72rem;
   color: var(--secondtext);
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
 }
 
-.arch-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  color: var(--theme-main);
-  font-weight: 800;
+.account-my-comment-msg {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--font-color);
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-.arch-arrow-line {
-  width: 50px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--card-border), var(--theme-main));
-  position: relative;
+.account-empty-state--compact {
+  padding: 24px 16px;
 }
 
-.arch-arrow-line::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: -3px;
-  width: 0;
-  height: 0;
-  border-left: 6px solid var(--theme-main);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-}
-
-.arch-notes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
-}
-
-.arch-trust-item {
+.account-privacy-note {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.8rem;
-  color: var(--font-color);
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--font-color) 12%, transparent);
+  font-size: 0.74rem;
+  color: var(--secondtext);
   line-height: 1.5;
-}
-
-.arch-trust-item strong {
-  color: var(--theme-main);
 }
 
 /* Custom Toggle Field */
@@ -3694,20 +3580,6 @@ body .snackbar-container.show,
 
   .account-field--full {
     grid-column: span 1;
-  }
-
-  .app-inspector-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .arch-flow-diagram {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .arch-arrow {
-    transform: rotate(90deg);
-    margin: 8px 0;
   }
 }
 

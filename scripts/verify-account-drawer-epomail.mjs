@@ -247,38 +247,51 @@ async function runVerification() {
     console.log('   -> Account Email:', heroDesc?.trim());
     if (!heroDesc?.includes('admin@epomail.bond')) throw new Error('Email did not update');
 
-    // Verify OAuth App Inspector is now visible
+    // Verify Technical cards (.account-card--inspector, .account-card--arch) are completely eliminated
     const inspectorVisible = await desktopPage.isVisible('.account-card--inspector');
-    console.log('   -> OAuth App Inspector visible:', inspectorVisible);
-    if (!inspectorVisible) throw new Error('OAuth App Inspector should be visible after login');
+    if (inspectorVisible) throw new Error('Security Pass / Inspector card must be completely eliminated');
+    console.log('   ✓ Verified: Technical Inspector card eliminated from user view');
 
-    const inspectorClientId = await desktopPage.textContent('.app-inspector-grid');
-    if (!inspectorClientId?.includes('epo_live_shijianus_blog')) {
-      throw new Error('Inspector missing client ID');
-    }
-    console.log('   -> App Inspector verified: Client ID matches epo_live_shijianus_blog');
+    // Verify Tab 1 does not contain duplicate privacy toggle
+    const tab1Toggles = await desktopPage.$$('.account-toggle-field');
+    if (tab1Toggles.length > 0) throw new Error('Tab 1 must not contain duplicate privacy toggle');
+    console.log('   ✓ Verified: Tab 1 has no duplicate privacy toggle');
 
-    // Test Tab 2: 站内提醒
-    console.log('4. Testing Tab 2: 站内提醒...');
+    // Verify Hero Avatar is clickable with camera badge
+    const heroAvatarClickable = await desktopPage.$('.account-hero-card__avatar.is-clickable');
+    if (!heroAvatarClickable) throw new Error('Hero avatar must be clickable');
+    const heroAvatarBadge = await desktopPage.$('.account-hero-card__avatar-badge');
+    if (!heroAvatarBadge) throw new Error('Hero avatar must show camera badge');
+    console.log('   ✓ Verified: Hero avatar click-to-upload and camera badge present');
+
+    // Test Tab 2: 站内提醒与评论足迹
+    console.log('4. Testing Tab 2: 站内提醒与评论足迹...');
     await tabs[1].click();
     await desktopPage.waitForTimeout(300);
     const notifCard = await desktopPage.isVisible('.account-notification-list, .account-empty-state');
     console.log('   -> Notifications tab content visible:', notifCard);
     if (!notifCard) throw new Error('Notifications content missing');
 
-    // Test Tab 3: 偏好与架构
-    console.log('5. Testing Tab 3: 偏好与架构 (Architecture Inspector)...');
+    // Test Tab 3: 偏好设置与隐私
+    console.log('5. Testing Tab 3: 偏好设置与隐私...');
     await tabs[2].click();
     await desktopPage.waitForTimeout(300);
-    const archDiagram = await desktopPage.isVisible('.arch-flow-diagram');
-    console.log('   -> Architecture flow diagram visible:', archDiagram);
-    if (!archDiagram) throw new Error('Architecture flow diagram missing');
 
-    const archText = await desktopPage.textContent('.account-card--arch');
-    if (!archText?.includes('Cloudflare D1 (DB)') || !archText?.includes('Epomail (USER_DB)')) {
-      throw new Error('Architecture diagram missing DB breakdown');
+    const archDiagramVisible = await desktopPage.isVisible('.arch-flow-diagram, .account-card--arch');
+    if (archDiagramVisible) throw new Error('Architecture diagram card must be completely eliminated');
+    console.log('   ✓ Verified: Developer Architecture card eliminated from user view');
+
+    const localeBtns = await desktopPage.$$('.account-locale-btn');
+    if (localeBtns.length !== 3) throw new Error('Expected 3 language options in Tab 3');
+
+    const privacyNote = await desktopPage.textContent('.account-privacy-note');
+    if (!privacyNote?.includes('管理合规需要') || !privacyNote?.includes('记录发件连接 IP')) {
+      throw new Error('Privacy note must accurately describe admin IP logging for moderation');
     }
-    console.log('   -> Architecture diagram properly details Comments DB & Identity DB');
+    if (privacyNote?.includes('绝不记录原始 IP')) {
+      throw new Error('Misleading statement "绝不记录原始 IP" must be removed');
+    }
+    console.log('   ✓ Verified: Tab 3 contains honest administrative IP disclaimer');
 
     // Test Logout
     console.log('6. Testing In-Place Logout...');

@@ -116,19 +116,19 @@ async function testTarget(baseUrl) {
   console.log('   -> Notifications tab content visible:', notifVisible);
   if (!notifVisible) throw new Error('Notifications content missing');
 
-  // Test Tab 3: 偏好与架构
-  console.log('7. Testing Tab 3: 偏好与架构 ...');
+  // Test Tab 3: 偏好设置与隐私
+  console.log('7. Testing Tab 3: 偏好设置与隐私 ...');
   await tabs[2].click();
   await page.waitForTimeout(300);
-  const archVisible = await page.isVisible('.arch-flow-diagram');
-  console.log('   -> Architecture Diagram visible:', archVisible);
-  if (!archVisible) throw new Error('Architecture diagram not visible');
+  const archVisible = await page.isVisible('.arch-flow-diagram, .account-card--arch');
+  if (archVisible) throw new Error('Developer Architecture diagram should NOT be visible');
+  console.log('   ✓ Developer architecture card eliminated');
 
-  const archContent = await page.textContent('.account-card--arch');
-  if (!archContent?.includes('Cloudflare D1 (DB)') || !archContent?.includes('Epomail (USER_DB)')) {
-    throw new Error('Architecture diagram missing database separation labels');
+  const privacyNote = await page.textContent('.account-privacy-note');
+  if (!privacyNote?.includes('管理合规需要') || !privacyNote?.includes('记录发件连接 IP')) {
+    throw new Error('Privacy note missing honest admin IP notice');
   }
-  console.log('   -> Verified Cloudflare D1 & Epomail architecture flow');
+  console.log('   ✓ Verified Tab 3 privacy settings & honest admin IP disclaimer');
 
   // Test Logout
   console.log('8. Testing In-Place Logout ...');

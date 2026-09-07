@@ -89,22 +89,44 @@ async function verifyProdAccountDrawer() {
     assert(notifCard !== null, 'Notifications tab content must be visible');
     console.log('   ✓ Notifications tab content visible');
 
-    // 8. Verify Tab 3 (Settings & Architecture)
-    console.log('8. Verifying Tab 3 (Settings & Architecture)...');
+    console.log('   ✓ Notifications tab content visible');
+
+    // 8. Verify Tab 3 (Settings & Privacy)
+    console.log('8. Verifying Tab 3 (Settings & Privacy)...');
     await tabs[2].click();
     await page.waitForTimeout(400);
 
-    const archDiagram = await page.waitForSelector('.arch-flow-diagram', { state: 'visible' });
-    assert(archDiagram !== null, 'Architecture flow diagram must be visible');
-    const archText = await page.textContent('.arch-flow-diagram');
-    assert(archText?.includes('评论数据域') && archText?.includes('用户身份域'), 'Arch diagram must detail both domains');
-    console.log('   ✓ Architecture Flow Diagram verified');
+    const hasArch = await page.$('.arch-flow-diagram, .account-card--arch');
+    assert.strictEqual(hasArch, null, 'Developer architecture card must NOT be present');
+    console.log('   ✓ Developer architecture card strictly eliminated');
 
-    // Switch back to Tab 1 and take screenshot
+    const privacyNote = await page.textContent('.account-privacy-note');
+    assert(privacyNote?.includes('管理合规需要') && privacyNote?.includes('记录发件连接 IP'), 'Privacy note must state admin IP logging');
+    assert(!privacyNote?.includes('绝不记录原始 IP'), 'Must not claim 绝不记录原始 IP');
+    console.log('   ✓ Accurate admin IP logging notice verified');
+
+    await page.screenshot({ path: 'scratch/prod-account-drawer-tab3.png' });
+
+    // Switch back to Tab 1 and verify avatar and absence of inspector
     await tabs[0].click();
     await page.waitForTimeout(400);
+
+    const hasInspector = await page.$('.account-card--inspector');
+    assert.strictEqual(hasInspector, null, 'Developer inspector card must NOT be present');
+    console.log('   ✓ Developer inspector card strictly eliminated');
+
+    const tab1Toggles = await page.$$('.account-toggle-field');
+    assert.strictEqual(tab1Toggles.length, 0, 'Tab 1 must not contain duplicate privacy toggle');
+    console.log('   ✓ Duplicate privacy toggle strictly eliminated from Tab 1');
+
+    const avatarClickable = await page.$('.account-hero-card__avatar.is-clickable');
+    assert(avatarClickable !== null, 'Hero avatar must be clickable');
+    const avatarBadge = await page.$('.account-hero-card__avatar-badge');
+    assert(avatarBadge !== null, 'Hero avatar camera badge must be present');
+    console.log('   ✓ Interactive avatar upload & camera badge verified');
+
     await page.screenshot({ path: 'scratch/prod-account-drawer.png' });
-    console.log('   ✓ Production visual audit screenshot saved to scratch/prod-account-drawer.png');
+    console.log('   ✓ Production visual audit screenshots saved');
 
     // Verify close interaction
     console.log('9. Testing Close Button interaction...');
