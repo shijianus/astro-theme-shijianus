@@ -2290,89 +2290,201 @@ body .snackbar-container.show,
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(7, 10, 21, 0.38);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   opacity: 0;
-  transition: opacity 0.26s ease;
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] .theme-account-overlay__mask {
+  background: rgba(4, 8, 20, 0.68);
 }
 
 .theme-account-overlay.show .theme-account-overlay__mask {
   opacity: 1;
 }
 
+/* 1. Account & Notification Center Drawer */
 .theme-account-drawer {
   position: fixed;
   top: 0;
   right: 0;
   z-index: 10000 !important;
-  width: min(560px, 100vw);
+  width: min(540px, 100vw);
   height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  background: var(--card-bg);
-  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.16);
+  gap: 18px;
+  padding: 24px 26px;
+  background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border-left: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
+  box-shadow: -20px 0 50px -10px rgba(0, 0, 0, 0.16), -6px 0 20px rgba(0, 0, 0, 0.08);
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--font-color) 16%, transparent) transparent;
+}
+
+.theme-account-drawer::-webkit-scrollbar {
+  width: 5px;
+}
+
+.theme-account-drawer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.theme-account-drawer::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--font-color) 16%, transparent);
+  border-radius: 999px;
+}
+
+.theme-account-drawer::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--theme-main) 50%, transparent);
 }
 
 .theme-account-overlay.show .theme-account-drawer {
   transform: translateX(0);
 }
 
+/* Header */
 .theme-account-drawer__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding-bottom: 4px;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--font-color) 6%, transparent);
+}
+
+.theme-account-drawer__head-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theme-account-drawer__head-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+  display: inline-block;
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.status-indicator-dot.is-active {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
 
 .theme-account-drawer__head h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--font-color);
+  line-height: 1.2;
 }
 
 .theme-account-drawer__head .eyebrow {
-  margin: 0 0 2px 0;
-  font-size: 0.75rem;
+  margin: 0;
+  font-size: 0.72rem;
   font-weight: 700;
+  font-family: var(--font-mono, monospace);
   color: var(--theme-main);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+}
+
+.theme-account-drawer__close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  background: color-mix(in srgb, var(--secondbg) 80%, var(--card-bg));
+  color: var(--secondtext);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.theme-account-drawer__close:hover {
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--theme-main) 35%, transparent);
+  color: var(--theme-main);
+  transform: rotate(90deg) scale(1.06);
 }
 
 /* 2. Hero Summary Profile Card */
 .account-hero-card {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
-  padding: 16px 18px;
-  border: var(--style-border-always);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--secondbg) 65%, var(--card-bg));
-  box-shadow: var(--shadow-border);
+  padding: 16px 20px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  border-radius: 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 5%, var(--card-bg)) 0%, color-mix(in srgb, var(--secondbg) 85%, var(--card-bg)) 100%);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.account-hero-card::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--theme-main) 14%, transparent) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .account-hero-card__avatar {
   position: relative;
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
   color: var(--theme-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 900;
   overflow: visible;
+  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px color-mix(in srgb, var(--theme-main) 30%, transparent), 0 6px 16px -2px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
 }
 
 .account-hero-card__avatar img {
@@ -2386,23 +2498,25 @@ body .snackbar-container.show,
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: #fff;
   font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--card-bg);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
 }
 
 .account-hero-card__info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
+  z-index: 1;
 }
 
 .account-hero-card__name-row {
@@ -2413,9 +2527,10 @@ body .snackbar-container.show,
 }
 
 .account-hero-card__name-row strong {
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   color: var(--font-color);
   font-weight: 800;
+  letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2425,7 +2540,7 @@ body .snackbar-container.show,
   margin: 0;
   font-size: 0.82rem;
   color: var(--secondtext);
-  line-height: 1.4;
+  line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2435,61 +2550,78 @@ body .snackbar-container.show,
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 5px;
   font-size: 11px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .account-pill--epomail {
-  background: color-mix(in srgb, #3b82f6 14%, transparent);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(37, 99, 235, 0.1));
   color: #2563eb;
-  border: 1px solid color-mix(in srgb, #3b82f6 30%, transparent);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+}
+
+[data-theme='dark'] .account-pill--epomail {
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 .account-pill--local {
   background: color-mix(in srgb, var(--font-color) 8%, transparent);
   color: var(--font-color);
+  border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
 }
 
 .account-pill--guest {
   background: color-mix(in srgb, var(--secondtext) 12%, transparent);
   color: var(--secondtext);
+  border: 1px solid color-mix(in srgb, var(--secondtext) 20%, transparent);
 }
 
 .account-pill--admin {
-  background: color-mix(in srgb, #10b981 14%, transparent);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.1));
   color: #059669;
-  border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.12);
+}
+
+[data-theme='dark'] .account-pill--admin {
+  color: #34d399;
 }
 
 .account-btn-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
-  border: var(--style-border-always);
+  border: 1px solid color-mix(in srgb, var(--card-border) 80%, transparent);
   background: var(--card-bg);
   color: var(--secondtext);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
 }
 
 .account-btn-icon:hover {
   color: #ef4444;
-  border-color: #ef4444;
-  background: color-mix(in srgb, #ef4444 8%, var(--card-bg));
+  border-color: rgba(239, 68, 68, 0.4);
+  background: color-mix(in srgb, #ef4444 10%, var(--card-bg));
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.2);
 }
 
 /* 3. Navigation Tabs */
 .account-nav-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  background: var(--secondbg);
-  padding: 4px;
+  gap: 6px;
+  background: color-mix(in srgb, var(--secondbg) 85%, var(--card-bg));
+  padding: 5px;
   border-radius: 10px;
   border: var(--style-border-always);
 }
@@ -2499,33 +2631,40 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  height: 38px;
+  padding: 0 10px;
   border-radius: 7px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--secondtext);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
 .account-nav-tab:hover {
   color: var(--font-color);
+  background: color-mix(in srgb, var(--card-bg) 50%, transparent);
 }
 
 .account-nav-tab.is-active {
   background: var(--card-bg);
   color: var(--theme-main);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .account-tab-badge {
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 999px;
   font-size: 10px;
-  background: var(--theme-main);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--theme-main), #2563eb);
   color: #fff;
+  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.35);
+  line-height: 1.3;
 }
 
 /* 4. Toasts & Notices */
@@ -2533,11 +2672,11 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .account-toast-notice--success {
@@ -2546,10 +2685,18 @@ body .snackbar-container.show,
   border: 1px solid color-mix(in srgb, #10b981 25%, transparent);
 }
 
+[data-theme='dark'] .account-toast-notice--success {
+  color: #34d399;
+}
+
 .account-toast-notice--error {
   background: color-mix(in srgb, #ef4444 12%, var(--card-bg));
   color: #dc2626;
   border: 1px solid color-mix(in srgb, #ef4444 25%, transparent);
+}
+
+[data-theme='dark'] .account-toast-notice--error {
+  color: #f87171;
 }
 
 .account-toast-notice--info {
@@ -2568,17 +2715,30 @@ body .snackbar-container.show,
 .account-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 16px;
+  padding: 20px 22px;
   border: var(--style-border-always);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--card-bg);
   box-shadow: var(--shadow-border);
+  transition: all 0.2s ease;
 }
 
 .account-card--epomail {
-  border-color: color-mix(in srgb, #3b82f6 30%, var(--card-border));
-  background: linear-gradient(180deg, color-mix(in srgb, #3b82f6 5%, var(--card-bg)), var(--card-bg));
+  border-color: color-mix(in srgb, #3b82f6 35%, var(--card-border));
+  background: linear-gradient(180deg, color-mix(in srgb, #3b82f6 6%, var(--card-bg)) 0%, var(--card-bg) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.account-card--epomail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #425aef, #38bdf8, #2563eb);
 }
 
 .account-card__head {
@@ -2591,78 +2751,114 @@ body .snackbar-container.show,
 .account-brand-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .epomail-badge-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(66, 90, 239, 0.16), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(66, 90, 239, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--theme-main);
+  box-shadow: 0 3px 10px rgba(66, 90, 239, 0.15);
+  flex-shrink: 0;
 }
 
 .account-card__title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 800;
+  letter-spacing: -0.01em;
   color: var(--font-color);
 }
 
 .account-card__subtitle {
-  margin: 2px 0 0 0;
+  margin: 3px 0 0 0;
   font-size: 0.78rem;
   color: var(--secondtext);
 }
 
 .account-tag-chip {
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 5px;
   font-size: 11px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--theme-main) 10%, var(--secondbg));
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
   color: var(--theme-main);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 22%, transparent);
   white-space: nowrap;
 }
 
 .account-tag-chip--active {
-  background: color-mix(in srgb, #10b981 12%, var(--secondbg));
+  background: color-mix(in srgb, #10b981 14%, var(--secondbg));
   color: #059669;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-theme='dark'] .account-tag-chip--active {
+  color: #34d399;
 }
 
 .account-card__desc {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--secondtext);
   line-height: 1.55;
 }
 
-/* Epomail Login Buttons */
+/* Epomail Feature Badges */
+.epomail-benefits-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: -2px 0 4px 0;
+}
+
+.epomail-benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: color-mix(in srgb, #3b82f6 8%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, #3b82f6 18%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+/* Epomail Primary Login Button */
 .epomail-primary-login-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  height: 44px;
+  height: 46px;
   padding: 0 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   background: linear-gradient(135deg, #425aef 0%, #2563eb 100%);
   color: #ffffff;
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
-  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px -2px rgba(66, 90, 239, 0.42);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.epomail-primary-login-btn:hover {
-  opacity: 0.94;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.45);
+.epomail-primary-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -2px rgba(66, 90, 239, 0.52);
+  filter: brightness(1.04);
+}
+
+.epomail-primary-login-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .epomail-primary-login-btn:disabled {
@@ -2673,8 +2869,8 @@ body .snackbar-container.show,
 
 /* Direct App Auth Accordion */
 .direct-app-auth-accordion {
-  border-top: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent);
-  padding-top: 12px;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 90%, transparent);
+  padding-top: 14px;
 }
 
 .direct-app-auth-toggle {
@@ -2682,49 +2878,53 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: transparent;
-  border: none;
-  padding: 6px 0;
-  font-size: 0.83rem;
+  background: color-mix(in srgb, var(--secondbg) 60%, transparent);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--theme-main);
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .direct-app-auth-toggle:hover {
-  opacity: 0.85;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--secondbg));
+  border-color: color-mix(in srgb, var(--theme-main) 20%, transparent);
 }
 
 .direct-app-auth-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 10px;
-  padding: 14px;
-  border-radius: 8px;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 10px;
   background: var(--secondbg);
   border: var(--style-border-always);
 }
 
 .direct-app-auth-intro {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--secondtext);
   line-height: 1.5;
 }
 
 .direct-app-auth-intro code {
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--font-color) 8%, transparent);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--theme-main);
 }
 
 .account-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .account-field {
@@ -2741,6 +2941,14 @@ body .snackbar-container.show,
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--font-color);
+}
+
+.account-field-sublabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--font-color);
+  margin-bottom: 4px;
+  display: block;
 }
 
 .account-input-wrap {
@@ -2760,24 +2968,25 @@ body .snackbar-container.show,
 
 .account-field input {
   width: 100%;
-  height: 40px;
-  padding: 0 12px;
-  border: var(--style-border-always);
-  border-radius: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--card-border) 85%, transparent);
+  border-radius: 8px;
   background: var(--card-bg);
   color: var(--font-color);
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   box-sizing: border-box;
-  transition: border-color 0.15s ease;
+  transition: all 0.18s ease;
 }
 
 .account-input-wrap input {
-  padding-left: 36px;
+  padding-left: 38px;
 }
 
 .account-field input:focus {
   outline: none;
   border-color: var(--theme-main);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
 .account-field input:disabled {
@@ -2788,18 +2997,18 @@ body .snackbar-container.show,
 
 /* Auth Scope Box */
 .auth-scope-box {
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 12px 14px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
 }
 
 .auth-scope-title {
   display: block;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--theme-main);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .auth-scope-list {
@@ -2808,36 +3017,39 @@ body .snackbar-container.show,
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .auth-scope-list li {
   display: flex;
   align-items: flex-start;
-  gap: 7px;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.8rem;
   color: var(--font-color);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .direct-app-submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 40px;
+  gap: 8px;
+  height: 42px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--theme-main);
   color: #fff;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
+  transition: all 0.2s ease;
 }
 
-.direct-app-submit-btn:hover {
-  opacity: 0.92;
+.direct-app-submit-btn:hover:not(:disabled) {
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.45);
 }
 
 .direct-app-submit-btn:disabled {
@@ -2849,8 +3061,8 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 6px;
+  gap: 12px;
+  padding-top: 8px;
 }
 
 .account-btn-primary,
@@ -2860,23 +3072,26 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .account-btn-primary {
   background: var(--theme-main);
   color: #fff;
   border: none;
+  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
 }
 
 .account-btn-primary:hover {
-  opacity: 0.92;
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.45);
 }
 
 .account-btn-secondary {
@@ -2888,6 +3103,7 @@ body .snackbar-container.show,
 .account-btn-secondary:hover {
   border-color: var(--theme-main);
   color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 6%, var(--secondbg));
 }
 
 .account-btn-danger {
@@ -2901,7 +3117,160 @@ body .snackbar-container.show,
   color: #fff;
 }
 
+/* Avatar Management Block */
+.account-avatar-card-block {
+  padding: 16px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
+  margin-top: 8px;
+}
+
+.account-avatar-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.account-avatar-main-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--theme-main);
+  background: var(--card-bg);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 20%, transparent), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.account-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-avatar-placeholder {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--theme-main);
+}
+
+.account-avatar-info {
+  flex: 1;
+}
+
+.account-avatar-status-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-avatar-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.account-avatar-status-badge.is-epomail {
+  background: color-mix(in srgb, var(--theme-main) 16%, transparent);
+  color: var(--theme-main);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 30%, transparent);
+}
+
+.account-avatar-status-badge.is-custom {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.account-avatar-status-badge.is-default {
+  background: color-mix(in srgb, var(--font-color) 8%, transparent);
+  color: var(--secondtext);
+  border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
+}
+
+.account-avatar-tip {
+  font-size: 11px;
+  color: var(--secondtext);
+  margin: 5px 0 0 0;
+  line-height: 1.45;
+}
+
+.account-avatar-btns-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.account-avatar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 7px;
+  border: 1px solid var(--theme-main);
+  background: var(--theme-main);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.account-avatar-action-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.account-avatar-action-btn.is-restore {
+  background: transparent;
+  color: var(--theme-main);
+  border-color: color-mix(in srgb, var(--theme-main) 35%, transparent);
+}
+
+.account-avatar-action-btn.is-restore:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--theme-main) 10%, transparent);
+}
+
+.account-input-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  background: var(--theme-main);
+  color: #ffffff;
+  cursor: pointer;
+  margin-right: 5px;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.account-input-inline-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+
 /* OAuth App Inspector */
+.account-card--inspector {
+  background: color-mix(in srgb, var(--secondbg) 40%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--font-color) 12%, transparent);
+}
+
 .app-inspector-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2911,9 +3280,9 @@ body .snackbar-container.show,
 .inspector-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--secondbg);
   border: var(--style-border-always);
 }
@@ -2927,21 +3296,21 @@ body .snackbar-container.show,
 }
 
 .inspector-value {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--font-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Architecture Flow Diagram */
+/* System Architecture Flow Diagram */
 .arch-flow-diagram {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 8px;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 10px;
   background: var(--secondbg);
   border: var(--style-border-always);
 }
@@ -2952,36 +3321,44 @@ body .snackbar-container.show,
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 3px;
-  padding: 10px 8px;
-  border-radius: 6px;
+  gap: 4px;
+  padding: 12px 10px;
+  border-radius: 8px;
   background: var(--card-bg);
   border: var(--style-border-always);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.arch-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .arch-node--highlight {
-  border-color: color-mix(in srgb, var(--theme-main) 35%, transparent);
-  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.1);
+  border-color: color-mix(in srgb, var(--theme-main) 40%, transparent);
+  box-shadow: 0 2px 12px rgba(66, 90, 239, 0.15);
 }
 
 .arch-node__icon {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   margin-bottom: 2px;
 }
 
 .arch-node strong {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--font-color);
-}
-
-.arch-node small {
-  font-size: 0.72rem;
-  color: var(--theme-main);
   font-weight: 700;
 }
 
+.arch-node small {
+  font-size: 0.74rem;
+  color: var(--theme-main);
+  font-weight: 800;
+}
+
 .arch-node span {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--secondtext);
 }
 
@@ -2989,16 +3366,16 @@ body .snackbar-container.show,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: 0.7rem;
-  color: var(--secondtext);
-  font-weight: 700;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--theme-main);
+  font-weight: 800;
 }
 
 .arch-arrow-line {
-  width: 42px;
+  width: 50px;
   height: 2px;
-  background: var(--card-border);
+  background: linear-gradient(90deg, var(--card-border), var(--theme-main));
   position: relative;
 }
 
@@ -3009,7 +3386,7 @@ body .snackbar-container.show,
   top: -3px;
   width: 0;
   height: 0;
-  border-left: 6px solid var(--card-border);
+  border-left: 6px solid var(--theme-main);
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
 }
@@ -3017,16 +3394,16 @@ body .snackbar-container.show,
 .arch-notes {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 10px;
   background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
 .arch-notes h4 {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--theme-main);
   font-weight: 800;
 }
@@ -3036,42 +3413,47 @@ body .snackbar-container.show,
   padding-left: 18px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.8rem;
   color: var(--font-color);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* Notifications in Drawer */
 .account-notification-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 480px;
+  gap: 10px;
+  max-height: 520px;
   overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
 }
 
 .account-notification-item {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
-  padding: 12px;
-  border-radius: 8px;
-  background: var(--secondbg);
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--secondbg) 60%, var(--card-bg));
   border: var(--style-border-always);
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .account-notification-item:hover {
   border-color: var(--theme-main);
-  transform: translateX(2px);
+  background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px -2px rgba(66, 90, 239, 0.12);
 }
 
 .account-notification-avatar {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   overflow: hidden;
   background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
@@ -3079,6 +3461,8 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   color: var(--theme-main);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .account-notification-avatar img {
@@ -3087,10 +3471,16 @@ body .snackbar-container.show,
   object-fit: cover;
 }
 
+.notification-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .account-notification-body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
 }
 
@@ -3102,7 +3492,7 @@ body .snackbar-container.show,
 }
 
 .account-notification-title-row strong {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--font-color);
   font-weight: 700;
 }
@@ -3110,13 +3500,14 @@ body .snackbar-container.show,
 .account-notification-date {
   font-size: 0.72rem;
   color: var(--secondtext);
+  font-family: var(--font-mono, monospace);
 }
 
 .account-notification-body p {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--secondtext);
-  line-height: 1.4;
+  line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -3129,59 +3520,79 @@ body .snackbar-container.show,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 36px 16px;
+  gap: 12px;
+  padding: 48px 20px;
   text-align: center;
 }
 
+.account-empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-main);
+  box-shadow: 0 4px 16px rgba(66, 90, 239, 0.15);
+}
+
 .account-empty-state strong {
-  font-size: 0.92rem;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--font-color);
 }
 
 .account-empty-state p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--secondtext);
   max-width: 320px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* Locale Buttons in Drawer */
 .account-locale-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .account-locale-btn {
-  height: 38px;
-  border-radius: 6px;
+  height: 42px;
+  border-radius: 8px;
   border: var(--style-border-always);
   background: var(--secondbg);
   color: var(--font-color);
-  font-size: 0.82rem;
+  font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .account-locale-btn:hover {
   border-color: var(--theme-main);
   color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 6%, var(--secondbg));
 }
 
 .account-locale-btn.is-active {
-  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
+  background: color-mix(in srgb, var(--theme-main) 14%, var(--card-bg));
   border-color: var(--theme-main);
   color: var(--theme-main);
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.2);
 }
 
 @media (max-width: 768px) {
   .theme-account-drawer {
     width: 100vw;
-    padding: 16px;
+    padding: 18px 16px;
+  }
+
+  .epomail-benefits-row {
+    grid-template-columns: 1fr;
   }
 
   .account-form-grid {
@@ -3198,12 +3609,12 @@ body .snackbar-container.show,
 
   .arch-flow-diagram {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .arch-arrow {
     transform: rotate(90deg);
-    margin: 6px 0;
+    margin: 8px 0;
   }
 }
 

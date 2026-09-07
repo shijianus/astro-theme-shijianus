@@ -411,5 +411,37 @@
   3. 博主（携带管理员会话凭证）在国家旗帜旁边可查阅发言者的真实 IP（如 `[172.16.20.1]`），并对隐藏地理位置的用户保留全景审计特权。
 - [x] 编写并执行全流程自动化端到端测试套件（`scripts/verify-comment-geo-avatar-reactions.mjs`），所有 5 项核心问题端到端自动化测试全部 100% 验证通过。
 
+### Task 33: 账号中心与通知中心 (.theme-account-drawer) UI/UX 全维度深度美化与规范化重构
+- [x] 抽屉容器与遮罩层质感全面升级 (`src/styles/final-pass.css`)：
+  1. 遮罩层 `.theme-account-overlay__mask` 注入高饱和度磨砂玻璃模糊（`backdrop-filter: blur(12px) saturate(180%)`）与暗调柔和晕影，深浅色自适应；
+  2. 抽屉本体 `.theme-account-drawer` 引入超清玻璃拟态（`backdrop-filter: blur(28px) saturate(190%)` 与 `color-mix(in srgb, var(--card-bg) 94%, transparent)`），边框微光投影与平滑弹簧曲线进入动效；
+  3. 细化自定义超薄圆角滚动条（5px），杜绝侵入式粗滚动条破坏视觉整体感。
+- [x] 抽屉头部与关闭交互重构 (`src/components/ThemeOverlays.tsx`)：
+  1. 新增带呼吸动画的状态指示小圆点（`.status-indicator-dot`），已登录展示活泼翡翠绿（Emerald）、访客展示科技蓝（Blue）；
+  2. 优化品牌标识与副标题层次（`EPOCANVAS IDENTITY · 账号与通知`）；
+  3. 头部关闭按钮重构为 36px 独立圆形磨砂按钮，注入 90° 旋转与微缩放悬浮反馈，支持标准可访问性。
+- [x] 个人资料卡片 (Hero Profile Card) 质感重塑：
+  1. 引入 62px 优雅双环发光头像预览容器与专属悬浮电光蓝认证角标（⚡）；
+  2. 身份徽章胶囊化重构（`.account-pill--epomail` 渐变蓝光认证标、`.account-pill--admin` 翡翠绿管理标、`.account-pill--local` 读者标与 `.account-pill--guest` 访客标）；
+  3. 退出登录按钮注入防误触微交互与警示红柔和反馈。
+- [x] 导航标签页 (Segmented Nav Tabs) 深度改造：
+  1. 还原 Apple / Linear 原生分段控制器（Segmented Control）设计，微浮雕磨砂底槽与纯色高光激活药丸滑块；
+  2. 站内提醒 Tab 注入高质感红蓝渐变微徽章（`.account-tab-badge`），数字显示更加夺目精致。
+- [x] 登录与授权模块 (Tab 1: Auth & Profile) 全景重塑：
+  1. Epomail 官方集成专区注入微光流转顶部三色边框（`linear-gradient`）与 44px 品牌图标容器；
+  2. 新增 3 项核心优势微胶囊（`一键跨站 SSO 授权`、`头像凭证云同步`、`评论回复即刻送达`）；
+  3. Epomail 主登录按钮升级为深海蓝渐变按钮，注入上浮位移与高光投影；
+  4. 管理员 APP 外接折叠表单与权限范围（Scopes）清单美化；
+  5. 头像管理 Studio（`.account-avatar-card-block`）支持 64px 预览、直链与图床上传直观排布。
+- [x] 站内提醒中心 (Tab 2: Notifications) 与系统架构 (Tab 3: Settings) 全量打磨：
+  1. 提醒列表卡片注入悬浮轻微向右位移（`translateX(4px)`）与主题色高亮边框；
+  2. 空状态设计升级，配备双层扩散光环的 Bell 专属插图；
+  3. 语言切换与架构流程图（D1 评论域 vs Epomail 用户域）连线与卡片全面优化。
+- [x] 自动化端到端测试套件全量通过：
+  1. `scripts/verify-account-drawer-epomail.mjs`：全量通过后端与桌面/移动端 UI 审计；
+  2. `scripts/verify-image-upload-and-avatar.mjs`：24/24 项头像与图床测试 100% 通过；
+  3. `scripts/verify-comment-geo-avatar-reactions.mjs`：5/5 项核心问题测试 100% 通过。
+- [x] 部署至 Cloudflare Pages 生产边缘节点并多端同步。
+
 
 

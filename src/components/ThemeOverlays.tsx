@@ -1484,13 +1484,16 @@ export function ThemeOverlays({
         <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label="账号中心">
           {/* 1. Header */}
           <div className="theme-account-drawer__head">
-            <div>
-              <p className="eyebrow">EPOCANVAS IDENTITY · 账号与通知</p>
+            <div className="theme-account-drawer__head-title-wrap">
+              <div className="theme-account-drawer__head-badge">
+                <span className={`status-indicator-dot ${account ? 'is-active' : ''}`} />
+                <span className="eyebrow">EPOCANVAS IDENTITY · 账号与通知</span>
+              </div>
               <h2>账号中心</h2>
             </div>
             <button
               type="button"
-              className="theme-icon-button theme-button--ghost"
+              className="theme-icon-button theme-button--ghost theme-account-drawer__close"
               onClick={() => setNotificationOpen(false)}
               aria-label="关闭账号面板"
             >
@@ -1631,6 +1634,21 @@ export function ThemeOverlays({
                     <p className="account-card__desc">
                       本站采用 Epomail 用户托管方案，授权后将同步您的 Epomail 头像、邮箱与身份凭证，用于全站评论与消息提醒。
                     </p>
+
+                    <div className="epomail-benefits-row">
+                      <div className="epomail-benefit-item">
+                        <Sparkles className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                        <span>一键跨站 SSO 授权</span>
+                      </div>
+                      <div className="epomail-benefit-item">
+                        <Camera className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                        <span>头像凭证云同步</span>
+                      </div>
+                      <div className="epomail-benefit-item">
+                        <Bell className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                        <span>评论回复即刻送达</span>
+                      </div>
+                    </div>
 
                     <button
                       type="button"
@@ -2083,7 +2101,9 @@ export function ThemeOverlays({
                   </div>
                 ) : (
                   <div className="account-empty-state">
-                    <UserRound className="h-10 w-10 text-theme-main/60" />
+                    <div className="account-empty-state-icon">
+                      <Bell className="h-6 w-6" />
+                    </div>
                     <strong>暂时没有新的互动提醒</strong>
                     <p>{account ? '当有读者在文章评论区回复你或 @ 你时，这里会实时呈现。' : '登录后可在被 @ 或被回复时第一时间收到站内提醒。'}</p>
                   </div>
