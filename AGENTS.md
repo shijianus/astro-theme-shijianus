@@ -563,7 +563,7 @@
   4. 自动化验证 Tab 3 滑块数量精确为 1（仅保留属地徽章）；
   5. 桌面端（1440x900）与移动端（390x844）Playwright E2E 测试全量 PASS 通过。
 
-### Task 40: 隐藏抽屉内部滚动条、支持免源码直接编撰全站广播、规范港澳台无中国前缀与真实精准定位、评论区国旗真实图像载入与单次展示保障
+### Task 40: 隐藏抽屉内部滚动条、支持免源码直接编撰全站广播、规范港澳台无中国前缀与真实精准定位、评论区国旗真实图像载入与单次展示保障 (`e54fa07`)
 - [x] 隐藏多层嵌套内部滚动条 (Hide Nested Scrollbars)：
   1. 通过 `scrollbar-width: none !important; -ms-overflow-style: none !important;` 以及 `::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`，彻底隐藏 `.theme-account-drawer`、`.account-card`、`.account-broadcast-list`、`.account-notification-list` 等内部组件的滚动条滑块；
   2. 完整保留鼠标滚轮、触摸板和手势的平滑上下滚动功能，右侧仅保留浏览器原生单一主滚动条，消除原本右侧 3 个滚动滑块的视觉杂乱。
