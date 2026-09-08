@@ -187,7 +187,7 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
     }
   }
 
-  // 7. POST /api/auth/profile (Update user profile - avatar, name, website, bio)
+  // 7. POST /api/auth/profile (Update user profile - avatar, name, website, bio, timezone, location)
   if (pathname === '/api/auth/profile' && request.method === 'POST') {
     try {
       const body = await safeReadJson<{
@@ -196,6 +196,8 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
         name?: string;
         website?: string;
         bio?: string;
+        timezone?: string;
+        location?: string;
       }>(request);
       const token = extractSessionToken(request, body);
       if (!token) {
@@ -209,6 +211,8 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
           name: body?.name,
           website: body?.website,
           bio: body?.bio,
+          timezone: body?.timezone,
+          location: body?.location,
         },
         env
       );

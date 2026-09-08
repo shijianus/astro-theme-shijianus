@@ -30,9 +30,18 @@ import {
   ChevronUp,
   Settings,
   Camera,
-  RotateCcw,
   Upload,
   Image as ImageIcon,
+  Megaphone,
+  UserCheck,
+  UserPen,
+  Clock,
+  MapPin,
+  Sliders,
+  Volume2,
+  VolumeX,
+  MessageSquare,
+  Heart,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -50,8 +59,13 @@ import {
   logoutAuthAccount,
   uploadCommentImage,
   updateAuthProfile,
+  fetchUserFeed,
+  readUserPreferences,
+  writeUserPreferences,
   type CommentIdentity,
   type PublicAuthConfig,
+  type UserPreferences,
+  type UserInteractionNotification,
 } from '../lib/comment-client';
 import {
   applyThemeWithBackground,
@@ -180,12 +194,28 @@ export function ThemeOverlays({
     email: '',
     website: '',
     avatar: '',
+    bio: '',
+    timezone: '',
+    location: '',
     showLocation: true,
   });
   const [accountNotice, setAccountNotice] = useState('');
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('auth');
+  const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('broadcast');
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => readUserPreferences());
+  const [userFeed, setUserFeed] = useState<{
+    userComments: any[];
+    notifications: UserInteractionNotification[];
+    loading: boolean;
+    fetchedAt: number;
+  }>({
+    userComments: [],
+    notifications: [],
+    loading: false,
+    fetchedAt: 0,
+  });
   const [authConfig, setAuthConfig] = useState<PublicAuthConfig | null>(null);
   const [epomailForm, setEpomailForm] = useState({ email: '', password: '', code: '' });
   const [showDirectAppAuth, setShowDirectAppAuth] = useState(false);
@@ -455,61 +485,113 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
-  const allNotifications = useMemo(() => {
-    const messages = [];
+  // 1. 全站广播通告（每个人可见，最新博文自动编译置顶，0 DB 开销）
+  const broadcastNotifications = useMemo(() => {
+    const list: Array<{
+      id: string;
+      type: 'announcement' | 'post';
+      badge: string;
+      title: string;
+      content: string;
+      date: string;
+      href: string;
+      category: string;
+      cover?: string;
+    }> = [];
 
-    // Site-wide messages (e.g., new articles)
-    const siteMessages = posts.slice(0, 3).map((post) => ({
-      id: `article-${post.href}`,
-      type: 'article',
-      title: '最新文章',
-      content: post.title,
-      href: post.href,
-      date: post.date,
-      icon: <Tags className="h-4 w-4" />,
-    }));
-    messages.push(...siteMessages);
-
-    // Personal account notifications
-    if (account) {
-      const personalMessages = readAllLocalThreads()
-        .filter((comment) => {
-          if (comment.authorId === account.id) return false;
-          return comment.message.includes(`@${account.name}`);
-        })
-        .map((comment) => ({
-          id: `comment-${comment.id}`,
-          type: 'mention',
-          title: '提到我的评论',
-          content: comment.message,
-          href: comment.slug ? `/posts/${comment.slug}/#post-comment` : '#post-comment',
-          date: new Date(comment.createdAt).toLocaleDateString('zh-CN'),
-          author: comment.name,
-          avatar: comment.avatar,
-          icon: <UserRound className="h-4 w-4" />,
-          timestamp: new Date(comment.createdAt).valueOf(),
-        }));
-      messages.push(...personalMessages);
-    }
-
-    // Sort by date (descending)
-    messages.sort((a, b) => {
-      const timeA = 'timestamp' in a ? (a.timestamp as number) : new Date(a.date).valueOf();
-      const timeB = 'timestamp' in b ? (b.timestamp as number) : new Date(b.date).valueOf();
-      return timeB - timeA;
+    // 博主站长官方置顶广播
+    list.push({
+      id: 'system-broadcast-hero',
+      type: 'announcement',
+      badge: '博主置顶广播',
+      title: '📢 读者中心与通知系统全新升级',
+      content: '全新通知系统上线，全站广播与个人互动双分区清晰呈现；支持个人简介、时区与位置定制，评论区支持 Linuxdo 模式与 Boost 动态！',
+      date: posts[0]?.date || '最新',
+      href: '#',
+      category: '站点通告',
     });
 
-    // Apply 30-day and 10-message limit
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    return messages
-      .filter((msg) => {
-        const msgTime = 'timestamp' in msg ? (msg.timestamp as number) : new Date(msg.date).valueOf();
-        return msgTime > thirtyDaysAgo;
-      })
-      .slice(0, 10);
-  }, [account, posts, commentThreadVersion]);
+    // 最新发布博文列表 (构建期自动编译生成最新置顶，零 DB 开销)
+    const latestArticles = posts.slice(0, 8).map((p, idx) => ({
+      id: `post-broadcast-${p.href}`,
+      type: 'post' as const,
+      badge: idx === 0 ? '🎉 最新博文发布' : '📝 精选博文',
+      title: p.title,
+      content: p.description || '点击前往阅读全文，欢迎在文末评论区交流探讨...',
+      date: p.date,
+      href: p.href,
+      category: p.category || '博文推荐',
+      cover: p.cover,
+    }));
+
+    list.push(...latestArticles);
+    return list;
+  }, [posts]);
+
+  // 2. 个人账户互动通知与足迹 (连结真实 DB 数据)
+  const refreshUserFeed = useCallback(async () => {
+    const currentName = (account?.name || '').trim();
+    const currentId = (account?.id || '').trim();
+    const currentEmail = (account?.email || '').trim();
+    const token = account?.token || (typeof window !== 'undefined' ? window.localStorage.getItem('shijianus-auth-token') : '');
+
+    if (!currentName && !currentId && !currentEmail && !token) {
+      setUserFeed({ userComments: [], notifications: [], loading: false, fetchedAt: Date.now() });
+      return;
+    }
+
+    setUserFeed((prev) => ({ ...prev, loading: true }));
+    try {
+      const result = await fetchUserFeed({
+        authorName: currentName,
+        authorId: currentId,
+        authorEmail: currentEmail,
+        sessionToken: token || undefined,
+      });
+      if (result.ok) {
+        setUserFeed({
+          userComments: result.userComments,
+          notifications: result.notifications,
+          loading: false,
+          fetchedAt: Date.now(),
+        });
+      } else {
+        setUserFeed((prev) => ({ ...prev, loading: false }));
+      }
+    } catch {
+      setUserFeed((prev) => ({ ...prev, loading: false }));
+    }
+  }, [account]);
+
+  const refreshUserFeedRef = useRef(refreshUserFeed);
+  refreshUserFeedRef.current = refreshUserFeed;
+
+  useEffect(() => {
+    if (notificationOpen) {
+      refreshUserFeedRef.current();
+    }
+  }, [notificationOpen]);
+
+  const personalNotifications = useMemo(() => {
+    return userFeed.notifications || [];
+  }, [userFeed.notifications]);
+
+  // 全站与个人综合通知列表 (用于计算 Badge 计数)
+  const allNotifications = useMemo(() => {
+    const combined: any[] = [];
+    if (userPreferences.broadcastNotify) {
+      combined.push(...broadcastNotifications);
+    }
+    if (userPreferences.personalNotify) {
+      combined.push(...personalNotifications);
+    }
+    return combined;
+  }, [broadcastNotifications, personalNotifications, userPreferences.broadcastNotify, userPreferences.personalNotify]);
 
   const myRecentComments = useMemo(() => {
+    if (userFeed.userComments.length > 0) {
+      return userFeed.userComments;
+    }
     if (typeof window === 'undefined') return [];
     const all = readAllLocalThreads();
     const currentName = (account?.name || accountForm.name || '').trim().toLowerCase();
@@ -521,9 +603,16 @@ export function ThemeOverlays({
         const matchEmail = currentEmail && c.email?.trim().toLowerCase() === currentEmail;
         return matchName || matchEmail;
       })
+      .map(c => ({
+        id: c.id,
+        postSlug: c.slug,
+        message: c.message,
+        createdAt: c.createdAt,
+        likesCount: c.likes?.length || 0,
+      }))
       .sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
-      .slice(0, 5);
-  }, [account, accountForm.name, accountForm.email, commentThreadVersion]);
+      .slice(0, 10);
+  }, [userFeed.userComments, account, accountForm.name, accountForm.email]);
 
   const emitActivity = (message: string) => {
     if (!message.trim()) return;
@@ -546,6 +635,9 @@ export function ThemeOverlays({
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
+        bio: next?.bio ?? '',
+        timezone: next?.timezone ?? '',
+        location: next?.location ?? '',
         showLocation: next?.showLocation !== false,
       });
     };
@@ -558,9 +650,13 @@ export function ThemeOverlays({
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
+        bio: next?.bio ?? '',
+        timezone: next?.timezone ?? '',
+        location: next?.location ?? '',
         showLocation: next?.showLocation !== false,
       });
       setAccountNeedsAttention(false);
+      refreshUserFeedRef.current();
     };
 
     const onAccountRequired = () => {
@@ -574,15 +670,26 @@ export function ThemeOverlays({
 
     const onThreadChange = () => {
       setCommentThreadVersion((value) => value + 1);
+      refreshUserFeedRef.current();
+    };
+
+    const onPrefsChange = (event: Event) => {
+      const next = (event as CustomEvent<UserPreferences>).detail;
+      if (next) setUserPreferences(next);
     };
 
     const onStorage = (event: StorageEvent) => {
       if (!event.key) return;
       if (event.key === 'shijianus-comment-account' || event.key === 'shijianus-comment-identity') {
         syncAccount();
+        refreshUserFeedRef.current();
+      }
+      if (event.key === 'shijianus-user-preferences') {
+        setUserPreferences(readUserPreferences());
       }
       if (event.key.startsWith('shijianus-comments:')) {
         setCommentThreadVersion((value) => value + 1);
+        refreshUserFeedRef.current();
       }
     };
 
@@ -590,12 +697,14 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
     window.addEventListener('shijianus:comment-account-required', onAccountRequired);
     window.addEventListener('shijianus:comment-thread-change', onThreadChange);
+    window.addEventListener('shijianus:preferences-change', onPrefsChange as EventListener);
     window.addEventListener('storage', onStorage);
 
     return () => {
       window.removeEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
       window.removeEventListener('shijianus:comment-account-required', onAccountRequired);
       window.removeEventListener('shijianus:comment-thread-change', onThreadChange);
+      window.removeEventListener('shijianus:preferences-change', onPrefsChange as EventListener);
       window.removeEventListener('storage', onStorage);
     };
   }, [accountPanel.loginHint]);
@@ -954,6 +1063,25 @@ export function ThemeOverlays({
           if (updateRes.ok && updateRes.user) {
             setAccount(updateRes.user);
           }
+        } else {
+          const current = readCommentIdentity();
+          const nextIdentity: CommentIdentity = current
+            ? { ...current, avatar: newAvatarUrl }
+            : {
+                id: createCommentId('local'),
+                name: accountForm.name.trim() || '访客朋友',
+                email: accountForm.email.trim(),
+                website: accountForm.website.trim(),
+                avatar: newAvatarUrl,
+                bio: accountForm.bio.trim(),
+                timezone: accountForm.timezone.trim(),
+                location: accountForm.location.trim(),
+                role: 'reader',
+                provider: 'local',
+                showLocation: accountForm.showLocation,
+              };
+          writeCommentIdentity(nextIdentity);
+          setAccount(nextIdentity);
         }
         setAuthStatusMessage({ type: 'success', text: '新头像已上传至 Telegram 图床并应用！' });
         emitActivity('已上传并更新头像');
@@ -984,62 +1112,79 @@ export function ThemeOverlays({
     }
   };
 
-  const handleLocalSave = async () => {
-    if (!accountForm.name.trim()) {
-      setAccountNotice('请先填写昵称');
-      setAccountNeedsAttention(true);
-      return;
-    }
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsAuthorizing(true);
     setAccountNeedsAttention(false);
 
-    if (account) {
-      // Logged in user updating profile
-      const res = await updateAuthProfile({
-        name: accountForm.name,
-        avatar: accountForm.avatar,
-        website: accountForm.website,
-        showLocation: accountForm.showLocation,
-      });
-      setIsAuthorizing(false);
-      if (res.ok && res.user) {
-        setAccount(res.user);
-        setAuthStatusMessage({ type: 'success', text: '个人资料与头像已成功保存！' });
-        emitActivity('更新个人资料与头像');
+    const trimmedName = accountForm.name.trim();
+    const effectiveName = trimmedName || (account?.name ? account.name : '访客朋友');
+
+    try {
+      if (account) {
+        // Logged in user updating profile
+        const res = await updateAuthProfile({
+          name: effectiveName,
+          avatar: accountForm.avatar,
+          website: accountForm.website.trim(),
+          bio: accountForm.bio.trim(),
+          timezone: accountForm.timezone.trim(),
+          location: accountForm.location.trim(),
+          showLocation: accountForm.showLocation,
+        });
+        setIsAuthorizing(false);
+        if (res.ok && res.user) {
+          setAccount(res.user);
+          setAuthStatusMessage({ type: 'success', text: '个人资料已成功保存！' });
+          emitActivity('更新个人资料');
+        } else {
+          setAuthStatusMessage({ type: 'error', text: res.error || '保存资料失败' });
+        }
       } else {
-        setAuthStatusMessage({ type: 'error', text: res.error || '保存资料失败' });
-      }
-    } else {
-      // Local reader registration
-      const res = await loginLocalReader(accountForm);
-      setIsAuthorizing(false);
-      let nextUser = res.user;
-      if (!nextUser) {
-        // Fallback for local/offline environment
-        nextUser = {
-          id: createCommentId('local'),
-          name: accountForm.name.trim(),
+        // Local reader or visitor updating identity
+        const nextUser: CommentIdentity = {
+          id: (account as any)?.id || createCommentId('local'),
+          name: effectiveName,
           email: accountForm.email.trim(),
           website: normaliseWebsite(accountForm.website.trim()),
           avatar: normaliseAvatar(accountForm.avatar.trim()),
+          bio: accountForm.bio.trim(),
+          timezone: accountForm.timezone.trim(),
+          location: accountForm.location.trim(),
           role: 'reader',
           provider: 'local',
           showLocation: accountForm.showLocation,
         };
-      } else {
-        nextUser = { ...nextUser, showLocation: accountForm.showLocation };
+        writeCommentIdentity(nextUser);
+        setAccount(nextUser);
+        setIsAuthorizing(false);
+        setAuthStatusMessage({ type: 'success', text: '个人资料与本地身份已保存！' });
+        emitActivity('更新本地个人资料');
       }
-      writeCommentIdentity(nextUser);
-      setAccount(nextUser);
-      setAuthStatusMessage({ type: 'success', text: '本地读者身份已保存并关联评论区' });
-      emitActivity('创建/更新本地身份');
+      setTimeout(() => setAuthStatusMessage(null), 3000);
+    } catch (err: any) {
+      setIsAuthorizing(false);
+      setAuthStatusMessage({ type: 'error', text: err?.message || '保存资料异常' });
     }
+  };
+
+  const handleLocalSave = async () => {
+    await handleSaveProfile();
   };
 
   const handleLogout = async () => {
     await logoutAuthAccount(account?.token);
     setAccount(null);
-    setAccountForm({ name: '', email: '', website: '', avatar: '', showLocation: true });
+    setAccountForm({
+      name: '',
+      email: '',
+      website: '',
+      avatar: '',
+      bio: '',
+      timezone: '',
+      location: '',
+      showLocation: true,
+    });
     setEpomailForm({ email: '', password: '', code: '' });
     setAuthStatusMessage({ type: 'info', text: '已退出登录并清除身份凭证' });
     emitActivity('已退出账号');
@@ -1576,12 +1721,35 @@ export function ThemeOverlays({
                 )}
               </div>
               <p className="account-hero-card__desc">
-                {account?.email || (account ? '已绑定评论身份' : accountForm.email ? accountForm.email : '设置公开昵称参与评论，或一键同步云端头像与通知')}
+                {accountForm.bio || account?.bio || (account?.email || (account ? '已绑定评论身份' : accountForm.email ? accountForm.email : '点击右上角设置个人简介、时区与位置'))}
               </p>
+              {(accountForm.location || accountForm.timezone || account?.location || account?.timezone) && (
+                <div className="account-hero-card__meta-row">
+                  {(accountForm.location || account?.location) && (
+                    <span className="account-meta-badge" title="所在位置">
+                      📍 {accountForm.location || account?.location}
+                    </span>
+                  )}
+                  {(accountForm.timezone || account?.timezone) && (
+                    <span className="account-meta-badge" title="当前时区">
+                      🕒 {accountForm.timezone || account?.timezone}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {account && (
-              <div className="account-hero-card__actions">
+            <div className="account-hero-card__actions">
+              <button
+                type="button"
+                className="account-btn-icon account-edit-profile-btn"
+                onClick={() => setAccountTab('auth')}
+                title="修改个人资料与账户设置"
+                aria-label="修改个人资料与账户设置"
+              >
+                <UserPen className="h-4 w-4" />
+              </button>
+              {account && (
                 <button
                   type="button"
                   className="account-btn-icon"
@@ -1591,8 +1759,8 @@ export function ThemeOverlays({
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* 3. Navigation Tabs */}
@@ -1641,7 +1809,7 @@ export function ThemeOverlays({
             </div>
           )}
 
-          {/* 5. TAB 1: 账号与授权 / 个人资料 */}
+          {/* 5. TAB 1: 个人资料与账户设置 */}
           {accountTab === 'auth' && (
             <div className="account-tab-content">
               {/* 隐藏的头像文件选择框 */}
@@ -1657,319 +1825,122 @@ export function ThemeOverlays({
                 }}
               />
 
-              {!account ? (
-                <>
-                  {/* 选项 A：云端一键快速登录 */}
-                  <section className="account-card account-card--epomail">
-                    <div className="account-card__head">
-                      <div className="account-brand-header">
-                        <div className="epomail-badge-icon">
-                          <Mail className="h-5 w-5 text-theme-main" />
-                        </div>
-                        <div>
-                          <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
-                          <p className="account-card__subtitle">一键同步云端头像、全站评论身份与回复通知</p>
-                        </div>
+              {/* 专属账户资料设置面板 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div>
+                    <h3 className="account-card__title">账户资料设置</h3>
+                    <p className="account-card__subtitle">自定义公开昵称、个人简介、时区与位置；留空均视为默认无内容。头像可直接点击上方头像卡片更换。</p>
+                  </div>
+                  <span className="account-tag-chip">
+                    {account?.provider === 'epomail' ? 'Epomail 认证' : account ? '本地读者' : '访客设置'}
+                  </span>
+                </div>
+
+                <form onSubmit={handleSaveProfile} className="account-profile-form">
+                  <div className="account-form-grid">
+                    <label className="account-field">
+                      <span>公开昵称 (Username)</span>
+                      <div className="account-field-control">
+                        <UserRound className="account-field-icon" />
+                        <input
+                          type="text"
+                          name="name"
+                          value={accountForm.name}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, name: val }));
+                          }}
+                          placeholder="公开显示的昵称（留空显示为访客）"
+                        />
                       </div>
-                      <span className="account-tag-chip">推荐</span>
-                    </div>
+                    </label>
 
-                    <div className="epomail-benefits-row">
-                      <div className="epomail-benefit-item">
-                        <Sparkles className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                        <span>一键免密授权</span>
+                    <label className="account-field">
+                      <span>个人主页 / 网站 (Website)</span>
+                      <div className="account-field-control">
+                        <Globe className="account-field-icon" />
+                        <input
+                          type="url"
+                          name="website"
+                          value={accountForm.website}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, website: val }));
+                          }}
+                          placeholder="https://example.com"
+                        />
                       </div>
-                      <div className="epomail-benefit-item">
-                        <Camera className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                        <span>云端头像漫游</span>
+                    </label>
+
+                    <label className="account-field account-field--full">
+                      <span>个人简介 (Bio)</span>
+                      <div className="account-field-control">
+                        <Sparkles className="account-field-icon" />
+                        <input
+                          type="text"
+                          name="bio"
+                          maxLength={120}
+                          value={accountForm.bio}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, bio: val }));
+                          }}
+                          placeholder="一句话介绍自己，如：探索者 / 独立创造者（留空默认为无）"
+                        />
                       </div>
-                      <div className="epomail-benefit-item">
-                        <Bell className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                        <span>回复即刻送达</span>
+                    </label>
+
+                    <label className="account-field">
+                      <span>所在时区 (Timezone)</span>
+                      <div className="account-field-control">
+                        <Clock className="account-field-icon" />
+                        <input
+                          type="text"
+                          name="timezone"
+                          value={accountForm.timezone}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, timezone: val }));
+                          }}
+                          placeholder="如：UTC+8 (北京) 或 PST"
+                        />
+                        <button
+                          type="button"
+                          className="account-field-quick-btn"
+                          title="自动检测本机当前时区"
+                          onClick={() => {
+                            try {
+                              const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                              setAccountForm((prev) => ({ ...prev, timezone: tz }));
+                            } catch {}
+                          }}
+                        >
+                          检测
+                        </button>
                       </div>
-                    </div>
+                    </label>
 
-                    <button
-                      type="button"
-                      className="epomail-primary-login-btn"
-                      onClick={handleEpomailOAuth}
-                      disabled={isAuthorizing}
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      <span>使用 Epomail 一键授权登录</span>
-                    </button>
-
-                    {/* 管理员或开发者通道 (折叠设计，不打扰普通访客) */}
-                    <div className="direct-app-auth-accordion">
-                      <button
-                        type="button"
-                        className="direct-app-auth-toggle"
-                        onClick={() => setShowDirectAppAuth(!showDirectAppAuth)}
-                      >
-                        <span>站长或开发者直接授权通道</span>
-                        {showDirectAppAuth ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                      </button>
-
-                      {showDirectAppAuth && (
-                        <form className="direct-app-auth-form" onSubmit={handleDirectEpomailSubmit}>
-                          <div className="account-form-grid">
-                            <label className="account-field">
-                              <span>Epomail 邮箱</span>
-                              <div className="account-input-wrap">
-                                <Mail className="account-input-icon" />
-                                <input
-                                  type="email"
-                                  value={epomailForm.email}
-                                  onChange={(e) => setEpomailForm({ ...epomailForm, email: e.target.value })}
-                                  placeholder="admin@epomail.bond"
-                                  required
-                                />
-                              </div>
-                            </label>
-
-                            <label className="account-field">
-                              <span>账户密码</span>
-                              <div className="account-input-wrap">
-                                <Lock className="account-input-icon" />
-                                <input
-                                  type="password"
-                                  value={epomailForm.password}
-                                  onChange={(e) => setEpomailForm({ ...epomailForm, password: e.target.value })}
-                                  placeholder="输入登录密码"
-                                />
-                              </div>
-                            </label>
-
-                            <label className="account-field account-field--full">
-                              <span>动态验证码 (选填)</span>
-                              <div className="account-input-wrap">
-                                <Key className="account-input-icon" />
-                                <input
-                                  type="text"
-                                  maxLength={6}
-                                  value={epomailForm.code}
-                                  onChange={(e) => setEpomailForm({ ...epomailForm, code: e.target.value })}
-                                  placeholder="如已开启双重认证请输入 6 位 TOTP"
-                                />
-                              </div>
-                            </label>
-                          </div>
-
-                          <div className="auth-scope-box">
-                            <span className="auth-scope-title">该授权将允许：</span>
-                            <ul className="auth-scope-list">
-                              <li>
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                                <span>获取公开资料（姓名与头像）</span>
-                              </li>
-                              <li>
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                                <span>验证邮箱并绑定为博客评论作者</span>
-                              </li>
-                              <li>
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                                <span>接收博文评论 @ 与回复站内提醒</span>
-                              </li>
-                            </ul>
-                          </div>
-
-                          <button
-                            type="submit"
-                            className="direct-app-submit-btn"
-                            disabled={isAuthorizing}
-                          >
-                            <ShieldCheck className="h-4 w-4" />
-                            <span>{isAuthorizing ? '正在验证授权...' : '验证并接续授予权限'}</span>
-                          </button>
-                        </form>
-                      )}
-                    </div>
-                  </section>
-
-                  {/* 分割提示 */}
-                  <div className="account-divider">
-                    <span>或设置免登录本地评论身份</span>
+                    <label className="account-field">
+                      <span>所在位置 (Location)</span>
+                      <div className="account-field-control">
+                        <MapPin className="account-field-icon" />
+                        <input
+                          type="text"
+                          name="location"
+                          value={accountForm.location}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, location: val }));
+                          }}
+                          placeholder="如：中国·北京 或 Global"
+                        />
+                      </div>
+                    </label>
                   </div>
 
-                  {/* 选项 B：免登录本地评论身份设定 */}
-                  <section className="account-card">
-                    <div className="account-card__head">
-                      <div>
-                        <h3 className="account-card__title">本地评论身份设置</h3>
-                        <p className="account-card__subtitle">仅保存在当前浏览器，无需注册即可直接参与讨论</p>
-                      </div>
-                    </div>
-
-                    <div className="account-form-grid">
-                      <label className="account-field">
-                        <span>显示昵称 <b style={{ color: '#ef4444' }}>*</b></span>
-                        <div className="account-input-wrap">
-                          <UserRound className="account-input-icon" />
-                          <input
-                            type="text"
-                            value={accountForm.name}
-                            onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
-                            placeholder="输入您的公开昵称"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <span>通知邮箱 (选填)</span>
-                        <div className="account-input-wrap">
-                          <Mail className="account-input-icon" />
-                          <input
-                            type="email"
-                            value={accountForm.email}
-                            onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                            placeholder="用于接收回复提醒与头像匹配"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <span>个人主页 / 网站 (选填)</span>
-                        <div className="account-input-wrap">
-                          <Globe className="account-input-icon" />
-                          <input
-                            type="url"
-                            value={accountForm.website}
-                            onChange={(e) => setAccountForm({ ...accountForm, website: e.target.value })}
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <span>自定义头像直链 (选填)</span>
-                        <div className="account-input-wrap">
-                          <ImageIcon className="account-input-icon" />
-                          <input
-                            type="url"
-                            value={accountForm.avatar}
-                            onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                            placeholder="图片直链，亦可直接点击上方头像上传"
-                          />
-                          <button
-                            type="button"
-                            className="account-input-inline-btn"
-                            onClick={() => avatarFileInputRef.current?.click()}
-                            disabled={isAuthorizing}
-                            title="上传本地图片"
-                          >
-                            <Camera className="h-3.5 w-3.5" />
-                            <span>上传</span>
-                          </button>
-                        </div>
-                      </label>
-                    </div>
-
-                    <div className="account-card__foot">
-                      <button
-                        type="button"
-                        className="account-btn-primary"
-                        onClick={handleLocalSave}
-                        disabled={isAuthorizing}
-                      >
-                        <Save className="h-4 w-4" />
-                        <span>保存评论身份</span>
-                      </button>
-                    </div>
-                  </section>
-                </>
-              ) : (
-                <>
-                  {/* 已登录：资料展示与更新 */}
-                  <section className="account-card">
-                    <div className="account-card__head">
-                      <div>
-                        <h3 className="account-card__title">个人资料设置</h3>
-                        <p className="account-card__subtitle">已成功认证，在此可更新文章评论中公开展示的作者信息</p>
-                      </div>
-                      <span className="account-tag-chip account-tag-chip--active">已认证</span>
-                    </div>
-
-                    <div className="account-form-grid">
-                      <label className="account-field">
-                        <span>公开昵称</span>
-                        <div className="account-input-wrap">
-                          <UserRound className="account-input-icon" />
-                          <input
-                            type="text"
-                            value={accountForm.name}
-                            onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
-                            placeholder="输入公开显示的昵称"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <span>绑定邮箱</span>
-                        <div className="account-input-wrap">
-                          <Mail className="account-input-icon" />
-                          <input
-                            type="email"
-                            value={accountForm.email}
-                            disabled={account.provider === 'epomail'}
-                            onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                            placeholder="name@example.com"
-                            title={account.provider === 'epomail' ? 'Epomail 认证邮箱由开放平台同步' : ''}
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <span>个人主页 / 网站</span>
-                        <div className="account-input-wrap">
-                          <Globe className="account-input-icon" />
-                          <input
-                            type="url"
-                            value={accountForm.website}
-                            onChange={(e) => setAccountForm({ ...accountForm, website: e.target.value })}
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="account-field">
-                        <div className="flex items-center justify-between">
-                          <span>头像直链 (选填)</span>
-                          {account?.provider === 'epomail' && account.epomailAvatar && accountForm.avatar !== account.epomailAvatar && (
-                            <button
-                              type="button"
-                              className="account-link-btn"
-                              onClick={handleRestoreEpomailAvatar}
-                              disabled={isAuthorizing}
-                              title="恢复 Epomail 官方头像"
-                            >
-                              <RotateCcw className="h-3 w-3 inline mr-1" />
-                              恢复官方头像
-                            </button>
-                          )}
-                        </div>
-                        <div className="account-input-wrap">
-                          <ImageIcon className="account-input-icon" />
-                          <input
-                            type="url"
-                            value={accountForm.avatar}
-                            onChange={(e) => setAccountForm({ ...accountForm, avatar: e.target.value })}
-                            placeholder="图片直链，亦可直接点击上方头像上传"
-                          />
-                          <button
-                            type="button"
-                            className="account-input-inline-btn"
-                            onClick={() => avatarFileInputRef.current?.click()}
-                            disabled={isAuthorizing}
-                            title="选择本地图片上传"
-                          >
-                            <Camera className="h-3.5 w-3.5" />
-                            <span>上传</span>
-                          </button>
-                        </div>
-                      </label>
-                    </div>
-
-                    <div className="account-card__foot">
+                  <div className="account-card__foot">
+                    {account && (
                       <button
                         type="button"
                         className="account-btn-danger"
@@ -1978,109 +1949,344 @@ export function ThemeOverlays({
                         <LogOut className="h-4 w-4" />
                         <span>退出登录</span>
                       </button>
-                      <button
-                        type="button"
-                        className="account-btn-primary"
-                        onClick={handleLocalSave}
-                      >
-                        <Save className="h-4 w-4" />
-                        <span>保存资料修改</span>
-                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="account-btn-primary"
+                      disabled={isAuthorizing}
+                    >
+                      <Save className="h-4 w-4" />
+                      <span>保存资料修改</span>
+                    </button>
+                  </div>
+                </form>
+              </section>
+
+              {/* 未登录 Epomail 时的统一身份认证与漫游通道 */}
+              {!account && (
+                <section className="account-card account-card--epomail">
+                  <div className="account-card__head">
+                    <div className="account-brand-header">
+                      <div className="epomail-badge-icon">
+                        <Mail className="h-5 w-5 text-theme-main" />
+                      </div>
+                      <div>
+                        <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
+                        <p className="account-card__subtitle">一键同步云端头像、全站评论身份与回复通知</p>
+                      </div>
                     </div>
-                  </section>
-                </>
+                    <span className="account-tag-chip">推荐</span>
+                  </div>
+
+                  <div className="epomail-benefits-row">
+                    <div className="epomail-benefit-item">
+                      <Sparkles className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      <span>一键免密授权</span>
+                    </div>
+                    <div className="epomail-benefit-item">
+                      <Camera className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      <span>云端头像漫游</span>
+                    </div>
+                    <div className="epomail-benefit-item">
+                      <Bell className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      <span>回复即刻送达</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="epomail-primary-login-btn"
+                    onClick={handleEpomailOAuth}
+                    disabled={isAuthorizing}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span>使用 Epomail 一键授权登录</span>
+                  </button>
+
+                  {/* 管理员或开发者通道 (折叠设计) */}
+                  <div className="direct-app-auth-accordion">
+                    <button
+                      type="button"
+                      className="direct-app-auth-toggle"
+                      onClick={() => setShowDirectAppAuth(!showDirectAppAuth)}
+                    >
+                      <span>站长或开发者直接授权通道</span>
+                      {showDirectAppAuth ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    </button>
+
+                    {showDirectAppAuth && (
+                      <form className="direct-app-auth-form" onSubmit={handleDirectEpomailSubmit}>
+                        <div className="account-form-grid">
+                          <label className="account-field">
+                            <span>Epomail 邮箱</span>
+                            <div className="account-input-wrap">
+                              <Mail className="account-input-icon" />
+                              <input
+                                type="email"
+                                value={epomailForm.email}
+                                onChange={(e) => setEpomailForm({ ...epomailForm, email: e.target.value })}
+                                placeholder="admin@epomail.bond"
+                                required
+                              />
+                            </div>
+                          </label>
+
+                          <label className="account-field">
+                            <span>账户密码</span>
+                            <div className="account-input-wrap">
+                              <Lock className="account-input-icon" />
+                              <input
+                                type="password"
+                                value={epomailForm.password}
+                                onChange={(e) => setEpomailForm({ ...epomailForm, password: e.target.value })}
+                                placeholder="输入登录密码"
+                              />
+                            </div>
+                          </label>
+
+                          <label className="account-field account-field--full">
+                            <span>动态验证码 (选填)</span>
+                            <div className="account-input-wrap">
+                              <Key className="account-input-icon" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                value={epomailForm.code}
+                                onChange={(e) => setEpomailForm({ ...epomailForm, code: e.target.value })}
+                                placeholder="如已开启双重认证请输入 6 位 TOTP"
+                              />
+                            </div>
+                          </label>
+                        </div>
+
+                        <div className="auth-scope-box">
+                          <span className="auth-scope-title">该授权将允许：</span>
+                          <ul className="auth-scope-list">
+                            <li>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                              <span>获取公开资料（姓名与头像）</span>
+                            </li>
+                            <li>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                              <span>验证邮箱并绑定为博客评论作者</span>
+                            </li>
+                            <li>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                              <span>接收博文评论 @ 与回复站内提醒</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="direct-app-submit-btn"
+                          disabled={isAuthorizing}
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          <span>{isAuthorizing ? '正在验证授权...' : '验证并接续授予权限'}</span>
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </section>
               )}
             </div>
           )}
 
-          {/* 6. TAB 2: 站内提醒与评论足迹 */}
+          {/* 6. TAB 2: 站内提醒与双分区 */}
           {accountTab === 'notifications' && (
             <div className="account-tab-content">
-              <section className="account-card">
-                <div className="account-card__head">
-                  <div>
-                    <h3 className="account-card__title">站内提醒与回复</h3>
-                    <p className="account-card__subtitle">接收文章评论 @ 提及、回复与站点动态</p>
-                  </div>
-                  <span className="account-tag-chip">{allNotifications.length} 条</span>
-                </div>
+              {/* 双分区切换控制器 */}
+              <div className="account-partition-nav" role="tablist">
+                <button
+                  type="button"
+                  className={`account-partition-btn ${notifPartition === 'broadcast' ? 'is-active' : ''}`}
+                  onClick={() => setNotifPartition('broadcast')}
+                >
+                  <Megaphone className="h-4 w-4" />
+                  <span>全站广播通告</span>
+                  <span className="account-partition-pill">{broadcastNotifications.length}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`account-partition-btn ${notifPartition === 'personal' ? 'is-active' : ''}`}
+                  onClick={() => setNotifPartition('personal')}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  <span>个人互动与足迹</span>
+                  {personalNotifications.length > 0 && (
+                    <span className="account-partition-pill account-partition-pill--highlight">
+                      {personalNotifications.length}
+                    </span>
+                  )}
+                </button>
+              </div>
 
-                {allNotifications.length > 0 ? (
-                  <div className="account-notification-list">
-                    {allNotifications.map((notification) => (
-                      <a
-                        className="account-notification-item"
-                        href={notification.href}
-                        key={notification.id}
-                        onClick={() => setNotificationOpen(false)}
-                      >
-                        <div className="account-notification-avatar">
-                          {notification.type === 'mention' && 'avatar' in notification && notification.avatar ? (
-                            <img src={notification.avatar} alt={notification.author} loading="lazy" />
-                          ) : (
-                            <span className="notification-icon-wrap">
-                              {notification.icon}
-                            </span>
-                          )}
-                        </div>
-                        <div className="account-notification-body">
-                          <div className="account-notification-title-row">
-                            <strong>{notification.title}</strong>
-                            <span className="account-notification-date">{notification.date}</span>
-                          </div>
-                          <p>{notification.content.slice(0, 120)}</p>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="account-empty-state">
-                    <div className="account-empty-state-icon">
-                      <Bell className="h-6 w-6" />
+              {/* 分区 1: 全站广播通告 (每个人都能看到，最新博文自动编译置顶，0 DB 损耗) */}
+              {notifPartition === 'broadcast' && (
+                <section className="account-card">
+                  <div className="account-card__head">
+                    <div>
+                      <h3 className="account-card__title">全站广播与最新动态</h3>
+                      <p className="account-card__subtitle">博主统一广播信息与新博文发布通告，全员同步可见</p>
                     </div>
-                    <strong>暂时没有新的互动提醒</strong>
-                    <p>{account ? '当有读者在文章评论区回复你或 @ 你时，这里会实时呈现。' : '登录后可在被 @ 或被回复时第一时间收到站内提醒。'}</p>
+                    <span className="account-tag-chip">{broadcastNotifications.length} 条通告</span>
                   </div>
-                )}
-              </section>
 
-              {/* 我的评论足迹 */}
-              <section className="account-card">
-                <div className="account-card__head">
-                  <div>
-                    <h3 className="account-card__title">我的评论足迹</h3>
-                    <p className="account-card__subtitle">回顾您在各篇文章下发表的观点与互动</p>
-                  </div>
-                  <span className="account-tag-chip">{myRecentComments.length} 条记录</span>
-                </div>
-
-                {myRecentComments.length > 0 ? (
-                  <div className="account-my-comments-list">
-                    {myRecentComments.map((item) => (
+                  <div className="account-broadcast-list">
+                    {broadcastNotifications.map((item) => (
                       <a
                         key={item.id}
-                        href={item.slug ? `/posts/${item.slug}/#comment-${item.id}` : '#'}
-                        className="account-my-comment-item"
-                        onClick={() => setNotificationOpen(false)}
+                        href={item.href}
+                        className="account-broadcast-item"
+                        onClick={() => {
+                          if (item.href !== '#') setNotificationOpen(false);
+                        }}
                       >
-                        <div className="account-my-comment-head">
-                          <span className="account-my-comment-post">
-                            {item.slug ? `文章：${item.slug}` : '博文评论'}
+                        <div className="account-broadcast-head">
+                          <span className="account-broadcast-badge">
+                            {item.type === 'announcement' ? <Megaphone className="h-3 w-3" /> : <Tags className="h-3 w-3" />}
+                            <span>{item.badge}</span>
                           </span>
-                          <span className="account-my-comment-date">
-                            {new Date(item.createdAt).toLocaleDateString('zh-CN')}
-                          </span>
+                          <span className="account-broadcast-date">{item.date}</span>
                         </div>
-                        <p className="account-my-comment-msg">{item.message}</p>
+                        <strong className="account-broadcast-title">{item.title}</strong>
+                        <p className="account-broadcast-desc">{item.content}</p>
                       </a>
                     ))}
                   </div>
-                ) : (
-                  <div className="account-empty-state account-empty-state--compact">
-                    <p>您尚未发表过评论，前往任意博文底部即可快速参与讨论交流。</p>
+
+                  <div className="account-privacy-note">
+                    <Info className="h-4 w-4 text-theme-main flex-shrink-0 mt-0.5" />
+                    <span>
+                      自动化广播说明：全站最新文章广播在博客重新构建时自动编译置顶，无需占用数据库资源，实现 100% 自动化与即时呈现。
+                    </span>
                   </div>
-                )}
-              </section>
+                </section>
+              )}
+
+              {/* 分区 2: 个人互动与足迹 (真实连结 DB，回复、点赞、Boost 与足迹) */}
+              {notifPartition === 'personal' && (
+                <>
+                  {/* 收到的个人互动提醒 */}
+                  <section className="account-card">
+                    <div className="account-card__head">
+                      <div>
+                        <h3 className="account-card__title">收到的互动提醒</h3>
+                        <p className="account-card__subtitle">文章评论回复、被 @ 提及、点赞与 Boost 互动提醒</p>
+                      </div>
+                      <span className="account-tag-chip">{personalNotifications.length} 条</span>
+                    </div>
+
+                    {personalNotifications.length > 0 ? (
+                      <div className="account-notification-list">
+                        {personalNotifications.map((notification) => (
+                          <a
+                            className="account-notification-item"
+                            href={`/posts/${notification.postSlug}/#comment-${notification.commentId}`}
+                            key={notification.id}
+                            onClick={() => setNotificationOpen(false)}
+                          >
+                            <div className="account-notification-avatar">
+                              {notification.actorAvatar ? (
+                                <img src={notification.actorAvatar} alt={notification.actorName} loading="lazy" />
+                              ) : (
+                                <span className="notification-icon-wrap">
+                                  {notification.type === 'like' ? (
+                                    <Heart className="h-4 w-4 text-rose-500" />
+                                  ) : notification.type === 'boost' ? (
+                                    <Sparkles className="h-4 w-4 text-amber-500" />
+                                  ) : (
+                                    <MessageSquare className="h-4 w-4 text-blue-500" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                            <div className="account-notification-body">
+                              <div className="account-notification-title-row">
+                                <strong>{notification.title}</strong>
+                                <span className="account-notification-date">
+                                  {new Date(notification.createdAt).toLocaleDateString('zh-CN')}
+                                </span>
+                              </div>
+                              <p>{notification.message.slice(0, 120)}</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="account-empty-state">
+                        <div className="account-empty-state-icon">
+                          <Bell className="h-6 w-6" />
+                        </div>
+                        <strong>暂时没有新的个人互动提醒</strong>
+                        <p>
+                          {account
+                            ? '当其他读者在文章评论区回复你、为你点赞或发送 Boost 时，这里将实时呈现。'
+                            : '设置昵称或登录后，当有人与你互动时将在此处即刻通知。'}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* 我的评论足迹 (真实连结 DB) */}
+                  <section className="account-card">
+                    <div className="account-card__head">
+                      <div>
+                        <h3 className="account-card__title">我的评论足迹</h3>
+                        <p className="account-card__subtitle">真实连结数据库，记录您在各博文下的精彩发言与互动</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="account-link-btn account-refresh-feed-btn"
+                          onClick={() => refreshUserFeed()}
+                          disabled={userFeed.loading}
+                          title="从数据库刷新最新记录"
+                        >
+                          <RefreshCw className={`h-3 w-3 inline mr-1 ${userFeed.loading ? 'animate-spin' : ''}`} />
+                          刷新
+                        </button>
+                        <span className="account-tag-chip">{userFeed.userComments.length} 条记录</span>
+                      </div>
+                    </div>
+
+                    {userFeed.userComments.length > 0 ? (
+                      <div className="account-my-comments-list">
+                        {userFeed.userComments.map((item) => (
+                          <a
+                            key={item.id}
+                            href={`/posts/${item.postSlug}/#comment-${item.id}`}
+                            className="account-my-comment-item"
+                            onClick={() => setNotificationOpen(false)}
+                          >
+                            <div className="account-my-comment-head">
+                              <span className="account-my-comment-post">
+                                {item.postSlug ? `文章：${item.postSlug}` : '博文评论'}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                {item.likesCount > 0 && (
+                                  <span className="text-xs font-semibold text-rose-500">
+                                    👍 {item.likesCount}
+                                  </span>
+                                )}
+                                <span className="account-my-comment-date">
+                                  {new Date(item.createdAt).toLocaleDateString('zh-CN')}
+                                </span>
+                              </div>
+                            </div>
+                            <p className="account-my-comment-msg">{item.message}</p>
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="account-empty-state account-empty-state--compact">
+                        <p>数据库中暂无您的评论记录，前往任意文章底部发表评论即可自动记录足迹。</p>
+                      </div>
+                    )}
+                  </section>
+                </>
+              )}
             </div>
           )}
 
@@ -2098,8 +2304,6 @@ export function ThemeOverlays({
                     {localeVariant === 'zh-CN' ? '简体中文' : localeVariant === 'zh-Hant' ? '繁體中文' : 'English'}
                   </span>
                 </div>
-
-                <p className="account-card__desc">切换博客正文与系统界面的多语言版本：</p>
 
                 <div className="account-locale-grid">
                   <button
@@ -2126,53 +2330,238 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              {/* 评论区隐私与偏好设置 (唯一保留处) */}
+              {/* 通知与提醒偏好 */}
               <section className="account-card">
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">评论区隐私与显示偏好</h3>
+                    <Bell className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">通知与提醒偏好</h3>
                   </div>
-                  <span className="account-tag-chip">
-                    {accountForm.showLocation ? '前台公开' : '前台隐藏'}
-                  </span>
                 </div>
 
-                <div className="account-toggle-field">
-                  <div className="account-toggle-field__info">
-                    <span className="account-toggle-field__title">
-                      <Globe className="h-4 w-4 text-theme-main" />
-                      <span>前台展示国家/地区属地徽章</span>
-                    </span>
-                    <span className="account-toggle-field__desc">
-                      开启后在评论区公开展出您发言时的国家/地区徽章（如 🇨🇳 中国·北京）；关闭后前台完全隐匿属地信息。
-                    </span>
+                <div className="account-prefs-group">
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Megaphone className="h-4 w-4 text-theme-main" />
+                        <span>全站广播与新博文发布通告</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        开启后将在通知中心置顶呈现博主广播公告与最新文章发布动态。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.broadcastNotify}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ broadcastNotify: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
                   </div>
-                  <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={accountForm.showLocation}
-                      onChange={async (e) => {
-                        const checked = e.target.checked;
-                        setAccountForm((prev) => ({ ...prev, showLocation: checked }));
-                        if (account) {
-                          await updateAuthProfile({ showLocation: checked });
-                          setAccount((prev) => (prev ? { ...prev, showLocation: checked } : null));
-                        } else {
-                          const current = readCommentIdentity();
-                          if (current) {
-                            const updated = { ...current, showLocation: checked };
-                            writeCommentIdentity(updated);
+
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <MessageSquare className="h-4 w-4 text-theme-main" />
+                        <span>个人评论回复与点赞提醒</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        当其他读者回复您的发言或给您的留言点赞时接收站内提醒。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.personalNotify}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ personalNotify: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* 评论区互动与显示偏好 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">评论区互动偏好</h3>
+                  </div>
+                </div>
+
+                <div className="account-prefs-group">
+                  {/* 默认排序 */}
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Clock className="h-4 w-4 text-theme-main" />
+                        <span>评论区默认排序方式</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        选择进入博文时评论列表的默认优先排序模式。
+                      </span>
+                    </div>
+                    <div className="account-pref-sort-group">
+                      <button
+                        type="button"
+                        className={`account-pref-sort-btn ${userPreferences.defaultCommentSort === 'new' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          const next = writeUserPreferences({ defaultCommentSort: 'new' });
+                          setUserPreferences(next);
+                        }}
+                      >
+                        ⏱️ 最新
+                      </button>
+                      <button
+                        type="button"
+                        className={`account-pref-sort-btn ${userPreferences.defaultCommentSort === 'hot' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          const next = writeUserPreferences({ defaultCommentSort: 'hot' });
+                          setUserPreferences(next);
+                        }}
+                      >
+                        🔥 最热
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 属地徽章开关 */}
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Globe className="h-4 w-4 text-theme-main" />
+                        <span>前台展示国家/地区属地徽章</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        开启后评论公开展示国家/地区徽章（如 🇨🇳 中国·北京）；关闭后前台完全隐匿。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={accountForm.showLocation}
+                        onChange={async (e) => {
+                          const checked = e.target.checked;
+                          setAccountForm((prev) => ({ ...prev, showLocation: checked }));
+                          writeUserPreferences({ showLocation: checked });
+                          if (account) {
+                            await updateAuthProfile({ showLocation: checked });
+                            setAccount((prev) => (prev ? { ...prev, showLocation: checked } : null));
+                          } else {
+                            const current = readCommentIdentity();
+                            if (current) {
+                              writeCommentIdentity({ ...current, showLocation: checked });
+                            }
                           }
-                        }
-                      }}
-                    />
-                    <div className="theme-switch-slider"></div>
-                  </label>
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+
+                  {/* 折叠二级回复 */}
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <ChevronDown className="h-4 w-4 text-theme-main" />
+                        <span>默认折叠嵌套回复</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        折叠多级嵌套回复（YouTube 手风琴风格），保持评论列表清爽。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.collapseReplies}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ collapseReplies: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* 交互反馈与无障碍 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">交互反馈与无障碍</h3>
+                  </div>
                 </div>
 
-                {/* 真实合规的管理目的说明 (诚实透明，修正误导) */}
+                <div className="account-prefs-group">
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        {userPreferences.soundEffects ? <Volume2 className="h-4 w-4 text-theme-main" /> : <VolumeX className="h-4 w-4 text-secondtext" />}
+                        <span>交互声音反馈</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        发表评论、点赞与切换模式时的触觉与轻量音频提示。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.soundEffects}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ soundEffects: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Sparkles className="h-4 w-4 text-theme-main" />
+                        <span>平滑动效与视差</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        开启全站优雅视差与平滑动效；关闭可减弱动效降低图形运算负载。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={!userPreferences.reducedMotion}
+                        onChange={(e) => {
+                          const val = !e.target.checked;
+                          const next = writeUserPreferences({ reducedMotion: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* 真实合规的管理目的说明 */}
                 <div className="account-privacy-note">
                   <Info className="h-4 w-4 text-theme-main flex-shrink-0 mt-0.5" />
                   <span>

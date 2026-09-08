@@ -280,9 +280,193 @@ export async function onRequest(context: {
   }
 
   // ----------------------------------------------------
-  // GET: Fetch real comments for a post slug (supports sort=hot|new)
+  // GET: Fetch real comments for a post slug, OR user interaction feed & notifications
   // ----------------------------------------------------
   if (method === 'GET') {
+    const actionParam = url.searchParams.get('action')?.toLowerCase();
+    const isUserFeed = actionParam === 'user_feed' || url.searchParams.get('feed') === 'user';
+
+    if (isUserFeed || (!url.searchParams.get('slug') && (url.searchParams.has('author_name') || url.searchParams.has('user_id')))) {
+      const authorName = url.searchParams.get('author_name')?.trim() || '';
+      const authorId = url.searchParams.get('author_id')?.trim() || url.searchParams.get('user_id')?.trim() || '';
+      const authorEmail = url.searchParams.get('email')?.trim() || '';
+      const sessionToken = url.searchParams.get('session_token')?.trim() || request.headers.get('X-Comment-Session-Token') || '';
+
+      if (!authorName && !authorId && !authorEmail && !sessionToken) {
+        return jsonResponse(request, env, { ok: true, userComments: [], notifications: [] });
+      }
+
+      if (env.DB) {
+        await ensureTable(env.DB);
+        try {
+          // 1. Fetch user's own comments from D1
+          const myCommentsQuery = `
+            SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
+                   author_avatar, author_website, author_role, message, ip, ip_country, ip_location,
+                   show_location, likes_count, reactions, status, created_at, updated_at
+            FROM comments
+            WHERE status != 'deleted' AND (
+              (? != '' AND author_name = ?) OR
+              (? != '' AND author_id = ?) OR
+              (? != '' AND author_email = ?) OR
+              (? != '' AND session_token = ?)
+            )
+            ORDER BY created_at DESC
+            LIMIT 30
+          `;
+          const myRes = await env.DB.prepare(myCommentsQuery)
+            .bind(authorName, authorName, authorId, authorId, authorEmail, authorEmail, sessionToken, sessionToken)
+            .all<RawCommentRow>();
+          const userComments = (myRes.results || []).map((r) => mapRowToClientComment(r, isAdmin));
+
+          // 2. Fetch notifications: comments that reply to or quote user's comments
+          const notifQuery = `
+            SELECT c.id, c.post_slug, c.parent_id, c.quote_id, c.post_type, c.author_id, c.author_name,
+                   c.author_avatar, c.author_role, c.message, c.likes_count, c.created_at,
+                   p.message AS parent_message, p.author_name AS parent_author
+            FROM comments c
+            JOIN comments p ON (c.parent_id = p.id OR c.quote_id = p.id)
+            WHERE c.status != 'deleted'
+              AND c.author_name != ?
+              AND (
+                (? != '' AND p.author_name = ?) OR
+                (? != '' AND p.author_id = ?) OR
+                (? != '' AND p.author_email = ?) OR
+                (? != '' AND p.session_token = ?)
+              )
+            ORDER BY c.created_at DESC
+            LIMIT 30
+          `;
+          const notifRes = await env.DB.prepare(notifQuery)
+            .bind(authorName, authorName, authorName, authorId, authorId, authorEmail, authorEmail, sessionToken, sessionToken)
+            .all<any>();
+
+          const notifications: any[] = [];
+          for (const row of notifRes.results || []) {
+            const isQuote = Boolean(row.quote_id);
+            const isBoost = row.post_type === 'boost';
+            notifications.push({
+              id: `notif-${row.id}`,
+              type: isBoost ? 'boost' : isQuote ? 'quote' : 'reply',
+              title: isBoost
+                ? `${row.author_name} 为你发送了 Boost ⚡`
+                : isQuote
+                ? `${row.author_name} 引用了你的留言 🔗`
+                : `${row.author_name} 回复了你的留言 💬`,
+              actorName: row.author_name,
+              actorAvatar: row.author_avatar || '',
+              actorRole: row.author_role || 'reader',
+              message: row.message,
+              postSlug: row.post_slug,
+              commentId: row.id,
+              createdAt: row.created_at,
+              parentMessage: row.parent_message || '',
+            });
+          }
+
+          // Also check likes on user's own comments
+          for (const comm of userComments) {
+            if (comm.likesCount > 0) {
+              notifications.push({
+                id: `like-${comm.id}`,
+                type: 'like',
+                title: `你的留言收到了 ${comm.likesCount} 次点赞 👍`,
+                actorName: '读者',
+                actorAvatar: '',
+                actorRole: 'reader',
+                message: comm.message,
+                postSlug: comm.postSlug,
+                commentId: comm.id,
+                createdAt: comm.updatedAt || comm.createdAt,
+              });
+            }
+          }
+
+          notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+          return jsonResponse(request, env, {
+            ok: true,
+            userComments,
+            notifications: notifications.slice(0, 30),
+          });
+        } catch (dbErr: any) {
+          console.error('[Comments] DB user_feed error:', dbErr);
+          return jsonResponse(request, env, { ok: true, userComments: [], notifications: [] });
+        }
+      }
+
+      // In-memory fallback (local dev)
+      const allComments = Array.from(memoryFallbackStore.values()).filter((c) => c.status !== 'deleted');
+      const userComments = allComments
+        .filter((c) =>
+          (authorName && c.author_name === authorName) ||
+          (authorId && c.author_id === authorId) ||
+          (authorEmail && c.author_email === authorEmail) ||
+          (sessionToken && c.session_token === sessionToken)
+        )
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .map((r) => mapRowToClientComment(r, isAdmin));
+
+      const myCommentIds = new Set(userComments.map((c) => c.id));
+      const notifications: any[] = [];
+
+      for (const c of allComments) {
+        if (c.author_name === authorName) continue;
+        if (c.parent_id && myCommentIds.has(c.parent_id)) {
+          notifications.push({
+            id: `notif-${c.id}`,
+            type: c.post_type === 'boost' ? 'boost' : 'reply',
+            title: c.post_type === 'boost' ? `${c.author_name} 为你发送了 Boost ⚡` : `${c.author_name} 回复了你的留言 💬`,
+            actorName: c.author_name,
+            actorAvatar: c.author_avatar || '',
+            actorRole: c.author_role || 'reader',
+            message: c.message,
+            postSlug: c.post_slug,
+            commentId: c.id,
+            createdAt: c.created_at,
+          });
+        } else if (c.quote_id && myCommentIds.has(c.quote_id)) {
+          notifications.push({
+            id: `notif-quote-${c.id}`,
+            type: 'quote',
+            title: `${c.author_name} 引用了你的留言 🔗`,
+            actorName: c.author_name,
+            actorAvatar: c.author_avatar || '',
+            actorRole: c.author_role || 'reader',
+            message: c.message,
+            postSlug: c.post_slug,
+            commentId: c.id,
+            createdAt: c.created_at,
+          });
+        }
+      }
+
+      for (const comm of userComments) {
+        if (comm.likesCount > 0) {
+          notifications.push({
+            id: `like-${comm.id}`,
+            type: 'like',
+            title: `你的留言收到了 ${comm.likesCount} 次点赞 👍`,
+            actorName: '读者',
+            actorAvatar: '',
+            actorRole: 'reader',
+            message: comm.message,
+            postSlug: comm.postSlug,
+            commentId: comm.id,
+            createdAt: comm.updatedAt || comm.createdAt,
+          });
+        }
+      }
+
+      notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      return jsonResponse(request, env, {
+        ok: true,
+        userComments,
+        notifications: notifications.slice(0, 30),
+      });
+    }
+
     const slug = url.searchParams.get('slug')?.trim();
     const sort = (url.searchParams.get('sort') || 'new').toLowerCase();
 

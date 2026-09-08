@@ -10,6 +10,8 @@ export interface UserProfile {
   provider: 'epomail' | 'local';
   externalId?: string | null;
   bio?: string;
+  timezone?: string;
+  location?: string;
   createdAt?: string;
 }
 
@@ -361,7 +363,7 @@ export async function invalidateSession(token: string, env: AppEnv): Promise<voi
 
 export async function updateUserProfile(
   token: string,
-  updates: { name?: string; avatar?: string; website?: string; bio?: string },
+  updates: { name?: string; avatar?: string; website?: string; bio?: string; timezone?: string; location?: string },
   env: AppEnv
 ): Promise<UserProfile> {
   const currentUser = await getUserBySessionToken(token, env);
@@ -375,6 +377,8 @@ export async function updateUserProfile(
     avatar: updates.avatar !== undefined ? updates.avatar.trim() : currentUser.avatar,
     website: updates.website !== undefined ? updates.website.trim() : currentUser.website,
     bio: updates.bio !== undefined ? updates.bio.trim() : currentUser.bio,
+    timezone: updates.timezone !== undefined ? updates.timezone.trim() : currentUser.timezone,
+    location: updates.location !== undefined ? updates.location.trim() : currentUser.location,
   };
 
   // Update in memory

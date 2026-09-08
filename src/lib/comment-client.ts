@@ -16,6 +16,8 @@ export type CommentIdentity = {
   epomailUserId?: string | number;
   epomailAvatar?: string;
   bio?: string;
+  timezone?: string;
+  location?: string;
   showLocation?: boolean;
 };
 
@@ -633,6 +635,8 @@ export async function updateAuthProfile(updates: {
   name?: string;
   website?: string;
   bio?: string;
+  timezone?: string;
+  location?: string;
   showLocation?: boolean;
 }): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
   try {
@@ -659,6 +663,8 @@ export async function updateAuthProfile(updates: {
             avatar: data.user.avatar ?? current?.avatar ?? '',
             website: data.user.website ?? current?.website ?? '',
             bio: data.user.bio ?? current?.bio ?? '',
+            timezone: updates.timezone !== undefined ? updates.timezone : (data.user.timezone ?? current?.timezone ?? ''),
+            location: updates.location !== undefined ? updates.location : (data.user.location ?? current?.location ?? ''),
             showLocation: updates.showLocation !== undefined ? updates.showLocation : (current?.showLocation ?? true),
             token,
           };
@@ -675,6 +681,8 @@ export async function updateAuthProfile(updates: {
         avatar: updates.avatar !== undefined ? updates.avatar : current.avatar,
         website: updates.website !== undefined ? updates.website : current.website,
         bio: updates.bio !== undefined ? updates.bio : current.bio,
+        timezone: updates.timezone !== undefined ? updates.timezone : current.timezone,
+        location: updates.location !== undefined ? updates.location : current.location,
         showLocation: updates.showLocation !== undefined ? updates.showLocation : (current.showLocation ?? true),
       };
     }
@@ -688,5 +696,110 @@ export async function updateAuthProfile(updates: {
   } catch (err: any) {
     return { ok: false, error: err?.message || '更新个人资料失败' };
   }
+}
+
+export type UserInteractionNotification = {
+  id: string;
+  type: 'reply' | 'like' | 'boost' | 'quote';
+  title: string;
+  actorName: string;
+  actorAvatar?: string;
+  actorRole?: 'admin' | 'reader' | 'visitor';
+  message: string;
+  postSlug: string;
+  commentId: string;
+  createdAt: string;
+  parentMessage?: string;
+};
+
+export async function fetchUserFeed(params: {
+  authorId?: string;
+  authorName?: string;
+  authorEmail?: string;
+  sessionToken?: string;
+}): Promise<{
+  ok: boolean;
+  userComments: BlogComment[];
+  notifications: UserInteractionNotification[];
+  error?: string;
+}> {
+  try {
+    const query = new URLSearchParams();
+    query.set('action', 'user_feed');
+    if (params.authorId) query.set('author_id', params.authorId);
+    if (params.authorName) query.set('author_name', params.authorName);
+    if (params.authorEmail) query.set('email', params.authorEmail);
+    if (params.sessionToken) query.set('session_token', params.sessionToken);
+
+    const headers: Record<string, string> = {};
+    if (params.sessionToken) {
+      headers['X-Comment-Session-Token'] = params.sessionToken;
+    }
+
+    const res = await fetch(`/api/comments?${query.toString()}`, { headers });
+    const result = await safeFetchJson<{
+      ok: boolean;
+      userComments?: BlogComment[];
+      notifications?: UserInteractionNotification[];
+      error?: string;
+    }>(res);
+
+    if (result.ok && result.data) {
+      return {
+        ok: true,
+        userComments: Array.isArray(result.data.userComments) ? result.data.userComments : [],
+        notifications: Array.isArray(result.data.notifications) ? result.data.notifications : [],
+      };
+    }
+    return { ok: false, userComments: [], notifications: [], error: result.error };
+  } catch (err: any) {
+    console.warn('[CommentClient] fetchUserFeed network error:', err);
+    return { ok: false, userComments: [], notifications: [], error: err?.message };
+  }
+}
+
+export const USER_PREFERENCES_KEY = 'shijianus-user-preferences';
+
+export interface UserPreferences {
+  broadcastNotify: boolean;
+  personalNotify: boolean;
+  defaultCommentSort: 'new' | 'hot';
+  showLocation: boolean;
+  collapseReplies: boolean;
+  soundEffects: boolean;
+  reducedMotion: boolean;
+}
+
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  broadcastNotify: true,
+  personalNotify: true,
+  defaultCommentSort: 'new',
+  showLocation: true,
+  collapseReplies: true,
+  soundEffects: true,
+  reducedMotion: false,
+};
+
+export function readUserPreferences(): UserPreferences {
+  if (typeof window === 'undefined') return DEFAULT_USER_PREFERENCES;
+  try {
+    const raw = window.localStorage.getItem(USER_PREFERENCES_KEY);
+    if (!raw) return DEFAULT_USER_PREFERENCES;
+    const parsed = JSON.parse(raw);
+    return { ...DEFAULT_USER_PREFERENCES, ...parsed };
+  } catch {
+    return DEFAULT_USER_PREFERENCES;
+  }
+}
+
+export function writeUserPreferences(prefs: Partial<UserPreferences>): UserPreferences {
+  const next = { ...readUserPreferences(), ...prefs };
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(USER_PREFERENCES_KEY, JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent('shijianus:preferences-change', { detail: next }));
+    } catch {}
+  }
+  return next;
 }
 
