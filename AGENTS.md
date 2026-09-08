@@ -483,5 +483,20 @@
   1. 在 Tab 2 中新增“我的评论足迹”板块，实时读取并呈现用户发表的历史评论与所属文章，点击一键直达对应博文评论锚点。
 - [x] 自动化测试套件全量更新与通过：
   1. `scripts/verify-account-drawer-epomail.mjs`：100% PASS（验证技术卡片消除、Tab 1 无重复开关、头像点击与相机标存在、Tab 3 合规 IP 说明、移动端与桌面端自适应）；
-  2. `scripts/verify-prod-account-drawer.mjs` & `scripts/verify-live-cf-account-drawer.mjs`：同步适配并通过。
-
+### Task 36: 读者中心与通知抽屉 (.theme-account-drawer) 基于 Swiss 2.0 与大厂极简风格的 UI 美化与视觉重构 (`072f586`)
+- [x] 严格遵循最小修改原则：严禁修改任何外部组件与后端业务，仅在 `src/styles/final-pass.css` 中对 `.theme-account-drawer` 及其子元素进行深度视觉质感与排版重构。
+- [x] 深度视觉审计与大厂设计规范落地 (Visual Audit & Big-Tech Standards)：
+  1. 通过 Playwright MCP 针对浅色/深色模式、已登录/未登录状态、3 个选项卡及移动端（390px）全量捕获 11 张高分辨率视网膜截图；
+  2. 输出系统级诊断报告 (`account_drawer_redesign_proposal.md`)，精准指出多重卡片边框套娃、层级辨识疲劳、移动端垂直拉伸等 6 大核心痛点。
+- [x] 抽屉容器与层级体验全面升维 (Drawer Elevation & Glassmorphism)：
+  1. 容器应用 `backdrop-filter: blur(32px) saturate(190%)` 超质感毛玻璃与柔和向左投影（`-24px 0 60px -10px rgba(...)`）；
+  2. 顶栏重构：单行脉冲呼吸灯（`.status-indicator-dot`）+ 紧凑单声道眉标（`.eyebrow`）+ 旋转动效圆形关闭按钮（`.theme-account-drawer__close`）；
+  3. Hero 个人资料卡：压缩为 52px 精致头像与自然光泽背景，消除笨拙双层边框，状态徽标（`.account-pill--epomail`, `.account-pill--guest` 等）收敛为方圆药丸胶囊。
+- [x] 选项卡与内容卡片极简重塑 (Swiss Segmented Control & Content Cards)：
+  1. 选项卡轨道（`.account-nav-tabs`）升级为内嵌凹槽分段控制器，活跃项以浮动微投影卡片形态凸显；
+  2. Tab 1（身份与资料）：单行自适应 3 列福利徽章（`.epomail-benefits-row`），避免移动端换行拉伸；高对比品牌蓝一键授权按钮；隐式开发者折叠通道与精致表单控件；
+  3. Tab 2（站内提醒）：通知卡片微交互位移（`translateX(3px)`）与柔和阴影，空状态居中呼吸排版；
+  4. Tab 3（偏好设置）：三列分段语言选择器与 iOS 质感平滑滑动开关（`.theme-switch-slider`）。
+- [x] 响应式移动端深度适配与全平台测试通过：
+  1. 移动端（$\le 768\text{px}$）自动切换为单列紧凑排版，文字优雅省略，杜绝横向滚动与越界；
+  2. 全套自动化测试套件（`scripts/verify-account-drawer-epomail.mjs`、`scripts/verify-rightside-dock.mjs`）验证全绿通过。
