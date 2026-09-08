@@ -531,3 +531,34 @@
 - [x] 生产环境 (Cloudflare Pages) 全量部署与生产端到端 Playwright 验证通过 (`scripts/verify-live-account-notifications.mjs`)：
   1. 通过 Wrangler Pages Deploy 全量打包上传 92 个静态路由与 Functions bundle 至生产节点（部署标识：`57030b2f.shijianus-blog.pages.dev`），实时绑定生产主域 `https://blog.epocanvas.com`；
   2. 真实生产环境 Playwright E2E 自动化审计：`GET /api/comments?feed=user` 返回 200 OK、桌面端抽屉呼出、Hero 卡片头像与编辑按钮、Tab 1 个人资料表单、Tab 2 双分区（全站广播通告 9 项直出、个人互动足迹与刷新按钮）、Tab 3 六项全站偏好开关及移动端（390px）自适应，线上全链路测试 100% PASS 通过。
+
+### Task 39: 账号中心抽屉 (.theme-account-drawer) 极简重构、偏好滑块大幅精简、默认展示站内通知与个人足迹、时区下拉与自动获取、排除自身交互通知并清除冗余元素 (`8747822`)
+- [x] 严格遵循最小修改原则：全面保障全站其他组件与全局逻辑稳定，代码修改仅严格限定在 `.theme-account-drawer` 及配套接口与样式。
+- [x] 偏好设置滑块大幅精简降噪 (Tab 3 Streamlined Preferences)：
+  1. 彻底根除原本过多冗余滑块（删除了广播通告、个人提醒、嵌套折叠、声音反馈、动效减弱等 5 个杂乱开关）；
+  2. 仅保留 1 项核心必要的“前台展示国家/地区属地徽章”iOS 质感滑动开关；
+  3. 保留语言切换三按钮控制器与评论区默认排序方式（`⏱️ 最新` vs `🔥 最热`）双按钮控制器；
+  4. 保留合规透明的后台 IP 审计与前台隐匿特别说明（`.account-privacy-note`）。
+- [x] 默认打开状态优化为站内通知与个人足迹：
+  1. 抽屉开启默认展示“站内提醒”选项卡（`accountTab === 'notifications'`），并设置事件细节自适应路由；
+  2. 站内通知默认激活“个人互动与足迹”子分区（`notifPartition === 'personal'`），满足用户对自身互动的核心关注诉求。
+- [x] 时区与位置自动获取及下拉选单优化 (Timezone & Location UX)：
+  1. 所在时区输入框占位符精简为“自动获取或选择”，彻底解决超长文案无法展示的问题；
+  2. 页面加载与抽屉打开时自动通过 `Intl.DateTimeFormat().resolvedOptions().timeZone` 智能推导本机时区，并结合城市映射预填所在位置；
+  3. 新增原生 `<datalist id="account-common-timezones">`，提供北京/上海、香港、台北、东京、纽约、洛杉矶、伦敦、UTC 等 8 个常用时区下拉候选，用户仍可自由手动修改或留空删除；
+  4. 所在位置自动请求 `/api/geo-profile` 获取边缘地理位置，提供“定位”快捷探测按钮。
+- [x] 彻底排查并清除冗余 UI 元素：
+  1. 彻底清除所有 `class="account-card__subtitle"` 说明副标题，保持卡片极致简洁；
+  2. 彻底清除所有 `class="account-tag-chip"` 冗余标签角标；
+  3. 彻底清除 `class="account-btn-icon account-edit-profile-btn"` 冗余按钮，用户在资料表单中可就地直接修改并保存；
+  4. 彻底清除广播通告中的 `class="account-privacy-note"`；
+  5. 彻底清除表单底部的 `class="account-btn-danger"` 退出按钮，全界面保持单一且醒目的顶部退出登录入口，杜绝重复。
+- [x] 排除用户自身交互触发的通知 (Exclude Self-Interactions)：
+  1. 在 Cloudflare D1 SQL 查询与开发内存回退中，严格比对 `author_name`、`author_id`、`author_email` 及 `session_token`；
+  2. 过滤掉用户自己对自身评论的回复、Boost 发送以及点赞操作，确保只有来自其他读者的真实互动才会触发站内通知。
+- [x] 自动化测试套件更新与全量验证通过 (`scripts/verify-account-notifications-and-profile.mjs`)：
+  1. 自动化验证默认选中“站内提醒”与“个人互动与足迹”；
+  2. 自动化断言 `.account-card__subtitle`、`.account-tag-chip`、`.account-btn-danger`、`.account-edit-profile-btn` 数量严格为 0；
+  3. 自动化验证时区 8 项下拉候选、自动推导值与表单持久化；
+  4. 自动化验证 Tab 3 滑块数量精确为 1（仅保留属地徽章）；
+  5. 桌面端（1440x900）与移动端（390x844）Playwright E2E 测试全量 PASS 通过。
