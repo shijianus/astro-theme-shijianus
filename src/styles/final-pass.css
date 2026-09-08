@@ -2311,18 +2311,18 @@ body .snackbar-container.show,
   top: 0;
   right: 0;
   z-index: 10000 !important;
-  width: min(540px, 100vw);
+  width: min(520px, 100vw);
   height: 100%;
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 24px 26px;
-  background: color-mix(in srgb, var(--card-bg) 94%, transparent);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  gap: 16px;
+  padding: 24px 24px 32px 24px;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
   border-left: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
-  box-shadow: -20px 0 50px -10px rgba(0, 0, 0, 0.16), -6px 0 20px rgba(0, 0, 0, 0.08);
+  box-shadow: -24px 0 60px -10px rgba(0, 0, 0, 0.16), -6px 0 20px rgba(0, 0, 0, 0.06);
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
@@ -2330,6 +2330,12 @@ body .snackbar-container.show,
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--font-color) 16%, transparent) transparent;
+}
+
+[data-theme='dark'] .theme-account-drawer {
+  background: color-mix(in srgb, var(--card-bg) 88%, #09090b);
+  border-left: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
+  box-shadow: -28px 0 70px -10px rgba(0, 0, 0, 0.55), -8px 0 24px rgba(0, 0, 0, 0.35);
 }
 
 .theme-account-drawer::-webkit-scrollbar {
@@ -2359,7 +2365,7 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid color-mix(in srgb, var(--font-color) 6%, transparent);
   flex-shrink: 0;
 }
@@ -2367,7 +2373,7 @@ body .snackbar-container.show,
 .theme-account-drawer__head-title-wrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .theme-account-drawer__head-badge {
@@ -2383,7 +2389,7 @@ body .snackbar-container.show,
   background: #3b82f6;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
   display: inline-block;
-  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulseDot 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .status-indicator-dot.is-active {
@@ -2397,16 +2403,16 @@ body .snackbar-container.show,
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.45;
     transform: scale(0.85);
   }
 }
 
 .theme-account-drawer__head h2 {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: 1.38rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--font-color);
   line-height: 1.2;
 }
@@ -2418,21 +2424,21 @@ body .snackbar-container.show,
   font-family: var(--font-mono, monospace);
   color: var(--theme-main);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .theme-account-drawer__close {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
   background: color-mix(in srgb, var(--secondbg) 80%, var(--card-bg));
   color: var(--secondtext);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
@@ -2440,53 +2446,58 @@ body .snackbar-container.show,
   background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
   border-color: color-mix(in srgb, var(--theme-main) 35%, transparent);
   color: var(--theme-main);
-  transform: rotate(90deg) scale(1.06);
+  transform: rotate(90deg) scale(1.05);
 }
 
-/* 2. Hero Summary Profile Card */
+/* 2. Hero Summary Profile Bar (Compact & Big-Tech Sleek) */
 .account-hero-card {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
-  padding: 16px 20px;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, var(--card-border));
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
   border-radius: 12px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 5%, var(--card-bg)) 0%, color-mix(in srgb, var(--secondbg) 85%, var(--card-bg)) 100%);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 5%, var(--card-bg)) 0%, color-mix(in srgb, var(--secondbg) 80%, var(--card-bg)) 100%);
+  box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  min-height: fit-content;
+  min-height: 80px;
+}
+
+[data-theme='dark'] .account-hero-card {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main) 8%, var(--card-bg)) 0%, color-mix(in srgb, var(--secondbg) 60%, var(--card-bg)) 100%);
+  border-color: color-mix(in srgb, var(--theme-main) 25%, rgba(255, 255, 255, 0.08));
 }
 
 .account-hero-card::after {
   content: '';
   position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 120px;
-  height: 120px;
+  top: -30px;
+  right: -30px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--theme-main) 14%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--theme-main) 12%, transparent) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .account-hero-card__avatar {
   position: relative;
-  width: 62px;
-  height: 62px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
   color: var(--theme-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  font-weight: 900;
+  font-size: 1.2rem;
+  font-weight: 800;
   overflow: visible;
-  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px color-mix(in srgb, var(--theme-main) 30%, transparent), 0 6px 16px -2px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 3px color-mix(in srgb, var(--theme-main) 28%, transparent), 0 4px 12px -2px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
@@ -2496,8 +2507,8 @@ body .snackbar-container.show,
 }
 
 .account-hero-card__avatar.is-clickable:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--theme-main), 0 8px 24px -2px rgba(66, 90, 239, 0.35);
+  transform: scale(1.04);
+  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 3.5px var(--theme-main), 0 6px 18px -2px rgba(66, 90, 239, 0.3);
 }
 
 .account-hero-card__avatar img {
@@ -2511,7 +2522,7 @@ body .snackbar-container.show,
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.68);
+  background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   color: #ffffff;
@@ -2520,10 +2531,10 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
   pointer-events: none;
   z-index: 2;
 }
@@ -2535,10 +2546,10 @@ body .snackbar-container.show,
 
 .account-hero-card__avatar-badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 22px;
-  height: 22px;
+  bottom: -1px;
+  right: -1px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--theme-main);
   color: #ffffff;
@@ -2546,9 +2557,9 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   border: 2px solid var(--card-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 3;
-  transition: transform 0.2s ease;
+  transition: transform 0.18s ease;
   pointer-events: none;
 }
 
@@ -2558,26 +2569,26 @@ body .snackbar-container.show,
 
 .account-hero-card__badge-icon {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 20px;
-  height: 20px;
+  top: -1px;
+  right: -1px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--card-bg);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
   z-index: 4;
 }
 
 .account-hero-card__info {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
   z-index: 1;
 }
@@ -2586,14 +2597,14 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 .account-hero-card__name-row strong {
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   color: var(--font-color);
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2601,9 +2612,9 @@ body .snackbar-container.show,
 
 .account-hero-card__desc {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--secondtext);
-  line-height: 1.45;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2612,43 +2623,42 @@ body .snackbar-container.show,
 .account-pill {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: 0.01em;
 }
 
 .account-pill--epomail {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(37, 99, 235, 0.1));
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.08));
   color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 [data-theme='dark'] .account-pill--epomail {
   color: #60a5fa;
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(96, 165, 250, 0.35);
 }
 
 .account-pill--local {
-  background: color-mix(in srgb, var(--font-color) 8%, transparent);
+  background: color-mix(in srgb, var(--font-color) 7%, transparent);
   color: var(--font-color);
-  border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
 }
 
 .account-pill--guest {
-  background: color-mix(in srgb, var(--secondtext) 12%, transparent);
+  background: color-mix(in srgb, var(--secondtext) 10%, transparent);
   color: var(--secondtext);
-  border: 1px solid color-mix(in srgb, var(--secondtext) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--secondtext) 18%, transparent);
 }
 
 .account-pill--admin {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.1));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.08));
   color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 [data-theme='dark'] .account-pill--admin {
@@ -2656,8 +2666,8 @@ body .snackbar-container.show,
 }
 
 .account-btn-icon {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--card-border) 80%, transparent);
   background: var(--card-bg);
@@ -2666,28 +2676,32 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1;
 }
 
 .account-btn-icon:hover {
   color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
-  background: color-mix(in srgb, #ef4444 10%, var(--card-bg));
+  border-color: rgba(239, 68, 68, 0.35);
+  background: color-mix(in srgb, #ef4444 8%, var(--card-bg));
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.2);
 }
 
-/* 3. Navigation Tabs */
+/* 3. Segmented Navigation Tabs (Apple/Linear Style) */
 .account-nav-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
   background: color-mix(in srgb, var(--secondbg) 85%, var(--card-bg));
-  padding: 5px;
-  border-radius: 10px;
-  border: var(--style-border-always);
+  padding: 4px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 6%, transparent);
   flex-shrink: 0;
+}
+
+[data-theme='dark'] .account-nav-tabs {
+  background: color-mix(in srgb, #18181b 90%, var(--card-bg));
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .account-nav-tab {
@@ -2695,59 +2709,65 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 38px;
-  padding: 0 10px;
-  border-radius: 7px;
-  font-size: 0.84rem;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--secondtext);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
 .account-nav-tab:hover {
   color: var(--font-color);
-  background: color-mix(in srgb, var(--card-bg) 50%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 45%, transparent);
 }
 
 .account-nav-tab.is-active {
   background: var(--card-bg);
   color: var(--theme-main);
   font-weight: 700;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .account-nav-tab.is-active {
+  background: color-mix(in srgb, var(--card-bg) 95%, #27272a);
+  color: #60a5fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .account-tab-badge {
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
   background: linear-gradient(135deg, var(--theme-main), #2563eb);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.35);
+  box-shadow: 0 1px 5px rgba(66, 90, 239, 0.3);
   line-height: 1.3;
 }
 
-/* 4. Toasts & Notices */
+/* 4. Toasts & Status Notices */
 .account-toast-notice {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .account-toast-notice--success {
-  background: color-mix(in srgb, #10b981 12%, var(--card-bg));
+  background: color-mix(in srgb, #10b981 10%, var(--card-bg));
   color: #059669;
-  border: 1px solid color-mix(in srgb, #10b981 25%, transparent);
+  border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
 }
 
 [data-theme='dark'] .account-toast-notice--success {
@@ -2755,9 +2775,9 @@ body .snackbar-container.show,
 }
 
 .account-toast-notice--error {
-  background: color-mix(in srgb, #ef4444 12%, var(--card-bg));
+  background: color-mix(in srgb, #ef4444 10%, var(--card-bg));
   color: #dc2626;
-  border: 1px solid color-mix(in srgb, #ef4444 25%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 22%, transparent);
 }
 
 [data-theme='dark'] .account-toast-notice--error {
@@ -2765,36 +2785,46 @@ body .snackbar-container.show,
 }
 
 .account-toast-notice--info {
-  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
   color: var(--theme-main);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
 }
 
-/* 5. Tab Content & Cards */
+/* 5. Tab Content & Cards (Seamless Swiss Layout) */
 .account-tab-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   flex-shrink: 0;
 }
 
 .account-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 22px;
-  border: var(--style-border-always);
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 7%, transparent);
   border-radius: 12px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-border);
-  transition: all 0.2s ease;
+  background: color-mix(in srgb, var(--card-bg) 92%, var(--secondbg));
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme='dark'] .account-card {
+  background: color-mix(in srgb, var(--card-bg) 85%, #18181b);
+  border-color: rgba(255, 255, 255, 0.07);
 }
 
 .account-card--epomail {
-  border-color: color-mix(in srgb, #3b82f6 35%, var(--card-border));
-  background: linear-gradient(180deg, color-mix(in srgb, #3b82f6 6%, var(--card-bg)) 0%, var(--card-bg) 100%);
+  border-color: color-mix(in srgb, #3b82f6 28%, var(--card-border));
+  background: linear-gradient(180deg, color-mix(in srgb, #3b82f6 5%, var(--card-bg)) 0%, var(--card-bg) 100%);
   position: relative;
   overflow: hidden;
+}
+
+[data-theme='dark'] .account-card--epomail {
+  background: linear-gradient(180deg, color-mix(in srgb, #3b82f6 8%, var(--card-bg)) 0%, var(--card-bg) 100%);
+  border-color: color-mix(in srgb, #3b82f6 30%, transparent);
 }
 
 .account-card--epomail::before {
@@ -2803,7 +2833,7 @@ body .snackbar-container.show,
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2.5px;
   background: linear-gradient(90deg, #425aef, #38bdf8, #2563eb);
 }
 
@@ -2817,52 +2847,57 @@ body .snackbar-container.show,
 .account-brand-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .epomail-badge-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(66, 90, 239, 0.16), rgba(59, 130, 246, 0.08));
-  border: 1px solid rgba(66, 90, 239, 0.25);
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(66, 90, 239, 0.14), rgba(59, 130, 246, 0.06));
+  border: 1px solid rgba(66, 90, 239, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--theme-main);
-  box-shadow: 0 3px 10px rgba(66, 90, 239, 0.15);
+  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.12);
   flex-shrink: 0;
 }
 
 .account-card__title {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: clamp(0.96rem, 3.8vw, 1.06rem);
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--font-color);
+  line-height: 1.3;
+  word-break: keep-all;
 }
 
 .account-card__subtitle {
-  margin: 3px 0 0 0;
-  font-size: 0.78rem;
+  margin: 2px 0 0 0;
+  font-size: 0.76rem;
   color: var(--secondtext);
+  line-height: 1.4;
 }
 
 .account-tag-chip {
-  padding: 3px 10px;
-  border-radius: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--secondbg));
   color: var(--theme-main);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .account-tag-chip--active {
-  background: color-mix(in srgb, #10b981 14%, var(--secondbg));
+  background: color-mix(in srgb, #10b981 12%, var(--secondbg));
   color: #059669;
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.28);
 }
 
 [data-theme='dark'] .account-tag-chip--active {
@@ -2871,30 +2906,32 @@ body .snackbar-container.show,
 
 .account-card__desc {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: var(--secondtext);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-/* Epomail Feature Badges */
+/* Epomail Feature Badges (Horizontal Compact Grid) */
 .epomail-benefits-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: -2px 0 4px 0;
+  gap: 7px;
+  margin: -1px 0 2px 0;
 }
 
 .epomail-benefit-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border-radius: 7px;
-  background: color-mix(in srgb, #3b82f6 8%, var(--secondbg));
-  border: 1px solid color-mix(in srgb, #3b82f6 18%, transparent);
-  font-size: 0.75rem;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, #3b82f6 7%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, #3b82f6 15%, transparent);
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--font-color);
+  white-space: nowrap;
 }
 
 /* Epomail Primary Login Button */
@@ -2904,23 +2941,23 @@ body .snackbar-container.show,
   justify-content: center;
   gap: 8px;
   width: 100%;
-  height: 46px;
-  padding: 0 20px;
+  height: 44px;
+  padding: 0 18px;
   border: none;
-  border-radius: 9px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #425aef 0%, #2563eb 100%);
   color: #ffffff;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 6px 20px -2px rgba(66, 90, 239, 0.42);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px -2px rgba(66, 90, 239, 0.38);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .epomail-primary-login-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px -2px rgba(66, 90, 239, 0.52);
-  filter: brightness(1.04);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px -2px rgba(66, 90, 239, 0.48);
+  filter: brightness(1.03);
 }
 
 .epomail-primary-login-btn:active:not(:disabled) {
@@ -2938,9 +2975,9 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 4px 0;
+  margin: 2px 0;
   color: var(--secondtext);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
 }
 
@@ -2948,18 +2985,18 @@ body .snackbar-container.show,
 .account-divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--font-color) 12%, transparent);
 }
 
 .account-divider span {
-  padding: 0 12px;
+  padding: 0 10px;
   opacity: 0.85;
 }
 
 /* Direct App Auth Accordion (Discreet Admin/Developer Portal) */
 .direct-app-auth-accordion {
-  border-top: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent);
-  padding-top: 10px;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 70%, transparent);
+  padding-top: 8px;
   margin-top: 2px;
 }
 
@@ -2967,61 +3004,45 @@ body .snackbar-container.show,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
   background: transparent;
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.78rem;
+  padding: 5px 8px;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--secondtext);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.16s ease;
 }
 
 .direct-app-auth-toggle:hover {
   color: var(--theme-main);
-  background: color-mix(in srgb, var(--theme-main) 6%, transparent);
+  background: color-mix(in srgb, var(--theme-main) 5%, transparent);
 }
 
 .direct-app-auth-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: 10px;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 8px;
   background: var(--secondbg);
-  border: var(--style-border-always);
-}
-
-.direct-app-auth-intro {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--secondtext);
-  line-height: 1.5;
-}
-
-.direct-app-auth-intro code {
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--font-color) 8%, transparent);
-  font-size: 0.8rem;
-  font-family: var(--font-mono, monospace);
-  color: var(--theme-main);
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
 }
 
 .account-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .account-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .account-field--full {
@@ -3029,17 +3050,9 @@ body .snackbar-container.show,
 }
 
 .account-field > span {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--font-color);
-}
-
-.account-field-sublabel {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--font-color);
-  margin-bottom: 4px;
-  display: block;
 }
 
 .account-input-wrap {
@@ -3050,34 +3063,34 @@ body .snackbar-container.show,
 
 .account-input-icon {
   position: absolute;
-  left: 12px;
-  width: 16px;
-  height: 16px;
+  left: 11px;
+  width: 15px;
+  height: 15px;
   color: var(--secondtext);
   pointer-events: none;
 }
 
 .account-field input {
   width: 100%;
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid color-mix(in srgb, var(--card-border) 85%, transparent);
-  border-radius: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  border-radius: 7px;
   background: var(--card-bg);
   color: var(--font-color);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   box-sizing: border-box;
   transition: all 0.18s ease;
 }
 
 .account-input-wrap input {
-  padding-left: 38px;
+  padding-left: 35px;
 }
 
 .account-field input:focus {
   outline: none;
   border-color: var(--theme-main);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-main) 16%, transparent);
 }
 
 .account-field input:disabled {
@@ -3088,18 +3101,18 @@ body .snackbar-container.show,
 
 /* Auth Scope Box */
 .auth-scope-box {
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--theme-main) 6%, var(--card-bg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--theme-main) 5%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, transparent);
 }
 
 .auth-scope-title {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--theme-main);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .auth-scope-list {
@@ -3108,39 +3121,39 @@ body .snackbar-container.show,
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .auth-scope-list li {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  font-size: 0.8rem;
+  gap: 7px;
+  font-size: 0.78rem;
   color: var(--font-color);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .direct-app-submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 42px;
+  gap: 7px;
+  height: 38px;
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--theme-main);
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
-  transition: all 0.2s ease;
+  box-shadow: 0 3px 12px rgba(66, 90, 239, 0.32);
+  transition: all 0.18s ease;
 }
 
 .direct-app-submit-btn:hover:not(:disabled) {
   opacity: 0.94;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.45);
+  box-shadow: 0 5px 15px rgba(66, 90, 239, 0.42);
 }
 
 .direct-app-submit-btn:disabled {
@@ -3152,8 +3165,8 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding-top: 8px;
+  gap: 10px;
+  padding-top: 6px;
 }
 
 .account-btn-primary,
@@ -3163,10 +3176,10 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 40px;
-  padding: 0 18px;
-  border-radius: 8px;
-  font-size: 0.86rem;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3176,19 +3189,19 @@ body .snackbar-container.show,
   background: var(--theme-main);
   color: #fff;
   border: none;
-  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
+  box-shadow: 0 3px 12px rgba(66, 90, 239, 0.32);
 }
 
 .account-btn-primary:hover {
   opacity: 0.94;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.45);
+  box-shadow: 0 5px 15px rgba(66, 90, 239, 0.42);
 }
 
 .account-btn-secondary {
   background: var(--secondbg);
   color: var(--font-color);
-  border: var(--style-border-always);
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
 }
 
 .account-btn-secondary:hover {
@@ -3198,9 +3211,9 @@ body .snackbar-container.show,
 }
 
 .account-btn-danger {
-  background: color-mix(in srgb, #ef4444 10%, var(--card-bg));
+  background: color-mix(in srgb, #ef4444 8%, var(--card-bg));
   color: #dc2626;
-  border: 1px solid color-mix(in srgb, #ef4444 25%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 22%, transparent);
 }
 
 .account-btn-danger:hover {
@@ -3212,7 +3225,7 @@ body .snackbar-container.show,
   background: none;
   border: none;
   color: var(--theme-main);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -3229,18 +3242,18 @@ body .snackbar-container.show,
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: 5px;
   border: none;
   background: var(--theme-main);
   color: #ffffff;
   cursor: pointer;
-  margin-right: 5px;
+  margin-right: 4px;
   flex-shrink: 0;
-  transition: all 0.18s ease;
+  transition: all 0.16s ease;
 }
 
 .account-input-inline-btn:hover:not(:disabled) {
@@ -3252,29 +3265,29 @@ body .snackbar-container.show,
 .account-my-comments-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   max-height: 280px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 3px;
   scrollbar-width: thin;
 }
 
 .account-my-comment-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: 5px;
+  padding: 10px 12px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--secondbg) 60%, var(--card-bg));
-  border: var(--style-border-always);
+  background: color-mix(in srgb, var(--secondbg) 50%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .account-my-comment-item:hover {
   border-color: var(--theme-main);
   background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
-  transform: translateX(3px);
+  transform: translateX(2.5px);
 }
 
 .account-my-comment-head {
@@ -3285,7 +3298,7 @@ body .snackbar-container.show,
 }
 
 .account-my-comment-post {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--theme-main);
   text-decoration: none;
@@ -3295,7 +3308,7 @@ body .snackbar-container.show,
 }
 
 .account-my-comment-date {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--secondtext);
   font-family: var(--font-mono, monospace);
   flex-shrink: 0;
@@ -3303,7 +3316,7 @@ body .snackbar-container.show,
 
 .account-my-comment-msg {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--font-color);
   line-height: 1.45;
   overflow: hidden;
@@ -3314,21 +3327,21 @@ body .snackbar-container.show,
 }
 
 .account-empty-state--compact {
-  padding: 24px 16px;
+  padding: 20px 14px;
 }
 
 .account-privacy-note {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  margin-top: 6px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--font-color) 3%, transparent);
   border: 1px dashed color-mix(in srgb, var(--font-color) 12%, transparent);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--secondtext);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 /* Custom Toggle Field */
@@ -3337,17 +3350,17 @@ body .snackbar-container.show,
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--theme-main) 4%, var(--secondbg));
-  border: var(--style-border-always);
-  transition: all 0.2s ease;
+  background: color-mix(in srgb, var(--theme-main) 3%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
+  transition: all 0.18s ease;
 }
 
 .account-toggle-field__info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   text-align: left;
 }
 
@@ -3355,24 +3368,24 @@ body .snackbar-container.show,
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--font-color);
 }
 
 .account-toggle-field__desc {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--secondtext);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .theme-switch-slider {
-  width: 40px;
-  height: 22px;
+  width: 38px;
+  height: 20px;
   background: color-mix(in srgb, var(--font-color) 20%, transparent);
   border-radius: 999px;
   position: relative;
-  transition: background-color 0.22s ease;
+  transition: background-color 0.2s ease;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -3382,12 +3395,12 @@ body .snackbar-container.show,
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   background: #ffffff;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .peer:checked ~ .theme-switch-slider {
@@ -3402,10 +3415,10 @@ body .snackbar-container.show,
 .account-notification-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   max-height: 520px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 3px;
   scrollbar-width: thin;
 }
 
@@ -3413,34 +3426,34 @@ body .snackbar-container.show,
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--secondbg) 60%, var(--card-bg));
-  border: var(--style-border-always);
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--secondbg) 50%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
   text-decoration: none;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .account-notification-item:hover {
   border-color: var(--theme-main);
   background: color-mix(in srgb, var(--theme-main) 4%, var(--card-bg));
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px -2px rgba(66, 90, 239, 0.12);
+  transform: translateX(3px);
+  box-shadow: 0 3px 12px -2px rgba(66, 90, 239, 0.1);
 }
 
 .account-notification-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--secondbg));
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--theme-main);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
 }
 
@@ -3459,7 +3472,7 @@ body .snackbar-container.show,
 .account-notification-body {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -3471,20 +3484,20 @@ body .snackbar-container.show,
 }
 
 .account-notification-title-row strong {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: var(--font-color);
   font-weight: 700;
 }
 
 .account-notification-date {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--secondtext);
   font-family: var(--font-mono, monospace);
 }
 
 .account-notification-body p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--secondtext);
   line-height: 1.45;
   overflow: hidden;
@@ -3499,83 +3512,108 @@ body .snackbar-container.show,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 20px;
+  gap: 10px;
+  padding: 40px 18px;
   text-align: center;
 }
 
 .account-empty-state-icon {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--theme-main) 12%, var(--secondbg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 20%, transparent);
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 18%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--theme-main);
-  box-shadow: 0 4px 16px rgba(66, 90, 239, 0.15);
+  box-shadow: 0 3px 12px rgba(66, 90, 239, 0.12);
 }
 
 .account-empty-state strong {
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: 800;
   color: var(--font-color);
 }
 
 .account-empty-state p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--secondtext);
-  max-width: 320px;
-  line-height: 1.55;
+  max-width: 300px;
+  line-height: 1.5;
 }
 
 /* Locale Buttons in Drawer */
 .account-locale-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .account-locale-btn {
-  height: 42px;
-  border-radius: 8px;
-  border: var(--style-border-always);
+  height: 38px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
   background: var(--secondbg);
   color: var(--font-color);
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
 .account-locale-btn:hover {
   border-color: var(--theme-main);
   color: var(--theme-main);
-  background: color-mix(in srgb, var(--theme-main) 6%, var(--secondbg));
+  background: color-mix(in srgb, var(--theme-main) 5%, var(--secondbg));
 }
 
 .account-locale-btn.is-active {
-  background: color-mix(in srgb, var(--theme-main) 14%, var(--card-bg));
+  background: color-mix(in srgb, var(--theme-main) 12%, var(--card-bg));
   border-color: var(--theme-main);
   color: var(--theme-main);
   font-weight: 800;
-  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.2);
+  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.16);
 }
 
 @media (max-width: 768px) {
   .theme-account-drawer {
     width: 100vw;
-    padding: 18px 16px;
+    padding: 18px 16px 28px 16px;
+    gap: 14px;
+  }
+
+  .account-hero-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .account-hero-card__avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
   }
 
   .epomail-benefits-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .epomail-benefit-item {
+    padding: 5px 4px;
+    font-size: 0.68rem;
+    gap: 3px;
+  }
+
+  .epomail-benefit-item svg {
+    width: 12px;
+    height: 12px;
   }
 
   .account-form-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .account-field--full {
