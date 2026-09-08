@@ -528,3 +528,6 @@
   3. 整合前台国家/地区属地徽章开关、嵌套回复自动折叠、音效开关与动画减弱等完整配置体系。
 - [x] 自动化测试套件全量编写与验证通过 (`scripts/verify-account-notifications-and-profile.mjs`)：
   覆盖后端 `/api/comments?feed=user` API 探测、桌面端抽屉呼出、Hero 卡片直更头像、Tab 1 资料表单填写与时区探测保存、Tab 2 双分区切换（全站广播 9 项直出、个人足迹与刷新）、Tab 3 偏好设置持久化、移动端 390px 视口响应式排版，所有断言 100% PASS 通过。
+- [x] 生产环境 (Cloudflare Pages) 全量部署与生产端到端 Playwright 验证通过 (`scripts/verify-live-account-notifications.mjs`)：
+  1. 通过 Wrangler Pages Deploy 全量打包上传 92 个静态路由与 Functions bundle 至生产节点（部署标识：`57030b2f.shijianus-blog.pages.dev`），实时绑定生产主域 `https://blog.epocanvas.com`；
+  2. 真实生产环境 Playwright E2E 自动化审计：`GET /api/comments?feed=user` 返回 200 OK、桌面端抽屉呼出、Hero 卡片头像与编辑按钮、Tab 1 个人资料表单、Tab 2 双分区（全站广播通告 9 项直出、个人互动足迹与刷新按钮）、Tab 3 六项全站偏好开关及移动端（390px）自适应，线上全链路测试 100% PASS 通过。
