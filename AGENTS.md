@@ -500,3 +500,14 @@
 - [x] 响应式移动端深度适配与全平台测试通过：
   1. 移动端（$\le 768\text{px}$）自动切换为单列紧凑排版，文字优雅省略，杜绝横向滚动与越界；
   2. 全套自动化测试套件（`scripts/verify-account-drawer-epomail.mjs`、`scripts/verify-rightside-dock.mjs`）验证全绿通过。
+
+### Task 37: 生产端 (Cloudflare Pages) 全量构建部署与真实博文页 Playwright 视觉与交互全链路验收 (`2734c0b`)
+- [x] Cloudflare Pages 生产边缘节点全量部署：
+  1. 执行 `npm run pages:build` 完成 92 个路由的静态生成与 Functions 运行时打包；
+  2. 通过 `wrangler pages deploy dist --project-name shijianus-blog --branch main` 上传最新 277 个静态资产与 Functions bundle 到生产节点（部署标识：`889c1686.shijianus-blog.pages.dev`），实时绑定至线上主域名 `https://blog.epocanvas.com`。
+- [x] 生产博文真实路径 (`https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`) Playwright 端到端全景测试与视觉审计 (`scripts/verify-live-post-account-drawer.mjs`)：
+  1. HTTP 状态码 200，无控制台致命 JS 报错，文章标题与 Post Hero 正确呈现；
+  2. 桌面端（1440x900）账号中心抽屉呼出交互审计：顶部毛玻璃遮罩、脉冲呼吸灯、3 列分段控制器切换、Epomail 授权卡片与开发者折叠通道展开、通知流与设置页滑动开关完全正常；
+  3. 深色模式（Dark Mode）线上实时切换验证：曜石黑质感抽屉背景与高对比文本无缝匹配；
+  4. 移动端（iPhone 14 / 390x844）真实视口审计：抽屉宽度严格锁定 390px，单列响应式排版自然贴合，无任何横向溢出；
+  5. 整体画风一致性审计：抽屉蓝系主色（`#425aef` / `#3b82f6`）、圆角规格（8px-12px）与博文页 Post Hero 水波纹渐变及卡片体系高度一致，质感协调自然。
