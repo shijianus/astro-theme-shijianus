@@ -34,12 +34,9 @@ import {
   Image as ImageIcon,
   Megaphone,
   UserCheck,
-  UserPen,
   Clock,
   MapPin,
   Sliders,
-  Volume2,
-  VolumeX,
   MessageSquare,
   Heart,
 } from 'lucide-react';
@@ -202,8 +199,8 @@ export function ThemeOverlays({
   const [accountNotice, setAccountNotice] = useState('');
   const [commentThreadVersion, setCommentThreadVersion] = useState(0);
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
-  const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('auth');
-  const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('broadcast');
+  const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('notifications');
+  const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('personal');
   const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => readUserPreferences());
   const [userFeed, setUserFeed] = useState<{
     userComments: any[];
@@ -630,31 +627,73 @@ export function ThemeOverlays({
     const syncAccount = () => {
       const next = readCommentIdentity();
       setAccount(next);
+
+      let autoTz = next?.timezone ?? '';
+      if (!autoTz) {
+        try {
+          autoTz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        } catch {}
+      }
+
+      let autoLoc = next?.location ?? '';
+      if (!autoLoc && autoTz) {
+        if (autoTz.includes('Shanghai') || autoTz.includes('Chongqing') || autoTz.includes('Urumqi') || autoTz.includes('Beijing')) {
+          autoLoc = '中国·北京';
+        } else if (autoTz.includes('Hong_Kong')) {
+          autoLoc = '中国香港';
+        } else if (autoTz.includes('Taipei')) {
+          autoLoc = '中国台湾';
+        } else if (autoTz.includes('Tokyo')) {
+          autoLoc = '日本·东京';
+        } else if (autoTz.includes('New_York')) {
+          autoLoc = '美国·纽约';
+        } else if (autoTz.includes('Los_Angeles')) {
+          autoLoc = '美国·加州';
+        } else if (autoTz.includes('London')) {
+          autoLoc = '英国·伦敦';
+        } else if (autoTz.includes('Paris') || autoTz.includes('Berlin')) {
+          autoLoc = '欧洲';
+        }
+      }
+
       setAccountForm({
         name: next?.name ?? '',
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
         bio: next?.bio ?? '',
-        timezone: next?.timezone ?? '',
-        location: next?.location ?? '',
+        timezone: autoTz,
+        location: autoLoc,
         showLocation: next?.showLocation !== false,
       });
+
+      // Query geo-profile endpoint if location is still unset
+      if (!next?.location && typeof fetch !== 'undefined') {
+        fetch('/api/geo-profile')
+          .then((r) => r.json())
+          .then((data: any) => {
+            if (data?.location) {
+              setAccountForm((prev) => (prev.location ? prev : { ...prev, location: data.location }));
+            }
+          })
+          .catch(() => {});
+      }
     };
 
     const onAccountChange = (event: Event) => {
       const next = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
       setAccount(next);
-      setAccountForm({
+      setAccountForm((prev) => ({
+        ...prev,
         name: next?.name ?? '',
         email: next?.email ?? '',
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
         bio: next?.bio ?? '',
-        timezone: next?.timezone ?? '',
-        location: next?.location ?? '',
+        timezone: next?.timezone || prev.timezone,
+        location: next?.location || prev.location,
         showLocation: next?.showLocation !== false,
-      });
+      }));
       setAccountNeedsAttention(false);
       refreshUserFeedRef.current();
     };
@@ -666,6 +705,7 @@ export function ThemeOverlays({
       setNotificationOpen(true);
       setAccountNotice(accountPanel.loginHint);
       setAccountNeedsAttention(true);
+      setAccountTab('auth');
     };
 
     const onThreadChange = () => {
@@ -761,11 +801,17 @@ export function ThemeOverlays({
       setConsoleOpen(false);
       setConsoleNoticeOpen(false);
     };
-    const openNotifications = () => {
+    const openNotifications = (event?: Event) => {
       setConsoleNoticeOpen(false);
       setSearchOpen(false);
       setConsoleOpen(false);
       setNotificationOpen(true);
+      const customEvent = event as CustomEvent<{ tab?: 'auth' | 'notifications' | 'settings' }> | undefined;
+      if (customEvent?.detail?.tab) {
+        setAccountTab(customEvent.detail.tab);
+      } else {
+        setAccountTab('notifications');
+      }
     };
     const closeNotifications = () => {
       setNotificationOpen(false);
@@ -1740,15 +1786,6 @@ export function ThemeOverlays({
             </div>
 
             <div className="account-hero-card__actions">
-              <button
-                type="button"
-                className="account-btn-icon account-edit-profile-btn"
-                onClick={() => setAccountTab('auth')}
-                title="修改个人资料与账户设置"
-                aria-label="修改个人资料与账户设置"
-              >
-                <UserPen className="h-4 w-4" />
-              </button>
               {account && (
                 <button
                   type="button"
@@ -1828,13 +1865,7 @@ export function ThemeOverlays({
               {/* 专属账户资料设置面板 */}
               <section className="account-card">
                 <div className="account-card__head">
-                  <div>
-                    <h3 className="account-card__title">账户资料设置</h3>
-                    <p className="account-card__subtitle">自定义公开昵称、个人简介、时区与位置；留空均视为默认无内容。头像可直接点击上方头像卡片更换。</p>
-                  </div>
-                  <span className="account-tag-chip">
-                    {account?.provider === 'epomail' ? 'Epomail 认证' : account ? '本地读者' : '访客设置'}
-                  </span>
+                  <h3 className="account-card__title">账户资料设置</h3>
                 </div>
 
                 <form onSubmit={handleSaveProfile} className="account-profile-form">
@@ -1886,7 +1917,7 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, bio: val }));
                           }}
-                          placeholder="一句话介绍自己，如：探索者 / 独立创造者（留空默认为无）"
+                          placeholder="一句话介绍自己（留空默认为无）"
                         />
                       </div>
                     </label>
@@ -1898,17 +1929,28 @@ export function ThemeOverlays({
                         <input
                           type="text"
                           name="timezone"
+                          list="account-common-timezones"
                           value={accountForm.timezone}
                           onChange={(e) => {
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, timezone: val }));
                           }}
-                          placeholder="如：UTC+8 (北京) 或 PST"
+                          placeholder="自动获取或选择"
                         />
+                        <datalist id="account-common-timezones">
+                          <option value="Asia/Shanghai">北京/上海 (UTC+8)</option>
+                          <option value="Asia/Hong_Kong">香港 (UTC+8)</option>
+                          <option value="Asia/Taipei">台北 (UTC+8)</option>
+                          <option value="Asia/Tokyo">东京 (UTC+9)</option>
+                          <option value="America/New_York">纽约 (EST/EDT)</option>
+                          <option value="America/Los_Angeles">洛杉矶 (PST/PDT)</option>
+                          <option value="Europe/London">伦敦 (UTC+0)</option>
+                          <option value="UTC">世界协调时 (UTC)</option>
+                        </datalist>
                         <button
                           type="button"
                           className="account-field-quick-btn"
-                          title="自动检测本机当前时区"
+                          title="重新检测本机当前时区"
                           onClick={() => {
                             try {
                               const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1933,23 +1975,30 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, location: val }));
                           }}
-                          placeholder="如：中国·北京 或 Global"
+                          placeholder="自动获取或自定义"
                         />
+                        <button
+                          type="button"
+                          className="account-field-quick-btn"
+                          title="重新获取网络地理位置"
+                          onClick={() => {
+                            fetch('/api/geo-profile')
+                              .then((r) => r.json())
+                              .then((data: any) => {
+                                if (data?.location) {
+                                  setAccountForm((prev) => ({ ...prev, location: data.location }));
+                                }
+                              })
+                              .catch(() => {});
+                          }}
+                        >
+                          定位
+                        </button>
                       </div>
                     </label>
                   </div>
 
                   <div className="account-card__foot">
-                    {account && (
-                      <button
-                        type="button"
-                        className="account-btn-danger"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>退出登录</span>
-                      </button>
-                    )}
                     <button
                       type="submit"
                       className="account-btn-primary"
@@ -1970,12 +2019,8 @@ export function ThemeOverlays({
                       <div className="epomail-badge-icon">
                         <Mail className="h-5 w-5 text-theme-main" />
                       </div>
-                      <div>
-                        <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
-                        <p className="account-card__subtitle">一键同步云端头像、全站评论身份与回复通知</p>
-                      </div>
+                      <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
                     </div>
-                    <span className="account-tag-chip">推荐</span>
                   </div>
 
                   <div className="epomail-benefits-row">
@@ -2126,11 +2171,7 @@ export function ThemeOverlays({
               {notifPartition === 'broadcast' && (
                 <section className="account-card">
                   <div className="account-card__head">
-                    <div>
-                      <h3 className="account-card__title">全站广播与最新动态</h3>
-                      <p className="account-card__subtitle">博主统一广播信息与新博文发布通告，全员同步可见</p>
-                    </div>
-                    <span className="account-tag-chip">{broadcastNotifications.length} 条通告</span>
+                    <h3 className="account-card__title">全站广播与最新动态</h3>
                   </div>
 
                   <div className="account-broadcast-list">
@@ -2155,13 +2196,6 @@ export function ThemeOverlays({
                       </a>
                     ))}
                   </div>
-
-                  <div className="account-privacy-note">
-                    <Info className="h-4 w-4 text-theme-main flex-shrink-0 mt-0.5" />
-                    <span>
-                      自动化广播说明：全站最新文章广播在博客重新构建时自动编译置顶，无需占用数据库资源，实现 100% 自动化与即时呈现。
-                    </span>
-                  </div>
                 </section>
               )}
 
@@ -2171,11 +2205,7 @@ export function ThemeOverlays({
                   {/* 收到的个人互动提醒 */}
                   <section className="account-card">
                     <div className="account-card__head">
-                      <div>
-                        <h3 className="account-card__title">收到的互动提醒</h3>
-                        <p className="account-card__subtitle">文章评论回复、被 @ 提及、点赞与 Boost 互动提醒</p>
-                      </div>
-                      <span className="account-tag-chip">{personalNotifications.length} 条</span>
+                      <h3 className="account-card__title">收到的互动提醒</h3>
                     </div>
 
                     {personalNotifications.length > 0 ? (
@@ -2232,23 +2262,17 @@ export function ThemeOverlays({
                   {/* 我的评论足迹 (真实连结 DB) */}
                   <section className="account-card">
                     <div className="account-card__head">
-                      <div>
-                        <h3 className="account-card__title">我的评论足迹</h3>
-                        <p className="account-card__subtitle">真实连结数据库，记录您在各博文下的精彩发言与互动</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          className="account-link-btn account-refresh-feed-btn"
-                          onClick={() => refreshUserFeed()}
-                          disabled={userFeed.loading}
-                          title="从数据库刷新最新记录"
-                        >
-                          <RefreshCw className={`h-3 w-3 inline mr-1 ${userFeed.loading ? 'animate-spin' : ''}`} />
-                          刷新
-                        </button>
-                        <span className="account-tag-chip">{userFeed.userComments.length} 条记录</span>
-                      </div>
+                      <h3 className="account-card__title">我的评论足迹</h3>
+                      <button
+                        type="button"
+                        className="account-link-btn account-refresh-feed-btn"
+                        onClick={() => refreshUserFeed()}
+                        disabled={userFeed.loading}
+                        title="从数据库刷新最新记录"
+                      >
+                        <RefreshCw className={`h-3 w-3 inline mr-1 ${userFeed.loading ? 'animate-spin' : ''}`} />
+                        刷新
+                      </button>
                     </div>
 
                     {userFeed.userComments.length > 0 ? (
@@ -2300,9 +2324,6 @@ export function ThemeOverlays({
                     <Globe className="h-5 w-5 text-theme-main" />
                     <h3 className="account-card__title">界面语言 (Language)</h3>
                   </div>
-                  <span className="account-tag-chip">
-                    {localeVariant === 'zh-CN' ? '简体中文' : localeVariant === 'zh-Hant' ? '繁體中文' : 'English'}
-                  </span>
                 </div>
 
                 <div className="account-locale-grid">
@@ -2330,74 +2351,12 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              {/* 通知与提醒偏好 */}
-              <section className="account-card">
-                <div className="account-card__head">
-                  <div className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">通知与提醒偏好</h3>
-                  </div>
-                </div>
-
-                <div className="account-prefs-group">
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
-                      <span className="account-pref-title">
-                        <Megaphone className="h-4 w-4 text-theme-main" />
-                        <span>全站广播与新博文发布通告</span>
-                      </span>
-                      <span className="account-pref-desc">
-                        开启后将在通知中心置顶呈现博主广播公告与最新文章发布动态。
-                      </span>
-                    </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={userPreferences.broadcastNotify}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          const next = writeUserPreferences({ broadcastNotify: val });
-                          setUserPreferences(next);
-                        }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
-                  </div>
-
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
-                      <span className="account-pref-title">
-                        <MessageSquare className="h-4 w-4 text-theme-main" />
-                        <span>个人评论回复与点赞提醒</span>
-                      </span>
-                      <span className="account-pref-desc">
-                        当其他读者回复您的发言或给您的留言点赞时接收站内提醒。
-                      </span>
-                    </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={userPreferences.personalNotify}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          const next = writeUserPreferences({ personalNotify: val });
-                          setUserPreferences(next);
-                        }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
-                  </div>
-                </div>
-              </section>
-
-              {/* 评论区互动与显示偏好 */}
+              {/* 偏好与隐私设置 */}
               <section className="account-card">
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Sliders className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">评论区互动偏好</h3>
+                    <h3 className="account-card__title">偏好与隐私设置</h3>
                   </div>
                 </div>
 
@@ -2466,94 +2425,6 @@ export function ThemeOverlays({
                               writeCommentIdentity({ ...current, showLocation: checked });
                             }
                           }
-                        }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
-                  </div>
-
-                  {/* 折叠二级回复 */}
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
-                      <span className="account-pref-title">
-                        <ChevronDown className="h-4 w-4 text-theme-main" />
-                        <span>默认折叠嵌套回复</span>
-                      </span>
-                      <span className="account-pref-desc">
-                        折叠多级嵌套回复（YouTube 手风琴风格），保持评论列表清爽。
-                      </span>
-                    </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={userPreferences.collapseReplies}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          const next = writeUserPreferences({ collapseReplies: val });
-                          setUserPreferences(next);
-                        }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
-                  </div>
-                </div>
-              </section>
-
-              {/* 交互反馈与无障碍 */}
-              <section className="account-card">
-                <div className="account-card__head">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">交互反馈与无障碍</h3>
-                  </div>
-                </div>
-
-                <div className="account-prefs-group">
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
-                      <span className="account-pref-title">
-                        {userPreferences.soundEffects ? <Volume2 className="h-4 w-4 text-theme-main" /> : <VolumeX className="h-4 w-4 text-secondtext" />}
-                        <span>交互声音反馈</span>
-                      </span>
-                      <span className="account-pref-desc">
-                        发表评论、点赞与切换模式时的触觉与轻量音频提示。
-                      </span>
-                    </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={userPreferences.soundEffects}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          const next = writeUserPreferences({ soundEffects: val });
-                          setUserPreferences(next);
-                        }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
-                  </div>
-
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
-                      <span className="account-pref-title">
-                        <Sparkles className="h-4 w-4 text-theme-main" />
-                        <span>平滑动效与视差</span>
-                      </span>
-                      <span className="account-pref-desc">
-                        开启全站优雅视差与平滑动效；关闭可减弱动效降低图形运算负载。
-                      </span>
-                    </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={!userPreferences.reducedMotion}
-                        onChange={(e) => {
-                          const val = !e.target.checked;
-                          const next = writeUserPreferences({ reducedMotion: val });
-                          setUserPreferences(next);
                         }}
                       />
                       <div className="theme-switch-slider"></div>

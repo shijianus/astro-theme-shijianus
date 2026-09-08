@@ -18,6 +18,10 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   const rawCountry = queryCountry || request.headers.get('cf-ipcountry') || 'GLOBAL';
   const country = rawCountry.trim().toUpperCase() || 'GLOBAL';
   const isMainland = country === 'CN';
+  const city = request.headers.get('cf-ipcity') || '';
+  const timezone = request.headers.get('cf-timezone') || '';
+  const countryName = request.headers.get('cf-ipcountry-name') || (country === 'CN' ? '中国' : country === 'US' ? '美国' : country === 'JP' ? '日本' : country);
+  const location = city ? `${countryName}·${city}` : countryName;
 
   return jsonResponse(
     request,
@@ -25,6 +29,10 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
     {
       country,
       isMainland,
+      city,
+      timezone,
+      countryName,
+      location,
     },
     {
       headers: {

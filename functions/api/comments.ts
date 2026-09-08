@@ -320,6 +320,7 @@ export async function onRequest(context: {
           const userComments = (myRes.results || []).map((r) => mapRowToClientComment(r, isAdmin));
 
           // 2. Fetch notifications: comments that reply to or quote user's comments
+          // Note: Strictly exclude any operations performed by user themselves!
           const notifQuery = `
             SELECT c.id, c.post_slug, c.parent_id, c.quote_id, c.post_type, c.author_id, c.author_name,
                    c.author_avatar, c.author_role, c.message, c.likes_count, c.created_at,
@@ -327,7 +328,12 @@ export async function onRequest(context: {
             FROM comments c
             JOIN comments p ON (c.parent_id = p.id OR c.quote_id = p.id)
             WHERE c.status != 'deleted'
-              AND c.author_name != ?
+              AND c.author_name != p.author_name
+              AND (c.author_id = '' OR p.author_id = '' OR c.author_id != p.author_id)
+              AND (? = '' OR c.author_name != ?)
+              AND (? = '' OR c.author_id != ?)
+              AND (? = '' OR c.author_email != ?)
+              AND (? = '' OR c.session_token != ?)
               AND (
                 (? != '' AND p.author_name = ?) OR
                 (? != '' AND p.author_id = ?) OR
@@ -338,7 +344,16 @@ export async function onRequest(context: {
             LIMIT 30
           `;
           const notifRes = await env.DB.prepare(notifQuery)
-            .bind(authorName, authorName, authorName, authorId, authorId, authorEmail, authorEmail, sessionToken, sessionToken)
+            .bind(
+              authorName, authorName,
+              authorId, authorId,
+              authorEmail, authorEmail,
+              sessionToken, sessionToken,
+              authorName, authorName,
+              authorId, authorId,
+              authorEmail, authorEmail,
+              sessionToken, sessionToken
+            )
             .all<any>();
 
           const notifications: any[] = [];
@@ -364,13 +379,21 @@ export async function onRequest(context: {
             });
           }
 
-          // Also check likes on user's own comments
+          // Also check likes on user's own comments - ONLY count reactions from OTHER users!
           for (const comm of userComments) {
-            if (comm.likesCount > 0) {
+            const rxUsers = comm.reactions?.users || {};
+            const otherReactors = Object.entries(rxUsers).filter(([uKey]) => {
+              if (authorId && uKey === authorId) return false;
+              if (comm.authorId && uKey === comm.authorId) return false;
+              if (authorName && (uKey === authorName || uKey === `name-${authorName}`)) return false;
+              return true;
+            });
+            const otherCount = otherReactors.length;
+            if (otherCount > 0) {
               notifications.push({
                 id: `like-${comm.id}`,
                 type: 'like',
-                title: `你的留言收到了 ${comm.likesCount} 次点赞 👍`,
+                title: `你的留言收到了来自读者的 ${otherCount} 次点赞 👍`,
                 actorName: '读者',
                 actorAvatar: '',
                 actorRole: 'reader',
@@ -411,8 +434,17 @@ export async function onRequest(context: {
       const notifications: any[] = [];
 
       for (const c of allComments) {
-        if (c.author_name === authorName) continue;
+        // Exclude operations performed by user themselves!
+        if (authorName && c.author_name === authorName) continue;
+        if (authorId && c.author_id === authorId) continue;
+        if (authorEmail && c.author_email === authorEmail) continue;
+        if (sessionToken && c.session_token === sessionToken) continue;
+
         if (c.parent_id && myCommentIds.has(c.parent_id)) {
+          const parentComm = allComments.find((p) => p.id === c.parent_id);
+          if (parentComm && (parentComm.author_name === c.author_name || (c.author_id && parentComm.author_id === c.author_id))) {
+            continue;
+          }
           notifications.push({
             id: `notif-${c.id}`,
             type: c.post_type === 'boost' ? 'boost' : 'reply',
@@ -442,11 +474,19 @@ export async function onRequest(context: {
       }
 
       for (const comm of userComments) {
-        if (comm.likesCount > 0) {
+        const rxUsers = comm.reactions?.users || {};
+        const otherReactors = Object.entries(rxUsers).filter(([uKey]) => {
+          if (authorId && uKey === authorId) return false;
+          if (comm.authorId && uKey === comm.authorId) return false;
+          if (authorName && (uKey === authorName || uKey === `name-${authorName}`)) return false;
+          return true;
+        });
+        const otherCount = otherReactors.length;
+        if (otherCount > 0) {
           notifications.push({
             id: `like-${comm.id}`,
             type: 'like',
-            title: `你的留言收到了 ${comm.likesCount} 次点赞 👍`,
+            title: `你的留言收到了来自读者的 ${otherCount} 次点赞 👍`,
             actorName: '读者',
             actorAvatar: '',
             actorRole: 'reader',

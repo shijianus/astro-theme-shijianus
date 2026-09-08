@@ -36,14 +36,29 @@ async function runLiveVerification() {
     await page.waitForSelector('.theme-account-drawer', { state: 'visible', timeout: 8000 });
     console.log('   -> Live Account Drawer is visible.');
 
+    // Verify Default Tab is Notifications / 站内提醒
+    const activeTab = await page.$('.account-nav-tab.is-active');
+    const activeTabText = await activeTab?.textContent();
+    console.log('   -> Live Default Active Tab:', activeTabText?.trim());
+    if (!activeTabText?.includes('站内提醒') && !activeTabText?.includes('通知')) {
+      throw new Error(`Expected default active tab to be 站内提醒, got ${activeTabText}`);
+    }
+
+    // Verify Default Partition is 个人互动与足迹
+    const activePartition = await page.$('.account-partition-btn.is-active');
+    const activePartitionText = await activePartition?.textContent();
+    console.log('   -> Live Default Active Notification Partition:', activePartitionText?.trim());
+    if (!activePartitionText?.includes('个人互动与足迹')) {
+      throw new Error(`Expected default partition to be 个人互动与足迹, got ${activePartitionText}`);
+    }
+
     // Inspect Hero Card
     const avatarTrigger = await page.$('.account-hero-card__avatar.is-clickable');
     if (!avatarTrigger) throw new Error('Missing live avatar trigger');
-    const editBtn = await page.$('.account-edit-profile-btn');
-    if (!editBtn) throw new Error('Missing live edit profile button');
 
-    // Click Edit Profile -> Tab 1
-    await editBtn.click();
+    // Switch to Tab 1
+    const tabs = await page.$$('.account-nav-tab');
+    await tabs[0].click();
     await page.waitForTimeout(400);
 
     const nameInput = await page.$('.account-profile-form input[name="name"]');
@@ -54,7 +69,6 @@ async function runLiveVerification() {
 
     // Tab 2 Dual-Partition
     console.log('   -> Checking Tab 2 Dual-Partition notifications...');
-    const tabs = await page.$$('.account-nav-tab');
     await tabs[1].click();
     await page.waitForTimeout(500);
 
@@ -68,6 +82,9 @@ async function runLiveVerification() {
       throw new Error('Partition button labels incorrect on live site');
     }
 
+    // Broadcast partition
+    await partitionButtons[0].click();
+    await page.waitForTimeout(400);
     const broadcastItems = await page.$$('.account-broadcast-item');
     console.log('   -> Live Broadcast Items count:', broadcastItems.length);
     if (broadcastItems.length === 0) throw new Error('Expected live broadcast items');
@@ -87,7 +104,7 @@ async function runLiveVerification() {
     if (sortButtons.length !== 2) throw new Error('Expected 2 sort mode buttons in live Tab 3');
     const toggles = await page.$$('.account-pref-card input[type="checkbox"]');
     console.log('   -> Live preference toggles count:', toggles.length);
-    if (toggles.length < 5) throw new Error('Expected at least 5 preference toggles');
+    if (toggles.length !== 1) throw new Error(`Expected exactly 1 preference slider in live Tab 3, got ${toggles.length}`);
 
     // 3. Mobile Viewport Verification
     console.log('\n--- 3. Mobile Viewport Verification (390x844) ---');

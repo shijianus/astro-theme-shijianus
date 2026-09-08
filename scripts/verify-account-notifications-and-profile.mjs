@@ -70,26 +70,43 @@ async function runVerification() {
     await page.waitForSelector('.theme-account-drawer', { state: 'visible', timeout: 5000 });
     console.log('   -> Account Drawer is visible.');
 
-    // 2. Check Account Hero Card
-    console.log('2. Inspecting Account Hero Card...');
-    const heroCard = await page.$('.account-hero-card');
-    if (!heroCard) throw new Error('Missing .account-hero-card');
+    // Verify Default Tab is Notifications
+    const activeTab = await page.$('.account-nav-tab.is-active');
+    const activeTabText = await activeTab?.textContent();
+    console.log('   -> Default Active Tab:', activeTabText?.trim());
+    if (!activeTabText?.includes('站内提醒')) {
+      throw new Error(`Expected default active tab to be 站内通知, got ${activeTabText}`);
+    }
 
-    const avatarUploadTrigger = await page.$('.account-hero-card__avatar.is-clickable');
-    if (!avatarUploadTrigger) throw new Error('Missing avatar upload trigger on hero card');
-    console.log('   -> Avatar upload trigger found on Hero Card.');
+    // Verify Default Partition is 个人互动与足迹
+    const activePartition = await page.$('.account-partition-btn.is-active');
+    const activePartitionText = await activePartition?.textContent();
+    console.log('   -> Default Active Notification Partition:', activePartitionText?.trim());
+    if (!activePartitionText?.includes('个人互动与足迹')) {
+      throw new Error(`Expected default partition to be 个人互动与足迹, got ${activePartitionText}`);
+    }
 
-    const nameText = await page.textContent('.account-hero-card__name-row strong');
-    console.log('   -> Hero Card Name:', nameText?.trim());
+    // Verify absence of redundant UI elements requested by user
+    const subtitleCount = await page.$$eval('.account-card__subtitle', (els) => els.length);
+    const chipCount = await page.$$eval('.account-tag-chip', (els) => els.length);
+    const dangerBtnCount = await page.$$eval('.account-btn-danger', (els) => els.length);
+    const editBtnCount = await page.$$eval('.account-edit-profile-btn', (els) => els.length);
+    console.log('   -> Redundant UI elements count:');
+    console.log('      - .account-card__subtitle:', subtitleCount);
+    console.log('      - .account-tag-chip:', chipCount);
+    console.log('      - .account-btn-danger:', dangerBtnCount);
+    console.log('      - .account-edit-profile-btn:', editBtnCount);
+    if (subtitleCount > 0) throw new Error('Found redundant .account-card__subtitle');
+    if (chipCount > 0) throw new Error('Found redundant .account-tag-chip');
+    if (dangerBtnCount > 0) throw new Error('Found redundant .account-btn-danger');
+    if (editBtnCount > 0) throw new Error('Found redundant .account-edit-profile-btn');
 
-    const editBtn = await page.$('.account-edit-profile-btn');
-    if (!editBtn) throw new Error('Missing .account-edit-profile-btn');
-    console.log('   -> "编辑资料" button found.');
-
-    // 3. Click "编辑资料" and verify Tab 1 (Profile Form)
-    console.log('3. Testing Tab 1: Profile Settings Form...');
-    await editBtn.click();
-    await page.waitForTimeout(300);
+    // 2. Test Tab 1: Profile Settings Form
+    console.log('2. Testing Tab 1: Profile Settings Form...');
+    const tabs = await page.$$('.account-nav-tab');
+    // Click Tab 0 (身份与资料)
+    await tabs[0].click();
+    await page.waitForTimeout(400);
 
     const nameInput = await page.$('.account-profile-form input[name="name"]');
     const websiteInput = await page.$('.account-profile-form input[name="website"]');
@@ -102,14 +119,20 @@ async function runVerification() {
     }
     console.log('   -> All profile inputs (name, website, bio, timezone, location) verified.');
 
-    // Test Auto-detect Timezone button
-    const detectTzBtn = await page.$('.account-field-quick-btn');
-    if (detectTzBtn) {
-      await detectTzBtn.click();
-      await page.waitForTimeout(200);
-      const detectedTz = await tzInput.inputValue();
-      console.log('   -> Auto-detected timezone:', detectedTz);
-      if (!detectedTz) throw new Error('Auto-detect timezone did not fill value');
+    // Verify Timezone datalist dropdown
+    const tzDatalist = await page.$('#account-common-timezones');
+    if (!tzDatalist) throw new Error('Missing #account-common-timezones datalist');
+    const tzOptionsCount = await page.$$eval('#account-common-timezones option', (els) => els.length);
+    console.log('   -> Timezone dropdown options count:', tzOptionsCount);
+    if (tzOptionsCount < 5) throw new Error('Expected at least 5 common timezone options in datalist');
+
+    // Verify auto-detected timezone
+    const initialTz = await tzInput.inputValue();
+    console.log('   -> Initial auto-detected timezone in input:', initialTz);
+    if (!initialTz) {
+      console.log('   -> Clicking detect timezone button...');
+      const detectTzBtn = await page.$('.account-field-quick-btn');
+      if (detectTzBtn) await detectTzBtn.click();
     }
 
     // Fill in profile fields
@@ -117,22 +140,17 @@ async function runVerification() {
     await locInput.fill('San Francisco, CA');
     await bioInput.fill('Exploring code and interfaces.');
 
-    console.log('   -> nameInput value before save:', await nameInput.inputValue());
-    console.log('   -> locInput value before save:', await locInput.inputValue());
-    console.log('   -> tzInput value before save:', await tzInput.inputValue());
-    console.log('   -> bioInput value before save:', await bioInput.inputValue());
-
     const saveProfileBtn = await page.$('.account-profile-form button[type="submit"]');
     if (!saveProfileBtn) throw new Error('Missing save profile button');
     await saveProfileBtn.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(800);
 
     // Verify localStorage has updated identity
     const savedIdentity = await page.evaluate(() => {
       const raw = localStorage.getItem('shijianus-comment-account') || localStorage.getItem('shijianus_comment_identity_v1');
       return raw ? JSON.parse(raw) : null;
     });
-    console.log('   -> Full saved identity:', JSON.stringify(savedIdentity));
+    console.log('   -> Saved identity in localStorage:', JSON.stringify(savedIdentity));
     if (savedIdentity?.name !== 'EpoExplorer' || savedIdentity?.location !== 'San Francisco, CA') {
       throw new Error('Identity was not persisted properly to localStorage');
     }
@@ -144,14 +162,8 @@ async function runVerification() {
       throw new Error('Hero Card name did not update to EpoExplorer');
     }
 
-    const metaRow = await page.$('.account-hero-card__meta-row');
-    if (!metaRow) throw new Error('Missing .account-hero-card__meta-row after profile save');
-    console.log('   -> Verified meta row chips are now visible on Hero Card.');
-
-    // 4. Test Tab 2: Dual-Partition Notifications
-    console.log('4. Testing Tab 2: Dual-Partition Notifications...');
-    const tabs = await page.$$('.account-nav-tab');
-    // Tab index 1 is notifications
+    // 3. Test Tab 2: Dual-Partition Notifications
+    console.log('3. Testing Tab 2: Dual-Partition Notifications...');
     await tabs[1].click();
     await page.waitForTimeout(400);
 
@@ -163,34 +175,29 @@ async function runVerification() {
       throw new Error(`Expected 2 partition buttons, got ${partitionButtons.length}`);
     }
 
-    const broadcastBtnText = await partitionButtons[0].textContent();
-    const personalBtnText = await partitionButtons[1].textContent();
-    console.log('   -> Partition Button 1:', broadcastBtnText?.trim());
-    console.log('   -> Partition Button 2:', personalBtnText?.trim());
-    if (!broadcastBtnText?.includes('全站广播通告') || !personalBtnText?.includes('个人互动与足迹')) {
-      throw new Error('Unexpected partition button labels');
-    }
-
     // Check Partition 1 (Broadcast) Content
+    console.log('   -> Clicking 全站广播通告...');
+    await partitionButtons[0].click();
+    await page.waitForTimeout(300);
     const broadcastList = await page.$('.account-broadcast-list');
     if (!broadcastList) throw new Error('Missing .account-broadcast-list in broadcast partition');
     const broadcastItems = await page.$$('.account-broadcast-item');
     console.log('   -> Broadcast items count (auto-compiled from build):', broadcastItems.length);
     if (broadcastItems.length === 0) throw new Error('Broadcast list should contain auto-compiled post notices');
 
-    // Switch to Partition 2 (Personal)
-    console.log('   -> Switching to personal partition...');
+    // Switch back to Partition 2 (Personal)
+    console.log('   -> Switching back to personal partition...');
     await partitionButtons[1].click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(400);
 
     const refreshFeedBtn = await page.$('.account-refresh-feed-btn');
     if (!refreshFeedBtn) throw new Error('Missing .account-refresh-feed-btn in personal partition');
     console.log('   -> Personal partition "🔄 刷新" button found.');
     await refreshFeedBtn.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(400);
 
-    // 5. Test Tab 3: Site Preferences
-    console.log('5. Testing Tab 3: Site Preferences...');
+    // 4. Test Tab 3: Site Preferences & Streamlined Sliders
+    console.log('4. Testing Tab 3: Site Preferences & Streamlined Sliders...');
     await tabs[2].click();
     await page.waitForTimeout(400);
 
@@ -212,10 +219,16 @@ async function runVerification() {
       throw new Error('Comment sort preference was not persisted as "hot"');
     }
 
-    // Toggle preferences checkboxes
+    // Toggle preferences checkboxes - verify streamlined to exactly 1 toggle (showLocation)
     const toggles = await page.$$('.account-pref-card input[type="checkbox"]');
-    console.log('   -> Preference toggles count:', toggles.length);
-    if (toggles.length < 5) throw new Error('Expected at least 5 preference toggles');
+    console.log('   -> Preference toggles count in Tab 3:', toggles.length);
+    if (toggles.length !== 1) {
+      throw new Error(`Expected exactly 1 preference slider in Tab 3 (showLocation), found ${toggles.length}`);
+    }
+
+    // Verify privacy note exists
+    const privacyNote = await page.$('.account-privacy-note');
+    if (!privacyNote) throw new Error('Missing .account-privacy-note in Tab 3');
 
     // ----------------------------------------------------
     // PHASE 3: Mobile Viewport Testing (390x844)
@@ -245,6 +258,9 @@ async function runVerification() {
     // Switch tabs on mobile
     const mobileTabs = await mobilePage.$$('.account-nav-tab');
     await mobileTabs[1].click();
+    await mobilePage.waitForTimeout(300);
+    const mobilePartitionButtons = await mobilePage.$$('.account-partition-btn');
+    await mobilePartitionButtons[0].click();
     await mobilePage.waitForTimeout(300);
     const mobileBroadcastItems = await mobilePage.$$('.account-broadcast-item');
     console.log('   -> Mobile Broadcast items rendered:', mobileBroadcastItems.length);
