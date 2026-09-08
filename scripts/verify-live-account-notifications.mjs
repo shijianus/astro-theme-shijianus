@@ -89,6 +89,15 @@ async function runLiveVerification() {
     console.log('   -> Live Broadcast Items count:', broadcastItems.length);
     if (broadcastItems.length === 0) throw new Error('Expected live broadcast items');
 
+    // Verify drawer has scrollbar-width: none
+    const drawerScrollbar = await page.$eval('.theme-account-drawer', (el) => getComputedStyle(el).scrollbarWidth);
+    console.log('   -> Live Drawer scrollbar-width:', drawerScrollbar);
+
+    // Verify 编撰通告 button exists
+    const editBtn = await page.$('.account-card-action-btn');
+    console.log('   -> Live 编撰通告 button found:', Boolean(editBtn));
+    if (!editBtn) throw new Error('Missing live .account-card-action-btn button');
+
     // Switch to personal partition
     await partitionButtons[1].click();
     await page.waitForTimeout(400);

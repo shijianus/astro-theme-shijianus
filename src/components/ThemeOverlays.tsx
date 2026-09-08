@@ -39,6 +39,8 @@ import {
   Sliders,
   MessageSquare,
   Heart,
+  PenTool,
+  Plus,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -157,6 +159,42 @@ function clampPosition(value: number, size: number, viewportSize: number) {
   return Math.max(12, Math.min(value, viewportSize - size - 12));
 }
 
+export interface CustomBroadcast {
+  id: string;
+  badge: string;
+  title: string;
+  content: string;
+  date?: string;
+  href?: string;
+}
+
+const DEFAULT_BROADCAST: CustomBroadcast = {
+  id: 'system-broadcast-hero',
+  badge: '博主置顶广播',
+  title: '📢 读者中心与通知系统全新升级',
+  content: '全新通知系统上线，全站广播与个人互动双分区清晰呈现；支持个人简介、时区与位置定制，评论区支持 Linuxdo 模式与 Boost 动态！',
+  href: '#',
+};
+
+function readCustomBroadcasts(): CustomBroadcast[] {
+  if (typeof window === 'undefined') return [DEFAULT_BROADCAST];
+  try {
+    const raw = localStorage.getItem('shijianus_custom_broadcasts');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return [DEFAULT_BROADCAST];
+}
+
+function saveCustomBroadcasts(list: CustomBroadcast[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('shijianus_custom_broadcasts', JSON.stringify(list));
+  } catch {}
+}
+
 export function ThemeOverlays({
   brandName,
   authorName,
@@ -201,6 +239,9 @@ export function ThemeOverlays({
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('notifications');
   const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('personal');
+  const [customBroadcasts, setCustomBroadcasts] = useState<CustomBroadcast[]>(() => readCustomBroadcasts());
+  const [isEditingBroadcast, setIsEditingBroadcast] = useState(false);
+  const [broadcastForm, setBroadcastForm] = useState<CustomBroadcast>({ ...DEFAULT_BROADCAST });
   const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => readUserPreferences());
   const [userFeed, setUserFeed] = useState<{
     userComments: any[];
@@ -496,17 +537,19 @@ export function ThemeOverlays({
       cover?: string;
     }> = [];
 
-    // 博主站长官方置顶广播
-    list.push({
-      id: 'system-broadcast-hero',
-      type: 'announcement',
-      badge: '博主置顶广播',
-      title: '📢 读者中心与通知系统全新升级',
-      content: '全新通知系统上线，全站广播与个人互动双分区清晰呈现；支持个人简介、时区与位置定制，评论区支持 Linuxdo 模式与 Boost 动态！',
-      date: posts[0]?.date || '最新',
-      href: '#',
-      category: '站点通告',
-    });
+    // 用户/博主自行编撰的广播公告（支持在界面上随时修改与发布，无需改动源码）
+    for (const b of customBroadcasts) {
+      list.push({
+        id: b.id,
+        type: 'announcement',
+        badge: b.badge || '博主广播',
+        title: b.title,
+        content: b.content,
+        date: b.date || posts[0]?.date || '最新',
+        href: b.href || '#',
+        category: '站点通告',
+      });
+    }
 
     // 最新发布博文列表 (构建期自动编译生成最新置顶，零 DB 开销)
     const latestArticles = posts.slice(0, 8).map((p, idx) => ({
@@ -523,7 +566,7 @@ export function ThemeOverlays({
 
     list.push(...latestArticles);
     return list;
-  }, [posts]);
+  }, [posts, customBroadcasts]);
 
   // 2. 个人账户互动通知与足迹 (连结真实 DB 数据)
   const refreshUserFeed = useCallback(async () => {
@@ -637,22 +680,30 @@ export function ThemeOverlays({
 
       let autoLoc = next?.location ?? '';
       if (!autoLoc && autoTz) {
-        if (autoTz.includes('Shanghai') || autoTz.includes('Chongqing') || autoTz.includes('Urumqi') || autoTz.includes('Beijing')) {
-          autoLoc = '中国·北京';
+        if (autoTz.includes('Taipei')) {
+          autoLoc = localeVariant === 'en' ? 'Taipei, Taiwan' : localeVariant === 'zh-Hant' ? '台灣·台北' : '台湾·台北';
         } else if (autoTz.includes('Hong_Kong')) {
-          autoLoc = '中国香港';
-        } else if (autoTz.includes('Taipei')) {
-          autoLoc = '中国台湾';
+          autoLoc = localeVariant === 'en' ? 'Hong Kong' : '香港';
+        } else if (autoTz.includes('Macau') || autoTz.includes('Macao')) {
+          autoLoc = localeVariant === 'en' ? 'Macau' : localeVariant === 'zh-Hant' ? '澳門' : '澳门';
+        } else if (autoTz.includes('Shanghai') || autoTz.includes('Chongqing') || autoTz.includes('Urumqi') || autoTz.includes('Beijing')) {
+          autoLoc = localeVariant === 'en' ? 'Beijing, China' : localeVariant === 'zh-Hant' ? '中國·北京' : '中国·北京';
         } else if (autoTz.includes('Tokyo')) {
-          autoLoc = '日本·东京';
+          autoLoc = localeVariant === 'en' ? 'Tokyo, Japan' : localeVariant === 'zh-Hant' ? '日本·東京' : '日本·东京';
         } else if (autoTz.includes('New_York')) {
-          autoLoc = '美国·纽约';
+          autoLoc = localeVariant === 'en' ? 'New York, US' : localeVariant === 'zh-Hant' ? '美國·紐約' : '美国·纽约';
         } else if (autoTz.includes('Los_Angeles')) {
-          autoLoc = '美国·加州';
+          autoLoc = localeVariant === 'en' ? 'California, US' : localeVariant === 'zh-Hant' ? '美國·加州' : '美国·加州';
         } else if (autoTz.includes('London')) {
-          autoLoc = '英国·伦敦';
-        } else if (autoTz.includes('Paris') || autoTz.includes('Berlin')) {
-          autoLoc = '欧洲';
+          autoLoc = localeVariant === 'en' ? 'London, UK' : localeVariant === 'zh-Hant' ? '英國·倫敦' : '英国·伦敦';
+        } else if (autoTz.includes('Paris')) {
+          autoLoc = localeVariant === 'en' ? 'Paris, France' : localeVariant === 'zh-Hant' ? '法國·巴黎' : '法国·巴黎';
+        } else if (autoTz.includes('Berlin')) {
+          autoLoc = localeVariant === 'en' ? 'Berlin, Germany' : localeVariant === 'zh-Hant' ? '德國·柏林' : '德国·柏林';
+        } else if (autoTz.includes('Singapore')) {
+          autoLoc = localeVariant === 'en' ? 'Singapore' : '新加坡';
+        } else if (autoTz.includes('Seoul')) {
+          autoLoc = localeVariant === 'en' ? 'Seoul, South Korea' : localeVariant === 'zh-Hant' ? '韓國·首爾' : '韩国·首尔';
         }
       }
 
@@ -669,7 +720,7 @@ export function ThemeOverlays({
 
       // Query geo-profile endpoint if location is still unset
       if (!next?.location && typeof fetch !== 'undefined') {
-        fetch('/api/geo-profile')
+        fetch(`/api/geo-profile?locale=${encodeURIComponent(localeVariant)}`)
           .then((r) => r.json())
           .then((data: any) => {
             if (data?.location) {
@@ -1982,7 +2033,7 @@ export function ThemeOverlays({
                           className="account-field-quick-btn"
                           title="重新获取网络地理位置"
                           onClick={() => {
-                            fetch('/api/geo-profile')
+                            fetch(`/api/geo-profile?locale=${encodeURIComponent(localeVariant)}`)
                               .then((r) => r.json())
                               .then((data: any) => {
                                 if (data?.location) {
@@ -2172,7 +2223,125 @@ export function ThemeOverlays({
                 <section className="account-card">
                   <div className="account-card__head">
                     <h3 className="account-card__title">全站广播与最新动态</h3>
+                    <button
+                      type="button"
+                      className="account-card-action-btn"
+                      onClick={() => {
+                        setIsEditingBroadcast((prev) => {
+                          const next = !prev;
+                          if (next && customBroadcasts[0]) {
+                            setBroadcastForm({ ...customBroadcasts[0] });
+                          }
+                          return next;
+                        });
+                      }}
+                    >
+                      <PenTool className="h-3 w-3" />
+                      <span>{isEditingBroadcast ? '收起编撰' : '编撰通告'}</span>
+                    </button>
                   </div>
+
+                  {isEditingBroadcast && (
+                    <form
+                      className="account-broadcast-editor"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const updated: CustomBroadcast = {
+                          id: broadcastForm.id || `custom-broadcast-${Date.now()}`,
+                          badge: (broadcastForm.badge || '站长公告').trim(),
+                          title: (broadcastForm.title || '').trim(),
+                          content: (broadcastForm.content || '').trim(),
+                          date: broadcastForm.date || new Date().toISOString().slice(0, 10),
+                          href: (broadcastForm.href || '#').trim(),
+                        };
+                        if (!updated.title) return;
+                        const nextList = [updated];
+                        setCustomBroadcasts(nextList);
+                        saveCustomBroadcasts(nextList);
+                        setIsEditingBroadcast(false);
+                      }}
+                    >
+                      <div className="account-broadcast-editor__head">
+                        <h4>编撰全站广播通告</h4>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--font-color)', opacity: 0.65 }}>
+                          即时生效，全站读者可见
+                        </span>
+                      </div>
+
+                      <div className="account-broadcast-editor__grid">
+                        <label className="account-field">
+                          <span>通告徽标 (Badge)</span>
+                          <input
+                            type="text"
+                            value={broadcastForm.badge}
+                            onChange={(e) => setBroadcastForm({ ...broadcastForm, badge: e.target.value })}
+                            placeholder="例如：置顶公告 / 站点动态"
+                          />
+                        </label>
+                        <label className="account-field">
+                          <span>跳转链接 (可选)</span>
+                          <input
+                            type="text"
+                            value={broadcastForm.href || ''}
+                            onChange={(e) => setBroadcastForm({ ...broadcastForm, href: e.target.value })}
+                            placeholder="如 /posts/slug 或 https://..."
+                          />
+                        </label>
+                        <label className="account-field account-field--full">
+                          <span>通告主标题 (Title)</span>
+                          <input
+                            type="text"
+                            required
+                            value={broadcastForm.title}
+                            onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
+                            placeholder="输入通告标题"
+                          />
+                        </label>
+                        <label className="account-field account-field--full">
+                          <span>通告详细内容 (Content)</span>
+                          <textarea
+                            rows={3}
+                            required
+                            value={broadcastForm.content}
+                            onChange={(e) => setBroadcastForm({ ...broadcastForm, content: e.target.value })}
+                            placeholder="输入要向全站用户广播展示的详细内容..."
+                          />
+                        </label>
+                      </div>
+
+                      <div className="account-broadcast-editor__actions">
+                        <button
+                          type="button"
+                          className="account-btn-secondary"
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', height: '28px' }}
+                          onClick={() => {
+                            setCustomBroadcasts([DEFAULT_BROADCAST]);
+                            saveCustomBroadcasts([DEFAULT_BROADCAST]);
+                            setBroadcastForm({ ...DEFAULT_BROADCAST });
+                            setIsEditingBroadcast(false);
+                          }}
+                        >
+                          恢复默认
+                        </button>
+                        <button
+                          type="button"
+                          className="account-btn-secondary"
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', height: '28px' }}
+                          onClick={() => setIsEditingBroadcast(false)}
+                        >
+                          取消
+                        </button>
+                        <button
+                          type="submit"
+                          className="account-btn-primary"
+                          style={{ padding: '4px 12px', fontSize: '0.75rem', height: '28px' }}
+                        >
+                          <Save className="h-3.5 w-3.5" />
+                          <span>保存通告</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
 
                   <div className="account-broadcast-list">
                     {broadcastNotifications.map((item) => (

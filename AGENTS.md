@@ -562,3 +562,28 @@
   3. 自动化验证时区 8 项下拉候选、自动推导值与表单持久化；
   4. 自动化验证 Tab 3 滑块数量精确为 1（仅保留属地徽章）；
   5. 桌面端（1440x900）与移动端（390x844）Playwright E2E 测试全量 PASS 通过。
+
+### Task 40: 隐藏抽屉内部滚动条、支持免源码直接编撰全站广播、规范港澳台无中国前缀与真实精准定位、评论区国旗真实图像载入与单次展示保障
+- [x] 隐藏多层嵌套内部滚动条 (Hide Nested Scrollbars)：
+  1. 通过 `scrollbar-width: none !important; -ms-overflow-style: none !important;` 以及 `::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`，彻底隐藏 `.theme-account-drawer`、`.account-card`、`.account-broadcast-list`、`.account-notification-list` 等内部组件的滚动条滑块；
+  2. 完整保留鼠标滚轮、触摸板和手势的平滑上下滚动功能，右侧仅保留浏览器原生单一主滚动条，消除原本右侧 3 个滚动滑块的视觉杂乱。
+- [x] 免改源码的全站广播通告在线编撰体系 (In-place Broadcast Editor)：
+  1. 在全站广播通告卡片头部增加“编撰通告 / 收起编撰”切换按钮（`.account-card-action-btn`）；
+  2. 提供即时内联编撰表单（`.account-broadcast-editor`），支持博主/站长就地编辑通告徽标（Badge）、主标题（Title）、详细内容（Content）及跳转链接（Href）；
+  3. 采用本地与事件广播持久化，点击“保存通告”即刻在全站广播列表中顶置展示，点击“恢复默认”可一键重置，无需重新编译或打包源码即可随心更新站点动态。
+- [x] 所在位置真实精准定位与 i18n 规范化（港澳台直达，严禁加“中国”）：
+  1. 重构 `/api/geo-profile` 后端服务：支持 `zh-CN`、`zh-Hant`、`en` 完整多语言支持；
+  2. 针对台湾、香港、澳门严格执行直达地区命名规范，彻底剔除 Cloudflare 默认附带的“中国”或“Province of China / SAR China”前缀/后缀：
+     - `TW` 严格输出 `台湾`（简）/ `台灣`（繁）/ `Taiwan`（英）；
+     - `HK` 严格输出 `香港`（简繁）/ `Hong Kong`（英）；
+     - `MO` 严格输出 `澳门`（简）/ `澳門`（繁）/ `Macau`（英）；
+  3. 所在时区与所在位置自动推导逻辑同步严格适配该国际规范，彻底锁定真实地区。
+- [x] 评论区 IP 定位国旗真实图载入与单次展示保障 (Comment Geo Flag Loading & Singularity)：
+  1. 解决国旗图标加载失败问题：引入 FlagCDN 高清位图（`https://flagcdn.com/24x18/${geo.code.toLowerCase()}.png` 并配 2x 高清 srcset），在 Windows/Chromium/Linux 等非 Apple 原生缺少 Emoji 旗帜字体的系统环境下 100% 稳定可靠展示真实国旗，并在异常时优雅降级为文字；
+  2. 保证国旗只显示 1 次：在 `PostComments.tsx` 中清洗评论数据，彻底剔除评论者名称或 `ipLocation` 中可能附带的 Emoji 旗帜与字母前缀，杜绝原本“旗帜图 + Emoji 旗帜”双重显示的重复 Bug。
+- [x] 自动化测试套件全量编写与验证通过：
+  1. `scripts/verify-account-notifications-and-profile.mjs`：全量验证内部滚动条隐藏、在线通告编撰即时生效、时区与资料表单持久化；
+  2. `scripts/verify-geo-and-flags.mjs`：自动化覆盖 `resolveGeoInfo` 字典映射、`/api/geo-profile` 接口实测（TW/HK/MO 规范）、浏览器端国旗真实位图类名与单次展示断言；
+  3. `scripts/verify-live-account-notifications.mjs`：生产环境（`https://blog.epocanvas.com`）全链路自动化测试 100% PASS 通过；
+  4. 真实生产环境 curl 验证 `https://blog.epocanvas.com/api/geo-profile?country=TW` 返回 `台湾`，HK/MO 均验证通过。
+

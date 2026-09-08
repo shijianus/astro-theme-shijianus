@@ -3386,6 +3386,17 @@ body[data-type='post'] hr.custom-hr {
   align-items: center;
 }
 
+#post-comment .tk-geo-badge .tk-geo-flag-img {
+  width: 15px;
+  height: 11px;
+  object-fit: cover;
+  border-radius: 2px;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
 #post-comment .tk-geo-badge .tk-geo-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 10.5px;

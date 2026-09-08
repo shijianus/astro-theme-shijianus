@@ -175,7 +175,11 @@ async function runVerification() {
       throw new Error(`Expected 2 partition buttons, got ${partitionButtons.length}`);
     }
 
-    // Check Partition 1 (Broadcast) Content
+    // Verify drawer has scrollbar-width: none
+    const drawerScrollbar = await page.$eval('.theme-account-drawer', (el) => getComputedStyle(el).scrollbarWidth);
+    console.log('   -> Drawer scrollbar-width:', drawerScrollbar);
+
+    // Check Partition 1 (Broadcast) Content & Broadcast Editing
     console.log('   -> Clicking 全站广播通告...');
     await partitionButtons[0].click();
     await page.waitForTimeout(300);
@@ -184,6 +188,33 @@ async function runVerification() {
     const broadcastItems = await page.$$('.account-broadcast-item');
     console.log('   -> Broadcast items count (auto-compiled from build):', broadcastItems.length);
     if (broadcastItems.length === 0) throw new Error('Broadcast list should contain auto-compiled post notices');
+
+    // Test "编撰通告" (Customizable Broadcast Editor without code change)
+    console.log('   -> Testing "编撰通告" inline editor...');
+    const editBroadcastBtn = await page.$('.account-card-action-btn');
+    if (!editBroadcastBtn) throw new Error('Missing .account-card-action-btn for broadcast editing');
+    await editBroadcastBtn.click();
+    await page.waitForTimeout(300);
+
+    const broadcastEditor = await page.$('.account-broadcast-editor');
+    if (!broadcastEditor) throw new Error('Broadcast editor form did not appear after clicking 编撰通告');
+
+    // Fill in custom broadcast form
+    const bTitle = await page.$('.account-broadcast-editor input[placeholder="输入通告标题"]');
+    const bContent = await page.$('.account-broadcast-editor textarea');
+    await bTitle.fill('🎉 自定义站长实时广播公告');
+    await bContent.fill('这是一条由博主在界面直接修改的广播，全站读者可见且无需修改源码！');
+
+    const bSubmit = await page.$('.account-broadcast-editor button[type="submit"]');
+    await bSubmit.click();
+    await page.waitForTimeout(400);
+
+    // Verify custom broadcast is now displayed at top of list
+    const firstBroadcastTitle = await page.textContent('.account-broadcast-item .account-broadcast-title');
+    console.log('   -> First broadcast item title after edit:', firstBroadcastTitle?.trim());
+    if (!firstBroadcastTitle?.includes('自定义站长实时广播公告')) {
+      throw new Error(`Custom broadcast was not displayed! Found: ${firstBroadcastTitle}`);
+    }
 
     // Switch back to Partition 2 (Personal)
     console.log('   -> Switching back to personal partition...');

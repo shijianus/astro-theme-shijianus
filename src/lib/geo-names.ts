@@ -183,8 +183,29 @@ export function getFlagEmoji(countryCode: string): string {
  * Resolves standard geo information for badges and locations
  */
 export function resolveGeoInfo(countryCode?: string | null, locale: GeoLocale = 'zh-CN'): GeoItemInfo {
-  const code = (countryCode || 'GLOBAL').trim().toUpperCase();
-  const explicit = EXPLICIT_GEO_DICTIONARY[code];
+  let input = (countryCode || 'GLOBAL').trim();
+  let code = input.toUpperCase();
+  let explicit = EXPLICIT_GEO_DICTIONARY[code];
+
+  if (!explicit) {
+    // Try matching by name or prefix in dictionary
+    for (const [dictCode, entry] of Object.entries(EXPLICIT_GEO_DICTIONARY)) {
+      if (
+        dictCode === code ||
+        entry.zh === input ||
+        entry['zh-Hant'] === input ||
+        entry.en.toUpperCase() === code ||
+        input.startsWith(entry.zh) ||
+        input.startsWith(entry['zh-Hant']) ||
+        input.toUpperCase().startsWith(entry.en.toUpperCase())
+      ) {
+        code = dictCode;
+        explicit = entry;
+        break;
+      }
+    }
+  }
+
   const flag = explicit?.flag || getFlagEmoji(code);
 
   let name = '';

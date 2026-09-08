@@ -2328,8 +2328,8 @@ body .snackbar-container.show,
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--font-color) 16%, transparent) transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 [data-theme='dark'] .theme-account-drawer {
@@ -2338,21 +2338,17 @@ body .snackbar-container.show,
   box-shadow: -28px 0 70px -10px rgba(0, 0, 0, 0.55), -8px 0 24px rgba(0, 0, 0, 0.35);
 }
 
-.theme-account-drawer::-webkit-scrollbar {
-  width: 5px;
+.theme-account-drawer::-webkit-scrollbar,
+.theme-account-drawer *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.theme-account-drawer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.theme-account-drawer::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--font-color) 16%, transparent);
-  border-radius: 999px;
-}
-
-.theme-account-drawer::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--theme-main) 50%, transparent);
+.theme-account-drawer,
+.theme-account-drawer * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .theme-account-overlay.show .theme-account-drawer {
@@ -3672,15 +3668,106 @@ body .snackbar-container.show,
   box-shadow: 0 1px 4px rgba(66, 90, 239, 0.25);
 }
 
-/* Broadcast List Items */
+/* Broadcast List Items & Inline Editor */
+.account-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
+  color: var(--theme-main);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.account-card-action-btn:hover {
+  background: var(--theme-main);
+  color: #ffffff;
+  border-color: var(--theme-main);
+}
+
+.account-broadcast-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--secondbg) 70%, var(--card-bg));
+  border: 1px dashed color-mix(in srgb, var(--theme-main) 35%, transparent);
+  margin-bottom: 12px;
+  animation: fadeIn 0.2s ease;
+}
+
+.account-broadcast-editor__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-broadcast-editor__head h4 {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--font-color);
+}
+
+.account-broadcast-editor__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.account-broadcast-editor__grid .account-field--full {
+  grid-column: 1 / -1;
+}
+
+.account-broadcast-editor__grid textarea {
+  width: 100%;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  background: var(--card-bg);
+  color: var(--font-color);
+  font-size: 0.82rem;
+  padding: 8px 10px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.account-broadcast-editor__grid textarea:focus {
+  outline: none;
+  border-color: var(--theme-main);
+}
+
+.account-broadcast-editor__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .account-broadcast-list {
   display: flex;
   flex-direction: column;
   gap: 9px;
   max-height: 520px;
   overflow-y: auto;
-  padding-right: 3px;
-  scrollbar-width: thin;
+  padding-right: 2px;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.account-broadcast-list::-webkit-scrollbar,
+.account-notification-list::-webkit-scrollbar,
+.account-card::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .account-broadcast-item {

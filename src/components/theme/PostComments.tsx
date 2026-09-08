@@ -253,30 +253,65 @@ export function PostComments({
     };
   }, [account]);
 
-  // Unified geo badge renderer supporting flag + code + i18n name + admin privileged IP display
+  // Unified geo badge renderer supporting graphic flag image + i18n name + admin privileged IP display
   const renderGeoBadge = (item: BlogComment) => {
     const isCurrentAdmin = account?.role === 'admin' || Boolean(item.ip);
-    const canShowToVisitor = item.showLocation !== false && Boolean(item.ipCountryFlag || item.ipCountry);
+    const canShowToVisitor = item.showLocation !== false && Boolean(item.ipCountryFlag || item.ipCountry || item.ipLocation);
 
     if (!canShowToVisitor && !isCurrentAdmin) return null;
     if (!item.ipCountry && !item.ipCountryFlag && !item.ipLocation) return null;
 
     const currentLocale = (typeof document !== 'undefined' && document.documentElement.dataset.localeVariant) || 'zh-CN';
-    const geo = resolveGeoInfo(item.ipCountry || item.ipCountryName || 'GLOBAL', currentLocale);
+    const geo = resolveGeoInfo(item.ipCountry || item.ipLocation || item.ipCountryName || 'GLOBAL', currentLocale);
     const flag = geo.flag || item.ipCountryFlag || '🌐';
-    const code = geo.code !== 'GLOBAL' ? geo.code : '';
-    const name = geo.name || item.ipCountryName || item.ipLocation || '全球';
+    const rawName = item.ipLocation || geo.name || item.ipCountryName || '全球';
+
+    // Strip any leading flag emojis or duplicate country codes and strictly ensure Taiwan/HK/Macau have no "中国" prefix
+    const cleanName = rawName
+      .replace(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/g, '')
+      .replace(/^[\uD83C-\uDBFF\uDC00-\uDFFF\s]+/, '')
+      .replace(/^([A-Z]{2})\s+/, '')
+      .replace(/中国台湾/g, '台湾')
+      .replace(/中國台灣/g, '台灣')
+      .replace(/中国香港/g, '香港')
+      .replace(/中國香港/g, '香港')
+      .replace(/中国澳门/g, '澳门')
+      .replace(/中國澳門/g, '澳門')
+      .replace(/Taiwan,\s*Province of China/gi, 'Taiwan')
+      .replace(/Hong Kong\s*SAR\s*China/gi, 'Hong Kong')
+      .replace(/Macao\s*SAR\s*China/gi, 'Macau')
+      .trim() || geo.name || '全球';
+
+    const isTwoLetterCode = geo.code && geo.code !== 'GLOBAL' && /^[A-Z]{2}$/.test(geo.code);
 
     return (
       <span
         className="tk-geo-badge"
-        title={`来源地区: ${flag} ${geo.formatted}${isCurrentAdmin && item.ip ? ` (真实IP: ${item.ip})` : ''}`}
+        title={`来源地区: ${geo.formatted}${isCurrentAdmin && item.ip ? ` (真实IP: ${item.ip})` : ''}`}
       >
         <span className="tk-geo-flag" role="img" aria-label={geo.code}>
-          {flag}
+          {isTwoLetterCode ? (
+            <img
+              src={`https://flagcdn.com/24x18/${geo.code.toLowerCase()}.png`}
+              srcSet={`https://flagcdn.com/48x36/${geo.code.toLowerCase()}.png 2x`}
+              width="15"
+              height="11"
+              alt={geo.code}
+              className="tk-geo-flag-img"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                if (target.parentElement) {
+                  target.parentElement.textContent = flag;
+                }
+              }}
+            />
+          ) : (
+            flag
+          )}
         </span>
-        {code && <span className="tk-geo-code">{code}</span>}
-        <span className="tk-geo-name">{name}</span>
+        <span className="tk-geo-name">{cleanName}</span>
         {isCurrentAdmin && item.ip && (
           <span className="tk-admin-ip-tag" title="博主管理特权：查看真实IP">
             {item.ip}

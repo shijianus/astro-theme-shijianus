@@ -22,7 +22,7 @@ interface PostRewardExtensionProps {
 
 const REGION_OPTIONS: Array<{ key: RegionKey; label: string; flag: string; desc: string }> = [
   { key: 'CN', label: '中国大陆', flag: '🇨🇳', desc: '微信 / 支付宝' },
-  { key: 'HK', label: '中国香港', flag: '🇭🇰', desc: 'WeChat HK / Alipay HK' },
+  { key: 'HK', label: '香港', flag: '🇭🇰', desc: 'WeChat HK / Alipay HK' },
   { key: 'GB', label: '英国', flag: '🇬🇧', desc: 'PayPal UK / Stripe' },
   { key: 'GLOBAL', label: '全球', flag: '🌐', desc: 'Stripe / PayPal' },
 ];
