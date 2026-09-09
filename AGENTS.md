@@ -791,7 +791,7 @@
 - [x] 完善协同收紧与目录内部翻页能力：
   1. 点击 `#hide-aside-btn` 能够平滑将侧栏收缩至 0 像素，正文列扩展至 100% 全宽；再次点击平滑恢复 300 像素并即时激活 24px 粘性对齐；
   2. 保留 `#card-toc .toc-content` 独立内部滚动能力，读者既能随着正文向下翻页同步高亮和进度条，也能在目录内部自由上下滑动查阅所有章节。
-### Task 37: 阅读模式文章目录位置与大小前后一致性 (0px漂移)、原生 post-hero__inner 标题保留与隐形无滑块重构
+### Task 37: 阅读模式文章目录位置与大小前后一致性 (0px漂移)、原生 post-hero__inner 标题保留与隐形无滑块重构 (`e536a07`)
 - [x] 文章目录大小与位置 1:1 前后一致性（0.00px 物理漂移）：
   1. 恢复阅读模式下的 `#content-inner.layout` 最大宽度为 `1400px !important;`，内边距与间隙统一为 `padding: 20px 15px !important; gap: 20px !important;`；
   2. 侧边栏 `.page-aside` 固化为 `width: 300px !important;`，正文 `.page-main` 固化为 `max-width: calc(100% - 320px) !important;`；
@@ -811,7 +811,7 @@
   1. 覆盖 1080p Desktop (1920x1080)、Standard 1440 (1440x900)、Compact 1366 (1366x768) 全桌面视口；
   2. 实测开启前后 Drift 全部为 **0.00px**，所有断言全部 PASS！视觉比对截图完整沉淀。
 
-### Task 38: 全站组件级 i18n 全景国际化重构 (6 种语言全量覆盖、React 孤岛防崩溃隔离与 Playwright 端到端审计)
+### Task 38: 全站组件级 i18n 全景国际化重构 (6 种语言全量覆盖、React 孤岛防崩溃隔离与 Playwright 端到端审计) (`b0ac795`)
 - [x] 右侧快捷按钮组 (`class="config-open panel-out"` / `#rightside`) 完整国际化：
   1. 在 `src/components/ThemeDock.tsx` 注入多语系配置字典 `DOCK_TRANSLATIONS`，覆盖 11 项核心状态：阅读模式（开/关）、直达评论、语言切换（动态显示当前与目标语种及简繁切换提示）、快捷设置展开/收起、深浅色模式切换、背景模式轮换、隐藏选单；
   2. 支持实时监听 `shijianus:localechange` 事件响应式更新，全量补齐 `title` 与 `aria-label`。
