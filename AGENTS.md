@@ -633,3 +633,22 @@
   2. 验证抽屉内 `.account-broadcast-editor` 数量严格为 0；
   3. 验证 `.account-broadcast-item--featured` 包含正确的徽标、标题、简介、4 项加粗亮点列表及详情链接；
   4. 生成视觉审计截图 `scratch/broadcast-drawer.png`，断言全部通过。
+
+### Task 30: Epomail OAuth 授权界面重构、直接使用博客现成标签页图片、按钮0偏差对齐与生产端端到端验证 (`0665a0d` / `66ae262`)
+- [x] 直接扫描并展示博客现成标签页图片 (Favicon)，拒绝虚假新建或手绘假 SVG：
+  1. 授权界面 `brand-chip app-chip` 彻底清除临时手绘 SVG，改由标准 `<img>` 标签直接展示应用现成标签页展示图片（即 `https://blog.epocanvas.com/favicon.png`，粉发少女动漫头像），自然尺寸 256x256；
+  2. 针对离线网络环境提供 `/shijianus-favicon.png` 本地高保真回退，对第三方应用提供通用的 `homepageUrl + '/favicon.png'` 自动扫描机制；
+  3. 远端 Cloudflare D1 数据库与后端默认应用种子 `DEFAULT_OAUTH_APPS` 同步更新 `logo_url`。
+- [x] 按钮对齐与 UI 质感优化 (0 像素级对齐)：
+  1. 彻底清除 Element Plus 注入的 `margin-left: 12px` 样式副作用，使「授权并继续」与「取消授权」在竖向流中达成绝对 0 偏差对齐（Delta X = 0px, Delta Width = 0px, Height = 44px）；
+  2. 将单薄突兀的裸 globe 升级为高质感微胶囊 `.app-origin-chip`（“官方已验证 · blog.epocanvas.com ↗”）；
+  3. 优化 `scopes-list`：将千篇一律的大对勾重构为 Duotone 双色卡片式图标体系（钥匙、信封、名片、评论气泡），补齐 `openid`、`email`、`profile`、`comments` 4 项权限及详细释义。
+- [x] 生产端全链路自动化端到端测试 100% 通过：
+  1. Playwright 测试脚本 `tests/test-shijianus-oauth-authorize-visual.mjs` 针对 `https://mail.epocanvas.com` 生产节点与真实应用全链路验证通过；
+  2. 验证标签页图片 `naturalWidth = 256`、`naturalHeight = 256` 真实加载无破损；
+  3. 验证按钮盒模型 0px 偏差；
+  4. 截留真实生产环境浅色、深色及未登录态视觉审计报告。
+- [x] 全网部署上线完成：
+  1. Cloudflare Workers 部署版本 ID：`4e7d81ef-178d-437b-9bb9-1f61c72cd617`；
+  2. 代码提交并全量同步至远端仓库。
+
