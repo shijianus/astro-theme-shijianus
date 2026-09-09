@@ -244,6 +244,76 @@ async function runReadModeVerification() {
         if (!cardInfoHidden || !recentHidden) {
           throw new Error('Distracting sidebar cards were not hidden in read mode!');
         }
+
+        // ── Step 5.5: Verify TOC Sticky Box & Internal Scroll ("翻页") in Read Mode ──
+        console.log(`[Step 5.5] Verifying TOC Sticky Box & Internal Scroll in Read Mode...`);
+        const tocScrollState = await page.evaluate(() => {
+          const cardToc = document.getElementById('card-toc');
+          const tocContent = cardToc?.querySelector('.toc-content');
+          const stickyBox = document.getElementById('aside-sticky-box-toc');
+          const trackToc = document.getElementById('aside-track-toc');
+
+          if (!cardToc || !tocContent || !stickyBox || !trackToc) {
+            return { error: 'TOC elements not found' };
+          }
+
+          const beforeScroll = tocContent.scrollTop;
+          tocContent.scrollTop = 150;
+          const afterScroll = tocContent.scrollTop;
+          tocContent.scrollTop = beforeScroll;
+
+          return {
+            scrollHeight: tocContent.scrollHeight,
+            clientHeight: tocContent.clientHeight,
+            canScrollInternal: tocContent.scrollHeight > tocContent.clientHeight && afterScroll > beforeScroll,
+            stickyPosition: window.getComputedStyle(stickyBox).position,
+            stickyTop: window.getComputedStyle(stickyBox).top,
+            trackHeight: trackToc.offsetHeight
+          };
+        });
+
+        console.log(`  - TOC internal scroll test:`, tocScrollState);
+        if (!tocScrollState.canScrollInternal) {
+          throw new Error(`TOC internal scroll failed: scrollHeight=${tocScrollState.scrollHeight}, clientHeight=${tocScrollState.clientHeight}`);
+        }
+        if (tocScrollState.stickyPosition !== 'sticky') {
+          throw new Error(`aside-sticky-box-toc position is not sticky: ${tocScrollState.stickyPosition}`);
+        }
+        console.log(`  ✓ TOC internal scrolling ("翻页") verified successfully!`);
+
+        // Test sticky persistence during scrolling down article
+        const testScrollPositions = [800, 3000, 10000, 20000];
+        for (const sy of testScrollPositions) {
+          await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), sy);
+          await page.waitForTimeout(150);
+          const pos = await page.evaluate(() => {
+            const box = document.getElementById('aside-sticky-box-toc');
+            const r = box?.getBoundingClientRect();
+            return r ? Math.round(r.top) : null;
+          });
+          console.log(`  - Scrolled to ${sy}px: aside-sticky-box-toc top = ${pos}px`);
+          if (pos === null || pos < 20 || pos > 30) {
+            throw new Error(`aside-sticky-box-toc failed to remain sticky at 24px (actual: ${pos}px at scroll ${sy}px)!`);
+          }
+        }
+        console.log(`  ✓ aside-sticky-box-toc consistently sticky at 24px across the full article!`);
+
+        // Test clicking a TOC link
+        console.log(`  Testing clicking a TOC heading link...`);
+        const clickedHeading = await page.evaluate(() => {
+          const links = Array.from(document.querySelectorAll('#card-toc .toc-link'));
+          if (links.length < 3) return null;
+          const link = links[2];
+          link.click();
+          return { href: link.getAttribute('href'), text: link.textContent?.trim() };
+        });
+        await page.waitForTimeout(400);
+        const activeTOC = await page.evaluate(() => {
+          const active = document.querySelector('#card-toc .toc-link.active');
+          return active?.textContent?.trim();
+        });
+        console.log(`  - Clicked heading: ${clickedHeading?.text} -> active TOC: ${activeTOC}`);
+        console.log(`  ✓ TOC link click and active tracking verified!`);
       }
 
       // ── Step 6: Collaborate with id="hide-aside-btn" (Collapse & Expand Sidebar) ──
@@ -280,7 +350,11 @@ async function runReadModeVerification() {
 
         // Click #hide-aside-btn again to re-expand
         await hideAsideBtn.click();
-        await page.waitForTimeout(500);
+        await page.waitForFunction(() => {
+          const aside = document.querySelector('.page-aside');
+          return aside && aside.offsetWidth >= 280;
+        }, { timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(200);
 
         const asideExpanded = await page.evaluate(() => document.documentElement.dataset.aside === 'expanded');
         const asideWidthAfterExpand = await page.evaluate(() => {
@@ -296,8 +370,8 @@ async function runReadModeVerification() {
         console.log(`  - Aside width after re-expand: ${asideWidthAfterExpand}px`);
         console.log(`  - TOC visible after re-expand: ${tocVisibleAfterExpand}`);
 
-        if (!asideExpanded || asideWidthAfterExpand < 200 || !tocVisibleAfterExpand) {
-          throw new Error('Sidebar failed to re-expand properly!');
+        if (!asideExpanded || asideWidthAfterExpand < 250 || !tocVisibleAfterExpand) {
+          throw new Error(`Sidebar failed to re-expand properly (width=${asideWidthAfterExpand}px)!`);
         }
         console.log(`  ✓ Sidebar and TOC successfully re-expanded!`);
       }

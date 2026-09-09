@@ -964,7 +964,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
         }
         const targetEl = document.getElementById(hash);
         if (targetEl) {
-          const topOffset = 80;
+          const isReadMode =
+            document.body.classList.contains('read-mode') ||
+            document.documentElement.getAttribute('data-readmode') === 'true';
+          const topOffset = isReadMode ? 24 : 80;
           const rect = targetEl.getBoundingClientRect();
           const targetY = window.scrollY + rect.top - topOffset;
           window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
@@ -1018,9 +1021,9 @@ const renderTocNodes = (nodes: TocNode[]) =>
       if (activeLink && tocContent) {
         const contentRect = tocContent.getBoundingClientRect();
         const linkRect = activeLink.getBoundingClientRect();
-        if (linkRect.top < contentRect.top) {
+        if (linkRect.top < contentRect.top + 10) {
           tocContent.scrollTop -= (contentRect.top - linkRect.top + 20);
-        } else if (linkRect.bottom > contentRect.bottom) {
+        } else if (linkRect.bottom > contentRect.bottom - 10) {
           tocContent.scrollTop += (linkRect.bottom - contentRect.bottom + 20);
         }
       }
@@ -1030,7 +1033,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       const docHeight = document.documentElement.scrollHeight;
-      const topOffset = 100;
+      const isReadMode =
+        document.body.classList.contains('read-mode') ||
+        document.documentElement.getAttribute('data-readmode') === 'true';
+      const topOffset = isReadMode ? 32 : 100;
 
       // Bottom of page: activate last heading
       if (scrollY + windowHeight >= docHeight - 40) {
@@ -1067,6 +1073,9 @@ const renderTocNodes = (nodes: TocNode[]) =>
     window.addEventListener('resize', onScroll, { passive: true });
     window.addEventListener('shijianus:toc-depth-changed', () => {
       setTimeout(updateActive, 40);
+    });
+    window.addEventListener('shijianus:readmode-changed', () => {
+      setTimeout(updateActive, 60);
     });
 
     updateActive();
@@ -1133,7 +1142,14 @@ const renderTocNodes = (nodes: TocNode[]) =>
 <script is:inline>
   function adjustTocFlex() {
     const tocCards = document.querySelectorAll('#card-toc');
+    const isReadMode =
+      document.body.classList.contains('read-mode') ||
+      document.documentElement.getAttribute('data-readmode') === 'true';
     tocCards.forEach(card => {
+      if (isReadMode) {
+        card.style.setProperty('flex', '1 1 auto', 'important');
+        return;
+      }
       const tocList = card.querySelector('.toc-list');
       if (tocList) {
         if (tocList.scrollHeight < 250) {
@@ -1147,4 +1163,5 @@ const renderTocNodes = (nodes: TocNode[]) =>
   adjustTocFlex();
   document.addEventListener('astro:page-load', adjustTocFlex);
   window.addEventListener('resize', adjustTocFlex);
+  window.addEventListener('shijianus:readmode-changed', adjustTocFlex);
 </script>

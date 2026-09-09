@@ -173,6 +173,55 @@ async function verifyLiveReadMode() {
         throw new Error('Live: Sidebar or TOC was incorrectly hidden in default read mode!');
       }
 
+      // Live Step 6.1: Verify TOC Internal Scrolling ("翻页") & Sticky Box Stability
+      console.log(`[Production Step 6.1] Verifying TOC Internal Scrolling & Sticky Box in Live Read Mode...`);
+      const liveTocScroll = await page.evaluate(() => {
+        const tocContent = document.querySelector('#card-toc .toc-content');
+        const stickyBox = document.getElementById('aside-sticky-box-toc');
+        if (!tocContent || !stickyBox) return { error: 'elements not found' };
+
+        const before = tocContent.scrollTop;
+        tocContent.scrollTop = 150;
+        const after = tocContent.scrollTop;
+        tocContent.scrollTop = before;
+
+        return {
+          scrollHeight: tocContent.scrollHeight,
+          clientHeight: tocContent.clientHeight,
+          canScroll: tocContent.scrollHeight > tocContent.clientHeight && after > before,
+          stickyPosition: window.getComputedStyle(stickyBox).position,
+          stickyTop: window.getComputedStyle(stickyBox).top
+        };
+      });
+      console.log('  - Live TOC scroll test:', liveTocScroll);
+      if (!liveTocScroll.canScroll) {
+        throw new Error(`Live: TOC internal scrolling ("翻页") failed: scrollHeight=${liveTocScroll.scrollHeight}, clientHeight=${liveTocScroll.clientHeight}`);
+      }
+      if (liveTocScroll.stickyPosition !== 'sticky') {
+        throw new Error(`Live: aside-sticky-box-toc position is not sticky: ${liveTocScroll.stickyPosition}`);
+      }
+      console.log('  ✓ Live TOC internal scrolling ("翻页") verified successfully!');
+
+      // Live Step 6.2: Test sticky persistence during scrolling
+      const scrollCheckPoints = [800, 3000, 8000];
+      for (const sy of scrollCheckPoints) {
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), sy);
+        await page.waitForTimeout(150);
+        const topPos = await page.evaluate(() => {
+          const box = document.getElementById('aside-sticky-box-toc');
+          return box ? Math.round(box.getBoundingClientRect().top) : null;
+        });
+        console.log(`  - Scrolled to ${sy}px: live aside-sticky-box-toc top = ${topPos}px`);
+        if (topPos === null || topPos < 20 || topPos > 30) {
+          throw new Error(`Live: aside-sticky-box-toc failed to remain sticky at 24px (actual: ${topPos}px at scroll ${sy}px)!`);
+        }
+      }
+      console.log('  ✓ Live aside-sticky-box-toc persistently sticky at 24px!');
+
+      // Reset scroll position before testing sidebar collapse
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.waitForTimeout(200);
+
       // Click #hide-aside-btn to collapse
       const hideAsideBtn = await page.$('#hide-aside-btn');
       if (!hideAsideBtn) throw new Error('Live: #hide-aside-btn not found!');

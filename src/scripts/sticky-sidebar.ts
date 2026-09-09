@@ -1,4 +1,10 @@
 function resolveHeaderOffset(): number {
+  if (
+    document.body.classList.contains('read-mode') ||
+    document.documentElement.getAttribute('data-readmode') === 'true'
+  ) {
+    return 24;
+  }
   const stored = parseFloat(
     document.documentElement.style.getPropertyValue('--site-header-height') ||
       window.getComputedStyle(document.documentElement).getPropertyValue('--site-header-height') ||
@@ -260,6 +266,24 @@ function syncPostScrollPosition(topOffset: number, isMobile: boolean) {
 
   const aside = document.getElementById('aside-content');
   const articleContainer = document.getElementById('article-container');
+  const isReadMode =
+    document.body.classList.contains('read-mode') ||
+    document.documentElement.getAttribute('data-readmode') === 'true';
+
+  if (isReadMode) {
+    if (articleContainer) {
+      const articleRect = articleContainer.getBoundingClientRect();
+      const totalScrollable = Math.max(1, articleRect.height - window.innerHeight * 0.7);
+      const scrolled = topOffset - articleRect.top;
+      const currentProgress = Math.min(100, Math.max(0, Math.round((scrolled / totalScrollable) * 100)));
+      const percentEl = document.querySelector<HTMLElement>('#card-toc .toc-percentage');
+      const progressBar = document.querySelector<HTMLElement>('#card-toc .toc-progress__bar');
+      if (percentEl) percentEl.textContent = `${currentProgress}%`;
+      if (progressBar) progressBar.style.width = `${currentProgress}%`;
+    }
+    return;
+  }
+
   const trackToc = document.getElementById('aside-track-toc');
   const copyrightBlock = document.querySelector<HTMLElement>('.post-copyright-block');
   const stickyBoxToc = document.getElementById('aside-sticky-box-toc');
@@ -391,7 +415,58 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
   }
 
   const mainEl = post ?? pageMain;
-  if (!mainEl || !trackToc || !trackSupport) return;
+  if (!mainEl || !trackToc) return;
+
+  const isReadMode =
+    document.body.classList.contains('read-mode') ||
+    document.documentElement.getAttribute('data-readmode') === 'true';
+
+  if (isReadMode) {
+    const docScrollY = window.scrollY;
+    const articleRect = articleContainer?.getBoundingClientRect();
+    const postRect = mainEl.getBoundingClientRect();
+    const docArticleBottom = articleRect
+      ? articleRect.bottom + docScrollY
+      : postRect.bottom + docScrollY;
+    const docPostBottom = postRect.bottom + docScrollY;
+    const docTrackTocTop = postRect.top + docScrollY;
+    const targetTocHeight = Math.max(0, Math.round(docArticleBottom - docTrackTocTop));
+
+    trackToc.style.minHeight = `${targetTocHeight}px`;
+    trackToc.style.height = `${targetTocHeight}px`;
+    trackToc.style.marginTop = '0px';
+
+    if (trackRecent) {
+      trackRecent.style.display = 'none';
+      trackRecent.style.marginTop = '0px';
+      trackRecent.style.minHeight = '0px';
+      trackRecent.style.height = '0px';
+    }
+    if (trackSupport) {
+      trackSupport.style.display = 'none';
+      trackSupport.style.marginTop = '0px';
+      trackSupport.style.minHeight = '0px';
+      trackSupport.style.height = '0px';
+      trackSupport.style.paddingTop = '0px';
+    }
+    aside.dataset.tocType = 'long';
+    cachedPostGeometry = {
+      isCompact: false,
+      docTrackTocTop,
+      docArticleBottom,
+      docCopyrightTop: docArticleBottom,
+      docPostBottom,
+      gap: 20,
+      recentHeight: 0,
+      supportHeight: 0,
+      tocHeight: stickyBoxToc?.offsetHeight ?? 0,
+    };
+    return;
+  }
+
+  if (!trackSupport) return;
+  trackRecent?.style.removeProperty('display');
+  trackSupport?.style.removeProperty('display');
 
   // Start every full geometry pass from the natural flow. Keeping the
   // previous scroll-derived `top` while tracks are being remeasured lets a
@@ -770,6 +845,14 @@ export function initStickySidebar() {
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', scheduleUpdate);
   document.addEventListener('astro:page-load', scheduleUpdate);
+  window.addEventListener('shijianus:readmode-changed', () => {
+    cachedPostGeometry = null;
+    window.setTimeout(update, 50);
+  });
+  window.addEventListener('shijianus:asidechange', () => {
+    cachedPostGeometry = null;
+    window.setTimeout(update, 50);
+  });
 
   update();
   ensureScrollFrame();

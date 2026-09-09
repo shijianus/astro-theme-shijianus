@@ -700,3 +700,22 @@
 - [x] Playwright 端到端全链路自动化审计 (`scripts/verify-readmode.mjs`)：
   1. 桌面大屏 (1440x900)、标准屏 (1280x800) 及移动端全视口验证通过；
   2. 断言验证了非正文组件全量隐藏、正文与阅读标题渲染、宽度未受 880px 夹紧（实际渲染宽度 > 916px ~ 1036px）、默认保留 TOC、点击收紧按钮目录关闭且文章扩展至 1336px、再次点击恢复 TOC、点击退出按钮及按下 Escape 键瞬时恢复等全部链路。
+
+### Task 33: 阅读模式 class="aside-sticky-box" 侧栏目录无法翻页与粘性卡片卡死根治、长目录内部滚动与全链路审计
+- [x] 彻底解决目录“无法翻页”（内部滚动卡死）缺陷：
+  1. 修复 CSS 中原本错误设置的 `display: block !important;`，恢复 `#card-toc` 与 `.aside-sticky-box` 规范的 `display: flex !important; flex-direction: column !important; min-height: 0 !important;`；
+  2. 释放 `.toc-content` 弹性伸缩空间，固化 `flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; overscroll-behavior: contain !important;`，彻底根除因 `display: block` 导致 `clientHeight === scrollHeight`（判定为无需滚动）从而卡死的缺陷；
+  3. 注入精致细窄滚动条（5px）与平滑滚动动效，确保超长目录与多层嵌套标题均能在卡片内部丝滑上下滚动与翻页浏览；
+  4. 针对 `Sidebar.astro` 中的 `adjustTocFlex()` 增加阅读模式感知，阅读模式下强制保持 `flex: 1 1 auto`，杜绝因行内样式覆盖导致的弹性坍塌。
+- [x] 彻底解决粘性卡片卡死与滚动被推飞（无法触发粘性卡片）缺陷：
+  1. 根治 `src/scripts/sticky-sidebar.ts` 中 `updatePostSticky` 的动态高度计算缺陷：阅读模式下以 `#post` 文章绝对文档顶部坐标（`postRect.top + docScrollY`，恒定文档基准）锚定 `docTrackTocTop`，使得 `targetTocHeight` 稳定等于文章正文总高度，粘性卡片在滑行过程中始终稳定吸顶在顶部 24px（`boxTop = 24px`），绝不再随 `scrollY` 发生线性缩水、坍塌或被推飞；
+  2. 在阅读模式下将已隐藏的 `trackRecent` 与 `trackSupport` 明确设为 `display: none` 并隔离，跳过复杂的多卡片交接与负 margin 干扰；退出阅读模式时无感恢复；
+  3. 消除双重 Sticky 定位冲突：清除此前在 `#card-toc` 上的 `position: sticky`，统一定义在父级 `.aside-sticky-box#aside-sticky-box-toc`（`position: sticky !important; top: 24px !important;`），`#card-toc` 回归 `position: static`；
+  4. 优化 `resolveHeaderOffset()`，阅读模式下自动返回顶部偏移量 `24px`，使 `--sticky-column-top` 适配无导航栏状态。
+- [x] 优化目录点击跳转与高亮自动聚焦联动：
+  1. 在 `Sidebar.astro` 的 TOC 点击事件与 `updateActive` 滚动侦测中接入阅读模式动态偏移：阅读模式下点击平滑滚动偏移量自适应调整为 `24px`（原为 80px），消除跳转后顶部大片空白；
+  2. 激活章节时自动通过 `tocContent.scrollTop` 将当前活动项平滑卷入可视区域内部；
+  3. 监听 `shijianus:readmode-changed` 与 `shijianus:asidechange` 事件，状态切换时即时重新校准高亮与几何坐标。
+- [x] Playwright 端到端全链路自动化审计 (`scripts/verify-readmode.mjs` & `scripts/verify-live-readmode.mjs`)：
+  1. 本地全视口（1440x900、1280x800、375x667）端到端自动化测试全部 100% PASS；
+  2. 断言验证了 TOC 内部滚动翻页能力（`canScrollInternal: true`）、页面滚动全过程 sticky 稳定在 24px（800px、3000px、10000px、20000px 全程 `boxTop = 24px`）、点击章节平滑跳转、收紧侧栏全宽展开与再次展开目录无缝恢复。

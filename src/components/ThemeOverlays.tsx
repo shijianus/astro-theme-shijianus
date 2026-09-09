@@ -201,7 +201,7 @@ export function ThemeOverlays({
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
   const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
   const [userPersona, setUserPersona] = useState<UserPersonaProfile | null>(null);
   const [account, setAccount] = useState<CommentIdentity | null>(null);
@@ -1714,28 +1714,28 @@ export function ThemeOverlays({
         </section>
       )}
 
-      <section className={`theme-account-overlay ${notificationOpen ? 'show' : ''}`} aria-hidden={!notificationOpen}>
+      <section className={`theme-account-overlay ${notificationOpen ? 'show' : ''}`} aria-hidden={!notificationOpen} data-no-translate="true">
         <button
           type="button"
           className="theme-account-overlay__mask"
           onClick={() => setNotificationOpen(false)}
           aria-label="关闭账号面板"
         />
-        <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label="账号中心">
+        <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label={t('drawer.title', '账号中心')}>
           {/* 1. Header */}
           <div className="theme-account-drawer__head">
             <div className="theme-account-drawer__head-title-wrap">
               <div className="theme-account-drawer__head-badge">
                 <span className={`status-indicator-dot ${account ? 'is-active' : ''}`} />
-                <span className="eyebrow">READER HUB · 读者中心</span>
+                <span className="eyebrow">{t('drawer.eyebrow', 'READER HUB · 读者中心')}</span>
               </div>
-              <h2>账号中心</h2>
+              <h2>{t('drawer.title', '账号中心')}</h2>
             </div>
             <button
               type="button"
               className="theme-icon-button theme-button--ghost theme-account-drawer__close"
               onClick={() => setNotificationOpen(false)}
-              aria-label="关闭账号面板"
+              aria-label={t('drawer.close', '关闭账号面板')}
             >
               <X className="overlay-icon" aria-hidden="true" />
             </button>
@@ -1746,10 +1746,10 @@ export function ThemeOverlays({
             <div
               className="account-hero-card__avatar is-clickable"
               onClick={() => avatarFileInputRef.current?.click()}
-              title="点击更换头像 (支持选择本地图片上传)"
+              title={t('hero.avatarTitle', '点击更换头像 (支持选择本地图片上传)')}
               role="button"
               tabIndex={0}
-              aria-label="点击更换头像"
+              aria-label={t('hero.avatarTitle', '点击更换头像')}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -1772,7 +1772,7 @@ export function ThemeOverlays({
               )}
               <div className="account-hero-card__avatar-overlay">
                 <Camera className="h-4 w-4" />
-                <span>更换</span>
+                <span>{t('hero.avatarChange', '更换')}</span>
               </div>
               <span className="account-hero-card__avatar-badge" title="点击更换头像">
                 <Camera className="h-2.5 w-2.5" />
@@ -1786,7 +1786,7 @@ export function ThemeOverlays({
 
             <div className="account-hero-card__info">
               <div className="account-hero-card__name-row">
-                <strong>{account ? account.name : accountForm.name ? accountForm.name : '访客朋友'}</strong>
+                <strong>{account ? account.name : accountForm.name ? accountForm.name : t('hero.guestFriend', '访客朋友')}</strong>
                 {account?.provider === 'epomail' ? (
                   <span className="account-pill account-pill--epomail">{t('hero.badge.epomail')}</span>
                 ) : account ? (
@@ -1797,11 +1797,11 @@ export function ThemeOverlays({
                   <span className="account-pill account-pill--guest">{t('hero.badge.guest')}</span>
                 )}
                 {account?.role === 'admin' && (
-                  <span className="account-pill account-pill--admin">管理员</span>
+                  <span className="account-pill account-pill--admin">{t('hero.badge.admin', '管理员')}</span>
                 )}
               </div>
               <p className="account-hero-card__desc">
-                {accountForm.bio || account?.bio || (account?.email || (account ? '已绑定评论身份' : accountForm.email ? accountForm.email : '点击右上角设置个人简介、时区与位置'))}
+                {accountForm.bio || account?.bio || (account?.email || (account ? t('hero.boundIdentity', '已绑定评论身份') : accountForm.email ? accountForm.email : t('hero.emptyBio', '点击设置个人简介、时区与位置')))}
               </p>
               {(accountForm.location || accountForm.timezone || account?.location || account?.timezone) && (
                 <div className="account-hero-card__meta-row">
@@ -1969,7 +1969,7 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, timezone: val }));
                           }}
-                          placeholder="自动获取或选择"
+                          placeholder={t('profile.field.timezonePlaceholder', '自动获取或选择')}
                         />
                         <datalist id="account-common-timezones">
                           <option value="Asia/Shanghai">北京/上海 (UTC+8)</option>
@@ -1984,7 +1984,7 @@ export function ThemeOverlays({
                         <button
                           type="button"
                           className="account-field-quick-btn"
-                          title="重新检测本机当前时区"
+                          title={t('profile.field.detectTzTitle', '重新检测本机当前时区')}
                           onClick={() => {
                             try {
                               const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -2009,12 +2009,12 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, location: val }));
                           }}
-                          placeholder="自动获取或自定义"
+                          placeholder={t('profile.field.locationPlaceholder', '自动获取或自定义')}
                         />
                         <button
                           type="button"
                           className="account-field-quick-btn"
-                          title="重新获取网络地理位置"
+                          title={t('profile.field.detectLocTitle', '重新获取网络地理位置')}
                           onClick={() => {
                             fetch(`/api/geo-profile?locale=${encodeURIComponent(localeVariant)}`)
                               .then((r) => r.json())
@@ -2060,15 +2060,15 @@ export function ThemeOverlays({
                   <div className="epomail-benefits-row">
                     <div className="epomail-benefit-item">
                       <Sparkles className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                      <span>一键免密授权</span>
+                      <span>{t('epomail.benefit.pwdless', '一键免密授权')}</span>
                     </div>
                     <div className="epomail-benefit-item">
                       <Camera className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                      <span>云端头像漫游</span>
+                      <span>{t('epomail.benefit.avatar', '云端头像漫游')}</span>
                     </div>
                     <div className="epomail-benefit-item">
                       <Bell className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                      <span>回复即刻送达</span>
+                      <span>{t('epomail.benefit.instant', '回复即刻送达')}</span>
                     </div>
                   </div>
 
@@ -2089,7 +2089,7 @@ export function ThemeOverlays({
                       className="direct-app-auth-toggle"
                       onClick={() => setShowDirectAppAuth(!showDirectAppAuth)}
                     >
-                      <span>站长或开发者直接授权通道</span>
+                      <span>{t('epomail.direct.toggle', '站长或开发者直接授权通道')}</span>
                       {showDirectAppAuth ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                     </button>
 
@@ -2097,7 +2097,7 @@ export function ThemeOverlays({
                       <form className="direct-app-auth-form" onSubmit={handleDirectEpomailSubmit}>
                         <div className="account-form-grid">
                           <label className="account-field">
-                            <span>Epomail 邮箱</span>
+                            <span>{t('epomail.direct.email', 'Epomail 邮箱')}</span>
                             <div className="account-input-wrap">
                               <Mail className="account-input-icon" />
                               <input
@@ -2111,20 +2111,20 @@ export function ThemeOverlays({
                           </label>
 
                           <label className="account-field">
-                            <span>账户密码</span>
+                            <span>{t('epomail.direct.password', '账户密码')}</span>
                             <div className="account-input-wrap">
                               <Lock className="account-input-icon" />
                               <input
                                 type="password"
                                 value={epomailForm.password}
                                 onChange={(e) => setEpomailForm({ ...epomailForm, password: e.target.value })}
-                                placeholder="输入登录密码"
+                                placeholder={t('epomail.direct.passwordPlaceholder', '输入登录密码')}
                               />
                             </div>
                           </label>
 
                           <label className="account-field account-field--full">
-                            <span>动态验证码 (选填)</span>
+                            <span>{t('epomail.direct.totp', '动态验证码 (选填)')}</span>
                             <div className="account-input-wrap">
                               <Key className="account-input-icon" />
                               <input
@@ -2132,26 +2132,26 @@ export function ThemeOverlays({
                                 maxLength={6}
                                 value={epomailForm.code}
                                 onChange={(e) => setEpomailForm({ ...epomailForm, code: e.target.value })}
-                                placeholder="如已开启双重认证请输入 6 位 TOTP"
+                                placeholder={t('epomail.direct.totpPlaceholder', '如已开启双重认证请输入 6 位 TOTP')}
                               />
                             </div>
                           </label>
                         </div>
 
                         <div className="auth-scope-box">
-                          <span className="auth-scope-title">该授权将允许：</span>
+                          <span className="auth-scope-title">{t('epomail.scope.title', '该授权将允许：')}</span>
                           <ul className="auth-scope-list">
                             <li>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                              <span>获取公开资料（姓名与头像）</span>
+                              <span>{t('epomail.scope.profile', '获取公开资料（姓名与头像）')}</span>
                             </li>
                             <li>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                              <span>验证邮箱并绑定为博客评论作者</span>
+                              <span>{t('epomail.scope.email', '验证邮箱并绑定为博客评论作者')}</span>
                             </li>
                             <li>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                              <span>接收博文评论 @ 与回复站内提醒</span>
+                              <span>{t('epomail.scope.notify', '接收博文评论 @ 与回复站内提醒')}</span>
                             </li>
                           </ul>
                         </div>
@@ -2162,7 +2162,7 @@ export function ThemeOverlays({
                           disabled={isAuthorizing}
                         >
                           <ShieldCheck className="h-4 w-4" />
-                          <span>{isAuthorizing ? '正在验证授权...' : '验证并接续授予权限'}</span>
+                          <span>{isAuthorizing ? t('epomail.direct.verifying', '正在验证授权...') : t('epomail.direct.submit', '验证并接续授予权限')}</span>
                         </button>
                       </form>
                     )}
@@ -2183,7 +2183,7 @@ export function ThemeOverlays({
                   onClick={() => setNotifPartition('broadcast')}
                 >
                   <Megaphone className="h-4 w-4" />
-                  <span>全站广播通告</span>
+                  <span>{t('notify.partition.broadcast', '全站广播通告')}</span>
                   <span className="account-partition-pill">{broadcastNotifications.length}</span>
                 </button>
                 <button
@@ -2192,7 +2192,7 @@ export function ThemeOverlays({
                   onClick={() => setNotifPartition('personal')}
                 >
                   <UserCheck className="h-4 w-4" />
-                  <span>个人互动与足迹</span>
+                  <span>{t('notify.partition.personal', '个人互动与足迹')}</span>
                   {personalNotifications.length > 0 && (
                     <span className="account-partition-pill account-partition-pill--highlight">
                       {personalNotifications.length}
@@ -2241,7 +2241,7 @@ export function ThemeOverlays({
                                   className="account-broadcast-link"
                                   onClick={() => setNotificationOpen(false)}
                                 >
-                                  <span>阅读详情</span>
+                                  <span>{t('notify.broadcast.readMore', '阅读详情')}</span>
                                   <ChevronRight className="h-3.5 w-3.5" />
                                 </a>
                               </div>
@@ -2325,11 +2325,11 @@ export function ThemeOverlays({
                         <div className="account-empty-state-icon">
                           <Bell className="h-6 w-6" />
                         </div>
-                        <strong>暂时没有新的个人互动提醒</strong>
+                        <strong>{t('notify.mentions.emptyTitle', '暂时没有新的个人互动提醒')}</strong>
                         <p>
                           {account
-                            ? '当其他读者在文章评论区回复你、为你点赞或发送 Boost 时，这里将实时呈现。'
-                            : '设置昵称或登录后，当有人与你互动时将在此处即刻通知。'}
+                            ? t('notify.mentions.emptyDescLogged', '当其他读者在文章评论区回复你、为你点赞或发送 Boost 时，这里将实时呈现。')
+                            : t('notify.mentions.emptyDescGuest', '设置昵称或登录后，当有人与你互动时将在此处即刻通知。')}
                         </p>
                       </div>
                     )}
@@ -2344,10 +2344,10 @@ export function ThemeOverlays({
                         className="account-link-btn account-refresh-feed-btn"
                         onClick={() => refreshUserFeed()}
                         disabled={userFeed.loading}
-                        title="从数据库刷新最新记录"
+                        title={t('notify.comments.refreshTitle', '从数据库刷新最新记录')}
                       >
                         <RefreshCw className={`h-3 w-3 inline mr-1 ${userFeed.loading ? 'animate-spin' : ''}`} />
-                        刷新
+                        {t('notify.comments.refresh', '刷新')}
                       </button>
                     </div>
 
@@ -2362,7 +2362,7 @@ export function ThemeOverlays({
                           >
                             <div className="account-my-comment-head">
                               <span className="account-my-comment-post">
-                                {item.postSlug ? `文章：${item.postSlug}` : '博文评论'}
+                                item.postSlug ? `${t('notify.comments.postPrefix', '文章：')}${item.postSlug}` : t('notify.comments.defaultPost', '博文评论')
                               </span>
                               <div className="flex items-center gap-2">
                                 {item.likesCount > 0 && (
@@ -2381,7 +2381,7 @@ export function ThemeOverlays({
                       </div>
                     ) : (
                       <div className="account-empty-state account-empty-state--compact">
-                        <p>数据库中暂无您的评论记录，前往任意文章底部发表评论即可自动记录足迹。</p>
+                        <p>{t('notify.comments.emptyDesc', '数据库中暂无您的评论记录，前往任意文章底部发表评论即可自动记录足迹。')}</p>
                       </div>
                     )}
                   </section>
@@ -2682,7 +2682,7 @@ export function ThemeOverlays({
                 <div className="account-privacy-note">
                   <Info className="h-4 w-4 text-theme-main flex-shrink-0 mt-0.5" />
                   <span>
-                    特别说明：前台隐匿仅针对普通访客隐藏属地徽章。出于社区反垃圾、网络安全与评论风控管理合规需要，系统后台仍会如实记录发件连接 IP，仅站长与管理员后台可见，绝不对公众展示。
+                    {t('settings.compliance.note', '特别说明：前台隐匿仅针对普通访客隐藏属地徽章。出于社区反垃圾、网络安全与评论风控管理合规需要，系统后台仍会如实记录发件连接 IP，仅站长与管理员后台可见，绝不对公众展示。')}
                   </span>
                 </div>
               </section>
