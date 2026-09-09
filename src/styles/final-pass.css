@@ -3668,87 +3668,76 @@ body .snackbar-container.show,
   box-shadow: 0 1px 4px rgba(66, 90, 239, 0.25);
 }
 
-/* Broadcast List Items & Inline Editor */
-.account-card-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
-  color: var(--theme-main);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
-  cursor: pointer;
-  transition: all 0.15s ease;
+/* Broadcast List Items & Build-time Featured Card */
+
+.account-broadcast-item--featured {
+  background: color-mix(in srgb, var(--theme-main) 7%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--theme-main) 30%, transparent);
+  box-shadow: 0 4px 18px -4px rgba(66, 90, 239, 0.12);
+  gap: 8px;
 }
 
-.account-card-action-btn:hover {
+.account-broadcast-item--featured:hover {
+  border-color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  transform: none;
+}
+
+.account-broadcast-badge--featured {
   background: var(--theme-main);
   color: #ffffff;
   border-color: var(--theme-main);
+  box-shadow: 0 2px 8px -1px rgba(66, 90, 239, 0.4);
 }
 
-.account-broadcast-editor {
+.account-broadcast-item--featured .account-broadcast-desc {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  color: var(--font-color);
+  opacity: 0.9;
+}
+
+.account-broadcast-bullets {
+  margin: 6px 0 2px 0;
+  padding-left: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--secondbg) 70%, var(--card-bg));
-  border: 1px dashed color-mix(in srgb, var(--theme-main) 35%, transparent);
-  margin-bottom: 12px;
-  animation: fadeIn 0.2s ease;
+  gap: 5px;
+  font-size: 0.77rem;
+  color: var(--font-color);
+  line-height: 1.5;
 }
 
-.account-broadcast-editor__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.account-broadcast-bullets li {
+  list-style-type: disc;
 }
 
-.account-broadcast-editor__head h4 {
-  margin: 0;
-  font-size: 0.84rem;
+.account-broadcast-bullets li strong {
+  color: var(--theme-main);
   font-weight: 700;
-  color: var(--font-color);
 }
 
-.account-broadcast-editor__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.account-broadcast-editor__grid .account-field--full {
-  grid-column: 1 / -1;
-}
-
-.account-broadcast-editor__grid textarea {
-  width: 100%;
-  border-radius: 7px;
-  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
-  background: var(--card-bg);
-  color: var(--font-color);
-  font-size: 0.82rem;
-  padding: 8px 10px;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.account-broadcast-editor__grid textarea:focus {
-  outline: none;
-  border-color: var(--theme-main);
-}
-
-.account-broadcast-editor__actions {
+.account-broadcast-action {
+  margin-top: 4px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
+}
+
+.account-broadcast-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--theme-main);
+  text-decoration: none;
+  transition: gap 0.15s ease;
+}
+
+.account-broadcast-link:hover {
+  gap: 6px;
+  text-decoration: underline;
 }
 
 .account-broadcast-list {

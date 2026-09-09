@@ -28,6 +28,7 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Settings,
   Camera,
   Upload,
@@ -39,11 +40,10 @@ import {
   Sliders,
   MessageSquare,
   Heart,
-  PenTool,
-  Plus,
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import type { SiteBroadcastData } from '../lib/broadcast';
 import { siteConfig } from '../config/site';
 import {
   createCommentId,
@@ -150,6 +150,7 @@ type ThemeOverlaysProps = {
     disabledNotice: string;
     loginHint: string;
   };
+  broadcast?: SiteBroadcastData;
 };
 
 function isEditableTarget(target: EventTarget | null) {
@@ -159,42 +160,6 @@ function isEditableTarget(target: EventTarget | null) {
 
 function clampPosition(value: number, size: number, viewportSize: number) {
   return Math.max(12, Math.min(value, viewportSize - size - 12));
-}
-
-export interface CustomBroadcast {
-  id: string;
-  badge: string;
-  title: string;
-  content: string;
-  date?: string;
-  href?: string;
-}
-
-const DEFAULT_BROADCAST: CustomBroadcast = {
-  id: 'system-broadcast-hero',
-  badge: '博主置顶广播',
-  title: '📢 读者中心与通知系统全新升级',
-  content: '全新通知系统上线，全站广播与个人互动双分区清晰呈现；支持个人简介、时区与位置定制，评论区支持 Linuxdo 模式与 Boost 动态！',
-  href: '#',
-};
-
-function readCustomBroadcasts(): CustomBroadcast[] {
-  if (typeof window === 'undefined') return [DEFAULT_BROADCAST];
-  try {
-    const raw = localStorage.getItem('shijianus_custom_broadcasts');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {}
-  return [DEFAULT_BROADCAST];
-}
-
-function saveCustomBroadcasts(list: CustomBroadcast[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem('shijianus_custom_broadcasts', JSON.stringify(list));
-  } catch {}
 }
 
 export function ThemeOverlays({
@@ -215,6 +180,7 @@ export function ThemeOverlays({
   pageType: initialPageType,
   consolePanel,
   accountPanel,
+  broadcast,
 }: ThemeOverlaysProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(features.centerConsole && consolePanel.enabled && consolePanel.defaultOpen);
@@ -241,9 +207,6 @@ export function ThemeOverlays({
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('notifications');
   const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('personal');
-  const [customBroadcasts, setCustomBroadcasts] = useState<CustomBroadcast[]>(() => readCustomBroadcasts());
-  const [isEditingBroadcast, setIsEditingBroadcast] = useState(false);
-  const [broadcastForm, setBroadcastForm] = useState<CustomBroadcast>({ ...DEFAULT_BROADCAST });
   const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => readUserPreferences());
   const [userFeed, setUserFeed] = useState<{
     userComments: any[];
@@ -525,7 +488,7 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
-  // 1. 全站广播通告（每个人可见，最新博文自动编译置顶，0 DB 开销）
+  // 1. 全站广播通告（每个人可见，构建期扫描渲染，0 DB 开销）
   const broadcastNotifications = useMemo(() => {
     const list: Array<{
       id: string;
@@ -537,19 +500,21 @@ export function ThemeOverlays({
       href: string;
       category: string;
       cover?: string;
+      bullets?: string[];
     }> = [];
 
-    // 用户/博主自行编撰的广播公告（支持在界面上随时修改与发布，无需改动源码）
-    for (const b of customBroadcasts) {
+    // 博主在构建前编写或AI协助生成的全站广播公告 (构建期预渲染，零DB损耗)
+    if (broadcast) {
       list.push({
-        id: b.id,
+        id: broadcast.id,
         type: 'announcement',
-        badge: b.badge || '博主广播',
-        title: b.title,
-        content: b.content,
-        date: b.date || posts[0]?.date || '最新',
-        href: b.href || '#',
+        badge: broadcast.badge || '博主动态',
+        title: broadcast.title,
+        content: broadcast.summary,
+        date: broadcast.date || posts[0]?.date || '最新',
+        href: broadcast.href || '#',
         category: '站点通告',
+        bullets: broadcast.bullets,
       });
     }
 
@@ -568,7 +533,7 @@ export function ThemeOverlays({
 
     list.push(...latestArticles);
     return list;
-  }, [posts, customBroadcasts]);
+  }, [posts, broadcast]);
 
   // 2. 个人账户互动通知与足迹 (连结真实 DB 数据)
   const refreshUserFeed = useCallback(async () => {
@@ -2065,7 +2030,7 @@ export function ThemeOverlays({
               </section>
 
               {/* 未登录 Epomail 时的统一身份认证与漫游通道 */}
-              {!account && (
+              {(!account || account.provider !== 'epomail') && (
                 <section className="account-card account-card--epomail">
                   <div className="account-card__head">
                     <div className="account-brand-header">
@@ -2220,152 +2185,76 @@ export function ThemeOverlays({
                 </button>
               </div>
 
-              {/* 分区 1: 全站广播通告 (每个人都能看到，最新博文自动编译置顶，0 DB 损耗) */}
+              {/* 分区 1: 全站广播通告 (每个人都能看到，构建期扫描渲染，0 DB 损耗) */}
               {notifPartition === 'broadcast' && (
                 <section className="account-card">
                   <div className="account-card__head">
-                    <h3 className="account-card__title">全站广播与最新动态</h3>
-                    <button
-                      type="button"
-                      className="account-card-action-btn"
-                      onClick={() => {
-                        setIsEditingBroadcast((prev) => {
-                          const next = !prev;
-                          if (next && customBroadcasts[0]) {
-                            setBroadcastForm({ ...customBroadcasts[0] });
-                          }
-                          return next;
-                        });
-                      }}
-                    >
-                      <PenTool className="h-3 w-3" />
-                      <span>{isEditingBroadcast ? '收起编撰' : '编撰通告'}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-5 w-5 text-theme-main" />
+                      <h3 className="account-card__title">全站广播与最新动态</h3>
+                    </div>
                   </div>
 
-                  {isEditingBroadcast && (
-                    <form
-                      className="account-broadcast-editor"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const updated: CustomBroadcast = {
-                          id: broadcastForm.id || `custom-broadcast-${Date.now()}`,
-                          badge: (broadcastForm.badge || '站长公告').trim(),
-                          title: (broadcastForm.title || '').trim(),
-                          content: (broadcastForm.content || '').trim(),
-                          date: broadcastForm.date || new Date().toISOString().slice(0, 10),
-                          href: (broadcastForm.href || '#').trim(),
-                        };
-                        if (!updated.title) return;
-                        const nextList = [updated];
-                        setCustomBroadcasts(nextList);
-                        saveCustomBroadcasts(nextList);
-                        setIsEditingBroadcast(false);
-                      }}
-                    >
-                      <div className="account-broadcast-editor__head">
-                        <h4>编撰全站广播通告</h4>
-                        <span style={{ fontSize: '0.74rem', color: 'var(--font-color)', opacity: 0.65 }}>
-                          即时生效，全站读者可见
-                        </span>
-                      </div>
+                  <div className="account-broadcast-list">
+                    {broadcastNotifications.map((item) => {
+                      if (item.type === 'announcement') {
+                        return (
+                          <div key={item.id} className="account-broadcast-item account-broadcast-item--featured">
+                            <div className="account-broadcast-head">
+                              <span className="account-broadcast-badge account-broadcast-badge--featured">
+                                <Megaphone className="h-3 w-3" />
+                                <span>{item.badge}</span>
+                              </span>
+                              <span className="account-broadcast-date">{item.date}</span>
+                            </div>
+                            <strong className="account-broadcast-title">{item.title}</strong>
+                            <p className="account-broadcast-desc">{item.content}</p>
 
-                      <div className="account-broadcast-editor__grid">
-                        <label className="account-field">
-                          <span>通告徽标 (Badge)</span>
-                          <input
-                            type="text"
-                            value={broadcastForm.badge}
-                            onChange={(e) => setBroadcastForm({ ...broadcastForm, badge: e.target.value })}
-                            placeholder="例如：置顶公告 / 站点动态"
-                          />
-                        </label>
-                        <label className="account-field">
-                          <span>跳转链接 (可选)</span>
-                          <input
-                            type="text"
-                            value={broadcastForm.href || ''}
-                            onChange={(e) => setBroadcastForm({ ...broadcastForm, href: e.target.value })}
-                            placeholder="如 /posts/slug 或 https://..."
-                          />
-                        </label>
-                        <label className="account-field account-field--full">
-                          <span>通告主标题 (Title)</span>
-                          <input
-                            type="text"
-                            required
-                            value={broadcastForm.title}
-                            onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
-                            placeholder="输入通告标题"
-                          />
-                        </label>
-                        <label className="account-field account-field--full">
-                          <span>通告详细内容 (Content)</span>
-                          <textarea
-                            rows={3}
-                            required
-                            value={broadcastForm.content}
-                            onChange={(e) => setBroadcastForm({ ...broadcastForm, content: e.target.value })}
-                            placeholder="输入要向全站用户广播展示的详细内容..."
-                          />
-                        </label>
-                      </div>
+                            {item.bullets && item.bullets.length > 0 && (
+                              <ul className="account-broadcast-bullets">
+                                {item.bullets.map((bullet, idx) => (
+                                  <li key={idx} dangerouslySetInnerHTML={{ __html: bullet }} />
+                                ))}
+                              </ul>
+                            )}
 
-                      <div className="account-broadcast-editor__actions">
-                        <button
-                          type="button"
-                          className="account-btn-secondary"
-                          style={{ padding: '4px 10px', fontSize: '0.75rem', height: '28px' }}
+                            {item.href && item.href !== '#' && (
+                              <div className="account-broadcast-action">
+                                <a
+                                  href={item.href}
+                                  className="account-broadcast-link"
+                                  onClick={() => setNotificationOpen(false)}
+                                >
+                                  <span>阅读详情</span>
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <a
+                          key={item.id}
+                          href={item.href}
+                          className="account-broadcast-item"
                           onClick={() => {
-                            setCustomBroadcasts([DEFAULT_BROADCAST]);
-                            saveCustomBroadcasts([DEFAULT_BROADCAST]);
-                            setBroadcastForm({ ...DEFAULT_BROADCAST });
-                            setIsEditingBroadcast(false);
+                            if (item.href !== '#') setNotificationOpen(false);
                           }}
                         >
-                          恢复默认
-                        </button>
-                        <button
-                          type="button"
-                          className="account-btn-secondary"
-                          style={{ padding: '4px 10px', fontSize: '0.75rem', height: '28px' }}
-                          onClick={() => setIsEditingBroadcast(false)}
-                        >
-                          取消
-                        </button>
-                        <button
-                          type="submit"
-                          className="account-btn-primary"
-                          style={{ padding: '4px 12px', fontSize: '0.75rem', height: '28px' }}
-                        >
-                          <Save className="h-3.5 w-3.5" />
-                          <span>保存通告</span>
-                        </button>
-                      </div>
-                    </form>
-                  )}
-
-                  <div className="account-broadcast-list">
-                    {broadcastNotifications.map((item) => (
-                      <a
-                        key={item.id}
-                        href={item.href}
-                        className="account-broadcast-item"
-                        onClick={() => {
-                          if (item.href !== '#') setNotificationOpen(false);
-                        }}
-                      >
-                        <div className="account-broadcast-head">
-                          <span className="account-broadcast-badge">
-                            {item.type === 'announcement' ? <Megaphone className="h-3 w-3" /> : <Tags className="h-3 w-3" />}
-                            <span>{item.badge}</span>
-                          </span>
-                          <span className="account-broadcast-date">{item.date}</span>
-                        </div>
-                        <strong className="account-broadcast-title">{item.title}</strong>
-                        <p className="account-broadcast-desc">{item.content}</p>
-                      </a>
-                    ))}
+                          <div className="account-broadcast-head">
+                            <span className="account-broadcast-badge">
+                              <Tags className="h-3 w-3" />
+                              <span>{item.badge}</span>
+                            </span>
+                            <span className="account-broadcast-date">{item.date}</span>
+                          </div>
+                          <strong className="account-broadcast-title">{item.title}</strong>
+                          <p className="account-broadcast-desc">{item.content}</p>
+                        </a>
+                      );
+                    })}
                   </div>
                 </section>
               )}

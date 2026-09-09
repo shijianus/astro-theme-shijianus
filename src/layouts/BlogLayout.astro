@@ -22,6 +22,7 @@ import {
   hasConfiguredCommentDatabase,
   isRemoteDatabaseConfigured,
 } from '../lib/comment-integration';
+import { loadBroadcastData } from '../lib/broadcast';
 import { type SidebarData, createSidebarData } from '../lib/theme';
 import '../styles/global.css';
 import '../styles/rebuild.css';
@@ -48,6 +49,7 @@ const {
 
 // Fetch global data for overlays to ensure they are populated on all routes
 const allPosts = await getCollection('posts');
+const broadcastData = loadBroadcastData();
 
 // Data slimming: map posts to essential fields to reduce payload and memory usage
 const slimPosts = allPosts.map((post) => {
@@ -296,6 +298,7 @@ const paypalUkMeUrl =
         pageType={pageType}
         consolePanel={consolePanel}
         accountPanel={accountPanel}
+        broadcast={broadcastData}
       />
       <LocaleRuntime />
       <CodeBlockEnhancer />

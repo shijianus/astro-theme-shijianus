@@ -34,12 +34,17 @@ async function main() {
   console.log('\n2. Testing Blog Side Account Drawer -> Epomail Button ...');
   const blogPage = await context.newPage();
   await blogPage.goto('https://blog.epocanvas.com', { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await blogPage.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await blogPage.reload({ waitUntil: 'domcontentloaded' });
   await blogPage.waitForTimeout(1500);
 
   await blogPage.evaluate(() => {
-    window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+    window.dispatchEvent(new CustomEvent('shijianus:open-account'));
   });
-  await blogPage.waitForTimeout(500);
+  await blogPage.waitForTimeout(1000);
 
   const oauthBtn = await blogPage.$('.epomail-primary-login-btn');
   if (!oauthBtn) throw new Error('Missing Epomail OAuth button in drawer');
