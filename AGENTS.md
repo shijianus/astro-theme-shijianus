@@ -774,3 +774,24 @@
   4. 验证 `#article-container` 内部正文未被篡改；
   5. 验证桌面与移动端无横向溢出；
   6. 验证账号抽屉 6 国语言切换与无损复原 Simplified Chinese。
+
+### Task 36: 阅读模式 class="aside-sticky-box" 与正文顶端 24px 精准对齐、全行程持续粘性吸附与右侧工具栏避让 (`eca740a`)
+- [x] 根治顶端对齐落差与跳动缺陷：
+  1. 清除阅读模式下 `#blog-container` 的 60px 虚位内边距（`padding-top: 0 !important;`），将 `#content-inner` 顶部内边距调整为 `padding: 24px 20px !important;`；
+  2. 在 `scrollY = 0` 时，左侧正文 `page-main`（top: 24px）与右侧目录 `aside-sticky-box`（top: 24px）实现 **100% 绝对像素级水平平齐对齐**（Difference = 0px）；
+  3. 在页面开始向下滚动的瞬间，`aside-sticky-box` 已经处于其粘性坐标（`top: 24px`），实现零延迟、零跳动、丝滑平滑过渡。
+- [x] 根治文章尾部侧栏被推飞与消失缺陷（全行程持续粘性吸附）：
+  1. 解除 `trackToc` 硬编码为正文高度的像素截断，将其与 `post-sticky-layout` 在阅读模式下统一设置为 `height: 100% !important; min-height: 100% !important; flex: 1 1 auto !important; align-self: stretch !important;`；
+  2. 确保在文章正文从开头到最末端（`scrollY` 从 0 到 33815px 终点）的全阅读行程中，`aside-sticky-box` 恒定稳定保持在视口内（`top: 24px`），永远不会在尾部区域发生负坐标位移或挤压移出视口。
+- [x] 强化 CSS 特异性覆盖：
+  1. 在 `final-pass.css` 中注入高优先级阅读模式覆盖规则（`body.read-mode[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box { top: 24px !important; }` 及 `height: 100% !important;`），杜绝被默认的 `80px` 覆盖。
+- [x] 彻底消除右侧悬浮工具栏 (`#rightside`) 与目录文字的重合交错：
+  1. 将阅读模式下 `#content-inner` 的最大宽度收敛优化为 `max-width: min(1280px, calc(100vw - 160px)) !important;`；
+  2. 在 1920x1080、1536x864、1440x900、1366x768 等所有桌面视口下，右侧固定定位的 `#rightside` 与 `#card-toc` 保持至少 21px ~ 261px 的完全物理避让与呼吸间距，杜绝遮挡文字与误触。
+- [x] 完善协同收紧与目录内部翻页能力：
+  1. 点击 `#hide-aside-btn` 能够平滑将侧栏收缩至 0 像素，正文列扩展至 100% 全宽；再次点击平滑恢复 300 像素并即时激活 24px 粘性对齐；
+  2. 保留 `#card-toc .toc-content` 独立内部滚动能力，读者既能随着正文向下翻页同步高亮和进度条，也能在目录内部自由上下滑动查阅所有章节。
+- [x] 编写并执行全平台 Playwright 自动化测试套件 (`scripts/verify-readmode-sticky-alignment.mjs`)：
+  1. 覆盖 1080p FHD (1920x1080)、Laptop HighDPI (1536x864)、MacBook Standard (1440x900)、Compact Laptop (1366x768) 全视口；
+  2. 0 到 33815px 全行程断言 100% 全部通过！
+
