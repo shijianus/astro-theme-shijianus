@@ -683,7 +683,7 @@
      - 全语言联动测试：在抽屉中选择“Français”，`#translate` 按钮即刻更新为“FR”，再次点击后极速在“FR”与“EN”之间轮转；
      - 生产环境截图存档：`scratch/live-initial-page.png`、`scratch/live-zh-hant-state.png`、`scratch/live-account-persona-drawer.png`、`scratch/live-french-en-cycled.png`。
 
-### Task 32: 阅读模式 (id="readmode") 沉浸式重构、规避干扰组件、文章正文孤立呈现、侧栏目录 (TOC) 默认保留与收紧侧栏 (id="hide-aside-btn") 协同解耦
+### Task 32: 阅读模式 (id="readmode") 沉浸式重构、规避干扰组件、文章正文孤立呈现、侧栏目录 (TOC) 默认保留与收紧侧栏 (id="hide-aside-btn") 协同解耦 (`911b564`)
 - [x] 阅读模式核心视觉与沉浸体验优化：
   1. 彻底根除历史遗留的 880px 宽度收缩 (`max-width: 880px !important`) 缺陷，在 1400px 标准容器下自然延伸，保障舒适舒展的排版与阅读呼吸感；
   2. 全局非阅读组件彻底规避：进入阅读模式后，全局顶栏导航 (`#nav`)、文章巨幅海报与视差水波纹 (`.page-shell__hero`)、底栏 (`#footer`)、AI摘要面板 (`.post-ai-abstract`)、版权卡片 (`.post-copyright`)、标签列表 (`.post-tags-row`)、相关文章推荐 (`.relatedPosts`)、末尾下一篇推荐 (`#pagination.pagination-post`) 以及评论系统 (`#post-comment`) 统一隐藏 (`display: none !important`)；
