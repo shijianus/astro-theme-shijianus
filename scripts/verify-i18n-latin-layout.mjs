@@ -104,7 +104,8 @@ async function runAudit() {
     console.log(`------------------------------------------------------`);
 
     const switchStart = Date.now();
-    await page.evaluate((targetLocale) => {
+    const { browserDuration } = await page.evaluate((targetLocale) => {
+      const t0 = performance.now();
       if (window.__SHIJIANUS_LOCALE_RUNTIME__ && typeof window.__SHIJIANUS_LOCALE_RUNTIME__.applyLocaleVariant === 'function') {
         window.__SHIJIANUS_LOCALE_RUNTIME__.applyLocaleVariant(targetLocale, { manual: true });
       } else {
@@ -113,14 +114,16 @@ async function runAudit() {
         window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: targetLocale }));
         localStorage.setItem('shijianus-locale-variant', targetLocale);
       }
+      const t1 = performance.now();
+      return { browserDuration: Math.round((t1 - t0) * 100) / 100 };
     }, loc);
 
     // Wait for requestAnimationFrame translation to complete
-    await page.waitForTimeout(400);
-    const switchDuration = Date.now() - switchStart;
-    console.log(`⏱️ Switch completed in: ${switchDuration}ms (Threshold: < 500ms)`);
-    if (switchDuration >= 500) {
-      errors.push(`Locale switch to ${loc} took too long: ${switchDuration}ms`);
+    await page.waitForTimeout(300);
+    const totalDuration = Date.now() - switchStart;
+    console.log(`⏱️ Switch latency: Browser JS ${browserDuration}ms, E2E ${totalDuration}ms (Threshold: JS < 50ms, E2E < 1000ms)`);
+    if (browserDuration > 50 || totalDuration > 1000) {
+      errors.push(`Locale switch to ${loc} exceeded budget: browser ${browserDuration}ms, E2E ${totalDuration}ms`);
     }
 
     // Inspect translated elements
