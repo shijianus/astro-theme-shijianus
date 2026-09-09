@@ -105,14 +105,15 @@ async function verifyLiveProduction() {
     throw new Error(`Expected 6 mainstream languages in drawer, got ${buttons.length}`);
   }
 
-  const personaCard = page.locator('.account-persona-card');
-  await personaCard.waitFor({ state: 'visible', timeout: 8000 });
-  const personaText = await personaCard.innerText();
-  console.log('   -> Live user persona card content snippet:\n', personaText.trim());
+  const personaCardCount = await page.locator('.account-persona-card').count();
+  console.log(`   -> Live .account-persona-card count: ${personaCardCount} (Expected: 0)`);
+  if (personaCardCount !== 0) {
+    throw new Error(`FAIL: .account-persona-card should NOT be visible or rendered! Found: ${personaCardCount}`);
+  }
 
   // Capture account drawer screenshot
-  await page.screenshot({ path: path.join(scratchDir, 'live-account-persona-drawer.png') });
-  console.log('   -> Captured live drawer screenshot: scratch/live-account-persona-drawer.png');
+  await page.screenshot({ path: path.join(scratchDir, 'live-account-drawer.png') });
+  console.log('   -> Captured live drawer screenshot: scratch/live-account-drawer.png');
 
   // Click Français in the drawer
   console.log('\n4. Testing live selection of Français in account drawer...');

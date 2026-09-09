@@ -720,3 +720,24 @@
   1. 本地全视口（1440x900、1280x800、375x667）端到端自动化测试全部 100% PASS；
   2. 断言验证了 TOC 内部滚动翻页能力（`canScrollInternal: true`）、页面滚动全过程 sticky 稳定在 24px（800px、3000px、10000px、20000px 全程 `boxTop = 24px`）、点击章节平滑跳转、收紧侧栏全宽展开与再次展开目录无缝恢复；
   3. 生产端真实环境（`https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`）Playwright 端到端全链路验证全部 100% 通过（验证了文章正文孤立呈现、TOC 内部丝滑翻页 `scrollHeight: 3752 > clientHeight: 745`、页面深层滚动 `top = 24px` 稳定停留、侧栏收紧正文扩展至 1336px 及退出恢复）。
+
+### Task 34: 抽屉多语言卡片呈现全面打通、消除语言切换卡顿与中文污染、画像卡片彻底移除与全链路审计
+- [x] 抽屉内 `account-card` 真实且完整多语言化：
+  1. 为主流 6 国语言（`zh-CN`, `zh-Hant`, `en`, `fr`, `es`, `de`）构建完整的 `I18N_STRINGS` 词典，全面覆盖抽屉内 3 大 Tab 所有卡片标题、表单字段、占位符、操作按钮及合规提示；
+  2. 修复抽屉仅为无意义按钮的问题，点击各语言即时全量重渲染抽屉内所有文本，杜绝空壳切换。
+- [x] 消除语言切换卡顿（零延迟秒级响应）：
+  1. TreeWalker 智能跳过 React 容器：`skipSelector` 补齐排除 `.theme-account-overlay, .theme-account-drawer, #theme-overlays, #local-search, #console`，消除 React 与 DOM TreeWalker 互相改写属性导致的死循环与重绘卡顿；
+  2. 惰性加载转换器：切回 `zh-CN` 或非繁体语言时不加载 OpenCC 转换模块，直出零等待。
+- [x] 根治硬编码 i18n 错乱与中文污染（100% 无损还原）：
+  1. 采用 `originalTextNodeMap` 缓存不可变原始中文文本节点与属性，切回 `zh-CN` 时直接赋值恢复；
+  2. 彻底杜绝使用繁简转换器恢复中文时导致外文残留混杂的问题，达成 0 外语残留、100% 中文无损复原。
+- [x] 彻底移除 `account-persona-card`（保护内部推断算法）：
+  1. 从前端 DOM 中完全剔除画像卡片，DOM 中 `.account-persona-card` 元素计数严格为 0；
+  2. 保留后台静默用户画像推断机制（输入法、时区、IP 地理批判），仅在底层为 `#translate` 按钮圈定双语候选对，绝不泄露算法权重与推断规则。
+- [x] 优化 `ThemeOverlays` 水合指令：
+  1. 将 `BlogLayout.astro` 中的 `<ThemeOverlays>` 由 `client:idle` 优化为 `client:load`，保障账号中心与抽屉在初次进入时立即可交互。
+- [x] 自动化端到端测试套件全量跑通 (`scripts/verify-i18n-thorough.mjs`)：
+  1. 验证 `.account-persona-card` 在 DOM 中完全不存在；
+  2. 验证 6 种主流语言在 Tab 1、Tab 2、Tab 3 中的卡片标题与权益文本；
+  3. 测量语言切换延迟（< 1000ms，极速响应）；
+  4. 验证关闭抽屉后整站中文 100% 无损还原，0 外语泄露。
