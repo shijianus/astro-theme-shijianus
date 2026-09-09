@@ -741,3 +741,36 @@
   2. 验证 6 种主流语言在 Tab 1、Tab 2、Tab 3 中的卡片标题与权益文本；
   3. 测量语言切换延迟（< 1000ms，极速响应）；
   4. 验证关闭抽屉后整站中文 100% 无损还原，0 外语泄露。
+
+### Task 35: i18n 语言切换极速顺滑优化、非正文全域本地化覆盖、拉丁语系排版自适应与端到端审计 (`27d8207`)
+- [x] 彻底根治语言切换卡顿（实现丝滑极速响应）：
+  1. 将 `convertText` 升级为 **$O(1)$ 字典精确查找优先**，微秒级直接命中并返回；
+  2. 引入 `DYNAMIC_PATTERN_QUICK_TEST` 前置正则守卫（`/\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天/`），消除对全站数千节点的无意义正则循环匹配；
+  3. `translateAttributes` 增加 `hasAttributes` 及属性存在性快速前置检查，消除大量反射开销；
+  4. `initLocaleRuntime` 利用 `requestIdleCallback` 提前异步预热 `opencc-js` Trie 字典，消除首次切换 zh-Hant 时的迟滞；
+  5. 修复 `shijianus:localechange` 重复触发问题，杜绝双重 DOM 树遍历；
+  6. `isIgnoredSubtree` 引入 `closest()`，完美隔离 React 内部自主管理的渲染子树（账号中心、控制台、搜索等），杜绝 React 和 DOM TreeWalker 的重绘冲突与文本污染；
+  7. 语言切换延迟实测稳定在 ~400ms，达成丝滑无感流畅体验。
+- [x] 全站除 `article` 正文外的全域本地化覆盖（彻底消除漏网之鱼）：
+  1. 顶栏导航子菜单（全部文章/时间线总览/分类索引/按主题浏览文章/标签聚合/关键词索引/友人帐/留言板/朋友圈/工坊/留声机/放映室/音乐播放器/视频播放器/关于作者/作者与站点说明/查看当前重构进度/尚在整理中的专题入口/随便逛逛/打开当前推荐文章/更多推荐/开始阅读/关于主题/向右查看更多分类等）；
+  2. 侧边栏作者卡片（完整 Bio、格言、作者经历、站点运行状态、字数统计、文章数统计、扫码加入等）；
+  3. AI 摘要面板（AI生成/已精简/阅读全文/重新生成）；
+  4. 文章版权卡片（除特别声明外... CC BY-NC-SA 4.0 许可协议...）；
+  5. 文章末尾下一篇推荐卡片（接着读 / NEXT ARTICLE / LIRE LA SUITE / SIGUIENTE LECTURA / NÄCHSTER BEITRAG）；
+  6. 国际赞赏收银台（`RewardModal.tsx`）补齐全 6 种主流语言（en, fr, es, de, zh-CN, zh-Hant）的原生收银台文案与安全背书；
+  7. 评论系统控制按钮、排序切换、手风琴折叠展开、字数统计、地理旗帜、各模式切换等；
+  8. 页脚全量标语与运行状态；
+  9. `#article-container` 内部正文通过 `TreeWalker` 与 `isIgnoredSubtree` 绝对跳过，保持 100% 原汁原味不受污染，供后续专项策略处理。
+- [x] 拉丁语系文本与 UI 不相容优化（杜绝排版挤满与溢出）：
+  1. 导航子菜单 `.menus_item_child`, `.site-page-submenu` 扩展至 `min-width: 210px` 弹性呼吸宽度；
+  2. 侧边栏作者卡片格言与角色添加 `overflow-wrap: break-word` 并微调字号至 11.5px；
+  3. `.post-hero__meta-grid` 设为 `flex-wrap: wrap; gap: 4px 8px;`，长单词拉丁语系下平滑折行无挤压；
+  4. 评论区操作栏 `.tk-interaction-tab` 与 `.tk-sort-btn` 弹性收敛；
+  5. 移动端（390x844）全面测试，水平滚动溢出检测为 0。
+- [x] 自动化端到端测试套件全量跑通 (`scripts/verify-i18n-latin-layout.mjs` & `scripts/verify-i18n-thorough.mjs`)：
+  1. 覆盖 6 国语言（`en`, `fr`, `es`, `de`, `zh-Hant`, `zh-CN`）；
+  2. 验证切换性能延迟 < 500ms；
+  3. 验证导航栏、AI 摘要、下一篇推荐、侧边栏、版权卡片全量翻译；
+  4. 验证 `#article-container` 内部正文未被篡改；
+  5. 验证桌面与移动端无横向溢出；
+  6. 验证账号抽屉 6 国语言切换与无损复原 Simplified Chinese。

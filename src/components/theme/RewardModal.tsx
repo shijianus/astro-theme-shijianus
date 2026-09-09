@@ -206,7 +206,7 @@ const StripeLinkIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h
 );
 
 /* ── I18N Dictionary ───────────────────────────────────────────────────────── */
-type LocaleKey = 'zh-CN' | 'zh-Hant' | 'en';
+type LocaleKey = 'zh-CN' | 'zh-Hant' | 'en' | 'fr' | 'es' | 'de';
 
 const I18N = {
   'zh-CN': {
@@ -283,6 +283,81 @@ const I18N = {
     privacyNote: 'No card or personal data is stored · Processed securely via Stripe',
     securedBy: 'Secured by',
     rewardRecords: 'Donation Log ↗',
+  },
+  'fr': {
+    title: 'Soutenir le Créateur',
+    checkoutTitle: 'Paiement Sécurisé',
+    successTitle: 'Merci Beaucoup',
+    subtitleAmount: 'Cartes · Apple Pay · Google Pay · Link',
+    subtitleCheckout: 'Sécurisé par Stripe',
+    subtitleSuccess: 'Votre soutien a bien été reçu ❤️',
+    customPlaceholder: (min: string, max: string) => `Montant personnalisé (${min} ~ ${max})`,
+    minError: (min: string) => `Le montant minimum est ${min} (≈ 1 HKD)`,
+    maxError: (max: string) => `Le montant maximum est ${max} (≈ 1 000 HKD)`,
+    continueBtn: (amt: string) => `Continuer — ${amt}`,
+    processing: 'Traitement en cours…',
+    connectingStripe: 'Connexion à la caisse Stripe…',
+    successMsg: 'Paiement réussi, un grand merci !',
+    leaveBlessing: 'Laisser un message à l auteur',
+    namePlaceholder: 'Nom ou pseudo (facultatif)',
+    msgPlaceholder: 'Écrire un mot pour l auteur… (facultatif)',
+    sendBlessing: 'Envoyer le message',
+    done: 'Terminer',
+    blessingDelivered: 'Message transmis ✨',
+    blessingDeliveredSub: 'Merci pour votre soutien, c est la plus belle motivation !',
+    privacyNote: 'Aucune coordonnée bancaire n est stockée · Traitement sécurisé par Stripe',
+    securedBy: 'Secured by',
+    rewardRecords: 'Historique des dons ↗',
+  },
+  'es': {
+    title: 'Apoyar al Creador',
+    checkoutTitle: 'Pago Seguro',
+    successTitle: 'Muchas Gracias',
+    subtitleAmount: 'Tarjetas · Apple Pay · Google Pay · Link',
+    subtitleCheckout: 'Seguridad garantizada por Stripe',
+    subtitleSuccess: 'Tu apoyo ha sido recibido ❤️',
+    customPlaceholder: (min: string, max: string) => `Monto personalizado (${min} ~ ${max})`,
+    minError: (min: string) => `El monto mínimo es ${min} (≈ 1 HKD)`,
+    maxError: (max: string) => `El monto máximo es ${max} (≈ 1.000 HKD)`,
+    continueBtn: (amt: string) => `Continuar — ${amt}`,
+    processing: 'Procesando…',
+    connectingStripe: 'Conectando con Stripe Checkout…',
+    successMsg: '¡Pago exitoso, muchas gracias!',
+    leaveBlessing: 'Deja un mensaje para el autor',
+    namePlaceholder: 'Nombre o usuario (opcional)',
+    msgPlaceholder: 'Escribe un mensaje al autor… (opcional)',
+    sendBlessing: 'Enviar mensaje',
+    done: 'Hecho',
+    blessingDelivered: 'Mensaje entregado ✨',
+    blessingDeliveredSub: '¡Gracias por acompañar y motivar esta creación!',
+    privacyNote: 'No se almacenan datos bancarios · Procesamiento cifrado vía Stripe',
+    securedBy: 'Secured by',
+    rewardRecords: 'Registro de donaciones ↗',
+  },
+  'de': {
+    title: 'Autor unterstützen',
+    checkoutTitle: 'Sichere Kasse',
+    successTitle: 'Herzlichen Dank',
+    subtitleAmount: 'Karten · Apple Pay · Google Pay · Link',
+    subtitleCheckout: 'Abgesichert durch Stripe',
+    subtitleSuccess: 'Ihre Unterstützung ist eingegangen ❤️',
+    customPlaceholder: (min: string, max: string) => `Eigener Betrag (${min} ~ ${max})`,
+    minError: (min: string) => `Mindestbetrag ist ${min} (≈ 1 HKD)`,
+    maxError: (max: string) => `Höchstbetrag ist ${max} (≈ 1.000 HKD)`,
+    continueBtn: (amt: string) => `Weiter — ${amt}`,
+    processing: 'Wird verarbeitet…',
+    connectingStripe: 'Verbindung zu Stripe Checkout…',
+    successMsg: 'Zahlung erfolgreich, vielen Dank!',
+    leaveBlessing: 'Nachricht für den Autor hinterlassen',
+    namePlaceholder: 'Name oder Handle (optional)',
+    msgPlaceholder: 'Eine kurze Nachricht an den Autor… (optional)',
+    sendBlessing: 'Nachricht senden',
+    done: 'Fertig',
+    blessingDelivered: 'Nachricht zugestellt ✨',
+    blessingDeliveredSub: 'Vielen Dank für Ihre Unterstützung und Ermutigung!',
+    privacyNote: 'Keine Kartendaten werden gespeichert · End-to-End-Verschlüsselung via Stripe',
+    securedBy: 'Secured by',
+    rewardRecords: 'Spendenprotokoll ↗',
   },
 };
 
@@ -361,7 +436,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   useEffect(() => {
     const updateLocale = () => {
       const v = (document.documentElement.dataset.localeVariant || 'zh-CN') as LocaleKey;
-      if (v === 'zh-Hant' || v === 'en') {
+      if (['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'].includes(v)) {
         setLocaleVariant(v);
       } else {
         setLocaleVariant('zh-CN');
@@ -372,8 +447,11 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     const onLocaleChange = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
       const next = customEvent.detail as LocaleKey;
-      if (next === 'zh-Hant' || next === 'en') setLocaleVariant(next);
-      else setLocaleVariant('zh-CN');
+      if (['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'].includes(next)) {
+        setLocaleVariant(next);
+      } else {
+        setLocaleVariant('zh-CN');
+      }
     };
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
@@ -424,7 +502,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       resetState();
       try {
         const v = (document.documentElement.dataset.localeVariant || window.localStorage.getItem('shijianus-locale-variant') || 'zh-CN') as LocaleKey;
-        if (v === 'zh-Hant' || v === 'en') setLocaleVariant(v);
+        if (['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'].includes(v)) setLocaleVariant(v);
         else setLocaleVariant('zh-CN');
       } catch {}
 

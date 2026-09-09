@@ -847,7 +847,443 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '标签索引': { en: 'Tag index', fr: 'Index des étiquettes', es: 'Índice de etiquetas', de: 'Schlagwort-Index' },
   '该分类下的文章': { en: 'Posts in this category', fr: 'Articles de cette catégorie', es: 'Artículos en esta categoría', de: 'Beiträge in dieser Kategorie' },
   '该标签下的文章': { en: 'Posts with this tag', fr: 'Articles avec cette étiquette', es: 'Artículos con esta etiqueta', de: 'Beiträge mit diesem Schlagwort' },
+
+  // Recommendation & Post End
+  '顺着这条线继续读': { en: 'Keep Reading Along This Line', fr: 'Continuer sur cette lancée', es: 'Continúa por esta línea', de: 'Weiter auf diesem Pfad' },
+  '再向前一步': { en: 'Take A Step Further', fr: 'Un pas de plus', es: 'Un paso más adelante', de: 'Einen Schritt weiter' },
+  '接着读': { en: 'Next Article', fr: 'Lire la suite', es: 'Siguiente lectura', de: 'Nächster Beitrag' },
+  '收起这条推荐': { en: 'Dismiss recommendation', fr: 'Masquer la recommandation', es: 'Ocultar recomendación', de: 'Empfehlung schließen' },
+  '接着读下一篇文章': { en: 'Read next post', fr: 'Lire l article suivant', es: 'Leer siguiente entrada', de: 'Nächsten Artikel lesen' },
+  '篇延伸阅读': { en: 'related posts', fr: 'lectures recommandées', es: 'lecturas recomendadas', de: 'empfohlene Beiträge' },
+
+  // AI Summary Panel
+  'Chronral 摘要': { en: 'Chronral Summary', fr: 'Résumé Chronral', es: 'Resumen Chronral', de: 'Chronral Zusammenfassung' },
+  '重新生成 / 刷新摘要': { en: 'Regenerate / Refresh summary', fr: 'Régénérer / Actualiser le résumé', es: 'Regenerar / Actualizar resumen', de: 'Zusammenfassung neu generieren' },
+  '重新生成 / 刷新摘要 (Refresh Summary)': { en: 'Regenerate / Refresh summary', fr: 'Régénérer / Actualiser le résumé', es: 'Regenerar / Actualizar resumen', de: 'Zusammenfassung neu generieren' },
+  '切换摘要引擎 (LLMGPT / InstanceAI / PrimerAI)': { en: 'Switch AI engine (LLMGPT / InstanceAI / PrimerAI)', fr: 'Changer de moteur IA (LLMGPT / InstanceAI / PrimerAI)', es: 'Cambiar motor de IA (LLMGPT / InstanceAI / PrimerAI)', de: 'KI-Engine wechseln (LLMGPT / InstanceAI / PrimerAI)' },
+  '切换摘要引擎': { en: 'Switch AI engine', fr: 'Changer de moteur IA', es: 'Cambiar motor de IA', de: 'KI-Engine wechseln' },
+  '当前摘要模式 (Current AI Mode)': { en: 'Current AI mode', fr: 'Mode IA actuel', es: 'Modo IA actual', de: 'Aktueller KI-Modus' },
+  '当前摘要模式': { en: 'Current AI mode', fr: 'Mode IA actuel', es: 'Modo IA actual', de: 'Aktueller KI-Modus' },
+  '正在通过 Chronral 智能提炼文章核心信息...': { en: 'Extracting key insights via Chronral AI...', fr: 'Extraction des informations clés via l IA Chronral...', es: 'Extrayendo ideas clave a través de IA Chronral...', de: 'Kerneinblicke werden mit Chronral KI extrahiert...' },
+  '💡 核心论点': { en: '💡 Key Points', fr: '💡 Points Clés', es: '💡 Puntos Clave', de: '💡 Kernaussagen' },
+  '🎯 适用读者': { en: '🎯 Target Audience', fr: '🎯 Public Cible', es: '🎯 Para Quién', de: '🎯 Zielgruppe' },
+  '⏱️ 30秒速读': { en: '⏱️ 30s Overview', fr: '⏱️ En 30s', es: '⏱️ En 30s', de: '⏱️ 30s Überblick' },
+  '🧠 实践启示': { en: '🧠 Key Takeaways', fr: '🧠 Enseignements', es: '🧠 Aprendizajes', de: '🧠 Praxiseinblicke' },
+  '👤 关于作者': { en: '👤 About Author', fr: '👤 À propos de l auteur', es: '👤 Sobre el autor', de: '👤 Über den Autor' },
+  '📚 推荐相关': { en: '📚 Related Reads', fr: '📚 Lectures Similaires', es: '📚 Lecturas Similares', de: '📚 Ähnliche Beiträge' },
+  '🔝 回到顶部': { en: '🔝 Back to Top', fr: '🔝 Haut de Page', es: '🔝 Volver Arriba', de: '🔝 Nach Oben' },
+  '提炼核心论点与关键技术方案': { en: 'Extract core arguments and technical solutions', fr: 'Extraire arguments et solutions techniques', es: 'Extraer argumentos clave y soluciones', de: 'Kerneinblicke und Lösungen herausarbeiten' },
+  '分析目标受众与解决的问题': { en: 'Analyze audience and solved problems', fr: 'Analyser le public cible et les solutions', es: 'Analizar audiencia objetivo y problemas resueltos', de: 'Zielgruppe und Nutzen analysieren' },
+  '30秒极速三句话概览': { en: '3-sentence quick summary in 30 seconds', fr: 'Aperçu en 3 phrases en 30 secondes', es: 'Resumen rápido de 3 frases en 30s', de: '3-Satz-Kurzüberblick in 30 Sekunden' },
+  '实践启示与工程思考': { en: 'Practical insights and architectural thoughts', fr: 'Perspectives pratiques et réflexions d ingénierie', es: 'Perspectivas prácticas e ingeniería', de: 'Praktische Erkenntnisse und Architekturüberlegungen' },
+  '深入了解博主与站点理念': { en: 'Learn more about author and blog philosophy', fr: 'En savoir plus sur l auteur et le blog', es: 'Conoce más sobre el autor y el blog', de: 'Mehr über den Autor und die Website erfahren' },
+  'AI 分析推荐理由并展开延伸阅读': { en: 'AI recommendations and extended reading', fr: 'Recommandations IA et lectures complémentaires', es: 'Recomendaciones de IA y lecturas sugeridas', de: 'KI-Empfehlungen und weiterführende Lektüre' },
+  '平滑回到文章顶部': { en: 'Smooth scroll to top', fr: 'Défilement fluide vers le haut', es: 'Desplazamiento suave arriba', de: 'Sanft nach oben scrollen' },
+
+  // Author Card & Profile
+  '以技术沉淀记忆，用设计表达温度': {
+    en: 'Precipitating memory with technology, expressing warmth through design',
+    fr: 'Précipiter la mémoire par la technologie, exprimer la chaleur par le design',
+    es: 'Precipitando la memoria con tecnología, expresando calidez con diseño',
+    de: 'Erinnerung durch Technologie bewahren, Wärme durch Design ausdrücken'
+  },
+  '全栈开发者 / 架构设计师': {
+    en: 'Full-Stack Developer / Architect',
+    fr: 'Développeur Full-Stack / Architecte',
+    es: 'Desarrollador Full-Stack / Arquitecto',
+    de: 'Full-Stack-Entwickler / Architekt'
+  },
+  '✨ 欢迎探索 💡': { en: '✨ Welcome & Explore 💡', fr: '✨ Bienvenue & Explorer 💡', es: '✨ Bienvenido & Explorar 💡', de: '✨ Willkommen & Entdecken 💡' },
+  '💡 技术干货 ✖️ 避坑指南': { en: '💡 Tech Insights ✖️ Pitfall Guides', fr: '💡 Retours d expérience ✖️ Bonnes pratiques', es: '💡 Claves técnicas ✖️ Guías prácticas', de: '💡 Technische Einblicke ✖️ Praxisleitfäden' },
+  '🚀 拓展数字边境 🛡️': { en: '🚀 Expanding Digital Frontiers 🛡️', fr: '🚀 Repousser les frontières numériques 🛡️', es: '🚀 Expandiendo fronteras digitales 🛡️', de: '🚀 Digitale Grenzen erweitern 🛡️' },
+  '🧬 跨界折腾记录 🐧': { en: '🧬 Cross-Domain Tinkering Logs 🐧', fr: '🧬 Carnet d expérimentations 🐧', es: '🧬 Registros de experimentación 🐧', de: '🧬 Interdisziplinäre Notizen 🐧' },
+  '☕ 愿对你有启发': { en: '☕ Hope it inspires you', fr: '☕ En espérant que cela vous inspire', es: '☕ Espero que te inspire', de: '☕ Hoffentlich inspiriert es dich' },
+
+  // Sidebar & Web Info
+  '文章分类': { en: 'Categories', fr: 'Catégories', es: 'Categorías', de: 'Kategorien' },
+  '热门标签': { en: 'Popular Tags', fr: 'Étiquettes populaires', es: 'Etiquetas populares', de: 'Beliebte Schlagwörter' },
+  '站点资讯': { en: 'Site Info', fr: 'Infos du site', es: 'Información del sitio', de: 'Website-Info' },
+  '全站字数': { en: 'Total Words', fr: 'Nombre de mots', es: 'Palabras totales', de: 'Wörter gesamt' },
+  '建站天数': { en: 'Days Online', fr: 'Jours en ligne', es: 'Días en línea', de: 'Tage online' },
+  '运行时间': { en: 'Uptime', fr: 'Temps de fonctionnement', es: 'Tiempo activo', de: 'Betriebszeit' },
+  '最后更新': { en: 'Last Updated', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Zuletzt aktualisiert' },
+  '本站访客数': { en: 'Total Visitors', fr: 'Visiteurs uniques', es: 'Visitantes únicos', de: 'Besucher gesamt' },
+  '访问总量': { en: 'Total Views', fr: 'Vues totales', es: 'Visitas totales', de: 'Aufrufe gesamt' },
+  '持续更新': { en: 'Continuous updates', fr: 'Mises à jour continues', es: 'Actualizaciones continuas', de: 'Laufende Aktualisierungen' },
+  '切换目录层级 (全部 / 1级 / 2级 / 3级)': { en: 'Toggle TOC levels (All / L1 / L2 / L3)', fr: 'Changer le niveau du sommaire (Tous / N1 / N2 / N3)', es: 'Alternar niveles de índice (Todos / N1 / N2 / N3)', de: 'Inhaltsverzeichnisebenen umschalten (Alle / E1 / E2 / E3)' },
+  '切换目录层级': { en: 'Toggle TOC levels', fr: 'Changer de niveau', es: 'Alternar niveles', de: 'Ebenen umschalten' },
+
+  // Post Hero Meta Labels
+  '发表于': { en: 'Published on', fr: 'Publié le', es: 'Publicado el', de: 'Veröffentlicht am' },
+  '更新于': { en: 'Updated on', fr: 'Mis à jour le', es: 'Actualizado el', de: 'Aktualisiert am' },
+  '字数': { en: 'Word count', fr: 'Nombre de mots', es: 'Palabras', de: 'Wörter' },
+  '时长': { en: 'Reading time', fr: 'Durée de lecture', es: 'Tiempo de lectura', de: 'Lesezeit' },
+  '阅读': { en: 'Reading', fr: 'Lecture', es: 'Lectura', de: 'Lesedauer' },
+  '浏览': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
+  '停留': { en: 'Dwell time', fr: 'Temps passé', es: 'Permanencia', de: 'Verweildauer' },
+  '受限': { en: 'Restricted', fr: 'Accès restreint', es: 'Restringido', de: 'Eingeschränkt' },
+
+  // Copyright, Sharing & Rewards
+  '手机扫码阅读': { en: 'Scan QR to read on mobile', fr: 'Scanner pour lire sur mobile', es: 'Escanear QR para leer en móvil', de: 'QR scannen für Mobilansicht' },
+  '使用手机扫码（点击复制二维码）': { en: 'Scan with mobile (Click to copy QR)', fr: 'Scanner avec mobile (Cliquer pour copier le QR)', es: 'Escanear con móvil (Clic para copiar QR)', de: 'Mit Handy scannen (Klicken zum Kopieren)' },
+  '复制文章链接': { en: 'Copy post link', fr: 'Copier le lien', es: 'Copiar enlace', de: 'Link kopieren' },
+  '文章原创标识': { en: 'Original post badge', fr: 'Badge d originalité', es: 'Insignia de original', de: 'Original-Beitrags-Kennzeichnung' },
+  '分享到 QQ': { en: 'Share to QQ', fr: 'Partager sur QQ', es: 'Compartir en QQ', de: 'Auf QQ teilen' },
+  '分享到 QQ 空间': { en: 'Share to Qzone', fr: 'Partager sur Qzone', es: 'Compartir en Qzone', de: 'Auf Qzone teilen' },
+  '分享到哔哩哔哩': { en: 'Share to Bilibili', fr: 'Partager sur Bilibili', es: 'Compartir en Bilibili', de: 'Auf Bilibili teilen' },
+  '分享到新浪微博': { en: 'Share to Weibo', fr: 'Partager sur Weibo', es: 'Compartir en Weibo', de: 'Auf Weibo teilen' },
+  '文章二维码': { en: 'Post QR Code', fr: 'QR Code de l article', es: 'Código QR del artículo', de: 'Beitrags-QR-Code' },
+  '点击直接将二维码图片复制到剪贴板': { en: 'Click to copy QR image to clipboard', fr: 'Cliquer pour copier l image QR', es: 'Clic para copiar imagen QR', de: 'Klicken, um QR-Bild zu kopieren' },
+  '已复制到剪贴板': { en: 'Copied to clipboard', fr: 'Copié dans le presse-papier', es: 'Copiado al portapapeles', de: 'In die Zwischenablage kopiert' },
+  '链接已复制': { en: 'Link copied', fr: 'Lien copié', es: 'Enlace copiado', de: 'Link kopiert' },
+  '赞赏支持': { en: 'Support & Sponsor', fr: 'Soutien & Don', es: 'Patrocinio & Apoyo', de: 'Unterstützung & Spende' },
+  '赞赏支持作者': { en: 'Sponsor the author', fr: 'Soutenir l auteur', es: 'Apoyar al autor', de: 'Autor unterstützen' },
+  'Stripe 国际收银台': { en: 'Stripe International Checkout', fr: 'Caisse internationale Stripe', es: 'Pasarela internacional Stripe', de: 'Stripe International Kasse' },
+  '推荐': { en: 'Recommended', fr: 'Recommandé', es: 'Recomendado', de: 'Empfohlen' },
+  '信用卡 · Apple Pay · Google Pay · Link': { en: 'Credit Card · Apple Pay · Google Pay · Link', fr: 'Carte bancaire · Apple Pay · Google Pay · Link', es: 'Tarjeta de crédito · Apple Pay · Google Pay · Link', de: 'Kreditkarte · Apple Pay · Google Pay · Link' },
+  '赞赏支持扩展栏': { en: 'Sponsor Extension Panel', fr: 'Panneau de soutien', es: 'Panel de apoyo', de: 'Unterstützer-Bereich' },
+  '手机访问': { en: 'Mobile Access', fr: 'Accès mobile', es: 'Acceso móvil', de: 'Mobilzugriff' },
+
+  // Comments System
+  '正在加载评论...': { en: 'Loading comments...', fr: 'Chargement des commentaires...', es: 'Cargando comentarios...', de: 'Kommentare werden geladen...' },
+  '⏱️ 最新': { en: '⏱️ Latest', fr: '⏱️ Récents', es: '⏱️ Más recientes', de: '⏱️ Neueste' },
+  '🔥 最热': { en: '🔥 Hottest', fr: '🔥 Populaires', es: '🔥 Más populares', de: '🔥 Beliebteste' },
+  '✏️ 编辑': { en: '✏️ Edit', fr: '✏️ Éditer', es: '✏️ Editar', de: '✏️ Bearbeiten' },
+  '👁️ 预览': { en: '👁️ Preview', fr: '👁️ Aperçu', es: '👁️ Vista previa', de: '👁️ Vorschau' },
+  '取消': { en: 'Cancel', fr: 'Annuler', es: 'Cancelar', de: 'Abbrechen' },
+  '发送中...': { en: 'Sending...', fr: 'Envoi en cours...', es: 'Enviando...', de: 'Wird gesendet...' },
+  '回复此评论': { en: 'Reply to this comment', fr: 'Répondre à ce commentaire', es: 'Responder a este comentario', de: 'Auf diesen Kommentar antworten' },
+  '引用此条内容发表评论': { en: 'Quote this comment', fr: 'Citer ce commentaire', es: 'Citar este comentario', de: 'Diesen Kommentar zitieren' },
+  '编辑此条评论': { en: 'Edit this comment', fr: 'Modifier ce commentaire', es: 'Editar este commentaire', de: 'Diesen Kommentar bearbeiten' },
+  '删除此条评论': { en: 'Delete this comment', fr: 'Supprimer ce commentaire', es: 'Eliminar este commentaire', de: 'Diesen Kommentar löschen' },
+  '切换为普通回复': { en: 'Switch to standard reply', fr: 'Passer en réponse standard', es: 'Cambiar a respuesta estándar', de: 'Zu normaler Antwort wechseln' },
+  '切换为 Boost (≤16字)': { en: 'Switch to Boost (≤16 chars)', fr: 'Passer en Boost (≤16 car.)', es: 'Cambiar a Boost (≤16 car.)', de: 'Zu Boost wechseln (≤16 Z.)' },
+  '火箭 Boost 回复模式 (≤16字)': { en: 'Rocket Boost Reply (≤16 chars)', fr: 'Mode Réponse Boost (≤16 car.)', es: 'Modo Respuesta Boost (≤16 car.)', de: 'Rocket-Boost-Modus (≤16 Z.)' },
+
+  // Footer & Philosophy
+  '把博客当成长期维护的软件来做。': {
+    en: 'Building the blog as long-term maintained software.',
+    fr: 'Concevoir le blog comme un logiciel maintenu sur le long terme.',
+    es: 'Construir el blog como software mantenido a largo plazo.',
+    de: 'Den Blog als langfristig gewartete Software entwickeln.'
+  },
+  '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。': {
+    en: 'Maintaining high information density, clear feedback, and stable layout into a truly evolving content system.',
+    fr: 'Maintenir une haute densité d information, des retours clairs et une mise en page stable dans un système évolutif.',
+    es: 'Mantener alta densidad de información, retroalimentación clara y maquetación estable en un sistema en constante evolución.',
+    de: 'Hohe Informationsdichte, klares Feedback und stabiles Layout zu einem zukunftsfähigen Inhaltssystem verbinden.'
+  },
+  '运行状态': { en: 'Operational Status', fr: 'État du système', es: 'Estado del sistema', de: 'Betriebsstatus' },
+  '持续维护中': { en: 'Under Active Maintenance', fr: 'En maintenance active', es: 'En mantenimiento activo', de: 'Wird aktiv gepflegt' },
+  '设计对齐': { en: 'Design Alignment', fr: 'Alignement du design', es: 'Alineación de diseño', de: 'Design-Ausrichtung' },
+  '重构进度': { en: 'Refactor Progress', fr: 'Progression de la refonte', es: 'Progreso de refactorización', de: 'Refaktorierungsfortschritt' },
+  '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
+  '系统设计': { en: 'System Design', fr: 'Architecture système', es: 'Diseño de sistemas', de: 'Systemdesign' },
+  '前端工程': { en: 'Frontend Engineering', fr: 'Ingénierie Frontend', es: 'Ingeniería Frontend', de: 'Frontend-Engineering' },
+  '关于本站': { en: 'About Site', fr: 'À propos du site', es: 'Acerca del sitio', de: 'Über die Website' },
+  '前往友链': { en: 'Visit Friends', fr: 'Voir les amis', es: 'Visitar amigos', de: 'Zu den Freunden' },
+  '文章总览': { en: 'Archive Overview', fr: 'Vue d ensemble', es: 'Visión general', de: 'Gesamtübersicht' },
+
+  // Navigation & Submenus
+  '文章': { en: 'Articles', fr: 'Articles', es: 'Artículos', de: 'Artikel' },
+  '全部文章': { en: 'All Posts', fr: 'Tous les articles', es: 'Todos los artículos', de: 'Alle Beiträge' },
+  '时间线总览': { en: 'Timeline Overview', fr: 'Chronologie globale', es: 'Visión general', de: 'Zeitleisten-Übersicht' },
+  '按主题浏览文章': { en: 'Browse by topic', fr: 'Parcourir par thème', es: 'Explorar por tema', de: 'Nach Themen durchsuchen' },
+  '标签聚合': { en: 'Tag Aggregation', fr: 'Agrégation des tags', es: 'Agrupación de etiquetas', de: 'Schlagwort-Übersicht' },
+  '关键词索引': { en: 'Keyword Index', fr: 'Index des mots-clés', es: 'Índice de palabras clave', de: 'Stichwort-Index' },
+  '友邻': { en: 'Friends', fr: 'Amis', es: 'Amigos', de: 'Freunde' },
+  '友人帐': { en: 'Friend List', fr: 'Liste d amis', es: 'Lista de amigos', de: 'Freundesliste' },
+  '互链、社群与交流入口': { en: 'Exchange & Community entry', fr: 'Échange & Entrée communauté', es: 'Intercambio y comunidad', de: 'Austausch & Community-Zugang' },
+  '留言板': { en: 'Guestbook', fr: 'Livre d or', es: 'Libro de visitas', de: 'Gästebuch' },
+  '朋友圈': { en: 'Moments', fr: 'Moments', es: 'Momentos', de: 'Momente' },
+  '工坊': { en: 'Workshop', fr: 'Atelier', es: 'Taller', de: 'Werkstatt' },
+  '实验田': { en: 'Experimental Lab', fr: 'Labo expérimental', es: 'Laboratorio experimental', de: 'Experimentierfeld' },
+  '留声机': { en: 'Gramophone', fr: 'Gramophone', es: 'Gramófono', de: 'Grammophon' },
+  '放映室': { en: 'Cinema', fr: 'Salle de projection', es: 'Sala de cine', de: 'Kinosaal' },
+  '音乐播放器': { en: 'Music Player', fr: 'Lecteur audio', es: 'Reproductor de musique', de: 'Musikplayer' },
+  '视频播放器': { en: 'Video Player', fr: 'Lecteur vidéo', es: 'Reproductor de video', de: 'Videoplayer' },
+  '关于作者': { en: 'About Author', fr: 'À propos de l auteur', es: 'Sobre el autor', de: 'Über den Autor' },
+  '作者与站点说明': { en: 'Author & site info', fr: 'Auteur et infos du site', es: 'Autor e información', de: 'Autor- & Website-Infos' },
+  '查看当前重构进度': { en: 'View refactor progress', fr: 'Voir la progression', es: 'Ver progreso', de: 'Fortschritt anzeigen' },
+  '尚在整理中的专题入口': { en: 'Topics in preparation', fr: 'Sujets en cours', es: 'Temas en preparación', de: 'Themen in Vorbereitung' },
+  '进入归档': { en: 'Enter Archives', fr: 'Accéder aux archives', es: 'Ir al archivo', de: 'Zum Archiv' },
+  '随便逛逛': { en: 'Random Post', fr: 'Article au hasard', es: 'Artículo aleatorio', de: 'Zufälliger Beitrag' },
+  '打开当前推荐文章': { en: 'Open recommended post', fr: 'Ouvrir l article recommandé', es: 'Abrir artículo recomendado', de: 'Empfohlenen Beitrag öffnen' },
+  '点击快速进入当前推荐文章': { en: 'Click to open recommendation', fr: 'Cliquer pour ouvrir la recommandation', es: 'Clic para abrir recomendación', de: 'Klicken für Empfehlung' },
+  '更多推荐': { en: 'More Recommendations', fr: 'Plus de recommandations', es: 'Más recomendaciones', de: 'Weitere Empfehlungen' },
+  '推荐卡组会在这里继续展开': { en: 'More recommendations expand here', fr: 'Les recommandations se déplient ici', es: 'Las recomendaciones se expanden aquí', de: 'Weitere Empfehlungen klappen hier aus' },
+  '创意工坊': { en: 'Creative Workshop', fr: 'Atelier créatif', es: 'Taller creativo', de: 'Kreativwerkstatt' },
+  '开始阅读': { en: 'Start Reading', fr: 'Commencer la lecture', es: 'Comenzar a leer', de: 'Jetzt lesen' },
+  '关于主题': { en: 'About Theme', fr: 'À propos du thème', es: 'Acerca del tema', de: 'Über das Theme' },
+  '向右查看更多分类': { en: 'Scroll right for more categories', fr: 'Faites défiler vers la droite', es: 'Desplaza para ver más', de: 'Nach rechts scrollen für mehr' },
+
+  // Profile Widget & Bio
+  '深耕系统重构与网络工程领域的真实折腾记录。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。持续构筑外脑知识库，期冀这些极客向的碎片随笔，能提供些许实战参考。': {
+    en: 'Hands-on records in system refactoring and network engineering. Focusing on core low-level logic and practical pitfall guides. Building an external second brain, hoping these geeky essays offer practical value.',
+    fr: 'Carnet d expérimentations en refonte système et ingénierie réseau. Centré sur la logique bas niveau et les retours d expérience. Bâtir un second cerveau pour offrir des références concrètes.',
+    es: 'Registros reales de experimentación en refactorización de sistemas e ingeniería de redes. Enfocado en la lógica central y guías prácticas. Construyendo un segundo cerebro digital útil.',
+    de: 'Praxisnahe Aufzeichnungen zu System-Refactoring und Netzwerktechnik. Fokus auf Kernlogik und Vermeidung von Fallstricken. Ein digitales Second Brain für handfeste Praxisreferenzen.'
+  },
+  '作者链接': { en: 'Author Links', fr: 'Liens de l auteur', es: 'Enlaces del autor', de: 'Autorenlinks' },
+
+  // Post Navigation
+  '阅读导航': { en: 'Post Navigation', fr: 'Navigation des articles', es: 'Navegación de entradas', de: 'Beitragsnavigation' },
+  '上一篇 / 下一篇': { en: 'Previous / Next Post', fr: 'Article précédent / suivant', es: 'Artículo anterior / siguiente', de: 'Vorheriger / Nächster Beitrag' },
+  '较新文章': { en: 'Newer post', fr: 'Article plus récent', es: 'Artículo más reciente', de: 'Neuerer Beitrag' },
+  '较早文章': { en: 'Older post', fr: 'Article plus ancien', es: 'Artículo más antiguo', de: 'Älterer Beitrag' },
+
+  // Post Copyright & Share
+  '除特别声明外，本博客所有文章均采用 ': { en: 'Except where otherwise noted, all posts are licensed under ', fr: 'Sauf mention contraire, tous les articles sont sous licence ', es: 'Salvo indicación contraria, todos los artículos están bajo licencia ', de: 'Sofern nicht anders angegeben, stehen alle Beiträge unter der Lizenz ' },
+  '除特别声明外，本博客所有文章均采用': { en: 'Except where otherwise noted, all posts are licensed under ', fr: 'Sauf mention contraire, tous les articles sont sous licence ', es: 'Salvo indicación contraria, todos los artículos están bajo licencia ', de: 'Sofern nicht anders angegeben, stehen alle Beiträge unter der Lizenz ' },
+  ' 许可协议。转载请注明来自 ': { en: '. Attribution required, please link back to ', fr: '. Attribution requise, veuillez créditer ', es: '. Se requiere atribución, mencione como fuente a ', de: '. Namensnennung erforderlich, bitte verlinken auf ' },
+  '许可协议。转载请注明来自': { en: '. Attribution required, please link back to ', fr: '. Attribution requise, veuillez créditer ', es: '. Se requiere atribución, mencione como fuente a ', de: '. Namensnennung erforderlich, bitte verlinken auf ' },
+  '分享到 WhatsApp': { en: 'Share to WhatsApp', fr: 'Partager sur WhatsApp', es: 'Compartir en WhatsApp', de: 'Auf WhatsApp teilen' },
+  '分享到 LINE': { en: 'Share to LINE', fr: 'Partager sur LINE', es: 'Compartir en LINE', de: 'Auf LINE teilen' },
+  '分享到 Threads': { en: 'Share to Threads', fr: 'Partager sur Threads', es: 'Compartir en Threads', de: 'Auf Threads teilen' },
+  '分享到 X': { en: 'Share to X', fr: 'Partager sur X', es: 'Compartir en X', de: 'Auf X teilen' },
+  '分享到 Facebook': { en: 'Share to Facebook', fr: 'Partager sur Facebook', es: 'Compartir en Facebook', de: 'Auf Facebook teilen' },
+  '分享到 LinkedIn': { en: 'Share to LinkedIn', fr: 'Partager sur LinkedIn', es: 'Compartir en LinkedIn', de: 'Auf LinkedIn teilen' },
+  '分享到 Reddit': { en: 'Share to Reddit', fr: 'Partager sur Reddit', es: 'Compartir en Reddit', de: 'Auf Reddit teilen' },
+  '分享到 Snapchat': { en: 'Share to Snapchat', fr: 'Partager sur Snapchat', es: 'Compartir en Snapchat', de: 'Auf Snapchat teilen' },
+  '通过邮件分享': { en: 'Share via Email', fr: 'Partager par e-mail', es: 'Compartir por correo', de: 'Per E-Mail teilen' },
+  '已唤起系统分享': { en: 'System share opened', fr: 'Partage système ouvert', es: 'Compartir del sistema abierto', de: 'System-Freigabe geöffnet' },
+  '当前环境不支持系统分享，已复制链接': { en: 'System share unavailable, link copied', fr: 'Partage système non supporté, lien copié', es: 'Compartir no disponible, enlace copiado', de: 'Systemfreigabe nicht verfügbar, Link kopiert' },
+
+  // Reward Extension
+  '点击跳转 ↗': { en: 'Open ↗', fr: 'Ouvrir ↗', es: 'Abrir ↗', de: 'Öffnen ↗' },
+  '点击复制地址': { en: 'Copy address', fr: 'Copier l adresse', es: 'Copiar dirección', de: 'Adresse kopieren' },
+  '点击复制 USDT 钱包地址': { en: 'Copy USDT address', fr: 'Copier l adresse USDT', es: 'Copiar dirección USDT', de: 'USDT-Adresse kopieren' },
+  '已复制 USDT (Arbitrum) 钱包地址': { en: 'USDT (Arbitrum) address copied', fr: 'Adresse USDT (Arbitrum) copiée', es: 'Dirección USDT (Arbitrum) copiada', de: 'USDT-Adresse (Arbitrum) kopiert' },
+  '选择地区优选通道': { en: 'Select preferred channel', fr: 'Sélectionner le canal préféré', es: 'Seleccionar canal preferido', de: 'Bevorzugten Kanal wählen' },
+  '恢复自动 IP 识别': { en: 'Reset to auto IP detection', fr: 'Rétablir détection IP auto', es: 'Restablecer detección IP auto', de: 'Auf automatische IP zurücksetzen' },
+  '微信扫一扫': { en: 'Scan with WeChat', fr: 'Scanner avec WeChat', es: 'Escanear con WeChat', de: 'Mit WeChat scannen' },
+  '支付宝扫一扫': { en: 'Scan with Alipay', fr: 'Scanner avec Alipay', es: 'Escanear con Alipay', de: 'Mit Alipay scannen' },
+  '如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️': { en: 'If this helped, feel free to buy me a coffee ☕️', fr: 'Si le contenu vous a été utile, offrez-moi un café ☕️', es: 'Si el contenido te ayudó, invítame un café ☕️', de: 'Wenn der Inhalt geholfen hat, lade mich auf einen Kaffee ein ☕️' },
+  '手机端可长按或截图保存二维码扫码支持 ☕️': { en: 'Long press or screenshot QR to sponsor on mobile ☕️', fr: 'Appui long ou capture d écran pour scanner sur mobile ☕️', es: 'Mantén presionado o captura pantalla para escanear ☕️', de: 'Lange drücken oder Screenshot für Mobilzahlung ☕️' },
+
+  // Comments
+  '刚刚': { en: 'Just now', fr: 'À l instant', es: 'Ahora mismo', de: 'Gerade eben' },
+  '已编辑': { en: 'Edited', fr: 'Modifié', es: 'Editado', de: 'Bearbeitet' },
+  '点赞': { en: 'Like', fr: 'J aime', es: 'Me gusta', de: 'Gefällt mir' },
+  '置顶': { en: 'Pinned', fr: 'Épinglé', es: 'Fijado', de: 'Angeheftet' },
+  '暂无评论，快来抢沙发吧！': { en: 'No comments yet. Be the first to share your thoughts!', fr: 'Aucun commentaire. Soyez le premier à réagir !', es: 'Aún no hay comentarios. ¡Sé el primero en opinar!', de: 'Noch keine Kommentare. Sei der Erste!' },
+  '暂无公开评论': { en: 'No public comments yet', fr: 'Aucun commentaire public pour le moment', es: 'Aún no hay comentarios públicos', de: 'Noch keine öffentlichen Kommentare' },
+  '畅所欲言，发表你的见解...': { en: 'Share your thoughts, join the discussion...', fr: 'Partagez vos réflexions, participez à la discussion...', es: 'Comparte tu opinión, únete a la conversación...', de: 'Teile deine Gedanken, nimm an der Diskussion teil...' },
+  '写下你的打气祝福（不超过16字）...': { en: 'Write your cheer note (max 16 chars)...', fr: 'Écrivez un mot d encouragement (max 16 car.)...', es: 'Escribe un mensaje de ánimo (máx. 16 car.)...', de: 'Schreibe eine Aufmunterung (max. 16 Zeichen)...' },
+
+  // Sidebar & Web Info
+  '站点运行': { en: 'Site Uptime', fr: 'Temps en ligne', es: 'Tiempo activo', de: 'Betriebszeit' },
+  '内容仍在持续整理': { en: 'Content continuously organized', fr: 'Contenu continuellement organisé', es: 'Contenido en constante organización', de: 'Inhalte werden laufend gepflegt' },
+  '优先修正阅读与侧栏体验': { en: 'Refining reading & sidebar UX', fr: 'Optimisation de la lecture et barre latérale', es: 'Refinando lectura y barra lateral', de: 'Lesefluss & Seitenleisten-UX optimieren' },
+  '文章数目': { en: 'Articles', fr: 'Articles', es: 'Artículos', de: 'Artikelanzahl' },
+  '已运行时间': { en: 'Uptime', fr: 'Temps en ligne', es: 'Tiempo activo', de: 'Betriebszeit' },
+  '本站总字数': { en: 'Total Words', fr: 'Mots totaux', es: 'Palabras totales', de: 'Wörter gesamt' },
+  '本站总访问量': { en: 'Total Views', fr: 'Vues totales', es: 'Visitas totales', de: 'Aufrufe gesamt' },
+  '最后更新时间': { en: 'Last Updated', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Zuletzt aktualisiert' },
+  '加入 chronoral 社群': { en: 'Join chronoral community', fr: 'Rejoindre chronoral', es: 'Unirse a chronoral', de: 'chronoral Community beitreten' },
+  '海外更新、测试通知和小范围交流入口。': { en: 'Overseas updates, testing notices, and discussions.', fr: 'Mises à jour, annonces et discussions.', es: 'Actualizaciones, avisos y discusiones.', de: 'Updates, Testankündigungen und Diskussionen.' },
+  '加入': { en: 'Join', fr: 'Rejoindre', es: 'Unirse', de: 'Beitreten' },
+  '扫码加入': { en: 'Scan QR to join', fr: 'Scanner pour rejoindre', es: 'Escanear para unirse', de: 'QR scannen zum Beitreten' },
+  '悬停翻面查看二维码，点击直接跳转 Telegram。': { en: 'Hover to flip for QR, click to open Telegram.', fr: 'Survolez pour le QR, cliquez pour ouvrir Telegram.', es: 'Pase el ratón para ver QR, clic para Telegram.', de: 'Hover für QR-Code, Klick öffnet Telegram.' },
+  '界面状态': { en: 'Interface Status', fr: 'État de l interface', es: 'Estado de la interfaz', de: 'Oberflächenstatus' },
+  '继续打磨真实可用的阅读与交互手感': { en: 'Refining authentic reading feel & tactile ergonomics', fr: 'Perfectionnement du confort de lecture et d ergonomie', es: 'Refinando el tacto de lectura y ergonomía', de: 'Lesefluss & Haptik weiter verfeinern' },
+  '目录固定': { en: 'Sticky TOC', fr: 'Sommaire fixe', es: 'Índice fijo', de: 'Fixiertes Inhaltsverzeichnis' },
+  '首页分页': { en: 'Home Pagination', fr: 'Pagination accueil', es: 'Paginación de inicio', de: 'Startseiten-Pagination' },
+  '动态头像': { en: 'Dynamic Avatar', fr: 'Avatar dynamique', es: 'Avatar dinámico', de: 'Dynamischer Avatar' },
+  '查看更多': { en: 'View More', fr: 'Voir plus', es: 'Ver más', de: 'Mehr anzeigen' },
+
+  // Footer & Runtime
+  '目前正在同步打磨首页、文章页、页脚、按钮反馈与交互动效。': {
+    en: 'Currently polishing homepage, articles, footer, button feedback, and motion effects.',
+    fr: 'Peaufinage de l accueil, des articles, du pied de page et des animations.',
+    es: 'Actualmente puliendo inicio, artículos, pie de página y animaciones.',
+    de: 'Startseite, Artikel, Footer und Animationen werden derzeit verfeinert.'
+  },
 };
+
+export interface PatternRule {
+  pattern: RegExp;
+  replace: Record<SupportedLocale, (match: RegExpMatchArray) => string>;
+}
+
+export const DYNAMIC_PATTERNS: PatternRule[] = [
+  {
+    pattern: /^(\d+(?:\.\d+)?k?)\s*节$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 节`,
+      'zh-Hant': (m) => `${m[1]} 節`,
+      en: (m) => `${m[1]} sections`,
+      fr: (m) => `${m[1]} sections`,
+      es: (m) => `${m[1]} secciones`,
+      de: (m) => `${m[1]} Abschnitte`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*篇$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 篇`,
+      'zh-Hant': (m) => `${m[1]} 篇`,
+      en: (m) => `${m[1]} posts`,
+      fr: (m) => `${m[1]} articles`,
+      es: (m) => `${m[1]} publicaciones`,
+      de: (m) => `${m[1]} Beiträge`,
+    },
+  },
+  {
+    pattern: /^(\d+(?:\.\d+)?k?)\s*字$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 字`,
+      'zh-Hant': (m) => `${m[1]} 字`,
+      en: (m) => `${m[1]} words`,
+      fr: (m) => `${m[1]} mots`,
+      es: (m) => `${m[1]} palabras`,
+      de: (m) => `${m[1]} Wörter`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*分钟$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 分钟`,
+      'zh-Hant': (m) => `${m[1]} 分鐘`,
+      en: (m) => `${m[1]} min`,
+      fr: (m) => `${m[1]} min`,
+      es: (m) => `${m[1]} min`,
+      de: (m) => `${m[1]} Min.`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*次$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 次`,
+      'zh-Hant': (m) => `${m[1]} 次`,
+      en: (m) => `${m[1]} views`,
+      fr: (m) => `${m[1]} vues`,
+      es: (m) => `${m[1]} vistas`,
+      de: (m) => `${m[1]} Aufrufe`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*篇延伸阅读$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 篇延伸阅读`,
+      'zh-Hant': (m) => `${m[1]} 篇延伸閱讀`,
+      en: (m) => `${m[1]} related posts`,
+      fr: (m) => `${m[1]} lectures recommandées`,
+      es: (m) => `${m[1]} lecturas recomendadas`,
+      de: (m) => `${m[1]} empfohlene Beiträge`,
+    },
+  },
+  {
+    pattern: /^查看\s*(\d+)\s*条回复$/i,
+    replace: {
+      'zh-CN': (m) => `查看 ${m[1]} 条回复`,
+      'zh-Hant': (m) => `查看 ${m[1]} 條回覆`,
+      en: (m) => `View ${m[1]} replies`,
+      fr: (m) => `Voir ${m[1]} réponses`,
+      es: (m) => `Ver ${m[1]} respuestas`,
+      de: (m) => `${m[1]} Antworten anzeigen`,
+    },
+  },
+  {
+    pattern: /^收起\s*(\d+)\s*条回复$/i,
+    replace: {
+      'zh-CN': (m) => `收起 ${m[1]} 条回复`,
+      'zh-Hant': (m) => `收起 ${m[1]} 條回覆`,
+      en: (m) => `Collapse ${m[1]} replies`,
+      fr: (m) => `Masquer ${m[1]} réponses`,
+      es: (m) => `Ocultar ${m[1]} respuestas`,
+      de: (m) => `${m[1]} Antworten einklappen`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*天$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 天`,
+      'zh-Hant': (m) => `${m[1]} 天`,
+      en: (m) => `${m[1]} days`,
+      fr: (m) => `${m[1]} jours`,
+      es: (m) => `${m[1]} días`,
+      de: (m) => `${m[1]} Tage`,
+    },
+  },
+  {
+    pattern: /^博客已萌萌哒运行了\s*(\d+)\s*天\s*(\d+)\s*小时\s*(\d+)\s*分\s*(\d+)\s*秒$/i,
+    replace: {
+      'zh-CN': (m) => `博客已萌萌哒运行了 ${m[1]} 天 ${m[2]} 小时 ${m[3]} 分 ${m[4]} 秒`,
+      'zh-Hant': (m) => `部落格已萌萌噠運行了 ${m[1]} 天 ${m[2]} 小時 ${m[3]} 分 ${m[4]} 秒`,
+      en: (m) => `Blog running for ${m[1]}d ${m[2]}h ${m[3]}m ${m[4]}s`,
+      fr: (m) => `Blog actif depuis ${m[1]}j ${m[2]}h ${m[3]}m ${m[4]}s`,
+      es: (m) => `Blog activo durante ${m[1]}d ${m[2]}h ${m[3]}m ${m[4]}s`,
+      de: (m) => `Blog aktiv seit ${m[1]}T ${m[2]}Std ${m[3]}Min ${m[4]}Sek`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*个跳转入口$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 个跳转入口`,
+      'zh-Hant': (m) => `${m[1]} 個跳轉入口`,
+      en: (m) => `${m[1]} navigation links`,
+      fr: (m) => `${m[1]} liens de navigation`,
+      es: (m) => `${m[1]} enlaces de navegación`,
+      de: (m) => `${m[1]} Navigationslinks`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*分钟前$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 分钟前`,
+      'zh-Hant': (m) => `${m[1]} 分鐘前`,
+      en: (m) => `${m[1]}m ago`,
+      fr: (m) => `il y a ${m[1]} min`,
+      es: (m) => `hace ${m[1]} min`,
+      de: (m) => `vor ${m[1]} Min.`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*小时前$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 小时前`,
+      'zh-Hant': (m) => `${m[1]} 小時前`,
+      en: (m) => `${m[1]}h ago`,
+      fr: (m) => `il y a ${m[1]} h`,
+      es: (m) => `hace ${m[1]} h`,
+      de: (m) => `vor ${m[1]} Std.`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*天前$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 天前`,
+      'zh-Hant': (m) => `${m[1]} 天前`,
+      en: (m) => `${m[1]}d ago`,
+      fr: (m) => `il y a ${m[1]} j`,
+      es: (m) => `hace ${m[1]} d`,
+      de: (m) => `vor ${m[1]} T.`,
+    },
+  },
+  {
+    pattern: /^始于\s*(.+)$/i,
+    replace: {
+      'zh-CN': (m) => `始于 ${m[1]}`,
+      'zh-Hant': (m) => `始於 ${m[1]}`,
+      en: (m) => `Since ${m[1]}`,
+      fr: (m) => `Depuis ${m[1]}`,
+      es: (m) => `Desde ${m[1]}`,
+      de: (m) => `Seit ${m[1]}`,
+    },
+  },
+  {
+    pattern: /^起始于\s*(.+)$/i,
+    replace: {
+      'zh-CN': (m) => `起始于 ${m[1]}`,
+      'zh-Hant': (m) => `起始於 ${m[1]}`,
+      en: (m) => `Started ${m[1]}`,
+      fr: (m) => `Débuté le ${m[1]}`,
+      es: (m) => `Iniciado el ${m[1]}`,
+      de: (m) => `Gegründet am ${m[1]}`,
+    },
+  },
+];
 
 // Pre-indexed fast maps for O(1) instantaneous lookups
 const zhToEnMap = new Map<string, string>();
@@ -871,7 +1307,7 @@ for (const [zh, trans] of Object.entries(MULTILINGUAL_DICTIONARY)) {
 
 const translatableAttributes = ['title', 'placeholder', 'aria-label', 'aria-description', 'alt'] as const;
 const skipTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'KBD', 'SAMP', 'SVG', 'PATH']);
-const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console';
+const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console,#article-container,.article-body,.post-content';
 
 type TranslateMutationOptions = {
   refreshBase?: boolean;
@@ -887,6 +1323,10 @@ declare global {
       currentVariant: LocaleVariant;
       scheduled: number | null;
       preparing: boolean;
+      applyLocaleVariant?: (
+        variant: LocaleVariant,
+        options?: { persist?: boolean; translate?: boolean; manual?: boolean },
+      ) => LocaleVariant;
     };
   }
 }
@@ -900,6 +1340,7 @@ function getRuntimeState() {
       currentVariant: 'zh-CN' as LocaleVariant,
       scheduled: null as number | null,
       preparing: false,
+      applyLocaleVariant: undefined,
     };
   }
 
@@ -910,7 +1351,10 @@ function getRuntimeState() {
     currentVariant: 'zh-CN',
     scheduled: null,
     preparing: false,
+    applyLocaleVariant,
   };
+
+  window.__SHIJIANUS_LOCALE_RUNTIME__.applyLocaleVariant ??= applyLocaleVariant;
 
   return window.__SHIJIANUS_LOCALE_RUNTIME__;
 }
@@ -955,63 +1399,100 @@ async function ensureChineseConverters() {
   await chineseConverterPromise;
 }
 
+export function isIgnoredSubtree(el: Element): boolean {
+  if (skipTags.has(el.tagName)) return true;
+  if (typeof el.closest === 'function') {
+    if (
+      el.closest(
+        '#article-container, #theme-overlays, #local-search, #console, .theme-account-overlay, .theme-account-drawer, .ignore-opencc, .article-body, .post-content, [data-no-translate]'
+      )
+    ) {
+      return true;
+    }
+  } else {
+    if (el.id === 'article-container' || el.id === 'theme-overlays' || el.id === 'local-search' || el.id === 'console') return true;
+    if (el.classList) {
+      if (
+        el.classList.contains('article-body') ||
+        el.classList.contains('post-content') ||
+        el.classList.contains('theme-account-overlay') ||
+        el.classList.contains('theme-account-drawer') ||
+        el.classList.contains('ignore-opencc')
+      ) {
+        return true;
+      }
+    }
+    if (el.hasAttribute('data-no-translate')) return true;
+  }
+  return false;
+}
+
+const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天/;
+
 /**
- * Text translation router based on variant (O(1) exact mapping)
+ * Text translation router based on variant (O(1) exact mapping + dynamic pattern rules)
  */
 export function convertText(value: string, variant: LocaleVariant): string {
   if (!value) return value;
   const trimmed = value.trim();
   if (!trimmed) return value;
 
-  // 1. Target is Simplified Chinese (Pure restoration from foreign map or original text)
+  // 1. Resolve canonical source Chinese key (handles foreign-to-foreign transitions seamlessly)
+  const sourceZh = allForeignToZhMap.get(trimmed) || trimmed;
+
+  // 2. Target is Simplified Chinese (pure restoration to Chinese)
   if (variant === 'zh-CN') {
-    const restoredZh = allForeignToZhMap.get(trimmed);
-    if (restoredZh) {
-      return value.replace(trimmed, restoredZh);
+    if (sourceZh !== trimmed) {
+      return value.replace(trimmed, sourceZh);
+    }
+    if (DYNAMIC_PATTERN_QUICK_TEST.test(trimmed)) {
+      for (const rule of DYNAMIC_PATTERNS) {
+        const match = trimmed.match(rule.pattern);
+        if (match) {
+          return value.replace(trimmed, rule.replace['zh-CN'](match));
+        }
+      }
     }
     return value;
   }
 
-  // 2. Target is Traditional Chinese
+  // 3. Fast exact dictionary translation for foreign targets (en, fr, es, de)
+  if (variant === 'en') {
+    const trans = zhToEnMap.get(sourceZh);
+    if (trans) return value.replace(trimmed, trans);
+  } else if (variant === 'fr') {
+    const trans = zhToFrMap.get(sourceZh);
+    if (trans) return value.replace(trimmed, trans);
+  } else if (variant === 'es') {
+    const trans = zhToEsMap.get(sourceZh);
+    if (trans) return value.replace(trimmed, trans);
+  } else if (variant === 'de') {
+    const trans = zhToDeMap.get(sourceZh);
+    if (trans) return value.replace(trimmed, trans);
+  }
+
+  // 4. Target is Traditional Chinese
   if (variant === 'zh-Hant') {
-    const restoredZh = allForeignToZhMap.get(trimmed);
-    const sourceZh = restoredZh || (zhPattern.test(trimmed) ? trimmed : null);
-    if (sourceZh) {
+    if (zhPattern.test(sourceZh)) {
       const converted = zhToTraditional ? zhToTraditional(sourceZh) : sourceZh;
       return value.replace(trimmed, converted);
     }
     if (zhPattern.test(value)) {
       return zhToTraditional ? zhToTraditional(value) : value;
     }
-    return value;
   }
 
-  // 3. Target is English
-  if (variant === 'en') {
-    const trans = zhToEnMap.get(trimmed);
-    if (trans) return value.replace(trimmed, trans);
-    return value;
-  }
-
-  // 4. Target is French
-  if (variant === 'fr') {
-    const trans = zhToFrMap.get(trimmed);
-    if (trans) return value.replace(trimmed, trans);
-    return value;
-  }
-
-  // 5. Target is Spanish
-  if (variant === 'es') {
-    const trans = zhToEsMap.get(trimmed);
-    if (trans) return value.replace(trimmed, trans);
-    return value;
-  }
-
-  // 6. Target is German
-  if (variant === 'de') {
-    const trans = zhToDeMap.get(trimmed);
-    if (trans) return value.replace(trimmed, trans);
-    return value;
+  // 5. Dynamic pattern replacement (only tested if string contains numbers/counters)
+  if (DYNAMIC_PATTERN_QUICK_TEST.test(sourceZh)) {
+    for (const rule of DYNAMIC_PATTERNS) {
+      const match = sourceZh.match(rule.pattern);
+      if (match) {
+        const replacer = rule.replace[variant];
+        if (replacer) {
+          return value.replace(trimmed, replacer(match));
+        }
+      }
+    }
   }
 
   return value;
@@ -1064,15 +1545,16 @@ function getOriginalAttributeValue(element: Element, attribute: string, currentV
 }
 
 function shouldSkipElement(element: Element): boolean {
-  return skipTags.has(element.tagName) || Boolean(element.closest(skipSelector));
+  return isIgnoredSubtree(element);
 }
 
 function translateAttributes(element: Element, variant: LocaleVariant, options: TranslateMutationOptions = {}) {
-  if (shouldSkipElement(element)) return;
+  if (isIgnoredSubtree(element) || !element.hasAttributes()) return;
 
   const attributes = options.attributes ?? translatableAttributes;
 
   for (const attribute of attributes) {
+    if (!element.hasAttribute(attribute)) continue;
     const current = element.getAttribute(attribute);
     if (!current) continue;
     const base = options.refreshBase
@@ -1093,7 +1575,7 @@ function translateAttributes(element: Element, variant: LocaleVariant, options: 
 function translateTextNode(node: Text, variant: LocaleVariant, options: TranslateMutationOptions = {}) {
   if (!node.nodeValue) return;
   const parent = node.parentElement;
-  if (parent && shouldSkipElement(parent)) return;
+  if (parent && isIgnoredSubtree(parent)) return;
 
   const base = rememberOriginalTextValue(node, node.nodeValue, options.refreshBase);
 
@@ -1119,16 +1601,34 @@ function translateTree(root: Element | DocumentFragment, variant: LocaleVariant,
   }
 
   try {
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node: Node) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node as Element;
+            if (isIgnoredSubtree(el)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          if (node.nodeType === Node.TEXT_NODE) {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          return NodeFilter.FILTER_SKIP;
+        },
+      }
+    );
     let current: Node | null = root;
 
-    if (current instanceof Element) translateAttributes(current, variant, options);
+    if (current instanceof Element && !isIgnoredSubtree(current)) {
+      translateAttributes(current, variant, options);
+    }
 
     while ((current = walker.nextNode())) {
       if (current instanceof Element) {
-        if (!shouldSkipElement(current)) {
-          translateAttributes(current, variant, options);
-        }
+        translateAttributes(current, variant, options);
         continue;
       }
       if (current instanceof Text) {
@@ -1153,11 +1653,13 @@ function handleLocaleMutations(mutations: MutationRecord[]) {
 
   for (const mutation of mutations) {
     if (mutation.type === 'characterData' && mutation.target instanceof Text) {
+      if (mutation.target.parentElement && isIgnoredSubtree(mutation.target.parentElement)) continue;
       translateTextNode(mutation.target, state.currentVariant, { refreshBase: false });
       continue;
     }
 
     if (mutation.type === 'attributes' && mutation.target instanceof Element && mutation.attributeName) {
+      if (isIgnoredSubtree(mutation.target)) continue;
       translateAttributes(mutation.target, state.currentVariant, {
         refreshBase: false,
         attributes: [mutation.attributeName],
@@ -1169,10 +1671,12 @@ function handleLocaleMutations(mutations: MutationRecord[]) {
 
     mutation.addedNodes.forEach((node) => {
       if (node instanceof Element) {
+        if (isIgnoredSubtree(node)) return;
         translateTree(node, state.currentVariant, { refreshBase: false });
         return;
       }
       if (node instanceof Text) {
+        if (node.parentElement && isIgnoredSubtree(node.parentElement)) return;
         translateTextNode(node, state.currentVariant, { refreshBase: false });
       }
     });
@@ -1307,12 +1811,26 @@ export function initLocaleRuntime() {
   state.initialized = true;
   state.currentVariant = readStoredLocaleVariant();
 
+  // Background pre-warm for OpenCC so switching to zh-Hant is instant with zero stutter
+  const idleWarmup = () => {
+    void ensureChineseConverters();
+  };
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(idleWarmup, { timeout: 3000 });
+  } else {
+    setTimeout(idleWarmup, 1500);
+  }
+
   const syncLocaleVariant = (event?: Event) => {
+    let next: LocaleVariant;
     if (event instanceof CustomEvent) {
-      state.currentVariant = normaliseLocaleVariant(event.detail);
+      next = normaliseLocaleVariant(event.detail);
     } else {
-      state.currentVariant = readStoredLocaleVariant();
+      next = readStoredLocaleVariant();
     }
+    // Only re-queue if variant changed from state or if coming from storage event
+    if (next === state.currentVariant && !(event instanceof StorageEvent)) return;
+    state.currentVariant = next;
     syncLocaleObserver();
     queueLocaleTranslation(state.currentVariant, true);
   };
@@ -1322,7 +1840,7 @@ export function initLocaleRuntime() {
   window.addEventListener('shijianus:localechange', syncLocaleVariant as EventListener);
   window.addEventListener('storage', (event) => {
     if (event.key === LOCALE_VARIANT_KEY || event.key === MANUAL_LOCALE_KEY) {
-      syncLocaleVariant();
+      syncLocaleVariant(event);
     }
   });
 

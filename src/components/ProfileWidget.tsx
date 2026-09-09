@@ -1,4 +1,5 @@
-import React, { type CSSProperties, useState } from 'react';
+import React, { type CSSProperties, useState, useEffect } from 'react';
+import { convertText, readStoredLocaleVariant, type LocaleVariant } from '../lib/client-locale';
 
 const renderMarkdown = (text: string) => {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
@@ -43,6 +44,18 @@ export function ProfileWidget({
   variant,
 }: ProfileWidgetProps) {
   const [sayHiIndex, setSayHiIndex] = useState(0);
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => {
+    if (typeof window !== 'undefined') return readStoredLocaleVariant();
+    return 'zh-CN';
+  });
+
+  useEffect(() => {
+    const onLocaleChange = (e: CustomEvent<LocaleVariant>) => {
+      setLocaleVariant(e.detail || readStoredLocaleVariant());
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
+  }, []);
 
   const sayHiPhrases = [
     "✨ 欢迎探索 💡",
@@ -53,15 +66,18 @@ export function ProfileWidget({
   ];
 
   // Bio logic
-  const rawBio = `深耕系统重构与网络工程领域的**真实折腾记录**。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。\n持续构筑*外脑知识库*，期冀这些极客向的碎片随笔，能提供些许实战参考。`;
+  const rawBioZh = `深耕系统重构与网络工程领域的**真实折腾记录**。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。\n持续构筑*外脑知识库*，期冀这些极客向的碎片随笔，能提供些许实战参考。`;
+  const rawBio = (localeVariant === 'zh-CN' || localeVariant === 'zh-Hant')
+    ? rawBioZh
+    : convertText('深耕系统重构与网络工程领域的真实折腾记录。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。持续构筑外脑知识库，期冀这些极客向的碎片随笔，能提供些许实战参考。', localeVariant);
 
   let paragraphs = rawBio.split('\n').map(p => p.trim()).filter(Boolean);
 
   // Warnings and limits logic
   const rawLen = paragraphs.join('').replace(/(\*\*|\*|\[|\]|\(.*?\))/g, '').length;
   
-  if (rawLen > 120) {
-    paragraphs = [paragraphs.join(' ').substring(0, 117) + '...'];
+  if (rawLen > 140) {
+    paragraphs = [paragraphs.join(' ').substring(0, 137) + '...'];
   } else {
     paragraphs = paragraphs.slice(0, 2);
   }
@@ -71,6 +87,10 @@ export function ProfileWidget({
   } as CSSProperties;
 
   const variantClass = variant === 'glass' ? 'is-glass' : (variant === 'solid' ? 'is-solid' : '');
+
+  const displayMotto = convertText(motto, localeVariant);
+  const displayRole = convertText(role, localeVariant);
+  const displaySayHi = convertText(sayHiPhrases[sayHiIndex], localeVariant);
 
   return (
     <section className={`card-widget card-info profile-card ${variantClass}`} style={style}>
@@ -82,7 +102,7 @@ export function ProfileWidget({
             className="author-info__sayhi"
           >
             <span className="sayhi-inner">
-              <span className="sayhi-text">{sayHiPhrases[sayHiIndex]}</span>
+              <span className="sayhi-text">{displaySayHi}</span>
             </span>
           </div>
         </div>
@@ -108,8 +128,8 @@ export function ProfileWidget({
           <a className="author-info__bottom-group-left" href="/about/" title={name}>
             <div className="author-info__name">{name}</div>
             <div className="author-info__desc">
-              <div className="desc-motto">{motto}</div>
-              <div className="desc-role">{role}</div>
+              <div className="desc-motto">{displayMotto}</div>
+              <div className="desc-role">{displayRole}</div>
             </div>
           </a>
           <div className="card-info-social-icons" aria-label="作者链接">
