@@ -701,7 +701,7 @@
   1. 桌面大屏 (1440x900)、标准屏 (1280x800) 及移动端全视口验证通过；
   2. 断言验证了非正文组件全量隐藏、正文与阅读标题渲染、宽度未受 880px 夹紧（实际渲染宽度 > 916px ~ 1036px）、默认保留 TOC、点击收紧按钮目录关闭且文章扩展至 1336px、再次点击恢复 TOC、点击退出按钮及按下 Escape 键瞬时恢复等全部链路。
 
-### Task 33: 阅读模式 class="aside-sticky-box" 侧栏目录无法翻页与粘性卡片卡死根治、长目录内部滚动与全链路审计
+### Task 33: 阅读模式 class="aside-sticky-box" 侧栏目录无法翻页与粘性卡片卡死根治、长目录内部滚动与全链路审计 (`6cfa0c2`)
 - [x] 彻底解决目录“无法翻页”（内部滚动卡死）缺陷：
   1. 修复 CSS 中原本错误设置的 `display: block !important;`，恢复 `#card-toc` 与 `.aside-sticky-box` 规范的 `display: flex !important; flex-direction: column !important; min-height: 0 !important;`；
   2. 释放 `.toc-content` 弹性伸缩空间，固化 `flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; overscroll-behavior: contain !important;`，彻底根除因 `display: block` 导致 `clientHeight === scrollHeight`（判定为无需滚动）从而卡死的缺陷；
