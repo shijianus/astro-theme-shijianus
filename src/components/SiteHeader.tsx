@@ -214,9 +214,10 @@ export function SiteHeader({
 
   useEffect(() => {
     const handleLocaleChange = (e: Event) => {
-      const custom = e as CustomEvent<{ variant: LocaleVariant }>;
-      if (custom.detail?.variant) {
-        setCurrentLocale(custom.detail.variant);
+      const custom = e as CustomEvent<LocaleVariant | { variant: LocaleVariant }>;
+      const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
+      if (next) {
+        setCurrentLocale(next);
       }
     };
     window.addEventListener('shijianus:localechange', handleLocaleChange);

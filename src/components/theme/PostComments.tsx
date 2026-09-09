@@ -116,16 +116,48 @@ const POST_LANGUAGES = [
   { label: 'Deutsch', code: 'de' },
 ];
 
-function formatCommentTime(value: string) {
+function formatCommentTime(value: string, locale: LocaleVariant = 'zh-CN') {
+  if (!value) return '';
   try {
     const d = new Date(value);
     const now = Date.now();
     const diff = (now - d.getTime()) / 1000;
-    if (diff < 60) return '刚刚';
-    if (diff < 3600) return `${Math.floor(diff / 60)} 分钟前`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} 小时前`;
-    if (diff < 86400 * 30) return `${Math.floor(diff / 86400)} 天前`;
-    return d.toLocaleDateString('zh-CN', {
+    if (diff < 60) {
+      if (locale === 'en') return 'just now';
+      if (locale === 'fr') return "à l'instant";
+      if (locale === 'es') return 'ahora mismo';
+      if (locale === 'de') return 'gerade eben';
+      if (locale === 'zh-Hant') return '剛剛';
+      return '刚刚';
+    }
+    if (diff < 3600) {
+      const m = Math.floor(diff / 60);
+      if (locale === 'en') return `${m} ${m === 1 ? 'min' : 'mins'} ago`;
+      if (locale === 'fr') return `il y a ${m} min`;
+      if (locale === 'es') return `hace ${m} min`;
+      if (locale === 'de') return `vor ${m} Min.`;
+      if (locale === 'zh-Hant') return `${m} 分鐘前`;
+      return `${m} 分钟前`;
+    }
+    if (diff < 86400) {
+      const h = Math.floor(diff / 3600);
+      if (locale === 'en') return `${h} ${h === 1 ? 'hour' : 'hours'} ago`;
+      if (locale === 'fr') return `il y a ${h} h`;
+      if (locale === 'es') return `hace ${h} h`;
+      if (locale === 'de') return `vor ${h} Std.`;
+      if (locale === 'zh-Hant') return `${h} 小時前`;
+      return `${h} 小时前`;
+    }
+    if (diff < 86400 * 30) {
+      const days = Math.floor(diff / 86400);
+      if (locale === 'en') return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+      if (locale === 'fr') return `il y a ${days} j`;
+      if (locale === 'es') return `hace ${days} días`;
+      if (locale === 'de') return `vor ${days} Tagen`;
+      if (locale === 'zh-Hant') return `${days} 天前`;
+      return `${days} 天前`;
+    }
+    return d.toLocaleDateString(locale === 'zh-Hant' ? 'zh-TW' : locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -1238,27 +1270,27 @@ export function PostComments({
       <div className="comment-head">
         <h3 className="comment-headline">
           <i className="anzhiyufont anzhiyu-icon-comments" aria-hidden="true"></i>
-          <span>{heading}</span>
+          <span>{tC.headingComments || heading}</span>
         </h3>
         <div className="comment-randomInfo">
           <a
             onClick={openAccountDrawer}
-            title="前往账号中心登录或设置个性化资料"
+            title={tC.loginDrawerTitle}
             style={{ cursor: 'pointer' }}
           >
             {account?.provider === 'epomail'
               ? `⚡ ${account.name} (Epomail)`
               : account && account.role !== 'visitor'
               ? `👤 ${account.name}`
-              : '访客身份 (点击登录)'}
+              : tC.loginAsGuest}
           </a>
           <a
             href="/about"
             target="_blank"
             rel="noreferrer"
-            title="阅读站点使用协议与隐私政策"
+            title={tC.policyTitle}
           >
-            {policyLabel}
+            {tC.policyLabel || policyLabel}
           </a>
         </div>
       </div>
@@ -1275,14 +1307,14 @@ export function PostComments({
                   className={`tk-editor-tab-btn ${editorTab === 'edit' ? 'is-active' : ''}`}
                   onClick={() => setEditorTab('edit')}
                 >
-                  ✏️ 编辑
+                  ✏️ {tC.tabEdit}
                 </button>
                 <button
                   type="button"
                   className={`tk-editor-tab-btn ${editorTab === 'preview' ? 'is-active' : ''}`}
                   onClick={() => setEditorTab('preview')}
                 >
-                  👁️ 预览
+                  👁️ {tC.tabPreview}
                 </button>
               </div>
             </div>
@@ -1294,8 +1326,8 @@ export function PostComments({
                 onClick={openAccountDrawer}
                 title={
                   effectiveCurrentAvatar.isVisitor
-                    ? '访客身份 (点击登录账号/设置专属头像)'
-                    : `当前身份: ${effectiveCurrentAvatar.name} (${effectiveCurrentAvatar.role === 'admin' ? '博主' : '读者'})`
+                    ? tC.avatarGuestTitle
+                    : tC.avatarUserTitle(effectiveCurrentAvatar.name, effectiveCurrentAvatar.role)
                 }
                 style={{ cursor: 'pointer' }}
               >
@@ -1304,7 +1336,7 @@ export function PostComments({
                 ) : !effectiveCurrentAvatar.isVisitor ? (
                   <span className="tk-avatar-initials">{effectiveCurrentAvatar.initials}</span>
                 ) : (
-                  <div className="tk-avatar-visitor-icon" title="访客">
+                  <div className="tk-avatar-visitor-icon" title={tC.visitorBadge}>
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
@@ -1317,7 +1349,7 @@ export function PostComments({
                 {quoteState && (
                   <div className="tk-quote-preview-card">
                     <div className="tk-quote-preview-meta">
-                      <span>🔗 引用 <strong>@{quoteState.authorName}</strong> 的评论：</span>
+                      <span>{tC.quoteBannerPrefix(quoteState.authorName)}</span>
                       <button type="button" onClick={() => setQuoteState(null)}>✕</button>
                     </div>
                     <p className="tk-quote-preview-text">{quoteState.text}</p>
@@ -1326,14 +1358,14 @@ export function PostComments({
 
                 {/* 1. Linuxdo-style Markdown Toolbar (Placed right above tk-input el-textarea) */}
                 {editorTab === 'edit' && (
-                  <div className="tk-markdown-toolbar" role="toolbar" aria-label="Markdown 编辑工具栏">
+                  <div className="tk-markdown-toolbar" role="toolbar" aria-label={tC.toolbarAria}>
                     {/* ① 贴文语言 */}
                     <div className="tk-toolbar-item">
                       <button
                         type="button"
                         className="tk-tb-btn tk-tb-btn-lang"
-                        title="贴文语言：选择并插入指定语种区块"
-                        aria-label="贴文语言选择"
+                        title={tC.toolbarLangTitle}
+                        aria-label={tC.toolbarLangAria}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown((prev) => (prev === 'lang' ? null : 'lang'));
@@ -1344,15 +1376,15 @@ export function PostComments({
                       </button>
                       {activeDropdown === 'lang' && (
                         <div className="tk-dropdown-panel tk-lang-dropdown" onClick={(e) => e.stopPropagation()}>
-                          <div className="tk-dropdown-title">选择贴文语言</div>
+                          <div className="tk-dropdown-title">{tC.toolbarLangMenuTitle}</div>
                           {POST_LANGUAGES.map((lang) => (
                             <button
                               key={lang.code}
                               type="button"
                               className="tk-dropdown-item"
                               onClick={() => {
-                                insertMarkdown(`<div lang="${lang.code}">\n`, '\n</div>', '在此处输入该语言内容');
-                                showToast(`已插入 ${lang.label} 语言区块`);
+                                insertMarkdown(`<div lang="${lang.code}">\n`, '\n</div>', lang.label);
+                                showToast(tC.toastLangInserted(lang.label));
                               }}
                             >
                               <div className="tk-dropdown-item-content">
@@ -1361,7 +1393,7 @@ export function PostComments({
                                 </div>
                                 <div className="tk-dropdown-text-col">
                                   <span className="tk-dropdown-label">{lang.label}</span>
-                                  <span className="tk-dropdown-desc">设置该区块为 {lang.code} 语种</span>
+                                  <span className="tk-dropdown-desc">{tC.toolbarLangItemDesc(lang.code)}</span>
                                 </div>
                               </div>
                             </button>
@@ -1786,8 +1818,8 @@ export function PostComments({
                                 <ImageIcon size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入图片 / Telegram 图床</span>
-                                <span className="tk-dropdown-desc">本地上传、Ctrl+V 粘贴与拖拽上传托管</span>
+                                <span className="tk-dropdown-label">{tC.optImageLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optImageDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1907,7 +1939,7 @@ export function PostComments({
             ) : comments.length === 0 ? (
               <div className="tk-comments-no">
                 <div className="tk-comments-empty-icon" style={{ fontSize: '28px', opacity: 0.65 }}>💬</div>
-                <span>{emptyTitle}，{emptySummary}</span>
+                <span>{tC.emptyComments || `${emptyTitle}，${emptySummary}`}</span>
               </div>
             ) : (
               <div className="tk-comments-list">
@@ -1933,7 +1965,7 @@ export function PostComments({
                           <img src={item.authorAvatar} alt={item.authorName} loading="lazy" />
                         ) : item.authorRole === 'admin' ? (
                           <img src="/media/shijianus/avatar.jpg" alt={item.authorName} loading="lazy" />
-                        ) : item.authorName && item.authorName !== '访客' ? (
+                        ) : item.authorName && item.authorName !== '访客' && item.authorName !== tC.visitorBadge ? (
                           <span className="tk-avatar-initials">{getCommentInitials(item.authorName)}</span>
                         ) : (
                           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -1974,11 +2006,11 @@ export function PostComments({
                             </span>
                           )}
 
-                          <time className="tk-time">{formatCommentTime(item.createdAt)}</time>
+                          <time className="tk-time">{formatCommentTime(item.createdAt, currentLocale)}</time>
                           {edited && (
                             <span className="tk-edited-mark">
                               <span className="tk-edited-bracket">(</span>
-                              <span className="tk-edited-text">已编辑</span>
+                              <span className="tk-edited-text">{tC.editedBadge}</span>
                               <span className="tk-edited-bracket">)</span>
                             </span>
                           )}
@@ -1988,7 +2020,7 @@ export function PostComments({
                         {item.quote && (
                           <div className="tk-quote-display-card">
                             <div className="tk-quote-display-author">
-                              <span>🔗 引用 <strong>@{item.quote.authorName}</strong>：</span>
+                              <span>{tC.quoteBannerPrefix(item.quote.authorName)}</span>
                             </div>
                             <p className="tk-quote-display-text">{item.quote.text}</p>
                           </div>
@@ -2012,7 +2044,7 @@ export function PostComments({
                                 disabled={savingEdit || !editingMessage.trim()}
                                 onClick={() => handleSaveEdit(item.id)}
                               >
-                                {savingEdit ? '保存中...' : '保存'}
+                                {savingEdit ? tC.savingBtn : tC.saveBtn}
                               </button>
                               <button
                                 type="button"
@@ -2325,7 +2357,7 @@ export function PostComments({
                                               reply.authorRole === 'admin' ? 'is-admin' : 'is-visitor'
                                             }`}
                                           >
-                                            {reply.authorRole === 'admin' ? '博主' : '访客'}
+                                            {reply.authorRole === 'admin' ? tC.bloggerBadge : tC.visitorBadge}
                                           </span>
 
                                           {/* Country / IP Location badge */}
@@ -2338,11 +2370,11 @@ export function PostComments({
                                             </span>
                                           )}
 
-                                          <time className="tk-time">{formatCommentTime(reply.createdAt)}</time>
+                                          <time className="tk-time">{formatCommentTime(reply.createdAt, currentLocale)}</time>
                                           {isReplyEdited && (
                                             <span className="tk-edited-mark">
                                               <span className="tk-edited-bracket">(</span>
-                                              <span className="tk-edited-text">已编辑</span>
+                                              <span className="tk-edited-text">{tC.editedBadge}</span>
                                               <span className="tk-edited-bracket">)</span>
                                             </span>
                                           )}
@@ -2365,14 +2397,14 @@ export function PostComments({
                                                 disabled={savingEdit || !editingMessage.trim()}
                                                 onClick={() => handleSaveEdit(reply.id)}
                                               >
-                                                {savingEdit ? '保存中...' : '保存'}
+                                                {savingEdit ? tC.savingBtn : tC.saveBtn}
                                               </button>
                                               <button
                                                 type="button"
                                                 className="tk-btn-cancel"
                                                 onClick={() => setEditingCommentId(null)}
                                               >
-                                                取消
+                                                {tC.cancelBtn}
                                               </button>
                                             </div>
                                           </div>

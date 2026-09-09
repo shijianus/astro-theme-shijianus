@@ -127,10 +127,54 @@ export interface CommentTranslations {
   geoRegionPrefix: string;
   geoRealIpPrefix: string;
   geoAdminPrivilege: string;
+  headingComments: string;
+  policyLabel: string;
+  policyTitle: string;
+  loginAsGuest: string;
+  loginDrawerTitle: string;
+  tabEdit: string;
+  tabPreview: string;
+  avatarGuestTitle: string;
+  avatarUserTitle: (name: string, role: string) => string;
+  quoteBannerPrefix: (author: string) => string;
+  toolbarAria: string;
+  toolbarLangTitle: string;
+  toolbarLangAria: string;
+  toolbarLangMenuTitle: string;
+  toolbarLangItemDesc: (code: string) => string;
+  toastLangInserted: (label: string) => string;
+  optImageLabel: string;
+  optImageDesc: string;
+  editedBadge: string;
+  saveBtn: string;
+  savingBtn: string;
+  emptyComments: string;
 }
 
 export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   'zh-CN': {
+    headingComments: '评论',
+    policyLabel: '隐私政策',
+    policyTitle: '阅读站点使用协议与隐私政策',
+    loginAsGuest: '访客身份 (点击登录)',
+    loginDrawerTitle: '前往账号中心登录或设置个性化资料',
+    tabEdit: '编辑',
+    tabPreview: '预览',
+    avatarGuestTitle: '访客身份 (点击登录账号/设置专属头像)',
+    avatarUserTitle: (name, role) => `当前身份: ${name} (${role === 'admin' ? '博主' : '读者'})`,
+    quoteBannerPrefix: (author) => `🔗 引用 @${author} 的评论：`,
+    toolbarAria: 'Markdown 编辑工具栏',
+    toolbarLangTitle: '贴文语言：选择并插入指定语种区块',
+    toolbarLangAria: '贴文语言选择',
+    toolbarLangMenuTitle: '选择贴文语言',
+    toolbarLangItemDesc: (code) => `设置该区块为 ${code} 语种`,
+    toastLangInserted: (label) => `已插入 ${label} 语言区块`,
+    optImageLabel: '插入图片 / Telegram 图床',
+    optImageDesc: '本地上传、Ctrl+V 粘贴与拖拽上传托管',
+    editedBadge: '已编辑',
+    saveBtn: '保存',
+    savingBtn: '保存中...',
+    emptyComments: '还没有公开评论，留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
     publicComments: '公开评论',
     sortNew: '⏱️ 最新',
     sortHot: '🔥 最热',
@@ -251,6 +295,28 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   },
 
   'zh-Hant': {
+    headingComments: '評論',
+    policyLabel: '隱私政策',
+    policyTitle: '閱讀站點使用協議與隱私政策',
+    loginAsGuest: '訪客身分 (點擊登入)',
+    loginDrawerTitle: '前往帳號中心登入或設定個性化資料',
+    tabEdit: '編輯',
+    tabPreview: '預覽',
+    avatarGuestTitle: '訪客身分 (點擊登入帳號/設定專屬頭像)',
+    avatarUserTitle: (name, role) => `當前身分: ${name} (${role === 'admin' ? '博主' : '讀者'})`,
+    quoteBannerPrefix: (author) => `🔗 引用 @${author} 的評論：`,
+    toolbarAria: 'Markdown 編輯工具列',
+    toolbarLangTitle: '貼文語言：選擇並插入指定語種區塊',
+    toolbarLangAria: '貼文語言選擇',
+    toolbarLangMenuTitle: '選擇貼文語言',
+    toolbarLangItemDesc: (code) => `設定該區塊為 ${code} 語種`,
+    toastLangInserted: (label) => `已插入 ${label} 語言區塊`,
+    optImageLabel: '插入圖片 / Telegram 圖床',
+    optImageDesc: '本機上傳、Ctrl+V 貼上與拖曳上傳託管',
+    editedBadge: '已編輯',
+    saveBtn: '儲存',
+    savingBtn: '儲存中...',
+    emptyComments: '還沒有公開評論，留下第一條反饋後，評論會直接出現在下方的公開評論流中。',
     publicComments: '公開評論',
     sortNew: '⏱️ 最新',
     sortHot: '🔥 最熱',
@@ -371,6 +437,28 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   },
 
   'en': {
+    headingComments: 'Comments',
+    policyLabel: 'Privacy Policy',
+    policyTitle: 'Read site terms of use and privacy policy',
+    loginAsGuest: 'Guest Mode (Click to Sign in)',
+    loginDrawerTitle: 'Go to reader center to sign in or customize profile',
+    tabEdit: 'Edit',
+    tabPreview: 'Preview',
+    avatarGuestTitle: 'Guest (Click to sign in / customize avatar)',
+    avatarUserTitle: (name, role) => `Current Profile: ${name} (${role === 'admin' ? 'Author' : 'Reader'})`,
+    quoteBannerPrefix: (author) => `🔗 Quoting @${author}:`,
+    toolbarAria: 'Markdown Editor Toolbar',
+    toolbarLangTitle: 'Post Language: Select and insert language block',
+    toolbarLangAria: 'Select post language',
+    toolbarLangMenuTitle: 'Select Post Language',
+    toolbarLangItemDesc: (code) => `Set block language to ${code}`,
+    toastLangInserted: (label) => `Inserted ${label} language block`,
+    optImageLabel: 'Insert Image / Telegram CDN',
+    optImageDesc: 'Local upload, Ctrl+V paste & drag-and-drop hosting',
+    editedBadge: 'Edited',
+    saveBtn: 'Save',
+    savingBtn: 'Saving...',
+    emptyComments: 'No public comments yet. Leave a thought to start the conversation!',
     publicComments: 'Public Comments',
     sortNew: '⏱️ Latest',
     sortHot: '🔥 Hot',
@@ -491,6 +579,28 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   },
 
   'fr': {
+    headingComments: 'Commentaires',
+    policyLabel: 'Politique de confidentialité',
+    policyTitle: "Consulter les conditions d'utilisation et la politique de confidentialité",
+    loginAsGuest: 'Mode Invité (Cliquer pour se connecter)',
+    loginDrawerTitle: 'Accéder au centre de compte pour se connecter ou personnaliser le profil',
+    tabEdit: 'Éditer',
+    tabPreview: 'Aperçu',
+    avatarGuestTitle: 'Invité (Cliquer pour se connecter / personnaliser votre avatar)',
+    avatarUserTitle: (name, role) => `Profil actuel : ${name} (${role === 'admin' ? 'Auteur' : 'Lecteur'})`,
+    quoteBannerPrefix: (author) => `🔗 Citation de @${author} :`,
+    toolbarAria: "Barre d'outils Markdown",
+    toolbarLangTitle: 'Langue de publication : insérer un bloc linguistique',
+    toolbarLangAria: 'Sélection de la langue',
+    toolbarLangMenuTitle: 'Choisir la langue de publication',
+    toolbarLangItemDesc: (code) => `Définir le bloc en langue ${code}`,
+    toastLangInserted: (label) => `Bloc de langue ${label} inséré`,
+    optImageLabel: 'Insérer une image / CDN Telegram',
+    optImageDesc: 'Téléversement local, Ctrl+V et glisser-déposer',
+    editedBadge: 'Modifié',
+    saveBtn: 'Enregistrer',
+    savingBtn: 'Enregistrement...',
+    emptyComments: 'Aucun commentaire public pour le moment. Laissez un message pour lancer la discussion !',
     publicComments: 'Commentaires publics',
     sortNew: '⏱️ Récents',
     sortHot: '🔥 Populaires',
@@ -611,6 +721,28 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   },
 
   'es': {
+    headingComments: 'Comentarios',
+    policyLabel: 'Política de privacidad',
+    policyTitle: 'Leer las condiciones de uso y la política de privacidad del sitio',
+    loginAsGuest: 'Modo Invitado (Clic para iniciar sesión)',
+    loginDrawerTitle: 'Ir al centro de cuentas para iniciar sesión o personalizar perfil',
+    tabEdit: 'Editar',
+    tabPreview: 'Vista previa',
+    avatarGuestTitle: 'Invitado (Clic para iniciar sesión / personalizar avatar)',
+    avatarUserTitle: (name, role) => `Perfil actual: ${name} (${role === 'admin' ? 'Autor' : 'Lector'})`,
+    quoteBannerPrefix: (author) => `🔗 Citando a @${author}:`,
+    toolbarAria: 'Barra de herramientas Markdown',
+    toolbarLangTitle: 'Idioma de publicación: insertar bloque de idioma',
+    toolbarLangAria: 'Selección de idioma',
+    toolbarLangMenuTitle: 'Seleccionar idioma de publicación',
+    toolbarLangItemDesc: (code) => `Establecer bloque en idioma ${code}`,
+    toastLangInserted: (label) => `Bloque de idioma ${label} insertado`,
+    optImageLabel: 'Insertar imagen / CDN Telegram',
+    optImageDesc: 'Subida local, Ctrl+V y arrastrar y soltar',
+    editedBadge: 'Editado',
+    saveBtn: 'Guardar',
+    savingBtn: 'Guardando...',
+    emptyComments: 'Aún no hay comentarios públicos. ¡Deja una opinión para iniciar la conversación!',
     publicComments: 'Comentarios públicos',
     sortNew: '⏱️ Más recientes',
     sortHot: '🔥 Populares',
@@ -731,6 +863,28 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
   },
 
   'de': {
+    headingComments: 'Kommentare',
+    policyLabel: 'Datenschutzerklärung',
+    policyTitle: 'Nutzungsbedingungen und Datenschutzerklärung lesen',
+    loginAsGuest: 'Gastmodus (Klicken zum Anmelden)',
+    loginDrawerTitle: 'Zum Kontocenter gehen, um sich anzumelden oder das Profil anzupassen',
+    tabEdit: 'Bearbeiten',
+    tabPreview: 'Vorschau',
+    avatarGuestTitle: 'Gast (Klicken zum Anmelden / Avatar anpassen)',
+    avatarUserTitle: (name, role) => `Aktuelles Profil: ${name} (${role === 'admin' ? 'Autor' : 'Leser'})`,
+    quoteBannerPrefix: (author) => `🔗 Zitat von @${author}:`,
+    toolbarAria: 'Markdown-Editor-Symbolleiste',
+    toolbarLangTitle: 'Beitragssprache: Sprachblock auswählen und einfügen',
+    toolbarLangAria: 'Sprachauswahl',
+    toolbarLangMenuTitle: 'Beitragssprache auswählen',
+    toolbarLangItemDesc: (code) => `Block-Sprache auf ${code} setzen`,
+    toastLangInserted: (label) => `${label}-Sprachblock eingefügt`,
+    optImageLabel: 'Bild einfügen / Telegram-CDN',
+    optImageDesc: 'Lokaler Upload, Strg+V und Drag & Drop Hosting',
+    editedBadge: 'Bearbeitet',
+    saveBtn: 'Speichern',
+    savingBtn: 'Wird gespeichert...',
+    emptyComments: 'Noch keine öffentlichen Kommentare. Hinterlasse einen Gedanken, um die Diskussion zu starten!',
     publicComments: 'Öffentliche Kommentare',
     sortNew: '⏱️ Neueste',
     sortHot: '🔥 Beliebteste',
