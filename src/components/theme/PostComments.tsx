@@ -58,6 +58,8 @@ import {
   type PostType,
 } from '../../lib/comment-client';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
+import type { LocaleVariant } from '../../lib/user-persona.ts';
+import { getCommentTranslations } from '../../lib/comments-i18n.ts';
 
 type CommentsIntegrationConfig = Readonly<{
   provider: CommentProvider;
@@ -168,6 +170,27 @@ export function PostComments({
   emptyTitle = '还没有公开评论',
   emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
 }: PostCommentsProps) {
+  // Locale state
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('shijianus_blog_locale_variant') as LocaleVariant) || 'zh-CN';
+    }
+    return 'zh-CN';
+  });
+
+  useEffect(() => {
+    const handleLocaleChange = (e: Event) => {
+      const custom = e as CustomEvent<{ variant: LocaleVariant }>;
+      if (custom.detail?.variant) {
+        setCurrentLocale(custom.detail.variant);
+      }
+    };
+    window.addEventListener('shijianus:localechange', handleLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', handleLocaleChange);
+  }, []);
+
+  const tC = getCommentTranslations(currentLocale);
+
   // Comments data
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -261,13 +284,12 @@ export function PostComments({
     if (!canShowToVisitor && !isCurrentAdmin) return null;
     if (!item.ipCountry && !item.ipCountryFlag && !item.ipLocation) return null;
 
-    const currentLocale = (typeof document !== 'undefined' && document.documentElement.dataset.localeVariant) || 'zh-CN';
     const geo = resolveGeoInfo(item.ipCountry || item.ipLocation || item.ipCountryName || 'GLOBAL', currentLocale);
     const flag = geo.flag || item.ipCountryFlag || '🌐';
     const rawName = item.ipLocation || geo.name || item.ipCountryName || '全球';
 
     // Strip any leading flag emojis or duplicate country codes and strictly ensure Taiwan/HK/Macau have no "中国" prefix
-    let cleanName = rawName
+    let cleanName = (geo && geo.code !== 'GLOBAL' && geo.name) ? geo.name : rawName
       .replace(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/g, '')
       .replace(/^[\uD83C-\uDBFF\uDC00-\uDFFF\s]+/, '')
       .replace(/^([A-Z]{2})\s+/, '')
@@ -293,7 +315,7 @@ export function PostComments({
     return (
       <span
         className="tk-geo-badge"
-        title={`来源地区: ${geo.formatted}${isCurrentAdmin && item.ip ? ` (真实IP: ${item.ip})` : ''}`}
+        title={`${tC.geoRegionPrefix}${geo.formatted}${isCurrentAdmin && item.ip ? `${tC.geoRealIpPrefix}${item.ip})` : ''}`}
       >
         <span className="tk-geo-flag" role="img" aria-label={geo.code}>
           {isTwoLetterCode ? (
@@ -324,7 +346,7 @@ export function PostComments({
         </span>
         <span className="tk-geo-name">{cleanName}</span>
         {isCurrentAdmin && item.ip && (
-          <span className="tk-admin-ip-tag" title="博主管理特权：查看真实IP">
+          <span className="tk-admin-ip-tag" title={tC.geoAdminPrivilege}>
             ({item.ip})
           </span>
         )}
@@ -1354,7 +1376,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-bold"
-                      title="加粗 (Ctrl+B)"
+                      title={tC.toolbarBold}
                       onClick={() => insertMarkdown('**', '**', '粗体文字')}
                     >
                       <Bold size={15} />
@@ -1364,7 +1386,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-italic"
-                      title="斜体 (Ctrl+I)"
+                      title={tC.toolbarItalic}
                       onClick={() => insertMarkdown('*', '*', '斜体文字')}
                     >
                       <Italic size={15} />
@@ -1374,7 +1396,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-heading"
-                      title="标题字号"
+                      title={tC.toolbarHeading}
                       onClick={() => insertMarkdown('### ', '', '标题内容')}
                     >
                       <Heading size={15} />
@@ -1384,7 +1406,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-quote tk-tb-btn-quote"
-                      title="块引用"
+                      title={tC.toolbarQuote}
                       onClick={() => insertMarkdown('> ', '', '引用文本内容')}
                     >
                       <Quote size={15} />
@@ -1394,7 +1416,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-code tk-tb-btn-code"
-                      title="预格式化代码"
+                      title={tC.toolbarCode}
                       onClick={() => insertMarkdown('```\n', '\n```', 'console.log("Hello, World!");')}
                     >
                       <Code size={15} />
@@ -1404,7 +1426,7 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-list tk-tb-btn-list"
-                      title="列表清单"
+                      title={tC.toolbarList}
                       onClick={() => insertMarkdown('- ', '', '列表项清单')}
                     >
                       <List size={15} />
@@ -1414,11 +1436,11 @@ export function PostComments({
                     <button
                       type="button"
                       className={`tk-tb-btn tk-tb-direction tk-tb-btn-direction ${textDirection === 'rtl' ? 'is-active' : ''}`}
-                      title="切换文本排版书写方向 (LTR / RTL)"
+                      title={tC.toolbarDirection}
                       onClick={() => {
                         const nextDir = textDirection === 'ltr' ? 'rtl' : 'ltr';
                         setTextDirection(nextDir);
-                        showToast(`已切换排版方向为：${nextDir.toUpperCase()}`);
+                        showToast(tC.toolbarDirectionToast(nextDir));
                       }}
                     >
                       <ArrowLeftRight size={15} />
@@ -1429,7 +1451,7 @@ export function PostComments({
                       <button
                         type="button"
                         className="tk-tb-btn tk-tb-emoji"
-                        title="插入表情"
+                        title={tC.toolbarEmoji}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown((prev) => (prev === 'emoji' ? null : 'emoji'));
@@ -1439,7 +1461,7 @@ export function PostComments({
                       </button>
                       {activeDropdown === 'emoji' && (
                         <div className="tk-dropdown-panel tk-emoji-picker-dropdown" onClick={(e) => e.stopPropagation()}>
-                          <div className="tk-dropdown-title">常用表情 (点击插入)</div>
+                          <div className="tk-dropdown-title">{tC.toolbarEmojiTitle}</div>
                           <div className="tk-emoji-grid">
                             {QUICK_EMOJIS.map((em) => (
                               <button
@@ -1460,8 +1482,8 @@ export function PostComments({
                     <button
                       type="button"
                       className="tk-tb-btn tk-tb-image"
-                      title="插入图片 (支持本地上传、剪贴板粘贴与拖拽上传至 Telegram 图床)"
-                      aria-label="插入图片"
+                      title={tC.toolbarImage}
+                      aria-label={tC.toolbarImageAria}
                       onClick={() => openImageModal('upload')}
                     >
                       <ImageIcon size={15} />
@@ -1474,8 +1496,8 @@ export function PostComments({
                       <button
                         type="button"
                         className="tk-tb-btn tk-tb-options"
-                        title="高级选项：插入表格、目录、图表与各类交互组件"
-                        aria-label="更多高级格式与插入选项"
+                        title={tC.toolbarOptions}
+                        aria-label={tC.toolbarOptionsAria}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown((prev) => (prev === 'options' ? null : 'options'));
@@ -1486,7 +1508,7 @@ export function PostComments({
                       </button>
                       {activeDropdown === 'options' && (
                         <div className="tk-dropdown-panel tk-options-dropdown" onClick={(e) => e.stopPropagation()}>
-                          <div className="tk-dropdown-title">高级选项与交互工具</div>
+                          <div className="tk-dropdown-title">{tC.toolbarOptionsTitle}</div>
 
                           {/* 1. 引用贴文 */}
                           <button
@@ -1509,8 +1531,8 @@ export function PostComments({
                                 <Quote size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">引用贴文 (博文内容)</span>
-                                <span className="tk-dropdown-desc">引用当前博文选中文段或核心论述</span>
+                                <span className="tk-dropdown-label">{tC.optQuoteLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optQuoteDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1526,8 +1548,8 @@ export function PostComments({
                                 <Table size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入表格</span>
-                                <span className="tk-dropdown-desc">可视化行列配置，生成规范数据表格</span>
+                                <span className="tk-dropdown-label">{tC.optTableLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optTableDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1543,8 +1565,8 @@ export function PostComments({
                                 <ListOrdered size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入目录</span>
-                                <span className="tk-dropdown-desc">自动提取各级标题生成 [TOC] 树</span>
+                                <span className="tk-dropdown-label">{tC.optTocLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optTocDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1560,8 +1582,8 @@ export function PostComments({
                                 <ScrollText size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入滚动内容</span>
-                                <span className="tk-dropdown-desc">定高容器展示超长日志与排查数据</span>
+                                <span className="tk-dropdown-label">{tC.optScrollLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optScrollDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1577,8 +1599,8 @@ export function PostComments({
                                 <GitFork size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入 Mermaid chart</span>
-                                <span className="tk-dropdown-desc">流程图、时序图、甘特图等拓扑绘制</span>
+                                <span className="tk-dropdown-label">{tC.optMermaidLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optMermaidDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1594,8 +1616,8 @@ export function PostComments({
                                 <BarChart3 size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入 Build Chart</span>
-                                <span className="tk-dropdown-desc">柱状图、折线图与饼图配置</span>
+                                <span className="tk-dropdown-label">{tC.optChartLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optChartDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1611,8 +1633,8 @@ export function PostComments({
                                 <ChevronRight size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">隐藏详细内容</span>
-                                <span className="tk-dropdown-desc">折叠收拢冗长细节与补充材料</span>
+                                <span className="tk-dropdown-label">{tC.optDetailsLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optDetailsDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1628,8 +1650,8 @@ export function PostComments({
                                 <Share2 size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入 Graphviz graph</span>
-                                <span className="tk-dropdown-desc">DOT 语言生成系统架构与状态流转</span>
+                                <span className="tk-dropdown-label">{tC.optGraphvizLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optGraphvizDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1645,8 +1667,8 @@ export function PostComments({
                                 <Clock size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入日期/时间</span>
-                                <span className="tk-dropdown-desc">当前时间戳或自定义日期标记</span>
+                                <span className="tk-dropdown-label">{tC.optDatetimeLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optDatetimeDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1662,8 +1684,8 @@ export function PostComments({
                                 <Sigma size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入数学式</span>
-                                <span className="tk-dropdown-desc">KaTeX / LaTeX 标准数学公式渲染</span>
+                                <span className="tk-dropdown-label">{tC.optMathLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optMathDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1679,8 +1701,8 @@ export function PostComments({
                                 <LayoutTemplate size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">插入范本</span>
-                                <span className="tk-dropdown-desc">技术研讨、Bug反馈与观点探讨预设</span>
+                                <span className="tk-dropdown-label">{tC.optTemplateLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optTemplateDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1696,8 +1718,8 @@ export function PostComments({
                                 <Bookmark size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">新增脚注</span>
-                                <span className="tk-dropdown-desc">正文引用标记与文末参考释义联动</span>
+                                <span className="tk-dropdown-label">{tC.optFootnoteLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optFootnoteDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1713,8 +1735,8 @@ export function PostComments({
                                 <EyeOff size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">模糊化剧透内容</span>
-                                <span className="tk-dropdown-desc">打码隐藏关键剧透，悬浮即显</span>
+                                <span className="tk-dropdown-label">{tC.optSpoilerLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optSpoilerDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1730,8 +1752,8 @@ export function PostComments({
                                 <Vote size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">建立投票</span>
-                                <span className="tk-dropdown-desc">互动投票组件，支持单选与多选</span>
+                                <span className="tk-dropdown-label">{tC.optPollLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optPollDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1747,8 +1769,8 @@ export function PostComments({
                                 <Layers size={15} className="tk-dropdown-svg" />
                               </div>
                               <div className="tk-dropdown-text-col">
-                                <span className="tk-dropdown-label">套用包装格式</span>
-                                <span className="tk-dropdown-desc">Note / Tip / Warning / Danger 高光卡片</span>
+                                <span className="tk-dropdown-label">{tC.optCalloutLabel}</span>
+                                <span className="tk-dropdown-desc">{tC.optCalloutDesc}</span>
                               </div>
                             </div>
                           </button>
@@ -1792,7 +1814,7 @@ export function PostComments({
                         setIsMainDragOver(true);
                       }}
                       onDragLeave={() => setIsMainDragOver(false)}
-                      placeholder={`围绕《${title}》发表公开评论... (支持 Markdown 排版、图片快捷粘贴与拖拽上传)`}
+                      placeholder={tC.mainPlaceholder(title)}
                       rows={mainInputFocused || mainMessage.trim() ? 5 : 2}
                     />
                     <span className="el-input__count">
@@ -1801,13 +1823,13 @@ export function PostComments({
                   </div>
                 ) : (
                   <div className="tk-preview-container">
-                    <div className="tk-preview-badge">最终渲染预览</div>
+                    <div className="tk-preview-badge">{tC.previewBadge}</div>
                     <div
                       className="tk-preview-box"
                       dangerouslySetInnerHTML={{
                         __html:
                           renderCommentMarkdown(mainMessage.trim()) ||
-                          '<p class="tk-preview-empty">暂无评论内容可预览，请在“编辑”模式下输入 Markdown 文本。</p>',
+                          `<p class="tk-preview-empty">${tC.previewEmpty}</p>`,
                       }}
                     />
                   </div>
@@ -1827,7 +1849,7 @@ export function PostComments({
                           setEditorTab('edit');
                         }}
                       >
-                        取消
+                        {tC.cancelBtn}
                       </button>
                       <button
                         type="button"
@@ -1835,7 +1857,7 @@ export function PostComments({
                         disabled={submitting || !mainMessage.trim()}
                         onClick={handleMainSubmit}
                       >
-                        {submitting ? '发送中...' : submitLabel}
+                        {submitting ? tC.sendingBtn : (submitLabel === '发送' ? tC.sendBtn : submitLabel)}
                       </button>
                     </div>
                   </div>
@@ -1855,7 +1877,7 @@ export function PostComments({
           <div className="tk-comments-container">
             <div className="tk-comments-title">
               <div className="tk-comments-count">
-                <span>公开评论</span>
+                <span>{tC.publicComments}</span>
                 <strong>({comments.length})</strong>
               </div>
 
@@ -1865,7 +1887,7 @@ export function PostComments({
                   className={`tk-sort-btn ${sortOrder === 'new' ? 'is-active' : ''}`}
                   onClick={() => handleSortToggle('new')}
                 >
-                  ⏱️ 最新
+                  {tC.sortNew}
                 </button>
                 <span className="tk-sort-divider">|</span>
                 <button
@@ -1873,14 +1895,14 @@ export function PostComments({
                   className={`tk-sort-btn ${sortOrder === 'hot' ? 'is-active' : ''}`}
                   onClick={() => handleSortToggle('hot')}
                 >
-                  🔥 最热
+                  {tC.sortHot}
                 </button>
               </div>
             </div>
 
             {loading && comments.length === 0 ? (
               <div className="tk-comments-no">
-                <span>正在加载评论...</span>
+                <span>{tC.loadingComments}</span>
               </div>
             ) : comments.length === 0 ? (
               <div className="tk-comments-no">
@@ -1936,10 +1958,10 @@ export function PostComments({
                             }`}
                           >
                             {item.status === 'pinned'
-                              ? '置顶'
+                              ? tC.pinnedBadge
                               : item.authorRole === 'admin'
-                              ? '博主'
-                              : '访客'}
+                              ? tC.bloggerBadge
+                              : tC.visitorBadge}
                           </span>
 
                           {/* Country / IP Location badge */}
@@ -1997,7 +2019,7 @@ export function PostComments({
                                 className="tk-btn-cancel"
                                 onClick={() => setEditingCommentId(null)}
                               >
-                                取消
+                                {tC.cancelBtn}
                               </button>
                             </div>
                           </div>
@@ -2013,7 +2035,7 @@ export function PostComments({
                                 className="tk-expand-text-btn"
                                 onClick={() => toggleLongText(item.id)}
                               >
-                                {isTextExpanded ? '收起' : '...展开全文'}
+                                {isTextExpanded ? tC.collapseText : tC.expandText}
                               </button>
                             )}
                           </div>
@@ -2034,11 +2056,11 @@ export function PostComments({
                               onMouseLeave={triggerReactionPressEnd}
                               onTouchStart={() => triggerReactionPressStart(item.id)}
                               onTouchEnd={triggerReactionPressEnd}
-                              aria-label="点赞或长按互动"
+                              aria-label={tC.likeAria}
                               title={
                                 rxMeta.totalCount > 0
-                                  ? `互动详情: ${rxMeta.entries.map(([e, c]) => `${e} ${c}`).join(' ')} (长按可切换表情)`
-                                  : '点赞 (长按可选择更多表情)'
+                                  ? tC.likeTitleWithCount(rxMeta.entries.map(([e, c]) => `${e} ${c}`).join(' '))
+                                  : tC.likeTitleEmpty
                               }
                             >
                               {rxMeta.top3.length > 0 ? (
@@ -2056,7 +2078,7 @@ export function PostComments({
                             {/* Long-press / Triggered Emoji Picker Tray */}
                             {isPopupOpen && (
                               <div className="tk-reaction-bubble-popup">
-                                <div className="tk-reaction-bubble-title">选择表达表情：</div>
+                                <div className="tk-reaction-bubble-title">{tC.reactionPickerTitle}</div>
                                 <div className="tk-reaction-bubble-list">
                                   {QUICK_EMOJIS.slice(0, 10).map((em) => (
                                     <button
@@ -2076,8 +2098,8 @@ export function PostComments({
                           <button
                             type="button"
                             className={`tk-action-btn tk-action-reply ${isReplying && replyMode === 'comment' ? 'is-active' : ''}`}
-                            aria-label="回复此评论"
-                            title="回复此评论"
+                            aria-label={tC.replyCommentAria}
+                            title={tC.replyCommentTitle}
                             onClick={() => {
                               if (isReplying && replyMode === 'comment') {
                                 setReplyingToCommentId(null);
@@ -2095,8 +2117,8 @@ export function PostComments({
                           <button
                             type="button"
                             className={`tk-action-btn tk-action-boost ${isReplying && replyMode === 'boost' ? 'is-active' : ''}`}
-                            aria-label="发送 16 字以内的火箭 Boost 快速回复"
-                            title="发送 16 字以内的火箭 Boost 快速回复"
+                            aria-label={tC.boostActionAria}
+                            title={tC.boostActionTitle}
                             onClick={() => {
                               if (isReplying && replyMode === 'boost') {
                                 setReplyingToCommentId(null);
@@ -2115,8 +2137,8 @@ export function PostComments({
                           <button
                             type="button"
                             className="tk-action-btn tk-action-quote"
-                            aria-label="引用此条内容发表评论"
-                            title="引用此条内容发表评论"
+                            aria-label={tC.quoteActionAria}
+                            title={tC.quoteActionTitle}
                             onClick={() => handleQuoteClick(item)}
                           >
                             <Quote size={14} className="tk-action-svg" />
@@ -2126,8 +2148,8 @@ export function PostComments({
                               <button
                                 type="button"
                                 className="tk-action-btn tk-action-edit"
-                                aria-label="编辑此条评论"
-                                title="编辑此条评论"
+                                aria-label={tC.editActionAria}
+                                title={tC.editActionTitle}
                                 onClick={() => {
                                   setEditingCommentId(item.id);
                                   setEditingMessage(item.message);
@@ -2138,8 +2160,8 @@ export function PostComments({
                               <button
                                 type="button"
                                 className="tk-action-btn tk-action-delete"
-                                aria-label="删除此条评论"
-                                title="删除此条评论"
+                                aria-label={tC.deleteActionAria}
+                                title={tC.deleteActionTitle}
                                 onClick={() => handleDelete(item.id)}
                               >
                                 <Trash2 size={14} className="tk-action-svg" />
@@ -2164,27 +2186,27 @@ export function PostComments({
                                   {replyMode === 'boost' ? (
                                     <div className="tk-reply-boost-badge">
                                       <Rocket size={12} className="tk-boost-icon" />
-                                      <span>火箭 Boost 回复模式 (≤16字)</span>
+                                      <span>{tC.boostModeBadge}</span>
                                       <button
                                         type="button"
                                         className="tk-reply-mode-toggle"
                                         onClick={() => setReplyMode('comment')}
-                                        title="切换回普通 500 字回复"
+                                        title={tC.boostToggleNormalTitle}
                                       >
-                                        切换为普通回复
+                                        {tC.boostToggleNormal}
                                       </button>
                                     </div>
                                   ) : (
                                     <div className="tk-reply-hint-bar">
-                                      <span className="tk-reply-to-text">回复 <strong>@{replyingTargetAuthor}</strong></span>
+                                      <span className="tk-reply-to-text">{tC.normalReplyTo(replyingTargetAuthor)}</span>
                                       <button
                                         type="button"
                                         className="tk-reply-mode-toggle tk-reply-mode-toggle-boost"
                                         onClick={() => setReplyMode('boost')}
-                                        title="切换为 16 字快速火箭 Boost 回复"
+                                        title={tC.normalToggleBoostTitle}
                                       >
                                         <Rocket size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '3px' }} />
-                                        切换为 Boost (≤16字)
+                                        {tC.normalToggleBoost}
                                       </button>
                                     </div>
                                   )}
@@ -2202,8 +2224,8 @@ export function PostComments({
                                     onDrop={(e) => handleDropOnInput(e, setReplyMessage)}
                                     placeholder={
                                       replyMode === 'boost'
-                                        ? `🚀 发表 16 字以内的 Boost 快速回复 @${replyingTargetAuthor}...`
-                                        : `回复 @${replyingTargetAuthor}...`
+                                        ? tC.boostPlaceholder(replyingTargetAuthor)
+                                        : tC.normalPlaceholder(replyingTargetAuthor)
                                     }
                                     rows={replyMode === 'boost' ? 2 : 3}
                                     autoFocus
@@ -2223,7 +2245,7 @@ export function PostComments({
                                       setReplyMode('comment');
                                     }}
                                   >
-                                    取消
+                                    {tC.cancelBtn}
                                   </button>
                                   <button
                                     type="button"
@@ -2232,7 +2254,7 @@ export function PostComments({
                                     onClick={() => handleReplySubmit(item.id)}
                                   >
                                     {replySubmitting
-                                      ? '发送中...'
+                                      ? tC.sendingBtn
                                       : replyMode === 'boost'
                                       ? (
                                         <>
@@ -2240,7 +2262,7 @@ export function PostComments({
                                           Boost
                                         </>
                                       )
-                                      : '回复'}
+                                      : tC.replyBtn}
                                   </button>
                                 </div>
                               </div>
@@ -2261,8 +2283,8 @@ export function PostComments({
                               </span>
                               <span>
                                 {areRepliesExpanded
-                                  ? `收起 ${replies.length} 条回复`
-                                  : `查看 ${replies.length} 条回复`}
+                                  ? tC.collapseReplies(replies.length)
+                                  : tC.viewReplies(replies.length)}
                               </span>
                             </button>
 
@@ -2366,7 +2388,7 @@ export function PostComments({
                                                 className="tk-expand-text-btn"
                                                 onClick={() => toggleLongText(reply.id)}
                                               >
-                                                {isReplyTextExpanded ? '收起' : '...展开全文'}
+                                                {isReplyTextExpanded ? tC.collapseText : tC.expandText}
                                               </button>
                                             )}
                                           </div>
@@ -2384,10 +2406,11 @@ export function PostComments({
                                               onMouseLeave={triggerReactionPressEnd}
                                               onTouchStart={() => triggerReactionPressStart(reply.id)}
                                               onTouchEnd={triggerReactionPressEnd}
+                                              aria-label={tC.likeAria}
                                               title={
                                                 replyRxMeta.totalCount > 0
-                                                  ? `互动详情: ${replyRxMeta.entries.map(([e, c]) => `${e} ${c}`).join(' ')}`
-                                                  : '点赞 (长按可选择表情)'
+                                                  ? tC.likeTitleWithCount(replyRxMeta.entries.map(([e, c]) => `${e} ${c}`).join(' '))
+                                                  : tC.likeTitleEmpty
                                               }
                                             >
                                               {replyRxMeta.top3.length > 0 ? (
@@ -2404,7 +2427,7 @@ export function PostComments({
 
                                             {isReplyPopupOpen && (
                                               <div className="tk-reaction-bubble-popup">
-                                                <div className="tk-reaction-bubble-title">选择表达表情：</div>
+                                                <div className="tk-reaction-bubble-title">{tC.reactionPickerTitle}</div>
                                                 <div className="tk-reaction-bubble-list">
                                                   {QUICK_EMOJIS.slice(0, 10).map((em) => (
                                                     <button
@@ -2424,8 +2447,8 @@ export function PostComments({
                                           <button
                                             type="button"
                                             className="tk-action-btn tk-action-reply"
-                                            aria-label={`回复 @${reply.authorName}`}
-                                            title={`回复 @${reply.authorName}`}
+                                            aria-label={tC.replyToUserAria(reply.authorName)}
+                                            title={tC.replyToUserTitle(reply.authorName)}
                                             onClick={() => {
                                               setReplyingToCommentId(item.id);
                                               setReplyingTargetAuthor(reply.authorName);
@@ -2438,8 +2461,8 @@ export function PostComments({
                                           <button
                                             type="button"
                                             className="tk-action-btn tk-action-boost"
-                                            aria-label="发送 16 字以内的火箭 Boost 快速回复"
-                                            title="发送 16 字以内的火箭 Boost 快速回复"
+                                            aria-label={tC.boostActionAria}
+                                            title={tC.boostActionTitle}
                                             onClick={() => {
                                               setReplyingToCommentId(item.id);
                                               setReplyingTargetAuthor(reply.authorName);
@@ -2452,8 +2475,8 @@ export function PostComments({
                                           <button
                                             type="button"
                                             className="tk-action-btn tk-action-quote"
-                                            aria-label="引用此条内容发表评论"
-                                            title="引用此条内容发表评论"
+                                            aria-label={tC.quoteActionAria}
+                                            title={tC.quoteActionTitle}
                                             onClick={() => handleQuoteClick(reply)}
                                           >
                                             <Quote size={14} className="tk-action-svg" />
@@ -2463,8 +2486,8 @@ export function PostComments({
                                               <button
                                                 type="button"
                                                 className="tk-action-btn tk-action-edit"
-                                                aria-label="编辑此条内容"
-                                                title="编辑此条内容"
+                                                aria-label={tC.editActionAria}
+                                                title={tC.editActionTitle}
                                                 onClick={() => {
                                                   setEditingCommentId(reply.id);
                                                   setEditingMessage(reply.message);
@@ -2475,8 +2498,8 @@ export function PostComments({
                                               <button
                                                 type="button"
                                                 className="tk-action-btn tk-action-delete"
-                                                aria-label="删除此条内容"
-                                                title="删除此条内容"
+                                                aria-label={tC.deleteActionAria}
+                                                title={tC.deleteActionTitle}
                                                 onClick={() => handleDelete(reply.id)}
                                               >
                                                 <Trash2 size={14} className="tk-action-svg" />
@@ -2518,77 +2541,77 @@ export function PostComments({
                 <h4 className="tk-tool-modal-title">
                   {activeModal === 'poll' && (
                     <>
-                      <Vote size={16} /> 发起互动投票
+                      <Vote size={16} /> {tC.modalPollTitle}
                     </>
                   )}
                   {activeModal === 'table' && (
                     <>
-                      <Table size={16} /> 插入数据表格
+                      <Table size={16} /> {tC.modalTableTitle}
                     </>
                   )}
                   {activeModal === 'toc' && (
                     <>
-                      <ListOrdered size={16} /> 插入目录导航 (TOC)
+                      <ListOrdered size={16} /> {tC.modalTocTitle}
                     </>
                   )}
                   {activeModal === 'details' && (
                     <>
-                      <ChevronRight size={16} /> 插入折叠隐藏区块
+                      <ChevronRight size={16} /> {tC.modalDetailsTitle}
                     </>
                   )}
                   {activeModal === 'spoiler' && (
                     <>
-                      <EyeOff size={16} /> 模糊化剧透内容
+                      <EyeOff size={16} /> {tC.modalSpoilerTitle}
                     </>
                   )}
                   {activeModal === 'math' && (
                     <>
-                      <Sigma size={16} /> 插入 LaTeX 数学公式
+                      <Sigma size={16} /> {tC.modalMathTitle}
                     </>
                   )}
                   {activeModal === 'scroll' && (
                     <>
-                      <ScrollText size={16} /> 插入滚动长内容
+                      <ScrollText size={16} /> {tC.modalScrollTitle}
                     </>
                   )}
                   {activeModal === 'callout' && (
                     <>
-                      <Layers size={16} /> 套用包装格式卡片
+                      <Layers size={16} /> {tC.modalCalloutTitle}
                     </>
                   )}
                   {activeModal === 'mermaid' && (
                     <>
-                      <GitFork size={16} /> 插入 Mermaid 图表
+                      <GitFork size={16} /> {tC.modalMermaidTitle}
                     </>
                   )}
                   {activeModal === 'chart' && (
                     <>
-                      <BarChart3 size={16} /> 插入 Build Chart 数据图表
+                      <BarChart3 size={16} /> {tC.modalChartTitle}
                     </>
                   )}
                   {activeModal === 'graphviz' && (
                     <>
-                      <Share2 size={16} /> 插入 Graphviz 拓扑图
+                      <Share2 size={16} /> {tC.modalGraphvizTitle}
                     </>
                   )}
                   {activeModal === 'datetime' && (
                     <>
-                      <Clock size={16} /> 插入日期与时间
+                      <Clock size={16} /> {tC.modalDatetimeTitle}
                     </>
                   )}
                   {activeModal === 'template' && (
                     <>
-                      <LayoutTemplate size={16} /> 插入结构化论述范本
+                      <LayoutTemplate size={16} /> {tC.modalTemplateTitle}
                     </>
                   )}
                   {activeModal === 'footnote' && (
                     <>
-                      <Bookmark size={16} /> 新增参考脚注
+                      <Bookmark size={16} /> {tC.modalFootnoteTitle}
                     </>
                   )}
                   {activeModal === 'image' && (
                     <>
-                      <ImageIcon size={16} /> 插入图片与 Telegram 图床托管
+                      <ImageIcon size={16} /> {tC.modalImageTitle}
                     </>
                   )}
                 </h4>
@@ -2596,8 +2619,8 @@ export function PostComments({
                   type="button"
                   className="tk-tool-modal-close"
                   onClick={() => setActiveModal(null)}
-                  title="关闭 (Esc)"
-                  aria-label="关闭"
+                  title={tC.modalClose}
+                  aria-label={tC.modalClose}
                 >
                   <X size={16} />
                 </button>
@@ -3502,14 +3525,14 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   className="tk-modal-btn tk-modal-btn-cancel"
                   onClick={() => setActiveModal(null)}
                 >
-                  取消
+                  {tC.modalCancel}
                 </button>
                 <button
                   type="button"
                   className="tk-modal-btn tk-modal-btn-confirm"
                   onClick={handleConfirmModal}
                 >
-                  确认插入
+                  {tC.modalConfirm}
                 </button>
               </div>
             </div>

@@ -89,6 +89,70 @@ import {
   readStoredUserPersona, 
   type UserPersonaProfile 
 } from '../lib/user-persona';
+import { resolveGeoInfo } from '../lib/geo-names.ts';
+
+const TIMEZONE_LABELS: Record<LocaleVariant, Record<string, string>> = {
+  'zh-CN': {
+    'Asia/Shanghai': '北京/上海 (UTC+8)',
+    'Asia/Hong_Kong': '香港 (UTC+8)',
+    'Asia/Taipei': '台北 (UTC+8)',
+    'Asia/Tokyo': '东京 (UTC+9)',
+    'America/New_York': '纽约 (EST/EDT)',
+    'America/Los_Angeles': '洛杉矶 (PST/PDT)',
+    'Europe/London': '伦敦 (UTC+0)',
+    'UTC': '世界协调时 (UTC)',
+  },
+  'zh-Hant': {
+    'Asia/Shanghai': '北京/上海 (UTC+8)',
+    'Asia/Hong_Kong': '香港 (UTC+8)',
+    'Asia/Taipei': '台北 (UTC+8)',
+    'Asia/Tokyo': '東京 (UTC+9)',
+    'America/New_York': '紐約 (EST/EDT)',
+    'America/Los_Angeles': '洛杉磯 (PST/PDT)',
+    'Europe/London': '倫敦 (UTC+0)',
+    'UTC': '世界協調時 (UTC)',
+  },
+  'en': {
+    'Asia/Shanghai': 'Beijing/Shanghai (UTC+8)',
+    'Asia/Hong_Kong': 'Hong Kong (UTC+8)',
+    'Asia/Taipei': 'Taipei (UTC+8)',
+    'Asia/Tokyo': 'Tokyo (UTC+9)',
+    'America/New_York': 'New York (EST/EDT)',
+    'America/Los_Angeles': 'Los Angeles (PST/PDT)',
+    'Europe/London': 'London (UTC+0)',
+    'UTC': 'Coordinated Universal Time (UTC)',
+  },
+  'fr': {
+    'Asia/Shanghai': 'Pékin/Shanghai (UTC+8)',
+    'Asia/Hong_Kong': 'Hong Kong (UTC+8)',
+    'Asia/Taipei': 'Taipei (UTC+8)',
+    'Asia/Tokyo': 'Tokyo (UTC+9)',
+    'America/New_York': 'New York (EST/EDT)',
+    'America/Los_Angeles': 'Los Angeles (PST/PDT)',
+    'Europe/London': 'Londres (UTC+0)',
+    'UTC': 'Temps universel coordonné (UTC)',
+  },
+  'es': {
+    'Asia/Shanghai': 'Pekín/Shanghái (UTC+8)',
+    'Asia/Hong_Kong': 'Hong Kong (UTC+8)',
+    'Asia/Taipei': 'Taipéi (UTC+8)',
+    'Asia/Tokyo': 'Tokio (UTC+9)',
+    'America/New_York': 'Nueva York (EST/EDT)',
+    'America/Los_Angeles': 'Los Ángeles (PST/PDT)',
+    'Europe/London': 'Londres (UTC+0)',
+    'UTC': 'Tiempo Universal Coordinado (UTC)',
+  },
+  'de': {
+    'Asia/Shanghai': 'Peking/Shanghai (UTC+8)',
+    'Asia/Hong_Kong': 'Hongkong (UTC+8)',
+    'Asia/Taipei': 'Taipeh (UTC+8)',
+    'Asia/Tokyo': 'Tokio (UTC+9)',
+    'America/New_York': 'New York (EST/EDT)',
+    'America/Los_Angeles': 'Los Angeles (PST/PDT)',
+    'Europe/London': 'London (UTC+0)',
+    'UTC': 'Koordinierte Weltzeit (UTC)',
+  },
+};
 
 type NavItem = {
   label: string;
@@ -1278,6 +1342,14 @@ export function ThemeOverlays({
     const applied = applyLocaleVariant(nextLocale, { manual: true });
     setLocaleVariant(applied);
     setUserPersona(ensureUserPersona());
+    setAccountForm((prev) => {
+      if (!prev.location) return prev;
+      const resolved = resolveGeoInfo(prev.location, applied);
+      if (resolved && resolved.code !== 'GLOBAL' && resolved.name) {
+        return { ...prev, location: resolved.name };
+      }
+      return prev;
+    });
     const meta = LOCALE_METADATA[applied];
     emitActivity(`已切换为${meta ? meta.nativeName : applied}界面`);
   };
@@ -1972,14 +2044,9 @@ export function ThemeOverlays({
                           placeholder={t('profile.field.timezonePlaceholder', '自动获取或选择')}
                         />
                         <datalist id="account-common-timezones">
-                          <option value="Asia/Shanghai">北京/上海 (UTC+8)</option>
-                          <option value="Asia/Hong_Kong">香港 (UTC+8)</option>
-                          <option value="Asia/Taipei">台北 (UTC+8)</option>
-                          <option value="Asia/Tokyo">东京 (UTC+9)</option>
-                          <option value="America/New_York">纽约 (EST/EDT)</option>
-                          <option value="America/Los_Angeles">洛杉矶 (PST/PDT)</option>
-                          <option value="Europe/London">伦敦 (UTC+0)</option>
-                          <option value="UTC">世界协调时 (UTC)</option>
+                          {Object.entries(TIMEZONE_LABELS[localeVariant] || TIMEZONE_LABELS['zh-CN']).map(([val, label]) => (
+                            <option key={val} value={val}>{label}</option>
+                          ))}
                         </datalist>
                         <button
                           type="button"
@@ -2021,6 +2088,9 @@ export function ThemeOverlays({
                               .then((data: any) => {
                                 if (data?.location) {
                                   setAccountForm((prev) => ({ ...prev, location: data.location }));
+                                } else if (data?.country) {
+                                  const info = resolveGeoInfo(data.country, localeVariant);
+                                  setAccountForm((prev) => ({ ...prev, location: info.name || data.country }));
                                 }
                               })
                               .catch(() => {});

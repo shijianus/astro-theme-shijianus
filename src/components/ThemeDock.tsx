@@ -34,6 +34,137 @@ function calculateProgress() {
   return Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100));
 }
 
+const DOCK_TRANSLATIONS: Record<
+  LocaleVariant,
+  {
+    exitReadMode: string;
+    readMode: string;
+    exitReadModeEsc: string;
+    tocHierarchy: (depth: string) => string;
+    toComment: string;
+    switchLang: (currentName: string, nextName: string) => string;
+    switchLangAria: (curBadge: string, nextBadge: string) => string;
+    expandAside: string;
+    collapseAside: string;
+    hideSettings: string;
+    expandSettings: string;
+    toLightMode: string;
+    toDarkMode: string;
+    toggleBg: string;
+    hideDock: string;
+    backToTop: string;
+  }
+> = {
+  'zh-CN': {
+    exitReadMode: '退出阅读模式',
+    readMode: '阅读模式',
+    exitReadModeEsc: '退出阅读模式 (Esc)',
+    tocHierarchy: (d) => `目录层级 (${d === 'all' ? '全部' : `${d}级`}) / 文章目录`,
+    toComment: '直达评论',
+    switchLang: (c, n) => `切换语言 (当前: ${c}，点击切换为: ${n})`,
+    switchLangAria: (cb, nb) => `切换语言 (${cb} ⇋ ${nb})`,
+    expandAside: '展开侧栏',
+    collapseAside: '收起侧栏',
+    hideSettings: '收起设置',
+    expandSettings: '展开设置',
+    toLightMode: '切换到浅色模式',
+    toDarkMode: '切换到深色模式',
+    toggleBg: '切换背景',
+    hideDock: '隐藏选单',
+    backToTop: '返回顶部',
+  },
+  'zh-Hant': {
+    exitReadMode: '退出閱讀模式',
+    readMode: '閱讀模式',
+    exitReadModeEsc: '退出閱讀模式 (Esc)',
+    tocHierarchy: (d) => `目錄層級 (${d === 'all' ? '全部' : `${d}級`}) / 文章目錄`,
+    toComment: '直達評論',
+    switchLang: (c, n) => `切換語言 (當前: ${c}，點擊切換為: ${n})`,
+    switchLangAria: (cb, nb) => `切換語言 (${cb} ⇋ ${nb})`,
+    expandAside: '展開側欄',
+    collapseAside: '收起側欄',
+    hideSettings: '收起設定',
+    expandSettings: '展開設定',
+    toLightMode: '切換到淺色模式',
+    toDarkMode: '切換到深色模式',
+    toggleBg: '切換背景',
+    hideDock: '隱藏選單',
+    backToTop: '返回頂部',
+  },
+  en: {
+    exitReadMode: 'Exit Reading Mode',
+    readMode: 'Reading Mode',
+    exitReadModeEsc: 'Exit Reading Mode (Esc)',
+    tocHierarchy: (d) => `TOC Depth (${d === 'all' ? 'All' : `Level ${d}`}) / Article Outline`,
+    toComment: 'Jump to Comments',
+    switchLang: (c, n) => `Switch Language (Current: ${c}, Click for: ${n})`,
+    switchLangAria: (cb, nb) => `Switch Language (${cb} ⇋ ${nb})`,
+    expandAside: 'Expand Sidebar',
+    collapseAside: 'Collapse Sidebar',
+    hideSettings: 'Hide Quick Actions',
+    expandSettings: 'Show Quick Actions',
+    toLightMode: 'Switch to Light Mode',
+    toDarkMode: 'Switch to Dark Mode',
+    toggleBg: 'Toggle Background',
+    hideDock: 'Hide Quick Menu',
+    backToTop: 'Back to Top',
+  },
+  fr: {
+    exitReadMode: 'Quitter le mode lecture',
+    readMode: 'Mode lecture',
+    exitReadModeEsc: 'Quitter le mode lecture (Échap)',
+    tocHierarchy: (d) => `Niveaux TdM (${d === 'all' ? 'Tous' : `Niveau ${d}`}) / Sommaire`,
+    toComment: 'Aller aux commentaires',
+    switchLang: (c, n) => `Changer de langue (Actuel : ${c}, Cliquez pour : ${n})`,
+    switchLangAria: (cb, nb) => `Changer de langue (${cb} ⇋ ${nb})`,
+    expandAside: 'Afficher la barre latérale',
+    collapseAside: 'Masquer la barre latérale',
+    hideSettings: 'Masquer les raccourcis',
+    expandSettings: 'Afficher les raccourcis',
+    toLightMode: 'Passer au mode clair',
+    toDarkMode: 'Passer au mode sombre',
+    toggleBg: 'Changer le fond',
+    hideDock: 'Masquer le menu',
+    backToTop: 'Retour en haut',
+  },
+  es: {
+    exitReadMode: 'Salir del modo lectura',
+    readMode: 'Modo lectura',
+    exitReadModeEsc: 'Salir del modo lectura (Esc)',
+    tocHierarchy: (d) => `Nivel del índice (${d === 'all' ? 'Todos' : `Nivel ${d}`}) / Índice`,
+    toComment: 'Ir a comentarios',
+    switchLang: (c, n) => `Cambiar de idioma (Actual: ${c}, Clic para: ${n})`,
+    switchLangAria: (cb, nb) => `Cambiar de idioma (${cb} ⇋ ${nb})`,
+    expandAside: 'Mostrar barra lateral',
+    collapseAside: 'Ocultar barra lateral',
+    hideSettings: 'Ocultar accesos rápidos',
+    expandSettings: 'Mostrar accesos rápidos',
+    toLightMode: 'Cambiar a modo claro',
+    toDarkMode: 'Cambiar a modo oscuro',
+    toggleBg: 'Cambiar fondo',
+    hideDock: 'Ocultar menú rápido',
+    backToTop: 'Volver arriba',
+  },
+  de: {
+    exitReadMode: 'Lesemodus beenden',
+    readMode: 'Lesemodus',
+    exitReadModeEsc: 'Lesemodus beenden (Esc)',
+    tocHierarchy: (d) => `Gliederungsebene (${d === 'all' ? 'Alle' : `Stufe ${d}`}) / Inhalt`,
+    toComment: 'Zu den Kommentaren',
+    switchLang: (c, n) => `Sprache wechseln (Aktuell: ${c}, Klick für: ${n})`,
+    switchLangAria: (cb, nb) => `Sprache wechseln (${cb} ⇋ ${nb})`,
+    expandAside: 'Seitenleiste ausklappen',
+    collapseAside: 'Seitenleiste einklappen',
+    hideSettings: 'Schnellaktionen schließen',
+    expandSettings: 'Schnellaktionen öffnen',
+    toLightMode: 'Zum hellen Modus wechseln',
+    toDarkMode: 'Zum dunklen Modus wechseln',
+    toggleBg: 'Hintergrund wechseln',
+    hideDock: 'Menü ausblenden',
+    backToTop: 'Nach oben scrollen',
+  },
+};
+
 export function ThemeDock(_props: ThemeDockProps) {
   /* progress 改为 DOM ref 直写，避免每帧 setProgress 触发 re-render */
   const dockProgressElRef = useRef<HTMLSpanElement | null>(null);
@@ -287,6 +418,8 @@ export function ThemeDock(_props: ThemeDockProps) {
     emitActivity('已收起快捷菜单（鼠标移至屏幕右侧可重新唤出）');
   };
 
+  const tD = DOCK_TRANSLATIONS[locale] || DOCK_TRANSLATIONS['zh-CN'];
+
   return (
     <>
       {readMode && (
@@ -294,8 +427,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           type="button"
           className="exit-readmode" 
           onClick={handleToggleReadMode}
-          title="退出阅读模式 (Esc)"
-          aria-label="退出阅读模式 (Esc)"
+          title={tD.exitReadModeEsc}
+          aria-label={tD.exitReadModeEsc}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -316,8 +449,8 @@ export function ThemeDock(_props: ThemeDockProps) {
               <button
                 type="button"
                 id="readmode"
-                title={readMode ? '退出阅读模式' : '阅读模式'}
-                aria-label={readMode ? '退出阅读模式' : '阅读模式'}
+                title={readMode ? tD.exitReadMode : tD.readMode}
+                aria-label={readMode ? tD.exitReadMode : tD.readMode}
                 className={readMode ? 'is-active' : ''}
                 onClick={handleToggleReadMode}
               >
@@ -331,8 +464,8 @@ export function ThemeDock(_props: ThemeDockProps) {
                 type="button"
                 id="mobile-toc-button"
                 className={`close ${tocDepth !== 'all' ? 'is-active' : ''}`}
-                title={`目录层级 (${tocDepth === 'all' ? '全部' : `${tocDepth}级`}) / 文章目录`}
-                aria-label="目录层级 / 文章目录"
+                title={tD.tocHierarchy(tocDepth)}
+                aria-label={tD.tocHierarchy(tocDepth)}
                 onClick={handleToggleTocDepth}
                 style={{ position: 'relative' }}
               >
@@ -344,10 +477,10 @@ export function ThemeDock(_props: ThemeDockProps) {
                   <line x1="3" y1="12" x2="3.01" y2="12"></line>
                   <line x1="3" y1="18" x2="3.01" y2="18"></line>
                 </svg>
-                <span className="dock-depth-badge">{tocDepth === 'all' ? '全' : `${tocDepth}级`}</span>
+                <span className="dock-depth-badge">{tocDepth === 'all' ? (locale === 'en' ? 'All' : locale === 'fr' ? 'Tous' : locale === 'de' ? 'Alle' : locale === 'es' ? 'Todo' : '全') : `${tocDepth}`}</span>
               </button>
 
-              <a id="to_comment" href="#post-comment" title="直达评论" aria-label="直达评论" onClick={handleJumpToComment}>
+              <a id="to_comment" href="#post-comment" title={tD.toComment} aria-label={tD.toComment} onClick={handleJumpToComment}>
                 <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
@@ -361,8 +494,8 @@ export function ThemeDock(_props: ThemeDockProps) {
             id="translate"
             className="ignore-opencc"
             data-no-translate="true"
-            title={`切换语言 (当前: ${LOCALE_METADATA[locale]?.nativeName || locale}，点击切换为: ${LOCALE_METADATA[locale === candidatePair[0] ? candidatePair[1] : candidatePair[0]]?.nativeName || '目标语言'})`}
-            aria-label={`切换语言 (${currentBadge} ⇋ ${nextBadge})`}
+            title={tD.switchLang(LOCALE_METADATA[locale]?.nativeName || locale, LOCALE_METADATA[targetLocale]?.nativeName || targetLocale)}
+            aria-label={tD.switchLangAria(currentBadge, nextBadge)}
             onClick={handleToggleLocale}
           >
             {locale === 'zh-CN' || locale === 'zh-Hant' ? (
@@ -412,8 +545,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="hide-aside-btn"
-            title={asideCollapsed ? '展开侧栏' : '收起侧栏'}
-            aria-label={asideCollapsed ? '展开侧栏' : '收起侧栏'}
+            title={asideCollapsed ? tD.expandAside : tD.collapseAside}
+            aria-label={asideCollapsed ? tD.expandAside : tD.collapseAside}
             className={asideCollapsed ? 'is-active' : ''}
             onClick={toggleAside}
           >
@@ -454,8 +587,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="rightside-config"
-            title={configOpen ? '收起设置' : '展开设置'}
-            aria-label={configOpen ? '收起设置' : '展开设置'}
+            title={configOpen ? tD.hideSettings : tD.expandSettings}
+            aria-label={configOpen ? tD.hideSettings : tD.expandSettings}
             aria-expanded={configOpen}
             className={configOpen ? 'is-active' : ''}
             onClick={handleToggleConfig}
@@ -493,8 +626,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="darkmode"
-            title={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
-            aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+            title={theme === 'dark' ? tD.toLightMode : tD.toDarkMode}
+            aria-label={theme === 'dark' ? tD.toLightMode : tD.toDarkMode}
             className={theme === 'dark' ? 'is-active' : ''}
             onClick={toggleTheme}
           >
@@ -537,8 +670,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="background-mode"
-            title="切换背景"
-            aria-label="切换背景"
+            title={tD.toggleBg}
+            aria-label={tD.toggleBg}
             onClick={toggleBackground}
           >
             <div style={{ position: 'relative', width: '16px', height: '16px' }}>
@@ -565,8 +698,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="hide-rightside-btn"
-            title="隐藏选单"
-            aria-label="隐藏选单"
+            title={tD.hideDock}
+            aria-label={tD.hideDock}
             onClick={handleHideRightside}
           >
             <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -577,8 +710,8 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="go-up"
-            title="回到顶部"
-            aria-label="回到顶部"
+            title={tD.backToTop}
+            aria-label={tD.backToTop}
             onClick={jumpToTop}
             ref={dockGoUpBtnRef}
             style={{ 

@@ -723,6 +723,11 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   // Rightside controls & Top Dock
   '回到顶部': { en: 'Back to top', fr: 'Haut de page', es: 'Volver arriba', de: 'Nach oben' },
   '控制台': { en: 'Console', fr: 'Console', es: 'Consola', de: 'Konsole' },
+  '中控台': { en: 'Console', fr: 'Tableau de bord', es: 'Consola', de: 'Konsole' },
+  '个人中心': { en: 'User Center', fr: 'Espace Utilisateur', es: 'Perfil', de: 'Benutzerkonto' },
+  '通知中心': { en: 'Notifications', fr: 'Notifications', es: 'Notificaciones', de: 'Mitteilungen' },
+  '切换主题': { en: 'Toggle Theme', fr: 'Changer le thème', es: 'Cambiar tema', de: 'Design wechseln' },
+  '随机文章': { en: 'Random Post', fr: 'Article aléatoire', es: 'Artículo aleatorio', de: 'Zufälliger Beitrag' },
   '账号中心': { en: 'Account', fr: 'Compte', es: 'Cuenta', de: 'Konto' },
   '账号面板': { en: 'Account panel', fr: 'Panneau de compte', es: 'Panel de cuenta', de: 'Kontoverwaltung' },
   '归档时间线': { en: 'Archive timeline', fr: 'Chronologie', es: 'Línea de tiempo', de: 'Zeitleiste' },
@@ -1305,7 +1310,7 @@ for (const [zh, trans] of Object.entries(MULTILINGUAL_DICTIONARY)) {
   allForeignToZhMap.set(trans.de, zh);
 }
 
-const translatableAttributes = ['title', 'placeholder', 'aria-label', 'aria-description', 'alt'] as const;
+const translatableAttributes = ['title', 'placeholder', 'aria-label', 'aria-description', 'alt', 'data-tooltip', 'data-shijianus-tooltip'] as const;
 const skipTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'KBD', 'SAMP', 'SVG', 'PATH']);
 const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console,#article-container,.article-body,.post-content';
 

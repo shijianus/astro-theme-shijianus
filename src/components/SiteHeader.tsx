@@ -11,6 +11,65 @@ import {
 import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
+import type { LocaleVariant } from '../lib/user-persona.ts';
+
+const NAV_TRANSLATIONS: Record<LocaleVariant, {
+  userCenter: string;
+  notifications: string;
+  search: string;
+  toggleTheme: string;
+  randomPost: string;
+  console: string;
+}> = {
+  'zh-CN': {
+    userCenter: '个人中心',
+    notifications: '通知中心',
+    search: '搜索',
+    toggleTheme: '切换主题',
+    randomPost: '随机文章',
+    console: '中控台',
+  },
+  'zh-Hant': {
+    userCenter: '個人中心',
+    notifications: '通知中心',
+    search: '搜尋',
+    toggleTheme: '切換主題',
+    randomPost: '隨機文章',
+    console: '中控台',
+  },
+  'en': {
+    userCenter: 'User Center',
+    notifications: 'Notifications',
+    search: 'Search',
+    toggleTheme: 'Toggle Theme',
+    randomPost: 'Random Post',
+    console: 'Console',
+  },
+  'fr': {
+    userCenter: 'Espace Utilisateur',
+    notifications: 'Notifications',
+    search: 'Recherche',
+    toggleTheme: 'Changer le thème',
+    randomPost: 'Article aléatoire',
+    console: 'Tableau de bord',
+  },
+  'es': {
+    userCenter: 'Perfil',
+    notifications: 'Notificaciones',
+    search: 'Buscar',
+    toggleTheme: 'Cambiar tema',
+    randomPost: 'Artículo aleatorio',
+    console: 'Consola',
+  },
+  'de': {
+    userCenter: 'Benutzerkonto',
+    notifications: 'Mitteilungen',
+    search: 'Suche',
+    toggleTheme: 'Design wechseln',
+    randomPost: 'Zufälliger Beitrag',
+    console: 'Konsole',
+  },
+};
 
 type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children'>;
 
@@ -145,6 +204,26 @@ export function SiteHeader({
   const [hoverSuppressed, setHoverSuppressed] = useState(false);
   const themeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const cloudTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('shijianus_blog_locale_variant') as LocaleVariant) || 'zh-CN';
+    }
+    return 'zh-CN';
+  });
+
+  useEffect(() => {
+    const handleLocaleChange = (e: Event) => {
+      const custom = e as CustomEvent<{ variant: LocaleVariant }>;
+      if (custom.detail?.variant) {
+        setCurrentLocale(custom.detail.variant);
+      }
+    };
+    window.addEventListener('shijianus:localechange', handleLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', handleLocaleChange);
+  }, []);
+
+  const tNav = NAV_TRANSLATIONS[currentLocale] || NAV_TRANSLATIONS['zh-CN'];
 
   const handleThemeToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -657,7 +736,9 @@ export function SiteHeader({
                 <a 
                   className={`site-page ${accountOpen ? 'is-active' : ''}`} 
                   href="#" 
-                  title="个人中心"
+                  title={tNav.userCenter}
+                  data-tooltip={tNav.userCenter}
+                  aria-label={tNav.userCenter}
                   onClick={(e) => {
                     e.preventDefault();
                     openAccountPanel();
@@ -673,7 +754,9 @@ export function SiteHeader({
                 <a 
                   className={`site-page ${notificationOpen ? 'is-active' : ''}`} 
                   href="#" 
-                  data-tooltip="通知中心"
+                  title={tNav.notifications}
+                  data-tooltip={tNav.notifications}
+                  aria-label={tNav.notifications}
                   onClick={(e) => {
                     e.preventDefault();
                     if (notificationOpen) {
@@ -694,7 +777,9 @@ export function SiteHeader({
               <a 
                 className="site-page social-icon search" 
                 href="#" 
-                data-tooltip="搜索" 
+                title={tNav.search}
+                data-tooltip={tNav.search}
+                aria-label={tNav.search}
                 onClick={(e) => {
                   e.preventDefault();
                   window.dispatchEvent(new CustomEvent('shijianus:open-search'));
@@ -705,7 +790,15 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="nav-theme-toggle" onMouseEnter={handleToggleMouseEnter} onMouseLeave={handleToggleMouseLeave} data-hover-suppressed={hoverSuppressed}>
-              <a className="site-page" href="#" data-tooltip="切换主题" onClick={handleThemeToggle} style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <a 
+                className="site-page" 
+                href="#" 
+                title={tNav.toggleTheme}
+                data-tooltip={tNav.toggleTheme}
+                aria-label={tNav.toggleTheme}
+                onClick={handleThemeToggle} 
+                style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <div className={`shijianus-cloud-transition ${showClouds ? 'is-active' : ''}`}>
                   <div className="cloud-particle p1"></div>
                   <div className="cloud-particle p2"></div>
@@ -734,11 +827,18 @@ export function SiteHeader({
             </div>
 
             <div className="nav-button" id="randomPost_button" onMouseEnter={startDiceRoll} onMouseLeave={resetDice}>
-              <a className="site-page" href="#" data-tooltip="随机文章" onClick={(e) => {
-                e.preventDefault();
-                const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
-                if (randomAction) window.location.href = randomAction.href;
-              }}>
+              <a 
+                className="site-page" 
+                href="#" 
+                title={tNav.randomPost}
+                data-tooltip={tNav.randomPost}
+                aria-label={tNav.randomPost}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const randomAction = quickActions[Math.floor(Math.random() * quickActions.length)];
+                  if (randomAction) window.location.href = randomAction.href;
+                }}
+              >
                 <DiceCube />
               </a>
             </div>
@@ -755,13 +855,16 @@ export function SiteHeader({
                   <div 
                     className="nav-console-btn-shijianus relative group flex items-center justify-center w-[35px] h-[35px] ml-2 first:ml-0 cursor-pointer hidden" 
                     id="center-console-button"
-                    data-shijianus-tooltip="中控台"
+                    title={tNav.console}
+                    data-shijianus-tooltip={tNav.console}
+                    data-tooltip={tNav.console}
+                    aria-label={tNav.console}
                     onClick={(e) => {
                       e.preventDefault();
                       consoleOpen ? closeCenterConsole() : openCenterConsole();
                     }}
                   >
-                    <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label="中控台">
+                    <button className={`w-full h-full flex items-center justify-center bg-transparent border-none outline-none ${consoleOpen ? 'is-active' : ''}`} aria-label={tNav.console}>
                       {/* 核心：拒绝SVG，使用纯CSS控制的3条线 */}
                       <div className="shijianus-matrix-icon flex flex-col justify-between w-[16px] h-[12px] relative overflow-hidden">
                         <span className="matrix-line line-1 w-full h-[2px] bg-[var(--font-color)] rounded-full transition-all duration-300 origin-center"></span>
