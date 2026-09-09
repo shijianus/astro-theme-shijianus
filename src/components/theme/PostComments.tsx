@@ -60,6 +60,7 @@ import {
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import type { LocaleVariant } from '../../lib/user-persona.ts';
 import { getCommentTranslations } from '../../lib/comments-i18n.ts';
+import { readStoredLocaleVariant, normaliseLocaleVariant } from '../../lib/client-locale';
 
 type CommentsIntegrationConfig = Readonly<{
   provider: CommentProvider;
@@ -203,18 +204,18 @@ export function PostComments({
   emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
 }: PostCommentsProps) {
   // Locale state
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('shijianus_blog_locale_variant') as LocaleVariant) || 'zh-CN';
-    }
-    return 'zh-CN';
-  });
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
+    const stored = readStoredLocaleVariant();
+    if (stored && stored !== 'zh-CN') {
+      setCurrentLocale(stored);
+    }
     const handleLocaleChange = (e: Event) => {
-      const custom = e as CustomEvent<{ variant: LocaleVariant }>;
-      if (custom.detail?.variant) {
-        setCurrentLocale(custom.detail.variant);
+      const custom = e as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
+      const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
+      if (next) {
+        setCurrentLocale(normaliseLocaleVariant(next));
       }
     };
     window.addEventListener('shijianus:localechange', handleLocaleChange);
@@ -1527,7 +1528,7 @@ export function PostComments({
                     <div className="tk-toolbar-item">
                       <button
                         type="button"
-                        className="tk-tb-btn tk-tb-options"
+                        className="tk-tb-btn tk-tb-options tk-tb-btn-options"
                         title={tC.toolbarOptions}
                         aria-label={tC.toolbarOptionsAria}
                         onClick={(e) => {

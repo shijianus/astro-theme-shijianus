@@ -15846,8 +15846,6 @@ body[data-type='post'] #aside-content {
 /* 1. Global Page Distraction Elimination & Alignment Zero */
 body.read-mode #nav,
 html[data-readmode='true'] #nav,
-body.read-mode .page-shell__hero,
-html[data-readmode='true'] .page-shell__hero,
 body.read-mode #footer,
 html[data-readmode='true'] #footer,
 body.read-mode .theme-floating-tools,
@@ -15886,15 +15884,15 @@ body.read-mode #post #vcomments {
   display: none !important;
 }
 
-/* 3. Read Mode Layout & Unconstrained Natural Width (No 880px Squeeze, No Rightside Overlap) */
+/* 3. Read Mode Layout & Unconstrained Natural Width (100% Harmonized 1:1 with Normal Post Mode) */
 body.read-mode #content-inner.layout,
 html[data-readmode='true'] #content-inner.layout {
   display: flex !important;
   width: 100% !important;
-  max-width: min(1280px, calc(100vw - 160px)) !important;
+  max-width: 1400px !important;
   margin: 0 auto !important;
-  padding: 24px 20px !important;
-  gap: 24px !important;
+  padding: 20px 15px !important;
+  gap: 20px !important;
   justify-content: center !important;
   align-items: flex-start !important;
   box-sizing: border-box !important;
@@ -15904,7 +15902,7 @@ body.read-mode .page-main,
 html[data-readmode='true'] .page-main {
   flex: 1 1 0% !important;
   min-width: 0 !important;
-  max-width: calc(100% - 324px) !important;
+  max-width: calc(100% - 320px) !important;
   width: 100% !important;
   transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -16050,6 +16048,7 @@ html[data-readmode='true'] #aside-content #card-toc {
   overflow: hidden !important;
 }
 
+/* No explicit scrollbar thumbs - smooth native scroll without visible scrollbar handles */
 body.read-mode #aside-content #card-toc .toc-content,
 html[data-readmode='true'] #aside-content #card-toc .toc-content {
   flex: 1 1 auto !important;
@@ -16057,82 +16056,23 @@ html[data-readmode='true'] #aside-content #card-toc .toc-content {
   max-height: none !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(66, 90, 239, 0.4) transparent !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   -webkit-overflow-scrolling: touch !important;
 }
 
 body.read-mode #aside-content #card-toc .toc-content::-webkit-scrollbar,
 html[data-readmode='true'] #aside-content #card-toc .toc-content::-webkit-scrollbar {
-  width: 5px !important;
-  height: 5px !important;
-  display: block !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 body.read-mode #aside-content #card-toc .toc-content::-webkit-scrollbar-track,
-html[data-readmode='true'] #aside-content #card-toc .toc-content::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
+html[data-readmode='true'] #aside-content #card-toc .toc-content::-webkit-scrollbar-track,
 body.read-mode #aside-content #card-toc .toc-content::-webkit-scrollbar-thumb,
 html[data-readmode='true'] #aside-content #card-toc .toc-content::-webkit-scrollbar-thumb {
-  background: rgba(66, 90, 239, 0.35) !important;
-  border-radius: 4px !important;
-}
-
-body.read-mode #aside-content #card-toc .toc-content::-webkit-scrollbar-thumb:hover,
-html[data-readmode='true'] #aside-content #card-toc .toc-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(66, 90, 239, 0.65) !important;
-}
-
-/* 5. Clean In-Article Title Header for Read Mode */
-.read-mode-header {
-  display: none;
-}
-
-body.read-mode .read-mode-header,
-html[data-readmode='true'] .read-mode-header {
-  display: block !important;
-  margin-bottom: 2.2rem !important;
-  padding-bottom: 1.5rem !important;
-  border-bottom: 1px solid #eef2f7 !important;
-}
-
-:root[data-theme='dark'] body.read-mode .read-mode-header,
-:root[data-theme='dark'] html[data-readmode='true'] .read-mode-header {
-  border-bottom-color: #272730 !important;
-}
-
-.read-mode-header__title {
-  font-size: 2.2rem !important;
-  font-weight: 800 !important;
-  line-height: 1.35 !important;
-  color: #1f2d3d !important;
-  margin: 0 0 1rem 0 !important;
-  letter-spacing: -0.02em !important;
-}
-
-:root[data-theme='dark'] .read-mode-header__title {
-  color: #f0f2f5 !important;
-}
-
-.read-mode-header__meta {
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-  font-size: 0.9rem !important;
-  color: #8592a6 !important;
-  line-height: 1.5 !important;
-}
-
-:root[data-theme='dark'] .read-mode-header__meta {
-  color: #8a8e99 !important;
-}
-
-.read-mode-header__sep {
-  opacity: 0.5;
-  user-select: none;
+  display: none !important;
 }
 
 /* 6. Exit Button (.exit-readmode) Aesthetic Polish */

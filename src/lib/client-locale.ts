@@ -1409,13 +1409,21 @@ export function isIgnoredSubtree(el: Element): boolean {
   if (typeof el.closest === 'function') {
     if (
       el.closest(
-        '#article-container, #theme-overlays, #local-search, #console, .theme-account-overlay, .theme-account-drawer, .ignore-opencc, .article-body, .post-content, [data-no-translate]'
+        '#article-container, #theme-overlays, #local-search, #console, #rightside, #post-comment, #nav-right, .theme-account-overlay, .theme-account-drawer, .ignore-opencc, .article-body, .post-content, [data-no-translate]'
       )
     ) {
       return true;
     }
   } else {
-    if (el.id === 'article-container' || el.id === 'theme-overlays' || el.id === 'local-search' || el.id === 'console') return true;
+    if (
+      el.id === 'article-container' ||
+      el.id === 'theme-overlays' ||
+      el.id === 'local-search' ||
+      el.id === 'console' ||
+      el.id === 'rightside' ||
+      el.id === 'post-comment' ||
+      el.id === 'nav-right'
+    ) return true;
     if (el.classList) {
       if (
         el.classList.contains('article-body') ||

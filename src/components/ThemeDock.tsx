@@ -8,6 +8,7 @@ import {
 import { 
   toggleLocaleVariant, 
   readStoredLocaleVariant,
+  normaliseLocaleVariant,
   getLocaleBadge,
   LOCALE_METADATA,
   type LocaleVariant 
@@ -231,27 +232,36 @@ export function ThemeDock(_props: ThemeDockProps) {
       setBackground(detail || _props.defaultBackground);
     };
 
-    const onLocaleChange = (event: Event) => {
-      const detail = (event as CustomEvent<LocaleVariant>).detail;
-      setLocale(detail || 'zh-CN');
-    };
-
     const onToggleTheme = () => {
       toggleTheme();
     };
 
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
-    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     window.addEventListener('shijianus:toggle-theme', onToggleTheme);
 
     return () => {
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
-      window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
       window.removeEventListener('shijianus:toggle-theme', onToggleTheme);
     };
   }, [_props.defaultBackground, theme]);
+
+  useEffect(() => {
+    const stored = readStoredLocaleVariant();
+    if (stored && stored !== 'zh-CN') {
+      setLocale(stored);
+    }
+    const onLocaleChange = (event: Event) => {
+      const custom = event as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
+      const detail = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
+      if (detail) {
+        setLocale(normaliseLocaleVariant(detail));
+      }
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
+  }, []);
 
   useEffect(() => {
     let frame = 0;

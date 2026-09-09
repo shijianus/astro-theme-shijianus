@@ -112,6 +112,36 @@ const { className = '', id = 'center-console-button-astro' } = Astro.props;
   
   let consoleOpen = false;
 
+  const CONSOLE_TOOLTIPS: Record<string, string> = {
+    'zh-CN': '中控台',
+    'zh-Hant': '中控台',
+    'en': 'Console',
+    'fr': 'Tableau de bord',
+    'es': 'Consola',
+    'de': 'Konsole',
+  };
+
+  const updateTooltip = (loc?: string) => {
+    const l = loc || document.documentElement.dataset.localeVariant || 'zh-CN';
+    const tip = CONSOLE_TOOLTIPS[l] || CONSOLE_TOOLTIPS['zh-CN'];
+    document.querySelectorAll('.shijianus-dashboard-icon').forEach((wrapper) => {
+      wrapper.setAttribute('data-shijianus-tooltip', tip);
+      wrapper.setAttribute('title', tip);
+      const btn = wrapper.querySelector('button');
+      if (btn) btn.setAttribute('aria-label', tip);
+    });
+  };
+
+  window.addEventListener('shijianus:localechange', ((event: CustomEvent) => {
+    const loc = typeof event.detail === 'string' ? event.detail : event.detail?.variant;
+    updateTooltip(loc);
+  }) as EventListener);
+
+  if (typeof document !== 'undefined') {
+    updateTooltip();
+    document.addEventListener('DOMContentLoaded', () => updateTooltip());
+  }
+
   // Sync console state from the visibility event broadcast by ThemeOverlays
   window.addEventListener('shijianus:console-visibility', ((event: Event) => {
     const customEvent = event as CustomEvent<boolean>;

@@ -791,7 +791,50 @@
 - [x] 完善协同收紧与目录内部翻页能力：
   1. 点击 `#hide-aside-btn` 能够平滑将侧栏收缩至 0 像素，正文列扩展至 100% 全宽；再次点击平滑恢复 300 像素并即时激活 24px 粘性对齐；
   2. 保留 `#card-toc .toc-content` 独立内部滚动能力，读者既能随着正文向下翻页同步高亮和进度条，也能在目录内部自由上下滑动查阅所有章节。
-- [x] 编写并执行全平台 Playwright 自动化测试套件 (`scripts/verify-readmode-sticky-alignment.mjs`)：
-  1. 覆盖 1080p FHD (1920x1080)、Laptop HighDPI (1536x864)、MacBook Standard (1440x900)、Compact Laptop (1366x768) 全视口；
-  2. 0 到 33815px 全行程断言 100% 全部通过！
+### Task 37: 阅读模式文章目录位置与大小前后一致性 (0px漂移)、原生 post-hero__inner 标题保留与隐形无滑块重构
+- [x] 文章目录大小与位置 1:1 前后一致性（0.00px 物理漂移）：
+  1. 恢复阅读模式下的 `#content-inner.layout` 最大宽度为 `1400px !important;`，内边距与间隙统一为 `padding: 20px 15px !important; gap: 20px !important;`；
+  2. 侧边栏 `.page-aside` 固化为 `width: 300px !important;`，正文 `.page-main` 固化为 `max-width: calc(100% - 320px) !important;`；
+  3. 彻底根除阅读模式下目录向左骤缩 60px 的视觉跳跃，开启与关闭阅读模式瞬间文章目录的水平物理位置（left, right）与尺寸（width: 300px）实现 **100% 绝对像素级一致（实测全视口 Drift = 0.00px）**，向右扩展回归标准 1400px 网格对齐线。
+- [x] 原生 `class="post-hero__inner"` 标题展示保留与正文纯粹化：
+  1. 从阅读模式隐藏列表中解除 `.page-shell__hero`，保留原汁原味的高质感 `<div class="post-hero__inner">`（涵盖原创/转载方形徽标、#tag 分类标签、主副标题、以及日期/字数/阅读时长流式 Meta 信息）；
+  2. 从 `src/pages/posts/[slug].astro` 中彻底删除注入到 `<article>` 正文内部的 `<header class="read-mode-header">` 及对应 CSS 样式；
+  3. 确保正文容器 `<article id="article-container" class="article-body post-content">` 内部仅保留纯净的文章内容，杜绝生硬的次生标题降级。
+- [x] 消除显式滑块（滚动条隐形化）：
+  1. 彻底移除此前为阅读模式注入的 5px 宽显式蓝色滑块（`::-webkit-scrollbar-thumb`）；
+  2. 严格还原与没开阅读模式时一致的隐形滚动规范：`scrollbar-width: none !important; -ms-overflow-style: none !important; ::-webkit-scrollbar { display: none !important; width: 0 !important; }`；
+  3. 保证目录内部依然保持平滑滚轮与触摸板滚动能力，但视觉呈现零滑块干扰。
+- [x] 侧栏协同折叠展开与全行程 24px 粘性吸顶：
+  1. 协同 `#hide-aside-btn`：收起侧边栏时 `.page-aside` 宽度平滑变为 0，正文自适应占满 100% 容器；展开后精准恢复 300px 并回归原位（恢复后漂移 0.00px）；
+  2. 滚过顶部 PostHero 之后，`#aside-sticky-box-toc` 稳定且持续粘性吸附在顶部 `24px`，无缝随行正文阅读。
+- [x] 编写并执行全流程自动化端到端测试套件 (`scripts/verify-readmode-consistency.mjs`)：
+  1. 覆盖 1080p Desktop (1920x1080)、Standard 1440 (1440x900)、Compact 1366 (1366x768) 全桌面视口；
+  2. 实测开启前后 Drift 全部为 **0.00px**，所有断言全部 PASS！视觉比对截图完整沉淀。
+
+### Task 38: 全站组件级 i18n 全景国际化重构 (6 种语言全量覆盖、React 孤岛防崩溃隔离与 Playwright 端到端审计)
+- [x] 右侧快捷按钮组 (`class="config-open panel-out"` / `#rightside`) 完整国际化：
+  1. 在 `src/components/ThemeDock.tsx` 注入多语系配置字典 `DOCK_TRANSLATIONS`，覆盖 11 项核心状态：阅读模式（开/关）、直达评论、语言切换（动态显示当前与目标语种及简繁切换提示）、快捷设置展开/收起、深浅色模式切换、背景模式轮换、隐藏选单；
+  2. 支持实时监听 `shijianus:localechange` 事件响应式更新，全量补齐 `title` 与 `aria-label`。
+- [x] 顶部导航栏按钮 (`id="nav-right"`) 提示与无障碍说明完整国际化：
+  1. 在 `src/components/SiteHeader.tsx` 注入 `NAV_TRANSLATIONS`，覆盖个人中心 (`#nav-account`)、通知中心 (`#nav-notification`)、站内搜索 (`#search-button`)、主题切换 (`#nav-theme-toggle`)、随机文章 (`#randomPost_button`) 与中控台 (`#center-console-button-astro`)；
+  2. 在 `AnzhiyuDashboardIcon.astro` 注入动态客户端脚本，响应 `shijianus:localechange` 并即时更新 `data-shijianus-tooltip`、`title` 与 `aria-label`。
+- [x] 账号中心与设置面板 (`class="account-field-control"`) 定位与时区完整国际化：
+  1. 完整重构地理位置与时区输入框占位符（`placeholder`）及快捷检测按钮文本与 tooltip；
+  2. 国际化常用时区列表选项，消除硬编码中文时区名称，适配所有 6 种语言。
+- [x] 评论区交互按钮 (`class="tk-actions-group"`) 与国旗说明 (`class="tk-geo-name"`) 彻底本地化：
+  1. 在 `src/lib/geo-names.ts` 重构国家与地区名称解析，提供 6 种语言完整映射与 `Intl.DisplayNames` 优雅降级，彻底根除硬编码中文前缀；
+  2. 动作按钮组（点赞、回复、Boost 快速打气、引用回复、编辑、删除、展开/折叠）全量适配 6 语系。
+- [x] 拓展选项下拉菜单 (`class="tk-dropdown-panel tk-options-dropdown"`) 与 Markdown 工具栏 (`class="tk-markdown-toolbar"`) 深度国际化：
+  1. 在 `src/lib/comments-i18n.ts` 中构建全部 16 个扩展选项（引用博文、插入表格、插入目录、横向滚动、Mermaid、Chart、折叠块、Graphviz、日期时间、数学公式、快捷模板、脚注、剧透、投票、Callout、图片上传）的标题与详细描述字典；
+  2. Markdown 控制栏（贴文语言选择、加粗、斜体、标题、引用、代码块、列表、文字方向 LTR/RTL、Emoji 表情、图片、扩展选项）全部配备精准 tooltip 与 aria 属性。
+- [x] 输入框占位符 (`class="tk-input el-textarea"`)、渲染预览 (`class="tk-col"`) 与交互动效全景国际化：
+  1. 动态生成带文章原标题的个性化占位符文本；
+  2. 实时渲染预览徽章（`class="tk-preview-badge"`）与空状态提示（`class="tk-preview-empty"`）双向适配；
+  3. 排序按钮（最新/最热）、空状态插画提示、角色徽章（置顶/博主/访客）及 YouTube 式手风琴折叠展开按钮全量国际化。
+- [x] React 孤岛渲染与 TreeWalker 冲突彻底根除（Minified React error #418 终结）：
+  1. 在 `src/lib/client-locale.ts` 的 `isIgnoredSubtree` 中加入 `#rightside`, `#post-comment`, `#nav-right`；
+  2. 杜绝 `TreeWalker` 直接操作 React 管理的 DOM 文本节点导致的虚拟 DOM 冲突；各 React 岛屿通过内部监听 `shijianus:localechange` 自治响应、零闪烁秒级渲染。
+- [x] 编写并执行全覆盖自动化端到端测试套件 (`scripts/verify-all-user-i18n.mjs`)：
+  1. 全面贯穿 6 种语言（`en`, `fr`, `es`, `de`, `zh-Hant`, `zh-CN`）；
+  2. 验证所有指定 UI 组件，正文内容 100% 保持不可变，移动端（390x844）零横向滚动溢出，全部断言 PASS！
 

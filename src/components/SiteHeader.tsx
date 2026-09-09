@@ -12,6 +12,7 @@ import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 import type { LocaleVariant } from '../lib/user-persona.ts';
+import { readStoredLocaleVariant, normaliseLocaleVariant } from '../lib/client-locale';
 
 const NAV_TRANSLATIONS: Record<LocaleVariant, {
   userCenter: string;
@@ -110,7 +111,7 @@ function closeNotificationPanel() {
 }
 
 function openAccountPanel() {
-  window.dispatchEvent(new CustomEvent('shijianus:open-account'));
+  window.dispatchEvent(new CustomEvent('shijianus:open-account', { detail: { tab: 'auth' } }));
 }
 
 const lucideIconMap: Record<string, LucideIcon> = {
@@ -205,19 +206,18 @@ export function SiteHeader({
   const themeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const cloudTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('shijianus_blog_locale_variant') as LocaleVariant) || 'zh-CN';
-    }
-    return 'zh-CN';
-  });
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
+    const stored = readStoredLocaleVariant();
+    if (stored && stored !== 'zh-CN') {
+      setCurrentLocale(stored);
+    }
     const handleLocaleChange = (e: Event) => {
-      const custom = e as CustomEvent<LocaleVariant | { variant: LocaleVariant }>;
+      const custom = e as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
       const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
       if (next) {
-        setCurrentLocale(next);
+        setCurrentLocale(normaliseLocaleVariant(next));
       }
     };
     window.addEventListener('shijianus:localechange', handleLocaleChange);
