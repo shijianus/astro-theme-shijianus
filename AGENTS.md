@@ -609,3 +609,27 @@
   4. 模拟连续 15 次全屏随机点击与窗口焦点切换，MutationObserver 确认 0 闪烁 0 重新加载！
 
 
+
+### Task 29: 构建时全站广播通告机制 (三层架构)、AI 辅助对比变更、零 DB 损耗与免在线编辑重构 (`a9f799c`)
+- [x] 明确通告机制本质定位与架构纠偏：
+  1. 彻底纠偏“在线动态编辑”设计：全站广播是博主向读者发布站点更新或新文章的官方渠道，不属于访客或前台动态在线编辑范畴；
+  2. 彻底清理抽屉中的 `.account-card-action-btn`（编辑通告按钮）与 `.account-broadcast-editor`（在线编辑表单），保持账号抽屉清爽自然，杜绝客户端无意义的状态混乱。
+- [x] 三层体系全景落地 (Three-Tier Architecture)：
+  1. **层级 1 (用户自主编写 - Manual Authoring)**：
+     - 在 `src/content/broadcast.md` 中以 Markdown + YAML Frontmatter 格式自主撰写；
+     - 规范定义 `badge`（徽标）、`title`（标题）、`date`（日期）、`author`（作者）、`href`（详情链接）、`summary`（导语）及若干条列表亮点；
+     - 构建期直接扫描静态渲染，0 数据库查询与 0 存储损耗。
+  2. **层级 2 (AI 辅助对比 - AI Assistance)**：
+     - 开关默认保持关闭 (`ENABLE_AI_BROADCAST=false`)，仅在博主于环境变量配置了 API Key (`AI_BROADCAST_API_KEY`) 时显式激活；
+     - 内置专属系统提示词 (`src/config/broadcast-prompt.md`)，严格遵守**防幻觉准则**（事实归因、读者视角、对比连续性、兜底维护）与**四步链式核验流程**（Step 1 数据提取、Step 2 博文甄别、Step 3 亮点提炼、Step 4 准确性核验）；
+     - `scripts/sync-broadcast.mjs` 自动抓取 Git 提交日志 (`git log`)、文件改动统计 (`git diff --stat`)、最新博文列表与历史通告进行对比，生成真实客观的通告；
+     - API 异常或未配置时平滑优雅回退至本地已有 `broadcast.md`，绝不中断构建流程。
+  3. **层级 3 (构建时渲染与 UI 展现 - Build-time Rendering & Presentation)**：
+     - `src/lib/broadcast.ts` (`loadBroadcastData()`) 在 Astro 构建期加载通告数据；
+     - `BlogLayout.astro` 与 `ThemeOverlays.tsx` 响应式展示精美的主通告卡片（`.account-broadcast-item--featured`），包含专属高亮徽标（`.account-broadcast-badge--featured`）、加粗高光亮点清单（`.account-broadcast-bullets`）与直达文章详情链接（`.account-broadcast-link`）；
+     - `package.json` 构建命令（`prebuild`、`build`、`build:static`）全量无缝集成 `npm run broadcast:sync`。
+- [x] 自动化端到端测试套件全量验证 (`scripts/verify-broadcast-build.mjs`)：
+  1. 验证抽屉内 `.account-card-action-btn` 数量严格为 0；
+  2. 验证抽屉内 `.account-broadcast-editor` 数量严格为 0；
+  3. 验证 `.account-broadcast-item--featured` 包含正确的徽标、标题、简介、4 项加粗亮点列表及详情链接；
+  4. 生成视觉审计截图 `scratch/broadcast-drawer.png`，断言全部通过。
