@@ -587,3 +587,25 @@
   3. `scripts/verify-live-account-notifications.mjs`：生产环境（`https://blog.epocanvas.com`）全链路自动化测试 100% PASS 通过；
   4. 真实生产环境 curl 验证 `https://blog.epocanvas.com/api/geo-profile?country=TW` 返回 `台湾`，HK/MO 均验证通过。
 
+### Task 28: 评论区常驻无感自动刷新杜绝闪烁、本地化国旗资源保障100%渲染、全量恢复偏好设置原貌 (`7740d2c`)
+- [x] 偏好设置（Tab 3）全量完整恢复原貌：
+  1. 完整恢复三大模块：
+     - **站内通知接收偏好**：全站广播与新博文发布通告（`broadcastNotify` 开关）、个人评论回复与点赞提醒（`personalNotify` 开关）；
+     - **评论区互动与显示偏好**：默认评论排序（最新/最热）、评论区展示我的地理位置（`showLocation` 开关）、默认折叠嵌套回复（`collapseReplies` 开关）；
+     - **交互反馈与无障碍**：交互声音反馈（`soundEffects` 开关）、平滑动效与视差（`reducedMotion` 开关）；
+  2. 保留合规与管理目的说明，界面开关与持久化逻辑 100% 完整。
+- [x] 评论区常驻（Permanent Residency）与无感自动刷新（Silent Auto-refresh）杜绝闪烁：
+  1. 彻底根治“随便点击/窗口聚焦就闪烁刷新”：移除了原本在 `window` 的 `focus` 事件上无条件触发 `setLoading(true)` 抹除整个评论 DOM 的致命逻辑；
+  2. 评论区持久常驻：引入 `commentsRef`，仅在初次进入且本地无任何评论缓存时展示初始加载态，一旦评论载入，DOM `<div className="tk-comments-list">` 永久常驻，严禁在后续点击、切换焦点或刷新时卸载或闪烁；
+  3. 无感后台自动轮询：引入 25 秒后台静默轮询机制（仅当页面处于活跃标签时静默轮询），若数据无变化则 0 重绘，有新评论则无感平滑合并；用户发表评论、回复、行内修改与删除操作均执行静默更新。
+- [x] 国旗资源第一方本地化（100% 稳定渲染与单次展示）：
+  1. 将 40 个主流国家/地区 48x36 高清 Retina PNG 旗帜图标（包含 `my.png`、`tw.png`、`hk.png`、`mo.png`、`cn.png`、`us.png` 等）下载至第一方静态资源库（`public/media/flags/*.png`）；
+  2. 评论区定位徽标直接优先引用同源资源 `/media/flags/${code}.png`，彻底摆脱第三方 FlagCDN 阻断与网络异常风险，并彻底解决 Windows/Chromium 缺失 Emoji 旗帜字体导致的方框乱码问题；
+  3. 严格清洗数据保障国旗只显示 1 次，移除冗余的国家缩写文本（如 `MY`），仅呈现精致高清国旗图与本地化中文地名（如 `马来西亚`）。
+- [x] 自动化端到端测试套件（`scripts/verify-full-e2e.mjs`）全量编写与执行通过：
+  1. 旗帜静态资源 HTTP 200 与图片尺寸断言通过；
+  2. 账号中心偏好设置 Tab 3 三大模块全部存在且可交互；
+  3. 评论区评论列表常驻、旗帜图像与本地化地名完整呈现；
+  4. 模拟连续 15 次全屏随机点击与窗口焦点切换，MutationObserver 确认 0 闪烁 0 重新加载！
+
+
