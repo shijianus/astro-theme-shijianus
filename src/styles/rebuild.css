@@ -15835,17 +15835,96 @@ body[data-type='post'] #aside-content {
   margin-top: 2.2rem;
 }
 
-/* 3. Read Mode (#readmode / body.read-mode) - Solid Fill & Focused Width */
+/* 3. Read Mode (#readmode / body.read-mode / html[data-readmode='true'])
+   Pure distraction-free reading experience:
+   - Retains only article content (class="article-body post-content")
+   - Retains sidebar TOC by default (cooperates with #hide-aside-btn to collapse)
+   - Eliminates 880px width squeeze, preserving comfortable wide layout
+   - Hides top nav, hero banner, footer, AI summary, copyright, tags, related posts, comments
+   ========================================================================== */
+
+/* 1. Global Page Distraction Elimination */
+body.read-mode #nav,
+html[data-readmode='true'] #nav,
+body.read-mode .page-shell__hero,
+html[data-readmode='true'] .page-shell__hero,
+body.read-mode #footer,
+html[data-readmode='true'] #footer,
+body.read-mode .theme-floating-tools,
+html[data-readmode='true'] .theme-floating-tools,
+body.read-mode #post-end-recommendation,
+html[data-readmode='true'] #post-end-recommendation,
+body.read-mode #pagination.pagination-post,
+html[data-readmode='true'] #pagination.pagination-post {
+  display: none !important;
+}
+
+/* 2. Post Container & Children Filtering: ONLY keep class="article-body post-content" */
+body.read-mode #post > :not(#article-container):not(.post-content):not(.article-body),
+html[data-readmode='true'] #post > :not(#article-container):not(.post-content):not(.article-body) {
+  display: none !important;
+}
+
+/* Specific explicit hidden components inside #post for absolute isolation */
+body.read-mode #post #post-ai-abstract,
+body.read-mode #post .post-ai-abstract,
+body.read-mode #post .post-outdate-notice,
+body.read-mode #post .post-copyright,
+body.read-mode #post .post-tools-right,
+body.read-mode #post .post-tags-row,
+body.read-mode #post .tag_share,
+body.read-mode #post .relatedPosts,
+body.read-mode #post hr.custom-hr,
+body.read-mode #post #post-comment,
+body.read-mode #post .post-comment,
+body.read-mode #post #vcomments {
+  display: none !important;
+}
+
+/* 3. Read Mode Layout & Unconstrained Natural Width (No 880px Squeeze) */
+body.read-mode #content-inner.layout,
+html[data-readmode='true'] #content-inner.layout {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 32px 20px !important;
+  gap: 24px !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  box-sizing: border-box !important;
+}
+
+body.read-mode .page-main,
+html[data-readmode='true'] .page-main {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 324px) !important;
+  width: 100% !important;
+  transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* When aside is collapsed (via #hide-aside-btn), page-main expands to 100% full width */
+:root[data-aside='collapsed'] body.read-mode .page-main,
+:root[data-aside='collapsed'] html[data-readmode='true'] .page-main {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* Post Container - Natural comfortable width, clean reading card */
 body.read-mode #post,
 html[data-readmode='true'] #post,
 #post.readmode {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 2.5rem 3rem !important;
   background: #ffffff !important;
   color: #1f2d3d !important;
-  border-color: #e3e8f7 !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
-  max-width: 880px !important;
-  margin: 0 auto !important;
-  padding: 2.5rem 3rem !important;
+  border: 1px solid #e3e8f7 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  box-sizing: border-box !important;
 }
 
 :root[data-theme='dark'] body.read-mode #post,
@@ -15853,27 +15932,203 @@ html[data-readmode='true'] #post,
 :root[data-theme='dark'] #post.readmode {
   background: #18171d !important;
   color: #dfdfdf !important;
-  border-color: #2c2c36 !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45) !important;
+  border-color: #272730 !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* 4. Sidebar in Read Mode: Keep TOC by default, hide all other distractions */
 body.read-mode .page-aside,
-html[data-readmode='true'] .page-aside,
-body.read-mode #aside-content,
-html[data-readmode='true'] #aside-content {
+html[data-readmode='true'] .page-aside {
+  display: block !important;
+  width: 300px !important;
+  flex-shrink: 0 !important;
+  align-self: stretch !important;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* When collapsed by #hide-aside-btn, page-aside closes smoothly */
+:root[data-aside='collapsed'] body.read-mode .page-aside,
+:root[data-aside='collapsed'] html[data-readmode='true'] .page-aside {
+  display: block !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* In Read Mode, hide non-TOC aside elements */
+body.read-mode #aside-content > :not(#post-sticky-layout),
+html[data-readmode='true'] #aside-content > :not(#post-sticky-layout),
+body.read-mode #aside-content .card-info,
+html[data-readmode='true'] #aside-content .card-info,
+body.read-mode #aside-content #card-recent-post,
+html[data-readmode='true'] #aside-content #card-recent-post,
+body.read-mode #aside-content #aside-track-recent,
+html[data-readmode='true'] #aside-content #aside-track-recent,
+body.read-mode #aside-content .promo-widget,
+html[data-readmode='true'] #aside-content .promo-widget,
+body.read-mode #aside-content #flip-wrapper,
+html[data-readmode='true'] #aside-content #flip-wrapper,
+body.read-mode #aside-content .card-categories,
+html[data-readmode='true'] #aside-content .card-categories {
   display: none !important;
 }
 
-body.read-mode .page-main,
-html[data-readmode='true'] .page-main {
-  max-width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
+/* Ensure TOC card is cleanly visible and pinned */
+body.read-mode #aside-content #aside-track-toc,
+html[data-readmode='true'] #aside-content #aside-track-toc,
+body.read-mode #aside-content #aside-sticky-box-toc,
+html[data-readmode='true'] #aside-content #aside-sticky-box-toc,
+body.read-mode #aside-content #card-toc,
+html[data-readmode='true'] #aside-content #card-toc {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
-body.read-mode #content-inner.layout,
-html[data-readmode='true'] #content-inner.layout {
+body.read-mode #card-toc,
+html[data-readmode='true'] #card-toc {
+  border-radius: 8px !important;
+  position: sticky !important;
+  top: 24px !important;
+  max-height: calc(100vh - 48px) !important;
+}
+
+/* 5. Clean In-Article Title Header for Read Mode */
+.read-mode-header {
+  display: none;
+}
+
+body.read-mode .read-mode-header,
+html[data-readmode='true'] .read-mode-header {
+  display: block !important;
+  margin-bottom: 2.2rem !important;
+  padding-bottom: 1.5rem !important;
+  border-bottom: 1px solid #eef2f7 !important;
+}
+
+:root[data-theme='dark'] body.read-mode .read-mode-header,
+:root[data-theme='dark'] html[data-readmode='true'] .read-mode-header {
+  border-bottom-color: #272730 !important;
+}
+
+.read-mode-header__title {
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  color: #1f2d3d !important;
+  margin: 0 0 1rem 0 !important;
+  letter-spacing: -0.02em !important;
+}
+
+:root[data-theme='dark'] .read-mode-header__title {
+  color: #f0f2f5 !important;
+}
+
+.read-mode-header__meta {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  font-size: 0.9rem !important;
+  color: #8592a6 !important;
+  line-height: 1.5 !important;
+}
+
+:root[data-theme='dark'] .read-mode-header__meta {
+  color: #8a8e99 !important;
+}
+
+.read-mode-header__sep {
+  opacity: 0.5;
+  user-select: none;
+}
+
+/* 6. Exit Button (.exit-readmode) Aesthetic Polish */
+.exit-readmode {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  z-index: 10002 !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  color: #2c3e50 !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  display: flex !important;
+  align-items: center !important;
   justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.exit-readmode:hover {
+  background: #425aef !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 6px 18px rgba(66, 90, 239, 0.35) !important;
+}
+
+:root[data-theme='dark'] .exit-readmode {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #e4e6eb !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-theme='dark'] .exit-readmode:hover {
+  background: #425aef !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(66, 90, 239, 0.5) !important;
+}
+
+/* 7. Rightside accessibility in Read Mode */
+body.read-mode #rightside,
+html[data-readmode='true'] #rightside {
+  display: block !important;
+  visibility: visible !important;
+  z-index: 10001 !important;
+}
+
+/* Hide to_comment button in rightside since comments are hidden */
+body.read-mode #to_comment,
+html[data-readmode='true'] #to_comment {
+  display: none !important;
+}
+
+@media (max-width: 1200px) {
+  body.read-mode #content-inner.layout,
+  html[data-readmode='true'] #content-inner.layout {
+    flex-direction: column !important;
+    padding: 20px 12px !important;
+  }
+  body.read-mode .page-main,
+  html[data-readmode='true'] .page-main {
+    max-width: 100% !important;
+  }
+  body.read-mode .page-aside,
+  html[data-readmode='true'] .page-aside {
+    display: none !important;
+  }
+  body.read-mode #post,
+  html[data-readmode='true'] #post {
+    padding: 1.8rem 1.4rem !important;
+  }
+  .exit-readmode {
+    top: auto !important;
+    bottom: 24px !important;
+    left: 24px !important;
+    right: auto !important;
+  }
 }
 
 /* 4. Unified Aside Content & Card Widget Standardization */

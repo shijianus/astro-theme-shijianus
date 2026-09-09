@@ -4,14 +4,9 @@
 }
 
 #menus .site-page__chevron,
-#rightside-config,
 #rightside-config-close,
-#background-mode,
-#darkmode,
-#hide-aside-btn,
 #shijianus-devbar,
-#shijianus-devbar-panel,
-#rightside-config-hide {
+#shijianus-devbar-panel {
   display: none !important;
 }
 

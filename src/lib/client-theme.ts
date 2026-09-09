@@ -38,6 +38,7 @@ export function syncTheme(nextTheme: ThemeMode) {
 export function syncAside(nextAside: AsideState) {
   document.documentElement.dataset.aside = nextAside;
   writeStorage('shijianus-aside', nextAside);
+  window.dispatchEvent(new CustomEvent('shijianus:asidechange', { detail: nextAside }));
 }
 
 export function syncBackground(nextBackground: string) {

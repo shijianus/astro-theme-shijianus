@@ -82,6 +82,7 @@ export function ThemeDock(_props: ThemeDockProps) {
 
     root.dataset.theme = nextTheme;
     root.dataset.aside = nextAside;
+    root.dataset.readmode = isReadMode ? 'true' : 'false';
 
     setTheme(nextTheme);
     setAsideCollapsed(nextAside === 'collapsed');
@@ -202,9 +203,23 @@ export function ThemeDock(_props: ThemeDockProps) {
   const handleToggleReadMode = () => {
     const next = !readMode;
     document.body.classList.toggle('read-mode', next);
+    document.documentElement.dataset.readmode = next ? 'true' : 'false';
     setReadMode(next);
+    window.dispatchEvent(new CustomEvent('shijianus:readmode-changed', { detail: next }));
     emitActivity(next ? '已开启阅读模式' : '已退出阅读模式');
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && readMode) {
+        handleToggleReadMode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [readMode]);
 
   const persona = ensureUserPersona();
   const candidatePair = persona?.candidatePair || (['zh-CN', 'zh-Hant'] as const);
@@ -276,12 +291,13 @@ export function ThemeDock(_props: ThemeDockProps) {
     <>
       {readMode && (
         <button 
+          type="button"
           className="exit-readmode" 
           onClick={handleToggleReadMode}
-          title="退出阅读模式"
-          aria-label="退出阅读模式"
+          title="退出阅读模式 (Esc)"
+          aria-label="退出阅读模式 (Esc)"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -294,7 +310,7 @@ export function ThemeDock(_props: ThemeDockProps) {
           if (panelHidden) setPanelHidden(false);
         }}
       >
-        <div id="rightside-config-hide" className={configOpen ? 'show' : ''}>
+        <div id="rightside-config-hide" className={configOpen || readMode ? 'show' : ''}>
           {isPost && !isDoc && (
             <>
               <button

@@ -683,5 +683,20 @@
      - 全语言联动测试：在抽屉中选择“Français”，`#translate` 按钮即刻更新为“FR”，再次点击后极速在“FR”与“EN”之间轮转；
      - 生产环境截图存档：`scratch/live-initial-page.png`、`scratch/live-zh-hant-state.png`、`scratch/live-account-persona-drawer.png`、`scratch/live-french-en-cycled.png`。
 
-
-
+### Task 32: 阅读模式 (id="readmode") 沉浸式重构、规避干扰组件、文章正文孤立呈现、侧栏目录 (TOC) 默认保留与收紧侧栏 (id="hide-aside-btn") 协同解耦
+- [x] 阅读模式核心视觉与沉浸体验优化：
+  1. 彻底根除历史遗留的 880px 宽度收缩 (`max-width: 880px !important`) 缺陷，在 1400px 标准容器下自然延伸，保障舒适舒展的排版与阅读呼吸感；
+  2. 全局非阅读组件彻底规避：进入阅读模式后，全局顶栏导航 (`#nav`)、文章巨幅海报与视差水波纹 (`.page-shell__hero`)、底栏 (`#footer`)、AI摘要面板 (`.post-ai-abstract`)、版权卡片 (`.post-copyright`)、标签列表 (`.post-tags-row`)、相关文章推荐 (`.relatedPosts`)、末尾下一篇推荐 (`#pagination.pagination-post`) 以及评论系统 (`#post-comment`) 统一隐藏 (`display: none !important`)；
+  3. 文章正文孤立呈现：`#post` 内部仅保留 `class="article-body post-content"`，并在正文顶部内嵌极简沉浸式标题与作者/日期/字数/阅读时长元信息栏 (`.read-mode-header`)；
+  4. 视觉基底重塑：在浅色与深色模式下提供极简纯净的阅读底色与精致微阴影。
+- [x] 侧边栏目录 (TOC) 默认保留与协同收紧：
+  1. 彻底解决历史遗留的阅读模式强制隐藏整个侧栏的问题，默认保留侧边栏 (`.page-aside`) 并仅展示文章目录 (`#card-toc`)，自动隐藏作者卡片、最新文章与推广翻转卡片等干扰项；
+  2. 与侧栏收紧按钮 (`#hide-aside-btn`) 深度联动协同：在阅读模式下点击收紧侧边栏即可连带关闭目录，正文平滑扩展至 100% 全宽；再次点击展开侧栏则即刻恢复目录；
+  3. 控制台按钮可达性保障：阅读模式下保持 `#rightside` 悬浮工具栏可见且默认滑出，方便用户随时一键操作 `#readmode`、`#hide-aside-btn` 与快捷返回。
+- [x] 多退出机制健全：
+  1. 右上角提供精致毛玻璃退出悬浮按钮 (`.exit-readmode`)，支持快捷点击退出；
+  2. 键盘事件监听接入：支持全局按 `Escape` 键一键瞬时退出阅读模式；
+  3. 点击 `#rightside` 中的 `#readmode` 按钮亦可双向切换。
+- [x] Playwright 端到端全链路自动化审计 (`scripts/verify-readmode.mjs`)：
+  1. 桌面大屏 (1440x900)、标准屏 (1280x800) 及移动端全视口验证通过；
+  2. 断言验证了非正文组件全量隐藏、正文与阅读标题渲染、宽度未受 880px 夹紧（实际渲染宽度 > 916px ~ 1036px）、默认保留 TOC、点击收紧按钮目录关闭且文章扩展至 1336px、再次点击恢复 TOC、点击退出按钮及按下 Escape 键瞬时恢复等全部链路。

@@ -314,6 +314,26 @@ const heroSummary = isUnlocked
       data-content-features={isUnlocked ? 'true' : undefined}
       data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
     >
+      {isUnlocked && (
+        <header class="read-mode-header">
+          <h1 class="read-mode-header__title">{publicFacingTitle}</h1>
+          <div class="read-mode-header__meta">
+            <span class="read-mode-header__author">{entry.data.author}</span>
+            <span class="read-mode-header__sep">•</span>
+            <span class="read-mode-header__date">{formatHeroDate(entry.data.pubDate)}</span>
+            {publicCategory && (
+              <>
+                <span class="read-mode-header__sep">•</span>
+                <span class="read-mode-header__category">{publicCategory}</span>
+              </>
+            )}
+            <span class="read-mode-header__sep">•</span>
+            <span class="read-mode-header__words">{wordCount.toLocaleString('zh-CN')} 字</span>
+            <span class="read-mode-header__sep">•</span>
+            <span class="read-mode-header__time">{estimateReadingMinutes(entry)} 分钟</span>
+          </div>
+        </header>
+      )}
       {isUnlocked && Content ? (
         <Content />
       ) : (
