@@ -15843,7 +15843,7 @@ body[data-type='post'] #aside-content {
    - Hides top nav, hero banner, footer, AI summary, copyright, tags, related posts, comments
    ========================================================================== */
 
-/* 1. Global Page Distraction Elimination */
+/* 1. Global Page Distraction Elimination & Alignment Zero */
 body.read-mode #nav,
 html[data-readmode='true'] #nav,
 body.read-mode .page-shell__hero,
@@ -15857,6 +15857,11 @@ html[data-readmode='true'] #post-end-recommendation,
 body.read-mode #pagination.pagination-post,
 html[data-readmode='true'] #pagination.pagination-post {
   display: none !important;
+}
+
+body.read-mode #blog-container,
+html[data-readmode='true'] #blog-container {
+  padding-top: 0 !important;
 }
 
 /* 2. Post Container & Children Filtering: ONLY keep class="article-body post-content" */
@@ -15881,14 +15886,14 @@ body.read-mode #post #vcomments {
   display: none !important;
 }
 
-/* 3. Read Mode Layout & Unconstrained Natural Width (No 880px Squeeze) */
+/* 3. Read Mode Layout & Unconstrained Natural Width (No 880px Squeeze, No Rightside Overlap) */
 body.read-mode #content-inner.layout,
 html[data-readmode='true'] #content-inner.layout {
   display: flex !important;
   width: 100% !important;
-  max-width: 1400px !important;
+  max-width: min(1280px, calc(100vw - 160px)) !important;
   margin: 0 auto !important;
-  padding: 32px 20px !important;
+  padding: 24px 20px !important;
   gap: 24px !important;
   justify-content: center !important;
   align-items: flex-start !important;
@@ -15982,6 +15987,25 @@ html[data-readmode='true'] #aside-content .card-categories {
 }
 
 /* Ensure TOC track, sticky box, and card are cleanly pinned and scrollable */
+body.read-mode #aside-content,
+html[data-readmode='true'] #aside-content {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+body.read-mode #aside-content #post-sticky-layout,
+html[data-readmode='true'] #aside-content #post-sticky-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  flex: 1 1 auto !important;
+  align-self: stretch !important;
+}
+
 body.read-mode #aside-content #aside-track-toc,
 html[data-readmode='true'] #aside-content #aside-track-toc {
   display: block !important;
@@ -15989,6 +16013,9 @@ html[data-readmode='true'] #aside-content #aside-track-toc {
   opacity: 1 !important;
   position: relative !important;
   width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  flex: 1 1 auto !important;
   align-self: stretch !important;
 }
 
@@ -16156,6 +16183,7 @@ html[data-readmode='true'] #rightside {
   display: block !important;
   visibility: visible !important;
   z-index: 10001 !important;
+  right: 16px !important;
 }
 
 /* Hide to_comment button in rightside since comments are hidden */

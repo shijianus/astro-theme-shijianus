@@ -5402,6 +5402,25 @@ body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-supp
   top: var(--support-sticky-top, var(--sticky-column-top, 80px)) !important;
 }
 
+body.read-mode[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box,
+html[data-readmode='true'] body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box,
+body.read-mode[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-toc,
+html[data-readmode='true'] body[data-type='post'] #aside-content #post-sticky-layout #aside-sticky-box-toc {
+  top: 24px !important;
+}
+
+body.read-mode[data-type='post'] #aside-content,
+html[data-readmode='true'] body[data-type='post'] #aside-content,
+body.read-mode[data-type='post'] #aside-content #post-sticky-layout,
+html[data-readmode='true'] body[data-type='post'] #aside-content #post-sticky-layout,
+body.read-mode[data-type='post'] #aside-content #post-sticky-layout #aside-track-toc,
+html[data-readmode='true'] body[data-type='post'] #aside-content #post-sticky-layout #aside-track-toc {
+  height: 100% !important;
+  min-height: 100% !important;
+  flex: 1 1 auto !important;
+  align-self: stretch !important;
+}
+
 /* Keep the support column inside the same horizontal and vertical boundary as
    the post shell. The promo face is absolutely positioned by design, so its
    containing boxes must own the clipping and width contract explicitly. */

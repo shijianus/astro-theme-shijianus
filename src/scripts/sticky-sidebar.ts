@@ -423,18 +423,18 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
 
   if (isReadMode) {
     const docScrollY = window.scrollY;
-    const articleRect = articleContainer?.getBoundingClientRect();
     const postRect = mainEl.getBoundingClientRect();
-    const docArticleBottom = articleRect
-      ? articleRect.bottom + docScrollY
-      : postRect.bottom + docScrollY;
     const docPostBottom = postRect.bottom + docScrollY;
     const docTrackTocTop = postRect.top + docScrollY;
-    const targetTocHeight = Math.max(0, Math.round(docArticleBottom - docTrackTocTop));
 
-    trackToc.style.minHeight = `${targetTocHeight}px`;
-    trackToc.style.height = `${targetTocHeight}px`;
+    trackToc.style.minHeight = '100%';
+    trackToc.style.height = '100%';
     trackToc.style.marginTop = '0px';
+
+    if (stickyLayout) {
+      stickyLayout.style.minHeight = '100%';
+      stickyLayout.style.height = '100%';
+    }
 
     if (trackRecent) {
       trackRecent.style.display = 'none';
@@ -453,8 +453,8 @@ function updatePostSticky(topOffset: number, isMobile: boolean) {
     cachedPostGeometry = {
       isCompact: false,
       docTrackTocTop,
-      docArticleBottom,
-      docCopyrightTop: docArticleBottom,
+      docArticleBottom: docPostBottom,
+      docCopyrightTop: docPostBottom,
       docPostBottom,
       gap: 20,
       recentHeight: 0,
