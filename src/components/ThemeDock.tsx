@@ -8,8 +8,11 @@ import {
 import { 
   toggleLocaleVariant, 
   readStoredLocaleVariant,
+  getLocaleBadge,
+  LOCALE_METADATA,
   type LocaleVariant 
 } from '../lib/client-locale';
+import { ensureUserPersona } from '../lib/user-persona';
 
 type BackgroundMode = {
   id: string;
@@ -203,10 +206,17 @@ export function ThemeDock(_props: ThemeDockProps) {
     emitActivity(next ? '已开启阅读模式' : '已退出阅读模式');
   };
 
+  const persona = ensureUserPersona();
+  const candidatePair = persona?.candidatePair || (['zh-CN', 'zh-Hant'] as const);
+  const currentBadge = getLocaleBadge(locale);
+  const targetLocale = locale === candidatePair[0] ? candidatePair[1] : candidatePair[0];
+  const nextBadge = getLocaleBadge(targetLocale);
+
   const handleToggleLocale = () => {
     const next = toggleLocaleVariant(locale);
     setLocale(next);
-    emitActivity(`已切换语言：${next === 'zh-CN' ? '简体中文' : next === 'zh-Hant' ? '繁體中文' : 'English'}`);
+    const meta = LOCALE_METADATA[next];
+    emitActivity(`已切换语言：${meta ? meta.nativeName : next}`);
   };
 
   const handleToggleTocDepth = () => {
@@ -327,14 +337,38 @@ export function ThemeDock(_props: ThemeDockProps) {
                 </svg>
               </a>
 
-              <button
-                type="button"
-                id="translate"
-                title={`切换语言 (当前: ${locale === 'zh-CN' ? '简' : locale === 'zh-Hant' ? '繁' : 'EN'})`}
-                aria-label="切换语言"
-                onClick={handleToggleLocale}
+            </>
+          )}
+
+          <button
+            type="button"
+            id="translate"
+            className="ignore-opencc"
+            data-no-translate="true"
+            title={`切换语言 (当前: ${LOCALE_METADATA[locale]?.nativeName || locale}，点击切换为: ${LOCALE_METADATA[locale === candidatePair[0] ? candidatePair[1] : candidatePair[0]]?.nativeName || '目标语言'})`}
+            aria-label={`切换语言 (${currentBadge} ⇋ ${nextBadge})`}
+            onClick={handleToggleLocale}
+          >
+            {locale === 'zh-CN' || locale === 'zh-Hant' ? (
+              <span
+                className="dock-translate-badge ignore-opencc"
+                data-no-translate="true"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  userSelect: 'none',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
               >
-                <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {currentBadge}
+              </span>
+            ) : (
+              <div style={{ position: 'relative', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
                   <path d="m5 8 6 6"></path>
                   <path d="m4 14 6-6 2-3"></path>
                   <path d="M2 5h12"></path>
@@ -342,9 +376,22 @@ export function ThemeDock(_props: ThemeDockProps) {
                   <path d="m22 22-5-10-5 10"></path>
                   <path d="M14 18h6"></path>
                 </svg>
-              </button>
-            </>
-          )}
+                <span
+                  style={{
+                    position: 'absolute',
+                    fontSize: '10px',
+                    fontWeight: 900,
+                    lineHeight: 1,
+                    letterSpacing: '-0.3px',
+                    color: '#ffffff',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                  }}
+                >
+                  {currentBadge}
+                </span>
+              </div>
+            )}
+          </button>
 
           <button
             type="button"

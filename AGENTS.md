@@ -652,3 +652,23 @@
   1. Cloudflare Workers 部署版本 ID：`4e7d81ef-178d-437b-9bb9-1f61c72cd617`；
   2. 代码提交并全量同步至远端仓库。
 
+### Task 31: 全站硬编码 i18n 多语言体系重构、智能用户画像 (Persona) 与地理批判推断引擎、最小化精准双语切换机制 (`384d5b9`)
+- [x] 主流多语言支持体系扩展 (主流 6 国语言)：
+  1. 全面扩展支持：英语 (en)、法语 (fr)、西班牙语 (es)、德语 (de)，以及简体中文 (zh-CN) 和正体中文 (zh-Hant)；
+  2. 重构多语言词典（`src/lib/client-locale.ts` 中 `MULTILINGUAL_DICTIONARY`），全面覆盖主导航、文章目录 (TOC)、阅读时长、打赏、评论区、账号抽屉、背景切换、快捷控制栏等全站所有硬编码文本与属性；
+  3. 后端地理接口（`functions/api/geo-profile.ts`）与国家字典全面打通多语言支持，智能解析各语言国家与城市名称。
+- [x] 智能用户画像与综合语言推断引擎 (45% 输入法 / 40% 时区 / 15% IP 地理)：
+  1. **输入法 / 语言环境 (45% 权重)**：智能感知 `navigator.languages` 与 IME 特征（如 Pinyin/Hans/ZhuYin/Hant/French/Spanish/German/English）；
+  2. **时区解析 (40% 权重)**：根据 `Intl.DateTimeFormat().resolvedOptions().timeZone` 解析读者所在时区；
+  3. **IP 地理批判与代理规避识别 (15% 权重)**：结合 Cloudflare 边缘 IP 归属地与网络特征，对海外代理出口（如 MY/SG/JP/US 等）且具备中文输入法和台北/上海时区的用户，精准推断为“大陆读者使用台北时区与海外代理规避”，自动赋予简体中文 (zh-CN) 偏好并标记代理特征，杜绝误判；
+  4. **候选对圈定 (Dual-Language Cycle Pairing)**：为用户精准圈定 2 种最匹配的双语组合（如简体中文 ⇋ 繁體中文、Français ⇋ English 等），并构建持久化用户画像（`UserPersonaProfile`）。
+- [x] 右侧快捷按钮 (`#rightside-config-hide` 中的 `#translate`) 精确最小化循环切换：
+  1. 仅在圈定的 2 种双语候选对之间极速轮换，杜绝全语言无序轮巡；
+  2. 图标直观化：繁简体中文直接呈现精致设计的“简”与“繁”字标；其他语言呈现对应的专属字标（"EN" / "FR" / "ES" / "DE"），一目了然；
+  3. 偏好设置（`account-card`）不受限制：账号中心提供完整 6 种主流语言选择网格，用户可随时自由指定任意偏好，并同步更新画像候选对。
+- [x] 自动化测试套件全量编写与验证通过 (`scripts/verify-i18n-persona.mjs`)：
+  1. 覆盖 6 种典型人群画像推理与权重断言（含 Pinyin + Taipei + MY 代理规避场景）；
+  2. 验证多语言词典在 en、fr、es、de 维度的精准翻译；
+  3. Playwright 浏览器端到端交互测试：验证 `#translate`“简”⇋“繁”精准切换、账号抽屉 6 语言自由选择、切换至法语后 `#translate` 自动转为 "FR" ⇋ "EN" 循环。
+
+

@@ -76,7 +76,18 @@ import {
   resolveInitialBackground,
   type ThemeMode,
 } from '../lib/client-theme';
-import { applyLocaleVariant, readStoredLocaleVariant, type LocaleVariant } from '../lib/client-locale';
+import { 
+  applyLocaleVariant, 
+  readStoredLocaleVariant, 
+  LOCALE_METADATA, 
+  SUPPORTED_LOCALES, 
+  type LocaleVariant 
+} from '../lib/client-locale';
+import { 
+  ensureUserPersona, 
+  readStoredUserPersona, 
+  type UserPersonaProfile 
+} from '../lib/user-persona';
 
 type NavItem = {
   label: string;
@@ -190,6 +201,7 @@ export function ThemeOverlays({
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const [userPersona, setUserPersona] = useState<UserPersonaProfile | null>(null);
   const [account, setAccount] = useState<CommentIdentity | null>(null);
   const [pageType, setPageType] = useState(initialPageType || 'page');
   const [accountForm, setAccountForm] = useState({
@@ -686,11 +698,15 @@ export function ThemeOverlays({
       });
 
       // Query geo-profile endpoint if location is still unset
-      if (!next?.location && typeof fetch !== 'undefined') {
+      if (typeof fetch !== 'undefined') {
         fetch(`/api/geo-profile?locale=${encodeURIComponent(localeVariant)}`)
           .then((r) => r.json())
           .then((data: any) => {
-            if (data?.location) {
+            if (data?.country) {
+              const updated = ensureUserPersona(data.country);
+              setUserPersona(updated);
+            }
+            if (data?.location && !next?.location) {
               setAccountForm((prev) => (prev.location ? prev : { ...prev, location: data.location }));
             }
           })
@@ -796,6 +812,7 @@ export function ThemeOverlays({
     setTheme(savedTheme);
     setBackground(savedBackground);
     setLocaleVariant(readStoredLocaleVariant());
+    setUserPersona(ensureUserPersona());
 
     const openSearch = () => {
       setNotificationOpen(false);
@@ -845,6 +862,7 @@ export function ThemeOverlays({
     const onLocaleChange = (event: Event) => {
       const customEvent = event as CustomEvent<LocaleVariant>;
       setLocaleVariant(customEvent.detail ?? readStoredLocaleVariant());
+      setUserPersona(ensureUserPersona());
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && features.searchPanel) {
@@ -1255,15 +1273,11 @@ export function ThemeOverlays({
   };
 
   const selectLocale = (nextLocale: LocaleVariant) => {
-    const applied = applyLocaleVariant(nextLocale);
+    const applied = applyLocaleVariant(nextLocale, { manual: true });
     setLocaleVariant(applied);
-    emitActivity(
-      applied === 'zh-Hant'
-        ? '已切换为繁體中文'
-        : applied === 'en'
-          ? '已切换为英文界面'
-          : '已切换为简体中文',
-    );
+    setUserPersona(ensureUserPersona());
+    const meta = LOCALE_METADATA[applied];
+    emitActivity(`已切换为${meta ? meta.nativeName : applied}界面`);
   };
 
   const accountAccessLabel = account ? '已登录' : '访客';
@@ -2386,29 +2400,99 @@ export function ThemeOverlays({
                   </div>
                 </div>
 
-                <div className="account-locale-grid">
-                  <button
-                    type="button"
-                    className={`account-locale-btn ${localeVariant === 'zh-CN' ? 'is-active' : ''}`}
-                    onClick={() => selectLocale('zh-CN')}
-                  >
-                    简体中文
-                  </button>
-                  <button
-                    type="button"
-                    className={`account-locale-btn ${localeVariant === 'zh-Hant' ? 'is-active' : ''}`}
-                    onClick={() => selectLocale('zh-Hant')}
-                  >
-                    繁體中文
-                  </button>
-                  <button
-                    type="button"
-                    className={`account-locale-btn ${localeVariant === 'en' ? 'is-active' : ''}`}
-                    onClick={() => selectLocale('en')}
-                  >
-                    English
-                  </button>
+                <div className="account-locale-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
+                  {SUPPORTED_LOCALES.map((code) => {
+                    const meta = LOCALE_METADATA[code];
+                    const isActive = localeVariant === code;
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        className={`account-locale-btn ${isActive ? 'is-active' : ''}`}
+                        onClick={() => selectLocale(code)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: isActive ? 600 : 400,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '15px' }}>{meta.flag}</span>
+                          <span>{meta.nativeName}</span>
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            opacity: isActive ? 1 : 0.65,
+                            background: isActive ? 'var(--anzhiyu-theme, #425aef)' : 'rgba(125,125,125,0.15)',
+                            color: isActive ? '#ffffff' : 'inherit',
+                          }}
+                        >
+                          {meta.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {userPersona && (
+                  <div
+                    className="account-persona-card"
+                    style={{
+                      marginTop: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(66, 90, 239, 0.05)',
+                      border: '1px solid rgba(66, 90, 239, 0.15)',
+                      fontSize: '12px',
+                      lineHeight: '1.6',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--anzhiyu-theme, #425aef)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>智能语言画像 (User Persona)</span>
+                      </span>
+                      <span style={{ fontSize: '11px', opacity: 0.75 }}>
+                        推荐置信度 {Math.round(userPersona.confidence * 100)}%
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
+                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                        ⌨️ 输入法: <strong>{userPersona.traits.inputMethodLocale || '默认'}</strong> (45%)
+                      </span>
+                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                        ⏱️ 时区: <strong>{userPersona.traits.timezone || '未识别'}</strong> (40%)
+                      </span>
+                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                        🌐 IP/节点: <strong>{userPersona.traits.ipCountry}</strong> (15%)
+                      </span>
+                      {userPersona.traits.isLikelyProxy && (
+                        <span style={{ background: 'rgba(234, 88, 12, 0.12)', color: '#ea580c', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          🛡️ 代理/规避节点识别
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '11.5px', opacity: 0.85 }}>
+                      右下角快捷按钮 (id="translate") 已绑定最小化双语循环：
+                      <strong style={{ marginLeft: '4px', color: 'var(--anzhiyu-theme, #425aef)' }}>
+                        {LOCALE_METADATA[userPersona.candidatePair[0]]?.nativeName || userPersona.candidatePair[0]}
+                        {' ⇋ '}
+                        {LOCALE_METADATA[userPersona.candidatePair[1]]?.nativeName || userPersona.candidatePair[1]}
+                      </strong>
+                      。您可随时点击上方 6 种语言进行任意切换。
+                    </div>
+                  </div>
+                )}
               </section>
 
               {/* 1. 站内通知接收偏好 */}
