@@ -721,7 +721,7 @@
   2. 断言验证了 TOC 内部滚动翻页能力（`canScrollInternal: true`）、页面滚动全过程 sticky 稳定在 24px（800px、3000px、10000px、20000px 全程 `boxTop = 24px`）、点击章节平滑跳转、收紧侧栏全宽展开与再次展开目录无缝恢复；
   3. 生产端真实环境（`https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`）Playwright 端到端全链路验证全部 100% 通过（验证了文章正文孤立呈现、TOC 内部丝滑翻页 `scrollHeight: 3752 > clientHeight: 745`、页面深层滚动 `top = 24px` 稳定停留、侧栏收紧正文扩展至 1336px 及退出恢复）。
 
-### Task 34: 抽屉多语言卡片呈现全面打通、消除语言切换卡顿与中文污染、画像卡片彻底移除与全链路审计
+### Task 34: 抽屉多语言卡片呈现全面打通、消除语言切换卡顿与中文污染、画像卡片彻底移除与全链路审计 (`2278cbf`)
 - [x] 抽屉内 `account-card` 真实且完整多语言化：
   1. 为主流 6 国语言（`zh-CN`, `zh-Hant`, `en`, `fr`, `es`, `de`）构建完整的 `I18N_STRINGS` 词典，全面覆盖抽屉内 3 大 Tab 所有卡片标题、表单字段、占位符、操作按钮及合规提示；
   2. 修复抽屉仅为无意义按钮的问题，点击各语言即时全量重渲染抽屉内所有文本，杜绝空壳切换。
