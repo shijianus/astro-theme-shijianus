@@ -670,5 +670,18 @@
   1. 覆盖 6 种典型人群画像推理与权重断言（含 Pinyin + Taipei + MY 代理规避场景）；
   2. 验证多语言词典在 en、fr、es、de 维度的精准翻译；
   3. Playwright 浏览器端到端交互测试：验证 `#translate`“简”⇋“繁”精准切换、账号抽屉 6 语言自由选择、切换至法语后 `#translate` 自动转为 "FR" ⇋ "EN" 循环。
+- [x] 生产端 (Cloudflare Pages) 全量构建、边缘部署与真实线上环境 E2E 视觉审计实证 (`scripts/verify-live-i18n-persona.mjs`)：
+  1. **多远端与双项目同步部署**：
+     - 代码提交推送至 GitHub 双远端（`origin` -> `astro-theme-shijianus.git`，`cf` -> `shijianus.github.io.git`）；
+     - 成功通过 Wrangler 将构建产物 `dist` 完整部署发布至 Cloudflare Pages 生产项目 `shijianus-blog`（绑定主域名 `https://blog.epocanvas.com`，部署 URL：`https://4f1a653d.shijianus-blog.pages.dev`）以及 `shijianus-github-io`（部署 URL：`https://b37e5324.shijianus-github-io.pages.dev`）；
+  2. **生产端真实全链路 Playwright 视觉与交互审计**：
+     - 真实访问生产环境文章页 `https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`，HTTP 200 加载正常；
+     - 初始字标识别：右侧控制栏展开，`#translate` 按钮渲染直观“简”字标；
+     - 第 1 次点击切换：动态切换为“繁”，`html[lang="zh-Hant"]` 生效；
+     - 第 2 次点击循环：动态循环回“简”，`html[lang="zh-CN"]` 生效，达成精准双语最小化切换闭环；
+     - 账号中心偏好设置抽屉：展示全部 6 种主流语言按钮，智能用户画像卡片（45% 输入法 / 40% 时区 / 15% 地理批判 + 代理规避识别）真实渲染；
+     - 全语言联动测试：在抽屉中选择“Français”，`#translate` 按钮即刻更新为“FR”，再次点击后极速在“FR”与“EN”之间轮转；
+     - 生产环境截图存档：`scratch/live-initial-page.png`、`scratch/live-zh-hant-state.png`、`scratch/live-account-persona-drawer.png`、`scratch/live-french-en-cycled.png`。
+
 
 
