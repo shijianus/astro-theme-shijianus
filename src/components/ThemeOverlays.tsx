@@ -80,7 +80,8 @@ import {
   applyLocaleVariant, 
   readStoredLocaleVariant, 
   LOCALE_METADATA, 
-  SUPPORTED_LOCALES, 
+  SUPPORTED_LOCALES,
+  getI18nText,
   type LocaleVariant 
 } from '../lib/client-locale';
 import { 
@@ -201,6 +202,7 @@ export function ThemeOverlays({
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
   const [userPersona, setUserPersona] = useState<UserPersonaProfile | null>(null);
   const [account, setAccount] = useState<CommentIdentity | null>(null);
   const [pageType, setPageType] = useState(initialPageType || 'page');
@@ -1786,13 +1788,13 @@ export function ThemeOverlays({
               <div className="account-hero-card__name-row">
                 <strong>{account ? account.name : accountForm.name ? accountForm.name : '访客朋友'}</strong>
                 {account?.provider === 'epomail' ? (
-                  <span className="account-pill account-pill--epomail">⚡ Epomail 认证</span>
+                  <span className="account-pill account-pill--epomail">{t('hero.badge.epomail')}</span>
                 ) : account ? (
-                  <span className="account-pill account-pill--local">本地读者</span>
+                  <span className="account-pill account-pill--local">{t('hero.badge.local')}</span>
                 ) : accountForm.name ? (
-                  <span className="account-pill account-pill--local">本地身份</span>
+                  <span className="account-pill account-pill--local">{t('hero.badge.local')}</span>
                 ) : (
-                  <span className="account-pill account-pill--guest">访客模式</span>
+                  <span className="account-pill account-pill--guest">{t('hero.badge.guest')}</span>
                 )}
                 {account?.role === 'admin' && (
                   <span className="account-pill account-pill--admin">管理员</span>
@@ -1823,8 +1825,8 @@ export function ThemeOverlays({
                   type="button"
                   className="account-btn-icon"
                   onClick={handleLogout}
-                  title="退出登录"
-                  aria-label="退出登录"
+                  title={t('hero.signout')}
+                  aria-label={t('hero.signout')}
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -1842,7 +1844,7 @@ export function ThemeOverlays({
               onClick={() => setAccountTab('auth')}
             >
               <UserRound className="h-4 w-4" />
-              <span>{account ? '个人资料' : '身份设置'}</span>
+              <span>{t('tab.auth')}</span>
             </button>
             <button
               type="button"
@@ -1852,7 +1854,7 @@ export function ThemeOverlays({
               onClick={() => setAccountTab('notifications')}
             >
               <Bell className="h-4 w-4" />
-              <span>站内提醒</span>
+              <span>{t('tab.notifications')}</span>
               {allNotifications.length > 0 && (
                 <span className="account-tab-badge">{allNotifications.length}</span>
               )}
@@ -1865,7 +1867,7 @@ export function ThemeOverlays({
               onClick={() => setAccountTab('settings')}
             >
               <Settings className="h-4 w-4" />
-              <span>偏好设置</span>
+              <span>{t('tab.settings')}</span>
             </button>
           </div>
 
@@ -1897,13 +1899,13 @@ export function ThemeOverlays({
               {/* 专属账户资料设置面板 */}
               <section className="account-card">
                 <div className="account-card__head">
-                  <h3 className="account-card__title">账户资料设置</h3>
+                  <h3 className="account-card__title">{t('profile.card.title')}</h3>
                 </div>
 
                 <form onSubmit={handleSaveProfile} className="account-profile-form">
                   <div className="account-form-grid">
                     <label className="account-field">
-                      <span>公开昵称 (Username)</span>
+                      <span>{t('profile.field.name')}</span>
                       <div className="account-field-control">
                         <UserRound className="account-field-icon" />
                         <input
@@ -1914,13 +1916,13 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, name: val }));
                           }}
-                          placeholder="公开显示的昵称（留空显示为访客）"
+                          placeholder={t('profile.field.namePlaceholder')}
                         />
                       </div>
                     </label>
 
                     <label className="account-field">
-                      <span>个人主页 / 网站 (Website)</span>
+                      <span>{t('profile.field.website')}</span>
                       <div className="account-field-control">
                         <Globe className="account-field-icon" />
                         <input
@@ -1937,7 +1939,7 @@ export function ThemeOverlays({
                     </label>
 
                     <label className="account-field account-field--full">
-                      <span>个人简介 (Bio)</span>
+                      <span>{t('profile.field.bio')}</span>
                       <div className="account-field-control">
                         <Sparkles className="account-field-icon" />
                         <input
@@ -1949,13 +1951,13 @@ export function ThemeOverlays({
                             const val = e.target.value;
                             setAccountForm((prev) => ({ ...prev, bio: val }));
                           }}
-                          placeholder="一句话介绍自己（留空默认为无）"
+                          placeholder={t('profile.field.bioPlaceholder')}
                         />
                       </div>
                     </label>
 
                     <label className="account-field">
-                      <span>所在时区 (Timezone)</span>
+                      <span>{t('profile.field.timezone')}</span>
                       <div className="account-field-control">
                         <Clock className="account-field-icon" />
                         <input
@@ -1990,13 +1992,13 @@ export function ThemeOverlays({
                             } catch {}
                           }}
                         >
-                          检测
+                          {t('profile.field.detectTz')}
                         </button>
                       </div>
                     </label>
 
                     <label className="account-field">
-                      <span>所在位置 (Location)</span>
+                      <span>{t('profile.field.location')}</span>
                       <div className="account-field-control">
                         <MapPin className="account-field-icon" />
                         <input
@@ -2024,7 +2026,7 @@ export function ThemeOverlays({
                               .catch(() => {});
                           }}
                         >
-                          定位
+                          {t('profile.field.detectLoc')}
                         </button>
                       </div>
                     </label>
@@ -2037,7 +2039,7 @@ export function ThemeOverlays({
                       disabled={isAuthorizing}
                     >
                       <Save className="h-4 w-4" />
-                      <span>保存资料修改</span>
+                      <span>{t('profile.btn.save')}</span>
                     </button>
                   </div>
                 </form>
@@ -2051,7 +2053,7 @@ export function ThemeOverlays({
                       <div className="epomail-badge-icon">
                         <Mail className="h-5 w-5 text-theme-main" />
                       </div>
-                      <h3 className="account-card__title">EpoCanvas Mail 统一身份认证</h3>
+                      <h3 className="account-card__title">{t('epomail.card.title')}</h3>
                     </div>
                   </div>
 
@@ -2077,7 +2079,7 @@ export function ThemeOverlays({
                     disabled={isAuthorizing}
                   >
                     <Sparkles className="h-4 w-4" />
-                    <span>使用 Epomail 一键授权登录</span>
+                    <span>{t('epomail.btn.login')}</span>
                   </button>
 
                   {/* 管理员或开发者通道 (折叠设计) */}
@@ -2205,7 +2207,7 @@ export function ThemeOverlays({
                   <div className="account-card__head">
                     <div className="flex items-center gap-2">
                       <Megaphone className="h-5 w-5 text-theme-main" />
-                      <h3 className="account-card__title">全站广播与最新动态</h3>
+                      <h3 className="account-card__title">{t('notify.broadcast.title')}</h3>
                     </div>
                   </div>
 
@@ -2279,7 +2281,7 @@ export function ThemeOverlays({
                   {/* 收到的个人互动提醒 */}
                   <section className="account-card">
                     <div className="account-card__head">
-                      <h3 className="account-card__title">收到的互动提醒</h3>
+                      <h3 className="account-card__title">{t('notify.mentions.title')}</h3>
                     </div>
 
                     {personalNotifications.length > 0 ? (
@@ -2336,7 +2338,7 @@ export function ThemeOverlays({
                   {/* 我的评论足迹 (真实连结 DB) */}
                   <section className="account-card">
                     <div className="account-card__head">
-                      <h3 className="account-card__title">我的评论足迹</h3>
+                      <h3 className="account-card__title">{t('notify.comments.title')}</h3>
                       <button
                         type="button"
                         className="account-link-btn account-refresh-feed-btn"
@@ -2396,7 +2398,7 @@ export function ThemeOverlays({
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Globe className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">界面语言 (Language)</h3>
+                    <h3 className="account-card__title">{t('settings.lang.title')}</h3>
                   </div>
                 </div>
 
@@ -2443,56 +2445,6 @@ export function ThemeOverlays({
                     );
                   })}
                 </div>
-
-                {userPersona && (
-                  <div
-                    className="account-persona-card"
-                    style={{
-                      marginTop: '12px',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(66, 90, 239, 0.05)',
-                      border: '1px solid rgba(66, 90, 239, 0.15)',
-                      fontSize: '12px',
-                      lineHeight: '1.6',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--anzhiyu-theme, #425aef)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>智能语言画像 (User Persona)</span>
-                      </span>
-                      <span style={{ fontSize: '11px', opacity: 0.75 }}>
-                        推荐置信度 {Math.round(userPersona.confidence * 100)}%
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
-                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                        ⌨️ 输入法: <strong>{userPersona.traits.inputMethodLocale || '默认'}</strong> (45%)
-                      </span>
-                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                        ⏱️ 时区: <strong>{userPersona.traits.timezone || '未识别'}</strong> (40%)
-                      </span>
-                      <span style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                        🌐 IP/节点: <strong>{userPersona.traits.ipCountry}</strong> (15%)
-                      </span>
-                      {userPersona.traits.isLikelyProxy && (
-                        <span style={{ background: 'rgba(234, 88, 12, 0.12)', color: '#ea580c', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                          🛡️ 代理/规避节点识别
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '11.5px', opacity: 0.85 }}>
-                      右下角快捷按钮 (id="translate") 已绑定最小化双语循环：
-                      <strong style={{ marginLeft: '4px', color: 'var(--anzhiyu-theme, #425aef)' }}>
-                        {LOCALE_METADATA[userPersona.candidatePair[0]]?.nativeName || userPersona.candidatePair[0]}
-                        {' ⇋ '}
-                        {LOCALE_METADATA[userPersona.candidatePair[1]]?.nativeName || userPersona.candidatePair[1]}
-                      </strong>
-                      。您可随时点击上方 6 种语言进行任意切换。
-                    </div>
-                  </div>
-                )}
               </section>
 
               {/* 1. 站内通知接收偏好 */}
@@ -2500,7 +2452,7 @@ export function ThemeOverlays({
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Bell className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">站内通知接收偏好</h3>
+                    <h3 className="account-card__title">{t('settings.notify.title')}</h3>
                   </div>
                 </div>
 
@@ -2509,10 +2461,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <Megaphone className="h-4 w-4 text-theme-main" />
-                        <span>全站广播与新博文发布通告</span>
+                        <span>{t('settings.notify.broadcast.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        开启后将在通知中心置顶呈现博主广播公告与最新文章发布动态。
+                        {t('settings.notify.broadcast.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2534,10 +2486,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <MessageSquare className="h-4 w-4 text-theme-main" />
-                        <span>个人评论回复与点赞提醒</span>
+                        <span>{t('settings.notify.personal.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        当其他读者回复您的发言或给您的留言点赞时接收站内提醒。
+                        {t('settings.notify.personal.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2562,7 +2514,7 @@ export function ThemeOverlays({
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Sliders className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">评论区互动与显示偏好</h3>
+                    <h3 className="account-card__title">{t('settings.comments.title')}</h3>
                   </div>
                 </div>
 
@@ -2572,10 +2524,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <Clock className="h-4 w-4 text-theme-main" />
-                        <span>评论区默认排序方式</span>
+                        <span>{t('settings.comments.sort.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        选择进入博文时评论列表的默认优先排序模式。
+                        {t('settings.comments.sort.desc')}
                       </span>
                     </div>
                     <div className="account-pref-sort-group">
@@ -2587,7 +2539,7 @@ export function ThemeOverlays({
                           setUserPreferences(next);
                         }}
                       >
-                        ⏱️ 最新
+                        {t('settings.comments.sort.new')}
                       </button>
                       <button
                         type="button"
@@ -2597,7 +2549,7 @@ export function ThemeOverlays({
                           setUserPreferences(next);
                         }}
                       >
-                        🔥 最热
+                        {t('settings.comments.sort.hot')}
                       </button>
                     </div>
                   </div>
@@ -2607,10 +2559,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <Globe className="h-4 w-4 text-theme-main" />
-                        <span>前台展示国家/地区属地徽章</span>
+                        <span>{t('settings.comments.location.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        开启后评论公开展示国家/地区徽章（如 🇨🇳 中国·北京）；关闭后前台完全隐匿。
+                        {t('settings.comments.location.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2642,10 +2594,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <ChevronDown className="h-4 w-4 text-theme-main" />
-                        <span>默认折叠嵌套回复</span>
+                        <span>{t('settings.comments.collapse.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        折叠多级嵌套回复（YouTube 手风琴风格），保持评论列表清爽。
+                        {t('settings.comments.collapse.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2670,7 +2622,7 @@ export function ThemeOverlays({
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">交互反馈与无障碍</h3>
+                    <h3 className="account-card__title">{t('settings.a11y.title')}</h3>
                   </div>
                 </div>
 
@@ -2679,10 +2631,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         {userPreferences.soundEffects ? <Volume2 className="h-4 w-4 text-theme-main" /> : <VolumeX className="h-4 w-4 text-secondtext" />}
-                        <span>交互声音反馈</span>
+                        <span>{t('settings.a11y.haptic.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        发表评论、点赞与切换模式时的触觉与轻量音频提示。
+                        {t('settings.a11y.haptic.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -2704,10 +2656,10 @@ export function ThemeOverlays({
                     <div className="account-pref-info">
                       <span className="account-pref-title">
                         <Sparkles className="h-4 w-4 text-theme-main" />
-                        <span>平滑动效与视差</span>
+                        <span>{t('settings.a11y.scroll.title')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        开启全站优雅视差与平滑动效；关闭可减弱动效降低图形运算负载。
+                        {t('settings.a11y.scroll.desc')}
                       </span>
                     </div>
                     <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">

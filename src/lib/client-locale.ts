@@ -29,6 +29,412 @@ export const LOCALE_METADATA: Record<LocaleVariant, LocaleMetadata> = {
   de: { code: 'de', nativeName: 'Deutsch', englishName: 'German', badge: 'DE', flag: '🇩🇪' },
 };
 
+/**
+ * High-performance Structured UI Translations for React Components (Drawer, Cards, Buttons)
+ */
+export const I18N_STRINGS: Record<SupportedLocale, Record<string, string>> = {
+  'zh-CN': {
+    // Drawer navigation tabs
+    'tab.auth': '登录 / 授权',
+    'tab.notifications': '站内提醒',
+    'tab.settings': '偏好与架构',
+
+    // Hero banner
+    'hero.badge.guest': '访客模式',
+    'hero.badge.local': '本地读者',
+    'hero.badge.epomail': '⚡ Epomail 认证',
+    'hero.signout': '退出登录',
+    'hero.quickLogin': '快速登录',
+    'hero.localHint': '当前处于本地身份模式，可使用本地免密登录或接入 Epomail。',
+    'hero.guestHint': '当前处于访客模式，填写昵称即可发表评论。',
+
+    // Tab 1: Profile & Auth Cards
+    'profile.card.title': '账户资料设置',
+    'profile.field.name': '公开昵称 (Username)',
+    'profile.field.namePlaceholder': '公开显示的昵称（留空显示为访客）',
+    'profile.field.website': '个人主页 / 网站 (Website)',
+    'profile.field.bio': '个人简介 (Bio)',
+    'profile.field.bioPlaceholder': '一句话介绍自己（留空默认为无）',
+    'profile.field.timezone': '所在时区 (Timezone)',
+    'profile.field.detectTz': '检测',
+    'profile.field.location': '所在位置 (Location)',
+    'profile.field.detectLoc': '定位',
+    'profile.btn.save': '保存资料修改',
+    'profile.avatar.title': '头像管理',
+    'profile.avatar.upload': '上传新头像',
+    'profile.avatar.reset': '↺ 恢复 Epomail 默认头像',
+    'epomail.card.title': 'EpoCanvas Mail 统一身份认证',
+    'epomail.card.desc': '接入博主自建权威 Epomail 邮件系统，实现全站统一登录、评论认证与专属头像同步。',
+    'epomail.btn.login': '使用 Epomail 一键授权登录',
+    'local.auth.title': '本地免密读者登录',
+    'local.auth.desc': '无需密码，仅凭昵称与邮箱即可在本地浏览器快速登记身份。',
+    'local.btn.login': '登记本地身份',
+
+    // Tab 2: Notifications Cards
+    'notify.broadcast.title': '全站广播与最新动态',
+    'notify.broadcast.empty': '暂无全站广播动态',
+    'notify.mentions.title': '收到的互动提醒',
+    'notify.mentions.empty': '暂无收到的互动通知',
+    'notify.comments.title': '我的评论足迹',
+    'notify.comments.empty': '您还没有发表过任何评论',
+
+    // Tab 3: Settings Cards (account-card)
+    'settings.lang.title': '界面语言 (Language)',
+    'settings.notify.title': '站内通知接收偏好',
+    'settings.notify.broadcast.title': '全站广播与新博文发布通告',
+    'settings.notify.broadcast.desc': '开启后将在通知中心置顶呈现博主广播公告与最新文章发布动态。',
+    'settings.notify.personal.title': '个人评论回复与点赞提醒',
+    'settings.notify.personal.desc': '当其他读者回复您的发言或给您的留言点赞时接收站内提醒。',
+    'settings.comments.title': '评论区互动与显示偏好',
+    'settings.comments.sort.title': '评论区默认排序方式',
+    'settings.comments.sort.desc': '选择进入博文时评论列表的默认优先排序模式。',
+    'settings.comments.sort.new': '⏱️ 最新',
+    'settings.comments.sort.hot': '🔥 最热',
+    'settings.comments.location.title': '前台展示国家/地区属地徽章',
+    'settings.comments.location.desc': '开启后评论公开展示国家/地区徽章（如 🇨🇳 中国·北京）；关闭后前台完全隐匿。',
+    'settings.comments.collapse.title': '默认折叠嵌套回复',
+    'settings.comments.collapse.desc': '折叠多级嵌套回复（YouTube 手风琴风格），保持评论列表清爽。',
+    'settings.a11y.title': '交互反馈与无障碍',
+    'settings.a11y.haptic.title': '点击音效与触觉反馈',
+    'settings.a11y.haptic.desc': '针对移动设备与支持震动的浏览器提供温和的触觉响应。',
+    'settings.a11y.scroll.title': '平滑滚动过渡',
+    'settings.a11y.scroll.desc': '锚点与目录跳转采用平滑动画。',
+    'settings.a11y.contrast.title': '界面高对比度呈现',
+    'settings.a11y.contrast.desc': '加强文字与边框对比度以提升阅读可达性。',
+
+    // General common
+    'common.close': '关闭',
+    'common.save': '保存',
+    'common.saved': '已保存',
+    'common.loading': '加载中...',
+  },
+  'zh-Hant': {
+    'tab.auth': '登入 / 授權',
+    'tab.notifications': '站內提醒',
+    'tab.settings': '偏好與架構',
+    'hero.badge.guest': '訪客模式',
+    'hero.badge.local': '本地讀者',
+    'hero.badge.epomail': '⚡ Epomail 認證',
+    'hero.signout': '登出帳號',
+    'hero.quickLogin': '快速登入',
+    'hero.localHint': '當前處於本地身分模式，可使用本地免密登入或接入 Epomail。',
+    'hero.guestHint': '當前處於訪客模式，填寫暱稱即可發表評論。',
+    'profile.card.title': '帳戶資料設定',
+    'profile.field.name': '公開暱稱 (Username)',
+    'profile.field.namePlaceholder': '公開顯示的暱稱（留空顯示為訪客）',
+    'profile.field.website': '個人主頁 / 網站 (Website)',
+    'profile.field.bio': '個人簡介 (Bio)',
+    'profile.field.bioPlaceholder': '一句話介紹自己（留空默認為無）',
+    'profile.field.timezone': '所在時區 (Timezone)',
+    'profile.field.detectTz': '檢測',
+    'profile.field.location': '所在位置 (Location)',
+    'profile.field.detectLoc': '定位',
+    'profile.btn.save': '儲存資料修改',
+    'profile.avatar.title': '頭像管理',
+    'profile.avatar.upload': '上傳新頭像',
+    'profile.avatar.reset': '↺ 恢復 Epomail 預設頭像',
+    'epomail.card.title': 'EpoCanvas Mail 統一身分認證',
+    'epomail.card.desc': '接入站長自建權威 Epomail 郵件系統，實現全站統一登入、評論認證與專屬頭像同步。',
+    'epomail.btn.login': '使用 Epomail 一鍵授權登入',
+    'local.auth.title': '本地免密讀者登入',
+    'local.auth.desc': '無需密碼，僅憑暱稱與電子郵件即可在本地瀏覽器快速登記身分。',
+    'local.btn.login': '登記本地身分',
+    'notify.broadcast.title': '全站廣播與最新動態',
+    'notify.broadcast.empty': '暫無全站廣播動態',
+    'notify.mentions.title': '收到的互動提醒',
+    'notify.mentions.empty': '暫無收到的互動通知',
+    'notify.comments.title': '我的評論足跡',
+    'notify.comments.empty': '您還沒有發表過任何評論',
+    'settings.lang.title': '介面語言 (Language)',
+    'settings.notify.title': '站內通知接收偏好',
+    'settings.notify.broadcast.title': '全站廣播與新文章發布通告',
+    'settings.notify.broadcast.desc': '開啟後將在通知中心置頂呈現站長廣播公告與最新文章發布動態。',
+    'settings.notify.personal.title': '個人評論回覆與按讚提醒',
+    'settings.notify.personal.desc': '當其他讀者回覆您的發言或給您的留言按讚時接收站內提醒。',
+    'settings.comments.title': '評論區互動與顯示偏好',
+    'settings.comments.sort.title': '評論區預設排序方式',
+    'settings.comments.sort.desc': '選擇進入文章時評論列表的預設優先排序模式。',
+    'settings.comments.sort.new': '⏱️ 最新',
+    'settings.comments.sort.hot': '🔥 最熱',
+    'settings.comments.location.title': '前台展示國家/地區屬地徽章',
+    'settings.comments.location.desc': '開啟後評論公開展示國家/地區徽章（如 🇭🇰 中國香港）；關閉後前台完全隱匿。',
+    'settings.comments.collapse.title': '預設折疊嵌套回覆',
+    'settings.comments.collapse.desc': '折疊多級嵌套回覆（YouTube 手風琴風格），保持評論列表清爽。',
+    'settings.a11y.title': '互動回饋與無障礙',
+    'settings.a11y.haptic.title': '點擊音效與觸覺回饋',
+    'settings.a11y.haptic.desc': '針對行動裝置與支援震動的瀏覽器提供溫和的觸覺回應。',
+    'settings.a11y.scroll.title': '平滑滾動過渡',
+    'settings.a11y.scroll.desc': '錨點與目錄跳轉採用平滑動畫。',
+    'settings.a11y.contrast.title': '介面高對比度呈現',
+    'settings.a11y.contrast.desc': '加強文字與邊框對比度以提升閱讀可達性。',
+    'common.close': '關閉',
+    'common.save': '儲存',
+    'common.saved': '已儲存',
+    'common.loading': '載入中...',
+  },
+  'en': {
+    'tab.auth': 'Sign In / Auth',
+    'tab.notifications': 'Notifications',
+    'tab.settings': 'Preferences & Architecture',
+    'hero.badge.guest': 'Visitor Mode',
+    'hero.badge.local': 'Local Reader',
+    'hero.badge.epomail': '⚡ Epomail Verified',
+    'hero.signout': 'Sign Out',
+    'hero.quickLogin': 'Quick Login',
+    'hero.localHint': 'Currently in local reader mode. You can sign in with Epomail anytime.',
+    'hero.guestHint': 'Currently in visitor mode. Enter a name to post comments.',
+    'profile.card.title': 'Profile Settings',
+    'profile.field.name': 'Username',
+    'profile.field.namePlaceholder': 'Public username (leave blank for visitor)',
+    'profile.field.website': 'Personal Website',
+    'profile.field.bio': 'Bio',
+    'profile.field.bioPlaceholder': 'A short bio about yourself',
+    'profile.field.timezone': 'Timezone',
+    'profile.field.detectTz': 'Detect',
+    'profile.field.location': 'Location',
+    'profile.field.detectLoc': 'Locate',
+    'profile.btn.save': 'Save Changes',
+    'profile.avatar.title': 'Avatar Settings',
+    'profile.avatar.upload': 'Upload New Avatar',
+    'profile.avatar.reset': '↺ Restore Epomail Avatar',
+    'epomail.card.title': 'EpoCanvas Mail Authentication',
+    'epomail.card.desc': 'Connect to official Epomail server for unified login, verified badges, and synced avatar.',
+    'epomail.btn.login': 'Sign in with Epomail',
+    'local.auth.title': 'Local Reader Registration',
+    'local.auth.desc': 'Passwordless registration using nickname and email stored in browser.',
+    'local.btn.login': 'Register Locally',
+    'notify.broadcast.title': 'Site Broadcasts & Updates',
+    'notify.broadcast.empty': 'No broadcasts available',
+    'notify.mentions.title': 'Interaction Alerts',
+    'notify.mentions.empty': 'No notifications yet',
+    'notify.comments.title': 'Comment History',
+    'notify.comments.empty': 'You have not posted any comments yet',
+    'settings.lang.title': 'Interface Language',
+    'settings.notify.title': 'Notification Preferences',
+    'settings.notify.broadcast.title': 'Site broadcasts and new post alerts',
+    'settings.notify.broadcast.desc': 'Show pinned broadcasts and new article announcements in notification center.',
+    'settings.notify.personal.title': 'Comment replies and reaction alerts',
+    'settings.notify.personal.desc': 'Receive notifications when someone replies to your comment or reacts to it.',
+    'settings.comments.title': 'Comment Preferences',
+    'settings.comments.sort.title': 'Default comment sort order',
+    'settings.comments.sort.desc': 'Choose default ordering for post comment threads.',
+    'settings.comments.sort.new': '⏱️ Latest',
+    'settings.comments.sort.hot': '🔥 Popular',
+    'settings.comments.location.title': 'Display location flag badges',
+    'settings.comments.location.desc': 'Display country/region flag on comments; hide completely when off.',
+    'settings.comments.collapse.title': 'Collapse nested replies by default',
+    'settings.comments.collapse.desc': 'Collapse threaded replies (YouTube accordion style) to keep threads tidy.',
+    'settings.a11y.title': 'Accessibility & Feedback',
+    'settings.a11y.haptic.title': 'Sound and haptic feedback',
+    'settings.a11y.haptic.desc': 'Provide gentle haptic feedback on supported mobile browsers.',
+    'settings.a11y.scroll.title': 'Smooth scrolling transition',
+    'settings.a11y.scroll.desc': 'Smooth scroll animation when navigating sections and anchors.',
+    'settings.a11y.contrast.title': 'High contrast interface',
+    'settings.a11y.contrast.desc': 'Enhance typography and border contrast for clearer readability.',
+    'common.close': 'Close',
+    'common.save': 'Save',
+    'common.saved': 'Saved',
+    'common.loading': 'Loading...',
+  },
+  'fr': {
+    'tab.auth': 'Connexion / Auth',
+    'tab.notifications': 'Notifications',
+    'tab.settings': 'Préférences & Architecture',
+    'hero.badge.guest': 'Mode Invité',
+    'hero.badge.local': 'Lecteur Local',
+    'hero.badge.epomail': '⚡ Vérifié Epomail',
+    'hero.signout': 'Déconnexion',
+    'hero.quickLogin': 'Connexion Rapide',
+    'hero.localHint': 'Mode lecteur local. Vous pouvez vous connecter avec Epomail.',
+    'hero.guestHint': 'Mode invité. Entrez un nom pour commenter.',
+    'profile.card.title': 'Paramètres du Profil',
+    'profile.field.name': 'Nom public (Username)',
+    'profile.field.namePlaceholder': 'Nom public affiché',
+    'profile.field.website': 'Site Web',
+    'profile.field.bio': 'Biographie',
+    'profile.field.bioPlaceholder': 'Courte présentation',
+    'profile.field.timezone': 'Fuseau horaire',
+    'profile.field.detectTz': 'Détecter',
+    'profile.field.location': 'Emplacement',
+    'profile.field.detectLoc': 'Localiser',
+    'profile.btn.save': 'Enregistrer',
+    'profile.avatar.title': 'Gestion de l avatar',
+    'profile.avatar.upload': 'Téléverser un avatar',
+    'profile.avatar.reset': '↺ Rétablir l avatar Epomail',
+    'epomail.card.title': 'Authentification EpoCanvas Mail',
+    'epomail.card.desc': 'Connexion sécurisée via le serveur Epomail pour synchroniser profil et commentaires.',
+    'epomail.btn.login': 'Connexion avec Epomail',
+    'local.auth.title': 'Lecteur local sans mot de passe',
+    'local.auth.desc': 'Enregistrement rapide avec pseudo et e-mail dans le navigateur.',
+    'local.btn.login': 'Enregistrer localement',
+    'notify.broadcast.title': 'Annonces & Mises à jour',
+    'notify.broadcast.empty': 'Aucune annonce disponible',
+    'notify.mentions.title': 'Alertes d interaction',
+    'notify.mentions.empty': 'Aucune alerte pour l instant',
+    'notify.comments.title': 'Mes commentaires',
+    'notify.comments.empty': 'Vous n avez pas encore publié de commentaire',
+    'settings.lang.title': 'Langue de l interface',
+    'settings.notify.title': 'Préférences de notification',
+    'settings.notify.broadcast.title': 'Annonces du site et nouveaux articles',
+    'settings.notify.broadcast.desc': 'Afficher les avis du blogueur et nouveaux articles dans les notifications.',
+    'settings.notify.personal.title': 'Réponses aux commentaires et réactions',
+    'settings.notify.personal.desc': 'Recevoir des alertes lors de réponses ou de mentions.',
+    'settings.comments.title': 'Préférences des commentaires',
+    'settings.comments.sort.title': 'Tri par défaut des commentaires',
+    'settings.comments.sort.desc': 'Mode de tri prioritaire lors de l accès aux articles.',
+    'settings.comments.sort.new': '⏱️ Récents',
+    'settings.comments.sort.hot': '🔥 Populaires',
+    'settings.comments.location.title': 'Afficher le drapeau de pays/région',
+    'settings.comments.location.desc': 'Afficher le drapeau géographique sur vos commentaires.',
+    'settings.comments.collapse.title': 'Replier les réponses par défaut',
+    'settings.comments.collapse.desc': 'Replier les sous-réponses (style accordéon YouTube) pour plus de clarté.',
+    'settings.a11y.title': 'Accessibilité & Retour tactile',
+    'settings.a11y.haptic.title': 'Sons et retour haptique',
+    'settings.a11y.haptic.desc': 'Retour tactile léger sur navigateurs mobiles compatibles.',
+    'settings.a11y.scroll.title': 'Défilement fluide',
+    'settings.a11y.scroll.desc': 'Transition animée et fluide lors des sauts de section.',
+    'settings.a11y.contrast.title': 'Interface à contraste élevé',
+    'settings.a11y.contrast.desc': 'Renforcer le contraste du texte et des bordures.',
+    'common.close': 'Fermer',
+    'common.save': 'Enregistrer',
+    'common.saved': 'Enregistré',
+    'common.loading': 'Chargement...',
+  },
+  'es': {
+    'tab.auth': 'Iniciar sesión / Auth',
+    'tab.notifications': 'Notificaciones',
+    'tab.settings': 'Preferencias y Arquitectura',
+    'hero.badge.guest': 'Modo Invitado',
+    'hero.badge.local': 'Lector Local',
+    'hero.badge.epomail': '⚡ Epomail Verificado',
+    'hero.signout': 'Cerrar sesión',
+    'hero.quickLogin': 'Acceso Rápido',
+    'hero.localHint': 'Modo lector local. Puede iniciar sesión con Epomail en cualquier momento.',
+    'hero.guestHint': 'Modo invitado. Ingrese un nombre para comentar.',
+    'profile.card.title': 'Ajustes del Perfil',
+    'profile.field.name': 'Nombre de usuario',
+    'profile.field.namePlaceholder': 'Nombre visible públicamente',
+    'profile.field.website': 'Sitio Web Personal',
+    'profile.field.bio': 'Biografía',
+    'profile.field.bioPlaceholder': 'Breve presentación personal',
+    'profile.field.timezone': 'Zona horaria',
+    'profile.field.detectTz': 'Detectar',
+    'profile.field.location': 'Ubicación',
+    'profile.field.detectLoc': 'Localizar',
+    'profile.btn.save': 'Guardar Cambios',
+    'profile.avatar.title': 'Gestión de Avatar',
+    'profile.avatar.upload': 'Subir nuevo avatar',
+    'profile.avatar.reset': '↺ Restaurar avatar de Epomail',
+    'epomail.card.title': 'Autenticación EpoCanvas Mail',
+    'epomail.card.desc': 'Conéctese al servidor oficial de Epomail para inicio de sesión unificado y avatar sincronizado.',
+    'epomail.btn.login': 'Iniciar sesión con Epomail',
+    'local.auth.title': 'Registro de lector local',
+    'local.auth.desc': 'Registro sin contraseña usando alias y correo en su navegador.',
+    'local.btn.login': 'Registrarse Localmente',
+    'notify.broadcast.title': 'Avisos del Sitio & Actualizaciones',
+    'notify.broadcast.empty': 'No hay avisos disponibles',
+    'notify.mentions.title': 'Alertas de interacción',
+    'notify.mentions.empty': 'No hay notificaciones aún',
+    'notify.comments.title': 'Mis comentarios',
+    'notify.comments.empty': 'Aún no has publicado ningún comentario',
+    'settings.lang.title': 'Idioma de la interfaz',
+    'settings.notify.title': 'Preferencias de notificaciones',
+    'settings.notify.broadcast.title': 'Difusión y nuevas publicaciones',
+    'settings.notify.broadcast.desc': 'Mostrar anuncios del sitio y nuevos artículos destacados.',
+    'settings.notify.personal.title': 'Respuestas a comentarios y me gusta',
+    'settings.notify.personal.desc': 'Recibir alertas cuando alguien responda o reaccione a tus comentarios.',
+    'settings.comments.title': 'Preferencias de comentarios',
+    'settings.comments.sort.title': 'Orden predeterminado de comentarios',
+    'settings.comments.sort.desc': 'Seleccione el criterio prioritario para la lista de comentarios.',
+    'settings.comments.sort.new': '⏱️ Más recientes',
+    'settings.comments.sort.hot': '🔥 Más populares',
+    'settings.comments.location.title': 'Mostrar bandera de país/región',
+    'settings.comments.location.desc': 'Mostrar bandera de ubicación geográfica en comentarios.',
+    'settings.comments.collapse.title': 'Plegar respuestas anidadas',
+    'settings.comments.collapse.desc': 'Plegar respuestas múltiples (estilo acordeón de YouTube) para mayor claridad.',
+    'settings.a11y.title': 'Accesibilidad y Respuesta háptica',
+    'settings.a11y.haptic.title': 'Sonido y respuesta háptica',
+    'settings.a11y.haptic.desc': 'Vibración suave en navegadores móviles compatibles.',
+    'settings.a11y.scroll.title': 'Desplazamiento suave',
+    'settings.a11y.scroll.desc': 'Transición animada y fluida al saltar entre secciones.',
+    'settings.a11y.contrast.title': 'Alto contraste de interfaz',
+    'settings.a11y.contrast.desc': 'Aumentar contraste tipográfico y bordes para mejor lectura.',
+    'common.close': 'Cerrar',
+    'common.save': 'Guardar',
+    'common.saved': 'Guardado',
+    'common.loading': 'Cargando...',
+  },
+  'de': {
+    'tab.auth': 'Anmelden / Auth',
+    'tab.notifications': 'Benachrichtigungen',
+    'tab.settings': 'Einstellungen & Architektur',
+    'hero.badge.guest': 'Gastmodus',
+    'hero.badge.local': 'Lokaler Leser',
+    'hero.badge.epomail': '⚡ Epomail Verifiziert',
+    'hero.signout': 'Abmelden',
+    'hero.quickLogin': 'Schnellanmeldung',
+    'hero.localHint': 'Lokaler Lesermodus. Sie können sich jederzeit mit Epomail anmelden.',
+    'hero.guestHint': 'Gastmodus. Geben Sie einen Namen ein, um zu kommentieren.',
+    'profile.card.title': 'Profileinstellungen',
+    'profile.field.name': 'Benutzername',
+    'profile.field.namePlaceholder': 'Öffentlich sichtbarer Name',
+    'profile.field.website': 'Persönliche Website',
+    'profile.field.bio': 'Biografie',
+    'profile.field.bioPlaceholder': 'Kurze Vorstellung',
+    'profile.field.timezone': 'Zeitzone',
+    'profile.field.detectTz': 'Erkennen',
+    'profile.field.location': 'Standort',
+    'profile.field.detectLoc': 'Lokalisieren',
+    'profile.btn.save': 'Änderungen speichern',
+    'profile.avatar.title': 'Avatar-Verwaltung',
+    'profile.avatar.upload': 'Neuen Avatar hochladen',
+    'profile.avatar.reset': '↺ Epomail-Avatar wiederherstellen',
+    'epomail.card.title': 'EpoCanvas Mail Authentifizierung',
+    'epomail.card.desc': 'Verbindung zum offiziellen Epomail-Server für einheitlichen Login und synchronisierten Avatar.',
+    'epomail.btn.login': 'Mit Epomail anmelden',
+    'local.auth.title': 'Lokale Leser-Registrierung',
+    'local.auth.desc': 'Passwortlose Registrierung mit Name und E-Mail im Browser.',
+    'local.btn.login': 'Lokal registrieren',
+    'notify.broadcast.title': 'Website-Mitteilungen & Neuigkeiten',
+    'notify.broadcast.empty': 'Keine Mitteilungen vorhanden',
+    'notify.mentions.title': 'Interaktions-Hinweise',
+    'notify.mentions.empty': 'Noch keine Benachrichtigungen',
+    'notify.comments.title': 'Meine Kommentare',
+    'notify.comments.empty': 'Sie haben noch keine Kommentare abgegeben',
+    'settings.lang.title': 'Oberflächensprache',
+    'settings.notify.title': 'Benachrichtigungseinstellungen',
+    'settings.notify.broadcast.title': 'Website-Mitteilungen und neue Beiträge',
+    'settings.notify.broadcast.desc': 'Ankündigungen und neue Artikel in der Mitteilungszentrale anzeigen.',
+    'settings.notify.personal.title': 'Kommentar-Antworten und Reaktionen',
+    'settings.notify.personal.desc': 'Benachrichtigungen erhalten, wenn jemand auf Ihre Kommentare antwortet.',
+    'settings.comments.title': 'Kommentareinstellungen',
+    'settings.comments.sort.title': 'Standard-Kommentarsortierung',
+    'settings.comments.sort.desc': 'Bevorzugte Reihenfolge für Kommentare festlegen.',
+    'settings.comments.sort.new': '⏱️ Neueste',
+    'settings.comments.sort.hot': '🔥 Beliebteste',
+    'settings.comments.location.title': 'Länder-/Regionsflagge anzeigen',
+    'settings.comments.location.desc': 'Standortflagge bei öffentlichen Kommentaren einblenden.',
+    'settings.comments.collapse.title': 'Verschachtelte Antworten einklappen',
+    'settings.comments.collapse.desc': 'Mehrstufige Antworten (YouTube-Akkordeon-Stil) standardmäßig einklappen.',
+    'settings.a11y.title': 'Barrierefreiheit & Feedback',
+    'settings.a11y.haptic.title': 'Sound und haptisches Feedback',
+    'settings.a11y.haptic.desc': 'Sanfte Vibration auf kompatiblen Mobilgeräten.',
+    'settings.a11y.scroll.title': 'Sanftes Scrollen',
+    'settings.a11y.scroll.desc': 'Flüssige Übergänge beim Navigieren zu Abschnitten und Ankern.',
+    'settings.a11y.contrast.title': 'Hoher Oberflächenkontrast',
+    'settings.a11y.contrast.desc': 'Typografie- und Rahmenkontrast für verbesserte Lesbarkeit verstärken.',
+    'common.close': 'Schließen',
+    'common.save': 'Speichern',
+    'common.saved': 'Gespeichert',
+    'common.loading': 'Laden...',
+  },
+};
+
+export function getI18nText(key: string, locale: LocaleVariant, fallback?: string): string {
+  const table = I18N_STRINGS[locale] || I18N_STRINGS['zh-CN'];
+  return table[key] ?? I18N_STRINGS['en']?.[key] ?? I18N_STRINGS['zh-CN']?.[key] ?? fallback ?? key;
+}
+
 const zhPattern = /[\u3400-\u9fff]/;
 const originalTextNodeMap = new WeakMap<Text, string>();
 const originalAttributeMap = new WeakMap<Element, Map<string, string>>();
@@ -64,6 +470,8 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '偏好': { en: 'Preferences', fr: 'Préférences', es: 'Preferencias', de: 'Einstellungen' },
   '上一页': { en: 'Prev', fr: 'Précédent', es: 'Anterior', de: 'Zurück' },
   '下一页': { en: 'Next', fr: 'Suivant', es: 'Siguiente', de: 'Weiter' },
+  '上一篇': { en: 'Prev Post', fr: 'Article précédent', es: 'Artículo anterior', de: 'Vorheriger Beitrag' },
+  '下一篇': { en: 'Next Post', fr: 'Article suivant', es: 'Artículo siguiente', de: 'Nächster Beitrag' },
   '上页': { en: 'Prev', fr: 'Préc', es: 'Ant', de: 'Zurück' },
   '下页': { en: 'Next', fr: 'Suiv', es: 'Sig', de: 'Weiter' },
   '文章分页': { en: 'Pagination', fr: 'Pagination', es: 'Paginación', de: 'Seitennummerierung' },
@@ -103,14 +511,18 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   // Table of contents & Post details
   '文章目录': { en: 'Table of contents', fr: 'Sommaire', es: 'Índice', de: 'Inhaltsverzeichnis' },
   '当前定位': { en: 'Current section', fr: 'Section actuelle', es: 'Sección actual', de: 'Aktueller Abschnitt' },
+  '全部': { en: 'All', fr: 'Tout', es: 'Todos', de: 'Alle' },
   '最新发布': { en: 'Latest posts', fr: 'Derniers articles', es: 'Últimas publicaciones', de: 'Neueste Beiträge' },
   '最近文章': { en: 'Recent posts', fr: 'Articles récents', es: 'Publicaciones recientes', de: 'Letzte Beiträge' },
+  '相关推荐': { en: 'Related posts', fr: 'Articles similaires', es: 'Artículos recomendados', de: 'Ähnliche Beiträge' },
+  '下一篇推荐': { en: 'Recommended Next', fr: 'Article suivant recommandé', es: 'Siguiente recomendado', de: 'Nächste Empfehlung' },
   '站点信息': { en: 'Site info', fr: 'Infos du site', es: 'Información del sitio', de: 'Website-Info' },
   '分类总数': { en: 'Categories', fr: 'Catégories', es: 'Categorías', de: 'Kategorien' },
   '标签总数': { en: 'Tags', fr: 'Étiquettes', es: 'Etiquetas', de: 'Schlagwörter' },
   '文章总数': { en: 'Posts', fr: 'Articles', es: 'Artículos', de: 'Beiträge' },
-  '阅读总量': { en: 'Reading', fr: 'Lectures', es: 'Lecturas', de: 'Aufrufe' },
+  '阅读总量': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
   '阅读时长': { en: 'Reading time', fr: 'Temps de lecture', es: 'Tiempo de lectura', de: 'Lesezeit' },
+  '字数统计': { en: 'Word count', fr: 'Nombre de mots', es: 'Recuento de palabras', de: 'Wortanzahl' },
   '最近更新': { en: 'Latest update', fr: 'Mise à jour', es: 'Última actualización', de: 'Letzte Aktualisierung' },
   '当前阶段': { en: 'Current phase', fr: 'Phase actuelle', es: 'Fase actual', de: 'Aktuelle Phase' },
   '目录定位': { en: 'TOC jump', fr: 'Navigation', es: 'Saltar a índice', de: 'Zum Inhaltsverzeichnis' },
@@ -123,6 +535,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '复制链接': { en: 'Copy link', fr: 'Copier le lien', es: 'Copiar enlace', de: 'Link kopieren' },
   '原创': { en: 'Original', fr: 'Original', es: 'Original', de: 'Original' },
   '转载': { en: 'Reprint', fr: 'Rediffusion', es: 'Reimpresión', de: 'Nachdruck' },
+  '阅读全文': { en: 'Read more', fr: 'Lire la suite', es: 'Leer más', de: 'Weiterlesen' },
 
   // Comments
   '评论': { en: 'Comments', fr: 'Commentaires', es: 'Comentarios', de: 'Kommentare' },
@@ -139,8 +552,22 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '博主': { en: 'Blogger', fr: 'Blogueur', es: 'Blogger', de: 'Blogger' },
   '访客': { en: 'Visitor', fr: 'Visiteur', es: 'Visitante', de: 'Besucher' },
   '输入评论内容...': { en: 'Write a comment...', fr: 'Écrire un commentaire...', es: 'Escribe un comentario...', de: 'Schreibe einen Kommentar...' },
+  '匿名评论': { en: 'Anonymous', fr: 'Anonyme', es: 'Anónimo', de: 'Anonym' },
+  '插入图片': { en: 'Insert image', fr: 'Insérer image', es: 'Insertar imagen', de: 'Bild einfügen' },
+  '切换互动模式': { en: 'Switch mode', fr: 'Changer mode', es: 'Cambiar modo', de: 'Modus umschalten' },
+  '展开全文': { en: 'Read full text', fr: 'Lire la suite', es: 'Leer todo', de: 'Vollständig lesen' },
+  '收起': { en: 'Collapse', fr: 'Réduire', es: 'Plegar', de: 'Einklappen' },
 
-  // Account & Preferences
+  // Account & Drawer Cards (Full Multilingual Coverage)
+  '账户资料设置': { en: 'Profile Settings', fr: 'Paramètres du profil', es: 'Ajustes de perfil', de: 'Profileinstellungen' },
+  'EpoCanvas Mail 统一身份认证': { en: 'EpoCanvas Mail Authentication', fr: 'Authentification EpoCanvas Mail', es: 'Autenticación EpoCanvas Mail', de: 'EpoCanvas Mail Authentifizierung' },
+  '全站广播与最新动态': { en: 'Site Broadcasts & Updates', fr: 'Diffusions et actualités', es: 'Avisos del sitio y novedades', de: 'Website-Mitteilungen & Neuigkeiten' },
+  '收到的互动提醒': { en: 'Interaction Alerts', fr: 'Alertes d interaction', es: 'Alertas de interacción', de: 'Interaktions-Hinweise' },
+  '我的评论足迹': { en: 'Comment History', fr: 'Historique des commentaires', es: 'Historial de comentarios', de: 'Meine Kommentare' },
+  '界面语言 (Language)': { en: 'Interface Language', fr: 'Langue de l interface', es: 'Idioma de la interfaz', de: 'Oberflächensprache' },
+  '站内通知接收偏好': { en: 'Notification Preferences', fr: 'Préférences de notification', es: 'Preferencias de notificación', de: 'Benachrichtigungseinstellungen' },
+  '评论区互动与显示偏好': { en: 'Comment Preferences', fr: 'Préférences des commentaires', es: 'Preferencias de comentarios', de: 'Kommentareinstellungen' },
+  '交互反馈与无障碍': { en: 'Accessibility & Feedback', fr: 'Accessibilité & Retour tactile', es: 'Accesibilidad y Respuesta háptica', de: 'Barrierefreiheit & Feedback' },
   '登录 / 注册': { en: 'Sign in / Register', fr: 'Connexion / Inscription', es: 'Iniciar sesión / Registro', de: 'Anmelden / Registrieren' },
   '更新资料': { en: 'Edit profile', fr: 'Modifier le profil', es: 'Editar perfil', de: 'Profil bearbeiten' },
   '昵称': { en: 'Name', fr: 'Nom', es: 'Nombre', de: 'Name' },
@@ -157,12 +584,11 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '繁體': { en: 'Traditional', fr: 'Traditionnel', es: 'Tradicional', de: 'Traditionell' },
   '简体中文': { en: 'Simplified Chinese', fr: 'Chinois simplifié', es: 'Chino simplificado', de: 'Vereinfachtes Chinesisch' },
   '繁體中文': { en: 'Traditional Chinese', fr: 'Chinois traditionnel', es: 'Chino tradicional', de: 'Traditionelles Chinesisch' },
-  '站内通知接收偏好': { en: 'Notification Preferences', fr: 'Préférences de notification', es: 'Preferencias de notificación', de: 'Benachrichtigungseinstellungen' },
   '全站广播与新博文发布通告': { en: 'Site broadcast & new posts', fr: 'Diffusions et nouveaux articles', es: 'Difusión y nuevas publicaciones', de: 'Website-Mitteilungen & neue Beiträge' },
   '提醒': { en: 'Notifications', fr: 'Notifications', es: 'Notificaciones', de: 'Benachrichtigungen' },
   '@ 与回复': { en: '@ mentions', fr: '@ mentions et réponses', es: '@ menciones y respuestas', de: '@ Erwähnungen & Antworten' },
   '提示': { en: 'Notice', fr: 'Avis', es: 'Aviso', de: 'Hinweis' },
-  '打赏作者': { en: 'Support the author', fr: 'Soutenir l auteur', es: 'Apoyar al autor', de: 'Autor unterstützen' },
+  '打赏作者': { en: 'Support author', fr: 'Soutenir l auteur', es: 'Apoyar al autor', de: 'Autor unterstützen' },
   'Telegram 频道': { en: 'Telegram channel', fr: 'Canal Telegram', es: 'Canal de Telegram', de: 'Telegram-Kanal' },
   '海外读者交流入口': { en: 'Overseas reader entrance', fr: 'Accès lecteurs étrangers', es: 'Entrada lectores externos', de: 'Internationaler Leserzugang' },
   '中国大陆': { en: 'Mainland China', fr: 'Chine continentale', es: 'China continental', de: 'Festlandchina' },
@@ -189,8 +615,28 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '该标签下的文章': { en: 'Posts with this tag', fr: 'Articles avec cette étiquette', es: 'Artículos con esta etiqueta', de: 'Beiträge mit diesem Schlagwort' },
 };
 
+// Pre-indexed fast maps for O(1) instantaneous lookups
+const zhToEnMap = new Map<string, string>();
+const zhToFrMap = new Map<string, string>();
+const zhToEsMap = new Map<string, string>();
+const zhToDeMap = new Map<string, string>();
+
+const allForeignToZhMap = new Map<string, string>();
+
+for (const [zh, trans] of Object.entries(MULTILINGUAL_DICTIONARY)) {
+  zhToEnMap.set(zh, trans.en);
+  zhToFrMap.set(zh, trans.fr);
+  zhToEsMap.set(zh, trans.es);
+  zhToDeMap.set(zh, trans.de);
+
+  allForeignToZhMap.set(trans.en, zh);
+  allForeignToZhMap.set(trans.fr, zh);
+  allForeignToZhMap.set(trans.es, zh);
+  allForeignToZhMap.set(trans.de, zh);
+}
+
 const translatableAttributes = ['title', 'placeholder', 'aria-label', 'aria-description', 'alt'] as const;
-const skipTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'KBD', 'SAMP']);
+const skipTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'KBD', 'SAMP', 'SVG', 'PATH']);
 const skipSelector = '.ignore-opencc,[data-no-translate="true"]';
 
 type TranslateMutationOptions = {
@@ -239,10 +685,6 @@ export function normaliseLocaleVariant(value: string | null | undefined): Locale
   return normaliseLocale(value);
 }
 
-/**
- * Reads the stored or inferred locale variant.
- * Respects explicit user selection first, then falls back to Intelligent Persona inference.
- */
 export function readStoredLocaleVariant(): LocaleVariant {
   if (typeof window === 'undefined') return 'zh-CN';
 
@@ -257,7 +699,6 @@ export function readStoredLocaleVariant(): LocaleVariant {
       return normaliseLocaleVariant(storedVariant);
     }
 
-    // Inferred by persona engine
     const persona = ensureUserPersona();
     return persona.primaryLocale;
   } catch {
@@ -281,53 +722,95 @@ async function ensureChineseConverters() {
 }
 
 /**
- * Text translation router based on variant
+ * Text translation router based on variant (O(1) exact mapping)
  */
 export function convertText(value: string, variant: LocaleVariant): string {
   if (!value) return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
 
-  // 1. Target is Simplified Chinese
+  // 1. Target is Simplified Chinese (Restore from foreign or convert from traditional)
   if (variant === 'zh-CN') {
-    if (!zhPattern.test(value)) return value;
-    return zhToSimplified ? zhToSimplified(value) : value;
+    const restoredZh = allForeignToZhMap.get(trimmed);
+    if (restoredZh) {
+      return value.replace(trimmed, restoredZh);
+    }
+    if (zhPattern.test(value)) {
+      return zhToSimplified ? zhToSimplified(value) : value;
+    }
+    return value;
   }
 
   // 2. Target is Traditional Chinese
   if (variant === 'zh-Hant') {
-    if (!zhPattern.test(value)) return value;
-    return zhToTraditional ? zhToTraditional(value) : value;
-  }
-
-  // 3. Target is en / fr / es / de
-  const langKey = variant as 'en' | 'fr' | 'es' | 'de';
-  const trimmed = value.trim();
-  if (!trimmed) return value;
-
-  // Direct match
-  const entry = MULTILINGUAL_DICTIONARY[trimmed];
-  if (entry && entry[langKey]) {
-    return value.replace(trimmed, entry[langKey]);
-  }
-
-  // Check partial prefix (e.g. "切换背景：晨光背景")
-  for (const [zhKey, translations] of Object.entries(MULTILINGUAL_DICTIONARY)) {
-    if (trimmed.includes(zhKey) && translations[langKey]) {
-      return value.replace(zhKey, translations[langKey]);
+    const restoredZh = allForeignToZhMap.get(trimmed);
+    const sourceZh = restoredZh || (zhPattern.test(trimmed) ? trimmed : null);
+    if (sourceZh) {
+      const converted = zhToTraditional ? zhToTraditional(sourceZh) : sourceZh;
+      return value.replace(trimmed, converted);
     }
+    if (zhPattern.test(value)) {
+      return zhToTraditional ? zhToTraditional(value) : value;
+    }
+    return value;
+  }
+
+  // 3. Target is English
+  if (variant === 'en') {
+    const trans = zhToEnMap.get(trimmed);
+    if (trans) return value.replace(trimmed, trans);
+    return value;
+  }
+
+  // 4. Target is French
+  if (variant === 'fr') {
+    const trans = zhToFrMap.get(trimmed);
+    if (trans) return value.replace(trimmed, trans);
+    return value;
+  }
+
+  // 5. Target is Spanish
+  if (variant === 'es') {
+    const trans = zhToEsMap.get(trimmed);
+    if (trans) return value.replace(trimmed, trans);
+    return value;
+  }
+
+  // 6. Target is German
+  if (variant === 'de') {
+    const trans = zhToDeMap.get(trimmed);
+    if (trans) return value.replace(trimmed, trans);
+    return value;
   }
 
   return value;
 }
 
-function rememberOriginalTextValue(node: Text, currentValue: string, refreshBase = false) {
-  if (refreshBase || !originalTextNodeMap.has(node)) {
-    originalTextNodeMap.set(node, currentValue);
-    return currentValue;
+function rememberOriginalTextValue(node: Text, currentValue: string, refreshBase = false): string {
+  const state = getRuntimeState();
+  if (originalTextNodeMap.has(node)) {
+    // Only allow updating base if we are currently in zh-CN
+    if (refreshBase && state.currentVariant === 'zh-CN') {
+      originalTextNodeMap.set(node, currentValue);
+    }
+    return originalTextNodeMap.get(node)!;
   }
-  return originalTextNodeMap.get(node) ?? currentValue;
+
+  // First time seeing this node:
+  // If we are currently NOT in zh-CN, it might already be in translated state
+  const trimmed = currentValue.trim();
+  const reverseZh = allForeignToZhMap.get(trimmed);
+  if (reverseZh) {
+    const restored = currentValue.replace(trimmed, reverseZh);
+    originalTextNodeMap.set(node, restored);
+    return restored;
+  }
+
+  originalTextNodeMap.set(node, currentValue);
+  return currentValue;
 }
 
-function setOriginalAttributeValue(element: Element, attribute: string, currentValue: string) {
+function setOriginalAttributeValue(element: Element, attribute: string, currentValue: string): string {
   let store = originalAttributeMap.get(element);
   if (!store) {
     store = new Map();
@@ -337,7 +820,7 @@ function setOriginalAttributeValue(element: Element, attribute: string, currentV
   return currentValue;
 }
 
-function getOriginalAttributeValue(element: Element, attribute: string, currentValue: string) {
+function getOriginalAttributeValue(element: Element, attribute: string, currentValue: string): string {
   let store = originalAttributeMap.get(element);
   if (!store) {
     store = new Map();
@@ -349,7 +832,7 @@ function getOriginalAttributeValue(element: Element, attribute: string, currentV
   return currentValue;
 }
 
-function shouldSkipElement(element: Element) {
+function shouldSkipElement(element: Element): boolean {
   return skipTags.has(element.tagName) || Boolean(element.closest(skipSelector));
 }
 
@@ -364,7 +847,14 @@ function translateAttributes(element: Element, variant: LocaleVariant, options: 
     const base = options.refreshBase
       ? setOriginalAttributeValue(element, attribute, current)
       : getOriginalAttributeValue(element, attribute, current);
-    if (!zhPattern.test(base) && !MULTILINGUAL_DICTIONARY[base.trim()]) continue;
+
+    if (variant === 'zh-CN') {
+      const original = getOriginalAttributeValue(element, attribute, base);
+      const next = convertText(original, 'zh-CN');
+      if (next !== current) element.setAttribute(attribute, next);
+      continue;
+    }
+
     const next = convertText(base, variant);
     if (next !== current) element.setAttribute(attribute, next);
   }
@@ -374,15 +864,30 @@ function translateTextNode(node: Text, variant: LocaleVariant, options: Translat
   if (!node.nodeValue) return;
   const parent = node.parentElement;
   if (parent && shouldSkipElement(parent)) return;
+
   const base = rememberOriginalTextValue(node, node.nodeValue, options.refreshBase);
-  if (!zhPattern.test(base) && !MULTILINGUAL_DICTIONARY[base.trim()]) return;
+
+  if (variant === 'zh-CN') {
+    const original = originalTextNodeMap.get(node) ?? base;
+    const next = convertText(original, 'zh-CN');
+    if (next !== node.nodeValue) node.nodeValue = next;
+    return;
+  }
+
   const next = convertText(base, variant);
   if (next !== node.nodeValue) node.nodeValue = next;
 }
 
 function translateTree(root: Element | DocumentFragment, variant: LocaleVariant, options: TranslateMutationOptions = {}) {
   const state = getRuntimeState();
+  if (state.translating) return;
   state.translating = true;
+
+  // Temporarily pause observer to prevent mutation storm
+  const prevObserver = state.observer;
+  if (prevObserver) {
+    prevObserver.disconnect();
+  }
 
   try {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
@@ -392,13 +897,18 @@ function translateTree(root: Element | DocumentFragment, variant: LocaleVariant,
 
     while ((current = walker.nextNode())) {
       if (current instanceof Element) {
-        translateAttributes(current, variant, options);
+        if (!shouldSkipElement(current)) {
+          translateAttributes(current, variant, options);
+        }
         continue;
       }
-      if (current instanceof Text) translateTextNode(current, variant, options);
+      if (current instanceof Text) {
+        translateTextNode(current, variant, options);
+      }
     }
   } finally {
     state.translating = false;
+    syncLocaleObserver();
   }
 }
 
@@ -414,13 +924,13 @@ function handleLocaleMutations(mutations: MutationRecord[]) {
 
   for (const mutation of mutations) {
     if (mutation.type === 'characterData' && mutation.target instanceof Text) {
-      translateTextNode(mutation.target, state.currentVariant, { refreshBase: true });
+      translateTextNode(mutation.target, state.currentVariant, { refreshBase: false });
       continue;
     }
 
     if (mutation.type === 'attributes' && mutation.target instanceof Element && mutation.attributeName) {
       translateAttributes(mutation.target, state.currentVariant, {
-        refreshBase: true,
+        refreshBase: false,
         attributes: [mutation.attributeName],
       });
       continue;
@@ -430,11 +940,11 @@ function handleLocaleMutations(mutations: MutationRecord[]) {
 
     mutation.addedNodes.forEach((node) => {
       if (node instanceof Element) {
-        translateTree(node, state.currentVariant, { refreshBase: true });
+        translateTree(node, state.currentVariant, { refreshBase: false });
         return;
       }
       if (node instanceof Text) {
-        translateTextNode(node, state.currentVariant, { refreshBase: true });
+        translateTextNode(node, state.currentVariant, { refreshBase: false });
       }
     });
   }
@@ -499,7 +1009,7 @@ function queueLocaleTranslation(variant: LocaleVariant, force = false) {
 }
 
 /**
- * Applies a specific locale variant.
+ * Applies a specific locale variant with zero lag.
  */
 export function applyLocaleVariant(
   variant: LocaleVariant,
@@ -508,7 +1018,7 @@ export function applyLocaleVariant(
     translate?: boolean;
     manual?: boolean;
   } = {},
-) {
+): LocaleVariant {
   if (typeof document === 'undefined') return variant;
 
   const state = getRuntimeState();
@@ -551,15 +1061,10 @@ export function toggleLocaleVariant(current?: LocaleVariant): LocaleVariant {
   const persona = ensureUserPersona();
   const [first, second] = persona.candidatePair;
 
-  // Toggle exclusively between the 2 candidate languages
   const nextVariant = normaliseLocaleVariant(activeVariant) === first ? second : first;
-  console.log('[toggleLocaleVariant]', { activeVariant, first, second, nextVariant });
   return applyLocaleVariant(nextVariant, { persist: true, translate: true, manual: false });
 }
 
-/**
- * Get display info and badge for a locale
- */
 export function getLocaleBadge(variant: LocaleVariant): string {
   return LOCALE_METADATA[variant]?.badge || 'EN';
 }
