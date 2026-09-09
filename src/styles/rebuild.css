@@ -3387,8 +3387,8 @@ body[data-type='post'] hr.custom-hr {
 }
 
 #post-comment .tk-geo-badge .tk-geo-flag-img {
-  width: 15px;
-  height: 11px;
+  width: 16px;
+  height: 12px;
   object-fit: cover;
   border-radius: 2px;
   vertical-align: middle;

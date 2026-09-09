@@ -267,7 +267,7 @@ export function PostComments({
     const rawName = item.ipLocation || geo.name || item.ipCountryName || '全球';
 
     // Strip any leading flag emojis or duplicate country codes and strictly ensure Taiwan/HK/Macau have no "中国" prefix
-    const cleanName = rawName
+    let cleanName = rawName
       .replace(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/g, '')
       .replace(/^[\uD83C-\uDBFF\uDC00-\uDFFF\s]+/, '')
       .replace(/^([A-Z]{2})\s+/, '')
@@ -282,7 +282,13 @@ export function PostComments({
       .replace(/Macao\s*SAR\s*China/gi, 'Macau')
       .trim() || geo.name || '全球';
 
+    // If cleanName is still a 2-letter country code (e.g. 'MY' or 'TW'), resolve to its proper localized name
+    if (/^[A-Z]{2}$/i.test(cleanName) || cleanName === geo.code) {
+      cleanName = geo.name || cleanName;
+    }
+
     const isTwoLetterCode = geo.code && geo.code !== 'GLOBAL' && /^[A-Z]{2}$/.test(geo.code);
+    const lowerCode = (geo.code || '').toLowerCase();
 
     return (
       <span
@@ -292,18 +298,23 @@ export function PostComments({
         <span className="tk-geo-flag" role="img" aria-label={geo.code}>
           {isTwoLetterCode ? (
             <img
-              src={`https://flagcdn.com/24x18/${geo.code.toLowerCase()}.png`}
-              srcSet={`https://flagcdn.com/48x36/${geo.code.toLowerCase()}.png 2x`}
+              src={`/media/flags/${lowerCode}.png`}
+              srcSet={`/media/flags/${lowerCode}.png 1x, https://flagcdn.com/48x36/${lowerCode}.png 2x`}
               width="15"
               height="11"
               alt={geo.code}
               className="tk-geo-flag-img"
-              loading="lazy"
+              loading="eager"
               onError={(e) => {
                 const target = e.currentTarget;
-                target.style.display = 'none';
-                if (target.parentElement) {
-                  target.parentElement.textContent = flag;
+                if (!target.dataset.triedCdn) {
+                  target.dataset.triedCdn = 'true';
+                  target.src = `https://flagcdn.com/48x36/${lowerCode}.png`;
+                } else {
+                  target.style.display = 'none';
+                  if (target.parentElement) {
+                    target.parentElement.textContent = flag;
+                  }
                 }
               }}
             />
@@ -314,7 +325,7 @@ export function PostComments({
         <span className="tk-geo-name">{cleanName}</span>
         {isCurrentAdmin && item.ip && (
           <span className="tk-admin-ip-tag" title="博主管理特权：查看真实IP">
-            {item.ip}
+            ({item.ip})
           </span>
         )}
       </span>
@@ -739,34 +750,75 @@ export function PostComments({
     }
   }, [activeModal]);
 
-  // Fetch real comments with admin token capability for IP inspection
-  const loadComments = useCallback(async (sort = sortOrder) => {
-    setLoading(true);
-    try {
-      const currentIdentity = readCommentIdentity();
-      const token = currentIdentity?.token;
-      const data = await fetchComments(slug, sort, { token });
-      setComments(data);
-    } catch (err) {
-      console.warn('[PostComments] Load error:', err);
-      setComments([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [slug, sortOrder]);
+  const commentsRef = useRef<BlogComment[]>([]);
+  commentsRef.current = comments;
+  const lastFocusRefreshRef = useRef<number>(0);
+
+  // Fetch real comments with silent refresh capability ensuring zero UI flashing
+  const loadComments = useCallback(
+    async (sort = sortOrder, isSilent = false) => {
+      // Only set loading if initial load and no comments are currently rendered
+      if (!isSilent && commentsRef.current.length === 0) {
+        setLoading(true);
+      }
+      try {
+        const currentIdentity = readCommentIdentity();
+        const token = currentIdentity?.token;
+        const data = await fetchComments(slug, sort, { token });
+        setComments((prev) => {
+          // Compare if data changed to avoid needless DOM re-renders
+          if (prev.length === data.length) {
+            let changed = false;
+            for (let i = 0; i < prev.length; i++) {
+              if (
+                prev[i].id !== data[i].id ||
+                prev[i].updatedAt !== data[i].updatedAt ||
+                prev[i].likesCount !== data[i].likesCount ||
+                prev[i].message !== data[i].message ||
+                JSON.stringify(prev[i].reactions) !== JSON.stringify(data[i].reactions)
+              ) {
+                changed = true;
+                break;
+              }
+            }
+            if (!changed) return prev;
+          }
+          return data;
+        });
+      } catch (err) {
+        console.warn('[PostComments] Load error:', err);
+        // Only clear if initial load with no cached comments
+        if (commentsRef.current.length === 0) {
+          setComments([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [slug, sortOrder]
+  );
 
   useEffect(() => {
     setAccount(readCommentIdentity());
 
     const syncAccountState = () => {
       setAccount(readCommentIdentity());
-      void loadComments();
     };
 
     const handleAccountChange = (event: Event) => {
       const detail = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
       setAccount(detail);
-      void loadComments();
+      void loadComments(sortOrder, true);
+    };
+
+    const handleWindowFocus = () => {
+      syncAccountState();
+      const now = Date.now();
+      // Silently refresh on window focus only if more than 30s have elapsed, never flash loading
+      if (now - lastFocusRefreshRef.current > 30000) {
+        lastFocusRefreshRef.current = now;
+        void loadComments(sortOrder, true);
+      }
     };
 
     const handleOutsideClick = (e: MouseEvent) => {
@@ -804,7 +856,7 @@ export function PostComments({
 
     window.addEventListener('shijianus:comment-account-change', handleAccountChange);
     window.addEventListener('storage', syncAccountState);
-    window.addEventListener('focus', syncAccountState);
+    window.addEventListener('focus', handleWindowFocus);
     document.addEventListener('click', handleOutsideClick);
     window.addEventListener('shijianus:quote-post-text', handleQuotePostText);
     window.addEventListener('keydown', handleKeyDown);
@@ -812,16 +864,27 @@ export function PostComments({
     return () => {
       window.removeEventListener('shijianus:comment-account-change', handleAccountChange);
       window.removeEventListener('storage', syncAccountState);
-      window.removeEventListener('focus', syncAccountState);
+      window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('click', handleOutsideClick);
       window.removeEventListener('shijianus:quote-post-text', handleQuotePostText);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [title, loadComments]);
+  }, [title, loadComments, sortOrder]);
 
+  // Initial load
   useEffect(() => {
-    loadComments(sortOrder);
+    void loadComments(sortOrder, false);
   }, [loadComments, sortOrder, account?.token, account?.role]);
+
+  // Permanent resident silent auto-refresh: polls silently in background every 25s without blinking UI
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        void loadComments(sortOrder, true);
+      }
+    }, 25000);
+    return () => clearInterval(timer);
+  }, [loadComments, sortOrder]);
 
   const canManage = (comment: BlogComment) => {
     if (account?.role === 'admin') return true;
@@ -837,6 +900,7 @@ export function PostComments({
   const handleSortToggle = (newSort: 'hot' | 'new') => {
     if (newSort === sortOrder) return;
     setSortOrder(newSort);
+    void loadComments(newSort, true);
   };
 
   const toggleReplies = (rootId: string) => {
@@ -928,7 +992,7 @@ export function PostComments({
         setEditorTab('edit');
         showToast('评论已成功发布！', 'success');
 
-        await loadComments();
+        await loadComments(sortOrder, true);
       } else {
         showToast(res.error || '提交失败，请重试', 'error');
       }
@@ -980,7 +1044,7 @@ export function PostComments({
         setExpandedReplies((prev) => new Set(prev).add(rootCommentId));
         showToast(replyMode === 'boost' ? '🚀 Boost 回复已成功发表！' : '回复已成功发表！', 'success');
 
-        await loadComments();
+        await loadComments(sortOrder, true);
       } else {
         showToast(res.error || '回复失败', 'error');
       }
@@ -1012,7 +1076,7 @@ export function PostComments({
         setEditingCommentId(null);
         setEditingMessage('');
         showToast('评论修改成功！', 'success');
-        await loadComments();
+        await loadComments(sortOrder, true);
       } else {
         showToast(res.error || '修改失败', 'error');
       }
@@ -1043,7 +1107,7 @@ export function PostComments({
           return next;
         });
         showToast('内容已删除', 'success');
-        await loadComments();
+        await loadComments(sortOrder, true);
       } else {
         showToast(res.error || '删除失败', 'error');
       }
@@ -1814,7 +1878,7 @@ export function PostComments({
               </div>
             </div>
 
-            {loading ? (
+            {loading && comments.length === 0 ? (
               <div className="tk-comments-no">
                 <span>正在加载评论...</span>
               </div>

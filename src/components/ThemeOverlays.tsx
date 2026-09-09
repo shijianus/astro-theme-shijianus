@@ -41,6 +41,8 @@ import {
   Heart,
   PenTool,
   Plus,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import {
@@ -2520,12 +2522,74 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              {/* 偏好与隐私设置 */}
+              {/* 1. 站内通知接收偏好 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">站内通知接收偏好</h3>
+                  </div>
+                </div>
+
+                <div className="account-prefs-group">
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Megaphone className="h-4 w-4 text-theme-main" />
+                        <span>全站广播与新博文发布通告</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        开启后将在通知中心置顶呈现博主广播公告与最新文章发布动态。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.broadcastNotify}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ broadcastNotify: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <MessageSquare className="h-4 w-4 text-theme-main" />
+                        <span>个人评论回复与点赞提醒</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        当其他读者回复您的发言或给您的留言点赞时接收站内提醒。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.personalNotify}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ personalNotify: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* 2. 评论区互动与显示偏好 */}
               <section className="account-card">
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Sliders className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">偏好与隐私设置</h3>
+                    <h3 className="account-card__title">评论区互动与显示偏好</h3>
                   </div>
                 </div>
 
@@ -2594,6 +2658,94 @@ export function ThemeOverlays({
                               writeCommentIdentity({ ...current, showLocation: checked });
                             }
                           }
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+
+                  {/* 折叠二级回复 */}
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <ChevronDown className="h-4 w-4 text-theme-main" />
+                        <span>默认折叠嵌套回复</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        折叠多级嵌套回复（YouTube 手风琴风格），保持评论列表清爽。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.collapseReplies}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ collapseReplies: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. 交互反馈与无障碍 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">交互反馈与无障碍</h3>
+                  </div>
+                </div>
+
+                <div className="account-prefs-group">
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        {userPreferences.soundEffects ? <Volume2 className="h-4 w-4 text-theme-main" /> : <VolumeX className="h-4 w-4 text-secondtext" />}
+                        <span>交互声音反馈</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        发表评论、点赞与切换模式时的触觉与轻量音频提示。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={userPreferences.soundEffects}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          const next = writeUserPreferences({ soundEffects: val });
+                          setUserPreferences(next);
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
+
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <Sparkles className="h-4 w-4 text-theme-main" />
+                        <span>平滑动效与视差</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        开启全站优雅视差与平滑动效；关闭可减弱动效降低图形运算负载。
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={!userPreferences.reducedMotion}
+                        onChange={(e) => {
+                          const val = !e.target.checked;
+                          const next = writeUserPreferences({ reducedMotion: val });
+                          setUserPreferences(next);
                         }}
                       />
                       <div className="theme-switch-slider"></div>

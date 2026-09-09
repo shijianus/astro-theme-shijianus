@@ -427,7 +427,7 @@ const heroSummary = isUnlocked
 
     {commentsEnabled && (
       <PostComments
-        client:visible
+        client:idle
         slug={entry.id}
         title={publicFacingTitle}
         heading={siteConfig.post.comments.title}
