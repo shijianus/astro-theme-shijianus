@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 async function verifyLiveReadMode() {
   const liveUrls = [
     'https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/',
-    'https://f42f7552.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/'
+    'https://7b9fdab5.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/'
   ];
 
   let browser;

@@ -718,4 +718,5 @@
   3. 监听 `shijianus:readmode-changed` 与 `shijianus:asidechange` 事件，状态切换时即时重新校准高亮与几何坐标。
 - [x] Playwright 端到端全链路自动化审计 (`scripts/verify-readmode.mjs` & `scripts/verify-live-readmode.mjs`)：
   1. 本地全视口（1440x900、1280x800、375x667）端到端自动化测试全部 100% PASS；
-  2. 断言验证了 TOC 内部滚动翻页能力（`canScrollInternal: true`）、页面滚动全过程 sticky 稳定在 24px（800px、3000px、10000px、20000px 全程 `boxTop = 24px`）、点击章节平滑跳转、收紧侧栏全宽展开与再次展开目录无缝恢复。
+  2. 断言验证了 TOC 内部滚动翻页能力（`canScrollInternal: true`）、页面滚动全过程 sticky 稳定在 24px（800px、3000px、10000px、20000px 全程 `boxTop = 24px`）、点击章节平滑跳转、收紧侧栏全宽展开与再次展开目录无缝恢复；
+  3. 生产端真实环境（`https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/`）Playwright 端到端全链路验证全部 100% 通过（验证了文章正文孤立呈现、TOC 内部丝滑翻页 `scrollHeight: 3752 > clientHeight: 745`、页面深层滚动 `top = 24px` 稳定停留、侧栏收紧正文扩展至 1336px 及退出恢复）。
