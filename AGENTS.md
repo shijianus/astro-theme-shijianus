@@ -923,3 +923,10 @@
 - [x] **端到端测试套件全量审计通过**：
   1. 编写并运行专用测试脚本 `scripts/verify-i18n-streamline.mjs`，全量断言 6 大语系桌面端与移动端；
   2. 运行 `scripts/audit-i18n-full-visual.mjs` 与 `scripts/audit-i18n-mobile.mjs`，全 48 组组合全部 0 缺陷通过。
+- [x] **生产端 (Cloudflare Pages) 全量部署与真实链路验证通过**：
+  1. 通过 `npx wrangler pages deploy dist --project-name shijianus-blog --branch main` 全量同步上传最新编译资产与 Functions bundle 至生产边缘节点（部署标识：`65a32ca7.shijianus-blog.pages.dev`），实时绑定至线上主域名 `https://blog.epocanvas.com`；
+  2. 针对生产真实域名执行 Playwright E2E 自动化审计（`scripts/verify-prod-i18n-streamline.mjs`），实测捕获：
+     - 单单词分类（`Frontend`, `Systems`, `Product`, `Notes`）100% 线上生效；
+     - 粘性卡片标题标识（Latest posts, Categories）`justify-content: flex-start`、`textX: 24` 与中文 100% 像素级左对齐；
+     - 账号中心选项卡（Sign In, Notices, Preferences）图标 16.0px 保活 100% 线上生效；
+     - 翻转卡片 CTA 按钮（`Join Now →`、`Rejoindre →`、`Unirse →`、`Beitreten →`）全语言响应 100% 线上生效。
