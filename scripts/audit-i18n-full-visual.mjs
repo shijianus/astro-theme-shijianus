@@ -83,7 +83,7 @@ async function switchLocale(page, locale) {
 async function auditPage(page, url, locale, viewport, issues) {
   const label = `${locale}@${viewport.name}`;
   try {
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(url, { waitUntil: LIVE_FLAG ? 'load' : 'networkidle', timeout: LIVE_FLAG ? 45000 : 30000 });
     await page.waitForTimeout(800);
     await switchLocale(page, locale);
     await page.waitForTimeout(800);
