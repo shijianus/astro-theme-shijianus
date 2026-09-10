@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  readStoredLocaleVariant,
+  convertText,
+  type LocaleVariant,
+} from '../../lib/client-locale';
+import {
   HeartHandshake,
   CreditCard,
   ExternalLink,
@@ -101,6 +106,17 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const [toastType, setToastType] = useState<'success' | 'info'>('success');
   const [popoverPos, setPopoverPos] = useState<'up' | 'down'>('up');
   const [copied, setCopied] = useState(false);
+  const [locale, setLocale] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
+
+  useEffect(() => {
+    const onLocaleChange = (event: Event) => {
+      const custom = event as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
+      const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
+      if (next) setLocale(next);
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -149,14 +165,15 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   }, [isPinned, isOpen]);
 
   const showToast = (msg: string, type: 'success' | 'info' = 'success') => {
-    setToastMsg(msg);
+    const translated = convertText(msg, locale);
+    setToastMsg(translated);
     setToastType(type);
     setTimeout(() => setToastMsg(null), 2800);
   };
 
   const handlePayPalClick = (url: string, regionLabel: string) => {
     navigator.clipboard?.writeText(url).catch(() => {});
-    showToast(`正在打开 PayPal ${regionLabel}...`, 'info');
+    showToast(convertText(`正在打开 PayPal ${regionLabel}...`, locale), 'info');
     try { window.open(url, '_blank', 'noopener,noreferrer'); }
     catch (_) { window.location.href = url; }
   };
@@ -164,7 +181,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const handleUsdtClick = () => {
     navigator.clipboard?.writeText(arbitrumAddress).catch(() => {});
     setCopied(true);
-    showToast('已复制 USDT (Arbitrum) 钱包地址');
+    showToast(convertText('已复制 USDT (Arbitrum) 钱包地址', locale));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -172,14 +189,14 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
     setRegion(r);
     setIsManualOverride(true);
     setIsRegionDropdownOpen(false);
-    showToast(`已切换至 ${REGION_OPTIONS.find((o) => o.key === r)?.label}`, 'info');
+    showToast(convertText(`已切换至 ${REGION_OPTIONS.find((o) => o.key === r)?.label}`, locale), 'info');
   };
 
   const handleResetToAuto = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsManualOverride(false);
     setIsRegionDropdownOpen(false);
-    showToast('已恢复自动 IP 地区识别', 'info');
+    showToast(convertText('已恢复自动 IP 地区识别', locale), 'info');
   };
 
   const handleOpenStripeModal = () => {
@@ -279,9 +296,9 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
           </div>
           <div className="text-left min-w-0">
             <div className="text-xs sm:text-[13px] font-bold leading-tight tracking-[0.01em] flex items-center gap-1.5 whitespace-nowrap">
-              <span>Stripe 国际收银台</span>
+              <span>{convertText('Stripe 国际收银台', locale)}</span>
               <span className="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-white/10 group-hover:bg-white/20 text-[#635BFF] dark:text-violet-300 group-hover:text-white ring-1 ring-violet-200 dark:ring-white/15 group-hover:ring-white/25 text-[9px] font-semibold tracking-wider uppercase transition-colors">
-                推荐
+                {convertText('推荐', locale)}
               </span>
             </div>
             <div className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 group-hover:text-white/80 mt-0.5 leading-none transition-colors truncate">
@@ -319,11 +336,11 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
         }`}
         data-panel-trigger="reward"
         onClick={togglePinned}
-        title="赞赏支持作者"
+        title={convertText('赞赏支持作者', locale)}
         aria-expanded={isOpen || isPinned}
       >
         <HeartHandshake className="w-4 h-4 shrink-0" />
-        <span>{rewardLabel}</span>
+        <span>{convertText(rewardLabel, locale)}</span>
       </button>
 
       {/* Backdrop overlay when pinned */}
@@ -358,10 +375,10 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 </div>
                 <div>
                   <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                    赞赏支持作者
+                    {convertText('赞赏支持作者', locale)}
                   </div>
                   <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                    如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️
+                    {convertText('如果内容对你有帮助，欢迎请作者喝杯咖啡 ☕️', locale)}
                   </div>
                 </div>
               </div>
@@ -381,7 +398,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 {isRegionDropdownOpen && (
                   <div className="absolute right-0 top-full mt-1.5 w-52 rounded-2xl bg-white dark:bg-[#1a1d26] border border-slate-200 dark:border-white/12 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                     <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-white/8 mb-1">
-                      选择地区优选通道
+                      {convertText('选择地区优选通道', locale)}
                     </div>
                     {REGION_OPTIONS.map((item) => (
                       <button
@@ -412,7 +429,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                           onClick={handleResetToAuto}
                         >
                           <RefreshCw className="w-3 h-3" />
-                          <span>恢复自动 IP 识别</span>
+                          <span>{convertText('恢复自动 IP 识别', locale)}</span>
                         </button>
                       </div>
                     )}
@@ -445,7 +462,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                   </div>
                   <StripeButton />
                   <div className="text-center text-[10px] text-slate-400 dark:text-slate-500">
-                    手机端可长按或截图保存二维码扫码支持 ☕️
+                    {convertText('手机端可长按或截图保存二维码扫码支持 ☕️', locale)}
                   </div>
                 </div>
               )}
@@ -567,7 +584,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
             <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-white/8 bg-slate-50/60 dark:bg-[#0f1117]/60">
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                 <Globe className="w-3.5 h-3.5 text-blue-400" />
-                <span>{isManualOverride ? `已选 ${currentRegionMeta.label}` : currentRegionMeta.label}</span>
+                <span>{isManualOverride ? `${convertText('已选', locale)} ${convertText(currentRegionMeta.label, locale)}` : convertText(currentRegionMeta.label, locale)}</span>
               </div>
               <a
                 href="/status/"
@@ -576,7 +593,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors font-medium cursor-pointer"
               >
-                <span>赞赏记录</span>
+                <span>{convertText('赞赏记录', locale)}</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -592,7 +609,7 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
             : 'bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900'
         }`}>
           <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
-          <span>{toastMsg}</span>
+          <span>{toastMsg ? convertText(toastMsg, locale) : ''}</span>
         </div>
       )}
     </div>

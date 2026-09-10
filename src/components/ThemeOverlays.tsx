@@ -82,6 +82,7 @@ import {
   LOCALE_METADATA, 
   SUPPORTED_LOCALES,
   getI18nText,
+  convertText,
   type LocaleVariant 
 } from '../lib/client-locale';
 import { 
@@ -699,9 +700,11 @@ export function ThemeOverlays({
       .slice(0, 10);
   }, [userFeed.userComments, account, accountForm.name, accountForm.email]);
 
-  const emitActivity = (message: string) => {
+  const emitActivity = (message: string, overrideLocale?: LocaleVariant) => {
     if (!message.trim()) return;
-    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+    const targetLocale = overrideLocale || localeVariant;
+    const translated = convertText(message, targetLocale);
+    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: translated } }));
   };
 
   const cycleBackground = () => {
@@ -1351,7 +1354,7 @@ export function ThemeOverlays({
       return prev;
     });
     const meta = LOCALE_METADATA[applied];
-    emitActivity(`已切换为${meta ? meta.nativeName : applied}界面`);
+    emitActivity(`已切换为${meta ? meta.nativeName : applied}界面`, applied);
   };
 
   const accountAccessLabel = account ? '已登录' : '访客';
@@ -1430,13 +1433,13 @@ export function ThemeOverlays({
       {features.searchPanel && (
         <section id="local-search" className={`theme-search ${searchOpen ? 'show' : ''}`} aria-hidden={!searchOpen}>
           <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板" />
-          <div className="search-dialog" role="dialog" aria-modal="true" aria-label="站内搜索">
+          <div className="search-dialog" role="dialog" aria-modal="true" aria-label={t('search.title', '站内搜索')}>
             <div className="search-dialog__head">
               <div>
-                <p className="eyebrow">站内搜索</p>
-                <h2>{brandName} 内容索引</h2>
+                <p className="eyebrow">{t('search.title', '站内搜索')}</p>
+                <h2>{brandName} {t('search.index', '内容索引')}</h2>
               </div>
-              <button type="button" className="theme-icon-button theme-button--ghost" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板">
+              <button type="button" className="theme-icon-button theme-button--ghost" onClick={() => setSearchOpen(false)} aria-label={t('search.close', '关闭搜索面板')}>
                 <X className="overlay-icon" aria-hidden="true" />
               </button>
             </div>
@@ -1447,7 +1450,7 @@ export function ThemeOverlays({
                 ref={searchInputRef}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="搜索标题、摘要或分类"
+                placeholder={t('search.placeholder', '搜索标题、摘要或分类')}
               />
               <span>Ctrl K</span>
             </label>
@@ -1483,7 +1486,7 @@ export function ThemeOverlays({
                   </a>
                 ))
               ) : (
-                <p className="search-empty">没有找到匹配内容</p>
+                <p className="search-empty">{t('search.empty', '没有找到匹配内容')}</p>
               )}
             </div>
           </div>
@@ -1512,28 +1515,28 @@ export function ThemeOverlays({
             <X size={20} strokeWidth={3} />
           </button>
 
-          <div className="console-card-group" role="dialog" aria-modal="true" aria-label="快捷控制台">
+          <div className="console-card-group" role="dialog" aria-modal="true" aria-label={t('console.title', '快捷控制台')}>
             <div className="console-card-group-left">
               <section className="console-card console-profile">
-                <p className="author-content-item-tips">个人中心</p>
+                <p className="author-content-item-tips">{t('console.personal', '个人中心')}</p>
                 <h2 className="author-content-item-title">{authorName}</h2>
-                <p>始于极简，构筑坚实；内容为核，长期演进。</p>
+                <p>{convertText('始于极简，构筑坚实；内容为核，长期演进。', localeVariant)}</p>
                 <div className="console-stat-grid">
                   <span>
                     <strong>{stats.posts}</strong>
-                    <small>文章</small>
+                    <small>{t('console.stat.posts', '文章')}</small>
                   </span>
                   <span>
                     <strong>{stats.categories}</strong>
-                    <small>分类</small>
+                    <small>{t('console.stat.categories', '分类')}</small>
                   </span>
                   <span>
                     <strong>{stats.tags}</strong>
-                    <small>标签</small>
+                    <small>{t('console.stat.tags', '标签')}</small>
                   </span>
                   <span>
                     <strong>{stats.readingMinutes}m</strong>
-                    <small>阅读</small>
+                    <small>{t('console.stat.reading', '阅读')}</small>
                   </span>
                 </div>
               </section>
@@ -1541,8 +1544,8 @@ export function ThemeOverlays({
               <section className="console-card console-webinfo">
                 <div className="console-card__head">
                   <div>
-                    <p className="author-content-item-tips">运行状态</p>
-                    <h2 className="author-content-item-title">站点概览</h2>
+                    <p className="author-content-item-tips">{t('console.status', '运行状态')}</p>
+                    <h2 className="author-content-item-title">{t('console.overview', '站点概览')}</h2>
                   </div>
                   <div 
                     data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。"
@@ -1551,7 +1554,7 @@ export function ThemeOverlays({
                     <Info className="h-5 w-5 text-theme-main info-icon" />
                   </div>
                 </div>
-                <p className="webinfo-description">数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。</p>
+                <p className="webinfo-description">{convertText('数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。', localeVariant)}</p>
                 <div className="console-webinfo-grid">
                   {[
                     ...siteStats,
@@ -1605,8 +1608,8 @@ export function ThemeOverlays({
               <section className="console-card activity">
                 <div className="console-card__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <p className="author-content-item-tips">shijianus 活跃度</p>
-                    <h2 className="author-content-item-title">更新记录</h2>
+                    <p className="author-content-item-tips">shijianus {t('console.activity.tips', '活跃度')}</p>
+                    <h2 className="author-content-item-title">{t('console.activity.title', '更新记录')}</h2>
                   </div>
                   <div className="legend-group">
                     <span>Less</span>
@@ -1695,9 +1698,9 @@ export function ThemeOverlays({
                               </li>
                             ))}
                           </ul>
-                        ) : <span className="no-activity-text">当日无推送记录</span>}
+                        ) : <span className="no-activity-text">{t('console.activity.empty', '当日无推送记录')}</span>}
                       </div>
-                    ) : <span className="activity-hint-text">点击方块查看记录</span>}
+                    ) : <span className="activity-hint-text">{t('console.activity.hint', '点击方块查看记录')}</span>}
                   </div>
                 </div>
               </section>
@@ -1723,7 +1726,7 @@ export function ThemeOverlays({
                 setSearchOpen(true);
                 emitActivity('已打开站内搜索');
               }}
-              title="搜索内容"
+              title={t('console.btn.search', '搜索内容')}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1736,7 +1739,7 @@ export function ThemeOverlays({
                 cycleBackground();
                 emitActivity('已切换页面背景');
               }}
-              title="背景切换"
+              title={t('console.btn.bg', '背景切换')}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1749,7 +1752,7 @@ export function ThemeOverlays({
                 window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
                 emitActivity('已打开通知中心');
               }}
-              title="查看通知"
+              title={t('console.btn.notifications', '查看通知')}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1762,7 +1765,7 @@ export function ThemeOverlays({
                 const randomPost = posts[Math.floor(Math.random() * posts.length)];
                 if (randomPost) window.location.href = randomPost.href;
               }}
-              title="随便逛逛"
+              title={t('console.btn.random', '随便逛逛')}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1776,7 +1779,7 @@ export function ThemeOverlays({
                 setConsoleOpen(false);
                 emitActivity('已回到页面顶部');
               }}
-              title="回到顶部"
+              title={t('console.btn.top', '回到顶部')}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1948,7 +1951,7 @@ export function ThemeOverlays({
             <div className={`account-toast-notice account-toast-notice--${authStatusMessage.type}`}>
               {authStatusMessage.type === 'success' && <CheckCircle2 className="h-4 w-4 flex-shrink-0" />}
               {authStatusMessage.type === 'error' && <Info className="h-4 w-4 flex-shrink-0" />}
-              <span>{authStatusMessage.text}</span>
+              <span>{convertText(authStatusMessage.text, localeVariant)}</span>
             </div>
           )}
 
@@ -2769,24 +2772,24 @@ export function ThemeOverlays({
             onClick={() => setConsoleNoticeOpen(false)}
             aria-label="关闭控制台提示"
           />
-          <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label="控制台提示">
+          <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label={t('console.notice.title', '控制台提示')}>
             <div className="search-dialog__head">
               <div>
-                <p className="eyebrow">控制台</p>
-                <h2>控制台暂不可用</h2>
+                <p className="eyebrow">{t('console.eyebrow', '控制台')}</p>
+                <h2>{t('console.notice.unavailable', '控制台暂不可用')}</h2>
               </div>
               <button
                 type="button"
                 className="theme-icon-button theme-button--ghost"
                 onClick={() => setConsoleNoticeOpen(false)}
-                aria-label="关闭控制台提示"
+                aria-label={t('console.notice.close', '关闭控制台提示')}
               >
                 <X className="overlay-icon" aria-hidden="true" />
               </button>
             </div>
 
             <div className="console-notice-dialog__body">
-              <p>{consolePanel.disabledNotice}</p>
+              <p>{convertText(consolePanel.disabledNotice, localeVariant)}</p>
             </div>
           </div>
         </section>
@@ -2799,19 +2802,19 @@ export function ThemeOverlays({
             id="rightMenu"
             className={rightMenu.open ? 'show' : ''}
             style={{ left: rightMenu.x, top: rightMenu.y }}
-            aria-label="右键菜单"
+            aria-label={t('menu.title', '右键菜单')}
           >
             <div className="rightMenu-group rightMenu-small">
-              <button type="button" className="rightMenu-item" onClick={() => window.history.back()} title="后退">
+              <button type="button" className="rightMenu-item" onClick={() => window.history.back()} title={t('menu.back', '后退')}>
                 <ArrowLeft aria-hidden="true" />
               </button>
-              <button type="button" className="rightMenu-item" onClick={() => window.history.forward()} title="前进">
+              <button type="button" className="rightMenu-item" onClick={() => window.history.forward()} title={t('menu.forward', '前进')}>
                 <ArrowRight aria-hidden="true" />
               </button>
-              <button type="button" className="rightMenu-item" onClick={() => window.location.reload()} title="刷新">
+              <button type="button" className="rightMenu-item" onClick={() => window.location.reload()} title={t('menu.refresh', '刷新')}>
                 <RefreshCw aria-hidden="true" />
               </button>
-              <button type="button" className="rightMenu-item" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="顶部">
+              <button type="button" className="rightMenu-item" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title={t('menu.top', '顶部')}>
                 <ArrowUp aria-hidden="true" />
               </button>
             </div>
@@ -2833,10 +2836,10 @@ export function ThemeOverlays({
                     );
                     emitActivity('已将选中文本引用至评论区');
                   }}
-                  title="将选中文本引用至评论区"
+                  title={t('menu.quote', '将选中文本引用至评论区')}
                 >
                   <Quote aria-hidden="true" />
-                  <span>引用至评论区</span>
+                  <span>{t('menu.quote', '引用至评论区')}</span>
                 </button>
               )}
               <button
@@ -2847,7 +2850,7 @@ export function ThemeOverlays({
                 }}
               >
                 <Copy aria-hidden="true" />
-                <span>复制选中文本</span>
+                <span>{t('menu.copyText', '复制选中文本')}</span>
               </button>
               <button
                 type="button"
@@ -2857,7 +2860,7 @@ export function ThemeOverlays({
                 }}
               >
                 <Clipboard aria-hidden="true" />
-                <span>复制地址</span>
+                <span>{t('menu.copyUrl', '复制地址')}</span>
               </button>
               <button
                 type="button"
@@ -2868,11 +2871,11 @@ export function ThemeOverlays({
                 }}
               >
                 <Search aria-hidden="true" />
-                <span>站内搜索</span>
+                <span>{t('menu.search', '站内搜索')}</span>
               </button>
               <button type="button" className="rightMenu-item" onClick={toggleTheme}>
                 {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
-                <span>{theme === 'dark' ? '浅色模式' : '深色模式'}</span>
+                <span>{theme === 'dark' ? t('menu.lightMode', '浅色模式') : t('menu.darkMode', '深色模式')}</span>
               </button>
             </div>
 

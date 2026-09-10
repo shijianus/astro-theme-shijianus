@@ -838,3 +838,27 @@
   1. 全面贯穿 6 种语言（`en`, `fr`, `es`, `de`, `zh-Hant`, `zh-CN`）；
   2. 验证所有指定 UI 组件，正文内容 100% 保持不可变，移动端（390x844）零横向滚动溢出，全部断言 PASS！
 
+### Task 39: 全站提示弹窗、交互模态框、通知横条与右键菜单全景 i18n 补完与零中文残留审计 (`7bd788c`)
+- [x] 15 组插入扩展居中模态框 (`.tk-tool-modal`) 全量 6 国语言国际化 (`src/lib/comments-i18n.ts` & `src/components/theme/PostComments.tsx`):
+  1. 覆盖数据表格 (Table)、文章目录 (TOC)、Mermaid 图表、Chart 图表、Graphviz 图形、折叠面板 (Details)、剧透模糊 (Spoiler)、数学公式 (Math)、长文本横向滚动 (Scroll)、日期时间 (Datetime)、论述范本 (Template)、脚注 (Footnote)、包装高光卡片 (Callout)、建立投票 (Poll) 与图片上传/图床 (Image)；
+  2. 模态框标题、语法规则横幅标题与正文说明、表单字段标签、输入框占位符、单选/多选 radio 选项、类型选择胶囊、以及确认/取消按钮（`tk-modal-btn-confirm` / `tk-modal-btn-cancel`）全部 100% 本地化；
+  3. 图片上传模态框：三大标签页（本地上传 / 📋 剪贴板粘贴与拖拽指南 / 🔗 外部图片直链）、拖拽区（Dropzone）指示与限制说明、上传中动效、预览状态卡片及 3 项图文指南卡片全部完成多语种精准映射。
+- [x] 评论区 40+ 项 Toast 提示与操作确认弹窗全景国际化：
+  1. 文件类型错误、超出 10MB、网络中继失败、上传成功等状态 Toast；
+  2. 15 类组件插入成功确认 Toast；
+  3. 空评论拦截、回复内容校验、访客点赞/表情修改拦截、删除确认（`window.confirm`）与就地编辑反馈等全量接入 6 国语系。
+- [x] 顶部主导航通知横条 (`#global-activity-bar` / `showActivity` in `src/layouts/BlogLayout.astro`) 国际化强化：
+  1. 接入 `convertText` 运行时自动翻译，支持多态参数传入与动态正则匹配；
+  2. 操作按钮（知道了）按语种自动呈现：`Dismiss` (en) / `Compris` (fr) / `Entendido` (es) / `Verstanden` (de) / `知道了` (zh-CN & zh-Hant)；
+  3. 页面复制事件自动国际化反馈（“已复制当前内容到剪贴板”）。
+- [x] 控制台、快捷托盘与右键菜单 (`src/components/ThemeDock.tsx` & `src/components/ThemeOverlays.tsx`) 全景本地化：
+  1. 站内搜索对话框（`.search-dialog`）占位符、无匹配提示、分类检索均完成多语言本地化；
+  2. 控制台提示对话框（`.console-notice-dialog`）、快捷控制台卡片组（`.console-card-group`）提示文案国际化；
+  3. 右键菜单（`#rightMenu`）全量菜单项（复制选中文本、复制地址、站内搜索、暗黑模式、随机文章、进入归档、博客分类、工坊、关于作者等）6 种语言 100% 适配；
+  4. 赞赏扩展栏（`PostRewardExtension.tsx`）提示与反馈文本全量国际化。
+- [x] 编写并执行全覆盖自动化端到端测试套件 (`scripts/verify-all-user-i18n.mjs`)：
+  1. 自动化遍历全部测试语系（`en`, `fr`, `es`, `de`, `zh-Hant`）；
+  2. 深度审计搜索弹窗占位符、高级 Markdown 选项下拉菜单、表格插入模态框（标题、规则标题、规则正文、确认/取消按钮）、图片上传模态框（3 个 Tab、拖拽区、指南卡片）、顶部通知横条关闭按钮、以及右键菜单每一项文案；
+  3. 实测零残留中文报错，全部语种断言 100% PASS 通过！
+
+

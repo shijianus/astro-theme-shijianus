@@ -11,6 +11,7 @@ import {
   normaliseLocaleVariant,
   getLocaleBadge,
   LOCALE_METADATA,
+  convertText,
   type LocaleVariant 
 } from '../lib/client-locale';
 import { ensureUserPersona } from '../lib/user-persona';
@@ -183,9 +184,11 @@ export function ThemeDock(_props: ThemeDockProps) {
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
 
-  const emitActivity = (message: string) => {
+  const emitActivity = (message: string, overrideLocale?: LocaleVariant) => {
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message } }));
+      const activeLocale = overrideLocale || locale;
+      const translated = convertText(message, activeLocale);
+      window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: translated } }));
     }
   };
 
@@ -372,7 +375,7 @@ export function ThemeDock(_props: ThemeDockProps) {
     const next = toggleLocaleVariant(locale);
     setLocale(next);
     const meta = LOCALE_METADATA[next];
-    emitActivity(`已切换语言：${meta ? meta.nativeName : next}`);
+    emitActivity(`已切换语言：${meta ? meta.nativeName : next}`, next);
   };
 
   const handleToggleTocDepth = () => {

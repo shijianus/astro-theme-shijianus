@@ -187,7 +187,8 @@ const paypalUkMeUrl =
       (() => {
         try {
           const savedVariant = window.localStorage.getItem('shijianus-locale-variant');
-          const localeVariant = savedVariant === 'zh-Hant' || savedVariant === 'en' ? savedVariant : 'zh-CN';
+          const valid = ['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'];
+          const localeVariant = valid.includes(savedVariant) ? savedVariant : 'zh-CN';
           document.documentElement.dataset.localeVariant = localeVariant;
           document.documentElement.lang = localeVariant;
         } catch {
@@ -323,7 +324,7 @@ const paypalUkMeUrl =
       role="status"
     >
       <p id="global-activity-message"></p>
-      <button type="button" class="action" id="global-activity-action" style="display: none;">知道了</button>
+      <button type="button" class="action" id="global-activity-action" style="display: none;"></button>
     </div>
 
     <script
@@ -384,6 +385,9 @@ const paypalUkMeUrl =
             }
             if (typeof actionText === 'string') {
               actionLabel = actionText;
+            } else if (actionText === true || showActionFunction === true) {
+              actionLabel = '';
+              onAction = onAction || (() => {});
             } else if (typeof customDuration === 'string' && typeof showActionFunction !== 'number') {
               actionLabel = customDuration;
             }
@@ -404,13 +408,36 @@ const paypalUkMeUrl =
           document.documentElement.style.setProperty('--anzhiyu-snackbar-time', `${duration}ms`);
           document.documentElement.style.setProperty('--site-snackbar-time', `${duration}ms`);
 
+          const getDismissLabel = () => {
+            if (typeof window !== 'undefined' && typeof window.__shijianus_t === 'function') {
+              return window.__shijianus_t('common.dismiss', '知道了');
+            }
+            const variant = document.documentElement.dataset.localeVariant || 'zh-CN';
+            switch (variant) {
+              case 'en': return 'Dismiss';
+              case 'fr': return 'Compris';
+              case 'es': return 'Entendido';
+              case 'de': return 'Verstanden';
+              default: return '知道了';
+            }
+          };
+
+          let displayMsg = cleanMsg;
+          if (typeof window !== 'undefined' && typeof window.__shijianus_convertText === 'function') {
+            displayMsg = window.__shijianus_convertText(cleanMsg);
+          }
+
           if (text) {
-            text.textContent = cleanMsg;
+            text.textContent = displayMsg;
           }
 
           if (actionBtn) {
             if (actionLabel || onAction) {
-              actionBtn.textContent = actionLabel || '知道了';
+              let displayAction = actionLabel;
+              if (displayAction && typeof window.__shijianus_convertText === 'function') {
+                displayAction = window.__shijianus_convertText(displayAction);
+              }
+              actionBtn.textContent = displayAction || getDismissLabel();
               actionBtn.style.display = 'inline-flex';
               actionBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -479,8 +506,17 @@ const paypalUkMeUrl =
         });
 
         document.addEventListener('copy', () => {
-          if (Date.now() - lastTime < 500 && lastMsg.includes('复制')) return;
-          showActivity('已复制当前内容到剪贴板');
+          if (Date.now() - lastTime < 500 && (lastMsg.includes('复制') || lastMsg.toLowerCase().includes('copi'))) return;
+          const copyMsg = typeof window.__shijianus_convertText === 'function'
+            ? window.__shijianus_convertText('已复制当前内容到剪贴板')
+            : '已复制当前内容到剪贴板';
+          showActivity(copyMsg);
+        });
+
+        window.addEventListener('shijianus:localechange', () => {
+          if (actionBtn && actionBtn.style.display !== 'none') {
+            actionBtn.textContent = getDismissLabel();
+          }
         });
       })();
     </script>
