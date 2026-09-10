@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
+const IS_LIVE = process.argv.includes('--live');
 const PORT = 4333;
-const BASE_URL = `http://localhost:${PORT}/posts/content-formats-and-markup-mastery/`;
+const BASE_URL = IS_LIVE ? 'https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/' : `http://localhost:${PORT}/posts/content-formats-and-markup-mastery/`;
 const OUTPUT_DIR = './scratch/i18n-inspection-after';
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -51,10 +52,15 @@ const VIEWPORTS = [
 const LOCALES = ['zh-CN', 'en', 'de', 'es', 'fr', 'zh-Hant'];
 
 async function runAudit() {
-  console.log('🚀 Starting Comprehensive Mobile i18n & Latin Layout Audit...');
-  const distDir = path.resolve('./dist');
-  const server = await createStaticServer(distDir, PORT);
-  console.log(`✅ Static server running on port ${PORT}`);
+  console.log(`🚀 Starting Comprehensive Mobile i18n & Latin Layout Audit (${IS_LIVE ? 'PROD LIVE' : 'LOCAL'})`);
+  let server = null;
+  if (!IS_LIVE) {
+    const distDir = path.resolve('./dist');
+    server = await createStaticServer(distDir, PORT);
+    console.log(`✅ Static server running on port ${PORT}`);
+  } else {
+    console.log(`🌐 Auditing Live Production: ${BASE_URL}`);
+  }
 
   const browser = await chromium.launch({
     headless: true,
