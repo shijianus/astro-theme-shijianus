@@ -861,4 +861,24 @@
   2. 深度审计搜索弹窗占位符、高级 Markdown 选项下拉菜单、表格插入模态框（标题、规则标题、规则正文、确认/取消按钮）、图片上传模态框（3 个 Tab、拖拽区、指南卡片）、顶部通知横条关闭按钮、以及右键菜单每一项文案；
   3. 实测零残留中文报错，全部语种断言 100% PASS 通过！
 
+### Task 40: 移动端 (Mobile) i18n 拉丁文组件异化消除、弹性字号微调与全模态框对齐审计 (`e2dae30`)
+- [x] 公开评论标题与排序栏 (`.tk-comments-count` & `.tk-sort-group`) 异化消除：
+  1. 根除多行换行与高度畸变：原在拉丁文（德语/西语/法语）下移动端宽度不足导致标题从 29px 被撑至 60px 双行错位；
+  2. 运用 `clamp(11.5px, 3.2vw, 13px)` 弹性字号与 `white-space: nowrap`，配合 `.tk-sort-btn` 的 `clamp(10px, 2.6vw, 11px)`，在 iPhone 12 (390px) 与 iPhone SE (375px) 全语种保持 100% 单行对齐，垂直错位归零。
+- [x] 居中模态框标签页 (`.tk-modal-tabs-bar` & `.tk-modal-tab-btn`) 等高与布局重构：
+  1. 彻底消除德语等长文本导致的高差畸变：原德语文案长达 39 字符被挤成 4~5 行垂直条，高差达 104px 并将底部挤出视口；
+  2. 启用弹性等高约束（`align-items: stretch; width: 100%`）与 `flex: 1 1 0; min-width: 0; flex-direction: column; text-align: center`；
+  3. 在 `src/lib/comments-i18n.ts` 中针对超长文案进行本地化精简（如 `📋 Einfügen & Drag-Drop`、`⚡ Boost (≤16)`、`Einzelauswahl`、`Guest (Sign in)` 等），高差从 104px 彻底降至 **0.0px**。
+- [x] 模态框移动端通用容器与响应式约束 (`@media (max-width: 640px)`):
+  1. 约束 `.tk-tool-modal` 最大宽度 `calc(100vw - 20px)`、最大高度 `calc(100dvh - 30px)` 与内部 `overflow-y: auto`；
+  2. 底部操作按钮等宽弹性排布（`flex: 1 1 0`），杜绝按钮折行挤压；
+  3. 涵盖所有 15 组模态框（投票 Poll、表格 Table、图片 Image、公式 Math 等），视口底部溢出彻底消除（`overflowBottom = false`）。
+- [x] 顶部主导航栏与下拉菜单多语种弹性适配：
+  1. 针对非中文语言微调 `#page-header #nav` padding（`0 16px !important`）与 `.site-page`（`12.5px`），杜绝长文本横向溢出。
+- [x] 编写并执行全覆盖移动端端到端自动化测试套件（`scripts/audit-i18n-mobile.mjs` & `scripts/verify-all-modals-mobile.mjs`）：
+  1. 覆盖 iPhone 12/13/14 (390x844) 与 iPhone SE (375x667) 两种视口；
+  2. 覆盖全部 6 种语系（`zh-CN`, `en`, `de`, `es`, `fr`, `zh-Hant`）；
+  3. 实测数据：`tabsHeightDiff = 0.0px`，`tabsWrapped = false`，`titleMultiLine = false`，`overflowBottom = false`，`pageOverflow = false`，全部 12 组组合 100% 通过！
+
+
 
