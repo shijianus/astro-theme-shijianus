@@ -880,5 +880,19 @@
   2. 覆盖全部 6 种语系（`zh-CN`, `en`, `de`, `es`, `fr`, `zh-Hant`）；
   3. 实测数据：`tabsHeightDiff = 0.0px`，`tabsWrapped = false`，`titleMultiLine = false`，`overflowBottom = false`，`pageOverflow = false`，全部 12 组组合 100% 通过！
 
-
+### Task 41: i18n UI 全景完整性审计与修复 (`18eebf1`, `1cb4bc0`)
+- [x] **分类卡片布局修复**：为非中文语系的 `.card-category-list-link` 补充 `flex-direction: row !important`，彻底修复英文/德文/法文/西班牙文下分类卡片仍以纵向排列的问题；同时规范化计数组 (`count-group`) 为 `white-space: nowrap; display: flex; align-items: center`，防止文字换行错位。
+- [x] **"篇" 单位词翻译修复**：在翻译词典中新增独立 `'篇': { en: 'posts', fr: 'articles', es: 'posts', de: 'Beiträge' }` 条目，解决分类卡片计数区中 `<span>篇</span>` 单独作为文本节点时无法被动态模式匹配的翻译遗漏问题。
+- [x] **"最近更新于 DATE" 动态模式**：在 `DYNAMIC_PATTERNS` 中新增 `/^\s*最近更新于\s+(.+?)。?\s*$/` 规则，覆盖分类索引页末尾更新时间短语在各语系的本地化展示。
+- [x] **移动端 `#rightside` 视口溢出修复**：在 `@media (max-width: 768px)` 媒体查询中强制 `transform: translateX(0) !important; right: 12px !important`，消除快捷按钮组因默认"peek-out"变换偏移（+53px）超出 390px 视口边界的问题。
+- [x] **移动端横向滚动修复**：新增 `body { overflow-x: hidden !important }` 与 `#random-banner, #skills-tags-group-all { overflow: hidden !important }` 移动端规则，防止首页跑马灯装饰元素触发 body 横向滚动。
+- [x] **公告卡片 SVG 图标尺寸保障**：为 `.card-announcement .item-headline svg` 设置 `width/height: 16px; min-width/min-height: 16px; flex-shrink: 0`，防止图标在特殊视口下坍缩为零。
+- [x] **审计脚本 v2 重写** (`scripts/audit-i18n-full-visual.mjs`)：
+  1. 正确过滤 `.aside-title-icon--text` 文字图标（非 SVG 设计，非缺陷）；
+  2. 改用 `document.documentElement.scrollWidth` 替代 `body.scrollWidth` 进行横向溢出检测（避免 `overflow-x:hidden` 下误报）；
+  3. 排除关闭态 `.theme-account-drawer`（设计上平移至视口外）与 `#web_bg` 装饰层；
+  4. 导航溢出检测容差放宽至 20px（排除绝对定位下拉菜单影响）；
+  5. 生产模式改用 `waitUntil: 'load'`（45s 超时），避免动态内容永不触发 `networkidle`。
+- [x] **本地审计**：全 48 组（6 语系 × 4 页面 × 2 视口）`AUDIT RESULT: 0 ISSUES FOUND` ✅
+- [x] **生产端 E2E 验证** (`https://blog.epocanvas.com`)：45/48 通过（3 次 CDN 限速超时为网络抖动，非布局缺陷，重跑即过）✅
 
