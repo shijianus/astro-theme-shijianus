@@ -1170,6 +1170,10 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '切换目录层级 (全部 / 1级 / 2级 / 3级)': { en: 'Toggle TOC levels (All / L1 / L2 / L3)', fr: 'Changer le niveau du sommaire (Tous / N1 / N2 / N3)', es: 'Alternar niveles de índice (Todos / N1 / N2 / N3)', de: 'Inhaltsverzeichnisebenen umschalten (Alle / E1 / E2 / E3)' },
   '切换目录层级': { en: 'Toggle TOC levels', fr: 'Changer de niveau', es: 'Alternar niveles', de: 'Ebenen umschalten' },
 
+  // Unit suffixes (standalone — used as separate text nodes in count groups, e.g. category cards)
+  '篇': { en: 'posts', fr: 'articles', es: 'posts', de: 'Beiträge' },
+  '最近更新于': { en: 'Last updated', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Zuletzt aktualisiert' },
+
   // Post Hero Meta Labels
   '发表于': { en: 'Published on', fr: 'Publié le', es: 'Publicado el', de: 'Veröffentlicht am' },
   '更新于': { en: 'Updated on', fr: 'Mis à jour le', es: 'Actualizado el', de: 'Aktualisiert am' },
@@ -1776,6 +1780,18 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
       fr: (m) => `Débuté le ${m[1]}`,
       es: (m) => `Iniciado el ${m[1]}`,
       de: (m) => `Gegründet am ${m[1]}`,
+    },
+  },
+  {
+    // Matches " 最近更新于 2024/12/20。" (categories page last-updated phrase)
+    pattern: /^\s*最近更新于\s+(.+?)。?\s*$/i,
+    replace: {
+      'zh-CN': (m) => ` 最近更新于 ${m[1]}。`,
+      'zh-Hant': (m) => ` 最近更新於 ${m[1]}。`,
+      en: (m) => ` Last updated ${m[1]}.`,
+      fr: (m) => ` Dernière mise à jour ${m[1]}.`,
+      es: (m) => ` Última actualización ${m[1]}.`,
+      de: (m) => ` Zuletzt aktualisiert ${m[1]}.`,
     },
   },
 ];

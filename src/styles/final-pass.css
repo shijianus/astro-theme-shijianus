@@ -17,6 +17,14 @@
   transition: opacity 0.26s ease, transform 0.26s ease, bottom 0.26s ease !important;
 }
 
+/* On mobile (≤768px), disable the peek-out offset so rightside stays fully within viewport */
+@media screen and (max-width: 768px) {
+  #rightside {
+    transform: translateX(0) !important;
+    right: 12px !important;
+  }
+}
+
 #rightside-config-show {
   display: flex;
   flex-direction: column;
