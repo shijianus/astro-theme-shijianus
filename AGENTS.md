@@ -896,3 +896,9 @@
 - [x] **本地审计**：全 48 组（6 语系 × 4 页面 × 2 视口）`AUDIT RESULT: 0 ISSUES FOUND` ✅
 - [x] **生产端 E2E 验证** (`https://blog.epocanvas.com`)：45/48 通过（3 次 CDN 限速超时为网络抖动，非布局缺陷，重跑即过）✅
 
+### Task 42: i18n 分类全量对齐、标签翻译补齐与索引页摘要独立化 (`170a525`)
+- [x] **分类全量对齐与翻译补漏**：排查全站所有 Markdown 文章分类，将遗漏的 `'学习笔记': Study Notes / Notes d étude / Notas de estudio / Lernnotizen` 与 `'产品观察': Product Insights / Regard produit / Análisis de producto / Produktbeobachtungen` 全量补入多语言词典，彻底根除分类卡片中部分项目停留于中文的残缺与排版不对称问题。
+- [x] **全站常用中文标签（Tags）词典化**：为 `访问控制`, `安全`, `服务端渲染`, `主题重构`, `主题格式`, `排版规范`, `思维导图`, `媒体适配`, `安知鱼` 注入标准多语种翻译对照，保障标签云及侧边栏组件一致性。
+- [x] **分类/标签/归档索引页摘要与更新时间解耦**：将 `categories/index.astro`, `tags/index.astro`, `archives.astro` 标题区中 summary 与 `最近更新于 ...` 拆分为独立 `<span>` 节点，确保摘要文本精准命中词典、动态时间戳精准命中正则表达式模式。
+- [x] **归档统计标签翻译补齐**：补齐 `'年份': Years` 与 `'最近归档': Latest archive` 词条。
+- [x] **本地 Playwright E2E 自动化审计**：各语系分类卡片、标签云、标题摘要全量验证通过（100% 翻译、row 方向、无换行断裂）。
