@@ -902,3 +902,24 @@
 - [x] **分类/标签/归档索引页摘要与更新时间解耦**：将 `categories/index.astro`, `tags/index.astro`, `archives.astro` 标题区中 summary 与 `最近更新于 ...` 拆分为独立 `<span>` 节点，确保摘要文本精准命中词典、动态时间戳精准命中正则表达式模式。
 - [x] **归档统计标签翻译补齐**：补齐 `'年份': Years` 与 `'最近归档': Latest archive` 词条。
 - [x] **本地 Playwright E2E 自动化审计**：各语系分类卡片、标签云、标题摘要全量验证通过（100% 翻译、row 方向、无换行断裂）。
+
+### Task 43: i18n 跨语言 UI 画风一致性同步重构 (选项卡与分类单单词意译、粘性卡片标题左对齐与翻转卡片 CTA 本地化)
+- [x] **AccountCenter 选项卡 (`account-nav-tab`) 意译精简与图标保活**：
+  1. 彻底解决拉丁文直译过长（如 `Preferences & Architecture` 26字符）导致卡片空间挤压、图标坍塌为 0px 的严重缺陷；
+  2. 采用精炼意译方案：英文简化为 `Sign In`、`Notices`、`Preferences`；法文 `Connexion`、`Alertes`、`Préférences`；西文 `Acceso`、`Avisos`、`Preferencias`；德文 `Anmelden`、`Hinweise`、`Einstellungen`；
+  3. CSS 全量保活：为 `.account-nav-tab svg` 配置 `flex-shrink: 0 !important; width: 16px !important; height: 16px !important;`，并为文字节点配置溢出省略，确保所有语种在桌面端与移动端（390px/360px）图标 100% 保持 16px。
+- [x] **侧边栏分类卡片 (`card-categories` & `card-category-list-link`) 单单词意译**：
+  1. 根除分类名称直译过长（英文/德文长达 200px+）导致与中文排版严重脱节、折行错位问题；
+  2. 将 4 大核心分类统一意译为单个优雅单单词：`前端工程` -> `Frontend`；`系统设计` -> `Systems`；`产品观察` -> `Product`；`学习笔记` -> `Notes`；
+  3. 单单词宽度恒定在 100~132px 之间，与中文（125px）实现 1:1 视觉等宽与整齐网格对齐；
+  4. 补齐 `LEGACY_SYNONYMS` 反向词典，确保旧词条反向映射 100% 兼容。
+- [x] **侧边栏粘性卡片 (`aside-sticky-box`) 标题标识强制同步中文左对齐**：
+  1. 排查并根除 `rebuild.css` 中 `html:not([lang^="zh"]) .card-widget .item-headline` 的 `justify-content: space-between !important;` 历史遗留问题；
+  2. 修复后强制为 `justify-content: flex-start !important; text-align: left !important; gap: 6px !important;`，彻底消除非中文下最新发布（Latest posts）与分类（Categories）标题文字漂移至卡片最右侧的严重缺陷，与中文左对齐效果 100% 保持一致。
+- [x] **推广翻转卡片 (`id="flip-content"`) 背面“立即加入”及社群文案 i18n 补充**：
+  1. 将 `PromoWidgetCard.astro` 中硬编码的 `立即加入 &rarr;` 升级为结构化 `<span class="promo-cta-text">立即加入</span> <span class="promo-cta-arrow">&rarr;</span>`；
+  2. 在多语言词典中补齐 `'立即加入'`（Join Now / Rejoindre / Unirse / Beitreten）、`'无缝安全交流'`、`'加入 Telegram'` 等 13 项配套推广文案；
+  3. 翻转卡片正面与背面实时响应全局语言切换。
+- [x] **端到端测试套件全量审计通过**：
+  1. 编写并运行专用测试脚本 `scripts/verify-i18n-streamline.mjs`，全量断言 6 大语系桌面端与移动端；
+  2. 运行 `scripts/audit-i18n-full-visual.mjs` 与 `scripts/audit-i18n-mobile.mjs`，全 48 组组合全部 0 缺陷通过。

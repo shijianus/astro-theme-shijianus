@@ -16866,9 +16866,15 @@ html:not([lang^="zh"]) body[data-type='post'] #pagination .next-info {
 
 /* 5. Account Drawer Layout & Segmented Tabs */
 html:not([lang^="zh"]) .account-nav-tab {
-  font-size: 0.75rem !important;
-  padding: 0 4px !important;
-  gap: 4px !important;
+  font-size: 0.8rem !important;
+  padding: 0 6px !important;
+  gap: 5px !important;
+}
+
+html:not([lang^="zh"]) .account-nav-tab svg {
+  flex-shrink: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
 html:not([lang^="zh"]) .account-tab-badge {
@@ -16891,11 +16897,15 @@ html:not([lang^="zh"]) .epomail-benefit-item {
 }
 
 /* 6. Sidebar Widgets Breathing Room */
-html:not([lang^="zh"]) .card-widget .item-headline {
+html:not([lang^="zh"]) .card-widget:not(#card-toc) .item-headline,
+html:not([lang^="zh"]) .aside-sticky-box .item-headline:not(#card-toc .item-headline),
+html:not([lang^="zh"]) .card-recent-post .item-headline,
+html:not([lang^="zh"]) .card-categories .item-headline {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: flex-start !important;
   gap: 6px !important;
+  text-align: left !important;
 }
 
 html:not([lang^="zh"]) .card-category-list-link {
