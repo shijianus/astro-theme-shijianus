@@ -903,7 +903,7 @@
 - [x] **归档统计标签翻译补齐**：补齐 `'年份': Years` 与 `'最近归档': Latest archive` 词条。
 - [x] **本地 Playwright E2E 自动化审计**：各语系分类卡片、标签云、标题摘要全量验证通过（100% 翻译、row 方向、无换行断裂）。
 
-### Task 43: i18n 跨语言 UI 画风一致性同步重构 (选项卡与分类单单词意译、粘性卡片标题左对齐与翻转卡片 CTA 本地化)
+### Task 43: i18n 跨语言 UI 画风一致性同步重构 (选项卡与分类单单词意译、粘性卡片标题左对齐与翻转卡片 CTA 本地化) (`b9ea1bb`)
 - [x] **AccountCenter 选项卡 (`account-nav-tab`) 意译精简与图标保活**：
   1. 彻底解决拉丁文直译过长（如 `Preferences & Architecture` 26字符）导致卡片空间挤压、图标坍塌为 0px 的严重缺陷；
   2. 采用精炼意译方案：英文简化为 `Sign In`、`Notices`、`Preferences`；法文 `Connexion`、`Alertes`、`Préférences`；西文 `Acceso`、`Avisos`、`Preferencias`；德文 `Anmelden`、`Hinweise`、`Einstellungen`；
