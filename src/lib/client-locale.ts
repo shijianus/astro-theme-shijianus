@@ -1241,6 +1241,42 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
   '系统设计': { en: 'System Design', fr: 'Architecture système', es: 'Diseño de sistemas', de: 'Systemdesign' },
   '前端工程': { en: 'Frontend Engineering', fr: 'Ingénierie Frontend', es: 'Ingeniería Frontend', de: 'Frontend-Engineering' },
+  '学习笔记': { en: 'Study Notes', fr: 'Notes d étude', es: 'Notas de estudio', de: 'Lernnotizen' },
+  '产品观察': { en: 'Product Insights', fr: 'Regard produit', es: 'Análisis de producto', de: 'Produktbeobachtungen' },
+
+  // Taxonomy Tags
+  '访问控制': { en: 'Access Control', fr: 'Contrôle d accès', es: 'Control de acceso', de: 'Zugriffskontrolle' },
+  '安全': { en: 'Security', fr: 'Sécurité', es: 'Seguridad', de: 'Sicherheit' },
+  '服务端渲染': { en: 'SSR', fr: 'SSR', es: 'SSR', de: 'SSR' },
+  '主题重构': { en: 'Theme Refactor', fr: 'Refonte du thème', es: 'Refactorización del tema', de: 'Theme-Refactoring' },
+  '主题格式': { en: 'Theme Formats', fr: 'Formats du thème', es: 'Formatos del tema', de: 'Theme-Formate' },
+  '排版规范': { en: 'Typography Specs', fr: 'Normes typographiques', es: 'Normas tipográficas', de: 'Typografische Richtlinien' },
+  '思维导图': { en: 'Mindmap', fr: 'Carte mentale', es: 'Mapa mental', de: 'Mindmap' },
+  '媒体适配': { en: 'Media Adaptation', fr: 'Adaptation média', es: 'Adaptación de medios', de: 'Medienanpassung' },
+  '安知鱼': { en: 'Anzhiyu', fr: 'Anzhiyu', es: 'Anzhiyu', de: 'Anzhiyu' },
+
+  // Taxonomy Summaries & Stats
+  '把长期主题拆成稳定入口，方便从具体兴趣点快速进入文章流。': {
+    en: 'Organize long-term themes into stable entry points for focused exploration.',
+    fr: 'Organisez les thèmes récurrents pour explorer les articles par centre d intérêt.',
+    es: 'Organiza temas recurrentes para explorar artículos según tus intereses.',
+    de: 'Laufende Themen in Einstiegspunkte bündeln für zielgerichtetes Lesen.'
+  },
+  '用更细的关键词把相邻主题串起来，减少信息孤岛。': {
+    en: 'Connect related topics with precise keywords to avoid information silos.',
+    fr: 'Reliez les thèmes connexes avec des mots-clés précis.',
+    es: 'Conecta temas relacionados mediante palabras clave precisas.',
+    de: 'Verwandte Themen mit präzisen Schlagwörtern vernetzen.'
+  },
+  '把所有文章按年份连续展开，保留明确时间顺序、封面信息和最短阅读路径。': {
+    en: 'Display all articles chronologically by year with covers and clear reading paths.',
+    fr: 'Affichez tous les articles par année avec couvertures et lecture directe.',
+    es: 'Muestra todos los artículos por año con portadas y lectura directa.',
+    de: 'Alle Artikel chronologisch nach Jahr mit Titelbildern anzeigen.'
+  },
+  '年份': { en: 'Years', fr: 'Années', es: 'Años', de: 'Jahre' },
+  '最近归档': { en: 'Latest archive', fr: 'Archive récente', es: 'Archivo reciente', de: 'Letztes Archiv' },
+
   '关于本站': { en: 'About Site', fr: 'À propos du site', es: 'Acerca del sitio', de: 'Über die Website' },
   '前往友链': { en: 'Visit Friends', fr: 'Voir les amis', es: 'Visitar amigos', de: 'Zu den Freunden' },
   '文章总览': { en: 'Archive Overview', fr: 'Vue d ensemble', es: 'Visión general', de: 'Gesamtübersicht' },

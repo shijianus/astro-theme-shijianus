@@ -22,8 +22,8 @@ const latestEntry = posts[0];
         <div class="taxonomy-index-card__title">
           <h1>{siteConfig.pages.tags.title}</h1>
           <p>
-            {siteConfig.pages.tags.summary}
-            {latestEntry && ` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}
+            <span>{siteConfig.pages.tags.summary}</span>
+            {latestEntry && <span>{` 最近更新于 ${latestEntry.data.pubDate.toLocaleDateString('zh-CN')}。`}</span>}
           </p>
         </div>
         <div class="taxonomy-index-card__meta" aria-label="标签页统计">
