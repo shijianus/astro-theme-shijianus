@@ -5,7 +5,7 @@ pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["example", "showcase", "code", "shiki"]
-category: "Examples"
+category: "示例"
 series: "功能示例"
 math: false
 mermaid: false

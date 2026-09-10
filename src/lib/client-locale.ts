@@ -1000,7 +1000,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '切换语言': { en: 'Switch language', fr: 'Changer de langue', es: 'Cambiar idioma', de: 'Sprache wechseln' },
 
   // Table of contents & Post details
-  '文章目录': { en: 'Table of contents', fr: 'Sommaire', es: 'Índice', de: 'Inhaltsverzeichnis' },
+  '文章目录': { en: 'CONTENTS', fr: 'SOMMAIRE', es: 'ÍNDICE', de: 'INHALT' },
   '当前定位': { en: 'Current section', fr: 'Section actuelle', es: 'Sección actual', de: 'Aktueller Abschnitt' },
   '全部': { en: 'All', fr: 'Tout', es: 'Todos', de: 'Alle' },
   '最新发布': { en: 'Latest posts', fr: 'Derniers articles', es: 'Últimas publicaciones', de: 'Neueste Beiträge' },
@@ -1243,6 +1243,21 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '前端工程': { en: 'Frontend', fr: 'Frontend', es: 'Frontend', de: 'Frontend' },
   '学习笔记': { en: 'Notes', fr: 'Notes', es: 'Notas', de: 'Notizen' },
   '产品观察': { en: 'Product', fr: 'Produit', es: 'Producto', de: 'Produkt' },
+  '示例': { en: 'Examples', fr: 'Exemples', es: 'Ejemplos', de: 'Beispiele' },
+  '范例': { en: 'Example', fr: 'Exemple', es: 'Ejemplo', de: 'Beispiel' },
+
+  // Callout and Alert Titles
+  '注意': { en: 'Note', fr: 'Note', es: 'Nota', de: 'Hinweis' },
+  '重点': { en: 'Important', fr: 'Important', es: 'Importante', de: 'Wichtig' },
+  '警告': { en: 'Warning', fr: 'Avertissement', es: 'Advertencia', de: 'Warnung' },
+  '危险': { en: 'Caution', fr: 'Attention', es: 'Precaución', de: 'Vorsicht' },
+  '致命': { en: 'Danger', fr: 'Danger', es: 'Peligro', de: 'Gefahr' },
+  '成功': { en: 'Success', fr: 'Succès', es: 'Éxito', de: 'Erfolg' },
+  '疑问': { en: 'Question', fr: 'Question', es: 'Pregunta', de: 'Frage' },
+  '引用': { en: 'Quote', fr: 'Citation', es: 'Cita', de: 'Zitat' },
+  '信息': { en: 'Info', fr: 'Info', es: 'Info', de: 'Info' },
+  '待办': { en: 'Todo', fr: 'À faire', es: 'Por hacer', de: 'Zu erledigen' },
+  '缺陷': { en: 'Bug', fr: 'Bogue', es: 'Error', de: 'Fehler' },
 
   // Taxonomy Tags
   '访问控制': { en: 'Access Control', fr: 'Contrôle d accès', es: 'Control de acceso', de: 'Zugriffskontrolle' },
@@ -1656,7 +1671,7 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
     },
   },
   {
-    pattern: /^(\d+(?:\.\d+)?k?)\s*节$/i,
+    pattern: /^(\d+(?:\.\d+)?k?)\s*(?:节|sessions?|sections?)$/i,
     replace: {
       'zh-CN': (m) => `${m[1]} 节`,
       'zh-Hant': (m) => `${m[1]} 節`,
@@ -1883,6 +1898,21 @@ const LEGACY_SYNONYMS: Record<string, string> = {
   'Regard produit': '产品观察',
   'Análisis de producto': '产品观察',
   'Produktbeobachtungen': '产品观察',
+  'Table of contents': '文章目录',
+  'CONTENTS': '文章目录',
+  'SOMMAIRE': '文章目录',
+  'ÍNDICE': '文章目录',
+  'INHALT': '文章目录',
+  'Sommaire': '文章目录',
+  'Inhaltsverzeichnis': '文章目录',
+  'Examples': '示例',
+  'Exemples': '示例',
+  'Ejemplos': '示例',
+  'Beispiele': '示例',
+  'Example': '示例',
+  'Exemple': '示例',
+  'Ejemplo': '示例',
+  'Beispiel': '示例',
 };
 for (const [foreign, zh] of Object.entries(LEGACY_SYNONYMS)) {
   allForeignToZhMap.set(foreign, zh);

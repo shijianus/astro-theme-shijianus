@@ -173,15 +173,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 <ListTree className="aside-title-icon" aria-hidden="true" />
                 <span>文章目录</span>
                 <span class="toc-count">{tocHeadings.length} 节</span>
-                <button
-                  type="button"
-                  class="toc-depth-btn"
-                  id="toc-depth-btn"
-                  title="切换目录层级 (全部 / 1级 / 2级 / 3级)"
-                  aria-label="切换目录层级"
-                >
-                  <span class="toc-depth-btn__text">全部</span>
-                </button>
                 <span class="toc-percentage"></span>
               </div>
               <div class="toc-progress" aria-hidden="true">
@@ -623,7 +614,26 @@ const renderTocNodes = (nodes: TocNode[]) =>
     display: none !important;
   }
 
-  #card-toc .item-headline,
+  #card-toc .item-headline {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    gap: 6px !important;
+    line-height: 1 !important;
+  }
+  #card-toc .item-headline span,
+  #card-toc .item-headline .toc-count,
+  #card-toc .item-headline .toc-percentage {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  #card-toc .item-headline .toc-percentage {
+    margin-left: auto !important;
+  }
   #card-toc .toc-content {
     margin: 0 !important;
     padding: 0 !important;
@@ -672,43 +682,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
   
   #card-toc .toc-text {
     display: inline !important;
-  }
-
-  .toc-depth-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: 6px;
-    padding: 1px 7px;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.4;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--font-color) 16%, transparent);
-    background: color-mix(in srgb, var(--font-color) 4%, transparent);
-    color: var(--font-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
-  }
-
-  .toc-depth-btn:hover {
-    color: var(--theme-main, #425aef);
-    border-color: var(--theme-main, #425aef);
-    background: color-mix(in srgb, var(--theme-main, #425aef) 10%, transparent);
-  }
-
-  :root[data-theme='dark'] .toc-depth-btn {
-    border-color: rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.06);
-    color: #e5e7eb;
-  }
-
-  :root[data-theme='dark'] .toc-depth-btn:hover {
-    color: #6ba1ff;
-    border-color: #6ba1ff;
-    background: rgba(107, 161, 255, 0.16);
   }
 
   /* Depth filtering rules */
@@ -863,22 +836,27 @@ const renderTocNodes = (nodes: TocNode[]) =>
     font-size: 14px !important;
   }
   .card-categories .card-category-list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: space-between !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     list-style: none !important;
   }
   .card-categories .card-category-list-item {
     width: 100% !important;
-    flex: 0 0 calc(50% - 4px) !important;
+    min-width: 0 !important;
+    flex: none !important;
     box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   .card-categories .card-category-list-link {
     display: flex !important;
     flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
     gap: 4px !important;
     padding: 8px 10px !important;
     border: var(--style-border-always) !important;
@@ -1083,16 +1061,9 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
   function initTocDepthFilter() {
     const cardToc = document.getElementById('card-toc');
-    const depthBtn = document.getElementById('toc-depth-btn');
     if (!cardToc) return;
 
     const depthLevels = ['all', '1', '2', '3'];
-    const depthLabels: Record<string, string> = {
-      'all': '全部',
-      '1': '1级',
-      '2': '至2级',
-      '3': '至3级',
-    };
 
     const savedDepth = localStorage.getItem('shijianus-toc-depth-filter') || 'all';
     applyDepth(savedDepth);
@@ -1106,26 +1077,19 @@ const renderTocNodes = (nodes: TocNode[]) =>
       localStorage.setItem('shijianus-toc-depth-filter', nextDepth);
     };
 
-    if (depthBtn) {
-      depthBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+    window.addEventListener('shijianus:toggle-toc-depth', (e) => {
+      const targetDepth = (e as CustomEvent)?.detail;
+      if (targetDepth && depthLevels.includes(targetDepth)) {
+        applyDepth(targetDepth);
+        localStorage.setItem('shijianus-toc-depth-filter', targetDepth);
+      } else {
         cycleDepth();
-      });
-    }
-
-    window.addEventListener('shijianus:toggle-toc-depth', () => {
-      cycleDepth();
+      }
     });
 
     function applyDepth(depth: string) {
       if (!depthLevels.includes(depth)) depth = 'all';
       cardToc.setAttribute('data-depth-filter', depth);
-      if (depthBtn) {
-        const labelEl = depthBtn.querySelector('.toc-depth-btn__text');
-        if (labelEl) {
-          labelEl.textContent = depthLabels[depth] || '全部';
-        }
-      }
       window.dispatchEvent(new CustomEvent('shijianus:toc-depth-changed', { detail: depth }));
     }
   }

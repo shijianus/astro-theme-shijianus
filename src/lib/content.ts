@@ -37,7 +37,11 @@ export function sortPostsByDate(posts: PostEntry[]) {
 }
 
 export function resolveCategory(entry: PostEntry) {
-  return entry.data.category ?? entry.data.space ?? 'uncategorized';
+  const cat = entry.data.category ?? entry.data.space ?? 'uncategorized';
+  if (cat.toLowerCase() === 'examples' || cat.toLowerCase() === 'example') {
+    return '示例';
+  }
+  return cat;
 }
 
 export function resolveGroup(entry: PostEntry) {

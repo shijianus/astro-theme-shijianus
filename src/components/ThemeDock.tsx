@@ -398,7 +398,8 @@ export function ThemeDock(_props: ThemeDockProps) {
     const nextIndex = (currentIndex + 1) % depthLevels.length;
     const nextDepth = depthLevels[nextIndex]!;
     setTocDepth(nextDepth);
-    window.dispatchEvent(new CustomEvent('shijianus:toggle-toc-depth'));
+    localStorage.setItem('shijianus-toc-depth-filter', nextDepth);
+    window.dispatchEvent(new CustomEvent('shijianus:toggle-toc-depth', { detail: nextDepth }));
     emitActivity(`已切换目录深度：${depthLabels[nextDepth] || '全部层级'}`);
   };
 

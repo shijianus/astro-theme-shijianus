@@ -11,10 +11,19 @@ export async function getStaticPaths() {
   const posts = getPublicPosts(await getCollection('posts'));
   const categories = collectCategories(posts);
 
-  return categories.map((item) => ({
+  const paths = categories.map((item) => ({
     params: { slug: item.slug },
     props: { categoryLabel: item.label },
   }));
+
+  if (!paths.some((p) => p.params.slug === 'examples')) {
+    paths.push({
+      params: { slug: 'examples' },
+      props: { categoryLabel: '示例' },
+    });
+  }
+
+  return paths;
 }
 
 const { categoryLabel } = Astro.props;
