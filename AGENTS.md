@@ -930,3 +930,31 @@
      - 粘性卡片标题标识（Latest posts, Categories）`justify-content: flex-start`、`textX: 24` 与中文 100% 像素级左对齐；
      - 账号中心选项卡（Sign In, Notices, Preferences）图标 16.0px 保活 100% 线上生效；
      - 翻转卡片 CTA 按钮（`Join Now →`、`Rejoindre →`、`Unirse →`、`Beitreten →`）全语言响应 100% 线上生效。
+
+### Task 44: TOC 目录层级按钮收拢、CONTENTS 极简单行排版、分类卡片网格排版修正与 Examples 全站中文本地化 (`685150e`, `e6b4137`)
+- [x] **目录层级切换收拢至快捷控制栏 (`id="mobile-toc-button"`)**：
+  1. 彻底删除 `#card-toc .item-headline` 中多余冗余的 `class="toc-depth-btn"` 按钮及相关局部样式；
+  2. 统一收拢至右侧边浮动栏 `id="mobile-toc-button"`，桌面端点击无缝循环切换目录展示层级（`all` / `1` / `2` / `3`）并持久化至 `localStorage`，移动端呼出移动端目录抽屉；
+  3. 通过 `shijianus:toggle-toc-depth` 与 `shijianus:toc-depth-changed` 自定义事件实现全局数据流双向同步。
+- [x] **"文章目录" 翻译精简为 "CONTENTS" 与严格单行保障**：
+  1. 将拉丁语系直译（`Table of contents`、`Inhaltsverzeichnis` 17~18字符）重构为契合设计美学的单单词大写眉标：英文 `CONTENTS`、法文 `SOMMAIRE`、西文 `ÍNDICE`、德文 `INHALT`；
+  2. 修复 `item-headline` flex 容器因 `overflow: hidden` 与 `line-height: 1` 导致的自身高度塌陷为 5.8px 垂直截断文字缺陷：显式配置 `min-height: 28px !important; line-height: 1.4 !important; overflow: visible !important; white-space: nowrap !important; flex-wrap: nowrap !important;`；
+  3. 保障章节数量（如 `35 sections` / `70 sessions`）与阅读进度百分比（`0%`）全部在单一行内完整展现，绝对不留两行换行。
+- [x] **分类卡片 (`class="card-widget card-categories"`) 双列网格顺序修正**：
+  1. 深度定位根因：原本使用 Flexbox 布局且 flex item 未声明 `min-width: 0`，英文环境下 `Examples 11 posts` 最小内容宽度达 128.75px，超过半宽阈值（125px），将第二项 `Frontend` 挤压至下一行，导致示例后方右侧形成难看的空白坑洞；
+  2. 全面重构为严格 CSS Grid：`display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important;`，所有子项统一锁定 125px 等宽；
+  3. 彻底根除空白孔洞，英文模式下第一行完美由 `Examples` 与 `Frontend` 并排占满，顺序严格按照文章数量降序流式排列。
+- [x] **全站 `Examples` 分类中文本地化与双向多语种词典打通**：
+  1. 将 11 篇 Markdown 文章中硬编码的 `category: "Examples"` 全量规范重命名为 `category: "示例"`；
+  2. 在 `src/lib/content.ts` 的 `resolveCategory` 中加入归一化兜底（自动将 `examples`/`example` 映射为 `示例`）；
+  3. 在 `src/lib/client-locale.ts` 中注册 `示例`: `{ en: 'Examples', fr: 'Exemples', es: 'Ejemplos', de: 'Beispiele' }` 及 `LEGACY_SYNONYMS` 双向反查映射；
+  4. 告示框（Callouts/Alerts）中文标题彻底清理英文括号残留（如 `注意 (Note)` -> `注意`，`示例 (Example)` -> `示例`），确保中文版全量纯中文、非中文版全量纯外文。
+- [x] **自动化端到端测试与生产真实环境 E2E 验证全量通过**：
+  1. 编写并执行专用 Playwright 测试套件（`scripts/verify-toc-categories.mjs` 与 `scripts/verify-live-toc-categories.mjs`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com` 进行全景测试，实测断言：
+     - `#toc-depth-btn` 生产 DOM 数量为 0；
+     - `#mobile-toc-button` 桌面端点击实时循环切层级（`all` -> `1`）；
+     - 中文版目录标题 `文章目录 35 节 0%` 与英文版 `CONTENTS 35 sections 0%` 高度严格为 28px 单行，无任何截断或折行；
+     - 分类卡片中文展示 `示例 11 篇`（零英文泄漏），英文展示 `Examples 11 posts`；
+     - 英文分类卡片第一行无孔洞，第 0 项与第 1 项 `top` 绝对对齐；
+     - 生产环境真实端到端测试全部 100% PASS 通过，附带高清视觉截图存档。
