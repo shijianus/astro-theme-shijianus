@@ -1079,7 +1079,7 @@
   - 生产边缘节点自动部署至版本：`https://72bb63fb.shijianus-blog.pages.dev`（绑定至生产域名 `https://blog.epocanvas.com`）；
   - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在 `72bb63fb.shijianus-blog.pages.dev` 与主域 `blog.epocanvas.com` 完成账号抽屉、排序折叠防溢出、头像规范及线上真实评论点击弹出 `.author-profile-popover` 的全链路验收，测试通过率 100%。
 
-### Task 50: 作者名片浮层 (Author Profile Popover) 彻底对标 LinuxDo 规范与真实数据联调
+### Task 50: 作者名片浮层 (Author Profile Popover) 彻底对标 LinuxDo 规范与真实数据联调 (`251489e`)
 - [x] **卡片形态与尺寸（彻底改为横向长条形 Landscape Card）**：
   - 尺寸规格：固定为宽版横向长条（宽度 480px，`max-width: calc(100vw - 32px)`，高度紧凑约 200px），彻底消除原有的竖直方块；
   - 基础布局：标准左右结构（左侧 80px 大圆形头像 + 绝对定位微型皇冠角标；右侧主体内容区自然流式排布）；
