@@ -7314,10 +7314,19 @@ body[data-type='post'] #card-toc .toc-content {
 }
 
 .aside-title-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--theme-main);
-  stroke-width: 2.35;
+  stroke-width: 2.25;
+  flex: 0 0 auto;
+}
+
+.card-categories .aside-title-icon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  flex: 0 0 auto !important;
 }
 
 /* shadcn-style icon buttons use lucide SVGs consistently across navigation and post tools. */
@@ -17337,10 +17346,10 @@ html:not([lang^="zh"]) .tk-reply-boost-badge {
 /* Announcement card SVG icon — ensure minimum visible size on all viewports */
 .card-announcement .item-headline .aside-title-icon,
 .card-announcement .item-headline svg {
-  width: 16px !important;
-  height: 16px !important;
-  min-width: 16px !important;
-  min-height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
   flex-shrink: 0 !important;
   display: inline-block !important;
 }

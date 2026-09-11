@@ -1,5 +1,5 @@
 ---
-import { Archive, Compass, FolderOpen, Info, ListTree, Megaphone, Tags } from 'lucide-react';
+import { Archive, Compass, FolderOpen, History, Info, ListTree, Megaphone, Tags } from 'lucide-react';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import {
@@ -194,7 +194,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
           <div class="aside-sticky-box" id="aside-sticky-box-recent">
             <section class="card-widget card-recent-post" id="card-recent-post">
               <div class="item-headline">
-                <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+                <History className="aside-title-icon" aria-hidden="true" />
                 <span>最新发布</span>
               </div>
               <div class="aside-list">
@@ -374,7 +374,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 {isHomePage && featurePanelRecentPosts.length > 0 && (
                   <div class="feature-panel-recent">
                     <div class="item-headline item-headline--embedded">
-                      <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+                      <History className="aside-title-icon" aria-hidden="true" />
                       <span>最新发布</span>
                     </div>
                     <div class="aside-list">
@@ -480,7 +480,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
         {showRecentPosts && (
           <section class="card-widget card-recent-post">
             <div class="item-headline">
-              <span class="aside-title-icon aside-title-icon--text" aria-hidden="true">N</span>
+              <History className="aside-title-icon" aria-hidden="true" />
               <span>最新发布</span>
             </div>
             <div class="aside-list">
@@ -836,6 +836,16 @@ const renderTocNodes = (nodes: TocNode[]) =>
   .card-categories .item-headline {
     margin: 0 0 10px 0 !important;
     font-size: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .card-categories .aside-title-icon {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    flex: 0 0 auto !important;
   }
   .card-categories .card-category-list {
     display: grid !important;

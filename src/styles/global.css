@@ -2263,8 +2263,8 @@ html.theme-ready body.theme-body #footer {
 }
 
 .aside-title-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--theme-main);
   flex: 0 0 auto;
 }

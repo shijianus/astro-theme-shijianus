@@ -5487,6 +5487,10 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .item
 
 body[data-type='post'] #aside-content #post-sticky-layout #card-categories .aside-title-icon {
   flex: 0 0 auto !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
 }
 
 @media screen and (max-width: 1199px) {

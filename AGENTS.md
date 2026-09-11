@@ -958,3 +958,17 @@
      - 分类卡片中文展示 `示例 11 篇`（零英文泄漏），英文展示 `Examples 11 posts`；
      - 英文分类卡片第一行无孔洞，第 0 项与第 1 项 `top` 绝对对齐；
      - 生产环境真实端到端测试全部 100% PASS 通过，附带高清视觉截图存档。
+
+### Task 45: 最新发布 (Recent Posts) 图标矢量化一致性重构与分类 (Categories) 图标视觉比重优化 (`240472d`)
+- [x] **"最新发布" 标题图标矢量化重构**：
+  1. 彻底清除原本在 `src/components/theme/Sidebar.astro` 中硬编码的文本字符 `<span class="aside-title-icon aside-title-icon--text">N</span>`（全站 3 处使用点：文章页次级侧栏、首页特性面板、通用侧栏兜底）；
+  2. 统一替换为规范的 Lucide SVG 矢量图标 `<History className="aside-title-icon" aria-hidden="true" />`，完美对齐安知鱼原生原型 `anzhiyu-icon-history` 语义与设计规范；
+  3. 与 "文章目录" (`ListTree`)、"分类" (`FolderOpen`)、"公告" (`Megaphone`)、"标签" (`Tags`)、"归档" (`Archive`)、"网站资讯" (`Info`) 实现 100% 的 DOM 结构一致性、描边粗细一致性（2.25px）与主题色变色一致性。
+- [x] **"分类" 卡片图标尺寸与全局标题图标视觉比重视觉平衡**：
+  1. 根因定位：`FolderOpen` 属于扁平横向图标（视口内几何有效高度仅 14px），在原 16px 约束下实际像素高度不足 9.3px，在 14~16px 粗体中文标题旁显得异常单薄微小；
+  2. 最小优化原则精准调优：将全局 `.aside-title-icon` 基础尺寸统一微调至 18px，并在 `Sidebar.astro`、`rebuild.css` 和 `final-pass.css` 中为 `.card-categories .aside-title-icon` 配置精准的 `20px` 视觉补偿；
+  3. 彻底消除分类图标过小问题，使横向文件夹图标与圆环形/方形图标在视觉感知重量（Optical Visual Weight）上达成完美的 1:1 几何平衡。
+- [x] **全场景 Playwright 自动化测试套件与视觉审计通过**：
+  1. 编写专用测试脚本 `scripts/verify-aside-icons.mjs`，全量验证文章页与首页下 "最新发布"、"分类"、"文章目录"、"公告" 图标的 SVG 标签形态、尺寸（18px / 20px）及浅色与深色模式（Dark Mode）；
+  2. 执行 `scripts/verify-toc-categories.mjs` 与 `scripts/verify-i18n-streamline.mjs` 回归测试，多语言及目录排版 100% PASS 通过；
+  3. 全量部署至 Cloudflare Pages 生产端并执行真实线上验证。
