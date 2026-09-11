@@ -42,6 +42,7 @@ import {
   Heart,
   Volume2,
   VolumeX,
+  Award,
 } from 'lucide-react';
 import type { SiteBroadcastData } from '../lib/broadcast';
 import { siteConfig } from '../config/site';
@@ -98,8 +99,13 @@ import {
   recordReadingActivity,
   recordDailyVisit,
   getLocalizedTitle,
+  getNextLevelRequirements,
+  evaluateUserBadges,
+  readEquippedBadges,
+  writeEquippedBadges,
   type UserStats,
   type UserLevelInfo,
+  type CommunityBadge,
 } from '../lib/user-level';
 
 const TIMEZONE_LABELS: Record<LocaleVariant, Record<string, string>> = {
@@ -320,6 +326,41 @@ export function ThemeOverlays({
   const userLevel = useMemo(() => {
     return computeUserLevel(userStats, account?.role, account?.email);
   }, [userStats, account?.role, account?.email]);
+
+  const [equippedBadgeIds, setEquippedBadgeIds] = useState<string[]>(() => readEquippedBadges());
+
+  const nextLevelPlan = useMemo(() => {
+    return getNextLevelRequirements(userStats, account?.role, account?.email);
+  }, [userStats, account?.role, account?.email]);
+
+  const unlockedBadges = useMemo(() => {
+    return evaluateUserBadges(userStats, {
+      email: account?.email,
+      role: account?.role,
+      bio: accountForm.bio || account?.bio,
+      avatarUrl: accountForm.avatar || account?.avatar,
+      isWebmaster: userLevel.isWebmaster,
+    });
+  }, [userStats, account?.email, account?.role, accountForm.bio, account?.bio, accountForm.avatar, account?.avatar, userLevel.isWebmaster]);
+
+  const handleToggleBadge = (badgeId: string) => {
+    let nextIds: string[];
+    if (equippedBadgeIds.includes(badgeId)) {
+      nextIds = equippedBadgeIds.filter((id) => id !== badgeId);
+    } else {
+      if (equippedBadgeIds.length >= 4) {
+        setAuthStatusMessage({
+          type: 'info',
+          text: '最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。',
+        });
+        return;
+      }
+      nextIds = [...equippedBadgeIds, badgeId];
+    }
+    setEquippedBadgeIds(nextIds);
+    writeEquippedBadges(nextIds);
+    emitActivity('更新了名片佩戴称号');
+  };
 
   const updateCloseBtnPosition = useCallback(() => {
     const trigger = document.querySelector('.shijianus-dashboard-icon');
@@ -916,8 +957,14 @@ export function ThemeOverlays({
     syncAccount();
     window.addEventListener('shijianus:comment-account-change', onAccountChange as EventListener);
     window.addEventListener('shijianus:comment-account-required', onAccountRequired);
+    const onBadgesChange = (event: Event) => {
+      const detail = (event as CustomEvent<string[]>).detail ?? readEquippedBadges();
+      setEquippedBadgeIds(detail);
+    };
+
     window.addEventListener('shijianus:comment-thread-change', onThreadChange);
     window.addEventListener('shijianus:preferences-change', onPrefsChange as EventListener);
+    window.addEventListener('shijianus:equipped-badges-change', onBadgesChange as EventListener);
     window.addEventListener('storage', onStorage);
 
     return () => {
@@ -925,6 +972,7 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:comment-account-required', onAccountRequired);
       window.removeEventListener('shijianus:comment-thread-change', onThreadChange);
       window.removeEventListener('shijianus:preferences-change', onPrefsChange as EventListener);
+      window.removeEventListener('shijianus:equipped-badges-change', onBadgesChange as EventListener);
       window.removeEventListener('storage', onStorage);
     };
   }, [accountPanel.loginHint]);
@@ -2214,64 +2262,86 @@ export function ThemeOverlays({
               {/* 社区等级与信任管理卡片 */}
               <section className="account-card account-card--level">
                 <div className="account-card__head">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Sparkles className="h-5 w-5 text-theme-main" />
                     <h3 className="account-card__title">{t('level.title', '社区等级与信任制度')}</h3>
+                    <strong className="account-level-name font-bold text-sm text-theme-main">{userLevel.badge}</strong>
+                    <span className="account-level-trust-pill">TL.{userLevel.trustLevel}</span>
+                    {userLevel.isWebmaster && (
+                      <span className="account-level-webmaster-pill" title="全站唯一方形头像">
+                        👑 {t('level.webmasterBadge', '站长专属方形头像')}
+                      </span>
+                    )}
                   </div>
                   <span className={`account-level-badge account-level-badge--${userLevel.levelCode}`}>
-                    {userLevel.badge}
+                    {nextLevelPlan.isMaxAutoLevel ? 'LV.3 上限达成' : `下一级: ${nextLevelPlan.nextTitle}`}
                   </span>
                 </div>
 
                 <div className="account-level-dashboard">
-                  <div className="account-level-primary-row">
-                    <div className="account-level-info">
-                      <div className="account-level-title-row">
-                        <strong className="account-level-name">{userLevel.badge}</strong>
-                        <span className="account-level-trust-pill">
-                          {t('level.trustLevel', '信任等级')}: TL.{userLevel.trustLevel}
-                        </span>
-                        {userLevel.isWebmaster && (
-                          <span className="account-level-webmaster-pill" title="全站唯一方形头像">
-                            👑 {t('level.webmasterBadge', '站长专属方形头像')}
+                  {/* 下一级晋升需求对比进度条组 */}
+                  <div className="account-level-requirements-list">
+                    {nextLevelPlan.items.map((req) => (
+                      <div key={req.id} className="account-level-progress-wrap">
+                        <div className="account-level-progress-header">
+                          <span className="account-level-progress-title">
+                            <span className="account-level-progress-icon">{req.icon}</span>
+                            <span className="account-level-progress-name">{req.label}</span>
                           </span>
-                        )}
+                          <span className="account-level-progress-values">
+                            <strong className="account-level-current-val">{req.current}</strong>
+                            <span className="account-level-separator"> / </span>
+                            <span className="account-level-target-val">{req.target} {req.unit}</span>
+                            {req.isMet ? (
+                              <span className="account-level-status is-met">✓ 已满足</span>
+                            ) : (
+                              <span className="account-level-status is-unmet">{req.progressPercent}%</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="account-level-progress-bar">
+                          <div
+                            className={`account-level-progress-fill ${req.isMet ? 'is-met' : ''}`}
+                            style={{ width: `${req.progressPercent}%` }}
+                          />
+                        </div>
                       </div>
-                      <p className="account-level-hint">{userLevel.nextRequirementHint}</p>
-                    </div>
+                    ))}
                   </div>
 
-                  {/* 等级成长进度条 */}
-                  <div className="account-level-progress-wrap">
-                    <div className="account-level-progress-bar">
-                      <div
-                        className="account-level-progress-fill"
-                        style={{ width: `${userLevel.progressPercent}%` }}
-                      />
+                  {/* 称号说明与个性佩戴管理 */}
+                  <div className="account-badges-section">
+                    <div className="account-badges-header">
+                      <div className="flex items-center gap-1.5">
+                        <Award className="h-4 w-4 text-theme-main" />
+                        <h4 className="account-badges-title">已解锁称号与名片佩戴</h4>
+                      </div>
+                      <span className="account-badges-counter">
+                        已佩戴 <strong>{equippedBadgeIds.length}</strong> / 4
+                      </span>
                     </div>
-                    <div className="account-level-progress-meta">
-                      <span>{t('level.nextLevel', '下一等级')}: {userLevel.nextLevelTitle || '已达最高荣誉'}</span>
-                      <span>{userLevel.progressPercent}%</span>
-                    </div>
-                  </div>
-
-                  {/* 4 项关键数据网格 */}
-                  <div className="account-level-stats-grid">
-                    <div className="account-level-stat-item">
-                      <span className="account-level-stat-label">📖 {t('level.readingTime', '阅读时长')}</span>
-                      <strong className="account-level-stat-val">{Math.round(userStats.readingMinutes)} min</strong>
-                    </div>
-                    <div className="account-level-stat-item">
-                      <span className="account-level-stat-label">📅 {t('level.activeDays', '活跃天数')}</span>
-                      <strong className="account-level-stat-val">{userStats.activeDays} 天</strong>
-                    </div>
-                    <div className="account-level-stat-item">
-                      <span className="account-level-stat-label">💬 {t('level.commentsCount', '发表讨论')}</span>
-                      <strong className="account-level-stat-val">{userStats.commentCount} 次</strong>
-                    </div>
-                    <div className="account-level-stat-item">
-                      <span className="account-level-stat-label">❤️ {t('level.reactionsCount', '互动获赞')}</span>
-                      <strong className="account-level-stat-val">{userStats.reactionsReceived} 个</strong>
+                    <p className="account-badges-desc">
+                      展示你已获得的专属称号。点击可自定义选择最多 4 个称号佩戴展示于评论名片中：
+                    </p>
+                    <div className="account-badges-grid">
+                      {unlockedBadges.map((badge) => {
+                        const isEquipped = equippedBadgeIds.includes(badge.id);
+                        return (
+                          <button
+                            key={badge.id}
+                            type="button"
+                            onClick={() => handleToggleBadge(badge.id)}
+                            className={`account-badge-card ${isEquipped ? 'is-equipped' : ''}`}
+                            title={badge.description}
+                          >
+                            <span className="badge-card-icon">{badge.icon}</span>
+                            <span className="badge-card-name">{badge.name}</span>
+                            <span className="badge-card-status">
+                              {isEquipped ? '✓ 已佩戴' : '+ 佩戴'}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

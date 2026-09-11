@@ -4038,67 +4038,74 @@ span.text-xs.font-semibold.text-rose-500 {
 .account-level-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   margin-top: 6px;
 }
 
-.account-level-primary-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.account-level-info {
+.account-level-requirements-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.account-level-title-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.account-level-name {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--font-color);
-}
-
-.account-level-trust-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--theme-main);
-  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-.account-level-webmaster-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #b45309;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  padding: 2px 8px;
-  border-radius: 4px; /* Square emblem */
-}
-
-.account-level-hint {
-  font-size: 0.75rem;
-  color: var(--secondtext);
-  line-height: 1.4;
-  margin: 0;
+  gap: 10px;
 }
 
 .account-level-progress-wrap {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+.account-level-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.account-level-progress-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+.account-level-progress-icon {
+  font-size: 0.85rem;
+}
+
+.account-level-progress-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--secondtext);
+}
+
+.account-level-current-val {
+  color: var(--font-color);
+  font-weight: 700;
+}
+
+.account-level-target-val {
+  color: var(--secondtext);
+}
+
+.account-level-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.account-level-status.is-met {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.account-level-status.is-unmet {
+  color: var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main) 10%, transparent);
 }
 
 .account-level-progress-bar {
@@ -4111,46 +4118,120 @@ span.text-xs.font-semibold.text-rose-500 {
 
 .account-level-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--theme-main), #818cf8);
+  background: linear-gradient(90deg, var(--theme-main, #425aef), #818cf8);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
-.account-level-progress-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: var(--secondtext);
-  font-weight: 600;
+.account-level-progress-fill.is-met {
+  background: linear-gradient(90deg, #10b981, #059669);
 }
 
-.account-level-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* Badges Section in Account Drawer */
+.account-badges-section {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed color-mix(in srgb, var(--font-color) 12%, transparent);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.account-level-stat-item {
+.account-badges-header {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--card-bg) 60%, var(--secondbg));
-  border: 1px solid color-mix(in srgb, var(--font-color) 6%, transparent);
+  align-items: center;
+  justify-content: space-between;
 }
 
-.account-level-stat-label {
+.account-badges-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--font-color);
+  margin: 0;
+}
+
+.account-badges-counter {
   font-size: 0.72rem;
+  font-weight: 600;
   color: var(--secondtext);
 }
 
-.account-level-stat-val {
-  font-size: 0.88rem;
-  font-weight: 800;
+.account-badges-counter strong {
+  color: var(--theme-main, #425aef);
+  font-size: 0.8rem;
+}
+
+.account-badges-desc {
+  font-size: 0.73rem;
+  color: var(--secondtext);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.account-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  gap: 7px;
+}
+
+.account-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 70%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.account-badge-card:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 40%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 50%, var(--secondbg));
+  transform: translateY(-1px);
+}
+
+.account-badge-card.is-equipped {
+  border-color: var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
+  box-shadow: 0 1px 4px rgba(66, 90, 239, 0.15);
+}
+
+.badge-card-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.badge-card-name {
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--font-color);
-  font-family: var(--font-mono, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.badge-card-status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-top: 2px;
+}
+
+.account-badge-card.is-equipped .badge-card-status {
+  color: var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main) 15%, transparent);
+}
+
+.account-badge-card:not(.is-equipped) .badge-card-status {
+  color: var(--secondtext);
+  background: color-mix(in srgb, var(--font-color) 6%, transparent);
 }
 
 .account-pill--level {
@@ -4328,30 +4409,22 @@ span.text-xs.font-semibold.text-rose-500 {
 
 .profile-popover-user-meta {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
   flex: 1;
+  flex-wrap: wrap;
 }
 
-/* Line 1: Display Name + Micro Location Tag */
-.profile-popover-name-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
+/* Display Name: Bold font */
 .profile-popover-display-name {
   margin: 0;
   padding: 0;
-  font-size: 1.15rem; /* ~18.4px */
+  font-size: 1.12rem;
   font-weight: 750;
   color: var(--font-color);
   line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -4378,21 +4451,24 @@ span.text-xs.font-semibold.text-rose-500 {
   font-weight: 500;
 }
 
-/* Line 2: Unique Username (@username) */
+/* Unique Username: Light/Thin font */
 .profile-popover-username {
-  font-size: 0.85rem; /* ~13.6px */
+  font-size: 0.88rem;
+  font-weight: 400;
   color: var(--secondtext);
   font-family: var(--font-mono, monospace);
-  line-height: 1.2;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
-/* Line 3: Highest Title (Pure text, NO colored outer box) */
+/* Main Title: Colored label */
 .profile-popover-title {
-  font-size: 0.82rem; /* ~13px */
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--theme-main, #425aef);
   line-height: 1.25;
-  margin-top: 1px;
+  margin-top: 0;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .profile-popover-title {
@@ -4434,7 +4510,7 @@ span.text-xs.font-semibold.text-rose-500 {
 }
 
 .profile-popover-mention-btn:hover {
-  opacity: 0.92;
+  background: var(--theme-hover, #2d43d8);
   transform: translateY(-1px);
 }
 
@@ -4478,6 +4554,38 @@ span.text-xs.font-semibold.text-rose-500 {
 .profile-popover-bio-empty {
   font-style: italic;
   opacity: 0.65;
+}
+
+/* Dedicated Website Line */
+.profile-popover-website-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--secondtext);
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.profile-popover-website-icon {
+  flex-shrink: 0;
+  color: var(--theme-main, #425aef);
+}
+
+.profile-popover-website-link {
+  color: var(--theme-main, #425aef);
+  text-decoration: none;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.profile-popover-website-link:hover {
+  text-decoration: underline;
+  color: var(--theme-hover, #2d43d8);
 }
 
 /* 2. Optional Email Line */

@@ -69,6 +69,8 @@ import {
   evaluateUserBadges,
   getAuthorGroups,
   readUserStats,
+  readEquippedBadges,
+  getEquippedBadges,
   type CommunityBadge,
   type UserBadgeContext,
   type UserLevelInfo,
@@ -432,13 +434,15 @@ export function PostComments({
       readingMinutes = 0;
     }
 
-    // 6. User Handle (@username)
+    // 6. User Handle (用户名，同步 Epomail 用户名或昵称)
     const handle = (() => {
-      if (comment.authorEmail && comment.authorEmail.includes('@')) {
-        const local = comment.authorEmail.split('@')[0].trim();
+      const email = comment.authorEmail || (isCurrentAccount ? account?.email : undefined);
+      if (email && email.includes('@')) {
+        const local = email.split('@')[0].trim();
         if (local) return `@${local}`;
       }
-      return `@${comment.authorName.replace(/\s+/g, '').toLowerCase()}`;
+      const raw = (comment.authorName || 'user').replace(/\s+/g, '').toLowerCase();
+      return raw.startsWith('@') ? raw : `@${raw}`;
     })();
 
     // Compute days since first seen / registered
@@ -465,8 +469,37 @@ export function PostComments({
       (c) => (c.content && c.content.includes('@')) || Boolean(c.replyToCommentId)
     );
 
-    const bio = (comment as any).authorBio || (isWebmaster ? '探索全栈工程架构与精致交互体验的技术旅人。' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined);
-    const avatarUrl = comment.authorAvatar || (isWebmaster ? '/media/shijianus/avatar.jpg' : undefined);
+    // Synchronize author bio, website, name, and avatar directly with real account / comment
+    const authorName = isCurrentAccount
+      ? (account?.name || comment.authorName)
+      : (isWebmaster && account?.role === 'admin'
+        ? (account?.name || comment.authorName)
+        : comment.authorName);
+
+    const authorBio = isCurrentAccount
+      ? (account?.bio ?? (comment as any).authorBio ?? '')
+      : (isWebmaster && account?.role === 'admin'
+        ? (account?.bio ?? (comment as any).authorBio ?? '')
+        : ((comment as any).authorBio ?? ''));
+
+    const authorWebsite = isCurrentAccount
+      ? (account?.website || comment.authorWebsite || '')
+      : (isWebmaster && account?.role === 'admin'
+        ? (account?.website || comment.authorWebsite || '')
+        : (comment.authorWebsite || ''));
+
+    const authorEmail = isCurrentAccount
+      ? (account?.email || comment.authorEmail)
+      : (isWebmaster && account?.role === 'admin'
+        ? (account?.email || comment.authorEmail)
+        : comment.authorEmail);
+
+    const avatarUrl = isCurrentAccount
+      ? (account?.avatar || comment.authorAvatar)
+      : (isWebmaster
+        ? (account?.avatar || comment.authorAvatar || '/media/shijianus/avatar.jpg')
+        : comment.authorAvatar);
+
     const activeDays = commentLevelInfo?.activeDays ?? (isCurrentAccount ? readUserStats().activeDays : Math.max(1, Math.min(daysSinceRegistered, authorComments.length)));
 
     // Compute Level Info for progression/title
@@ -487,7 +520,7 @@ export function PostComments({
     // 7. Highest Title (纯文本最高称号，严格仅限官方系统阶梯)
     const highestTitle = levelInfo.isWebmaster ? '站长' : levelInfo.title;
 
-    // 8. Community Badges (博客专属成就池，evaluateUserBadges 动态判定，严格按权重降序排列，取前 4 个)
+    // 8. Community Badges (动态判定 + 用户个性佩戴管理，最多 4 个)
     const badgeContext: UserBadgeContext = {
       readingTime: readingMinutes,
       readingMinutes,
@@ -499,27 +532,30 @@ export function PostComments({
       hasEditedComment,
       hasEmojiReaction,
       hasMentioned,
-      bio,
+      bio: authorBio,
       avatarUrl,
-      email: comment.authorEmail,
-      epomail: Boolean(comment.authorEmail?.toLowerCase().endsWith('@epomail.bond')),
+      email: authorEmail,
+      epomail: Boolean(authorEmail?.toLowerCase().endsWith('@epomail.bond')),
       isWebmaster,
       role: comment.authorRole,
     };
 
     const unlockedBadges = evaluateUserBadges(stats, badgeContext);
-    const badges = unlockedBadges.slice(0, 4);
+    const equippedIds = readEquippedBadges();
+    const badges = (isCurrentAccount || isWebmaster)
+      ? getEquippedBadges(unlockedBadges, equippedIds)
+      : getEquippedBadges(unlockedBadges);
 
     setProfilePopover({
       isOpen: true,
       author: {
-        name: comment.authorName,
+        name: authorName,
         handle,
-        avatar: comment.authorAvatar || (isWebmaster ? '/media/shijianus/avatar.jpg' : undefined),
+        avatar: avatarUrl,
         role: comment.authorRole,
-        email: comment.authorEmail,
-        website: comment.authorWebsite,
-        bio: (comment as any).authorBio || (isWebmaster ? 'EpoCanvas 站长 · 博客创作者与架构设计者' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined),
+        email: authorEmail,
+        website: authorWebsite,
+        bio: authorBio,
         highestTitle,
         isWebmaster,
         latestCommentTime,
@@ -1219,7 +1255,45 @@ export function PostComments({
     const handleAccountChange = (event: Event) => {
       const detail = (event as CustomEvent<CommentIdentity | null>).detail ?? readCommentIdentity();
       setAccount(detail);
+      setProfilePopover((prev) => {
+        if (!prev.isOpen || !prev.author) return prev;
+        if (detail && (prev.author.isWebmaster || prev.author.email === detail.email || prev.author.name === detail.name)) {
+          return {
+            ...prev,
+            author: {
+              ...prev.author,
+              name: detail.name || prev.author.name,
+              bio: detail.bio !== undefined ? detail.bio : prev.author.bio,
+              website: detail.website !== undefined ? detail.website : prev.author.website,
+              avatar: detail.avatar || prev.author.avatar,
+            },
+          };
+        }
+        return prev;
+      });
       void loadComments(sortOrder, true);
+    };
+
+    const handleBadgesChange = () => {
+      setProfilePopover((prev) => {
+        if (!prev.isOpen || !prev.author) return prev;
+        const currentStats = readUserStats();
+        const unlocked = evaluateUserBadges(currentStats, {
+          email: prev.author.email,
+          role: prev.author.role,
+          bio: prev.author.bio,
+          avatarUrl: prev.author.avatar,
+          isWebmaster: prev.author.isWebmaster,
+        });
+        const equippedIds = readEquippedBadges();
+        return {
+          ...prev,
+          author: {
+            ...prev.author,
+            badges: getEquippedBadges(unlocked, equippedIds),
+          },
+        };
+      });
     };
 
     const handleWindowFocus = () => {
@@ -1242,8 +1316,8 @@ export function PostComments({
       }
     };
 
-    const handleQuotePostText = (event: Event) => {
-      const detail = (event as CustomEvent<{ text: string; url: string; title: string }>).detail;
+    const handleQuotePostText = (e: Event) => {
+      const detail = (e as CustomEvent<{ text: string; title?: string }>).detail;
       if (!detail?.text) return;
 
       const commentEl = document.querySelector('#post-comment');
@@ -1266,6 +1340,7 @@ export function PostComments({
     };
 
     window.addEventListener('shijianus:comment-account-change', handleAccountChange);
+    window.addEventListener('shijianus:equipped-badges-change', handleBadgesChange);
     window.addEventListener('storage', syncAccountState);
     window.addEventListener('focus', handleWindowFocus);
     document.addEventListener('click', handleOutsideClick);
@@ -1274,6 +1349,7 @@ export function PostComments({
 
     return () => {
       window.removeEventListener('shijianus:comment-account-change', handleAccountChange);
+      window.removeEventListener('shijianus:equipped-badges-change', handleBadgesChange);
       window.removeEventListener('storage', syncAccountState);
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('click', handleOutsideClick);
@@ -4101,14 +4177,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                         <Globe size={12} />
                       </a>
                     )}
-                    <button
-                      type="button"
-                      className="profile-popover-action-icon-btn"
-                      onClick={() => setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }))}
-                      aria-label="关闭名片"
-                    >
-                      <X size={13} />
-                    </button>
                   </div>
                 </div>
 
@@ -4118,6 +4186,22 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                     <span className="profile-popover-bio-empty">这位读者很低调，暂未留下介绍。</span>
                   )}
                 </p>
+
+                {/* Dedicated Personal Website display space */}
+                {profilePopover.author.website && (
+                  <div className="profile-popover-website-line">
+                    <Globe size={11} className="profile-popover-website-icon" />
+                    <a
+                      href={profilePopover.author.website}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="profile-popover-website-link"
+                      title={`访问个人站点: ${profilePopover.author.website}`}
+                    >
+                      {profilePopover.author.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+                    </a>
+                  </div>
+                )}
 
                 {/* Optional subtle Epomail / Email line if email exists */}
                 {profilePopover.author.email && (

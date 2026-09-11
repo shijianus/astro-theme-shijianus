@@ -1187,6 +1187,33 @@
     - 验证真实统计数据行（`最新发言5 天前加入时间9月5日已读0m喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-comments-blog.epocanvas.com.png`，端到端测试全绿通过。
 
+### Task 54: 社群等级卡片真实需求对比重构、徽章佩戴自选池与作者名片横向排版及数据全同步 (`97c7cdc`)
+- [x] **作者名片 (`author-profile-popover`) 数据真实同步与假数据清零**：
+  - 彻底清除任何硬编码签名（假 bio）与静态文字；
+  - 名片信息与账号中心 (`account-field-control`) 及评论实体严格双向同步：`displayName`、`bio`、`website`、`avatar`、`email`；
+  - 新增专用个人主页展示空间 (`.profile-popover-website-line`，带 Globe 图标与直链跳转)。
+- [x] **作者名片头部排版横向化与取消按钮删除**：
+  - 将 `.profile-popover-user-meta` 由竖向多行重构为横向单行流式排版（`flex-direction: row; align-items: baseline; gap: 8px; flex-wrap: wrap`），节约纵向空间；
+  - 严格规范三段式格式：显示名称（粗体 `font-weight: 750`，同步 `account-field-control`） + 用户名（细体 `font-weight: 400`，同步 Epomail `@username`） + 主流称号（如 `站长` / `贡献者`，纯色无背景）；
+  - 彻底删除 `.profile-popover-action-icon-btn` 取消/关闭图标按钮。
+- [x] **账号中心等级卡片 (`account-card--level`) UI 重构与对比进度条**：
+  - 彻底移除旧版 `.account-level-stat-item` 卡片及 `.account-level-primary-row` 冗余说明文字；
+  - 采用直接展示真实数据与下一级要求的对比进度条 (`.account-level-progress-wrap`)：
+    - 展示指标：活跃天数、阅读时长、发表讨论、互动获赞等；
+    - 数据形式：`当前数值 / 下级目标`（如 `3 / 3 天`，`380 / 380 min`）；
+    - 进度条在达到或超出要求时严格封顶为 100%（`Math.min(100, ...)`）；
+    - 满足条件向下堆叠，自动升级上限设为 LV.3。
+- [x] **徽章展示与自选佩戴系统 (Badges Equipping System)**：
+  - 账号中心新增徽章展示专区 (`.account-badges-section`)，展示已解锁成就徽章池；
+  - 支持用户交互式自选佩戴，最多佩戴 4 个徽章（`已佩戴 X / 4`）；
+  - 佩戴的徽章通过 `shijianus-equipped-badges` 持久化，并与作者名片浮层 (`.profile-popover-badges-flow`) 实时联动展示。
+- [x] **标准称号与等级制度规范文档 (`TITLES_AND_BADGES.md`)**：
+  - 编写详尽的社群等级天梯（LV.0 初始用户至 LV.4 先驱）、自动晋升上限（LV.3）、五大成就徽章池标准、自选佩戴规则及数据流转架构。
+- [x] **端到端自动化测试套件验收 100% PASS**：
+  - 执行 `scripts/verify-titles-and-level-card.mjs`，等级卡片 UI、进度条封顶、徽章装备交互（最多 4 枚）、名片横向排版、粗体/细体/称号、无取消按钮、真实个人网站展示及真 Bio 数据同步全部验证通过；
+  - 执行 `scripts/verify-author-profile-linuxdo.mjs`，5 大模块 100% 通过无回归。
+
+
 
 
 
