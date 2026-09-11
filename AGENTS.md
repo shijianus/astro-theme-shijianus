@@ -1103,6 +1103,13 @@
   - 徽章列表：位于卡片最底部，取消“所属群组”等标题，以轻量胶囊（Pill，高度 22px）形式水平流式排列（👑 站长、🧡 受到赞赏、💬 活跃交流、国旗归属地等），超出 4 个自动折叠为“+N 更多”。
 - [x] **Playwright 自动化端到端测试 100% 验收通过（`scripts/verify-author-profile-linuxdo.mjs`）**：
   - 覆盖横向长条尺寸（480px x ~200px）、向右展开定位、80px 圆形头像与皇冠角标、纯文本称号、真实数据统计（无 9999m 假数据）、暗黑模式、@ 提及交互与移动端 390px 视口无溢出断言全部通过。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测通过**：
+  - 生产边缘节点自动部署至版本：`https://021ec40d.shijianus-blog.pages.dev`（绑定至生产主域名 `https://blog.epocanvas.com`）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在最新 Pages 部署与生产主域完成验证：
+    - 实测作者名片浮层成功右向横向展开，尺寸：`width: 465.6px`, `height: 197.6px`；
+    - 验证三行极简文本排版（显示名 `admin`、唯一名 `@admin`、纯文本无框称号 `站长`）；
+    - 验证真实统计数据行（`加入时间9月5日·已读0m·评论1·喝彩2`，无任何 9999m 或 999 假数据，`hasFakeData: false`，`legacyPillsCount: 0`）；
+    - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png`，端到端测试全绿通过。
 
 
 

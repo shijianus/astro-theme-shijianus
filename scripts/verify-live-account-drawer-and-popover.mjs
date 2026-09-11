@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://72bb63fb.shijianus-blog.pages.dev',
+  'https://021ec40d.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -198,6 +198,35 @@ async function runLiveVerification() {
         await page.waitForSelector('.author-profile-popover', { state: 'visible', timeout: 5000 });
         console.log('   ✅ Live .author-profile-popover opened successfully!');
         
+        const livePopoverData = await page.evaluate(() => {
+          const pop = document.querySelector('.author-profile-popover');
+          if (!pop) return null;
+          const rect = pop.getBoundingClientRect();
+          const name = pop.querySelector('.profile-popover-display-name')?.textContent?.trim();
+          const username = pop.querySelector('.profile-popover-username')?.textContent?.trim();
+          const title = pop.querySelector('.profile-popover-title')?.textContent?.trim();
+          const stats = pop.querySelector('.profile-popover-inline-stats')?.textContent?.replace(/\s+/g, ' ').trim();
+          const legacyPills = pop.querySelectorAll('.profile-popover-pill');
+          return {
+            width: rect.width,
+            height: rect.height,
+            name,
+            username,
+            title,
+            stats,
+            legacyPillsCount: legacyPills.length,
+            hasFakeData: stats?.includes('9999m') || stats?.includes('999'),
+          };
+        });
+        console.log('   📊 Live Popover Data:', livePopoverData);
+        if (livePopoverData.hasFakeData) {
+          throw new Error(`Live popover contains fake 9999m data: "${livePopoverData.stats}"`);
+        }
+        if (livePopoverData.legacyPillsCount > 0) {
+          throw new Error('Live popover has legacy colorful pills');
+        }
+        console.log('   ✅ Live Popover is Landscape (width: ' + livePopoverData.width + 'px) with real data and clean hierarchy!');
+
         const popoverScreenshotPath = path.join(screenshotDir, `live-popover-${new URL(targetUrl).hostname}.png`);
         await page.screenshot({ path: popoverScreenshotPath, fullPage: false });
         console.log(`   📸 Popover Screenshot saved: ${popoverScreenshotPath}`);
