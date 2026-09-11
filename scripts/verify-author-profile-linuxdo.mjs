@@ -340,10 +340,10 @@ async function runVerification() {
       throw new Error('Stats must be inline text flow');
     }
     if (popoverAudit.statItemsCount !== 4) {
-      throw new Error(`Expected 4 stat items (加入时间, 已读, 评论, 喝彩), got ${popoverAudit.statItemsCount}`);
+      throw new Error(`Expected 4 stat items (最新评论, 加入时间, 已读, 喝彩), got ${popoverAudit.statItemsCount}`);
     }
-    if (!popoverAudit.statFlowText?.includes('加入时间') || !popoverAudit.statFlowText?.includes('已读') || !popoverAudit.statFlowText?.includes('评论') || !popoverAudit.statFlowText?.includes('喝彩')) {
-      throw new Error(`Expected real stats stream with all 4 metrics, got "${popoverAudit.statFlowText}"`);
+    if (!popoverAudit.statFlowText?.includes('最新评论') || !popoverAudit.statFlowText?.includes('加入时间') || !popoverAudit.statFlowText?.includes('已读') || !popoverAudit.statFlowText?.includes('喝彩')) {
+      throw new Error(`Expected real stats stream with all 4 metrics (最新评论, 加入时间, 已读, 喝彩), got "${popoverAudit.statFlowText}"`);
     }
     if (popoverAudit.statFlowText?.includes('9999m') || popoverAudit.statFlowText?.includes('999')) {
       throw new Error(`Stat text must NOT contain hardcoded mock data (9999m or 999): "${popoverAudit.statFlowText}"`);
@@ -353,7 +353,7 @@ async function runVerification() {
     }
     console.log(`   ✅ 7. Real Data Stats: "${popoverAudit.statFlowText}" (100% real metrics, ZERO dot separator, gap-spaced).`);
 
-    // 8. Badges (Strictly official titles/groups, <= 4 pills, ZERO fake badges, ZERO "+N 更多", ZERO location pollution)
+    // 8. Badges (Strictly official level titles + blog achievements, <= 4 pills, ZERO fake badges, ZERO "站长团队/核心架构师", ZERO "+N 更多", ZERO location pollution)
     if (!popoverAudit.hasBadgesFlow) {
       throw new Error('Badges must be rendered directly in badges flow');
     }
@@ -366,12 +366,24 @@ async function runVerification() {
     if (popoverAudit.hasMorePillText) {
       throw new Error('Found "+N 更多" pill in popover, it must be removed!');
     }
+    const badgesString = popoverAudit.badgePillTexts.join(' ');
+    if (badgesString.includes('站长团队') || badgesString.includes('核心架构师')) {
+      throw new Error(`Found fabricated group tags in badges: "${badgesString}"`);
+    }
+    if (badgesString.includes('马来西亚') || badgesString.includes('MY')) {
+      throw new Error(`Found location "${badgesString}" in badges flow! Location must not be in badges.`);
+    }
+    const ALLOWED_BADGES = [
+      '站长', '年度用户', '先驱', '活跃用户', '贡献者', '基本用户', '初始用户', '新兴用户',
+      '沉浸阅读', '热情回应', '引发共鸣', '资深常客'
+    ];
     for (const text of popoverAudit.badgePillTexts) {
-      if (text.includes('马来西亚') || text.includes('MY')) {
-        throw new Error(`Found location "${text}" in badges flow! Location must not be in badges.`);
+      const isAllowed = ALLOWED_BADGES.some((b) => text.includes(b));
+      if (!isAllowed) {
+        throw new Error(`Badge "${text}" does not match any in the allowed blog achievement pool (${ALLOWED_BADGES.join(', ')})!`);
       }
     }
-    console.log(`   ✅ 8. Badges: Official badges (${popoverAudit.badgePillTexts.join(', ')}), <= 4 pills, ZERO fake badges, ZERO "+N 更多", ZERO location pollution.`);
+    console.log(`   ✅ 8. Badges: Official achievement badges (${popoverAudit.badgePillTexts.join(', ')}), <= 4 pills, ZERO fake badges, ZERO "站长团队/核心架构师", ZERO "+N 更多", ZERO location pollution.`);
 
     await page.waitForTimeout(300);
     const lightScreenshotPath = path.join(screenshotDir, '01-linuxdo-popover-light.png');
@@ -483,7 +495,11 @@ async function runVerification() {
     if (readerAudit.badgePillsCount > 4) {
       throw new Error(`Regular reader badge count must be <= 4, got ${readerAudit.badgePillsCount}`);
     }
-    console.log('   ✅ Regular reader card verified: 0 crown, pure text title, real data stats without dots, official badges.');
+    const readerBadgesString = readerAudit.badgePillTexts.join(' ');
+    if (readerBadgesString.includes('站长团队') || readerBadgesString.includes('核心架构师') || readerBadgesString.includes('日本') || readerBadgesString.includes('JP')) {
+      throw new Error(`Regular reader badges contaminated: "${readerBadgesString}"`);
+    }
+    console.log(`   ✅ Regular reader card verified: 0 crown, pure text title, real data stats without dots, official badges (${readerAudit.badgePillTexts.join(', ')}).`);
 
     await page.waitForTimeout(300);
     const readerScreenshotPath = path.join(screenshotDir, '03-linuxdo-popover-reader.png');

@@ -298,8 +298,7 @@ export function PostComments({
       bio?: string;
       highestTitle: string;
       isWebmaster: boolean;
-      locationFlag?: string;
-      locationName?: string;
+      latestCommentTime: string;
       readingMinutes: number;
       commentCount: number;
       reactionsReceived: number;
@@ -380,11 +379,15 @@ export function PostComments({
         : calculatedReactions;
     }
 
-    // 4. Real Join Date (加入时间 / 首次互动时间)
+    // 4. Real Join Date & Latest Comment Time
     let earliestDateStr = comment.createdAt;
+    let latestCommentDate = comment.createdAt;
     for (const c of authorComments) {
       if (c.createdAt && (!earliestDateStr || new Date(c.createdAt).getTime() < new Date(earliestDateStr).getTime())) {
         earliestDateStr = c.createdAt;
+      }
+      if (c.createdAt && (!latestCommentDate || new Date(c.createdAt).getTime() > new Date(latestCommentDate).getTime())) {
+        latestCommentDate = c.createdAt;
       }
     }
     if (isCurrentAccount) {
@@ -396,6 +399,8 @@ export function PostComments({
     if (commentLevelInfo?.firstSeenAt) {
       earliestDateStr = commentLevelInfo.firstSeenAt;
     }
+
+    const latestCommentTime = latestCommentDate ? formatCommentTime(latestCommentDate, currentLocale) : '近期';
 
     const joinDateStr = (() => {
       if (!earliestDateStr) return '近期';
@@ -448,24 +453,14 @@ export function PostComments({
 
     const levelInfo = computeUserLevel(stats, comment.authorRole, comment.authorEmail);
 
-    // 7. Highest Title (纯文本最高称号，严格仅限官方系统阶梯，不包裹夸张彩色外框)
-    let highestTitle = '新兴用户';
-    if (isWebmaster || comment.authorRole === 'admin') {
-      highestTitle = '站长';
-    } else if (levelInfo.title) {
-      highestTitle = levelInfo.title;
-    } else if (comment.authorRole === 'visitor') {
-      highestTitle = '新兴用户';
-    } else {
-      highestTitle = '注册读者';
-    }
+    // 7. Highest Title (纯文本最高称号，严格仅限官方系统阶梯)
+    const highestTitle = levelInfo.isWebmaster ? '站长' : levelInfo.title;
 
-    // 8. Official Badges (严格仅限官方系统阶梯与官方群组，彻底杜绝伪造勋章与IP)
+    // 8. Official Badges (严格仅限等级主称号 + 4大博客互动成就，彻底杜绝伪造标签与IP)
     const badges = computeOfficialBadges(stats, {
       role: comment.authorRole,
       isWebmaster,
       email: comment.authorEmail,
-      groups: (comment as any).groups,
     });
 
     setProfilePopover({
@@ -480,8 +475,7 @@ export function PostComments({
         bio: (comment as any).authorBio || (isWebmaster ? 'EpoCanvas 站长 · 博客创作者与架构设计者' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined),
         highestTitle,
         isWebmaster,
-        locationFlag: comment.ipCountryFlag,
-        locationName: comment.ipCountryName || comment.ipCountry,
+        latestCommentTime,
         readingMinutes,
         commentCount,
         reactionsReceived,
@@ -4024,25 +4018,12 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
 
               {/* Right Column: Main Content */}
               <div className="profile-popover-right">
-                {/* 1. Header: Display Name + Micro Location, Username, Highest Title & Top-Right Actions */}
+                {/* 1. Header: Display Name, Username, Highest Title & Top-Right Actions */}
                 <div className="profile-popover-top">
                   <div className="profile-popover-user-meta">
-                    <div className="profile-popover-name-row">
-                      <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
-                        {profilePopover.author.name}
-                      </h4>
-                      {profilePopover.author.locationFlag && (
-                        <span
-                          className="profile-popover-location-tag"
-                          title={profilePopover.author.locationName || ''}
-                        >
-                          <span className="location-flag">{profilePopover.author.locationFlag}</span>
-                          {profilePopover.author.locationName && (
-                            <span className="location-name">{profilePopover.author.locationName}</span>
-                          )}
-                        </span>
-                      )}
-                    </div>
+                    <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
+                      {profilePopover.author.name}
+                    </h4>
                     <span className="profile-popover-username">
                       {profilePopover.author.handle}
                     </span>
@@ -4115,8 +4096,12 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   </div>
                 )}
 
-                {/* 3. Real Inline Stats (LinuxDo Flow): 弹性横向间距 (gap: 16px)，两段式排印，零圆点分隔符 */}
+                {/* 3. Real Inline Stats (LinuxDo Flow): 最新评论 5天前    加入时间 9月5日    已读 17m    喝彩 2 */}
                 <div className="profile-popover-inline-stats">
+                  <span className="stat-item">
+                    <span className="stat-label">最新评论</span>
+                    <span className="stat-value">{profilePopover.author.latestCommentTime}</span>
+                  </span>
                   <span className="stat-item">
                     <span className="stat-label">加入时间</span>
                     <span className="stat-value">{profilePopover.author.joinDateStr}</span>
@@ -4124,10 +4109,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   <span className="stat-item">
                     <span className="stat-label">已读</span>
                     <span className="stat-value">{profilePopover.author.readingMinutes}m</span>
-                  </span>
-                  <span className="stat-item">
-                    <span className="stat-label">评论</span>
-                    <span className="stat-value">{profilePopover.author.commentCount}</span>
                   </span>
                   <span className="stat-item">
                     <span className="stat-label">喝彩</span>

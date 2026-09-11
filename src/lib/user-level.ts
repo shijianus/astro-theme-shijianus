@@ -477,9 +477,25 @@ export interface OfficialBadge {
 }
 
 /**
- * Computes official badges unlocked by user based on real stats and identity.
- * Strictly limited to official ladder titles and official groups.
- * Absolutely NO fake badges ('受到赞赏', '活跃交流') and NO IP/location.
+ * Computes official lightweight badges unlocked by user based strictly on real metrics:
+ * 1. [等级主称号] (1st core badge):
+ *    - 站长 (LV.4, TL.99)
+ *    - 年度用户 (LV.3, TL.20)
+ *    - 先驱 (LV.3, TL.15)
+ *    - 活跃用户 (LV.2, TL.10)
+ *    - 贡献者 (LV.1, TL.7)
+ *    - 基本用户 (LV.1, TL.5)
+ *    - 初始用户 (LV.0, TL.2)
+ *    - 新兴用户 (LV.0, TL.0)
+ *
+ * 2. [博客互动成就] (Strictly unlocked by real metrics, hidden if not achieved):
+ *    - 沉浸阅读: stats.readingMinutes > 60
+ *    - 热情回应: stats.commentCount >= 5
+ *    - 引发共鸣: stats.reactionsReceived >= 10
+ *    - 资深常客: stats.activeDays >= 15
+ *
+ * Strictly NO fake badges, NO "站长团队", NO "核心架构师", NO IP/location.
+ * Maximum 4 badges (.slice(0, 4)), zero "+N 更多".
  */
 export function computeOfficialBadges(
   stats: UserStats,
@@ -487,105 +503,54 @@ export function computeOfficialBadges(
     role?: string;
     isWebmaster?: boolean;
     email?: string;
-    groups?: string[];
   }
 ): OfficialBadge[] {
   const badges: OfficialBadge[] = [];
-  const isOwner =
-    author.isWebmaster ||
-    author.role === 'admin' ||
-    (author.email && author.email.toLowerCase() === 'admin@epomail.bond') ||
-    (author.email && author.email.toLowerCase() === 'shijian@epomail.bond');
 
-  // 1. Webmaster (LV.4, TL.99)
-  if (isOwner) {
+  // 1. [等级主称号] (首个核心徽章)
+  const levelInfo = computeUserLevel(stats, author.role, author.email);
+  if (levelInfo.isWebmaster) {
     badges.push({ icon: '👑', label: '站长', isSpecial: true });
-    badges.push({ label: '站长团队', isSpecial: true });
-    badges.push({ label: '核心架构师', isSpecial: true });
-  } else if (stats.customLevel === 4 || author.role === 'core_member') {
-    // 2. Core Member (LV.4, TL.25)
+  } else if (levelInfo.title === '核心成员') {
     badges.push({ icon: '⭐', label: '核心成员', isSpecial: true });
-  }
-
-  // 3. Annual Member (LV.3, TL.20)
-  if (stats.activeDays >= 365) {
-    if (!badges.some((b) => b.label === '年度用户')) {
-      badges.push({ icon: '🏅', label: '年度用户' });
-    }
-  }
-
-  // 4. Pioneer (LV.3, TL.15)
-  const pioneerMet =
-    stats.activeDays >= 60 &&
-    stats.readingMinutes >= 720 &&
-    stats.commentCount >= 100 &&
-    stats.reactionsReceived >= 50;
-  if (pioneerMet) {
-    if (!badges.some((b) => b.label === '先驱')) {
-      badges.push({ icon: '🚀', label: '先驱' });
-    }
-  }
-
-  // 5. Active User (LV.2, TL.10)
-  const activeUserMet =
-    stats.activeDays >= 20 &&
-    stats.readingMinutes >= 300 &&
-    stats.commentCount >= 30 &&
-    stats.reactionsReceived >= 30;
-  if (activeUserMet) {
-    if (!badges.some((b) => b.label === '活跃用户')) {
-      badges.push({ icon: '🔥', label: '活跃用户' });
-    }
-  }
-
-  // 6. Contributor (LV.1, TL.7)
-  const contributorMet = stats.readingMinutes >= 30 && stats.commentCount >= 10;
-  if (contributorMet) {
-    if (!badges.some((b) => b.label === '贡献者')) {
-      badges.push({ icon: '✍️', label: '贡献者' });
-    }
-  }
-
-  // 7. Basic User (LV.1, TL.5)
-  if (stats.commentCount >= 1) {
-    if (!badges.some((b) => b.label === '基本用户') && !isOwner) {
-      badges.push({ icon: '🌱', label: '基本用户' });
-    }
-  }
-
-  // 8. Initial User (LV.0, TL.2)
-  if (stats.hasReadAny || stats.readingMinutes > 0) {
-    if (!badges.some((b) => b.label === '初始用户') && !isOwner && badges.length === 0) {
-      badges.push({ icon: '📖', label: '初始用户' });
-    }
-  }
-
-  // 9. Newcomer (LV.0, TL.0)
-  if (badges.length === 0) {
+  } else if (levelInfo.title === '年度用户') {
+    badges.push({ icon: '🏅', label: '年度用户' });
+  } else if (levelInfo.title === '先驱') {
+    badges.push({ icon: '🚀', label: '先驱' });
+  } else if (levelInfo.title === '活跃用户') {
+    badges.push({ icon: '🔥', label: '活跃用户' });
+  } else if (levelInfo.title === '贡献者') {
+    badges.push({ icon: '✍️', label: '贡献者' });
+  } else if (levelInfo.title === '基本用户') {
+    badges.push({ icon: '🌱', label: '基本用户' });
+  } else if (levelInfo.title === '初始用户') {
+    badges.push({ icon: '📖', label: '初始用户' });
+  } else {
     badges.push({ icon: '✨', label: '新兴用户' });
   }
 
-  // Official groups from whitelist
-  if (!isOwner) {
-    const isEpomail =
-      author.email && author.email.toLowerCase().endsWith('@epomail.bond');
-    if (isEpomail && !badges.some((b) => b.label === 'Epomail 认证读者')) {
-      badges.push({ label: 'Epomail 认证读者' });
-    } else if (badges.length < 2 && !badges.some((b) => b.label === '社区读者圈')) {
-      badges.push({ label: '社区读者圈' });
-    }
+  // 2. [博客互动成就] (真实数据动态判定)
+  // 沉浸阅读：累计阅读时长 > 60 分钟
+  if (stats.readingMinutes > 60) {
+    badges.push({ icon: '📚', label: '沉浸阅读' });
   }
 
-  // If author has official groups in author.groups, only accept whitelist groups
-  if (Array.isArray(author.groups)) {
-    for (const g of author.groups) {
-      if ((OFFICIAL_ALLOWED_GROUPS as readonly string[]).includes(g) && !badges.some((b) => b.label === g)) {
-        badges.push({ label: g });
-      }
-    }
+  // 热情回应：累计发表评论 ≥ 5 条
+  if (stats.commentCount >= 5) {
+    badges.push({ icon: '💬', label: '热情回应' });
   }
 
-  // Strictly slice to max 4
+  // 引发共鸣：累计收到赞/喝彩（Emoji 交互）≥ 10 次
+  if (stats.reactionsReceived >= 10) {
+    badges.push({ icon: '❤️', label: '引发共鸣' });
+  }
+
+  // 资深常客：连续或累计活跃天数 ≥ 15 天
+  if (stats.activeDays >= 15) {
+    badges.push({ icon: '🌟', label: '资深常客' });
+  }
+
+  // 严格 .slice(0, 4) 截断，至多展示 4 个
   return badges.slice(0, 4);
 }
 
