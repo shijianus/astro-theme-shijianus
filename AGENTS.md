@@ -1216,7 +1216,7 @@
     - 实测文章页线上真实留言作者名片 (`.author-profile-popover`)：横向排版 `flexDirection: row`（宽 465.6px，高 138.6px）、粗体显示名 (`font-weight: 750`) + 细体用户名 (`font-weight: 400`) + 纯文本称号（`站长`）、取消按钮彻底删除、硬编码假 Bio 彻底清零（`hasFakeBio: false`）、真实动态统计指标无圆点分隔符（`hasDotSep: false`）、官方成就徽章流渲染正常；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-drawer-blog.epocanvas.com.png`，真实生产链路验收 100% 通过。
 
-### Task 55: 读者中心用户状态扩展、称号后置状态 Emoji、名片文档绝对定位跟随滚动与等级/徽章卡片视觉精简
+### Task 55: 读者中心用户状态扩展、称号后置状态 Emoji、名片文档绝对定位跟随滚动与等级/徽章卡片视觉精简 (`a225291`)
 - [x] **作者名片浮层 (`author-profile-popover`) 文档绝对定位跟随滚动与 Epomail 标签精简**：
   - 将名片浮层定位模式由视口固定 `position: fixed` 重构为相对于文档的 `position: absolute`，通过 `docTop` 与 `docLeft` 锚定于留言头像所在的文档绝对坐标；
   - 解决用户滚动页面时名片冻结在屏幕视口固定位置的问题，实现名片随着页面内容滚动 1:1 自然跟随移动；
