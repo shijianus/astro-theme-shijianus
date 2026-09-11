@@ -3326,6 +3326,31 @@ body .snackbar-container.show,
   flex-shrink: 0;
 }
 
+.account-my-comment-badge-boost {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.account-my-comment-quote {
+  font-size: 0.72rem;
+  color: var(--secondtext);
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border-left: 2px solid var(--theme-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .account-my-comment-msg {
   margin: 0;
   font-size: 0.78rem;

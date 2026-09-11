@@ -991,4 +991,24 @@
      - 浅色与深色模式（Dark Mode）断言全绿通过；
      - 高清截图存档 (`scripts/audit_screenshots/live-card-toc-verified.png`, `live-card-toc-dark.png`)。
 
+### Task 47: 账号中心评论足迹 (Comment History) 渲染乱码根治、文章标题智能解析与多语言全链路优化
+- [x] **根治 JSX 未转义代码乱码缺陷**：
+  1. 彻底修复 `ThemeOverlays.tsx` 中 `account-my-comments-list` 内 `account-my-comment-post` 缺失花括号 `{...}` 的严重缺陷（原本未被 `{}` 包裹导致浏览器直接渲染字面量 JavaScript 三元运算与模板字符串表达式 `item.postSlug ? ...`，被读者感知为代码泄露或乱码报错）；
+  2. 采用严格安全的 JSX 表达式语法包裹，杜绝任何未转义代码文本外泄。
+- [x] **文章标题智能反查与美化解析 (`getCommentPostInfo`)**：
+  1. 引入智能文章解析函数 `getCommentPostInfo(slug)`，自动与站点全局 `posts` 集合（`OverlayPostItem[]`）进行双向前缀与后缀匹配；
+  2. 优先呈现人类可读的真实文章标题（如《静态站点生成器（SSG）与博客主题内容格式全景指南...》），并提供悬停原生 `title` 提示；若未匹配则自动优雅去除横杠并格式化，彻底取代原始生硬且无语义的 URL slug；
+  3. 规范化评论跳转链接 `targetHref`，统一过滤多余的 `/posts/` 前缀与斜杠，杜绝 `//posts/` 或 `/posts/posts/` 路径异常。
+- [x] **多态评论交互呈现打磨与样式增强**：
+  1. 为 `postType === 'boost'` 的动态评论注入专属 `⚡ Boost` 高光小徽章（`.account-my-comment-badge-boost`）；
+  2. 支持引用评论（`item.quote`）原作者与引用片段微缩预览（`.account-my-comment-quote`），增强评论上下文连贯性；
+  3. 优化 `userFeed.loading` 状态，加载中显示优雅动效骨架而不再瞬间闪烁空白提示；
+  4. 支持基于当前多语言（`localeVariant`）的本地化时间呈现，并在 `client-locale.ts` 中补全全 6 种主流语言的 `'notify.comments.loading'` 词条。
+- [x] **实时事件联动与跨组件即时刷新**：
+  1. 在 `PostComments.tsx` 的发表评论、就地回复、就地编辑与删除操作完成后，自动派发 `shijianus:comment-thread-change` 全局事件，驱动账号抽屉与顶栏即时刷新最新足迹与角标，无需手动 F5。
+- [x] **Playwright 全场景端到端自动化测试通过**：
+  1. 编写专用测试脚本 `scripts/verify-comment-history.mjs`，在 1440x900 视口下验证抽屉开启、Tab 切换、评论项 DOM 结构、标题解析、无代码泄露断言及中英双语切换；
+  2. 测试全部 100% PASS 通过，并存档高清视觉截图。
+
+
 

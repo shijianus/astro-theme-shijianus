@@ -1048,6 +1048,9 @@ export function PostComments({
         showToast(tC.toastCommentSuccess, 'success');
 
         await loadComments(sortOrder, true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+        }
       } else {
         showToast(tC.toastCommentFailed(res.error || ''), 'error');
       }
@@ -1100,6 +1103,9 @@ export function PostComments({
         showToast(replyMode === 'boost' ? tC.toastReplyBoostSuccess : tC.toastReplySuccess, 'success');
 
         await loadComments(sortOrder, true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+        }
       } else {
         showToast(tC.toastReplyFailed(res.error || ''), 'error');
       }
@@ -1132,6 +1138,9 @@ export function PostComments({
         setEditingMessage('');
         showToast(tC.toastEditSuccess, 'success');
         await loadComments(sortOrder, true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+        }
       } else {
         showToast(tC.toastEditFailed(res.error || ''), 'error');
       }
@@ -1163,6 +1172,9 @@ export function PostComments({
         });
         showToast(tC.toastDeleteSuccess, 'success');
         await loadComments(sortOrder, true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('shijianus:comment-thread-change'));
+        }
       } else {
         showToast(tC.toastDeleteFailed(res.error || ''), 'error');
       }

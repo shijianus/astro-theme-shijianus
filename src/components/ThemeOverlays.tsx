@@ -616,9 +616,9 @@ export function ThemeOverlays({
 
   // 2. 个人账户互动通知与足迹 (连结真实 DB 数据)
   const refreshUserFeed = useCallback(async () => {
-    const currentName = (account?.name || '').trim();
+    const currentName = (account?.name || accountForm.name || '').trim();
     const currentId = (account?.id || '').trim();
-    const currentEmail = (account?.email || '').trim();
+    const currentEmail = (account?.email || accountForm.email || '').trim();
     const token = account?.token || (typeof window !== 'undefined' ? window.localStorage.getItem('shijianus-auth-token') : '');
 
     if (!currentName && !currentId && !currentEmail && !token) {
@@ -647,7 +647,7 @@ export function ThemeOverlays({
     } catch {
       setUserFeed((prev) => ({ ...prev, loading: false }));
     }
-  }, [account]);
+  }, [account, accountForm.name, accountForm.email]);
 
   const refreshUserFeedRef = useRef(refreshUserFeed);
   refreshUserFeedRef.current = refreshUserFeed;
@@ -692,13 +692,34 @@ export function ThemeOverlays({
       .map(c => ({
         id: c.id,
         postSlug: c.slug,
+        postType: ((c as any).postType || 'comment') as PostType,
+        quote: (c as any).quote || null,
         message: c.message,
         createdAt: c.createdAt,
         likesCount: c.likes?.length || 0,
       }))
       .sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
-      .slice(0, 10);
+      .slice(0, 15);
   }, [userFeed.userComments, account, accountForm.name, accountForm.email]);
+
+  const getCommentPostInfo = useCallback((slug?: string) => {
+    if (!slug) {
+      return {
+        title: t('notify.comments.defaultPost', '博文评论'),
+        href: '#',
+      };
+    }
+    const cleanSlug = slug.replace(/^\/?posts\/?/, '').replace(/\/$/, '');
+    const matched = posts.find((p) => {
+      const pHref = p.href.replace(/^\/?posts\/?/, '').replace(/\/$/, '');
+      return pHref === cleanSlug || pHref.endsWith(`/${cleanSlug}`);
+    });
+
+    return {
+      title: matched?.title || cleanSlug.replace(/[-_]/g, ' '),
+      href: matched?.href || `/posts/${cleanSlug}/`,
+    };
+  }, [posts, t]);
 
   const emitActivity = (message: string, overrideLocale?: LocaleVariant) => {
     if (!message.trim()) return;
@@ -2359,39 +2380,44 @@ export function ThemeOverlays({
 
                     {personalNotifications.length > 0 ? (
                       <div className="account-notification-list">
-                        {personalNotifications.map((notification) => (
-                          <a
-                            className="account-notification-item"
-                            href={`/posts/${notification.postSlug}/#comment-${notification.commentId}`}
-                            key={notification.id}
-                            onClick={() => setNotificationOpen(false)}
-                          >
-                            <div className="account-notification-avatar">
-                              {notification.actorAvatar ? (
-                                <img src={notification.actorAvatar} alt={notification.actorName} loading="lazy" />
-                              ) : (
-                                <span className="notification-icon-wrap">
-                                  {notification.type === 'like' ? (
-                                    <Heart className="h-4 w-4 text-rose-500" />
-                                  ) : notification.type === 'boost' ? (
-                                    <Sparkles className="h-4 w-4 text-amber-500" />
-                                  ) : (
-                                    <MessageSquare className="h-4 w-4 text-blue-500" />
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                            <div className="account-notification-body">
-                              <div className="account-notification-title-row">
-                                <strong>{notification.title}</strong>
-                                <span className="account-notification-date">
-                                  {new Date(notification.createdAt).toLocaleDateString('zh-CN')}
-                                </span>
+                        {personalNotifications.map((notification) => {
+                          const cleanSlug = (notification.postSlug || '').replace(/^\/?posts\/?/, '').replace(/\/$/, '');
+                          const targetHref = cleanSlug ? `/posts/${cleanSlug}/#comment-${notification.commentId}` : `#comment-${notification.commentId}`;
+
+                          return (
+                            <a
+                              className="account-notification-item"
+                              href={targetHref}
+                              key={notification.id}
+                              onClick={() => setNotificationOpen(false)}
+                            >
+                              <div className="account-notification-avatar">
+                                {notification.actorAvatar ? (
+                                  <img src={notification.actorAvatar} alt={notification.actorName} loading="lazy" />
+                                ) : (
+                                  <span className="notification-icon-wrap">
+                                    {notification.type === 'like' ? (
+                                      <Heart className="h-4 w-4 text-rose-500" />
+                                    ) : notification.type === 'boost' ? (
+                                      <Sparkles className="h-4 w-4 text-amber-500" />
+                                    ) : (
+                                      <MessageSquare className="h-4 w-4 text-blue-500" />
+                                    )}
+                                  </span>
+                                )}
                               </div>
-                              <p>{notification.message.slice(0, 120)}</p>
-                            </div>
-                          </a>
-                        ))}
+                              <div className="account-notification-body">
+                                <div className="account-notification-title-row">
+                                  <strong>{notification.title}</strong>
+                                  <span className="account-notification-date">
+                                    {new Date(notification.createdAt).toLocaleDateString(localeVariant === 'en' ? 'en-US' : 'zh-CN')}
+                                  </span>
+                                </div>
+                                <p>{notification.message.slice(0, 120)}</p>
+                              </div>
+                            </a>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="account-empty-state">
@@ -2424,33 +2450,57 @@ export function ThemeOverlays({
                       </button>
                     </div>
 
-                    {userFeed.userComments.length > 0 ? (
+                    {userFeed.loading && myRecentComments.length === 0 ? (
+                      <div className="account-empty-state account-empty-state--compact">
+                        <RefreshCw className="h-5 w-5 animate-spin text-theme-main mx-auto mb-2" />
+                        <p>{t('notify.comments.loading', '正在从数据库获取评论足迹...')}</p>
+                      </div>
+                    ) : myRecentComments.length > 0 ? (
                       <div className="account-my-comments-list">
-                        {userFeed.userComments.map((item) => (
-                          <a
-                            key={item.id}
-                            href={`/posts/${item.postSlug}/#comment-${item.id}`}
-                            className="account-my-comment-item"
-                            onClick={() => setNotificationOpen(false)}
-                          >
-                            <div className="account-my-comment-head">
-                              <span className="account-my-comment-post">
-                                item.postSlug ? `${t('notify.comments.postPrefix', '文章：')}${item.postSlug}` : t('notify.comments.defaultPost', '博文评论')
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {item.likesCount > 0 && (
-                                  <span className="text-xs font-semibold text-rose-500">
-                                    👍 {item.likesCount}
-                                  </span>
-                                )}
-                                <span className="account-my-comment-date">
-                                  {new Date(item.createdAt).toLocaleDateString('zh-CN')}
+                        {myRecentComments.map((item) => {
+                          const postInfo = getCommentPostInfo(item.postSlug);
+                          const cleanSlug = (item.postSlug || '').replace(/^\/?posts\/?/, '').replace(/\/$/, '');
+                          const targetHref = cleanSlug ? `/posts/${cleanSlug}/#comment-${item.id}` : (postInfo.href !== '#' ? `${postInfo.href}#comment-${item.id}` : `#comment-${item.id}`);
+
+                          return (
+                            <a
+                              key={item.id}
+                              href={targetHref}
+                              className="account-my-comment-item"
+                              onClick={() => setNotificationOpen(false)}
+                            >
+                              <div className="account-my-comment-head">
+                                <span className="account-my-comment-post" title={postInfo.title}>
+                                  {item.postSlug
+                                    ? `${t('notify.comments.postPrefix', '文章：')}${postInfo.title}`
+                                    : t('notify.comments.defaultPost', '博文评论')}
                                 </span>
+                                <div className="flex items-center gap-2">
+                                  {item.postType === 'boost' && (
+                                    <span className="account-my-comment-badge-boost">
+                                      ⚡ Boost
+                                    </span>
+                                  )}
+                                  {item.likesCount > 0 && (
+                                    <span className="text-xs font-semibold text-rose-500">
+                                      👍 {item.likesCount}
+                                    </span>
+                                  )}
+                                  <span className="account-my-comment-date">
+                                    {new Date(item.createdAt).toLocaleDateString(localeVariant === 'en' ? 'en-US' : 'zh-CN')}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                            <p className="account-my-comment-msg">{item.message}</p>
-                          </a>
-                        ))}
+                              {item.quote && (
+                                <div className="account-my-comment-quote">
+                                  <span className="font-semibold text-theme-main">@{item.quote.authorName}: </span>
+                                  <span>{item.quote.text.slice(0, 60)}</span>
+                                </div>
+                              )}
+                              <p className="account-my-comment-msg">{item.message}</p>
+                            </a>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="account-empty-state account-empty-state--compact">
