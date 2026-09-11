@@ -260,6 +260,14 @@ function clampPosition(value: number, size: number, viewportSize: number) {
   return Math.max(12, Math.min(value, viewportSize - size - 12));
 }
 
+const CUSTOM_STATUS_EMOJIS: readonly string[] = [
+  '☕', '💻', '🚀', '🎯', '🌿', '💡', '🎧', '💤',
+  '🔥', '✨', '📚', '✍️', '🎨', '🛠️', '🏖️', '🎮',
+  '🍕', '🍵', '🏃', '🧘', '🥳', '🤔', '😎', '😴',
+  '🔋', '⚡', '💎', '🌟', '🌈', '🎪', '🥑', '🚲',
+  '🐱', '🐶', '🎵', '☀️',
+] as const;
+
 export function ThemeOverlays({
   brandName,
   authorName,
@@ -334,6 +342,15 @@ export function ThemeOverlays({
 
   const [equippedBadgeIds, setEquippedBadgeIds] = useState<string[]>(() => readEquippedBadges());
 
+  useEffect(() => {
+    const handleBadgesUpdate = (e: Event) => {
+      const detail = (e as CustomEvent<string[]>).detail ?? readEquippedBadges();
+      setEquippedBadgeIds(detail);
+    };
+    window.addEventListener('shijianus:equipped-badges-change', handleBadgesUpdate);
+    return () => window.removeEventListener('shijianus:equipped-badges-change', handleBadgesUpdate);
+  }, []);
+
   const nextLevelPlan = useMemo(() => {
     return getNextLevelRequirements(userStats, account?.role, account?.email);
   }, [userStats, account?.role, account?.email]);
@@ -349,18 +366,19 @@ export function ThemeOverlays({
   }, [userStats, account?.email, account?.role, accountForm.bio, account?.bio, accountForm.avatar, account?.avatar, userLevel.isWebmaster]);
 
   const handleToggleBadge = (badgeId: string) => {
+    const current = readEquippedBadges();
     let nextIds: string[];
-    if (equippedBadgeIds.includes(badgeId)) {
-      nextIds = equippedBadgeIds.filter((id) => id !== badgeId);
+    if (current.includes(badgeId)) {
+      nextIds = current.filter((id) => id !== badgeId);
     } else {
-      if (equippedBadgeIds.length >= 4) {
+      if (current.length >= 4) {
         setAuthStatusMessage({
           type: 'info',
           text: '最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。',
         });
         return;
       }
-      nextIds = [...equippedBadgeIds, badgeId];
+      nextIds = [...current, badgeId];
     }
     setEquippedBadgeIds(nextIds);
     writeEquippedBadges(nextIds);
@@ -368,6 +386,7 @@ export function ThemeOverlays({
   };
 
   const [userStatus, setUserStatus] = useState<UserStatus>(() => readUserStatus());
+  const [showStatusEmojiPicker, setShowStatusEmojiPicker] = useState(false);
 
   useEffect(() => {
     const handleStatusUpdate = (e: Event) => {
@@ -2324,15 +2343,27 @@ export function ThemeOverlays({
                     })}
                   </div>
                   <div className="account-status-custom-row">
-                    <input
-                      type="text"
-                      className="account-status-emoji-input"
-                      value={userStatus.emoji}
-                      placeholder="☕"
-                      maxLength={4}
-                      onChange={(e) => handleCustomStatusChange(e.target.value, userStatus.text)}
-                      title="自定义状态 Emoji"
-                    />
+                    <div className="account-status-emoji-select-group">
+                      <button
+                        type="button"
+                        className={`account-status-emoji-trigger ${showStatusEmojiPicker ? 'is-active' : ''}`}
+                        onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
+                        title="点击选择状态 Emoji 表情"
+                        aria-label="选择状态 Emoji 表情"
+                      >
+                        <span className="current-status-emoji">{userStatus.emoji || '☕'}</span>
+                        <ChevronDown className="h-3 w-3 opacity-60" />
+                      </button>
+                      <input
+                        type="text"
+                        className="account-status-emoji-input"
+                        value={userStatus.emoji}
+                        placeholder="☕"
+                        maxLength={4}
+                        onChange={(e) => handleCustomStatusChange(e.target.value, userStatus.text)}
+                        title="自定义输入 Emoji"
+                      />
+                    </div>
                     <input
                       type="text"
                       className="account-status-text-input"
@@ -2350,6 +2381,7 @@ export function ThemeOverlays({
                           const next = { emoji: '', text: '' };
                           setUserStatus(next);
                           writeUserStatus(next);
+                          setShowStatusEmojiPicker(false);
                         }}
                         title="清除当前状态"
                       >
@@ -2357,6 +2389,38 @@ export function ThemeOverlays({
                       </button>
                     )}
                   </div>
+
+                  {showStatusEmojiPicker && (
+                    <div className="account-status-emoji-palette">
+                      <div className="account-status-emoji-palette__header">
+                        <span className="account-status-emoji-palette__title">选择状态 Emoji</span>
+                        <button
+                          type="button"
+                          className="account-status-emoji-palette__close"
+                          onClick={() => setShowStatusEmojiPicker(false)}
+                          aria-label="关闭选择面板"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="account-status-emoji-palette__grid">
+                        {CUSTOM_STATUS_EMOJIS.map((em) => (
+                          <button
+                            key={em}
+                            type="button"
+                            className={`account-status-emoji-palette__item ${userStatus.emoji === em ? 'is-selected' : ''}`}
+                            onClick={() => {
+                              handleCustomStatusChange(em, userStatus.text);
+                              setShowStatusEmojiPicker(false);
+                            }}
+                            title={`选择 ${em}`}
+                          >
+                            {em}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -2390,9 +2454,7 @@ export function ThemeOverlays({
                             <strong className="account-level-current-val">{req.current}</strong>
                             <span className="account-level-separator"> / </span>
                             <span className="account-level-target-val">{req.target} {req.unit}</span>
-                            {nextLevelPlan.isExempt && !req.isMet ? (
-                              <span className="account-level-status is-exempt" title="站长特权豁免等级限制">✓ 站长特免 ({req.progressPercent}%)</span>
-                            ) : req.isMet ? (
+                            {req.isMet ? (
                               <span className="account-level-status is-met">✓ 已满足</span>
                             ) : (
                               <span className={`account-level-status is-${req.colorTier}`}>{req.progressPercent}%</span>
@@ -2427,24 +2489,19 @@ export function ThemeOverlays({
                       {unlockedBadges.map((badge) => {
                         const isEquipped = equippedBadgeIds.includes(badge.id);
                         return (
-                          <div
+                          <button
                             key={badge.id}
+                            type="button"
                             className={`account-badge-card ${isEquipped ? 'is-equipped' : ''}`}
                             title={badge.description}
+                            onClick={() => handleToggleBadge(badge.id)}
+                            aria-pressed={isEquipped}
                           >
                             <div className="badge-card-main">
                               <span className="badge-card-icon">{badge.icon}</span>
                               <span className="badge-card-name">{badge.name}</span>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleBadge(badge.id)}
-                              className={`badge-card-equip-btn ${isEquipped ? 'is-equipped' : ''}`}
-                              aria-label={isEquipped ? `卸下 ${badge.name}` : `佩戴 ${badge.name}`}
-                            >
-                              {isEquipped ? '已佩戴' : '佩戴'}
-                            </button>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>

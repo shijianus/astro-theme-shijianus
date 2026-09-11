@@ -729,8 +729,32 @@ export function evaluateUserBadges(
     });
   }
 
-  // 2. 【阅读沉淀成就】（权重 40-70）
+  // 2. 【阅读沉淀成就】（权重 40-75）
   const readingTime = merged.readingTime ?? merged.readingMinutes ?? 0;
+  if (readingTime >= 3600) {
+    unlocked.push({
+      id: 'read_3600m',
+      name: '墨海领航',
+      label: '墨海领航',
+      icon: '🧭',
+      category: 'read',
+      priority: 75,
+      description: '累计沉浸博文阅读突破 60 小时，博大精深',
+      isUnlocked: true,
+    });
+  }
+  if (readingTime >= 1800) {
+    unlocked.push({
+      id: 'read_1800m',
+      name: '学贯中西',
+      label: '学贯中西',
+      icon: '📜',
+      category: 'read',
+      priority: 72,
+      description: '累计潜心研读文章突破 30 小时',
+      isUnlocked: true,
+    });
+  }
   if (readingTime >= 600) {
     unlocked.push({
       id: 'read_600m',
@@ -793,7 +817,32 @@ export function evaluateUserBadges(
       isUnlocked: true,
     });
   }
-  if ((merged.commentCount ?? 0) >= 5) {
+  const cCount = merged.commentCount ?? 0;
+  if (cCount >= 50) {
+    unlocked.push({
+      id: 'comment_50',
+      name: '纵论古今',
+      label: '纵论古今',
+      icon: '🗣️',
+      category: 'comment',
+      priority: 65,
+      description: '累计发表 50 条及以上富有见地的思辨言论',
+      isUnlocked: true,
+    });
+  }
+  if (cCount >= 20) {
+    unlocked.push({
+      id: 'comment_20',
+      name: '真知灼见',
+      label: '真知灼见',
+      icon: '💡',
+      category: 'comment',
+      priority: 58,
+      description: '累计发表 20 条及以上优质独立见解',
+      isUnlocked: true,
+    });
+  }
+  if (cCount >= 5) {
     unlocked.push({
       id: 'comment_5',
       name: '言之有物',
@@ -818,9 +867,21 @@ export function evaluateUserBadges(
     });
   }
 
-  // 4. 【赞赏喝彩成就】（权重 40-80）
+  // 4. 【赞赏喝彩成就】（权重 40-85）
   const reactionsGiven = merged.reactionsGiven ?? 0;
   const reactionsReceived = merged.reactionsReceived ?? 0;
+  if (reactionsReceived >= 100) {
+    unlocked.push({
+      id: 'reaction_rec_100',
+      name: '众望所归',
+      label: '众望所归',
+      icon: '🌟',
+      category: 'reaction',
+      priority: 85,
+      description: '见解深邃，累计收获超过 100 次读者热烈喝彩',
+      isUnlocked: true,
+    });
+  }
   if (reactionsReceived >= 50) {
     unlocked.push({
       id: 'reaction_rec_50',
@@ -842,6 +903,18 @@ export function evaluateUserBadges(
       category: 'reaction',
       priority: 65,
       description: '发表的见解累计收获 20 次以上喝彩互动',
+      isUnlocked: true,
+    });
+  }
+  if (reactionsGiven >= 30) {
+    unlocked.push({
+      id: 'reaction_given_30',
+      name: '乐善好施',
+      label: '乐善好施',
+      icon: '💖',
+      category: 'reaction',
+      priority: 55,
+      description: '由衷赞赏他人，送出超过 30 次喝彩互动',
       isUnlocked: true,
     });
   }
@@ -870,13 +943,25 @@ export function evaluateUserBadges(
     });
   }
 
-  // 5. 【常客与资料成就】（权重 30-80）
+  // 5. 【常客与资料成就】（权重 30-90）
   const bio = merged.bio || '';
   const avatarUrl = merged.avatarUrl || '';
   const activeDays = merged.activeDays ?? 1;
   const daysSinceRegistered = merged.daysSinceRegistered ?? 0;
   const hasEmail = Boolean(merged.epomail || merged.email);
 
+  if (activeDays >= 200 || daysSinceRegistered >= 500) {
+    unlocked.push({
+      id: 'activity_evergreen',
+      name: '坚韧长青',
+      label: '坚韧长青',
+      icon: '🌲',
+      category: 'activity',
+      priority: 88,
+      description: '持之以恒，在博客积累了长青般的持久印记',
+      isUnlocked: true,
+    });
+  }
   if (daysSinceRegistered >= 365) {
     unlocked.push({
       id: 'activity_365d',
@@ -898,6 +983,18 @@ export function evaluateUserBadges(
       category: 'activity',
       priority: 75,
       description: '累计在博客活跃长达 100 天的深厚笔友',
+      isUnlocked: true,
+    });
+  }
+  if (activeDays >= 30) {
+    unlocked.push({
+      id: 'activity_30d',
+      name: '见缝插针',
+      label: '见缝插针',
+      icon: '⚡',
+      category: 'activity',
+      priority: 60,
+      description: '保持高频活跃，累计活跃访问达到 30 天',
       isUnlocked: true,
     });
   }
@@ -997,23 +1094,21 @@ export function writeEquippedBadges(badgeIds: string[]): void {
 
 /**
  * Resolves which badges to display in the author profile popover (max 4).
- * If user has customized equipped badges, returns those in selected order.
- * Otherwise falls back to the top 4 unlocked badges by default priority.
+ * Strictly synchronized with user's equipped badges selection.
+ * If user has not equipped any badge (ids is empty), returns an empty array.
  */
 export function getEquippedBadges(
   unlockedBadges: CommunityBadge[],
   equippedIds?: string[]
 ): CommunityBadge[] {
   if (!unlockedBadges || unlockedBadges.length === 0) return [];
-  const ids = equippedIds && equippedIds.length > 0 ? equippedIds : readEquippedBadges();
+  const ids = equippedIds !== undefined ? equippedIds : readEquippedBadges();
   if (ids && ids.length > 0) {
     const map = new Map(unlockedBadges.map((b) => [b.id, b]));
     const equipped = ids.map((id) => map.get(id)).filter(Boolean) as CommunityBadge[];
-    if (equipped.length > 0) {
-      return equipped.slice(0, 4);
-    }
+    return equipped.slice(0, 4);
   }
-  return unlockedBadges.slice(0, 4);
+  return [];
 }
 
 export interface LevelRequirementItem {

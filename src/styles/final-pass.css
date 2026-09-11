@@ -4209,40 +4209,61 @@ span.text-xs.font-semibold.text-rose-500 {
 
 .account-badges-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: 7px;
+  width: 100%;
 }
 
-/* Compact Badge Card with Equip Toggle Button (Deep vs Light Distinction) */
+/* Compact Badge Card (Deep vs Light Distinction without any button text) */
 .account-badge-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
-  padding: 5px 8px;
+  padding: 6px 10px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--card-bg) 65%, var(--secondbg));
+  background: color-mix(in srgb, var(--card-bg) 75%, var(--secondbg));
   border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
-  transition: all 0.2s ease;
+  color: var(--font-color);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   width: 100%;
   box-sizing: border-box;
+  user-select: none;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
 }
 
 .account-badge-card:hover {
-  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
-  background: color-mix(in srgb, var(--card-bg) 45%, var(--secondbg));
+  border-color: color-mix(in srgb, var(--theme-main) 40%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 50%, var(--secondbg));
+  transform: translateY(-1px);
 }
 
 .account-badge-card.is-equipped {
-  border-color: color-mix(in srgb, var(--theme-main) 45%, transparent);
-  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
-  box-shadow: 0 1px 4px rgba(66, 90, 239, 0.12);
+  border: 1.5px solid var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main) 18%, var(--card-bg));
+  color: var(--theme-main, #425aef);
+  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.22);
+}
+
+[data-theme='dark'] .account-badge-card.is-equipped {
+  background: color-mix(in srgb, var(--theme-main) 28%, #18191c);
+  border-color: var(--theme-main);
+  color: #88a4ff;
+  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.35);
+}
+
+.account-badge-card.is-equipped:hover {
+  background: color-mix(in srgb, var(--theme-main) 24%, var(--card-bg));
+  transform: translateY(-1.5px);
+  box-shadow: 0 3px 10px rgba(66, 90, 239, 0.3);
 }
 
 .badge-card-main {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
@@ -4254,45 +4275,14 @@ span.text-xs.font-semibold.text-rose-500 {
 }
 
 .badge-card-name {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: var(--font-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.badge-card-equip-btn {
-  flex-shrink: 0;
-  font-size: 11px;
-  line-height: 1.2;
-  padding: 2px 7px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
-  background: color-mix(in srgb, var(--font-color) 6%, transparent);
-  color: var(--secondtext);
-  user-select: none;
-}
-
-.badge-card-equip-btn:hover {
-  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
-  color: var(--theme-main);
-  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
-}
-
-.badge-card-equip-btn.is-equipped {
-  background: var(--theme-main, #425aef);
-  color: #ffffff;
-  border-color: var(--theme-main, #425aef);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(66, 90, 239, 0.3);
-}
-
-.badge-card-equip-btn.is-equipped:hover {
-  background: color-mix(in srgb, var(--theme-main) 85%, #000);
-  border-color: color-mix(in srgb, var(--theme-main) 85%, #000);
+  color: inherit;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
 }
 
 .account-pill--level {
@@ -4380,7 +4370,38 @@ span.text-xs.font-semibold.text-rose-500 {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 4px;
+  position: relative;
+}
+
+.account-status-emoji-select-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.account-status-emoji-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
+  background: var(--card-bg);
+  color: var(--font-color);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.account-status-emoji-trigger:hover,
+.account-status-emoji-trigger.is-active {
+  border-color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg));
+  color: var(--theme-main);
 }
 
 .account-status-emoji-input {
@@ -4393,6 +4414,7 @@ span.text-xs.font-semibold.text-rose-500 {
   background: var(--card-bg);
   color: var(--font-color);
   box-sizing: border-box;
+  height: 32px;
 }
 
 .account-status-text-input {
@@ -4404,6 +4426,7 @@ span.text-xs.font-semibold.text-rose-500 {
   background: var(--card-bg);
   color: var(--font-color);
   box-sizing: border-box;
+  height: 32px;
 }
 
 .account-status-clear-btn {
@@ -4415,12 +4438,79 @@ span.text-xs.font-semibold.text-rose-500 {
   color: var(--secondtext);
   cursor: pointer;
   transition: all 0.18s ease;
+  height: 32px;
 }
 
 .account-status-clear-btn:hover {
   color: #ef4444;
   border-color: #ef4444;
   background: color-mix(in srgb, #ef4444 8%, transparent);
+}
+
+.account-status-emoji-palette {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 95%, var(--secondbg));
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.18s ease-out;
+}
+
+.account-status-emoji-palette__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--secondtext);
+}
+
+.account-status-emoji-palette__close {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--secondtext);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.account-status-emoji-palette__close:hover {
+  color: var(--theme-main);
+  background: color-mix(in srgb, var(--font-color) 8%, transparent);
+}
+
+.account-status-emoji-palette__grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+
+.account-status-emoji-palette__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-size: 1.15rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.account-status-emoji-palette__item:hover {
+  background: color-mix(in srgb, var(--theme-main) 14%, transparent);
+  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
+  transform: scale(1.18);
+}
+
+.account-status-emoji-palette__item.is-selected {
+  background: color-mix(in srgb, var(--theme-main) 20%, transparent);
+  border-color: var(--theme-main);
 }
 
 .profile-popover-status-emoji {

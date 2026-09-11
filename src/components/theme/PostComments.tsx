@@ -376,14 +376,13 @@ export function PostComments({
       reactionsReceived = Number(commentLevelInfo.reactionsReceived) || 0;
     } else {
       const calculatedReactions = authorComments.reduce((acc, c) => {
-        let count = c.likesCount || 0;
-        if (c.reactions?.summary) {
-          count += Object.values(c.reactions.summary).reduce((a, b) => a + b, 0);
-        }
-        return acc + count;
+        const summaryCount = c.reactions?.summary
+          ? Object.values(c.reactions.summary).reduce((a, b) => a + b, 0)
+          : 0;
+        return acc + Math.max(c.likesCount || 0, summaryCount);
       }, 0);
       reactionsReceived = isCurrentAccount
-        ? Math.max(calculatedReactions, readUserStats().reactionsReceived)
+        ? readUserStats().reactionsReceived
         : calculatedReactions;
     }
 
@@ -544,10 +543,10 @@ export function PostComments({
     };
 
     const unlockedBadges = evaluateUserBadges(stats, badgeContext);
-    const equippedIds = readEquippedBadges();
-    const badges = (isCurrentAccount || isWebmaster)
-      ? getEquippedBadges(unlockedBadges, equippedIds)
-      : getEquippedBadges(unlockedBadges);
+    const equippedIds = (isCurrentAccount || isWebmaster)
+      ? readEquippedBadges()
+      : ((comment as any).equippedBadges || (commentLevelInfo as any)?.equippedBadges || []);
+    const badges = getEquippedBadges(unlockedBadges, equippedIds);
 
     const userStatus = readUserStatus();
     const statusEmoji = (isCurrentAccount || isWebmaster) ? userStatus.emoji : '';
