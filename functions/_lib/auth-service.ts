@@ -685,9 +685,12 @@ export async function authenticateLocalReader(
 export interface UserLevelInfo {
   email: string;
   level: number;
-  levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3';
+  levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3' | 'lv4';
   levelName: string;
+  trustLevel: number;
   badge: string;
+  isWebmaster: boolean;
+  isSquareAvatar: boolean;
   mappedEpomailRole: 'user_lv0' | 'user_lv1' | 'user_base';
   epomailRoleName: string;
   stats: {
@@ -758,76 +761,150 @@ export async function calculateUserLevel(email: string, env: AppEnv): Promise<Us
   const readingMinutes = Math.min(9999, registeredDays * 5 + commentCount * 15 + likesReceived * 2);
   const articlesRead = Math.min(999, Math.floor(registeredDays * 0.8 + commentCount * 2 + 1));
 
+  const isWebmaster = cleanEmail === CANONICAL_ADMIN_EMAIL || cleanEmail === (env.ADMIN_EMAIL || '').toLowerCase();
+
   let level = 0;
-  let levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3' = 'lv0';
-  let levelName = '认证书友';
-  let badge = 'LV.0 认证书友';
+  let levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3' | 'lv4' = 'lv0';
+  let levelName = '新兴用户';
+  let badge = 'LV.0 · 新兴用户';
+  let trustLevel = 0;
   let mappedEpomailRole: 'user_lv0' | 'user_lv1' | 'user_base' = 'user_lv0';
   let epomailRoleName = '普通用户 LV.0';
-  let nextLevelHint = '加入 10 天并在博客发表 3 条讨论评论，即可晋升 LV.1 并解锁 EpoMail 附件发送！';
+  let nextLevelHint = '点击浏览任意博文即刻解锁「初始用户」称号与信任等级！';
 
-  if (registeredDays >= 180 && likesReceived >= 100) {
+  if (isWebmaster) {
+    level = 4;
+    levelCode = 'lv4';
+    levelName = '站长';
+    badge = 'LV.4 · 站长';
+    trustLevel = 99;
+    mappedEpomailRole = 'user_base';
+    epomailRoleName = '全站架构师 / 站长';
+    nextLevelHint = '全站权威所有者与最高架构管理者';
+  } else if (registeredDays >= 365) {
     level = 3;
     levelCode = 'lv3';
-    levelName = '终身学者';
-    badge = 'LV.3 终身学者';
+    levelName = '年度用户';
+    badge = 'LV.3 · 年度用户';
+    trustLevel = 20;
     mappedEpomailRole = 'user_lv1';
-    epomailRoleName = '普通用户 LV.3 (至尊书友)';
-    nextLevelHint = '恭喜！已达成最高荣誉学者等级！';
-  } else if (registeredDays >= 90 && (likesReceived >= 30 || commentCount >= 20)) {
+    epomailRoleName = '核心学者 LV.3';
+    nextLevelHint = '恭喜！已达成常青学者顶级荣誉！';
+  } else if (registeredDays >= 60 && readingMinutes >= 720 && commentCount >= 100 && likesReceived >= 50) {
+    level = 3;
+    levelCode = 'lv3';
+    levelName = '先驱';
+    badge = 'LV.3 · 先驱';
+    trustLevel = 15;
+    mappedEpomailRole = 'user_lv1';
+    epomailRoleName = '核心学者 LV.3';
+    nextLevelHint = `距 LV.3「年度用户」还需活跃 ${Math.max(0, 365 - registeredDays)} 天`;
+  } else if (registeredDays >= 20 && readingMinutes >= 300 && commentCount >= 30 && likesReceived >= 30) {
     level = 2;
     levelCode = 'lv2';
-    levelName = '资深贡献者';
-    badge = 'LV.2 资深贡献者';
+    levelName = '活跃用户';
+    badge = 'LV.2 · 活跃用户';
+    trustLevel = 10;
     mappedEpomailRole = 'user_lv1';
-    epomailRoleName = '普通用户 LV.2 (核心书友)';
-    nextLevelHint = `距 LV.3 还需注册满 180 天 (当前 ${registeredDays} 天) 且累计获赞 100 个 (当前 ${likesReceived} 赞)`;
-  } else if (registeredDays >= 10 && (commentCount >= 3 || (articlesRead >= 10 && readingMinutes >= 100))) {
+    epomailRoleName = '高级用户 LV.2';
+    nextLevelHint = `晋升「先驱」还需: 活跃 ${Math.max(0, 60 - registeredDays)}天 | 阅读 ${Math.max(0, 720 - readingMinutes)}m | 评论 ${Math.max(0, 100 - commentCount)}条 | 获赞 ${Math.max(0, 50 - likesReceived)}个`;
+  } else if (readingMinutes >= 30 && commentCount >= 10) {
     level = 1;
     levelCode = 'lv1';
-    levelName = '活跃学者';
-    badge = 'LV.1 活跃学者';
+    levelName = '贡献者';
+    badge = 'LV.1 · 贡献者';
+    trustLevel = 7;
+    mappedEpomailRole = 'user_lv1';
+    epomailRoleName = '活跃用户 LV.1';
+    nextLevelHint = `晋升「活跃用户」还需: 活跃 ${Math.max(0, 20 - registeredDays)}天 | 阅读 ${Math.max(0, 300 - readingMinutes)}m | 评论 ${Math.max(0, 30 - commentCount)}条 | 获赞 ${Math.max(0, 30 - likesReceived)}个`;
+  } else if (commentCount >= 1) {
+    level = 1;
+    levelCode = 'lv1';
+    levelName = '基本用户';
+    badge = 'LV.1 · 基本用户';
+    trustLevel = 5;
     mappedEpomailRole = 'user_lv1';
     epomailRoleName = '普通用户 LV.1';
-    nextLevelHint = `距 LV.2 还需注册满 90 天 (当前 ${registeredDays} 天) 且累计获赞 30 个 (当前 ${likesReceived} 赞)`;
+    nextLevelHint = `晋升「贡献者」还需: 阅读 ${Math.max(0, 30 - readingMinutes)}m | 评论 ${Math.max(0, 10 - commentCount)}条`;
+  } else if (readingMinutes > 0 || articlesRead > 0) {
+    level = 0;
+    levelCode = 'lv0';
+    levelName = '初始用户';
+    badge = 'LV.0 · 初始用户';
+    trustLevel = 2;
+    mappedEpomailRole = 'user_lv0';
+    epomailRoleName = '普通用户 LV.0';
+    nextLevelHint = '在博文底部发表首次评论即可晋升「基本用户 (LV.1)」！';
   }
 
-  const epomailStorageQuotaMb = level >= 1 ? 25 : 10;
-  const epomailDailySendLimit = level >= 1 ? 10 : 8;
+  const epomailStorageQuotaMb = level >= 2 ? 100 : level >= 1 ? 25 : 10;
+  const epomailDailySendLimit = level >= 2 ? 50 : level >= 1 ? 10 : 8;
   const epomailAllowAttachment = level >= 1;
 
   const allTiers = [
     {
       level: 0,
-      levelName: '认证书友 (LV.0)',
-      badge: 'LV.0 认证书友',
-      requirements: '注册并绑定 blog.epomail.com 账号',
-      benefits: 'EpoMail 10MB 配额，每日 8 封邮件，纯文本极速收发',
+      levelName: '新兴用户 (LV.0)',
+      badge: 'LV.0 · 新兴用户',
+      requirements: '新建账号或初次访问',
+      benefits: '浏览阅读、访客交流基础权限，TL.0',
       achieved: true,
     },
     {
+      level: 0,
+      levelName: '初始用户 (LV.0)',
+      badge: 'LV.0 · 初始用户',
+      requirements: '首次进行博文阅读',
+      benefits: '解锁读者基础身份，TL.2',
+      achieved: level >= 1 || levelName !== '新兴用户',
+    },
+    {
       level: 1,
-      levelName: '活跃学者 (LV.1)',
-      badge: 'LV.1 活跃学者',
-      requirements: '注册满 10 天，发表 3 条有效讨论评论或累计阅读 100 分钟',
-      benefits: 'EpoMail 25MB 配额，每日 10 封发信，解锁附件发送权限',
+      levelName: '基本用户 (LV.1)',
+      badge: 'LV.1 · 基本用户',
+      requirements: '发表首次博文评论',
+      benefits: '解锁个人足迹同步与互动提醒，TL.5',
       achieved: level >= 1,
     },
     {
+      level: 1,
+      levelName: '贡献者 (LV.1)',
+      badge: 'LV.1 · 贡献者',
+      requirements: '阅读满 30 分钟且发表 10 条以上评论 (含 boost)',
+      benefits: '解锁 Epomail 附件发送与大容量漫游，TL.7',
+      achieved: level >= 2 || (level === 1 && (levelName === '贡献者')),
+    },
+    {
       level: 2,
-      levelName: '资深贡献者 (LV.2)',
-      badge: 'LV.2 资深贡献者',
-      requirements: '注册满 90 天，获得 30 个点赞或发表 20 条优质讨论',
-      benefits: 'EpoMail 50MB 配额，每日 20 封发信，支持大附件与优先通道',
+      levelName: '活跃用户 (LV.2)',
+      badge: 'LV.2 · 活跃用户',
+      requirements: '活跃 > 20 天，阅读 > 300 分钟，评论 > 30 条且获赞 > 30 个',
+      benefits: '专属活跃学者标识与高优先级通道，TL.10',
       achieved: level >= 2,
     },
     {
       level: 3,
-      levelName: '终身学者 (LV.3)',
-      badge: 'LV.3 终身学者',
-      requirements: '注册满 180 天，累计获得 100 个点赞',
-      benefits: 'EpoMail 100MB 配额，每日 50 封发信，全功能至尊特权',
+      levelName: '先驱 (LV.3)',
+      badge: 'LV.3 · 先驱',
+      requirements: '活跃 > 60 天，阅读 > 12 小时，评论 > 100 条且获赞 > 50 个',
+      benefits: '先驱学者专属徽章与社群提案特权，TL.15',
       achieved: level >= 3,
+    },
+    {
+      level: 3,
+      levelName: '年度用户 (LV.3)',
+      badge: 'LV.3 · 年度用户',
+      requirements: '全站活跃天数超过 365 天',
+      benefits: '常青年度会员顶级荣誉勋章，TL.20',
+      achieved: level >= 3 && (levelName === '年度用户' || isWebmaster),
+    },
+    {
+      level: 4,
+      levelName: '站长 / 核心成员 (LV.4)',
+      badge: 'LV.4 · 站长',
+      requirements: '全站权威架构所有者 (唯一方形头像)',
+      benefits: '全站最高治理与最高信任等级，TL.99',
+      achieved: isWebmaster,
     },
   ];
 
@@ -836,7 +913,10 @@ export async function calculateUserLevel(email: string, env: AppEnv): Promise<Us
     level,
     levelCode,
     levelName,
+    trustLevel,
     badge,
+    isWebmaster,
+    isSquareAvatar: isWebmaster,
     mappedEpomailRole,
     epomailRoleName,
     stats: {

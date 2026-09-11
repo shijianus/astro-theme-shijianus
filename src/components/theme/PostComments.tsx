@@ -40,6 +40,13 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
+  Mail,
+  Copy,
+  Check,
+  Crown,
+  Globe,
+  AtSign,
+  Shield,
 } from 'lucide-react';
 import type { CommentProvider } from '../../config/site';
 import {
@@ -57,6 +64,11 @@ import {
   type CommentQuote,
   type PostType,
 } from '../../lib/comment-client';
+import {
+  computeUserLevel,
+  getAuthorGroups,
+  type UserLevelInfo,
+} from '../../lib/user-level';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import type { LocaleVariant } from '../../lib/user-persona.ts';
 import { getCommentTranslations } from '../../lib/comments-i18n.ts';
@@ -270,6 +282,188 @@ export function PostComments({
   const [activeReactionPopupId, setActiveReactionPopupId] = useState<string | null>(null);
   const longPressTimerRef = useRef<any>(null);
   const isLongPressTriggeredRef = useRef(false);
+
+  // User Profile Popover state (click or hover on author avatar)
+  const [profilePopover, setProfilePopover] = useState<{
+    isOpen: boolean;
+    author: {
+      name: string;
+      avatar?: string;
+      role: 'admin' | 'reader' | 'visitor';
+      email?: string;
+      website?: string;
+      bio?: string;
+      isWebmaster: boolean;
+      levelInfo: UserLevelInfo;
+      groups: string[];
+      ipCountryFlag?: string | null;
+      ipCountryName?: string | null;
+      ipLocation?: string | null;
+    } | null;
+    anchorRect: { top: number; left: number; width: number; height: number } | null;
+    isPinned: boolean;
+  }>({
+    isOpen: false,
+    author: null,
+    anchorRect: null,
+    isPinned: false,
+  });
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const hoverCloseTimerRef = useRef<any>(null);
+
+  const openAuthorProfile = (
+    comment: BlogComment,
+    event: React.MouseEvent<HTMLElement>,
+    isPinned: boolean
+  ) => {
+    if (hoverCloseTimerRef.current) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+    const target = event.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const isWebmaster =
+      comment.authorRole === 'admin' ||
+      (comment as any).isWebmaster === true ||
+      comment.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+
+    const isCurrentAccount = account && (
+      account.id === comment.authorId ||
+      account.name === comment.authorName ||
+      account.email === comment.authorEmail
+    );
+
+    const stats = {
+      hasAccount: Boolean(comment.authorEmail || comment.authorRole !== 'visitor'),
+      hasReadAny: true,
+      readingMinutes: isWebmaster ? 9999 : isCurrentAccount ? 120 : (comment.authorRole === 'reader' ? 45 : 5),
+      commentCount: isWebmaster ? 999 : (comment.authorRole === 'reader' ? 12 : 1),
+      reactionsReceived: isWebmaster ? 999 : (comment.likesCount || 0),
+      activeDays: isWebmaster ? 400 : (comment.authorRole === 'reader' ? 15 : 1),
+      activeDates: [],
+      firstSeenAt: comment.createdAt,
+      isWebmaster,
+    };
+
+    const levelInfo = computeUserLevel(stats, comment.authorRole, comment.authorEmail);
+    const groups = getAuthorGroups({
+      role: comment.authorRole,
+      isWebmaster,
+      email: comment.authorEmail,
+      groups: (comment as any).groups,
+    });
+
+    setProfilePopover({
+      isOpen: true,
+      author: {
+        name: comment.authorName,
+        avatar: comment.authorAvatar || (isWebmaster ? '/media/shijianus/avatar.jpg' : undefined),
+        role: comment.authorRole,
+        email: comment.authorEmail,
+        website: comment.authorWebsite,
+        bio: (comment as any).authorBio || (isWebmaster ? 'EpoCanvas 站长 · 博客创作者与架构设计者' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined),
+        isWebmaster,
+        levelInfo,
+        groups,
+        ipCountryFlag: comment.ipCountryFlag,
+        ipCountryName: comment.ipCountryName,
+        ipLocation: comment.ipLocation,
+      },
+      anchorRect: {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      },
+      isPinned,
+    });
+  };
+
+  const handleAvatarMouseEnter = (comment: BlogComment, e: React.MouseEvent<HTMLElement>) => {
+    if (!profilePopover.isPinned) {
+      openAuthorProfile(comment, e, false);
+    }
+  };
+
+  const handleAvatarMouseLeave = () => {
+    if (!profilePopover.isPinned) {
+      hoverCloseTimerRef.current = setTimeout(() => {
+        setProfilePopover((prev) => ({ ...prev, isOpen: false }));
+      }, 350);
+    }
+  };
+
+  const handleAvatarClick = (comment: BlogComment, e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    openAuthorProfile(comment, e, true);
+  };
+
+  const handleQuickMentionAuthor = (authorName: string) => {
+    const mentionText = `@${authorName} `;
+    setMainMessage((prev) => (prev.includes(mentionText) ? prev : `${mentionText}${prev}`));
+    setMainInputFocused(true);
+    setProfilePopover({ isOpen: false, author: null, anchorRect: null, isPinned: false });
+    setTimeout(() => {
+      const textarea = document.querySelector('#post-comment textarea') as HTMLTextAreaElement | null;
+      if (textarea) {
+        textarea.focus();
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
+  const handleCopyEmail = (email: string) => {
+    const markCopied = () => {
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(email)
+        .then(markCopied)
+        .catch(() => {
+          try {
+            const temp = document.createElement('textarea');
+            temp.value = email;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            markCopied();
+          } catch {}
+        });
+    } else {
+      try {
+        const temp = document.createElement('textarea');
+        temp.value = email;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        markCopied();
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest('.author-profile-popover') && !target.closest('.tk-avatar')) {
+        setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }));
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }));
+      }
+    };
+    window.addEventListener('click', handleOutsideClick);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleOutsideClick);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // Compute effective avatar for current user with full role fallback
   const effectiveCurrentAvatar = useMemo(() => {
@@ -1973,19 +2167,33 @@ export function PostComments({
                   return (
                     <div className={`tk-comment ${isBoost ? 'is-boost-card' : ''}`} key={item.id} id={`comment-${item.id}`}>
                       {/* Avatar */}
-                      <div className="tk-avatar theme-account-drawer__summary-avatar">
-                        {item.authorAvatar ? (
-                          <img src={item.authorAvatar} alt={item.authorName} loading="lazy" />
-                        ) : item.authorRole === 'admin' ? (
-                          <img src="/media/shijianus/avatar.jpg" alt={item.authorName} loading="lazy" />
-                        ) : item.authorName && item.authorName !== '访客' && item.authorName !== tC.visitorBadge ? (
-                          <span className="tk-avatar-initials">{getCommentInitials(item.authorName)}</span>
-                        ) : (
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                          </svg>
-                        )}
-                      </div>
+                      {(() => {
+                        const isAuthorWebmaster = item.authorRole === 'admin' || (item as any).isWebmaster === true || item.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+                        return (
+                          <div
+                            className={`tk-avatar ${isAuthorWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'} theme-account-drawer__summary-avatar is-clickable`}
+                            onClick={(e) => handleAvatarClick(item, e)}
+                            onMouseEnter={(e) => handleAvatarMouseEnter(item, e)}
+                            onMouseLeave={handleAvatarMouseLeave}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`查看 ${item.authorName} 的个人资料`}
+                            title={isAuthorWebmaster ? '站长专属方形头像 (点击查看资料)' : '点击/悬停查看用户资料'}
+                          >
+                            {item.authorAvatar ? (
+                              <img src={item.authorAvatar} alt={item.authorName} loading="lazy" />
+                            ) : isAuthorWebmaster ? (
+                              <img src="/media/shijianus/avatar.jpg" alt={item.authorName} loading="lazy" />
+                            ) : item.authorName && item.authorName !== '访客' && item.authorName !== tC.visitorBadge ? (
+                              <span className="tk-avatar-initials">{getCommentInitials(item.authorName)}</span>
+                            ) : (
+                              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                              </svg>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {/* Comment Main */}
                       <div className="tk-main">
@@ -2348,19 +2556,34 @@ export function PostComments({
 
                                   return (
                                     <div className={`tk-comment tk-comment-reply ${isReplyBoost ? 'is-boost-card' : ''}`} key={reply.id} id={`comment-${reply.id}`}>
-                                      <div className="tk-avatar tk-avatar-small theme-account-drawer__summary-avatar">
-                                        {reply.authorAvatar ? (
-                                          <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
-                                        ) : reply.authorRole === 'admin' ? (
-                                          <img src="/media/shijianus/avatar.jpg" alt={reply.authorName} loading="lazy" />
-                                        ) : reply.authorName && reply.authorName !== '访客' ? (
-                                          <span className="tk-avatar-initials">{getCommentInitials(reply.authorName)}</span>
-                                        ) : (
-                                          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                          </svg>
-                                        )}
-                                      </div>
+                                      {/* Avatar */}
+                                      {(() => {
+                                        const isReplyWebmaster = reply.authorRole === 'admin' || (reply as any).isWebmaster === true || reply.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+                                        return (
+                                          <div
+                                            className={`tk-avatar tk-avatar-small ${isReplyWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'} theme-account-drawer__summary-avatar is-clickable`}
+                                            onClick={(e) => handleAvatarClick(reply, e)}
+                                            onMouseEnter={(e) => handleAvatarMouseEnter(reply, e)}
+                                            onMouseLeave={handleAvatarMouseLeave}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`查看 ${reply.authorName} 的个人资料`}
+                                            title={isReplyWebmaster ? '站长专属方形头像 (点击查看资料)' : '点击/悬停查看用户资料'}
+                                          >
+                                            {reply.authorAvatar ? (
+                                              <img src={reply.authorAvatar} alt={reply.authorName} loading="lazy" />
+                                            ) : isReplyWebmaster ? (
+                                              <img src="/media/shijianus/avatar.jpg" alt={reply.authorName} loading="lazy" />
+                                            ) : reply.authorName && reply.authorName !== '访客' ? (
+                                              <span className="tk-avatar-initials">{getCommentInitials(reply.authorName)}</span>
+                                            ) : (
+                                              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                              </svg>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
 
                                       <div className="tk-main">
                                         <div className="tk-row tk-meta">
@@ -3576,6 +3799,232 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                 >
                   {tC.modalConfirm}
                 </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Author Profile Popover */}
+      {typeof document !== 'undefined' &&
+        profilePopover.isOpen &&
+        profilePopover.author &&
+        profilePopover.anchorRect &&
+        createPortal(
+          <div
+            className={`author-profile-popover ${profilePopover.isPinned ? 'is-pinned' : ''} ${
+              profilePopover.author.isWebmaster ? 'is-webmaster-card' : ''
+            }`}
+            style={(() => {
+              const rect = profilePopover.anchorRect!;
+              const popoverWidth = 320;
+              const margin = 12;
+
+              let left = rect.left + rect.width / 2 - popoverWidth / 2;
+              if (typeof window !== 'undefined') {
+                if (left < margin) left = margin;
+                if (left + popoverWidth > window.innerWidth - margin) {
+                  left = window.innerWidth - popoverWidth - margin;
+                }
+              }
+
+              const popoverHeight = 310;
+              let top = rect.top - popoverHeight - 12;
+              if (top < margin) {
+                top = rect.bottom + 12;
+              }
+
+              return {
+                position: 'fixed',
+                left: `${Math.round(left)}px`,
+                top: `${Math.round(top)}px`,
+                width: `${popoverWidth}px`,
+                zIndex: 9999,
+              };
+            })()}
+            onMouseEnter={() => {
+              if (hoverCloseTimerRef.current) {
+                clearTimeout(hoverCloseTimerRef.current);
+                hoverCloseTimerRef.current = null;
+              }
+            }}
+            onMouseLeave={() => {
+              if (!profilePopover.isPinned) {
+                hoverCloseTimerRef.current = setTimeout(() => {
+                  setProfilePopover((prev) => ({ ...prev, isOpen: false }));
+                }, 350);
+              }
+            }}
+          >
+            <div className="profile-popover-inner">
+              {/* Header: Avatar, Name, Badges & Close Button */}
+              <div className="profile-popover-header">
+                <div
+                  className={`profile-popover-avatar ${
+                    profilePopover.author.isWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'
+                  }`}
+                >
+                  {profilePopover.author.avatar ? (
+                    <img src={profilePopover.author.avatar} alt={profilePopover.author.name} />
+                  ) : profilePopover.author.isWebmaster ? (
+                    <img src="/media/shijianus/avatar.jpg" alt={profilePopover.author.name} />
+                  ) : (
+                    <span className="profile-popover-initials">
+                      {getCommentInitials(profilePopover.author.name)}
+                    </span>
+                  )}
+                  {profilePopover.author.isWebmaster && (
+                    <span className="profile-popover-avatar-badge" title="站长专属身份">
+                      <Crown size={12} />
+                    </span>
+                  )}
+                </div>
+
+                <div className="profile-popover-identity">
+                  <div className="profile-popover-name-row">
+                    <span className="profile-popover-name">{profilePopover.author.name}</span>
+                    {profilePopover.author.isWebmaster ? (
+                      <span className="profile-popover-badge is-webmaster">
+                        <Crown size={11} /> 站长
+                      </span>
+                    ) : (
+                      <span className="profile-popover-badge is-role">
+                        {profilePopover.author.role === 'admin'
+                          ? '管理员'
+                          : profilePopover.author.role === 'reader'
+                          ? '注册读者'
+                          : '访客'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="profile-popover-level-row">
+                    <span className="profile-popover-badge is-level">
+                      {profilePopover.author.levelInfo.badge}
+                    </span>
+                    <span className="profile-popover-badge is-trust">
+                      TL.{profilePopover.author.levelInfo.trustLevel}
+                    </span>
+                    {profilePopover.author.ipCountryFlag && (
+                      <span
+                        className="profile-popover-badge is-geo"
+                        title={profilePopover.author.ipLocation || profilePopover.author.ipCountryName || ''}
+                      >
+                        {profilePopover.author.ipCountryFlag} {profilePopover.author.ipCountryName || ''}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {profilePopover.isPinned && (
+                  <button
+                    type="button"
+                    className="profile-popover-close-btn"
+                    onClick={() => setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }))}
+                    aria-label="关闭名片"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Bio / 个人介绍 */}
+              <div className="profile-popover-bio">
+                {profilePopover.author.bio || (
+                  <span className="profile-popover-bio-empty">这位读者很低调，暂未留下介绍</span>
+                )}
+              </div>
+
+              {/* Epomail 邮箱绑定状态 (支持完全独立工作) */}
+              <div className="profile-popover-email-box">
+                <div className="profile-popover-email-header">
+                  <span className="profile-popover-section-label">
+                    <Mail size={12} /> 电子邮箱 / Epomail
+                  </span>
+                  {profilePopover.author.email?.toLowerCase().endsWith('@epomail.bond') ? (
+                    <span className="profile-popover-epomail-tag">Epomail 认证</span>
+                  ) : profilePopover.author.email ? (
+                    <span className="profile-popover-mail-tag">已验证</span>
+                  ) : (
+                    <span className="profile-popover-mail-tag is-offline">独立模式 / 未绑定</span>
+                  )}
+                </div>
+                {profilePopover.author.email ? (
+                  <div className="profile-popover-email-row">
+                    <span className="profile-popover-email-text" title={profilePopover.author.email}>
+                      {profilePopover.author.email}
+                    </span>
+                    <button
+                      type="button"
+                      className="profile-popover-copy-btn"
+                      onClick={() => handleCopyEmail(profilePopover.author!.email!)}
+                      title="复制邮箱地址"
+                    >
+                      {copiedEmail ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                      <span>{copiedEmail ? '已复制' : '复制'}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="profile-popover-email-notice">
+                    访客未公开邮箱或处于 Epomail 离线模式
+                  </div>
+                )}
+              </div>
+
+              {/* 所属群组 / 用户组 (如果公开的话) */}
+              {profilePopover.author.groups && profilePopover.author.groups.length > 0 && (
+                <div className="profile-popover-groups-box">
+                  <div className="profile-popover-section-label">
+                    <Shield size={12} /> 所属群组
+                  </div>
+                  <div className="profile-popover-groups-list">
+                    {profilePopover.author.groups.map((group, idx) => (
+                      <span key={idx} className="profile-popover-group-pill">
+                        {group}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 行为指标统计 */}
+              <div className="profile-popover-stats-grid">
+                <div className="profile-popover-stat-item">
+                  <span className="stat-label">阅读时长</span>
+                  <span className="stat-value">{profilePopover.author.levelInfo.readingMinutes}m</span>
+                </div>
+                <div className="profile-popover-stat-item">
+                  <span className="stat-label">互动评论</span>
+                  <span className="stat-value">{profilePopover.author.levelInfo.commentCount}</span>
+                </div>
+                <div className="profile-popover-stat-item">
+                  <span className="stat-label">收到获赞</span>
+                  <span className="stat-value">{profilePopover.author.levelInfo.reactionsReceived}</span>
+                </div>
+              </div>
+
+              {/* Actions: @Mention & Website */}
+              <div className="profile-popover-footer">
+                <button
+                  type="button"
+                  className="profile-popover-action-btn is-mention"
+                  onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
+                >
+                  <AtSign size={13} />
+                  <span>@ 提及此人</span>
+                </button>
+                {profilePopover.author.website && (
+                  <a
+                    href={profilePopover.author.website}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="profile-popover-action-btn is-website"
+                    title="访问主页"
+                  >
+                    <Globe size={13} />
+                    <span>个人站点</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>,

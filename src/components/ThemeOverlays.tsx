@@ -91,6 +91,16 @@ import {
   type UserPersonaProfile 
 } from '../lib/user-persona';
 import { resolveGeoInfo } from '../lib/geo-names.ts';
+import {
+  computeUserLevel,
+  readUserStats,
+  updateUserStats,
+  recordReadingActivity,
+  recordDailyVisit,
+  getLocalizedTitle,
+  type UserStats,
+  type UserLevelInfo,
+} from '../lib/user-level';
 
 const TIMEZONE_LABELS: Record<LocaleVariant, Record<string, string>> = {
   'zh-CN': {
@@ -306,6 +316,10 @@ export function ThemeOverlays({
   const [syncStats, setSyncStats] = useState(stats);
   const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const [userStats, setUserStats] = useState<UserStats>(() => readUserStats());
+  const userLevel = useMemo(() => {
+    return computeUserLevel(userStats, account?.role, account?.email);
+  }, [userStats, account?.role, account?.email]);
 
   const updateCloseBtnPosition = useCallback(() => {
     const trigger = document.querySelector('.shijianus-dashboard-icon');
@@ -701,6 +715,48 @@ export function ThemeOverlays({
       .sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
       .slice(0, 15);
   }, [userFeed.userComments, account, accountForm.name, accountForm.email]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    recordDailyVisit();
+    const isPost = window.location.pathname.startsWith('/posts/');
+    if (isPost) {
+      recordReadingActivity(0);
+      setUserStats(readUserStats());
+    }
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        recordReadingActivity(0.5);
+        setUserStats(readUserStats());
+      }
+    }, 30000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (myRecentComments.length > 0 || account) {
+      const cCount = myRecentComments.length;
+      const rxCount = myRecentComments.reduce((sum, item) => sum + (item.likesCount || 0), 0);
+      const isOwner = account?.role === 'admin' || account?.email?.toLowerCase() === 'admin@epomail.bond';
+      const current = readUserStats();
+      if (
+        cCount > current.commentCount ||
+        rxCount !== current.reactionsReceived ||
+        (isOwner && !current.isWebmaster) ||
+        (Boolean(account) && !current.hasAccount)
+      ) {
+        const next = updateUserStats({
+          hasAccount: Boolean(account),
+          commentCount: Math.max(current.commentCount, cCount),
+          reactionsReceived: Math.max(current.reactionsReceived, rxCount),
+          isWebmaster: isOwner,
+        });
+        setUserStats(next);
+      }
+    }
+  }, [myRecentComments, account]);
 
   const getCommentPostInfo = useCallback((slug?: string) => {
     if (!slug) {
@@ -1821,9 +1877,18 @@ export function ThemeOverlays({
           {/* 1. Header */}
           <div className="theme-account-drawer__head">
             <div className="theme-account-drawer__head-title-wrap">
-              <div className="theme-account-drawer__head-badge">
+              <div
+                className="theme-account-drawer__head-badge"
+                title={`${t('level.trustLevel', '信任等级')}: TL.${userLevel.trustLevel} | ${userLevel.badge}`}
+              >
                 <span className={`status-indicator-dot ${account ? 'is-active' : ''}`} />
-                <span className="eyebrow">{t('drawer.eyebrow', 'READER HUB · 读者中心')}</span>
+                <span className="eyebrow">
+                  {account?.provider === 'epomail'
+                    ? `⚡ Epomail · ${userLevel.badge} (TL.${userLevel.trustLevel})`
+                    : account
+                    ? `🟢 ${userLevel.badge} · TL.${userLevel.trustLevel}`
+                    : t('drawer.headBadge.guest', '访客模式 · LV.0 初始浏览')}
+                </span>
               </div>
               <h2>{t('drawer.title', '账号中心')}</h2>
             </div>
@@ -1840,7 +1905,7 @@ export function ThemeOverlays({
           {/* 2. Hero Summary Profile Card */}
           <div className="account-hero-card">
             <div
-              className="account-hero-card__avatar is-clickable"
+              className={`account-hero-card__avatar is-clickable ${userLevel.isWebmaster ? 'is-webmaster-avatar' : ''}`}
               onClick={() => avatarFileInputRef.current?.click()}
               title={t('hero.avatarTitle', '点击更换头像 (支持选择本地图片上传)')}
               role="button"
@@ -1892,9 +1957,16 @@ export function ThemeOverlays({
                 ) : (
                   <span className="account-pill account-pill--guest">{t('hero.badge.guest')}</span>
                 )}
-                {account?.role === 'admin' && (
+                {userLevel.isWebmaster ? (
+                  <span className="account-pill account-pill--admin" title="全站唯一方形头像所有者">
+                    👑 {t('level.webmasterBadge', '站长专属方形头像')}
+                  </span>
+                ) : account?.role === 'admin' ? (
                   <span className="account-pill account-pill--admin">{t('hero.badge.admin', '管理员')}</span>
-                )}
+                ) : null}
+                <span className="account-pill account-pill--level" title={userLevel.nextRequirementHint}>
+                  {userLevel.badge} · TL.{userLevel.trustLevel}
+                </span>
               </div>
               <p className="account-hero-card__desc">
                 {accountForm.bio || account?.bio || (account?.email || (account ? t('hero.boundIdentity', '已绑定评论身份') : accountForm.email ? accountForm.email : t('hero.emptyBio', '点击设置个人简介、时区与位置')))}
@@ -2137,6 +2209,72 @@ export function ThemeOverlays({
                     </button>
                   </div>
                 </form>
+              </section>
+
+              {/* 社区等级与信任管理卡片 */}
+              <section className="account-card account-card--level">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">{t('level.title', '社区等级与信任制度')}</h3>
+                  </div>
+                  <span className={`account-level-badge account-level-badge--${userLevel.levelCode}`}>
+                    {userLevel.badge}
+                  </span>
+                </div>
+
+                <div className="account-level-dashboard">
+                  <div className="account-level-primary-row">
+                    <div className="account-level-info">
+                      <div className="account-level-title-row">
+                        <strong className="account-level-name">{userLevel.badge}</strong>
+                        <span className="account-level-trust-pill">
+                          {t('level.trustLevel', '信任等级')}: TL.{userLevel.trustLevel}
+                        </span>
+                        {userLevel.isWebmaster && (
+                          <span className="account-level-webmaster-pill" title="全站唯一方形头像">
+                            👑 {t('level.webmasterBadge', '站长专属方形头像')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="account-level-hint">{userLevel.nextRequirementHint}</p>
+                    </div>
+                  </div>
+
+                  {/* 等级成长进度条 */}
+                  <div className="account-level-progress-wrap">
+                    <div className="account-level-progress-bar">
+                      <div
+                        className="account-level-progress-fill"
+                        style={{ width: `${userLevel.progressPercent}%` }}
+                      />
+                    </div>
+                    <div className="account-level-progress-meta">
+                      <span>{t('level.nextLevel', '下一等级')}: {userLevel.nextLevelTitle || '已达最高荣誉'}</span>
+                      <span>{userLevel.progressPercent}%</span>
+                    </div>
+                  </div>
+
+                  {/* 4 项关键数据网格 */}
+                  <div className="account-level-stats-grid">
+                    <div className="account-level-stat-item">
+                      <span className="account-level-stat-label">📖 {t('level.readingTime', '阅读时长')}</span>
+                      <strong className="account-level-stat-val">{Math.round(userStats.readingMinutes)} min</strong>
+                    </div>
+                    <div className="account-level-stat-item">
+                      <span className="account-level-stat-label">📅 {t('level.activeDays', '活跃天数')}</span>
+                      <strong className="account-level-stat-val">{userStats.activeDays} 天</strong>
+                    </div>
+                    <div className="account-level-stat-item">
+                      <span className="account-level-stat-label">💬 {t('level.commentsCount', '发表讨论')}</span>
+                      <strong className="account-level-stat-val">{userStats.commentCount} 次</strong>
+                    </div>
+                    <div className="account-level-stat-item">
+                      <span className="account-level-stat-label">❤️ {t('level.reactionsCount', '互动获赞')}</span>
+                      <strong className="account-level-stat-val">{userStats.reactionsReceived} 个</strong>
+                    </div>
+                  </div>
+                </div>
               </section>
 
               {/* 未登录 Epomail 时的统一身份认证与漫游通道 */}
@@ -2482,8 +2620,12 @@ export function ThemeOverlays({
                                     </span>
                                   )}
                                   {item.likesCount > 0 && (
-                                    <span className="text-xs font-semibold text-rose-500">
-                                      👍 {item.likesCount}
+                                    <span
+                                      className="text-xs font-semibold text-rose-500 inline-flex items-center gap-1 whitespace-nowrap"
+                                      title={`👍 ${item.likesCount}`}
+                                    >
+                                      <span className="leading-none">👍</span>
+                                      <span className="leading-none">{item.likesCount}</span>
                                     </span>
                                   )}
                                   <span className="account-my-comment-date">
@@ -2653,7 +2795,7 @@ export function ThemeOverlays({
                         {t('settings.comments.sort.desc')}
                       </span>
                     </div>
-                    <div className="account-pref-sort-group">
+                    <div className="account-pref-sort-group" role="group" aria-label={t('settings.comments.sort.title')}>
                       <button
                         type="button"
                         className={`account-pref-sort-btn ${userPreferences.defaultCommentSort === 'new' ? 'is-active' : ''}`}
@@ -2661,8 +2803,13 @@ export function ThemeOverlays({
                           const next = writeUserPreferences({ defaultCommentSort: 'new' });
                           setUserPreferences(next);
                         }}
+                        title={t('settings.comments.sort.new')}
+                        aria-pressed={userPreferences.defaultCommentSort === 'new'}
                       >
-                        {t('settings.comments.sort.new')}
+                        <span className="account-pref-sort-emoji">⏱️</span>
+                        {userPreferences.defaultCommentSort === 'new' && (
+                          <span className="account-pref-sort-label">{t('settings.comments.sort.new_label', '最新')}</span>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -2671,8 +2818,13 @@ export function ThemeOverlays({
                           const next = writeUserPreferences({ defaultCommentSort: 'hot' });
                           setUserPreferences(next);
                         }}
+                        title={t('settings.comments.sort.hot')}
+                        aria-pressed={userPreferences.defaultCommentSort === 'hot'}
                       >
-                        {t('settings.comments.sort.hot')}
+                        <span className="account-pref-sort-emoji">🔥</span>
+                        {userPreferences.defaultCommentSort === 'hot' && (
+                          <span className="account-pref-sort-label">{t('settings.comments.sort.hot_label', '最热')}</span>
+                        )}
                       </button>
                     </div>
                   </div>
