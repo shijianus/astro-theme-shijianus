@@ -972,3 +972,21 @@
   1. 编写专用测试脚本 `scripts/verify-aside-icons.mjs`，全量验证文章页与首页下 "最新发布"、"分类"、"文章目录"、"公告" 图标的 SVG 标签形态、尺寸（18px / 20px）及浅色与深色模式（Dark Mode）；
   2. 执行 `scripts/verify-toc-categories.mjs` 与 `scripts/verify-i18n-streamline.mjs` 回归测试，多语言及目录排版 100% PASS 通过；
   3. 全量部署至 Cloudflare Pages 生产端并执行真实线上验证。
+
+### Task 46: 文章目录 (TOC) 头部水平基线对齐、左侧整体成组与阅读进度百分比 UI 一致性优化 (`3303b58`)
+- [x] **左侧整体成组与解耦 (`.item-headline__left`)**：
+  1. 在 `Sidebar.astro` 中引入 `.item-headline__left` 容器，将 `ListTree` 图标、文章目录标题与节数徽章 (`.toc-count`) 严密聚合为左侧语义整体；
+  2. 彻底清除 `final-pass.css` 中历史遗留的 `body[data-type='post'] #card-toc .toc-count { margin-left: auto; }` 导致的节数漂浮至卡片中间断裂缺陷，强制归零（`margin-left: 0 !important;`）。
+- [x] **进度百分比 (.toc-percentage) 垂直基线绝对水平平齐与样式归一**：
+  1. 根治历史遗留的 `float: right; margin-top: -9px; font-style: italic;`（向上漂移 9px 视觉脱节缺陷），重构为现代 Flex 布局与 `margin: 0 0 0 auto !important; float: none !important; font-style: normal !important;`；
+  2. 采用 `font-variant-numeric: tabular-nums` 等宽数字规范，避免进度从 `1%` 到 `100%` 时的微抖动；
+  3. 全局统一 `#card-toc .item-headline` 的 `line-height: 1 !important; align-items: center !important; justify-content: space-between !important;`。
+- [x] **节数徽章 (.toc-count) 与多主题质感打磨**：
+  1. 遵循 Task 16 去 AI 味小方角规范（`border-radius: 4px`），配置轻量半透明背景与紧凑内边距（`padding: 2px 6px`）；
+  2. 浅色与深色模式自适应：浅色模式下为柔和字色，暗色模式下为精致灰蓝，兼具可读性与层次感。
+- [x] **全流程自动化端到端测试与像素级水平对齐审计通过**：
+  1. 编写专用自动化测试套件（`scripts/verify-toc-headline.mjs`），实测捕获断言：
+     - 图标中心 Y（`centerY: 109px`）、标题中心 Y（`centerY: 109px`）、节数中心 Y（`centerY: 109px`）与百分比中心 Y（`centerY: 109px`）垂直中心线 100.0% 严格重合，水平基线完全平齐；
+     - 浅色与深色模式（Dark Mode）断言全绿通过；
+     - 高清截图存档 (`scripts/audit_screenshots/card-toc-verified.png`, `card-toc-dark.png`)。
+
