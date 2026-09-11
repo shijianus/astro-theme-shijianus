@@ -4549,12 +4549,16 @@ body[data-type='post'] #card-toc .toc-depth {
 }
 
 body[data-type='post'] #card-toc .toc-count {
-  margin-left: auto;
+  margin-left: 0 !important;
 }
 
 body[data-type='post'] #card-toc .toc-percentage {
-  min-width: 3ch;
+  min-width: 3.5ch;
   text-align: right;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  float: none !important;
+  font-style: normal !important;
 }
 
 body[data-type='post'] #card-toc .toc-item {
