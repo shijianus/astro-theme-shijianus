@@ -1239,7 +1239,7 @@
 - [x] **端到端自动化测试与全链路验证**：
   - 扩展 `scripts/verify-titles-and-level-card.mjs`，全量断言通过：Hero 卡片圆形头像与邮箱、状态卡片激活、三色进度条与站长豁免、紧凑徽章卡片切换、名片浮层 `position: absolute`、滚动跟随坐标变化 1:1、状态 Emoji 紧随站长后方、Epomail 认证标签清除等 9 大模块。
 
-### Task 56: 称号深浅色无文字重构、名片徽章双向全同步、喝彩去重真实统计、删除豁免标识与自定义状态 Emoji 选择器
+### Task 56: 称号深浅色无文字重构、名片徽章双向全同步、喝彩去重真实统计、删除豁免标识与自定义状态 Emoji 选择器 (`2e5d048`)
 - [x] **`class="account-badges-grid"` 称号深浅色无文字重构与防截断**：
   - 彻底移除卡片内部的“佩戴”/“已佩戴”按钮与文本说明（删除 `.badge-card-equip-btn`），通过深浅背景色一目了然区分状态（未佩戴为浅色微弱底色，已佩戴为深色高亮主题色及发光边框）；
   - 卡片整卡采用语义化 `<button type="button">`，点击直接触发佩戴/卸下切换，支持原子化状态更新；
@@ -1259,7 +1259,17 @@
   - 在自定义输入行前新增状态表情触发按钮（`.account-status-emoji-trigger`），点击展开包含 36 种常用情绪与状态的精致 Emoji 候选调色板（`.account-status-emoji-palette`）；
   - 支持快捷点击一键选填，同时支持手动键盘输入，兼具便捷性与极致开放性。
 - [x] **Playwright 真实浏览器端到端全流程测试全绿通过**：
-  - 编写并执行全功能自动化端到端测试脚本 `scripts/verify-badges-sync-and-status.mjs`，全部 5 项需求 100% 验证通过。
+  - 编写并执行自动化端到端测试套件 `scripts/verify-badges-sync-and-status.mjs`，本地 5 项核心指标验证 100% 通过。
+- [x] **生产端 (Cloudflare Pages) 真实链路部署与线上多节点 E2E 验证全绿通过 (`scripts/verify-live-badges-and-status.mjs`)**：
+  - 生产边缘节点部署成功（部署标识：`https://026b917e.shijianus-blog.pages.dev`，主域名 `https://blog.epocanvas.com` 同步生效）；
+  - 执行线上真实端到端 Playwright 自动化审计，同时对 Pages 部署版本与生产主域 `blog.epocanvas.com` 进行全流程实测：
+    1. 验证等级需求列表无任何 `.is-exempt` 元素且无“豁免/特免”字样（真实对比显示 `['5%', '53%', '45%', '2%']`）；
+    2. 验证徽章卡片网格渲染 8+ 枚解锁称号，0“佩戴”文本、0 独立按钮、0“...”省略截断、整卡点击切换及深浅色视觉对比；
+    3. 验证自定义状态 Emoji 交互式调色板正常呼出（36 种 Emoji），一键点击选填（如 `☕`）即时生效；
+    4. 验证徽章佩戴双向严格同步：抽屉内点击佩戴 2 枚徽章，评论区名片浮层即时同步呈现 `['👑站长', '💡真知灼见']`；
+    5. 验证真实“喝彩”获赞去重：线上真实评论名片浮层实测显示准确的 `喝彩 1`（杜绝 1 变 2）；
+    6. 自动化截图自动归档至 `scripts/audit_screenshots/live-drawer-badges-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-popover-badges-blog.epocanvas.com.png`，生产端 100% 验证通过。
+
 
 
 
