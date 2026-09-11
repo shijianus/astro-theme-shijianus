@@ -4213,63 +4213,56 @@ span.text-xs.font-semibold.text-rose-500 {
 }
 
 /* ==========================================================================
-   Discourse / LinuxDo Lightweight Flow User Card (.author-profile-popover)
+   Discourse / LinuxDo Lightweight Landscape User Card (.author-profile-popover)
    ========================================================================== */
 
 .author-profile-popover {
   border-radius: 14px;
   background: var(--card-bg, #ffffff);
   border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
   padding: 16px 18px;
   color: var(--font-color);
   animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box !important;
   font-family: inherit;
   z-index: 9999;
-  max-width: calc(100vw - 24px) !important;
+  max-width: calc(100vw - 32px) !important;
 }
 
 [data-theme='dark'] .author-profile-popover {
   background: #1e2025;
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 16px 44px -6px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .author-profile-popover.is-pinned {
-  box-shadow: 0 16px 40px -4px rgba(66, 90, 239, 0.22), 0 0 0 2px var(--theme-main, #425aef);
+  box-shadow: 0 16px 44px -4px rgba(66, 90, 239, 0.22), 0 0 0 2px var(--theme-main, #425aef);
 }
 
 .author-profile-popover.is-webmaster-card {
-  border-color: color-mix(in srgb, #f59e0b 30%, transparent);
+  border-color: color-mix(in srgb, #f59e0b 32%, transparent);
 }
 
-/* 内部单板流式排版，无任何多余嵌套卡片或灰底方块 */
-.profile-popover-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 1. Header: Avatar (Left), Identity (Middle), Actions (Top-Right) */
-.profile-popover-header {
+/* Horizontal Landscape Layout (Left Avatar 80px, Right Content) */
+.profile-popover-layout {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  position: relative;
+  gap: 16px;
+  width: 100%;
 }
 
-/* 头像：圆形 74px */
-.profile-popover-avatar-wrap {
-  position: relative;
+/* Left Column: Avatar */
+.profile-popover-left {
   flex-shrink: 0;
-  width: 74px;
-  height: 74px;
+  position: relative;
+  width: 80px;
+  height: 80px;
 }
 
 .profile-popover-avatar {
-  width: 74px !important;
-  height: 74px !important;
+  width: 80px !important;
+  height: 80px !important;
   border-radius: 50% !important;
   overflow: hidden;
   display: flex;
@@ -4288,16 +4281,16 @@ span.text-xs.font-semibold.text-rose-500 {
 }
 
 .profile-popover-initials {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--theme-main, #425aef);
 }
 
-/* 站长皇冠微型徽章：贴在头像右下角，不单独占用排版空间 */
+/* Micro crown badge pinned to bottom-right of avatar */
 .profile-popover-avatar-crown-badge {
   position: absolute;
-  bottom: 0px;
-  right: 0px;
+  bottom: -1px;
+  right: -1px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -4315,52 +4308,88 @@ span.text-xs.font-semibold.text-rose-500 {
   border-color: #1e2025;
 }
 
-/* 用户名与标签区域 */
-.profile-popover-identity {
+/* Right Column: Main Content Flow */
+.profile-popover-right {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 1px;
+  gap: 8px;
 }
 
-/* 第一行：主昵称与右上角操作按钮平齐横排 */
-.profile-popover-top-row {
+/* Top Area: Metadata on left, Actions on right */
+.profile-popover-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
 }
 
-.profile-popover-name {
+.profile-popover-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Line 1: Display Name */
+.profile-popover-display-name {
+  margin: 0;
+  padding: 0;
   font-size: 1.15rem; /* ~18.4px */
-  font-weight: 800;
+  font-weight: 750;
   color: var(--font-color);
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
-  min-width: 0;
 }
 
-/* 右上角紧凑操作按钮组 */
-.profile-popover-header-actions {
+/* Line 2: Unique Username (@username) */
+.profile-popover-username {
+  font-size: 0.85rem; /* ~13.6px */
+  color: var(--secondtext);
+  font-family: var(--font-mono, monospace);
+  line-height: 1.2;
+}
+
+/* Line 3: Highest Title (Pure text, NO colored outer box) */
+.profile-popover-title {
+  font-size: 0.82rem; /* ~13px */
+  font-weight: 600;
+  color: var(--theme-main, #425aef);
+  line-height: 1.25;
+  margin-top: 1px;
+}
+
+[data-theme='dark'] .profile-popover-title {
+  color: #818cf8;
+}
+
+.is-webmaster-card .profile-popover-title {
+  color: #d97706;
+}
+
+[data-theme='dark'] .is-webmaster-card .profile-popover-title {
+  color: #f59e0b;
+}
+
+/* Top-Right Action Buttons */
+.profile-popover-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
-/* 精简提及此人按钮 */
 .profile-popover-mention-btn {
-  height: 28px;
-  padding: 0 10px;
+  height: 26px;
+  padding: 0 9px;
   border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -4376,12 +4405,11 @@ span.text-xs.font-semibold.text-rose-500 {
 .profile-popover-mention-btn:hover {
   opacity: 0.92;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(66, 90, 239, 0.3);
 }
 
-.profile-popover-website-btn {
-  width: 28px;
-  height: 28px;
+.profile-popover-action-icon-btn {
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
@@ -4389,109 +4417,31 @@ span.text-xs.font-semibold.text-rose-500 {
   background: color-mix(in srgb, var(--font-color) 6%, transparent);
   color: var(--secondtext);
   border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
+  cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
-}
-
-.profile-popover-website-btn:hover {
-  background: color-mix(in srgb, var(--font-color) 10%, transparent);
-  color: var(--font-color);
-}
-
-.profile-popover-close-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--secondtext);
-  border: none;
-  cursor: pointer;
   padding: 0;
-  transition: all 0.15s ease;
 }
 
-.profile-popover-close-btn:hover {
-  background: color-mix(in srgb, var(--font-color) 8%, transparent);
+.profile-popover-action-icon-btn:hover {
+  background: color-mix(in srgb, var(--font-color) 12%, transparent);
   color: var(--font-color);
 }
 
-/* 第二行：身分头衔与等级微型胶囊 (Pill Tags) */
-.profile-popover-pills-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.profile-popover-pill {
-  font-size: 0.68rem; /* ~11px */
-  font-weight: 700;
-  height: 20px;
-  line-height: 18px;
-  padding: 0 7px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-
-.profile-popover-pill.is-webmaster {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.28);
-}
-
-[data-theme='dark'] .profile-popover-pill.is-webmaster {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
-.profile-popover-pill.is-role {
-  background: color-mix(in srgb, var(--font-color) 6%, transparent);
-  color: var(--secondtext);
-  border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
-}
-
-.profile-popover-pill.is-level {
-  background: color-mix(in srgb, var(--theme-main) 10%, transparent);
-  color: var(--theme-main, #425aef);
-  border: 1px solid color-mix(in srgb, var(--theme-main) 22%, transparent);
-}
-
-.profile-popover-pill.is-trust {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-[data-theme='dark'] .profile-popover-pill.is-trust {
-  background: rgba(16, 185, 129, 0.16);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.profile-popover-pill.is-geo {
-  background: color-mix(in srgb, var(--font-color) 5%, transparent);
-  color: var(--secondtext);
-  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
-}
-
-/* 2. Bio / 个人介绍：纯文本自然段落排版，次级字体颜色，字号约 14px，无边框容器 */
+/* 2. Bio / 个人介绍：纯文本自然段落排版，字号约 13px */
 .profile-popover-bio {
-  font-size: 0.88rem; /* ~14px */
+  font-size: 0.82rem; /* ~13px */
   color: var(--secondtext);
-  line-height: 1.5;
+  line-height: 1.45;
   margin: 0;
   padding: 0;
   background: none;
   border: none;
   word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .profile-popover-bio-empty {
@@ -4499,18 +4449,14 @@ span.text-xs.font-semibold.text-rose-500 {
   opacity: 0.65;
 }
 
-/* 2. Epomail / 邮箱状态：单行轻量辅助文本，微型 ✉ 图标，字号 12px-13px，无任何外框 */
+/* 2. Optional Email Line */
 .profile-popover-email-line {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem; /* ~12.8px */
+  gap: 5px;
+  font-size: 0.78rem;
   color: var(--secondtext);
-  line-height: 1.4;
-  margin: 0;
-  padding: 0;
-  background: none;
-  border: none;
+  line-height: 1.3;
 }
 
 .profile-popover-email-icon {
@@ -4521,7 +4467,7 @@ span.text-xs.font-semibold.text-rose-500 {
 .profile-popover-email-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
 }
 
@@ -4532,13 +4478,13 @@ span.text-xs.font-semibold.text-rose-500 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 175px;
+  max-width: 180px;
 }
 
 .profile-popover-epomail-tag {
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(99, 102, 241, 0.12);
   color: #6366f1;
@@ -4550,8 +4496,8 @@ span.text-xs.font-semibold.text-rose-500 {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 1px 5px;
-  font-size: 0.68rem;
+  padding: 1px 4px;
+  font-size: 0.66rem;
   font-weight: 600;
   border-radius: 4px;
   background: transparent;
@@ -4565,20 +4511,14 @@ span.text-xs.font-semibold.text-rose-500 {
   background: color-mix(in srgb, var(--theme-main) 10%, transparent);
 }
 
-.profile-popover-email-offline {
-  color: var(--secondtext);
-  opacity: 0.8;
-  font-size: 0.78rem;
-}
-
-/* 3. 数据统计栏 (Inline Text Stats)：行内文本排印流，单行平铺，· 分隔，彻底无独立小方块 */
+/* 3. 数据统计栏 (Inline Text Stats)：纯文本单行排列，· 分隔，无独立方块 */
 .profile-popover-inline-stats {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 0.82rem; /* ~13px */
-  line-height: 1.4;
+  gap: 6px;
+  font-size: 0.78rem; /* ~12.5px */
+  line-height: 1.35;
   margin: 0;
   padding: 0;
   background: none;
@@ -4588,12 +4528,12 @@ span.text-xs.font-semibold.text-rose-500 {
 .profile-popover-inline-stats .stat-item {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 3px;
 }
 
 .profile-popover-inline-stats .stat-label {
   color: var(--secondtext);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 500;
 }
 
@@ -4601,7 +4541,7 @@ span.text-xs.font-semibold.text-rose-500 {
   color: var(--font-color);
   font-weight: 700;
   font-family: var(--font-mono, monospace);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .profile-popover-inline-stats .stat-sep {
@@ -4610,50 +4550,71 @@ span.text-xs.font-semibold.text-rose-500 {
   font-weight: bold;
 }
 
-/* 4. 群组与徽章展示区 (Badges)：取消标题与盾牌，紧凑小胶囊 24px-26px，支持折行与 +N 更多 */
+/* 4. 徽章与称号列表 (Badges)：轻量胶囊 (Pill)，高度 22px-24px */
 .profile-popover-badges-flow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   margin: 0;
   padding: 0;
 }
 
-.profile-popover-group-pill {
-  height: 24px;
-  line-height: 22px;
-  padding: 0 9px;
+.profile-popover-badge-pill {
+  height: 22px;
+  line-height: 20px;
+  padding: 0 8px;
   border-radius: 999px;
-  font-size: 0.72rem; /* ~11.5px */
+  font-size: 0.7rem; /* ~11px */
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+  gap: 3px;
   background: color-mix(in srgb, var(--font-color) 5%, transparent);
   border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
   color: var(--font-color);
   white-space: nowrap;
 }
 
-[data-theme='dark'] .profile-popover-group-pill {
+.profile-popover-badge-pill .badge-icon {
+  font-size: 0.75rem;
+}
+
+.profile-popover-badge-pill.is-special {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+[data-theme='dark'] .profile-popover-badge-pill.is-special {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme='dark'] .profile-popover-badge-pill {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
   color: #e5e7eb;
 }
 
-.profile-popover-group-pill.is-more {
+.profile-popover-badge-pill.is-more {
   color: var(--secondtext);
   background: transparent;
   border-style: dashed;
   font-weight: 500;
 }
 
+/* Mobile Responsiveness */
 @media (max-width: 480px) {
   .author-profile-popover {
-    padding: 14px 14px;
+    padding: 12px 14px;
     border-radius: 12px;
   }
-  .profile-popover-avatar-wrap {
+  .profile-popover-layout {
+    gap: 12px;
+  }
+  .profile-popover-left {
     width: 64px;
     height: 64px;
   }
@@ -4662,16 +4623,11 @@ span.text-xs.font-semibold.text-rose-500 {
     height: 64px !important;
   }
   .profile-popover-avatar-crown-badge {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
-  .profile-popover-name {
+  .profile-popover-display-name {
     font-size: 1.05rem;
-  }
-  .profile-popover-mention-btn {
-    height: 26px;
-    padding: 0 8px;
-    font-size: 0.72rem;
   }
 }
 

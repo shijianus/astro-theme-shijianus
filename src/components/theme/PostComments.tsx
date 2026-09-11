@@ -66,7 +66,9 @@ import {
 import {
   computeUserLevel,
   getAuthorGroups,
+  readUserStats,
   type UserLevelInfo,
+  type UserStats,
 } from '../../lib/user-level';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import type { LocaleVariant } from '../../lib/user-persona.ts';
@@ -287,19 +289,21 @@ export function PostComments({
     isOpen: boolean;
     author: {
       name: string;
+      handle: string;
       avatar?: string;
       role: 'admin' | 'reader' | 'visitor';
       email?: string;
       website?: string;
       bio?: string;
+      highestTitle: string;
       isWebmaster: boolean;
-      levelInfo: UserLevelInfo;
-      groups: string[];
-      ipCountryFlag?: string | null;
-      ipCountryName?: string | null;
-      ipLocation?: string | null;
+      readingMinutes: number;
+      commentCount: number;
+      reactionsReceived: number;
+      joinDateStr: string;
+      badges: { icon?: string; label: string; isSpecial?: boolean }[];
     } | null;
-    anchorRect: { top: number; left: number; width: number; height: number } | null;
+    anchorRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null;
     isPinned: boolean;
   }>({
     isOpen: false,
@@ -324,54 +328,184 @@ export function PostComments({
     const isWebmaster =
       comment.authorRole === 'admin' ||
       (comment as any).isWebmaster === true ||
-      comment.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+      comment.authorEmail?.toLowerCase() === 'admin@epomail.bond' ||
+      comment.authorEmail?.toLowerCase() === 'shijian@epomail.bond';
 
-    const isCurrentAccount = account && (
-      account.id === comment.authorId ||
-      account.name === comment.authorName ||
-      account.email === comment.authorEmail
+    const isCurrentAccount = Boolean(
+      account && (
+        (account.id && comment.authorId && account.id === comment.authorId) ||
+        (account.name && account.name === comment.authorName) ||
+        (account.email && comment.authorEmail && account.email.toLowerCase() === comment.authorEmail.toLowerCase())
+      )
     );
 
+    // 1. Gather all comments authored by this user on page
+    const allComments = commentsRef.current.length > 0 ? commentsRef.current : comments;
+    const authorComments = allComments.filter((c) => {
+      if (c.authorId && comment.authorId && c.authorId === comment.authorId) return true;
+      if (c.authorEmail && comment.authorEmail && c.authorEmail.toLowerCase() === comment.authorEmail.toLowerCase()) return true;
+      if (c.authorName && comment.authorName && c.authorName.trim() === comment.authorName.trim()) return true;
+      return false;
+    });
+
     const commentLevelInfo = (comment as any).levelInfo;
-    const stats = {
+
+    // 2. Real Comments Count (互动评论真实统计)
+    let commentCount = 1;
+    if (commentLevelInfo?.commentCount !== undefined) {
+      commentCount = Number(commentLevelInfo.commentCount) || 0;
+    } else if (isCurrentAccount) {
+      commentCount = Math.max(authorComments.length, readUserStats().commentCount);
+    } else {
+      commentCount = Math.max(1, authorComments.length);
+    }
+
+    // 3. Real Reactions Received (喝彩次数 / 获赞数真实汇总)
+    let reactionsReceived = 0;
+    if (commentLevelInfo?.reactionsReceived !== undefined) {
+      reactionsReceived = Number(commentLevelInfo.reactionsReceived) || 0;
+    } else {
+      const calculatedReactions = authorComments.reduce((acc, c) => {
+        let count = c.likesCount || 0;
+        if (c.reactions?.summary) {
+          count += Object.values(c.reactions.summary).reduce((a, b) => a + b, 0);
+        }
+        return acc + count;
+      }, 0);
+      reactionsReceived = isCurrentAccount
+        ? Math.max(calculatedReactions, readUserStats().reactionsReceived)
+        : calculatedReactions;
+    }
+
+    // 4. Real Join Date (加入时间 / 首次互动时间)
+    let earliestDateStr = comment.createdAt;
+    for (const c of authorComments) {
+      if (c.createdAt && (!earliestDateStr || new Date(c.createdAt).getTime() < new Date(earliestDateStr).getTime())) {
+        earliestDateStr = c.createdAt;
+      }
+    }
+    if (isCurrentAccount) {
+      const userFirstSeen = readUserStats().firstSeenAt;
+      if (userFirstSeen && (!earliestDateStr || new Date(userFirstSeen).getTime() < new Date(earliestDateStr).getTime())) {
+        earliestDateStr = userFirstSeen;
+      }
+    }
+    if (commentLevelInfo?.firstSeenAt) {
+      earliestDateStr = commentLevelInfo.firstSeenAt;
+    }
+
+    const joinDateStr = (() => {
+      if (!earliestDateStr) return '近期';
+      try {
+        const d = new Date(earliestDateStr);
+        if (isNaN(d.getTime())) return '近期';
+        const now = new Date();
+        const isSameYear = d.getFullYear() === now.getFullYear();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        return isSameYear ? `${m}月${day}日` : `${d.getFullYear()}年${m}月${day}日`;
+      } catch {
+        return '近期';
+      }
+    })();
+
+    // 5. Real Reading Time (阅读时长 / 已读时长，未记录则显示 0m，严禁假数据)
+    let readingMinutes = 0;
+    if (commentLevelInfo?.readingMinutes !== undefined) {
+      readingMinutes = Number(commentLevelInfo.readingMinutes) || 0;
+    } else if (isCurrentAccount) {
+      readingMinutes = Math.round(readUserStats().readingMinutes);
+    } else if ((comment as any).readingMinutes !== undefined) {
+      readingMinutes = Number((comment as any).readingMinutes) || 0;
+    } else {
+      readingMinutes = 0;
+    }
+
+    // 6. User Handle (@username)
+    const handle = (() => {
+      if (comment.authorEmail && comment.authorEmail.includes('@')) {
+        const local = comment.authorEmail.split('@')[0].trim();
+        if (local) return `@${local}`;
+      }
+      return `@${comment.authorName.replace(/\s+/g, '').toLowerCase()}`;
+    })();
+
+    // Compute Level Info for progression/title
+    const stats: UserStats = {
       hasAccount: Boolean(comment.authorEmail || comment.authorRole !== 'visitor'),
-      hasReadAny: true,
-      readingMinutes: commentLevelInfo?.readingMinutes ?? (isWebmaster ? 9999 : isCurrentAccount ? 120 : (comment.authorRole === 'reader' ? 45 : 5)),
-      commentCount: commentLevelInfo?.commentCount ?? (isWebmaster ? 999 : (comment.authorRole === 'reader' ? 12 : 1)),
-      reactionsReceived: commentLevelInfo?.reactionsReceived ?? (isWebmaster ? 999 : (comment.likesCount || 0)),
-      activeDays: commentLevelInfo?.activeDays ?? (isWebmaster ? 400 : (comment.authorRole === 'reader' ? 15 : 1)),
+      hasReadAny: readingMinutes > 0,
+      readingMinutes,
+      commentCount,
+      reactionsReceived,
+      activeDays: commentLevelInfo?.activeDays ?? (isCurrentAccount ? readUserStats().activeDays : 1),
       activeDates: [],
-      firstSeenAt: comment.createdAt,
+      firstSeenAt: earliestDateStr,
       isWebmaster,
     };
 
     const levelInfo = computeUserLevel(stats, comment.authorRole, comment.authorEmail);
-    const groups = getAuthorGroups({
+
+    // 7. Highest Title (纯文本最高称号，不包裹夸张彩色外框)
+    let highestTitle = '注册读者';
+    if (isWebmaster) {
+      highestTitle = '站长';
+    } else if (comment.authorRole === 'admin') {
+      highestTitle = '管理员';
+    } else if (levelInfo.title) {
+      highestTitle = levelInfo.title;
+    } else if (comment.authorRole === 'visitor') {
+      highestTitle = '访客';
+    }
+
+    // 8. Badges (底部轻量胶囊: 👑 站长、🧡 受到赞赏、💬 活跃交流 等)
+    const badges: { icon?: string; label: string; isSpecial?: boolean }[] = [];
+    if (isWebmaster) {
+      badges.push({ icon: '👑', label: '站长', isSpecial: true });
+    }
+    if (reactionsReceived > 0) {
+      badges.push({ icon: '🧡', label: '受到赞赏' });
+    }
+    if (commentCount > 0) {
+      badges.push({ icon: '💬', label: '活跃交流' });
+    }
+    if (comment.ipCountryFlag && (comment.ipCountryName || comment.ipCountry)) {
+      badges.push({ icon: comment.ipCountryFlag, label: comment.ipCountryName || comment.ipCountry || '' });
+    }
+    const extraGroups = getAuthorGroups({
       role: comment.authorRole,
       isWebmaster,
       email: comment.authorEmail,
       groups: (comment as any).groups,
     });
+    for (const g of extraGroups) {
+      if (!badges.some((b) => b.label === g) && g !== '站长' && g !== '管理员') {
+        badges.push({ label: g });
+      }
+    }
 
     setProfilePopover({
       isOpen: true,
       author: {
         name: comment.authorName,
+        handle,
         avatar: comment.authorAvatar || (isWebmaster ? '/media/shijianus/avatar.jpg' : undefined),
         role: comment.authorRole,
         email: comment.authorEmail,
         website: comment.authorWebsite,
         bio: (comment as any).authorBio || (isWebmaster ? 'EpoCanvas 站长 · 博客创作者与架构设计者' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined),
+        highestTitle,
         isWebmaster,
-        levelInfo,
-        groups,
-        ipCountryFlag: comment.ipCountryFlag,
-        ipCountryName: comment.ipCountryName,
-        ipLocation: comment.ipLocation,
+        readingMinutes,
+        commentCount,
+        reactionsReceived,
+        joinDateStr,
+        badges,
       },
       anchorRect: {
         top: rect.top,
         left: rect.left,
+        right: rect.right,
+        bottom: rect.bottom,
         width: rect.width,
         height: rect.height,
       },
@@ -3805,7 +3939,7 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
           document.body
         )}
 
-      {/* Author Profile Popover */}
+      {/* Author Profile Popover (Discourse / LinuxDo Landscape Card) */}
       {typeof document !== 'undefined' &&
         profilePopover.isOpen &&
         profilePopover.author &&
@@ -3817,21 +3951,41 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
             }`}
             style={(() => {
               const rect = profilePopover.anchorRect!;
-              const popoverWidth = typeof window !== 'undefined' ? Math.min(380, window.innerWidth - 24) : 380;
-              const margin = 12;
+              const popoverWidth = typeof window !== 'undefined' ? Math.min(480, window.innerWidth - 32) : 480;
+              const popoverHeight = 200;
+              const margin = 16;
+              const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1440;
+              const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 900;
 
-              let left = rect.left + rect.width / 2 - popoverWidth / 2;
-              if (typeof window !== 'undefined') {
-                if (left < margin) left = margin;
-                if (left + popoverWidth > window.innerWidth - margin) {
-                  left = window.innerWidth - popoverWidth - margin;
+              // Priority 1: Expand to the RIGHT of the avatar (Discourse style)
+              const canFitRight = rect.right + 12 + popoverWidth <= viewportWidth - margin;
+
+              let left: number;
+              let top: number;
+
+              if (canFitRight) {
+                left = rect.right + 12;
+                top = rect.top - 8;
+                if (top + popoverHeight > viewportHeight - margin) {
+                  top = viewportHeight - popoverHeight - margin;
                 }
-              }
+                if (top < margin) top = margin;
+              } else {
+                // Priority 2: Expand DOWNWARDS from the avatar (avoid editor above)
+                left = rect.left;
+                if (left + popoverWidth > viewportWidth - margin) {
+                  left = viewportWidth - popoverWidth - margin;
+                }
+                if (left < margin) left = margin;
 
-              const popoverHeight = 240;
-              let top = rect.top - popoverHeight - 12;
-              if (top < margin) {
-                top = rect.bottom + 12;
+                const canFitDown = rect.bottom + 8 + popoverHeight <= viewportHeight - margin;
+                if (canFitDown) {
+                  top = rect.bottom + 8;
+                } else if (rect.top - 8 - popoverHeight >= margin) {
+                  top = rect.top - popoverHeight - 8;
+                } else {
+                  top = Math.max(margin, viewportHeight - popoverHeight - margin);
+                }
               }
 
               return {
@@ -3856,178 +4010,157 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
               }
             }}
           >
-            <div className="profile-popover-inner">
-              {/* 1. Header: Avatar (Left), Identity (Middle), Actions (Top-Right) */}
-              <div className="profile-popover-header">
-                {/* Avatar (74px circular avatar with micro crown badge) */}
-                <div className="profile-popover-avatar-wrap">
-                  <div
-                    className={`profile-popover-avatar ${
-                      profilePopover.author.isWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'
-                    }`}
-                  >
-                    {profilePopover.author.avatar ? (
-                      <img src={profilePopover.author.avatar} alt={profilePopover.author.name} />
-                    ) : profilePopover.author.isWebmaster ? (
-                      <img src="/media/shijianus/avatar.jpg" alt={profilePopover.author.name} />
-                    ) : (
-                      <span className="profile-popover-initials">
-                        {getCommentInitials(profilePopover.author.name)}
-                      </span>
-                    )}
-                  </div>
-                  {profilePopover.author.isWebmaster && (
-                    <span className="profile-popover-avatar-crown-badge" title="站长专属身份">
-                      <Crown size={12} />
+            <div className="profile-popover-layout">
+              {/* Left Column: 80px Circular Avatar with micro Crown Badge */}
+              <div className="profile-popover-left">
+                <div
+                  className={`profile-popover-avatar ${
+                    profilePopover.author.isWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'
+                  }`}
+                >
+                  {profilePopover.author.avatar ? (
+                    <img src={profilePopover.author.avatar} alt={profilePopover.author.name} />
+                  ) : profilePopover.author.isWebmaster ? (
+                    <img src="/media/shijianus/avatar.jpg" alt={profilePopover.author.name} />
+                  ) : (
+                    <span className="profile-popover-initials">
+                      {getCommentInitials(profilePopover.author.name)}
                     </span>
                   )}
                 </div>
-
-                {/* Identity: Row 1 Name & Actions, Row 2 Micro Pill Tags */}
-                <div className="profile-popover-identity">
-                  <div className="profile-popover-top-row">
-                    <span className="profile-popover-name" title={profilePopover.author.name}>
-                      {profilePopover.author.name}
-                    </span>
-
-                    {/* Actions (Top-Right): Mention Button, Website & Close */}
-                    <div className="profile-popover-header-actions">
-                      <button
-                        type="button"
-                        className="profile-popover-mention-btn"
-                        onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
-                        title={`@ 提及 ${profilePopover.author.name}`}
-                      >
-                        <AtSign size={12} />
-                        <span>提及此人</span>
-                      </button>
-                      {profilePopover.author.website && (
-                        <a
-                          href={profilePopover.author.website}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          className="profile-popover-website-btn"
-                          title="访问个人站点"
-                        >
-                          <Globe size={13} />
-                        </a>
-                      )}
-                      {profilePopover.isPinned && (
-                        <button
-                          type="button"
-                          className="profile-popover-close-btn"
-                          onClick={() => setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }))}
-                          aria-label="关闭名片"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="profile-popover-pills-row">
-                    {profilePopover.author.isWebmaster ? (
-                      <span className="profile-popover-pill is-webmaster">
-                        <Crown size={10} /> 站长
-                      </span>
-                    ) : (
-                      <span className="profile-popover-pill is-role">
-                        {profilePopover.author.role === 'admin'
-                          ? '管理员'
-                          : profilePopover.author.role === 'reader'
-                          ? '注册读者'
-                          : '访客'}
-                      </span>
-                    )}
-                    <span className="profile-popover-pill is-level">
-                      {profilePopover.author.levelInfo.badge}
-                    </span>
-                    <span className="profile-popover-pill is-trust">
-                      TL.{profilePopover.author.levelInfo.trustLevel}
-                    </span>
-                    {profilePopover.author.ipCountryFlag && (
-                      <span
-                        className="profile-popover-pill is-geo"
-                        title={profilePopover.author.ipLocation || profilePopover.author.ipCountryName || ''}
-                      >
-                        {profilePopover.author.ipCountryFlag} {profilePopover.author.ipCountryName || ''}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Bio / 个人介绍 (纯文本自然段落排版，次级字体颜色，字号约 14px) */}
-              <div className="profile-popover-bio">
-                {profilePopover.author.bio || (
-                  <span className="profile-popover-bio-empty">这位读者很低调，暂未留下介绍</span>
+                {profilePopover.author.isWebmaster && (
+                  <span className="profile-popover-avatar-crown-badge" title="站长专属身份">
+                    <Crown size={12} />
+                  </span>
                 )}
               </div>
 
-              {/* 2. Epomail / 邮箱状态 (单行轻量辅助文本，微型 ✉ 图标，弱化显示，不喧宾夺主) */}
-              <div className="profile-popover-email-line">
-                <Mail size={12} className="profile-popover-email-icon" />
-                {profilePopover.author.email ? (
-                  <span className="profile-popover-email-wrap">
-                    <span className="profile-popover-email-text" title={profilePopover.author.email}>
-                      {profilePopover.author.email}
+              {/* Right Column: Main Content */}
+              <div className="profile-popover-right">
+                {/* 1. Header: Display Name, Username, Highest Title & Top-Right Actions */}
+                <div className="profile-popover-top">
+                  <div className="profile-popover-user-meta">
+                    <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
+                      {profilePopover.author.name}
+                    </h4>
+                    <span className="profile-popover-username">
+                      {profilePopover.author.handle}
                     </span>
-                    {profilePopover.author.email.toLowerCase().endsWith('@epomail.bond') && (
-                      <span className="profile-popover-epomail-tag">Epomail 认证</span>
+                    <span className="profile-popover-title">
+                      {profilePopover.author.highestTitle}
+                    </span>
+                  </div>
+
+                  {/* Top-Right Actions */}
+                  <div className="profile-popover-actions">
+                    <button
+                      type="button"
+                      className="profile-popover-mention-btn"
+                      onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
+                      title={`@ 提及 ${profilePopover.author.name}`}
+                    >
+                      <AtSign size={11} />
+                      <span>提及此人</span>
+                    </button>
+                    {profilePopover.author.website && (
+                      <a
+                        href={profilePopover.author.website}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="profile-popover-action-icon-btn"
+                        title="访问个人站点"
+                      >
+                        <Globe size={12} />
+                      </a>
                     )}
                     <button
                       type="button"
-                      className="profile-popover-copy-btn"
-                      onClick={() => handleCopyEmail(profilePopover.author!.email!)}
-                      title="复制邮箱地址"
+                      className="profile-popover-action-icon-btn"
+                      onClick={() => setProfilePopover((prev) => ({ ...prev, isOpen: false, isPinned: false }))}
+                      aria-label="关闭名片"
                     >
-                      {copiedEmail ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                      <span>{copiedEmail ? '已复制' : '复制'}</span>
+                      <X size={13} />
                     </button>
+                  </div>
+                </div>
+
+                {/* 2. Bio: Plain text paragraph, no borders */}
+                <p className="profile-popover-bio">
+                  {profilePopover.author.bio || (
+                    <span className="profile-popover-bio-empty">这位读者很低调，暂未留下介绍。</span>
+                  )}
+                </p>
+
+                {/* Optional subtle Epomail / Email line if email exists */}
+                {profilePopover.author.email && (
+                  <div className="profile-popover-email-line">
+                    <Mail size={11} className="profile-popover-email-icon" />
+                    <span className="profile-popover-email-wrap">
+                      <span className="profile-popover-email-text" title={profilePopover.author.email}>
+                        {profilePopover.author.email}
+                      </span>
+                      {profilePopover.author.email.toLowerCase().endsWith('@epomail.bond') && (
+                        <span className="profile-popover-epomail-tag">Epomail 认证</span>
+                      )}
+                      <button
+                        type="button"
+                        className="profile-popover-copy-btn"
+                        onClick={() => handleCopyEmail(profilePopover.author!.email!)}
+                        title="复制邮箱地址"
+                      >
+                        {copiedEmail ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                        <span>{copiedEmail ? '已复制' : '复制'}</span>
+                      </button>
+                    </span>
+                  </div>
+                )}
+
+                {/* 3. Real Inline Stats (LinuxDo Flow): 加入时间 · 已读 · 评论 · 喝彩 */}
+                <div className="profile-popover-inline-stats">
+                  <span className="stat-item">
+                    <span className="stat-label">加入时间</span>
+                    <span className="stat-value">{profilePopover.author.joinDateStr}</span>
                   </span>
-                ) : (
-                  <span className="profile-popover-email-offline">
-                    未公开邮箱 / Epomail 离线模式
+                  <span className="stat-sep">·</span>
+                  <span className="stat-item">
+                    <span className="stat-label">已读</span>
+                    <span className="stat-value">{profilePopover.author.readingMinutes}m</span>
                   </span>
+                  <span className="stat-sep">·</span>
+                  <span className="stat-item">
+                    <span className="stat-label">评论</span>
+                    <span className="stat-value">{profilePopover.author.commentCount}</span>
+                  </span>
+                  <span className="stat-sep">·</span>
+                  <span className="stat-item">
+                    <span className="stat-label">喝彩</span>
+                    <span className="stat-value">{profilePopover.author.reactionsReceived}</span>
+                  </span>
+                </div>
+
+                {/* 4. Badges Flow: Light pills (22px-24px), icon + label, +N more */}
+                {profilePopover.author.badges && profilePopover.author.badges.length > 0 && (
+                  <div className="profile-popover-badges-flow">
+                    {profilePopover.author.badges.slice(0, 4).map((b, idx) => (
+                      <span
+                        key={idx}
+                        className={`profile-popover-badge-pill ${b.isSpecial ? 'is-special' : ''}`}
+                      >
+                        {b.icon && <span className="badge-icon">{b.icon}</span>}
+                        <span>{b.label}</span>
+                      </span>
+                    ))}
+                    {profilePopover.author.badges.length > 4 && (
+                      <span
+                        className="profile-popover-badge-pill is-more"
+                        title={profilePopover.author.badges.slice(4).map((b) => b.label).join('、')}
+                      >
+                        +{profilePopover.author.badges.length - 4} 更多
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
-
-              {/* 3. 数据统计栏 (Inline Stats: 学习 LinuxDo 行内文本排印流，单行平铺，· 分隔，无独立方块) */}
-              <div className="profile-popover-inline-stats">
-                <span className="stat-item">
-                  <span className="stat-label">阅读时长</span>
-                  <span className="stat-value">{profilePopover.author.levelInfo.stats?.readingMinutes ?? 0}m</span>
-                </span>
-                <span className="stat-sep">·</span>
-                <span className="stat-item">
-                  <span className="stat-label">互动评论</span>
-                  <span className="stat-value">{profilePopover.author.levelInfo.stats?.commentCount ?? 0}</span>
-                </span>
-                <span className="stat-sep">·</span>
-                <span className="stat-item">
-                  <span className="stat-label">收到获赞</span>
-                  <span className="stat-value">{profilePopover.author.levelInfo.stats?.reactionsReceived ?? 0}</span>
-                </span>
-              </div>
-
-              {/* 4. 群组与徽章展示区 (Badges: 取消标题与盾牌，紧凑小胶囊 24px-26px，支持 +N 更多) */}
-              {profilePopover.author.groups && profilePopover.author.groups.length > 0 && (
-                <div className="profile-popover-badges-flow">
-                  {profilePopover.author.groups.slice(0, 4).map((group, idx) => (
-                    <span key={idx} className="profile-popover-group-pill">
-                      {group}
-                    </span>
-                  ))}
-                  {profilePopover.author.groups.length > 4 && (
-                    <span
-                      className="profile-popover-group-pill is-more"
-                      title={profilePopover.author.groups.slice(4).join('、')}
-                    >
-                      +{profilePopover.author.groups.length - 4} 更多
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           </div>,
           document.body
