@@ -4011,7 +4011,7 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
                 >
                   <AtSign size={13} />
-                  <span>@ 提及此人</span>
+                  <span>提及此人</span>
                 </button>
                 {profilePopover.author.website && (
                   <a

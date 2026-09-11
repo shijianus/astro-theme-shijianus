@@ -1043,6 +1043,11 @@
   6. 快捷互动操作：`@ 提及此人`（一键向输入框追加 `@作者 ` 并自动聚焦滚动）、个人站点直达。
 - [x] **全场景 Playwright 自动化端到端测试覆盖**：
   1. 编写自动化测试脚本 `scripts/verify-account-drawer-and-avatar.mjs`，全量验证点赞行内格式、排序折叠与无溢出、动态徽章、个人资料卡片、方形/圆形头像样式计算、Webmaster 与 Reader 名片气泡信息、一键复制与 `@ 提及` 交互，测试全绿通过。
+- [x] **生产端 (Cloudflare Pages) 真实全链路部署与 Playwright 视觉双重验收**：
+  1. 通过 `npx wrangler pages deploy dist --project-name shijianus-blog --branch main` 上传至生产边缘节点（部署标识：`7da5314f.shijianus-blog.pages.dev`），实时绑定至线上主域名 `https://blog.epocanvas.com`；
+  2. 编写真实生产端到端审计套件（`scripts/verify-live-account-drawer-and-popover.mjs`），在生产主域 `https://blog.epocanvas.com` 上实测验证抽屉徽章动态呈现、Tab 0 个人资料、评论排序展开/折叠 0 溢出、站长专属方形头像 (`8px`/`6px`) 与用户圆形头像 (`50%`)，以及作者名片卡片气泡弹出与 `@ 提及` 交互；
+  3. 截图存档：`live-drawer-blog.epocanvas.com.png`、`live-popover-blog.epocanvas.com.png`，视觉与交互断言 100% 通过。
+
 
 
 
