@@ -278,6 +278,8 @@ async function runLiveVerification() {
       console.log('   ✅ Requirement 2 PASSED: 100% two-way lockstep synchronization between account badges and popover flow!');
 
       // Capture popover screenshot
+      await page.locator('.author-profile-popover').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
       const popoverScreenshot = path.join(screenshotDir, `live-popover-badges-${hostName}.png`);
       await page.screenshot({ path: popoverScreenshot, fullPage: false });
       console.log(`   📸 Saved popover screenshot: ${popoverScreenshot}`);
