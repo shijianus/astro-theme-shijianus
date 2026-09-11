@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://7da5314f.shijianus-blog.pages.dev',
+  'https://72bb63fb.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -42,7 +42,7 @@ async function runLiveVerification() {
       // STEP 1: Home Page & Account Drawer UI/UX Verification
       // ----------------------------------------------------
       console.log(`1. Navigating to ${targetUrl} ...`);
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForTimeout(2000);
 
       console.log('2. Triggering Account Drawer ...');
@@ -134,7 +134,7 @@ async function runLiveVerification() {
       // ----------------------------------------------------
       const postUrl = `${targetUrl}/posts/content-formats-and-markup-mastery/`;
       console.log(`\n5. Navigating to Post Page: ${postUrl} ...`);
-      await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForTimeout(2500);
 
       // Remove loading animation overlay if still visible

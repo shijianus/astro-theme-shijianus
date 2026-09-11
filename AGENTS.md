@@ -1075,6 +1075,10 @@
 - [x] **自动化端到端测试套件（`scripts/verify-author-profile-linuxdo.mjs`）100% 验收通过**：
   - 桌面与移动端全场景审计：包含圆形头像+微型皇冠定位、粗体昵称与横向微胶囊、右上角提及按钮、纯文本介绍、单行邮箱文本、连续行内统计数据流、群组紧凑徽章与“+1 更多”、0 嵌套灰盒断言、暗黑模式切换、点击提及自动追加 `@作者 ` 至输入框并获得焦点、移动端 390px 视口无溢出检测；
   - 生成 4 张高清实景验收截图并存档至 `scripts/audit_screenshots/`。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测通过**：
+  - 生产边缘节点自动部署至版本：`https://72bb63fb.shijianus-blog.pages.dev`（绑定至生产域名 `https://blog.epocanvas.com`）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在 `72bb63fb.shijianus-blog.pages.dev` 与主域 `blog.epocanvas.com` 完成账号抽屉、排序折叠防溢出、头像规范及线上真实评论点击弹出 `.author-profile-popover` 的全链路验收，测试通过率 100%。
+
 
 
 
