@@ -1111,7 +1111,7 @@
     - 验证真实统计数据行（`加入时间9月5日·已读0m·评论1·喝彩2`，无任何 9999m 或 999 假数据，`hasFakeData: false`，`legacyPillsCount: 0`）；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png`，端到端测试全绿通过。
 
-### Task 51: 剔除伪造徽章与脏数据，严格展示官方阶梯称号与 LinuxDo 纯净弹性排版
+### Task 51: 剔除伪造徽章与脏数据，严格展示官方阶梯称号与 LinuxDo 纯净弹性排版 (`b8d9379`)
 - [x] **称号徽章区（Badges/Titles）彻底重构**：
   - 彻底删除所有类似「受到赞赏」、「活跃交流」等硬编码捏造的假勋章；
   - 彻底清理混入称号栏的 IP 归属地（如「MY 马来西亚」），若存在仅作为名字旁的微型辅助标识（`.profile-popover-location-tag`）；
@@ -1126,6 +1126,13 @@
   - 断言页面不存在「受到赞赏」、「活跃交流」及「+N 更多」；
   - 断言称号数量 <= 4，且均属于系统官方真实称号/群组；
   - 断言统计栏无 `·` 字符，gap: 16px 间距生效，全套 5 大测试模块 100% 通过。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测通过**：
+  - 生产边缘节点自动部署至版本：`https://9a8b0274.shijianus-blog.pages.dev`（绑定至生产主域名 `https://blog.epocanvas.com`）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在最新 Pages 部署与生产主域完成验证：
+    - 实测作者名片浮层横向长条展开（宽 465.6px，高 171.3px）；
+    - 验证徽章 100% 为官方真实阶梯与白名单群组（`['👑站长', '站长团队', '核心架构师']`），0 伪造勋章，0「+N 更多」；
+    - 验证真实统计数据行（`加入时间9月5日已读0m评论1喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
+    - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png`，端到端测试全绿通过。
 
 
 
