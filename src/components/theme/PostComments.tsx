@@ -66,8 +66,11 @@ import {
 import {
   computeUserLevel,
   computeOfficialBadges,
+  evaluateUserBadges,
   getAuthorGroups,
   readUserStats,
+  type CommunityBadge,
+  type UserBadgeContext,
   type UserLevelInfo,
   type UserStats,
 } from '../../lib/user-level';
@@ -303,7 +306,7 @@ export function PostComments({
       commentCount: number;
       reactionsReceived: number;
       joinDateStr: string;
-      badges: { icon?: string; label: string; isSpecial?: boolean }[];
+      badges: CommunityBadge[];
     } | null;
     anchorRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null;
     isPinned: boolean;
@@ -438,6 +441,34 @@ export function PostComments({
       return `@${comment.authorName.replace(/\s+/g, '').toLowerCase()}`;
     })();
 
+    // Compute days since first seen / registered
+    const daysSinceRegistered = (() => {
+      if (!earliestDateStr) return 0;
+      try {
+        const diff = Date.now() - new Date(earliestDateStr).getTime();
+        return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+      } catch {
+        return 0;
+      }
+    })();
+
+    // Interaction achievements calculation
+    const hasEditedComment = authorComments.some(
+      (c) => Boolean(c.isEdited || (c as any).editedAt || (c.updatedAt && c.createdAt && c.updatedAt !== c.createdAt))
+    );
+    const hasEmojiReaction = authorComments.some((c) => {
+      const summary = c.reactions?.summary;
+      const userReactions = c.reactions?.userReactions;
+      return Boolean((summary && Object.keys(summary).length > 0) || (userReactions && userReactions.length > 0));
+    });
+    const hasMentioned = authorComments.some(
+      (c) => (c.content && c.content.includes('@')) || Boolean(c.replyToCommentId)
+    );
+
+    const bio = (comment as any).authorBio || (isWebmaster ? '探索全栈工程架构与精致交互体验的技术旅人。' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined);
+    const avatarUrl = comment.authorAvatar || (isWebmaster ? '/media/shijianus/avatar.jpg' : undefined);
+    const activeDays = commentLevelInfo?.activeDays ?? (isCurrentAccount ? readUserStats().activeDays : Math.max(1, Math.min(daysSinceRegistered, authorComments.length)));
+
     // Compute Level Info for progression/title
     const stats: UserStats = {
       hasAccount: Boolean(comment.authorEmail || comment.authorRole !== 'visitor'),
@@ -445,7 +476,7 @@ export function PostComments({
       readingMinutes,
       commentCount,
       reactionsReceived,
-      activeDays: commentLevelInfo?.activeDays ?? (isCurrentAccount ? readUserStats().activeDays : 1),
+      activeDays,
       activeDates: [],
       firstSeenAt: earliestDateStr,
       isWebmaster,
@@ -456,12 +487,28 @@ export function PostComments({
     // 7. Highest Title (纯文本最高称号，严格仅限官方系统阶梯)
     const highestTitle = levelInfo.isWebmaster ? '站长' : levelInfo.title;
 
-    // 8. Official Badges (严格仅限等级主称号 + 4大博客互动成就，彻底杜绝伪造标签与IP)
-    const badges = computeOfficialBadges(stats, {
-      role: comment.authorRole,
-      isWebmaster,
+    // 8. Community Badges (博客专属成就池，evaluateUserBadges 动态判定，严格按权重降序排列，取前 4 个)
+    const badgeContext: UserBadgeContext = {
+      readingTime: readingMinutes,
+      readingMinutes,
+      commentCount,
+      reactionsReceived,
+      reactionsGiven: isCurrentAccount ? readUserStats().reactionsReceived : ((comment as any).reactionsGiven ?? 0),
+      activeDays,
+      daysSinceRegistered,
+      hasEditedComment,
+      hasEmojiReaction,
+      hasMentioned,
+      bio,
+      avatarUrl,
       email: comment.authorEmail,
-    });
+      epomail: Boolean(comment.authorEmail?.toLowerCase().endsWith('@epomail.bond')),
+      isWebmaster,
+      role: comment.authorRole,
+    };
+
+    const unlockedBadges = evaluateUserBadges(stats, badgeContext);
+    const badges = unlockedBadges.slice(0, 4);
 
     setProfilePopover({
       isOpen: true,
@@ -4096,10 +4143,10 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   </div>
                 )}
 
-                {/* 3. Real Inline Stats (LinuxDo Flow): 最新评论 5天前    加入时间 9月5日    已读 17m    喝彩 2 */}
+                {/* 3. Real Inline Stats (LinuxDo Flow): 最新发言 5天前    加入时间 9月5日    已读 17m    喝彩 2 */}
                 <div className="profile-popover-inline-stats">
                   <span className="stat-item">
-                    <span className="stat-label">最新评论</span>
+                    <span className="stat-label">最新发言</span>
                     <span className="stat-value">{profilePopover.author.latestCommentTime}</span>
                   </span>
                   <span className="stat-item">
@@ -4121,11 +4168,12 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   <div className="profile-popover-badges-flow">
                     {profilePopover.author.badges.slice(0, 4).map((b, idx) => (
                       <span
-                        key={idx}
-                        className={`profile-popover-badge-pill ${b.isSpecial ? 'is-special' : ''}`}
+                        key={b.id || idx}
+                        className={`profile-popover-badge-pill ${b.category === 'tier' ? 'is-special' : ''}`}
+                        title={b.description}
                       >
                         {b.icon && <span className="badge-icon">{b.icon}</span>}
-                        <span>{b.label}</span>
+                        <span>{b.name || b.label}</span>
                       </span>
                     ))}
                   </div>

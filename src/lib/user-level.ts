@@ -470,87 +470,447 @@ export const OFFICIAL_ALLOWED_GROUPS: readonly string[] = [
   '社区读者圈',
 ] as const;
 
+export interface CommunityBadge {
+  id: string;
+  name: string;
+  icon: string;
+  category: 'tier' | 'read' | 'comment' | 'reaction' | 'activity';
+  priority: number; // 稀有度与排序权重，数值越大越优先展示
+  description: string;
+  isUnlocked: boolean;
+  label?: string; // 兼容别名 (同 name)
+}
+
 export interface OfficialBadge {
   icon?: string;
   label: string;
+  name?: string;
   isSpecial?: boolean;
+  description?: string;
+  category?: string;
+  priority?: number;
+}
+
+export interface UserBadgeContext {
+  readingTime?: number; // 分钟数
+  readingMinutes?: number; // 兼容别名
+  commentCount?: number;
+  reactionsReceived?: number;
+  reactionsGiven?: number;
+  activeDays?: number;
+  daysSinceRegistered?: number;
+  hasEditedComment?: boolean;
+  hasEmojiReaction?: boolean;
+  hasMentioned?: boolean;
+  bio?: string;
+  avatarUrl?: string;
+  email?: string;
+  epomail?: boolean;
+  isWebmaster?: boolean;
+  role?: string;
+  customLevel?: number;
 }
 
 /**
- * Computes official lightweight badges unlocked by user based strictly on real metrics:
- * 1. [等级主称号] (1st core badge):
- *    - 站长 (LV.4, TL.99)
- *    - 年度用户 (LV.3, TL.20)
- *    - 先驱 (LV.3, TL.15)
- *    - 活跃用户 (LV.2, TL.10)
- *    - 贡献者 (LV.1, TL.7)
- *    - 基本用户 (LV.1, TL.5)
- *    - 初始用户 (LV.0, TL.2)
- *    - 新兴用户 (LV.0, TL.0)
+ * 博客专属徽章池自动判定引擎 (evaluateUserBadges):
+ * 全部基于真实指标动态判定，严禁硬编码假标签！
  *
- * 2. [博客互动成就] (Strictly unlocked by real metrics, hidden if not achieved):
- *    - 沉浸阅读: stats.readingMinutes > 60
- *    - 热情回应: stats.commentCount >= 5
- *    - 引发共鸣: stats.reactionsReceived >= 10
- *    - 资深常客: stats.activeDays >= 15
+ * 1. 【等级主称号】（互斥取最高级，权重 100）：
+ *    👑 站长 / ⭐ 先驱 / 🎖️ 活跃用户 / 🏅 贡献者 / 🥉 基本用户 / 📘 初始用户 / 🐣 新兴用户
+ * 2. 【阅读沉淀成就】（权重 40-70）：
+ *    - 📖 通读全文: readingTime >= 15m (40)
+ *    - ☕ 慢读时光: readingTime >= 120m (55)
+ *    - 📚 博览群书: readingTime >= 600m (70)
+ * 3. 【互动交流成就】（权重 30-60）：
+ *    - ✍️ 初露锋芒: hasEditedComment === true (30)
+ *    - 😀 丰富表情: hasEmojiReaction === true (35)
+ *    - 💬 言之有物: commentCount >= 5 (50)
+ *    - 🔔 回音激荡: hasMentioned === true (45)
+ * 4. 【赞赏喝彩成就】（权重 40-80）：
+ *    - ❤️ 不吝赞美: reactionsGiven >= 10 (45)
+ *    - ✨ 初见回响: reactionsReceived >= 1 (40)
+ *    - 🔥 引发共鸣: reactionsReceived >= 20 (65)
+ *    - 💎 深得人心: reactionsReceived >= 50 (80)
+ * 5. 【常客与资料成就】（权重 30-80）：
+ *    - 🏷️ 自传作者: bio && bio.trim().length >= 10 && avatarUrl (35)
+ *    - ✉️ 信件连结: epomail || email (40)
+ *    - 🏃 常客印记: activeDays >= 10 (50)
+ *    - 🏔️ 百日墨客: activeDays >= 100 (75)
+ *    - 🎂 同舟一载: daysSinceRegistered >= 365 (85)
  *
- * Strictly NO fake badges, NO "站长团队", NO "核心架构师", NO IP/location.
- * Maximum 4 badges (.slice(0, 4)), zero "+N 更多".
+ * 严格按照 priority 从高到低降序排序，返回已解锁徽章列表。
+ */
+export function evaluateUserBadges(
+  statsOrContext: UserStats | UserBadgeContext,
+  authorExtra?: Partial<UserBadgeContext>
+): CommunityBadge[] {
+  const isStats = 'hasAccount' in statsOrContext;
+  const merged: UserBadgeContext = {
+    ...(isStats
+      ? {
+          readingTime: (statsOrContext as UserStats).readingMinutes,
+          readingMinutes: (statsOrContext as UserStats).readingMinutes,
+          commentCount: (statsOrContext as UserStats).commentCount,
+          reactionsReceived: (statsOrContext as UserStats).reactionsReceived,
+          activeDays: (statsOrContext as UserStats).activeDays,
+          isWebmaster: (statsOrContext as UserStats).isWebmaster,
+          customLevel: (statsOrContext as UserStats).customLevel,
+        }
+      : {}),
+    ...statsOrContext,
+    ...(authorExtra || {}),
+  };
+
+  const unlocked: CommunityBadge[] = [];
+
+  // 计算用户所属阶梯信息
+  const statsForLevel: UserStats = {
+    hasAccount: Boolean(merged.email || (merged.role && merged.role !== 'visitor')),
+    hasReadAny: (merged.readingTime || merged.readingMinutes || 0) > 0,
+    readingMinutes: merged.readingTime ?? merged.readingMinutes ?? 0,
+    commentCount: merged.commentCount || 0,
+    reactionsReceived: merged.reactionsReceived || 0,
+    activeDays: merged.activeDays || 1,
+    activeDates: [],
+    firstSeenAt: '',
+    isWebmaster: Boolean(merged.isWebmaster),
+    customLevel: merged.customLevel,
+  };
+  const levelInfo = computeUserLevel(statsForLevel, merged.role, merged.email);
+
+  // 1. 【等级主称号】（互斥取最高级，权重 100）
+  if (levelInfo.isWebmaster || merged.isWebmaster) {
+    unlocked.push({
+      id: 'tier_webmaster',
+      name: '站长',
+      label: '站长',
+      icon: '👑',
+      category: 'tier',
+      priority: 100,
+      description: '博客站长与系统主创，拥有最高全站管理权限',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '核心成员' || merged.role === 'core_member') {
+    unlocked.push({
+      id: 'tier_core_member',
+      name: '核心成员',
+      label: '核心成员',
+      icon: '⭐',
+      category: 'tier',
+      priority: 100,
+      description: '社区核心成员与架构协作者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '年度用户') {
+    unlocked.push({
+      id: 'tier_annual_member',
+      name: '年度用户',
+      label: '年度用户',
+      icon: '🏅',
+      category: 'tier',
+      priority: 100,
+      description: '与博客结缘满一年的尊贵读者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '先驱') {
+    unlocked.push({
+      id: 'tier_pioneer',
+      name: '先驱',
+      label: '先驱',
+      icon: '⭐',
+      category: 'tier',
+      priority: 100,
+      description: '深度见证博客成长的社区先驱读者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '活跃用户') {
+    unlocked.push({
+      id: 'tier_active_user',
+      name: '活跃用户',
+      label: '活跃用户',
+      icon: '🎖️',
+      category: 'tier',
+      priority: 100,
+      description: '高频互动并深研博客内容的活跃读者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '贡献者') {
+    unlocked.push({
+      id: 'tier_contributor',
+      name: '贡献者',
+      label: '贡献者',
+      icon: '🏅',
+      category: 'tier',
+      priority: 100,
+      description: '积极留下高质量见解的社区贡献者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '基本用户') {
+    unlocked.push({
+      id: 'tier_basic_user',
+      name: '基本用户',
+      label: '基本用户',
+      icon: '🥉',
+      category: 'tier',
+      priority: 100,
+      description: '在博客留下过真实评论足迹的基础读者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '初始用户') {
+    unlocked.push({
+      id: 'tier_initial_user',
+      name: '初始用户',
+      label: '初始用户',
+      icon: '📘',
+      category: 'tier',
+      priority: 100,
+      description: '开启深度阅读探索的初始读者',
+      isUnlocked: true,
+    });
+  } else {
+    unlocked.push({
+      id: 'tier_newcomer',
+      name: '新兴用户',
+      label: '新兴用户',
+      icon: '🐣',
+      category: 'tier',
+      priority: 100,
+      description: '初次邂逅博客的新兴读者',
+      isUnlocked: true,
+    });
+  }
+
+  // 2. 【阅读沉淀成就】（权重 40-70）
+  const readingTime = merged.readingTime ?? merged.readingMinutes ?? 0;
+  if (readingTime >= 600) {
+    unlocked.push({
+      id: 'read_600m',
+      name: '博览群书',
+      label: '博览群书',
+      icon: '📚',
+      category: 'read',
+      priority: 70,
+      description: '累计沉浸阅读博客超过 10 小时',
+      isUnlocked: true,
+    });
+  }
+  if (readingTime >= 120) {
+    unlocked.push({
+      id: 'read_120m',
+      name: '慢读时光',
+      label: '慢读时光',
+      icon: '☕',
+      category: 'read',
+      priority: 55,
+      description: '累计享受深度慢读时光超过 2 小时',
+      isUnlocked: true,
+    });
+  }
+  if (readingTime >= 15) {
+    unlocked.push({
+      id: 'read_15m',
+      name: '通读全文',
+      label: '通读全文',
+      icon: '📖',
+      category: 'read',
+      priority: 40,
+      description: '累计深度阅读博文时长达到 15 分钟',
+      isUnlocked: true,
+    });
+  }
+
+  // 3. 【互动交流成就】（权重 30-60）
+  if (merged.hasEditedComment) {
+    unlocked.push({
+      id: 'comment_edited',
+      name: '初露锋芒',
+      label: '初露锋芒',
+      icon: '✍️',
+      category: 'comment',
+      priority: 30,
+      description: '精益求精，就地编辑完善过自己的发言',
+      isUnlocked: true,
+    });
+  }
+  if (merged.hasEmojiReaction) {
+    unlocked.push({
+      id: 'comment_emoji',
+      name: '丰富表情',
+      label: '丰富表情',
+      icon: '😀',
+      category: 'comment',
+      priority: 35,
+      description: '使用生动丰富的表情符号参与互动交流',
+      isUnlocked: true,
+    });
+  }
+  if ((merged.commentCount ?? 0) >= 5) {
+    unlocked.push({
+      id: 'comment_5',
+      name: '言之有物',
+      label: '言之有物',
+      icon: '💬',
+      category: 'comment',
+      priority: 50,
+      description: '累计发表 5 条及以上优质独立见解',
+      isUnlocked: true,
+    });
+  }
+  if (merged.hasMentioned) {
+    unlocked.push({
+      id: 'comment_mentioned',
+      name: '回音激荡',
+      label: '回音激荡',
+      icon: '🔔',
+      category: 'comment',
+      priority: 45,
+      description: '在评论互动中主动提及或呼应他人',
+      isUnlocked: true,
+    });
+  }
+
+  // 4. 【赞赏喝彩成就】（权重 40-80）
+  const reactionsGiven = merged.reactionsGiven ?? 0;
+  const reactionsReceived = merged.reactionsReceived ?? 0;
+  if (reactionsReceived >= 50) {
+    unlocked.push({
+      id: 'reaction_rec_50',
+      name: '深得人心',
+      label: '深得人心',
+      icon: '💎',
+      category: 'reaction',
+      priority: 80,
+      description: '累计获得超过 50 次读者共鸣喝彩与赞赏',
+      isUnlocked: true,
+    });
+  }
+  if (reactionsReceived >= 20) {
+    unlocked.push({
+      id: 'reaction_rec_20',
+      name: '引发共鸣',
+      label: '引发共鸣',
+      icon: '🔥',
+      category: 'reaction',
+      priority: 65,
+      description: '发表的见解累计收获 20 次以上喝彩互动',
+      isUnlocked: true,
+    });
+  }
+  if (reactionsGiven >= 10) {
+    unlocked.push({
+      id: 'reaction_given_10',
+      name: '不吝赞美',
+      label: '不吝赞美',
+      icon: '❤️',
+      category: 'reaction',
+      priority: 45,
+      description: '慷慨为他人的深刻思考送出 10 次以上喝彩',
+      isUnlocked: true,
+    });
+  }
+  if (reactionsReceived >= 1) {
+    unlocked.push({
+      id: 'reaction_rec_1',
+      name: '初见回响',
+      label: '初见回响',
+      icon: '✨',
+      category: 'reaction',
+      priority: 40,
+      description: '个人发言收获了读者的第一枚热烈喝彩',
+      isUnlocked: true,
+    });
+  }
+
+  // 5. 【常客与资料成就】（权重 30-80）
+  const bio = merged.bio || '';
+  const avatarUrl = merged.avatarUrl || '';
+  const activeDays = merged.activeDays ?? 1;
+  const daysSinceRegistered = merged.daysSinceRegistered ?? 0;
+  const hasEmail = Boolean(merged.epomail || merged.email);
+
+  if (daysSinceRegistered >= 365) {
+    unlocked.push({
+      id: 'activity_365d',
+      name: '同舟一载',
+      label: '同舟一载',
+      icon: '🎂',
+      category: 'activity',
+      priority: 85,
+      description: '与本博客相识相伴同行超过 1 年时光',
+      isUnlocked: true,
+    });
+  }
+  if (activeDays >= 100) {
+    unlocked.push({
+      id: 'activity_100d',
+      name: '百日墨客',
+      label: '百日墨客',
+      icon: '🏔️',
+      category: 'activity',
+      priority: 75,
+      description: '累计在博客活跃长达 100 天的深厚笔友',
+      isUnlocked: true,
+    });
+  }
+  if (activeDays >= 10) {
+    unlocked.push({
+      id: 'activity_10d',
+      name: '常客印记',
+      label: '常客印记',
+      icon: '🏃',
+      category: 'activity',
+      priority: 50,
+      description: '累计在博客活跃探索 10 天以上',
+      isUnlocked: true,
+    });
+  }
+  if (hasEmail) {
+    unlocked.push({
+      id: 'activity_email',
+      name: '信件连结',
+      label: '信件连结',
+      icon: '✉️',
+      category: 'activity',
+      priority: 40,
+      description: '绑定了专属邮箱，开启思想交流连结通道',
+      isUnlocked: true,
+    });
+  }
+  if (bio.trim().length >= 10 && avatarUrl) {
+    unlocked.push({
+      id: 'activity_bio_avatar',
+      name: '自传作者',
+      label: '自传作者',
+      icon: '🏷️',
+      category: 'activity',
+      priority: 35,
+      description: '完善了个性签名介绍并配置了专属头像',
+      isUnlocked: true,
+    });
+  }
+
+  // 严格按照 priority 从高到低降序排序
+  unlocked.sort((a, b) => b.priority - a.priority);
+
+  return unlocked;
+}
+
+/**
+ * 兼容层：获取前 4 个官方徽章
  */
 export function computeOfficialBadges(
-  stats: UserStats,
-  author: {
-    role?: string;
-    isWebmaster?: boolean;
-    email?: string;
-  }
+  statsOrContext: UserStats | UserBadgeContext,
+  author?: Partial<UserBadgeContext>
 ): OfficialBadge[] {
-  const badges: OfficialBadge[] = [];
-
-  // 1. [等级主称号] (首个核心徽章)
-  const levelInfo = computeUserLevel(stats, author.role, author.email);
-  if (levelInfo.isWebmaster) {
-    badges.push({ icon: '👑', label: '站长', isSpecial: true });
-  } else if (levelInfo.title === '核心成员') {
-    badges.push({ icon: '⭐', label: '核心成员', isSpecial: true });
-  } else if (levelInfo.title === '年度用户') {
-    badges.push({ icon: '🏅', label: '年度用户' });
-  } else if (levelInfo.title === '先驱') {
-    badges.push({ icon: '🚀', label: '先驱' });
-  } else if (levelInfo.title === '活跃用户') {
-    badges.push({ icon: '🔥', label: '活跃用户' });
-  } else if (levelInfo.title === '贡献者') {
-    badges.push({ icon: '✍️', label: '贡献者' });
-  } else if (levelInfo.title === '基本用户') {
-    badges.push({ icon: '🌱', label: '基本用户' });
-  } else if (levelInfo.title === '初始用户') {
-    badges.push({ icon: '📖', label: '初始用户' });
-  } else {
-    badges.push({ icon: '✨', label: '新兴用户' });
-  }
-
-  // 2. [博客互动成就] (真实数据动态判定)
-  // 沉浸阅读：累计阅读时长 > 60 分钟
-  if (stats.readingMinutes > 60) {
-    badges.push({ icon: '📚', label: '沉浸阅读' });
-  }
-
-  // 热情回应：累计发表评论 ≥ 5 条
-  if (stats.commentCount >= 5) {
-    badges.push({ icon: '💬', label: '热情回应' });
-  }
-
-  // 引发共鸣：累计收到赞/喝彩（Emoji 交互）≥ 10 次
-  if (stats.reactionsReceived >= 10) {
-    badges.push({ icon: '❤️', label: '引发共鸣' });
-  }
-
-  // 资深常客：连续或累计活跃天数 ≥ 15 天
-  if (stats.activeDays >= 15) {
-    badges.push({ icon: '🌟', label: '资深常客' });
-  }
-
-  // 严格 .slice(0, 4) 截断，至多展示 4 个
-  return badges.slice(0, 4);
+  const unlocked = evaluateUserBadges(statsOrContext, author);
+  return unlocked.slice(0, 4).map((b) => ({
+    icon: b.icon,
+    label: b.name,
+    name: b.name,
+    isSpecial: b.category === 'tier',
+    description: b.description,
+    category: b.category,
+    priority: b.priority,
+  }));
 }
 

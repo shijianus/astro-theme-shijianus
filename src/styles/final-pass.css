@@ -4590,24 +4590,32 @@ span.text-xs.font-semibold.text-rose-500 {
 }
 
 .profile-popover-badge-pill {
-  height: 22px;
-  line-height: 20px;
-  padding: 0 8px;
-  border-radius: 999px;
+  height: 23px;
+  line-height: 21px;
+  padding: 0 7px;
+  border-radius: 5px;
   font-size: 0.7rem; /* ~11px */
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 3.5px;
   background: color-mix(in srgb, var(--font-color) 5%, transparent);
   border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
   color: var(--font-color);
   white-space: nowrap;
   flex-shrink: 0;
+  cursor: default;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.profile-popover-badge-pill:hover {
+  background: color-mix(in srgb, var(--font-color) 9%, transparent);
+  border-color: color-mix(in srgb, var(--font-color) 18%, transparent);
 }
 
 .profile-popover-badge-pill .badge-icon {
   font-size: 0.75rem;
+  line-height: 1;
 }
 
 .profile-popover-badge-pill.is-special {
@@ -4628,11 +4636,9 @@ span.text-xs.font-semibold.text-rose-500 {
   color: #e5e7eb;
 }
 
-.profile-popover-badge-pill.is-more {
-  color: var(--secondtext);
-  background: transparent;
-  border-style: dashed;
-  font-weight: 500;
+[data-theme='dark'] .profile-popover-badge-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Mobile Responsiveness */

@@ -340,10 +340,11 @@ async function runVerification() {
       throw new Error('Stats must be inline text flow');
     }
     if (popoverAudit.statItemsCount !== 4) {
-      throw new Error(`Expected 4 stat items (最新评论, 加入时间, 已读, 喝彩), got ${popoverAudit.statItemsCount}`);
+      throw new Error(`Expected 4 stat items (最新发言, 加入时间, 已读, 喝彩), got ${popoverAudit.statItemsCount}`);
     }
-    if (!popoverAudit.statFlowText?.includes('最新评论') || !popoverAudit.statFlowText?.includes('加入时间') || !popoverAudit.statFlowText?.includes('已读') || !popoverAudit.statFlowText?.includes('喝彩')) {
-      throw new Error(`Expected real stats stream with all 4 metrics (最新评论, 加入时间, 已读, 喝彩), got "${popoverAudit.statFlowText}"`);
+    const hasLatestLabel = popoverAudit.statFlowText?.includes('最新发言') || popoverAudit.statFlowText?.includes('最新评论');
+    if (!hasLatestLabel || !popoverAudit.statFlowText?.includes('加入时间') || !popoverAudit.statFlowText?.includes('已读') || !popoverAudit.statFlowText?.includes('喝彩')) {
+      throw new Error(`Expected real stats stream with all 4 metrics (最新发言/最新评论, 加入时间, 已读, 喝彩), got "${popoverAudit.statFlowText}"`);
     }
     if (popoverAudit.statFlowText?.includes('9999m') || popoverAudit.statFlowText?.includes('999')) {
       throw new Error(`Stat text must NOT contain hardcoded mock data (9999m or 999): "${popoverAudit.statFlowText}"`);
@@ -374,8 +375,11 @@ async function runVerification() {
       throw new Error(`Found location "${badgesString}" in badges flow! Location must not be in badges.`);
     }
     const ALLOWED_BADGES = [
-      '站长', '年度用户', '先驱', '活跃用户', '贡献者', '基本用户', '初始用户', '新兴用户',
-      '沉浸阅读', '热情回应', '引发共鸣', '资深常客'
+      '站长', '核心成员', '年度用户', '先驱', '活跃用户', '贡献者', '基本用户', '初始用户', '新兴用户',
+      '通读全文', '慢读时光', '博览群书',
+      '初露锋芒', '丰富表情', '言之有物', '回音激荡',
+      '不吝赞美', '初见回响', '引发共鸣', '深得人心',
+      '自传作者', '信件连结', '常客印记', '百日墨客', '同舟一载'
     ];
     for (const text of popoverAudit.badgePillTexts) {
       const isAllowed = ALLOWED_BADGES.some((b) => text.includes(b));
