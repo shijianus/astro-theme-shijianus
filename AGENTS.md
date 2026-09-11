@@ -1111,6 +1111,22 @@
     - 验证真实统计数据行（`加入时间9月5日·已读0m·评论1·喝彩2`，无任何 9999m 或 999 假数据，`hasFakeData: false`，`legacyPillsCount: 0`）；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png`，端到端测试全绿通过。
 
+### Task 51: 剔除伪造徽章与脏数据，严格展示官方阶梯称号与 LinuxDo 纯净弹性排版
+- [x] **称号徽章区（Badges/Titles）彻底重构**：
+  - 彻底删除所有类似「受到赞赏」、「活跃交流」等硬编码捏造的假勋章；
+  - 彻底清理混入称号栏的 IP 归属地（如「MY 马来西亚」），若存在仅作为名字旁的微型辅助标识（`.profile-popover-location-tag`）；
+  - 称号来源严格仅限官方系统阶梯（8 个官方等级称号：新兴用户、初始用户、基本用户、贡献者、活跃用户、先驱、年度用户、站长/核心成员）以及官方群组白名单（站长团队、核心架构师、Epomail 认证读者、邮件公测组、社区读者圈）；
+  - 严格数量截断：使用 `.slice(0, 4)` 最多展示 4 个，坚决移除「+N 更多」逻辑，超量静默忽略；
+  - 胶囊样式：单行横向排开（`flex-wrap: nowrap; overflow: hidden;`），微型圆角胶囊（22px，细致浅色背景，`flex-shrink: 0`），杜绝折行。
+- [x] **统计数据栏 (Stats Row) 规范（完全对齐 LinuxDo）**：
+  - 彻底移除所有圆点分隔符（`·`），改为标准的弹性横向间距（`gap: 16px` 平铺，`flex-wrap: nowrap`）；
+  - 指标采用两段式排印：标签采用次级灰度文字（`color: var(--secondtext)`），数值采用加粗高对比度文本（`color: var(--font-color); font-weight: 700; font-family: monospace`）；
+  - 100% 动态读取评论上下文及运行时真实数据（加入时间、已读、评论、喝彩）。
+- [x] **自动化端到端测试 100% 验收通过（`scripts/verify-author-profile-linuxdo.mjs`）**：
+  - 断言页面不存在「受到赞赏」、「活跃交流」及「+N 更多」；
+  - 断言称号数量 <= 4，且均属于系统官方真实称号/群组；
+  - 断言统计栏无 `·` 字符，gap: 16px 间距生效，全套 5 大测试模块 100% 通过。
+
 
 
 

@@ -201,7 +201,12 @@ async function runVerification() {
       const emailLine = popover.querySelector('.profile-popover-email-line');
       const emailText = emailLine?.querySelector('.profile-popover-email-text')?.textContent?.trim();
 
+      const locationTag = popover.querySelector('.profile-popover-location-tag');
+      const locationText = locationTag?.textContent?.trim();
+      const popoverAllText = popover.textContent || '';
+
       const inlineStats = popover.querySelector('.profile-popover-inline-stats');
+      const inlineStatsComputed = inlineStats ? window.getComputedStyle(inlineStats) : null;
       const statItems = Array.from(popover.querySelectorAll('.profile-popover-inline-stats .stat-item'));
       const oldStatsGrid = popover.querySelector('.profile-popover-stats-grid');
 
@@ -228,6 +233,8 @@ async function runVerification() {
         } : null,
         displayNameText: displayName?.textContent?.trim(),
         displayNameWeight: displayComputed?.fontWeight,
+        hasLocationTag: !!locationTag,
+        locationText,
         usernameText: username?.textContent?.trim(),
         titleText: title?.textContent?.trim(),
         titleHasBg: titleComputed?.backgroundColor !== 'rgba(0, 0, 0, 0)' && titleComputed?.backgroundColor !== 'transparent',
@@ -244,9 +251,13 @@ async function runVerification() {
         hasOldStatsGrid: !!oldStatsGrid,
         statItemsCount: statItems.length,
         statFlowText: inlineStats?.textContent?.replace(/\s+/g, ' ').trim(),
+        statsHasDotSep: inlineStats?.textContent?.includes('·') || false,
+        statsGap: inlineStatsComputed?.gap,
         hasBadgesFlow: !!badgesFlow,
         badgePillsCount: badgePills.length,
         badgePillTexts: badgePills.map((b) => b.textContent?.trim()),
+        hasFakeBadgesText: popoverAllText.includes('受到赞赏') || popoverAllText.includes('活跃交流'),
+        hasMorePillText: popoverAllText.includes('更多'),
       };
     });
 
@@ -324,7 +335,7 @@ async function runVerification() {
     }
     console.log('   ✅ 6. Bio: Plain text natural paragraph, secondary color, NO container borders.');
 
-    // 7. Real Data Inline Stats (Zero 9999m or 999!)
+    // 7. Real Data Inline Stats (Zero 9999m or 999! ZERO "·" separator! Elastic gap spacing!)
     if (!popoverAudit.hasInlineStats) {
       throw new Error('Stats must be inline text flow');
     }
@@ -337,20 +348,30 @@ async function runVerification() {
     if (popoverAudit.statFlowText?.includes('9999m') || popoverAudit.statFlowText?.includes('999')) {
       throw new Error(`Stat text must NOT contain hardcoded mock data (9999m or 999): "${popoverAudit.statFlowText}"`);
     }
-    console.log(`   ✅ 7. Real Data Stats: "${popoverAudit.statFlowText}" (100% real metrics, ZERO 9999 mock data).`);
+    if (popoverAudit.statsHasDotSep) {
+      throw new Error(`Stats row must NOT contain dot separator "·": "${popoverAudit.statFlowText}"`);
+    }
+    console.log(`   ✅ 7. Real Data Stats: "${popoverAudit.statFlowText}" (100% real metrics, ZERO dot separator, gap-spaced).`);
 
-    // 8. Badges
+    // 8. Badges (Strictly official titles/groups, <= 4 pills, ZERO fake badges, ZERO "+N 更多", ZERO location pollution)
     if (!popoverAudit.hasBadgesFlow) {
       throw new Error('Badges must be rendered directly in badges flow');
     }
-    if (popoverAudit.badgePillsCount < 4) {
-      throw new Error(`Expected at least 4 badge pills, got ${popoverAudit.badgePillsCount}`);
+    if (popoverAudit.badgePillsCount > 4) {
+      throw new Error(`Expected at most 4 badge pills, got ${popoverAudit.badgePillsCount}`);
     }
-    const hasMorePill = popoverAudit.badgePillTexts.some((t) => t.includes('更多'));
-    if (!hasMorePill) {
-      throw new Error('Expected "+N 更多" pill when badges > 4');
+    if (popoverAudit.hasFakeBadgesText) {
+      throw new Error('Found fake badges "受到赞赏" or "活跃交流" in popover!');
     }
-    console.log('   ✅ 8. Badges: Compact pills (22px) with icons & "+N 更多", NO "所属群组" title.');
+    if (popoverAudit.hasMorePillText) {
+      throw new Error('Found "+N 更多" pill in popover, it must be removed!');
+    }
+    for (const text of popoverAudit.badgePillTexts) {
+      if (text.includes('马来西亚') || text.includes('MY')) {
+        throw new Error(`Found location "${text}" in badges flow! Location must not be in badges.`);
+      }
+    }
+    console.log(`   ✅ 8. Badges: Official badges (${popoverAudit.badgePillTexts.join(', ')}), <= 4 pills, ZERO fake badges, ZERO "+N 更多", ZERO location pollution.`);
 
     await page.waitForTimeout(300);
     const lightScreenshotPath = path.join(screenshotDir, '01-linuxdo-popover-light.png');
@@ -414,13 +435,20 @@ async function runVerification() {
       const title = popover?.querySelector('.profile-popover-title')?.textContent?.trim();
       const statFlowText = popover?.querySelector('.profile-popover-inline-stats')?.textContent?.replace(/\s+/g, ' ').trim();
       const legacyPills = popover?.querySelectorAll('.profile-popover-pill');
+      const badgePills = Array.from(popover?.querySelectorAll('.profile-popover-badge-pill') || []);
+      const popoverAllText = popover?.textContent || '';
       return {
         hasCrownBadge: !!crown,
         displayName,
         username,
         title,
         statFlowText,
+        statsHasDotSep: statFlowText?.includes('·') || false,
         legacyPillsCount: legacyPills?.length ?? 0,
+        badgePillsCount: badgePills.length,
+        badgePillTexts: badgePills.map((b) => b.textContent?.trim()),
+        hasFakeBadgesText: popoverAllText.includes('受到赞赏') || popoverAllText.includes('活跃交流'),
+        hasMorePillText: popoverAllText.includes('更多'),
       };
     });
 
@@ -434,8 +462,8 @@ async function runVerification() {
     if (!readerAudit.username?.startsWith('@')) {
       throw new Error(`Expected username starting with "@", got "${readerAudit.username}"`);
     }
-    if (!readerAudit.title || (readerAudit.title !== '基本用户' && readerAudit.title !== '注册读者')) {
-      throw new Error(`Expected title "基本用户" or "注册读者", got "${readerAudit.title}"`);
+    if (!readerAudit.title || (readerAudit.title !== '基本用户' && readerAudit.title !== '注册读者' && readerAudit.title !== '新兴用户')) {
+      throw new Error(`Expected official title, got "${readerAudit.title}"`);
     }
     if (readerAudit.legacyPillsCount > 0) {
       throw new Error('Regular reader should NOT have legacy colorful pills');
@@ -443,7 +471,19 @@ async function runVerification() {
     if (readerAudit.statFlowText?.includes('9999m') || readerAudit.statFlowText?.includes('999')) {
       throw new Error(`Regular reader stats must NOT have fake data: "${readerAudit.statFlowText}"`);
     }
-    console.log('   ✅ Regular reader card verified: 0 crown, pure text title, real data stats.');
+    if (readerAudit.statsHasDotSep) {
+      throw new Error(`Regular reader stats must NOT have "·": "${readerAudit.statFlowText}"`);
+    }
+    if (readerAudit.hasFakeBadgesText) {
+      throw new Error('Regular reader popover has fake badges!');
+    }
+    if (readerAudit.hasMorePillText) {
+      throw new Error('Regular reader popover has "+N 更多" pill!');
+    }
+    if (readerAudit.badgePillsCount > 4) {
+      throw new Error(`Regular reader badge count must be <= 4, got ${readerAudit.badgePillsCount}`);
+    }
+    console.log('   ✅ Regular reader card verified: 0 crown, pure text title, real data stats without dots, official badges.');
 
     await page.waitForTimeout(300);
     const readerScreenshotPath = path.join(screenshotDir, '03-linuxdo-popover-reader.png');

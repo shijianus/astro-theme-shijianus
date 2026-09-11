@@ -4334,7 +4334,15 @@ span.text-xs.font-semibold.text-rose-500 {
   flex: 1;
 }
 
-/* Line 1: Display Name */
+/* Line 1: Display Name + Micro Location Tag */
+.profile-popover-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
 .profile-popover-display-name {
   margin: 0;
   padding: 0;
@@ -4345,6 +4353,29 @@ span.text-xs.font-semibold.text-rose-500 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profile-popover-location-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  color: var(--secondtext);
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.profile-popover-location-tag .location-flag {
+  font-size: 0.75rem;
+}
+
+.profile-popover-location-tag .location-name {
+  font-size: 0.68rem;
+  font-weight: 500;
 }
 
 /* Line 2: Unique Username (@username) */
@@ -4511,50 +4542,48 @@ span.text-xs.font-semibold.text-rose-500 {
   background: color-mix(in srgb, var(--theme-main) 10%, transparent);
 }
 
-/* 3. 数据统计栏 (Inline Text Stats)：纯文本单行排列，· 分隔，无独立方块 */
+/* 3. 数据统计栏 (Inline Text Stats)：LinuxDo 弹性横向间距，无圆点 ·，两段式排印 */
 .profile-popover-inline-stats {
   display: flex;
   align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 16px;
   font-size: 0.78rem; /* ~12.5px */
   line-height: 1.35;
   margin: 0;
   padding: 0;
   background: none;
   border: none;
+  overflow: hidden;
 }
 
 .profile-popover-inline-stats .stat-item {
   display: inline-flex;
   align-items: baseline;
-  gap: 3px;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .profile-popover-inline-stats .stat-label {
-  color: var(--secondtext);
-  font-size: 0.74rem;
+  color: var(--secondtext, #888888);
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .profile-popover-inline-stats .stat-value {
-  color: var(--font-color);
+  color: var(--font-color, #1f2937);
   font-weight: 700;
   font-family: var(--font-mono, monospace);
   font-size: 0.78rem;
 }
 
-.profile-popover-inline-stats .stat-sep {
-  color: var(--secondtext);
-  opacity: 0.4;
-  font-weight: bold;
-}
-
-/* 4. 徽章与称号列表 (Badges)：轻量胶囊 (Pill)，高度 22px-24px */
+/* 4. 徽章与称号列表 (Badges)：官方阶梯/群组轻量胶囊 (Pill)，单行不折行 (nowrap) */
 .profile-popover-badges-flow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  gap: 6px;
   align-items: center;
   margin: 0;
   padding: 0;
@@ -4574,6 +4603,7 @@ span.text-xs.font-semibold.text-rose-500 {
   border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
   color: var(--font-color);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .profile-popover-badge-pill .badge-icon {

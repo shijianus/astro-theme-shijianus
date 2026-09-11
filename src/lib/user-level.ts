@@ -443,3 +443,149 @@ export function getAuthorGroups(author: {
 
   return ['社区读者圈'];
 }
+
+/**
+ * Official 8 title ladder names.
+ */
+export const OFFICIAL_LADDER_TITLES: readonly UserLevelTitle[] = [
+  '站长',
+  '核心成员',
+  '年度用户',
+  '先驱',
+  '活跃用户',
+  '贡献者',
+  '基本用户',
+  '初始用户',
+  '新兴用户',
+] as const;
+
+/**
+ * Official group / identity tags whitelist.
+ */
+export const OFFICIAL_ALLOWED_GROUPS: readonly string[] = [
+  '站长团队',
+  '核心架构师',
+  'Epomail 认证读者',
+  '邮件公测组',
+  '社区读者圈',
+] as const;
+
+export interface OfficialBadge {
+  icon?: string;
+  label: string;
+  isSpecial?: boolean;
+}
+
+/**
+ * Computes official badges unlocked by user based on real stats and identity.
+ * Strictly limited to official ladder titles and official groups.
+ * Absolutely NO fake badges ('受到赞赏', '活跃交流') and NO IP/location.
+ */
+export function computeOfficialBadges(
+  stats: UserStats,
+  author: {
+    role?: string;
+    isWebmaster?: boolean;
+    email?: string;
+    groups?: string[];
+  }
+): OfficialBadge[] {
+  const badges: OfficialBadge[] = [];
+  const isOwner =
+    author.isWebmaster ||
+    author.role === 'admin' ||
+    (author.email && author.email.toLowerCase() === 'admin@epomail.bond') ||
+    (author.email && author.email.toLowerCase() === 'shijian@epomail.bond');
+
+  // 1. Webmaster (LV.4, TL.99)
+  if (isOwner) {
+    badges.push({ icon: '👑', label: '站长', isSpecial: true });
+    badges.push({ label: '站长团队', isSpecial: true });
+    badges.push({ label: '核心架构师', isSpecial: true });
+  } else if (stats.customLevel === 4 || author.role === 'core_member') {
+    // 2. Core Member (LV.4, TL.25)
+    badges.push({ icon: '⭐', label: '核心成员', isSpecial: true });
+  }
+
+  // 3. Annual Member (LV.3, TL.20)
+  if (stats.activeDays >= 365) {
+    if (!badges.some((b) => b.label === '年度用户')) {
+      badges.push({ icon: '🏅', label: '年度用户' });
+    }
+  }
+
+  // 4. Pioneer (LV.3, TL.15)
+  const pioneerMet =
+    stats.activeDays >= 60 &&
+    stats.readingMinutes >= 720 &&
+    stats.commentCount >= 100 &&
+    stats.reactionsReceived >= 50;
+  if (pioneerMet) {
+    if (!badges.some((b) => b.label === '先驱')) {
+      badges.push({ icon: '🚀', label: '先驱' });
+    }
+  }
+
+  // 5. Active User (LV.2, TL.10)
+  const activeUserMet =
+    stats.activeDays >= 20 &&
+    stats.readingMinutes >= 300 &&
+    stats.commentCount >= 30 &&
+    stats.reactionsReceived >= 30;
+  if (activeUserMet) {
+    if (!badges.some((b) => b.label === '活跃用户')) {
+      badges.push({ icon: '🔥', label: '活跃用户' });
+    }
+  }
+
+  // 6. Contributor (LV.1, TL.7)
+  const contributorMet = stats.readingMinutes >= 30 && stats.commentCount >= 10;
+  if (contributorMet) {
+    if (!badges.some((b) => b.label === '贡献者')) {
+      badges.push({ icon: '✍️', label: '贡献者' });
+    }
+  }
+
+  // 7. Basic User (LV.1, TL.5)
+  if (stats.commentCount >= 1) {
+    if (!badges.some((b) => b.label === '基本用户') && !isOwner) {
+      badges.push({ icon: '🌱', label: '基本用户' });
+    }
+  }
+
+  // 8. Initial User (LV.0, TL.2)
+  if (stats.hasReadAny || stats.readingMinutes > 0) {
+    if (!badges.some((b) => b.label === '初始用户') && !isOwner && badges.length === 0) {
+      badges.push({ icon: '📖', label: '初始用户' });
+    }
+  }
+
+  // 9. Newcomer (LV.0, TL.0)
+  if (badges.length === 0) {
+    badges.push({ icon: '✨', label: '新兴用户' });
+  }
+
+  // Official groups from whitelist
+  if (!isOwner) {
+    const isEpomail =
+      author.email && author.email.toLowerCase().endsWith('@epomail.bond');
+    if (isEpomail && !badges.some((b) => b.label === 'Epomail 认证读者')) {
+      badges.push({ label: 'Epomail 认证读者' });
+    } else if (badges.length < 2 && !badges.some((b) => b.label === '社区读者圈')) {
+      badges.push({ label: '社区读者圈' });
+    }
+  }
+
+  // If author has official groups in author.groups, only accept whitelist groups
+  if (Array.isArray(author.groups)) {
+    for (const g of author.groups) {
+      if ((OFFICIAL_ALLOWED_GROUPS as readonly string[]).includes(g) && !badges.some((b) => b.label === g)) {
+        badges.push({ label: g });
+      }
+    }
+  }
+
+  // Strictly slice to max 4
+  return badges.slice(0, 4);
+}
+

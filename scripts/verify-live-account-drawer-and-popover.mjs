@@ -207,6 +207,8 @@ async function runLiveVerification() {
           const title = pop.querySelector('.profile-popover-title')?.textContent?.trim();
           const stats = pop.querySelector('.profile-popover-inline-stats')?.textContent?.replace(/\s+/g, ' ').trim();
           const legacyPills = pop.querySelectorAll('.profile-popover-pill');
+          const badgePills = Array.from(pop.querySelectorAll('.profile-popover-badge-pill')).map((b) => b.textContent?.trim());
+          const allText = pop.textContent || '';
           return {
             width: rect.width,
             height: rect.height,
@@ -214,7 +216,12 @@ async function runLiveVerification() {
             username,
             title,
             stats,
+            statsHasDotSep: stats?.includes('·') || false,
             legacyPillsCount: legacyPills.length,
+            badgePillsCount: badgePills.length,
+            badgePills,
+            hasFakeBadges: allText.includes('受到赞赏') || allText.includes('活跃交流'),
+            hasMorePill: allText.includes('更多'),
             hasFakeData: stats?.includes('9999m') || stats?.includes('999'),
           };
         });
@@ -225,7 +232,19 @@ async function runLiveVerification() {
         if (livePopoverData.legacyPillsCount > 0) {
           throw new Error('Live popover has legacy colorful pills');
         }
-        console.log('   ✅ Live Popover is Landscape (width: ' + livePopoverData.width + 'px) with real data and clean hierarchy!');
+        if (livePopoverData.statsHasDotSep) {
+          throw new Error(`Live popover stats must NOT contain dot separator "·": "${livePopoverData.stats}"`);
+        }
+        if (livePopoverData.hasFakeBadges) {
+          throw new Error('Live popover contains fake badges ("受到赞赏" / "活跃交流")');
+        }
+        if (livePopoverData.hasMorePill) {
+          throw new Error('Live popover contains "+N 更多" pill');
+        }
+        if (livePopoverData.badgePillsCount > 4) {
+          throw new Error(`Live popover badge count must be <= 4, got ${livePopoverData.badgePillsCount}`);
+        }
+        console.log('   ✅ Live Popover: 100% official badges (' + livePopoverData.badgePills.join(', ') + '), 0 fake badges, 0 dot sep, gap-spaced!');
 
         const popoverScreenshotPath = path.join(screenshotDir, `live-popover-${new URL(targetUrl).hostname}.png`);
         await page.screenshot({ path: popoverScreenshotPath, fullPage: false });

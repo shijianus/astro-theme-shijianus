@@ -65,6 +65,7 @@ import {
 } from '../../lib/comment-client';
 import {
   computeUserLevel,
+  computeOfficialBadges,
   getAuthorGroups,
   readUserStats,
   type UserLevelInfo,
@@ -297,6 +298,8 @@ export function PostComments({
       bio?: string;
       highestTitle: string;
       isWebmaster: boolean;
+      locationFlag?: string;
+      locationName?: string;
       readingMinutes: number;
       commentCount: number;
       reactionsReceived: number;
@@ -445,43 +448,25 @@ export function PostComments({
 
     const levelInfo = computeUserLevel(stats, comment.authorRole, comment.authorEmail);
 
-    // 7. Highest Title (纯文本最高称号，不包裹夸张彩色外框)
-    let highestTitle = '注册读者';
-    if (isWebmaster) {
+    // 7. Highest Title (纯文本最高称号，严格仅限官方系统阶梯，不包裹夸张彩色外框)
+    let highestTitle = '新兴用户';
+    if (isWebmaster || comment.authorRole === 'admin') {
       highestTitle = '站长';
-    } else if (comment.authorRole === 'admin') {
-      highestTitle = '管理员';
     } else if (levelInfo.title) {
       highestTitle = levelInfo.title;
     } else if (comment.authorRole === 'visitor') {
-      highestTitle = '访客';
+      highestTitle = '新兴用户';
+    } else {
+      highestTitle = '注册读者';
     }
 
-    // 8. Badges (底部轻量胶囊: 👑 站长、🧡 受到赞赏、💬 活跃交流 等)
-    const badges: { icon?: string; label: string; isSpecial?: boolean }[] = [];
-    if (isWebmaster) {
-      badges.push({ icon: '👑', label: '站长', isSpecial: true });
-    }
-    if (reactionsReceived > 0) {
-      badges.push({ icon: '🧡', label: '受到赞赏' });
-    }
-    if (commentCount > 0) {
-      badges.push({ icon: '💬', label: '活跃交流' });
-    }
-    if (comment.ipCountryFlag && (comment.ipCountryName || comment.ipCountry)) {
-      badges.push({ icon: comment.ipCountryFlag, label: comment.ipCountryName || comment.ipCountry || '' });
-    }
-    const extraGroups = getAuthorGroups({
+    // 8. Official Badges (严格仅限官方系统阶梯与官方群组，彻底杜绝伪造勋章与IP)
+    const badges = computeOfficialBadges(stats, {
       role: comment.authorRole,
       isWebmaster,
       email: comment.authorEmail,
       groups: (comment as any).groups,
     });
-    for (const g of extraGroups) {
-      if (!badges.some((b) => b.label === g) && g !== '站长' && g !== '管理员') {
-        badges.push({ label: g });
-      }
-    }
 
     setProfilePopover({
       isOpen: true,
@@ -495,6 +480,8 @@ export function PostComments({
         bio: (comment as any).authorBio || (isWebmaster ? 'EpoCanvas 站长 · 博客创作者与架构设计者' : comment.authorEmail?.endsWith('@epomail.bond') ? 'Epomail 认证读者' : undefined),
         highestTitle,
         isWebmaster,
+        locationFlag: comment.ipCountryFlag,
+        locationName: comment.ipCountryName || comment.ipCountry,
         readingMinutes,
         commentCount,
         reactionsReceived,
@@ -4037,12 +4024,25 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
 
               {/* Right Column: Main Content */}
               <div className="profile-popover-right">
-                {/* 1. Header: Display Name, Username, Highest Title & Top-Right Actions */}
+                {/* 1. Header: Display Name + Micro Location, Username, Highest Title & Top-Right Actions */}
                 <div className="profile-popover-top">
                   <div className="profile-popover-user-meta">
-                    <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
-                      {profilePopover.author.name}
-                    </h4>
+                    <div className="profile-popover-name-row">
+                      <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
+                        {profilePopover.author.name}
+                      </h4>
+                      {profilePopover.author.locationFlag && (
+                        <span
+                          className="profile-popover-location-tag"
+                          title={profilePopover.author.locationName || ''}
+                        >
+                          <span className="location-flag">{profilePopover.author.locationFlag}</span>
+                          {profilePopover.author.locationName && (
+                            <span className="location-name">{profilePopover.author.locationName}</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
                     <span className="profile-popover-username">
                       {profilePopover.author.handle}
                     </span>
@@ -4115,30 +4115,27 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   </div>
                 )}
 
-                {/* 3. Real Inline Stats (LinuxDo Flow): 加入时间 · 已读 · 评论 · 喝彩 */}
+                {/* 3. Real Inline Stats (LinuxDo Flow): 弹性横向间距 (gap: 16px)，两段式排印，零圆点分隔符 */}
                 <div className="profile-popover-inline-stats">
                   <span className="stat-item">
                     <span className="stat-label">加入时间</span>
                     <span className="stat-value">{profilePopover.author.joinDateStr}</span>
                   </span>
-                  <span className="stat-sep">·</span>
                   <span className="stat-item">
                     <span className="stat-label">已读</span>
                     <span className="stat-value">{profilePopover.author.readingMinutes}m</span>
                   </span>
-                  <span className="stat-sep">·</span>
                   <span className="stat-item">
                     <span className="stat-label">评论</span>
                     <span className="stat-value">{profilePopover.author.commentCount}</span>
                   </span>
-                  <span className="stat-sep">·</span>
                   <span className="stat-item">
                     <span className="stat-label">喝彩</span>
                     <span className="stat-value">{profilePopover.author.reactionsReceived}</span>
                   </span>
                 </div>
 
-                {/* 4. Badges Flow: Light pills (22px-24px), icon + label, +N more */}
+                {/* 4. Badges Flow: Strictly max 4 official pills, single row, flex-wrap: nowrap, NO "+N 更多" */}
                 {profilePopover.author.badges && profilePopover.author.badges.length > 0 && (
                   <div className="profile-popover-badges-flow">
                     {profilePopover.author.badges.slice(0, 4).map((b, idx) => (
@@ -4150,14 +4147,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                         <span>{b.label}</span>
                       </span>
                     ))}
-                    {profilePopover.author.badges.length > 4 && (
-                      <span
-                        className="profile-popover-badge-pill is-more"
-                        title={profilePopover.author.badges.slice(4).map((b) => b.label).join('、')}
-                      >
-                        +{profilePopover.author.badges.length - 4} 更多
-                      </span>
-                    )}
                   </div>
                 )}
               </div>
