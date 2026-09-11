@@ -43,6 +43,7 @@ import {
   Volume2,
   VolumeX,
   Award,
+  Smile,
 } from 'lucide-react';
 import type { SiteBroadcastData } from '../lib/broadcast';
 import { siteConfig } from '../config/site';
@@ -103,9 +104,13 @@ import {
   evaluateUserBadges,
   readEquippedBadges,
   writeEquippedBadges,
+  readUserStatus,
+  writeUserStatus,
+  PRESET_STATUS_OPTIONS,
   type UserStats,
   type UserLevelInfo,
   type CommunityBadge,
+  type UserStatus,
 } from '../lib/user-level';
 
 const TIMEZONE_LABELS: Record<LocaleVariant, Record<string, string>> = {
@@ -360,6 +365,33 @@ export function ThemeOverlays({
     setEquippedBadgeIds(nextIds);
     writeEquippedBadges(nextIds);
     emitActivity('更新了名片佩戴称号');
+  };
+
+  const [userStatus, setUserStatus] = useState<UserStatus>(() => readUserStatus());
+
+  useEffect(() => {
+    const handleStatusUpdate = (e: Event) => {
+      const detail = (e as CustomEvent<UserStatus>).detail ?? readUserStatus();
+      setUserStatus(detail);
+    };
+    window.addEventListener('shijianus:user-status-change', handleStatusUpdate);
+    return () => window.removeEventListener('shijianus:user-status-change', handleStatusUpdate);
+  }, []);
+
+  const handleSetPresetStatus = (preset: { emoji: string; text: string }) => {
+    const next =
+      userStatus.emoji === preset.emoji && userStatus.text === preset.text
+        ? { emoji: '', text: '' }
+        : { emoji: preset.emoji, text: preset.text };
+    setUserStatus(next);
+    writeUserStatus(next);
+    emitActivity(`更新了用户状态: ${next.emoji} ${next.text}`);
+  };
+
+  const handleCustomStatusChange = (emoji: string, text: string) => {
+    const next = { emoji, text };
+    setUserStatus(next);
+    writeUserStatus(next);
   };
 
   const updateCloseBtnPosition = useCallback(() => {
@@ -1953,7 +1985,7 @@ export function ThemeOverlays({
           {/* 2. Hero Summary Profile Card */}
           <div className="account-hero-card">
             <div
-              className={`account-hero-card__avatar is-clickable ${userLevel.isWebmaster ? 'is-webmaster-avatar' : ''}`}
+              className="account-hero-card__avatar is-clickable"
               onClick={() => avatarFileInputRef.current?.click()}
               title={t('hero.avatarTitle', '点击更换头像 (支持选择本地图片上传)')}
               role="button"
@@ -1998,24 +2030,22 @@ export function ThemeOverlays({
                 <strong>{account ? account.name : accountForm.name ? accountForm.name : t('hero.guestFriend', '访客朋友')}</strong>
                 {account?.provider === 'epomail' ? (
                   <span className="account-pill account-pill--epomail">{t('hero.badge.epomail')}</span>
-                ) : account ? (
-                  <span className="account-pill account-pill--local">{t('hero.badge.local')}</span>
-                ) : accountForm.name ? (
+                ) : accountForm.name || account ? (
                   <span className="account-pill account-pill--local">{t('hero.badge.local')}</span>
                 ) : (
                   <span className="account-pill account-pill--guest">{t('hero.badge.guest')}</span>
                 )}
-                {userLevel.isWebmaster ? (
-                  <span className="account-pill account-pill--admin" title="全站唯一方形头像所有者">
-                    👑 {t('level.webmasterBadge', '站长专属方形头像')}
+                {userStatus.emoji && (
+                  <span className="account-status-chip" title={userStatus.text || '当前状态'}>
+                    {userStatus.emoji} {userStatus.text}
                   </span>
-                ) : account?.role === 'admin' ? (
-                  <span className="account-pill account-pill--admin">{t('hero.badge.admin', '管理员')}</span>
-                ) : null}
-                <span className="account-pill account-pill--level" title={userLevel.nextRequirementHint}>
-                  {userLevel.badge} · TL.{userLevel.trustLevel}
-                </span>
+                )}
               </div>
+              {(account?.email || accountForm.email) && (
+                <p className="account-hero-card__email">
+                  {account?.email || accountForm.email}
+                </p>
+              )}
               <p className="account-hero-card__desc">
                 {accountForm.bio || account?.bio || (account?.email || (account ? t('hero.boundIdentity', '已绑定评论身份') : accountForm.email ? accountForm.email : t('hero.emptyBio', '点击设置个人简介、时区与位置')))}
               </p>
@@ -2259,6 +2289,77 @@ export function ThemeOverlays({
                 </form>
               </section>
 
+              {/* 用户当前状态设置卡片 */}
+              <section className="account-card account-card--status">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Smile className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">我的当前状态</h3>
+                    {userStatus.emoji && (
+                      <span className="account-status-chip">
+                        {userStatus.emoji} {userStatus.text || '已设置'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="account-status-body">
+                  <p className="account-status-desc text-xs text-muted">
+                    自定义当前状态 Emoji 与说明，将实时展示于评论名片中的身份（如「站长」）后方：
+                  </p>
+                  <div className="account-status-grid">
+                    {PRESET_STATUS_OPTIONS.map((opt) => {
+                      const isActive = userStatus.emoji === opt.emoji && userStatus.text === opt.text;
+                      return (
+                        <button
+                          key={opt.emoji}
+                          type="button"
+                          className={`account-status-preset-btn ${isActive ? 'is-active' : ''}`}
+                          onClick={() => handleSetPresetStatus(opt)}
+                          title={opt.text}
+                        >
+                          <span className="status-preset-emoji">{opt.emoji}</span>
+                          <span className="status-preset-text">{opt.text}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="account-status-custom-row">
+                    <input
+                      type="text"
+                      className="account-status-emoji-input"
+                      value={userStatus.emoji}
+                      placeholder="☕"
+                      maxLength={4}
+                      onChange={(e) => handleCustomStatusChange(e.target.value, userStatus.text)}
+                      title="自定义状态 Emoji"
+                    />
+                    <input
+                      type="text"
+                      className="account-status-text-input"
+                      value={userStatus.text}
+                      placeholder="输入自定义状态说明（如：忙碌中）"
+                      maxLength={30}
+                      onChange={(e) => handleCustomStatusChange(userStatus.emoji, e.target.value)}
+                      title="自定义状态说明"
+                    />
+                    {userStatus.emoji && (
+                      <button
+                        type="button"
+                        className="account-status-clear-btn"
+                        onClick={() => {
+                          const next = { emoji: '', text: '' };
+                          setUserStatus(next);
+                          writeUserStatus(next);
+                        }}
+                        title="清除当前状态"
+                      >
+                        清除
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </section>
+
               {/* 社区等级与信任管理卡片 */}
               <section className="account-card account-card--level">
                 <div className="account-card__head">
@@ -2267,15 +2368,12 @@ export function ThemeOverlays({
                     <h3 className="account-card__title">{t('level.title', '社区等级与信任制度')}</h3>
                     <strong className="account-level-name font-bold text-sm text-theme-main">{userLevel.badge}</strong>
                     <span className="account-level-trust-pill">TL.{userLevel.trustLevel}</span>
-                    {userLevel.isWebmaster && (
-                      <span className="account-level-webmaster-pill" title="全站唯一方形头像">
-                        👑 {t('level.webmasterBadge', '站长专属方形头像')}
-                      </span>
-                    )}
                   </div>
-                  <span className={`account-level-badge account-level-badge--${userLevel.levelCode}`}>
-                    {nextLevelPlan.isMaxAutoLevel ? 'LV.3 上限达成' : `下一级: ${nextLevelPlan.nextTitle}`}
-                  </span>
+                  {!userLevel.isWebmaster && userLevel.levelCode !== 'lv4' && (
+                    <span className={`account-level-badge account-level-badge--${userLevel.levelCode}`}>
+                      {nextLevelPlan.isMaxAutoLevel ? 'LV.3 上限达成' : `下一级: ${nextLevelPlan.nextTitle}`}
+                    </span>
+                  )}
                 </div>
 
                 <div className="account-level-dashboard">
@@ -2292,16 +2390,18 @@ export function ThemeOverlays({
                             <strong className="account-level-current-val">{req.current}</strong>
                             <span className="account-level-separator"> / </span>
                             <span className="account-level-target-val">{req.target} {req.unit}</span>
-                            {req.isMet ? (
+                            {nextLevelPlan.isExempt && !req.isMet ? (
+                              <span className="account-level-status is-exempt" title="站长特权豁免等级限制">✓ 站长特免 ({req.progressPercent}%)</span>
+                            ) : req.isMet ? (
                               <span className="account-level-status is-met">✓ 已满足</span>
                             ) : (
-                              <span className="account-level-status is-unmet">{req.progressPercent}%</span>
+                              <span className={`account-level-status is-${req.colorTier}`}>{req.progressPercent}%</span>
                             )}
                           </span>
                         </div>
                         <div className="account-level-progress-bar">
                           <div
-                            className={`account-level-progress-fill ${req.isMet ? 'is-met' : ''}`}
+                            className={`account-level-progress-fill account-level-progress-fill--${req.colorTier} ${req.isMet ? 'is-met' : ''}`}
                             style={{ width: `${req.progressPercent}%` }}
                           />
                         </div>
@@ -2321,25 +2421,30 @@ export function ThemeOverlays({
                       </span>
                     </div>
                     <p className="account-badges-desc">
-                      展示你已获得的专属称号。点击可自定义选择最多 4 个称号佩戴展示于评论名片中：
+                      展示已获得的专属称号。按需选择最多 4 个称号佩戴展示于评论名片中：
                     </p>
                     <div className="account-badges-grid">
                       {unlockedBadges.map((badge) => {
                         const isEquipped = equippedBadgeIds.includes(badge.id);
                         return (
-                          <button
+                          <div
                             key={badge.id}
-                            type="button"
-                            onClick={() => handleToggleBadge(badge.id)}
                             className={`account-badge-card ${isEquipped ? 'is-equipped' : ''}`}
                             title={badge.description}
                           >
-                            <span className="badge-card-icon">{badge.icon}</span>
-                            <span className="badge-card-name">{badge.name}</span>
-                            <span className="badge-card-status">
-                              {isEquipped ? '✓ 已佩戴' : '+ 佩戴'}
-                            </span>
-                          </button>
+                            <div className="badge-card-main">
+                              <span className="badge-card-icon">{badge.icon}</span>
+                              <span className="badge-card-name">{badge.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBadge(badge.id)}
+                              className={`badge-card-equip-btn ${isEquipped ? 'is-equipped' : ''}`}
+                              aria-label={isEquipped ? `卸下 ${badge.name}` : `佩戴 ${badge.name}`}
+                            >
+                              {isEquipped ? '已佩戴' : '佩戴'}
+                            </button>
+                          </div>
                         );
                       })}
                     </div>

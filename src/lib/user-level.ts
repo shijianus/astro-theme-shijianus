@@ -53,6 +53,55 @@ export interface UserLevelInfo {
 
 export const USER_STATS_STORAGE_KEY = 'shijianus-user-activity-stats';
 
+export interface UserStatus {
+  emoji: string;
+  text: string;
+  updatedAt?: string;
+}
+
+export const USER_STATUS_STORAGE_KEY = 'shijianus-user-status';
+
+export const PRESET_STATUS_OPTIONS: { emoji: string; text: string }[] = [
+  { emoji: '☕', text: '喝咖啡中' },
+  { emoji: '💻', text: '写代码中' },
+  { emoji: '🚀', text: '忙碌中' },
+  { emoji: '🎯', text: '深度专注' },
+  { emoji: '🌿', text: '摸鱼小憩' },
+  { emoji: '💡', text: '构思想法' },
+  { emoji: '🎧', text: '听歌沉浸' },
+  { emoji: '💤', text: '暂离休息' },
+];
+
+export function readUserStatus(): UserStatus {
+  if (typeof window === 'undefined') return { emoji: '', text: '' };
+  try {
+    const raw = window.localStorage.getItem(USER_STATUS_STORAGE_KEY);
+    if (!raw) return { emoji: '', text: '' };
+    const parsed = JSON.parse(raw);
+    return {
+      emoji: typeof parsed.emoji === 'string' ? parsed.emoji : '',
+      text: typeof parsed.text === 'string' ? parsed.text : '',
+      updatedAt: parsed.updatedAt,
+    };
+  } catch {
+    return { emoji: '', text: '' };
+  }
+}
+
+export function writeUserStatus(status: UserStatus): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      USER_STATUS_STORAGE_KEY,
+      JSON.stringify({
+        ...status,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+    window.dispatchEvent(new CustomEvent('shijianus:user-status-change', { detail: status }));
+  } catch {}
+}
+
 const TITLE_TRANSLATIONS: Record<UserLevelTitle, Record<string, string>> = {
   站长: {
     'zh-CN': '站长',
@@ -975,6 +1024,7 @@ export interface LevelRequirementItem {
   current: number;
   target: number;
   progressPercent: number; // 0 - 100, strictly capped
+  colorTier: 'red' | 'yellow' | 'green';
   isMet: boolean;
 }
 
@@ -984,9 +1034,16 @@ export interface NextLevelRequirementPlan {
   nextTitle: string;
   isMaxAutoLevel: boolean; // True when reaching LV.3 (automatic promotion cap) or LV.4
   isWebmaster: boolean;
+  isExempt?: boolean;
   totalRequirements: number;
   metRequirements: number;
   items: LevelRequirementItem[];
+}
+
+export function getProgressColorTier(percent: number): 'red' | 'yellow' | 'green' {
+  if (percent < 40) return 'red';
+  if (percent < 80) return 'yellow';
+  return 'green';
 }
 
 /**
@@ -996,6 +1053,8 @@ export interface NextLevelRequirementPlan {
  * - Even if current exceeds target, progress bar strictly caps at 100% (即使超出了，也是直接显示满了).
  * - Satisfied criteria stack downwards (满足可以继续向下叠加).
  * - LV.3 is the automatic promotion ceiling (到达LV.3是自动升级的上限).
+ * - Webmaster (站长) is the unique owner who bypasses level restrictions even if criteria are not met.
+ * - Progress bar colors represent 3 tiers from low to high: Red (<40%), Yellow (40%-79%), Green (>=80%).
  */
 export function getNextLevelRequirements(
   stats: UserStats,
@@ -1007,157 +1066,76 @@ export function getNextLevelRequirements(
     accountRole === 'admin' ||
     (email && email.toLowerCase() === 'admin@epomail.bond');
 
+  const createItem = (
+    id: string,
+    label: string,
+    icon: string,
+    unit: string,
+    current: number,
+    target: number,
+    forcedIsMet?: boolean
+  ): LevelRequirementItem => {
+    const progressPercent = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 100;
+    return {
+      id,
+      label,
+      icon,
+      unit,
+      current,
+      target,
+      progressPercent,
+      colorTier: getProgressColorTier(progressPercent),
+      isMet: forcedIsMet !== undefined ? forcedIsMet : current >= target,
+    };
+  };
+
   if (isOwner) {
+    const items: LevelRequirementItem[] = [
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
+    ];
     return {
       currentLevel: 4,
       currentTitle: '站长',
-      nextTitle: '站长专属顶级权限',
+      nextTitle: '站长专属全站权限',
       isMaxAutoLevel: true,
       isWebmaster: true,
-      totalRequirements: 4,
-      metRequirements: 4,
-      items: [
-        {
-          id: 'activeDays',
-          label: '活跃天数',
-          icon: '📅',
-          unit: '天',
-          current: stats.activeDays,
-          target: stats.activeDays,
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'readingMinutes',
-          label: '阅读时长',
-          icon: '📖',
-          unit: 'min',
-          current: Math.round(stats.readingMinutes),
-          target: Math.round(stats.readingMinutes),
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'commentCount',
-          label: '发表讨论',
-          icon: '💬',
-          unit: '次',
-          current: stats.commentCount,
-          target: stats.commentCount,
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'reactionsReceived',
-          label: '互动获赞',
-          icon: '❤️',
-          unit: '个',
-          current: stats.reactionsReceived,
-          target: stats.reactionsReceived,
-          progressPercent: 100,
-          isMet: true,
-        },
-      ],
+      isExempt: true,
+      totalRequirements: items.length,
+      metRequirements: items.filter((i) => i.isMet).length,
+      items,
     };
   }
 
   if (stats.customLevel === 4) {
+    const items: LevelRequirementItem[] = [
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
+    ];
     return {
       currentLevel: 4,
       currentTitle: '核心成员',
       nextTitle: '站长特邀特权',
       isMaxAutoLevel: true,
       isWebmaster: false,
-      totalRequirements: 4,
-      metRequirements: 4,
-      items: [
-        {
-          id: 'activeDays',
-          label: '活跃天数',
-          icon: '📅',
-          unit: '天',
-          current: stats.activeDays,
-          target: stats.activeDays,
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'readingMinutes',
-          label: '阅读时长',
-          icon: '📖',
-          unit: 'min',
-          current: Math.round(stats.readingMinutes),
-          target: Math.round(stats.readingMinutes),
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'commentCount',
-          label: '发表讨论',
-          icon: '💬',
-          unit: '次',
-          current: stats.commentCount,
-          target: stats.commentCount,
-          progressPercent: 100,
-          isMet: true,
-        },
-        {
-          id: 'reactionsReceived',
-          label: '互动获赞',
-          icon: '❤️',
-          unit: '个',
-          current: stats.reactionsReceived,
-          target: stats.reactionsReceived,
-          progressPercent: 100,
-          isMet: true,
-        },
-      ],
+      isExempt: true,
+      totalRequirements: items.length,
+      metRequirements: items.filter((i) => i.isMet).length,
+      items,
     };
   }
 
   // LV.3 年度用户 (activeDays >= 365) - Automatic leveling ceiling
   if (stats.activeDays >= 365) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'activeDays',
-        label: '活跃天数',
-        icon: '📅',
-        unit: '天',
-        current: stats.activeDays,
-        target: 365,
-        progressPercent: 100,
-        isMet: true,
-      },
-      {
-        id: 'readingMinutes',
-        label: '阅读时长',
-        icon: '📖',
-        unit: 'min',
-        current: Math.round(stats.readingMinutes),
-        target: 720,
-        progressPercent: Math.min(100, Math.round((stats.readingMinutes / 720) * 100)),
-        isMet: stats.readingMinutes >= 720,
-      },
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 100,
-        progressPercent: Math.min(100, Math.round((stats.commentCount / 100) * 100)),
-        isMet: stats.commentCount >= 100,
-      },
-      {
-        id: 'reactionsReceived',
-        label: '互动获赞',
-        icon: '❤️',
-        unit: '个',
-        current: stats.reactionsReceived,
-        target: 50,
-        progressPercent: Math.min(100, Math.round((stats.reactionsReceived / 50) * 100)),
-        isMet: stats.reactionsReceived >= 50,
-      },
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 365),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
     ];
     return {
       currentLevel: 3,
@@ -1180,51 +1158,15 @@ export function getNextLevelRequirements(
 
   if (pioneerMet) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'activeDays',
-        label: '活跃天数',
-        icon: '📅',
-        unit: '天',
-        current: stats.activeDays,
-        target: 365,
-        progressPercent: Math.min(100, Math.round((stats.activeDays / 365) * 100)),
-        isMet: stats.activeDays >= 365,
-      },
-      {
-        id: 'readingMinutes',
-        label: '阅读时长',
-        icon: '📖',
-        unit: 'min',
-        current: Math.round(stats.readingMinutes),
-        target: 720,
-        progressPercent: 100,
-        isMet: true,
-      },
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 100,
-        progressPercent: 100,
-        isMet: true,
-      },
-      {
-        id: 'reactionsReceived',
-        label: '互动获赞',
-        icon: '❤️',
-        unit: '个',
-        current: stats.reactionsReceived,
-        target: 50,
-        progressPercent: 100,
-        isMet: true,
-      },
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 365),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
     ];
     return {
       currentLevel: 3,
       currentTitle: '先驱',
-      nextTitle: '年度用户 (LV.3 上限)',
+      nextTitle: '年度用户 (LV.3)',
       isMaxAutoLevel: true,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1233,7 +1175,7 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.2 活跃用户 (activeDays >= 20 && readingMinutes >= 300 && commentCount >= 30 && reactionsReceived >= 30)
+  // LV.2 活跃用户: 活跃 > 20 天, 阅读 > 300min, 评论 >= 30, 收到 30+ 赞
   const activeUserMet =
     stats.activeDays >= 20 &&
     stats.readingMinutes >= 300 &&
@@ -1242,46 +1184,10 @@ export function getNextLevelRequirements(
 
   if (activeUserMet) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'activeDays',
-        label: '活跃天数',
-        icon: '📅',
-        unit: '天',
-        current: stats.activeDays,
-        target: 60,
-        progressPercent: Math.min(100, Math.round((stats.activeDays / 60) * 100)),
-        isMet: stats.activeDays >= 60,
-      },
-      {
-        id: 'readingMinutes',
-        label: '阅读时长',
-        icon: '📖',
-        unit: 'min',
-        current: Math.round(stats.readingMinutes),
-        target: 720,
-        progressPercent: Math.min(100, Math.round((stats.readingMinutes / 720) * 100)),
-        isMet: stats.readingMinutes >= 720,
-      },
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 100,
-        progressPercent: Math.min(100, Math.round((stats.commentCount / 100) * 100)),
-        isMet: stats.commentCount >= 100,
-      },
-      {
-        id: 'reactionsReceived',
-        label: '互动获赞',
-        icon: '❤️',
-        unit: '个',
-        current: stats.reactionsReceived,
-        target: 50,
-        progressPercent: Math.min(100, Math.round((stats.reactionsReceived / 50) * 100)),
-        isMet: stats.reactionsReceived >= 50,
-      },
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
     ];
     return {
       currentLevel: 2,
@@ -1295,51 +1201,14 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.1 贡献者 (readingMinutes >= 30 && commentCount >= 10)
+  // LV.1 贡献者: 阅读 > 30min, 评论 >= 10
   const contributorMet = stats.readingMinutes >= 30 && stats.commentCount >= 10;
-
   if (contributorMet) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'activeDays',
-        label: '活跃天数',
-        icon: '📅',
-        unit: '天',
-        current: stats.activeDays,
-        target: 20,
-        progressPercent: Math.min(100, Math.round((stats.activeDays / 20) * 100)),
-        isMet: stats.activeDays >= 20,
-      },
-      {
-        id: 'readingMinutes',
-        label: '阅读时长',
-        icon: '📖',
-        unit: 'min',
-        current: Math.round(stats.readingMinutes),
-        target: 300,
-        progressPercent: Math.min(100, Math.round((stats.readingMinutes / 300) * 100)),
-        isMet: stats.readingMinutes >= 300,
-      },
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 30,
-        progressPercent: Math.min(100, Math.round((stats.commentCount / 30) * 100)),
-        isMet: stats.commentCount >= 30,
-      },
-      {
-        id: 'reactionsReceived',
-        label: '互动获赞',
-        icon: '❤️',
-        unit: '个',
-        current: stats.reactionsReceived,
-        target: 30,
-        progressPercent: Math.min(100, Math.round((stats.reactionsReceived / 30) * 100)),
-        isMet: stats.reactionsReceived >= 30,
-      },
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 20),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 300),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 30),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 30),
     ];
     return {
       currentLevel: 1,
@@ -1356,26 +1225,8 @@ export function getNextLevelRequirements(
   // LV.1 基本用户 (commentCount >= 1)
   if (stats.commentCount >= 1) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'readingMinutes',
-        label: '阅读时长',
-        icon: '📖',
-        unit: 'min',
-        current: Math.round(stats.readingMinutes),
-        target: 30,
-        progressPercent: Math.min(100, Math.round((stats.readingMinutes / 30) * 100)),
-        isMet: stats.readingMinutes >= 30,
-      },
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 10,
-        progressPercent: Math.min(100, Math.round((stats.commentCount / 10) * 100)),
-        isMet: stats.commentCount >= 10,
-      },
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 30),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 10),
     ];
     return {
       currentLevel: 1,
@@ -1392,16 +1243,7 @@ export function getNextLevelRequirements(
   // LV.0 初始用户 (hasReadAny || readingMinutes > 0)
   if (stats.hasReadAny || stats.readingMinutes > 0) {
     const items: LevelRequirementItem[] = [
-      {
-        id: 'commentCount',
-        label: '发表讨论',
-        icon: '💬',
-        unit: '次',
-        current: stats.commentCount,
-        target: 1,
-        progressPercent: Math.min(100, Math.round((stats.commentCount / 1) * 100)),
-        isMet: stats.commentCount >= 1,
-      },
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 1),
     ];
     return {
       currentLevel: 0,
@@ -1417,16 +1259,7 @@ export function getNextLevelRequirements(
 
   // LV.0 新兴用户
   const items: LevelRequirementItem[] = [
-    {
-      id: 'readingMinutes',
-      label: '阅读探索',
-      icon: '📖',
-      unit: 'min',
-      current: Math.round(stats.readingMinutes),
-      target: 1,
-      progressPercent: (stats.hasReadAny || stats.readingMinutes > 0) ? 100 : 0,
-      isMet: (stats.hasReadAny || stats.readingMinutes > 0),
-    },
+    createItem('readingMinutes', '阅读探索', '📖', 'min', Math.round(stats.readingMinutes), 1),
   ];
   return {
     currentLevel: 0,

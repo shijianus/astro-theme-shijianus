@@ -43,7 +43,6 @@ import {
   Mail,
   Copy,
   Check,
-  Crown,
   Globe,
   AtSign,
 } from 'lucide-react';
@@ -71,10 +70,12 @@ import {
   readUserStats,
   readEquippedBadges,
   getEquippedBadges,
+  readUserStatus,
   type CommunityBadge,
   type UserBadgeContext,
   type UserLevelInfo,
   type UserStats,
+  type UserStatus,
 } from '../../lib/user-level';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import type { LocaleVariant } from '../../lib/user-persona.ts';
@@ -309,8 +310,10 @@ export function PostComments({
       reactionsReceived: number;
       joinDateStr: string;
       badges: CommunityBadge[];
+      statusEmoji?: string;
+      statusText?: string;
     } | null;
-    anchorRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null;
+    anchorRect: { top: number; left: number; right: number; bottom: number; width: number; height: number; docTop?: number; docLeft?: number } | null;
     isPinned: boolean;
   }>({
     isOpen: false,
@@ -546,6 +549,30 @@ export function PostComments({
       ? getEquippedBadges(unlockedBadges, equippedIds)
       : getEquippedBadges(unlockedBadges);
 
+    const userStatus = readUserStatus();
+    const statusEmoji = (isCurrentAccount || isWebmaster) ? userStatus.emoji : '';
+    const statusText = (isCurrentAccount || isWebmaster) ? userStatus.text : '';
+
+    const scrollX = typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset || 0) : 0;
+    const scrollY = typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || 0) : 0;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const popoverWidth = Math.min(480, viewportWidth - 32);
+
+    const canFitRight = rect.right + 12 + popoverWidth <= viewportWidth - 16;
+    let docLeft: number;
+    let docTop: number;
+
+    if (canFitRight) {
+      docLeft = rect.right + scrollX + 12;
+      docTop = Math.max(16 + scrollY, rect.top + scrollY - 8);
+    } else {
+      docLeft = Math.max(16 + scrollX, rect.left + scrollX);
+      if (docLeft + popoverWidth > viewportWidth - 16 + scrollX) {
+        docLeft = Math.max(16 + scrollX, viewportWidth - 16 + scrollX - popoverWidth);
+      }
+      docTop = rect.bottom + scrollY + 8;
+    }
+
     setProfilePopover({
       isOpen: true,
       author: {
@@ -564,6 +591,8 @@ export function PostComments({
         reactionsReceived,
         joinDateStr,
         badges,
+        statusEmoji,
+        statusText,
       },
       anchorRect: {
         top: rect.top,
@@ -572,6 +601,8 @@ export function PostComments({
         bottom: rect.bottom,
         width: rect.width,
         height: rect.height,
+        docTop,
+        docLeft,
       },
       isPinned,
     });
@@ -1296,6 +1327,21 @@ export function PostComments({
       });
     };
 
+    const handleStatusChange = () => {
+      setProfilePopover((prev) => {
+        if (!prev.isOpen || !prev.author) return prev;
+        const status = readUserStatus();
+        return {
+          ...prev,
+          author: {
+            ...prev.author,
+            statusEmoji: status.emoji,
+            statusText: status.text,
+          },
+        };
+      });
+    };
+
     const handleWindowFocus = () => {
       syncAccountState();
       const now = Date.now();
@@ -1341,6 +1387,7 @@ export function PostComments({
 
     window.addEventListener('shijianus:comment-account-change', handleAccountChange);
     window.addEventListener('shijianus:equipped-badges-change', handleBadgesChange);
+    window.addEventListener('shijianus:user-status-change', handleStatusChange);
     window.addEventListener('storage', syncAccountState);
     window.addEventListener('focus', handleWindowFocus);
     document.addEventListener('click', handleOutsideClick);
@@ -1350,6 +1397,7 @@ export function PostComments({
     return () => {
       window.removeEventListener('shijianus:comment-account-change', handleAccountChange);
       window.removeEventListener('shijianus:equipped-badges-change', handleBadgesChange);
+      window.removeEventListener('shijianus:user-status-change', handleStatusChange);
       window.removeEventListener('storage', syncAccountState);
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('click', handleOutsideClick);
@@ -4056,46 +4104,15 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
             style={(() => {
               const rect = profilePopover.anchorRect!;
               const popoverWidth = typeof window !== 'undefined' ? Math.min(480, window.innerWidth - 32) : 480;
-              const popoverHeight = 200;
-              const margin = 16;
-              const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1440;
-              const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 900;
-
-              // Priority 1: Expand to the RIGHT of the avatar (Discourse style)
-              const canFitRight = rect.right + 12 + popoverWidth <= viewportWidth - margin;
-
-              let left: number;
-              let top: number;
-
-              if (canFitRight) {
-                left = rect.right + 12;
-                top = rect.top - 8;
-                if (top + popoverHeight > viewportHeight - margin) {
-                  top = viewportHeight - popoverHeight - margin;
-                }
-                if (top < margin) top = margin;
-              } else {
-                // Priority 2: Expand DOWNWARDS from the avatar (avoid editor above)
-                left = rect.left;
-                if (left + popoverWidth > viewportWidth - margin) {
-                  left = viewportWidth - popoverWidth - margin;
-                }
-                if (left < margin) left = margin;
-
-                const canFitDown = rect.bottom + 8 + popoverHeight <= viewportHeight - margin;
-                if (canFitDown) {
-                  top = rect.bottom + 8;
-                } else if (rect.top - 8 - popoverHeight >= margin) {
-                  top = rect.top - popoverHeight - 8;
-                } else {
-                  top = Math.max(margin, viewportHeight - popoverHeight - margin);
-                }
-              }
+              const scrollX = typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset || 0) : 0;
+              const scrollY = typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || 0) : 0;
+              const docLeft = rect.docLeft !== undefined ? rect.docLeft : (rect.left + scrollX);
+              const docTop = rect.docTop !== undefined ? rect.docTop : (rect.top + scrollY);
 
               return {
-                position: 'fixed',
-                left: `${Math.round(left)}px`,
-                top: `${Math.round(top)}px`,
+                position: 'absolute',
+                left: `${Math.round(docLeft)}px`,
+                top: `${Math.round(docTop)}px`,
                 width: `${popoverWidth}px`,
                 zIndex: 9999,
               };
@@ -4114,8 +4131,8 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
               }
             }}
           >
-            <div className="profile-popover-layout">
-              {/* Left Column: 80px Circular Avatar with micro Crown Badge */}
+            <div className="profile-popover-layout profile-popover-content">
+              {/* Left Column: 80px Circular Avatar with Micro Crown at Bottom-Right */}
               <div className="profile-popover-left">
                 <div
                   className={`profile-popover-avatar ${
@@ -4127,14 +4144,14 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                   ) : profilePopover.author.isWebmaster ? (
                     <img src="/media/shijianus/avatar.jpg" alt={profilePopover.author.name} />
                   ) : (
-                    <span className="profile-popover-initials">
+                    <span className="profile-popover-initials profile-popover-avatar-initials">
                       {getCommentInitials(profilePopover.author.name)}
                     </span>
                   )}
                 </div>
                 {profilePopover.author.isWebmaster && (
-                  <span className="profile-popover-avatar-crown-badge" title="站长专属身份">
-                    <Crown size={12} />
+                  <span className="profile-popover-avatar-crown-badge" title="全站最高权威 · 博客站长">
+                    👑
                   </span>
                 )}
               </div>
@@ -4152,6 +4169,14 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                     </span>
                     <span className="profile-popover-title">
                       {profilePopover.author.highestTitle}
+                      {profilePopover.author.statusEmoji && (
+                        <span
+                          className="profile-popover-status-emoji"
+                          title={profilePopover.author.statusText || '当前状态'}
+                        >
+                          {' '}{profilePopover.author.statusEmoji}
+                        </span>
+                      )}
                     </span>
                   </div>
 
@@ -4211,9 +4236,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                       <span className="profile-popover-email-text" title={profilePopover.author.email}>
                         {profilePopover.author.email}
                       </span>
-                      {profilePopover.author.email.toLowerCase().endsWith('@epomail.bond') && (
-                        <span className="profile-popover-epomail-tag">Epomail 认证</span>
-                      )}
                       <button
                         type="button"
                         className="profile-popover-copy-btn"

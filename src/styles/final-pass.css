@@ -4123,8 +4123,47 @@ span.text-xs.font-semibold.text-rose-500 {
   transition: width 0.4s ease;
 }
 
+/* 3-tier Progress Bar Fill Colors (Red < 40%, Yellow 40%-79%, Green >= 80%) */
+.account-level-progress-fill.account-level-progress-fill--red {
+  background: linear-gradient(90deg, #ef4444, #f87171) !important;
+}
+
+.account-level-progress-fill.account-level-progress-fill--yellow {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+}
+
+.account-level-progress-fill.account-level-progress-fill--green,
 .account-level-progress-fill.is-met {
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+}
+
+.account-level-status.is-red {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.account-level-status.is-yellow {
+  color: #d97706;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .account-level-status.is-yellow {
+  color: #fbbf24;
+}
+
+.account-level-status.is-green {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.account-level-status.is-exempt {
+  color: var(--theme-main, #425aef);
+  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
 }
 
 /* Badges Section in Account Drawer */
@@ -4170,68 +4209,90 @@ span.text-xs.font-semibold.text-rose-500 {
 
 .account-badges-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 6px;
 }
 
+/* Compact Badge Card with Equip Toggle Button (Deep vs Light Distinction) */
 .account-badge-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-  padding: 7px 9px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--card-bg) 70%, var(--secondbg));
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--card-bg) 65%, var(--secondbg));
   border: 1px solid color-mix(in srgb, var(--font-color) 8%, transparent);
-  cursor: pointer;
   transition: all 0.2s ease;
-  text-align: left;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .account-badge-card:hover {
-  border-color: color-mix(in srgb, var(--theme-main) 40%, transparent);
-  background: color-mix(in srgb, var(--card-bg) 50%, var(--secondbg));
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 45%, var(--secondbg));
 }
 
 .account-badge-card.is-equipped {
-  border-color: var(--theme-main, #425aef);
+  border-color: color-mix(in srgb, var(--theme-main) 45%, transparent);
   background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
-  box-shadow: 0 1px 4px rgba(66, 90, 239, 0.15);
+  box-shadow: 0 1px 4px rgba(66, 90, 239, 0.12);
+}
+
+.badge-card-main {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
 }
 
 .badge-card-icon {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .badge-card-name {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 600;
   color: var(--font-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
 }
 
-.badge-card-status {
-  font-size: 0.68rem;
-  font-weight: 600;
+.badge-card-equip-btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 2px 7px;
   border-radius: 4px;
-  padding: 1px 4px;
-  margin-top: 2px;
-}
-
-.account-badge-card.is-equipped .badge-card-status {
-  color: var(--theme-main, #425aef);
-  background: color-mix(in srgb, var(--theme-main) 15%, transparent);
-}
-
-.account-badge-card:not(.is-equipped) .badge-card-status {
-  color: var(--secondtext);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
   background: color-mix(in srgb, var(--font-color) 6%, transparent);
+  color: var(--secondtext);
+  user-select: none;
+}
+
+.badge-card-equip-btn:hover {
+  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
+  color: var(--theme-main);
+  border-color: color-mix(in srgb, var(--theme-main) 30%, transparent);
+}
+
+.badge-card-equip-btn.is-equipped {
+  background: var(--theme-main, #425aef);
+  color: #ffffff;
+  border-color: var(--theme-main, #425aef);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(66, 90, 239, 0.3);
+}
+
+.badge-card-equip-btn.is-equipped:hover {
+  background: color-mix(in srgb, var(--theme-main) 85%, #000);
+  border-color: color-mix(in srgb, var(--theme-main) 85%, #000);
 }
 
 .account-pill--level {
@@ -4240,35 +4301,158 @@ span.text-xs.font-semibold.text-rose-500 {
   border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
 }
 
-.account-hero-card__avatar.is-webmaster-avatar {
-  border-radius: 8px !important; /* Square avatar for webmaster */
-  box-shadow: 0 0 0 2px var(--theme-main), 0 4px 12px rgba(66, 90, 239, 0.3) !important;
+/* User Status Card (.account-card--status) */
+.account-card--status {
+  margin-bottom: 14px;
 }
 
-.account-hero-card__avatar.is-webmaster-avatar img {
-  border-radius: 6px !important;
+.account-hero-card__email {
+  margin: 2px 0 0 0;
+  font-size: 0.76rem;
+  color: var(--secondtext);
+  font-family: var(--font-mono, monospace);
+  letter-spacing: -0.01em;
+  word-break: break-all;
 }
 
-/* Comment Section Avatar Shape Rules: Webmaster is SQUARE, all others CIRCULAR */
-#post-comment .tk-avatar.is-webmaster-avatar,
-.theme-account-drawer__summary-avatar.is-webmaster-avatar {
-  border-radius: 8px !important; /* Square with micro-rounded corners for webmaster */
+.account-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--theme-main) 12%, transparent);
+  color: var(--theme-main);
+  border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
+}
+
+.account-status-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-status-desc {
+  font-size: 0.76rem;
+  color: var(--secondtext);
+  margin: 0;
+}
+
+.account-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 5px;
+}
+
+.account-status-preset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 10%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 70%, var(--secondbg));
+  color: var(--font-color);
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.account-status-preset-btn:hover {
+  border-color: var(--theme-main);
+  color: var(--theme-main);
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg));
+}
+
+.account-status-preset-btn.is-active {
+  border-color: var(--theme-main);
+  background: var(--theme-main);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.25);
+}
+
+.account-status-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.account-status-emoji-input {
+  width: 44px;
+  text-align: center;
+  font-size: 1rem;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
+  background: var(--card-bg);
+  color: var(--font-color);
+  box-sizing: border-box;
+}
+
+.account-status-text-input {
+  flex: 1;
+  font-size: 0.78rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
+  background: var(--card-bg);
+  color: var(--font-color);
+  box-sizing: border-box;
+}
+
+.account-status-clear-btn {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--font-color) 12%, transparent);
+  background: transparent;
+  color: var(--secondtext);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.account-status-clear-btn:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 8%, transparent);
+}
+
+.profile-popover-status-emoji {
+  display: inline-block;
+  font-size: 0.85em;
+  margin-left: 3px;
+  vertical-align: middle;
+  cursor: help;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.12));
+}
+
+/* Comment Section Avatar Shape Rules: Webmaster in post comments is SQUARE, everywhere else CIRCULAR */
+#post-comment .tk-avatar.is-webmaster-avatar {
+  border-radius: 8px !important; /* Square with micro-rounded corners for webmaster in comments */
   box-shadow: 0 0 0 2px rgba(66, 90, 239, 0.4), 0 2px 8px rgba(66, 90, 239, 0.25) !important;
 }
 
-#post-comment .tk-avatar.is-webmaster-avatar img,
-.theme-account-drawer__summary-avatar.is-webmaster-avatar img {
+#post-comment .tk-avatar.is-webmaster-avatar img {
   border-radius: 6px !important;
 }
 
 #post-comment .tk-avatar:not(.is-webmaster-avatar),
 #post-comment .tk-avatar.is-user-avatar,
-.theme-account-drawer__summary-avatar:not(.is-webmaster-avatar) {
-  border-radius: 50% !important; /* All other users strictly circular */
+.theme-account-drawer__summary-avatar,
+.account-hero-card__avatar {
+  border-radius: 50% !important; /* Circular everywhere else */
 }
 
 #post-comment .tk-avatar:not(.is-webmaster-avatar) img,
-#post-comment .tk-avatar.is-user-avatar img {
+#post-comment .tk-avatar.is-user-avatar img,
+.theme-account-drawer__summary-avatar img,
+.account-hero-card__avatar img {
   border-radius: 50% !important;
 }
 

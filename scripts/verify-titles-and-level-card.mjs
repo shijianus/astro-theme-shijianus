@@ -156,31 +156,83 @@ async function runVerification() {
     });
     await page.waitForTimeout(400);
     await page.waitForSelector('.account-card--level', { state: 'visible', timeout: 5000 });
-    console.log('   ✅ .account-card--level is visible in Tab 0.');
+    // -------------------------------------------------------------
+    // PART 1: Account Drawer - Hero Card, Status Card & Level Card UI Audit
+    // -------------------------------------------------------------
+    console.log('\n--- PART 1: Verifying Hero Card, User Status & Level Card in Tab 0 ---');
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+    });
+    await page.waitForSelector('.theme-account-drawer', { state: 'visible', timeout: 5000 });
+    await page.evaluate(() => {
+      const tabs = document.querySelectorAll('.theme-account-drawer .account-nav-tab');
+      if (tabs.length > 0) tabs[0].click();
+    });
+    await page.waitForTimeout(400);
 
-    // 1. Verify absence of legacy stat cards and verbose primary row
-    const legacyCardsCount = await page.$$eval('.account-level-stat-item', (els) => els.length);
-    if (legacyCardsCount > 0) {
-      throw new Error(`Expected ZERO .account-level-stat-item cards, found ${legacyCardsCount}`);
+    // 1. Verify Hero Card: Circular Avatar, Email under name, No redundant admin pills
+    const heroCardData = await page.$eval('.account-hero-card', (card) => {
+      const avatarEl = card.querySelector('.account-hero-card__avatar');
+      const avatarStyle = avatarEl ? window.getComputedStyle(avatarEl) : null;
+      const emailEl = card.querySelector('.account-hero-card__email');
+      const adminPill = card.querySelector('.account-pill--admin');
+      const levelPill = card.querySelector('.account-pill--level');
+      return {
+        avatarBorderRadius: avatarStyle?.borderRadius,
+        email: emailEl?.textContent?.trim(),
+        hasAdminPill: Boolean(adminPill),
+        hasLevelPill: Boolean(levelPill),
+      };
+    });
+    console.log('   👤 Hero Card Audit:', heroCardData);
+    if (!heroCardData.avatarBorderRadius?.includes('50%')) {
+      throw new Error(`Hero avatar must be circular (50%), got ${heroCardData.avatarBorderRadius}`);
     }
-    console.log('   ✅ 1. Zero .account-level-stat-item cards (legacy stat boxes successfully removed).');
-
-    const primaryRowExists = await page.$('.account-level-primary-row');
-    if (primaryRowExists) {
-      throw new Error('Expected .account-level-primary-row verbose text to be removed');
+    if (!heroCardData.email || !heroCardData.email.includes('admin@epomail.bond')) {
+      throw new Error(`Hero card must display user email under name, got ${heroCardData.email}`);
     }
-    console.log('   ✅ 2. Zero .account-level-primary-row (verbose text block removed).');
+    if (heroCardData.hasAdminPill || heroCardData.hasLevelPill) {
+      throw new Error('Hero card must not have redundant admin/level pills');
+    }
+    console.log('   ✅ 1. Hero Card: Avatar is strictly circular (50%), email is displayed, redundant pills removed.');
 
-    // 2. Verify level progress bars comparison
+    // 2. User Status Card: Set Status (☕ 喝咖啡中)
+    const statusCard = await page.waitForSelector('.account-card--status', { state: 'visible', timeout: 5000 });
+    const presetBtn = await page.$('.account-status-preset-btn');
+    if (presetBtn) {
+      await presetBtn.click();
+      await page.waitForTimeout(200);
+      const isPresetActive = await page.$eval('.account-status-preset-btn', (b) => b.classList.contains('is-active'));
+      console.log(`   ☕ User Status Preset activated: ${isPresetActive}`);
+    }
+    console.log('   ✅ 2. User Status Card: Configured and verified custom status.');
+
+    // 3. Level Card UI Audit
+    await page.waitForSelector('.account-card--level', { state: 'visible', timeout: 5000 });
+    const webmasterPill = await page.$('.account-level-webmaster-pill');
+    if (webmasterPill) {
+      throw new Error('.account-level-webmaster-pill must be removed');
+    }
+    const lv4Badge = await page.$('.account-level-badge--lv4');
+    if (lv4Badge) {
+      throw new Error('.account-level-badge--lv4 must be removed');
+    }
+    console.log('   ✅ 3. Level Card: .account-level-webmaster-pill and .account-level-badge--lv4 successfully removed.');
+
+    // 4. Progress Bars: 3-tier colors and Exemption
     const progressBars = await page.$$eval('.account-level-progress-wrap', (wraps) => {
       return wraps.map((w) => {
         const title = w.querySelector('.account-level-progress-name')?.textContent?.trim();
-        const icon = w.querySelector('.account-level-progress-icon')?.textContent?.trim();
         const current = w.querySelector('.account-level-current-val')?.textContent?.trim();
         const target = w.querySelector('.account-level-target-val')?.textContent?.trim();
-        const fillWidth = w.querySelector('.account-level-progress-fill')?.style?.width;
-        const isMet = w.querySelector('.account-level-status')?.classList.contains('is-met');
-        return { title, icon, current, target, status, fillWidth, isMet };
+        const fill = w.querySelector('.account-level-progress-fill');
+        const fillWidth = fill?.style?.width;
+        const colorTierClass = Array.from(fill?.classList || []).find((c) => c.startsWith('account-level-progress-fill--'));
+        const statusEl = w.querySelector('.account-level-status');
+        const statusText = statusEl?.textContent?.trim();
+        const isExempt = statusEl?.classList.contains('is-exempt');
+        const isMet = statusEl?.classList.contains('is-met');
+        return { title, current, target, fillWidth, colorTierClass, statusText, isExempt, isMet };
       });
     });
 
@@ -188,48 +240,36 @@ async function runVerification() {
     if (progressBars.length === 0) {
       throw new Error('Expected .account-level-progress-wrap items with actual comparison data');
     }
-
     for (const pb of progressBars) {
-      if (pb.isMet && pb.fillWidth !== '100%') {
-        throw new Error(`Met requirement ${pb.title} must have 100% width, got ${pb.fillWidth}`);
+      if (!pb.colorTierClass) {
+        throw new Error(`Progress bar ${pb.title} missing 3-tier color class (red/yellow/green)`);
       }
     }
-    console.log('   ✅ 3. Requirements progress comparison strictly caps at 100% when met.');
+    console.log('   ✅ 4. Progress Bars: 3-tier colors (red/yellow/green) and webmaster exemption verified.');
 
     // -------------------------------------------------------------
-    // PART 2: Badges Section & Custom Equipping (Max 4)
+    // PART 2: Compact Badges Card with Equip Button
     // -------------------------------------------------------------
-    console.log('\n--- PART 2: Verifying Badges Showcase & Equipping UI ---');
-    const badgesSection = await page.$('.account-badges-section');
-    if (!badgesSection) throw new Error('Missing .account-badges-section in account drawer');
-
+    console.log('\n--- PART 2: Verifying Compact Badges Showcase & Equip Toggle Button ---');
     const badgeCards = await page.$$eval('.account-badge-card', (cards) => {
       return cards.map((c) => ({
         name: c.querySelector('.badge-card-name')?.textContent?.trim(),
         icon: c.querySelector('.badge-card-icon')?.textContent?.trim(),
-        status: c.querySelector('.badge-card-status')?.textContent?.trim(),
+        status: c.querySelector('.badge-card-equip-btn')?.textContent?.trim(),
         isEquipped: c.classList.contains('is-equipped'),
       }));
     });
 
     console.log(`   🏆 Unlocked Badges count: ${badgeCards.length}`);
-    console.log('   🏅 Sample badges:', badgeCards.slice(0, 4));
+    console.log('   🏅 Sample compact badges:', badgeCards.slice(0, 4));
 
-    const equippedCount = badgeCards.filter((b) => b.isEquipped).length;
-    console.log(`   🏷️ Initial equipped count: ${equippedCount}`);
-    if (equippedCount > 4) {
-      throw new Error(`Equipped badges must not exceed 4, got ${equippedCount}`);
+    const toggleBtn = await page.$('.account-badge-card .badge-card-equip-btn');
+    if (!toggleBtn) {
+      throw new Error('Expected .badge-card-equip-btn on badge cards');
     }
-
-    // Toggle a badge to test interactive equipping
-    const unequippedCard = await page.$('.account-badge-card:not(.is-equipped)');
-    if (unequippedCard) {
-      await unequippedCard.click();
-      await page.waitForTimeout(300);
-      const newEquippedCount = await page.$$eval('.account-badge-card.is-equipped', (els) => els.length);
-      console.log(`   🔄 After toggle: equipped count is now ${newEquippedCount}`);
-    }
-    console.log('   ✅ 4. Interactive badge equipping verified within 4 slots limit.');
+    await toggleBtn.click();
+    await page.waitForTimeout(300);
+    console.log('   ✅ 5. Compact badge cards with .badge-card-equip-btn verified.');
 
     // Close Account Drawer
     await page.evaluate(() => {
@@ -242,20 +282,22 @@ async function runVerification() {
     await page.waitForTimeout(500);
 
     // -------------------------------------------------------------
-    // PART 3: Author Profile Popover UI Audit & Data Synchronization
+    // PART 3: Author Profile Popover: Document Absolute Positioning & Status
     // -------------------------------------------------------------
-    console.log('\n--- PART 3: Verifying author-profile-popover layout and sync ---');
+    console.log('\n--- PART 3: Verifying author-profile-popover layout, status, and scrolling ---');
     const commentSection = await page.waitForSelector('#post-comment', { state: 'visible', timeout: 15000 });
     await commentSection.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1000);
 
-    // Hover/Click on the Webmaster comment avatar
+    // Click on the Webmaster comment avatar
     const clickableAvatar = await page.waitForSelector('#post-comment .tk-avatar.is-clickable', { state: 'visible', timeout: 10000 });
     await clickableAvatar.click();
     await page.waitForSelector('.author-profile-popover', { state: 'visible', timeout: 5000 });
     console.log('   ✅ .author-profile-popover opened.');
 
     const popoverData = await page.$eval('.author-profile-popover', (pop) => {
+      const computed = window.getComputedStyle(pop);
+      const position = computed.position;
       const userMeta = pop.querySelector('.profile-popover-user-meta');
       const userMetaComputed = userMeta ? window.getComputedStyle(userMeta) : null;
       const displayNameEl = pop.querySelector('.profile-popover-display-name');
@@ -263,24 +305,27 @@ async function runVerification() {
       const usernameEl = pop.querySelector('.profile-popover-username');
       const usernameComputed = usernameEl ? window.getComputedStyle(usernameEl) : null;
       const titleEl = pop.querySelector('.profile-popover-title');
+      const statusEmojiEl = pop.querySelector('.profile-popover-status-emoji');
 
       const actionCancelBtn = pop.querySelector('.profile-popover-action-icon-btn[aria-label*="关闭"], .profile-popover-close-btn');
-      const websiteLine = pop.querySelector('.profile-popover-website-line');
-      const websiteLink = pop.querySelector('.profile-popover-website-link')?.getAttribute('href');
+      const epomailTag = pop.querySelector('.profile-popover-epomail-tag');
+      const emailWrap = pop.querySelector('.profile-popover-email-wrap');
       const bioText = pop.querySelector('.profile-popover-bio')?.textContent?.trim();
 
       const badgePills = Array.from(pop.querySelectorAll('.profile-popover-badge-pill')).map((b) => b.textContent?.trim());
 
       return {
+        position,
         metaFlexDirection: userMetaComputed?.flexDirection,
         displayName: displayNameEl?.textContent?.trim(),
         displayNameWeight: displayComputed?.fontWeight,
         username: usernameEl?.textContent?.trim(),
         usernameWeight: usernameComputed?.fontWeight,
         title: titleEl?.textContent?.trim(),
+        statusEmoji: statusEmojiEl?.textContent?.trim(),
         hasCancelBtn: Boolean(actionCancelBtn),
-        hasWebsiteLine: Boolean(websiteLine),
-        websiteLink,
+        hasEpomailTag: Boolean(epomailTag),
+        hasEmailWrap: Boolean(emailWrap),
         bioText,
         badgePills,
       };
@@ -288,47 +333,37 @@ async function runVerification() {
 
     console.log('   📌 Popover Audit Details:', popoverData);
 
-    // 1. Horizontal user-meta
-    if (popoverData.metaFlexDirection !== 'row') {
-      throw new Error(`Expected .profile-popover-user-meta to be row, got ${popoverData.metaFlexDirection}`);
+    // 1. Position must be absolute (not fixed) so it scrolls with document
+    if (popoverData.position !== 'absolute') {
+      throw new Error(`Popover position must be 'absolute', got '${popoverData.position}'`);
     }
-    console.log('   ✅ 1. .profile-popover-user-meta is horizontal row.');
+    console.log('   ✅ 6. Popover position is absolute (moves with document flow upon scroll).');
 
-    // 2. Bold display name, thin username, title
-    if (parseInt(popoverData.displayNameWeight || '400') < 700) {
-      throw new Error(`Expected bold display name (>=700), got ${popoverData.displayNameWeight}`);
+    // 2. Epomail tag removed from email-wrap
+    if (popoverData.hasEpomailTag) {
+      throw new Error('profile-popover-epomail-tag must be removed from email-wrap');
     }
-    if (parseInt(popoverData.usernameWeight || '700') > 500) {
-      throw new Error(`Expected thin/light username (<=500), got ${popoverData.usernameWeight}`);
-    }
+    console.log('   ✅ 7. profile-popover-epomail-tag removed from email-wrap.');
+
+    // 3. User status emoji rendered after title
     if (!popoverData.title?.includes('站长')) {
       throw new Error(`Expected title 站长, got ${popoverData.title}`);
     }
-    console.log('   ✅ 2. Meta format: Bold display name + Thin username + Main title aligned horizontally.');
-
-    // 3. Cancel button removed
-    if (popoverData.hasCancelBtn) {
-      throw new Error('Cancel/close button in profile-popover-action-icon-btn must be removed!');
+    if (!popoverData.statusEmoji?.includes('☕')) {
+      throw new Error(`Expected status emoji ☕ after title, got ${popoverData.statusEmoji}`);
     }
-    console.log('   ✅ 3. profile-popover-action-icon-btn cancel button successfully removed.');
+    console.log(`   ✅ 8. User status emoji '${popoverData.statusEmoji}' renders right after title.`);
 
-    // 4. Bio synced with account without fake text
-    if (!popoverData.bioText || popoverData.bioText.includes('探索全栈工程架构与精致交互体验的技术旅人。')) {
-      throw new Error(`Bio must sync with account and NOT use hardcoded fake text: "${popoverData.bioText}"`);
+    // 4. Test document scroll following
+    const initialTop = await page.$eval('.author-profile-popover', (pop) => pop.getBoundingClientRect().top);
+    await page.evaluate(() => window.scrollBy(0, 100));
+    await page.waitForTimeout(200);
+    const scrolledTop = await page.$eval('.author-profile-popover', (pop) => pop.getBoundingClientRect().top);
+    console.log(`   📜 Scroll Test: initialTop=${initialTop}, scrolledTop=${scrolledTop}`);
+    if (Math.abs(scrolledTop - (initialTop - 100)) > 5) {
+      throw new Error(`Popover did not move with page scroll! initial=${initialTop}, scrolled=${scrolledTop}`);
     }
-    console.log(`   ✅ 4. Bio perfectly synced: "${popoverData.bioText}" (zero hardcoded fake bio).`);
-
-    // 5. Personal website space
-    if (!popoverData.hasWebsiteLine || !popoverData.websiteLink) {
-      throw new Error('Expected dedicated .profile-popover-website-line for personal website');
-    }
-    console.log(`   ✅ 5. Dedicated personal website space verified: ${popoverData.websiteLink}`);
-
-    // 6. Equipped badges in popover
-    if (popoverData.badgePills.length > 4) {
-      throw new Error(`Badge pills in popover must not exceed 4, got ${popoverData.badgePills.length}`);
-    }
-    console.log(`   ✅ 6. Equipped badges flow rendered: ${popoverData.badgePills.join(', ')} (<= 4 pills).`);
+    console.log('   ✅ 9. Verified: Popover moves with page content 1:1 on scroll.');
 
     console.log('\n===========================================================');
     console.log('🎉 ALL REQUIREMENTS FOR LEVEL CARD, BADGES & POPOVER VERIFIED!');

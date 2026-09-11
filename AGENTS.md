@@ -1216,6 +1216,30 @@
     - 实测文章页线上真实留言作者名片 (`.author-profile-popover`)：横向排版 `flexDirection: row`（宽 465.6px，高 138.6px）、粗体显示名 (`font-weight: 750`) + 细体用户名 (`font-weight: 400`) + 纯文本称号（`站长`）、取消按钮彻底删除、硬编码假 Bio 彻底清零（`hasFakeBio: false`）、真实动态统计指标无圆点分隔符（`hasDotSep: false`）、官方成就徽章流渲染正常；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-drawer-blog.epocanvas.com.png`，真实生产链路验收 100% 通过。
 
+### Task 55: 读者中心用户状态扩展、称号后置状态 Emoji、名片文档绝对定位跟随滚动与等级/徽章卡片视觉精简
+- [x] **作者名片浮层 (`author-profile-popover`) 文档绝对定位跟随滚动与 Epomail 标签精简**：
+  - 将名片浮层定位模式由视口固定 `position: fixed` 重构为相对于文档的 `position: absolute`，通过 `docTop` 与 `docLeft` 锚定于留言头像所在的文档绝对坐标；
+  - 解决用户滚动页面时名片冻结在屏幕视口固定位置的问题，实现名片随着页面内容滚动 1:1 自然跟随移动；
+  - 彻底删除 `.profile-popover-email-wrap` 中多余的 `.profile-popover-epomail-tag`（"Epomail 认证"）。
+- [x] **账号中心 Hero 卡片 (`account-hero-card`) 圆形头像规范与邮箱直出**：
+  - 明确头像形态规则：仅在评论区发表的内容（`#post-comment .tk-avatar.is-webmaster-avatar`）中呈现站长专属方形头像（8px 圆角），账号中心抽屉 Hero 卡片头像严格保持为精致圆形（`border-radius: 50%`）；
+  - 移除 Hero 卡片中冗余的 `.account-pill--admin` 说明徽章（"Epomail 认证"、"站长专属方形头像"、"LV.4 · 站长 · TL.99"）；
+  - 在用户名称下方直出呈现真实绑定的电子邮箱地址（`.account-hero-card__email`）。
+- [x] **新增用户状态卡片 (`account-card--status`) 与身份后置状态 Emoji 联动**：
+  - 账号中心新增用户状态管理卡片，提供快捷预设状态按钮（☕ 喝咖啡中、💻 写代码中、🚀 忙碌中、🎯 深度专注等）以及自定义 Emoji 与文本输入框；
+  - 状态数据通过 `shijianus-user-status` 持久化，并自动派发 `shijianus:user-status-change` 全局事件；
+  - 在作者名片浮层中，该状态 Emoji 即时呈现在用户身份（如「站长」）正后方（`.profile-popover-status-emoji`），悬停展示详细状态说明。
+- [x] **社群等级卡片 (`account-card--level`) 冗余清理、真实进度红黄绿三阶阶梯与站长豁免**：
+  - 彻底删除 `.account-level-webmaster-pill`（"站长专属方形头像"说明）与 `.account-level-badge--lv4` 冗余标签；
+  - 等级需求进度条同步实际情况，站长作为权威唯一豁免等级晋升限制（即使未满指标依然特免，显示 `✓ 站长特免 (X%)`）；
+  - 进度条颜色由低到高严格分为三阶状态：红色（`<40%`，`.account-level-progress-fill--red`）、黄色（`40%-79%`，`.account-level-progress-fill--yellow`）、绿色（`>=80%`，`.account-level-progress-fill--green`）。
+- [x] **紧凑型徽章卡片 (`account-badge-card`) 与深浅色佩戴切换按钮**：
+  - 优化徽章卡片尺寸，去除臃肿占位，采用横向流式紧凑布局；
+  - 增加专用佩戴切换按钮（`.badge-card-equip-btn`），未佩戴呈现淡雅浅色，已佩戴呈现主题深色与白色高亮文字（`已佩戴` / `佩戴`），清晰辨识。
+- [x] **端到端自动化测试与全链路验证**：
+  - 扩展 `scripts/verify-titles-and-level-card.mjs`，全量断言通过：Hero 卡片圆形头像与邮箱、状态卡片激活、三色进度条与站长豁免、紧凑徽章卡片切换、名片浮层 `position: absolute`、滚动跟随坐标变化 1:1、状态 Emoji 紧随站长后方、Epomail 认证标签清除等 9 大模块。
+
+
 
 
 

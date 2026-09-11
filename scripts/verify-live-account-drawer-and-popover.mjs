@@ -239,6 +239,8 @@ async function runLiveVerification() {
           const pop = document.querySelector('.author-profile-popover');
           if (!pop) return null;
           const rect = pop.getBoundingClientRect();
+          const computed = window.getComputedStyle(pop);
+          const position = computed.position;
           const userMeta = pop.querySelector('.profile-popover-user-meta');
           const metaFlexDirection = userMeta ? window.getComputedStyle(userMeta).flexDirection : null;
           const nameEl = pop.querySelector('.profile-popover-display-name');
@@ -248,7 +250,9 @@ async function runLiveVerification() {
           const username = usernameEl?.textContent?.trim();
           const usernameWeight = usernameEl ? window.getComputedStyle(usernameEl).fontWeight : null;
           const title = pop.querySelector('.profile-popover-title')?.textContent?.trim();
+          const statusEmoji = pop.querySelector('.profile-popover-status-emoji')?.textContent?.trim();
           const cancelBtn = pop.querySelector('.profile-popover-action-icon-btn, .profile-popover-close-btn');
+          const epomailTag = pop.querySelector('.profile-popover-epomail-tag');
           const websiteLine = pop.querySelector('.profile-popover-website-line');
           const bio = pop.querySelector('.profile-popover-bio')?.textContent?.trim() || '';
           const stats = pop.querySelector('.profile-popover-inline-stats')?.textContent?.replace(/\s+/g, ' ').trim();
@@ -258,13 +262,16 @@ async function runLiveVerification() {
           return {
             width: rect.width,
             height: rect.height,
+            position,
             metaFlexDirection,
             name,
             nameWeight,
             username,
             usernameWeight,
             title,
+            statusEmoji,
             hasCancelBtn: Boolean(cancelBtn),
+            hasEpomailTag: Boolean(epomailTag),
             hasWebsiteLine: Boolean(websiteLine),
             bio,
             hasFakeBio: bio.includes('探索全栈工程架构与精致交互体验的技术旅人。'),
@@ -280,6 +287,12 @@ async function runLiveVerification() {
           };
         });
         console.log('   📊 Live Popover Data:', livePopoverData);
+        if (livePopoverData.position !== 'absolute') {
+          throw new Error(`Live popover position must be 'absolute', got '${livePopoverData.position}'`);
+        }
+        if (livePopoverData.hasEpomailTag) {
+          throw new Error('Live popover must not contain profile-popover-epomail-tag in email-wrap!');
+        }
         if (livePopoverData.metaFlexDirection !== 'row') {
           throw new Error(`Live popover user-meta must be row, got ${livePopoverData.metaFlexDirection}`);
         }
@@ -310,7 +323,7 @@ async function runLiveVerification() {
         if (livePopoverData.badgePillsCount > 4) {
           throw new Error(`Live popover badge count must be <= 4, got ${livePopoverData.badgePillsCount}`);
         }
-        console.log('   ✅ Live Popover: 100% official badges (' + livePopoverData.badgePills.join(', ') + '), 0 fake badges, 0 dot sep, gap-spaced!');
+        console.log('   ✅ Live Popover: absolute position, official badges (' + livePopoverData.badgePills.join(', ') + '), 0 fake badges, 0 dot sep, 0 epomail tag!');
 
         const popoverScreenshotPath = path.join(screenshotDir, `live-popover-${new URL(targetUrl).hostname}.png`);
         await page.screenshot({ path: popoverScreenshotPath, fullPage: false });
