@@ -1048,7 +1048,7 @@
   2. 编写真实生产端到端审计套件（`scripts/verify-live-account-drawer-and-popover.mjs`），在生产主域 `https://blog.epocanvas.com` 上实测验证抽屉徽章动态呈现、Tab 0 个人资料、评论排序展开/折叠 0 溢出、站长专属方形头像 (`8px`/`6px`) 与用户圆形头像 (`50%`)，以及作者名片卡片气泡弹出与 `@ 提及` 交互；
   3. 截图存档：`live-drawer-blog.epocanvas.com.png`、`live-popover-blog.epocanvas.com.png`，视觉与交互断言 100% 通过。
 
-### Task 49: 作者名片浮层 (author-profile-popover) LinuxDo / Discourse 规范轻量排版重构与全景端到端实证
+### Task 49: 作者名片浮层 (author-profile-popover) LinuxDo / Discourse 规范轻量排版重构与全景端到端实证 (`df2b934`)
 - [x] **整体改造原则（去除卡片嵌套厚重感，采用 LinuxDo/Discourse 轻量排版流）**：
   - 彻底摒弃原有“多层边框卡片相互嵌套”与内部灰底独立小方块设计；
   - 整张卡片采用纯色统一底板（浅色 `#ffffff` / 深色 `#1e2025`）与柔和阴影，仅依靠字体粗细、字阶颜色、间距以及微型胶囊标签来构建清晰的信息层级；
