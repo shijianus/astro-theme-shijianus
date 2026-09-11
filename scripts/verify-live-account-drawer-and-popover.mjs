@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://47b32681.shijianus-blog.pages.dev',
+  'https://6af80151.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -89,6 +89,35 @@ async function runLiveVerification() {
         throw new Error(`Expected trust pill to contain "TL.", got "${trustPill}"`);
       }
       console.log('   ✅ Live Community Level & Trust card verified.');
+
+      // Task 54: Check account-card--level overhaul
+      const legacyStatItems = await page.$$('.account-level-stat-item');
+      if (legacyStatItems.length > 0) {
+        throw new Error(`Expected 0 .account-level-stat-item, found ${legacyStatItems.length}`);
+      }
+      console.log('   ✅ Zero legacy .account-level-stat-item on live.');
+
+      const legacyPrimaryRow = await page.$('.account-level-primary-row');
+      if (legacyPrimaryRow) {
+        throw new Error('Expected 0 .account-level-primary-row on live');
+      }
+      console.log('   ✅ Zero .account-level-primary-row verbose text block on live.');
+
+      const progressWraps = await page.$$('.account-level-progress-wrap');
+      console.log(`   -> Found ${progressWraps.length} progress wraps in live level card.`);
+      if (progressWraps.length === 0) {
+        throw new Error('Expected at least 1 .account-level-progress-wrap on live');
+      }
+      console.log('   ✅ Live progress wraps comparing current vs target verified.');
+
+      // Task 54: Check badges showcase & equipping section
+      const badgesSection = await page.$('.account-badges-section');
+      if (!badgesSection) {
+        throw new Error('Missing .account-badges-section on live');
+      }
+      const badgeCards = await page.$$('.account-badge-card');
+      console.log(`   -> Found ${badgeCards.length} badge cards in live badges section.`);
+      console.log('   ✅ Live badges section & custom equipping UI verified.');
 
       // Check Tab 2 (设置与偏好) Sort Group
       console.log('4. Checking Tab 2 (设置与偏好) Comment Sort Group...');
@@ -210,9 +239,18 @@ async function runLiveVerification() {
           const pop = document.querySelector('.author-profile-popover');
           if (!pop) return null;
           const rect = pop.getBoundingClientRect();
-          const name = pop.querySelector('.profile-popover-display-name')?.textContent?.trim();
-          const username = pop.querySelector('.profile-popover-username')?.textContent?.trim();
+          const userMeta = pop.querySelector('.profile-popover-user-meta');
+          const metaFlexDirection = userMeta ? window.getComputedStyle(userMeta).flexDirection : null;
+          const nameEl = pop.querySelector('.profile-popover-display-name');
+          const name = nameEl?.textContent?.trim();
+          const nameWeight = nameEl ? window.getComputedStyle(nameEl).fontWeight : null;
+          const usernameEl = pop.querySelector('.profile-popover-username');
+          const username = usernameEl?.textContent?.trim();
+          const usernameWeight = usernameEl ? window.getComputedStyle(usernameEl).fontWeight : null;
           const title = pop.querySelector('.profile-popover-title')?.textContent?.trim();
+          const cancelBtn = pop.querySelector('.profile-popover-action-icon-btn, .profile-popover-close-btn');
+          const websiteLine = pop.querySelector('.profile-popover-website-line');
+          const bio = pop.querySelector('.profile-popover-bio')?.textContent?.trim() || '';
           const stats = pop.querySelector('.profile-popover-inline-stats')?.textContent?.replace(/\s+/g, ' ').trim();
           const legacyPills = pop.querySelectorAll('.profile-popover-pill');
           const badgePills = Array.from(pop.querySelectorAll('.profile-popover-badge-pill')).map((b) => b.textContent?.trim());
@@ -220,9 +258,16 @@ async function runLiveVerification() {
           return {
             width: rect.width,
             height: rect.height,
+            metaFlexDirection,
             name,
+            nameWeight,
             username,
+            usernameWeight,
             title,
+            hasCancelBtn: Boolean(cancelBtn),
+            hasWebsiteLine: Boolean(websiteLine),
+            bio,
+            hasFakeBio: bio.includes('探索全栈工程架构与精致交互体验的技术旅人。'),
             stats,
             statsHasDotSep: stats?.includes('·') || false,
             legacyPillsCount: legacyPills.length,
@@ -235,6 +280,15 @@ async function runLiveVerification() {
           };
         });
         console.log('   📊 Live Popover Data:', livePopoverData);
+        if (livePopoverData.metaFlexDirection !== 'row') {
+          throw new Error(`Live popover user-meta must be row, got ${livePopoverData.metaFlexDirection}`);
+        }
+        if (livePopoverData.hasCancelBtn) {
+          throw new Error('Live popover cancel button must be removed!');
+        }
+        if (livePopoverData.hasFakeBio) {
+          throw new Error('Live popover must not contain hardcoded fake bio!');
+        }
         if (livePopoverData.hasFakeData) {
           throw new Error(`Live popover contains fake 9999m data: "${livePopoverData.stats}"`);
         }

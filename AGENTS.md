@@ -1209,9 +1209,13 @@
   - 佩戴的徽章通过 `shijianus-equipped-badges` 持久化，并与作者名片浮层 (`.profile-popover-badges-flow`) 实时联动展示。
 - [x] **标准称号与等级制度规范文档 (`TITLES_AND_BADGES.md`)**：
   - 编写详尽的社群等级天梯（LV.0 初始用户至 LV.4 先驱）、自动晋升上限（LV.3）、五大成就徽章池标准、自选佩戴规则及数据流转架构。
-- [x] **端到端自动化测试套件验收 100% PASS**：
-  - 执行 `scripts/verify-titles-and-level-card.mjs`，等级卡片 UI、进度条封顶、徽章装备交互（最多 4 枚）、名片横向排版、粗体/细体/称号、无取消按钮、真实个人网站展示及真 Bio 数据同步全部验证通过；
-  - 执行 `scripts/verify-author-profile-linuxdo.mjs`，5 大模块 100% 通过无回归。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测 100% 通过**：
+  - 通过 `npm run cf:deploy` 成功构建并部署至 Cloudflare Pages 边缘节点：`https://6af80151.shijianus-blog.pages.dev`（主域名 `https://blog.epocanvas.com` 同步生效）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端 Playwright 测试，对最新 Pages 部署与生产主域完成全景验收：
+    - 实测账号中心 `.account-card--level`：旧版方块 `.account-level-stat-item` 数量为 0，冗余文本块 `.account-level-primary-row` 为 0，真实对比进度条与 `.account-badges-section` 徽章专区正常渲染；
+    - 实测文章页线上真实留言作者名片 (`.author-profile-popover`)：横向排版 `flexDirection: row`（宽 465.6px，高 138.6px）、粗体显示名 (`font-weight: 750`) + 细体用户名 (`font-weight: 400`) + 纯文本称号（`站长`）、取消按钮彻底删除、硬编码假 Bio 彻底清零（`hasFakeBio: false`）、真实动态统计指标无圆点分隔符（`hasDotSep: false`）、官方成就徽章流渲染正常；
+    - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-drawer-blog.epocanvas.com.png`，真实生产链路验收 100% 通过。
+
 
 
 
