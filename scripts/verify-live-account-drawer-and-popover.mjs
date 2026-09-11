@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://ed3af0ae.shijianus-blog.pages.dev',
+  'https://47b32681.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -136,8 +136,14 @@ async function runLiveVerification() {
       // ----------------------------------------------------
       const postUrl = `${targetUrl}/posts/content-formats-and-markup-mastery/`;
       console.log(`\n5. Navigating to Post Page: ${postUrl} ...`);
-      await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(2500);
+      try {
+        await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      } catch (err) {
+        console.warn(`Initial navigation timed out (${err.message}), retrying with commit...`);
+        await page.waitForTimeout(2000);
+        await page.goto(postUrl, { waitUntil: 'commit', timeout: 90000 });
+      }
+      await page.waitForTimeout(3000);
 
       // Remove loading animation overlay if still visible
       await page.evaluate(() => {

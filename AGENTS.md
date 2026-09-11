@@ -1162,6 +1162,32 @@
     - 验证真实统计数据行（`最新评论5 天前加入时间9月5日已读0m喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-comments-blog.epocanvas.com.png`，端到端测试全绿通过。
 
+### Task 53: 落地完整博客专属徽章库 (CommunityBadge) 与动态判定引擎 (`b6c4758`)
+- [x] **定义标准社区徽章体系与专属成就池 (`src/lib/user-level.ts`)**：
+  - 定义标准徽章结构 `CommunityBadge`（包含 `id`, `name`, `icon`, `category`, `priority`, `description`, `isUnlocked`）；
+  - 实现完整博客专属成就池，100% 绑定真实统计指标：
+    1. 【等级主称号】（互斥取最高级，权重 100）：👑 站长 / ⭐ 先驱 / 🎖️ 活跃用户 / 🏅 贡献者 / 🥉 基本用户 / 📘 初始用户 / 🐣 新兴用户；
+    2. 【阅读沉淀成就】（权重 40-70）：📖 通读全文（$\ge 15$m，40）、☕ 慢读时光（$\ge 120$m，55）、📚 博览群书（$\ge 600$m，70）；
+    3. 【互动交流成就】（权重 30-60）：✍️ 初露锋芒（编辑过评论，30）、😀 丰富表情（使用过表情交互，35）、💬 言之有物（评论数 $\ge 5$，50）、🔔 回音激荡（提及过他人，45）；
+    4. 【赞赏喝彩成就】（权重 40-80）：❤️ 不吝赞美（主动点赞 $\ge 10$，45）、✨ 初见回响（收到首个喝彩 $\ge 1$，40）、🔥 引发共鸣（收到喝彩 $\ge 20$，65）、💎 深得人心（收到喝彩 $\ge 50$，80）；
+    5. 【常客与资料成就】（权重 30-80）：🏷️ 自传作者（签名 $\ge 10$ 字且有头像，35）、✉️ 信件连结（绑定邮箱，40）、🏃 常客印记（活跃 $\ge 10$ 天，50）、🏔️ 百日墨客（活跃 $\ge 100$ 天，75）、🎂 同舟一载（相伴 $\ge 365$ 天，85）；
+  - 实现动态判定引擎 `evaluateUserBadges(stats, context)`，严格按 priority 降序排序并返回已解锁成就。
+- [x] **评论区名片浮层 (PostComments.tsx) 徽章与统计行对齐**：
+  - 严格最多展示 4 个徽章（`unlockedBadges.slice(0, 4)`），杜绝任何 "+N 更多" 折行胶囊与 IP 混入；
+  - 鼠标悬浮微胶囊时提供 `title={b.description}` 原生友好成就说明；
+  - 统计栏更新为标准 LinuxDo 弹性排印：`最新发言 5天前    加入时间 9月5日    已读 0m    喝彩 2`（零圆点分隔，`gap: 16px`）；
+  - 微胶囊样式打磨（`final-pass.css`）：高度 23px，圆角 5px（4px-6px），深浅模式自适应与微光悬浮态。
+- [x] **自动化端到端测试 100% 验收通过（`scripts/verify-author-profile-linuxdo.mjs`）**：
+  - 覆盖横向长条、纯文本称号、真实动态统计行（`最新发言1 小时前...`）、成就徽章池（`👑站长`, `✨初见回响`, `✉️信件连结`, `🏷️自传作者`）、普通读者成就（`🥉基本用户`, `✨初见回响`, `✉️信件连结`）、0 伪造标签、移动端 390px 视口等 5 大模块全部 PASS。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测通过**：
+  - 自动部署至生产版本：`https://47b32681.shijianus-blog.pages.dev`（绑定至生产主域名 `https://blog.epocanvas.com`）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在最新 Pages 部署与生产主域完成验证：
+    - 实测作者名片浮层横向长条展开（宽 465.6px，高 172.3px）；
+    - 验证徽章 100% 由 `evaluateUserBadges` 动态判定：线上真实站长展示 `['👑站长', '✨初见回响', '😀丰富表情', '🏷️自传作者']`（`hasFakeBadges: false`，`hasFakeGroups: false`，`hasMorePill: false`）；
+    - 验证真实统计数据行（`最新发言5 天前加入时间9月5日已读0m喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
+    - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-comments-blog.epocanvas.com.png`，端到端测试全绿通过。
+
+
 
 
 
