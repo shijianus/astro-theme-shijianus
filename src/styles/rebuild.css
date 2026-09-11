@@ -16986,9 +16986,13 @@ body[data-type='post'] #card-toc .item-headline {
   align-items: center !important;
   flex-wrap: nowrap !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  gap: 6px !important;
-  line-height: 1 !important;
+  overflow: visible !important;
+  gap: 8px !important;
+  min-height: 28px !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
 }
 
 #card-toc .item-headline span,
