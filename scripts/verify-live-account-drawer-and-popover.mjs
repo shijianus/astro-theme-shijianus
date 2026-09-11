@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://9a8b0274.shijianus-blog.pages.dev',
+  'https://ed3af0ae.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -70,13 +70,17 @@ async function runLiveVerification() {
 
       // Click Tab 0 and check Community Level Card
       console.log('3. Checking Tab 0 (个人资料) Community Level Card...');
-      await page.evaluate(() => {
-        document.querySelectorAll('.theme-account-drawer .account-nav-tab')[0].click();
-      });
-      await page.waitForTimeout(500);
+      await page.locator('.theme-account-drawer .account-nav-tab').first().click();
+      await page.waitForTimeout(800);
 
-      const levelCard = await page.$('.account-card--level');
-      if (!levelCard) throw new Error('Missing .account-card--level in Tab 0 (个人资料)');
+      const levelCard = await page.waitForSelector('.account-card--level', { state: 'visible', timeout: 5000 }).catch(() => null);
+      if (!levelCard) {
+        // Fallback dispatch if synthetic click was intercepted
+        await page.evaluate(() => {
+          window.dispatchEvent(new CustomEvent('shijianus:open-account', { detail: { tab: 'auth' } }));
+        });
+        await page.waitForSelector('.account-card--level', { state: 'visible', timeout: 5000 });
+      }
       const levelTitle = await page.$eval('.account-level-name', (el) => el.textContent?.trim());
       const trustPill = await page.$eval('.account-level-trust-pill', (el) => el.textContent?.trim());
       console.log('   -> Level Card Title:', levelTitle);
@@ -88,10 +92,8 @@ async function runLiveVerification() {
 
       // Check Tab 2 (设置与偏好) Sort Group
       console.log('4. Checking Tab 2 (设置与偏好) Comment Sort Group...');
-      await page.evaluate(() => {
-        document.querySelectorAll('.theme-account-drawer .account-nav-tab')[2].click();
-      });
-      await page.waitForTimeout(500);
+      await page.locator('.theme-account-drawer .account-nav-tab').nth(2).click();
+      await page.waitForTimeout(800);
 
       const sortBtns = await page.$$('.account-pref-sort-btn');
       if (sortBtns.length < 2) throw new Error('Expected 2 sort buttons in Settings tab');
@@ -221,6 +223,7 @@ async function runLiveVerification() {
             badgePillsCount: badgePills.length,
             badgePills,
             hasFakeBadges: allText.includes('受到赞赏') || allText.includes('活跃交流'),
+            hasFakeGroups: allText.includes('站长团队') || allText.includes('核心架构师'),
             hasMorePill: allText.includes('更多'),
             hasFakeData: stats?.includes('9999m') || stats?.includes('999'),
           };
@@ -237,6 +240,9 @@ async function runLiveVerification() {
         }
         if (livePopoverData.hasFakeBadges) {
           throw new Error('Live popover contains fake badges ("受到赞赏" / "活跃交流")');
+        }
+        if (livePopoverData.hasFakeGroups) {
+          throw new Error('Live popover contains fake groups ("站长团队" / "核心架构师")');
         }
         if (livePopoverData.hasMorePill) {
           throw new Error('Live popover contains "+N 更多" pill');

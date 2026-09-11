@@ -1134,6 +1134,35 @@
     - 验证真实统计数据行（`加入时间9月5日已读0m评论1喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
     - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png`，端到端测试全绿通过。
 
+### Task 52: 作者名片浮层 (Author Profile Popover) 彻底剔除虚构数据，严格对齐官方阶梯与博客专属动态互动成就 (`8ff275b`)
+- [x] **称号与徽章区规范（严格限制 4 个，彻底拒绝假标签与空洞群组）**：
+  - 彻底清除所有“站长团队”、“核心架构师”等空洞生硬的虚构群组标签；
+  - 彻底杜绝地理位置/IP（如“MY 马来西亚”）混入徽章区，保持纯粹成就属性；
+  - 严格限定徽章池为且仅为两类真实动态产物：
+    1. **[等级主称号]** (首个核心徽章，取用户当前计算出的最高称号)：
+       - 👑 站长 / 核心成员 / 🏅 年度用户 / 🚀 先驱 / 🔥 活跃用户 / ✍️ 贡献者 / 🌱 基本用户 / 📖 初始用户 / ✨ 新兴用户；
+    2. **[博客互动成就]** (严格基于博客真实指标动态判定，未达成则不显示)：
+       - 📚 沉浸阅读：累计阅读时长 > 60 分钟 (`stats.readingMinutes > 60`)；
+       - 💬 热情回应：累计发表评论 $\ge 5$ 条 (`stats.commentCount >= 5`)；
+       - ❤️ 引发共鸣：累计收到赞/喝彩（Emoji 交互）$\ge 10$ 次 (`stats.reactionsReceived >= 10`)；
+       - 🌟 资深常客：连续或累计活跃天数 $\ge 15$ 天 (`stats.activeDays >= 15`)；
+  - 截断与排版：严格使用 `.slice(0, 4)` 截断（最多展示 4 个），彻底删除「+N 更多」逻辑，单行横向排开（`flex-wrap: nowrap; overflow: hidden`），胶囊无折行。
+- [x] **数据统计行排版（完全对齐 LinuxDo 弹性间距）**：
+  - 彻底删除所有圆点分隔符（`·`），改为标准的横向弹性间距（`gap: 16px` 平铺，`flex-wrap: nowrap`）；
+  - 统一四项核心动态指标两段式排印（浅灰次级标签 + 粗体高对比数值）：
+    `最新评论 [动态相对时间]`    `加入时间 [动态格式化时间]`    `已读 [X]m`    `喝彩 [Y]`；
+  - 零嵌套独立方块，彻底杜绝 9999m / 999 等假数据。
+- [x] **自动化端到端测试 100% 验收通过（`scripts/verify-author-profile-linuxdo.mjs`）**：
+  - 覆盖横向长条尺寸（宽 465.6px，高 194.8px）、右侧展开避让评论输入区、80px 圆形头像与右下角微型皇冠、纯文本称号、真实动态统计行（`最新评论1 小时前加入时间9月11日已读0m喝彩15`）、官方徽章池（`👑站长`, `❤️引发共鸣`）、0 虚假群组、0 虚构勋章、0「+N 更多」、暗黑模式、@ 提及交互与移动端 390px 视口断言全部通过。
+- [x] **生产端 (Cloudflare Pages) 全量自动构建部署与线上真实环境 E2E 实测通过**：
+  - 生产边缘节点自动部署至版本：`https://ed3af0ae.shijianus-blog.pages.dev`（绑定至生产主域名 `https://blog.epocanvas.com`）；
+  - 执行 `scripts/verify-live-account-drawer-and-popover.mjs` 真实端到端测试，分别在最新 Pages 部署与生产主域完成验证：
+    - 实测作者名片浮层横向长条展开（宽 465.6px，高 171.3px）；
+    - 验证徽章 100% 动态判定（线上真实站长展示 `['👑站长']`，`hasFakeBadges: false`，`hasFakeGroups: false`，`hasMorePill: false`）；
+    - 验证真实统计数据行（`最新评论5 天前加入时间9月5日已读0m喝彩2`，无任何 `·` 圆点分隔符，CSS gap 弹性平铺，`hasFakeData: false`）；
+    - 截图已自动存档至 `scripts/audit_screenshots/live-popover-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-comments-blog.epocanvas.com.png`，端到端测试全绿通过。
+
+
 
 
 
