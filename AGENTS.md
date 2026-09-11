@@ -991,7 +991,7 @@
      - 浅色与深色模式（Dark Mode）断言全绿通过；
      - 高清截图存档 (`scripts/audit_screenshots/live-card-toc-verified.png`, `live-card-toc-dark.png`)。
 
-### Task 47: 账号中心评论足迹 (Comment History) 渲染乱码根治、文章标题智能解析与多语言全链路优化
+### Task 47: 账号中心评论足迹 (Comment History) 渲染乱码根治、文章标题智能解析与多语言全链路优化 (`c5dda90`)
 - [x] **根治 JSX 未转义代码乱码缺陷**：
   1. 彻底修复 `ThemeOverlays.tsx` 中 `account-my-comments-list` 内 `account-my-comment-post` 缺失花括号 `{...}` 的严重缺陷（原本未被 `{}` 包裹导致浏览器直接渲染字面量 JavaScript 三元运算与模板字符串表达式 `item.postSlug ? ...`，被读者感知为代码泄露或乱码报错）；
   2. 采用严格安全的 JSX 表达式语法包裹，杜绝任何未转义代码文本外泄。
