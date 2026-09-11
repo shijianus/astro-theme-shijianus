@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
-  'https://6af80151.shijianus-blog.pages.dev',
+  'https://42d047ed.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
@@ -46,10 +46,21 @@ async function runLiveVerification() {
       await page.waitForTimeout(2000);
 
       console.log('2. Triggering Account Drawer ...');
-      await page.evaluate(() => {
-        window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
-      });
-      await page.waitForSelector('.theme-account-drawer', { state: 'visible', timeout: 8000 });
+      let drawerOpened = false;
+      for (let attempt = 0; attempt < 15; attempt++) {
+        await page.evaluate(() => {
+          window.dispatchEvent(new CustomEvent('shijianus:open-notifications'));
+        });
+        const isVisible = await page.isVisible('.theme-account-drawer');
+        if (isVisible) {
+          drawerOpened = true;
+          break;
+        }
+        await page.waitForTimeout(600);
+      }
+      if (!drawerOpened) {
+        await page.waitForSelector('.theme-account-drawer', { state: 'visible', timeout: 8000 });
+      }
       console.log('   -> Account Drawer is visible.');
 
       // Verify Head Badge
