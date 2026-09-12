@@ -1301,6 +1301,15 @@
     7. 验证作者名片浮层 `.profile-popover-user-meta .profile-popover-status-emoji` 紧随“站长”后方同步呈现 `💻`，并彻底验证评论区无任何 `.tk-global-toast` 自建提示框；
     8. 真实浏览器截图自动归档至 `scripts/audit_screenshots/live-drawer-status-emoji-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-popover-status-emoji-blog.epocanvas.com.png`，生产端全链路 100% 验证通过。
 
+### Task 58: 修复 ProfileWidget 社交图标 (.social-icon) 与全站邮箱一致性 (`4506792`)
+- [x] **修复 ProfileWidget 社交图标邮箱链接与标题不一致问题**：
+  - 将 `src/components/ProfileWidget.tsx` 中 `class="social-icon"` 邮件图标的 `href` 由 `mailto:${email}`（原值为 `hello@shijian.us`）修正并动态绑定为 `mailto:${email || 'shijianus@epocanvas.com'}`，标题同步统一为 `title={`Email: ${email || 'shijianus@epocanvas.com'}`}`；
+  - 彻底消除 DOM 中 `title="Email: shijianus@epocanvas.com"` 与实际 `href="mailto:hello@shijian.us"` 的冲突，悬停与点击打开的目标邮箱保持 100% 一致。
+- [x] **全站作者与导航邮箱配置统一**：
+  - 更新 `src/config/site.ts` 中 `siteConfig.site.author.email` 为 `shijianus@epocanvas.com`；
+  - 同步更新导航栏 utility 及页脚 socialBar 中的邮件链接为 `mailto:shijianus@epocanvas.com`；
+  - 全站静态打包（`npm run build`）构建通过，93 个页面生成的 HTML 产物已验证生效。
+
 
 
 
