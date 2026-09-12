@@ -1361,7 +1361,7 @@
 - [x] **邮箱展示区 (`.profile-popover-email-line`) 纯净化与宽度扩充**：
   - 邮箱行中仅保留直按复制组件 `.profile-popover-email-wrap`，杜绝冗余重复的写信按钮；
   - 扩充 `.profile-popover-email-text` 最大宽度由 175px 至 260px，确保长邮箱地址完整清晰展示。
-### Task 61: 作者名片写信按钮 (.profile-popover-mail-link) 规范为竖排排布（置于 actions 下方，竖向对齐）与全链路端到端审计 (`714aa0b`)
+### Task 61: 作者名片写信按钮 (.profile-popover-mail-link) 规范为竖排排布（置于 actions 下方，竖向对齐）与全链路端到端审计 (`98cc1df`)
 - [x] **重构操作区为竖排流式布局 (`flex-direction: column`)**：
   - 将 `.profile-popover-actions` 调整为垂直列排布（`flex-direction: column; align-items: flex-end; gap: 6px;`）；
   - 首行 `.profile-popover-actions-row` 承载 `@ 提及此人` 与个人站点图标；
