@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-async function verifyLive(targetUrl = 'https://c4e9f6c3.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/') {
+async function verifyLive(targetUrl = 'https://669ca9a2.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/') {
   console.log(`🚀 Starting Live Production E2E Verification for Popover Reorganization on:\n${targetUrl}\n`);
 
   const browser = await chromium.launch({
@@ -139,7 +139,7 @@ async function verifyLive(targetUrl = 'https://c4e9f6c3.shijianus-blog.pages.dev
 
 async function main() {
   console.log('=== Step 1: Testing Cloudflare Pages Direct Deployment ===');
-  const directUrl = 'https://c4e9f6c3.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/';
+  const directUrl = 'https://669ca9a2.shijianus-blog.pages.dev/posts/content-formats-and-markup-mastery/';
   const directRes = await verifyLive(directUrl);
   if (!directRes.propagated) {
     console.error('❌ Direct deployment verification failed.');
