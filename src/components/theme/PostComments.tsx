@@ -41,6 +41,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Mail,
+  Send,
   Copy,
   Check,
   Globe,
@@ -640,10 +641,51 @@ export function PostComments({
     }, 50);
   };
 
+  // Check if current visitor / user is authenticated via Epomail
+  const isEpomailLoggedIn = (): boolean => {
+    if (account && account.provider === 'epomail') return true;
+    const stored = readCommentIdentity();
+    if (stored && stored.provider === 'epomail') return true;
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = window.localStorage.getItem('shijianus-comment-account') || window.localStorage.getItem('shijianus_comment_account');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.provider === 'epomail') return true;
+        }
+      } catch {}
+    }
+    return false;
+  };
+
+  const getMailActionHref = (targetEmail: string) => {
+    const clean = targetEmail.trim();
+    if (isEpomailLoggedIn()) {
+      return `https://mail.epocanvas.com/inbox?composeTo=${encodeURIComponent(clean)}`;
+    }
+    return `mailto:${clean}`;
+  };
+
+  const handleSendEmail = (e: React.MouseEvent, targetEmail: string) => {
+    e.stopPropagation();
+    const clean = targetEmail.trim();
+    if (!clean) return;
+
+    if (isEpomailLoggedIn()) {
+      e.preventDefault();
+      const epomailUrl = `https://mail.epocanvas.com/inbox?composeTo=${encodeURIComponent(clean)}`;
+      window.open(epomailUrl, '_blank', 'noopener,noreferrer');
+      showToast('已在新窗口打开 Epomail 邮件撰写', 'info', 2500);
+    } else {
+      showToast('正在调起本地邮件客户端 (mailto)...', 'info', 2000);
+    }
+  };
+
   const handleCopyEmail = (email: string) => {
     const markCopied = () => {
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2000);
+      showToast('已复制邮箱地址到剪贴板', 'success');
     };
 
     if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
@@ -1390,6 +1432,8 @@ export function PostComments({
     };
 
     window.addEventListener('shijianus:comment-account-change', handleAccountChange);
+    window.addEventListener('shijianus:account-change', handleAccountChange);
+    window.addEventListener('shijianus:comment-identity-changed', handleAccountChange);
     window.addEventListener('shijianus:equipped-badges-change', handleBadgesChange);
     window.addEventListener('shijianus:user-status-change', handleStatusChange);
     window.addEventListener('storage', syncAccountState);
@@ -1400,6 +1444,8 @@ export function PostComments({
 
     return () => {
       window.removeEventListener('shijianus:comment-account-change', handleAccountChange);
+      window.removeEventListener('shijianus:account-change', handleAccountChange);
+      window.removeEventListener('shijianus:comment-identity-changed', handleAccountChange);
       window.removeEventListener('shijianus:equipped-badges-change', handleBadgesChange);
       window.removeEventListener('shijianus:user-status-change', handleStatusChange);
       window.removeEventListener('storage', syncAccountState);
@@ -4254,21 +4300,53 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                 {/* Optional subtle Epomail / Email line if email exists */}
                 {profilePopover.author.email && (
                   <div className="profile-popover-email-line">
-                    <Mail size={11} className="profile-popover-email-icon" />
-                    <span className="profile-popover-email-wrap">
+                    <span
+                      className={`profile-popover-email-wrap ${copiedEmail ? 'is-copied' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyEmail(profilePopover.author!.email!);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleCopyEmail(profilePopover.author!.email!);
+                        }
+                      }}
+                      title={copiedEmail ? '已复制邮箱到剪贴板' : '点击复制邮箱地址'}
+                    >
+                      <Mail size={11} className="profile-popover-email-icon" />
                       <span className="profile-popover-email-text" title={profilePopover.author.email}>
                         {profilePopover.author.email}
                       </span>
-                      <button
-                        type="button"
-                        className="profile-popover-copy-btn"
-                        onClick={() => handleCopyEmail(profilePopover.author!.email!)}
-                        title="复制邮箱地址"
-                      >
+                      <span className="profile-popover-copy-icon" aria-hidden="true">
                         {copiedEmail ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
-                        <span>{copiedEmail ? '已复制' : '复制'}</span>
-                      </button>
+                      </span>
+                      {copiedEmail && (
+                        <span className="profile-popover-copied-badge">已复制</span>
+                      )}
                     </span>
+
+                    {/* Mail Action Link: priority Epomail webmail compose, fallback to mailto */}
+                    <a
+                      href={getMailActionHref(profilePopover.author.email)}
+                      onClick={(e) => handleSendEmail(e, profilePopover.author!.email!)}
+                      className="profile-popover-mail-link"
+                      title={
+                        isEpomailLoggedIn()
+                          ? '已登录 Epomail，点击直接在线撰写邮件'
+                          : '发送邮件 (mailto)'
+                      }
+                      target={isEpomailLoggedIn() ? '_blank' : undefined}
+                      rel={isEpomailLoggedIn() ? 'noopener noreferrer' : undefined}
+                    >
+                      <Send size={10} className="profile-popover-mail-icon" />
+                      <span className="profile-popover-mail-text">
+                        {isEpomailLoggedIn() ? 'Epomail 写信' : '写信'}
+                      </span>
+                    </a>
                   </div>
                 )}
 

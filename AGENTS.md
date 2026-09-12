@@ -1316,19 +1316,19 @@
     3. 页脚链接 `#footer_deal a` 邮箱链接同步更新为 `mailto:shijianus@epocanvas.com`；
     4. 自动截取两套真实生产环境截图存档（`scripts/audit_screenshots/live-social-email-*.png`），端到端实测 100% PASS 通过。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Task 59: 整合评论区作者名片邮箱直按复制 (.profile-popover-email-wrap) 与 Epomail 优先发信连结
+- [x] **删除独立复制按钮并整合直按复制交互**：
+  - 彻底删除 `.profile-popover-copy-btn` 复制按钮；
+  - 将复制逻辑整合到 `.profile-popover-email-wrap`，设置为可交互无障碍按钮态（`role="button"`, `tabIndex={0}`, `cursor: pointer`），直接点击邮箱地址即刻写入剪贴板；
+  - 提供即时视觉反馈：包含平滑 hover 主题色高亮、复制成功绿色高光（`.is-copied`）、`<Check />` 图标过渡、以及轻量「已复制」胶囊徽标与 Toast 提示。
+- [x] **实现 Epomail 优先发信与 Mailto 智能回退连结**：
+  - 在邮箱行引入 `.profile-popover-mail-link`（搭配 `<Send />` 图标与高对比灵动交互）；
+  - 智能鉴权状态感知：优先检查当前访客/用户是否已登录 Epomail（检查内存会话 `account?.provider === 'epomail'` 及 `readCommentIdentity()`）；
+  - 登录 Epomail 场景：直达 `https://mail.epocanvas.com/inbox?composeTo=${email}`，自动在新标签页打开并预填收件人；
+  - 未登录 Epomail 场景：平滑回退至标准本地邮件客户端 `mailto:${email}`。
+- [x] **E2E 自动化测试与全流程验证**：
+  - 编写并执行专用端到端测试套件（`scripts/verify-popover-email-actions.mjs`），覆盖：
+    1. DOM 中 0 冗余 `.profile-popover-copy-btn` 确认；
+    2. `.profile-popover-email-wrap` 直按复制、状态类及动画反馈；
+    3. 未登录态下 fallback `mailto:` 连结核验；
+    4. Epomail 登录态下目标路由、`composeTo` 参数、`target="_blank"` 及新标签页跳转验证。

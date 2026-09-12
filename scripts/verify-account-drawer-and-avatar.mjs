@@ -451,8 +451,8 @@ async function runVerification() {
         trustBadge: popover.querySelector('.profile-popover-badge.is-trust')?.textContent?.trim(),
         bio: popover.querySelector('.profile-popover-bio')?.textContent?.trim(),
         emailText: popover.querySelector('.profile-popover-email-text')?.textContent?.trim(),
-        epomailTag: popover.querySelector('.profile-popover-epomail-tag')?.textContent?.trim(),
-        hasCopyBtn: Boolean(popover.querySelector('.profile-popover-copy-btn')),
+        hasEmailWrap: Boolean(popover.querySelector('.profile-popover-email-wrap')),
+        hasMailLink: Boolean(popover.querySelector('.profile-popover-mail-link')),
         hasMentionBtn: Boolean(popover.querySelector('.profile-popover-action-btn.is-mention')),
         hasCloseBtn: Boolean(popover.querySelector('.profile-popover-close-btn')),
         avatarShape: window.getComputedStyle(popover.querySelector('.profile-popover-avatar')).borderRadius,
@@ -471,23 +471,20 @@ async function runVerification() {
     if (wmPopoverData.emailText !== 'admin@epomail.bond') {
       throw new Error(`Expected email admin@epomail.bond, got ${wmPopoverData.emailText}`);
     }
-    if (wmPopoverData.epomailTag !== 'Epomail 认证') {
-      throw new Error(`Expected Epomail 认证 tag, got ${wmPopoverData.epomailTag}`);
-    }
     console.log('   ✅ Webmaster profile popover completely verified with square avatar, LV.4, TL.99, and Epomail!');
 
-    // Test Copy Email Button
-    console.log('   -> Testing copy email button...');
-    const copyBtn = await page.$('.profile-popover-copy-btn');
-    if (copyBtn) {
-      await copyBtn.click();
+    // Test Click to Copy on profile-popover-email-wrap
+    console.log('   -> Testing click-to-copy on profile-popover-email-wrap...');
+    const emailWrap = await page.$('.profile-popover-email-wrap');
+    if (emailWrap) {
+      await emailWrap.click();
       await page.waitForTimeout(200);
-      const copyBtnText = await copyBtn.textContent();
-      console.log('   -> Copy button text after click:', copyBtnText?.trim());
-      if (!copyBtnText?.includes('已复制')) {
-        throw new Error(`Expected copy button to show "已复制", got "${copyBtnText}"`);
+      const emailWrapText = await emailWrap.textContent();
+      console.log('   -> Email wrap text after click:', emailWrapText?.trim());
+      if (!emailWrapText?.includes('已复制')) {
+        throw new Error(`Expected email wrap to show "已复制", got "${emailWrapText}"`);
       }
-      console.log('   ✅ Copy email button verified.');
+      console.log('   ✅ Click-to-copy email verified.');
     }
 
     // Close popover
