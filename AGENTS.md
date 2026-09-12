@@ -1341,7 +1341,7 @@
     4. 验证默认未登录态下 `.profile-popover-mail-link` 自动生成回退 `mailto:shijianus@epocanvas.com`；
     5. 验证 Epomail 认证状态下 `.profile-popover-mail-link` 智能优先直达 `https://mail.epocanvas.com/inbox?composeTo=shijianus%40epocanvas.com`，并在新标签页安全打开；
     6. 自动截取真实生产环境截图存档（`scripts/audit_screenshots/live-popover-email-actions.png`），端到端实测 100% PASS 通过。
-### Task 60: 作者名片写信按钮 (.profile-popover-mail-link) 移入操作区与提及并排、严格文案与多语言 i18n 支援、Epomail/Mailto 智能状态回退与邮箱展示区扩宽 (`133c519`)
+### Task 60: 作者名片写信按钮 (.profile-popover-mail-link) 移入操作区与提及并排、严格文案与多语言 i18n 支援、Epomail/Mailto 智能状态回退与邮箱展示区扩宽 (`1d5e103`)
 - [x] **按钮文案严格统一为「写信」与全语种 i18n 国际化支援**：
   - 将 `.profile-popover-mail-link` 内容严格固化为「写信」（不再出现「Epomail 写信」等非统一文字），在 6 种语种字典中全部注入对应本地化定义：
     - `zh-CN`: `'写信'`
