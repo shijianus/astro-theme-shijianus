@@ -8,13 +8,13 @@ type InstanceAiResult = {
 };
 
 export const DEFAULT_INSTANCE_MODELS_POOL = [
-  'kimi-k3-free',
-  'deepseek-v4-flash-free',
   'gpt-oss-120b',
+  'deepseek-v4-flash-free',
   'gpt-oss-20b',
   'deepseek-v4-pro-free',
   'glm-5.2-free',
   'llama-3.3-70b-free',
+  'kimi-k3-free',
 ];
 
 function cleanModelName(model: string): string {
@@ -73,14 +73,14 @@ export async function generateWithInstanceAi(
 
   const temperature = Number((0.72 + Math.random() * 0.15).toFixed(2));
   const seed = Math.floor(Math.random() * 1000000);
-  const maxTokens = options?.maxTokens || 850;
+  const maxTokens = options?.maxTokens || 2048;
 
   const attempts = candidateModels.slice(0, 2);
 
   for (const model of attempts) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const timeoutId = setTimeout(() => controller.abort(), 16000);
 
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',

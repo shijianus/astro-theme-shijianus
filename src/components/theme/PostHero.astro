@@ -21,7 +21,24 @@ interface Props {
   badges?: string[];
   meta?: PostHeroMetaItem[];
   runtimeMetrics?: boolean;
+  translations?: Record<string, {
+    slug: string;
+    url: string;
+    title: string;
+    lang: string;
+    isAiGenerated?: boolean;
+  }>;
+  currentLang?: string;
 }
+
+const LOCALE_NAMES: Record<string, { native: string; english: string }> = {
+  'zh-CN': { native: '简体中文', english: 'Simplified Chinese' },
+  'zh-Hant': { native: '繁體中文', english: 'Traditional Chinese' },
+  en: { native: 'English', english: 'English' },
+  fr: { native: 'Français', english: 'French' },
+  es: { native: 'Español', english: 'Spanish' },
+  de: { native: 'Deutsch', english: 'German' },
+};
 
 const {
   slug,
@@ -36,7 +53,11 @@ const {
   badges = [],
   meta = [],
   runtimeMetrics = true,
+  translations = {},
+  currentLang = 'zh-CN',
 } = Astro.props;
+
+const hasTranslations = Object.keys(translations).length > 1;
 
 const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
   calendar: CalendarDays,
@@ -109,6 +130,30 @@ const hasMedia = Boolean(image || video);
             </a>
           );
         })}
+
+        {hasTranslations && (
+          <div class="post-hero__i18n-switch" role="group" aria-label="Available Languages">
+            <span class="post-hero__i18n-icon" aria-hidden="true">🌐</span>
+            <div class="post-hero__i18n-pills">
+              {Object.entries(translations).map(([langCode, trans]) => {
+                const isActive = langCode === currentLang;
+                const meta = LOCALE_NAMES[langCode] || { native: langCode, english: langCode };
+                return (
+                  <a
+                    href={trans.url}
+                    class:list={['post-hero__i18n-pill', isActive && 'is-active']}
+                    data-target-lang={langCode}
+                    title={`${meta.native} (${meta.english})${trans.isAiGenerated ? ' · AI 翻译' : ''}`}
+                    onclick={`if(typeof localStorage !== 'undefined'){localStorage.setItem('shijianus-locale-variant','${langCode}');}`}
+                  >
+                    <span>{meta.native}</span>
+                    {trans.isAiGenerated && <span class="post-hero__i18n-tag">AI</span>}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     )}
 

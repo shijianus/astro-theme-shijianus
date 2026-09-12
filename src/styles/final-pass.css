@@ -6810,6 +6810,66 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   font-size: 11px !important;
 }
 
+.post-hero__i18n-switch {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-left: 8px !important;
+  padding: 1px 4px !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.post-hero__i18n-icon {
+  font-size: 11px !important;
+  opacity: 0.85 !important;
+  padding-left: 4px !important;
+}
+
+.post-hero__i18n-pills {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.post-hero__i18n-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 1px 7px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-decoration: none !important;
+  border-radius: 4px !important;
+  transition: all 0.18s ease !important;
+}
+
+.post-hero__i18n-pill:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+.post-hero__i18n-pill.is-active {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 6px rgba(66, 90, 239, 0.45) !important;
+}
+
+.post-hero__i18n-tag {
+  font-size: 9px !important;
+  line-height: 1 !important;
+  padding: 1px 3px !important;
+  border-radius: 3px !important;
+  background: rgba(255, 193, 7, 0.3) !important;
+  color: #ffd166 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
 .post-hero__meta-grid {
   display: flex !important;
   flex-wrap: wrap !important;

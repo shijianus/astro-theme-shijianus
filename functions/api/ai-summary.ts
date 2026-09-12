@@ -199,7 +199,7 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
     ? buildQuestionPrompt({ title, url, summary, content, questionType, level, related })
     : buildSummaryPrompt({ title, url, summary, content, level, customUserPrompt: env.AI_SUMMARY_CUSTOM_USER_PROMPT });
 
-  const maxTokens = level === 'high' ? 950 : level === 'medium' ? 750 : 550;
+  const maxTokens = level === 'high' ? 2048 : level === 'medium' ? 1200 : 800;
   const providerOptions = {
     fixedModel: env.AI_SUMMARY_FIXED_MODEL,
     maxTokens,

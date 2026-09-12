@@ -72,8 +72,31 @@ export function isProtectedPost(entry: PostEntry) {
   return hasPostAccess(entry);
 }
 
-export function getPublicPosts(posts: PostEntry[]) {
-  return sortPostsByDate(posts).filter((entry) => !hasPostAccess(entry));
+export function getPostI18nKey(entry: PostEntry): string {
+  if (entry.data.i18nKey) return entry.data.i18nKey;
+  return entry.id.replace(/\.[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/, '');
+}
+
+export function getPublicPosts(
+  posts: PostEntry[],
+  options: { deduplicateI18n?: boolean; preferredLocale?: string } = {},
+) {
+  const sorted = sortPostsByDate(posts).filter((entry) => !hasPostAccess(entry));
+  const deduplicate = options.deduplicateI18n ?? true;
+  if (!deduplicate) return sorted;
+
+  const seenKeys = new Set<string>();
+  const canonicalPosts: PostEntry[] = [];
+
+  for (const post of sorted) {
+    const key = getPostI18nKey(post);
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      canonicalPosts.push(post);
+    }
+  }
+
+  return canonicalPosts;
 }
 
 export function getDisplayPostTitle(entry: PostEntry, revealProtected = false) {

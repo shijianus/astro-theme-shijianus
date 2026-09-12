@@ -10,6 +10,8 @@ coverAlt: "frontend workspace"
 featured: true
 sticky: 3
 tags: ["Astro", "Tailwind", "主题重构"]
+i18nKey: "hello-world"
+lang: "zh-CN"
 ---
 
 # 为什么要重做

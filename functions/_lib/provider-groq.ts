@@ -8,10 +8,9 @@ type GroqResult = {
 
 const DEFAULT_GROQ_MODELS = [
   'openai/gpt-oss-120b',
-  'groq/compound-mini',
-  'llama-3.3-70b-versatile',
   'openai/gpt-oss-20b',
   'qwen/qwen3.6-27b',
+  'groq/compound-mini',
 ];
 
 export async function generateWithGroq(
@@ -39,14 +38,14 @@ export async function generateWithGroq(
     candidateModels = shuffled;
   }
 
-  const maxTokens = options?.maxTokens || 850;
+  const maxTokens = options?.maxTokens || 1500;
 
   const attempts = candidateModels.slice(0, 2);
 
   for (const model of attempts) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',

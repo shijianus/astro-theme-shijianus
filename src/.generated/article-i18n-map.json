@@ -1,0 +1,267 @@
+{
+  "access-control": {
+    "i18nKey": "access-control",
+    "translations": {
+      "lab": {
+        "filename": "access-control-lab.md",
+        "slug": "access-control-lab",
+        "title": "文章访问控制实验室",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "anzhiyu-markdown-showcase": {
+    "i18nKey": "anzhiyu-markdown-showcase",
+    "translations": {
+      "zh-CN": {
+        "filename": "anzhiyu-markdown-showcase.md",
+        "slug": "anzhiyu-markdown-showcase",
+        "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "api-ready-theme-contracts": {
+    "i18nKey": "api-ready-theme-contracts",
+    "translations": {
+      "en": {
+        "filename": "api-ready-theme-contracts-en.md",
+        "slug": "api-ready-theme-contracts-en",
+        "title": "Turning Theme Configuration into an API-Ready Contract",
+        "isAiGenerated": true
+      },
+      "zh-CN": {
+        "filename": "api-ready-theme-contracts.md",
+        "slug": "api-ready-theme-contracts",
+        "title": "把主题配置做成可接 API 的契约",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "badges-guide": {
+    "i18nKey": "badges-guide",
+    "translations": {
+      "zh-CN": {
+        "filename": "badges-guide.md",
+        "slug": "badges-guide",
+        "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "content-first-homepage": {
+    "i18nKey": "content-first-homepage",
+    "translations": {
+      "zh-CN": {
+        "filename": "content-first-homepage.md",
+        "slug": "content-first-homepage",
+        "title": "内容优先的首页，为什么比功能堆叠更耐用",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "content-formats-and-markup-mastery": {
+    "i18nKey": "content-formats-and-markup-mastery",
+    "translations": {
+      "zh-CN": {
+        "filename": "content-formats-and-markup-mastery.md",
+        "slug": "content-formats-and-markup-mastery",
+        "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-all-special-formats": {
+    "i18nKey": "example-all-special-formats",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-all-special-formats.md",
+        "slug": "example-all-special-formats",
+        "title": "示例：Astro 特殊格式与特异功能综合测试大全",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-callouts": {
+    "i18nKey": "example-callouts",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-callouts.md",
+        "slug": "example-callouts",
+        "title": "示例：Callouts 告示框与提示卡完整展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-code-enhancements": {
+    "i18nKey": "example-code-enhancements",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-code-enhancements.md",
+        "slug": "example-code-enhancements",
+        "title": "示例：代码块全量增强功能展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-details-collapse": {
+    "i18nKey": "example-details-collapse",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-details-collapse.md",
+        "slug": "example-details-collapse",
+        "title": "示例：折叠面板、手风琴与下拉框格式展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-embeds": {
+    "i18nKey": "example-embeds",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-embeds.md",
+        "slug": "example-embeds",
+        "title": "示例：富媒体嵌入、Post Formats 与聊天气泡展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-frontmatter-fields": {
+    "i18nKey": "example-frontmatter-fields",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-frontmatter-fields.md",
+        "slug": "example-frontmatter-fields",
+        "title": "示例：Front Matter 扩展字段与 Zod 验证展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-gallery-figure": {
+    "i18nKey": "example-gallery-figure",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-gallery-figure.md",
+        "slug": "example-gallery-figure",
+        "title": "示例：图片画廊、拍立得相纸与灯箱展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-math": {
+    "i18nKey": "example-math",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-math.md",
+        "slug": "example-math",
+        "title": "示例：KaTeX 数学公式渲染展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-mermaid": {
+    "i18nKey": "example-mermaid",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-mermaid.md",
+        "slug": "example-mermaid",
+        "title": "示例：Mermaid 11 图表与可视化展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-mindmap": {
+    "i18nKey": "example-mindmap",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-mindmap.md",
+        "slug": "example-mindmap",
+        "title": "示例：Markmap 动态交互式思维导图与无限层级扩展",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "example-tabs": {
+    "i18nKey": "example-tabs",
+    "translations": {
+      "zh-CN": {
+        "filename": "example-tabs.md",
+        "slug": "example-tabs",
+        "title": "示例：多标签页与多代码版本切换展示",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "hello-world": {
+    "i18nKey": "hello-world",
+    "translations": {
+      "en": {
+        "filename": "hello-world-en.md",
+        "slug": "hello-world-en",
+        "title": "Theme Refactoring Kickoff Log",
+        "isAiGenerated": true
+      },
+      "zh-CN": {
+        "filename": "hello-world.md",
+        "slug": "hello-world",
+        "title": "主题重构启动记录",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "learning-through-rebuilds": {
+    "i18nKey": "learning-through-rebuilds",
+    "translations": {
+      "zh-CN": {
+        "filename": "learning-through-rebuilds.md",
+        "slug": "learning-through-rebuilds",
+        "title": "通过重构来学习，比单纯临摹更有效",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "markdown-scan-showcase": {
+    "i18nKey": "markdown-scan-showcase",
+    "translations": {
+      "zh-CN": {
+        "filename": "markdown-scan-showcase.md",
+        "slug": "markdown-scan-showcase",
+        "title": "Markdown 扫描与展示能力全量示例",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "markdown-syntax-mastery": {
+    "i18nKey": "markdown-syntax-mastery",
+    "translations": {
+      "zh-CN": {
+        "filename": "markdown-syntax-mastery.md",
+        "slug": "markdown-syntax-mastery",
+        "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "media-capability": {
+    "i18nKey": "media-capability",
+    "translations": {
+      "lab": {
+        "filename": "media-capability-lab.md",
+        "slug": "media-capability-lab",
+        "title": "封面、图床与视频适配实验室",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "readable-geek-interfaces": {
+    "i18nKey": "readable-geek-interfaces",
+    "translations": {
+      "zh-CN": {
+        "filename": "readable-geek-interfaces.md",
+        "slug": "readable-geek-interfaces",
+        "title": "极客感界面为什么更需要可读性",
+        "isAiGenerated": false
+      }
+    }
+  }
+}

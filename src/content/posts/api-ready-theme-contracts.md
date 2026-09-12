@@ -10,6 +10,8 @@ coverAlt: "system board"
 featured: true
 sticky: 2
 tags: ["API", "Config", "Architecture"]
+i18nKey: "api-ready-theme-contracts"
+lang: "zh-CN"
 ---
 
 # 为什么先做契约
