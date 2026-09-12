@@ -190,18 +190,29 @@ async function runVerification() {
     }
     console.log('   ✅ 3. Direct click on email copies to clipboard, shows "已复制" badge and is-copied styling.');
 
-    // 4. Test Mail Link Placement in .profile-popover-actions and Non-Epomail State (Fallback to mailto)
+    // 4. Test Mail Link Placement: Placed vertically BELOW .profile-popover-actions-row (放下面，竖排对齐)
     const mailLinkPlacement = await page.evaluate(() => {
+      const actions = document.querySelector('.profile-popover-actions');
+      const topRow = document.querySelector('.profile-popover-actions-row');
       const inActions = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
       const inEmailLine = document.querySelector('.profile-popover-email-line .profile-popover-mail-link');
       const mentionBtn = document.querySelector('.profile-popover-actions .profile-popover-mention-btn');
+
+      const mentionRect = mentionBtn?.getBoundingClientRect();
+      const mailLinkRect = inActions?.getBoundingClientRect();
+
       return {
+        hasActions: Boolean(actions),
+        hasTopRow: Boolean(topRow),
         hasInActions: Boolean(inActions),
         hasInEmailLine: Boolean(inEmailLine),
         hasMentionBtn: Boolean(mentionBtn),
+        isVertical: Boolean(mailLinkRect && mentionRect && mailLinkRect.top >= mentionRect.bottom - 2),
+        mentionBottom: mentionRect?.bottom,
+        mailLinkTop: mailLinkRect?.top,
       };
     });
-    console.log('   -> Mail link placement audit:', mailLinkPlacement);
+    console.log('   -> Mail link vertical placement audit:', mailLinkPlacement);
     if (!mailLinkPlacement.hasInActions) {
       throw new Error('Expected .profile-popover-mail-link to be inside .profile-popover-actions');
     }
@@ -209,9 +220,12 @@ async function runVerification() {
       throw new Error('.profile-popover-mail-link should NOT be inside .profile-popover-email-line');
     }
     if (!mailLinkPlacement.hasMentionBtn) {
-      throw new Error('Expected .profile-popover-mention-btn to be alongside in .profile-popover-actions');
+      throw new Error('Expected .profile-popover-mention-btn to be present in .profile-popover-actions');
     }
-    console.log('   ✅ 4. .profile-popover-mail-link is placed inside .profile-popover-actions side-by-side with mention button.');
+    if (!mailLinkPlacement.isVertical) {
+      throw new Error(`Expected vertical stack (mailLinkTop >= mentionBottom), but got mentionBottom=${mailLinkPlacement.mentionBottom}, mailLinkTop=${mailLinkPlacement.mailLinkTop}`);
+    }
+    console.log('   ✅ 4. .profile-popover-mail-link is strictly placed BELOW .profile-popover-actions-row in a vertical stack (放下面，竖排对齐).');
 
     // 5. Test Mail Link in Unauthenticated / Non-Epomail State (Fallback to mailto)
     const mailLinkUnauthenticated = await page.evaluate(() => {

@@ -1361,5 +1361,11 @@
 - [x] **邮箱展示区 (`.profile-popover-email-line`) 纯净化与宽度扩充**：
   - 邮箱行中仅保留直按复制组件 `.profile-popover-email-wrap`，杜绝冗余重复的写信按钮；
   - 扩充 `.profile-popover-email-text` 最大宽度由 175px 至 260px，确保长邮箱地址完整清晰展示。
-- [x] **本地与线上 E2E 自动化测试全量通过**：
-  - 更新并执行 `scripts/verify-popover-email-actions.mjs`，7 项核心指标（复制按钮移除、邮箱直按复制反馈、写信按钮并排位置、写信纯净文案、mailto 回退连结、Epomail 优先连结、新窗口打开）全绿通过。
+### Task 61: 作者名片写信按钮 (.profile-popover-mail-link) 规范为竖排排布（置于 actions 下方，竖向对齐）与全链路端到端审计 (`714aa0b`)
+- [x] **重构操作区为竖排流式布局 (`flex-direction: column`)**：
+  - 将 `.profile-popover-actions` 调整为垂直列排布（`flex-direction: column; align-items: flex-end; gap: 6px;`）；
+  - 首行 `.profile-popover-actions-row` 承载 `@ 提及此人` 与个人站点图标；
+  - 次行（放下面，竖排对齐）独立承载 `.profile-popover-mail-link`（`✈ 写信`），设置 `width: 100%; justify-content: center;`，与上方按钮保持对齐统一；
+  - 彻底杜绝横排挤占标题空间的问题，确保整体界面优雅呼吸感。
+- [x] **自动化端到端测试与垂直几何位置断言**：
+  - 更新 `scripts/verify-popover-email-actions.mjs` 与 `scripts/verify-live-popover-email.mjs`，通过 Playwright 精确断言 `mailLinkRect.top >= mentionRect.bottom - 2`，确认物理与视觉层面上百分百为竖向堆叠（`isVertical: true`）。

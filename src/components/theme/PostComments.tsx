@@ -4249,17 +4249,30 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                     </span>
                   </div>
 
-                  {/* Top-Right Actions */}
-                  <div className="profile-popover-actions">
-                    <button
-                      type="button"
-                      className="profile-popover-mention-btn"
-                      onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
-                      title={tC.popoverMentionTitle ? tC.popoverMentionTitle(profilePopover.author.name) : `@ 提及 ${profilePopover.author.name}`}
-                    >
-                      <AtSign size={11} />
-                      <span>{tC.popoverMentionBtn || '提及此人'}</span>
-                    </button>
+                  {/* Top-Right Actions: Vertical Stack (放下面，竖排对齐) */}
+                  <div className="profile-popover-actions is-vertical">
+                    <div className="profile-popover-actions-row">
+                      <button
+                        type="button"
+                        className="profile-popover-mention-btn"
+                        onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
+                        title={tC.popoverMentionTitle ? tC.popoverMentionTitle(profilePopover.author.name) : `@ 提及 ${profilePopover.author.name}`}
+                      >
+                        <AtSign size={11} />
+                        <span>{tC.popoverMentionBtn || '提及此人'}</span>
+                      </button>
+                      {profilePopover.author.website && (
+                        <a
+                          href={profilePopover.author.website}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="profile-popover-action-icon-btn"
+                          title={tC.popoverWebsiteTitle || '访问个人站点'}
+                        >
+                          <Globe size={12} />
+                        </a>
+                      )}
+                    </div>
                     {profilePopover.author.email && (
                       <a
                         href={getMailActionHref(profilePopover.author.email)}
@@ -4276,17 +4289,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                       >
                         <Send size={11} className="profile-popover-mail-icon" />
                         <span className="profile-popover-mail-text">{tC.popoverMailBtn || '写信'}</span>
-                      </a>
-                    )}
-                    {profilePopover.author.website && (
-                      <a
-                        href={profilePopover.author.website}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="profile-popover-action-icon-btn"
-                        title={tC.popoverWebsiteTitle || '访问个人站点'}
-                      >
-                        <Globe size={12} />
                       </a>
                     )}
                   </div>

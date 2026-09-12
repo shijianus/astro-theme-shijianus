@@ -4760,12 +4760,19 @@ span.text-xs.font-semibold.text-rose-500 {
   color: #f59e0b;
 }
 
-/* Top-Right Action Buttons */
+/* Top-Right Action Buttons: Vertical Stack (放下面，竖排对齐) */
 .profile-popover-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.profile-popover-actions-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
 }
 
 .profile-popover-mention-btn {
@@ -4791,6 +4798,7 @@ span.text-xs.font-semibold.text-rose-500 {
   transform: translateY(-1px);
 }
 
+/* Mail Link Button: Placed Below .profile-popover-actions-row in vertical stack (放下面竖排) */
 .profile-popover-mail-link {
   height: 26px;
   padding: 0 9px;
@@ -4799,6 +4807,7 @@ span.text-xs.font-semibold.text-rose-500 {
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   background: color-mix(in srgb, var(--theme-main, #425aef) 12%, transparent);
   color: var(--theme-main, #425aef);
@@ -4809,6 +4818,8 @@ span.text-xs.font-semibold.text-rose-500 {
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(66, 90, 239, 0.08);
   text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .profile-popover-mail-link:hover {
