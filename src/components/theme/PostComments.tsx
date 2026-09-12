@@ -4229,24 +4229,78 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
               <div className="profile-popover-right">
                 {/* 1. Header: Display Name, Username, Highest Title & Top-Right Actions */}
                 <div className="profile-popover-top">
-                  <div className="profile-popover-user-meta">
-                    <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
-                      {profilePopover.author.name}
-                    </h4>
-                    <span className="profile-popover-username">
-                      {profilePopover.author.handle}
-                    </span>
-                    <span className="profile-popover-title">
-                      {profilePopover.author.highestTitle}
-                      {profilePopover.author.statusEmoji && (
-                        <span
-                          className="profile-popover-status-emoji"
-                          title={profilePopover.author.statusText || '当前状态'}
-                        >
-                          {' '}{profilePopover.author.statusEmoji}
-                        </span>
-                      )}
-                    </span>
+                  <div className="profile-popover-header-info">
+                    <div className="profile-popover-user-meta">
+                      <h4 className="profile-popover-display-name" title={profilePopover.author.name}>
+                        {profilePopover.author.name}
+                      </h4>
+                      <span className="profile-popover-username">
+                        {profilePopover.author.handle}
+                      </span>
+                      <span className="profile-popover-title">
+                        {profilePopover.author.highestTitle}
+                        {profilePopover.author.statusEmoji && (
+                          <span
+                            className="profile-popover-status-emoji"
+                            title={profilePopover.author.statusText || '当前状态'}
+                          >
+                            {' '}{profilePopover.author.statusEmoji}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Moved Up: Email Wrap & Website Line filling vacancy to the left of vertical actions */}
+                    {(profilePopover.author.email || profilePopover.author.website) && (
+                      <div className="profile-popover-sub-meta">
+                        {profilePopover.author.email && (
+                          <div className="profile-popover-email-line">
+                            <span
+                              className={`profile-popover-email-wrap ${copiedEmail ? 'is-copied' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyEmail(profilePopover.author!.email!);
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleCopyEmail(profilePopover.author!.email!);
+                                }
+                              }}
+                              title={copiedEmail ? (tC.popoverEmailCopiedTitle || '已复制邮箱到剪贴板') : (tC.popoverEmailCopyTitle || '点击复制邮箱地址')}
+                            >
+                              <Mail size={11} className="profile-popover-email-icon" />
+                              <span className="profile-popover-email-text" title={profilePopover.author.email}>
+                                {profilePopover.author.email}
+                              </span>
+                              <span className="profile-popover-copy-icon" aria-hidden="true">
+                                {copiedEmail ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                              </span>
+                              {copiedEmail && (
+                                <span className="profile-popover-copied-badge">{tC.popoverEmailCopiedBadge || '已复制'}</span>
+                              )}
+                            </span>
+                          </div>
+                        )}
+                        {profilePopover.author.website && (
+                          <div className="profile-popover-website-line">
+                            <Globe size={11} className="profile-popover-website-icon" />
+                            <a
+                              href={profilePopover.author.website}
+                              target="_blank"
+                              rel="noopener noreferrer nofollow"
+                              className="profile-popover-website-link"
+                              title={`${tC.popoverWebsiteTitle || '访问个人站点'}: ${profilePopover.author.website}`}
+                            >
+                              {profilePopover.author.website.replace(/^https?:\/\//i, '').replace(/\/+$/, '')}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Top-Right Actions: Vertical Stack (放下面，竖排对齐) */}
@@ -4261,17 +4315,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                         <AtSign size={11} />
                         <span>{tC.popoverMentionBtn || '提及此人'}</span>
                       </button>
-                      {profilePopover.author.website && (
-                        <a
-                          href={profilePopover.author.website}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          className="profile-popover-action-icon-btn"
-                          title={tC.popoverWebsiteTitle || '访问个人站点'}
-                        >
-                          <Globe size={12} />
-                        </a>
-                      )}
                     </div>
                     {profilePopover.author.email && (
                       <a
@@ -4300,56 +4343,6 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                     <span className="profile-popover-bio-empty">{tC.popoverBioEmpty || '这位读者很低调，暂未留下介绍。'}</span>
                   )}
                 </p>
-
-                {/* Dedicated Personal Website display space */}
-                {profilePopover.author.website && (
-                  <div className="profile-popover-website-line">
-                    <Globe size={11} className="profile-popover-website-icon" />
-                    <a
-                      href={profilePopover.author.website}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="profile-popover-website-link"
-                      title={`${tC.popoverWebsiteTitle || '访问个人站点'}: ${profilePopover.author.website}`}
-                    >
-                      {profilePopover.author.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
-                    </a>
-                  </div>
-                )}
-
-                {/* Optional subtle Epomail / Email line if email exists */}
-                {profilePopover.author.email && (
-                  <div className="profile-popover-email-line">
-                    <span
-                      className={`profile-popover-email-wrap ${copiedEmail ? 'is-copied' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyEmail(profilePopover.author!.email!);
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleCopyEmail(profilePopover.author!.email!);
-                        }
-                      }}
-                      title={copiedEmail ? (tC.popoverEmailCopiedTitle || '已复制邮箱到剪贴板') : (tC.popoverEmailCopyTitle || '点击复制邮箱地址')}
-                    >
-                      <Mail size={11} className="profile-popover-email-icon" />
-                      <span className="profile-popover-email-text" title={profilePopover.author.email}>
-                        {profilePopover.author.email}
-                      </span>
-                      <span className="profile-popover-copy-icon" aria-hidden="true">
-                        {copiedEmail ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
-                      </span>
-                      {copiedEmail && (
-                        <span className="profile-popover-copied-badge">{tC.popoverEmailCopiedBadge || '已复制'}</span>
-                      )}
-                    </span>
-                  </div>
-                )}
 
                 {/* 3. Real Inline Stats (LinuxDo Flow): 最新发言 5天前    加入时间 9月5日    已读 17m    喝彩 2 */}
                 <div className="profile-popover-inline-stats">

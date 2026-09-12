@@ -1369,3 +1369,25 @@
   - 彻底杜绝横排挤占标题空间的问题，确保整体界面优雅呼吸感。
 - [x] **自动化端到端测试与垂直几何位置断言**：
   - 更新 `scripts/verify-popover-email-actions.mjs` 与 `scripts/verify-live-popover-email.mjs`，通过 Playwright 精确断言 `mailLinkRect.top >= mentionRect.bottom - 2`，确认物理与视觉层面上百分百为竖向堆叠（`isVertical: true`）。
+
+### Task 62: 作者名片 (.author-profile-popover.is-pinned.is-webmaster-card) 布局重构：删除访问站点图标、Bio 保持不动、邮箱直按复制与网址上移补充空缺及防遮挡省略截断
+- [x] **删除 `class="profile-popover-action-icon-btn"` 访问站点按钮**：
+  - 彻底从卡片右上角操作区（`.profile-popover-actions-row`）中删除访问站点的图标按钮，消除冗余外链入口；
+  - 仅保留 `@ 提及此人` 按钮与下方竖排对齐的 `写信` 按钮。
+- [x] **`class="profile-popover-bio"` 保持原位不动**：
+  - 个人简介段落（`.profile-popover-bio`）保持严格位于卡片顶部 Header 区域下方、统计信息栏上方，文案与多行截断样式保持不变。
+- [x] **`class="profile-popover-email-wrap"` 与 `class="profile-popover-website-line"` 上移补充空缺**：
+  - 重构顶部 Header 左侧信息区（`.profile-popover-header-info`），在首行用户元信息（名字、Handle、头衔、Emoji）下方新建次行容器（`.profile-popover-sub-meta`）；
+  - 将直按复制邮箱（`.profile-popover-email-wrap`）与个人站点链接（`.profile-popover-website-line`）整行平移至该处，完美填补右侧竖排操作按钮组左侧的垂直留白空间。
+- [x] **网址区域边界防护与 "..." 省略截断控制**：
+  - 为 `.profile-popover-website-line` 与 `.profile-popover-website-link` 配置动态弹性约束（`flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;`）；
+  - 严格限制其最大宽度绝不侵入或覆盖右侧 `class="profile-popover-actions is-vertical"` 区域，超出部分自动以 `"..."` 截断呈现；
+  - 优化邮箱复制胶囊（`.profile-popover-email-wrap`）与已复制徽章（`.profile-popover-copied-badge`）为单行不换行（`white-space: nowrap !important; flex-shrink: 0 !important;`），杜绝字换行折叠。
+- [x] **Playwright 真实浏览器端到端自动化验收通过 (`scripts/verify-popover-reorganization.mjs`)**：
+  - 验证 1：目标选择器 `class="author-profile-popover is-pinned is-webmaster-card"` 100% 匹配；
+  - 验证 2：DOM 中 `.profile-popover-action-icon-btn` 数量为 0（彻底删除）；
+  - 验证 3：`.profile-popover-bio` 保持位于 Header 下方与 Stats 上方；
+  - 验证 4：`.profile-popover-sub-meta` 位于 `.profile-popover-top` 内部，成功上移并避开 actions；
+  - 验证 5：长网址截断审核，`websiteRight <= actionsLeft - 9.7px`，物理无重叠（`overlap: false`），具备 `text-overflow: ellipsis`、`overflow: hidden`、`white-space: nowrap`；
+  - 验证 6：邮箱直按复制功能完好，反馈 `已复制` 徽章；
+  - 验证 7：高清晰度渲染截图归档（`scripts/audit_screenshots/refactored-popover-card-normal.png` 与 `refactored-popover-card.png`）。

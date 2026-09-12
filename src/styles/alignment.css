@@ -891,15 +891,8 @@ body[data-type='post'] #post-comment {
   gap: 10px;
 }
 
-#rightside-config-hide {
-  display: none !important;
-  transform: none;
-  pointer-events: none;
-}
-
 #rightside-config-hide.show {
-  pointer-events: none;
-  transform: none;
+  pointer-events: auto;
 }
 
 #rightside-config,

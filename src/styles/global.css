@@ -3664,13 +3664,18 @@ html.theme-ready body.theme-body #footer {
   overflow: hidden;
   opacity: 0;
   transform: translateY(12px);
-  transition: 0.3s;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding-top: 4px;
+  margin-top: -4px;
 }
 
 #rightside #rightside-config-hide.show {
-  max-height: 250px;
+  max-height: 400px;
   opacity: 1;
   transform: translateY(0);
+  overflow: visible;
 }
 
 #rightside > div > button,
