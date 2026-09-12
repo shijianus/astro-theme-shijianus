@@ -200,6 +200,10 @@ async function runVerification() {
       const actionsRect = actionsEl?.getBoundingClientRect();
       const bioRect = bioEl?.getBoundingClientRect();
 
+      const subMetaComputed = subMetaEl ? window.getComputedStyle(subMetaEl) : null;
+      const isVerticalStack = subMetaComputed?.flexDirection === 'column';
+      const isWebsiteBelowEmail = Boolean(websiteRect && emailWrapRect && websiteRect.top >= emailWrapRect.bottom - 1);
+
       return {
         hasHeaderInfo: Boolean(headerInfoEl),
         hasSubMeta: Boolean(subMetaEl),
@@ -210,6 +214,9 @@ async function runVerification() {
         websiteRight: websiteRect?.right,
         actionsLeft: actionsRect?.left,
         websiteInsideBounds: Boolean(websiteRect && actionsRect && websiteRect.right <= actionsRect.left + 2),
+        isVerticalStack,
+        isWebsiteBelowEmail,
+        flexDirection: subMetaComputed?.flexDirection,
       };
     });
     console.log('   -> Sub-meta placement info:', subMetaPlacement);
@@ -219,10 +226,16 @@ async function runVerification() {
     if (!subMetaPlacement.hasEmailWrap) throw new Error('.profile-popover-email-wrap not found');
     if (!subMetaPlacement.isInsideTop) throw new Error('.profile-popover-sub-meta should be inside .profile-popover-top');
     if (!subMetaPlacement.isAboveBio) throw new Error('.profile-popover-sub-meta must be above .profile-popover-bio');
+    if (!subMetaPlacement.isVerticalStack) {
+      throw new Error(`Expected .profile-popover-sub-meta to have flex-direction: column, got: ${subMetaPlacement.flexDirection}`);
+    }
+    if (!subMetaPlacement.isWebsiteBelowEmail) {
+      throw new Error('Expected .profile-popover-website-line to be vertically stacked BELOW .profile-popover-email-wrap');
+    }
     if (!subMetaPlacement.websiteInsideBounds) {
       throw new Error(`Website line exceeded boundary: websiteRight=${subMetaPlacement.websiteRight}, actionsLeft=${subMetaPlacement.actionsLeft}`);
     }
-    console.log('   ✅ 4. .profile-popover-website-line and .profile-popover-email-wrap moved UP into .profile-popover-top alongside actions.');
+    console.log('   ✅ 4. .profile-popover-sub-meta is strictly vertically stacked (column layout) with email on top and website below, filling the vacancy cleanly without horizontal squeezing.');
 
     // Audit 5: Collision Avoidance & Ellipsis Truncation Verification
     // Test with extra long website URL dynamically

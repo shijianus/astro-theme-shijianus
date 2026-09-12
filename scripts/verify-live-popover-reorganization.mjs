@@ -48,6 +48,12 @@ async function verifyLive(targetUrl = 'https://c4e9f6c3.shijianus-blog.pages.dev
       const websiteLine = document.querySelector('.profile-popover-website-line');
       const actions = document.querySelector('.profile-popover-actions.is-vertical');
 
+      const subMetaComputed = subMeta ? window.getComputedStyle(subMeta) : null;
+      const isVerticalStack = subMetaComputed?.flexDirection === 'column';
+      const emailRect = emailWrap?.getBoundingClientRect();
+      const webRect = websiteLine?.getBoundingClientRect();
+      const isWebsiteBelowEmail = Boolean(emailRect && webRect && webRect.top >= emailRect.bottom - 1);
+
       return {
         iconBtnCount,
         hasSubMeta: Boolean(subMeta),
@@ -55,19 +61,22 @@ async function verifyLive(targetUrl = 'https://c4e9f6c3.shijianus-blog.pages.dev
         hasEmailWrap: Boolean(emailWrap),
         hasWebsiteLine: Boolean(websiteLine),
         hasActions: Boolean(actions),
+        isVerticalStack,
+        isWebsiteBelowEmail,
+        flexDirection: subMetaComputed?.flexDirection,
       };
     });
 
     console.log('   -> Live Production Component State:', checkState);
 
-    if (checkState.iconBtnCount > 0 || !checkState.hasSubMeta) {
+    if (checkState.iconBtnCount > 0 || !checkState.hasSubMeta || !checkState.isVerticalStack) {
       console.log('⏳ Cloudflare Pages deployment is still building or propagating CDN cache. Waiting 15s...');
       return { propagated: false };
     }
 
     // Full audits on Live Production
     console.log('   ✅ 1. Live .profile-popover-action-icon-btn count: 0 (deleted from live production).');
-    console.log('   ✅ 2. Live .profile-popover-sub-meta present, successfully moving email wrap & website line up.');
+    console.log('   ✅ 2. Live .profile-popover-sub-meta present with flex-direction: column (strictly vertically stacked).');
 
     // Audit truncation on live production
     const liveTruncation = await page.evaluate(() => {
