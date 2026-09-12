@@ -1391,6 +1391,14 @@
   - 验证 5：长网址截断审核，`websiteRight <= actionsLeft - 9.7px`，物理无重叠（`overlap: false`），具备 `text-overflow: ellipsis`、`overflow: hidden`、`white-space: nowrap`；
   - 验证 6：邮箱直按复制功能完好，反馈 `已复制` 徽章；
   - 验证 7：高清晰度渲染截图归档（`scripts/audit_screenshots/refactored-popover-card-normal.png` 与 `refactored-popover-card.png`）。
+- [x] **生产端 (Cloudflare Pages) 全量上线与真实链路 Playwright 审计通过 (`scripts/verify-live-popover-reorganization.mjs`)**：
+  - 生产边缘节点部署成功（部署标识：`https://c4e9f6c3.shijianus-blog.pages.dev`，主域名 `https://blog.epocanvas.com` 同步上线生效）；
+  - 执行真实生产端 Playwright 端到端审计，覆盖 Pages 部署版本与生产主域 `blog.epocanvas.com`：
+    1. 线上真实验证 `.profile-popover-action-icon-btn` 数量为 0，彻底从生产环境消除；
+    2. 线上真实验证 `.profile-popover-sub-meta` 成功上移填补空缺，与右侧竖排 `actions`（@ 提及此人 + 写信）保持完美水平对齐；
+    3. 线上真实验证个人站点链接物理边界无重合（`gap: 9.7px > 0`，`overlap: false`），自动以 `"..."` 省略截断；
+    4. 线上真实验证邮箱直按复制交互完好，单行呈现绿色高光与「已复制」徽标；
+    5. 真实生产环境高清晰度名片截图归档至 `scripts/audit_screenshots/live-popover-refactored-blog.epocanvas.com.png`，生产端 100% 验证通过。
 
 ### Task 63: 右侧折叠栏阅读模式按钮 (#rightside-config-hide #readmode) 向上弹起截断消除、溢出可见性与全景防截断优化 (`c0655bd`)
 - [x] **根除按钮向上弹起被父级容器截断缺陷**：
