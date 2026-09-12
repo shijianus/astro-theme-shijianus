@@ -68,6 +68,12 @@
         "slug": "content-formats-and-markup-mastery",
         "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
         "isAiGenerated": false
+      },
+      "en": {
+        "filename": "content-formats-and-markup-mastery-en.md",
+        "slug": "content-formats-and-markup-mastery-en",
+        "title": "Static Site Generators (SSG) and Blog Theme Content Formats: A Comprehensive Guide from Mainstream Support to Special Features, Dropdown Interactions, and Typography Enhancements",
+        "isAiGenerated": true
       }
     }
   },

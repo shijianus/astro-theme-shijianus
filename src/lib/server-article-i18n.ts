@@ -288,8 +288,10 @@ export async function translateArticle(options: TranslateArticleOptions): Promis
   // 2. Fallback to Groq (High-speed & Reliable)
   if (groqKey) {
     const candidateGroqModels = Array.from(
-      new Set(['qwen/qwen3.6-27b', 'openai/gpt-oss-120b', options.groqModel, process.env.GROQ_MODEL].filter(Boolean)),
-    ) as string[];
+    new Set(['openai/gpt-oss-120b', 'qwen/qwen3.6-27b', 'llama-3.1-8b-instant', options.groqModel, process.env.GROQ_MODEL].filter(
+      (m) => m && m !== 'llama-3.3-70b-versatile'  // remove defunct model
+    )),
+  ) as string[];
 
     for (const gModel of candidateGroqModels) {
       try {

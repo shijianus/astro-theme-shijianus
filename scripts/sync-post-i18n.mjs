@@ -176,10 +176,10 @@ async function main() {
         }
       }
 
-      // Smart truncation: for very large articles (>30KB), only translate
-      // the first ~30KB to stay within API context window limits.
+      // Smart truncation: for very large articles (>10KB), only translate
+      // the first ~10KB to stay within API context window limits.
       // A localized notice is appended to the generated file.
-      const MAX_TRANSLATE_BYTES = 30000;
+      const MAX_TRANSLATE_BYTES = 10000;
       const isTruncated = Buffer.byteLength(sourceArticle.raw, 'utf8') > MAX_TRANSLATE_BYTES;
       let sourceToTranslate = sourceArticle.raw;
       if (isTruncated) {
