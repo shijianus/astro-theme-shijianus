@@ -1595,3 +1595,19 @@
   5. 点击语言药丸成功逆向切回中文原文（`hello-world`），中文标题与中文 TOC 毫秒级复原；
   6. 验证生产主域（`https://blog.epocanvas.com/posts/api-ready-theme-contracts-en/`）第二篇英文文章及目录完整展示，保存截图 (`live_article_i18n_api_contracts_en.png`)；
   7. 全程控制台 0 致命 JS 报错，全链路 100% PASS。
+
+### Task 74: 彻底根除 AI 总结截断缺陷 (Gemini Thinking Token 吞噬)、高档位无损输出与 LLMGPT 离线架构师预构建全量注入
+- [x] **线上 33 字符截断致命根因定位与根治**：
+  1. **根因复现**：生产端线上日志显示模型耗时 20s+、消耗 472 个输出 token，但前台仅展示“这篇深度指南揭示了一个面向未来、以内容为核心的静态站点生成器（SS”（精确 33 字符）。经排查，Gemini 2.5 Flash 默认启用了深度思考模式（Thinking CoT），思考本身吞噬了 440+ tokens，而原本的 `maxOutputTokens: 512` 耗尽触发 `finishReason: MAX_TOKENS` 强制截断，只剩 32 个 token 吐给前端；
+  2. **Gemini 引擎无损改造 (`functions/_lib/provider-gemini.ts`)**：显式注入 `thinkingConfig: { thinkingBudget: 0 }` 并扩充 `maxOutputTokens: 2048`，保证 100% 的 Token 配额全额用于正文输出，彻底杜绝半途截断；
+  3. **InstanceAI / Groq 引擎防截断加固 (`functions/_lib/provider-*.ts`)**：
+     - 同步将 `maxTokens` 扩容至 2048；
+     - 将网络 Abort 超时时间提升至 12s~16s，确保大文章全景知识库上下文（10,000+ tokens）推理不被提前中断；
+     - 修复 `rawContent` 误取 `reasoning` 的隐患，严格锁定 `choice.message.content`，避免内部思考草稿泄露到正文；
+     - 更新 Groq 可用模型列表，剔除失效的 `llama-3.3-70b-versatile`，锁定 `openai/gpt-oss-120b`、`qwen/qwen3.6-27b` 等高速可用模型；
+  4. **云端 D1 数据库脏缓存清理**：执行 D1 命令彻底清除历史生成的残缺截断缓存，确保用户请求始终获取全新无损高档位摘要。
+- [x] **LLMGPT 离线预构建全量注入架构师高档位模式 (`scripts/generate-ai-summaries.mjs` & `src/data/ai-summaries.json`)**：
+  1. 彻底破除原离线脚本 6,000 字符切片限制，喂入全量无损正文上下文（可达 80,000+ 字符）；
+  2. 注入资深架构师提示词体系与 220-320 字单一连贯完整段落纯文本硬性约束；
+  3. 全量重新生成全站 25 篇博文的高档位离线摘要，保存至 `src/data/ai-summaries.json`；
+  4. 执行静态构建 `npm run build:static`，全量 101 个页面均成功在构建时注入无损高档位静态摘要（`data-static-summary`），实现毫秒级首屏直出且内容高深充沛。

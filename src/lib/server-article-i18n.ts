@@ -241,7 +241,8 @@ export async function translateArticle(options: TranslateArticleOptions): Promis
   if (customApiKey) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000);
+      // 90s timeout: full-article translations may take 30-80s on large posts
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
 
       const endpoint = `${customBaseUrl}/chat/completions`;
       const response = await fetch(endpoint, {
@@ -259,7 +260,7 @@ export async function translateArticle(options: TranslateArticleOptions): Promis
             { role: 'user', content: userMessage },
           ],
           temperature: 0.25,
-          max_tokens: 4096,
+          max_tokens: 8192,
         }),
       });
       clearTimeout(timeoutId);
@@ -293,7 +294,8 @@ export async function translateArticle(options: TranslateArticleOptions): Promis
     for (const gModel of candidateGroqModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
+        // 120s timeout for Groq: long articles need more time
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -309,7 +311,7 @@ export async function translateArticle(options: TranslateArticleOptions): Promis
               { role: 'user', content: userMessage },
             ],
             temperature: 0.2,
-            max_tokens: 4096,
+            max_tokens: 8192,
           }),
         });
         clearTimeout(timeoutId);

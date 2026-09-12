@@ -1,156 +1,177 @@
 {
   "access-control-lab": {
     "title": "文章访问控制实验室",
-    "summary": "本文阐述了基于服务端判定的文章访问控制实现及验证要点。未解锁时正文、目录、摘要等不出现在 HTML，避免前端隐藏泄露；支持密码、IP、地区白名单/黑名单四类规则，推荐在 frontmatter 中仅保存 SHA‑256 passwordHash。输入正确密码后写入短时凭证，刷新后保持解锁状态，首页、列表、搜索等入口同样不泄露受限内容。通过锁页、解锁页及状态保持的烟雾测试，即可确认该机制已可投入使用。",
-    "model": "llama-3.3-70b-versatile",
-    "provider": "Chronral LLMGPT",
-    "generatedAt": "2026-08-31T13:14:07.823Z"
+    "summary": "文章通过服务端判定实现真正的访问控制，未解锁时不向前端输出任何正文、目录或摘要，避免了先渲染再隐藏的泄露风险；密码采用 SHA‑256 哈希写入 frontmatter，防止明文存储，同时支持基于 IP、国家或地区的白名单/黑名单规则，所有限制均在渲染阶段拦截，首页卡片、最新列表、搜索索引均不泄露受限内容。解锁后服务器写入短时凭证，实现刷新后免重复验证，保持用户体验。该实现展示了从概念到可生产的安全模型，提醒架构师在设计内容保护时必须把访问判断前置到数据层，避免前端依赖隐藏手段，并通过哈希和短时凭证平衡安全与性能。",
+    "model": "groq/compound-mini",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:01.799Z"
   },
   "anzhiyu-markdown-showcase": {
     "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
-    "summary": "一篇专门用于压测文章扫描、目录层级、GFM、隐藏内容、特殊格式、媒体展示与常见内容块的长示例文章。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:15.377Z"
+    "summary": "这篇博文深邃地展现了一个博客主题从“看起来像样”到“真正可交付”的演进路径，通过对安知鱼主题的深度复刻与功能总检，揭示了构建优质阅读体验背后严谨的工程实践与设计哲学。文章不仅细致验证了 Markdown 基础语义、GFM 扩展、多层级目录映射、内联增强（如剧透遮罩）与媒体嵌入的稳定性，更强调了在极端长文、复杂内容块组合下，系统整体稳定性、性能与用户体验的权衡。它跳脱了表面功能罗列，深入探究了信息结构、阅读路径、交互效率和工程美学，例如目录层级压缩的精妙、滚动跟随与焦点管理的艺术，以及对原生 HTML 结构可迁移性的考量。作者的极客精神体现在，他不仅复刻了表象，更致力于理解并重现原主题在信息优先级、交互反馈、阅读路径和模块秩序上的判断力，这对于任何追求卓越内容系统构建的架构师和开发者而言，都是极具启发性的范式。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:16.434Z"
   },
   "api-ready-theme-contracts": {
     "title": "把主题配置做成可接 API 的契约",
-    "summary": "作者主张在主题开发时先定义数据契约，将页面所需的数据形状固定，再通过统一的helper（文章排序、归档、分类、标签、相关文章推荐）抽象数据入口。这样，当数据源从本地Markdown切换至API，或接入自定义dashboard、外部搜索、远程摘要等服务时，只需更换数据提供层，UI组件无需改动，实现主题的可维护扩展。",
-    "model": "llama-3.3-70b-versatile",
-    "provider": "Chronral LLMGPT",
-    "generatedAt": "2026-08-31T13:14:21.793Z"
+    "summary": "此文核心在于前瞻性架构设计对系统韧性与扩展性的深层影响。博主深刻洞察到数据模型与视图层耦合的工程风险，尤其在数据源可能变迁的场景下。其关键决策是剥离原始数据访问逻辑，将数据处理能力抽象为一系列内聚的helper函数，例如文章排序、归档、分类与标签聚合，以及相关文章推荐。这本质上是在模板与原始数据之间构建了一层稳定的数据契约层。如此一来，未来无论底层数据源从本地Markdown切换至API，或是引入自定义dashboard、外部搜索、远程摘要服务，视图组件层都无需感知底层变化而进行重构，仅需替换数据入口适配器即可。这种策略体现了对“稳定数据形状先于请求实现”的极客哲学，极大提升了系统面对需求迭代时的架构稳定性与演进能力，是典型的高内聚、低耦合设计范式实践。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:30.766Z"
   },
   "content-first-homepage": {
     "title": "内容优先的首页，为什么比功能堆叠更耐用",
-    "summary": "首页第一屏如果先服务阅读路径，而不是先展示一堆功能入口，主题通常会更稳。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:24.482Z"
+    "summary": "首页是用户进入全站的第一感知点，作者通过把首页拆解为四层结构——顶部 hero 与品牌语义、分类入口与状态卡、文章流、侧栏作者与索引——实现了内容优先而非功能堆砌的设计哲学。每一层都有明确的语义职责，新增模块只需定位所属层级，避免了随意插入导致的视觉混乱和代码耦合；层级固定后，后端 API 如热门文章、访问统计、实时状态等只在既定容器中替换数据，前端布局无需重构，维护成本显著下降。该方案把页面从“功能仓库”转向“阅读导向”，强化信息层次感，提升首屏可读性，同时为迭代提供了可预见的扩展空间，体现了以业务价值驱动的架构演进思路，对追求长期可维护性和用户体验的团队具有直接的参考价值",
+    "model": "openai/gpt-oss-120b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:42.459Z"
   },
   "content-formats-and-markup-mastery": {
     "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
-    "summary": "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流静态站点与博客系统的内容格式支持清单。从 Markdown、MDX、HTML、AsciiDoc、Org-mode、RST 到全量实装的 WordPress Post Formats、交互式下拉框切换器、手风琴折叠、KaTeX 数学公式、Mermaid 图表与密码加密特异功能。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:26.524Z"
+    "summary": "这篇博文深邃地剖析了现代静态站点生成器（SSG）内容呈现的工程哲学与极致实践。它不仅系统梳理了Hugo、Astro等主流SSG对Markdown、MDX、Org-mode等基础标记语言及Front Matter序列化格式的支持，更展现了将交互式组件深度融入静态内容的创新能力。文章精妙之处在于，它通过“内容群岛化”思想，将WordPress的Post Formats、实时汇率单位换算器、黑胶唱片旋转播放器、动态聊天气泡流，乃至KaTeX数学公式、Mermaid图表与Markmap思维导图等高度动态与视觉化的元素，通过构建期预渲染或客户端按需激活的方式，无缝融入纯静态页面。尤其值得称道的是其WebCrypto SHA-256分级加密与视口防窥即锁机制，以及可交互任务清单、告示框折叠等功能，在确保极速加载、极致SEO的同时，大幅拓宽了静态内容承载复杂信息与交互的可能性边界，为静态内容工程化提供了未来导向的范式。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:50.344Z"
   },
   "example-all-special-formats": {
     "title": "示例：Astro 特殊格式与特异功能综合测试大全",
-    "summary": "一站式跑全所有 13 种 Callout、Post Formats、下拉框切换器、手风琴、密码解密、公式、图表与排版组件。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:28.253Z"
+    "summary": "这篇 Astro 综合测试文章深入揭示了现代内容平台在格式化与交互功能层面的工程广度与深度，它并非仅是功能的堆砌，而是展现了一种对用户体验与内容表现力边界的探索。从结构化的 Callouts 提升信息传达效率，到灵活的 Dropdowns 与 Accordions 应对复杂内容的按需加载与展示，乃至 MathJax/KaTeX 渲染的数学公式与 Mermaid 图表的无缝集成，都体现了对技术细节的极致追求。尤为引人深思的是密码解密与高斯模糊等安全与隐私功能，以及 Post Formats 对多元内容形态的支持，这些设计背后蕴含着对内容安全、信息渐进式披露和多媒体表现的深刻理解。Astro Islands 架构在实现 0KB JS 交付下的高性能交互，更是以其工程美学，为前端架构师提供了在性能与功能之间进行巧妙权衡的范式。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:04.367Z"
   },
   "example-callouts": {
     "title": "示例：Callouts 告示框与提示卡完整展示",
-    "summary": "全面展示支持的 13 种 Callout 语义类型、默认展开/折叠版本与 Markdown 源码对比。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:29.370Z"
+    "summary": "在本主题中，作者将 GitHub Alerts 规范与安知鱼的美学理念深度融合，构建了一个完整的 13 种语义化 Callout 生态，支持 Note、Tip、Important、Warning、Caution、Danger、Success、Question、Quote、Info、Todo、Bug、Example 等多样化卡片，并通过简单的 `[!TYPE]` 语法在 Markdown 中即刻声明。所有卡片均采用响应式色彩方案，自动匹配亮暗模式，实现高对比度与视觉一致性；此设计既提升了可读性，又减少了 CSS 维护成本。为了兼顾屏幕空间与信息密度，作者引入可折叠告示框，`[!TIP]-` 与 `[!NOTE]+` 等标记可一键控制默认展开或折叠状态，既能在细节层面提供即时可视化，又能在需要时压缩页面长度。主题基于 Astro 6 与 Tailwind 4 开发，采用纯静态导出，保证了极低的运行时依赖与高性能渲染；同时通过自定义组件将 Callout 逻辑抽象，便于后续扩展与维护。对架构师而言，这一实现展示了如何在保持 Markdown 纯净的同时注入丰富的语义层次；对前端工程师来说，折叠卡片的默认状态可视化与颜色自适应提供了可复制的 UI 设计范式；对技术探索者而言，作者的示例代码与源码对比揭示了从静态页面到动态交互的平滑过渡。整体而言，文章不仅呈现了一个功能完整、易用性极佳的 Callout 系统，更为团队协作与内容可维护性提供了可复制的技术蓝图，值得在任何注重内容表达与用户体验的项目中深入借鉴。",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:06.564Z"
   },
   "example-code-enhancements": {
     "title": "示例：代码块全量增强功能展示",
-    "summary": "全面展示 macOS 拟物交通灯控制条、语言徽章、增删 Diff、一键复制与超长折叠特性。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:32.668Z"
+    "summary": "此博文细致展现了代码块可视化增强的工程实践，超越纯粹的内容呈现，将极简主义与交互效率深度融合。其核心思考在于，如何在有限的显示空间内，通过 macOS 拟物交通灯、语言徽章、增删行 Diff 对比等设计元素，提升代码阅读的沉浸感与信息密度。特别是超长代码的自动折叠功能，巧妙地平衡了内容的完整性与页面的整洁性，通过动态限高与半透明遮罩，辅以“展开代码”的交互，极大地优化了用户体验，避免了冗长代码对阅读流的冲击。这体现了一种对细节的极致追求，即在保障信息传达的同时，通过精妙的交互设计与视觉优化，实现技术内容展示的优雅与高效，为开发者提供了更具生产力的阅读环境。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:13.426Z"
   },
   "example-details-collapse": {
     "title": "示例：折叠面板、手风琴与下拉框格式展示",
-    "summary": "全面展示原生 details、手风琴折叠组、嵌套折叠与特殊的下拉框选择器组件。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:43.234Z"
+    "summary": "此篇深入展示了折叠面板、手风琴组与下拉框选择器的实现，其核心技术思想并非停留在表面组件的展示，而是深刻体现了在追求极致性能与维护效率背景下，对于前端架构的深度考量。作者通过优先采用浏览器原生语义与轻量级Islands架构，确保了极小的客户端开销，这本身就是对现代前端“重客户端”趋势的一种反思与制衡。更深层次的洞察在于，这些组件的展示是构建在静态站点生成器（SSG）这一基石之上，从而实现了理论上极高的并发、物理层面的高安全性、毫秒级的全球CDN交付，以及近乎零的维护成本。特别值得注意的是，交互式下拉规格计算器与选择运行时架构等示例，均巧妙地将动态逻辑整合于静态交付框架内，这启示我们，即使在面向静态化、无服务器架构的语境下，依然存在大量富有工程美感的空间去实现丰富且高性能的交互体验，这远超传统意义上的“纯静态”范畴，是工程极客对技术边界的持续探索与精进。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:25.756Z"
   },
   "example-embeds": {
     "title": "示例：富媒体嵌入、Post Formats 与聊天气泡展示",
-    "summary": "全面展示 WordPress 风格 Post Formats、视频/音频黑胶唱片、书签卡片与聊天气泡对话流。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:14:58.541Z"
+    "summary": "这篇案例以极简静态站点为底层，演示了如何在 Astro 环境中将富媒体嵌入与 WordPress Post Formats 融合，构建 Aside、Status、Vinyl",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:28.780Z"
   },
   "example-frontmatter-fields": {
     "title": "示例：Front Matter 扩展字段与 Zod 验证展示",
-    "summary": "本文通过 src/content.config.ts 中的 Zod Schema，系统化列举并解释博客支持的 Front Matter 字段，包括 title、pubDate、updatedDate、description、author、tags、category、cover、coverAlt、featured、sticky、draft、postFormat、toc/hideToc、math、mermaid、series、access 等，明确其类型、默认值及在主题渲染、SEO、目录、数学公式、图表、系列关联和访问控制等场景的作用，帮助开发者快速配置、验证并利用这些元数据实现文章的精准展示和功能扩展。",
-    "model": "llama-3.3-70b-versatile",
-    "provider": "Chronral LLMGPT",
-    "generatedAt": "2026-08-31T13:15:04.465Z"
+    "summary": "此文精准刻画了一个内容管理系统在声明式配置上的深邃思考，尤其凸显了 Front Matter 作为核心元数据契约的战略价值。通过 Zod Schema 进行字段的严格定义与验证，不仅确保了数据的类型安全与结构一致性，更将系统行为与主题交互逻辑前置固化，避免了运行时错误与配置蔓延。从强制性的 `title`、`pubDate` 到可选的 `description`、`tags`，再到驱动特定渲染能力的 `math`、`mermaid`，以及控制内容可见性的 `draft`、`access`，每个字段都承载着精妙的工程决策，共同编织出高度可控且灵活的内容发布流程。作者对 WordPress 文章形态的引入，以及 `featured`、`sticky` 等字段对内容编排权重的影响，展现了对传统CMS精髓的吸纳与创新，最终以极客式的严谨和工匠般的细致，为构建稳定、可扩展且用户友好的内容平台提供了范式级的实践启示。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:34.390Z"
   },
   "example-gallery-figure": {
     "title": "示例：图片画廊、拍立得相纸与灯箱展示",
-    "summary": "全面展示自适应图片画廊网格、人文拍立得相册与全屏无损图片灯箱功能。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:08.016Z"
+    "summary": "在本示例中，作者通过极简却完整的实现展示了自适应三列图片画廊与全屏灯箱的交互模型，核心采用响应式网格布局配合 CSS‑Grid 与媒体查询实现列数在不同视口下的平滑切换，图片容器统一抽象为可复用的 GalleryItem 组件，内部通过 IntersectionObserver 实现懒加载以压缩首屏渲染成本；点击任意项触发的 Lightbox 采用门户模式挂载至 body 顶层，利用键盘事件统一捕获 Esc 退出并在遮罩层点击时同步关闭，保证用户在全屏放大状态下的快速脱离路径。人文化的 Polaroid 风格相册则在视觉层面加入了投影、旋转与边框纹理，背后通过 CSS‑Custom‑Properties 将主题色与纸张厚度参数化，使得同一套组件能够在大屏监控面板与研发工坊展示墙之间无缝迁移，体现了“一次编码，多场景复用”的架构哲学。整个系统遵循单向数据流与事件冒泡分层，既保持了代码的可维护性，又在交互流畅度与资源占用之间取得了平衡，为后续的灯箱动画、图片压缩服务或 CDN 接入提供了清晰的扩展点。",
+    "model": "openai/gpt-oss-120b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:44.878Z"
   },
   "example-math": {
     "title": "示例：KaTeX 数学公式渲染展示",
-    "summary": "全面展示基于 remark-math 与 rehype-katex 的行内公式与块级推导公式静态渲染。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:10.683Z"
+    "summary": "在 Astro 项目中，作者利用 remark‑math 与 rehype‑katex 将 Markdown 中的 LaTeX 表达式在构建期即转换为无运行时消耗的纯 HTML/MathML，配合弹性水平滚动容器解决公式溢出。示例涵盖行内表达式如能量守恒、欧拉恒等式及高斯分布密度，块级公式则演示二阶线性微分方程拉普拉斯变换、麦克斯韦微分形式与高斯积分矩阵。通过静态渲染与可滚动布局的结合，展示了前端渲染数学公式的性能与可维护性平衡，提示架构师在构建静态站点时可将复杂排版逻辑剥离到构建步骤，既保持运行时轻量，又不牺牲可读性与交互体验。",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:47.349Z"
   },
   "example-mermaid": {
     "title": "示例：Mermaid 11 图表与可视化展示",
-    "summary": "全面展示 Mermaid 架构流程图、时序图、甘特图、统计饼图与 GitGraph 分支图。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:14.699Z"
+    "summary": "此文演示了 Mermaid 11 在博客内容中集成矢量图表的实践，其核心在于将声明式纯文本转化为富可视化表达。技术选型上，客户端按需异步加载 ESM 引擎，体现了现代前端工程对性能与资源优化的考量，确保图表渲染的灵活性与高效性，并能智能适配不同的主题模式。从工程视角看，这种基于文本声明的图表生成方案，极大地简化了复杂图表的创建与维护成本，无需依赖图形界面工具，天然具备版本控制的优势，尤其适用于文档驱动的开发模式或技术博客的撰写，通过流程图、时序图、甘特图与饼图等多种形式，直观呈现系统架构、交互流程、项目进度及技术构成，这不仅是功能的展示，更是对“代码即文档，文档即代码”这一极客理念的践行，为技术内容的表达提供了高效且一致的视觉语言。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:52.679Z"
   },
   "example-mindmap": {
     "title": "示例：Markmap 动态交互式思维导图与无限层级扩展",
-    "summary": "全面展示基于 Markdown 的 Markmap 动态思维导图渲染，演示 6 层深度堆叠、无限层级扩展语法、默认单块折叠保护空间、点击节点多向扩散分支与全屏沉浸式交互。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:16.497Z"
+    "summary": "这篇博文深刻揭示了 Markmap 在构建动态交互式思维导图方面的工程实践与架构弹性。其核心价值在于对 Markdown AST 的深度利用与 D3 弹性布局的巧妙结合，实现了真正意义上的无限层级扩展，这不仅体现在 H1-H6 标题与多级列表的混合应用，更在纯列表缩进中展现出对任意深度的理论支持，突破了传统思维导图工具的层级限制。设计者通过默认单块呈现、点击多向散开、以及全功能工具栏，精妙地平衡了信息密度与用户体验，尤其是在处理高复杂度、深层级架构图时的沉浸式全屏模式，直击工程师在大型系统全景理解上的痛点。这种对解析引擎、渲染逻辑和交互模式的系统性思考，为构建基于文本的高效知识可视化工具提供了严谨而富有洞察力的范例。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:56:57.624Z"
   },
   "example-tabs": {
     "title": "示例：多标签页与多代码版本切换展示",
-    "summary": "全面展示交互式 Tabs 标签页与基于下拉框的多语言代码切换器组件。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:18.961Z"
+    "summary": "本示例通过可点击标签快速复制不同包管理器的安装命令，随后在下拉框中切换前端框架并即时渲染对应的计数器实现，展示了组件化思维与多框架兼容性的实践。作者将同一业务逻辑拆分为 React Hooks、Vue Composition API、Astro Islands 与 Svelte Runes 四种实现，利用统一的交互面板与轻量化状态管理，验证了代码可复用性与框架无关性。通过在 Markdown 里嵌入可复制按钮与即时渲染区域，既提升了文档可操作性，也为技术交流提供了可视化实验场。此做法提醒工程师在构建文档或演示时，应将功能拆分为最小可演示单元，并通过统一交互层统一管理状态，既保持了技术多样性，又避免了重复实现，从而在保持可维护性的同时加速迭代。",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:00.044Z"
   },
   "hello-world": {
     "title": "主题重构启动记录",
-    "summary": "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:22.775Z"
+    "summary": "此次主题重构的深层驱动，在于摆脱原有实现中结构混乱、风格混杂的表象困境，直指核心可维护性不足的工程症结。其决策并非肤浅的换皮，而是战略性地切换至Astro + React + Tailwind的技术栈，构建一套真正内容优先、高内聚低耦合的现代前端架构。通过保留原主题强结构的首页、侧栏与卡片体系的交互优势，并以信息地图的范式重新定义首页，确保品牌识别、内容分类与最新动态的即时呈现，有效引导用户认知与探索路径。作者对“技术感与用户友好”的平衡追求，体现了对系统设计深层次的思考，即技术骨架的强健不应以牺牲用户体验为代价，而是要在确保可扩展性的同时，兼顾前端美学与信息传达的直观性。这不仅是前端工程的实践，更是对内容产品与技术架构协同进化的深刻洞察。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:13.641Z"
   },
   "learning-through-rebuilds": {
     "title": "通过重构来学习，比单纯临摹更有效",
-    "summary": "重构一个已有主题时，最有价值的不是复制外观，而是理解它为什么这样组织信息。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:26.358Z"
+    "summary": "在这篇手记中，作者以主题重构为例阐释了复制与重写的根本差异。仅靠截图复制只能复制配色与间距，无法捕捉决定主题质量的深层结构——路由、数据层、板块优先级与可扩展配置。通过用另一技术栈重写，开发者被迫回答隐藏的设计问题：哪些首页板块真正有价值，哪些交互值得保留，哪些遗留技术已成负担。重构不仅是迁移，更是把主题从碎片化模板转变为可维护的系统；它揭示了架构权衡、模块化拆分与配置解耦的最佳实践并让工程师在实践中体会",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:20.290Z"
   },
   "markdown-scan-showcase": {
     "title": "Markdown 扫描与展示能力全量示例",
-    "summary": "用一篇长文把当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:27.549Z"
+    "summary": "本文以一篇极度复杂、内容类型全覆盖的 Markdown 样章，深刻揭示了现代博客主题在内容扫描、渲染与用户体验设计上的深层挑战与精妙权衡。它跳脱出寻常的“概念说明”，将文章本身作为前端主题的权威烟测样本，验证了对标题层级、代码块、GFM 表格、脚注、特殊格式（如隐藏内容与提示卡）的语义化理解与展示能力。作者强调，一个真正成熟的主题绝非仅能在普通段落与标题下表现正常，更需在多种内容块混合嵌套、复杂度拉满的情况下依然维持阅读秩序与信息可导航性。特别是目录层级设计，从单一的缩进深化演进为“小步进缩进、当前项高亮、父路径弱高亮与纵向引导线”的组合策略，兼顾了层级真实性与点击效率，这体现了对用户认知负载与交互体验的极致打磨。最终，文章传递出一种核心工程美学：任何样式或动效都必须以提升信息定位效率为依归，而非盲目追求视觉炫酷，从而为技术博客构建了一个结构严谨、秩序井然且反馈明确的阅读体验范式。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:26.266Z"
   },
   "markdown-syntax-mastery": {
     "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版",
-    "summary": "专为本博客量身定制的 Markdown 终极参考手册与全景压测示范文章。涵盖基础排版、KaTeX 数学公式、Mermaid 绘图、安知鱼告示框、代码高亮折叠与 Diff、密码加密弹窗、高斯模糊与马赛克等全量功能。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:28.738Z"
+    "summary": "此博客系统以 Astro 6 为静态渲染基石，深度融合 Hexo-Theme-Anzhiyu 视觉美学，构建了一套超越传统 Markdown 功能边界的全景内容发布能力。其核心亮点在于将学术级 KaTeX 数学公式、Mermaid 矢量图表编译、Shiki 代码高亮与 Diff 增强无缝内建于渲染管线，实现了高性能、全设备自适应的专业排版。更具突破性的是，系统引入了局部加密内容与毛玻璃密码弹窗、文字/图片高斯模糊与马赛克、以及 Discord 风格剧透遮罩等一系列特异功能，有效平衡了内容安全性、阅读趣味性与作者表达自由。此外，诸如响应式表格、交互式任务列表、多语言选项卡、GitHub 仓库卡片嵌入等细节优化，共同构筑了一个兼具优雅、强大与极客工匠精神的现代化内容创作与分发平台，对追求极致内容体验与前沿技术整合的开发者具有深刻的实践启示。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:32.137Z"
   },
   "media-capability-lab": {
     "title": "封面、图床与视频适配实验室",
-    "summary": "集中验证文章头图、远程图床、本地资源、视频封面、失效回退和不同宽度下的媒体展示效果。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:30.342Z"
+    "summary": "在这篇实验性文章中，作者通过构造一套完整的媒体适配链验证了从文章头图到正文图像、远程图床、视频及其 poster 的可靠性与回退策略。设计允许头图直接引用本地图片或视频，并在缺失 poster 时自动注入默认封面；正文图片若加载失败会被统一替换为占位图，正文视频同样在无 poster 时补全；所有媒体在不同宽度下被强制限制不超出正文边界，手机端视频保持完整控制条，长宽比例失衡的资源也不产生破碎占位。该方案通过显式的本地、远程、失效三种情景进行边缘测试，确保在多终端、多网络环境下的视觉一致性。对架构师而言，它展示了在内容系统中引入自动回退与尺寸约束的必要性，同时提供了一种可复制的测试用例，提醒我们在视觉细化前先保障基础媒体链的稳健运行。",
+    "model": "openai/gpt-oss-20b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:34.541Z"
   },
   "readable-geek-interfaces": {
     "title": "极客感界面为什么更需要可读性",
-    "summary": "技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。",
-    "model": "primer-fallback",
-    "provider": "Chronral Primer",
-    "generatedAt": "2026-08-31T13:15:34.097Z"
+    "summary": "此文深刻揭示了极客风格界面设计中一个普遍却隐蔽的误区：将形式上的“技术感”等同于视觉噪音的堆砌，而非信息层级与阅读节奏的精妙编排。作者通过对“标题像按钮、按钮像装饰、装饰比内容更抢眼”的反思，直指过度强调单个元素视觉冲击力所导致的全局信息失焦。其核心工程哲学在于，真正的“技术感”应是为内容服务、提升可读性的内敛美学，而非“巨大的霓虹光晕”、“发光渐变”或“过重的玻璃拟态”等形式主义的炫技。文章在视觉上的收束，通过保留清晰的网格、状态标签与模块边界，同时削减无意义的视觉干扰，精准回应了用户对“快速定位内容”、“阅读不被打断”以及“多端适配良好”的直观需求。这体现了资深架构师在前端工程与用户体验之间寻求本质平衡的深刻洞察，即设计应回归服务信息本体，而非沉溺于表面形式，最终通过底层设计逻辑的优化，实现用户层面的无感知提升，这正是极客工匠精神的极致体现。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:43.277Z"
+  },
+  "api-ready-theme-contracts-en": {
+    "title": "Turning Theme Configuration into an API-Ready Contract",
+    "summary": "文章抛出“先定义契约再写 UI”的逆向思路，指出若模板直接读取 Markdown 内容，后期迁移至 API 几乎等同重构全部页面。作者将分页、归档、分类、标签、关联推荐等业务抽象为统一的数据获取层，形成一套独立的 contract。核心在于把页面所依赖的结构化数据模型固化为入口函数，所有展示组件只消费该模型而不感知来源。这样当数据来源从本地文件切换为远程服务时，只需实现同签名的适配器，业务层保持不变，极大降低耦合度并提升可插拔性。进一步，作者预见未来可能接入自定义仪表盘、外部搜索或文章摘要服务，只要遵循相同 contract，即可无缝挂载而无需拆解现有组件，实现主题的真正可扩展与演进。",
+    "model": "openai/gpt-oss-120b",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:19.907Z"
+  },
+  "badges-guide": {
+    "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）",
+    "summary": "EpoCanvas博客构建了一套精巧的双轨信任阶梯系统，以LV准入门槛控制内容访问权限，通过TL权重衡量用户活跃与信誉。其设计核心在于严格的瀑布依赖解锁链，确保用户必须逐级达成前置条件方能晋升，并引入35点活动积分封顶机制，杜绝单纯刷分行为。常规读者最高可达LV.3墨海宗师，TL上限90，但绝版荣誉称号机制提供了突破100+的特权，并叠加额外TL加成与高优先级权重。此外，站长与管理员体系通过独特的头像样式及TL划分，明确了治理权限。辅以精细的阅读、评论、互动及活跃天数成就徽章体系，该系统以极客工匠精神，引导用户深度参与、贡献高质量内容，而非盲目堆砌数量，最终通过个性化名片浮层展示用户身份与成就，彰显其独特的社区生态设计哲学。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:55:39.381Z"
+  },
+  "hello-world-en": {
+    "title": "Theme Refactoring Kickoff Log",
+    "summary": "此次主题重构的深层驱动并非功能缺失，而是对既有架构混乱、品牌风格与组件混杂的根本性不满，导致主题既无原始设计的清晰，也未能形成自身秩序。工程决策的核心在于汲取原主题稳健的首页、侧边栏模块与卡片系统等成熟优势，同时彻底转向基于Astro、React与Tailwind的内容优先（content-first）架构范式。这不仅是技术栈的迁移，更是对信息架构的重塑，强调首页作为信息地图，需清晰呈现品牌身份、核心分类、近期要闻与导航路径，避免沦为营销页面。整个重构的终极目标是打造一个兼具技术深度与用户友好性的主题，实现技术表达与普适阅读体验的和谐统一，这体现了对工程美学与信息架构严谨思考的实践。",
+    "model": "gemini-2.5-flash",
+    "provider": "Chronral LLMGPT (High Tier)",
+    "generatedAt": "2026-09-12T17:57:08.507Z"
   }
 }
