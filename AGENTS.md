@@ -1553,3 +1553,31 @@
   - 真实访问生产环境博文 `https://blog.epocanvas.com/posts/readable-geek-interfaces/`，页面 200 OK，`.shijianus-ai-summary` 居中且视觉样式完好；
   - 交互切换模式至 `InstanceAI`，动态抓取模型池节点（`正在调用 gpt-oss-120b 思考...`）并保存视觉截图；
   - 真实浏览器上下文向生产端 `/api/ai-summary` 发起直接调用，实测响应状态码 `200 OK`，`ok: true`，`model: openai/gpt-oss-120b`，关键指标 `level: "high"` 100% 确认通过！
+
+### Task 72: AI 辅助文章多语言 (i18n) 构建体系与界面无缝切换 (`380a920`)
+- [x] **Markdown i18n 标识规范与 Schema 扩展 (`src/content.config.ts`)**：
+  1. 在 `postsCollection` 的 schema 中扩展 `i18nKey`（用于将同一文章的不同语言版本归属为同一篇）、`lang`（如 `zh-CN`, `en`, `fr`）、`isAiGenerated`（布尔值，标识是否为构建期 AI 辅助生成）和 `aiTranslatedFrom`（源语言标识）；
+  2. 确立最高优先级原则：用户手动编写的翻译文章拥有绝对优先级，构建流程绝不覆盖任何用户手写内容；仅当用户未提供对应语言版本且 AI i18n 开关开启时，才执行自动补全。
+- [x] **AI 文章翻译服务引擎与专属多语言提示词体系 (`src/config/article-i18n-prompt.md` & `src/lib/server-article-i18n.ts`)**：
+  1. 制定严格且完备的系统翻译提示词：严格保护 Frontmatter 结构、代码块（保留代码语法与注释语气）、LaTeX 公式、Mermaid 流程图节点说明以及作者原本的行文语气与极客技术格调；
+  2. 专属构建期翻译引擎：自动解析 `.env` / `.dev.vars`，智能复用既有 ChronoralAI (`INSTANCE_AI_*`, `GROQ_*`) 凭证或支持独立覆盖配置 (`ARTICLE_AI_I18N_*`)；
+  3. 引入多模型降级候选池（`openai/gpt-oss-120b`, `qwen/qwen3.6-27b` 等）与深度思考 `<think>` 标签清理机制，确保生成的 Markdown 纯净合规。
+- [x] **自动化构建同步脚本与流程集成 (`scripts/sync-post-i18n.mjs` & `package.json`)**：
+  1. 默认静默安全关闭（`ENABLE_ARTICLE_AI_I18N=false`，零开销快速退出）；
+  2. 开启时全景扫描 `src/content/posts/`，通过 `i18nKey` 自动建立多语言索引映射树并落盘至 `src/.generated/article-i18n-map.json`；
+  3. 针对缺失目标语言的文章自动调用 AI 翻译并输出为规范的命名格式 `${key}-${targetLang}.md`；
+  4. 整合至 `npm run build`、`build:static` 及独立执行脚本 `npm run sync:i18n`。
+- [x] **首页与归档去重、路由与 SEO 增强 (`src/lib/content.ts` & `src/pages/posts/[slug].astro`)**：
+  1. 首页与归档卡片去重（`getPublicPosts()`）：同一 `i18nKey` 在卡片流中仅展示 1 个主要卡片，杜绝多语言变体导致首页卡片重复堆叠；
+  2. 路由与同源兄弟文章解析：动态匹配同源兄弟语言版本，注入标准 SEO `<link rel="alternate" hreflang="...">` 标签；
+  3. 客户端语言偏好与无感联动：接入 `shijianus:localechange` 全局事件与 `localStorage` 语言偏好，访问规范中文路径时按偏好平滑跳转对应语言版本。
+- [x] **文章头部 (PostHero) 语言切换器与目录 (TOC) 自适应 (`src/components/theme/PostHero.astro` & `src/styles/final-pass.css`)**：
+  1. Post Hero 标签栏右侧优雅注入 `.post-hero__i18n-switch` 语言切换药丸组件，高亮当前活跃语言，并对 AI 辅助生成的版本展示专属金色 `AI` 标识；
+  2. 文章目录（TOC）基于生成的全量本地化标题自动解析并精准高亮聚焦，完全自适应目标语言内容。
+- [x] **自动化端到端测试套件全量验证通过 (`scripts/verify-article-i18n.mjs`)**：
+  1. 中文原文页面渲染与初始状态检查通过；
+  2. 点击语言药丸切换至英文版本及 URL 跳转检查通过；
+  3. 英文文章目录 (TOC) 标题自动翻译与定位自适应检查通过；
+  4. 药丸逆向切回中文版本检查通过；
+  5. 验证第二篇 AI 生成文章（`api-ready-theme-contracts-en`）各指标完全正常；
+  6. 首页文章卡片流去重断言通过，无重复展示。
