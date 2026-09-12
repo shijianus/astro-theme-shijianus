@@ -1453,5 +1453,12 @@
   2. 多端同步推送：`origin` 与 `cf` (`shijianus.github.io.git`) 全量推送最新提交，触发 GitHub Actions / Pages 镜像同步；
   3. 执行生产端真实网络请求与浏览器端到端 Playwright 审计：生产环境状态码 `200 OK`、页面标题正确、15 枚徽章与全量样式渲染无缺。
 
+### Task 66: 彻底清除外部社区名称提及，固化 EpoCanvas 原创自研读者分级体系并全量部署同步 (`e84defc`)
+- [x] 清除任何外部社区命名：全面排查并彻底清除 `badges-guide.md` 与测试脚本中所有对外部社区名称的引用；
+- [x] 确立 EpoCanvas 原创地位：将前言、描述、正文及标签统一更新为“EpoCanvas 博客原创自研读者分级制度、信任阶梯与极客美学体系”，标签更新为 `读者社区`；
+- [x] 本地重新构建并执行自动化端到端测试（`scripts/verify-badges-guide.mjs`），15 枚徽章、25 个目录索引、33 个 Callout 卡片与信任阶梯断言全绿通过；
+- [x] 执行 `npm run cf:deploy` 将最新纯净版本同步部署至 Cloudflare Pages 生产端，并全量推送到 `origin` 与 `cf` 仓库。
+
+
 
 
