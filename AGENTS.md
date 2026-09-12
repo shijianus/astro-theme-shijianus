@@ -1332,3 +1332,13 @@
     2. `.profile-popover-email-wrap` 直按复制、状态类及动画反馈；
     3. 未登录态下 fallback `mailto:` 连结核验；
     4. Epomail 登录态下目标路由、`composeTo` 参数、`target="_blank"` 及新标签页跳转验证。
+- [x] **生产端 (Cloudflare Pages) 全量上线与真实链路 Playwright 审计通过**：
+  - 生产边缘节点部署成功（部署标识：`https://e029fd12.shijianus-blog.pages.dev`，主域名 `https://blog.epocanvas.com` 同步上线生效）；
+  - 编写并执行专用生产 Playwright 端到端审计套件（`scripts/verify-live-popover-email.mjs`），全量验证生产主域 `blog.epocanvas.com`：
+    1. HTTP 状态码 200 OK，0 控制台致命 JS 报错；
+    2. 验证 DOM 中 `.profile-popover-copy-btn` 彻底删除（数量 0）；
+    3. 验证 `.profile-popover-email-wrap` 作为可交互按钮（`role="button"`, `cursor: pointer`），直接点击邮箱地址即刻写入剪贴板并呈现「已复制」与过渡高亮动效；
+    4. 验证默认未登录态下 `.profile-popover-mail-link` 自动生成回退 `mailto:shijianus@epocanvas.com`；
+    5. 验证 Epomail 认证状态下 `.profile-popover-mail-link` 智能优先直达 `https://mail.epocanvas.com/inbox?composeTo=shijianus%40epocanvas.com`，并在新标签页安全打开；
+    6. 自动截取真实生产环境截图存档（`scripts/audit_screenshots/live-popover-email-actions.png`），端到端实测 100% PASS 通过。
+
