@@ -1370,7 +1370,7 @@
 - [x] **自动化端到端测试与垂直几何位置断言**：
   - 更新 `scripts/verify-popover-email-actions.mjs` 与 `scripts/verify-live-popover-email.mjs`，通过 Playwright 精确断言 `mailLinkRect.top >= mentionRect.bottom - 2`，确认物理与视觉层面上百分百为竖向堆叠（`isVertical: true`）。
 
-### Task 62: 作者名片 (.author-profile-popover.is-pinned.is-webmaster-card) 布局重构：删除访问站点图标、Bio 保持不动、邮箱直按复制与网址上移补充空缺及防遮挡省略截断
+### Task 62: 作者名片 (.author-profile-popover.is-pinned.is-webmaster-card) 布局重构：删除访问站点图标、Bio 保持不动、邮箱直按复制与网址上移补充空缺及防遮挡省略截断 (`6c8f154`)
 - [x] **删除 `class="profile-popover-action-icon-btn"` 访问站点按钮**：
   - 彻底从卡片右上角操作区（`.profile-popover-actions-row`）中删除访问站点的图标按钮，消除冗余外链入口；
   - 仅保留 `@ 提及此人` 按钮与下方竖排对齐的 `写信` 按钮。
