@@ -768,22 +768,46 @@ pre .line.deleted {
    -------------------------------------------------------------------------- */
 .mermaid-diagram-wrap {
   position: relative;
-  margin: 1.8rem 0;
-  padding: 1.6rem 1.4rem;
+  margin: 2.2rem 0;
+  padding: 2.2rem 1.8rem;
   display: flex;
   justify-content: center;
   align-items: center;
   background: color-mix(in srgb, var(--card-bg) 96%, var(--secondbg));
-  border: 1px solid color-mix(in srgb, var(--theme-main) 14%, var(--card-border));
-  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--theme-main) 16%, var(--card-border));
+  border-radius: 16px;
   overflow-x: auto;
-  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.06);
 }
 
 .mermaid-diagram-wrap svg {
+  display: block;
+  margin: 0 auto;
+  min-width: min(100%, 720px);
+  width: auto;
   max-width: 100%;
   height: auto;
   font-family: inherit;
+  transition: min-width 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .mermaid-diagram-wrap {
+    padding: 1.5rem 1rem;
+  }
+  .mermaid-diagram-wrap svg {
+    min-width: 620px;
+  }
+}
+
+/* Subgraph and Cluster Labels: Make them prominent and clear */
+.mermaid-diagram-wrap .cluster-label,
+.mermaid-diagram-wrap .cluster text,
+.mermaid-diagram-wrap .cluster span {
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
 }
 
 /* Fix text paragraphs inside Mermaid to prevent inheriting external paragraph margins and line breaks */
@@ -794,7 +818,7 @@ pre .line.deleted {
 .mermaid-diagram-wrap .label p {
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1.4 !important;
+  line-height: 1.45 !important;
   font-family: inherit !important;
   display: inline !important;
 }
@@ -806,9 +830,9 @@ pre .line.deleted {
 .mermaid-diagram-wrap .edgeLabel span {
   fill: var(--font-color) !important;
   color: var(--font-color) !important;
-  font-size: 0.84rem !important;
+  font-size: 0.9rem !important;
   font-weight: 600 !important;
-  line-height: 1.2 !important;
+  line-height: 1.25 !important;
 }
 
 .mermaid-diagram-wrap .edgeLabel .labelBkg,
@@ -848,6 +872,8 @@ pre .line.deleted {
   justify-content: center !important;
   white-space: nowrap !important;
   overflow: visible !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
   line-height: 1.4 !important;
   word-break: keep-all !important;
 }

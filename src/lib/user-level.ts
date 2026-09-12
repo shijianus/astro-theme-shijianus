@@ -16,9 +16,12 @@
 export type UserLevelTitle =
   | '站长'
   | '核心成员'
+  | '墨海宗师'
   | '年度用户'
   | '先驱'
+  | '常青极客'
   | '活跃用户'
+  | '思辨学者'
   | '贡献者'
   | '基本用户'
   | '初始用户'
@@ -41,7 +44,8 @@ export interface UserLevelInfo {
   level: number; // 0, 1, 2, 3, 4
   levelCode: 'lv0' | 'lv1' | 'lv2' | 'lv3' | 'lv4';
   title: UserLevelTitle;
-  trustLevel: number;
+  trustLevel: number; // 当前实际拥有的 TL 数值
+  maxTrustLevel: number; // 当前称号决定的最高 TL 上限 (TL Cap)
   badge: string; // e.g. "LV.1 · 贡献者"
   isWebmaster: boolean;
   isSquareAvatar: boolean;
@@ -119,6 +123,14 @@ const TITLE_TRANSLATIONS: Record<UserLevelTitle, Record<string, string>> = {
     es: 'Miembro clave',
     de: 'Kernmitglied',
   },
+  墨海宗师: {
+    'zh-CN': '墨海宗师',
+    'zh-TW': '墨海宗師',
+    en: 'Ink Master',
+    fr: 'Maître d’Encre',
+    es: 'Maestro de Tinta',
+    de: 'Meister der Tinte',
+  },
   年度用户: {
     'zh-CN': '年度用户',
     'zh-TW': '年度使用者',
@@ -135,6 +147,14 @@ const TITLE_TRANSLATIONS: Record<UserLevelTitle, Record<string, string>> = {
     es: 'Pionero',
     de: 'Pionier',
   },
+  常青极客: {
+    'zh-CN': '常青极客',
+    'zh-TW': '常青極客',
+    en: 'Evergreen Geek',
+    fr: 'Geek Éternel',
+    es: 'Geek Perenne',
+    de: 'Immergrüner Geek',
+  },
   活跃用户: {
     'zh-CN': '活跃用户',
     'zh-TW': '活躍使用者',
@@ -142,6 +162,14 @@ const TITLE_TRANSLATIONS: Record<UserLevelTitle, Record<string, string>> = {
     fr: 'Utilisateur actif',
     es: 'Usuario activo',
     de: 'Aktiver Nutzer',
+  },
+  思辨学者: {
+    'zh-CN': '思辨学者',
+    'zh-TW': '思辨學者',
+    en: 'Reflective Scholar',
+    fr: 'Savant Réflexif',
+    es: 'Erudito Reflexivo',
+    de: 'Reflektierter Gelehrter',
   },
   贡献者: {
     'zh-CN': '贡献者',
@@ -278,136 +306,294 @@ export function recordReadingActivity(minutes: number = 0): void {
   });
 }
 
+export const OFFICIAL_LADDER_TITLES: readonly UserLevelTitle[] = [
+  '站长',
+  '核心成员',
+  '墨海宗师',
+  '年度用户',
+  '先驱',
+  '常青极客',
+  '活跃用户',
+  '思辨学者',
+  '贡献者',
+  '基本用户',
+  '初始用户',
+  '新兴用户',
+] as const;
+
 /**
- * Computes level, trust level, badge, and hints according to the strict leveling ladder.
+ * Calculates user earned Trust Level (TL) within their current title interval.
+ *
+ * Core Principle:
+ * - Title dictates the Max TL Cap (maxTrustLevel).
+ * - Activity points lift TL up from baseTL up to maxTrustLevel:
+ *   1 pt per 30m reading, 1 pt per 3 comments, 1 pt per 2 reactions, 1 pt per 3 active days.
+ */
+export function calculateEarnedTrustLevel(stats: UserStats, baseTL: number, maxTL: number): number {
+  if (baseTL >= maxTL) return maxTL;
+  const earnedBonus =
+    Math.floor((stats.readingMinutes || 0) / 30) +
+    Math.floor((stats.commentCount || 0) / 3) +
+    Math.floor((stats.reactionsReceived || 0) / 2) +
+    Math.floor((stats.activeDays || 1) / 3);
+  return Math.min(maxTL, baseTL + Math.max(0, earnedBonus));
+}
+
+/**
+ * Computes level, trust level, badge, and hints according to the strict waterfall leveling ladder.
  */
 export function computeUserLevel(stats: UserStats, accountRole?: string, email?: string): UserLevelInfo {
   const isOwner = stats.isWebmaster || accountRole === 'admin' || (email && email.toLowerCase() === 'admin@epomail.bond');
 
-  // 1. LV.4 站长 (Webmaster) - All-site ONLY square avatar
+  // 1. LV.4 站长 (Webmaster) - All-site ONLY square avatar, TL 100, absolute content penetration
   if (isOwner) {
     return {
       level: 4,
       levelCode: 'lv4',
       title: '站长',
-      trustLevel: 99,
+      trustLevel: 100,
+      maxTrustLevel: 100,
       badge: 'LV.4 · 站长',
       isWebmaster: true,
       isSquareAvatar: true,
       progressPercent: 100,
-      nextRequirementHint: '全站权威所有者与最高架构管理者',
+      nextRequirementHint: '全站最高权威主创与系统所有者 (TL.100 全站无条件穿透权限)',
       stats,
     };
   }
 
-  // 2. LV.4 核心成员 (Core Member / Promoted by Webmaster) - Circular avatar
-  if (stats.customLevel === 4) {
+  // 2. LV.4 核心成员 / 管理员 (Admin / Core Member) - Standard Circular avatar, TL 91 ~ 99
+  if (stats.customLevel === 4 || accountRole === 'admin_moderator') {
+    const adminTL = calculateEarnedTrustLevel(stats, 95, 99);
     return {
       level: 4,
       levelCode: 'lv4',
       title: '核心成员',
-      trustLevel: 25,
+      trustLevel: adminTL,
+      maxTrustLevel: 99,
       badge: 'LV.4 · 核心成员',
       isWebmaster: false,
       isSquareAvatar: false,
       progressPercent: 100,
-      nextRequirementHint: '站长特邀理事与最高荣誉成员',
+      nextRequirementHint: '站长特邀委任理事与社区常务管理核心 (TL.91~99)',
       stats,
     };
   }
 
-  // 3. LV.3 年度用户: 活跃超过 365 天 (activeDays >= 365)
-  if (stats.activeDays >= 365) {
+  // Strict Waterfall Stage Verification (前置解锁链条，逐级依赖，严禁越级)
+  // Stage 1: 初始用户 (LV.0) - Max TL 2
+  const stage1_initial = stats.hasReadAny || stats.readingMinutes >= 1;
+
+  // Stage 2: 基本用户 (LV.1) - Depends on Stage 1 - Max TL 10
+  const stage2_basic = stage1_initial && stats.commentCount >= 1;
+
+  // Stage 3: 贡献者 (LV.1) - Depends on Stage 2 - Max TL 20
+  const stage3_contributor = stage2_basic && stats.readingMinutes >= 30 && stats.commentCount >= 10;
+
+  // Stage 4: 思辨学者 (LV.1) - Depends on Stage 3 - Max TL 30
+  const stage4_scholar =
+    stage3_contributor && stats.readingMinutes >= 120 && stats.commentCount >= 20 && stats.reactionsReceived >= 10;
+
+  // Stage 5: 活跃用户 (LV.2) - Depends on Stage 4 - Max TL 45
+  const stage5_active =
+    stage4_scholar &&
+    stats.activeDays >= 20 &&
+    stats.readingMinutes >= 300 &&
+    stats.commentCount >= 30 &&
+    stats.reactionsReceived >= 20;
+
+  // Stage 6: 常青极客 (LV.2) - Depends on Stage 5 - Max TL 60
+  const stage6_geek =
+    stage5_active &&
+    stats.activeDays >= 45 &&
+    stats.readingMinutes >= 480 &&
+    stats.commentCount >= 60 &&
+    stats.reactionsReceived >= 40;
+
+  // Stage 7: 先驱 (LV.3) - Depends on Stage 6 - Max TL 75
+  const stage7_pioneer =
+    stage6_geek &&
+    stats.activeDays >= 90 &&
+    stats.readingMinutes >= 720 &&
+    stats.commentCount >= 100 &&
+    stats.reactionsReceived >= 60;
+
+  // Stage 8: 年度用户 (LV.3) - Depends on Stage 7 (必须先解锁先驱!) - Max TL 85
+  const stage8_annual =
+    stage7_pioneer && stats.activeDays >= 180 && stats.readingMinutes >= 1440 && stats.commentCount >= 150;
+
+  // Stage 9: 墨海宗师 (LV.3) - Depends on Stage 8 - Max TL 90 (<= 365 天!)
+  const stage9_inkMaster =
+    stage8_annual && stats.activeDays >= 300 && stats.readingMinutes >= 2160 && stats.reactionsReceived >= 100;
+
+  // 9. 墨海宗师
+  if (stage9_inkMaster) {
+    const tl = calculateEarnedTrustLevel(stats, 86, 90);
+    return {
+      level: 3,
+      levelCode: 'lv3',
+      title: '墨海宗师',
+      trustLevel: tl,
+      maxTrustLevel: 90,
+      badge: 'LV.3 · 墨海宗师',
+      isWebmaster: false,
+      isSquareAvatar: false,
+      progressPercent: 100,
+      nextRequirementHint: '已登顶读者自动晋升最高巅峰 (LV.3 顶级荣誉)',
+      stats,
+    };
+  }
+
+  // 8. 年度用户
+  if (stage8_annual) {
+    const tl = calculateEarnedTrustLevel(stats, 76, 85);
+    const pDays = Math.min(1, stats.activeDays / 300);
+    const pRead = Math.min(1, stats.readingMinutes / 2160);
+    const pRx = Math.min(1, stats.reactionsReceived / 100);
+    const progress = Math.round(((pDays + pRead + pRx) / 3) * 100);
+
     return {
       level: 3,
       levelCode: 'lv3',
       title: '年度用户',
-      trustLevel: 20,
+      trustLevel: tl,
+      maxTrustLevel: 85,
       badge: 'LV.3 · 年度用户',
       isWebmaster: false,
       isSquareAvatar: false,
-      progressPercent: 100,
-      nextRequirementHint: '已达成常青学者顶级荣誉',
+      nextLevelTitle: '墨海宗师',
+      nextRequirementHint: `晋升「墨海宗师」还需: 活跃 ${Math.max(0, 300 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 2160 - stats.readingMinutes)}m | 获赞 ${Math.max(0, 100 - stats.reactionsReceived)}个`,
+      progressPercent: Math.min(99, progress),
       stats,
     };
   }
 
-  // 4. LV.3 先驱: 活跃 > 60 天, 阅读 > 12h (720m), 评论 >= 100 (含 boost), 收到 50+ 赞/Emoji 互动
-  const pioneerMet =
-    stats.activeDays >= 60 &&
-    stats.readingMinutes >= 720 &&
-    stats.commentCount >= 100 &&
-    stats.reactionsReceived >= 50;
-  if (pioneerMet) {
+  // 7. 先驱
+  if (stage7_pioneer) {
+    const tl = calculateEarnedTrustLevel(stats, 61, 75);
+    const pDays = Math.min(1, stats.activeDays / 180);
+    const pRead = Math.min(1, stats.readingMinutes / 1440);
+    const pCom = Math.min(1, stats.commentCount / 150);
+    const progress = Math.round(((pDays + pRead + pCom) / 3) * 100);
+
     return {
       level: 3,
       levelCode: 'lv3',
       title: '先驱',
-      trustLevel: 15,
+      trustLevel: tl,
+      maxTrustLevel: 75,
       badge: 'LV.3 · 先驱',
       isWebmaster: false,
       isSquareAvatar: false,
       nextLevelTitle: '年度用户',
-      nextRequirementHint: `距 LV.3「年度用户」还需活跃 ${Math.max(0, 365 - stats.activeDays)} 天`,
-      progressPercent: Math.min(99, Math.round((stats.activeDays / 365) * 100)),
+      nextRequirementHint: `晋升「年度用户」还需: 活跃 ${Math.max(0, 180 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 1440 - stats.readingMinutes)}m | 评论 ${Math.max(0, 150 - stats.commentCount)}条`,
+      progressPercent: Math.min(99, progress),
       stats,
     };
   }
 
-  // 5. LV.2 活跃用户: 活跃 > 20 天, 阅读 > 300min, 评论 >= 30 (含 boost), 收到 30+ 赞
-  const activeUserMet =
-    stats.activeDays >= 20 &&
-    stats.readingMinutes >= 300 &&
-    stats.commentCount >= 30 &&
-    stats.reactionsReceived >= 30;
-  if (activeUserMet) {
-    const pDays = Math.min(1, stats.activeDays / 60);
+  // 6. 常青极客
+  if (stage6_geek) {
+    const tl = calculateEarnedTrustLevel(stats, 46, 60);
+    const pDays = Math.min(1, stats.activeDays / 90);
     const pRead = Math.min(1, stats.readingMinutes / 720);
     const pCom = Math.min(1, stats.commentCount / 100);
-    const pRx = Math.min(1, stats.reactionsReceived / 50);
+    const pRx = Math.min(1, stats.reactionsReceived / 60);
+    const progress = Math.round(((pDays + pRead + pCom + pRx) / 4) * 100);
+
+    return {
+      level: 2,
+      levelCode: 'lv2',
+      title: '常青极客',
+      trustLevel: tl,
+      maxTrustLevel: 60,
+      badge: 'LV.2 · 常青极客',
+      isWebmaster: false,
+      isSquareAvatar: false,
+      nextLevelTitle: '先驱',
+      nextRequirementHint: `晋升「先驱」还需: 活跃 ${Math.max(0, 90 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 720 - stats.readingMinutes)}m | 评论 ${Math.max(0, 100 - stats.commentCount)}条 | 获赞 ${Math.max(0, 60 - stats.reactionsReceived)}个`,
+      progressPercent: Math.min(99, progress),
+      stats,
+    };
+  }
+
+  // 5. 活跃用户
+  if (stage5_active) {
+    const tl = calculateEarnedTrustLevel(stats, 31, 45);
+    const pDays = Math.min(1, stats.activeDays / 45);
+    const pRead = Math.min(1, stats.readingMinutes / 480);
+    const pCom = Math.min(1, stats.commentCount / 60);
+    const pRx = Math.min(1, stats.reactionsReceived / 40);
     const progress = Math.round(((pDays + pRead + pCom + pRx) / 4) * 100);
 
     return {
       level: 2,
       levelCode: 'lv2',
       title: '活跃用户',
-      trustLevel: 10,
+      trustLevel: tl,
+      maxTrustLevel: 45,
       badge: 'LV.2 · 活跃用户',
       isWebmaster: false,
       isSquareAvatar: false,
-      nextLevelTitle: '先驱',
-      nextRequirementHint: `晋升「先驱」还需: 活跃 ${Math.max(0, 60 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 720 - stats.readingMinutes)}m | 评论 ${Math.max(0, 100 - stats.commentCount)}条 | 获赞 ${Math.max(0, 50 - stats.reactionsReceived)}个`,
+      nextLevelTitle: '常青极客',
+      nextRequirementHint: `晋升「常青极客」还需: 活跃 ${Math.max(0, 45 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 480 - stats.readingMinutes)}m | 评论 ${Math.max(0, 60 - stats.commentCount)}条 | 获赞 ${Math.max(0, 40 - stats.reactionsReceived)}个`,
       progressPercent: Math.min(99, progress),
       stats,
     };
   }
 
-  // 6. LV.1 贡献者: 阅读 > 30min, 评论 >= 10 (含 boost)
-  const contributorMet = stats.readingMinutes >= 30 && stats.commentCount >= 10;
-  if (contributorMet) {
+  // 4. 思辨学者
+  if (stage4_scholar) {
+    const tl = calculateEarnedTrustLevel(stats, 21, 30);
     const pDays = Math.min(1, stats.activeDays / 20);
     const pRead = Math.min(1, stats.readingMinutes / 300);
     const pCom = Math.min(1, stats.commentCount / 30);
-    const pRx = Math.min(1, stats.reactionsReceived / 30);
+    const pRx = Math.min(1, stats.reactionsReceived / 20);
     const progress = Math.round(((pDays + pRead + pCom + pRx) / 4) * 100);
 
     return {
       level: 1,
       levelCode: 'lv1',
-      title: '贡献者',
-      trustLevel: 7,
-      badge: 'LV.1 · 贡献者',
+      title: '思辨学者',
+      trustLevel: tl,
+      maxTrustLevel: 30,
+      badge: 'LV.1 · 思辨学者',
       isWebmaster: false,
       isSquareAvatar: false,
       nextLevelTitle: '活跃用户',
-      nextRequirementHint: `晋升「活跃用户」还需: 活跃 ${Math.max(0, 20 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 300 - stats.readingMinutes)}m | 评论 ${Math.max(0, 30 - stats.commentCount)}条 | 获赞 ${Math.max(0, 30 - stats.reactionsReceived)}个`,
+      nextRequirementHint: `晋升「活跃用户」还需: 活跃 ${Math.max(0, 20 - stats.activeDays)} 天 | 阅读 ${Math.max(0, 300 - stats.readingMinutes)}m | 评论 ${Math.max(0, 30 - stats.commentCount)}条 | 获赞 ${Math.max(0, 20 - stats.reactionsReceived)}个`,
       progressPercent: Math.min(99, progress),
       stats,
     };
   }
 
-  // 7. LV.1 基本用户: 首次发表评论 (commentCount >= 1)
-  if (stats.commentCount >= 1) {
+  // 3. 贡献者
+  if (stage3_contributor) {
+    const tl = calculateEarnedTrustLevel(stats, 11, 20);
+    const pRead = Math.min(1, stats.readingMinutes / 120);
+    const pCom = Math.min(1, stats.commentCount / 20);
+    const pRx = Math.min(1, stats.reactionsReceived / 10);
+    const progress = Math.round(((pRead + pCom + pRx) / 3) * 100);
+
+    return {
+      level: 1,
+      levelCode: 'lv1',
+      title: '贡献者',
+      trustLevel: tl,
+      maxTrustLevel: 20,
+      badge: 'LV.1 · 贡献者',
+      isWebmaster: false,
+      isSquareAvatar: false,
+      nextLevelTitle: '思辨学者',
+      nextRequirementHint: `晋升「思辨学者」还需: 阅读 ${Math.max(0, 120 - stats.readingMinutes)}m | 评论 ${Math.max(0, 20 - stats.commentCount)}条 | 获赞 ${Math.max(0, 10 - stats.reactionsReceived)}个`,
+      progressPercent: Math.min(99, progress),
+      stats,
+    };
+  }
+
+  // 2. 基本用户
+  if (stage2_basic) {
+    const tl = calculateEarnedTrustLevel(stats, 3, 10);
     const pRead = Math.min(1, stats.readingMinutes / 30);
     const pCom = Math.min(1, stats.commentCount / 10);
     const progress = Math.round(((pRead + pCom) / 2) * 100);
@@ -416,7 +602,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 1,
       levelCode: 'lv1',
       title: '基本用户',
-      trustLevel: 5,
+      trustLevel: tl,
+      maxTrustLevel: 10,
       badge: 'LV.1 · 基本用户',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -427,13 +614,15 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 8. LV.0 初始用户: 首次进行阅读 (hasReadAny || readingMinutes > 0)
-  if (stats.hasReadAny || stats.readingMinutes > 0) {
+  // 1. 初始用户
+  if (stage1_initial) {
+    const tl = calculateEarnedTrustLevel(stats, 1, 2);
     return {
       level: 0,
       levelCode: 'lv0',
       title: '初始用户',
-      trustLevel: 2,
+      trustLevel: tl,
+      maxTrustLevel: 2,
       badge: 'LV.0 · 初始用户',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -444,12 +633,13 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 9. LV.0 新兴用户: 初始情况 / 新建账号
+  // 0. 新兴用户
   return {
     level: 0,
     levelCode: 'lv0',
     title: '新兴用户',
     trustLevel: 0,
+    maxTrustLevel: 0,
     badge: 'LV.0 · 新兴用户',
     isWebmaster: false,
     isSquareAvatar: false,
@@ -492,21 +682,6 @@ export function getAuthorGroups(author: {
 
   return ['社区读者圈'];
 }
-
-/**
- * Official 8 title ladder names.
- */
-export const OFFICIAL_LADDER_TITLES: readonly UserLevelTitle[] = [
-  '站长',
-  '核心成员',
-  '年度用户',
-  '先驱',
-  '活跃用户',
-  '贡献者',
-  '基本用户',
-  '初始用户',
-  '新兴用户',
-] as const;
 
 /**
  * Official group / identity tags whitelist.
@@ -636,7 +811,7 @@ export function evaluateUserBadges(
       icon: '👑',
       category: 'tier',
       priority: 100,
-      description: '博客站长与系统主创，拥有最高全站管理权限',
+      description: '博客站长与系统主创，拥有最高全站管理权限 (TL.100)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '核心成员' || merged.role === 'core_member') {
@@ -650,6 +825,17 @@ export function evaluateUserBadges(
       description: '社区核心成员与架构协作者',
       isUnlocked: true,
     });
+  } else if (levelInfo.title === '墨海宗师') {
+    unlocked.push({
+      id: 'tier_ink_master',
+      name: '墨海宗师',
+      label: '墨海宗师',
+      icon: '📜',
+      category: 'tier',
+      priority: 100,
+      description: '登峰造极的读者宗师，博学笃行 (TL.90 上限)',
+      isUnlocked: true,
+    });
   } else if (levelInfo.title === '年度用户') {
     unlocked.push({
       id: 'tier_annual_member',
@@ -658,7 +844,7 @@ export function evaluateUserBadges(
       icon: '🏅',
       category: 'tier',
       priority: 100,
-      description: '与博客结缘满一年的尊贵读者',
+      description: '与博客结缘满一年的尊贵常客读者',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '先驱') {
@@ -672,6 +858,17 @@ export function evaluateUserBadges(
       description: '深度见证博客成长的社区先驱读者',
       isUnlocked: true,
     });
+  } else if (levelInfo.title === '常青极客') {
+    unlocked.push({
+      id: 'tier_evergreen_geek',
+      name: '常青极客',
+      label: '常青极客',
+      icon: '🌲',
+      category: 'tier',
+      priority: 100,
+      description: '高频沉浸与深度探讨的常青读者',
+      isUnlocked: true,
+    });
   } else if (levelInfo.title === '活跃用户') {
     unlocked.push({
       id: 'tier_active_user',
@@ -681,6 +878,17 @@ export function evaluateUserBadges(
       category: 'tier',
       priority: 100,
       description: '高频互动并深研博客内容的活跃读者',
+      isUnlocked: true,
+    });
+  } else if (levelInfo.title === '思辨学者') {
+    unlocked.push({
+      id: 'tier_reflective_scholar',
+      name: '思辨学者',
+      label: '思辨学者',
+      icon: '💡',
+      category: 'tier',
+      priority: 100,
+      description: '见解深刻且频频引发读者共鸣的学术读者',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '贡献者') {
@@ -950,7 +1158,7 @@ export function evaluateUserBadges(
   const daysSinceRegistered = merged.daysSinceRegistered ?? 0;
   const hasEmail = Boolean(merged.epomail || merged.email);
 
-  if (activeDays >= 200 || daysSinceRegistered >= 500) {
+  if (activeDays >= 200 || daysSinceRegistered >= 365) {
     unlocked.push({
       id: 'activity_evergreen',
       name: '坚韧长青',
@@ -1145,21 +1353,17 @@ export function getProgressColorTier(percent: number): 'red' | 'yellow' | 'green
  * Computes exact comparison data for next level requirements.
  * Rules:
  * - Direct comparison between real current stats and next level targets.
- * - Even if current exceeds target, progress bar strictly caps at 100% (即使超出了，也是直接显示满了).
- * - Satisfied criteria stack downwards (满足可以继续向下叠加).
- * - LV.3 is the automatic promotion ceiling (到达LV.3是自动升级的上限).
- * - Webmaster (站长) is the unique owner who bypasses level restrictions even if criteria are not met.
- * - Progress bar colors represent 3 tiers from low to high: Red (<40%), Yellow (40%-79%), Green (>=80%).
+ * - Even if current exceeds target, progress bar strictly caps at 100%.
+ * - LV.3「墨海宗师」is the automatic promotion ceiling.
+ * - Webmaster (站长) is the unique owner who bypasses level restrictions with TL 100.
+ * - Progress bar colors: Red (<40%), Yellow (40%-79%), Green (>=80%).
  */
 export function getNextLevelRequirements(
   stats: UserStats,
   accountRole?: string,
   email?: string
 ): NextLevelRequirementPlan {
-  const isOwner =
-    stats.isWebmaster ||
-    accountRole === 'admin' ||
-    (email && email.toLowerCase() === 'admin@epomail.bond');
+  const currentInfo = computeUserLevel(stats, accountRole, email);
 
   const createItem = (
     id: string,
@@ -1184,7 +1388,8 @@ export function getNextLevelRequirements(
     };
   };
 
-  if (isOwner) {
+  // 1. 站长
+  if (currentInfo.isWebmaster) {
     const items: LevelRequirementItem[] = [
       createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
       createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
@@ -1194,7 +1399,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 4,
       currentTitle: '站长',
-      nextTitle: '站长专属全站权限',
+      nextTitle: '站长专属全站特权 (TL.100 全穿透)',
       isMaxAutoLevel: true,
       isWebmaster: true,
       isExempt: true,
@@ -1204,7 +1409,8 @@ export function getNextLevelRequirements(
     };
   }
 
-  if (stats.customLevel === 4) {
+  // 2. 核心成员 / 管理员
+  if (currentInfo.title === '核心成员') {
     const items: LevelRequirementItem[] = [
       createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
       createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
@@ -1214,7 +1420,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 4,
       currentTitle: '核心成员',
-      nextTitle: '站长特邀特权',
+      nextTitle: '社区管理特权 (TL.91~99)',
       isMaxAutoLevel: true,
       isWebmaster: false,
       isExempt: true,
@@ -1224,18 +1430,18 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.3 年度用户 (activeDays >= 365) - Automatic leveling ceiling
-  if (stats.activeDays >= 365) {
+  // 3. LV.3 墨海宗师 - 读者晋升巅峰
+  if (currentInfo.title === '墨海宗师') {
     const items: LevelRequirementItem[] = [
-      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 365),
-      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
-      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
-      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 300),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 2160),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 150),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 100),
     ];
     return {
       currentLevel: 3,
-      currentTitle: '年度用户',
-      nextTitle: '已达自动晋升上限 (LV.3)',
+      currentTitle: '墨海宗师',
+      nextTitle: '已达读者自动晋升巅峰 (LV.3 · 墨海宗师)',
       isMaxAutoLevel: true,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1244,25 +1450,37 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.3 先驱 (activeDays >= 60 && readingMinutes >= 720 && commentCount >= 100 && reactionsReceived >= 50)
-  const pioneerMet =
-    stats.activeDays >= 60 &&
-    stats.readingMinutes >= 720 &&
-    stats.commentCount >= 100 &&
-    stats.reactionsReceived >= 50;
-
-  if (pioneerMet) {
+  // 4. LV.3 年度用户 -> 墨海宗师 (activeDays >= 300 && readingMinutes >= 2160 && reactionsReceived >= 100)
+  if (currentInfo.title === '年度用户') {
     const items: LevelRequirementItem[] = [
-      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 365),
-      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
-      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
-      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 300),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 2160),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 100),
+    ];
+    return {
+      currentLevel: 3,
+      currentTitle: '年度用户',
+      nextTitle: '墨海宗师 (LV.3)',
+      isMaxAutoLevel: false,
+      isWebmaster: false,
+      totalRequirements: items.length,
+      metRequirements: items.filter((i) => i.isMet).length,
+      items,
+    };
+  }
+
+  // 5. LV.3 先驱 -> 年度用户 (activeDays >= 180 && readingMinutes >= 1440 && commentCount >= 150)
+  if (currentInfo.title === '先驱') {
+    const items: LevelRequirementItem[] = [
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 180),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 1440),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 150),
     ];
     return {
       currentLevel: 3,
       currentTitle: '先驱',
       nextTitle: '年度用户 (LV.3)',
-      isMaxAutoLevel: true,
+      isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
       metRequirements: items.filter((i) => i.isMet).length,
@@ -1270,23 +1488,17 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.2 活跃用户: 活跃 > 20 天, 阅读 > 300min, 评论 >= 30, 收到 30+ 赞
-  const activeUserMet =
-    stats.activeDays >= 20 &&
-    stats.readingMinutes >= 300 &&
-    stats.commentCount >= 30 &&
-    stats.reactionsReceived >= 30;
-
-  if (activeUserMet) {
+  // 6. LV.2 常青极客 -> 先驱 (activeDays >= 90 && readingMinutes >= 720 && commentCount >= 100 && reactionsReceived >= 60)
+  if (currentInfo.title === '常青极客') {
     const items: LevelRequirementItem[] = [
-      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 60),
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 90),
       createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 720),
       createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 100),
-      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 50),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 60),
     ];
     return {
       currentLevel: 2,
-      currentTitle: '活跃用户',
+      currentTitle: '常青极客',
       nextTitle: '先驱 (LV.3)',
       isMaxAutoLevel: false,
       isWebmaster: false,
@@ -1296,18 +1508,37 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.1 贡献者: 阅读 > 30min, 评论 >= 10
-  const contributorMet = stats.readingMinutes >= 30 && stats.commentCount >= 10;
-  if (contributorMet) {
+  // 7. LV.2 活跃用户 -> 常青极客 (activeDays >= 45 && readingMinutes >= 480 && commentCount >= 60 && reactionsReceived >= 40)
+  if (currentInfo.title === '活跃用户') {
+    const items: LevelRequirementItem[] = [
+      createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 45),
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 480),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 60),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 40),
+    ];
+    return {
+      currentLevel: 2,
+      currentTitle: '活跃用户',
+      nextTitle: '常青极客 (LV.2)',
+      isMaxAutoLevel: false,
+      isWebmaster: false,
+      totalRequirements: items.length,
+      metRequirements: items.filter((i) => i.isMet).length,
+      items,
+    };
+  }
+
+  // 8. LV.1 思辨学者 -> 活跃用户 (activeDays >= 20 && readingMinutes >= 300 && commentCount >= 30 && reactionsReceived >= 20)
+  if (currentInfo.title === '思辨学者') {
     const items: LevelRequirementItem[] = [
       createItem('activeDays', '活跃天数', '📅', '天', stats.activeDays, 20),
       createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 300),
       createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 30),
-      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 30),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 20),
     ];
     return {
       currentLevel: 1,
-      currentTitle: '贡献者',
+      currentTitle: '思辨学者',
       nextTitle: '活跃用户 (LV.2)',
       isMaxAutoLevel: false,
       isWebmaster: false,
@@ -1317,8 +1548,27 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.1 基本用户 (commentCount >= 1)
-  if (stats.commentCount >= 1) {
+  // 9. LV.1 贡献者 -> 思辨学者 (readingMinutes >= 120 && commentCount >= 20 && reactionsReceived >= 10)
+  if (currentInfo.title === '贡献者') {
+    const items: LevelRequirementItem[] = [
+      createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 120),
+      createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 20),
+      createItem('reactionsReceived', '互动获赞', '❤️', '个', stats.reactionsReceived, 10),
+    ];
+    return {
+      currentLevel: 1,
+      currentTitle: '贡献者',
+      nextTitle: '思辨学者 (LV.1)',
+      isMaxAutoLevel: false,
+      isWebmaster: false,
+      totalRequirements: items.length,
+      metRequirements: items.filter((i) => i.isMet).length,
+      items,
+    };
+  }
+
+  // 10. LV.1 基本用户 -> 贡献者 (readingMinutes >= 30 && commentCount >= 10)
+  if (currentInfo.title === '基本用户') {
     const items: LevelRequirementItem[] = [
       createItem('readingMinutes', '阅读时长', '📖', 'min', Math.round(stats.readingMinutes), 30),
       createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 10),
@@ -1335,8 +1585,8 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.0 初始用户 (hasReadAny || readingMinutes > 0)
-  if (stats.hasReadAny || stats.readingMinutes > 0) {
+  // 11. LV.0 初始用户 -> 基本用户 (commentCount >= 1)
+  if (currentInfo.title === '初始用户') {
     const items: LevelRequirementItem[] = [
       createItem('commentCount', '发表讨论', '💬', '次', stats.commentCount, 1),
     ];
@@ -1352,7 +1602,7 @@ export function getNextLevelRequirements(
     };
   }
 
-  // LV.0 新兴用户
+  // 12. LV.0 新兴用户 -> 初始用户 (readingMinutes >= 1)
   const items: LevelRequirementItem[] = [
     createItem('readingMinutes', '阅读探索', '📖', 'min', Math.round(stats.readingMinutes), 1),
   ];
