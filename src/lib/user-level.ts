@@ -1227,7 +1227,6 @@ export function evaluateUserBadges(
 
   // 4. 【赞赏喝彩成就】（权重 40-85）
   const reactionsGiven = merged.reactionsGiven ?? 0;
-  const reactionsReceived = merged.reactionsReceived ?? 0;
   if (reactionsReceived >= 100) {
     unlocked.push({
       id: 'reaction_rec_100',
@@ -1304,9 +1303,7 @@ export function evaluateUserBadges(
   // 5. 【常客与资料成就】（权重 30-90）
   const bio = merged.bio || '';
   const avatarUrl = merged.avatarUrl || '';
-  const activeDays = merged.activeDays ?? 1;
   const daysSinceRegistered = merged.daysSinceRegistered ?? 0;
-  const hasEmail = Boolean(merged.epomail || merged.email);
 
   if (activeDays >= 200 || daysSinceRegistered >= 365) {
     unlocked.push({
