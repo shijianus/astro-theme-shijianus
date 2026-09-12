@@ -1304,11 +1304,18 @@
 ### Task 58: 修复 ProfileWidget 社交图标 (.social-icon) 与全站邮箱一致性 (`4506792`)
 - [x] **修复 ProfileWidget 社交图标邮箱链接与标题不一致问题**：
   - 将 `src/components/ProfileWidget.tsx` 中 `class="social-icon"` 邮件图标的 `href` 由 `mailto:${email}`（原值为 `hello@shijian.us`）修正并动态绑定为 `mailto:${email || 'shijianus@epocanvas.com'}`，标题同步统一为 `title={`Email: ${email || 'shijianus@epocanvas.com'}`}`；
-  - 彻底消除 DOM 中 `title="Email: shijianus@epocanvas.com"` 与实际 `href="mailto:hello@shijian.us"` 的冲突，悬停与点击打开的目标邮箱保持 100% 一致。
 - [x] **全站作者与导航邮箱配置统一**：
   - 更新 `src/config/site.ts` 中 `siteConfig.site.author.email` 为 `shijianus@epocanvas.com`；
   - 同步更新导航栏 utility 及页脚 socialBar 中的邮件链接为 `mailto:shijianus@epocanvas.com`；
   - 全站静态打包（`npm run build`）构建通过，93 个页面生成的 HTML 产物已验证生效。
+- [x] **生产端 (Cloudflare Pages) 全量上线与真实链路 Playwright 审计通过**：
+  - 生产边缘节点部署成功（部署标识：`https://cc110299.shijianus-blog.pages.dev`，主域名 `https://blog.epocanvas.com` 同步上线生效）；
+  - 编写并执行专用生产 Playwright 端到端审计套件（`scripts/verify-live-social-email.mjs`），全量验证 Pages 部署版本与生产主域 `blog.epocanvas.com`：
+    1. HTTP 状态码 200 OK，0 控制台致命 JS 报错；
+    2. 作者名片社交图标 `.card-info-social-icons .social-icon` 真实链接 `href="mailto:shijianus@epocanvas.com"` 与悬停提示 `title="Email: shijianus@epocanvas.com"` 严格一致；
+    3. 页脚链接 `#footer_deal a` 邮箱链接同步更新为 `mailto:shijianus@epocanvas.com`；
+    4. 自动截取两套真实生产环境截图存档（`scripts/audit_screenshots/live-social-email-*.png`），端到端实测 100% PASS 通过。
+
 
 
 
