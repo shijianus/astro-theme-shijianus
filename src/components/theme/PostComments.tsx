@@ -487,14 +487,14 @@ export function PostComments({
 
     const authorWebsite = isCurrentAccount
       ? (account?.website || comment.authorWebsite || '')
-      : (isWebmaster && account?.role === 'admin'
-        ? (account?.website || comment.authorWebsite || '')
+      : (isWebmaster
+        ? (comment.authorWebsite || (account?.role === 'admin' ? account?.website : undefined) || 'https://blog.epocanvas.com')
         : (comment.authorWebsite || ''));
 
     const authorEmail = isCurrentAccount
-      ? (account?.email || comment.authorEmail)
-      : (isWebmaster && account?.role === 'admin'
-        ? (account?.email || comment.authorEmail)
+      ? (account?.email || comment.authorEmail || (isWebmaster ? 'shijianus@epocanvas.com' : undefined))
+      : (isWebmaster
+        ? (comment.authorEmail || (account?.role === 'admin' ? account?.email : undefined) || 'shijianus@epocanvas.com')
         : comment.authorEmail);
 
     const avatarUrl = isCurrentAccount
