@@ -75,10 +75,12 @@ export async function generateWithInstanceAi(
   const seed = Math.floor(Math.random() * 1000000);
   const maxTokens = options?.maxTokens || 850;
 
-  for (const model of candidateModels) {
+  const attempts = candidateModels.slice(0, 2);
+
+  for (const model of attempts) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
 
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',

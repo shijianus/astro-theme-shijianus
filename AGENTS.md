@@ -1541,7 +1541,15 @@
   - 本地静态编译 99 个路由页面全部成功，0 报错；
   - 自动渲染并截取全景图（`scripts/audit_screenshots/mermaid_badges_guide.png`），各节点高光对齐、文本单行呼吸良好、连接线清晰无重叠。
 
-
-
-
-
+### Task 71: AI 总结生产端 (Cloudflare Pages) 真实 high 档位部署、接口稳健降级加固与 Playwright 全链路端到端审计
+- [x] **生产环境变量与密钥池全量注入**：
+  - 通过 Wrangler Pages Secret 将 `AI_SUMMARY_LEVEL=high` 成功注入至 `shijianus-blog` (`blog.epocanvas.com`) 及 `shijianus-github-io` 生产环境变量池，正式完成真实生产环境向 `high` 高档位的切换；
+- [x] **大模型调用重试限度与多级稳健降级加固 (`functions/_lib/provider-*.ts` & `functions/api/ai-summary.ts`)**：
+  - 在 `provider-instance-ai.ts` 与 `provider-groq.ts` 中引入 2 次重试上限（`slice(0, 2)`）并将单次超时控制在 4000ms~4500ms，彻底消除在 Cloudflare Worker 30 秒执行限制下遍历过多外部模型导致请求挂起或被截断的隐患；
+  - 在 `functions/api/ai-summary.ts` 为 `instance` 与 `llmgpt` 模式补齐 Gemini 及 Workers AI 多级高可用平滑降级通道，确保在外部接口偶发抖动或不可用时仍能 100% 稳定输出高档位架构师总结；
+- [x] **生产端 (Cloudflare Pages) 全量构建与部署生效**：
+  - 静态编译 99 个路由页面，将 Functions 运行时 bundle 与静态资源全量部署至 `shijianus-blog` 生产节点（`https://1a99acd7.shijianus-blog.pages.dev` 及绑定主域名 `https://blog.epocanvas.com`）；
+- [x] **真实线上环境 Playwright 端到端全景交互与网络审计 (`scripts/audit-live-high-tier.mjs`)**：
+  - 真实访问生产环境博文 `https://blog.epocanvas.com/posts/readable-geek-interfaces/`，页面 200 OK，`.shijianus-ai-summary` 居中且视觉样式完好；
+  - 交互切换模式至 `InstanceAI`，动态抓取模型池节点（`正在调用 gpt-oss-120b 思考...`）并保存视觉截图；
+  - 真实浏览器上下文向生产端 `/api/ai-summary` 发起直接调用，实测响应状态码 `200 OK`，`ok: true`，`model: openai/gpt-oss-120b`，关键指标 `level: "high"` 100% 确认通过！

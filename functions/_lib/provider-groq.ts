@@ -41,7 +41,9 @@ export async function generateWithGroq(
 
   const maxTokens = options?.maxTokens || 850;
 
-  for (const model of candidateModels) {
+  const attempts = candidateModels.slice(0, 2);
+
+  for (const model of attempts) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);

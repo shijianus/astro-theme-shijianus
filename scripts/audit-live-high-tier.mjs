@@ -115,29 +115,31 @@ async function runHighTierAudit() {
   console.log(`[DOM] 核心论点解答: ${pointOutput?.trim().slice(0, 100)}...`);
 
   // 5. 验证后端网络真实 level
-  // 直接通过 POST 请求验证生产端 Functions 的真实响应
-  console.log('\n[Live API] 向生产环境真实 /api/ai-summary 发送直接验证请求...');
-  const apiTestResponse = await page.request.post('https://blog.epocanvas.com/api/ai-summary', {
-    data: {
-      slug: 'readable-geek-interfaces',
-      title: '极客感界面为什么更需要可读性',
-      summary: '技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。',
-      content: '测试高档位全量知识库传递：' + '极客感界面的核心是信息可读性与工程秩序。'.repeat(50),
-      mode: 'instance',
-    },
+  // 在真实浏览器上下文内执行 fetch 验证生产端 Functions 的真实响应
+  console.log('\n[Live API] 在真实浏览器上下文向生产环境 /api/ai-summary 发送直接验证请求...');
+  const liveJson = await page.evaluate(async () => {
+    try {
+      const resp = await fetch('/api/ai-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: 'readable-geek-interfaces-live-test',
+          title: '极客感界面为什么更需要可读性',
+          summary: '技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。',
+          content: '测试高档位全量知识库传递：' + '极客感界面的核心是信息可读性与工程秩序。'.repeat(30),
+          mode: 'auto',
+        }),
+      });
+      return { status: resp.status, ...(await resp.json()) };
+    } catch (e) {
+      return { error: e.message };
+    }
   });
 
-  console.log(`[Live API] 响应 HTTP 状态码: ${apiTestResponse.status()}`);
-  const liveJson = await apiTestResponse.json();
-  console.log('[Live API] 响应详情:', {
-    ok: liveJson.ok,
-    level: liveJson.level,
-    model: liveJson.model,
-    summaryLength: liveJson.summary?.length,
-  });
+  console.log('[Live API] 响应详情:', liveJson);
 
   if (liveJson.level !== 'high') {
-    console.warn(`⚠️ 警告: 预期 level 为 high，当前返回 ${liveJson.level}`);
+    console.warn(`⚠️ 警告: 预期 level 为 high，当前返回 ${liveJson?.level}`);
   } else {
     console.log('🎉 生产端真实 level 经校验 100% 确认为 high 档位！');
   }

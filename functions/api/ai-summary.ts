@@ -212,10 +212,22 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
     if (!aiResult) {
       aiResult = await generateWithGroq(env, prompt, systemInstruction, providerOptions);
     }
+    if (!aiResult) {
+      aiResult = await generateWithGemini(env, prompt, systemInstruction);
+    }
+    if (!aiResult) {
+      aiResult = await generateWithWorkersAi(env, prompt, systemInstruction);
+    }
   } else if (mode === 'llmgpt') {
     aiResult = await generateWithGroq(env, prompt, systemInstruction, providerOptions);
     if (!aiResult) {
       aiResult = await generateWithInstanceAi(env, prompt, systemInstruction, providerOptions);
+    }
+    if (!aiResult) {
+      aiResult = await generateWithGemini(env, prompt, systemInstruction);
+    }
+    if (!aiResult) {
+      aiResult = await generateWithWorkersAi(env, prompt, systemInstruction);
     }
   } else {
     // auto or question
