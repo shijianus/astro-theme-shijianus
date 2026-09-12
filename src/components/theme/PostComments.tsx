@@ -675,9 +675,9 @@ export function PostComments({
       e.preventDefault();
       const epomailUrl = `https://mail.epocanvas.com/inbox?composeTo=${encodeURIComponent(clean)}`;
       window.open(epomailUrl, '_blank', 'noopener,noreferrer');
-      showToast('已在新窗口打开 Epomail 邮件撰写', 'info', 2500);
+      showToast(tC.toastOpeningEpomail || '已在新窗口打开 Epomail 邮件撰写', 'info', 2500);
     } else {
-      showToast('正在调起本地邮件客户端 (mailto)...', 'info', 2000);
+      showToast(tC.toastOpeningMailto || '正在调起本地邮件客户端 (mailto)...', 'info', 2000);
     }
   };
 
@@ -685,7 +685,7 @@ export function PostComments({
     const markCopied = () => {
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2000);
-      showToast('已复制邮箱地址到剪贴板', 'success');
+      showToast(tC.popoverEmailCopySuccess || '已复制邮箱地址到剪贴板', 'success');
     };
 
     if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
@@ -4255,18 +4255,36 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                       type="button"
                       className="profile-popover-mention-btn"
                       onClick={() => handleQuickMentionAuthor(profilePopover.author!.name)}
-                      title={`@ 提及 ${profilePopover.author.name}`}
+                      title={tC.popoverMentionTitle ? tC.popoverMentionTitle(profilePopover.author.name) : `@ 提及 ${profilePopover.author.name}`}
                     >
                       <AtSign size={11} />
-                      <span>提及此人</span>
+                      <span>{tC.popoverMentionBtn || '提及此人'}</span>
                     </button>
+                    {profilePopover.author.email && (
+                      <a
+                        href={getMailActionHref(profilePopover.author.email)}
+                        onClick={(e) => handleSendEmail(e, profilePopover.author!.email!)}
+                        className="profile-popover-mail-link"
+                        role="button"
+                        title={
+                          isEpomailLoggedIn()
+                            ? (tC.popoverMailTitleEpomail || '已登录 Epomail，点击直接在线撰写邮件')
+                            : (tC.popoverMailTitleMailto || '发送邮件 (mailto)')
+                        }
+                        target={isEpomailLoggedIn() ? '_blank' : undefined}
+                        rel={isEpomailLoggedIn() ? 'noopener noreferrer' : undefined}
+                      >
+                        <Send size={11} className="profile-popover-mail-icon" />
+                        <span className="profile-popover-mail-text">{tC.popoverMailBtn || '写信'}</span>
+                      </a>
+                    )}
                     {profilePopover.author.website && (
                       <a
                         href={profilePopover.author.website}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
                         className="profile-popover-action-icon-btn"
-                        title="访问个人站点"
+                        title={tC.popoverWebsiteTitle || '访问个人站点'}
                       >
                         <Globe size={12} />
                       </a>
@@ -4277,7 +4295,7 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                 {/* 2. Bio: Plain text paragraph, no borders */}
                 <p className="profile-popover-bio">
                   {profilePopover.author.bio || (
-                    <span className="profile-popover-bio-empty">这位读者很低调，暂未留下介绍。</span>
+                    <span className="profile-popover-bio-empty">{tC.popoverBioEmpty || '这位读者很低调，暂未留下介绍。'}</span>
                   )}
                 </p>
 
@@ -4290,7 +4308,7 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                       target="_blank"
                       rel="noopener noreferrer nofollow"
                       className="profile-popover-website-link"
-                      title={`访问个人站点: ${profilePopover.author.website}`}
+                      title={`${tC.popoverWebsiteTitle || '访问个人站点'}: ${profilePopover.author.website}`}
                     >
                       {profilePopover.author.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
                     </a>
@@ -4315,7 +4333,7 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                           handleCopyEmail(profilePopover.author!.email!);
                         }
                       }}
-                      title={copiedEmail ? '已复制邮箱到剪贴板' : '点击复制邮箱地址'}
+                      title={copiedEmail ? (tC.popoverEmailCopiedTitle || '已复制邮箱到剪贴板') : (tC.popoverEmailCopyTitle || '点击复制邮箱地址')}
                     >
                       <Mail size={11} className="profile-popover-email-icon" />
                       <span className="profile-popover-email-text" title={profilePopover.author.email}>
@@ -4325,28 +4343,9 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                         {copiedEmail ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
                       </span>
                       {copiedEmail && (
-                        <span className="profile-popover-copied-badge">已复制</span>
+                        <span className="profile-popover-copied-badge">{tC.popoverEmailCopiedBadge || '已复制'}</span>
                       )}
                     </span>
-
-                    {/* Mail Action Link: priority Epomail webmail compose, fallback to mailto */}
-                    <a
-                      href={getMailActionHref(profilePopover.author.email)}
-                      onClick={(e) => handleSendEmail(e, profilePopover.author!.email!)}
-                      className="profile-popover-mail-link"
-                      title={
-                        isEpomailLoggedIn()
-                          ? '已登录 Epomail，点击直接在线撰写邮件'
-                          : '发送邮件 (mailto)'
-                      }
-                      target={isEpomailLoggedIn() ? '_blank' : undefined}
-                      rel={isEpomailLoggedIn() ? 'noopener noreferrer' : undefined}
-                    >
-                      <Send size={10} className="profile-popover-mail-icon" />
-                      <span className="profile-popover-mail-text">
-                        {isEpomailLoggedIn() ? 'Epomail 写信' : '写信'}
-                      </span>
-                    </a>
                   </div>
                 )}
 

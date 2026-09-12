@@ -98,9 +98,32 @@ async function runLiveVerification() {
     }
     console.log('   ✅ 3. Direct click on email successfully activates copy animation and "已复制" badge.');
 
-    // 4. Test Mail Link in Unauthenticated State (Fallback to mailto)
+    // 4. Test Mail Link Placement in .profile-popover-actions and Unauthenticated State (Fallback to mailto)
+    const mailLinkPlacement = await page.evaluate(() => {
+      const inActions = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
+      const inEmailLine = document.querySelector('.profile-popover-email-line .profile-popover-mail-link');
+      const mentionBtn = document.querySelector('.profile-popover-actions .profile-popover-mention-btn');
+      return {
+        hasInActions: Boolean(inActions),
+        hasInEmailLine: Boolean(inEmailLine),
+        hasMentionBtn: Boolean(mentionBtn),
+      };
+    });
+    console.log('   -> Production mail link placement audit:', mailLinkPlacement);
+    if (!mailLinkPlacement.hasInActions) {
+      throw new Error('Expected .profile-popover-mail-link to be inside .profile-popover-actions on production');
+    }
+    if (mailLinkPlacement.hasInEmailLine) {
+      throw new Error('.profile-popover-mail-link should NOT be inside .profile-popover-email-line on production');
+    }
+    if (!mailLinkPlacement.hasMentionBtn) {
+      throw new Error('Expected .profile-popover-mention-btn to be alongside in .profile-popover-actions on production');
+    }
+    console.log('   ✅ 4. Production confirmed: .profile-popover-mail-link is placed inside .profile-popover-actions side-by-side with mention button.');
+
+    // 5. Test Mail Link in Unauthenticated State (Fallback to mailto)
     const mailLinkUnauthenticated = await page.evaluate(() => {
-      const link = document.querySelector('.profile-popover-mail-link');
+      const link = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
       if (!link) return null;
       return {
         href: link.getAttribute('href'),
@@ -113,12 +136,12 @@ async function runLiveVerification() {
     if (!mailLinkUnauthenticated.href?.startsWith('mailto:')) {
       throw new Error(`Expected mailto: href, got ${mailLinkUnauthenticated.href}`);
     }
-    if (!mailLinkUnauthenticated.text?.includes('写信')) {
-      throw new Error(`Expected label "写信", got ${mailLinkUnauthenticated.text}`);
+    if (mailLinkUnauthenticated.text !== '写信') {
+      throw new Error(`Expected label strictly "写信", got "${mailLinkUnauthenticated.text}"`);
     }
-    console.log('   ✅ 4. Unauthenticated state on production correctly falls back to standard mailto: link.');
+    console.log('   ✅ 5. Unauthenticated state on production correctly displays "写信" and falls back to standard mailto: link.');
 
-    // 5. Test Mail Link in Epomail Logged-In State
+    // 6. Test Mail Link in Epomail Logged-In State
     console.log('\n   -> Simulating user logged in via Epomail on production...');
     await page.evaluate(() => {
       const epomailIdentity = {
@@ -149,7 +172,7 @@ async function runLiveVerification() {
     await page.waitForTimeout(300);
 
     const mailLinkEpomail = await page.evaluate(() => {
-      const link = document.querySelector('.profile-popover-mail-link');
+      const link = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
       if (!link) return null;
       return {
         href: link.getAttribute('href'),
@@ -164,13 +187,13 @@ async function runLiveVerification() {
     if (!mailLinkEpomail.href?.includes('https://mail.epocanvas.com/inbox?composeTo=')) {
       throw new Error(`Expected Epomail compose URL, got ${mailLinkEpomail.href}`);
     }
-    if (!mailLinkEpomail.text?.includes('Epomail 写信')) {
-      throw new Error(`Expected label "Epomail 写信", got ${mailLinkEpomail.text}`);
+    if (mailLinkEpomail.text !== '写信') {
+      throw new Error(`Expected label strictly "写信", got "${mailLinkEpomail.text}"`);
     }
     if (mailLinkEpomail.target !== '_blank') {
       throw new Error(`Expected target="_blank", got ${mailLinkEpomail.target}`);
     }
-    console.log('   ✅ 5. When authenticated via Epomail, mail link on production prioritizes Epomail compose with composeTo target in new tab.');
+    console.log('   ✅ 6. When authenticated via Epomail, mail link on production retains "写信" and prioritizes Epomail compose with composeTo target in new tab.');
 
     // Save screenshot for audit
     const screenshotPath = path.join(screenshotsDir, 'live-popover-email-actions.png');

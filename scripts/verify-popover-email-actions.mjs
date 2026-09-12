@@ -190,9 +190,32 @@ async function runVerification() {
     }
     console.log('   ✅ 3. Direct click on email copies to clipboard, shows "已复制" badge and is-copied styling.');
 
-    // 4. Test Mail Link in Unauthenticated / Non-Epomail State (Fallback to mailto)
+    // 4. Test Mail Link Placement in .profile-popover-actions and Non-Epomail State (Fallback to mailto)
+    const mailLinkPlacement = await page.evaluate(() => {
+      const inActions = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
+      const inEmailLine = document.querySelector('.profile-popover-email-line .profile-popover-mail-link');
+      const mentionBtn = document.querySelector('.profile-popover-actions .profile-popover-mention-btn');
+      return {
+        hasInActions: Boolean(inActions),
+        hasInEmailLine: Boolean(inEmailLine),
+        hasMentionBtn: Boolean(mentionBtn),
+      };
+    });
+    console.log('   -> Mail link placement audit:', mailLinkPlacement);
+    if (!mailLinkPlacement.hasInActions) {
+      throw new Error('Expected .profile-popover-mail-link to be inside .profile-popover-actions');
+    }
+    if (mailLinkPlacement.hasInEmailLine) {
+      throw new Error('.profile-popover-mail-link should NOT be inside .profile-popover-email-line');
+    }
+    if (!mailLinkPlacement.hasMentionBtn) {
+      throw new Error('Expected .profile-popover-mention-btn to be alongside in .profile-popover-actions');
+    }
+    console.log('   ✅ 4. .profile-popover-mail-link is placed inside .profile-popover-actions side-by-side with mention button.');
+
+    // 5. Test Mail Link in Unauthenticated / Non-Epomail State (Fallback to mailto)
     const mailLinkUnauthenticated = await page.evaluate(() => {
-      const link = document.querySelector('.profile-popover-mail-link');
+      const link = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
       if (!link) return null;
       return {
         href: link.getAttribute('href'),
@@ -207,15 +230,15 @@ async function runVerification() {
     if (!mailLinkUnauthenticated.href.startsWith('mailto:shijian@epomail.bond')) {
       throw new Error(`Expected href to be mailto:shijian@epomail.bond, got ${mailLinkUnauthenticated.href}`);
     }
-    if (!mailLinkUnauthenticated.text.includes('写信')) {
-      throw new Error(`Expected label to contain "写信", got ${mailLinkUnauthenticated.text}`);
+    if (mailLinkUnauthenticated.text !== '写信') {
+      throw new Error(`Expected label strictly "写信", got "${mailLinkUnauthenticated.text}"`);
     }
     if (mailLinkUnauthenticated.target === '_blank') {
       throw new Error('mailto link should not have target="_blank"');
     }
-    console.log('   ✅ 4. Unauthenticated state correctly falls back to standard mailto: link.');
+    console.log('   ✅ 5. Unauthenticated state correctly displays "写信" and falls back to standard mailto: link.');
 
-    // 5. Test Mail Link in Epomail Logged-In State
+    // 6. Test Mail Link in Epomail Logged-In State
     console.log('\n   -> Simulating user logged in via Epomail...');
     await page.evaluate(() => {
       const epomailIdentity = {
@@ -246,7 +269,7 @@ async function runVerification() {
     await page.waitForTimeout(300);
 
     const mailLinkEpomailLoggedIn = await page.evaluate(() => {
-      const link = document.querySelector('.profile-popover-mail-link');
+      const link = document.querySelector('.profile-popover-actions .profile-popover-mail-link');
       if (!link) return null;
       return {
         href: link.getAttribute('href'),
@@ -261,8 +284,8 @@ async function runVerification() {
     if (!mailLinkEpomailLoggedIn.href.includes('https://mail.epocanvas.com/inbox?composeTo=shijian%40epomail.bond')) {
       throw new Error(`Expected Epomail compose URL, got ${mailLinkEpomailLoggedIn.href}`);
     }
-    if (!mailLinkEpomailLoggedIn.text.includes('Epomail 写信')) {
-      throw new Error(`Expected label "Epomail 写信", got ${mailLinkEpomailLoggedIn.text}`);
+    if (mailLinkEpomailLoggedIn.text !== '写信') {
+      throw new Error(`Expected label strictly "写信", got "${mailLinkEpomailLoggedIn.text}"`);
     }
     if (mailLinkEpomailLoggedIn.target !== '_blank') {
       throw new Error(`Expected target="_blank", got ${mailLinkEpomailLoggedIn.target}`);
@@ -270,24 +293,24 @@ async function runVerification() {
     if (!mailLinkEpomailLoggedIn.rel?.includes('noopener')) {
       throw new Error(`Expected rel to contain noopener, got ${mailLinkEpomailLoggedIn.rel}`);
     }
-    console.log('   ✅ 5. When logged into Epomail, mail link automatically prioritizes Epomail compose with composeTo parameter in new tab.');
+    console.log('   ✅ 6. When logged into Epomail, mail link retains "写信" and automatically prioritizes Epomail compose in new tab.');
 
-    // 6. Test Clicking Mail Link in Epomail State triggers window.open
+    // 7. Test Clicking Mail Link in Epomail State triggers window.open
     const popupPromise = page.waitForEvent('popup', { timeout: 4000 }).catch(() => null);
-    const mailLinkEl = await page.$('.profile-popover-mail-link');
+    const mailLinkEl = await page.$('.profile-popover-actions .profile-popover-mail-link');
     await mailLinkEl.click();
     const newPage = await popupPromise;
     if (newPage) {
       console.log(`   -> Popup opened with URL: ${newPage.url()}`);
       if (newPage.url().includes('mail.epocanvas.com')) {
-        console.log('   ✅ 6. Click on Epomail compose successfully triggered new tab to Epomail webmail.');
+        console.log('   ✅ 7. Click on Epomail compose successfully triggered new tab to Epomail webmail.');
       }
       await newPage.close();
     } else {
-      console.log('   ✅ 6. Click handler invoked properly with Epomail priority.');
+      console.log('   ✅ 7. Click handler invoked properly with Epomail priority.');
     }
 
-    console.log('\n🎉 ALL 6 VERIFICATION CRITERIA PASSED FLAWLESSLY!\n');
+    console.log('\n🎉 ALL 7 VERIFICATION CRITERIA PASSED FLAWLESSLY!\n');
   } finally {
     await browser.close();
     server.close();

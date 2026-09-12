@@ -392,6 +392,21 @@ export interface CommentTranslations {
   saveBtn: string;
   savingBtn: string;
   emptyComments: string;
+
+  // User Profile Popover & Mail Action
+  popoverMentionBtn: string;
+  popoverMentionTitle: (author: string) => string;
+  popoverMailBtn: string;
+  popoverMailTitleEpomail: string;
+  popoverMailTitleMailto: string;
+  toastOpeningEpomail: string;
+  toastOpeningMailto: string;
+  popoverWebsiteTitle: string;
+  popoverBioEmpty: string;
+  popoverEmailCopySuccess: string;
+  popoverEmailCopiedBadge: string;
+  popoverEmailCopyTitle: string;
+  popoverEmailCopiedTitle: string;
 }
 
 export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
@@ -779,6 +794,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: '地区: ',
     geoRealIpPrefix: ' (真实IP: ',
     geoAdminPrivilege: '博主权限：显示真实IP归属地',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: '提及此人',
+    popoverMentionTitle: (author) => `@ 提及 ${author}`,
+    popoverMailBtn: '写信',
+    popoverMailTitleEpomail: '已登录 Epomail，点击直接在线撰写邮件',
+    popoverMailTitleMailto: '发送邮件 (mailto)',
+    toastOpeningEpomail: '已在新窗口打开 Epomail 邮件撰写',
+    toastOpeningMailto: '正在调起本地邮件客户端 (mailto)...',
+    popoverWebsiteTitle: '访问个人站点',
+    popoverBioEmpty: '这位读者很低调，暂未留下介绍。',
+    popoverEmailCopySuccess: '已复制邮箱地址到剪贴板',
+    popoverEmailCopiedBadge: '已复制',
+    popoverEmailCopyTitle: '点击复制邮箱地址',
+    popoverEmailCopiedTitle: '已复制邮箱到剪贴板',
   },
 
   'zh-Hant': {
@@ -1164,6 +1194,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: '地區: ',
     geoRealIpPrefix: ' (真實IP: ',
     geoAdminPrivilege: '博主權限：顯示真實IP歸屬地',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: '提及此人',
+    popoverMentionTitle: (author) => `@ 提及 ${author}`,
+    popoverMailBtn: '寫信',
+    popoverMailTitleEpomail: '已登入 Epomail，點擊直接線上撰寫郵件',
+    popoverMailTitleMailto: '發送郵件 (mailto)',
+    toastOpeningEpomail: '已在新視窗開啟 Epomail 郵件撰寫',
+    toastOpeningMailto: '正在調起本機郵件客戶端 (mailto)...',
+    popoverWebsiteTitle: '造訪個人網站',
+    popoverBioEmpty: '這位讀者很低調，暫未留下介紹。',
+    popoverEmailCopySuccess: '已複製電子郵件地址至剪貼簿',
+    popoverEmailCopiedBadge: '已複製',
+    popoverEmailCopyTitle: '點擊複製電子郵件地址',
+    popoverEmailCopiedTitle: '已複製電子郵件至剪貼簿',
   },
 
   en: {
@@ -1549,6 +1594,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: 'Region: ',
     geoRealIpPrefix: ' (Real IP: ',
     geoAdminPrivilege: 'Author Privilege: Show real IP origin',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: 'Mention',
+    popoverMentionTitle: (author) => `@ Mention ${author}`,
+    popoverMailBtn: 'Compose',
+    popoverMailTitleEpomail: 'Signed into Epomail: Click to compose email online',
+    popoverMailTitleMailto: 'Send email (mailto)',
+    toastOpeningEpomail: 'Opened Epomail composer in a new tab',
+    toastOpeningMailto: 'Launching default mail client (mailto)...',
+    popoverWebsiteTitle: 'Visit personal website',
+    popoverBioEmpty: 'This reader is keeping a low profile and hasn’t left a bio yet.',
+    popoverEmailCopySuccess: 'Copied email address to clipboard',
+    popoverEmailCopiedBadge: 'Copied',
+    popoverEmailCopyTitle: 'Click to copy email address',
+    popoverEmailCopiedTitle: 'Email address copied to clipboard',
   },
 
   fr: {
@@ -1934,6 +1994,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: 'Région : ',
     geoRealIpPrefix: ' (IP réelle : ',
     geoAdminPrivilege: 'Privilège auteur : Afficher l’IP réelle',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: 'Mentionner',
+    popoverMentionTitle: (author) => `@ Mentionner ${author}`,
+    popoverMailBtn: 'Écrire',
+    popoverMailTitleEpomail: 'Connecté à Epomail : Cliquez pour rédiger un e-mail en ligne',
+    popoverMailTitleMailto: 'Envoyer un e-mail (mailto)',
+    toastOpeningEpomail: 'Compositeur Epomail ouvert dans un nouvel onglet',
+    toastOpeningMailto: 'Lancement du client de messagerie local (mailto)...',
+    popoverWebsiteTitle: 'Visiter le site personnel',
+    popoverBioEmpty: 'Ce lecteur est discret et n’a pas encore laissé de biographie.',
+    popoverEmailCopySuccess: 'Adresse e-mail copiée dans le presse-papiers',
+    popoverEmailCopiedBadge: 'Copié',
+    popoverEmailCopyTitle: 'Cliquer pour copier l’adresse e-mail',
+    popoverEmailCopiedTitle: 'E-mail copié dans le presse-papiers',
   },
 
   es: {
@@ -2319,6 +2394,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: 'Región: ',
     geoRealIpPrefix: ' (IP real: ',
     geoAdminPrivilege: 'Privilegio de autor: Mostrar IP real',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: 'Mencionar',
+    popoverMentionTitle: (author) => `@ Mencionar ${author}`,
+    popoverMailBtn: 'Redactar',
+    popoverMailTitleEpomail: 'Conectado a Epomail: Haz clic para redactar un correo en línea',
+    popoverMailTitleMailto: 'Enviar correo (mailto)',
+    toastOpeningEpomail: 'Compositor de Epomail abierto en una nueva pestaña',
+    toastOpeningMailto: 'Iniciando cliente de correo local (mailto)...',
+    popoverWebsiteTitle: 'Visitar sitio web personal',
+    popoverBioEmpty: 'Este lector mantiene un perfil bajo y aún no ha dejado una biografía.',
+    popoverEmailCopySuccess: 'Dirección de correo copiada al portapapeles',
+    popoverEmailCopiedBadge: 'Copiado',
+    popoverEmailCopyTitle: 'Haz clic para copiar la dirección de correo',
+    popoverEmailCopiedTitle: 'Correo copiado al portapapeles',
   },
 
   de: {
@@ -2704,6 +2794,21 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
     geoRegionPrefix: 'Region: ',
     geoRealIpPrefix: ' (Echte IP: ',
     geoAdminPrivilege: 'Admin-Berechtigung: Echte IP anzeigen',
+
+    // User Profile Popover & Mail Action
+    popoverMentionBtn: 'Erwähnen',
+    popoverMentionTitle: (author) => `@ ${author} erwähnen`,
+    popoverMailBtn: 'Schreiben',
+    popoverMailTitleEpomail: 'In Epomail angemeldet: Klicken, um online eine E-Mail zu verfassen',
+    popoverMailTitleMailto: 'E-Mail senden (mailto)',
+    toastOpeningEpomail: 'Epomail-Editor in neuem Tab geöffnet',
+    toastOpeningMailto: 'Lokales E-Mail-Programm wird gestartet (mailto)...',
+    popoverWebsiteTitle: 'Persönliche Website besuchen',
+    popoverBioEmpty: 'Dieser Leser hält sich bedeckt und hat noch keine Biografie hinterlassen.',
+    popoverEmailCopySuccess: 'E-Mail-Adresse in die Zwischenablage kopiert',
+    popoverEmailCopiedBadge: 'Kopiert',
+    popoverEmailCopyTitle: 'Klicken, um E-Mail-Adresse zu kopieren',
+    popoverEmailCopiedTitle: 'E-Mail in die Zwischenablage kopiert',
   },
 };
 

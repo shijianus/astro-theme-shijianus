@@ -4791,6 +4791,56 @@ span.text-xs.font-semibold.text-rose-500 {
   transform: translateY(-1px);
 }
 
+.profile-popover-mail-link {
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--theme-main, #425aef) 12%, transparent);
+  color: var(--theme-main, #425aef);
+  border: 1px solid color-mix(in srgb, var(--theme-main, #425aef) 25%, transparent);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(66, 90, 239, 0.08);
+  text-decoration: none;
+}
+
+.profile-popover-mail-link:hover {
+  background: var(--theme-main, #425aef);
+  color: #ffffff;
+  border-color: var(--theme-main, #425aef);
+  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.25);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.profile-popover-mail-icon {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.profile-popover-mail-link:hover .profile-popover-mail-icon {
+  transform: translateY(-1px) translateX(1px);
+}
+
+[data-theme='dark'] .profile-popover-mail-link {
+  background: color-mix(in srgb, var(--theme-main, #425aef) 22%, transparent);
+  border-color: color-mix(in srgb, var(--theme-main, #425aef) 38%, transparent);
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .profile-popover-mail-link:hover {
+  background: var(--theme-main, #425aef);
+  border-color: var(--theme-main, #425aef);
+  color: #ffffff;
+}
+
 .profile-popover-action-icon-btn {
   width: 26px;
   height: 26px;
@@ -4916,7 +4966,7 @@ span.text-xs.font-semibold.text-rose-500 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 175px;
+  max-width: 260px;
   transition: color 0.15s ease;
 }
 
@@ -4939,41 +4989,6 @@ span.text-xs.font-semibold.text-rose-500 {
   color: #10b981;
   padding: 0 2px;
   line-height: 1;
-}
-
-.profile-popover-mail-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 7px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--theme-main, #425aef) 8%, transparent);
-  color: var(--theme-main, #425aef);
-  border: 1px solid color-mix(in srgb, var(--theme-main, #425aef) 20%, transparent);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.profile-popover-mail-link:hover {
-  background: var(--theme-main, #425aef);
-  color: #ffffff;
-  border-color: var(--theme-main, #425aef);
-  box-shadow: 0 2px 6px rgba(66, 90, 239, 0.25);
-  text-decoration: none;
-}
-
-.profile-popover-mail-icon {
-  flex-shrink: 0;
-  transition: transform 0.15s ease;
-}
-
-.profile-popover-mail-link:hover .profile-popover-mail-icon {
-  transform: translateY(-1px) translateX(1px);
 }
 
 /* 3. 数据统计栏 (Inline Text Stats)：LinuxDo 弹性横向间距，无圆点 ·，两段式排印 */

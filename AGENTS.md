@@ -1341,4 +1341,25 @@
     4. 验证默认未登录态下 `.profile-popover-mail-link` 自动生成回退 `mailto:shijianus@epocanvas.com`；
     5. 验证 Epomail 认证状态下 `.profile-popover-mail-link` 智能优先直达 `https://mail.epocanvas.com/inbox?composeTo=shijianus%40epocanvas.com`，并在新标签页安全打开；
     6. 自动截取真实生产环境截图存档（`scripts/audit_screenshots/live-popover-email-actions.png`），端到端实测 100% PASS 通过。
-
+### Task 60: 作者名片写信按钮 (.profile-popover-mail-link) 移入操作区与提及并排、严格文案与多语言 i18n 支援、Epomail/Mailto 智能状态回退与邮箱展示区扩宽 (`133c519`)
+- [x] **按钮文案严格统一为「写信」与全语种 i18n 国际化支援**：
+  - 将 `.profile-popover-mail-link` 内容严格固化为「写信」（不再出现「Epomail 写信」等非统一文字），在 6 种语种字典中全部注入对应本地化定义：
+    - `zh-CN`: `'写信'`
+    - `zh-Hant`: `'寫信'`
+    - `en`: `'Compose'`
+    - `fr`: `'Écrire'`
+    - `es`: `'Redactar'`
+    - `de`: `'Schreiben'`
+  - 并在 `CommentTranslations` 中完善全套浮层多语言提示：`popoverMailTitleEpomail`、`popoverMailTitleMailto`、`toastOpeningEpomail`、`toastOpeningMailto`、`popoverMentionBtn`、`popoverMentionTitle`、`popoverWebsiteTitle`、`popoverBioEmpty`、`popoverEmailCopySuccess`、`popoverEmailCopiedBadge`、`popoverEmailCopyTitle`、`popoverEmailCopiedTitle`。
+- [x] **写信按钮移入 `.profile-popover-actions` 与提及并排对齐**：
+  - 将 `.profile-popover-mail-link` 从下方邮箱行彻底移出，放入卡片右上角的 `.profile-popover-actions` 容器中，与 `.profile-popover-mention-btn`（@ 提及此人）及个人站点图标并排平齐展示；
+  - 视觉样式统一规范：高度 26px，精致 6px 圆角，深浅色主题自适应微蓝底色与主题色边框，悬停呈现高亮填充背景及平滑微位移。
+- [x] **Epomail 登录状态检查与 Mailto 智能回退机制加固**：
+  - 严格保持鉴权状态优先感知：
+    1. 若当前用户已通过 Epomail 登录，连结自动生成为 `https://mail.epocanvas.com/inbox?composeTo=${email}`，配置 `target="_blank"` 与 `rel="noopener noreferrer"`，点击在新窗口打开在线邮件撰写页并提示 Toast；
+    2. 若未登录 Epomail，连结平滑回退为本地邮件客户端 `mailto:${email}`，不开启新标签页，并提示调起本地客户端 Toast。
+- [x] **邮箱展示区 (`.profile-popover-email-line`) 纯净化与宽度扩充**：
+  - 邮箱行中仅保留直按复制组件 `.profile-popover-email-wrap`，杜绝冗余重复的写信按钮；
+  - 扩充 `.profile-popover-email-text` 最大宽度由 175px 至 260px，确保长邮箱地址完整清晰展示。
+- [x] **本地与线上 E2E 自动化测试全量通过**：
+  - 更新并执行 `scripts/verify-popover-email-actions.mjs`，7 项核心指标（复制按钮移除、邮箱直按复制反馈、写信按钮并排位置、写信纯净文案、mailto 回退连结、Epomail 优先连结、新窗口打开）全绿通过。
