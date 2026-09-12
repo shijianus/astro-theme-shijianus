@@ -297,6 +297,22 @@ export function ThemeOverlays({
   const [background, setBackground] = useState(defaultBackground);
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
   const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
+
+  const showUnifiedToast = useCallback((message: string, overrideLocale?: LocaleVariant) => {
+    if (!message || !message.trim()) return;
+    const targetLocale = overrideLocale || localeVariant;
+    const translated = convertText(message, targetLocale);
+    if (typeof window !== 'undefined') {
+      if (typeof (window as any).snackbarShow === 'function') {
+        (window as any).snackbarShow(translated);
+      } else if (typeof (window as any).showToast === 'function') {
+        (window as any).showToast(translated);
+      } else {
+        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: translated } }));
+      }
+    }
+  }, [localeVariant]);
+
   const [userPersona, setUserPersona] = useState<UserPersonaProfile | null>(null);
   const [account, setAccount] = useState<CommentIdentity | null>(null);
   const [pageType, setPageType] = useState(initialPageType || 'page');
@@ -331,7 +347,6 @@ export function ThemeOverlays({
   const [epomailForm, setEpomailForm] = useState({ email: '', password: '', code: '' });
   const [showDirectAppAuth, setShowDirectAppAuth] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
-  const [authStatusMessage, setAuthStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [syncStats, setSyncStats] = useState(stats);
   const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
@@ -372,10 +387,7 @@ export function ThemeOverlays({
       nextIds = current.filter((id) => id !== badgeId);
     } else {
       if (current.length >= 4) {
-        setAuthStatusMessage({
-          type: 'info',
-          text: '最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。',
-        });
+        showUnifiedToast('最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。');
         return;
       }
       nextIds = [...current, badgeId];
@@ -870,10 +882,7 @@ export function ThemeOverlays({
   }, [posts, t]);
 
   const emitActivity = (message: string, overrideLocale?: LocaleVariant) => {
-    if (!message.trim()) return;
-    const targetLocale = overrideLocale || localeVariant;
-    const translated = convertText(message, targetLocale);
-    window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: translated } }));
+    showUnifiedToast(message, overrideLocale);
   };
 
   const cycleBackground = () => {
@@ -1249,7 +1258,7 @@ export function ThemeOverlays({
       if (event.data?.type === 'EPOMAIL_OAUTH_SUCCESS' && event.data.code) {
         const code = event.data.code;
         setIsAuthorizing(true);
-        setAuthStatusMessage({ type: 'info', text: '正在验证 Epomail 凭据并同步账号...' });
+        showUnifiedToast('正在验证 Epomail 凭据并同步账号...');
         try {
           const redirectUri = `${window.location.origin}/auth/callback`;
           const result = await exchangeEpomailCode(code, redirectUri);
@@ -1262,12 +1271,15 @@ export function ThemeOverlays({
             email: result.user.email || '',
             website: result.user.website || '',
             avatar: result.user.avatar || '',
+            bio: (result.user.bio || '').slice(0, 100),
+            timezone: result.user.timezone || '',
+            location: result.user.location || '',
+            showLocation: result.user.showLocation ?? true,
           });
-          setAuthStatusMessage({ type: 'success', text: `Epomail 授权登录成功！欢迎，${result.user.name}` });
-          emitActivity(`Epomail 授权登录: ${result.user.name}`);
+          showUnifiedToast(`Epomail 授权登录成功！欢迎，${result.user.name}`);
         } catch (err: any) {
           console.error('[ThemeOverlays] EPOMAIL_OAUTH_SUCCESS exchange error:', err);
-          setAuthStatusMessage({ type: 'error', text: err?.message || 'Epomail 授权凭据交换失败，请重试' });
+          showUnifiedToast(err?.message || 'Epomail 授权凭据交换失败，请重试');
         } finally {
           setIsAuthorizing(false);
         }
@@ -1290,9 +1302,12 @@ export function ThemeOverlays({
           email: user.email || '',
           website: user.website || '',
           avatar: user.avatar || '',
+          bio: (user.bio || '').slice(0, 100),
+          timezone: user.timezone || '',
+          location: user.location || '',
+          showLocation: user.showLocation ?? true,
         });
-        setAuthStatusMessage({ type: 'success', text: `Epomail 授权登录成功！欢迎，${user.name}` });
-        emitActivity(`Epomail 授权登录: ${user.name}`);
+        showUnifiedToast(`Epomail 授权登录成功！欢迎，${user.name}`);
       }
     };
     window.addEventListener('message', onWindowMessage);
@@ -1301,7 +1316,7 @@ export function ThemeOverlays({
 
   const handleEpomailOAuth = () => {
     setIsAuthorizing(true);
-    setAuthStatusMessage({ type: 'info', text: '请在弹出的 Epomail 窗口中完成授权...' });
+    showUnifiedToast('请在弹出的 Epomail 窗口中完成授权...');
     try {
       sessionStorage.setItem('epomail_auth_return', window.location.href);
     } catch {}
@@ -1342,11 +1357,10 @@ export function ThemeOverlays({
   const handleDirectEpomailSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!epomailForm.email.trim()) {
-      setAuthStatusMessage({ type: 'error', text: '请填写 Epomail 账号或邮箱' });
+      showUnifiedToast('请填写 Epomail 账号或邮箱');
       return;
     }
     setIsAuthorizing(true);
-    setAuthStatusMessage(null);
 
     const res = await directEpomailLogin(epomailForm);
     setIsAuthorizing(false);
@@ -1357,31 +1371,34 @@ export function ThemeOverlays({
         email: res.user.email,
         website: res.user.website || '',
         avatar: res.user.avatar || '',
+        bio: (res.user.bio || '').slice(0, 100),
+        timezone: res.user.timezone || '',
+        location: res.user.location || '',
+        showLocation: res.user.showLocation ?? true,
       });
-      setAuthStatusMessage({ type: 'success', text: `Epomail 授权成功 (APP 外接方案)！欢迎，${res.user.name}` });
-      emitActivity(`Epomail 登录: ${res.user.name}`);
+      showUnifiedToast(`Epomail 授权成功！欢迎，${res.user.name}`);
     } else {
-      setAuthStatusMessage({ type: 'error', text: res.error || 'Epomail 授权验证失败，请重试' });
+      showUnifiedToast(res.error || 'Epomail 授权验证失败，请重试');
     }
   };
 
   const handleAvatarFileSelect = async (file: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setAuthStatusMessage({ type: 'error', text: '仅支持上传图片格式文件 (PNG, JPG, WebP, GIF, SVG)' });
+      showUnifiedToast('仅支持上传图片格式文件 (PNG, JPG, WebP, GIF, SVG)');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setAuthStatusMessage({ type: 'error', text: '头像文件不能超过 10MB' });
+      showUnifiedToast('头像文件不能超过 10MB');
       return;
     }
 
     setIsAuthorizing(true);
-    setAuthStatusMessage({ type: 'info', text: '正在上传新头像至 Telegram 图床...' });
+    showUnifiedToast('正在上传新头像至 Telegram 图床...');
     try {
       const res = await uploadCommentImage(file);
       if (!res.ok || !res.url) {
-        setAuthStatusMessage({ type: 'error', text: res.error || '头像上传失败' });
+        showUnifiedToast(res.error || '头像上传失败');
       } else {
         const newAvatarUrl = res.url;
         setAccountForm((prev) => ({ ...prev, avatar: newAvatarUrl }));
@@ -1400,7 +1417,7 @@ export function ThemeOverlays({
                 email: accountForm.email.trim(),
                 website: accountForm.website.trim(),
                 avatar: newAvatarUrl,
-                bio: accountForm.bio.trim(),
+                bio: accountForm.bio.trim().slice(0, 100),
                 timezone: accountForm.timezone.trim(),
                 location: accountForm.location.trim(),
                 role: 'reader',
@@ -1410,11 +1427,10 @@ export function ThemeOverlays({
           writeCommentIdentity(nextIdentity);
           setAccount(nextIdentity);
         }
-        setAuthStatusMessage({ type: 'success', text: '新头像已上传至 Telegram 图床并应用！' });
-        emitActivity('已上传并更新头像');
+        showUnifiedToast('新头像已上传至 Telegram 图床并应用！');
       }
     } catch (err: any) {
-      setAuthStatusMessage({ type: 'error', text: err?.message || '头像上传异常' });
+      showUnifiedToast(err?.message || '头像上传异常');
     } finally {
       setIsAuthorizing(false);
     }
@@ -1430,10 +1446,9 @@ export function ThemeOverlays({
       if (updateRes.ok && updateRes.user) {
         setAccount(updateRes.user);
       }
-      setAuthStatusMessage({ type: 'success', text: '已恢复默认 Epomail 官方头像' });
-      emitActivity('恢复默认 Epomail 官方头像');
+      showUnifiedToast('已恢复默认 Epomail 官方头像');
     } catch (err: any) {
-      setAuthStatusMessage({ type: 'error', text: err?.message || '恢复头像失败' });
+      showUnifiedToast(err?.message || '恢复头像失败');
     } finally {
       setIsAuthorizing(false);
     }
@@ -1446,6 +1461,7 @@ export function ThemeOverlays({
 
     const trimmedName = accountForm.name.trim();
     const effectiveName = trimmedName || (account?.name ? account.name : '访客朋友');
+    const safeBio = accountForm.bio.trim().slice(0, 100);
 
     try {
       if (account) {
@@ -1454,7 +1470,7 @@ export function ThemeOverlays({
           name: effectiveName,
           avatar: accountForm.avatar,
           website: accountForm.website.trim(),
-          bio: accountForm.bio.trim(),
+          bio: safeBio,
           timezone: accountForm.timezone.trim(),
           location: accountForm.location.trim(),
           showLocation: accountForm.showLocation,
@@ -1462,10 +1478,9 @@ export function ThemeOverlays({
         setIsAuthorizing(false);
         if (res.ok && res.user) {
           setAccount(res.user);
-          setAuthStatusMessage({ type: 'success', text: '个人资料已成功保存！' });
-          emitActivity('更新个人资料');
+          showUnifiedToast('个人资料已成功保存！');
         } else {
-          setAuthStatusMessage({ type: 'error', text: res.error || '保存资料失败' });
+          showUnifiedToast(res.error || '保存资料失败');
         }
       } else {
         // Local reader or visitor updating identity
@@ -1475,7 +1490,7 @@ export function ThemeOverlays({
           email: accountForm.email.trim(),
           website: normaliseWebsite(accountForm.website.trim()),
           avatar: normaliseAvatar(accountForm.avatar.trim()),
-          bio: accountForm.bio.trim(),
+          bio: safeBio,
           timezone: accountForm.timezone.trim(),
           location: accountForm.location.trim(),
           role: 'reader',
@@ -1485,13 +1500,11 @@ export function ThemeOverlays({
         writeCommentIdentity(nextUser);
         setAccount(nextUser);
         setIsAuthorizing(false);
-        setAuthStatusMessage({ type: 'success', text: '个人资料与本地身份已保存！' });
-        emitActivity('更新本地个人资料');
+        showUnifiedToast('个人资料与本地身份已保存！');
       }
-      setTimeout(() => setAuthStatusMessage(null), 3000);
     } catch (err: any) {
       setIsAuthorizing(false);
-      setAuthStatusMessage({ type: 'error', text: err?.message || '保存资料异常' });
+      showUnifiedToast(err?.message || '保存资料异常');
     }
   };
 
@@ -1513,8 +1526,7 @@ export function ThemeOverlays({
       showLocation: true,
     });
     setEpomailForm({ email: '', password: '', code: '' });
-    setAuthStatusMessage({ type: 'info', text: '已退出登录并清除身份凭证' });
-    emitActivity('已退出账号');
+    showUnifiedToast('已退出登录并清除身份凭证');
   };
 
   const selectLocale = (nextLocale: LocaleVariant) => {
@@ -2056,7 +2068,7 @@ export function ThemeOverlays({
                 )}
                 {userStatus.emoji && (
                   <span className="account-status-chip" title={userStatus.text || '当前状态'}>
-                    {userStatus.emoji} {userStatus.text}
+                    {userStatus.emoji}
                   </span>
                 )}
               </div>
@@ -2065,8 +2077,8 @@ export function ThemeOverlays({
                   {account?.email || accountForm.email}
                 </p>
               )}
-              <p className="account-hero-card__desc">
-                {accountForm.bio || account?.bio || (account?.email || (account ? t('hero.boundIdentity', '已绑定评论身份') : accountForm.email ? accountForm.email : t('hero.emptyBio', '点击设置个人简介、时区与位置')))}
+              <p className="account-hero-card__desc" title={accountForm.bio || account?.bio || ''}>
+                {accountForm.bio ? accountForm.bio.slice(0, 100) : (account?.bio ? account?.bio.slice(0, 100) : (account?.email || (account ? t('hero.boundIdentity', '已绑定评论身份') : accountForm.email ? accountForm.email : t('hero.emptyBio', '点击设置个人简介、时区与位置'))))}
               </p>
               {(accountForm.location || accountForm.timezone || account?.location || account?.timezone) && (
                 <div className="account-hero-card__meta-row">
@@ -2136,16 +2148,7 @@ export function ThemeOverlays({
             </button>
           </div>
 
-          {/* 4. Status Toast / Notice */}
-          {authStatusMessage && (
-            <div className={`account-toast-notice account-toast-notice--${authStatusMessage.type}`}>
-              {authStatusMessage.type === 'success' && <CheckCircle2 className="h-4 w-4 flex-shrink-0" />}
-              {authStatusMessage.type === 'error' && <Info className="h-4 w-4 flex-shrink-0" />}
-              <span>{convertText(authStatusMessage.text, localeVariant)}</span>
-            </div>
-          )}
-
-          {/* 5. TAB 1: 个人资料与账户设置 */}
+          {/* 4. TAB 1: 个人资料与账户设置 */}
           {accountTab === 'auth' && (
             <div className="account-tab-content">
               {/* 隐藏的头像文件选择框 */}
@@ -2204,16 +2207,21 @@ export function ThemeOverlays({
                     </label>
 
                     <label className="account-field account-field--full">
-                      <span>{t('profile.field.bio')}</span>
+                      <div className="account-field-label-row flex items-center justify-between">
+                        <span>{t('profile.field.bio')}</span>
+                        <span className="account-field-limit text-xs text-muted" style={{ opacity: 0.7, fontFamily: 'monospace' }}>
+                          {accountForm.bio.length} / 100
+                        </span>
+                      </div>
                       <div className="account-field-control">
                         <Sparkles className="account-field-icon" />
                         <input
                           type="text"
                           name="bio"
-                          maxLength={120}
+                          maxLength={100}
                           value={accountForm.bio}
                           onChange={(e) => {
-                            const val = e.target.value;
+                            const val = e.target.value.slice(0, 100);
                             setAccountForm((prev) => ({ ...prev, bio: val }));
                           }}
                           placeholder={t('profile.field.bioPlaceholder')}
@@ -2315,16 +2323,13 @@ export function ThemeOverlays({
                     <Smile className="h-5 w-5 text-theme-main" />
                     <h3 className="account-card__title">我的当前状态</h3>
                     {userStatus.emoji && (
-                      <span className="account-status-chip">
-                        {userStatus.emoji} {userStatus.text || '已设置'}
+                      <span className="account-status-chip" title={userStatus.text || '当前状态'}>
+                        {userStatus.emoji}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="account-status-body">
-                  <p className="account-status-desc text-xs text-muted">
-                    自定义当前状态 Emoji 与说明，将实时展示于评论名片中的身份（如「站长」）后方：
-                  </p>
                   <div className="account-status-grid">
                     {PRESET_STATUS_OPTIONS.map((opt) => {
                       const isActive = userStatus.emoji === opt.emoji && userStatus.text === opt.text;
@@ -2343,34 +2348,23 @@ export function ThemeOverlays({
                     })}
                   </div>
                   <div className="account-status-custom-row">
-                    <div className="account-status-emoji-select-group">
-                      <button
-                        type="button"
-                        className={`account-status-emoji-trigger ${showStatusEmojiPicker ? 'is-active' : ''}`}
-                        onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
-                        title="点击选择状态 Emoji 表情"
-                        aria-label="选择状态 Emoji 表情"
-                      >
-                        <span className="current-status-emoji">{userStatus.emoji || '☕'}</span>
-                        <ChevronDown className="h-3 w-3 opacity-60" />
-                      </button>
-                      <input
-                        type="text"
-                        className="account-status-emoji-input"
-                        value={userStatus.emoji}
-                        placeholder="☕"
-                        maxLength={4}
-                        onChange={(e) => handleCustomStatusChange(e.target.value, userStatus.text)}
-                        title="自定义输入 Emoji"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      className={`account-status-emoji-trigger ${showStatusEmojiPicker ? 'is-active' : ''}`}
+                      onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
+                      title="点击选择状态 Emoji 表情"
+                      aria-label="选择状态 Emoji 表情"
+                    >
+                      <span className="current-status-emoji">{userStatus.emoji || '☕'}</span>
+                      <ChevronDown className="h-3 w-3 opacity-60" />
+                    </button>
                     <input
                       type="text"
                       className="account-status-text-input"
                       value={userStatus.text}
                       placeholder="输入自定义状态说明（如：忙碌中）"
                       maxLength={30}
-                      onChange={(e) => handleCustomStatusChange(userStatus.emoji, e.target.value)}
+                      onChange={(e) => handleCustomStatusChange(userStatus.emoji || '☕', e.target.value)}
                       title="自定义状态说明"
                     />
                     {userStatus.emoji && (
@@ -2382,6 +2376,7 @@ export function ThemeOverlays({
                           setUserStatus(next);
                           writeUserStatus(next);
                           setShowStatusEmojiPicker(false);
+                          showUnifiedToast('已清除当前状态');
                         }}
                         title="清除当前状态"
                       >

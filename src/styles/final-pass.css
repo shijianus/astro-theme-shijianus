@@ -4308,14 +4308,16 @@ span.text-xs.font-semibold.text-rose-500 {
 .account-status-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
+  justify-content: center;
+  padding: 1px 6px;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
   background: color-mix(in srgb, var(--theme-main) 12%, transparent);
   color: var(--theme-main);
   border: 1px solid color-mix(in srgb, var(--theme-main) 25%, transparent);
+  cursor: default;
+  user-select: none;
 }
 
 .account-status-body {
@@ -4374,18 +4376,13 @@ span.text-xs.font-semibold.text-rose-500 {
   position: relative;
 }
 
-.account-status-emoji-select-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .account-status-emoji-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 4px 6px;
-  font-size: 0.95rem;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 1.05rem;
   border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
   background: var(--card-bg);
@@ -4394,7 +4391,9 @@ span.text-xs.font-semibold.text-rose-500 {
   transition: all 0.18s ease;
   user-select: none;
   height: 32px;
+  min-width: 44px;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .account-status-emoji-trigger:hover,
@@ -4404,17 +4403,21 @@ span.text-xs.font-semibold.text-rose-500 {
   color: var(--theme-main);
 }
 
-.account-status-emoji-input {
-  width: 44px;
-  text-align: center;
-  font-size: 1rem;
-  padding: 4px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--font-color) 14%, transparent);
-  background: var(--card-bg);
-  color: var(--font-color);
-  box-sizing: border-box;
-  height: 32px;
+.tk-status-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: default;
+  margin-left: 2px;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.tk-status-emoji:hover {
+  transform: scale(1.18);
 }
 
 .account-status-text-input {

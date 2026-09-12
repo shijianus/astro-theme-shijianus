@@ -249,7 +249,7 @@ export function PostComments({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sortOrder, setSortOrder] = useState<'hot' | 'new'>('new');
-  const [noticeText, setNoticeText] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [currentUserStatus, setCurrentUserStatus] = useState<{ emoji: string; text: string }>(() => readUserStatus());
 
   // Tab: 'edit' | 'preview'
   const [editorTab, setEditorTab] = useState<'edit' | 'preview'>('edit');
@@ -581,7 +581,7 @@ export function PostComments({
         role: comment.authorRole,
         email: authorEmail,
         website: authorWebsite,
-        bio: authorBio,
+        bio: authorBio ? authorBio.slice(0, 100) : '',
         highestTitle,
         isWebmaster,
         latestCommentTime,
@@ -811,18 +811,22 @@ export function PostComments({
 
   // Toast notification helper - dispatched directly to blog top #global-activity-bar at #nav
   const showToast = (text: string, type: 'success' | 'error' = 'success', duration = 3000) => {
-    setNoticeText({ text, type });
-    setTimeout(() => setNoticeText(null), duration + 500);
-
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('shijianus:activity', {
-          detail: {
-            message: text,
-            duration,
-          },
-        })
-      );
+      const translated = convertText(text, currentLocale as any);
+      if (typeof (window as any).snackbarShow === 'function') {
+        (window as any).snackbarShow(translated);
+      } else if (typeof (window as any).showToast === 'function') {
+        (window as any).showToast(translated);
+      } else {
+        window.dispatchEvent(
+          new CustomEvent('shijianus:activity', {
+            detail: {
+              message: translated,
+              duration,
+            },
+          })
+        );
+      }
     }
   };
 
@@ -1327,9 +1331,10 @@ export function PostComments({
     };
 
     const handleStatusChange = () => {
+      const status = readUserStatus();
+      setCurrentUserStatus(status);
       setProfilePopover((prev) => {
         if (!prev.isOpen || !prev.author) return prev;
-        const status = readUserStatus();
         return {
           ...prev,
           author: {
@@ -2388,13 +2393,6 @@ export function PostComments({
                 )}
               </div>
             </div>
-
-            {/* Global Notice Toast */}
-            {noticeText && (
-              <div className={`tk-global-toast is-${noticeText.type}`}>
-                {noticeText.type === 'success' ? '✅' : '⚠️'} {noticeText.text}
-              </div>
-            )}
           </div>
 
           {/* Public Comments Stream */}
@@ -2448,12 +2446,15 @@ export function PostComments({
 
                   const rxMeta = computeReactionsMeta(item, account?.id);
                   const isPopupOpen = activeReactionPopupId === item.id;
+                  const isAuthorWebmaster = item.authorRole === 'admin' || (item as any).isWebmaster === true || item.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+                  const isCurrentAccount = Boolean(account && ((account.id && account.id === item.authorId) || (account.name && account.name === item.authorName)));
+                  const commentStatusEmoji = (item as any).statusEmoji || ((isCurrentAccount || isAuthorWebmaster) ? currentUserStatus.emoji : '');
+                  const commentStatusText = (item as any).statusText || ((isCurrentAccount || isAuthorWebmaster) ? currentUserStatus.text : '');
 
                   return (
                     <div className={`tk-comment ${isBoost ? 'is-boost-card' : ''}`} key={item.id} id={`comment-${item.id}`}>
                       {/* Avatar */}
                       {(() => {
-                        const isAuthorWebmaster = item.authorRole === 'admin' || (item as any).isWebmaster === true || item.authorEmail?.toLowerCase() === 'admin@epomail.bond';
                         return (
                           <div
                             className={`tk-avatar ${isAuthorWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'} theme-account-drawer__summary-avatar is-clickable`}
@@ -2501,6 +2502,16 @@ export function PostComments({
                               ? tC.bloggerBadge
                               : tC.visitorBadge}
                           </span>
+
+                          {/* User Status Emoji (Only emoji displayed, text on hover) */}
+                          {commentStatusEmoji && (
+                            <span
+                              className="tk-status-emoji"
+                              title={commentStatusText || '当前状态'}
+                            >
+                              {commentStatusEmoji}
+                            </span>
+                          )}
 
                           {/* Country / IP Location badge */}
                           {renderGeoBadge(item)}
@@ -2838,12 +2849,15 @@ export function PostComments({
 
                                   const replyRxMeta = computeReactionsMeta(reply, account?.id);
                                   const isReplyPopupOpen = activeReactionPopupId === reply.id;
+                                  const isReplyWebmaster = reply.authorRole === 'admin' || (reply as any).isWebmaster === true || reply.authorEmail?.toLowerCase() === 'admin@epomail.bond';
+                                  const isReplyCurrentAccount = Boolean(account && ((account.id && account.id === reply.authorId) || (account.name && account.name === reply.authorName)));
+                                  const replyStatusEmoji = (reply as any).statusEmoji || ((isReplyCurrentAccount || isReplyWebmaster) ? currentUserStatus.emoji : '');
+                                  const replyStatusText = (reply as any).statusText || ((isReplyCurrentAccount || isReplyWebmaster) ? currentUserStatus.text : '');
 
                                   return (
                                     <div className={`tk-comment tk-comment-reply ${isReplyBoost ? 'is-boost-card' : ''}`} key={reply.id} id={`comment-${reply.id}`}>
                                       {/* Avatar */}
                                       {(() => {
-                                        const isReplyWebmaster = reply.authorRole === 'admin' || (reply as any).isWebmaster === true || reply.authorEmail?.toLowerCase() === 'admin@epomail.bond';
                                         return (
                                           <div
                                             className={`tk-avatar tk-avatar-small ${isReplyWebmaster ? 'is-webmaster-avatar' : 'is-user-avatar'} theme-account-drawer__summary-avatar is-clickable`}
@@ -2880,6 +2894,16 @@ export function PostComments({
                                           >
                                             {reply.authorRole === 'admin' ? tC.bloggerBadge : tC.visitorBadge}
                                           </span>
+
+                                          {/* User Status Emoji (Only emoji displayed, text on hover) */}
+                                          {replyStatusEmoji && (
+                                            <span
+                                              className="tk-status-emoji"
+                                              title={replyStatusText || '当前状态'}
+                                            >
+                                              {replyStatusEmoji}
+                                            </span>
+                                          )}
 
                                           {/* Country / IP Location badge */}
                                           {renderGeoBadge(reply)}

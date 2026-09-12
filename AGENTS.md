@@ -1270,6 +1270,29 @@
     5. 验证真实“喝彩”获赞去重：线上真实评论名片浮层实测显示准确的 `喝彩 1`（杜绝 1 变 2）；
     6. 自动化截图自动归档至 `scripts/audit_screenshots/live-drawer-badges-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-popover-badges-blog.epocanvas.com.png`，生产端 100% 验证通过。
 
+### Task 57: 状态卡片冗余说明清理、状态Emoji纯净展示(悬停显文)三处同步、消除输入冲突、个人简介上限控制与全局导航栏统一提示 (`e829c2e`)
+- [x] **删除冗余状态说明文字**：
+  - 从“我的当前状态”卡片中彻底清除 `"自定义当前状态 Emoji 与说明，将实时展示于评论名片中的身份（如「站长」）后方："`，界面极致清爽。
+- [x] **状态 Emoji 纯净展示规范（仅显示 Emoji，悬停呈现文本）**：
+  - 任何位置（Hero 卡片状态徽章、状态卡片头部徽章、评论元信息、名片浮层）统一只渲染 Emoji 本身，状态文本说明仅在鼠标悬停 hover 时的 `title` 浮层中展示；
+  - 严格确保三处毫秒级全局同步：
+    1. `class="account-hero-card__name-row"`
+    2. `class="tk-row tk-meta"`
+    3. `class="profile-popover-user-meta"`
+- [x] **消除 Emoji 选择与输入的视觉与操作冲突**：
+  - 彻底移除重复的多余展示框 `class="account-status-emoji-input"`；
+  - 仅保留 `class="account-status-emoji-trigger"` 用于展示当前选中 Emoji 及点击呼出 36 种 Emoji 调色板，搭配右侧自定义说明输入框，逻辑清晰直观。
+- [x] **个人简介 (Bio) 双重上限控制**：
+  - 录入硬性上限：限制最大 100 字符（`maxLength={100}`），界面提供动态高对比字数指示器（`X / 100`）；
+  - 内容展示上限：Hero 卡片（`.account-hero-card__desc`）与名片浮层（`.profile-popover-bio`）严格执行 CSS `-webkit-line-clamp: 2`、`text-overflow: ellipsis` 与溢出隐藏，保证长文本不破坏布局。
+- [x] **彻底清理各自自建提示框，全量统一博客顶部导航栏通知**：
+  - 彻底清除抽屉内部自建通知框 `class="account-toast-notice account-toast-notice--success"`；
+  - 彻底清除评论区内嵌提示 `class="tk-global-toast"` 与打赏弹窗自建 toast；
+  - 全量接入博客顶层统一的导航栏通知体系（`window.snackbarShow` / `shijianus:activity` / `#snackbar-container`），全局所有操作反馈在统一通知中心优雅呈现。
+- [x] **自动化端到端测试套件全流程验证通过**：
+  - 编写并执行本地端到端测试套件 `scripts/verify-status-emoji-and-unified-toast.mjs`，6 大核心模块全绿通过。
+
+
 
 
 

@@ -102,8 +102,6 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const [region, setRegion] = useState<RegionKey>('CN');
   const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
   const [isManualOverride, setIsManualOverride] = useState(false);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'info'>('success');
   const [popoverPos, setPopoverPos] = useState<'up' | 'down'>('up');
   const [copied, setCopied] = useState(false);
   const [locale, setLocale] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
@@ -114,9 +112,21 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
       const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
       if (next) setLocale(next);
     };
-    window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
-    return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
+    window.addEventListener('shijianus:localechange', onLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange);
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest('.reward-region-wrap')) {
+        setIsRegionDropdownOpen(false);
+      }
+    };
+    if (isPinned || isOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isPinned, isOpen]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -166,9 +176,15 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
 
   const showToast = (msg: string, type: 'success' | 'info' = 'success') => {
     const translated = convertText(msg, locale);
-    setToastMsg(translated);
-    setToastType(type);
-    setTimeout(() => setToastMsg(null), 2800);
+    if (typeof window !== 'undefined') {
+      if (typeof (window as any).snackbarShow === 'function') {
+        (window as any).snackbarShow(translated);
+      } else if (typeof (window as any).showToast === 'function') {
+        (window as any).showToast(translated);
+      } else {
+        window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: translated } }));
+      }
+    }
   };
 
   const handlePayPalClick = (url: string, regionLabel: string) => {
@@ -598,18 +614,6 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
               </a>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toastMsg && (
-        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] px-4 py-2.5 rounded-full text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150 pointer-events-none ${
-          toastType === 'success'
-            ? 'bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900'
-            : 'bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900'
-        }`}>
-          <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
-          <span>{toastMsg ? convertText(toastMsg, locale) : ''}</span>
         </div>
       )}
     </div>
