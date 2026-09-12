@@ -54,7 +54,7 @@ async function runHighTierAudit() {
     }
   });
 
-  const targetUrl = 'https://blog.epocanvas.com/posts/readable-geek-interfaces/';
+  const targetUrl = 'https://blog.epocanvas.com/posts/content-formats-and-markup-mastery/';
   console.log(`[Playwright] 访问线上生产文章: ${targetUrl}`);
   const navResponse = await page.goto(targetUrl, {
     waitUntil: 'networkidle',
@@ -69,7 +69,7 @@ async function runHighTierAudit() {
   await aiPanel.scrollIntoViewIfNeeded();
   console.log('[Playwright] .shijianus-ai-summary 已滚动进入视口居中');
 
-  // 等待打字效果
+  // 等待渲染完成
   await page.waitForTimeout(3000);
 
   // 1. 截图生产端视觉效果
@@ -77,10 +77,16 @@ async function runHighTierAudit() {
   await aiPanel.screenshot({ path: screenshotPath });
   console.log(`[Visual] 生产端视觉截图已保存: ${screenshotPath}`);
 
-  // 2. 验证前端输出框内容
+  // 2. 验证前端输出框内容 (验证 LLMGPT 离线预生成的 high 模式架构师摘要)
   const outputText = await page.locator('.shijianus-ai-summary [data-ai-output]').textContent();
   console.log(`[DOM] 当前摘要输出字符数: ${outputText?.trim().length}`);
   console.log(`[DOM] 当前摘要内容: ${outputText?.trim()}`);
+
+  if ((outputText?.trim().length || 0) < 180) {
+    console.error(`❌ 致命缺陷: 预期高档位摘要字符数 >= 180，当前仅 ${outputText?.trim().length} 字符！`);
+  } else {
+    console.log('✅ LLMGPT 高档位离线预生成摘要验证成功，字符充沛无截断！');
+  }
 
   // 3. 触发真实点击：切换至 InstanceAI 模式进行实时高档位推演
   console.log('\n[Playwright] 点击切换模式按钮 (切换至 InstanceAI 实时推演)...');
@@ -94,7 +100,7 @@ async function runHighTierAudit() {
   if (modeLabel?.includes('InstanceAI')) {
     console.log('[Playwright] 已切至 InstanceAI，等待思考链与高档位模型推演...');
     // 等待接口响应
-    await page.waitForTimeout(6000);
+    await page.waitForTimeout(8000);
 
     const instanceOutput = await page.locator('.shijianus-ai-summary [data-ai-output]').textContent();
     console.log(`[DOM] InstanceAI 生成结果长度: ${instanceOutput?.trim().length}`);
@@ -114,7 +120,7 @@ async function runHighTierAudit() {
   const pointOutput = await page.locator('.shijianus-ai-summary [data-ai-output]').textContent();
   console.log(`[DOM] 核心论点解答: ${pointOutput?.trim().slice(0, 100)}...`);
 
-  // 5. 验证后端网络真实 level
+  // 5. 验证后端网络真实 level 与防截断机制
   // 在真实浏览器上下文内执行 fetch 验证生产端 Functions 的真实响应
   console.log('\n[Live API] 在真实浏览器上下文向生产环境 /api/ai-summary 发送直接验证请求...');
   const liveJson = await page.evaluate(async () => {
@@ -123,10 +129,10 @@ async function runHighTierAudit() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          slug: 'readable-geek-interfaces-live-test',
-          title: '极客感界面为什么更需要可读性',
-          summary: '技术气质不是靠发光边框堆出来的，真正让界面成立的是信息层级和阅读节奏。',
-          content: '测试高档位全量知识库传递：' + '极客感界面的核心是信息可读性与工程秩序。'.repeat(30),
+          slug: 'content-formats-and-markup-mastery-live-test',
+          title: '静态站点生成器（SSG）与博客主题内容格式全景指南',
+          summary: '全面系统梳理主流静态站点与博客系统的内容格式支持清单。',
+          content: '这是一篇关于静态站点生成器（SSG）架构与格式扩展的深度长文。'.repeat(40),
           mode: 'auto',
         }),
       });
@@ -142,6 +148,12 @@ async function runHighTierAudit() {
     console.warn(`⚠️ 警告: 预期 level 为 high，当前返回 ${liveJson?.level}`);
   } else {
     console.log('🎉 生产端真实 level 经校验 100% 确认为 high 档位！');
+  }
+
+  if (liveJson.summary && liveJson.summary.length >= 200) {
+    console.log(`🎉 生产端真实 summary 字符数达到 ${liveJson.summary.length}，完全根除 33 字截断缺陷！`);
+  } else {
+    console.warn(`⚠️ 警告: summary 长度可能受限: ${liveJson?.summary?.length}`);
   }
 
   await browser.close();

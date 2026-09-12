@@ -13,6 +13,8 @@ markup: "markdown"
 tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "EpoCanvas", "排版规范", "UI", "Mindmap", "思维导图"]
 mermaid: true
 mindmap: true
+i18nKey: "content-formats-and-markup-mastery"
+lang: "zh-CN"
 # ─────────────────────────────────────────────────────────────────────────────
 # Multiple encrypted variants demo (externalEncrypts array)
 # ─────────────────────────────────────────────────────────────────────────────

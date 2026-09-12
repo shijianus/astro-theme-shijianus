@@ -176,10 +176,27 @@ async function main() {
         }
       }
 
+      // Smart truncation: for very large articles (>30KB), only translate
+      // the first ~30KB to stay within API context window limits.
+      // A localized notice is appended to the generated file.
+      const MAX_TRANSLATE_BYTES = 30000;
+      const isTruncated = Buffer.byteLength(sourceArticle.raw, 'utf8') > MAX_TRANSLATE_BYTES;
+      let sourceToTranslate = sourceArticle.raw;
+      if (isTruncated) {
+        // Encode and slice carefully to avoid cutting mid-character
+        sourceToTranslate = Buffer.from(sourceArticle.raw, 'utf8').slice(0, MAX_TRANSLATE_BYTES).toString('utf8');
+        // Find last complete line to avoid split Markdown structures
+        const lastNewline = sourceToTranslate.lastIndexOf('\n');
+        if (lastNewline > 5000) {
+          sourceToTranslate = sourceToTranslate.slice(0, lastNewline);
+        }
+        console.log(`[Article-i18n] ⚠️  Article "${key}" is large (${Math.round(Buffer.byteLength(sourceArticle.raw, 'utf8') / 1024)}KB). Translating first ${Math.round(Buffer.byteLength(sourceToTranslate, 'utf8') / 1024)}KB only.`);
+      }
+
       console.log(`[Article-i18n] 🤖 Generating ${targetLang} translation for "${key}" (Title: ${sourceArticle.title})...`);
 
       const result = await translateArticle({
-        sourceMarkdown: sourceArticle.raw,
+        sourceMarkdown: sourceToTranslate,
         sourceLocale: sourceArticle.lang,
         targetLocale: targetLang,
         i18nKey: key,
@@ -195,8 +212,18 @@ async function main() {
         const targetFilename = `${key}-${targetLang}.md`;
         const targetFilePath = path.join(POSTS_DIR, targetFilename);
 
-        fs.writeFileSync(targetFilePath, result.translatedMarkdown, 'utf8');
-        console.log(`[Article-i18n] ✅ Successfully generated ${targetFilename} via [${result.provider} / ${result.model}]`);
+        // Localized truncation notice for oversized articles
+        const truncationNotices = {
+          en: '\n\n---\n\n> **Note:** This is an AI-assisted partial translation. The full article (78KB+) exceeds the AI context window. The complete English version is in preparation. [Read the original Chinese version](/posts/content-formats-and-markup-mastery/).',
+          fr: '\n\n---\n\n> **Remarque :** Il s\'agit d\'une traduction partielle assistée par IA. L\'article complet (78 Ko+) dépasse la fenêtre de contexte de l\'IA. La version française complète est en cours de préparation.',
+          es: '\n\n---\n\n> **Nota:** Esta es una traducción parcial asistida por IA. El artículo completo (78KB+) supera la ventana de contexto de la IA. La versión española completa está en preparación.',
+          de: '\n\n---\n\n> **Hinweis:** Dies ist eine KI-unterstützte Teilübersetzung. Der vollständige Artikel (78KB+) überschreitet das KI-Kontextfenster. Die vollständige deutsche Version ist in Vorbereitung.',
+          'zh-Hant': '\n\n---\n\n> **提示：** 此為 AI 輔助局部翻譯。完整文章（78KB+）超出 AI 上下文窗口。完整繁體中文版本正在準備中。',
+        };
+        const notice = isTruncated ? (truncationNotices[targetLang] || '') : '';
+
+        fs.writeFileSync(targetFilePath, result.translatedMarkdown + notice, 'utf8');
+        console.log(`[Article-i18n] ✅ Successfully generated ${targetFilename} via [${result.provider} / ${result.model}]${isTruncated ? ' (partial — first 30KB)' : ''}`);
         generatedCount++;
 
         // Update in-memory mapping
