@@ -13,39 +13,6 @@ markup: "markdown"
 tags: ["SSG", "Markdown", "MDX", "Astro", "Theme Formats", "EpoCanvas", "Typography Guidelines", "UI", "Mindmap", "Mind Map"]
 mermaid: true
 mindmap: true
-# ─────────────────────────────────────────────────────────────────────────────
-# Multiple encrypted variants demo (externalEncrypts array)
-# ─────────────────────────────────────────────────────────────────────────────
-externalEncrypts:
-  # ── Variant A: 哈希推导 Token（默认，后缀模式）────────────────────────────
-  # URL: /posts/content-formats-and-markup-mastery--x6c64b93324b386/
-  # 密码: shijianus2026
-  - id: "tier-1-full"
-    hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
-    hint: "这是该指南的加密完整版，包含所有受限技术细节与完整示例。密码与1级加密相同。"
-    showButton: true
-    title: "SSG Guide · Full Encrypted Version (Tier 1)"
-
-  # ── Variant B: 自定义 Token（后缀模式）────────────────────────────────────
-  # URL: /posts/content-formats-and-markup-mastery--xepocanvas2026ver/
-  # 密码: epocanvas2026
-  - id: "tier-2-epo"
-    hash: "f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07"
-    token: "epocanvas2026ver"
-    hint: "EpoCanvas 核心成员专属加密版，包含内部架构细节与完整设计规范。密码: epocanvas2026"
-    showButton: true
-    title: "SSG Guide · EpoCanvas Member Exclusive (Tier 2)"
-
-  # ── Variant C: 独立 URL（standalone 模式，不基于原文 slug 扩展）───────────
-  # URL: /posts/ssg-secret-annex/
-  # 密码: shijianus2026
-  # showButton: false → 秘密 URL，不在普通文章中显示入口按钮
-  - id: "standalone-annex"
-    hash: "d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351"
-    slug: "ssg-secret-annex"
-    hint: "这是一个独立 URL 的秘密附录，只有持有此链接的人才能访问。"
-    showButton: false
-    title: "SSG Secret Annex (Standalone URL)"
 i18nKey: "content-formats-and-markup-mastery"
 lang: "en"
 isAiGenerated: true

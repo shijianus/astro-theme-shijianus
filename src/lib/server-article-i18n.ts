@@ -115,13 +115,35 @@ export function cleanAiArticleOutput(raw: string, i18nKey: string, targetLocale:
         !/^aiTranslatedFrom\s*:/i.test(line),
     );
 
-    // Append standard i18n fields
-    fmLines.push(`i18nKey: "${i18nKey}"`);
-    fmLines.push(`lang: "${targetLocale}"`);
-    fmLines.push(`isAiGenerated: true`);
-    fmLines.push(`aiTranslatedFrom: "${sourceLocale}"`);
+    // Strip externalEncrypt / externalEncrypts blocks entirely from translations.
+    // These define encrypted slug routes on the SOURCE article only.
+    // Keeping them on translated copies produces duplicate encrypted slugs
+    // which causes build errors (validateCustomToken gets "" + "alt" = "alt" → 3 chars, fails).
+    const cleanedFmLines: string[] = [];
+    let inEncryptBlock = false;
+    for (const line of fmLines) {
+      if (/^externalEncrypt(s)?\s*:/i.test(line)) {
+        inEncryptBlock = true;
+        continue;
+      }
+      if (inEncryptBlock) {
+        // Block ends when we hit a top-level key (no leading spaces) that isn't a YAML list item
+        if (/^[a-zA-Z]/.test(line) && !line.startsWith('-') && !line.startsWith('#')) {
+          inEncryptBlock = false;
+        } else {
+          continue; // still inside the block, skip
+        }
+      }
+      cleanedFmLines.push(line);
+    }
 
-    cleaned = `---\n${fmLines.join('\n')}\n---` + cleaned.slice(fmMatch[0].length);
+    // Append standard i18n fields
+    cleanedFmLines.push(`i18nKey: "${i18nKey}"`);
+    cleanedFmLines.push(`lang: "${targetLocale}"`);
+    cleanedFmLines.push(`isAiGenerated: true`);
+    cleanedFmLines.push(`aiTranslatedFrom: "${sourceLocale}"`);
+
+    cleaned = `---\n${cleanedFmLines.join('\n')}\n---` + cleaned.slice(fmMatch[0].length);
   }
 
   return cleaned.trim();
