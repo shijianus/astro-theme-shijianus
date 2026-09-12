@@ -186,7 +186,7 @@ export const siteConfig = {
       role: '厚土潜藏细脉 大荒广构通衢',
       motto: '内容优先，结构优先，长期可维护。',
       bio: '记录构建、实验、写作和日常技术判断，把博客做成一个真正能持续生长的内容系统。',
-      email: 'hello@shijian.us',
+      email: 'shijianus@epocanvas.com',
       location: 'UTC-8',
       avatar: '/media/shijianus/avatar.jpg',
       cover: '/media/shijianus/geek-cover.jpg',
@@ -303,7 +303,7 @@ export const siteConfig = {
     ] satisfies SiteNavItem[],
     utility: [
       { label: 'GitHub', href: 'https://github.com/shijianus', external: true },
-      { label: '邮箱', href: 'mailto:hello@shijian.us', external: true },
+      { label: '邮箱', href: 'mailto:shijianus@epocanvas.com', external: true },
     ] satisfies SiteNavItem[],
     quickActions: [
       { label: '随便逛逛', href: '/posts/readable-geek-interfaces/' },
@@ -470,7 +470,7 @@ export const siteConfig = {
     socialBar: {
       left: [
         { label: 'GitHub', href: 'https://github.com/shijianus', external: true, icon: 'github' },
-        { label: '邮箱', href: 'mailto:hello@shijian.us', external: true, icon: 'mail' },
+        { label: '邮箱', href: 'mailto:shijianus@epocanvas.com', external: true, icon: 'mail' },
         { label: '归档', href: '/archives/', icon: 'archive' },
         { label: '标签', href: '/tags/', icon: 'tags' },
       ] satisfies SiteNavItem[],

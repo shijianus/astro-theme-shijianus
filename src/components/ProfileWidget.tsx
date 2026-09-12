@@ -133,7 +133,7 @@ export function ProfileWidget({
             </div>
           </a>
           <div className="card-info-social-icons" aria-label="作者链接">
-            <a className="social-icon" href={`mailto:${email}`} title="Email: shijianus@epocanvas.com">
+            <a className="social-icon" href={`mailto:${email || 'shijianus@epocanvas.com'}`} title={`Email: ${email || 'shijianus@epocanvas.com'}`}>
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/></svg>
             </a>
             <a className="social-icon" href="https://github.com/shijianus" target="_blank" rel="noreferrer" title="GitHub: shijianus">
