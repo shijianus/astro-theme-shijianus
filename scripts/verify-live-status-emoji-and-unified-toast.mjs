@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TARGET_URLS = [
+  'https://e5da1a6b.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 

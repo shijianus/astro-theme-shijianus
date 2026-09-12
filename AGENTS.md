@@ -1289,8 +1289,18 @@
   - 彻底清除抽屉内部自建通知框 `class="account-toast-notice account-toast-notice--success"`；
   - 彻底清除评论区内嵌提示 `class="tk-global-toast"` 与打赏弹窗自建 toast；
   - 全量接入博客顶层统一的导航栏通知体系（`window.snackbarShow` / `shijianus:activity` / `#snackbar-container`），全局所有操作反馈在统一通知中心优雅呈现。
-- [x] **自动化端到端测试套件全流程验证通过**：
-  - 编写并执行本地端到端测试套件 `scripts/verify-status-emoji-and-unified-toast.mjs`，6 大核心模块全绿通过。
+- [x] **生产端 (Cloudflare Pages) 真实链路部署与线上多节点 E2E 验证全绿通过 (`scripts/verify-live-status-emoji-and-unified-toast.mjs`)**：
+  - 生产边缘节点部署成功（部署标识：`https://e5da1a6b.shijianus-blog.pages.dev`，主域名 `https://blog.epocanvas.com` 100% 同步生效）；
+  - 执行线上真实端到端 Playwright 自动化审计，覆盖 Pages 部署版本与生产主域 `blog.epocanvas.com`：
+    1. 验证“我的当前状态”卡片彻底删除冗余说明文字（`自定义当前状态 Emoji 与说明，将实时展示于评论名片中的身份...`）；
+    2. 验证 Hero 卡片与状态卡片头部纯 Emoji 徽章规范（仅渲染 `☕`，文本“喝咖啡中”仅在 hover `title` 浮层呈现）；
+    3. 验证彻底删除 `.account-status-emoji-input`，仅保留 trigger 按钮，消除输入冲突与多重展示；
+    4. 验证个人简介 Bio 输入硬限制 100 字符、实时字数指示器（`34 / 100`）及 Hero 描述与名片 `-webkit-line-clamp: 2` 截断；
+    5. 验证彻底移除抽屉内 `.account-toast-notice`，点击更新状态统一调用博客顶部导航栏通知（`#snackbar-container.show`：`更新了用户状态: 💻 写代码中`）；
+    6. 验证评论区作者元信息 `.tk-row.tk-meta .tk-status-emoji` 毫秒级同步呈现 `💻`，鼠标悬停展示“写代码中”；
+    7. 验证作者名片浮层 `.profile-popover-user-meta .profile-popover-status-emoji` 紧随“站长”后方同步呈现 `💻`，并彻底验证评论区无任何 `.tk-global-toast` 自建提示框；
+    8. 真实浏览器截图自动归档至 `scripts/audit_screenshots/live-drawer-status-emoji-blog.epocanvas.com.png` 与 `scripts/audit_screenshots/live-popover-status-emoji-blog.epocanvas.com.png`，生产端全链路 100% 验证通过。
+
 
 
 
