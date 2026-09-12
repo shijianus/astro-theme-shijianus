@@ -1316,7 +1316,7 @@
     3. 页脚链接 `#footer_deal a` 邮箱链接同步更新为 `mailto:shijianus@epocanvas.com`；
     4. 自动截取两套真实生产环境截图存档（`scripts/audit_screenshots/live-social-email-*.png`），端到端实测 100% PASS 通过。
 
-### Task 59: 整合评论区作者名片邮箱直按复制 (.profile-popover-email-wrap) 与 Epomail 优先发信连结
+### Task 59: 整合评论区作者名片邮箱直按复制 (.profile-popover-email-wrap) 与 Epomail 优先发信连结 (`50fb422`)
 - [x] **删除独立复制按钮并整合直按复制交互**：
   - 彻底删除 `.profile-popover-copy-btn` 复制按钮；
   - 将复制逻辑整合到 `.profile-popover-email-wrap`，设置为可交互无障碍按钮态（`role="button"`, `tabIndex={0}`, `cursor: pointer`），直接点击邮箱地址即刻写入剪贴板；
