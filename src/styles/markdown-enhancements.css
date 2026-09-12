@@ -785,9 +785,9 @@ pre .line.deleted {
 .mermaid-diagram-wrap svg {
   display: block;
   margin: 0 auto;
-  min-width: min(100%, 720px);
-  width: auto;
-  max-width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: min(100%, 760px);
   height: auto;
   font-family: inherit;
   transition: min-width 0.2s ease;
@@ -807,7 +807,7 @@ pre .line.deleted {
 .mermaid-diagram-wrap .cluster-label,
 .mermaid-diagram-wrap .cluster text,
 .mermaid-diagram-wrap .cluster span {
-  font-size: 0.92rem !important;
+  font-size: 0.95rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.02em !important;
   transform: translateY(-4px);
@@ -821,7 +821,7 @@ pre .line.deleted {
 .mermaid-diagram-wrap .label p {
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1.35 !important;
+  line-height: 1.4 !important;
   font-family: inherit !important;
 }
 
@@ -832,9 +832,9 @@ pre .line.deleted {
 .mermaid-diagram-wrap .edgeLabel span {
   fill: var(--font-color) !important;
   color: var(--font-color) !important;
-  font-size: 0.85rem !important;
+  font-size: 0.88rem !important;
   font-weight: 600 !important;
-  line-height: 1.25 !important;
+  line-height: 1.3 !important;
 }
 
 .mermaid-diagram-wrap .edgeLabel .labelBkg,
@@ -848,7 +848,7 @@ pre .line.deleted {
   opacity: 1 !important;
   border: 1px solid color-mix(in srgb, var(--theme-main) 25%, var(--card-border)) !important;
   border-radius: 6px !important;
-  padding: 2px 6px !important;
+  padding: 3px 8px !important;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -860,24 +860,24 @@ pre .line.deleted {
 .mermaid-diagram-wrap foreignObject > div {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  line-height: 1.35 !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  line-height: 1.45 !important;
   width: 100% !important;
   height: 100% !important;
-  padding: 4px 6px !important;
+  padding: 0 10px !important;
   box-sizing: border-box !important;
 }
 
 .mermaid-diagram-wrap .nodeLabel {
   display: inline-block !important;
-  text-align: center !important;
+  text-align: left !important;
   white-space: normal !important;
   word-break: normal !important;
   overflow: visible !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  line-height: 1.35 !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
 }
 
 .mermaid-diagram-wrap .node rect,

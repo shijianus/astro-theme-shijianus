@@ -16,6 +16,8 @@ async function main() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
+  page.on('console', msg => console.log('[PAGE LOG]', msg.text()));
+  page.on('pageerror', err => console.log('[PAGE ERROR]', err.message));
 
   try {
     console.log('🌐 Navigating to http://127.0.0.1:4399/posts/badges-guide/ ...');
@@ -41,6 +43,14 @@ async function main() {
     if (!fs.existsSync(outDir)) {
       fs.mkdirSync(outDir, { recursive: true });
     }
+
+    // Hide sticky nav before screenshot to prevent overlap
+    await page.evaluate(() => {
+      const nav = document.getElementById('nav');
+      if (nav) nav.style.display = 'none';
+    });
+    await wrap.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
 
     const screenshotPath = path.join(outDir, 'mermaid_badges_guide.png');
     await wrap.screenshot({ path: screenshotPath });

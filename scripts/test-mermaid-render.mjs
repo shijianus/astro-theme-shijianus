@@ -2,140 +2,113 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-const htmlTemplate = (mermaidCode) => `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+async function screenshotMermaid() {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
+
+  const testHtml = `<!DOCTYPE html>
+  <html>
+  <head>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #f8fafc;
-      padding: 30px 15px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-    }
-    .article-container {
-      width: 960px;
-      max-width: 98vw;
-      background: #fff;
-      padding: 32px 28px;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    }
-    .mermaid-diagram-wrap {
-      position: relative;
-      margin: 1.5rem 0;
-      padding: 1.8rem 1.4rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 40px;
       display: flex;
       justify-content: center;
-      align-items: center;
+    }
+    .article-wrap {
+      width: 880px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .mermaid-diagram-wrap {
+      padding: 24px;
       background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      overflow-x: auto;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
     }
     .mermaid-diagram-wrap svg {
-      display: block;
-      width: 100%;
+      width: 100% !important;
+      max-width: 100% !important;
       height: auto;
     }
     .mermaid-diagram-wrap .nodeLabel {
-      font-size: 15px !important;
-      font-weight: 600 !important;
-      line-height: 1.4 !important;
-    }
-    .mermaid-diagram-wrap .cluster-label {
-      font-size: 16px !important;
-      font-weight: 700 !important;
+      text-align: left !important;
+      font-size: 13.5px !important;
+      line-height: 1.5 !important;
     }
     .mermaid-diagram-wrap .edgeLabel {
-      font-size: 13px !important;
+      font-size: 12.5px !important;
     }
   </style>
-</head>
-<body>
-  <div class="article-container">
-    <h2>EpoCanvas 读者社区信任阶梯全景图 (双列宽幅自适应优化)</h2>
-    <div class="mermaid-diagram-wrap">
-      <pre class="mermaid">
-${mermaidCode}
-      </pre>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  </head>
+  <body>
+    <div class="article-wrap">
+      <h2>EpoCanvas 社区读者信任阶梯全景图</h2>
+      <div class="mermaid-diagram-wrap" id="wrap"></div>
     </div>
-  </div>
-  <script>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      themeVariables: {
-        fontSize: '15px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-      },
-      flowchart: {
-        useMaxWidth: true,
-        htmlLabels: true,
-        curve: 'basis',
-        nodeSpacing: 40,
-        rankSpacing: 45
-      }
-    });
-  </script>
-</body>
-</html>`;
+    <script>
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: 'basis',
+          nodeSpacing: 25,
+          rankSpacing: 35
+        }
+      });
+      const code = \`flowchart TD
+      classDef lv0 fill:#f8fafc,stroke:#94a3b8,stroke-width:2px;
+      classDef lv1 fill:#eff6ff,stroke:#3b82f6,stroke-width:2px;
+      classDef lv2 fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;
+      classDef lv3 fill:#fefce8,stroke:#eab308,stroke-width:2px;
+      classDef lv4 fill:#faf5ff,stroke:#a855f7,stroke-width:2px;
+      classDef spec fill:#fff1f2,stroke:#f43f5e,stroke-width:2px;
 
-async function testRender() {
-  const code = `flowchart TD
-    %% 左列：基础与进阶贡献
-    subgraph COL_LEFT["🌱 阶段一：新手启程与进阶贡献 (LV.0 ~ LV.1)"]
-        TL0["🐣 新兴用户 · <b>TL Cap 0</b>"] -->|读文| TL2["📘 初始用户 · <b>TL Cap 2</b>"]
-        TL2 ==>|首次发表评论| TL8["🥉 基本用户 · <b>TL Cap 8</b>"]
-        TL8 -->|读30m + 评10| TL15["🏅 贡献者 · <b>TL Cap 15</b>"]
-        TL15 -->|读120m + 评20 + 赞10| TL20["💡 思辨学者 · <b>TL Cap 20 (LV.1 封顶)</b>"]
-    end
+      LV0["<b>🐣 LV.0 新手起步阶梯（TL Cap 0 ~ 2）</b><br/>• 🐣 新兴用户 (TL Cap 0 · 初访起步，浏览公开博文)<br/>• 📘 初始用户 (TL Cap 2 · 累计阅读 >= 1 篇博文)"]:::lv0
 
-    %% 右列：活跃极客与先驱宗师
-    subgraph COL_RIGHT["⭐ 阶段二：活跃极客与先驱宗师 (LV.2 ~ LV.3)"]
-        TL35["🎖️ 活跃用户 · <b>TL Cap 35</b>"] -->|活45d + 读480m + 评60 + 赞40| TL50["🌲 常青极客 · <b>TL Cap 50 (LV.2 封顶)</b>"]
-        TL50 ==>|长期共鸣奉献| TL70["⭐ 先驱 · <b>TL Cap 70</b>"]
-        TL70 -->|活180d + 读1440m + 评150| TL80["🎂 年度用户 · <b>TL Cap 80</b>"]
-        TL80 -->|活300d + 读2160m + 赞100| TL90["📜 墨海宗师 · <b>TL Cap 90 (常规巅峰)</b>"]
-    end
+      LV1["<b>🥉 LV.1 进阶贡献阶梯（TL Cap 8 ~ 20 封顶）</b><br/>• 🥉 基本用户 (TL Cap 8 · 首发真实评论，解锁 Boost 极速打气与表情互动)<br/>• 🏅 贡献者 (TL Cap 15 · 累计阅读 >= 30m 且 发表评论 >= 10 次)<br/>• 💡 思辨学者 (TL Cap 20 封顶 · 累计阅读 >= 120m 且 评论 >= 20 次 且 获赞 >= 10 个)"]:::lv1
 
-    %% 底层：治理特权与绝版加成
-    subgraph COL_BOTTOM["👑 阶段三：治理主创体系与 6 大绝版荣誉（可突破 100+）"]
-        ADMIN["🛡️ 社区管理员 (TL 91~99 · 圆形头像)"]
-        OWNER["👑 站长 (TL 100 满级 · 微圆角方冠 · 全穿透)"]
-        SPEC["💎 6 大绝版荣誉称号 (领跑者/铁粉/种子/破晓/架构/创世)<br/><b>独立加成 · 权威直达 TL 100+！</b>"]
-    end
+      LV2["<b>🎖️ LV.2 活跃极客阶梯（TL Cap 35 ~ 50 封顶）</b><br/>• 🎖️ 活跃用户 (TL Cap 35 · 活跃 >= 20d 且 阅读 >= 300m 且 评论 >= 30 次 且 获赞 >= 20 次)<br/>• 🌲 常青极客 (TL Cap 50 封顶 · 活跃 >= 45d 且 阅读 >= 480m 且 评论 >= 60 次 且 获赞 >= 40 次)"]:::lv2
 
-    %% 跨阶段跃迁
-    TL20 ==>|多维活跃跨阶跃迁| TL35
-    TL90 -. 特邀委任理事 .-> ADMIN
-    TL90 -. 密钥唯一所有者 .-> OWNER
-    TL90 -. 卓越限定贡献突破 .-> SPEC
-`;
+      LV3["<b>⭐ LV.3 先驱宗师阶梯（TL Cap 70 ~ 90 · 读者常规巅峰）</b><br/>• ⭐ 先驱 (TL Cap 70 · 活跃 >= 90d 且 阅读 >= 720m 且 评论 >= 100 次 且 获赞 >= 60 次)<br/>• 🎂 年度用户 (TL Cap 80 · 必须先解锁先驱 + 活跃 >= 180d 且 阅读 >= 1440m 且 评论 >= 150 次)<br/>• 📜 墨海宗师 (TL Cap 90 常规巅峰 · 必须先解锁年度用户 + 活跃 >= 300d 且 获赞 >= 100 个)"]:::lv3
 
-  const html = htmlTemplate(code);
-  const tmpHtml = path.resolve('scripts/test_mermaid.html');
-  fs.writeFileSync(tmpHtml, html, 'utf-8');
+      SPEC["<b>💎 6 大绝版荣誉称号（独立加成 · 权威突破 TL 100+！）</b><br/>• 🚀 领跑者 (+3~+5)  • 💎 铁杆粉丝 (+4~+6)  • 🌱 种子用户 (+5~+8)<br/>• 🔥 破晓布道者 (+4~+7)  • 🛠️ 架构见证人 (+5~+8)  • 📜 创世墨客 (+6~+10)"]:::spec
 
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await page.goto(`file://${tmpHtml}`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1500);
+      LV4["<b>👑 LV.4 治理与主创体系（特邀任命 / 唯一所有者）</b><br/>• 🛡️ 社区管理员 (TL 91 ~ 99 · 站长特邀委任理事 · 标准圆形头像)<br/>• 👑 站长 (Webmaster · TL 100 恒定绝对满级 · 微圆角金冠方头像 · 全站绝对穿透特权)"]:::lv4
 
-  const wrap = await page.$('.mermaid-diagram-wrap');
+      LV0 ==>|首次发表真实评论| LV1
+      LV1 ==>|四维指标综合跃迁 (活跃20d+阅读300m+评论30+赞20)| LV2
+      LV2 ==>|长期研读深度共鸣 (活跃90d+阅读720m+评论100+赞60)| LV3
+      LV3 -. 卓越限定贡献加成突破至 100+ .-> SPEC
+      LV3 -. 站长特邀委任理事 .-> LV4
+  \`;
+      mermaid.render('graphDiv', code).then(res => {
+        document.getElementById('wrap').innerHTML = res.svg;
+      });
+    </script>
+  </body></html>`;
+
+  await page.setContent(testHtml);
+  await page.waitForTimeout(2000);
+
+  const wrap = await page.$('#wrap');
   const box = await wrap.boundingBox();
-  console.log(`Test wrap box: W=${box.width}px, H=${box.height}px`);
+  console.log(`Box: W=${box.width}px, H=${box.height}px`);
 
-  const screenshotPath = path.resolve('scripts/audit_screenshots/test_mermaid_2col.png');
+  const screenshotPath = path.resolve('scripts/audit_screenshots/test_mermaid_tier_success.png');
   await wrap.screenshot({ path: screenshotPath });
-  console.log(`Saved screenshot to ${screenshotPath}`);
+  console.log(`Screenshot saved to: ${screenshotPath}`);
 
   await browser.close();
 }
 
-testRender();
+screenshotMermaid();
