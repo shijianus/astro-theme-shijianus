@@ -1392,7 +1392,7 @@
   - 验证 6：邮箱直按复制功能完好，反馈 `已复制` 徽章；
   - 验证 7：高清晰度渲染截图归档（`scripts/audit_screenshots/refactored-popover-card-normal.png` 与 `refactored-popover-card.png`）。
 
-### Task 63: 右侧折叠栏阅读模式按钮 (#rightside-config-hide #readmode) 向上弹起截断消除、溢出可见性与全景防截断优化
+### Task 63: 右侧折叠栏阅读模式按钮 (#rightside-config-hide #readmode) 向上弹起截断消除、溢出可见性与全景防截断优化 (`c0655bd`)
 - [x] **根除按钮向上弹起被父级容器截断缺陷**：
   - 核心原因定位：`#rightside-config-hide` 默认配置了 `overflow: hidden`，但在激活展开态（`.show`）时未重置为 `overflow: visible`；导致位于首位的 `#readmode`（`title="阅读模式"`）在 hover 交互触发向上位移与缩放动效（`transform: translateY(-2px) scale(1.05)`）时，顶部超出容器 2.875px 的圆角、描边与外发光阴影被水平齐平切断；
   - 溢出可见性修复：在 `src/styles/final-pass.css` 与 `src/styles/global.css` 中为 `#rightside-config-hide.show` 配置 `overflow: visible !important;`，确保 hover / active 向上微动、高斯模糊光晕及扩散阴影完整透出；
