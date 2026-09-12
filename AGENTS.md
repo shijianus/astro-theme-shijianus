@@ -1391,3 +1391,19 @@
   - 验证 5：长网址截断审核，`websiteRight <= actionsLeft - 9.7px`，物理无重叠（`overlap: false`），具备 `text-overflow: ellipsis`、`overflow: hidden`、`white-space: nowrap`；
   - 验证 6：邮箱直按复制功能完好，反馈 `已复制` 徽章；
   - 验证 7：高清晰度渲染截图归档（`scripts/audit_screenshots/refactored-popover-card-normal.png` 与 `refactored-popover-card.png`）。
+
+### Task 63: 右侧折叠栏阅读模式按钮 (#rightside-config-hide #readmode) 向上弹起截断消除、溢出可见性与全景防截断优化
+- [x] **根除按钮向上弹起被父级容器截断缺陷**：
+  - 核心原因定位：`#rightside-config-hide` 默认配置了 `overflow: hidden`，但在激活展开态（`.show`）时未重置为 `overflow: visible`；导致位于首位的 `#readmode`（`title="阅读模式"`）在 hover 交互触发向上位移与缩放动效（`transform: translateY(-2px) scale(1.05)`）时，顶部超出容器 2.875px 的圆角、描边与外发光阴影被水平齐平切断；
+  - 溢出可见性修复：在 `src/styles/final-pass.css` 与 `src/styles/global.css` 中为 `#rightside-config-hide.show` 配置 `overflow: visible !important;`，确保 hover / active 向上微动、高斯模糊光晕及扩散阴影完整透出；
+  - 呼吸间距与层级加固：为 `#rightside-config-hide` 增加 `padding-top: 4px; margin-top: -4px;` 安全呼吸边距，将 `#readmode` 默认物理几何位置稳定在容器内（`diffTop = 1.125px > 0`）；配置 `z-index: 2` 与 hover/active 态 `z-index: 5`，保障阴影自然叠加于后序按钮之上；
+  - 展开高度扩充：将 `#rightside-config-hide.show` 的 `max-height` 由 `250px` 扩充至 `400px !important;`，消除紧凑空间压迫。
+- [x] **清理历史冲突与多样式表同步**：
+  - 清除 `src/styles/alignment.css` 中对 `#rightside-config-hide` 的陈旧 `display: none !important; pointer-events: none;` 规则，保持三层样式表对齐；
+  - 保留 Task 37 对阅读模式下 `post-hero__inner` 标题保留与一致性规范，确保全站功能平稳无缝。
+- [x] **自动化端到端测试与全视口全状态断言**：
+  - 编写并执行全流程自动化端到端测试脚本 (`scripts/verify-readmode-fix.mjs`)；
+  - 覆盖桌面大屏 (1440x900)、标准屏 (1280x800)、平板 (768x1024)、移动端 (375x667)；
+  - 完整断言初始状态、`.show` 展开、hover 向上弹起 (`diffTop >= 0`, `transform` 正常, `overflow: visible`)、激活 Read Mode（白圈高亮环完好无缺）、Active + Hover、暗色模式全链路测试 100% 通过；
+  - 同步执行 `verify-rightside-dock.mjs` 与 `verify-readmode-consistency.mjs`，回归测试全量绿灯。
+
