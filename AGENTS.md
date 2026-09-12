@@ -1581,3 +1581,17 @@
   4. 药丸逆向切回中文版本检查通过；
   5. 验证第二篇 AI 生成文章（`api-ready-theme-contracts-en`）各指标完全正常；
   6. 首页文章卡片流去重断言通过，无重复展示。
+
+### Task 73: 生产端 (Cloudflare Pages) 全量多语言部署与真实环境 Playwright 非中文多语言全链路端到端审计
+- [x] **生产端 (Cloudflare Pages) 全量构建与多语言页面部署**：
+  1. 执行 `npm run cf:deploy`，101 个路由页面静态构建成功，Functions 运行时打包；
+  2. 部署至生产边缘节点（部署实例：`https://c3df6f1f.shijianus-blog.pages.dev`，生产主域名：`https://blog.epocanvas.com`）；
+  3. 验证网络状态 `HTTP/2 200 OK`，多语言非中文路由正常响应。
+- [x] **真实生产环境 Playwright 非中文语言展示全链路端到端审计 (`scripts/verify-live-cf-article-i18n.mjs`)**：
+  1. 访问生产端非中文英文文章（`https://c3df6f1f.shijianus-blog.pages.dev/posts/hello-world-en/`），HTTP 200 OK；
+  2. PostHero 英文标题（"Theme Refactoring Kickoff Log"）与语言切换药丸（"English AI" 活跃高亮，专属金色 `AI` 标识）正常渲染；
+  3. 文章目录 (TOC) 在非中文状态下自动渲染全量英文标题（"Judging This Refactor", "What the Homepage Should Address First", "Future Direction"），0 残留中文；
+  4. 正文英文段落与代码块（2 处）完整展示，保存无头渲染截图 (`live_article_i18n_en.png`)；
+  5. 点击语言药丸成功逆向切回中文原文（`hello-world`），中文标题与中文 TOC 毫秒级复原；
+  6. 验证生产主域（`https://blog.epocanvas.com/posts/api-ready-theme-contracts-en/`）第二篇英文文章及目录完整展示，保存截图 (`live_article_i18n_api_contracts_en.png`)；
+  7. 全程控制台 0 致命 JS 报错，全链路 100% PASS。
