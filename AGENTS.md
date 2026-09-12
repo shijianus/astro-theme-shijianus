@@ -1611,3 +1611,27 @@
   2. 注入资深架构师提示词体系与 220-320 字单一连贯完整段落纯文本硬性约束；
   3. 全量重新生成全站 25 篇博文的高档位离线摘要，保存至 `src/data/ai-summaries.json`；
   4. 执行静态构建 `npm run build:static`，全量 101 个页面均成功在构建时注入无损高档位静态摘要（`data-static-summary`），实现毫秒级首屏直出且内容高深充沛。
+
+### Task 75: AI 辅助构建时文章 i18n 完整提示词重构、超时加固、真实 API 端到端验证与 Playwright 全量验收 (`515768c`)
+- [x] **全面重写 `src/config/article-i18n-prompt.md`**：
+  1. 从 54 行精简版扩展为 160+ 行企业级本地化规范，覆盖 frontmatter 逐字段规范（i18nKey 绑定、lang、isAiGenerated、所有可选字段保留规则）；
+  2. Markdown 正文翻译标准：标题/段落/代码块/LaTeX/Mermaid/链接/HTML/列表/Blockquotes/表格全量规则，确保代码变量名/库名/URL 100% 不被翻译；
+  3. 语言专项本地化规范：英文（美式拼写/牛津逗号/Oxford comma）、繁体中文（台湾术语体系）、简体中文（大陆 GB 标准）、法文（标点规则）、西班牙文（拉丁美洲标准）、德文（词语首字母大写）；
+  4. 严格输出约束：无前言/后记、无外层代码围栏、完整输出不截断、无思考 token 泄露。
+- [x] **修复 `src/lib/server-article-i18n.ts` 超时与 token 限制**：
+  1. 主接口超时：20s → 90s；
+  2. Groq 备用超时：25s → 120s；
+  3. 两端 `max_tokens`：4096 → 8192（支持长文章完整输出）。
+- [x] **真实 ChronralAI 接口端到端验证**：
+  1. 启用 `ENABLE_ARTICLE_AI_I18N=true` 并限定 `ARTICLE_AI_I18N_POSTS=hello-world` 进行精准测试；
+  2. 调用 `npm run sync:i18n`，主接口（kimi-k3-free）超时后自动降级到 Groq（openai/gpt-oss-120b）成功生成；
+  3. 生成的 `hello-world-en.md` 内容自然地道：frontmatter 正确保留 i18nKey、lang=en、isAiGenerated=true，TOC 标题英文完整，代码块未被翻译。
+- [x] **更新 `scripts/verify-article-i18n.mjs`**：将硬编码标题/TOC 断言改为智能弹性断言（检测关键词而非精确字符串），适应每次 AI 生成的不同但等价翻译结果。
+- [x] **更新 `.env.example`**：新增完整 i18n 配置区说明（逻辑流程注释、API 共用策略、作用域过滤说明）。
+- [x] **Playwright E2E 验收全量通过（5/5）**：
+  - Test 1：中文原文章加载标题 `主题重构启动记录`、TOC 中文标题、i18n 切换器显示 `[简体中文, English AI]` ✅
+  - Test 2：点击 English 切换，英文标题/TOC/正文验证通过（灵活断言），Active Pill 切换至 `English AI` ✅
+  - Test 3：回切中文，标题恢复 `主题重构启动记录` ✅
+  - Test 4：`api-ready-theme-contracts-en` 英文 TOC 验证通过 ✅
+  - Test 5：首页去重检查，hello-world 仅显示 1 张卡片无重复 ✅
+- [x] `ENABLE_ARTICLE_AI_I18N` 恢复默认 `false`，功能默认关闭，用户在 `.env` 手动开启。
