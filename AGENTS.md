@@ -1459,6 +1459,36 @@
 - [x] 本地重新构建并执行自动化端到端测试（`scripts/verify-badges-guide.mjs`），15 枚徽章、25 个目录索引、33 个 Callout 卡片与信任阶梯断言全绿通过；
 - [x] 执行 `npm run cf:deploy` 将最新纯净版本同步部署至 Cloudflare Pages 生产端，并全量推送到 `origin` 与 `cf` 仓库。
 
+### Task 67: 读者等级阶梯与信任机制（LV门槛 / TL权重）深度重构、瀑布锁链、Mermaid视觉优化与全量部署同步 (`e33f3bb`)
+- [x] **Mermaid 架构流程图高清放大与视觉优化**：
+  - 针对 `.mermaid-diagram-wrap` 渲染过小、横向压扁问题彻底重构：由原本单行挤压的 `flowchart LR` 重构为结构化纵向分层子图 `flowchart TD`，节点内部使用清晰换行与加粗标题；
+  - 在 `src/styles/markdown-enhancements.css` 为 `.mermaid-diagram-wrap` 扩充内边距（`2.2rem 1.8rem`），设定最小清晰宽度（`min-width: min(100%, 720px)`，移动端 `620px`），增大节点文字与边缘标注字体（`0.95rem` / `0.9rem`）；
+  - 在 `src/components/ContentFeatureEnhancer.astro` 将 Mermaid 初始化参数调大（`fontSize: 16`, `padding: 20`, `nodeSpacing: 50`, `rankSpacing: 50`）；Playwright 实测渲染 SVG 宽达 720px，清晰易读。
+- [x] **LV 准入门槛 vs TL 排名权重的双轨制明确定义**：
+  - 在文档 `badges-guide.md` 中以核心 Callout 明确阐述双轨机制：
+    1. **LV（Level 0 ~ 4）**：决定你能看到的内容最低等级（准入门槛 / 访问权限锁，如 LV.1 解锁 Boost，LV.2 解锁私有专栏，LV.3 解锁先驱闭门研讨）；
+    2. **TL（Trust Level 0 ~ 100）**：决定你在本等级区间内的权威度与排名权重（评论区展示优先级、点赞权重、防灌水限流放宽、活跃榜排位）。
+- [x] **称号决定最高 TL 上限（Max TL Cap）与严密瀑布依赖解锁链（Strict Waterfall）**：
+  - 代码 `src/lib/user-level.ts` 与文档全面同步：称号后缀的 TL 代表**最高信任等级上限（Max TL Cap）**，而非固定数值（如 LV.0 初始用户最高 TL 上限为 2，未解锁 LV.1 时即使阅读 1000 分钟也严格锁死在 TL.2）；
+  - 严格瀑布前置锁链：相同或不同 LV 的称号必须逐级前置满足（如必须先解锁「先驱」才能解锁「年度用户」，未解锁「先驱」即使活跃 365 天也无法越级解锁）；
+  - 信任等级动态计算算法：基于阅读时长（30m/分）、评论（3条/分）、获赞（2赞/分）、活跃留存（3天/分）动态累积，平滑上升至 Cap 上限。
+- [x] **扩充等级阶梯至 11 大读者称号 + 管理员 + 站长（1 年内均可达成，≤365 天）**：
+  - LV.0：新兴用户 (TL Cap 0) $\rightarrow$ 初始用户 (TL Cap 2)；
+  - LV.1：基本用户 (TL Cap 10) $\rightarrow$ 贡献者 (TL Cap 20) $\rightarrow$ 思辨学者 (TL Cap 30)；
+  - LV.2：活跃用户 (TL Cap 45) $\rightarrow$ 常青极客 (TL Cap 60)；
+  - LV.3：先驱 (TL Cap 75) $\rightarrow$ 年度用户 (TL Cap 85) $\rightarrow$ 墨海宗师 (TL Cap 90，读者全自动升级巅峰，活跃 300 天 $\le 365$ 天)；
+  - LV.4 社区管理员 (TL 91 ~ 99，标准正圆形头像，社区常务巡查与敏感内容审核)；
+  - 👑 站长 (TL 100 恒定绝对满级，全站唯一微圆角方形金冠头像，全站无条件绝对穿透权限)。
+- [x] **严禁任何禁词提及**：全文档、代码与测试脚本绝无任何外部社区名称，100% 呈现 EpoCanvas 原创自研读者分级制度与极客美学。
+- [x] **自动化端到端测试全绿通过 (`scripts/verify-badges-guide.mjs`)**：
+  - 11 大称号与站长/管理员全量覆盖断言；
+  - LV 准入门槛与 TL 权重双轨制规则断言；
+  - 瀑布解锁链与 Max TL Cap 规则断言；
+  - 站长微圆角方形金冠 vs 管理员全员圆形头像断言；
+  - 禁词扫描 0 命中，16 枚成就徽章与 Mermaid 渲染全景断言通过。
+- [x] **生产端全量部署与多远端推送**：完成 `npm run build`、`git commit`、多远端同步推送（`origin` 与 `cf`）并部署至 Cloudflare Pages。
+
+
 
 
 
