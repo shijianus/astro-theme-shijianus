@@ -1413,5 +1413,21 @@
   - 编写并执行全流程自动化端到端测试脚本 (`scripts/verify-readmode-fix.mjs`)；
   - 覆盖桌面大屏 (1440x900)、标准屏 (1280x800)、平板 (768x1024)、移动端 (375x667)；
   - 完整断言初始状态、`.show` 展开、hover 向上弹起 (`diffTop >= 0`, `transform` 正常, `overflow: visible`)、激活 Read Mode（白圈高亮环完好无缺）、Active + Hover、暗色模式全链路测试 100% 通过；
-  - 同步执行 `verify-rightside-dock.mjs` 与 `verify-readmode-consistency.mjs`，回归测试全量绿灯。
+### Task 64: 作者名片次级元信息 (.profile-popover-sub-meta) 竖向排列 (flex-direction: column) 重构与防横向挤压优化 (`6c26eaa`)
+- [x] **重构 `.profile-popover-sub-meta` 为纵向堆叠布局 (`flex-direction: column`)**：
+  - 彻底根除原横向排布（`flex-direction: row`）导致的邮箱胶囊与站点链接在有限宽度（~260px）内互相挤压的视觉缺陷；
+  - 设置 `.profile-popover-sub-meta` 为 `display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-width: 0;`；
+  - 首行完整展示邮箱直按复制胶囊（`.profile-popover-email-wrap`），独享单行呼吸空间，文本最大限制放宽至 220px；
+  - 次行完整展示独立个人主页直链（`.profile-popover-website-line`），带 Globe 图标与文字超链接。
+- [x] **网址边界防护与安全省略截断**：
+  - `.profile-popover-website-line` 与 `.profile-popover-website-link` 配置 `display: flex; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;`；
+  - 当站点 URL 过长时自动在右边界前以 `"..."` 优雅截断，绝不侵入或重叠右侧 `.profile-popover-actions.is-vertical`（@ 提及此人 + 写信）竖排操作栏。
+- [x] **自动化端到端测试与高保真视觉审计通过 (`scripts/verify-popover-reorganization.mjs`)**：
+  - 验证 1：组件选择器 `class="author-profile-popover is-pinned is-webmaster-card"` 100% 匹配；
+  - 验证 2：`.profile-popover-action-icon-btn` 彻底清除（count: 0）；
+  - 验证 3：`class="profile-popover-bio"` 保持原位不动；
+  - 验证 4：`.profile-popover-sub-meta` 经 CSS 计算与几何包围盒断言为严格竖向堆叠（`flexDirection: column`，`isWebsiteBelowEmail: true`）；
+  - 验证 5：长 URL 边界断言通过，无任何重叠碰撞（`overlap: false`，`gap: 9.7px`），且具备完整 `ellipsis`；
+  - 验证 6：邮箱直按复制交互正常，单行无折叠弹出「已复制」反馈；
+  - 验证 7：高清晰度渲染截图归档（`scripts/audit_screenshots/refactored-popover-card-normal.png` 与 `refactored-popover-card.png`）。
 
