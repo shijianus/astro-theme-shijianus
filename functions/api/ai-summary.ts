@@ -10,6 +10,8 @@ import {
   buildSummaryPrompt,
   buildQuestionPrompt,
   normalizeArticleText,
+  getSummaryLevel,
+  getSystemInstructionByLevel,
   SUMMARY_SYSTEM_INSTRUCTION,
 } from '../_lib/summary';
 import type { AppEnv } from '../_lib/types';
@@ -22,6 +24,7 @@ type SummaryRequest = {
   content?: string;
   mode?: 'auto' | 'instance' | 'llmgpt' | 'question';
   questionType?: string;
+  related?: Array<{ title: string; href: string }>;
 };
 
 async function readCachedSummary(env: AppEnv, cacheKey: string) {
@@ -159,16 +162,22 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
   const title = body?.title?.trim() || '';
   const url = body?.url?.trim() || '';
   const summary = body?.summary?.trim() || '';
-  const content = normalizeArticleText(body?.content || '');
   const slug = body?.slug?.trim() || title;
   const mode = body?.mode || 'auto';
   const questionType = body?.questionType || '';
+  const related = body?.related || [];
+
+  // 获取站长配置的档位（默认低档位 low，可随时切回）
+  const level = getSummaryLevel(env.AI_SUMMARY_LEVEL);
+  // 根据档位处理正文内容：low 截取前 3500 字，medium 截取前 15000 字，high 保留全量知识库上下文
+  const content = normalizeArticleText(body?.content || '', level);
 
   if (!title || !content) {
     return jsonResponse(request, env, { ok: false, error: 'Missing title or content.' }, { status: 400 });
   }
 
-  const cacheKey = await sha256Hex([slug, title, summary, mode, questionType, content.slice(0, 1000)].join('|'));
+  // 缓存 key 加入 level，保证档位切换后不读取旧档位缓存
+  const cacheKey = await sha256Hex([slug, title, summary, mode, questionType, level, content.slice(0, 1000)].join('|'));
   
   // Only use server D1 cache for non-instance and non-question requests, or when cached
   if (mode !== 'instance') {
@@ -180,34 +189,42 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
         provider: 'Chronral',
         model: cached.model,
         summary: cached.summary,
+        level,
       });
     }
   }
 
+  const systemInstruction = getSystemInstructionByLevel(level, env.AI_SUMMARY_CUSTOM_SYSTEM_PROMPT);
   const prompt = questionType
-    ? buildQuestionPrompt({ title, url, summary, content, questionType })
-    : buildSummaryPrompt({ title, url, summary, content });
+    ? buildQuestionPrompt({ title, url, summary, content, questionType, level, related })
+    : buildSummaryPrompt({ title, url, summary, content, level, customUserPrompt: env.AI_SUMMARY_CUSTOM_USER_PROMPT });
+
+  const maxTokens = level === 'high' ? 950 : level === 'medium' ? 750 : 550;
+  const providerOptions = {
+    fixedModel: env.AI_SUMMARY_FIXED_MODEL,
+    maxTokens,
+  };
 
   let aiResult: { text: string; provider: string; model: string } | null = null;
 
   if (mode === 'instance') {
-    aiResult = await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    aiResult = await generateWithInstanceAi(env, prompt, systemInstruction, providerOptions);
     if (!aiResult) {
-      aiResult = await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+      aiResult = await generateWithGroq(env, prompt, systemInstruction, providerOptions);
     }
   } else if (mode === 'llmgpt') {
-    aiResult = await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+    aiResult = await generateWithGroq(env, prompt, systemInstruction, providerOptions);
     if (!aiResult) {
-      aiResult = await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION);
+      aiResult = await generateWithInstanceAi(env, prompt, systemInstruction, providerOptions);
     }
   } else {
     // auto or question
     aiResult =
-      (await generateWithInstanceAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
-      || (await generateWithGroq(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
-      || (await generateWithGemini(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
-      || (await generateWithModelscope(env, prompt, SUMMARY_SYSTEM_INSTRUCTION))
-      || (await generateWithWorkersAi(env, prompt, SUMMARY_SYSTEM_INSTRUCTION));
+      (await generateWithInstanceAi(env, prompt, systemInstruction, providerOptions))
+      || (await generateWithGroq(env, prompt, systemInstruction, providerOptions))
+      || (await generateWithGemini(env, prompt, systemInstruction))
+      || (await generateWithModelscope(env, prompt, systemInstruction))
+      || (await generateWithWorkersAi(env, prompt, systemInstruction));
   }
 
   if (!aiResult?.text) {
@@ -231,6 +248,7 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
     provider: 'Chronral',
     model: aiResult.model,
     summary: aiResult.text,
+    level,
     thinking: (aiResult as any).thinking || undefined,
   });
 }

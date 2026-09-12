@@ -768,6 +768,7 @@ pre .line.deleted {
    -------------------------------------------------------------------------- */
 .mermaid-diagram-wrap {
   position: relative;
+  z-index: 1;
   margin: 2.2rem 0;
   padding: 2.2rem 1.8rem;
   display: flex;
@@ -790,24 +791,26 @@ pre .line.deleted {
   height: auto;
   font-family: inherit;
   transition: min-width 0.2s ease;
+  overflow: visible !important;
 }
 
 @media (max-width: 768px) {
   .mermaid-diagram-wrap {
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 0.8rem;
   }
   .mermaid-diagram-wrap svg {
-    min-width: 620px;
+    min-width: 600px;
   }
 }
 
-/* Subgraph and Cluster Labels: Make them prominent and clear */
+/* Subgraph and Cluster Labels: Make them prominent and clear with generous vertical clearance */
 .mermaid-diagram-wrap .cluster-label,
 .mermaid-diagram-wrap .cluster text,
 .mermaid-diagram-wrap .cluster span {
-  font-size: 1.02rem !important;
+  font-size: 0.92rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.02em !important;
+  transform: translateY(-4px);
 }
 
 /* Fix text paragraphs inside Mermaid to prevent inheriting external paragraph margins and line breaks */
@@ -818,9 +821,8 @@ pre .line.deleted {
 .mermaid-diagram-wrap .label p {
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1.45 !important;
+  line-height: 1.35 !important;
   font-family: inherit !important;
-  display: inline !important;
 }
 
 /* Edge Labels: Clean elevated badge cards that never collide with lines */
@@ -830,7 +832,7 @@ pre .line.deleted {
 .mermaid-diagram-wrap .edgeLabel span {
   fill: var(--font-color) !important;
   color: var(--font-color) !important;
-  font-size: 0.9rem !important;
+  font-size: 0.85rem !important;
   font-weight: 600 !important;
   line-height: 1.25 !important;
 }
@@ -860,22 +862,22 @@ pre .line.deleted {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  line-height: 1.4 !important;
+  line-height: 1.35 !important;
   width: 100% !important;
   height: 100% !important;
+  padding: 4px 6px !important;
   box-sizing: border-box !important;
 }
 
 .mermaid-diagram-wrap .nodeLabel {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  white-space: nowrap !important;
+  display: inline-block !important;
+  text-align: center !important;
+  white-space: normal !important;
+  word-break: normal !important;
   overflow: visible !important;
-  font-size: 0.95rem !important;
+  font-size: 0.88rem !important;
   font-weight: 600 !important;
-  line-height: 1.4 !important;
-  word-break: keep-all !important;
+  line-height: 1.35 !important;
 }
 
 .mermaid-diagram-wrap .node rect,

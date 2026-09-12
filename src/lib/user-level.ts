@@ -321,6 +321,8 @@ export const OFFICIAL_LADDER_TITLES: readonly UserLevelTitle[] = [
   '新兴用户',
 ] as const;
 
+export const MAX_ACTIVITY_EARNED_POINTS = 35;
+
 /**
  * Calculates user earned Trust Level (TL) within their current title interval.
  *
@@ -328,21 +330,86 @@ export const OFFICIAL_LADDER_TITLES: readonly UserLevelTitle[] = [
  * - Title dictates the Max TL Cap (maxTrustLevel).
  * - Activity points lift TL up from baseTL up to maxTrustLevel:
  *   1 pt per 30m reading, 1 pt per 3 comments, 1 pt per 2 reactions, 1 pt per 3 active days.
+ * - Raw activity bonus is strictly capped at MAX_ACTIVITY_EARNED_POINTS (35).
  */
 export function calculateEarnedTrustLevel(stats: UserStats, baseTL: number, maxTL: number): number {
   if (baseTL >= maxTL) return maxTL;
-  const earnedBonus =
+  const rawBonus =
     Math.floor((stats.readingMinutes || 0) / 30) +
     Math.floor((stats.commentCount || 0) / 3) +
     Math.floor((stats.reactionsReceived || 0) / 2) +
     Math.floor((stats.activeDays || 1) / 3);
+  const earnedBonus = Math.min(MAX_ACTIVITY_EARNED_POINTS, rawBonus);
   return Math.min(maxTL, baseTL + Math.max(0, earnedBonus));
+}
+
+/**
+ * Special / Out-of-Print Titles Bonus Calculation:
+ * - Can grant extra TL bonuses (e.g. +3 ~ +10)
+ * - Can break through the normal Max TL Cap (even exceeding 90 and reaching 100+!)
+ * - Does not alter base LV content visibility gate
+ */
+export function calculateSpecialTitleBonus(
+  stats: UserStats,
+  currentTL: number,
+  level: number,
+  extra?: Partial<UserBadgeContext>
+): number {
+  let bonus = 0;
+  const days = stats.activeDays || 1;
+  const read = stats.readingMinutes || 0;
+  const comments = stats.commentCount || 0;
+  const reactions = stats.reactionsReceived || 0;
+  const hasEmail = Boolean(extra?.email || extra?.epomail || (stats as any).email);
+
+  // 1. 🚀 领跑者 (Frontrunner): 限制在 LV.3 及以下获得，注册 30 天内极速起步 (阅读>=300m, 评论>=30, 获赞>=20)
+  // TL 50 以下加 5 个等级，50 级以上加 3 个等级
+  if (level <= 3 && days <= 30 && read >= 300 && comments >= 30 && reactions >= 20) {
+    bonus += currentTL <= 50 ? 5 : 3;
+  }
+
+  // 2. 💎 铁杆粉丝 (Die-Hard Fan): 前 1000 名加入博客的早期创世读者 (活跃>=60天 且 有深度阅读/发言)
+  // TL 50 以下加 6 个等级，50 级以上加 4 个等级
+  if (days >= 60 && (read >= 300 || comments >= 20)) {
+    bonus += currentTL <= 50 ? 6 : 4;
+  }
+
+  // 3. 🌱 种子用户 (Seed User): 限制在 LV.3 及以下，注册 90 天内获赞>=30, 回复>=50, 深度互动
+  // TL 60 以下加 8 个等级，60 级以上加 5 个等级
+  if (level <= 3 && days <= 90 && reactions >= 30 && comments >= 50) {
+    bonus += currentTL <= 60 ? 8 : 5;
+  }
+
+  // 4. 🔥 破晓布道者 (Daybreak Evangelist): 限制在 LV.1 及以上，代码纠错与高光互动 (就地编辑过 + 获赞>=15)
+  // TL 50 以下加 7 个等级，50 级以上加 4 个等级
+  if (level >= 1 && (extra?.hasEditedComment || comments >= 15) && reactions >= 15) {
+    bonus += currentTL <= 50 ? 7 : 4;
+  }
+
+  // 5. 🛠️ 架构见证人 (Architectural Witness): 见证博客 1.0 到 2.0 重构并贡献反馈 (活跃>=30天, 阅读>=600m, 评论>=20)
+  // TL 70 以下加 8 个等级，70 级以上加 5 个等级
+  if (days >= 30 && read >= 600 && comments >= 20) {
+    bonus += currentTL <= 70 ? 8 : 5;
+  }
+
+  // 6. 📜 创世墨客 (Genesis Scribe): 深度长评并绑定专属邮箱 (评论>=10, 获赞>=30, 绑定邮箱)
+  // TL 70 以下加 10 个等级，70 级以上加 6 个等级
+  if (comments >= 10 && reactions >= 30 && hasEmail) {
+    bonus += currentTL <= 70 ? 10 : 6;
+  }
+
+  return bonus;
 }
 
 /**
  * Computes level, trust level, badge, and hints according to the strict waterfall leveling ladder.
  */
-export function computeUserLevel(stats: UserStats, accountRole?: string, email?: string): UserLevelInfo {
+export function computeUserLevel(
+  stats: UserStats,
+  accountRole?: string,
+  email?: string,
+  extra?: Partial<UserBadgeContext>
+): UserLevelInfo {
   const isOwner = stats.isWebmaster || accountRole === 'admin' || (email && email.toLowerCase() === 'admin@epomail.bond');
 
   // 1. LV.4 站长 (Webmaster) - All-site ONLY square avatar, TL 100, absolute content penetration
@@ -384,17 +451,17 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
   // Stage 1: 初始用户 (LV.0) - Max TL 2
   const stage1_initial = stats.hasReadAny || stats.readingMinutes >= 1;
 
-  // Stage 2: 基本用户 (LV.1) - Depends on Stage 1 - Max TL 10
+  // Stage 2: 基本用户 (LV.1) - Depends on Stage 1 - Max TL 8 (LV.1 封顶 20)
   const stage2_basic = stage1_initial && stats.commentCount >= 1;
 
-  // Stage 3: 贡献者 (LV.1) - Depends on Stage 2 - Max TL 20
+  // Stage 3: 贡献者 (LV.1) - Depends on Stage 2 - Max TL 15
   const stage3_contributor = stage2_basic && stats.readingMinutes >= 30 && stats.commentCount >= 10;
 
-  // Stage 4: 思辨学者 (LV.1) - Depends on Stage 3 - Max TL 30
+  // Stage 4: 思辨学者 (LV.1) - Depends on Stage 3 - Max TL 20 (LV.1 巅峰)
   const stage4_scholar =
     stage3_contributor && stats.readingMinutes >= 120 && stats.commentCount >= 20 && stats.reactionsReceived >= 10;
 
-  // Stage 5: 活跃用户 (LV.2) - Depends on Stage 4 - Max TL 45
+  // Stage 5: 活跃用户 (LV.2) - Depends on Stage 4 - Max TL 35 (LV.2 封顶 50)
   const stage5_active =
     stage4_scholar &&
     stats.activeDays >= 20 &&
@@ -402,7 +469,7 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     stats.commentCount >= 30 &&
     stats.reactionsReceived >= 20;
 
-  // Stage 6: 常青极客 (LV.2) - Depends on Stage 5 - Max TL 60
+  // Stage 6: 常青极客 (LV.2) - Depends on Stage 5 - Max TL 50 (LV.2 巅峰)
   const stage6_geek =
     stage5_active &&
     stats.activeDays >= 45 &&
@@ -410,7 +477,7 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     stats.commentCount >= 60 &&
     stats.reactionsReceived >= 40;
 
-  // Stage 7: 先驱 (LV.3) - Depends on Stage 6 - Max TL 75
+  // Stage 7: 先驱 (LV.3) - Depends on Stage 6 - Max TL 70 (LV.3 封顶 90)
   const stage7_pioneer =
     stage6_geek &&
     stats.activeDays >= 90 &&
@@ -418,22 +485,23 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     stats.commentCount >= 100 &&
     stats.reactionsReceived >= 60;
 
-  // Stage 8: 年度用户 (LV.3) - Depends on Stage 7 (必须先解锁先驱!) - Max TL 85
+  // Stage 8: 年度用户 (LV.3) - Depends on Stage 7 (必须先解锁先驱!) - Max TL 80
   const stage8_annual =
     stage7_pioneer && stats.activeDays >= 180 && stats.readingMinutes >= 1440 && stats.commentCount >= 150;
 
-  // Stage 9: 墨海宗师 (LV.3) - Depends on Stage 8 - Max TL 90 (<= 365 天!)
+  // Stage 9: 墨海宗师 (LV.3) - Depends on Stage 8 - Max TL 90 (<= 365 天! LV.3 巅峰)
   const stage9_inkMaster =
     stage8_annual && stats.activeDays >= 300 && stats.readingMinutes >= 2160 && stats.reactionsReceived >= 100;
 
-  // 9. 墨海宗师
+  // 9. 墨海宗师 (LV.3 巅峰, 封顶 TL 90)
   if (stage9_inkMaster) {
-    const tl = calculateEarnedTrustLevel(stats, 86, 90);
+    const rawTL = calculateEarnedTrustLevel(stats, 81, 90);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 3, extra);
     return {
       level: 3,
       levelCode: 'lv3',
       title: '墨海宗师',
-      trustLevel: tl,
+      trustLevel: rawTL + spBonus,
       maxTrustLevel: 90,
       badge: 'LV.3 · 墨海宗师',
       isWebmaster: false,
@@ -444,9 +512,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 8. 年度用户
+  // 8. 年度用户 (LV.3, 封顶 TL 80)
   if (stage8_annual) {
-    const tl = calculateEarnedTrustLevel(stats, 76, 85);
+    const rawTL = calculateEarnedTrustLevel(stats, 71, 80);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 3, extra);
     const pDays = Math.min(1, stats.activeDays / 300);
     const pRead = Math.min(1, stats.readingMinutes / 2160);
     const pRx = Math.min(1, stats.reactionsReceived / 100);
@@ -456,8 +525,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 3,
       levelCode: 'lv3',
       title: '年度用户',
-      trustLevel: tl,
-      maxTrustLevel: 85,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 80,
       badge: 'LV.3 · 年度用户',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -468,9 +537,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 7. 先驱
+  // 7. 先驱 (LV.3, 封顶 TL 70)
   if (stage7_pioneer) {
-    const tl = calculateEarnedTrustLevel(stats, 61, 75);
+    const rawTL = calculateEarnedTrustLevel(stats, 51, 70);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 3, extra);
     const pDays = Math.min(1, stats.activeDays / 180);
     const pRead = Math.min(1, stats.readingMinutes / 1440);
     const pCom = Math.min(1, stats.commentCount / 150);
@@ -480,8 +550,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 3,
       levelCode: 'lv3',
       title: '先驱',
-      trustLevel: tl,
-      maxTrustLevel: 75,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 70,
       badge: 'LV.3 · 先驱',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -492,9 +562,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 6. 常青极客
+  // 6. 常青极客 (LV.2 巅峰, 封顶 TL 50)
   if (stage6_geek) {
-    const tl = calculateEarnedTrustLevel(stats, 46, 60);
+    const rawTL = calculateEarnedTrustLevel(stats, 36, 50);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 2, extra);
     const pDays = Math.min(1, stats.activeDays / 90);
     const pRead = Math.min(1, stats.readingMinutes / 720);
     const pCom = Math.min(1, stats.commentCount / 100);
@@ -505,8 +576,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 2,
       levelCode: 'lv2',
       title: '常青极客',
-      trustLevel: tl,
-      maxTrustLevel: 60,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 50,
       badge: 'LV.2 · 常青极客',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -517,9 +588,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 5. 活跃用户
+  // 5. 活跃用户 (LV.2, 封顶 TL 35)
   if (stage5_active) {
-    const tl = calculateEarnedTrustLevel(stats, 31, 45);
+    const rawTL = calculateEarnedTrustLevel(stats, 21, 35);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 2, extra);
     const pDays = Math.min(1, stats.activeDays / 45);
     const pRead = Math.min(1, stats.readingMinutes / 480);
     const pCom = Math.min(1, stats.commentCount / 60);
@@ -530,8 +602,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 2,
       levelCode: 'lv2',
       title: '活跃用户',
-      trustLevel: tl,
-      maxTrustLevel: 45,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 35,
       badge: 'LV.2 · 活跃用户',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -542,9 +614,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 4. 思辨学者
+  // 4. 思辨学者 (LV.1 巅峰, 封顶 TL 20)
   if (stage4_scholar) {
-    const tl = calculateEarnedTrustLevel(stats, 21, 30);
+    const rawTL = calculateEarnedTrustLevel(stats, 16, 20);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 1, extra);
     const pDays = Math.min(1, stats.activeDays / 20);
     const pRead = Math.min(1, stats.readingMinutes / 300);
     const pCom = Math.min(1, stats.commentCount / 30);
@@ -555,8 +628,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 1,
       levelCode: 'lv1',
       title: '思辨学者',
-      trustLevel: tl,
-      maxTrustLevel: 30,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 20,
       badge: 'LV.1 · 思辨学者',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -567,9 +640,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 3. 贡献者
+  // 3. 贡献者 (LV.1, 封顶 TL 15)
   if (stage3_contributor) {
-    const tl = calculateEarnedTrustLevel(stats, 11, 20);
+    const rawTL = calculateEarnedTrustLevel(stats, 9, 15);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 1, extra);
     const pRead = Math.min(1, stats.readingMinutes / 120);
     const pCom = Math.min(1, stats.commentCount / 20);
     const pRx = Math.min(1, stats.reactionsReceived / 10);
@@ -579,8 +653,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 1,
       levelCode: 'lv1',
       title: '贡献者',
-      trustLevel: tl,
-      maxTrustLevel: 20,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 15,
       badge: 'LV.1 · 贡献者',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -591,9 +665,10 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 2. 基本用户
+  // 2. 基本用户 (LV.1, 封顶 TL 8)
   if (stage2_basic) {
-    const tl = calculateEarnedTrustLevel(stats, 3, 10);
+    const rawTL = calculateEarnedTrustLevel(stats, 3, 8);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 1, extra);
     const pRead = Math.min(1, stats.readingMinutes / 30);
     const pCom = Math.min(1, stats.commentCount / 10);
     const progress = Math.round(((pRead + pCom) / 2) * 100);
@@ -602,8 +677,8 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
       level: 1,
       levelCode: 'lv1',
       title: '基本用户',
-      trustLevel: tl,
-      maxTrustLevel: 10,
+      trustLevel: rawTL + spBonus,
+      maxTrustLevel: 8,
       badge: 'LV.1 · 基本用户',
       isWebmaster: false,
       isSquareAvatar: false,
@@ -614,14 +689,15 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 1. 初始用户
+  // 1. 初始用户 (LV.0, 封顶 TL 2)
   if (stage1_initial) {
-    const tl = calculateEarnedTrustLevel(stats, 1, 2);
+    const rawTL = calculateEarnedTrustLevel(stats, 1, 2);
+    const spBonus = calculateSpecialTitleBonus(stats, rawTL, 0, extra);
     return {
       level: 0,
       levelCode: 'lv0',
       title: '初始用户',
-      trustLevel: tl,
+      trustLevel: rawTL + spBonus,
       maxTrustLevel: 2,
       badge: 'LV.0 · 初始用户',
       isWebmaster: false,
@@ -633,7 +709,7 @@ export function computeUserLevel(stats: UserStats, accountRole?: string, email?:
     };
   }
 
-  // 0. 新兴用户
+  // 0. 新兴用户 (LV.0, 封顶 TL 0)
   return {
     level: 0,
     levelCode: 'lv0',
@@ -698,7 +774,7 @@ export interface CommunityBadge {
   id: string;
   name: string;
   icon: string;
-  category: 'tier' | 'read' | 'comment' | 'reaction' | 'activity';
+  category: 'tier' | 'special' | 'read' | 'comment' | 'reaction' | 'activity';
   priority: number; // 稀有度与排序权重，数值越大越优先展示
   description: string;
   isUnlocked: boolean;
@@ -739,28 +815,12 @@ export interface UserBadgeContext {
  * 博客专属徽章池自动判定引擎 (evaluateUserBadges):
  * 全部基于真实指标动态判定，严禁硬编码假标签！
  *
- * 1. 【等级主称号】（互斥取最高级，权重 100）：
- *    👑 站长 / ⭐ 先驱 / 🎖️ 活跃用户 / 🏅 贡献者 / 🥉 基本用户 / 📘 初始用户 / 🐣 新兴用户
- * 2. 【阅读沉淀成就】（权重 40-70）：
- *    - 📖 通读全文: readingTime >= 15m (40)
- *    - ☕ 慢读时光: readingTime >= 120m (55)
- *    - 📚 博览群书: readingTime >= 600m (70)
- * 3. 【互动交流成就】（权重 30-60）：
- *    - ✍️ 初露锋芒: hasEditedComment === true (30)
- *    - 😀 丰富表情: hasEmojiReaction === true (35)
- *    - 💬 言之有物: commentCount >= 5 (50)
- *    - 🔔 回音激荡: hasMentioned === true (45)
- * 4. 【赞赏喝彩成就】（权重 40-80）：
- *    - ❤️ 不吝赞美: reactionsGiven >= 10 (45)
- *    - ✨ 初见回响: reactionsReceived >= 1 (40)
- *    - 🔥 引发共鸣: reactionsReceived >= 20 (65)
- *    - 💎 深得人心: reactionsReceived >= 50 (80)
- * 5. 【常客与资料成就】（权重 30-80）：
- *    - 🏷️ 自传作者: bio && bio.trim().length >= 10 && avatarUrl (35)
- *    - ✉️ 信件连结: epomail || email (40)
- *    - 🏃 常客印记: activeDays >= 10 (50)
- *    - 🏔️ 百日墨客: activeDays >= 100 (75)
- *    - 🎂 同舟一载: daysSinceRegistered >= 365 (85)
+ * 1. 【等级主称号】（互斥取最高级，权重 100）
+ * 1.5 【绝版与限定荣誉称号】（高稀有度，权重 92-98，可突破常规 TL 上限至 100+）
+ * 2. 【阅读沉淀成就】（权重 40-75）
+ * 3. 【互动交流成就】（权重 30-65）
+ * 4. 【赞赏喝彩成就】（权重 40-85）
+ * 5. 【常客与资料成就】（权重 30-88）
  *
  * 严格按照 priority 从高到低降序排序，返回已解锁徽章列表。
  */
@@ -800,7 +860,7 @@ export function evaluateUserBadges(
     isWebmaster: Boolean(merged.isWebmaster),
     customLevel: merged.customLevel,
   };
-  const levelInfo = computeUserLevel(statsForLevel, merged.role, merged.email);
+  const levelInfo = computeUserLevel(statsForLevel, merged.role, merged.email, merged);
 
   // 1. 【等级主称号】（互斥取最高级，权重 100）
   if (levelInfo.isWebmaster || merged.isWebmaster) {
@@ -811,7 +871,7 @@ export function evaluateUserBadges(
       icon: '👑',
       category: 'tier',
       priority: 100,
-      description: '博客站长与系统主创，拥有最高全站管理权限 (TL.100)',
+      description: '博客站长与系统主创，拥有最高全站管理权限 (TL.100 全站绝对穿透)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '核心成员' || merged.role === 'core_member') {
@@ -822,7 +882,7 @@ export function evaluateUserBadges(
       icon: '⭐',
       category: 'tier',
       priority: 100,
-      description: '社区核心成员与架构协作者',
+      description: '社区核心成员与架构协作者 (TL.91~99 管理员)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '墨海宗师') {
@@ -833,7 +893,7 @@ export function evaluateUserBadges(
       icon: '📜',
       category: 'tier',
       priority: 100,
-      description: '登峰造极的读者宗师，博学笃行 (TL.90 上限)',
+      description: '登峰造极的读者宗师，博学笃行 (TL.90 读者自动晋升巅峰)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '年度用户') {
@@ -844,7 +904,7 @@ export function evaluateUserBadges(
       icon: '🏅',
       category: 'tier',
       priority: 100,
-      description: '与博客结缘满一年的尊贵常客读者',
+      description: '与博客结缘满一年的尊贵常客读者 (TL.80 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '先驱') {
@@ -855,7 +915,7 @@ export function evaluateUserBadges(
       icon: '⭐',
       category: 'tier',
       priority: 100,
-      description: '深度见证博客成长的社区先驱读者',
+      description: '深度见证博客成长的社区先驱读者 (TL.70 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '常青极客') {
@@ -866,7 +926,7 @@ export function evaluateUserBadges(
       icon: '🌲',
       category: 'tier',
       priority: 100,
-      description: '高频沉浸与深度探讨的常青读者',
+      description: '高频沉浸与深度探讨的常青极客 (TL.50 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '活跃用户') {
@@ -877,7 +937,7 @@ export function evaluateUserBadges(
       icon: '🎖️',
       category: 'tier',
       priority: 100,
-      description: '高频互动并深研博客内容的活跃读者',
+      description: '高频互动并深研博客内容的活跃读者 (TL.35 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '思辨学者') {
@@ -888,7 +948,7 @@ export function evaluateUserBadges(
       icon: '💡',
       category: 'tier',
       priority: 100,
-      description: '见解深刻且频频引发读者共鸣的学术读者',
+      description: '见解深刻且频频引发读者共鸣的学术读者 (TL.20 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '贡献者') {
@@ -899,7 +959,7 @@ export function evaluateUserBadges(
       icon: '🏅',
       category: 'tier',
       priority: 100,
-      description: '积极留下高质量见解的社区贡献者',
+      description: '积极留下高质量见解的社区贡献者 (TL.15 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '基本用户') {
@@ -910,7 +970,7 @@ export function evaluateUserBadges(
       icon: '🥉',
       category: 'tier',
       priority: 100,
-      description: '在博客留下过真实评论足迹的基础读者',
+      description: '在博客留下过真实评论足迹的基础读者 (TL.8 封顶)',
       isUnlocked: true,
     });
   } else if (levelInfo.title === '初始用户') {
@@ -921,7 +981,7 @@ export function evaluateUserBadges(
       icon: '📘',
       category: 'tier',
       priority: 100,
-      description: '开启深度阅读探索的初始读者',
+      description: '开启深度阅读探索的初始读者 (TL.2 封顶)',
       isUnlocked: true,
     });
   } else {
@@ -932,13 +992,103 @@ export function evaluateUserBadges(
       icon: '🐣',
       category: 'tier',
       priority: 100,
-      description: '初次邂逅博客的新兴读者',
+      description: '初次邂逅博客的新兴读者 (TL.0)',
+      isUnlocked: true,
+    });
+  }
+
+  // 1.5 【绝版与限定荣誉称号】（权重 92-98，可突破常规 TL 上限至 100+）
+  const readingTime = merged.readingTime ?? merged.readingMinutes ?? 0;
+  const commentCount = merged.commentCount ?? 0;
+  const reactionsReceived = merged.reactionsReceived ?? 0;
+  const activeDays = merged.activeDays ?? 1;
+  const hasEmail = Boolean(merged.epomail || merged.email);
+
+  // 1. 📜 创世墨客 (Genesis Scribe) - Priority 98
+  if (commentCount >= 10 && reactionsReceived >= 30 && hasEmail) {
+    unlocked.push({
+      id: 'special_genesis_scribe',
+      name: '创世墨客',
+      label: '创世墨客',
+      icon: '📜',
+      category: 'special',
+      priority: 98,
+      description: '【绝版限定】早期撰写深度长评并受邀入驻的创世读者 (TL 加成: +6~+10)',
+      isUnlocked: true,
+    });
+  }
+
+  // 2. 🛠️ 架构见证人 (Architectural Witness) - Priority 96
+  if (activeDays >= 30 && readingTime >= 600 && commentCount >= 20) {
+    unlocked.push({
+      id: 'special_architect',
+      name: '架构见证人',
+      label: '架构见证人',
+      icon: '🛠️',
+      category: 'special',
+      priority: 96,
+      description: '【限定荣誉】深度参与博客历次技术重构并贡献关键反馈 (TL 加成: +5~+8)',
+      isUnlocked: true,
+    });
+  }
+
+  // 3. 🌱 种子用户 (Seed User) - Priority 95
+  if (levelInfo.level <= 3 && reactionsReceived >= 30 && commentCount >= 50) {
+    unlocked.push({
+      id: 'special_seed_user',
+      name: '种子用户',
+      label: '种子用户',
+      icon: '🌱',
+      category: 'special',
+      priority: 95,
+      description: '【绝版限定】注册 90 天内高频深度互动与共鸣的初代种子 (TL 加成: +5~+8)',
+      isUnlocked: true,
+    });
+  }
+
+  // 4. 💎 铁杆粉丝 (Die-Hard Fan) - Priority 94
+  if (activeDays >= 60 && (readingTime >= 300 || commentCount >= 20)) {
+    unlocked.push({
+      id: 'special_diehard_fan',
+      name: '铁杆粉丝',
+      label: '铁杆粉丝',
+      icon: '💎',
+      category: 'special',
+      priority: 94,
+      description: '【绝版限定】博客开站早期前 1000 名常驻核心探索者 (TL 加成: +4~+6)',
+      isUnlocked: true,
+    });
+  }
+
+  // 5. 🔥 破晓布道者 (Daybreak Evangelist) - Priority 93
+  if (levelInfo.level >= 1 && (merged.hasEditedComment || commentCount >= 15) && reactionsReceived >= 15) {
+    unlocked.push({
+      id: 'special_daybreak',
+      name: '破晓布道者',
+      label: '破晓布道者',
+      icon: '🔥',
+      category: 'special',
+      priority: 93,
+      description: '【限定荣誉】大版本首发期提交高质量技术纠错与高光见解 (TL 加成: +4~+7)',
+      isUnlocked: true,
+    });
+  }
+
+  // 6. 🚀 领跑者 (Frontrunner) - Priority 92
+  if (levelInfo.level <= 3 && activeDays <= 30 && readingTime >= 300 && commentCount >= 30 && reactionsReceived >= 20) {
+    unlocked.push({
+      id: 'special_frontrunner',
+      name: '领跑者',
+      label: '领跑者',
+      icon: '🚀',
+      category: 'special',
+      priority: 92,
+      description: '【绝版限定】注册 30 天内全站贡献起步领先的极速领跑者 (TL 加成: +3~+5)',
       isUnlocked: true,
     });
   }
 
   // 2. 【阅读沉淀成就】（权重 40-75）
-  const readingTime = merged.readingTime ?? merged.readingMinutes ?? 0;
   if (readingTime >= 3600) {
     unlocked.push({
       id: 'read_3600m',
@@ -1441,7 +1591,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 3,
       currentTitle: '墨海宗师',
-      nextTitle: '已达读者自动晋升巅峰 (LV.3 · 墨海宗师)',
+      nextTitle: '已达读者自动晋升巅峰 (LV.3 · 墨海宗师 · TL Cap 90)',
       isMaxAutoLevel: true,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1460,7 +1610,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 3,
       currentTitle: '年度用户',
-      nextTitle: '墨海宗师 (LV.3)',
+      nextTitle: '墨海宗师 (LV.3 · TL Cap 90)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1479,7 +1629,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 3,
       currentTitle: '先驱',
-      nextTitle: '年度用户 (LV.3)',
+      nextTitle: '年度用户 (LV.3 · TL Cap 80)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1499,7 +1649,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 2,
       currentTitle: '常青极客',
-      nextTitle: '先驱 (LV.3)',
+      nextTitle: '先驱 (LV.3 · TL Cap 70)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1519,7 +1669,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 2,
       currentTitle: '活跃用户',
-      nextTitle: '常青极客 (LV.2)',
+      nextTitle: '常青极客 (LV.2 · TL Cap 50)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1539,7 +1689,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 1,
       currentTitle: '思辨学者',
-      nextTitle: '活跃用户 (LV.2)',
+      nextTitle: '活跃用户 (LV.2 · TL Cap 35)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1558,7 +1708,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 1,
       currentTitle: '贡献者',
-      nextTitle: '思辨学者 (LV.1)',
+      nextTitle: '思辨学者 (LV.1 · TL Cap 20)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1576,7 +1726,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 1,
       currentTitle: '基本用户',
-      nextTitle: '贡献者 (LV.1)',
+      nextTitle: '贡献者 (LV.1 · TL Cap 15)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1593,7 +1743,7 @@ export function getNextLevelRequirements(
     return {
       currentLevel: 0,
       currentTitle: '初始用户',
-      nextTitle: '基本用户 (LV.1)',
+      nextTitle: '基本用户 (LV.1 · TL Cap 8)',
       isMaxAutoLevel: false,
       isWebmaster: false,
       totalRequirements: items.length,
@@ -1609,7 +1759,7 @@ export function getNextLevelRequirements(
   return {
     currentLevel: 0,
     currentTitle: '新兴用户',
-    nextTitle: '初始用户 (LV.0)',
+    nextTitle: '初始用户 (LV.0 · TL Cap 2)',
     isMaxAutoLevel: false,
     isWebmaster: false,
     totalRequirements: items.length,

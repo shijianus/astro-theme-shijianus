@@ -35,50 +35,6 @@ function epocanvasBrandIntegration() {
   };
 }
 
-function chronralAiDevIntegration() {
-  return {
-    name: 'chronral-ai-dev-middleware',
-    hooks: {
-      'astro:server:setup': ({ server }) => {
-        server.middlewares.use(async (req, res, next) => {
-          if (req.url && (req.url === '/api/ai-summary' || req.url.startsWith('/api/ai-summary?')) && req.method === 'POST') {
-            try {
-              let bodyStr = '';
-              req.on('data', (chunk) => {
-                bodyStr += chunk;
-              });
-              req.on('end', async () => {
-                try {
-                  const payload = JSON.parse(bodyStr || '{}');
-                  const { processAiSummaryRequest } = await import('./src/lib/server-ai-summary.ts');
-                  const result = await processAiSummaryRequest(payload, {
-                    instanceAiBaseUrl: process.env.INSTANCE_AI_BASE_URL,
-                    instanceAiApiKey: process.env.INSTANCE_AI_API_KEY,
-                    instanceAiModel: process.env.INSTANCE_AI_MODEL,
-                    groqApiKey: process.env.GROQ_API_KEY,
-                    groqModel: process.env.GROQ_MODEL,
-                  });
-                  res.setHeader('Content-Type', 'application/json');
-                  res.writeHead(200);
-                  res.end(JSON.stringify(result));
-                } catch (err) {
-                  res.setHeader('Content-Type', 'application/json');
-                  res.writeHead(500);
-                  res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
-                }
-              });
-            } catch (err) {
-              next();
-            }
-          } else {
-            next();
-          }
-        });
-      },
-    },
-  };
-}
-
 import fs from 'fs';
 import path from 'path';
 
@@ -104,6 +60,51 @@ function getEnvVar(key) {
     }
   } catch (_) {}
   return '';
+}
+
+function chronralAiDevIntegration() {
+  return {
+    name: 'chronral-ai-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.url && (req.url === '/api/ai-summary' || req.url.startsWith('/api/ai-summary?')) && req.method === 'POST') {
+            try {
+              const chunks = [];
+              for await (const chunk of req) {
+                chunks.push(chunk);
+              }
+              const bodyStr = Buffer.concat(chunks).toString('utf8');
+              const payload = JSON.parse(bodyStr || '{}');
+              const { processAiSummaryRequest } = await import('./src/lib/server-ai-summary.ts');
+              const result = await processAiSummaryRequest(payload, {
+                instanceAiBaseUrl: getEnvVar('INSTANCE_AI_BASE_URL') || process.env.INSTANCE_AI_BASE_URL,
+                instanceAiApiKey: getEnvVar('INSTANCE_AI_API_KEY') || process.env.INSTANCE_AI_API_KEY,
+                instanceAiModel: getEnvVar('INSTANCE_AI_MODEL') || process.env.INSTANCE_AI_MODEL,
+                groqApiKey: getEnvVar('GROQ_API_KEY') || process.env.GROQ_API_KEY,
+                groqModel: getEnvVar('GROQ_MODEL') || process.env.GROQ_MODEL,
+                aiSummaryLevel: getEnvVar('AI_SUMMARY_LEVEL') || process.env.AI_SUMMARY_LEVEL,
+                aiSummaryFixedModel: getEnvVar('AI_SUMMARY_FIXED_MODEL') || process.env.AI_SUMMARY_FIXED_MODEL,
+                aiSummaryModelPool: getEnvVar('AI_SUMMARY_MODEL_POOL') || process.env.AI_SUMMARY_MODEL_POOL,
+                aiSummaryCustomSystemPrompt: getEnvVar('AI_SUMMARY_CUSTOM_SYSTEM_PROMPT') || process.env.AI_SUMMARY_CUSTOM_SYSTEM_PROMPT,
+                aiSummaryCustomUserPrompt: getEnvVar('AI_SUMMARY_CUSTOM_USER_PROMPT') || process.env.AI_SUMMARY_CUSTOM_USER_PROMPT,
+              });
+              res.setHeader('Content-Type', 'application/json');
+              res.writeHead(200);
+              res.end(JSON.stringify(result));
+              return;
+            } catch (err) {
+              res.setHeader('Content-Type', 'application/json');
+              res.writeHead(500);
+              res.end(JSON.stringify({ ok: false, error: err?.message || 'Server error' }));
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  };
 }
 
 function stripeAndGeoDevIntegration() {

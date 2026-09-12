@@ -7,7 +7,7 @@ type InstanceAiResult = {
   model: string;
 };
 
-const INSTANCE_MODELS_POOL = [
+export const DEFAULT_INSTANCE_MODELS_POOL = [
   'kimi-k3-free',
   'deepseek-v4-flash-free',
   'gpt-oss-120b',
@@ -41,20 +41,41 @@ export async function generateWithInstanceAi(
   env: AppEnv,
   prompt: string,
   systemInstruction: string,
+  options?: {
+    fixedModel?: string;
+    maxTokens?: number;
+  },
 ): Promise<InstanceAiResult | null> {
   const baseUrl = (env.INSTANCE_AI_BASE_URL || 'https://ai.121628.xyz/v1').replace(/\/+$/, '');
   const apiKey = env.INSTANCE_AI_API_KEY || '';
   if (!apiKey) return null;
 
-  const shuffled = [...INSTANCE_MODELS_POOL].sort(() => Math.random() - 0.5);
-  if (env.INSTANCE_AI_MODEL) {
-    shuffled.unshift(env.INSTANCE_AI_MODEL);
+  // 1. 模型选择逻辑：固定模型节点 vs 模型池随机体验
+  const explicitFixedModel = options?.fixedModel?.trim() || env.AI_SUMMARY_FIXED_MODEL?.trim();
+  let candidateModels: string[] = [];
+
+  if (explicitFixedModel) {
+    // 站长指定了固定模型节点：优先且固定请求该模型
+    candidateModels = [explicitFixedModel];
+  } else {
+    // 未指定固定模型：从支持的模型池中随机打乱挑选，确保高自由度与高体验感
+    const customPool = env.AI_SUMMARY_MODEL_POOL
+      ? env.AI_SUMMARY_MODEL_POOL.split(',').map((m) => m.trim()).filter(Boolean)
+      : [];
+    const basePool = customPool.length > 0 ? customPool : DEFAULT_INSTANCE_MODELS_POOL;
+    candidateModels = [...basePool].sort(() => Math.random() - 0.5);
+
+    // 如果设置了 INSTANCE_AI_MODEL 且未在池中，置于首选位置
+    if (env.INSTANCE_AI_MODEL && !candidateModels.includes(env.INSTANCE_AI_MODEL)) {
+      candidateModels.unshift(env.INSTANCE_AI_MODEL);
+    }
   }
 
   const temperature = Number((0.72 + Math.random() * 0.15).toFixed(2));
   const seed = Math.floor(Math.random() * 1000000);
+  const maxTokens = options?.maxTokens || 850;
 
-  for (const model of shuffled) {
+  for (const model of candidateModels) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
@@ -75,7 +96,7 @@ export async function generateWithInstanceAi(
           ],
           temperature,
           seed,
-          max_tokens: 650,
+          max_tokens: maxTokens,
         }),
       });
       clearTimeout(timeoutId);
