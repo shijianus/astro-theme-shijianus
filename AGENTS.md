@@ -1889,12 +1889,13 @@
   1. 自动请求 `/api/sponsorships`，真实 D1 记录充足时全量展示真实数据，记录较少时平滑混入逼真致谢名录保障页面丰满；
   2. 完整实现包含图标与文字注释的分页控制器（`< 上一页`、`下一页 >`，内置 `ChevronLeft` / `ChevronRight` 图标）；
   3. 支持高阶页码窗口算法：以 `1, 2, ... [跳转按钮], 10, 11, 12, ..., 30, 31` 形式呈现，点击 `...` 呼出快捷输入弹窗可直接跳转任意页码。
-- [x] **全流程自动化端到端测试全量跑通 (`scripts/verify-support-page.mjs`)**：
-  1. 验证卡片顶部落差 0px、底部落差 0px；
-  2. 验证 FAQ 与名录全宽对齐落差 0px；
-  3. 验证 2-Currency 双币种极简切换与 USD 金额响应；
-  4. 验证自定义金额快捷芯片与 Serv00 称呼/寄语标签；
-  5. 验证 LV/TL 零特权解耦承诺与 FAQ 展开；
-  6. 验证带图标的前后翻页、页码窗口与快速跳转；
-  7. 移动端 (375x812) 视觉审计全景通过；
-  8. Commit Hash: `d509b92`。
+- [x] **生产端 (Cloudflare Pages) 部署与线上全链路验证通过 (`scripts/verify-live-support.mjs`)**：
+  1. 通过 `npm run cf:deploy` 成功编译 Functions bundle 并全量部署至 `shijianus-blog` 生产环境 (`https://73e3618a.shijianus-blog.pages.dev`) 及生产自定义域名 (`https://blog.epocanvas.com/support/`)；
+  2. 针对生产真实 URL 进行 Playwright 浏览器端到端全链路审计：
+     - HTTP 响应状态码 200 OK；
+     - 左右核心卡片上下对齐落差 0px (`y=534px`, `bottom=1436px`)；
+     - FAQ 全宽贯通左右对齐落差 0px (`x=124px`, `width=1192px`)；
+     - 2-Currency 双币种极简切换器正常响应；
+     - Serv00 称呼/寄语与防误发安全声明正常展示；
+     - 线上 Stripe 国际收银台模态框唤起正常，无任何致命 JS 控制台报错；
+     - 支援名录表格数据与高阶分页器正常运作。
