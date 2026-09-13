@@ -1921,4 +1921,5 @@
   1. 完善 `hello-world-es.md`、`hello-world-fr.md`、`hello-world-zh-Hant.md` 的高质量本地化翻译；
   2. 编写并运行 `scripts/audit-posts-quality.mjs`，对全库 34 篇文章进行 8 大质量维度的深度扫描（KaTeX 撕裂、Mermaid 代码平衡、HTML 标签平衡、data-title 属性本地化、Chat 容器完整性、手风琴嵌套隔离等），全部 34 篇文章 100% 通过（Zero defects detected）；
   3. 编写并执行全流程 Playwright 浏览器真实端到端测试（`scripts/verify-article-i18n-quality.mjs`），在 Chrome 无头浏览器下真实验证无 `undefined` 文本、无 `post-hero__i18n-switch` 按钮、无 `isAiGenerated` 徽标、KaTeX 公式与 Mermaid 图表正常渲染，断言全绿通过。
+  4. Commit Hash: `09de05c`。
 
