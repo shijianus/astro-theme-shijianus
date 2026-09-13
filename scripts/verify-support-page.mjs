@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { spawn } from 'child_process';
+import http from 'http';
 import fs from 'fs';
 import path from 'path';
 
@@ -8,38 +8,48 @@ if (!fs.existsSync(outDir)) {
   fs.mkdirSync(outDir, { recursive: true });
 }
 
+function createStaticServer(distDir, port) {
+  const mimeTypes = {
+    '.html': 'text/html',
+    '.js': 'text/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.mp4': 'video/mp4',
+    '.woff2': 'font/woff2',
+    '.woff': 'font/woff',
+    '.ttf': 'font/ttf',
+  };
+
+  const server = http.createServer((req, res) => {
+    let reqUrl = req.url.split('?')[0];
+    let filePath = path.join(distDir, reqUrl);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, 'index.html');
+    } else if (!fs.existsSync(filePath) && fs.existsSync(filePath + '.html')) {
+      filePath = filePath + '.html';
+    }
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath).toLowerCase();
+      res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+      fs.createReadStream(filePath).pipe(res);
+    } else {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not Found');
+    }
+  });
+
+  return new Promise((resolve) => server.listen(port, () => resolve(server)));
+}
+
 async function runVerification() {
-  console.log('🚀 Starting local Astro preview server...');
-  const server = spawn('npx', ['astro', 'preview', '--port', '4399', '--host', '127.0.0.1'], {
-    cwd: '/home/shijian/projects/shijianus-blog',
-    stdio: 'pipe',
-  });
-
-  server.stdout.on('data', (d) => {
-    // console.log(`[server] ${d}`);
-  });
-  server.stderr.on('data', (d) => {
-    // console.error(`[server err] ${d}`);
-  });
-
-  // Wait for preview server to be responsive
-  let started = false;
-  for (let i = 0; i < 30; i++) {
-    try {
-      const res = await fetch('http://127.0.0.1:4399/support/');
-      if (res.ok) {
-        started = true;
-        console.log('✅ Astro preview server ready at http://127.0.0.1:4399');
-        break;
-      }
-    } catch {}
-    await new Promise((r) => setTimeout(r, 500));
-  }
-
-  if (!started) {
-    server.kill();
-    throw new Error('Failed to start Astro preview server on port 4399');
-  }
+  const port = 4399;
+  const distDir = path.resolve('/home/shijian/projects/shijianus-blog/dist');
+  console.log('🚀 Starting local static server on port ' + port + '...');
+  const server = await createStaticServer(distDir, port);
+  console.log('✅ Static server ready at http://127.0.0.1:' + port);
 
   console.log('🌐 Launching Chromium browser for E2E audit...');
   const browser = await chromium.launch({
@@ -220,7 +230,7 @@ async function runVerification() {
     console.log('🎉 All Support Page audits PASSED successfully!');
   } finally {
     await browser.close();
-    server.kill('SIGINT');
+    server.close();
   }
 }
 
