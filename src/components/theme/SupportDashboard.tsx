@@ -1,30 +1,23 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Coffee,
   CreditCard,
   Heart,
-  Check,
-  Copy,
   ExternalLink,
   Search,
-  Sparkles,
-  ShieldCheck,
   ChevronDown,
-  Globe,
   Coins,
   ArrowRight,
   Maximize2,
   X,
   ChevronLeft,
   ChevronRight,
-  SlidersHorizontal,
-  Award,
-  Lock,
+  Check,
+  Copy,
 } from 'lucide-react';
 import {
   supportConfig,
-  type CoffeeTier,
-  type CurrencyOption,
+  type CurrencyPresetConfig,
   type SponsorItem,
 } from '../../config/support';
 
@@ -71,59 +64,82 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
 );
 
 export const SupportDashboard: React.FC = () => {
-  // ── Currency State: Only 2 IP-Adaptive Choices (Local Currency & USD) ──
+  // ── 1. Currency & Amount State ──
   const [detectedCountry, setDetectedCountry] = useState<string>('CN');
   const [currency, setCurrency] = useState<string>('CNY');
-  const [selectedTierId, setSelectedTierId] = useState<string>('americano');
-  const [isCustomAmount, setIsCustomAmount] = useState<boolean>(false);
-  const [customAmountStr, setCustomAmountStr] = useState<string>('');
+  const [selectedAmount, setSelectedAmount] = useState<number>(14);
+  const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
+  const [customAmount, setCustomAmount] = useState<string>('');
 
-  // ── Supporter Info (Serv00-styled inputs filled directly on page) ──
+  // ── 2. Serv00 Supporter Inputs ──
   const [donorName, setDonorName] = useState<string>('');
   const [donorMessage, setDonorMessage] = useState<string>('');
 
-  // ── Payment QR Tab ──
+  // ── 3. Payment QR Tabs ──
   const [qrTab, setQrTab] = useState<'cn' | 'hk' | 'paypal' | 'crypto'>('cn');
   const [modalImage, setModalImage] = useState<{ src: string; title: string } | null>(null);
-
-  // ── Copied Toast Indicator ──
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // ── FAQ Accordion ──
+  // ── 4. FAQ Accordion ──
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  // ── Supporter Roster State & Dynamic Transition ──
+  // ── 5. Supporter Roster State ──
   const [sponsors, setSponsors] = useState<SponsorItem[]>(supportConfig.seedSponsors);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tablePage, setTablePage] = useState<number>(1);
   const [jumpPageInput, setJumpPageInput] = useState<string>('');
   const [showJumpPopover, setShowJumpPopover] = useState<boolean>(false);
-  const pageSize = 5; // 5 items per page for clean table rhythm
+  const pageSize = 5;
 
-  // Detect country on mount and determine the 2 supported currency options
+  // Auto-detect country on mount
   useEffect(() => {
     try {
       fetch('/api/geo-profile')
         .then((res) => res.json())
         .then((data: any) => {
           const c = (data?.country || '').toUpperCase();
-          if (c) setDetectedCountry(c);
-          if (c === 'CN') setCurrency('CNY');
-          else if (c === 'HK' || c === 'MO') setCurrency('HKD');
-          else if (c === 'TW') setCurrency('TWD');
-          else if (c === 'US') setCurrency('USD');
-          else if (c === 'GB') setCurrency('GBP');
-          else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) setCurrency('EUR');
-          else if (c === 'JP') setCurrency('JPY');
-          else if (c === 'SG') setCurrency('SGD');
-          else if (c === 'CA') setCurrency('CAD');
-          else if (c === 'AUD') setCurrency('AUD');
-          else setCurrency('USD');
+          if (c) {
+            setDetectedCountry(c);
+            if (c === 'CN') {
+              setCurrency('CNY');
+              setSelectedAmount(supportConfig.currencies.CNY.amounts[2]);
+            } else if (c === 'HK' || c === 'MO') {
+              setCurrency('HKD');
+              setSelectedAmount(supportConfig.currencies.HKD.amounts[2]);
+            } else if (c === 'TW') {
+              setCurrency('TWD');
+              setSelectedAmount(supportConfig.currencies.TWD.amounts[2]);
+            } else if (c === 'US') {
+              setCurrency('USD');
+              setSelectedAmount(supportConfig.currencies.USD.amounts[2]);
+            } else if (c === 'GB') {
+              setCurrency('GBP');
+              setSelectedAmount(supportConfig.currencies.GBP.amounts[2]);
+            } else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) {
+              setCurrency('EUR');
+              setSelectedAmount(supportConfig.currencies.EUR.amounts[2]);
+            } else if (c === 'JP') {
+              setCurrency('JPY');
+              setSelectedAmount(supportConfig.currencies.JPY.amounts[2]);
+            } else if (c === 'SG') {
+              setCurrency('SGD');
+              setSelectedAmount(supportConfig.currencies.SGD.amounts[2]);
+            } else if (c === 'CA') {
+              setCurrency('CAD');
+              setSelectedAmount(supportConfig.currencies.CAD.amounts[2]);
+            } else if (c === 'AU') {
+              setCurrency('AUD');
+              setSelectedAmount(supportConfig.currencies.AUD.amounts[2]);
+            } else {
+              setCurrency('USD');
+              setSelectedAmount(supportConfig.currencies.USD.amounts[2]);
+            }
+          }
         })
         .catch(() => {});
     } catch {}
 
-    // Fetch live sponsorships from D1 database
+    // Fetch live sponsorships from D1
     try {
       fetch('/api/sponsorships?limit=50')
         .then((res) => res.json())
@@ -140,10 +156,8 @@ export const SupportDashboard: React.FC = () => {
             }));
 
             if (apiItems.length >= 8) {
-              // Transition entirely to real authentic records once enough exist
               setSponsors(apiItems);
             } else {
-              // Graceful blend: authentic records first, followed by remaining seed sponsors
               setSponsors((prev) => {
                 const existingIds = new Set(apiItems.map((i) => i.id));
                 const remainingSeed = prev.filter((s) => !existingIds.has(s.id));
@@ -156,7 +170,7 @@ export const SupportDashboard: React.FC = () => {
     } catch {}
   }, []);
 
-  // Compute the 2 allowed currency choices based on detected location
+  // Compute the 2 allowed currency choices based on detected location (Local Currency & USD)
   const [localCurrencyOption, globalCurrencyOption] = useMemo(() => {
     const c = detectedCountry.toUpperCase();
     let localCode = 'CNY';
@@ -173,39 +187,57 @@ export const SupportDashboard: React.FC = () => {
     else if (c === 'AU') localCode = 'AUD';
     else localCode = 'USD';
 
-    const localOpt = supportConfig.currencies.find((cur) => cur.code === localCode) || supportConfig.currencies[0];
-    // If local is USD, secondary is HKD; otherwise secondary is always USD
-    const globalCode = localOpt.code === 'USD' ? 'HKD' : 'USD';
-    const globalOpt = supportConfig.currencies.find((cur) => cur.code === globalCode) || supportConfig.currencies[1];
+    const localOpt = supportConfig.currencies[localCode] || supportConfig.currencies['CNY'];
+    const globalCode = localOpt.code.toUpperCase() === 'USD' ? 'HKD' : 'USD';
+    const globalOpt = supportConfig.currencies[globalCode] || supportConfig.currencies['USD'];
 
     return [localOpt, globalOpt];
   }, [detectedCountry]);
 
-  // Current active currency configuration
-  const currentCurrency = useMemo(() => {
-    return (
-      supportConfig.currencies.find((c) => c.code === currency) ||
-      localCurrencyOption
-    );
+  // Active currency config
+  const activeCurrencyConfig: CurrencyPresetConfig = useMemo(() => {
+    return supportConfig.currencies[currency] || localCurrencyOption;
   }, [currency, localCurrencyOption]);
 
-  // Amount computation
-  const currentAmount = useMemo(() => {
-    if (isCustomAmount) {
-      const val = parseFloat(customAmountStr);
-      return isNaN(val) ? 0 : val;
-    }
-    const tier = supportConfig.coffeeTiers.find((t) => t.id === selectedTierId);
-    return tier?.amounts[currency] ?? 22;
-  }, [isCustomAmount, customAmountStr, selectedTierId, currency]);
+  // Dynamic currency switching with exchange rate conversion
+  const handleCurrencyChange = (newCode: string) => {
+    if (newCode === currency) return;
+    const oldCfg = activeCurrencyConfig;
+    const newCfg = supportConfig.currencies[newCode] || supportConfig.currencies['USD'];
 
-  // Amount validity (strictly 1 HKD eq. to 1000 HKD eq.)
-  const isAmountValid = useMemo(() => {
-    if (isCustomAmount) {
-      return currentAmount >= currentCurrency.min && currentAmount <= currentCurrency.max;
+    if (isCustomMode && customAmount) {
+      const numeric = parseFloat(customAmount);
+      if (!isNaN(numeric) && numeric > 0) {
+        const usdVal = numeric * oldCfg.rateToUSD;
+        const converted = Math.round(usdVal / newCfg.rateToUSD);
+        const bounded = Math.max(newCfg.min, Math.min(newCfg.max, converted));
+        setCustomAmount(String(bounded));
+      }
+    } else {
+      const currentIdx = oldCfg.amounts.indexOf(selectedAmount);
+      const targetIdx = currentIdx !== -1 ? currentIdx : 2;
+      setSelectedAmount(newCfg.amounts[targetIdx]);
     }
-    return currentAmount > 0;
-  }, [isCustomAmount, currentAmount, currentCurrency]);
+
+    setCurrency(newCode);
+  };
+
+  // Custom amount validation
+  const parsedCustom = parseFloat(customAmount);
+  const isCustomInvalid =
+    isCustomMode &&
+    (customAmount === '' ||
+      isNaN(parsedCustom) ||
+      parsedCustom < activeCurrencyConfig.min ||
+      parsedCustom > activeCurrencyConfig.max);
+
+  const effectiveAmount = isCustomMode
+    ? isNaN(parsedCustom)
+      ? 0
+      : parsedCustom
+    : selectedAmount;
+
+  const isAmountValid = effectiveAmount >= activeCurrencyConfig.min && effectiveAmount <= activeCurrencyConfig.max;
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard?.writeText(text).catch(() => {});
@@ -213,7 +245,7 @@ export const SupportDashboard: React.FC = () => {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // Trigger Stripe direct checkout modal
+  // Trigger Stripe Direct Checkout Modal
   const handleTriggerStripe = () => {
     if (!isAmountValid) return;
 
@@ -221,8 +253,8 @@ export const SupportDashboard: React.FC = () => {
       new CustomEvent('open-stripe-modal', {
         detail: {
           directCheckout: true,
-          amount: currentAmount,
-          currency: currency.toLowerCase(),
+          amount: effectiveAmount,
+          currency: activeCurrencyConfig.code,
           name: donorName.trim(),
           message: donorMessage.trim(),
         },
@@ -230,7 +262,7 @@ export const SupportDashboard: React.FC = () => {
     );
   };
 
-  // Filtered sponsors for table
+  // Supporter filtering & pagination
   const filteredSponsors = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return sponsors;
@@ -248,17 +280,7 @@ export const SupportDashboard: React.FC = () => {
     return filteredSponsors.slice(start, start + pageSize);
   }, [filteredSponsors, tablePage]);
 
-  // Preset quick increments for custom amount based on currency
-  const quickIncrements = useMemo(() => {
-    if (currency === 'CNY') return [10, 20, 50, 100];
-    if (currency === 'USD' || currency === 'EUR' || currency === 'GBP') return [5, 10, 20, 50];
-    if (currency === 'HKD') return [20, 50, 100, 200];
-    if (currency === 'JPY') return [500, 1000, 2000, 5000];
-    if (currency === 'TWD') return [100, 200, 500, 1000];
-    return [10, 25, 50, 100];
-  }, [currency]);
-
-  // Advanced Pagination Window Generator: 1, 2, ... [jump], k-1, k, k+1, ..., totalPages-1, totalPages
+  // Windowed pagination items
   const paginationItems = useMemo(() => {
     const items: Array<{ type: 'page' | 'ellipsis'; page?: number; key: string }> = [];
 
@@ -269,16 +291,13 @@ export const SupportDashboard: React.FC = () => {
       return items;
     }
 
-    // Always include page 1 and 2
     items.push({ type: 'page', page: 1, key: 'p-1' });
     items.push({ type: 'page', page: 2, key: 'p-2' });
 
-    // Left ellipsis
     if (tablePage > 4) {
       items.push({ type: 'ellipsis', key: 'ellipsis-left' });
     }
 
-    // Middle window around current page
     const start = Math.max(3, tablePage - 1);
     const end = Math.min(totalPages - 2, tablePage + 1);
     for (let i = start; i <= end; i++) {
@@ -287,12 +306,10 @@ export const SupportDashboard: React.FC = () => {
       }
     }
 
-    // Right ellipsis
     if (tablePage < totalPages - 3) {
       items.push({ type: 'ellipsis', key: 'ellipsis-right' });
     }
 
-    // Always include totalPages - 1 and totalPages
     items.push({ type: 'page', page: totalPages - 1, key: `p-${totalPages - 1}` });
     items.push({ type: 'page', page: totalPages, key: `p-${totalPages}` });
 
@@ -310,10 +327,10 @@ export const SupportDashboard: React.FC = () => {
   };
 
   return (
-    <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-14 text-slate-800 dark:text-slate-100">
+    <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-12 text-slate-800 dark:text-slate-100">
       {/* ── 1. Hero Header ────────────────────────────────────────────── */}
       <section className="support-hero relative overflow-hidden rounded-3xl p-6 sm:p-10 md:p-12 text-center bg-gradient-to-b from-blue-50/70 via-white to-slate-50/50 dark:from-[#151a2e]/80 dark:via-[#0e121f] dark:to-[#0a0d17] border border-blue-100/80 dark:border-white/[0.08] shadow-sm">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-100/80 dark:bg-blue-500/20 text-[#425aef] dark:text-blue-300 border border-blue-200/60 dark:border-blue-500/30 mb-4 animate-in fade-in">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-100/80 dark:bg-blue-500/20 text-[#425aef] dark:text-blue-300 border border-blue-200/60 dark:border-blue-500/30 mb-4">
           <Coffee className="w-4 h-4 text-[#425aef]" />
           <span>{supportConfig.subtitle}</span>
         </div>
@@ -326,7 +343,6 @@ export const SupportDashboard: React.FC = () => {
           {supportConfig.description}
         </p>
 
-        {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 max-w-3xl mx-auto">
           {supportConfig.trustPills.map((pill, idx) => (
             <span
@@ -339,12 +355,12 @@ export const SupportDashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 2. Main Donation Section: Top & Bottom Strictly Equal Height ───── */}
+      {/* ── 2. Donation Main Section: Naturally Balanced Columns ──────── */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-stretch">
-        {/* Left Column: Stripe Checkout Amount & Serv00-styled Supporter Inputs (7 Cols) */}
-        <div className="lg:col-span-7 h-full flex flex-col justify-between bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-6">
-          <div className="space-y-6">
-            {/* Header & 2-Currency Switcher */}
+        {/* Left Column: Stripe Checkout Amount & Serv00-styled Inputs (7 Cols) */}
+        <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-6">
+          <div className="space-y-5">
+            {/* Header with 2-Currency Switcher */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
@@ -355,183 +371,123 @@ export const SupportDashboard: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 2-Currency IP-Adaptive Switcher */}
+              {/* 2-Currency Switcher */}
               <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
                 <button
                   type="button"
-                  onClick={() => setCurrency(localCurrencyOption.code)}
-                  className={`px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    currency === localCurrencyOption.code
+                  onClick={() => handleCurrencyChange(localCurrencyOption.code.toUpperCase())}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    currency === localCurrencyOption.code.toUpperCase()
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title={`根据访问地区自适应 (${localCurrencyOption.name})`}
+                  title={`本地货币 (${localCurrencyOption.name})`}
                 >
                   <span aria-hidden="true">{localCurrencyOption.flag}</span>
-                  <span>
-                    {localCurrencyOption.code} ({localCurrencyOption.symbol})
-                  </span>
+                  <span>{localCurrencyOption.code.toUpperCase()} ({localCurrencyOption.symbol})</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCurrency(globalCurrencyOption.code)}
-                  className={`px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    currency === globalCurrencyOption.code
+                  onClick={() => handleCurrencyChange(globalCurrencyOption.code.toUpperCase())}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    currency === globalCurrencyOption.code.toUpperCase()
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title="全球通用结算币种"
+                  title="全球通用结算货币"
                 >
                   <span aria-hidden="true">{globalCurrencyOption.flag}</span>
-                  <span>
-                    {globalCurrencyOption.code} ({globalCurrencyOption.symbol})
-                  </span>
+                  <span>{globalCurrencyOption.code.toUpperCase()} ({globalCurrencyOption.symbol})</span>
                 </button>
               </div>
             </div>
 
-            {/* Coffee Tiers */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  1. 选择咖啡档位（真实购买力换算）
-                </label>
-                <span className="text-[11px] text-slate-400">
-                  当前币种限额: {currentCurrency.symbol}{currentCurrency.min} ~ {currentCurrency.symbol}{currentCurrency.max}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {supportConfig.coffeeTiers.map((tier) => {
-                  const amount = tier.amounts[currency] ?? 22;
-                  const isSelected = !isCustomAmount && selectedTierId === tier.id;
+            {/* 6 Preset Amounts Grid (Copied from RewardModal: grid grid-cols-3 gap-2.5) */}
+            <div className="space-y-2.5">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                1. 选择支持档位
+              </label>
+              <div className="grid grid-cols-3 gap-2.5">
+                {activeCurrencyConfig.amounts.map((amt, idx) => {
+                  const isSelected = !isCustomMode && selectedAmount === amt;
+                  const label = activeCurrencyConfig.labels[idx];
                   return (
                     <button
-                      key={tier.id}
+                      key={amt}
                       type="button"
                       onClick={() => {
-                        setSelectedTierId(tier.id);
-                        setIsCustomAmount(false);
+                        setIsCustomMode(false);
+                        setSelectedAmount(amt);
                       }}
-                      className={`relative p-3.5 rounded-2xl text-left border transition-all duration-200 cursor-pointer ${
+                      className={`py-3 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border ${
                         isSelected
-                          ? 'bg-blue-50/70 dark:bg-blue-900/20 border-[#425aef] ring-2 ring-[#425aef]/30 shadow-xs'
-                          : 'bg-slate-50/60 dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.07] hover:border-blue-300 dark:hover:border-blue-500/40 hover:bg-white dark:hover:bg-white/[0.04]'
+                          ? 'bg-[#425aef] border-[#425aef] text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40 scale-[1.02]'
+                          : 'bg-slate-50/80 dark:bg-white/[0.04] border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.08] hover:border-slate-300 dark:hover:border-white/20'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl" aria-hidden="true">{tier.icon}</span>
-                          <div>
-                            <div className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                              {tier.name}
-                            </div>
-                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400">
-                              {tier.badge}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-base font-extrabold text-[#425aef] dark:text-blue-400">
-                          {currentCurrency.symbol}
-                          {amount}
-                        </div>
+                      <div className="text-sm font-black tracking-tight">
+                        {activeCurrencyConfig.symbol}{amt}
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-1">
-                        {tier.description}
-                      </p>
+                      <div
+                        className={`text-[11px] font-medium mt-0.5 whitespace-nowrap ${
+                          isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
+                        {label}
+                      </div>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Upgraded Tactile Custom Amount Button & Interactive Input */}
-              <div className="pt-1">
-                {!isCustomAmount ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsCustomAmount(true)}
-                    className="w-full group p-3.5 sm:p-4 rounded-2xl text-left bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-white/[0.02] dark:to-blue-950/20 border border-dashed border-slate-300 dark:border-white/15 hover:border-[#425aef] dark:hover:border-blue-400 transition-all duration-200 cursor-pointer flex items-center justify-between shadow-2xs hover:shadow-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 dark:bg-blue-900/40 text-[#425aef] dark:text-blue-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <Sparkles className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#425aef] dark:group-hover:text-blue-400 transition-colors">
-                          自定义任意赞赏金额
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          自由输入心意金额（支援 1 HKD 等值至 1000 HKD 等值）
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-[#425aef] dark:text-blue-400 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a1e2d] border border-blue-200/60 dark:border-blue-500/30 group-hover:bg-[#425aef] group-hover:text-white transition-all shrink-0">
-                      点此输入 ➔
+              {/* Custom Amount Input (Copied from RewardModal: border-2 transition-all cursor-text) */}
+              <div className="space-y-1 pt-1">
+                <label
+                  className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 transition-all cursor-text ${
+                    isCustomMode
+                      ? isCustomInvalid
+                        ? 'border-red-400 bg-red-50/50 dark:bg-red-950/20'
+                        : 'border-[#425aef] bg-blue-50/60 dark:bg-blue-950/25'
+                      : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03]'
+                  }`}
+                >
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                    {activeCurrencyConfig.symbol}
+                  </span>
+                  <input
+                    type="number"
+                    min={activeCurrencyConfig.min}
+                    max={activeCurrencyConfig.max}
+                    step={activeCurrencyConfig.code === 'jpy' ? 100 : 1}
+                    placeholder={`自定义金额（${activeCurrencyConfig.symbol}${activeCurrencyConfig.min} ~ ${activeCurrencyConfig.symbol}${activeCurrencyConfig.max}）`}
+                    value={customAmount}
+                    onFocus={() => setIsCustomMode(true)}
+                    onChange={(e) => {
+                      setIsCustomMode(true);
+                      setCustomAmount(e.target.value);
+                    }}
+                    className="flex-1 bg-transparent text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden"
+                  />
+                  {isCustomMode && customAmount && (
+                    <span className="text-[11px] font-bold uppercase text-[#425aef] shrink-0">
+                      {activeCurrencyConfig.code.toUpperCase()}
                     </span>
-                  </button>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-900/15 border border-[#425aef] ring-2 ring-[#425aef]/25 space-y-3 animate-in fade-in duration-200 shadow-sm">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
-                      <div className="flex items-center gap-1.5">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-[#425aef]" />
-                        <span>自定义赞赏金额 ({currentCurrency.name})</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsCustomAmount(false)}
-                        className="text-xs text-[#425aef] dark:text-blue-400 hover:underline cursor-pointer font-semibold"
-                      >
-                        返回预设档位
-                      </button>
-                    </div>
-
-                    {/* Quick increment chips */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] text-slate-500 font-medium mr-1">快捷预设:</span>
-                      {quickIncrements.map((inc) => (
-                        <button
-                          key={inc}
-                          type="button"
-                          onClick={() => setCustomAmountStr(String(inc))}
-                          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#425aef] hover:text-[#425aef] cursor-pointer transition-colors shadow-2xs"
-                        >
-                          +{currentCurrency.symbol}{inc}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-extrabold text-slate-400 text-sm">
-                        {currentCurrency.symbol}
-                      </span>
-                      <input
-                        type="number"
-                        min={currentCurrency.min}
-                        max={currentCurrency.max}
-                        step="any"
-                        placeholder={`请输入金额 (${currentCurrency.min} ~ ${currentCurrency.max})`}
-                        value={customAmountStr}
-                        onChange={(e) => setCustomAmountStr(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 text-sm font-bold rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40"
-                      />
-                    </div>
-
-                    {!isAmountValid && customAmountStr && (
-                      <p className="text-xs text-red-500 font-medium">
-                        ⚠️ 金额需在 {currentCurrency.symbol}{currentCurrency.min} ~ {currentCurrency.symbol}{currentCurrency.max} 之间（约 1 HKD ~ 1000 HKD 等值）
-                      </p>
-                    )}
+                  )}
+                </label>
+                {isCustomMode && isCustomInvalid && (
+                  <div className="text-[11px] text-red-500 dark:text-red-400 px-1 font-medium">
+                    请输入 {activeCurrencyConfig.symbol}{activeCurrencyConfig.min} ~ {activeCurrencyConfig.symbol}{activeCurrencyConfig.max} 之间的金额
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Serv00-styled Supporter Name & Message Inputs */}
+            {/* Serv00-styled Supporter Inputs */}
             <div className="space-y-3 pt-1">
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                2. 支持者信息登记（参考 Serv00 布局规范）
+                2. 支持者信息登记
               </label>
               <div className="space-y-3">
-                {/* Field 1: Name or Social */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
                     👤 称呼或社交账号 (Name or your social) (可选)
@@ -542,11 +498,10 @@ export const SupportDashboard: React.FC = () => {
                     placeholder="例如：@github_username 或 Shijian Friend"
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
                   />
                 </div>
 
-                {/* Field 2: Message */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
                     💬 留言寄语 (Say something nice) (可选)
@@ -557,15 +512,15 @@ export const SupportDashboard: React.FC = () => {
                     placeholder="写下想对作者说的话或鼓励..."
                     value={donorMessage}
                     onChange={(e) => setDonorMessage(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Action Area: Checkout Button & Clear Guarantees */}
-          <div className="pt-4 space-y-3 border-t border-slate-100 dark:border-white/[0.06]">
+          {/* Bottom Action Button & Notification Notice */}
+          <div className="pt-4 space-y-2 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               disabled={!isAmountValid}
@@ -574,35 +529,21 @@ export const SupportDashboard: React.FC = () => {
             >
               <CreditCard className="w-5 h-5 text-white/90" />
               <span>
-                前往 Stripe 安全收银台支付 — {currentCurrency.symbol}
-                {currentAmount > 0 ? currentAmount : currentCurrency.min} {currentCurrency.code}
+                前往 Stripe 安全收银台支付 — {activeCurrencyConfig.symbol}
+                {effectiveAmount} {activeCurrencyConfig.code.toUpperCase()}
               </span>
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* Crucial Notice Under Button explicitly informing user about Telegram Webhook & Security */}
-            <div className="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-center space-y-1">
-              <p className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-1">
-                <span>🔔</span>
-                <span>支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存</span>
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  Stripe 端到端安全加密
-                </span>
-                <span>•</span>
-                <span>支持 Apple Pay / Google Pay / 信用卡 / Link</span>
-                <span>•</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-medium">未完成付款绝不触发任何推送</span>
-              </div>
-            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 text-center pt-1 leading-relaxed">
+              支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存
+            </p>
           </div>
         </div>
 
         {/* Right Column: QR Codes Overview & Web3 Channels (5 Cols) */}
-        <div className="lg:col-span-5 h-full flex flex-col justify-between bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-5">
-          <div className="space-y-5">
+        <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-5">
+          <div className="space-y-4">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                 扫码支付一览
@@ -664,11 +605,10 @@ export const SupportDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Tab 1: CN QR Codes (WeChat & Alipay) */}
+            {/* Tab 1: CN QR Codes */}
             {qrTab === 'cn' && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="grid grid-cols-2 gap-3.5">
-                  {/* WeChat Pay */}
                   <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
                     <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
                       <WeChatIcon className="w-4 h-4" />
@@ -698,7 +638,6 @@ export const SupportDashboard: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Alipay */}
                   <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group">
                     <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300">
                       <AlipayIcon className="w-4 h-4" />
@@ -727,10 +666,6 @@ export const SupportDashboard: React.FC = () => {
                       支付宝扫一扫
                     </span>
                   </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  💡 <strong>扫码提示</strong>：转账时可在附言中写下您的称呼与寄语，博主核对账单后将手动同步至下方公开致谢名册！
                 </div>
               </div>
             )}
@@ -904,22 +839,14 @@ export const SupportDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Bottom Trust & Level Disassociation Disclaimer Box */}
-          <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06] space-y-2.5">
-            <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-500/20 space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
-                <Award className="w-4 h-4 text-amber-600" />
-                <span>社区等级与赞赏 100% 独立承诺</span>
-              </div>
-              <p className="text-[11px] text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
-                本博客会员等级 (LV) 与信任等级 (TL) 纯粹基于技术互动与开源讨论评定，<strong>绝无付费升级特权</strong>，每一位读者均享有完全平等的权益。
-              </p>
-            </div>
+          {/* Clean Tip Box: Balanced with Left Column */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            💡 <strong>扫码支持提示</strong>：转账时可在附言中备注称呼与寄语，博主定期查对账单后将手动录入至下方致谢名录。若希望保持匿名，无需填写附言。
           </div>
         </div>
       </section>
 
-      {/* ── 3. Part 2: Supporter Roster (支援名录表格) ──────────────────── */}
+      {/* ── 3. Part 2: Supporter Roster (公开致谢名册) ────────────────── */}
       <section id="sponsor-records" className="space-y-6 pt-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -931,7 +858,7 @@ export const SupportDashboard: React.FC = () => {
               支援名录 (Hall of Fame)
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              致敬每一位慷慨赞助的读者与同行，名单自动与 D1 数据库同步收录。
+              致谢每一位慷慨支持的读者与同行，名单定期与后台数据库同步。
             </p>
           </div>
 
@@ -954,7 +881,7 @@ export const SupportDashboard: React.FC = () => {
         {/* Highlight Metrics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               累计支持人次
             </div>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
@@ -962,7 +889,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               喝到咖啡
             </div>
             <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
@@ -970,7 +897,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               汇聚币种
             </div>
             <div className="text-2xl font-black text-[#425aef] dark:text-blue-400 mt-1">
@@ -978,7 +905,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               最新支持
             </div>
             <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate">
@@ -993,21 +920,11 @@ export const SupportDashboard: React.FC = () => {
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200/80 dark:border-white/[0.07] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
-                  <th scope="col" className="px-5 py-3.5">
-                    赞赏支持者
-                  </th>
-                  <th scope="col" className="px-4 py-3.5">
-                    支持金额
-                  </th>
-                  <th scope="col" className="px-4 py-3.5">
-                    祝福与寄语
-                  </th>
-                  <th scope="col" className="px-4 py-3.5">
-                    支付渠道
-                  </th>
-                  <th scope="col" className="px-5 py-3.5 text-right">
-                    日期
-                  </th>
+                  <th scope="col" className="px-5 py-3.5">赞赏支持者</th>
+                  <th scope="col" className="px-4 py-3.5">支持金额</th>
+                  <th scope="col" className="px-4 py-3.5">祝福与寄语</th>
+                  <th scope="col" className="px-4 py-3.5">支付渠道</th>
+                  <th scope="col" className="px-5 py-3.5 text-right">日期</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
@@ -1017,7 +934,6 @@ export const SupportDashboard: React.FC = () => {
                       key={sponsor.id}
                       className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors"
                     >
-                      {/* Name */}
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#425aef] dark:text-blue-300 flex items-center justify-center font-bold text-xs shrink-0">
@@ -1029,7 +945,6 @@ export const SupportDashboard: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Amount */}
                       <td className="px-4 py-3.5 whitespace-nowrap font-bold text-slate-900 dark:text-white">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold bg-blue-50 dark:bg-blue-950/40 text-[#425aef] dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
                           {sponsor.currency === 'USD'
@@ -1057,7 +972,6 @@ export const SupportDashboard: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* Message */}
                       <td className="px-4 py-3.5 max-w-xs md:max-w-md">
                         {sponsor.message ? (
                           <span className="text-slate-700 dark:text-slate-300 text-xs italic">
@@ -1070,14 +984,12 @@ export const SupportDashboard: React.FC = () => {
                         )}
                       </td>
 
-                      {/* Channel */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/10">
                           {sponsor.channel}
                         </span>
                       </td>
 
-                      {/* Date */}
                       <td className="px-5 py-3.5 whitespace-nowrap text-right text-xs text-slate-400 dark:text-slate-400 font-mono">
                         {sponsor.date}
                       </td>
@@ -1095,16 +1007,14 @@ export const SupportDashboard: React.FC = () => {
             </table>
           </div>
 
-          {/* Advanced Pagination Bar: < 上一页, 1, 2, ... [跳转按钮], 10, 11, ..., 下一页 > */}
+          {/* Advanced Pagination Bar */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-slate-100 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400">
               <div>
                 第 <strong className="text-slate-800 dark:text-white font-bold">{tablePage}</strong> / {totalPages} 页 (共 {filteredSponsors.length} 条记录)
               </div>
 
-              {/* Number Buttons & Prev/Next with Icons */}
               <div className="flex items-center gap-1.5 relative">
-                {/* Prev Button with Icon */}
                 <button
                   type="button"
                   disabled={tablePage <= 1}
@@ -1115,7 +1025,6 @@ export const SupportDashboard: React.FC = () => {
                   <span>上一页</span>
                 </button>
 
-                {/* Number Buttons & Ellipsis Jump Button */}
                 <div className="flex items-center gap-1">
                   {paginationItems.map((item) => {
                     if (item.type === 'page' && item.page !== undefined) {
@@ -1136,7 +1045,6 @@ export const SupportDashboard: React.FC = () => {
                       );
                     }
 
-                    // Ellipsis with Quick Jump Button
                     return (
                       <div key={item.key} className="relative">
                         <button
@@ -1152,7 +1060,6 @@ export const SupportDashboard: React.FC = () => {
                   })}
                 </div>
 
-                {/* Next Button with Icon */}
                 <button
                   type="button"
                   disabled={tablePage >= totalPages}
@@ -1163,7 +1070,6 @@ export const SupportDashboard: React.FC = () => {
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
 
-                {/* Quick Jump Input Popover */}
                 {showJumpPopover && (
                   <div className="absolute right-0 bottom-full mb-2 z-20 p-3 rounded-2xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 shadow-xl animate-in zoom-in-95 duration-150 w-48">
                     <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-white/10">
@@ -1213,7 +1119,6 @@ export const SupportDashboard: React.FC = () => {
           </h2>
         </div>
 
-        {/* Full-width container aligned perfectly with top cards and table */}
         <div className="w-full space-y-3">
           {supportConfig.faqs.map((faq, idx) => {
             const isOpen = expandedFaq === idx;

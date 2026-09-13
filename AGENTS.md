@@ -1899,3 +1899,26 @@
      - Serv00 称呼/寄语与防误发安全声明正常展示；
      - 线上 Stripe 国际收银台模态框唤起正常，无任何致命 JS 控制台报错；
      - 支援名录表格数据与高阶分页器正常运作。
+
+### Task 86: 多语言翻译接口与文章质量全面自查加固：根除 KaTeX 语法撕裂、Mermaid 图表崩溃、手风琴嵌套吞噬与未翻译属性
+- [x] **KaTeX 复杂物理公式与 LaTeX 语法撕裂根除 (Issue 1)**：
+  1. 定位并彻底清除所有多语言版本中的残留撕裂片段（如 `artial t} \end{aligned}`、孤立 `$$` 与泄漏的前分片上下文标记 `<!-- context from previous chunk -->`）；
+  2. 修复分片上下文提取机制：在 `server-article-i18n.ts` 中以完整的段落与标题为边界提取前置上下文，严禁直接对原始字符流切片切断公式/Token；
+  3. 恢复麦克斯韦方程组完整的纯净 LaTeX/KaTeX 语法（`\frac{\partial \mathbf{B}}{\partial t}` 与 `\frac{\partial \mathbf{E}}{\partial t}`），并在全量 34 篇文章中通过正则严格扫描断言（`/(?<!\\p)artial\s*t\s*\}/` 匹配数为 0）。
+- [x] **Mermaid 11 图表语法崩溃与 `undefined` 报错根治 (Issue 1)**：
+  1. 全量修复因分片上下文导致的非平衡代码块（```fence）和 $$ 数学块，杜绝 Markdown 解析器崩溃；
+  2. 对 Mermaid 流程图（Flowchart TD）与时序图（Sequence Diagram）节点文本、决策判断分支及按钮进行地道的多语言本地化翻译（如 Reader visits post, Verify password, Display password dialog 等），彻底解决原生中文遗留与 `undefined` 运行时报错。
+- [x] **手风琴折叠卡片 (`article-accordion-group`) 嵌套吞噬语法缺陷修复 (Issue 2)**：
+  1. 根治因缺少闭合 `</div>` 导致的 `article-accordion-group` 容器无限向下吞噬后续 `article-tabs` 多标签卡与标题问题；
+  2. 在架构模块 C 之后精准闭合手风琴群组，恢复与后续 `---`、`### 3. 多标签选项卡（Interactive Tabs）` 及 `<div class="article-tabs">` 的清晰同级布局；
+  3. 编写自动化 AST/HTML 容器深度审计脚本，对全量文章验证 `div` 与 `details` 的绝对平衡（Net Depth = 0）以及不存在吞噬嵌套。
+- [x] **用户交互组件 HTML 属性汉字残留全面本地化 (Issue 3)**：
+  1. 全量本地化交互式通用单位换算器（`.interactive-unit-converter`）的 `data-title` 属性（EN: `Interactive Universal Unit Converter (Base Unit Switching & Live Exchange Rates)`，DE: `Interaktiver universeller Einheitenwandler...`，ES: `Convertidor de unidades universal interactivo...`，FR: `Convertisseur Interactif Universel d'Unités...`，ZH-HANT: `互動式通用單位換算器...`）；
+  2. 全量本地化分级加密卡片（`.article-encrypted-box`）中的 `data-hint` 提示信息与按钮文本，根除英文/德文/西文/法文版本中的中文残留。
+- [x] **聊天流对话组件 (`article-chat`) 完整闭合与孤立消息消除**：
+  1. 保证全部 6 条对话消息完整嵌套在 `<div class="article-chat">` 容器内，每个消息拥有独立的 3 层 `div` 结构并在最后一条消息后统一闭合，杜绝孤立消息（Orphan Chat Message）。
+- [x] **全量 34 篇文章自查与高质量端到端验证通过**：
+  1. 完善 `hello-world-es.md`、`hello-world-fr.md`、`hello-world-zh-Hant.md` 的高质量本地化翻译；
+  2. 编写并运行 `scripts/audit-posts-quality.mjs`，对全库 34 篇文章进行 8 大质量维度的深度扫描（KaTeX 撕裂、Mermaid 代码平衡、HTML 标签平衡、data-title 属性本地化、Chat 容器完整性、手风琴嵌套隔离等），全部 34 篇文章 100% 通过（Zero defects detected）；
+  3. 编写并执行全流程 Playwright 浏览器真实端到端测试（`scripts/verify-article-i18n-quality.mjs`），在 Chrome 无头浏览器下真实验证无 `undefined` 文本、无 `post-hero__i18n-switch` 按钮、无 `isAiGenerated` 徽标、KaTeX 公式与 Mermaid 图表正常渲染，断言全绿通过。
+

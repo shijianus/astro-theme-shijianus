@@ -154,19 +154,7 @@ Org-mode est un outil puissant pour les utilisateurs d'Emacs pour la gestion des
 > [!QUOTE]
 > “Org-mode n'est pas seulement un format, c'est aussi un flux de travail de pensée exécutable.”
 
-<!-- context from previous chunk -->
-一种可执行的思维工作流。”
-#+END_QUOTE
-```
 
-**本主题中的标准静态 GFM 任务清单呈现（只读状态）**：
-
-- [x] 修复表格与移动端溢出
-- [ ] 补全 Org-mode 语法转换器
-
-> [!QUOTE]
-> “Org-mode 不仅是格式，更是一种可执行的思维工作流。”
-<!-- end context -->
 
 #### 可交互式任务清单与联动进度条（Interactive Tutorial Checklist & Chained Progression）
 
@@ -265,7 +253,7 @@ _斜体强调文本_
 
 ---
 
-## 四、WordPress 风格文章形态（Post Formats）全量实装与视觉呈现
+## 4. Implémentation complète et présentation visuelle des formats d'articles style WordPress (Post Formats)
 
 WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不同类型的内容展现专属的视觉形态。我们在本主题正文栏中完整实现了这 9 种形态：
 
@@ -279,15 +267,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ---
 
-<!-- context from previous chunk -->
-临时笔记：
 
-<div class="article-aside">
-  <p><strong>💡 随笔备忘</strong>：静态站点的真正价值不在于炫技，而在于交付极速、零服务端维护负担的纯粹阅读体验。即便经过五年、十年，生成的 HTML 文件依然可以完美打开。</p>
-</div>
-
----
-<!-- end context -->
 
 ### 2. `status`（状态动态 / 碎碎念 / 微语录）
 
@@ -482,13 +462,7 @@ Fournit un aperçu élégant sous forme de cartes pour les sources de référenc
 ### 8. `chat` (Flux de dialogue en bulles de chat / Organic Animated Dialogue Stream)
 
 Utilisé pour démontrer de manière vivante les soutenances techniques, les discussions à deux ou les scénarios d'entretiens utilisateurs. Prend en charge les bulles gauche/droite, le code en ligne, la personnalisation des couleurs ainsi que **l'animation de frappe adaptative au contenu, les effets sonores synthétisés via Web Audio et les avatars dynamiques (`footer_mini_logo__media`)** :
-* **Mode statique (par défaut)** : `<div class="article-chat">` maintient une présentation purement statique et légère, sans aucune surcharge JavaScript ;
-* **Activation de la démonstration dynamique (contrôle par paramètre)** : en configurant `data-animate="true"` (ou `class="article-chat is-animated"`), le système déclenchera automatiquement, lorsque le lecteur fera défiler la page pour la première fois jusqu'à ce que cet élément entre dans le viewport, une animation de frappe réaliste basée sur la longueur des caractères et des rythmes aléatoires naturels, accompagnée de sons de notification spécifiques à gauche et à droite ;
-* **Chronologie dynamique non mécanique (Content-Length Aware Timing)** : le système détermine intelligemment la durée de l'indicateur de frappe en fonction de la longueur de la réplique (clignotement de 380 ms pour les phrases courtes, frappe et réflexion de 1000 ms+ pour les paragraphes techniques longs), et insère des pauses naturelles entre les bulles conformes au jugement de lecture humaine, ainsi que de légères variations de fréquence sonore ;
-* **Prise en charge des avatars vidéo dynamiques (`footer_mini_logo__media`)** : les avatars prennent en charge l'intégration de micro-vidéos MP4 animées et d'une image d'affiche statique de secours ;
-* **Déclenchement unique et garantie de rechargement** : après le premier déclenchement lors du défilement, le système se verrouille automatiquement ; les défilements répétés ultérieurs ne déclencheront pas à nouveau l'animation, évitant ainsi de perturber la lecture ; le système ne sera réinitialisé que lorsque l'utilisateur rafraîchira la page (F5) ; une barre de micro-commandes est également fournie en haut à droite, avec « ↺ Rejouer » et « 🔊/🔇 Bascule du son ».
-
-<div class="article-chat" data-animate="true" data-sound="true">
+* **Mode statique (par défaut)** : `<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -499,7 +473,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        Bonjour ! Est-ce que l'implémentation du rendu statique de <code>KaTeX</code> et <code>Mermaid</code> dans Astro ne ralentirait pas le chargement de la page côté front-end ?
+        Bonjour ! Est-ce que le rendu statique de <code>KaTeX</code> et <code>Mermaid</code> dans Astro ralentira la vitesse de chargement de la page front-end ?
       </div>
     </div>
   </div>
@@ -509,39 +483,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        Absolument pas ! Car <code>remark-math</code> et <code>rehype-katex</code> compilent les formules en chaînes HTML/MathML pures dès la phase de construction (Build-time), ce qui signifie <strong>0 charge d'exécution JavaScript</strong> côté navigateur ; et les diagrammes Mermaid sont également chargés de manière asynchrone et à la demande en modules ESM, ce qui rend le premier écran extrêmement léger ! ⚡
-      </div>
-    </div>
-  </div>
-
-<!-- context from previous chunk -->
-> 在构建期（Build-time）就已经把公式编译成了纯 HTML/MathML 字符串，浏览器端 <strong>0 JS 运行时负担</strong>；而 Mermaid 图表也是动态按需异步加载 ESM 模块，首屏极其轻快！⚡
-      </div>
-    </div>
-  </div>
-<!-- end context -->
-
-<div class="chat-message chat-left">
-    <span class="chat-avatar footer_mini_logo__media">
-      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
-        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
-      </video>
-      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
-    </span>
-    <div class="chat-body">
-      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
-      <div class="chat-bubble">
-        太棒了！那我们在 Markdown 里直接写架构时序图和交互式单位换算器也是开箱即用的对吧？
-      </div>
-    </div>
-  </div>
-
-  <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
-    <div class="chat-body">
-      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
-      <div class="chat-bubble">
-        对的！不仅双击放大与高清 SVG 导出已全量具备，单位换算器更是接入了<strong>实时联网外汇牌价同步</strong>与<strong>基准单位下拉切换</strong>，而且保证固定质量单位完整对称表达，所有度量均经过严谨测试！🚀
+        Absolument pas ! Puisque <code>remark-math</code> et <code>rehype-katex</code> compilent les formules en chaînes HTML/MathML pures au moment de la génération (Build-time), le côté navigateur a <strong>0 surcharge JS d'exécution</strong> ; et les diagrammes Mermaid se chargent dynamiquement à la demande sous forme de modules ESM asynchrones, rendant le premier écran extrêmement rapide ! ⚡
       </div>
     </div>
   </div>
@@ -554,19 +496,44 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
       <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
     </span>
     <div class="chat-body">
-      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
+      <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        收到！这个交互手感与根据消息长短变化的打字动画非常自然，我这就把团队的技术文档库升级上来！🎉
+        Fantastique ! Cela signifie que nous pouvons écrire des diagrammes de séquence d'architecture et des convertisseurs d'unités interactifs directement en Markdown, et qu'ils sont prêts à l'emploi, n'est-ce pas ?
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architecte shijianus" />
     <div class="chat-body">
-      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
+      <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
-        欢迎体验！后续如果遇到任何格式扩展或定制需求，随时在讨论区或 GitHub 交流探讨~ ✨
+        Tout à fait ! Non seulement le zoom par double-clic et l'export SVG haute définition sont pleinement intégrés, mais le convertisseur d'unités synchronise les <strong>taux de change en direct</strong> et permet le <strong>changement d'unité de base par liste déroulante</strong> avec une symétrie parfaite ; toutes les mesures ont été rigoureusement validées ! 🚀
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-message chat-left">
+    <span class="chat-avatar footer_mini_logo__media">
+      <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
+        <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
+      </video>
+      <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
+    </span>
+    <div class="chat-body">
+      <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
+      <div class="chat-bubble">
+        Bien reçu ! La sensation d'interaction et l'animation de frappe dynamique selon la longueur du message sont très naturelles ; je vais mettre à jour la documentation technique de l'équipe dès maintenant ! 🎉
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-message chat-right">
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architecte shijianus" />
+    <div class="chat-body">
+      <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
+      <div class="chat-bubble">
+        Bienvenue à l'essai ! Si vous avez besoin d'extensions de format ou de personnalisations ultérieures, n'hésitez pas à en discuter dans l'espace communautaire ou sur GitHub~ ✨
       </div>
     </div>
   </div>
@@ -574,7 +541,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
 
 ---
 
-## 五、特殊的下拉框格式与动态交互组件（Dropdown Selectors & Interactive Formats）
+## 5.特殊的下拉框格式与动态交互组件（Dropdown Selectors & Interactive Formats）
 
 针对用户明确要求的**特殊下拉框格式**，我们在文章正文层提供了纯客户端即时响应的下拉选择器组件：
 
@@ -582,15 +549,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
 
 读者可以在下拉框中自由选择技术框架，正文面板将实时无刷新切换对应的内容与代码：
 
-<!-- context from previous chunk -->
-ats）
 
-针对用户明确要求的**特殊下拉框格式**，我们在文章正文层提供了纯客户端即时响应的下拉选择器组件：
-
-### 1. 多框架与多代码版本下拉切换器（Interactive Dropdown Switcher）
-
-读者可以在下拉框中自由选择技术框架，正文面板将实时无刷新切换对应的内容与代码：
-<!-- end context -->
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
@@ -662,7 +621,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 * **通用 API 便捷调用**：系统同时在全局暴露了 `window.shijianusAPI.fetchExchangeRates(base)` 辅助函数，方便文档内的任何自定义脚本即时调用实时牌价数据；
 * **快捷一键复制与等式推算**：每个换算卡片均提供一键复制按钮与高亮反馈，底部同步展示动态等式链推算摘要。
 
-<div class="interactive-unit-converter" data-default="1" data-title="🔄 交互式通用单位换算器（支持基准单位切换与实时汇率）"></div>
+<div class="interactive-unit-converter" data-default="1" data-title="🔄 Convertisseur Interactif Universel d'Unités (Changement d'Unité de Base et Taux de Change en Direct)"></div>
 
 
 
@@ -855,15 +814,7 @@ Basé sur les normes GitHub Alert et EpoCanvas, prend en charge 13 types de cart
 > [!SUCCESS]
 > **Opération réussie (Success)** : Le processus de construction statique s'est terminé avec succès, les 47 routes statiques sont prêtes !
 
-<!-- context from previous chunk -->
-*：执行数据表重建操作具有破坏性，请先备份 D1 数据库！
 
-> [!DANGER]
-> **致命危险（Danger）**：直接删除生产数据库将导致全部评论与用户资产永久损毁。
-
-> [!SUCCESS]
-> **操作成功（Success）**：静态构建流程已成功完成，所有 47 个静态路由已就绪！
-<!-- end context -->
 
 > [!QUESTION]
 > **疑难探讨（Question）**：如何在无服务端依赖的环境下实现毫秒级的纯客户端全文检索？
@@ -896,7 +847,7 @@ Basé sur les normes GitHub Alert et EpoCanvas, prend en charge 13 types de cart
 
 ---
 
-## 八、学术数学公式（KaTeX）、架构图表（Mermaid 11）与动态思维导图（Markmap）
+## 8. Formules mathématiques académiques (KaTeX), diagrammes d'architecture (Mermaid 11) et cartes mentales dynamiques (Markmap)
 
 在展示型与示例型技术文档中，以 **「实际渲染效果 + 对应源码对照」**（双标签选项卡 Tabs）为核心呈现理念，不仅能让读者直观体验最终视觉与交互特性，更能方便开发者一键参考、复制并迁移至实际项目中。
 
@@ -1351,17 +1302,7 @@ kdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式
 
 <div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db
 
-<!-- context from previous chunk -->
-ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
-      </div>
-    </div>
-  </div>
-</div>
 
----
-
-### 4. 外联分段加密（External Link Segment Decryption Gate）
-<!-- end context -->
 
 在构建期或架构分层时，同一篇文章可以被物理分割为**公开正文段**与**外联受控密文段**。创作者可在文末或章节任意位置插入外联解密引导门，验证凭据后动态解密并在此无缝挂载完整后半段正文：
 
@@ -1416,7 +1357,7 @@ ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
 
 ---
 
-## 十、时间轴、步骤条、定义列表与数据表格
+## 10. Chronologies, barres d'étapes, listes de définitions et tableaux de données
 
 ### 1. 垂直时间轴（Vertical Timeline）
 
@@ -1467,16 +1408,7 @@ ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
 ---  
 ## Onze, Embellissement micro-typographique en ligne du texte riche et badges
 
-<!-- context from previous chunk -->
->在构建期完成 LaTeX 语法的 AST 解析，零客户端额外渲染延迟。</dd>
-  <dt>Post Formats</dt>
-  <dd>源自 WordPress 的内容形态定义规范，用于赋予不同文章类型专属的排版外观。</dd>
-</dl>
 
----
-
-## 十一、富文本行内微排版美化与徽章
-<!-- end context -->
 
 - **多色彩高亮（HTML 标签形式）**：
   - <mark class="mark-yellow">黄色高亮（重点标注）</mark>
@@ -1524,7 +1456,7 @@ ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
 
 ---
 
-## 十二、脚注与悬浮气泡（Footnotes）
+## 12. Notes de bas de page et infobulles flottantes (Footnotes)
 
 在学术或长篇技术文章中，脚注是必不可少的引用形式。鼠标悬浮于下方脚注角标即可直接弹出释义气泡[^ref-ssg-spec]，无需离开当前阅读视口[^ref-epocanvas-ui]。
 

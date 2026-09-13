@@ -1,30 +1,30 @@
 ---
-title: "主题重构启动记录"
+title: "Journal de Lancement de la Refonte du Thème"
 pubDate: 2026-04-02
-description: "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。"
+description: "Premier journal de refonte : s'assurer que le nouveau thème n'est pas une simple coquille de l'ancien, mais une implémentation Astro véritablement maintenable."
 author: "shijianus"
-category: "前端工程"
-group: "迁移记录"
+category: "Ingénierie Frontend"
+group: "Journaux de Migration"
 cover: "/media/shijianus/frontend.jpg"
 coverAlt: "frontend workspace"
 featured: true
 sticky: 3
-tags: ["Astro", "Tailwind", "主题重构"]
+tags: ["Astro", "Tailwind", "Refonte du Thème"]
 i18nKey: "hello-world"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
 ---
 
-# 为什么要重做
+# Pourquoi refaire
 
-之前的实现最大的问题不是功能少，而是结构不清楚。页面上混杂了试验性的品牌、风格和局部组件，最终既不像原主题，也没有形成自己的秩序。
+Le principal problème de l'implémentation précédente n'était pas le manque de fonctionnalités, mais le manque de clarté de sa structure. La page mélangeait des marques expérimentales, des styles et des composants locaux, de sorte qu'elle ne ressemblait ni au thème d'origine ni ne créait son propre ordre.
 
-## 这次重构的判断
+## Les prémisses de cette refonte
 
-这次的主题重构有两个前提：
+Cette refonte du thème repose sur deux conditions préalables :
 
-1. 保留原主题强结构首页、侧栏模块和卡片体系的优点。
-2. 把实现方式完全切换到 Astro + React + Tailwind 的内容优先架构。
+1. Conserver les points forts du thème d'origine : sa page d'accueil fortement structurée, les modules de la barre latérale et le système de cartes.
+2. Basculer entièrement l'implémentation vers une architecture orientée contenu basée sur Astro + React + Tailwind.
 
 ```ts
 const themeContract = {
@@ -34,15 +34,15 @@ const themeContract = {
 };
 ```
 
-## 首页应该先解决什么
+## Ce que la page d'accueil doit résoudre en premier
 
-首页不是宣传页，它首先是一张信息地图。读者进入第一页，需要很快看见：
+La page d'accueil n'est pas une page promotionnelle ; c'est avant tout une carte d'information. Dès la première page, le lecteur doit pouvoir identifier rapidement :
 
-- 品牌与作者身份
-- 当前有哪些主要分类
-- 最近有哪些值得读的文章
-- 侧栏里还能继续往哪里走
+- L'identité de la marque et de l'auteur
+- Les principales catégories actuellement disponibles
+- Les articles récents qui méritent d'être lus
+- Les destinations accessibles depuis la barre latérale
 
-## 之后的方向
+## Perspectives futures
 
-后续所有板块都会围绕同一个目标继续调整：让这套主题既有技术感，又不会把普通读者挡在门外。
+Toutes les sections suivantes continueront d'être ajustées autour du même objectif : conférer à ce thème une identité technique affirmée sans pour autant rebuter les lecteurs ordinaires.

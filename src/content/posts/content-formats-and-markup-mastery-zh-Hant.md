@@ -246,7 +246,7 @@ _斜体强调文本_
 
 ---
 
-## 四、WordPress 风格文章形态（Post Formats）全量实装与视觉呈现
+## 四、WordPress 風格文章形態（Post Formats）全量實裝與視覺呈現
 
 WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不同类型的内容展现专属的视觉形态。我们在本主题正文栏中完整实现了这 9 种形态：
 
@@ -453,13 +453,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 ### 8. `chat`（聊天氣泡對話流 / Organic Animated Dialogue Stream）
 
 用於生動演示技術答辯、雙人對話討論或使用者訪談場景，支援左右氣泡、行內程式碼、自訂配色以及**動態內容自適應打字動效、Web Audio 合成音效與動態頭像（`footer_mini_logo__media`）**：
-* **靜態模式（預設）**：`<div class="article-chat">` 保持輕量純靜態呈現，零 JS 開銷；
-* **開啟動態演示（參數控制）**：配置 `data-animate="true"`（或 `class="article-chat is-animated"`），系統將在**讀者第一次捲動滑入該視口時自動觸發基於字元長度與自然隨機律決定的擬真時序打字動畫與左右專屬提示音**；
-* **非機械動態時序（Content‑Length Aware Timing）**：系統根據發言長短智慧決定打字中指示器時長（短句 380ms 閃爍發出，長技術段落 1000ms+ 打字思考），並在氣泡間加入符合人類閱讀判斷的自然停頓與微頻音效抖動；
-* **動態影片頭像支援（`footer_mini_logo__media`）**：頭像支援嵌入 MP4 微影片動效與靜態兜底海報；
-* **單次觸發與重載保障**：首次滑入觸發後自動鎖定，後續反覆捲動不會重複觸發打擾閱讀；只有當使用者重新整理網頁（F5）重新載入時才會重新就緒；同時提供右上角「↺ 重播」與「🔊/🔇 音效切換」微控欄。
-
-<div class="article-chat" data-animate="true" data-sound="true">
+* **靜態模式（預設）**：`<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -470,7 +464,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
     <div class="chat-body">
       <div class="chat-author">開發者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        你好！請問在 Astro 中實現 <code>KaTeX</code> 和 <code>Mermaid</code> 的靜態渲染會不會拖慢前端頁面載入速度？
+        你好！請問在 Astro 中實現 <code>KaTeX</code> 和 <code>Mermaid</code> 的靜態渲染會不會拖慢前端頁面加載速度？
       </div>
     </div>
   </div>
@@ -480,13 +474,12 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
     <div class="chat-body">
       <div class="chat-author">架構師 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        完全不會！因為 <code>remark-math</code> 和 <code>rehype-katex</code> 在建置期（Build-time）就已經把公式編譯成了純 HTML/MathML 字串，瀏覽器端 <strong>0 JS 執行時負擔</strong>；而 Mermaid 圖表也是動態按需非同步載入 ESM 模組，首屏極其輕快！⚡
+        完全不會！因為 <code>remark-math</code> 和 <code>rehype-katex</code> 在構建期就已經把公式編譯成了純 HTML/MathML 字串，瀏覽器端 <strong>0 JS 運行時負擔</strong>；而 Mermaid 圖表也是動態按需非同步加載 ESM 模組，首屏極其輕快！⚡
       </div>
     </div>
   </div>
-</div>
 
-<div class="chat-message chat-left">
+  <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
         <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
@@ -496,17 +489,17 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
     <div class="chat-body">
       <div class="chat-author">開發者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        太棒了！那我們在 Markdown 裡直接寫架構時序圖和交互式單位換算器也是開箱即用的對吧？
+        太棒了！那我們在 Markdown 裡直接寫架構循序圖和互動式單位換算器也是開箱即用的對吧？
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架構師 shijianus" />
     <div class="chat-body">
       <div class="chat-author">架構師 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
-        對的！不僅雙擊放大與高清 SVG 匯出已全量具備，單位換算器更是接入了<strong>即時聯網外匯牌價同步</strong>與<strong>基準單位下拉切換</strong>，而且保證固定品質單位完整對稱表達，所有度量均經過嚴謹測試！🚀
+        對的！不僅雙擊放大與高解析度 SVG 匯出已全量具備，單位換算器更是串接了<strong>即時聯網外匯牌價同步</strong>與<strong>基準單位下拉切換</strong>，而且保證固定質量單位完整對稱表達，所有度量均經過嚴謹測試！🚀
       </div>
     </div>
   </div>
@@ -521,17 +514,17 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
     <div class="chat-body">
       <div class="chat-author">開發者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
       <div class="chat-bubble">
-        收到！這個交互手感與根據訊息長短變化的打字動畫非常自然，我這就把團隊的技術文件庫升級上來！🎉
+        收到！這個互動手感與根據訊息長短變化的打字動畫非常自然，我這就把團隊的技術文件庫升級上來！🎉
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架構師 shijianus" />
     <div class="chat-body">
       <div class="chat-author">架構師 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
       <div class="chat-bubble">
-        歡迎體驗！後續如果遇到任何格式擴展或客製需求，隨時在討論區或 GitHub 交流探討~ ✨
+        歡迎體驗！後續如果遇到任何格式擴充或自訂需求，隨時在討論區或 GitHub 交流探討~ ✨
       </div>
     </div>
   </div>
@@ -539,7 +532,7 @@ WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不�
 
 ---
 
-## 五、特殊的下拉框格式與動態交互元件（Dropdown Selectors & Interactive Formats）
+## 五、特殊的下拉框格式與動態交互元件（Dropdown Selectors & Interactive Formats）特殊的下拉框格式與動態交互元件（Dropdown Selectors & Interactive Formats）特殊的下拉框格式與動態交互元件（Dropdown Selectors & Interactive Formats）特殊的下拉框格式與動態交互元件（Dropdown Selectors & Interactive Formats）
 
 針對使用者明確要求的**特殊下拉框格式**，我們在文章正文層提供了純客戶端即時回應的下拉選擇器元件：
 
@@ -617,7 +610,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 * **通用 API 便捷调用**：系统同时在全局暴露了 `window.shijianusAPI.fetchExchangeRates(base)` 辅助函数，方便文档内的任何自定义脚本即时调用实时牌价数据；
 * **快捷一键复制与等式推算**：每个换算卡片均提供一键复制按钮与高亮反馈，底部同步展示动态等式链推算摘要。
 
-<div class="interactive-unit-converter" data-default="1" data-title="🔄 交互式通用单位换算器（支持基准单位切换与实时汇率）"></div>
+<div class="interactive-unit-converter" data-default="1" data-title="🔄 互動式通用單位換算器（支援基準單位切換與即時匯率）"></div>
 
 ---
 
@@ -841,7 +834,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-## 八、学术数学公式（KaTeX）、架构图表（Mermaid 11）与动态思维导图（Markmap）
+## 八、學術數學公式（KaTeX）、架構圖表（Mermaid 11）與動態思維導圖（Markmap）
 
 在展示型与示例型技术文档中，以 **「实际渲染效果 + 对应源码对照」**（双标签选项卡 Tabs）为核心呈现理念，不仅能让读者直观体验最终视觉与交互特性，更能方便开发者一键参考、复制并迁移至实际项目中。
 
@@ -942,580 +935,7 @@ $$
 
 #### ① 博客加密验证与内容渲染流程图（Flowchart TD）
 
-<!-- context from previous chunk -->
-artial t}
-\end{aligned}
-$$
-```
 
-</div>
-</div>
-</div>
-
----
-
-### 2. Mermaid 11 架構圖表（Flowchart & Sequence · 流程圖與時序圖）
-
-#### ① 部落格加密驗證與內容渲染流程圖（Flowchart TD）
-
-<div class="article-tabs">
-<div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈現</button>
-<button class="article-tabs__button" type="button">💻 Mermaid 原始碼</button>
-</div>
-<div class="article-tabs__panels">
-<div class="article-tabs__panel is-active">
-
-```mermaid
-flowchart TD
-    A[讀者訪問文章] --> B{文章是否加密?}
-    B -- 是 --> C[彈出毛玻璃密碼對話框]
-    C --> D{密碼校驗}
-    D -- 正確 --> E[解密並呈現正文]
-    D -- 錯誤 --> F[觸發視窗震動與紅字警示]
-    F -. 重新輸入口令 .-> C
-    B -- 否 --> E
-    E --> G[渲染 KaTeX 公式與 Mermaid 圖表]
-    G --> H[呈現完整沉浸式閱讀體驗]
-```
-
-</div>
-<div class="article-tabs__panel">
-
-````markdown
-```mermaid
-flowchart TD
-    A[讀者訪問文章] --> B{文章是否加密?}
-    B -- 是 --> C[彈出毛玻璃密碼對話框]
-    C --> D{密碼校驗}
-    D -- 正確 --> E[解密並呈現正文]
-    D -- 錯誤 --> F[觸發視窗震動與紅字警示]
-    F -. 重新輸入口令 .-> C
-    B -- 否 --> E
-    E --> G[渲染 KaTeX 公式與 Mermaid 圖表]
-    G --> H[呈現完整沉浸式閱讀體驗]
-```
-````
-
-</div>
-</div>
-</div>
-
-#### ② 客戶端安全鑑權與解密時序圖（Sequence Diagram）
-
-<div class="article-tabs">
-<div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈現</button>
-<button class="article-tabs__button" type="button">💻 Mermaid 原始碼</button>
-</div>
-<div class="article-tabs__panels">
-<div class="article-tabs__panel is-active">
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 讀者 (User)
-    participant Browser as 客戶端瀏覽器
-    participant PostPage as 文章渲染引擎
-    participant Security as 加密安全模組
-
-    User->>Browser: 點擊受保護的加密內容
-    Browser->>PostPage: 喚起密碼輸入對話框
-    User->>Browser: 輸入訪問密鑰
-    Browser->>Security: 校驗口令 Hash
-    alt 驗證成功
-        Security-->>Browser: 返回解鎖令牌
-        Browser->>PostPage: 解密正文並平滑展示
-    else 驗證失敗
-        Security-->>Browser: 返回密碼錯誤
-        Browser->>User: 觸發視窗搖晃與紅字警示
-    end
-```
-
-</div>
-<div class="article-tabs__panel">
-
-````markdown
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 讀者 (User)
-    participant Browser as 客戶端瀏覽器
-    participant PostPage as 文章渲染引擎
-    participant Security as 加密安全模組
-
-    User->>Browser: 點擊受保護的加密內容
-    Browser->>PostPage: 喚起密碼輸入對話框
-    User->>Browser: 輸入訪問密鑰
-    Browser->>Security: 校驗口令 Hash
-    alt 驗證成功
-        Security-->>Browser: 返回解鎖令牌
-        Browser->>PostPage: 解密正文並平滑展示
-    else 驗證失敗
-        Security-->>Browser: 返回密碼錯誤
-        Browser->>User: 觸發視窗搖晃與紅字警示
-    end
-```
-````
-
-</div>
-</div>
-</div>
-
----
-
-### 3. 動態交互式思維導圖（Markmap / Mindmap · 多向分支擴散）
-
-在長篇技術規範與系統架構梳理中，傳統的靜態列表難以直觀呈現複雜的知識脈絡。本主題全新實裝 **Markmap 動態交互式思維導圖引擎**，在文章主欄（`.post.post-page-shell`）中實現徹底的原生解析與交互增強：
-
-> [!TIP]
-> **多向分支擴散核心規則**：
-> 1. **預設單塊保護空間**：預設狀態下，思維導圖僅展示 **1 塊核心根節點**（Level 1），右側附帶折疊小圓點指示器；
-> 2. **點擊展開多向分支**：點擊根節點或任意子節點的小圓點，子分支將**平滑向外散開**；
-> 3. **工具欄全能操控**：支援 **放大 / 縮小 / 居中自適應 / 一鍵展開全部 / 一鍵收起單塊 / 全螢幕沉浸式閱讀 / 複製原始碼**；
-> 4. **畫布拖拽與縮放**：按住滑鼠左鍵可自由拖拽平移畫布，滾動滑鼠滾輪可縮放視野。
-
-#### 活體思維導圖呈現：SSG 與主題內容格式生態全景
-
-<div class="article-tabs">
-<div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 交互導圖呈現</button>
-<button class="article-tabs__button" type="button">💻 Mindmap 結構原始碼</button>
-</div>
-<div class="article-tabs__panels">
-<div class="article-tabs__panel is-active">
-
-```mindmap
-# 靜態站點生成器與全格式內容生態架構
-## 1. 靜態編譯核心流水線
-### AST 語法轉換管道
-#### Markdown / MDX 語義解析流水線
-##### Unified / Remark 語法擴展
-- GFM 表格與刪除線語法轉換
-- 自動生成 Heading 鏈接與 ID
-##### Markmap 交互式多向思維導圖擴展
-- 递归 AST 樹構建 (Transformer.transform)
-- D3 層次化彈性布局 (Flextree Algorithm)
-- 交互式折疊狀態機 (payload.fold)
-- 動態調色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 數學公式擴展
-- 行內公式與獨立塊公式解析
-- 宏定義支持與錯誤容錯回退
-#### 程式碼高亮與靜態著色器
-##### Shiki 雙主題編譯器
-- VSCode TextMate 語法規則解析
-- 浅色/深色模式雙主題預渲染零水合
-### 編譯器與資源打包
-#### Vite 6 极速热重载 (HMR)
-##### ESM 原生模組載入
-- 毫秒級按需編譯與熱更新
-#### Rollup 靜態生成流水線
-##### 靜態打包優化
-- 智能代碼分塊 (Code Splitting)
-- Tree‑Shaking 冗餘消除
-## 2. 動態交互與群島體系
-### 混合組件群島 Islands
-#### 客戶端組件分島掛載
-##### React 19 客戶端組件
-- 獨立狀態隔離與上下文通信
-- 會話狀態保持 (SessionStorage / Crypto)
-##### Astro 伺服器端 Islands
-- 零執行時客戶端 JS (Zero‑JS by Default)
-- 按需激活交互島嶼 (client:visible)
-### 現代視覺與動效系統
-#### 動態背景與渲染引擎
-##### Aurora 極光 / Starfield 星空
-- WebGL / Canvas 2D 硬體加速
-- 節能模式與視口離開自動暫停
-##### 毛玻璃卡片 Glassmorphism 規範
-- 動態高斯模糊與多重環境陰影
-- 響應式全端自適應布局 (PC / Pad / Mobile)
-## 3. 格式全景與特異功能
-### 擴展文件規範對照
-#### AsciiDoc (.adoc) 原生等效適配
-#### Emacs Org-Mode (.org) 任務清單映射
-#### reStructuredText (.rst) 指令轉換
-### 富交互組件集
-#### 交互式下拉框切換器 (Dropdown Switcher)
-#### 互斥手風琴折疊卡片 (Accordion Groups)
-#### 動態黑膠唱片音頻播放器 (Vinyl Audio)
-### 安全隱私與分級加密
-#### WebCrypto SHA-256 雜湊校驗 (無明文外露)
-#### 1級會話持久解鎖 (Session Persistent)
-#### 2級防窺遮罩切換 (高斯模糊 / 馬賽克 / 劇透遮罩)
-#### 3級視口防窺離開即鎖 (IntersectionObserver)
-``` 
-
-</div>
-<div class="article-tabs__panel">
-
-````markdown
-```mindmap
-# 靜態站點生成器與全格式內容生態架構
-## 1. 靜態編譯核心流水線
-### AST 語法轉換管道
-#### Markdown / MDX 語義解析流水線
-##### Unified / Remark 語法擴展
-- GFM 表格與刪除線語法轉換
-- 自動生成 Heading 鏈接與 ID
-##### Markmap 交互式多向思維導圖擴展
-- 递归 AST 樹構建 (Transformer.transform)
-- D3 層次化彈性布局 (Flextree Algorithm)
-- 交互式折疊狀態機 (payload.fold)
-- 動態調色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 數學公式擴展
-- 行內公式與獨立塊公式解析
-- 宏定義支持與錯誤容錯回退
-#### 程式碼高亮與靜態著色器
-##### Shiki 雙主題編譯器
-- VSCode TextMate 語法規則解析
-- 浅色/深色模式雙主題預渲染零水合
-### 編譯器與資源打包
-#### Vite 6 极速热重载 (HMR)
-##### ESM 原生模組載入
-- 毫秒級按需編譯與熱更新
-#### Rollup 靜態生成流水線
-##### 靜態打包優化
-- 智能代碼分塊 (Code Splitting)
-- Tree‑Shaking 冗餘消除
-## 2. 動態交互與群島體系
-### 混合組件群島 Islands
-#### 客戶端組件分島掛載
-##### React 19 客戶端組件
-- 獨立狀態隔離與上下文通信
-- 會話狀態保持 (SessionStorage / Crypto)
-##### Astro 伺服器端 Islands
-- 零執行時客戶端 JS (Zero‑JS by Default)
-- 按需激活交互島嶼 (client:visible)
-### 現代視覺與動效系統
-#### 動態背景與渲染引擎
-##### Aurora 極光 / Starfield 星空
-- WebGL / Canvas 2D 硬體加速
-- 節能模式與視口離開自動暫停
-##### 毛玻璃卡片 Glassmorphism 規範
-- 動態高斯模糊與多重環境陰影
-- 響應式全端自適應布局 (PC / Pad / Mobile)
-## 3. 格式全景與特異功能
-### 擴展文件規範對照
-#### AsciiDoc (.adoc) 原生等效適配
-#### Emacs Org-Mode (.org) 任務清單映射
-#### reStructuredText (.rst) 指令轉換
-### 富交互組件集
-#### 交互式下拉框切換器 (Dropdown Switcher)
-#### 互斥手風琴折疊卡片 (Accordion Groups)
-#### 動態黑膠唱片音頻播放器 (Vinyl Audio)
-### 安全隱私與分級加密
-#### WebCrypto SHA-256 雜湊校驗 (無明文外露)
-#### 1級會話持久解鎖 (Session Persistent)
-#### 2級防窺遮罩切換 (高斯模糊 / 馬賽克 / 劇透遮罩)
-#### 3級視口防窺離開即鎖 (IntersectionObserver)
-```
-````
-
-</div>
-</div>
-</div>
-
-#### 外聯分段解密端點隔離 (Standalone Token)
-```
-
-</div>
-<div class="article-tabs__panel">
-
-````markdown
-```mindmap
-# 靜態站點生成器與全格式內容生態架構
-## 1. 靜態編譯核心流水線
-### AST 語法轉換管道
-#### Markdown / MDX 語義解析流水線
-##### Unified / Remark 語法拓展
-- GFM 表格與刪除線語法轉換
-- 自動生成 Heading 鎖點與 ID
-##### Markmap 互動式多向思維導圖拓展
-- 遞迴 AST 樹構建 (Transformer.transform)
-- D3 層次化彈性佈局 (Flextree Algorithm)
-- 互動式折疊狀態機 (payload.fold)
-- 動態調色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 數學公式拓展
-- 行內公式與獨立塊公式解析
-- 宏定義支援與錯誤容錯回退
-#### 程式碼高亮與靜態著色器
-##### Shiki 雙主題編譯器
-- VSCode TextMate 語法規則解析
-- 淺色/深色模式雙主題預渲染零水合
-### 編譯器與資源打包
-#### Vite 6 极速熱重載 (HMR)
-##### ESM 原生模組載入
-- 毫秒級按需編譯與熱更新
-#### Rollup 靜態生成流水線
-##### 靜態打包優化
-- 智慧程式碼分塊 (Code Splitting)
-- Tree-Shaking 冗餘消除
-## 2. 動態互動與群島體系
-### 混合元件群島 Islands
-#### 客戶端元件分島掛載
-##### React 19 Client Components
-- 獨立狀態隔離與上下文通信
-- 會話狀態保持 (SessionStorage / Crypto)
-##### Astro Server-Side Islands
-- 零執行時客戶端 JS (Zero-JS by Default)
-- 按需激活互動島嶼 (client:visible)
-### 現代視覺與動效系統
-#### 動態背景與渲染引擎
-##### Aurora 極光 / Starfield 星空
-- WebGL / Canvas 2D 硬體加速
-- 節能模式與視口離開自動暫停
-##### 毛玻璃卡片 Glassmorphism 規範
-- 動態高斯模糊與多重環境陰影
-- 響應式全端自適應佈局 (PC / Pad / Mobile)
-## 3. 格式全景與特異功能
-### 擴展文件規範對照
-#### AsciiDoc (.adoc) 原生等效適配
-#### Emacs Org-Mode (.org) 任務清單映射
-#### reStructuredText (.rst) 指令轉換
-### 富互動元件集
-#### 互動式下拉框切換器 (Dropdown Switcher)
-#### 互斥手風琴折疊卡片 (Accordion Groups)
-#### 動態黑膠唱片音訊播放器 (Vinyl Audio)
-### 安全隱私與分級加密
-#### WebCrypto SHA-256 雜湊校驗 (無明文外露)
-#### 1級會話持久解鎖 (Session Persistent)
-#### 2級防窺遮罩切換 (高斯模糊 / 馬賽克 / 劇透遮罩)
-#### 3級視口防窺離開即鎖 (IntersectionObserver)
-#### 外聯分段解密端點隔離 (Standalone Token)
-```
-````
-
-</div>
-</div>
-</div>
-
-#### Markdown 編寫規範與語法參考
-
-本部落格整合的 **Mindmap 渲染引擎** 基於 AST 遞迴解析與 D3 Flextree 彈性樹佈局，**原生支援無限層級擴展（Level 1 至 Level N）**，無任何深度上限限制。作者在編寫文章時，可根據知識樹的縱深複雜度選擇以下書寫規範：
-
-##### 1. 混合階梯語法（推薦 1~6 層骨幹 + 無限列表深層衍生）
-標準 Markdown 標題支援 6 級深度（`#` 至 `######`），在第 6 級以下可繼續透過無序列表項（`-`、`*`）配合空格縮進無限向下衍生（Level 7、Level 8、Level 9...）：
-
-````markdown
-```mindmap
-#
-
-为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并建立起三级文内局部加密与外联分段解密体系：
-* **默认安全重置规则（重新載入時零持久性）**：默认情况下，所有加密内容（1级、2级、3级及外联解密门）在**页面刷新（F5 / 重新加载）后都会坚决自动重置回上锁状态**，彻底避免页面刷新后保持裸露的安全隐患；
-* **开放性持久化参数（`data-persist`）**：为了满足特殊文档场景的开放性需求，可通过参数配置覆盖默认重置策略：
-  * `data-persist="session"`（或 `data-persist="true"`）：在当前标签页会话期间跨刷新保持解锁；
-  * `data-persist="local"`：在本地浏览器存储中持久记忆解锁状态；
-  * 默认未配置：纯内存生命周期，**页面刷新立即安全重置上锁**。
-
----
-
-### 1. 1级加密：单页基础加密（等級 1 · 預設刷新重置）
-
-输入一次访问凭证即可解锁阅读正文，默认刷新页面即刻自动重锁；若需跨刷新保持可在标签中加入 `data-persist="session"`：
-
-<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 1级加密提示：演示密钥请输入 shijianus2026（哈希校验 · 刷新自动重锁）">
-  <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ 1级加密 · 刷新自动重置</span> <span class="badge badge-cyan">SHA-256 保护</span></div>
-    <div class="encrypted-box__icon">🔒</div>
-    <div class="encrypted-box__title">1级保护：私有开发配置与源码资产</div>
-    <div class="encrypted-box__desc">该区域受 1 级安全策略保护，密码使用 WebCrypto 散列校验，无明文外露；刷新页面后将自动重锁。</div>
-    <button class="encrypted-box__btn" type="button">🔑 验证密钥解锁内容</button>
-  </div>
-  <div class="encrypted-box__content">
-    <div class="admonition admonition-success">
-      <div class="admonition-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>🎉 1级验证通过！当前页面已解锁（刷新将自动安全重锁）</span>
-      </div>
-      <div class="admonition-content">
-        <p><strong>核心开发环境参数已解锁：</strong></p>
-        <ul>
-          <li><code>DEPLOY_ENDPOINT</code>: <code>https://api.shijian.us/v2/deploy/core</code></li>
-          <li><code>AUTH_SCOPE</code>: <code>read:articles, write:releases</code></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
----
-
-### 2. 2级加密：解密后遮罩防窥保护（等級 2 · 遮罩保護）
-
-验证成功后内容虽被解密，但**默认自动进入高斯模糊防窥遮罩状态**（默认不显示切换栏，鼠标悬浮即可清晰查看），有效抵御近距离窥屏。
-- **开启工具栏**：配置 `data-allow-select="true"` 开启遮罩切换工具栏，**工具栏默认同样包含在遮罩内受保护**（鼠标悬浮时工具栏与正文一同清晰显露并可点击切换）；如需工具栏保持在遮罩外，可配置 `data-toolbar-masked="false"`；
-- **指定遮罩方式**：可通过 `data-mask="blur|mosaic|spoiler|reveal"` 强制指定遮罩模式；
-- **自定义设置栏**：支持在 Markdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式，或直接在正文中书写 `<div class="encrypted-mask-toolbar">` 结构，系统会自动扫描并激活自定义设置栏；
-- **刷新重置保障**：默认刷新页面后自动重锁。
-
-<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2級加密提示：演示密鑰請輸入 epocanvas2026">
-  <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ 2級加密 · 遮罩防窺模式</span> <span class="badge badge-purple">動態多態遮罩</span></div>
-    <div class="encrypted-box__icon">🛡️</div>
-    <div class="encrypted-box__title">2級保護：機密商業資料與財務清單</div>
-    <div class="encrypted-box__desc">解密後將預設啟用高斯模糊保護，滑鼠懸停或點擊方可看清，有效抵禦近距離窺視；頁面刷新後自動重鎖。</div>
-    <button class="encrypted-box__btn" type="button">🔑 驗證憑證並開啟防窺查看</button>
-  </div>
-  <div class="encrypted-box__content">
-    <div class="admonition admonition-important">
-      <div class="admonition-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <span>📊 商業專案核心財務與合約參數</span>
-      </div>
-      <div class="admonition-content">
-        <p>以下為 2026 年度 EpoCanvas 商業支援預算分配：</p>
-        <ul>
-          <li><strong>企業級私有化授權費</strong>：¥ 280,000 / 年（含高可用叢集與 SLA 保障）</li>
-          <li><strong>邊緣 CDN 流量支出</strong>：¥ 36,500 / 月</li>
-          <li><strong>專屬技術顧問密鑰</strong>：<code>sec_corp_epocanvas_key_2026</code></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
----
-
-### 3. 3級加密：離開視口立即重新上鎖（第3級 · 視口自動鎖定）
-
-超高安全等級！**不寫入任何永久性儲存**；一旦解密後的內容在滾動中**離開當前螢幕視口**，或者瀏覽器分頁切換到背景，系統將**瞬間自動重新上鎖**，再次查看必須重新輸入密碼：
-
-<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db24a44adf25238a00f5ee81ee89" data-hint="💡 3級加密提示：演示密鑰請輸入 level3pass">
-  <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-danger">🛡️ 3級加密 · 離開視口即鎖</span> <span class="badge badge-orange">視口哨兵監控</span></div>
-    <div class="encrypted-box__relock-wrap">
-      <div class="encrypted-relock-notice">⚠️ 安全保護已觸發：由於該內容先前離開了螢幕視口，系統已自動重新鎖定！</div>
-    </div>
-    <div class="encrypted-box__icon">🚨</div>
-    <div class="encrypted-box__title">3級絕密：核心基礎設施私鑰與災備指令</div>
-    <div class="encrypted-box__desc">最高防護標準。解密後一旦滾動移出螢幕，立即觸發銷毀重鎖機制，絕不在螢幕外遺留任何明文。</div>
-    <button class="encrypted-box__btn" type="button">🔐 驗證高階密鑰（離開視口即鎖）</button>
-  </div>
-  <div class="encrypted-box__content">
-    <div class="encrypted-level3-status">
-      <span class="security-pulse-dot"></span>
-      <span>視口防窺哨兵即時監聽中 · 移出視口立即銷毀明文</span>
-    </div>
-    <div class="admonition admonition-danger">
-      <div class="admonition-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-        <span>⚡ 絕密叢集應急接管憑據</span>
-      </div>
-      <div class="admonition-content">
-        <p>請注意：此資訊僅在當前視口內可見，向下或向上滾動使其離開螢幕將自動上鎖：</p>
-        <pre><code># 核心節點緊急自毀 / 切換指令
-curl -X POST https://cluster.shijian.us/v1/node/failover \
-  -H "X-Root-Token: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
-      </div>
-    </div>
-  </div>
-</div>
-
----
-
-### 4. 外部連結分段解密門（External Link Segment Decryption Gate）
-
-在构建期或架构分层时，同一篇文章可以被物理分割为**公开正文段**与**外联受控密文段**。创作者可在文末或章节任意位置插入外联解密引导门，验证凭据后动态解密并在此无缝挂载完整后半段正文：
-
-<div class="article-external-decrypt-gate" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="🔑 外联分段密钥：请输入 shijianus2026">
-  <div class="external-gate__header">
-    <div class="external-gate__badge">
-      <span class="badge badge-purple">🌐 外联安全分段加密</span>
-      <span class="badge badge-cyan">端点分片存储</span>
-      <span class="badge badge-success">WebCrypto SHA-256</span>
-    </div>
-    <h3 class="external-gate__title">🔐 正文深度章节已外联隔离存放</h3>
-    <p class="external-gate__desc">当前长文在构建阶段启用了**外联分段隔离存储**：前 75% 基础语法与组件说明公开交付；核心企业级工程落地方案与架构推导演示已被加密打包存放。点击下方按钮输入密钥，即可在当前页面实时无缝解密并挂载剩余正文内容。</p>
-  </div>
-  <div class="external-gate__actions">
-    <button type="button" class="external-gate__btn">🔑 输入凭据解密并挂载完整正文</button>
-    <a href="#top" class="article-btn article-btn-outline external-gate__btn-alt">⬆️ 返回文章顶部</a>
-  </div>
-  <div class="external-gate__decrypted-payload">
-    <div class="decrypted-payload-banner">
-      <span class="badge badge-success">✨ 外联分段密文已成功验证解密，正文无缝挂载完成</span>
-      <span class="payload-timestamp">SHA-256 Stream Verified</span>
-    </div>
-    <div class="decrypted-payload-body">
-      <h4>📦 外联分段解密正文：企业级 SSG 内容工程落地规范</h4>
-      <p>恭喜您成功解锁了本文的外联分段核心内容！在现代大型静态知识库工程中，将高敏感或付费特权内容采用外联分段加密存放，具有以下核心优势：</p>
-      <ul>
-        <li><strong>首屏负载极小化</strong>：未授权访问者仅拉取基础公开 HTML，网络开销减少 60% 以上；</li>
-        <li><strong>防抓取与防逆向</strong>：敏感密文与密钥隔离存储，静态爬虫无法从公开 DOM 中抓取到任何有效数据；</li>
-        <li><strong>无感流式接入</strong>：通过客户端 WebCrypto 引擎，读者在当前页面无需页面跳转即可享受无缝展开的连贯阅读体验。</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
----
-
-### 5. 行内高斯模糊、马赛克与剧透隐藏
-
-除了块级加密外，正文行内亦提供丰富的轻量级防窥与趣味遮罩：
-
-- **文字高斯模糊**：<span class="blur-text">这是一段被高斯模糊保护的关键剧透文字，鼠标悬浮或点击即可看清！</span>
-- **黑幕马赛克**：<span class="mosaic-text">机密数据：SHA256-7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069</span>
-- **Discord 剧透遮罩**：||这是一段使用双竖线包裹的剧透遮罩，点击揭开。||
-- **内联隐藏锁**：%%这里是使用百分号包裹的内联隐藏内容，点击展开。%%
-
-#### 图片高斯模糊保护
-
-<div class="blur-image-wrap">
-  <img class="blur-image" src="/media/shijianus/workbench.jpg" alt="模糊保护工作台图片" />
-  <div class="blur-image-badge"><span>👁️ 悬浮或点击揭开迷雾</span></div>
-</div>
-
----
-
-## 十、时间轴、步骤条、定义列表与数据表格
-
-### 1. 垂直时间轴（Vertical Timeline）
-
-<div class="article-timeline">
-  <div class="timeline-node is-success">
-    <div class="timeline-node__dot"></div>
-    <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.04 · 基础重构</div>
-      <div class="timeline-node__title">完成 Astro 6 静态站点内核迁移</div>
-      <p class="timeline-node__desc">建立全新 Content Collections 架构与 Shiki 代码高亮管道。</p>
-    </div>
-  </div>
-
-  <div class="timeline-node is-warning">
-    <div class="timeline-node__dot"></div>
-    <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.08 · 特性扩展</div>
-      <div class="timeline-node__title">全量实装 WordPress Post Formats 与下拉框切换器</div>
-      <p class="timeline-node__desc">补全 13 种 Admonitions、KaTeX 数学公式与密码弹窗解密系统。</p>
-    </div>
-  </div>
-
-  <div class="timeline-node">
-    <div class="timeline-node__dot"></div>
-    <div class="timeline-node__content">
-      <div class="timeline-node__date">未来展望 · 生态演进</div>
-      <div class="timeline-node__title">发布开源主题标准与多平台插件</div>
-      <p class="timeline-node__desc">提供从 Hexo/WordPress 到 Astro 的一键无缝内容迁移工具链。</p>
-    </div>
-  </div>
-</div>
-
----
-
-### 2. 教程步骤条（Tutorial Steps）
-
-</div>
-      <p class="timeline-node__desc">提供從 Hexo/WordPress 到 Astro 的一鍵無縫內容遷移工具鏈。</p>
-    </div>
-  </div>
-</div>
-
----
-
-### 2. 教程步驟條（Tutorial Steps）
-<!-- end context -->
 
 <div class="article-steps">
   <div class="article-steps__item">

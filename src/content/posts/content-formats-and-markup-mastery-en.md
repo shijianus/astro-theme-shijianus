@@ -470,13 +470,7 @@ Provide elegant card-style previews for key reference sources within the article
 
 Used to vividly demonstrate technical defense, two-person dialogue discussions, or user interview scenarios, supporting left/right bubbles, inline code, custom color schemes, and **dynamic content adaptive typing animation, Web Audio synthesized sound effects, and dynamic avatars (`footer_mini_logo__media`)**:
 
-* **Static mode (default)**: `<div class="article-chat">` remains lightweight pure static rendering, zero JS overhead;
-* **Enable dynamic demonstration (parameter controlled)**: configure `data-animate="true"` (or `class="article-chat is-animated"`), the system will automatically trigger a realistic timing typing animation and left/right exclusive prompt sounds based on character length and natural randomness when the reader first scrolls into the viewport;
-* **Non-mechanical dynamic timing (Content-Length Aware Timing)**: the system intelligently determines the typing indicator duration based on the length of the speech (short sentences 380 ms flicker, long technical paragraphs 1000 ms+ typing think), and adds natural pauses and micro-frequency sound jitter between bubbles that align with human reading judgment;
-* **Dynamic video avatar support (`footer_mini_logo__media`)**: avatars support embedded MP4 micro-video animations and static fallback posters;
-* **Single trigger and reload guarantee**: after the first scroll trigger, it locks automatically; subsequent scrolling will not retrigger and disturb reading; only when the user refreshes the page (F5) will it reset; also provides a micro-control bar in the top right corner with "↺ Replay" and "🔊/🔇 Sound toggle".
-
-<div class="article-chat" data-animate="true" data-sound="true">
+* **Static mode (default)**: `<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -487,13 +481,13 @@ Used to vividly demonstrate technical defense, two-person dialogue discussions, 
     <div class="chat-body">
       <div class="chat-author">Developer <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        Hello! May I ask whether implementing static rendering of <code>KaTeX</code> and <code>Mermaid</code> in Astro will slow down the front‑end page load speed?
+        Hello! May I ask whether implementing static rendering of <code>KaTeX</code> and <code>Mermaid</code> in Astro will slow down the front-end page load speed?
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architect shijianus" />
     <div class="chat-body">
       <div class="chat-author">Architect <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
@@ -501,9 +495,8 @@ Used to vividly demonstrate technical defense, two-person dialogue discussions, 
       </div>
     </div>
   </div>
-</div>
 
-<div class="chat-message chat-left">
+  <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
         <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
@@ -519,7 +512,7 @@ Used to vividly demonstrate technical defense, two-person dialogue discussions, 
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architect shijianus" />
     <div class="chat-body">
       <div class="chat-author">Architect <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
@@ -538,13 +531,13 @@ Used to vividly demonstrate technical defense, two-person dialogue discussions, 
     <div class="chat-body">
       <div class="chat-author">Developer <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
       <div class="chat-bubble">
-        Got it! The interaction feels natural and the typing animation changes according to the length of the message; I'm going to upgrade the team's technical documentation library now! 🎉
+        Got it! The interaction feels natural and the typing animation changes according to the length of the message; I am going to upgrade the team technical documentation library now! 🎉
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architect shijianus" />
     <div class="chat-body">
       <div class="chat-author">Architect <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
       <div class="chat-bubble">
@@ -562,17 +555,12 @@ For users who explicitly request **special dropdown formats**, we provide a pure
 
 ### 1. Multi-Framework and Multi-Code-Version Dropdown Switcher (Interactive Dropdown Switch ...)
 
-针对用户明确要求的**特殊下拉框格式**，我们在文章正文层提供了纯客户端即时响应的下拉选择器组件：
-
-### 1. Multi-framework and Multi-code-version Dropdown Switcher (Interactive Dropdown Switcher)
-
-读者可以在下拉框中自由选择技术框架，正文面板将实时无刷新切换对应的内容与代码：
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
     <div class="article-dropdown-switcher__title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-      <span>请选择要查看的前端框架实现代码：</span>
+      <span>Please select the frontend framework implementation code to view:</span>
     </div>
     <select class="article-select dropdown-switcher__select">
       <option value="react-tab">⚛️ React 19 (Hooks & TSX)</option>
@@ -583,7 +571,7 @@ For users who explicitly request **special dropdown formats**, we provide a pure
   </div>
   <div class="article-dropdown-switcher__body">
     <div class="article-dropdown-panel is-active" data-panel="react-tab">
-      <div class="article-dropdown-panel__title">⚛️ React 19 组件实现方式：</div>
+      <div class="article-dropdown-panel__title">⚛️ React 19 Component Implementation:</div>
       <pre class="no-code-enhance"><code class="language-tsx">import { useState } from 'react';
 export function Counter() {
   const [count, setCount] = useState(0);
@@ -595,7 +583,7 @@ export function Counter() {
 }</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="vue-tab">
-      <div class="article-dropdown-panel__title">🟢 Vue 3.5 单文件组件实现方式：</div>
+      <div class="article-dropdown-panel__title">🟢 Vue 3.5 SFC Implementation:</div>
       <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
 import { ref } from 'vue';
 const count = ref(0);
@@ -607,7 +595,7 @@ const count = ref(0);
 &lt;/template&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="astro-tab">
-      <div class="article-dropdown-panel__title">🚀 Astro 6 零 JS 静态组件实现方式：</div>
+      <div class="article-dropdown-panel__title">🚀 Astro 6 Zero-JS Static Island:</div>
       <pre class="no-code-enhance"><code class="language-astro">---
 const { title = "Astro 极速群岛" } = Astro.props;
 ---
@@ -617,7 +605,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 &lt;/div&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="svelte-tab">
-      <div class="article-dropdown-panel__title">🟠 Svelte 5 Runes 实现方式：</div>
+      <div class="article-dropdown-panel__title">🟠 Svelte 5 Runes Implementation:</div>
       <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
   let count = $state(0);
 &lt;/script&gt;
@@ -637,7 +625,7 @@ const { title = "Astro 极速群岛" } = Astro.props;
 * **Convenient Universal API Calls**: The system also globally exposes the helper function `window.shijianusAPI.fetchExchangeRates(base)`, making it easy for any custom script within the document to instantly call real-time rate data;  
 * **Quick One-click Copy and Equation Calculation**: Each conversion card provides a one-click copy button with highlighted feedback, and the bottom synchronously displays a dynamic equation chain calculation summary.
 
-<div class="interactive-unit-converter" data-default="1" data-title="🔄 交互式通用单位换算器（支持基准单位切换与实时汇率）"></div>
+<div class="interactive-unit-converter" data-default="1" data-title="🔄 Interactive Universal Unit Converter (Base Unit Switching & Live Exchange Rates)"></div>
 
 
 
@@ -740,6 +728,11 @@ Configure `data-single="false"` (or default multi-open mode). Readers can freely
       <p>Built-in Level 1 session persistent unlock, Level 2 anti-peeking dynamic polymorphic mask (Gaussian blur/mosaic/spoiler mask), Level 3 viewport sentinel auto-lock on exit, and external URL sharding encryption scheme, completely eliminating plaintext password exposure in the DOM.</p>
     </div>
   </details>
+</div>
+
+---
+
+### 3. Interactive Tabs
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
@@ -933,14 +926,14 @@ $$
 <div class="article-tabs__panel">
 
 ```latex
-$$
+$
 \begin{aligned}
 \nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\
 \nabla \cdot \mathbf{B} &= 0 \\
 \nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
 \nabla \times \mathbf{B} &= \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
 \end{aligned}
-$$
+$
 ```
 
 </div>
@@ -949,46 +942,29 @@ $$
 
 ---
 
-### 2. Mermaid 11 Architecture Diagrams (Flowchart & Sequence · Flowcharts and Sequence Diagrams)
+### 2. Mermaid 11 Architecture Diagrams (Flowchart & Sequence)
 
-#### ① Blog Encryption Verification and Content Rendering Flowchart (Flowchart TD)
-
-<!-- context from previous chunk -->
-artial t}
-\end{aligned}
-$$
-```
-
-</div>
-</div>
-</div>
-
----
-
-### 2. Mermaid 11 架构图表（Flowchart & Sequence · 流程图与时序图）
-
-#### ① 博客加密验证与内容渲染流程图（Flowchart TD）
-<!-- end context -->
+#### ① Blog Encryption Verification & Content Rendering Flowchart (Flowchart TD)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
-<button class="article-tabs__button" type="button">💻 Mermaid 源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Live Render Preview</button>
+<button class="article-tabs__button" type="button">💻 Mermaid Source</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
 
 ```mermaid
 flowchart TD
-    A[读者访问文章] --> B{文章是否加密?}
-    B -- 是 --> C[弹出毛玻璃密码对话框]
-    C --> D{密码校验}
-    D -- 正确 --> E[解密并呈现正文]
-    D -- 错误 --> F[触发窗口震动与红字警示]
-    F -. 重新输入口令 .-> C
-    B -- 否 --> E
-    E --> G[渲染 KaTeX 公式与 Mermaid 图表]
-    G --> H[呈现完整沉浸式阅读体验]
+    A[Reader visits post] --> B{Is post encrypted?}
+    B -- Yes --> C[Display frosted glass password modal]
+    C --> D{Verify password}
+    D -- Correct --> E[Decrypt and render body]
+    D -- Incorrect --> F[Trigger shake animation and red warning]
+    F -. Re-enter password .-> C
+    B -- No --> E
+    E --> G[Render KaTeX math and Mermaid diagrams]
+    G --> H[Deliver immersive reading experience]
 ```
 
 </div>
@@ -997,15 +973,15 @@ flowchart TD
 ````markdown
 ```mermaid
 flowchart TD
-    A[读者访问文章] --> B{文章是否加密?}
-    B -- 是 --> C[弹出毛玻璃密码对话框]
-    C --> D{密码校验}
-    D -- 正确 --> E[解密并呈现正文]
-    D -- 错误 --> F[触发窗口震动与红字警示]
-    F -. 重新输入口令 .-> C
-    B -- 否 --> E
-    E --> G[渲染 KaTeX 公式与 Mermaid 图表]
-    G --> H[呈现完整沉浸式阅读体验]
+    A[Reader visits post] --> B{Is post encrypted?}
+    B -- Yes --> C[Display frosted glass password modal]
+    C --> D{Verify password}
+    D -- Correct --> E[Decrypt and render body]
+    D -- Incorrect --> F[Trigger shake animation and red warning]
+    F -. Re-enter password .-> C
+    B -- No --> E
+    E --> G[Render KaTeX math and Mermaid diagrams]
+    G --> H[Deliver immersive reading experience]
 ```
 ````
 
@@ -1017,8 +993,8 @@ flowchart TD
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
-<button class="article-tabs__button" type="button">💻 Mermaid 源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Live Render Preview</button>
+<button class="article-tabs__button" type="button">💻 Mermaid Source</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
@@ -1026,21 +1002,21 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 读者 (User)
-    participant Browser as 客户端浏览器
-    participant PostPage as 文章渲染引擎
-    participant Security as 加密安全模块
+    actor User as Reader (User)
+    participant Browser as Client Browser
+    participant PostPage as Article Render Engine
+    participant Security as Crypto Security Module
 
-    User->>Browser: 点击受保护的加密内容
-    Browser->>PostPage: 唤起密码输入对话框
-    User->>Browser: 输入访问密钥
-    Browser->>Security: 校验口令 Hash
-    alt 验证成功
-        Security-->>Browser: 返回解锁令牌
-        Browser->>PostPage: 解密正文并平滑展示
-    else 验证失败
-        Security-->>Browser: 返回密码错误
-        Browser->>User: 触发窗口摇晃与红字警示
+    User->>Browser: Click protected encrypted content
+    Browser->>PostPage: Display password input dialog
+    User->>Browser: Enter access credentials
+    Browser->>Security: Verify password SHA-256 hash
+    alt Verification Succeeded
+        Security-->>Browser: Return unlock session token
+        Browser->>PostPage: Decrypt content with smooth transition
+    else Verification Failed
+        Security-->>Browser: Return password error status
+        Browser->>User: Trigger window shake and red warning
     end
 ```
 
@@ -1051,21 +1027,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 读者 (User)
-    participant Browser as 客户端浏览器
-    participant PostPage as 文章渲染引擎
-    participant Security as 加密安全模块
+    actor User as Reader (User)
+    participant Browser as Client Browser
+    participant PostPage as Article Render Engine
+    participant Security as Crypto Security Module
 
-    User->>Browser: 点击受保护的加密内容
-    Browser->>PostPage: 唤起密码输入对话框
-    User->>Browser: 输入访问密钥
-    Browser->>Security: 校验口令 Hash
-    alt 验证成功
-        Security-->>Browser: 返回解锁令牌
-        Browser->>PostPage: 解密正文并平滑展示
-    else 验证失败
-        Security-->>Browser: 返回密码错误
-        Browser->>User: 触发窗口摇晃与红字警示
+    User->>Browser: Click protected encrypted content
+    Browser->>PostPage: Display password input dialog
+    User->>Browser: Enter access credentials
+    Browser->>Security: Verify password SHA-256 hash
+    alt Verification Succeeded
+        Security-->>Browser: Return unlock session token
+        Browser->>PostPage: Decrypt content with smooth transition
+    else Verification Failed
+        Security-->>Browser: Return password error status
+        Browser->>User: Trigger window shake and red warning
     end
 ```
 ````
@@ -1076,154 +1052,152 @@ sequenceDiagram
 
 ---
 
-### 3. 动态交互式思维导图（Markmap / Mindmap · 多向分支扩散）
+### 3. Dynamic Interactive Mindmap (Markmap / Mindmap · Multi-directional Branch Expansion)
 
-在长篇技术规范与系统架构梳理中，传统的静态列表难以直观呈现复杂的知识脉络。本主题全新实装 **Markmap 动态交互式思维导图引擎**，在文章主栏（`.post.post-page-shell`）中实现彻底的原生解析与交互增强：
+In long-form technical specifications and system architecture overviews, traditional static lists struggle to present complex knowledge hierarchies intuitively. This theme features an all-new **Markmap Dynamic Interactive Mindmap Engine**, providing native parsing and interaction enhancements directly in the article's main body (`.post.post-page-shell`):
 
 > [!TIP]
-> **多向分支扩散核心规则**：
-> 1. **默认单块保护空间**：默认状态下，思维导图仅展示 **1 块核心根节点**（Level 1），右侧附带折叠小圆点指示器；
-> 2. **点击展开多向分支**：点击根节点或任意子节点的小圆点，子分支将**平滑向外散开**；
-> 3. **工具栏全能操控**：支持 **放大 / 缩小 / 居中自适应 / 一键展开全部 / 一键收起单块 / 全屏沉浸式阅读 / 复制源码**；
-> 4. **画布拖拽与缩放**：按住鼠标左键可自由拖拽平移画布，滚动鼠标滚轮可缩放视野。
+> **Core Rules for Multi-directional Branch Expansion**:
+> 1. **Default Single-Block Protected View**: By default, the mindmap only displays **1 core root node** (Level 1), with a folded circle indicator on the right;
+> 2. **Click to Expand Multi-directional Branches**: Click the small circle on the root node or any child node to **smoothly expand** its sub-branches outward;
+> 3. **Comprehensive Toolbar Control**: Supports **Zoom In / Zoom Out / Fit View / Expand All / Collapse to Root / Fullscreen Immersive View / Copy Source**;
+> 4. **Canvas Panning and Zooming**: Hold the left mouse button to drag and pan the canvas, and use the mouse wheel to zoom in and out.
 
-#### 活体思维导图呈现：SSG 与主题内容格式生态全景
+#### Live Mindmap Presentation: SSG and Theme Content Format Ecosystem Panorama
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 交互导图呈现</button>
-<button class="article-tabs__button" type="button">💻 Mindmap 结构源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Interactive Mindmap View</button>
+<button class="article-tabs__button" type="button">💻 Mindmap Source Code</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
 
 ```mindmap
-# 静态站点生成器与全格式内容生态架构
-## 1. 静态编译核心流水线
-### AST 语法转换管道
-#### Markdown / MDX 语义解析流水线
-##### Unified / Remark 语法拓展
-- GFM 表格与删除线语法转换
-- 自动生成 Heading 锚点与 ID
-##### Markmap 交互式多向思维导图拓展
-- 递归 AST 树构建 (Transformer.transform)
-- D3 层次化弹性布局 (Flextree Algorithm)
-- 交互式折叠状态机 (payload.fold)
-- 动态调色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 数学公式拓展
-- 行内公式与独立块公式解析
-- 宏定义支持与错误容错回退
-#### 代码高亮与静态着色器
-##### Shiki 双主题编译器
-- VSCode TextMate 语法规则解析
-- 浅色/深色模式双主题预渲染零水合
-### 编译器与资源打包
-#### Vite 6 极速热重载 (HMR)
-##### ESM 原生模块加载
-- 毫秒级按需编译与热更新
-#### Rollup 静态生成流水线
-##### 静态打包优化
-- 智能代码分块 (Code Splitting)
-- Tree-Shaking 冗余消除
-## 2. 动态交互与群岛体系
-### 混合组件群岛 Islands
-#### 客户端组件分岛挂载
+# Static Site Generators & Full-Format Content Ecosystem Architecture
+## 1. Static Compilation Core Pipeline
+### AST Syntax Transformation Pipeline
+#### Markdown / MDX Semantic Parsing Pipeline
+##### Unified / Remark Syntax Extensions
+- GFM Tables and Strikethrough Syntax Translation
+- Automatic Heading Anchor and ID Generation
+##### Markmap Interactive Multi-directional Mindmap Extension
+- Recursive AST Tree Construction (Transformer.transform)
+- D3 Hierarchical Elastic Layout (Flextree Algorithm)
+- Interactive Folding State Machine (payload.fold)
+- Dynamic Palette Branch Coloring (d3.scaleOrdinal)
+##### Rehype KaTeX Mathematical Formula Extension
+- Inline and Block Math Expression Parsing
+- Macro Definition Support and Error Fallback
+#### Code Highlighting and Static Shaders
+##### Shiki Dual-Theme Compiler
+- VSCode TextMate Syntax Rule Parsing
+- Light/Dark Dual-Theme Pre-rendering with Zero Hydration
+### Compiler and Asset Bundling
+#### Vite 6 Blazing-Fast Hot Module Replacement (HMR)
+##### Native ESM Module Loading
+- Millisecond On-Demand Compilation & Hot Updates
+#### Rollup Static Generation Pipeline
+##### Static Bundling Optimization
+- Intelligent Code Splitting
+- Tree-Shaking Redundancy Elimination
+## 2. Dynamic Interactions & Islands Architecture
+### Hybrid Component Islands
+#### Client Component Island Mounting
 ##### React 19 Client Components
-- 独立状态隔离与上下文通信
-- 会话状态保持 (SessionStorage / Crypto)
+- Isolated State and Cross-Context Communication
+- Session State Persistence (SessionStorage / Crypto)
 ##### Astro Server-Side Islands
-- 零运行时客户端 JS (Zero-JS by Default)
-- 按需激活交互岛屿 (client:visible)
-### 现代视觉与动效系统
-#### 动态背景与渲染引擎
-##### Aurora 极光 / Starfield 星空
-- WebGL / Canvas 2D 硬件加速
-- 节能模式与视口离开自动暂停
-##### 毛玻璃卡片 Glassmorphism 规范
-- 动态高斯模糊与多重环境阴影
-- 响应式全端自适应布局 (PC / Pad / Mobile)
-## 3. 格式全景与特异功能
-### 扩展文档规范对照
-#### AsciiDoc (.adoc) 原生等效适配
-#### Emacs Org-Mode (.org) 任务清单映射
-#### reStructuredText (.rst) 指令转换
-### 富交互组件集
-#### 交互式下拉框切换器 (Dropdown Switcher)
-#### 互斥手风琴折叠卡片 (Accordion Groups)
-#### 动态黑胶唱片音频播放器 (Vinyl Audio)
-### 安全隐私与分级加密
-#### WebCrypto SHA-256 哈希校验 (无明文外露)
-#### 1级会话持久解锁 (Session Persistent)
-#### 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
-#### 3级视口防窥离开即锁 (IntersectionObserver)
-
-#### External Segment Decryption Endpoint Isolation (Standalone Token)
-
+- Zero-JS by Default Client Runtime
+- On-Demand Hydration (client:visible)
+### Modern Visual & Motion System
+#### Dynamic Backgrounds & Render Engines
+##### Aurora Borealis / Starfield Parallax
+- WebGL / Canvas 2D Hardware Acceleration
+- Power Saving Mode with Viewport Auto-Pause
+##### Glassmorphism Card Specification
+- Dynamic Gaussian Blur & Layered Ambient Shadows
+- Responsive Multi-device Layout (PC / Tablet / Mobile)
+## 3. Format Panorama & Specialized Features
+### Extended Document Specifications Comparison
+#### AsciiDoc (.adoc) Native Equivalent Adaptation
+#### Emacs Org-Mode (.org) Task List Mapping
+#### reStructuredText (.rst) Directive Translation
+### Rich Interactive Component Suite
+#### Interactive Dropdown Switcher
+#### Mutually Exclusive Accordion Groups
+#### Dynamic Vinyl Audio Player
+### Security, Privacy and Tiered Encryption
+#### WebCrypto SHA-256 Hash Verification (Zero Plaintext Exposure)
+#### Level 1 Session Persistent Unlock
+#### Level 2 Privacy Mask Switching (Gaussian Blur / Mosaic / Spoiler)
+#### Level 3 Viewport Sentinel Auto-Lock on Exit (IntersectionObserver)
+#### External Link Segment Decryption Endpoint Isolation (Standalone Token)
 ```
 </div>
 <div class="article-tabs__panel">
 
 ````markdown
 ```mindmap
-# 静态站点生成器与全格式内容生态架构
-## 1. 静态编译核心流水线
-### AST 语法转换管道
-#### Markdown / MDX 语义解析流水线
-##### Unified / Remark 语法拓展
-- GFM 表格与删除线语法转换
-- 自动生成 Heading 锚点与 ID
-##### Markmap 交互式多向思维导图拓展
-- 递归 AST 树构建 (Transformer.transform)
-- D3 层次化弹性布局 (Flextree Algorithm)
-- 交互式折叠状态机 (payload.fold)
-- 动态调色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 数学公式拓展
-- 行内公式与独立块公式解析
-- 宏定义支持与错误容错回退
-#### 代码高亮与静态着色器
-##### Shiki 双主题编译器
-- VSCode TextMate 语法规则解析
-- 浅色/深色模式双主题预渲染零水合
-### 编译器与资源打包
-#### Vite 6 极速热重载 (HMR)
-##### ESM 原生模块加载
-- 毫秒级按需编译与热更新
-#### Rollup 静态生成流水线
-##### 静态打包优化
-- 智能代码分块 (Code Splitting)
-- Tree-Shaking 冗余消除
-## 2. 动态交互与群岛体系
-### 混合组件群岛 Islands
-#### 客户端组件分岛挂载
+# Static Site Generators & Full-Format Content Ecosystem Architecture
+## 1. Static Compilation Core Pipeline
+### AST Syntax Transformation Pipeline
+#### Markdown / MDX Semantic Parsing Pipeline
+##### Unified / Remark Syntax Extensions
+- GFM Tables and Strikethrough Syntax Translation
+- Automatic Heading Anchor and ID Generation
+##### Markmap Interactive Multi-directional Mindmap Extension
+- Recursive AST Tree Construction (Transformer.transform)
+- D3 Hierarchical Elastic Layout (Flextree Algorithm)
+- Interactive Folding State Machine (payload.fold)
+- Dynamic Palette Branch Coloring (d3.scaleOrdinal)
+##### Rehype KaTeX Mathematical Formula Extension
+- Inline and Block Math Expression Parsing
+- Macro Definition Support and Error Fallback
+#### Code Highlighting and Static Shaders
+##### Shiki Dual-Theme Compiler
+- VSCode TextMate Syntax Rule Parsing
+- Light/Dark Dual-Theme Pre-rendering with Zero Hydration
+### Compiler and Asset Bundling
+#### Vite 6 Blazing-Fast Hot Module Replacement (HMR)
+##### Native ESM Module Loading
+- Millisecond On-Demand Compilation & Hot Updates
+#### Rollup Static Generation Pipeline
+##### Static Bundling Optimization
+- Intelligent Code Splitting
+- Tree-Shaking Redundancy Elimination
+## 2. Dynamic Interactions & Islands Architecture
+### Hybrid Component Islands
+#### Client Component Island Mounting
 ##### React 19 Client Components
-- 独立状态隔离与上下文通信
-- 会话状态保持 (SessionStorage / Crypto)
+- Isolated State and Cross-Context Communication
+- Session State Persistence (SessionStorage / Crypto)
 ##### Astro Server-Side Islands
-- 零运行时客户端 JS (Zero-JS by Default)
-- 按需激活交互岛屿 (client:visible)
-### 现代视觉与动效系统
-#### 动态背景与渲染引擎
-##### Aurora 极光 / Starfield 星空
-- WebGL / Canvas 2D 硬件加速
-- 节能模式与视口离开自动暂停
-##### 毛玻璃卡片 Glassmorphism 规范
-- 动态高斯模糊与多重环境阴影
-- 响应式全端自适应布局 (PC / Pad / Mobile)
-## 3. 格式全景与特异功能
-### 扩展文档规范对照
-#### AsciiDoc (.adoc) 原生等效适配
-#### Emacs Org-Mode (.org) 任务清单映射
-#### reStructuredText (.rst) 指令转换
-### 富交互组件集
-#### 交互式下拉框切换器 (Dropdown Switcher)
-#### 互斥手风琴折叠卡片 (Accordion Groups)
-#### 动态黑胶唱片音频播放器 (Vinyl Audio)
-### 安全隐私与分级加密
-#### WebCrypto SHA-256 哈希校验 (无明文外露)
-#### 1级会话持久解锁 (Session Persistent)
-#### 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
-#### 3级视口防窥离开即锁 (IntersectionObserver)
-#### 外联分段解密端点隔离 (Standalone Token)
+- Zero-JS by Default Client Runtime
+- On-Demand Hydration (client:visible)
+### Modern Visual & Motion System
+#### Dynamic Backgrounds & Render Engines
+##### Aurora Borealis / Starfield Parallax
+- WebGL / Canvas 2D Hardware Acceleration
+- Power Saving Mode with Viewport Auto-Pause
+##### Glassmorphism Card Specification
+- Dynamic Gaussian Blur & Layered Ambient Shadows
+- Responsive Multi-device Layout (PC / Tablet / Mobile)
+## 3. Format Panorama & Specialized Features
+### Extended Document Specifications Comparison
+#### AsciiDoc (.adoc) Native Equivalent Adaptation
+#### Emacs Org-Mode (.org) Task List Mapping
+#### reStructuredText (.rst) Directive Translation
+### Rich Interactive Component Suite
+#### Interactive Dropdown Switcher
+#### Mutually Exclusive Accordion Groups
+#### Dynamic Vinyl Audio Player
+### Security, Privacy and Tiered Encryption
+#### WebCrypto SHA-256 Hash Verification (Zero Plaintext Exposure)
+#### Level 1 Session Persistent Unlock
+#### Level 2 Privacy Mask Switching (Gaussian Blur / Mosaic / Spoiler)
+#### Level 3 Viewport Sentinel Auto-Lock on Exit (IntersectionObserver)
+#### External Link Segment Decryption Endpoint Isolation (Standalone Token)
 ```
 ````
 
@@ -1241,15 +1215,15 @@ Standard Markdown headings support 6 levels of depth (`#` to `######`). Below le
 
 ````markdown
 ```mindmap
-# Level 1 核心主题 (H1)
-## Level 2 领域分支 (H2)
-### Level 3 子系统 (H3)
-#### Level 4 技术模块 (H4)
-##### Level 5 组件单元 (H5)
-###### Level 6 算法规范 (H6)
-- Level 7 细分执行细节 (List item)
-  - Level 8 子项参数 (Indent +2 spaces)
-    - Level 9 底层硬件原语 (Indent +4 spaces)
+# Level 1 Core Topic (H1)
+## Level 2 Domain Branch (H2)
+### Level 3 Subsystem (H3)
+#### Level 4 Technical Module (H4)
+##### Level 5 Component Unit (H5)
+###### Level 6 Algorithm Spec (H6)
+- Level 7 Granular Execution Detail (List item)
+  - Level 8 Sub-item Parameter (Indent +2 spaces)
+    - Level 9 Low-level Hardware Primitive (Indent +4 spaces)
 ```
 ````
 
@@ -1259,15 +1233,15 @@ If you don't need Markdown heading semantics, or the knowledge network hierarchy
 
 ````markdown
 ```mindmap
-- 🌐 根主题：计算机科学知识图谱 (Level 1)
-  - 🖥️ 软件系统工程 (Level 2)
-    - 📦 操作系统与内核 (Level 3)
-      - ⚙️ 进程与线程调度 (Level 4)
-        - 🔄 并发同步原语 (Level 5)
-          - 🔒 互斥锁与信号量 (Level 6)
-            - ⚡ 硬件级 CAS 原子指令 (Level 7)
-              - ⏱️ Cache Coherency MESI 协议 (Level 8)
-                - 🔬 内存屏障与流水线指令重排 (Level 9)
+- 🌐 Root Topic: Computer Science Knowledge Graph (Level 1)
+  - 🖥️ Software Systems Engineering (Level 2)
+    - 📦 Operating Systems & Kernels (Level 3)
+      - ⚙️ Process & Thread Scheduling (Level 4)
+        - 🔄 Concurrency Synchronization Primitives (Level 5)
+          - 🔒 Mutexes & Semaphores (Level 6)
+            - ⚡ Hardware-level CAS Atomic Instructions (Level 7)
+              - ⏱️ Cache Coherency MESI Protocol (Level 8)
+                - 🔬 Memory Barriers & Pipeline Instruction Reordering (Level 9)
 ```
 ````
 
@@ -1277,11 +1251,11 @@ You can use a single-line JSON object on the first line of a code block to custo
 
 ````markdown
 ```mindmap
-{"initialExpandLevel": 2, "height": "560px", "title": "全栈工程架构全景"}
-# 核心主题
-## 一级分支 A
-### 二级分支 A1
-- 细分知识点 1
+{"initialExpandLevel": 2, "height": "560px", "title": "Full-Stack Engineering Architecture Overview"}
+# Core Topic
+## Primary Branch A
+### Secondary Branch A1
+- Granular Knowledge Item 1
 ```
 ````
 
@@ -1301,14 +1275,7 @@ You can use a single-line JSON object on the first line of a code block to custo
 
 ## 9. Security, Privacy, Tiered Encryption (Level 1/2/3) and External Segment Decryption Special Features
 
-`⛶` Expand to a full‑screen independent canvas (press `Esc` to exit anytime), gaining unlimited horizontal exploration space;  
-* **Real‑time metadata awareness**: The Header bar displays the total number of nodes and maximum depth of the current mind map in real time (e.g., `53 个节点 · 6 层分支结构`).
-
----
-
-## Nine, Security Privacy, Tiered Encryption (Level 1/2/3) and External Segmented Decryption Special Functionality
-
-为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 hash verification (`data-hash`)**，并建立起三级文内局部加密与外联分段解密体系：  
+To completely eliminate plaintext passwords from DOM attributes (such as `data-password` being easily inspected in browser devtools), this blog's content system has been fully upgraded to **WebCrypto SHA-256 hash verification (`data-hash`)**, establishing a three-tier in-article local encryption and external segment decryption architecture:
 * **Default Security Reset Rule (Zero Persistence on Reload)**: By default, all encrypted content (Level 1, 2, 3 and external decryption gates) will decisively auto‑reset to the locked state after a page refresh (F5 / reload), completely avoiding the security risk of remaining exposed after a page refresh;  
 * **Open Persistence Parameter (`data-persist`)**: To meet the openness requirements of special document scenarios, the default reset strategy can be overridden via parameter configuration:  
   * `data-persist="session"` (or `data-persist="true"`): Keep unlocked across refreshes during the current tab session;  
@@ -1361,7 +1328,7 @@ After successful verification, the content is decrypted, but **it automatically 
 In the kdown tag, pass `data-mask-options="blur,mosaic"` to quickly customize optional modes, or directly write the `<div class="encrypted-mask-toolbar">` structure in the body; the system will automatically scan and activate the custom settings bar;
 - **Refresh Reset Guarantee**: By default, the page will automatically relock after a refresh.
 
-<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 2级加密提示：演示密钥请输入 epocanvas2026">
+<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 Level 2 Encryption Hint: For demo, please enter epocanvas2026">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ Level 2 Encryption · Masked Anti-Spy Mode</span> <span class="badge badge-purple">Dynamic Polymorphic Mask</span></div>
     <div class="encrypted-box__icon">🛡️</div>
@@ -1393,7 +1360,7 @@ In the kdown tag, pass `data-mask-options="blur,mosaic"` to quickly customize op
 
 Ultra-high security level! **No persistent storage is written**; once the decrypted content **leaves the current screen viewport** during scrolling, or the browser tab switches to the background, the system will **instantly auto-relock**, and viewing again requires re-entering the password:
 
-<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db24a44adf25238a00f5ee81ee89" data-hint="💡 3级加密提示：演示密钥请输入 level3pass">
+<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db24a44adf25238a00f5ee81ee89" data-hint="💡 Level 3 Encryption Hint: For demo, please enter level3pass">
   <div class="encrypted-box__lock">
     <div class="encrypted-box__level-tag"><span class="badge badge-danger">🛡️ Level 3 Encryption · Auto-Lock When Leaving Viewport</span> <span class="badge badge-orange">Viewport Sentinel Monitoring</span></div>
     <div class="encrypted-box__relock-wrap">
@@ -1520,6 +1487,32 @@ In addition to block-level encryption, the body text also provides rich, lightwe
 
 ### 2. Tutorial Steps
 
+<div class="article-steps">
+  <div class="article-steps__item">
+    <div class="article-steps__num">1</div>
+    <div class="article-steps__content">
+      <h4>Write Markdown or MDX Post</h4>
+      <p>Create a <code>.md</code> file under the <code>src/content/posts/</code> directory and declare Front Matter metadata.</p>
+    </div>
+  </div>
+  <div class="article-steps__item">
+    <div class="article-steps__num">2</div>
+    <div class="article-steps__content">
+      <h4>Freely Combine Rich Media Cards & Interactive Components</h4>
+      <p>Choose dropdown switchers, vinyl music cards, gallery albums, or encryption blocks on demand.</p>
+    </div>
+  </div>
+  <div class="article-steps__item">
+    <div class="article-steps__num">3</div>
+    <div class="article-steps__content">
+      <h4>One-Click Static Compilation and Instant Deployment</h4>
+      <p>Run <code>npm run build</code> to generate pure static assets and push to Cloudflare CDN global acceleration.</p>
+    </div>
+  </div>
+</div>
+
+---
+
 ### 3. Definition Lists & Specs  
 
 <dl class="article-dl">
@@ -1535,69 +1528,58 @@ In addition to block-level encryption, the body text also provides rich, lightwe
 
 ## 11. Rich Text Inline Micro-typography Beautification and Badges
 
-<!-- context from previous chunk -->
->在构建期完成 LaTeX 语法的 AST 解析，零客户端额外渲染延迟。</dd>
-  <dt>Post Formats</dt>
-  <dd>源自 WordPress 的内容形态定义规范，用于赋予不同文章类型专属的排版外观。</dd>
-</dl>
+- **Multi-color Highlights (HTML Tag Format)**:
+  - <mark class="mark-yellow">Yellow Highlight (Key Focus)</mark>
+  - <mark class="mark-green">Green Highlight (Recommended)</mark>
+  - <mark class="mark-blue">Blue Highlight (Information Clue)</mark>
+  - <mark class="mark-pink">Pink Highlight (Design Inspiration)</mark>
+  - <mark class="mark-purple">Purple Highlight (In-depth Principle)</mark>
+  - <mark class="mark-orange">Orange Highlight (Operation Warning)</mark>
+  - <mark class="mark-red">Red Highlight (Risk Alert)</mark>
+  - <mark class="mark-cyan">Cyan Highlight (Network Protocol)</mark>
+- **Shortcut Syntax Sugar Highlights (`==color:content==` Format)**:
+  - ==Default Highlight Text (Automatic Yellow)==
+  - ==green:Green Highlight Sugar (Agile Marker)==
+  - ==blue:Blue Highlight Sugar (Architecture Element)==
+  - ==pink:Pink Highlight Sugar (UI Beautification)==
+  - ==purple:Purple Highlight Sugar (Core Algorithm)==
+- **Status Badges**:
+  - <span class="badge badge-primary">Primary</span>
+  - <span class="badge badge-success">Success</span>
+  - <span class="badge badge-warning">Warning</span>
+  - <span class="badge badge-danger">Danger</span>
+  - <span class="badge badge-info">Info</span>
+  - <span class="badge badge-purple">Architecture (Purple)</span>
+  - <span class="badge badge-cyan">Network (Cyan)</span>
+  - <span class="badge badge-orange">Hardware (Orange)</span>
+- **Key Display**: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> opens the global command palette.
+- **Multilingual Phonetics (Ruby / Multilingual Annotations)**:
+  - **Chinese Hanyu Pinyin**: <ruby>時間<rt>shí jiān</rt></ruby> · <ruby>画布<rt>huà bù</rt></ruby> · <ruby>極客<rt>jí kè</rt></ruby>
+  - **Chinese Bopomofo (Taiwan Zhuyin)**: <ruby>時間<rt>ㄕˊ ㄐㄧㄢ</rt></ruby> · <ruby>極客<rt>ㄐㄧˊ ㄎㄜˋ</rt></ruby> · <ruby>編程<rt>ㄅㄧㄢ ㄔㄥˊ</rt></ruby>
+  - **Japanese Kanji + Furigana**: <ruby>時間<rt>じかん</rt></ruby> · <ruby>明日<rt>あす</rt></ruby> · <ruby>儚い<rt>はかない</rt></ruby>
+  - **Japanese Katakana Loanwords & Ateji**: <ruby>画布<rt>キャンバス</rt></ruby> · <ruby>電脳<rt>パソコン</rt></ruby> · <ruby>宇宙<rt>コスモ</rt></ruby>
+  - **Japanese Jukujikun**: <ruby>煙草<rt>タバコ</rt></ruby> · <ruby>大人<rt>おとな</rt></ruby> · <ruby>今日<rt>きょう</rt></ruby>
+  - **English Word + IPA Transcription**: <ruby>EpoCanvas<rt>/ˌepəˈkænvəs/</rt></ruby> · <ruby>Aesthetics<rt>/esˈθetɪks/</rt></ruby> · <ruby>Chronos<rt>/ˈkrɒnɒs/</rt></ruby>
+  - **French IPA & Special Pronunciation**: <ruby>Rendez-vous<rt>/ʁɑ̃.de.vu/</rt></ruby> · <ruby>Déjà-vu<rt>/de.ʒa.vy/</rt></ruby> · <ruby>C'est la vie<rt>/sɛ la vi/</rt></ruby>
+  - **German Umlaut & Compounds**: <ruby>Zeitgeist<rt>/ˈtsaɪtɡaɪst/</rt></ruby> · <ruby>Schadenfreude<rt>/ˈʃaːdn̩ˌfʁɔʏ̯də/</rt></ruby>
+  - **Greek + Romanization**: <ruby>Φιλοσοφία<rt>philosophia</rt></ruby> · <ruby>Καλημέρα<rt>kaliméra</rt></ruby>
+  - **Korean Hanja + Hangul**: <ruby>時間<rt>시간</rt></ruby> · <ruby>極客<rt>긱</rt></ruby> · <ruby>未來<rt>미래</rt></ruby>
+  - **Russian Cyrillic + IPA**: <ruby>Привет<rt>/prʲɪˈvʲet/</rt></ruby> · <ruby>Спасибо<rt>/spɐˈsʲibə/</rt></ruby>
+  - **Sanskrit Devanagari + IAST**: <ruby>नमस्ते<rt>namaste</rt></ruby> · <ruby>शान्तिः<rt>śāntiḥ</rt></ruby>
+- **Abbreviation Tooltips**: <abbr title="Static Site Generator">SSG</abbr> and <abbr title="Single Page Application">SPA</abbr>.
+- **Wavy and Dashed Underlines**: <u class="u-wavy">Wavy emphasis underline</u> and <u class="u-dashed">Dashed attention underline</u>.
+- **Call-to-Action Buttons (CTA Buttons)**:
+  - <a class="article-btn article-btn-primary" href="#top">Back to Top ⬆️</a>
+  - <a class="article-btn article-btn-outline" href="/archives/">Browse Archives 📂</a>
 
 ---
 
-## 十一、富文本行内微排版美化与徽章
-<!-- end context -->
+## 12. Footnotes and Floating Popups (Footnotes)
 
-- **多色彩高亮（HTML 标签形式）**：
-  - <mark class="mark-yellow">黄色高亮（重点标注）</mark>
-  - <mark class="mark-green">绿色高亮（成功推荐）</mark>
-  - <mark class="mark-blue">蓝色高亮（信息线索）</mark>
-  - <mark class="mark-pink">粉色高亮（设计灵感）</mark>
-  - <mark class="mark-purple">紫色高亮（深度原理）</mark>
-  - <mark class="mark-orange">橙色高亮（操作预警）</mark>
-  - <mark class="mark-red">红色高亮（风险警示）</mark>
-  - <mark class="mark-cyan">青色高亮（网络协议）</mark>
-- **快捷语法糖高亮（`==颜色:内容==` 形式）**：
-  - ==默认高亮文本（自动黄色）==
-  - ==green:绿色高亮语法糖（敏捷标记）==
-  - ==blue:蓝色高亮语法糖（架构要素）==
-  - ==pink:粉色高亮语法糖（界面美化）==
-  - ==purple:紫色高亮语法糖（核心算法）==
-- **状态徽章（Badges）**：
-  - <span class="badge badge-primary">推荐 (Primary)</span>
-  - <span class="badge badge-success">通过 (Success)</span>
-  - <span class="badge badge-warning">注意 (Warning)</span>
-  - <span class="badge badge-danger">危险 (Danger)</span>
-  - <span class="badge badge-info">信息 (Info)</span>
-  - <span class="badge badge-purple">架构 (Purple)</span>
-  - <span class="badge badge-cyan">网络 (Cyan)</span>
-  - <span class="badge badge-orange">硬件 (Orange)</span>
-- **按键展示**：<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> 打开全局命令调色板。
-- **多语言注音与发音标注（Ruby / Multilingual Phonetics）**：
-  - **中文汉语拼音（Hanyu Pinyin）**：<ruby>時間<rt>shí jiān</rt></ruby> · <ruby>画布<rt>huà bù</rt></ruby> · <ruby>極客<rt>jí kè</rt></ruby>
-  - **中文注音符号（Bopomofo / 台湾注音）**：<ruby>時間<rt>ㄕˊ ㄐㄧㄢ</rt></ruby> · <ruby>極客<rt>ㄐㄧˊ ㄎㄜˋ</rt></ruby> · <ruby>編程<rt>ㄅㄧㄢ ㄔㄥˊ</rt></ruby>
-  - **日文汉字 + 平假名振假名（Furigana / 訓読・音読）**：<ruby>時間<rt>じかん</rt></ruby> · <ruby>明日<rt>あす</rt></ruby> · <ruby>儚い<rt>はかない</rt></ruby>
-  - **日文片假名外来语与当て字（Katakana / Loanwords & Ateji）**：<ruby>画布<rt>キャンバス</rt></ruby> · <ruby>電脳<rt>パソコン</rt></ruby> · <ruby>宇宙<rt>コスモ</rt></ruby>
-  - **日文熟字训（Jukujikun / 義訓特殊读法）**：<ruby>煙草<rt>タバコ</rt></ruby> · <ruby>大人<rt>おとな</rt></ruby> · <ruby>今日<rt>きょう</rt></ruby>
-  - **英文单词 + IPA 国际音标标注（English + IPA Transcription）**：<ruby>EpoCanvas<rt>/ˌepəˈkænvəs/</rt></ruby> · <ruby>Aesthetics<rt>/esˈθetɪks/</rt></ruby> · <ruby>Chronos<rt>/ˈkrɒnɒs/</rt></ruby>
-  - **法语音标与特殊连诵（French IPA & Special Pronunciation）**：<ruby>Rendez-vous<rt>/ʁɑ̃.de.vu/</rt></ruby> · <ruby>Déjà-vu<rt>/de.ʒa.vy/</rt></ruby> · <ruby>C'est la vie<rt>/sɛ la vi/</rt></ruby>
-  - **德语变音与复合词发音（German Umlaut & Compounds）**：<ruby>Zeitgeist<rt>/ˈtsaɪtɡaɪst/</rt></ruby> · <ruby>Schadenfreude<rt>/ˈʃaːdn̩ˌfʁɔʏ̯də/</rt></ruby>
-  - **希腊文与其拉丁转写（Greek + Romanization）**：<ruby>Φιλοσοφία<rt>philosophia</rt></ruby> · <ruby>Καλημέρα<rt>kaliméra</rt></ruby>
-  - **韩文汉字与谚文注音（Hanja + Hangul）**：<ruby>時間<rt>시간</rt></ruby> · <ruby>極客<rt>긱</rt></ruby> · <ruby>未來<rt>미래</rt></ruby>
-  - **俄语/西里尔字母音标（Russian Cyrillic + IPA）**：<ruby>Привет<rt>/prʲɪˈvʲet/</rt></ruby> · <ruby>Спасибо<rt>/spɐˈsʲibə/</rt></ruby>
-  - **梵文/天城文与 IAST 转写（Sanskrit Devanagari + IAST）**：<ruby>नमस्ते<rt>namaste</rt></ruby> · <ruby>शान्तिः<rt>śāntiḥ</rt></ruby>
-- **缩写说明**：<abbr title="Static Site Generator 静态站点生成器">SSG</abbr> 与 <abbr title="Single Page Application 单页应用程序">SPA</abbr>。
-- **波浪与虚线下划线**：<u class="u-wavy">波浪强调下划线</u> 与 <u class="u-dashed">虚线注重下划线</u>。
-- **行动呼吁按钮（CTA Buttons）**：
-  - <a class="article-btn article-btn-primary" href="#top">返回顶部 ⬆️</a>
-  - <a class="article-btn article-btn-outline" href="/archives/">查看全站归档 📂</a>
+In academic or in-depth technical articles, footnotes are an indispensable form of citation. Hovering over the footnote superscript below displays an immediate definition bubble[^ref-ssg-spec] without navigating away from the current viewport[^ref-epocanvas-ui].
 
----
-
-## 十二、脚注与悬浮气泡（Footnotes）
-
-在学术或长篇技术文章中，脚注是必不可少的引用形式。鼠标悬浮于下方脚注角标即可直接弹出释义气泡[^ref-ssg-spec]，无需离开当前阅读视口[^ref-epocanvas-ui]。
-
-[^ref-ssg-spec]: **SSG 内容规范**：主流静态站点生成器均遵循以 Markdown/GFM 为核心，以 MDX 或模板语言为扩展的现代内容工程标准。
-[^ref-epocanvas-ui]: **EpoCanvas 美学规范**：以精致的微交互、高对比色彩与克制的留白，为中文与全球极客社区带来一流的阅读体验。
+[^ref-ssg-spec]: **SSG Content Standards**: Mainstream static site generators adhere to modern content engineering standards centered on Markdown/GFM, extended with MDX or templating languages.
+[^ref-epocanvas-ui]: **EpoCanvas Aesthetic Standards**: Delivering a premier reading experience for Chinese and global hacker communities with refined micro-interactions, high-contrast palettes, and restrained negative space.
 
 ---
 

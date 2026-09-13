@@ -10,7 +10,7 @@ if (!fs.existsSync(outDir)) {
 async function verifyLive() {
   const targetUrls = [
     'https://blog.epocanvas.com/support/',
-    'https://73e3618a.shijianus-blog.pages.dev/support/'
+    'https://024fedfb.shijianus-blog.pages.dev/support/'
   ];
 
   console.log('🌐 Launching Chromium browser for Live Cloudflare Pages E2E verification...');
@@ -102,14 +102,53 @@ async function verifyLive() {
         throw new Error(`Expected exactly 2 currency buttons, found ${btnCount}`);
       }
 
-      // 5. Test Serv00 Labels & Notice
+      // 5. Test Presets and Custom Input
+      console.log('☕ Testing 6 Presets and Cursor-Text Custom Input...');
+      const presetButtons = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
+      const presetCount = await presetButtons.count();
+      console.log(`Live Presets Count: ${presetCount}`);
+      if (presetCount !== 6) {
+        throw new Error(`Expected exactly 6 presets, found ${presetCount}`);
+      }
+
+      const customInputLabel = page.locator('.flex.items-center.gap-2\\.5.px-4.py-3.rounded-xl.cursor-text');
+      const customInputVisible = await customInputLabel.isVisible();
+      console.log(`Live Custom Input (cursor-text) Visible: ${customInputVisible}`);
+      if (!customInputVisible) {
+        throw new Error('Expected custom amount input with cursor-text style to be visible');
+      }
+
+      // 6. Test Serv00 Labels & Notice
       console.log('👤 Checking Serv00 Labels & Notification Text...');
       const nameLabel = await page.locator('label:has-text("称呼或社交账号")').textContent();
       const msgLabel = await page.locator('label:has-text("留言寄语")').textContent();
       console.log(`Field 1: "${nameLabel?.trim()}"`);
       console.log(`Field 2: "${msgLabel?.trim()}"`);
 
-      // 6. Test Triggering Stripe Modal
+      const noticeText = await page.locator('.text-center.text-xs.text-slate-500').textContent();
+      console.log(`Notice under button: "${noticeText?.trim()}"`);
+      if (!noticeText?.includes('支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存')) {
+        throw new Error(`Notice text unexpected: ${noticeText}`);
+      }
+
+      // 7. Audit Absence of Amber Filler Cards & Verify Grounded FAQ
+      console.log('💎 Auditing Absence of Amber Filler Cards & Accurate FAQ...');
+      const amberCards = await page.locator('.border-amber-500\\/30').count();
+      console.log(`Amber filler cards count: ${amberCards}`);
+      if (amberCards > 0) {
+        throw new Error(`Found ${amberCards} amber filler cards! They must not be present.`);
+      }
+
+      const faqBtn = page.locator('button:has-text("赞赏支持能否提升我的社区等级 (LV) 或信任等级 (TL)？")');
+      await faqBtn.click();
+      await page.waitForTimeout(300);
+      const faqAnswer = await page.locator('text=完全不能，两者 100% 独立脱钩').textContent();
+      console.log(`FAQ Answer snippet: "${faqAnswer?.slice(0, 60)}..."`);
+      if (!faqAnswer?.includes('LV.0 至 LV.4') || faqAnswer?.includes('LV.6')) {
+        throw new Error(`FAQ answer must ground in LV.0 to LV.4 and not hallucinate LV.6! Got: ${faqAnswer}`);
+      }
+
+      // 8. Test Triggering Stripe Modal
       console.log('💳 Testing Live Stripe Modal trigger...');
       const stripeBtn = page.locator('button:has-text("前往 Stripe 安全收银台支付")');
       await stripeBtn.click();
@@ -129,7 +168,7 @@ async function verifyLive() {
       await closeBtn.click();
       await page.waitForTimeout(500);
 
-      // 7. Test Table Pagination
+      // 9. Test Table Pagination
       console.log('📜 Testing Supporter Table on live page...');
       await page.locator('#sponsor-records').scrollIntoViewIfNeeded();
       await page.waitForTimeout(500);

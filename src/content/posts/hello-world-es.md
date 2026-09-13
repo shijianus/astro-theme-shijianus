@@ -1,30 +1,30 @@
 ---
-title: "主题重构启动记录"
+title: "Registro de Inicio de la Reconstrucción del Tema"
 pubDate: 2026-04-02
-description: "第一篇重构记录，确定新的主题不是旧主题的壳，而是一套真正可维护的 Astro 实现。"
+description: "Primer registro de reconstrucción: determinar que el nuevo tema no es solo una carcasa del anterior, sino una implementación de Astro verdaderamente mantenible."
 author: "shijianus"
-category: "前端工程"
-group: "迁移记录"
+category: "Ingeniería Frontend"
+group: "Registros de Migración"
 cover: "/media/shijianus/frontend.jpg"
 coverAlt: "frontend workspace"
 featured: true
 sticky: 3
-tags: ["Astro", "Tailwind", "主题重构"]
+tags: ["Astro", "Tailwind", "Reconstrucción del Tema"]
 i18nKey: "hello-world"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
 ---
 
-# 为什么要重做
+# Por qué rehacer
 
-之前的实现最大的问题不是功能少，而是结构不清楚。页面上混杂了试验性的品牌、风格和局部组件，最终既不像原主题，也没有形成自己的秩序。
+El mayor problema de la implementación anterior no era la falta de funciones, sino la falta de claridad en la estructura. La página mezclaba marcas experimentales, estilos y componentes locales, de modo que al final ni se parecía al tema original ni formaba un orden propio.
 
-## 这次重构的判断
+## Las premisas de esta reconstrucción
 
-这次的主题重构有两个前提：
+Esta reconstrucción del tema tiene dos premisas fundamentales:
 
-1. 保留原主题强结构首页、侧栏模块和卡片体系的优点。
-2. 把实现方式完全切换到 Astro + React + Tailwind 的内容优先架构。
+1. Conservar las ventajas del tema original: su página de inicio fuertemente estructurada, los módulos de la barra lateral y el sistema de tarjetas.
+2. Migrar completamente la implementación a una arquitectura orientada al contenido basada en Astro + React + Tailwind.
 
 ```ts
 const themeContract = {
@@ -34,15 +34,15 @@ const themeContract = {
 };
 ```
 
-## 首页应该先解决什么
+## Qué debe resolver primero la página de inicio
 
-首页不是宣传页，它首先是一张信息地图。读者进入第一页，需要很快看见：
+La página de inicio no es una página publicitaria; ante todo, es un mapa de información. Al entrar a la primera página, los lectores deben ver rápidamente:
 
-- 品牌与作者身份
-- 当前有哪些主要分类
-- 最近有哪些值得读的文章
-- 侧栏里还能继续往哪里走
+- La marca y la identidad del autor
+- Cuáles son las categorías principales disponibles actualmente
+- Qué artículos recientes vale la pena leer
+- Hacia dónde más pueden dirigirse a través de la barra lateral
 
-## 之后的方向
+## Dirección futura
 
-后续所有板块都会围绕同一个目标继续调整：让这套主题既有技术感，又不会把普通读者挡在门外。
+Todas las secciones posteriores continuarán ajustándose en torno al mismo objetivo: hacer que este tema transmita solidez técnica sin alejar a los lectores habituales.

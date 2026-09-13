@@ -453,13 +453,7 @@ Proporciona una vista previa elegante en formato de tarjeta para las fuentes de 
 ### 8. `chat` (Flujo de diálogo con burbujas de chat / Organic Animated Dialogue Stream)
 
 Se utiliza para demostrar de manera vívida escenarios de defensas técnicas, discusiones en diálogos de dos personas o entrevistas a usuarios. Admite burbujas izquierda/derecha, código en línea, colores personalizados y **animaciones de escritura adaptativas dinámicas, efectos de sonido sintetizados con Web Audio y avatares dinámicos (`footer_mini_logo__media`)**:
-* **Modo estático (predeterminado)**: `<div class="article-chat">` mantiene una presentación ligera y puramente estática, sin costo de JS;
-* **Activar demostración dinámica (controlado por parámetros)**: Configure `data-animate="true"` (o `class="article-chat is-animated"`), y el sistema **disparará automáticamente una animación de escritura con secuencia temporal realista, determinada por la longitud de los caracteres y la ley de aleatoriedad natural, junto con sonidos de notificación exclusivos para izquierda y derecha, cuando el lector haga scroll por primera vez hasta que el elemento entre en el viewport**;
-* **Secuencia temporal dinámica no mecánica (Content-Length Aware Timing)**: El sistema decide inteligentemente la duración del indicador de escritura según la longitud del mensaje (parpadeo de 380 ms para frases cortas, escritura y reflexión de 1000 ms+ para párrafos técnicos largos), y añade pausas naturales y vibraciones de microfrecuencia de sonido entre burbujas que se ajustan al juicio de lectura humana;
-* **Soporte para avatares de video dinámicos (`footer_mini_logo__media`)**: Los avatares admiten la incorporación de microvideos MP4 animados y pósters estáticos de respaldo;
-* **Disparo único y garantía de recarga**: Después del primer disparo al hacer scroll, se bloquea automáticamente; los scrolls repetidos posteriores no volverán a dispararlo, evitando interrumpir la lectura; solo se volverá a preparar cuando el usuario recargue la página web (F5); al mismo tiempo, se proporciona una barra de microcontrol en la esquina superior derecha con «↺ Reproducir de nuevo» y «🔊/🔇 Alternar sonido».
-
-<div class="article-chat" data-animate="true" data-sound="true">
+* **Modo estático (predeterminado)**: `<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -470,7 +464,7 @@ Se utiliza para demostrar de manera vívida escenarios de defensas técnicas, di
     <div class="chat-body">
       <div class="chat-author">Desarrollador <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        ¡Hola! ¿Crees que implementar la renderización estática de <code>KaTeX</code> y <code>Mermaid</code> en Astro ralentizará la velocidad de carga de la página frontend?
+        ¡Hola! ¿Implementar la representación estática de <code>KaTeX</code> y <code>Mermaid</code> en Astro ralentizará la carga de la página del frontend?
       </div>
     </div>
   </div>
@@ -480,12 +474,12 @@ Se utiliza para demostrar de manera vívida escenarios de defensas técnicas, di
     <div class="chat-body">
       <div class="chat-author">Arquitecto <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        ¡En absoluto! Porque <code>remark-math</code> y <code>rehype-katex</code> ya han compilado las fórmulas en cadenas puras de HTML/MathML durante la fase de construcción (Build-time), lo que supone una **carga de ejecución JS en el navegador de 0**; y los diagramas de Mermaid también cargan módulos ESM de forma asíncrona y bajo demanda, ¡lo que hace que la primera pantalla sea extremadamente ligera! ⚡
+        ¡En absoluto! Porque <code>remark-math</code> y <code>rehype-katex</code> compilan las fórmulas en cadenas puras de HTML/MathML durante la fase de compilación (Build-time), el lado del navegador tiene <strong>0 sobrecarga de tiempo de ejecución de JS</strong>; además, los diagramas de Mermaid se cargan asíncronamente como módulos ESM bajo demanda, ¡haciendo que la primera pantalla sea extremadamente ligera! ⚡
       </div>
     </div>
   </div>
 
-<div class="chat-message chat-left">
+  <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
         <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
@@ -495,17 +489,17 @@ Se utiliza para demostrar de manera vívida escenarios de defensas técnicas, di
     <div class="chat-body">
       <div class="chat-author">Desarrollador <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        ¡Excelente! Entonces, ¿podemos escribir directamente diagramas de secuencia de arquitectura y un convertidor de unidades interactivo en Markdown y que funcionen de inmediato, verdad?
+        ¡Excelente! Eso significa que podemos escribir diagramas de secuencia de arquitectura y convertidores de unidades interactivos directamente en Markdown, y funcionan desde el primer momento, ¿verdad?
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Arquitecto shijianus" />
     <div class="chat-body">
       <div class="chat-author">Arquitecto <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
-        ¡Correcto! No solo se puede hacer zoom doble y exportar SVG de alta definición, el convertidor de unidades también se ha integrado con <strong>sincronización de precios de divisas en tiempo real</strong> y <strong>cambio de unidad base mediante menú desplegable</strong>, y garantiza una expresión completa y simétrica de unidades de calidad fija; todas las métricas han sido rigurosamente probadas! 🚀
+        ¡Así es! No solo admiten zoom con doble clic y exportación de SVG de alta definición por completo, sino que el convertidor de unidades integra <strong>sincronización de tipos de cambio de divisas en tiempo real</strong> y <strong>cambio desplegable de unidad base</strong> garantizando una expresión simétrica de unidades; ¡todas las métricas han sido rigurosamente probadas! 🚀
       </div>
     </div>
   </div>
@@ -520,17 +514,17 @@ Se utiliza para demostrar de manera vívida escenarios de defensas técnicas, di
     <div class="chat-body">
       <div class="chat-author">Desarrollador <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
       <div class="chat-bubble">
-        ¡Entendido! La sensación de interacción y la animación de escritura que varía según la longitud del mensaje son muy naturales; voy a actualizar la biblioteca de documentación técnica de mi equipo ahora mismo! 🎉
+        ¡Entendido! La sensación de interacción y la animación de escritura dinámica según la longitud del mensaje se sienten extremadamente naturales; ¡voy a actualizar la biblioteca de documentación técnica del equipo ahora mismo! 🎉
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Arquitecto shijianus" />
     <div class="chat-body">
       <div class="chat-author">Arquitecto <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
       <div class="chat-bubble">
-        ¡Bienvenido a probar! Si encuentras alguna extensión de formato o necesidad de personalización en el futuro, no dudes en discutirlo en el foro o en GitHub. ✨
+        ¡Bienvenido a probarlo! Si más adelante surge alguna necesidad de personalización o extensión de formato, comunícate en el área de debate o en GitHub~ ✨
       </div>
     </div>
   </div>
@@ -1282,14 +1276,7 @@ Se puede usar un objeto JSON de una sola línea en la primera línea del bloque 
 
 ## 9. Seguridad, privacidad, cifrado por niveles (Nivel 1/2/3) y funciones especiales de descifrado por segmento externo
 
-<!-- context from previous chunk -->
- `⛶` 展开至全屏独立画布（按 `Esc` 随时退出），获得无限横向探索空间；
-* **元数据实时感知**：Header 栏实时展示当前导图的总节点数与最大深度（例如 `53 个节点 · 6 层分支结构`）。
 
----
-
-## 九、安全隐私、分级加密（Level 1/2/3）与外联分段解密特异功能
-<!-- end context -->
 
 为了彻底杜绝密码明文暴露在 DOM 属性中（如 `data-password` 易被审查元素窥探），本博客内容系统全面升级为 **WebCrypto SHA-256 散列校验（`data-hash`）**，并建立起三级文内局部加密与外联分段解密体系：
 * **默认安全重置规则（Zero Persistence on Reload）**：默认情况下，所有加密内容（1级、2级、3级及外联解密门）在**页面刷新（F5 / 重新加载）后都会坚决自动重置回上锁状态**，彻底避免页面刷新后保持裸露的安全隐患；
@@ -1459,42 +1446,34 @@ curl -X POST https://cluster.shijian.us/v1/node/failover \
 
 ---
 
-## 十、时间轴、步骤条、定义列表与数据表格
+## 10. Línea de tiempo, barras de pasos, listas de definición y tablas de datos
 
-### 1. 垂直时间轴（Vertical Timeline）
+### 1. Línea de tiempo vertical (Vertical Timeline)
 
 <div class="article-timeline">
   <div class="timeline-node is-success">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.04 · 基础重构</div>
-      <div class="timeline-node__title">完成 Astro 6 静态站点内核迁移</div>
-      <p class="timeline-node__desc">建立全新 Content Collections 架构与 Shiki 代码高亮管道。</p>
+      <div class="timeline-node__date">2026.04 · Reconstrucción básica</div>
+      <div class="timeline-node__title">Migración completada del núcleo del sitio estático Astro 6</div>
+      <p class="timeline-node__desc">Se estableció una nueva arquitectura de Content Collections y el flujo de resaltado de código de Shiki.</p>
     </div>
   </div>
 
   <div class="timeline-node is-warning">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.08 · 特性扩展</div>
-      <div class="timeline-node__title">全量实装 WordPress Post Formats 与下拉框切换器</div>
-      <p class="timeline-node__desc">补全 13 种 Admonitions、KaTeX 数学公式与密码弹窗解密系统。</p>
+      <div class="timeline-node__date">2026.08 · Expansión de características</div>
+      <div class="timeline-node__title">Implementación completa de WordPress Post Formats y selector desplegable</div>
+      <p class="timeline-node__desc">Se completaron 13 tipos de Admonitions, fórmulas matemáticas de KaTeX y el sistema de descifrado con ventana emergente de contraseña.</p>
     </div>
   </div>
 
   <div class="timeline-node">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">未来展望 · 生态演进</div>
-      <div class="timeline-node__title">发布开源主题标准与多平台插件</div>
-      <p class="timeline-node__desc">提供从 Hexo/WordPress 到 Astro 的一键无缝内容迁移工具链。</p>
-    </div>
-  </div>
-</div>
-
----
-
-### 2. 教程步骤条（Tutorial Steps)
+      <div class="timeline-node__date">Perspectivas futuras · Evolución del ecosistema</div>
+      <div class="timeline-node__title">Lanzamiento de estándares de temas de código abierto y complementos multiplataforma
 
 </div>
       <p class="timeline-node__desc">Proporciona una cadena de herramientas de migración de contenido sin fisuras y con un solo clic desde Hexo/WordPress a Astro.</p>
@@ -1505,7 +1484,7 @@ curl -X POST https://cluster.shijian.us/v1/node/failover \
 ---
 
 ### 2. Barra de pasos del tutorial（Tutorial Steps）
-<!-- end context -->
+
 
 <div class="article-steps">
   <div class="article-steps__item">

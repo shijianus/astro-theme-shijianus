@@ -447,13 +447,7 @@ Bietet eine elegante kartengestützte Vorschau für wichtige Referenzquellen im 
 ### 8. `chat` (Chatblasen-Dialogstrom / Organic Animated Dialogue Stream)
 
 Dient der lebendigen Darstellung technischer Verteidigungen, Zweiergespräche oder Nutzerinterviews. Unterstützt linke und rechte Chatblasen, Inline-Code, individuelle Farbgebungen sowie **dynamische, inhaltsadaptive Tipp-Animationen, Web Audio-Synthesetöne und dynamische Profilbilder (`footer_mini_logo__media`)**:
-* **Statischer Modus (Standard)**:`<div class="article-chat">` gewährleistet eine leichte, rein statische Darstellung ohne JS-Overhead;
-* **Aktivierung der dynamischen Darstellung (Parametersteuerung):** Konfiguration von `data-animate="true"` (oder `class="article-chat is-animated"`). Das System löst beim ersten Scrollen des Lesers in den Viewport automatisch eine realistische, zeitgesteuerte Tipp-Animation sowie seitenspezifische Audiowiedergaben aus, die auf der Zeichenlänge und natürlichen Zufallsverteilungen basieren;
-* **Nicht-mechanische dynamische Zeitsteuerung (Content-Length Aware Timing):** Das System bestimmt intelligent die Dauer des Tipp-Indikators basierend auf der Länge der Nachricht (kurze Sätze: 380 ms Blinken, lange technische Abschnitte: 1000 ms+ Tipp- und Denkphase) und fügt zwischen den Blasen natürliche Pausen sowie subtile Audioeffekte hinzu, die menschlichen Lesegewohnheiten entsprechen;
-* **Unterstützung für dynamische Video-Profilbilder (`footer_mini_logo__media`):** Profilbilder unterstützen die Einbettung von MP4-Mikrovideosequenzen sowie statischen Fallback-Postern;
-* **Einmalige Auslösung und Neuladungssicherung:** Nach der ersten Auslösung beim Scrollen wird der Status automatisch gesperrt, sodass wiederholtes Scrollen keine weiteren Auslösungen verursacht und das Lesen nicht stört; eine erneute Bereitschaft tritt nur bei einer manuellen Seiteaktualisierung (F5) ein. Zudem steht oben rechts eine Mikro-Steuerleiste mit den Optionen „↺ Wiederholen“ und „🔊/🔇 Audio umschalten“ zur Verfügung.
-
-<div class="article-chat" data-animate="true" data-sound="true">
+* **Statischer Modus (Standard)**:`<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -478,9 +472,8 @@ Dient der lebendigen Darstellung technischer Verteidigungen, Zweiergespräche od
       </div>
     </div>
   </div>
-</div>
 
-<div class="chat-message chat-left">
+  <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
         <source src="/media/shijianus/avatar-dynamic.mp4" type="video/mp4" />
@@ -488,19 +481,19 @@ Dient der lebendigen Darstellung technischer Verteidigungen, Zweiergespräche od
       <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
     </span>
     <div class="chat-body">
-      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
+      <div class="chat-author">Entwickler <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        太棒了！那我们在 Markdown 里直接写架构时序图和交互式单位换算器也是开箱即用的对吧？
+        Großartig! Das bedeutet, dass wir Architektur-Sequenzdiagramme und interaktive Einheitenrechner direkt in Markdown schreiben können und sie sofort einsatzbereit sind, richtig?
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architekt shijianus" />
     <div class="chat-body">
-      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
+      <div class="chat-author">Architekt <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
-        对的！不仅双击放大与高清 SVG 导出已全量具备，单位换算器更是接入了<strong>实时联网外汇牌价同步</strong>与<strong>基准单位下拉切换</strong>，而且保证固定质量单位完整对称表达，所有度量均经过严谨测试！🚀
+        Ganz genau! Nicht nur Doppelklick-Zoom und hochauflösender SVG-Export sind vollständig integriert, sondern der Einheitenrechner synchronisiert auch <strong>Echtzeit-Wechselkurse</strong> und ermöglicht den <strong>Dropdown-Wechsel der Basiseinheit</strong> bei absolut symmetrischer Darstellung; alle Metriken wurden sorgfältig getestet! 🚀
       </div>
     </div>
   </div>
@@ -513,19 +506,19 @@ Dient der lebendigen Darstellung technischer Verteidigungen, Zweiergespräche od
       <img src="/media/shijianus/avatar.jpg" alt="Léon Boven" />
     </span>
     <div class="chat-body">
-      <div class="chat-author">开发者 <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
+      <div class="chat-author">Entwickler <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
       <div class="chat-bubble">
-        收到！这个交互手感与根据消息长短变化的打字动画非常自然，我这就把团队的技术文档库升级上来！🎉
+        Verstanden! Das Interaktionsgefühl und die dynamische Tippanimation je nach Nachrichtenlänge wirken extrem natürlich; ich werde die technische Dokumentationsbibliothek des Teams sofort aktualisieren! 🎉
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architekt shijianus" />
     <div class="chat-body">
-      <div class="chat-author">架构师 <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
+      <div class="chat-author">Architekt <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
       <div class="chat-bubble">
-        欢迎体验！后续如果遇到任何格式扩展或定制需求，随时在讨论区或 GitHub 交流探讨~ ✨
+        Herzlich willkommen zum Ausprobieren! Wenn Sie später Fragen zu Formaterweiterungen oder Anpassungen haben, können Sie sich jederzeit im Diskussionsbereich oder auf GitHub austauschen~ ✨
       </div>
     </div>
   </div>
@@ -533,7 +526,7 @@ Dient der lebendigen Darstellung technischer Verteidigungen, Zweiergespräche od
 
 ---
 
-## 五、特殊的下拉框格式与动态交互组件（Dropdown Selectors & Interactive Formats）
+## 5.特殊的下拉框格式与动态交互组件（Dropdown Selectors & Interactive Formats）
 
 针对用户明确要求的**特殊下拉框格式**，我们在文章正文层提供了纯客户端即时响应的下拉选择器组件：
 
@@ -639,7 +632,7 @@ Benutzer können einen **beliebigen Basiswert** im Eingabefeld eingeben (Standar
 
 ---
 
-## 六、手风琴折叠、选项卡与多栏排版（Collapsibles, Tabs & Columns）
+## 6. Akkordeon-Faltungen, Registerkarten und mehrspaltiges Layout (Collapsibles, Tabs & Columns)
 
 ### 1. 互斥手风琴折叠组（Exclusive Accordion Group · 展开单项自动闭合其余项）
 
@@ -1729,38 +1722,7 @@ Here's a thinking process:
 
    ---
 
-   Check against constraints:
-   - "Maintain all Markdown headings, formatting, lists, tables, callout blocks (> [!NOTE]), and HTML tags (<div class="...">, etc.) exactly as in the source." -> I kept all HTML tags exactly. I translated the text inside them.
-   - "Do NOT translate code inside code blocks (```...```) or inline backticks (`...`)." -> Checked. `==颜色:内容==` became `==Farbe:Inhalt==` inside backticks. That's fine.
-   - "Preserve URLs and image links intact." -> Checked.
-   - "Output ONLY the translated Markdown text." -> Checked.
-   - One detail: The source uses full-width colons `：` in some places. I will keep them or convert to standard German `:`. I'll stick to standard German punctuation for professionalism, but keep the structure. I'll use `:` for lists.
-   - I will adjust punctuation to standard German where appropriate, but keep the Markdown structure identical.
-   - "十二、" -> "12." is correct.
-   - "悬浮气泡" -> "Hover-Tooltips" or "Kontextblasen". I'll use "Hover-Tooltips".
-   - "阅读视口" -> "Viewport" or "Lesefenster". I'll use "Viewport".
-   - All looks solid. I will generate the output now.
-   - Self-Correction/Refinement during thought:
-     - Check `<abbr title="...">` tags. The prompt says "Maintain all ... HTML tags exactly as in the source." I will keep the exact attribute structure but translate the content inside the title to German for consistency, or leave it bilingual. I'll translate it to German: `title="Statischer Seitengenerator (Static Site Generator)"`. Actually, it's safer to just translate the visible text and keep the title attribute as is, or translate it fully. I'll translate it fully to German: `title="Statischer Seitengenerator (Static Site Generator)"` -> `title="Static Site Generator (Statischer Seitengenerator)"`. I'll just translate the visible text and keep the title attribute exactly as in the source to be strictly compliant with "Maintain all HTML tags exactly". Wait, the prompt says "Maintain all Markdown headings, formatting, lists, tables, callout blocks, and HTML tags exactly as in the source." This usually means don't change classes, structure, or remove them. Translating the text inside is expected. I'll translate the title content to German as well for professionalism.
-     - I'll adjust the `<abbr>` tags to: `<abbr title="Statischer Seitengenerator (Static Site Generator)">SSG</abbr>` and `<abbr title="Einseitige Anwendung (Single Page Application)">SPA</abbr>`.
-     - Check Ruby tags: I will leave the content inside `<ruby>` and `<rt>` exactly as is, since they are phonetic/script representations.
-     - Check list indentation: I'll preserve it.
-     - All good. Output matches the draft.✅
-   - Final check of the text:
-     - "多色彩高亮（HTML 标签形式）" -> "Mehrfarbiges Hervorheben (als HTML-Tags)"
-     - "快捷语法糖高亮（`==颜色:内容==` 形式）" -> "Hervorheben mit Syntax-Sugar (`==Farbe:Inhalt==`-Format)"
-     - "状态徽章（Badges）" -> "Status-Badges (Abzeichen)"
-     - "按键展示" -> "Tastaturkürzel-Anzeige"
-     - "多语言注音与发音标注（Ruby / Multilingual Phonetics）" -> "Mehrsprachige Aussprache- und Lautschriftmarkierungen (Ruby / Multilingual Phonetics)"
-     - "缩写说明" -> "Abkürzungen"
-     - "波浪与虚线下划线" -> "Wellen- und gestrichelte Unterstreichungen"
-     - "行动呼吁按钮（CTA Buttons）" -> "Call-to-Action-Buttons (CTA)"
-     - "十二、脚注与悬浮气泡（Footnotes）" -> "12. Fußnoten und Hover-Tooltips (Footnotes)"
-     - Footnotes text translated accurately.
-     - Structure preserved.
-     -
-
-## Schlusswort: Aufbau eines zukunftsorientierten Content-Präsentationssystems
+   ## Schlusswort: Aufbau eines zukunftsorientierten Content-Präsentationssystems
 
 Durch dieses umfassende Upgrade und die Erweiterungen bietet `shijianus-blog` im Hauptinhaltsbereich (`.article-body.post-content`) eine umfassende Abdeckung der gängigen SSG‑Content‑Formate, WordPress Post Formats, interaktiver Dropdowns, Akkordeon‑Übergänge, LaTeX‑Formeln, Mermaid‑Diagramme sowie Passwortverschlüsselung und weiterer spezieller Funktionen.
 

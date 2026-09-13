@@ -240,19 +240,19 @@
       "es": {
         "filename": "hello-world-es.md",
         "slug": "hello-world-es",
-        "title": "主题重构启动记录",
+        "title": "Registro de Inicio de la Reconstrucción del Tema",
         "isAiGenerated": true
       },
       "fr": {
         "filename": "hello-world-fr.md",
         "slug": "hello-world-fr",
-        "title": "主题重构启动记录",
+        "title": "Journal de Lancement de la Refonte du Thème",
         "isAiGenerated": true
       },
       "zh-Hant": {
         "filename": "hello-world-zh-Hant.md",
         "slug": "hello-world-zh-Hant",
-        "title": "主题重构启动记录",
+        "title": "主題重構啟動記錄",
         "isAiGenerated": true
       },
       "zh-CN": {
