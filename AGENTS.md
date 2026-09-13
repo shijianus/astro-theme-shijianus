@@ -1803,4 +1803,31 @@
   3. 针对线上域名 `https://blog.epocanvas.com/about/` 执行真实自动化端到端审计，100% PASS 通过；
   4. Commit Hash: `7d88ad3`。
 
+### Task 83: 关于页正体中文名称纯粹化 (shijianus)、隐私脱敏去地域化 (杜绝提及中国/大二/计算机专业)、UTC-8/PST 时区校准、专业开发装备升级 (Ubuntu/Mac Studio/iPhone 17 Pro/AirPods Pro 3) 与消除省略号截断
+- [x] **正体中文名称纯粹化与多语言本地化映射**：
+  1. 姓名纠正：正体中文环境下直接为 `shijianus`（`我叫 shijianus`），杜绝任何括号与 `(時間)` 别名解释；
+  2. 多语言创作者本地化保持连贯映射：英文转译为 `I'm Kevin Sparks`，法文转译为 `Je m'appelle Léon Boven`（带闭音符 `é`），切回中文恢复为 `我叫 shijianus`。
+- [x] **隐私深度脱敏与谦逊创新人设**：
+  1. 移除大二与计算机专业标签，使用不做作的谦逊创新称号（如「全栈初探者」、「工艺探索」、「体验洁癖」）；
+  2. 隐私脱敏：生于仅写 `2006`，彻底移除城市卡片与校园生活细节，**全页严格杜绝提及“中国”二字（0 处出现）**。
+- [x] **时区坐标与实时时钟精准校准**：
+  1. 地图卡与个人信息卡直接标注 `UTC-8 · 太平洋时间 (PST)` 与 `UTC-8 (PST)`，精准贴合底层 Ubuntu PST 开发环境，严禁与中国关联；
+  2. 实时跳动 PST 太平洋时钟 (`#about-live-clock`) 保持精准走时。
+- [x] **实用硬件装备升级与杜绝省略号截断**：
+  1. 彻底清除 `.gear-item__desc` 与 `.gear-item__name` 的 `white-space: nowrap; text-overflow: ellipsis;` 文本截断，改为 `white-space: normal; word-break: break-word;` 完整换行展示，零 `...` 截断；
+  2. 实用装备硬核专业化：
+     - `Ubuntu Linux`（Primary OS）：主力底层开发环境，用于日常工程构建、Docker 容器编排与全天候后台服务调度；
+     - `Mac Studio`（Workstation）：桌面核心工作台，承载大型前端工程多线程编译、本地大语言模型并发推理与 4K 多屏扩展；
+     - `ZA/A iPhone 17 Pro`（Testbed）：移动端真机调试平台，针对 Safari WebKit 内核渲染、PWA 离线运行及高帧率手势进行真实视口性能验证；
+     - `AirPods Pro 3`（Audio）：高保真音频调试与空间音频采样，长时间编码时用于降噪隔音与心流伴听；
+  3. 补齐 `phone`、`terminal` 等全新纯 SVG 图标及多语言词典。
+- [x] **自动化端到端测试全量通过 (`scripts/verify-about-rebuild.mjs`)**：
+  1. 桌面端 (1440x900)、平板端 (768x1024)、移动端 (375x667) 均 100% 通过；
+  2. 严格断言正体中文姓名仅包含 `shijianus`，无括号无时间；
+  3. 严格断言全页“中国”提及次数为 **0**；
+  4. 严格断言无“大二”、无“计算机专业”；
+  5. 严格断言包含 `UTC-8` 与 `PST`；
+  6. 严格断言包含 Ubuntu Linux、Mac Studio、iPhone 17 Pro、AirPods Pro 3 且无任何 `...` 截断；
+  7. 严格断言英文与法文模式下中文字符残留数量为 **0**。
+
 

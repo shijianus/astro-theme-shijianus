@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import SupportDashboard from '../components/theme/SupportDashboard';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title="请喝一杯咖啡 | 赞赏支持"
+  description="全景打赏支援与公开致谢名册：支持 Stripe 国际收银台 (Apple Pay / Google Pay / 信用卡)、微信支付、支付宝、PayPal 及 Web3 加密货币。"
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <SupportDashboard client:load />
+</BlogLayout>

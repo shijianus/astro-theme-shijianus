@@ -99,37 +99,58 @@ async function runLiveAudit() {
         allPassed = false;
       }
 
-      // 验证姓名、大学生、2006、设备等真实文字
+      // 验证姓名、无中国、2006、UTC-8/PST、专业硬件装备与无省略号截断
       const textAudit = await page.evaluate(() => {
         const bodyText = document.body.innerText;
+        const greetingText = document.querySelector('.myInfoAndSayHello .title2')?.innerText || '';
+        const gearDescs = Array.from(document.querySelectorAll('.gear-item__desc')).map(el => el.textContent || '');
+        const hasEllipsisInGear = gearDescs.some(text => text.includes('...') || text.includes('…'));
+
         return {
+          hasShijianus: bodyText.includes('shijianus'),
           hasTimeName: bodyText.includes('時間'),
           hasWrongName: bodyText.includes('世健'),
-          hasStudent: bodyText.includes('大学生'),
+          hasParenthesesInGreeting: /\([^\)]*\)/.test(greetingText),
+          hasChina: bodyText.includes('中国'),
+          hasSophomore: bodyText.includes('大二'),
+          hasCSMajor: bodyText.includes('计算机专业'),
           has2006: bodyText.includes('2006'),
-          hasLenovo: bodyText.includes('联想小新'),
-          hasRedmi: bodyText.includes('红米'),
+          hasUTC8: bodyText.includes('UTC-8'),
+          hasPST: bodyText.includes('PST'),
+          hasUbuntu: bodyText.includes('Ubuntu Linux'),
+          hasMacStudio: bodyText.includes('Mac Studio'),
+          hasIPhone17: bodyText.includes('iPhone 17 Pro'),
+          hasAirPods: bodyText.includes('AirPods Pro 3'),
+          hasEllipsisInGear,
+          greetingText
         };
       });
 
-      if (textAudit.hasTimeName && !textAudit.hasWrongName) {
-        console.log(`✅ [LIVE NAME CHECK] Correct name '時間' verified live, '世健' completely absent!`);
+      if (textAudit.hasShijianus && !textAudit.hasTimeName && !textAudit.hasWrongName && !textAudit.hasParenthesesInGreeting) {
+        console.log(`✅ [LIVE NAME CHECK] Clean name 'shijianus' verified live without parentheses or aliases! Greeting: '${textAudit.greetingText.trim()}'`);
       } else {
-        console.error(`❌ [LIVE NAME ERROR] Name mismatch on live: hasTimeName=${textAudit.hasTimeName}, hasWrongName=${textAudit.hasWrongName}`);
+        console.error(`❌ [LIVE NAME ERROR] Name mismatch on live:`, textAudit);
         allPassed = false;
       }
 
-      if (textAudit.hasStudent && textAudit.has2006) {
-        console.log(`✅ [LIVE PERSONA CHECK] Genuine 2006 undergraduate persona verified live!`);
+      if (!textAudit.hasChina && !textAudit.hasSophomore && !textAudit.hasCSMajor && textAudit.has2006) {
+        console.log(`✅ [LIVE PRIVACY & PERSONA CHECK] Zero mentions of China, no sophomore/CS major labels, born 2006 verified live!`);
       } else {
-        console.error(`❌ [LIVE PERSONA ERROR] Undergraduate / 2006 not found live:`, textAudit);
+        console.error(`❌ [LIVE PRIVACY & PERSONA ERROR] Privacy violation or persona mismatch live:`, textAudit);
         allPassed = false;
       }
 
-      if (textAudit.hasLenovo && textAudit.hasRedmi) {
-        console.log(`✅ [LIVE GEAR CHECK] Humble student gear verified live (Lenovo / Redmi)!`);
+      if (textAudit.hasUTC8 && textAudit.hasPST) {
+        console.log(`✅ [LIVE TIMEZONE CHECK] UTC-8 & PST coordinates verified live!`);
       } else {
-        console.error(`❌ [LIVE GEAR ERROR] Student gear not found live:`, textAudit);
+        console.error(`❌ [LIVE TIMEZONE ERROR] UTC-8 or PST missing live:`, textAudit);
+        allPassed = false;
+      }
+
+      if (textAudit.hasUbuntu && textAudit.hasMacStudio && textAudit.hasIPhone17 && textAudit.hasAirPods && !textAudit.hasEllipsisInGear) {
+        console.log(`✅ [LIVE GEAR & WORKSTATION CHECK] Professional gear verified live (Ubuntu, Mac Studio, iPhone 17 Pro, AirPods Pro 3) with zero ellipsis truncation!`);
+      } else {
+        console.error(`❌ [LIVE GEAR ERROR] Gear items missing or ellipsis truncation found live:`, textAudit);
         allPassed = false;
       }
 
@@ -172,7 +193,7 @@ async function runLiveAudit() {
         runtime.applyLocaleVariant('zh-CN');
         await new Promise(r => setTimeout(r, 400));
         const zhGreeting = document.querySelector('.myInfoAndSayHello .title2')?.innerText || '';
-        const zhHasTime = zhGreeting.includes('時間');
+        const zhHasShijianus = zhGreeting.includes('shijianus');
 
         return {
           available: true,
@@ -183,12 +204,12 @@ async function runLiveAudit() {
           frHasLeon,
           frChineseCount,
           zhGreeting,
-          zhHasTime
+          zhHasShijianus
         };
       });
 
       if (i18nAudit.available) {
-        if (i18nAudit.enHasKevin && i18nAudit.frHasLeon && i18nAudit.zhHasTime) {
+        if (i18nAudit.enHasKevin && i18nAudit.frHasLeon && i18nAudit.zhHasShijianus) {
           console.log(`✅ [LIVE I18N SUCCESS] Multilingual localized identity verified live! EN='${i18nAudit.enGreeting.trim()}', FR='${i18nAudit.frGreeting.trim()}', ZH='${i18nAudit.zhGreeting.trim()}'`);
         } else {
           console.error(`❌ [LIVE I18N FAILURE] Localization failed live:`, i18nAudit);

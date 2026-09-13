@@ -89,14 +89,17 @@ function compileChunkSystemPrompt(targetLocale: string): string {
     `1. Output ONLY the translated Markdown text. Do NOT add preamble, conversational remarks, or postscript.`,
     `2. Do NOT add YAML frontmatter or --- header delimiters.`,
     `3. Maintain all Markdown syntax structure (headings #/##/###, blockquotes > [!NOTE], lists, tables, dividers ---) exactly.`,
-    `4. CODE & MATH INTEGRITY:`,
-    `   - Do NOT translate code inside code blocks (\`\`\`...\`\`\`) or inline backticks (\`...\`).`,
-    `   - Do NOT translate LaTeX / KaTeX math blocks ($$...$$ or $...$). Keep all formulas completely intact.`,
-    `   - Do NOT translate URLs, file paths, image paths, or technical IDs.`,
+    `4. CODE, MERMAID & MATH INTEGRITY:`,
+    `   - For programming language code blocks (\`\`\`typescript, \`\`\`python, \`\`\`bash, \`\`\`html, etc.): Keep the code intact, only translate inline human-readable comments if helpful.`,
+    `   - For Mermaid diagrams (\`\`\`mermaid): TRANSLATE visible human-readable node labels, decision question texts, and edge annotations into ${localeName} (e.g. [Reader visits post], {Is encrypted?}, "Yes", "No"). Keep flowchart syntax, node IDs (A, B, C), and arrows intact.`,
+    `   - Do NOT translate LaTeX / KaTeX math blocks ($$...$$ or $...$). Keep all mathematical formulas, symbols, and expressions completely intact. Never drop \\partial or other LaTeX operators.`,
+    `   - Do NOT translate URLs, file paths, image paths, audio paths, video paths, or technical IDs.`,
     `5. HTML & ATTRIBUTES INTEGRITY:`,
-    `   - Maintain all HTML opening and closing tags (<div ...>, </div>, <details>, </details>, <summary>, etc.) exactly as in the source. Never drop or prematurely close HTML container tags.`,
+    `   - Maintain all HTML opening and closing tags (<div ...>, </div>, <details>, </details>, <summary>, <button>, etc.) exactly as in the source. Never drop or prematurely close HTML container tags.`,
     `   - Strictly keep technical attributes and their values unchanged: class, id, data-level, data-single, data-animate, data-sound, data-hash, data-default, data-video-type, viewBox, etc.`,
     `   - TRANSLATE human-readable text inside user-facing HTML attributes: data-title="...", placeholder="...", aria-label="...", alt="...", title="...", and data-hint="...". Translate ONLY their natural language values into ${localeName}.`,
+    `   - All chat messages (<div class="chat-message ...">) must remain strictly nested inside their parent <div class="article-chat" ...> container.`,
+    `   - All accordions (<details class="article-accordion" ...>) must remain strictly inside <div class="article-accordion-group" ...>.`,
     `6. CONTEXT & CONTINUITY:`,
     `   - If any [REFERENCE CONTEXT] is provided, use it strictly for terminology continuity. Do NOT translate or echo the reference context in your output.`,
     `   - Translate ALL text under [TEXT TO TRANSLATE]. Do not truncate or summarize.`,
@@ -408,6 +411,49 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
     }
   }
 
+  // 3. Fallback to Gemini 2.5 Flash (Ultra-high context & capacity)
+  const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+  const geminiKeys = rawGeminiKeys.split(',').map((k) => k.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  if (geminiKeys.length > 0) {
+    for (const gKey of geminiKeys.slice(0, 6)) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(gKey)}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `${systemPrompt}\n\n---\n\n${userMessage}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.15,
+              maxOutputTokens: 8192,
+            },
+          }),
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const json = await response.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+          if (text) {
+            return { ok: true, text, provider: 'Chronral-Gemini', model: 'gemini-2.5-flash' };
+          }
+        } else {
+          const errText = await response.text().catch(() => '');
+          console.warn(`[Article-i18n] Gemini status ${response.status}: ${errText.slice(0, 120)}`);
+        }
+      } catch (err: any) {
+        console.warn(`[Article-i18n] Gemini fallback attempt failed: ${err.message}`);
+      }
+    }
+  }
+
   return {
     ok: false,
     text: '',
@@ -447,7 +493,8 @@ export function splitIntoChunks(body: string, maxChars = 4500): string[] {
 
   const VOID_TAGS = new Set([
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-    'link', 'meta', 'param', 'source', 'track', 'wbr'
+    'link', 'meta', 'param', 'source', 'track', 'wbr',
+    'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline', 'rect', 'stop', 'use'
   ]);
 
   function scanHtmlDepthChange(line: string): number {
@@ -1026,7 +1073,11 @@ export async function processImagesWithOcr(markdown: string, targetLocale = 'en'
 /**
  * Validates that the translated output has preserved the essential Markdown/HTML structural integrity.
  */
-export function validateTranslatedFormat(sourceMarkdown: string, translatedMarkdown: string): { valid: boolean; reason?: string } {
+export function validateTranslatedFormat(
+  sourceMarkdown: string,
+  translatedMarkdown: string,
+  targetLocale = 'en',
+): { valid: boolean; reason?: string } {
   if (!translatedMarkdown || translatedMarkdown.length < 50) {
     return { valid: false, reason: 'Output too short' };
   }
@@ -1051,6 +1102,11 @@ export function validateTranslatedFormat(sourceMarkdown: string, translatedMarkd
     return { valid: false, reason: `Unbalanced KaTeX math fences (odd number of $$: ${transMathBlocks})` };
   }
 
+  // Check for corrupted LaTeX partial formula (e.g. artial t})
+  if (/(?<!\\p)artial\s+[a-zA-Z0-9_\{\}\\]+/i.test(translatedMarkdown) || /artial\s*t\}/i.test(translatedMarkdown)) {
+    return { valid: false, reason: 'Corrupted LaTeX formula detected (partial cut: artial t})' };
+  }
+
   // Check HTML tags preservation
   const srcHtmlTags = (sourceMarkdown.match(/<(?:div|span|details|summary|table|tr|td|th|mark|kbd|figure|figcaption)/gi) || []).length;
   const transHtmlTags = (translatedMarkdown.match(/<(?:div|span|details|summary|table|tr|td|th|mark|kbd|figure|figcaption)/gi) || []).length;
@@ -1071,10 +1127,31 @@ export function validateTranslatedFormat(sourceMarkdown: string, translatedMarkd
     return { valid: false, reason: `Unbalanced <details> tags in translation: open=${openDetails}, close=${closeDetails}` };
   }
 
+  // Check for unclosed article-accordion-group swallowing article-tabs
+  if (/<div[^>]*class="[^"]*article-accordion-group[^"]*"[^>]*>(?:(?!<\/div>)[\s\S])*?<div[^>]*class="[^"]*article-tabs/i.test(translatedMarkdown)) {
+    return { valid: false, reason: 'Unclosed article-accordion-group swallowed downstream article-tabs' };
+  }
+
+  // Check for orphaned chat messages outside article-chat container
+  if (/<\/div>\s*(?:<div[^>]*class="[^"]*chat-message|<span[^>]*class="[^"]*chat-avatar)/i.test(translatedMarkdown)) {
+    return { valid: false, reason: 'Chat messages orphaned outside article-chat container' };
+  }
+
+  // Check for untranslated Chinese in data-title attribute for non-Chinese locales
+  if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
+    const dataTitleMatch = translatedMarkdown.match(/data-title="([^"]*[\u4e00-\u9fa5]+[^"]*)"/);
+    if (dataTitleMatch) {
+      return { valid: false, reason: `Untranslated Chinese characters in data-title: ${dataTitleMatch[0]}` };
+    }
+  }
+
   // Check for leaked markers
-  if (/<!--\s*context from previous chunk\s*-->/i.test(translatedMarkdown) ||
-      /\[REFERENCE (?:ONLY|CONTEXT)\]/i.test(translatedMarkdown) ||
-      /\[TEXT TO TRANSLATE\]/i.test(translatedMarkdown)) {
+  if (
+    /<!--\s*context from previous chunk\s*-->/i.test(translatedMarkdown) ||
+    /<!--\s*end context\s*-->/i.test(translatedMarkdown) ||
+    /\[REFERENCE (?:ONLY|CONTEXT)\]/i.test(translatedMarkdown) ||
+    /\[TEXT TO TRANSLATE\]/i.test(translatedMarkdown)
+  ) {
     return { valid: false, reason: `Leaked prompt markers detected in output` };
   }
 
@@ -1283,16 +1360,34 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
     });
   }
 
-  // 4. In-place re-insertion of translated segments
+  // 4. In-place re-insertion of translated segments into protected tokens (for HTML attributes like data-title)
+  for (let p = 0; p < protectedTokens.length; p++) {
+    for (let i = 0; i < translatedSegments.length; i++) {
+      const token = `__TX_NODE_${i}__`;
+      if (protectedTokens[p].includes(token)) {
+        protectedTokens[p] = protectedTokens[p].replaceAll(token, translatedSegments[i] || textSegments[i]);
+      }
+    }
+  }
+
+  // 5. In-place re-insertion of translated segments into body template
   for (let i = 0; i < translatedSegments.length; i++) {
     const token = `__TX_NODE_${i}__`;
     finalBodyTemplate = finalBodyTemplate.replaceAll(token, translatedSegments[i] || textSegments[i]);
   }
 
-  // 5. Restore protected tokens (HTML tags, code blocks, math)
+  // 6. Restore protected tokens (HTML tags, code blocks, math)
   for (let i = protectedTokens.length - 1; i >= 0; i--) {
     const token = `__PROT_${i}__`;
     finalBodyTemplate = finalBodyTemplate.replaceAll(token, protectedTokens[i]);
+  }
+
+  // 7. Safety pass: replace any remaining __TX_NODE_ in finalBodyTemplate
+  for (let i = 0; i < translatedSegments.length; i++) {
+    const token = `__TX_NODE_${i}__`;
+    if (finalBodyTemplate.includes(token)) {
+      finalBodyTemplate = finalBodyTemplate.replaceAll(token, translatedSegments[i] || textSegments[i]);
+    }
   }
 
   // 6. OCR image processing
@@ -1341,7 +1436,7 @@ export async function translateArticleAuto(options: TranslateArticleOptions): Pr
   }
 
   if (primaryResult.ok && primaryResult.translatedMarkdown) {
-    const validation = validateTranslatedFormat(options.sourceMarkdown, primaryResult.translatedMarkdown);
+    const validation = validateTranslatedFormat(options.sourceMarkdown, primaryResult.translatedMarkdown, options.targetLocale);
     if (validation.valid) {
       console.log(`[Article-i18n] ✅ Scheme 1 format verification passed for "${options.i18nKey}".`);
       if (options.enableOcr !== false) {

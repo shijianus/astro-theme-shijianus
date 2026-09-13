@@ -324,6 +324,7 @@ export const siteConfig = {
         icon: 'circle-info',
         children: [
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
+          { label: '请喝咖啡', href: '/support/', description: '赞赏与支援名录', icon: 'mug-hot' },
           { label: '站点状态', href: '/status/', description: '查看当前重构进度', icon: 'chart-bar' },
           { label: '主题路线', href: '/roadmap/', description: '尚在整理中的专题入口', icon: 'compass' },
         ],
@@ -569,7 +570,7 @@ export const siteConfig = {
       title: '赞赏支持',
       summary: '如果觉得文章对你有启发或帮助，欢迎请作者喝杯咖啡 ☕️',
       historyLabel: '查看支持记录',
-      historyHref: '/about/#about-reward',
+      historyHref: '/support/#sponsor-records',
       geoEndpoint: '/api/geo-risk',
       storageKey: 'shijianus-reward-region',
       detect: {

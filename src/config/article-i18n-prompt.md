@@ -26,7 +26,7 @@ The article starts with YAML Frontmatter delimited by `---`. You MUST preserve t
 - **`coverAlt`**: Translate the alt description into ${TARGET_LOCALE_NAME} naturally.
 - **`i18nKey`**: **CRITICAL** — Preserve the exact same `i18nKey` from the original article. This key binds all language variants together as the same article. Never change this value.
 - **`lang`**: Set explicitly to `${TARGET_LOCALE}`.
-- **`isAiGenerated`**: Set explicitly to `true`.
+- **`isAiGenerated`**: Do NOT set this field (omit it completely; translation is owned by the author).
 - **`aiTranslatedFrom`**: Set explicitly to `${SOURCE_LOCALE}`.
 - All other frontmatter fields (e.g. `toc`, `hideToc`, `featured`, `sticky`, `math`, `mermaid`, `mindmap`, `postFormat`, `access`, `externalEncrypt`, `externalEncrypts`, `series`, `outdateDays`, `validDays`) MUST be preserved with their original values exactly.
 
@@ -54,9 +54,9 @@ The article starts with YAML Frontmatter delimited by `---`. You MUST preserve t
 - Preserve all inline math (`$...$`) and block math (`$$...$$`) 100% byte-for-byte identical. Do not alter mathematical notation, operators, or variable names.
 
 #### 2.5 Diagrams & Visuals (Mermaid, Markmap)
-- Preserve diagram structural commands (e.g. `graph TD`, `sequenceDiagram`, `subgraph`, `flowchart LR`) exactly.
-- Translate only the visible human-readable **node labels** and **edge labels** into ${TARGET_LOCALE_NAME}.
-- Keep technical node IDs and variable references unchanged.
+- Preserve diagram structural commands (e.g. `flowchart TD`, `sequenceDiagram`, `subgraph`, `flowchart LR`) exactly.
+- **TRANSLATE** visible human-readable **node labels**, decision questions, and **edge labels** into ${TARGET_LOCALE_NAME} (e.g., `A[Reader visits post] --> B{Is post encrypted?}`).
+- Keep technical node IDs (A, B, C...) and syntax operators intact.
 
 #### 2.6 Links & Images
 - Preserve markdown links `[text](url)` — translate the link anchor `text` into natural ${TARGET_LOCALE_NAME}, but keep the `url` intact and unchanged.
@@ -64,9 +64,10 @@ The article starts with YAML Frontmatter delimited by `---`. You MUST preserve t
 - For images `![alt text](url)` — translate the `alt text` into ${TARGET_LOCALE_NAME}, keep the URL unchanged.
 
 #### 2.7 HTML & Custom Elements & Rich Component Integrity
-- **CRITICAL FORMAT RETENTION**: Preserve all embedded HTML elements (`<details>`, `<summary>`, `<div>`, `<pre>`, `<span>`, `<kbd>`, `<mark>`, `<abbr>`, `<br>`, `<hr>`, `<input>`, `<label>`, `<svg>`, `<path>`, `<figure>`, `<figcaption>`) and their CSS class names, `id` attributes, and data attributes 100% UNMODIFIED.
+- **CRITICAL FORMAT RETENTION**: Preserve all embedded HTML elements (`<details>`, `<summary>`, `<div>`, `<pre>`, `<span>`, `<kbd>`, `<mark>`, `<abbr>`, `<br>`, `<hr>`, `<input>`, `<label>`, `<svg>`, `<path>`, `<figure>`, `<figcaption>`) and their CSS class names, `id` attributes, and technical attributes (`data-level`, `data-single`, `data-animate`, `data-sound`, `data-hash`, `data-default`, `data-video-type`, `viewBox`, etc.) 100% UNMODIFIED.
+- **TRANSLATE HUMAN-READABLE ATTRIBUTES**: Translate human-readable text inside user-facing HTML attributes: `data-title="..."`, `placeholder="..."`, `aria-label="..."`, `alt="..."`, `title="..."`, and `data-hint="..."`. Translate ONLY their natural language values into ${TARGET_LOCALE_NAME}.
 - Translate only the inner human-readable **textual content** within these HTML elements.
-- Do NOT delete, omit, or strip any HTML tags.
+- Do NOT delete, omit, or prematurely close any HTML container tags. All `<div class="article-chat" ...>`, `<div class="article-accordion-group" ...>`, `<div class="article-tabs">` must remain properly structured.
 - Do NOT convert structured components (such as `.article-task-tracker`, `.task-checklist`, `.article-dropdown-switcher`, `.article-tabs`, `.badge`, `.status-card`, `.article-image-ocr`) into plain unformatted paragraphs.
 - Do NOT inject `<font color="black">` or any inline dark styles that would break in dark mode. Text must adapt smoothly to dark mode without hardcoded black font colors.
 

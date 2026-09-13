@@ -44,7 +44,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
     <div class="author-content-item myInfoAndSayHello">
       <div class="title1">{about.helloTips}</div>
       <div class="title2">
-        <span>我叫</span> <span class="inline-word">{siteConfig.site.author.name}</span> <span class="author-alias">(時間)</span>
+        <span>我叫</span> <span class="inline-word">{siteConfig.site.author.name}</span>
       </div>
       <div class="title1 role-desc">{about.helloDescription}</div>
       <div class="hello-tag-chips">
@@ -269,10 +269,12 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
             {about.gear.hardware.map((item) => (
               <div class="gear-item">
                 <div class="gear-item__icon">
-                  {item.icon === 'laptop' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>}
+                  {item.icon === 'terminal' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>}
                   {item.icon === 'monitor' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>}
-                  {item.icon === 'keyboard' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="6" y1="8" x2="6" y2="8.01"></line><line x1="10" y1="8" x2="10" y2="8.01"></line><line x1="14" y1="8" x2="14" y2="8.01"></line><line x1="18" y1="8" x2="18" y2="8.01"></line><line x1="6" y1="12" x2="6" y2="12.01"></line><line x1="18" y1="12" x2="18" y2="12.01"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>}
+                  {item.icon === 'phone' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>}
                   {item.icon === 'headphones' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>}
+                  {item.icon === 'laptop' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>}
+                  {item.icon === 'keyboard' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="6" y1="8" x2="6" y2="8.01"></line><line x1="10" y1="8" x2="10" y2="8.01"></line><line x1="14" y1="8" x2="14" y2="8.01"></line><line x1="18" y1="8" x2="18" y2="8.01"></line><line x1="6" y1="12" x2="6" y2="12.01"></line><line x1="18" y1="12" x2="18" y2="12.01"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>}
                 </div>
                 <div class="gear-item__content">
                   <div class="gear-item__name">
@@ -860,22 +862,25 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 3px;
+    gap: 4px;
     min-width: 0;
+    flex: 1;
   }
 
   .gear-item__name {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
   }
 
   .gear-item__name strong {
     color: var(--font-color);
     font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .gear-badge {
@@ -889,11 +894,12 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
 
   .gear-item__desc {
     color: var(--text-muted);
-    font-size: 11px;
-    line-height: 1.4;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 11.5px;
+    line-height: 1.5;
+    white-space: normal;
+    word-break: break-word;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   /* 数字花园建站宣言 */

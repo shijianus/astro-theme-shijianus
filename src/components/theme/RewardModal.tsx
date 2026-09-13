@@ -398,6 +398,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
   const [isCreating, setIsCreating]   = useState(false);
   const [createError, setCreateError] = useState('');
   const [checkoutReady, setCheckoutReady] = useState(false);
+  const [isDirectCheckout, setIsDirectCheckout] = useState(false);
 
   const [donorName, setDonorName]         = useState('');
   const [donorMsg, setDonorMsg]           = useState('');
@@ -496,9 +497,80 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       });
   }, []);
 
-  /* ── 2. Open modal from PostRewardExtension ───────────────────────────── */
+  const handleDirectCheckout = async (
+    targetAmount: number,
+    targetCurrency?: string,
+    targetCountry?: string,
+    targetName?: string,
+    targetMsg?: string,
+  ) => {
+    setIsDirectCheckout(true);
+    setIsCreating(true);
+    setCreateError('');
+    setStep('checkout');
+
+    const effectiveCountry = targetCountry || country || detectCountryFromClient();
+    const cfg = targetCurrency
+      ? (Object.values(COUNTRY_CURRENCY).find((c) => c.code.toLowerCase() === targetCurrency.toLowerCase()) || (targetCurrency.toLowerCase() === 'eur' ? EUR_CONFIG : DEFAULT_CONFIG))
+      : getCurrencyConfig(effectiveCountry);
+    const currCode = targetCurrency ? targetCurrency.toLowerCase() : cfg.code;
+    const finalAmount = targetAmount > 0 ? targetAmount : cfg.amounts[1];
+
+    setPaidAmount(finalAmount);
+    setCurrencyConfig(cfg);
+    setCountry(effectiveCountry);
+    if (targetName) setDonorName(targetName);
+    if (targetMsg) setDonorMsg(targetMsg);
+
+    try {
+      const returnUrl =
+        `${window.location.origin}${window.location.pathname}` +
+        `?stripe_return=1&amount=${finalAmount}&session_id={CHECKOUT_SESSION_ID}`;
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: finalAmount,
+          currency: currCode,
+          name: targetName || '',
+          message: targetMsg || '',
+          country: effectiveCountry,
+          locale: localeVariant,
+          returnUrl,
+        }),
+      });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('支付接口暂不可用：请确认使用 npm run dev / wrangler pages dev 启动后重试');
+      }
+      const data = (await res.json()) as any;
+      if (!res.ok || !data.ok || !data.clientSecret) {
+        throw new Error(data.error || `Server error (${res.status})`);
+      }
+      setClientSecret(data.clientSecret);
+      setSessionId(data.sessionId || '');
+      setPaidAmount(finalAmount);
+      setStep('checkout');
+    } catch (e: any) {
+      setCreateError(e?.message || 'Payment setup failed — please try again');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  /* ── 2. Open modal from PostRewardExtension / Support Page ─────────────── */
   useEffect(() => {
-    const handle = (e: CustomEvent<{ region?: string; country?: string; amount?: number }>) => {
+    const handle = (
+      e: CustomEvent<{
+        region?: string;
+        country?: string;
+        amount?: number;
+        currency?: string;
+        name?: string;
+        message?: string;
+        directCheckout?: boolean;
+      }>,
+    ) => {
       resetState();
       try {
         const v = (document.documentElement.dataset.localeVariant || window.localStorage.getItem('shijianus-locale-variant') || 'zh-CN') as LocaleKey;
@@ -515,17 +587,31 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           : e.detail?.region === 'GB'
           ? 'GB'
           : country || detectCountryFromClient());
+
       if (targetCountry && targetCountry !== 'GLOBAL') {
         const cfg = getCurrencyConfig(targetCountry);
         setCountry(targetCountry);
         setCurrencyConfig(cfg);
-        setSelectedAmount(cfg.amounts[1]);
+        setSelectedAmount(e.detail?.amount || cfg.amounts[1]);
+      } else if (e.detail?.amount) {
+        setSelectedAmount(e.detail.amount);
       }
+
       setIsOpen(true);
+
+      if (e.detail?.directCheckout) {
+        handleDirectCheckout(
+          e.detail.amount || selectedAmount || 5,
+          e.detail.currency,
+          targetCountry,
+          e.detail.name,
+          e.detail.message,
+        );
+      }
     };
     window.addEventListener('open-stripe-modal' as any, handle);
     return () => window.removeEventListener('open-stripe-modal' as any, handle);
-  }, [country]);
+  }, [country, selectedAmount, localeVariant]);
 
   /* ── 3. Mount Stripe Embedded Checkout ───────────────────────────────── */
   useEffect(() => {
@@ -742,6 +828,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       sendPendingNotification(donorNameRef.current, donorMsgRef.current, 'modal_closed');
     }
     setStep('amount');
+    setIsDirectCheckout(false);
     setClientSecret('');
     setCreateError('');
     setIsCreating(false);
@@ -781,7 +868,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-slate-100 dark:border-white/[0.07] shrink-0">
-          {step === 'checkout' && (
+          {step === 'checkout' && !isDirectCheckout && (
             <button
               type="button"
               onClick={goBack}
@@ -1091,7 +1178,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
               <StripeWordmark className="h-3.5 w-auto opacity-70 group-hover:opacity-100 dark:opacity-50 dark:group-hover:opacity-80 text-[#635BFF] dark:text-slate-200 transition-opacity" />
             </a>
             <a
-              href="/status/"
+              href="/support/#sponsor-records"
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
