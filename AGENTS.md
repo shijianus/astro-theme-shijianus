@@ -1923,3 +1923,27 @@
   3. 编写并执行全流程 Playwright 浏览器真实端到端测试（`scripts/verify-article-i18n-quality.mjs`），在 Chrome 无头浏览器下真实验证无 `undefined` 文本、无 `post-hero__i18n-switch` 按钮、无 `isAiGenerated` 徽标、KaTeX 公式与 Mermaid 图表正常渲染，断言全绿通过。
   4. Commit Hash: `09de05c`。
 
+### Task 87: 独立赞赏界面 (/support) 用户体验深度重塑：6档网格预设、就地自定义金额、自然对称文案、真实汇率换算、去除生硬填充卡片与真实LV.0-LV.4 FAQ
+- [x] **自然对称用户端文案与潜规则清理 (Requirement 1)**：
+  1. 彻底清除生硬的内部规则泄露（如“当前币种限额: ¥1 ~ ¥920”等）；
+  2. 彻底清除做作的免责声明与反复强调的微文案（如“未完成付款绝不触发任何推送”）；
+  3. 保持语言自然、尊重、对称，专为阅读 blog 的读者设计；
+  4. 按钮下方精简统一保留单句清晰提示：“支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存”。
+- [x] **像素级复用已有组件 (`RewardModal.tsx`) 设计规范 (Requirement 2 & 4)**：
+  1. 预设档位：完全复用 `RewardModal.tsx` 的 6 档 3 列网格布局（`grid grid-cols-3 gap-2.5`），两行三列紧凑排列，移除 `line-clamp-1` 避免标题与金额截断；
+  2. 自定义金额输入：完全复用 `RewardModal.tsx` 的就地聚焦输入框（`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 transition-all cursor-text border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03]`），点击整行直接激活输入，原生内联呈现。
+- [x] **真实货币动态汇率换算 (Requirement 3)**：
+  1. 切换 Local 本地货币与 USD 时，不仅切换符号，更根据汇率元数据（`rateToUSD`）与精心校准的本地购买力档位动态转换金额；
+  2. 自定义输入金额在切换货币时自动进行等值汇率折算，确保数据真实连贯。
+- [x] **消除右侧栏空洞与彻底删除生硬填充卡片 (Requirement 5)**：
+  1. 彻底移除右侧栏突兀的琥珀色免责填充卡片（无生硬凑高度的 AI 质感卡片）；
+  2. 左侧卡片采用紧凑 3 列预设 + 单行就地自定义金额后，左右两侧卡片自然平衡在 ~740px 高度（实测桌面端顶部与底部对齐误差均为 0px）。
+- [x] **忠于博客真实的社区等级 (LV.0 至 LV.4) 与诚恳退款政策 (Requirement 7)**：
+  1. 消除对“LV.6”等不存在等级的虚构，严格与 `src/lib/user-level.ts` 真实等级（LV.0 新兴用户 至 LV.4 核心成员/站长）对齐；
+  2. FAQ 中明确说明赞赏与成长体系（LV.0 ~ LV.4）及信任度（TL）100% 独立脱钩，纯粹衡量客观贡献；
+  3. 消除“秒级退款”的夸大承诺，诚恳说明个人独立博客的实际处理流程（邮件出示凭证由博主尽快人工处理，Stripe 自动发送电子凭证）。
+- [x] **自动化端到端测试与生产端部署验证**：
+  1. 本地 Playwright 自动化验证通过（`scripts/verify-support-page.mjs`，0 报错）；
+  2. 通过 `npm run cf:deploy` 成功构建并全量部署至 Cloudflare Pages 生产环境；
+  3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 与预览节点 `https://024fedfb.shijianus-blog.pages.dev/support/` 执行真实浏览器全链路端到端审计（`scripts/verify-live-support.mjs`，0 报错全部通过）。
+
