@@ -10,7 +10,7 @@ if (!fs.existsSync(outDir)) {
 async function verifyLive() {
   const targetUrls = [
     'https://blog.epocanvas.com/support/',
-    'https://024fedfb.shijianus-blog.pages.dev/support/'
+    'https://f0dda98c.shijianus-blog.pages.dev/support/'
   ];
 
   console.log('🌐 Launching Chromium browser for Live Cloudflare Pages E2E verification...');
