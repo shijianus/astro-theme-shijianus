@@ -68,6 +68,151 @@
     }
   };
 
+  // ── i18n UI String Dictionary ──────────────────────────────────────────────
+  // All locale-specific UI strings for the mindmap component.
+  // The page locale is read from <html lang="..."> at runtime.
+  const MINDMAP_I18N: Record<string, {
+    defaultTitle: string;
+    nodesLabel: (n: number) => string;
+    depthLabel: (d: number) => string;
+    stateCollapsed: string;
+    stateExpanded: string;
+    stateBranchMode: string;
+    stateAllExpanded: string;
+    stateAllCollapsed: string;
+    hintPill: string;
+    footerGuide: string;
+    zoomIn: string; zoomOut: string; fitView: string;
+    expandAll: string; collapseAll: string;
+    fullscreen: string; exitFullscreen: string;
+    copySource: string;
+    actZoomIn: string; actZoomOut: string; actFitView: string;
+    actExpandAll: string; actEnterFullscreen: string; actExitFullscreen: string;
+    actCopied: string;
+  }> = {
+    'zh-CN': {
+      defaultTitle: '交互式多向分支思维导图',
+      nodesLabel: (n) => `${n} 个节点`,
+      depthLabel: (d) => `${d} 层分支结构`,
+      stateCollapsed: '单块已折叠 · 点击展开多向分支',
+      stateExpanded: '多向分支已展开',
+      stateBranchMode: '多级分支模式',
+      stateAllExpanded: '全部分支已展开',
+      stateAllCollapsed: '单块已收起 · 点击展开多向分支',
+      hintPill: '默认仅展示单块核心 · 点击节点或圆点展开多向分支 · 按住拖拽平移 · 滚轮缩放',
+      footerGuide: '💡 点击节点或小圆点散开/收起分支 · 滚轮缩放 · 鼠标拖拽平移 · 工具栏支持居中/展开/全屏(Esc)',
+      zoomIn: '放大视图 (+)', zoomOut: '缩小视图 (-)', fitView: '自适应居中视野 (Fit View)',
+      expandAll: '一键展开全部多向分支', collapseAll: '一键收起至单块（恢复初始状态）',
+      fullscreen: '全屏沉浸模式 (按 Esc 退出)', exitFullscreen: '退出全屏 (Esc)',
+      copySource: '复制 Markdown 节点源码',
+      actZoomIn: '🔍 思维导图视图已放大', actZoomOut: '🔍 思维导图视图已缩小',
+      actFitView: '🎯 思维导图视野已自适应居中', actExpandAll: '🧠 思维导图已一键展开全部多向分支',
+      actEnterFullscreen: '⛶ 已进入全屏思维导图探索（按 Esc 键随时退出）',
+      actExitFullscreen: '⛶ 已退出全屏思维导图模式', actCopied: '📋 思维导图结构源码已复制到剪贴板',
+    },
+    'zh-Hant': {
+      defaultTitle: '互動式多向分支思維導圖',
+      nodesLabel: (n) => `${n} 個節點`,
+      depthLabel: (d) => `${d} 層分支結構`,
+      stateCollapsed: '單塊已摺疊 · 點擊展開多向分支',
+      stateExpanded: '多向分支已展開', stateBranchMode: '多級分支模式',
+      stateAllExpanded: '全部分支已展開', stateAllCollapsed: '單塊已收起 · 點擊展開多向分支',
+      hintPill: '預設僅展示單塊核心 · 點擊節點或圓點展開多向分支 · 按住拖曳平移 · 滾輪縮放',
+      footerGuide: '💡 點擊節點或小圓點散開/收起分支 · 滾輪縮放 · 滑鼠拖曳平移 · 工具列支援置中/展開/全螢幕(Esc)',
+      zoomIn: '放大視圖 (+)', zoomOut: '縮小視圖 (-)', fitView: '自適應置中視野 (Fit View)',
+      expandAll: '一鍵展開全部多向分支', collapseAll: '一鍵收起至單塊（恢復初始狀態）',
+      fullscreen: '全螢幕沉浸模式 (按 Esc 退出)', exitFullscreen: '退出全螢幕 (Esc)',
+      copySource: '複製 Markdown 節點原始碼',
+      actZoomIn: '🔍 思維導圖視圖已放大', actZoomOut: '🔍 思維導圖視圖已縮小',
+      actFitView: '🎯 思維導圖視野已自適應置中', actExpandAll: '🧠 思維導圖已一鍵展開全部多向分支',
+      actEnterFullscreen: '⛶ 已進入全螢幕思維導圖探索（按 Esc 鍵隨時退出）',
+      actExitFullscreen: '⛶ 已退出全螢幕思維導圖模式', actCopied: '📋 思維導圖結構原始碼已複製到剪貼板',
+    },
+    en: {
+      defaultTitle: 'Interactive Multi-Branch Mind Map',
+      nodesLabel: (n) => `${n} nodes`,
+      depthLabel: (d) => `${d}-level branch structure`,
+      stateCollapsed: 'Collapsed · Click to expand branches',
+      stateExpanded: 'Branches expanded', stateBranchMode: 'Multi-level branch mode',
+      stateAllExpanded: 'All branches expanded', stateAllCollapsed: 'Collapsed · Click to expand branches',
+      hintPill: 'Shows single root by default · Click a node or dot to expand · Drag to pan · Scroll to zoom',
+      footerGuide: '💡 Click nodes or dots to expand/collapse · Scroll to zoom · Drag to pan · Toolbar: center / expand / fullscreen (Esc)',
+      zoomIn: 'Zoom in (+)', zoomOut: 'Zoom out (-)', fitView: 'Fit view (center)',
+      expandAll: 'Expand all branches', collapseAll: 'Collapse to root (reset)',
+      fullscreen: 'Fullscreen immersive mode (Esc to exit)', exitFullscreen: 'Exit fullscreen (Esc)',
+      copySource: 'Copy Markdown node source',
+      actZoomIn: '🔍 Mind map zoomed in', actZoomOut: '🔍 Mind map zoomed out',
+      actFitView: '🎯 Mind map view centered', actExpandAll: '🧠 All branches expanded',
+      actEnterFullscreen: '⛶ Entered fullscreen mind map mode (press Esc to exit)',
+      actExitFullscreen: '⛶ Exited fullscreen mind map mode', actCopied: '📋 Mind map source copied to clipboard',
+    },
+    fr: {
+      defaultTitle: 'Carte mentale interactive multi-branches',
+      nodesLabel: (n) => `${n} nœuds`,
+      depthLabel: (d) => `Structure à ${d} niveaux`,
+      stateCollapsed: 'Réduit · Cliquez pour développer les branches',
+      stateExpanded: 'Branches développées', stateBranchMode: 'Mode multi-niveaux',
+      stateAllExpanded: 'Toutes les branches développées', stateAllCollapsed: 'Réduit · Cliquez pour développer les branches',
+      hintPill: 'Affiche uniquement la racine par défaut · Cliquez sur un nœud ou un point pour développer · Glisser pour déplacer · Molette pour zoomer',
+      footerGuide: "💡 Cliquez sur les nœuds ou points pour développer/réduire · Molette : zoom · Glisser : déplacer · Barre d'outils : centrer / développer / plein écran (Esc)",
+      zoomIn: 'Zoom avant (+)', zoomOut: 'Zoom arrière (-)', fitView: 'Ajuster la vue (centrer)',
+      expandAll: 'Développer toutes les branches', collapseAll: 'Réduire à la racine (réinitialiser)',
+      fullscreen: 'Mode plein écran immersif (Esc pour quitter)', exitFullscreen: 'Quitter le plein écran (Esc)',
+      copySource: 'Copier le source Markdown',
+      actZoomIn: '🔍 Carte mentale agrandie', actZoomOut: '🔍 Carte mentale réduite',
+      actFitView: '🎯 Vue de la carte mentale centrée', actExpandAll: '🧠 Toutes les branches développées',
+      actEnterFullscreen: '⛶ Mode plein écran activé (appuyez sur Esc pour quitter)',
+      actExitFullscreen: '⛶ Mode plein écran désactivé', actCopied: '📋 Source de la carte mentale copié dans le presse-papiers',
+    },
+    es: {
+      defaultTitle: 'Mapa mental interactivo multi-rama',
+      nodesLabel: (n) => `${n} nodos`,
+      depthLabel: (d) => `Estructura de ${d} niveles`,
+      stateCollapsed: 'Contraído · Clic para expandir ramas',
+      stateExpanded: 'Ramas expandidas', stateBranchMode: 'Modo multi-nivel',
+      stateAllExpanded: 'Todas las ramas expandidas', stateAllCollapsed: 'Contraído · Clic para expandir ramas',
+      hintPill: 'Muestra solo la raíz por defecto · Clic en nodo o punto para expandir · Arrastrar para mover · Rueda para zoom',
+      footerGuide: '💡 Clic en nodos o puntos para expandir/contraer · Rueda: zoom · Arrastrar: mover · Barra de herramientas: centrar / expandir / pantalla completa (Esc)',
+      zoomIn: 'Acercar (+)', zoomOut: 'Alejar (-)', fitView: 'Ajustar vista (centrar)',
+      expandAll: 'Expandir todas las ramas', collapseAll: 'Contraer a la raíz (restablecer)',
+      fullscreen: 'Modo pantalla completa (Esc para salir)', exitFullscreen: 'Salir de pantalla completa (Esc)',
+      copySource: 'Copiar fuente Markdown',
+      actZoomIn: '🔍 Mapa mental ampliado', actZoomOut: '🔍 Mapa mental reducido',
+      actFitView: '🎯 Vista del mapa mental centrada', actExpandAll: '🧠 Todas las ramas expandidas',
+      actEnterFullscreen: '⛶ Modo pantalla completa activado (Esc para salir)',
+      actExitFullscreen: '⛶ Modo pantalla completa desactivado', actCopied: '📋 Fuente del mapa mental copiado al portapapeles',
+    },
+    de: {
+      defaultTitle: 'Interaktive Multi-Zweig-Mindmap',
+      nodesLabel: (n) => `${n} Knoten`,
+      depthLabel: (d) => `${d}-stufige Verzweigungsstruktur`,
+      stateCollapsed: 'Eingeklappt · Klicken zum Erweitern',
+      stateExpanded: 'Zweige erweitert', stateBranchMode: 'Mehrstufiger Zweigmodus',
+      stateAllExpanded: 'Alle Zweige erweitert', stateAllCollapsed: 'Eingeklappt · Klicken zum Erweitern',
+      hintPill: 'Zeigt standardmäßig nur die Wurzel · Knoten oder Punkt klicken zum Erweitern · Ziehen zum Verschieben · Scrollen zum Zoomen',
+      footerGuide: '💡 Knoten oder Punkte klicken zum Ein-/Ausklappen · Scrollen: Zoom · Ziehen: Verschieben · Werkzeuge: zentrieren / erweitern / Vollbild (Esc)',
+      zoomIn: 'Vergrößern (+)', zoomOut: 'Verkleinern (-)', fitView: 'Ansicht anpassen (zentrieren)',
+      expandAll: 'Alle Zweige erweitern', collapseAll: 'Zur Wurzel einklappen (zurücksetzen)',
+      fullscreen: 'Vollbild-Immersionsmodus (Esc zum Beenden)', exitFullscreen: 'Vollbild beenden (Esc)',
+      copySource: 'Markdown-Quellcode kopieren',
+      actZoomIn: '🔍 Mindmap vergrößert', actZoomOut: '🔍 Mindmap verkleinert',
+      actFitView: '🎯 Mindmap-Ansicht zentriert', actExpandAll: '🧠 Alle Zweige erweitert',
+      actEnterFullscreen: '⛶ Vollbild-Mindmap-Modus aktiviert (Esc zum Beenden)',
+      actExitFullscreen: '⛶ Vollbild-Mindmap-Modus beendet', actCopied: '📋 Mindmap-Quellcode in die Zwischenablage kopiert',
+    },
+  };
+
+  // Resolve page locale from <html lang="..."> attribute, with fallback to zh-CN
+  const resolveLocale = (): string => {
+    const lang = (document.documentElement.lang || 'zh-CN').trim();
+    if (lang.startsWith('zh-Hant') || lang === 'zh-TW' || lang === 'zh-HK') return 'zh-Hant';
+    if (lang.startsWith('zh')) return 'zh-CN';
+    const base = lang.split('-')[0].toLowerCase();
+    if (MINDMAP_I18N[lang]) return lang;
+    if (MINDMAP_I18N[base]) return base;
+    return 'zh-CN';
+  };
+
   // Main enhancement runner
   const initMindmaps = () => {
     // Select all mindmap code blocks or container elements
@@ -124,7 +269,9 @@
         : parseInt(pre.dataset.initialExpandLevel || '1', 10);
 
       const customHeight = customOptions.height || pre.dataset.height || '460px';
-      const customTitle = customOptions.title || pre.dataset.title || '交互式多向分支思维导图';
+      // Resolve locale-aware strings — reads <html lang="..."> at runtime
+      const loc = MINDMAP_I18N[resolveLocale()] || MINDMAP_I18N['zh-CN'];
+      const customTitle = customOptions.title || pre.dataset.title || loc.defaultTitle;
 
       // Parse Markdown into Markmap AST
       const { root } = transformer.transform(rawCode);
@@ -156,36 +303,36 @@
             </div>
             <div class="mindmap-header__meta">
               <span class="mindmap-meta-pill mindmap-meta-nodes">
-                <span class="meta-dot"></span>${totalNodes} 个节点
+                <span class="meta-dot"></span>${loc.nodesLabel(totalNodes)}
               </span>
               <span class="mindmap-meta-pill mindmap-meta-depth">
-                ${maxDepth} 层分支结构
+                ${loc.depthLabel(maxDepth)}
               </span>
-              <span class="mindmap-state-tag is-collapsed" title="当前节点展开状态">
-                ${initialExpandLevel === 1 ? '单块已折叠 · 点击展开多向分支' : '多级分支模式'}
+              <span class="mindmap-state-tag is-collapsed">
+                ${initialExpandLevel === 1 ? loc.stateCollapsed : loc.stateBranchMode}
               </span>
             </div>
           </div>
           <div class="mindmap-toolbar">
-            <button type="button" class="mindmap-btn mindmap-btn--zoom-in" title="放大视图 (+)" aria-label="放大视图">
+            <button type="button" class="mindmap-btn mindmap-btn--zoom-in" title="${loc.zoomIn}" aria-label="${loc.zoomIn}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--zoom-out" title="缩小视图 (-)" aria-label="缩小视图">
+            <button type="button" class="mindmap-btn mindmap-btn--zoom-out" title="${loc.zoomOut}" aria-label="${loc.zoomOut}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--fit" title="自适应居中视野 (Fit View)" aria-label="自适应居中视野">
+            <button type="button" class="mindmap-btn mindmap-btn--fit" title="${loc.fitView}" aria-label="${loc.fitView}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--expand-all" title="一键展开全部多向分支" aria-label="一键展开全部多向分支">
+            <button type="button" class="mindmap-btn mindmap-btn--expand-all" title="${loc.expandAll}" aria-label="${loc.expandAll}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--collapse-all" title="一键收起至单块（恢复初始状态）" aria-label="一键收起至单块">
+            <button type="button" class="mindmap-btn mindmap-btn--collapse-all" title="${loc.collapseAll}" aria-label="${loc.collapseAll}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--fullscreen" title="全屏沉浸模式 (按 Esc 退出)" aria-label="全屏沉浸模式">
+            <button type="button" class="mindmap-btn mindmap-btn--fullscreen" title="${loc.fullscreen}" aria-label="${loc.fullscreen}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><polyline points="21 15 21 21 15 21"/><polyline points="3 9 3 3 9 3"/></svg>
             </button>
-            <button type="button" class="mindmap-btn mindmap-btn--copy" title="复制 Markdown 节点源码" aria-label="复制 Markdown 节点源码">
+            <button type="button" class="mindmap-btn mindmap-btn--copy" title="${loc.copySource}" aria-label="${loc.copySource}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             </button>
           </div>
@@ -193,12 +340,12 @@
         <div class="mindmap-canvas-container">
           <svg class="mindmap-svg" id="${mindmapId}-svg"></svg>
           <div class="mindmap-hint-pill">
-            <span class="pulse-dot"></span> 默认仅展示单块核心 · 点击节点或圆点展开多向分支 · 按住拖拽平移 · 滚轮缩放
+            <span class="pulse-dot"></span> ${loc.hintPill}
           </div>
         </div>
         <div class="mindmap-footer">
           <div class="mindmap-footer__guide">
-            <span class="guide-icon">💡</span> 点击节点或小圆点散开/收起分支 · 滚轮缩放 · 鼠标拖拽平移 · 工具栏支持居中/展开/全屏(Esc)
+            ${loc.footerGuide}
           </div>
           <div class="mindmap-footer__brand">
             <span>EpoCanvas Mindmap Engine</span>
@@ -268,7 +415,7 @@
             mm.fit();
           }, 380);
           if (stateTag) {
-            stateTag.textContent = '多向分支已展开';
+            stateTag.textContent = loc.stateExpanded;
             stateTag.className = 'mindmap-state-tag is-expanded';
           }
         }
@@ -290,7 +437,7 @@
         dismissHint();
         mm.rescale(1.25);
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
-          detail: { message: '🔍 思维导图视图已放大' }
+          detail: { message: loc.actZoomIn }
         }));
       });
 
@@ -299,7 +446,7 @@
         dismissHint();
         mm.rescale(0.8);
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
-          detail: { message: '🔍 思维导图视图已缩小' }
+          detail: { message: loc.actZoomOut }
         }));
       });
 
@@ -308,7 +455,7 @@
         dismissHint();
         mm.fit();
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
-          detail: { message: '🎯 思维导图视野已自适应居中' }
+          detail: { message: loc.actFitView }
         }));
       });
 
@@ -321,11 +468,11 @@
           mm.fit();
         }, 380);
         if (stateTag) {
-          stateTag.textContent = '全部分支已展开';
+          stateTag.textContent = loc.stateAllExpanded;
           stateTag.className = 'mindmap-state-tag is-expanded';
         }
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
-          detail: { message: '🧠 思维导图已一键展开全部多向分支' }
+          detail: { message: loc.actExpandAll }
         }));
       });
 
@@ -338,11 +485,11 @@
           mm.fit();
         }, 380);
         if (stateTag) {
-          stateTag.textContent = '单块已收起 · 点击展开多向分支';
+          stateTag.textContent = loc.stateAllCollapsed;
           stateTag.className = 'mindmap-state-tag is-collapsed';
         }
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
-          detail: { message: '⊟ 思维导图已重置为初始单块模式' }
+          detail: { message: loc.stateAllCollapsed }
         }));
       });
 
@@ -364,13 +511,13 @@
           wrapper.classList.add('is-fullscreen');
           document.body.classList.add('mindmap-fullscreen-active');
           
-          fullscreenBtn?.setAttribute('title', '退出全屏 (Esc)');
-          fullscreenBtn?.setAttribute('aria-label', '退出全屏 (Esc)');
+          fullscreenBtn?.setAttribute('title', loc.exitFullscreen);
+          fullscreenBtn?.setAttribute('aria-label', loc.exitFullscreen);
           if (fullscreenBtn) {
             fullscreenBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><polyline points="14 20 14 14 20 14"/><polyline points="10 4 10 10 4 10"/></svg>`;
           }
           window.dispatchEvent(new CustomEvent('shijianus:activity', {
-            detail: { message: '⛶ 已进入全屏思维导图探索（按 Esc 键随时退出）' }
+            detail: { message: loc.actEnterFullscreen }
           }));
         } else {
           wrapper.classList.remove('is-fullscreen');
@@ -380,13 +527,13 @@
             placeholder.remove();
             placeholder = null;
           }
-          fullscreenBtn?.setAttribute('title', '全屏沉浸模式 (按 Esc 退出)');
-          fullscreenBtn?.setAttribute('aria-label', '全屏沉浸模式');
+          fullscreenBtn?.setAttribute('title', loc.fullscreen);
+          fullscreenBtn?.setAttribute('aria-label', loc.fullscreen);
           if (fullscreenBtn) {
             fullscreenBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><polyline points="21 15 21 21 15 21"/><polyline points="3 9 3 3 9 3"/></svg>`;
           }
           window.dispatchEvent(new CustomEvent('shijianus:activity', {
-            detail: { message: '⛶ 已退出全屏思维导图模式' }
+            detail: { message: loc.actExitFullscreen }
           }));
         }
 
@@ -425,7 +572,7 @@
           }
           copyBtn.classList.add('is-copied');
           window.dispatchEvent(new CustomEvent('shijianus:activity', {
-            detail: { message: '📋 思维导图结构源码已复制到剪贴板' }
+            detail: { message: loc.actCopied }
           }));
           setTimeout(() => {
             copyBtn.classList.remove('is-copied');

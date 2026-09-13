@@ -1946,4 +1946,5 @@
   1. 本地 Playwright 自动化验证通过（`scripts/verify-support-page.mjs`，0 报错）；
   2. 通过 `npm run cf:deploy` 成功构建并全量部署至 Cloudflare Pages 生产环境；
   3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 与预览节点 `https://024fedfb.shijianus-blog.pages.dev/support/` 执行真实浏览器全链路端到端审计（`scripts/verify-live-support.mjs`，0 报错全部通过）。
+  4. Commit Hash: `09de05c`, `cef3b95`。
 

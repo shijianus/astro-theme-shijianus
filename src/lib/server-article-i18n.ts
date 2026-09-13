@@ -92,17 +92,22 @@ function compileChunkSystemPrompt(targetLocale: string): string {
     `4. CODE, MERMAID & MATH INTEGRITY:`,
     `   - For programming language code blocks (\`\`\`typescript, \`\`\`python, \`\`\`bash, \`\`\`html, etc.): Keep the code intact, only translate inline human-readable comments if helpful.`,
     `   - For Mermaid diagrams (\`\`\`mermaid): TRANSLATE visible human-readable node labels, decision question texts, and edge annotations into ${localeName} (e.g. [Reader visits post], {Is encrypted?}, "Yes", "No"). Keep flowchart syntax, node IDs (A, B, C), and arrows intact.`,
-    `   - Do NOT translate LaTeX / KaTeX math blocks ($$...$$ or $...$). Keep all mathematical formulas, symbols, and expressions completely intact. Never drop \\partial or other LaTeX operators.`,
+    `   - Do NOT translate LaTeX / KaTeX math blocks ($$....$$ or $...$). Keep all mathematical formulas, symbols, and expressions completely intact. Never drop \\partial or other LaTeX operators.`,
     `   - Do NOT translate URLs, file paths, image paths, audio paths, video paths, or technical IDs.`,
     `5. HTML & ATTRIBUTES INTEGRITY:`,
     `   - Maintain all HTML opening and closing tags (<div ...>, </div>, <details>, </details>, <summary>, <button>, etc.) exactly as in the source. Never drop or prematurely close HTML container tags.`,
     `   - Strictly keep technical attributes and their values unchanged: class, id, data-level, data-single, data-animate, data-sound, data-hash, data-default, data-video-type, viewBox, etc.`,
     `   - TRANSLATE human-readable text inside user-facing HTML attributes: data-title="...", placeholder="...", aria-label="...", alt="...", title="...", and data-hint="...". Translate ONLY their natural language values into ${localeName}.`,
+    `   - IMPORTANT — Widget container tags: For tags like <div class="interactive-unit-converter" data-title="..."> or similar self-closing widget divs, the data-title attribute MUST be translated into ${localeName}. NEVER leave Chinese characters in data-title for non-Chinese locales.`,
+    `   - IMPORTANT — Tab button text: For <button class="article-tabs__button" ...> elements inside <div class="article-tabs__nav">, the button text labels (like "🌟 渲染效果呈现", "💻 LaTeX 源码") MUST be translated into ${localeName}. Never leave Chinese in tab button text.`,
     `   - All chat messages (<div class="chat-message ...">) must remain strictly nested inside their parent <div class="article-chat" ...> container.`,
     `   - All accordions (<details class="article-accordion" ...>) must remain strictly inside <div class="article-accordion-group" ...>.`,
     `6. CONTEXT & CONTINUITY:`,
     `   - If any [REFERENCE CONTEXT] is provided, use it strictly for terminology continuity. Do NOT translate or echo the reference context in your output.`,
     `   - Translate ALL text under [TEXT TO TRANSLATE]. Do not truncate or summarize.`,
+    `7. CHINESE CHARACTER PROHIBITION (CRITICAL for non-Chinese locales):`,
+    `   - This translation is for ${localeName}. After translating, ZERO Chinese characters (Unicode range U+4E00–U+9FFF) should appear in the output EXCEPT inside code fences (\`\`\`....\`\`\`), LaTeX blocks ($$...$$), or HTML attribute values that are part of data-encrypt/data-hash/data-key technical identifiers.`,
+    `   - If you encounter a section that you cannot translate (e.g., due to length), DO NOT fall back to the original Chinese. Instead, provide your best translation attempt.`,
   ].join('\n');
 }
 
