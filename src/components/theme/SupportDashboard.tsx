@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Coffee,
   CreditCard,
@@ -6,10 +6,7 @@ import {
   Check,
   Copy,
   ExternalLink,
-  QrCode,
   Search,
-  User,
-  MessageSquare,
   Sparkles,
   ShieldCheck,
   ChevronDown,
@@ -18,6 +15,11 @@ import {
   ArrowRight,
   Maximize2,
   X,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  Award,
+  Lock,
 } from 'lucide-react';
 import {
   supportConfig,
@@ -69,51 +71,59 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
 );
 
 export const SupportDashboard: React.FC = () => {
-  // Currency and Amount State
+  // ── Currency State: Only 2 IP-Adaptive Choices (Local Currency & USD) ──
+  const [detectedCountry, setDetectedCountry] = useState<string>('CN');
   const [currency, setCurrency] = useState<string>('CNY');
   const [selectedTierId, setSelectedTierId] = useState<string>('americano');
   const [isCustomAmount, setIsCustomAmount] = useState<boolean>(false);
   const [customAmountStr, setCustomAmountStr] = useState<string>('');
-  
-  // Supporter Info (Filled directly on the page)
+
+  // ── Supporter Info (Serv00-styled inputs filled directly on page) ──
   const [donorName, setDonorName] = useState<string>('');
   const [donorMessage, setDonorMessage] = useState<string>('');
 
-  // Payment QR Tab
+  // ── Payment QR Tab ──
   const [qrTab, setQrTab] = useState<'cn' | 'hk' | 'paypal' | 'crypto'>('cn');
   const [modalImage, setModalImage] = useState<{ src: string; title: string } | null>(null);
 
-  // Copied toast indicators
+  // ── Copied Toast Indicator ──
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // FAQ Accordion
+  // ── FAQ Accordion ──
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  // Supporter Roster State
+  // ── Supporter Roster State & Dynamic Transition ──
   const [sponsors, setSponsors] = useState<SponsorItem[]>(supportConfig.seedSponsors);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tablePage, setTablePage] = useState<number>(1);
-  const pageSize = 8;
+  const [jumpPageInput, setJumpPageInput] = useState<string>('');
+  const [showJumpPopover, setShowJumpPopover] = useState<boolean>(false);
+  const pageSize = 5; // 5 items per page for clean table rhythm
 
-  // Auto-detect currency via geo profile or browser locale on mount
+  // Detect country on mount and determine the 2 supported currency options
   useEffect(() => {
     try {
       fetch('/api/geo-profile')
         .then((res) => res.json())
         .then((data: any) => {
           const c = (data?.country || '').toUpperCase();
+          if (c) setDetectedCountry(c);
           if (c === 'CN') setCurrency('CNY');
           else if (c === 'HK' || c === 'MO') setCurrency('HKD');
+          else if (c === 'TW') setCurrency('TWD');
           else if (c === 'US') setCurrency('USD');
           else if (c === 'GB') setCurrency('GBP');
-          else if (['DE', 'FR', 'IT', 'ES', 'NL'].includes(c)) setCurrency('EUR');
+          else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) setCurrency('EUR');
           else if (c === 'JP') setCurrency('JPY');
+          else if (c === 'SG') setCurrency('SGD');
+          else if (c === 'CA') setCurrency('CAD');
+          else if (c === 'AUD') setCurrency('AUD');
           else setCurrency('USD');
         })
         .catch(() => {});
     } catch {}
 
-    // Fetch real-time sponsorship records from D1 API
+    // Fetch live sponsorships from D1 database
     try {
       fetch('/api/sponsorships?limit=50')
         .then((res) => res.json())
@@ -128,33 +138,68 @@ export const SupportDashboard: React.FC = () => {
               channel: item.channel || 'Stripe',
               date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
             }));
-            
-            // Merge with seed sponsors, avoiding duplicates by id
-            setSponsors((prev) => {
-              const existingIds = new Set(apiItems.map((i) => i.id));
-              const remainingSeed = prev.filter((s) => !existingIds.has(s.id));
-              return [...apiItems, ...remainingSeed];
-            });
+
+            if (apiItems.length >= 8) {
+              // Transition entirely to real authentic records once enough exist
+              setSponsors(apiItems);
+            } else {
+              // Graceful blend: authentic records first, followed by remaining seed sponsors
+              setSponsors((prev) => {
+                const existingIds = new Set(apiItems.map((i) => i.id));
+                const remainingSeed = prev.filter((s) => !existingIds.has(s.id));
+                return [...apiItems, ...remainingSeed];
+              });
+            }
           }
         })
         .catch(() => {});
     } catch {}
   }, []);
 
-  // Calculate current amount
-  const currentCurrency = useMemo(() => {
-    return supportConfig.currencies.find((c) => c.code === currency) || supportConfig.currencies[0];
-  }, [currency]);
+  // Compute the 2 allowed currency choices based on detected location
+  const [localCurrencyOption, globalCurrencyOption] = useMemo(() => {
+    const c = detectedCountry.toUpperCase();
+    let localCode = 'CNY';
 
+    if (c === 'CN') localCode = 'CNY';
+    else if (c === 'HK' || c === 'MO') localCode = 'HKD';
+    else if (c === 'TW') localCode = 'TWD';
+    else if (c === 'US') localCode = 'USD';
+    else if (c === 'GB') localCode = 'GBP';
+    else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) localCode = 'EUR';
+    else if (c === 'JP') localCode = 'JPY';
+    else if (c === 'SG') localCode = 'SGD';
+    else if (c === 'CA') localCode = 'CAD';
+    else if (c === 'AU') localCode = 'AUD';
+    else localCode = 'USD';
+
+    const localOpt = supportConfig.currencies.find((cur) => cur.code === localCode) || supportConfig.currencies[0];
+    // If local is USD, secondary is HKD; otherwise secondary is always USD
+    const globalCode = localOpt.code === 'USD' ? 'HKD' : 'USD';
+    const globalOpt = supportConfig.currencies.find((cur) => cur.code === globalCode) || supportConfig.currencies[1];
+
+    return [localOpt, globalOpt];
+  }, [detectedCountry]);
+
+  // Current active currency configuration
+  const currentCurrency = useMemo(() => {
+    return (
+      supportConfig.currencies.find((c) => c.code === currency) ||
+      localCurrencyOption
+    );
+  }, [currency, localCurrencyOption]);
+
+  // Amount computation
   const currentAmount = useMemo(() => {
     if (isCustomAmount) {
       const val = parseFloat(customAmountStr);
       return isNaN(val) ? 0 : val;
     }
     const tier = supportConfig.coffeeTiers.find((t) => t.id === selectedTierId);
-    return tier?.amounts[currency] ?? 30;
+    return tier?.amounts[currency] ?? 22;
   }, [isCustomAmount, customAmountStr, selectedTierId, currency]);
 
+  // Amount validity (strictly 1 HKD eq. to 1000 HKD eq.)
   const isAmountValid = useMemo(() => {
     if (isCustomAmount) {
       return currentAmount >= currentCurrency.min && currentAmount <= currentCurrency.max;
@@ -168,7 +213,7 @@ export const SupportDashboard: React.FC = () => {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // Trigger Stripe Checkout Modal directly
+  // Trigger Stripe direct checkout modal
   const handleTriggerStripe = () => {
     if (!isAmountValid) return;
 
@@ -203,6 +248,67 @@ export const SupportDashboard: React.FC = () => {
     return filteredSponsors.slice(start, start + pageSize);
   }, [filteredSponsors, tablePage]);
 
+  // Preset quick increments for custom amount based on currency
+  const quickIncrements = useMemo(() => {
+    if (currency === 'CNY') return [10, 20, 50, 100];
+    if (currency === 'USD' || currency === 'EUR' || currency === 'GBP') return [5, 10, 20, 50];
+    if (currency === 'HKD') return [20, 50, 100, 200];
+    if (currency === 'JPY') return [500, 1000, 2000, 5000];
+    if (currency === 'TWD') return [100, 200, 500, 1000];
+    return [10, 25, 50, 100];
+  }, [currency]);
+
+  // Advanced Pagination Window Generator: 1, 2, ... [jump], k-1, k, k+1, ..., totalPages-1, totalPages
+  const paginationItems = useMemo(() => {
+    const items: Array<{ type: 'page' | 'ellipsis'; page?: number; key: string }> = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push({ type: 'page', page: i, key: `p-${i}` });
+      }
+      return items;
+    }
+
+    // Always include page 1 and 2
+    items.push({ type: 'page', page: 1, key: 'p-1' });
+    items.push({ type: 'page', page: 2, key: 'p-2' });
+
+    // Left ellipsis
+    if (tablePage > 4) {
+      items.push({ type: 'ellipsis', key: 'ellipsis-left' });
+    }
+
+    // Middle window around current page
+    const start = Math.max(3, tablePage - 1);
+    const end = Math.min(totalPages - 2, tablePage + 1);
+    for (let i = start; i <= end; i++) {
+      if (i > 2 && i < totalPages - 1) {
+        items.push({ type: 'page', page: i, key: `p-${i}` });
+      }
+    }
+
+    // Right ellipsis
+    if (tablePage < totalPages - 3) {
+      items.push({ type: 'ellipsis', key: 'ellipsis-right' });
+    }
+
+    // Always include totalPages - 1 and totalPages
+    items.push({ type: 'page', page: totalPages - 1, key: `p-${totalPages - 1}` });
+    items.push({ type: 'page', page: totalPages, key: `p-${totalPages}` });
+
+    return items;
+  }, [totalPages, tablePage]);
+
+  const handleJumpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const p = parseInt(jumpPageInput, 10);
+    if (!isNaN(p) && p >= 1 && p <= totalPages) {
+      setTablePage(p);
+      setShowJumpPopover(false);
+      setJumpPageInput('');
+    }
+  };
+
   return (
     <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-14 text-slate-800 dark:text-slate-100">
       {/* ── 1. Hero Header ────────────────────────────────────────────── */}
@@ -233,160 +339,233 @@ export const SupportDashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 2. Main Donation Section (Stripe Trigger & QR Overview) ───── */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
-        {/* Left Column: Stripe Checkout Amount & Supporter Info (7 Cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
-                Stripe 国际收银台
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-                自选金额与寄语
-              </h2>
-            </div>
+      {/* ── 2. Main Donation Section: Top & Bottom Strictly Equal Height ───── */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-stretch">
+        {/* Left Column: Stripe Checkout Amount & Serv00-styled Supporter Inputs (7 Cols) */}
+        <div className="lg:col-span-7 h-full flex flex-col justify-between bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-6">
+          <div className="space-y-6">
+            {/* Header & 2-Currency Switcher */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
+                  Stripe 国际收银台
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+                  自选金额与寄语
+                </h2>
+              </div>
 
-            {/* Currency Switcher */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/10 text-xs">
-              <Globe className="w-3.5 h-3.5 text-slate-400 ml-1" />
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                aria-label="选择结算币种"
-                className="bg-transparent font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden cursor-pointer pr-1"
-              >
-                {supportConfig.currencies.map((c) => (
-                  <option key={c.code} value={c.code} className="dark:bg-[#1a1e2d] text-slate-900 dark:text-white">
-                    {c.flag} {c.code} ({c.symbol})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Coffee Tiers */}
-          <div className="space-y-3">
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              1. 选择支持档位
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {supportConfig.coffeeTiers.map((tier) => {
-                const amount = tier.amounts[currency] ?? 30;
-                const isSelected = !isCustomAmount && selectedTierId === tier.id;
-                return (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTierId(tier.id);
-                      setIsCustomAmount(false);
-                    }}
-                    className={`relative p-3.5 rounded-2xl text-left border transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-50/70 dark:bg-blue-900/20 border-[#425aef] ring-2 ring-[#425aef]/30 shadow-xs'
-                        : 'bg-slate-50/60 dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.07] hover:border-blue-300 dark:hover:border-blue-500/40 hover:bg-white dark:hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl" aria-hidden="true">{tier.icon}</span>
-                        <div>
-                          <div className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                            {tier.name}
-                          </div>
-                          <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400">
-                            {tier.badge}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-base font-extrabold text-[#425aef] dark:text-blue-400">
-                        {currentCurrency.symbol}
-                        {amount}
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-1">
-                      {tier.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Custom Amount Button & Input */}
-            <div className="pt-1">
-              {!isCustomAmount ? (
+              {/* 2-Currency IP-Adaptive Switcher */}
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
                 <button
                   type="button"
-                  onClick={() => setIsCustomAmount(true)}
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100/80 dark:bg-white/[0.04] border border-dashed border-slate-300 dark:border-white/15 hover:border-[#425aef] dark:hover:border-blue-400 hover:text-[#425aef] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  onClick={() => setCurrency(localCurrencyOption.code)}
+                  className={`px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    currency === localCurrencyOption.code
+                      ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title={`根据访问地区自适应 (${localCurrencyOption.name})`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#425aef]" />
-                  <span>自定义任意赞赏金额</span>
+                  <span aria-hidden="true">{localCurrencyOption.flag}</span>
+                  <span>
+                    {localCurrencyOption.code} ({localCurrencyOption.symbol})
+                  </span>
                 </button>
-              ) : (
-                <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-[#425aef] ring-2 ring-[#425aef]/20 space-y-2 animate-in fade-in">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <span>自定义金额 ({currentCurrency.name})</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrency(globalCurrencyOption.code)}
+                  className={`px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    currency === globalCurrencyOption.code
+                      ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="全球通用结算币种"
+                >
+                  <span aria-hidden="true">{globalCurrencyOption.flag}</span>
+                  <span>
+                    {globalCurrencyOption.code} ({globalCurrencyOption.symbol})
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Coffee Tiers */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  1. 选择咖啡档位（真实购买力换算）
+                </label>
+                <span className="text-[11px] text-slate-400">
+                  当前币种限额: {currentCurrency.symbol}{currentCurrency.min} ~ {currentCurrency.symbol}{currentCurrency.max}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {supportConfig.coffeeTiers.map((tier) => {
+                  const amount = tier.amounts[currency] ?? 22;
+                  const isSelected = !isCustomAmount && selectedTierId === tier.id;
+                  return (
                     <button
+                      key={tier.id}
                       type="button"
-                      onClick={() => setIsCustomAmount(false)}
-                      className="text-xs text-[#425aef] hover:underline cursor-pointer"
+                      onClick={() => {
+                        setSelectedTierId(tier.id);
+                        setIsCustomAmount(false);
+                      }}
+                      className={`relative p-3.5 rounded-2xl text-left border transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-50/70 dark:bg-blue-900/20 border-[#425aef] ring-2 ring-[#425aef]/30 shadow-xs'
+                          : 'bg-slate-50/60 dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.07] hover:border-blue-300 dark:hover:border-blue-500/40 hover:bg-white dark:hover:bg-white/[0.04]'
+                      }`}
                     >
-                      返回预设档位
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl" aria-hidden="true">{tier.icon}</span>
+                          <div>
+                            <div className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                              {tier.name}
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400">
+                              {tier.badge}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-base font-extrabold text-[#425aef] dark:text-blue-400">
+                          {currentCurrency.symbol}
+                          {amount}
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-1">
+                        {tier.description}
+                      </p>
                     </button>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
-                      {currentCurrency.symbol}
+                  );
+                })}
+              </div>
+
+              {/* Upgraded Tactile Custom Amount Button & Interactive Input */}
+              <div className="pt-1">
+                {!isCustomAmount ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomAmount(true)}
+                    className="w-full group p-3.5 sm:p-4 rounded-2xl text-left bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-white/[0.02] dark:to-blue-950/20 border border-dashed border-slate-300 dark:border-white/15 hover:border-[#425aef] dark:hover:border-blue-400 transition-all duration-200 cursor-pointer flex items-center justify-between shadow-2xs hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 dark:bg-blue-900/40 text-[#425aef] dark:text-blue-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#425aef] dark:group-hover:text-blue-400 transition-colors">
+                          自定义任意赞赏金额
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          自由输入心意金额（支援 1 HKD 等值至 1000 HKD 等值）
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-[#425aef] dark:text-blue-400 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a1e2d] border border-blue-200/60 dark:border-blue-500/30 group-hover:bg-[#425aef] group-hover:text-white transition-all shrink-0">
+                      点此输入 ➔
                     </span>
-                    <input
-                      type="number"
-                      min={currentCurrency.min}
-                      max={currentCurrency.max}
-                      placeholder={`输入金额 (${currentCurrency.min} ~ ${currentCurrency.max})`}
-                      value={customAmountStr}
-                      onChange={(e) => setCustomAmountStr(e.target.value)}
-                      className="w-full pl-8 pr-4 py-2.5 text-sm font-bold rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40"
-                    />
+                  </button>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-900/15 border border-[#425aef] ring-2 ring-[#425aef]/25 space-y-3 animate-in fade-in duration-200 shadow-sm">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center gap-1.5">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-[#425aef]" />
+                        <span>自定义赞赏金额 ({currentCurrency.name})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomAmount(false)}
+                        className="text-xs text-[#425aef] dark:text-blue-400 hover:underline cursor-pointer font-semibold"
+                      >
+                        返回预设档位
+                      </button>
+                    </div>
+
+                    {/* Quick increment chips */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] text-slate-500 font-medium mr-1">快捷预设:</span>
+                      {quickIncrements.map((inc) => (
+                        <button
+                          key={inc}
+                          type="button"
+                          onClick={() => setCustomAmountStr(String(inc))}
+                          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#425aef] hover:text-[#425aef] cursor-pointer transition-colors shadow-2xs"
+                        >
+                          +{currentCurrency.symbol}{inc}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-extrabold text-slate-400 text-sm">
+                        {currentCurrency.symbol}
+                      </span>
+                      <input
+                        type="number"
+                        min={currentCurrency.min}
+                        max={currentCurrency.max}
+                        step="any"
+                        placeholder={`请输入金额 (${currentCurrency.min} ~ ${currentCurrency.max})`}
+                        value={customAmountStr}
+                        onChange={(e) => setCustomAmountStr(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 text-sm font-bold rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40"
+                      />
+                    </div>
+
+                    {!isAmountValid && customAmountStr && (
+                      <p className="text-xs text-red-500 font-medium">
+                        ⚠️ 金额需在 {currentCurrency.symbol}{currentCurrency.min} ~ {currentCurrency.symbol}{currentCurrency.max} 之间（约 1 HKD ~ 1000 HKD 等值）
+                      </p>
+                    )}
                   </div>
-                  {!isAmountValid && customAmountStr && (
-                    <p className="text-xs text-red-500 font-medium">
-                      金额需在 {currentCurrency.symbol}{currentCurrency.min} ~ {currentCurrency.symbol}{currentCurrency.max} 之间
-                    </p>
-                  )}
+                )}
+              </div>
+            </div>
+
+            {/* Serv00-styled Supporter Name & Message Inputs */}
+            <div className="space-y-3 pt-1">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                2. 支持者信息登记（参考 Serv00 布局规范）
+              </label>
+              <div className="space-y-3">
+                {/* Field 1: Name or Social */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    👤 称呼或社交账号 (Name or your social) (可选)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={32}
+                    placeholder="例如：@github_username 或 Shijian Friend"
+                    value={donorName}
+                    onChange={(e) => setDonorName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
+                  />
                 </div>
-              )}
+
+                {/* Field 2: Message */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    💬 留言寄语 (Say something nice) (可选)
+                  </label>
+                  <textarea
+                    rows={2}
+                    maxLength={120}
+                    placeholder="写下想对作者说的话或鼓励..."
+                    value={donorMessage}
+                    onChange={(e) => setDonorMessage(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Supporter Name & Message Inputs */}
-          <div className="space-y-3 pt-2">
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              2. 留下您的称呼与寄语（将同步收录至名录）
-            </label>
-            <div className="space-y-2.5">
-              <input
-                type="text"
-                maxLength={32}
-                placeholder="您的称呼或社交账号（选填，留空将显示为匿名支持者）"
-                value={donorName}
-                onChange={(e) => setDonorName(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40"
-              />
-              <textarea
-                rows={2}
-                maxLength={120}
-                placeholder="写下想对作者说的话或祝福（选填，将同步展示于名录并推送至作者）..."
-                value={donorMessage}
-                onChange={(e) => setDonorMessage(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Stripe Trigger Button */}
-          <div className="pt-2 space-y-2.5">
+          {/* Bottom Action Area: Checkout Button & Clear Guarantees */}
+          <div className="pt-4 space-y-3 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               disabled={!isAmountValid}
@@ -401,321 +580,342 @@ export const SupportDashboard: React.FC = () => {
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-400 dark:text-slate-500">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                Stripe 端到端安全加密
-              </span>
-              <span>支持 Apple Pay / Google Pay / 信用卡 / Link</span>
+            {/* Crucial Notice Under Button explicitly informing user about Telegram Webhook & Security */}
+            <div className="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-center space-y-1">
+              <p className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-1">
+                <span>🔔</span>
+                <span>支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存</span>
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  Stripe 端到端安全加密
+                </span>
+                <span>•</span>
+                <span>支持 Apple Pay / Google Pay / 信用卡 / Link</span>
+                <span>•</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">未完成付款绝不触发任何推送</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: QR Codes Overview & Web3 Channels (5 Cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-5">
-          <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              扫码支付一览
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-              微信 / 支付宝 / PayPal / Web3
-            </h2>
-          </div>
-
-          {/* Sub-channel Tabs */}
-          <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setQrTab('cn')}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrTab === 'cn'
-                  ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <span aria-hidden="true">🇨🇳</span>
-              <span>国内扫码</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setQrTab('hk')}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrTab === 'hk'
-                  ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <span aria-hidden="true">🇭🇰</span>
-              <span>港澳渠道</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setQrTab('paypal')}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrTab === 'paypal'
-                  ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <PayPalIcon className="w-3.5 h-3.5" />
-              <span>PayPal</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setQrTab('crypto')}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrTab === 'crypto'
-                  ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Coins className="w-3.5 h-3.5 text-emerald-500" />
-              <span>USDT</span>
-            </button>
-          </div>
-
-          {/* Tab 1: CN QR Codes (WeChat & Alipay) */}
-          {qrTab === 'cn' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="grid grid-cols-2 gap-3.5">
-                {/* WeChat Pay */}
-                <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                    <WeChatIcon className="w-4 h-4" />
-                    <span>微信支付</span>
-                  </div>
-                  <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                    onClick={() =>
-                      setModalImage({
-                        src: '/media/shijianus/support/weixin-pay-cn.jpg',
-                        title: '微信支付赞赏码',
-                      })
-                    }
-                  >
-                    <img
-                      src="/media/shijianus/support/weixin-pay-cn.jpg"
-                      alt="微信支付赞赏码"
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
-                    </div>
-                  </div>
-                  <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
-                    微信扫一扫
-                  </span>
-                </div>
-
-                {/* Alipay */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300">
-                    <AlipayIcon className="w-4 h-4" />
-                    <span>支付宝</span>
-                  </div>
-                  <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                    onClick={() =>
-                      setModalImage({
-                        src: '/media/shijianus/support/alipay-cn.jpg',
-                        title: '支付宝赞赏码',
-                      })
-                    }
-                  >
-                    <img
-                      src="/media/shijianus/support/alipay-cn.jpg"
-                      alt="支付宝赞赏码"
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
-                    </div>
-                  </div>
-                  <span className="block text-[11px] text-blue-600/80 dark:text-blue-400/80 font-medium">
-                    支付宝扫一扫
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                💡 <strong>扫码提示</strong>：转账时可在附言中写下您的昵称与寄语，博主核对后将手动同步至下方支援名录中致谢！
-              </div>
+        <div className="lg:col-span-5 h-full flex flex-col justify-between bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-5">
+          <div className="space-y-5">
+            <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                扫码支付一览
+              </span>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+                微信 / 支付宝 / PayPal / Web3
+              </h2>
             </div>
-          )}
 
-          {/* Tab 2: HK QR Codes */}
-          {qrTab === 'hk' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="grid grid-cols-2 gap-3.5">
-                <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2 group">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                    <AlipayIcon className="w-4 h-4" />
-                    <span>Alipay HK</span>
-                  </div>
-                  <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                    onClick={() =>
-                      setModalImage({
-                        src: '/media/shijianus/support/alipay-hk.jpg',
-                        title: 'Alipay HK 赞赏码',
-                      })
-                    }
-                  >
-                    <img
-                      src="/media/shijianus/support/alipay-hk.jpg"
-                      alt="Alipay HK 赞赏码"
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
-                    </div>
-                  </div>
-                  <span className="block text-[11px] text-indigo-600/80 dark:text-indigo-400/80 font-medium">
-                    港币 HKD 扫码
-                  </span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                    <WeChatIcon className="w-4 h-4" />
-                    <span>WeChat Pay HK</span>
-                  </div>
-                  <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                    onClick={() =>
-                      setModalImage({
-                        src: '/media/shijianus/support/wechat-pay-hk.jpg',
-                        title: 'WeChat Pay HK 赞赏码',
-                      })
-                    }
-                  >
-                    <img
-                      src="/media/shijianus/support/wechat-pay-hk.jpg"
-                      alt="WeChat Pay HK 赞赏码"
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
-                    </div>
-                  </div>
-                  <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
-                    WeChat HK 扫码
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tab 3: PayPal */}
-          {qrTab === 'paypal' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <a
-                href="https://www.paypal.com/paypalme/shijianus"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="w-full p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-500/30 flex items-center justify-between group hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-colors"
+            {/* Sub-channel Tabs */}
+            <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setQrTab('cn')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  qrTab === 'cn'
+                    ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#003087] text-white flex items-center justify-center font-black">
-                    <PayPalIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                      paypal.me/shijianus
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      点击直接在 PayPal 网页或 App 付款
-                    </div>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              </a>
+                <span aria-hidden="true">🇨🇳</span>
+                <span>国内扫码</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrTab('hk')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  qrTab === 'hk'
+                    ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span aria-hidden="true">🇭🇰</span>
+                <span>港澳渠道</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrTab('paypal')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  qrTab === 'paypal'
+                    ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <PayPalIcon className="w-3.5 h-3.5" />
+                <span>PayPal</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrTab('crypto')}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  qrTab === 'crypto'
+                    ? 'bg-white dark:bg-[#1e2233] text-slate-900 dark:text-white shadow-2xs font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Coins className="w-3.5 h-3.5 text-emerald-500" />
+                <span>USDT</span>
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3.5">
-                <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal HK 码</span>
-                  <img
-                    src="/media/shijianus/support/paypal-hk.jpg"
-                    alt="PayPal HK"
-                    className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
-                    onClick={() =>
-                      setModalImage({ src: '/media/shijianus/support/paypal-hk.jpg', title: 'PayPal HK' })
-                    }
-                  />
+            {/* Tab 1: CN QR Codes (WeChat & Alipay) */}
+            {qrTab === 'cn' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-2 gap-3.5">
+                  {/* WeChat Pay */}
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                      <WeChatIcon className="w-4 h-4" />
+                      <span>微信支付</span>
+                    </div>
+                    <div
+                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
+                      onClick={() =>
+                        setModalImage({
+                          src: '/media/shijianus/support/weixin-pay-cn.jpg',
+                          title: '微信支付赞赏码',
+                        })
+                      }
+                    >
+                      <img
+                        src="/media/shijianus/support/weixin-pay-cn.jpg"
+                        alt="微信支付赞赏码"
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span>查看大图</span>
+                      </div>
+                    </div>
+                    <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
+                      微信扫一扫
+                    </span>
+                  </div>
+
+                  {/* Alipay */}
+                  <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300">
+                      <AlipayIcon className="w-4 h-4" />
+                      <span>支付宝</span>
+                    </div>
+                    <div
+                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
+                      onClick={() =>
+                        setModalImage({
+                          src: '/media/shijianus/support/alipay-cn.jpg',
+                          title: '支付宝赞赏码',
+                        })
+                      }
+                    >
+                      <img
+                        src="/media/shijianus/support/alipay-cn.jpg"
+                        alt="支付宝赞赏码"
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span>查看大图</span>
+                      </div>
+                    </div>
+                    <span className="block text-[11px] text-blue-600/80 dark:text-blue-400/80 font-medium">
+                      支付宝扫一扫
+                    </span>
+                  </div>
                 </div>
-                <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal UK 码</span>
-                  <img
-                    src="/media/shijianus/support/paypal-uk.jpg"
-                    alt="PayPal UK"
-                    className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
-                    onClick={() =>
-                      setModalImage({ src: '/media/shijianus/support/paypal-uk.jpg', title: 'PayPal UK' })
-                    }
-                  />
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  💡 <strong>扫码提示</strong>：转账时可在附言中写下您的称呼与寄语，博主核对账单后将手动同步至下方公开致谢名册！
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Tab 4: Web3 / USDT */}
-          {qrTab === 'crypto' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <UsdtIcon className="w-5 h-5" />
-                    <div>
-                      <div className="text-sm font-bold text-slate-900 dark:text-white">
-                        USDT (Arbitrum One)
-                      </div>
-                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                        Layer 2 极低 Gas 费链路
+            {/* Tab 2: HK QR Codes */}
+            {qrTab === 'hk' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2 group">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                      <AlipayIcon className="w-4 h-4" />
+                      <span>Alipay HK</span>
+                    </div>
+                    <div
+                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
+                      onClick={() =>
+                        setModalImage({
+                          src: '/media/shijianus/support/alipay-hk.jpg',
+                          title: 'Alipay HK 赞赏码',
+                        })
+                      }
+                    >
+                      <img
+                        src="/media/shijianus/support/alipay-hk.jpg"
+                        alt="Alipay HK 赞赏码"
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span>查看大图</span>
                       </div>
                     </div>
+                    <span className="block text-[11px] text-indigo-600/80 dark:text-indigo-400/80 font-medium">
+                      港币 HKD 扫码
+                    </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    Arbitrum
-                  </span>
-                </div>
 
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200/70 dark:border-white/10 space-y-1.5">
-                  <div className="text-[10px] text-slate-400 font-mono">钱包收款地址 (EVM)：</div>
-                  <code className="block text-[11px] font-mono break-all text-slate-800 dark:text-slate-200 select-all">
-                    0x00d52edc5230dD21F521D8396c68b84D576e6041
-                  </code>
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                      <WeChatIcon className="w-4 h-4" />
+                      <span>WeChat Pay HK</span>
+                    </div>
+                    <div
+                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
+                      onClick={() =>
+                        setModalImage({
+                          src: '/media/shijianus/support/wechat-pay-hk.jpg',
+                          title: 'WeChat Pay HK 赞赏码',
+                        })
+                      }
+                    >
+                      <img
+                        src="/media/shijianus/support/wechat-pay-hk.jpg"
+                        alt="WeChat Pay HK 赞赏码"
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span>查看大图</span>
+                      </div>
+                    </div>
+                    <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
+                      WeChat HK 扫码
+                    </span>
+                  </div>
                 </div>
+              </div>
+            )}
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCopy('0x00d52edc5230dD21F521D8396c68b84D576e6041', 'crypto-addr')
-                  }
-                  className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            {/* Tab 3: PayPal */}
+            {qrTab === 'paypal' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <a
+                  href="https://www.paypal.com/paypalme/shijianus"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="w-full p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-500/30 flex items-center justify-between group hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-colors"
                 >
-                  {copiedKey === 'crypto-addr' ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>已复制到剪贴板！</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>复制 USDT Arbitrum 钱包地址</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#003087] text-white flex items-center justify-center font-black">
+                      <PayPalIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                        paypal.me/shijianus
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        点击直接在 PayPal 网页或 App 付款
+                      </div>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </a>
 
-              <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
-                支持 Trust Wallet、MetaMask、OKX 等主流 Web3 钱包直接转账。
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal HK 码</span>
+                    <img
+                      src="/media/shijianus/support/paypal-hk.jpg"
+                      alt="PayPal HK"
+                      className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
+                      onClick={() =>
+                        setModalImage({ src: '/media/shijianus/support/paypal-hk.jpg', title: 'PayPal HK' })
+                      }
+                    />
+                  </div>
+                  <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal UK 码</span>
+                    <img
+                      src="/media/shijianus/support/paypal-uk.jpg"
+                      alt="PayPal UK"
+                      className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
+                      onClick={() =>
+                        setModalImage({ src: '/media/shijianus/support/paypal-uk.jpg', title: 'PayPal UK' })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* Tab 4: Web3 / USDT */}
+            {qrTab === 'crypto' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <UsdtIcon className="w-5 h-5" />
+                      <div>
+                        <div className="text-sm font-bold text-slate-900 dark:text-white">
+                          USDT (Arbitrum One)
+                        </div>
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                          Layer 2 极低 Gas 费链路
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      Arbitrum
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200/70 dark:border-white/10 space-y-1.5">
+                    <div className="text-[10px] text-slate-400 font-mono">钱包收款地址 (EVM)：</div>
+                    <code className="block text-[11px] font-mono break-all text-slate-800 dark:text-slate-200 select-all">
+                      0x00d52edc5230dD21F521D8396c68b84D576e6041
+                    </code>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleCopy('0x00d52edc5230dD21F521D8396c68b84D576e6041', 'crypto-addr')
+                    }
+                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedKey === 'crypto-addr' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>已复制到剪贴板！</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>复制 USDT Arbitrum 钱包地址</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Trust & Level Disassociation Disclaimer Box */}
+          <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06] space-y-2.5">
+            <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-500/20 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                <Award className="w-4 h-4 text-amber-600" />
+                <span>社区等级与赞赏 100% 独立承诺</span>
+              </div>
+              <p className="text-[11px] text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
+                本博客会员等级 (LV) 与信任等级 (TL) 纯粹基于技术互动与开源讨论评定，<strong>绝无付费升级特权</strong>，每一位读者均享有完全平等的权益。
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -844,6 +1044,14 @@ export const SupportDashboard: React.FC = () => {
                             ? '€'
                             : sponsor.currency === 'JPY'
                             ? '¥'
+                            : sponsor.currency === 'TWD'
+                            ? 'NT$'
+                            : sponsor.currency === 'SGD'
+                            ? 'S$'
+                            : sponsor.currency === 'CAD'
+                            ? 'CA$'
+                            : sponsor.currency === 'AUD'
+                            ? 'A$'
                             : ''}
                           {sponsor.amount} {sponsor.currency}
                         </span>
@@ -887,53 +1095,132 @@ export const SupportDashboard: React.FC = () => {
             </table>
           </div>
 
-          {/* Table Pagination */}
+          {/* Advanced Pagination Bar: < 上一页, 1, 2, ... [跳转按钮], 10, 11, ..., 下一页 > */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-slate-100 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400">
               <div>
-                第 {tablePage} / {totalPages} 页 (共 {filteredSponsors.length} 条记录)
+                第 <strong className="text-slate-800 dark:text-white font-bold">{tablePage}</strong> / {totalPages} 页 (共 {filteredSponsors.length} 条记录)
               </div>
-              <div className="flex gap-1.5">
+
+              {/* Number Buttons & Prev/Next with Icons */}
+              <div className="flex items-center gap-1.5 relative">
+                {/* Prev Button with Icon */}
                 <button
                   type="button"
                   disabled={tablePage <= 1}
                   onClick={() => setTablePage((p) => Math.max(p - 1, 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-1 font-medium"
                 >
-                  上一页
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>上一页</span>
                 </button>
+
+                {/* Number Buttons & Ellipsis Jump Button */}
+                <div className="flex items-center gap-1">
+                  {paginationItems.map((item) => {
+                    if (item.type === 'page' && item.page !== undefined) {
+                      const isCurrent = item.page === tablePage;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setTablePage(item.page!)}
+                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                            isCurrent
+                              ? 'bg-[#425aef] text-white shadow-xs'
+                              : 'border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {item.page}
+                        </button>
+                      );
+                    }
+
+                    // Ellipsis with Quick Jump Button
+                    return (
+                      <div key={item.key} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowJumpPopover((prev) => !prev)}
+                          title="点击快速跳转页面"
+                          className="w-8 h-8 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#425aef] hover:text-[#425aef] text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center"
+                        >
+                          ...
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button with Icon */}
                 <button
                   type="button"
                   disabled={tablePage >= totalPages}
                   onClick={() => setTablePage((p) => Math.min(p + 1, totalPages))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-1 font-medium"
                 >
-                  下一页
+                  <span>下一页</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
+
+                {/* Quick Jump Input Popover */}
+                {showJumpPopover && (
+                  <div className="absolute right-0 bottom-full mb-2 z-20 p-3 rounded-2xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 shadow-xl animate-in zoom-in-95 duration-150 w-48">
+                    <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-white/10">
+                      <span className="text-[11px] font-bold text-slate-800 dark:text-white">快速跳转至页码</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowJumpPopover(false)}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <form onSubmit={handleJumpSubmit} className="flex gap-1.5">
+                      <input
+                        type="number"
+                        min={1}
+                        max={totalPages}
+                        placeholder={`1 ~ ${totalPages}`}
+                        value={jumpPageInput}
+                        onChange={(e) => setJumpPageInput(e.target.value)}
+                        className="w-full px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-hidden focus:ring-1 focus:ring-[#425aef]"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="px-2.5 py-1 rounded-lg bg-[#425aef] hover:bg-blue-600 text-white font-bold text-xs cursor-pointer"
+                      >
+                        跳转
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
       </section>
 
-      {/* ── 4. FAQs Section ───────────────────────────────────────────── */}
-      <section className="space-y-4 pt-4">
+      {/* ── 4. FAQs Section: Strictly Aligned Full-Width With Above Cards ───── */}
+      <section className="space-y-4 pt-4 w-full">
         <div className="text-center max-w-xl mx-auto mb-6">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             FAQ & Transparency
           </span>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-            常见问题与透明度承诺
+            常見問題與透明度承諾
           </h2>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-3">
+        {/* Full-width container aligned perfectly with top cards and table */}
+        <div className="w-full space-y-3">
           {supportConfig.faqs.map((faq, idx) => {
             const isOpen = expandedFaq === idx;
             return (
               <div
                 key={idx}
-                className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121520] overflow-hidden transition-all"
+                className="w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121520] overflow-hidden transition-all shadow-2xs"
               >
                 <button
                   type="button"
