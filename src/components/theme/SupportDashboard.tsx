@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import {
   supportConfig,
-  type CurrencyPresetConfig,
   type SponsorItem,
+  getLocalCurrencyByCountry,
+  convertByLocalPPP,
 } from '../../config/support';
 
 /* ── SVG Brand Icons ── */
@@ -64,26 +65,26 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
 );
 
 export const SupportDashboard: React.FC = () => {
-  // ── 1. Currency & Amount State ──
+  // ── 1. Country & Dual-Currency State ──
   const [detectedCountry, setDetectedCountry] = useState<string>('CN');
-  const [currency, setCurrency] = useState<string>('CNY');
-  const [selectedAmount, setSelectedAmount] = useState<number>(14);
+  const [activeCurrencyType, setActiveCurrencyType] = useState<'local' | 'global'>('local');
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number>(2); // Default tier index (Americano)
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [customAmount, setCustomAmount] = useState<string>('');
 
-  // ── 2. Serv00 Supporter Inputs ──
+  // ── 2. Supporter Inputs ──
   const [donorName, setDonorName] = useState<string>('');
   const [donorMessage, setDonorMessage] = useState<string>('');
 
-  // ── 3. Payment QR Tabs ──
+  // ── 3. Payment QR Tabs & Modals ──
   const [qrTab, setQrTab] = useState<'cn' | 'hk' | 'paypal' | 'crypto'>('cn');
   const [modalImage, setModalImage] = useState<{ src: string; title: string } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // ── 4. FAQ Accordion ──
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(0); // First FAQ opened by default
 
-  // ── 5. Supporter Roster State ──
+  // ── 5. Supporter Roster State (Max 3 initial seed records, no fake inflation) ──
   const [sponsors, setSponsors] = useState<SponsorItem[]>(supportConfig.seedSponsors);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tablePage, setTablePage] = useState<number>(1);
@@ -100,46 +101,12 @@ export const SupportDashboard: React.FC = () => {
           const c = (data?.country || '').toUpperCase();
           if (c) {
             setDetectedCountry(c);
-            if (c === 'CN') {
-              setCurrency('CNY');
-              setSelectedAmount(supportConfig.currencies.CNY.amounts[2]);
-            } else if (c === 'HK' || c === 'MO') {
-              setCurrency('HKD');
-              setSelectedAmount(supportConfig.currencies.HKD.amounts[2]);
-            } else if (c === 'TW') {
-              setCurrency('TWD');
-              setSelectedAmount(supportConfig.currencies.TWD.amounts[2]);
-            } else if (c === 'US') {
-              setCurrency('USD');
-              setSelectedAmount(supportConfig.currencies.USD.amounts[2]);
-            } else if (c === 'GB') {
-              setCurrency('GBP');
-              setSelectedAmount(supportConfig.currencies.GBP.amounts[2]);
-            } else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) {
-              setCurrency('EUR');
-              setSelectedAmount(supportConfig.currencies.EUR.amounts[2]);
-            } else if (c === 'JP') {
-              setCurrency('JPY');
-              setSelectedAmount(supportConfig.currencies.JPY.amounts[2]);
-            } else if (c === 'SG') {
-              setCurrency('SGD');
-              setSelectedAmount(supportConfig.currencies.SGD.amounts[2]);
-            } else if (c === 'CA') {
-              setCurrency('CAD');
-              setSelectedAmount(supportConfig.currencies.CAD.amounts[2]);
-            } else if (c === 'AU') {
-              setCurrency('AUD');
-              setSelectedAmount(supportConfig.currencies.AUD.amounts[2]);
-            } else {
-              setCurrency('USD');
-              setSelectedAmount(supportConfig.currencies.USD.amounts[2]);
-            }
           }
         })
         .catch(() => {});
     } catch {}
 
-    // Fetch live sponsorships from D1
+    // Fetch live sponsorships from D1 database
     try {
       fetch('/api/sponsorships?limit=50')
         .then((res) => res.json())
@@ -151,18 +118,14 @@ export const SupportDashboard: React.FC = () => {
               amount: item.amount,
               currency: item.currency,
               message: item.message,
-              channel: item.channel || 'Stripe',
+              channel: item.channel || 'Stripe (国际收银台)',
+              allocation: item.allocation || '-',
               date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
             }));
 
-            if (apiItems.length >= 8) {
+            // Only use real records or fallback to 3 seed sponsors
+            if (apiItems.length > 0) {
               setSponsors(apiItems);
-            } else {
-              setSponsors((prev) => {
-                const existingIds = new Set(apiItems.map((i) => i.id));
-                const remainingSeed = prev.filter((s) => !existingIds.has(s.id));
-                return [...apiItems, ...remainingSeed];
-              });
             }
           }
         })
@@ -170,56 +133,97 @@ export const SupportDashboard: React.FC = () => {
     } catch {}
   }, []);
 
-  // Compute the 2 allowed currency choices based on detected location (Local Currency & USD)
-  const [localCurrencyOption, globalCurrencyOption] = useMemo(() => {
-    const c = detectedCountry.toUpperCase();
-    let localCode = 'CNY';
+  // Compute the 2 allowed currency options based on detected location:
+  // 1. Local Currency: IP-detected local fiat
+  // 2. Global Currency: Unified settlement (USD; if local is USD/dollar-based, auto-switch to HKD)
+  const { localCurrencyOption, globalCurrencyOption } = useMemo(() => {
+    const local = getLocalCurrencyByCountry(detectedCountry);
+    const isLocalUSD = local.code.toUpperCase() === 'USD';
+    const global = isLocalUSD
+      ? supportConfig.currencies['HKD']
+      : supportConfig.currencies['USD'];
 
-    if (c === 'CN') localCode = 'CNY';
-    else if (c === 'HK' || c === 'MO') localCode = 'HKD';
-    else if (c === 'TW') localCode = 'TWD';
-    else if (c === 'US') localCode = 'USD';
-    else if (c === 'GB') localCode = 'GBP';
-    else if (['DE', 'FR', 'IT', 'ES', 'NL', 'AT', 'BE', 'FI', 'IE', 'PT'].includes(c)) localCode = 'EUR';
-    else if (c === 'JP') localCode = 'JPY';
-    else if (c === 'SG') localCode = 'SGD';
-    else if (c === 'CA') localCode = 'CAD';
-    else if (c === 'AU') localCode = 'AUD';
-    else localCode = 'USD';
-
-    const localOpt = supportConfig.currencies[localCode] || supportConfig.currencies['CNY'];
-    const globalCode = localOpt.code.toUpperCase() === 'USD' ? 'HKD' : 'USD';
-    const globalOpt = supportConfig.currencies[globalCode] || supportConfig.currencies['USD'];
-
-    return [localOpt, globalOpt];
+    return { localCurrencyOption: local, globalCurrencyOption: global };
   }, [detectedCountry]);
 
-  // Active currency config
-  const activeCurrencyConfig: CurrencyPresetConfig = useMemo(() => {
-    return supportConfig.currencies[currency] || localCurrencyOption;
-  }, [currency, localCurrencyOption]);
+  // Derived active currency configuration & purchasing power price tiers
+  const {
+    activeCurrencyCode,
+    activeCurrencySymbol,
+    activeAmounts,
+    activeMin,
+    activeMax,
+  } = useMemo(() => {
+    if (activeCurrencyType === 'local') {
+      return {
+        activeCurrencyCode: localCurrencyOption.code.toUpperCase(),
+        activeCurrencySymbol: localCurrencyOption.symbol,
+        activeAmounts: localCurrencyOption.amounts,
+        activeMin: localCurrencyOption.min,
+        activeMax: localCurrencyOption.max,
+      };
+    } else {
+      // Global currency: Amounts are dynamically adjusted according to local PPP exchange conversion
+      const pppAmounts = localCurrencyOption.amounts.map((amt) =>
+        convertByLocalPPP(
+          amt,
+          localCurrencyOption.rateToUSD,
+          globalCurrencyOption.rateToUSD,
+          globalCurrencyOption.code,
+        ),
+      ) as [number, number, number, number, number, number];
 
-  // Dynamic currency switching with exchange rate conversion
-  const handleCurrencyChange = (newCode: string) => {
-    if (newCode === currency) return;
-    const oldCfg = activeCurrencyConfig;
-    const newCfg = supportConfig.currencies[newCode] || supportConfig.currencies['USD'];
+      const pppMin = convertByLocalPPP(
+        localCurrencyOption.min,
+        localCurrencyOption.rateToUSD,
+        globalCurrencyOption.rateToUSD,
+        globalCurrencyOption.code,
+      );
+      const pppMax = convertByLocalPPP(
+        localCurrencyOption.max,
+        localCurrencyOption.rateToUSD,
+        globalCurrencyOption.rateToUSD,
+        globalCurrencyOption.code,
+      );
+
+      return {
+        activeCurrencyCode: globalCurrencyOption.code.toUpperCase(),
+        activeCurrencySymbol: globalCurrencyOption.symbol,
+        activeAmounts: pppAmounts,
+        activeMin: pppMin,
+        activeMax: pppMax,
+      };
+    }
+  }, [activeCurrencyType, localCurrencyOption, globalCurrencyOption]);
+
+  // Handle switching between the 2 allowed currencies (Local vs Global)
+  const handleCurrencySwitch = (newType: 'local' | 'global') => {
+    if (newType === activeCurrencyType) return;
 
     if (isCustomMode && customAmount) {
       const numeric = parseFloat(customAmount);
       if (!isNaN(numeric) && numeric > 0) {
-        const usdVal = numeric * oldCfg.rateToUSD;
-        const converted = Math.round(usdVal / newCfg.rateToUSD);
-        const bounded = Math.max(newCfg.min, Math.min(newCfg.max, converted));
-        setCustomAmount(String(bounded));
+        if (newType === 'global') {
+          const converted = convertByLocalPPP(
+            numeric,
+            localCurrencyOption.rateToUSD,
+            globalCurrencyOption.rateToUSD,
+            globalCurrencyOption.code,
+          );
+          setCustomAmount(String(converted));
+        } else {
+          const converted = convertByLocalPPP(
+            numeric,
+            globalCurrencyOption.rateToUSD,
+            localCurrencyOption.rateToUSD,
+            localCurrencyOption.code,
+          );
+          setCustomAmount(String(converted));
+        }
       }
-    } else {
-      const currentIdx = oldCfg.amounts.indexOf(selectedAmount);
-      const targetIdx = currentIdx !== -1 ? currentIdx : 2;
-      setSelectedAmount(newCfg.amounts[targetIdx]);
     }
 
-    setCurrency(newCode);
+    setActiveCurrencyType(newType);
   };
 
   // Custom amount validation
@@ -228,16 +232,16 @@ export const SupportDashboard: React.FC = () => {
     isCustomMode &&
     (customAmount === '' ||
       isNaN(parsedCustom) ||
-      parsedCustom < activeCurrencyConfig.min ||
-      parsedCustom > activeCurrencyConfig.max);
+      parsedCustom < activeMin ||
+      parsedCustom > activeMax);
 
   const effectiveAmount = isCustomMode
     ? isNaN(parsedCustom)
       ? 0
       : parsedCustom
-    : selectedAmount;
+    : activeAmounts[selectedTierIndex] || activeAmounts[2];
 
-  const isAmountValid = effectiveAmount >= activeCurrencyConfig.min && effectiveAmount <= activeCurrencyConfig.max;
+  const isAmountValid = effectiveAmount >= activeMin && effectiveAmount <= activeMax;
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard?.writeText(text).catch(() => {});
@@ -254,7 +258,7 @@ export const SupportDashboard: React.FC = () => {
         detail: {
           directCheckout: true,
           amount: effectiveAmount,
-          currency: activeCurrencyConfig.code,
+          currency: activeCurrencyCode.toLowerCase(),
           name: donorName.trim(),
           message: donorMessage.trim(),
         },
@@ -270,7 +274,8 @@ export const SupportDashboard: React.FC = () => {
       (s) =>
         s.name.toLowerCase().includes(q) ||
         (s.message && s.message.toLowerCase().includes(q)) ||
-        s.channel.toLowerCase().includes(q),
+        s.channel.toLowerCase().includes(q) ||
+        (s.allocation && s.allocation.toLowerCase().includes(q)),
     );
   }, [sponsors, searchQuery]);
 
@@ -357,10 +362,10 @@ export const SupportDashboard: React.FC = () => {
 
       {/* ── 2. Donation Main Section: Naturally Balanced Columns ──────── */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-stretch">
-        {/* Left Column: Stripe Checkout Amount & Serv00-styled Inputs (7 Cols) */}
+        {/* Left Column: Stripe Checkout & PPP Price Tiers (7 Cols) */}
         <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-6">
           <div className="space-y-5">
-            {/* Header with 2-Currency Switcher */}
+            {/* Header with 2-Currency Switcher (Local Currency & Unified Currency) */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
@@ -371,53 +376,65 @@ export const SupportDashboard: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 2-Currency Switcher */}
+              {/* 2-Currency Switcher: strictly supports Local Currency & Unified Global Currency */}
               <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
                 <button
                   type="button"
-                  onClick={() => handleCurrencyChange(localCurrencyOption.code.toUpperCase())}
+                  onClick={() => handleCurrencySwitch('local')}
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    currency === localCurrencyOption.code.toUpperCase()
+                    activeCurrencyType === 'local'
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                   title={`本地货币 (${localCurrencyOption.name})`}
                 >
                   <span aria-hidden="true">{localCurrencyOption.flag}</span>
-                  <span>{localCurrencyOption.code.toUpperCase()} ({localCurrencyOption.symbol})</span>
+                  <span>
+                    {localCurrencyOption.code.toUpperCase()} ({localCurrencyOption.symbol})
+                  </span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCurrencyChange(globalCurrencyOption.code.toUpperCase())}
+                  onClick={() => handleCurrencySwitch('global')}
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    currency === globalCurrencyOption.code.toUpperCase()
+                    activeCurrencyType === 'global'
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title="全球通用结算货币"
+                  title={`统一结算货币 (${globalCurrencyOption.name})`}
                 >
                   <span aria-hidden="true">{globalCurrencyOption.flag}</span>
-                  <span>{globalCurrencyOption.code.toUpperCase()} ({globalCurrencyOption.symbol})</span>
+                  <span>
+                    {globalCurrencyOption.code.toUpperCase()} ({globalCurrencyOption.symbol})
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* 6 Preset Amounts Grid (Copied from RewardModal: grid grid-cols-3 gap-2.5) */}
+            {/* 6 Preset Amounts Grid: strictly paired with local coffee price tiers & PPP adjustment */}
             <div className="space-y-2.5">
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                1. 选择支持档位
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  1. 选择支持档位
+                </label>
+                {activeCurrencyType === 'global' && (
+                  <span className="text-[11px] text-[#425aef] dark:text-blue-400 font-medium">
+                    ⚡ 已随本地购买力（PPP）汇率折算
+                  </span>
+                )}
+              </div>
+
               <div className="grid grid-cols-3 gap-2.5">
-                {activeCurrencyConfig.amounts.map((amt, idx) => {
-                  const isSelected = !isCustomMode && selectedAmount === amt;
-                  const label = activeCurrencyConfig.labels[idx];
+                {activeAmounts.map((amt, idx) => {
+                  const isSelected = !isCustomMode && selectedTierIndex === idx;
+                  const label = localCurrencyOption.labels[idx] || '咖啡心意';
                   return (
                     <button
-                      key={amt}
+                      key={`${activeCurrencyCode}-${idx}-${amt}`}
                       type="button"
                       onClick={() => {
                         setIsCustomMode(false);
-                        setSelectedAmount(amt);
+                        setSelectedTierIndex(idx);
                       }}
                       className={`py-3 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border ${
                         isSelected
@@ -426,7 +443,7 @@ export const SupportDashboard: React.FC = () => {
                       }`}
                     >
                       <div className="text-sm font-black tracking-tight">
-                        {activeCurrencyConfig.symbol}{amt}
+                        {activeCurrencySymbol}{amt}
                       </div>
                       <div
                         className={`text-[11px] font-medium mt-0.5 whitespace-nowrap ${
@@ -440,7 +457,7 @@ export const SupportDashboard: React.FC = () => {
                 })}
               </div>
 
-              {/* Custom Amount Input (Copied from RewardModal: border-2 transition-all cursor-text) */}
+              {/* Custom Amount Input */}
               <div className="space-y-1 pt-1">
                 <label
                   className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 transition-all cursor-text ${
@@ -452,14 +469,20 @@ export const SupportDashboard: React.FC = () => {
                   }`}
                 >
                   <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 shrink-0">
-                    {activeCurrencyConfig.symbol}
+                    {activeCurrencySymbol}
                   </span>
                   <input
                     type="number"
-                    min={activeCurrencyConfig.min}
-                    max={activeCurrencyConfig.max}
-                    step={activeCurrencyConfig.code === 'jpy' ? 100 : 1}
-                    placeholder={`自定义金额（${activeCurrencyConfig.symbol}${activeCurrencyConfig.min} ~ ${activeCurrencyConfig.symbol}${activeCurrencyConfig.max}）`}
+                    min={activeMin}
+                    max={activeMax}
+                    step={
+                      ['jpy', 'krw'].includes(activeCurrencyCode.toLowerCase())
+                        ? 100
+                        : activeCurrencyType === 'global'
+                        ? 0.5
+                        : 1
+                    }
+                    placeholder={`自定义金额（${activeCurrencySymbol}${activeMin} ~ ${activeCurrencySymbol}${activeMax}）`}
                     value={customAmount}
                     onFocus={() => setIsCustomMode(true)}
                     onChange={(e) => {
@@ -470,19 +493,19 @@ export const SupportDashboard: React.FC = () => {
                   />
                   {isCustomMode && customAmount && (
                     <span className="text-[11px] font-bold uppercase text-[#425aef] shrink-0">
-                      {activeCurrencyConfig.code.toUpperCase()}
+                      {activeCurrencyCode}
                     </span>
                   )}
                 </label>
                 {isCustomMode && isCustomInvalid && (
                   <div className="text-[11px] text-red-500 dark:text-red-400 px-1 font-medium">
-                    请输入 {activeCurrencyConfig.symbol}{activeCurrencyConfig.min} ~ {activeCurrencyConfig.symbol}{activeCurrencyConfig.max} 之间的金额
+                    请输入 {activeCurrencySymbol}{activeMin} ~ {activeCurrencySymbol}{activeMax} 之间的金额
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Serv00-styled Supporter Inputs */}
+            {/* Supporter Inputs */}
             <div className="space-y-3 pt-1">
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 2. 支持者信息登记
@@ -490,7 +513,7 @@ export const SupportDashboard: React.FC = () => {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                    👤 称呼或社交账号 (Name or your social) (可选)
+                    👤 称呼或社交账号 (Name or social handle) (可选)
                   </label>
                   <input
                     type="text"
@@ -519,8 +542,8 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Action Button & Notification Notice */}
-          <div className="pt-4 space-y-2 border-t border-slate-100 dark:border-white/[0.06]">
+          {/* Bottom Action Button (Unnecessary notification text removed, fully explained in FAQ) */}
+          <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               disabled={!isAmountValid}
@@ -529,24 +552,20 @@ export const SupportDashboard: React.FC = () => {
             >
               <CreditCard className="w-5 h-5 text-white/90" />
               <span>
-                前往 Stripe 安全收银台支付 — {activeCurrencyConfig.symbol}
-                {effectiveAmount} {activeCurrencyConfig.code.toUpperCase()}
+                前往 Stripe 安全收银台支付 — {activeCurrencySymbol}
+                {effectiveAmount} {activeCurrencyCode}
               </span>
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
-
-            <p className="text-xs text-slate-500 dark:text-slate-400 text-center pt-1 leading-relaxed">
-              支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存
-            </p>
           </div>
         </div>
 
-        {/* Right Column: QR Codes Overview & Web3 Channels (5 Cols) */}
+        {/* Right Column: QR Codes Overview & Guidance Cards (5 Cols, Anti-Hollow Optimization) */}
         <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-5">
           <div className="space-y-4">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                扫码支付一览
+                免中转手续费 · 极速直达
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
                 微信 / 支付宝 / PayPal / Web3
@@ -605,9 +624,9 @@ export const SupportDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Tab 1: CN QR Codes */}
+            {/* Tab 1: CN QR Codes & Feature Guidance */}
             {qrTab === 'cn' && (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-3.5 animate-in fade-in duration-200">
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
                     <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
@@ -667,12 +686,25 @@ export const SupportDashboard: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Guidance Micro-Card (Eliminating hollow whitespace) */}
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>零中转扣费 · 100% 直达技术开销</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
+                    <div>• <strong>免通道费</strong>：免除 Stripe 3.4% + $0.30 跨境手续费与清算磨损</div>
+                    <div>• <strong>转账备注</strong>：转账时请在附言备注 <code>称呼: 寄语</code>，博主核实后录入名录</div>
+                    <div>• <strong>TG 记账同步</strong>：博主核对账目后，Telegram 机器人自动同步记录资金状态</div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Tab 2: HK QR Codes */}
+            {/* Tab 2: HK QR Codes & Feature Guidance */}
             {qrTab === 'hk' && (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-3.5 animate-in fade-in duration-200">
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2 group">
                     <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
@@ -732,12 +764,24 @@ export const SupportDashboard: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                    <span>港币原生通道 · 零电汇换汇损耗</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
+                    <div>• <strong>本地钱包</strong>：支持香港本地电子钱包/转数快通道直连支持</div>
+                    <div>• <strong>附言致谢</strong>：转账附言备注昵称与寄语，博主查对后手动录入名录</div>
+                    <div>• <strong>隐私保障</strong>：人工安全对账，前台名册仅公示昵称，绝不泄露账号</div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Tab 3: PayPal */}
+            {/* Tab 3: PayPal & Feature Guidance */}
             {qrTab === 'paypal' && (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-3.5 animate-in fade-in duration-200">
                 <a
                   href="https://www.paypal.com/paypalme/shijianus"
                   target="_blank"
@@ -784,12 +828,23 @@ export const SupportDashboard: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    <span>全球跨国支持 · 亲友转账免手续费</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
+                    <div>• <strong>转账类型建议</strong>：建议选择个人亲友 (Friends & Family) 方式，避免商户扣费</div>
+                    <div>• <strong>核验凭单</strong>：转账后欢迎发送邮件附带 Transaction ID，以便核对录入</div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Tab 4: Web3 / USDT */}
+            {/* Tab 4: Web3 / USDT & Feature Guidance */}
             {qrTab === 'crypto' && (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-3.5 animate-in fade-in duration-200">
                 <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -799,7 +854,7 @@ export const SupportDashboard: React.FC = () => {
                           USDT (Arbitrum One)
                         </div>
                         <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                          Layer 2 极低 Gas 费链路
+                          以太坊 Layer 2 极低 Gas 费链路
                         </div>
                       </div>
                     </div>
@@ -835,18 +890,30 @@ export const SupportDashboard: React.FC = () => {
                     )}
                   </button>
                 </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>极客与去中心化通道 · 链上透明查验</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
+                    <div>• <strong>极低 Gas 费</strong>：推荐 Arbitrum One 网络，单笔链上手续费常低于 $0.01</div>
+                    <div>• <strong>TxHash 查验</strong>：转账后可将交易哈希邮件发送作者，链上确认后录入榜单</div>
+                    <div>• <strong>隐私至上</strong>：真正点对点直连，免除一切中心化支付商身份审计</div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Clean Tip Box: Balanced with Left Column */}
+          {/* Clean Explanatory Notice Box for QR Code channels */}
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            💡 <strong>扫码支持提示</strong>：转账时可在附言中备注称呼与寄语，博主定期查对账单后将手动录入至下方致谢名录。若希望保持匿名，无需填写附言。
+            💡 <strong>扫码支持提示</strong>：第三方扫码打赏属于封闭支付系统，无对外 Webhook 接口。博主在查实对账后会手动录入至下方致谢名册并同步 Telegram 频道。若希望完全匿名，转账时附言留空即可。如发现遗漏欢迎邮件联系。
           </div>
         </div>
       </section>
 
-      {/* ── 3. Part 2: Supporter Roster (公开致谢名册) ────────────────── */}
+      {/* ── 3. Part 2: Supporter Roster (公开致谢名册与资金公示) ────────────────── */}
       <section id="sponsor-records" className="space-y-6 pt-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -855,10 +922,10 @@ export const SupportDashboard: React.FC = () => {
               <span>公开致谢名册</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              支援名录 (Hall of Fame)
+              支援名录与资金公示
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              致谢每一位慷慨支持的读者与同行，名单定期与后台数据库同步。
+              致谢每一位慷慨支持的读者与同行，真实资金去向透明挂钩，未动用部分严谨显示“-”。
             </p>
           </div>
 
@@ -890,10 +957,10 @@ export const SupportDashboard: React.FC = () => {
           </div>
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              喝到咖啡
+              精神咖啡支持
             </div>
             <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-              {Math.round(sponsors.length * 2.4)} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
+              {sponsors.length} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
             </div>
           </div>
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
@@ -914,7 +981,7 @@ export const SupportDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Supporter Table */}
+        {/* Supporter Table: with explicit Allocation (资金去向 / 消费公示) column */}
         <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121520] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
@@ -924,6 +991,7 @@ export const SupportDashboard: React.FC = () => {
                   <th scope="col" className="px-4 py-3.5">支持金额</th>
                   <th scope="col" className="px-4 py-3.5">祝福与寄语</th>
                   <th scope="col" className="px-4 py-3.5">支付渠道</th>
+                  <th scope="col" className="px-4 py-3.5">资金去向 / 消费公示</th>
                   <th scope="col" className="px-5 py-3.5 text-right">日期</th>
                 </tr>
               </thead>
@@ -990,6 +1058,18 @@ export const SupportDashboard: React.FC = () => {
                         </span>
                       </td>
 
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded-md text-[11px] font-medium ${
+                            sponsor.allocation && sponsor.allocation !== '-'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40'
+                              : 'text-slate-400 dark:text-slate-500 font-mono text-center'
+                          }`}
+                        >
+                          {sponsor.allocation && sponsor.allocation !== '-' ? `🎯 ${sponsor.allocation}` : '—'}
+                        </span>
+                      </td>
+
                       <td className="px-5 py-3.5 whitespace-nowrap text-right text-xs text-slate-400 dark:text-slate-400 font-mono">
                         {sponsor.date}
                       </td>
@@ -997,7 +1077,7 @@ export const SupportDashboard: React.FC = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                    <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-slate-500">
                       <Coffee className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
                       <p className="text-sm">未搜索到相关支持者记录</p>
                     </td>

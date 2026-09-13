@@ -118,17 +118,24 @@ async function verifyLive() {
         throw new Error('Expected custom amount input with cursor-text style to be visible');
       }
 
-      // 6. Test Serv00 Labels & Notice
-      console.log('👤 Checking Serv00 Labels & Notification Text...');
+      // 6. Test Serv00 Labels & Superfluous Notice Removal
+      console.log('👤 Checking Serv00 Labels & Superfluous Notice Removal...');
       const nameLabel = await page.locator('label:has-text("称呼或社交账号")').textContent();
       const msgLabel = await page.locator('label:has-text("留言寄语")').textContent();
       console.log(`Field 1: "${nameLabel?.trim()}"`);
       console.log(`Field 2: "${msgLabel?.trim()}"`);
 
-      const noticeText = await page.locator('.text-center.text-xs.text-slate-500').textContent();
-      console.log(`Notice under button: "${noticeText?.trim()}"`);
-      if (!noticeText?.includes('支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存')) {
-        throw new Error(`Notice text unexpected: ${noticeText}`);
+      const superfluousNotice = page.locator('.lg\\:col-span-7 .pt-4 p.text-slate-500');
+      const superfluousCount = await superfluousNotice.count();
+      console.log(`Superfluous notice count under button: ${superfluousCount}`);
+      if (superfluousCount > 0) {
+        throw new Error('Superfluous notification text should be removed from left column');
+      }
+
+      // Check QR tip box in right column
+      const qrTipBox = page.locator('.lg\\:col-span-5 div.p-3\\.5.rounded-2xl:has-text("扫码支持提示")');
+      if (!(await qrTipBox.isVisible())) {
+        throw new Error('QR code explanatory tip box is missing in right column');
       }
 
       // 7. Audit Absence of Amber Filler Cards & Verify Grounded FAQ
@@ -168,18 +175,20 @@ async function verifyLive() {
       await closeBtn.click();
       await page.waitForTimeout(500);
 
-      // 9. Test Table Pagination
+      // 9. Test Supporter Table with Allocation Column & Max 3 initial records
       console.log('📜 Testing Supporter Table on live page...');
       await page.locator('#sponsor-records').scrollIntoViewIfNeeded();
       await page.waitForTimeout(500);
 
-      const page1Btn = page.locator('.flex.items-center.gap-1 button:has-text("1")').first();
-      const page2Btn = page.locator('.flex.items-center.gap-1 button:has-text("2")').first();
-      const jumpBtn = page.locator('.flex.items-center.gap-1 button:has-text("...")').first();
+      const tableHeaders = page.locator('#sponsor-records table thead tr th');
+      const headerCount = await tableHeaders.count();
+      console.log(`Live Table Header Count: ${headerCount}`);
+      if (headerCount !== 6) {
+        throw new Error(`Expected 6 table headers, got: ${headerCount}`);
+      }
 
-      console.log(`Live Page 1 Button Visible: ${await page1Btn.isVisible()}`);
-      console.log(`Live Page 2 Button Visible: ${await page2Btn.isVisible()}`);
-      console.log(`Live Jump Button Visible: ${await jumpBtn.isVisible()}`);
+      const rowsCount = await page.locator('#sponsor-records table tbody tr').count();
+      console.log(`Live Initial Rows Count: ${rowsCount}`);
 
       await page.screenshot({ path: path.join(outDir, `live-target-${i + 1}-table.png`) });
 

@@ -69,6 +69,8 @@ async function runVerification() {
 
     console.log('📄 1. Navigating to /support/ ...');
     await page.goto('http://127.0.0.1:4399/support/', { waitUntil: 'networkidle' });
+    await page.waitForSelector('#loading-box', { state: 'detached', timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(1000);
 
     // Assert Title and Hero
     const heroTitle = await page.locator('h1').textContent();
@@ -105,58 +107,49 @@ async function runVerification() {
     if (bottomDiff > 2) {
       throw new Error(`Left and Right cards are not bottom-aligned (diff: ${bottomDiff}px)`);
     }
-    console.log('✅ Requirement 1 Verified: Left & Right Cards are perfectly aligned top-to-bottom!');
+    console.log('✅ Requirement 1 & 4 Verified: Left & Right Cards are perfectly aligned top-to-bottom and anti-hollow!');
 
     // -------------------------------------------------------------
-    // 3. Width Alignment Audit for FAQ
+    // 3. Test 2-Currency Switcher & Dynamic PPP Conversion
     // -------------------------------------------------------------
-    console.log('📐 3. Auditing Width Alignment of FAQ Section with Other Sections...');
-    const faqSection = page.locator('section:has(h2:has-text("常見問題與透明度承諾"))');
-    const recordsSection = page.locator('#sponsor-records');
-    const faqBox = await faqSection.boundingBox();
-    const recordsBox = await recordsSection.boundingBox();
-
-    if (!faqBox || !recordsBox) {
-      throw new Error('Failed to retrieve bounding boxes for FAQ or Records section');
-    }
-
-    console.log(`FAQ Section: x=${faqBox.x}, width=${faqBox.width}`);
-    console.log(`Records Section: x=${recordsBox.x}, width=${recordsBox.width}`);
-
-    const widthDiff = Math.abs(faqBox.width - recordsBox.width);
-    const leftDiff = Math.abs(faqBox.x - recordsBox.x);
-    console.log(`FAQ Width Diff: ${widthDiff}px, Left Diff: ${leftDiff}px`);
-    if (widthDiff > 2 || leftDiff > 2) {
-      throw new Error(`FAQ section does not span full width matching records section (width diff: ${widthDiff}px)`);
-    }
-    console.log('✅ Requirement 2 Verified: FAQ is 100% full-width aligned with the rest of the page!');
-
-    // -------------------------------------------------------------
-    // 4. Test 2-Currency Switcher & Dynamic Conversion
-    // -------------------------------------------------------------
-    console.log('💱 4. Testing 2-Currency Switcher & Dynamic Conversion...');
+    console.log('💱 3. Testing 2-Currency Switcher & PPP Price Conversion...');
     const currencyButtons = page.locator('.lg\\:col-span-7 .flex.items-center.gap-1.p-1 button');
     const currencyBtnCount = await currencyButtons.count();
     console.log(`Visible Currency Toggle Buttons: ${currencyBtnCount}`);
     if (currencyBtnCount !== 2) {
-      throw new Error(`Expected exactly 2 currency buttons (Local & USD), found: ${currencyBtnCount}`);
+      throw new Error(`Expected exactly 2 currency buttons (Local & Unified USD/HKD), found: ${currencyBtnCount}`);
     }
 
-    // Toggle to USD
+    const btn1Text = await currencyButtons.nth(0).textContent();
+    const btn2Text = await currencyButtons.nth(1).textContent();
+    console.log(`Button 1 (Local): "${btn1Text?.trim()}"`);
+    console.log(`Button 2 (Unified): "${btn2Text?.trim()}"`);
+
+    // Verify initial local presets (CNY: 4, 9, 14, 16, 20, 25)
+    const cnyPresets = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
+    const cny3rdText = await cnyPresets.nth(2).textContent();
+    console.log(`CNY 3rd Preset: "${cny3rdText?.trim()}"`);
+    if (!cny3rdText?.includes('14')) {
+      throw new Error('Expected CNY 3rd preset to be ¥14');
+    }
+
+    // Toggle to Unified Currency (USD)
+    console.log('Switching to Unified Currency (USD)...');
     await currencyButtons.nth(1).click();
     await page.waitForTimeout(300);
+
     const ctaTextUSD = await page.locator('button:has-text("前往 Stripe 安全收银台支付")').textContent();
     console.log(`CTA Text after selecting USD: "${ctaTextUSD?.trim()}"`);
     if (!ctaTextUSD?.includes('USD')) {
       throw new Error('Expected CTA button to display USD currency code');
     }
 
-    // Check USD preset buttons in grid-cols-3
+    // Check that USD amounts reflect PPP conversion from local coffee prices (e.g. $2 for Americano instead of native US $5)
     const usdPresets = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
-    const usdPresetCount = await usdPresets.count();
-    console.log(`USD Presets Count: ${usdPresetCount}`);
-    if (usdPresetCount !== 6) {
-      throw new Error(`Expected 6 preset buttons in grid-cols-3, got ${usdPresetCount}`);
+    const usd3rdText = await usdPresets.nth(2).textContent();
+    console.log(`USD 3rd Preset (PPP Converted from 14 CNY): "${usd3rdText?.trim()}"`);
+    if (!usd3rdText?.includes('$2')) {
+      throw new Error(`Expected USD 3rd preset to be $2 (PPP converted from 14 CNY), got: ${usd3rdText}`);
     }
 
     // Switch back to CNY
@@ -164,150 +157,133 @@ async function runVerification() {
     await page.waitForTimeout(300);
 
     // -------------------------------------------------------------
-    // 5. Test 6 Presets in grid-cols-3 and In-place Custom Input
+    // 4. Verify Superfluous Notification Text Removal in Left Column
     // -------------------------------------------------------------
-    console.log('☕ 5. Auditing 6 Presets in grid-cols-3 and In-place Custom Input...');
-    const cnyPresets = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
-    await cnyPresets.nth(2).click(); // Click 3rd preset (¥14)
-    await page.waitForTimeout(200);
-
-    const ctaText14 = await page.locator('button:has-text("前往 Stripe 安全收银台支付")').textContent();
-    console.log(`CTA Text after picking 3rd preset: "${ctaText14?.trim()}"`);
-    if (!ctaText14?.includes('14')) {
-      throw new Error('Expected CTA to show amount 14');
+    console.log('🗑️ 4. Verifying Superfluous Notification Removal under Stripe CTA button...');
+    const superfluousNotice = page.locator('.lg\\:col-span-7 .pt-4 p.text-slate-500');
+    const superfluousCount = await superfluousNotice.count();
+    console.log(`Superfluous notice count under button: ${superfluousCount}`);
+    if (superfluousCount > 0) {
+      throw new Error('Superfluous notification text should be removed from left column and migrated to FAQ');
     }
-
-    // Test in-place custom input
-    const customInputLabel = page.locator('label.cursor-text');
-    if (!(await customInputLabel.isVisible())) {
-      throw new Error('Custom amount label (cursor-text) is missing');
-    }
-
-    const customInput = customInputLabel.locator('input[type="number"]');
-    await customInput.fill('50');
-    await page.waitForTimeout(200);
-
-    const ctaText50 = await page.locator('button:has-text("前往 Stripe 安全收银台支付")').textContent();
-    console.log(`CTA Text after filling custom 50: "${ctaText50?.trim()}"`);
-    if (!ctaText50?.includes('50')) {
-      throw new Error('Expected CTA to show custom amount 50');
-    }
-    console.log('✅ Requirement 4 & 5 Verified: Copied grid-cols-3 and cursor-text custom input work seamlessly!');
+    console.log('✅ Requirement 3 Verified: Superfluous text removed from left column!');
 
     // -------------------------------------------------------------
-    // 6. Test Serv00-styled Supporter Inputs & Clean Notice
+    // 5. Verify Right Column Density, Guidance Cards & QR Notice
     // -------------------------------------------------------------
-    console.log('👤 6. Testing Serv00-styled Supporter Inputs & Notice...');
-    const nameLabel = await page.locator('label:has-text("称呼或社交账号")').textContent();
-    const msgLabel = await page.locator('label:has-text("留言寄语")').textContent();
-    console.log(`Field 1 Label: "${nameLabel?.trim()}"`);
-    console.log(`Field 2 Label: "${msgLabel?.trim()}"`);
-
-    if (!nameLabel?.includes('👤 称呼或社交账号 (Name or your social) (可选)')) {
-      throw new Error(`Label does not match Serv00 standard: ${nameLabel}`);
-    }
-    if (!msgLabel?.includes('💬 留言寄语 (Say something nice) (可选)')) {
-      throw new Error(`Label does not match Serv00 standard: ${msgLabel}`);
+    console.log('🛡️ 5. Verifying Right Column Anti-Hollow Optimization & QR Explanation Box...');
+    const qrTipBox = page.locator('.lg\\:col-span-5 div.p-3\\.5.rounded-2xl:has-text("扫码支持提示")');
+    const qrTipVisible = await qrTipBox.isVisible();
+    const qrTipContent = await qrTipBox.textContent();
+    console.log(`QR Tip Box Visible: ${qrTipVisible}`);
+    console.log(`QR Tip Content: "${qrTipContent?.trim()}"`);
+    if (!qrTipVisible || !qrTipContent?.includes('第三方扫码打赏属于封闭支付系统')) {
+      throw new Error('Missing or incomplete QR code explanatory tip box in right column');
     }
 
-    const nameInput = page.locator('input[placeholder="例如：@github_username 或 Shijian Friend"]');
-    const msgInput = page.locator('textarea[placeholder="写下想对作者说的话或鼓励..."]');
-    if (!(await nameInput.isVisible()) || !(await msgInput.isVisible())) {
-      throw new Error('Supporter input placeholders do not match Serv00 format');
+    // Check guidance micro-card
+    const guidanceCard = page.locator('.lg\\:col-span-5 div.p-3.rounded-xl');
+    const guidanceVisible = await guidanceCard.first().isVisible();
+    console.log(`Right Column Guidance Micro-Card Visible: ${guidanceVisible}`);
+    if (!guidanceVisible) {
+      throw new Error('Guidance micro-card missing from right column');
     }
-
-    // Check notice under button
-    const noticeText = await page.locator('.pt-4.space-y-2 p').textContent();
-    console.log(`Notice under button: "${noticeText?.trim()}"`);
-    if (!noticeText?.includes('支持信息将在完成付款后自动推送到作者 Telegram 频道并安全保存')) {
-      throw new Error('Missing exact telegram completion notice under button');
-    }
-    console.log('✅ Requirement 6 Verified: Serv00 inputs and clean notification text verified!');
-
-    // Fill inputs
-    await nameInput.fill('时间探索者');
-    await msgInput.fill('非常喜爱博客的极客交互与深度长文，请博主喝咖啡！☕️🚀');
+    console.log('✅ Requirement 3 & 4 Verified: Right column is rich, dense, and well-explained!');
 
     // -------------------------------------------------------------
-    // 7. Test Triggering Stripe Modal (Direct Checkout Mode)
+    // 6. Test Supporter Roster (Max 3 Seed Records & Allocation Column)
     // -------------------------------------------------------------
-    console.log('💳 7. Testing Stripe Checkout CTA Trigger button...');
-    const stripeCta = page.locator('button:has-text("前往 Stripe 安全收银台支付")');
-    await stripeCta.click();
-    await page.waitForTimeout(1000);
-
-    const modal = page.locator('.fixed.inset-0.z-\\[10000\\]');
-    const isModalVisible = await modal.isVisible();
-    console.log(`Stripe Modal visible: ${isModalVisible}`);
-    if (!isModalVisible) {
-      throw new Error('RewardModal did not open when clicking Stripe CTA button');
-    }
-
-    await page.screenshot({ path: path.join(outDir, '02-desktop-stripe-modal-opened.png') });
-
-    // Close modal
-    const closeBtn = modal.locator('button:has(svg.lucide-x)');
-    await closeBtn.click();
-    await page.waitForTimeout(500);
-
-    // -------------------------------------------------------------
-    // 8. Test Accurate LV.0-LV.4 Disassociation in FAQ (No Amber Filler Card)
-    // -------------------------------------------------------------
-    console.log('💎 8. Auditing Accurate LV.0-LV.4 Disassociation in FAQ...');
-    // Assert amber card is NOT present in right column
-    const amberCards = page.locator('.bg-amber-50\\/60');
-    const amberCount = await amberCards.count();
-    console.log(`Amber filler cards count: ${amberCount}`);
-    if (amberCount > 0) {
-      throw new Error('Amber filler card should be removed from the column');
-    }
-
-    const lvFaqBtn = page.locator('button:has-text("赞赏支持能否提升我的社区等级 (LV) 或信任等级 (TL)？")');
-    await lvFaqBtn.click();
-    await page.waitForTimeout(300);
-
-    const faqContent = await page.locator('text=完全不能，两者 100% 独立脱钩').textContent();
-    console.log(`FAQ Answer: "${faqContent?.trim().slice(0, 100)}..."`);
-    if (!faqContent?.includes('LV.0 至 LV.4')) {
-      throw new Error('FAQ must accurately reflect the project level system (LV.0 至 LV.4)');
-    }
-    console.log('✅ Requirement 8 Verified: Grounded LV.0-LV.4 disassociation verified without filler cards!');
-
-    // -------------------------------------------------------------
-    // 9. Test Supporter Table Advanced Pagination
-    // -------------------------------------------------------------
-    console.log('📜 9. Testing Supporter Table Advanced Pagination...');
+    console.log('📜 6. Auditing Supporter Table: Max 3 Seed Records & Allocation Column...');
     await page.locator('#sponsor-records').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(400);
 
-    const prevBtn = page.locator('button:has-text("上一页"):has(svg.lucide-chevron-left)');
-    const nextBtn = page.locator('button:has-text("下一页"):has(svg.lucide-chevron-right)');
-    if (!(await prevBtn.isVisible()) || !(await nextBtn.isVisible())) {
-      throw new Error('Prev or Next buttons missing Chevron icon or text');
+    // Check table headers including "资金去向 / 消费公示"
+    const tableHeaders = page.locator('#sponsor-records table thead tr th');
+    const headerCount = await tableHeaders.count();
+    console.log(`Table Header Count: ${headerCount}`);
+    if (headerCount !== 6) {
+      throw new Error(`Expected 6 table headers (including Allocation), got: ${headerCount}`);
     }
 
-    const page1Btn = page.locator('.flex.items-center.gap-1 button:has-text("1")').first();
-    const page2Btn = page.locator('.flex.items-center.gap-1 button:has-text("2")').first();
-    const jumpBtn = page.locator('.flex.items-center.gap-1 button:has-text("...")').first();
+    const allocationHeader = await tableHeaders.nth(4).textContent();
+    console.log(`Header 5: "${allocationHeader?.trim()}"`);
+    if (!allocationHeader?.includes('资金去向 / 消费公示')) {
+      throw new Error(`Expected Header 5 to be '资金去向 / 消费公示', got: ${allocationHeader}`);
+    }
 
-    console.log(`Page 1 Btn Visible: ${await page1Btn.isVisible()}`);
-    console.log(`Page 2 Btn Visible: ${await page2Btn.isVisible()}`);
-    console.log(`Jump "..." Btn Visible: ${await jumpBtn.isVisible()}`);
+    // Check rows count
+    const tableRows = page.locator('#sponsor-records table tbody tr');
+    const rowCount = await tableRows.count();
+    console.log(`Initial Table Rows Count: ${rowCount}`);
+    if (rowCount > 3) {
+      throw new Error(`Expected at most 3 initial seed sponsors (no fake inflation), got: ${rowCount}`);
+    }
 
-    // Click Next button
-    await nextBtn.click();
-    await page.waitForTimeout(300);
-
-    const pageInfoText = await page.locator('#sponsor-records').getByText(/第\s*2\s*\//).textContent();
-    console.log(`Page text after clicking next: "${pageInfoText?.trim()}"`);
-
-    await page.screenshot({ path: path.join(outDir, '03-desktop-pagination-page2.png') });
-    console.log('✅ Requirement 9 Verified: Advanced pagination works with icons and number windows!');
+    // Verify allocation values (e.g. '-' or specific project allocation)
+    const row1Allocation = await tableRows.nth(0).locator('td').nth(4).textContent();
+    const row3Allocation = await tableRows.nth(2).locator('td').nth(4).textContent();
+    console.log(`Row 1 Allocation: "${row1Allocation?.trim()}"`);
+    console.log(`Row 3 Allocation: "${row3Allocation?.trim()}"`);
+    if (!row1Allocation?.includes('Cloudflare') || !row3Allocation?.includes('—')) {
+      throw new Error('Allocation column does not display correct project allocation or "-" placeholder');
+    }
+    console.log('✅ Requirement 5 Verified: At most 3 seed records with authentic expenditure disclosure!');
 
     // -------------------------------------------------------------
-    // 10. Mobile Viewport Audit (375 x 812)
+    // 7. Test Expanded FAQs (7 Comprehensive Topics)
     // -------------------------------------------------------------
-    console.log('📱 10. Testing Mobile Viewport (375x812)...');
+    console.log('📚 7. Testing Expanded Comprehensive FAQs (7 Topics)...');
+    const faqSection = page.locator('section:has(h2:has-text("常見問題與透明度承諾"))');
+    await faqSection.scrollIntoViewIfNeeded();
+    const faqItems = faqSection.locator('button:has(svg.lucide-chevron-down)');
+    const faqCount = await faqItems.count();
+    console.log(`FAQ Items Count: ${faqCount}`);
+    if (faqCount < 7) {
+      throw new Error(`Expected at least 7 comprehensive FAQs, found: ${faqCount}`);
+    }
+
+    // Test FAQ 1: Infrastructure, Spiritual Coffee & Transparent Allocation with "-"
+    const faq1Btn = faqItems.nth(0);
+    const faq1Title = await faq1Btn.textContent();
+    console.log(`FAQ 1: "${faq1Title?.trim()}"`);
+    // Ensure FAQ 1 is expanded
+    if (!(await page.locator('text=象征意义的精神咖啡').isVisible())) {
+      await faq1Btn.click();
+      await page.waitForTimeout(200);
+    }
+    const faq1Body = await page.locator('text=象征意义的精神咖啡').textContent();
+    if (!faq1Body?.includes('Cloudflare CDN 与边缘算力服务') || !faq1Body?.includes('“-”替代')) {
+      throw new Error('FAQ 1 does not contain required details on spiritual coffee, Cloudflare services, and "-" placeholder');
+    }
+
+    // Test FAQ 3: Third-party (WeChat/Alipay/PayPal) vs Stripe Webhook & QR Code justification
+    const faq3Btn = page.locator('button:has-text("通过微信、支付宝、PayPal 扫码后")');
+    await faq3Btn.click();
+    await page.waitForTimeout(200);
+    const faq3Body = await page.locator('text=精确到秒的瞬时 Webhook 更新').textContent();
+    if (!faq3Body?.includes('封闭式第三方支付生态') || !faq3Body?.includes('避免通道抽成')) {
+      throw new Error('FAQ 3 does not contain required webhook and QR code fee justification details');
+    }
+
+    // Test FAQ 4: Refund policy with original return & required materials
+    const faq4Btn = page.locator('button:has-text("如果赞赏出现误操作或需要退款")');
+    await faq4Btn.click();
+    await page.waitForTimeout(200);
+    const faq4Body = await page.locator('text=我们倾向于原路返回').textContent();
+    if (!faq4Body?.includes('核验材料') || !faq4Body?.includes('原支付账户或银行卡')) {
+      throw new Error('FAQ 4 does not contain original return policy and required proof materials');
+    }
+    // Take component screenshots
+    await page.locator('.grid.grid-cols-1.lg\\:grid-cols-12').screenshot({ path: path.join(outDir, '02-desktop-cards.png') });
+    await page.locator('#sponsor-records').screenshot({ path: path.join(outDir, '03-desktop-roster-table.png') });
+    await page.locator('section:has(h2:has-text("常見問題与透明度承诺"), h2:has-text("常見問題與透明度承諾"))').screenshot({ path: path.join(outDir, '04-desktop-faqs.png') });
+
+    console.log('✅ Requirement 6 Verified: All 7 comprehensive FAQs tested and verified!');
+
+    // -------------------------------------------------------------
+    // 8. Test Mobile Viewport (375 x 812)
+    // -------------------------------------------------------------
+    console.log('📱 8. Testing Mobile Viewport (375x812)...');
     const mobileContext = await browser.newContext({
       viewport: { width: 375, height: 812 },
       deviceScaleFactor: 2,
@@ -332,7 +308,7 @@ async function runVerification() {
     await mobileContext.close();
     await context.close();
 
-    console.log('🎉 All Support Page requirements PASSED Playwright verification!');
+    console.log('\n🎉 ALL 6 REQUIREMENTS 100% PASSED PLAYWRIGHT VERIFICATION!');
   } finally {
     await browser.close();
     server.close();

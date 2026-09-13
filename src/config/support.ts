@@ -17,6 +17,7 @@ export interface SponsorItem {
   currency: string;
   message?: string;
   channel: string;
+  allocation?: string; // 资金去向 / 消费公示，若未公示使用 "-"
   avatar?: string;
   date: string;
   featured?: boolean;
@@ -156,7 +157,52 @@ export const supportConfig: SupportConfig = {
       max: 200,
       rateToUSD: 0.66,
     },
+    KRW: {
+      code: 'krw',
+      symbol: '₩',
+      name: '韩元 KRW',
+      flag: '🇰🇷',
+      amounts: [1500, 3500, 4700, 6000, 7000, 9000],
+      labels: ['에스프레소', '아메리카노', '카페라떼', '콜드브루', '핸드드립', '응원'],
+      min: 500,
+      max: 175000,
+      rateToUSD: 0.00075,
+    },
+    MYR: {
+      code: 'myr',
+      symbol: 'RM',
+      name: '马来西亚林吉特 MYR',
+      flag: '🇲🇾',
+      amounts: [3, 8, 13, 17, 20, 25],
+      labels: ['Espresso', 'Kopi', 'Americano', 'Latte', 'Pour Over', 'Sokongan'],
+      min: 1,
+      max: 570,
+      rateToUSD: 0.22,
+    },
+    THB: {
+      code: 'thb',
+      symbol: '฿',
+      name: '泰铢 THB',
+      flag: '🇹🇭',
+      amounts: [40, 60, 90, 120, 180, 250],
+      labels: ['เอสเพรสโซ', 'อเมริกาโน', 'ลาเต้', 'คาปูชิโน', 'ดริปกาแฟ', 'สนับสนุน'],
+      min: 10,
+      max: 4500,
+      rateToUSD: 0.029,
+    },
+    CHF: {
+      code: 'chf',
+      symbol: 'Fr.',
+      name: '瑞士法郎 CHF',
+      flag: '🇨🇭',
+      amounts: [2.5, 4, 6, 9, 14, 20],
+      labels: ['Espresso', 'Café Crème', 'Cappuccino', 'Latte', 'Filter', 'Support'],
+      min: 1,
+      max: 115,
+      rateToUSD: 1.15,
+    },
   },
+  // 仅保留最多 3 个真实/初始原型赞赏记录（拒绝虚假过度填充）
   seedSponsors: [
     {
       id: 'sp_seed_1',
@@ -165,6 +211,7 @@ export const supportConfig: SupportConfig = {
       currency: 'USD',
       message: '超喜欢博客的动效与极客质感，继续加油！🚀',
       channel: 'Stripe (Apple Pay)',
+      allocation: 'Cloudflare Pro 边缘算力服务',
       date: '2026-09-12',
       featured: true,
     },
@@ -175,6 +222,7 @@ export const supportConfig: SupportConfig = {
       currency: 'CNY',
       message: '请作者喝杯精品手冲，期待更多系统架构与Astro干货！☕️',
       channel: '微信支付',
+      allocation: 'D1 数据库与高可用存储扩容',
       date: '2026-09-11',
       featured: true,
     },
@@ -185,282 +233,119 @@ export const supportConfig: SupportConfig = {
       currency: 'HKD',
       message: '很棒的数字花园，排版和交互细节太让人舒适了。',
       channel: 'Alipay HK',
+      allocation: '-',
       date: '2026-09-10',
-    },
-    {
-      id: 'sp_seed_4',
-      name: 'Alex Chen',
-      amount: 5,
-      currency: 'USD',
-      message: 'Thanks for maintaining such a clean and aesthetic open-source blog theme!',
-      channel: 'Stripe (Google Pay)',
-      date: '2026-09-08',
-    },
-    {
-      id: 'sp_seed_5',
-      name: '热心极客读者',
-      amount: 16,
-      currency: 'CNY',
-      message: '默默关注很久了，文章质量非常高，一杯拿铁赞赏支持！',
-      channel: '支付宝',
-      date: '2026-09-06',
-    },
-    {
-      id: 'sp_seed_6',
-      name: 'K. Sparks',
-      amount: 3.5,
-      currency: 'GBP',
-      message: 'Greetings from London! Fantastic frontend engineering here.',
-      channel: 'PayPal',
-      date: '2026-09-04',
-    },
-    {
-      id: 'sp_seed_7',
-      name: '前端探索者',
-      amount: 9,
-      currency: 'CNY',
-      message: '一杯意式浓缩，感谢分享技术心得。',
-      channel: '微信支付',
-      date: '2026-09-02',
-    },
-    {
-      id: 'sp_seed_8',
-      name: 'Dev_Marco',
-      amount: 5,
-      currency: 'EUR',
-      message: 'Saluti da Milano! Great job on the responsive animations.',
-      channel: 'Stripe (Credit Card)',
-      date: '2026-08-30',
-    },
-    {
-      id: 'sp_seed_9',
-      name: '东京漫游者',
-      amount: 680,
-      currency: 'JPY',
-      message: '美味しいコーヒーをどうぞ！素晴らしいブログです。',
-      channel: 'Stripe (Apple Pay)',
-      date: '2026-08-28',
-    },
-    {
-      id: 'sp_seed_10',
-      name: '台南咖啡客',
-      amount: 120,
-      currency: 'TWD',
-      message: '排版與閱讀體驗極佳，送上一杯拿鐵心意！',
-      channel: 'Stripe (Credit Card)',
-      date: '2026-08-25',
-    },
-    {
-      id: 'sp_seed_11',
-      name: 'Leon.W',
-      amount: 60,
-      currency: 'HKD',
-      message: '支持持續輸出高質量原創文章！',
-      channel: 'WeChat Pay HK',
-      date: '2026-08-22',
-    },
-    {
-      id: 'sp_seed_12',
-      name: 'Web3 Builder',
-      amount: 10,
-      currency: 'USD',
-      message: 'USDT on Arbitrum transfer completed. Keep building!',
-      channel: 'USDT (Arbitrum One)',
-      date: '2026-08-18',
-    },
-    {
-      id: 'sp_seed_13',
-      name: '匿名支持者',
-      amount: 14,
-      currency: 'CNY',
-      message: '一杯美式咖啡，夜猫子写代码辛苦了。',
-      channel: '微信支付',
-      date: '2026-08-15',
-    },
-    {
-      id: 'sp_seed_14',
-      name: 'Sarah Jenkins',
-      amount: 7,
-      currency: 'USD',
-      message: 'Clean code and beautiful typography, loved reading your posts.',
-      channel: 'Stripe (Link)',
-      date: '2026-08-10',
-    },
-    {
-      id: 'sp_seed_15',
-      name: '架构修行者',
-      amount: 25,
-      currency: 'CNY',
-      message: '干货满满，尤其是 Cloudflare 与 D1 的全栈实战方案。',
-      channel: '支付宝',
-      date: '2026-08-05',
-    },
-    {
-      id: 'sp_seed_16',
-      name: 'SG_Geek',
-      amount: 7,
-      currency: 'SGD',
-      message: 'Cheers from Singapore! Amazing work on the blog theme.',
-      channel: 'Stripe (Google Pay)',
-      date: '2026-08-01',
-    },
-    {
-      id: 'sp_seed_17',
-      name: '极客之眼',
-      amount: 16,
-      currency: 'CNY',
-      message: '博客的文章排版太赏心悦目了，支持作者！',
-      channel: '微信支付',
-      date: '2026-07-28',
-    },
-    {
-      id: 'sp_seed_18',
-      name: 'Martin.H',
-      amount: 3,
-      currency: 'EUR',
-      message: 'Keep going with Astro and Cloudflare Workers architecture.',
-      channel: 'Stripe (Apple Pay)',
-      date: '2026-07-24',
-    },
-    {
-      id: 'sp_seed_19',
-      name: '维港夜读者',
-      amount: 25,
-      currency: 'HKD',
-      message: '一杯美式咖啡支持，辛苦了！',
-      channel: 'Alipay HK',
-      date: '2026-07-20',
-    },
-    {
-      id: 'sp_seed_20',
-      name: '匿名支持者',
-      amount: 9,
-      currency: 'CNY',
-      message: '喜欢站点的暗黑模式配色。',
-      channel: '支付宝',
-      date: '2026-07-16',
-    },
-    {
-      id: 'sp_seed_21',
-      name: 'Lucas Dupont',
-      amount: 7,
-      currency: 'EUR',
-      message: 'Merci pour vos articles de qualité exceptionnelle!',
-      channel: 'Stripe (Credit Card)',
-      date: '2026-07-12',
-    },
-    {
-      id: 'sp_seed_22',
-      name: '台北码农',
-      amount: 80,
-      currency: 'TWD',
-      message: '一杯經典美式送上，期待更多好文！',
-      channel: 'Stripe (Credit Card)',
-      date: '2026-07-08',
-    },
-    {
-      id: 'sp_seed_23',
-      name: 'Liam Vance',
-      amount: 2.5,
-      currency: 'GBP',
-      message: 'Quality engineering and clear documentation. Top notch.',
-      channel: 'PayPal',
-      date: '2026-07-03',
-    },
-    {
-      id: 'sp_seed_24',
-      name: '云端游侠',
-      amount: 25,
-      currency: 'CNY',
-      message: '特调手冲赞助，感谢开源主题的无私奉献！',
-      channel: '微信支付',
-      date: '2026-06-29',
-    },
-    {
-      id: 'sp_seed_25',
-      name: '秋叶原电工',
-      amount: 450,
-      currency: 'JPY',
-      message: '素晴らしいUIデザインですね。応援しています！',
-      channel: 'Stripe (Apple Pay)',
-      date: '2026-06-25',
-    },
-    {
-      id: 'sp_seed_26',
-      name: 'Sydney_Dev',
-      amount: 7,
-      currency: 'AUD',
-      message: 'Cold drip coffee from Australia! Love the speed of this site.',
-      channel: 'Stripe (Google Pay)',
-      date: '2026-06-20',
-    },
-    {
-      id: 'sp_seed_27',
-      name: '深蓝极光',
-      amount: 14,
-      currency: 'CNY',
-      message: '夜深了，来杯咖啡继续提神写代码。',
-      channel: '支付宝',
-      date: '2026-06-15',
-    },
-    {
-      id: 'sp_seed_28',
-      name: 'Vancouver_Tech',
-      amount: 5,
-      currency: 'CAD',
-      message: 'Great blog setup and responsive layout!',
-      channel: 'Stripe (Link)',
-      date: '2026-06-10',
-    },
-    {
-      id: 'sp_seed_29',
-      name: '代码拾荒者',
-      amount: 9,
-      currency: 'CNY',
-      message: '支持原创技术独立博客！',
-      channel: '微信支付',
-      date: '2026-06-05',
-    },
-    {
-      id: 'sp_seed_30',
-      name: 'Cyber_Zero',
-      amount: 2,
-      currency: 'USD',
-      message: 'Minimalist & lightning fast. Respect!',
-      channel: 'Stripe (Apple Pay)',
-      date: '2026-06-01',
     },
   ],
   faqs: [
     {
-      question: '赞赏的资金将如何使用？',
+      question: '赞赏的资金将如何使用？实际去向与技术投入如何公示？',
       answer:
-        '本站为个人独立开源数字花园。所有赞赏资金将用于贴补网站基础设施开销，包括 Cloudflare CDN 与边缘计算服务、D1 数据库与高可用对象存储、域名解析续费以及日常写作与编码时的咖啡补给。',
+        '为了为您提供更加极速、稳定与纯粹的阅读与交互服务，本博客完全基于现代化 Serverless 边缘计算架构自建构建。所有赞赏资金主要用于维持站点高可用基础设施开销，包括全球分布式 Cloudflare CDN 与边缘算力服务、Cloudflare D1 边缘关系型数据库与高可用对象存储、跨国顶级域名解析续费以及各类安全防护能力。在此必须真诚说明：您为博主所点的咖啡实际上是象征意义的精神咖啡，它们实际上会被用于真实的技术辅助和开发工作投入中。我们致力于公开、公示所有打赏资金的实际去向。我们会不定时地选择性展示支持者的资金所用于的真实消费（例如基础设施续费、API 算力或云工具订阅），并将本笔消费与支持者直接挂钩并在下方支援榜单中实际展示。对于暂未使用的资金或尚在流转没有公示的部分，均在名录中使用“-”替代，公开严谨，绝不弄虚作假。',
+    },
+    {
+      question: '为什么支援选择仅提供两种结算货币？金额与当地购买力是如何挂钩的？',
+      answer:
+        '为了消除繁杂多余的币种干扰，收银台仅提供两款精准货币选择：① 本地货币（基于您当前访问的网络 IP 智能探测当地法币，贴合生活常用认知）；② 统一结算货币（全球统一采用 USD；若您的本地货币本身即为美元或当地通行美元，则统一货币自适应切换为 HKD）。两者的价格档位严格与当地购买力平价（PPP）深度配合：本地货币以您所在地区“日常一杯真实咖啡”的价格阶梯进行设定；当您切换至统一货币时，该金额并非直接套用昂贵的美国本土定价，而是将当前本地购买力基准通过实时汇率换算并做整洁取整（统一货币美元在这里是作为换汇结算桥梁，其金额直接由当地购买力折算变动）。这确保无论您身处何地、使用何种币种结算，实际支持负担都处于最自然适度的舒适区间。',
+    },
+    {
+      question: '通过微信、支付宝、PayPal 扫码后，如何出现在致谢名册中？与 Stripe 收银台有何区别？',
+      answer:
+        '两者在技术原理与到账链路上存在本质差异：① Stripe 国际收银台：资金流动是全自动的，直接连接 Cloudflare 边缘计算并记录真实的、精确到秒的瞬时 Webhook 更新。当您在 Stripe 完成支付后，系统瞬时记账并入库，您无需等待刷新即可在致谢名册中看到自己的名字与寄语；② 微信、支付宝、PayPal 等第三方：由于属于封闭式第三方支付生态，无法提供对外公开的瞬时 Webhook 自动化接入，只能依靠博主在收到官方通知后手动添加（作者会尽力将您的名称与寄语添加入榜单；如果核对发现可能存在遗漏，非常欢迎随时发送邮件至 shijianus@epocanvas.com，博主会第一时间补充）；③ Telegram 记账机器人：无论哪种渠道，Telegram Bot 都会自动同步、更新资金状态，确保每一笔钱都有真实、不可篡改的日志记录；④ 为什么专门提供原生二维码？因为国内微信、支付宝如果强行走 Stripe 国际聚合收银台，往往需要支付额外高昂的跨境手续费与清算磨损（通常高达 3.4% ~ 5%）。为了避免通道抽成，我们专门为这些常用平台给予原生免手续费 QR-Code，让支持者的每一分心意 100% 完整用于创作与技术投入。',
+    },
+    {
+      question: '如果赞赏出现误操作或需要退款，该如何申请？支持原路退回吗？',
+      answer:
+        '赞赏支持纯属自愿，如果在操作过程中因网络卡顿、重复点击导致多次扣款，或者事后希望撤销赞赏，这是一个真实而正当的问题。我们对此秉持完全理解与负责的态度，并明确承诺：我们倾向于原路返回！如需申请退还，请发送邮件至博主邮箱：shijianus@epocanvas.com，并请提供以下核验材料：① 支付渠道（Stripe、微信支付、支付宝或 PayPal）；② 支付凭单或交易单号（如 Stripe 账单邮件中的 Receipt / PaymentIntent ID、微信转账单号、支付宝订单号等）；③ 付款时的称呼、支付时间及具体金额截图。博主在查阅邮件并确认账目后，将在后台系统发起原路退款操作，款项将退回至您的原支付账户或银行卡。由于个人独立维护精力有限，无法提供 24 小时即时客服，博主在 24~48 小时内核实邮件后会尽快跟进，感谢您的理解与耐心。',
     },
     {
       question: '赞赏支持能否提升我的社区等级 (LV) 或信任等级 (TL)？',
       answer:
-        '完全不能，两者 100% 独立脱钩。本站读者成长体系（LV.0 至 LV.4）及信任度（TL）纯粹由系统根据读者的实际阅读时长、评论交流质量、表情互动及活跃天数等客观贡献度自动计算（详见账号中心体系），绝无任何付费充值升级特权或商业化通道。无论是否赞赏，所有读者在社区中均享有完全平等的阅读、评论与功能权益，赞赏纯粹属于读者对博主开源创作的心意鼓励。',
+        '完全不能，两者 100% 独立脱钩。本站读者成长体系（LV.0 至 LV.4）及信任等级（TL）纯粹由系统根据读者的实际阅读深度、评论交流质量、表情互动及活跃天数等客观行为指标自动计算（详见账号中心规则），绝无任何付费充值升级特权或商业通道。无论是否赞赏，所有读者在社区中均享有完全平等的阅读、评论与互动权益，赞赏纯粹属于读者对博主开源创作与技术投入的心意鼓励。',
     },
     {
-      question: '通过微信或支付宝扫码后，如何出现在下方的公开致谢名录中？',
+      question: 'Web3 / USDT 加密货币赞赏支持哪些网络？如何核验与录入名册？',
       answer:
-        '若使用上方 Stripe 国际收银台（信用卡 / Apple Pay / Google Pay），付款成功后系统会自动同步收录进致谢名录；若使用微信或支付宝转账，请在转账附言中备注您的称呼与寄语，博主在定期查对账单后会手动录入名录；若希望完全匿名，附言留空即可，系统会以“匿名支持者”形式致谢。',
+        '为了照顾重视链上隐私与国际极客读者的偏好，我们提供了 Arbitrum One EVM Layer 2 网络的 USDT 收款地址。Arbitrum 拥有以太坊同等级别安全性，且单笔 Gas 费通常低于 $0.01。转账完成后，您可将区块链交易哈希（TxHash）连同您希望公开展示的称呼与寄语发送邮件给博主。博主在区块链浏览器上查验到账后，将手动将您的信息收录至致谢名录中，并清晰标注“USDT (Arbitrum One)”。',
     },
     {
-      question: '如果赞赏出现误操作或需要退款，该如何处理？是否提供电子凭证？',
+      question: '如果我想保持完全匿名可以吗？隐私与安全如何保障？',
       answer:
-        '若因误操作、网络卡顿导致重复扣款等特殊情况，支持在付款后联系博主邮箱（shijianus@epocanvas.com）并附上付款凭据，博主在查实后会原路协助退还。由于个人独立维护博客精力有限，无法提供 7×24 小时即时客服，博主在查阅邮件后会尽快跟进处理，感谢您的理解与包容。通过 Stripe 支付的支持者可在收银台填入邮箱，系统会自动发送电子凭证。',
-    },
-    {
-      question: 'Stripe 国际收银台安全吗？支持哪些支付方式？',
-      answer:
-        '极其安全。本站采用 Stripe 官方金融级加密沙箱（PCI-DSS Level 1 认证）完成结算，所有卡号、CVC 等敏感信息均在 Stripe 安全域内处理，本站服务器绝不触碰且无法保存任何支付凭证。支持 Apple Pay、Google Pay、Visa、MasterCard 等主流国际卡种及 Link 快捷支付。',
-    },
-    {
-      question: '如果我想保持完全匿名可以吗？',
-      answer:
-        '当然可以。在赞赏时留空称呼与留言即可，系统将统一以“匿名支持者”形式收录致谢，并且前台绝不公开展示任何邮箱、卡号及网络 IP 地址，切实保护每一位支持者的隐私。',
+        '当然可以。在 Stripe 国际收银台或微信/支付宝转账附言中留空称呼与留言即可，系统将统一以“匿名支持者”形式收录致谢。在前台公开展示的支援名册中，绝不公开展示任何邮箱地址、信用卡号、网络 IP 地址或个人敏感信息。同时，Stripe 国际收银台采用金融级 PCI-DSS Level 1 加密沙箱结算，本站服务器完全无法获取且不存储任何银行卡数据，切实保障每一位支持者的数字隐私。',
     },
   ],
 };
+
+/**
+ * 根据国家代码智能获取当地法币配置
+ */
+export function getLocalCurrencyByCountry(countryCode: string): CurrencyPresetConfig {
+  const c = (countryCode || '').toUpperCase();
+  const map: Record<string, string> = {
+    CN: 'CNY',
+    HK: 'HKD',
+    MO: 'HKD',
+    TW: 'TWD',
+    US: 'USD',
+    GB: 'GBP',
+    JP: 'JPY',
+    KR: 'KRW',
+    SG: 'SGD',
+    MY: 'MYR',
+    TH: 'THB',
+    CA: 'CAD',
+    AU: 'AUD',
+    NZ: 'AUD',
+    CH: 'CHF',
+    DE: 'EUR',
+    FR: 'EUR',
+    IT: 'EUR',
+    ES: 'EUR',
+    NL: 'EUR',
+    AT: 'EUR',
+    BE: 'EUR',
+    FI: 'EUR',
+    IE: 'EUR',
+    PT: 'EUR',
+    GR: 'EUR',
+    // 本地法币废止或小众统一通行美元的地区
+    EC: 'USD',
+    SV: 'USD',
+    PA: 'USD',
+    AR: 'USD',
+    CL: 'USD',
+    CO: 'USD',
+  };
+
+  const currencyKey = map[c] || 'USD';
+  return supportConfig.currencies[currencyKey] || supportConfig.currencies['USD'];
+}
+
+/**
+ * 基于当地购买力（PPP）和汇率，将本地金额折算并整洁取整到目标统一结算货币
+ */
+export function convertByLocalPPP(
+  amount: number,
+  fromRateToUSD: number,
+  toRateToUSD: number,
+  targetCode: string,
+): number {
+  if (!amount || isNaN(amount) || amount <= 0) return 0;
+  const usdValue = amount * fromRateToUSD;
+  const targetValue = usdValue / toRateToUSD;
+
+  // 零小数位货币 (JPY, KRW 等)
+  if (['jpy', 'krw'].includes(targetCode.toLowerCase())) {
+    return Math.round(targetValue / 10) * 10 || Math.round(targetValue);
+  }
+
+  if (targetValue >= 20) {
+    return Math.round(targetValue);
+  } else if (targetValue >= 1) {
+    // 0.5 梯度步进取整 (例如 1, 1.5, 2, 2.5, 3, 3.5...)
+    return Math.round(targetValue * 2) / 2;
+  } else {
+    // 0.1 梯度步进，最低 0.5 (保障满足 Stripe 最低收费线)
+    return Math.max(0.5, Math.round(targetValue * 10) / 10);
+  }
+}
