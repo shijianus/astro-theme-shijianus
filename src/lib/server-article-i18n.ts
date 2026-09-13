@@ -302,6 +302,7 @@ interface CallModelResult {
 let primaryEndpointOffline = false;
 
 async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
+  loadLocalEnvFiles();
   const { systemPrompt, userMessage, timeoutMs = 90000 } = opts;
 
   const customApiKey = opts.apiKey || process.env.ARTICLE_AI_I18N_API_KEY || process.env.INSTANCE_AI_API_KEY || '';
@@ -815,8 +816,8 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   // Brief pause before body chunks
   await new Promise((r) => setTimeout(r, 1500));
 
-  // Step 2: Split body into clean semantic chunks (~3500 chars each)
-  const chunks = splitIntoChunks(rawBody, 3500);
+  // Step 2: Split body into clean semantic chunks (~5500 chars each)
+  const chunks = splitIntoChunks(rawBody, 5500);
   console.log(`[Article-i18n]    Split into ${chunks.length} chunks`);
 
   // Step 3: Translate each chunk sequentially
@@ -829,7 +830,13 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
       // 3s delay between chunk API calls to avoid rate limiting
       await new Promise((r) => setTimeout(r, 3000));
     }
-    const prevContext = i > 0 ? chunks[i - 1].slice(-200) : '';
+    // Extract only a clean complete sentence or heading from the end of the previous chunk.
+    // Never slice raw characters across math formulas or code blocks.
+    const prevCleanLines = (i > 0 ? chunks[i - 1] : '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('```') && !l.startsWith('$$') && !l.startsWith('<'));
+    const prevContext = prevCleanLines.length > 0 ? prevCleanLines[prevCleanLines.length - 1] : '';
     const { text, provider, model } = await translateBodyChunk(chunks[i], i, chunks.length, options, prevContext);
     translatedChunks.push(text);
     lastProvider = provider;
