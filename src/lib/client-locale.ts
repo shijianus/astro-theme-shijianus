@@ -8,6 +8,7 @@ import {
   normaliseLocale,
   updateCandidatePairWithManualChoice,
 } from './user-persona.ts';
+import { aboutI18nDictionary } from '../config/about';
 
 export type { SupportedLocale, LocaleVariant };
 export { SUPPORTED_LOCALES, LOCALE_VARIANT_KEY, MANUAL_LOCALE_KEY };
@@ -1018,65 +1019,8 @@ export type TranslationDict = Record<'en' | 'fr' | 'es' | 'de', string>;
  * Multilingual dictionaries covering navigation, actions, controls, widgets, comments, and profile drawers.
  */
 export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
-  // Author & Identity Localization (Same creator across languages: Kevin Sparks / Léon Boven)
-  'shijianus (時間)': { en: 'Kevin Sparks', fr: 'Léon Boven', es: 'Kevin Sparks', de: 'Kevin Sparks' },
-  '時間': { en: 'Kevin Sparks', fr: 'Léon Boven', es: 'Kevin Sparks', de: 'Kevin Sparks' },
-  '(時間)': { en: '', fr: '', es: '', de: '' },
-  '我叫': { en: "I'm", fr: "Je m'appelle", es: 'Soy', de: 'Ich heiße' },
-  'shijianus': { en: 'Kevin Sparks', fr: 'Léon Boven', es: 'Kevin Sparks', de: 'Kevin Sparks' },
-  '我叫 shijianus (時間)': { en: "I'm Kevin Sparks", fr: "Je m'appelle Léon Boven", es: "Soy Kevin Sparks", de: "Ich heiße Kevin Sparks" },
-  '00后在读大学生 · Web 全栈初探者 · 数字花园建造者': { en: 'Undergraduate (b. 2006) · Web Explorer · Digital Gardener', fr: 'Étudiant (né en 2006) · Explorateur Web · Jardinier numérique', es: 'Estudiante (nacido en 2006) · Explorador Web · Jardinero digital', de: 'Student (geb. 2006) · Web-Entdecker · Digitaler Gärtner' },
-  '00后在读大学生': { en: 'Undergraduate (b. 2006)', fr: 'Étudiant (né en 2006)', es: 'Estudiante universitario', de: 'Student' },
-  '00后大学生': { en: 'Undergraduate (b. 2006)', fr: 'Étudiant (né en 2006)', es: 'Estudiante universitario', de: 'Student' },
-  '计算机在读': { en: 'CS Student', fr: 'Étudiant en informatique', es: 'Estudiante de informática', de: 'Informatik-Student' },
-  '计算机专业': { en: 'Computer Science', fr: 'Informatique', es: 'Ciencias de la computación', de: 'Informatik' },
-  '在读大学生': { en: 'Undergraduate Student', fr: 'Étudiant universitaire', es: 'Estudiante universitario', de: 'Student' },
-  'Web 全栈求索': { en: 'Web Full-Stack Exploration', fr: 'Exploration Web Full-Stack', es: 'Exploración Web Full-Stack', de: 'Web-Full-Stack-Erkundung' },
-  '开源求索': { en: 'Open Source', fr: 'Open Source', es: 'Código abierto', de: 'Open Source' },
-  '长效构建': { en: 'Long-term Building', fr: 'Construction durable', es: 'Construcción a largo plazo', de: 'Langfristiger Aufbau' },
-  '数字花园': { en: 'Digital Garden', fr: 'Jardin numérique', es: 'Jardín digital', de: 'Digitaler Garten' },
-  '体验洁癖': { en: 'UX Obsessive', fr: 'Perfectionniste UX', es: 'Obsesión por UX', de: 'UX-Perfektionist' },
-  '厚土潜藏细脉 大荒广构通衢': { en: 'Nurture deep roots quietly · Build broad paths forward', fr: "Enracinement discret · Voies larges vers l'avenir", es: 'Echar raíces en silencio · Construir amplios caminos', de: 'Wurzeln im Verborgenen schlagen · Breite Wege bauen' },
-  '深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。': { en: 'Delve into quiet fundamentals to connect distant horizons.', fr: 'Forger des bases solides pour ouvrir de vastes horizons.', es: 'Profundizar en lo esencial para alcanzar nuevos horizontes.', de: 'Solide Grundlagen schaffen, um weite Horizonte zu erreichen.' },
-  '深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。在信息快餐与算法喧嚣的时代，为你我保留一处专注慢思考、深度阅读与自由构建的数字静地。': { en: 'Delving into quiet fundamentals to connect distant horizons. Reserving a tranquil corner for deep thinking, focused reading, and continuous building amidst algorithmic noise.', fr: "Forger des bases solides pour ouvrir de vastes horizons. Préserver un espace paisible pour la réflexion lente, la lecture attentive et la création libre.", es: 'Profundizar en lo esencial para alcanzar nuevos horizontes. Un rincón sereno para pensar, leer y crear con calma.', de: 'Solide Grundlagen schaffen, um weite Horizonte zu erreichen. Ein ruhiger Ort für konzentriertes Nachdenken und freies Schaffen.' },
-  '实用装备 / Gear': { en: 'Gear & Hardware', fr: 'Équipements & Matériel', es: 'Equipamiento y Hardware', de: 'Hardware & Ausrüstung' },
-  '日常学习与开发伙伴': { en: 'Daily Learning & Development Gear', fr: 'Équipement d apprentissage et de développement', es: 'Equipo de aprendizaje y desarrollo', de: 'Werkzeuge für Studium und Entwicklung' },
-  '工欲善其事，实用当先。用高性价比的平价设备，在自习室与宿舍搭建专注写码的轻量桌面。': { en: 'Practicality first. Building a lightweight desk setup for coding and coursework in dorms and study rooms on a student budget.', fr: 'Priorité à la praticité. Un poste de travail léger et abordable en chambre étudiante ou bibliothèque.', es: 'Prioridad a lo práctico. Un espacio ligero y accesible para programar y estudiar con presupuesto universitario.', de: 'Praxisnähe zuerst. Ein leichtes und bezahlbares Setup zum Lernen und Programmieren im Wohnheim.' },
-  '实用工具 / Software': { en: 'Software & Dev Stack', fr: 'Logiciels & Environnement', es: 'Software y Herramientas', de: 'Software & Umgebung' },
-  '学习与开发工作流': { en: 'Learning & Dev Workflow', fr: 'Flux de travail & Développement', es: 'Flujo de aprendizaje y desarrollo', de: 'Workflow für Studium & Entwicklung' },
-  '轻量敏捷、注重实效。用好基础开源与免费工具，满足日常求索与写码需求。': { en: 'Lightweight, agile, and effective. Making the best of open-source and free tools for student studies and coding projects.', fr: 'Léger, agile et pragmatique. Tirer parti des outils open source et gratuits pour les études et projets de code.', es: 'Ligero, ágil y eficaz. Aprovechando herramientas abiertas y gratuitas para el estudio y la programación.', de: 'Leicht, agil und zweckmäßig. Nutzen von Open-Source- und kostenlosen Tools für Studium und Entwicklung.' },
-  '联想小新 Pro / 拯救者便携本': { en: 'Lenovo Laptop (Xiaoxin / Legion)', fr: 'PC Portable Lenovo (Xiaoxin / Legion)', es: 'Portátil Lenovo (Xiaoxin / Legion)', de: 'Lenovo Laptop (Xiaoxin / Legion)' },
-  '红米 / AOC 24寸 护眼显示屏': { en: 'Redmi / AOC 24" Eye-Care Monitor', fr: 'Écran 24" Redmi / AOC Confort Visuel', es: 'Monitor 24" Redmi / AOC', de: 'Redmi / AOC 24" Monitor' },
-  '国产客制化红轴机械键盘': { en: 'Custom Red-Switch Mechanical Keyboard', fr: 'Clavier Mécanique Switch Rouge', es: 'Teclado Mecánico Switch Rojo', de: 'Mechanische Tastatur Rote Switches' },
-  '实用入耳式降噪耳机': { en: 'Noise-Canceling In-Ear Earphones', fr: 'Écouteurs Intra-auriculaires Réduction de Bruit', es: 'Auriculares con Cancelación de Ruido', de: 'In-Ear-Kopfhörer mit Geräuschunterdrückung' },
-  '自习室与寝室主力 · 陪我熬夜跑实验写代码的高性价比伙伴': { en: 'Daily driver for coursework, lab experiments, and late-night coding', fr: 'Machine principale pour cours, TPs et séances de code nocturnes', es: 'Portátil principal para tareas y experimentos de programación', de: 'Hauptgerät für Studium, Laborexperimente und Programmieren' },
-  '桌面副屏扩展 · 平价实用，双屏分屏查文档编码更专注': { en: 'Affordable secondary display for referencing documentation while coding', fr: 'Affichage secondaire abordable pour lire la doc tout en codant', es: 'Pantalla secundaria asequible para consultar documentación', de: 'Erschwinglicher Zweitbildschirm zum Lesen von Dokumentationen beim Coden' },
-  '轻柔静音 · 宿舍不扰室友，长时间打字指尖轻快舒适': { en: 'Quiet and comfortable keystrokes for dorm rooms without disturbing others', fr: 'Frappe douce et silencieuse en dortoir pour de longues sessions', es: 'Teclas silenciosas y cómodas para no molestar a los compañeros', de: 'Leise und komfortable Tastenanschläge für das Wohnheim' },
-  '自习防线 · 图书馆与宿舍里隔绝杂音、开启心流沉浸': { en: 'Effective ambient noise blocking for library flow and focus', fr: 'Isolation sonore efficace pour rester concentré en bibliothèque', es: 'Aislamiento de ruido ambiental para concentrarse en la biblioteca', de: 'Geräuschabschirmung für konzentriertes Arbeiten in der Bibliothek' },
-  'VS Code & 终端': { en: 'VS Code & Terminal', fr: 'VS Code & Terminal', es: 'VS Code y Terminal', de: 'VS Code & Terminal' },
-  '代码编写与调试 · 课业实验与个人博客维护主力': { en: 'Primary tools for university lab experiments and blog maintenance', fr: 'Outils principaux pour les TPs universitaires et la maintenance du blog', es: 'Herramientas principales para prácticas universitarias y blog', de: 'Hauptwerkzeuge für Hochschulpraktika und Blog-Wartung' },
-  'Obsidian / Markdown': { en: 'Obsidian / Markdown', fr: 'Obsidian / Markdown', es: 'Obsidian / Markdown', de: 'Obsidian / Markdown' },
-  '知识沉淀与课程笔记 · 构建双向链接的个人知识库': { en: 'Course notes and knowledge retention with bidirectional links', fr: 'Prise de notes et base de connaissances avec liens bidirectionnels', es: 'Notas de clase y base de conocimientos con enlaces bidireccionales', de: 'Vorlesungsnotizen und Wissensbasis mit bidirektionalen Verknüpfungen' },
-  'Chrome / Edge DevTools': { en: 'Chrome / Edge DevTools', fr: 'Chrome / Edge DevTools', es: 'Chrome / Edge DevTools', de: 'Chrome / Edge DevTools' },
-  '前端调试与查阅文档 · 边看文档边排查样式布局': { en: 'Front-end debugging, layout inspection, and MDN references', fr: 'Débogage front-end, inspection de mise en page et doc MDN', es: 'Depuración frontend, inspección de estilos y lectura de MDN', de: 'Frontend-Debugging, Layout-Prüfung und MDN-Dokumentation' },
-  'Cloudflare Pages & GitHub': { en: 'Cloudflare Pages & GitHub', fr: 'Cloudflare Pages & GitHub', es: 'Cloudflare Pages & GitHub', de: 'Cloudflare Pages & GitHub' },
-  '自动化部署与版本控制 · 零成本托管个人数字花园': { en: 'Automated CI/CD and zero-cost hosting for my digital garden', fr: 'Déploiement CI/CD automatisé et hébergement gratuit du jardin numérique', es: 'Despliegue automatizado y alojamiento sin coste del jardín digital', de: 'Automatisierte Bereitstellung und kostenloses Hosting des digitalen Gartens' },
-  '生于': { en: 'Born', fr: 'Né en', es: 'Nacido en', de: 'Geboren' },
-  '2006 (大二在读)': { en: '2006 (Undergraduate Sophomore)', fr: '2006 (Étudiant en 2e année)', es: '2006 (2º año universitario)', de: '2006 (2. Studienjahr)' },
-  '城市': { en: 'Location', fr: 'Lieu', es: 'Ubicación', de: 'Ort' },
-  '中国 · 校园与自习室': { en: 'China · Campus & Library', fr: 'Chine · Campus & Bibliothèque', es: 'China · Campus y biblioteca', de: 'China · Campus & Bibliothek' },
-  '阶段': { en: 'Status', fr: 'Statut', es: 'Estado', de: 'Status' },
-  '方向': { en: 'Focus', fr: 'Orientation', es: 'Enfoque', de: 'Schwerpunkt' },
-  '求索': { en: 'Aspirations', fr: 'Aspirations', es: 'Aspiraciones', de: 'Bestrebungen' },
-  '阶段与长期方向': { en: 'Current Stage & Long-Term Direction', fr: 'Étape actuelle & Orientation à long terme', es: 'Etapa actual y dirección a largo plazo', de: 'Aktuelle Phase & Langfristige Richtung' },
-  '在大学本科阶段踏实打好计算机与工程基础': { en: 'Build solid computer science and engineering foundations during undergraduate studies', fr: 'Bâtir de solides bases en informatique et en ingénierie durant le cursus universitaire', es: 'Construir una base sólida de informática e ingeniería durante el grado', de: 'Solide Grundlagen in Informatik und Ingenieurwesen im Bachelorstudium erarbeiten' },
-  '把个人主页打磨成长效可演进的数字花园，而非一次性产物': { en: 'Cultivate this personal site as a living, enduring digital garden rather than a disposable project', fr: 'Faire évoluer ce site personnel comme un jardin numérique durable plutôt qu un produit éphémère', es: 'Desarrollar este sitio como un jardín digital duradero y no como un producto desechable', de: 'Diese Website als langlebigen digitalen Garten statt als Einwegprojekt pflegen' },
-  '探索 Web 全栈、现代设计系统与人机协同的融合实践': { en: 'Explore web full-stack development, modern design systems, and human-AI synergy', fr: 'Explorer le développement web full-stack, les systèmes de design et la synergie humain-IA', es: 'Explorar desarrollo web full-stack, sistemas de diseño y sinergia humano-IA', de: 'Web-Full-Stack-Entwicklung, Designsysteme und Mensch-KI-Synergien erforschen' },
-  '技能': { en: 'Skills', fr: 'Compétences', es: 'Habilidades', de: 'Fähigkeiten' },
-  '正在求索与打磨的技术栈': { en: 'Tech Stack in Active Practice', fr: 'Technologies en cours d apprentissage et pratique', es: 'Tecnologías en práctica y aprendizaje', de: 'Praktizierte Technologien & Werkzeuge' },
-  '关于我': { en: 'About Me', fr: 'À propos de moi', es: 'Sobre mí', de: 'Über mich' },
-  '关于本站与作者': { en: 'About Site & Author', fr: 'À propos du site et de l auteur', es: 'Acerca del sitio y del autor', de: 'Über die Website und den Autor' },
-  '一枚在读大学生的数字花园与个人求索档案': { en: 'A digital garden and personal journey of an undergraduate student', fr: 'Le jardin numérique et le parcours d un étudiant universitaire', es: 'El jardín digital y cuaderno de viaje de un estudiante universitario', de: 'Der digitale Garten und persönliche Werdegang eines Studenten' },
+  // Dedicated About Page Configuration Dictionary (covers 100% of about page text in en/fr/es/de)
+  ...aboutI18nDictionary,
 
   // Navigation & Core Pages
   '首页': { en: 'Home', fr: 'Accueil', es: 'Inicio', de: 'Startseite' },
@@ -2338,11 +2282,13 @@ function translateAttributes(element: Element, variant: LocaleVariant, options: 
 }
 
 function translateTextNode(node: Text, variant: LocaleVariant, options: TranslateMutationOptions = {}) {
-  if (!node.nodeValue) return;
   const parent = node.parentElement;
   if (parent && isIgnoredSubtree(parent)) return;
 
-  const base = rememberOriginalTextValue(node, node.nodeValue, options.refreshBase);
+  // If node has original stored value, proceed even if current nodeValue is empty string
+  if (!node.nodeValue && !originalTextNodeMap.has(node)) return;
+
+  const base = rememberOriginalTextValue(node, node.nodeValue || '', options.refreshBase);
 
   if (variant === 'zh-CN') {
     const original = originalTextNodeMap.get(node) ?? base;

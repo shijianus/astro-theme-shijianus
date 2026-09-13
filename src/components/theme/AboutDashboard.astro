@@ -26,7 +26,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
 
     <div class="author-img">
       <img src={siteConfig.site.author.avatar} alt={siteConfig.site.author.name} loading="eager" />
-      <span class="online-indicator" title="当前在线 · 持续构建中"></span>
+      <span class="online-indicator" title={about.onlineStatus || "当前在线 · 持续构建中"}></span>
     </div>
 
     <div class="author-tag-right">
@@ -44,17 +44,23 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
     <div class="author-content-item myInfoAndSayHello">
       <div class="title1">{about.helloTips}</div>
       <div class="title2">
-        我叫 <span class="inline-word">{siteConfig.site.author.name}</span> (時間)
+        <span>我叫</span> <span class="inline-word">{siteConfig.site.author.name}</span> <span class="author-alias">(時間)</span>
       </div>
       <div class="title1 role-desc">{about.helloDescription}</div>
       <div class="hello-tag-chips">
-        <span>#Astro</span>
-        <span>#TypeScript</span>
-        <span>#Tailwind</span>
-        <span>#Cloudflare</span>
-        <span>#UI/UX</span>
-        <span>#系统架构</span>
-        <span>#数据主权</span>
+        {about.helloChips ? about.helloChips.map((chip) => (
+          <span>{chip}</span>
+        )) : (
+          <>
+            <span>#Astro</span>
+            <span>#TypeScript</span>
+            <span>#Tailwind</span>
+            <span>#Cloudflare</span>
+            <span>#UI/UX</span>
+            <span>#系统架构</span>
+            <span>#数据主权</span>
+          </>
+        )}
       </div>
     </div>
 
@@ -73,7 +79,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
         </div>
       </h2>
       <p class="aboutsite-lead">
-        深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。在信息快餐与算法喧嚣的时代，为你我保留一处专注慢思考、深度阅读与自由构建的数字静地。
+        {about.siteTips.lead || '深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。在信息快餐与算法喧嚣的时代，为你我保留一处专注慢思考、深度阅读与自由构建的数字静地。'}
       </p>
     </div>
   </div>
@@ -163,7 +169,10 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
         </div>
         <div class="banner-button-group">
           <a class="banner-button" href={about.statistics.buttonHref}>
-            <span class="banner-button-text">{about.statistics.buttonLabel} →</span>
+            <span class="banner-button-text">
+              <span>{about.statistics.buttonLabel}</span>
+              <span class="btn-arrow">→</span>
+            </span>
           </a>
         </div>
       </div>
@@ -232,7 +241,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
 
         <div class="personality-link-wrap">
           <a class="personality-more-link" href={about.personality.link} target="_blank" rel="noopener noreferrer">
-            深入了解 16Personalities
+            <span>深入了解 16Personalities</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V8H8"/></svg>
           </a>
         </div>
@@ -253,9 +262,9 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
     <div class="author-content">
       <div class="author-content-item gear-card hardware">
         <div class="card-content">
-          <div class="author-content-item-tips">实用装备 / Gear</div>
-          <span class="author-content-item-title">日常学习与开发伙伴</span>
-          <p class="gear-desc">工欲善其事，实用当先。用高性价比的平价设备，在自习室与宿舍搭建专注写码的轻量桌面。</p>
+          <div class="author-content-item-tips">{about.gear.hardwareTips || '实用装备 / Gear'}</div>
+          <span class="author-content-item-title">{about.gear.hardwareTitle || '日常学习与开发伙伴'}</span>
+          <p class="gear-desc">{about.gear.hardwareDesc || '工欲善其事，实用当先。用高性价比的平价设备，在自习室与宿舍搭建专注写码的轻量桌面。'}</p>
           <div class="gear-grid">
             {about.gear.hardware.map((item) => (
               <div class="gear-item">
@@ -280,9 +289,9 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
 
       <div class="author-content-item gear-card software">
         <div class="card-content">
-          <div class="author-content-item-tips">实用工具 / Software</div>
-          <span class="author-content-item-title">学习与开发工作流</span>
-          <p class="gear-desc">轻量敏捷、注重实效。用好基础开源与免费工具，满足日常求索与写码需求。</p>
+          <div class="author-content-item-tips">{about.gear.softwareTips || '实用工具 / Software'}</div>
+          <span class="author-content-item-title">{about.gear.softwareTitle || '学习与开发工作流'}</span>
+          <p class="gear-desc">{about.gear.softwareDesc || '轻量敏捷、注重实效。用好基础开源与免费工具，满足日常求索与写码需求。'}</p>
           <div class="gear-grid">
             {about.gear.software.map((item) => (
               <div class="gear-item">
@@ -343,118 +352,42 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
   )}
 
   <!-- 8.5 全栈工程架构三层拓扑与云端底座 (Topology & Cloud Deck) -->
-  <div class="author-content">
-    <div class="author-content-item single topology-card">
-      <div class="card-content">
-        <div class="author-content-item-tips">系统架构 / Architecture Topology</div>
-        <span class="author-content-item-title">全栈工程架构与云端底座</span>
-        <p class="topology-lead">
-          从浏览器感知交互、排版编译管道到底层全球分布式边缘运算的全链路技术选型。
-        </p>
+  {about.topology && (
+    <div class="author-content">
+      <div class="author-content-item single topology-card">
+        <div class="card-content">
+          <div class="author-content-item-tips">{about.topology.tips}</div>
+          <span class="author-content-item-title">{about.topology.title}</span>
+          <p class="topology-lead">
+            {about.topology.lead}
+          </p>
 
-        <div class="topology-tiers-grid">
-          <!-- Tier 1: 客户端感知层 -->
-          <div class="topology-tier-box">
-            <div class="topology-tier-head">
-              <span class="tier-badge-num">01</span>
-              <div class="tier-badge-title">
-                <strong>感知交互层</strong>
-                <span>Client & UX Tier</span>
+          <div class="topology-tiers-grid">
+            {about.topology.tiers.map((tier) => (
+              <div class="topology-tier-box">
+                <div class="topology-tier-head">
+                  <span class="tier-badge-num">{tier.num}</span>
+                  <div class="tier-badge-title">
+                    <strong>{tier.title}</strong>
+                    <span>{tier.subtitle}</span>
+                  </div>
+                </div>
+                <div class="topology-chips-flow">
+                  {tier.items.map((item) => (
+                    <div class="topology-item">
+                      <span class={`tier-dot ${item.color}`}></span>
+                      <strong class="item-name">{item.name}</strong>
+                      <span class="item-role">{item.role}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div class="topology-chips-flow">
-              <div class="topology-item">
-                <span class="tier-dot blue"></span>
-                <strong class="item-name">Astro 6</strong>
-                <span class="item-role">Islands 极速渲染</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot blue"></span>
-                <strong class="item-name">React 19</strong>
-                <span class="item-role">动态交互状态岛</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot blue"></span>
-                <strong class="item-name">TypeScript</strong>
-                <span class="item-role">全链路类型守卫</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot blue"></span>
-                <strong class="item-name">Tailwind CSS</strong>
-                <span class="item-role">现代原子设计系统</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tier 2: 排版编译管道 -->
-          <div class="topology-tier-box">
-            <div class="topology-tier-head">
-              <span class="tier-badge-num">02</span>
-              <div class="tier-badge-title">
-                <strong>排版编译管道</strong>
-                <span>Content Engine</span>
-              </div>
-            </div>
-            <div class="topology-chips-flow">
-              <div class="topology-item">
-                <span class="tier-dot green"></span>
-                <strong class="item-name">MDX & Shiki</strong>
-                <span class="item-role">双主题自适应高亮</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot green"></span>
-                <strong class="item-name">KaTeX Math</strong>
-                <span class="item-role">严谨科学公式排版</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot green"></span>
-                <strong class="item-name">Mermaid 图谱</strong>
-                <span class="item-role">知识拓扑可视化</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot green"></span>
-                <strong class="item-name">i18n 多语言</strong>
-                <span class="item-role">多语种语义分块转译</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tier 3: 分布式边缘底座 -->
-          <div class="topology-tier-box">
-            <div class="topology-tier-head">
-              <span class="tier-badge-num">03</span>
-              <div class="tier-badge-title">
-                <strong>分布式边缘底座</strong>
-                <span>Edge & Cloud</span>
-              </div>
-            </div>
-            <div class="topology-chips-flow">
-              <div class="topology-item">
-                <span class="tier-dot purple"></span>
-                <strong class="item-name">Cloudflare Pages</strong>
-                <span class="item-role">全球 Anycast 边缘</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot purple"></span>
-                <strong class="item-name">Cloudflare D1</strong>
-                <span class="item-role">边缘分布式 SQLite</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot purple"></span>
-                <strong class="item-name">Workers Serverless</strong>
-                <span class="item-role">零冷启动轻量路由</span>
-              </div>
-              <div class="topology-item">
-                <span class="tier-dot purple"></span>
-                <strong class="item-name">GitOps 流水线</strong>
-                <span class="item-role">多远端双向自动同步</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
-  </div>
+  )}
 
   <!-- 9. 灵感黑胶唱机与次元精神角落 -->
   <div class="author-content">
@@ -511,93 +444,38 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
   </div>
 
   <!-- 9.5 站点演进足迹与造物里程碑 (Evolution Milestones) -->
-  <div class="author-content">
-    <div class="author-content-item single milestones-card">
-      <div class="card-content">
-        <div class="author-content-item-tips">演进足迹 / Milestones</div>
-        <span class="author-content-item-title">站点演进与造物足迹</span>
-        <p class="milestones-lead">
-          从一行简单的 Markdown，到高度工程化、全球边缘化分发的内容产品演进史。
-        </p>
+  {about.milestones && (
+    <div class="author-content">
+      <div class="author-content-item single milestones-card">
+        <div class="card-content">
+          <div class="author-content-item-tips">{about.milestones.tips}</div>
+          <span class="author-content-item-title">{about.milestones.title}</span>
+          <p class="milestones-lead">
+            {about.milestones.lead}
+          </p>
 
-        <div class="milestones-track">
-          <div class="milestone-node">
-            <div class="node-indicator">
-              <span class="node-dot"></span>
-              <span class="node-line"></span>
-            </div>
-            <div class="node-body">
-              <div class="node-meta">
-                <span class="node-year">2006</span>
-                <span class="node-tag">始于盛夏 (Origins)</span>
+          <div class="milestones-track">
+            {about.milestones.items.map((item) => (
+              <div class="milestone-node">
+                <div class="node-indicator">
+                  <span class={`node-dot ${item.dotClass || ''}`}></span>
+                  {item.hasLine !== false && <span class="node-line"></span>}
+                </div>
+                <div class="node-body">
+                  <div class="node-meta">
+                    <span class={`node-year ${item.yearClass || ''}`}>{item.year}</span>
+                    <span class={`node-tag ${item.tagClass || ''}`}>{item.tag}</span>
+                  </div>
+                  <strong class="node-title">{item.title}</strong>
+                  <p class="node-desc">{item.desc}</p>
+                </div>
               </div>
-              <strong class="node-title">出生于 2006 年</strong>
-              <p class="node-desc">出生于 2006 年盛夏，与现代互联网和开源浪潮共同成长，对未知世界充满好奇与求知欲。</p>
-            </div>
-          </div>
-
-          <div class="milestone-node">
-            <div class="node-indicator">
-              <span class="node-dot"></span>
-              <span class="node-line"></span>
-            </div>
-            <div class="node-body">
-              <div class="node-meta">
-                <span class="node-year">2022</span>
-                <span class="node-tag">初探代码 (First Code)</span>
-              </div>
-              <strong class="node-title">敲下第一行 Hello World</strong>
-              <p class="node-desc">高中偶然接触编程，被代码创造数字界面的奇妙深深吸引，确立了拒绝快餐化、保持长期沉淀的创作基调。</p>
-            </div>
-          </div>
-
-          <div class="milestone-node">
-            <div class="node-indicator">
-              <span class="node-dot"></span>
-              <span class="node-line"></span>
-            </div>
-            <div class="node-body">
-              <div class="node-meta">
-                <span class="node-year">2024</span>
-                <span class="node-tag">步入大学 (Campus Journey)</span>
-              </div>
-              <strong class="node-title">开启计算机专业求学历程</strong>
-              <p class="node-desc">成为一名在读大学生，在自习室与宿舍搭建个人独立博客，重构为现代前端工程架构，确立产品级维护标准。</p>
-            </div>
-          </div>
-
-          <div class="milestone-node">
-            <div class="node-indicator">
-              <span class="node-dot"></span>
-              <span class="node-line"></span>
-            </div>
-            <div class="node-body">
-              <div class="node-meta">
-                <span class="node-year">2026</span>
-                <span class="node-tag current-tag">旗舰成型 (Flagship Maturity)</span>
-              </div>
-              <strong class="node-title">自研 Shijianus 旗舰主题与边缘原生底座</strong>
-              <p class="node-desc">深度集成 Cloudflare D1 边缘原生留言系统、国际多币种收银台、多语言自动流水线与端到端自动化测试，达到工业级水准。</p>
-            </div>
-          </div>
-
-          <div class="milestone-node">
-            <div class="node-indicator">
-              <span class="node-dot future-dot"></span>
-            </div>
-            <div class="node-body">
-              <div class="node-meta">
-                <span class="node-year future-year">未来</span>
-                <span class="node-tag future-tag">持续演进 (Continuous Evolution)</span>
-              </div>
-              <strong class="node-title">构筑跨越时空的知识通衢</strong>
-              <p class="node-desc">践行“厚土潜藏细脉，大荒广构通衢”之志，在系统架构、数字交互与人机智能协同创作的前沿持续深耕。</p>
-            </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
-  </div>
+  )}
 
   <!-- 10. 箴言与状态加成 -->
   <div class="author-content">
@@ -608,7 +486,7 @@ const skillMarquee = [...siteConfig.home.hero.skillFlow, ...siteConfig.home.hero
           <span>{about.maxim.top}</span>
           <span>{about.maxim.bottom}</span>
         </span>
-        <p class="maxim-annotation">深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。</p>
+        <p class="maxim-annotation">{about.maxim.annotation || '深潜底层打磨隐秘细脉，拓越远方构筑长效通衢。'}</p>
       </div>
     </div>
 

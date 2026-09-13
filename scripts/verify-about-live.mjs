@@ -133,26 +133,44 @@ async function runLiveAudit() {
         allPassed = false;
       }
 
-      // 测试多语言动态切换 (English: Kevin Sparks, French: Léon Boven)
+      // 测试多语言动态切换 (English: Kevin Sparks, French: Léon Boven & 零中文残留)
       const i18nAudit = await page.evaluate(async () => {
         const runtime = window.__SHIJIANUS_LOCALE_RUNTIME__;
         if (!runtime?.applyLocaleVariant) return { available: false };
 
+        const aboutContainer = document.querySelector('#about-page');
+
+        // Helper to count chinese characters in text nodes
+        const countChineseTextNodes = () => {
+          if (!aboutContainer) return 0;
+          const walker = document.createTreeWalker(aboutContainer, NodeFilter.SHOW_TEXT);
+          let count = 0;
+          let node = walker.nextNode();
+          while (node) {
+            const text = node.nodeValue?.trim();
+            if (text && /[\u4e00-\u9fa5]/.test(text)) count++;
+            node = walker.nextNode();
+          }
+          return count;
+        };
+
         // Switch to English
         runtime.applyLocaleVariant('en');
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 400));
         const enGreeting = document.querySelector('.myInfoAndSayHello .title2')?.innerText || '';
         const enHasKevin = enGreeting.includes('Kevin Sparks');
+        const enChineseCount = countChineseTextNodes();
 
         // Switch to French
         runtime.applyLocaleVariant('fr');
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 400));
         const frGreeting = document.querySelector('.myInfoAndSayHello .title2')?.innerText || '';
         const frHasLeon = frGreeting.includes('Léon Boven');
+        const frChineseCount = countChineseTextNodes();
 
         // Restore to zh-CN
         runtime.applyLocaleVariant('zh-CN');
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 400));
         const zhGreeting = document.querySelector('.myInfoAndSayHello .title2')?.innerText || '';
         const zhHasTime = zhGreeting.includes('時間');
 
@@ -160,8 +178,10 @@ async function runLiveAudit() {
           available: true,
           enGreeting,
           enHasKevin,
+          enChineseCount,
           frGreeting,
           frHasLeon,
+          frChineseCount,
           zhGreeting,
           zhHasTime
         };
@@ -172,6 +192,13 @@ async function runLiveAudit() {
           console.log(`✅ [LIVE I18N SUCCESS] Multilingual localized identity verified live! EN='${i18nAudit.enGreeting.trim()}', FR='${i18nAudit.frGreeting.trim()}', ZH='${i18nAudit.zhGreeting.trim()}'`);
         } else {
           console.error(`❌ [LIVE I18N FAILURE] Localization failed live:`, i18nAudit);
+          allPassed = false;
+        }
+
+        if (i18nAudit.enChineseCount === 0 && i18nAudit.frChineseCount === 0) {
+          console.log(`✅ [LIVE I18N PURITY SUCCESS] Zero Chinese character leakage in English and French modes on live! (EN count: 0, FR count: 0)`);
+        } else {
+          console.error(`❌ [LIVE I18N PURITY FAILURE] Chinese character leakage detected live: EN=${i18nAudit.enChineseCount}, FR=${i18nAudit.frChineseCount}`);
           allPassed = false;
         }
       }
