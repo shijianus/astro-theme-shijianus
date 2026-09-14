@@ -36,6 +36,127 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     // Default encryption behavior: all unlocked content resets on refresh unless data-persist="session|local|true" is explicitly set.
     const _unlockedInMemory = new Set();
 
+    const resolveContentLang = () => {
+      const article = document.querySelector('article[data-lang]');
+      const articleLang = article?.getAttribute('data-lang')?.trim();
+      if (articleLang) {
+        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+        if (articleLang.startsWith('zh')) return 'zh-CN';
+        const base = articleLang.split('-')[0].toLowerCase();
+        return base;
+      }
+      const docLang = (document.documentElement.lang || '').trim();
+      if (docLang) {
+        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
+        if (docLang.startsWith('zh')) return 'zh-CN';
+        const base = docLang.split('-')[0].toLowerCase();
+        return base;
+      }
+      const path = window.location.pathname;
+      const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/);
+      if (matched) return matched[1];
+      return 'zh-CN';
+    };
+
+    const ENCRYPTED_MODAL_I18N = {
+      'zh-CN': {
+        title: '验证安全访问凭证',
+        hint: '该部分为受保护加密内容，请输入密码进行校验。',
+        placeholder: '输入访问密钥 / 密码',
+        error: '凭证校验失败，请重新输入',
+        cancel: '取消',
+        submit: '验证并解密',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? '外联分段密文已解密挂载' : `${level}级加密内容已解锁`}`,
+        toastLocked: '🔒 3级加密内容离开视口，已自动重新上锁',
+        spoilerAria: '点击显示剧透内容',
+        hiddenAria: '点击显示隐藏内容',
+        hiddenText: '隐藏内容',
+      },
+      'zh-Hant': {
+        title: '驗證安全存取憑證',
+        hint: '此部分為受保護加密內容，請輸入密碼進行校驗。',
+        placeholder: '輸入存取金鑰 / 密碼',
+        error: '憑證校驗失敗，請重新輸入',
+        cancel: '取消',
+        submit: '驗證並解密',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? '外聯分段密文已解密掛載' : `${level}級加密內容已解鎖`}`,
+        toastLocked: '🔒 3級加密內容離開視口，已自動重新上鎖',
+        spoilerAria: '點擊顯示劇透內容',
+        hiddenAria: '點擊顯示隱藏內容',
+        hiddenText: '隱藏內容',
+      },
+      'en': {
+        title: 'Verify Security Credentials',
+        hint: 'This section contains protected encrypted content. Please enter the password to verify.',
+        placeholder: 'Enter access key / password',
+        error: 'Credential verification failed, please try again',
+        cancel: 'Cancel',
+        submit: 'Verify & Decrypt',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? 'External encrypted segment decrypted & mounted' : `Level ${level} encrypted content unlocked`}`,
+        toastLocked: '🔒 Level 3 encrypted content left viewport and has been re-locked automatically',
+        spoilerAria: 'Click to reveal spoiler content',
+        hiddenAria: 'Click to reveal hidden content',
+        hiddenText: 'Hidden Content',
+      },
+      'es': {
+        title: 'Verificar Credenciales de Seguridad',
+        hint: 'Esta sección contiene contenido protegido y cifrado. Ingrese la contraseña para verificar.',
+        placeholder: 'Ingrese clave de acceso / contraseña',
+        error: 'Error de verificación de credenciales, intente de nuevo',
+        cancel: 'Cancelar',
+        submit: 'Verificar y Descifrar',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? 'Segmento cifrado externo descifrado y montado' : `Contenido cifrado de nivel ${level} desbloqueado`}`,
+        toastLocked: '🔒 El contenido cifrado de nivel 3 salió del viewport y se ha vuelto a bloquear automáticamente',
+        spoilerAria: 'Haga clic para revelar el contenido de spoiler',
+        hiddenAria: 'Haga clic para revelar el contenido oculto',
+        hiddenText: 'Contenido Oculto',
+      },
+      'de': {
+        title: 'Sicherheitsanmeldeinformationen überprüfen',
+        hint: 'Dieser Bereich enthält geschützte, verschlüsselte Inhalte. Bitte geben Sie das Passwort ein.',
+        placeholder: 'Zugangsschlüssel / Passwort eingeben',
+        error: 'Verifizierung fehlgeschlagen, bitte erneut versuchen',
+        cancel: 'Abbrechen',
+        submit: 'Überprüfen & Entschlüsseln',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? 'Externes verschlüsseltes Segment entschlüsselt und geladen' : `Verschlüsselter Inhalt der Stufe ${level} freigeschaltet`}`,
+        toastLocked: '🔒 Verschlüsselter Inhalt der Stufe 3 hat den Viewport verlassen und wurde automatisch wieder gesperrt',
+        spoilerAria: 'Klicken, um Spoiler-Inhalt anzuzeigen',
+        hiddenAria: 'Klicken, um versteckten Inhalt anzuzeigen',
+        hiddenText: 'Versteckter Inhalt',
+      },
+      'fr': {
+        title: 'Vérifier les identifiants de sécurité',
+        hint: 'Cette section contient du contenu protégé et chiffré. Veuillez saisir le mot de passe pour vérifier.',
+        placeholder: 'Saisir la clé d\'accès / le mot de passe',
+        error: 'Échec de vérification des identifiants, veuillez réessayer',
+        cancel: 'Annuler',
+        submit: 'Vérifier et Déchiffrer',
+        toastUnlocked: (level, isGate) => `🔓 ${isGate ? 'Segment chiffré externe déchiffré et monté' : `Contenu chiffré de niveau ${level} déverrouillé`}`,
+        toastLocked: '🔒 Le contenu chiffré de niveau 3 a quitté le champ de vision et a été reverrouillé automatiquement',
+        spoilerAria: 'Cliquer pour afficher le contenu spoiler',
+        hiddenAria: 'Cliquer pour afficher le contenu masqué',
+        hiddenText: 'Contenu masqué',
+      },
+    };
+
+    const MASK_TOOLBAR_I18N = {
+      'zh-CN': { label: '🔒 遮罩防窥保护中：', blur: '🌫️ 高斯模糊', mosaic: '🏁 马赛克', spoiler: '⬛ 剧透遮罩', reveal: '👁️ 显露正文' },
+      'zh-Hant': { label: '🔒 遮罩防窺保護中：', blur: '🌫️ 高斯模糊', mosaic: '🏁 馬賽克', spoiler: '⬛ 劇透遮罩', reveal: '👁️ 顯露內文' },
+      'en': { label: '🔒 Mask privacy protection active:', blur: '🌫️ Gaussian Blur', mosaic: '🏁 Mosaic', spoiler: '⬛ Spoiler Mask', reveal: '👁️ Reveal Content' },
+      'es': { label: '🔒 Protección de privacidad activa:', blur: '🌫️ Desenfoque Gaussiano', mosaic: '🏁 Mosaico', spoiler: '⬛ Máscara Spoiler', reveal: '👁️ Revelar Contenido' },
+      'de': { label: '🔒 Sichtschutzmaske aktiv:', blur: '🌫️ Gaußscher Weichzeichner', mosaic: '🏁 Mosaik', spoiler: '⬛ Spoiler-Maske', reveal: '👁️ Text anzeigen' },
+      'fr': { label: '🔒 Masquage de confidentialité actif :', blur: '🌫️ Flou gaussien', mosaic: '🏁 Mosaïque', spoiler: '⬛ Masque spoiler', reveal: '👁️ Révéler le texte' },
+    };
+
+    const ADMONITION_I18N = {
+      'zh-CN': { note: '注意', tip: '提示', important: '重点', warning: '警告', caution: '危险', danger: '致命', success: '成功', question: '疑问', quote: '引用', info: '信息', todo: '待办', bug: '缺陷', example: '示例' },
+      'zh-Hant': { note: '注意', tip: '提示', important: '重點', warning: '警告', caution: '危險', danger: '致命', success: '成功', question: '疑問', quote: '引用', info: '資訊', todo: '待辦', bug: '缺陷', example: '範例' },
+      'en': { note: 'Note', tip: 'Tip', important: 'Important', warning: 'Warning', caution: 'Caution', danger: 'Danger', success: 'Success', question: 'Question', quote: 'Quote', info: 'Info', todo: 'To-Do', bug: 'Bug', example: 'Example' },
+      'es': { note: 'Nota', tip: 'Consejo', important: 'Importante', warning: 'Advertencia', caution: 'Precaución', danger: 'Peligro', success: 'Éxito', question: 'Pregunta', quote: 'Cita', info: 'Información', todo: 'Pendiente', bug: 'Error', example: 'Ejemplo' },
+      'de': { note: 'Hinweis', tip: 'Tipp', important: 'Wichtig', warning: 'Warnung', caution: 'Vorsicht', danger: 'Gefahr', success: 'Erfolg', question: 'Frage', quote: 'Zitat', info: 'Information', todo: 'Aufgabe', bug: 'Fehler', example: 'Beispiel' },
+      'fr': { note: 'Remarque', tip: 'Conseil', important: 'Important', warning: 'Avertissement', caution: 'Attention', danger: 'Danger', success: 'Succès', question: 'Question', quote: 'Citation', info: 'Information', todo: 'À faire', bug: 'Bogue', example: 'Exemple' },
+    };
+
     const checkIsUnlocked = (el, id) => {
       if (!id) return false;
       if (_unlockedInMemory.has(id)) return true;
@@ -232,9 +353,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           }
 
           closeModal();
+          const lang = resolveContentLang();
+          const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
           window.dispatchEvent(
             new CustomEvent('shijianus:activity', {
-              detail: { message: `🔓 ${isGate ? '外联分段密文已解密挂载' : `${level}级加密内容已解锁`}` },
+              detail: { message: locModal.toastUnlocked(level, isGate) },
             })
           );
         } else {
@@ -268,7 +391,23 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     // -------------------------------------------------------
     const openModal = (target, levelTag, hint) => {
       _currentActiveTarget = target;
-      if (_modalHint) _modalHint.textContent = hint;
+      const lang = resolveContentLang();
+      const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
+
+      if (_modalOverlay) {
+        const titleEl = _modalOverlay.querySelector('.encrypted-modal__title');
+        if (titleEl) titleEl.textContent = locModal.title;
+        if (_modalInput) _modalInput.placeholder = locModal.placeholder;
+        if (_modalError) _modalError.textContent = locModal.error;
+        const cancelBtn = _modalOverlay.querySelector('.encrypted-modal__cancel');
+        if (cancelBtn) cancelBtn.textContent = locModal.cancel;
+        const submitBtn = _modalOverlay.querySelector('.encrypted-modal__submit');
+        if (submitBtn) submitBtn.textContent = locModal.submit;
+      }
+
+      const hintHasChinese = /[\u4e00-\u9fa5]/.test(hint || '');
+      const finalHint = (!hint || (hintHasChinese && !lang.startsWith('zh'))) ? locModal.hint : hint;
+      if (_modalHint) _modalHint.textContent = finalHint;
       if (_modalLevelTag) _modalLevelTag.innerHTML = levelTag;
       if (_modalError) _modalError.style.display = 'none';
       if (_modalInput) _modalInput.value = '';
@@ -330,11 +469,13 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
       // 5. Generate default/custom options toolbar if allowSelect is true and no HTML toolbar was found
       if (allowSelect && !toolbar) {
+        const lang = resolveContentLang();
+        const locMask = MASK_TOOLBAR_I18N[lang] || MASK_TOOLBAR_I18N['zh-CN'];
         const optionDefs = {
-          blur: { mask: 'blur', label: '🌫️ 高斯模糊' },
-          mosaic: { mask: 'mosaic', label: '🏁 马赛克' },
-          spoiler: { mask: 'spoiler', label: '⬛ 剧透遮罩' },
-          reveal: { mask: 'reveal', label: '👁️ 显露正文' }
+          blur: { mask: 'blur', label: locMask.blur },
+          mosaic: { mask: 'mosaic', label: locMask.mosaic },
+          spoiler: { mask: 'spoiler', label: locMask.spoiler },
+          reveal: { mask: 'reveal', label: locMask.reveal }
         };
 
         let optionsToRender = ['blur', 'mosaic', 'spoiler', 'reveal'];
@@ -350,7 +491,9 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
         toolbar = document.createElement('div');
         toolbar.className = 'encrypted-mask-toolbar';
-        const labelText = box.dataset.toolbarLabel || '🔒 遮罩防窥保护中：';
+        const rawLabel = box.dataset.toolbarLabel;
+        const labelHasChinese = /[\u4e00-\u9fa5]/.test(rawLabel || '');
+        const labelText = (!rawLabel || (labelHasChinese && !lang.startsWith('zh'))) ? locMask.label : rawLabel;
         const buttonsHtml = optionsToRender
           .map((opt) => {
             const def = optionDefs[opt] || { mask: opt, label: opt };
@@ -447,9 +590,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           if (!entry.isIntersecting && box.classList.contains('is-unlocked')) {
             box.classList.remove('is-unlocked');
             box.classList.add('was-relocked');
+            const lang = resolveContentLang();
+            const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
             window.dispatchEvent(
               new CustomEvent('shijianus:activity', {
-                detail: { message: '🔒 3级加密内容离开视口，已自动重新上锁' },
+                detail: { message: locModal.toastLocked },
               })
             );
           }
@@ -475,11 +620,13 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
       // 1. Spoilers and Hidden Inline Text Nodes
       const createSpoiler = (text) => {
+        const lang = resolveContentLang();
+        const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'spoiler-mask';
         button.setAttribute('aria-pressed', 'false');
-        button.setAttribute('aria-label', '点击显示剧透内容');
+        button.setAttribute('aria-label', locModal.spoilerAria);
         button.textContent = text;
         button.addEventListener('click', () => {
           button.classList.add('is-visible');
@@ -489,11 +636,13 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       };
 
       const createHiddenInline = (text) => {
+        const lang = resolveContentLang();
+        const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'hidden-inline-lock';
-        button.setAttribute('aria-label', '点击显示隐藏内容');
-        button.textContent = '隐藏内容';
+        button.setAttribute('aria-label', locModal.hiddenAria);
+        button.textContent = locModal.hiddenText;
         button.addEventListener('click', () => {
           button.textContent = text;
           button.classList.add('is-visible');
@@ -582,20 +731,9 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         example: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 2v7.31"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg>`
       };
 
-      const defaultTitles = {
-        note: '注意',
-        tip: '提示',
-        important: '重点',
-        warning: '警告',
-        caution: '危险',
-        danger: '致命',
-        success: '成功',
-        question: '疑问',
-        quote: '引用',
-        info: '信息',
-        todo: '待办',
-        bug: '缺陷',
-        example: '示例'
+      const getDefaultAlertTitles = () => {
+        const lang = resolveContentLang();
+        return ADMONITION_I18N[lang] || ADMONITION_I18N['zh-CN'];
       };
 
       const enhanceAlerts = (article) => {
@@ -616,7 +754,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           restContent = restContent.replace(/^(<br\s*\/?>|\n|\r)+/i, '').trim();
 
-          let customTitle = defaultTitles[type] || type.toUpperCase();
+          let customTitle = getDefaultAlertTitles()[type] || type.toUpperCase();
 
           const strongMatch = restContent.match(/^<strong>(.*?)<\/strong>[:：\s]*(.*)/is);
           if (strongMatch) {
@@ -1119,7 +1257,9 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           let currentVal = parseFloat(box.dataset.default || '1');
           if (isNaN(currentVal)) currentVal = 1;
 
-          const title = box.dataset.title || ui.defaultTitle;
+          const rawTitle = box.dataset.title;
+          const titleHasChinese = /[\u4e00-\u9fa5]/.test(rawTitle || '');
+          const title = (!rawTitle || (titleHasChinese && !lang.startsWith('zh'))) ? ui.defaultTitle : rawTitle;
           const catButtonsHtml = Object.entries(customCategories).map(([key, cat]) => {
             const isActive = key === activeCatKey ? ' is-active' : '';
             return `<button type="button" class="unit-cat-btn${isActive}" data-cat="${key}"><span>${cat.icon}</span> <span>${cat.name}</span></button>`;

@@ -2022,3 +2022,20 @@
 - [x] **自动化端到端 Playwright 验证与多端全量同步**：
   1. 编写并执行本地与线上端到端测试套件（`scripts/verify-support-page.mjs`），左右两栏 0px 偏差对齐、无虚假文案、档位按钮质感背景、9 项 FAQ 展开与响应式视口断言 100% 全绿；
   2. Commit Hash: `7d6692a`。
+
+### Task 91: 独立赞赏界面 (/support) 生产端部署与真实 Playwright E2E 浏览器全链路审计
+- [x] **全量生产环境打包与 Cloudflare Pages 边缘节点直推**：
+  1. 执行 `npm run build`，成功编译构建全站全部 111 个路由产物；
+  2. 修复 Node 22 环境下 DNS IPv6 解析等待问题（配置 `NODE_OPTIONS="--dns-result-order=ipv4first"`）；
+  3. 执行 `wrangler pages deploy dist --project-name shijianus-blog --branch main --commit-dirty=true`，完成边缘部署（部署标识：`https://ce5150f2.shijianus-blog.pages.dev`），实时绑定至生产域名 `https://blog.epocanvas.com/support/`。
+- [x] **真实线上生产环境 Playwright 端到端自动化审计与截图核验 (`scripts/verify-live-support.mjs`)**：
+  1. 自动化访问真实生产站点 `https://ce5150f2.shijianus-blog.pages.dev/support/` 与 `https://blog.epocanvas.com/support/`，响应状态均严格为 `200 OK`；
+  2. 真实测量并断言左右两栏垂直对齐（Left Card: y=526, h=657; Right Card: y=526, h=657; Top Diff = 0px, Bottom Diff = 0px，100% PASS）；
+  3. 真实断言 FAQ 区域全宽对齐（Left Diff = 0px, Width Diff = 0px，100% PASS）；
+  4. 真实断言 6 个档位选择器未选中态具有非纯白微渐变高级底色（`linear-gradient(...)`）；
+  5. 真实断言自定义金额输入框最小金额属性严格 $\ge 1$；
+  6. 真实排查并断言全页面禁止词汇（“零中转扣费”、“100% 直达技术开销”、“免中转手续费”、“TG 记账同步”、“贴合生活常用认知”、“扫码支持提示”）残留数为 0；
+  7. 真实断言右侧栏舒展展示 2 个放大二维码；
+  8. 真实展开并核验 9 项独立 FAQ（包含 Telegram 机器人单向提醒/无存储/不可篡改，PayPal 与 Web3 手续费真相等）；
+  9. 真实触发点击“前往 Stripe 安全收银台支付”，成功呼出 Stripe 收银台模态框；
+  10. 生成真实生产环境无水印截图：`fresh-live-cards.png`、`fresh-live-faq.png`、`live-target-2-modal.png`、`live-target-2-table.png`，所有断言 100% PASS 全绿通过。

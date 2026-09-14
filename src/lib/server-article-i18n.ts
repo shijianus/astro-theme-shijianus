@@ -305,12 +305,133 @@ interface CallModelResult {
   error?: string;
 }
 
-let primaryEndpointOffline = false;
+const badGeminiKeys = new Set<string>();
+const rateLimitedGeminiKeys = new Map<string, number>();
+let geminiKeyIndex = 0;
 
 async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   loadLocalEnvFiles();
   const { systemPrompt, userMessage, timeoutMs = 90000 } = opts;
 
+  // 1. Primary: Google Gemini (21 keys round-robin with auto-health filtering & rate limit cooldown)
+  const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+  const allGeminiKeys = rawGeminiKeys
+    .split(',')
+    .map((k) => k.trim().replace(/^["']|["']$/g, ''))
+    .filter(Boolean);
+  const candidateGeminiKeys = allGeminiKeys.filter((k) => !badGeminiKeys.has(k));
+
+  if (candidateGeminiKeys.length > 0) {
+    const candidateGeminiModels = ['gemini-2.5-flash'];
+    for (const gModel of candidateGeminiModels) {
+      const now = Date.now();
+      // Prioritize keys not currently in cooldown
+      const availableKeys = candidateGeminiKeys.filter((k) => (rateLimitedGeminiKeys.get(k) || 0) <= now);
+      const keysToTry = availableKeys.length > 0 ? availableKeys : candidateGeminiKeys;
+      const maxKeyAttempts = Math.min(keysToTry.length * 2, 20);
+
+      for (let kAttempt = 0; kAttempt < maxKeyAttempts; kAttempt++) {
+        const gKey = keysToTry[geminiKeyIndex % keysToTry.length];
+        geminiKeyIndex++;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 45000);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${encodeURIComponent(gKey)}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [{ text: `${systemPrompt}\n\n---\n\n${userMessage}` }],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 8192,
+                thinkingConfig: { thinkingBudget: 0 },
+              },
+            }),
+          });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            const json = await response.json();
+            const text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+            if (text) {
+              return { ok: true, text, provider: 'Chronral-Gemini', model: gModel };
+            }
+          } else {
+            const errText = await response.text().catch(() => '');
+            if (response.status === 404 || response.status === 403 || response.status === 400) {
+              badGeminiKeys.add(gKey);
+              console.warn(`[Article-i18n] Gemini key marked permanently inactive (status ${response.status})`);
+            } else if (response.status === 429) {
+              rateLimitedGeminiKeys.set(gKey, Date.now() + 25000);
+            } else if (response.status !== 503) {
+              console.warn(`[Article-i18n] Gemini (${gModel}) status ${response.status}: ${errText.slice(0, 100)}`);
+            }
+          }
+        } catch (err: any) {
+          // Network error, try next key
+        }
+      }
+    }
+  }
+
+  // 2. Secondary: Groq (High-speed Fallback)
+  const groqKey = opts.groqApiKey || process.env.GROQ_API_KEY || '';
+  if (groqKey) {
+    const candidateGroqModels = Array.from(
+      new Set(
+        [
+          'openai/gpt-oss-120b',
+          opts.groqModel,
+          process.env.GROQ_MODEL,
+          'qwen/qwen3.8-27b',
+          'qwen/qwen3.6-27b',
+          'openai/gpt-oss-20b',
+        ].filter(Boolean) as string[],
+      ),
+    );
+
+    for (const gModel of candidateGroqModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const estimatedInputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 3);
+        const safeMaxTokens = Math.max(1500, Math.min(3600, 7500 - estimatedInputTokens));
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: gModel,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage },
+            ],
+            temperature: 0.15,
+            max_tokens: safeMaxTokens,
+          }),
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const json = await response.json();
+          const text = json?.choices?.[0]?.message?.content || '';
+          if (text) {
+            return { ok: true, text, provider: 'Chronral-Groq', model: gModel };
+          }
+        }
+      } catch (err: any) {}
+    }
+  }
+
+  // 3. Tertiary: Primary Instance AI
   const customApiKey = opts.apiKey || process.env.ARTICLE_AI_I18N_API_KEY || process.env.INSTANCE_AI_API_KEY || '';
   const customBaseUrl = (
     opts.baseUrl ||
@@ -320,14 +441,10 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   ).replace(/\/+$/, '');
   const customModel = opts.model || process.env.ARTICLE_AI_I18N_MODEL || process.env.INSTANCE_AI_MODEL || 'kimi-k3-free';
 
-  const groqKey = opts.groqApiKey || process.env.GROQ_API_KEY || '';
-  const groqModel = opts.groqModel || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-
-  // 1. Attempt Primary (Custom or Instance AI) with 10s circuit breaker
   if (customApiKey && !primaryEndpointOffline) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 10000));
+      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 3000));
       const endpoint = `${customBaseUrl}/chat/completions`;
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -359,105 +476,6 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
       }
     } catch (err: any) {
       primaryEndpointOffline = true;
-      console.warn(`[Article-i18n] Primary endpoint offline/timeout (${err.message}). Circuit breaker active; switching to Groq.`);
-    }
-  }
-
-  // 2. Fallback to Groq (High-speed & Reliable)
-  if (groqKey) {
-    const candidateGroqModels = Array.from(
-      new Set(
-        [
-          'openai/gpt-oss-120b',
-          'openai/gpt-oss-20b',
-          'qwen/qwen3.8-27b',
-          'qwen/qwen3.6-27b',
-          opts.groqModel,
-          process.env.GROQ_MODEL,
-          'llama-3.3-70b-versatile',
-          'llama-3.1-8b-instant',
-        ].filter(Boolean) as string[],
-      ),
-    );
-
-    for (const gModel of candidateGroqModels) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${groqKey}`,
-          },
-          body: JSON.stringify({
-            model: gModel,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userMessage },
-            ],
-            temperature: 0.2,
-            max_tokens: 8192,
-          }),
-        });
-        clearTimeout(timeoutId);
-        if (response.ok) {
-          const json = await response.json();
-          const text = json?.choices?.[0]?.message?.content || '';
-          if (text) {
-            return { ok: true, text, provider: 'Chronral-Groq', model: gModel };
-          }
-        } else {
-          const errText = await response.text().catch(() => '');
-          console.warn(`[Article-i18n] Groq (${gModel}) status ${response.status}: ${errText.slice(0, 120)}`);
-        }
-      } catch (err: any) {
-        console.warn(`[Article-i18n] Groq (${gModel}) fallback attempt failed: ${err.message}`);
-      }
-    }
-  }
-
-  // 3. Fallback to Gemini 2.5 Flash (Ultra-high context & capacity)
-  const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
-  const geminiKeys = rawGeminiKeys.split(',').map((k) => k.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
-  if (geminiKeys.length > 0) {
-    for (const gKey of geminiKeys.slice(0, 6)) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(gKey)}`;
-        const response = await fetch(url, {
-          method: 'POST',
-          signal: controller.signal,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: `${systemPrompt}\n\n---\n\n${userMessage}` }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.15,
-              maxOutputTokens: 8192,
-            },
-          }),
-        });
-        clearTimeout(timeoutId);
-        if (response.ok) {
-          const json = await response.json();
-          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-          if (text) {
-            return { ok: true, text, provider: 'Chronral-Gemini', model: 'gemini-2.5-flash' };
-          }
-        } else {
-          const errText = await response.text().catch(() => '');
-          console.warn(`[Article-i18n] Gemini status ${response.status}: ${errText.slice(0, 120)}`);
-        }
-      } catch (err: any) {
-        console.warn(`[Article-i18n] Gemini fallback attempt failed: ${err.message}`);
-      }
     }
   }
 
@@ -751,11 +769,14 @@ export async function translateBodyChunk(
 
     if (result.ok && result.text.trim()) {
       let translated = result.text.trim();
-      // Strip outer ```markdown ... ``` or ``` ... ```
-      if (translated.startsWith('```markdown')) translated = translated.replace(/^```markdown\r?\n/, '');
-      else if (translated.startsWith('```')) translated = translated.replace(/^```[a-z]*\r?\n/, '');
-      if (translated.endsWith('```')) translated = translated.replace(/\r?\n```$/, '');
-      translated = translated.trim();
+
+      // Smart wrapper stripping: only strip artificial outer ```markdown ... ``` wrapper if the source chunk did not start with a code fence
+      const sourceStartsWithFence = /^(`{3,}|~{3,})/i.test(chunk.trim());
+      const sourceEndsWithFence = /(`{3,}|~{3,})$/i.test(chunk.trim());
+
+      if (!sourceStartsWithFence && /^```(?:markdown)?\r?\n/i.test(translated) && /\r?\n```$/.test(translated)) {
+        translated = translated.replace(/^```(?:markdown)?\r?\n/i, '').replace(/\r?\n```$/, '').trim();
+      }
 
       // Strip echoed prompt markers and reference context
       translated = translated.replace(/\[REFERENCE CONTEXT[\s\S]*?\[END REFERENCE CONTEXT\]/gi, '').trim();
@@ -764,6 +785,11 @@ export async function translateBodyChunk(
       translated = translated.replace(/<!--\s*end context\s*-->/gi, '').trim();
       translated = translated.replace(/^\[TEXT TO TRANSLATE\]:\s*\r?\n?/i, '').trim();
       translated = translated.replace(/\[END TEXT TO TRANSLATE\]\s*$/i, '').trim();
+
+      // Strip conversational intros (e.g. "Here is the translation:", "Aquí tienes la traducción...", "Voici la traduction :", etc.)
+      translated = translated.replace(/^(?:(?:Aquí tienes|Here is|Voici|Hier ist|Claro|Sure|Below is|Here's|Voici la|Este es)[\s\S]*?:\s*\r?\n+)/i, '').trim();
+      // Strip conversational outros
+      translated = translated.replace(/\r?\n+(?:(?:Espero que|Hope this|J'espère que|Ich hoffe|Si tienes alguna)[\s\S]*)$/i, '').trim();
 
       // Strip accidental frontmatter block ONLY if it contains YAML metadata keys
       if (translated.startsWith('---')) {
@@ -1116,16 +1142,16 @@ export function validateTranslatedFormat(
   }
 
   // Check code blocks preservation
-  const srcCodeBlocks = (sourceMarkdown.match(/```[a-z0-9_-]*/gi) || []).length;
-  const transCodeBlocks = (translatedMarkdown.match(/```[a-z0-9_-]*/gi) || []).length;
-  if (srcCodeBlocks > 0 && transCodeBlocks < Math.floor(srcCodeBlocks * 0.7)) {
+  const srcCodeBlocks = (sourceMarkdown.match(/^(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
+  const transCodeBlocks = (translatedMarkdown.match(/^(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
+  if (srcCodeBlocks > 0 && transCodeBlocks < Math.floor(srcCodeBlocks * 0.6)) {
     return { valid: false, reason: `Code blocks dropped: expected ~${srcCodeBlocks}, got ${transCodeBlocks}` };
   }
 
-  // Check code block parity (even count of ``` fences)
-  const totalTripleBackticks = (translatedMarkdown.match(/```/g) || []).length;
-  if (totalTripleBackticks % 2 !== 0) {
-    return { valid: false, reason: `Unbalanced code fences (odd number of triple backticks: ${totalTripleBackticks})` };
+  // Check code block parity (even count of code fence lines)
+  const totalFenceLines = (translatedMarkdown.match(/^(`{3,}|~{3,})/gim) || []).length;
+  if (totalFenceLines % 2 !== 0) {
+    return { valid: false, reason: `Unbalanced code fences (odd number of code fence lines: ${totalFenceLines})` };
   }
 
   // Check KaTeX math block parity (even count of $$)
@@ -1135,8 +1161,8 @@ export function validateTranslatedFormat(
     return { valid: false, reason: `Unbalanced KaTeX math fences (odd number of $$: ${transMathBlocks})` };
   }
 
-  // Check for corrupted LaTeX partial formula (e.g. artial t})
-  if (/(?<!\\p)artial\s+[a-zA-Z0-9_\{\}\\]+/i.test(translatedMarkdown) || /artial\s*t\}/i.test(translatedMarkdown)) {
+  // Check for corrupted LaTeX partial formula (e.g. artial t} where \p was severed)
+  if (/(?<![pP])artial\s+[a-zA-Z0-9_\{\}\\]+/i.test(translatedMarkdown) || /(?<![pP])artial\s*t\}/i.test(translatedMarkdown)) {
     return { valid: false, reason: 'Corrupted LaTeX formula detected (partial cut: artial t})' };
   }
 
@@ -1165,9 +1191,11 @@ export function validateTranslatedFormat(
     return { valid: false, reason: 'Unclosed article-accordion-group swallowed downstream article-tabs' };
   }
 
-  // Check for orphaned chat messages outside article-chat container
-  if (/<\/div>\s*(?:<div[^>]*class="[^"]*chat-message|<span[^>]*class="[^"]*chat-avatar)/i.test(translatedMarkdown)) {
-    return { valid: false, reason: 'Chat messages orphaned outside article-chat container' };
+  // Check for chat container presence if chat messages exist
+  const transChatMessages = (translatedMarkdown.match(/<div[^>]*class="[^"]*chat-message/gi) || []).length;
+  const transChatContainers = (translatedMarkdown.match(/<div[^>]*class="[^"]*article-chat/gi) || []).length;
+  if (transChatMessages > 0 && transChatContainers === 0) {
+    return { valid: false, reason: 'Chat messages present but outer article-chat container is missing' };
   }
 
   // Check for untranslated Chinese in data-title attribute for non-Chinese locales

@@ -293,8 +293,11 @@
 
       const customHeight = customOptions.height || pre.dataset.height || '460px';
       // Resolve locale-aware strings — reads <html lang="..."> at runtime
-      const loc = MINDMAP_I18N[resolveLocale()] || MINDMAP_I18N['zh-CN'];
-      const customTitle = customOptions.title || pre.dataset.title || loc.defaultTitle;
+      const currentLoc = resolveLocale();
+      const loc = MINDMAP_I18N[currentLoc] || MINDMAP_I18N['zh-CN'];
+      const rawTitle = customOptions.title || pre.dataset.title;
+      const titleHasChinese = /[\u4e00-\u9fa5]/.test(rawTitle || '');
+      const customTitle = (!rawTitle || (titleHasChinese && !currentLoc.startsWith('zh'))) ? loc.defaultTitle : rawTitle;
 
       // Parse Markdown into Markmap AST
       const { root } = transformer.transform(rawCode);

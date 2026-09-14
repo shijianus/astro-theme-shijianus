@@ -234,7 +234,13 @@ async function main() {
         enableOcr: config.enableOcr,
       });
 
-      if (result.ok && result.translatedMarkdown) {
+      if (
+        result.ok &&
+        result.translatedMarkdown &&
+        result.translatedMarkdown.length > 500 &&
+        result.translatedMarkdown.includes('title:') &&
+        result.translatedMarkdown.includes('pubDate:')
+      ) {
         const targetFilename = `${key}-${targetLang}.md`;
         const targetFilePath = path.join(POSTS_DIR, targetFilename);
 

@@ -9,8 +9,8 @@ if (!fs.existsSync(outDir)) {
 
 async function verifyLive() {
   const targetUrls = [
-    'https://blog.epocanvas.com/support/',
-    'https://f0dda98c.shijianus-blog.pages.dev/support/'
+    'https://ce5150f2.shijianus-blog.pages.dev/support/',
+    'https://blog.epocanvas.com/support/'
   ];
 
   console.log('🌐 Launching Chromium browser for Live Cloudflare Pages E2E verification...');
@@ -102,7 +102,7 @@ async function verifyLive() {
         throw new Error(`Expected exactly 2 currency buttons, found ${btnCount}`);
       }
 
-      // 5. Test Presets and Custom Input
+      // 5. Test Presets, Unselected Button Non-White Gradient, and Custom Input
       console.log('☕ Testing 6 Presets and Cursor-Text Custom Input...');
       const presetButtons = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
       const presetCount = await presetButtons.count();
@@ -111,49 +111,81 @@ async function verifyLive() {
         throw new Error(`Expected exactly 6 presets, found ${presetCount}`);
       }
 
-      const customInputLabel = page.locator('.flex.items-center.gap-2\\.5.px-4.py-3.rounded-xl.cursor-text');
+      // Verify unselected preset buttons have non-pure-white background
+      const unselectedPreset = presetButtons.nth(1); // second button
+      const bgStyle = await unselectedPreset.evaluate((el) => window.getComputedStyle(el).backgroundImage || window.getComputedStyle(el).backgroundColor);
+      console.log(`Unselected Preset Background Style: ${bgStyle}`);
+      if (bgStyle.includes('rgb(255, 255, 255)') && !bgStyle.includes('gradient')) {
+        throw new Error('Unselected preset button must not be pure white; it must have gradient background styling!');
+      }
+
+      const customInputLabel = page.locator('label.cursor-text:has(input[placeholder*="自定义金额"])');
       const customInputVisible = await customInputLabel.isVisible();
       console.log(`Live Custom Input (cursor-text) Visible: ${customInputVisible}`);
       if (!customInputVisible) {
         throw new Error('Expected custom amount input with cursor-text style to be visible');
       }
 
-      // 6. Test Serv00 Labels & Superfluous Notice Removal
-      console.log('👤 Checking Serv00 Labels & Superfluous Notice Removal...');
-      const nameLabel = await page.locator('label:has-text("称呼或社交账号")').textContent();
-      const msgLabel = await page.locator('label:has-text("留言寄语")').textContent();
-      console.log(`Field 1: "${nameLabel?.trim()}"`);
-      console.log(`Field 2: "${msgLabel?.trim()}"`);
-
-      const superfluousNotice = page.locator('.lg\\:col-span-7 .pt-4 p.text-slate-500');
-      const superfluousCount = await superfluousNotice.count();
-      console.log(`Superfluous notice count under button: ${superfluousCount}`);
-      if (superfluousCount > 0) {
-        throw new Error('Superfluous notification text should be removed from left column');
+      // Check min amount hint / input attributes
+      const customInput = customInputLabel.locator('input');
+      const minAttr = await customInput.getAttribute('min');
+      console.log(`Custom Input min attribute: ${minAttr}`);
+      if (Number(minAttr) < 1) {
+        throw new Error(`Custom input min should be at least 1, got: ${minAttr}`);
       }
+
+      // 6. Test Right Card Content & Absence of False Claims
+      console.log('🛡️ Verifying Absence of False Claims and Checking QR expansion...');
+      const pageText = await page.locator('body').innerText();
+      const falsePhrases = [
+        '零中转扣费',
+        '100% 直达技术开销',
+        '免中转手续费',
+        'TG 记账同步',
+        '贴合生活常用认知',
+        '扫码支持提示'
+      ];
+      for (const phrase of falsePhrases) {
+        if (pageText.includes(phrase)) {
+          throw new Error(`Forbidden false phrase detected on live page: "${phrase}"`);
+        }
+      }
+      console.log('✅ Zero false claims verified!');
 
       // Check clean QR code showcase in right column
       const qrCards = page.locator('.lg\\:col-span-5 img');
       const qrCount = await qrCards.count();
+      console.log(`Live QR count in right column: ${qrCount}`);
       if (qrCount < 2) {
         throw new Error('QR code cards are missing in right column');
       }
 
-      // 7. Audit Absence of Amber Filler Cards & Verify Grounded FAQ
-      console.log('💎 Auditing Absence of Amber Filler Cards & Accurate FAQ...');
-      const amberCards = await page.locator('.border-amber-500\\/30').count();
-      console.log(`Amber filler cards count: ${amberCards}`);
-      if (amberCards > 0) {
-        throw new Error(`Found ${amberCards} amber filler cards! They must not be present.`);
+      // 7. Audit Absence of Amber Filler Cards & Verify 9 Distinct Grounded FAQs
+      console.log('💎 Auditing 9 Distinct Grounded FAQs...');
+      const faqButtons = page.locator('section:has(h2:has-text("常見問題與透明度承諾")) button');
+      const faqCount = await faqButtons.count();
+      console.log(`Live FAQ Items Count: ${faqCount}`);
+      if (faqCount !== 9) {
+        throw new Error(`Expected exactly 9 distinct FAQ items, got: ${faqCount}`);
       }
 
-      const faqBtn = page.locator('button:has-text("赞赏支持能否提升我的社区等级 (LV) 或信任等级 (TL)？")');
-      await faqBtn.click();
+      // Check specific FAQ titles
+      const tgFaq = page.locator('button:has-text("Telegram 机器人的通知与数据存储机制是怎样的？")');
+      if ((await tgFaq.count()) === 0) {
+        throw new Error('Missing FAQ on Telegram bot notification & data storage!');
+      }
+      const feeFaq = page.locator('button:has-text("PayPal 与 Web3 (USDT) 赞赏的手续费与网络成本如何理解？")');
+      if ((await feeFaq.count()) === 0) {
+        throw new Error('Missing FAQ on transaction fees (PayPal & Web3)!');
+      }
+
+      // Test opening TG FAQ and checking content
+      await tgFaq.click();
       await page.waitForTimeout(300);
-      const faqAnswer = await page.locator('text=完全不能，两者 100% 独立脱钩').textContent();
-      console.log(`FAQ Answer snippet: "${faqAnswer?.slice(0, 60)}..."`);
-      if (!faqAnswer?.includes('LV.0 至 LV.4') || faqAnswer?.includes('LV.6')) {
-        throw new Error(`FAQ answer must ground in LV.0 to LV.4 and not hallucinate LV.6! Got: ${faqAnswer}`);
+      const tgAnswer = await page.locator('text=Telegram 机器人仅作为博主本人的实时消息提醒终端').textContent();
+      console.log(`TG FAQ Answer snippet: "${tgAnswer?.slice(0, 60)}..."`);
+      if (!tgAnswer?.includes('Telegram 内部并不存储、维护任何资金账本') || !tgAnswer?.includes('管理员也无权且无法篡改')) {
+        throw new Error(`TG FAQ must clarify one-way alert, no TG storage, and no tampering! Got: ${tgAnswer}`);
       }
 
       // 8. Test Triggering Stripe Modal
@@ -162,17 +194,23 @@ async function verifyLive() {
       await stripeBtn.click();
       await page.waitForTimeout(1500);
 
-      const modal = page.locator('.fixed.inset-0.z-\\[10000\\]');
-      const modalOpened = await modal.isVisible();
+      const modal = page.locator('.fixed.inset-0:has(button:has(svg.lucide-x))');
+      const modalOpened = await modal.first().isVisible();
       console.log(`Live Stripe Modal Opened: ${modalOpened}`);
       if (!modalOpened) {
         throw new Error('Live Stripe modal failed to open');
       }
 
+      // Check modal min amount note doesn't mention (约等值 1 HKD)
+      const modalText = await modal.first().innerText();
+      if (modalText.includes('约等值 1 HKD')) {
+        throw new Error('Modal text still mentions "约等值 1 HKD"!');
+      }
+
       await page.screenshot({ path: path.join(outDir, `live-target-${i + 1}-modal.png`) });
 
       // Close modal
-      const closeBtn = modal.locator('button:has(svg.lucide-x)');
+      const closeBtn = modal.first().locator('button:has(svg.lucide-x)');
       await closeBtn.click();
       await page.waitForTimeout(500);
 
