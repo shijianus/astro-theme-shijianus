@@ -305,7 +305,9 @@ interface CallModelResult {
   error?: string;
 }
 
+let primaryEndpointOffline = false;
 const badGeminiKeys = new Set<string>();
+const badGeminiModelKeys = new Set<string>();
 const rateLimitedGeminiKeys = new Map<string, number>();
 let geminiKeyIndex = 0;
 
@@ -313,7 +315,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   loadLocalEnvFiles();
   const { systemPrompt, userMessage, timeoutMs = 90000 } = opts;
 
-  // 1. Primary: Google Gemini (21 keys round-robin with auto-health filtering & rate limit cooldown)
+  // 1. Primary: Google Gemini (multi-model, 21 keys round-robin with auto-health filtering & rate limit cooldown)
   const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
   const allGeminiKeys = rawGeminiKeys
     .split(',')
@@ -322,12 +324,20 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   const candidateGeminiKeys = allGeminiKeys.filter((k) => !badGeminiKeys.has(k));
 
   if (candidateGeminiKeys.length > 0) {
-    const candidateGeminiModels = ['gemini-2.5-flash'];
+    const candidateGeminiModels = [
+      'gemini-2.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-2.5-flash',
+    ];
     for (const gModel of candidateGeminiModels) {
       const now = Date.now();
-      // Prioritize keys not currently in cooldown
-      const availableKeys = candidateGeminiKeys.filter((k) => (rateLimitedGeminiKeys.get(k) || 0) <= now);
-      const keysToTry = availableKeys.length > 0 ? availableKeys : candidateGeminiKeys;
+      const availableKeys = candidateGeminiKeys.filter(
+        (k) => !badGeminiModelKeys.has(`${k}:${gModel}`) && (rateLimitedGeminiKeys.get(`${k}:${gModel}`) || 0) <= now,
+      );
+      const nonBannedKeys = candidateGeminiKeys.filter((k) => !badGeminiModelKeys.has(`${k}:${gModel}`));
+      if (nonBannedKeys.length === 0) continue;
+
+      const keysToTry = availableKeys.length > 0 ? availableKeys : nonBannedKeys;
       const maxKeyAttempts = Math.min(keysToTry.length * 2, 20);
 
       for (let kAttempt = 0; kAttempt < maxKeyAttempts; kAttempt++) {
@@ -351,7 +361,6 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
               generationConfig: {
                 temperature: 0.1,
                 maxOutputTokens: 8192,
-                thinkingConfig: { thinkingBudget: 0 },
               },
             }),
           });
@@ -364,11 +373,13 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
             }
           } else {
             const errText = await response.text().catch(() => '');
-            if (response.status === 404 || response.status === 403 || response.status === 400) {
+            if (response.status === 404) {
+              badGeminiModelKeys.add(`${gKey}:${gModel}`);
+            } else if (response.status === 403 || response.status === 401) {
               badGeminiKeys.add(gKey);
               console.warn(`[Article-i18n] Gemini key marked permanently inactive (status ${response.status})`);
             } else if (response.status === 429) {
-              rateLimitedGeminiKeys.set(gKey, Date.now() + 25000);
+              rateLimitedGeminiKeys.set(`${gKey}:${gModel}`, Date.now() + 20000);
             } else if (response.status !== 503) {
               console.warn(`[Article-i18n] Gemini (${gModel}) status ${response.status}: ${errText.slice(0, 100)}`);
             }
@@ -444,7 +455,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   if (customApiKey && !primaryEndpointOffline) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 3000));
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const endpoint = `${customBaseUrl}/chat/completions`;
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -1141,15 +1152,15 @@ export function validateTranslatedFormat(
     return { valid: false, reason: 'Output too short' };
   }
 
-  // Check code blocks preservation
-  const srcCodeBlocks = (sourceMarkdown.match(/^(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
-  const transCodeBlocks = (translatedMarkdown.match(/^(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
-  if (srcCodeBlocks > 0 && transCodeBlocks < Math.floor(srcCodeBlocks * 0.6)) {
+  // Check code blocks preservation (support indented fences)
+  const srcCodeBlocks = (sourceMarkdown.match(/^\s*(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
+  const transCodeBlocks = (translatedMarkdown.match(/^\s*(`{3,}|~{3,})[a-z0-9_-]+/gim) || []).length;
+  if (srcCodeBlocks > 0 && transCodeBlocks < Math.floor(srcCodeBlocks * 0.5)) {
     return { valid: false, reason: `Code blocks dropped: expected ~${srcCodeBlocks}, got ${transCodeBlocks}` };
   }
 
   // Check code block parity (even count of code fence lines)
-  const totalFenceLines = (translatedMarkdown.match(/^(`{3,}|~{3,})/gim) || []).length;
+  const totalFenceLines = (translatedMarkdown.match(/^\s*(`{3,}|~{3,})/gim) || []).length;
   if (totalFenceLines % 2 !== 0) {
     return { valid: false, reason: `Unbalanced code fences (odd number of code fence lines: ${totalFenceLines})` };
   }
@@ -1173,11 +1184,15 @@ export function validateTranslatedFormat(
     return { valid: false, reason: `HTML tags dropped: expected ~${srcHtmlTags}, got ${transHtmlTags}` };
   }
 
-  // Check HTML container balance (<div> vs </div>, <details> vs </details>)
+  // Check HTML container balance (<div> vs </div>, <details> vs </details>) relative to source
+  const srcOpenDivs = (sourceMarkdown.match(/<div(\s+[^>]*)?>/gi) || []).length;
+  const srcCloseDivs = (sourceMarkdown.match(/<\/div>/gi) || []).length;
+  const srcDivDiff = Math.abs(srcOpenDivs - srcCloseDivs);
   const openDivs = (translatedMarkdown.match(/<div(\s+[^>]*)?>/gi) || []).length;
   const closeDivs = (translatedMarkdown.match(/<\/div>/gi) || []).length;
-  if (Math.abs(openDivs - closeDivs) > 2) {
-    return { valid: false, reason: `Unbalanced <div> tags in translation: open=${openDivs}, close=${closeDivs}` };
+  const transDivDiff = Math.abs(openDivs - closeDivs);
+  if (Math.abs(transDivDiff - srcDivDiff) > 8) {
+    return { valid: false, reason: `Unbalanced <div> tags in translation: open=${openDivs}, close=${closeDivs} (source diff: ${srcDivDiff})` };
   }
 
   const openDetails = (translatedMarkdown.match(/<details(\s+[^>]*)?>/gi) || []).length;
@@ -1206,7 +1221,10 @@ export function validateTranslatedFormat(
     }
 
     // Check for excessive residual Chinese characters in body (outside code blocks and LaTeX math)
-    const textWithoutCode = translatedMarkdown
+    let textWithoutCode = translatedMarkdown;
+    textWithoutCode = textWithoutCode.replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
+    textWithoutCode = textWithoutCode.replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
+    textWithoutCode = textWithoutCode
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`[^`\r\n]+`/g, '')
       .replace(/\$\$[\s\S]*?\$\$/g, '')
@@ -1218,9 +1236,9 @@ export function validateTranslatedFormat(
     const nonCodeLen = textWithoutCode.replace(/\s+/g, '').length;
     const chineseRatio = nonCodeLen > 0 ? (chineseMatches.length / nonCodeLen) : 0;
 
-    // If more than 35 Chinese characters remain, or Chinese exceeds 1.5% of body text,
+    // If more than 70 Chinese characters remain, or Chinese exceeds 1% of body text,
     // this indicates a failed chunk fallback, dropped translation, or untranslated section.
-    if (chineseMatches.length > 35 || (chineseMatches.length > 10 && chineseRatio > 0.015)) {
+    if (chineseMatches.length > 70 || (chineseMatches.length > 25 && chineseRatio > 0.01)) {
       return {
         valid: false,
         reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`

@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Check,
   Copy,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 import {
   supportConfig,
@@ -131,27 +133,134 @@ const TIER_ICONS = [
   TierHeartCupIcon,
 ];
 
+// 6 个档位专属色彩主题系统（拒绝苍白单调，赋予每个档位专属色彩身份）
+const TIER_STYLES = [
+  {
+    // 档位 0：暖金琥珀 (Amber / Golden Honey)
+    name: 'amber',
+    selected:
+      'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-amber-50/90 via-amber-50/40 to-orange-50/25 dark:from-amber-950/25 dark:via-amber-950/15 dark:to-slate-900/60 border-amber-200/80 dark:border-amber-800/40 text-amber-950 dark:text-amber-100 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-amber-600 dark:text-amber-400 bg-amber-100/90 dark:bg-amber-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-amber-500/15 dark:text-amber-400/10 group-hover:opacity-25',
+    labelSelected: 'text-amber-100',
+    labelUnselected: 'text-amber-800/80 dark:text-amber-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-amber-900 dark:text-amber-100',
+  },
+  {
+    // 档位 1：活力橙色 (Sunset Orange / Tangerine)
+    name: 'orange',
+    selected:
+      'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-orange-50/90 via-orange-50/40 to-amber-50/25 dark:from-orange-950/25 dark:via-orange-950/15 dark:to-slate-900/60 border-orange-200/80 dark:border-orange-800/40 text-orange-950 dark:text-orange-100 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-orange-600 dark:text-orange-400 bg-orange-100/90 dark:bg-orange-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-orange-500/15 dark:text-orange-400/10 group-hover:opacity-25',
+    labelSelected: 'text-orange-100',
+    labelUnselected: 'text-orange-800/80 dark:text-orange-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-orange-900 dark:text-orange-100',
+  },
+  {
+    // 档位 2：科技经典蓝 (Cobalt Royal Blue)
+    name: 'blue',
+    selected:
+      'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-blue-50/90 via-indigo-50/40 to-blue-50/25 dark:from-blue-950/25 dark:via-blue-950/15 dark:to-slate-900/60 border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-[#425aef] dark:text-blue-400 bg-blue-100/90 dark:bg-blue-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-blue-500/15 dark:text-blue-400/10 group-hover:opacity-25',
+    labelSelected: 'text-blue-100',
+    labelUnselected: 'text-blue-800/80 dark:text-blue-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-blue-900 dark:text-blue-100',
+  },
+  {
+    // 档位 3：清新翡翠薄荷绿 (Emerald / Mint Teal)
+    name: 'emerald',
+    selected:
+      'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-emerald-50/90 via-teal-50/40 to-emerald-50/25 dark:from-emerald-950/25 dark:via-emerald-950/15 dark:to-slate-900/60 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100/90 dark:bg-emerald-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-emerald-500/15 dark:text-emerald-400/10 group-hover:opacity-25',
+    labelSelected: 'text-emerald-100',
+    labelUnselected: 'text-emerald-800/80 dark:text-emerald-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-emerald-900 dark:text-emerald-100',
+  },
+  {
+    // 档位 4：高雅罗兰紫 (Purple / Violet Amethyst)
+    name: 'purple',
+    selected:
+      'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-purple-50/90 via-violet-50/40 to-purple-50/25 dark:from-purple-950/25 dark:via-purple-950/15 dark:to-slate-900/60 border-purple-200/80 dark:border-purple-800/40 text-purple-950 dark:text-purple-100 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-purple-600 dark:text-purple-400 bg-purple-100/90 dark:bg-purple-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-purple-500/15 dark:text-purple-400/10 group-hover:opacity-25',
+    labelSelected: 'text-purple-100',
+    labelUnselected: 'text-purple-800/80 dark:text-purple-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-purple-900 dark:text-purple-100',
+  },
+  {
+    // 档位 5：炽烈珊瑚玫红 (Rose / Crimson Coral)
+    name: 'rose',
+    selected:
+      'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
+    unselected:
+      'bg-gradient-to-b from-rose-50/90 via-pink-50/40 to-rose-50/25 dark:from-rose-950/25 dark:via-rose-950/15 dark:to-slate-900/60 border-rose-200/80 dark:border-rose-800/40 text-rose-950 dark:text-rose-100 hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-xs',
+    iconSelected: 'text-white bg-white/20',
+    iconUnselected: 'text-rose-600 dark:text-rose-400 bg-rose-100/90 dark:bg-rose-900/40',
+    watermarkSelected: 'text-white opacity-20',
+    watermarkUnselected: 'text-rose-500/15 dark:text-rose-400/10 group-hover:opacity-25',
+    labelSelected: 'text-rose-100',
+    labelUnselected: 'text-rose-800/80 dark:text-rose-300/80',
+    amountSelected: 'text-white',
+    amountUnselected: 'text-rose-900 dark:text-rose-100',
+  },
+];
+
 /**
  * 客户端环境即时判定本地国家，解决因异步加载导致的货币显式不同步缺陷
  */
 function detectClientCountry(): string {
-  if (typeof window === 'undefined') return 'MY';
+  if (typeof window === 'undefined') return 'CN';
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    if (tz.includes('Kuala_Lumpur') || tz.includes('Kuching')) return 'MY';
-    if (tz.includes('Tokyo')) return 'JP';
-    if (tz.includes('London')) return 'GB';
-    if (tz.includes('Seoul')) return 'KR';
     if (tz.includes('Shanghai') || tz.includes('Chongqing') || tz.includes('Urumqi') || tz.includes('Harbin') || tz.includes('Beijing')) return 'CN';
     if (tz.includes('Hong_Kong')) return 'HK';
     if (tz.includes('Taipei')) return 'TW';
     if (tz.includes('Singapore')) return 'SG';
+    if (tz.includes('Kuala_Lumpur') || tz.includes('Kuching')) return 'MY';
+    if (tz.includes('Tokyo')) return 'JP';
+    if (tz.includes('London')) return 'GB';
+    if (tz.includes('Seoul')) return 'KR';
     if (tz.includes('Sydney') || tz.includes('Melbourne') || tz.includes('Brisbane') || tz.includes('Perth')) return 'AU';
     if (tz.includes('Toronto') || tz.includes('Vancouver') || tz.includes('Montreal')) return 'CA';
     if (tz.includes('Berlin') || tz.includes('Paris') || tz.includes('Rome') || tz.includes('Madrid') || tz.includes('Amsterdam') || tz.includes('Vienna') || tz.includes('Brussels') || tz.includes('Athens') || tz.includes('Dublin') || tz.includes('Helsinki') || tz.includes('Lisbon')) return 'DE';
     if (tz.startsWith('America/')) return 'US';
+
+    const lang = (navigator.language || '').toLowerCase();
+    if (lang.startsWith('zh-cn') || lang.startsWith('zh-hans')) return 'CN';
+    if (lang.startsWith('zh-hk')) return 'HK';
+    if (lang.startsWith('zh-tw')) return 'TW';
+    if (lang.startsWith('ja')) return 'JP';
+    if (lang.startsWith('ko')) return 'KR';
   } catch {}
-  return 'MY';
+  return 'CN';
 }
 
 export const SupportDashboard: React.FC = () => {
@@ -239,47 +348,18 @@ export const SupportDashboard: React.FC = () => {
     return { localCurrencyOption: local, globalCurrencyOption: global };
   }, [detectedCountry]);
 
-  // Derived active currency configuration & purchasing power price tiers
-  const {
-    activeCurrencyCode,
-    activeCurrencySymbol,
-    activeAmounts,
-    activeMin,
-    activeMax,
-  } = useMemo(() => {
-    if (activeCurrencyType === 'local') {
-      return {
-        activeCurrencyCode: localCurrencyOption.code.toUpperCase(),
-        activeCurrencySymbol: localCurrencyOption.symbol,
-        activeAmounts: localCurrencyOption.amounts,
-        activeMin: Math.max(1, localCurrencyOption.min),
-        activeMax: localCurrencyOption.max,
-      };
-    } else {
-      // Global currency: Amounts are dynamically adjusted according to local PPP exchange conversion
-      const pppAmounts = localCurrencyOption.amounts.map((amt) =>
-        convertByLocalPPP(
-          amt,
-          localCurrencyOption.rateToUSD,
-          globalCurrencyOption.rateToUSD,
-          globalCurrencyOption.code,
-        ),
-      ) as [number, number, number, number, number, number];
-
-      // 最低金额严格保底为 1（或当前全球货币自身 min），绝不小于 1；
-      // 上限以 1000 HKD 等价货币化 0 后的 max 为准（即 globalCurrencyOption.max）
-      const pppMin = Math.max(1, globalCurrencyOption.min);
-      const pppMax = globalCurrencyOption.max;
-
-      return {
-        activeCurrencyCode: globalCurrencyOption.code.toUpperCase(),
-        activeCurrencySymbol: globalCurrencyOption.symbol,
-        activeAmounts: pppAmounts,
-        activeMin: pppMin,
-        activeMax: pppMax,
-      };
-    }
+  // Derived active currency configuration: Single Source of Truth
+  // Ensures currency selector, 6 tiers, custom input, and checkout button are 100% strictly identical
+  const activeCurrencyConfig = useMemo(() => {
+    return activeCurrencyType === 'local' ? localCurrencyOption : globalCurrencyOption;
   }, [activeCurrencyType, localCurrencyOption, globalCurrencyOption]);
+
+  const activeCurrencyCode = activeCurrencyConfig.code.toUpperCase();
+  const activeCurrencySymbol = activeCurrencyConfig.symbol;
+  const activeAmounts = activeCurrencyConfig.amounts;
+  const activeLabels = activeCurrencyConfig.labels;
+  const activeMin = Math.max(1, activeCurrencyConfig.min);
+  const activeMax = activeCurrencyConfig.max;
 
   // Handle switching between the 2 allowed currencies (Local vs Global)
   const handleCurrencySwitch = (newType: 'local' | 'global') => {
@@ -350,6 +430,36 @@ export const SupportDashboard: React.FC = () => {
       }),
     );
   };
+
+  // 支援名册上方 4 个指标卡动态真实联动计算 (累计人次、精神咖啡杯数、汇聚币种、最新支持者)
+  const metrics = useMemo(() => {
+    const totalSupporters = sponsors.length;
+    let totalCups = 0;
+    const currencies = new Set<string>();
+
+    sponsors.forEach((s) => {
+      if (s.currency) currencies.add(s.currency.toUpperCase());
+      const cur = (s.currency || 'cny').toLowerCase();
+      const amt = Number(s.amount) || 0;
+      let cups = 1;
+      if (['cny', 'rmb'].includes(cur)) cups = Math.max(1, Math.round(amt / 15));
+      else if (['usd', 'eur', 'gbp', 'chf'].includes(cur)) cups = Math.max(1, Math.round(amt / 4));
+      else if (['hkd', 'twd', 'mop'].includes(cur)) cups = Math.max(1, Math.round(amt / 35));
+      else if (['jpy', 'krw'].includes(cur)) cups = Math.max(1, Math.round(amt / 500));
+      else cups = Math.max(1, Math.round(amt / 5));
+      totalCups += cups;
+    });
+
+    const latestDonor =
+      sponsors.length > 0 ? (sponsors[0]?.name || '热心读者') : '虚位以待 · 期待支持 ✨';
+
+    return {
+      totalSupporters,
+      totalCups,
+      currencyCount: currencies.size,
+      latestDonor,
+    };
+  }, [sponsors]);
 
   // Supporter filtering & pagination
   const filteredSponsors = useMemo(() => {
@@ -513,34 +623,12 @@ export const SupportDashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* Aesthetic Visual Coffee Banner */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-[#425aef] text-white p-2.5 sm:p-3 shadow-xs flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/20 shadow-xs shrink-0">
-                    <Coffee className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold tracking-wide flex items-center gap-1.5">
-                      <span>☕️ 特调咖啡支持档位</span>
-                      <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[9px] font-semibold uppercase tracking-normal">
-                        {activeCurrencyCode}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-blue-100/90 font-normal">
-                      每一份心意表达，均直接投入高可用算力与原创技术开销
-                    </p>
-                  </div>
-                </div>
-                <div className="text-xs shrink-0 opacity-80 hidden sm:block">
-                  ✨
-                </div>
-              </div>
-
               <div className="grid grid-cols-3 gap-2.5">
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
-                  const label = localCurrencyOption.labels[idx] || '咖啡心意';
+                  const label = activeLabels[idx] || '咖啡心意';
                   const TierIcon = TIER_ICONS[idx] || Coffee;
+                  const tierStyle = TIER_STYLES[idx] || TIER_STYLES[0];
                   return (
                     <button
                       key={`${activeCurrencyCode}-${idx}-${amt}`}
@@ -550,17 +638,15 @@ export const SupportDashboard: React.FC = () => {
                         setSelectedTierIndex(idx);
                       }}
                       className={`relative overflow-hidden py-2.5 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border group ${
-                        isSelected
-                          ? 'bg-[#425aef] border-[#425aef] text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40 scale-[1.02]'
-                          : 'bg-gradient-to-b from-slate-100/90 via-slate-50 to-blue-50/40 dark:from-[#181c2d] dark:via-[#141827] dark:to-[#111422] border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:from-blue-50 hover:to-indigo-50/60 dark:hover:from-[#1d2238] dark:hover:to-[#171c2e] hover:border-blue-300/80 dark:hover:border-blue-500/40 hover:shadow-xs shadow-2xs'
+                        isSelected ? tierStyle.selected : tierStyle.unselected
                       }`}
                     >
                       {/* Background Watermark Illustration */}
                       <div
                         className={`absolute -right-1 -bottom-1 pointer-events-none transition-opacity ${
                           isSelected
-                            ? 'text-white opacity-20'
-                            : 'text-slate-400 dark:text-slate-600 opacity-10 group-hover:opacity-20'
+                            ? tierStyle.watermarkSelected
+                            : tierStyle.watermarkUnselected
                         }`}
                       >
                         <TierIcon className="w-9 h-9" />
@@ -571,28 +657,26 @@ export const SupportDashboard: React.FC = () => {
                         <div
                           className={`p-1 rounded-lg mb-1 transition-colors ${
                             isSelected
-                              ? 'text-white bg-white/20'
-                              : idx === 0
-                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/30'
-                              : idx === 1
-                              ? 'text-orange-500 bg-orange-50 dark:bg-orange-950/30'
-                              : idx === 2
-                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                              : idx === 3
-                              ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                              : idx === 4
-                              ? 'text-purple-500 bg-purple-50 dark:bg-purple-950/30'
-                              : 'text-rose-500 bg-rose-50 dark:bg-rose-950/30'
+                              ? tierStyle.iconSelected
+                              : tierStyle.iconUnselected
                           }`}
                         >
                           <TierIcon className="w-4 h-4" />
                         </div>
-                        <div className="text-sm font-black tracking-tight">
+                        <div
+                          className={`text-sm font-black tracking-tight ${
+                            isSelected
+                              ? tierStyle.amountSelected
+                              : tierStyle.amountUnselected
+                          }`}
+                        >
                           {activeCurrencySymbol}{amt}
                         </div>
                         <div
                           className={`text-[10px] sm:text-[11px] font-medium mt-0.5 whitespace-nowrap ${
-                            isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'
+                            isSelected
+                              ? tierStyle.labelSelected
+                              : tierStyle.labelUnselected
                           }`}
                         >
                           {label}
@@ -706,7 +790,7 @@ export const SupportDashboard: React.FC = () => {
 
         {/* Right Column: Clean QR Codes Showcase (5 Cols, Expanded & Focused) */}
         <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-4">
-          <div className="space-y-4 flex-1 flex flex-col justify-between">
+          <div className="space-y-4 flex-1 flex flex-col">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 本地与跨国支付通道
@@ -770,7 +854,7 @@ export const SupportDashboard: React.FC = () => {
 
             {/* Tab 1: CN QR Codes (Expanded naturally) */}
             {qrTab === 'cn' && (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto py-1 animate-in fade-in duration-200">
+              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 py-1 animate-in fade-in duration-200">
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
                     <WeChatIcon className="w-4 h-4" />
@@ -833,7 +917,7 @@ export const SupportDashboard: React.FC = () => {
 
             {/* Tab 2: HK QR Codes */}
             {qrTab === 'hk' && (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto py-1 animate-in fade-in duration-200">
+              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 py-1 animate-in fade-in duration-200">
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-indigo-50/35 dark:from-indigo-950/20 dark:to-[#151928] border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300">
                     <AlipayIcon className="w-4 h-4" />
@@ -896,7 +980,7 @@ export const SupportDashboard: React.FC = () => {
 
             {/* Tab 3: PayPal */}
             {qrTab === 'paypal' && (
-              <div className="space-y-3 my-auto py-1 animate-in fade-in duration-200">
+              <div className="space-y-3 py-1 animate-in fade-in duration-200">
                 <a
                   href="https://www.paypal.com/paypalme/shijianus"
                   target="_blank"
@@ -912,7 +996,7 @@ export const SupportDashboard: React.FC = () => {
                         paypal.me/shijianus
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        点击直接在 PayPal 网页或 App 付款
+                        推荐使用同货币转账以减少汇率损耗与平台抽成
                       </div>
                     </div>
                   </div>
@@ -948,7 +1032,7 @@ export const SupportDashboard: React.FC = () => {
 
             {/* Tab 4: Web3 / USDT */}
             {qrTab === 'crypto' && (
-              <div className="space-y-3.5 my-auto py-2 animate-in fade-in duration-200">
+              <div className="space-y-3.5 py-1 animate-in fade-in duration-200">
                 <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -997,6 +1081,18 @@ export const SupportDashboard: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Direct QR Transparency & Refund Guarantee Notice */}
+          <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
+            <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] flex items-start gap-2.5">
+              <div className="p-1 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-[#425aef] dark:text-blue-300 shrink-0 mt-0.5">
+                <Heart className="w-3.5 h-3.5 fill-current" />
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手工录入名册；误操作支持原路退款，资金变动与结案情况均如实公示。
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1034,36 +1130,43 @@ export const SupportDashboard: React.FC = () => {
 
         {/* Highlight Metrics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              累计支持人次
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span>累计支持人次</span>
+              <Users className="w-3.5 h-3.5 text-blue-500" />
             </div>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {sponsors.length} <span className="text-xs font-normal text-slate-400">位</span>
+              {metrics.totalSupporters} <span className="text-xs font-normal text-slate-400">位</span>
             </div>
           </div>
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              精神咖啡支持
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span>精神咖啡支持</span>
+              <Coffee className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-              {sponsors.length} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
+              {metrics.totalCups} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
             </div>
           </div>
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              汇聚币种
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span>汇聚币种</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#425aef]" />
             </div>
             <div className="text-2xl font-black text-[#425aef] dark:text-blue-400 mt-1">
-              {new Set(sponsors.map((s) => s.currency)).size} <span className="text-xs font-normal text-slate-400">种</span>
+              {metrics.currencyCount} <span className="text-xs font-normal text-slate-400">种</span>
             </div>
           </div>
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              最新支持
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span>最新支持</span>
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             </div>
-            <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate">
-              {sponsors.length > 0 ? (sponsors[0]?.name || '热心读者') : '等待首位支持者 ✨'}
+            <div
+              className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate"
+              title={metrics.latestDonor}
+            >
+              {metrics.latestDonor}
             </div>
           </div>
         </div>
