@@ -202,41 +202,8 @@ export const supportConfig: SupportConfig = {
       rateToUSD: 1.15,
     },
   },
-  // 仅保留最多 3 个真实/初始原型赞赏记录（拒绝虚假过度填充）
-  seedSponsors: [
-    {
-      id: 'sp_seed_1',
-      name: 'CyberNomad',
-      amount: 10,
-      currency: 'USD',
-      message: '超喜欢博客的动效与极客质感，继续加油！🚀',
-      channel: 'Stripe (Apple Pay)',
-      allocation: 'Cloudflare Pro 边缘算力服务',
-      date: '2026-09-12',
-      featured: true,
-    },
-    {
-      id: 'sp_seed_2',
-      name: '时间的朋友',
-      amount: 25,
-      currency: 'CNY',
-      message: '请作者喝杯精品手冲，期待更多系统架构与Astro干货！☕️',
-      channel: '微信支付',
-      allocation: 'D1 数据库与高可用存储扩容',
-      date: '2026-09-11',
-      featured: true,
-    },
-    {
-      id: 'sp_seed_3',
-      name: '匿名支持者',
-      amount: 40,
-      currency: 'HKD',
-      message: '很棒的数字花园，排版和交互细节太让人舒适了。',
-      channel: 'Alipay HK',
-      allocation: '-',
-      date: '2026-09-10',
-    },
-  ],
+  // 支援名录完全采用真实记录（彻底清空示例数据，拒绝虚假过度填充）
+  seedSponsors: [],
   faqs: [
     {
       question: '赞赏的资金将如何使用？实际去向与技术投入如何公示？',
@@ -266,12 +233,12 @@ export const supportConfig: SupportConfig = {
     {
       question: 'PayPal 与 Web3 (USDT) 赞赏的手续费与网络成本如何理解？',
       answer:
-        '各个支付通道均存在其客观的规则与成本，本站绝不作“完全免手续费”的虚假承诺：① PayPal 属于国际商业支付平台，转账通常存在平台手续费或跨境汇率折算损耗，使用个人亲友（Friends & Family）方式转账可在符合规则的前提下降低平台抽成；② Web3 USDT（Arbitrum One 网络）属于点对点去中心化链上转账，虽然 Arbitrum 的网络拥堵费极低（通常单笔 Gas 费低于 $0.01），但发起方钱包仍需承担该笔链上矿工费。转账完成后，您可将交易单号或 TxHash 发送邮件告知博主以便核对收录。',
+        '各个支付通道均存在其客观的规则与成本，本站绝不作“完全免手续费”的虚假承诺：① PayPal 属于国际商业支付平台，转账通常存在平台手续费或跨境汇率折算损耗，推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费；② Web3 USDT（Arbitrum One 网络）属于点对点去中心化链上转账，虽然 Arbitrum 的网络拥堵费极低（通常单笔 Gas 费低于 $0.01），但发起方钱包仍需承担该笔链上矿工费。转账完成后，您可将交易单号或 TxHash 发送邮件告知博主以便核对收录。',
     },
     {
       question: '如果赞赏出现误操作或需要退款，该如何申请？',
       answer:
-        '赞赏支持纯属自愿心意。如果在操作过程中因网络延迟、重复点击导致多次扣款，或者因误操作希望撤销赞赏，博主完全支持原路退回。申请退款请发送邮件至 shijianus@epocanvas.com，并请提供：① 支付渠道（Stripe、微信、支付宝或 PayPal）；② 支付凭单或交易单号（如 Stripe Receipt、微信/支付宝转账单号等）；③ 付款时间与金额。博主查阅邮件核对账目后会在后台发起原路退款。因个人精力有限，邮件通常在 24~48 小时内处理，敬请理解。',
+        '赞赏支持纯属自愿心意。如果在操作过程中因网络延迟、重复点击导致多次扣款，或者因误操作希望撤销赞赏，博主完全支持原路退回。申请退款请发送邮件至 shijianus@epocanvas.com，并请提供：① 支付渠道（Stripe、微信、支付宝或 PayPal）；② 支付凭单或交易单号（如 Stripe Receipt、微信/支付宝转账单号等）；③ 付款时间与金额。博主查阅邮件核对账目后会在后台发起原路退款。为了保障资金流向的绝对公开透明，所有因误操作退款或原路退回导致的资金变动，均会在下方支援名册中以公示标识如实注明撤销与结案情况，确保账目全流程真实可溯。因个人精力有限，邮件通常在 24~48 小时内处理，敬请理解。',
     },
     {
       question: '赞赏支持能否提升社区等级 (LV) 或信任等级 (TL)？',

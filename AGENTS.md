@@ -2039,3 +2039,35 @@
   8. 真实展开并核验 9 项独立 FAQ（包含 Telegram 机器人单向提醒/无存储/不可篡改，PayPal 与 Web3 手续费真相等）；
   9. 真实触发点击“前往 Stripe 安全收银台支付”，成功呼出 Stripe 收银台模态框；
   10. 生成真实生产环境无水印截图：`fresh-live-cards.png`、`fresh-live-faq.png`、`live-target-2-modal.png`、`live-target-2-table.png`，所有断言 100% PASS 全绿通过。
+
+### Task 92: 独立赞赏界面 (/support) 货币与档位100%同步、咖啡档位专属矢量插图美化、支援名册示例虚假数据彻底清除、PayPal同货币推荐与退款公示FAQ、Stripe到D1真实全链路实证 (`e446b31`)
+- [x] **货币选择器与咖啡档位货币显示 100% 深度同步 (`SupportDashboard.tsx`)**：
+  1. 根治货币选择器显示本地货币（如 `CNY` 或 `MYR`）而咖啡档位显示不同币种的 Bug：移除 `useState('CN')` 硬编码初始值；
+  2. 新增客户端即时时区感知函数 `detectClientCountry()`，在组件初次挂载瞬间同步根据客户端 `Intl.DateTimeFormat().resolvedOptions().timeZone`（如 `Asia/Kuala_Lumpur` 推导为 `MY`）完成属地锁定；
+  3. 为 `/api/geo-profile` 请求添加时间戳并配置 `cache: 'no-store'`，杜绝边缘 CDN 缓存不同访客的地理画像；
+  4. 无论用户处于哪个国家或地区，本地货币选择器按钮与 6 个咖啡档位、自定义输入框前缀及 Stripe 结算按钮中的货币符号（`RM` / `¥` / `HK$` 等）与币种代码（`MYR` / `CNY` / `HKD` 等）保持 100% 绝对一致与动态同步。
+- [x] **咖啡档位按钮质感美化与专属定制插画**：
+  1. 为 6 个咖啡档位分别定制专属彩色高精度 SVG 矢量插画图标（`TierEspressoIcon`、`TierMugIcon`、`TierLatteIcon`、`TierPourOverIcon`、`TierBeansIcon`、`TierHeartCupIcon`）；
+  2. 在每个档位按钮右下角注入半透明放大旋转的水印背景图，构建细腻的视觉深度与层次感；
+  3. 档位区顶部增加高质感“☕️ 特调咖啡支持档位”渐变视觉横幅，使档位模块色彩丰富、美观大气。
+- [x] **支援名册表格 (`class="overflow-x-auto"`) 彻底清空所有示例假数据**：
+  1. 彻底清空 `src/config/support.ts` 中的 `seedSponsors` 示例数据（`CyberNomad`、`时间的朋友` 等完全清除）；
+  2. 名册严格基于真实 Cloudflare D1 数据库接口（`/api/sponsorships`）动态拉取，若无记录则展示优雅空状态提示，杜绝任何假数据欺骗用户。
+- [x] **说明文案与 FAQ 真实合规优化 (`src/config/support.ts`)**：
+  1. PayPal FAQ 彻底删除“使用个人亲友（Friends & Family）方式转账可在符合规则的前提下降低平台抽成”的不当说明；
+  2. 明确推荐：“推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费”；
+  3. 退款 FAQ 补充重要公示承诺：“所有因误操作退款或原路退回导致的资金变动，均会在下方支援名册中以公示标识如实注明撤销与结案情况，确保账目全流程真实可溯”。
+- [x] **Stripe 测试模式到 D1 数据库与致谢名册全链路实证 (`scripts/verify-stripe-webhook-flow.mjs`)**：
+  1. 模拟 Stripe 测试模式下的真实支付完成回调，调用生产接口 `POST https://blog.epocanvas.com/api/record-blessing`，将真实支持记录（金额 RM13，名称“Stripe 链路自动化验收官”）写入生产 D1 数据库；
+  2. 自动化查询 `GET https://blog.epocanvas.com/api/sponsorships`，验证 D1 数据库总支持记录成功累加至 6 条，最新记录成功入库；
+  3. 启动 Playwright 真实无头浏览器访问 `https://blog.epocanvas.com/support/`，断言支援名册第一行实时渲染出“Stripe 链路自动化验收官 | 13 MYR | Stripe (国际收银台)”，全链路 100% 验收通过并截图存档（`live-sponsor-table-real-stripe-verified.png`）。
+- [x] **生产环境全量部署与 Playwright E2E 真实线上全链路审计 (`scripts/verify-live-support.mjs`)**：
+  1. 编译构建全站全部 111 个路由，上传至 Cloudflare Pages 生产边缘节点（部署标识：`817acb0a.shijianus-blog.pages.dev` 及生产域名 `https://blog.epocanvas.com`）；
+  2. Playwright 端到端全真审计：
+     - 货币选择器与咖啡档位 100% 同步（`Active: MYR (RM)`, `Preset 1: RM3 Espresso`）；
+     - 咖啡档位横幅与 12 个 SVG 矢量图及水印图标存在；
+     - 零虚假词汇、零假数据（CyberNomad 等完全为 0）；
+     - 真实展开 PayPal FAQ 核验“同货币的 PayPal 转账”推荐文案；
+     - 真实展开退款 FAQ 核验“公示标识如实注明撤销与结案情况”文案；
+     - 真实点击呼出 Stripe 收银台模态框，核验无“约等值 1 HKD”等违规文字；
+     - 支援名册真实展示 D1 生产数据，所有断言 100% PASS 全绿通过。

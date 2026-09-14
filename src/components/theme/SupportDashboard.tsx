@@ -64,9 +64,99 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
+/* ── Coffee Tier SVG Illustrations ── */
+const TierEspressoIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+    <path d="M2 8h16v7a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
+    <path d="M6 1v3" />
+    <path d="M10 1v3" />
+    <path d="M14 1v3" />
+  </svg>
+);
+
+const TierMugIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+    <path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+    <line x1="6" y1="2" x2="6" y2="4" />
+    <line x1="10" y1="2" x2="10" y2="4" />
+    <line x1="14" y1="2" x2="14" y2="4" />
+  </svg>
+);
+
+const TierLatteIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 4h14l-2 15a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 4Z" />
+    <line x1="3" y1="4" x2="21" y2="4" />
+    <path d="M10 9h4" />
+    <path d="M9 14h6" />
+  </svg>
+);
+
+const TierPourOverIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 2h14l-4 9h-6L5 2Z" />
+    <path d="M9 11v1a3 3 0 0 0 6 0v-1" />
+    <path d="M7 16h10l-2 6H9l-2-6Z" />
+  </svg>
+);
+
+const TierBeansIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="8" cy="14" r="5" />
+    <path d="M6 11c1.5 2 2.5 4 4 4" />
+    <circle cx="16" cy="10" r="5" />
+    <path d="M14 7c1.5 2 2.5 4 4 4" />
+    <path d="M12 2v2" />
+    <path d="M19 2l-1 2" />
+  </svg>
+);
+
+const TierHeartCupIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+    <path d="M2 8h16v7a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
+    <path d="M10 12.5l1.5 1.5 3-3" />
+    <circle cx="12" cy="4" r="2" fill="currentColor" />
+  </svg>
+);
+
+const TIER_ICONS = [
+  TierEspressoIcon,
+  TierMugIcon,
+  TierLatteIcon,
+  TierPourOverIcon,
+  TierBeansIcon,
+  TierHeartCupIcon,
+];
+
+/**
+ * 客户端环境即时判定本地国家，解决因异步加载导致的货币显式不同步缺陷
+ */
+function detectClientCountry(): string {
+  if (typeof window === 'undefined') return 'MY';
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (tz.includes('Kuala_Lumpur') || tz.includes('Kuching')) return 'MY';
+    if (tz.includes('Tokyo')) return 'JP';
+    if (tz.includes('London')) return 'GB';
+    if (tz.includes('Seoul')) return 'KR';
+    if (tz.includes('Shanghai') || tz.includes('Chongqing') || tz.includes('Urumqi') || tz.includes('Harbin') || tz.includes('Beijing')) return 'CN';
+    if (tz.includes('Hong_Kong')) return 'HK';
+    if (tz.includes('Taipei')) return 'TW';
+    if (tz.includes('Singapore')) return 'SG';
+    if (tz.includes('Sydney') || tz.includes('Melbourne') || tz.includes('Brisbane') || tz.includes('Perth')) return 'AU';
+    if (tz.includes('Toronto') || tz.includes('Vancouver') || tz.includes('Montreal')) return 'CA';
+    if (tz.includes('Berlin') || tz.includes('Paris') || tz.includes('Rome') || tz.includes('Madrid') || tz.includes('Amsterdam') || tz.includes('Vienna') || tz.includes('Brussels') || tz.includes('Athens') || tz.includes('Dublin') || tz.includes('Helsinki') || tz.includes('Lisbon')) return 'DE';
+    if (tz.startsWith('America/')) return 'US';
+  } catch {}
+  return 'MY';
+}
+
 export const SupportDashboard: React.FC = () => {
   // ── 1. Country & Dual-Currency State ──
-  const [detectedCountry, setDetectedCountry] = useState<string>('CN');
+  const [detectedCountry, setDetectedCountry] = useState<string>(() => detectClientCountry());
   const [activeCurrencyType, setActiveCurrencyType] = useState<'local' | 'global'>('local');
   const [selectedTierIndex, setSelectedTierIndex] = useState<number>(2); // Default tier index (Americano)
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
@@ -84,34 +174,41 @@ export const SupportDashboard: React.FC = () => {
   // ── 4. FAQ Accordion ──
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0); // First FAQ opened by default
 
-  // ── 5. Supporter Roster State (Max 3 initial seed records, no fake inflation) ──
-  const [sponsors, setSponsors] = useState<SponsorItem[]>(supportConfig.seedSponsors);
+  // ── 5. Supporter Roster State (彻底清空示例数据，100% 连结真实记录) ──
+  const [sponsors, setSponsors] = useState<SponsorItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tablePage, setTablePage] = useState<number>(1);
   const [jumpPageInput, setJumpPageInput] = useState<string>('');
   const [showJumpPopover, setShowJumpPopover] = useState<boolean>(false);
   const pageSize = 5;
 
-  // Auto-detect country on mount
+  // Auto-detect country & live sponsors on mount
   useEffect(() => {
+    // 1. 同步确认客户端时区属地
+    const clientC = detectClientCountry();
+    if (clientC) {
+      setDetectedCountry(clientC);
+    }
+
+    // 2. 异步请求后端精准边缘地理位置，带上 no-store 防缓存
     try {
-      fetch('/api/geo-profile')
+      fetch(`/api/geo-profile?_t=${Date.now()}`, { cache: 'no-store' })
         .then((res) => res.json())
         .then((data: any) => {
           const c = (data?.country || '').toUpperCase();
-          if (c) {
+          if (c && c !== 'GLOBAL') {
             setDetectedCountry(c);
           }
         })
         .catch(() => {});
     } catch {}
 
-    // Fetch live sponsorships from D1 database
+    // 3. 拉取 D1 真实致谢记录（绝无 mock 伪造）
     try {
-      fetch('/api/sponsorships?limit=50')
+      fetch(`/api/sponsorships?limit=50&_t=${Date.now()}`, { cache: 'no-store' })
         .then((res) => res.json())
         .then((data: any) => {
-          if (data?.ok && Array.isArray(data.list) && data.list.length > 0) {
+          if (data?.ok && Array.isArray(data.list)) {
             const apiItems: SponsorItem[] = data.list.map((item: any) => ({
               id: item.id,
               name: item.name || '匿名支持者',
@@ -122,11 +219,7 @@ export const SupportDashboard: React.FC = () => {
               allocation: item.allocation || '-',
               date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
             }));
-
-            // Only use real records or fallback to 3 seed sponsors
-            if (apiItems.length > 0) {
-              setSponsors(apiItems);
-            }
+            setSponsors(apiItems);
           }
         })
         .catch(() => {});
@@ -404,22 +497,50 @@ export const SupportDashboard: React.FC = () => {
             </div>
 
             {/* 6 Preset Amounts Grid: strictly paired with local coffee price tiers & PPP adjustment */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   1. 选择支持档位
                 </label>
-                {activeCurrencyType === 'global' && (
+                {activeCurrencyType === 'global' ? (
                   <span className="text-[11px] text-[#425aef] dark:text-blue-400 font-medium">
                     ⚡ 已随本地购买力（PPP）汇率折算
                   </span>
+                ) : (
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                    按实际生活咖啡档位换算
+                  </span>
                 )}
+              </div>
+
+              {/* Aesthetic Visual Coffee Banner */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-[#425aef] text-white p-2.5 sm:p-3 shadow-xs flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/20 shadow-xs shrink-0">
+                    <Coffee className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold tracking-wide flex items-center gap-1.5">
+                      <span>☕️ 特调咖啡支持档位</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[9px] font-semibold uppercase tracking-normal">
+                        {activeCurrencyCode}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-blue-100/90 font-normal">
+                      每一份心意表达，均直接投入高可用算力与原创技术开销
+                    </p>
+                  </div>
+                </div>
+                <div className="text-xs shrink-0 opacity-80 hidden sm:block">
+                  ✨
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2.5">
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
                   const label = localCurrencyOption.labels[idx] || '咖啡心意';
+                  const TierIcon = TIER_ICONS[idx] || Coffee;
                   return (
                     <button
                       key={`${activeCurrencyCode}-${idx}-${amt}`}
@@ -428,21 +549,54 @@ export const SupportDashboard: React.FC = () => {
                         setIsCustomMode(false);
                         setSelectedTierIndex(idx);
                       }}
-                      className={`py-3 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border ${
+                      className={`relative overflow-hidden py-2.5 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border group ${
                         isSelected
                           ? 'bg-[#425aef] border-[#425aef] text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40 scale-[1.02]'
                           : 'bg-gradient-to-b from-slate-100/90 via-slate-50 to-blue-50/40 dark:from-[#181c2d] dark:via-[#141827] dark:to-[#111422] border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:from-blue-50 hover:to-indigo-50/60 dark:hover:from-[#1d2238] dark:hover:to-[#171c2e] hover:border-blue-300/80 dark:hover:border-blue-500/40 hover:shadow-xs shadow-2xs'
                       }`}
                     >
-                      <div className="text-sm font-black tracking-tight">
-                        {activeCurrencySymbol}{amt}
-                      </div>
+                      {/* Background Watermark Illustration */}
                       <div
-                        className={`text-[11px] font-medium mt-0.5 whitespace-nowrap ${
-                          isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'
+                        className={`absolute -right-1 -bottom-1 pointer-events-none transition-opacity ${
+                          isSelected
+                            ? 'text-white opacity-20'
+                            : 'text-slate-400 dark:text-slate-600 opacity-10 group-hover:opacity-20'
                         }`}
                       >
-                        {label}
+                        <TierIcon className="w-9 h-9" />
+                      </div>
+
+                      {/* Foreground Content */}
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div
+                          className={`p-1 rounded-lg mb-1 transition-colors ${
+                            isSelected
+                              ? 'text-white bg-white/20'
+                              : idx === 0
+                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                              : idx === 1
+                              ? 'text-orange-500 bg-orange-50 dark:bg-orange-950/30'
+                              : idx === 2
+                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                              : idx === 3
+                              ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
+                              : idx === 4
+                              ? 'text-purple-500 bg-purple-50 dark:bg-purple-950/30'
+                              : 'text-rose-500 bg-rose-50 dark:bg-rose-950/30'
+                          }`}
+                        >
+                          <TierIcon className="w-4 h-4" />
+                        </div>
+                        <div className="text-sm font-black tracking-tight">
+                          {activeCurrencySymbol}{amt}
+                        </div>
+                        <div
+                          className={`text-[10px] sm:text-[11px] font-medium mt-0.5 whitespace-nowrap ${
+                            isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'
+                          }`}
+                        >
+                          {label}
+                        </div>
                       </div>
                     </button>
                   );
@@ -909,7 +1063,7 @@ export const SupportDashboard: React.FC = () => {
               最新支持
             </div>
             <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate">
-              {sponsors[0]?.name || '热心读者'}
+              {sponsors.length > 0 ? (sponsors[0]?.name || '热心读者') : '等待首位支持者 ✨'}
             </div>
           </div>
         </div>
@@ -1010,9 +1164,18 @@ export const SupportDashboard: React.FC = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-slate-500">
-                      <Coffee className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                      <p className="text-sm">未搜索到相关支持者记录</p>
+                    <td colSpan={6} className="py-14 text-center">
+                      <div className="w-12 h-12 mx-auto rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#425aef] dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/40 shadow-xs mb-3">
+                        <Coffee className="w-6 h-6" />
+                      </div>
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {searchQuery ? '未搜索到相关支持者记录' : '暂无公开致谢记录'}
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+                        {searchQuery
+                          ? '请尝试更换关键词搜索'
+                          : '所有通过 Stripe 国际收银台、微信、支付宝等完成的赞赏均在此实时公开展示。欢迎通过上方收银台成为第一位支持者 ✨'}
+                      </p>
                     </td>
                   </tr>
                 )}

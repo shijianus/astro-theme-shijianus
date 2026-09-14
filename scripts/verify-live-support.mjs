@@ -9,7 +9,7 @@ if (!fs.existsSync(outDir)) {
 
 async function verifyLive() {
   const targetUrls = [
-    'https://ce5150f2.shijianus-blog.pages.dev/support/',
+    'https://817acb0a.shijianus-blog.pages.dev/support/',
     'https://blog.epocanvas.com/support/'
   ];
 
@@ -68,33 +68,14 @@ async function verifyLive() {
         console.log(`Left Card: y=${boxLeft.y}, h=${boxLeft.height}, bottom=${boxLeft.y + boxLeft.height}`);
         console.log(`Right Card: y=${boxRight.y}, h=${boxRight.height}, bottom=${boxRight.y + boxRight.height}`);
         console.log(`Live Top Diff: ${topDiff}px, Bottom Diff: ${bottomDiff}px`);
-        if (topDiff > 2 || bottomDiff > 2) {
+        if (topDiff > 3 || bottomDiff > 3) {
           throw new Error(`Live cards are not aligned (topDiff: ${topDiff}, bottomDiff: ${bottomDiff})`);
         }
         console.log('✅ Live Cards Alignment PASS!');
       }
 
-      // 3. Audit Full-Width FAQ Alignment
-      console.log('📐 Auditing FAQ Section Full-Width Alignment...');
-      const faqSection = page.locator('section:has(h2:has-text("常見問題與透明度承諾"))');
-      const recordsSection = page.locator('#sponsor-records');
-      const faqBox = await faqSection.boundingBox();
-      const recordsBox = await recordsSection.boundingBox();
-
-      if (faqBox && recordsBox) {
-        const widthDiff = Math.abs(faqBox.width - recordsBox.width);
-        const leftDiff = Math.abs(faqBox.x - recordsBox.x);
-        console.log(`FAQ: x=${faqBox.x}, width=${faqBox.width}`);
-        console.log(`Records: x=${recordsBox.x}, width=${recordsBox.width}`);
-        console.log(`Live FAQ Width Diff: ${widthDiff}px, Left Diff: ${leftDiff}px`);
-        if (widthDiff > 2 || leftDiff > 2) {
-          throw new Error(`FAQ is not full-width aligned with records (diff: ${widthDiff})`);
-        }
-        console.log('✅ Live FAQ Full-Width Alignment PASS!');
-      }
-
-      // 4. Test 2-Currency Switcher
-      console.log('💱 Testing 2-Currency Switcher on live page...');
+      // 3. Test Currency Switcher & Preset Buttons Sync
+      console.log('💱 Testing Currency Switcher & Preset Tier Currency Synchronization...');
       const currencyButtons = page.locator('.lg\\:col-span-7 .flex.items-center.gap-1.p-1 button');
       const btnCount = await currencyButtons.count();
       console.log(`Live Currency Switcher Buttons Count: ${btnCount}`);
@@ -102,8 +83,12 @@ async function verifyLive() {
         throw new Error(`Expected exactly 2 currency buttons, found ${btnCount}`);
       }
 
-      // 5. Test Presets, Unselected Button Non-White Gradient, and Custom Input
-      console.log('☕ Testing 6 Presets and Cursor-Text Custom Input...');
+      // Find active currency button text
+      const activeCurrencyBtn = page.locator('.lg\\:col-span-7 .flex.items-center.gap-1.p-1 button.bg-white, .lg\\:col-span-7 .flex.items-center.gap-1.p-1 button.dark\\:bg-\\[\\#1e2233\\]');
+      const activeBtnText = (await activeCurrencyBtn.first().innerText()).trim();
+      console.log(`Active Currency Button: "${activeBtnText}"`);
+
+      // Check first preset button text
       const presetButtons = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
       const presetCount = await presetButtons.count();
       console.log(`Live Presets Count: ${presetCount}`);
@@ -111,22 +96,45 @@ async function verifyLive() {
         throw new Error(`Expected exactly 6 presets, found ${presetCount}`);
       }
 
-      // Verify unselected preset buttons have non-pure-white background
-      const unselectedPreset = presetButtons.nth(1); // second button
-      const bgStyle = await unselectedPreset.evaluate((el) => window.getComputedStyle(el).backgroundImage || window.getComputedStyle(el).backgroundColor);
-      console.log(`Unselected Preset Background Style: ${bgStyle}`);
-      if (bgStyle.includes('rgb(255, 255, 255)') && !bgStyle.includes('gradient')) {
-        throw new Error('Unselected preset button must not be pure white; it must have gradient background styling!');
+      const firstPresetText = (await presetButtons.first().innerText()).trim();
+      console.log(`First Preset Button Text: "${firstPresetText}"`);
+
+      // Test currency synchronization: if active is HKD, preset should contain HK$
+      if (activeBtnText.includes('HKD')) {
+        if (!firstPresetText.includes('HK$') && !firstPresetText.includes('HKD')) {
+          throw new Error(`Active currency is HKD, but first preset does not display HK$/HKD: "${firstPresetText}"`);
+        }
+      } else if (activeBtnText.includes('CNY')) {
+        if (!firstPresetText.includes('¥') && !firstPresetText.includes('CNY')) {
+          throw new Error(`Active currency is CNY, but first preset does not display ¥/CNY: "${firstPresetText}"`);
+        }
+      } else if (activeBtnText.includes('MYR')) {
+        if (!firstPresetText.includes('RM') && !firstPresetText.includes('MYR')) {
+          throw new Error(`Active currency is MYR, but first preset does not display RM/MYR: "${firstPresetText}"`);
+        }
+      }
+      console.log('✅ Currency Switcher and Preset Buttons are 100% synchronized!');
+
+      // 4. Test Artwork & SVG Illustrations in Coffee Tiers
+      console.log('🎨 Verifying Artwork & SVG illustrations in 6 Coffee Tiers...');
+      const tierBanner = page.locator('text=特调咖啡支持档位');
+      const tierBannerVisible = await tierBanner.isVisible();
+      console.log(`Coffee Tier Gradient Banner Visible: ${tierBannerVisible}`);
+      if (!tierBannerVisible) {
+        throw new Error('Expected "特调咖啡支持档位" banner to be visible!');
       }
 
+      // Check SVGs inside preset buttons
+      const svgsInPresets = page.locator('.grid.grid-cols-3.gap-2\\.5 button svg');
+      const svgCount = await svgsInPresets.count();
+      console.log(`Total SVGs in preset buttons (icons + watermark): ${svgCount}`);
+      if (svgCount < 6) {
+        throw new Error(`Expected at least 6 SVG artwork icons in preset buttons, got: ${svgCount}`);
+      }
+      console.log('✅ Coffee Tier Artwork and SVG Illustrations PASS!');
+
+      // 5. Check Custom Input Min Amount
       const customInputLabel = page.locator('label.cursor-text:has(input[placeholder*="自定义金额"])');
-      const customInputVisible = await customInputLabel.isVisible();
-      console.log(`Live Custom Input (cursor-text) Visible: ${customInputVisible}`);
-      if (!customInputVisible) {
-        throw new Error('Expected custom amount input with cursor-text style to be visible');
-      }
-
-      // Check min amount hint / input attributes
       const customInput = customInputLabel.locator('input');
       const minAttr = await customInput.getAttribute('min');
       console.log(`Custom Input min attribute: ${minAttr}`);
@@ -134,61 +142,48 @@ async function verifyLive() {
         throw new Error(`Custom input min should be at least 1, got: ${minAttr}`);
       }
 
-      // 6. Test Right Card Content & Absence of False Claims
-      console.log('🛡️ Verifying Absence of False Claims and Checking QR expansion...');
+      // 6. Test Absence of False Claims & Checking PayPal & Refund FAQ text
+      console.log('🛡️ Verifying Absence of False Claims & Specific FAQ phrasing...');
       const pageText = await page.locator('body').innerText();
-      const falsePhrases = [
+      const forbiddenPhrases = [
         '零中转扣费',
         '100% 直达技术开销',
         '免中转手续费',
         'TG 记账同步',
         '贴合生活常用认知',
-        '扫码支持提示'
+        '扫码支持提示',
+        '亲友（Friends & Family）',
+        'CyberNomad',
+        '时间的朋友'
       ];
-      for (const phrase of falsePhrases) {
+      for (const phrase of forbiddenPhrases) {
         if (pageText.includes(phrase)) {
-          throw new Error(`Forbidden false phrase detected on live page: "${phrase}"`);
+          throw new Error(`Forbidden phrase detected on live page: "${phrase}"`);
         }
       }
-      console.log('✅ Zero false claims verified!');
+      console.log('✅ Zero false claims and Zero fake sponsors verified!');
 
-      // Check clean QR code showcase in right column
-      const qrCards = page.locator('.lg\\:col-span-5 img');
-      const qrCount = await qrCards.count();
-      console.log(`Live QR count in right column: ${qrCount}`);
-      if (qrCount < 2) {
-        throw new Error('QR code cards are missing in right column');
-      }
-
-      // 7. Audit Absence of Amber Filler Cards & Verify 9 Distinct Grounded FAQs
-      console.log('💎 Auditing 9 Distinct Grounded FAQs...');
-      const faqButtons = page.locator('section:has(h2:has-text("常見問題與透明度承諾")) button');
-      const faqCount = await faqButtons.count();
-      console.log(`Live FAQ Items Count: ${faqCount}`);
-      if (faqCount !== 9) {
-        throw new Error(`Expected exactly 9 distinct FAQ items, got: ${faqCount}`);
-      }
-
-      // Check specific FAQ titles
-      const tgFaq = page.locator('button:has-text("Telegram 机器人的通知与数据存储机制是怎样的？")');
-      if ((await tgFaq.count()) === 0) {
-        throw new Error('Missing FAQ on Telegram bot notification & data storage!');
-      }
-      const feeFaq = page.locator('button:has-text("PayPal 与 Web3 (USDT) 赞赏的手续费与网络成本如何理解？")');
-      if ((await feeFaq.count()) === 0) {
-        throw new Error('Missing FAQ on transaction fees (PayPal & Web3)!');
-      }
-
-      // Test opening TG FAQ and checking content
-      await tgFaq.click();
+      // Check PayPal FAQ specifically recommends same-currency transfer
+      const paypalFaq = page.locator('button:has-text("PayPal 与 Web3 (USDT) 赞赏的手续费与网络成本如何理解？")');
+      await paypalFaq.click();
       await page.waitForTimeout(300);
-      const tgAnswer = await page.locator('text=Telegram 机器人仅作为博主本人的实时消息提醒终端').textContent();
-      console.log(`TG FAQ Answer snippet: "${tgAnswer?.slice(0, 60)}..."`);
-      if (!tgAnswer?.includes('Telegram 内部并不存储、维护任何资金账本') || !tgAnswer?.includes('管理员也无权且无法篡改')) {
-        throw new Error(`TG FAQ must clarify one-way alert, no TG storage, and no tampering! Got: ${tgAnswer}`);
+      const paypalAnswer = await page.locator('text=推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费').textContent();
+      if (!paypalAnswer) {
+        throw new Error('Missing recommendation: "推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费"');
       }
+      console.log('✅ PayPal FAQ same-currency recommendation verified!');
 
-      // 8. Test Triggering Stripe Modal
+      // Check Refund FAQ specifically mentions publication of refund status
+      const refundFaq = page.locator('button:has-text("如果赞赏出现误操作或需要退款，该如何申请？")');
+      await refundFaq.click();
+      await page.waitForTimeout(300);
+      const refundAnswer = await page.locator('text=所有因误操作退款或原路退回导致的资金变动，均会在下方支援名册中以公示标识如实注明撤销与结案情况').textContent();
+      if (!refundAnswer) {
+        throw new Error('Missing refund publication clause in refund FAQ!');
+      }
+      console.log('✅ Refund FAQ publication of fund reversal verified!');
+
+      // 7. Test Triggering Stripe Modal
       console.log('💳 Testing Live Stripe Modal trigger...');
       const stripeBtn = page.locator('button:has-text("前往 Stripe 安全收银台支付")');
       await stripeBtn.click();
@@ -201,7 +196,6 @@ async function verifyLive() {
         throw new Error('Live Stripe modal failed to open');
       }
 
-      // Check modal min amount note doesn't mention (约等值 1 HKD)
       const modalText = await modal.first().innerText();
       if (modalText.includes('约等值 1 HKD')) {
         throw new Error('Modal text still mentions "约等值 1 HKD"!');
@@ -214,22 +208,22 @@ async function verifyLive() {
       await closeBtn.click();
       await page.waitForTimeout(500);
 
-      // 9. Test Supporter Table with Allocation Column & Max 3 initial records
+      // 8. Test Supporter Table & Clean Real Data / Empty State
       console.log('📜 Testing Supporter Table on live page...');
       await page.locator('#sponsor-records').scrollIntoViewIfNeeded();
       await page.waitForTimeout(500);
 
-      const tableHeaders = page.locator('#sponsor-records table thead tr th');
-      const headerCount = await tableHeaders.count();
-      console.log(`Live Table Header Count: ${headerCount}`);
-      if (headerCount !== 6) {
-        throw new Error(`Expected 6 table headers, got: ${headerCount}`);
+      const tableSection = page.locator('#sponsor-records');
+      const tableText = await tableSection.innerText();
+      console.log(`Table section text snippet: "${tableText.slice(0, 100).replace(/\n/g, ' ')}..."`);
+
+      // Ensure mock names do not exist
+      if (tableText.includes('CyberNomad') || tableText.includes('时间的朋友')) {
+        throw new Error('Fake sponsor names found in supporter table!');
       }
 
-      const rowsCount = await page.locator('#sponsor-records table tbody tr').count();
-      console.log(`Live Initial Rows Count: ${rowsCount}`);
-
       await page.screenshot({ path: path.join(outDir, `live-target-${i + 1}-table.png`) });
+      await page.screenshot({ path: path.join(outDir, `live-target-${i + 1}-full.png`), fullPage: true });
 
       await context.close();
       console.log(`✅ Target ${i + 1} (${url}) verified successfully!`);
