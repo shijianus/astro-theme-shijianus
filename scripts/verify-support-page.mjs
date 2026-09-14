@@ -169,26 +169,25 @@ async function runVerification() {
     console.log('✅ Requirement 3 Verified: Superfluous text removed from left column!');
 
     // -------------------------------------------------------------
-    // 5. Verify Right Column Density, Guidance Cards & QR Notice
+    // 5. Verify Right Column Clean QR Showcase & No False Claims
     // -------------------------------------------------------------
-    console.log('🛡️ 5. Verifying Right Column Anti-Hollow Optimization & QR Explanation Box...');
-    const qrTipBox = page.locator('.lg\\:col-span-5 div.p-3\\.5.rounded-2xl:has-text("扫码支持提示")');
-    const qrTipVisible = await qrTipBox.isVisible();
-    const qrTipContent = await qrTipBox.textContent();
-    console.log(`QR Tip Box Visible: ${qrTipVisible}`);
-    console.log(`QR Tip Content: "${qrTipContent?.trim()}"`);
-    if (!qrTipVisible || !qrTipContent?.includes('第三方扫码打赏属于封闭支付系统')) {
-      throw new Error('Missing or incomplete QR code explanatory tip box in right column');
+    console.log('🛡️ 5. Verifying Right Column Clean QR Showcase & No False Claims...');
+    // Ensure false claims like "免中转手续费" or "零中转扣费" are completely gone
+    const falseClaimNotice = page.locator('text=免中转手续费, text=零中转扣费, text=TG 记账同步');
+    const falseClaimCount = await falseClaimNotice.count();
+    console.log(`False claim count in page: ${falseClaimCount}`);
+    if (falseClaimCount > 0) {
+      throw new Error('Unrealistic/misleading claims found in right column');
     }
 
-    // Check guidance micro-card
-    const guidanceCard = page.locator('.lg\\:col-span-5 div.p-3.rounded-xl');
-    const guidanceVisible = await guidanceCard.first().isVisible();
-    console.log(`Right Column Guidance Micro-Card Visible: ${guidanceVisible}`);
-    if (!guidanceVisible) {
-      throw new Error('Guidance micro-card missing from right column');
+    // Check QR codes showcase in right column
+    const qrImages = page.locator('.lg\\:col-span-5 img');
+    const qrCount = await qrImages.count();
+    console.log(`Right Column QR Images Count: ${qrCount}`);
+    if (qrCount !== 2) {
+      throw new Error(`Expected exactly 2 QR code cards in CN tab, found: ${qrCount}`);
     }
-    console.log('✅ Requirement 3 & 4 Verified: Right column is rich, dense, and well-explained!');
+    console.log('✅ Requirement 4 Verified: Right column is clean, authentic, and focused on QR-codes!');
 
     // -------------------------------------------------------------
     // 6. Test Supporter Roster (Max 3 Seed Records & Allocation Column)
@@ -230,55 +229,55 @@ async function runVerification() {
     console.log('✅ Requirement 5 Verified: At most 3 seed records with authentic expenditure disclosure!');
 
     // -------------------------------------------------------------
-    // 7. Test Expanded FAQs (7 Comprehensive Topics)
+    // 7. Test Expanded FAQs (9 Comprehensive Topics)
     // -------------------------------------------------------------
-    console.log('📚 7. Testing Expanded Comprehensive FAQs (7 Topics)...');
+    console.log('📚 7. Testing Expanded Comprehensive FAQs (9 Topics)...');
     const faqSection = page.locator('section:has(h2:has-text("常見問題與透明度承諾"))');
     await faqSection.scrollIntoViewIfNeeded();
     const faqItems = faqSection.locator('button:has(svg.lucide-chevron-down)');
     const faqCount = await faqItems.count();
     console.log(`FAQ Items Count: ${faqCount}`);
-    if (faqCount < 7) {
-      throw new Error(`Expected at least 7 comprehensive FAQs, found: ${faqCount}`);
+    if (faqCount < 9) {
+      throw new Error(`Expected at least 9 comprehensive FAQs, found: ${faqCount}`);
     }
 
-    // Test FAQ 1: Infrastructure, Spiritual Coffee & Transparent Allocation with "-"
+    // Test FAQ 1: Infrastructure & Transparent Allocation with "-"
     const faq1Btn = faqItems.nth(0);
     const faq1Title = await faq1Btn.textContent();
     console.log(`FAQ 1: "${faq1Title?.trim()}"`);
-    // Ensure FAQ 1 is expanded
-    if (!(await page.locator('text=象征意义的精神咖啡').isVisible())) {
+    if (!(await page.locator('text=Serverless 边缘架构').isVisible())) {
       await faq1Btn.click();
       await page.waitForTimeout(200);
     }
-    const faq1Body = await page.locator('text=象征意义的精神咖啡').textContent();
-    if (!faq1Body?.includes('Cloudflare CDN 与边缘算力服务') || !faq1Body?.includes('“-”替代')) {
-      throw new Error('FAQ 1 does not contain required details on spiritual coffee, Cloudflare services, and "-" placeholder');
+    const faq1Body = await page.locator('text=Serverless 边缘架构').textContent();
+    if (!faq1Body?.includes('D1 关系型数据库') || !faq1Body?.includes('“-”严格标注')) {
+      throw new Error('FAQ 1 does not contain required details on Serverless infrastructure and "-" placeholder');
     }
 
-    // Test FAQ 3: Third-party (WeChat/Alipay/PayPal) vs Stripe Webhook & QR Code justification
-    const faq3Btn = page.locator('button:has-text("通过微信、支付宝、PayPal 扫码后")');
-    await faq3Btn.click();
-    await page.waitForTimeout(200);
-    const faq3Body = await page.locator('text=精确到秒的瞬时 Webhook 更新').textContent();
-    if (!faq3Body?.includes('封闭式第三方支付生态') || !faq3Body?.includes('避免通道抽成')) {
-      throw new Error('FAQ 3 does not contain required webhook and QR code fee justification details');
-    }
-
-    // Test FAQ 4: Refund policy with original return & required materials
-    const faq4Btn = page.locator('button:has-text("如果赞赏出现误操作或需要退款")');
+    // Test FAQ 4: WeChat / Alipay Manual Entry Explanation
+    const faq4Btn = page.locator('button:has-text("通过微信、支付宝扫码赞赏后")');
     await faq4Btn.click();
     await page.waitForTimeout(200);
-    const faq4Body = await page.locator('text=我们倾向于原路返回').textContent();
-    if (!faq4Body?.includes('核验材料') || !faq4Body?.includes('原支付账户或银行卡')) {
-      throw new Error('FAQ 4 does not contain original return policy and required proof materials');
+    const faq4Body = await page.locator('text=无法向本站提供对外公开的实时 Webhook').textContent();
+    if (!faq4Body?.includes('手动将您的信息录入') || !faq4Body?.includes('默认以“匿名支持者”收录')) {
+      throw new Error('FAQ 4 does not contain authentic manual reconciliation details');
     }
+
+    // Test FAQ 5: Telegram Bot notification only (not stored)
+    const faq5Btn = page.locator('button:has-text("Telegram 机器人的通知与数据存储机制")');
+    await faq5Btn.click();
+    await page.waitForTimeout(200);
+    const faq5Body = await page.locator('text=Telegram 机器人仅作为博主本人的实时消息提醒终端').textContent();
+    if (!faq5Body?.includes('并不存储、维护任何资金账本') || !faq5Body?.includes('管理员也无权且无法篡改')) {
+      throw new Error('FAQ 5 does not contain factual explanation of Telegram notification and non-storage');
+    }
+
     // Take component screenshots
     await page.locator('.grid.grid-cols-1.lg\\:grid-cols-12').screenshot({ path: path.join(outDir, '02-desktop-cards.png') });
     await page.locator('#sponsor-records').screenshot({ path: path.join(outDir, '03-desktop-roster-table.png') });
     await page.locator('section:has(h2:has-text("常見問題与透明度承诺"), h2:has-text("常見問題與透明度承諾"))').screenshot({ path: path.join(outDir, '04-desktop-faqs.png') });
 
-    console.log('✅ Requirement 6 Verified: All 7 comprehensive FAQs tested and verified!');
+    console.log('✅ Requirement 6 Verified: All 9 comprehensive FAQs tested and verified!');
 
     // -------------------------------------------------------------
     // 8. Test Mobile Viewport (375 x 812)

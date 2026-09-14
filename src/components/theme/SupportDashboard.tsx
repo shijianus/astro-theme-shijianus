@@ -159,7 +159,7 @@ export const SupportDashboard: React.FC = () => {
         activeCurrencyCode: localCurrencyOption.code.toUpperCase(),
         activeCurrencySymbol: localCurrencyOption.symbol,
         activeAmounts: localCurrencyOption.amounts,
-        activeMin: localCurrencyOption.min,
+        activeMin: Math.max(1, localCurrencyOption.min),
         activeMax: localCurrencyOption.max,
       };
     } else {
@@ -173,18 +173,10 @@ export const SupportDashboard: React.FC = () => {
         ),
       ) as [number, number, number, number, number, number];
 
-      const pppMin = convertByLocalPPP(
-        localCurrencyOption.min,
-        localCurrencyOption.rateToUSD,
-        globalCurrencyOption.rateToUSD,
-        globalCurrencyOption.code,
-      );
-      const pppMax = convertByLocalPPP(
-        localCurrencyOption.max,
-        localCurrencyOption.rateToUSD,
-        globalCurrencyOption.rateToUSD,
-        globalCurrencyOption.code,
-      );
+      // 最低金额严格保底为 1（或当前全球货币自身 min），绝不小于 1；
+      // 上限以 1000 HKD 等价货币化 0 后的 max 为准（即 globalCurrencyOption.max）
+      const pppMin = Math.max(1, globalCurrencyOption.min);
+      const pppMax = globalCurrencyOption.max;
 
       return {
         activeCurrencyCode: globalCurrencyOption.code.toUpperCase(),
@@ -363,10 +355,10 @@ export const SupportDashboard: React.FC = () => {
       {/* ── 2. Donation Main Section: Naturally Balanced Columns ──────── */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-stretch">
         {/* Left Column: Stripe Checkout & PPP Price Tiers (7 Cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-6">
-          <div className="space-y-5">
+        <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-4 sm:space-y-5">
+          <div className="space-y-4">
             {/* Header with 2-Currency Switcher (Local Currency & Unified Currency) */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-white/[0.06]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
                   Stripe 国际收银台
@@ -412,7 +404,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
 
             {/* 6 Preset Amounts Grid: strictly paired with local coffee price tiers & PPP adjustment */}
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   1. 选择支持档位
@@ -439,7 +431,7 @@ export const SupportDashboard: React.FC = () => {
                       className={`py-3 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border ${
                         isSelected
                           ? 'bg-[#425aef] border-[#425aef] text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40 scale-[1.02]'
-                          : 'bg-slate-50/80 dark:bg-white/[0.04] border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.08] hover:border-slate-300 dark:hover:border-white/20'
+                          : 'bg-gradient-to-b from-slate-100/90 via-slate-50 to-blue-50/40 dark:from-[#181c2d] dark:via-[#141827] dark:to-[#111422] border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:from-blue-50 hover:to-indigo-50/60 dark:hover:from-[#1d2238] dark:hover:to-[#171c2e] hover:border-blue-300/80 dark:hover:border-blue-500/40 hover:shadow-xs shadow-2xs'
                       }`}
                     >
                       <div className="text-sm font-black tracking-tight">
@@ -460,12 +452,12 @@ export const SupportDashboard: React.FC = () => {
               {/* Custom Amount Input */}
               <div className="space-y-1 pt-1">
                 <label
-                  className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 transition-all cursor-text ${
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 transition-all cursor-text ${
                     isCustomMode
                       ? isCustomInvalid
                         ? 'border-red-400 bg-red-50/50 dark:bg-red-950/20'
                         : 'border-[#425aef] bg-blue-50/60 dark:bg-blue-950/25'
-                      : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03]'
+                      : 'border-slate-200 dark:border-white/10 bg-slate-50/90 dark:bg-white/[0.03]'
                   }`}
                 >
                   <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 shrink-0">
@@ -478,8 +470,6 @@ export const SupportDashboard: React.FC = () => {
                     step={
                       ['jpy', 'krw'].includes(activeCurrencyCode.toLowerCase())
                         ? 100
-                        : activeCurrencyType === 'global'
-                        ? 0.5
                         : 1
                     }
                     placeholder={`自定义金额（${activeCurrencySymbol}${activeMin} ~ ${activeCurrencySymbol}${activeMax}）`}
@@ -506,12 +496,12 @@ export const SupportDashboard: React.FC = () => {
             </div>
 
             {/* Supporter Inputs */}
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2.5 pt-0.5">
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 2. 支持者信息登记
               </label>
-              <div className="space-y-3">
-                <div className="space-y-1.5">
+              <div className="space-y-2.5">
+                <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
                     👤 称呼或社交账号 (Name or social handle) (可选)
                   </label>
@@ -521,11 +511,11 @@ export const SupportDashboard: React.FC = () => {
                     placeholder="例如：@github_username 或 Shijian Friend"
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
-                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
+                    className="w-full px-4 py-2 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
                     💬 留言寄语 (Say something nice) (可选)
                   </label>
@@ -535,15 +525,15 @@ export const SupportDashboard: React.FC = () => {
                     placeholder="写下想对作者说的话或鼓励..."
                     value={donorMessage}
                     onChange={(e) => setDonorMessage(e.target.value)}
-                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
+                    className="w-full px-4 py-2 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Action Button (Unnecessary notification text removed, fully explained in FAQ) */}
-          <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06]">
+          {/* Bottom Action Button */}
+          <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               disabled={!isAmountValid}
@@ -560,12 +550,12 @@ export const SupportDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: QR Codes Overview & Guidance Cards (5 Cols, Anti-Hollow Optimization) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-5">
-          <div className="space-y-4">
+        {/* Right Column: Clean QR Codes Showcase (5 Cols, Expanded & Focused) */}
+        <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-4 flex-1 flex flex-col justify-between">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                免中转手续费 · 极速直达
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                本地与跨国支付通道
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
                 微信 / 支付宝 / PayPal / Web3
@@ -624,164 +614,135 @@ export const SupportDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Tab 1: CN QR Codes & Feature Guidance */}
+            {/* Tab 1: CN QR Codes (Expanded naturally) */}
             {qrTab === 'cn' && (
-              <div className="space-y-3.5 animate-in fade-in duration-200">
-                <div className="grid grid-cols-2 gap-3.5">
-                  <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
-                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      <WeChatIcon className="w-4 h-4" />
-                      <span>微信支付</span>
-                    </div>
-                    <div
-                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                      onClick={() =>
-                        setModalImage({
-                          src: '/media/shijianus/support/weixin-pay-cn.jpg',
-                          title: '微信支付赞赏码',
-                        })
-                      }
-                    >
-                      <img
-                        src="/media/shijianus/support/weixin-pay-cn.jpg"
-                        alt="微信支付赞赏码"
-                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span>查看大图</span>
-                      </div>
-                    </div>
-                    <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
-                      微信扫一扫
-                    </span>
+              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto py-1 animate-in fade-in duration-200">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
+                  <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                    <WeChatIcon className="w-4 h-4" />
+                    <span>微信支付</span>
                   </div>
-
-                  <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group">
-                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300">
-                      <AlipayIcon className="w-4 h-4" />
-                      <span>支付宝</span>
+                  <div
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    onClick={() =>
+                      setModalImage({
+                        src: '/media/shijianus/support/weixin-pay-cn.jpg',
+                        title: '微信支付赞赏码',
+                      })
+                    }
+                  >
+                    <img
+                      src="/media/shijianus/support/weixin-pay-cn.jpg"
+                      alt="微信支付赞赏码"
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>查看大图</span>
                     </div>
-                    <div
-                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                      onClick={() =>
-                        setModalImage({
-                          src: '/media/shijianus/support/alipay-cn.jpg',
-                          title: '支付宝赞赏码',
-                        })
-                      }
-                    >
-                      <img
-                        src="/media/shijianus/support/alipay-cn.jpg"
-                        alt="支付宝赞赏码"
-                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span>查看大图</span>
-                      </div>
-                    </div>
-                    <span className="block text-[11px] text-blue-600/80 dark:text-blue-400/80 font-medium">
-                      支付宝扫一扫
-                    </span>
                   </div>
+                  <span className="block text-xs text-emerald-600/90 dark:text-emerald-400 font-medium">
+                    微信扫一扫赞赏
+                  </span>
                 </div>
 
-                {/* Guidance Micro-Card (Eliminating hollow whitespace) */}
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>零中转扣费 · 100% 直达技术开销</span>
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-blue-50/35 dark:from-blue-950/20 dark:to-[#151928] border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
+                  <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300">
+                    <AlipayIcon className="w-4 h-4" />
+                    <span>支付宝</span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                    <div>• <strong>免通道费</strong>：免除 Stripe 3.4% + $0.30 跨境手续费与清算磨损</div>
-                    <div>• <strong>转账备注</strong>：转账时请在附言备注 <code>称呼: 寄语</code>，博主核实后录入名录</div>
-                    <div>• <strong>TG 记账同步</strong>：博主核对账目后，Telegram 机器人自动同步记录资金状态</div>
+                  <div
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    onClick={() =>
+                      setModalImage({
+                        src: '/media/shijianus/support/alipay-cn.jpg',
+                        title: '支付宝赞赏码',
+                      })
+                    }
+                  >
+                    <img
+                      src="/media/shijianus/support/alipay-cn.jpg"
+                      alt="支付宝赞赏码"
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>查看大图</span>
+                    </div>
                   </div>
+                  <span className="block text-xs text-blue-600/90 dark:text-blue-400 font-medium">
+                    支付宝扫一扫赞赏
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Tab 2: HK QR Codes & Feature Guidance */}
+            {/* Tab 2: HK QR Codes */}
             {qrTab === 'hk' && (
-              <div className="space-y-3.5 animate-in fade-in duration-200">
-                <div className="grid grid-cols-2 gap-3.5">
-                  <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2 group">
-                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                      <AlipayIcon className="w-4 h-4" />
-                      <span>Alipay HK</span>
-                    </div>
-                    <div
-                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                      onClick={() =>
-                        setModalImage({
-                          src: '/media/shijianus/support/alipay-hk.jpg',
-                          title: 'Alipay HK 赞赏码',
-                        })
-                      }
-                    >
-                      <img
-                        src="/media/shijianus/support/alipay-hk.jpg"
-                        alt="Alipay HK 赞赏码"
-                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span>查看大图</span>
-                      </div>
-                    </div>
-                    <span className="block text-[11px] text-indigo-600/80 dark:text-indigo-400/80 font-medium">
-                      港币 HKD 扫码
-                    </span>
+              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto py-1 animate-in fade-in duration-200">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-indigo-50/35 dark:from-indigo-950/20 dark:to-[#151928] border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500/40">
+                  <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                    <AlipayIcon className="w-4 h-4" />
+                    <span>Alipay HK</span>
                   </div>
-
-                  <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group">
-                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      <WeChatIcon className="w-4 h-4" />
-                      <span>WeChat Pay HK</span>
+                  <div
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    onClick={() =>
+                      setModalImage({
+                        src: '/media/shijianus/support/alipay-hk.jpg',
+                        title: 'Alipay HK 赞赏码',
+                      })
+                    }
+                  >
+                    <img
+                      src="/media/shijianus/support/alipay-hk.jpg"
+                      alt="Alipay HK 赞赏码"
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>查看大图</span>
                     </div>
-                    <div
-                      className="relative aspect-square rounded-xl overflow-hidden bg-white p-1.5 shadow-2xs cursor-pointer"
-                      onClick={() =>
-                        setModalImage({
-                          src: '/media/shijianus/support/wechat-pay-hk.jpg',
-                          title: 'WeChat Pay HK 赞赏码',
-                        })
-                      }
-                    >
-                      <img
-                        src="/media/shijianus/support/wechat-pay-hk.jpg"
-                        alt="WeChat Pay HK 赞赏码"
-                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span>查看大图</span>
-                      </div>
-                    </div>
-                    <span className="block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-medium">
-                      WeChat HK 扫码
-                    </span>
                   </div>
+                  <span className="block text-xs text-indigo-600/90 dark:text-indigo-400 font-medium">
+                    港币 HKD 扫码
+                  </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                    <span>港币原生通道 · 零电汇换汇损耗</span>
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
+                  <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                    <WeChatIcon className="w-4 h-4" />
+                    <span>WeChat Pay HK</span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                    <div>• <strong>本地钱包</strong>：支持香港本地电子钱包/转数快通道直连支持</div>
-                    <div>• <strong>附言致谢</strong>：转账附言备注昵称与寄语，博主查对后手动录入名录</div>
-                    <div>• <strong>隐私保障</strong>：人工安全对账，前台名册仅公示昵称，绝不泄露账号</div>
+                  <div
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    onClick={() =>
+                      setModalImage({
+                        src: '/media/shijianus/support/wechat-pay-hk.jpg',
+                        title: 'WeChat Pay HK 赞赏码',
+                      })
+                    }
+                  >
+                    <img
+                      src="/media/shijianus/support/wechat-pay-hk.jpg"
+                      alt="WeChat Pay HK 赞赏码"
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>查看大图</span>
+                    </div>
                   </div>
+                  <span className="block text-xs text-emerald-600/90 dark:text-emerald-400 font-medium">
+                    WeChat HK 扫码
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Tab 3: PayPal & Feature Guidance */}
+            {/* Tab 3: PayPal */}
             {qrTab === 'paypal' && (
-              <div className="space-y-3.5 animate-in fade-in duration-200">
+              <div className="space-y-3 my-auto py-1 animate-in fade-in duration-200">
                 <a
                   href="https://www.paypal.com/paypalme/shijianus"
                   target="_blank"
@@ -789,14 +750,14 @@ export const SupportDashboard: React.FC = () => {
                   className="w-full p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-500/30 flex items-center justify-between group hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#003087] text-white flex items-center justify-center font-black">
-                      <PayPalIcon className="w-5 h-5 text-white" />
+                    <div className="w-9 h-9 rounded-xl bg-[#003087] text-white flex items-center justify-center font-black">
+                      <PayPalIcon className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                         paypal.me/shijianus
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                         点击直接在 PayPal 网页或 App 付款
                       </div>
                     </div>
@@ -805,47 +766,36 @@ export const SupportDashboard: React.FC = () => {
                 </a>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal HK 码</span>
+                  <div className="p-3 rounded-2xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5 bg-slate-50/50 dark:bg-white/[0.02]">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">PayPal HK 码</span>
                     <img
                       src="/media/shijianus/support/paypal-hk.jpg"
                       alt="PayPal HK"
-                      className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
+                      className="w-full aspect-square object-contain rounded-xl p-1 bg-white cursor-pointer shadow-2xs"
                       onClick={() =>
                         setModalImage({ src: '/media/shijianus/support/paypal-hk.jpg', title: 'PayPal HK' })
                       }
                     />
                   </div>
-                  <div className="p-3 rounded-xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">PayPal UK 码</span>
+                  <div className="p-3 rounded-2xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5 bg-slate-50/50 dark:bg-white/[0.02]">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">PayPal UK 码</span>
                     <img
                       src="/media/shijianus/support/paypal-uk.jpg"
                       alt="PayPal UK"
-                      className="w-full aspect-square object-contain rounded-lg p-1 bg-white cursor-pointer"
+                      className="w-full aspect-square object-contain rounded-xl p-1 bg-white cursor-pointer shadow-2xs"
                       onClick={() =>
                         setModalImage({ src: '/media/shijianus/support/paypal-uk.jpg', title: 'PayPal UK' })
                       }
                     />
                   </div>
                 </div>
-
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span>全球跨国支持 · 亲友转账免手续费</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                    <div>• <strong>转账类型建议</strong>：建议选择个人亲友 (Friends & Family) 方式，避免商户扣费</div>
-                    <div>• <strong>核验凭单</strong>：转账后欢迎发送邮件附带 Transaction ID，以便核对录入</div>
-                  </div>
-                </div>
               </div>
             )}
 
-            {/* Tab 4: Web3 / USDT & Feature Guidance */}
+            {/* Tab 4: Web3 / USDT */}
             {qrTab === 'crypto' && (
-              <div className="space-y-3.5 animate-in fade-in duration-200">
-                <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
+              <div className="space-y-3.5 my-auto py-2 animate-in fade-in duration-200">
+                <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <UsdtIcon className="w-5 h-5" />
@@ -853,8 +803,8 @@ export const SupportDashboard: React.FC = () => {
                         <div className="text-sm font-bold text-slate-900 dark:text-white">
                           USDT (Arbitrum One)
                         </div>
-                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                          以太坊 Layer 2 极低 Gas 费链路
+                        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                          以太坊 Layer 2 链上极客通道
                         </div>
                       </div>
                     </div>
@@ -863,9 +813,9 @@ export const SupportDashboard: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200/70 dark:border-white/10 space-y-1.5">
-                    <div className="text-[10px] text-slate-400 font-mono">钱包收款地址 (EVM)：</div>
-                    <code className="block text-[11px] font-mono break-all text-slate-800 dark:text-slate-200 select-all">
+                  <div className="p-3 rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200/70 dark:border-white/10 space-y-1.5 shadow-2xs">
+                    <div className="text-[10px] text-slate-400 font-mono">收款钱包地址 (EVM Compatible)：</div>
+                    <code className="block text-xs font-mono break-all text-slate-800 dark:text-slate-200 select-all font-semibold">
                       0x00d52edc5230dD21F521D8396c68b84D576e6041
                     </code>
                   </div>
@@ -875,7 +825,7 @@ export const SupportDashboard: React.FC = () => {
                     onClick={() =>
                       handleCopy('0x00d52edc5230dD21F521D8396c68b84D576e6041', 'crypto-addr')
                     }
-                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                   >
                     {copiedKey === 'crypto-addr' ? (
                       <>
@@ -890,25 +840,8 @@ export const SupportDashboard: React.FC = () => {
                     )}
                   </button>
                 </div>
-
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-1.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>极客与去中心化通道 · 链上透明查验</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                    <div>• <strong>极低 Gas 费</strong>：推荐 Arbitrum One 网络，单笔链上手续费常低于 $0.01</div>
-                    <div>• <strong>TxHash 查验</strong>：转账后可将交易哈希邮件发送作者，链上确认后录入榜单</div>
-                    <div>• <strong>隐私至上</strong>：真正点对点直连，免除一切中心化支付商身份审计</div>
-                  </div>
-                </div>
               </div>
             )}
-          </div>
-
-          {/* Clean Explanatory Notice Box for QR Code channels */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            💡 <strong>扫码支持提示</strong>：第三方扫码打赏属于封闭支付系统，无对外 Webhook 接口。博主在查实对账后会手动录入至下方致谢名册并同步 Telegram 频道。若希望完全匿名，转账时附言留空即可。如发现遗漏欢迎邮件联系。
           </div>
         </div>
       </section>

@@ -132,10 +132,11 @@ async function verifyLive() {
         throw new Error('Superfluous notification text should be removed from left column');
       }
 
-      // Check QR tip box in right column
-      const qrTipBox = page.locator('.lg\\:col-span-5 div.p-3\\.5.rounded-2xl:has-text("扫码支持提示")');
-      if (!(await qrTipBox.isVisible())) {
-        throw new Error('QR code explanatory tip box is missing in right column');
+      // Check clean QR code showcase in right column
+      const qrCards = page.locator('.lg\\:col-span-5 img');
+      const qrCount = await qrCards.count();
+      if (qrCount < 2) {
+        throw new Error('QR code cards are missing in right column');
       }
 
       // 7. Audit Absence of Amber Filler Cards & Verify Grounded FAQ
