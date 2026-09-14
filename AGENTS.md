@@ -2075,3 +2075,32 @@
   1. 同步全量部署到 Cloudflare Pages 的两大项目：`shijianus-blog`（绑定生产主域名 `https://blog.epocanvas.com`）与 `shijianus-github-io`（绑定预览域名 `https://64aca32b.shijianus-github-io.pages.dev` 及 `blog.shijian.qzz.io`）；
   2. 启动 Playwright MCP 无头浏览器对两个目标生产环境展开深度端到端视觉审计，断言 200 OK、H1 标题、货币选择器与档位绝对一致（MYR/RM 100% 动态同步）、咖啡档位 12 个 SVG 图标与背景水印呈现、致谢名册零假数据且实时渲染 D1 真实支持记录、FAQ 文本合规无亲友转账说明、Stripe 模态框正常弹出且无违规字样；
   3. 捕获两端超高分辨率视网膜截图（`target-1-coffee-tiers.png`, `target-1-sponsor-table.png`, `target-1-stripe-modal.png`, `target-2-coffee-tiers.png`, `target-2-fullpage.png`），调用 `view_file` 深度逐一审阅，所有检查点 100% PASS 全绿通过。
+
+### Task 93: 独立赞赏界面 (/support) 咖啡档位丰富色彩注入、彻底消除右卡空洞留白、结算货币绝对单一源对齐、4大指标卡真实联动与FAQ深度扩充 (`2e489be`)
+- [x] **咖啡档位专属丰富色彩体系 (`TIER_STYLES`)**：
+  1. 为 6 个咖啡档位全面配置专属色彩身份（档位 0 暖金琥珀 `amber`、档位 1 活力日落橙 `orange`、档位 2 科技经典蓝 `blue`、档位 3 清新薄荷翡翠绿 `emerald`、档位 4 高雅罗兰紫 `purple`、档位 5 炽烈珊瑚玫红 `rose`）；
+  2. 未选中态注入专属浅色微渐变背景（深浅色模式自适应）、柔和彩色边框、专属微深彩色金额文字与微彩色标签、专属浅彩色图标容器底衬与前景色，彻底告别单调灰白；
+  3. 选中态注入饱满绚丽微渐变、专属高光阴影光晕（`shadow-amber-500/25`、`shadow-orange-500/25`、`shadow-blue-500/30`、`shadow-emerald-500/25`、`shadow-purple-500/25`、`shadow-rose-500/25`）与彩色微光环形高亮（`ring-2`）及微放大（`scale-[1.02]`）。
+- [x] **彻底删除画蛇添足横幅并消除右卡空洞留白**：
+  1. 坚决移除用户指出的特调咖啡渐变横幅（`class="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-[#425aef] text-white p-2.5 sm:p-3 shadow-xs flex items-center justify-between"`），使左侧收银台卡片回归紧凑自然高度（约 540px）；
+  2. 重构右侧卡片布局，彻底清除 `justify-between` 和 `my-auto` 导致的纵向拉扯空洞；
+  3. 在右卡底部新增与左侧结算按钮对齐的“扫码赞赏与资金公示保障”底栏，左右两卡高度天然对称契合，彻底杜绝任何大块留白。
+- [x] **结算货币绝对单一源（Single Source of Truth）100% 严格对齐**：
+  1. 统一由 `activeCurrencyConfig` 单一真实源驱动整个收银台组件；
+  2. 本地货币选择器当前高亮项（如 `CNY (¥)`、`USD ($)` 或 `HKD (HK$)`）、6 个咖啡档位中的金额与币种符号及标签、自定义金额输入框的前缀与范围、底部结算按钮（`前往 Stripe 安全收银台支付 — [符号+金额+代码]`）全部严格同一，杜绝任何脱节；
+  3. 优化 `detectClientCountry()` 客户端环境判定，增加中文语言识别（`zh-CN`/`zh-Hans` -> `CN`），默认 fallback 优化为 `CN`，彻底消除访客初始看到不相关币种的问题。
+- [x] **支援名册 4 大指标卡动态真实联动计算**：
+  1. 累计支持人次：实时绑定 D1 真实数据 `metrics.totalSupporters`；
+  2. 精神咖啡总杯数：基于真实金额与币种消费基准动态折算累计杯数 `metrics.totalCups`；
+  3. 汇聚币种数量：动态统计去重货币数 `metrics.currencyCount`；
+  4. 最新支持者：动态提取第一位支持者姓名 `metrics.latestDonor`（空数据展示“虚位以待 · 期待支持 ✨”）；
+  5. 指标卡配备专属彩色图标（`Users`, `Coffee`, `Sparkles`, `Heart`），视觉精致饱满。
+- [x] **真实合规 FAQ 深度充实与完善**：
+  1. 扩充跨币种发卡行实时汇率结算机制（全球 135+ 货币支持，由发卡行按实时银行汇率折算）；
+  2. 明确电子凭单收据 (Stripe Receipt) 自动发送机制；
+  3. 强化 Stripe PCI-DSS Level 1 最高安全标准隔离保障；
+  4. 明确误操作原路退款公示结案与公开标识承诺；
+  5. 明确社区权益永久免费、绝无付费专栏与等级特权脱钩承诺。
+- [x] **编译构建通过与 Commit Hash 记录**：
+  1. 全量静态构建 111 个路由 100% 通过；
+  2. Commit Hash: `2e489be`。
