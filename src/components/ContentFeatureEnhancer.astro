@@ -866,11 +866,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             rateOnline: (time) => `🟢 Live exchange rates synced (${time || 'latest'})`,
             rateOffline: '⚪ Offline base rates',
             categories: {
-              weight: { name: 'Mass / Weight', units: { kg: 'Kilogram (kg)', g: 'Gram (g)', lb: 'Pound (lb)', jin: 'Jin (市斤)', oz: 'Ounce (oz)', t: 'Metric ton (t)', mg: 'Milligram (mg)' } },
+              weight: { name: 'Mass / Weight', units: { kg: 'Kilogram (kg)', g: 'Gram (g)', lb: 'Pound (lb)', jin: 'Jin (Catty)', oz: 'Ounce (oz)', t: 'Metric ton (t)', mg: 'Milligram (mg)' } },
               currency: { name: 'Exchange Rates', units: { USD: 'US Dollar (USD $)', HKD: 'HK Dollar (HKD HK$)', CNY: 'Chinese Yuan (CNY ¥)', EUR: 'Euro (EUR €)', JPY: 'Japanese Yen (JPY ¥)', GBP: 'British Pound (GBP £)', CAD: 'Canadian Dollar (CAD C$)', AUD: 'Australian Dollar (AUD A$)', SGD: 'Singapore Dollar (SGD S$)', KRW: 'Korean Won (KRW ₩)' } },
               storage: { name: 'Data Storage', units: { GB: 'Gigabyte (GB)', MB: 'Megabyte (MB)', KB: 'Kilobyte (KB)', Bytes: 'Byte (B)', TB: 'Terabyte (TB)', PB: 'Petabyte (PB)' } },
               bandwidth: { name: 'Network Speed', units: { Gbps: 'Gigabit/s (Gbps)', Mbps: 'Megabit/s (Mbps)', MB_s: 'Download MB/s', Kbps: 'Kilobit/s (Kbps)', KB_s: 'Download KB/s' } },
-              length: { name: 'Length / Distance', units: { m: 'Meter (m)', cm: 'Centimeter (cm)', mm: 'Millimeter (mm)', ft: 'Foot (ft)', inch: 'Inch (in)', km: 'Kilometer (km)', chi: 'Chinese Chi (尺)' } },
+              length: { name: 'Length / Distance', units: { m: 'Meter (m)', cm: 'Centimeter (cm)', mm: 'Millimeter (mm)', ft: 'Foot (ft)', inch: 'Inch (in)', km: 'Kilometer (km)', chi: 'Chi (Chinese Foot)' } },
             }
           },
           fr: {
@@ -889,11 +889,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             rateOnline: (time) => `🟢 Taux de change en direct synchronisés (${time || 'dernière mise à jour'})`,
             rateOffline: '⚪ Taux de base hors ligne',
             categories: {
-              weight: { name: 'Masse / Poids', units: { kg: 'Kilogramme (kg)', g: 'Gramme (g)', lb: 'Livre (lb)', jin: 'Jin (市斤)', oz: 'Once (oz)', t: 'Tonne métrique (t)', mg: 'Milligramme (mg)' } },
+              weight: { name: 'Masse / Poids', units: { kg: 'Kilogramme (kg)', g: 'Gramme (g)', lb: 'Livre (lb)', jin: 'Jin (Catty)', oz: 'Once (oz)', t: 'Tonne métrique (t)', mg: 'Milligramme (mg)' } },
               currency: { name: 'Taux de change', units: { USD: 'Dollar américain (USD $)', HKD: 'Dollar HK (HKD HK$)', CNY: 'Yuan chinois (CNY ¥)', EUR: 'Euro (EUR €)', JPY: 'Yen japonais (JPY ¥)', GBP: 'Livre sterling (GBP £)', CAD: 'Dollar canadien (CAD C$)', AUD: 'Dollar australien (AUD A$)', SGD: 'Dollar de Singapour (SGD S$)', KRW: 'Won coréen (KRW ₩)' } },
               storage: { name: 'Stockage de données', units: { GB: 'Gigaoctet (Go)', MB: 'Mégaoctet (Mo)', KB: 'Kilooctet (Ko)', Bytes: 'Octet (o)', TB: 'Téraoctet (To)', PB: 'Pétaoctet (Po)' } },
               bandwidth: { name: 'Débit réseau', units: { Gbps: 'Gigabit/s (Gbit/s)', Mbps: 'Mégabit/s (Mbit/s)', MB_s: 'Téléchargement Mo/s', Kbps: 'Kilobit/s (Kbit/s)', KB_s: 'Téléchargement Ko/s' } },
-              length: { name: 'Longueur / Distance', units: { m: 'Mètre (m)', cm: 'Centimètre (cm)', mm: 'Millimètre (mm)', ft: 'Pied (ft)', inch: 'Pouce (in)', km: 'Kilomètre (km)', chi: 'Chi chinois (尺)' } },
+              length: { name: 'Longueur / Distance', units: { m: 'Mètre (m)', cm: 'Centimètre (cm)', mm: 'Millimètre (mm)', ft: 'Pied (ft)', inch: 'Pouce (in)', km: 'Kilomètre (km)', chi: 'Chi (Pied chinois)' } },
             }
           },
           es: {
@@ -912,11 +912,11 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             rateOnline: (time) => `🟢 Tipos de cambio en vivo sincronizados (${time || 'más reciente'})`,
             rateOffline: '⚪ Tasas base sin conexión',
             categories: {
-              weight: { name: 'Masa / Peso', units: { kg: 'Kilogramo (kg)', g: 'Gramo (g)', lb: 'Libra (lb)', jin: 'Jin (市斤)', oz: 'Onza (oz)', t: 'Tonelada métrica (t)', mg: 'Miligramo (mg)' } },
+              weight: { name: 'Masa / Peso', units: { kg: 'Kilogramo (kg)', g: 'Gramo (g)', lb: 'Libra (lb)', jin: 'Jin (Catty)', oz: 'Onza (oz)', t: 'Tonelada métrica (t)', mg: 'Miligramo (mg)' } },
               currency: { name: 'Tipos de cambio', units: { USD: 'Dólar estadounidense (USD $)', HKD: 'Dólar de Hong Kong (HKD HK$)', CNY: 'Yuan chino (CNY ¥)', EUR: 'Euro (EUR €)', JPY: 'Yen japonés (JPY ¥)', GBP: 'Libra esterlina (GBP £)', CAD: 'Dólar canadiense (CAD C$)', AUD: 'Dólar australiano (AUD A$)', SGD: 'Dólar de Singapur (SGD S$)', KRW: 'Won coreano (KRW ₩)' } },
               storage: { name: 'Almacenamiento de datos', units: { GB: 'Gigabyte (GB)', MB: 'Megabyte (MB)', KB: 'Kilobyte (KB)', Bytes: 'Byte (B)', TB: 'Terabyte (TB)', PB: 'Petabyte (PB)' } },
               bandwidth: { name: 'Velocidad de red', units: { Gbps: 'Gigabit/s (Gbps)', Mbps: 'Megabit/s (Mbps)', MB_s: 'Descarga MB/s', Kbps: 'Kilobit/s (Kbps)', KB_s: 'Descarga KB/s' } },
-              length: { name: 'Longitud / Distancia', units: { m: 'Metro (m)', cm: 'Centímetro (cm)', mm: 'Milímetro (mm)', ft: 'Pie (ft)', inch: 'Pulgada (in)', km: 'Kilómetro (km)', chi: 'Chi chino (尺)' } },
+              length: { name: 'Longitud / Distancia', units: { m: 'Metro (m)', cm: 'Centímetro (cm)', mm: 'Milímetro (mm)', ft: 'Pie (ft)', inch: 'Pulgada (in)', km: 'Kilómetro (km)', chi: 'Chi (Pie chino)' } },
             }
           },
           de: {
@@ -935,23 +935,46 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             rateOnline: (time) => `🟢 Live-Wechselkurse synchronisiert (${time || 'aktuell'})`,
             rateOffline: '⚪ Offline-Basiskurse',
             categories: {
-              weight: { name: 'Masse / Gewicht', units: { kg: 'Kilogramm (kg)', g: 'Gramm (g)', lb: 'Pfund (lb)', jin: 'Jin (市斤)', oz: 'Unze (oz)', t: 'Metrische Tonne (t)', mg: 'Milligramm (mg)' } },
+              weight: { name: 'Masse / Gewicht', units: { kg: 'Kilogramm (kg)', g: 'Gramm (g)', lb: 'Pfund (lb)', jin: 'Jin (Catty)', oz: 'Unze (oz)', t: 'Metrische Tonne (t)', mg: 'Milligramm (mg)' } },
               currency: { name: 'Wechselkurse', units: { USD: 'US-Dollar (USD $)', HKD: 'Hongkong-Dollar (HKD HK$)', CNY: 'Chinesischer Yuan (CNY ¥)', EUR: 'Euro (EUR €)', JPY: 'Japanischer Yen (JPY ¥)', GBP: 'Britisches Pfund (GBP £)', CAD: 'Kanadischer Dollar (CAD C$)', AUD: 'Australischer Dollar (AUD A$)', SGD: 'Singapur-Dollar (SGD S$)', KRW: 'Koreanischer Won (KRW ₩)' } },
               storage: { name: 'Datenspeicher', units: { GB: 'Gigabyte (GB)', MB: 'Megabyte (MB)', KB: 'Kilobyte (KB)', Bytes: 'Byte (B)', TB: 'Terabyte (TB)', PB: 'Petabyte (PB)' } },
               bandwidth: { name: 'Netzwerkgeschwindigkeit', units: { Gbps: 'Gigabit/s (Gbps)', Mbps: 'Megabit/s (Mbps)', MB_s: 'Download MB/s', Kbps: 'Kilobit/s (Kbps)', KB_s: 'Download KB/s' } },
-              length: { name: 'Länge / Entfernung', units: { m: 'Meter (m)', cm: 'Zentimeter (cm)', mm: 'Millimeter (mm)', ft: 'Fuß (ft)', inch: 'Zoll (in)', km: 'Kilometer (km)', chi: 'Chinesischer Chi (尺)' } },
+              length: { name: 'Länge / Entfernung', units: { m: 'Meter (m)', cm: 'Zentimeter (cm)', mm: 'Millimeter (mm)', ft: 'Fuß (ft)', inch: 'Zoll (in)', km: 'Kilometer (km)', chi: 'Chi (Chinesischer Fuß)' } },
             }
           },
         };
 
-        // Resolve locale from <html lang="...">
+        // Resolve locale with triple-layer resolution: article data-lang -> html lang -> URL slug -> fallback
         const resolveLang = () => {
-          const lang = (document.documentElement.lang || 'zh-CN').trim();
-          if (lang.startsWith('zh-Hant') || lang === 'zh-TW' || lang === 'zh-HK') return 'zh-Hant';
-          if (lang.startsWith('zh')) return 'zh-CN';
-          const base = lang.split('-')[0].toLowerCase();
-          if (UNIT_I18N[lang]) return lang;
-          if (UNIT_I18N[base]) return base;
+          // 1. Check article data-lang
+          const article = document.querySelector('article[data-lang]');
+          const articleLang = article?.getAttribute('data-lang')?.trim();
+          if (articleLang) {
+            if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+            if (articleLang.startsWith('zh')) return 'zh-CN';
+            const base = articleLang.split('-')[0].toLowerCase();
+            if (UNIT_I18N[articleLang]) return articleLang;
+            if (UNIT_I18N[base]) return base;
+          }
+
+          // 2. Check documentElement.lang
+          const lang = (document.documentElement.lang || '').trim();
+          if (lang) {
+            if (lang.startsWith('zh-Hant') || lang === 'zh-TW' || lang === 'zh-HK') return 'zh-Hant';
+            if (lang.startsWith('zh')) return 'zh-CN';
+            const base = lang.split('-')[0].toLowerCase();
+            if (UNIT_I18N[lang]) return lang;
+            if (UNIT_I18N[base]) return base;
+          }
+
+          // 3. Check URL path suffix (-es, -en, -fr, -de, -zh-hant)
+          const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
+          if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
+          if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
+          if (path.includes('-fr/') || path.endsWith('-fr') || path.includes('/fr/')) return 'fr';
+          if (path.includes('-de/') || path.endsWith('-de') || path.includes('/de/')) return 'de';
+          if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
+
           return 'zh-CN';
         };
         const ui = UNIT_I18N[resolveLang()] || UNIT_I18N['zh-CN'];

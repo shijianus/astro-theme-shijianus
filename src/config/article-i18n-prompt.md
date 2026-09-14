@@ -56,6 +56,7 @@ The article starts with YAML Frontmatter delimited by `---`. You MUST preserve t
 #### 2.5 Diagrams & Visuals (Mermaid, Markmap)
 - Preserve diagram structural commands (e.g. `flowchart TD`, `sequenceDiagram`, `subgraph`, `flowchart LR`) exactly.
 - **TRANSLATE** visible human-readable **node labels**, decision questions, and **edge labels** into ${TARGET_LOCALE_NAME} (e.g., `A[Reader visits post] --> B{Is post encrypted?}`).
+- **MINDMAP / MARKMAP OUTLINES**: For ````mindmap` blocks and mindmap source code examples (` ```mindmap ` nested inside ` ````markdown ````): TRANSLATE all human-readable outline titles, headings (`#`, `##`, `###`), bullet items (`- Item`), and node descriptions into ${TARGET_LOCALE_NAME}. Keep indentation, hash levels, and syntax operators intact.
 - Keep technical node IDs (A, B, C...) and syntax operators intact.
 
 #### 2.6 Links & Images

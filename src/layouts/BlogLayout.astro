@@ -37,6 +37,7 @@ interface Props {
   showAside?: boolean;
   sidebarData?: SidebarData;
   pageType?: string;
+  lang?: string;
 }
 
 const {
@@ -45,6 +46,7 @@ const {
   showAside = true,
   sidebarData,
   pageType = 'page',
+  lang = siteConfig.site.locale,
 } = Astro.props;
 
 // Fetch global data for overlays to ensure they are populated on all routes
@@ -167,11 +169,11 @@ const paypalUkMeUrl =
 
 <!doctype html>
 <html
-  lang={siteConfig.site.locale}
+  lang={lang}
   data-theme={siteConfig.theme.defaultMode}
   data-aside="expanded"
   data-background={siteConfig.theme.background.defaultMode}
-  data-locale-variant={siteConfig.site.locale}
+  data-locale-variant={lang}
 >
   <head>
     <meta charset="UTF-8" />
@@ -186,6 +188,12 @@ const paypalUkMeUrl =
     <script is:inline>
       (() => {
         try {
+          const docLang = document.documentElement.getAttribute('lang') || document.documentElement.lang;
+          // If the page was rendered with an explicit locale (e.g. es, fr, de, en, zh-Hant), respect it!
+          if (docLang && docLang !== 'zh-CN') {
+            document.documentElement.dataset.localeVariant = docLang;
+            return;
+          }
           const savedVariant = window.localStorage.getItem('shijianus-locale-variant');
           const valid = ['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'];
           const localeVariant = valid.includes(savedVariant) ? savedVariant : 'zh-CN';

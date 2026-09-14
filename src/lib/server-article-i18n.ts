@@ -92,6 +92,7 @@ function compileChunkSystemPrompt(targetLocale: string): string {
     `4. CODE, MERMAID & MATH INTEGRITY:`,
     `   - For programming language code blocks (\`\`\`typescript, \`\`\`python, \`\`\`bash, \`\`\`html, etc.): Keep the code intact, only translate inline human-readable comments if helpful.`,
     `   - For Mermaid diagrams (\`\`\`mermaid): TRANSLATE visible human-readable node labels, decision question texts, and edge annotations into ${localeName} (e.g. [Reader visits post], {Is encrypted?}, "Yes", "No"). Keep flowchart syntax, node IDs (A, B, C), and arrows intact.`,
+    `   - For Mindmap blocks (\`\`\`mindmap) AND mindmap code examples nested inside \`\`\`\`markdown \`\`\`mindmap ...: TRANSLATE all human-readable outline titles, headings (#, ##, ###), bullet items (- Item), and node labels into ${localeName}. Keep the mindmap indentation and outline hierarchy intact.`,
     `   - Do NOT translate LaTeX / KaTeX math blocks ($$....$$ or $...$). Keep all mathematical formulas, symbols, and expressions completely intact. Never drop \\partial or other LaTeX operators.`,
     `   - Do NOT translate URLs, file paths, image paths, audio paths, video paths, or technical IDs.`,
     `5. HTML & ATTRIBUTES INTEGRITY:`,
@@ -481,7 +482,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
  * 3. HTML container tags (<div ...> ... </div>, <details> ... </details>, etc.) are NEVER cut across chunks.
  * 4. Human-readable components (tabs, accordions, chat dialogs) remain intact as atomic units.
  */
-export function splitIntoChunks(body: string, maxChars = 4500): string[] {
+export function splitIntoChunks(body: string, maxChars = 3200): string[] {
   if (body.length <= maxChars) return [body];
 
   const lines = body.split('\n');
@@ -566,8 +567,13 @@ export function splitIntoChunks(body: string, maxChars = 4500): string[] {
 
     // 3. Track HTML depth (only outside code fences)
     if (!inCodeFence) {
-      const delta = scanHtmlDepthChange(line);
-      htmlDepth = Math.max(0, htmlDepth + delta);
+      // Top-level markdown headings or thematic breaks are never inside inline HTML elements
+      if (trimmed.startsWith('# ') || trimmed.startsWith('## ') || trimmed === '---') {
+        htmlDepth = 0;
+      } else {
+        const delta = scanHtmlDepthChange(line);
+        htmlDepth = Math.max(0, htmlDepth + delta);
+      }
     }
 
     currentChunkLines.push(line);
@@ -821,8 +827,8 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   // Brief pause before body chunks
   await new Promise((r) => setTimeout(r, 1500));
 
-  // Step 2: Split body into clean semantic chunks (~5500 chars each)
-  const chunks = splitIntoChunks(rawBody, 5500);
+  // Step 2: Split body into clean semantic chunks (~3200 chars each)
+  const chunks = splitIntoChunks(rawBody, 3200);
   console.log(`[Article-i18n]    Split into ${chunks.length} chunks`);
 
   // Step 3: Translate each chunk sequentially
@@ -842,10 +848,25 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith('```') && !l.startsWith('$$') && !l.startsWith('<'));
     const prevContext = prevCleanLines.length > 0 ? prevCleanLines[prevCleanLines.length - 1] : '';
-    const { text, provider, model } = await translateBodyChunk(chunks[i], i, chunks.length, options, prevContext);
-    translatedChunks.push(text);
-    lastProvider = provider;
-    lastModel = model;
+    const chunkRes = await translateBodyChunk(chunks[i], i, chunks.length, options, prevContext);
+    
+    // Strict integrity guard: if any chunk failed all retries and defaulted to source,
+    // abort Scheme 1 immediately so Scheme 2 (Extraction & Re-insertion) takes over!
+    if (chunkRes.provider === 'fallback-source') {
+      console.warn(`[Article-i18n] ❌ Chunk ${i + 1}/${chunks.length} failed all translation retries for ${targetLocale}. Failing Scheme 1 to activate Scheme 2 backup.`);
+      return {
+        ok: false,
+        error: `Body chunk ${i + 1}/${chunks.length} failed all translation attempts in Scheme 1`,
+        targetLocale,
+        i18nKey,
+        provider: 'fallback-source',
+        model: 'none',
+      };
+    }
+
+    translatedChunks.push(chunkRes.text);
+    lastProvider = chunkRes.provider;
+    lastModel = chunkRes.model;
   }
 
   // Step 4: Reassemble translated frontmatter + body
@@ -1155,6 +1176,28 @@ export function validateTranslatedFormat(
     if (dataTitleMatch) {
       return { valid: false, reason: `Untranslated Chinese characters in data-title: ${dataTitleMatch[0]}` };
     }
+
+    // Check for excessive residual Chinese characters in body (outside code blocks and LaTeX math)
+    const textWithoutCode = translatedMarkdown
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`[^`\r\n]+`/g, '')
+      .replace(/\$\$[\s\S]*?\$\$/g, '')
+      .replace(/\$[^$\r\n]+\$/g, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]+>/g, '');
+
+    const chineseMatches = textWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
+    const nonCodeLen = textWithoutCode.replace(/\s+/g, '').length;
+    const chineseRatio = nonCodeLen > 0 ? (chineseMatches.length / nonCodeLen) : 0;
+
+    // If more than 35 Chinese characters remain, or Chinese exceeds 1.5% of body text,
+    // this indicates a failed chunk fallback, dropped translation, or untranslated section.
+    if (chineseMatches.length > 35 || (chineseMatches.length > 10 && chineseRatio > 0.015)) {
+      return {
+        valid: false,
+        reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`
+      };
+    }
   }
 
   // Check for leaked markers
@@ -1301,13 +1344,25 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
       continue;
     }
 
-    // Regular line: check for markdown links [anchor](url)
-    let processedLine = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, anchor, url) => {
-      const segToken = addSegment(anchor);
-      return `[${segToken}](${url})`;
-    });
-
-    templatedLines.push(addSegment(processedLine));
+    // Regular line: extract links and plain text segments cleanly without nested wrapping
+    if (/\[([^\]]+)\]\(([^)]+)\)/.test(line)) {
+      let result = '';
+      let lastIdx = 0;
+      const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+      let match: RegExpExecArray | null;
+      while ((match = linkRegex.exec(line)) !== null) {
+        const textBefore = line.slice(lastIdx, match.index);
+        if (textBefore) result += addSegment(textBefore);
+        const anchorSeg = addSegment(match[1]);
+        result += `[${anchorSeg}](${match[2]})`;
+        lastIdx = match.index + match[0].length;
+      }
+      const textAfter = line.slice(lastIdx);
+      if (textAfter) result += addSegment(textAfter);
+      templatedLines.push(result);
+    } else {
+      templatedLines.push(addSegment(line));
+    }
   }
 
   let finalBodyTemplate = templatedLines.join('\n');

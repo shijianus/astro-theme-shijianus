@@ -324,6 +324,7 @@ const heroSummary = isUnlocked
   sidebarData={sidebarData}
   pageType="post"
   showAside={true}
+  lang={currentLang}
 >
   <Fragment slot="head">
     {heroImage && heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
@@ -382,6 +383,7 @@ const heroSummary = isUnlocked
       class="article-body post-content"
       data-content-features={isUnlocked ? 'true' : undefined}
       data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
+      data-lang={currentLang}
     >
       {isUnlocked && Content ? (
         <Content />

@@ -1973,4 +1973,30 @@
   2. 桌面端（1440x920）与移动端（375x812）断言 100% 全绿，无任何 JS 错误或样式错位。
   3. Commit Hash: `4d89752`, `8866ca9`, `ef3b653`。
 
+### Task 89: 文章组件与正文多语言 (i18n) 丢失根因溯源排查、前端组件多语言字典落地、分片安全阈值与残余中文校验防线
+- [x] **交互式通用单位换算器 (`.interactive-unit-converter`) 多语言完整落地**：
+  1. 根因溯源定位：换算器 UI 元素（输入框提示、重置按钮、公式栏标签、复制按钮、分类按钮、汇率同步状态等）全由客户端 JS 运行时动态生成，AI 仅翻译 Markdown 文档，不触碰 Astro 组件代码，导致客户端动态生成的 UI 始终为源码写死的硬编码中文；
+  2. 在 `ContentFeatureEnhancer.astro` 中建立完整的 `UNIT_I18N` 本地化字典（覆盖 `zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de` 六大语言）；
+  3. 引入三层冗余语言判定（`article[data-lang]` -> `html[lang]` -> URL 路径后缀如 `-es/` -> 回退 `zh-CN`），彻底消除多语言页面下的中文残留；
+  4. 替换换算器内所有硬编码文本（分类名称、单位标签、输入标签、重置按钮、等式栏、实时联网汇率/离线基准汇率胶囊、复制/已复制状态反馈与 ARIA 无障碍标签），西方语言中的“市斤”与“尺”均采用地道规范译名（`Jin (Catty)` 与 `Chi (Chinese Foot)`）。
+- [x] **思维导图组件 (`.mindmap-wrapper` / `mindmap-header` / `mindmap-footer`) 多语言完整落地**：
+  1. 根因溯源定位：与换算器一致，思维导图顶部头部（节点数、分支层级、展开/折叠状态徽标）、底部说明（操作指引、快捷键说明）、悬浮提示胶囊以及工具栏 7 大操作按钮的 `title` / `aria-label` 全为 `MindmapEnhancer.astro` 客户端运行时生成，AI 无法自动翻译；
+  2. 在 `MindmapEnhancer.astro` 中建立完整的 `MINDMAP_I18N` 本地化字典，全量覆盖 6 大语言的所有 UI 字符串；
+  3. 引入三层冗余语言判定，将模版文字与动态状态机广播事件（放大、缩小、自适应、全屏展开/收起、源码复制提示）全面接入本地化字典。
+- [x] **页面语言环境隔离与布局穿透修复 (`BlogLayout.astro` & `[slug].astro`)**：
+  1. 修复根源性语言覆盖缺陷：原 `BlogLayout.astro` 无论文章为何种语言，均硬编码传递 `siteConfig.site.locale`（`zh-CN`），导致西文/德文/法文文章的 `<html lang="...">` 始终被标记为 `zh-CN`，且 inline script 在客户端强制将 `document.documentElement.lang` 刷为 `zh-CN`；
+  2. 在 `BlogLayout.astro` 的 Props 中支持 `lang` 属性并穿透至 `<html lang={lang} data-locale-variant={lang}>`；
+  3. 在内联脚本中尊重已有文章语言（当 `docLang !== 'zh-CN'` 时保留文章原生语言），并在 `[slug].astro` 中为 `<article id="article-container" data-lang={currentLang}>` 与 `<BlogLayout lang={currentLang}>` 显式注入当前文章真实语言。
+- [x] **分片算法超限与漏译根治 (`server-article-i18n.ts`)**：
+  1. 根因溯源定位：分片阈值过大（原设 5500 字符），当遇到代码块/思维导图/复杂表格时极易造成 LLM 超出输出 Token 限制或超时截断；同时 `translateBodyChunk` 在重试耗尽后静默回退并返回原始中文分片，而 `validateTranslatedFormat` 未对正文残余中文做任何校验，直接判定通过，导致大段中文直接落盘；
+  2. 将分片阈值由 5500 字符大幅收敛至 3200 字符（黄金语义分片尺寸），保障 LLM 在单次交互中 100% 完整吐出翻译结果；
+  3. 在 `splitIntoChunks` 中引入一级/二级 Markdown 标题边界复位机制（遇到 `# `、`## `、`---` 时重置 `htmlDepth = 0`），根除因未闭合标签或属性换行导致的深度滞留与不安全分割；
+  4. 彻底切断静默中文回退：在 `translateArticleChunked` 中严格检测分片结果，一旦有分片回退原始中文，立即判定失败并自动无缝切入方案二（Scheme 2: AST 抽取式重新插入翻译）；
+  5. 引入残余中文严格防御线：在 `validateTranslatedFormat` 中对非 CJK 语言（`es`, `en`, `fr`, `de`）执行残余汉字密度校验（过滤代码与数学公式后汉字数 > 35 字符即判定不合格，拦截落盘并触发方案二回退重试）；
+  6. 修复方案二中链接提取双重包装导致 `__TX_NODE_` 嵌套泄漏的问题；并在翻译 Prompt 中显式强化对 ````mindmap` 结构源码大纲标题翻译的规则约束。
+- [x] **同步脚本防御加固与自动化端到端测试 (`sync-post-i18n.mjs` & `verify-i18n-component-fix.mjs`)**：
+  1. 在 `sync-post-i18n.mjs` 中加入对历史已翻译文件的残余中文扫描机制，自动检测并刷新含有大面积中文漏译的旧文章；
+  2. 编写并执行全流程 Playwright 端到端浏览器审计套件（`scripts/verify-i18n-component-fix.mjs`），在真实构建产物中启动无头 Chromium 对西班牙语与德语页面进行深度审计；
+  3. 断言 `<html lang>`、`<article data-lang>`、换算器 5 类分类名、输入标签、重置按钮、公式推导、0 汉字残留；断言思维导图状态徽章、说明指引、缩放操作按钮 0 汉字残留；18/18 项断言 100% PASS 通过。
+
 

@@ -179,13 +179,31 @@ async function main() {
           skippedCount++;
           continue;
         } else if (!forceRegenerate) {
-          // AI-generated translation exists: only re-generate if source article is newer or translation is undersized (truncated)
-          const isUndersized = sourceArticle.raw.length > 10000 && existingTranslation.raw.length < sourceArticle.raw.length * 0.4;
-          if (existingTranslation.mtime >= sourceArticle.mtime && !isUndersized) {
+          // AI-generated translation exists: re-generate if source article is newer, undersized (truncated), or has untranslated Chinese leakage
+          const isUndersized = sourceArticle.raw.length > 4000 && existingTranslation.raw.length < sourceArticle.raw.length * 0.6;
+          
+          let hasChineseLeakage = false;
+          let chineseCount = 0;
+          if (targetLang !== 'zh-CN' && targetLang !== 'zh-Hant') {
+            const rawWithoutCode = existingTranslation.raw
+              .replace(/```[\s\S]*?```/g, '')
+              .replace(/`[^`\r\n]+`/g, '')
+              .replace(/\$\$[\s\S]*?\$\$/g, '')
+              .replace(/<!--[\s\S]*?-->/g, '')
+              .replace(/<[^>]+>/g, '');
+            const chineseMatches = rawWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
+            chineseCount = chineseMatches.length;
+            hasChineseLeakage = chineseCount > 35;
+          }
+
+          if (existingTranslation.mtime >= sourceArticle.mtime && !isUndersized && !hasChineseLeakage) {
             skippedCount++;
             continue;
           }
-          if (isUndersized) {
+
+          if (hasChineseLeakage) {
+            console.log(`[Article-i18n] Translation "${existingTranslation.filename}" has ${chineseCount} untranslated Chinese characters. Triggering clean re-translation for ${targetLang}...`);
+          } else if (isUndersized) {
             console.log(`[Article-i18n] Translation "${existingTranslation.filename}" is undersized (${existingTranslation.raw.length} vs source ${sourceArticle.raw.length} bytes). Regenerating full translation for ${targetLang}...`);
           } else {
             console.log(`[Article-i18n] Source article "${key}" updated. Refreshing AI translation for ${targetLang}...`);

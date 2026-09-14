@@ -202,14 +202,37 @@
     },
   };
 
-  // Resolve page locale from <html lang="..."> attribute, with fallback to zh-CN
+  // Resolve page locale with triple-layer resolution: article data-lang -> html lang -> URL slug -> fallback
   const resolveLocale = (): string => {
-    const lang = (document.documentElement.lang || 'zh-CN').trim();
-    if (lang.startsWith('zh-Hant') || lang === 'zh-TW' || lang === 'zh-HK') return 'zh-Hant';
-    if (lang.startsWith('zh')) return 'zh-CN';
-    const base = lang.split('-')[0].toLowerCase();
-    if (MINDMAP_I18N[lang]) return lang;
-    if (MINDMAP_I18N[base]) return base;
+    // 1. Check article data-lang
+    const article = document.querySelector('article[data-lang]');
+    const articleLang = article?.getAttribute('data-lang')?.trim();
+    if (articleLang) {
+      if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+      if (articleLang.startsWith('zh')) return 'zh-CN';
+      const base = articleLang.split('-')[0].toLowerCase();
+      if (MINDMAP_I18N[articleLang]) return articleLang;
+      if (MINDMAP_I18N[base]) return base;
+    }
+
+    // 2. Check documentElement.lang
+    const lang = (document.documentElement.lang || '').trim();
+    if (lang) {
+      if (lang.startsWith('zh-Hant') || lang === 'zh-TW' || lang === 'zh-HK') return 'zh-Hant';
+      if (lang.startsWith('zh')) return 'zh-CN';
+      const base = lang.split('-')[0].toLowerCase();
+      if (MINDMAP_I18N[lang]) return lang;
+      if (MINDMAP_I18N[base]) return base;
+    }
+
+    // 3. Check URL path suffix (-es, -en, -fr, -de, -zh-hant)
+    const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
+    if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
+    if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
+    if (path.includes('-fr/') || path.endsWith('-fr') || path.includes('/fr/')) return 'fr';
+    if (path.includes('-de/') || path.endsWith('-de') || path.includes('/de/')) return 'de';
+    if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
+
     return 'zh-CN';
   };
 
