@@ -2071,3 +2071,7 @@
      - 真实展开退款 FAQ 核验“公示标识如实注明撤销与结案情况”文案；
      - 真实点击呼出 Stripe 收银台模态框，核验无“约等值 1 HKD”等违规文字；
      - 支援名册真实展示 D1 生产数据，所有断言 100% PASS 全绿通过。
+- [x] **双端 Cloudflare Pages 同步部署与真实 MCP Playwright 视觉检查全量通过 (`scripts/verify-live-mcp-playwright.mjs`)**：
+  1. 同步全量部署到 Cloudflare Pages 的两大项目：`shijianus-blog`（绑定生产主域名 `https://blog.epocanvas.com`）与 `shijianus-github-io`（绑定预览域名 `https://64aca32b.shijianus-github-io.pages.dev` 及 `blog.shijian.qzz.io`）；
+  2. 启动 Playwright MCP 无头浏览器对两个目标生产环境展开深度端到端视觉审计，断言 200 OK、H1 标题、货币选择器与档位绝对一致（MYR/RM 100% 动态同步）、咖啡档位 12 个 SVG 图标与背景水印呈现、致谢名册零假数据且实时渲染 D1 真实支持记录、FAQ 文本合规无亲友转账说明、Stripe 模态框正常弹出且无违规字样；
+  3. 捕获两端超高分辨率视网膜截图（`target-1-coffee-tiers.png`, `target-1-sponsor-table.png`, `target-1-stripe-modal.png`, `target-2-coffee-tiers.png`, `target-2-fullpage.png`），调用 `view_file` 深度逐一审阅，所有检查点 100% PASS 全绿通过。
