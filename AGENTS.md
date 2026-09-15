@@ -2123,7 +2123,16 @@
 - [x] **常见问题与透明度承诺 (FAQ) 扩展与充实**：
   1. 扩展至 15 条高价值问答，深度解答“为何自建收银台而非第三方平台”、“Apple/Google Pay 硬件唤起要求”、“非金钱支持方式”、“名册信息修改途径”以及“Telegram 私人通知机制”；
   2. 保持真实、真诚、合规的文风，消除 AI 浮夸词汇。
-- [x] **Playwright 自动化测试与高分辨率视觉审计全量通过**：
-  1. 编写并执行自动化测试套件（`scripts/verify-support-optimization.mjs`），双卡对齐（Top Diff: 0.0px, Bottom Diff: 0.0px）、6 档位具体化标签与双 SVG 存在、本地/全球货币双向切换及结账按钮文本同步、右侧公示板块、指标卡联动、FAQ 展开全绿通过；
-  2. 捕获桌面视口（1440x960）与移动视口（375x812）高分辨率截图存档。
+- [x] **生产端 (Cloudflare Pages) 全量部署与线上真实 E2E 验证全绿通过 (`dba29d6`)**：
+  1. 通过 `npx wrangler pages deploy dist` 全量发布至生产边缘节点（部署标识：`https://8bb54a89.shijianus-blog.pages.dev` 及绑定生产域名 `https://blog.epocanvas.com`）；
+  2. 编写并执行自动化测试套件（`scripts/verify-live-support-optimization.mjs`），对上述两大生产环境执行全真审计：
+     - HTTP 200 响应正常，H1 包含“请喝一杯咖啡”；
+     - 左右两卡高度天然对称契合（Top Diff: 0.0px, Bottom Diff: 0.0px，高度严格均为 800px）；
+     - 6 大档位贴近生活的具体化打赏成果标签与双 SVG 完整渲染；
+     - 本地货币（马来西亚边缘 IP 自动识别 `🇲🇾 MYR (RM)`）与全球货币（`🇺🇸 USD ($)`）在选择器、6 档位金额、自定义输入框与 Stripe 结账按钮之间 100% 绝对一致，杜绝任何币种冲突；
+     - 右侧公示板块 4 大支柱与扫码备注保障正常展示，消除空洞留白；
+     - 支援名册上方 4 大指标卡动态与 D1 数据库实时入库数据（6位支持者、12杯咖啡、2种币种、最新支持“Stripe 链路自动化验收官”）精准同步；
+     - 15 条 FAQ 手风琴展开折叠交互流畅；
+  3. 捕获生产端高分辨率截图存档（`target-1-cards.png`, `target-2-cards.png`, `target-2-table.png`），所有断言 100% PASS 全绿通过。
+
 
