@@ -16,6 +16,11 @@ import {
   Copy,
   Users,
   Sparkles,
+  ShieldCheck,
+  Globe,
+  Database,
+  Lock,
+  Cpu,
 } from 'lucide-react';
 import {
   supportConfig,
@@ -133,10 +138,10 @@ const TIER_ICONS = [
   TierHeartCupIcon,
 ];
 
-// 6 个档位专属色彩主题系统（拒绝苍白单调，赋予每个档位专属色彩身份）
+/* ── 6 个档位专属色彩主题系统 ── */
 const TIER_STYLES = [
   {
-    // 档位 0：暖金琥珀 (Amber / Golden Honey)
+    // 档位 0：暖金琥珀
     name: 'amber',
     selected:
       'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
@@ -150,9 +155,11 @@ const TIER_STYLES = [
     labelUnselected: 'text-amber-800/80 dark:text-amber-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-amber-900 dark:text-amber-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-amber-100/80 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
   },
   {
-    // 档位 1：活力橙色 (Sunset Orange / Tangerine)
+    // 档位 1：活力橙色
     name: 'orange',
     selected:
       'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
@@ -166,9 +173,11 @@ const TIER_STYLES = [
     labelUnselected: 'text-orange-800/80 dark:text-orange-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-orange-900 dark:text-orange-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-orange-100/80 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
   },
   {
-    // 档位 2：科技经典蓝 (Cobalt Royal Blue)
+    // 档位 2：科技经典蓝
     name: 'blue',
     selected:
       'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
@@ -182,9 +191,11 @@ const TIER_STYLES = [
     labelUnselected: 'text-blue-800/80 dark:text-blue-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-blue-900 dark:text-blue-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-blue-100/80 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
   },
   {
-    // 档位 3：清新翡翠薄荷绿 (Emerald / Mint Teal)
+    // 档位 3：清新翡翠薄荷绿
     name: 'emerald',
     selected:
       'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
@@ -198,9 +209,11 @@ const TIER_STYLES = [
     labelUnselected: 'text-emerald-800/80 dark:text-emerald-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-emerald-900 dark:text-emerald-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
   },
   {
-    // 档位 4：高雅罗兰紫 (Purple / Violet Amethyst)
+    // 档位 4：高雅罗兰紫
     name: 'purple',
     selected:
       'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
@@ -214,9 +227,11 @@ const TIER_STYLES = [
     labelUnselected: 'text-purple-800/80 dark:text-purple-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-purple-900 dark:text-purple-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-purple-100/80 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
   },
   {
-    // 档位 5：炽烈珊瑚玫红 (Rose / Crimson Coral)
+    // 档位 5：炽烈珊瑚玫红
     name: 'rose',
     selected:
       'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
@@ -230,35 +245,40 @@ const TIER_STYLES = [
     labelUnselected: 'text-rose-800/80 dark:text-rose-300/80',
     amountSelected: 'text-white',
     amountUnselected: 'text-rose-900 dark:text-rose-100',
+    tagSelected: 'bg-white/20 text-white/90',
+    tagUnselected: 'bg-rose-100/80 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300',
   },
 ];
 
+/* ── 贴近生活的实际展示与成果映射 (去AI浮夸词，具体化打赏结果) ── */
+const TIER_PRACTICAL_RESULTS = [
+  { daily: '☕ 提神浓缩', impact: '支撑边缘 CDN 1 天' },
+  { daily: '🥐 咖啡烘焙', impact: '覆盖 1 周站点运行' },
+  { daily: '🥤 特调拿铁', impact: '承担 D1 数据库 1 个月' },
+  { daily: '🥪 饱腹轻食', impact: '支持写完 1 篇长文' },
+  { daily: '🍰 精品下午茶', impact: '分摊域名与 SSL 年费' },
+  { daily: '🚀 充能礼包', impact: '助力开源基建长久更新' },
+];
+
 /**
- * 客户端环境即时判定本地国家，解决因异步加载导致的货币显式不同步缺陷
+ * 客户端环境仅通过时区安全推测初始国家代码 (杜绝仅凭语言把马来西亚误判为台湾)
  */
 function detectClientCountry(): string {
   if (typeof window === 'undefined') return 'CN';
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    if (tz.includes('Shanghai') || tz.includes('Chongqing') || tz.includes('Urumqi') || tz.includes('Harbin') || tz.includes('Beijing')) return 'CN';
+    if (tz.includes('Kuala_Lumpur') || tz.includes('Kuching')) return 'MY';
+    if (tz.includes('Singapore')) return 'SG';
     if (tz.includes('Hong_Kong')) return 'HK';
     if (tz.includes('Taipei')) return 'TW';
-    if (tz.includes('Singapore')) return 'SG';
-    if (tz.includes('Kuala_Lumpur') || tz.includes('Kuching')) return 'MY';
     if (tz.includes('Tokyo')) return 'JP';
-    if (tz.includes('London')) return 'GB';
     if (tz.includes('Seoul')) return 'KR';
+    if (tz.includes('London')) return 'GB';
     if (tz.includes('Sydney') || tz.includes('Melbourne') || tz.includes('Brisbane') || tz.includes('Perth')) return 'AU';
     if (tz.includes('Toronto') || tz.includes('Vancouver') || tz.includes('Montreal')) return 'CA';
     if (tz.includes('Berlin') || tz.includes('Paris') || tz.includes('Rome') || tz.includes('Madrid') || tz.includes('Amsterdam') || tz.includes('Vienna') || tz.includes('Brussels') || tz.includes('Athens') || tz.includes('Dublin') || tz.includes('Helsinki') || tz.includes('Lisbon')) return 'DE';
     if (tz.startsWith('America/')) return 'US';
-
-    const lang = (navigator.language || '').toLowerCase();
-    if (lang.startsWith('zh-cn') || lang.startsWith('zh-hans')) return 'CN';
-    if (lang.startsWith('zh-hk')) return 'HK';
-    if (lang.startsWith('zh-tw')) return 'TW';
-    if (lang.startsWith('ja')) return 'JP';
-    if (lang.startsWith('ko')) return 'KR';
+    if (tz.includes('Shanghai') || tz.includes('Chongqing') || tz.includes('Urumqi') || tz.includes('Harbin') || tz.includes('Beijing')) return 'CN';
   } catch {}
   return 'CN';
 }
@@ -267,7 +287,7 @@ export const SupportDashboard: React.FC = () => {
   // ── 1. Country & Dual-Currency State ──
   const [detectedCountry, setDetectedCountry] = useState<string>(() => detectClientCountry());
   const [activeCurrencyType, setActiveCurrencyType] = useState<'local' | 'global'>('local');
-  const [selectedTierIndex, setSelectedTierIndex] = useState<number>(2); // Default tier index (Americano)
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number>(2); // Default tier index (Americano/Latte)
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [customAmount, setCustomAmount] = useState<string>('');
 
@@ -283,8 +303,9 @@ export const SupportDashboard: React.FC = () => {
   // ── 4. FAQ Accordion ──
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0); // First FAQ opened by default
 
-  // ── 5. Supporter Roster State (彻底清空示例数据，100% 连结真实记录) ──
+  // ── 5. Supporter Roster State (彻底清空伪造数据，100% 真实联动) ──
   const [sponsors, setSponsors] = useState<SponsorItem[]>([]);
+  const [isLoadingSponsors, setIsLoadingSponsors] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tablePage, setTablePage] = useState<number>(1);
   const [jumpPageInput, setJumpPageInput] = useState<string>('');
@@ -299,45 +320,45 @@ export const SupportDashboard: React.FC = () => {
       setDetectedCountry(clientC);
     }
 
-    // 2. 异步请求后端精准边缘地理位置，带上 no-store 防缓存
-    try {
-      fetch(`/api/geo-profile?_t=${Date.now()}`, { cache: 'no-store' })
-        .then((res) => res.json())
-        .then((data: any) => {
-          const c = (data?.country || '').toUpperCase();
-          if (c && c !== 'GLOBAL') {
-            setDetectedCountry(c);
-          }
-        })
-        .catch(() => {});
-    } catch {}
+    // 2. 异步请求后端精准边缘 IP 地理位置，若检测到真实国家立即同步，杜绝硬编码冲突
+    fetch(`/api/geo-profile?_t=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data: any) => {
+        const c = (data?.country || '').toUpperCase();
+        if (c && c !== 'GLOBAL') {
+          setDetectedCountry(c);
+        }
+      })
+      .catch(() => {});
 
     // 3. 拉取 D1 真实致谢记录（绝无 mock 伪造）
-    try {
-      fetch(`/api/sponsorships?limit=50&_t=${Date.now()}`, { cache: 'no-store' })
-        .then((res) => res.json())
-        .then((data: any) => {
-          if (data?.ok && Array.isArray(data.list)) {
-            const apiItems: SponsorItem[] = data.list.map((item: any) => ({
-              id: item.id,
-              name: item.name || '匿名支持者',
-              amount: item.amount,
-              currency: item.currency,
-              message: item.message,
-              channel: item.channel || 'Stripe (国际收银台)',
-              allocation: item.allocation || '-',
-              date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
-            }));
-            setSponsors(apiItems);
-          }
-        })
-        .catch(() => {});
-    } catch {}
+    setIsLoadingSponsors(true);
+    fetch(`/api/sponsorships?limit=50&_t=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data: any) => {
+        if (data?.ok && Array.isArray(data.list)) {
+          const apiItems: SponsorItem[] = data.list.map((item: any) => ({
+            id: item.id,
+            name: item.name || '匿名支持者',
+            amount: item.amount,
+            currency: item.currency,
+            message: item.message,
+            channel: item.channel || 'Stripe (国际收银台)',
+            allocation: item.allocation || '-',
+            date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
+          }));
+          setSponsors(apiItems);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsLoadingSponsors(false);
+      });
   }, []);
 
   // Compute the 2 allowed currency options based on detected location:
   // 1. Local Currency: IP-detected local fiat
-  // 2. Global Currency: Unified settlement (USD; if local is USD/dollar-based, auto-switch to HKD)
+  // 2. Global Currency: Unified settlement (USD; if local is USD, auto-switch to HKD)
   const { localCurrencyOption, globalCurrencyOption } = useMemo(() => {
     const local = getLocalCurrencyByCountry(detectedCountry);
     const isLocalUSD = local.code.toUpperCase() === 'USD';
@@ -431,7 +452,7 @@ export const SupportDashboard: React.FC = () => {
     );
   };
 
-  // 支援名册上方 4 个指标卡动态真实联动计算 (累计人次、精神咖啡杯数、汇聚币种、最新支持者)
+  // 支援名册上方 4 个指标卡动态联动真实计算 (累计人次、精神咖啡杯数、汇聚币种、最新支持者)
   const metrics = useMemo(() => {
     const totalSupporters = sponsors.length;
     let totalCups = 0;
@@ -610,7 +631,7 @@ export const SupportDashboard: React.FC = () => {
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  1. 选择支持档位
+                  特调咖啡支持档位
                 </label>
                 {activeCurrencyType === 'global' ? (
                   <span className="text-[11px] text-[#425aef] dark:text-blue-400 font-medium">
@@ -623,12 +644,15 @@ export const SupportDashboard: React.FC = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              {/* Grid of 6 Cards: key on activeCurrencyCode guarantees full atomic re-render when currency changes */}
+              <div key={`grid-${activeCurrencyCode}`} className="grid grid-cols-3 gap-2.5">
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
                   const label = activeLabels[idx] || '咖啡心意';
                   const TierIcon = TIER_ICONS[idx] || Coffee;
                   const tierStyle = TIER_STYLES[idx] || TIER_STYLES[0];
+                  const practical = TIER_PRACTICAL_RESULTS[idx] || TIER_PRACTICAL_RESULTS[2];
+
                   return (
                     <button
                       key={`${activeCurrencyCode}-${idx}-${amt}`}
@@ -637,7 +661,7 @@ export const SupportDashboard: React.FC = () => {
                         setIsCustomMode(false);
                         setSelectedTierIndex(idx);
                       }}
-                      className={`relative overflow-hidden py-2.5 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border group ${
+                      className={`relative overflow-hidden py-2.5 px-2 rounded-xl text-center transition-all duration-150 cursor-pointer select-none border group flex flex-col justify-between ${
                         isSelected ? tierStyle.selected : tierStyle.unselected
                       }`}
                     >
@@ -649,10 +673,10 @@ export const SupportDashboard: React.FC = () => {
                             : tierStyle.watermarkUnselected
                         }`}
                       >
-                        <TierIcon className="w-9 h-9" />
+                        <TierIcon className="w-10 h-10" />
                       </div>
 
-                      {/* Foreground Content */}
+                      {/* Top: Icon + Coffee Name */}
                       <div className="relative z-10 flex flex-col items-center">
                         <div
                           className={`p-1 rounded-lg mb-1 transition-colors ${
@@ -680,6 +704,20 @@ export const SupportDashboard: React.FC = () => {
                           }`}
                         >
                           {label}
+                        </div>
+                      </div>
+
+                      {/* Bottom: Practical life equivalent & real impact result */}
+                      <div className="relative z-10 mt-1.5 pt-1 border-t border-black/5 dark:border-white/5 w-full">
+                        <div
+                          className={`px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-medium leading-tight text-center truncate ${
+                            isSelected
+                              ? tierStyle.tagSelected
+                              : tierStyle.tagUnselected
+                          }`}
+                          title={`${practical.daily} · ${practical.impact}`}
+                        >
+                          {practical.impact}
                         </div>
                       </div>
                     </button>
@@ -736,7 +774,7 @@ export const SupportDashboard: React.FC = () => {
             {/* Supporter Inputs */}
             <div className="space-y-2.5 pt-0.5">
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                2. 支持者信息登记
+                留下你的名字与寄语（可选）
               </label>
               <div className="space-y-2.5">
                 <div className="space-y-1">
@@ -770,8 +808,8 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Action Button */}
-          <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
+          {/* Bottom Action Button: Strictly synchronized currency & amount */}
+          <div key={`checkout-btn-${activeCurrencyCode}`} className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               disabled={!isAmountValid}
@@ -785,12 +823,15 @@ export const SupportDashboard: React.FC = () => {
               </span>
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
+            <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+              🔒 由 Stripe 提供金融级加密结账 · 支持 Apple Pay / Google Pay / 国际信用卡
+            </p>
           </div>
         </div>
 
-        {/* Right Column: Clean QR Codes Showcase (5 Cols, Expanded & Focused) */}
+        {/* Right Column: Local & Cross-border QR Codes (5 Cols, perfectly filled without empty space) */}
         <div className="lg:col-span-5 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-4">
-          <div className="space-y-4 flex-1 flex flex-col">
+          <div className="space-y-3.5 flex-1 flex flex-col">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 本地与跨国支付通道
@@ -852,16 +893,16 @@ export const SupportDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Tab 1: CN QR Codes (Expanded naturally) */}
+            {/* Tab 1: CN QR Codes */}
             {qrTab === 'cn' && (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 py-1 animate-in fade-in duration-200">
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
+              <div className="grid grid-cols-2 gap-3.5 py-1 animate-in fade-in duration-200">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
                     <WeChatIcon className="w-4 h-4" />
                     <span>微信支付</span>
                   </div>
                   <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/weixin-pay-cn.jpg',
@@ -884,13 +925,13 @@ export const SupportDashboard: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-blue-50/35 dark:from-blue-950/20 dark:to-[#151928] border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-blue-50/35 dark:from-blue-950/20 dark:to-[#151928] border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300">
                     <AlipayIcon className="w-4 h-4" />
                     <span>支付宝</span>
                   </div>
                   <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/alipay-cn.jpg',
@@ -917,14 +958,14 @@ export const SupportDashboard: React.FC = () => {
 
             {/* Tab 2: HK QR Codes */}
             {qrTab === 'hk' && (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-4 py-1 animate-in fade-in duration-200">
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-indigo-50/35 dark:from-indigo-950/20 dark:to-[#151928] border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500/40">
+              <div className="grid grid-cols-2 gap-3.5 py-1 animate-in fade-in duration-200">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-indigo-50/35 dark:from-indigo-950/20 dark:to-[#151928] border border-indigo-200/70 dark:border-indigo-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300">
                     <AlipayIcon className="w-4 h-4" />
                     <span>Alipay HK</span>
                   </div>
                   <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/alipay-hk.jpg',
@@ -947,13 +988,13 @@ export const SupportDashboard: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2.5 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
                     <WeChatIcon className="w-4 h-4" />
                     <span>WeChat Pay HK</span>
                   </div>
                   <div
-                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[200px] mx-auto"
+                    className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/wechat-pay-hk.jpg',
@@ -996,7 +1037,7 @@ export const SupportDashboard: React.FC = () => {
                         paypal.me/shijianus
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        推荐使用同货币转账以减少汇率损耗与平台抽成
+                        推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费
                       </div>
                     </div>
                   </div>
@@ -1033,7 +1074,7 @@ export const SupportDashboard: React.FC = () => {
             {/* Tab 4: Web3 / USDT */}
             {qrTab === 'crypto' && (
               <div className="space-y-3.5 py-1 animate-in fade-in duration-200">
-                <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
+                <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-500/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <UsdtIcon className="w-5 h-5" />
@@ -1042,7 +1083,7 @@ export const SupportDashboard: React.FC = () => {
                           USDT (Arbitrum One)
                         </div>
                         <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                          以太坊 Layer 2 链上极客通道
+                          以太坊 Layer 2 极低矿工费通道
                         </div>
                       </div>
                     </div>
@@ -1080,6 +1121,46 @@ export const SupportDashboard: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Middle Section: Infrastructure & Transparency Pillars (Eliminates empty white space naturally) */}
+            <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  真实开销与站点保障公示
+                </span>
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.04]">
+                  <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">全球边缘 CDN</div>
+                    <div className="text-[10px] text-slate-400 truncate">高可用就近访问</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.04]">
+                  <Database className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">D1 关系型存储</div>
+                    <div className="text-[10px] text-slate-400 truncate">致谢与留言系统</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.04]">
+                  <Lock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">顶级域名与 SSL</div>
+                    <div className="text-[10px] text-slate-400 truncate">加密传输与续费</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.04]">
+                  <Cpu className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">Serverless 算力</div>
+                    <div className="text-[10px] text-slate-400 truncate">边缘函数毫秒响应</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Direct QR Transparency & Refund Guarantee Notice */}
@@ -1089,7 +1170,7 @@ export const SupportDashboard: React.FC = () => {
                 <Heart className="w-3.5 h-3.5 fill-current" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手工录入名册；误操作支持原路退款，资金变动与结案情况均如实公示。
+                扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手动录入名册；误操作支持原路退款，资金去向与变动均如实公示。
               </p>
             </div>
           </div>
@@ -1128,7 +1209,7 @@ export const SupportDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Highlight Metrics Cards */}
+        {/* Highlight Metrics Cards: Strictly synchronized with database records */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
@@ -1136,27 +1217,57 @@ export const SupportDashboard: React.FC = () => {
               <Users className="w-3.5 h-3.5 text-blue-500" />
             </div>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {metrics.totalSupporters} <span className="text-xs font-normal text-slate-400">位</span>
+              {isLoadingSponsors ? (
+                <span className="text-slate-400 text-lg">加载中…</span>
+              ) : (
+                <>
+                  {metrics.totalSupporters} <span className="text-xs font-normal text-slate-400">位</span>
+                </>
+              )}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">
+              {metrics.totalSupporters === 0 ? '期待第一位支持者 ✨' : `来自 ${metrics.currencyCount} 个货币区`}
             </div>
           </div>
+
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              <span>精神咖啡支持</span>
+              <span>咖啡档位支持</span>
               <Coffee className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-              {metrics.totalCups} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
+              {isLoadingSponsors ? (
+                <span className="text-slate-400 text-lg">加载中…</span>
+              ) : (
+                <>
+                  {metrics.totalCups} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
+                </>
+              )}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">
+              {metrics.totalCups === 0 ? '暂无咖啡记录' : '等值咖啡换算累计'}
             </div>
           </div>
+
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               <span>汇聚币种</span>
               <Sparkles className="w-3.5 h-3.5 text-[#425aef]" />
             </div>
             <div className="text-2xl font-black text-[#425aef] dark:text-blue-400 mt-1">
-              {metrics.currencyCount} <span className="text-xs font-normal text-slate-400">种</span>
+              {isLoadingSponsors ? (
+                <span className="text-slate-400 text-lg">加载中…</span>
+              ) : (
+                <>
+                  {metrics.currencyCount} <span className="text-xs font-normal text-slate-400">种</span>
+                </>
+              )}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">
+              {metrics.currencyCount === 0 ? '支持 14 款法币' : '真实跨币种结算'}
             </div>
           </div>
+
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               <span>最新支持</span>
@@ -1166,7 +1277,10 @@ export const SupportDashboard: React.FC = () => {
               className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate"
               title={metrics.latestDonor}
             >
-              {metrics.latestDonor}
+              {isLoadingSponsors ? '同步中…' : metrics.latestDonor}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">
+              {sponsors.length > 0 ? '实时入库同步' : '虚位以待'}
             </div>
           </div>
         </div>
@@ -1186,7 +1300,13 @@ export const SupportDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                {paginatedSponsors.length > 0 ? (
+                {isLoadingSponsors ? (
+                  <tr>
+                    <td colSpan={6} className="py-14 text-center text-sm text-slate-400 dark:text-slate-500">
+                      正在从数据库读取公开致谢名册…
+                    </td>
+                  </tr>
+                ) : paginatedSponsors.length > 0 ? (
                   paginatedSponsors.map((sponsor) => (
                     <tr
                       key={sponsor.id}
@@ -1225,6 +1345,10 @@ export const SupportDashboard: React.FC = () => {
                             ? 'CA$'
                             : sponsor.currency === 'AUD'
                             ? 'A$'
+                            : sponsor.currency === 'MYR'
+                            ? 'RM'
+                            : sponsor.currency === 'KRW'
+                            ? '₩'
                             : ''}
                           {sponsor.amount} {sponsor.currency}
                         </span>
@@ -1396,6 +1520,9 @@ export const SupportDashboard: React.FC = () => {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
             常見問題與透明度承諾
           </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            关于资金流向、多币种换算、退款机制与隐私安全的坦诚说明
+          </p>
         </div>
 
         <div className="w-full space-y-3">
