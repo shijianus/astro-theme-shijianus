@@ -279,21 +279,7 @@
     };
 
     const resolveCodeLang = () => {
-      const article = document.querySelector('article[data-lang]');
-      const articleLang = article?.getAttribute('data-lang')?.trim();
-      if (articleLang) {
-        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
-        if (articleLang.startsWith('zh')) return 'zh-CN';
-        const base = articleLang.split('-')[0].toLowerCase();
-        return base;
-      }
-      const docLang = (document.documentElement.lang || '').trim();
-      if (docLang) {
-        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
-        if (docLang.startsWith('zh')) return 'zh-CN';
-        const base = docLang.split('-')[0].toLowerCase();
-        return base;
-      }
+      // 1. Explicit language in URL pathname takes absolute highest priority
       const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
       if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
       if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
@@ -302,6 +288,41 @@
       if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
       const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/i);
       if (matched) return matched[1];
+
+      // 2. User's manual selection in localStorage or data-locale-variant attribute
+      try {
+        const stored = window.localStorage.getItem('shijianus-manual-locale-selected') ||
+                       window.localStorage.getItem('shijianus-locale-variant') ||
+                       document.documentElement.getAttribute('data-locale-variant');
+        if (stored) {
+          if (stored.startsWith('zh-Hant') || stored === 'zh-TW' || stored === 'zh-HK') return 'zh-Hant';
+          if (stored.startsWith('zh')) return 'zh-CN';
+          const base = stored.split('-')[0].toLowerCase();
+          if (['en', 'es', 'de', 'fr', 'zh-hant'].includes(base)) {
+            return base === 'zh-hant' ? 'zh-Hant' : base;
+          }
+        }
+      } catch (_) {}
+
+      // 3. Article container data-lang
+      const article = document.querySelector('article[data-lang]');
+      const articleLang = article?.getAttribute('data-lang')?.trim();
+      if (articleLang) {
+        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+        if (articleLang.startsWith('zh')) return 'zh-CN';
+        const base = articleLang.split('-')[0].toLowerCase();
+        return base;
+      }
+
+      // 4. Document element lang
+      const docLang = (document.documentElement.lang || '').trim();
+      if (docLang) {
+        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
+        if (docLang.startsWith('zh')) return 'zh-CN';
+        const base = docLang.split('-')[0].toLowerCase();
+        return base;
+      }
+
       return 'zh-CN';
     };
 
@@ -575,6 +596,28 @@
         });
       });
     };
+
+    // Re-localize all code buttons on global locale change
+    window.addEventListener('shijianus:localechange', (e) => {
+      const nextLang = (e && e.detail) ? e.detail : resolveCodeLang();
+      const tNext = CODE_BLOCK_I18N[nextLang] || CODE_BLOCK_I18N['zh-CN'];
+      document.querySelectorAll('.code-copy-button').forEach((btn) => {
+        btn.title = tNext.copyTitle;
+        const textSpan = btn.querySelector('span');
+        if (textSpan && btn.dataset.copyState !== 'success' && btn.dataset.copyState !== 'error') {
+          textSpan.textContent = tNext.copy;
+        }
+      });
+      document.querySelectorAll('.code-expand-btn').forEach((btn) => {
+        const isExpanded = btn.closest('.code-collapse-wrap')?.classList.contains('is-expanded');
+        const countMatch = btn.textContent?.match(/\d+/);
+        const count = countMatch ? parseInt(countMatch[0], 10) : 30;
+        const span = btn.querySelector('span');
+        if (span) {
+          span.textContent = isExpanded ? tNext.collapse : tNext.expand(count);
+        }
+      });
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', enhanceCodeBlocks, { once: true });

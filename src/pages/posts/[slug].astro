@@ -46,8 +46,12 @@ export async function getStaticPaths() {
   const paths = [];
   for (const post of posts) {
     paths.push({ params: { slug: post.id } });
+    if (post.id.toLowerCase() !== post.id) {
+      paths.push({ params: { slug: post.id.toLowerCase() } });
+    }
     if (post.id.includes('.')) {
       paths.push({ params: { slug: post.id.replace(/\./g, '-') } });
+      paths.push({ params: { slug: post.id.replace(/\./g, '-').toLowerCase() } });
     }
   }
 
@@ -72,8 +76,13 @@ const allPosts = sortPostsByDate(await getCollection('posts'));
 const publicPosts = getPublicPosts(allPosts);
 const existingPostIds = new Set(allPosts.map((p) => p.id));
 
-// ── Normal post lookup ──────────────────────────────────────────────────────
-let entry = allPosts.find((post) => post.id === slug || post.id.replace(/\./g, '-') === slug);
+// ── Normal post lookup (with case-insensitive fallback) ─────────────────────
+let entry = allPosts.find((post) =>
+  post.id === slug ||
+  post.id.toLowerCase() === slug?.toLowerCase() ||
+  post.id.replace(/\./g, '-') === slug ||
+  post.id.replace(/\./g, '-').toLowerCase() === slug?.toLowerCase()
+);
 
 // ── Encrypted route lookup ──────────────────────────────────────────────────
 let matchedEncryptConfig = null;
@@ -120,14 +129,19 @@ const allEncryptConfigs = getPostEncryptConfigs(entry.data);
 // ──── End of encrypted route detection ─────────────────────────────────────
 
 // ──── Multilingual i18n Translation Resolution ─────────────────────────────
-const currentI18nKey =
-  entry.data.i18nKey || entry.id.replace(/\.[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/, '');
-const suffixMatch = entry.id.match(/\.([a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?)$/);
-const currentLang = entry.data.lang || (suffixMatch ? suffixMatch[1] : 'zh-CN');
+const langSuffixRegex = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
+const inferredLangMatch = entry.id.match(langSuffixRegex);
+const normalizedInferredLang = inferredLangMatch
+  ? (inferredLangMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : inferredLangMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : inferredLangMatch[1].toLowerCase())
+  : undefined;
+const inferredKey = entry.id.replace(langSuffixRegex, '');
+const currentI18nKey = entry.data.i18nKey || inferredKey;
+const currentLang = entry.data.lang || normalizedInferredLang || 'zh-CN';
 
 // Find all sibling translations with the same i18nKey
 const siblingTranslations = allPosts.filter((p) => {
-  const pKey = p.data.i18nKey || p.id.replace(/\.[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/, '');
+  const pInferredKey = p.id.replace(langSuffixRegex, '');
+  const pKey = p.data.i18nKey || pInferredKey;
   return pKey === currentI18nKey;
 });
 
@@ -143,15 +157,19 @@ const translationsByLang: Record<
 > = {};
 
 for (const p of siblingTranslations) {
-  const pSuffix = p.id.match(/\.([a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?)$/);
-  const pLang = p.data.lang || (pSuffix ? pSuffix[1] : 'zh-CN');
+  const pSuffixMatch = p.id.match(langSuffixRegex);
+  const pNormLang = pSuffixMatch
+    ? (pSuffixMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffixMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffixMatch[1].toLowerCase())
+    : undefined;
+  const pLang = p.data.lang || pNormLang || 'zh-CN';
   const cleanSlug = p.id.includes('.') ? p.id.replace(/\./g, '-') : p.id;
+  const urlSlug = cleanSlug.toLowerCase() === cleanSlug ? cleanSlug : cleanSlug.toLowerCase();
 
   // Manual/user post takes priority if both exist
   if (!translationsByLang[pLang] || !p.data.isAiGenerated) {
     translationsByLang[pLang] = {
       slug: cleanSlug,
-      url: `/posts/${cleanSlug}/`,
+      url: `/posts/${urlSlug}/`,
       title: p.data.title,
       lang: pLang,
       isAiGenerated: Boolean(p.data.isAiGenerated),

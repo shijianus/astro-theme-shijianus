@@ -37,21 +37,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     const _unlockedInMemory = new Set();
 
     const resolveContentLang = () => {
-      const article = document.querySelector('article[data-lang]');
-      const articleLang = article?.getAttribute('data-lang')?.trim();
-      if (articleLang) {
-        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
-        if (articleLang.startsWith('zh')) return 'zh-CN';
-        const base = articleLang.split('-')[0].toLowerCase();
-        return base;
-      }
-      const docLang = (document.documentElement.lang || '').trim();
-      if (docLang) {
-        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
-        if (docLang.startsWith('zh')) return 'zh-CN';
-        const base = docLang.split('-')[0].toLowerCase();
-        return base;
-      }
+      // 1. Explicit language in URL pathname takes absolute highest priority
       const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
       if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
       if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
@@ -60,6 +46,41 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
       const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/i);
       if (matched) return matched[1];
+
+      // 2. User's manual selection in localStorage or data-locale-variant attribute
+      try {
+        const stored = window.localStorage.getItem('shijianus-manual-locale-selected') ||
+                       window.localStorage.getItem('shijianus-locale-variant') ||
+                       document.documentElement.getAttribute('data-locale-variant');
+        if (stored) {
+          if (stored.startsWith('zh-Hant') || stored === 'zh-TW' || stored === 'zh-HK') return 'zh-Hant';
+          if (stored.startsWith('zh')) return 'zh-CN';
+          const base = stored.split('-')[0].toLowerCase();
+          if (['en', 'es', 'de', 'fr', 'zh-hant'].includes(base)) {
+            return base === 'zh-hant' ? 'zh-Hant' : base;
+          }
+        }
+      } catch (_) {}
+
+      // 3. Article container data-lang
+      const article = document.querySelector('article[data-lang]');
+      const articleLang = article?.getAttribute('data-lang')?.trim();
+      if (articleLang) {
+        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+        if (articleLang.startsWith('zh')) return 'zh-CN';
+        const base = articleLang.split('-')[0].toLowerCase();
+        return base;
+      }
+
+      // 4. Document element lang
+      const docLang = (document.documentElement.lang || '').trim();
+      if (docLang) {
+        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
+        if (docLang.startsWith('zh')) return 'zh-CN';
+        const base = docLang.split('-')[0].toLowerCase();
+        return base;
+      }
+
       return 'zh-CN';
     };
 
@@ -1750,10 +1771,10 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           let soundEnabled = chat.dataset.sound !== 'false';
 
           let headerBar = chat.querySelector('.chat-header-bar');
-          if (!headerBar) {
-            const chatLang = resolveContentLang();
-            const tChat = CHAT_I18N[chatLang] || CHAT_I18N['zh-CN'];
+          const chatLang = resolveContentLang();
+          const tChat = CHAT_I18N[chatLang] || CHAT_I18N['zh-CN'];
 
+          if (!headerBar) {
             headerBar = document.createElement('div');
             headerBar.className = 'chat-header-bar';
             headerBar.innerHTML = `
@@ -1790,6 +1811,21 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
               e.stopPropagation();
               playSequence();
             });
+          } else {
+            // Already initialized: re-localize dynamic labels
+            const titleEl = headerBar.querySelector('.chat-header-title');
+            if (titleEl) titleEl.textContent = tChat.title;
+            const badgeEl = headerBar.querySelector('.chat-header-badge');
+            if (badgeEl) badgeEl.textContent = tChat.badge;
+            const replayEl = headerBar.querySelector('.chat-replay-btn');
+            if (replayEl) {
+              replayEl.textContent = tChat.replayBtn;
+              replayEl.title = tChat.replayTitle;
+            }
+            const soundBtn = headerBar.querySelector('.chat-sound-toggle');
+            if (soundBtn) {
+              soundBtn.title = soundEnabled ? tChat.soundOn : tChat.soundMuted;
+            }
           }
 
           // Initially hide messages for animation
@@ -1906,10 +1942,10 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const countLabel = tracker.querySelector('.task-tracker__count');
           const chainAlert = tracker.querySelector('.task-tracker__status-card');
 
-          const taskLang = resolveContentLang();
-          const tTask = TASK_TRACKER_I18N[taskLang] || TASK_TRACKER_I18N['zh-CN'];
-
           const updateProgress = () => {
+            const currentTaskLang = resolveContentLang();
+            const tTask = TASK_TRACKER_I18N[currentTaskLang] || TASK_TRACKER_I18N['zh-CN'];
+
             const total = checkboxes.length;
             if (!total) return;
             const checked = tracker.querySelectorAll('input[type="checkbox"]:checked').length;
@@ -1953,6 +1989,8 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
               }
             }
           };
+
+          tracker._updateProgress = updateProgress;
 
           checkboxes.forEach((cb) => {
             cb.addEventListener('change', updateProgress);
@@ -2405,6 +2443,16 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       initContentEnhancements();
     }
     document.addEventListener('astro:page-load', initContentEnhancements);
+
+    // Re-localize all interactive components on global locale change
+    window.addEventListener('shijianus:localechange', () => {
+      initContentEnhancements();
+      document.querySelectorAll('.article-task-tracker, .interactive-task-list-wrap').forEach((tracker) => {
+        if (typeof tracker._updateProgress === 'function') {
+          tracker._updateProgress();
+        }
+      });
+    });
   })();
 </script>
 
