@@ -2173,3 +2173,21 @@
   2. 运行基础组件回归测试套件（`scripts/verify-i18n-component-fix.mjs`），**45 项断言 100% 全部通过**；
   3. 双测试套件共计 **118 项自动化断言 100% 全绿**，确认前端动态组件与 Markdown 静态内容零冲突、零中文残留。
 
+### Task 97: 赞赏支持页自选金额卡片精炼直出重构、隐式配件背景视觉升维、右侧扫码通道空白消除与开销说明彻底解绑 (`140f4d4`)
+- [x] **自选金额卡片布局精炼直出与去商品绑定**：
+  1. 彻底清除卡片底部的实际开销说明容器（`border-t border-black/5` 与 `practical.impact`），彻底移除前台强制绑定的咖啡商品名称标签（`text-[10px] whitespace-nowrap`）与前台图标容器（`p-1 rounded-lg mb-1`）；
+  2. 前台纯粹且醒目直出金额文本（`text-sm sm:text-base font-black tracking-tight`），卡片按钮统一收敛为精致胶囊圆角（`min-h-[50px] sm:min-h-[54px]`），彻底解除多余 DOM 容器拉伸高度的问题；
+  3. 头部说明由“特调咖啡支持档位”调整为“推荐支持档位”，彻底解除内容与咖啡/具体消费品的硬编码绑定。
+- [x] **隐式配件 (Implicit Accessories) 背景视觉升维与价格梯度象征**：
+  1. 采用非侵入式绝对定位背景配件方案（`absolute -right-1 -bottom-1 pointer-events-none`），不占用任何按钮物理排版空间，杜绝卡片过度膨胀；
+  2. 隐式水波纹图标根据价格梯度层级递进（浓缩咖啡杯 -> 经典马克杯 -> 特调拿铁杯 -> 手冲滤壶 -> 精品咖啡豆 -> 挚友荣耀杯），象征金额等级；
+  3. 优化微交互体验：悬浮时背景配件平滑缩放 110% 并产生 -3° 微旋转（`group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200`），未选中间态透明度自然受控（`opacity-20` ~ `opacity-35`），选中态呈现纯白半透光晕。
+- [x] **右侧 QR 扫码通道空白消除与开销说明彻底解绑**：
+  1. 彻底删除右侧列下方的开销说明区块（`p-3.5 rounded-2xl bg-slate-50/90 ... 真实开销与站点保障公示` 四列基建卡片），杜绝与支持赞赏页面过度绑定；
+  2. 针对国内扫码（微信/支付宝）、港澳渠道（Alipay HK / WeChat HK）、PayPal 及 Web3 USDT 全部 4 个 Tab 注入 `flex-1` 与垂直居中对齐结构（`items-center` / `justify-center`），彻底消除原本产生的顶部与底部留白空隙；
+  3. 左右两列（`lg:col-span-7` 与 `lg:col-span-5`）高度天然对称契合（Desktop y=537.0px, height=661.8px, Top Diff = 0.0px, Bottom Diff = 0.0px），视口比例极致协调。
+- [x] **全场景自动化 Playwright 端到端深度审计与高分辨率截图实测**：
+  1. 编写专用测试套件 `scripts/verify-support-refined.mjs`，在本地环境全流程验证 6 档金额直出、零商品绑定、隐式配件水波纹、右侧开销完全移除、4 大通道 Tab 切换及 Stripe 收银台金额原子联动；
+  2. 捕获桌面浅色（`01-desktop-main-section-light.png`）、卡片特写（`02-desktop-preset-cards-light.png`）、右侧通道（`03-desktop-right-column-light.png`）、桌面深色（`04-desktop-main-section-dark.png`）、平板（`05-tablet-main-section.png`）与移动端（`06-mobile-main-section.png`）全套高分辨率渲染图，并通过视觉审计确认无样式缺陷，断言 100% 全绿通过。
+
+
