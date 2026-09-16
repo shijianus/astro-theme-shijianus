@@ -66,31 +66,31 @@
       "de": {
         "filename": "content-formats-and-markup-mastery-de.md",
         "slug": "content-formats-and-markup-mastery-de",
-        "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
+        "title": "Statische Seitengeneratoren (SSG) und Umfassender Leitfaden zu Blog-Themen-Inhaltsformaten: Von Mainstream-Unterstützung bis zu speziellen Funktionen, Dropdown-Interaktionen und typografischer Verschönerung",
         "isAiGenerated": true
       },
       "en": {
         "filename": "content-formats-and-markup-mastery-en.md",
         "slug": "content-formats-and-markup-mastery-en",
-        "title": "Comprehensive Guide to Content Formats in Static Site Generators (SSG) and Blog Themes: From Mainstream Support to Special Features, Dropdown Interactions, and Typography Beautification",
+        "title": "Comprehensive Guide to Static Site Generators (SSG) and Blog Theme Content Formats: From Mainstream Support to Special Features, Dropdown Interactions, and Typography Enhancement",
         "isAiGenerated": true
       },
       "es": {
         "filename": "content-formats-and-markup-mastery-es.md",
         "slug": "content-formats-and-markup-mastery-es",
-        "title": "Guía panorámica de generadores de sitios estáticos (SSG) y formatos de contenido de temas: del soporte estándar a funciones avanzadas, menús desplegables y tipografía pulida",
+        "title": "Guía panorámica de formatos de contenido para generadores de sitios estáticos (SSG) y temas de blog: desde soporte principal hasta funciones especiales, interacción con menús desplegables y embellecimiento tipográfico",
         "isAiGenerated": true
       },
       "fr": {
         "filename": "content-formats-and-markup-mastery-fr.md",
         "slug": "content-formats-and-markup-mastery-fr",
-        "title": "Guide panoramique des générateurs de sites statiques (SSG) et des formats de contenu de thème : de la prise en charge standard aux fonctionnalités avancées, menus déroulants et typographie soignée",
+        "title": "Guide panoramique des formats de contenu pour générateurs de sites statiques (SSG) et thèmes de blog : du support courant aux fonctionnalités spéciales, interactions avec les menus déroulants et embellissement typographique",
         "isAiGenerated": true
       },
       "zh-Hant": {
         "filename": "content-formats-and-markup-mastery-zh-Hant.md",
         "slug": "content-formats-and-markup-mastery-zh-Hant",
-        "title": "靜態站點生成器（SSG）與博客主題內容格式全景指南：從主流支持到特異功能、下拉框交互與排版美化",
+        "title": "靜態站點生成器（SSG）與部落格主題內容格式全景指南：從主流支援到特異功能、下拉框互動與排版美化",
         "isAiGenerated": true
       },
       "zh-CN": {

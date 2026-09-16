@@ -2135,4 +2135,20 @@
      - 15 条 FAQ 手风琴展开折叠交互流畅；
   3. 捕获生产端高分辨率截图存档（`target-1-cards.png`, `target-2-cards.png`, `target-2-table.png`），所有断言 100% PASS 全绿通过。
 
-
+### Task 95: 文章全量 i18n 1:1 本地化全真复刻、分片容灾机制重构、组件级遗漏根除与全语种 Playwright 深度审计
+- [x] **排查并根除 AI 接口与分片遗漏根本原因**：
+  1. 彻底废弃导致组件属性丢失与结构损毁的旧提取式回退（Scheme 2，原因为仅提取 Markdown 纯文本导致 HTML 属性、按钮、Mindmap 结构全数丢失）；
+  2. 修复 Gemini 新模型在 `thinkingConfig: { thinkingBudget: 0 }` 下返回 HTTP 400 导致可用密钥秒级误判拉黑的致命缺陷；
+  3. 确立 `gemini-2.5-flash` 为核心多密钥轮询（14 个可用密钥），Groq `qwen/qwen3.8-27b` 与开源模型为次级容灾，并将 Tertiary 超时由 60s 降至 4s，彻底消除卡死挂起；
+  4. 升级分片重试机制（`MAX_RETRIES = 10`），引入指数退避与分片级残余中文拦截校验，杜绝任何分片回退至原文中文。
+- [x] **校验器 (Validator) 规则全景校准**：
+  1. 解决缩进代码块（`^\s*(`{3,}|~{3,})`）与非严格闭合 HTML（如自闭合 Hydration Widget 引起的 div 差值）误报；
+  2. 优化残余中文检测算法：在排除前置元数据、HTML 嵌套代码块（`<pre><code>`）、音视频媒体标签（`<video>`/`<audio>`）及日语汉字（Audio demo Kanji）后进行严格比对，确保译文主体正文残余中文为 0。
+- [x] **组件级本地化遗漏根除与前端运行时修复**：
+  1. 修复 `ContentFeatureEnhancer.astro` 中 `lang` 变量未定义引发的 `ReferenceError: lang is not defined` 运行时异常；
+  2. 注入全语种字典（`es`, `de`, `fr`, `en`, `zh-Hant`），`interactive-unit-converter` 在 `data-title`、类别按钮、输入提示、换算公式、重置按钮均实现 100% 完整本地化，非中文语系残余中文为 0；
+  3. `article-tabs__panels` 及其内嵌组件（`mindmap-header`、`mindmap-footer`、导图节点、代码标签切换等）实现 100% 同步本地化。
+- [x] **全语种 1:1 生成与 Playwright 端到端自动化审计通过**：
+  1. 全量重新生成 `content-formats-and-markup-mastery` 的全部 5 种支持语系（`es`, `de`, `fr`, `en`, `zh-Hant`），所有文件通过 Scheme 1 格式校验；
+  2. 执行静态编译（111 个页面完整渲染构建无报错）；
+  3. 编写并执行全语种自动化审计套件（`scripts/verify-i18n-component-fix.mjs` 及深度组件测试），涵盖 45 项严格断言，全部 100% PASS 通过。

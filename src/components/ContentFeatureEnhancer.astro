@@ -1115,7 +1115,8 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           return 'zh-CN';
         };
-        const ui = UNIT_I18N[resolveLang()] || UNIT_I18N['zh-CN'];
+        const currentLang = resolveLang();
+        const ui = UNIT_I18N[currentLang] || UNIT_I18N['zh-CN'];
 
         const defaultCategories = {
           weight: {
@@ -1259,7 +1260,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           const rawTitle = box.dataset.title;
           const titleHasChinese = /[\u4e00-\u9fa5]/.test(rawTitle || '');
-          const title = (!rawTitle || (titleHasChinese && !lang.startsWith('zh'))) ? ui.defaultTitle : rawTitle;
+          const title = (!rawTitle || (titleHasChinese && !currentLang.startsWith('zh'))) ? ui.defaultTitle : rawTitle;
           const catButtonsHtml = Object.entries(customCategories).map(([key, cat]) => {
             const isActive = key === activeCatKey ? ' is-active' : '';
             return `<button type="button" class="unit-cat-btn${isActive}" data-cat="${key}"><span>${cat.icon}</span> <span>${cat.name}</span></button>`;

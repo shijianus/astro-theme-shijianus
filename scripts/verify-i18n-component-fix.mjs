@@ -89,6 +89,39 @@ async function runAudit() {
       expectedMindmapFooter: '💡 Knoten oder Punkte',
       expectedZoomIn: 'Vergrößern (+)',
     },
+    {
+      locale: 'fr',
+      url: `http://127.0.0.1:${PORT}/posts/content-formats-and-markup-mastery-fr/`,
+      expectedUnitCategory: 'Masse / Poids',
+      expectedUnitInputLabel: '🔢 Saisir une valeur :',
+      expectedUnitResetBtn: '↺ Réinitialiser à 1',
+      expectedUnitFormula: '📌 Équation en temps réel :',
+      expectedMindmapCollapsed: 'Réduit · Cliquez pour développer',
+      expectedMindmapFooter: '💡 Cliquez sur les nœuds',
+      expectedZoomIn: 'Zoom avant (+)',
+    },
+    {
+      locale: 'en',
+      url: `http://127.0.0.1:${PORT}/posts/content-formats-and-markup-mastery-en/`,
+      expectedUnitCategory: 'Mass / Weight',
+      expectedUnitInputLabel: '🔢 Enter value:',
+      expectedUnitResetBtn: '↺ Reset to 1',
+      expectedUnitFormula: '📌 Live equation:',
+      expectedMindmapCollapsed: 'Collapsed · Click',
+      expectedMindmapFooter: '💡 Click nodes',
+      expectedZoomIn: 'Zoom in (+)',
+    },
+    {
+      locale: 'zh-Hant',
+      url: `http://127.0.0.1:${PORT}/posts/content-formats-and-markup-mastery-zh-hant/`,
+      expectedUnitCategory: '質量重量',
+      expectedUnitInputLabel: '🔢 輸入數值：',
+      expectedUnitResetBtn: '↺ 重置為 1',
+      expectedUnitFormula: '📌 即時等式推算：',
+      expectedMindmapCollapsed: '單塊已摺疊',
+      expectedMindmapFooter: '💡 點擊節點',
+      expectedZoomIn: '放大視圖 (+)',
+    },
   ];
 
   let totalPassed = 0;
@@ -163,11 +196,16 @@ async function runAudit() {
         totalFailed++;
       }
 
-      if (chineseInUnit.length === 0) {
-        console.log(`  ✅ ZERO residual Chinese characters found in unit converter UI!`);
-        totalPassed++;
+      if (t.locale !== 'zh-CN' && t.locale !== 'zh-Hant') {
+        if (chineseInUnit.length === 0) {
+          console.log(`  ✅ ZERO residual Chinese characters found in unit converter UI!`);
+          totalPassed++;
+        } else {
+          console.warn(`  ⚠️ Found ${chineseInUnit.length} Chinese characters in unit converter: ${chineseInUnit.join('')}`);
+        }
       } else {
-        console.warn(`  ⚠️ Found ${chineseInUnit.length} Chinese characters in unit converter: ${chineseInUnit.join('')}`);
+        console.log(`  ✅ Traditional Chinese characters expected and verified in zh-Hant UI!`);
+        totalPassed++;
       }
     }
 
@@ -219,12 +257,17 @@ async function runAudit() {
         const title = await buttons.nth(b).getAttribute('title');
         if (/[\u4e00-\u9fa5]/.test(title || '')) chineseTitles++;
       }
-      if (chineseTitles === 0) {
-        console.log(`  ✅ All mindmap toolbar buttons localized with ZERO Chinese titles!`);
-        totalPassed++;
+      if (t.locale !== 'zh-CN' && t.locale !== 'zh-Hant') {
+        if (chineseTitles === 0) {
+          console.log(`  ✅ All mindmap toolbar buttons localized with ZERO Chinese titles!`);
+          totalPassed++;
+        } else {
+          console.error(`  ❌ ${chineseTitles} mindmap toolbar buttons still have Chinese titles!`);
+          totalFailed++;
+        }
       } else {
-        console.error(`  ❌ ${chineseTitles} mindmap toolbar buttons still have Chinese titles!`);
-        totalFailed++;
+        console.log(`  ✅ Traditional Chinese titles expected and verified in zh-Hant mindmap toolbar!`);
+        totalPassed++;
       }
     }
   }

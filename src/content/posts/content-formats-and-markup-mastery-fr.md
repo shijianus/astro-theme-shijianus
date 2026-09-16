@@ -1,8 +1,8 @@
 ---
-title: "Guide panoramique des générateurs de sites statiques (SSG) et des formats de contenu de thème : de la prise en charge standard aux fonctionnalités avancées, menus déroulants et typographie soignée"
+title: "Guide panoramique des formats de contenu pour générateurs de sites statiques (SSG) et thèmes de blog : du support courant aux fonctionnalités spéciales, interactions avec les menus déroulants et embellissement typographique"
 pubDate: 2026-08-28
 updatedDate: 2026-08-28
-description: "Une vue d'ensemble systématique de la prise en charge des formats de contenu dans les systèmes de sites statiques et de blogs populaires tels que Hugo, Jekyll, Eleventy, Astro, Hexo et WordPress. De Markdown, MDX, HTML, AsciiDoc, Org-mode, RST aux formats de publication WordPress, sélecteurs déroulants interactifs, accordéons, formules mathématiques KaTeX, diagrammes Mermaid et chiffrement par mot de passe."
+description: "Inventaire systématique et complet des formats de contenu pris en charge par les principaux systèmes de sites statiques et de blogs tels que Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress. Du Markdown, MDX, HTML, AsciiDoc, Org-mode, RST aux formats de publication WordPress entièrement implémentés, sélecteurs interactifs à liste déroulante, accordéons, formules mathématiques KaTeX, diagrammes Mermaid et fonctionnalités spéciales de chiffrement par mot de passe."
 author: "shijianus"
 category: "Conception de systèmes"
 group: "Spécifications techniques"
@@ -10,7 +10,7 @@ featured: true
 sticky: 10
 postFormat: "standard"
 markup: "markdown"
-tags: ["SSG", "Markdown", "MDX", "Astro", "主题格式", "EpoCanvas", "排版规范", "UI", "Mindmap", "思维导图"]
+tags: ["SSG", "Markdown", "MDX", "Astro", "Formats de thème", "EpoCanvas", "Normes typographiques", "UI", "Mindmap", "Carte mentale"]
 mermaid: true
 mindmap: true
 # ─────────────────────────────────────────────────────────────────────────────
@@ -22,41 +22,41 @@ aiTranslatedFrom: "zh-CN"
 ---
 # Guide panoramique des générateurs de sites statiques (SSG) et des formats de contenu de thème
 
-Dans les projets modernes de générateurs de sites statiques (SSG) et de thèmes de blogs indépendants, **la capacité d'analyse et de rendu des formats de contenu des articles** détermine directement les limites d'expression des créateurs et l'expérience de lecture des lecteurs.
+Dans l'ingénierie moderne des générateurs de sites statiques (SSG) et des thèmes de blogs indépendants, la **capacité d'analyse et de rendu des formats de contenu des articles** détermine directement les limites d'expression du créateur et l'expérience de lecture du lecteur.
 
-Ce guide combine les normes de contenu de l'écosystème SSG majeur (**Hugo, Jekyll, Eleventy, Astro, Pelican, Hexo, WordPress, VitePress**, etc.), établissant un système panoramique couvrant **Markup de base, langages de documentation étendus, formats de publication WordPress, commutateurs déroulants interactifs, accordéons pliants, formules mathématiques LaTeX, diagrammes Mermaid et fonctionnalités de chiffrement/déchiffrement spécifiques**, et fournit des démonstrations de rendu en direct prêtes à l'emploi.
+Ce guide, en combinant les spécifications de contenu des écosystèmes SSG majeurs (**Hugo, Jekyll, Eleventy, Astro, Pelican, Hexo, WordPress, VitePress**, etc.), établit un système panoramique couvrant le **balisage de base, les langages de documentation étendus, les formats de publication WordPress, les sélecteurs déroulants interactifs, les accordéons, les formules mathématiques LaTeX, les diagrammes Mermaid et les fonctionnalités spéciales de chiffrement/déchiffrement**, et fournit des démonstrations de rendu en direct prêtes à l'emploi.
 
 ---
 
-## 1. Résumé des formats de contenu supportés et de l'écosystème des générateurs de sites statiques (SSG) majeurs
+## I. Récapitulatif du support des formats de contenu et de l'écosystème des générateurs de sites statiques (SSG) majeurs
 
-Les différents générateurs de sites statiques ont des philosophies de sélection différentes dans leur architecture d'analyse de contenu. Le tableau ci-dessous résume systématiquement le support natif et étendu des divers formats par les moteurs majeurs :
+Les différents générateurs de sites statiques adoptent des philosophies distinctes en matière d'architecture d'analyse de contenu. Le tableau ci-dessous récapitule de manière systématique le support natif et étendu des divers formats par les moteurs principaux :
 
-| Générateur de sites statiques / Plateforme | Moteur d'analyse principal | Formats natifs intégrés | Formats supportés par extensions / outils externes | Support de sérialisation Front Matter |
+| Générateur de site statique / Plateforme | Moteur d'analyse principal | Formats pris en charge nativement | Formats pris en charge via extensions / outils externes | Support de sérialisation Front Matter |
 | :--- | :--- | :--- | :--- | :--- |
 | **Hugo** | Goldmark (Go) | `.md` (CommonMark/GFM), `.html`, `.org` (Org-mode) | `.adoc` (Asciidoctor), `.rst` (rst2html), `.pdc` (Pandoc) | YAML (`---`), TOML (`+++`), JSON (`{}`) |
-| **Astro (l'architecture de ce blog)** | Vite + Unified/Remark + MDX | `.md` (GFM), `.mdx` (JSX), `.html`, `.astro` 组件 | Extensions AST Loader montables pour Org/AsciiDoc/RST | YAML, TOML, JSON |
+| **Astro (Architecture de ce blog)** | Vite + Unified/Remark + MDX | `.md` (GFM), `.mdx` (JSX), `.html`, composants `.astro` | Peut monter des chargeurs AST pour étendre Org/AsciiDoc/RST | YAML, TOML, JSON |
 | **Jekyll** | Kramdown (Ruby) | `.md` (Kramdown/GFM), `.html` | `.textile` (plugin Textile) | YAML |
-| **Eleventy (11ty)** | Pipeline de templates JavaScript | `.md`, `.html`, `.liquid`, `.njk`, `.ejs`, `.webc` | MDX (plugin), extensions de template personnalisées | YAML, JSON, JS/11tydata |
-| **Hexo** | Marked / Hexo-Renderer | `.md` (GFM), `.html`, EJS/Pug 模板 | Org-mode / Pandoc (support plugin) | YAML, JSON |
+| **Eleventy (11ty)** | Pipeline de templates JavaScript | `.md`, `.html`, `.liquid`, `.njk`, `.ejs`, `.webc` | MDX (plugin), extensions de templates personnalisées | YAML, JSON, JS/11tydata |
+| **Hexo** | Marked / Hexo-Renderer | `.md` (GFM), `.html`, templates EJS/Pug | Org-mode / Pandoc (support de plugins) | YAML, JSON |
 | **Pelican** | Python Docutils | `.md` (Markdown), `.rst` (reStructuredText) | `.asciidoc` (Asciidoctor) | YAML, Markdown Metadata |
-| **WordPress (Headless/Thème)** | Gutenberg Block Engine | HTML5 Blocks, Shortcodes, Post Formats | Classic Editor HTML | JSON metadata de bloc / Post Meta |
-| **VitePress / Docusaurus** | Markdown-It / MDX | `.md`, `.mdx`, Vue/React 组件 | Syntaxe de conteneur personnalisée (::: tip) | YAML |
+| **WordPress (Headless/Thème)** | Gutenberg Block Engine | Blocs HTML5, Shortcodes, Formats de publication | Éditeur classique HTML | Métadonnées de bloc JSON / Post Meta |
+| **VitePress / Docusaurus** | Markdown-It / MDX | `.md`, `.mdx`, composants Vue/React | Syntaxe de conteneur personnalisée (`::: tip`) | YAML |
 
 > [!NOTE]
-> **Perspectives sur l'architecture de l'écosystème** : Hugo, grâce au support natif de la concurrence élevée du langage Go, prend en charge Markdown et Org-mode ; tandis que le SSG front-end moderne représenté par **Astro** utilise la capacité **MDX et les îlots de composants (Islands)** pour intégrer de manière transparente des interfaces utilisateur interactives dynamiques (telles que le commutateur déroulant, la fenêtre de mot de passe, le disque vinyle présentés dans cet article) dans le texte, offrant une flexibilité ultime.
+> **Aperçu de l'architecture de l'écosystème** : Hugo, grâce à la haute concurrence du langage Go, prend en charge nativement Markdown et Org-mode ; tandis que les SSG front-end modernes, représentés par **Astro**, exploitent les **capacités de MDX et des îles de composants (Islands)** pour intégrer de manière transparente des interfaces utilisateur interactives dynamiques (telles que le sélecteur déroulant, la fenêtre contextuelle de mot de passe, le disque vinyle présentés dans cet article) directement dans le corps du texte, offrant une flexibilité ultime.
 
 ---
 
-## 2. Spécifications de support des formats de sérialisation Front Matter
+## II. Spécification du support des formats de sérialisation Front Matter
 
-Les métadonnées (Front Matter) de l'en-tête d'un article de blog déterminent le routage, le titre, la date, la catégorie, la couverture et l'état de protection de l'article. Ce thème prend en charge tous les modes de sérialisation principaux :
+Les métadonnées en début d'article de blog (Front Matter) déterminent le routage, le titre, la date, la catégorie, la couverture et le statut de protection de l'article. Ce thème prend en charge tous les modes de sérialisation courants :
 
-### 1. Format YAML (le plus utilisé, recommandé par défaut)
+### 1. Format YAML (le plus largement utilisé, recommandé par défaut)
 
 ```yaml
 ---
-title: "文章标题"
+title: "Titre de l'article"
 pubDate: 2026-08-28
 author: "shijianus"
 tags: ["Astro", "Markdown"]
@@ -69,7 +69,7 @@ postFormat: "aside"
 
 ```toml
 +++
-title = "文章标题"
+title = "Titre de l'article"
 pubDate = 2026-08-28T00:00:00Z
 author = "shijianus"
 tags = ["Astro", "Markdown"]
@@ -77,11 +77,11 @@ featured = true
 +++
 ```
 
-### 3. Format JSON (scénarios API-driven et Headless)
+### 3. Format JSON (pour les scénarios pilotés par API et Headless)
 
 ```json
 {
-  "title": "文章标题",
+  "title": "Titre de l'article",
   "pubDate": "2026-08-28T00:00:00.000Z",
   "author": "shijianus",
   "tags": ["Astro", "Markdown"],
@@ -91,82 +91,78 @@ featured = true
 
 ---
 
-## 3. Comparaison et correspondance de migration entre les Markup légers spéciaux et les formats non Markdown
+## III. Comparaison et référence de migration pour les balisages légers spéciaux et les formats non-Markdown
 
-Dans différentes piles technologiques, les auteurs peuvent utiliser d'autres langages de balisage léger en plus de Markdown. Ci-dessous, les caractéristiques syntaxiques des formats majeurs et leur rendu équivalent dans ce thème sont présentés :
+Dans différentes piles technologiques, les auteurs peuvent utiliser d'autres langages de balisage légers que Markdown. Voici les caractéristiques syntaxiques des formats courants et leur rendu équivalent dans ce thème :
 
 ### 1. AsciiDoc (.adoc / .asciidoc)
 
-AsciiDoc est couramment utilisé dans les livres techniques et les manuels d'ingénierie volumineux, disposant d'un système de blocs d'astuce et de propriétés extrêmement riche :
+AsciiDoc est couramment utilisé dans les livres techniques et les longs manuels d'ingénierie, et dispose d'un système extrêmement riche de blocs d'avertissement et d'attributs :
 
 ```asciidoc
-// AsciiDoc 源码语法
-= AsciiDoc 技术规范
+// Syntaxe source AsciiDoc
+= Spécification technique AsciiDoc
 :author: shijianus
 :toc: macro
 
 [NOTE]
 ====
-这是一条 AsciiDoc 风格的注意卡片。
+Ceci est une carte de note de style AsciiDoc.
 ====
 
 [cols="1,2,1", options="header"]
 |===
-| 模块 | 描述 | 状态
-| 核心引擎 | Astro 6 静态管线 | 已就绪
+| Module | Description | Statut
+| Moteur principal | Pipeline statique Astro 6 | Prêt
 |===
 ```
 
 **Écriture équivalente en Markdown / MDX dans ce thème** :
 
 > [!NOTE]
-> Ceci est une carte d'astuce équivalente rendue nativement dans le thème Astro, avec un style et une interaction entièrement alignés.
+> Ceci est une carte de note équivalente rendue nativement dans le thème Astro, avec un style et une interaction parfaitement alignés.
 
 | Module | Description | Statut |
 | :--- | :--- | :---: |
-| **Moteur principal** | Pipeline statique Astro 6 | Prêt |
-
----
+| **Moteur principal** | Pipeline statique Astro 6 | <span class="badge badge-success">Prêt</span> |
 
 ### 2. Emacs Org-Mode (.org)
 
 Org-mode est un outil puissant pour les utilisateurs d'Emacs pour la gestion des connaissances, le suivi des tâches et la rédaction de documents :
 
 ```ini
-#+TITLE: Emacs Org-Mode 实践笔记
+#+TITLE: Notes de pratique Emacs Org-Mode
 #+DATE: 2026-08-28
 #+TAGS: Emacs OrgMode
 
-* TODO 第一阶段：Markdown 扫描增强 [1/2]
-- [X] 修复表格与移动端溢出
-- [ ] 补全 Org-mode 语法转换器
+* TODO Phase 1 : Amélioration de la numérisation Markdown [1/2]
+- [X] Correction des tableaux et du débordement mobile
+- [ ] Compléter le convertisseur de syntaxe Org-mode
 
 #+BEGIN_QUOTE
-“Org-mode 不仅是格式，更是一种可执行的思维工作流。”
+“Org-mode n'est pas seulement un format, c'est aussi un flux de travail de pensée exécutable.”
 #+END_QUOTE
 ```
 
-**Présentation standard de la liste de tâches GFM statique dans ce thème (en lecture seule)** :
+**Présentation de la liste de tâches GFM statique standard dans ce thème (état en lecture seule)** :
 
-- [x] Corriger le débordement des tableaux et du mobile
+- [x] Correction des tableaux et du débordement mobile
 - [ ] Compléter le convertisseur de syntaxe Org-mode
 
 > [!QUOTE]
 > “Org-mode n'est pas seulement un format, c'est aussi un flux de travail de pensée exécutable.”
 
+#### Liste de contrôle de tutoriel interactive et progression en chaîne (Interactive Tutorial Checklist & Chained Progression)
 
-
-#### 可交互式任务清单与联动进度条（Interactive Tutorial Checklist & Chained Progression）
-
-在技术教程、实战演练与部署指南中，传统的只读 `[ ]` 任务清单无法直观交互与记忆。本主题特别增设了**支持实时勾选与连锁状态联动的可交互清单（`.article-task-tracker`）**。读者每勾选一项，动态进度条将实时重新计算百分比，当全部关键步骤确认完毕后，还将**自动连锁解锁下游就绪指令**，非常适合用作教程的通关检查表：
+Dans les tutoriels techniques, les exercices pratiques et les guides de déploiement, les listes de tâches `[ ]` traditionnelles en lecture seule ne permettent pas une interaction et une mémorisation intuitives. Ce thème propose une **liste de contrôle interactive (`.article-task-tracker`) qui prend en charge le cochage en temps réel et la liaison d'état en chaîne**. Chaque fois que le lecteur coche un élément, la barre de progression dynamique recalcule le pourcentage en temps réel. Une fois toutes les étapes clés confirmées, les **instructions de préparation en aval seront automatiquement débloquées en chaîne**, ce qui la rend idéale comme liste de contrôle de progression pour les tutoriels :
 
 <div class="article-task-tracker" data-storage-key="content-format-tutorial-demo">
   <div class="task-tracker__header">
     <div class="task-tracker__title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      <span>静态站点工程化上线部署前置检查清单（可交互实时打勾）</span>
+      <span>Liste de contrôle préalable au déploiement technique d'un site statique (cochage interactif en temps réel)</span>
     </div>
-    <span class="task-tracker__count">1/4 步骤已完成 (25%)</span>
+    <span class="task-tracker__count">1/4 étapes terminées (25%)</span>
   </div>
   <div class="task-tracker__bar-wrap">
     <div class="task-tracker__fill" style="width: 25%;"></div>
@@ -175,38 +171,38 @@ Org-mode est un outil puissant pour les utilisateurs d'Emacs pour la gestion des
     <li class="task-checklist-item is-done">
       <input type="checkbox" checked id="chk-step-1" />
       <div class="task-item-body">
-        <label for="chk-step-1" class="task-item-label">步骤 1：完成本地代码全量备份与 Git Commit</label>
-        <div class="task-item-desc">确认当前工作树干净，备份 Hash 记录至开发审计日志。</div>
+        <label for="chk-step-1" class="task-item-label">Étape 1 : Effectuer une sauvegarde complète du code local et un commit Git</label>
+        <div class="task-item-desc">Vérifier que l'arborescence de travail est propre et enregistrer le hachage de sauvegarde dans le journal d'audit de développement.</div>
       </div>
     </li>
     <li class="task-checklist-item">
       <input type="checkbox" id="chk-step-2" />
       <div class="task-item-body">
-        <label for="chk-step-2" class="task-item-label">步骤 2：配置 Cloudflare Pages 静态构建管线</label>
-        <div class="task-item-desc">设置 <code>BLOG_BUILD_TARGET=static</code> 与 Node.js 20+ 运行时环境。</div>
+        <label for="chk-step-2" class="task-item-label">Étape 2 : Configurer le pipeline de construction statique de Cloudflare Pages</label>
+        <div class="task-item-desc">Définir <code>BLOG_BUILD_TARGET=static</code> et l'environnement d'exécution Node.js 20+.</div>
       </div>
     </li>
     <li class="task-checklist-item">
       <input type="checkbox" id="chk-step-3" />
       <div class="task-item-body">
-        <label for="chk-step-3" class="task-item-label">步骤 3：验证媒体资源与外部视频/音频内嵌</label>
-        <div class="task-item-desc">确保所有音频与视频单文件体积严格控制在 25MB 以内，满足 CDN 部署规范。</div>
+        <label for="chk-step-3" class="task-item-label">Étape 3 : Vérifier les ressources multimédias et l'intégration de vidéos/audios externes</label>
+        <div class="task-item-desc">S'assurer que la taille de tous les fichiers audio et vidéo est strictement inférieure à 25 Mo, conformément aux spécifications de déploiement CDN.</div>
       </div>
     </li>
     <li class="task-checklist-item">
       <input type="checkbox" id="chk-step-4" />
       <div class="task-item-body">
-        <label for="chk-step-4" class="task-item-label">步骤 4：执行 Playwright 自动化视觉回归与烟测</label>
-        <div class="task-item-desc">验证 PC 端与移动端多分辨率下所有富媒体卡片与交互组件排版正常。</div>
+        <label for="chk-step-4" class="task-item-label">Étape 4 : Exécuter la régression visuelle automatisée et les tests de fumée avec Playwright</label>
+        <div class="task-item-desc">Vérifier que la mise en page de toutes les cartes multimédias riches et des composants interactifs est correcte sur PC et mobile, à différentes résolutions.</div>
       </div>
     </li>
   </ul>
   <div class="task-tracker__status-card is-pending">
     <div class="status-card__header">
-      <span class="badge badge-warning">⏳ 待办就绪中</span>
-      <span style="font-weight:700;">当前进度：1/4 (25%)</span>
+      <span class="badge badge-warning">⏳ En attente de préparation</span>
+      <span style="font-weight:700;">Progression actuelle : 1/4 (25%)</span>
     </div>
-    <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">请依次完成上方清单中打勾的每个步骤；当所有任务完成后，此处将实时连锁解锁生产发布指令。</p>
+    <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">Veuillez compléter chaque étape cochée dans la liste ci-dessus ; une fois toutes les tâches terminées, les instructions de publication en production seront débloquées en temps réel ici.</p>
   </div>
 </div>
 
@@ -214,12 +210,12 @@ Org-mode est un outil puissant pour les utilisateurs d'Emacs pour la gestion des
 
 ### 3. reStructuredText (.rst)
 
-reStructuredText 是 Python 社区（如 Sphinx、ReadTheDocs）的标准文档格式：
+reStructuredText est le format de documentation standard de la communauté Python (par exemple, Sphinx, ReadTheDocs) :
 
 ```rst
-.. reStructuredText 源码语法
+.. Syntaxe source reStructuredText
 .. note::
-   这是一条 RST 指令定义的 Note 块。
+   Ceci est un bloc Note défini par une directive RST.
 
 .. code-block:: python
    :linenos:
@@ -228,10 +224,10 @@ reStructuredText 是 Python 社区（如 Sphinx、ReadTheDocs）的标准文档�
        return f"Hello, {name}!"
 ```
 
-**本主题中的 Markdown 等效呈现**：
+**Rendu équivalent en Markdown dans ce thème** :
 
 > [!NOTE]
-> 这是在 Astro 中以 GitHub Alert 规范呈现的 RST Note 等价卡片。
+> Ceci est une carte équivalente à une Note RST, rendue selon la spécification GitHub Alert dans Astro.
 
 ```python
 def greet(name: str) -> str:
@@ -240,194 +236,192 @@ def greet(name: str) -> str:
 
 ---
 
-### 4. Textile 语法
+### 4. Syntaxe Textile
 
-Textile 是老牌轻量级标记语言（常见于 Redmine 与早期 Jekyll 博客）：
+Textile est un langage de balisage léger de longue date (courant dans Redmine et les premiers blogs Jekyll) :
 
 ```markdown
-h2. 章节标题
-bq. 这是 Textile 引用块内容。
-*列表项 1*
-_斜体强调文本_
+h2. Titre de section
+bq. Ceci est le contenu d'un bloc de citation Textile.
+*Élément de liste 1*
+_Texte en italique accentué_
 ```
 
 ---
 
-## 4. Implémentation complète et présentation visuelle des formats d'articles style WordPress (Post Formats)
+## IV. Implémentation complète et présentation visuelle des formats de publication (Post Formats) de style WordPress
 
-WordPress 主题生态中经典的 **Post Formats** 机制允许博客针对不同类型的内容展现专属的视觉形态。我们在本主题正文栏中完整实现了这 9 种形态：
+Le mécanisme classique des **Formats de publication** dans l'écosystème des thèmes WordPress permet aux blogs d'afficher des formes visuelles spécifiques pour différents types de contenu. Nous avons entièrement implémenté ces 9 formats dans la colonne principale de ce thème :
 
-### 1. `aside`（轻语 / 便签 / 随笔卡片）
+### 1. `aside` (Pensée rapide / Mémo / Carte de note)
 
-适合记录短小的思考灵感、备忘提醒或临时笔记：
+Convient pour enregistrer de courtes inspirations, des rappels ou des notes temporaires :
 
 <div class="article-aside">
-  <p><strong>💡 随笔备忘</strong>：静态站点的真正价值不在于炫技，而在于交付极速、零服务端维护负担的纯粹阅读体验。即便经过五年、十年，生成的 HTML 文件依然可以完美打开。</p>
+  <p><strong>💡 Mémo rapide</strong> : La véritable valeur d'un site statique ne réside pas dans la démonstration technique, mais dans la livraison d'une expérience de lecture pure, ultra-rapide et sans charge de maintenance côté serveur. Même après cinq ou dix ans, les fichiers HTML générés peuvent toujours être ouverts parfaitement.</p>
 </div>
 
 ---
 
+### 2. `status` (Mise à jour de statut / Pensée fugace / Micro-citation)
 
-
-### 2. `status`（状态动态 / 碎碎念 / 微语录）
-
-类似 Twitter/微博风格的即时状态发布卡片，包含作者头像、客户端标识与心情标签：
+Une carte de publication de statut instantanée de style Twitter/Weibo, incluant l'avatar de l'auteur, l'identifiant du client et un tag d'humeur :
 
 <div class="article-status">
   <div class="article-status__header">
     <div class="article-status__user">
-      <img class="article-status__avatar" src="/media/shijianus/avatar.jpg" alt="作者头像" />
+      <img class="article-status__avatar" src="/media/shijianus/avatar.jpg" alt="Avatar de l'auteur" />
       <div>
         <div class="article-status__name">shijianus</div>
-        <div class="article-status__meta">发布于 2026-08-28 14:32 · 🇨🇳 杭州</div>
+        <div class="article-status__meta">Publié le 28-08-2026 14:32 · 🇨🇳 Hangzhou</div>
       </div>
     </div>
     <div class="article-status__badge">
-      <span>📱 来自 极客工坊 Mac Studio</span>
+      <span>📱 Depuis Geek Workshop Mac Studio</span>
     </div>
   </div>
   <p class="article-status__content">
-    今天终于完成了博客主内容栏的全部格式扩展与视觉重构！从 KaTeX、Mermaid 到交互式下拉框与黑胶唱片，全栈静态交付的感觉太棒了 🚀✨
+    Aujourd'hui, j'ai enfin terminé toutes les extensions de format et la refonte visuelle de la colonne de contenu principale du blog ! De KaTeX et Mermaid aux menus déroulants interactifs et aux disques vinyles, la sensation de livraison statique complète est incroyable 🚀✨
   </p>
 </div>
 
 ---
 
-### 3. `quote`（精选引言 / 名言大卡片）
+### 3. `quote` (Citation sélectionnée / Grande carte de citation)
 
-用于展现极具分量的人物语录、设计箴言或金句：
+Utilisé pour afficher des citations percutantes, des maximes de design ou des phrases mémorables :
 
 <div class="article-quote">
   <div class="article-quote__icon">“</div>
   <div class="article-quote__body">
-    Simplicity is prerequisite for reliability. (简单是可靠的前提条件。)
+    Simplicity is prerequisite for reliability. (La simplicité est un prérequis à la fiabilité.)
   </div>
   <div class="article-quote__author">
     <img src="/media/shijianus/avatar.jpg" alt="Edsger W. Dijkstra" />
     <div class="article-quote__author-info">
       <div class="article-quote__author-name">Edsger W. Dijkstra</div>
-      <div class="article-quote__author-title">计算机科学家 · 图灵奖得主 (1972)</div>
+      <div class="article-quote__author-title">Informaticien · Lauréat du Prix Turing (1972)</div>
     </div>
   </div>
 </div>
 
 ---
 
-### 4. `gallery`（图片画廊 / 自适应相册与拍立得网格）
+### 4. `gallery` (Galerie d'images / Album adaptatif et grille Polaroid)
 
-支持多列自适应响应式网格与具有人文质感的拍立得相纸卡片，点击任意图片均可触发全屏灯箱放大：
+Prend en charge des grilles réactives adaptatives à plusieurs colonnes et des cartes photo Polaroid avec une touche humaine. Cliquer sur n'importe quelle image déclenche un agrandissement en plein écran avec une lightbox :
 
-#### 2 列与 3 列自适应画廊
+#### Galerie adaptative à 2 et 3 colonnes
 
 <div class="article-gallery">
   <div class="gallery-grid gallery-grid-3">
     <div class="gallery-item">
-      <img src="/media/shijianus/workbench.jpg" alt="极客工作台全景" />
-      <div class="gallery-item__caption">极客工作台全景</div>
+      <img src="/media/shijianus/workbench.jpg" alt="Vue panoramique du poste de travail du geek" />
+      <div class="gallery-item__caption">Vue panoramique du poste de travail du geek</div>
     </div>
     <div class="gallery-item">
-      <img src="/media/shijianus/system.jpg" alt="系统架构设计大屏" />
-      <div class="gallery-item__caption">系统架构设计大屏</div>
+      <img src="/media/shijianus/system.jpg" alt="Grand écran de conception d'architecture système" />
+      <div class="gallery-item__caption">Grand écran de conception d'architecture système</div>
     </div>
     <div class="gallery-item">
-      <img src="/media/shijianus/default.png" alt="星河漫游视觉封面" />
-      <div class="gallery-item__caption">星河漫游视觉封面</div>
+      <img src="/media/shijianus/default.png" alt="Couverture visuelle de la balade galactique" />
+      <div class="gallery-item__caption">Couverture visuelle de la balade galactique</div>
     </div>
   </div>
 </div>
 
-#### 拍立得相纸画廊（Polaroid Style）
+#### Galerie de photos Polaroid (Style Polaroid)
 
 <div class="gallery-polaroid">
   <div class="polaroid-card">
-    <img src="/media/shijianus/workbench.jpg" alt="2026 研发展望" />
-    <div class="polaroid-card__caption">2026.04 杭州·研发基地</div>
+    <img src="/media/shijianus/workbench.jpg" alt="Perspectives de R&D 2026" />
+    <div class="polaroid-card__caption">2026.04 Hangzhou · Base de R&D</div>
   </div>
   <div class="polaroid-card">
-    <img src="/media/shijianus/system.jpg" alt="架构重构之夜" />
-    <div class="polaroid-card__caption">2026.08 架构演进重构夜</div>
+    <img src="/media/shijianus/system.jpg" alt="Nuit de refonte architecturale" />
+    <div class="polaroid-card__caption">2026.08 Nuit de refonte et d'évolution architecturale</div>
   </div>
 </div>
 
 ---
 
-### 5. `video`（自适应视频播放卡片）
+### 5. `video` (Carte de lecture vidéo adaptative)
 
-支持 16:9 响应式比例、圆角边框与底栏说明，单行独占一个完整横位展示。兼容 Bilibili、YouTube 外部代理式嵌入及站内原生 MP4（单文件均控制在 25MB 以内，满足 Cloudflare Pages 静态部署规范）：
+Prend en charge un rapport réactif 16:9, des bords arrondis et une description en bas de page. Chaque vidéo occupe une ligne complète. Compatible avec l'intégration externe de Bilibili et YouTube via proxy, ainsi qu'avec les fichiers MP4 natifs du site (chaque fichier est limité à 25 Mo, respectant les spécifications de déploiement statique de Cloudflare Pages) :
 
-#### 外部视频内嵌（Bilibili & YouTube 连结代理式嵌入 · 默认需读者翻到此处并点击开始播放）
+#### Intégration vidéo externe (Intégration via proxy de liens Bilibili & YouTube · Par défaut, le lecteur doit faire défiler jusqu'ici et cliquer pour démarrer la lecture)
 
 <div class="video-embed-card" data-video-type="bilibili">
   <iframe src="https://player.bilibili.com/player.html?bvid=BV11k4y1T7kS&page=1&high_quality=1&danmaku=0&autoplay=0" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" sandbox="allow-top-navigation-by-user-activation allow-same-origin allow-forms allow-scripts allow-popups"></iframe>
-  <div class="embed-caption">🎬 Bilibili 外部内嵌演示：BV11k4y1T7kS (1080P 高清 · 需翻至此处并点击播放)</div>
+  <div class="embed-caption">🎬 Démonstration d'intégration externe Bilibili : BV11k4y1T7kS (1080P HD · Faites défiler jusqu'ici et cliquez pour lire)</div>
 </div>
 
 <div class="video-embed-card" data-video-type="youtube">
   <iframe src="https://www.youtube-nocookie.com/embed/LXb3EKWsInQ?autoplay=0&rel=0" allowfullscreen="true" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-  <div class="embed-caption">🎬 Démonstration d'intégration externe YouTube : Costa Rica 4K 60fps HDR (1080P/4K · URL réel et valide · Veuillez traduire ici et cliquer pour lire)</div>
+  <div class="embed-caption">🎬 Démonstration d'intégration externe YouTube : Costa Rica 4K 60fps HDR (1080P/4K · URL valide · Faites défiler jusqu'ici et cliquez pour lire)</div>
 </div>
 
-#### Vidéo MP4 native intégrée sur le site (Lecteur HTML5 natif · Support de vitesse et picture-in-picture · Téléchargement désactivé par défaut)
+#### Intégration vidéo MP4 native sur le site (Lecteur vidéo HTML5 natif · Prend en charge la vitesse de lecture et le mode image dans l'image · Téléchargement désactivé par défaut)
 
 <div class="video-embed-card">
   <video controls controlsList="nodownload" preload="metadata" playsinline oncontextmenu="return false;">
     <source src="/media/video/landscape_compressed.mp4" type="video/mp4" />
-    您的浏览器不支持 HTML5 视频播放。
+    Votre navigateur ne prend pas en charge la lecture vidéo HTML5.
   </video>
-  <div class="embed-caption">🎥 Vidéo native intégrée locale 1 : démonstration de paysages ultra haute définition 4K/1080P (Taille 21,7 MB · Support de vitesse et picture-in-picture · Téléchargement direct désactivé)</div>
+  <div class="embed-caption">🎥 Vidéo native intégrée 1 : Démonstration de paysage ultra HD 4K/1080P (Taille 21.7 Mo · Prend en charge la vitesse de lecture et le mode image dans l'image · Téléchargement direct désactivé)</div>
 </div>
 
 <div class="video-embed-card">
   <video controls controlsList="nodownload" preload="metadata" playsinline oncontextmenu="return false;">
     <source src="/media/video/blue_archive_miracle.mp4" type="video/mp4" />
-    您的浏览器不支持 HTML5 视频播放。
+    Votre navigateur ne prend pas en charge la lecture vidéo HTML5.
   </video>
-  <div class="embed-caption">🎥 Vidéo native intégrée locale 2 : 【蔚蓝档案】“奇迹的终始—我们的故事由我们来决定！” (Taille 23,3 MB · Support de vitesse et picture-in-picture · Téléchargement direct désactivé)</div>
+  <div class="embed-caption">🎥 Vidéo native intégrée 2 : [Blue Archive] "Le début et la fin du miracle — C'est à nous de décider de notre histoire !" (Taille 23.3 Mo · Prend en charge la vitesse de lecture et le mode image dans l'image · Téléchargement direct désactivé)</div>
 </div>
 
 ---
 
-### 6. `audio` (Carte de musique à vinyle tournant)
+### 6. `audio` (Carte musicale avec vinyle rotatif)
 
-Contrôleur audio HTML5 intégré, déclenchant automatiquement un effet de rotation fluide et sans interruption du disque vinyle lors de la lecture. Toutes les couvertures de disques utilisent des couvertures d'album officielles en haute définition, supportant plusieurs formats audio populaires (FLAC sans perte, MP3 haute bande passante, AAC/M4A), et disposent déjà d'une protection anti-crawling et anti-téléchargement :
+Contrôleur audio HTML5 intégré, déclenchant automatiquement une **animation de rotation fluide et continue du disque vinyle** lors de la lecture. Toutes les pochettes d'album sont des couvertures officielles haute définition fidèlement assorties, prenant en charge plusieurs formats audio courants (FLAC sans perte, MP3 à haut débit, AAC/M4A), avec une protection anti-scraping et anti-téléchargement intégrée :
 
-#### ① Shaun - Way Back Home (FLAC sans perte · 24,55 MB)
+#### ① Shaun - Way Back Home (Format audio FLAC sans perte · 24.55 Mo)
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/audio/covers/way_back_home.jpg" alt="Shaun - Way Back Home 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
+    <img src="/media/audio/covers/way_back_home.jpg" alt="Shaun - Way Back Home Pochette d'album" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
       <span>Way Back Home</span>
-      <span class="badge badge-purple">FLAC sans perte</span>
+      <span class="badge badge-purple">FLAC Lossless</span>
     </div>
     <div class="audio-card__author">Shaun (숀) · Audio sans perte (FLAC / 44.1kHz 16-bit 961 kbps)</div>
     <audio controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;" src="/media/audio/WayBackHome.flac"></audio>
   </div>
 </div>
 
-#### ② ヨルシカ (Yorushika) - 彼女は旅に出る (MP3 320 Kbps haute définition · 8,41 MB)
+#### ② ヨルシカ (Yorushika) - 彼女は旅に出る (Format HD MP3 320 Kbps · 8.41 Mo)
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/audio/covers/kanojo_wa_tabi_ni_deru.jpg" alt="ヨルシカ - 彼女は旅に出る 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
+    <img src="/media/audio/covers/kanojo_wa_tabi_ni_deru.jpg" alt="ヨルシカ - 彼女は旅に出る Pochette d'album" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
       <span>彼女は旅に出る (She Leaves on a Journey)</span>
       <span class="badge badge-success">320 Kbps MP3</span>
     </div>
-    <div class="audio-card__author">ヨルシカ (Yorushika) · Stéréo haute définition (MP3 / 48kHz 320 kbps)</div>
+    <div class="audio-card__author">ヨルシカ (Yorushika) · Stéréo HD (MP3 / 48kHz 320 kbps)</div>
     <audio controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;" src="/media/audio/彼女は旅に出る.mp3"></audio>
   </div>
 </div>
 
-#### ③ すこっぷ feat. 初音ミク - アイロニ (M4A / AAC format · 7,63 MB)
+#### ③ すこっぷ feat. 初音ミク - アイロニ (Format M4A / AAC · 7.63 Mo)
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/audio/covers/irony_scop.jpg" alt="すこっぷ feat. 初音ミク - アイロニ 专辑封面" onerror="this.src='/media/shijianus/default.png'" />
+    <img src="/media/audio/covers/irony_scop.jpg" alt="すこっぷ feat. 初音ミク - アイロニ Pochette d'album" onerror="this.src='/media/shijianus/default.png'" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">
@@ -439,17 +433,19 @@ Contrôleur audio HTML5 intégré, déclenchant automatiquement un effet de rota
   </div>
 </div>
 
-### 7. `link` (Liens externes et cartes d'aperçu de signets / Bookmark Preview)
+---
 
-Fournit un aperçu élégant sous forme de cartes pour les sources de référence clés au sein de l'article :
+### 7. `link` (Carte de prévisualisation de lien externe et de signet / Bookmark Preview)
+
+Fournit une prévisualisation élégante sous forme de carte pour les références clés de l'article :
 
 <a class="article-bookmark" href="https://github.com/shijianus/shijianus-blog" target="_blank" rel="noopener">
   <div class="article-bookmark__content">
-    <div class="article-bookmark__title">EpoCanvas / shijianus-blog (Dépôt de spécifications de conception du thème de blog de shijianus)</div>
-    <p class="article-bookmark__desc">EpoCanvas (Toile des Époques) est un système d'architecture de contenu de blog geek moderne, axé sur la présentation d'informations à haute densité, les micro-interactions élégantes et la prise en charge de tous les formats.</p>
+    <div class="article-bookmark__title">EpoCanvas / shijianus-blog (Dépôt des spécifications de conception du thème principal du blog 時間)</div>
+    <p class="article-bookmark__desc">EpoCanvas (時代画布) est un système d'architecture de contenu de blog geek moderne axé sur la présentation d'informations à haute densité, les micro-interactions élégantes et la prise en charge de tous les formats.</p>
     <div class="article-bookmark__site">
       <span class="badge badge-primary">GitHub</span>
-      <span>github.com · Spécifications principales d'EpoCanvas</span>
+      <span>github.com · EpoCanvas Core Spec</span>
     </div>
   </div>
   <div class="article-bookmark__icon">
@@ -457,12 +453,16 @@ Fournit un aperçu élégant sous forme de cartes pour les sources de référenc
   </div>
 </a>
 
----
+### 8. `chat` (Flux de dialogue à bulles de chat / Organic Animated Dialogue Stream)
 
-### 8. `chat` (Flux de dialogue en bulles de chat / Organic Animated Dialogue Stream)
+Utilisé pour des démonstrations vivantes de soutenances techniques, de discussions à deux ou de scénarios d'entretiens utilisateurs, prenant en charge les bulles gauche/droite, le code en ligne, la personnalisation des couleurs, ainsi que des effets d'animation de saisie adaptatifs au contenu dynamique, des effets sonores de synthèse Web Audio et des avatars dynamiques (`footer_mini_logo__media`) :
+*   **Mode statique (par défaut)** : `<div class="article-chat">` maintient une présentation légère et purement statique, sans aucun coût JS ;
+*   **Activation de la démonstration dynamique (contrôle par paramètre)** : Configurez `data-animate="true"` (ou `class="article-chat is-animated"`), le système déclenchera automatiquement une animation de saisie réaliste basée sur la longueur des caractères et une loi aléatoire naturelle, ainsi que des sons d'invite exclusifs gauche/droite, **lorsque le lecteur fera défiler la page pour la première fois dans cette fenêtre d'affichage** ;
+*   **Synchronisation dynamique non mécanique (Content-Length Aware Timing)** : Le système détermine intelligemment la durée de l'indicateur de saisie en fonction de la longueur du message (380 ms de clignotement pour les phrases courtes, 1000 ms+ de "réflexion" pour les longs paragraphes techniques), et ajoute des pauses naturelles et de légères variations de fréquence sonore entre les bulles, conformes à la lecture humaine ;
+*   **Prise en charge des avatars vidéo dynamiques (`footer_mini_logo__media`)** : Les avatars prennent en charge l'intégration de micro-vidéos MP4 animées et d'affiches statiques de secours ;
+*   **Déclenchement unique et garantie de rechargement** : Après le premier déclenchement par défilement, il se verrouille automatiquement, les défilements répétés ultérieurs ne le déclencheront pas à nouveau pour ne pas perturber la lecture ; il ne sera réinitialisé que lorsque l'utilisateur rafraîchira la page (F5) ; une barre de micro-contrôle "↺ Rejouer" et "🔊/🔇 Activer/Désactiver le son" est également disponible en haut à droite.
 
-Utilisé pour démontrer de manière vivante les soutenances techniques, les discussions à deux ou les scénarios d'entretiens utilisateurs. Prend en charge les bulles gauche/droite, le code en ligne, la personnalisation des couleurs ainsi que **l'animation de frappe adaptative au contenu, les effets sonores synthétisés via Web Audio et les avatars dynamiques (`footer_mini_logo__media`)** :
-* **Mode statique (par défaut)** : `<div class="article-chat" data-animate="true" data-sound="true">
+<div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
     <span class="chat-avatar footer_mini_logo__media">
       <video autoplay muted loop playsinline preload="metadata" poster="/media/shijianus/avatar.jpg" aria-hidden="true">
@@ -473,7 +473,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        Bonjour ! Est-ce que le rendu statique de <code>KaTeX</code> et <code>Mermaid</code> dans Astro ralentira la vitesse de chargement de la page front-end ?
+        Bonjour ! L'implémentation du rendu statique de <code>KaTeX</code> et <code>Mermaid</code> dans Astro ne ralentira-t-elle pas la vitesse de chargement des pages front-end ?
       </div>
     </div>
   </div>
@@ -483,7 +483,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        Absolument pas ! Puisque <code>remark-math</code> et <code>rehype-katex</code> compilent les formules en chaînes HTML/MathML pures au moment de la génération (Build-time), le côté navigateur a <strong>0 surcharge JS d'exécution</strong> ; et les diagrammes Mermaid se chargent dynamiquement à la demande sous forme de modules ESM asynchrones, rendant le premier écran extrêmement rapide ! ⚡
+        Absolument pas ! Car <code>remark-math</code> et <code>rehype-katex</code> compilent déjà les formules en chaînes HTML/MathML pures pendant la phase de construction (Build-time), ce qui représente <strong>0 charge d'exécution JS</strong> côté navigateur ; et les diagrammes Mermaid chargent également les modules ESM de manière asynchrone et à la demande, rendant le premier affichage extrêmement rapide ! ⚡
       </div>
     </div>
   </div>
@@ -498,7 +498,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        Fantastique ! Cela signifie que nous pouvons écrire des diagrammes de séquence d'architecture et des convertisseurs d'unités interactifs directement en Markdown, et qu'ils sont prêts à l'emploi, n'est-ce pas ?
+        Génial ! Donc, nous pouvons directement écrire des diagrammes de séquence d'architecture et des convertisseurs d'unités interactifs en Markdown, prêts à l'emploi, n'est-ce pas ?
       </div>
     </div>
   </div>
@@ -508,7 +508,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:18</div>
       <div class="chat-bubble">
-        Tout à fait ! Non seulement le zoom par double-clic et l'export SVG haute définition sont pleinement intégrés, mais le convertisseur d'unités synchronise les <strong>taux de change en direct</strong> et permet le <strong>changement d'unité de base par liste déroulante</strong> avec une symétrie parfaite ; toutes les mesures ont été rigoureusement validées ! 🚀
+        Exactement ! Non seulement le double-clic pour zoomer et l'exportation SVG haute définition sont entièrement disponibles, mais le convertisseur d'unités intègre également la <strong>synchronisation en temps réel des taux de change en ligne</strong> et le <strong>changement d'unité de base via un menu déroulant</strong>, et assure une expression complète et symétrique des unités de masse fixes, toutes les mesures ayant été rigoureusement testées ! 🚀
       </div>
     </div>
   </div>
@@ -523,7 +523,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Développeur <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:19</div>
       <div class="chat-bubble">
-        Bien reçu ! La sensation d'interaction et l'animation de frappe dynamique selon la longueur du message sont très naturelles ; je vais mettre à jour la documentation technique de l'équipe dès maintenant ! 🎉
+        Compris ! Cette sensation interactive et l'animation de saisie qui varie en fonction de la longueur du message sont très naturelles, je vais immédiatement mettre à jour la bibliothèque de documentation technique de l'équipe ! 🎉
       </div>
     </div>
   </div>
@@ -533,7 +533,7 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
     <div class="chat-body">
       <div class="chat-author">Architecte <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:20</div>
       <div class="chat-bubble">
-        Bienvenue à l'essai ! Si vous avez besoin d'extensions de format ou de personnalisations ultérieures, n'hésitez pas à en discuter dans l'espace communautaire ou sur GitHub~ ✨
+        Bienvenue à l'essayer ! Si vous rencontrez des besoins d'extension de format ou de personnalisation à l'avenir, n'hésitez pas à en discuter sur le forum ou sur GitHub~ ✨
       </div>
     </div>
   </div>
@@ -541,21 +541,19 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
 
 ---
 
-## 5.特殊的下拉框格式与动态交互组件（Dropdown Selectors & Interactive Formats）
+## V. Formats de listes déroulantes spéciales et composants interactifs dynamiques (Dropdown Selectors & Interactive Formats)
 
-针对用户明确要求的**特殊下拉框格式**，我们在文章正文层提供了纯客户端即时响应的下拉选择器组件：
+Pour les **formats de listes déroulantes spéciales** explicitement demandés par les utilisateurs, nous avons intégré des composants de sélecteur déroulant à réponse instantanée côté client directement dans le corps de l'article :
 
-### 1. 多框架与多代码版本下拉切换器（Interactive Dropdown Switcher）
+### 1. Sélecteur déroulant pour plusieurs frameworks et versions de code (Interactive Dropdown Switcher)
 
-读者可以在下拉框中自由选择技术框架，正文面板将实时无刷新切换对应的内容与代码：
-
-
+Les lecteurs peuvent librement choisir un framework technique dans la liste déroulante, et le panneau de contenu basculera en temps réel, sans rechargement, pour afficher le contenu et le code correspondants :
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
     <div class="article-dropdown-switcher__title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-      <span>请选择要查看的前端框架实现代码：</span>
+      <span>Veuillez sélectionner le code d'implémentation du framework frontend à afficher :</span>
     </div>
     <select class="article-select dropdown-switcher__select">
       <option value="react-tab">⚛️ React 19 (Hooks & TSX)</option>
@@ -566,46 +564,46 @@ Utilisé pour démontrer de manière vivante les soutenances techniques, les dis
   </div>
   <div class="article-dropdown-switcher__body">
     <div class="article-dropdown-panel is-active" data-panel="react-tab">
-      <div class="article-dropdown-panel__title">⚛️ React 19 组件实现方式：</div>
+      <div class="article-dropdown-panel__title">⚛️ Implémentation du composant React 19 :</div>
       <pre class="no-code-enhance"><code class="language-tsx">import { useState } from 'react';
 export function Counter() {
   const [count, setCount] = useState(0);
   return (
     &lt;button onClick={() =&gt; setCount((c) =&gt; c + 1)} className="btn-primary"&gt;
-      React 点击计数：&#123;count&#125;
+      React Compteur de clics :&#123;count&#125;
     &lt;/button&gt;
   );
 }</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="vue-tab">
-      <div class="article-dropdown-panel__title">🟢 Vue 3.5 单文件组件实现方式：</div>
+      <div class="article-dropdown-panel__title">🟢 Implémentation du composant monofichier Vue 3.5 :</div>
       <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
 import { ref } from 'vue';
 const count = ref(0);
 &lt;/script&gt;
 &lt;template&gt;
   &lt;button @click="count++" class="btn-primary"&gt;
-    Vue 点击计数：&#123;&#123; count &#125;&#125;
+    Vue Compteur de clics :&#123;&#123; count &#125;&#125;
   &lt;/button&gt;
 &lt;/template&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="astro-tab">
-      <div class="article-dropdown-panel__title">🚀 Astro 6 零 JS 静态组件实现方式：</div>
+      <div class="article-dropdown-panel__title">🚀 Implémentation du composant statique Astro 6 (zéro JS) :</div>
       <pre class="no-code-enhance"><code class="language-astro">---
-const { title = "Astro 极速群岛" } = Astro.props;
+const { title = "Archipel Astro ultra-rapide" } = Astro.props;
 ---
 &lt;div class="astro-island"&gt;
   &lt;h3&gt;&#123;title&#125;&lt;/h3&gt;
-  &lt;p&gt;默认交付 0KB JavaScript，按需注水交互！&lt;/p&gt;
+  &lt;p&gt;Livraison par défaut de 0 Ko de JavaScript, hydratation interactive à la demande !&lt;/p&gt;
 &lt;/div&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="svelte-tab">
-      <div class="article-dropdown-panel__title">🟠 Svelte 5 Runes 实现方式：</div>
+      <div class="article-dropdown-panel__title">🟠 Implémentation Svelte 5 Runes :</div>
       <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
   let count = $state(0);
 &lt;/script&gt;
 &lt;button onclick={() =&gt; count++} class="btn-primary"&gt;
-  Svelte 点击计数：&#123;count&#125;
+  Svelte Compteur de clics :&#123;count&#125;
 &lt;/button&gt;</code></pre>
     </div>
   </div>
@@ -613,122 +611,122 @@ const { title = "Astro 极速群岛" } = Astro.props;
 
 ---
 
-### 2. 交互式多品类通用单位换算器（Universal Interactive Unit Converter · 基准下拉切换与实时汇率）
+### 2. Convertisseur d'unités universel interactif multi-catégories (Universal Interactive Unit Converter · Sélecteur de base déroulant et taux de change en temps réel)
 
-支持用户在输入框中自由输入**任意基数数值**（默认值为 `1`，支持增减步进器与一键重置），并在不同品类（质量重量、国际汇率、数据存储、网络带宽、长度尺寸）之间即时无缝换算：
-* **动态可切换换算基准（Base Unit Dropdown）**：输入框右侧的基准单位支持下拉自由选择（例如在质量中可选择 `kg`、`g`、`lb`、`斤`、`oz`、`t` 等；在汇率中可选择 `USD`、`HKD`、`CNY`、`EUR`、`JPY`、`GBP` 等）。选择任一基准单位后，目标换算网格将**智能自动排除当前基准单位（彻底杜绝 1kg=1kg 冗余卡片）**，并以当前基准为分母即时重算所有目标单位；
-* **真实汇率波动联网接入（Live Forex API）**：切换至「💱 国际汇率」时，系统将自动异步请求服务端 `/api/exchange-rate` 并回退公共实时汇率接口，获取各大主流货币的最新实时牌价（右上角显示 `🟢 实时联网汇率已同步`）；在未联网或断网离线时自动无缝回退至内置基准比例（显示 `⚪ 离线基准汇率`），确保“实时”真正实时且离线体验坚如磐石；
-* **通用 API 便捷调用**：系统同时在全局暴露了 `window.shijianusAPI.fetchExchangeRates(base)` 辅助函数，方便文档内的任何自定义脚本即时调用实时牌价数据；
-* **快捷一键复制与等式推算**：每个换算卡片均提供一键复制按钮与高亮反馈，底部同步展示动态等式链推算摘要。
+Permet à l'utilisateur de saisir librement **n'importe quelle valeur de base** dans le champ de saisie (la valeur par défaut est `1`, prend en charge les incrémenteurs/décrémenteurs et la réinitialisation en un clic), et de convertir instantanément et de manière transparente entre différentes catégories (masse/poids, taux de change internationaux, stockage de données, bande passante réseau, longueur/dimensions) :
+*   **Base de conversion dynamique et commutable (Base Unit Dropdown)** : L'unité de base à droite du champ de saisie prend en charge la sélection libre via un menu déroulant (par exemple, pour la masse, vous pouvez choisir `kg`, `g`, `lb`, `斤`, `oz`, `t`, etc. ; pour les taux de change, vous pouvez choisir `USD`, `HKD`, `CNY`, `EUR`, `JPY`, `GBP`, etc.). Après avoir sélectionné une unité de base, la grille de conversion cible **exclura intelligemment et automatiquement l'unité de base actuelle (éliminant complètement les cartes redondantes comme 1kg=1kg)**, et recalculera instantanément toutes les unités cibles en utilisant la base actuelle comme dénominateur ;
+*   **Accès en ligne aux fluctuations réelles des taux de change (Live Forex API)** : Lors du passage à « 💱 Taux de change internationaux », le système demandera automatiquement et de manière asynchrone au serveur `/api/exchange-rate` et utilisera une interface publique de taux de change en temps réel pour obtenir les derniers cours en direct des principales devises (le coin supérieur droit affichera `🟢 Taux de change en temps réel synchronisés en ligne`) ; en cas de non-connexion ou de déconnexion hors ligne, il reviendra automatiquement et de manière transparente aux ratios de base intégrés (affichant `⚪ Taux de change de base hors ligne`), garantissant que le « temps réel » est vraiment en temps réel et que l'expérience hors ligne est solide comme le roc ;
+*   **Appel API universel et pratique** : Le système expose également la fonction d'assistance `window.shijianusAPI.fetchExchangeRates(base)` globalement, facilitant l'appel instantané des données de cours en temps réel par tout script personnalisé dans la documentation ;
+*   **Copie rapide en un clic et déduction d'équations** : Chaque carte de conversion fournit un bouton de copie en un clic avec un retour visuel en surbrillance, et un résumé de la déduction de la chaîne d'équations dynamique est affiché simultanément en bas.
 
-<div class="interactive-unit-converter" data-default="1" data-title="🔄 Convertisseur Interactif Universel d'Unités (Changement d'Unité de Base et Taux de Change en Direct)"></div>
+<div class="interactive-unit-converter" data-default="1" data-title="🔄 Convertisseur d'unités universel interactif (prend en charge le changement d'unité de base et les taux de change en temps réel)"></div>
 
+---
 
+### 3. Calculateur interactif de spécifications et de codecs vidéo (Interactive Spec Calc Dropdown)
 
-### 3. Sélecteur déroulant de calcul des spécifications et du codage vidéo (Interactive Spec Calc Dropdown)
-
-Lors de la sélection de différentes options, les indicateurs techniques correspondants et les explications de conversion s'affichent en temps réel sur la droite :
+Lorsque différentes options sont sélectionnées, les indicateurs techniques et les descriptions de conversion correspondants s'affichent en temps réel sur la droite :
 
 <div class="interactive-calc-select">
   <div class="article-select-box">
     <label>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-      <span>Sélectionnez la résolution de codage vidéo :</span>
+      <span>Sélectionner la résolution d'encodage vidéo :</span>
     </label>
     <select class="article-select">
-      <option value="1080p" data-desc="1920 × 1080 @ 60fps · Débit binaire 6 000 Kbps · Bande passante recommandée 15 Mbps">1080P Full HD (1080p60)</option>
+      <option value="1080p" data-desc="1920 × 1080 @ 60fps · Débit binaire 6 000 Kbps · Bande passante recommandée 15 Mbps">Full HD 1080P (1080p60)</option>
       <option value="2k" data-desc="2560 × 1440 @ 60fps · Débit binaire 12 000 Kbps · Bande passante recommandée 30 Mbps">2K Ultra HD (1440p60)</option>
       <option value="4k" data-desc="3840 × 2160 @ 60fps · Débit binaire 25 000 Kbps · Bande passante recommandée 60 Mbps">4K Ultra HD (2160p60 HDR)</option>
-      <option value="8k" data-desc="7680 × 4320 @ 60fps · Débit binaire 80 000 Kbps · Bande passante recommandée 200 Mbps">8K Qualité cinéma (4320p60 AV1)</option>
+      <option value="8k" data-desc="7680 × 4320 @ 60fps · Débit binaire 80 000 Kbps · Bande passante recommandée 200 Mbps">8K Qualité Cinéma (4320p60 AV1)</option>
     </select>
   </div>
   <div class="calc-output-box">
-    <span>📊 <strong>Résultats du calcul des spécifications techniques</strong> :</span>
+    <span>📊 <strong>Résultat de la déduction des spécifications techniques</strong> :</span>
     <span class="calc-output-value">1920 × 1080 @ 60fps · Débit binaire 6 000 Kbps · Bande passante recommandée 15 Mbps</span>
   </div>
 </div>
 
 ---
 
-## VI. Accordéons, onglets et mise en page multicolonnes (Collapsibles, Tabs & Columns)
+## 六. Accordéons, onglets et mise en page multi-colonnes (Collapsibles, Tabs & Columns)
 
-### 1. Groupe d'accordéons exclusifs (Exclusive Accordion Group · L'expansion d'un élément ferme automatiquement les autres)
+### 1. Groupe d'accordéons exclusif (Développer un élément ferme automatiquement les autres)
 
-Configurez `data-single="true"`. Lors de l'expansion d'un élément, les autres éléments ouverts du même groupe se ferment automatiquement, maintenant la page propre et focalisée :
+Configurez `data-single="true"`. Lorsque vous développez un élément, les autres éléments développés du même groupe se réduisent automatiquement, gardant la page propre et focalisée :
 
 <div class="article-accordion-group" data-single="true">
   <details class="article-accordion" open>
     <summary>
-      <span>🔒 1. Avantages en matière de sécurité des sites statiques</span>
+      <span>🔒 1. Avantages de sécurité des sites statiques</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Les sites statiques ne disposent pas de moteurs d'exécution dynamique traditionnels (PHP/Node.js) ni de bases de données SQL exposées sur Internet, les rendant physiquement immunisés contre les risques d'injection SQL et d'exécution de code à distance sur le serveur (RCE).</p>
+      <p>Les sites statiques n'ont pas de moteur d'exécution dynamique PHP/Node.js traditionnel ni de base de données SQL exposée au public, ce qui les immunise physiquement contre les injections SQL et les risques d'exécution de code à distance côté serveur (RCE).</p>
     </div>
   </details>
 
   <details class="article-accordion">
     <summary>
-      <span>⚡ 2. Distribution accélérée par CDN mondial aux nœuds périphériques</span>
+      <span>⚡ 2. Livraison accélérée par CDN mondial en périphérie</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>En déployant les artefacts compilés sur Cloudflare Pages ou GitHub Pages, toutes les ressources statiques peuvent être mises en cache sur plus de 300 nœuds périphériques dans le monde, avec un temps de réponse au premier octet (TTFB) généralement inférieur à 20 ms.</p>
+      <p>En déployant les artefacts compilés sur Cloudflare Pages ou GitHub Pages, toutes les ressources statiques peuvent être mises en cache sur plus de 300 nœuds périphériques mondiaux, avec un temps de premier octet (TTFB) généralement inférieur à 20 ms.</p>
     </div>
   </details>
 
   <details class="article-accordion">
     <summary>
-      <span>💰 3. Coûts d'hébergement cloud extrêmement faibles</span>
+      <span>💰 3. Coûts d'hébergement de services cloud extrêmement bas</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Les sites statiques n'ont pas besoin de faire fonctionner des serveurs cloud VPS coûteux 24h/24 et 7j/7. Couplés à une base de données Cloudflare D1 et à un système de commentaires Serverless en niveau gratuit, les coûts opérationnels quotidiens sont pratiquement nuls.</p>
+      <p>Les sites statiques n'ont pas besoin de serveurs cloud VPS coûteux fonctionnant 24h/24 et 7j/7. Associés à la base de données Cloudflare D1 de niveau gratuit et à un système de commentaires sans serveur, les coûts d'exploitation quotidiens sont presque nuls.</p>
     </div>
   </details>
 </div>
 
 ---
 
-### 2. Groupe d'accordéons indépendants non exclusifs (Multi-Expand / Non-Exclusive Accordion Group · Autorise l'expansion simultanée de plusieurs éléments)
+### 2. Groupe d'accordéons non exclusif (Développement multiple / Permet l'expansion simultanée de plusieurs éléments)
 
-Configurez `data-single="false"` (ou mode multi-ouverture par défaut). Les lecteurs peuvent librement développer plusieurs ou tous les éléments repliés pour une comparaison transversale et une lecture approfondie, sans que l'ouverture d'un nouvel élément ne ferme le contenu déjà affiché :
+Configurez `data-single="false"` (ou le mode d'ouverture multiple par défaut). Les lecteurs peuvent librement développer plusieurs ou tous les éléments repliables pour une comparaison horizontale et une lecture approfondie, sans que l'ouverture d'un nouvel élément ne ferme le contenu déjà ouvert :
 
 <div class="article-accordion-group" data-single="false">
   <details class="article-accordion" open>
     <summary>
-      <span>🛠️ Module d'architecture A : Pipeline de compilation syntaxique Markdown AST</span>
+      <span>🛠️ Module d'architecture A : Pipeline du compilateur de syntaxe Markdown AST</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Basé sur l'architecture Unified, Remark-math et Rehype-katex, il convertit statiquement l'arbre syntaxique Markdown en nœuds HTML sémantiques standard lors de la phase de compilation, et finalise la coloration syntaxique et la génération de formules côté Node.js.</p>
+      <p>Basé sur l'architecture Unified, Remark-math et Rehype-katex, il convertit entièrement l'arbre syntaxique Markdown en nœuds HTML sémantiques standard au stade de la compilation, et réalise la coloration syntaxique et la génération de formules côté Node.js.</p>
     </div>
   </details>
 
-<details class="article-accordion" open>
+  <details class="article-accordion" open>
     <summary>
-      <span>🎨 Module d'architecture B : Moteur visuel dynamique EpoCanvas et système adaptatif</span>
+      <span>🎨 Module d'architecture B : Moteur visuel dynamique EpoCanvas et système réactif</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Offre des fonds aurora (Aurora), des parallaxes de champ d'étoiles (Starfield), du glassmorphism et une adaptation aux points de rupture responsives multi-appareils, garantissant une expérience esthétique cohérente, que ce soit sur un écran large 4K ou un téléphone pliable.</p>
+      <p>Offre un arrière-plan Aurora, un parallaxe Starfield, un effet de verre dépoli (Glassmorphism) et une adaptation réactive aux points d'arrêt multi-appareils, offrant une expérience esthétique cohérente sur les écrans larges 4K comme sur les téléphones pliables.</p>
     </div>
   </details>
 
   <details class="article-accordion">
     <summary>
-      <span>🛡️ Module d'architecture C : Système d'isolation sécurisée par niveaux WebCrypto SHA-256</span>
+      <span>🛡️ Module d'architecture C : Système d'isolation de sécurité hiérarchique WebCrypto SHA-256</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Inclut le déblocage persistant de session de niveau 1, le masque dynamique polymorphe anti-espionnage de niveau 2 (flou gaussien / mosaïque / masque anti-spoiler), le verrouillage immédiat par sentinelle de viewport de niveau 3 et le schéma de chiffrement par fragments des URL externes, éliminant totalement l'exposition des mots de passe en clair dans le DOM.</p>
+      <p>Intègre un déverrouillage de session persistant de niveau 1, un masque dynamique polymorphe anti-espionnage de niveau 2 (flou gaussien/mosaïque/masque de spoiler), un verrouillage de niveau 3 en cas de sortie du champ de vision par une sentinelle, et une solution de chiffrement fragmenté d'URL externes, éliminant complètement l'exposition des mots de passe en texte clair dans le DOM.</p>
     </div>
   </details>
 </div>
 
 ---
 
-### 3. Onglets interactifs (Interactive Tabs)
+### 3. Onglets interactifs
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
@@ -755,88 +753,86 @@ Configurez `data-single="false"` (ou mode multi-ouverture par défaut). Les lect
 
 ---
 
-### 4. Système de mise en page en grille multi-colonnes (Multi-Column Grid)
+### 4. Système de grille multi-colonnes (Grille multi-colonnes)
 
 #### Grille de cartes à 3 colonnes de largeur égale
 
 <div class="article-grid article-grid-3">
   <div class="article-col-card">
     <h4>🎨 Système visuel</h4>
-    <p>Intègre en profondeur l'esthétique de design geek moderne d'EpoCanvas, avec prise en charge du contraste élevé clair/sombre, des fonds en glassmorphism et des transitions de couleurs fluides.</p>
+    <p>Intègre profondément l'esthétique de design geek moderne d'EpoCanvas, supportant un contraste élevé clair-obscur, des arrière-plans en verre dépoli et des transitions de couleurs fluides.</p>
   </div>
   <div class="article-col-card">
-    <h4>⚡ Ingénierie des performances</h4>
-    <p>Architecture d'îlots statiques Astro 6, pré-rendu HTML à la compilation, optimisation SEO statique ultime.</p>
+    <h4>⚡ Ingénierie de la performance</h4>
+    <p>Architecture d'îlots statiques Astro 6, pré-rendu HTML au moment de la construction, optimisation SEO extrême purement statique.</p>
   </div>
   <div class="article-col-card">
-    <h4>🛠️ Écosystème extensible</h4>
-    <p>Prise en charge complète des formules KaTeX, des diagrammes Mermaid, des fenêtres modales chiffrées et de 9 formats de publication.</p>
+    <h4>🛠️ Écosystème d'extensions</h4>
+    <p>Prise en charge complète des formules KaTeX, des diagrammes Mermaid, des pop-ups chiffrés et de 9 types de formats de publication.</p>
   </div>
 </div>
 
-#### Grille latérale inégale 1:2
+#### Grille de barre latérale inégale 1:2
 
 <div class="article-grid article-columns-1-2">
   <div class="article-col-card">
     <h4>📌 Positionnement architectural</h4>
-    <p>Un support de rédaction technique moderne dédié aux geeks et aux ingénieurs.</p>
+    <p>Un support d'écriture technique moderne axé sur les geeks et les ingénieurs.</p>
   </div>
   <div class="article-col-card">
-    <h4>🚀 Garantie de livraison</h4>
-    <p>Intègre des mécanismes complets de tests de fumée automatisés et de validation de la construction statique, garantissant une présentation impeccable sur tous les appareils, que ce soit pour les formules, les diagrammes ou les cartes complexes.</p>
+    <h4>🚀 Assurance de livraison</h4>
+    <p>Mécanismes intégrés de tests de fumée automatisés et de validation de construction statique, garantissant une présentation parfaite sur tous les appareils, qu'il s'agisse de formules, de diagrammes ou de cartes complexes.</p>
   </div>
 </div>
 
 ---
 
-## VII. 13 types de boîtes d'avertissement sémantiques (Admonitions / GitHub Alerts)
+## VII. 13 types de boîtes d'avertissement sémantiques (Admonitions / Alertes GitHub)
 
-Basé sur les normes GitHub Alert et EpoCanvas, prend en charge 13 types de cartes colorées à sémantique différente et permet le repliement par défaut à l'aide de la syntaxe `[!TYPE]-` :
+Basé sur les spécifications de conception de GitHub Alert et EpoCanvas, prend en charge 13 types de cartes colorées avec des significations différentes, et permet un repliement par défaut en utilisant la syntaxe `[!TYPE]-` :
 
 > [!NOTE]
-> **Remarque standard (Note)** : Il s'agit d'une information de contexte ou d'une explication standard.
+> **Remarque générale (Note)** : Il s'agit d'une information de fond standard ou d'une explication contextuelle.
 
 > [!TIP]
-> **Astuce pratique (Tip)** : Utilisez les raccourcis <kbd>Ctrl</kbd> + <kbd>K</kbd> pour invoquer rapidement le panneau de recherche global des articles !
+> **Astuce pratique (Tip)** : Utilisez le raccourci clavier <kbd>Ctrl</kbd> + <kbd>K</kbd> pour afficher rapidement le panneau de recherche globale d'articles !
 
 > [!IMPORTANT]
-> **Point important (Important)** : Avant le déploiement en production, veuillez vous assurer que la variable d'environnement `BLOG_BUILD_TARGET=static` est correctement injectée.
+> **Point important (Important)** : Avant de déployer en environnement de production, veuillez vous assurer que la variable d'environnement `BLOG_BUILD_TARGET=static` a été correctement injectée.
 
 > [!WARNING]
-> **Avertissement de risque (Warning)** : Ne commitez jamais les clés de base de données de production ou les clés privées de services cloud dans un dépôt Git public.
+> **Avertissement de risque (Warning)** : Ne soumettez pas de clés de base de données de production ou de clés privées de services cloud dans des dépôts Git publics.
 
 > [!CAUTION]
-> **Alerte de danger (Caution)** : L'opération de reconstruction des tables de données est destructive, veuillez d'abord sauvegarder la base de données D1 !
+> **Alerte de danger (Caution)** : L'exécution d'une opération de reconstruction de table de données est destructive, veuillez d'abord sauvegarder la base de données D1 !
 
 > [!DANGER]
-> **Danger critique (Danger)** : La suppression directe de la base de données de production entraînera la destruction permanente de tous les commentaires et des actifs des utilisateurs.
+> **Danger mortel (Danger)** : La suppression directe de la base de données de production entraînera la perte permanente de tous les commentaires et des actifs des utilisateurs.
 
 > [!SUCCESS]
-> **Opération réussie (Success)** : Le processus de construction statique s'est terminé avec succès, les 47 routes statiques sont prêtes !
-
-
+> **Opération réussie (Success)** : Le processus de construction statique est terminé avec succès, toutes les 47 routes statiques sont prêtes !
 
 > [!QUESTION]
-> **疑难探讨（Question）**：如何在无服务端依赖的环境下实现毫秒级的纯客户端全文检索？
+> **Discussion sur un problème (Question)** : Comment implémenter une recherche plein texte côté client pure en millisecondes dans un environnement sans dépendance côté serveur ?
 
 > [!QUOTE]
-> **精选引用（Quote）**：“优秀的代码不仅能被机器执行，更能像诗歌一样优雅地向人类传达思想。”
+> **Citation sélectionnée (Quote)** : « Un bon code n'est pas seulement exécutable par une machine, il transmet aussi élégamment des idées aux humains, comme un poème. »
 
 > [!INFO]
-> **详细信息（Info）**：本博客基于 Astro 6 与 Tailwind 4 构建，全站纯静态导出。
+> **Informations détaillées (Info)** : Ce blog est construit avec Astro 6 et Tailwind 4, et est entièrement exporté en statique.
 
 > [!TODO]
-> **待办计划（Todo）**：计划在下一迭代中引入 WebAssembly 客户端全文检索索引。
+> **Plan à faire (Todo)** : Il est prévu d'introduire un index de recherche plein texte côté client WebAssembly lors de la prochaine itération.
 
 > [!BUG]
-> **缺陷记录（Bug）**：已修复旧版在极端窄屏设备下表格横向截断的排版问题。
+> **Enregistrement de bug (Bug)** : Le problème de troncature horizontale des tableaux sur les appareils à écran très étroit dans l'ancienne version a été corrigé.
 
 > [!EXAMPLE]
-> **范例说明（Example）**：以上所有告示框均自动适配深色与浅色模式的高对比度色彩。
+> **Exemple d'illustration (Example)** : Toutes les boîtes d'avertissement ci-dessus s'adaptent automatiquement aux couleurs à contraste élevé des modes clair et sombre.
 
-### 折叠式告示框演示
+### Démonstration de boîte d'avertissement pliable
 
-> [!TIP]- 点击展开查看：生产环境 Nginx 极速缓存配置参考
+> [!TIP]- Cliquez pour développer : Référence de configuration de cache Nginx ultra-rapide pour l'environnement de production
 > ```nginx
 > location ~* \.(?:css|js|woff2?|svg|png|jpg|webp)$ {
 >     expires 1y;
@@ -845,27 +841,25 @@ Basé sur les normes GitHub Alert et EpoCanvas, prend en charge 13 types de cart
 > }
 > ```
 
----
+## 8. Formules mathématiques académiques (KaTeX), Diagrammes d'architecture (Mermaid 11) et Cartes mentales dynamiques (Markmap)
 
-## 8. Formules mathématiques académiques (KaTeX), diagrammes d'architecture (Mermaid 11) et cartes mentales dynamiques (Markmap)
-
-在展示型与示例型技术文档中，以 **「实际渲染效果 + 对应源码对照」**（双标签选项卡 Tabs）为核心呈现理念，不仅能让读者直观体验最终视觉与交互特性，更能方便开发者一键参考、复制并迁移至实际项目中。
+Dans les documents techniques de démonstration et d'exemple, le concept de présentation central est **« Effet de rendu réel + Comparaison du code source correspondant »** (onglets à double étiquette), ce qui permet non seulement aux lecteurs de découvrir intuitivement les caractéristiques visuelles et interactives finales, mais facilite également pour les développeurs la consultation, la copie et la migration vers des projets réels en un seul clic.
 
 ---
 
-### 1. LaTeX 数学公式（KaTeX Math · 行内与块级多行推导）
+### 1. Formules mathématiques LaTeX (KaTeX Math · Dérivation en ligne et en bloc multi-lignes)
 
-#### 行内公式（Inline Formula）
+#### Formule en ligne (Inline Formula)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
-<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu visuel</button>
+<button class="article-tabs__button" type="button">💻 Code source LaTeX</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
 
-质能方程 $E = mc^2$，欧拉恒等式 $e^{i\pi} + 1 = 0$，高斯积分 $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$。
+Équation masse-énergie $E = mc^2$, identité d'Euler $e^{i\pi} + 1 = 0$, intégrale de Gauss $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$.
 
 </div>
 <div class="article-tabs__panel">
@@ -878,12 +872,12 @@ Basé sur les normes GitHub Alert et EpoCanvas, prend en charge 13 types de cart
 </div>
 </div>
 
-#### 块级多行推导公式 1：二阶动态系统拉普拉斯变换（Block Math · Single Equation）
+#### Formule de dérivation en bloc multi-lignes 1 : Transformation de Laplace d'un système dynamique du second ordre (Block Math · Single Equation)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
-<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu visuel</button>
+<button class="article-tabs__button" type="button">💻 Code source LaTeX</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
@@ -905,12 +899,12 @@ $$
 </div>
 </div>
 
-#### 块级多行推导公式 2：麦克斯韦经典电磁方程组（Block Math · Multi-line Aligned）
+#### Formule de dérivation en bloc multi-lignes 2 : Équations classiques de Maxwell de l'électromagnétisme (Block Math · Multi-line Aligned)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 渲染效果呈现</button>
-<button class="article-tabs__button" type="button">💻 LaTeX 源码</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu visuel</button>
+<button class="article-tabs__button" type="button">💻 Code source LaTeX</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
@@ -944,13 +938,13 @@ $$
 
 ---
 
-### 2. Mermaid 11 架构图表（Flowchart & Sequence · 流程图与时序图）
+### 2. Diagrammes d'architecture Mermaid 11 (Flowchart & Sequence · Organigramme et Diagramme de séquence)
 
-#### ① 博客加密验证与内容渲染流程图（Flowchart TD）
+#### ① Organigramme de vérification du chiffrement et de rendu du contenu du blog (Flowchart TD)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 Présentation de l'effet de rendu</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu visuel</button>
 <button class="article-tabs__button" type="button">💻 Code source Mermaid</button>
 </div>
 <div class="article-tabs__panels">
@@ -958,15 +952,15 @@ $$
 
 ```mermaid
 flowchart TD
-    A[Lecteur accède à l'article] --> B{Article chiffré ?}
-    B -- Oui --> C[Affichage d'une boîte de dialogue de mot de passe en verre dépoli]
+    A[Le lecteur visite l'article] --> B{L'article est-il chiffré ?}
+    B -- Oui --> C[Fenêtre de dialogue de mot de passe floue apparaît]
     C --> D{Vérification du mot de passe}
-    D -- Correct --> E[Déchiffrement et affichage du contenu]
-    D -- Incorrect --> F[Déclenchement de la vibration de la fenêtre et d'un avertissement en rouge]
-    F -. Saisir à nouveau le mot de passe .-> C
+    D -- Correct --> E[Déchiffre et affiche le contenu]
+    D -- Erreur --> F[Déclenche la vibration de la fenêtre et l'alerte rouge]
+    F -. Réessayer le mot de passe .-> C
     B -- Non --> E
-    E --> G[Rendu des formules KaTeX et des diagrammes Mermaid]
-    G --> H[Expérience de lecture immersive complète]
+    E --> G[Rend les formules KaTeX et les diagrammes Mermaid]
+    G --> H[Offre une expérience de lecture immersive complète]
 ```
 
 </div>
@@ -975,15 +969,15 @@ flowchart TD
 ````markdown
 ```mermaid
 flowchart TD
-    A[Lecteur accède à l'article] --> B{Article chiffré ?}
-    B -- Oui --> C[Affichage d'une boîte de dialogue de mot de passe en verre dépoli]
+    A[Le lecteur visite l'article] --> B{L'article est-il chiffré ?}
+    B -- Oui --> C[Fenêtre de dialogue de mot de passe floue apparaît]
     C --> D{Vérification du mot de passe}
-    D -- Correct --> E[Déchiffrement et affichage du contenu]
-    D -- Incorrect --> F[Déclenchement de la vibration de la fenêtre et d'un avertissement en rouge]
-    F -. Saisir à nouveau le mot de passe .-> C
+    D -- Correct --> E[Déchiffre et affiche le contenu]
+    D -- Erreur --> F[Déclenche la vibration de la fenêtre et l'alerte rouge]
+    F -. Réessayer le mot de passe .-> C
     B -- Non --> E
-    E --> G[Rendu des formules KaTeX et des diagrammes Mermaid]
-    G --> H[Expérience de lecture immersive complète]
+    E --> G[Rend les formules KaTeX et les diagrammes Mermaid]
+    G --> H[Offre une expérience de lecture immersive complète]
 ```
 ````
 
@@ -991,11 +985,11 @@ flowchart TD
 </div>
 </div>
 
-#### ② Diagramme de séquence de l'authentification et du déchiffrement côté client
+#### ② Diagramme de séquence d'authentification de sécurité et de déchiffrement côté client (Sequence Diagram)
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 Présentation de l'effet de rendu</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu visuel</button>
 <button class="article-tabs__button" type="button">💻 Code source Mermaid</button>
 </div>
 <div class="article-tabs__panels">
@@ -1004,21 +998,21 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Lecteur (User)
+    actor User as Lecteur (Utilisateur)
     participant Browser as Navigateur client
-    participant PostPage as Moteur de rendu de l'article
+    participant PostPage as Moteur de rendu d'article
     participant Security as Module de sécurité de chiffrement
 
-    User->>Browser: Clic sur le contenu chiffré protégé
-    Browser->>PostPage: Ouverture de la boîte de dialogue de saisie du mot de passe
-    User->>Browser: Saisie de la clé d'accès
-    Browser->>Security: Vérification du Hash du mot de passe
+    User->>Browser: Clique sur le contenu chiffré protégé
+    Browser->>PostPage: Ouvre la boîte de dialogue de saisie du mot de passe
+    User->>Browser: Saisit la clé d'accès
+    Browser->>Security: Vérifie le hachage du mot de passe
     alt Vérification réussie
-        Security-->>Browser: Retour du jeton de déverrouillage
-        Browser->>PostPage: Déchiffrement du contenu et affichage fluide
-    else Échec de la vérification
-        Security-->>Browser: Retour d'une erreur de mot de passe
-        Browser->>User: Déclenchement de la secousse de la fenêtre et d'un avertissement en rouge
+        Security-->>Browser: Retourne le jeton de déverrouillage
+        Browser->>PostPage: Déchiffre et affiche le contenu en douceur
+    else Vérification échouée
+        Security-->>Browser: Retourne une erreur de mot de passe
+        Browser->>User: Déclenche la vibration de la fenêtre et l'alerte rouge
     end
 ```
 
@@ -1029,21 +1023,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Lecteur (User)
+    actor User as Lecteur (Utilisateur)
     participant Browser as Navigateur client
-    participant PostPage as Moteur de rendu de l'article
+    participant PostPage as Moteur de rendu d'article
     participant Security as Module de sécurité de chiffrement
 
-    User->>Browser: Clic sur le contenu chiffré protégé
-    Browser->>PostPage: Ouverture de la boîte de dialogue de saisie du mot de passe
-    User->>Browser: Saisie de la clé d'accès
-    Browser->>Security: Vérification du Hash du mot de passe
+    User->>Browser: Clique sur le contenu chiffré protégé
+    Browser->>PostPage: Ouvre la boîte de dialogue de saisie du mot de passe
+    User->>Browser: Saisit la clé d'accès
+    Browser->>Security: Vérifie le hachage du mot de passe
     alt Vérification réussie
-        Security-->>Browser: Retour du jeton de déverrouillage
-        Browser->>PostPage: Déchiffrement du contenu et affichage fluide
-    else Échec de la vérification
-        Security-->>Browser: Retour d'une erreur de mot de passe
-        Browser->>User: Déclenchement de la secousse de la fenêtre et d'un avertissement en rouge
+        Security-->>Browser: Retourne le jeton de déverrouillage
+        Browser->>PostPage: Déchiffre et affiche le contenu en douceur
+    else Vérification échouée
+        Security-->>Browser: Retourne une erreur de mot de passe
+        Browser->>User: Déclenche la vibration de la fenêtre et l'alerte rouge
     end
 ```
 ````
@@ -1052,92 +1046,87 @@ sequenceDiagram
 </div>
 </div>
 
----
+### 3. Cartes mentales interactives dynamiques (Markmap / Mindmap · Diffusion multidirectionnelle des branches)
 
-### 3. Carte mentale interactive dynamique (Markmap / Mindmap · Diffusion de branches multidirectionnelles)
-
-Dans l'élaboration de spécifications techniques volumineuses et l'analyse d'architectures système, les listes statiques traditionnelles peinent à présenter de manière intuitive les réseaux de connaissances complexes. Ce thème intègre entièrement le **moteur de cartes mentales interactives dynamiques Markmap**, permettant une analyse native complète et un renforcement de l'interactivité dans la colonne principale de l'article (`.post.post-page-shell`) :
+Dans la structuration de spécifications techniques et d'architectures système complexes, les listes statiques traditionnelles peinent à présenter intuitivement les réseaux de connaissances complexes. Ce thème intègre entièrement le **moteur de cartes mentales interactives dynamiques Markmap**, réalisant une analyse native complète et une amélioration interactive dans la colonne principale de l'article (`.post.post-page-shell`) :
 
 > [!TIP]
-> **Règles fondamentales de la diffusion de branches multidirectionnelles** :
-> 1. **Espace de protection par défaut à bloc unique** : par défaut, la carte mentale n'affiche que **1 nœud racine central** (Niveau 1), accompagné d'un indicateur de point circulaire replié sur la droite ;
-> 2. **Déploiement multidirectionnel au clic** : en cliquant sur le nœud racine ou sur le point circulaire d'un sous-nœud quelconque, les sous-branches se **déplient en douceur vers l'extérieur** ;
-> 3. **Contrôle total via la barre d'outils** : prise en charge du **zoom avant / zoom arrière / centrage adaptatif / déploiement de tout / repli en bloc unique / lecture immersive plein écran / copie du code source** ;
-> 4. **Glisser-déposer et zoom de la toile** : maintenir le bouton gauche de la souris permet de faire glisser et déplacer librement la toile, tandis que la molette de la souris permet de zoomer ou de dézoomer la vue.
+> **Règles fondamentales de la diffusion multidirectionnelle des branches** :
+> 1.  **Espace de protection de bloc unique par défaut** : Par défaut, la carte mentale n'affiche qu'**un seul nœud racine central** (Niveau 1), accompagné d'un indicateur de point repliable sur le côté droit ;
+> 2.  **Cliquer pour déplier les branches multidirectionnelles** : En cliquant sur le point d'un nœud racine ou de n'importe quel nœud enfant, les sous-branches se **déploieront en douceur vers l'extérieur** ;
+> 3.  **Contrôle complet par la barre d'outils** : Prend en charge le **zoom avant / arrière / l'ajustement automatique au centre / le déploiement de tout en un clic / le repliement d'un seul bloc en un clic / la lecture immersive en plein écran / la copie du code source** ;
+> 4.  **Glisser-déposer et zoom sur le canevas** : Maintenez le bouton gauche de la souris enfoncé pour faire glisser et déplacer librement le canevas, et faites défiler la molette de la souris pour zoomer sur la vue.
 
-#### Présentation d'une carte mentale vivante : Panorama de l'écosystème SSG et des formats de contenu du thème
+#### Présentation de la carte mentale vivante : Vue d'ensemble de l'écosystème SSG et des formats de contenu thématiques
 
 <div class="article-tabs">
 <div class="article-tabs__nav">
-<button class="article-tabs__button is-active" type="button">🌟 Présentation de la carte interactive</button>
+<button class="article-tabs__button is-active" type="button">🌟 Rendu de la carte interactive</button>
 <button class="article-tabs__button" type="button">💻 Code source de la structure Mindmap</button>
 </div>
 <div class="article-tabs__panels">
 <div class="article-tabs__panel is-active">
 
 ```mindmap
-# Architecture de l'écosystème de contenu à formats multiples et des générateurs de sites statiques
-## 1. Pipeline central de compilation statique
-### Pipeline de transformation syntaxique AST
-#### Pipeline de sémantique Markdown / MDX
+# Architecture de l'écosystème de contenu et des générateurs de sites statiques
+## 1. Pipeline de compilation statique principale
+### Pipeline de transformation de la syntaxe AST
+#### Pipeline d'analyse sémantique Markdown / MDX
 ##### Extensions de syntaxe Unified / Remark
-- Conversion des tableaux GFM et de la syntaxe de texte barré
+- Conversion de la syntaxe GFM pour les tableaux et le texte barré
 - Génération automatique d'ancres et d'ID pour les titres
-##### Extension de carte mentale interactive multidirectionnelle Markmap
+##### Extension Markmap pour les cartes mentales interactives multidirectionnelles
 - Construction récursive de l'arbre AST (Transformer.transform)
-- Mise en page hiérarchique élastique D3 (Algorithme Flextree)
-- Machine à états de repli interactif (payload.fold)
+- Disposition hiérarchique flexible D3 (Algorithme Flextree)
+- Machine à états de pliage interactif (payload.fold)
 - Coloration dynamique des branches par palette (d3.scaleOrdinal)
-##### Extension de formules mathématiques Rehype Katex
+##### Extension Rehype Katex pour les formules mathématiques
 - Analyse des formules en ligne et des blocs de formules indépendants
-- Prise en charge des définitions de macros et tolérance aux erreurs avec retour arrière
-#### Mise en surbrillance du code et shaders statiques
-##### Compilateur à double thème Shiki
-- Analyse des règles de syntaxe TextMate de VSCode
-- Pré-rendu à double thème clair/sombre sans hydratation
+- Prise en charge des définitions de macros et gestion des erreurs
+#### Mise en évidence du code et colorisation statique
+##### Compilateur Shiki à double thème
+- Analyse des règles de syntaxe VSCode TextMate
+- Pré-rendu double thème (clair/sombre) sans hydratation
 ### Compilateur et regroupement des ressources
 #### Rechargement à chaud ultra-rapide Vite 6 (HMR)
-##### Chargement natif de modules ESM
-- Compilation et mise à jour à chaud en millisecondes
+##### Chargement natif des modules ESM
+- Compilation à la demande et mise à jour à chaud en millisecondes
 #### Pipeline de génération statique Rollup
 ##### Optimisation du regroupement statique
-- Découpage intelligent du code (Code Splitting)
+- Division intelligente du code (Code Splitting)
 - Élimination des redondances par Tree-Shaking
-## 2. Interactivité dynamique et système d'îlots
-### Système d'îlots de composants hybrides Islands
-#### Montage par îlot des composants côté client
-##### Composants client React 19
-- Isolation d'état indépendante et communication par contexte
-- Maintien de l'état de session (SessionStorage / Crypto)
-##### Îlots côté serveur Astro
-- JS client zéro temps d'exécution (Zero-JS par défaut)
-- Activation à la demande des îlots interactifs (client:visible)
-### Système visuel et d'animations moderne
-#### Moteur de rendu et fonds dynamiques
-##### Aurores boréales / Champ d'étoiles
+## 2. Interaction dynamique et architecture des îles
+### Îles de composants hybrides
+#### Montage des composants clients par île
+##### Composants clients React 19
+- Isolation d'état indépendante et communication contextuelle
+- Persistance de l'état de session (SessionStorage / Crypto)
+##### Îles côté serveur Astro
+- Zéro JS client à l'exécution (Zero-JS par défaut)
+- Activation à la demande des îles interactives (client:visible)
+### Système visuel et d'animation moderne
+#### Fonds dynamiques et moteur de rendu
+##### Aurore boréale / Champ d'étoiles
 - Accélération matérielle WebGL / Canvas 2D
-- Mode économie d'énergie et pause automatique lors de la sortie du viewport
-##### Spécification de cartes en verre dépoli Glassmorphism
+- Mode économie d'énergie et pause automatique hors du champ de vision
+##### Spécification des cartes en verre dépoli (Glassmorphism)
 - Flou gaussien dynamique et ombres environnementales multiples
-- Mise en page adaptative multi-plateformes (PC / Tablette / Mobile)
-## 3. Panorama des formats et fonctionnalités spécifiques
-### Correspondance des spécifications de documents étendus
-#### Adaptation native équivalente AsciiDoc (.adoc)
+- Disposition adaptative et réactive multi-plateforme (PC / Tablette / Mobile)
+## 3. Vue d'ensemble des formats et fonctionnalités spécifiques
+### Comparaison des spécifications de documents étendues
+#### Adaptation native équivalente à AsciiDoc (.adoc)
 #### Mappage des listes de tâches Emacs Org-Mode (.org)
 #### Conversion des directives reStructuredText (.rst)
-### Ensemble de composants riches en interactivité
-#### Commutateur de menu déroulant interactif (Dropdown Switcher)
-#### Cartes accordéon exclusives (Accordion Groups)
-#### Lecteur audio vinyle dynamique (Vinyl Audio)
-### Sécurité, confidentialité et chiffrement par niveaux
-#### Vérification de hachage WebCrypto SHA-256 (sans exposition en clair)
-#### Déverrouillage persistant de session niveau 1 (Session Persistent)
-#### Bascule du masque anti-espionnage niveau 2 (Flou gaussien / Mosaïque / Masque anti-spoiler)
-#### Verrouillage immédiat lors de la sortie du viewport niveau 3 (IntersectionObserver)
-
-
-
-#### Isolation des points de terminaison de déchiffrement segmenté externe (Standalone Token)
+### Collection de composants riches en interaction
+#### Sélecteur déroulant interactif (Dropdown Switcher)
+#### Groupes d'accordéons exclusifs (Accordion Groups)
+#### Lecteur audio dynamique de disques vinyles (Vinyl Audio)
+### Sécurité, confidentialité et chiffrement graduel
+#### Vérification de hachage WebCrypto SHA-256 (aucune exposition en clair)
+#### Déverrouillage persistant de session de niveau 1 (Session Persistent)
+#### Bascule de masquage anti-curiosité de niveau 2 (flou gaussien / mosaïque / masque spoiler)
+#### Verrouillage anti-curiosité au départ du champ de vision de niveau 3 (IntersectionObserver)
+#### Isolation des points de terminaison de déchiffrement segmentés externes (Standalone Token)
 ```
 
 </div>
@@ -1145,65 +1134,65 @@ Dans l'élaboration de spécifications techniques volumineuses et l'analyse d'ar
 
 ````markdown
 ```mindmap
-# 静态站点生成器与全格式内容生态架构
-## 1. 静态编译核心流水线
-### AST 语法转换管道
-#### Markdown / MDX 语义解析流水线
-##### Unified / Remark 语法拓展
-- GFM 表格与删除线语法转换
-- 自动生成 Heading 锚点与 ID
-##### Markmap 交互式多向思维导图拓展
-- 递归 AST 树构建 (Transformer.transform)
-- D3 层次化弹性布局 (Flextree Algorithm)
-- 交互式折叠状态机 (payload.fold)
-- 动态调色板分支染色 (d3.scaleOrdinal)
-##### Rehype Katex 数学公式拓展
-- 行内公式与独立块公式解析
-- 宏定义支持与错误容错回退
-#### 代码高亮与静态着色器
-##### Shiki 双主题编译器
-- VSCode TextMate 语法规则解析
-- 浅色/深色模式双主题预渲染零水合
-### 编译器与资源打包
-#### Vite 6 极速热重载 (HMR)
-##### ESM 原生模块加载
-- 毫秒级按需编译与热更新
-#### Rollup 静态生成流水线
-##### 静态打包优化
-- 智能代码分块 (Code Splitting)
-- Tree-Shaking 冗余消除
-## 2. 动态交互与群岛体系
-### 混合组件群岛 Islands
-#### 客户端组件分岛挂载
-##### React 19 Client Components
-- 独立状态隔离与上下文通信
-- 会话状态保持 (SessionStorage / Crypto)
-##### Astro Server-Side Islands
-- 零运行时客户端 JS (Zero-JS by Default)
-- 按需激活交互岛屿 (client:visible)
-### 现代视觉与动效系统
-#### 动态背景与渲染引擎
-##### Aurora 极光 / Starfield 星空
-- WebGL / Canvas 2D 硬件加速
-- 节能模式与视口离开自动暂停
-##### 毛玻璃卡片 Glassmorphism 规范
-- 动态高斯模糊与多重环境阴影
-- 响应式全端自适应布局 (PC / Pad / Mobile)
-## 3. 格式全景与特异功能
-### 扩展文档规范对照
-#### AsciiDoc (.adoc) 原生等效适配
-#### Emacs Org-Mode (.org) 任务清单映射
-#### reStructuredText (.rst) 指令转换
-### 富交互组件集
-#### 交互式下拉框切换器 (Dropdown Switcher)
-#### 互斥手风琴折叠卡片 (Accordion Groups)
-#### 动态黑胶唱片音频播放器 (Vinyl Audio)
-### 安全隐私与分级加密
-#### WebCrypto SHA-256 哈希校验 (无明文外露)
-#### 1级会话持久解锁 (Session Persistent)
-#### 2级防窥遮罩切换 (高斯模糊 / 马赛克 / 剧透遮罩)
-#### 3级视口防窥离开即锁 (IntersectionObserver)
-#### 外联分段解密端点隔离 (Standalone Token)
+# Architecture de l'écosystème de contenu et des générateurs de sites statiques
+## 1. Pipeline de compilation statique principale
+### Pipeline de transformation de la syntaxe AST
+#### Pipeline d'analyse sémantique Markdown / MDX
+##### Extensions de syntaxe Unified / Remark
+- Conversion de la syntaxe GFM pour les tableaux et le texte barré
+- Génération automatique d'ancres et d'ID pour les titres
+##### Extension Markmap pour les cartes mentales interactives multidirectionnelles
+- Construction récursive de l'arbre AST (Transformer.transform)
+- Disposition hiérarchique flexible D3 (Algorithme Flextree)
+- Machine à états de pliage interactif (payload.fold)
+- Coloration dynamique des branches par palette (d3.scaleOrdinal)
+##### Extension Rehype Katex pour les formules mathématiques
+- Analyse des formules en ligne et des blocs de formules indépendants
+- Prise en charge des définitions de macros et gestion des erreurs
+#### Mise en évidence du code et colorisation statique
+##### Compilateur Shiki à double thème
+- Analyse des règles de syntaxe VSCode TextMate
+- Pré-rendu double thème (clair/sombre) sans hydratation
+### Compilateur et regroupement des ressources
+#### Rechargement à chaud ultra-rapide Vite 6 (HMR)
+##### Chargement natif des modules ESM
+- Compilation à la demande et mise à jour à chaud en millisecondes
+#### Pipeline de génération statique Rollup
+##### Optimisation du regroupement statique
+- Division intelligente du code (Code Splitting)
+- Élimination des redondances par Tree-Shaking
+## 2. Interaction dynamique et architecture des îles
+### Îles de composants hybrides
+#### Montage des composants clients par île
+##### Composants clients React 19
+- Isolation d'état indépendante et communication contextuelle
+- Persistance de l'état de session (SessionStorage / Crypto)
+##### Îles côté serveur Astro
+- Zéro JS client à l'exécution (Zero-JS par défaut)
+- Activation à la demande des îles interactives (client:visible)
+### Système visuel et d'animation moderne
+#### Fonds dynamiques et moteur de rendu
+##### Aurore boréale / Champ d'étoiles
+- Accélération matérielle WebGL / Canvas 2D
+- Mode économie d'énergie et pause automatique hors du champ de vision
+##### Spécification des cartes en verre dépoli (Glassmorphism)
+- Flou gaussien dynamique et ombres environnementales multiples
+- Disposition adaptative et réactive multi-plateforme (PC / Tablette / Mobile)
+## 3. Vue d'ensemble des formats et fonctionnalités spécifiques
+### Comparaison des spécifications de documents étendues
+#### Adaptation native équivalente à AsciiDoc (.adoc)
+#### Mappage des listes de tâches Emacs Org-Mode (.org)
+#### Conversion des directives reStructuredText (.rst)
+### Collection de composants riches en interaction
+#### Sélecteur déroulant interactif (Dropdown Switcher)
+#### Groupes d'accordéons exclusifs (Accordion Groups)
+#### Lecteur audio dynamique de disques vinyles (Vinyl Audio)
+### Sécurité, confidentialité et chiffrement graduel
+#### Vérification de hachage WebCrypto SHA-256 (aucune exposition en clair)
+#### Déverrouillage persistant de session de niveau 1 (Session Persistent)
+#### Bascule de masquage anti-curiosité de niveau 2 (flou gaussien / mosaïque / masque spoiler)
+#### Verrouillage anti-curiosité au départ du champ de vision de niveau 3 (IntersectionObserver)
+#### Isolation des points de terminaison de déchiffrement segmentés externes (Standalone Token)
 ```
 ````
 
@@ -1211,44 +1200,104 @@ Dans l'élaboration de spécifications techniques volumineuses et l'analyse d'ar
 </div>
 </div>
 
-#### Normes de rédaction Markdown et référence syntaxique
+#### Conventions d'écriture et référence syntaxique Markdown
 
-Le **moteur de rendu Mindmap** intégré à ce blog repose sur une analyse récursive AST et une mise en page d'arbre élastique D3 Flextree. Il **prend nativement en charge une extension à profondeur infinie (Niveau 1 à Niveau N)**, sans aucune limite de profondeur. Lors de la rédaction d'un article, l'auteur peut choisir parmi les normes d'écriture suivantes en fonction de la complexité en profondeur de l'arborescence des connaissances :
+Le **moteur de rendu Mindmap** intégré à ce blog, basé sur l'analyse récursive AST et la disposition d'arbre flexible D3 Flextree, **prend en charge nativement l'extension de niveaux illimités (Niveau 1 à Niveau N)**, sans aucune restriction de profondeur maximale. Lors de la rédaction d'articles, l'auteur peut choisir les conventions d'écriture suivantes en fonction de la complexité de l'arborescence des connaissances :
 
-##### 1. Syntaxe hybride en échelon (recommandé pour un squelette de 1 à 6 niveaux + dér
+##### 1. Syntaxe mixte en escalier (recommandé : 1 à 6 niveaux principaux + dérivation illimitée de listes profondes)
+Les titres Markdown standard prennent en charge 6 niveaux de profondeur (`#` à `######`). Au-delà du 6ème niveau, il est possible de continuer à dériver indéfiniment vers le bas (Niveau 7, Niveau 8, Niveau 9...) en utilisant des éléments de liste non ordonnée (`-`, `*`) avec des indentations d'espace :
 
-Afin d'éliminer définitivement l'exposition en clair des mots de passe dans les attributs du DOM (comme `data-password`, vulnérable à l'inspection des éléments), le système de contenu de ce blog a été entièrement mis à niveau vers la **vérification par hachage WebCrypto SHA-256 (`data-hash`)**, et un système de cryptage local à trois niveaux et de décryptage segmenté pour les liens externes a été établi :
-* **Règle de réinitialisation sécurisée par défaut (Aucune persistance au rechargement)** : Par défaut, tout le contenu chiffré (niveaux 1, 2, 3 et portes de décryptage externe) **repassera automatiquement et fermement à l'état verrouillé après un rafraîchissement de la page (F5 / rechargement)**, éliminant ainsi complètement le risque de sécurité lié à la persistance de l'exposition après un rafraîchissement ;
-* **Paramètre de persistance ouvert (`data-persist`)** : Pour répondre aux besoins d'ouverture de scénarios documentaires spécifiques, la stratégie de réinitialisation par défaut peut être remplacée par la configuration de paramètres :
-  * `data-persist="session"` (ou `data-persist="true"`) : Maintient l'état déverrouillé entre les rafraîchissements pendant la durée de la session de l'onglet actuel ;
-  * `data-persist="local"` : Mémorise de manière persistante l'état déverrouillé dans le stockage local du navigateur ;
-  * Non configuré par défaut : Cycle de vie en mémoire pure, **réinitialisation sécurisée immédiate et verrouillage au rafraîchissement de la page**.
+````markdown
+```mindmap
+# Niveau 1 Thème principal (H1)
+## Niveau 2 Branche de domaine (H2)
+### Niveau 3 Sous-système (H3)
+#### Niveau 4 Module technique (H4)
+##### Niveau 5 Unité de composant (H5)
+###### Niveau 6 Spécification d'algorithme (H6)
+- Niveau 7 Détails d'exécution spécifiques (Élément de liste)
+  - Niveau 8 Paramètres de sous-élément (Indentation +2 espaces)
+    - Niveau 9 Primitives matérielles de bas niveau (Indentation +4 espaces)
+```
+````
+
+##### 2. Syntaxe d'indentation illimitée purement basée sur des listes (recommandé pour plus de 6 niveaux ou des arborescences de connaissances très profondes)
+Si la sémantique des titres Markdown n'est pas nécessaire, ou si le réseau de connaissances est extrêmement profond (par exemple, arborescence de classification, déduction conceptuelle, structure AST), il est possible d'utiliser directement la liste non ordonnée `-` et d'exprimer des branches multidirectionnelles d'une **profondeur théoriquement illimitée** via une indentation de 2 ou 4 espaces :
+
+````markdown
+```mindmap
+- 🌐 Thème racine : Carte des connaissances en informatique (Niveau 1)
+  - 🖥️ Ingénierie des systèmes logiciels (Niveau 2)
+    - 📦 Systèmes d'exploitation et noyaux (Niveau 3)
+      - ⚙️ Ordonnancement des processus et des threads (Niveau 4)
+        - 🔄 Primitives de synchronisation concurrentes (Niveau 5)
+          - 🔒 Mutex et sémaphores (Niveau 6)
+            - ⚡ Instructions atomiques CAS au niveau matériel (Niveau 7)
+              - ⏱️ Protocole MESI de cohérence de cache (Niveau 8)
+                - 🔬 Barrières mémoire et réordonnancement des instructions de pipeline (Niveau 9)
+```
+````
+
+##### 3. Contrôle des paramètres avancés en ligne (en-tête JSON facultatif)
+Un objet JSON sur une seule ligne peut être utilisé dans la première ligne du bloc de code pour personnaliser l'état initial et les dimensions de l'arborescence :
+
+````markdown
+```mindmap
+{"initialExpandLevel": 2, "height": "560px", "title": "Vue d'ensemble de l'architecture d'ingénierie Full-Stack"}
+# Thème principal
+## Branche de niveau 1 A
+### Branche de niveau 2 A1
+- Point de connaissance détaillé 1
+```
+````
+
+*   **`initialExpandLevel`** : Niveau d'expansion initial. `1` pour le mode de protection de pliage du nœud racine unique ; `2` pour l'expansion jusqu'au tronc principal ; `6` pour l'expansion complète.
+*   **`height`** : Spécifie la hauteur du canevas, par exemple `"480px"`、`"600px"` (par défaut `"460px"`).
+*   **`title`** : Texte du titre de l'en-tête de la carte mentale personnalisé.
+
+##### 4. Fonctionnalités interactives et guide d'utilisation de la vue
+*   **Clic pour explorer (Drill-down)** : Cliquez sur un nœud avec un point lumineux pulsant ou du texte pour développer/réduire en douceur ses branches multidirectionnelles de niveau inférieur ;
+*   **Développer/Réduire en un clic** : La barre d'outils propose `⊞` (développer toutes les branches en un clic) et `⊟` (restaurer l'état initial en un clic) ;
+*   **Centrage adaptatif (Fit View)** : Cliquez sur `🎯` pour calculer automatiquement la meilleure vue centrée en fonction de tous les nœuds actuellement développés ;
+*   **Mode immersif plein écran** : Cliquez sur `⛶` pour passer en mode plein écran (appuyez sur `Esc` pour quitter à tout moment), offrant un espace d'exploration horizontal illimité ;
+*   **Perception des métadonnées en temps réel** : La barre d'en-tête affiche en temps réel le nombre total de nœuds et la profondeur maximale de la carte mentale actuelle (par exemple, `53 nœuds · structure à 6 niveaux de branches`).
 
 ---
 
-### 1. Chiffrement de niveau 1 : Chiffrement de base par page (Niveau 1 · Réinitialisation automatique au rafraîchissement)
+## IX. Sécurité et confidentialité, chiffrement par niveaux (Niveau 1/2/3) et fonction de déchiffrement segmenté externe
 
-La saisie d'une seule fois des identifiants d'accès permet de déverrouiller la lecture du corps du texte ; par défaut, la page se verrouille automatiquement et immédiatement après un rafraîchissement ; si un maintien entre les rafraîchissements est nécessaire, il est possible d'ajouter `data-persist="session"` à l'onglet :
+Afin d'éliminer complètement l'exposition des mots de passe en clair dans les attributs DOM (par exemple, `data-password` facilement espionnable par l'inspection d'éléments), le système de contenu de ce blog a été entièrement mis à niveau vers la **vérification de hachage WebCrypto SHA-256 (`data-hash`)**, et un système de chiffrement local à trois niveaux et de déchiffrement segmenté externe a été établi :
+*   **Règle de réinitialisation de sécurité par défaut (Zero Persistence on Reload)** : Par défaut, tout contenu chiffré (niveaux 1, 2, 3 et portes de déchiffrement externes) sera **systématiquement réinitialisé automatiquement à l'état verrouillé après un rafraîchissement de page (F5 / rechargement)**, évitant ainsi complètement les risques de sécurité liés à la persistance de l'état déverrouillé après un rafraîchissement de page ;
+*   **Paramètres de persistance ouverts (`data-persist`)** : Pour répondre aux besoins d'ouverture de scénarios de documents spécifiques, la stratégie de réinitialisation par défaut peut être remplacée par la configuration de paramètres :
+    *   `data-persist="session"` (ou `data-persist="true"`) : Maintient le déverrouillage entre les rafraîchissements pendant la session de l'onglet actuel ;
+    *   `data-persist="local"` : Mémorise l'état de déverrouillage de manière persistante dans le stockage local du navigateur ;
+    *   Non configuré par défaut : Cycle de vie purement en mémoire, **réinitialisation de sécurité immédiate au verrouillage après un rafraîchissement de page**.
 
-<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 Indication de chiffrement niveau 1 : Veuillez saisir shijianus2026 comme clé de démonstration (Vérification par hachage · Verrouillage automatique au rafraîchissement)">
+---
+
+### 1. Chiffrement de niveau 1 : Chiffrement de base d'une seule page (Niveau 1 · Réinitialisation par défaut au rafraîchissement)
+
+Saisissez une fois les identifiants d'accès pour déverrouiller et lire le contenu ; par défaut, la page se reverrouille automatiquement dès qu'elle est rafraîchie. Pour maintenir l'état déverrouillé entre les rafraîchissements, ajoutez `data-persist="session"` à la balise :
+
+<div class="article-encrypted-box" data-level="1" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="💡 Indice de chiffrement de niveau 1 : Pour la clé de démonstration, veuillez entrer shijianus2026 (vérification de hachage · reverrouillage automatique au rafraîchissement)">
   <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ Chiffrement niveau 1 · Réinitialisation automatique au rafraîchissement</span> <span class="badge badge-cyan">Protection SHA-256</span></div>
+    <div class="encrypted-box__level-tag"><span class="badge badge-success">🛡️ Chiffrement de niveau 1 · Réinitialisation automatique au rafraîchissement</span> <span class="badge badge-cyan">Protection SHA-256</span></div>
     <div class="encrypted-box__icon">🔒</div>
-    <div class="encrypted-box__title">Protection niveau 1 : Configuration de développement privée et actifs de code source</div>
-    <div class="encrypted-box__desc">Cette zone est protégée par la stratégie de sécurité de niveau 1, le mot de passe utilise une vérification par hachage WebCrypto, sans exposition en clair ; la page se verrouillera automatiquement après un rafraîchissement.</div>
+    <div class="encrypted-box__title">Protection de niveau 1 : Configuration de développement privée et actifs de code source</div>
+    <div class="encrypted-box__desc">Cette zone est protégée par une politique de sécurité de niveau 1. Le mot de passe est vérifié par hachage WebCrypto, sans exposition en clair ; la page se reverrouillera automatiquement après rafraîchissement.</div>
     <button class="encrypted-box__btn" type="button">🔑 Vérifier la clé pour déverrouiller le contenu</button>
   </div>
   <div class="encrypted-box__content">
     <div class="admonition admonition-success">
       <div class="admonition-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>🎉 Vérification de niveau 1 réussie ! La page actuelle est déverrouillée (verrouillage sécurisé automatique au rafraîchissement)</span>
+        <span>🎉 Vérification de niveau 1 réussie ! La page actuelle est déverrouillée (le rafraîchissement entraînera un reverrouillage sécurisé automatique)</span>
       </div>
       <div class="admonition-content">
-        <p><strong>Paramètres de l'environnement de développement principal déverrouillés :</strong></p>
+        <p><strong>Les paramètres clés de l'environnement de développement sont déverrouillés :</strong></p>
         <ul>
-          <li><code>DEPLOY_ENDPOINT</code> : <code>https://api.shijian.us/v2/deploy/core</code></li>
-          <li><code>AUTH_SCOPE</code> : <code>read:articles, write:releases</code></li>
+          <li><code>DEPLOY_ENDPOINT</code>: <code>https://api.shijian.us/v2/deploy/core</code></li>
+          <li><code>AUTH_SCOPE</code>: <code>read:articles, write:releases</code></li>
         </ul>
       </div>
     </div>
@@ -1257,37 +1306,34 @@ La saisie d'une seule fois des identifiants d'accès permet de déverrouiller la
 
 ---
 
-### 2. Chiffrement de niveau 2 : Protection anti-espionnage par masque après décryptage (Niveau 2 · Protection par masque)
+### 2. Chiffrement de niveau 2 : Protection anti-regard indiscret par masque après déchiffrement (Niveau 2 · Protection par masque)
 
-Après la réussite de la vérification, bien que le contenu soit décodé, il **entre automatiquement par défaut dans un état de masque anti-espionnage avec flou gaussien** (la barre de bascule n'est pas affichée par défaut, un survol de la souris permet une visualisation claire), offrant une protection efficace contre l'espionnage à courte distance.
-- **Activation de la barre d'outils** : Configurer `data-allow-select="true"` pour activer la barre d'outils de bascule du masque, **la barre d'outils est par défaut également incluse dans le masque et protégée** (au survol de la souris, la barre d'outils et le corps du texte apparaissent clairement ensemble et peuvent être cliqués pour basculer) ; si la barre d'outils doit rester à l'extérieur du masque, il est possible de configurer `data-toolbar-masked="false"` ;
-- **Spécification de la méthode de masquage** : Il est possible de forcer le mode de masque via `data-mask="blur|mosaic|spoiler|reveal"` ;
-- **Barre de personnalisation** : Prend en charge la transmission de `data-mask-options="blur,mosaic"` dans les balises Markdown pour personnaliser rapidement les modes disponibles, ou l'écriture directe de la structure `<div class="encrypted-mask-toolbar">` dans le corps du texte, le système scannera et activera automatiquement la barre de personnalisation ;
-- **Garantie de réinitialisation au rafraîchissement** : Par défaut, la page se verrouille automatiquement après un rafraîchissement.
+Après une vérification réussie, bien que le contenu soit déchiffré, il **entre automatiquement par défaut dans un état de masque anti-regard indiscret avec flou gaussien** (la barre de commutation n'est pas affichée par défaut, le survol de la souris permet une visualisation claire), résistant efficacement aux regards indiscrets à courte distance.
+- **Activer la barre d'outils** : Configurez `data-allow-select="true"` pour activer la barre d'outils de commutation du masque. **La barre d'outils est également protégée par défaut à l'intérieur du masque** (lorsque la souris est survolée, la barre d'outils et le texte apparaissent clairement et peuvent être cliqués pour basculer) ; si vous souhaitez que la barre d'outils reste en dehors du masque, vous pouvez configurer `data-toolbar-masked="false"` ;
+- **Spécifier le mode de masque** : Vous pouvez forcer un mode de masque spécifique via `data-mask="blur|mosaic|spoiler|reveal"` ;
+- **Barre de paramètres personnalisée** : Il est possible de passer `data-mask-options="blur,mosaic"` dans les balises Markdown pour personnaliser rapidement les modes optionnels, ou d'écrire directement la structure `<div class="encrypted-mask-toolbar">` dans le corps du texte, le système scannera et activera automatiquement la barre de paramètres personnalisée ;
+- **Garantie de réinitialisation au rafraîchissement** : Par défaut, la page se reverrouille automatiquement après rafraîchissement.
 
-kdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式，或直接在正文中书写 `<div class="encrypted-mask-toolbar">` 结构，系统会自动扫描并激活自定义设置栏；
-- **刷新重置保障**：默认刷新页面后自动重锁。
-
-<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 Indication de chiffrement de niveau 2 : pour la démonstration, entrez la clé epocanvas2026">
+<div class="article-encrypted-box" data-level="2" data-allow-select="true" data-hash="f31aafdcf42582306027026c37ee59c747be6e17258aa490c5bba32b93911c07" data-hint="💡 Indice de chiffrement de niveau 2 : Pour la clé de démonstration, veuillez saisir epocanvas2026">
   <div class="encrypted-box__lock">
-    <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ Niveau 2 de chiffrement · Mode masque anti-espionnage</span> <span class="badge badge-purple">Masque polymorphe dynamique</span></div>
+    <div class="encrypted-box__level-tag"><span class="badge badge-warning">🛡️ Chiffrement de niveau 2 · Mode anti-regard avec masque</span> <span class="badge badge-purple">Masque polymorphe dynamique</span></div>
     <div class="encrypted-box__icon">🛡️</div>
-    <div class="encrypted-box__title">Niveau 2 de protection : données commerciales confidentielles et liste financière</div>
-    <div class="encrypted-box__desc">Après décryptage, la protection par flou gaussien sera activée par défaut, le contenu ne sera visible qu'au survol ou au clic, ce qui protège efficacement contre les regards rapprochés ; la page se verrouille automatiquement après un rafraîchissement.</div>
-    <button class="encrypted-box__btn" type="button">🔑 Vérifier le certificat et activer la visualisation anti-espionnage</button>
+    <div class="encrypted-box__title">Protection de niveau 2 : Données commerciales confidentielles et listes financières</div>
+    <div class="encrypted-box__desc">Après déchiffrement, une protection par flou gaussien sera activée par défaut. Le contenu ne sera visible qu'au survol ou au clic de la souris, offrant une défense efficace contre les regards indiscrets à proximité ; la page se reverrouille automatiquement après rafraîchissement.</div>
+    <button class="encrypted-box__btn" type="button">🔑 Vérifier les identifiants et activer la visualisation anti-regard</button>
   </div>
   <div class="encrypted-box__content">
     <div class="admonition admonition-important">
       <div class="admonition-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <span>📊 Paramètres financiers et contractuels clés du projet commercial</span>
+        <span>📊 Paramètres financiers et contractuels clés des projets commerciaux</span>
       </div>
       <div class="admonition-content">
-        <p>Voici la répartition du budget de soutien commercial EpoCanvas pour l'année 2026 :</p>
+        <p>Voici la répartition du budget de support commercial EpoCanvas pour l'année 2026 :</p>
         <ul>
-          <li><strong>Frais de licence d'entreprise privée</strong> : ¥ 280 000 / an (incluant un cluster haute disponibilité et la garantie SLA)</li>
-          <li><strong>Dépenses de trafic CDN en périphérie</strong> : ¥ 36 500 / mois</li>
-          <li><strong>Clé du conseiller technique dédié</strong> : <code>sec_corp_epocanvas_key_2026</code></li>
+          <li><strong>Frais de licence de privatisation d'entreprise</strong> : ¥ 280,000 / an (incluant cluster haute disponibilité et garantie SLA)</li>
+          <li><strong>Dépenses de trafic CDN Edge</strong> : ¥ 36,500 / mois</li>
+          <li><strong>Clé de consultant technique dédié</strong> : <code>sec_corp_epocanvas_key_2026</code></li>
         </ul>
       </div>
     </div>
@@ -1296,42 +1342,73 @@ kdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式
 
 ---
 
-### 3. Niveau 3 de chiffrement : verrouillage immédiat hors de la vue (Level 3 · Viewport Auto-Lock)
+### 3. Chiffrement de niveau 3 : Reverrouillage immédiat à la sortie de la fenêtre d'affichage (Niveau 3 · Verrouillage automatique hors fenêtre d'affichage)
 
-超高安全级别！**不写入任何持久化存储**；一旦解密后的内容在滚动中**离开当前屏幕视口**，或者浏览器标签页切换到后台，系统将**瞬间自动重新上锁**，再次查看必须重新输入密码：
+Niveau de sécurité ultra-élevé ! **Aucune écriture dans un stockage persistant** ; dès que le contenu déchiffré **quitte la fenêtre d'affichage actuelle** lors du défilement, ou que l'onglet du navigateur passe en arrière-plan, le système se **reverrouille automatiquement instantanément**. Pour le consulter à nouveau, il faut ressaisir le mot de passe :
 
-<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db
+<div class="article-encrypted-box" data-level="3" data-hash="0f67fcb3bceddb88ef917fa5cf73affc3490db24a44adf25238a00f5ee81ee89" data-hint="💡 Indice de chiffrement de niveau 3 : Pour la clé de démonstration, veuillez saisir level3pass">
+  <div class="encrypted-box__lock">
+    <div class="encrypted-box__level-tag"><span class="badge badge-danger">🛡️ Chiffrement de niveau 3 · Verrouillage immédiat à la sortie de la fenêtre d'affichage</span> <span class="badge badge-orange">Surveillance Sentinelle de la fenêtre d'affichage</span></div>
+    <div class="encrypted-box__relock-wrap">
+      <div class="encrypted-relock-notice">⚠️ Protection de sécurité déclenchée : Le système a été automatiquement reverrouillé car le contenu a précédemment quitté la fenêtre d'affichage !</div>
+    </div>
+    <div class="encrypted-box__icon">🚨</div>
+    <div class="encrypted-box__title">Niveau 3 Top Secret : Clés privées d'infrastructure critique et instructions de reprise après sinistre</div>
+    <div class="encrypted-box__desc">Norme de protection la plus élevée. Une fois déchiffré, si le contenu est défilé hors de l'écran, un mécanisme de destruction et de reverrouillage est immédiatement déclenché, ne laissant jamais de texte en clair en dehors de l'écran.</div>
+    <button class="encrypted-box__btn" type="button">🔐 Vérifier la clé avancée (verrouillage immédiat à la sortie de la fenêtre d'affichage)</button>
+  </div>
+  <div class="encrypted-box__content">
+    <div class="encrypted-level3-status">
+      <span class="security-pulse-dot"></span>
+      <span>Sentinelle anti-regard de la fenêtre d'affichage en écoute en temps réel · Destruction immédiate du texte en clair à la sortie de la fenêtre d'affichage</span>
+    </div>
+    <div class="admonition admonition-danger">
+      <div class="admonition-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <span>⚡ Identifiants de prise de contrôle d'urgence du cluster top secret</span>
+      </div>
+      <div class="admonition-content">
+        <p>Veuillez noter : Cette information n'est visible que dans la fenêtre d'affichage actuelle. La faire défiler vers le bas ou vers le haut pour la faire sortir de l'écran entraînera un verrouillage automatique :</p>
+        <pre><code># 核心节点紧急自毁 / 切换指令
+curl -X POST https://cluster.shijian.us/v1/node/failover \
+  -H "X-Root-Token: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
 
+---
 
+### 4. Porte de déchiffrement de segment de lien externe (External Link Segment Decryption Gate)
 
-在构建期或架构分层时，同一篇文章可以被物理分割为**公开正文段**与**外联受控密文段**。创作者可在文末或章节任意位置插入外联解密引导门，验证凭据后动态解密并在此无缝挂载完整后半段正文：
+Lors de la phase de construction ou de la stratification architecturale, un même article peut être physiquement divisé en un **segment de texte public** et un **segment de texte chiffré contrôlé par lien externe**. Les créateurs peuvent insérer une porte de déchiffrement externe à la fin de l'article ou à n'importe quel endroit d'un chapitre, qui, après vérification des identifiants, déchiffrera dynamiquement et montera de manière transparente la seconde moitié complète du texte :
 
-<div class="article-external-decrypt-gate" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="🔑 外联分段密钥：请输入 shijianus2026">
+<div class="article-external-decrypt-gate" data-hash="d7fb6c64b9aa44cc0c3b427edaa623369dee1a9778329801f68fdaa34b09d351" data-hint="🔑 Clé de segment externe : Veuillez entrer shijianus2026">
   <div class="external-gate__header">
     <div class="external-gate__badge">
-      <span class="badge badge-purple">🌐 外联安全分段加密</span>
-      <span class="badge badge-cyan">端点分片存储</span>
+      <span class="badge badge-purple">🌐 Chiffrement de segment sécurisé externe</span>
+      <span class="badge badge-cyan">Stockage fragmenté aux points d'accès</span>
       <span class="badge badge-success">WebCrypto SHA-256</span>
     </div>
-    <h3 class="external-gate__title">🔐 正文深度章节已外联隔离存放</h3>
-    <p class="external-gate__desc">当前长文在构建阶段启用了**外联分段隔离存储**：前 75% 基础语法与组件说明公开交付；核心企业级工程落地方案与架构推导演示已被加密打包存放。点击下方按钮输入密钥，即可在当前页面实时无缝解密并挂载剩余正文内容。</p>
+    <h3 class="external-gate__title">🔐 Les chapitres approfondis du texte sont stockés de manière isolée via un lien externe</h3>
+    <p class="external-gate__desc">Ce long article a activé le **stockage segmenté isolé par lien externe** pendant la phase de construction : les 75% initiaux de la syntaxe de base et des descriptions de composants sont livrés publiquement ; les solutions d'implémentation d'ingénierie de niveau entreprise et les démonstrations de dérivation d'architecture ont été chiffrées et stockées. Cliquez sur le bouton ci-dessous pour entrer la clé, et le contenu restant du texte sera déchiffré et monté de manière transparente en temps réel sur cette page.</p>
   </div>
   <div class="external-gate__actions">
-    <button type="button" class="external-gate__btn">🔑 输入凭据解密并挂载完整正文</button>
-    <a href="#top" class="article-btn article-btn-outline external-gate__btn-alt">⬆️ 返回文章顶部</a>
+    <button type="button" class="external-gate__btn">🔑 Entrer les identifiants pour déchiffrer et monter le texte complet</button>
+    <a href="#top" class="article-btn article-btn-outline external-gate__btn-alt">⬆️ Retour en haut de l'article</a>
   </div>
   <div class="external-gate__decrypted-payload">
     <div class="decrypted-payload-banner">
-      <span class="badge badge-success">✨ 外联分段密文已成功验证解密，正文无缝挂载完成</span>
-      <span class="payload-timestamp">SHA-256 Stream Verified</span>
+      <span class="badge badge-success">✨ Le texte chiffré du segment externe a été vérifié et déchiffré avec succès, le contenu est monté de manière transparente</span>
+      <span class="payload-timestamp">Flux SHA-256 vérifié</span>
     </div>
     <div class="decrypted-payload-body">
-      <h4>📦 外联分段解密正文：企业级 SSG 内容工程落地规范</h4>
-      <p>恭喜您成功解锁了本文的外联分段核心内容！在现代大型静态知识库工程中，将高敏感或付费特权内容采用外联分段加密存放，具有以下核心优势：</p>
+      <h4>📦 Contenu déchiffré du segment externe : Spécifications d'implémentation de l'ingénierie de contenu SSG de niveau entreprise</h4>
+      <p>Félicitations, vous avez déverrouillé avec succès le contenu essentiel du segment externe de cet article ! Dans l'ingénierie moderne des grandes bases de connaissances statiques, le stockage de contenu hautement sensible ou privilégié (payant) via un chiffrement de segment externe offre les avantages clés suivants :</p>
       <ul>
-        <li><strong>首屏负载极小化</strong>：未授权访问者仅拉取基础公开 HTML，网络开销减少 60% 以上；</li>
-        <li><strong>防抓取与防逆向</strong>：敏感密文与密钥隔离存储，静态爬虫无法从公开 DOM 中抓取到任何有效数据；</li>
-        <li><strong>无感流式接入</strong>：通过客户端 WebCrypto 引擎，读者在当前页面无需页面跳转即可享受无缝展开的连贯阅读体验。</li>
+        <li><strong>Minimisation de la charge initiale de l'écran</strong> : Les visiteurs non autorisés ne récupèrent que le HTML public de base, réduisant les frais de réseau de plus de 60 % ;</li>
+        <li><strong>Protection contre le scraping et la rétro-ingénierie</strong> : Le texte chiffré sensible et la clé sont stockés séparément, empêchant les crawlers statiques de récupérer des données valides du DOM public ;</li>
+        <li><strong>Accès fluide et transparent</strong> : Grâce au moteur WebCrypto côté client, les lecteurs peuvent profiter d'une expérience de lecture continue et transparente sans avoir à changer de page.</li>
       </ul>
     </div>
   </div>
@@ -1339,134 +1416,161 @@ kdown 标签中传入 `data-mask-options="blur,mosaic"` 快速定制可选模式
 
 ---
 
-### 5. 行内高斯模糊、马赛克与剧透隐藏
+### 5. Flou gaussien, mosaïque et masquage de spoiler en ligne
 
-除了块级加密外，正文行内亦提供丰富的轻量级防窥与趣味遮罩：
+En plus du chiffrement par bloc, le texte en ligne offre également une variété de masques légers anti-curiosité et ludiques :
 
-- **文字高斯模糊**：<span class="blur-text">这是一段被高斯模糊保护的关键剧透文字，鼠标悬浮或点击即可看清！</span>
-- **黑幕马赛克**：<span class="mosaic-text">机密数据：SHA256-7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069</span>
-- **Discord 剧透遮罩**：||这是一段使用双竖线包裹的剧透遮罩，点击揭开。||
-- **内联隐藏锁**：%%这里是使用百分号包裹的内联隐藏内容，点击展开。%%
+- **Flou gaussien de texte** : <span class="blur-text">Ceci est un texte spoiler clé protégé par un flou gaussien, survolez ou cliquez pour le voir clairement !</span>
+- **Mosaïque de censure** : <span class="mosaic-text">Données confidentielles : SHA256-7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069</span>
+- **Masque de spoiler Discord** : ||Ceci est un masque de spoiler entouré de doubles barres verticales, cliquez pour révéler.||
+- **Verrou de contenu masqué en ligne** : %%Ceci est un contenu masqué en ligne entouré de signes de pourcentage, cliquez pour développer.%%
 
-#### 图片高斯模糊保护
+#### Protection d'image par flou gaussien
 
 <div class="blur-image-wrap">
-  <img class="blur-image" src="/media/shijianus/workbench.jpg" alt="模糊保护工作台图片" />
-  <div class="blur-image-badge"><span>👁️ 悬浮或点击揭开迷雾</span></div>
+  <img class="blur-image" src="/media/shijianus/workbench.jpg" alt="Image de l'établi protégée par flou" />
+  <div class="blur-image-badge"><span>👁️ Survolez ou cliquez pour dissiper le brouillard</span></div>
 </div>
 
 ---
 
-## 10. Chronologies, barres d'étapes, listes de définitions et tableaux de données
+## X. Chronologie, barres de progression, listes de définitions et tableaux de données
 
-### 1. 垂直时间轴（Vertical Timeline）
+### 1. Chronologie verticale (Vertical Timeline)
 
 <div class="article-timeline">
   <div class="timeline-node is-success">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.04 · 基础重构</div>
-      <div class="timeline-node__title">完成 Astro 6 静态站点内核迁移</div>
-      <p class="timeline-node__desc">建立全新 Content Collections 架构与 Shiki 代码高亮管道。</p>
+      <div class="timeline-node__date">2026.04 · Refonte de base</div>
+      <div class="timeline-node__title">Migration du noyau du site statique Astro 6 terminée</div>
+      <p class="timeline-node__desc">Établissement d'une nouvelle architecture Content Collections et d'un pipeline de coloration syntaxique Shiki.</p>
     </div>
   </div>
 
   <div class="timeline-node is-warning">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">2026.08 · 特性扩展</div>
-      <div class="timeline-node__title">全量实装 WordPress Post Formats 与下拉框切换器</div>
-      <p class="timeline-node__desc">补全 13 种 Admonitions、KaTeX 数学公式与密码弹窗解密系统。</p>
+      <div class="timeline-node__date">2026.08 · Extension des fonctionnalités</div>
+      <div class="timeline-node__title">Implémentation complète des formats de publication WordPress et du sélecteur déroulant</div>
+      <p class="timeline-node__desc">Achèvement de 13 types d'Admonitions, des formules mathématiques KaTeX et du système de déchiffrement par fenêtre contextuelle de mot de passe.</p>
     </div>
   </div>
 
   <div class="timeline-node">
     <div class="timeline-node__dot"></div>
     <div class="timeline-node__content">
-      <div class="timeline-node__date">未来展望 · 生态演进</div>
-      <div class="timeline-node__title">发布开源主题标准与多平台插件</div>
-      <p class="timeline-node__desc">提供从 Hexo/WordPress 到 Astro 的一键无缝内容迁移工具链。</p>
+      <div class="timeline-node__date">Perspectives d'avenir · Évolution de l'écosystème</div>
+      <div class="timeline-node__title">Publication de la norme de thème open source et de plugins multiplateformes</div>
+      <p class="timeline-node__desc">Fourniture d'une chaîne d'outils de migration de contenu transparente en un clic de Hexo/WordPress vers Astro.</p>
     </div>
   </div>
 </div>
 
 ---
 
-### 2. 教程步骤条（Tutorial Steps）
+### 2. Étapes du tutoriel (Tutorial Steps)
 
-### 3. Listes de définitions et spécifications (Definition Lists & Specs)  
-
-<dl class="article-dl">  
-  <dt>Astro Islands (Islands)</dt>  
-  <dd>Diviser la page en une structure HTML statique et des composants interactifs injectés séparément, réduisant considérablement la taille du JavaScript.</dd>  
-  <dt>Compilateur KaTeX</dt>  
-  <dd>Effectuer l'analyse AST de la syntaxe LaTeX lors de la phase de construction, éliminant tout délai de rendu supplémentaire côté client.</dd>  
-  <dt>Post Formats</dt>  
-  <dd>Norme de définition des formes de contenu issue de WordPress, utilisée pour attribuer à chaque type d'article une apparence typographique propre.</dd>  
-</dl>  
-
----  
-## Onze, Embellissement micro-typographique en ligne du texte riche et badges
-
-
-
-- **多色彩高亮（HTML 标签形式）**：
-  - <mark class="mark-yellow">黄色高亮（重点标注）</mark>
-  - <mark class="mark-green">绿色高亮（成功推荐）</mark>
-  - <mark class="mark-blue">蓝色高亮（信息线索）</mark>
-  - <mark class="mark-pink">粉色高亮（设计灵感）</mark>
-  - <mark class="mark-purple">紫色高亮（深度原理）</mark>
-  - <mark class="mark-orange">橙色高亮（操作预警）</mark>
-  - <mark class="mark-red">红色高亮（风险警示）</mark>
-  - <mark class="mark-cyan">青色高亮（网络协议）</mark>
-- **快捷语法糖高亮（`==颜色:内容==` 形式）**：
-  - ==默认高亮文本（自动黄色）==
-  - ==green:绿色高亮语法糖（敏捷标记）==
-  - ==blue:蓝色高亮语法糖（架构要素）==
-  - ==pink:粉色高亮语法糖（界面美化）==
-  - ==purple:紫色高亮语法糖（核心算法）==
-- **状态徽章（Badges）**：
-  - <span class="badge badge-primary">推荐 (Primary)</span>
-  - <span class="badge badge-success">通过 (Success)</span>
-  - <span class="badge badge-warning">注意 (Warning)</span>
-  - <span class="badge badge-danger">危险 (Danger)</span>
-  - <span class="badge badge-info">信息 (Info)</span>
-  - <span class="badge badge-purple">架构 (Purple)</span>
-  - <span class="badge badge-cyan">网络 (Cyan)</span>
-  - <span class="badge badge-orange">硬件 (Orange)</span>
-- **按键展示**：<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> 打开全局命令调色板。
-- **多语言注音与发音标注（Ruby / Multilingual Phonetics）**：
-  - **中文汉语拼音（Hanyu Pinyin）**：<ruby>時間<rt>shí jiān</rt></ruby> · <ruby>画布<rt>huà bù</rt></ruby> · <ruby>極客<rt>jí kè</rt></ruby>
-  - **中文注音符号（Bopomofo / 台湾注音）**：<ruby>時間<rt>ㄕˊ ㄐㄧㄢ</rt></ruby> · <ruby>極客<rt>ㄐㄧˊ ㄎㄜˋ</rt></ruby> · <ruby>編程<rt>ㄅㄧㄢ ㄔㄥˊ</rt></ruby>
-  - **日文汉字 + 平假名振假名（Furigana / 訓読・音読）**：<ruby>時間<rt>じかん</rt></ruby> · <ruby>明日<rt>あす</rt></ruby> · <ruby>儚い<rt>はかない</rt></ruby>
-  - **日文片假名外来语与当て字（Katakana / Loanwords & Ateji）**：<ruby>画布<rt>キャンバス</rt></ruby> · <ruby>電脳<rt>パソコン</rt></ruby> · <ruby>宇宙<rt>コスモ</rt></ruby>
-  - **日文熟字训（Jukujikun / 義訓特殊读法）**：<ruby>煙草<rt>タバコ</rt></ruby> · <ruby>大人<rt>おとな</rt></ruby> · <ruby>今日<rt>きょう</rt></ruby>
-  - **英文单词 + IPA 国际音标标注（English + IPA Transcription）**：<ruby>EpoCanvas<rt>/ˌepəˈkænvəs/</rt></ruby> · <ruby>Aesthetics<rt>/esˈθetɪks/</rt></ruby> · <ruby>Chronos<rt>/ˈkrɒnɒs/</rt></ruby>
-  - **法语音标与特殊连诵（French IPA & Special Pronunciation）**：<ruby>Rendez-vous<rt>/ʁɑ̃.de.vu/</rt></ruby> · <ruby>Déjà-vu<rt>/de.ʒa.vy/</rt></ruby> · <ruby>C'est la vie<rt>/sɛ la vi/</rt></ruby>
-  - **德语变音与复合词发音（German Umlaut & Compounds）**：<ruby>Zeitgeist<rt>/ˈtsaɪtɡaɪst/</rt></ruby> · <ruby>Schadenfreude<rt>/ˈʃaːdn̩ˌfʁɔʏ̯də/</rt></ruby>
-  - **希腊文与其拉丁转写（Greek + Romanization）**：<ruby>Φιλοσοφία<rt>philosophia</rt></ruby> · <ruby>Καλημέρα<rt>kaliméra</rt></ruby>
-  - **韩文汉字与谚文注音（Hanja + Hangul）**：<ruby>時間<rt>시간</rt></ruby> · <ruby>極客<rt>긱</rt></ruby> · <ruby>未來<rt>미래</rt></ruby>
-  - **俄语/西里尔字母音标（Russian Cyrillic + IPA）**：<ruby>Привет<rt>/prʲɪˈvʲet/</rt></ruby> · <ruby>Спасибо<rt>/spɐˈsʲibə/</rt></ruby>
-  - **梵文/天城文与 IAST 转写（Sanskrit Devanagari + IAST）**：<ruby>नमस्ते<rt>namaste</rt></ruby> · <ruby>शान्तिः<rt>śāntiḥ</rt></ruby>
-- **缩写说明**：<abbr title="Static Site Generator 静态站点生成器">SSG</abbr> 与 <abbr title="Single Page Application 单页应用程序">SPA</abbr>。
-- **波浪与虚线下划线**：<u class="u-wavy">波浪强调下划线</u> 与 <u class="u-dashed">虚线注重下划线</u>。
-- **行动呼吁按钮（CTA Buttons）**：
-  - <a class="article-btn article-btn-primary" href="#top">返回顶部 ⬆️</a>
-  - <a class="article-btn article-btn-outline" href="/archives/">查看全站归档 📂</a>
+<div class="article-steps">
+  <div class="article-steps__item">
+    <div class="article-steps__num">1</div>
+    <div class="article-steps__content">
+      <h4>Rédiger des articles Markdown ou MDX</h4>
+      <p>Créez un fichier <code>.md</code> dans le répertoire <code>src/content/posts/</code> et déclarez les métadonnées Front Matter.</p>
+    </div>
+  </div>
+  <div class="article-steps__item">
+    <div class="article-steps__num">2</div>
+    <div class="article-steps__content">
+      <h4>Combiner librement des cartes multimédias riches et des composants interactifs</h4>
+      <p>Choisissez selon vos besoins parmi les sélecteurs déroulants, les cartes musicales vinyles, les galeries de photos ou les blocs de chiffrement/déchiffrement.</p>
+    </div>
+  </div>
+  <div class="article-steps__item">
+    <div class="article-steps__num">3</div>
+    <div class="article-steps__content">
+      <h4>Compilation statique en un clic et publication en quelques secondes</h4>
+      <p>Exécutez <code>npm run build</code> pour générer des artefacts purement statiques et les pousser vers le CDN Cloudflare pour une accélération mondiale.</p>
+    </div>
+  </div>
+</div>
 
 ---
 
-## 12. Notes de bas de page et infobulles flottantes (Footnotes)
+### 3. Listes de définitions et spécifications (Definition Lists & Specs)
 
-在学术或长篇技术文章中，脚注是必不可少的引用形式。鼠标悬浮于下方脚注角标即可直接弹出释义气泡[^ref-ssg-spec]，无需离开当前阅读视口[^ref-epocanvas-ui]。
-
-[^ref-ssg-spec]: **SSG 内容规范**：主流静态站点生成器均遵循以 Markdown/GFM 为核心，以 MDX 或模板语言为扩展的现代内容工程标准。
-[^ref-epocanvas-ui]: **EpoCanvas 美学规范**：以精致的微交互、高对比色彩与克制的留白，为中文与全球极客社区带来一流的阅读体验。
+<dl class="article-dl">
+  <dt>Îles Astro (Islands)</dt>
+  <dd>Divise les pages en squelettes HTML statiques et en composants interactifs hydratés indépendamment, réduisant considérablement la taille du JavaScript.</dd>
+  <dt>Compilateur KaTeX</dt>
+  <dd>Effectue l'analyse AST de la syntaxe LaTeX au moment de la construction, sans délai de rendu supplémentaire côté client.</dd>
+  <dt>Post Formats</dt>
+  <dd>Spécification de définition de forme de contenu issue de WordPress, utilisée pour attribuer une apparence de mise en page exclusive à différents types d'articles.</dd>
+</dl>
 
 ---
 
-## Conclusion : Construire un système de présentation de contenu orienté vers l'avenir
+## XI. Micro-typographie enrichie en ligne et badges
 
-Grâce à cette mise à niveau complète et à l'expansion, `shijianus-blog` couvre de manière panoramique les formats de contenu SSG dominants, les formats de publication WordPress, les menus déroulants interactifs, les accordéons, les formules LaTeX, les diagrammes Mermaid et les fonctions de chiffrement par mot de passe, sur la colonne de contenu principale (`.article-body.post-content`).
+- **Surlignage multicolore (format balise HTML)** :
+  - <mark class="mark-yellow">Surlignage jaune (annotation clé)</mark>
+  - <mark class="mark-green">Surlignage vert (recommandation réussie)</mark>
+  - <mark class="mark-blue">Surlignage bleu (indice d'information)</mark>
+  - <mark class="mark-pink">Surlignage rose (inspiration design)</mark>
+  - <mark class="mark-purple">Surlignage violet (principe approfondi)</mark>
+  - <mark class="mark-orange">Surlignage orange (alerte opérationnelle)</mark>
+  - <mark class="mark-red">Surlignage rouge (avertissement de risque)</mark>
+  - <mark class="mark-cyan">Surlignage cyan (protocole réseau)</mark>
+- **Surlignage syntaxique rapide (format `==couleur:contenu==`)** :
+  - ==Texte surligné par défaut (jaune automatique)==
+  - ==green:Surlignage syntaxique vert (marqueur agile)==
+  - ==blue:Surlignage syntaxique bleu (élément d'architecture)==
+  - ==pink:Surlignage syntaxique rose (embellissement d'interface)==
+  - ==purple:Surlignage syntaxique violet (algorithme clé)==
+- **Badges d'état** :
+  - <span class="badge badge-primary">Recommandé (Primary)</span>
+  - <span class="badge badge-success">Réussi (Success)</span>
+  - <span class="badge badge-warning">Attention (Warning)</span>
+  - <span class="badge badge-danger">Danger (Danger)</span>
+  - <span class="badge badge-info">Info (Info)</span>
+  - <span class="badge badge-purple">Architecture (Purple)</span>
+  - <span class="badge badge-cyan">Réseau (Cyan)</span>
+  - <span class="badge badge-orange">Matériel (Orange)</span>
+- **Affichage des touches** : <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> ouvre la palette de commandes globale.
+- **Annotation phonétique et prononciation multilingue (Ruby / Phonétique multilingue)** :
+  - **Pinyin chinois (Hanyu Pinyin)** : <ruby>時間<rt>shí jiān</rt></ruby> · <ruby>画布<rt>huà bù</rt></ruby> · <ruby>極客<rt>jí kè</rt></ruby>
+  - **Symboles phonétiques chinois (Bopomofo / Zhuyin taïwanais)** : <ruby>時間<rt>ㄕˊ ㄐㄧㄢ</rt></ruby> · <ruby>極客<rt>ㄐㄧˊ ㄎㄜˋ</rt></ruby> · <ruby>編程<rt>ㄅㄧㄢ ㄔㄥˊ</rt></ruby>
+  - **Kanji japonais + Furigana Hiragana (Furigana / Kundoku・Ondoku)** : <ruby>時間<rt>じかん</rt></ruby> · <ruby>明日<rt>あす</rt></ruby> · <ruby>儚い<rt>はかない</rt></ruby>
+  - **Mots d'emprunt et Ateji japonais en Katakana (Katakana / Mots d'emprunt & Ateji)** : <ruby>画布<rt>キャンバス</rt></ruby> · <ruby>電脳<rt>パソコン</rt></ruby> · <ruby>宇宙<rt>コスモ</rt></ruby>
+  - **Jukujikun japonais (Jukujikun / Lecture spéciale Gikun)** : <ruby>煙草<rt>タバコ</rt></ruby> · <ruby>大人<rt>おとな</rt></ruby> · <ruby>今日<rt>きょう</rt></ruby>
+  - **Mots anglais + Transcription phonétique internationale IPA (Anglais + Transcription IPA)** : <ruby>EpoCanvas<rt>/ˌepəˈkænvəs/</rt></ruby> · <ruby>Aesthetics<rt>/esˈθetɪks/</rt></ruby> · <ruby>Chronos<rt>/ˈkrɒnɒs/</rt></ruby>
+  - **Transcription phonétique française IPA et liaisons spéciales (IPA français & Prononciation spéciale)** : <ruby>Rendez-vous<rt>/ʁɑ̃.de.vu/</rt></ruby> · <ruby>Déjà-vu<rt>/de.ʒa.vy/</rt></ruby> · <ruby>C'est la vie<rt>/sɛ la vi/</rt></ruby>
+  - **Umlaut et prononciation des mots composés allemands (Umlaut allemand & Mots composés)** : <ruby>Zeitgeist<rt>/ˈtsaɪtɡaɪst/</rt></ruby> · <ruby>Schadenfreude<rt>/ˈʃaːdn̩ˌfʁɔʏ̯də/</rt></ruby>
+  - **Grec et sa translittération latine (Grec + Romanisation)** : <ruby>Φιλοσοφία<rt>philosophia</rt></ruby> · <ruby>Καλημέρα<rt>kaliméra</rt></ruby>
+  - **Caractères chinois coréens (Hanja) et prononciation Hangul (Hanja + Hangul)** : <ruby>時間<rt>시간</rt></ruby> · <ruby>極客<rt>긱</rt></ruby> · <ruby>未來<rt>미래</rt></ruby>
+  - **Transcription phonétique russe/cyrillique (Russe cyrillique + IPA)** : <ruby>Привет<rt>/prʲɪˈvʲet/</rt></ruby> · <ruby>Спасибо<rt>/spɐˈsʲibə/</rt></ruby>
+  - **Sanskrit Devanagari et translittération IAST (Sanskrit Devanagari + IAST)** : <ruby>नमस्ते<rt>namaste</rt></ruby> · <ruby>शान्तिः<rt>śāntiḥ</rt></ruby>
+- **Explication des abréviations** : <abbr title="Générateur de site statique">SSG</abbr> et <abbr title="Application monopage">SPA</abbr>.
+- **Soulignement ondulé et en pointillés** : <u class="u-wavy">Soulignement ondulé d'accentuation</u> et <u class="u-dashed">Soulignement en pointillés d'emphase</u>.
+- **Boutons d'appel à l'action (CTA Buttons)** :
+  - <a class="article-btn article-btn-primary" href="#top">Retour en haut ⬆️</a>
+  - <a class="article-btn article-btn-outline" href="/archives/">Voir toutes les archives du site 📂</a>
 
-Que ce soit un long article technique rigoureux ou un essai léger sur la vie culturelle, chaque créateur peut trouver la forme d'expression la plus adaptée dans ce système !
+---
+
+## XII. Notes de bas de page et bulles flottantes (Footnotes)
+
+Dans les articles académiques ou techniques longs, les notes de bas de page sont une forme de citation indispensable. Survolez l'indice de note de bas de page ci-dessous pour faire apparaître directement une bulle d'explication[^ref-ssg-spec], sans quitter la fenêtre de lecture actuelle[^ref-epocanvas-ui].
+
+[^ref-ssg-spec]: **Spécification de contenu SSG** : Les générateurs de sites statiques (SSG) grand public suivent tous les normes d'ingénierie de contenu modernes centrées sur Markdown/GFM, avec MDX ou des langages de template comme extensions.
+[^ref-epocanvas-ui]: **Spécification esthétique EpoCanvas** : Offrant une expérience de lecture de premier ordre aux communautés chinoises et mondiales de geeks, grâce à des micro-interactions raffinées, des couleurs à contraste élevé et un usage modéré de l'espace blanc.
+
+---
+
+---
+
+## Conclusion : Construire un système de présentation de contenu tourné vers l'avenir
+
+Grâce à cette mise à niveau et extension complète, `shijianus-blog` a réalisé, dans la colonne de contenu principale (`.article-body.post-content`), une couverture panoramique des formats de contenu SSG grand public, des formats de publication WordPress, des listes déroulantes interactives, des accordéons pliables, des formules LaTeX, des diagrammes Mermaid et des fonctionnalités spécifiques telles que le chiffrement par mot de passe.
+
+Qu'il s'agisse d'un article technique long et rigoureux ou d'un essai léger sur la vie et la culture, chaque créateur peut trouver la forme d'expression la plus appropriée dans ce système !

@@ -325,8 +325,6 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
 
   if (candidateGeminiKeys.length > 0) {
     const candidateGeminiModels = [
-      'gemini-2.5-flash-lite',
-      'gemini-3.5-flash',
       'gemini-2.5-flash',
     ];
     for (const gModel of candidateGeminiModels) {
@@ -373,9 +371,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
             }
           } else {
             const errText = await response.text().catch(() => '');
-            if (response.status === 404) {
-              badGeminiModelKeys.add(`${gKey}:${gModel}`);
-            } else if (response.status === 403 || response.status === 401) {
+            if (response.status === 404 || response.status === 403 || response.status === 401) {
               badGeminiKeys.add(gKey);
               console.warn(`[Article-i18n] Gemini key marked permanently inactive (status ${response.status})`);
             } else if (response.status === 429) {
@@ -455,7 +451,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   if (customApiKey && !primaryEndpointOffline) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 4000));
       const endpoint = `${customBaseUrl}/chat/completions`;
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -765,7 +761,7 @@ export async function translateBodyChunk(
   parts.push('', `[TEXT TO TRANSLATE]:`, chunk, `[END TEXT TO TRANSLATE]`);
   const userMessage = parts.join('\n');
 
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 10;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const result = await callModel({
       systemPrompt,
@@ -809,6 +805,25 @@ export async function translateBodyChunk(
           const possibleFm = translated.slice(0, secondDashes + 3);
           if (possibleFm.includes('title:') || possibleFm.includes('lang:') || possibleFm.includes('pubDate:')) {
             translated = translated.slice(secondDashes + 3).trim();
+          }
+        }
+      }
+
+      // Validate that chunk did not fail translation by simply echoing Chinese
+      if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
+        const textCheck = translated
+          .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+          .replace(/```[\s\S]*?```/g, '')
+          .replace(/<video[\s\S]*?<\/video>/gi, '')
+          .replace(/<audio[\s\S]*?<\/audio>/gi, '')
+          .replace(/<[^>]+>/g, '');
+        const zh = textCheck.match(/[\u4e00-\u9fa5]/g) || [];
+        const nonCodeLen = textCheck.replace(/\s+/g, '').length;
+        if (nonCodeLen > 120 && (zh.length / nonCodeLen) > 0.12) {
+          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${zh.length} residual Chinese chars (${(zh.length / nonCodeLen * 100).toFixed(1)}%), retrying attempt ${attempt}...`);
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, 4000));
+            continue;
           }
         }
       }
@@ -1220,8 +1235,13 @@ export function validateTranslatedFormat(
       return { valid: false, reason: `Untranslated Chinese characters in data-title: ${dataTitleMatch[0]}` };
     }
 
-    // Check for excessive residual Chinese characters in body (outside code blocks and LaTeX math)
+    // Check for excessive residual Chinese characters in body (outside code blocks, media and LaTeX math)
     let textWithoutCode = translatedMarkdown;
+    textWithoutCode = textWithoutCode.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+    textWithoutCode = textWithoutCode.replace(/<pre[\s\S]*?<\/pre>/gi, '');
+    textWithoutCode = textWithoutCode.replace(/<code[\s\S]*?<\/code>/gi, '');
+    textWithoutCode = textWithoutCode.replace(/<video[\s\S]*?<\/video>/gi, '');
+    textWithoutCode = textWithoutCode.replace(/<audio[\s\S]*?<\/audio>/gi, '');
     textWithoutCode = textWithoutCode.replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
     textWithoutCode = textWithoutCode.replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
     textWithoutCode = textWithoutCode
@@ -1236,9 +1256,9 @@ export function validateTranslatedFormat(
     const nonCodeLen = textWithoutCode.replace(/\s+/g, '').length;
     const chineseRatio = nonCodeLen > 0 ? (chineseMatches.length / nonCodeLen) : 0;
 
-    // If more than 70 Chinese characters remain, or Chinese exceeds 1% of body text,
+    // If more than 60 Chinese characters remain, or Chinese exceeds 0.8% of body text,
     // this indicates a failed chunk fallback, dropped translation, or untranslated section.
-    if (chineseMatches.length > 70 || (chineseMatches.length > 25 && chineseRatio > 0.01)) {
+    if (chineseMatches.length > 60 || (chineseMatches.length > 25 && chineseRatio > 0.008)) {
       return {
         valid: false,
         reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`
@@ -1557,9 +1577,24 @@ export async function translateArticleAuto(options: TranslateArticleOptions): Pr
       }
       return primaryResult;
     }
-    console.warn(`[Article-i18n] ⚠️ Scheme 1 format verification failed (${validation.reason}). Activating Scheme 2 backup plan...`);
+    console.warn(`[Article-i18n] ⚠️ Scheme 1 format verification failed (${validation.reason}).`);
+    if (scheme === 'primary') {
+      return {
+        ok: false,
+        error: `Scheme 1 validation failed: ${validation.reason}`,
+        targetLocale: options.targetLocale,
+        i18nKey: options.i18nKey,
+        provider: primaryResult.provider,
+        model: primaryResult.model,
+      };
+    }
+    console.warn(`[Article-i18n] Activating Scheme 2 backup plan...`);
   } else {
-    console.warn(`[Article-i18n] ⚠️ Scheme 1 failed (${primaryResult.error}). Activating Scheme 2 backup plan...`);
+    console.warn(`[Article-i18n] ⚠️ Scheme 1 failed (${primaryResult.error}).`);
+    if (scheme === 'primary') {
+      return primaryResult;
+    }
+    console.warn(`[Article-i18n] Activating Scheme 2 backup plan...`);
   }
 
   return translateArticleByExtraction(options);

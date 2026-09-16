@@ -185,7 +185,14 @@ async function main() {
           let hasChineseLeakage = false;
           let chineseCount = 0;
           if (targetLang !== 'zh-CN' && targetLang !== 'zh-Hant') {
-            const rawWithoutCode = existingTranslation.raw
+            let rawWithoutCode = existingTranslation.raw
+              .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+              .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+              .replace(/<code[\s\S]*?<\/code>/gi, '')
+              .replace(/<video[\s\S]*?<\/video>/gi, '')
+              .replace(/<audio[\s\S]*?<\/audio>/gi, '')
+              .replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+              .replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
               .replace(/```[\s\S]*?```/g, '')
               .replace(/`[^`\r\n]+`/g, '')
               .replace(/\$\$[\s\S]*?\$\$/g, '')
@@ -193,7 +200,7 @@ async function main() {
               .replace(/<[^>]+>/g, '');
             const chineseMatches = rawWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
             chineseCount = chineseMatches.length;
-            hasChineseLeakage = chineseCount > 35;
+            hasChineseLeakage = chineseCount > 70;
           }
 
           if (existingTranslation.mtime >= sourceArticle.mtime && !isUndersized && !hasChineseLeakage) {
