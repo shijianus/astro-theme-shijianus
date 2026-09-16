@@ -52,8 +52,13 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         const base = docLang.split('-')[0].toLowerCase();
         return base;
       }
-      const path = window.location.pathname;
-      const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/);
+      const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
+      if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
+      if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
+      if (path.includes('-fr/') || path.endsWith('-fr') || path.includes('/fr/')) return 'fr';
+      if (path.includes('-de/') || path.endsWith('-de') || path.includes('/de/')) return 'de';
+      if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
+      const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/i);
       if (matched) return matched[1];
       return 'zh-CN';
     };
@@ -155,6 +160,231 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       'es': { note: 'Nota', tip: 'Consejo', important: 'Importante', warning: 'Advertencia', caution: 'Precaución', danger: 'Peligro', success: 'Éxito', question: 'Pregunta', quote: 'Cita', info: 'Información', todo: 'Pendiente', bug: 'Error', example: 'Ejemplo' },
       'de': { note: 'Hinweis', tip: 'Tipp', important: 'Wichtig', warning: 'Warnung', caution: 'Vorsicht', danger: 'Gefahr', success: 'Erfolg', question: 'Frage', quote: 'Zitat', info: 'Information', todo: 'Aufgabe', bug: 'Fehler', example: 'Beispiel' },
       'fr': { note: 'Remarque', tip: 'Conseil', important: 'Important', warning: 'Avertissement', caution: 'Attention', danger: 'Danger', success: 'Succès', question: 'Question', quote: 'Citation', info: 'Information', todo: 'À faire', bug: 'Bogue', example: 'Exemple' },
+    };
+
+    const CHAT_I18N = {
+      'zh-CN': {
+        title: '实时对话模拟流',
+        badge: '首次滑入动效',
+        soundOn: '音效开启中',
+        soundMuted: '音效已静音',
+        replayTitle: '重新演示发送动画',
+        replayBtn: '↺ 重播',
+      },
+      'zh-Hant': {
+        title: '即時對話模擬流',
+        badge: '首次滑入動效',
+        soundOn: '音效開啟中',
+        soundMuted: '音效已靜音',
+        replayTitle: '重新演示發送動畫',
+        replayBtn: '↺ 重播',
+      },
+      'en': {
+        title: 'Live Dialogue Stream Simulation',
+        badge: 'Scroll-in Animation',
+        soundOn: 'Sound enabled',
+        soundMuted: 'Sound muted',
+        replayTitle: 'Replay dialogue animation',
+        replayBtn: '↺ Replay',
+      },
+      'es': {
+        title: 'Simulación de Diálogo en Vivo',
+        badge: 'Animación al Desplazarse',
+        soundOn: 'Efectos de sonido activados',
+        soundMuted: 'Sonido silenciado',
+        replayTitle: 'Repetir animación de diálogo',
+        replayBtn: '↺ Reproducir',
+      },
+      'de': {
+        title: 'Echtzeit-Dialogsimulation',
+        badge: 'Scroll-in-Animation',
+        soundOn: 'Soundeffekte aktiviert',
+        soundMuted: 'Stummgeschaltet',
+        replayTitle: 'Dialoganimation wiederholen',
+        replayBtn: '↺ Wiederholen',
+      },
+      'fr': {
+        title: 'Simulation de Dialogue en Direct',
+        badge: 'Animation au Défilement',
+        soundOn: 'Effets sonores activés',
+        soundMuted: 'Son coupé',
+        replayTitle: 'Rejouer l\'animation de dialogue',
+        replayBtn: '↺ Rejouer',
+      },
+    };
+
+    const TASK_TRACKER_I18N = {
+      'zh-CN': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} 步骤已完成 (${percent}%)`,
+        pendingBadge: '⏳ 待办就绪中',
+        pendingTitle: (checked, total, percent) => `当前进度：${checked}/${total} (${percent}%)`,
+        pendingDesc: '请依次完成上方清单中打勾的每个步骤；当所有任务完成后，此处将实时连锁解锁生产发布指令。',
+        completedBadge: '🎉 全部前置检查已通过',
+        completedTitle: '部署流水线就绪',
+        completedDesc: '已确认完成本教程全部 4 个关键操作点！构建系统已自动解除发布锁，可立即执行 <code>npm run build && npx wrangler pages deploy</code> 极速上线 🚀',
+      },
+      'zh-Hant': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} 步驟已完成 (${percent}%)`,
+        pendingBadge: '⏳ 待辦就緒中',
+        pendingTitle: (checked, total, percent) => `目前進度：${checked}/${total} (${percent}%)`,
+        pendingDesc: '請依次完成上方清單中勾選的每個步驟；當所有任務完成後，此處將即時連鎖解鎖生產發布指令。',
+        completedBadge: '🎉 全部前置檢查已通過',
+        completedTitle: '部署管線就緒',
+        completedDesc: '已確認完成本教學全部 4 個關鍵操作點！建置系統已自動解除發布鎖，可立即執行 <code>npm run build && npx wrangler pages deploy</code> 極速上線 🚀',
+      },
+      'en': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} steps completed (${percent}%)`,
+        pendingBadge: '⏳ In Progress',
+        pendingTitle: (checked, total, percent) => `Current Progress: ${checked}/${total} (${percent}%)`,
+        pendingDesc: 'Please complete each checked step in the checklist above in order; once all tasks are completed, the production deployment command will unlock here in real time.',
+        completedBadge: '🎉 All Pre-checks Passed',
+        completedTitle: 'Deployment Pipeline Ready',
+        completedDesc: 'All 4 critical checkpoints in this tutorial have been verified! The build system has released the deployment lock. Run <code>npm run build && npx wrangler pages deploy</code> to go live 🚀',
+      },
+      'es': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} pasos completados (${percent}%)`,
+        pendingBadge: '⏳ Pendiente de preparación',
+        pendingTitle: (checked, total, percent) => `Progreso actual: ${checked}/${total} (${percent}%)`,
+        pendingDesc: 'Por favor, complete cada paso marcado en la lista anterior en orden; cuando todas las tareas estén completadas, aquí se desbloquearán automáticamente las instrucciones de lanzamiento de producción en tiempo real.',
+        completedBadge: '🎉 Todas las comprobaciones previas superadas',
+        completedTitle: 'Canal de despliegue listo',
+        completedDesc: '¡Se ha confirmado la finalización de los 4 puntos operativos clave de este tutorial! El sistema de compilación ha desbloqueado el bloqueo de publicación. Ejecute <code>npm run build && npx wrangler pages deploy</code> para desplegar inmediatamente 🚀',
+      },
+      'de': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} Schritte abgeschlossen (${percent}%)`,
+        pendingBadge: '⏳ Vorbereitung ausstehend',
+        pendingTitle: (checked, total, percent) => `Aktueller Fortschritt: ${checked}/${total} (${percent}%)`,
+        pendingDesc: 'Bitte führen Sie jeden markierten Schritt in der obigen Checkliste der Reihe nach aus. Sobald alle Aufgaben abgeschlossen sind, werden die Produktions-Bereitstellungsbefehle hier in Echtzeit freigeschaltet.',
+        completedBadge: '🎉 Alle Vorabprüfungen bestanden',
+        completedTitle: 'Bereitstellungs-Pipeline bereit',
+        completedDesc: 'Alle 4 wichtigen Kontrollpunkte dieses Tutorials wurden erfolgreich abgeschlossen! Die Freigabesperre wurde aufgehoben. Führen Sie <code>npm run build && npx wrangler pages deploy</code> aus, um sofort online zu gehen 🚀',
+      },
+      'fr': {
+        stepsCompleted: (checked, total, percent) => `${checked}/${total} étapes terminées (${percent}%)`,
+        pendingBadge: '⏳ En attente de préparation',
+        pendingTitle: (checked, total, percent) => `Progression actuelle : ${checked}/${total} (${percent}%)`,
+        pendingDesc: 'Veuillez réaliser chaque étape cochée dans la liste ci-dessus dans l\'ordre ; lorsque toutes les tâches seront terminées, les instructions de déploiement en production seront déverrouillées ici en temps réel.',
+        completedBadge: '🎉 Toutes les vérifications préalables ont réussi',
+        completedTitle: 'Pipeline de déploiement prêt',
+        completedDesc: 'Les 4 étapes clés de ce tutoriel ont été validées avec succès ! Le verrou de publication a été levé. Exécutez <code>npm run build && npx wrangler pages deploy</code> pour une mise en ligne immédiate 🚀',
+      },
+    };
+
+    const ENCRYPTED_BOX_I18N = {
+      'zh-CN': {
+        persistSession: ' · 会话持久',
+        persistLocal: ' · 本地持久',
+        persistReset: ' · 刷新自动重置',
+        level1: '🛡️ 1级加密',
+        level2: '🛡️ 2级加密 · 遮罩防窥保护',
+        level3: '🛡️ 3级加密 · 视口防窥离开即锁',
+        defaultHint: '该部分为受限加密内容，请输入凭证解锁。',
+        gateBadge1: '🌐 外联分段安全解密',
+        gateBadge2: '端点分片存储',
+        gateHint: '请输入外联安全分段凭证以挂载密文正文。',
+      },
+      'zh-Hant': {
+        persistSession: ' · 會話持久',
+        persistLocal: ' · 本地持久',
+        persistReset: ' · 重新整理自動重設',
+        level1: '🛡️ 1級加密',
+        level2: '🛡️ 2級加密 · 遮罩防窺保護',
+        level3: '🛡️ 3級加密 · 視口防窺離開即鎖',
+        defaultHint: '此部分為受限加密內容，請輸入憑證解鎖。',
+        gateBadge1: '🌐 外聯分段安全解密',
+        gateBadge2: '端點分片存儲',
+        gateHint: '請輸入外聯安全分段憑證以掛載密文正文。',
+      },
+      'en': {
+        persistSession: ' · Session Persistent',
+        persistLocal: ' · Local Persistent',
+        persistReset: ' · Reset on Refresh',
+        level1: '🛡️ Level 1 Encryption',
+        level2: '🛡️ Level 2 Encryption · Privacy Masking',
+        level3: '🛡️ Level 3 Encryption · Auto-lock on Exit',
+        defaultHint: 'This section contains restricted encrypted content. Please enter credentials to unlock.',
+        gateBadge1: '🌐 External Segment Decryption',
+        gateBadge2: 'Endpoint Segmented Storage',
+        gateHint: 'Please enter external security credentials to mount ciphertext body.',
+      },
+      'es': {
+        persistSession: ' · Persistente en sesión',
+        persistLocal: ' · Persistente local',
+        persistReset: ' · Restablecer al recargar',
+        level1: '🛡️ Cifrado Nivel 1',
+        level2: '🛡️ Cifrado Nivel 2 · Máscara de Privacidad',
+        level3: '🛡️ Cifrado Nivel 3 · Bloqueo al Salir',
+        defaultHint: 'Esta sección contiene contenido cifrado restringido. Ingrese las credenciales para desbloquear.',
+        gateBadge1: '🌐 Descifrado de Segmento Externo',
+        gateBadge2: 'Almacenamiento Fragmentado',
+        gateHint: 'Ingrese las credenciales de seguridad externas para montar el texto cifrado.',
+      },
+      'de': {
+        persistSession: ' · Sitzungspersistent',
+        persistLocal: ' · Lokal persistent',
+        persistReset: ' · Zurücksetzen beim Aktualisieren',
+        level1: '🛡️ Stufe 1 Verschlüsselung',
+        level2: '🛡️ Stufe 2 Verschlüsselung · Sichtschutzmaske',
+        level3: '🛡️ Stufe 3 Verschlüsselung · Automatische Sperre beim Verlassen',
+        defaultHint: 'Dieser Bereich enthält geschützte, verschlüsselte Inhalte. Bitte Anmeldedaten eingeben.',
+        gateBadge1: '🌐 Externe Segment-Entschlüsselung',
+        gateBadge2: 'Endpunkt-fragmentierter Speicher',
+        gateHint: 'Bitte externe Sicherheitsanmeldedaten eingeben, um den Geheimtext einzubinden.',
+      },
+      'fr': {
+        persistSession: ' · Persistant en session',
+        persistLocal: ' · Persistant local',
+        persistReset: ' · Réinitialisation à l\'actualisation',
+        level1: '🛡️ Chiffrement Niveau 1',
+        level2: '🛡️ Chiffrement Niveau 2 · Masquage de Confidentialité',
+        level3: '🛡️ Chiffrement Niveau 3 · Verrouillage en sortie',
+        defaultHint: 'Cette section contient du contenu chiffré restreint. Saisissez les identifiants pour déverrouiller.',
+        gateBadge1: '🌐 Déchiffrement de Segment Externe',
+        gateBadge2: 'Stockage Fractionné d\'Extrémité',
+        gateHint: 'Veuillez saisir les identifiants de sécurité externes pour charger le texte chiffré.',
+      },
+    };
+
+    const FOOTNOTE_I18N = {
+      'zh-CN': {
+        jumpToast: (label) => label ? `已跳转至页尾注释释义 [${label}]` : '已跳转至页尾注释释义',
+        backrefTitle: '回到文章正文引用处',
+        rollbackToast: (label) => label ? `已回到文章正文引用位置 [${label}]` : '已回到文章正文引用位置',
+      },
+      'zh-Hant': {
+        jumpToast: (label) => label ? `已跳轉至頁尾註釋釋義 [${label}]` : '已跳轉至頁尾註釋釋義',
+        backrefTitle: '回到文章正文引用處',
+        rollbackToast: (label) => label ? `已回到文章正文引用位置 [${label}]` : '已回到文章正文引用位置',
+      },
+      'en': {
+        jumpToast: (label) => label ? `Jumped to footnote definition [${label}]` : 'Jumped to footnote definition',
+        backrefTitle: 'Back to reference in text',
+        rollbackToast: (label) => label ? `Returned to reference in text [${label}]` : 'Returned to reference in text',
+      },
+      'es': {
+        jumpToast: (label) => label ? `Saltó a la nota al pie [${label}]` : 'Saltó a la nota al pie',
+        backrefTitle: 'Volver a la referencia en el texto',
+        rollbackToast: (label) => label ? `Volvió a la referencia en el texto [${label}]` : 'Volvió a la referencia en el texto',
+      },
+      'de': {
+        jumpToast: (label) => label ? `Zur Fußnotendefinition gesprungen [${label}]` : 'Zur Fußnotendefinition gesprungen',
+        backrefTitle: 'Zurück zur Textstelle',
+        rollbackToast: (label) => label ? `Zurück zur Textstelle gesprungen [${label}]` : 'Zurück zur Textstelle gesprungen',
+      },
+      'fr': {
+        jumpToast: (label) => label ? `Aller à la définition de note de bas de page [${label}]` : 'Aller à la note de bas de page',
+        backrefTitle: 'Retour à la référence dans le texte',
+        rollbackToast: (label) => label ? `Retour à la référence dans le texte [${label}]` : 'Retour à la référence dans le texte',
+      },
+    };
+
+    const LIGHTBOX_I18N = {
+      'zh-CN': { close: '关闭预览' },
+      'zh-Hant': { close: '關閉預覽' },
+      'en': { close: 'Close preview' },
+      'es': { close: 'Cerrar vista previa' },
+      'de': { close: 'Vorschau schließen' },
+      'fr': { close: 'Fermer l\'aperçu' },
     };
 
     const checkIsUnlocked = (el, id) => {
@@ -1521,20 +1751,23 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
           let headerBar = chat.querySelector('.chat-header-bar');
           if (!headerBar) {
+            const chatLang = resolveContentLang();
+            const tChat = CHAT_I18N[chatLang] || CHAT_I18N['zh-CN'];
+
             headerBar = document.createElement('div');
             headerBar.className = 'chat-header-bar';
             headerBar.innerHTML = `
               <div class="chat-header-left">
                 <span class="chat-header-dot"></span>
-                <span class="chat-header-title">实时对话模拟流</span>
-                <span class="badge badge-success chat-header-badge">首次滑入动效</span>
+                <span class="chat-header-title">${tChat.title}</span>
+                <span class="badge badge-success chat-header-badge">${tChat.badge}</span>
               </div>
               <div class="chat-header-actions">
-                <button type="button" class="chat-action-btn chat-sound-toggle" title="${soundEnabled ? '音效开启中' : '音效已静音'}">
+                <button type="button" class="chat-action-btn chat-sound-toggle" title="${soundEnabled ? tChat.soundOn : tChat.soundMuted}">
                   ${soundEnabled ? '🔊' : '🔇'}
                 </button>
-                <button type="button" class="chat-action-btn chat-replay-btn" title="重新演示发送动画">
-                  ↺ 重播
+                <button type="button" class="chat-action-btn chat-replay-btn" title="${tChat.replayTitle}">
+                  ${tChat.replayBtn}
                 </button>
               </div>
             `;
@@ -1547,7 +1780,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
               chat.dataset.sound = soundEnabled ? 'true' : 'false';
               if (soundBtn) {
                 soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
-                soundBtn.title = soundEnabled ? '音效开启中' : '音效已静音';
+                soundBtn.title = soundEnabled ? tChat.soundOn : tChat.soundMuted;
               }
               if (soundEnabled) playChatSound('incoming');
             });
@@ -1673,6 +1906,9 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const countLabel = tracker.querySelector('.task-tracker__count');
           const chainAlert = tracker.querySelector('.task-tracker__status-card');
 
+          const taskLang = resolveContentLang();
+          const tTask = TASK_TRACKER_I18N[taskLang] || TASK_TRACKER_I18N['zh-CN'];
+
           const updateProgress = () => {
             const total = checkboxes.length;
             if (!total) return;
@@ -1680,7 +1916,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             const percent = Math.round((checked / total) * 100);
 
             if (progressBar) progressBar.style.width = `${percent}%`;
-            if (countLabel) countLabel.textContent = `${checked}/${total} 步骤已完成 (${percent}%)`;
+            if (countLabel) countLabel.textContent = tTask.stepsCompleted(checked, total, percent);
 
             checkboxes.forEach((cb) => {
               const item = cb.closest('li, .task-checklist-item');
@@ -1699,20 +1935,20 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
                 chainAlert.classList.add('is-completed');
                 chainAlert.innerHTML = `
                   <div class="status-card__header">
-                    <span class="badge badge-success">🎉 全部前置检查已通过</span>
-                    <span style="font-weight:700;">部署流水线就绪</span>
+                    <span class="badge badge-success">${tTask.completedBadge}</span>
+                    <span style="font-weight:700;">${tTask.completedTitle}</span>
                   </div>
-                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">已确认完成本教程全部 4 个关键操作点！构建系统已自动解除发布锁，可立即执行 <code>npm run build && npx wrangler pages deploy</code> 极速上线 🚀</p>
+                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">${tTask.completedDesc}</p>
                 `;
               } else {
                 chainAlert.classList.remove('is-completed');
                 chainAlert.classList.add('is-pending');
                 chainAlert.innerHTML = `
                   <div class="status-card__header">
-                    <span class="badge badge-warning">⏳ 待办就绪中</span>
-                    <span style="font-weight:700;">当前进度：${checked}/${total} (${percent}%)</span>
+                    <span class="badge badge-warning">${tTask.pendingBadge}</span>
+                    <span style="font-weight:700;">${tTask.pendingTitle(checked, total, percent)}</span>
                   </div>
-                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">请依次完成上方清单中打勾的每个步骤；当所有任务完成后，此处将实时连锁解锁生产发布指令。</p>
+                  <p style="margin-top:0.4rem;margin-bottom:0;font-size:0.88rem;line-height:1.6;">${tTask.pendingDesc}</p>
                 `;
               }
             }
@@ -1823,18 +2059,21 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const btn = box.querySelector('.encrypted-box__btn');
           if (!btn) return;
 
+          const encLang = resolveContentLang();
+          const tEnc = ENCRYPTED_BOX_I18N[encLang] || ENCRYPTED_BOX_I18N['zh-CN'];
+
           btn.addEventListener('click', () => {
             let levelTag = '';
             const p = (box.dataset.persist || box.dataset.remember || '').trim().toLowerCase();
-            const persistNote = (p === 'session' || p === 'true') ? ' · 会话持久' : (p === 'local' ? ' · 本地持久' : ' · 刷新自动重置');
+            const persistNote = (p === 'session' || p === 'true') ? tEnc.persistSession : (p === 'local' ? tEnc.persistLocal : tEnc.persistReset);
             if (level === '1') {
-              levelTag = `<span class="badge badge-success">🛡️ 1级加密${persistNote}</span>`;
+              levelTag = `<span class="badge badge-success">${tEnc.level1}${persistNote}</span>`;
             } else if (level === '2') {
-              levelTag = `<span class="badge badge-warning">🛡️ 2级加密 · 遮罩防窥保护${persistNote}</span>`;
+              levelTag = `<span class="badge badge-warning">${tEnc.level2}${persistNote}</span>`;
             } else if (level === '3') {
-              levelTag = '<span class="badge badge-danger">🛡️ 3级加密 · 视口防窥离开即锁</span>';
+              levelTag = `<span class="badge badge-danger">${tEnc.level3}</span>`;
             }
-            const hint = box.dataset.hint || '该部分为受限加密内容，请输入凭证解锁。';
+            const hint = box.dataset.hint || tEnc.defaultHint;
             openModal(box, levelTag, hint);
           });
         });
@@ -1854,9 +2093,12 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           const btn = gate.querySelector('.external-gate__btn');
           if (!btn) return;
 
+          const encLang = resolveContentLang();
+          const tEnc = ENCRYPTED_BOX_I18N[encLang] || ENCRYPTED_BOX_I18N['zh-CN'];
+
           btn.addEventListener('click', () => {
-            const hint = gate.dataset.hint || '请输入外联安全分段凭证以挂载密文正文。';
-            const levelTag = '<span class="badge badge-purple">🌐 外联分段安全解密</span> <span class="badge badge-cyan">端点分片存储</span>';
+            const hint = gate.dataset.hint || tEnc.gateHint;
+            const levelTag = `<span class="badge badge-purple">${tEnc.gateBadge1}</span> <span class="badge badge-cyan">${tEnc.gateBadge2}</span>`;
             openModal(gate, levelTag, hint);
           });
         });
@@ -1865,10 +2107,13 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
       // 6. Image Lightbox
       let lightbox = document.querySelector('.article-lightbox');
       if (!lightbox) {
+        const lbLang = resolveContentLang();
+        const tLb = LIGHTBOX_I18N[lbLang] || LIGHTBOX_I18N['zh-CN'];
+
         lightbox = document.createElement('div');
         lightbox.className = 'article-lightbox';
         lightbox.innerHTML = `
-          <button type="button" class="article-lightbox__close" aria-label="关闭预览">✕</button>
+          <button type="button" class="article-lightbox__close" aria-label="${tLb.close}">✕</button>
           <div class="article-lightbox__img-wrap">
             <img class="article-lightbox__img" src="" alt="" />
           </div>
@@ -1994,8 +2239,10 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
             scrollToFootnoteTarget(targetEl, 'footnote-target-active');
 
             // Show top notification popup explaining jump to footnote
+            const fnLang = resolveContentLang();
+            const tFn = FOOTNOTE_I18N[fnLang] || FOOTNOTE_I18N['zh-CN'];
             const refLabel = ref.textContent?.trim() || '';
-            const msg = refLabel ? `已跳转至页尾注释释义 [${refLabel}]` : '已跳转至页尾注释释义';
+            const msg = tFn.jumpToast(refLabel);
             if (typeof window.snackbarShow === 'function') {
               window.snackbarShow(msg, false, 2000);
             } else if (typeof window.showToast === 'function') {
@@ -2018,12 +2265,15 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
           if (backref.dataset.footnoteBackrefBound === 'true') return;
           backref.dataset.footnoteBackrefBound = 'true';
 
+          const fnLang = resolveContentLang();
+          const tFn = FOOTNOTE_I18N[fnLang] || FOOTNOTE_I18N['zh-CN'];
+
           // Set accessible attributes and tooltip text
           if (!backref.getAttribute('title')) {
-            backref.setAttribute('title', '回到文章正文引用处');
+            backref.setAttribute('title', tFn.backrefTitle);
           }
           if (!backref.getAttribute('aria-label')) {
-            backref.setAttribute('aria-label', '回到文章正文引用处');
+            backref.setAttribute('aria-label', tFn.backrefTitle);
           }
 
           backref.addEventListener('click', (e) => {
@@ -2053,7 +2303,7 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
 
             // Show top notification popup explaining rollback to body
             const refLabel = targetEl.textContent?.trim() || '';
-            const msg = refLabel ? `已回到文章正文引用位置 [${refLabel}]` : '已回到文章正文引用位置';
+            const msg = tFn.rollbackToast(refLabel);
             if (typeof window.snackbarShow === 'function') {
               window.snackbarShow(msg, false, 2000);
             } else if (typeof window.showToast === 'function') {

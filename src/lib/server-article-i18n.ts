@@ -101,7 +101,10 @@ function compileChunkSystemPrompt(targetLocale: string): string {
     `   - TRANSLATE human-readable text inside user-facing HTML attributes: data-title="...", placeholder="...", aria-label="...", alt="...", title="...", and data-hint="...". Translate ONLY their natural language values into ${localeName}.`,
     `   - IMPORTANT — Widget container tags: For tags like <div class="interactive-unit-converter" data-title="..."> or similar self-closing widget divs, the data-title attribute MUST be translated into ${localeName}. NEVER leave Chinese characters in data-title for non-Chinese locales.`,
     `   - IMPORTANT — Tab button text: For <button class="article-tabs__button" ...> elements inside <div class="article-tabs__nav">, the button text labels (like "🌟 渲染效果呈现", "💻 LaTeX 源码") MUST be translated into ${localeName}. Never leave Chinese in tab button text.`,
-    `   - All chat messages (<div class="chat-message ...">) must remain strictly nested inside their parent <div class="article-chat" ...> container.`,
+    `   - IMPORTANT — Task trackers & checklists: For <div class="task-tracker__status-card ..."> elements, badges (e.g. "⏳ 待办就绪中", "🎉 全部前置检查已通过"), progress titles, descriptions, <label class="task-item-label">, and <div class="task-item-desc"> MUST be fully translated into ${localeName}.`,
+    `   - IMPORTANT — Chat & Dialogue streams: All chat messages (<div class="chat-message ...">), author roles/names (<div class="chat-author">), and dialogue bubbles (<div class="chat-bubble">) MUST be translated into ${localeName} and remain strictly nested inside their parent <div class="article-chat" ...> container.`,
+    `   - IMPORTANT — Dropdowns & Select options: All <option ...> label texts and human-readable data-desc="..." attributes in <select class="article-select ..."> MUST be translated into ${localeName}.`,
+    `   - IMPORTANT — Encrypted boxes & Gate cards: Titles (<div class="encrypted-box__title">), descriptions (<div class="encrypted-box__desc">), badges (<span class="badge ...">), and hint attributes (data-hint="...") MUST be translated into ${localeName}.`,
     `   - All accordions (<details class="article-accordion" ...>) must remain strictly inside <div class="article-accordion-group" ...>.`,
     `6. CONTEXT & CONTINUITY:`,
     `   - If any [REFERENCE CONTEXT] is provided, use it strictly for terminology continuity. Do NOT translate or echo the reference context in your output.`,
@@ -529,13 +532,33 @@ export function splitIntoChunks(body: string, maxChars = 3200): string[] {
     'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline', 'rect', 'stop', 'use'
   ]);
 
+  let inHtmlComment = false;
+
   function scanHtmlDepthChange(line: string): number {
     let delta = 0;
     // Strip inline code spans e.g. `<div>`
-    const lineWithoutInlineCode = line.replace(/`[^`]*`/g, '');
+    let clean = line.replace(/`[^`]*`/g, '');
+
+    // Multi-line HTML comment tracking
+    if (inHtmlComment) {
+      const closeIdx = clean.indexOf('-->');
+      if (closeIdx !== -1) {
+        inHtmlComment = false;
+        clean = clean.slice(closeIdx + 3);
+      } else {
+        return 0;
+      }
+    }
+    clean = clean.replace(/<!--[\s\S]*?-->/g, '');
+    const openCommentIdx = clean.indexOf('<!--');
+    if (openCommentIdx !== -1) {
+      inHtmlComment = true;
+      clean = clean.slice(0, openCommentIdx);
+    }
+
     const tagRegex = /<\/?([a-zA-Z0-9_-]+)(?:\s+[^>]*?)?(\/?)>/g;
     let match: RegExpExecArray | null;
-    while ((match = tagRegex.exec(lineWithoutInlineCode)) !== null) {
+    while ((match = tagRegex.exec(clean)) !== null) {
       const isClosing = match[0].startsWith('</');
       const tagName = match[1].toLowerCase();
       const isSelfClosing = match[2] === '/' || VOID_TAGS.has(tagName);
@@ -592,13 +615,8 @@ export function splitIntoChunks(body: string, maxChars = 3200): string[] {
 
     // 3. Track HTML depth (only outside code fences)
     if (!inCodeFence) {
-      // Top-level markdown headings or thematic breaks are never inside inline HTML elements
-      if (trimmed.startsWith('# ') || trimmed.startsWith('## ') || trimmed === '---') {
-        htmlDepth = 0;
-      } else {
-        const delta = scanHtmlDepthChange(line);
-        htmlDepth = Math.max(0, htmlDepth + delta);
-      }
+      const delta = scanHtmlDepthChange(line);
+      htmlDepth = Math.max(0, htmlDepth + delta);
     }
 
     currentChunkLines.push(line);

@@ -278,6 +278,102 @@
       return highlightJsTsx(rawCode);
     };
 
+    const resolveCodeLang = () => {
+      const article = document.querySelector('article[data-lang]');
+      const articleLang = article?.getAttribute('data-lang')?.trim();
+      if (articleLang) {
+        if (articleLang.startsWith('zh-Hant') || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
+        if (articleLang.startsWith('zh')) return 'zh-CN';
+        const base = articleLang.split('-')[0].toLowerCase();
+        return base;
+      }
+      const docLang = (document.documentElement.lang || '').trim();
+      if (docLang) {
+        if (docLang.startsWith('zh-Hant') || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
+        if (docLang.startsWith('zh')) return 'zh-CN';
+        const base = docLang.split('-')[0].toLowerCase();
+        return base;
+      }
+      const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
+      if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
+      if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
+      if (path.includes('-fr/') || path.endsWith('-fr') || path.includes('/fr/')) return 'fr';
+      if (path.includes('-de/') || path.endsWith('-de') || path.includes('/de/')) return 'de';
+      if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
+      const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/i);
+      if (matched) return matched[1];
+      return 'zh-CN';
+    };
+
+    const CODE_BLOCK_I18N = {
+      'zh-CN': {
+        copy: '复制',
+        copyTitle: '复制代码',
+        copied: '已复制',
+        copiedMsg: '已复制代码块',
+        failed: '失败',
+        failedTitle: '复制失败',
+        failedMsg: '代码复制失败',
+        expand: (lines) => `展开全部代码 (${lines} 行)`,
+        collapse: '收起代码',
+      },
+      'zh-Hant': {
+        copy: '複製',
+        copyTitle: '複製代碼',
+        copied: '已複製',
+        copiedMsg: '已複製程式碼區塊',
+        failed: '失敗',
+        failedTitle: '複製失敗',
+        failedMsg: '程式碼複製失敗',
+        expand: (lines) => `展開全部代碼 (${lines} 行)`,
+        collapse: '收起代碼',
+      },
+      'en': {
+        copy: 'Copy',
+        copyTitle: 'Copy code',
+        copied: 'Copied',
+        copiedMsg: 'Code block copied',
+        failed: 'Failed',
+        failedTitle: 'Copy failed',
+        failedMsg: 'Failed to copy code block',
+        expand: (lines) => `Expand all code (${lines} lines)`,
+        collapse: 'Collapse code',
+      },
+      'es': {
+        copy: 'Copiar',
+        copyTitle: 'Copiar código',
+        copied: 'Copiado',
+        copiedMsg: 'Bloque de código copiado',
+        failed: 'Error',
+        failedTitle: 'Error al copiar',
+        failedMsg: 'Error al copiar el bloque de código',
+        expand: (lines) => `Expandir todo el código (${lines} líneas)`,
+        collapse: 'Contraer código',
+      },
+      'de': {
+        copy: 'Kopieren',
+        copyTitle: 'Code kopieren',
+        copied: 'Kopiert',
+        copiedMsg: 'Codeblock kopiert',
+        failed: 'Fehler',
+        failedTitle: 'Kopieren fehlgeschlagen',
+        failedMsg: 'Fehler beim Kopieren des Codeblocks',
+        expand: (lines) => `Gesamten Code anzeigen (${lines} Zeilen)`,
+        collapse: 'Code einklappen',
+      },
+      'fr': {
+        copy: 'Copier',
+        copyTitle: 'Copier le code',
+        copied: 'Copié',
+        copiedMsg: 'Bloc de code copié',
+        failed: 'Échec',
+        failedTitle: 'Échec de la copie',
+        failedMsg: 'Échec de la copie du bloc de code',
+        expand: (lines) => `Développer tout le code (${lines} lignes)`,
+        collapse: 'Réduire le code',
+      },
+    };
+
     const getLanguage = (pre, code) => {
       const dataLanguage = pre.dataset.language || code?.dataset.language;
       if (dataLanguage) return dataLanguage.toUpperCase();
@@ -290,11 +386,14 @@
     const attachEmbeddedCopyBtn = (pre, code) => {
       if (pre.querySelector('.embedded-code-copy-btn')) return;
 
+      const codeLang = resolveCodeLang();
+      const tCode = CODE_BLOCK_I18N[codeLang] || CODE_BLOCK_I18N['zh-CN'];
+
       const copyBtn = document.createElement('button');
       copyBtn.type = 'button';
       copyBtn.className = 'embedded-code-copy-btn';
-      copyBtn.title = '复制代码';
-      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>复制</span>`;
+      copyBtn.title = tCode.copyTitle;
+      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>${tCode.copy}</span>`;
 
       let resetTimer = 0;
       copyBtn.addEventListener('click', async (e) => {
@@ -306,18 +405,19 @@
 
         if (copied) {
           copyBtn.classList.add('copied');
-          copyBtn.querySelector('span').textContent = '已复制';
-          window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: '已复制代码块' } }));
+          copyBtn.querySelector('span').textContent = tCode.copied;
+          window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: tCode.copiedMsg } }));
           resetTimer = window.setTimeout(() => {
             copyBtn.classList.remove('copied');
-            copyBtn.querySelector('span').textContent = '复制';
+            copyBtn.querySelector('span').textContent = tCode.copy;
           }, 1800);
         } else {
           copyBtn.classList.add('copy-failed');
-          copyBtn.querySelector('span').textContent = '失败';
+          copyBtn.querySelector('span').textContent = tCode.failed;
+          window.dispatchEvent(new CustomEvent('shijianus:activity', { detail: { message: tCode.failedMsg } }));
           resetTimer = window.setTimeout(() => {
             copyBtn.classList.remove('copy-failed');
-            copyBtn.querySelector('span').textContent = '复制';
+            copyBtn.querySelector('span').textContent = tCode.copy;
           }, 1800);
         }
       });
@@ -383,6 +483,9 @@
         const button = document.createElement('button');
         const buttonText = document.createElement('span');
 
+        const codeLang = resolveCodeLang();
+        const tCode = CODE_BLOCK_I18N[codeLang] || CODE_BLOCK_I18N['zh-CN'];
+
         shell.className = 'code-block-shell';
         toolbar.className = 'code-block-toolbar';
         lights.className = 'code-block-lights';
@@ -390,9 +493,9 @@
         lang.className = 'code-block-lang';
         button.className = 'code-copy-button';
         button.type = 'button';
-        button.title = '复制代码';
+        button.title = tCode.copyTitle;
         button.dataset.copyState = 'idle';
-        buttonText.textContent = '复制';
+        buttonText.textContent = tCode.copy;
 
         lights.innerHTML = '<i></i><i></i><i></i>';
         lang.textContent = langStr;
@@ -414,14 +517,14 @@
           const expandBtn = document.createElement('button');
           expandBtn.type = 'button';
           expandBtn.className = 'code-expand-btn';
-          expandBtn.innerHTML = `<span>展开全部代码 (${lineCount} 行)</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+          expandBtn.innerHTML = `<span>${tCode.expand(lineCount)}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
 
           expandBtn.addEventListener('click', () => {
             const isExpanded = collapseWrap.classList.toggle('is-expanded');
             if (isExpanded) {
-              expandBtn.innerHTML = `<span>收起代码</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`;
+              expandBtn.innerHTML = `<span>${tCode.collapse}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`;
             } else {
-              expandBtn.innerHTML = `<span>展开全部代码 (${lineCount} 行)</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+              expandBtn.innerHTML = `<span>${tCode.expand(lineCount)}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
               shell.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
           });
@@ -445,14 +548,14 @@
             button.classList.remove('copied');
             button.classList.add('copy-failed');
             button.dataset.copyState = 'error';
-            button.title = '复制失败';
-            buttonText.textContent = '失败';
-            emitActivity('代码复制失败');
+            button.title = tCode.failedTitle;
+            buttonText.textContent = tCode.failed;
+            emitActivity(tCode.failedMsg);
             resetTimer = window.setTimeout(() => {
               button.classList.remove('copy-failed');
               button.dataset.copyState = 'idle';
-              button.title = '复制代码';
-              buttonText.textContent = '复制';
+              button.title = tCode.copyTitle;
+              buttonText.textContent = tCode.copy;
             }, 1800);
             return;
           }
@@ -460,14 +563,14 @@
           button.classList.remove('copy-failed');
           button.classList.add('copied');
           button.dataset.copyState = 'success';
-          button.title = '已复制代码';
-          buttonText.textContent = '已复制';
-          emitActivity('已复制代码块');
+          button.title = tCode.copied;
+          buttonText.textContent = tCode.copied;
+          emitActivity(tCode.copiedMsg);
           resetTimer = window.setTimeout(() => {
             button.classList.remove('copied');
             button.dataset.copyState = 'idle';
-            button.title = '复制代码';
-            buttonText.textContent = '复制';
+            button.title = tCode.copyTitle;
+            buttonText.textContent = tCode.copy;
           }, 1800);
         });
       });
