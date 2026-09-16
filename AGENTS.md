@@ -2189,5 +2189,12 @@
 - [x] **全场景自动化 Playwright 端到端深度审计与高分辨率截图实测**：
   1. 编写专用测试套件 `scripts/verify-support-refined.mjs`，在本地环境全流程验证 6 档金额直出、零商品绑定、隐式配件水波纹、右侧开销完全移除、4 大通道 Tab 切换及 Stripe 收银台金额原子联动；
   2. 捕获桌面浅色（`01-desktop-main-section-light.png`）、卡片特写（`02-desktop-preset-cards-light.png`）、右侧通道（`03-desktop-right-column-light.png`）、桌面深色（`04-desktop-main-section-dark.png`）、平板（`05-tablet-main-section.png`）与移动端（`06-mobile-main-section.png`）全套高分辨率渲染图，并通过视觉审计确认无样式缺陷，断言 100% 全绿通过。
-
+- [x] **生产端 (Cloudflare Pages) 真实链路部署与 Playwright E2E 终审验证**：
+  1. 构建全量静态产物与 Functions 运行时，全量部署至 Cloudflare Pages 生产边缘节点（项目 `shijianus-blog`，生产域名 `https://blog.epocanvas.com`）；
+  2. 编写并执行专用生产端自动化端到端测试套件 `scripts/verify-live-support-refined.mjs`，对生产环境 `https://blog.epocanvas.com/support/` 展开全链路真机与浏览器审计；
+  3. 生产端 6 档金额预设卡片纯净直出（`text-sm sm:text-base font-black`），高度收敛至 54px，底纹水波纹配件 SVG 完整呈现；
+  4. 生产端右侧列开销说明区块（`真实开销与站点保障公示`）严格为 0（已彻底剔除）；
+  5. 左右两列（`lg:col-span-7` 与 `lg:col-span-5`）顶底对齐误差严格为 0.0px（`y=526.0px, height=665.0px, bottom=1191.0px`，`Top Diff = 0.0px, Bottom Diff = 0.0px`），布局极致协调；
+  6. 4 大收款 Tab（CN、HK、PayPal、Crypto）切换顺畅且垂直完美居中无冗余留白，Stripe 收银台结账按钮金额实时原子级同步（如 RM8 即时更新）；
+  7. 捕获生产端高分辨率截图（`live-01-desktop-overview.png`、`live-02-desktop-preset-cards.png`、`live-03-desktop-right-column.png`、`live-04-desktop-dark-mode.png`、`live-05-tablet.png`、`live-06-mobile.png`），经视觉审查无任何错位或控制台异常，全链路交付通过。
 
