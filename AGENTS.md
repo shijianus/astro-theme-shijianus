@@ -2152,3 +2152,24 @@
   1. 全量重新生成 `content-formats-and-markup-mastery` 的全部 5 种支持语系（`es`, `de`, `fr`, `en`, `zh-Hant`），所有文件通过 Scheme 1 格式校验；
   2. 执行静态编译（111 个页面完整渲染构建无报错）；
   3. 编写并执行全语种自动化审计套件（`scripts/verify-i18n-component-fix.mjs` 及深度组件测试），涵盖 45 项严格断言，全部 100% PASS 通过。
+
+### Task 96: 客户端增强组件 (对话流/任务卡/代码块/灯箱/脚注) 全局 i18n 普适性重构、分片 HTML 容器深度追踪防割裂与双重自动化端到端审计 (`1482ff4`)
+- [x] **排查并解决客户端组件中文回退的本质根因**：
+  1. 定位并证实用户发现的 `.article-chat.chat-animated-container`（"实时对话模拟流"、"首次滑入动效"、"重播"、音效提示）以及 `.task-tracker__status-card.is-pending`（"待办就绪中"、"当前进度"、待办指引及完成流水线提示）并非 Markdown 翻译遗漏，而是由于 `ContentFeatureEnhancer.astro` 在客户端 Hydration 运行时硬编码了中文模板，每次初始化及交互时直接覆盖了 DOM 结构；
+  2. 修复 `resolveContentLang()` 无法匹配文章 slug 后缀（如 `/posts/slug-es/`）的问题，打通全局语种感知，覆盖 `es`, `de`, `fr`, `en`, `zh-Hant`, `zh-CN`。
+- [x] **全量客户端组件普适性 i18n 字典系统与交互动态注入**：
+  1. `CHAT_I18N`：对话流组件头部标题、动效徽标、重播按钮、音效开关 Tooltip 全语种本地化；
+  2. `TASK_TRACKER_I18N`：步骤进度条计数器（如 `1/4 pasos completados`）、未就绪卡片徽标/标题/指引、全部勾选后的部署就绪解锁卡片全语种动态本地化；
+  3. `ENCRYPTED_BOX_I18N`：1/2/3 级加密徽标、持久化模式后缀、默认密码提示、外联分段密文门禁卡片全语种本地化；
+  4. `LIGHTBOX_I18N`：图片放大灯箱关闭按钮 `aria-label` 全语种本地化；
+  5. `FOOTNOTE_I18N`：页尾脚注跳转 Toast、返回正文 Tooltip/Aria-label、回到正文 Toast 全语种本地化；
+  6. `CODE_BLOCK_I18N`：在 `CodeBlockEnhancer.astro` 中彻底清除硬编码中文，代码块复制按钮、复制成功 Toast、复制失败反馈、超长代码折叠与展开全部行数按钮实现全语种本地化。
+- [x] **分片算法 (splitIntoChunks) 普适性加固与 HTML 容器防割裂**：
+  1. 修复由于原代码中 `trimmed === '---'` 粗暴重置 `htmlDepth = 0` 导致如果容器内部包含分隔线可能引起的容器被腰斩切片的潜在隐患；
+  2. 增强多行 HTML 标签与多行 HTML 注释的状态机跟踪，确保任何复杂的富文本、合成语法或自定义 HTML 容器在分片切分时 100% 保持闭合与原子性；
+  3. 实测验证全篇 20 个分片 100% 保持 HTML 标签完全闭合（0 标签撕裂）。
+- [x] **自动化端到端测试验证与 0 残余中文保障**：
+  1. 编写并运行专用客户端组件端到端审计套件（`scripts/verify-client-components-i18n.mjs`），覆盖全部 5 种目标语言的对话流头部、任务状态卡交互流转、代码块复制与残余中文检测，**73 项断言 100% 全部通过**；
+  2. 运行基础组件回归测试套件（`scripts/verify-i18n-component-fix.mjs`），**45 项断言 100% 全部通过**；
+  3. 双测试套件共计 **118 项自动化断言 100% 全绿**，确认前端动态组件与 Markdown 静态内容零冲突、零中文残留。
+
