@@ -2135,7 +2135,7 @@
      - 15 条 FAQ 手风琴展开折叠交互流畅；
   3. 捕获生产端高分辨率截图存档（`target-1-cards.png`, `target-2-cards.png`, `target-2-table.png`），所有断言 100% PASS 全绿通过。
 
-### Task 95: 文章全量 i18n 1:1 本地化全真复刻、分片容灾机制重构、组件级遗漏根除与全语种 Playwright 深度审计
+### Task 95: 文章全量 i18n 1:1 本地化全真复刻、分片容灾机制重构、组件级遗漏根除与全语种 Playwright 深度审计 (`04dc442`)
 - [x] **排查并根除 AI 接口与分片遗漏根本原因**：
   1. 彻底废弃导致组件属性丢失与结构损毁的旧提取式回退（Scheme 2，原因为仅提取 Markdown 纯文本导致 HTML 属性、按钮、Mindmap 结构全数丢失）；
   2. 修复 Gemini 新模型在 `thinkingConfig: { thinkingBudget: 0 }` 下返回 HTTP 400 导致可用密钥秒级误判拉黑的致命缺陷；
