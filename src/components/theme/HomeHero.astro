@@ -431,7 +431,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   body[data-type='home'] .topGroup .recent-post-item {
     width: calc((100% - 1rem) / 3) !important;
     min-width: 0 !important;
-    height: 164px !important;
+    height: calc((100% - 0.5rem) / 2) !important;
+    max-height: none !important;
     margin: 0 !important;
   }
 
