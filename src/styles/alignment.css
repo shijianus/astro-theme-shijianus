@@ -597,52 +597,122 @@ body[data-type='home'] .page-aside__sticky {
   align-self: stretch;
 }
 
+body[data-type='home'] .page-aside__sticky,
+body[data-type='home'] #aside-content {
+  position: static;
+  align-self: stretch;
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+body[data-type='home'] #aside-content .sticky_layout,
 body[data-type='home'] #aside-content .sticky_layout--utility {
-  min-height: 0;
-  position: static;
+  position: static !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
+#aside-content .card-widget.card-feature-panel--overview,
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky;
-  top: var(--sticky-column-top, 88px);
-  min-height: var(--sticky-card-height, calc(100vh - 116px));
-  max-height: var(--sticky-card-height, calc(100vh - 116px));
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  position: sticky !important;
+  top: var(--sticky-column-top, 88px) !important;
+  min-height: 240px !important;
+  max-height: 380px !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px 18px 14px !important;
+  overflow: hidden !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 8px !important;
+  color: var(--font-color) !important;
+  box-shadow: var(--anzhiyu-shadow-border) !important;
 }
 
+#aside-content .card-widget.card-feature-panel--overview::before,
+body[data-type='home'] .card-feature-panel--overview::before {
+  display: none !important;
+}
+
+#aside-content .card-widget.card-feature-panel--overview.is-static-layout,
 body[data-type='home'] .card-feature-panel--overview.is-static-layout {
-  position: static;
-  max-height: none;
+  position: static !important;
+  min-height: auto !important;
+  max-height: 380px !important;
 }
 
-body[data-type='home'] .card-feature-panel--overview .card-content,
-body[data-type='home'] .card-feature-panel--overview .webinfo-panel {
+body[data-type='home'] .card-feature-panel--overview .item-headline {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--font-color) 12%, transparent);
+  color: var(--font-color);
+}
+
+body[data-type='home'] .card-feature-panel--overview .card-more-btn {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--theme-main, #4259ef);
+  background: color-mix(in srgb, var(--theme-main, #4259ef) 10%, transparent);
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+body[data-type='home'] .card-feature-panel--overview .card-more-btn:hover {
+  background: var(--theme-main, #4259ef);
+  color: #fff;
+}
+
+body[data-type='home'] .card-feature-panel--overview .card-tag-cloud {
   flex: 1 1 auto;
-  flex-direction: column;
   min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  padding-right: 2px;
 }
 
-body[data-type='home'] .card-feature-panel--overview .webinfo-grid,
-body[data-type='home'] .feature-panel-recent {
-  flex: 0 0 auto;
+body[data-type='home'] .card-feature-panel--overview .tag-cloud-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--card-border) 40%, transparent);
+  color: var(--font-color);
+  text-decoration: none;
+  font-weight: 500;
+  line-height: 1.3;
+  transition: all 0.2s ease;
 }
 
-body[data-type='home'] .feature-panel-recent {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+body[data-type='home'] .card-feature-panel--overview .tag-cloud-item:hover {
+  background: var(--theme-main, #4259ef);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
-body[data-type='home'] .feature-panel-recent .aside-list {
-  flex: 1 1 auto;
-  min-height: 0;
-  position: relative;
-  margin-top: 8px;
-  overflow: auto;
-  padding-right: 4px;
+body[data-type='home'] .card-feature-panel--overview .tag-cloud-item .tag-count {
+  font-size: 0.72em;
+  opacity: 0.7;
+}
+
+body[data-type='home'] #home-pagination {
+  margin-top: 28px !important;
 }
 
 body[data-type='home'] .item-headline--embedded {

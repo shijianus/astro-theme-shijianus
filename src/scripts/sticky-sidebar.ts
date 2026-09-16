@@ -222,9 +222,9 @@ function resolveCompactRecentTop({
 }
 
 function updateHomeSticky(topOffset: number, isMobile: boolean) {
-  const boundary =
-    document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ??
-    document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
+  const pagination = document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
+  const recentPosts = document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts');
+  const boundary = pagination ?? recentPosts;
   const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
 
   if (!boundary || !card) return;
@@ -237,27 +237,29 @@ function updateHomeSticky(topOffset: number, isMobile: boolean) {
     return;
   }
 
+  // Always keep is-sticky-active on desktop
+  card.classList.add('is-sticky-active');
+  card.classList.remove('is-static-layout');
+  card.style.transform = 'none';
+
+  const cardRect = card.getBoundingClientRect();
   const boundaryRect = boundary.getBoundingClientRect();
-  const contentHeight = Math.max(card.scrollHeight, card.offsetHeight, 420);
-  const beforePinDistance = boundaryRect.top - topOffset;
-  const remainingAfterPin = boundaryRect.bottom - topOffset;
+
+  // Has not slid up to topOffset yet (entering phase)
+  const isEntering = cardRect.top > topOffset + 1;
+  // Has reached the bottom boundary (leaving / aligned phase)
+  const isLeaving = cardRect.bottom >= boundaryRect.bottom - 2;
 
   let stickyState = 'reading';
-  if (beforePinDistance > 0) {
+  if (isEntering) {
     stickyState = 'entering';
-    card.style.transform = 'none';
-  } else if (remainingAfterPin < contentHeight) {
+  } else if (isLeaving) {
     stickyState = 'leaving';
-    const offset = Math.round(remainingAfterPin - contentHeight);
-    card.style.transform = `translateY(${offset}px)`;
   } else {
     stickyState = 'reading';
-    card.style.transform = 'none';
   }
 
   card.dataset.stickyState = stickyState;
-  card.classList.toggle('is-static-layout', stickyState === 'static');
-  card.classList.toggle('is-sticky-active', stickyState === 'reading' || stickyState === 'leaving');
   syncScrollableOverflow(card);
 }
 
