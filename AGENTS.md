@@ -2198,3 +2198,21 @@
   6. 4 大收款 Tab（CN、HK、PayPal、Crypto）切换顺畅且垂直完美居中无冗余留白，Stripe 收银台结账按钮金额实时原子级同步（如 RM8 即时更新）；
   7. 捕获生产端高分辨率截图（`live-01-desktop-overview.png`、`live-02-desktop-preset-cards.png`、`live-03-desktop-right-column.png`、`live-04-desktop-dark-mode.png`、`live-05-tablet.png`、`live-06-mobile.png`），经视觉审查无任何错位或控制台异常，全链路交付通过。
 
+### Task 98: 首页侧栏概览粘性卡片重构为全标签卡片、尺寸固定防无限扩展与底部翻页精准对齐 (`9a555d4`)
+- [x] **卡片功能重构为全标签展示卡片 (Tag Card)**：
+  1. 将原有 `class="card-widget card-feature-panel card-feature-panel--overview is-sticky-active"` 卡片从站点概况/运行工单转化为 Anzhiyu 风格的标签卡片（Tag Card），完整保留原有类名组合以保证选择器与测试兼容；
+  2. 展示站点全部真实标签（`展示所有的tag`，共 53 个标签），包含动态标题、`Tags` 矢量图标、标签总数徽标直链 `/tags/`，以及每个标签名称与文章计数上标；
+  3. 标签气泡采用细腻的方圆角胶囊设计（`border-radius: 6px`）与根据文章权重平滑缩放的字号体系，悬浮高亮变蓝并产生微浮动交互（`transform: translateY(-1px)`）。
+- [x] **卡片尺寸严格固定与防无限扩展 (Bounded Dimensions)**：
+  1. 彻底根除此前侧栏粘性卡片向下无节制撑开拉长（甚至达到 808px 超出底部）的问题，强制固定最小与最大高度约束（`min-height: 240px !important; max-height: 380px !important; height: auto !important;`）；
+  2. 内层 `.card-tag-cloud` 容器配置 `overflow-y: auto; scrollbar-width: thin;`，标签少时自然紧凑贴合内容避免大片空白，标签多时在 380px 上限内精致滚动，绝不突破卡片容器边界。
+- [x] **起始滑入与底部终止对齐 (`home-pagination`) 零误差**：
+  1. 起始位置：页面初始位于正常文档流，向下滚动首次滑入视口顶部（`topOffset: 74px`）时即刻激活吸顶（`.is-sticky-active`，`stickyState: 'reading'`）；
+  2. 终止对齐：侧栏容器与左侧主内容列同高延伸（`height: 100% !important; align-self: stretch;`），粘性卡片随页面滑动到底部时，天然终止并完美对齐 `class="theme-card home-pagination"` 底部边缘；
+  3. 真实渲染断言实测：`cardBottom: 356.96875px`，`paginationBottom: 356.96875px`，误差严格为 **0.00px** (`bottomDiff: 0`)。
+- [x] **文章网格与分页间距扩增 & 网格容量扩充**：
+  1. 解决 `class="grid grid-cols-1 md:grid-cols-2 gap-3"` 与 `class="theme-card home-pagination"` 之间过度紧贴的问题：网格容器注入 `mb-7 sm:mb-8`，分页注入 `margin-top: 28px !important`，垂直间距扩展至 **31.6px** 的自然舒适呼吸空间；
+  2. 扩充首页文章列表分页容量：将 `siteConfig.home.feed.pageSize` 由 6 扩增为 10（5 行 2 列布局），为侧栏粘性滑动与分页对齐提供充足平滑的视口跑道。
+- [x] **Playwright 视觉与自动化证据链全流程验收通过**：
+  1. 编写专用测试脚本 `scripts/verify-sticky-tag-card-optimized.mjs`，捕获顶部视图（`01_optimized_top_view.png`）、中部吸顶（`02_optimized_sticky_middle.png`）、底部终止对齐（`03_optimized_bottom_alignment.png`）、标签卡片特写（`04_optimized_tag_card_closeup.png`）及分页间距特写（`05_optimized_pagination_gap_closeup.png`）；
+  2. 全量指标严格达标：类名包含 `is-sticky-active`、标签数 53、卡片高度 375.2px（<= 380px）、网格卡片数 10、网格与分页间距 31.6px、底部对齐差值 0px。
