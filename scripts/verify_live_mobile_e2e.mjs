@@ -111,7 +111,9 @@ async function runLiveAudit() {
 
     // Tap backdrop to close
     if (mBackdrop.hasBackdrop) {
-      await mPage.click('.site-mobile-panel-backdrop');
+      await mPage.click('.site-mobile-panel-backdrop', { force: true }).catch(async () => {
+        await mPage.evaluate(() => document.querySelector('.site-mobile-panel-backdrop')?.click());
+      });
       await mPage.waitForTimeout(400);
     }
 
