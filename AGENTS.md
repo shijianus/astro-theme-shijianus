@@ -2433,4 +2433,21 @@
      - `allTitlesClampedProperly: true`（全部标题行数 <= 2，高度 <= 36px，无任何字体被遮挡或被横向切成半截）；
      - 捕获并留存浅色模式与深色模式的高清视觉截图证据（`live_epocanvas_topgroup_light.png`、`live_epocanvas_topgroup_dark.png`、`live_epocanvas_toggled_light.png` 等）。
 
-
+### Task 108: 单一规范 URL (Single Canonical URL) 无感知就地多语言切换体系重构、零刷新 (Zero-Reload) 架构与全栈组件双语/多语净化 (`9d7373e`, `5a44f8f`, `dc633c4`)
+- [x] **单一规范 URL 强约束 (Strict Single Canonical URL Invariance)**：
+  1. 无论用户选择何种语言（zh-CN, en, es, de, fr, zh-Hant），文章的实际 URL 始终保持单一的规范 URL（如 `/posts/content-formats-and-markup-mastery/`），严禁在 URL 中出现语言后缀（如 `-en`, `-es`, `-fr` 等）；
+  2. 历史语言后缀链接（如 `/posts/...-en/`）通过前端 `window.location.replace` 瞬间静默替换到规范 URL，并保留目标语言偏好，绝不出现 404；
+  3. 服务端静态生成（SSG）在构建阶段将该文章的所有语言变体（共 6 种）一次性全部预渲染至 DOM 中的 `.article-translation-variant[data-lang="..."]`。
+- [x] **零刷新无感知就地切换 (Zero-Reload In-Place Language Switch)**：
+  1. 将 PostHero 中的语言版本标签重构为交互按钮（`<button class="post-hero__lang-tag">`），绑定 `window.switchArticleLanguage(targetLang)`；
+  2. 点击切换时，纯客户端瞬间切换可见变体（`display: none` / `display: block`），并同步更新 PostHero 大标题 `<h1>`、副标题导言 `.post-hero__lede`、浏览器标签标题 `document.title`、HTML 根节点属性（`lang` 与 `data-locale-variant`）以及右侧目录卡片（TOC）；
+  3. 严格实现零页面刷新（Playwright 实测通过 `window.__RELOAD_DETECTION_ID__` 验证，页面生命周期未发生中断，刷新计数为 0）；
+  4. 语言偏好严格尊重用户选择：最高优先级为用户手动选择（`localStorage` 中的 `shijianus-manual-locale-selected`），次高为已存储偏好，仅在初次无选择时根据访客浏览器画像（`navigator.language`）自适应决定。
+- [x] **全栈动态组件双语/多语净化与中文回退根除 (Zero Chinese Fallback in Client Components)**：
+  1. 聊天对话模拟流（`.article-chat.chat-animated-container`）：修复初始化短路拦截导致的多语言更新失效，确保切至英文时标题为 "Live Dialogue Stream Simulation"、徽标为 "Scroll-in Animation"、重播按钮为 "↺ Replay"，全面清除 "实时对话模拟流"、"首次滑入动效"、"重播" 等中文回退；
+  2. 任务清单追踪器（`.article-task-tracker`）：状态卡片标题与进度百分比自适应本地化为 "⏳ In Progress" 与 "Current Progress: 1/4 (25%)"，彻底根除 "待办就绪中"、"已完成" 等中文泄漏；
+  3. 侧边栏文章目录（`#card-toc`）：为每种语言生成独立的 `.variant-toc-list[data-lang="..."]`，切换语言时实时同步切换对应的目录项。
+- [x] **本地与 Cloudflare Pages 生产真实环境 Playwright 端到端全景测试 (35/35 All Passed)**：
+  1. 编写全自动测试套件 `scripts/verify-single-url-i18n.mjs`；
+  2. 本地静态环境审计：35 项断言全绿通过；
+  3. Cloudflare Pages 生产环境（部署 ID `61ec3bbc`，真实域名 `https://blog.epocanvas.com`）线上真实全链路审计：35 项断言 100% 全绿通过（包含规范 URL 不变性、零刷新标记验证、英文/西文/德文/法文/繁体中文/简体中文全景切换、聊天流与任务卡片无中文泄漏、历史语言链接自动替换以及跨文章普适性验证）。
