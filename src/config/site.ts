@@ -449,7 +449,7 @@ export const siteConfig = {
       eyebrow: '最新发布',
       title: '近期更新',
       summary: '保留强结构文章流和明显封面卡片，用更稳定的元信息层次提高扫描效率。',
-      pageSize: 10,
+      pageSize: 6,
     },
   },
   aside: {

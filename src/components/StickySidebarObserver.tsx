@@ -41,9 +41,9 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
     const resizeObserver = new ResizeObserver(() => scheduleUpdate());
 
     const updateHomeSticky = (topOffset: number, isMobile: boolean) => {
-      const pagination = document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
-      const recentPosts = document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts');
-      const boundary = pagination ?? recentPosts;
+      const boundary =
+        document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ??
+        document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
       const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
 
       if (!boundary || !card) return;
@@ -56,29 +56,18 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
         return;
       }
 
-      // Use actual rendered bounding client rect height of the card
-      const cardRect = card.getBoundingClientRect();
-      const cardHeight = cardRect.height || card.offsetHeight;
-
-      // Reference for stopping: bottom edge aligns with #home-pagination bottom
       const boundaryRect = boundary.getBoundingClientRect();
-      const boundaryBottom = boundaryRect.bottom;
-
-      // Sticky bottom threshold when pinned at topOffset
-      const stickyBottomAtPin = topOffset + cardHeight;
-      const distanceToBottomAlignment = boundaryBottom - stickyBottomAtPin;
-
-      // Has not slid up to topOffset yet (entering phase)
-      const isEntering = cardRect.top > topOffset + 1;
+      const contentHeight = Math.max(card.scrollHeight, card.offsetHeight, 420);
+      const beforePinDistance = boundaryRect.top - topOffset;
+      const remainingAfterPin = boundaryRect.bottom - topOffset;
 
       let stickyState: StickyState = 'reading';
-      if (isEntering) {
+      if (beforePinDistance > 0) {
         stickyState = 'entering';
         card.style.transform = 'none';
-      } else if (distanceToBottomAlignment < 0) {
-        // Terminate aligned with #home-pagination bottom
+      } else if (remainingAfterPin < contentHeight) {
         stickyState = 'leaving';
-        const offset = Math.round(distanceToBottomAlignment);
+        const offset = Math.round(remainingAfterPin - contentHeight);
         card.style.transform = `translateY(${offset}px)`;
       } else {
         stickyState = 'reading';

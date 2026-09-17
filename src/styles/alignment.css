@@ -592,121 +592,68 @@ body[data-type='home'] .page-aside {
   align-self: stretch;
 }
 
-body[data-type='home'] .page-aside__sticky,
-body[data-type='home'] #aside-content {
+body[data-type='home'] .page-aside__sticky {
   position: static;
   align-self: stretch;
-  height: 100% !important;
-  min-height: 100% !important;
 }
 
-body[data-type='home'] #aside-content .sticky_layout,
 body[data-type='home'] #aside-content .sticky_layout--utility {
-  position: static !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  flex: 1 1 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
+  min-height: 0;
+  position: static;
 }
 
-#aside-content .card-widget.card-feature-panel--overview,
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky !important;
-  top: var(--sticky-column-top, 88px) !important;
-  min-height: 240px;
-  max-height: 380px;
-  height: auto;
+  position: sticky;
+  top: var(--sticky-column-top, 88px);
+  min-height: var(--sticky-card-height, calc(100vh - 116px));
+  max-height: var(--sticky-card-height, calc(100vh - 116px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--card-bg) !important;
-  border: 1px solid var(--card-border) !important;
-  border-radius: 8px !important;
-  color: var(--font-color) !important;
-  box-shadow: var(--anzhiyu-shadow-border);
-  padding: 16px 18px 14px;
 }
 
-#aside-content .card-widget.card-feature-panel--overview::before,
-body[data-type='home'] .card-feature-panel--overview::before {
-  display: none !important;
-}
-
-#aside-content .card-widget.card-feature-panel--overview.is-static-layout,
 body[data-type='home'] .card-feature-panel--overview.is-static-layout {
-  position: static !important;
-  max-height: 380px;
+  position: static;
+  max-height: none;
 }
 
-body[data-type='home'] .card-feature-panel--overview .item-headline {
-  padding-bottom: 0;
-  margin-bottom: 8px;
+body[data-type='home'] .card-feature-panel--overview .card-content,
+body[data-type='home'] .card-feature-panel--overview .webinfo-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
-body[data-type='home'] .card-feature-panel--overview .card-tag-count {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--secondbg);
-  color: var(--theme-main);
-  margin-left: 4px;
+body[data-type='home'] .card-feature-panel--overview .webinfo-grid,
+body[data-type='home'] .feature-panel-recent {
+  flex: 0 0 auto;
 }
 
-body[data-type='home'] .card-feature-panel--overview .card-tag-cloud {
+body[data-type='home'] .feature-panel-recent {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border));
+}
+
+body[data-type='home'] .feature-panel-recent .aside-list {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 100%;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 8px;
-  padding: 4px 2px 2px;
-  margin-top: 4px;
+  position: relative;
+  margin-top: 8px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
-body[data-type='home'] .card-feature-panel--overview .card-tag-cloud a {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  background: var(--secondbg);
-  border-radius: 8px;
-  border: 1px solid var(--card-border);
-  color: var(--font-color);
-  text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-body[data-type='home'] .card-feature-panel--overview .card-tag-cloud a:hover {
-  background: var(--theme-main);
-  color: #fff;
-  border-color: var(--theme-main);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.28);
-}
-
-body[data-type='home'] .card-feature-panel--overview .card-tag-cloud sup {
-  font-size: 10px;
-  opacity: 0.68;
-  font-weight: 600;
-}
-
-body[data-type='home'] .card-feature-panel--overview .card-tag-cloud a:hover sup {
-  opacity: 1;
-  color: #fff;
+body[data-type='home'] .item-headline--embedded {
+  margin-left: 0;
+  padding-bottom: 0;
 }
 
 body[data-type='home'] #home-pagination {
-  margin-top: 28px !important;
   gap: 16px;
   padding: 16px 20px;
-  border-radius: 8px;
+  border-radius: 20px;
 }
 
 body[data-type='post'] .post-layout-row {
