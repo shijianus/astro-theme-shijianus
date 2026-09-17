@@ -2451,3 +2451,23 @@
   1. 编写全自动测试套件 `scripts/verify-single-url-i18n.mjs`；
   2. 本地静态环境审计：35 项断言全绿通过；
   3. Cloudflare Pages 生产环境（部署 ID `61ec3bbc`，真实域名 `https://blog.epocanvas.com`）线上真实全链路审计：35 项断言 100% 全绿通过（包含规范 URL 不变性、零刷新标记验证、英文/西文/德文/法文/繁体中文/简体中文全景切换、聊天流与任务卡片无中文泄漏、历史语言链接自动替换以及跨文章普适性验证）。
+
+### Task 109: 赞赏预设卡片彻底去模板化——6档完全独立/风格迥异创作者场景动效升维 (Zero-Template & 6 Divergent Creator Scenes)
+- [x] **彻底破除单一模板限制 (Zero Cookie-Cutter & Independent Visual Narratives)**：
+  1. 深入落实用户批评与指导要求：“我上面说的只是示例，而不是所有的都是一个桌子、一个冒气泡的咖啡这种完全一样的模板！你这样全做的一样就没有意义了”；
+  2. 严格杜绝“每张卡片底部一条桌子横线、中间一杯咖啡冒热气”的套路化设计，6 档预设金额全部重构为**概念独立、画风和谐、完全不同的生动视觉题材**：
+     - **Tier 0 (`RM3` / `¥4` / `$1`) - 掌心微光与爱心拍拍 (`SceneHeartPulse`)**：友善托举击掌掌心、律动跳动的爱心（`animate-support-heart-beat` 心跳 1.4s 动效）、同心圆扩散波纹（`animate-support-ripple`）与闪烁星芒，表达最轻盈纯粹的温暖与点赞；
+     - **Tier 1 (`RM8` / `¥9` / `$2.5`) - 创作者书桌、热咖啡与笔记本 (`SceneDeskCoffee`)**：**严格保留用户指定场景**——办公桌面、轻薄笔记本电脑（代码高亮）、爱心陶瓷热咖啡杯（3 道袅袅升腾热气 `animate-support-steam-1/2/3`）与微风摇曳的多肉绿植（`animate-support-plant-sway`）；
+     - **Tier 2 (`RM13` / `¥14` / `$4`) - 灵感火花与复古发光灯泡 (`SceneInspirationBulb`)**：默认热门推荐档位，复古爱迪生钨丝灯泡（微浮悬动 `animate-support-bulb-float`）、8 放射状灵感光芒（`animate-support-ray-glow` 呼吸放大）与顿悟 Eureka 星光，象征好文章带来的启迪与灵感火花；
+     - **Tier 3 (`RM17` / `¥16` / `$5`) - 探索火箭与星辰大海 (`SceneRocketLaunch`)**：斜向 45 度腾空飞升的复古卡通航天火箭（`animate-support-rocket-hover`）、动态剧烈闪烁推进的尾焰喷射（`animate-support-flame-jet`）、土星光环星球与星轨，象征为博主的技术探索与创作加满燃料、一飞冲天；
+     - **Tier 4 (`RM20` / `¥20` / `$6.5`) - 黑胶唱机与漫游音符 (`SceneVinylTurntable`)**：复古木质黑胶唱片机、匀速平滑旋转的黑胶唱片（`animate-support-vinyl-spin` 60fps 旋转）、金属唱针唱臂与飘逸上升的灵动音乐双音符（`animate-support-note-float-1/2`），呈现极客深邃的生活调性与艺术格调；
+     - **Tier 5 (`RM25` / `¥25` / `$8`) - 荣耀王冠与庆典礼花 (`SceneCrownCelebration`)**：至尊荣誉赞赏，浮动华丽金色五峰王冠（`animate-support-crown-float`）、峰顶璀璨宝石与四周向外喷发的庆典礼花彩带与小五角星（`animate-support-confetti-pop`），仪式感拉满。
+- [x] **交互动效加速与微交互响应**：
+  1. 鼠标悬停（Hover）在任意卡片上时，该卡片专属的动效立即加速（爱心心跳加速、热气袅袅加速、灵感光芒高亮扩展、火箭尾焰剧烈喷涌、黑胶唱片转速加倍、音符加速漂浮、王冠微光浮动）；
+  2. 保持卡片高度在全分辨率下物理恒定（`min-h-[50px] sm:min-h-[54px] max-h-[54px]`），实测 54.0px；
+  3. 左右两列（收银台与扫码通道）上下顶底绝对平衡误差保持 **0.0px**。
+- [x] **全链路端到端验证与 Cloudflare Pages 生产边缘部署 (Live E2E Verification)**：
+  1. 本地 Playwright 验证测试（`scripts/verify-support-refined.mjs`）100% 通过；
+  2. 部署至 Cloudflare Pages 生产边缘节点（部署版本：`9a22f0ec`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，断言 100% 全绿，全视口截图留存完毕。
+

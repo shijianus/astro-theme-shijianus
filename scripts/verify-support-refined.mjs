@@ -100,7 +100,8 @@ async function runVerification() {
 
     // 1. Audit Preset Amount Cards (Multi-dimensional Explicit Transaction UX)
     console.log('\n--- 1. Auditing Refined Preset Amount Cards ---');
-    const presetButtons = page.locator('.grid.grid-cols-3 button');
+    await page.waitForSelector('.grid[class*="gap-2"] button', { timeout: 15000 });
+    const presetButtons = page.locator('.grid[class*="gap-2"] button');
     const count = await presetButtons.count();
     console.log(`Preset buttons count: ${count} (Expected: 6)`);
     if (count !== 6) throw new Error(`Expected 6 preset buttons, got ${count}`);
@@ -137,26 +138,38 @@ async function runVerification() {
         throw new Error(`Card ${i + 1} missing interactive animated SVG scene!`);
       }
 
-      // Verify animated steam SVG path exists in the scene
-      const steamPath = sceneSvg.locator('path.animate-support-steam-1, path.animate-support-steam-2');
-      if ((await steamPath.count()) < 1) {
-        throw new Error(`Card ${i + 1} missing animated steam path!`);
-      }
-
-      // Card 2 (Tier 1: RM8 equivalent): Verify the office desk, steaming coffee & plant scene
-      if (i === 1) {
-        const plantEl = sceneSvg.locator('.animate-support-plant-sway');
-        if ((await plantEl.count()) < 1) {
-          throw new Error(`Card 2 (Tier 1) missing animated desk succulent plant decor!`);
-        }
-      }
-
-      // Check selected card (default index 2) has active checkmark
-      if (i === 2) {
+      // Verify each tier has its own UNIQUE non-repetitive scene animation
+      if (i === 0) {
+        // Tier 0: Heart Beat & Pulse
+        const heart = sceneSvg.locator('.animate-support-heart-beat');
+        if ((await heart.count()) < 1) throw new Error('Tier 0 missing animate-support-heart-beat!');
+      } else if (i === 1) {
+        // Tier 1: User-specified Desk, Steaming Coffee & Plant
+        const steam = sceneSvg.locator('path.animate-support-steam-1, path.animate-support-steam-2');
+        const plant = sceneSvg.locator('.animate-support-plant-sway');
+        if ((await steam.count()) < 1) throw new Error('Tier 1 missing animate-support-steam!');
+        if ((await plant.count()) < 1) throw new Error('Tier 1 missing animate-support-plant-sway!');
+      } else if (i === 2) {
+        // Tier 2: Inspiration Bulb & Eureka Rays (Featured)
+        const rays = sceneSvg.locator('.animate-support-ray-glow');
+        if ((await rays.count()) < 1) throw new Error('Tier 2 missing animate-support-ray-glow!');
+        // Check selected card has active checkmark
         const checkIcon = btn.locator('svg.lucide-check');
-        if ((await checkIcon.count()) < 1) {
-          throw new Error(`Selected Card ${i + 1} (Tier 2) missing active checkmark indicator!`);
-        }
+        if ((await checkIcon.count()) < 1) throw new Error('Tier 2 missing active checkmark indicator!');
+      } else if (i === 3) {
+        // Tier 3: Rocket Launch & Flame Jet
+        const flame = sceneSvg.locator('.animate-support-flame-jet');
+        if ((await flame.count()) < 1) throw new Error('Tier 3 missing animate-support-flame-jet!');
+      } else if (i === 4) {
+        // Tier 4: Vinyl Turntable & Floating Notes
+        const vinyl = sceneSvg.locator('.animate-support-vinyl-spin');
+        if ((await vinyl.count()) < 1) throw new Error('Tier 4 missing animate-support-vinyl-spin!');
+      } else if (i === 5) {
+        // Tier 5: Royal Crown & Confetti Pop
+        const crown = sceneSvg.locator('.animate-support-crown-float');
+        const confetti = sceneSvg.locator('.animate-support-confetti-pop');
+        if ((await crown.count()) < 1) throw new Error('Tier 5 missing animate-support-crown-float!');
+        if ((await confetti.count()) < 1) throw new Error('Tier 5 missing animate-support-confetti-pop!');
       }
     }
 
@@ -279,7 +292,7 @@ async function runVerification() {
     console.log('  📸 Captured 01-desktop-main-section-light.png');
 
     // Preset cards close-up
-    const presetGrid = page.locator('.grid.grid-cols-3');
+    const presetGrid = page.locator('.grid[class*="gap-2"]').first();
     await presetGrid.screenshot({
       path: path.join(outDir, '02-desktop-preset-cards-light.png'),
     });

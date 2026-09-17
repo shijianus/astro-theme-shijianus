@@ -66,31 +66,27 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
-/* ── 6 个档位专属温馨生动的创作者工位/咖啡场景与交互动画 SVG ── */
+/* ── 6 个档位专属温馨生动、风格迥异的创作者场景与交互动画 SVG (零重复模板) ── */
 
-/** Tier 0 (RM3 / $1 / ¥5): 醒神浓缩咖啡与手账便签 */
-const SceneEspresso: React.FC<{ isSelected?: boolean }> = () => (
-  <svg viewBox="0 0 110 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 桌面边缘 */}
-    <line x1="8" y1="38" x2="104" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.35" />
-    {/* 便签纸与手账笔记 */}
-    <rect x="18" y="27" width="22" height="11" rx="1.5" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="1" opacity="0.75" />
-    <line x1="22" y1="31" x2="33" y2="31" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.5" />
-    <line x1="22" y1="34.5" x2="29" y2="34.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.4" />
-    {/* 办公手账笔 */}
-    <line x1="39" y1="23" x2="45" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.65" />
-    {/* 浓缩咖啡碟与咖啡杯 */}
-    <ellipse cx="71" cy="38" rx="12" ry="2" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" opacity="0.8" />
-    <path d="M 64 26 H 78 L 76 36 C 76 37.5, 66 37.5, 66 36 Z" fill="currentColor" fillOpacity="0.28" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M 78 28 C 82 28, 82 33, 78 34" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    <ellipse cx="71" cy="26" rx="7" ry="1.8" fill="currentColor" fillOpacity="0.4" />
-    {/* 动态上升热气 */}
-    <path className="animate-support-steam-1" d="M 68 22 C 66 17, 70 13, 68 8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-2" d="M 74 21 C 76 16, 72 12, 75 7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+/** Tier 0 (RM3 / $1 / ¥4): 掌心微光与爱心拍拍 (轻盈温馨的点赞与友爱) */
+const SceneHeartPulse: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 友善击掌/托举小手掌 */}
+    <path d="M 26 38 C 24 33, 23 27, 27 24 C 29 22, 32 23, 33 26 L 35 21 C 36 19, 39 20, 40 22 L 42 20 C 43 18, 46 19, 46 22 L 47 23 C 48 21, 51 22, 51 25 C 51 32, 46 38, 38 38 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    {/* 掌心托起的爱心（心跳律动动效） */}
+    <g className="animate-support-heart-beat" style={{ transformOrigin: '68px 21px' }}>
+      <path d="M 68 30 C 59 21, 54 13, 61 7 C 67 2, 68 9, 68 9 C 68 9, 69 2, 75 7 C 82 13, 77 21, 68 30 Z" fill="currentColor" fillOpacity="0.85" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M 62 8 C 60 11, 61 14, 64 17" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+    </g>
+    {/* 围绕爱心的灵动扩散波纹与星芒 */}
+    <circle cx="68" cy="18" r="14" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" opacity="0.35" className="animate-support-ripple" style={{ transformOrigin: '68px 18px' }} />
+    <path className="animate-support-twinkle-1" d="M 88 12 L 89 14.5 L 91.5 15 L 89 16.5 L 88 19 L 87 16.5 L 84.5 15 L 87 14.5 Z" fill="currentColor" opacity="0.9" />
+    <path className="animate-support-twinkle-2" d="M 96 23 L 96.6 24.5 L 98.5 25 L 96.6 25.5 L 96 27 L 95.4 25.5 L 93.5 25 L 95.4 24.5 Z" fill="currentColor" opacity="0.75" />
+    <circle cx="82" cy="27" r="1.5" fill="currentColor" opacity="0.7" className="animate-support-twinkle-1" />
   </svg>
 );
 
-/** Tier 1 (RM8 / $2.5 / ¥15): 办公桌、热咖啡与笔记本 (用户指定专属场景) */
+/** Tier 1 (RM8 / $2.5 / ¥9): 办公桌、热咖啡与笔记本 (用户指定专属场景) */
 const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
     {/* 创作者办公桌面 */}
@@ -98,7 +94,7 @@ const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
     {/* 办公笔记本电脑 (键盘底座与展开屏幕) */}
     <path d="M 11 38 L 39 38 L 37 34 L 13 34 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1" opacity="0.85" />
     <path d="M 15 34 L 15 19 C 15 17.5, 16.5 16, 18 16 H 34 C 35.5 16, 37 17.5, 37 19 L 37 34 Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.2" />
-    {/* 屏幕代码/文字高亮 */}
+    {/* 屏幕代码高亮 */}
     <line x1="19" y1="21" x2="28" y2="21" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
     <line x1="19" y1="25" x2="33" y2="25" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
     <line x1="19" y1="29" x2="25" y2="29" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
@@ -107,7 +103,7 @@ const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
     <path d="M 64 25.5 C 68.5 25.5, 68.5 32.5, 64 32.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     <ellipse cx="56" cy="23" rx="8" ry="2" fill="currentColor" fillOpacity="0.35" />
     {/* 咖啡杯上的温暖爱心徽标 */}
-    <path d="M 56 29.5 C 54.5 27.5, 53 28.3, 53 29.5 C 53 30.5, 56 32.3, 56 32.3 C 56 32.3, 59 30.5, 59 29.5 C 59 28.3, 57.5 27.5, 56 29.5 Z" fill="currentColor" opacity="0.6" />
+    <path d="M 56 29.5 C 54.5 27.5, 53 28.3, 53 29.5 C 53 30.5, 56 32.3, 56 32.3 C 56 32.3, 59 30.5, 59 29.5 C 59 28.3, 57.5 27.5, 56 29.5 Z" fill="currentColor" opacity="0.65" />
     {/* 3 道冒热气袅袅动画线条 */}
     <path className="animate-support-steam-1" d="M 52 19 C 50 14, 54 11, 52 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     <path className="animate-support-steam-2" d="M 56 19 C 58 15, 54 11, 57 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
@@ -121,109 +117,141 @@ const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
   </svg>
 );
 
-/** Tier 2 (RM13 / $4 / ¥25): 深夜极客工位、暖光台灯与大马克杯 (默认热门推荐) */
-const SceneLampCoder: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 2 (RM13 / $4 / ¥14): 灵感火花与复古发光灯泡 (默认热门推荐：顿悟与知识启迪) */
+const SceneInspirationBulb: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="lamp-cone-grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="currentColor" stopOpacity="0.45" />
-        <stop offset="100%" stopColor="currentColor" stopOpacity="0.06" />
-      </linearGradient>
-    </defs>
-    {/* 桌面边缘 */}
-    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
-    {/* 极客工作台灯 */}
-    <path d="M 14 38 H 20 M 17 38 L 21 23 L 37 15" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
-    <path d="M 36 15 L 43 12 L 45 18 L 38 21 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1.2" />
-    {/* 台灯柔和暖光束 */}
-    <polygon className="animate-support-lamp-glow" points="41,17 25,38 71,38" fill="url(#lamp-cone-grad)" />
-    {/* 暖光下的热气马克杯 */}
-    <path d="M 45 24 H 59 V 35 C 59 37.5, 45 37.5, 45 35 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M 59 26.5 C 63 26.5, 63 32.5, 59 32.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-    {/* 袅袅升腾热气 */}
-    <path className="animate-support-steam-1" d="M 49 20 C 47 15, 51 11, 49 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-2" d="M 55 20 C 57 16, 53 11, 56 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    {/* 右侧工位显示屏与代码符 */}
-    <path d="M 78 38 H 86 M 82 34 V 38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.75" />
-    <rect x="71" y="18" width="23" height="16" rx="1.5" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
-    <text x="82.5" y="29.5" fontSize="8" fontWeight="bold" textAnchor="middle" fill="currentColor" opacity="0.9">&lt;/&gt;</text>
+    {/* 发光灯泡主体 (微浮动效) */}
+    <g style={{ transformOrigin: '58px 22px' }} className="animate-support-bulb-float">
+      {/* 玻璃灯泡外罩 */}
+      <path d="M 50 25 C 45 20, 47 11, 54 8 C 61 5, 69 9, 68 18 C 67 22, 64 24, 64 27 H 53 C 53 25, 51 24, 50 25 Z" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.3" />
+      {/* 内部螺旋心动钨丝 */}
+      <path d="M 55 26 V 19 L 58 15 L 61 19 V 26" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.9" />
+      <circle cx="58" cy="15" r="2" fill="currentColor" opacity="0.95" />
+      {/* 灯泡螺口底座 */}
+      <rect x="54" y="27" width="9" height="2.5" rx="0.5" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="0.8" />
+      <rect x="54.5" y="29.5" width="8" height="2" rx="0.5" fill="currentColor" fillOpacity="0.55" />
+      <path d="M 56 32 C 56 33.5, 61 33.5, 61 32 Z" fill="currentColor" opacity="0.7" />
+    </g>
+    {/* 放射状灵感光芒光束 */}
+    <g className="animate-support-ray-glow" style={{ transformOrigin: '58px 16px' }}>
+      <line x1="58" y1="2" x2="58" y2="5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+      <line x1="45" y1="7" x2="48" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
+      <line x1="71" y1="7" x2="68" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
+      <line x1="40" y1="18" x2="43" y2="18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
+      <line x1="76" y1="18" x2="73" y2="18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
+    </g>
+    {/* 左右 Eureka 顿悟灵感小火花与星光 */}
+    <path className="animate-support-twinkle-1" d="M 28 16 L 29.5 19 L 32.5 19.5 L 29.5 21 L 28 24 L 26.5 21 L 23.5 19.5 L 26.5 19 Z" fill="currentColor" opacity="0.85" />
+    <path className="animate-support-twinkle-2" d="M 88 14 L 89.2 16.5 L 92 17 L 89.2 18 L 88 20.5 L 86.8 18 L 84 17 L 86.8 16.5 Z" fill="currentColor" opacity="0.85" />
+    <circle cx="36" cy="27" r="1.5" fill="currentColor" opacity="0.6" className="animate-support-twinkle-2" />
+    <circle cx="82" cy="28" r="1.5" fill="currentColor" opacity="0.6" className="animate-support-twinkle-1" />
   </svg>
 );
 
-/** Tier 3 (RM17 / $5 / ¥35): 茶歇灵感、堆叠图书与绿植星光 */
-const SceneBooksPlant: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 3 (RM17 / $5 / ¥16): 探索火箭与星辰大海 (加满燃料、一飞冲天) */
+const SceneRocketLaunch: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 桌面边缘 */}
-    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
-    {/* 3 本堆叠技术图书 */}
-    <rect x="14" y="34" width="34" height="4" rx="0.5" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1" />
-    <rect x="16" y="30" width="31" height="4" rx="0.5" fill="currentColor" fillOpacity="0.26" stroke="currentColor" strokeWidth="1" />
-    <rect x="18" y="26" width="28" height="4" rx="0.5" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" />
-    <path d="M 40 30 L 40 37 L 42 35 L 44 37 L 44 30" fill="currentColor" opacity="0.65" />
-    {/* 随行随饮保温咖啡杯与吸管 */}
-    <path d="M 55 22 L 57 36 C 57 37.5, 67 37.5, 67 36 L 69 22 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.2" />
-    <rect x="54" y="20" width="16" height="2.5" rx="1" fill="currentColor" fillOpacity="0.48" />
-    <line x1="63" y1="14" x2="61" y2="21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
-    <path className="animate-support-steam-1" d="M 65 18 C 67 15, 64 12, 66 9" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    {/* 垂蔓龟背竹绿植与星光 */}
-    <path d="M 80 38 C 82 28, 90 22, 98 20" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
-    <path className="animate-support-plant-sway" d="M 88 25 C 84 22, 85 16, 92 18 C 94 22, 91 26, 88 25 Z" fill="currentColor" fillOpacity="0.48" />
-    <path className="animate-support-twinkle-1" d="M 75 14 L 76 16 L 78 17 L 76 18 L 75 20 L 74 18 L 72 17 L 74 16 Z" fill="currentColor" opacity="0.85" />
+    {/* 背景土星光环星球 */}
+    <ellipse cx="23" cy="26" rx="8" ry="8" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+    <ellipse cx="23" cy="26" rx="14" ry="4" stroke="currentColor" strokeWidth="1" strokeDasharray="18 4" opacity="0.45" transform="rotate(-20 23 26)" />
+    
+    {/* 穿梭火箭主体 (斜向 45 度腾空飞升) */}
+    <g className="animate-support-rocket-hover" style={{ transformOrigin: '66px 18px' }}>
+      {/* 火箭船舱锥体与机身 */}
+      <path d="M 76 8 C 71 10, 58 18, 54 26 L 66 35 C 73 30, 81 17, 83 12 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      {/* 舷窗圆形 */}
+      <circle cx="68" cy="20" r="3.5" fill="currentColor" fillOpacity="0.6" stroke="currentColor" strokeWidth="1" />
+      <circle cx="67" cy="19" r="1" fill="#ffffff" opacity="0.9" />
+      {/* 火箭左右尾翼 */}
+      <path d="M 54 26 L 45 28 L 51 34 L 57 30 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1" />
+      <path d="M 66 35 L 68 42 L 74 39 L 72 33 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1" />
+      {/* 动力喷管 */}
+      <path d="M 56 31 L 50 35" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      {/* 喷射推进火焰 (动态剧烈闪动) */}
+      <path className="animate-support-flame-jet" d="M 51 34 C 45 38, 40 42, 36 41 C 39 37, 44 32, 49 32 Z" fill="currentColor" opacity="0.9" />
+      <path className="animate-support-flame-inner" d="M 50 34 C 46 37, 43 39, 40 38 C 42 36, 46 33, 48 33 Z" fill="#ffffff" opacity="0.85" />
+    </g>
+    
+    {/* 宇宙星辰与航行光迹 */}
+    <path className="animate-support-twinkle-1" d="M 94 8 L 95 10.5 L 97.5 11 L 95 12.5 L 94 15 L 93 12.5 L 90.5 11 L 93 10.5 Z" fill="currentColor" opacity="0.95" />
+    <path className="animate-support-twinkle-2" d="M 88 28 L 88.6 29.5 L 90.5 30 L 88.6 30.5 L 88 32 L 87.4 30.5 L 85.5 30 L 87.4 29.5 Z" fill="currentColor" opacity="0.8" />
+    <circle cx="78" cy="38" r="1.2" fill="currentColor" opacity="0.6" className="animate-support-twinkle-1" />
   </svg>
 );
 
-/** Tier 4 (RM20 / $6.5 / ¥50): 极客工位、机械键盘与律动耳机 */
-const SceneKeyboardHeadset: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 4 (RM20 / $6.5 / ¥20): 黑胶唱机与漫游音符 (艺术格调与灵动旋律) */
+const SceneVinylTurntable: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 桌面边缘 */}
-    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
-    {/* 机械键盘 */}
-    <rect x="12" y="29" width="36" height="9" rx="1.5" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.2" />
-    <line x1="16" y1="32" x2="44" y2="32" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 2" strokeLinecap="round" opacity="0.65" />
-    <line x1="18" y1="35" x2="42" y2="35" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 2" strokeLinecap="round" opacity="0.65" />
-    {/* 键盘旁的热饮马克杯 */}
-    <path d="M 53 23 H 64 V 35 C 64 37.5, 53 37.5, 53 35 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.2" />
-    <path className="animate-support-steam-1" d="M 56 20 C 54 16, 58 12, 56 7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-2" d="M 61 20 C 63 16, 59 12, 62 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    {/* 专业头戴式监听耳机 */}
-    <path d="M 75 30 C 75 20, 93 20, 93 30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.7" />
-    <rect x="73" y="27" width="4.5" height="9" rx="1.5" fill="currentColor" fillOpacity="0.48" />
-    <rect x="90.5" y="27" width="4.5" height="9" rx="1.5" fill="currentColor" fillOpacity="0.48" />
-    {/* 灵动音乐跳动脉冲线 */}
-    <line className="animate-support-music-1" x1="81" y1="18" x2="81" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <line className="animate-support-music-2" x1="84" y1="15" x2="84" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <line className="animate-support-music-3" x1="87" y1="19" x2="87" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    {/* 复古黑胶机底座 */}
+    <rect x="16" y="16" width="56" height="23" rx="3" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
+    {/* 调音旋钮 */}
+    <circle cx="64" cy="32" r="2.2" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="0.8" />
+    <circle cx="64" cy="24" r="1.5" fill="currentColor" fillOpacity="0.4" />
+
+    {/* 匀速旋转的黑胶唱片 */}
+    <g className="animate-support-vinyl-spin" style={{ transformOrigin: '36px 27px' }}>
+      <circle cx="36" cy="27" r="13" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="36" cy="27" r="10" stroke="currentColor" strokeWidth="0.8" strokeDasharray="5 2" opacity="0.5" />
+      <circle cx="36" cy="27" r="7" stroke="currentColor" strokeWidth="0.8" strokeDasharray="4 2" opacity="0.55" />
+      <circle cx="36" cy="27" r="4" fill="currentColor" fillOpacity="0.65" />
+      <circle cx="36" cy="27" r="1.2" fill="#ffffff" opacity="0.9" />
+    </g>
+
+    {/* 金属唱针唱臂 (Tonearm) */}
+    <circle cx="56" cy="20" r="2" fill="currentColor" fillOpacity="0.7" />
+    <path d="M 56 20 L 51 23 L 40 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+    <rect x="38" y="23" width="2.5" height="3" rx="0.5" fill="currentColor" fillOpacity="0.8" />
+
+    {/* 浮动飘逸上升的音乐音符与律动 */}
+    <g className="animate-support-note-float-1" style={{ transformOrigin: '80px 20px' }}>
+      <path d="M 80 22 C 80 24, 77 25, 75 24 C 73 23, 73 21, 75 20 C 77 19, 80 20, 80 22 Z M 80 22 V 14 L 87 12 V 18 M 87 18 C 87 20, 84 21, 82 20 C 80 19, 80 17, 82 16 C 84 15, 87 16, 87 18 Z" fill="currentColor" opacity="0.85" />
+    </g>
+    <g className="animate-support-note-float-2" style={{ transformOrigin: '96px 14px' }}>
+      <path d="M 97 18 C 97 20, 94 21, 92 20 C 90 19, 91 17, 93 16 C 95 15, 97 16, 97 18 Z M 97 18 V 10 L 102 9 V 12" fill="currentColor" opacity="0.8" />
+    </g>
+    <path className="animate-support-twinkle-1" d="M 88 29 L 89 30.5 L 90.5 31 L 89 31.5 L 88 33 L 87.5 31.5 L 86 31 L 87.5 30.5 Z" fill="currentColor" opacity="0.7" />
   </svg>
 );
 
-/** Tier 5 (RM25 / $8 / ¥88): 终极创作者工位、带鱼屏与金星热咖啡 */
-const SceneStudioCelebration: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 5 (RM25 / $8 / ¥25): 荣耀王冠与庆典礼花 (至尊赞赏、盛大加冕) */
+const SceneCrownCelebration: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 桌面边缘 */}
-    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
-    {/* 超宽曲面带鱼屏 */}
-    <path d="M 28 38 H 38 M 33 34 V 38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
-    <rect x="12" y="19" width="42" height="15" rx="2" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
-    <line x1="16" y1="23" x2="28" y2="23" stroke="currentColor" strokeWidth="1.2" opacity="0.55" strokeLinecap="round" />
-    <rect x="32" y="22" width="18" height="9" rx="1" fill="currentColor" fillOpacity="0.32" />
-    {/* 创作者金星咖啡杯与热气 */}
-    <path d="M 64 22 H 78 V 35 C 78 37.5, 64 37.5, 64 35 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.3" />
-    <path d="M 78 25 C 83 25, 83 33, 78 33" fill="none" stroke="currentColor" strokeWidth="1.3" />
-    <path d="M 71 27 L 71.8 28.8 L 73.8 29 L 72.2 30.3 L 72.7 32.2 L 71 31.2 L 69.3 32.2 L 69.8 30.3 L 68.2 29 L 70.2 28.8 Z" fill="currentColor" opacity="0.85" />
-    <path className="animate-support-steam-1" d="M 68 18 C 66 13, 70 9, 68 4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-2" d="M 73 18 C 75 13, 71 9, 74 4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    {/* 庆典闪烁星芒 */}
-    <path className="animate-support-twinkle-1" d="M 88 12 L 89 14.5 L 91.5 15 L 89 16.5 L 88 19 L 87 16.5 L 84.5 15 L 87 14.5 Z" fill="currentColor" opacity="0.9" />
-    <path className="animate-support-twinkle-2" d="M 96 22 L 96.8 24 L 99 24.5 L 96.8 25.5 L 96 27.5 L 95.2 25.5 L 93 24.5 L 95.2 24 Z" fill="currentColor" opacity="0.8" />
-    <circle cx="85" cy="27" r="1.2" fill="currentColor" opacity="0.7" className="animate-support-twinkle-1" />
+    {/* 浮动华丽王冠主体 */}
+    <g className="animate-support-crown-float" style={{ transformOrigin: '56px 23px' }}>
+      {/* 王冠底环 */}
+      <rect x="36" y="27" width="40" height="4.5" rx="1.5" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="1.2" />
+      <line x1="38" y1="29.2" x2="74" y2="29.2" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" opacity="0.7" />
+      
+      {/* 王冠五峰造型 */}
+      <path d="M 37 27 L 39 16 L 46 22 L 56 12 L 66 22 L 73 16 L 75 27 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      
+      {/* 峰顶璀璨宝石与光芒圆球 */}
+      <circle cx="39" cy="15" r="2" fill="currentColor" opacity="0.9" />
+      <circle cx="56" cy="11" r="2.8" fill="currentColor" opacity="0.95" />
+      <circle cx="73" cy="15" r="2" fill="currentColor" opacity="0.9" />
+      <polygon points="56,17 58.5,21 53.5,21" fill="currentColor" opacity="0.85" />
+    </g>
+
+    {/* 四周喷发的庆典礼花碎片与闪耀星芒 */}
+    <g className="animate-support-confetti-pop">
+      <rect x="22" y="16" width="3.5" height="1.8" rx="0.5" fill="currentColor" opacity="0.85" transform="rotate(35 22 16)" />
+      <rect x="28" y="26" width="3" height="1.5" rx="0.5" fill="currentColor" opacity="0.75" transform="rotate(-25 28 26)" />
+      <rect x="85" y="16" width="3.5" height="1.8" rx="0.5" fill="currentColor" opacity="0.85" transform="rotate(-30 85 16)" />
+      <rect x="81" y="28" width="3" height="1.5" rx="0.5" fill="currentColor" opacity="0.75" transform="rotate(40 81 28)" />
+      
+      <path className="animate-support-twinkle-1" d="M 24 10 L 25.2 12.5 L 28 13 L 25.2 14 L 24 16.5 L 22.8 14 L 20 13 L 22.8 12.5 Z" fill="currentColor" opacity="0.95" />
+      <path className="animate-support-twinkle-2" d="M 92 10 L 93.2 12.5 L 96 13 L 93.2 14 L 92 16.5 L 90.8 14 L 88 13 L 90.8 12.5 Z" fill="currentColor" opacity="0.95" />
+      <circle cx="17" cy="22" r="1.5" fill="currentColor" opacity="0.75" className="animate-support-twinkle-2" />
+      <circle cx="98" cy="22" r="1.5" fill="currentColor" opacity="0.75" className="animate-support-twinkle-1" />
+    </g>
   </svg>
 );
 
-/* ── 6 个档位专属温馨生动主题配置 ── */
+/* ── 6 个档位专属温馨生动主题配置 (零重复、场景对应) ── */
 const TIER_STYLES = [
   {
     name: 'amber',
-    scene: SceneEspresso,
+    scene: SceneHeartPulse,
     selected:
       'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
     unselected:
@@ -247,7 +275,7 @@ const TIER_STYLES = [
   },
   {
     name: 'blue',
-    scene: SceneLampCoder,
+    scene: SceneInspirationBulb,
     selected:
       'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
     unselected:
@@ -259,7 +287,7 @@ const TIER_STYLES = [
   },
   {
     name: 'emerald',
-    scene: SceneBooksPlant,
+    scene: SceneRocketLaunch,
     selected:
       'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
     unselected:
@@ -271,7 +299,7 @@ const TIER_STYLES = [
   },
   {
     name: 'purple',
-    scene: SceneKeyboardHeadset,
+    scene: SceneVinylTurntable,
     selected:
       'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
     unselected:
@@ -283,7 +311,7 @@ const TIER_STYLES = [
   },
   {
     name: 'rose',
-    scene: SceneStudioCelebration,
+    scene: SceneCrownCelebration,
     selected:
       'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
     unselected:
@@ -585,6 +613,18 @@ export const SupportDashboard: React.FC = () => {
     <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-12 text-slate-800 dark:text-slate-100">
       {/* ── Scoped Keyframe Animations for Warm Interactive Creator SVG Scenes ── */}
       <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes supportHeartBeat {
+          0%, 100% { transform: scale(1); }
+          14% { transform: scale(1.18); }
+          28% { transform: scale(1); }
+          42% { transform: scale(1.12); }
+          70% { transform: scale(1); }
+        }
+        @keyframes supportRipple {
+          0% { transform: scale(0.85); opacity: 0.5; }
+          50% { transform: scale(1.15); opacity: 0.15; }
+          100% { transform: scale(0.85); opacity: 0.5; }
+        }
         @keyframes supportSteamRise1 {
           0% { transform: translateY(0) scaleX(1); opacity: 0; }
           25% { opacity: 0.85; }
@@ -607,9 +647,45 @@ export const SupportDashboard: React.FC = () => {
           0%, 100% { transform: rotate(0deg); }
           50% { transform: rotate(3.5deg); }
         }
-        @keyframes supportLampGlow {
-          0%, 100% { opacity: 0.22; }
-          50% { opacity: 0.65; }
+        @keyframes supportBulbFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
+        }
+        @keyframes supportRayGlow {
+          0%, 100% { opacity: 0.35; transform: scale(0.92); }
+          50% { opacity: 0.95; transform: scale(1.08); }
+        }
+        @keyframes supportRocketHover {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-2px) rotate(1.2deg); }
+        }
+        @keyframes supportFlameJet {
+          0%, 100% { transform: scale(0.85, 0.9); opacity: 0.75; }
+          50% { transform: scale(1.18, 1.2); opacity: 1; }
+        }
+        @keyframes supportVinylSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes supportNoteFloat1 {
+          0% { transform: translateY(2px) rotate(0deg); opacity: 0.2; }
+          40% { opacity: 0.95; }
+          80% { opacity: 0.7; }
+          100% { transform: translateY(-8px) rotate(-10deg); opacity: 0; }
+        }
+        @keyframes supportNoteFloat2 {
+          0% { transform: translateY(2px) rotate(0deg); opacity: 0.2; }
+          45% { opacity: 0.9; }
+          85% { opacity: 0.6; }
+          100% { transform: translateY(-7px) rotate(12deg); opacity: 0; }
+        }
+        @keyframes supportCrownFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2.2px); }
+        }
+        @keyframes supportConfettiPop {
+          0%, 100% { transform: scale(0.92); opacity: 0.6; }
+          50% { transform: scale(1.08); opacity: 1; }
         }
         @keyframes supportTwinkle1 {
           0%, 100% { transform: scale(0.8); opacity: 0.3; }
@@ -619,19 +695,13 @@ export const SupportDashboard: React.FC = () => {
           0%, 100% { transform: scale(1.1); opacity: 0.85; }
           50% { transform: scale(0.75); opacity: 0.25; }
         }
-        @keyframes supportMusic1 {
-          0%, 100% { transform: scaleY(0.35); }
-          50% { transform: scaleY(1); }
-        }
-        @keyframes supportMusic2 {
-          0%, 100% { transform: scaleY(0.9); }
-          50% { transform: scaleY(0.3); }
-        }
-        @keyframes supportMusic3 {
-          0%, 100% { transform: scaleY(0.45); }
-          50% { transform: scaleY(0.95); }
-        }
 
+        .animate-support-heart-beat {
+          animation: supportHeartBeat 1.4s ease-in-out infinite;
+        }
+        .animate-support-ripple {
+          animation: supportRipple 2.2s ease-in-out infinite;
+        }
         .animate-support-steam-1 {
           animation: supportSteamRise1 2.4s ease-in-out infinite;
         }
@@ -645,8 +715,38 @@ export const SupportDashboard: React.FC = () => {
           animation: supportPlantSway 3.5s ease-in-out infinite;
           transform-origin: 84px 30px;
         }
-        .animate-support-lamp-glow {
-          animation: supportLampGlow 2.5s ease-in-out infinite;
+        .animate-support-bulb-float {
+          animation: supportBulbFloat 2.5s ease-in-out infinite;
+        }
+        .animate-support-ray-glow {
+          animation: supportRayGlow 2s ease-in-out infinite;
+        }
+        .animate-support-rocket-hover {
+          animation: supportRocketHover 2.2s ease-in-out infinite;
+        }
+        .animate-support-flame-jet {
+          animation: supportFlameJet 0.4s ease-in-out infinite alternate;
+          transform-origin: 52px 34px;
+        }
+        .animate-support-flame-inner {
+          animation: supportFlameJet 0.35s ease-in-out 0.1s infinite alternate;
+          transform-origin: 51px 34px;
+        }
+        .animate-support-vinyl-spin {
+          animation: supportVinylSpin 4s linear infinite;
+        }
+        .animate-support-note-float-1 {
+          animation: supportNoteFloat1 2.6s ease-in-out infinite;
+        }
+        .animate-support-note-float-2 {
+          animation: supportNoteFloat2 2.8s ease-in-out 0.9s infinite;
+        }
+        .animate-support-crown-float {
+          animation: supportCrownFloat 2.4s ease-in-out infinite;
+        }
+        .animate-support-confetti-pop {
+          animation: supportConfettiPop 2s ease-in-out infinite;
+          transform-origin: 56px 22px;
         }
         .animate-support-twinkle-1 {
           animation: supportTwinkle1 2s ease-in-out infinite;
@@ -656,20 +756,11 @@ export const SupportDashboard: React.FC = () => {
           animation: supportTwinkle2 2.4s ease-in-out 0.8s infinite;
           transform-origin: center;
         }
-        .animate-support-music-1 {
-          animation: supportMusic1 1.2s ease-in-out infinite;
-          transform-origin: bottom;
-        }
-        .animate-support-music-2 {
-          animation: supportMusic2 1.4s ease-in-out infinite;
-          transform-origin: bottom;
-        }
-        .animate-support-music-3 {
-          animation: supportMusic3 1.1s ease-in-out infinite;
-          transform-origin: bottom;
-        }
 
-        /* 悬浮微交互：热气袅袅加速与光辉响应 */
+        /* 悬浮微交互：各场景独立加速与高亮 */
+        .group:hover .animate-support-heart-beat {
+          animation-duration: 0.8s;
+        }
         .group:hover .animate-support-steam-1 {
           animation-duration: 1.4s;
         }
@@ -679,9 +770,27 @@ export const SupportDashboard: React.FC = () => {
         .group:hover .animate-support-steam-3 {
           animation-duration: 1.3s;
         }
-        .group:hover .animate-support-lamp-glow {
-          animation-duration: 1.5s;
-          opacity: 0.75;
+        .group:hover .animate-support-ray-glow {
+          animation-duration: 1.2s;
+          opacity: 1;
+        }
+        .group:hover .animate-support-flame-jet {
+          animation-duration: 0.2s;
+        }
+        .group:hover .animate-support-vinyl-spin {
+          animation-duration: 1.8s;
+        }
+        .group:hover .animate-support-note-float-1 {
+          animation-duration: 1.6s;
+        }
+        .group:hover .animate-support-note-float-2 {
+          animation-duration: 1.7s;
+        }
+        .group:hover .animate-support-crown-float {
+          animation-duration: 1.4s;
+        }
+        .group:hover .animate-support-confetti-pop {
+          animation-duration: 1.2s;
         }
       ` }} />
 
