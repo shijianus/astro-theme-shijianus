@@ -47,7 +47,8 @@ async function runTests() {
     });
 
     const targetUrl = `${BASE_URL}/posts/${item.slug}/`;
-    await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(1200);
     const finalUrl = page.url();
     assert(
       finalUrl.includes(item.slug),
@@ -61,7 +62,8 @@ async function runTests() {
   {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/posts/content-formats-and-markup-mastery-en/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE_URL}/posts/content-formats-and-markup-mastery-en/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(1200);
 
     const switcherExists = await page.locator('.post-hero__translations').isVisible();
     assert(switcherExists, 'PostHero .post-hero__translations switcher is rendered and visible');
@@ -137,7 +139,8 @@ async function runTests() {
     await page.addInitScript(() => {
       window.localStorage.setItem('shijianus-manual-locale-selected', 'zh-CN');
     });
-    await page.goto(exp.url, { waitUntil: 'networkidle' });
+    await page.goto(exp.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(1500);
 
     // 1. Check chat header localization
     const chatTitle = await page.locator('.chat-header-title').textContent();
