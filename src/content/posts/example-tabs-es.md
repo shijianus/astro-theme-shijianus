@@ -1,29 +1,30 @@
 ---
-title: "示例：多标签页与多代码版本切换展示"
-description: "全面展示交互式 Tabs 标签页与基于下拉框的多语言代码切换器组件。"
+title: "Ejemplo: Pestañas interactivas y conmutador de versiones de código"
+description: "Demostración completa de las pestañas interactivas y el conmutador de código multilingüe basado en un menú desplegable."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["example", "showcase", "tabs", "code-group"]
-category: "示例"
-series: "功能示例"
+tags: ["ejemplo", "demostración", "pestañas", "grupo-de-código"]
+category: "Ejemplos"
+series: "Ejemplos de funcionalidades"
 math: false
 mermaid: false
 i18nKey: "example-tabs"
-lang: "zh-CN"
+lang: "es"
+aiTranslatedFrom: "zh-CN"
 ---
 
-本篇示例专用于展示与测试博客正文中的 **多标签页切换（Interactive Tabs）与多版本下拉切换器（Dropdown Switcher）**。
+Este ejemplo está diseñado específicamente para demostrar y probar las **pestañas interactivas (Interactive Tabs) y el conmutador de versiones mediante menú desplegable (Dropdown Switcher)** dentro del cuerpo del artículo.
 
 ---
 
-## 一、包管理器安装命令选项卡（Interactive Tabs）
+## 1. Pestañas para comandos de instalación de gestores de paquetes (Interactive Tabs)
 
-用户可以点击不同的标签页快速复制对应包管理器的安装指令：
+El usuario puede hacer clic en diferentes pestañas para copiar rápidamente el comando de instalación correspondiente a cada gestor de paquetes:
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
-    <button class="article-tabs__button is-active" type="button">pnpm (推荐)</button>
+    <button class="article-tabs__button is-active" type="button">pnpm (recomendado)</button>
     <button class="article-tabs__button" type="button">npm</button>
     <button class="article-tabs__button" type="button">yarn</button>
     <button class="article-tabs__button" type="button">bun</button>
@@ -63,15 +64,15 @@ lang: "zh-CN"
 
 ---
 
-## 二、多前端框架实现下拉切换器（Interactive Dropdown Switcher）
+## 2. Conmutador de implementaciones de frameworks front-end (Interactive Dropdown Switcher)
 
-通过正文内的下拉菜单选择目标技术框架，下方的内容面板将自动同步切换：
+Selecciona el framework tecnológico objetivo mediante el menú desplegable en el cuerpo del artículo; el panel de contenido inferior se sincronizará automáticamente:
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
     <div class="article-dropdown-switcher__title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-      <span>选择前端框架实现：</span>
+      <span>Selecciona la implementación del framework front-end:</span>
     </div>
     <select class="article-select dropdown-switcher__select">
       <option value="react-code">⚛️ React 19 (Hooks)</option>
@@ -82,7 +83,7 @@ lang: "zh-CN"
   </div>
   <div class="article-dropdown-switcher__body">
     <div class="article-dropdown-panel is-active" data-panel="react-code">
-      <div class="article-dropdown-panel__title">⚛️ React 19 计数器代码：</div>
+      <div class="article-dropdown-panel__title">⚛️ Código del contador en React 19:</div>
       <pre class="no-code-enhance"><code class="language-tsx">import &#123; useState &#125; from 'react';
 export function Counter() &#123;
   const [count, setCount] = useState(0);
@@ -90,7 +91,7 @@ export function Counter() &#123;
 &#125;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="vue-code">
-      <div class="article-dropdown-panel__title">🟢 Vue 3.5 计数器代码：</div>
+      <div class="article-dropdown-panel__title">🟢 Código del contador en Vue 3.5:</div>
       <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
 import &#123; ref &#125; from 'vue';
 const count = ref(0);
@@ -100,7 +101,7 @@ const count = ref(0);
 &lt;/template&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="astro-code">
-      <div class="article-dropdown-panel__title">🚀 Astro 6 群岛组件代码：</div>
+      <div class="article-dropdown-panel__title">🚀 Código del componente de isla en Astro 6:</div>
       <pre class="no-code-enhance"><code class="language-astro">---
 const &#123; label = "Astro 静态组件" &#125; = Astro.props;
 ---
@@ -109,7 +110,7 @@ const &#123; label = "Astro 静态组件" &#125; = Astro.props;
 &lt;/div&gt;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="svelte-code">
-      <div class="article-dropdown-panel__title">🟠 Svelte 5 计数器代码：</div>
+      <div class="article-dropdown-panel__title">🟠 Código del contador en Svelte 5:</div>
       <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
   let count = $state(0);
 &lt;/script&gt;

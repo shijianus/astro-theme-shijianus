@@ -1,27 +1,28 @@
 ---
-title: "示例：代码块全量增强功能展示"
-description: "全面展示 macOS 拟物交通灯控制条、语言徽章、增删 Diff、一键复制与超长折叠特性。"
+title: "範例：程式碼區塊完整增強功能展示"
+description: "全面展示 macOS 擬物交通燈控制條、語言徽章、增刪 Diff、一鍵複製與超長摺疊特性。"
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["example", "showcase", "code", "shiki"]
-category: "示例"
-series: "功能示例"
+tags: ["範例", "展示", "程式碼", "Shiki"]
+category: "範例"
+series: "功能範例"
 math: false
 mermaid: false
 i18nKey: "example-code-enhancements"
-lang: "zh-CN"
+lang: "zh-Hant"
+aiTranslatedFrom: "zh-CN"
 ---
 
-本篇示例专用于验证与测试博客正文中的 **代码块（Code Block Enhancements）** 功能。
+本篇範例專用於驗證與測試部落格正文中的 **程式碼區塊（Code Block Enhancements）** 功能。
 
-主题为所有代码块注入了 **macOS 拟物交通灯控制条、语言徽章、增删行 Diff 对比、一键复制** 以及 **超长代码自动限高折叠**。
+主題為所有程式碼區塊注入了 **macOS 擬物交通燈控制條、語言徽章、增刪行 Diff 對比、一鍵複製** 以及 **超長程式碼自動限高摺疊**。
 
 ---
 
-## 一、带增删行对比的 Diff 代码块（Diff Highlighting）
+## 一、帶增刪行對比的 Diff 程式碼區塊（Diff Highlighting）
 
-在代码块中展示版本升级与配置变更时的增加行与删除行：
+在程式碼區塊中展示版本升級與配置變更時的增加行與刪除行：
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -30,8 +31,8 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://shijian.us',
-- output: 'server', // 旧的服务端渲染模式
-+ output: 'static', // 升级为极速纯静态导出模式
+- output: 'server', // 舊的伺服器端渲染模式
++ output: 'static', // 升級為極速純靜態匯出模式
   markdown: {
 +   remarkPlugins: [remarkMath], // 注入 KaTeX 公式解析
 +   rehypePlugins: [rehypeKatex],
@@ -47,15 +48,15 @@ export default defineConfig({
 
 ---
 
-## 二、超长代码自动折叠演示（Code Collapse）
+## 二、超長程式碼自動摺疊演示（Code Collapse）
 
-当代码行数过多时，主题会自动在高度超过 380px 时启用半透明遮罩与「展开代码」胶囊按钮：
+當程式碼行數過多時，主題會自動在高度超過 380px 時啟用半透明遮罩與「展開程式碼」膠囊按鈕：
 
 ```json
 {
   "name": "shijianus-blog",
   "version": "2.0.0",
-  "description": "基于 Astro 6 与安知鱼设计美学的高性能极客独立博客",
+  "description": "基於 Astro 6 與安知魚設計美學的高效能極客獨立部落格",
   "author": "shijianus",
   "license": "MIT",
   "scripts": {

@@ -12,9 +12,126 @@ interface Props {
     title: string;  // article/variant title
     hint?: string;  // optional hint text
   }>;
+  lang?: string;
 }
 
-const { externalEncryptData, showEncryptButtons } = Astro.props;
+const { externalEncryptData, showEncryptButtons, lang = 'zh-CN' } = Astro.props;
+
+const EXT_GATE_I18N: Record<string, {
+  badge1: string;
+  badge2: string;
+  title: string;
+  hintDefault: string;
+  placeholder: string;
+  error: string;
+  cancel: string;
+  submit: string;
+  footer: string;
+  bannerLabelSingle: string;
+  bannerLabelMulti: (n: number) => string;
+  bannerDescDefault: string;
+  bannerBtnText: string;
+  bannerBtnAria: (title: string) => string;
+}> = {
+  'zh-CN': {
+    badge1: '🌐 外联加密文章',
+    badge2: '端点隔离存储',
+    title: '验证访问凭证',
+    hintDefault: '这是一篇加密文章，请输入访问密码继续阅读完整内容。',
+    placeholder: '输入访问密钥 / 密码',
+    error: '凭证校验失败，请重新输入',
+    cancel: '取消，返回原文',
+    submit: '🔓 验证并解密',
+    footer: '取消后将自动跳转至未加密版本',
+    bannerLabelSingle: '存在加密扩展版本',
+    bannerLabelMulti: (n: number) => `加密版本 ${n}`,
+    bannerDescDefault: '这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。',
+    bannerBtnText: '🔑 进入加密版本',
+    bannerBtnAria: (title: string) => `进入加密版本：${title}`,
+  },
+  'zh-Hant': {
+    badge1: '🌐 外聯加密文章',
+    badge2: '端點隔離存儲',
+    title: '驗證訪問憑證',
+    hintDefault: '這是一篇加密文章，請輸入訪問密碼繼續閱讀完整內容。',
+    placeholder: '輸入訪問金鑰 / 密碼',
+    error: '憑證校驗失敗，請重新輸入',
+    cancel: '取消，返回原文',
+    submit: '🔓 驗證並解密',
+    footer: '取消後將自動跳轉至未加密版本',
+    bannerLabelSingle: '存在加密擴充版本',
+    bannerLabelMulti: (n: number) => `加密版本 ${n}`,
+    bannerDescDefault: '這篇文章擁有一個加密的完整版本，輸入密碼後可訪問全部內容。',
+    bannerBtnText: '🔑 進入加密版本',
+    bannerBtnAria: (title: string) => `進入加密版本：${title}`,
+  },
+  'en': {
+    badge1: '🌐 Encrypted Article',
+    badge2: 'Isolated Storage',
+    title: 'Verify Access Credentials',
+    hintDefault: 'This is an encrypted article. Please enter the password to unlock.',
+    placeholder: 'Enter access key / password',
+    error: 'Verification failed, please re-enter',
+    cancel: 'Cancel, return to article',
+    submit: '🔓 Verify & Decrypt',
+    footer: 'Canceling will redirect to the unencrypted version',
+    bannerLabelSingle: 'Encrypted Edition Available',
+    bannerLabelMulti: (n: number) => `Encrypted Edition ${n}`,
+    bannerDescDefault: 'This article has an encrypted edition. Enter password to view full content.',
+    bannerBtnText: '🔑 Access Encrypted Version',
+    bannerBtnAria: (title: string) => `Access Encrypted Version: ${title}`,
+  },
+  'es': {
+    badge1: '🌐 Artículo Encriptado',
+    badge2: 'Almacenamiento Aislado',
+    title: 'Verificar Credenciales de Acceso',
+    hintDefault: 'Este es un artículo encriptado. Ingrese la contraseña para desbloquear.',
+    placeholder: 'Ingrese clave / contraseña',
+    error: 'Error de verificación, intente de nuevo',
+    cancel: 'Cancelar, volver al artículo',
+    submit: '🔓 Verificar y Descifrar',
+    footer: 'Cancelar redirigirá a la versión sin encriptar',
+    bannerLabelSingle: 'Versión Encriptada Disponible',
+    bannerLabelMulti: (n: number) => `Versión Encriptada ${n}`,
+    bannerDescDefault: 'Este artículo dispone de una versión encriptada. Ingrese la contraseña para verla.',
+    bannerBtnText: '🔑 Acceder a la Versión Encriptada',
+    bannerBtnAria: (title: string) => `Acceder a la versión encriptada: ${title}`,
+  },
+  'de': {
+    badge1: '🌐 Verschlüsselter Artikel',
+    badge2: 'Isolierter Speicher',
+    title: 'Zugangsdaten Überprüfen',
+    hintDefault: 'Dies ist ein verschlüsselter Artikel. Bitte Passwort eingeben.',
+    placeholder: 'Schlüssel / Passwort eingeben',
+    error: 'Überprüfung fehlgeschlagen, bitte erneut eingeben',
+    cancel: 'Abbrechen, zurück zum Artikel',
+    submit: '🔓 Überprüfen & Entschlüsseln',
+    footer: 'Beim Abbrechen werden Sie zur unverschlüsselten Version weitergeleitet',
+    bannerLabelSingle: 'Verschlüsselte Version verfügbar',
+    bannerLabelMulti: (n: number) => `Verschlüsselte Version ${n}`,
+    bannerDescDefault: 'Dieser Artikel verfügt über eine verschlüsselte Version. Passwort eingeben für Vollzugriff.',
+    bannerBtnText: '🔑 Zur verschlüsselten Version',
+    bannerBtnAria: (title: string) => `Zur verschlüsselten Version: ${title}`,
+  },
+  'fr': {
+    badge1: '🌐 Article Chiffré',
+    badge2: 'Stockage Isolé',
+    title: 'Vérifier les Identifiants d\'Accès',
+    hintDefault: 'Ceci est un article chiffré. Veuillez saisir le mot de passe pour continuer.',
+    placeholder: 'Saisir la clé / mot de passe',
+    error: 'Échec de la vérification, veuillez réessayer',
+    cancel: 'Annuler, retourner à l\'article',
+    submit: '🔓 Vérifier et Déchiffrer',
+    footer: 'L\'annulation redirigera vers la version non chiffrée',
+    bannerLabelSingle: 'Version Chiffrée Disponible',
+    bannerLabelMulti: (n: number) => `Version Chiffrée ${n}`,
+    bannerDescDefault: 'Cet article possède une version chiffrée. Entrez le mot de passe pour y accéder.',
+    bannerBtnText: '🔑 Accéder à la Version Chiffrée',
+    bannerBtnAria: (title: string) => `Accéder à la version chiffrée : ${title}`,
+  },
+};
+
+const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 ---
 <script is:inline>
   (() => {
@@ -2476,33 +2593,33 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
     <div class="ext-encrypt-gate__card">
       <div class="ext-encrypt-gate__icon">🔐</div>
       <div class="ext-encrypt-gate__badge">
-        <span class="badge badge-purple">🌐 外联加密文章</span>
-        <span class="badge badge-cyan">端点隔离存储</span>
+        <span class="badge badge-purple">{tExtGate.badge1}</span>
+        <span class="badge badge-cyan">{tExtGate.badge2}</span>
       </div>
-      <h2 class="ext-encrypt-gate__title">验证访问凭证</h2>
-      <p class="ext-encrypt-gate__hint">{externalEncryptData.hint || '这是一篇加密文章，请输入访问密码继续阅读完整内容。'}</p>
+      <h2 class="ext-encrypt-gate__title">{tExtGate.title}</h2>
+      <p class="ext-encrypt-gate__hint">{externalEncryptData.hint || tExtGate.hintDefault}</p>
       <div class="ext-encrypt-gate__field">
         <input
           type="password"
           id="ext-encrypt-gate__input"
           class="ext-encrypt-gate__input"
-          placeholder="输入访问密钥 / 密码"
+          placeholder={tExtGate.placeholder}
           autocomplete="current-password"
         />
       </div>
       <div class="ext-encrypt-gate__error" id="ext-encrypt-gate__error" hidden>
-        凭证校验失败，请重新输入
+        {tExtGate.error}
       </div>
       <div class="ext-encrypt-gate__actions">
         <button type="button" class="ext-encrypt-gate__cancel" id="ext-encrypt-gate__cancel">
-          取消，返回原文
+          {tExtGate.cancel}
         </button>
         <button type="button" class="ext-encrypt-gate__submit" id="ext-encrypt-gate__submit">
-          🔓 验证并解密
+          {tExtGate.submit}
         </button>
       </div>
       <p class="ext-encrypt-gate__footer">
-        取消后将自动跳转至未加密版本
+        {tExtGate.footer}
       </p>
     </div>
   </div>
@@ -2725,19 +2842,19 @@ const { externalEncryptData, showEncryptButtons } = Astro.props;
         <span class="ext-encrypt-entry-banner__icon">🔐</span>
         <div>
           <div class="ext-encrypt-entry-banner__label">
-            {showEncryptButtons.length > 1 ? `加密版本 ${idx + 1}` : '存在加密扩展版本'}
+            {showEncryptButtons.length > 1 ? tExtGate.bannerLabelMulti(idx + 1) : tExtGate.bannerLabelSingle}
           </div>
           <div class="ext-encrypt-entry-banner__desc">
-            {btn.hint || '这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。'}
+            {btn.hint || tExtGate.bannerDescDefault}
           </div>
         </div>
       </div>
       <a
         href={btn.href}
         class="ext-encrypt-entry-banner__btn"
-        aria-label={`进入加密版本：${btn.title}`}
+        aria-label={tExtGate.bannerBtnAria(btn.title)}
       >
-        🔑 进入加密版本
+        {tExtGate.bannerBtnText}
       </a>
     </div>
   </div>

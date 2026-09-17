@@ -9,6 +9,8 @@ category: "示例"
 series: "功能示例"
 math: false
 mermaid: false
+i18nKey: "example-details-collapse"
+lang: "zh-CN"
 ---
 
 本篇示例专用于验证与测试博客正文中的 **折叠面板（Details）、手风琴组（Accordions）以及特殊的下拉框（Dropdown Selectors）** 组件。

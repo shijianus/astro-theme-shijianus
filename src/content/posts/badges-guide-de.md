@@ -1,18 +1,25 @@
 ---
-title: "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）"
-description: "全面盘点 EpoCanvas 博客原创自研的信任阶梯（TL.0 ~ TL.100+）、11 级常规读者称号、6 大绝版荣誉称号、管理员与站长权限、15+ 枚成就徽章的判定算法与解锁秘籍。LV 准入门槛与 TL 权重双轨制、35分活动封顶、突破100+特权、瀑布锁链、防踩坑指北与名片排版全揭秘。"
+title: "Umfassender Überblick! Vollständiger Leitfaden zu Leser‑Stufen, Titeln und Abzeichen im EpoCanvas‑Blog (2026 fortlaufend aktualisiert)"
+description: "Umfassende Übersicht über die von EpoCanvas Blog selbst entwickelte Vertrauensstufe (TL.0 ~ TL.100+), 11 reguläre Leser‑Titel, 6 exklusive Ehrentitel, Administrator‑ und Webmaster‑Rechte, die Berechnungsalgorithmen und Freischalt‑Tipps für über 15 Errungenschafts‑Abzeichen. LV‑Zugangsschwelle und TL‑Gewicht‑Doppelsystem, 35‑Punkte‑Aktivitätsobergrenze, Durchbruch über 100+ Privilegien, Wasserfall‑Kette, Fallen‑Vermeidung‑Leitfaden und vollständige Enthüllung der Visitenkarten‑Gestaltung."
 pubDate: 2026-09-12
 author: "shijianus"
-category: "社区指南"
-group: "官方规范"
-tags: ["社区指南", "读者社区", "等级阶梯", "徽章系统", "EpoCanvas", "Astro"]
+category: "Community‑Leitfaden"
+group: "Offizielle Richtlinien"
+tags:
+  - "Community‑Leitfaden"
+  - "Leser‑Community"
+  - "Stufenleiter"
+  - "Abzeichen‑System"
+  - "EpoCanvas"
+  - "Astro"
 cover: "/media/shijianus/geek-cover.jpg"
 coverAlt: "EpoCanvas Badges and Community Leveling Guide"
 toc: true
 featured: true
 sticky: 10
 i18nKey: "badges-guide"
-lang: "zh-CN"
+lang: "de"
+aiTranslatedFrom: "zh-CN"
 ---
 
 各位极客开发者、常驻读者与深研博友们，大家好！
@@ -68,12 +75,12 @@ EpoCanvas 博客社区体系采用精密的 **双轨治理架构**：**LV（Leve
 >    - **真实案例**：读者必须先解锁「先驱」，才能进一步解锁「年度用户」。如果尚未达成「先驱」（如评论数或获赞未达标），即使注册活跃天数达到了 365 天，也绝对无法越级解锁「年度用户」！
 > 3. **信任等级（TL）如何提升与计算？（35 点活动积分封顶）**：
 >    - 信任等级由系统根据 4 项多维度读者真实活动动态计算：
->      $$\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$$
+>      $\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$
 >    - **【硬性防刷分机制】活动积分上限限制为 35 点**：
->      $$\text{Earned Points} = \min(35, \text{Raw Activity Points})$$
+>      $\text{Earned Points} = \min(35, \text{Raw Activity Points})$
 >      这保证了任何读者都无法通过单纯挂机刷时长或活跃天数绕过称号门槛，必须通过实质性深度互动晋升称号！
 >    - **常规读者实际 TL 公式**：
->      $$\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$$
+>      $\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$
 >    - 只要未解锁新称号，获得的积分将平滑提升你的 TL，直到达到当前称号的上限。想要突破天花板，必须完成下一称号的瀑布要求！
 
 ---

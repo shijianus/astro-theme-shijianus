@@ -14,6 +14,8 @@ tags: ["访问控制", "安全", "服务端渲染"]
 access:
   passwordHash: "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
   message: "这篇文章启用了服务端访问控制。输入正确密码后才会继续渲染正文。"
+i18nKey: "access-control-lab"
+lang: "zh-CN"
 ---
 
 # 这是一篇受保护的文章

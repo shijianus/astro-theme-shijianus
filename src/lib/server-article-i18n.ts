@@ -126,13 +126,13 @@ export function cleanAiArticleOutput(raw: string, i18nKey: string, targetLocale:
     .replace(/<think>[\s\S]*?(<\/think>|$)/gi, '')
     .trim();
 
-  // Strip wrapping ```markdown ... ``` or ``` ... ```
+  const hadWrappingCodeblock = cleaned.startsWith('```markdown') || cleaned.startsWith('```');
   if (cleaned.startsWith('```markdown')) {
     cleaned = cleaned.replace(/^```markdown\r?\n/, '');
   } else if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```[a-z]*\r?\n/, '');
   }
-  if (cleaned.endsWith('```')) {
+  if (hadWrappingCodeblock && cleaned.endsWith('```')) {
     cleaned = cleaned.replace(/\r?\n```$/, '');
   }
   cleaned = cleaned.trim();

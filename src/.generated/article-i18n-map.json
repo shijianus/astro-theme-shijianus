@@ -1,8 +1,38 @@
 {
-  "access-control": {
-    "i18nKey": "access-control",
+  "access-control-lab": {
+    "i18nKey": "access-control-lab",
     "translations": {
-      "lab": {
+      "de": {
+        "filename": "access-control-lab-de.md",
+        "slug": "access-control-lab-de",
+        "title": "Labor für Artikel-Zugriffskontrolle",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "access-control-lab-en.md",
+        "slug": "access-control-lab-en",
+        "title": "Article Access Control Lab",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "access-control-lab-es.md",
+        "slug": "access-control-lab-es",
+        "title": "Laboratorio de Control de Acceso para Artículos",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "access-control-lab-fr.md",
+        "slug": "access-control-lab-fr",
+        "title": "Laboratoire de contrôle d'accès aux articles",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "access-control-lab-zh-Hant.md",
+        "slug": "access-control-lab-zh-Hant",
+        "title": "文章存取控制實驗室",
+        "isAiGenerated": true
+      },
+      "zh-CN": {
         "filename": "access-control-lab.md",
         "slug": "access-control-lab",
         "title": "文章访问控制实验室",
@@ -24,10 +54,34 @@
   "api-ready-theme-contracts": {
     "i18nKey": "api-ready-theme-contracts",
     "translations": {
+      "de": {
+        "filename": "api-ready-theme-contracts-de.md",
+        "slug": "api-ready-theme-contracts-de",
+        "title": "Theme-Konfiguration als API-fähigen Vertrag gestalten",
+        "isAiGenerated": true
+      },
       "en": {
         "filename": "api-ready-theme-contracts-en.md",
         "slug": "api-ready-theme-contracts-en",
         "title": "Turning Theme Configuration into an API-Ready Contract",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "api-ready-theme-contracts-es.md",
+        "slug": "api-ready-theme-contracts-es",
+        "title": "Convertir la configuración del tema en un contrato listo para API",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "api-ready-theme-contracts-fr.md",
+        "slug": "api-ready-theme-contracts-fr",
+        "title": "Transformer la configuration de thème en un contrat API-ready",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "api-ready-theme-contracts-zh-Hant.md",
+        "slug": "api-ready-theme-contracts-zh-Hant",
+        "title": "將主題配置設計成可供 API 串接的契約",
         "isAiGenerated": true
       },
       "zh-CN": {
@@ -41,6 +95,36 @@
   "badges-guide": {
     "i18nKey": "badges-guide",
     "translations": {
+      "de": {
+        "filename": "badges-guide-de.md",
+        "slug": "badges-guide-de",
+        "title": "Umfassender Überblick! Vollständiger Leitfaden zu Leser‑Stufen, Titeln und Abzeichen im EpoCanvas‑Blog (2026 fortlaufend aktualisiert)",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "badges-guide-en.md",
+        "slug": "badges-guide-en",
+        "title": "All Network Overview! EpoCanvas Blog Reader Levels, Titles, and Badge Acquisition Complete Guide (2026 Continuously Updated)",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "badges-guide-es.md",
+        "slug": "badges-guide-es",
+        "title": "¡Inventario completo! Guía definitiva para obtener niveles, títulos y insignias de lectores en el blog EpoCanvas (actualización continua 2026)",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "badges-guide-fr.md",
+        "slug": "badges-guide-fr",
+        "title": "Inventaire complet du web ! Guide complet pour obtenir les niveaux, titres et badges des lecteurs du blog EpoCanvas (mise à jour continue en 2026)",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "badges-guide-zh-Hant.md",
+        "slug": "badges-guide-zh-Hant",
+        "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "badges-guide.md",
         "slug": "badges-guide",
@@ -104,6 +188,36 @@
   "example-all-special-formats": {
     "i18nKey": "example-all-special-formats",
     "translations": {
+      "de": {
+        "filename": "example-all-special-formats-de.md",
+        "slug": "example-all-special-formats-de",
+        "title": "Beispiel: Umfassender Test der speziellen Formate und Funktionen von Astro",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-all-special-formats-en.md",
+        "slug": "example-all-special-formats-en",
+        "title": "Example: Comprehensive Test of Astro's Special Formats and Unique Features",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-all-special-formats-es.md",
+        "slug": "example-all-special-formats-es",
+        "title": "Ejemplo: Prueba exhaustiva de formatos especiales y características únicas de Astro",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-all-special-formats-fr.md",
+        "slug": "example-all-special-formats-fr",
+        "title": "Exemple : Test complet des formats spéciaux et fonctionnalités avancées d'Astro",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-all-special-formats-zh-Hant.md",
+        "slug": "example-all-special-formats-zh-Hant",
+        "title": "範例：Astro 特殊格式與特異功能綜合測試大全",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-all-special-formats.md",
         "slug": "example-all-special-formats",
@@ -126,6 +240,36 @@
   "example-code-enhancements": {
     "i18nKey": "example-code-enhancements",
     "translations": {
+      "de": {
+        "filename": "example-code-enhancements-de.md",
+        "slug": "example-code-enhancements-de",
+        "title": "Beispiel: Vollständige Demonstration der Code‑Block‑Erweiterungsfunktionen",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-code-enhancements-en.md",
+        "slug": "example-code-enhancements-en",
+        "title": "Example: Full Code Block Enhancement Showcase",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-code-enhancements-es.md",
+        "slug": "example-code-enhancements-es",
+        "title": "Ejemplo: Demostración Completa de Mejoras en Bloques de Código",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-code-enhancements-fr.md",
+        "slug": "example-code-enhancements-fr",
+        "title": "Exemple : Démonstration des fonctionnalités avancées des blocs de code",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-code-enhancements-zh-Hant.md",
+        "slug": "example-code-enhancements-zh-Hant",
+        "title": "範例：程式碼區塊完整增強功能展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-code-enhancements.md",
         "slug": "example-code-enhancements",
@@ -137,6 +281,36 @@
   "example-details-collapse": {
     "i18nKey": "example-details-collapse",
     "translations": {
+      "de": {
+        "filename": "example-details-collapse-de.md",
+        "slug": "example-details-collapse-de",
+        "title": "Beispiel: Aufklappbare Panels, Akkordeons und Dropdown-Selektoren",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-details-collapse-en.md",
+        "slug": "example-details-collapse-en",
+        "title": "Example: Collapsible Panels, Accordions, and Dropdown Selectors",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-details-collapse-es.md",
+        "slug": "example-details-collapse-es",
+        "title": "Ejemplo: Paneles plegables, acordeones y selectores desplegables",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-details-collapse-fr.md",
+        "slug": "example-details-collapse-fr",
+        "title": "Exemple : panneaux repliables, accordéons et sélecteurs déroulants",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-details-collapse-zh-Hant.md",
+        "slug": "example-details-collapse-zh-Hant",
+        "title": "範例：摺疊面板、手風琴與下拉選單格式展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-details-collapse.md",
         "slug": "example-details-collapse",
@@ -148,6 +322,36 @@
   "example-embeds": {
     "i18nKey": "example-embeds",
     "translations": {
+      "de": {
+        "filename": "example-embeds-de.md",
+        "slug": "example-embeds-de",
+        "title": "Beispiel: Rich Media Einbettungen, Post-Formate und Chat-Dialoge",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-embeds-en.md",
+        "slug": "example-embeds-en",
+        "title": "Example: Rich Media Embeds, Post Formats, and Chat Bubbles Showcase",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-embeds-es.md",
+        "slug": "example-embeds-es",
+        "title": "Ejemplo: Incrustaciones de Medios Ricos, Formatos de Publicación y Burbujas de Chat",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-embeds-fr.md",
+        "slug": "example-embeds-fr",
+        "title": "Exemple : Intégrations de médias riches, formats de publication et bulles de chat",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-embeds-zh-Hant.md",
+        "slug": "example-embeds-zh-Hant",
+        "title": "範例：富媒體嵌入、文章格式與聊天氣泡展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-embeds.md",
         "slug": "example-embeds",
@@ -214,6 +418,36 @@
   "example-tabs": {
     "i18nKey": "example-tabs",
     "translations": {
+      "de": {
+        "filename": "example-tabs-de.md",
+        "slug": "example-tabs-de",
+        "title": "Beispiel: Interaktive Tabs und Dropdown‑Switcher für mehrere Code‑Versionen",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-tabs-en.md",
+        "slug": "example-tabs-en",
+        "title": "Example: Interactive Tabs and Multi‑Code Version Switcher Showcase",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-tabs-es.md",
+        "slug": "example-tabs-es",
+        "title": "Ejemplo: Pestañas interactivas y conmutador de versiones de código",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-tabs-fr.md",
+        "slug": "example-tabs-fr",
+        "title": "Exemple : affichage avec onglets multiples et bascule de versions de code",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-tabs-zh-Hant.md",
+        "slug": "example-tabs-zh-Hant",
+        "title": "範例：多分頁與多程式碼版本切換展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-tabs.md",
         "slug": "example-tabs",

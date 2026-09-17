@@ -1,27 +1,28 @@
 ---
-title: "示例：代码块全量增强功能展示"
-description: "全面展示 macOS 拟物交通灯控制条、语言徽章、增删 Diff、一键复制与超长折叠特性。"
+title: "Example: Full Code Block Enhancement Showcase"
+description: "A comprehensive demonstration of macOS skeuomorphic traffic light controls, language badges, diff highlighting, one-click copy, and automatic long code collapse."
 pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["example", "showcase", "code", "shiki"]
-category: "示例"
-series: "功能示例"
+category: "Examples"
+series: "Feature Examples"
 math: false
 mermaid: false
 i18nKey: "example-code-enhancements"
-lang: "zh-CN"
+lang: "en"
+aiTranslatedFrom: "zh-CN"
 ---
 
-本篇示例专用于验证与测试博客正文中的 **代码块（Code Block Enhancements）** 功能。
+This example article is dedicated to verifying and testing the **Code Block Enhancements** feature within blog posts.
 
-主题为所有代码块注入了 **macOS 拟物交通灯控制条、语言徽章、增删行 Diff 对比、一键复制** 以及 **超长代码自动限高折叠**。
+The theme injects **macOS skeuomorphic traffic light controls, language badges, line addition/deletion diff highlighting, one-click copy**, and **automatic height-limited collapse for extra-long code blocks** into all code blocks.
 
 ---
 
-## 一、带增删行对比的 Diff 代码块（Diff Highlighting）
+## 1. Diff Code Blocks with Line Highlighting (Diff Highlighting)
 
-在代码块中展示版本升级与配置变更时的增加行与删除行：
+Displays added and deleted lines when showing version upgrades and configuration changes within code blocks:
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -30,10 +31,10 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://shijian.us',
-- output: 'server', // 旧的服务端渲染模式
-+ output: 'static', // 升级为极速纯静态导出模式
+- output: 'server', // Old server-side rendering mode
++ output: 'static', // Upgraded to ultra-fast static export mode
   markdown: {
-+   remarkPlugins: [remarkMath], // 注入 KaTeX 公式解析
++   remarkPlugins: [remarkMath], // Injects KaTeX formula parsing
 +   rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {
@@ -47,9 +48,9 @@ export default defineConfig({
 
 ---
 
-## 二、超长代码自动折叠演示（Code Collapse）
+## 2. Automatic Code Collapse for Long Blocks (Code Collapse)
 
-当代码行数过多时，主题会自动在高度超过 380px 时启用半透明遮罩与「展开代码」胶囊按钮：
+When code blocks contain too many lines, the theme automatically enables a translucent overlay and an "Expand Code" capsule button when the height exceeds 380px:
 
 ```json
 {

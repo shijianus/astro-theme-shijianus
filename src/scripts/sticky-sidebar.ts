@@ -237,29 +237,38 @@ function updateHomeSticky(topOffset: number, isMobile: boolean) {
     return;
   }
 
-  // Always keep is-sticky-active on desktop
-  card.classList.add('is-sticky-active');
-  card.classList.remove('is-static-layout');
-  card.style.transform = 'none';
-
+  // Use actual rendered bounding client rect height of the card
   const cardRect = card.getBoundingClientRect();
+  const cardHeight = cardRect.height || card.offsetHeight;
+
+  // Reference for stopping: bottom edge aligns with #home-pagination bottom
   const boundaryRect = boundary.getBoundingClientRect();
+  const boundaryBottom = boundaryRect.bottom;
+
+  // Sticky bottom threshold when pinned at topOffset
+  const stickyBottomAtPin = topOffset + cardHeight;
+  const distanceToBottomAlignment = boundaryBottom - stickyBottomAtPin;
 
   // Has not slid up to topOffset yet (entering phase)
   const isEntering = cardRect.top > topOffset + 1;
-  // Has reached the bottom boundary (leaving / aligned phase)
-  const isLeaving = cardRect.bottom >= boundaryRect.bottom - 2;
 
   let stickyState = 'reading';
   if (isEntering) {
     stickyState = 'entering';
-  } else if (isLeaving) {
+    card.style.transform = 'none';
+  } else if (distanceToBottomAlignment < 0) {
+    // Terminate aligned with #home-pagination bottom
     stickyState = 'leaving';
+    const offset = Math.round(distanceToBottomAlignment);
+    card.style.transform = `translateY(${offset}px)`;
   } else {
     stickyState = 'reading';
+    card.style.transform = 'none';
   }
 
   card.dataset.stickyState = stickyState;
+  card.classList.toggle('is-static-layout', stickyState === 'static');
+  card.classList.toggle('is-sticky-active', stickyState === 'reading' || stickyState === 'leaving');
   syncScrollableOverflow(card);
 }
 

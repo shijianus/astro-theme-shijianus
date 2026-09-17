@@ -431,6 +431,7 @@ const heroSummary = isUnlocked
     </article>
 
     {isUnlocked && <ContentFeatureEnhancer
+      lang={currentLang}
       externalEncryptData={isEncryptedRoute && matchedEncryptConfig ? {
         hash: matchedEncryptConfig.hash,
         hint: matchedEncryptConfig.hint ?? '',

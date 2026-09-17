@@ -1,60 +1,61 @@
 ---
-title: "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）"
-description: "全面盘点 EpoCanvas 博客原创自研的信任阶梯（TL.0 ~ TL.100+）、11 级常规读者称号、6 大绝版荣誉称号、管理员与站长权限、15+ 枚成就徽章的判定算法与解锁秘籍。LV 准入门槛与 TL 权重双轨制、35分活动封顶、突破100+特权、瀑布锁链、防踩坑指北与名片排版全揭秘。"
+title: "¡Inventario completo! Guía definitiva para obtener niveles, títulos y insignias de lectores en el blog EpoCanvas (actualización continua 2026)"
+description: "Inventario exhaustivo de la escalera de confianza (TL.0 ~ TL.100+) desarrollada originalmente por el blog EpoCanvas, 11 títulos de lector regulares, 6 títulos honoríficos de edición limitada, permisos de administrador y propietario, y el algoritmo de determinación y los secretos para desbloquear más de 15 insignias de logro. Revelación completa del sistema dual de umbrales de acceso LV y pesos TL, tope de 35 puntos para eventos, privilegios al superar 100+, cadena de cascada, guía para evitar errores y diseño de la tarjeta de presentación."
 pubDate: 2026-09-12
 author: "shijianus"
-category: "社区指南"
-group: "官方规范"
-tags: ["社区指南", "读者社区", "等级阶梯", "徽章系统", "EpoCanvas", "Astro"]
+category: "Guía de la comunidad"
+group: "Normativa oficial"
+tags: ["Guía de la comunidad", "Comunidad de lectores", "Escalera de niveles", "Sistema de insignias", "EpoCanvas", "Astro"]
 cover: "/media/shijianus/geek-cover.jpg"
 coverAlt: "EpoCanvas Badges and Community Leveling Guide"
 toc: true
 featured: true
 sticky: 10
 i18nKey: "badges-guide"
-lang: "zh-CN"
+lang: "es"
+aiTranslatedFrom: "zh-CN"
 ---
 
-各位极客开发者、常驻读者与深研博友们，大家好！
+¡Hola a todos, desarrolladores geeks, lectores habituales y compañeros de investigación profunda!
 
-经常有细心的朋友在博客文章底部互动或悬停评论区头像时好奇：为什么有的读者顶着 **「LV.1 · 贡献者」**，有的是耀眼的 **「LV.3 · 先驱」**，甚至还有极少数核心老读者亮着 **「📜 创世墨客」** 或 **「TL.102」** 这样突破天花板的耀眼数字？名片浮层里的 **「☕ 慢读时光」**、**「💎 深得人心」** 又是如何点亮的？站长的头像为什么能独树一帜地呈现微圆角方形与金色皇冠？
+A menudo, los amigos atentos se preguntan al interactuar en la parte inferior de los artículos del blog o al pasar el cursor sobre los avatares en la sección de comentarios: ¿por qué algunos lectores llevan el título de **«LV.1 · Contribuidor»**, otros el brillante **«LV.3 · Pionero»**, e incluso unos pocos lectores core veteranos lucen cifras deslumbrantes que rompen el techo como **«📜 Cronista de la Creación»** o **«TL.102»**? ¿Cómo se encienden los **«☕ Tiempo de Lectura Lenta»** y **«💎 Muy Querido»** en la tarjeta flotante? ¿Por qué el avatar del administrador puede presentar de forma única una forma cuadrada con esquinas ligeramente redondeadas y una corona dorada?
 
-今天，这篇凝聚了 **EpoCanvas 原创极客设计美学** 的官方权威指南，将向大家彻底开源揭秘 EpoCanvas 博客现行的 **双轨信任阶梯系统（LV 准入门槛 + TL 权重机制）**、**11 大核心读者常规称号**、**6 大绝版与限定荣誉称号**、**管理员与站长权责** 以及 **15+ 枚专属成就徽章** 的底层判定算法与实操升级路径！
+Hoy, esta guía oficial y autoritativa, que encapsula la **estética de diseño geek original de EpoCanvas**, revelará a fondo el algoritmo de determinación subyacente y la ruta práctica de mejora para el **sistema de escalera de confianza de doble vía (umbral de acceso LV + mecanismo de peso TL)**, los **11 títulos de lector habituales principales**, los **6 títulos honoríficos de edición limitada y descontinuados**, las **responsabilidades y poderes de los administradores y el administrador del sitio**, ¡así como las **15+ insignias de logro exclusivas** del blog EpoCanvas!
 
 ---
 
 > [!warning]
-> **数据同步与统计须知**：本博客读者数据（包括阅读时长、活跃天数、评论数、Emoji 喝彩记录）依托客户端 `LocalStorage` 本地持久沉淀与 Cloudflare Workers / D1 后端鉴权通道异步同步。若使用无痕隐私模式、频繁跨设备访问或清空浏览器缓存，可能会产生微弱的统计延迟或临时会话断连。建议在账号中心绑定专属邮箱（如 Epomail）以确保权益永久绑定！
+> **Aviso de sincronización y estadísticas de datos**: Los datos de los lectores de este blog (incluyendo tiempo de lectura, días de actividad, número de comentarios y registros de aplausos con Emoji) se sincronizan de forma asíncrona mediante la persistencia local del cliente `LocalStorage` y el canal de autenticación del backend Cloudflare Workers / D1. El uso del modo de navegación privada, el acceso frecuente entre dispositivos o el vaciado de la caché del navegador puede provocar un ligero retraso en las estadísticas o una desconexión temporal de la sesión. Se recomienda vincular un correo electrónico exclusivo (como Epomail) en el centro de cuentas para garantizar la vinculación permanente de los derechos!
 
 > [!tip]
-> **战绩与徽章佩戴快捷入口**：点击博客顶部导航栏右侧或控制台快捷按钮的 **「账号中心」抽屉（Account Drawer）**，即可实时查看当前的信任等级（TL）、下一级达成百分比、已解锁成就池，并可自由挑选佩戴最多 **4 枚专属徽章** 彰显极客身份！
+> **Acceso rápido a récords y uso de insignias**: Haga clic en el **«Barral de Cuenta» (Account Drawer)** en el lado derecho de la barra de navegación superior del blog o en el botón de acceso rápido de la consola para ver en tiempo real su nivel de confianza actual (TL), el porcentaje de logro para el siguiente nivel y el pool de logros desbloqueados, ¡y puede elegir libremente hasta **4 insignias exclusivas** para lucir su identidad geek!
 
 <div data-theme-toc="true"> </div>
 
 ---
 
-# 一、核心机制：LV 准入门槛与 TL 权重的双轨制
+# I. Mecanismo central: Sistema de doble vía de umbral de acceso LV y peso TL
 
-EpoCanvas 博客社区体系采用精密的 **双轨治理架构**：**LV（Level）** 与 **TL（Trust Level）** 各司其职，相辅相成：
+El sistema comunitario del blog EpoCanvas adopta una **arquitectura de gobernanza de doble vía** precisa: **LV (Nivel)** y **TL (Nivel de Confianza)** cumplen funciones específicas y se complementan mutuamente:
 
 > [!important]
-> **【核心机制：LV 准入门槛 vs TL 权重排名的本质区别】**
-> - **LV (Level 0 ~ 4) —— 决定你能看到的内容最低等级（准入门槛 / 访问权限锁）**：
->   - LV 是博客设立的内容安全与深度分级门槛。
->   - **LV.0（新手）**：仅可查阅常规公开博文；
->   - **LV.1（进阶）**：解锁极速打气（Boost）、专属评论互动与进阶技术探讨专栏；
->   - **LV.2（极客）**：解锁高阶架构实录、私有折叠代码块与前沿内测实验专栏；
->   - **LV.3（先驱）**：解锁先驱闭门研讨专栏与特邀技术提案权限；
->   - **LV.4（管理与主创）**：社区巡查治理（管理员）与全站无条件穿透权限（站长）。
-> - **TL (Trust Level 0 ~ 100+) —— 决定你在本等级区间内的权威度与排名权重**：
->   - TL 衡量你在当前等级区间内的活跃度与信誉积累。
->   - 在同一 LV 等级内，TL 更高的读者在评论区展示优先级更高、点赞喝彩权重更大、防灌水限流配额更宽松、在读者活跃榜上更亮眼。
+> **【Mecanismo central: Diferencia esencial entre umbral de acceso LV y clasificación por peso TL】**
+> - **LV (Nivel 0 ~ 4) —— Determina el nivel mínimo de contenido que puede ver (umbral de acceso / candado de permisos de acceso)**:
+>   - LV es el umbral de seguridad del contenido y clasificación por profundidad establecido por el blog.
+>   - **LV.0 (Novato)**: Solo puede consultar artículos públicos habituales;
+>   - **LV.1 (Intermedio)**: Desbloquea el impulso rápido (Boost), la interacción de comentarios exclusiva y la columna de debate técnico avanzado;
+>   - **LV.2 (Geek)**: Desbloquea registros de arquitectura de alto nivel, bloques de código plegados privados y la columna de experimentos de pruebas internas de vanguardia;
+>   - **LV.3 (Pionero)**: Desbloquea la columna de seminarios cerrados para pioneros y permisos para propuestas técnicas invitadas;
+>   - **LV.4 (Gestión y Creación Principal)**: Gobernanza de inspección comunitaria (Administradores) y permisos de penetración incondicional en todo el sitio (Administrador del sitio).
+> - **TL (Nivel de Confianza 0 ~ 100+) —— Determina su autoridad y peso de clasificación dentro de su intervalo de nivel actual**:
+>   - TL mide su nivel de actividad y acumulación de reputación dentro de su intervalo de nivel actual.
+>   - Dentro del mismo nivel LV, los lectores con un TL más alto tienen una prioridad de visualización más alta en la sección de comentarios, un mayor peso en los me gusta y aplausos, una cuota de limitación de spam más flexible y un brillo más destacado en el ranking de actividad de lectores.
 
 ---
 
 > [!tip]
-> **【关键晋级准则：最高信任等级上限（Max TL Cap）、瀑布解锁链与 35 点积分封顶】**
-> 1. **称号决定最高 TL 上限（Max TL Cap）**：
+> **【Criterios clave de promoción: Límite máximo de nivel de confianza (Max TL Cap), cadena de desbloqueo en cascada y tope de 35 puntos de puntuación】**
+> 1. **El título determina el límite máximo de TL (Max TL Cap)**:
 >    - 称号后缀的 TL 代表该称号所赋予的 **最高信任等级上限（Max TL Cap）**，而非固定的当前数值。
 >    - **阶梯区间上限严格划定**：
 >      - **LV.0 阶梯**：上限严格限制在 **TL.2**（新兴用户 Cap 0，初始用户 Cap 2）；
@@ -68,12 +69,12 @@ EpoCanvas 博客社区体系采用精密的 **双轨治理架构**：**LV（Leve
 >    - **真实案例**：读者必须先解锁「先驱」，才能进一步解锁「年度用户」。如果尚未达成「先驱」（如评论数或获赞未达标），即使注册活跃天数达到了 365 天，也绝对无法越级解锁「年度用户」！
 > 3. **信任等级（TL）如何提升与计算？（35 点活动积分封顶）**：
 >    - 信任等级由系统根据 4 项多维度读者真实活动动态计算：
->      $$\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$$
+>      $\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$
 >    - **【硬性防刷分机制】活动积分上限限制为 35 点**：
->      $$\text{Earned Points} = \min(35, \text{Raw Activity Points})$$
+>      $\text{Earned Points} = \min(35, \text{Raw Activity Points})$
 >      这保证了任何读者都无法通过单纯挂机刷时长或活跃天数绕过称号门槛，必须通过实质性深度互动晋升称号！
 >    - **常规读者实际 TL 公式**：
->      $$\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$$
+>      $\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$
 >    - 只要未解锁新称号，获得的积分将平滑提升你的 TL，直到达到当前称号的上限。想要突破天花板，必须完成下一称号的瀑布要求！
 
 ---
