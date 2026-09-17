@@ -97,7 +97,9 @@ async function run() {
 
     const canonicalUrl = `${BASE_URL}/posts/content-formats-and-markup-mastery/`;
     console.log(`Navigating to canonical URL: ${canonicalUrl}`);
-    await page.goto(canonicalUrl, { waitUntil: 'networkidle' });
+    await page.goto(canonicalUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForSelector('#article-container', { timeout: 20000 });
+    await page.waitForTimeout(1500);
 
     // Set a reload detection token in window
     await page.evaluate(() => {
@@ -274,8 +276,8 @@ async function run() {
 
     const legacyEnUrl = `${BASE_URL}/posts/content-formats-and-markup-mastery-en/`;
     console.log(`Navigating to legacy URL: ${legacyEnUrl}`);
-    await page.goto(legacyEnUrl, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(1000);
+    await page.goto(legacyEnUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForTimeout(2000);
 
     // Verify redirected immediately to canonical URL
     assert(
@@ -293,7 +295,9 @@ async function run() {
 
     const badgesUrl = `${BASE_URL}/posts/badges-guide/`;
     console.log(`Navigating to canonical URL: ${badgesUrl}`);
-    await page.goto(badgesUrl, { waitUntil: 'networkidle' });
+    await page.goto(badgesUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForSelector('#article-container', { timeout: 20000 });
+    await page.waitForTimeout(1500);
 
     assert(page.url() === badgesUrl, `Badges guide canonical URL: ${page.url()}`);
     const badgesVariants = await page.locator('.article-translation-variant').count();
