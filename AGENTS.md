@@ -2216,3 +2216,29 @@
 - [x] **Playwright 视觉与自动化证据链全流程验收通过**：
   1. 编写专用测试脚本 `scripts/verify-sticky-tag-card-optimized.mjs`，捕获顶部视图（`01_optimized_top_view.png`）、中部吸顶（`02_optimized_sticky_middle.png`）、底部终止对齐（`03_optimized_bottom_alignment.png`）、标签卡片特写（`04_optimized_tag_card_closeup.png`）及分页间距特写（`05_optimized_pagination_gap_closeup.png`）；
   2. 全量指标严格达标：类名包含 `is-sticky-active`、标签数 53、卡片高度 375.2px（<= 380px）、网格卡片数 10、网格与分页间距 31.6px、底部对齐差值 0px。
+
+### Task 99: 支持赞赏页预设金额卡片 UI 复杂化升维、6 档非重复显式交易内容与生产端 E2E 验证
+- [x] **卡片整体 UI 复杂化与金融卡质感升维 (UI Complexity & Multi-Tier Micro Information)**：
+  1. 告别单行纯文字金额直出，重构为具备精致金融卡微层次的双行结构（Row 1: 顶部微元信息行；Row 2: 主金额与显式交易属性行）；
+  2. 保持卡片高度尺寸物理不变（严格在 54.0px ~ 55.1px 范围内，`min-h-[50px] sm:min-h-[54px]`），彻底解除多余撑高风险；
+  3. 与右侧扫码列完美保持 0.0px 上下绝对对称对齐（`Top Diff = 0.0px, Bottom Diff = 0.0px`）。
+- [x] **六卡完全独立无重复且画风高度统一 (Differentiated & Cohesive 6 Tiers)**：
+  1. 6 个档位卡片配置独一无二、不重复的档位徽标、角色支持、交易性质、矢量图标与主题色系：
+     - Tier 0: `微额` | 闪电 `Zap` | `即时零钱` | 琥珀金 (Amber)
+     - Tier 1: `日常` | 爱心 `Heart` | `常客支持` | 活力橙 (Orange)
+     - Tier 2: `🔥 热门` | 火焰 `Flame` | `推荐支持` | 经典蓝 (Blue，默认选中高亮)
+     - Tier 3: `⚡ 算力` | CPU 芯片 `Cpu` | `边缘函数` | 薄荷绿 (Emerald)
+     - Tier 4: `🛡️ 基建` | 盾牌 `Shield` | `域名存储` | 梦幻紫 (Purple)
+     - Tier 5: `👑 荣誉` | 皇冠 `Crown` | `名录致谢` | 珊瑚粉 (Rose)
+  2. 严格契合安知鱼整体设计规范与深浅色模式系统，未选中态具备清晰的边框与文字辨识度，选中态呈现立体渐变、外发光投影与双环光效。
+- [x] **实际交易内容与资金投向显式展示 (Explicit Transaction Context)**：
+  1. 显式直出赞赏资金投向与实际交易场景说明（`即时零钱`、`常客支持`、`推荐支持`、`边缘函数`、`域名存储`、`名录致谢`）；
+  2. 选中态呈现专属极简高光勾选胶囊（`<Check className="w-2.5 h-2.5 stroke-[3]" />`），未选态显式展示该货币币种代码（`MYR`/`USD`/`CNY`）；
+  3. 背景隐式水印图标悬浮缩放动效（微动效 `scale-110 -rotate-3`）完美融合。
+- [x] **生产端 (Cloudflare Pages) 全链路部署与 Playwright E2E 终审全绿**：
+  1. 构建全量静态产物与 Functions 运行时，全量部署至 Cloudflare Pages 生产边缘节点（项目 `shijianus-blog`，版本 `57b6268a`，生产域名 `https://blog.epocanvas.com`）；
+  2. 编写并执行生产端自动化端到端测试套件 `scripts/verify-live-support-refined.mjs`，对生产环境 `https://blog.epocanvas.com/support/` 展开全链路真机与浏览器审计；
+  3. 生产端 6 档卡片高度严格受控在 54.0px ~ 55.1px 之间，徽标与性质 100% 独立无重复；
+  4. 生产端左右两列顶底对齐误差严格为 **0.0px**（`Top Diff = 0.0px, Bottom Diff = 0.0px`）；
+  5. 生产端 Stripe 收银台结账按钮金额实时原子级同步，4 大收款 Tab（CN、HK、PayPal、Crypto）切换顺畅；
+  6. 捕获生产端高分辨率截图（`live-01-desktop-overview.png`、`live-02-desktop-preset-cards.png`、`live-03-desktop-right-column.png`、`live-04-desktop-dark-mode.png`、`live-05-tablet.png`、`live-06-mobile.png`），视觉审查 100% 达标。

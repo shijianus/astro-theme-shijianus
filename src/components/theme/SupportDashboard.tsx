@@ -16,6 +16,11 @@ import {
   Copy,
   Users,
   Sparkles,
+  Zap,
+  Flame,
+  Cpu,
+  Shield,
+  Crown,
 } from 'lucide-react';
 import {
   supportConfig,
@@ -66,78 +71,20 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
-/* ── Coffee Tier SVG Illustrations ── */
-const TierEspressoIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-    <path d="M2 8h16v7a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
-    <path d="M6 1v3" />
-    <path d="M10 1v3" />
-    <path d="M14 1v3" />
-  </svg>
-);
-
-const TierMugIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-    <path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-    <line x1="6" y1="2" x2="6" y2="4" />
-    <line x1="10" y1="2" x2="10" y2="4" />
-    <line x1="14" y1="2" x2="14" y2="4" />
-  </svg>
-);
-
-const TierLatteIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 4h14l-2 15a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 4Z" />
-    <line x1="3" y1="4" x2="21" y2="4" />
-    <path d="M10 9h4" />
-    <path d="M9 14h6" />
-  </svg>
-);
-
-const TierPourOverIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 2h14l-4 9h-6L5 2Z" />
-    <path d="M9 11v1a3 3 0 0 0 6 0v-1" />
-    <path d="M7 16h10l-2 6H9l-2-6Z" />
-  </svg>
-);
-
-const TierBeansIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="8" cy="14" r="5" />
-    <path d="M6 11c1.5 2 2.5 4 4 4" />
-    <circle cx="16" cy="10" r="5" />
-    <path d="M14 7c1.5 2 2.5 4 4 4" />
-    <path d="M12 2v2" />
-    <path d="M19 2l-1 2" />
-  </svg>
-);
-
-const TierHeartCupIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-    <path d="M2 8h16v7a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
-    <path d="M10 12.5l1.5 1.5 3-3" />
-    <circle cx="12" cy="4" r="2" fill="currentColor" />
-  </svg>
-);
-
-const TIER_ICONS = [
-  TierEspressoIcon,
-  TierMugIcon,
-  TierLatteIcon,
-  TierPourOverIcon,
-  TierBeansIcon,
-  TierHeartCupIcon,
-];
-
-/* ── 6 个档位专属色彩主题系统 ── */
+/* ── 6 个档位专属显式交易主题与元数据系统 ── */
 const TIER_STYLES = [
   {
-    // 档位 0：暖金琥珀
+    // 档位 0：暖金琥珀 - 微额体验
     name: 'amber',
+    badge: '微额',
+    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
+    badgeUnselected:
+      'bg-amber-500/15 text-amber-900 dark:text-amber-200 border-amber-300/60 dark:border-amber-700/50',
+    role: '轻量体验',
+    nature: '即时零钱',
+    icon: Zap,
+    subtagSelected: 'text-white/80',
+    subtagUnselected: 'text-amber-800/80 dark:text-amber-300/70',
     selected:
       'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
     unselected:
@@ -145,11 +92,20 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-amber-500/20 dark:text-amber-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-amber-900 dark:text-amber-100',
+    amountUnselected: 'text-amber-950 dark:text-amber-100',
   },
   {
-    // 档位 1：活力橙色
+    // 档位 1：活力橙色 - 常规激励
     name: 'orange',
+    badge: '日常',
+    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
+    badgeUnselected:
+      'bg-orange-500/15 text-orange-900 dark:text-orange-200 border-orange-300/60 dark:border-orange-700/50',
+    role: '常规激励',
+    nature: '常客支持',
+    icon: Heart,
+    subtagSelected: 'text-white/80',
+    subtagUnselected: 'text-orange-800/80 dark:text-orange-300/70',
     selected:
       'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
     unselected:
@@ -157,11 +113,20 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-orange-500/20 dark:text-orange-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-orange-900 dark:text-orange-100',
+    amountUnselected: 'text-orange-950 dark:text-orange-100',
   },
   {
-    // 档位 2：科技经典蓝
+    // 档位 2：科技经典蓝 - 精选首选 (Default / Featured)
     name: 'blue',
+    badge: '🔥 热门',
+    badgeSelected: 'bg-white/30 text-white border-white/50 shadow-xs font-black',
+    badgeUnselected:
+      'bg-blue-500/15 text-[#425aef] dark:text-blue-300 border-blue-400/40 dark:border-blue-500/40 font-black',
+    role: '精选首选',
+    nature: '推荐支持',
+    icon: Flame,
+    subtagSelected: 'text-white/90 font-bold',
+    subtagUnselected: 'text-[#425aef] dark:text-blue-300 font-bold',
     selected:
       'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
     unselected:
@@ -169,11 +134,20 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-blue-500/20 dark:text-blue-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-blue-900 dark:text-blue-100',
+    amountUnselected: 'text-blue-950 dark:text-blue-100',
   },
   {
-    // 档位 3：清新翡翠薄荷绿
+    // 档位 3：清新翡翠薄荷绿 - 算力加速
     name: 'emerald',
+    badge: '⚡ 算力',
+    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
+    badgeUnselected:
+      'bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 border-emerald-300/60 dark:border-emerald-700/50',
+    role: '算力加速',
+    nature: '边缘函数',
+    icon: Cpu,
+    subtagSelected: 'text-white/80',
+    subtagUnselected: 'text-emerald-800/80 dark:text-emerald-300/70',
     selected:
       'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
     unselected:
@@ -181,11 +155,20 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-emerald-500/20 dark:text-emerald-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-emerald-900 dark:text-emerald-100',
+    amountUnselected: 'text-emerald-950 dark:text-emerald-100',
   },
   {
-    // 档位 4：高雅罗兰紫
+    // 档位 4：高雅罗兰紫 - 设施守护
     name: 'purple',
+    badge: '🛡️ 基建',
+    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
+    badgeUnselected:
+      'bg-purple-500/15 text-purple-900 dark:text-purple-200 border-purple-300/60 dark:border-purple-700/50',
+    role: '设施守护',
+    nature: '域名存储',
+    icon: Shield,
+    subtagSelected: 'text-white/80',
+    subtagUnselected: 'text-purple-800/80 dark:text-purple-300/70',
     selected:
       'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
     unselected:
@@ -193,11 +176,20 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-purple-500/20 dark:text-purple-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-purple-900 dark:text-purple-100',
+    amountUnselected: 'text-purple-950 dark:text-purple-100',
   },
   {
-    // 档位 5：炽烈珊瑚玫红
+    // 档位 5：炽烈珊瑚玫红 - 核心赞助
     name: 'rose',
+    badge: '👑 荣誉',
+    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
+    badgeUnselected:
+      'bg-rose-500/15 text-rose-900 dark:text-rose-200 border-rose-300/60 dark:border-rose-700/50',
+    role: '核心赞助',
+    nature: '名录致谢',
+    icon: Crown,
+    subtagSelected: 'text-white/80',
+    subtagUnselected: 'text-rose-800/80 dark:text-rose-300/70',
     selected:
       'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
     unselected:
@@ -205,7 +197,7 @@ const TIER_STYLES = [
     watermarkSelected: 'text-white opacity-25',
     watermarkUnselected: 'text-rose-500/20 dark:text-rose-400/15 group-hover:opacity-35',
     amountSelected: 'text-white',
-    amountUnselected: 'text-rose-900 dark:text-rose-100',
+    amountUnselected: 'text-rose-950 dark:text-rose-100',
   },
 ];
 
@@ -593,11 +585,11 @@ export const SupportDashboard: React.FC = () => {
               </div>
 
               {/* Grid of 6 Cards: key on activeCurrencyCode guarantees full atomic re-render when currency changes */}
-              <div key={`grid-${activeCurrencyCode}`} className="grid grid-cols-3 gap-2.5">
+              <div key={`grid-${activeCurrencyCode}`} className="grid grid-cols-3 gap-2 sm:gap-2.5">
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
-                  const TierIcon = TIER_ICONS[idx] || Coffee;
-                  const tierStyle = TIER_STYLES[idx] || TIER_STYLES[0];
+                  const tier = TIER_STYLES[idx] || TIER_STYLES[0];
+                  const TierIcon = tier.icon || Sparkles;
 
                   return (
                     <button
@@ -607,34 +599,65 @@ export const SupportDashboard: React.FC = () => {
                         setIsCustomMode(false);
                         setSelectedTierIndex(idx);
                       }}
-                      className={`relative overflow-hidden py-3 sm:py-3.5 px-3 rounded-xl sm:rounded-2xl text-center transition-all duration-150 cursor-pointer select-none border group flex items-center justify-center min-h-[50px] sm:min-h-[54px] ${
-                        isSelected ? tierStyle.selected : tierStyle.unselected
+                      className={`relative overflow-hidden py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-left transition-all duration-150 cursor-pointer select-none border group flex flex-col justify-between min-h-[50px] sm:min-h-[54px] ${
+                        isSelected ? tier.selected : tier.unselected
                       }`}
-                      title={`${activeCurrencySymbol}${amt} 支持档位`}
-                      aria-label={`${activeCurrencySymbol}${amt}`}
+                      title={`${activeCurrencySymbol}${amt} ${activeCurrencyCode.toUpperCase()} (${tier.role} · ${tier.nature})`}
+                      aria-label={`${activeCurrencySymbol}${amt} ${tier.badge}`}
                     >
                       {/* Background Watermark Illustration (Implicit Accessory) */}
                       <div
                         className={`absolute -right-1 -bottom-1 pointer-events-none transition-all duration-200 ${
                           isSelected
-                            ? tierStyle.watermarkSelected
-                            : tierStyle.watermarkUnselected
+                            ? tier.watermarkSelected
+                            : tier.watermarkUnselected
                         }`}
                         aria-hidden="true"
                       >
-                        <TierIcon className="w-10 h-10 sm:w-11 sm:h-11 transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200" />
+                        <TierIcon className="w-9 h-9 sm:w-10 sm:h-10 transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200" />
                       </div>
 
-                      {/* Foreground: Clean and bold amount display only */}
-                      <span
-                        className={`relative z-10 text-sm sm:text-base font-black tracking-tight transition-transform duration-200 group-hover:scale-105 ${
-                          isSelected
-                            ? tierStyle.amountSelected
-                            : tierStyle.amountUnselected
-                        }`}
-                      >
-                        {activeCurrencySymbol}{amt}
-                      </span>
+                      {/* Row 1 (Top Micro Meta Line): Distinct Tier Badge + Currency/Selected Indicator */}
+                      <div className="relative z-10 flex items-center justify-between w-full pointer-events-none">
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] border text-[9px] sm:text-[10px] font-bold tracking-tight leading-none ${
+                            isSelected ? tier.badgeSelected : tier.badgeUnselected
+                          }`}
+                        >
+                          {tier.badge}
+                        </span>
+
+                        {isSelected ? (
+                          <span className="inline-flex items-center gap-0.5 text-[8.5px] font-black text-white/95 bg-white/20 px-1 py-0.5 rounded-full leading-none shadow-2xs">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                        ) : (
+                          <span className="text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase opacity-55 leading-none">
+                            {activeCurrencyCode}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Row 2 (Bottom Row): Amount with Symbol + Explicit Transaction Nature */}
+                      <div className="relative z-10 flex items-baseline justify-between w-full mt-1 pointer-events-none">
+                        <span
+                          className={`text-sm sm:text-base font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
+                            isSelected
+                              ? tier.amountSelected
+                              : tier.amountUnselected
+                          }`}
+                        >
+                          {activeCurrencySymbol}{amt}
+                        </span>
+
+                        <span
+                          className={`text-[9px] sm:text-[10px] font-medium tracking-tight truncate max-w-[65px] sm:max-w-[75px] text-right leading-none ${
+                            isSelected ? tier.subtagSelected : tier.subtagUnselected
+                          }`}
+                        >
+                          {tier.nature}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}

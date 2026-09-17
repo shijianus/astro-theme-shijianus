@@ -41,38 +41,76 @@ async function runLiveAudit() {
 
     // 1. Audit Preset Amount Cards
     console.log('\n--- 1. Auditing Live Preset Amount Cards ---');
-    const presetButtons = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
+    const presetButtons = page.locator('.grid.grid-cols-3 button');
     const count = await presetButtons.count();
     console.log(`Found ${count} preset buttons (Expected: 6)`);
     if (count !== 6) throw new Error(`Expected 6 preset buttons, got ${count}`);
+
+    const badges = [];
+    const natures = [];
+    const amounts = [];
 
     for (let i = 0; i < count; i++) {
       const btn = presetButtons.nth(i);
       const text = (await btn.innerText()).trim();
       const box = await btn.boundingBox();
-      console.log(`  Card ${i + 1}: "${text}" (height=${box?.height.toFixed(1)}px)`);
+      console.log(`  Card ${i + 1}: height=${box?.height.toFixed(1)}px, text="${text.replace(/\n/g, ' | ')}"`);
 
-      // Verify ONLY amount is displayed
-      if (/[\u4e00-\u9fa5]/.test(text)) {
-        throw new Error(`Card ${i + 1} contains Chinese characters in foreground: "${text}"`);
+      // Verify sleek height constraint
+      if (box && (box.height < 48 || box.height > 60)) {
+        throw new Error(`Card ${i + 1} height (${box.height}px) on live site exceeds range [48px, 60px]!`);
       }
-      if (text.includes('意式') || text.includes('拿铁') || text.includes('咖啡') || text.includes('支撑') || text.includes('覆盖')) {
-        throw new Error(`Card ${i + 1} contains banned product/expense label: "${text}"`);
-      }
+
+      // Check tier badge
+      const badgeEl = btn.locator('.relative.z-10 > span').first();
+      const badgeText = (await badgeEl.innerText()).trim();
+      badges.push(badgeText);
+
+      // Check transaction nature
+      const natureEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(1);
+      const natureText = (await natureEl.innerText()).trim();
+      natures.push(natureText);
+
+      // Check amount
+      const amountEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(0);
+      const amountText = (await amountEl.innerText()).trim();
+      amounts.push(amountText);
 
       // Verify implicit watermark exists
       const watermark = btn.locator('[aria-hidden="true"] svg');
       if (await watermark.count() < 1) {
-        throw new Error(`Card ${i + 1} does not have implicit watermark accessory SVG`);
+        throw new Error(`Card ${i + 1} does not have implicit watermark accessory SVG on live site`);
       }
 
-      // Verify no bottom border-t explanation
-      const borderT = btn.locator('.border-t');
-      if (await borderT.count() > 0) {
-        throw new Error(`Card ${i + 1} still contains border-t explanation block`);
+      // Check selected card (default index 2) has active checkmark
+      if (i === 2) {
+        const checkIcon = btn.locator('svg.lucide-check');
+        if (await checkIcon.count() < 1) {
+          throw new Error(`Selected Card ${i + 1} (Tier 2) missing active checkmark indicator on live site!`);
+        }
       }
     }
-    console.log('✅ Live preset amount cards are streamlined: amount-only foreground + implicit watermark accessory!');
+
+    console.log(`\n  Live Badges: ${JSON.stringify(badges)}`);
+    console.log(`  Live Natures: ${JSON.stringify(natures)}`);
+    console.log(`  Live Amounts: ${JSON.stringify(amounts)}`);
+
+    // Verify non-repetition
+    const uniqueBadges = new Set(badges);
+    if (uniqueBadges.size !== 6) {
+      throw new Error(`Duplicate badges found on live site! Expected 6 unique badges, got ${uniqueBadges.size}`);
+    }
+    const uniqueNatures = new Set(natures);
+    if (uniqueNatures.size !== 6) {
+      throw new Error(`Duplicate transaction natures found on live site! Expected 6 unique natures, got ${uniqueNatures.size}`);
+    }
+
+    // Verify Tier 2 is highlighted as HOT
+    if (!badges[2].includes('热门')) {
+      throw new Error(`Tier 2 should have HOT/热门 badge on live site, got "${badges[2]}"`);
+    }
+
+    console.log('✅ Live preset amount cards are completely differentiated without repetition, displaying explicit transaction metadata at invariant sleek height (~54px)!');
 
     // 2. Audit Right Column Expense Removal
     console.log('\n--- 2. Auditing Right Column QR Interface on Production ---');
@@ -176,7 +214,7 @@ async function runLiveAudit() {
     });
     console.log('  📸 Captured live-01-desktop-overview.png');
 
-    const presetGrid = page.locator('.grid.grid-cols-3.gap-2\\.5');
+    const presetGrid = page.locator('.grid.grid-cols-3');
     await presetGrid.screenshot({
       path: path.join(outDir, 'live-02-desktop-preset-cards.png'),
     });

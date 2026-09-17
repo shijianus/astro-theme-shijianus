@@ -98,46 +98,78 @@ async function runVerification() {
       throw new Error(`Expected HTTP 200, got ${resp.status()}`);
     }
 
-    // 1. Audit Preset Amount Cards
-    console.log('\n--- 1. Auditing Preset Amount Cards ---');
-    const presetButtons = page.locator('.grid.grid-cols-3.gap-2\\.5 button');
+    // 1. Audit Preset Amount Cards (Multi-dimensional Explicit Transaction UX)
+    console.log('\n--- 1. Auditing Refined Preset Amount Cards ---');
+    const presetButtons = page.locator('.grid.grid-cols-3 button');
     const count = await presetButtons.count();
     console.log(`Preset buttons count: ${count} (Expected: 6)`);
     if (count !== 6) throw new Error(`Expected 6 preset buttons, got ${count}`);
+
+    const badges = [];
+    const natures = [];
+    const amounts = [];
 
     for (let i = 0; i < count; i++) {
       const btn = presetButtons.nth(i);
       const text = (await btn.innerText()).trim();
       const box = await btn.boundingBox();
-      console.log(`Card ${i + 1}: text="${text}", height=${box?.height.toFixed(1)}px`);
+      console.log(`Card ${i + 1}: height=${box?.height.toFixed(1)}px, text="${text.replace(/\n/g, ' | ')}"`);
 
-      // Verify ONLY the amount is shown (e.g. ¥15 or $3)
-      if (/[\u4e00-\u9fa5]/.test(text)) {
-        throw new Error(`Card ${i + 1} contains Chinese characters in foreground: "${text}"`);
-      }
-      if (text.includes('意式') || text.includes('拿铁') || text.includes('咖啡') || text.includes('支撑') || text.includes('覆盖')) {
-        throw new Error(`Card ${i + 1} contains banned product/expense label: "${text}"`);
+      // Verify sleek height constraint: strictly ~50px-58px
+      if (box && (box.height < 48 || box.height > 60)) {
+        throw new Error(`Card ${i + 1} height (${box.height}px) exceeds invariant range [48px, 60px]!`);
       }
 
-      // Verify implicit watermark exists
+      // Check tier badge
+      const badgeEl = btn.locator('.relative.z-10 > span').first();
+      const badgeText = (await badgeEl.innerText()).trim();
+      badges.push(badgeText);
+
+      // Check transaction nature
+      const natureEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(1);
+      const natureText = (await natureEl.innerText()).trim();
+      natures.push(natureText);
+
+      // Check amount
+      const amountEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(0);
+      const amountText = (await amountEl.innerText()).trim();
+      amounts.push(amountText);
+
+      // Verify implicit watermark accessory SVG exists
       const watermark = btn.locator('[aria-hidden="true"] svg');
-      const watermarkCount = await watermark.count();
-      if (watermarkCount < 1) {
-        throw new Error(`Card ${i + 1} does not have implicit watermark accessory SVG`);
+      if (await watermark.count() < 1) {
+        throw new Error(`Card ${i + 1} missing implicit watermark accessory SVG`);
       }
 
-      // Verify no bottom border-t explanation
-      const borderT = btn.locator('.border-t');
-      if (await borderT.count() > 0) {
-        throw new Error(`Card ${i + 1} still contains border-t explanation block`);
-      }
-
-      // Verify sleek height
-      if (box && (box.height < 44 || box.height > 75)) {
-        throw new Error(`Card ${i + 1} height is outside expected sleek range: ${box.height}px`);
+      // Check selected card (default index 2) has active checkmark
+      if (i === 2) {
+        const checkIcon = btn.locator('svg.lucide-check');
+        if (await checkIcon.count() < 1) {
+          throw new Error(`Selected Card ${i + 1} (Tier 2) missing active checkmark indicator!`);
+        }
       }
     }
-    console.log('✅ Preset amount cards are streamlined: amount-only foreground + implicit watermark accessory!');
+
+    console.log(`\n  Extracted Badges: ${JSON.stringify(badges)}`);
+    console.log(`  Extracted Natures: ${JSON.stringify(natures)}`);
+    console.log(`  Extracted Amounts: ${JSON.stringify(amounts)}`);
+
+    // Verify non-repetition
+    const uniqueBadges = new Set(badges);
+    if (uniqueBadges.size !== 6) {
+      throw new Error(`Duplicate badges found! Expected 6 unique badges, got ${uniqueBadges.size}`);
+    }
+    const uniqueNatures = new Set(natures);
+    if (uniqueNatures.size !== 6) {
+      throw new Error(`Duplicate transaction natures found! Expected 6 unique natures, got ${uniqueNatures.size}`);
+    }
+
+    // Verify Tier 2 is highlighted as HOT
+    if (!badges[2].includes('热门')) {
+      throw new Error(`Tier 2 should have HOT/热门 badge, got "${badges[2]}"`);
+    }
+
+    console.log('✅ Preset amount cards are completely differentiated without repetition, displaying explicit transaction metadata at invariant sleek height (~54px)!');
 
     // 2. Audit Right Column (QR-Code Interface & Expense Section Removal)
     console.log('\n--- 2. Auditing Right Column QR Interface ---');
@@ -250,7 +282,7 @@ async function runVerification() {
     console.log('  📸 Captured 01-desktop-main-section-light.png');
 
     // Preset cards close-up
-    const presetGrid = page.locator('.grid.grid-cols-3.gap-2\\.5');
+    const presetGrid = page.locator('.grid.grid-cols-3');
     await presetGrid.screenshot({
       path: path.join(outDir, '02-desktop-preset-cards-light.png'),
     });
