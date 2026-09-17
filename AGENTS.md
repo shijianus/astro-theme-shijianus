@@ -2471,3 +2471,35 @@
   2. 部署至 Cloudflare Pages 生产边缘节点（部署版本：`9a22f0ec`）；
   3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，断言 100% 全绿，全视口截图留存完毕。
 
+### Task 110: 首页文章流扩容增距为粘性卡片释放跑道、分页组件 (home-pagination) 极简重构对齐安知鱼与标签卡片视觉升维 (`8f7d493`)
+- [x] **首页文章流内容扩容 (page-main Content Expansion)**：
+  1. 将 `src/config/site.ts` 中 `home.feed.pageSize` 由 6 扩充为 10（5 行 2 列完整矩阵，杜绝单篇落单）；
+  2. 文章卡片列表高度由 ~850px 扩展至 ~1450px，整个左侧内容列高度扩展至 ~1600px；
+  3. 为右侧 `aside-sticky-box` 标签粘性卡片提供充足平滑的滑动跑道（Track 高度由 498px 跃升至 1131px ~ 1148px，滚动展示空间翻倍！）。
+- [x] **加大文章网格与分页卡片间距 (Post Grid & Pagination Breathing Room)**：
+  1. 为 `#home-pagination` 设置 `margin-top: 28px !important`；
+  2. 彻底解决 `class="grid grid-cols-1 md:grid-cols-2 gap-3"` 与 `class="theme-card home-pagination"` 紧挨在一起的拥挤感，形成自然舒适的呼吸空间。
+- [x] **分页卡片 (home-pagination) 极简重构对齐安知鱼设计语言**：
+  1. 学习并借鉴 `https://blog.anheyu.com/` 的 `Pagination-module__G9SIia__paginationNav` 优秀排布方式；
+  2. 保留用户要求的背底卡片 `class="theme-card home-pagination"`，但彻底告别原有 88px+ 粗大厚重的 3 列块状堆叠与 999px 椭圆胶囊；
+  3. 左侧注入精巧的流式状态胶囊（`home-pagination__status`）：微蓝指示光点、`第 1 / 3 页` 以及 `共 22 篇` 总览计数；
+  4. 中部/右侧重构为 Anzhiyu 原生风格的精致小方圆角数字按钮（`home-pagination__num`）：`36px × 36px`、`border-radius: 8px`；当前页高亮标志性科技蓝（`#425aef`，纯白高对比文字与 `0 4px 12px rgba(66, 90, 239, 0.35)` 柔光投影）；
+  5. 上下页按钮升级为带左右矢量箭头的精致小方角按钮（`‹ 上页` 与 `下页 ›`，36px 高度、8px 方圆角，首尾页优雅禁用态）；
+  6. 快速跳转保留精简微型悬浮弹窗（`home-pagination__jump-dropdown`），卡片整体高度收敛至 **54px ~ 58px** 精致水准；
+  7. 移动端自适应上下居中堆叠布局，大拇指触摸体验一流。
+- [x] **粘性标签卡片 (aside-sticky-box) 视觉升维与精准对齐**：
+  1. 标签项气泡采用精致方圆角微交互（`border-radius: 8px`、`gap: 6px 8px`）；
+  2. 鼠标悬停（Hover）平滑变蓝（`var(--theme-main)`）并微浮动（`translateY(-2px)`），文章计数上标协同变白；
+  3. 滑动至底部时，粘性卡片底边与左侧 `#home-pagination` 底部保持 **0.20px 零误差绝对齐平**（`Bottom Diff = 0.20px ≈ 0px`）。
+- [x] **自动化端到端 Playwright 深度审计与多端多路由实测**：
+  1. 运行 `scripts/verify-home-tag-sticky.mjs`，全量覆盖：
+     - 53 个全标签卡片渲染与高度约束；
+     - 10 篇完整文章矩阵供给；
+     - 粘性滑入进入态（`entering`）与底部终止态（`leaving`）；
+     - 底边对齐误差严格为 0.20px；
+     - 分页卡片高度 58px（<= 60px），间距 28px，数字按钮 34x34px、圆角 8px、背景蓝色；
+     - 移动端 375x812 视口响应式布局；
+     - `/page/2/` 真实路由跳转验证（第 2 页高亮、上页按钮自动解锁）；
+  2. 捕获桌面顶部（`01_home_top.png`）、中部吸顶（`02_home_sticky_active.png`）、底部终止对齐（`03_home_bottom_aligned.png`）、标签卡特写（`04_tag_card_closeup.png`）、分页卡片特写（`05_home_pagination_closeup.png`）、移动端分页（`06_home_pagination_mobile.png`）及第2页分页（`07_page2_pagination.png`）全套截图证据。
+
+

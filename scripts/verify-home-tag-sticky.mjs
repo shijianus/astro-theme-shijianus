@@ -184,6 +184,32 @@ async function runVerification() {
       console.log(`📸 Saved mobile pagination screenshot: ${mobilePaginationScreenshot}`);
     }
     await mobilePage.close();
+
+    // Test page 2 navigation and pagination state
+    console.log(`\n🔄 Navigating to page 2...`);
+    const page2 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page2.goto(`${targetUrl}page/2/`, { waitUntil: 'networkidle', timeout: 30000 });
+    const page2Pagination = await page2.$('#home-pagination');
+    if (page2Pagination) {
+      await page2Pagination.scrollIntoViewIfNeeded();
+      await page2.waitForTimeout(500);
+      const page2Screenshot = path.join(outputDir, '07_page2_pagination.png');
+      await page2Pagination.screenshot({ path: page2Screenshot });
+      console.log(`📸 Saved page 2 pagination screenshot: ${page2Screenshot}`);
+
+      const page2Info = await page2.evaluate(() => {
+        const active = document.querySelector('#home-pagination .home-pagination__num.is-current');
+        const prev = document.querySelector('#home-pagination .home-pagination__prev');
+        const next = document.querySelector('#home-pagination .home-pagination__next');
+        return {
+          activePage: active?.textContent?.trim(),
+          prevDisabled: prev?.classList.contains('is-disabled'),
+          nextDisabled: next?.classList.contains('is-disabled'),
+        };
+      });
+      console.log('   - Page 2 state:', JSON.stringify(page2Info));
+    }
+    await page2.close();
     console.log(`✅ VERIFICATION COMPLETED SUCCESSFULLY`);
     console.log(`===============================================================\n`);
   } finally {
