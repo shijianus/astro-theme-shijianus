@@ -5622,29 +5622,243 @@ body[data-type='home'] .feature-panel-recent .aside-list {
   scrollbar-gutter: stable both-edges;
 }
 
+/* ==========================================================================
+   Refined Modern Home Pagination (Anzhiyu & Modern Aesthetic Alignment)
+   ========================================================================== */
 body[data-type='home'] #home-pagination {
-  gap: 14px;
-  padding: 16px 20px;
-  border-radius: 10px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 28px !important;
+  padding: 10px 18px !important;
+  min-height: 54px !important;
+  border-radius: 12px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--anzhiyu-shadow-border) !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='home'] .home-pagination__status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  color: var(--secondtext) !important;
+  user-select: none !important;
+}
+
+body[data-type='home'] .home-pagination__badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: var(--font-color) !important;
+}
+
+body[data-type='home'] .home-pagination__badge-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--theme-main) !important;
+  box-shadow: 0 0 8px rgba(66, 90, 239, 0.6) !important;
+}
+
+body[data-type='home'] .home-pagination__total {
+  font-size: 12px !important;
+  color: var(--secondtext) !important;
+  opacity: 0.85 !important;
+}
+
+body[data-type='home'] .home-pagination__nav-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
 }
 
 body[data-type='home'] .home-pagination__numbers {
-  flex-wrap: wrap;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
-body[data-type='home'] .home-pagination__jump-form {
-  display: grid;
-  gap: 8px;
+body[data-type='home'] .home-pagination__num,
+body[data-type='home'] .home-pagination__btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  color: var(--font-color) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  user-select: none !important;
 }
 
-body[data-type='home'] .home-pagination__jump-form label {
-  display: grid;
-  gap: 4px;
+body[data-type='home'] .home-pagination__num {
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
 }
 
-body[data-type='home'] .home-pagination__jump-form input {
-  min-height: 40px;
+body[data-type='home'] .home-pagination__btn {
+  min-width: 36px !important;
+  padding: 0 12px !important;
+  gap: 4px !important;
+  font-size: 13px !important;
+}
+
+body[data-type='home'] .home-pagination__num:hover:not(.is-current),
+body[data-type='home'] .home-pagination__btn:hover:not(.is-disabled) {
+  border-color: var(--theme-main) !important;
+  color: var(--theme-main) !important;
+  background: color-mix(in srgb, var(--theme-main) 8%, var(--card-bg)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(66, 90, 239, 0.15) !important;
+}
+
+body[data-type='home'] .home-pagination__num.is-current {
+  background: var(--theme-main) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35) !important;
+  cursor: default !important;
+}
+
+body[data-type='home'] .home-pagination__btn.is-disabled {
+  opacity: 0.38 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Fast Jump / Ellipsis popup */
+body[data-type='home'] .home-pagination__jump-dropdown {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+body[data-type='home'] .home-pagination__ellipsis {
+  list-style: none !important;
+}
+
+body[data-type='home'] .home-pagination__ellipsis::-webkit-details-marker {
+  display: none !important;
+}
+
+body[data-type='home'] .home-pagination__jump-dropdown[open] .home-pagination__ellipsis {
+  border-color: var(--theme-main) !important;
+  color: var(--theme-main) !important;
+  background: color-mix(in srgb, var(--theme-main) 10%, var(--card-bg)) !important;
+}
+
+body[data-type='home'] .home-pagination__jump-popup {
+  position: absolute !important;
+  bottom: calc(100% + 8px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 50 !important;
+  padding: 8px !important;
+  border-radius: 10px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  white-space: nowrap !important;
+}
+
+body[data-type='home'] .home-pagination__jump-input-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+body[data-type='home'] .home-pagination__jump-input-wrap input {
+  width: 60px !important;
+  height: 32px !important;
+  padding: 0 8px !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--card-border) !important;
+  background: color-mix(in srgb, var(--card-bg) 90%, var(--font-color)) !important;
+  color: var(--font-color) !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  outline: none !important;
+}
+
+body[data-type='home'] .home-pagination__jump-input-wrap input:focus {
+  border-color: var(--theme-main) !important;
+}
+
+body[data-type='home'] .home-pagination__jump-submit {
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: var(--theme-main) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s !important;
+}
+
+body[data-type='home'] .home-pagination__jump-submit:hover {
+  opacity: 0.9 !important;
+}
+
+/* Home Tag Cloud Panel Styling (Anzhiyu & Modern Aesthetics) */
+body[data-type='home'] .card-tag-cloud-panel .card-tag-cloud {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px 8px !important;
+  padding-top: 4px !important;
+}
+
+body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--card-border) !important;
+  background: color-mix(in srgb, var(--card-bg) 94%, var(--font-color)) !important;
+  color: var(--font-color) !important;
+  font-size: 12.5px !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item:hover {
+  background: var(--theme-main) !important;
+  border-color: var(--theme-main) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item:hover .tag-count {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body[data-type='home'] .card-tag-cloud-panel .tag-count {
+  font-size: 10px !important;
+  color: var(--secondtext) !important;
+  font-weight: 600 !important;
+  transition: color 0.2s !important;
 }
 
 body[data-type='home'] .feature-panel-recent .aside-list,

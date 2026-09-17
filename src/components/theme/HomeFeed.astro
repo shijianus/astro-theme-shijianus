@@ -9,6 +9,7 @@ interface Props {
   posts: CollectionEntry<'posts'>[];
   currentPage: number;
   lastPage: number;
+  total?: number;
   categories: Array<{
     label: string;
     slug: string;
@@ -21,6 +22,7 @@ const {
   posts,
   currentPage,
   lastPage,
+  total,
   categories,
   categoryRail,
 } = Astro.props;
@@ -63,5 +65,5 @@ const {
     ))}
   </div>
 
-  <HomePagination currentPage={currentPage} lastPage={lastPage} />
+  <HomePagination currentPage={currentPage} lastPage={lastPage} total={total} />
 </div>

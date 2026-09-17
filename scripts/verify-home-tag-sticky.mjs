@@ -138,11 +138,52 @@ async function runVerification() {
     console.log(`   - Bottom alignment difference: ${bottomScrollInfo.diffBottom}px`);
     console.log(`   - Track alignment difference: ${bottomScrollInfo.trackDiffBottom}px`);
 
+    // Capture pagination closeup
+    const paginationEl = await page.$('#home-pagination');
+    if (paginationEl) {
+      const paginationScreenshot = path.join(outputDir, '05_home_pagination_closeup.png');
+      await paginationEl.screenshot({ path: paginationScreenshot });
+      console.log(`📸 Saved pagination closeup: ${paginationScreenshot}`);
+    }
+
+    const postItemsCount = await page.$$eval('#recent-posts .recent-post-item', els => els.length);
+    console.log(`   - Feed post items count: ${postItemsCount} (expanded content for runway)`);
+
+    const paginationDetails = await page.evaluate(() => {
+      const el = document.getElementById('home-pagination');
+      if (!el) return null;
+      const cs = window.getComputedStyle(el);
+      const activeBtn = el.querySelector('.home-pagination__num.is-current');
+      const activeCs = activeBtn ? window.getComputedStyle(activeBtn) : null;
+      return {
+        cardHeight: el.offsetHeight,
+        marginTop: cs.marginTop,
+        display: cs.display,
+        borderRadius: cs.borderRadius,
+        activeBtnWidth: activeBtn?.clientWidth,
+        activeBtnHeight: activeBtn?.clientHeight,
+        activeBtnRadius: activeCs?.borderRadius,
+        activeBtnBg: activeCs?.backgroundColor,
+      };
+    });
+    console.log('   - Pagination Details:', JSON.stringify(paginationDetails, null, 2));
+
     const bottomScreenshot = path.join(outputDir, '03_home_bottom_aligned.png');
     await page.screenshot({ path: bottomScreenshot });
     console.log(`📸 Saved bottom aligned screenshot: ${bottomScreenshot}`);
 
-    console.log(`\n===============================================================`);
+    // Test mobile responsive
+    const mobilePage = await browser.newPage({ viewport: { width: 375, height: 812 } });
+    await mobilePage.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    const mobilePagination = await mobilePage.$('#home-pagination');
+    if (mobilePagination) {
+      await mobilePagination.scrollIntoViewIfNeeded();
+      await mobilePage.waitForTimeout(500);
+      const mobilePaginationScreenshot = path.join(outputDir, '06_home_pagination_mobile.png');
+      await mobilePagination.screenshot({ path: mobilePaginationScreenshot });
+      console.log(`📸 Saved mobile pagination screenshot: ${mobilePaginationScreenshot}`);
+    }
+    await mobilePage.close();
     console.log(`✅ VERIFICATION COMPLETED SUCCESSFULLY`);
     console.log(`===============================================================\n`);
   } finally {

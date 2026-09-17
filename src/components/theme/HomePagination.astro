@@ -4,59 +4,104 @@ import { buildHomePageUrl, getHomePaginationItems } from '../../lib/home-feed';
 interface Props {
   currentPage: number;
   lastPage: number;
+  total?: number;
 }
 
-const { currentPage, lastPage } = Astro.props;
+const { currentPage, lastPage, total } = Astro.props;
 const items = getHomePaginationItems(currentPage, lastPage);
 ---
 
 {lastPage > 1 && (
-  <nav id="home-pagination" class="theme-card home-pagination" aria-label="首页分页">
-    <div class="home-pagination__summary">
-      <span class="home-pagination__eyebrow">文章分页</span>
-      <strong>第 {currentPage} / {lastPage} 页</strong>
-    </div>
-
-    <div class="home-pagination__numbers" aria-label="页码">
-      {items.map((item) =>
-        item === 'ellipsis' ? (
-          <details class="home-pagination__jump">
-            <summary class="home-pagination__ellipsis" aria-label="快速跳转页码">…</summary>
-            <form class="home-pagination__jump-form" data-home-pagination-jump data-max-page={lastPage}>
-              <label>
-                <span>跳转到</span>
-                <input type="number" min="1" max={lastPage} inputmode="numeric" placeholder={`1-${lastPage}`} required />
-              </label>
-              <button type="submit">前往</button>
-            </form>
-          </details>
-        ) : item === currentPage ? (
-          <span class="home-pagination__number is-active" aria-current="page">
-            {item}
-          </span>
-        ) : (
-          <a class="home-pagination__number" href={buildHomePageUrl(item)}>
-            {item}
-          </a>
-        ),
+  <nav id="home-pagination" class="theme-card home-pagination" aria-label="文章分页导航">
+    <div class="home-pagination__status" aria-live="polite">
+      <span class="home-pagination__badge">
+        <span class="home-pagination__badge-dot" aria-hidden="true"></span>
+        <span>第 <strong>{currentPage}</strong> / {lastPage} 页</span>
+      </span>
+      {typeof total === 'number' && total > 0 && (
+        <span class="home-pagination__total">共 {total} 篇</span>
       )}
     </div>
 
-    <div class="home-pagination__actions">
+    <div class="home-pagination__nav-group" aria-label="页码列表">
       {currentPage > 1 ? (
-        <a class="home-pagination__edge" href={buildHomePageUrl(currentPage - 1)} rel="prev">
-          上页
+        <a
+          class="home-pagination__btn home-pagination__prev"
+          href={buildHomePageUrl(currentPage - 1)}
+          rel="prev"
+          title="上一页"
+          aria-label="上一页"
+        >
+          <i class="anzhiyufont anzhiyu-icon-angle-left" aria-hidden="true"></i>
+          <span class="home-pagination__btn-text">上页</span>
         </a>
       ) : (
-        <span class="home-pagination__edge is-disabled" aria-disabled="true">上页</span>
+        <span
+          class="home-pagination__btn home-pagination__prev is-disabled"
+          aria-disabled="true"
+          title="已是第一页"
+        >
+          <i class="anzhiyufont anzhiyu-icon-angle-left" aria-hidden="true"></i>
+          <span class="home-pagination__btn-text">上页</span>
+        </span>
       )}
+
+      <div class="home-pagination__numbers">
+        {items.map((item) =>
+          item === 'ellipsis' ? (
+            <details class="home-pagination__jump-dropdown">
+              <summary class="home-pagination__num home-pagination__ellipsis" title="快速跳转页码" aria-label="快速跳转页码">
+                <span class="home-pagination__ellipsis-dots">…</span>
+              </summary>
+              <form class="home-pagination__jump-popup" data-home-pagination-jump data-max-page={lastPage}>
+                <div class="home-pagination__jump-input-wrap">
+                  <input
+                    type="number"
+                    min="1"
+                    max={lastPage}
+                    inputmode="numeric"
+                    placeholder={`1-${lastPage}`}
+                    required
+                    aria-label="输入目标页码"
+                  />
+                  <button type="submit" class="home-pagination__jump-submit" title="前往">
+                    前往
+                  </button>
+                </div>
+              </form>
+            </details>
+          ) : item === currentPage ? (
+            <span class="home-pagination__num is-current" aria-current="page">
+              {item}
+            </span>
+          ) : (
+            <a class="home-pagination__num" href={buildHomePageUrl(item)} title={`前往第 ${item} 页`}>
+              {item}
+            </a>
+          ),
+        )}
+      </div>
 
       {currentPage < lastPage ? (
-        <a class="home-pagination__edge" href={buildHomePageUrl(currentPage + 1)} rel="next">
-          下页
+        <a
+          class="home-pagination__btn home-pagination__next"
+          href={buildHomePageUrl(currentPage + 1)}
+          rel="next"
+          title="下一页"
+          aria-label="下一页"
+        >
+          <span class="home-pagination__btn-text">下页</span>
+          <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
         </a>
       ) : (
-        <span class="home-pagination__edge is-disabled" aria-disabled="true">下页</span>
+        <span
+          class="home-pagination__btn home-pagination__next is-disabled"
+          aria-disabled="true"
+          title="已是最后一页"
+        >
+          <span class="home-pagination__btn-text">下页</span>
+          <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
+        </span>
       )}
     </div>
   </nav>
