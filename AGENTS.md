@@ -2338,4 +2338,23 @@
 - [x] **Playwright 本地端到端回归测试套件全量通过 (42/42 PASS 100%)**：
   1. 编写并执行 `scripts/verify-i18n-post-flow.mjs`，包含 42 项严格断言（URL 无劫持、语言切换器交互、各语系下组件零中文泄漏全覆盖），全量通过。
 
+### Task 104: 首页侧边栏粘性标签卡片 (card-tag-cloud-panel) 重构、学习 aside-sticky-box 轨道对齐与零切除视觉保障 (`79b19cb`)
+- [x] **学习 aside-sticky-box 轨道架构并重构首页粘性卡片 (aside-track + aside-sticky-box Architecture)**:
+  1. 在 `Sidebar.astro` 中将首页 `sticky_layout` 重构为带有 `#aside-track-overview` 独立轨道容器与 `#aside-sticky-box-overview` 粘性盒子的双层架构；
+  2. 将原概览卡片重构为全标签云卡片，完整保留必需类名 `class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`；
+  3. 卡片头部包含标题、标签图标与标签总数统计超链接徽标（`53个`），无缝链接至 `/tags/`；
+  4. 采用响应式网格/流式排版渲染全站全部 53 个标签，包含独立的名称与文章计数上标（`sup`）。
+- [x] **固定起止锚点与 #home-pagination 零误差底端对齐 (Zero-Pixel Bottom Alignment)**:
+  1. 起始位置（开始于第一次滑入）：卡片在页面初始位置位于自然文档流，当用户向下滑动使卡片顶部接触 `var(--sticky-column-top, 80px)` 时自然激活纯原生 CSS 粘性固定（`entering` -> `reading`）；
+  2. 终止位置（终止于对齐 `#home-pagination`）：在 `sticky-sidebar.ts` 与 `StickySidebarObserver.tsx` 中动态计算 `#aside-track-overview` 高度为 `Math.max(cardHeight, Math.round(docBoundaryBottom - docTrackTop))`；当页面滑至底部分页器时，粘性卡片自然抵达轨道底端并随页面上移，底边与 `#home-pagination` / `#recent-posts` 保持 0px 精准对齐（`diffFromPagination = 0.18px ≈ 0px`）。
+- [x] **固定卡片尺寸、禁止无限扩展且杜绝强制切除 (Bounded Size, No Infinite Void, No Clipping)**:
+  1. 彻底清除 `alignment.css` 与 `final-pass.css` 中此前导致卡片内容截断的 `max-height: 380px !important; overflow: hidden;`；
+  2. 设置 `min-height: 240px; max-height: calc(100vh - var(--sticky-column-top, 80px) - 32px); height: fit-content; overflow: visible;`；
+  3. 精准缩放标签内边距（`2.5px 7px`）与字体大小（`11.5px`），使全部 53 个标签自然容纳在 ~469px 高度内，全景完整展示，无大片空白，且绝不出现截断或文字半截隐没等“强制切除”。
+- [x] **Playwright 真实浏览器全流程端到端视觉审计通过 (E2E Visual Verification Passed)**:
+  1. 编写并运行专用 Playwright 验证脚本 `scripts/verify-home-tag-sticky.mjs`；
+  2. 捕获并核实 4 张关键视觉截图：`01_home_top.png`（初始状态）、`02_home_sticky_active.png`（滑入粘性态）、`03_home_bottom_aligned.png`（底端平齐对齐态）、`04_tag_card_closeup.png`（标签卡片特写）及 `06_home_sticky_in_action.png`；
+  3. 严格核验：卡片类名完整匹配、53 个标签全量渲染、底端平齐误差 < 0.2px、全流程无视觉切除与控制台报错。
+
+
 

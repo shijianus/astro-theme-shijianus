@@ -105,10 +105,7 @@ async function runVerification() {
     // 3. Scroll to bottom: test termination aligned with #home-pagination
     console.log(`\n🔄 Scrolling to bottom near #home-pagination...`);
     await page.evaluate(() => {
-      const boundary = document.getElementById('home-pagination') || document.getElementById('recent-posts');
-      if (boundary) {
-        boundary.scrollIntoView({ block: 'end', behavior: 'instant' });
-      }
+      window.scrollTo(0, document.body.scrollHeight);
     });
     await page.waitForTimeout(800);
 
