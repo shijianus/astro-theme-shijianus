@@ -2298,3 +2298,28 @@
   8. 生产端赞助支持页：4 大支付通道自适应呈现 2x2 网格，单格宽度扩展至 139px 舒适点击；
   9. 生产端桌面端（1440x900）：导航与支付通道平铺布局 100% 保持不变，电脑端零破坏、零回归！
 
+### Task 102: 全站多语系国际化 (i18n) 普适化重构、客户端交互组件零中文残留与跨文章全量多语言矩阵 (`d13674c`)
+- [x] **跨文章全量多语系翻译矩阵全面构建 (10 大核心/示范博文 × 6 种语系 = 60 篇全覆盖)**：
+  1. 覆盖博文列表：`access-control-lab`, `api-ready-theme-contracts`, `badges-guide`, `content-formats-and-markup-mastery`, `example-all-special-formats`, `example-code-enhancements`, `example-details-collapse`, `example-embeds`, `example-tabs`, `hello-world`；
+  2. 每篇博文均具备完整 6 种语言变体（`zh-CN`, `zh-Hant`, `en`, `es`, `de`, `fr`），生成 149 页完整静态发布产物，彻底根除 404 Not Found；
+  3. 优化 `server-article-i18n.ts` 翻译管道引擎：修复 `cleanAiArticleOutput` 代码块剥离逻辑，防止截断有效正文；修正 Gemini 候选模型（`gemini-2.0-flash` 与 `gemini-1.5-flash`）；将主要实例超时从 4000ms 宽限至 60000ms，确保翻译长文的高鲁棒性。
+- [x] **客户端交互组件深度国际化与零中文残留保障**：
+  1. 聊天对话流组件 (`.article-chat.chat-animated-container`)：全面接入多语系字典，头部标题 (`chat-header-title`)、滑入动效徽章 (`chat-header-badge`)、重播按钮 (`chat-replay-btn`) 及音效开关注释 (`chat-sound-toggle[title]`) 在所有语系下 100% 本地化展示，非中文模式下零中文汉字残留；
+  2. 代码高亮与增强组件 (`CodeBlockEnhancer`)：代码复制按钮 (`.code-copy-button`) 动态适配 `Copy` / `Copiar` / `Kopieren` / `Copier` / `複製`；代码长文本折叠按钮 (`.code-expand-btn`) 自适应展示行数与折叠状态；保留 Mac 交通灯工具栏 (`.code-block-toolbar`, `.code-block-lights`)；
+  3. 任务清单追踪组件 (`.article-task-tracker`)：就绪状态卡片 (`.task-tracker__status-card`) 与步骤计数徽章 (`.task-tracker__count`) 在各语言变体下动态联动，非中文模式下零中文汉字残留；
+  4. 外部加密网关与加密版本入口横幅 (`ext-encrypt-gate` 与 `ext-encrypt-entry-banner`)：新增 `EXT_GATE_I18N` 多语言映射体系，外联加密文章徽章、密码输入框占位符、错误提示、取消与验证按钮、版本入口横幅在各语系下全面本地化；
+  5. 文章页面传递属性：在 `src/pages/posts/[slug].astro` 中将计算出的 `currentLang` 精准传递给 `<ContentFeatureEnhancer lang={currentLang} />`。
+- [x] **无感动态语系切换响应式联动 (`shijianus:localechange`)**：
+  1. 客户端监听 `shijianus:localechange` 自定义事件，无须刷新页面 (F5) 即可就地动态重渲染所有交互组件；
+  2. 验证从中文到英文即时切换：对话模拟流标题毫秒级更新为 `Live Dialogue Stream Simulation`、代码复制按钮毫秒级更新为 `Copy`，实现全站语系响应式平滑联动。
+- [x] **Playwright 真实浏览器全流程端到端测试套件全量通过 (223/223 PASS 100%)**：
+  1. 编写并运行综合 E2E 审计套件 `scripts/verify-universal-i18n.mjs`，覆盖 7 大测试组共 223 个断言，全量通过（0 failures）；
+  2. Group 1: `example-embeds` 5 大非 zh-CN 语系下的标题、动效徽标、重播按钮、音效开关、多端 Alternate 链接及 Sibling JSON 元数据审计全绿；
+  3. Group 2: `example-code-enhancements` 5 大语系下的代码复制按钮文本、气泡提示与工具栏交通灯全绿；
+  4. Group 3: `example-tabs` 4 大西方语系下的标签页渲染与零中文审计全绿；
+  5. Group 4: `example-details-collapse` 4 大语系下的手风琴折叠展开交互与标题零中文审计全绿；
+  6. Group 5: `content-formats-and-markup-mastery` 5 大语系下的任务追踪状态卡与进度计数零中文审计全绿；
+  7. Group 6: `shijianus:localechange` 运行时无刷新就地语系重渲染动态响应测试全绿；
+  8. Group 7: 10 大核心示范博文 × 5 种外语变体（50 条全量路由）HTTP 200 OK 与内容容器渲染 100% 通过，零 404 缺陷。
+
+
