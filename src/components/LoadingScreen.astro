@@ -89,15 +89,14 @@ const { brandName, avatar } = Astro.props;
 
     root.classList.remove('theme-ready');
     preloadVisuals();
-    loadingBox.addEventListener('click', () => {
-      if (!firstVisit) endLoading();
-    }, { once: true });
+    loadingBox.addEventListener('click', endLoading, { once: true });
+    loadingBox.addEventListener('touchstart', endLoading, { once: true, passive: true });
 
     if (document.readyState === 'complete') {
       endLoading();
     } else {
       window.addEventListener('load', endLoading, { once: true });
-      window.setTimeout(endLoading, 10000);
+      window.setTimeout(endLoading, 8000);
     }
   })();
 </script>

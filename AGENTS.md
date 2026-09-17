@@ -2259,3 +2259,31 @@
      - 断言全量 4 张 `recent-post-item` 均满足 `containedInB1 === true` 与 `containedInB2 === true`，`allContained: true` 100% 达标；
      - 测量 Card 3（下排左侧卡片）在 B1 下边界的内嵌深度为 **+14.66px**，在 B2 下边界的内嵌深度为 **+13.00px**，彻底杜绝穿底现象；
      - 验证浅色默认态（`todayCard`）、展开态（4 张卡片网格）、深色模式切换态（Dark Mode）与移动端响应式，捕获全套证据链截图（`verify_live_default_light.png`、`verify_live_toggled_light.png`、`verify_live_toggled_dark.png`、`verify_live_mobile.png`）。
+
+### Task 101: 移动端 (手机端) 全链路 UI/UX 深度体验优化与电脑端零回归保障
+- [x] **全站首屏加载层 (#loading-box) 交互阻塞彻底消除**：
+  1. 修复 `#loading-box` 在加载完毕（带 `.loaded` 类）后未释放触控的缺陷，配置 `display: none !important; pointer-events: none !important;`；
+  2. 支持移动端用户点击/触摸屏幕立即提前完成加载动画，消除假死阻塞。
+- [x] **移动端右下角悬浮控制台 (#rightside) 尺寸坍塌与重叠拦截根除**：
+  1. 为 `#rightside` 内部按钮设置 `flex-shrink: 0 !important; width: 35px !important; min-height: 35px !important; height: 35px !important;`，彻底根绝 2px 恶性高度坍塌；
+  2. 折叠状态的 `#rightside-config-hide:not(.show)` 强制应用 `display: none !important; pointer-events: none !important;`，消除层叠穿透对目录按钮的点击拦截。
+- [x] **移动端顶部导航栏 (#nav-right) 图标精简与大拇指安全触控**：
+  1. 在 `≤768px` 移动端下隐藏低频的随机文章骰子 (`#randomPost_button`) 与挤压至 0px 的顶部滚动进度胶囊 (`#nav-totop`)；
+  2. 保留搜索、深色模式与汉堡菜单，按钮间距拉开至安全 8px，彻底消除 0px 挤压与误触。
+- [x] **移动端汉堡导航面板 (.site-mobile-panel) 全屏毛玻璃遮罩与点击空白收起**：
+  1. 引入 `.site-mobile-panel-backdrop` 全屏毛玻璃背景遮罩（`backdrop-filter: blur(8px)`）；
+  2. 支持点击遮罩任意空白区域即时平滑收起面板，杜绝穿透误触。
+- [x] **中控台面板 (#console) 移动端专属关闭按钮与卡片滚动约束**：
+  1. 移动端在右上角固定 40x40px 高对比蓝色实体关闭按钮（`top: 14px; right: 14px;`），彻底解决手机端无 ESC 导致用户被困中控台的体验缺陷；
+  2. 移动端约束卡片组为单列平滑滚动（`overflow-y: auto; -webkit-overflow-scrolling: touch`），卡片与热力图完整可达。
+- [x] **文章尾部下一篇推荐卡片 (#pagination.pagination-post) 移动端紧凑化**：
+  1. 移动端将卡片高度由 92px 压缩收敛至 60px 精致胶囊，封面图缩小至 54x44px；
+  2. 标题采用单行截断，移动端屏幕遮挡面积大幅削减 35% 以上，释放宝贵的正文与评论可视区域。
+- [x] **文章详情页移动端底层静态目录卡片清理**：
+  1. 移动端隐藏正文深处冗余的桌面端底层静态 `#card-toc`，由移动端右下角专属目录抽屉 (`MobileTocDrawer`) 承接长文大纲索引。
+- [x] **赞助支持页 (/support/) 移动端 2x2 支付通道网格优化**：
+  1. 4 个支付通道选项由挤压在单行的 71px 调整为移动端舒适的 `grid-cols-2` 2x2 网格，单格宽度扩展至 139px；
+  2. 电脑端（桌面端 `sm:flex`）严格保持单行平铺不变，零回归破坏。
+- [x] **自动化端到端 Playwright 测试套件全量通过 (100% PASS)**：
+  1. 执行 `scripts/verify_mobile_optimizations.mjs`，全量覆盖 iPhone 14/15 Pro (390x844) 移动端所有优化项验证；
+  2. 同步覆盖桌面端 (1440x900) 导航完整性与支付通道平铺布局回归测试，全景测试 100% 达标。

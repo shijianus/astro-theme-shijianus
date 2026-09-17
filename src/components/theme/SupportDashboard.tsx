@@ -779,8 +779,8 @@ export const SupportDashboard: React.FC = () => {
               </h2>
             </div>
 
-            {/* Sub-channel Tabs */}
-            <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/10 text-xs font-semibold">
+            {/* Sub-channel Tabs: 2x2 on mobile for comfortable touch targets, flex row on desktop */}
+            <div className="grid grid-cols-2 sm:flex rounded-xl p-1 bg-slate-100 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/10 text-xs font-semibold gap-1 sm:gap-0">
               <button
                 type="button"
                 onClick={() => setQrTab('cn')}

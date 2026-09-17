@@ -911,57 +911,64 @@ export function SiteHeader({
       </nav>
 
       {menuOpen && (
-        <div className="site-mobile-panel">
-          <nav className="site-mobile-panel__group" aria-label="移动端导航">
-            {primary.map((item) => (
-              <div key={item.href} className="site-mobile-link-group">
-                <a
-                  href={item.href}
-                  className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
-                >
-                  {renderNavIcon(item.icon, 'site-mobile-link__icon')}
+        <>
+          <div 
+            className="site-mobile-panel-backdrop" 
+            onClick={() => setMenuOpen(false)} 
+            aria-label="关闭移动端导航菜单" 
+          />
+          <div className="site-mobile-panel">
+            <nav className="site-mobile-panel__group" aria-label="移动端导航">
+              {primary.map((item) => (
+                <div key={item.href} className="site-mobile-link-group">
+                  <a
+                    href={item.href}
+                    className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
+                  >
+                    {renderNavIcon(item.icon, 'site-mobile-link__icon')}
+                    {item.label}
+                  </a>
+                  {item.children && item.children.length > 1 && (
+                    <div className="site-mobile-sublinks">
+                      {item.children.slice(0, 3).map((child) => (
+                        <a
+                          key={child.href}
+                          href={child.href}
+                          className={`site-mobile-sublink ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            <div className="site-mobile-panel__group">
+              {quickActions.map((item) => (
+                <a key={item.href} href={item.href} className="site-mobile-link">
                   {item.label}
                 </a>
-                {item.children && item.children.length > 1 && (
-                  <div className="site-mobile-sublinks">
-                    {item.children.slice(0, 3).map((child) => (
-                      <a
-                        key={child.href}
-                        href={child.href}
-                        className={`site-mobile-sublink ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
-                      >
-                        {child.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
+              ))}
+            </div>
 
-          <div className="site-mobile-panel__group">
-            {quickActions.map((item) => (
-              <a key={item.href} href={item.href} className="site-mobile-link">
-                {item.label}
-              </a>
-            ))}
+            <div className="site-mobile-panel__group">
+              {utility.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noreferrer' : undefined}
+                  className="site-mobile-link"
+                >
+                  <span>{item.label}</span>
+                  {item.external && <ExternalLink className="h-3.5 w-3.5" />}
+                </a>
+              ))}
+            </div>
           </div>
-
-          <div className="site-mobile-panel__group">
-            {utility.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noreferrer' : undefined}
-                className="site-mobile-link"
-              >
-                <span>{item.label}</span>
-                {item.external && <ExternalLink className="h-3.5 w-3.5" />}
-              </a>
-            ))}
-          </div>
-        </div>
+        </>
       )}
     </header>
   );
