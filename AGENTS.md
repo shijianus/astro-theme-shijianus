@@ -2381,7 +2381,7 @@
   2. 移动端（390x844）：首页横向溢出 0px，通知栏与卡组 360px 贴合容器，预设金额卡片 6 张全宽 142px 零截断，音乐黑胶 38px 零重叠；
   3. 电脑端（1440x900）：首页卡组保持 `row nowrap` 与 348px 绝对高度，支持页保持 `sm:grid-cols-3` 3 列，音乐播放器保持 66px，全量指标 100% 达标。
 
-### Task 106: 赞赏预设金额卡片去官话与温暖创作者工位/咖啡场景动效升维 (SVG Interactive Scenes & Pure Warmth)
+#### Task 106: 赞赏预设金额卡片去官话与温暖创作者工位/咖啡场景动效升维 (`69695fe`, `e028197`)
 - [x] **彻底清理生硬“官话”与定价感 (Zero Bureaucratic Words & Pricing Stigma)**：
   1. 深入贯彻用户端亲和力视角，从个人博客温情打赏体验出发，全面清除“微额”、“日常”、“算力”、“基建”、“名录致谢”、“即时零钱”、“边缘函数”、“域名存储”等企业级/云账单式标价说明；
   2. 突出纯粹、大方、自信的金额数值（`RM3`、`RM8`、`RM13`、`RM17`、`RM20`、`RM25` / `¥4`、`¥9`、`¥14`、`¥16`、`¥20`、`¥25` / `$1`、`$2.5`、`$4`...），搭配微小的币种代码与选中高光对勾，彻底解除读者的心理负担与消费标价感。
@@ -2402,5 +2402,6 @@
   3. 移动端 2 列自适应优化（`w-16 sm:w-28 md:w-32`），文字与矢量图完全无重叠、间距呼吸自如。
 - [x] **全链路验证与 Cloudflare Pages 生产边缘部署 (Live E2E Verification)**：
   1. 本地 `scripts/verify-support-refined.mjs` 测试全绿通过；
-  2. 部署至 Cloudflare Pages 生产节点（`shijianus-blog`，版本 `44287bc2`）；
+  2. 部署至 Cloudflare Pages 生产节点（`shijianus-blog`，版本 `44287bc2` & `96c375a9`）；
   3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，断言 100% 全绿，全视口截图留存完毕。
+
