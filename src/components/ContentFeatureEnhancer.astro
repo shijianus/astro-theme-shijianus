@@ -153,48 +153,45 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     // Default encryption behavior: all unlocked content resets on refresh unless data-persist="session|local|true" is explicitly set.
     const _unlockedInMemory = new Set();
 
-    const resolveContentLang = () => {
-      // 1. Article container data-lang (most specific: the article itself explicitly states its language)
-      const article = document.querySelector('article[data-lang]');
-      const articleLang = article?.getAttribute('data-lang')?.trim();
-      if (articleLang) {
-        if (articleLang.startsWith('zh-Hant') || articleLang.toLowerCase() === 'zh-hant' || articleLang === 'zh-TW' || articleLang === 'zh-HK') return 'zh-Hant';
-        if (articleLang.toLowerCase() === 'zh-cn' || articleLang.toLowerCase() === 'zh') return 'zh-CN';
-        const base = articleLang.split('-')[0].toLowerCase();
-        if (['en', 'es', 'de', 'fr'].includes(base)) return base;
+    const normalizeLang = (langStr) => {
+      if (!langStr) return '';
+      const s = String(langStr).trim();
+      if (s.startsWith('zh-Hant') || s.toLowerCase() === 'zh-hant' || s === 'zh-TW' || s === 'zh-HK') return 'zh-Hant';
+      if (s.toLowerCase() === 'zh-cn' || s.toLowerCase() === 'zh') return 'zh-CN';
+      const base = s.split('-')[0].toLowerCase();
+      if (['en', 'es', 'de', 'fr'].includes(base)) return base;
+      return '';
+    };
+
+    const resolveContentLang = (contextEl) => {
+      // 0. Closest element with data-lang (e.g. .article-translation-variant[data-lang] or article[data-lang])
+      if (contextEl && typeof contextEl.closest === 'function') {
+        const langEl = contextEl.closest('[data-lang]');
+        const langVal = normalizeLang(langEl?.getAttribute('data-lang'));
+        if (langVal) return langVal;
       }
 
-      // 2. Explicit language in URL pathname
-      const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
-      if (path.includes('-es/') || path.endsWith('-es') || path.includes('/es/')) return 'es';
-      if (path.includes('-en/') || path.endsWith('-en') || path.includes('/en/')) return 'en';
-      if (path.includes('-fr/') || path.endsWith('-fr') || path.includes('/fr/')) return 'fr';
-      if (path.includes('-de/') || path.endsWith('-de') || path.includes('/de/')) return 'de';
-      if (path.includes('-zh-hant') || path.includes('/zh-hant/')) return 'zh-Hant';
-      const matched = path.match(/\/(en|zh-Hant|fr|es|de)(\/|$)/i);
-      if (matched) return matched[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : matched[1].toLowerCase();
+      // 1. Currently active/visible article variant
+      const visibleVariant = document.querySelector('.article-translation-variant:not([style*="display: none"])');
+      const varLang = normalizeLang(visibleVariant?.getAttribute('data-lang'));
+      if (varLang) return varLang;
+
+      // 2. Article container data-lang
+      const article = document.querySelector('article[data-lang]');
+      const articleLang = normalizeLang(article?.getAttribute('data-lang'));
+      if (articleLang) return articleLang;
 
       // 3. Document element lang or data-locale-variant
-      const docLang = (document.documentElement.lang || document.documentElement.getAttribute('data-locale-variant') || '').trim();
-      if (docLang) {
-        if (docLang.startsWith('zh-Hant') || docLang.toLowerCase() === 'zh-hant' || docLang === 'zh-TW' || docLang === 'zh-HK') return 'zh-Hant';
-        if (docLang.toLowerCase() === 'zh-cn' || docLang.toLowerCase() === 'zh') return 'zh-CN';
-        const base = docLang.split('-')[0].toLowerCase();
-        if (['en', 'es', 'de', 'fr'].includes(base)) return base;
-      }
+      const docLang = normalizeLang(document.documentElement.lang || document.documentElement.getAttribute('data-locale-variant'));
+      if (docLang) return docLang;
 
-      // 4. User's manual selection in localStorage (only as fallback for non-article UI)
+      // 4. Stored user selection
       try {
-        const stored = window.localStorage.getItem('shijianus-manual-locale-selected') ||
-                       window.localStorage.getItem('shijianus-locale-variant');
-        if (stored) {
-          if (stored.startsWith('zh-Hant') || stored.toLowerCase() === 'zh-hant' || stored === 'zh-TW' || stored === 'zh-HK') return 'zh-Hant';
-          if (stored.startsWith('zh')) return 'zh-CN';
-          const base = stored.split('-')[0].toLowerCase();
-          if (['en', 'es', 'de', 'fr', 'zh-hant'].includes(base)) {
-            return base === 'zh-hant' ? 'zh-Hant' : base;
-          }
-        }
+        const stored = normalizeLang(
+          window.localStorage.getItem('shijianus-manual-locale-selected') ||
+          window.localStorage.getItem('shijianus-locale-variant')
+        );
+        if (stored) return stored;
       } catch (_) {}
 
       return 'zh-CN';
@@ -1098,8 +1095,8 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
         example: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 2v7.31"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg>`
       };
 
-      const getDefaultAlertTitles = () => {
-        const lang = resolveContentLang();
+      const getDefaultAlertTitles = (contextEl) => {
+        const lang = resolveContentLang(contextEl);
         return ADMONITION_I18N[lang] || ADMONITION_I18N['zh-CN'];
       };
 
@@ -1121,7 +1118,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
           restContent = restContent.replace(/^(<br\s*\/?>|\n|\r)+/i, '').trim();
 
-          let customTitle = getDefaultAlertTitles()[type] || type.toUpperCase();
+          let customTitle = getDefaultAlertTitles(bq)[type] || type.toUpperCase();
 
           const strongMatch = restContent.match(/^<strong>(.*?)<\/strong>[:：\s]*(.*)/is);
           if (strongMatch) {
@@ -1870,9 +1867,6 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
       const enhanceChatDialogues = (article) => {
         article.querySelectorAll('.article-chat, .chat-dialogue').forEach((chat) => {
-          if (chat.dataset.chatBound === 'true') return;
-          chat.dataset.chatBound = 'true';
-
           // Animation is opt-in via data-animate="true" / data-animation="true" / class="is-animated"
           const isAnimated = chat.dataset.animate === 'true' ||
                              chat.dataset.animation === 'true' ||
@@ -1887,7 +1881,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
           let soundEnabled = chat.dataset.sound !== 'false';
 
           let headerBar = chat.querySelector('.chat-header-bar');
-          const chatLang = resolveContentLang();
+          const chatLang = resolveContentLang(chat);
           const tChat = CHAT_I18N[chatLang] || CHAT_I18N['zh-CN'];
 
           if (!headerBar) {
@@ -1943,6 +1937,9 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
               soundBtn.title = soundEnabled ? tChat.soundOn : tChat.soundMuted;
             }
           }
+
+          if (chat.dataset.chatBound === 'true') return;
+          chat.dataset.chatBound = 'true';
 
           // Initially hide messages for animation
           messages.forEach((msg) => {
@@ -2050,16 +2047,13 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       // 4.3 Interactive Tutorial Task Lists & Progress Tracking
       const enhanceInteractiveTasks = (article) => {
         article.querySelectorAll('.article-task-tracker, .interactive-task-list-wrap').forEach((tracker) => {
-          if (tracker.dataset.taskBound === 'true') return;
-          tracker.dataset.taskBound = 'true';
-
           const checkboxes = tracker.querySelectorAll('input[type="checkbox"]');
           const progressBar = tracker.querySelector('.task-tracker__fill');
           const countLabel = tracker.querySelector('.task-tracker__count');
           const chainAlert = tracker.querySelector('.task-tracker__status-card');
 
           const updateProgress = () => {
-            const currentTaskLang = resolveContentLang();
+            const currentTaskLang = resolveContentLang(tracker);
             const tTask = TASK_TRACKER_I18N[currentTaskLang] || TASK_TRACKER_I18N['zh-CN'];
 
             const total = checkboxes.length;
@@ -2108,11 +2102,14 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
           tracker._updateProgress = updateProgress;
 
-          checkboxes.forEach((cb) => {
-            cb.addEventListener('change', updateProgress);
-            cb.addEventListener('input', updateProgress);
-            cb.addEventListener('click', updateProgress);
-          });
+          if (tracker.dataset.taskBound !== 'true') {
+            tracker.dataset.taskBound = 'true';
+            checkboxes.forEach((cb) => {
+              cb.addEventListener('change', updateProgress);
+              cb.addEventListener('input', updateProgress);
+              cb.addEventListener('click', updateProgress);
+            });
+          }
           updateProgress();
         });
       };

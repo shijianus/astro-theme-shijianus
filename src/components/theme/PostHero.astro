@@ -143,20 +143,17 @@ const hasMedia = Boolean(image || video);
           {translationEntries.map(([langKey, item]) => {
             const isActive = langKey === currentLang;
             const meta = LOCALE_NAMES[langKey] || { native: langKey };
-            return isActive ? (
-              <span class="post-hero__lang-tag is-active" aria-current="page" title={`当前语言: ${meta.native}`}>
+            return (
+              <button
+                type="button"
+                class:list={['post-hero__lang-tag', isActive && 'is-active']}
+                data-target-lang={langKey}
+                aria-current={isActive ? 'page' : undefined}
+                title={isActive ? `当前语言: ${meta.native}` : `切换至 ${meta.native}`}
+              >
                 <span class="lang-dot"></span>
                 {meta.native}
-              </span>
-            ) : (
-              <a
-                href={item.url}
-                class="post-hero__lang-tag"
-                data-target-lang={langKey}
-                title={`切换至 ${meta.native}`}
-              >
-                {meta.native}
-              </a>
+              </button>
             );
           })}
         </div>

@@ -10,8 +10,16 @@ export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
 export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
+export const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|fr|es|de)$/i;
+
+export function getPostCanonicalSlug(id: string): string {
+  return id.replace(LANG_SUFFIX_REGEX, '');
+}
+
 export function getPostPath(entry: Pick<PostEntry, 'id'>) {
-  return `/posts/${entry.id}/`;
+  const canonical = getPostCanonicalSlug(entry.id);
+  const clean = canonical.includes('.') ? canonical.replace(/\./g, '-') : canonical;
+  return `/posts/${clean}/`;
 }
 
 export function encodePathSegment(value: string) {
@@ -74,7 +82,7 @@ export function isProtectedPost(entry: PostEntry) {
 
 export function getPostI18nKey(entry: PostEntry): string {
   if (entry.data.i18nKey) return entry.data.i18nKey;
-  return entry.id.replace(/\.[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/, '');
+  return getPostCanonicalSlug(entry.id);
 }
 
 export function getPublicPosts(
@@ -85,18 +93,22 @@ export function getPublicPosts(
   const deduplicate = options.deduplicateI18n ?? true;
   if (!deduplicate) return sorted;
 
-  const seenKeys = new Set<string>();
-  const canonicalPosts: PostEntry[] = [];
-
+  const map = new Map<string, PostEntry>();
   for (const post of sorted) {
     const key = getPostI18nKey(post);
-    if (!seenKeys.has(key)) {
-      seenKeys.add(key);
-      canonicalPosts.push(post);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, post);
+    } else {
+      const existingHasSuffix = LANG_SUFFIX_REGEX.test(existing.id);
+      const currentHasSuffix = LANG_SUFFIX_REGEX.test(post.id);
+      if (existingHasSuffix && !currentHasSuffix) {
+        map.set(key, post);
+      }
     }
   }
 
-  return canonicalPosts;
+  return Array.from(map.values());
 }
 
 export function getDisplayPostTitle(entry: PostEntry, revealProtected = false) {

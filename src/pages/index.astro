@@ -9,7 +9,7 @@ import { getHomeFeedPage, resolveHomeFeedPageSize } from '../lib/home-feed';
 import { createSidebarData } from '../lib/theme';
 
 const posts = getPublicPosts(await getCollection('posts'));
-const featuredPosts = getFeaturedPosts(posts, 4);
+const featuredPosts = getFeaturedPosts(posts, 6);
 const categories = collectCategories(posts);
 const sidebarData = createSidebarData(posts);
 const categoryRail = siteConfig.home.categoryRail;

@@ -41,13 +41,12 @@ async function runLiveAudit() {
 
     // 1. Audit Preset Amount Cards
     console.log('\n--- 1. Auditing Live Preset Amount Cards ---');
-    const presetButtons = page.locator('.grid.grid-cols-3 button');
+    await page.waitForSelector('.grid[class*="gap-2"] button', { timeout: 15000 });
+    const presetButtons = page.locator('.grid[class*="gap-2"] button');
     const count = await presetButtons.count();
     console.log(`Found ${count} preset buttons (Expected: 6)`);
     if (count !== 6) throw new Error(`Expected 6 preset buttons, got ${count}`);
 
-    const badges = [];
-    const natures = [];
     const amounts = [];
 
     for (let i = 0; i < count; i++) {
@@ -213,7 +212,7 @@ async function runLiveAudit() {
     });
     console.log('  📸 Captured live-01-desktop-overview.png');
 
-    const presetGrid = page.locator('.grid.grid-cols-3');
+    const presetGrid = page.locator('.grid[class*="gap-2"]').first();
     await presetGrid.screenshot({
       path: path.join(outDir, 'live-02-desktop-preset-cards.png'),
     });
