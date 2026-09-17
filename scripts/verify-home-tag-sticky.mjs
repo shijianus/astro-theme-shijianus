@@ -33,6 +33,8 @@ async function runVerification() {
       const track = document.getElementById('aside-track-overview');
       const stickyBox = document.getElementById('aside-sticky-box-overview');
       const tags = card ? card.querySelectorAll('.tag-cloud-item') : [];
+      const categoryChips = card ? card.querySelectorAll('.category-chip') : [];
+      const webinfoItems = card ? card.querySelectorAll('.webinfo-item') : [];
       const pagination = document.getElementById('home-pagination');
       const recentPosts = document.getElementById('recent-posts');
       
@@ -42,9 +44,12 @@ async function runVerification() {
         trackExists: Boolean(track),
         stickyBoxExists: Boolean(stickyBox),
         tagCount: tags.length,
+        categoryChipsCount: categoryChips.length,
+        webinfoItemsCount: webinfoItems.length,
         paginationExists: Boolean(pagination),
         recentPostsExists: Boolean(recentPosts),
         cardHeight: card?.offsetHeight,
+        cardWidth: card?.offsetWidth,
         trackHeight: track?.offsetHeight,
       };
     });
@@ -54,12 +59,21 @@ async function runVerification() {
     console.log(`   - card classes: ${cardInfo.cardClasses}`);
     console.log(`   - aside-track-overview exists: ${cardInfo.trackExists}`);
     console.log(`   - aside-sticky-box-overview exists: ${cardInfo.stickyBoxExists}`);
-    console.log(`   - Total tags rendered: ${cardInfo.tagCount}`);
+    console.log(`   - Total tags rendered (capped): ${cardInfo.tagCount}`);
+    console.log(`   - Category chips rendered: ${cardInfo.categoryChipsCount}`);
+    console.log(`   - WebInfo items rendered: ${cardInfo.webinfoItemsCount}`);
+    console.log(`   - Initial card width: ${cardInfo.cardWidth}px`);
     console.log(`   - Initial card height: ${cardInfo.cardHeight}px`);
     console.log(`   - Initial track height: ${cardInfo.trackHeight}px`);
 
     if (!cardInfo.cardExists || !cardInfo.trackExists || !cardInfo.stickyBoxExists) {
       throw new Error('Required sticky track, box, or card element is missing!');
+    }
+    if (cardInfo.tagCount > 24) {
+      throw new Error(`Tag count ${cardInfo.tagCount} exceeds display limit of 24!`);
+    }
+    if (cardInfo.categoryChipsCount === 0 || cardInfo.webinfoItemsCount === 0) {
+      throw new Error('Enriched sections (categories/webinfo) are missing!');
     }
 
     // Capture initial top screenshot

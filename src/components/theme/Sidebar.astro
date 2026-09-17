@@ -1,5 +1,5 @@
 ---
-import { Archive, Compass, FolderOpen, History, Info, ListTree, Megaphone, Tags } from 'lucide-react';
+import { Archive, Compass, FolderOpen, History, Info, ListTree, Megaphone, Tags, Activity } from 'lucide-react';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import {
@@ -119,6 +119,8 @@ const allHomeTags = tags && tags.length > 0 ? tags : realTags;
 const sortedHomeTags = [...allHomeTags].sort(
   (a, b) => b.count - a.count || a.label.localeCompare(b.label),
 );
+const HOME_TAG_LIMIT = 24;
+const displayedHomeTags = sortedHomeTags.slice(0, HOME_TAG_LIMIT);
 
 const runtimeDays = Math.max(
   1,
@@ -339,29 +341,94 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"
                 id="card-tag-cloud-overview"
               >
-                <div class="item-headline">
-                  <div class="item-headline__left">
-                    <Tags className="aside-title-icon" aria-hidden="true" />
-                    <span>标签</span>
+                <!-- 1. 热门标签板块 (设置展示上限 24 个，避免无限制扩展) -->
+                <div class="overview-section overview-section--tags">
+                  <div class="item-headline">
+                    <div class="item-headline__left">
+                      <Tags className="aside-title-icon" aria-hidden="true" />
+                      <span>热门标签</span>
+                    </div>
+                    {sortedHomeTags.length > 0 && (
+                      <a class="card-more-btn" href="/tags/" title="查看全部标签">
+                        <span class="card-more-count">{sortedHomeTags.length}</span>
+                        <span class="card-more-unit">个</span>
+                        <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
+                      </a>
+                    )}
                   </div>
-                  {sortedHomeTags.length > 0 && (
-                    <a class="card-more-btn" href="/tags/" title="查看全部标签">
-                      <span class="card-more-count">{sortedHomeTags.length}</span>
-                      <span class="card-more-unit">个</span>
-                    </a>
-                  )}
+                  <div class="card-tag-cloud">
+                    {displayedHomeTags.map((tag) => (
+                      <a
+                        href={getTagPath(tag.slug)}
+                        class="tag-cloud-item"
+                        title={`${tag.label} (${tag.count})`}
+                      >
+                        <span class="tag-name">{tag.label}</span>
+                        <sup class="tag-count">{tag.count}</sup>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <div class="card-tag-cloud">
-                  {sortedHomeTags.map((tag) => (
-                    <a
-                      href={getTagPath(tag.slug)}
-                      class="tag-cloud-item"
-                      title={`${tag.label} (${tag.count})`}
-                    >
-                      <span class="tag-name">{tag.label}</span>
-                      <sup class="tag-count">{tag.count}</sup>
-                    </a>
-                  ))}
+
+                <!-- 2. 精选分类速达 (加宽丰富内容，一键直达核心主题) -->
+                {categories.length > 0 && (
+                  <div class="overview-section overview-section--categories">
+                    <div class="item-headline item-headline--sub">
+                      <div class="item-headline__left">
+                        <FolderOpen className="aside-title-icon" aria-hidden="true" />
+                        <span>精选分类</span>
+                      </div>
+                      <a class="card-more-btn" href="/categories/" title="查看全部分类">
+                        <span class="card-more-count">{categories.length}</span>
+                        <span class="card-more-unit">类</span>
+                        <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                    <div class="card-category-chips">
+                      {categories.slice(0, 6).map((cat) => (
+                        <a
+                          href={getCategoryPath(cat.slug)}
+                          class="category-chip"
+                          title={`${cat.label} (${cat.count} 篇)`}
+                        >
+                          <span class="category-chip__name">{cat.label}</span>
+                          <span class="category-chip__count">{cat.count}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <!-- 3. 网站资讯与极客统计 (借鉴安知鱼设计，让侧栏饱满专业) -->
+                <div class="overview-section overview-section--webinfo">
+                  <div class="item-headline item-headline--sub">
+                    <div class="item-headline__left">
+                      <Activity className="aside-title-icon" aria-hidden="true" />
+                      <span>站点资讯</span>
+                    </div>
+                    <span class="webinfo-live-badge">
+                      <span class="webinfo-live-dot" aria-hidden="true"></span>
+                      <span>正常运行</span>
+                    </span>
+                  </div>
+                  <div class="card-webinfo-grid">
+                    <div class="webinfo-item">
+                      <span class="webinfo-label">文章总数</span>
+                      <span class="webinfo-val">{realTotalPosts} 篇</span>
+                    </div>
+                    <div class="webinfo-item">
+                      <span class="webinfo-label">建站运行</span>
+                      <span class="webinfo-val">{realRuntimeDays} 天</span>
+                    </div>
+                    <div class="webinfo-item">
+                      <span class="webinfo-label">标签总数</span>
+                      <span class="webinfo-val">{allHomeTags.length} 个</span>
+                    </div>
+                    <div class="webinfo-item">
+                      <span class="webinfo-label">核心协议</span>
+                      <span class="webinfo-val">EpoCanvas</span>
+                    </div>
+                  </div>
                 </div>
               </section>
             </div>

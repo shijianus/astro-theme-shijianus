@@ -5861,6 +5861,142 @@ body[data-type='home'] .card-tag-cloud-panel .tag-count {
   transition: color 0.2s !important;
 }
 
+/* Multi-Section Enriched Layout for Home Sticky Overview Card */
+body[data-type='home'] .card-tag-cloud-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='home'] .overview-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+body[data-type='home'] .overview-section + .overview-section {
+  padding-top: 14px !important;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 80%, transparent) !important;
+}
+
+body[data-type='home'] .overview-section .item-headline {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body[data-type='home'] .overview-section--tags .card-tag-cloud {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px 7px !important;
+}
+
+/* Category Chips 2-Column Grid */
+body[data-type='home'] .card-category-chips {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+body[data-type='home'] .category-chip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--card-border) !important;
+  background: color-mix(in srgb, var(--card-bg) 95%, var(--font-color)) !important;
+  color: var(--font-color) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='home'] .category-chip:hover {
+  background: var(--theme-main) !important;
+  border-color: var(--theme-main) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(66, 90, 239, 0.2) !important;
+}
+
+body[data-type='home'] .category-chip__name {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body[data-type='home'] .category-chip__count {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: var(--secondtext) !important;
+  margin-left: 4px !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  background: color-mix(in srgb, var(--font-color) 6%, transparent) !important;
+  transition: all 0.2s !important;
+}
+
+body[data-type='home'] .category-chip:hover .category-chip__count {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* WebInfo 2-Column Dashboard Grid */
+body[data-type='home'] .webinfo-live-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11.5px !important;
+  color: #10b981 !important;
+  font-weight: 600 !important;
+}
+
+body[data-type='home'] .webinfo-live-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #10b981 !important;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6) !important;
+}
+
+body[data-type='home'] .card-webinfo-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+body[data-type='home'] .webinfo-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  background: color-mix(in srgb, var(--font-color) 3%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important;
+}
+
+body[data-type='home'] .webinfo-label {
+  font-size: 11px !important;
+  color: var(--secondtext) !important;
+}
+
+body[data-type='home'] .webinfo-val {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--font-color) !important;
+}
+
 body[data-type='home'] .feature-panel-recent .aside-list,
 body[data-type='post'] #card-toc .toc-content,
 body[data-type='post'] #post-secondary-aside .card-recent-post .aside-list {
