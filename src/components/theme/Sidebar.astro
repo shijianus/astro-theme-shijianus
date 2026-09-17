@@ -39,10 +39,12 @@ const {
   totalTags,
   totalReadingMinutes,
   headings = [],
+  variantHeadings = {},
   pageType = 'page',
   asideId = 'aside-content',
   previousPost = null,
   nextPost = null,
+  lang: currentLang = 'zh-CN',
 } = Astro.props;
 
 // Fetch real data for dynamic widgets
@@ -59,18 +61,18 @@ const realRuntimeDays = Math.max(
 
 const isPostPage = pageType === 'post';
 const isHomePage = pageType === 'home';
-const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
-const recentPostEntries = recentPosts;
-const tocBaseDepth = tocHeadings[0]?.depth ?? 2;
-const tocTree = (() => {
+
+function buildTocTree(rawHeadings: typeof headings) {
+  const filtered = (rawHeadings || []).filter((heading) => heading.depth >= 2 && heading.depth <= 6);
+  const baseDepth = filtered[0]?.depth ?? 2;
   const roots: TocNode[] = [];
   const stack: TocNode[] = [];
 
-  tocHeadings.forEach((heading, index) => {
+  filtered.forEach((heading, index) => {
     const node: TocNode = {
       heading,
       index,
-      level: Math.max(0, heading.depth - tocBaseDepth),
+      level: Math.max(0, heading.depth - baseDepth),
       children: [],
     };
 
@@ -87,8 +89,19 @@ const tocTree = (() => {
     stack.push(node);
   });
 
-  return roots;
-})();
+  return { tree: roots, count: filtered.length, headings: filtered };
+}
+
+const defaultToc = buildTocTree(headings);
+const tocHeadings = defaultToc.headings;
+const tocTree = defaultToc.tree;
+
+const variantTocEntries = Object.entries(variantHeadings || {}).map(([vLang, vHeadings]) => ({
+  lang: vLang,
+  ...buildTocTree(vHeadings as any),
+}));
+
+const recentPostEntries = recentPosts;
 
 const showRecentPosts = recentPostEntries.length > 0 && !isHomePage;
 const showToc = isPostPage && siteConfig.theme.features.postToc && tocHeadings.length > 0;
@@ -186,9 +199,24 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 <span class="toc-progress__bar"></span>
               </div>
               <div class="toc-content">
-                <ol class="toc-list">
-                  <Fragment set:html={renderTocNodes(tocTree)} />
-                </ol>
+                {variantTocEntries.length > 0 ? (
+                  variantTocEntries.map(({ lang: vLang, tree: vTree, count: vCount }) => (
+                    <div
+                      class="variant-toc-list"
+                      data-lang={vLang}
+                      data-toc-count={`${vCount} 节`}
+                      style={vLang === currentLang ? '' : 'display: none;'}
+                    >
+                      <ol class="toc-list">
+                        <Fragment set:html={renderTocNodes(vTree)} />
+                      </ol>
+                    </div>
+                  ))
+                ) : (
+                  <ol class="toc-list">
+                    <Fragment set:html={renderTocNodes(tocTree)} />
+                  </ol>
+                )}
               </div>
             </section>
           )}

@@ -72,6 +72,7 @@ export type SidebarData = {
   totalReadingMinutes: number;
   totalWords: number;
   headings?: SidebarHeading[];
+  variantHeadings?: Record<string, SidebarHeading[]>;
   postContext?: SidebarPostContext;
   previousPost?: CollectionEntry<'posts'> | null;
   nextPost?: CollectionEntry<'posts'> | null;
