@@ -2405,3 +2405,32 @@
   2. 部署至 Cloudflare Pages 生产节点（`shijianus-blog`，版本 `44287bc2` & `96c375a9`）；
   3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，断言 100% 全绿，全视口截图留存完毕。
 
+### Task 107: 首页 class="topGroup" 视觉去杂质降噪、倾斜背景层彻底根除、6张卡片矩阵满额填充与文章标题 2 行截断防遮挡深度重构 (`6d39ca3`)
+- [x] **根除倾斜重叠背景干扰 (Zero Visual Noise & Clutter)**：
+  1. 根因分析：原本的 `.topGroup__stack` 内含 `.topGroup__stack-back--one` 与 `--two` 两层带有 `transform: rotate(-2deg)` 的背景白板，既无法准确契合动态高度，又在卡片下方产生多余杂乱的倾斜锯齿白边与阴影叠加；
+  2. 深度修复：在 `src/styles/global.css` 与 `src/components/theme/HomeHero.astro` 中将 `.topGroup__stack` 设置为 `display: none !important;`，彻底根除背景白板与倾斜杂质，还原安知鱼原生清爽的高对比卡片矩阵。
+- [x] **修复文章卡片文字遮挡截断与弹性伸缩失衡 (No Text Clipping / 2-Line Strict Clamp)**：
+  1. 根因分析：
+     - 在 Blink/WebKit 内核中，如果父级容器设置了 `display: grid`（原 `src/styles/rebuild.css` 与 `global.css` 中 `.recent-post-info` 为 `display: grid`），子元素在计算时会被自动转换为 `flow-root` 块级格式化上下文，从而导致 `-webkit-line-clamp: 2` 与 `-webkit-box-orient: vertical` 完全失效，标题高度不受控撑大到 152px；
+     - `.recent-post-info` 曾设置 `min-height: 100%; height: 100%`，在加上封面 `100px` 后卡片内容严重越界达 98px，被 `overflow: hidden` 暴力横向切断，文字直接被腰斩；
+  2. 深度重构：
+     - 将 `.topGroup .recent-post-info` 彻底改写为 `display: block !important; flex: 1 1 auto; height: auto; min-height: 0; padding: 8px 10px 6px 10px; overflow: hidden;`；
+     - 将标题 `.article-title` 属性锁定为 `display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 13px !important; line-height: 1.4 !important; max-height: 38px !important;`；
+     - 将卡片封面固定为 `height: 92px !important; flex: 0 0 92px !important; border-radius: 11px 11px 0 0 !important;`；
+     - 将序号徽章 `.recent-post-top-text` 调整为精致方圆角玻璃态（`height: 20px; border-radius: 6px; top: 6px; left: 6px;`）；
+     - 彻底保证所有卡片文字绝不溢出、绝不切断、严格限制在 2 行内，行末自然带上省略号 `...`。
+- [x] **卡片数量满额供给（2行×3列共 6 张）**：
+  1. 根因分析：原本 `src/pages/index.astro` 写死 `getFeaturedPosts(posts, 4)`，只向 `HomeHero` 传递了 4 篇文章，导致底部一行右侧永远有两个空白缺口；
+  2. 深度修复：`index.astro` 提升为 `getFeaturedPosts(posts, 6)`，并在 `HomeHero.astro` 中做防穿透保底供给（当精选文章不足 6 篇时由最新公开文章自动补齐），保证任何时刻 `topGroup` 均拥有 6 张标准尺寸卡片（宽 `calc((100% - 1rem)/3)`，高 `calc((100% - 0.5rem)/2)`），完美填满并与左侧 `bannerGroup` 高度（348px）绝对平齐。
+- [x] **生产环境 (Cloudflare Pages) 全链路部署与 Playwright 严格端到端验证**：
+  1. 构建并部署至 Cloudflare Pages 生产边缘节点（部署 ID: `25b87b7f-5640-4bae-8292-c96d36ae4c88`，Commit: `6d39ca3`）；
+  2. 多远端全量同步至 `origin` 与 `cf` (`shijianus.github.io.git`)；
+  3. 编写并在真实线上域名 `https://blog.epocanvas.com/` 上运行 Playwright 深度端到端审计脚本（`scripts/verify-topgroup-live.mjs`）：
+     - `stackHidden: true`（倾斜背景层彻底隐藏）；
+     - `cardCount: 6`（6张卡片满格排布）；
+     - `allTitlesInside: true`（全部卡片标题完全位于卡片视界内，底部无裁剪）；
+     - `allCoverHeight92: true`（封面高度严格为 92px）；
+     - `allTitlesClampedProperly: true`（全部标题行数 <= 2，高度 <= 36px，无任何字体被遮挡或被横向切成半截）；
+     - 捕获并留存浅色模式与深色模式的高清视觉截图证据（`live_epocanvas_topgroup_light.png`、`live_epocanvas_topgroup_dark.png`、`live_epocanvas_toggled_light.png` 等）。
+
+

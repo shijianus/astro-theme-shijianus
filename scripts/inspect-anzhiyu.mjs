@@ -6,8 +6,15 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   console.log('Navigating to https://blog.anheyu.com/ ...');
   try {
-    await page.goto('https://blog.anheyu.com/', { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(3000);
+    await page.setExtraHTTPHeaders({
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+    });
+    await page.goto('https://blog.anheyu.com/', { waitUntil: 'commit', timeout: 120000 });
+    console.log('Committed, waiting for DOM content loaded...');
+    await page.waitForLoadState('domcontentloaded', { timeout: 120000 });
+    console.log('DOM content loaded! Waiting for network idle or timeout...');
+    await page.waitForTimeout(5000);
 
     // Ensure scratch directory exists
     if (!fs.existsSync('scratch')) {

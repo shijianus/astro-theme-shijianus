@@ -24,6 +24,8 @@ import {
   resolveExplicitCover,
   resolveCoverAlt,
   sortPostsByDate,
+  getPostCanonicalSlug,
+  LANG_SUFFIX_REGEX,
 } from '../../lib/content';
 import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
 import { createSidebarData } from '../../lib/theme';
@@ -58,12 +60,10 @@ export async function getStaticPaths() {
   // Build encrypted slug map with conflict detection
   const { slugMap, warnings } = buildEncryptedSlugMap(posts, existingPostIds);
 
-  // Log any warnings (shows in build output)
   for (const w of warnings) {
     console.warn(`[ExternalEncrypt] ${w.type}: "${w.encryptedSlug}" → auto-resolved to "${w.autoResolvedTo}"`);
   }
 
-  // Add all encrypted slug routes
   for (const encSlug of slugMap.keys()) {
     paths.push({ params: { slug: encSlug } });
   }
@@ -72,6 +72,19 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
+const langSuffixRegex = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
+const isSuffixRoute = langSuffixRegex.test(slug ?? '');
+const canonicalSlug = (slug ?? '').replace(langSuffixRegex, '');
+const matchLang = (slug ?? '').match(langSuffixRegex);
+const targetLang = matchLang
+  ? (matchLang[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : matchLang[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : matchLang[1].toLowerCase())
+  : 'zh-CN';
+
+// In SSR mode, immediately redirect legacy language URLs to canonical without rendering
+if (isSuffixRoute && !STATIC_EXPORT) {
+  return Astro.redirect(`/posts/${canonicalSlug}/`, 301);
+}
+
 const allPosts = sortPostsByDate(await getCollection('posts'));
 const publicPosts = getPublicPosts(allPosts);
 const existingPostIds = new Set(allPosts.map((p) => p.id));
@@ -81,23 +94,27 @@ let entry = allPosts.find((post) =>
   post.id === slug ||
   post.id.toLowerCase() === slug?.toLowerCase() ||
   post.id.replace(/\./g, '-') === slug ||
-  post.id.replace(/\./g, '-').toLowerCase() === slug?.toLowerCase()
+  post.id.replace(/\./g, '-').toLowerCase() === slug?.toLowerCase() ||
+  (isSuffixRoute && (
+    post.id === canonicalSlug ||
+    post.id.toLowerCase() === canonicalSlug.toLowerCase() ||
+    post.id.replace(/\./g, '-') === canonicalSlug ||
+    post.id.replace(/\./g, '-').toLowerCase() === canonicalSlug.toLowerCase()
+  ))
 );
 
 // ── Encrypted route lookup ──────────────────────────────────────────────────
 let matchedEncryptConfig = null;
 let isEncryptedRoute = false;
-let contentEntry = null; // if cross-article contentSlug is set, render this post instead
+let contentEntry = null;
 
-if (!entry) {
-  // Not a normal post — try to find as encrypted route
+if (!entry && !isSuffixRoute) {
   const match = findEncryptedRouteMatch(slug ?? '', allPosts);
   if (match) {
     entry = match.post;
     matchedEncryptConfig = match.config;
     isEncryptedRoute = true;
 
-    // Cross-article content: load a different post's content
     if (match.config.contentSlug) {
       const crossEntry = allPosts.find((p) => p.id === match.config.contentSlug);
       if (crossEntry) {
@@ -109,34 +126,24 @@ if (!entry) {
   }
 }
 
-if (!entry) {
+if (!entry && !isSuffixRoute) {
   throw new Error(`Post not found: ${slug}`);
 }
 
-// The "source" post for content rendering
-// (could be the cross-article post, or the current post)
-const contentSourceEntry = contentEntry ?? entry;
-
-// For encrypted routes: normal post URL to navigate back to on cancel
-const normalPostUrl = isEncryptedRoute
-  ? `/posts/${entry.id}/`
-  : `/posts/${entry.id}/`;
-
-// Collect all encrypted configs for the NORMAL article
-// (used to build "enter encrypted version" buttons)
-const allEncryptConfigs = getPostEncryptConfigs(entry.data);
-
-// ──── End of encrypted route detection ─────────────────────────────────────
+// Fallback dummy for suffix redirects to satisfy compiler
+const postEntry = entry || allPosts[0];
+const contentSourceEntry = contentEntry ?? postEntry;
+const normalPostUrl = `/posts/${canonicalSlug}/`;
+const allEncryptConfigs = postEntry ? getPostEncryptConfigs(postEntry.data) : [];
 
 // ──── Multilingual i18n Translation Resolution ─────────────────────────────
-const langSuffixRegex = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
-const inferredLangMatch = entry.id.match(langSuffixRegex);
+const inferredLangMatch = postEntry.id.match(langSuffixRegex);
 const normalizedInferredLang = inferredLangMatch
   ? (inferredLangMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : inferredLangMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : inferredLangMatch[1].toLowerCase())
   : undefined;
-const inferredKey = entry.id.replace(langSuffixRegex, '');
-const currentI18nKey = entry.data.i18nKey || inferredKey;
-const currentLang = entry.data.lang || normalizedInferredLang || 'zh-CN';
+const inferredKey = postEntry.id.replace(langSuffixRegex, '');
+const currentI18nKey = postEntry.data.i18nKey || inferredKey;
+const currentLang = postEntry.data.lang || normalizedInferredLang || 'zh-CN';
 
 // Find all sibling translations with the same i18nKey
 const siblingTranslations = allPosts.filter((p) => {
@@ -145,58 +152,25 @@ const siblingTranslations = allPosts.filter((p) => {
   return pKey === currentI18nKey;
 });
 
-const translationsByLang: Record<
-  string,
-  {
-    slug: string;
-    url: string;
-    title: string;
-    lang: string;
-    isAiGenerated: boolean;
-  }
-> = {};
-
-for (const p of siblingTranslations) {
-  const pSuffixMatch = p.id.match(langSuffixRegex);
-  const pNormLang = pSuffixMatch
-    ? (pSuffixMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffixMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffixMatch[1].toLowerCase())
-    : undefined;
-  const pLang = p.data.lang || pNormLang || 'zh-CN';
-  const cleanSlug = p.id.includes('.') ? p.id.replace(/\./g, '-') : p.id;
-  const urlSlug = cleanSlug.toLowerCase() === cleanSlug ? cleanSlug : cleanSlug.toLowerCase();
-
-  // Manual/user post takes priority if both exist
-  if (!translationsByLang[pLang] || !p.data.isAiGenerated) {
-    translationsByLang[pLang] = {
-      slug: cleanSlug,
-      url: `/posts/${urlSlug}/`,
-      title: p.data.title,
-      lang: pLang,
-      isAiGenerated: Boolean(p.data.isAiGenerated),
-    };
-  }
-}
-const hasTranslations = Object.keys(translationsByLang).length > 1;
-
 const typedAiSummaries = aiSummaries as Record<string, { summary: string; model?: string }>;
 const staticSummariesByLang: Record<string, string> = {};
-if (typedAiSummaries[entry.id]?.summary) {
-  staticSummariesByLang[currentLang] = typedAiSummaries[entry.id].summary;
+if (typedAiSummaries[postEntry.id]?.summary) {
+  staticSummariesByLang[currentLang] = typedAiSummaries[postEntry.id].summary;
 }
 for (const p of siblingTranslations) {
-  const pSuffix = p.id.match(/\.([a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?)$/);
-  const pLang = p.data.lang || (pSuffix ? pSuffix[1] : 'zh-CN');
+  const pSuffix = p.id.match(langSuffixRegex);
+  const pNorm = pSuffix ? (pSuffix[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffix[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffix[1].toLowerCase()) : undefined;
+  const pLang = p.data.lang || pNorm || 'zh-CN';
   const pSum = typedAiSummaries[p.id]?.summary;
   if (pSum && !staticSummariesByLang[pLang]) {
     staticSummariesByLang[pLang] = pSum;
   }
 }
 
-// Prepare the inline-encrypted article content (rendered server-side, initially hidden)
-// For encrypted routes: always render content (hidden behind gate)
-const access = isEncryptedRoute ? undefined : entry.data.access;
+// Access Control
+const access = isEncryptedRoute ? undefined : postEntry.data.access;
 const accessPasswordHash = getAccessPasswordHash(access);
-const accessCookieName = accessPasswordHash ? `shijianus-post-access:${entry.id}` : '';
+const accessCookieName = accessPasswordHash ? `shijianus-post-access:${postEntry.id}` : '';
 let unlockErrorMessage = '';
 
 if (!STATIC_EXPORT && Astro.request.method.toUpperCase() === 'POST' && accessPasswordHash) {
@@ -207,7 +181,7 @@ if (!STATIC_EXPORT && Astro.request.method.toUpperCase() === 'POST' && accessPas
     Astro.cookies.set(
       accessCookieName,
       (await evaluatePostAccess({
-        slug: entry.id,
+        slug: postEntry.id,
         access,
         headers: Astro.request.headers,
       })).cookieValue,
@@ -215,7 +189,7 @@ if (!STATIC_EXPORT && Astro.request.method.toUpperCase() === 'POST' && accessPas
         httpOnly: true,
         sameSite: 'lax',
         secure: Astro.url.protocol === 'https:',
-        path: `/posts/${entry.id}/`,
+        path: `/posts/${canonicalSlug}/`,
         maxAge: 60 * 60 * 8,
       },
     );
@@ -228,48 +202,127 @@ if (!STATIC_EXPORT && Astro.request.method.toUpperCase() === 'POST' && accessPas
 
 const accessState = STATIC_EXPORT
   ? await evaluatePostAccess({
-      slug: entry.id,
+      slug: postEntry.id,
       access,
       headers: new Headers(),
       cookieValue: undefined,
     })
   : await evaluatePostAccess({
-      slug: entry.id,
+      slug: postEntry.id,
       access,
       headers: Astro.request.headers,
       cookieValue: accessCookieName ? Astro.cookies.get(accessCookieName)?.value : undefined,
     });
 
-// For encrypted routes: always treat as "unlocked" at server-side
-// (content is rendered but hidden by the client-side password gate)
 const isUnlocked = isEncryptedRoute ? true : accessState.unlocked;
-const publicFacingTitle = isUnlocked ? entry.data.title : PROTECTED_POST_TITLE;
-const publicFacingDescription = isUnlocked ? entry.data.description ?? siteConfig.post.hero.summaryFallback : PROTECTED_POST_SUMMARY;
+const publicFacingTitle = isUnlocked ? postEntry.data.title : PROTECTED_POST_TITLE;
+const publicFacingDescription = isUnlocked ? postEntry.data.description ?? siteConfig.post.hero.summaryFallback : PROTECTED_POST_SUMMARY;
 
-let Content:
-  | (Awaited<ReturnType<typeof render>>['Content'])
-  | null = null;
-let headings: Awaited<ReturnType<typeof render>>['headings'] = [];
+type RenderedVariant = {
+  lang: string;
+  post: (typeof allPosts)[0];
+  Content: Awaited<ReturnType<typeof render>>['Content'];
+  headings: Awaited<ReturnType<typeof render>>['headings'];
+  title: string;
+  summary: string;
+};
 
-if (isUnlocked) {
-  // contentSourceEntry: normally the same as entry; for cross-article encrypted routes,
-  // this is the referenced post's entry
-  const rendered = await render(contentSourceEntry);
-  Content = rendered.Content;
-  headings = rendered.headings;
+const renderedVariants: RenderedVariant[] = [];
+const variantHeadings: Record<string, Awaited<ReturnType<typeof render>>['headings']> = {};
+
+if (!isSuffixRoute && isUnlocked) {
+  for (const p of siblingTranslations) {
+    const pSuffixMatch = p.id.match(langSuffixRegex);
+    const pNormLang = pSuffixMatch
+      ? (pSuffixMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffixMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffixMatch[1].toLowerCase())
+      : undefined;
+    const vLang = p.data.lang || pNormLang || 'zh-CN';
+
+    const existingIdx = renderedVariants.findIndex((v) => v.lang === vLang);
+    if (existingIdx >= 0) {
+      if (!p.data.isAiGenerated) {
+        const rendered = await render(p);
+        renderedVariants[existingIdx] = {
+          lang: vLang,
+          post: p,
+          Content: rendered.Content,
+          headings: rendered.headings,
+          title: p.data.title,
+          summary: p.data.description ?? siteConfig.post.hero.summaryFallback,
+        };
+        variantHeadings[vLang] = rendered.headings;
+      }
+      continue;
+    }
+
+    const rendered = await render(p);
+    renderedVariants.push({
+      lang: vLang,
+      post: p,
+      Content: rendered.Content,
+      headings: rendered.headings,
+      title: p.data.title,
+      summary: p.data.description ?? siteConfig.post.hero.summaryFallback,
+    });
+    variantHeadings[vLang] = rendered.headings;
+  }
+
+  // Ensure canonical entry is present
+  if (!renderedVariants.some((v) => v.post.id === contentSourceEntry.id)) {
+    const rendered = await render(contentSourceEntry);
+    renderedVariants.unshift({
+      lang: currentLang,
+      post: contentSourceEntry,
+      Content: rendered.Content,
+      headings: rendered.headings,
+      title: contentSourceEntry.data.title,
+      summary: contentSourceEntry.data.description ?? siteConfig.post.hero.summaryFallback,
+    });
+    variantHeadings[currentLang] = rendered.headings;
+  }
 }
 
-const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, entry, 6) : [];
-const publicPostIndex = publicPosts.findIndex((post) => post.id === entry.id);
+// Canonical content & headings fallback
+const primaryVariant = renderedVariants.find((v) => v.lang === currentLang) || renderedVariants[0];
+let Content = primaryVariant?.Content ?? null;
+let headings = primaryVariant?.headings ?? [];
+
+const translationsByLang: Record<
+  string,
+  {
+    slug: string;
+    url: string;
+    title: string;
+    lang: string;
+    isAiGenerated: boolean;
+  }
+> = {};
+
+for (const v of renderedVariants) {
+  translationsByLang[v.lang] = {
+    slug: v.post.id,
+    url: `/posts/${canonicalSlug}/`, // URL is strictly canonical!
+    title: v.title,
+    lang: v.lang,
+    isAiGenerated: Boolean(v.post.data.isAiGenerated),
+  };
+}
+const hasTranslations = Object.keys(translationsByLang).length > 1;
+
+const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, postEntry, 6) : [];
+const publicPostIndex = publicPosts.findIndex((post) => post.id === postEntry.id);
 const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
 const nextPost = publicPostIndex >= 0 && publicPostIndex < publicPosts.length - 1 ? publicPosts[publicPostIndex + 1] : null;
-const hasTocAside = !isEncryptedRoute && isUnlocked && siteConfig.theme.features.postToc && entry.data.toc !== false && !entry.data.hideToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
-const sidebarData = createSidebarData(publicPosts, hasTocAside ? headings : []);
-sidebarData.recentPosts = publicPosts.filter((post) => post.id !== entry.id);
-sidebarData.previousPost = previousPost;
-sidebarData.nextPost = nextPost;
+const hasTocAside = !isEncryptedRoute && isUnlocked && siteConfig.theme.features.postToc && postEntry.data.toc !== false && !postEntry.data.hideToc && headings.some((heading) => heading.depth >= 2 && heading.depth <= 6);
+const sidebarData = !isSuffixRoute ? createSidebarData(publicPosts, hasTocAside ? headings : []) : null;
+if (sidebarData) {
+  sidebarData.recentPosts = publicPosts.filter((post) => post.id !== postEntry.id);
+  sidebarData.previousPost = previousPost;
+  sidebarData.nextPost = nextPost;
+  sidebarData.variantHeadings = variantHeadings;
+}
 
-const wordCount = estimateWordCount(entry);
+const wordCount = estimateWordCount(postEntry);
 type HeroMetaItem = {
   label: string;
   value: string;
@@ -279,9 +332,9 @@ type HeroMetaItem = {
 const formatHeroDate = (date: Date) => {
   return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
 };
-const category = resolveCategory(entry);
+const category = resolveCategory(postEntry);
 const publicCategory = isUnlocked ? category : PROTECTED_POST_CATEGORY;
-const isOriginal = entry.data.author.trim().toLowerCase() === siteConfig.site.author.name.trim().toLowerCase();
+const isOriginal = postEntry.data.author.trim().toLowerCase() === siteConfig.site.author.name.trim().toLowerCase();
 const originalBadge = siteConfig.post.hero.detectOriginalTag ? [isOriginal ? '原创' : '转载'] : [];
 const formatLabels: Record<string, string> = {
   aside: '便签',
@@ -294,19 +347,19 @@ const formatLabels: Record<string, string> = {
   chat: '对话',
   image: '相片',
 };
-const formatBadge = entry.data.postFormat && entry.data.postFormat !== 'standard' ? [formatLabels[entry.data.postFormat] || entry.data.postFormat] : [];
-const scannedTags = [...new Set(entry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
+const formatBadge = postEntry.data.postFormat && postEntry.data.postFormat !== 'standard' ? [formatLabels[postEntry.data.postFormat] || postEntry.data.postFormat] : [];
+const scannedTags = [...new Set(postEntry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
 const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length - formatBadge.length);
 const badges = isUnlocked ? [...originalBadge, ...formatBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
-const heroImage = isUnlocked ? resolveExplicitCover(entry) : '';
-const heroImageAlt = isUnlocked ? resolveCoverAlt(entry) : PROTECTED_POST_TITLE;
+const heroImage = isUnlocked ? resolveExplicitCover(postEntry) : '';
+const heroImageAlt = isUnlocked ? resolveCoverAlt(postEntry) : PROTECTED_POST_TITLE;
 const heroImageUrl = heroImage ? new URL(heroImage, siteConfig.site.url) : null;
 const heroImageOrigin = heroImageUrl && heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
 const publicMeta = [
-  { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(entry.data.pubDate), icon: 'calendar' as const },
-  entry.data.updatedDate && {
+  { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(postEntry.data.pubDate), icon: 'calendar' as const },
+  postEntry.data.updatedDate && {
     label: siteConfig.post.hero.metaLabels.updated,
-    value: formatHeroDate(entry.data.updatedDate),
+    value: formatHeroDate(postEntry.data.updatedDate),
     icon: 'refresh' as const,
   },
 ].filter(Boolean);
@@ -314,7 +367,7 @@ const fullMeta = [
   ...publicMeta,
   { label: siteConfig.post.hero.metaLabels.category, value: publicCategory, icon: 'folder' as const },
   { label: siteConfig.post.hero.metaLabels.words, value: wordCount.toLocaleString('zh-CN'), icon: 'file' as const },
-  { label: siteConfig.post.hero.metaLabels.reading, value: `${estimateReadingMinutes(entry)} 分钟`, icon: 'clock' as const },
+  { label: siteConfig.post.hero.metaLabels.reading, value: `${estimateReadingMinutes(postEntry)} 分钟`, icon: 'clock' as const },
   { label: siteConfig.post.hero.metaLabels.views, value: '0 次', runtime: 'views' as const, icon: 'eye' as const },
   { label: siteConfig.post.hero.metaLabels.dwell, value: '0 分钟', runtime: 'dwell' as const, icon: 'timer' as const },
 ];
@@ -332,265 +385,385 @@ publicPosts.forEach((post) => {
 });
 
 const heroSummary = isUnlocked
-  ? entry.data.description ?? siteConfig.post.hero.summaryFallback
+  ? postEntry.data.description ?? siteConfig.post.hero.summaryFallback
   : accessState.denialReason || '这篇文章设置了访问条件，完成验证后才会展示正文。';
 ---
 
-<BlogLayout
-  title={publicFacingTitle}
-  description={publicFacingDescription}
-  sidebarData={sidebarData}
-  pageType="post"
-  showAside={true}
-  lang={currentLang}
->
-  <Fragment slot="head">
-    {heroImage && heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
-    {heroImage && (
-      <link
-        rel="preload"
-        as="image"
-        href={heroImage}
-        crossorigin={heroImageOrigin ? 'anonymous' : undefined}
-      />
-    )}
-    {hasTranslations &&
-      Object.entries(translationsByLang).map(([langCode, trans]) => (
-        <link rel="alternate" hreflang={langCode} href={new URL(trans.url, siteConfig.site.url).href} />
-      ))}
-  </Fragment>
-
-  <Fragment slot="hero">
-    <PostHero
-      slug={entry.id}
-      title={publicFacingTitle}
-      summary={heroSummary}
-      image={heroImage}
-      imageAlt={heroImageAlt}
-      video={entry.data.coverVideo}
-      videoPoster={entry.data.coverVideoPoster ?? heroImage}
-      fallbackImage={siteConfig.post.hero.fallbackImage}
-      remoteFallbackImage={siteConfig.post.hero.remoteFallbackImage}
-      badges={badges}
-      meta={meta}
-      runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
-      translations={translationsByLang}
-      currentLang={currentLang}
-    />
-  </Fragment>
-
-  <div id="post" class="post post-page-shell">
-    {isUnlocked && (
-      <AiSummaryPanel
-        slug={entry.id}
-        title={publicFacingTitle}
-        summary={(entry.data as any).aiSummary || (entry.data as any).ai_summary || (entry.data as any).summary || entry.data.description || ''}
-        staticSummary={typedAiSummaries[entry.id]?.summary || ''}
-        staticSummariesByLang={staticSummariesByLang}
-        articleLang={currentLang}
-        url={Astro.url.href}
-        related={relatedPosts.map((post) => ({
-          title: post.data.title,
-          href: `/posts/${post.id}/`,
-        }))}
-      />
-    )}
-
-    <article
-      id="article-container"
-      class="article-body post-content"
-      data-content-features={isUnlocked ? 'true' : undefined}
-      data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
-      data-lang={currentLang}
-    >
-      {isUnlocked && Content ? (
-        <Content />
-      ) : (
-        <section class="content-access-panel content-access-panel--server">
-          <span class="content-access-panel__eyebrow">访问验证</span>
-          <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
-          <p>{unlockErrorMessage || accessState.denialReason}</p>
-          {accessState.requiresPassword && accessState.locationAllowed && (
-            <form method="post" class="content-access-panel__form">
-              <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
-              <button type="submit">解锁文章</button>
-            </form>
-          )}
-          {!accessState.locationAllowed && (
-            <div class="content-access-panel__status" data-state="error">
-              已根据当前请求地址与地区策略拦截访问。
-            </div>
-          )}
-          {unlockErrorMessage && (
-            <div class="content-access-panel__status" data-state="error">
-              {unlockErrorMessage}
-            </div>
-          )}
-        </section>
+{isSuffixRoute ? (
+  <html lang={targetLang}>
+    <head>
+      <meta charset="utf-8" />
+      <title>Redirecting to /posts/{canonicalSlug}/...</title>
+      <meta http-equiv="refresh" content={`0;url=/posts/${canonicalSlug}/`} />
+      <link rel="canonical" href={`/posts/${canonicalSlug}/`} />
+      <script is:inline define:vars={{ canonicalSlug, targetLang }}>
+        try {
+          window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
+          window.localStorage.setItem('shijianus-locale-variant', targetLang);
+        } catch (_) {}
+        window.location.replace('/posts/' + canonicalSlug + '/');
+      </script>
+    </head>
+    <body>
+      <p>Redirecting to <a href={`/posts/${canonicalSlug}/`}>/posts/{canonicalSlug}/</a>...</p>
+    </body>
+  </html>
+) : (
+  <BlogLayout
+    title={publicFacingTitle}
+    description={publicFacingDescription}
+    sidebarData={sidebarData}
+    pageType="post"
+    showAside={true}
+    lang={currentLang}
+  >
+    <Fragment slot="head">
+      {heroImage && heroImageOrigin && <link rel="preconnect" href={heroImageOrigin} crossorigin="anonymous" />}
+      {heroImage && (
+        <link
+          rel="preload"
+          as="image"
+          href={heroImage}
+          crossorigin={heroImageOrigin ? 'anonymous' : undefined}
+        />
       )}
-    </article>
+      <link rel="canonical" href={new URL(`/posts/${canonicalSlug}/`, siteConfig.site.url).href} />
+    </Fragment>
 
-    {isUnlocked && <ContentFeatureEnhancer
-      lang={currentLang}
-      externalEncryptData={isEncryptedRoute && matchedEncryptConfig ? {
-        hash: matchedEncryptConfig.hash,
-        hint: matchedEncryptConfig.hint ?? '',
-        normalPostUrl,
-        isEncryptedRoute: true,
-      } : undefined}
-      showEncryptButtons={!isEncryptedRoute && allEncryptConfigs.length > 0 ? (
-        allEncryptConfigs
-          .filter((c) => c.showButton !== false && c.hash)
-          .map((c) => ({
-            href: `/posts/${resolveConfigSlug(entry.id, c)}/`,
-            title: c.title ?? entry.data.title,
-            hint: c.hint ?? '',
-          }))
-      ) : undefined}
-    />}
-
-    {isUnlocked && (
-      <PostOutdateNotice
-        referenceDate={entry.data.updatedDate ?? entry.data.pubDate}
-        configuredDays={entry.data.outdateDays ?? entry.data.validDays}
-      />
-    )}
-
-    {isUnlocked && siteConfig.theme.features.postCopyright && (
-      <PostCopyright
-        permalink={Astro.url.href}
+    <Fragment slot="hero">
+      <PostHero
+        slug={postEntry.id}
         title={publicFacingTitle}
-        shortTitle={entry.data.shortTitle || entry.data.short_title}
-        cover={heroImage}
-        summary={entry.data.description ?? ''}
-        authorName={siteConfig.site.author.name}
-        authorRole={siteConfig.site.author.role}
-        authorAvatar={siteConfig.site.author.avatar}
-        badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
-        copyrightTitle={siteConfig.post.copyright.title}
-        notice={siteConfig.post.copyright.notice}
-        copyLabel={siteConfig.post.copyright.copyLabel}
-        rewardLabel={siteConfig.post.copyright.rewardLabel}
-        rewardNote={siteConfig.post.copyright.rewardNote}
-        aboutTitle={siteConfig.post.tools.aboutTitle}
-        modeHref={siteConfig.post.tools.modeHref}
-        modeLabel={siteConfig.post.tools.modeLabel}
-        modeDescription={siteConfig.post.tools.modeDescription}
-        shareLabel={siteConfig.post.tools.shareLabel}
-        rewardHref={siteConfig.post.tools.rewardHref}
-        rewardDescription={siteConfig.post.tools.rewardDescription}
-        copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
-        shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
-        shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
+        summary={heroSummary}
+        image={heroImage}
+        imageAlt={heroImageAlt}
+        video={postEntry.data.coverVideo}
+        videoPoster={postEntry.data.coverVideoPoster ?? heroImage}
+        fallbackImage={siteConfig.post.hero.fallbackImage}
+        remoteFallbackImage={siteConfig.post.hero.remoteFallbackImage}
+        badges={badges}
+        meta={meta}
+        runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
+        translations={translationsByLang}
+        currentLang={currentLang}
       />
-    )}
+    </Fragment>
 
-    {isUnlocked && scannedTags.length > 0 && (
-      <div class="post-tools-right post-tags-row">
-        <div class="tag_share">
-          <div class="post-meta__box">
-            <div class="post-meta__box__tag-list">
-              {scannedTags.map((tag) => (
-                <a class="post-meta__box__tags" href={`/tags/${encodeURIComponent(tag.toLowerCase())}/`}>
-                  <span class="tags-punctuation"><i class="anzhiyufont anzhiyu-icon-tag"></i></span>
-                  {tag}
-                  <span class="tagsPageCount">{tagCounts[tag] || 1}</span>
-                </a>
-              ))}
+    <div id="post" class="post post-page-shell">
+      {isUnlocked && (
+        <AiSummaryPanel
+          slug={postEntry.id}
+          title={publicFacingTitle}
+          summary={(postEntry.data as any).aiSummary || (postEntry.data as any).ai_summary || (postEntry.data as any).summary || postEntry.data.description || ''}
+          staticSummary={typedAiSummaries[postEntry.id]?.summary || ''}
+          staticSummariesByLang={staticSummariesByLang}
+          articleLang={currentLang}
+          url={Astro.url.href}
+          related={relatedPosts.map((post) => ({
+            title: post.data.title,
+            href: `/posts/${getPostCanonicalSlug(post.id)}/`,
+          }))}
+        />
+      )}
+
+      <article
+        id="article-container"
+        class="article-body post-content"
+        data-content-features={isUnlocked ? 'true' : undefined}
+        data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
+        data-lang={currentLang}
+      >
+        {isUnlocked && renderedVariants.length > 0 ? (
+          renderedVariants.map(({ lang: vLang, Content: VariantContent }) => (
+            <div
+              class="article-translation-variant"
+              data-lang={vLang}
+              style={vLang === currentLang ? '' : 'display: none;'}
+            >
+              <VariantContent />
+            </div>
+          ))
+        ) : isUnlocked && Content ? (
+          <Content />
+        ) : (
+          <section class="content-access-panel content-access-panel--server">
+            <span class="content-access-panel__eyebrow">访问验证</span>
+            <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
+            <p>{unlockErrorMessage || accessState.denialReason}</p>
+            {accessState.requiresPassword && accessState.locationAllowed && (
+              <form method="post" class="content-access-panel__form">
+                <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
+                <button type="submit">解锁文章</button>
+              </form>
+            )}
+            {!accessState.locationAllowed && (
+              <div class="content-access-panel__status" data-state="error">
+                已根据当前请求地址与地区策略拦截访问。
+              </div>
+            )}
+            {unlockErrorMessage && (
+              <div class="content-access-panel__status" data-state="error">
+                {unlockErrorMessage}
+              </div>
+            )}
+          </section>
+        )}
+      </article>
+
+      {isUnlocked && <ContentFeatureEnhancer
+        lang={currentLang}
+        externalEncryptData={isEncryptedRoute && matchedEncryptConfig ? {
+          hash: matchedEncryptConfig.hash,
+          hint: matchedEncryptConfig.hint ?? '',
+          normalPostUrl,
+          isEncryptedRoute: true,
+        } : undefined}
+        showEncryptButtons={!isEncryptedRoute && allEncryptConfigs.length > 0 ? (
+          allEncryptConfigs
+            .filter((c) => c.showButton !== false && c.hash)
+            .map((c) => ({
+              href: `/posts/${resolveConfigSlug(postEntry.id, c)}/`,
+              title: c.title ?? postEntry.data.title,
+              hint: c.hint ?? '',
+            }))
+        ) : undefined}
+      />}
+
+      {isUnlocked && (
+        <PostOutdateNotice
+          referenceDate={postEntry.data.updatedDate ?? postEntry.data.pubDate}
+          configuredDays={postEntry.data.outdateDays ?? postEntry.data.validDays}
+        />
+      )}
+
+      {isUnlocked && siteConfig.theme.features.postCopyright && (
+        <PostCopyright
+          permalink={new URL(`/posts/${canonicalSlug}/`, siteConfig.site.url).href}
+          title={publicFacingTitle}
+          shortTitle={postEntry.data.shortTitle || postEntry.data.short_title}
+          cover={heroImage}
+          summary={postEntry.data.description ?? ''}
+          authorName={siteConfig.site.author.name}
+          authorRole={siteConfig.site.author.role}
+          authorAvatar={siteConfig.site.author.avatar}
+          badge={isOriginal ? siteConfig.post.copyright.badge : '转载'}
+          copyrightTitle={siteConfig.post.copyright.title}
+          notice={siteConfig.post.copyright.notice}
+          copyLabel={siteConfig.post.copyright.copyLabel}
+          rewardLabel={siteConfig.post.copyright.rewardLabel}
+          rewardNote={siteConfig.post.copyright.rewardNote}
+          aboutTitle={siteConfig.post.tools.aboutTitle}
+          modeHref={siteConfig.post.tools.modeHref}
+          modeLabel={siteConfig.post.tools.modeLabel}
+          modeDescription={siteConfig.post.tools.modeDescription}
+          shareLabel={siteConfig.post.tools.shareLabel}
+          rewardHref={siteConfig.post.tools.rewardHref}
+          rewardDescription={siteConfig.post.tools.rewardDescription}
+          copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
+          shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
+          shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
+        />
+      )}
+
+      {isUnlocked && scannedTags.length > 0 && (
+        <div class="post-tools-right post-tags-row">
+          <div class="tag_share">
+            <div class="post-meta__box">
+              <div class="post-meta__box__tag-list">
+                {scannedTags.map((tag) => (
+                  <a class="post-meta__box__tags" href={`/tags/${encodeURIComponent(tag.toLowerCase())}/`}>
+                    <span class="tags-punctuation"><i class="anzhiyufont anzhiyu-icon-tag"></i></span>
+                    {tag}
+                    <span class="tagsPageCount">{tagCounts[tag] || 1}</span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-    {isUnlocked && siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
-      <RelatedPosts
-        posts={relatedPosts}
-        eyebrow={siteConfig.post.related.eyebrow}
-        title={siteConfig.post.related.title}
-      />
-    )}
+      {isUnlocked && siteConfig.theme.features.relatedPosts && relatedPosts.length > 0 && (
+        <RelatedPosts
+          posts={relatedPosts}
+          eyebrow={siteConfig.post.related.eyebrow}
+          title={siteConfig.post.related.title}
+        />
+      )}
 
-    {isUnlocked && <PostEndRecommendation nextPost={nextPost} />}
+      {isUnlocked && <PostEndRecommendation nextPost={nextPost} />}
 
-    {commentsEnabled && <hr class="custom-hr" />}
+      {commentsEnabled && <hr class="custom-hr" />}
 
-    {commentsEnabled && (
-      <PostComments
-        client:idle
-        slug={entry.id}
-        title={publicFacingTitle}
-        heading={siteConfig.post.comments.title}
-        policyLabel={siteConfig.post.comments.policyLabel}
-        notice={siteConfig.post.comments.notice}
-        submitLabel={siteConfig.post.comments.submitLabel}
-        previewLabel={siteConfig.post.comments.previewLabel}
-        emptyTitle={siteConfig.post.comments.emptyTitle}
-        emptySummary={siteConfig.post.comments.emptySummary}
-        tips={siteConfig.post.comments.tips}
-        integration={siteConfig.integrations.comments}
-      />
-    )}
+      {commentsEnabled && (
+        <PostComments
+          client:idle
+          slug={canonicalSlug}
+          title={publicFacingTitle}
+          heading={siteConfig.post.comments.title}
+          policyLabel={siteConfig.post.comments.policyLabel}
+          notice={siteConfig.post.comments.notice}
+          submitLabel={siteConfig.post.comments.submitLabel}
+          previewLabel={siteConfig.post.comments.previewLabel}
+          emptyTitle={siteConfig.post.comments.emptyTitle}
+          emptySummary={siteConfig.post.comments.emptySummary}
+          tips={siteConfig.post.comments.tips}
+          integration={siteConfig.integrations.comments}
+        />
+      )}
 
-    {hasTranslations && (
-      <script
-        id="shijianus-article-i18n-data"
-        type="application/json"
-        set:html={JSON.stringify({
-          currentI18nKey,
-          currentLang,
-          translations: translationsByLang,
-        })}
-      />
-    )}
+      {hasTranslations && (
+        <script
+          id="shijianus-article-variants-data"
+          type="application/json"
+          set:html={JSON.stringify({
+            canonicalSlug,
+            defaultLang: currentLang,
+            availableLangs: renderedVariants.map((v) => v.lang),
+            variantsMeta: Object.fromEntries(
+              renderedVariants.map((v) => [
+                v.lang,
+                {
+                  title: v.title,
+                  summary: v.summary,
+                  lang: v.lang,
+                },
+              ])
+            ),
+            staticSummariesByLang,
+          })}
+        />
+      )}
 
-    {hasTranslations && (
-      <script is:inline>
-        (function () {
-          const dataEl = document.getElementById('shijianus-article-i18n-data');
-          if (!dataEl) return;
-          try {
-            const data = JSON.parse(dataEl.textContent || '{}');
-            const translations = data.translations || {};
-            const currentLang = data.currentLang;
-            const i18nKey = data.currentI18nKey;
-
-            function navigateToLang(targetLang) {
-              const target = translations[targetLang];
-              if (target && target.url) {
-                const currentPath = window.location.pathname;
-                const targetPath = target.url;
-                // Normalize: both with and without trailing slash
-                const norm = (p) => p.replace(/\/$/, '');
-                if (norm(currentPath) !== norm(targetPath)) {
-                  try {
-                    window.localStorage.setItem('shijianus-locale-variant', targetLang);
-                    window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
-                  } catch {}
-                  window.location.href = targetPath;
-                }
-              }
+      {hasTranslations && (
+        <script is:inline>
+          (function () {
+            const dataEl = document.getElementById('shijianus-article-variants-data');
+            if (!dataEl) return;
+            let config;
+            try {
+              config = JSON.parse(dataEl.textContent || '{}');
+            } catch (_) {
+              return;
             }
 
-            // 1. Listen for global locale changes from the account card language selector
+            const { availableLangs = [], variantsMeta = {}, staticSummariesByLang = {}, defaultLang = 'zh-CN' } = config;
+
+            window.switchArticleLanguage = function (targetLang) {
+              if (!availableLangs.includes(targetLang)) {
+                targetLang = defaultLang;
+              }
+
+              // 1. Switch visible variant
+              const variants = document.querySelectorAll('.article-translation-variant');
+              variants.forEach((v) => {
+                if (v.dataset.lang === targetLang) {
+                  v.style.display = '';
+                } else {
+                  v.style.display = 'none';
+                }
+              });
+
+              // 2. Update article and html language attributes
+              const article = document.getElementById('article-container');
+              if (article) article.dataset.lang = targetLang;
+              document.documentElement.lang = targetLang;
+              document.documentElement.dataset.localeVariant = targetLang;
+
+              // 3. Update Hero Title & Summary & Document Title
+              const meta = variantsMeta[targetLang];
+              if (meta) {
+                const titleEl = document.querySelector('.post-hero__title-block h1');
+                if (titleEl && meta.title) titleEl.textContent = meta.title;
+                const ledeEl = document.querySelector('.post-hero__lede');
+                if (ledeEl && meta.summary) ledeEl.textContent = meta.summary;
+                if (meta.title) {
+                  const parts = document.title.split(' - ');
+                  const suffix = parts.length > 1 ? parts.slice(1).join(' - ') : '';
+                  document.title = suffix ? `${meta.title} - ${suffix}` : meta.title;
+                }
+              }
+
+              // 4. Update PostHero buttons active state
+              document.querySelectorAll('.post-hero__lang-tag').forEach((btn) => {
+                const isMatch = btn.dataset.targetLang === targetLang;
+                btn.classList.toggle('is-active', isMatch);
+                if (isMatch) btn.setAttribute('aria-current', 'page');
+                else btn.removeAttribute('aria-current');
+              });
+
+              // 5. Update AI Summary text if present
+              const aiSummaryContent = document.querySelector('.ai-summary__content, .ai-summary__text');
+              if (aiSummaryContent && staticSummariesByLang[targetLang]) {
+                aiSummaryContent.textContent = staticSummariesByLang[targetLang];
+              }
+
+              // 6. Update TOC: switch active variant TOC if available
+              document.querySelectorAll('.variant-toc-list').forEach((vtoc) => {
+                const isActive = vtoc.dataset.lang === targetLang;
+                vtoc.style.display = isActive ? '' : 'none';
+                if (isActive && vtoc.dataset.tocCount) {
+                  const countEl = document.querySelector('#card-toc .toc-count');
+                  if (countEl) countEl.textContent = vtoc.dataset.tocCount;
+                }
+              });
+
+              // 7. Store user preference in localStorage
+              try {
+                window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
+                window.localStorage.setItem('shijianus-locale-variant', targetLang);
+              } catch (_) {}
+
+              // 8. Re-trigger content feature enhancement & code block enhancers
+              window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: targetLang }));
+            };
+
+            // Attach click listeners to PostHero language buttons
+            document.querySelectorAll('.post-hero__lang-tag[data-target-lang]').forEach((btn) => {
+              btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const tLang = this.dataset.targetLang;
+                if (tLang) window.switchArticleLanguage(tLang);
+              });
+            });
+
+            // Listen for global locale changes from header/account drawer
             window.addEventListener('shijianus:localechange', function (e) {
-              const nextLang = (e && e.detail) ? e.detail : currentLang;
-              if (nextLang !== currentLang && translations[nextLang]) {
-                navigateToLang(nextLang);
+              const nextLang = e && e.detail ? e.detail : '';
+              if (nextLang && availableLangs.includes(nextLang)) {
+                const currentVisible = document.querySelector('.article-translation-variant:not([style*="display: none"])');
+                if (currentVisible && currentVisible.dataset.lang !== nextLang) {
+                  window.switchArticleLanguage(nextLang);
+                }
               }
             });
 
-            // 2. On page load: sync current article language to DOM and storage,
-            // strictly DO NOT force redirect away from explicit URLs!
+            // Determine initial language:
+            // Priority 1: Manual user choice
+            // Priority 2: Stored locale variant
+            // Priority 3 (First-time visitor): Browser language persona
+            let initialLang = '';
             try {
-              document.documentElement.lang = currentLang;
-              document.documentElement.dataset.localeVariant = currentLang;
-              window.localStorage.setItem('shijianus-locale-variant', currentLang);
+              initialLang = window.localStorage.getItem('shijianus-manual-locale-selected') ||
+                            window.localStorage.getItem('shijianus-locale-variant') || '';
             } catch (_) {}
-          } catch {}
-        })();
-      </script>
-    )}
-  </div>
-</BlogLayout>
 
+            if (!initialLang) {
+              const navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+              if (navLang.startsWith('en')) initialLang = 'en';
+              else if (navLang.startsWith('es')) initialLang = 'es';
+              else if (navLang.startsWith('de')) initialLang = 'de';
+              else if (navLang.startsWith('fr')) initialLang = 'fr';
+              else if (navLang === 'zh-tw' || navLang === 'zh-hk' || navLang.includes('hant')) initialLang = 'zh-Hant';
+              else if (navLang.startsWith('zh')) initialLang = 'zh-CN';
+            }
+
+            if (initialLang && availableLangs.includes(initialLang) && initialLang !== defaultLang) {
+              window.switchArticleLanguage(initialLang);
+            }
+          })();
+        </script>
+      )}
+    </div>
+  </BlogLayout>
+)}
