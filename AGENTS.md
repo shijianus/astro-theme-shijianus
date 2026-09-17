@@ -2380,3 +2380,27 @@
   1. 编写并运行测试套件 `scripts/verify_mobile_fix_comprehensive.mjs`；
   2. 移动端（390x844）：首页横向溢出 0px，通知栏与卡组 360px 贴合容器，预设金额卡片 6 张全宽 142px 零截断，音乐黑胶 38px 零重叠；
   3. 电脑端（1440x900）：首页卡组保持 `row nowrap` 与 348px 绝对高度，支持页保持 `sm:grid-cols-3` 3 列，音乐播放器保持 66px，全量指标 100% 达标。
+
+### Task 106: 赞赏预设金额卡片去官话与温暖创作者工位/咖啡场景动效升维 (SVG Interactive Scenes & Pure Warmth)
+- [x] **彻底清理生硬“官话”与定价感 (Zero Bureaucratic Words & Pricing Stigma)**：
+  1. 深入贯彻用户端亲和力视角，从个人博客温情打赏体验出发，全面清除“微额”、“日常”、“算力”、“基建”、“名录致谢”、“即时零钱”、“边缘函数”、“域名存储”等企业级/云账单式标价说明；
+  2. 突出纯粹、大方、自信的金额数值（`RM3`、`RM8`、`RM13`、`RM17`、`RM20`、`RM25` / `¥4`、`¥9`、`¥14`、`¥16`、`¥20`、`¥25` / `$1`、`$2.5`、`$4`...），搭配微小的币种代码与选中高光对勾，彻底解除读者的心理负担与消费标价感。
+- [x] **6 档专属创作者工位/咖啡温情动态场景 SVG (Real Animated SVG Scenes)**：
+  1. 严格落地用户需求：“例如在RM8(或者等价位的)后面放一个小咖啡冒着热气，并且旁边有办公桌等的装饰”：
+     - **Tier 0 (`RM3` / `¥4`) - 醒神浓缩与手账便签 (`SceneEspresso`)**：便签纸、手账铅笔、浓缩咖啡碟杯与袅袅升腾双波热气；
+     - **Tier 1 (`RM8` / `¥9`) - 办公桌、热咖啡与笔记本 (`SceneDeskCoffee`)**：创作者办公桌面、展开的笔记本电脑（代码屏幕）、爱心热咖啡杯（3 道连续上升动态波浪热气）、工位绿植多肉微风摇曳；
+     - **Tier 2 (`RM13` / `¥14`) - 深夜极客工位与暖光台灯 (`SceneLampCoder`)**：工作台灯、柔和暖光束（光晕呼吸动效）、大马克杯热气、右侧工位屏幕代码符 `</>`；
+     - **Tier 3 (`RM17` / `¥16`) - 茶歇灵感、堆叠图书与绿植 (`SceneBooksPlant`)**：三本堆叠技术图书、随行咖啡杯、垂蔓龟背竹绿植与闪烁星芒；
+     - **Tier 4 (`RM20` / `¥20`) - 机械键盘与律动耳机 (`SceneKeyboardHeadset`)**：客制化机械键盘键帽、热饮杯、专业头戴耳机与音乐律动跳动脉冲柱；
+     - **Tier 5 (`RM25` / `¥25`) - 终极创作者工位、带鱼屏与金星咖啡 (`SceneStudioCelebration`)**：超宽曲面带鱼屏、金星勋章咖啡杯与庆典闪烁星光；
+  2. **交互动效与加速响应 (Interactive Animations & CSS Keyframes)**：
+     - 注入纯 CSS 60fps 视网膜动画：`supportSteamRise1/2/3`、`supportPlantSway`、`supportLampGlow`、`supportTwinkle1/2`、`supportMusic1/2/3`；
+     - 鼠标悬浮时动效加速响应（`group-hover` 热气加速袅袅升腾、台灯光辉照亮）。
+- [x] **尺寸物理恒定与左右两列绝对平衡 (Invariant ~54px & 0.0px Diff)**：
+  1. 高度严格受控于 `min-h-[50px] sm:min-h-[54px] max-h-[54px]`，实测高度 54.0px；
+  2. 左右两列（`lg:col-span-7` 收银台与 `lg:col-span-5` 扫码通道）上下顶底绝对平衡误差为 **0.0px**；
+  3. 移动端 2 列自适应优化（`w-16 sm:w-28 md:w-32`），文字与矢量图完全无重叠、间距呼吸自如。
+- [x] **全链路验证与 Cloudflare Pages 生产边缘部署 (Live E2E Verification)**：
+  1. 本地 `scripts/verify-support-refined.mjs` 测试全绿通过；
+  2. 部署至 Cloudflare Pages 生产节点（`shijianus-blog`，版本 `44287bc2`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，断言 100% 全绿，全视口截图留存完毕。
