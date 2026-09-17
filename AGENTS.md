@@ -2356,5 +2356,27 @@
   2. 捕获并核实 4 张关键视觉截图：`01_home_top.png`（初始状态）、`02_home_sticky_active.png`（滑入粘性态）、`03_home_bottom_aligned.png`（底端平齐对齐态）、`04_tag_card_closeup.png`（标签卡片特写）及 `06_home_sticky_in_action.png`；
   3. 严格核验：卡片类名完整匹配、53 个标签全量渲染、底端平齐误差 < 0.2px、全流程无视觉切除与控制台报错。
 
-
-
+### Task 105: 移动端 (手机端) 首页横向溢出彻底根除、音乐黑胶贴边微型化与赞赏档位 2 列零截断自适应
+- [x] **首页 (/) 移动端 578px 恶性横向溢出彻底根除 (Zero Horizontal Overflow)**：
+  1. 根因剖析：`body[data-type="home"] .swiper_container_card` 硬编码了 `display: flex; gap: 18px;` 覆盖了移动端媒体查询，导致其两个子容器 `#bannerGroup`（311px）与 `.topGroup`（624px）在手机端并排成一横排（总宽 953px）；且 `.home-top-notice` 内 `<p>` 含有长文本，在 CSS Grid 下因 `min-width: auto` 撑大至 953px；
+  2. 深度修复：在 `src/styles/final-pass.css` 中为 `@media screen and (max-width: 768px)` 注入最高特异度规则：
+     - `body[data-type='home'] #home_top`: `width: 100% !important; max-width: 100% !important; min-width: 0 !important; overflow: hidden !important; padding: 0 15px !important;`；
+     - `.home-top-notice`: `width: 100% !important; max-width: 100% !important; min-width: 0 !important; overflow: hidden !important; box-sizing: border-box !important;`；
+     - `.home-top-notice p`: `min-width: 0 !important; flex: 1 1 0% !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;`；
+     - `body[data-type='home'] .swiper_container_card`: 调整为单列垂直排布（`flex-direction: column !important; width: 100% !important; max-width: 100% !important; min-width: 0 !important; height: auto !important; gap: 12px !important; overflow: hidden !important;`）；
+     - `body[data-type='home'] #bannerGroup` 与 `.topGroup`: 强制 `width: 100% !important; max-width: 100% !important; min-width: 0 !important;`；
+     - `body[data-type='home'] .topGroup .recent-post-item`: 移动端自适应为 2 列（`width: calc((100% - 8px) / 2) !important; height: 150px !important;`），杜绝 3 列过窄挤压；
+  3. 实测验证：手机端（390x844）`scrollWidth: 390px, innerWidth: 390px`，横向溢出严格为 **0.0px**（`hasOverflow: false`）。
+- [x] **音乐播放器 (.shijianus-music-pocket) 移动端微型贴边化与交互遮挡根除**：
+  1. 根因剖析：原 `.shijianus-music-pocket__toggle` 尺寸高达 66x66px，在手机端像大黑镜头占据左下角，直接遮挡了赞赏页预设卡片及其他页面的可点击区域；
+  2. 深度修复：在移动端（`max-width: 768px`）将尺寸精致收敛为 **38x38px**（内层黑胶盘缩小至 28x28px，中心圆核缩小至 7x7px），底边距优化为 `left: 10px; bottom: 74px;`，背景设为高透光轻量毛玻璃（`backdrop-filter: blur(12px)`）；
+  3. 顶层全屏防御：当顶层全屏模态框激活时（`body.theme-overlay-open`、`#console.show`、`.theme-account-overlay.show`、`body.reward-modal-open`），音乐播放器自动设置 `opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;`，彻底杜绝穿透与误触。
+- [x] **赞助支持页 (/support/) 推荐支持档位 2 列自适应与文字零截断**：
+  1. 根因剖析：原本预设卡片容器写死了 `grid-cols-3`，在手机端单卡仅 92px 宽，导致“推荐支持”、“边缘函数”、“域名存储”、“名录致谢”全部被省略号截断（`truncatedText`）；
+  2. 深度修复：在 `src/components/theme/SupportDashboard.tsx` 中采用响应式 `grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5`：
+     - 手机端（≤640px）：自动以 3 行 2 列排布，单卡宽度扩增至 **142px**，6 个档位所有文案 100% 完整展示，截断归零；
+     - 电脑端（>640px）：严格保持 2 行 3 列平铺不变，电脑端零破坏、零回归！
+- [x] **Playwright 本地综合端到端与电脑端零回归自动化测试 (100% PASS)**：
+  1. 编写并运行测试套件 `scripts/verify_mobile_fix_comprehensive.mjs`；
+  2. 移动端（390x844）：首页横向溢出 0px，通知栏与卡组 360px 贴合容器，预设金额卡片 6 张全宽 142px 零截断，音乐黑胶 38px 零重叠；
+  3. 电脑端（1440x900）：首页卡组保持 `row nowrap` 与 348px 绝对高度，支持页保持 `sm:grid-cols-3` 3 列，音乐播放器保持 66px，全量指标 100% 达标。

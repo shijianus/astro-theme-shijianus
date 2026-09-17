@@ -16,11 +16,6 @@ import {
   Copy,
   Users,
   Sparkles,
-  Zap,
-  Flame,
-  Cpu,
-  Shield,
-  Crown,
 } from 'lucide-react';
 import {
   supportConfig,
@@ -785,8 +780,8 @@ export const SupportDashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* Grid of 6 Cards: key on activeCurrencyCode guarantees full atomic re-render when currency changes */}
-              <div key={`grid-${activeCurrencyCode}`} className="grid grid-cols-3 gap-2 sm:gap-2.5">
+              {/* Grid of 6 Cards: 2 cols on mobile to prevent text truncation, 3 cols on desktop */}
+              <div key={`grid-${activeCurrencyCode}`} className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
                   const tier = TIER_STYLES[idx] || TIER_STYLES[0];
