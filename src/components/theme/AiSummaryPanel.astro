@@ -449,26 +449,32 @@ const initialActions = isEnglishArticle
       let activeActionName = null;
       let userExplicitlySwitchedLang = null;
 
-      // Priority Rule: If article language and selected language differ, the selected language has HIGHEST priority!
+      // Priority Rule:
+      // 1. If user explicitly clicked a summary language tab (userExplicitlySwitchedLang), use that.
+      // 2. The article's native language (root.dataset.articleLang) takes precedence so that
+      //    an English article presents the English AI summary by default.
+      // 3. Document element lang / dataset.localeVariant.
+      // 4. Stored manual preference or fallback to zh-CN.
       const getTargetLanguage = () => {
         if (userExplicitlySwitchedLang) {
           return normalizeLocale(userExplicitlySwitchedLang);
         }
-        const manualSelected = window.localStorage.getItem('shijianus-manual-locale-selected');
-        if (manualSelected) {
-          return normalizeLocale(manualSelected);
-        }
 
-        // If user hasn't explicitly chosen a manual UI language, align with article's native language
         const articleLang = root.dataset.articleLang;
         if (articleLang) {
           return normalizeLocale(articleLang);
         }
 
-        const docVariant = document.documentElement.dataset.localeVariant;
+        const docVariant = document.documentElement.dataset.localeVariant || document.documentElement.lang;
         if (docVariant && docVariant !== 'zh-CN') {
           return normalizeLocale(docVariant);
         }
+
+        const manualSelected = window.localStorage.getItem('shijianus-manual-locale-selected');
+        if (manualSelected) {
+          return normalizeLocale(manualSelected);
+        }
+
         const storedVariant = window.localStorage.getItem('shijianus-locale-variant');
         if (storedVariant && storedVariant !== 'zh-CN') {
           return normalizeLocale(storedVariant);

@@ -105,9 +105,8 @@ async function runVerification() {
     console.log(`Preset buttons count: ${count} (Expected: 6)`);
     if (count !== 6) throw new Error(`Expected 6 preset buttons, got ${count}`);
 
-    const badges = [];
-    const natures = [];
     const amounts = [];
+    const bureaucraticWords = ['微额', '日常', '算力', '基建', '名录致谢', '即时零钱', '边缘函数', '域名存储'];
 
     for (let i = 0; i < count; i++) {
       const btn = presetButtons.nth(i);
@@ -115,61 +114,59 @@ async function runVerification() {
       const box = await btn.boundingBox();
       console.log(`Card ${i + 1}: height=${box?.height.toFixed(1)}px, text="${text.replace(/\n/g, ' | ')}"`);
 
-      // Verify sleek height constraint: strictly ~50px-58px
-      if (box && (box.height < 48 || box.height > 60)) {
-        throw new Error(`Card ${i + 1} height (${box.height}px) exceeds invariant range [48px, 60px]!`);
+      // Verify sleek height constraint: strictly ~50px-56px
+      if (box && (box.height < 48 || box.height > 58)) {
+        throw new Error(`Card ${i + 1} height (${box.height}px) exceeds invariant range [48px, 58px]!`);
       }
 
-      // Check tier badge
-      const badgeEl = btn.locator('.relative.z-10 > span').first();
-      const badgeText = (await badgeEl.innerText()).trim();
-      badges.push(badgeText);
-
-      // Check transaction nature
-      const natureEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(1);
-      const natureText = (await natureEl.innerText()).trim();
-      natures.push(natureText);
-
       // Check amount
-      const amountEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(0);
+      const amountEl = btn.locator('.relative.z-10 span').first();
       const amountText = (await amountEl.innerText()).trim();
       amounts.push(amountText);
 
-      // Verify implicit watermark accessory SVG exists
-      const watermark = btn.locator('[aria-hidden="true"] svg');
-      if (await watermark.count() < 1) {
-        throw new Error(`Card ${i + 1} missing implicit watermark accessory SVG`);
+      // Verify NO bureaucratic official words
+      for (const word of bureaucraticWords) {
+        if (text.includes(word)) {
+          throw new Error(`Card ${i + 1} contains bureaucratic word "${word}"! Should be warm and natural.`);
+        }
+      }
+
+      // Verify interactive animated SVG scene exists
+      const sceneSvg = btn.locator('[aria-hidden="true"] svg');
+      if ((await sceneSvg.count()) < 1) {
+        throw new Error(`Card ${i + 1} missing interactive animated SVG scene!`);
+      }
+
+      // Verify animated steam SVG path exists in the scene
+      const steamPath = sceneSvg.locator('path.animate-support-steam-1, path.animate-support-steam-2');
+      if ((await steamPath.count()) < 1) {
+        throw new Error(`Card ${i + 1} missing animated steam path!`);
+      }
+
+      // Card 2 (Tier 1: RM8 equivalent): Verify the office desk, steaming coffee & plant scene
+      if (i === 1) {
+        const plantEl = sceneSvg.locator('.animate-support-plant-sway');
+        if ((await plantEl.count()) < 1) {
+          throw new Error(`Card 2 (Tier 1) missing animated desk succulent plant decor!`);
+        }
       }
 
       // Check selected card (default index 2) has active checkmark
       if (i === 2) {
         const checkIcon = btn.locator('svg.lucide-check');
-        if (await checkIcon.count() < 1) {
+        if ((await checkIcon.count()) < 1) {
           throw new Error(`Selected Card ${i + 1} (Tier 2) missing active checkmark indicator!`);
         }
       }
     }
 
-    console.log(`\n  Extracted Badges: ${JSON.stringify(badges)}`);
-    console.log(`  Extracted Natures: ${JSON.stringify(natures)}`);
-    console.log(`  Extracted Amounts: ${JSON.stringify(amounts)}`);
-
-    // Verify non-repetition
-    const uniqueBadges = new Set(badges);
-    if (uniqueBadges.size !== 6) {
-      throw new Error(`Duplicate badges found! Expected 6 unique badges, got ${uniqueBadges.size}`);
-    }
-    const uniqueNatures = new Set(natures);
-    if (uniqueNatures.size !== 6) {
-      throw new Error(`Duplicate transaction natures found! Expected 6 unique natures, got ${uniqueNatures.size}`);
+    console.log(`\n  Extracted Amounts: ${JSON.stringify(amounts)}`);
+    const uniqueAmounts = new Set(amounts);
+    if (uniqueAmounts.size !== 6) {
+      throw new Error(`Expected 6 unique amounts, got ${uniqueAmounts.size}`);
     }
 
-    // Verify Tier 2 is highlighted as HOT
-    if (!badges[2].includes('热门')) {
-      throw new Error(`Tier 2 should have HOT/热门 badge, got "${badges[2]}"`);
-    }
-
-    console.log('✅ Preset amount cards are completely differentiated without repetition, displaying explicit transaction metadata at invariant sleek height (~54px)!');
+    console.log('✅ Preset amount cards feature warm animated SVG scenes with steaming coffee & desk decor, zero bureaucratic pricing words, and strictly invariant height (~54px)!');
 
     // 2. Audit Right Column (QR-Code Interface & Expense Section Removal)
     console.log('\n--- 2. Auditing Right Column QR Interface ---');
@@ -211,7 +208,7 @@ async function runVerification() {
 
     // 4. Test Tab Switching in Right Column
     console.log('\n--- 4. Auditing Sub-channel Tabs ---');
-    const tabs = page.locator('.lg\\:col-span-5 .flex.rounded-xl button');
+    const tabs = page.locator('.lg\\:col-span-5 .rounded-xl button');
     const tabCount = await tabs.count();
     console.log(`Tabs found: ${tabCount} (Expected: 4)`);
 

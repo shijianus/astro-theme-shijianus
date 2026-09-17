@@ -71,131 +71,230 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
-/* ── 6 个档位专属显式交易主题与元数据系统 ── */
+/* ── 6 个档位专属温馨生动的创作者工位/咖啡场景与交互动画 SVG ── */
+
+/** Tier 0 (RM3 / $1 / ¥5): 醒神浓缩咖啡与手账便签 */
+const SceneEspresso: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 110 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="8" y1="38" x2="104" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.35" />
+    {/* 便签纸与手账笔记 */}
+    <rect x="18" y="27" width="22" height="11" rx="1.5" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="1" opacity="0.75" />
+    <line x1="22" y1="31" x2="33" y2="31" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.5" />
+    <line x1="22" y1="34.5" x2="29" y2="34.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.4" />
+    {/* 办公手账笔 */}
+    <line x1="39" y1="23" x2="45" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.65" />
+    {/* 浓缩咖啡碟与咖啡杯 */}
+    <ellipse cx="71" cy="38" rx="12" ry="2" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" opacity="0.8" />
+    <path d="M 64 26 H 78 L 76 36 C 76 37.5, 66 37.5, 66 36 Z" fill="currentColor" fillOpacity="0.28" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M 78 28 C 82 28, 82 33, 78 34" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    <ellipse cx="71" cy="26" rx="7" ry="1.8" fill="currentColor" fillOpacity="0.4" />
+    {/* 动态上升热气 */}
+    <path className="animate-support-steam-1" d="M 68 22 C 66 17, 70 13, 68 8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-2" d="M 74 21 C 76 16, 72 12, 75 7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+/** Tier 1 (RM8 / $2.5 / ¥15): 办公桌、热咖啡与笔记本 (用户指定专属场景) */
+const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 创作者办公桌面 */}
+    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+    {/* 办公笔记本电脑 (键盘底座与展开屏幕) */}
+    <path d="M 11 38 L 39 38 L 37 34 L 13 34 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1" opacity="0.85" />
+    <path d="M 15 34 L 15 19 C 15 17.5, 16.5 16, 18 16 H 34 C 35.5 16, 37 17.5, 37 19 L 37 34 Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.2" />
+    {/* 屏幕代码/文字高亮 */}
+    <line x1="19" y1="21" x2="28" y2="21" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
+    <line x1="19" y1="25" x2="33" y2="25" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+    <line x1="19" y1="29" x2="25" y2="29" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
+    {/* 办公桌上的冒热气热咖啡杯 */}
+    <path d="M 48 23 H 64 V 35 C 64 37.5, 48 37.5, 48 35 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M 64 25.5 C 68.5 25.5, 68.5 32.5, 64 32.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <ellipse cx="56" cy="23" rx="8" ry="2" fill="currentColor" fillOpacity="0.35" />
+    {/* 咖啡杯上的温暖爱心徽标 */}
+    <path d="M 56 29.5 C 54.5 27.5, 53 28.3, 53 29.5 C 53 30.5, 56 32.3, 56 32.3 C 56 32.3, 59 30.5, 59 29.5 C 59 28.3, 57.5 27.5, 56 29.5 Z" fill="currentColor" opacity="0.6" />
+    {/* 3 道冒热气袅袅动画线条 */}
+    <path className="animate-support-steam-1" d="M 52 19 C 50 14, 54 11, 52 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-2" d="M 56 19 C 58 15, 54 11, 57 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-3" d="M 60 19 C 58 14, 62 10, 60 6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    {/* 办公桌旁边的绿植盆栽装饰 */}
+    <path d="M 78 31 L 90 31 L 88 38 L 80 38 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.1" />
+    <rect x="77" y="30" width="14" height="2" rx="0.5" fill="currentColor" fillOpacity="0.5" />
+    <path className="animate-support-plant-sway" d="M 84 30 C 80 25, 82 20, 84 19 C 86 20, 88 25, 84 30 Z" fill="currentColor" fillOpacity="0.55" />
+    <path d="M 80 30 C 77 27, 78 24, 81 23 C 82 26, 81 29, 80 30 Z" fill="currentColor" fillOpacity="0.38" />
+    <path d="M 88 30 C 91 27, 90 24, 87 23 C 86 26, 87 29, 88 30 Z" fill="currentColor" fillOpacity="0.38" />
+  </svg>
+);
+
+/** Tier 2 (RM13 / $4 / ¥25): 深夜极客工位、暖光台灯与大马克杯 (默认热门推荐) */
+const SceneLampCoder: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lamp-cone-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="currentColor" stopOpacity="0.45" />
+        <stop offset="100%" stopColor="currentColor" stopOpacity="0.06" />
+      </linearGradient>
+    </defs>
+    {/* 桌面边缘 */}
+    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+    {/* 极客工作台灯 */}
+    <path d="M 14 38 H 20 M 17 38 L 21 23 L 37 15" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
+    <path d="M 36 15 L 43 12 L 45 18 L 38 21 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1.2" />
+    {/* 台灯柔和暖光束 */}
+    <polygon className="animate-support-lamp-glow" points="41,17 25,38 71,38" fill="url(#lamp-cone-grad)" />
+    {/* 暖光下的热气马克杯 */}
+    <path d="M 45 24 H 59 V 35 C 59 37.5, 45 37.5, 45 35 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M 59 26.5 C 63 26.5, 63 32.5, 59 32.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    {/* 袅袅升腾热气 */}
+    <path className="animate-support-steam-1" d="M 49 20 C 47 15, 51 11, 49 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-2" d="M 55 20 C 57 16, 53 11, 56 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    {/* 右侧工位显示屏与代码符 */}
+    <path d="M 78 38 H 86 M 82 34 V 38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.75" />
+    <rect x="71" y="18" width="23" height="16" rx="1.5" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
+    <text x="82.5" y="29.5" fontSize="8" fontWeight="bold" textAnchor="middle" fill="currentColor" opacity="0.9">&lt;/&gt;</text>
+  </svg>
+);
+
+/** Tier 3 (RM17 / $5 / ¥35): 茶歇灵感、堆叠图书与绿植星光 */
+const SceneBooksPlant: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+    {/* 3 本堆叠技术图书 */}
+    <rect x="14" y="34" width="34" height="4" rx="0.5" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1" />
+    <rect x="16" y="30" width="31" height="4" rx="0.5" fill="currentColor" fillOpacity="0.26" stroke="currentColor" strokeWidth="1" />
+    <rect x="18" y="26" width="28" height="4" rx="0.5" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" />
+    <path d="M 40 30 L 40 37 L 42 35 L 44 37 L 44 30" fill="currentColor" opacity="0.65" />
+    {/* 随行随饮保温咖啡杯与吸管 */}
+    <path d="M 55 22 L 57 36 C 57 37.5, 67 37.5, 67 36 L 69 22 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.2" />
+    <rect x="54" y="20" width="16" height="2.5" rx="1" fill="currentColor" fillOpacity="0.48" />
+    <line x1="63" y1="14" x2="61" y2="21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+    <path className="animate-support-steam-1" d="M 65 18 C 67 15, 64 12, 66 9" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    {/* 垂蔓龟背竹绿植与星光 */}
+    <path d="M 80 38 C 82 28, 90 22, 98 20" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
+    <path className="animate-support-plant-sway" d="M 88 25 C 84 22, 85 16, 92 18 C 94 22, 91 26, 88 25 Z" fill="currentColor" fillOpacity="0.48" />
+    <path className="animate-support-twinkle-1" d="M 75 14 L 76 16 L 78 17 L 76 18 L 75 20 L 74 18 L 72 17 L 74 16 Z" fill="currentColor" opacity="0.85" />
+  </svg>
+);
+
+/** Tier 4 (RM20 / $6.5 / ¥50): 极客工位、机械键盘与律动耳机 */
+const SceneKeyboardHeadset: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+    {/* 机械键盘 */}
+    <rect x="12" y="29" width="36" height="9" rx="1.5" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.2" />
+    <line x1="16" y1="32" x2="44" y2="32" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 2" strokeLinecap="round" opacity="0.65" />
+    <line x1="18" y1="35" x2="42" y2="35" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 2" strokeLinecap="round" opacity="0.65" />
+    {/* 键盘旁的热饮马克杯 */}
+    <path d="M 53 23 H 64 V 35 C 64 37.5, 53 37.5, 53 35 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.2" />
+    <path className="animate-support-steam-1" d="M 56 20 C 54 16, 58 12, 56 7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-2" d="M 61 20 C 63 16, 59 12, 62 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    {/* 专业头戴式监听耳机 */}
+    <path d="M 75 30 C 75 20, 93 20, 93 30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.7" />
+    <rect x="73" y="27" width="4.5" height="9" rx="1.5" fill="currentColor" fillOpacity="0.48" />
+    <rect x="90.5" y="27" width="4.5" height="9" rx="1.5" fill="currentColor" fillOpacity="0.48" />
+    {/* 灵动音乐跳动脉冲线 */}
+    <line className="animate-support-music-1" x1="81" y1="18" x2="81" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <line className="animate-support-music-2" x1="84" y1="15" x2="84" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <line className="animate-support-music-3" x1="87" y1="19" x2="87" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+/** Tier 5 (RM25 / $8 / ¥88): 终极创作者工位、带鱼屏与金星热咖啡 */
+const SceneStudioCelebration: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+    {/* 超宽曲面带鱼屏 */}
+    <path d="M 28 38 H 38 M 33 34 V 38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
+    <rect x="12" y="19" width="42" height="15" rx="2" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
+    <line x1="16" y1="23" x2="28" y2="23" stroke="currentColor" strokeWidth="1.2" opacity="0.55" strokeLinecap="round" />
+    <rect x="32" y="22" width="18" height="9" rx="1" fill="currentColor" fillOpacity="0.32" />
+    {/* 创作者金星咖啡杯与热气 */}
+    <path d="M 64 22 H 78 V 35 C 78 37.5, 64 37.5, 64 35 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M 78 25 C 83 25, 83 33, 78 33" fill="none" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M 71 27 L 71.8 28.8 L 73.8 29 L 72.2 30.3 L 72.7 32.2 L 71 31.2 L 69.3 32.2 L 69.8 30.3 L 68.2 29 L 70.2 28.8 Z" fill="currentColor" opacity="0.85" />
+    <path className="animate-support-steam-1" d="M 68 18 C 66 13, 70 9, 68 4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-support-steam-2" d="M 73 18 C 75 13, 71 9, 74 4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    {/* 庆典闪烁星芒 */}
+    <path className="animate-support-twinkle-1" d="M 88 12 L 89 14.5 L 91.5 15 L 89 16.5 L 88 19 L 87 16.5 L 84.5 15 L 87 14.5 Z" fill="currentColor" opacity="0.9" />
+    <path className="animate-support-twinkle-2" d="M 96 22 L 96.8 24 L 99 24.5 L 96.8 25.5 L 96 27.5 L 95.2 25.5 L 93 24.5 L 95.2 24 Z" fill="currentColor" opacity="0.8" />
+    <circle cx="85" cy="27" r="1.2" fill="currentColor" opacity="0.7" className="animate-support-twinkle-1" />
+  </svg>
+);
+
+/* ── 6 个档位专属温馨生动主题配置 ── */
 const TIER_STYLES = [
   {
-    // 档位 0：暖金琥珀 - 微额体验
     name: 'amber',
-    badge: '微额',
-    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
-    badgeUnselected:
-      'bg-amber-500/15 text-amber-900 dark:text-amber-200 border-amber-300/60 dark:border-amber-700/50',
-    role: '轻量体验',
-    nature: '即时零钱',
-    icon: Zap,
-    subtagSelected: 'text-white/80',
-    subtagUnselected: 'text-amber-800/80 dark:text-amber-300/70',
+    scene: SceneEspresso,
     selected:
       'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-amber-50/90 via-amber-50/40 to-orange-50/25 dark:from-amber-950/25 dark:via-amber-950/15 dark:to-slate-900/60 border-amber-200/80 dark:border-amber-800/40 text-amber-950 dark:text-amber-100 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-amber-500/20 dark:text-amber-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-amber-700/70 dark:text-amber-300/60 group-hover:text-amber-900 dark:group-hover:text-amber-100',
     amountSelected: 'text-white',
     amountUnselected: 'text-amber-950 dark:text-amber-100',
   },
   {
-    // 档位 1：活力橙色 - 常规激励
     name: 'orange',
-    badge: '日常',
-    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
-    badgeUnselected:
-      'bg-orange-500/15 text-orange-900 dark:text-orange-200 border-orange-300/60 dark:border-orange-700/50',
-    role: '常规激励',
-    nature: '常客支持',
-    icon: Heart,
-    subtagSelected: 'text-white/80',
-    subtagUnselected: 'text-orange-800/80 dark:text-orange-300/70',
+    scene: SceneDeskCoffee,
     selected:
       'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-orange-50/90 via-orange-50/40 to-amber-50/25 dark:from-orange-950/25 dark:via-orange-950/15 dark:to-slate-900/60 border-orange-200/80 dark:border-orange-800/40 text-orange-950 dark:text-orange-100 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-orange-500/20 dark:text-orange-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-orange-700/70 dark:text-orange-300/60 group-hover:text-orange-900 dark:group-hover:text-orange-100',
     amountSelected: 'text-white',
     amountUnselected: 'text-orange-950 dark:text-orange-100',
   },
   {
-    // 档位 2：科技经典蓝 - 精选首选 (Default / Featured)
     name: 'blue',
-    badge: '🔥 热门',
-    badgeSelected: 'bg-white/30 text-white border-white/50 shadow-xs font-black',
-    badgeUnselected:
-      'bg-blue-500/15 text-[#425aef] dark:text-blue-300 border-blue-400/40 dark:border-blue-500/40 font-black',
-    role: '精选首选',
-    nature: '推荐支持',
-    icon: Flame,
-    subtagSelected: 'text-white/90 font-bold',
-    subtagUnselected: 'text-[#425aef] dark:text-blue-300 font-bold',
+    scene: SceneLampCoder,
     selected:
       'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-blue-50/90 via-indigo-50/40 to-blue-50/25 dark:from-blue-950/25 dark:via-blue-950/15 dark:to-slate-900/60 border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-blue-500/20 dark:text-blue-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-[#425aef]/75 dark:text-blue-300/65 group-hover:text-blue-700 dark:group-hover:text-blue-200',
     amountSelected: 'text-white',
     amountUnselected: 'text-blue-950 dark:text-blue-100',
   },
   {
-    // 档位 3：清新翡翠薄荷绿 - 算力加速
     name: 'emerald',
-    badge: '⚡ 算力',
-    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
-    badgeUnselected:
-      'bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 border-emerald-300/60 dark:border-emerald-700/50',
-    role: '算力加速',
-    nature: '边缘函数',
-    icon: Cpu,
-    subtagSelected: 'text-white/80',
-    subtagUnselected: 'text-emerald-800/80 dark:text-emerald-300/70',
+    scene: SceneBooksPlant,
     selected:
       'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-emerald-50/90 via-teal-50/40 to-emerald-50/25 dark:from-emerald-950/25 dark:via-emerald-950/15 dark:to-slate-900/60 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-emerald-500/20 dark:text-emerald-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-emerald-700/70 dark:text-emerald-300/60 group-hover:text-emerald-900 dark:group-hover:text-emerald-100',
     amountSelected: 'text-white',
     amountUnselected: 'text-emerald-950 dark:text-emerald-100',
   },
   {
-    // 档位 4：高雅罗兰紫 - 设施守护
     name: 'purple',
-    badge: '🛡️ 基建',
-    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
-    badgeUnselected:
-      'bg-purple-500/15 text-purple-900 dark:text-purple-200 border-purple-300/60 dark:border-purple-700/50',
-    role: '设施守护',
-    nature: '域名存储',
-    icon: Shield,
-    subtagSelected: 'text-white/80',
-    subtagUnselected: 'text-purple-800/80 dark:text-purple-300/70',
+    scene: SceneKeyboardHeadset,
     selected:
       'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-purple-50/90 via-violet-50/40 to-purple-50/25 dark:from-purple-950/25 dark:via-purple-950/15 dark:to-slate-900/60 border-purple-200/80 dark:border-purple-800/40 text-purple-950 dark:text-purple-100 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-purple-500/20 dark:text-purple-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-purple-700/70 dark:text-purple-300/60 group-hover:text-purple-900 dark:group-hover:text-purple-100',
     amountSelected: 'text-white',
     amountUnselected: 'text-purple-950 dark:text-purple-100',
   },
   {
-    // 档位 5：炽烈珊瑚玫红 - 核心赞助
     name: 'rose',
-    badge: '👑 荣誉',
-    badgeSelected: 'bg-white/25 text-white border-white/40 shadow-2xs',
-    badgeUnselected:
-      'bg-rose-500/15 text-rose-900 dark:text-rose-200 border-rose-300/60 dark:border-rose-700/50',
-    role: '核心赞助',
-    nature: '名录致谢',
-    icon: Crown,
-    subtagSelected: 'text-white/80',
-    subtagUnselected: 'text-rose-800/80 dark:text-rose-300/70',
+    scene: SceneStudioCelebration,
     selected:
       'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
     unselected:
       'bg-gradient-to-b from-rose-50/90 via-pink-50/40 to-rose-50/25 dark:from-rose-950/25 dark:via-rose-950/15 dark:to-slate-900/60 border-rose-200/80 dark:border-rose-800/40 text-rose-950 dark:text-rose-100 hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-xs',
-    watermarkSelected: 'text-white opacity-25',
-    watermarkUnselected: 'text-rose-500/20 dark:text-rose-400/15 group-hover:opacity-35',
+    sceneColorSelected: 'text-white',
+    sceneColorUnselected: 'text-rose-700/70 dark:text-rose-300/60 group-hover:text-rose-900 dark:group-hover:text-rose-100',
     amountSelected: 'text-white',
     amountUnselected: 'text-rose-950 dark:text-rose-100',
   },
@@ -489,6 +588,108 @@ export const SupportDashboard: React.FC = () => {
 
   return (
     <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-12 text-slate-800 dark:text-slate-100">
+      {/* ── Scoped Keyframe Animations for Warm Interactive Creator SVG Scenes ── */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes supportSteamRise1 {
+          0% { transform: translateY(0) scaleX(1); opacity: 0; }
+          25% { opacity: 0.85; }
+          70% { opacity: 0.45; }
+          100% { transform: translateY(-7px) scaleX(1.3); opacity: 0; }
+        }
+        @keyframes supportSteamRise2 {
+          0% { transform: translateY(0) scaleX(1); opacity: 0; }
+          30% { opacity: 0.9; }
+          75% { opacity: 0.4; }
+          100% { transform: translateY(-8px) scaleX(1.25); opacity: 0; }
+        }
+        @keyframes supportSteamRise3 {
+          0% { transform: translateY(0) scaleX(1); opacity: 0; }
+          25% { opacity: 0.8; }
+          80% { opacity: 0.35; }
+          100% { transform: translateY(-6px) scaleX(1.2); opacity: 0; }
+        }
+        @keyframes supportPlantSway {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(3.5deg); }
+        }
+        @keyframes supportLampGlow {
+          0%, 100% { opacity: 0.22; }
+          50% { opacity: 0.65; }
+        }
+        @keyframes supportTwinkle1 {
+          0%, 100% { transform: scale(0.8); opacity: 0.3; }
+          50% { transform: scale(1.15); opacity: 0.95; }
+        }
+        @keyframes supportTwinkle2 {
+          0%, 100% { transform: scale(1.1); opacity: 0.85; }
+          50% { transform: scale(0.75); opacity: 0.25; }
+        }
+        @keyframes supportMusic1 {
+          0%, 100% { transform: scaleY(0.35); }
+          50% { transform: scaleY(1); }
+        }
+        @keyframes supportMusic2 {
+          0%, 100% { transform: scaleY(0.9); }
+          50% { transform: scaleY(0.3); }
+        }
+        @keyframes supportMusic3 {
+          0%, 100% { transform: scaleY(0.45); }
+          50% { transform: scaleY(0.95); }
+        }
+
+        .animate-support-steam-1 {
+          animation: supportSteamRise1 2.4s ease-in-out infinite;
+        }
+        .animate-support-steam-2 {
+          animation: supportSteamRise2 2.8s ease-in-out 0.6s infinite;
+        }
+        .animate-support-steam-3 {
+          animation: supportSteamRise3 2.2s ease-in-out 1.2s infinite;
+        }
+        .animate-support-plant-sway {
+          animation: supportPlantSway 3.5s ease-in-out infinite;
+          transform-origin: 84px 30px;
+        }
+        .animate-support-lamp-glow {
+          animation: supportLampGlow 2.5s ease-in-out infinite;
+        }
+        .animate-support-twinkle-1 {
+          animation: supportTwinkle1 2s ease-in-out infinite;
+          transform-origin: center;
+        }
+        .animate-support-twinkle-2 {
+          animation: supportTwinkle2 2.4s ease-in-out 0.8s infinite;
+          transform-origin: center;
+        }
+        .animate-support-music-1 {
+          animation: supportMusic1 1.2s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+        .animate-support-music-2 {
+          animation: supportMusic2 1.4s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+        .animate-support-music-3 {
+          animation: supportMusic3 1.1s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+
+        /* 悬浮微交互：热气袅袅加速与光辉响应 */
+        .group:hover .animate-support-steam-1 {
+          animation-duration: 1.4s;
+        }
+        .group:hover .animate-support-steam-2 {
+          animation-duration: 1.6s;
+        }
+        .group:hover .animate-support-steam-3 {
+          animation-duration: 1.3s;
+        }
+        .group:hover .animate-support-lamp-glow {
+          animation-duration: 1.5s;
+          opacity: 0.75;
+        }
+      ` }} />
+
       {/* ── 1. Hero Header ────────────────────────────────────────────── */}
       <section className="support-hero relative overflow-hidden rounded-3xl p-6 sm:p-10 md:p-12 text-center bg-gradient-to-b from-blue-50/70 via-white to-slate-50/50 dark:from-[#151a2e]/80 dark:via-[#0e121f] dark:to-[#0a0d17] border border-blue-100/80 dark:border-white/[0.08] shadow-sm">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-100/80 dark:bg-blue-500/20 text-[#425aef] dark:text-blue-300 border border-blue-200/60 dark:border-blue-500/30 mb-4">
@@ -589,7 +790,7 @@ export const SupportDashboard: React.FC = () => {
                 {activeAmounts.map((amt, idx) => {
                   const isSelected = !isCustomMode && selectedTierIndex === idx;
                   const tier = TIER_STYLES[idx] || TIER_STYLES[0];
-                  const TierIcon = tier.icon || Sparkles;
+                  const TierScene = tier.scene;
 
                   return (
                     <button
@@ -599,64 +800,45 @@ export const SupportDashboard: React.FC = () => {
                         setIsCustomMode(false);
                         setSelectedTierIndex(idx);
                       }}
-                      className={`relative overflow-hidden py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-left transition-all duration-150 cursor-pointer select-none border group flex flex-col justify-between min-h-[50px] sm:min-h-[54px] ${
+                      className={`relative overflow-hidden py-2 px-3 sm:px-3.5 rounded-xl sm:rounded-2xl text-left transition-all duration-200 cursor-pointer select-none border group flex items-center justify-between min-h-[50px] sm:min-h-[54px] max-h-[54px] ${
                         isSelected ? tier.selected : tier.unselected
                       }`}
-                      title={`${activeCurrencySymbol}${amt} ${activeCurrencyCode.toUpperCase()} (${tier.role} · ${tier.nature})`}
-                      aria-label={`${activeCurrencySymbol}${amt} ${tier.badge}`}
+                      title={`赞赏支持 ${activeCurrencySymbol}${amt} ${activeCurrencyCode.toUpperCase()}`}
+                      aria-label={`${activeCurrencySymbol}${amt}`}
                     >
-                      {/* Background Watermark Illustration (Implicit Accessory) */}
+                      {/* Left: Warm Bold Amount + Currency Code + Active Checkmark */}
+                      <div className="relative z-10 flex flex-col justify-center select-none shrink-0 pointer-events-none">
+                        <div className="flex items-baseline gap-1.5">
+                          <span
+                            className={`text-base sm:text-lg font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
+                              isSelected ? tier.amountSelected : tier.amountUnselected
+                            }`}
+                          >
+                            {activeCurrencySymbol}{amt}
+                          </span>
+                          {isSelected && (
+                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-white/25 text-white shadow-2xs">
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase leading-none mt-1 ${
+                            isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'
+                          }`}
+                        >
+                          {activeCurrencyCode}
+                        </span>
+                      </div>
+
+                      {/* Right: Rich Interactive Animated SVG Creator Scene */}
                       <div
-                        className={`absolute -right-1 -bottom-1 pointer-events-none transition-all duration-200 ${
-                          isSelected
-                            ? tier.watermarkSelected
-                            : tier.watermarkUnselected
+                        className={`absolute right-0.5 sm:right-1 bottom-0 top-0 w-16 sm:w-28 md:w-32 flex items-center justify-end pointer-events-none transition-all duration-200 ${
+                          isSelected ? tier.sceneColorSelected : tier.sceneColorUnselected
                         }`}
                         aria-hidden="true"
                       >
-                        <TierIcon className="w-9 h-9 sm:w-10 sm:h-10 transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200" />
-                      </div>
-
-                      {/* Row 1 (Top Micro Meta Line): Distinct Tier Badge + Currency/Selected Indicator */}
-                      <div className="relative z-10 flex items-center justify-between w-full pointer-events-none">
-                        <span
-                          className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] border text-[9px] sm:text-[10px] font-bold tracking-tight leading-none ${
-                            isSelected ? tier.badgeSelected : tier.badgeUnselected
-                          }`}
-                        >
-                          {tier.badge}
-                        </span>
-
-                        {isSelected ? (
-                          <span className="inline-flex items-center gap-0.5 text-[8.5px] font-black text-white/95 bg-white/20 px-1 py-0.5 rounded-full leading-none shadow-2xs">
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          </span>
-                        ) : (
-                          <span className="text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase opacity-55 leading-none">
-                            {activeCurrencyCode}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Row 2 (Bottom Row): Amount with Symbol + Explicit Transaction Nature */}
-                      <div className="relative z-10 flex items-baseline justify-between w-full mt-1 pointer-events-none">
-                        <span
-                          className={`text-sm sm:text-base font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
-                            isSelected
-                              ? tier.amountSelected
-                              : tier.amountUnselected
-                          }`}
-                        >
-                          {activeCurrencySymbol}{amt}
-                        </span>
-
-                        <span
-                          className={`text-[9px] sm:text-[10px] font-medium tracking-tight truncate max-w-[65px] sm:max-w-[75px] text-right leading-none ${
-                            isSelected ? tier.subtagSelected : tier.subtagUnselected
-                          }`}
-                        >
-                          {tier.nature}
-                        </span>
+                        <TierScene isSelected={isSelected} />
                       </div>
                     </button>
                   );

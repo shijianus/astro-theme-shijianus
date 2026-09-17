@@ -2322,4 +2322,20 @@
   7. Group 6: `shijianus:localechange` 运行时无刷新就地语系重渲染动态响应测试全绿；
   8. Group 7: 10 大核心示范博文 × 5 种外语变体（50 条全量路由）HTTP 200 OK 与内容容器渲染 100% 通过，零 404 缺陷。
 
+### Task 103: 修复翻译文章 URL 劫持重定向、新增 PostHero 语系切换器与组件本地化最高优先级保障
+- [x] **彻底根除页面加载时的 URL 劫持与重定向死循环 (No URL Hijacking & Infinite Bounce-Back)**：
+  1. 彻底移除 `src/pages/posts/[slug].astro` 中在页面初次加载时强行比对 `localStorage` 并执行 `navigateToLang()` 的破坏性重定向逻辑；
+  2. 修复后：用户直接输入或点击任何语言后缀文章 URL（如 `/posts/*-en/`, `/posts/*-es/`, `/posts/*-de/`, `/posts/*-fr/`, `/posts/*-zh-hant/`），页面无条件持久停留在该语言版本，绝不强制弹回中文或其他语系；
+  3. 客户端页面加载阶段精准同步 `document.documentElement.lang`、`dataset.localeVariant` 与 `localStorage.setItem('shijianus-locale-variant', currentLang)`，使整站 UI 状态与当前阅读文章天然一致。
+- [x] **文章头部新增 Anzhiyu 风格多语系切换器 (`.post-hero__translations`)**：
+  1. 在 `PostHero.astro` 中为存在兄弟翻译的文章注入实体语言切换组件，支持 6 种语系（`简体中文`、`繁體中文`、`English`、`Español`、`Deutsch`、`Français`）；
+  2. 当前阅读语言呈现专属高亮激活态（`.post-hero__lang-tag.is-active`），附带指示圆点；其他语言呈现自然 hover 微交互态，点击即可一键平滑跳转至对应语系版本；
+  3. 点击语系标签时即刻同步更新本地持久化记录，杜绝跳回；在 `final-pass.css` 中注入高质感毛玻璃圆角与悬浮动画样式。
+- [x] **组件本地化语言判定优先级倒置修复 (Article Native Lang Takes Highest Priority)**：
+  1. 修复 `ContentFeatureEnhancer.astro` 与 `CodeBlockEnhancer.astro` 中 `resolveContentLang()` 的判定层级：将 `article[data-lang]` 与 URL 路径后缀置于最高优先级，彻底禁止从 `localStorage` 的中文缓存倒灌覆盖文章内部组件；
+  2. 修复 `AiSummaryPanel.astro`：文章原生语言优先于全局通用缓存，确保外语文章默认展示对应外语 AI 总结；
+  3. 全量修复对话流组件 (`chat-header-title`, `chat-header-badge`, `chat-replay-btn`) 与任务追踪卡片 (`task-tracker__status-card`)，非中文文章下绝无中文回退。
+- [x] **Playwright 本地端到端回归测试套件全量通过 (42/42 PASS 100%)**：
+  1. 编写并执行 `scripts/verify-i18n-post-flow.mjs`，包含 42 项严格断言（URL 无劫持、语言切换器交互、各语系下组件零中文泄漏全覆盖），全量通过。
+
 

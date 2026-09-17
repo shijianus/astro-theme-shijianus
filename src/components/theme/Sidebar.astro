@@ -102,6 +102,11 @@ const showTelegramCard = Boolean(siteConfig.aside.telegramWidget);
 const showAuthorCard = siteConfig.theme.features.asideAuthor;
 const showAnnouncement = siteConfig.theme.features.asideStatus && isHomePage;
 
+const allHomeTags = tags && tags.length > 0 ? tags : realTags;
+const sortedHomeTags = [...allHomeTags].sort(
+  (a, b) => b.count - a.count || a.label.localeCompare(b.label),
+);
+
 const runtimeDays = Math.max(
   1,
   Math.floor((Date.now() - new Date(siteConfig.footer.startedAt).valueOf()) / 86_400_000),
@@ -298,113 +303,41 @@ const renderTocNodes = (nodes: TocNode[]) =>
         </section>
       )}
 
-      <div class="sticky_layout">
+      <div class="sticky_layout" id="home-sticky-layout">
         {showHomeOverview && (
-          <section class="card-widget card-feature-panel card-feature-panel--overview is-sticky-active">
-            <div class="card-content">
-              <div class="feature-card__eyebrow">{siteConfig.aside.featureCard.eyebrow}</div>
-              <h3>{siteConfig.aside.featureCard.title}</h3>
-              <p>{siteConfig.aside.featureCard.summary}</p>
-              <div class="feature-card__chips">
-                {siteConfig.aside.featureCard.chips.map((item) => (
-                  <span>{item}</span>
-                ))}
-              </div>
-
-              <div class="webinfo-panel">
-                <div class="workboard-panel webinfo-workboard">
-                  <div class="webinfo-workboard__head">
-                    <div class="workboard-status">
-                      <span class="workboard-dot" aria-hidden="true"></span>
-                      <span class="workboard-label">{siteConfig.footer.runtime.label}</span>
-                      <strong>{siteConfig.footer.runtime.workLabel}</strong>
-                    </div>
-                    <span class="webinfo-workboard__since">始于 {startedAtLabel}</span>
+          <div class="aside-track aside-track--overview" id="aside-track-overview">
+            <div class="aside-sticky-box" id="aside-sticky-box-overview">
+              <section
+                class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"
+                id="card-tag-cloud-overview"
+              >
+                <div class="item-headline">
+                  <div class="item-headline__left">
+                    <Tags className="aside-title-icon" aria-hidden="true" />
+                    <span>标签</span>
                   </div>
-                  <p>{siteConfig.footer.runtime.workDetail}</p>
-                  <div class="webinfo-highlight-grid">
-                    <article class="webinfo-highlight-card webinfo-highlight-card--primary">
-                      <span>站点运行</span>
-                      <strong>{runtimeDays} 天</strong>
-                      <small>起始于 {startedAtLabel}</small>
-                    </article>
-                    <article class="webinfo-highlight-card">
-                      <span>最近更新</span>
-                      <strong>{latestPublishedLabel}</strong>
-                      <small>内容仍在持续整理</small>
-                    </article>
-                    <article class="webinfo-highlight-card">
-                      <span>当前阶段</span>
-                      <strong>{currentPhase}</strong>
-                      <small>优先修正阅读与侧栏体验</small>
-                    </article>
-                  </div>
-                  <div class="workboard-chip-list">
-                    <span>{siteConfig.footer.runtime.workLabel}</span>
-                    <span>{siteConfig.site.author.statusLabel}</span>
-                    <span>{siteConfig.home.announcement.eyebrow}</span>
-                  </div>
+                  {sortedHomeTags.length > 0 && (
+                    <a class="card-more-btn" href="/tags/" title="查看全部标签">
+                      <span class="card-more-count">{sortedHomeTags.length}</span>
+                      <span class="card-more-unit">个</span>
+                    </a>
+                  )}
                 </div>
-
-                <div class="webinfo webinfo-grid">
-                  <div class="webinfo-item">
-                    <div class="webinfo-item-title">
-                      <span class="item-name">文章总数</span>
-                    </div>
-                    <div class="item-count">{totalPosts}</div>
-                  </div>
-                  <div class="webinfo-item">
-                    <div class="webinfo-item-title">
-                      <span class="item-name">分类总数</span>
-                    </div>
-                    <div class="item-count">{totalCategories}</div>
-                  </div>
-                  <div class="webinfo-item">
-                    <div class="webinfo-item-title">
-                      <span class="item-name">标签总数</span>
-                    </div>
-                    <div class="item-count">{totalTags}</div>
-                  </div>
-                  <div class="webinfo-item">
-                    <div class="webinfo-item-title">
-                      <span class="item-name">阅读总量</span>
-                    </div>
-                    <div class="item-count">{totalReadingMinutes} 分钟</div>
-                  </div>
+                <div class="card-tag-cloud">
+                  {sortedHomeTags.map((tag) => (
+                    <a
+                      href={getTagPath(tag.slug)}
+                      class="tag-cloud-item"
+                      title={`${tag.label} (${tag.count})`}
+                    >
+                      <span class="tag-name">{tag.label}</span>
+                      <sup class="tag-count">{tag.count}</sup>
+                    </a>
+                  ))}
                 </div>
-
-                {isHomePage && featurePanelRecentPosts.length > 0 && (
-                  <div class="feature-panel-recent">
-                    <div class="item-headline item-headline--embedded">
-                      <History className="aside-title-icon" aria-hidden="true" />
-                      <span>最新发布</span>
-                    </div>
-                    <div class="aside-list">
-                      {featurePanelRecentPosts.map((entry) => (
-                        <a href={getPostPath(entry)} class="aside-list-item">
-                          <span class="thumbnail">
-                            <img
-                              src={resolveDisplayCover(entry, true)}
-                              alt={getDisplayPostTitle(entry, true)}
-                              loading="lazy"
-                              decoding="async"
-                              data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
-                              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
-                              onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
-                            />
-                          </span>
-                          <span class="content">
-                            <span class="title">{getDisplayPostTitle(entry, true)}</span>
-                            <time>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
-                          </span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              </section>
             </div>
-          </section>
+          </div>
         )}
 
         {showTags && (
@@ -555,6 +488,10 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   .aside-track--support {
+    min-height: 120px;
+  }
+
+  .aside-track--overview {
     min-height: 120px;
   }
 
@@ -977,6 +914,101 @@ const renderTocNodes = (nodes: TocNode[]) =>
     .page-aside {
       display: none !important;
     }
+  }
+
+  /* Tag Cloud Panel (Home Sidebar Sticky) */
+  #aside-content .card-tag-cloud-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 14px 16px !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    min-height: 240px !important;
+    max-height: calc(100vh - var(--sticky-column-top, 80px) - 32px) !important;
+    height: fit-content !important;
+    overflow: visible !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .item-headline {
+    margin: 0 0 8px 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    min-height: 26px !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .item-headline__left {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    line-height: 1 !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .item-headline__left span {
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    color: var(--font-color) !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .card-more-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    background: color-mix(in srgb, var(--font-color, #334155) 8%, transparent) !important;
+    color: color-mix(in srgb, var(--font-color, #334155) 70%, transparent) !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .card-more-btn:hover {
+    background: var(--theme-main, #425aef) !important;
+    color: #ffffff !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .card-tag-cloud {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-content: flex-start !important;
+    gap: 4px 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2.5px !important;
+    padding: 2.5px 7px !important;
+    font-size: 11.5px !important;
+    line-height: 1.2 !important;
+    border-radius: 5px !important;
+    background: var(--secondbg, rgba(0, 0, 0, 0.03)) !important;
+    border: var(--style-border-always, 1px solid rgba(0, 0, 0, 0.08)) !important;
+    color: var(--font-color) !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+  }
+
+  #aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item:hover {
+    background: var(--theme-main, #425aef) !important;
+    color: #ffffff !important;
+    border-color: var(--theme-main, #425aef) !important;
+    transform: translateY(-1px);
+  }
+
+  #aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item sup {
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    opacity: 0.75 !important;
+    top: -0.2em !important;
   }
 
   body[data-type='post'] #content-inner.layout {

@@ -42,13 +42,18 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
 
     const updateHomeSticky = (topOffset: number, isMobile: boolean) => {
       const boundary =
-        document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts') ??
-        document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination');
+        document.querySelector<HTMLElement>('body[data-type="home"] #home-pagination') ??
+        document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts');
       const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
+      const track = document.getElementById('aside-track-overview');
 
       if (!boundary || !card) return;
 
       if (isMobile) {
+        if (track) {
+          track.style.height = 'auto';
+          track.style.minHeight = '0px';
+        }
         card.style.transform = 'none';
         card.dataset.stickyState = 'static';
         card.classList.remove('is-sticky-active');
@@ -56,27 +61,32 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
         return;
       }
 
+      const docScrollY = window.scrollY;
       const boundaryRect = boundary.getBoundingClientRect();
-      const contentHeight = Math.max(card.scrollHeight, card.offsetHeight, 420);
-      const beforePinDistance = boundaryRect.top - topOffset;
-      const remainingAfterPin = boundaryRect.bottom - topOffset;
+      const docBoundaryBottom = boundaryRect.bottom + docScrollY;
 
-      let stickyState: StickyState = 'reading';
-      if (beforePinDistance > 0) {
-        stickyState = 'entering';
-        card.style.transform = 'none';
-      } else if (remainingAfterPin < contentHeight) {
-        stickyState = 'leaving';
-        const offset = Math.round(remainingAfterPin - contentHeight);
-        card.style.transform = `translateY(${offset}px)`;
-      } else {
-        stickyState = 'reading';
-        card.style.transform = 'none';
+      if (track) {
+        const docTrackTop = track.getBoundingClientRect().top + docScrollY;
+        const cardHeight = card.offsetHeight;
+        const targetTrackHeight = Math.max(cardHeight, Math.round(docBoundaryBottom - docTrackTop));
+        track.style.minHeight = `${targetTrackHeight}px`;
+        track.style.height = `${targetTrackHeight}px`;
       }
 
+      const cardRect = card.getBoundingClientRect();
+      let stickyState: StickyState = 'reading';
+      if (cardRect.top > topOffset + 1) {
+        stickyState = 'entering';
+      } else if (cardRect.bottom >= boundaryRect.bottom - 1) {
+        stickyState = 'leaving';
+      } else {
+        stickyState = 'reading';
+      }
+
+      card.style.transform = 'none';
       card.dataset.stickyState = stickyState;
       card.classList.toggle('is-static-layout', stickyState === 'static');
-      card.classList.toggle('is-sticky-active', stickyState === 'reading' || stickyState === 'leaving');
+      card.classList.add('is-sticky-active');
       syncScrollableOverflow(card);
     };
 
@@ -276,7 +286,10 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
         document.getElementById('post'),
         document.querySelector('.post-copyright-block'),
         document.getElementById('aside-content'),
+        document.getElementById('aside-track-overview'),
+        document.getElementById('aside-sticky-box-overview'),
         document.getElementById('recent-posts'),
+        document.getElementById('home-pagination'),
       ].filter((el): el is HTMLElement => Boolean(el));
 
       elementsToObserve.forEach((el) => resizeObserver.observe(el));

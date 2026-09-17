@@ -602,27 +602,45 @@ body[data-type='home'] #aside-content .sticky_layout--utility {
   position: static;
 }
 
+body[data-type='home'] #aside-content .sticky_layout,
+body[data-type='home'] #aside-content #home-sticky-layout {
+  position: relative !important;
+  top: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-self: stretch !important;
+}
+
+body[data-type='home'] #aside-content #aside-track-overview {
+  position: relative !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='home'] #aside-content #aside-sticky-box-overview {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  z-index: 10 !important;
+}
+
 body[data-type='home'] .card-feature-panel--overview {
-  position: sticky;
-  top: var(--sticky-column-top, 88px);
-  min-height: var(--sticky-card-height, calc(100vh - 116px));
-  max-height: var(--sticky-card-height, calc(100vh - 116px));
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  position: relative !important;
+  top: auto !important;
+  min-height: 240px !important;
+  max-height: calc(100vh - var(--sticky-column-top, 80px) - 32px) !important;
+  height: fit-content !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
 }
 
 body[data-type='home'] .card-feature-panel--overview.is-static-layout {
-  position: static;
-  max-height: none;
-}
-
-body[data-type='home'] .card-feature-panel--overview .card-content,
-body[data-type='home'] .card-feature-panel--overview .webinfo-panel {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
+  position: relative !important;
+  max-height: none !important;
 }
 
 body[data-type='home'] .card-feature-panel--overview .webinfo-grid,

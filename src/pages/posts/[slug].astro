@@ -565,6 +565,7 @@ const heroSummary = isUnlocked
                 if (norm(currentPath) !== norm(targetPath)) {
                   try {
                     window.localStorage.setItem('shijianus-locale-variant', targetLang);
+                    window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
                   } catch {}
                   window.location.href = targetPath;
                 }
@@ -579,13 +580,13 @@ const heroSummary = isUnlocked
               }
             });
 
-            // 2. On page load: the language selected in the account card (interface language)
-            // determines which article language is displayed. If preferred language differs
-            // from current article language and a translation exists, immediately show that translation.
-            const preferredLocale = window.localStorage.getItem('shijianus-manual-locale-selected') || window.localStorage.getItem('shijianus-locale-variant');
-            if (preferredLocale && preferredLocale !== currentLang && translations[preferredLocale]) {
-              navigateToLang(preferredLocale);
-            }
+            // 2. On page load: sync current article language to DOM and storage,
+            // strictly DO NOT force redirect away from explicit URLs!
+            try {
+              document.documentElement.lang = currentLang;
+              document.documentElement.dataset.localeVariant = currentLang;
+              window.localStorage.setItem('shijianus-locale-variant', currentLang);
+            } catch (_) {}
           } catch {}
         })();
       </script>

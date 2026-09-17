@@ -1,5 +1,5 @@
 ---
-import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, Globe, type LucideIcon } from 'lucide-react';
 
 type PostHeroMetaItem = {
   label: string;
@@ -30,6 +30,15 @@ interface Props {
   currentLang?: string;
 }
 
+const LOCALE_NAMES: Record<string, { native: string; english: string }> = {
+  'zh-CN': { native: '简体中文', english: 'Chinese (Simplified)' },
+  'zh-Hant': { native: '繁體中文', english: 'Chinese (Traditional)' },
+  en: { native: 'English', english: 'English' },
+  es: { native: 'Español', english: 'Spanish' },
+  de: { native: 'Deutsch', english: 'German' },
+  fr: { native: 'Français', english: 'French' },
+};
+
 const {
   slug,
   title,
@@ -46,6 +55,9 @@ const {
   translations = {},
   currentLang = 'zh-CN',
 } = Astro.props;
+
+const translationEntries = Object.entries(translations);
+const hasTranslations = translationEntries.length > 1;
 
 const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
   calendar: CalendarDays,
@@ -118,6 +130,36 @@ const hasMedia = Boolean(image || video);
             </a>
           );
         })}
+      </div>
+    )}
+
+    {hasTranslations && (
+      <div class="post-hero__translations" aria-label="Available translations">
+        <span class="post-hero__translations-label">
+          <Globe className="post-hero__translations-icon" aria-hidden="true" />
+          <span>语言版本:</span>
+        </span>
+        <div class="post-hero__translations-list">
+          {translationEntries.map(([langKey, item]) => {
+            const isActive = langKey === currentLang;
+            const meta = LOCALE_NAMES[langKey] || { native: langKey };
+            return isActive ? (
+              <span class="post-hero__lang-tag is-active" aria-current="page" title={`当前语言: ${meta.native}`}>
+                <span class="lang-dot"></span>
+                {meta.native}
+              </span>
+            ) : (
+              <a
+                href={item.url}
+                class="post-hero__lang-tag"
+                data-target-lang={langKey}
+                title={`切换至 ${meta.native}`}
+              >
+                {meta.native}
+              </a>
+            );
+          })}
+        </div>
       </div>
     )}
 
@@ -270,6 +312,18 @@ const hasMedia = Boolean(image || video);
         },
         { once: true },
       );
+
+      root.querySelectorAll('.post-hero__lang-tag[data-target-lang]').forEach((link) => {
+        link.addEventListener('click', () => {
+          const targetLang = link.getAttribute('data-target-lang');
+          if (targetLang) {
+            try {
+              window.localStorage.setItem('shijianus-locale-variant', targetLang);
+              window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
+            } catch (_) {}
+          }
+        });
+      });
     });
   })();
 </script>

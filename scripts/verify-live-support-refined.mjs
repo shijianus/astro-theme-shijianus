@@ -61,56 +61,55 @@ async function runLiveAudit() {
         throw new Error(`Card ${i + 1} height (${box.height}px) on live site exceeds range [48px, 60px]!`);
       }
 
-      // Check tier badge
-      const badgeEl = btn.locator('.relative.z-10 > span').first();
-      const badgeText = (await badgeEl.innerText()).trim();
-      badges.push(badgeText);
-
-      // Check transaction nature
-      const natureEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(1);
-      const natureText = (await natureEl.innerText()).trim();
-      natures.push(natureText);
-
       // Check amount
-      const amountEl = btn.locator('.relative.z-10').nth(1).locator('span').nth(0);
+      const amountEl = btn.locator('.relative.z-10 span').first();
       const amountText = (await amountEl.innerText()).trim();
       amounts.push(amountText);
 
-      // Verify implicit watermark exists
-      const watermark = btn.locator('[aria-hidden="true"] svg');
-      if (await watermark.count() < 1) {
-        throw new Error(`Card ${i + 1} does not have implicit watermark accessory SVG on live site`);
+      // Verify NO bureaucratic official words on live site
+      const bureaucraticWords = ['微额', '日常', '算力', '基建', '名录致谢', '即时零钱', '边缘函数', '域名存储'];
+      for (const word of bureaucraticWords) {
+        if (text.includes(word)) {
+          throw new Error(`Live Card ${i + 1} contains bureaucratic word "${word}"!`);
+        }
+      }
+
+      // Verify interactive animated SVG scene exists on live site
+      const sceneSvg = btn.locator('[aria-hidden="true"] svg');
+      if ((await sceneSvg.count()) < 1) {
+        throw new Error(`Live Card ${i + 1} missing interactive animated SVG scene!`);
+      }
+
+      // Verify animated steam SVG path exists in the scene
+      const steamPath = sceneSvg.locator('path.animate-support-steam-1, path.animate-support-steam-2');
+      if ((await steamPath.count()) < 1) {
+        throw new Error(`Live Card ${i + 1} missing animated steam path!`);
+      }
+
+      // Card 2 (Tier 1: RM8 equivalent): Verify the office desk, steaming coffee & plant scene
+      if (i === 1) {
+        const plantEl = sceneSvg.locator('.animate-support-plant-sway');
+        if ((await plantEl.count()) < 1) {
+          throw new Error(`Live Card 2 (Tier 1) missing animated desk succulent plant decor!`);
+        }
       }
 
       // Check selected card (default index 2) has active checkmark
       if (i === 2) {
         const checkIcon = btn.locator('svg.lucide-check');
-        if (await checkIcon.count() < 1) {
+        if ((await checkIcon.count()) < 1) {
           throw new Error(`Selected Card ${i + 1} (Tier 2) missing active checkmark indicator on live site!`);
         }
       }
     }
 
-    console.log(`\n  Live Badges: ${JSON.stringify(badges)}`);
-    console.log(`  Live Natures: ${JSON.stringify(natures)}`);
-    console.log(`  Live Amounts: ${JSON.stringify(amounts)}`);
-
-    // Verify non-repetition
-    const uniqueBadges = new Set(badges);
-    if (uniqueBadges.size !== 6) {
-      throw new Error(`Duplicate badges found on live site! Expected 6 unique badges, got ${uniqueBadges.size}`);
-    }
-    const uniqueNatures = new Set(natures);
-    if (uniqueNatures.size !== 6) {
-      throw new Error(`Duplicate transaction natures found on live site! Expected 6 unique natures, got ${uniqueNatures.size}`);
+    console.log(`\n  Live Amounts: ${JSON.stringify(amounts)}`);
+    const uniqueAmounts = new Set(amounts);
+    if (uniqueAmounts.size !== 6) {
+      throw new Error(`Expected 6 unique amounts on live site, got ${uniqueAmounts.size}`);
     }
 
-    // Verify Tier 2 is highlighted as HOT
-    if (!badges[2].includes('热门')) {
-      throw new Error(`Tier 2 should have HOT/热门 badge on live site, got "${badges[2]}"`);
-    }
-
-    console.log('✅ Live preset amount cards are completely differentiated without repetition, displaying explicit transaction metadata at invariant sleek height (~54px)!');
+    console.log('✅ Live preset amount cards feature warm animated SVG scenes with steaming coffee & desk decor, zero bureaucratic pricing words, and strictly invariant height (~54px)!');
 
     // 2. Audit Right Column Expense Removal
     console.log('\n--- 2. Auditing Right Column QR Interface on Production ---');
@@ -147,7 +146,7 @@ async function runLiveAudit() {
 
     // 4. Test Sub-channel Tabs on Production
     console.log('\n--- 4. Auditing Sub-channel Tabs on Production ---');
-    const tabs = page.locator('.lg\\:col-span-5 .flex.rounded-xl button');
+    const tabs = page.locator('.lg\\:col-span-5 .rounded-xl button');
     const tabCount = await tabs.count();
     console.log(`Tabs found: ${tabCount} (Expected: 4)`);
 
