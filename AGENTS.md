@@ -2322,7 +2322,7 @@
   7. Group 6: `shijianus:localechange` 运行时无刷新就地语系重渲染动态响应测试全绿；
   8. Group 7: 10 大核心示范博文 × 5 种外语变体（50 条全量路由）HTTP 200 OK 与内容容器渲染 100% 通过，零 404 缺陷。
 
-### Task 103: 修复翻译文章 URL 劫持重定向、新增 PostHero 语系切换器与组件本地化最高优先级保障
+### Task 103: 修复翻译文章 URL 劫持重定向、新增 PostHero 语系切换器与组件本地化最高优先级保障 (`0e37059`)
 - [x] **彻底根除页面加载时的 URL 劫持与重定向死循环 (No URL Hijacking & Infinite Bounce-Back)**：
   1. 彻底移除 `src/pages/posts/[slug].astro` 中在页面初次加载时强行比对 `localStorage` 并执行 `navigateToLang()` 的破坏性重定向逻辑；
   2. 修复后：用户直接输入或点击任何语言后缀文章 URL（如 `/posts/*-en/`, `/posts/*-es/`, `/posts/*-de/`, `/posts/*-fr/`, `/posts/*-zh-hant/`），页面无条件持久停留在该语言版本，绝不强制弹回中文或其他语系；
