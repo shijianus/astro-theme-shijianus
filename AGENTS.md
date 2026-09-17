@@ -2242,3 +2242,20 @@
   4. 生产端左右两列顶底对齐误差严格为 **0.0px**（`Top Diff = 0.0px, Bottom Diff = 0.0px`）；
   5. 生产端 Stripe 收银台结账按钮金额实时原子级同步，4 大收款 Tab（CN、HK、PayPal、Crypto）切换顺畅；
   6. 捕获生产端高分辨率截图（`live-01-desktop-overview.png`、`live-02-desktop-preset-cards.png`、`live-03-desktop-right-column.png`、`live-04-desktop-dark-mode.png`、`live-05-tablet.png`、`live-06-mobile.png`），视觉审查 100% 达标。
+
+### Task 100: 首页 topGroup 衬底卡片 (stack-back) 底部压缩缺陷根除、全量包裹卡组与网格尺寸协调优化 (`aa4e919`)
+- [x] **根除 `topGroup__stack-back` 底部压缩与无法包住卡片缺陷**：
+  1. 根因剖析：原本 `.topGroup__stack-back--one` 硬编码了 `top: 18px; left: 18px; width: calc(600px - 10px); height: calc(100% - 24px); transform: rotate(-1.2deg);`，高宽压缩导致下边沿短缺 24px 且受逆时针旋转抬升，导致下排卡片（特别是 `idx: 3`）在视觉上直接穿破衬底露出；
+  2. 修复方案：在 `src/styles/global.css` 中重构 `.topGroup__stack-back` 尺寸为 `inset: -8px; pointer-events: none;`，彻底解除宽度限制与底部高度截断，以对称 8px 外扩构建完备包裹几何体；
+  3. 精简旋转层：`.topGroup__stack-back--one`（`transform: rotate(-1.2deg); opacity: 0.44;`）与 `.topGroup__stack-back--two`（`transform: rotate(0.9deg); opacity: 0.68;`），旋转后四角在各方向均保持至少 1.2px ~ 14.7px 的全包裹安全边距。
+- [x] **协调优化 `topGroup` 卡片网格高度与内外间距**：
+  1. 根治下排 28px 异常行距：此前卡片被硬编码为 `height: 160px !important;`，在 348px 高度容器中两排仅占 320px，被 `align-content: space-between` 撑出高达 28px 的夸张行距，与 8px 列距严重失调；
+  2. 在 `src/components/theme/HomeHero.astro` 中设定卡片高度为 `calc((100% - 0.5rem) / 2) !important; max-height: none !important; margin: 0 !important;`（单张高度精确为 170px）；
+  3. 达成两行行距与三列列距恒等均为 8px（0.5rem），卡组与今日卡片（`todayCard`）总高（348px）100% 严丝合缝。
+- [x] **生产端 (Cloudflare Pages) 全链路部署与 Playwright E2E 线上终审**：
+  1. 编译全量静态资源与 Functions 运行时，全量部署至 Cloudflare Pages 生产边缘节点（项目 `shijianus-blog`，生产域名 `https://blog.epocanvas.com`，Deployment `ecc64fa9`）；
+  2. 提交代码并执行多端推送同步（`git push origin main && git push cf main`，Commit `aa4e919`）；
+  3. 编写并运行生产端自动化端到端测试套件（`scripts/verify-live-topgroup-fix.mjs`），针对生产环境 `https://blog.epocanvas.com/` 进行全链路实时审计：
+     - 断言全量 4 张 `recent-post-item` 均满足 `containedInB1 === true` 与 `containedInB2 === true`，`allContained: true` 100% 达标；
+     - 测量 Card 3（下排左侧卡片）在 B1 下边界的内嵌深度为 **+14.66px**，在 B2 下边界的内嵌深度为 **+13.00px**，彻底杜绝穿底现象；
+     - 验证浅色默认态（`todayCard`）、展开态（4 张卡片网格）、深色模式切换态（Dark Mode）与移动端响应式，捕获全套证据链截图（`verify_live_default_light.png`、`verify_live_toggled_light.png`、`verify_live_toggled_dark.png`、`verify_live_mobile.png`）。
