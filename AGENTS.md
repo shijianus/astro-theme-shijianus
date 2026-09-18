@@ -2570,7 +2570,7 @@
   1. 覆盖 4 大测试组：Canonical URL 规范性与零刷新切换、旧 URL 301 重定向与偏好保留、`badges-guide` 跨文章首载 TOC 对齐与零中文验证、`markdown-syntax-mastery` 通用分片与多语言 TOC 验证；
   2. **全部 62 项端到端断言 100% 通过（Passed: 62 | Failed: 0）**。
 
-### Task 115: 移动端全链路深度优化（直出文章目录按钮、Loading立即跳过、滚动指示阴影与平滑过渡）与电脑端零回归双重视口验证
+### Task 115: 移动端全链路深度优化（直出文章目录按钮、Loading立即跳过、滚动指示阴影与平滑过渡）与电脑端零回归双重视口验证 (`f8781bb`)
 - [x] **移动端阅读长文目录体验优化 (Mobile Quick TOC Direct Access)**:
   1. 在 `ThemeDock.tsx` 的 `#rightside-config-show` 浮动常驻组中增设移动端独立目录直出按钮 `#mobile-toc-quick`；
   2. 严格遵循最小修改与电脑端零破坏原则：通过 CSS 媒体查询在桌面端（`> 768px`）对 `#mobile-toc-quick` 施加 `display: none !important;`，彻底保持电脑端原有外观与交互 100% 不变；
