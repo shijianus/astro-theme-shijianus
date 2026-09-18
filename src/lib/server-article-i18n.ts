@@ -1281,6 +1281,18 @@ export function validateTranslatedFormat(
       return { valid: false, reason: `Untranslated Chinese characters in data-title: ${dataTitleMatch[0]}` };
     }
 
+    // Check for untranslated Chinese in footnote definitions for non-Chinese locales
+    const untranslatedFootnote = translatedMarkdown.match(/^\[\^[a-zA-Z0-9_-]+\]:\s*[^\n]*[\u4e00-\u9fa5]/m);
+    if (untranslatedFootnote) {
+      return { valid: false, reason: `Untranslated Chinese characters in footnote definition: ${untranslatedFootnote[0]}` };
+    }
+
+    // Check for untranslated Chinese in ext-encrypt-entry-banner for non-Chinese locales
+    const untranslatedEncryptBanner = translatedMarkdown.match(/<div[^>]*class="[^"]*ext-encrypt-entry-banner[^"]*"[^>]*>[\s\S]*?[\u4e00-\u9fa5][\s\S]*?<\/div>/);
+    if (untranslatedEncryptBanner) {
+      return { valid: false, reason: `Untranslated Chinese characters inside ext-encrypt-entry-banner` };
+    }
+
     // Check for excessive residual Chinese characters in body (outside code blocks, media and LaTeX math)
     let textWithoutCode = translatedMarkdown;
     textWithoutCode = textWithoutCode.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');

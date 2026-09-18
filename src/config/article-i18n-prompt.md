@@ -86,6 +86,15 @@ The article starts with YAML Frontmatter delimited by `---`. You MUST preserve t
 - Translate header cells and data cells naturally in ${TARGET_LOCALE_NAME}.
 - Do not alter column counts or `---` alignment rows.
 
+#### 2.11 Footnotes & References
+- Markdown footnote definitions (e.g. `[^1]: ...`, `[^ref-spec]: ...`) MUST be fully translated into ${TARGET_LOCALE_NAME}.
+- Keep footnote label identifiers (`[^1]`, `[^ref-spec]`) identical between body text references and bottom definitions so that footnote anchors resolve cleanly.
+- Never leave Chinese characters inside footnote explanations for non-Chinese locales.
+
+#### 2.12 Encrypted Components, Badges & Interactive Banners
+- All descriptive text, hints, titles, and button labels inside or referencing encrypted components (`<div class="ext-encrypt-entry-banner" ...>`, `.encrypted-box`, `.lock-gate`, etc.) MUST be fully translated into ${TARGET_LOCALE_NAME}.
+- For non-Chinese locales, ensure ZERO Chinese characters remain in any user-facing text, custom hints (`data-hint="..."`), or status badges.
+
 ---
 
 ### 3. Language-Specific Localization Rules

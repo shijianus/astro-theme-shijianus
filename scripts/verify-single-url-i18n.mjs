@@ -477,7 +477,82 @@ async function run() {
     }
 
     await msmContext.close();
+
+    console.log('\n======================================================');
+    console.log('5. Residual Elements Localization Audit (Footnotes, Encrypt Banner, Copyright, Outdate)');
+    console.log('======================================================');
+
+    const auditUrl = `${BASE_URL}/posts/content-formats-and-markup-mastery/`;
+    console.log(`Navigating to: ${auditUrl}`);
+    await page.goto(auditUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForSelector('#article-container', { timeout: 20000 });
+    await page.waitForTimeout(1000);
+
+    // Switch to English
+    const auditEnBtn = page.locator('.post-hero__lang-tag[data-target-lang="en"]');
+    await auditEnBtn.click();
+    await page.waitForTimeout(600);
+
+    // 1. Audit class="footnotes" pseudo-element content
+    const footnotesBeforeContent = await page.evaluate(() => {
+      const el = document.querySelector('.article-translation-variant[data-lang="en"] .footnotes, .footnotes');
+      if (!el) return null;
+      return window.getComputedStyle(el, '::before').content;
+    });
+    console.log(`  Footnotes ::before content: ${footnotesBeforeContent}`);
+    if (footnotesBeforeContent) {
+      const hasZhInFootnotesBefore = CHINESE_CHAR_REGEX.test(footnotesBeforeContent);
+      assert(!hasZhInFootnotesBefore, `Footnotes header pseudo-element in English (no Chinese): ${footnotesBeforeContent}`);
+      assert(footnotesBeforeContent.includes('Footnotes'), `Footnotes header contains "Footnotes": ${footnotesBeforeContent}`);
+    } else {
+      console.log('  ℹ️ No footnotes block found in this post');
+    }
+
+    // 2. Audit class="ext-encrypt-entry-banner"
+    const encryptBanner = page.locator('.ext-encrypt-entry-banner');
+    const bannerCount = await encryptBanner.count();
+    console.log(`  Encrypted entry banners found: ${bannerCount}`);
+    if (bannerCount > 0) {
+      for (let i = 0; i < bannerCount; i++) {
+        const b = encryptBanner.nth(i);
+        const bannerText = await b.textContent();
+        const hasZhInBanner = CHINESE_CHAR_REGEX.test(bannerText || '');
+        assert(!hasZhInBanner, `Ext encrypt banner #${i + 1} has ZERO Chinese characters in English: "${bannerText?.replace(/\s+/g, ' ').trim()}"`);
+        const btnText = await b.locator('.ext-encrypt-entry-banner__btn').textContent();
+        assert(!CHINESE_CHAR_REGEX.test(btnText || ''), `Banner button in English: "${btnText?.trim()}"`);
+      }
+    }
+
+    // 3. Audit PostCopyright badge and notice
+    const copyrightBadge = await page.locator('.post-copyright__original').first().textContent();
+    assert(copyrightBadge?.trim() === 'Original', `PostCopyright original badge translated to English: "${copyrightBadge?.trim()}" (NOT "原创")`);
+
+    const copyrightNotice = await page.locator('.post-copyright-info').first().textContent();
+    assert(!copyrightNotice?.includes('除特别声明外'), `PostCopyright notice translated to English (no Chinese): "${copyrightNotice?.slice(0, 50)}..."`);
+
+    // 4. Audit PostEndRecommendation label
+    const endRecommendLabel = await page.locator('[data-pagination-label]').first().textContent();
+    if (endRecommendLabel) {
+      assert(endRecommendLabel.trim() === 'Next Up', `PostEndRecommendation label translated to English: "${endRecommendLabel.trim()}" (NOT "接着读")`);
+    }
+
+    // 5. Audit PostHero meta and badge
+    const heroBadge = await page.locator('.post-hero__badge.is-primary').first().textContent();
+    if (heroBadge) {
+      assert(heroBadge.trim() === 'Original', `PostHero badge translated to English: "${heroBadge.trim()}" (NOT "原创")`);
+    }
+    const heroLangLabel = await page.locator('[data-translations-label]').first().textContent();
+    if (heroLangLabel) {
+      assert(heroLangLabel.trim() === 'Translations:', `PostHero translation label translated to English: "${heroLangLabel.trim()}" (NOT "语言版本:")`);
+    }
+
+    // 6. Audit RelatedPosts
+    const relatedEyebrow = await page.locator('[data-related-eyebrow]').first().textContent();
+    if (relatedEyebrow) {
+      assert(relatedEyebrow.trim() === 'Related Posts', `RelatedPosts eyebrow translated to English: "${relatedEyebrow.trim()}" (NOT "相关推荐")`);
+    }
   } catch (err) {
+    console.error('Test run failed with error:', err);
     failed++;
   } finally {
     await browser.close();
