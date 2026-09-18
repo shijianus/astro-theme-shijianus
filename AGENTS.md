@@ -2570,3 +2570,33 @@
   1. 覆盖 4 大测试组：Canonical URL 规范性与零刷新切换、旧 URL 301 重定向与偏好保留、`badges-guide` 跨文章首载 TOC 对齐与零中文验证、`markdown-syntax-mastery` 通用分片与多语言 TOC 验证；
   2. **全部 62 项端到端断言 100% 通过（Passed: 62 | Failed: 0）**。
 
+### Task 115: 移动端全链路深度优化（直出文章目录按钮、Loading立即跳过、滚动指示阴影与平滑过渡）与电脑端零回归双重视口验证
+- [x] **移动端阅读长文目录体验优化 (Mobile Quick TOC Direct Access)**:
+  1. 在 `ThemeDock.tsx` 的 `#rightside-config-show` 浮动常驻组中增设移动端独立目录直出按钮 `#mobile-toc-quick`；
+  2. 严格遵循最小修改与电脑端零破坏原则：通过 CSS 媒体查询在桌面端（`> 768px`）对 `#mobile-toc-quick` 施加 `display: none !important;`，彻底保持电脑端原有外观与交互 100% 不变；
+  3. 在移动端（`<= 768px`）渲染为精致主题蓝（`#425aef`）35×35px 方圆角（8px）独立触控方块，并在文章详情页一键直达唤起 `#mobile-toc-drawer` 文章目录抽屉，免除先展开折叠齿轮的过深链路；
+  4. 电脑端侧边栏目录卡片（`#card-toc`）以及 `#rightside-config-hide #mobile-toc-button` 的层级深度切换（all/1/2/3）完全保留并持续生效。
+- [x] **首屏加载动画触控即刻隐匿 (Instant Touch Dismissal for Loading Screen)**:
+  1. 优化 `src/components/LoadingScreen.astro`，引入 `dismissImmediately()` 逻辑；
+  2. 监听全局 `touchstart` 与 `click` 事件，在用户发生首触即刻强制追加 `.loaded`、设置 `display: none !important; pointer-events: none !important;` 并从 DOM 树移除，彻底消灭首屏触控等待与拦截窗口。
+- [x] **移动端代码块与表格横向滚动微提示 (Scroll Hint Affordance)**:
+  1. 为移动端 `.code-block-shell` 注入右侧渐变微光提示蒙层（Scroll Affordance Gradient），有效消除移动端 Safari/Chrome 默认隐藏滚动条时的“内容被截断”错觉；
+  2. 保持 `-webkit-overflow-scrolling: touch;` 与硬件加速平滑滚动。
+- [x] **文章末尾下一篇推荐组件平滑缓动优化 (Smooth Mobile Pagination Post Transitions)**:
+  1. 针对移动端 `#pagination.pagination-post` 注入硬件加速 `transform: translateY(12px) scale(0.98)` 与 `cubic-bezier(0.16, 1, 0.3, 1)` 缓动曲线；
+  2. 唤出与退出更细腻丝滑，并在各类弹窗（中控台、账号中心、赞赏模态框）激活时即时隐藏避让。
+- [x] **Playwright 真实浏览器移动端与桌面端双重视口自动化测试全量通过 (`scripts/verify_mobile_optimizations_full.mjs`)**:
+  1. 移动端（iPhone 14/15 Pro: 390×844 @2x Retina, Touch & Mobile 开启）：
+     - Check 1.1: Loading 屏触控即刻隐匿通过 (`exists: true, isDismissed: true`)；
+     - Check 1.2: `#mobile-toc-quick` 按钮状态检测通过 (`found: true, display: 'flex', visible: true`)；
+     - Check 1.3: 点击 `#mobile-toc-quick` 唤起 `#mobile-toc-drawer` 抽屉成功 (`isOpen: true, ariaHidden: 'false', bodyOverflow: 'hidden', linksCount: 70`)；
+     - Check 1.4: 点击关闭按钮正常关闭抽屉 (`isOpen: false, ariaHidden: 'true', bodyOverflow: ''`)；
+     - Check 1.5: 核心 11 个主要路由横向滚动溢出量全量核查，**全站 100% 保持严格 0.0px 溢出（W: 390/390 | Overflow: 0px）**。
+  2. 桌面端（1440×900 视口，零回归核查）：
+     - Check 2.1: `#mobile-toc-quick` 按钮在桌面端严格为 `display: none !important;`；
+     - Check 2.2: 桌面端侧边栏目录卡片 `#card-toc` 完整展示（420 条索引正常聚焦）；
+     - Check 2.3: 点击齿轮展开 `#rightside-config-hide` 并成功触发 `#mobile-toc-button` 大纲深度切换（badge: 1）；
+     - Check 2.4: 首页 Hero 双卡单行平铺并列（Banner: 705px, TopGroup: 620px）；
+     - Check 2.5: 赞赏预设档位卡片严格保持 3 列排布（6 张卡片双行各 3 列对齐）。
+
+
