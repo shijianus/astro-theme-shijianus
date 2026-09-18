@@ -79,38 +79,36 @@ async function runLiveAudit() {
         throw new Error(`Live Card ${i + 1} missing interactive animated SVG scene!`);
       }
 
-      // Verify each tier has its own UNIQUE non-repetitive scene animation on live site
+      // Verify each tier has its own UNIQUE non-repetitive pure-coffee scene animation on live site
       if (i === 0) {
-        // Tier 0: Heart Beat & Pulse
-        const heart = sceneSvg.locator('.animate-support-heart-beat');
-        if ((await heart.count()) < 1) throw new Error('Live Tier 0 missing animate-support-heart-beat!');
+        // Tier 0: 便捷速溶咖啡条与小纸杯 (Sachet Pour & Granules)
+        const sachet = sceneSvg.locator('.animate-coffee-sachet-pour');
+        if ((await sachet.count()) < 1) throw new Error('Live Tier 0 missing animate-coffee-sachet-pour!');
       } else if (i === 1) {
-        // Tier 1: User-specified Desk, Steaming Coffee & Plant
-        const steam = sceneSvg.locator('path.animate-support-steam-1, path.animate-support-steam-2');
-        const plant = sceneSvg.locator('.animate-support-plant-sway');
-        if ((await steam.count()) < 1) throw new Error('Live Tier 1 missing animate-support-steam!');
-        if ((await plant.count()) < 1) throw new Error('Live Tier 1 missing animate-support-plant-sway!');
+        // Tier 1: 经典商品外带咖啡纸杯 (Takeaway Paper Cup with Corrugated Sleeve & Coffee Beans)
+        const cup = sceneSvg.locator('.animate-coffee-cup-bounce');
+        const steam = sceneSvg.locator('path.animate-coffee-steam-1, path.animate-coffee-steam-2');
+        if ((await cup.count()) < 1) throw new Error('Live Tier 1 missing animate-coffee-cup-bounce!');
+        if ((await steam.count()) < 1) throw new Error('Live Tier 1 missing animate-coffee-steam!');
       } else if (i === 2) {
-        // Tier 2: Inspiration Bulb & Eureka Rays (Featured)
-        const rays = sceneSvg.locator('.animate-support-ray-glow');
-        if ((await rays.count()) < 1) throw new Error('Live Tier 2 missing animate-support-ray-glow!');
+        // Tier 2: 精致意式拿铁拉花陶瓷杯 (Latte Art Heart Foam & Ceramic Cup - Featured)
+        const latte = sceneSvg.locator('.animate-coffee-latte-pulse');
+        if ((await latte.count()) < 1) throw new Error('Live Tier 2 missing animate-coffee-latte-pulse!');
         // Check selected card has active checkmark
         const checkIcon = btn.locator('svg.lucide-check');
         if ((await checkIcon.count()) < 1) throw new Error('Live Tier 2 missing active checkmark indicator!');
       } else if (i === 3) {
-        // Tier 3: Rocket Launch & Flame Jet
-        const flame = sceneSvg.locator('.animate-support-flame-jet');
-        if ((await flame.count()) < 1) throw new Error('Live Tier 3 missing animate-support-flame-jet!');
+        // Tier 3: 经典意式八角摩卡壶萃取 (Moka Pot & Espresso Demitasse)
+        const moka = sceneSvg.locator('.animate-coffee-moka-rumble');
+        if ((await moka.count()) < 1) throw new Error('Live Tier 3 missing animate-coffee-moka-rumble!');
       } else if (i === 4) {
-        // Tier 4: Vinyl Turntable & Floating Notes
-        const vinyl = sceneSvg.locator('.animate-support-vinyl-spin');
-        if ((await vinyl.count()) < 1) throw new Error('Live Tier 4 missing animate-support-vinyl-spin!');
+        // Tier 4: 专业慢调手冲咖啡壶 (Gooseneck Pour-over & V60 Server)
+        const kettle = sceneSvg.locator('.animate-coffee-kettle-pour');
+        if ((await kettle.count()) < 1) throw new Error('Live Tier 4 missing animate-coffee-kettle-pour!');
       } else if (i === 5) {
-        // Tier 5: Royal Crown & Confetti Pop
-        const crown = sceneSvg.locator('.animate-support-crown-float');
-        const confetti = sceneSvg.locator('.animate-support-confetti-pop');
-        if ((await crown.count()) < 1) throw new Error('Live Tier 5 missing animate-support-crown-float!');
-        if ((await confetti.count()) < 1) throw new Error('Live Tier 5 missing animate-support-confetti-pop!');
+        // Tier 5: 殿堂冷萃冰滴塔与特调杯 (Cold Brew Tower & Rock Glass with Ice Sphere)
+        const tower = sceneSvg.locator('.animate-coffee-tower-drip');
+        if ((await tower.count()) < 1) throw new Error('Live Tier 5 missing animate-coffee-tower-drip!');
       }
     }
 

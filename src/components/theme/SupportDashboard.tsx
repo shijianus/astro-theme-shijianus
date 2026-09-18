@@ -66,192 +66,282 @@ const UsdtIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
   </svg>
 );
 
-/* ── 6 个档位专属温馨生动、风格迥异的创作者场景与交互动画 SVG (零重复模板) ── */
+/* ── 6 个档位专属温馨生动、纯粹专业的咖啡品类阶梯与交互动画 SVG (100% 咖啡主题、零杂质) ── */
 
-/** Tier 0 (RM3 / $1 / ¥4): 掌心微光与爱心拍拍 (轻盈温馨的点赞与友爱) */
-const SceneHeartPulse: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 0 (RM3 / $1 / ¥4): 便捷速溶咖啡条与小纸杯 (轻盈便捷的每日第一口咖啡) */
+const SceneInstantCoffee: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 友善击掌/托举小手掌 */}
-    <path d="M 26 38 C 24 33, 23 27, 27 24 C 29 22, 32 23, 33 26 L 35 21 C 36 19, 39 20, 40 22 L 42 20 C 43 18, 46 19, 46 22 L 47 23 C 48 21, 51 22, 51 25 C 51 32, 46 38, 38 38 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-    {/* 掌心托起的爱心（心跳律动动效） */}
-    <g className="animate-support-heart-beat" style={{ transformOrigin: '68px 21px' }}>
-      <path d="M 68 30 C 59 21, 54 13, 61 7 C 67 2, 68 9, 68 9 C 68 9, 69 2, 75 7 C 82 13, 77 21, 68 30 Z" fill="currentColor" fillOpacity="0.85" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M 62 8 C 60 11, 61 14, 64 17" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-    </g>
-    {/* 围绕爱心的灵动扩散波纹与星芒 */}
-    <circle cx="68" cy="18" r="14" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" opacity="0.35" className="animate-support-ripple" style={{ transformOrigin: '68px 18px' }} />
-    <path className="animate-support-twinkle-1" d="M 88 12 L 89 14.5 L 91.5 15 L 89 16.5 L 88 19 L 87 16.5 L 84.5 15 L 87 14.5 Z" fill="currentColor" opacity="0.9" />
-    <path className="animate-support-twinkle-2" d="M 96 23 L 96.6 24.5 L 98.5 25 L 96.6 25.5 L 96 27 L 95.4 25.5 L 93.5 25 L 95.4 24.5 Z" fill="currentColor" opacity="0.75" />
-    <circle cx="82" cy="27" r="1.5" fill="currentColor" opacity="0.7" className="animate-support-twinkle-1" />
-  </svg>
-);
-
-/** Tier 1 (RM8 / $2.5 / ¥9): 办公桌、热咖啡与笔记本 (用户指定专属场景) */
-const SceneDeskCoffee: React.FC<{ isSelected?: boolean }> = () => (
-  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 创作者办公桌面 */}
-    <line x1="6" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
-    {/* 办公笔记本电脑 (键盘底座与展开屏幕) */}
-    <path d="M 11 38 L 39 38 L 37 34 L 13 34 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1" opacity="0.85" />
-    <path d="M 15 34 L 15 19 C 15 17.5, 16.5 16, 18 16 H 34 C 35.5 16, 37 17.5, 37 19 L 37 34 Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.2" />
-    {/* 屏幕代码高亮 */}
-    <line x1="19" y1="21" x2="28" y2="21" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-    <line x1="19" y1="25" x2="33" y2="25" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
-    <line x1="19" y1="29" x2="25" y2="29" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-    {/* 办公桌上的冒热气热咖啡杯 */}
-    <path d="M 48 23 H 64 V 35 C 64 37.5, 48 37.5, 48 35 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.3" />
-    <path d="M 64 25.5 C 68.5 25.5, 68.5 32.5, 64 32.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <ellipse cx="56" cy="23" rx="8" ry="2" fill="currentColor" fillOpacity="0.35" />
-    {/* 咖啡杯上的温暖爱心徽标 */}
-    <path d="M 56 29.5 C 54.5 27.5, 53 28.3, 53 29.5 C 53 30.5, 56 32.3, 56 32.3 C 56 32.3, 59 30.5, 59 29.5 C 59 28.3, 57.5 27.5, 56 29.5 Z" fill="currentColor" opacity="0.65" />
-    {/* 3 道冒热气袅袅动画线条 */}
-    <path className="animate-support-steam-1" d="M 52 19 C 50 14, 54 11, 52 6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-2" d="M 56 19 C 58 15, 54 11, 57 5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    <path className="animate-support-steam-3" d="M 60 19 C 58 14, 62 10, 60 6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    {/* 办公桌旁边的绿植盆栽装饰 */}
-    <path d="M 78 31 L 90 31 L 88 38 L 80 38 Z" fill="currentColor" fillOpacity="0.32" stroke="currentColor" strokeWidth="1.1" />
-    <rect x="77" y="30" width="14" height="2" rx="0.5" fill="currentColor" fillOpacity="0.5" />
-    <path className="animate-support-plant-sway" d="M 84 30 C 80 25, 82 20, 84 19 C 86 20, 88 25, 84 30 Z" fill="currentColor" fillOpacity="0.55" />
-    <path d="M 80 30 C 77 27, 78 24, 81 23 C 82 26, 81 29, 80 30 Z" fill="currentColor" fillOpacity="0.38" />
-    <path d="M 88 30 C 91 27, 90 24, 87 23 C 86 26, 87 29, 88 30 Z" fill="currentColor" fillOpacity="0.38" />
-  </svg>
-);
-
-/** Tier 2 (RM13 / $4 / ¥14): 灵感火花与复古发光灯泡 (默认热门推荐：顿悟与知识启迪) */
-const SceneInspirationBulb: React.FC<{ isSelected?: boolean }> = () => (
-  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 发光灯泡主体 (微浮动效) */}
-    <g style={{ transformOrigin: '58px 22px' }} className="animate-support-bulb-float">
-      {/* 玻璃灯泡外罩 */}
-      <path d="M 50 25 C 45 20, 47 11, 54 8 C 61 5, 69 9, 68 18 C 67 22, 64 24, 64 27 H 53 C 53 25, 51 24, 50 25 Z" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.3" />
-      {/* 内部螺旋心动钨丝 */}
-      <path d="M 55 26 V 19 L 58 15 L 61 19 V 26" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.9" />
-      <circle cx="58" cy="15" r="2" fill="currentColor" opacity="0.95" />
-      {/* 灯泡螺口底座 */}
-      <rect x="54" y="27" width="9" height="2.5" rx="0.5" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="0.8" />
-      <rect x="54.5" y="29.5" width="8" height="2" rx="0.5" fill="currentColor" fillOpacity="0.55" />
-      <path d="M 56 32 C 56 33.5, 61 33.5, 61 32 Z" fill="currentColor" opacity="0.7" />
-    </g>
-    {/* 放射状灵感光芒光束 */}
-    <g className="animate-support-ray-glow" style={{ transformOrigin: '58px 16px' }}>
-      <line x1="58" y1="2" x2="58" y2="5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
-      <line x1="45" y1="7" x2="48" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
-      <line x1="71" y1="7" x2="68" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
-      <line x1="40" y1="18" x2="43" y2="18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
-      <line x1="76" y1="18" x2="73" y2="18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
-    </g>
-    {/* 左右 Eureka 顿悟灵感小火花与星光 */}
-    <path className="animate-support-twinkle-1" d="M 28 16 L 29.5 19 L 32.5 19.5 L 29.5 21 L 28 24 L 26.5 21 L 23.5 19.5 L 26.5 19 Z" fill="currentColor" opacity="0.85" />
-    <path className="animate-support-twinkle-2" d="M 88 14 L 89.2 16.5 L 92 17 L 89.2 18 L 88 20.5 L 86.8 18 L 84 17 L 86.8 16.5 Z" fill="currentColor" opacity="0.85" />
-    <circle cx="36" cy="27" r="1.5" fill="currentColor" opacity="0.6" className="animate-support-twinkle-2" />
-    <circle cx="82" cy="28" r="1.5" fill="currentColor" opacity="0.6" className="animate-support-twinkle-1" />
-  </svg>
-);
-
-/** Tier 3 (RM17 / $5 / ¥16): 探索火箭与星辰大海 (加满燃料、一飞冲天) */
-const SceneRocketLaunch: React.FC<{ isSelected?: boolean }> = () => (
-  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 背景土星光环星球 */}
-    <ellipse cx="23" cy="26" rx="8" ry="8" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-    <ellipse cx="23" cy="26" rx="14" ry="4" stroke="currentColor" strokeWidth="1" strokeDasharray="18 4" opacity="0.45" transform="rotate(-20 23 26)" />
+    {/* 桌面边缘微基线 */}
+    <line x1="20" y1="38" x2="100" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3" />
     
-    {/* 穿梭火箭主体 (斜向 45 度腾空飞升) */}
-    <g className="animate-support-rocket-hover" style={{ transformOrigin: '66px 18px' }}>
-      {/* 火箭船舱锥体与机身 */}
-      <path d="M 76 8 C 71 10, 58 18, 54 26 L 66 35 C 73 30, 81 17, 83 12 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-      {/* 舷窗圆形 */}
-      <circle cx="68" cy="20" r="3.5" fill="currentColor" fillOpacity="0.6" stroke="currentColor" strokeWidth="1" />
-      <circle cx="67" cy="19" r="1" fill="#ffffff" opacity="0.9" />
-      {/* 火箭左右尾翼 */}
-      <path d="M 54 26 L 45 28 L 51 34 L 57 30 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1" />
-      <path d="M 66 35 L 68 42 L 74 39 L 72 33 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1" />
-      {/* 动力喷管 */}
-      <path d="M 56 31 L 50 35" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      {/* 喷射推进火焰 (动态剧烈闪动) */}
-      <path className="animate-support-flame-jet" d="M 51 34 C 45 38, 40 42, 36 41 C 39 37, 44 32, 49 32 Z" fill="currentColor" opacity="0.9" />
-      <path className="animate-support-flame-inner" d="M 50 34 C 46 37, 43 39, 40 38 C 42 36, 46 33, 48 33 Z" fill="#ffffff" opacity="0.85" />
+    {/* 细长速溶咖啡包装条 (Sachet Pack - 40度倾斜往杯里倒) */}
+    <g transform="rotate(-36 48 18)" className="animate-coffee-sachet-pour" style={{ transformOrigin: '48px 18px' }}>
+      {/* 包装长条 */}
+      <rect x="24" y="14" width="34" height="9" rx="1.5" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.2" />
+      {/* 封口锯齿纹 */}
+      <line x1="26" y1="14" x2="26" y2="23" stroke="currentColor" strokeWidth="1" strokeDasharray="1.5 1.5" opacity="0.7" />
+      <line x1="56" y1="14" x2="56" y2="23" stroke="currentColor" strokeWidth="1" strokeDasharray="1.5 1.5" opacity="0.7" />
+      {/* 撕开缺口 */}
+      <path d="M 58 17 L 55 18.5 L 58 20" stroke="currentColor" strokeWidth="0.8" fill="currentColor" opacity="0.8" />
+      {/* 咖啡豆小标签 */}
+      <ellipse cx="40" cy="18.5" rx="3.5" ry="2.2" fill="currentColor" fillOpacity="0.6" />
+      <path d="M 40 16.5 Q 40 18.5 38 18.5 Q 40 18.5 40 20.5" stroke="#ffffff" strokeWidth="0.7" fill="none" opacity="0.9" />
     </g>
-    
-    {/* 宇宙星辰与航行光迹 */}
-    <path className="animate-support-twinkle-1" d="M 94 8 L 95 10.5 L 97.5 11 L 95 12.5 L 94 15 L 93 12.5 L 90.5 11 L 93 10.5 Z" fill="currentColor" opacity="0.95" />
-    <path className="animate-support-twinkle-2" d="M 88 28 L 88.6 29.5 L 90.5 30 L 88.6 30.5 L 88 32 L 87.4 30.5 L 85.5 30 L 87.4 29.5 Z" fill="currentColor" opacity="0.8" />
-    <circle cx="78" cy="38" r="1.2" fill="currentColor" opacity="0.6" className="animate-support-twinkle-1" />
+
+    {/* 倾倒落下的微小咖啡颗粒动效 */}
+    <g className="animate-coffee-granules">
+      <circle cx="56" cy="22" r="0.9" fill="currentColor" opacity="0.85" />
+      <circle cx="58" cy="25" r="0.8" fill="currentColor" opacity="0.75" />
+      <circle cx="55" cy="27" r="0.7" fill="currentColor" opacity="0.65" />
+    </g>
+
+    {/* 便捷小纸杯 */}
+    <path d="M 56 22 L 60 38 H 78 L 82 22 Z" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    {/* 杯口卷边 */}
+    <rect x="54" y="20.5" width="30" height="2.5" rx="1.2" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="0.8" />
+    {/* 杯身波纹隔热贴纸 */}
+    <path d="M 60 26 H 78 L 76 34 H 62 Z" fill="currentColor" fillOpacity="0.18" />
+    <line x1="63" y1="30" x2="75" y2="30" stroke="currentColor" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.5" />
+
+    {/* 热气升腾 */}
+    <path className="animate-coffee-steam-1" d="M 66 18 C 64 14, 68 10, 65 6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    <path className="animate-coffee-steam-2" d="M 72 17 C 74 13, 70 9, 73 5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
   </svg>
 );
 
-/** Tier 4 (RM20 / $6.5 / ¥20): 黑胶唱机与漫游音符 (艺术格调与灵动旋律) */
-const SceneVinylTurntable: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 1 (RM8 / $2.5 / ¥9): 经典商品外带咖啡纸杯 (工位与街角外带美式咖啡) */
+const SceneTakeawayCup: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 复古黑胶机底座 */}
-    <rect x="16" y="16" width="56" height="23" rx="3" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.2" />
-    {/* 调音旋钮 */}
-    <circle cx="64" cy="32" r="2.2" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="0.8" />
-    <circle cx="64" cy="24" r="1.5" fill="currentColor" fillOpacity="0.4" />
+    {/* 桌面边缘基线 */}
+    <line x1="20" y1="38" x2="98" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3" />
 
-    {/* 匀速旋转的黑胶唱片 */}
-    <g className="animate-support-vinyl-spin" style={{ transformOrigin: '36px 27px' }}>
-      <circle cx="36" cy="27" r="13" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="36" cy="27" r="10" stroke="currentColor" strokeWidth="0.8" strokeDasharray="5 2" opacity="0.5" />
-      <circle cx="36" cy="27" r="7" stroke="currentColor" strokeWidth="0.8" strokeDasharray="4 2" opacity="0.55" />
-      <circle cx="36" cy="27" r="4" fill="currentColor" fillOpacity="0.65" />
-      <circle cx="36" cy="27" r="1.2" fill="#ffffff" opacity="0.9" />
+    {/* 外带咖啡杯主体 */}
+    <g className="animate-coffee-cup-bounce" style={{ transformOrigin: '58px 38px' }}>
+      {/* 杯身 */}
+      <path d="M 44 14 L 48 38 H 68 L 72 14 Z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      {/* 加厚防烫瓦楞杯套 */}
+      <path d="M 46 20 L 48 32 H 68 L 70 20 Z" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="1" />
+      {/* 杯套中央爱心咖啡标 */}
+      <circle cx="58" cy="26" r="3.6" fill="currentColor" fillOpacity="0.75" />
+      <path d="M 58 24.5 C 57 23.5, 55.5 24, 55.5 25 C 55.5 25.8, 58 27.2, 58 27.2 C 58 27.2, 60.5 25.8, 60.5 25 C 60.5 24, 59 23.5, 58 24.5 Z" fill="#ffffff" opacity="0.95" />
+
+      {/* 专业防溢外凸杯盖 */}
+      <path d="M 42 14 H 74 V 11 C 74 9.8, 72.8 9, 71.5 9 H 44.5 C 43.2 9, 42 9.8, 42 11 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1.2" />
+      {/* 杯盖饮口突起与小吸口 */}
+      <rect x="44" y="7.5" width="8" height="2" rx="0.5" fill="currentColor" fillOpacity="0.8" />
+      <ellipse cx="48" cy="7.5" rx="1.5" ry="0.6" fill="#ffffff" opacity="0.8" />
     </g>
 
-    {/* 金属唱针唱臂 (Tonearm) */}
-    <circle cx="56" cy="20" r="2" fill="currentColor" fillOpacity="0.7" />
-    <path d="M 56 20 L 51 23 L 40 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
-    <rect x="38" y="23" width="2.5" height="3" rx="0.5" fill="currentColor" fillOpacity="0.8" />
+    {/* 从杯盖吸口袅袅飘出的两缕热气动效 */}
+    <path className="animate-coffee-steam-1" d="M 48 6 C 46 2, 51 -1, 48 -4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-coffee-steam-2" d="M 52 5 C 55 1, 50 -2, 53 -5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
 
-    {/* 浮动飘逸上升的音乐音符与律动 */}
-    <g className="animate-support-note-float-1" style={{ transformOrigin: '80px 20px' }}>
-      <path d="M 80 22 C 80 24, 77 25, 75 24 C 73 23, 73 21, 75 20 C 77 19, 80 20, 80 22 Z M 80 22 V 14 L 87 12 V 18 M 87 18 C 87 20, 84 21, 82 20 C 80 19, 80 17, 82 16 C 84 15, 87 16, 87 18 Z" fill="currentColor" opacity="0.85" />
+    {/* 杯旁的 2 颗饱满咖啡豆点缀 */}
+    <g transform="translate(80, 29) rotate(25)">
+      <ellipse cx="0" cy="0" rx="4" ry="2.6" fill="currentColor" fillOpacity="0.55" stroke="currentColor" strokeWidth="0.8" />
+      <path d="M -3 0 Q 0 1 3 0" stroke="#ffffff" strokeWidth="0.8" fill="none" opacity="0.85" />
     </g>
-    <g className="animate-support-note-float-2" style={{ transformOrigin: '96px 14px' }}>
-      <path d="M 97 18 C 97 20, 94 21, 92 20 C 90 19, 91 17, 93 16 C 95 15, 97 16, 97 18 Z M 97 18 V 10 L 102 9 V 12" fill="currentColor" opacity="0.8" />
+    <g transform="translate(88, 34) rotate(-35)">
+      <ellipse cx="0" cy="0" rx="3.5" ry="2.3" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="0.8" />
+      <path d="M -2.5 0 Q 0 -0.8 2.5 0" stroke="#ffffff" strokeWidth="0.7" fill="none" opacity="0.85" />
     </g>
-    <path className="animate-support-twinkle-1" d="M 88 29 L 89 30.5 L 90.5 31 L 89 31.5 L 88 33 L 87.5 31.5 L 86 31 L 87.5 30.5 Z" fill="currentColor" opacity="0.7" />
   </svg>
 );
 
-/** Tier 5 (RM25 / $8 / ¥25): 荣耀王冠与庆典礼花 (至尊赞赏、盛大加冕) */
-const SceneCrownCelebration: React.FC<{ isSelected?: boolean }> = () => (
+/** Tier 2 (RM13 / $4 / ¥14): 精致意式拿铁拉花陶瓷杯 (默认推荐热门档位：现磨爱心拉花咖啡) */
+const SceneLatteArt: React.FC<{ isSelected?: boolean }> = () => (
   <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 浮动华丽王冠主体 */}
-    <g className="animate-support-crown-float" style={{ transformOrigin: '56px 23px' }}>
-      {/* 王冠底环 */}
-      <rect x="36" y="27" width="40" height="4.5" rx="1.5" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="1.2" />
-      <line x1="38" y1="29.2" x2="74" y2="29.2" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" opacity="0.7" />
-      
-      {/* 王冠五峰造型 */}
-      <path d="M 37 27 L 39 16 L 46 22 L 56 12 L 66 22 L 73 16 L 75 27 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-      
-      {/* 峰顶璀璨宝石与光芒圆球 */}
-      <circle cx="39" cy="15" r="2" fill="currentColor" opacity="0.9" />
-      <circle cx="56" cy="11" r="2.8" fill="currentColor" opacity="0.95" />
-      <circle cx="73" cy="15" r="2" fill="currentColor" opacity="0.9" />
-      <polygon points="56,17 58.5,21 53.5,21" fill="currentColor" opacity="0.85" />
+    {/* 陶瓷托盘 (Saucer) */}
+    <ellipse cx="58" cy="37.5" rx="28" ry="3.5" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.2" />
+    <ellipse cx="58" cy="37" rx="16" ry="1.5" fill="currentColor" fillOpacity="0.2" />
+
+    {/* 陶瓷咖啡杯身与把手 */}
+    <g className="animate-coffee-cup-gentle">
+      {/* 宽口圆润杯身 */}
+      <path d="M 40 21 C 40 33, 47 36, 58 36 C 69 36, 76 33, 76 21 Z" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.3" />
+      {/* 圆润杯把手 */}
+      <path d="M 75 23 C 83 23, 83 31, 74 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.75" />
+      {/* 杯口液面椭圆 */}
+      <ellipse cx="58" cy="21" rx="18" ry="4" fill="currentColor" fillOpacity="0.65" stroke="currentColor" strokeWidth="1.1" />
+
+      {/* 绝美拿铁爱心拉花 (Heart Latte Foam Art) */}
+      <g className="animate-coffee-latte-pulse" style={{ transformOrigin: '58px 21px' }}>
+        <ellipse cx="58" cy="21" rx="14" ry="3" fill="#ffffff" fillOpacity="0.9" />
+        {/* 咖啡色拉花心形与叶瓣纹理 */}
+        <path d="M 58 23 C 54 20, 52 18, 55 17.2 C 57.5 16.5, 58 19, 58 19 C 58 19, 58.5 16.5, 61 17.2 C 64 18, 62 20, 58 23 Z" fill="currentColor" opacity="0.8" />
+        <path d="M 58 19.5 V 23.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" opacity="0.85" />
+      </g>
     </g>
 
-    {/* 四周喷发的庆典礼花碎片与闪耀星芒 */}
-    <g className="animate-support-confetti-pop">
-      <rect x="22" y="16" width="3.5" height="1.8" rx="0.5" fill="currentColor" opacity="0.85" transform="rotate(35 22 16)" />
-      <rect x="28" y="26" width="3" height="1.5" rx="0.5" fill="currentColor" opacity="0.75" transform="rotate(-25 28 26)" />
-      <rect x="85" y="16" width="3.5" height="1.8" rx="0.5" fill="currentColor" opacity="0.85" transform="rotate(-30 85 16)" />
-      <rect x="81" y="28" width="3" height="1.5" rx="0.5" fill="currentColor" opacity="0.75" transform="rotate(40 81 28)" />
-      
-      <path className="animate-support-twinkle-1" d="M 24 10 L 25.2 12.5 L 28 13 L 25.2 14 L 24 16.5 L 22.8 14 L 20 13 L 22.8 12.5 Z" fill="currentColor" opacity="0.95" />
-      <path className="animate-support-twinkle-2" d="M 92 10 L 93.2 12.5 L 96 13 L 93.2 14 L 92 16.5 L 90.8 14 L 88 13 L 90.8 12.5 Z" fill="currentColor" opacity="0.95" />
-      <circle cx="17" cy="22" r="1.5" fill="currentColor" opacity="0.75" className="animate-support-twinkle-2" />
-      <circle cx="98" cy="22" r="1.5" fill="currentColor" opacity="0.75" className="animate-support-twinkle-1" />
+    {/* 袅袅升华的香醇蒸汽 */}
+    <path className="animate-coffee-steam-1" d="M 52 15 C 50 10, 54 6, 51 2" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-coffee-steam-2" d="M 58 15 C 60 11, 56 6, 59 1" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-coffee-steam-3" d="M 64 15 C 62 10, 66 7, 64 3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+
+    {/* 托盘边的香浓咖啡豆 */}
+    <g transform="translate(26, 35) rotate(-20)">
+      <ellipse cx="0" cy="0" rx="3.8" ry="2.4" fill="currentColor" fillOpacity="0.55" stroke="currentColor" strokeWidth="0.8" />
+      <path d="M -2.8 0 Q 0 0.8 2.8 0" stroke="#ffffff" strokeWidth="0.8" fill="none" opacity="0.85" />
     </g>
   </svg>
 );
 
-/* ── 6 个档位专属温馨生动主题配置 (零重复、场景对应) ── */
+/** Tier 3 (RM17 / $5 / ¥16): 经典意式八角摩卡壶萃取 (浓烈纯正的意式 Espresso 冲煮) */
+const SceneMokaPot: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="16" y1="38" x2="102" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3" />
+
+    {/* 经典 Bialetti 八角摩卡壶 */}
+    <g className="animate-coffee-moka-rumble" style={{ transformOrigin: '48px 38px' }}>
+      {/* 底部下壶 (储水腔与压力安全阀) */}
+      <path d="M 38 38 L 40 28 H 58 L 60 38 Z" fill="currentColor" fillOpacity="0.38" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* 铜质安全泄压阀 */}
+      <circle cx="41" cy="33" r="1.3" fill="currentColor" opacity="0.9" />
+      
+      {/* 中间旋紧接环腰线 */}
+      <rect x="39" y="26.5" width="20" height="2" rx="0.5" fill="currentColor" fillOpacity="0.65" stroke="currentColor" strokeWidth="0.8" />
+
+      {/* 上壶 (经典的倒梯形八角棱面刻线) */}
+      <path d="M 40 26.5 L 36 15 H 62 L 58 26.5 Z" fill="currentColor" fillOpacity="0.28" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      {/* 八角切面反光棱线 */}
+      <line x1="45" y1="26.5" x2="43" y2="15" stroke="currentColor" strokeWidth="0.9" opacity="0.5" />
+      <line x1="53" y1="26.5" x2="55" y2="15" stroke="currentColor" strokeWidth="0.9" opacity="0.5" />
+
+      {/* 尖形出液鹰嘴壶嘴 */}
+      <path d="M 36 17 L 31 15 L 36 21 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+
+      {/* 棱角分明的壶盖与球形提纽 */}
+      <path d="M 36 15 L 49 10 L 62 15 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <circle cx="49" cy="8.5" r="1.8" fill="currentColor" opacity="0.9" />
+
+      {/* 经典黑色人体工学隔热侧把手 */}
+      <path d="M 61 16 H 67 C 69 16, 70 18, 69 22 L 67 31 C 66 33, 64 34, 62 34 H 59" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" opacity="0.85" />
+    </g>
+
+    {/* 从壶嘴升腾的浓郁蒸汽与香气气团 */}
+    <path className="animate-coffee-steam-1" d="M 30 13 C 27 9, 32 5, 29 1" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path className="animate-coffee-steam-2" d="M 34 11 C 37 7, 33 3, 36 -1" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+
+    {/* 旁边放着的一杯已萃取出的 Espresso Demitasse 小杯 */}
+    <g transform="translate(76, 26)">
+      <ellipse cx="10" cy="12" rx="8" ry="1.8" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="0.8" />
+      <path d="M 4 3 C 4 9, 6 11, 10 11 C 14 11, 16 9, 16 3 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1" />
+      <ellipse cx="10" cy="3" rx="6" ry="1.6" fill="currentColor" fillOpacity="0.75" />
+      <path d="M 16 4 C 18.5 4, 18.5 8, 16 9" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      {/* 浓缩表层的金黄油脂 Crema 光泽 */}
+      <ellipse cx="10" cy="3" rx="4" ry="1" fill="#ffffff" opacity="0.6" />
+      <path className="animate-coffee-steam-3" d="M 10 0 C 9 -3, 12 -5, 10 -8" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </g>
+  </svg>
+);
+
+/** Tier 4 (RM20 / $6.5 / ¥20): 专业慢调手冲咖啡壶 (精品手冲 V60 滤杯、长颈细嘴壶与分享壶) */
+const ScenePourOver: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘基线 */}
+    <line x1="16" y1="38" x2="104" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3" />
+
+    {/* 手冲细嘴长颈壶 (Gooseneck Kettle) 正在精准注水 */}
+    <g className="animate-coffee-kettle-pour" style={{ transformOrigin: '32px 14px' }}>
+      {/* 壶身 */}
+      <path d="M 18 26 L 20 12 H 30 L 33 26 Z" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" />
+      <path d="M 21 12 Q 25 10 29 12" stroke="currentColor" strokeWidth="1" fill="none" />
+      {/* 壶把手 */}
+      <path d="M 18 14 C 13 14, 13 24, 18 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
+      {/* 优雅的天鹅颈细长壶嘴 (Gooseneck Spout) */}
+      <path d="M 32 23 C 37 21, 38 10, 43 9 L 45 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      {/* 缓缓注入的一道细水流 */}
+      <path d="M 45 11 Q 48 13 49 17" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.8" strokeDasharray="3 1" />
+    </g>
+
+    {/* V60 滤杯与玻璃分享壶整体 */}
+    <g className="animate-coffee-server-glow">
+      {/* 下方耐热玻璃咖啡分享壶 (Server Carat) */}
+      <path d="M 49 26 L 46 38 H 74 L 71 26 Z" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* 壶身刻度线与玻璃把手 */}
+      <line x1="50" y1="30" x2="54" y2="30" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
+      <line x1="49" y1="34" x2="55" y2="34" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
+      <path d="M 72 28 C 77 28, 77 36, 73 36" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.75" />
+      {/* 壶内积聚的金黄色咖啡液位 */}
+      <path d="M 47.5 33 L 46 38 H 74 L 72.5 33 Z" fill="currentColor" fillOpacity="0.45" />
+
+      {/* 上方 V60 圆锥形滤杯 (Cone Dripper) */}
+      <path d="M 46 17 L 54 26 H 66 L 74 17 Z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* 锥形滤纸边沿与咖啡粉层粉坑 */}
+      <path d="M 48 18 H 72" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+      <ellipse cx="60" cy="18" rx="8" ry="2" fill="currentColor" fillOpacity="0.65" />
+    </g>
+
+    {/* 滤出滴落的咖啡液滴动效 */}
+    <circle cx="60" cy="28.5" r="1.1" fill="currentColor" opacity="0.9" className="animate-coffee-drip" />
+
+    {/* 氤氲优雅的香气热气 */}
+    <path className="animate-coffee-steam-1" d="M 64 13 C 66 9, 62 5, 65 1" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    <path className="animate-coffee-steam-2" d="M 70 14 C 73 10, 68 6, 71 2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+  </svg>
+);
+
+/** Tier 5 (RM25 / $8 / ¥25): 殿堂冷萃冰滴塔与特调大冰球杯 (数小时慢滴萃取的夏日冰滴特调) */
+const SceneColdBrewTower: React.FC<{ isSelected?: boolean }> = () => (
+  <svg viewBox="0 0 115 44" className="w-full h-10 sm:h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* 桌面边缘 */}
+    <line x1="16" y1="38" x2="104" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3" />
+
+    {/* 精密古典冰滴咖啡塔架 (Dutch Cold Drip Tower) */}
+    <g className="animate-coffee-tower-drip">
+      {/* 木质/金属垂直支架 */}
+      <line x1="28" y1="6" x2="28" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+      <line x1="52" y1="6" x2="52" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+      <line x1="26" y1="6" x2="54" y2="6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.7" />
+      <line x1="26" y1="21" x2="54" y2="21" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
+
+      {/* 上层：晶莹冰块与冷水上壶 */}
+      <ellipse cx="40" cy="9" rx="9" ry="3" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1" />
+      <path d="M 31 9 C 31 15, 33 18, 40 18 C 47 18, 49 15, 49 9" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1" />
+      {/* 冰块多面体小轮廓 */}
+      <rect x="36" y="11" width="3.5" height="3.5" rx="0.5" fill="#ffffff" opacity="0.7" />
+      <rect x="41" y="12" width="3" height="3" rx="0.5" fill="#ffffff" opacity="0.6" />
+
+      {/* 中层：慢速点滴微调阀门与咖啡粉滤杯 */}
+      <circle cx="40" cy="20" r="1.5" fill="currentColor" opacity="0.9" />
+      <path d="M 34 22 L 36 28 H 44 L 46 22 Z" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="1" />
+
+      {/* 下层：慢萃深色冷萃咖啡收集烧瓶 */}
+      <path d="M 37 30 L 33 38 H 47 L 43 30 Z" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1" />
+      <path d="M 34.5 35 L 33 38 H 47 L 45.5 35 Z" fill="currentColor" fillOpacity="0.65" />
+      {/* 慢滴水珠动画 */}
+      <circle cx="40" cy="24" r="0.9" fill="currentColor" opacity="0.9" className="animate-coffee-drop-slow" />
+    </g>
+
+    {/* 旁边放着的威士忌特调杯与纯净大圆冰球 */}
+    <g transform="translate(68, 16)" className="animate-coffee-glass-shine">
+      {/* 厚底水晶古典杯 (Rock Glass) */}
+      <path d="M 6 4 L 9 22 H 27 L 30 4 Z" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      {/* 厚重玻璃底座 */}
+      <rect x="8.5" y="19" width="19" height="3" rx="1" fill="currentColor" fillOpacity="0.4" />
+      {/* 杯内冷萃咖啡液 */}
+      <path d="M 7.5 10 L 9 22 H 27 L 28.5 10 Z" fill="currentColor" fillOpacity="0.4" />
+
+      {/* 晶莹大圆冰球 (Crystal Ice Sphere) */}
+      <circle cx="18" cy="12" r="6" fill="#ffffff" fillOpacity="0.6" stroke="currentColor" strokeWidth="1" />
+      <ellipse cx="16" cy="10" rx="2" ry="1" fill="#ffffff" opacity="0.9" />
+
+      {/* 杯沿插着的一枚鲜亮香橙片点缀 */}
+      <path d="M 27 5 A 5 5 0 0 1 33 11 L 29 11 Z" fill="currentColor" fillOpacity="0.75" stroke="currentColor" strokeWidth="0.8" />
+    </g>
+
+    {/* 奢华冷萃香气与冰雾 */}
+    <path className="animate-coffee-steam-1" d="M 86 12 C 84 8, 88 5, 85 1" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
+    <path className="animate-coffee-steam-2" d="M 92 13 C 95 9, 91 6, 94 2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
+  </svg>
+);
+
+/* ── 6 个档位专属咖啡品类主题配置 (100% 咖啡主题、层次递进) ── */
 const TIER_STYLES = [
   {
     name: 'amber',
-    scene: SceneHeartPulse,
+    scene: SceneInstantCoffee,
     selected:
       'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
     unselected:
@@ -263,7 +353,7 @@ const TIER_STYLES = [
   },
   {
     name: 'orange',
-    scene: SceneDeskCoffee,
+    scene: SceneTakeawayCup,
     selected:
       'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
     unselected:
@@ -275,7 +365,7 @@ const TIER_STYLES = [
   },
   {
     name: 'blue',
-    scene: SceneInspirationBulb,
+    scene: SceneLatteArt,
     selected:
       'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
     unselected:
@@ -287,7 +377,7 @@ const TIER_STYLES = [
   },
   {
     name: 'emerald',
-    scene: SceneRocketLaunch,
+    scene: SceneMokaPot,
     selected:
       'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
     unselected:
@@ -299,7 +389,7 @@ const TIER_STYLES = [
   },
   {
     name: 'purple',
-    scene: SceneVinylTurntable,
+    scene: ScenePourOver,
     selected:
       'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
     unselected:
@@ -311,7 +401,7 @@ const TIER_STYLES = [
   },
   {
     name: 'rose',
-    scene: SceneCrownCelebration,
+    scene: SceneColdBrewTower,
     selected:
       'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
     unselected:
@@ -613,184 +703,163 @@ export const SupportDashboard: React.FC = () => {
     <div className="support-dashboard w-full max-w-[1240px] mx-auto px-3 sm:px-6 py-6 md:py-10 space-y-10 md:space-y-12 text-slate-800 dark:text-slate-100">
       {/* ── Scoped Keyframe Animations for Warm Interactive Creator SVG Scenes ── */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes supportHeartBeat {
-          0%, 100% { transform: scale(1); }
-          14% { transform: scale(1.18); }
-          28% { transform: scale(1); }
-          42% { transform: scale(1.12); }
-          70% { transform: scale(1); }
-        }
-        @keyframes supportRipple {
-          0% { transform: scale(0.85); opacity: 0.5; }
-          50% { transform: scale(1.15); opacity: 0.15; }
-          100% { transform: scale(0.85); opacity: 0.5; }
-        }
-        @keyframes supportSteamRise1 {
+        @keyframes coffeeSteamRise1 {
           0% { transform: translateY(0) scaleX(1); opacity: 0; }
           25% { opacity: 0.85; }
           70% { opacity: 0.45; }
           100% { transform: translateY(-7px) scaleX(1.3); opacity: 0; }
         }
-        @keyframes supportSteamRise2 {
+        @keyframes coffeeSteamRise2 {
           0% { transform: translateY(0) scaleX(1); opacity: 0; }
           30% { opacity: 0.9; }
           75% { opacity: 0.4; }
           100% { transform: translateY(-8px) scaleX(1.25); opacity: 0; }
         }
-        @keyframes supportSteamRise3 {
+        @keyframes coffeeSteamRise3 {
           0% { transform: translateY(0) scaleX(1); opacity: 0; }
           25% { opacity: 0.8; }
           80% { opacity: 0.35; }
           100% { transform: translateY(-6px) scaleX(1.2); opacity: 0; }
         }
-        @keyframes supportPlantSway {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(3.5deg); }
+        @keyframes coffeeSachetPour {
+          0%, 100% { transform: rotate(-36deg) translateY(0); }
+          50% { transform: rotate(-44deg) translateY(1px); }
         }
-        @keyframes supportBulbFloat {
+        @keyframes coffeeGranulesDrop {
+          0% { transform: translateY(0) scale(0.6); opacity: 0; }
+          35% { opacity: 0.95; }
+          75% { transform: translateY(4px) scale(1); opacity: 0.7; }
+          100% { transform: translateY(8px) scale(0.4); opacity: 0; }
+        }
+        @keyframes coffeeCupBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-1.5px) scale(1.02); }
+        }
+        @keyframes coffeeCupGentle {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-1.5px); }
+          50% { transform: translateY(-1px); }
         }
-        @keyframes supportRayGlow {
-          0%, 100% { opacity: 0.35; transform: scale(0.92); }
-          50% { opacity: 0.95; transform: scale(1.08); }
+        @keyframes coffeeLattePulse {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.05); opacity: 1; }
         }
-        @keyframes supportRocketHover {
+        @keyframes coffeeMokaRumble {
           0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-2px) rotate(1.2deg); }
+          25% { transform: translateY(-0.8px) rotate(-0.5deg); }
+          50% { transform: translateY(-1.4px) rotate(0.6deg); }
+          75% { transform: translateY(-0.4px) rotate(-0.3deg); }
         }
-        @keyframes supportFlameJet {
-          0%, 100% { transform: scale(0.85, 0.9); opacity: 0.75; }
-          50% { transform: scale(1.18, 1.2); opacity: 1; }
+        @keyframes coffeeKettlePour {
+          0%, 100% { transform: rotate(0deg) translateY(0); }
+          50% { transform: rotate(-5deg) translateY(-1px); }
         }
-        @keyframes supportVinylSpin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        @keyframes coffeeServerGlow {
+          0%, 100% { opacity: 0.95; }
+          50% { opacity: 1; }
         }
-        @keyframes supportNoteFloat1 {
-          0% { transform: translateY(2px) rotate(0deg); opacity: 0.2; }
-          40% { opacity: 0.95; }
-          80% { opacity: 0.7; }
-          100% { transform: translateY(-8px) rotate(-10deg); opacity: 0; }
+        @keyframes coffeeDripDrop {
+          0% { transform: translateY(0) scale(0.6); opacity: 0; }
+          30% { opacity: 1; transform: translateY(1.5px) scale(1); }
+          80% { opacity: 0.8; transform: translateY(5px) scale(0.8); }
+          100% { transform: translateY(7px) scale(0.2); opacity: 0; }
         }
-        @keyframes supportNoteFloat2 {
-          0% { transform: translateY(2px) rotate(0deg); opacity: 0.2; }
-          45% { opacity: 0.9; }
-          85% { opacity: 0.6; }
-          100% { transform: translateY(-7px) rotate(12deg); opacity: 0; }
-        }
-        @keyframes supportCrownFloat {
+        @keyframes coffeeTowerDrip {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-2.2px); }
+          50% { transform: translateY(-0.8px); }
         }
-        @keyframes supportConfettiPop {
-          0%, 100% { transform: scale(0.92); opacity: 0.6; }
-          50% { transform: scale(1.08); opacity: 1; }
+        @keyframes coffeeDropSlow {
+          0% { transform: translateY(0) scale(0.5); opacity: 0; }
+          25% { opacity: 1; transform: translateY(1px) scale(1); }
+          75% { opacity: 0.85; transform: translateY(7px) scale(0.9); }
+          100% { transform: translateY(11px) scale(0.3); opacity: 0; }
         }
-        @keyframes supportTwinkle1 {
-          0%, 100% { transform: scale(0.8); opacity: 0.3; }
-          50% { transform: scale(1.15); opacity: 0.95; }
-        }
-        @keyframes supportTwinkle2 {
-          0%, 100% { transform: scale(1.1); opacity: 0.85; }
-          50% { transform: scale(0.75); opacity: 0.25; }
+        @keyframes coffeeGlassShine {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.2px); }
         }
 
-        .animate-support-heart-beat {
-          animation: supportHeartBeat 1.4s ease-in-out infinite;
+        .animate-coffee-steam-1 {
+          animation: coffeeSteamRise1 2.4s ease-in-out infinite;
         }
-        .animate-support-ripple {
-          animation: supportRipple 2.2s ease-in-out infinite;
+        .animate-coffee-steam-2 {
+          animation: coffeeSteamRise2 2.8s ease-in-out 0.6s infinite;
         }
-        .animate-support-steam-1 {
-          animation: supportSteamRise1 2.4s ease-in-out infinite;
+        .animate-coffee-steam-3 {
+          animation: coffeeSteamRise3 2.2s ease-in-out 1.2s infinite;
         }
-        .animate-support-steam-2 {
-          animation: supportSteamRise2 2.8s ease-in-out 0.6s infinite;
+        .animate-coffee-sachet-pour {
+          animation: coffeeSachetPour 2.6s ease-in-out infinite;
         }
-        .animate-support-steam-3 {
-          animation: supportSteamRise3 2.2s ease-in-out 1.2s infinite;
+        .animate-coffee-granules {
+          animation: coffeeGranulesDrop 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-        .animate-support-plant-sway {
-          animation: supportPlantSway 3.5s ease-in-out infinite;
-          transform-origin: 84px 30px;
+        .animate-coffee-cup-bounce {
+          animation: coffeeCupBounce 2.8s ease-in-out infinite;
         }
-        .animate-support-bulb-float {
-          animation: supportBulbFloat 2.5s ease-in-out infinite;
+        .animate-coffee-cup-gentle {
+          animation: coffeeCupGentle 3s ease-in-out infinite;
         }
-        .animate-support-ray-glow {
-          animation: supportRayGlow 2s ease-in-out infinite;
+        .animate-coffee-latte-pulse {
+          animation: coffeeLattePulse 2.4s ease-in-out infinite;
         }
-        .animate-support-rocket-hover {
-          animation: supportRocketHover 2.2s ease-in-out infinite;
+        .animate-coffee-moka-rumble {
+          animation: coffeeMokaRumble 2.2s ease-in-out infinite;
         }
-        .animate-support-flame-jet {
-          animation: supportFlameJet 0.4s ease-in-out infinite alternate;
-          transform-origin: 52px 34px;
+        .animate-coffee-kettle-pour {
+          animation: coffeeKettlePour 3.2s ease-in-out infinite;
         }
-        .animate-support-flame-inner {
-          animation: supportFlameJet 0.35s ease-in-out 0.1s infinite alternate;
-          transform-origin: 51px 34px;
+        .animate-coffee-server-glow {
+          animation: coffeeServerGlow 2.5s ease-in-out infinite;
         }
-        .animate-support-vinyl-spin {
-          animation: supportVinylSpin 4s linear infinite;
+        .animate-coffee-drip {
+          animation: coffeeDripDrop 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-        .animate-support-note-float-1 {
-          animation: supportNoteFloat1 2.6s ease-in-out infinite;
+        .animate-coffee-tower-drip {
+          animation: coffeeTowerDrip 3.5s ease-in-out infinite;
         }
-        .animate-support-note-float-2 {
-          animation: supportNoteFloat2 2.8s ease-in-out 0.9s infinite;
+        .animate-coffee-drop-slow {
+          animation: coffeeDropSlow 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-        .animate-support-crown-float {
-          animation: supportCrownFloat 2.4s ease-in-out infinite;
-        }
-        .animate-support-confetti-pop {
-          animation: supportConfettiPop 2s ease-in-out infinite;
-          transform-origin: 56px 22px;
-        }
-        .animate-support-twinkle-1 {
-          animation: supportTwinkle1 2s ease-in-out infinite;
-          transform-origin: center;
-        }
-        .animate-support-twinkle-2 {
-          animation: supportTwinkle2 2.4s ease-in-out 0.8s infinite;
-          transform-origin: center;
+        .animate-coffee-glass-shine {
+          animation: coffeeGlassShine 3s ease-in-out infinite;
         }
 
-        /* 悬浮微交互：各场景独立加速与高亮 */
-        .group:hover .animate-support-heart-beat {
-          animation-duration: 0.8s;
+        /* 悬浮微交互：各咖啡场景独立加速 */
+        .group:hover .animate-coffee-sachet-pour {
+          animation-duration: 1.5s;
         }
-        .group:hover .animate-support-steam-1 {
-          animation-duration: 1.4s;
+        .group:hover .animate-coffee-granules {
+          animation-duration: 1.0s;
         }
-        .group:hover .animate-support-steam-2 {
+        .group:hover .animate-coffee-cup-bounce {
           animation-duration: 1.6s;
         }
-        .group:hover .animate-support-steam-3 {
+        .group:hover .animate-coffee-latte-pulse {
           animation-duration: 1.3s;
         }
-        .group:hover .animate-support-ray-glow {
+        .group:hover .animate-coffee-moka-rumble {
           animation-duration: 1.2s;
-          opacity: 1;
         }
-        .group:hover .animate-support-flame-jet {
-          animation-duration: 0.2s;
-        }
-        .group:hover .animate-support-vinyl-spin {
+        .group:hover .animate-coffee-kettle-pour {
           animation-duration: 1.8s;
         }
-        .group:hover .animate-support-note-float-1 {
-          animation-duration: 1.6s;
+        .group:hover .animate-coffee-drip {
+          animation-duration: 0.9s;
         }
-        .group:hover .animate-support-note-float-2 {
-          animation-duration: 1.7s;
-        }
-        .group:hover .animate-support-crown-float {
+        .group:hover .animate-coffee-drop-slow {
           animation-duration: 1.4s;
         }
-        .group:hover .animate-support-confetti-pop {
-          animation-duration: 1.2s;
+        .group:hover .animate-coffee-glass-shine {
+          animation-duration: 1.5s;
+        }
+        .group:hover .animate-coffee-steam-1 {
+          animation-duration: 1.4s;
+        }
+        .group:hover .animate-coffee-steam-2 {
+          animation-duration: 1.6s;
+        }
+        .group:hover .animate-coffee-steam-3 {
+          animation-duration: 1.3s;
         }
       ` }} />
 

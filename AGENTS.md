@@ -2520,3 +2520,23 @@
   2. 三大板块（热门标签 + 精选分类 + 站点资讯）间通过精致的 1px 虚线分割线（`dashed border`）与 14px 呼吸间距区隔，层次井然；
   3. 运行端到端自动化测试（`scripts/verify-home-tag-sticky.mjs`），滑动至页面底部时粘性卡片底边与左侧 `#home-pagination` 底边保持 **0.20px 零误差绝对齐平**（实测 `0.203125px`）；
   4. 生产编译全量通过（149 页面构建完成，0 报错），全景视觉截图留存。
+
+### Task 112: 赞赏预设卡片全面回归纯粹咖啡主题——6档专业咖啡冲煮品类生动SVG交互、高度恒定(~54px)与生产端全链路实测
+- [x] **彻底根除与咖啡无关的杂质意向 (100% Pure Coffee Brewing Culture & Zero Cookie-Cutter)**：
+  1. 深入落实用户核心批评：“都说了是请一杯咖啡，你上面还是一些完全和咖啡无关的内容。咖啡本身就有很多不同的种类，意向也不同，例如最普通的速溶咖啡就是一个小杯子放速溶咖啡的svg、还有后面的直接商品咖啡等！”；
+  2. 彻底清除火箭、黑胶唱片、王冠、灵感灯泡等非咖啡元素，6 档预设卡片全部重构为**文化纯粹、画风和谐、专业生动的咖啡品类与冲煮仪式递进阶梯**：
+     - **Tier 0 (`RM3` / `¥4` / `$1`) - 便捷速溶咖啡条与小纸杯 (`SceneInstantCoffee`)**：倾斜撕开的细长速溶包装条（`animate-coffee-sachet-pour` 倾倒动效）、散落掉入杯中的咖啡细微颗粒（`animate-coffee-granules` 下坠动效）、便捷波纹纸杯与袅袅升腾的晨间双缕热气（`animate-coffee-steam-1/2`）；
+     - **Tier 1 (`RM8` / `¥9` / `$2.5`) - 经典商品外带咖啡纸杯 (`SceneTakeawayCup`)**：经典街角外带咖啡纸杯（`animate-coffee-cup-bounce` 轻盈微浮弹动）、专业防溢外凸杯盖与小吸口、加厚瓦楞隔热杯套（嵌爱心咖啡徽标）、杯口升腾热气与杯旁两颗饱满烘焙咖啡豆；
+     - **Tier 2 (`RM13` / `¥14` / `$4`) - 精致意式拿铁拉花陶瓷杯 (`SceneLatteArt`)**：默认推荐热门档位，双层圆润陶瓷咖啡杯与宽托盘、杯内精致心形拿铁拉花奶泡（`animate-coffee-latte-pulse` 柔和脉动呼吸）、3 缕香浓热气（`animate-coffee-steam-1/2/3`）与托盘边咖啡豆；
+     - **Tier 3 (`RM17` / `¥16` / `$5`) - 经典意式八角摩卡壶萃取 (`SceneMokaPot`)**：经典 Bialetti 风格八角金属摩卡壶（`animate-coffee-moka-rumble` 萃取微振颤动效）、纯铜安全泄压阀、鹰嘴出液口喷出浓郁蒸汽、旁边放着一杯刚萃出的带金黄油脂 Crema 的浓缩咖啡小杯（Espresso Demitasse）；
+     - **Tier 4 (`RM20` / `¥20` / `$6.5`) - 专业慢调手冲咖啡壶 (`ScenePourOver`)**：优雅天鹅颈长颈细嘴手冲壶（`animate-coffee-kettle-pour` 倾斜慢速注水）、均匀注出一道水流汇入 V60 圆锥形滤杯与粉坑、耐热玻璃分享壶刻度线与慢速滴落的咖啡液滴动效（`animate-coffee-drip`）；
+     - **Tier 5 (`RM25` / `¥25` / `$8`) - 殿堂冷萃冰滴塔与特调杯 (`SceneColdBrewTower`)**：古典双立柱荷兰冰滴塔架（`animate-coffee-tower-drip`）、上层晶莹冰块储水室、中层精密点滴微调阀门与收集烧瓶（`animate-coffee-drop-slow` 慢滴萃取动效）、旁边放着盛有晶莹剔透大圆冰球与香橙片点缀的水晶古典杯（Rock Glass with Ice Sphere）。
+- [x] **纯粹定价与高度物理恒定 (Strict Physical Invariant Height & Zero Bureaucratic Pricing)**：
+  1. 彻底清除“微额”、“日常”、“算力”、“基建”等官僚化词语，仅展示高对比纯粹金额；
+  2. 卡片高度强制约束为 `min-h-[50px] sm:min-h-[54px] max-h-[54px]`，实测全分辨率下卡片高度恒定为 **54.0px**；
+  3. 左右两列（收银台与扫码通道）上下顶底绝对齐平，误差严格为 **0.0px**。
+- [x] **本地与 Cloudflare Pages 生产真实环境 Playwright 端到端全景测试**：
+  1. 运行本地自动化测试套件（`scripts/verify-support-refined.mjs`），所有断言 100% 通过；
+  2. 部署至 Cloudflare Pages 生产边缘节点（项目：`shijianus-blog`，生产域名：`https://blog.epocanvas.com/support/`，部署版本 `2095e038`）；
+  3. 针对生产真实域名运行 `scripts/verify-live-support-refined.mjs`，桌面、平板、手机视口及深浅色模式断言 100% 全绿，全套生产截图留存完毕。
+
