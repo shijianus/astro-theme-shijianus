@@ -226,12 +226,15 @@ const WEBINFO_METRIC_DEFAULTS: Record<
   },
 };
 
-const configuredWebinfoItems = (siteConfig.aside as any).overviewCard?.webinfo?.items || [
-  { key: 'posts' },
-  { key: 'runtime' },
-  { key: 'words' },
-  { key: 'lastUpdate' },
-];
+// Site Info 严格限制展示 4 个指标卡片为上限，其余作为可自由配置切换的单一卡片候选池
+const configuredWebinfoItems = (
+  (siteConfig.aside as any).overviewCard?.webinfo?.items || [
+    { key: 'posts' },
+    { key: 'runtime' },
+    { key: 'words' },
+    { key: 'lastUpdate' },
+  ]
+).slice(0, 4);
 
 const resolvedWebinfoItems = configuredWebinfoItems.map((item: any) => {
   const def = WEBINFO_METRIC_DEFAULTS[item.key] || {
@@ -246,13 +249,6 @@ const resolvedWebinfoItems = configuredWebinfoItems.map((item: any) => {
     tooltip: item.tooltip ?? def.tooltip,
   };
 });
-
-const quickBadges = (siteConfig.aside as any).overviewCard?.webinfo?.quickBadges || [
-  { label: '归档', href: '/archives/' },
-  { label: '分类', href: '/categories/' },
-  { label: '标签', href: '/tags/' },
-  { label: '标准', href: '/standards/' },
-];
 
 const runtimeDays = Math.max(
   1,
@@ -484,13 +480,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
                       <Tags className="aside-title-icon" aria-hidden="true" />
                       <span>{currentLang === 'en' ? 'Popular Tags' : '热门标签'}</span>
                     </a>
-                    {sortedHomeTags.length > 0 && (
-                      <a class="card-more-btn" href="/tags/" title={currentLang === 'en' ? 'View all tags' : '查看全部标签'}>
-                        <span class="card-more-count">{sortedHomeTags.length}</span>
-                        <span class="card-more-unit">{currentLang === 'en' ? 'tags' : '个'}</span>
-                        <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
-                      </a>
-                    )}
                   </div>
                   <div class="card-tag-cloud">
                     {displayedHomeTags.map((tag) => (
@@ -514,11 +503,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
                         <FolderOpen className="aside-title-icon" aria-hidden="true" />
                         <span>{currentLang === 'en' ? 'Featured Categories' : '精选分类'}</span>
                       </a>
-                      <a class="card-more-btn" href="/categories/" title={currentLang === 'en' ? 'View all categories' : '查看全部分类'}>
-                        <span class="card-more-count">{categories.length}</span>
-                        <span class="card-more-unit">{currentLang === 'en' ? 'cats' : '类'}</span>
-                        <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
-                      </a>
                     </div>
                     <div class="card-category-chips">
                       {categories.slice(0, 6).map((cat) => (
@@ -535,7 +519,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
                   </div>
                 )}
 
-                <!-- 3. 网站资讯与极客统计 (深度同步 console-card console-webinfo 扫描引擎) -->
+                <!-- 3. 网站资讯与极客统计 (深度同步 console-card console-webinfo 扫描引擎，上限严格4个) -->
                 <div class="overview-section overview-section--webinfo">
                   <div class="item-headline item-headline--sub">
                     <div class="item-headline__left">
@@ -562,15 +546,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
                       )
                     )}
                   </div>
-                  {quickBadges.length > 0 && (
-                    <div class="webinfo-quick-badges">
-                      {quickBadges.map((badge: any) => (
-                        <a href={badge.href} class="quick-badge-chip">
-                          <span>{badge.label}</span>
-                        </a>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </section>
             </div>

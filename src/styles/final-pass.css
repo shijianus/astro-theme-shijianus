@@ -5907,11 +5907,6 @@ body[data-type='home'] .card-tag-cloud-panel .item-headline__title-link:hover {
   color: var(--theme-main) !important;
 }
 
-body[data-type='home'] .card-tag-cloud-panel .item-headline:hover .card-more-btn {
-  background: var(--theme-main) !important;
-  color: #ffffff !important;
-}
-
 body[data-type='home'] .overview-section--tags .card-tag-cloud {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -6031,38 +6026,6 @@ body[data-type='home'] a.webinfo-item:hover {
 
 body[data-type='home'] a.webinfo-item:hover .webinfo-label {
   color: var(--theme-main) !important;
-}
-
-/* Quick Exploration Badges Strip */
-body[data-type='home'] .webinfo-quick-badges {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 6px !important;
-  margin-top: 4px !important;
-}
-
-body[data-type='home'] .quick-badge-chip {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 4.5px 6px !important;
-  border-radius: 6px !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important;
-  background: color-mix(in srgb, var(--font-color) 3%, transparent) !important;
-  color: var(--secondtext) !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-sizing: border-box !important;
-}
-
-body[data-type='home'] .quick-badge-chip:hover {
-  background: var(--theme-main) !important;
-  border-color: var(--theme-main) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 3px 8px rgba(66, 90, 239, 0.2) !important;
 }
 
 body[data-type='home'] .feature-panel-recent .aside-list,

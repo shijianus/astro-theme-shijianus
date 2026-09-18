@@ -65,6 +65,7 @@ async function verifyLive() {
           webinfoLabels,
           titleLinks,
           moreBtns,
+          moreBtnsInCardCount: moreBtns.length,
           quickBadgesCount: quickBadges.length,
           hasLegacyCoreProtocol: webinfoLabels.some(l => l.includes('核心协议')),
           hasDynamicWordsOrUpdate: webinfoLabels.some(l => l.includes('全站字数') || l.includes('最后推送') || l.includes('Words')),
@@ -80,18 +81,20 @@ async function verifyLive() {
       console.log(`   - aside-sticky-box-overview: ${cardInfo.stickyBoxExists}`);
       console.log(`   - tags rendered: ${cardInfo.tagCount}`);
       console.log(`   - category chips: ${cardInfo.categoryChipsCount}`);
-      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount} (${cardInfo.webinfoLabels.join(', ')})`);
+      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount} (exactly 4 = ${cardInfo.webinfoItemsCount === 4}) [${cardInfo.webinfoLabels.join(', ')}]`);
       console.log(`   - has legacy '核心协议': ${cardInfo.hasLegacyCoreProtocol}`);
       console.log(`   - title links: ${cardInfo.titleLinks.join(', ')}`);
-      console.log(`   - more buttons: ${cardInfo.moreBtns.join(', ')}`);
-      console.log(`   - quick badges: ${cardInfo.quickBadgesCount}`);
+      console.log(`   - card-more-btn in card (must be 0): ${cardInfo.moreBtnsInCardCount}`);
+      console.log(`   - quick badges (must be 0): ${cardInfo.quickBadgesCount}`);
 
       if (
         cardInfo.cardExists &&
         cardInfo.stickyBoxExists &&
         cardInfo.tagCount <= 24 &&
         cardInfo.categoryChipsCount > 0 &&
-        cardInfo.webinfoItemsCount >= 4 &&
+        cardInfo.webinfoItemsCount === 4 &&
+        cardInfo.moreBtnsInCardCount === 0 &&
+        cardInfo.quickBadgesCount === 0 &&
         !cardInfo.hasLegacyCoreProtocol &&
         cardInfo.hasDynamicWordsOrUpdate &&
         cardInfo.titleLinks.length >= 2

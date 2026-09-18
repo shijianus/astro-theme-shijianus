@@ -493,21 +493,21 @@ export const siteConfig = {
       categoriesLimit: 6,
       webinfo: {
         liveStatusText: '正常运行',
-        // 内置可自由配置的站点指标（深度同步 console-card console-webinfo 扫描引擎）
-        // 支持的指标 key: 'posts' | 'runtime' | 'words' | 'lastUpdate' | 'tags' | 'version' | 'activeLevel' | 'density' | 'reading' | 'architecture' | 'custom'
+        // 站点资讯指标卡片：上限最多展示 4 个，深度同步 console-card console-webinfo 扫描引擎
+        // 默认激活的 4 个基础卡片：
         items: [
           { key: 'posts', label: '文章总数', href: '/archives/' },
           { key: 'runtime', label: '建站运行' },
           { key: 'words', label: '全站字数' }, // 彻底替换静态“核心协议”，动态同步全站 Markdown 扫描字数
           { key: 'lastUpdate', label: '最后推送', href: 'auto' }, // 自动指向最新发布文章
         ],
-        // 推荐内置附加组件：极客速达胶囊条（Quick Exploration Strip）
-        quickBadges: [
-          { label: '归档', href: '/archives/' },
-          { label: '分类', href: '/categories/' },
-          { label: '标签', href: '/tags/' },
-          { label: '标准', href: '/standards/' },
-        ],
+        // 可自由切换替代的单一卡片候选池（用户可将上述 items 中的任意项替换为以下候选组件之一，最多保留4个）：
+        // - { key: 'tags', label: '标签总数', href: '/tags/' }
+        // - { key: 'version', label: '版本协议', href: '/version/' }
+        // - { key: 'activeLevel', label: '活跃等级', href: '/standards/' }
+        // - { key: 'density', label: '内容密度', href: '/standards/' }
+        // - { key: 'reading', label: '全站阅读' }
+        // - { key: 'architecture', label: '系统架构' }
       },
     },
   },

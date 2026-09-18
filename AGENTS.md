@@ -2668,3 +2668,24 @@
      - 英雄区：语言版本标签变为 `Translations:`，原创徽章变为 `Original`（PASS）；
      - 延伸阅读：标题变为 `Related Posts`（PASS）；
      - 其它既有核心测试：六国语言即时无刷新切换、URL 唯一性规范、TOC 对齐等全部 100% 保持正常。
+
+### Task 119: 彻底移除 overview 卡片中 card-more-btn、严格限制 Site Info 4 项上限并收敛为可切换候选池 (`54bf346`)
+- [x] **彻底移除 `class="card-tag-cloud-panel"` 内冗余的 `class="card-more-btn"`**:
+  1. 遵照用户明确指示：“你没有删除class="card-more-btn"请删除，因为前面已经存在这个功能了”，全面排查并彻底删除 `overview-section--tags`（热门标签）与 `overview-section--categories`（精选分类）内的 `class="card-more-btn"` 元素；
+  2. 依托此前建立的 `.item-headline__title-link` 架构，用户点击标题文字或 Lucide 图标即可自然平滑跳转至 `/tags/` 与 `/categories/`，功能完整且杜绝重复按键；
+  3. 清理 `src/styles/final-pass.css` 中残留的 `.card-tag-cloud-panel .item-headline:hover .card-more-btn` 规则，保持代码纯净。
+- [x] **严格限制 `class="overview-section overview-section--webinfo"` 4 个卡片为上限，收敛附加胶囊条为配置式候选池**:
+  1. 遵照用户明确指示：“Site Info只需要4个，其它的不是直接展示的，而是作为可以(便于用户添加)切换的其它的单一卡片替代已有的class="webinfo-item"卡片的，而且最多就是4个为上限”；
+  2. 彻底从 DOM 和 CSS 中移除此前直接渲染的 `webinfo-quick-badges`（极客速达胶囊条），不占用直接展示空间；
+  3. 在 `Sidebar.astro` 中对配置项施加硬性截断 `configuredWebinfoItems.slice(0, 4)`，确保前台 UI 严格呈现且仅呈现 2×2 极简四宫格（文章总数、建站运行、全站字数、最后推送）；
+  4. 在 `src/config/site.ts` 完善规范说明与单一卡片候选池注释，清晰说明用户可自由将 `items` 中的任一项替换为 `tags`、`version`、`activeLevel`、`density`、`reading` 或 `architecture` 单一卡片组件。
+- [x] **生产环境 (Cloudflare Pages) 全量真实链路验证通过**:
+  1. 全站 154 页面 Clean Build 编译通过（48.78s）；
+  2. 部署至 Cloudflare Pages 生产边缘节点（`c6cee189.shijianus-blog.pages.dev`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com` 运行 Playwright 端到端自动化审计（`scripts/verify-live-home-sticky.mjs`），所有断言 100% 绿色通过：
+     - `card-more-btn in card: 0`（完全绝迹）；
+     - `quick badges in card: 0`（完全绝迹）；
+     - `webinfo items: 4 (exactly 4 = true)`（严格 4 个指标卡片）；
+     - `title links: /tags/, /categories/`（标题超链接畅通无阻）；
+     - 粘性卡片底端与 `#home-pagination` 分页器底端误差稳定在 `0.203px`；
+     - 实拍验证截图留存：`02_live_tag_card_closeup.png` 与 `04_live_home_bottom_aligned.png`。
