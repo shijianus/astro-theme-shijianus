@@ -2599,7 +2599,7 @@
      - Check 2.4: 首页 Hero 双卡单行平铺并列（Banner: 705px, TopGroup: 620px）；
      - Check 2.5: 赞赏预设卡片严格保持 3 列排布（6 张卡片双行各 3 列对齐）。
 
-### Task 116: 赞赏预设卡片矢量插画多色立体化升维、纯粹咖啡冲煮艺术质感打磨与全链路生产端实测
+### Task 116: 赞赏预设卡片矢量插画多色立体化升维、纯粹咖啡冲煮艺术质感打磨与全链路生产端实测 (`98ee513`)
 - [x] **根除单色线框图素与粗糙感，全面升级为多色多阶珐琅质感矢量插画 (Masterclass Multi-Tone Enamel Vector Scenes)**:
   1. 深度落实用户批评：“当前的svg动画做得太糟糕了！再次寻找合适的svg或者进一步的优化——当前感官非常糟糕”；彻底重构此前单色、半透明（`opacity: 20%~35%`）、类似 CAD 线框的生硬描线；
   2. 运用独立线性与径向渐变（`coffee-grad-sachet`、`coffee-grad-cup-paper`、`coffee-grad-ceramic`、`coffee-grad-moka-light/dark`、`coffee-grad-kettle`、`coffee-grad-coldbrew`、`coffee-grad-ice-cube`）、纯白高光、深邃烘焙咖啡色（`#4a2411`）、温暖奶泡色（`#fdfaf5`）与柔和投影（`filter="url(#coffee-drop-shadow)"`），打造饱满精致、立体且引人入胜的视觉品相；
