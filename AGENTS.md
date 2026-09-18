@@ -2709,3 +2709,38 @@
      - `quick badges in card: 0`；
      - 粘性卡片底端与 `#home-pagination` 分页器底端误差稳定在 `0.203px`；
      - 实拍验证截图留存：`02_live_tag_card_closeup.png` 与 `04_live_home_bottom_aligned.png`。
+
+### Task 121: topGroup 统一精致背板重构、对齐 (bannerGroup 上下 / profileCard 最右侧) 与全场景回退机制 (`b1a4cc6`)
+- [x] **统一精致背板架构与像素级严格对齐 (`bannerGroup` 与 `profileCard`)**:
+  1. 遵照用户明确指示：“缺少翻转回去的回退机制啊！建议是还是需要一个背板来方便点击背板进行翻转！同时背板需要对齐id="bannerGroup"的上下以及class="card-widget card-info profile-card "的最右侧！”；
+  2. 彻底废弃杂乱倾斜的旧堆叠背板（`stack-back--one`、`stack-back--two`），重构为非倾斜、统一包裹的精致背板容器（`class="topGroup__backboard"`，`border-radius: 16px`）；
+  3. 精准几何网格计算：
+     - 容器宽度：644px；
+     - 容器高度：348px；
+     - 上边界垂直误差（`topDiff`）：`bannerGroup.top (142px) === topGroup.top (142px)`，误差 **0px**；
+     - 下边界垂直误差（`bottomDiff`）：`bannerGroup.bottom (490px) === topGroup.bottom (490px)`，误差 **0px**；
+     - 右边界对齐误差（`rightDiff`）：`profileCard.right (1416px) === topGroup.right (1416px)`，误差 **0px**（绝对像素级平齐）。
+- [x] **全场景回退机制与三维立体交互保障**:
+  1. **显式控制条与返回按钮（Return Badge）**:
+     - 在 `.topGroup` 顶部专门开辟 34px 高度内嵌控制条（`.topGroup__header`），左侧显示 `✦ 精选文章` 标识，右侧放置胶囊形返回标贴 `<label for="today-card-toggle" class="topGroup__backboard-badge">`（带回退箭头图标与“返回今日推荐”字样）；
+     - 控制条位于卡片网格外独立排布，卡片网格下移并设定 `padding: 34px 8px 8px 8px`，**彻底杜绝任何卡片文字或图片被遮挡**（`allCardsBelowHeader: true`, `allTitlesInside: true`）；
+  2. **背板空白区/缝隙一键回退（Backboard Click）**:
+     - `.topGroup__header` 设定 `pointer-events: none`（其子元素 badge 为 `auto`），背板设定 `pointer-events: auto`，点击顶部栏任意非按钮区域、卡片间隙或外围衬垫，事件精准穿透触发 `#today-card-toggle` 关闭回退；
+  3. **键盘 ESC 按键监听回退（Keyboard Escape）**:
+     - 监听全局 `keydown` 事件，当处于 6 卡片展开状态时按下 `Escape` 键立即收起翻转回 `todayCard`；
+  4. **卡片独立导航隔离**:
+     - 为所有 `.recent-post-item` 注入 `e.stopPropagation()`，点击文章卡片或标题链接直接正常跳转文章详情页，绝不发生误触回退。
+- [x] **生产环境 (Cloudflare Pages) 全量真实链路验证通过**:
+  1. 本地 Playwright 端到端全量测试全部通过（`scripts/verify-backboard-alignment.mjs`）；
+  2. 执行 `git commit`（`b1a4cc6`）并双远端同步推送至 `origin` 与 `cf`；
+  3. 构建全站 154 页面并直接部署至 Cloudflare Pages 生产边缘节点（`d3280d36.shijianus-blog.pages.dev`）；
+  4. 针对生产真实域名 `https://blog.epocanvas.com` 运行 Playwright 端到端自动化审计（`scripts/verify-live-epocanvas-backboard.mjs`），断言全部 100% 绿色通过：
+     - `bannerHeight: 348, tgHeight: 348, topDiff: 0, bottomDiff: 0`；
+     - `profileRight: 1416, tgRight: 1416, rightDiff: 0`（像素级对齐）；
+     - `allCardsBelowHeader: true, allTitlesInside: true, allTitlesClamped: true`（0 遮挡，0 溢出）；
+     - `return badge click: isChecked = false`（测试通过）；
+     - `backboard click: isChecked = false`（测试通过）；
+     - `escape key: isChecked = false`（测试通过）；
+     - 浅色/深色主题与移动端响应式布局均完美验证；
+     - 视觉实拍证据链留存：`live_backboard_01_default_light.png`、`live_backboard_02_cards_toggled_light.png`、`live_backboard_03_topgroup_cards_light.png`、`live_backboard_04_returned_todaycard.png`、`live_backboard_05_cards_toggled_dark.png`、`live_backboard_06_topgroup_cards_dark.png`、`live_backboard_07_mobile.png`。
+
