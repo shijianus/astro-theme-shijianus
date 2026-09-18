@@ -1,17 +1,11 @@
 ---
-title: "Umfassender Überblick! Vollständiger Leitfaden zu Leser‑Stufen, Titeln und Abzeichen im EpoCanvas‑Blog (2026 fortlaufend aktualisiert)"
-description: "Umfassende Übersicht über die von EpoCanvas Blog selbst entwickelte Vertrauensstufe (TL.0 ~ TL.100+), 11 reguläre Leser‑Titel, 6 exklusive Ehrentitel, Administrator‑ und Webmaster‑Rechte, die Berechnungsalgorithmen und Freischalt‑Tipps für über 15 Errungenschafts‑Abzeichen. LV‑Zugangsschwelle und TL‑Gewicht‑Doppelsystem, 35‑Punkte‑Aktivitätsobergrenze, Durchbruch über 100+ Privilegien, Wasserfall‑Kette, Fallen‑Vermeidung‑Leitfaden und vollständige Enthüllung der Visitenkarten‑Gestaltung."
+title: "Umfassende Übersicht! Der vollständige Leitfaden zum Erwerb von Leserleveln, Titeln und Abzeichen im EpoCanvas Blog (Kontinuierlich aktualisiert 2026)"
+description: "Eine umfassende Übersicht über die von EpoCanvas Blog selbst entwickelten Vertrauensstufen (TL.0 ~ TL.100+), 11 reguläre Lesertitel, 6 große vergriffene Ehrentitel, Administrator- und Webmaster-Berechtigungen, sowie die Bewertungsalgorithmen und Freischaltgeheimnisse von über 15 Erfolgsabzeichen. Das zweigleisige System aus LV-Zugangsschwellen und TL-Gewichtung, die 35-Punkte-Obergrenze für Aktivitäten, Privilegien für über 100+, Kaskadenketten, ein Leitfaden zur Vermeidung von Fallstricken und die vollständige Enthüllung des Visitenkarten-Layouts."
 pubDate: 2026-09-12
 author: "shijianus"
-category: "Community‑Leitfaden"
+category: "Community-Leitfaden"
 group: "Offizielle Richtlinien"
-tags:
-  - "Community‑Leitfaden"
-  - "Leser‑Community"
-  - "Stufenleiter"
-  - "Abzeichen‑System"
-  - "EpoCanvas"
-  - "Astro"
+tags: ["Community-Leitfaden", "Leser-Community", "Level-Stufen", "Abzeichen-System", "EpoCanvas", "Astro"]
 cover: "/media/shijianus/geek-cover.jpg"
 coverAlt: "EpoCanvas Badges and Community Leveling Guide"
 toc: true
@@ -21,73 +15,72 @@ i18nKey: "badges-guide"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
 ---
+Hallo an alle Geek-Entwickler, Stammleser und tiefgründigen Blogfreunde!
 
-各位极客开发者、常驻读者与深研博友们，大家好！
+Oft fragen sich aufmerksame Freunde, wenn sie am Ende von Blogartikeln interagieren oder mit der Maus über die Avatar-Bilder im Kommentarbereich fahren: Warum tragen einige Leser **„LV.1 · Mitwirkender“**, andere das strahlende **„LV.3 · Pionier“**, und eine sehr kleine Anzahl von Kernlesern zeigt sogar glänzende Zahlen wie **„📜 Gründungs-Schreiber“** oder **„TL.102“**, die die Obergrenze durchbrechen? Wie werden die Bezeichnungen **„☕ Langsame Lesezeit“** und **„💎 Tief geschätzt“** in der Visitenkarten-Einblendung aktiviert? Und warum hat der Avatar des Webmasters eine einzigartige, leicht abgerundete quadratische Form mit einer goldenen Krone?
 
-经常有细心的朋友在博客文章底部互动或悬停评论区头像时好奇：为什么有的读者顶着 **「LV.1 · 贡献者」**，有的是耀眼的 **「LV.3 · 先驱」**，甚至还有极少数核心老读者亮着 **「📜 创世墨客」** 或 **「TL.102」** 这样突破天花板的耀眼数字？名片浮层里的 **「☕ 慢读时光」**、**「💎 深得人心」** 又是如何点亮的？站长的头像为什么能独树一帜地呈现微圆角方形与金色皇冠？
-
-今天，这篇凝聚了 **EpoCanvas 原创极客设计美学** 的官方权威指南，将向大家彻底开源揭秘 EpoCanvas 博客现行的 **双轨信任阶梯系统（LV 准入门槛 + TL 权重机制）**、**11 大核心读者常规称号**、**6 大绝版与限定荣誉称号**、**管理员与站长权责** 以及 **15+ 枚专属成就徽章** 的底层判定算法与实操升级路径！
+Heute wird dieser offizielle, maßgebliche Leitfaden, der die **originelle Geek-Designästhetik von EpoCanvas** verkörpert, das aktuell auf dem EpoCanvas-Blog verwendete **zweigleisige Vertrauensstufensystem (LV-Zugangsschwelle + TL-Gewichtungsmechanismus)**, die **11 Kern-Leser-Standardtitel**, die **6 seltenen und limitierten Ehrentitel**, die **Rechte und Pflichten von Administratoren und dem Webmaster** sowie die zugrundeliegenden Bewertungsalgorithmen und praktischen Upgrade-Pfade für **über 15 exklusive Erfolgsabzeichen** vollständig offenlegen!
 
 ---
 
 > [!warning]
-> **数据同步与统计须知**：本博客读者数据（包括阅读时长、活跃天数、评论数、Emoji 喝彩记录）依托客户端 `LocalStorage` 本地持久沉淀与 Cloudflare Workers / D1 后端鉴权通道异步同步。若使用无痕隐私模式、频繁跨设备访问或清空浏览器缓存，可能会产生微弱的统计延迟或临时会话断连。建议在账号中心绑定专属邮箱（如 Epomail）以确保权益永久绑定！
+> **Hinweis zur Datensynchronisation und Statistik**: Die Leserdaten dieses Blogs (einschließlich Lesezeit, aktive Tage, Kommentare, Emoji-Beifall-Aufzeichnungen) werden lokal persistent im `LocalStorage` des Clients gespeichert und asynchron über Cloudflare Workers / D1 Backend-Authentifizierungskanäle synchronisiert. Bei Verwendung des Inkognito-Modus, häufigem geräteübergreifendem Zugriff oder dem Leeren des Browser-Caches kann es zu geringen statistischen Verzögerungen oder temporären Sitzungsabbrüchen kommen. Es wird empfohlen, eine spezielle E-Mail-Adresse (z. B. Epomail) im Kontocenter zu verknüpfen, um die dauerhafte Bindung Ihrer Rechte zu gewährleisten!
 
 > [!tip]
-> **战绩与徽章佩戴快捷入口**：点击博客顶部导航栏右侧或控制台快捷按钮的 **「账号中心」抽屉（Account Drawer）**，即可实时查看当前的信任等级（TL）、下一级达成百分比、已解锁成就池，并可自由挑选佩戴最多 **4 枚专属徽章** 彰显极客身份！
+> **Schnellzugriff auf Erfolge und Abzeichen**: Klicken Sie auf die **„Kontocenter-Schublade (Account Drawer)“** rechts in der oberen Navigationsleiste des Blogs oder auf die Schnellschaltfläche in der Konsole, um Ihre aktuelle Vertrauensstufe (TL), den Prozentsatz bis zur nächsten Stufe und den freigeschalteten Erfolgspool in Echtzeit anzuzeigen. Sie können dann frei bis zu **4 exklusive Abzeichen** auswählen und tragen, um Ihre Geek-Identität zu zeigen!
 
 <div data-theme-toc="true"> </div>
 
 ---
 
-# 一、核心机制：LV 准入门槛与 TL 权重的双轨制
+# 1. Kernmechanismus: Das zweigleisige System von LV-Zugangsschwelle und TL-Gewichtung
 
-EpoCanvas 博客社区体系采用精密的 **双轨治理架构**：**LV（Level）** 与 **TL（Trust Level）** 各司其职，相辅相成：
+Das EpoCanvas Blog-Community-System verwendet eine präzise **zweigleisige Governance-Architektur**: **LV (Level)** und **TL (Trust Level)** haben jeweils ihre eigenen Aufgaben und ergänzen sich gegenseitig:
 
 > [!important]
-> **【核心机制：LV 准入门槛 vs TL 权重排名的本质区别】**
-> - **LV (Level 0 ~ 4) —— 决定你能看到的内容最低等级（准入门槛 / 访问权限锁）**：
->   - LV 是博客设立的内容安全与深度分级门槛。
->   - **LV.0（新手）**：仅可查阅常规公开博文；
->   - **LV.1（进阶）**：解锁极速打气（Boost）、专属评论互动与进阶技术探讨专栏；
->   - **LV.2（极客）**：解锁高阶架构实录、私有折叠代码块与前沿内测实验专栏；
->   - **LV.3（先驱）**：解锁先驱闭门研讨专栏与特邀技术提案权限；
->   - **LV.4（管理与主创）**：社区巡查治理（管理员）与全站无条件穿透权限（站长）。
-> - **TL (Trust Level 0 ~ 100+) —— 决定你在本等级区间内的权威度与排名权重**：
->   - TL 衡量你在当前等级区间内的活跃度与信誉积累。
->   - 在同一 LV 等级内，TL 更高的读者在评论区展示优先级更高、点赞喝彩权重更大、防灌水限流配额更宽松、在读者活跃榜上更亮眼。
+> **【Kernmechanismus: Der wesentliche Unterschied zwischen LV-Zugangsschwelle und TL-Gewichtungsranking】**
+> - **LV (Level 0 ~ 4) – Bestimmt die Mindeststufe der Inhalte, die Sie sehen können (Zugangsschwelle / Zugriffsberechtigungssperre)**:
+>   - LV ist die vom Blog festgelegte Schwelle für Inhaltssicherheit und Tiefenklassifizierung.
+>   - **LV.0 (Anfänger)**: Kann nur reguläre öffentliche Blogbeiträge einsehen;
+>   - **LV.1 (Fortgeschritten)**: Schaltet Turbo-Boost, exklusive Kommentarinteraktionen und fortgeschrittene technische Diskussionsspalten frei;
+>   - **LV.2 (Geek)**: Schaltet fortgeschrittene Architekturaufzeichnungen, private faltbare Codeblöcke und Spalten für experimentelle interne Tests frei;
+>   - **LV.3 (Pionier)**: Schaltet geschlossene Pionier-Workshops und Berechtigungen für eingeladene technische Vorschläge frei;
+>   - **LV.4 (Verwaltung und Hauptentwickler)**: Community-Überwachung und -Verwaltung (Administrator) und uneingeschränkte Zugriffsrechte auf die gesamte Website (Webmaster).
+> - **TL (Trust Level 0 ~ 100+) – Bestimmt Ihre Autorität und Ihr Ranking-Gewicht innerhalb dieses Level-Bereichs**:
+>   - TL misst Ihre Aktivität und Ihren Vertrauensaufbau innerhalb Ihres aktuellen Level-Bereichs.
+>   - Innerhalb derselben LV-Stufe haben Leser mit höherem TL eine höhere Anzeigepriorität im Kommentarbereich, ein größeres Gewicht bei Likes und Beifall, großzügigere Quoten für Anti-Spam-Ratenbegrenzung und sind auffälliger in der Leser-Aktivitätsrangliste.
 
 ---
 
 > [!tip]
-> **【关键晋级准则：最高信任等级上限（Max TL Cap）、瀑布解锁链与 35 点积分封顶】**
-> 1. **称号决定最高 TL 上限（Max TL Cap）**：
->    - 称号后缀的 TL 代表该称号所赋予的 **最高信任等级上限（Max TL Cap）**，而非固定的当前数值。
->    - **阶梯区间上限严格划定**：
->      - **LV.0 阶梯**：上限严格限制在 **TL.2**（新兴用户 Cap 0，初始用户 Cap 2）；
->      - **LV.1 阶梯**：上限严格限制在 **TL.20**（基本用户 Cap 8，贡献者 Cap 15，思辨学者 Cap 20）；
->      - **LV.2 阶梯**：上限严格限制在 **TL.50**（活跃用户 Cap 35，常青极客 Cap 50）；
->      - **LV.3 阶梯**：常规读者上限严格限制在 **TL.90**（先驱 Cap 70，年度用户 Cap 80，墨海宗师 Cap 90）；
->      - **LV.4 阶梯**：管理员 TL 91 ~ 99，👑 站长 TL 100 恒定绝对满级。
->    - **真实案例**：LV.0 初始用户的最高信任等级上限是 2（TL Cap 2）。即使一位新读者极度用功，一口气连续阅读了 1000 分钟博文，只要他尚未发表过任何真实评论以解锁 LV.1 基本用户，他的信任等级在系统中依然被严格锁死在 **TL.2**！
-> 2. **瀑布依赖解锁链（Strict Waterfall Progression）**：
->    - 处于相同或不同 LV 的称号之间，存在严密的前置解锁链条。**必须先满足前一个称号的所有要求，才能解锁后续称号，严禁越级！**
->    - **真实案例**：读者必须先解锁「先驱」，才能进一步解锁「年度用户」。如果尚未达成「先驱」（如评论数或获赞未达标），即使注册活跃天数达到了 365 天，也绝对无法越级解锁「年度用户」！
-> 3. **信任等级（TL）如何提升与计算？（35 点活动积分封顶）**：
->    - 信任等级由系统根据 4 项多维度读者真实活动动态计算：
->      $\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$
->    - **【硬性防刷分机制】活动积分上限限制为 35 点**：
->      $\text{Earned Points} = \min(35, \text{Raw Activity Points})$
->      这保证了任何读者都无法通过单纯挂机刷时长或活跃天数绕过称号门槛，必须通过实质性深度互动晋升称号！
->    - **常规读者实际 TL 公式**：
->      $\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$
->    - 只要未解锁新称号，获得的积分将平滑提升你的 TL，直到达到当前称号的上限。想要突破天花板，必须完成下一称号的瀑布要求！
+> **【Wichtige Aufstiegskriterien: Maximale Vertrauensstufen-Obergrenze (Max TL Cap), Kaskaden-Freischaltkette und 35-Punkte-Obergrenze für Aktivitätspunkte】**
+> 1.  **Der Titel bestimmt die maximale TL-Obergrenze (Max TL Cap)**:
+>     - Das TL im Titelsuffix repräsentiert die **maximale Vertrauensstufen-Obergrenze (Max TL Cap)**, die dieser Titel verleiht, und nicht den festen aktuellen Wert.
+>     - **Strenge Festlegung der Obergrenzen für Stufenbereiche**:
+>       - **LV.0 Stufe**: Obergrenze streng auf **TL.2** begrenzt (Neuer Benutzer Cap 0, Initialer Benutzer Cap 2);
+>       - **LV.1 Stufe**: Obergrenze streng auf **TL.20** begrenzt (Basisbenutzer Cap 8, Mitwirkender Cap 15, Spekulativer Gelehrter Cap 20);
+>       - **LV.2 Stufe**: Obergrenze streng auf **TL.50** begrenzt (Aktiver Benutzer Cap 35, Evergreen Geek Cap 50);
+>       - **LV.3 Stufe**: Obergrenze für reguläre Leser streng auf **TL.90** begrenzt (Pionier Cap 70, Jahresbenutzer Cap 80, Tintenmeer-Meister Cap 90);
+>       - **LV.4 Stufe**: Administrator TL 91 ~ 99, 👑 Webmaster TL 100 ist konstant die absolute Maximalstufe.
+>     - **Praxisbeispiel**: Die maximale Vertrauensstufen-Obergrenze für einen LV.0 Initialen Benutzer ist 2 (TL Cap 2). Selbst wenn ein neuer Leser extrem fleißig ist und 1000 Minuten Blogbeiträge am Stück liest, bleibt seine Vertrauensstufe im System streng auf **TL.2** gesperrt, solange er noch keinen echten Kommentar veröffentlicht hat, um den LV.1 Basisbenutzer freizuschalten!
+> 2.  **Kaskaden-Abhängigkeits-Freischaltkette (Strict Waterfall Progression)**:
+>     - Zwischen Titeln derselben oder unterschiedlicher LV-Stufen besteht eine strenge Kette von Vorab-Freischaltungen. **Alle Anforderungen des vorherigen Titels müssen zuerst erfüllt werden, um nachfolgende Titel freizuschalten; ein Überspringen von Stufen ist strengstens untersagt!**
+>     - **Praxisbeispiel**: Leser müssen zuerst den Titel „Pionier“ freischalten, bevor sie den Titel „Jahresbenutzer“ freischalten können. Wenn der Titel „Pionier“ noch nicht erreicht wurde (z. B. unzureichende Kommentare oder Likes), ist es absolut unmöglich, den Titel „Jahresbenutzer“ zu überspringen und freizuschalten, selbst wenn die aktiven Registrierungstage 365 Tage erreicht haben!
+> 3.  **Wie wird die Vertrauensstufe (TL) erhöht und berechnet? (35 Aktivitätspunkte Obergrenze)**:
+>     - Die Vertrauensstufe wird vom System dynamisch berechnet anhand von 4 mehrdimensionalen, echten Leseraktivitäten:
+>       $$\text{Raw Activity Points} = \lfloor\frac{\text{Lesezeit(m)}}{30}\rfloor + \lfloor\frac{\text{Anzahl Kommentare}}{3}\rfloor + \lfloor\frac{\text{Anzahl Likes}}{2}\rfloor + \lfloor\frac{\text{Aktive Tage}}{3}\rfloor$$
+>     - **【Harter Anti-Cheating-Mechanismus】Aktivitätspunkte sind auf maximal 35 Punkte begrenzt**:
+>       $$\text{Earned Points} = \min(35, \text{Raw Activity Points})$$
+>       Dies stellt sicher, dass kein Leser die Titel-Schwelle durch einfaches „AFK-Sein“ oder das Sammeln von aktiven Tagen umgehen kann; der Aufstieg zu einem Titel erfordert eine substanzielle, tiefe Interaktion!
+>     - **Tatsächliche TL-Formel für reguläre Leser**:
+>       $$\text{Aktuelle reguläre TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$$
+>     - Solange kein neuer Titel freigeschaltet wurde, erhöhen die gesammelten Punkte Ihre TL stetig, bis die Obergrenze des aktuellen Titels erreicht ist. Um die Obergrenze zu durchbrechen, müssen die Kaskadenanforderungen des nächsten Titels erfüllt werden!
 
 ---
 
-# 二、全景阶梯架构与瀑布晋级流程
+# 2. Panorama-Stufenarchitektur und Kaskaden-Aufstiegsprozess
 
-全站划分为 11 个读者常规原生称号，外加 6 大绝版荣誉称号与特邀委任管理员、站长主创。严禁虚假硬编码，全部常规指标均可在 1 年（$\le 365$ 天）内由真实交互自然达成：
+Die gesamte Website ist in 11 reguläre Leser-Titel unterteilt, zusätzlich zu 6 großen, vergriffenen Ehrentiteln sowie speziell eingeladenen und ernannten Administratoren und dem Webmaster-Kernteam. Falsche Hardcodierung ist strengstens untersagt; alle regulären Indikatoren können innerhalb eines Jahres ($\le 365$ Tage) durch echte Interaktionen auf natürliche Weise erreicht werden:
 
 ```mermaid
 flowchart TD
@@ -98,348 +91,348 @@ flowchart TD
     classDef lv4 fill:#faf5ff,stroke:#a855f7,stroke-width:2px;
     classDef spec fill:#fff1f2,stroke:#f43f5e,stroke-width:2px;
 
-    LV0["<b>🐣 LV.0 新手起步阶梯（TL Cap 0 ~ 2 · 访客起步与阅读留存）</b><br/>• 🐣 新兴用户 (TL Cap 0): 初访未产生交互记录，可浏览全站公开静态博文与全局关键字搜索<br/>• 📘 初始用户 (TL Cap 2): 产生任意博文深度阅读停留 (>=1篇)，开启活跃留存与阅读时长心跳统计"]:::lv0
+    LV0["<b>🐣 LV.0 Einstiegsstufe für Neulinge (TL Cap 0 ~ 2 · Besucherstart und Lesebindung)</b><br/>• 🐣 Neuer Nutzer (TL Cap 0): Erstbesuch ohne Interaktionsaufzeichnung, kann alle öffentlichen statischen Blogbeiträge und die globale Stichwortsuche durchsuchen<br/>• 📘 Initialer Nutzer (TL Cap 2): Verweildauer bei tiefem Lesen eines beliebigen Blogbeitrags (>=1 Beitrag), startet die aktive Bindung und die Herzschlagstatistik der Lesezeit"]:::lv0
 
-    LV1["<b>🥉 LV.1 进阶贡献阶梯（TL Cap 8 ~ 20 封顶 · 评论互动与学术思辨）</b><br/>• 🥉 基本用户 (TL Cap 8): 首次发表真实评论，解锁 Boost 极速打气与 Emoji 表情互动、就地编辑特权<br/>• 🏅 贡献者 (TL Cap 15): 累计阅读时长 >= 30m 且发表讨论 >= 10 次，名片激活专属橙铜徽标<br/>• 💡 思辨学者 (TL Cap 20 封顶): 阅读 >= 120m 且评论 >= 20 次 且获赞 >= 10 个，达 LV.1 最高晋升上限"]:::lv1
+    LV1["<b>🥉 LV.1 Fortgeschrittene Beitragsstufe (TL Cap 8 ~ 20 Maximum · Kommentarinteraktion und akademische Debatte)</b><br/>• 🥉 Basisnutzer (TL Cap 8): Erster echter Kommentar veröffentlicht, schaltet Boost-Schnellunterstützung und Emoji-Interaktion, sowie das Recht zur Inline-Bearbeitung frei<br/>• 🏅 Mitwirkender (TL Cap 15): Kumulierte Lesezeit >= 30 Min. und >= 10 Diskussionsbeiträge, aktiviert exklusives orange-bronzenes Abzeichen auf der Visitenkarte<br/>• 💡 Debattierender Gelehrter (TL Cap 20 Maximum): Lesen >= 120 Min. und Kommentare >= 20 und Likes >= 10, erreicht die höchste Aufstiegsgrenze von LV.1"]:::lv1
 
-    LV2["<b>🎖️ LV.2 活跃极客阶梯（TL Cap 35 ~ 50 封顶 · 进阶专栏与常青读者）</b><br/>• 🎖️ 活跃用户 (TL Cap 35): 累计活跃 >= 20 天 且阅读 >= 300m 且发表评论 >= 30 次 且获赞 >= 20 次<br/>• 🌲 常青极客 (TL Cap 50 封顶): 累计活跃 >= 45 天 且阅读 >= 480m 且发表评论 >= 60 次 且获赞 >= 40 次"]:::lv2
+    LV2["<b>🎖️ LV.2 Aktive Geek-Stufe (TL Cap 35 ~ 50 Maximum · Fortgeschrittene Kolumnen und Evergreen-Leser)</b><br/>• 🎖️ Aktiver Nutzer (TL Cap 35): Kumulierte Aktivität >= 20 Tage und Lesen >= 300 Min. und Kommentare >= 30 und Likes >= 20<br/>• 🌲 Evergreen-Geek (TL Cap 50 Maximum): Kumulierte Aktivität >= 45 Tage und Lesen >= 480 Min. und Kommentare >= 60 und Likes >= 40"]:::lv2
 
-    LV3["<b>⭐ LV.3 先驱宗师阶梯（TL Cap 70 ~ 90 · 读者常规晋升最高巅峰）</b><br/>• ⭐ 先驱 (TL Cap 70): 累计活跃 >= 90 天 且阅读 >= 720m 且发表评论 >= 100 次 且收获获赞 >= 60 次<br/>• 🎂 年度用户 (TL Cap 80): 必须先达成先驱 + 累计活跃 >= 180 天 且阅读 >= 1440m 且发表评论 >= 150 次<br/>• 📜 墨海宗师 (TL Cap 90 常规巅峰): 必须先达成年度用户 + 活跃 >= 300 天 且收获全站读者获赞 >= 100 次"]:::lv3
+    LV3["<b>⭐ LV.3 Pionier-Großmeister-Stufe (TL Cap 70 ~ 90 · Höchster regulärer Aufstieg für Leser)</b><br/>• ⭐ Pionier (TL Cap 70): Kumulierte Aktivität >= 90 Tage und Lesen >= 720 Min. und Kommentare >= 100 und Likes >= 60<br/>• 🎂 Jahresnutzer (TL Cap 80): Muss zuerst Pionier erreichen + kumulierte Aktivität >= 180 Tage und Lesen >= 1440 Min. und Kommentare >= 150<br/>• 📜 Tintenmeer-Großmeister (TL Cap 90 regulärer Höhepunkt): Muss zuerst Jahresnutzer erreichen + Aktivität >= 300 Tage und Likes von allen Lesern der Website >= 100"]:::lv3
 
-    SPEC["<b>💎 6 大绝版与限定荣誉称号（独立增量加成 · 权威突破常规直达 TL 100+！）</b><br/>• 🚀 领跑者 (+3至+5级)  • 💎 铁杆粉丝 (+4至+6级)  • 🌱 种子用户 (+5至+8级)<br/>• 🔥 破晓布道者 (+4至+7级)  • 🛠️ 架构见证人 (+5至+8级)  • 📜 创世墨客 (+6至+10级)"]:::spec
+    SPEC["<b>💎 6 vergriffene und limitierte Ehrentitel (unabhängiger inkrementeller Bonus · Autorität durchbricht die Norm und erreicht direkt TL 100+!)</b><br/>• 🚀 Vorreiter (+3 bis +5 Stufen)  • 💎 Hardcore-Fan (+4 bis +6 Stufen)  • 🌱 Seed-Nutzer (+5 bis +8 Stufen)<br/>• 🔥 Dawn-Evangelist (+4 bis +7 Stufen)  • 🛠️ Architektur-Zeuge (+5 bis +8 Stufen)  • 📜 Gründungs-Tintenschreiber (+6 bis +10 Stufen)"]:::spec
 
-    LV4["<b>👑 LV.4 治理与主创体系（特邀任命理事 / 站点唯一所有者）</b><br/>• 🛡️ 社区管理员 (TL 91 ~ 99): 站长特邀委任理事，拥有常务巡查与敏感治理权 · 标准圆形头像<br/>• 👑 站长 Webmaster (TL 100 恒定绝对满级): 系统主创唯一所有者 · 微圆角金冠方头像 · 全站绝对穿透特权"]:::lv4
+    LV4["<b>👑 LV.4 Governance- und Kernteam-System (speziell ernannte Direktoren / alleiniger Eigentümer der Website)</b><br/>• 🛡️ Community-Administrator (TL 91 ~ 99): Vom Webmaster speziell ernannter Direktor, mit regulären Inspektions- und sensiblen Governance-Rechten · Standard-Rundprofilbild<br/>• 👑 Webmaster (TL 100 konstant absolutes Maximum): Alleiniger Eigentümer des System-Kernteams · Leicht abgerundetes, goldgekröntes quadratisches Profilbild · Absolute Durchdringungsrechte für die gesamte Website"]:::lv4
 
-    LV0 ==>|首次发表真实评论| LV1
-    LV1 ==>|四维指标综合跃迁：活跃20天 阅读300m 评论30次 获赞20个| LV2
-    LV2 ==>|长期研读深度共鸣：活跃90天 阅读720m 评论100次 获赞60个| LV3
-    LV3 -. 卓越限定历史贡献加成突破至 100+ .-> SPEC
-    LV3 -. 站长特邀委任理事 .-> LV4
+    LV0 ==>|Erster echter Kommentar veröffentlicht| LV1
+    LV1 ==>|Umfassender Vier-Dimensionen-Sprung: 20 Tage aktiv, 300 Min. gelesen, 30 Kommentare, 20 Likes| LV2
+    LV2 ==>|Langfristiges Studium und tiefe Resonanz: 90 Tage aktiv, 720 Min. gelesen, 100 Kommentare, 60 Likes| LV3
+    LV3 -. Durchbruch zu 100+ durch exzellente, limitierte historische Beitragsboni .-> SPEC
+    LV3 -. Vom Webmaster speziell ernannter Direktor .-> LV4
 ```
 
 ---
 
-# 三、11 大常规读者称号详细解锁手册
+# 3. Detailliertes Freischalt-Handbuch für 11 reguläre Leser-Titel
 
-### 1. LV.0 新兴用户 (TL Cap: 0)
-- **称号标识**：🐣 新兴用户
-- **准入条件**：初次到访博客的新访客，尚未产生阅读与互动记录。
-- **信任等级**：`TL.0`（不可上涨，上限 0）。
-- **权限与权益**：浏览公开静态博文、全局关键字搜索。
-- **晋级路线**：点击浏览任意一篇文章，即刻解锁「初始用户」！
+### 1. LV.0 Neuer Nutzer (TL Cap: 0)
+- **Titel-Identifikator**: 🐣 Neuer Nutzer
+- **Zugangsbedingungen**: Erstmaliger Besucher des Blogs, der noch keine Lese- oder Interaktionsaufzeichnungen generiert hat.
+- **Vertrauensstufe**: `TL.0` (nicht steigerbar, Obergrenze 0).
+- **Berechtigungen und Rechte**: Anzeigen öffentlicher statischer Blogbeiträge, globale Stichwortsuche.
+- **Aufstiegsweg**: Klicken Sie auf einen beliebigen Artikel, um sofort den Titel „Initialer Nutzer“ freizuschalten!
 
-### 2. LV.0 初始用户 (TL Cap: 2)
-- **称号标识**：📘 初始用户
-- **前置依赖**：已成为新兴用户。
-- **准入条件**：在博客完成任意一篇文章的阅读停留（`hasReadAny === true || readingMinutes >= 1`）。
-- **信任等级**：`TL.1 ~ TL.2`（上限 2）。
-- **权限与权益**：开始记录每日活跃留存与阅读时长心跳。
-- **晋级路线**：在任意博文底部留下你的第一条真实评论，跃迁 LV.1！
+### 2. LV.0 Initialer Nutzer (TL Cap: 2)
+- **Titel-Identifikator**: 📘 Initialer Nutzer
+- **Voraussetzung**: Muss bereits ein Neuer Nutzer sein.
+- **Zugangsbedingungen**: Verweildauer beim Lesen eines beliebigen Artikels im Blog abgeschlossen (`hasReadAny === true || readingMinutes >= 1`).
+- **Vertrauensstufe**: `TL.1 ~ TL.2` (Obergrenze 2).
+- **Berechtigungen und Rechte**: Beginnt mit der Aufzeichnung der täglichen aktiven Bindung und der Herzschlagstatistik der Lesezeit.
+- **Aufstiegsweg**: Hinterlassen Sie Ihren ersten echten Kommentar unter einem beliebigen Blogbeitrag, um zu LV.1 aufzusteigen!
 
-### 3. LV.1 基本用户 (TL Cap: 8)
-- **称号标识**：🥉 基本用户
-- **前置依赖**：必须先解锁「初始用户」。
-- **准入条件**：累计发表 1 条真实评论（`commentCount >= 1`）。
-- **信任等级**：`TL.3 ~ TL.8`（上限 8）。
-- **权限与权益**：
-  - 解锁评论区 **“⚡ Boost 极速打气”**（$\le 16$ 字符高光模式）；
-  - 解锁评论区 **“😀 表情互动”**（一键发射 Emoji 反馈）；
-  - 拥有发表后临时会话的 **“就地编辑（Inline Edit）”** 与自主撤回权限。
+### 3. LV.1 Basisnutzer (TL Cap: 8)
+- **Titel-Identifikator**: 🥉 Basisnutzer
+- **Voraussetzung**: Muss zuerst den Titel „Initialer Nutzer“ freigeschaltet haben.
+- **Zugangsbedingungen**: Kumuliert 1 echten Kommentar veröffentlicht (`commentCount >= 1`).
+- **Vertrauensstufe**: `TL.3 ~ TL.8` (Obergrenze 8).
+- **Berechtigungen und Rechte**:
+  - Schaltet im Kommentarbereich **„⚡ Boost Schnellunterstützung“** (Hervorhebungsmodus mit $\le 16$ Zeichen) frei;
+  - Schaltet im Kommentarbereich **„😀 Emoji-Interaktion“** (Ein-Klick-Emoji-Feedback) frei;
+  - Besitzt die Berechtigung zur **„Inline-Bearbeitung“** und zum selbstständigen Widerruf für temporäre Sitzungen nach der Veröffentlichung.
 
-### 4. LV.1 贡献者 (TL Cap: 15)
-- **称号标识**：🏅 贡献者
-- **前置依赖**：必须先解锁「基本用户」。
-- **准入条件**：累计阅读时长 $\ge 30$ 分钟 且 发表评论 $\ge 10$ 次（含常规讨论与 Boost）。
-- **信任等级**：`TL.9 ~ TL.15`（上限 15）。
-- **权限与权益**：名片激活「贡献者」专属橙铜徽标，评论流排序权重提升。
+### 4. LV.1 Mitwirkender (TL Cap: 15)
+- **Titel-Identifikator**: 🏅 Mitwirkender
+- **Voraussetzung**: Muss zuerst den Titel „Basisnutzer“ freigeschaltet haben.
+- **Zugangsbedingungen**: Kumulierte Lesezeit $\ge 30$ Minuten und Kommentare $\ge 10$ (einschließlich regulärer Diskussionen und Boost).
+- **Vertrauensstufe**: `TL.9 ~ TL.15` (Obergrenze 15).
+- **Berechtigungen und Rechte**: Aktiviert das exklusive orange-bronzene „Mitwirkender“-Abzeichen auf der Visitenkarte, erhöht die Sortiergewichtung im Kommentarfluss.
 
-### 5. LV.1 思辨学者 (TL Cap: 20 · LV.1 封顶)
-- **称号标识**：💡 思辨学者
-- **前置依赖**：必须先解锁「贡献者」。
-- **准入条件**：累计阅读时长 $\ge 120$ 分钟（2 小时）且 发表评论 $\ge 20$ 次 且 累计收获读者喝彩/点赞 $\ge 10$ 个。
-- **信任等级**：`TL.16 ~ TL.20`（上限 20，**LV.1 阶梯最高天花板**）。
-- **权限与权益**：名片激活「思辨学者」智能微光，获得深度互动专区准入权。
+### 5. LV.1 Denker (TL-Obergrenze: 20 · LV.1 Maximal)
+- **Titelbezeichnung**: 💡 Denker
+- **Voraussetzung**: Muss zuerst „Mitwirkender“ freigeschaltet haben.
+- **Zulassungsbedingungen**: Kumulierte Lesezeit $\ge 120$ Minuten (2 Stunden) UND $\ge 20$ Kommentare verfasst UND $\ge 10$ Applaus/Likes von Lesern erhalten.
+- **Vertrauensstufe**: `TL.16 ~ TL.20` (Obergrenze 20, **höchste Stufe in LV.1**).
+- **Berechtigungen und Vorteile**: Visitenkarte aktiviert das intelligente Mikroleuchten „Denker“, erhält Zugang zum Bereich für tiefgehende Interaktionen.
 
-### 6. LV.2 活跃用户 (TL Cap: 35)
-- **称号标识**：🎖️ 活跃用户
-- **前置依赖**：必须先解锁「思辨学者」。
-- **准入条件**（四项指标严密联动）：
-  - 累计活跃天数 $\ge 20$ 天；
-  - 累计阅读时长 $\ge 300$ 分钟（5 小时）；
-  - 累计发表评论 $\ge 30$ 次；
-  - 累计收获读者喝彩 $\ge 20$ 次。
-- **信任等级**：`TL.21 ~ TL.35`（上限 35）。
-- **权限与权益**：解锁 LV.2 进阶专栏与架构踩坑实录，评论具备加权高亮标识。
+### 6. LV.2 Aktiver Nutzer (TL-Obergrenze: 35)
+- **Titelbezeichnung**: 🎖️ Aktiver Nutzer
+- **Voraussetzung**: Muss zuerst „Denker“ freigeschaltet haben.
+- **Zulassungsbedingungen** (vier Indikatoren eng verknüpft):
+  - Kumulierte aktive Tage $\ge 20$ Tage;
+  - Kumulierte Lesezeit $\ge 300$ Minuten (5 Stunden);
+  - Kumulierte Kommentare verfasst $\ge 30$ Mal;
+  - Kumulierter Applaus von Lesern erhalten $\ge 20$ Mal.
+- **Vertrauensstufe**: `TL.21 ~ TL.35` (Obergrenze 35).
+- **Berechtigungen und Vorteile**: Schaltet LV.2 Fortgeschrittenen-Spalten und Architektur-Fallstudien frei, Kommentare erhalten eine gewichtete Hervorhebung.
 
-### 7. LV.2 常青极客 (TL Cap: 50 · LV.2 封顶)
-- **称号标识**：🌲 常青极客
-- **前置依赖**：必须先解锁「活跃用户」。
-- **准入条件**：
-  - 累计活跃天数 $\ge 45$ 天；
-  - 累计阅读时长 $\ge 480$ 分钟（8 小时）；
-  - 累计发表评论 $\ge 60$ 次；
-  - 累计收获读者喝彩 $\ge 40$ 次。
-- **信任等级**：`TL.36 ~ TL.50`（上限 50，**LV.2 阶梯最高天花板**）。
-- **权限与权益**：名片浮层附带翡翠绿尊贵光晕，社区活跃骨干成员认证。
+### 7. LV.2 Evergreen-Geek (TL-Obergrenze: 50 · LV.2 Maximal)
+- **Titelbezeichnung**: 🌲 Evergreen-Geek
+- **Voraussetzung**: Muss zuerst „Aktiver Nutzer“ freigeschaltet haben.
+- **Zulassungsbedingungen**:
+  - Kumulierte aktive Tage $\ge 45$ Tage;
+  - Kumulierte Lesezeit $\ge 480$ Minuten (8 Stunden);
+  - Kumulierte Kommentare verfasst $\ge 60$ Mal;
+  - Kumulierter Applaus von Lesern erhalten $\ge 40$ Mal.
+- **Vertrauensstufe**: `TL.36 ~ TL.50` (Obergrenze 50, **höchste Stufe in LV.2**).
+- **Berechtigungen und Vorteile**: Visitenkarten-Overlay mit edlem smaragdgrünem Heiligenschein, Zertifizierung als aktives Kernmitglied der Community.
 
-### 8. LV.3 先驱 (TL Cap: 70)
-- **称号标识**：⭐ 先驱
-- **前置依赖**：必须先解锁「常青极客」。
-- **准入条件**：
-  - 累计活跃天数 $\ge 90$ 天；
-  - 累计阅读时长 $\ge 720$ 分钟（12 小时）；
-  - 累计发表评论 $\ge 100$ 次；
-  - 累计收获读者喝彩 $\ge 60$ 次。
-- **信任等级**：`TL.51 ~ TL.70`（上限 70）。
-- **权限与权益**：享有先驱专属星芒徽标，受邀优先体验博客实验性黑科技特性。
+### 8. LV.3 Pionier (TL-Obergrenze: 70)
+- **Titelbezeichnung**: ⭐ Pionier
+- **Voraussetzung**: Muss zuerst „Evergreen-Geek“ freigeschaltet haben.
+- **Zulassungsbedingungen**:
+  - Kumulierte aktive Tage $\ge 90$ Tage;
+  - Kumulierte Lesezeit $\ge 720$ Minuten (12 Stunden);
+  - Kumulierte Kommentare verfasst $\ge 100$ Mal;
+  - Kumulierter Applaus von Lesern erhalten $\ge 60$ Mal.
+- **Vertrauensstufe**: `TL.51 ~ TL.70` (Obergrenze 70).
+- **Berechtigungen und Vorteile**: Erhält das exklusive Sternenstrahl-Abzeichen des Pioniers, wird bevorzugt eingeladen, experimentelle Blog-Technologien zu testen.
 
-### 9. LV.3 年度用户 (TL Cap: 80)
-- **称号标识**：🎂 年度用户
-- **前置依赖**：**必须先解锁「先驱」！** 严禁仅靠挂机天数跳级。
-- **准入条件**：
-  - 在达成「先驱」基础上，累计活跃天数达到 **180 天**；
-  - 累计阅读时长 $\ge 1440$ 分钟（24 小时）；
-  - 累计发表评论 $\ge 150$ 次。
-- **信任等级**：`TL.71 ~ TL.80`（上限 80）。
-- **权限与权益**：常青读者终身荣誉，尊贵年度印记，永不降级的忠实读者象征。
+### 9. LV.3 Jahresnutzer (TL-Obergrenze: 80)
+- **Titelbezeichnung**: 🎂 Jahresnutzer
+- **Voraussetzung**: **Muss zuerst „Pionier“ freigeschaltet haben!** Das Überspringen von Stufen allein durch inaktive Tage ist strengstens untersagt.
+- **Zulassungsbedingungen**:
+  - Nach Erreichen des „Pionier“-Status müssen die kumulierten aktiven Tage **180 Tage** erreichen;
+  - Kumulierte Lesezeit $\ge 1440$ Minuten (24 Stunden);
+  - Kumulierte Kommentare verfasst $\ge 150$ Mal.
+- **Vertrauensstufe**: `TL.71 ~ TL.80` (Obergrenze 80).
+- **Berechtigungen und Vorteile**: Lebenslange Ehre als Evergreen-Leser, prestigeträchtiges Jahresabzeichen, Symbol eines treuen Lesers, der niemals herabgestuft wird.
 
-### 10. LV.3 墨海宗师 (TL Cap: 90 · 常规晋升巅峰)
-- **称号标识**：📜 墨海宗师
-- **前置依赖**：**必须先解锁「年度用户」！**
-- **准入条件**（极客读者的全自动升级天花板，$\le 365$ 天内绝对可达成）：
-  - 累计活跃天数达到 **300 天**（未超过 1 年限制！）；
-  - 累计沉浸阅读时长 $\ge 2160$ 分钟（36 小时）；
-  - 累计收获全站读者喝彩点赞 $\ge 100$ 次。
-- **信任等级**：`TL.81 ~ TL.90`（上限 90，**常规读者自动晋升巅峰**）。
-- **权限与权益**：**普通读者常规晋升最高殿堂**！名片独享墨海宗师紫金光芒，登峰造极。
+### 10. LV.3 Meister der Tintenmeere (TL-Obergrenze: 90 · Höhepunkt des regulären Aufstiegs)
+- **Titelbezeichnung**: 📜 Meister der Tintenmeere
+- **Voraussetzung**: **Muss zuerst „Jahresnutzer“ freigeschaltet haben!**
+- **Zulassungsbedingungen** (die vollautomatische Aufstiegs-Obergrenze für Geek-Leser, absolut erreichbar innerhalb von $\le 365$ Tagen):
+  - Kumulierte aktive Tage erreichen **300 Tage** (nicht über die 1-Jahres-Grenze hinaus!);
+  - Kumulierte immersive Lesezeit $\ge 2160$ Minuten (36 Stunden);
+  - Kumulierter Applaus/Likes von Lesern der gesamten Website erhalten $\ge 100$ Mal.
+- **Vertrauensstufe**: `TL.81 ~ TL.90` (Obergrenze 90, **Höhepunkt des automatischen Aufstiegs für reguläre Leser**).
+- **Berechtigungen und Vorteile**: **Der höchste Rang für den regulären Aufstieg gewöhnlicher Leser**! Die Visitenkarte erhält exklusiv den purpur-goldenen Glanz des Meisters der Tintenmeere, erreicht den Gipfel der Exzellenz.
 
 ---
 
-# 四、绝版与限定荣誉称号（突破 TL 100+ 上限！）
+# IV. Vergriffene und limitierte Ehrentitel (Durchbruch der TL 100+ Obergrenze!)
 
-在 EpoCanvas 社区的漫长演进中，有一群见证历史、在关键时期给予关键反馈的开拓者。为了铭记这些卓越贡献，系统特别推出了 **6 大绝版与限定荣誉称号**。
+In der langen Entwicklung der EpoCanvas-Community gab es eine Gruppe von Pionieren, die Geschichte miterlebt und in kritischen Phasen entscheidendes Feedback gegeben haben. Um diese herausragenden Beiträge zu würdigen, hat das System speziell **6 vergriffene und limitierte Ehrentitel** eingeführt.
 
 > [!important]
-> **【核心规则：绝版称号加分机制与突破 100+ 特权】**
-> 1. **额外信任等级加成（Special Title Bonus）**：
->    - 绝版与限定称号不占用常规 35 点活动积分配额，其加分是 **直接叠加在计算结果之上的全局增量**！
-> 2. **突破常规 90 限制，信任等级直达 100+**：
->    - 常规读者受限于 LV.3 墨海宗师的 90 上限。但**拥有绝版称号的读者，其信任等级可以突破 90，最高达到 100 以上（如 TL.102、TL.106）**！
-> 3. **基础 LV 门槛保持不变（安全底线）**：
->    - 绝版称号赋予极高的 TL 权威度和排名，但读者原有的 LV 基础门槛不变（若为 LV.3 墨海宗师，获得绝版加成后 TL 达到 102，其 LV 仍为 LV.3，严格守卫内容安全分级）。
-> 4. **什么是权重等级（Priority）？**：
->    - Priority（0 ~ 100）决定了在名片浮层与评论区作者栏中，当读者拥有多个称号与徽章时，系统如何进行高优展示与排序。
->    - 称号徽标（Tier Badge）固定为 Priority 100，独占首位；
->    - **绝版限定称号赋予了 Priority 92 ~ 98 的超高权重**，优先于所有常规成就徽章，默认抢占名片浮层至多 4 枚徽章的高光席位！
+> **【Kernregeln: Bonussystem für vergriffene Titel und Privilegien über 100+】**
+> 1. **Zusätzlicher Vertrauensstufen-Bonus (Special Title Bonus)**:
+>    - Vergriffene und limitierte Titel belegen nicht das reguläre Kontingent von 35 Aktivitätspunkten; ihr Bonus ist ein **globaler Zuwachs, der direkt auf das Berechnungsergebnis aufaddiert wird**!
+> 2. **Durchbruch der regulären 90er-Grenze, Vertrauensstufe direkt auf 100+**:
+>    - Reguläre Leser sind durch die Obergrenze von 90 des LV.3 Meisters der Tintenmeere begrenzt. Aber **Leser mit einem vergriffenen Titel können ihre Vertrauensstufe über 90 hinaus erhöhen und maximal über 100 erreichen (z.B. TL.102, TL.106)**!
+> 3. **Grundlegende LV-Schwelle bleibt unverändert (Sicherheitsuntergrenze)**:
+>    - Vergriffene Titel verleihen eine extrem hohe TL-Autorität und ein hohes Ranking, aber die ursprüngliche LV-Grundschwelle des Lesers bleibt unverändert (wenn es sich um einen LV.3 Meister der Tintenmeere handelt und die TL nach Erhalt des vergriffenen Bonus 102 erreicht, bleibt sein LV weiterhin LV.3, um die Inhaltssicherheitsklassifizierung streng zu wahren).
+> 4. **Was ist die Gewichtungsstufe (Priority)?**:
+>    - Priority (0 ~ 100) bestimmt, wie das System die Anzeige und Sortierung mit hoher Priorität vornimmt, wenn ein Leser mehrere Titel und Abzeichen im Visitenkarten-Overlay und im Autorenfeld des Kommentarbereichs besitzt.
+>    - Das Titelabzeichen (Tier Badge) ist fest auf Priority 100 gesetzt und nimmt die erste Position ein;
+>    - **Vergriffene und limitierte Titel erhalten eine extrem hohe Gewichtung von Priority 92 ~ 98**, haben Vorrang vor allen regulären Erfolgsabzeichen und belegen standardmäßig die prominenten Plätze für bis zu 4 Abzeichen im Visitenkarten-Overlay!
 
-以下是 6 大绝版与限定称号的准入条件、加成梯度与权重规则：
+Im Folgenden sind die Zulassungsbedingungen, Bonusstufen und Gewichtungsregeln für die 6 vergriffenen und limitierten Ehrentitel aufgeführt:
 
-| 绝版称号 | 权重 Priority | 获得资格与门槛限制 | TL 等级加成机制 | 绝版状态 |
+| Exklusiver Titel | Priorität | Qualifikation und Zugangsbeschränkungen | TL-Level-Bonusmechanismus | Status |
 | :--- | :---: | :--- | :--- | :---: |
-| **📜 创世墨客** | `98` | 早期撰写深度长评被系统收录、获赞 $\ge 30$、评论 $\ge 10$ 且绑定专属邮箱 | **TL $\le 70$ 加 10 级**<br/>**TL $> 70$ 加 6 级** | 🔒 永久绝版 |
-| **🛠️ 架构见证人** | `96` | 见证博客历次技术重构，活跃 $\ge 30$ 天、阅读 $\ge 600\text{m}$、评论 $\ge 20$ 条并贡献关键反馈 | **TL $\le 70$ 加 8 级**<br/>**TL $> 70$ 加 5 级** | 🎖️ 限定授予 |
-| **🌱 种子用户** | `95` | 限制 LV.3 以下读者；注册 90 天内获赞 $\ge 30$、评论回复 $\ge 50$ 条 | **TL $\le 60$ 加 8 级**<br/>**TL $> 60$ 加 5 级** | 🔒 永久绝版 |
-| **💎 铁杆粉丝** | `94` | 博客开站早期前 1000 名常驻核心探索者；活跃 $\ge 60$ 天且阅读 $\ge 300\text{m}$ 或评论 $\ge 20$ 条 | **TL $\le 50$ 加 6 级**<br/>**TL $> 50$ 加 4 级** | 🔒 永久绝版 |
-| **🔥 破晓布道者** | `93` | 限制 LV.1+ 读者；大版本首发期提交高质量技术纠错、编辑完善评论且获赞 $\ge 15$ | **TL $\le 50$ 加 7 级**<br/>**TL $> 50$ 加 4 级** | 🎖️ 限定荣誉 |
-| **🚀 领跑者** | `92` | 限制 LV.3 以下读者；注册起 30 天内活跃起跑：阅读 $\ge 300\text{m}$、评论 $\ge 30$ 条、获赞 $\ge 20$ 个 | **TL $\le 50$ 加 5 级**<br/>**TL $> 50$ 加 3 级** | 🔒 永久绝版 |
+| **📜 Gründer-Schreiber** | `98` | Frühe Verfasser von ausführlichen Rezensionen, die vom System aufgenommen wurden, $\ge 30$ Likes, $\ge 10$ Kommentare und eine verknüpfte exklusive E-Mail-Adresse | **TL $\le 70$ + 10 Level**<br/>**TL $> 70$ + 6 Level** | 🔒 Dauerhaft vergriffen |
+| **🛠️ Architektur-Zeuge** | `96` | Zeuge aller technischen Umstrukturierungen des Blogs, aktiv an $\ge 30$ Tagen, $\ge 600\text{m}$ Lesezeit, $\ge 20$ Kommentare und wichtige Rückmeldungen beigetragen | **TL $\le 70$ + 8 Level**<br/>**TL $> 70$ + 5 Level** | 🎖️ Begrenzte Vergabe |
+| **🌱 Seed-Benutzer** | `95` | Beschränkt auf Leser unter LV.3; innerhalb von 90 Tagen nach der Registrierung $\ge 30$ Likes, $\ge 50$ Kommentare/Antworten | **TL $\le 60$ + 8 Level**<br/>**TL $> 60$ + 5 Level** | 🔒 Dauerhaft vergriffen |
+| **💎 Treuer Fan** | `94` | Einer der ersten 1000 Stamm-Kern-Entdecker in der Frühphase des Blogs; aktiv an $\ge 60$ Tagen und $\ge 300\text{m}$ Lesezeit oder $\ge 20$ Kommentare | **TL $\le 50$ + 6 Level**<br/>**TL $> 50$ + 4 Level** | 🔒 Dauerhaft vergriffen |
+| **🔥 Dämmerungs-Evangelist** | `93` | Beschränkt auf Leser LV.1+; Einreichung hochwertiger technischer Korrekturen, Bearbeitung und Verbesserung von Kommentaren während der Erstveröffentlichung einer Hauptversion und $\ge 15$ Likes | **TL $\le 50$ + 7 Level**<br/>**TL $> 50$ + 4 Level** | 🎖️ Begrenzte Auszeichnung |
+| **🚀 Vorreiter** | `92` | Beschränkt auf Leser unter LV.3; aktiver Start innerhalb von 30 Tagen nach der Registrierung: $\ge 300\text{m}$ Lesezeit, $\ge 30$ Kommentare, $\ge 20$ Likes | **TL $\le 50$ + 5 Level**<br/>**TL $> 50$ + 3 Level** | 🔒 Dauerhaft vergriffen |
 
 > [!example]
-> **真实高光案例**：
-> 一位勤勉的读者历经近一年研读，达成了「LV.3 · 墨海宗师」（基准 TL Cap 90）。同时，他在博客早期曾是前 1000 名创世探索者（获得「💎 铁杆粉丝」TL > 50 加 4 级），并因撰写多篇高质量架构反馈受邀获得「📜 创世墨客」（TL > 70 加 6 级）。
-> - 他的最终信任等级为：$90 + 4 + 6 = \mathbf{100}$，若再叠加其他限定贡献，便可傲视群雄突破至 **TL.102+**！
+> **Echtes Highlight-Beispiel**:
+> Ein fleißiger Leser erreichte nach fast einem Jahr Studium den Titel „LV.3 · Meister der Tintenmeere“ (Basis-TL-Cap 90). Gleichzeitig war er in der Frühphase des Blogs einer der ersten 1000 Gründer-Entdecker (erhielt „💎 Treuer Fan“ TL > 50 + 4 Level) und wurde aufgrund des Verfassens mehrerer hochwertiger Architektur-Feedbacks eingeladen, den Titel „📜 Gründer-Schreiber“ (TL > 70 + 6 Level) zu erhalten.
+> - Sein endgültiges Vertrauenslevel beträgt: $90 + 4 + 6 = \mathbf{100}$. Wenn weitere begrenzte Beiträge hinzukommen, kann er sich von der Masse abheben und **TL.102+** erreichen!
 
 ---
 
-# 五、治理与主创体系：管理员与站长权责划分
+# V. Governance- und Kernteam-System: Aufgabenverteilung zwischen Administratoren und Webmastern
 
 > [!danger]
-> **【核心排印与辨识原则：站长金冠微圆角方型 vs 管理员全员圆形】**
-> - **👑 站长 (Webmaster)**：作为博客系统所有者与最高架构管理者，拥有全站 **独一无二的微圆角方形头像与金色皇冠（isSquareAvatar: true）**，全站仅此一人；
-> - **🛡️ 社区管理员 (Admin)** 与其他所有读者：全站统一遵循 **标准高精度圆形头像（border-radius: 50%）**，杜绝身份混淆。
+> **【Kernprinzipien für Typografie und Identifikation: Webmaster mit goldener Krone und leicht abgerundetem Quadrat vs. alle Administratoren mit rundem Profilbild】**
+> - **👑 Webmaster**: Als Eigentümer des Blogsystems und oberster Architekturmanager besitzt er das **einzigartige, leicht abgerundete quadratische Profilbild mit goldener Krone (isSquareAvatar: true)** für die gesamte Website; er ist die einzige Person mit diesem Status;
+> - **🛡️ Community-Administratoren (Admin)** und alle anderen Leser: Die gesamte Website folgt einem **standardmäßigen hochpräzisen runden Profilbild (border-radius: 50%)**, um Identitätsverwechslungen auszuschließen.
 
-### 11. LV.4 社区管理员 (Admin / Core Member)
-- **称号标识**：🛡️ 社区管理员 / ⭐ 核心成员
-- **头像样式**：**标准圆形头像**（`border-radius: 50%`）
-- **晋升机制**：非全自动升级。由站长特邀委任或经社区核心贡献考核通过后人工晋升。
-- **信任等级**：`TL.91 ~ TL.99`（默认基准 95，最高可达 99）。
-- **权责范围**：
-  - 社区常务巡查与敏感违规内容就地审核；
-  - 恶意灌水与违规评论屏蔽下架；
-  - 协助站长进行技术选题讨论与读者事务协调。
+### 11. LV.4 Community-Administrator (Admin / Core Member)
+- **Titel-Kennzeichnung**: 🛡️ Community-Administrator / ⭐ Kernmitglied
+- **Profilbild-Stil**: **Standard-Rundes Profilbild** (`border-radius: 50%`)
+- **Beförderungsmechanismus**: Nicht vollautomatische Beförderung. Manuelle Beförderung durch spezielle Einladung des Webmasters oder nach erfolgreicher Bewertung des Kernbeitrags zur Community.
+- **Vertrauenslevel**: `TL.91 ~ TL.99` (Standardbasis 95, maximal 99).
+- **Verantwortlichkeiten**:
+  - Regelmäßige Community-Patrouillen und sofortige Überprüfung sensibler, regelwidriger Inhalte;
+  - Blockieren und Entfernen von Spam und regelwidrigen Kommentaren;
+  - Unterstützung des Webmasters bei technischen Themenbesprechungen und der Koordination von Leserangelegenheiten.
 
-### 12. 👑 站长 (Webmaster / Site Owner)
-- **称号标识**：👑 站长
-- **头像样式**：**全站唯一微圆角方形头像 + 独家金色皇冠**（`border-radius: 10px; isSquareAvatar: true`）
-- **身份认证**：博客主创（shijianus），通过专属密钥通道与管理员邮箱鉴权。
-- **信任等级**：**`TL.100`（恒定绝对满级）**。
-- **权责范围**：
-  - **全站无条件绝对穿透权限**：无需任何前置门槛，无视所有 LV 限制，可随时调阅、测试与穿透全站所有私有专栏、隐藏分级文档及实验室模块；
-  - 云端 Functions / D1 数据库与 Stripe 收银台架构最高管辖权；
-  - 社区规则的最终制定与仲裁解释权。
-
----
-
-# 六、阅读沉淀成就徽章（静水流深）
-
-读完一篇上千字的技术深度文章，比浮躁走马观花更有价值。以下徽章为你记录在 EpoCanvas 汲取知识的时光轨迹：
-
-## No.1 通读全文
-> [!todo] 通读全文 (📖)
-> **权重优先级**：`40` | **所属分类**：`read`
-> **系统定义**：累计深度阅读博文时长达到 15 分钟。
-- **获取方式：** 在博文页面产生真实滚动与阅读停留达到 **15 分钟**。
-- **参考操作：** 挑选 2 篇长文，开启目录索引（TOC），静下心读完。
-- **避坑提示**：系统内置智能心跳。标签页切入后台或超过 3 分钟无操作将暂停计时。
-
-## No.2 慢读时光
-> [!todo] 慢读时光 (☕)
-> **权重优先级**：`55` | **所属分类**：`read`
-> **系统定义**：累计享受深度慢读时光超过 2 小时。
-- **获取方式：** 全站各博文累计阅读时长突破 **120 分钟**。
-- **参考操作：** 完整研读博客的“架构重构实录”或“Stripe 全球结账设计”长篇系列。
-
-## No.3 博览群书
-> [!todo] 博览群书 (📚)
-> **权重优先级**：`70` | **所属分类**：`read`
-> **系统定义**：累计沉浸阅读博客超过 10 小时。
-- **获取方式：** 全站深度研读时长突破 **600 分钟**（10 小时）。
-- **进阶彩蛋**：当阅读时长进一步突破 **30 小时（1800m）** 与 **60 小时（3600m）** 时，系统将自动解锁隐藏成就 **「📜 学贯中西」**（权重 72）与 **「🧭 墨海领航」**（权重 75）！
+### 12. 👑 Webmaster (Webmaster / Site Owner)
+- **Titel-Kennzeichnung**: 👑 Webmaster
+- **Profilbild-Stil**: **Website-weit einzigartiges, leicht abgerundetes quadratisches Profilbild + exklusive goldene Krone** (`border-radius: 10px; isSquareAvatar: true`)
+- **Identitätsauthentifizierung**: Blog-Gründer (shijianus), authentifiziert über einen exklusiven Schlüsselkanal und die Administrator-E-Mail.
+- **Vertrauenslevel**: **`TL.100` (Konstant maximales Level)**.
+- **Verantwortlichkeiten**:
+  - **Uneingeschränkte absolute Durchgriffsberechtigung für die gesamte Website**: Keine vorherigen Hürden erforderlich, ignoriert alle LV-Beschränkungen, kann jederzeit alle privaten Spalten, versteckten abgestuften Dokumente und Labormodule der gesamten Website einsehen, testen und durchdringen;
+  - Höchste Zuständigkeit für Cloud Functions / D1-Datenbank und die Stripe-Kassenarchitektur;
+  - Endgültige Festlegung und Schiedsinterpretation der Community-Regeln.
 
 ---
 
-# 七、评论与互动徽章（思辨共鸣）
+# VI. Abzeichen für Leseverdienste (Stille Wasser sind tief)
 
-EpoCanvas 原生自研评论系统，支持多模态交互、Boost 极速打气与就地回复树：
+Eine technische Tiefenanalyse von über tausend Wörtern zu lesen, ist wertvoller als oberflächliches Überfliegen. Die folgenden Abzeichen zeichnen Ihre Zeit des Wissenserwerbs auf EpoCanvas auf:
 
-## No.4 初露锋芒
-> [!todo] 初露锋芒 (✍️)
-> **权重优先级**：`30` | **所属分类**：`comment`
-> **系统定义**：精益求精，就地编辑完善过自己的发言。
-- **获取方式：** 在评论区发表任意言论后，完成过至少 1 次 **“就地编辑（Inline Edit）”** 操作。
-- **实操避坑**：访客临时会话在刷新（F5）或关闭浏览器后即刻销毁，请在发布后趁热打铁体验编辑！
+## Nr. 1 Vollständiges Lesen
+> [!todo] Vollständiges Lesen (📖)
+> **Priorität**: `40` | **Kategorie**: `read`
+> **Systemdefinition**: Kumulierte tiefe Lesezeit für Blogbeiträge erreicht 15 Minuten.
+- **So erhalten Sie es:** Erzielen Sie echtes Scrollen und Verweilen auf einer Blogbeitragsseite für **15 Minuten**.
+- **Empfohlene Vorgehensweise:** Wählen Sie 2 lange Artikel aus, öffnen Sie das Inhaltsverzeichnis (TOC) und lesen Sie sie in Ruhe durch.
+- **Hinweis zur Vermeidung von Fallstricken**: Das System verfügt über einen intelligenten Herzschlag. Wenn der Tab in den Hintergrund wechselt oder länger als 3 Minuten keine Aktion erfolgt, wird die Zeiterfassung angehalten.
 
-## No.5 丰富表情
-> [!todo] 丰富表情 (😀)
-> **权重优先级**：`35` | **所属分类**：`comment`
-> **系统定义**：使用生动丰富的表情符号参与互动交流。
-- **获取方式：** 首次使用评论区的“😀 表情互动”托盘发布 Emoji，或在他人评论卡片右下角送出 Emoji Reaction。
+## Nr. 2 Langsames Lesevergnügen
+> [!todo] Langsames Lesevergnügen (☕)
+> **Priorität**: `55` | **Kategorie**: `read`
+> **Systemdefinition**: Kumulierte Zeit für tiefes, langsames Lesen über 2 Stunden.
+- **So erhalten Sie es:** Die kumulierte Lesezeit aller Blogbeiträge auf der gesamten Website überschreitet **120 Minuten**.
+- **Empfohlene Vorgehensweise:** Lesen Sie die langen Serien des Blogs „Architektur-Refactoring-Aufzeichnungen“ oder „Stripe Global Checkout Design“ vollständig durch.
 
-## No.6 言之有物
-> [!todo] 言之有物 (💬)
-> **权重优先级**：`50` | **所属分类**：`comment`
-> **系统定义**：累计发表 5 条及以上优质独立见解。
-- **获取方式：** 累计发表达到 **5 条** 真实评论。
-- **进阶称号**：评论数达到 **20 条** 解锁 **「💡 真知灼见」**（权重 58），达到 **50 条** 解锁 **「🗣️ 纵论古今」**（权重 65）。
-- **风控警示**：1 小时内相同评论会被拦截；普通评论每小时限额 3 次，珍惜发帖额度，“水贴不如精读”！
-
-## No.7 回音激荡
-> [!todo] 回音激荡 (🔔)
-> **权重优先级**：`45` | **所属分类**：`comment`
-> **系统定义**：在评论互动中主动提及或呼应他人。
-- **获取方式：** 在评论中首次使用 `@` 提及特定读者，或点击他人评论卡片的 **“🔗 引用”** 按钮完成带引文的回复。
+## Nr. 3 Umfangreiches Lesen
+> [!todo] Umfangreiches Lesen (📚)
+> **Priorität**: `70` | **Kategorie**: `read`
+> **Systemdefinition**: Kumulierte immersive Lesezeit im Blog über 10 Stunden.
+- **So erhalten Sie es:** Die tiefe Lesezeit auf der gesamten Website überschreitet **600 Minuten** (10 Stunden).
+- **Fortgeschrittenes Easter Egg**: Wenn die Lesezeit weiter **30 Stunden (1800m)** und **60 Stunden (3600m)** überschreitet, schaltet das System automatisch die versteckten Erfolge **„📜 Gelehrter des Ostens und Westens“** (Priorität 72) und **„🧭 Navigator der Tintenmeere“** (Priorität 75) frei!
 
 ---
 
-# 八、赞赏与喝彩成就徽章（赠人玫瑰）
+# VII. Kommentar- und Interaktionsabzeichen (Kritisches Denken und Resonanz)
 
-## No.8 不吝赞美
-> [!todo] 不吝赞美 (❤️)
-> **权重优先级**：`45` | **所属分类**：`reaction`
-> **系统定义**：慷慨为他人的深刻思考送出 10 次以上喝彩。
-- **获取方式：** 累计主动送出 **10 次以上** Emoji 喝彩（`reactionsGiven >= 10`）。送出超过 30 次还将解锁 **「💖 乐善好施」**（权重 55）。
+Das native, selbst entwickelte Kommentarsystem von EpoCanvas unterstützt multimodale Interaktionen, schnelle Boosts und In-situ-Antwortbäume:
 
-## No.9 初见回响
-> [!todo] 初见回响 (✨)
-> **权重优先级**：`40` | **所属分类**：`reaction`
-> **系统定义**：个人发言收获了读者的第一枚热烈喝彩。
-- **获取方式：** 自己发表的评论或 Boost 首次收到来自他人的点赞喝彩。
+## Nr. 4 Erste Schritte
+> [!todo] Erste Schritte (✍️)
+> **Priorität**: `30` | **Kategorie**: `comment`
+> **Systemdefinition**: Streben nach Perfektion, die eigenen Kommentare direkt bearbeitet und verbessert.
+- **So erhalten Sie es:** Nach dem Veröffentlichen eines beliebigen Kommentars im Kommentarbereich mindestens 1 Mal die Aktion **„Direkte Bearbeitung (Inline Edit)“** durchgeführt.
+- **Praktischer Hinweis zur Vermeidung von Fallstricken**: Temporäre Gast-Sitzungen werden sofort nach dem Aktualisieren (F5) oder Schließen des Browsers zerstört. Bitte nutzen Sie die Gelegenheit, die Bearbeitung direkt nach dem Veröffentlichen auszuprobieren!
 
-## No.10 引发共鸣
-> [!todo] 引发共鸣 (🔥)
-> **权重优先级**：`65` | **所属分类**：`reaction`
-> **系统定义**：发表的见解累计收获 20 次以上喝彩互动。
-- **获取方式：** 个人名下发言累计收获喝彩点赞达到 **20 次**。
+## Nr. 5 Reichhaltige Emojis
+> [!todo] Reichhaltige Emojis (😀)
+> **Priorität**: `35` | **Kategorie**: `comment`
+> **Systemdefinition**: Verwenden Sie lebendige und vielfältige Emojis, um an Interaktionen teilzunehmen.
+- **So erhalten Sie es:** Veröffentlichen Sie zum ersten Mal ein Emoji über das „😀 Emoji-Interaktion“-Feld im Kommentarbereich oder geben Sie eine Emoji-Reaktion in der unteren rechten Ecke der Kommentarbox eines anderen Nutzers ab.
 
-## No.11 深得人心
-> [!todo] 深得人心 (💎)
-> **权重优先级**：`80` | **所属分类**：`reaction`
-> **系统定义**：累计获得超过 50 次读者共鸣喝彩与赞赏。
-- **进阶殿堂**：当收获喝彩突破 **100 次** 时，将激活极高权重成就 **「🌟 众望所归」**（权重 85）！
+## Nr. 6 Aussagekräftige Beiträge
+> [!todo] Aussagekräftige Beiträge (💬)
+> **Priorität**: `50` | **Kategorie**: `comment`
+> **Systemdefinition**: Veröffentlichen Sie kumulativ 5 oder mehr hochwertige, eigenständige Meinungen.
+- **So erhalten Sie es:** Veröffentlichen Sie kumulativ **5** echte Kommentare.
+- **Fortgeschrittener Titel**: Erreichen Sie **20 Kommentare**, um **„💡 Tiefgreifende Einsichten“** (Priorität 58) freizuschalten, und **50 Kommentare**, um **„🗣️ Zeitlose Diskussionen“** (Priorität 65) freizuschalten.
+- **Risikohinweis**: Gleiche Kommentare innerhalb von 1 Stunde werden blockiert; normale Kommentare sind auf 3 pro Stunde begrenzt. Nutzen Sie Ihr Posting-Kontingent weise, „Qualität vor Quantität“!
 
----
-
-# 九、极客身份与常客徽章（历久弥新）
-
-## No.12 自传作者
-> [!todo] 自传作者 (🏷️)
-> **权重优先级**：`35` | **所属分类**：`activity`
-> **系统定义**：完善了个性签名介绍并配置了专属头像。
-- **获取方式：** 在账号中心上传自定义头像，并且撰写 **不少于 10 个字** 的个人简介（`bio.length >= 10 && avatarUrl`）。
-
-## No.13 信件连结
-> [!todo] 信件连结 (✉️)
-> **权重优先级**：`40` | **所属分类**：`activity`
-> **系统定义**：绑定了专属邮箱，开启思想交流连结通道。
-- **获取方式：** 成功绑定常用邮箱或测试专属的 `@epomail.bond` 邮箱。绑定官方域名邮箱还将获赠 **「Epomail 认证读者」** 专属身份标签！
-
-## No.14 常客印记
-> [!todo] 常客印记 (🏃)
-> **权重优先级**：`50` | **所属分类**：`activity`
-> **系统定义**：累计在博客活跃探索 10 天以上。
-- **获取方式：** 累计活跃访问天数达到 **10 天**。活跃达到 30 天还将解锁 **「⚡ 见缝插针」**（权重 60）。
-
-## No.15 百日墨客
-> [!todo] 百日墨客 (🏔️)
-> **权重优先级**：`75` | **所属分类**：`activity`
-> **系统定义**：累计在博客活跃长达 100 天的深厚笔友。
-- **获取方式：** 累计活跃天数突破 **100 天**。
-
-## No.16 同舟一载
-> [!todo] 同舟一载 (🎂)
-> **权重优先级**：`85` | **所属分类**：`activity`
-> **系统定义**：与本博客相识相伴同行超过 1 年时光。
-- **获取方式：** 距离初次访问或注册时间满 **365 天**（$\le 365$ 天上限）。此外，累计活跃超过 200 天还将解锁 **「🌲 坚韧长青」**（权重 88）！
+## Nr. 7 Resonanz erzeugen
+> [!todo] Resonanz erzeugen (🔔)
+> **Priorität**: `45` | **Kategorie**: `comment`
+> **Systemdefinition**: Erwähnen oder antworten Sie aktiv auf andere in Kommentarinteraktionen.
+- **So erhalten Sie es:** Erwähnen Sie zum ersten Mal einen bestimmten Leser mit `@` in einem Kommentar oder klicken Sie auf die Schaltfläche **„🔗 Zitieren“** in der Kommentarbox eines anderen Nutzers, um eine Antwort mit Zitat zu verfassen.
 
 ---
 
-# 十、附录：名片浮层展示规则说明（读者须知）
+# VIII. Abzeichen für Wertschätzung und Beifall (Rosen verschenken)
 
-当你把鼠标悬停在评论区任何一位发帖者的头像或昵称上时，系统都会瞬间弹出一张精心调校的 **极客名片（Author Profile Popover）**：
+## Nr. 8 Großzügiger Lobgeber
+> [!todo] Großzügiger Lobgeber (❤️)
+> **Priorität**: `45` | **Kategorie**: `reaction`
+> **Systemdefinition**: Spenden Sie großzügig mehr als 10 Mal Beifall für die tiefgründigen Gedanken anderer.
+- **So erhalten Sie es:** Geben Sie kumulativ **mehr als 10** Emoji-Reaktionen (Beifall) (`reactionsGiven >= 10`). Wenn Sie mehr als 30 Mal Beifall spenden, schalten Sie außerdem **„💖 Wohltäter“** (Priorität 55) frei.
+
+## Nr. 9 Erste Resonanz
+> [!todo] Erste Resonanz (✨)
+> **Priorität**: `40` | **Kategorie**: `reaction`
+> **Systemdefinition**: Ihr persönlicher Beitrag hat den ersten begeisterten Beifall eines Lesers erhalten.
+- **So erhalten Sie es:** Ihr eigener Kommentar oder Boost erhält zum ersten Mal Beifall/Likes von anderen.
+
+## Nr. 10 Resonanz erzeugen
+> [!todo] Resonanz erzeugen (🔥)
+> **Priorität**: `65` | **Kategorie**: `reaction`
+> **Systemdefinition**: Ihre veröffentlichten Meinungen haben kumulativ mehr als 20 Beifallsinteraktionen erhalten.
+- **So erhalten Sie es:** Ihre Beiträge haben kumulativ **20 Mal** Beifall/Likes erhalten.
+
+## Nr. 11 Beliebt
+> [!todo] Beliebt (💎)
+> **Priorität**: `80` | **Kategorie**: `reaction`
+> **Systemdefinition**: Kumulativ mehr als 50 Mal Beifall und Wertschätzung von Lesern erhalten.
+- **Fortgeschrittene Stufe**: Wenn Sie mehr als **100 Mal** Beifall erhalten, wird die Errungenschaft mit sehr hoher Priorität **„🌟 Publikumsliebling“** (Priorität 85) aktiviert!
+
+---
+
+# IX. Geek-Identität und Stammgast-Abzeichen (Zeitlos)
+
+## Nr. 12 Autobiograf
+> [!todo] Autobiograf (🏷️)
+> **Priorität**: `35` | **Kategorie**: `activity`
+> **Systemdefinition**: Vervollständigen Sie Ihre persönliche Signatur und konfigurieren Sie einen exklusiven Avatar.
+- **So erhalten Sie es:** Laden Sie im Kontocenter einen benutzerdefinierten Avatar hoch und verfassen Sie eine persönliche Beschreibung von **mindestens 10 Zeichen** (`bio.length >= 10 && avatarUrl`).
+
+## Nr. 13 E-Mail-Verbindung
+> [!todo] E-Mail-Verbindung (✉️)
+> **Priorität**: `40` | **Kategorie**: `activity`
+> **Systemdefinition**: Binden Sie eine exklusive E-Mail-Adresse, um den Kanal für den Gedankenaustausch zu öffnen.
+- **So erhalten Sie es:** Binden Sie erfolgreich eine häufig verwendete E-Mail-Adresse oder testen Sie die exklusive `@epomail.bond` E-Mail-Adresse. Das Binden einer offiziellen Domain-E-Mail-Adresse gewährt Ihnen außerdem das exklusive Identitäts-Tag **„Epomail Verifizierter Leser“**!
+
+## Nr. 14 Stammgast-Zeichen
+> [!todo] Stammgast-Zeichen (🏃)
+> **Priorität**: `50` | **Kategorie**: `activity`
+> **Systemdefinition**: Kumulativ mehr als 10 Tage aktiv im Blog unterwegs.
+- **So erhalten Sie es:** Erreichen Sie kumulativ **10 aktive Besuchstage**. Wenn Sie 30 Tage aktiv sind, schalten Sie außerdem **„⚡ Überall präsent“** (Priorität 60) frei.
+
+## Nr. 15 Hundert-Tage-Schreiber
+> [!todo] Hundert-Tage-Schreiber (🏔️)
+> **Priorität**: `75` | **Kategorie**: `activity`
+> **Systemdefinition**: Ein langjähriger Blog-Freund, der kumulativ über 100 Tage aktiv im Blog war.
+- **So erhalten Sie es:** Überschreiten Sie kumulativ **100 aktive Tage**.
+
+## Nr. 16 Ein Jahr gemeinsam
+> [!todo] Ein Jahr gemeinsam (🎂)
+> **Priorität**: `85` | **Kategorie**: `activity`
+> **Systemdefinition**: Seit über 1 Jahr mit diesem Blog verbunden und gemeinsam unterwegs.
+- **So erhalten Sie es:** Seit dem ersten Besuch oder der Registrierung sind **365 Tage** vergangen (maximal $\le 365$ Tage). Wenn Sie außerdem kumulativ über 200 Tage aktiv sind, schalten Sie **„🌲 Dauerhaft beständig“** (Priorität 88) frei!
+
+---
+
+# X. Anhang: Erläuterung der Anzeigeregeln für das Visitenkarten-Popover (Für Leser)
+
+Wenn Sie den Mauszeiger über den Avatar oder den Spitznamen eines Kommentators im Kommentarbereich bewegen, wird sofort ein sorgfältig abgestimmtes **Geek-Profil-Popover (Author Profile Popover)** angezeigt:
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  [圆形头像]  shijian_fan  [⭐ 先驱] [Epomail 认证]     │
-│  热爱开源，折腾 Astro 与 Rust 的全栈开发者             │
+│  [Runder Avatar]  shijian_fan  [⭐ Pionier] [Epomail Verifiziert]     │
+│  Liebt Open Source, Full-Stack-Entwickler, der mit Astro und Rust experimentiert             │
 │  ────────────────────────────────────────────────────  │
-│  [ 💎 深得人心 ] [ 📚 博览群书 ] [ 🏔️ 百日墨客 ] [ ☕ 慢读时光 ] │
+│  [ 💎 Beliebt ] [ 📚 Bücherwurm ] [ 🏔️ Hundert-Tage-Schreiber ] [ ☕ Langsamer Leser ] │
 │  ────────────────────────────────────────────────────  │
-│  最新发言: 刚刚 · 加入时间: 120天前 · 已读: 480m · 喝彩: 68   │
+│  Letzter Beitrag: Gerade eben · Beigetreten: vor 120 Tagen · Gelesen: 480m · Beifall: 68   │
 └────────────────────────────────────────────────────────┘
 ```
 
-很多朋友会问：**“我已经解锁了 8 个徽章，为什么我的名片上只显示了 4 个？”**
+Viele Freunde fragen: **„Ich habe 8 Abzeichen freigeschaltet, warum werden auf meiner Visitenkarte nur 4 angezeigt?“**
 
-### 1. 原创极简克制排版规范
-- **拒绝花哨冗余**：我们不希望名片变成铺天盖地的勋章墙，破坏排版呼吸感。
-- **至多佩戴 4 枚**：系统严格限制名片浮层中的勋章栏 **单行最多展示 4 个徽章**（`max 4`）。
-- **自主挑选 vs 权重兜底**：
-  - **自主装备**：你可以在「账号中心」的徽章抽屉中，任意点击挑选你最喜欢的 4 枚徽章进行“装备”；
-  - **智能兜底**：如果你从未手动设置，系统将基于算法，自动从你已解锁的徽章池中 **严格按照 Priority 权重从高到低排序，截取前 4 个最高荣誉徽章** 展示！
-  - **绝版称号天然高光**：由于 6 大绝版荣誉称号赋予了 `92 ~ 98` 的超高 Priority，只要你达成解锁，系统默认会直接将它们排在最醒目的展示位！
+### 1. Originale, minimalistische und zurückhaltende Layout-Richtlinien
+- **Keine überflüssige Extravaganz**: Wir möchten nicht, dass die Visitenkarte zu einer überladenen Abzeichenwand wird und das Layout-Gefühl beeinträchtigt.
+- **Maximal 4 Abzeichen**: Das System begrenzt die Abzeichenleiste im Visitenkarten-Popover streng auf **maximal 4 Abzeichen pro Zeile** (`max 4`).
+- **Selbstauswahl vs. Prioritäts-Fallback**:
+  - **Manuelle Auswahl**: Im Abzeichen-Fach des „Kontocenters“ können Sie beliebig Ihre 4 Lieblingsabzeichen auswählen und „ausrüsten“;
+  - **Intelligenter Fallback**: Wenn Sie noch nie manuelle Einstellungen vorgenommen haben, wählt das System algorithmusbasiert automatisch aus Ihrem Pool der freigeschalteten Abzeichen **streng nach Prioritätsgewicht von hoch nach niedrig sortiert die 4 höchsten Ehrenabzeichen** zur Anzeige aus!
+  - **Exklusive Titel mit natürlicher Hervorhebung**: Da die 6 großen exklusiven Ehrentitel eine extrem hohe Priorität von `92 ~ 98` haben, werden sie, sobald Sie sie freigeschaltet haben, vom System standardmäßig direkt an der prominentesten Anzeigeposition platziert!
 
-### 2. 统计栏排印规范（弹性横向流）
-名片底部的读者活跃数据采用横向弹性流排布，包含 4 项真实统计指标：
-1. **最新发言**：动态计算并展示相对时间戳（如“刚刚”、“3小时前”）；
-2. **加入时间**：记录读者首次访问或注册距离当前的天数（如“180天前”）；
-3. **已读时长**：展示在博客累计消耗的阅读心跳时长（如“240m”）；
-4. **喝彩点赞**：展示发表见解累计收获的读者点赞总数。
+### 2. Typografie der Statistikleiste (Flexibler horizontaler Fluss)
+Die Leseraktivitätsdaten am unteren Rand der Visitenkarte sind in einem flexiblen horizontalen Fluss angeordnet und umfassen 4 echte statistische Indikatoren:
+1. **Letzter Beitrag**: Berechnet und zeigt dynamisch relative Zeitstempel an (z.B. „gerade eben“, „vor 3 Stunden“);
+2. **Beitrittsdatum**: Zeigt die Anzahl der Tage seit dem ersten Besuch oder der Registrierung des Lesers an (z.B. „vor 180 Tagen“);
+3. **Lesezeit**: Zeigt die kumulierte Lesezeit (Herzschläge) im Blog an (z.B. „240m“);
+4. **Applaus & Likes**: Zeigt die Gesamtzahl der Likes, die für veröffentlichte Beiträge gesammelt wurden.
 
 ---
 
-# 十一、结语：水贴不如精读，坐和放宽！
+# Elf. Fazit: Qualität vor Quantität, lehnen Sie sich zurück und entspannen Sie sich!
 
-社区的深度从不在于发帖数量的盲目堆砌，而在于每一次思想碰撞所激荡出的回响。
+Die Tiefe einer Community liegt niemals im blinden Anhäufen von Beiträgen, sondern im Echo, das aus jedem Gedankenaustausch entsteht.
 
-无论你是刚刚到访的 **「🐣 新兴用户」**，还是已经默默读完数十篇博文的 **「☕ 慢读时光」** 拥有者，EpoCanvas 博客都为你保留了一张属于你的极客数字名片。
+Egal, ob Sie ein gerade angekommener **„🐣 Neuer Nutzer“** oder ein Besitzer von **„☕ Langsamer Lesezeit“** sind, der bereits Dutzende von Blogbeiträgen stillschweigend gelesen hat – der EpoCanvas Blog hält eine digitale Geek-Visitenkarte für Sie bereit.
 
-**坐和放宽，欢迎在下方评论区发表你的第一条见解，开启属于你的信任等级晋升之旅！**
+**Lehnen Sie sich zurück und entspannen Sie sich, und teilen Sie Ihre erste Einsicht im Kommentarbereich unten, um Ihre Reise zur Vertrauensstufen-Beförderung zu beginnen!**

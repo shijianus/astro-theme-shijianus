@@ -1,11 +1,11 @@
 ---
-title: "Inventaire complet du web ! Guide complet pour obtenir les niveaux, titres et badges des lecteurs du blog EpoCanvas (mise à jour continue en 2026)"
-description: "Inventaire complet du système de confiance auto‑développé du blog EpoCanvas (TL.0 ~ TL.100+), des 11 niveaux de titres de lecteur standard, des 6 titres d'honneur rares, des permissions d'administrateur et de propriétaire du site, ainsi que des algorithmes de détermination et des astuces de déverrouillage pour plus de 15 badges de réussite. Seuil d'entrée LV et double système de poids TL, plafond d'activité à 35 points, dépassement des privilèges 100+, chaîne en cascade, guide anti‑piège et révélation complète de la mise en page des cartes de visite."
+title: "Inventaire complet ! Guide complet pour l'obtention des niveaux de lecteur, titres et badges du blog EpoCanvas (Mise à jour continue en 2026)"
+description: "Inventaire complet de l'échelle de confiance (TL.0 ~ TL.100+) développée par le blog EpoCanvas, des 11 titres de lecteur réguliers, des 6 titres honorifiques rares, des permissions d'administrateur et de webmaster, ainsi que des algorithmes de détermination et des astuces de déverrouillage pour plus de 15 badges de réussite. Le système à double voie des seuils d'entrée LV et des pondérations TL, le plafond de 35 points pour les activités, les privilèges au-delà de 100+, les chaînes en cascade, le guide anti-pièges et la révélation complète de la mise en page des cartes de visite."
 pubDate: 2026-09-12
 author: "shijianus"
-category: "Guide communautaire"
-group: "Normes officielles"
-tags: ["Guide communautaire", "Communauté des lecteurs", "Échelle de niveaux", "Système de badges", "EpoCanvas", "Astro"]
+category: "Guide de la communauté"
+group: "Règles officielles"
+tags: ["Guide de la communauté", "Communauté de lecteurs", "Échelle de niveaux", "Système de badges", "EpoCanvas", "Astro"]
 cover: "/media/shijianus/geek-cover.jpg"
 coverAlt: "EpoCanvas Badges and Community Leveling Guide"
 toc: true
@@ -15,73 +15,72 @@ i18nKey: "badges-guide"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
 ---
+Bonjour à tous, développeurs geeks, lecteurs assidus et amis blogueurs passionnés !
 
-Bonjour à tous, développeurs geeks, lecteurs fidèles et passionnés de la recherche approfondie !
+Souvent, des amis attentifs, en interagissant au bas des articles du blog ou en survolant les avatars dans la section des commentaires, se demandent : Pourquoi certains lecteurs affichent-ils **« LV.1 · Contributeur »**, d'autres un éclatant **« LV.3 · Pionnier »**, et même quelques rares lecteurs fidèles arborent-ils des chiffres éblouissants qui dépassent le plafond, comme **« 📜 Scribe Fondateur »** ou **« TL.102 »** ? Comment les badges **« ☕ Temps de lecture lent »** et **« 💎 Très apprécié »** s'illuminent-ils dans la carte de visite flottante ? Pourquoi l'avatar de l'administrateur du site se distingue-t-il par sa forme carrée légèrement arrondie et sa couronne dorée ?
 
-Des amis attentifs s'interrogent souvent, en interagissant en bas des articles de blog ou en survolant les avatars dans la section des commentaires : pourquoi certains lecteurs arborent-ils le titre **« LV.1 · Contributeur »**, d'autres le brillant **« LV.3 · Pionnier »**, et même un très petit nombre de lecteurs fidèles affichent-ils des chiffres impressionnants comme **« 📜 Scribe de la Genèse »** ou **« TL.102 »** ? Comment les badges **« ☕ Temps de lecture lente »** et **« 💎 Profondément apprécié »** s'illuminent-ils dans la carte de visite ? Pourquoi l'avatar de l'administrateur se distingue-t-il par une forme carrée aux coins légèrement arrondis et une couronne dorée ?
-
-Aujourd'hui, ce guide officiel et autoritaire, qui incarne l'**esthétique de design geek originale d'EpoCanvas**, vous dévoilera en toute transparence l'algorithme de base et le parcours de mise à niveau pratique du **système de double échelle de confiance (seuils d'accès LV + mécanisme de pondération TL)**, des **11 titres de lecteur courants**, des **6 titres honorifiques épuisés et limités**, des **prérogatives des administrateurs et de l'administrateur principal**, ainsi que des **15+ badges d'accomplissement exclusifs** actuellement en vigueur sur le blog EpoCanvas !
+Aujourd'hui, ce guide officiel et faisant autorité, imprégné de l'**esthétique de design geek originale d'EpoCanvas**, va vous révéler en toute transparence le système actuel de **double échelle de confiance (seuil d'accès LV + mécanisme de pondération TL)** du blog EpoCanvas, les **11 titres de lecteurs réguliers principaux**, les **6 titres honorifiques rares et limités**, les **responsabilités des administrateurs et du webmaster**, ainsi que l'algorithme de détermination sous-jacent et le chemin de mise à niveau pratique pour les **plus de 15 badges de succès exclusifs** !
 
 ---
 
-> [!warning]
-> **Informations sur la synchronisation et les statistiques des données** : Les données des lecteurs de ce blog (y compris la durée de lecture, les jours d'activité, le nombre de commentaires et les enregistrements d'applaudissements Emoji) reposent sur la persistance locale du client `LocalStorage` et sur la synchronisation asynchrone via le canal d'authentification backend Cloudflare Workers / D1. L'utilisation du mode navigation privée, l'accès fréquent depuis plusieurs appareils ou le vidage du cache du navigateur peuvent entraîner de légers retards de statistiques ou des déconnexions de session temporaires. Il est recommandé de lier un e-mail dédié (comme Epomail) dans le centre de compte pour garantir la liaison permanente de vos droits !
+> [!avertissement]
+> **Avis sur la synchronisation et les statistiques des données** : Les données des lecteurs de ce blog (y compris le temps de lecture, les jours d'activité, le nombre de commentaires, les enregistrements d'applaudissements Emoji) reposent sur la persistance locale via `LocalStorage` côté client et la synchronisation asynchrone via les canaux d'authentification backend Cloudflare Workers / D1. L'utilisation du mode de navigation privée, des accès fréquents multi-appareils ou la suppression du cache du navigateur peuvent entraîner de légers retards statistiques ou des déconnexions de session temporaires. Il est recommandé de lier une adresse e-mail dédiée (comme Epomail) dans le centre de compte pour garantir la liaison permanente de vos droits !
 
-> [!tip]
-> **Accès rapide aux statistiques et à l'affichage des badges** : Cliquez sur le **tiroir « Centre de compte » (Account Drawer)** situé à droite de la barre de navigation supérieure du blog ou sur le bouton rapide de la console pour consulter en temps réel votre niveau de confiance actuel (TL), le pourcentage d'atteinte du niveau suivant, le pool d'accomplissements débloqués, et choisir librement jusqu'à **4 badges exclusifs** à afficher pour affirmer votre identité geek !
+> [!astuce]
+> **Accès rapide aux réalisations et à l'équipement des badges** : Cliquez sur le **tiroir « Centre de compte » (Account Drawer)**, situé à droite de la barre de navigation supérieure du blog ou via le bouton de raccourci de la console, pour consulter en temps réel votre niveau de confiance (TL), le pourcentage d'atteinte du niveau suivant, le pool de succès débloqués, et choisir librement de porter jusqu'à **4 badges exclusifs** pour affirmer votre identité geek !
 
 <div data-theme-toc="true"> </div>
 
 ---
 
-# I. Mécanisme central : le système à double piste des seuils d'accès LV et de la pondération TL
+# I. Mécanisme central : Le système à double voie du seuil d'accès LV et de la pondération TL
 
-Le système communautaire du blog EpoCanvas adopte une **architecture de gouvernance à double piste** précise : **LV (Niveau)** et **TL (Niveau de Confiance)** ont chacun leur rôle et se complètent :
+Le système communautaire du blog EpoCanvas adopte une **architecture de gouvernance à double voie** sophistiquée : **LV (Level)** et **TL (Trust Level)** ont chacun leur rôle et se complètent mutuellement :
 
 > [!important]
-> **【Mécanisme central : différence essentielle entre le seuil d'accès LV et le classement par pondération TL】**
-> - **LV (Niveau 0 ~ 4) — Détermine le niveau minimal de contenu que vous pouvez voir (seuil d'accès / verrou d'autorisation d'accès)** :
->   - Le LV est le seuil de sécurité du contenu et de classification en profondeur établi par le blog.
->   - **LV.0 (Débutant)** : Accès uniquement aux articles publics courants ;
->   - **LV.1 (Intermédiaire)** : Débloque le Boost rapide, l'interaction en commentaire exclusive et la rubrique de discussion technique avancée ;
->   - **LV.2 (Geek)** : Débloque les comptes rendus d'architecture de haut niveau, les blocs de code privés repliables et la rubrique d'expérimentation bêta de pointe ;
->   - **LV.3 (Pionnier)** : Débloque la rubrique de séminaire privé des pionniers et les droits de proposition technique par invitation ;
->   - **LV.4 (Gestion et Création principale)** : Gouvernance et surveillance de la communauté (Administrateurs) et droits de pénétration inconditionnelle sur tout le site (Administrateur principal).
-> - **TL (Niveau de Confiance 0 ~ 100+) — Détermine votre autorité et votre poids de classement dans cette plage de niveau** :
->   - Le TL mesure votre niveau d'activité et l'accumulation de réputation dans votre plage de niveau actuelle.
->   - Au sein du même niveau LV, les lecteurs ayant un TL plus élevé ont une priorité d'affichage plus élevée dans la section des commentaires, un poids plus important pour les likes et les applaudissements, des quotas de limitation anti-spam plus souples et une présence plus éclatante dans le classement d'activité des lecteurs.
+> **[Mécanisme central : Différence essentielle entre le seuil d'accès LV et le classement par pondération TL]**
+> - **LV (Niveau 0 ~ 4) — Détermine le niveau minimum de contenu que vous pouvez voir (seuil d'accès / verrou d'autorisation d'accès)** :
+>   - Le LV est le seuil de sécurité du contenu et de classification par profondeur établi par le blog.
+>   - **LV.0 (Débutant)** : Peut uniquement consulter les articles de blog publics réguliers ;
+>   - **LV.1 (Avancé)** : Débloque le Boost rapide, les interactions de commentaires exclusives et les rubriques de discussion technique avancée ;
+>   - **LV.2 (Geek)** : Débloque les enregistrements d'architecture avancée, les blocs de code pliables privés et les rubriques d'expérimentation bêta de pointe ;
+>   - **LV.3 (Pionnier)** : Débloque les rubriques de séminaires privés pour pionniers et les autorisations de proposition technique sur invitation ;
+>   - **LV.4 (Administration et Création principale)** : Gouvernance de la patrouille communautaire (administrateur) et accès illimité à l'ensemble du site (webmaster).
+> - **TL (Niveau de confiance 0 ~ 100+) — Détermine votre autorité et votre poids de classement au sein de votre niveau actuel** :
+>   - Le TL mesure votre activité et l'accumulation de votre réputation au sein de votre niveau actuel.
+>   - Au sein du même niveau LV, les lecteurs avec un TL plus élevé ont une priorité d'affichage supérieure dans la section des commentaires, un poids plus important pour les likes et les applaudissements, un quota de limitation anti-spam plus généreux, et sont plus visibles dans le classement des lecteurs actifs.
 
 ---
 
-> [!tip]
-> **【Critères clés de promotion : plafond maximal du niveau de confiance (Max TL Cap), chaîne de déblocage en cascade et plafonnement à 35 points d'intégrité】**
+> [!astuce]
+> **[Critères de promotion clés : Plafond maximal du niveau de confiance (Max TL Cap), chaîne de déverrouillage en cascade et plafond de 35 points d'activité]**
 > 1. **Le titre détermine le plafond maximal du TL (Max TL Cap)** :
->    - Le TL en suffixe du titre représente le **plafond maximal du niveau de confiance (Max TL Cap)**, et non une valeur actuelle fixe.
->    - **Délimitation stricte du plafond de chaque palier** :
->      - **Palier LV.0** : le plafond est strictement limité à **TL.2** (Nouvel utilisateur Cap 0, Utilisateur initial Cap 2) ;
->      - **Palier LV.1** : le plafond est strictement limité à **TL.20** (Utilisateur de base Cap 8, Contributeur Cap 15, Chercheur réflexif Cap 20) ;
->      - **Palier LV.2** : le plafond est strictement limité à **TL.50** (Utilisateur actif Cap 35, Geek éternel Cap 50) ;
->      - **Palier LV.3** : le plafond des lecteurs ordinaires est strictement limité à **TL.90** (Pionnier Cap 70, Utilisateur annuel Cap 80, Maître de l’encre Cap 90) ;
->      - **Palier LV.4** : administrateurs TL 91 ~ 99, 👑 propriétaire du site TL 100, niveau maximal constant et absolu.
->    - **Cas réel** : le plafond du niveau de confiance maximal pour un utilisateur initial LV.0 est de 2 (TL Cap 2). Même si un nouveau lecteur travaille intensément, lisant d'affilée 1000 minutes d'articles, tant qu'il n'a pas publié de commentaire réel pour débloquer le LV.1 Utilisateur de base, son niveau de confiance reste strictement bloqué à **TL.2** dans le système !
-> 2. **Chaîne de déverrouillage en cascade (Strict Waterfall Progression)** :
->    - Entre les titres du même ou de différents LV, il existe une chaîne de déverrouillage préalable rigoureuse. **Il faut d'abord satisfaire toutes les exigences du titre précédent pour pouvoir débloquer le suivant, le saut de niveau est strictement interdit !**
->    - **Cas réel** : le lecteur doit d'abord débloquer « Pionnier », avant de pouvoir débloquer « Utilisateur annuel ». Si le « Pionnier » n'est pas atteint (par exemple le nombre de commentaires ou de likes insuffisant), même avec 365 jours d'activité enregistrés, il est absolument impossible de débloquer « Utilisateur annuel » en sautant le niveau !
+>    - Le TL en suffixe du titre représente le **plafond maximal du niveau de confiance (Max TL Cap)** accordé par ce titre, et non une valeur actuelle fixe.
+>    - **Les plafonds des paliers sont strictement définis** :
+>      - **Palier LV.0** : Le plafond est strictement limité à **TL.2** (Nouvel utilisateur Cap 0, Utilisateur initial Cap 2) ;
+>      - **Palier LV.1** : Le plafond est strictement limité à **TL.20** (Utilisateur de base Cap 8, Contributeur Cap 15, Érudit spéculatif Cap 20) ;
+>      - **Palier LV.2** : Le plafond est strictement limité à **TL.50** (Utilisateur actif Cap 35, Geek émérite Cap 50) ;
+>      - **Palier LV.3** : Le plafond pour les lecteurs réguliers est strictement limité à **TL.90** (Pionnier Cap 70, Utilisateur annuel Cap 80, Maître de l'encre Cap 90) ;
+>      - **Palier LV.4** : Administrateur TL 91 ~ 99, 👑 Webmaster TL 100, niveau maximum absolu et constant.
+>    - **Cas réel** : Le plafond maximal du niveau de confiance pour un utilisateur initial LV.0 est de 2 (TL Cap 2). Même si un nouveau lecteur est extrêmement assidu et lit 1000 minutes d'articles de blog d'affilée, tant qu'il n'a pas publié de commentaires réels pour débloquer le statut d'utilisateur de base LV.1, son niveau de confiance restera strictement bloqué à **TL.2** dans le système !
+> 2. **Chaîne de déverrouillage par dépendance en cascade (Strict Waterfall Progression)** :
+>    - Entre les titres de LV identiques ou différents, il existe une chaîne de déverrouillage préalable stricte. **Il est impératif de satisfaire toutes les exigences du titre précédent avant de pouvoir débloquer les titres suivants ; tout saut de niveau est interdit !**
+>    - **Cas réel** : Un lecteur doit d'abord débloquer le titre de « Pionnier » avant de pouvoir débloquer celui d'« Utilisateur annuel ». Si le titre de « Pionnier » n'est pas encore atteint (par exemple, le nombre de commentaires ou de likes est insuffisant), même si le nombre de jours d'activité depuis l'inscription atteint 365 jours, il sera absolument impossible de sauter un niveau pour débloquer le titre d'« Utilisateur annuel » !
 > 3. **Comment le niveau de confiance (TL) est-il augmenté et calculé ? (Plafond de 35 points d'activité)** :
->    - Le niveau de confiance est calculé dynamiquement par le système en fonction de 4 dimensions d'activités réelles du lecteur :
->      $\text{Raw Activity Points} = \lfloor\frac{\text{阅读时长(m)}}{30}\rfloor + \lfloor\frac{\text{评论数}}{3}\rfloor + \lfloor\frac{\text{获赞数}}{2}\rfloor + \lfloor\frac{\text{活跃天数}}{3}\rfloor$
->    - **【Mécanisme anti-fraude rigide】 Le plafond des points d'activité est limité à 35 points** :
->      $\text{Earned Points} = \min(35, \text{Raw Activity Points})$
->      Cela garantit qu'aucun lecteur ne peut contourner les seuils de titre en se contentant d'accumuler du temps d'inactivité ou des jours d'activité, il doit progresser grâce à des interactions profondes et substantielles !
->    - **Formule du TL réel pour les lecteurs ordinaires** :
->      $\text{当前常规 TL} = \min(\text{Max TL Cap}, \text{Base TL} + \text{Earned Points})$
->    - Tant que vous n'avez pas débloqué un nouveau titre, les points obtenus augmenteront votre TL de manière progressive jusqu'à atteindre le plafond du titre actuel. Pour dépasser ce plafond, il faut satisfaire les exigences en cascade du titre suivant !
+>    - Le niveau de confiance est calculé dynamiquement par le système en fonction de 4 activités réelles multidimensionnelles du lecteur :
+>      $$\text{Points d'activité bruts} = \lfloor\frac{\text{Temps de lecture (min)}}{30}\rfloor + \lfloor\frac{\text{Nombre de commentaires}}{3}\rfloor + \lfloor\frac{\text{Nombre de likes reçus}}{2}\rfloor + \lfloor\frac{\text{Jours d'activité}}{3}\rfloor$$
+>    - **[Mécanisme anti-triche strict] Le plafond des points d'activité est limité à 35 points** :
+>      $$\text{Points gagnés} = \min(35, \text{Points d'activité bruts})$$
+>      Cela garantit qu'aucun lecteur ne peut contourner les seuils de titre en se contentant de laisser le site ouvert ou d'accumuler des jours d'activité ; la promotion des titres doit se faire par une interaction substantielle et approfondie !
+>    - **Formule réelle du TL pour les lecteurs réguliers** :
+>      $$\text{TL régulier actuel} = \min(\text{Plafond TL Max}, \text{TL de base} + \text{Points gagnés})$$
+>    - Tant qu'un nouveau titre n'est pas débloqué, les points obtenus augmenteront progressivement votre TL jusqu'à atteindre le plafond du titre actuel. Pour dépasser ce plafond, il est impératif de satisfaire aux exigences en cascade du titre suivant !
 
 ---
 
-# II. Architecture globale des paliers et processus de promotion en cascade
+# II. Architecture panoramique par paliers et processus de promotion en cascade
 
-Le site est divisé en 11 titres natifs réguliers pour les lecteurs, plus 6 titres d'honneur exclusifs et les administrateurs et propriétaire du site nommés sur invitation. Aucun codage dur factice n'est autorisé ; tous les indicateurs réguliers peuvent être atteints naturellement par des interactions réelles en 1 an ($\le 365$ jours) :
+Le site est divisé en 11 titres de lecteur natifs réguliers, plus 6 titres honorifiques exclusifs et limités, ainsi que des administrateurs nommés sur invitation spéciale et le créateur/propriétaire du site. Le codage en dur (hardcoding) frauduleux est strictement interdit ; tous les indicateurs réguliers peuvent être atteints naturellement par des interactions réelles en 1 an ($\le 365$ jours) :
 
 ```mermaid
 flowchart TD
@@ -92,348 +91,348 @@ flowchart TD
     classDef lv4 fill:#faf5ff,stroke:#a855f7,stroke-width:2px;
     classDef spec fill:#fff1f2,stroke:#f43f5e,stroke-width:2px;
 
-    LV0["<b>🐣 LV.0 新手起步阶梯（TL Cap 0 ~ 2 · 访客起步与阅读留存）</b><br/>• 🐣 新兴用户 (TL Cap 0): 初访未产生交互记录，可浏览全站公开静态博文与全局关键字搜索<br/>• 📘 初始用户 (TL Cap 2): 产生任意博文深度阅读停留 (>=1篇)，开启活跃留存与阅读时长心跳统计"]:::lv0
+    LV0["<b>🐣 LV.0 Palier de démarrage pour débutants (Plafond TL 0 ~ 2 · Démarrage visiteur et rétention de lecture)</b><br/>• 🐣 Utilisateur Émergent (Plafond TL 0): Première visite sans enregistrement d'interaction, peut parcourir tous les articles de blog statiques publics et la recherche globale par mots-clés<br/>• 📘 Utilisateur Initial (Plafond TL 2): Séjour de lecture approfondie sur n'importe quel article de blog (>=1 article), active la rétention active et le suivi du temps de lecture"]:::lv0
 
-    LV1["<b>🥉 LV.1 进阶贡献阶梯（TL Cap 8 ~ 20 封顶 · 评论互动与学术思辨）</b><br/>• 🥉 基本用户 (TL Cap 8): 首次发表真实评论，解锁 Boost 极速打气与 Emoji 表情互动、就地编辑特权<br/>• 🏅 贡献者 (TL Cap 15): 累计阅读时长 >= 30m 且发表讨论 >= 10 次，名片激活专属橙铜徽标<br/>• 💡 思辨学者 (TL Cap 20 封顶): 阅读 >= 120m 且评论 >= 20 次 且获赞 >= 10 个，达 LV.1 最高晋升上限"]:::lv1
+    LV1["<b>🥉 LV.1 Palier de contribution avancée (Plafond TL 8 ~ 20 max · Interaction par commentaires et délibération académique)</b><br/>• 🥉 Utilisateur Basique (Plafond TL 8): Premier commentaire authentique publié, débloque le Boost rapide et l'interaction par emojis, ainsi que le privilège d'édition sur place<br/>• 🏅 Contributeur (Plafond TL 15): Durée de lecture cumulée >= 30m et discussions publiées >= 10 fois, la carte de profil active un badge exclusif en bronze-orange<br/>• 💡 Érudit Délibératif (Plafond TL 20 max): Lecture >= 120m et commentaires >= 20 fois et likes reçus >= 10, atteint la limite de promotion maximale du LV.1"]:::lv1
 
-    LV2["<b>🎖️ LV.2 活跃极客阶梯（TL Cap 35 ~ 50 封顶 · 进阶专栏与常青读者）</b><br/>• 🎖️ 活跃用户 (TL Cap 35): 累计活跃 >= 20 天 且阅读 >= 300m 且发表评论 >= 30 次 且获赞 >= 20 次<br/>• 🌲 常青极客 (TL Cap 50 封顶): 累计活跃 >= 45 天 且阅读 >= 480m 且发表评论 >= 60 次 且获赞 >= 40 次"]:::lv2
+    LV2["<b>🎖️ LV.2 Palier de geek actif (Plafond TL 35 ~ 50 max · Rubriques avancées et lecteurs assidus)</b><br/>• 🎖️ Utilisateur Actif (Plafond TL 35): Activité cumulée >= 20 jours et lecture >= 300m et commentaires publiés >= 30 fois et likes reçus >= 20 fois<br/>• 🌲 Geek Assidu (Plafond TL 50 max): Activité cumulée >= 45 jours et lecture >= 480m et commentaires publiés >= 60 fois et likes reçus >= 40 fois"]:::lv2
 
-    LV3["<b>⭐ LV.3 先驱宗师阶梯（TL Cap 70 ~ 90 · 读者常规晋升最高巅峰）</b><br/>• ⭐ 先驱 (TL Cap 70): 累计活跃 >= 90 天 且阅读 >= 720m 且发表评论 >= 100 次 且收获获赞 >= 60 次<br/>• 🎂 年度用户 (TL Cap 80): 必须先达成先驱 + 累计活跃 >= 180 天 且阅读 >= 1440m 且发表评论 >= 150 次<br/>• 📜 墨海宗师 (TL Cap 90 常规巅峰): 必须先达成年度用户 + 活跃 >= 300 天 且收获全站读者获赞 >= 100 次"]:::lv3
+    LV3["<b>⭐ LV.3 Palier de pionnier grand maître (Plafond TL 70 ~ 90 · Le plus haut sommet de promotion régulière pour les lecteurs)</b><br/>• ⭐ Pionnier (Plafond TL 70): Activité cumulée >= 90 jours et lecture >= 720m et commentaires publiés >= 100 fois et likes reçus >= 60 fois<br/>• 🎂 Utilisateur Annuel (Plafond TL 80): Doit d'abord atteindre Pionnier + Activité cumulée >= 180 jours et lecture >= 1440m et commentaires publiés >= 150 fois<br/>• 📜 Grand Maître de l'Encre (Plafond régulier 90): Doit d'abord atteindre Utilisateur Annuel + Activité >= 300 jours et likes reçus de tous les lecteurs du site >= 100 fois"]:::lv3
 
-    SPEC["<b>💎 6 大绝版与限定荣誉称号（独立增量加成 · 权威突破常规直达 TL 100+！）</b><br/>• 🚀 领跑者 (+3至+5级)  • 💎 铁杆粉丝 (+4至+6级)  • 🌱 种子用户 (+5至+8级)<br/>• 🔥 破晓布道者 (+4至+7级)  • 🛠️ 架构见证人 (+5至+8级)  • 📜 创世墨客 (+6至+10级)"]:::spec
+    SPEC["<b>💎 6 titres honorifiques exclusifs et limités (Bonus incrémental indépendant · L'autorité dépasse les conventions pour atteindre TL 100+ !)</b><br/>• 🚀 Leader (+3 à +5 niveaux)  • 💎 Fan Inconditionnel (+4 à +6 niveaux)  • 🌱 Utilisateur Semence (+5 à +8 niveaux)<br/>• 🔥 Évangéliste de l'Aube (+4 à +7 niveaux)  • 🛠️ Témoin de l'Architecture (+5 à +8 niveaux)  • 📜 Scribe Fondateur (+6 à +10 niveaux)"]:::spec
 
-    LV4["<b>👑 LV.4 治理与主创体系（特邀任命理事 / 站点唯一所有者）</b><br/>• 🛡️ 社区管理员 (TL 91 ~ 99): 站长特邀委任理事，拥有常务巡查与敏感治理权 · 标准圆形头像<br/>• 👑 站长 Webmaster (TL 100 恒定绝对满级): 系统主创唯一所有者 · 微圆角金冠方头像 · 全站绝对穿透特权"]:::lv4
+    LV4["<b>👑 LV.4 Système de gouvernance et de création (Directeur nommé sur invitation / Propriétaire unique du site)</b><br/>• 🛡️ Administrateur Communautaire (TL 91 ~ 99): Directeur nommé sur invitation spéciale par le propriétaire du site, possède des droits de patrouille régulière et de gouvernance sensible · Avatar circulaire standard<br/>• 👑 Propriétaire du site Webmaster (TL 100 niveau absolu constant): Propriétaire unique du créateur du système · Avatar carré avec couronne dorée légèrement arrondie · Privilèges de pénétration absolue sur tout le site"]:::lv4
 
-    LV0 ==>|首次发表真实评论| LV1
-    LV1 ==>|四维指标综合跃迁：活跃20天 阅读300m 评论30次 获赞20个| LV2
-    LV2 ==>|长期研读深度共鸣：活跃90天 阅读720m 评论100次 获赞60个| LV3
-    LV3 -. 卓越限定历史贡献加成突破至 100+ .-> SPEC
-    LV3 -. 站长特邀委任理事 .-> LV4
+    LV0 ==>|Premier commentaire authentique publié| LV1
+    LV1 ==>|Saut complet des quatre indicateurs : 20 jours actifs, 300m de lecture, 30 commentaires, 20 likes| LV2
+    LV2 ==>|Étude approfondie à long terme et résonance profonde : 90 jours actifs, 720m de lecture, 100 commentaires, 60 likes| LV3
+    LV3 -. Bonus exceptionnel de contribution historique limitée pour dépasser 100+ .-> SPEC
+    LV3 -. Directeur nommé sur invitation spéciale par le propriétaire du site .-> LV4
 ```
 
 ---
 
-# III. Manuel détaillé de déverrouillage des 11 titres réguliers pour les lecteurs
+# III. Manuel détaillé de déverrouillage des 11 titres de lecteur réguliers
 
-### 1. LV.0 Nouvel utilisateur (TL Cap : 0)
-- **Identifiant du titre** : 🐣 Nouvel utilisateur
-- **Condition d'admission** : nouveau visiteur du blog, n'ayant pas encore généré d'historique de lecture ou d'interaction.
+### 1. LV.0 Utilisateur Émergent (Plafond TL: 0)
+- **Identifiant du titre** : 🐣 Utilisateur Émergent
+- **Conditions d'accès** : Nouveau visiteur arrivant sur le blog pour la première fois, n'ayant pas encore généré d'enregistrements de lecture ou d'interaction.
 - **Niveau de confiance** : `TL.0` (non augmentable, plafond 0).
-- **Permissions et avantages** : consulter les articles statiques publics, recherche globale par mots-clés.
-- **Chemin de progression** : Cliquez sur n'importe quel article pour débloquer immédiatement l'utilisateur « Initial » !
+- **Permissions et droits** : Parcourir les articles de blog statiques publics, recherche globale par mots-clés.
+- **Chemin de promotion** : Cliquez pour parcourir n'importe quel article, débloquez instantanément « Utilisateur Initial » !
 
-### 2. LV.0 Utilisateur initial (TL Cap: 2)
-- **Identifiant de titre** : 📘 Utilisateur initial
-- **Pré-requis** : Vous êtes déjà devenu un nouvel utilisateur.
-- **Conditions d'admission** : Restez en lecture d'un article sur le blog ( `hasReadAny === true || readingMinutes >= 1` ).
-- **Niveau de confiance** : `TL.1 ~ TL.2` (maximum 2).
-- **Permissions et avantages** : Commencez à enregistrer le suivi quotidien de l'activité et de la durée de lecture.
-- **Chemin de progression** : Laissez votre premier commentaire authentique sous n'importe quel article pour passer à LV.1 !
+### 2. LV.0 Utilisateur Initial (Plafond TL: 2)
+- **Identifiant du titre** : 📘 Utilisateur Initial
+- **Prérequis** : Est déjà un utilisateur émergent.
+- **Conditions d'accès** : A terminé un séjour de lecture sur n'importe quel article du blog (`hasReadAny === true || readingMinutes >= 1`).
+- **Niveau de confiance** : `TL.1 ~ TL.2` (plafond 2).
+- **Permissions et droits** : Début de l'enregistrement de la rétention active quotidienne et du suivi du temps de lecture.
+- **Chemin de promotion** : Laissez votre premier commentaire authentique au bas de n'importe quel article de blog, passez au LV.1 !
 
-### 3. LV.1 Utilisateur de base (TL Cap: 8)
-- **Identifiant de titre** : 🥉 Utilisateur de base
-- **Pré-requis** : Vous devez d'abord débloquer l'utilisateur « Initial ».
-- **Conditions d'admission** : Publiez 1 commentaire authentique ( `commentCount >= 1` ).
-- **Niveau de confiance** : `TL.3 ~ TL.8` (maximum 8).
-- **Permissions et avantages** :
-  - Débloquez la zone de commentaire **“⚡ Boost Accélération”** (mode surbrillance de caractères $\le 16$ );
-  - Débloquez la zone de commentaire **“😀 Interaction d'émoticônes”** (lancer un Emoji en un clic);
-  - Vous avez la permission d'**« Édition en place (Inline Edit) »** et de retrait autonome après publication.
+### 3. LV.1 Utilisateur Basique (Plafond TL: 8)
+- **Identifiant du titre** : 🥉 Utilisateur Basique
+- **Prérequis** : Doit d'abord débloquer « Utilisateur Initial ».
+- **Conditions d'accès** : A publié 1 commentaire authentique au total (`commentCount >= 1`).
+- **Niveau de confiance** : `TL.3 ~ TL.8` (plafond 8).
+- **Permissions et droits** :
+  - Débloque le **« ⚡ Boost Rapide »** dans la section des commentaires (mode surligné $\le 16$ caractères) ;
+  - Débloque l'**« 😀 Interaction par Emojis »** dans la section des commentaires (envoyer un feedback Emoji en un clic) ;
+  - Possède le privilège d'**« Édition sur place (Inline Edit) »** et de retrait autonome pour les sessions temporaires après publication.
 
-### 4. LV.1 Contributeur (TL Cap: 15)
-- **Identifiant de titre** : 🏅 Contributeur
-- **Pré-requis** : Vous devez d'abord débloquer l'utilisateur « De base ».
-- **Conditions d'admission** : Durée de lecture cumulée de $\ge 30$ minutes et publication de $\ge 10$ commentaires (y compris discussions régulières et Boost).
-- **Niveau de confiance** : `TL.9 ~ TL.15` (maximum 15).
-- **Permissions et avantages** : Activation du badge orange-copper exclusif « Contributeur » sur la carte de visite, et augmentation du poids de tri du flux de commentaires.
+### 4. LV.1 Contributeur (Plafond TL: 15)
+- **Identifiant du titre** : 🏅 Contributeur
+- **Prérequis** : Doit d'abord débloquer « Utilisateur Basique ».
+- **Conditions d'accès** : Durée de lecture cumulée $\ge 30$ minutes ET commentaires publiés $\ge 10$ fois (incluant les discussions régulières et les Boosts).
+- **Niveau de confiance** : `TL.9 ~ TL.15` (plafond 15).
+- **Permissions et droits** : La carte de profil active le badge exclusif en bronze-orange « Contributeur », le poids de tri dans le flux de commentaires est augmenté.
 
-### 5. LV.1 Penseur critique (TL Cap: 20 · plafond LV.1)
-- **Identifiant de titre** : 💡 Penseur critique
-- **Pré-requis** : Vous devez d'abord débloquer « Contributeur ».
-- **Conditions d'admission** : Temps de lecture cumulatif de $\ge 120$ minutes (2 heures) et $\ge 20$ commentaires, ainsi que $\ge 10$ applaudissements/likes cumulés de lecteurs.
-- **Niveau de confiance** : `TL.16 ~ TL.20` (plafond 20, **LV.1 plafond maximum**).
-- **Permissions et avantages** : Activer la carte « Penseur critique » pour obtenir l'accès à la zone d'interaction approfondie.
+### 5. LV.1 Érudit Réfléchi (Plafond TL : 20 · Plafond LV.1)
+- **Identifiant de titre** : 💡 Érudit Réfléchi
+- **Prérequis** : Doit d'abord débloquer « Contributeur ».
+- **Conditions d'accès** : Durée de lecture cumulée $\ge 120$ minutes (2 heures) et Commentaires publiés $\ge 20$ fois et Applaudissements/Likes de lecteurs cumulés $\ge 10$.
+- **Niveau de confiance** : `TL.16 ~ TL.20` (plafond 20, **plafond le plus élevé pour le palier LV.1**).
+- **Permissions et avantages** : La carte de profil active la micro-lumière intelligente « Érudit Réfléchi », et donne accès à la zone d'interaction approfondie.
 
-### 6. LV.2 Utilisateur actif (TL Cap: 35)
-- **Titre** : 🎖️ Utilisateur actif
-- **Pré-requis** : Vous devez d'abord débloquer « Penseur critique ».
-- **Conditions d'admission** (quatre indicateurs étroitement liés) :
-  - Nombre de jours actifs cumulés : $\ge 20$ jours ;
-  - Temps de lecture cumulatif : $\ge 300$ minutes (5 heures) ;
-  - Nombre de commentaires cumulés : $\ge 30$ ;
-  - Applaudissements de lecteurs cumulés : $\ge 20$ ;
+### 6. LV.2 Utilisateur Actif (Plafond TL : 35)
+- **Identifiant de titre** : 🎖️ Utilisateur Actif
+- **Prérequis** : Doit d'abord débloquer « Érudit Réfléchi ».
+- **Conditions d'accès** (quatre indicateurs étroitement liés) :
+  - Jours d'activité cumulés $\ge 20$ jours ;
+  - Durée de lecture cumulée $\ge 300$ minutes (5 heures) ;
+  - Commentaires publiés cumulés $\ge 30$ fois ;
+  - Applaudissements de lecteurs cumulés $\ge 20$ fois.
 - **Niveau de confiance** : `TL.21 ~ TL.35` (plafond 35).
-- **Permissions et avantages** : Débloquer la colonne avancée LV.2 et le journal de pièges d'architecture, les commentaires bénéficient d'un surlignage pondéré.
+- **Permissions et avantages** : Débloque les rubriques avancées LV.2 et les retours d'expérience sur les pièges architecturaux, les commentaires bénéficient d'un marquage en surbrillance pondéré.
 
-### 7. LV.2 Geek éternel (TL Cap: 50 · plafond LV.2)
-- **Titre** : 🌲 Geek éternel
-- **Pré-requis** : Vous devez d'abord débloquer « Utilisateur actif ».
-- **Conditions d'admission** :
-  - Nombre de jours actifs cumulés : $\ge 45$ jours ;
-  - Temps de lecture cumulatif : $\ge 480$ minutes (8 heures) ;
-  - Nombre de commentaires cumulés : $\ge 60$ ;
-  - Applaudissements de lecteurs cumulés : $\ge 40$ ;
-- **Niveau de confiance** : `TL.36 ~ TL.50` (plafond 50, **LV.2 plafond maximum**).
-- **Permissions et avantages** : La couche flottante de la carte est accompagnée d'une lueur verte émeraude, certification de membre actif de la communauté.
+### 7. LV.2 Geek Éternel (Plafond TL : 50 · Plafond LV.2)
+- **Identifiant de titre** : 🌲 Geek Éternel
+- **Prérequis** : Doit d'abord débloquer « Utilisateur Actif ».
+- **Conditions d'accès** :
+  - Jours d'activité cumulés $\ge 45$ jours ;
+  - Durée de lecture cumulée $\ge 480$ minutes (8 heures) ;
+  - Commentaires publiés cumulés $\ge 60$ fois ;
+  - Applaudissements de lecteurs cumulés $\ge 40$ fois.
+- **Niveau de confiance** : `TL.36 ~ TL.50` (plafond 50, **plafond le plus élevé pour le palier LV.2**).
+- **Permissions et avantages** : La superposition de la carte de profil est accompagnée d'une auréole vert émeraude distinguée, certification de membre actif clé de la communauté.
 
-### 8. LV.3 Pionnier (TL Cap: 70)
-- **称号标识**：⭐ 先驱
-- **前置依赖**：必须先解锁「常青极客」。
-- **准入条件**：
-  - 累计活跃天数 $\ge 90$ 天；
-  - 累计阅读时长 $\ge 720$ 分钟（12 小时）；
-  - 累计发表评论 $\ge 100$ 次；
-  - 累计收获读者喝彩 $\ge 60$ 次。
-- **信任等级**：`TL.51 ~ TL.70`（上限 70）。
-- **权限与权益**：享有先驱专属星芒徽标，受邀优先体验博客实验性黑科技特性。
+### 8. LV.3 Pionnier (Plafond TL : 70)
+- **Identifiant de titre** : ⭐ Pionnier
+- **Prérequis** : Doit d'abord débloquer « Geek Éternel ».
+- **Conditions d'accès** :
+  - Jours d'activité cumulés $\ge 90$ jours ;
+  - Durée de lecture cumulée $\ge 720$ minutes (12 heures) ;
+  - Commentaires publiés cumulés $\ge 100$ fois ;
+  - Applaudissements de lecteurs cumulés $\ge 60$ fois.
+- **Niveau de confiance** : `TL.51 ~ TL.70` (plafond 70).
+- **Permissions et avantages** : Bénéficie de l'emblème étoilé exclusif du Pionnier, invité à expérimenter en priorité les fonctionnalités expérimentales de pointe du blog.
 
-### 9. LV.3 年度用户 (TL Cap: 80)
-- **称号标识**：🎂 年度用户
-- **前置依赖**：**必须先解锁「先驱」！** 严禁仅靠挂机天数跳级。
-- **准入条件**：
-  - 在达成「先驱」基础上，累计活跃天数达到 **180 天**；
-  - 累计阅读时长 $\ge 1440$ 分钟（24 小时）；
-  - 累计发表评论 $\ge 150$ 次。
-- **信任等级**：`TL.71 ~ TL.80`（上限 80）。
-- **权限与权益**：常青读者终身荣誉，尊贵年度印记，永不降级的忠实读者象征。
+### 9. LV.3 Utilisateur Annuel (Plafond TL : 80)
+- **Identifiant de titre** : 🎂 Utilisateur Annuel
+- **Prérequis** : **Doit d'abord débloquer « Pionnier » !** Il est strictement interdit de sauter des niveaux en se basant uniquement sur les jours d'inactivité.
+- **Conditions d'accès** :
+  - En plus d'avoir atteint le statut de « Pionnier », les jours d'activité cumulés doivent atteindre **180 jours** ;
+  - Durée de lecture cumulée $\ge 1440$ minutes (24 heures) ;
+  - Commentaires publiés cumulés $\ge 150$ fois.
+- **Niveau de confiance** : `TL.71 ~ TL.80` (plafond 80).
+- **Permissions et avantages** : Honneur à vie de lecteur fidèle, insigne annuel distingué, symbole d'un lecteur loyal qui ne sera jamais rétrogradé.
 
-### 10. LV.3 墨海宗师 (TL Cap: 90 · 常规晋升巅峰)
-- **称号标识**：📜 墨海宗师
-- **前置依赖**：**必须先解锁「年度用户」！**
-- **准入条件**（极客读者的全自动升级天花板，$\le 365$ 天内绝对可达成）：
-  - 累计活跃天数达到 **300 天**（未超过 1 年限制！）；
-  - 累计沉浸阅读时长 $\ge 2160$ 分钟（36 小时）；
-  - 累计收获全站读者喝彩点赞 $\ge 100$ 次。
-- **信任等级**：`TL.81 ~ TL.90`（上限 90，**常规读者自动晋升巅峰**）。
-- **权限与权益**：**普通读者常规晋升最高殿堂**！名片独享墨海宗师紫金光芒，登峰造极。
+### 10. LV.3 Grand Maître de l'Encre (Plafond TL : 90 · Sommet de la promotion régulière)
+- **Identifiant de titre** : 📜 Grand Maître de l'Encre
+- **Prérequis** : **Doit d'abord débloquer « Utilisateur Annuel » !**
+- **Conditions d'accès** (plafond de mise à niveau entièrement automatique pour les lecteurs geeks, absolument réalisable en $\le 365$ jours) :
+  - Jours d'activité cumulés atteignant **300 jours** (sans dépasser la limite d'un an !) ;
+  - Durée de lecture immersive cumulée $\ge 2160$ minutes (36 heures) ;
+  - Applaudissements/Likes de lecteurs cumulés sur tout le site $\ge 100$ fois.
+- **Niveau de confiance** : `TL.81 ~ TL.90` (plafond 90, **sommet de la promotion automatique pour les lecteurs réguliers**).
+- **Permissions et avantages** : **Le plus haut niveau de promotion régulière pour les lecteurs ordinaires** ! La carte de profil bénéficie exclusivement de l'éclat violet et or du Grand Maître de l'Encre, atteignant le summum.
 
 ---
 
-# 四、绝版与限定荣誉称号（突破 TL 100+ 上限！）
+# IV. Titres honorifiques exclusifs et limités (dépassant le plafond TL 100+ !)
 
-在 EpoCanvas 社区的漫长演进中，有一群见证历史、在关键时期给予关键反馈的开拓者。为了铭记这些卓越贡献，系统特别推出了 **6 大绝版与限定荣誉称号**。
+Au cours de la longue évolution de la communauté EpoCanvas, il y a eu un groupe de pionniers qui ont été témoins de l'histoire et ont fourni des retours cruciaux à des moments clés. Pour commémorer ces contributions exceptionnelles, le système a spécialement introduit **6 titres honorifiques exclusifs et limités**.
 
 > [!important]
-> **【核心规则：绝版称号加分机制与突破 100+ 特权】**
-> 1. **额外信任等级加成（Special Title Bonus）**：
->    - 绝版与限定称号不占用常规 35 点活动积分配额，其加分是 **直接叠加在计算结果之上的全局增量**！
-> 2. **突破常规 90 限制，信任等级直达 100+**：
->    - 常规读者受限于 LV.3 墨海宗师的 90 上限。但**拥有绝版称号的读者，其信任等级可以突破 90，最高达到 100 以上（如 TL.102、TL.106）**！
-> 3. **基础 LV 门槛保持不变（安全底线）**：
->    - 绝版称号赋予极高的 TL 权威度和排名，但读者原有的 LV 基础门槛不变（若为 LV.3 墨海宗师，获得绝版加成后 TL 达到 102，其 LV 仍为 LV.3，严格守卫内容安全分级）。
-> 4. **什么是权重等级（Priority）？**：
->    - Priority（0 ~ 100）决定了在名片浮层与评论区作者栏中，当读者拥有多个称号与徽章时，系统如何进行高优展示与排序。
->    - 称号徽标（Tier Badge）固定为 Priority 100，独占首位；
->    - **绝版限定称号赋予了 Priority 92 ~ 98 的超高权重**，优先于所有常规成就徽章，默认抢占名片浮层至多 4 枚徽章的高光席位！
+> **【Règles fondamentales : Mécanisme de bonus des titres exclusifs et privilèges de dépassement du TL 100+】**
+> 1. **Bonus de niveau de confiance supplémentaire (Special Title Bonus)** :
+>    - Les titres exclusifs et limités n'utilisent pas le quota régulier de 35 points d'activité ; leur bonus est un **incrément global directement superposé au résultat du calcul** !
+> 2. **Dépassement de la limite régulière de 90, niveau de confiance atteignant 100+** :
+>    - Les lecteurs réguliers sont limités par le plafond de 90 du Grand Maître de l'Encre LV.3. Cependant, **les lecteurs possédant un titre exclusif peuvent dépasser 90 en niveau de confiance, atteignant plus de 100 (par exemple TL.102, TL.106)** !
+> 3. **Le seuil de LV de base reste inchangé (ligne de sécurité)** :
+>    - Les titres exclusifs confèrent une autorité et un classement TL très élevés, mais le seuil de LV de base du lecteur reste inchangé (si le lecteur est un Grand Maître de l'Encre LV.3 et atteint TL 102 après avoir obtenu le bonus exclusif, son LV reste LV.3, protégeant strictement la classification de sécurité du contenu).
+> 4. **Qu'est-ce que le niveau de priorité (Priority) ?** :
+>    - La Priorité (0 ~ 100) détermine comment le système affiche et classe les titres et badges avec une haute priorité lorsque le lecteur en possède plusieurs dans la superposition de la carte de profil et la section auteur des commentaires.
+>    - Le badge de titre (Tier Badge) est fixé à Priorité 100, occupant la première place ;
+>    - **Les titres exclusifs et limités confèrent une priorité ultra-élevée de 92 ~ 98**, primant sur tous les badges d'accomplissement réguliers, et occupant par défaut les emplacements de mise en évidence pour un maximum de 4 badges dans la superposition de la carte de profil !
 
-以下是 6 大绝版与限定称号的准入条件、加成梯度与权重规则：
+Voici les conditions d'accès, les paliers de bonus et les règles de priorité pour les 6 titres exclusifs et limités :
 
-| 绝版称号 | 权重 Priority | 获得资格与门槛限制 | TL 等级加成机制 | 绝版状态 |
+| Titre Exclusif | Priorité (Poids) | Conditions d'éligibilité et restrictions | Mécanisme de bonus de niveau TL | Statut d'Exclusivité |
 | :--- | :---: | :--- | :--- | :---: |
-| **📜 创世墨客** | `98` | 早期撰写深度长评被系统收录、获赞 $\ge 30$、评论 $\ge 10$ 且绑定专属邮箱 | **TL $\le 70$ 加 10 级**<br/>**TL $> 70$ 加 6 级** | 🔒 永久绝版 |
-| **🛠️ 架构见证人** | `96` | 见证博客历次技术重构，活跃 $\ge 30$ 天、阅读 $\ge 600\text{m}$、评论 $\ge 20$ 条并贡献关键反馈 | **TL $\le 70$ 加 8 级**<br/>**TL $> 70$ 加 5 级** | 🎖️ 限定授予 |
-| **🌱 种子用户** | `95` | 限制 LV.3 以下读者；注册 90 天内获赞 $\ge 30$、评论回复 $\ge 50$ 条 | **TL $\le 60$ 加 8 级**<br/>**TL $> 60$ 加 5 级** | 🔒 永久绝版 |
-| **💎 铁杆粉丝** | `94` | 博客开站早期前 1000 名常驻核心探索者；活跃 $\ge 60$ 天且阅读 $\ge 300\text{m}$ 或评论 $\ge 20$ 条 | **TL $\le 50$ 加 6 级**<br/>**TL $> 50$ 加 4 级** | 🔒 永久绝版 |
-| **🔥 破晓布道者** | `93` | 限制 LV.1+ 读者；大版本首发期提交高质量技术纠错、编辑完善评论且获赞 $\ge 15$ | **TL $\le 50$ 加 7 级**<br/>**TL $> 50$ 加 4 级** | 🎖️ 限定荣誉 |
-| **🚀 领跑者** | `92` | 限制 LV.3 以下读者；注册起 30 天内活跃起跑：阅读 $\ge 300\text{m}$、评论 $\ge 30$ 条、获赞 $\ge 20$ 个 | **TL $\le 50$ 加 5 级**<br/>**TL $> 50$ 加 3 级** | 🔒 永久绝版 |
+| **📜 Érudit Fondateur** | `98` | Auteur de critiques approfondies précoces, enregistrées par le système, avec $\ge 30$ likes, $\ge 10$ commentaires et une adresse e-mail exclusive liée. | **TL $\le 70$ : +10 niveaux**<br/>**TL $> 70$ : +6 niveaux** | 🔒 Exclusivité permanente |
+| **🛠️ Témoin de l'Architecture** | `96` | A témoigné des refontes techniques successives du blog, actif $\ge 30$ jours, lecture $\ge 600\text{m}$, $\ge 20$ commentaires et a contribué à des retours clés. | **TL $\le 70$ : +8 niveaux**<br/>**TL $> 70$ : +5 niveaux** | 🎖️ Attribution limitée |
+| **🌱 Utilisateur Pionnier** | `95` | Limité aux lecteurs de niveau LV.3 et inférieur ; dans les 90 jours suivant l'inscription, $\ge 30$ likes, $\ge 50$ réponses aux commentaires. | **TL $\le 60$ : +8 niveaux**<br/>**TL $> 60$ : +5 niveaux** | 🔒 Exclusivité permanente |
+| **💎 Fan Inconditionnel** | `94` | Parmi les 1000 premiers explorateurs principaux résidents au début du blog ; actif $\ge 60$ jours et lecture $\ge 300\text{m}$ ou $\ge 20$ commentaires. | **TL $\le 50$ : +6 niveaux**<br/>**TL $> 50$ : +4 niveaux** | 🔒 Exclusivité permanente |
+| **🔥 Évangéliste de l'Aube** | `93` | Limité aux lecteurs de niveau LV.1+ ; a soumis des corrections techniques de haute qualité, a édité et amélioré des commentaires et a reçu $\ge 15$ likes pendant la période de lancement des versions majeures. | **TL $\le 50$ : +7 niveaux**<br/>**TL $> 50$ : +4 niveaux** | 🎖️ Honneur limité |
+| **🚀 Précurseur** | `92` | Limité aux lecteurs de niveau LV.3 et inférieur ; actif dans les 30 jours suivant l'inscription : lecture $\ge 300\text{m}$, $\ge 30$ commentaires, $\ge 20$ likes. | **TL $\le 50$ : +5 niveaux**<br/>**TL $> 50$ : +3 niveaux** | 🔒 Exclusivité permanente |
 
 > [!example]
-> **真实高光案例**：
-> 一位勤勉的读者历经近一年研读，达成了「LV.3 · 墨海宗师」（基准 TL Cap 90）。同时，他在博客早期曾是前 1000 名创世探索者（获得「💎 铁杆粉丝」TL > 50 加 4 级），并因撰写多篇高质量架构反馈受邀获得「📜 创世墨客」（TL > 70 加 6 级）。
-> - 他的最终信任等级为：$90 + 4 + 6 = \mathbf{100}$，若再叠加其他限定贡献，便可傲视群雄突破至 **TL.102+**！
+> **Cas réel d'exemple marquant** :
+> Un lecteur assidu, après près d'un an d'étude, a atteint le niveau « LV.3 · Maître de l'Encre Océanique » (plafond TL de base 90). De plus, il faisait partie des 1000 premiers explorateurs fondateurs du blog (obtenant le titre « 💎 Fan Inconditionnel » avec un bonus de +4 niveaux pour TL > 50), et a été invité à recevoir le titre « 📜 Érudit Fondateur » (bonus de +6 niveaux pour TL > 70) pour avoir rédigé plusieurs retours architecturaux de haute qualité.
+> - Son niveau de confiance final est : $90 + 4 + 6 = \mathbf{100}$. S'il ajoute d'autres contributions limitées, il pourra dépasser les autres et atteindre **TL.102+** !
 
 ---
 
-# 五、治理与主创体系：管理员与站长权责划分
+# V. Gouvernance et Système des Créateurs Principaux : Répartition des Responsabilités entre Administrateurs et Webmaster
 
 > [!danger]
-> **【核心排印与辨识原则：站长金冠微圆角方型 vs 管理员全员圆形】**
-> - **👑 站长 (Webmaster)**：作为博客系统所有者与最高架构管理者，拥有全站 **独一无二的微圆角方形头像与金色皇冠（isSquareAvatar: true）**，全站仅此一人；
-> - **🛡️ 社区管理员 (Admin)** 与其他所有读者：全站统一遵循 **标准高精度圆形头像（border-radius: 50%）**，杜绝身份混淆。
+> **【Principes clés de typographie et d'identification : Webmaster avec couronne dorée et carré légèrement arrondi vs Administrateurs avec avatar rond】**
+> - **👑 Webmaster** : En tant que propriétaire du système de blog et gestionnaire d'architecture suprême, il possède le **seul avatar carré légèrement arrondi et la couronne dorée (isSquareAvatar: true)** de tout le site ; il est le seul.
+> - **🛡️ Administrateur Communautaire (Admin)** et tous les autres lecteurs : tout le site suit un **avatar rond standard de haute précision (border-radius: 50%)**, pour éviter toute confusion d'identité.
 
-### 11. LV.4 社区管理员 (Admin / Core Member)
-- **称号标识**：🛡️ 社区管理员 / ⭐ 核心成员
-- **头像样式**：**标准圆形头像**（`border-radius: 50%`）
-- **晋升机制**：非全自动升级。由站长特邀委任或经社区核心贡献考核通过后人工晋升。
-- **信任等级**：`TL.91 ~ TL.99`（默认基准 95，最高可达 99）。
-- **权责范围**：
-  - 社区常务巡查与敏感违规内容就地审核；
-  - 恶意灌水与违规评论屏蔽下架；
-  - 协助站长进行技术选题讨论与读者事务协调。
+### 11. LV.4 Administrateur Communautaire (Admin / Membre Principal)
+- **Identifiant du titre** : 🛡️ Administrateur Communautaire / ⭐ Membre Principal
+- **Style d'avatar** : **Avatar rond standard** (`border-radius: 50%`)
+- **Mécanisme de promotion** : Mise à niveau non entièrement automatique. Nomination par invitation spéciale du webmaster ou promotion manuelle après évaluation des contributions clés à la communauté.
+- **Niveau de confiance** : `TL.91 ~ TL.99` (base par défaut 95, maximum 99).
+- **Champ de responsabilités** :
+  - Patrouille régulière de la communauté et examen sur place des contenus sensibles ou non conformes ;
+  - Blocage et suppression des spams malveillants et des commentaires non conformes ;
+  - Assister le webmaster dans les discussions sur les sujets techniques et la coordination des affaires des lecteurs.
 
-### 12. 👑 站长 (Webmaster / Site Owner)
-- **称号标识**：👑 站长
-- **头像样式**：**全站唯一微圆角方形头像 + 独家金色皇冠**（`border-radius: 10px; isSquareAvatar: true`）
-- **身份认证**：博客主创（shijianus），通过专属密钥通道与管理员邮箱鉴权。
-- **信任等级**：**`TL.100`（恒定绝对满级）**。
-- **权责范围**：
-  - **全站无条件绝对穿透权限**：无需任何前置门槛，无视所有 LV 限制，可随时调阅、测试与穿透全站所有私有专栏、隐藏分级文档及实验室模块；
-  - 云端 Functions / D1 数据库与 Stripe 收银台架构最高管辖权；
-  - 社区规则的最终制定与仲裁解释权。
-
----
-
-# 六、阅读沉淀成就徽章（静水流深）
-
-读完一篇上千字的技术深度文章，比浮躁走马观花更有价值。以下徽章为你记录在 EpoCanvas 汲取知识的时光轨迹：
-
-## No.1 通读全文
-> [!todo] 通读全文 (📖)
-> **权重优先级**：`40` | **所属分类**：`read`
-> **系统定义**：累计深度阅读博文时长达到 15 分钟。
-- **获取方式：** 在博文页面产生真实滚动与阅读停留达到 **15 分钟**。
-- **参考操作：** 挑选 2 篇长文，开启目录索引（TOC），静下心读完。
-- **避坑提示**：系统内置智能心跳。标签页切入后台或超过 3 分钟无操作将暂停计时。
-
-## No.2 慢读时光
-> [!todo] 慢读时光 (☕)
-> **权重优先级**：`55` | **所属分类**：`read`
-> **系统定义**：累计享受深度慢读时光超过 2 小时。
-- **获取方式：** 全站各博文累计阅读时长突破 **120 分钟**。
-- **参考操作：** 完整研读博客的“架构重构实录”或“Stripe 全球结账设计”长篇系列。
-
-## No.3 博览群书
-> [!todo] 博览群书 (📚)
-> **权重优先级**：`70` | **所属分类**：`read`
-> **系统定义**：累计沉浸阅读博客超过 10 小时。
-- **获取方式：** 全站深度研读时长突破 **600 分钟**（10 小时）。
-- **进阶彩蛋**：当阅读时长进一步突破 **30 小时（1800m）** 与 **60 小时（3600m）** 时，系统将自动解锁隐藏成就 **「📜 学贯中西」**（权重 72）与 **「🧭 墨海领航」**（权重 75）！
+### 12. 👑 Webmaster (Propriétaire du Site)
+- **Identifiant du titre** : 👑 Webmaster
+- **Style d'avatar** : **Avatar carré légèrement arrondi unique sur tout le site + couronne dorée exclusive** (`border-radius: 10px; isSquareAvatar: true`)
+- **Authentification d'identité** : Créateur principal du blog (shijianus), authentifié via un canal de clé exclusif et l'e-mail de l'administrateur.
+- **Niveau de confiance** : **`TL.100` (Niveau maximum absolu et constant)**.
+- **Champ de responsabilités** :
+  - **Accès absolu et inconditionnel à tout le site** : sans aucun prérequis, ignorant toutes les restrictions de niveau, peut consulter, tester et accéder à tout moment à toutes les colonnes privées, documents classifiés cachés et modules de laboratoire du site ;
+  - Juridiction suprême sur les fonctions cloud / base de données D1 et l'architecture de la caisse Stripe ;
+  - Droit de formulation finale et d'interprétation arbitrale des règles de la communauté.
 
 ---
 
-# 七、评论与互动徽章（思辨共鸣）
+# VI. Badges d'Accomplissement de Lecture (Profondeur Silencieuse)
 
-EpoCanvas 原生自研评论系统，支持多模态交互、Boost 极速打气与就地回复树：
+Terminer la lecture d'un article technique approfondi de plus de mille mots a plus de valeur qu'une lecture superficielle et hâtive. Les badges suivants enregistrent votre parcours d'acquisition de connaissances sur EpoCanvas :
 
-## No.4 初露锋芒
-> [!todo] 初露锋芒 (✍️)
-> **权重优先级**：`30` | **所属分类**：`comment`
-> **系统定义**：精益求精，就地编辑完善过自己的发言。
-- **获取方式：** 在评论区发表任意言论后，完成过至少 1 次 **“就地编辑（Inline Edit）”** 操作。
-- **实操避坑**：访客临时会话在刷新（F5）或关闭浏览器后即刻销毁，请在发布后趁热打铁体验编辑！
+## No.1 Lecture Complète
+> [!todo] Lecture Complète (📖)
+> **Priorité (Poids)** : `40` | **Catégorie** : `read`
+> **Définition du système** : Durée cumulée de lecture approfondie d'articles de blog atteignant 15 minutes.
+- **Comment l'obtenir :** Atteindre **15 minutes** de défilement réel et de temps de lecture sur une page d'article.
+- **Opération de référence :** Choisissez 2 articles longs, activez l'index (TOC), et lisez-les attentivement.
+- **Conseil pour éviter les pièges** : Le système intègre un battement de cœur intelligent. Le chronomètre sera mis en pause si l'onglet passe en arrière-plan ou s'il n'y a aucune activité pendant plus de 3 minutes.
 
-## No.5 丰富表情
-> [!todo] 丰富表情 (😀)
-> **权重优先级**：`35` | **所属分类**：`comment`
-> **系统定义**：使用生动丰富的表情符号参与互动交流。
-- **获取方式：** 首次使用评论区的“😀 表情互动”托盘发布 Emoji，或在他人评论卡片右下角送出 Emoji Reaction。
+## No.2 Temps de Lecture Lente
+> [!todo] Temps de Lecture Lente (☕)
+> **Priorité (Poids)** : `55` | **Catégorie** : `read`
+> **Définition du système** : Temps cumulé de lecture lente et approfondie dépassant 2 heures.
+- **Comment l'obtenir :** La durée cumulée de lecture de tous les articles du site dépasse **120 minutes**.
+- **Opération de référence :** Étudiez en profondeur les séries longues du blog « Enregistrement de la refonte architecturale » ou « Conception du système de paiement mondial Stripe ».
 
-## No.6 言之有物
-> [!todo] 言之有物 (💬)
-> **权重优先级**：`50` | **所属分类**：`comment`
-> **系统定义**：累计发表 5 条及以上优质独立见解。
-- **获取方式：** 累计发表达到 **5 条** 真实评论。
-- **进阶称号**：评论数达到 **20 条** 解锁 **「💡 真知灼见」**（权重 58），达到 **50 条** 解锁 **「🗣️ 纵论古今」**（权重 65）。
-- **风控警示**：1 小时内相同评论会被拦截；普通评论每小时限额 3 次，珍惜发帖额度，“水贴不如精读”！
-
-## No.7 回音激荡
-> [!todo] 回音激荡 (🔔)
-> **权重优先级**：`45` | **所属分类**：`comment`
-> **系统定义**：在评论互动中主动提及或呼应他人。
-- **获取方式：** 在评论中首次使用 `@` 提及特定读者，或点击他人评论卡片的 **“🔗 引用”** 按钮完成带引文的回复。
+## No.3 Lecture Extensive
+> [!todo] Lecture Extensive (📚)
+> **Priorité (Poids)** : `70` | **Catégorie** : `read`
+> **Définition du système** : Temps cumulé de lecture immersive du blog dépassant 10 heures.
+- **Comment l'obtenir :** La durée d'étude approfondie sur tout le site dépasse **600 minutes** (10 heures).
+- **Œuf de Pâques avancé** : Lorsque la durée de lecture dépasse **30 heures (1800m)** et **60 heures (3600m)**, le système débloquera automatiquement les succès cachés **« 📜 Érudit Universel »** (priorité 72) et **« 🧭 Navigateur de l'Encre Océanique »** (priorité 75) !
 
 ---
 
-# 八、赞赏与喝彩成就徽章（赠人玫瑰）
+# VII. Badges de Commentaires et d'Interaction (Résonance Critique)
 
-## No.8 不吝赞美
-> [!todo] 不吝赞美 (❤️)
-> **权重优先级**：`45` | **所属分类**：`reaction`
-> **系统定义**：慷慨为他人的深刻思考送出 10 次以上喝彩。
-- **获取方式：** 累计主动送出 **10 次以上** Emoji 喝彩（`reactionsGiven >= 10`）。送出超过 30 次还将解锁 **「💖 乐善好施」**（权重 55）。
+Le système de commentaires natif et auto-développé d'EpoCanvas prend en charge l'interaction multimodale, les boosts rapides et les arbres de réponses sur place :
 
-## No.9 Première rencontre résonnante
-> [!todo] Première rencontre résonnante (✨)
-> **Priorité de poids**：`40` | **Catégorie**：`reaction`
-> **Définition du système**：L'énoncé personnel a reçu le premier applaudissement enthousiaste du lecteur.
-- **Mode d'obtention :** Publier un commentaire ou un Boost et recevoir pour la première fois des applaudissements et des likes d'autres personnes.
+## No.4 Première Apparition
+> [!todo] Première Apparition (✍️)
+> **Priorité (Poids)** : `30` | **Catégorie** : `comment`
+> **Définition du système** : Rechercher l'excellence en éditant et en améliorant ses propres commentaires sur place.
+- **Comment l'obtenir :** Après avoir publié un commentaire dans la section des commentaires, avoir effectué au moins 1 opération d'**« édition en ligne (Inline Edit) »**.
+- **Conseil pratique pour éviter les pièges** : Les sessions temporaires des visiteurs sont immédiatement détruites après un rafraîchissement (F5) ou la fermeture du navigateur. Veuillez profiter de l'édition tant que c'est chaud après la publication !
 
-## No.10 Susciter la résonance
-> [!todo] Susciter la résonance (🔥)
-> **Priorité de poids**：`65` | **Catégorie**：`reaction`
-> **Définition du système**：Les idées publiées ont accumulé plus de 20 interactions d'applaudissements.
-- **Mode d'obtention :** Les déclarations sous votre nom accumulent des applaudissements et des likes atteignant **20 fois**.
+## N°5 Expressions riches
+> [!todo] Expressions riches (😀)
+> **Priorité de poids** : `35` | **Catégorie** : `comment`
+> **Définition du système** : Utiliser des émoticônes vivantes et variées pour interagir et communiquer.
+- **Comment l'obtenir :** Publier un Emoji pour la première fois en utilisant le plateau "😀 Interaction Emoji" dans la section des commentaires, ou envoyer une Réaction Emoji depuis le coin inférieur droit de la carte de commentaire d'une autre personne.
 
-## No.11 Toucher le cœur
-> [!todo] Toucher le cœur (💎)
-> **Priorité de poids**：`80` | **Catégorie**：`reaction`
-> **Définition du système**：Accumuler plus de 50 applaudissements et appréciations de résonance des lecteurs.
-- **Hall d'avancement**：Lorsque les applaudissements dépassent **100 fois**, l'accomplissement à poids très élevé **« 🌟 Consensus général »** (poids 85) sera activé !
+## N°6 Contenu pertinent
+> [!todo] Contenu pertinent (💬)
+> **Priorité de poids** : `50` | **Catégorie** : `comment`
+> **Définition du système** : Avoir publié 5 opinions indépendantes de qualité ou plus.
+- **Comment l'obtenir :** Avoir publié un total de **5** commentaires authentiques.
+- **Titre avancé** : Atteindre **20** commentaires débloque **« 💡 Idées lumineuses »** (poids 58), et atteindre **50** débloque **« 🗣️ Discours intemporel »** (poids 65).
+- **Avertissement de contrôle des risques** : Les commentaires identiques seront bloqués dans l'heure ; les commentaires ordinaires sont limités à 3 par heure. Utilisez votre quota de publication avec parcimonie, "mieux vaut lire attentivement que de spammer" !
+
+## N°7 Écho retentissant
+> [!todo] Écho retentissant (🔔)
+> **Priorité de poids** : `45` | **Catégorie** : `comment`
+> **Définition du système** : Mentionner ou répondre activement à d'autres personnes dans les interactions de commentaires.
+- **Comment l'obtenir :** Utiliser `@` pour mentionner un lecteur spécifique pour la première fois dans un commentaire, ou cliquer sur le bouton **« 🔗 Citer »** de la carte de commentaire d'une autre personne pour répondre avec une citation.
 
 ---
 
-# 9. Identité Geek et Badge de client habituel (intemporel)
+# VIII. Badges de réussite pour les appréciations et les acclamations (Donner des roses)
 
-## No.12 Auteur d'autobiographie
+## N°8 Louanges généreuses
+> [!todo] Louanges généreuses (❤️)
+> **Priorité de poids** : `45` | **Catégorie** : `reaction`
+> **Définition du système** : Acclamer généreusement les réflexions profondes d'autrui plus de 10 fois.
+- **Comment l'obtenir :** Avoir envoyé un total de **plus de 10** acclamations Emoji (`reactionsGiven >= 10`). Envoyer plus de 30 débloquera également **« 💖 Bienfaiteur »** (poids 55).
+
+## N°9 Premier écho
+> [!todo] Premier écho (✨)
+> **Priorité de poids** : `40` | **Catégorie** : `reaction`
+> **Définition du système** : Votre propre publication a reçu la première acclamation enthousiaste d'un lecteur.
+- **Comment l'obtenir :** Votre commentaire ou Boost publié reçoit pour la première fois une acclamation/un like d'une autre personne.
+
+## N°10 Résonance
+> [!todo] Résonance (🔥)
+> **Priorité de poids** : `65` | **Catégorie** : `reaction`
+> **Définition du système** : Vos opinions publiées ont cumulé plus de 20 interactions d'acclamations.
+- **Comment l'obtenir :** Vos publications ont cumulé **20** acclamations/likes.
+
+## N°11 Très apprécié
+> [!todo] Très apprécié (💎)
+> **Priorité de poids** : `80` | **Catégorie** : `reaction`
+> **Définition du système** : Avoir cumulé plus de 50 acclamations et appréciations de lecteurs.
+- **Hall d'avancement** : Lorsque le nombre d'acclamations dépasse **100**, l'accomplissement de très haute priorité **« 🌟 Plébiscité »** (poids 85) sera activé !
+
+---
+
+# IX. Badges d'identité de geek et de visiteur régulier (Intemporel)
+
+## N°12 Auteur d'autobiographie
 > [!todo] Auteur d'autobiographie (🏷️)
-> **Priorité de poids**：`35` | **Catégorie**：`activity`
-> **Définition du système**：Signature personnalisée améliorée et avatar dédié configuré.
-- **Mode d'obtention :** Téléchargez un avatar personnalisé dans le centre de compte et rédigez une biographie personnelle d'**au moins 10 caractères** (`bio.length >= 10 && avatarUrl`).
+> **Priorité de poids** : `35` | **Catégorie** : `activity`
+> **Définition du système** : Avoir complété la description de votre signature personnalisée et configuré un avatar exclusif.
+- **Comment l'obtenir :** Télécharger un avatar personnalisé dans le centre de compte et rédiger une biographie personnelle de **pas moins de 10 caractères** (`bio.length >= 10 && avatarUrl`).
 
-## No.13 Lien de lettre
-> [!todo] Lien de lettre (✉️)
-> **Priorité de poids**：`40` | **Catégorie**：`activity`
-> **Définition du système**：Boîte mail dédiée liée, ouvrant le canal de connexion d'échange d'idées.
-- **Méthode d'obtention :** Lier avec succès une adresse e-mail courante ou l'adresse e-mail `@epomail.bond` dédiée aux tests. La liaison d'une adresse e-mail sur un domaine officiel vous offrira également l'étiquette d'identité exclusive **« Lecteur certifié Epomail »** !
+## N°13 Lien par e-mail
+> [!todo] Lien par e-mail (✉️)
+> **Priorité de poids** : `40` | **Catégorie** : `activity`
+> **Définition du système** : Avoir lié une adresse e-mail exclusive pour ouvrir un canal de connexion et d'échange d'idées.
+- **Comment l'obtenir :** Lier avec succès une adresse e-mail courante ou tester l'adresse e-mail exclusive `@epomail.bond`. Lier une adresse e-mail de domaine officiel vous donnera également le badge d'identité exclusif **« Lecteur certifié Epomail »** !
 
-## No.14 Empreinte de fidèle
-> [!todo] Empreinte de fidèle (🏃)
+## N°14 Marque de régulier
+> [!todo] Marque de régulier (🏃)
 > **Priorité de poids** : `50` | **Catégorie** : `activity`
-> **Définition système** : Cumul de plus de 10 jours d'exploration active sur le blog.
-- **Méthode d'obtention :** Atteindre **10 jours** de jours d'activité cumulée. Atteindre 30 jours d'activité débloquera également **« ⚡ Opportuniste »** (poids 60).
+> **Définition du système** : Avoir été actif sur le blog pendant plus de 10 jours cumulés.
+- **Comment l'obtenir :** Atteindre un total de **10 jours** de visite active. Atteindre 30 jours débloquera également **« ⚡ Opportuniste »** (poids 60).
 
-## No.15 Calligraphe centenaire
-> [!todo] Calligraphe centenaire (🏔️)
+## N°15 Écrivain centenaire
+> [!todo] Écrivain centenaire (🏔️)
 > **Priorité de poids** : `75` | **Catégorie** : `activity`
-> **Définition système** : Ami de plume profondément enraciné, actif sur le blog depuis 100 jours cumulés.
-- **Méthode d'obtention :** Franchir le seuil de **100 jours** d'activité cumulée.
+> **Définition du système** : Un ami de plume assidu, actif sur le blog pendant 100 jours cumulés.
+- **Comment l'obtenir :** Le nombre total de jours d'activité dépasse **100 jours**.
 
-## No.16 Un an de navigation commune
-> [!todo] Un an de navigation commune (🎂)
+## N°16 Un an ensemble
+> [!todo] Un an ensemble (🎂)
 > **Priorité de poids** : `85` | **Catégorie** : `activity`
-> **Définition système** : Plus d'un an de connaissance et de compagnonnage avec ce blog.
-- **Méthode d'obtention :** Atteindre **365 jours** depuis la première visite ou l'inscription (plafond de $\le 365$ jours). De plus, une activité cumulée supérieure à 200 jours débloquera **« 🌲 Résilience éternelle »** (poids 88) !
+> **Définition du système** : Avoir accompagné ce blog pendant plus d'un an depuis la première rencontre.
+- **Comment l'obtenir :** **365 jours** se sont écoulés depuis la première visite ou l'inscription (limite de $\le 365$ jours). De plus, une activité cumulée de plus de 200 jours débloquera également **« 🌲 Persévérance éternelle »** (poids 88) !
 
 ---
 
-# X. Annexe : Explication des règles d'affichage de la superposition de carte de visite (À l'attention des lecteurs)
+# X. Annexe : Règles d'affichage du popover de carte de visite (À l'attention des lecteurs)
 
-Lorsque vous survolez la photo de profil ou le pseudonyme de n'importe quel contributeur dans la section des commentaires, le système affiche instantanément une **carte de visite geek (Popover de profil de l'auteur)** soigneusement ajustée :
+Lorsque vous survolez l'avatar ou le pseudonyme de n'importe quel commentateur dans la section des commentaires, le système affiche instantanément une **carte de visite de geek (Author Profile Popover)** soigneusement ajustée :
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  [圆形头像]  shijian_fan  [⭐ 先驱] [Epomail 认证]     │
-│  热爱开源，折腾 Astro 与 Rust 的全栈开发者             │
+│  [Avatar rond]  shijian_fan  [⭐ Pionnier] [Certifié Epomail]     │
+│  Développeur full-stack passionné par l'open source, Astro et Rust             │
 │  ────────────────────────────────────────────────────  │
-│  [ 💎 深得人心 ] [ 📚 博览群书 ] [ 🏔️ 百日墨客 ] [ ☕ 慢读时光 ] │
+│  [ 💎 Très apprécié ] [ 📚 Grand lecteur ] [ 🏔️ Écrivain centenaire ] [ ☕ Temps de lecture lent ] │
 │  ────────────────────────────────────────────────────  │
-│  最新发言: 刚刚 · 加入时间: 120天前 · 已读: 480m · 喝彩: 68   │
+│  Dernière publication : À l'instant · Membre depuis : 120 jours · Lu : 480 min · Acclamations : 68   │
 └────────────────────────────────────────────────────────┘
 ```
 
-Beaucoup de gens se demandent : **« J'ai déjà débloqué 8 badges, pourquoi seulement 4 sont affichés sur ma carte de visite ? »**
+Beaucoup d'amis se demanderont : **« J'ai débloqué 8 badges, pourquoi seulement 4 sont-ils affichés sur ma carte de visite ? »**
 
-### 1. Normes de mise en page minimalistes et épurées
-- **Refus de l'excès** : Nous ne voulons pas que la carte de visite devienne un mur de médailles envahissant, nuisant à l'aération de la mise en page.
-- **Maximum de 4 badges** : Le système limite strictement la barre de médailles dans la superposition de carte de visite à **un maximum de 4 badges par ligne** (`max 4`).
-- **Sélection autonome vs Repli par poids** :
-  - **Équipement autonome** : Vous pouvez cliquer dans le tiroir des badges du « Centre de compte » pour sélectionner et « équiper » librement vos 4 badges préférés ;
-  - **Repli intelligent** : Si vous n'avez jamais effectué de configuration manuelle, le système triera automatiquement, sur la base de l'algorithme, les badges débloqués **strictement par ordre de poids de priorité décroissant, et affichera les 4 badges d'honneur les plus élevés** !
-  - **Titres en édition limitée naturellement en vedette** : En raison des 6 grands titres d'honneur en édition limitée qui attribuent une priorité `92 ~ 98` très élevée, dès que vous les débloquez, le système les place automatiquement dans l'emplacement le plus visible !
+### 1. Normes de mise en page minimalistes et originales
+- **Refus du superflu ostentatoire** : Nous ne voulons pas que la carte de visite devienne un mur de médailles envahissant, nuisant à la lisibilité de la mise en page.
+- **Maximum 4 badges** : Le système limite strictement la barre de badges dans le popover de la carte de visite à **un maximum de 4 badges par ligne** (`max 4`).
+- **Sélection autonome vs. Priorité par défaut** :
+  - **Équipement autonome** : Vous pouvez choisir et « équiper » vos 4 badges préférés en cliquant dessus dans le tiroir à badges du « Centre de compte » ;
+  - **Priorité intelligente par défaut** : Si vous n'avez jamais effectué de réglage manuel, le système, basé sur un algorithme, sélectionnera automatiquement les **4 badges d'honneur les plus élevés de votre pool de badges débloqués, strictement triés par poids de priorité du plus élevé au plus bas**, pour les afficher !
+  - **Titres exclusifs naturellement mis en avant** : Étant donné que les 6 titres d'honneur exclusifs ont une priorité très élevée de `92 ~ 98`, dès que vous les débloquez, le système les placera par défaut directement dans les emplacements d'affichage les plus visibles !
 
-### 2. Normes de mise en page de la barre de statistiques (flux horizontal flexible)
-Les données d'activité des lecteurs en bas de la carte sont disposées en flux horizontal flexible, comprenant 4 indicateurs statistiques réels :
-1. **Dernière prise de parole** : calcul dynamique et affichage d'un horodatage relatif (ex. « à l'instant », « il y a 3 heures ») ;
-2. **Date d'adhésion** : enregistre le nombre de jours depuis la première visite ou inscription du lecteur (ex. « il y a 180 jours ») ;
-3. **Durée de lecture** : affiche la durée totale de lecture accumulée sur le blog (ex. « 240m ») ;
-4. **Applaudissements et likes** : affiche le nombre total de likes reçus pour les publications d'opinions.
+### 2. Spécifications de typographie de la barre de statistiques (Flux horizontal flexible)
+Les données d'activité du lecteur en bas de la carte de visite sont disposées en flux horizontal flexible, comprenant 4 indicateurs statistiques réels :
+1. **Dernier commentaire** : Calcule et affiche dynamiquement un horodatage relatif (par exemple, « à l'instant », « il y a 3 heures ») ;
+2. **Date d'adhésion** : Enregistre le nombre de jours écoulés depuis la première visite ou inscription du lecteur (par exemple, « il y a 180 jours ») ;
+3. **Temps de lecture** : Affiche la durée cumulée des battements de cœur de lecture passée sur le blog (par exemple, « 240m ») ;
+4. **Applaudissements et J'aime** : Affiche le nombre total de J'aime reçus des lecteurs pour les opinions publiées.
 
 ---
 
-# XI, Conclusion : les posts superficiels ne valent pas la lecture approfondie, détendez-vous et relaxez !
+# XI. Conclusion : Mieux vaut une lecture approfondie qu'une publication superficielle, asseyez-vous et détendez-vous !
 
-La profondeur de la communauté ne réside pas dans l'empilement aveugle de publications, mais dans les résonances générées à chaque collision d'idées.
+La profondeur d'une communauté ne réside jamais dans l'accumulation aveugle de publications, mais dans l'écho généré par chaque échange d'idées.
 
-Que vous soyez un **«🐣 nouvel utilisateur »** qui vient de visiter, ou un **«☕ amateur de lecture lente »** qui a silencieusement lu des dizaines d'articles, le blog EpoCanvas vous réserve une carte numérique geek à votre nom.
+Que vous soyez un **« 🐣 Nouvel utilisateur »** qui vient d'arriver, ou un détenteur du **« ☕ Temps de lecture lente »** ayant déjà lu des dizaines d'articles de blog en silence, le blog EpoCanvas vous a réservé une carte de visite numérique de geek qui vous est propre.
 
-**Détendez-vous et relaxez, bienvenue à publier votre première opinion dans la section commentaires ci-dessous, et lancez votre parcours d'ascension de niveau de confiance !**
+**Asseyez-vous et détendez-vous, nous vous invitons à partager votre première opinion dans la section des commentaires ci-dessous et à commencer votre parcours de progression du niveau de confiance !**

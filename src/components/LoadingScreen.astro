@@ -87,16 +87,30 @@ const { brandName, avatar } = Astro.props;
       window.setTimeout(complete, remaining);
     };
 
+    const dismissImmediately = () => {
+      if (ended) return;
+      ended = true;
+      root.classList.add('theme-ready');
+      markSeen();
+      loadingBox.classList.add('loaded');
+      loadingBox.style.setProperty('display', 'none', 'important');
+      loadingBox.style.setProperty('pointer-events', 'none', 'important');
+      window.setTimeout(() => {
+        loadingBox.remove();
+      }, 0);
+    };
+
     root.classList.remove('theme-ready');
     preloadVisuals();
-    loadingBox.addEventListener('click', endLoading, { once: true });
-    loadingBox.addEventListener('touchstart', endLoading, { once: true, passive: true });
+    loadingBox.addEventListener('click', dismissImmediately, { once: true });
+    loadingBox.addEventListener('touchstart', dismissImmediately, { once: true, passive: true });
+    window.addEventListener('touchstart', dismissImmediately, { once: true, passive: true });
 
     if (document.readyState === 'complete') {
       endLoading();
     } else {
       window.addEventListener('load', endLoading, { once: true });
-      window.setTimeout(endLoading, 8000);
+      window.setTimeout(endLoading, 5000);
     }
   })();
 </script>

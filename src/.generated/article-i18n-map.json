@@ -98,31 +98,31 @@
       "de": {
         "filename": "badges-guide-de.md",
         "slug": "badges-guide-de",
-        "title": "Umfassender Überblick! Vollständiger Leitfaden zu Leser‑Stufen, Titeln und Abzeichen im EpoCanvas‑Blog (2026 fortlaufend aktualisiert)",
+        "title": "Umfassende Übersicht! Der vollständige Leitfaden zum Erwerb von Leserleveln, Titeln und Abzeichen im EpoCanvas Blog (Kontinuierlich aktualisiert 2026)",
         "isAiGenerated": true
       },
       "en": {
         "filename": "badges-guide-en.md",
         "slug": "badges-guide-en",
-        "title": "All Network Overview! EpoCanvas Blog Reader Levels, Titles, and Badge Acquisition Complete Guide (2026 Continuously Updated)",
+        "title": "Comprehensive Inventory! EpoCanvas Blog Reader Levels, Titles, and Badge Acquisition Complete Guide (2026 Continuously Updated)",
         "isAiGenerated": true
       },
       "es": {
         "filename": "badges-guide-es.md",
         "slug": "badges-guide-es",
-        "title": "¡Inventario completo! Guía definitiva para obtener niveles, títulos y insignias de lectores en el blog EpoCanvas (actualización continua 2026)",
+        "title": "¡Análisis completo! Guía definitiva para obtener niveles, títulos y insignias de lector del blog EpoCanvas (actualización continua 2026)",
         "isAiGenerated": true
       },
       "fr": {
         "filename": "badges-guide-fr.md",
         "slug": "badges-guide-fr",
-        "title": "Inventaire complet du web ! Guide complet pour obtenir les niveaux, titres et badges des lecteurs du blog EpoCanvas (mise à jour continue en 2026)",
+        "title": "Inventaire complet ! Guide complet pour l'obtention des niveaux de lecteur, titres et badges du blog EpoCanvas (Mise à jour continue en 2026)",
         "isAiGenerated": true
       },
       "zh-Hant": {
         "filename": "badges-guide-zh-Hant.md",
         "slug": "badges-guide-zh-Hant",
-        "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）",
+        "title": "全網盤點！EpoCanvas 部落格讀者等級、稱號與徽章獲取完全指南（2026 持續更新）",
         "isAiGenerated": true
       },
       "zh-CN": {
@@ -522,6 +522,36 @@
   "markdown-syntax-mastery": {
     "i18nKey": "markdown-syntax-mastery",
     "translations": {
+      "de": {
+        "filename": "markdown-syntax-mastery-de.md",
+        "slug": "markdown-syntax-mastery-de",
+        "title": "Umfassender Leitfaden zur Markdown-Syntax und Sonderfunktionen: Mathematische Formeln, Diagramme, Warnfelder, Verschlüsselung/Entschlüsselung, Unschärfe-Mosaik und modernes Layout",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "markdown-syntax-mastery-en.md",
+        "slug": "markdown-syntax-mastery-en",
+        "title": "Markdown Full Syntax and Special Features Panorama Guide: Math Formulas, Charts, Alert Boxes, Encryption/Decryption, Blur Mosaic, and Modern Typography",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "markdown-syntax-mastery-es.md",
+        "slug": "markdown-syntax-mastery-es",
+        "title": "Guía panorámica de la sintaxis completa y funciones especiales de Markdown: Fórmulas matemáticas, gráficos, cuadros de alerta, cifrado y descifrado, desenfoque y mosaico, y tipografía moderna",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "markdown-syntax-mastery-fr.md",
+        "slug": "markdown-syntax-mastery-fr",
+        "title": "Guide panoramique complet de la syntaxe et des fonctionnalités spéciales de Markdown : formules mathématiques, graphiques, boîtes d'alerte, chiffrement/déchiffrement, flou/mosaïque et typographie moderne",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "markdown-syntax-mastery-zh-Hant.md",
+        "slug": "markdown-syntax-mastery-zh-Hant",
+        "title": "Markdown 全語法與特異功能全景指南：數學公式、圖表、告警框、加密解密、模糊馬賽克與現代排版",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "markdown-syntax-mastery.md",
         "slug": "markdown-syntax-mastery",

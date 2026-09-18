@@ -200,7 +200,7 @@ async function main() {
               .replace(/<[^>]+>/g, '');
             const chineseMatches = rawWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
             chineseCount = chineseMatches.length;
-            hasChineseLeakage = chineseCount > 70;
+            hasChineseLeakage = chineseCount > 20;
           }
 
           if (existingTranslation.mtime >= sourceArticle.mtime && !isUndersized && !hasChineseLeakage) {

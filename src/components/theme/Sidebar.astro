@@ -47,6 +47,16 @@ const {
   lang: currentLang = 'zh-CN',
 } = Astro.props;
 
+const TOC_I18N: Record<string, { title: string; unit: string }> = {
+  'zh-CN': { title: '文章目录', unit: '节' },
+  'zh-Hant': { title: '文章目錄', unit: '節' },
+  en: { title: 'Contents', unit: 'sections' },
+  es: { title: 'Contenido', unit: 'secciones' },
+  de: { title: 'Inhalt', unit: 'Abschnitte' },
+  fr: { title: 'Sommaire', unit: 'sections' },
+};
+const defaultTocMeta = TOC_I18N[currentLang] || TOC_I18N['zh-CN'];
+
 // Fetch real data for dynamic widgets
 const allPublicPosts = await getCollection('posts', ({ data }) => !data.draft);
 const realTotalPosts = allPublicPosts.length;
@@ -192,8 +202,8 @@ const renderTocNodes = (nodes: TocNode[]) =>
               <div class="item-headline">
                 <div class="item-headline__left">
                   <ListTree className="aside-title-icon" aria-hidden="true" />
-                  <span>文章目录</span>
-                  <span class="toc-count">{tocHeadings.length} 节</span>
+                  <span class="toc-title-text" data-i18n-toc-title>{defaultTocMeta.title}</span>
+                  <span class="toc-count" data-i18n-toc-count>{tocHeadings.length} {defaultTocMeta.unit}</span>
                 </div>
                 <span class="toc-percentage"></span>
               </div>
@@ -202,18 +212,22 @@ const renderTocNodes = (nodes: TocNode[]) =>
               </div>
               <div class="toc-content">
                 {variantTocEntries.length > 0 ? (
-                  variantTocEntries.map(({ lang: vLang, tree: vTree, count: vCount }) => (
-                    <div
-                      class="variant-toc-list"
-                      data-lang={vLang}
-                      data-toc-count={`${vCount} 节`}
-                      style={vLang === currentLang ? '' : 'display: none;'}
-                    >
-                      <ol class="toc-list">
-                        <Fragment set:html={renderTocNodes(vTree)} />
-                      </ol>
-                    </div>
-                  ))
+                  variantTocEntries.map(({ lang: vLang, tree: vTree, count: vCount }) => {
+                    const vMeta = TOC_I18N[vLang] || TOC_I18N['zh-CN'];
+                    return (
+                      <div
+                        class="variant-toc-list"
+                        data-lang={vLang}
+                        data-toc-title={vMeta.title}
+                        data-toc-count={`${vCount} ${vMeta.unit}`}
+                        style={vLang === currentLang ? '' : 'display: none;'}
+                      >
+                        <ol class="toc-list">
+                          <Fragment set:html={renderTocNodes(vTree)} />
+                        </ol>
+                      </div>
+                    );
+                  })
                 ) : (
                   <ol class="toc-list">
                     <Fragment set:html={renderTocNodes(tocTree)} />
@@ -1113,12 +1127,40 @@ const renderTocNodes = (nodes: TocNode[]) =>
 </style>
 
 <script>
-  function initTocScrollSpy() {
+  const TOC_I18N: Record<string, { title: string; unit: string }> = {
+    'zh-CN': { title: '文章目录', unit: '节' },
+    'zh-Hant': { title: '文章目錄', unit: '節' },
+    en: { title: 'Contents', unit: 'sections' },
+    es: { title: 'Contenido', unit: 'secciones' },
+    de: { title: 'Inhalt', unit: 'Abschnitte' },
+    fr: { title: 'Sommaire', unit: 'sections' },
+  };
+
+  let scrollListenerCleanup: (() => void) | null = null;
+
+  function initTocScrollSpy(activeLang?: string) {
+    if (scrollListenerCleanup) {
+      scrollListenerCleanup();
+      scrollListenerCleanup = null;
+    }
+
     const tocCard = document.getElementById('card-toc');
     if (!tocCard) return;
     const tocContent = tocCard.querySelector('.toc-content');
-    const links = Array.from(tocCard.querySelectorAll('.toc-link')) as HTMLAnchorElement[];
+    if (!tocContent) return;
+
+    const currentLang = activeLang || document.documentElement.lang || 'zh-CN';
+    const activeList = tocCard.querySelector(`.variant-toc-list[data-lang="${currentLang}"]`) ||
+                       tocCard.querySelector('.variant-toc-list:not([style*="display: none"])') ||
+                       tocCard.querySelector('.toc-content');
+
+    const links = Array.from(activeList ? activeList.querySelectorAll('.toc-link') : []) as HTMLAnchorElement[];
     
+    // Target the visible article container
+    const activeArticleVariant = document.querySelector(`.article-translation-variant[data-lang="${currentLang}"]:not([style*="display: none"])`) ||
+                                document.querySelector('.article-translation-variant:not([style*="display: none"])') ||
+                                document.getElementById('article-container');
+
     const headings = links.map(link => {
       let hash = '';
       try {
@@ -1126,14 +1168,24 @@ const renderTocNodes = (nodes: TocNode[]) =>
       } catch (e) {
         hash = link.hash.replace(/^#/, '');
       }
-      const el = document.getElementById(hash);
+      let el: HTMLElement | null = null;
+      if (activeArticleVariant && hash) {
+        try {
+          el = activeArticleVariant.querySelector(`[id="${CSS.escape(hash)}"]`) as HTMLElement;
+        } catch (_) {}
+      }
+      if (!el && hash) {
+        try {
+          el = document.getElementById(hash);
+        } catch (_) {}
+      }
       const depth = parseInt(link.getAttribute('data-depth') || '2', 10);
       return { id: hash, el, link, depth };
     }).filter((h): h is { id: string; el: HTMLElement; link: HTMLAnchorElement; depth: number } => Boolean(h.el));
 
     if (!headings.length) return;
 
-    // Smooth click handler for TOC links with header offset
+    // Smooth click handler for active TOC links with header offset
     links.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1143,7 +1195,17 @@ const renderTocNodes = (nodes: TocNode[]) =>
         } catch (err) {
           hash = link.hash.replace(/^#/, '');
         }
-        const targetEl = document.getElementById(hash);
+        let targetEl: HTMLElement | null = null;
+        if (activeArticleVariant && hash) {
+          try {
+            targetEl = activeArticleVariant.querySelector(`[id="${CSS.escape(hash)}"]`) as HTMLElement;
+          } catch (_) {}
+        }
+        if (!targetEl && hash) {
+          try {
+            targetEl = document.getElementById(hash);
+          } catch (_) {}
+        }
         if (targetEl) {
           const isReadMode =
             document.body.classList.contains('read-mode') ||
@@ -1252,14 +1314,104 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    window.addEventListener('shijianus:toc-depth-changed', () => {
-      setTimeout(updateActive, 40);
-    });
-    window.addEventListener('shijianus:readmode-changed', () => {
-      setTimeout(updateActive, 60);
-    });
+    const onDepthChanged = () => setTimeout(updateActive, 40);
+    const onReadModeChanged = () => setTimeout(updateActive, 60);
+    window.addEventListener('shijianus:toc-depth-changed', onDepthChanged);
+    window.addEventListener('shijianus:readmode-changed', onReadModeChanged);
+
+    scrollListenerCleanup = () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('shijianus:toc-depth-changed', onDepthChanged);
+      window.removeEventListener('shijianus:readmode-changed', onReadModeChanged);
+    };
 
     updateActive();
+  }
+
+  // Universal Dynamic TOC synchronizer & heading scanner
+  function syncActiveToc(targetLang: string) {
+    const tocCard = document.getElementById('card-toc');
+    if (!tocCard) return;
+
+    const tMeta = TOC_I18N[targetLang] || TOC_I18N['zh-CN'];
+
+    // 1. Update Title Header
+    const titleEl = tocCard.querySelector('[data-i18n-toc-title]');
+    if (titleEl) titleEl.textContent = tMeta.title;
+
+    // 2. Locate or dynamically build the variant TOC list
+    let variantList = tocCard.querySelector(`.variant-toc-list[data-lang="${targetLang}"]`) as HTMLElement | null;
+    const tocContent = tocCard.querySelector('.toc-content');
+
+    if (!variantList && tocContent) {
+      // Dynamic heading scan fallback for active variant in DOM
+      const activeArticleVariant = document.querySelector(`.article-translation-variant[data-lang="${targetLang}"]:not([style*="display: none"])`) ||
+                                  document.querySelector('.article-translation-variant:not([style*="display: none"])') ||
+                                  document.getElementById('article-container');
+
+      if (activeArticleVariant) {
+        const domHeadings = Array.from(activeArticleVariant.querySelectorAll('h2, h3, h4, h5, h6')) as HTMLElement[];
+        if (domHeadings.length > 0) {
+          variantList = document.createElement('div');
+          variantList.className = 'variant-toc-list';
+          variantList.dataset.lang = targetLang;
+          variantList.dataset.tocTitle = tMeta.title;
+          variantList.dataset.tocCount = `${domHeadings.length} ${tMeta.unit}`;
+
+          const ol = document.createElement('ol');
+          ol.className = 'toc-list';
+
+          domHeadings.forEach((h, index) => {
+            const depth = parseInt(h.tagName.substring(1), 10);
+            const level = Math.max(0, depth - 2);
+            let id = h.id;
+            if (!id) {
+              id = 'heading-' + index;
+              h.id = id;
+            }
+            const li = document.createElement('li');
+            li.className = 'toc-item';
+            li.style.setProperty('--toc-level', String(level));
+
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.className = `toc-link level-${level}`;
+            a.dataset.depth = String(depth);
+            a.dataset.headingId = id;
+            a.setAttribute('aria-current', 'false');
+
+            const textGroup = document.createElement('span');
+            textGroup.className = 'toc-text-group';
+            const textSpan = document.createElement('span');
+            textSpan.className = 'toc-text';
+            textSpan.textContent = h.textContent?.trim() || `Section ${index + 1}`;
+            textGroup.appendChild(textSpan);
+            a.appendChild(textGroup);
+            li.appendChild(a);
+            ol.appendChild(li);
+          });
+
+          variantList.appendChild(ol);
+          tocContent.appendChild(variantList);
+        }
+      }
+    }
+
+    // 3. Switch visible variant TOC list
+    tocCard.querySelectorAll('.variant-toc-list').forEach((vl) => {
+      const isMatch = (vl as HTMLElement).dataset.lang === targetLang;
+      (vl as HTMLElement).style.display = isMatch ? '' : 'none';
+      if (isMatch) {
+        const countEl = tocCard.querySelector('[data-i18n-toc-count]');
+        if (countEl && (vl as HTMLElement).dataset.tocCount) {
+          countEl.textContent = (vl as HTMLElement).dataset.tocCount!;
+        }
+      }
+    });
+
+    // 4. Re-bind ScrollSpy to the active list
+    initTocScrollSpy(targetLang);
   }
 
   function initTocDepthFilter() {
@@ -1298,9 +1450,15 @@ const renderTocNodes = (nodes: TocNode[]) =>
   }
 
   function setupSidebarToc() {
-    initTocScrollSpy();
+    const activeLang = document.documentElement.lang || 'zh-CN';
+    syncActiveToc(activeLang);
     initTocDepthFilter();
   }
+
+  window.addEventListener('shijianus:localechange', (e: any) => {
+    const lang = e?.detail;
+    if (lang) syncActiveToc(lang);
+  });
 
   document.addEventListener('astro:page-load', setupSidebarToc);
   document.addEventListener('DOMContentLoaded', setupSidebarToc);

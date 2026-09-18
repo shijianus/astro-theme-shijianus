@@ -720,7 +720,7 @@ export async function translateFrontmatterOnly(
   const systemPrompt = [
     `You are a precise YAML translator. Translate ONLY the human-readable text values in the given YAML frontmatter into ${localeName}.`,
     `Rules:`,
-    `- Translate ONLY the values of these fields: title, description, category, group, tags (and tag list items).`,
+    `- Translate ONLY the values of these fields: title, description, category, group, tags (and tag list items), coverAlt.`,
     `- Do NOT translate or modify: i18nKey, lang, date, updated, cover, images, slug, permalink, abbrlink, externalLink, encrypt, externalEncrypt, externalEncrypts, pinned, sticky, hidden, draft, isAiGenerated, aiTranslatedFrom, wordCount, readingTime, or any field whose value is a URL, number, boolean, or null.`,
     `- Output ONLY the raw YAML block (no --- delimiters, no markdown fences).`,
     `- Preserve the exact YAML structure, indentation, and key order.`,
@@ -728,22 +728,40 @@ export async function translateFrontmatterOnly(
 
   const userMessage = `Frontmatter to translate:\n\n${frontmatter}`;
 
-  const result = await callModel({
-    systemPrompt,
-    userMessage,
-    apiKey: options.apiKey,
-    baseUrl: options.baseUrl,
-    model: options.model,
-    groqApiKey: options.groqApiKey,
-    groqModel: options.groqModel,
-    timeoutMs: 45000,
-  });
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const result = await callModel({
+      systemPrompt,
+      userMessage,
+      apiKey: options.apiKey,
+      baseUrl: options.baseUrl,
+      model: options.model,
+      groqApiKey: options.groqApiKey,
+      groqModel: options.groqModel,
+      timeoutMs: 45000,
+    });
 
-  if (result.ok && result.text.trim()) {
-    let out = result.text.trim();
-    if (out.startsWith('```')) out = out.replace(/^```[a-z]*\r?\n/, '');
-    if (out.endsWith('```')) out = out.replace(/\r?\n```$/, '');
-    return out.trim();
+    if (result.ok && result.text.trim()) {
+      let out = result.text.trim();
+      if (out.startsWith('```')) out = out.replace(/^```[a-z]*\r?\n/, '');
+      if (out.endsWith('```')) out = out.replace(/\r?\n```$/, '');
+
+      if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
+        const titleMatch = out.match(/title:\s*["']?(.*?)["']?\r?\n/);
+        if (titleMatch && /[\u4e00-\u9fa5]/.test(titleMatch[1])) {
+          console.warn(`[Article-i18n] Frontmatter title in ${targetLocale} contains residual Chinese ("${titleMatch[1]}"). Retrying...`);
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+        }
+      }
+
+      return out.trim();
+    }
+
+    if (attempt < 3) {
+      await new Promise((r) => setTimeout(r, 2000));
+    }
   }
 
   // Fallback: return original frontmatter unchanged
@@ -831,14 +849,22 @@ export async function translateBodyChunk(
       if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
         const textCheck = translated
           .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+          .replace(/<code[\s\S]*?<\/code>/gi, '')
+          .replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
           .replace(/```[\s\S]*?```/g, '')
+          .replace(/`[^`\r\n]+`/g, '')
+          .replace(/\$\$[\s\S]*?\$\$/g, '')
+          .replace(/\$[^$\r\n]+\$/g, '')
           .replace(/<video[\s\S]*?<\/video>/gi, '')
           .replace(/<audio[\s\S]*?<\/audio>/gi, '')
+          .replace(/<!--[\s\S]*?-->/g, '')
+          .replace(/<ruby[\s\S]*?<\/ruby>/gi, '')
           .replace(/<[^>]+>/g, '');
         const zh = textCheck.match(/[\u4e00-\u9fa5]/g) || [];
         const nonCodeLen = textCheck.replace(/\s+/g, '').length;
-        if (nonCodeLen > 120 && (zh.length / nonCodeLen) > 0.12) {
-          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${zh.length} residual Chinese chars (${(zh.length / nonCodeLen * 100).toFixed(1)}%), retrying attempt ${attempt}...`);
+        if (zh.length > 20 || (nonCodeLen > 120 && (zh.length / nonCodeLen) > 0.04)) {
+          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${zh.length} residual Chinese chars (${(zh.length / Math.max(1, nonCodeLen) * 100).toFixed(1)}%), retrying attempt ${attempt}...`);
           if (attempt < MAX_RETRIES) {
             await new Promise((r) => setTimeout(r, 4000));
             continue;
@@ -1268,15 +1294,16 @@ export function validateTranslatedFormat(
       .replace(/\$\$[\s\S]*?\$\$/g, '')
       .replace(/\$[^$\r\n]+\$/g, '')
       .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<ruby[\s\S]*?<\/ruby>/gi, '')
       .replace(/<[^>]+>/g, '');
 
     const chineseMatches = textWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
     const nonCodeLen = textWithoutCode.replace(/\s+/g, '').length;
     const chineseRatio = nonCodeLen > 0 ? (chineseMatches.length / nonCodeLen) : 0;
 
-    // If more than 60 Chinese characters remain, or Chinese exceeds 0.8% of body text,
+    // If more than 25 Chinese characters remain, or Chinese exceeds 0.5% of body text,
     // this indicates a failed chunk fallback, dropped translation, or untranslated section.
-    if (chineseMatches.length > 60 || (chineseMatches.length > 25 && chineseRatio > 0.008)) {
+    if (chineseMatches.length > 25 || (chineseMatches.length > 15 && chineseRatio > 0.005)) {
       return {
         valid: false,
         reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`

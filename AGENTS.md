@@ -2553,3 +2553,20 @@
   5. 验证站点资讯 2×2 极客仪表盘（文章 74 篇、建站运行 1996 天、标签 53 个、核心协议 EPOCANVAS，带绿色呼吸脉冲徽标 `● 正常运行`）；
   6. 验证滑动吸顶进入态（`entering` / `is-sticky-active`）及底部对齐误差严格保持 **0.20px**，与左侧精简分页卡片（`#home-pagination`）完美平齐；
   7. 生产环境全景截图留存：`01_live_home_top.png`、`02_live_tag_card_closeup.png`、`03_live_home_sticky_active.png`、`04_live_home_bottom_aligned.png`、`05_live_home_pagination_closeup.png`。
+
+### Task 114: 文章目录 (TOC) 首次加载语言对齐、动态目录扫描器与通用分片翻译普适性深度优化
+- [x] **根因精准排查与修复 (Root-Cause Analysis & Frontend TOC Alignment)**：
+  1. **TOC 标题与节数单位硬编码修复**：修复 `Sidebar.astro` 中 `#card-toc` 头部硬编码“文章目录”与“节”的问题，注入 `TOC_I18N` 字典（覆盖 `zh-CN`、`zh-Hant`、`en`、`es`、`de`、`fr`），并在标题与节数元素配置 `[data-i18n-toc-title]` 与 `[data-i18n-toc-count]`；
+  2. **动态 DOM 标题扫描器与回退保障 (`syncActiveToc`)**：当预渲染的变体 TOC 不存在时，通过 `activeVariant.querySelectorAll('h2, h3, h4, h5, h6')` 动态深度扫描文章标题并挂载对应的结构化 `variant-toc-list`，并在语言切换与页面初始化时重新绑定 ScrollSpy 监听，杜绝跨语言混合聚焦；
+  3. **页面首载脚本全面激活**：修复 `src/pages/posts/[slug].astro` 中首载检查逻辑，无论用户首选语言是否为默认语言均无条件触发 `switchArticleLanguage`，保障变体内容、TOC 标题、节数单位与 URL 规范性 100% 保持一致。
+- [x] **通用分片翻译算法深度优化 (Universal Chunked Translation Pipeline Optimization)**：
+  1. **YAML Frontmatter 翻译健全化**：在 `translateFrontmatterOnly` 中纳入 `coverAlt` 字段，且针对非中文语言加入标题中文残留校验与自动重试机制；
+  2. **分片内容清洗与中文残留严苛防护**：在 `translateBodyChunk` 中补充剔除行内代码、KaTeX 公式、HTML 注释与 ruby 音标标记，并将残留中文重试阈值收紧至 20 字符以内；
+  3. **格式校验器强化**：在 `validateTranslatedFormat` 中将中文残留阈值收缩至 25 字符以内，严禁任何降级至中文原文的残缺分片逃逸。
+- [x] **跨文章通用性实证与分片压测全量通过 (`badges-guide` 与 `markdown-syntax-mastery`)**：
+  1. **`badges-guide`（15,731 字符，30KB）**：全面重译 5 种目标语言（`en`、`es`、`de`、`fr`、`zh-Hant`），实测 30 个标题与全文正文 0 中文残留；
+  2. **`markdown-syntax-mastery`（15,681 字符，22KB，含数学公式、流程图、折叠面板等极致复杂度）**：成功触发 6 分片全链路流水线（`splitIntoChunks`），全量生成 `en`、`es`、`de`、`fr`、`zh-Hant`，实测 35 个层级标题 0 中文泄漏，英文、西文、德文、法文正文除 ruby 示范外 0 中文残留。
+- [x] **Playwright 真实浏览器端到端自动化测试全量通过 (`scripts/verify-single-url-i18n.mjs`)**：
+  1. 覆盖 4 大测试组：Canonical URL 规范性与零刷新切换、旧 URL 301 重定向与偏好保留、`badges-guide` 跨文章首载 TOC 对齐与零中文验证、`markdown-syntax-mastery` 通用分片与多语言 TOC 验证；
+  2. **全部 62 项端到端断言 100% 通过（Passed: 62 | Failed: 0）**。
+

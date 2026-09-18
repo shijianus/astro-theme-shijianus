@@ -7834,6 +7834,86 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   color: #93c5fd !important;
 }
 
+/* ==========================================================================
+   Mobile UX Refinements (TOC Quick Access, Scroll Hints, Smooth Transitions)
+   Strictly isolated to <= 768px / Desktop remains 100% untouched
+   ========================================================================== */
+
+/* 1. Mobile Quick TOC Button in #rightside-config-show */
+#rightside-config-show #mobile-toc-quick {
+  display: none !important;
+}
+
+@media screen and (max-width: 768px) {
+  #rightside-config-show #mobile-toc-quick {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 35px !important;
+    height: 35px !important;
+    margin-bottom: 5px;
+    border-radius: 8px !important;
+    background-color: var(--theme-main, #425aef) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(66, 90, 239, 0.4) !important;
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease !important;
+  }
+  #rightside-config-show #mobile-toc-quick:active {
+    transform: scale(0.9) !important;
+  }
+  #rightside-config-show #mobile-toc-quick .rightside-icon {
+    width: 16px !important;
+    height: 16px !important;
+    stroke: #ffffff !important;
+  }
+}
+
+/* 2. Mobile Code Blocks & Tables Horizontal Scroll Affordance */
+@media screen and (max-width: 768px) {
+  .code-block-shell {
+    position: relative;
+  }
+  .code-block-shell pre {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .code-block-shell::after {
+    content: '';
+    position: absolute;
+    top: 38px;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.16));
+    pointer-events: none;
+    opacity: 0.7;
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+    transition: opacity 0.2s ease;
+  }
+  :root[data-theme='light'] .code-block-shell::after {
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.07));
+  }
+  .article-container table {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 3. Mobile Next Recommendation (#pagination.pagination-post) Smooth Transitions */
+@media screen and (max-width: 768px) {
+  body[data-type='post'] #pagination.pagination-post {
+    transform: translateY(12px) scale(0.98);
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+    will-change: transform, opacity;
+  }
+  body[data-type='post'] #pagination.pagination-post.is-visible {
+    transform: translateY(0) scale(1) !important;
+  }
+}
+
+
 
 
 

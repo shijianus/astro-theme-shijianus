@@ -290,31 +290,194 @@ async function run() {
     assert(legacyEnVisible, 'Active variant automatically preserved as English after redirect');
 
     console.log('\n======================================================');
-    console.log('3. Cross-Article Universality Test (/posts/badges-guide/)');
+    console.log('3. Cross-Article Universality & Initial Load TOC Alignment (/posts/badges-guide/)');
     console.log('======================================================');
 
+    // Test first-time visitor with English persona on badges-guide
+    const enContext = await browser.newContext({
+      locale: 'en-US',
+      viewport: { width: 1440, height: 900 }
+    });
+    const badgesPage = await enContext.newPage();
     const badgesUrl = `${BASE_URL}/posts/badges-guide/`;
-    console.log(`Navigating to canonical URL: ${badgesUrl}`);
-    await page.goto(badgesUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await page.waitForSelector('#article-container', { timeout: 20000 });
-    await page.waitForTimeout(1500);
+    console.log(`Navigating to canonical URL with en-US persona: ${badgesUrl}`);
+    await badgesPage.goto(badgesUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await badgesPage.waitForSelector('#article-container', { timeout: 20000 });
+    await badgesPage.waitForTimeout(2000);
 
-    assert(page.url() === badgesUrl, `Badges guide canonical URL: ${page.url()}`);
-    const badgesVariants = await page.locator('.article-translation-variant').count();
+    assert(badgesPage.url() === badgesUrl, `Badges guide canonical URL: ${badgesPage.url()}`);
+    const badgesVariants = await badgesPage.locator('.article-translation-variant').count();
     assert(badgesVariants >= 5, `Badges guide has multi-variants pre-rendered (found: ${badgesVariants})`);
 
-    // In-place switch to English on Badges Guide
-    const badgesEnBtn = page.locator('.post-hero__lang-tag[data-target-lang="en"]');
-    if (await badgesEnBtn.count() > 0) {
-      await badgesEnBtn.click();
-      await page.waitForTimeout(500);
-      assert(page.url() === badgesUrl, `Badges guide URL strictly preserved (${page.url()})`);
-      const badgesEnVisible = await page.locator('.article-translation-variant[data-lang="en"]').isVisible();
-      assert(badgesEnVisible, 'Badges guide English variant active without reload');
+    // 1. Verify Initial English Alignment on first visit
+    const badgesEnVisible = await badgesPage.locator('.article-translation-variant[data-lang="en"]').isVisible();
+    assert(badgesEnVisible, 'First visit with en persona: English variant is automatically active');
+
+    const badgesHeroTitle = await badgesPage.locator('.post-hero__title-block h1').textContent();
+    assert(!CHINESE_CHAR_REGEX.test(badgesHeroTitle || ''), `Badges guide hero title is in English (no Chinese): "${badgesHeroTitle}"`);
+
+    // 2. Verify TOC Headline & Unit localized to English
+    const tocTitle = await badgesPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(tocTitle?.trim() === 'Contents', `TOC headline translated to English: "${tocTitle?.trim()}" (NOT "文章目录")`);
+
+    const tocCount = await badgesPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(tocCount?.includes('sections'), `TOC count localized to English: "${tocCount?.trim()}" (NOT "节")`);
+
+    // 3. Verify all active TOC items on Badges Guide are in English with ZERO Chinese
+    const activeTocLinks = await badgesPage.locator('.variant-toc-list[data-lang="en"] .toc-link .toc-text').allTextContents();
+    assert(activeTocLinks.length > 0, `Active English TOC list has items (found: ${activeTocLinks.length})`);
+
+    let zhInToc = false;
+    for (const itemText of activeTocLinks) {
+      if (CHINESE_CHAR_REGEX.test(itemText)) {
+        zhInToc = true;
+        console.error(`  ❌ Residual Chinese in TOC item: "${itemText}"`);
+      }
+    }
+    assert(!zhInToc, 'ZERO residual Chinese characters in active English TOC items');
+
+    // 4. Verify Badges Guide English body has ZERO residual Chinese
+    const enBodyText = await badgesPage.locator('.article-translation-variant[data-lang="en"]').textContent();
+    // Exclude code blocks & pre tags from Chinese check
+    const enBodyWithoutCode = (enBodyText || '').replace(/```[\s\S]*?```/g, '');
+    const zhMatchesInBody = enBodyWithoutCode.match(CHINESE_CHAR_REGEX) || [];
+    assert(zhMatchesInBody.length === 0, `ZERO residual Chinese in Badges Guide English body (found: ${zhMatchesInBody.length})`);
+
+    // 5. Test In-place switch to Spanish on Badges Guide
+    console.log('\n--> Testing in-place switch to Spanish on Badges Guide...');
+    const badgesEsBtn = badgesPage.locator('.post-hero__lang-tag[data-target-lang="es"]');
+    await badgesEsBtn.click();
+    await badgesPage.waitForTimeout(800);
+
+    const esTocTitle = await badgesPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(esTocTitle?.trim() === 'Contenido', `Spanish TOC headline: "${esTocTitle?.trim()}"`);
+    const esTocCount = await badgesPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(esTocCount?.includes('secciones'), `Spanish TOC count: "${esTocCount?.trim()}"`);
+
+    const esTocLinks = await badgesPage.locator('.variant-toc-list[data-lang="es"] .toc-link .toc-text').allTextContents();
+    const zhInEsToc = esTocLinks.some((t) => CHINESE_CHAR_REGEX.test(t));
+    assert(!zhInEsToc, 'ZERO residual Chinese in Spanish TOC items');
+
+    // 6. Test In-place switch to German on Badges Guide
+    console.log('\n--> Testing in-place switch to German on Badges Guide...');
+    const badgesDeBtn = badgesPage.locator('.post-hero__lang-tag[data-target-lang="de"]');
+    await badgesDeBtn.click();
+    await badgesPage.waitForTimeout(800);
+
+    const deTocTitle = await badgesPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(deTocTitle?.trim() === 'Inhalt', `German TOC headline: "${deTocTitle?.trim()}"`);
+    const deTocCount = await badgesPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(deTocCount?.includes('Abschnitte'), `German TOC count: "${deTocCount?.trim()}"`);
+
+    // 7. Test TOC smooth scroll click on Badges Guide
+    const firstDeTocLink = badgesPage.locator('.variant-toc-list[data-lang="de"] .toc-link').first();
+    if (await firstDeTocLink.count() > 0) {
+      await firstDeTocLink.click();
+      await badgesPage.waitForTimeout(500);
+      const scrollY = await badgesPage.evaluate(() => window.scrollY);
+      assert(scrollY > 0, `TOC click successfully triggered smooth scroll (scrollY: ${scrollY}px)`);
     }
 
+    await enContext.close();
+
+    console.log('\n======================================================');
+    console.log('4. Universal Chunked Translation & TOC (/posts/markdown-syntax-mastery/)');
+    console.log('======================================================');
+
+    const msmContext = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      locale: 'en-US',
+    });
+    const msmPage = await msmContext.newPage();
+    const msmUrl = `${BASE_URL}/posts/markdown-syntax-mastery/`;
+    console.log(`Navigating to canonical URL with en-US persona: ${msmUrl}`);
+    await msmPage.goto(msmUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await msmPage.waitForSelector('#article-container', { timeout: 20000 });
+    await msmPage.waitForTimeout(2000);
+
+    assert(msmPage.url() === msmUrl, `Markdown syntax mastery canonical URL: ${msmPage.url()}`);
+    const msmVariants = await msmPage.locator('.article-translation-variant').count();
+    assert(msmVariants >= 5, `Markdown syntax mastery has multi-variants pre-rendered (found: ${msmVariants})`);
+
+    // 1. Verify Initial English Alignment on first visit
+    const msmEnVisible = await msmPage.locator('.article-translation-variant[data-lang="en"]').isVisible();
+    assert(msmEnVisible, 'First visit with en persona: English variant is automatically active');
+
+    const msmHeroTitle = await msmPage.locator('.post-hero__title-block h1').textContent();
+    assert(!CHINESE_CHAR_REGEX.test(msmHeroTitle || ''), `Hero title is in English (no Chinese): "${msmHeroTitle}"`);
+
+    // 2. Verify TOC Headline & Unit localized to English
+    const msmTocTitle = await msmPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(msmTocTitle?.trim() === 'Contents', `TOC headline translated to English: "${msmTocTitle?.trim()}" (NOT "文章目录")`);
+
+    const msmTocCount = await msmPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(msmTocCount?.includes('sections'), `TOC count localized to English: "${msmTocCount?.trim()}" (NOT "节")`);
+
+    // 3. Verify all active TOC items on Markdown Syntax Mastery are in English with ZERO Chinese
+    const msmActiveTocLinks = await msmPage.locator('.variant-toc-list[data-lang="en"] .toc-link .toc-text').allTextContents();
+    assert(msmActiveTocLinks.length > 0, `Active English TOC list has items (found: ${msmActiveTocLinks.length})`);
+
+    let msmZhInToc = false;
+    for (const itemText of msmActiveTocLinks) {
+      if (CHINESE_CHAR_REGEX.test(itemText)) {
+        msmZhInToc = true;
+        console.error(`  ❌ Residual Chinese in TOC item: "${itemText}"`);
+      }
+    }
+    assert(!msmZhInToc, 'ZERO residual Chinese characters in active English TOC items');
+
+    // 4. Verify Markdown Syntax Mastery English body has ZERO residual Chinese (excluding ruby demo)
+    const msmEnBodyText = await msmPage.locator('.article-translation-variant[data-lang="en"]').textContent();
+    const msmEnBodyWithoutRuby = (msmEnBodyText || '').replace(/安知鱼|時間/g, '').replace(/```[\s\S]*?```/g, '');
+    const msmZhMatchesInBody = msmEnBodyWithoutRuby.match(CHINESE_CHAR_REGEX) || [];
+    assert(msmZhMatchesInBody.length === 0, `ZERO residual Chinese in Markdown Syntax Mastery English body (found: ${msmZhMatchesInBody.length})`);
+
+    // 5. Test In-place switch to Spanish on Markdown Syntax Mastery
+    console.log('\n--> Testing in-place switch to Spanish on Markdown Syntax Mastery...');
+    const msmEsBtn = msmPage.locator('.post-hero__lang-tag[data-target-lang="es"]');
+    await msmEsBtn.click();
+    await msmPage.waitForTimeout(800);
+
+    const msmEsTocTitle = await msmPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(msmEsTocTitle?.trim() === 'Contenido', `Spanish TOC headline: "${msmEsTocTitle?.trim()}"`);
+    const msmEsTocCount = await msmPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(msmEsTocCount?.includes('secciones'), `Spanish TOC count: "${msmEsTocCount?.trim()}"`);
+
+    const msmEsTocLinks = await msmPage.locator('.variant-toc-list[data-lang="es"] .toc-link .toc-text').allTextContents();
+    const msmZhInEsToc = msmEsTocLinks.some((t) => CHINESE_CHAR_REGEX.test(t));
+    assert(!msmZhInEsToc, 'ZERO residual Chinese in Spanish TOC items');
+
+    // 6. Test In-place switch to German on Markdown Syntax Mastery
+    console.log('\n--> Testing in-place switch to German on Markdown Syntax Mastery...');
+    const msmDeBtn = msmPage.locator('.post-hero__lang-tag[data-target-lang="de"]');
+    await msmDeBtn.click();
+    await msmPage.waitForTimeout(800);
+
+    const msmDeTocTitle = await msmPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(msmDeTocTitle?.trim() === 'Inhalt', `German TOC headline: "${msmDeTocTitle?.trim()}"`);
+    const msmDeTocCount = await msmPage.locator('#card-toc [data-i18n-toc-count]').textContent();
+    assert(msmDeTocCount?.includes('Abschnitte'), `German TOC count: "${msmDeTocCount?.trim()}"`);
+
+    // 7. Test In-place switch to French on Markdown Syntax Mastery
+    console.log('\n--> Testing in-place switch to French on Markdown Syntax Mastery...');
+    const msmFrBtn = msmPage.locator('.post-hero__lang-tag[data-target-lang="fr"]');
+    await msmFrBtn.click();
+    await msmPage.waitForTimeout(800);
+
+    const msmFrTocTitle = await msmPage.locator('#card-toc [data-i18n-toc-title]').textContent();
+    assert(msmFrTocTitle?.trim().toLowerCase() === 'sommaire', `French TOC headline: "${msmFrTocTitle?.trim()}"`);
+
+    // 8. Test TOC smooth scroll click on Markdown Syntax Mastery
+    const firstFrTocLink = msmPage.locator('.variant-toc-list[data-lang="fr"] .toc-link').first();
+    if (await firstFrTocLink.count() > 0) {
+      await firstFrTocLink.click();
+      await msmPage.waitForTimeout(500);
+      const scrollY = await msmPage.evaluate(() => window.scrollY);
+      assert(scrollY > 0, `French TOC click triggered smooth scroll (scrollY: ${scrollY}px)`);
+    }
+
+    await msmContext.close();
   } catch (err) {
-    console.error('Test execution exception:', err);
     failed++;
   } finally {
     await browser.close();

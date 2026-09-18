@@ -598,6 +598,29 @@ export function ThemeDock(_props: ThemeDockProps) {
         </div>
 
         <div id="rightside-config-show">
+          {isPost && !isDoc && (
+            <button
+              type="button"
+              id="mobile-toc-quick"
+              className="mobile-toc-quick-btn"
+              title={locale === 'en' ? 'Table of Contents' : '文章目录'}
+              aria-label={locale === 'en' ? 'Table of Contents' : '文章目录'}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('shijianus:toggle-mobile-toc'));
+                emitActivity('已打开文章目录抽屉');
+              }}
+            >
+              <svg className="rightside-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+          )}
+
           <button
             type="button"
             id="rightside-config"

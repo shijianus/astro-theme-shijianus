@@ -649,6 +649,15 @@ const heroSummary = isUnlocked
 
             const { availableLangs = [], variantsMeta = {}, staticSummariesByLang = {}, defaultLang = 'zh-CN' } = config;
 
+            const TOC_I18N = {
+              'zh-CN': { title: '文章目录', unit: '节' },
+              'zh-Hant': { title: '文章目錄', unit: '節' },
+              en: { title: 'Contents', unit: 'sections' },
+              es: { title: 'Contenido', unit: 'secciones' },
+              de: { title: 'Inhalt', unit: 'Abschnitte' },
+              fr: { title: 'Sommaire', unit: 'sections' },
+            };
+
             window.switchArticleLanguage = function (targetLang) {
               if (!availableLangs.includes(targetLang)) {
                 targetLang = defaultLang;
@@ -698,13 +707,19 @@ const heroSummary = isUnlocked
                 aiSummaryContent.textContent = staticSummariesByLang[targetLang];
               }
 
-              // 6. Update TOC: switch active variant TOC if available
+              // 6. Update TOC: title, count, and active variant TOC
+              const tMeta = TOC_I18N[targetLang] || TOC_I18N['zh-CN'];
+              const tocTitleEl = document.querySelector('#card-toc [data-i18n-toc-title]');
+              if (tocTitleEl) tocTitleEl.textContent = tMeta.title;
+
               document.querySelectorAll('.variant-toc-list').forEach((vtoc) => {
                 const isActive = vtoc.dataset.lang === targetLang;
                 vtoc.style.display = isActive ? '' : 'none';
-                if (isActive && vtoc.dataset.tocCount) {
-                  const countEl = document.querySelector('#card-toc .toc-count');
-                  if (countEl) countEl.textContent = vtoc.dataset.tocCount;
+                if (isActive) {
+                  const countEl = document.querySelector('#card-toc [data-i18n-toc-count]');
+                  if (countEl && vtoc.dataset.tocCount) {
+                    countEl.textContent = vtoc.dataset.tocCount;
+                  }
                 }
               });
 
@@ -758,7 +773,7 @@ const heroSummary = isUnlocked
               else if (navLang.startsWith('zh')) initialLang = 'zh-CN';
             }
 
-            if (initialLang && availableLangs.includes(initialLang) && initialLang !== defaultLang) {
+            if (initialLang && availableLangs.includes(initialLang)) {
               window.switchArticleLanguage(initialLang);
             }
           })();
