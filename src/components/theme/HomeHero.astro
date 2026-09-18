@@ -156,15 +156,30 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
         id="topGroup-backboard"
         title="点击背板返回今日推荐"
         aria-label="返回今日推荐"
-      >
-        <span class="topGroup__backboard-badge">
-          <svg class="topGroup__backboard-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      ></label>
+
+      <!-- 顶部控制条：左侧标题标识，右侧显式返回按钮，杜绝任何文字遮挡 -->
+      <div class="topGroup__header">
+        <span class="topGroup__header-title">
+          <svg class="topGroup__header-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>精选文章</span>
+        </span>
+        <label
+          for="today-card-toggle"
+          class="topGroup__backboard-badge"
+          id="topGroup-backboard-badge"
+          title="点击返回今日推荐"
+          aria-label="返回今日推荐"
+        >
+          <svg class="topGroup__backboard-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="1 4 1 10 7 10"></polyline>
             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
           </svg>
           <span class="topGroup__backboard-badge-text">返回今日推荐</span>
-        </span>
-      </label>
+        </label>
+      </div>
 
       {stackPosts.map((entry, index) => (
         <div class="recent-post-item" data-card-link={getPostPath(entry)}>
@@ -236,7 +251,31 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     const initFlipBack = () => {
       const toggle = document.getElementById('today-card-toggle');
       const topGroup = document.querySelector('.topGroup');
+      const backboard = document.getElementById('topGroup-backboard');
+      const backboardBadge = document.getElementById('topGroup-backboard-badge');
       if (!toggle || !topGroup) return;
+
+      const doRollback = () => {
+        if (toggle.checked) {
+          toggle.checked = false;
+          toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      };
+
+      if (backboard) {
+        backboard.addEventListener('click', (e) => {
+          e.preventDefault();
+          doRollback();
+        });
+      }
+
+      if (backboardBadge) {
+        backboardBadge.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          doRollback();
+        });
+      }
 
       // Prevent card clicks from bubbling to backboard label
       topGroup.querySelectorAll('.recent-post-item').forEach((card) => {
@@ -248,7 +287,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       // ESC key to return
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && toggle.checked) {
-          toggle.checked = false;
+          doRollback();
         }
       });
     };
@@ -489,18 +528,21 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     body[data-type='home'] .topGroup {
       width: 644px !important;
       height: 348px !important;
+      padding: 34px 8px 8px 8px !important;
+      box-sizing: border-box !important;
     }
   }
 
   /* topGroup 容器与统一背板 */
   body[data-type='home'] .topGroup {
     position: relative !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-    align-content: space-between !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, 1fr) !important;
+    gap: 6px !important;
     height: 348px !important;
     border-radius: 16px !important;
+    box-sizing: border-box !important;
   }
 
   /* 统一精致背板：对齐 bannerGroup 上下与 profileCard 最右侧，点击可直接翻转回退今日推荐 */
@@ -515,7 +557,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     box-shadow: var(--anzhiyu-shadow-border) !important;
     cursor: pointer !important;
     transition: border-color 0.24s ease, box-shadow 0.24s ease !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     pointer-events: auto !important;
   }
 
@@ -524,39 +566,74 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     box-shadow: 0 8px 24px -6px rgba(66, 90, 239, 0.16) !important;
   }
 
-  /* 返回今日推荐悬浮标贴 */
-  body[data-type='home'] .topGroup__backboard-badge {
+  /* 顶部控制条：绝对定位在 topGroup 顶部 34px 高度内，不干扰卡片且绝不遮挡文字 */
+  body[data-type='home'] .topGroup__header {
     position: absolute !important;
-    bottom: 8px !important;
-    right: 12px !important;
-    z-index: 4 !important;
-    display: inline-flex !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+    display: flex !important;
     align-items: center !important;
-    gap: 4px !important;
-    padding: 2.5px 9px !important;
-    border-radius: 999px !important;
-    background: rgba(17, 24, 39, 0.76) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    color: #ffffff !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
-    cursor: pointer !important;
-    transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease !important;
+    justify-content: space-between !important;
+    z-index: 3 !important;
+    pointer-events: none !important;
     opacity: 0 !important;
+    transition: opacity 0.24s ease !important;
+  }
+
+  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .topGroup__header {
+    opacity: 1 !important;
     pointer-events: none !important;
   }
 
-  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .topGroup__backboard-badge {
-    opacity: 0.92 !important;
+  body[data-type='home'] .topGroup__header-title {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--font-color) !important;
+    opacity: 0.85 !important;
+    user-select: none !important;
+    pointer-events: none !important;
+  }
+
+  body[data-type='home'] .topGroup__header-icon {
+    color: var(--theme-main) !important;
+  }
+
+  /* 返回今日推荐悬浮标贴按钮 */
+  body[data-type='home'] .topGroup__backboard-badge {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2.5px 10px !important;
+    border-radius: 999px !important;
+    background: rgba(66, 90, 239, 0.08) !important;
+    border: 1px solid rgba(66, 90, 239, 0.22) !important;
+    color: var(--theme-main) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
     pointer-events: auto !important;
   }
 
-  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .topGroup__backboard:hover .topGroup__backboard-badge {
-    opacity: 1 !important;
-    transform: translateY(-2px) !important;
+  :root[data-theme='dark'] body[data-type='home'] .topGroup__backboard-badge {
+    background: rgba(66, 90, 239, 0.18) !important;
+    border-color: rgba(66, 90, 239, 0.38) !important;
+    color: #93c5fd !important;
+  }
+
+  body[data-type='home'] .topGroup__backboard-badge:hover {
     background: var(--theme-main) !important;
+    border-color: var(--theme-main) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.3) !important;
   }
 
   /* todayCard 全覆盖并保持平齐 */
@@ -567,7 +644,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     height: 100% !important;
     margin: 0 !important;
     border-radius: 16px !important;
-    z-index: 5 !important;
+    z-index: 10 !important;
     transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1), transform 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
     transform-origin: center right !important;
   }
@@ -579,10 +656,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   body[data-type='home'] .topGroup .recent-post-item {
-    width: calc((100% - 1rem) / 3) !important;
+    position: relative !important;
+    z-index: 2 !important;
+    width: 100% !important;
     min-width: 0 !important;
-    height: calc((100% - 0.5rem) / 2) !important;
-    max-height: none !important;
+    height: 150px !important;
+    max-height: 150px !important;
     margin: 0 !important;
     border-radius: 12px !important;
     background: var(--card-bg) !important;
@@ -602,13 +681,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .topGroup .recent-post-item .post_cover {
     width: 100% !important;
-    height: 92px !important;
-    min-height: 92px !important;
-    max-height: 92px !important;
+    height: 86px !important;
+    min-height: 86px !important;
+    max-height: 86px !important;
     position: relative !important;
     display: block !important;
     overflow: hidden !important;
-    flex: 0 0 92px !important;
+    flex: 0 0 86px !important;
   }
 
   body[data-type='home'] .topGroup .recent-post-item .post_cover a {
@@ -627,21 +706,21 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .topGroup span.recent-post-top-text {
     position: absolute !important;
-    top: 6px !important;
-    left: 6px !important;
+    top: 5px !important;
+    left: 5px !important;
     z-index: 2 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-width: 22px !important;
-    height: 20px !important;
-    padding: 0 6px !important;
-    border-radius: 6px !important;
+    min-width: 20px !important;
+    height: 18px !important;
+    padding: 0 5px !important;
+    border-radius: 4px !important;
     background: rgba(0, 0, 0, 0.62) !important;
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
     color: #ffffff !important;
-    font-size: 11px !important;
+    font-size: 10.5px !important;
     font-weight: 700 !important;
   }
 
@@ -654,9 +733,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     flex: 1 1 auto !important;
     width: 100% !important;
     min-height: 0 !important;
-    height: auto !important;
-    padding: 8px 10px 6px 10px !important;
+    height: 64px !important;
+    padding: 6px 8px !important;
     overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   body[data-type='home'] .topGroup .recent-post-item .article-title {
@@ -665,10 +745,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     -webkit-line-clamp: 2 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    font-size: 13px !important;
+    font-size: 12.5px !important;
     font-weight: 700 !important;
-    line-height: 1.4 !important;
-    max-height: 38px !important;
+    line-height: 1.35 !important;
+    max-height: 34px !important;
     color: var(--font-color) !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -677,5 +757,31 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .topGroup .recent-post-item:hover .article-title {
     color: var(--theme-main) !important;
+  }
+
+  @media screen and (max-width: 1200px) {
+    body[data-type='home'] .topGroup {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    body[data-type='home'] .topGroup__backboard,
+    body[data-type='home'] .topGroup__header {
+      display: none !important;
+    }
+    body[data-type='home'] .topGroup .todayCard {
+      display: none !important;
+    }
+    body[data-type='home'] .topGroup .recent-post-item {
+      display: flex !important;
+      flex: 0 0 200px !important;
+      width: 200px !important;
+      height: 160px !important;
+    }
   }
 </style>
