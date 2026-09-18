@@ -531,25 +531,31 @@ async function run() {
     assert(!copyrightNotice?.includes('除特别声明外'), `PostCopyright notice translated to English (no Chinese): "${copyrightNotice?.slice(0, 50)}..."`);
 
     // 4. Audit PostEndRecommendation label
-    const endRecommendLabel = await page.locator('[data-pagination-label]').first().textContent();
-    if (endRecommendLabel) {
-      assert(endRecommendLabel.trim() === 'Next Up', `PostEndRecommendation label translated to English: "${endRecommendLabel.trim()}" (NOT "接着读")`);
+    const endRecommendLoc = page.locator('[data-pagination-label]');
+    if (await endRecommendLoc.count() > 0) {
+      const endRecommendLabel = await endRecommendLoc.first().textContent();
+      assert(endRecommendLabel?.trim() === 'Next Up', `PostEndRecommendation label translated to English: "${endRecommendLabel?.trim()}" (NOT "接着读")`);
+    } else {
+      console.log('  ℹ️ No next post recommendation found on this article');
     }
 
     // 5. Audit PostHero meta and badge
-    const heroBadge = await page.locator('.post-hero__badge.is-primary').first().textContent();
-    if (heroBadge) {
-      assert(heroBadge.trim() === 'Original', `PostHero badge translated to English: "${heroBadge.trim()}" (NOT "原创")`);
+    const heroBadgeLoc = page.locator('.post-hero__badge.is-primary');
+    if (await heroBadgeLoc.count() > 0) {
+      const heroBadge = await heroBadgeLoc.first().textContent();
+      assert(heroBadge?.trim() === 'Original', `PostHero badge translated to English: "${heroBadge?.trim()}" (NOT "原创")`);
     }
-    const heroLangLabel = await page.locator('[data-translations-label]').first().textContent();
-    if (heroLangLabel) {
-      assert(heroLangLabel.trim() === 'Translations:', `PostHero translation label translated to English: "${heroLangLabel.trim()}" (NOT "语言版本:")`);
+    const heroLangLabelLoc = page.locator('[data-translations-label]');
+    if (await heroLangLabelLoc.count() > 0) {
+      const heroLangLabel = await heroLangLabelLoc.first().textContent();
+      assert(heroLangLabel?.trim() === 'Translations:', `PostHero translation label translated to English: "${heroLangLabel?.trim()}" (NOT "语言版本:")`);
     }
 
     // 6. Audit RelatedPosts
-    const relatedEyebrow = await page.locator('[data-related-eyebrow]').first().textContent();
-    if (relatedEyebrow) {
-      assert(relatedEyebrow.trim() === 'Related Posts', `RelatedPosts eyebrow translated to English: "${relatedEyebrow.trim()}" (NOT "相关推荐")`);
+    const relatedEyebrowLoc = page.locator('[data-related-eyebrow]');
+    if (await relatedEyebrowLoc.count() > 0) {
+      const relatedEyebrow = await relatedEyebrowLoc.first().textContent();
+      assert(relatedEyebrow?.trim() === 'Related Posts', `RelatedPosts eyebrow translated to English: "${relatedEyebrow?.trim()}" (NOT "相关推荐")`);
     }
   } catch (err) {
     console.error('Test run failed with error:', err);

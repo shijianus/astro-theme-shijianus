@@ -2639,3 +2639,32 @@
      - 站点资讯：4 项动态仪表盘（文章总数 78 篇、建站运行 1996 天、全站字数 748.5K 字、最后推送 2026.9.11 直达最新文章），旧版“核心协议”完全绝迹（`hasLegacyCoreProtocol: false`）；
      - 底部平齐精度：粘性卡片底端与分页器底端误差实测 **0.203px**（完全满足小于 2px 的极致像素级标准）；
      - 实拍验证截图留存：`02_live_tag_card_closeup.png`、`04_live_home_bottom_aligned.png`。
+
+### Task 118: 彻底根除残留中文退回（.footnotes::before、.ext-encrypt-entry-banner、PostCopyright、PostOutdateNotice、PostHero、RelatedPosts、PostEndRecommendation）与 AI 翻译协议加固
+- [x] **深入排查并根除 `class="footnotes"` 残留中文根因**:
+  1. 根因剖析：`src/styles/markdown-enhancements.css` 原先在 `.article-body .footnotes::before` 硬编码了 `content: '📑 参考与注释 · Footnotes';`，导致不论语言如何切换，CSS 伪元素永久在顶部注入中文字符；
+  2. 方案落地：全面重构为语系专属选择器（`html[lang="en"] .footnotes::before`、`.article-translation-variant[data-lang="en"] .footnotes::before` 等），在英语下展示 `📑 Footnotes & References`，德语 `📑 Fußnoten & Referenzen`，西班牙语 `📑 Notas al pie y referencias`，法语 `📑 Notes de bas de page et références`，繁中 `📑 參考與註釋`，简中 `📑 参考与注释`，并支持 `attr(data-footnotes-title)` 动态配置；
+- [x] **彻底排查并根除 `class="ext-encrypt-entry-banner"` 残留中文根因**:
+  1. 根因剖析：`ContentFeatureEnhancer.astro` 中的加密版本入口横幅在服务端以 `zh-CN` 静态渲染，缺乏客户端响应 `shijianus:localechange` 的事件监听与动态文本更新器；若文章作者配置了中文自定义 hint，在非中文语系下依然会泄露中文；
+  2. 方案落地：在客户端脚本注入 `EXT_GATE_CLIENT_I18N` 字典及 `updateExtEncryptBanners(targetLang)` / `updateExtEncryptGate(targetLang)`；当目标语言为非中文且作者 frontmatter 自定义 hint 包含中文时，优雅回退至本地化默认描述 `bannerDescDefault`；标签、按钮及无障碍属性全面实现六国语言自适应；
+- [x] **全量排查并本地化周边文章组件**:
+  1. `PostCopyright.astro`：新增 `COPYRIGHT_I18N` 字典，原创徽章（`Original` / `原创` / `原創` / `Reimpresión` / `Nachdruck` / `Réimpression`）、标题复制提示、微信扫码提示、二维码复制文案及 CC BY-NC-SA 4.0 许可协议声明全面支持客户端动态多语言切换；
+  2. `PostOutdateNotice.astro`：新增 `OUTDATE_I18N` 字典与轻量客户端监听器，在非中文模式下动态刷新过期天数提醒标题与文本；
+  3. `PostHero.astro`：新增 `HERO_I18N` 字典，将原先写死的 `语言版本:` 标签（`Translations:` / `Idiomas:` / `Sprachen:` / `Langues :`）、原创徽章及热度/停留时长单位（`views`, `min`）全链路响应 `shijianus:localechange`；
+  4. `RelatedPosts.astro`：新增 `RELATED_I18N` 字典，小标题（`Related Posts`）、主标题（`Continue Exploring Related Topics`）及篇数统计动态本地化；
+  5. `PostEndRecommendation.astro`：右下角常驻“接着读”小胶囊提示更新为 `Next Up`，无障碍属性同步更新；
+  6. `src/pages/posts/[slug].astro`：在 `variantsMeta` 中打通各语系翻译后的独立标签数组（`tags`），用户在切换文章语言时，文章底部的标签栏同步无痕切换为对应语言的本地化标签。
+- [x] **加固 AI 翻译提示词与质量校验引擎**:
+  1. 在 `src/lib/server-article-i18n.ts`（`compileChunkSystemPrompt`）与 `src/config/article-i18n-prompt.md` 中增加对 Markdown 脚注定义（`[^1]: ...`）与加密组件/入口横幅的强约束翻译准则；
+  2. 在 `validateArticleMarkdown` 质检引擎中增加针对非中文译本中未翻译脚注定义及未翻译加密横幅的阻断校验规则，杜绝残存中文字符。
+- [x] **生产环境 (Cloudflare Pages) 全量真实链路验证通过**:
+  1. 本地 Playwright 端到端全量测试 74 项断言全部通过；
+  2. 部署至 Cloudflare Pages 生产边缘节点（`65b39864.shijianus-blog.pages.dev`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com` 运行 `node scripts/verify-single-url-i18n.mjs --prod`，74 项测试断言 100% 全部通过：
+     - 脚注伪元素内容：`📑 Footnotes & References`（PASS，无任何中文残存）；
+     - 加密版本横幅：两枚加密横幅标题、说明与按钮全部为英文（PASS，0 个中文字符）；
+     - 版权区：原创徽标变为 `Original`，许可协议无中文（PASS）；
+     - 文章推荐胶囊：标签变为 `Next Up`（PASS）；
+     - 英雄区：语言版本标签变为 `Translations:`，原创徽章变为 `Original`（PASS）；
+     - 延伸阅读：标题变为 `Related Posts`（PASS）；
+     - 其它既有核心测试：六国语言即时无刷新切换、URL 唯一性规范、TOC 对齐等全部 100% 保持正常。
