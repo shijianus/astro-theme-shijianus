@@ -2619,3 +2619,23 @@
   2. 部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog.pages.dev`，版本 `4fbf49c5`）；
   3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，所有 6 档金额、SVG 渲染、按钮同步、深浅色模式与响应式断言 100% 全绿；
   4. 生产实景截图留存：`live-02-desktop-preset-cards.png`、`live-04-desktop-dark-mode.png` 等。
+
+### Task 117: Site Info 核心协议替换升级、全站 Markdown 动态字数与最后推送同步、丰富组件自定义池与 card-more-btn 标题无痕整合 (`ae12d27`)
+- [x] **彻底替换静态“核心协议”，深度同步 `console-card console-webinfo` 扫描引擎与真实元数据**:
+  1. 遵照用户要求，彻底替换旧版硬编码且无法跳转的静态“核心协议”项；
+  2. 学习并同步 `console-card console-webinfo`（严格保持只读，零改动）的后台扫描机制，将全站 78 篇 Markdown 真实精算字数（`748.5K 字`）及最新文章推送日期（`2026.9.11`，使用 `entry.data.pubDate` 规范解析，点击直达最新文章）动态注入到 2×2 仪表盘中；
+  3. 提供内置可自由配置的站点指标组件池：支持在 `siteConfig.aside.overviewCard.webinfo.items` 中自由声明 `posts`（文章总数）、`runtime`（建站天数）、`words`（全站字数）、`lastUpdate`（最后推送）、`tags`（标签总数）、`version`（版本协议）、`activeLevel`（活跃等级）、`density`（内容密度）、`reading`（全站阅读）、`architecture`（系统架构）等丰富组件；
+  4. 推荐内置拓展组件：在资讯区下方内嵌“极客速达胶囊条（Quick Exploration Badges）”，提供归档、分类、标签、标准 4 枚快速直达小圆角胶囊按键。
+- [x] **优化并无缝整合 `card-more-btn` 至“热门标签”与“精选分类”标题中，确保前端 UI 视觉零异动**:
+  1. 引入 `.item-headline__title-link` 架构，将标题文字与 Lucide 图标包裹为语义化超链接，与右侧小巧的 `.card-more-btn`（含角标数值与向右小箭头）形成双向联动；
+  2. 鼠标悬停标题或按钮时，平滑触发主题色高亮与背景联动（`.item-headline:hover .card-more-btn`），提升点击引导感；
+  3. 前端 UI 视觉与原设计完全一致，未引入任何破坏性重构、间距偏移或破坏性位移。
+- [x] **生产环境端到端验证通过**:
+  1. 全站 154 页面 Clean Build 编译通过（37.81s）；
+  2. 部署至 Cloudflare Pages 边缘节点（`e884754e.shijianus-blog.pages.dev`）；
+  3. 针对线上真实生产环境（`https://blog.epocanvas.com`）执行 Playwright 端到端审计（`scripts/verify-live-home-sticky.mjs`）：
+     - 热门标签：上限 24 个标签，标题超链接有效，更多按钮正常；
+     - 精选分类：6 个分类芯片，标题超链接有效，更多按钮正常；
+     - 站点资讯：4 项动态仪表盘（文章总数 78 篇、建站运行 1996 天、全站字数 748.5K 字、最后推送 2026.9.11 直达最新文章），旧版“核心协议”完全绝迹（`hasLegacyCoreProtocol: false`）；
+     - 底部平齐精度：粘性卡片底端与分页器底端误差实测 **0.203px**（完全满足小于 2px 的极致像素级标准）；
+     - 实拍验证截图留存：`02_live_tag_card_closeup.png`、`04_live_home_bottom_aligned.png`。
