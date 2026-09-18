@@ -2689,3 +2689,23 @@
      - `title links: /tags/, /categories/`（标题超链接畅通无阻）；
      - 粘性卡片底端与 `#home-pagination` 分页器底端误差稳定在 `0.203px`；
      - 实拍验证截图留存：`02_live_tag_card_closeup.png` 与 `04_live_home_bottom_aligned.png`。
+
+### Task 120: Site Info (class="webinfo-item") 全面改用纯数字与规范日期展示，彻底根除跨语言单位长度差异与排版错乱 (`cf1b91f`)
+- [x] **`class="webinfo-item"` 全面改用纯数字与规范统一日期展示**:
+  1. 遵照用户明确指示：“推荐class="webinfo-item"直接展示数字，以免导致不同语言的后续占用位置的区别和完整的错乱”，彻底移除数值后拼接的语言特化后缀字符（如 `篇`、`天`、`字`、`posts`、`days`、`words`、`min` 等）；
+  2. 文章总数展示纯整数 `78`，建站天数展示纯整数 `1997`，全站字数展示国际通用公制缩写 `748.5k`，最后推送展示严格等宽数字日期 `2026.09.11`（候选池组件 `tags: 53`、`reading: 124`、`version: 2.6.0` 亦全面数字规范化）；
+  3. 标签（`label`）自包含明确语义（`建站天数` / `Uptime Days`、`全站字数` / `Total Words`、`文章总数` / `Total Posts`、`最后推送` / `Last Push`），Tooltip 保留详细精算说明，既表意精准又杜绝不同语系字符长度导致的卡片高度不一与折行挤压。
+- [x] **排版参数极致加固与等宽数字（tabular-nums）**:
+  1. 在 `final-pass.css` 中为 `.webinfo-item` 设定 `min-height: 52px !important; justify-content: center !important; box-sizing: border-box !important;`，保证 4 个卡片物理高度 100% 绝对一致；
+  2. 为 `.webinfo-val` 注入 `font-variant-numeric: tabular-nums !important; font-feature-settings: 'tnum' !important; white-space: nowrap !important;`，所有数字等宽渲染，永不换行、永无抖动。
+- [x] **生产环境 (Cloudflare Pages) 全量真实链路验证通过**:
+  1. 全站 154 页面 Clean Build 编译通过（43.19s）；
+  2. 部署至 Cloudflare Pages 生产边缘节点（`5ca7e34e.shijianus-blog.pages.dev`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com` 运行 Playwright 端到端自动化审计（`scripts/verify-live-home-sticky.mjs`），所有断言 100% 绿色通过：
+     - `webinfo values (pure numeric/date): [78, 1997, 748.5k, 2026.09.11] (valid = true)`；
+     - `has legacy units (篇/天/字/posts): false`（完全绝迹）；
+     - `webinfo items: 4 (exactly 4 = true)`（严格 4 个指标卡片）；
+     - `card-more-btn in card: 0`；
+     - `quick badges in card: 0`；
+     - 粘性卡片底端与 `#home-pagination` 分页器底端误差稳定在 `0.203px`；
+     - 实拍验证截图留存：`02_live_tag_card_closeup.png` 与 `04_live_home_bottom_aligned.png`。

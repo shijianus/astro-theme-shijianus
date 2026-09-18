@@ -5993,22 +5993,36 @@ body[data-type='home'] .card-webinfo-grid {
 body[data-type='home'] .webinfo-item {
   display: flex !important;
   flex-direction: column !important;
+  justify-content: center !important;
   gap: 3px !important;
   padding: 8px 10px !important;
+  min-height: 52px !important;
   border-radius: 8px !important;
   background: color-mix(in srgb, var(--font-color) 3%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important;
+  box-sizing: border-box !important;
 }
 
 body[data-type='home'] .webinfo-label {
   font-size: 11px !important;
   color: var(--secondtext) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
 }
 
 body[data-type='home'] .webinfo-val {
-  font-size: 13.5px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
   color: var(--font-color) !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: 'tnum' !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
 }
 
 body[data-type='home'] a.webinfo-item {

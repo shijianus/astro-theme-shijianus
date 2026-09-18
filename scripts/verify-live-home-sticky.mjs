@@ -48,12 +48,16 @@ async function verifyLive() {
         const categoryChips = card ? card.querySelectorAll('.category-chip') : [];
         const webinfoItems = card ? card.querySelectorAll('.webinfo-item') : [];
         const webinfoLabels = Array.from(card ? card.querySelectorAll('.webinfo-label') : []).map(el => el.textContent.trim());
+        const webinfoValues = Array.from(card ? card.querySelectorAll('.webinfo-val') : []).map(el => el.textContent.trim());
         const titleLinks = Array.from(card ? card.querySelectorAll('.item-headline__title-link') : []).map(el => el.getAttribute('href'));
         const moreBtns = Array.from(card ? card.querySelectorAll('.card-more-btn') : []).map(el => el.getAttribute('href'));
         const quickBadges = card ? card.querySelectorAll('.quick-badge-chip') : [];
         const pagination = document.getElementById('home-pagination');
         const recentPosts = document.getElementById('recent-posts');
         
+        const hasLegacyUnits = webinfoValues.some(v => /[篇天字]/i.test(v) || /\b(posts|days|words)\b/i.test(v));
+        const allPureNumericOrDate = webinfoValues.length === 4 && webinfoValues.every(v => /^[0-9]+(\.[0-9]+[kK]?)?$/.test(v) || /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/.test(v));
+
         return {
           cardExists: Boolean(card),
           cardClasses: card?.className,
@@ -63,10 +67,13 @@ async function verifyLive() {
           categoryChipsCount: categoryChips.length,
           webinfoItemsCount: webinfoItems.length,
           webinfoLabels,
+          webinfoValues,
           titleLinks,
           moreBtns,
           moreBtnsInCardCount: moreBtns.length,
           quickBadgesCount: quickBadges.length,
+          hasLegacyUnits,
+          allPureNumericOrDate,
           hasLegacyCoreProtocol: webinfoLabels.some(l => l.includes('核心协议')),
           hasDynamicWordsOrUpdate: webinfoLabels.some(l => l.includes('全站字数') || l.includes('最后推送') || l.includes('Words')),
           paginationExists: Boolean(pagination),
@@ -81,7 +88,10 @@ async function verifyLive() {
       console.log(`   - aside-sticky-box-overview: ${cardInfo.stickyBoxExists}`);
       console.log(`   - tags rendered: ${cardInfo.tagCount}`);
       console.log(`   - category chips: ${cardInfo.categoryChipsCount}`);
-      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount} (exactly 4 = ${cardInfo.webinfoItemsCount === 4}) [${cardInfo.webinfoLabels.join(', ')}]`);
+      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount} (exactly 4 = ${cardInfo.webinfoItemsCount === 4})`);
+      console.log(`   - webinfo labels: [${cardInfo.webinfoLabels.join(', ')}]`);
+      console.log(`   - webinfo values (pure numeric/date): [${cardInfo.webinfoValues.join(', ')}] (valid = ${cardInfo.allPureNumericOrDate})`);
+      console.log(`   - has legacy units (篇/天/字/posts): ${cardInfo.hasLegacyUnits}`);
       console.log(`   - has legacy '核心协议': ${cardInfo.hasLegacyCoreProtocol}`);
       console.log(`   - title links: ${cardInfo.titleLinks.join(', ')}`);
       console.log(`   - card-more-btn in card (must be 0): ${cardInfo.moreBtnsInCardCount}`);
@@ -93,6 +103,8 @@ async function verifyLive() {
         cardInfo.tagCount <= 24 &&
         cardInfo.categoryChipsCount > 0 &&
         cardInfo.webinfoItemsCount === 4 &&
+        cardInfo.allPureNumericOrDate &&
+        !cardInfo.hasLegacyUnits &&
         cardInfo.moreBtnsInCardCount === 0 &&
         cardInfo.quickBadgesCount === 0 &&
         !cardInfo.hasLegacyCoreProtocol &&

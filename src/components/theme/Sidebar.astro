@@ -138,8 +138,14 @@ const sortedPublicPosts = [...allPublicPosts].sort(
 );
 const trueLatestPost = sortedPublicPosts[0];
 const trueLatestPostDate = trueLatestPost
-  ? new Date(trueLatestPost.data.pubDate).toLocaleDateString('zh-CN').replaceAll('/', '.')
-  : '近期';
+  ? (() => {
+      const d = new Date(trueLatestPost.data.pubDate);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}.${m}.${day}`;
+    })()
+  : '-';
 const trueLatestPostHref = trueLatestPost ? getPostPath(trueLatestPost) : '/archives/';
 
 // Dynamic Active Level (Posts in last 30 days) - Synchronized with console-webinfo
@@ -163,65 +169,65 @@ else if (avgWordsPerPost > 800) dynamicDensityLevel = 'Level 2';
 
 const effectiveReadingMinutes = totalReadingMinutes || Math.max(1, Math.ceil(realTotalWords / 300));
 
-// Webinfo Metrics Dictionary (deeply synchronized with console-card console-webinfo)
+// Webinfo Metrics Dictionary (纯数字规范排布，彻底消除不同语系单位长度差异造成的排版错乱)
 const WEBINFO_METRIC_DEFAULTS: Record<
   string,
   { label: string; value: string; href?: string; tooltip?: string }
 > = {
   posts: {
     label: currentLang === 'en' ? 'Total Posts' : '文章总数',
-    value: `${realTotalPosts} ${currentLang === 'en' ? 'posts' : '篇'}`,
+    value: `${realTotalPosts}`,
     href: '/archives/',
-    tooltip: `已发布 ${realTotalPosts} 篇公开文章`,
+    tooltip: currentLang === 'en' ? `Published ${realTotalPosts} public posts` : `已发布 ${realTotalPosts} 篇公开文章`,
   },
   runtime: {
-    label: currentLang === 'en' ? 'Site Uptime' : '建站运行',
-    value: `${realRuntimeDays} ${currentLang === 'en' ? 'days' : '天'}`,
-    tooltip: `安全稳定运行 ${realRuntimeDays} 天`,
+    label: currentLang === 'en' ? 'Uptime Days' : '建站天数',
+    value: `${realRuntimeDays}`,
+    tooltip: currentLang === 'en' ? `Operational for ${realRuntimeDays} days` : `安全稳定运行 ${realRuntimeDays} 天`,
   },
   words: {
     label: currentLang === 'en' ? 'Total Words' : '全站字数',
-    value: `${realTotalWordsK}k 字`,
-    tooltip: `基于全站 ${realTotalPosts} 篇文章精算 (${realTotalWords.toLocaleString()} 字)`,
+    value: `${realTotalWordsK}k`,
+    tooltip: currentLang === 'en' ? `Calculated from ${realTotalPosts} posts (${realTotalWords.toLocaleString()} words)` : `基于全站 ${realTotalPosts} 篇文章精算 (${realTotalWords.toLocaleString()} 字)`,
   },
   lastUpdate: {
     label: currentLang === 'en' ? 'Last Push' : '最后推送',
     value: trueLatestPostDate,
     href: trueLatestPostHref,
-    tooltip: `最新发布: ${trueLatestPost?.data.title || '最新文章'}`,
+    tooltip: currentLang === 'en' ? `Latest post: ${trueLatestPost?.data.title || 'Latest'}` : `最新发布: ${trueLatestPost?.data.title || '最新文章'}`,
   },
   tags: {
     label: currentLang === 'en' ? 'Total Tags' : '标签总数',
-    value: `${allHomeTags.length} ${currentLang === 'en' ? 'tags' : '个'}`,
+    value: `${allHomeTags.length}`,
     href: '/tags/',
-    tooltip: `共涵盖 ${allHomeTags.length} 个技术标签`,
+    tooltip: currentLang === 'en' ? `Covering ${allHomeTags.length} tags` : `共涵盖 ${allHomeTags.length} 个技术标签`,
   },
   version: {
-    label: currentLang === 'en' ? 'Engine Ver' : '版本协议',
-    value: 'v2.6.0',
+    label: currentLang === 'en' ? 'Version' : '版本协议',
+    value: '2.6.0',
     href: '/version/',
     tooltip: '核心架构版本与协议规范',
   },
   activeLevel: {
     label: currentLang === 'en' ? 'Active Level' : '活跃等级',
-    value: dynamicActiveLevel,
+    value: dynamicActiveLevel.replace('Status ', 'Lv.'),
     href: '/standards/',
-    tooltip: `近30天发布 ${recentPostCount30d} 篇内容`,
+    tooltip: currentLang === 'en' ? `Published ${recentPostCount30d} posts in last 30d` : `近30天发布 ${recentPostCount30d} 篇内容`,
   },
   density: {
     label: currentLang === 'en' ? 'Density' : '内容密度',
-    value: dynamicDensityLevel,
+    value: dynamicDensityLevel.replace('Level ', 'Lv.'),
     href: '/standards/',
-    tooltip: `平均单篇字数约 ${avgWordsPerPost} 字`,
+    tooltip: currentLang === 'en' ? `Avg words per post: ~${avgWordsPerPost}` : `平均单篇字数约 ${avgWordsPerPost} 字`,
   },
   reading: {
-    label: currentLang === 'en' ? 'Reading' : '全站阅读',
-    value: `${effectiveReadingMinutes} min`,
-    tooltip: `预估全站平均总阅读时长 ${effectiveReadingMinutes} 分钟`,
+    label: currentLang === 'en' ? 'Reading Time' : '阅读时长',
+    value: `${effectiveReadingMinutes}`,
+    tooltip: currentLang === 'en' ? `Est. total reading time: ${effectiveReadingMinutes} min` : `预估全站平均总阅读时长 ${effectiveReadingMinutes} 分钟`,
   },
   architecture: {
     label: currentLang === 'en' ? 'Architecture' : '系统架构',
-    value: 'Astro Edge',
+    value: 'Edge',
     tooltip: '基于 Astro 核心引擎与 Edge Functions',
   },
 };

@@ -493,11 +493,11 @@ export const siteConfig = {
       categoriesLimit: 6,
       webinfo: {
         liveStatusText: '正常运行',
-        // 站点资讯指标卡片：上限最多展示 4 个，深度同步 console-card console-webinfo 扫描引擎
+        // 站点资讯指标卡片：上限最多展示 4 个，直接展示纯数字与规范日期，消除多语系单位长度差异造成的排版错乱
         // 默认激活的 4 个基础卡片：
         items: [
           { key: 'posts', label: '文章总数', href: '/archives/' },
-          { key: 'runtime', label: '建站运行' },
+          { key: 'runtime', label: '建站天数' },
           { key: 'words', label: '全站字数' }, // 彻底替换静态“核心协议”，动态同步全站 Markdown 扫描字数
           { key: 'lastUpdate', label: '最后推送', href: 'auto' }, // 自动指向最新发布文章
         ],
