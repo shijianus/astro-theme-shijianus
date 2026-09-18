@@ -2554,7 +2554,7 @@
   6. 验证滑动吸顶进入态（`entering` / `is-sticky-active`）及底部对齐误差严格保持 **0.20px**，与左侧精简分页卡片（`#home-pagination`）完美平齐；
   7. 生产环境全景截图留存：`01_live_home_top.png`、`02_live_tag_card_closeup.png`、`03_live_home_sticky_active.png`、`04_live_home_bottom_aligned.png`、`05_live_home_pagination_closeup.png`。
 
-### Task 114: 文章目录 (TOC) 首次加载语言对齐、动态目录扫描器与通用分片翻译普适性深度优化
+### Task 114: 文章目录 (TOC) 首次加载语言对齐、动态目录扫描器与通用分片翻译普适性深度优化 (`f90147a`)
 - [x] **根因精准排查与修复 (Root-Cause Analysis & Frontend TOC Alignment)**：
   1. **TOC 标题与节数单位硬编码修复**：修复 `Sidebar.astro` 中 `#card-toc` 头部硬编码“文章目录”与“节”的问题，注入 `TOC_I18N` 字典（覆盖 `zh-CN`、`zh-Hant`、`en`、`es`、`de`、`fr`），并在标题与节数元素配置 `[data-i18n-toc-title]` 与 `[data-i18n-toc-count]`；
   2. **动态 DOM 标题扫描器与回退保障 (`syncActiveToc`)**：当预渲染的变体 TOC 不存在时，通过 `activeVariant.querySelectorAll('h2, h3, h4, h5, h6')` 动态深度扫描文章标题并挂载对应的结构化 `variant-toc-list`，并在语言切换与页面初始化时重新绑定 ScrollSpy 监听，杜绝跨语言混合聚焦；
