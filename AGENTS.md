@@ -2540,3 +2540,16 @@
   2. 部署至 Cloudflare Pages 生产边缘节点（项目：`shijianus-blog`，生产域名：`https://blog.epocanvas.com/support/`，部署版本 `2095e038`）；
   3. 针对生产真实域名运行 `scripts/verify-live-support-refined.mjs`，桌面、平板、手机视口及深浅色模式断言 100% 全绿，全套生产截图留存完毕。
 
+### Task 113: 首页右侧粘性卡片 (aside-sticky-box) 生产端缓存彻底根治与线上真实全景 Playwright 验收
+- [x] **根因排查与 Cloudflare CDN 边缘缓存规则解除 (Root-Cause & Edge Cache Governance)**：
+  1. 深度排查线上访问未即时生效的根因：发现 Cloudflare Zone `epocanvas.com` 存在历史 Cache Rule 规则 `534608c0efee41a382103f56da234cb6`（`cache all`，`edge_ttl: override_origin 604800`），导致新加坡等 CDN 边缘节点对根路径 HTML 强制缓存长达 7 天（实测 `age: 73586` 超过 20 小时）；
+  2. 通过 Cloudflare API 成功将该规则修改为 `enabled: false`，彻底解除对 HTML 文档的强行覆盖缓存；
+  3. 执行全站缓存清洗（`purge_cache` with `purge_everything: true`），彻底清除全球边缘节点陈旧缓存，恢复源站实时动态响应（`cache-control: public, max-age=0, must-revalidate`，`age` 归零）。
+- [x] **生产环境真实全链路 Playwright 端到端审计通过 (`scripts/verify-live-home-sticky.mjs`)**：
+  1. 真实访问线上生产域名 `https://blog.epocanvas.com/`，全量断言 100% 通过；
+  2. 验证右侧粘性卡片容器 `aside-sticky-box-overview` 具备核心类名 `aside-sticky-box`；
+  3. 验证热门标签展示上限生效：全站 53 个标签精选展示 Top 24，右上角保留 `53个 ›` 全量跳转入口；
+  4. 验证精选分类 6 大主题速达模块（示例 11、前端工程 5、系统设计 3、产品观察 1、学习笔记 1、社区指南 1）展示正常，交互良好；
+  5. 验证站点资讯 2×2 极客仪表盘（文章 74 篇、建站运行 1996 天、标签 53 个、核心协议 EPOCANVAS，带绿色呼吸脉冲徽标 `● 正常运行`）；
+  6. 验证滑动吸顶进入态（`entering` / `is-sticky-active`）及底部对齐误差严格保持 **0.20px**，与左侧精简分页卡片（`#home-pagination`）完美平齐；
+  7. 生产环境全景截图留存：`01_live_home_top.png`、`02_live_tag_card_closeup.png`、`03_live_home_sticky_active.png`、`04_live_home_bottom_aligned.png`、`05_live_home_pagination_closeup.png`。
