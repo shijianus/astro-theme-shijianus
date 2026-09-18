@@ -47,6 +47,10 @@ async function verifyLive() {
         const tags = card ? card.querySelectorAll('.tag-cloud-item') : [];
         const categoryChips = card ? card.querySelectorAll('.category-chip') : [];
         const webinfoItems = card ? card.querySelectorAll('.webinfo-item') : [];
+        const webinfoLabels = Array.from(card ? card.querySelectorAll('.webinfo-label') : []).map(el => el.textContent.trim());
+        const titleLinks = Array.from(card ? card.querySelectorAll('.item-headline__title-link') : []).map(el => el.getAttribute('href'));
+        const moreBtns = Array.from(card ? card.querySelectorAll('.card-more-btn') : []).map(el => el.getAttribute('href'));
+        const quickBadges = card ? card.querySelectorAll('.quick-badge-chip') : [];
         const pagination = document.getElementById('home-pagination');
         const recentPosts = document.getElementById('recent-posts');
         
@@ -58,6 +62,12 @@ async function verifyLive() {
           tagCount: tags.length,
           categoryChipsCount: categoryChips.length,
           webinfoItemsCount: webinfoItems.length,
+          webinfoLabels,
+          titleLinks,
+          moreBtns,
+          quickBadgesCount: quickBadges.length,
+          hasLegacyCoreProtocol: webinfoLabels.some(l => l.includes('核心协议')),
+          hasDynamicWordsOrUpdate: webinfoLabels.some(l => l.includes('全站字数') || l.includes('最后推送') || l.includes('Words')),
           paginationExists: Boolean(pagination),
           recentPostsExists: Boolean(recentPosts),
           cardHeight: card?.offsetHeight,
@@ -70,15 +80,28 @@ async function verifyLive() {
       console.log(`   - aside-sticky-box-overview: ${cardInfo.stickyBoxExists}`);
       console.log(`   - tags rendered: ${cardInfo.tagCount}`);
       console.log(`   - category chips: ${cardInfo.categoryChipsCount}`);
-      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount}`);
+      console.log(`   - webinfo items: ${cardInfo.webinfoItemsCount} (${cardInfo.webinfoLabels.join(', ')})`);
+      console.log(`   - has legacy '核心协议': ${cardInfo.hasLegacyCoreProtocol}`);
+      console.log(`   - title links: ${cardInfo.titleLinks.join(', ')}`);
+      console.log(`   - more buttons: ${cardInfo.moreBtns.join(', ')}`);
+      console.log(`   - quick badges: ${cardInfo.quickBadgesCount}`);
 
-      if (cardInfo.cardExists && cardInfo.stickyBoxExists && cardInfo.tagCount <= 24 && cardInfo.categoryChipsCount > 0 && cardInfo.webinfoItemsCount > 0) {
+      if (
+        cardInfo.cardExists &&
+        cardInfo.stickyBoxExists &&
+        cardInfo.tagCount <= 24 &&
+        cardInfo.categoryChipsCount > 0 &&
+        cardInfo.webinfoItemsCount >= 4 &&
+        !cardInfo.hasLegacyCoreProtocol &&
+        cardInfo.hasDynamicWordsOrUpdate &&
+        cardInfo.titleLinks.length >= 2
+      ) {
         verified = true;
         console.log(`✅ CDN edge has updated to latest version on attempt ${attempt}!`);
         break;
       }
 
-      console.log(`⏳ Stale CDN cache detected on attempt ${attempt} (tags=${cardInfo.tagCount}, categories=${cardInfo.categoryChipsCount}). Waiting 5s...`);
+      console.log(`⏳ Stale CDN cache or pending update on attempt ${attempt}. Waiting 5s...`);
       await page.waitForTimeout(5000);
     }
 

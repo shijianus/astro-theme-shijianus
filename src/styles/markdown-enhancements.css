@@ -2216,7 +2216,7 @@ section[data-footnotes]:hover {
 
 .article-body .footnotes::before,
 section[data-footnotes]::before {
-  content: '📑 参考与注释 · Footnotes';
+  content: attr(data-footnotes-title, '📑 Footnotes & References');
   display: block;
   font-size: 0.96rem;
   font-weight: 700;
@@ -2225,6 +2225,48 @@ section[data-footnotes]::before {
   padding-bottom: 0.65rem;
   border-bottom: 1px dashed color-mix(in srgb, var(--theme-main) 20%, var(--card-border));
   letter-spacing: 0.02em;
+}
+
+html[lang='zh-CN'] .article-body .footnotes::before,
+html[lang='zh-CN'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='zh-CN'] .footnotes::before,
+.article-translation-variant[data-lang='zh-CN'] section[data-footnotes]::before {
+  content: '📑 参考与注释';
+}
+
+html[lang='zh-Hant'] .article-body .footnotes::before,
+html[lang='zh-Hant'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='zh-Hant'] .footnotes::before,
+.article-translation-variant[data-lang='zh-Hant'] section[data-footnotes]::before {
+  content: '📑 參考與註釋';
+}
+
+html[lang='en'] .article-body .footnotes::before,
+html[lang='en'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='en'] .footnotes::before,
+.article-translation-variant[data-lang='en'] section[data-footnotes]::before {
+  content: '📑 Footnotes & References';
+}
+
+html[lang='es'] .article-body .footnotes::before,
+html[lang='es'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='es'] .footnotes::before,
+.article-translation-variant[data-lang='es'] section[data-footnotes]::before {
+  content: '📑 Notas al pie y referencias';
+}
+
+html[lang='de'] .article-body .footnotes::before,
+html[lang='de'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='de'] .footnotes::before,
+.article-translation-variant[data-lang='de'] section[data-footnotes]::before {
+  content: '📑 Fußnoten & Referenzen';
+}
+
+html[lang='fr'] .article-body .footnotes::before,
+html[lang='fr'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='fr'] .footnotes::before,
+.article-translation-variant[data-lang='fr'] section[data-footnotes]::before {
+  content: '📑 Notes de bas de page et références';
 }
 
 .article-body .footnotes #footnote-label,

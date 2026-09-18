@@ -2597,6 +2597,25 @@
      - Check 2.2: 桌面端侧边栏目录卡片 `#card-toc` 完整展示（420 条索引正常聚焦）；
      - Check 2.3: 点击齿轮展开 `#rightside-config-hide` 并成功触发 `#mobile-toc-button` 大纲深度切换（badge: 1）；
      - Check 2.4: 首页 Hero 双卡单行平铺并列（Banner: 705px, TopGroup: 620px）；
-     - Check 2.5: 赞赏预设档位卡片严格保持 3 列排布（6 张卡片双行各 3 列对齐）。
+     - Check 2.5: 赞赏预设卡片严格保持 3 列排布（6 张卡片双行各 3 列对齐）。
 
-
+### Task 116: 赞赏预设卡片矢量插画多色立体化升维、纯粹咖啡冲煮艺术质感打磨与全链路生产端实测
+- [x] **根除单色线框图素与粗糙感，全面升级为多色多阶珐琅质感矢量插画 (Masterclass Multi-Tone Enamel Vector Scenes)**:
+  1. 深度落实用户批评：“当前的svg动画做得太糟糕了！再次寻找合适的svg或者进一步的优化——当前感官非常糟糕”；彻底重构此前单色、半透明（`opacity: 20%~35%`）、类似 CAD 线框的生硬描线；
+  2. 运用独立线性与径向渐变（`coffee-grad-sachet`、`coffee-grad-cup-paper`、`coffee-grad-ceramic`、`coffee-grad-moka-light/dark`、`coffee-grad-kettle`、`coffee-grad-coldbrew`、`coffee-grad-ice-cube`）、纯白高光、深邃烘焙咖啡色（`#4a2411`）、温暖奶泡色（`#fdfaf5`）与柔和投影（`filter="url(#coffee-drop-shadow)"`），打造饱满精致、立体且引人入胜的视觉品相；
+  3. **6 档咖啡品类全量多色重构**：
+     - **Tier 0 (`RM3` / `¥4` / `$1`) - 便捷速溶咖啡条与小纸杯 (`SceneInstantCoffee`)**：香浓琥珀/金黄多色速溶包装条（-38° 倾斜倾倒动效）、深红棕色咖啡细微颗粒坠落动效、双层杯口压纹卷边纸杯、浓郁咖啡液与袅袅升腾的双缕温润热气；
+     - **Tier 1 (`RM8` / `¥9` / `$2.5`) - 经典外带咖啡纸杯 (`SceneTakeawayCup`)**：高对比深色凸起杯盖与饮水嘴、立体卡其原木色加厚隔热杯套（嵌白色爱心咖啡徽标）、两颗带凹缝与高光的饱满烘焙咖啡豆，配合轻盈弹跳浮动动效；
+     - **Tier 2 (`RM13` / `¥14` / `$4` - 默认推荐)**：双层经典白瓷咖啡杯与椭圆宽托盘、醇厚 Espresso 基底与绵密丝滑奶泡、咖啡师精致爱心拉花图案（微呼吸动效）、杯旁静置一颗咖啡豆；
+     - **Tier 3 (`RM17` / `¥16` / `$5`) - 意式八角摩卡壶萃取 (`SceneMokaPot`)**：双色金属渐变质感八角壶身、经典黑胶人机工程把手、纯铜金色泄压阀、鹰嘴蒸汽喷涌，右侧摆放一只带金黄 Crema 油脂的白瓷意式浓缩 Demitasse 小杯；
+     - **Tier 4 (`RM20` / `¥20` / `$6.5`) - 专业慢调手冲咖啡壶 (`ScenePourOver`)**：深蓝/曜黑磨砂长颈细嘴天鹅颈手冲壶（倾斜注水弧线）、V60 锥形滤杯与现磨咖啡粉、耐热高透玻璃分享壶刻度线与慢速下坠的咖啡液滴动效；
+     - **Tier 5 (`RM25` / `¥25` / `$8`) - 殿堂冷萃冰滴塔与特调杯 (`SceneColdBrewTower`)**：古典双立柱酒红构架冰滴塔、上方盛有晶莹蓝白冰块的储水室、中层精密点滴调节阀与萃取收集烧瓶，右侧搭配带有剔透圆冰球与金黄鲜橙片装饰的水晶古典威士忌杯。
+- [x] **物理尺寸严格恒定与双列绝对平齐 (Physical Size Invariance & Perfect 0.0px Discrepancy)**:
+  1. 卡片高度强制约束为 `min-h-[50px] sm:min-h-[54px] max-h-[54px]`，实测全视口下高度保持 54.0px；
+  2. 收银台卡片与右侧扫码支付卡片顶部与底部严格齐平，垂直对齐差实测为 **0.0px**；
+  3. 彻底杜绝官僚定价词语，仅显式呈现清晰金额与币种，拉近与读者的温暖连接。
+- [x] **生产端全链路 Playwright 视觉实测与双远端同步**:
+  1. 自动化全套构建（154 页面全部通过）；
+  2. 部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog.pages.dev`，版本 `4fbf49c5`）；
+  3. 针对生产真实域名 `https://blog.epocanvas.com/support/` 运行 `scripts/verify-live-support-refined.mjs`，所有 6 档金额、SVG 渲染、按钮同步、深浅色模式与响应式断言 100% 全绿；
+  4. 生产实景截图留存：`live-02-desktop-preset-cards.png`、`live-04-desktop-dark-mode.png` 等。

@@ -149,10 +149,22 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     </div>
 
     <div class="topGroup">
-      <div class="topGroup__stack" aria-hidden="true">
-        <span class="topGroup__stack-back topGroup__stack-back--one"></span>
-        <span class="topGroup__stack-back topGroup__stack-back--two"></span>
-      </div>
+      <!-- 统一精致背板：对齐 bannerGroup 上下与 profileCard 最右侧，点击可直接翻转回退今日推荐 -->
+      <label
+        for="today-card-toggle"
+        class="topGroup__backboard"
+        id="topGroup-backboard"
+        title="点击背板返回今日推荐"
+        aria-label="返回今日推荐"
+      >
+        <span class="topGroup__backboard-badge">
+          <svg class="topGroup__backboard-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          <span class="topGroup__backboard-badge-text">返回今日推荐</span>
+        </span>
+      </label>
 
       {stackPosts.map((entry, index) => (
         <div class="recent-post-item" data-card-link={getPostPath(entry)}>
@@ -219,6 +231,37 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   </div>
 </section>
 
+<script is:inline>
+  (() => {
+    const initFlipBack = () => {
+      const toggle = document.getElementById('today-card-toggle');
+      const topGroup = document.querySelector('.topGroup');
+      if (!toggle || !topGroup) return;
+
+      // Prevent card clicks from bubbling to backboard label
+      topGroup.querySelectorAll('.recent-post-item').forEach((card) => {
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      });
+
+      // ESC key to return
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toggle.checked) {
+          toggle.checked = false;
+        }
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initFlipBack);
+    } else {
+      initFlipBack();
+    }
+    document.addEventListener('astro:page-load', initFlipBack);
+  })();
+</script>
+
 <style is:global>
   /* 彻底屏蔽旧版的 ::after 幽灵线 */
   body[data-type='home'] .categoryButton::after,
@@ -247,14 +290,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryButton {
     display: flex !important;
-    flex: 1 1 100% !important; /* Force fill parent */
+    flex: 1 1 100% !important;
     align-items: center !important;
-    width: 100% !important;
-    height: 100% !important;
     position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
     text-decoration: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
     transform: none !important;
     transition: background 0.3s ease !important;
     overflow: hidden !important;
@@ -431,18 +472,110 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     filter: blur(0);
   }
 
-  /* topGroup 卡组尺寸与图片适配 */
+  /* 桌面端对齐：Swiper 与 topGroup 对齐 profileCard 最右侧，bannerGroup 与 topGroup 等高 348px */
+  @media screen and (min-width: 1201px) {
+    body[data-type='home'] #home_top {
+      padding-right: 4px !important;
+    }
+    body[data-type='home'] .swiper_container_card {
+      width: 1372px !important;
+      max-width: 1372px !important;
+      gap: 18px !important;
+    }
+    body[data-type='home'] #bannerGroup {
+      width: 710px !important;
+      height: 348px !important;
+    }
+    body[data-type='home'] .topGroup {
+      width: 644px !important;
+      height: 348px !important;
+    }
+  }
+
+  /* topGroup 容器与统一背板 */
   body[data-type='home'] .topGroup {
+    position: relative !important;
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 0.5rem !important;
     align-content: space-between !important;
-    width: calc(600px + 1.5rem) !important;
     height: 348px !important;
+    border-radius: 16px !important;
   }
 
-  body[data-type='home'] .topGroup__stack {
-    display: none !important;
+  /* 统一精致背板：对齐 bannerGroup 上下与 profileCard 最右侧，点击可直接翻转回退今日推荐 */
+  body[data-type='home'] .topGroup__backboard {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+    display: block !important;
+    border-radius: 16px !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: var(--anzhiyu-shadow-border) !important;
+    cursor: pointer !important;
+    transition: border-color 0.24s ease, box-shadow 0.24s ease !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
+  body[data-type='home'] .topGroup__backboard:hover {
+    border-color: color-mix(in srgb, var(--theme-main) 36%, var(--card-border)) !important;
+    box-shadow: 0 8px 24px -6px rgba(66, 90, 239, 0.16) !important;
+  }
+
+  /* 返回今日推荐悬浮标贴 */
+  body[data-type='home'] .topGroup__backboard-badge {
+    position: absolute !important;
+    bottom: 8px !important;
+    right: 12px !important;
+    z-index: 4 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2.5px 9px !important;
+    border-radius: 999px !important;
+    background: rgba(17, 24, 39, 0.76) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .topGroup__backboard-badge {
+    opacity: 0.92 !important;
+    pointer-events: auto !important;
+  }
+
+  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .topGroup__backboard:hover .topGroup__backboard-badge {
+    opacity: 1 !important;
+    transform: translateY(-2px) !important;
+    background: var(--theme-main) !important;
+  }
+
+  /* todayCard 全覆盖并保持平齐 */
+  body[data-type='home'] .topGroup .todayCard {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+    z-index: 5 !important;
+    transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1), transform 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transform-origin: center right !important;
+  }
+
+  body[data-type='home'] .today-card-toggle:checked ~ .swiper_container_card .todayCard {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.96) !important;
   }
 
   body[data-type='home'] .topGroup .recent-post-item {

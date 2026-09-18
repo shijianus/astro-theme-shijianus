@@ -278,6 +278,169 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       },
     };
 
+    const EXT_GATE_CLIENT_I18N = {
+      'zh-CN': {
+        badge1: '🌐 外联加密文章',
+        badge2: '端点隔离存储',
+        title: '验证访问凭证',
+        hintDefault: '这是一篇加密文章，请输入访问密码继续阅读完整内容。',
+        placeholder: '输入访问密钥 / 密码',
+        error: '凭证校验失败，请重新输入',
+        cancel: '取消，返回原文',
+        submit: '🔓 验证并解密',
+        footer: '取消后将自动跳转至未加密版本',
+        bannerLabelSingle: '存在加密扩展版本',
+        bannerLabelMulti: (n) => `加密版本 ${n}`,
+        bannerDescDefault: '这篇文章拥有一个加密的完整版本，输入密码后可访问全部内容。',
+        bannerBtnText: '🔑 进入加密版本',
+        bannerBtnAria: (title) => `进入加密版本：${title}`,
+      },
+      'zh-Hant': {
+        badge1: '🌐 外聯加密文章',
+        badge2: '端點隔離存儲',
+        title: '驗證訪問憑證',
+        hintDefault: '這是一篇加密文章，請輸入訪問密碼繼續閱讀完整內容。',
+        placeholder: '輸入訪問金鑰 / 密碼',
+        error: '憑證校驗失敗，請重新輸入',
+        cancel: '取消，返回原文',
+        submit: '🔓 驗證並解密',
+        footer: '取消後將自動跳轉至未加密版本',
+        bannerLabelSingle: '存在加密擴充版本',
+        bannerLabelMulti: (n) => `加密版本 ${n}`,
+        bannerDescDefault: '這篇文章擁有一個加密的完整版本，輸入密碼後可訪問全部內容。',
+        bannerBtnText: '🔑 進入加密版本',
+        bannerBtnAria: (title) => `進入加密版本：${title}`,
+      },
+      'en': {
+        badge1: '🌐 Encrypted Article',
+        badge2: 'Isolated Storage',
+        title: 'Verify Access Credentials',
+        hintDefault: 'This is an encrypted article. Please enter the password to unlock.',
+        placeholder: 'Enter access key / password',
+        error: 'Verification failed, please re-enter',
+        cancel: 'Cancel, return to article',
+        submit: '🔓 Verify & Decrypt',
+        footer: 'Canceling will redirect to the unencrypted version',
+        bannerLabelSingle: 'Encrypted Edition Available',
+        bannerLabelMulti: (n) => `Encrypted Edition ${n}`,
+        bannerDescDefault: 'This article has an encrypted edition. Enter password to view full content.',
+        bannerBtnText: '🔑 Access Encrypted Version',
+        bannerBtnAria: (title) => `Access Encrypted Version: ${title}`,
+      },
+      'es': {
+        badge1: '🌐 Artículo Encriptado',
+        badge2: 'Almacenamiento Aislado',
+        title: 'Verificar Credenciales de Acceso',
+        hintDefault: 'Este es un artículo encriptado. Ingrese la contraseña para desbloquear.',
+        placeholder: 'Ingrese clave / contraseña',
+        error: 'Error de verificación, intente de nuevo',
+        cancel: 'Cancelar, volver al artículo',
+        submit: '🔓 Verificar y Descifrar',
+        footer: 'Cancelar redirigirá a la versión sin encriptar',
+        bannerLabelSingle: 'Versión Encriptada Disponible',
+        bannerLabelMulti: (n) => `Versión Encriptada ${n}`,
+        bannerDescDefault: 'Este artículo dispone de una versión encriptada. Ingrese la contraseña para verla.',
+        bannerBtnText: '🔑 Acceder a la Versión Encriptada',
+        bannerBtnAria: (title) => `Acceder a la versión encriptada: ${title}`,
+      },
+      'de': {
+        badge1: '🌐 Verschlüsselter Artikel',
+        badge2: 'Isolierter Speicher',
+        title: 'Zugangsdaten Überprüfen',
+        hintDefault: 'Dies ist ein verschlüsselter Artikel. Bitte Passwort eingeben.',
+        placeholder: 'Schlüssel / Passwort eingeben',
+        error: 'Überprüfung fehlgeschlagen, bitte erneut eingeben',
+        cancel: 'Abbrechen, zurück zum Artikel',
+        submit: '🔓 Überprüfen & Entschlüsseln',
+        footer: 'Beim Abbrechen werden Sie zur unverschlüsselten Version weitergeleitet',
+        bannerLabelSingle: 'Verschlüsselte Version verfügbar',
+        bannerLabelMulti: (n) => `Verschlüsselte Version ${n}`,
+        bannerDescDefault: 'Dieser Artikel verfügt über eine verschlüsselte Version. Passwort eingeben für Vollzugriff.',
+        bannerBtnText: '🔑 Zur verschlüsselten Version',
+        bannerBtnAria: (title) => `Zur verschlüsselten Version: ${title}`,
+      },
+      'fr': {
+        badge1: '🌐 Article Chiffré',
+        badge2: 'Stockage Isolé',
+        title: 'Vérifier les Identifiants d\'Accès',
+        hintDefault: 'Ceci est un article chiffré. Veuillez saisir le mot de passe pour continuer.',
+        placeholder: 'Saisir la clé / mot de passe',
+        error: 'Échec de la vérification, veuillez réessayer',
+        cancel: 'Annuler, retourner à l\'article',
+        submit: '🔓 Vérifier et Déchiffrer',
+        footer: 'L\'annulation redirigera vers la version non chiffrée',
+        bannerLabelSingle: 'Version Chiffrée Disponible',
+        bannerLabelMulti: (n) => `Version Chiffrée ${n}`,
+        bannerDescDefault: 'Cet article possède une version chiffrée. Entrez le mot de passe pour y accéder.',
+        bannerBtnText: '🔑 Accéder à la Version Chiffrée',
+        bannerBtnAria: (title) => `Accéder à la version chiffrée : ${title}`,
+      },
+    };
+
+    const updateExtEncryptBanners = (targetLang) => {
+      const normalized = normalizeLang(targetLang) || 'zh-CN';
+      const t = EXT_GATE_CLIENT_I18N[normalized] || EXT_GATE_CLIENT_I18N['zh-CN'];
+      const banners = document.querySelectorAll('.ext-encrypt-entry-banner');
+      banners.forEach((banner, idx) => {
+        const labelEl = banner.querySelector('.ext-encrypt-entry-banner__label');
+        const descEl = banner.querySelector('.ext-encrypt-entry-banner__desc');
+        const btnEl = banner.querySelector('.ext-encrypt-entry-banner__btn');
+        const customHint = banner.getAttribute('data-custom-hint') || '';
+
+        if (labelEl) {
+          labelEl.textContent = banners.length > 1
+            ? (typeof t.bannerLabelMulti === 'function' ? t.bannerLabelMulti(idx + 1) : `Encrypted Edition ${idx + 1}`)
+            : t.bannerLabelSingle;
+        }
+        if (descEl) {
+          const hasChinese = /[\u4e00-\u9fa5]/.test(customHint);
+          const isTargetChinese = normalized === 'zh-CN' || normalized === 'zh-Hant';
+          if (customHint && (!hasChinese || isTargetChinese)) {
+            descEl.textContent = customHint;
+          } else {
+            descEl.textContent = t.bannerDescDefault;
+          }
+        }
+        if (btnEl) {
+          btnEl.textContent = t.bannerBtnText;
+        }
+      });
+    };
+
+    const updateExtEncryptGate = (targetLang) => {
+      const gate = document.getElementById('ext-encrypt-gate');
+      if (!gate) return;
+      const normalized = normalizeLang(targetLang) || 'zh-CN';
+      const t = EXT_GATE_CLIENT_I18N[normalized] || EXT_GATE_CLIENT_I18N['zh-CN'];
+      const badgePurple = gate.querySelector('.badge-purple');
+      if (badgePurple) badgePurple.textContent = t.badge1;
+      const badgeCyan = gate.querySelector('.badge-cyan');
+      if (badgeCyan) badgeCyan.textContent = t.badge2;
+      const title = gate.querySelector('.ext-encrypt-gate__title');
+      if (title) title.textContent = t.title;
+      const hint = gate.querySelector('.ext-encrypt-gate__hint');
+      const customHint = gate.getAttribute('data-hint') || '';
+      const hasChinese = /[\u4e00-\u9fa5]/.test(customHint);
+      const isTargetChinese = normalized === 'zh-CN' || normalized === 'zh-Hant';
+      if (hint) {
+        if (customHint && (!hasChinese || isTargetChinese)) {
+          hint.textContent = customHint;
+        } else {
+          hint.textContent = t.hintDefault;
+        }
+      }
+      const input = gate.querySelector('#ext-encrypt-gate__input');
+      if (input) input.placeholder = t.placeholder;
+      const error = gate.querySelector('#ext-encrypt-gate__error');
+      if (error) error.textContent = t.error;
+      const cancel = gate.querySelector('#ext-encrypt-gate__cancel');
+      if (cancel) cancel.textContent = t.cancel;
+      const submit = gate.querySelector('#ext-encrypt-gate__submit');
+      if (submit) submit.textContent = t.submit;
+      const footer = gate.querySelector('.ext-encrypt-gate__footer');
+      if (footer) footer.textContent = t.footer;
+    };
+
     const MASK_TOOLBAR_I18N = {
       'zh-CN': { label: '🔒 遮罩防窥保护中：', blur: '🌫️ 高斯模糊', mosaic: '🏁 马赛克', spoiler: '⬛ 剧透遮罩', reveal: '👁️ 显露正文' },
       'zh-Hant': { label: '🔒 遮罩防窺保護中：', blur: '🌫️ 高斯模糊', mosaic: '🏁 馬賽克', spoiler: '⬛ 劇透遮罩', reveal: '👁️ 顯露內文' },
@@ -979,6 +1142,10 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     // Main per-page enhancement runner
     // -------------------------------------------------------
     const initContentEnhancements = async () => {
+      const currentLang = resolveContentLang();
+      updateExtEncryptBanners(currentLang);
+      updateExtEncryptGate(currentLang);
+
       const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container');
       if (!articles.length) return;
 
@@ -2558,7 +2725,10 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     document.addEventListener('astro:page-load', initContentEnhancements);
 
     // Re-localize all interactive components on global locale change
-    window.addEventListener('shijianus:localechange', () => {
+    window.addEventListener('shijianus:localechange', (e) => {
+      const targetLang = normalizeLang(typeof e?.detail === 'string' ? e.detail : e?.detail?.lang) || resolveContentLang();
+      updateExtEncryptBanners(targetLang);
+      updateExtEncryptGate(targetLang);
       initContentEnhancements();
       document.querySelectorAll('.article-task-tracker, .interactive-task-list-wrap').forEach((tracker) => {
         if (typeof tracker._updateProgress === 'function') {
@@ -2832,7 +3002,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     has showButton:true. Supports multiple encrypted variants.
     ============================================================ */}
 {showEncryptButtons && showEncryptButtons.length > 0 && showEncryptButtons.map((btn, idx) => (
-  <div class="ext-encrypt-entry-banner" data-enc-idx={idx}>
+  <div class="ext-encrypt-entry-banner" data-enc-idx={idx} data-custom-hint={btn.hint || ''}>
     <div class="ext-encrypt-entry-banner__inner">
       <div class="ext-encrypt-entry-banner__left">
         <span class="ext-encrypt-entry-banner__icon">🔐</span>

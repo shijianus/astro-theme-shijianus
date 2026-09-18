@@ -16,11 +16,11 @@ const { posts, eyebrow, title } = Astro.props;
 <section class="relatedPosts">
   <div class="relatedPosts__head">
     <div class="relatedPosts__heading">
-      <p class="eyebrow">{eyebrow}</p>
-      <h2 class="relatedPosts__title">{title}</h2>
+      <p class="eyebrow" data-related-eyebrow>{eyebrow}</p>
+      <h2 class="relatedPosts__title" data-related-title>{title}</h2>
     </div>
     <div class="relatedPosts__meta">
-      <span>{posts.length} 篇延伸阅读</span>
+      <span data-related-meta data-count={posts.length}>{posts.length} 篇延伸阅读</span>
     </div>
   </div>
 
@@ -44,4 +44,69 @@ const { posts, eyebrow, title } = Astro.props;
       </a>
     ))}
   </div>
+
+  <script is:inline>
+  (() => {
+    const RELATED_I18N = {
+      'zh-CN': {
+        eyebrow: '相关推荐',
+        title: '继续探索更多相关记录',
+        meta: (n) => `${n} 篇延伸阅读`,
+      },
+      'zh-Hant': {
+        eyebrow: '相關推薦',
+        title: '繼續探索更多相關記錄',
+        meta: (n) => `${n} 篇延伸閱讀`,
+      },
+      'en': {
+        eyebrow: 'Related Posts',
+        title: 'Continue Exploring Related Topics',
+        meta: (n) => `${n} related articles`,
+      },
+      'es': {
+        eyebrow: 'Publicaciones Relacionadas',
+        title: 'Continuar Explorando Temas Relacionados',
+        meta: (n) => `${n} artículos relacionados`,
+      },
+      'de': {
+        eyebrow: 'Ähnliche Beiträge',
+        title: 'Entdecken Sie weitere verwandte Themen',
+        meta: (n) => `${n} weiterführende Artikel`,
+      },
+      'fr': {
+        eyebrow: 'Articles Connexes',
+        title: 'Poursuivez votre exploration',
+        meta: (n) => `${n} lectures recommandées`,
+      },
+    };
+
+    const updateRelated = (lang) => {
+      const normalized = (lang || '').toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+        : (lang || '').toLowerCase().startsWith('zh') ? 'zh-CN'
+        : ['en', 'es', 'de', 'fr'].includes((lang || '').split('-')[0]) ? (lang || '').split('-')[0]
+        : 'zh-CN';
+      const t = RELATED_I18N[normalized] || RELATED_I18N['zh-CN'];
+
+      const eyebrowEl = document.querySelector('[data-related-eyebrow]');
+      if (eyebrowEl) eyebrowEl.textContent = t.eyebrow;
+
+      const titleEl = document.querySelector('[data-related-title]');
+      if (titleEl) titleEl.textContent = t.title;
+
+      const metaEl = document.querySelector('[data-related-meta]');
+      if (metaEl) {
+        const count = parseInt(metaEl.getAttribute('data-count') || '0', 10);
+        metaEl.textContent = t.meta(count);
+      }
+    };
+
+    const curLang = document.documentElement.lang || 'zh-CN';
+    updateRelated(curLang);
+
+    window.addEventListener('shijianus:localechange', (e) => {
+      const next = typeof e?.detail === 'string' ? e.detail : (e?.detail?.lang || document.documentElement.lang || 'zh-CN');
+      updateRelated(next);
+    });
+  })();
+  </script>
 </section>

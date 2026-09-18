@@ -24,7 +24,7 @@ const { nextPost = null } = Astro.props;
         onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
       />
       <span class="pagination-info">
-        <span class="label">接着读</span>
+        <span class="label" data-pagination-label>接着读</span>
         <strong class="next-info">{nextPost.data.title}</strong>
       </span>
     </a>
@@ -47,6 +47,35 @@ const { nextPost = null } = Astro.props;
         let dismissed = false;
         let active = false;
         let ticking = false;
+
+        const RECOMMEND_I18N = {
+          'zh-CN': { label: '接着读', closeAria: '收起这条推荐', navAria: '接着读下一篇文章' },
+          'zh-Hant': { label: '接著讀', closeAria: '收起這條推薦', navAria: '接著讀下一篇文章' },
+          'en': { label: 'Next Up', closeAria: 'Dismiss recommendation', navAria: 'Read next article' },
+          'es': { label: 'Siguiente', closeAria: 'Cerrar recomendación', navAria: 'Leer siguiente artículo' },
+          'de': { label: 'Als Nächstes', closeAria: 'Empfehlung schließen', navAria: 'Nächsten Artikel lesen' },
+          'fr': { label: 'À suivre', closeAria: 'Fermer la recommandation', navAria: 'Lire l\'article suivant' },
+        };
+
+        const updateRecommendationI18n = (lang) => {
+          const normalized = (lang || '').toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+            : (lang || '').toLowerCase().startsWith('zh') ? 'zh-CN'
+            : ['en', 'es', 'de', 'fr'].includes((lang || '').split('-')[0]) ? (lang || '').split('-')[0]
+            : 'zh-CN';
+          const t = RECOMMEND_I18N[normalized] || RECOMMEND_I18N['zh-CN'];
+          const labelEl = root.querySelector('[data-pagination-label]');
+          if (labelEl) labelEl.textContent = t.label;
+          if (closeButton) closeButton.setAttribute('aria-label', t.closeAria);
+          root.setAttribute('aria-label', t.navAria);
+        };
+
+        const curLang = document.documentElement.lang || 'zh-CN';
+        updateRecommendationI18n(curLang);
+
+        window.addEventListener('shijianus:localechange', (e) => {
+          const next = typeof e?.detail === 'string' ? e.detail : (e?.detail?.lang || document.documentElement.lang || 'zh-CN');
+          updateRecommendationI18n(next);
+        });
 
         // Keep the popup out of filtered content layers so fixed positioning is
         // relative to the viewport rather than the article's containing block.

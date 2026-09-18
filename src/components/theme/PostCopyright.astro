@@ -100,8 +100,8 @@ const needsMarquee = finalTitle.length > 25;
 
     {/* 3. 原创标识与长标题（严格在同一行展示，文字不截断，>25字时左右循环滚动） */}
     <div class="post-copyright__post__info">
-      <a class="post-copyright__original" href={permalink} title="文章原创标识">{badge}</a>
-      <button type="button" class="post-copyright-title" data-tool="copy" title={`点击复制完整标题与链接：${rawTitle}`}>
+      <a class="post-copyright__original" href={permalink} title="文章原创标识" data-is-original={badge === '原创' ? 'true' : 'false'}>{badge}</a>
+      <button type="button" class="post-copyright-title" data-tool="copy" data-raw-title={rawTitle} title={`点击复制完整标题与链接：${rawTitle}`}>
         <div class:list={['post-copyright-title__viewport', needsMarquee && 'has-marquee']}>
           <span class:list={['post-copyright-title__text', needsMarquee && 'is-marquee']}>{finalTitle}</span>
         </div>
@@ -403,7 +403,7 @@ const needsMarquee = finalTitle.length > 25;
 
     {/* 5. 卡片最底部：版权声明（完全对齐安知鱼，无下划线，悬停变色） */}
     <div class="post-copyright__notice">
-      <span class="post-copyright-info">
+      <span class="post-copyright-info" data-author={authorName} data-site-url={siteConfig.site.url}>
         除特别声明外，本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href={siteConfig.site.url} class="post-copyright-site-link" title={authorName}>{authorName}</a> ！
       </span>
     </div>
@@ -685,6 +685,119 @@ const needsMarquee = finalTitle.length > 25;
               await copyText(permalink, '链接已复制');
           }
         });
+      });
+
+      // 多语言动态切换适配 (i18n locale change)
+      const COPYRIGHT_I18N: Record<string, {
+        badgeOriginal: string;
+        badgeReprint: string;
+        badgeTip: string;
+        titleTip: (t: string) => string;
+        qrTip: string;
+        qrDec: string;
+        notice: (author: string, url: string) => string;
+      }> = {
+        'zh-CN': {
+          badgeOriginal: '原创',
+          badgeReprint: '转载',
+          badgeTip: '文章原创标识',
+          titleTip: (t) => `点击复制完整标题与链接：${t}`,
+          qrTip: '手机扫码阅读',
+          qrDec: '使用手机扫码（点击复制二维码）',
+          notice: (author, url) => `除特别声明外，本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a> ！`,
+        },
+        'zh-Hant': {
+          badgeOriginal: '原創',
+          badgeReprint: '轉載',
+          badgeTip: '文章原創標識',
+          titleTip: (t) => `點擊複製完整標題與連結：${t}`,
+          qrTip: '手機掃碼閱讀',
+          qrDec: '使用手機掃碼（點擊複製二維碼）',
+          notice: (author, url) => `除特別聲明外，本網誌所有文章均採用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a> 許可協議。轉載請註明來自 <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a> ！`,
+        },
+        'en': {
+          badgeOriginal: 'Original',
+          badgeReprint: 'Reprint',
+          badgeTip: 'Original Article Badge',
+          titleTip: (t) => `Click to copy full title and link: ${t}`,
+          qrTip: 'Scan with mobile to read',
+          qrDec: 'Scan with mobile (click to copy QR)',
+          notice: (author, url) => `Except where otherwise noted, all articles on this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a>. Attribution is required: mention <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a>!`,
+        },
+        'es': {
+          badgeOriginal: 'Original',
+          badgeReprint: 'Reimpresión',
+          badgeTip: 'Identificador de artículo original',
+          titleTip: (t) => `Haga clic para copiar el título y enlace: ${t}`,
+          qrTip: 'Escanear con móvil para leer',
+          qrDec: 'Escanear con el móvil (clic para copiar QR)',
+          notice: (author, url) => `A menos que se indique lo contrario, todos los artículos de este blog están bajo licencia <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a>. Atribución requerida: mencione a <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a>.`,
+        },
+        'de': {
+          badgeOriginal: 'Original',
+          badgeReprint: 'Nachdruck',
+          badgeTip: 'Originalartikel-Kennzeichnung',
+          titleTip: (t) => `Klicken zum Kopieren von Titel und Link: ${t}`,
+          qrTip: 'Mit dem Handy scannen zum Lesen',
+          qrDec: 'Mit dem Handy scannen (Klick zum Kopieren des QR-Codes)',
+          notice: (author, url) => `Sofern nicht anders angegeben, stehen alle Artikel in diesem Blog unter der Lizenz <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a>. Quellenangabe erforderlich: <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a>!`,
+        },
+        'fr': {
+          badgeOriginal: 'Original',
+          badgeReprint: 'Réimpression',
+          badgeTip: 'Badge d\'article original',
+          titleTip: (t) => `Cliquer pour copier le titre et le lien : ${t}`,
+          qrTip: 'Scanner avec mobile pour lire',
+          qrDec: 'Scanner avec mobile (cliquer pour copier le QR)',
+          notice: (author, url) => `Sauf mention contraire, tous les articles de ce blog sont sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" target="_blank" rel="noopener external nofollow noreferrer" class="post-copyright-license-link" title="Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International">CC BY-NC-SA 4.0</a>. Mention obligatoire : <a href="${url}" class="post-copyright-site-link" title="${author}">${author}</a> !`,
+        },
+      };
+
+      const updateCopyrightI18n = (targetLang: string) => {
+        const normalized = targetLang.toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+          : targetLang.toLowerCase().startsWith('zh') ? 'zh-CN'
+          : ['en', 'es', 'de', 'fr'].includes(targetLang.split('-')[0]) ? targetLang.split('-')[0]
+          : 'zh-CN';
+        const t = COPYRIGHT_I18N[normalized] || COPYRIGHT_I18N['zh-CN'];
+
+        const badgeEl = block.querySelector('.post-copyright__original');
+        if (badgeEl) {
+          const isOrig = badgeEl.getAttribute('data-is-original') !== 'false';
+          badgeEl.textContent = isOrig ? t.badgeOriginal : t.badgeReprint;
+          badgeEl.setAttribute('title', t.badgeTip);
+        }
+
+        const titleBtn = block.querySelector('.post-copyright-title');
+        if (titleBtn) {
+          const raw = titleBtn.getAttribute('data-raw-title') || document.title;
+          titleBtn.setAttribute('title', t.titleTip(raw));
+        }
+
+        const qrBtn = block.querySelector('[data-share-platform="wechat"]');
+        if (qrBtn) {
+          qrBtn.setAttribute('title', t.qrTip);
+        }
+
+        const qrDec = block.querySelector('.reward-dec');
+        if (qrDec) {
+          qrDec.textContent = t.qrDec;
+        }
+
+        const noticeInfo = block.querySelector('.post-copyright-info');
+        if (noticeInfo) {
+          const author = noticeInfo.getAttribute('data-author') || 'shijianus';
+          const siteUrl = noticeInfo.getAttribute('data-site-url') || window.location.origin;
+          noticeInfo.innerHTML = t.notice(author, siteUrl);
+        }
+      };
+
+      const initLang = document.documentElement.lang || 'zh-CN';
+      updateCopyrightI18n(initLang);
+
+      window.addEventListener('shijianus:localechange', (e: Event) => {
+        const custom = e as CustomEvent<string | { lang?: string }>;
+        const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.lang;
+        updateCopyrightI18n(next || document.documentElement.lang || 'zh-CN');
       });
 
       // 全局 Esc 键

@@ -129,8 +129,130 @@ const allHomeTags = tags && tags.length > 0 ? tags : realTags;
 const sortedHomeTags = [...allHomeTags].sort(
   (a, b) => b.count - a.count || a.label.localeCompare(b.label),
 );
-const HOME_TAG_LIMIT = 24;
+const HOME_TAG_LIMIT = (siteConfig.aside as any).overviewCard?.tagsLimit || 24;
 const displayedHomeTags = sortedHomeTags.slice(0, HOME_TAG_LIMIT);
+
+// Real metrics synchronized with ThemeOverlays console-webinfo
+const sortedPublicPosts = [...allPublicPosts].sort(
+  (a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
+);
+const trueLatestPost = sortedPublicPosts[0];
+const trueLatestPostDate = trueLatestPost
+  ? new Date(trueLatestPost.data.pubDate).toLocaleDateString('zh-CN').replaceAll('/', '.')
+  : '近期';
+const trueLatestPostHref = trueLatestPost ? getPostPath(trueLatestPost) : '/archives/';
+
+// Dynamic Active Level (Posts in last 30 days) - Synchronized with console-webinfo
+const thirtyDaysAgo = new Date();
+thirtyDaysAgo.setDate(new Date().getDate() - 30);
+const recentPostCount30d = allPublicPosts.filter(
+  (p) => new Date(p.data.pubDate) >= thirtyDaysAgo,
+).length;
+let dynamicActiveLevel = 'Status 0';
+if (recentPostCount30d > 8) dynamicActiveLevel = 'Status 4';
+else if (recentPostCount30d >= 5) dynamicActiveLevel = 'Status 3';
+else if (recentPostCount30d >= 3) dynamicActiveLevel = 'Status 2';
+else if (recentPostCount30d >= 1) dynamicActiveLevel = 'Status 1';
+
+// Dynamic Content Density
+const avgWordsPerPost = realTotalPosts > 0 ? Math.round(realTotalWords / realTotalPosts) : 0;
+let dynamicDensityLevel = 'Level 1';
+if (avgWordsPerPost > 3000) dynamicDensityLevel = 'Level 4';
+else if (avgWordsPerPost > 1500) dynamicDensityLevel = 'Level 3';
+else if (avgWordsPerPost > 800) dynamicDensityLevel = 'Level 2';
+
+const effectiveReadingMinutes = totalReadingMinutes || Math.max(1, Math.ceil(realTotalWords / 300));
+
+// Webinfo Metrics Dictionary (deeply synchronized with console-card console-webinfo)
+const WEBINFO_METRIC_DEFAULTS: Record<
+  string,
+  { label: string; value: string; href?: string; tooltip?: string }
+> = {
+  posts: {
+    label: currentLang === 'en' ? 'Total Posts' : '文章总数',
+    value: `${realTotalPosts} ${currentLang === 'en' ? 'posts' : '篇'}`,
+    href: '/archives/',
+    tooltip: `已发布 ${realTotalPosts} 篇公开文章`,
+  },
+  runtime: {
+    label: currentLang === 'en' ? 'Site Uptime' : '建站运行',
+    value: `${realRuntimeDays} ${currentLang === 'en' ? 'days' : '天'}`,
+    tooltip: `安全稳定运行 ${realRuntimeDays} 天`,
+  },
+  words: {
+    label: currentLang === 'en' ? 'Total Words' : '全站字数',
+    value: `${realTotalWordsK}k 字`,
+    tooltip: `基于全站 ${realTotalPosts} 篇文章精算 (${realTotalWords.toLocaleString()} 字)`,
+  },
+  lastUpdate: {
+    label: currentLang === 'en' ? 'Last Push' : '最后推送',
+    value: trueLatestPostDate,
+    href: trueLatestPostHref,
+    tooltip: `最新发布: ${trueLatestPost?.data.title || '最新文章'}`,
+  },
+  tags: {
+    label: currentLang === 'en' ? 'Total Tags' : '标签总数',
+    value: `${allHomeTags.length} ${currentLang === 'en' ? 'tags' : '个'}`,
+    href: '/tags/',
+    tooltip: `共涵盖 ${allHomeTags.length} 个技术标签`,
+  },
+  version: {
+    label: currentLang === 'en' ? 'Engine Ver' : '版本协议',
+    value: 'v2.6.0',
+    href: '/version/',
+    tooltip: '核心架构版本与协议规范',
+  },
+  activeLevel: {
+    label: currentLang === 'en' ? 'Active Level' : '活跃等级',
+    value: dynamicActiveLevel,
+    href: '/standards/',
+    tooltip: `近30天发布 ${recentPostCount30d} 篇内容`,
+  },
+  density: {
+    label: currentLang === 'en' ? 'Density' : '内容密度',
+    value: dynamicDensityLevel,
+    href: '/standards/',
+    tooltip: `平均单篇字数约 ${avgWordsPerPost} 字`,
+  },
+  reading: {
+    label: currentLang === 'en' ? 'Reading' : '全站阅读',
+    value: `${effectiveReadingMinutes} min`,
+    tooltip: `预估全站平均总阅读时长 ${effectiveReadingMinutes} 分钟`,
+  },
+  architecture: {
+    label: currentLang === 'en' ? 'Architecture' : '系统架构',
+    value: 'Astro Edge',
+    tooltip: '基于 Astro 核心引擎与 Edge Functions',
+  },
+};
+
+const configuredWebinfoItems = (siteConfig.aside as any).overviewCard?.webinfo?.items || [
+  { key: 'posts' },
+  { key: 'runtime' },
+  { key: 'words' },
+  { key: 'lastUpdate' },
+];
+
+const resolvedWebinfoItems = configuredWebinfoItems.map((item: any) => {
+  const def = WEBINFO_METRIC_DEFAULTS[item.key] || {
+    label: item.label || item.key,
+    value: item.value || '-',
+    href: item.href,
+  };
+  return {
+    label: item.label || def.label,
+    value: item.value || def.value,
+    href: item.href === 'auto' ? def.href : (item.href ?? def.href),
+    tooltip: item.tooltip ?? def.tooltip,
+  };
+});
+
+const quickBadges = (siteConfig.aside as any).overviewCard?.webinfo?.quickBadges || [
+  { label: '归档', href: '/archives/' },
+  { label: '分类', href: '/categories/' },
+  { label: '标签', href: '/tags/' },
+  { label: '标准', href: '/standards/' },
+];
 
 const runtimeDays = Math.max(
   1,
@@ -358,14 +480,14 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 <!-- 1. 热门标签板块 (设置展示上限 24 个，避免无限制扩展) -->
                 <div class="overview-section overview-section--tags">
                   <div class="item-headline">
-                    <div class="item-headline__left">
+                    <a class="item-headline__left item-headline__title-link" href="/tags/" title={currentLang === 'en' ? 'View all tags' : '查看全部标签'}>
                       <Tags className="aside-title-icon" aria-hidden="true" />
-                      <span>热门标签</span>
-                    </div>
+                      <span>{currentLang === 'en' ? 'Popular Tags' : '热门标签'}</span>
+                    </a>
                     {sortedHomeTags.length > 0 && (
-                      <a class="card-more-btn" href="/tags/" title="查看全部标签">
+                      <a class="card-more-btn" href="/tags/" title={currentLang === 'en' ? 'View all tags' : '查看全部标签'}>
                         <span class="card-more-count">{sortedHomeTags.length}</span>
-                        <span class="card-more-unit">个</span>
+                        <span class="card-more-unit">{currentLang === 'en' ? 'tags' : '个'}</span>
                         <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
                       </a>
                     )}
@@ -388,13 +510,13 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 {categories.length > 0 && (
                   <div class="overview-section overview-section--categories">
                     <div class="item-headline item-headline--sub">
-                      <div class="item-headline__left">
+                      <a class="item-headline__left item-headline__title-link" href="/categories/" title={currentLang === 'en' ? 'View all categories' : '查看全部分类'}>
                         <FolderOpen className="aside-title-icon" aria-hidden="true" />
-                        <span>精选分类</span>
-                      </div>
-                      <a class="card-more-btn" href="/categories/" title="查看全部分类">
+                        <span>{currentLang === 'en' ? 'Featured Categories' : '精选分类'}</span>
+                      </a>
+                      <a class="card-more-btn" href="/categories/" title={currentLang === 'en' ? 'View all categories' : '查看全部分类'}>
                         <span class="card-more-count">{categories.length}</span>
-                        <span class="card-more-unit">类</span>
+                        <span class="card-more-unit">{currentLang === 'en' ? 'cats' : '类'}</span>
                         <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
                       </a>
                     </div>
@@ -413,36 +535,42 @@ const renderTocNodes = (nodes: TocNode[]) =>
                   </div>
                 )}
 
-                <!-- 3. 网站资讯与极客统计 (借鉴安知鱼设计，让侧栏饱满专业) -->
+                <!-- 3. 网站资讯与极客统计 (深度同步 console-card console-webinfo 扫描引擎) -->
                 <div class="overview-section overview-section--webinfo">
                   <div class="item-headline item-headline--sub">
                     <div class="item-headline__left">
                       <Activity className="aside-title-icon" aria-hidden="true" />
-                      <span>站点资讯</span>
+                      <span>{currentLang === 'en' ? 'Site Pulse' : '站点资讯'}</span>
                     </div>
                     <span class="webinfo-live-badge">
                       <span class="webinfo-live-dot" aria-hidden="true"></span>
-                      <span>正常运行</span>
+                      <span>{(siteConfig.aside as any).overviewCard?.webinfo?.liveStatusText || (currentLang === 'en' ? 'Operational' : '正常运行')}</span>
                     </span>
                   </div>
                   <div class="card-webinfo-grid">
-                    <div class="webinfo-item">
-                      <span class="webinfo-label">文章总数</span>
-                      <span class="webinfo-val">{realTotalPosts} 篇</span>
-                    </div>
-                    <div class="webinfo-item">
-                      <span class="webinfo-label">建站运行</span>
-                      <span class="webinfo-val">{realRuntimeDays} 天</span>
-                    </div>
-                    <div class="webinfo-item">
-                      <span class="webinfo-label">标签总数</span>
-                      <span class="webinfo-val">{allHomeTags.length} 个</span>
-                    </div>
-                    <div class="webinfo-item">
-                      <span class="webinfo-label">核心协议</span>
-                      <span class="webinfo-val">EpoCanvas</span>
-                    </div>
+                    {resolvedWebinfoItems.map((stat: any) =>
+                      stat.href ? (
+                        <a href={stat.href} class="webinfo-item webinfo-item--link" title={stat.tooltip || stat.label}>
+                          <span class="webinfo-label">{stat.label}</span>
+                          <span class="webinfo-val">{stat.value}</span>
+                        </a>
+                      ) : (
+                        <div class="webinfo-item" title={stat.tooltip || stat.label}>
+                          <span class="webinfo-label">{stat.label}</span>
+                          <span class="webinfo-val">{stat.value}</span>
+                        </div>
+                      )
+                    )}
                   </div>
+                  {quickBadges.length > 0 && (
+                    <div class="webinfo-quick-badges">
+                      {quickBadges.map((badge: any) => (
+                        <a href={badge.href} class="quick-badge-chip">
+                          <span>{badge.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </section>
             </div>

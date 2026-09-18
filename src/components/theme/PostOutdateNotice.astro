@@ -15,7 +15,8 @@ const articleDays = typeof configuredDays === 'number' && Number.isFinite(config
 const thresholdDays = Math.min(systemDays, articleDays ?? systemDays);
 const ageDays = Math.max(0, Math.floor((Date.now() - referenceDate.valueOf()) / 86_400_000));
 const shouldShow = ageDays >= thresholdDays;
-const thresholdSource = articleDays !== null && articleDays <= systemDays ? '文章设定' : '站点规则';
+const isArticleRule = articleDays !== null && articleDays <= systemDays;
+const thresholdSource = isArticleRule ? '文章设定' : '站点规则';
 const dateLabel = referenceDate.toLocaleDateString('zh-CN');
 ---
 
@@ -26,19 +27,107 @@ const dateLabel = referenceDate.toLocaleDateString('zh-CN');
     data-post-outdate
     data-age-days={ageDays}
     data-threshold-days={thresholdDays}
+    data-ref-date={referenceDate.toISOString()}
+    data-is-article-rule={isArticleRule ? 'true' : 'false'}
   >
     <span class="post-outdate-notice__icon" aria-hidden="true">
       <AlertTriangle size={20} strokeWidth={1.8} />
     </span>
     <div class="post-outdate-notice__copy">
-      <strong>这篇记录可能需要重新核对</strong>
-      <p>
+      <strong class="post-outdate-notice__heading">这篇记录可能需要重新核对</strong>
+      <p class="post-outdate-notice__desc">
         内容距今约 {ageDays} 天（{dateLabel}），已达到 {thresholdDays} 天的{thresholdSource}提醒线。阅读时可以把它当作当时的判断，关键结论请再确认一次。
       </p>
     </div>
     <span class="post-outdate-notice__meta" aria-label={`提醒阈值 ${thresholdDays} 天`}>
       <CalendarClock size={15} aria-hidden="true" />
-      {thresholdDays} 天
+      <span class="post-outdate-notice__meta-text">{thresholdDays} 天</span>
     </span>
   </aside>
+
+  <script is:inline>
+  (() => {
+    const OUTDATE_I18N = {
+      'zh-CN': {
+        heading: '这篇记录可能需要重新核对',
+        desc: (age, dateStr, threshold, isArt) =>
+          `内容距今约 ${age} 天（${dateStr}），已达到 ${threshold} 天的${isArt ? '文章设定' : '站点规则'}提醒线。阅读时可以把它当作当时的判断，关键结论请再确认一次。`,
+        metaLabel: (days) => `提醒阈值 ${days} 天`,
+        metaText: (days) => `${days} 天`,
+      },
+      'zh-Hant': {
+        heading: '這篇記錄可能需要重新核對',
+        desc: (age, dateStr, threshold, isArt) =>
+          `內容距今約 ${age} 天（${dateStr}），已達到 ${threshold} 天的${isArt ? '文章設定' : '站點規則'}提醒線。閱讀時可以把它當作當時的判斷，關鍵結論請再確認一次。`,
+        metaLabel: (days) => `提醒閾值 ${days} 天`,
+        metaText: (days) => `${days} 天`,
+      },
+      'en': {
+        heading: 'This record may need re-verification',
+        desc: (age, dateStr, threshold) =>
+          `This content was updated about ${age} days ago (${dateStr}) and has reached the ${threshold}-day reminder threshold. Please double-check key conclusions against current documentation.`,
+        metaLabel: (days) => `Reminder threshold: ${days} days`,
+        metaText: (days) => `${days} days`,
+      },
+      'es': {
+        heading: 'Este registro puede requerir nueva verificación',
+        desc: (age, dateStr, threshold) =>
+          `Este contenido tiene aproximadamente ${age} días (${dateStr}) y ha alcanzado el umbral de recordatorio de ${threshold} días. Por favor confirme las conclusiones clave.`,
+        metaLabel: (days) => `Umbral de recordatorio: ${days} días`,
+        metaText: (days) => `${days} días`,
+      },
+      'de': {
+        heading: 'Dieser Beitrag muss möglicherweise überprüft werden',
+        desc: (age, dateStr, threshold) =>
+          `Dieser Inhalt ist etwa ${age} Tage alt (${dateStr}) und hat den Schwellenwert von ${threshold} Tagen erreicht. Bitte vor wichtigen Schritten gegenprüfen.`,
+        metaLabel: (days) => `Erinnerungsschwelle: ${days} Tage`,
+        metaText: (days) => `${days} Tage`,
+      },
+      'fr': {
+        heading: 'Cet article nécessite peut-être une vérification',
+        desc: (age, dateStr, threshold) =>
+          `Ce contenu date d'environ ${age} jours (${dateStr}) et a atteint le seuil de rappel de ${threshold} jours. Veuillez revérifier les conclusions critiques.`,
+        metaLabel: (days) => `Seuil de rappel : ${days} jours`,
+        metaText: (days) => `${days} jours`,
+      },
+    };
+
+    const updateNotice = (lang) => {
+      const el = document.querySelector('[data-post-outdate]');
+      if (!el) return;
+      const normalized = (lang || '').toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+        : (lang || '').toLowerCase().startsWith('zh') ? 'zh-CN'
+        : ['en', 'es', 'de', 'fr'].includes((lang || '').split('-')[0]) ? (lang || '').split('-')[0]
+        : 'zh-CN';
+      const t = OUTDATE_I18N[normalized] || OUTDATE_I18N['zh-CN'];
+      const age = parseInt(el.dataset.ageDays || '0', 10);
+      const threshold = parseInt(el.dataset.thresholdDays || '0', 10);
+      const isArt = el.dataset.isArticleRule === 'true';
+      const refDateIso = el.dataset.refDate;
+      const dateObj = refDateIso ? new Date(refDateIso) : new Date();
+      const localeCode = normalized === 'zh-CN' ? 'zh-CN' : normalized === 'zh-Hant' ? 'zh-TW' : normalized;
+      const dateStr = dateObj.toLocaleDateString(localeCode);
+
+      const headingEl = el.querySelector('.post-outdate-notice__heading');
+      if (headingEl) headingEl.textContent = t.heading;
+
+      const descEl = el.querySelector('.post-outdate-notice__desc');
+      if (descEl) descEl.textContent = t.desc(age, dateStr, threshold, isArt);
+
+      const metaEl = el.querySelector('.post-outdate-notice__meta');
+      if (metaEl) metaEl.setAttribute('aria-label', t.metaLabel(threshold));
+
+      const metaTextEl = el.querySelector('.post-outdate-notice__meta-text');
+      if (metaTextEl) metaTextEl.textContent = t.metaText(threshold);
+    };
+
+    const curLang = document.documentElement.lang || 'zh-CN';
+    updateNotice(curLang);
+
+    window.addEventListener('shijianus:localechange', (e) => {
+      const targetLang = typeof e?.detail === 'string' ? e.detail : (e?.detail?.lang || document.documentElement.lang || 'zh-CN');
+      updateNotice(targetLang);
+    });
+  })();
+  </script>
 )}

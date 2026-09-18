@@ -488,6 +488,28 @@ export const siteConfig = {
       { title: '主题状态', value: '持续重构中', detail: '共享壳层、首页、文章页同步重做' },
       { title: '界面语气', value: '克制但有手感', detail: '强化作者感，但不牺牲阅读性' },
     ] satisfies HomeStatusCard[],
+    overviewCard: {
+      tagsLimit: 24,
+      categoriesLimit: 6,
+      webinfo: {
+        liveStatusText: '正常运行',
+        // 内置可自由配置的站点指标（深度同步 console-card console-webinfo 扫描引擎）
+        // 支持的指标 key: 'posts' | 'runtime' | 'words' | 'lastUpdate' | 'tags' | 'version' | 'activeLevel' | 'density' | 'reading' | 'architecture' | 'custom'
+        items: [
+          { key: 'posts', label: '文章总数', href: '/archives/' },
+          { key: 'runtime', label: '建站运行' },
+          { key: 'words', label: '全站字数' }, // 彻底替换静态“核心协议”，动态同步全站 Markdown 扫描字数
+          { key: 'lastUpdate', label: '最后推送', href: 'auto' }, // 自动指向最新发布文章
+        ],
+        // 推荐内置附加组件：极客速达胶囊条（Quick Exploration Strip）
+        quickBadges: [
+          { label: '归档', href: '/archives/' },
+          { label: '分类', href: '/categories/' },
+          { label: '标签', href: '/tags/' },
+          { label: '标准', href: '/standards/' },
+        ],
+      },
+    },
   },
   footer: {
     since: 2020,

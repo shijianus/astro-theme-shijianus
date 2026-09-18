@@ -627,6 +627,7 @@ const heroSummary = isUnlocked
                   title: v.title,
                   summary: v.summary,
                   lang: v.lang,
+                  tags: v.post?.data?.tags || [],
                 },
               ])
             ),
@@ -705,6 +706,16 @@ const heroSummary = isUnlocked
               const aiSummaryContent = document.querySelector('.ai-summary__content, .ai-summary__text');
               if (aiSummaryContent && staticSummariesByLang[targetLang]) {
                 aiSummaryContent.textContent = staticSummariesByLang[targetLang];
+              }
+
+              // 5.1 Update article footer tags if present
+              if (meta && Array.isArray(meta.tags) && meta.tags.length > 0) {
+                const tagContainer = document.querySelector('.post-meta__box__tag-list');
+                if (tagContainer) {
+                  tagContainer.innerHTML = meta.tags
+                    .map((t) => `<a class="post-meta__box__tags" href="/tags/${encodeURIComponent(t.toLowerCase())}/"><span class="tags-punctuation"><i class="anzhiyufont anzhiyu-icon-tag"></i></span>${t}</a>`)
+                    .join('');
+                }
               }
 
               // 6. Update TOC: title, count, and active variant TOC

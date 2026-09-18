@@ -118,7 +118,7 @@ const hasMedia = Boolean(image || video);
       <div class="post-hero__badges">
         {badges.map((item, index) => {
           if (index === 0 && (item === '原创' || item === '转载' || item === '受限')) {
-            return <span class="post-hero__badge is-primary">{item}</span>;
+            return <span class="post-hero__badge is-primary" data-badge-type={item}>{item}</span>;
           }
           const tagSlug = encodeURIComponent(
             item.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')
@@ -137,7 +137,7 @@ const hasMedia = Boolean(image || video);
       <div class="post-hero__translations" aria-label="Available translations">
         <span class="post-hero__translations-label">
           <Globe className="post-hero__translations-icon" aria-hidden="true" />
-          <span>语言版本:</span>
+          <span data-translations-label>语言版本:</span>
         </span>
         <div class="post-hero__translations-list">
           {translationEntries.map(([langKey, item]) => {
@@ -282,18 +282,88 @@ const hasMedia = Boolean(image || video);
         safeSessionSet(viewedKey, '1');
       }
 
-      if (viewsNode instanceof HTMLElement) {
-        viewsNode.textContent = `${Number(safeSessionGet(viewKey) || '0')} 次`;
-      }
+      const HERO_I18N = {
+        'zh-CN': {
+          translationsLabel: '语言版本:',
+          badgeOriginal: '原创',
+          badgeReprint: '转载',
+          viewsUnit: '次',
+          dwellUnit: '分钟',
+        },
+        'zh-Hant': {
+          translationsLabel: '語言版本:',
+          badgeOriginal: '原創',
+          badgeReprint: '轉載',
+          viewsUnit: '次',
+          dwellUnit: '分鐘',
+        },
+        'en': {
+          translationsLabel: 'Translations:',
+          badgeOriginal: 'Original',
+          badgeReprint: 'Reprint',
+          viewsUnit: 'views',
+          dwellUnit: 'min',
+        },
+        'es': {
+          translationsLabel: 'Idiomas:',
+          badgeOriginal: 'Original',
+          badgeReprint: 'Reimpresión',
+          viewsUnit: 'vistas',
+          dwellUnit: 'min',
+        },
+        'de': {
+          translationsLabel: 'Sprachen:',
+          badgeOriginal: 'Original',
+          badgeReprint: 'Nachdruck',
+          viewsUnit: 'Aufrufe',
+          dwellUnit: 'Min.',
+        },
+        'fr': {
+          translationsLabel: 'Langues :',
+          badgeOriginal: 'Original',
+          badgeReprint: 'Réimpression',
+          viewsUnit: 'vues',
+          dwellUnit: 'min',
+        },
+      };
+
+      let currentHeroLang = document.documentElement.lang || 'zh-CN';
+
+      const updateHeroI18n = (targetLang) => {
+        currentHeroLang = (targetLang || '').toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+          : (targetLang || '').toLowerCase().startsWith('zh') ? 'zh-CN'
+          : ['en', 'es', 'de', 'fr'].includes((targetLang || '').split('-')[0]) ? (targetLang || '').split('-')[0]
+          : 'zh-CN';
+        const t = HERO_I18N[currentHeroLang] || HERO_I18N['zh-CN'];
+
+        const labelEl = root.querySelector('[data-translations-label]');
+        if (labelEl) labelEl.textContent = t.translationsLabel;
+
+        const badgeEl = root.querySelector('.post-hero__badge.is-primary');
+        if (badgeEl) {
+          const type = badgeEl.getAttribute('data-badge-type') || badgeEl.textContent.trim();
+          if (type === '原创' || type === 'Original' || type === '原創') {
+            badgeEl.textContent = t.badgeOriginal;
+          } else if (type === '转载' || type === 'Reprint' || type === '轉載') {
+            badgeEl.textContent = t.badgeReprint;
+          }
+        }
+
+        if (viewsNode instanceof HTMLElement) {
+          viewsNode.textContent = `${Number(safeSessionGet(viewKey) || '0')} ${t.viewsUnit}`;
+        }
+        renderDwell();
+      };
 
       let dwellSeconds = Number(safeSessionGet(dwellKey) || '0');
       const renderDwell = () => {
         if (!(dwellNode instanceof HTMLElement)) return;
+        const t = HERO_I18N[currentHeroLang] || HERO_I18N['zh-CN'];
         const minutes = Math.max(0, Math.floor(dwellSeconds / 60));
-        dwellNode.textContent = `${minutes} 分钟`;
+        dwellNode.textContent = `${minutes} ${t.dwellUnit}`;
       };
 
-      renderDwell();
+      updateHeroI18n(currentHeroLang);
 
       const timer = window.setInterval(() => {
         if (document.visibilityState !== 'visible') return;
@@ -301,6 +371,11 @@ const hasMedia = Boolean(image || video);
         safeSessionSet(dwellKey, String(dwellSeconds));
         renderDwell();
       }, 1000);
+
+      window.addEventListener('shijianus:localechange', (e) => {
+        const next = typeof e?.detail === 'string' ? e.detail : (e?.detail?.lang || document.documentElement.lang || 'zh-CN');
+        updateHeroI18n(next);
+      });
 
       window.addEventListener(
         'pagehide',
