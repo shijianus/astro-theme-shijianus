@@ -2640,7 +2640,7 @@
      - 底部平齐精度：粘性卡片底端与分页器底端误差实测 **0.203px**（完全满足小于 2px 的极致像素级标准）；
      - 实拍验证截图留存：`02_live_tag_card_closeup.png`、`04_live_home_bottom_aligned.png`。
 
-### Task 118: 彻底根除残留中文退回（.footnotes::before、.ext-encrypt-entry-banner、PostCopyright、PostOutdateNotice、PostHero、RelatedPosts、PostEndRecommendation）与 AI 翻译协议加固
+### Task 118: 彻底根除残留中文退回（.footnotes::before、.ext-encrypt-entry-banner、PostCopyright、PostOutdateNotice、PostHero、RelatedPosts、PostEndRecommendation）与 AI 翻译协议加固 (`7d95eb8`)
 - [x] **深入排查并根除 `class="footnotes"` 残留中文根因**:
   1. 根因剖析：`src/styles/markdown-enhancements.css` 原先在 `.article-body .footnotes::before` 硬编码了 `content: '📑 参考与注释 · Footnotes';`，导致不论语言如何切换，CSS 伪元素永久在顶部注入中文字符；
   2. 方案落地：全面重构为语系专属选择器（`html[lang="en"] .footnotes::before`、`.article-translation-variant[data-lang="en"] .footnotes::before` 等），在英语下展示 `📑 Footnotes & References`，德语 `📑 Fußnoten & Referenzen`，西班牙语 `📑 Notas al pie y referencias`，法语 `📑 Notes de bas de page et références`，繁中 `📑 參考與註釋`，简中 `📑 参考与注释`，并支持 `attr(data-footnotes-title)` 动态配置；
