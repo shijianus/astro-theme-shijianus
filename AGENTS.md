@@ -2904,5 +2904,23 @@
   1. 本地 Playwright 自动化套件（3 场景 100% 全绿）：验证初次加载真实金额与支持者渲染、事件驱动无感动态同步、优雅空状态呈现；
   2. 生产环境 `https://blog.epocanvas.com/support/` 真实链路审计：确认生产端已成功渲染 `RM13 MYR` 及 `Stripe 链路自动化验收官 · 09月14日`，完全消除「实时入库同步」占位文本。
 
+### Task 129: 多语言翻译技术漏洞全面优化、Frontmatter 元数据/思维导图保真与门禁系统加固
+- [x] **根因排查与错误源头定性**:
+  1. 深入溯源 3 大类技术缺陷根因：架构设计与门禁检测疏忽（占比 ~85%）+ 提示词规则互斥（占比 ~15%）；
+  2. 定位 `translateFrontmatterOnly` 静默返回原始中文的异常吞噬缺陷，以及 `translateArticleChunked` 缺乏头部校验的拼接漏洞；
+  3. 定位 `sync-post-i18n.mjs` 门禁中主动剥离 Frontmatter 与粗暴剔除所有代码块导致的检测盲区。
+- [x] **翻译系统底层核心与门禁防线重构 (`src/lib/server-article-i18n.ts` & `scripts/sync-post-i18n.mjs`)**:
+  1. **消除 Prompt 规则冲突**: 明确提示词规则 7，将 `mindmap` 与 `mermaid` 从代码围栏豁免名单中移出，强制要求图表大纲节点 100% 翻译为目标语系，严禁残留中文；
+  2. **Frontmatter 校验与熔断门禁**: 重构 `translateFrontmatterOnly` 正则匹配，注入 `zh-Hant` 简体特征字拦截；在 `translateArticleChunked` 中注入前置熔断门禁，若头部翻译出现中文残留则强制中止；
+  3. **自动化同步门禁补齐**: 在 `sync-post-i18n.mjs` 中将 Frontmatter `title` 与 `description` 纳入中文残留检测，且不再将 `mindmap` 与 `mermaid` 代码块作为通用编程代码剔除。
+- [x] **全量受影响多语言博文修复与 100% 本地化闭环**:
+  1. 补齐 `markdown-scan-showcase-de.md`、`media-capability-lab-de.md`、`media-capability-lab-es.md` 的德文与西文 Frontmatter 完整元数据；
+  2. 修正 `example-tabs-zh-Hant.md` 标题为纯正繁体（`範例：多分頁與多程式碼版本切換展示`），实现 0 简体残留；
+  3. 全量翻译 `example-mindmap-en.md` 与 `example-mindmap-de.md` 中思维导图各层级架构节点与说明参数，彻底实现 0 中文字符残留。
+- [x] **Playwright 真实浏览器全量端到端复测 (132/132 全绿)**:
+  1. 全量静态构建编译通过（`214 page(s) built in 55.29s`）；
+  2. Playwright 实测验证 22 篇公开文章的 132 个语言变体节点，可见性切换率 100.0%、渲染高度正常展开、PostHero H1 标题 100% 与正文语言对齐（0 中文倒退、0 简繁混杂）；
+  3. 生成最新审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
+
 
 
