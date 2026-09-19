@@ -2766,6 +2766,20 @@
   2. 6 档位卡片数量、`viewBox 0 0 48 48`、`currentColor` 穿透、0 硬编码杂色、0 动画抖动残留全量断言通过；
   3. 实拍对比截图留存：`scheme_a_selected_final.png` 与 `scheme_a_grid_final.png`；
   4. Commit 成功提交并打印短 Hash：`3e45d7f`。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实链路 (Live E2E) 验证 100% 满分通过**:
+  1. 全量编译 154 个页面并上传部署至 Cloudflare Pages 生产边缘节点（部署标识：`https://8c402a2c.shijianus-blog.pages.dev`），实时生效于生产主域 `https://blog.epocanvas.com/support/`；
+  2. 编写并执行真实生产环境自动化端到端测试套件（`scripts/verify-live-support-scheme-a.mjs`）；
+  3. 生产端真实 DOM 审计与交互断言全部绿灯：
+     - `cardCount: 6`（6 个预设卡片完整渲染）；
+     - `legacyJitterCount: 0`（0 动画抖动与无休止抽搐）；
+     - `viewBox: "0 0 48 48"`（100% 现代统一栅格）；
+     - `hasCurrentColor: true` 且 `foundForbidden: []`（100% 统一矢量着色，0 脏色 Hex）；
+     - 默认激活态 Tier 2（意式拿铁）卡片半透明白光浮水印与渐变底色浑然一体；
+     - 现场真实点击测试：点击 Tier 4（手冲滴滤）卡片，即时平滑激活为 `scale-[1.02]`，SVG 瞬态变色无卡顿；
+     - 浅色模式、深色模式与移动端（390×844）自适应排版均完美呈现；
+     - 控制台 0 致命 JS 报错（`Console Errors: []`）；
+     - 生产实拍证据链留存：`live_support_scheme_a_selected_light.png`、`live_support_scheme_a_grid_light.png`、`live_support_scheme_a_tier4_selected.png`、`live_support_scheme_a_grid_dark.png`、`live_support_scheme_a_grid_mobile.png`。
+
 
 ### Task 123: topGroup 彻底去除多余按钮与说明文字、极简背板直出与点击背板回退全链路优化 (`0368dc6`)
 - [x] **遵照用户最高明确指示彻底精简与去多余化**:
