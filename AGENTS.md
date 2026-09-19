@@ -2811,4 +2811,24 @@
      - 浅色模式、深色模式与移动端自适应全量验证通过；
      - 生产实拍证据链留存：`live_backboard_streamlined_01_default_light.png`、`live_backboard_streamlined_02_cards_toggled_light.png`、`live_backboard_streamlined_03_topgroup_cards_light.png`、`live_backboard_streamlined_04_returned_todaycard.png`、`live_backboard_streamlined_05_cards_toggled_dark.png`、`live_backboard_streamlined_06_topgroup_cards_dark.png`、`live_backboard_streamlined_07_mobile.png`。
 
+### Task 124: 赞赏界面卡片多余勾选徽标去除与浅色/暗色调色彩明度精细校准 (`c2bfc7e`)
+- [x] **遵照用户最高指令彻底去除多余勾选 (Checkmark) 徽标**:
+  1. 彻底删除卡片金额右侧的 `<Check className="w-2.5 h-2.5 stroke-[3]" />` 及其包裹的圆底徽标；
+  2. 消除视觉累赘与俗气拟态，金额与币种直出呈现，依靠卡片整体色彩高亮与自适应光泽形成鲜明辨识度；
+- [x] **浅色调与暗色调色彩明度系统级精细校准 (Light not too dark, Dark not too bright)**:
+  1. **浅色模式 (Light Mode) 杜绝过深黑暗**:
+     - 废除激活态原本深沉浓黑的 `indigo-700` (`#4338ca`)，重构为明快跃动的品牌中明度渐变 `from-[#4f6bf7] to-[#3b53e8]`（明度由 29% 提升至 48%），彻底消除如墨团般沉重的压抑感；
+     - 未选中卡片文字由死板沉重的 `text-*-950` 优化为清爽自然的 `text-slate-800`，恢复背景空气感；
+  2. **暗色模式 (Dark Mode) 杜绝刺眼强光**:
+     - 废除暗色下刺眼的荧光亮蓝外环（`ring-2 ring-blue-400/50`）与高亮阴影，降级为收敛柔和的 `dark:ring-1 dark:ring-blue-500/25 dark:shadow-none`；
+     - 激活态背景适配为深邃沉静的低眩光底色（`dark:from-[#233175] dark:to-[#1a2356]`），文字适配为温润柔和的 `dark:text-blue-100`；
+     - 未选中卡片文字由过亮的 `dark:text-*-100` 优化为自然的 `dark:text-slate-200`，杜绝暗色模式下的视觉眩光；
+  3. **统筹 6 档位全量色彩矩阵**:
+     - 琥珀金 (Amber)、暖橙 (Orange)、拿铁蓝 (Blue)、翡翠绿 (Emerald)、紫罗兰 (Purple)、冷萃红 (Rose) 全量 6 档位的选中与未选中态均完成明度校准。
+- [x] **自动化测试与双模态视觉证据链留存**:
+  1. 编写自动化断言脚本（`scripts/verify-support-clean-highlight.mjs`），断言 checkmarkCount === 0，0 遗留深暗 indigo-700，0 遗留刺眼 ring-blue-400；
+  2. 浅色模式与暗色模式卡片截图留存：`local_support_clean_selected_light.png`、`local_support_clean_selected_dark.png`、`local_support_clean_grid_light.png`、`local_support_clean_grid_dark.png`；
+  3. Commit 成功提交并打印 Hash：`c2bfc7e`。
+
+
 
