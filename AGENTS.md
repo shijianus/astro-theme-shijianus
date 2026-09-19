@@ -2870,7 +2870,7 @@
   4. 验证客户端即时无刷新切换机制正常工作；
   5. 生成完整本地审计报告 `ARTICLE_I18N_VERIFICATION_REPORT.md`。
 
-### Task 127: 主页最后一页少内容自适应文章组合体粘性卡片 (Left Posts Sticky Group) 与右侧互斥联动
+### Task 127: 主页最后一页少内容自适应文章组合体粘性卡片 (Left Posts Sticky Group) 与右侧互斥联动 (`2fdd886`)
 - [x] **主页文章列表与分页导航组合化封装 (`src/components/theme/HomeFeed.astro`)**:
   1. 将 `class="grid grid-cols-1 md:grid-cols-2 gap-3"` 文章网格与 `class="theme-card home-pagination"` 分页卡片封装为一体化组合容器 `<div class="home-posts-sticky-group" id="home-posts-sticky-group">`；
   2. 动态注入 `data-is-last-page` 标识与页码元数据（`data-feed-page`、`data-feed-pages`），精准识别主页最后一页。
