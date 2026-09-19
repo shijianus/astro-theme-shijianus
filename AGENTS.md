@@ -2829,6 +2829,17 @@
   1. 编写自动化断言脚本（`scripts/verify-support-clean-highlight.mjs`），断言 checkmarkCount === 0，0 遗留深暗 indigo-700，0 遗留刺眼 ring-blue-400；
   2. 浅色模式与暗色模式卡片截图留存：`local_support_clean_selected_light.png`、`local_support_clean_selected_dark.png`、`local_support_clean_grid_light.png`、`local_support_clean_grid_dark.png`；
   3. Commit 成功提交并打印 Hash：`c2bfc7e`。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实链路 (Live E2E) 验证 100% 满分通过**:
+  1. 编译全站静态资产并发布至 Cloudflare Pages 生产边缘节点（部署标识：`https://a4f86760.shijianus-blog.pages.dev`），实时绑定至线上生产域名 `https://blog.epocanvas.com/support/`；
+  2. 编写并运行真实线上自动化测试脚本（`scripts/verify-live-support-clean.mjs`）；
+  3. 线上真实 DOM 审计与交互断言全部通过：
+     - `checkmarkCount: 0`（全量 6 档位勾选徽标 100% 消除）；
+     - `cardCount: 6`（6 个卡片无缝呈现）；
+     - `hasLegacyDarkIndigo: false`（浅色模式 0 沉暗 indigo-700 墨团）；
+     - `hasLegacyBrightRing: false`（暗色模式 0 荧光 ring-blue-400 刺眼亮光）；
+     - 浅色模式中明度跃动蓝（`from-[#4f6bf7] to-[#3b53e8]`）与暗色模式深邃静谧蓝（`dark:from-[#233175] dark:to-[#1a2356]`）双模态完美呈现；
+     - 生产实拍证据链留存：`live_support_clean_selected_light.png`、`live_support_clean_selected_dark.png`、`live_support_clean_grid_light.png`、`live_support_clean_grid_dark.png`。
+
 
 
 
