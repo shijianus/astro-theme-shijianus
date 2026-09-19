@@ -12,7 +12,7 @@ import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 import type { LocaleVariant } from '../lib/user-persona.ts';
-import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText } from '../lib/client-locale';
+import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText, convertText } from '../lib/client-locale';
 
 const NAV_TRANSLATIONS: Record<LocaleVariant, {
   userCenter: string;
@@ -617,7 +617,7 @@ export function SiteHeader({
 
   return (
     <header id="page-header" className={`site-header not-top-img nav-fixed nav-visible`}>
-      <nav id="nav" aria-label="主导航">
+      <nav id="nav" aria-label={convertText('主导航', currentLocale)}>
         <div id="nav-group">
           <span id="blog_name">
             <a id="site-name" href="/" accessKey="h" aria-label={brandName}>
@@ -629,7 +629,7 @@ export function SiteHeader({
           <div className="mask-name-container">
             <div id="name-container">
               <a id="page-name" href="#blog-container">
-                {activeLabel}
+                {convertText(activeLabel, currentLocale)}
               </a>
             </div>
           </div>
@@ -665,7 +665,7 @@ export function SiteHeader({
                       <a
                         href={item.href}
                         className={`site-page ${itemActive ? 'is-active' : ''}`}
-                        data-subtitle={item.description}
+                        data-subtitle={item.description ? convertText(item.description, currentLocale) : undefined}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
@@ -687,7 +687,7 @@ export function SiteHeader({
                             lineHeight: 1.1,
                             display: 'block'
                           }}>
-                            {item.label}
+                            {convertText(item.label, currentLocale)}
                           </span>
                           {item.description && (
                             <span className="site-page__subtitle" style={{ 
@@ -700,14 +700,14 @@ export function SiteHeader({
                               marginTop: '2px',
                               display: 'block'
                             }}>
-                              {item.description}
+                              {convertText(item.description, currentLocale)}
                             </span>
                           )}
                         </div>
                       </a>
 
                       {hasChildren && (
-                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`} aria-hidden={!submenuOpen}>
+                        <div className="site-page-submenu" role="menu" aria-label={`${convertText(item.label, currentLocale)} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`} aria-hidden={!submenuOpen}>
                           {item.children.slice(0, 3).map((child) => {
                             return (
                               <a
@@ -715,10 +715,10 @@ export function SiteHeader({
                                 href={child.href}
                                 className={`site-page-submenu__item ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
                                 role="menuitem"
-                                title={child.description ?? child.label}
+                                title={child.description ? convertText(child.description, currentLocale) : convertText(child.label, currentLocale)}
                               >
                                 {renderNavIcon(child.icon, 'site-page-submenu__icon')}
-                                <span className="site-page-submenu__label">{child.label}</span>
+                                <span className="site-page-submenu__label">{convertText(child.label, currentLocale)}</span>
                               </a>
                             );
                           })}
@@ -882,7 +882,8 @@ export function SiteHeader({
               <a
                 className="site-page"
                 href="#"
-                data-tooltip="切换菜单"
+                data-tooltip={convertText('切换菜单', currentLocale)}
+                aria-label={convertText('切换菜单', currentLocale)}
                 onClick={(e) => {
                   e.preventDefault();
                   setMenuOpen(!menuOpen);
@@ -896,7 +897,8 @@ export function SiteHeader({
               <a
                 className="totopbtn"
                 href="#"
-                data-tooltip="回到顶部"
+                data-tooltip={convertText('回到顶部', currentLocale)}
+                aria-label={convertText('回到顶部', currentLocale)}
                 onClick={(e) => {
                   e.preventDefault();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -926,7 +928,7 @@ export function SiteHeader({
                     className={`site-mobile-link ${isActive(currentPath, item.href) ? 'is-active' : ''}`}
                   >
                     {renderNavIcon(item.icon, 'site-mobile-link__icon')}
-                    {item.label}
+                    {convertText(item.label, currentLocale)}
                   </a>
                   {item.children && item.children.length > 1 && (
                     <div className="site-mobile-sublinks">
@@ -936,7 +938,7 @@ export function SiteHeader({
                           href={child.href}
                           className={`site-mobile-sublink ${isActive(currentPath, child.href) ? 'is-active' : ''}`}
                         >
-                          {child.label}
+                          {convertText(child.label, currentLocale)}
                         </a>
                       ))}
                     </div>
@@ -948,7 +950,7 @@ export function SiteHeader({
             <div className="site-mobile-panel__group">
               {quickActions.map((item) => (
                 <a key={item.href} href={item.href} className="site-mobile-link">
-                  {item.label}
+                  {convertText(item.label, currentLocale)}
                 </a>
               ))}
             </div>

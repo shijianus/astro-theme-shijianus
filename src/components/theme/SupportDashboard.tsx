@@ -23,7 +23,7 @@ import {
   getLocalCurrencyByCountry,
   convertByLocalPPP,
 } from '../../config/support';
-import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText, type LocaleVariant } from '../../lib/client-locale';
+import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText, convertText, type LocaleVariant } from '../../lib/client-locale';
 
 /* ── SVG Brand Icons ── */
 const WeChatIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -645,7 +645,7 @@ export const SupportDashboard: React.FC = () => {
               key={idx}
               className="px-3 py-1 text-xs rounded-lg bg-white/80 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 shadow-2xs backdrop-blur-xs font-medium"
             >
-              {pill}
+              {convertText(pill, locale)}
             </span>
           ))}
         </div>
@@ -889,7 +889,7 @@ export const SupportDashboard: React.FC = () => {
                 {t('support.channelsTitle', '本地与跨国支付通道')}
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-                微信 / 支付宝 / PayPal / Web3
+                {convertText('微信 / 支付宝 / PayPal / Web3', locale)}
               </h2>
             </div>
 
@@ -951,58 +951,58 @@ export const SupportDashboard: React.FC = () => {
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/35 dark:from-emerald-950/20 dark:to-[#151928] border border-emerald-200/70 dark:border-emerald-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
                     <WeChatIcon className="w-4 h-4" />
-                    <span>微信支付</span>
+                    <span>{convertText('微信支付', locale)}</span>
                   </div>
                   <div
                     className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/weixin-pay-cn.jpg',
-                        title: '微信支付赞赏码',
+                        title: convertText('微信支付赞赏码', locale),
                       })
                     }
                   >
                     <img
                       src="/media/shijianus/support/weixin-pay-cn.jpg"
-                      alt="微信支付赞赏码"
+                      alt={convertText('微信支付赞赏码', locale)}
                       className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
                       <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
+                      <span>{convertText('查看大图', locale)}</span>
                     </div>
                   </div>
                   <span className="block text-xs text-emerald-600/90 dark:text-emerald-400 font-medium">
-                    微信扫一扫赞赏
+                    {convertText('微信扫一扫赞赏', locale)}
                   </span>
                 </div>
 
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-slate-50 to-blue-50/35 dark:from-blue-950/20 dark:to-[#151928] border border-blue-200/70 dark:border-blue-500/20 text-center space-y-2 group transition-all duration-150 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
                   <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300">
                     <AlipayIcon className="w-4 h-4" />
-                    <span>支付宝</span>
+                    <span>{convertText('支付宝', locale)}</span>
                   </div>
                   <div
                     className="relative aspect-square rounded-xl overflow-hidden bg-white p-2 shadow-2xs border border-slate-100 dark:border-white/5 cursor-pointer max-w-[190px] mx-auto"
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/alipay-cn.jpg',
-                        title: '支付宝赞赏码',
+                        title: convertText('支付宝赞赏码', locale),
                       })
                     }
                   >
                     <img
                       src="/media/shijianus/support/alipay-cn.jpg"
-                      alt="支付宝赞赏码"
+                      alt={convertText('支付宝赞赏码', locale)}
                       className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
                       <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
+                      <span>{convertText('查看大图', locale)}</span>
                     </div>
                   </div>
                   <span className="block text-xs text-blue-600/90 dark:text-blue-400 font-medium">
-                    支付宝扫一扫赞赏
+                    {convertText('支付宝扫一扫赞赏', locale)}
                   </span>
                 </div>
               </div>
@@ -1021,22 +1021,22 @@ export const SupportDashboard: React.FC = () => {
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/alipay-hk.jpg',
-                        title: 'Alipay HK 赞赏码',
+                        title: convertText('Alipay HK 赞赏码', locale),
                       })
                     }
                   >
                     <img
                       src="/media/shijianus/support/alipay-hk.jpg"
-                      alt="Alipay HK 赞赏码"
+                      alt={convertText('Alipay HK 赞赏码', locale)}
                       className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
                       <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
+                      <span>{convertText('查看大图', locale)}</span>
                     </div>
                   </div>
                   <span className="block text-xs text-indigo-600/90 dark:text-indigo-400 font-medium">
-                    港币 HKD 扫码
+                    {convertText('港币 HKD 扫码', locale)}
                   </span>
                 </div>
 
@@ -1050,22 +1050,22 @@ export const SupportDashboard: React.FC = () => {
                     onClick={() =>
                       setModalImage({
                         src: '/media/shijianus/support/wechat-pay-hk.jpg',
-                        title: 'WeChat Pay HK 赞赏码',
+                        title: convertText('WeChat Pay HK 赞赏码', locale),
                       })
                     }
                   >
                     <img
                       src="/media/shijianus/support/wechat-pay-hk.jpg"
-                      alt="WeChat Pay HK 赞赏码"
+                      alt={convertText('WeChat Pay HK 赞赏码', locale)}
                       className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity rounded-xl gap-1">
                       <Maximize2 className="w-3.5 h-3.5" />
-                      <span>查看大图</span>
+                      <span>{convertText('查看大图', locale)}</span>
                     </div>
                   </div>
                   <span className="block text-xs text-emerald-600/90 dark:text-emerald-400 font-medium">
-                    WeChat HK 扫码
+                    {convertText('WeChat HK 扫码', locale)}
                   </span>
                 </div>
               </div>
@@ -1089,7 +1089,7 @@ export const SupportDashboard: React.FC = () => {
                         paypal.me/shijianus
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        推荐使用同币种 PayPal 转账赞赏以减少手续费
+                        {convertText('推荐使用同币种 PayPal 转账赞赏以减少手续费', locale)}
                       </div>
                     </div>
                   </div>
@@ -1098,24 +1098,24 @@ export const SupportDashboard: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-3.5">
                   <div className="p-3 rounded-2xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5 bg-slate-50/50 dark:bg-white/[0.02]">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">PayPal HK 码</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{convertText('PayPal HK 码', locale)}</span>
                     <img
                       src="/media/shijianus/support/paypal-hk.jpg"
-                      alt="PayPal HK"
+                      alt={convertText('PayPal HK 码', locale)}
                       className="w-full aspect-square object-contain rounded-xl p-1 bg-white cursor-pointer shadow-2xs max-w-[170px] mx-auto"
                       onClick={() =>
-                        setModalImage({ src: '/media/shijianus/support/paypal-hk.jpg', title: 'PayPal HK' })
+                        setModalImage({ src: '/media/shijianus/support/paypal-hk.jpg', title: convertText('PayPal HK 码', locale) })
                       }
                     />
                   </div>
                   <div className="p-3 rounded-2xl border border-slate-200/80 dark:border-white/10 text-center space-y-1.5 bg-slate-50/50 dark:bg-white/[0.02]">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">PayPal UK 码</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{convertText('PayPal UK 码', locale)}</span>
                     <img
                       src="/media/shijianus/support/paypal-uk.jpg"
-                      alt="PayPal UK"
+                      alt={convertText('PayPal UK 码', locale)}
                       className="w-full aspect-square object-contain rounded-xl p-1 bg-white cursor-pointer shadow-2xs max-w-[170px] mx-auto"
                       onClick={() =>
-                        setModalImage({ src: '/media/shijianus/support/paypal-uk.jpg', title: 'PayPal UK' })
+                        setModalImage({ src: '/media/shijianus/support/paypal-uk.jpg', title: convertText('PayPal UK 码', locale) })
                       }
                     />
                   </div>
@@ -1135,7 +1135,7 @@ export const SupportDashboard: React.FC = () => {
                           USDT (Arbitrum One)
                         </div>
                         <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                          以太坊 Layer 2 极低矿工费通道
+                          {convertText('以太坊 Layer 2 极低矿工费通道', locale)}
                         </div>
                       </div>
                     </div>
@@ -1145,7 +1145,7 @@ export const SupportDashboard: React.FC = () => {
                   </div>
 
                   <div className="p-3 rounded-xl bg-white dark:bg-[#1a1e2d] border border-slate-200/70 dark:border-white/10 space-y-1.5 shadow-2xs">
-                    <div className="text-[10px] text-slate-400 font-mono">收款钱包地址 (EVM Compatible)：</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{convertText('收款钱包地址 (EVM Compatible)：', locale)}</div>
                     <code className="block text-xs font-mono break-all text-slate-800 dark:text-slate-200 select-all font-semibold">
                       0x00d52edc5230dD21F521D8396c68b84D576e6041
                     </code>
@@ -1161,20 +1161,20 @@ export const SupportDashboard: React.FC = () => {
                     {copiedKey === 'crypto-addr' ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>已复制到剪贴板！</span>
+                        <span>{convertText('已复制到剪贴板！', locale)}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>复制 USDT Arbitrum 钱包地址</span>
+                        <span>{convertText('复制 USDT Arbitrum 钱包地址', locale)}</span>
                       </>
                     )}
                   </button>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.05] text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
-                  <div className="font-semibold text-slate-700 dark:text-slate-300">💡 转账提示：</div>
-                  <p>仅支持 Arbitrum One 网络的 USDT (ERC-20) 资产，链上确认极速且 Gas 极低（约 $0.01）。</p>
+                  <div className="font-semibold text-slate-700 dark:text-slate-300">{convertText('💡 转账提示：', locale)}</div>
+                  <p>{convertText('仅支持 Arbitrum One 网络的 USDT (ERC-20) 资产，链上确认极速且 Gas 极低（约 $0.01）。', locale)}</p>
                 </div>
               </div>
             )}
@@ -1187,7 +1187,7 @@ export const SupportDashboard: React.FC = () => {
                 <Heart className="w-3.5 h-3.5 fill-current" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手动录入名册；误操作支持原路退款，资金去向与变动均如实公示。
+                {convertText('扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手动录入名册；误操作支持原路退款，资金去向与变动均如实公示。', locale)}
               </p>
             </div>
           </div>
@@ -1230,69 +1230,69 @@ export const SupportDashboard: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              <span>累计支持人次</span>
+              <span>{convertText('累计支持人次', locale)}</span>
               <Users className="w-3.5 h-3.5 text-blue-500" />
             </div>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {isLoadingSponsors ? (
-                <span className="text-slate-400 text-lg">加载中…</span>
+                <span className="text-slate-400 text-lg">{convertText('加载中…', locale)}</span>
               ) : (
                 <>
-                  {metrics.totalSupporters} <span className="text-xs font-normal text-slate-400">位</span>
+                  {metrics.totalSupporters} {convertText('位', locale) ? <span className="text-xs font-normal text-slate-400">{convertText('位', locale)}</span> : null}
                 </>
               )}
             </div>
             <div className="text-[10px] text-slate-400 mt-0.5">
-              {metrics.totalSupporters === 0 ? '期待第一位支持者 ✨' : `来自 ${metrics.currencyCount} 个货币区`}
+              {metrics.totalSupporters === 0 ? convertText('期待第一位支持者 ✨', locale) : `${metrics.currencyCount} currencies`}
             </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              <span>咖啡档位支持</span>
+              <span>{convertText('咖啡档位支持', locale)}</span>
               <Coffee className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
               {isLoadingSponsors ? (
-                <span className="text-slate-400 text-lg">加载中…</span>
+                <span className="text-slate-400 text-lg">{convertText('加载中…', locale)}</span>
               ) : (
                 <>
-                  {metrics.totalCups} <span className="text-xs font-normal text-slate-400">杯 ☕</span>
+                  {metrics.totalCups} <span className="text-xs font-normal text-slate-400">{convertText('杯 ☕', locale)}</span>
                 </>
               )}
             </div>
             <div className="text-[10px] text-slate-400 mt-0.5">
-              {metrics.totalCups === 0 ? '暂无咖啡记录' : '等值咖啡换算累计'}
+              {metrics.totalCups === 0 ? convertText('暂无咖啡记录', locale) : convertText('等值咖啡换算累计', locale)}
             </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              <span>汇聚币种</span>
+              <span>{convertText('汇聚币种', locale)}</span>
               <Sparkles className="w-3.5 h-3.5 text-[#425aef]" />
             </div>
             <div className="text-2xl font-black text-[#425aef] dark:text-blue-400 mt-1">
               {isLoadingSponsors ? (
-                <span className="text-slate-400 text-lg">加载中…</span>
+                <span className="text-slate-400 text-lg">{convertText('加载中…', locale)}</span>
               ) : (
                 <>
-                  {metrics.currencyCount} <span className="text-xs font-normal text-slate-400">种</span>
+                  {metrics.currencyCount} <span className="text-xs font-normal text-slate-400">{convertText('种', locale)}</span>
                 </>
               )}
             </div>
             <div className="text-[10px] text-slate-400 mt-0.5">
-              {metrics.currencyCount === 0 ? '支持 14 款法币' : '真实跨币种结算'}
+              {metrics.currencyCount === 0 ? convertText('支持 14 款法币', locale) : convertText('真实跨币种结算', locale)}
             </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-[#121520] border border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs transition-all">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              <span>最新支持</span>
+              <span>{convertText('最新支持', locale)}</span>
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             </div>
             <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
               {isLoadingSponsors ? (
-                <span className="text-slate-400 text-lg font-normal">加载中…</span>
+                <span className="text-slate-400 text-lg font-normal">{convertText('加载中…', locale)}</span>
               ) : metrics.latestSponsor ? (
                 <div className="flex items-baseline gap-1.5 truncate">
                   <span className="truncate">{metrics.latestSponsor.formattedAmount}</span>
@@ -1301,7 +1301,7 @@ export const SupportDashboard: React.FC = () => {
                   </span>
                 </div>
               ) : (
-                <span className="text-slate-400 text-base font-medium">虚位以待</span>
+                <span className="text-slate-400 text-base font-medium">{convertText('虚位以待', locale)}</span>
               )}
             </div>
             <div
@@ -1313,7 +1313,7 @@ export const SupportDashboard: React.FC = () => {
               }
             >
               {isLoadingSponsors ? (
-                <span>正在同步名册…</span>
+                <span>{convertText('正在同步名册…', locale)}</span>
               ) : metrics.latestSponsor ? (
                 <span className="inline-flex items-center gap-1 max-w-full truncate">
                   <span className="font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
@@ -1323,7 +1323,7 @@ export const SupportDashboard: React.FC = () => {
                   <span className="shrink-0">{metrics.latestSponsor.date}</span>
                 </span>
               ) : (
-                <span>期待第一位支持者 ✨</span>
+                <span>{convertText('期待第一位支持者 ✨', locale)}</span>
               )}
             </div>
           </div>
@@ -1405,7 +1405,7 @@ export const SupportDashboard: React.FC = () => {
                           </span>
                         ) : (
                           <span className="text-slate-400 dark:text-slate-400 text-xs">
-                            默默送上心意 ❤️
+                            {convertText('默默送上心意 ❤️', locale)}
                           </span>
                         )}
                       </td>
@@ -1440,12 +1440,12 @@ export const SupportDashboard: React.FC = () => {
                         <Coffee className="w-6 h-6" />
                       </div>
                       <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        {searchQuery ? '未搜索到相关支持者记录' : '暂无公开致谢记录'}
+                        {searchQuery ? convertText('未搜索到相关支持者记录', locale) : convertText('暂无公开致谢记录', locale)}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                         {searchQuery
-                          ? '请尝试更换关键词搜索'
-                          : '所有通过 Stripe 国际收银台、微信、支付宝等完成的赞赏均在此实时公开展示。欢迎通过上方收银台成为第一位支持者 ✨'}
+                          ? convertText('请尝试更换关键词搜索', locale)
+                          : convertText('所有通过 Stripe 国际收银台、微信、支付宝等完成的赞赏均在此实时公开展示。欢迎通过上方收银台成为第一位支持者 ✨', locale)}
                       </p>
                     </td>
                   </tr>
@@ -1458,7 +1458,7 @@ export const SupportDashboard: React.FC = () => {
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-slate-100 dark:border-white/[0.06] text-xs text-slate-500 dark:text-slate-400">
               <div>
-                第 <strong className="text-slate-800 dark:text-white font-bold">{tablePage}</strong> / {totalPages} 页 (共 {filteredSponsors.length} 条记录)
+                {convertText('第', locale)} <strong className="text-slate-800 dark:text-white font-bold">{tablePage}</strong> / {totalPages} {locale === 'en' ? 'pages' : convertText('页', locale)} ({filteredSponsors.length} {locale === 'en' ? 'records total' : convertText('条记录', locale)})
               </div>
 
               <div className="flex items-center gap-1.5 relative">
@@ -1469,7 +1469,7 @@ export const SupportDashboard: React.FC = () => {
                   className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-1 font-medium"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>上一页</span>
+                  <span>{convertText('上一页', locale)}</span>
                 </button>
 
                 <div className="flex items-center gap-1">
@@ -1497,7 +1497,7 @@ export const SupportDashboard: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setShowJumpPopover((prev) => !prev)}
-                          title="点击快速跳转页面"
+                          title={convertText('点击快速跳转页面', locale)}
                           className="w-8 h-8 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#425aef] hover:text-[#425aef] text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center"
                         >
                           ...
@@ -1513,14 +1513,14 @@ export const SupportDashboard: React.FC = () => {
                   onClick={() => setTablePage((p) => Math.min(p + 1, totalPages))}
                   className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-1 font-medium"
                 >
-                  <span>下一页</span>
+                  <span>{convertText('下一页', locale)}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
 
                 {showJumpPopover && (
                   <div className="absolute right-0 bottom-full mb-2 z-20 p-3 rounded-2xl bg-white dark:bg-[#1a1e2d] border border-slate-200 dark:border-white/10 shadow-xl animate-in zoom-in-95 duration-150 w-48">
                     <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-white/10">
-                      <span className="text-[11px] font-bold text-slate-800 dark:text-white">快速跳转至页码</span>
+                      <span className="text-[11px] font-bold text-slate-800 dark:text-white">{convertText('快速跳转至页码', locale)}</span>
                       <button
                         type="button"
                         onClick={() => setShowJumpPopover(false)}
@@ -1544,7 +1544,7 @@ export const SupportDashboard: React.FC = () => {
                         type="submit"
                         className="px-2.5 py-1 rounded-lg bg-[#425aef] hover:bg-blue-600 text-white font-bold text-xs cursor-pointer"
                       >
-                        跳转
+                        {convertText('跳转', locale)}
                       </button>
                     </form>
                   </div>
@@ -1565,7 +1565,7 @@ export const SupportDashboard: React.FC = () => {
             {t('support.faqTitle', '常見問題與透明度承諾')}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
-            关于资金流向、多币种换算、退款机制与隐私安全的坦诚说明
+            {convertText('关于资金流向、多币种换算、退款机制与隐私安全的坦诚说明', locale)}
           </p>
         </div>
 
@@ -1582,7 +1582,7 @@ export const SupportDashboard: React.FC = () => {
                   onClick={() => setExpandedFaq(isOpen ? null : idx)}
                   className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 font-bold text-sm text-slate-900 dark:text-white hover:text-[#425aef] dark:hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <span>{faq.question}</span>
+                  <span>{convertText(faq.question, locale)}</span>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
                       isOpen ? 'rotate-180 text-[#425aef]' : ''
@@ -1591,7 +1591,7 @@ export const SupportDashboard: React.FC = () => {
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-white/[0.06] pt-3 animate-in fade-in">
-                    {faq.answer}
+                    {convertText(faq.answer, locale)}
                   </div>
                 )}
               </div>
@@ -1632,7 +1632,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              请使用相应 App 扫描上方二维码完成赞赏
+              {convertText('请使用相应 App 扫描上方二维码完成赞赏', locale)}
             </p>
           </div>
         </div>

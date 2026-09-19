@@ -224,18 +224,10 @@ export const siteConfig = {
   theme: {
     defaultMode: 'light',
     background: {
-      defaultMode: 'daybreak',
-      darkMode: 'starfield',
+      defaultMode: 'clean',
+      darkMode: 'clean',
       modes: [
-        { id: 'daybreak', label: '晨光背景' },
-        { id: 'twilight', label: '黄昏背景' },
-        { id: 'snow', label: '落雪背景' },
-        { id: 'grid', label: '网格背景' },
-        { id: 'starfield', label: '星空背景' },
-        { id: 'nebula', label: '星云背景' },
-        { id: 'aurora', label: '极光背景' },
-        { id: 'matrix', label: '赛博矩阵' },
-        { id: 'clean', label: '纯净背景' },
+        { id: 'clean', label: '纯净纯色' },
       ],
     },
     snackbar: {

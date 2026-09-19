@@ -2330,6 +2330,141 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。': { en: 'Data is the pulse of the system, objectively mirroring every render and interaction.', fr: 'Les données sont le pouls du système, reflétant chaque rendu et interaction.', es: 'Los datos son el pulso del sistema, reflejando cada renderizado e interacción.', de: 'Daten sind der Puls des Systems und spiegeln jedes Rendern und jede Interaktion wider.' },
   '始于极简，构筑坚实；内容为核，长期演进。': { en: 'Born of minimalism, built to last; content at core, evolving steadily.', fr: 'Né du minimalisme, conçu pour durer ; le contenu au cœur, en évolution continue.', es: 'Nacido del minimalismo, construido para durar; contenido en el centro, evolución continua.', de: 'Aus Minimalismus geboren, für die Ewigkeit gebaut; Inhalt im Kern, stetige Weiterentwicklung.' },
 
+  // Navigation & Submenus
+  '请喝咖啡': { en: 'Buy Me a Coffee', fr: 'Offrir un café', es: 'Invítame a un café', de: 'Kaffee spendieren' },
+  '时间线总览': { en: 'Timeline overview', fr: 'Vue chronologique', es: 'Línea de tiempo', de: 'Zeitleisten-Übersicht' },
+  '按主题浏览文章': { en: 'Browse by topic', fr: 'Parcourir par sujet', es: 'Explorar por tema', de: 'Nach Thema durchsuchen' },
+  '关键词索引': { en: 'Keyword index', fr: 'Index des mots-clés', es: 'Índice de palabras clave', de: 'Schlagwort-Index' },
+  '互链、社群与交流入口': { en: 'Links, community and discussion', fr: 'Liens, communauté et échanges', es: 'Enlaces, comunidad y debate', de: 'Links, Community und Austausch' },
+  '界面与功能的试验场': { en: 'UI and feature lab', fr: 'Lab d\'interfaces et fonctionnalités', es: 'Laboratorio de interfaz y funciones', de: 'Labor für Benutzeroberflächen' },
+  '查看当前重构进度': { en: 'Track reconstruction progress', fr: 'Suivre les progrès de refonte', es: 'Ver progreso de reconstrucción', de: 'Fortschritt der Neugestaltung' },
+  '音乐播放器': { en: 'Music player', fr: 'Lecteur de musique', es: 'Reproductor de música', de: 'Musik-Player' },
+  '视频播放器': { en: 'Video player', fr: 'Lecteur vidéo', es: 'Reproductor de video', de: 'Video-Player' },
+  '作者与站点说明': { en: 'Author & site notes', fr: 'Notes sur l\'auteur et le site', es: 'Notas del autor y del sitio', de: 'Autor- und Website-Hinweise' },
+  '赞赏与支援名录': { en: 'Sponsors & appreciation roster', fr: 'Mécénat et liste de soutien', es: 'Patrocinio y lista de apoyo', de: 'Förderer- und Unterstützerliste' },
+  '尚在整理中的专题入口': { en: 'Curated topics in progress', fr: 'Sujets en cours de préparation', es: 'Temas seleccionados en preparación', de: 'Themen in Bearbeitung' },
+  '切换菜单': { en: 'Toggle Menu', fr: 'Basculer le menu', es: 'Alternar menú', de: 'Menü umschalten' },
+  '回到顶部': { en: 'Back to top', fr: 'Haut de page', es: 'Volver arriba', de: 'Nach oben' },
+  '主导航': { en: 'Main navigation', fr: 'Navigation principale', es: 'Navegación principal', de: 'Hauptnavigation' },
+
+  // Console & Discovery
+  '热门话题': { en: 'Hot Topics', fr: 'Sujets populaires', es: 'Temas populares', de: 'Beliebte Themen' },
+  '内容发现': { en: 'Discovery', fr: 'Découverte', es: 'Descubrimiento', de: 'Entdeckung' },
+  '随机播放 / 点歌': { en: 'Shuffle / Search', fr: 'Aléatoire / Rechercher', es: 'Aleatorio / Buscar', de: 'Zufall / Suchen' },
+  '点歌 / 随机 / 后台播放': { en: 'Search / Shuffle / Background', fr: 'Recherche / Aléatoire / Fond', es: 'Buscar / Aleatorio / Fondo', de: 'Suchen / Zufall / Hintergrund' },
+  '关闭背景音乐面板': { en: 'Close background music panel', fr: 'Fermer le lecteur musical', es: 'Cerrar panel de música', de: 'Musik-Panel schließen' },
+  '打开背景音乐面板': { en: 'Open background music panel', fr: 'Ouvrir le lecteur musical', es: 'Abrir panel de música', de: 'Musik-Panel öffnen' },
+  '关闭音乐面板': { en: 'Close music panel', fr: 'Fermer le panneau musical', es: 'Cerrar panel de música', de: 'Musikbereich schließen' },
+  '切换曲库': { en: 'Switch library', fr: 'Changer de bibliothèque', es: 'Cambiar biblioteca', de: 'Bibliothek wechseln' },
+
+  // Badges, Cards & Pagination
+  '荐': { en: 'Top', fr: 'Top', es: 'Top', de: 'Top' },
+  '文': { en: 'Post', fr: 'Article', es: 'Post', de: 'Beitrag' },
+  '最新动态': { en: 'Latest News', fr: 'Actualités', es: 'Novedades', de: 'Aktuelles' },
+  '未读': { en: 'Unread', fr: 'Non lu', es: 'No leído', de: 'Ungelesen' },
+  '置顶': { en: 'Pinned', fr: 'Épinglé', es: 'Fijado', de: 'Angeheftet' },
+  '最新': { en: 'New', fr: 'Nouveau', es: 'Nuevo', de: 'Neu' },
+  '第': { en: 'Page', fr: 'Page', es: 'Pág.', de: 'Seite' },
+  '快速跳转页码': { en: 'Jump to page', fr: 'Aller à la page', es: 'Ir a la página', de: 'Zur Seite' },
+  '输入目标页码': { en: 'Enter target page', fr: 'Entrer le numéro de page', es: 'Ingresar página objetivo', de: 'Zielseite eingeben' },
+  '前往': { en: 'Go', fr: 'Aller', es: 'Ir', de: 'Los' },
+  '已是第一页': { en: 'First page', fr: 'Première page', es: 'Primera página', de: 'Erste Seite' },
+  '已是最后一页': { en: 'Last page', fr: 'Dernière page', es: 'Última página', de: 'Letzte Seite' },
+
+  // Categories & Descriptions
+  '架构判断与演进记录': { en: 'Architecture decisions & evolution', fr: 'Décisions d\'architecture et évolution', es: 'Decisiones de arquitectura y evolución', de: 'Architektur-Entscheidungen und Evolution' },
+  '界面、组件和体验实现': { en: 'UI, components & UX delivery', fr: 'Interface, composants et ergonomie', es: 'Interfaz, componentes y experiencia', de: 'Benutzeroberfläche, Komponenten & UX' },
+  '课程、实验与思考': { en: 'Courses, experiments & reflections', fr: 'Cours, expériences et réflexions', es: 'Kurse, Experimente und Reflexionen', de: 'Kurse, Experimente und Reflexionen' },
+  '等级阶梯与徽章': { en: 'Levels, tiers & achievements', fr: 'Niveaux, paliers et badges', es: 'Niveles, rangos e insignias', de: 'Stufen, Ränge und Abzeichen' },
+  '规范、指引与说明': { en: 'Guidelines, specs & manuals', fr: 'Directives, spécifications et guides', es: 'Pautas, especificaciones y guías', de: 'Richtlinien, Spezifikationen und Anleitungen' },
+  '系统设计': { en: 'System Design', fr: 'Conception système', es: 'Diseño de sistemas', de: 'Systemdesign' },
+  '前端工程': { en: 'Frontend Eng', fr: 'Ingénierie frontend', es: 'Ingeniería frontend', de: 'Frontend-Entwicklung' },
+  '学习笔记': { en: 'Study Notes', fr: 'Notes d\'étude', es: 'Notas de estudio', de: 'Studiennotizen' },
+  '读者社区': { en: 'Community', fr: 'Communauté', es: 'Comunidad', de: 'Community' },
+  '社区指南': { en: 'Community Guide', fr: 'Guide communautaire', es: 'Guía comunitaria', de: 'Community-Leitfaden' },
+  '主题重构': { en: 'Theme Refactor', fr: 'Refonte du thème', es: 'Refactorización del tema', de: 'Theme-Refaktorisierung' },
+  '主题格式': { en: 'Theme Formats', fr: 'Formats du thème', es: 'Formatos del tema', de: 'Theme-Formate' },
+  '媒体适配': { en: 'Media Adaptation', fr: 'Adaptation multimédia', es: 'Adaptación de medios', de: 'Medienanpassung' },
+  '安知鱼': { en: 'Anzhiyu', fr: 'Anzhiyu', es: 'Anzhiyu', de: 'Anzhiyu' },
+  '徽章系统': { en: 'Badge System', fr: 'Système de badges', es: 'Sistema de insignias', de: 'Abzeichensystem' },
+  '思维导图': { en: 'Mind Map', fr: 'Carte mentale', es: 'Mapa mental', de: 'Mindmap' },
+  '排版规范': { en: 'Typography Specs', fr: 'Normes de typographie', es: 'Normas tipográficas', de: 'Typografie-Standards' },
+  '等级阶梯': { en: 'Trust Levels', fr: 'Niveaux de confiance', es: 'Niveles de confianza', de: 'Vertrauensstufen' },
+
+  // Support Dashboard
+  '☕ 咖啡档位随心选': { en: '☕ Flexible Coffee Tiers', fr: '☕ Paliers café flexibles', es: '☕ Niveles de café flexibles', de: '☕ Flexible Kaffeestufen' },
+  '💳 国际收银台 (Apple / Google Pay)': { en: '💳 Global Checkout (Apple / Google Pay)', fr: '💳 Caisse mondiale (Apple / Google Pay)', es: '💳 Caja global (Apple / Google Pay)', de: '💳 Globale Kasse (Apple / Google Pay)' },
+  '🍵 微信 & 支付宝扫码直达': { en: '🍵 WeChat & Alipay QR Fast Pay', fr: '🍵 QR WeChat & Alipay direct', es: '🍵 QR WeChat y Alipay directo', de: '🍵 Direkte WeChat & Alipay QR-Zahlung' },
+  '⚡ 多币种自适应结算': { en: '⚡ Multi-Currency Adaptive Settlement', fr: '⚡ Règlement multi-devises adaptatif', es: '⚡ Liquidación multimoneda adaptativa', de: '⚡ Adaptive Multi-Währungs-Abrechnung' },
+  '🛡️ Stripe 端到端金融级加密': { en: '🛡️ Stripe End-to-End Banking Encryption', fr: '🛡️ Cryptage bancaire de bout en bout Stripe', es: '🛡️ Cifrado bancario de extremo a extremo de Stripe', de: '🛡️ Stripe End-to-End Bankenverschlüsselung' },
+  '📜 公开透明支援名录': { en: '📜 Transparent Public Supporter Roster', fr: '📜 Registre public et transparent des soutiens', es: '📜 Registro público y transparente de apoyo', de: '📜 Transparentes öffentliches Fördererverzeichnis' },
+  '微信 / 支付宝 / PayPal / Web3': { en: 'WeChat / Alipay / PayPal / Web3', fr: 'WeChat / Alipay / PayPal / Web3', es: 'WeChat / Alipay / PayPal / Web3', de: 'WeChat / Alipay / PayPal / Web3' },
+  '微信支付': { en: 'WeChat Pay', fr: 'WeChat Pay', es: 'WeChat Pay', de: 'WeChat Pay' },
+  '微信扫一扫赞赏': { en: 'Scan with WeChat to support', fr: 'Scanner avec WeChat pour soutenir', es: 'Escanear con WeChat para apoyar', de: 'Mit WeChat scannen und unterstützen' },
+  '微信支付赞赏码': { en: 'WeChat Pay QR Code', fr: 'Code QR WeChat Pay', es: 'Código QR de WeChat Pay', de: 'WeChat Pay QR-Code' },
+  '支付宝': { en: 'Alipay', fr: 'Alipay', es: 'Alipay', de: 'Alipay' },
+  '支付宝扫一扫赞赏': { en: 'Scan with Alipay to support', fr: 'Scanner avec Alipay pour soutenir', es: 'Escanear con Alipay para apoyar', de: 'Mit Alipay scannen und unterstützen' },
+  '支付宝赞赏码': { en: 'Alipay QR Code', fr: 'Code QR Alipay', es: 'Código QR de Alipay', de: 'Alipay QR-Code' },
+  'Alipay HK 赞赏码': { en: 'Alipay HK QR Code', fr: 'Code QR Alipay HK', es: 'Código QR Alipay HK', de: 'Alipay HK QR-Code' },
+  'WeChat Pay HK 赞赏码': { en: 'WeChat Pay HK QR Code', fr: 'Code QR WeChat Pay HK', es: 'Código QR WeChat Pay HK', de: 'WeChat Pay HK QR-Code' },
+  '查看大图': { en: 'View full size', fr: 'Agrandir', es: 'Ver en tamaño completo', de: 'Vollbild anzeigen' },
+  '港币 HKD 扫码': { en: 'Scan for HKD', fr: 'Scanner pour HKD', es: 'Escanear para HKD', de: 'Für HKD scannen' },
+  'WeChat HK 扫码': { en: 'Scan with WeChat HK', fr: 'Scanner avec WeChat HK', es: 'Escanear con WeChat HK', de: 'Mit WeChat HK scannen' },
+  '推荐使用同币种 PayPal 转账赞赏以减少手续费': { en: 'Prefer same-currency PayPal transfers to minimize fees', fr: 'Privilégiez les virements PayPal dans la même devise pour limiter les frais', es: 'Prefiera transferencias de PayPal en la misma moneda para minimizar tarifas', de: 'Gleichwährungsüberweisungen per PayPal empfohlen, um Gebühren zu minimieren' },
+  'PayPal HK 码': { en: 'PayPal HK QR', fr: 'QR PayPal HK', es: 'QR PayPal HK', de: 'PayPal HK QR' },
+  'PayPal UK 码': { en: 'PayPal UK QR', fr: 'QR PayPal UK', es: 'QR PayPal UK', de: 'PayPal UK QR' },
+  '以太坊 Layer 2 极低矿工费通道': { en: 'Ethereum Layer 2 Ultra-Low Gas Channel', fr: 'Canal Ethereum Layer 2 à très faibles frais', es: 'Canal de Ethereum Capa 2 de tarifas ultra bajas', de: 'Ethereum Layer 2 Kanal mit extrem niedrigen Gebühren' },
+  '收款钱包地址 (EVM Compatible)：': { en: 'Receiving Wallet Address (EVM Compatible):', fr: 'Adresse de réception (compatible EVM) :', es: 'Dirección de billetera de recepción (compatible con EVM):', de: 'Empfangsadresse (EVM-kompatibel):' },
+  '已复制到剪贴板！': { en: 'Copied to clipboard!', fr: 'Copié dans le presse-papiers !', es: '¡Copiado al portapapeles!', de: 'In die Zwischenablage kopiert!' },
+  '复制 USDT Arbitrum 钱包地址': { en: 'Copy USDT Arbitrum Wallet Address', fr: 'Copier l\'adresse USDT Arbitrum', es: 'Copiar dirección de billetera USDT Arbitrum', de: 'USDT Arbitrum Wallet-Adresse kopieren' },
+  '💡 转账提示：': { en: '💡 Transfer Note:', fr: '💡 Note de transfert :', es: '💡 Nota de transferencia:', de: '💡 Überweisungshinweis:' },
+  '仅支持 Arbitrum One 网络的 USDT (ERC-20) 资产，链上确认极速且 Gas 极低（约 $0.01）。': { en: 'Supports only USDT (ERC-20) on Arbitrum One network. Instant confirmation and low gas (~$0.01).', fr: 'Prend en charge uniquement l\'USDT (ERC-20) sur Arbitrum One. Confirmation rapide et frais minimes (~0,01 $).', es: 'Solo admite USDT (ERC-20) en la red Arbitrum One. Confirmación rápida y gas bajo (~$0.01).', de: 'Unterstützt nur USDT (ERC-20) im Arbitrum One Netzwerk. Schnelle Bestätigung und minimale Gebühren (~0,01 $).' },
+  '扫码赞赏可在转账附言中备注称呼与寄语，博主核对账单后将手动录入名册；误操作支持原路退款，资金去向与变动均如实公示。': { en: 'You can include your name and message in the transfer memo. Accidental payments can be refunded upon request. All fund allocations are transparently updated.', fr: 'Vous pouvez inclure votre nom et un message dans le libellé. Les paiements accidentels peuvent être remboursés sur demande. Toutes les affectations sont publiées en toute transparence.', es: 'Puede incluir su nombre y mensaje en la nota de transferencia. Los pagos accidentales se pueden reembolsar a pedido. Todas las asignaciones se publican de forma transparente.', de: 'Sie können Ihren Namen und eine Nachricht in den Überweisungszweck eintragen. Versehentliche Zahlungen können auf Anfrage erstattet werden. Alle Mittelverwendungen werden transparent offengelegt.' },
+  '累计支持人次': { en: 'Total Supporters', fr: 'Soutiens cumulés', es: 'Apoyos acumulados', de: 'Unterstützer insgesamt' },
+  '位': { en: '', fr: '', es: '', de: '' },
+  '期待第一位支持者 ✨': { en: 'Awaiting the first supporter ✨', fr: 'En attente du premier soutien ✨', es: 'Esperando al primer colaborador ✨', de: 'Warten auf den ersten Unterstützer ✨' },
+  '咖啡档位支持': { en: 'Coffee Tiers Backed', fr: 'Cafés offerts', es: 'Cafés patrocinados', de: 'Gespendete Kaffees' },
+  '杯 ☕': { en: 'cups ☕', fr: 'tasses ☕', es: 'tazas ☕', de: 'Tassen ☕' },
+  '暂无咖啡记录': { en: 'No coffee records yet', fr: 'Aucun enregistrement de café', es: 'Sin registros de café todavía', de: 'Noch keine Kaffeeeinträge' },
+  '等值咖啡换算累计': { en: 'Equivalent coffee tally', fr: 'Équivalent café cumulé', es: 'Equivalente en café acumulado', de: 'Kaffeeäquivalent insgesamt' },
+  '汇聚币种': { en: 'Currencies Received', fr: 'Devises reçues', es: 'Monedas recibidas', de: 'Erhaltene Währungen' },
+  '种': { en: 'types', fr: 'types', es: 'tipos', de: 'Arten' },
+  '支持 14 款法币': { en: '14 fiat currencies supported', fr: '14 devises fiduciaires supportées', es: '14 monedas fiduciarias admitidas', de: '14 Fiat-Währungen unterstützt' },
+  '真实跨币种结算': { en: 'Multi-currency settlement', fr: 'Règlement multi-devises réel', es: 'Liquidación multimoneda real', de: 'Echte Multiwährungsabrechnung' },
+  '最新支持': { en: 'Latest Supporter', fr: 'Dernier soutien', es: 'Último apoyo', de: 'Neuester Unterstützer' },
+  '虚位以待': { en: 'Open Spot', fr: 'Place libre', es: 'Plaza libre', de: 'Freier Platz' },
+  '暂无公开致谢记录': { en: 'No public records yet', fr: 'Aucun enregistrement public pour l\'instant', es: 'Aún no hay registros públicos', de: 'Noch keine öffentlichen Einträge' },
+  '所有通过 Stripe 国际收银台、微信、支付宝等完成的赞赏均在此实时公开展示。欢迎通过上方收银台成为第一位支持者 ✨': { en: 'All contributions via Stripe, WeChat, Alipay, etc. are shown here in real-time. Feel free to use the checkout above to become the first supporter ✨', fr: 'Tous les dons via Stripe, WeChat, Alipay, etc. sont affichés ici en temps réel. Devenez le premier soutien grâce à la caisse ci-dessus ✨', es: 'Todas las contribuciones a través de Stripe, WeChat, Alipay, etc. se muestran aquí en tiempo real. Le invitamos a convertirse en el primer colaborador ✨', de: 'Alle Beiträge über Stripe, WeChat, Alipay usw. werden hier in Echtzeit angezeigt. Werden Sie über die obige Kasse der erste Unterstützer ✨' },
+  '关于资金流向、多币种换算、退款机制与隐私安全的坦诚说明': { en: 'Honest explanations on fund allocation, multi-currency conversion, refunds, and privacy', fr: 'Explications transparentes sur l\'utilisation des fonds, la conversion multi-devises, les remboursements et la confidentialité', es: 'Explicaciones sinceras sobre el flujo de fondos, conversión multimoneda, reembolsos y privacidad', de: 'Ehrliche Erläuterungen zu Mittelverwendung, Währungsumrechnung, Erstattungen und Datenschutz' },
+  '赞赏支持者': { en: 'Supporter', fr: 'Soutien', es: 'Colaborador', de: 'Unterstützer' },
+  '支持金额': { en: 'Amount', fr: 'Montant', es: 'Monto', de: 'Betrag' },
+  '祝福与寄语': { en: 'Wishes & Message', fr: 'Vœux & Message', es: 'Deseos y mensaje', de: 'Wünsche & Nachricht' },
+  '支付渠道': { en: 'Payment Channel', fr: 'Canal de paiement', es: 'Canal de pago', de: 'Zahlungskanal' },
+  '资金去向 / 消费公示': { en: 'Fund Allocation / Transparency', fr: 'Affectation des fonds / Transparence', es: 'Destino de los fondos / Transparencia', de: 'Mittelverwendung / Transparenz' },
+  '默默送上心意 ❤️': { en: 'Warm support sent silently ❤️', fr: 'Soutien envoyé en toute discrétion ❤️', es: 'Apoyo enviado en silencio ❤️', de: 'Stille Unterstützung gesendet ❤️' },
+  '未搜索到相关支持者记录': { en: 'No matching supporter records found', fr: 'Aucun enregistrement trouvé', es: 'No se encontraron registros de colaboradores', de: 'Keine passenden Förderer-Einträge gefunden' },
+  '请尝试更换关键词搜索': { en: 'Please try searching with different keywords', fr: 'Veuillez essayer d\'autres mots-clés', es: 'Intente buscar con otras palabras clave', de: 'Bitte versuchen Sie es mit anderen Suchbegriffen' },
+  '快速跳转至页码': { en: 'Jump to page', fr: 'Aller à la page', es: 'Ir a la página', de: 'Zur Seite springen' },
+  '跳转': { en: 'Go', fr: 'Aller', es: 'Ir', de: 'Los' },
+  '请使用相应 App 扫描上方二维码完成赞赏': { en: 'Please use the corresponding app to scan the QR code', fr: 'Veuillez utiliser l\'application correspondante pour scanner le code QR', es: 'Utilice la aplicación correspondiente para escanear el código QR', de: 'Bitte scannen Sie den QR-Code mit der entsprechenden App' },
+
+  // Placeholder Pages
+  '运行 / 状态': { en: 'Runtime / Status', fr: 'Système / Statut', es: 'Sistema / Estado', de: 'System / Status' },
+  '这个页面预留给运行状态、重构里程碑、页面完成度和后续路线图，让读者能直接看到当前站点还在做什么。': { en: 'This page is reserved for runtime metrics, milestones, completeness, and roadmaps to show ongoing work.', fr: 'Cette page est réservée aux métriques d\'exécution, jalons, avancement et feuille de route.', es: 'Esta página está reservada para métricas de ejecución, hitos, progreso y hoja de ruta.', de: 'Diese Seite ist für Laufzeitmetriken, Meilensteine, Fertigstellungsgrad und Roadmap reserviert.' },
+  '状态面板待接入': { en: 'Status panel pending integration', fr: 'Panneau de statut en attente', es: 'Panel de estado pendiente de integración', de: 'Status-Panel noch nicht angebunden' },
+  '当前页面已预留完成，后续内容可以直接在这个路由上继续扩展。': { en: 'This placeholder page is ready; future contents will expand directly under this route.', fr: 'Cette page réservée est prête ; le contenu futur s\'étendra directement sous cette route.', es: 'Esta página de reserva está lista; el contenido futuro se expandirá en esta ruta.', de: 'Diese Platzhalterseite ist bereit; zukünftige Inhalte werden hier erweitert.' },
+  '之后可以直接接入运行时间、构建状态、评论数据库与访问统计。': { en: 'Uptime, build status, comment database, and visitor stats will be directly connected here.', fr: 'La disponibilité, l\'état des builds, la base de commentaires et les statistiques seront connectés ici.', es: 'El tiempo de actividad, estado de compilación, base de comentarios y estadísticas se conectarán aquí.', de: 'Betriebszeit, Build-Status, Kommentardatenbank und Besucherstatistiken werden hier angebunden.' },
+  '现在先把路径、布局和导航层级固定下来，避免以后再拆菜单。': { en: 'Paths, layout, and nav hierarchy are locked in advance to avoid refactoring menus later.', fr: 'Les chemins, la mise en page et la hiérarchie sont fixés à l\'avance pour préserver la structure des menus.', es: 'Las rutas, diseño y jerarquía de navegación quedan fijados con anticipación para evitar refactorizaciones.', de: 'Pfade, Layout und Navigationshierarchie werden vorab fixiert, um spätere Menüänderungen zu vermeiden.' },
+  '占位页借用 404 的建设中语义，但本身已经是正式可访问页面。': { en: 'The placeholder borrows "under construction" aesthetics while being a formal accessible route.', fr: 'La page d\'attente emprunte l\'esthétique « en construction » tout en étant une route officielle.', es: 'La página de marcador adopta la estética de «en construcción» siendo ya una ruta oficial.', de: 'Die Platzhalterseite nutzt das „Im Bau“-Thema, ist aber bereits eine offizielle Route.' },
+
+  // Encrypted Modal
+  '验证安全访问凭证': { en: 'Verify Security Credentials', fr: 'Vérifier les informations de sécurité', es: 'Verificar credenciales de seguridad', de: 'Sicherheitsnachweis überprüfen' },
+  '该部分为受保护加密内容，请输入密码进行校验。': { en: 'This section is protected and encrypted. Please enter your passcode to verify.', fr: 'Cette section est protégée et chiffrée. Veuillez saisir votre mot de passe.', es: 'Esta sección está protegida y cifrada. Ingrese su contraseña para verificar.', de: 'Dieser Bereich ist geschützt und verschlüsselt. Bitte Passwort zur Überprüfung eingeben.' },
+  '验证并解密': { en: 'Verify & Decrypt', fr: 'Vérifier et déchiffrer', es: 'Verificar y descifrar', de: 'Überprüfen und entschlüsseln' },
+
+  // Author Bio
+  '00后在读大学生 · Web 全栈初探者 · 数字花园建造者': { en: 'Gen-Z Undergrad · Web Full-Stack Explorer · Digital Garden Builder', fr: 'Étudiant Gen-Z · Explorateur Web Full-Stack · Bâtisseur de jardin numérique', es: 'Estudiante universitario Gen-Z · Explorador Web Full-Stack · Constructor de jardín digital', de: 'Gen-Z Student · Web-Full-Stack-Entdecker · Erbauer digitaler Gärten' },
+  '主题重构启动记录': { en: 'Theme Refactoring Genesis', fr: 'Genèse de la refonte du thème', es: 'Génesis de la refactorización del tema', de: 'Start der Theme-Neugestaltung' },
 };
 
 export interface PatternRule {
@@ -2337,7 +2472,45 @@ export interface PatternRule {
   replace: Record<SupportedLocale, (match: RegExpMatchArray) => string>;
 }
 
+const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const MONTHS_ES = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.'];
+const MONTHS_DE = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
+
 export const DYNAMIC_PATTERNS: PatternRule[] = [
+  {
+    pattern: /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
+    replace: {
+      'zh-CN': (m) => `${m[1]}年${m[2]}月${m[3]}日`,
+      'zh-Hant': (m) => `${m[1]}年${m[2]}月${m[3]}日`,
+      en: (m) => `${MONTHS_EN[parseInt(m[2], 10) - 1] || m[2]} ${m[3]}, ${m[1]}`,
+      fr: (m) => `${m[3]} ${MONTHS_FR[parseInt(m[2], 10) - 1] || m[2]} ${m[1]}`,
+      es: (m) => `${m[3]} de ${MONTHS_ES[parseInt(m[2], 10) - 1] || m[2]} de ${m[1]}`,
+      de: (m) => `${m[3]}. ${MONTHS_DE[parseInt(m[2], 10) - 1] || m[2]} ${m[1]}`,
+    },
+  },
+  {
+    pattern: /^\/\s*(\d+)\s*页$/,
+    replace: {
+      'zh-CN': (m) => `/ ${m[1]} 页`,
+      'zh-Hant': (m) => `/ ${m[1]} 頁`,
+      en: (m) => `/ ${m[1]} pages`,
+      fr: (m) => `/ ${m[1]} pages`,
+      es: (m) => `/ ${m[1]} páginas`,
+      de: (m) => `/ ${m[1]} Seiten`,
+    },
+  },
+  {
+    pattern: /^共\s*(\d+)\s*篇$/,
+    replace: {
+      'zh-CN': (m) => `共 ${m[1]} 篇`,
+      'zh-Hant': (m) => `共 ${m[1]} 篇`,
+      en: (m) => `${m[1]} posts total`,
+      fr: (m) => `${m[1]} articles au total`,
+      es: (m) => `${m[1]} publicaciones en total`,
+      de: (m) => `${m[1]} Beiträge insgesamt`,
+    },
+  },
   {
     pattern: /^已切换背景：(.*)$/i,
     replace: {
@@ -2493,7 +2666,7 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
     },
   },
   {
-    pattern: /^(\d+(?:\.\d+)?k?)\s*字$/i,
+    pattern: /^([\d,]+(?:\.\d+)?k?)\s*字$/i,
     replace: {
       'zh-CN': (m) => `${m[1]} 字`,
       'zh-Hant': (m) => `${m[1]} 字`,
@@ -2559,7 +2732,7 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
     },
   },
   {
-    pattern: /^(\d+)\s*天$/i,
+    pattern: /^([\d,]+)\s*天$/i,
     replace: {
       'zh-CN': (m) => `${m[1]} 天`,
       'zh-Hant': (m) => `${m[1]} 天`,
@@ -2851,7 +3024,7 @@ export function isIgnoredSubtree(el: Element): boolean {
   return false;
 }
 
-const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail/;
+const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail|年|月|日|页/;
 
 /**
  * Text translation router based on variant (O(1) exact mapping + dynamic pattern rules)
@@ -2920,6 +3093,13 @@ export function convertText(value: string, variant: LocaleVariant): string {
   }
 
   return value;
+}
+
+if (typeof window !== 'undefined') {
+  (window as any).__shijianusConvertText = convertText;
+  if (window.__SHIJIANUS_LOCALE_RUNTIME__) {
+    (window.__SHIJIANUS_LOCALE_RUNTIME__ as any).convertText = convertText;
+  }
 }
 
 function rememberOriginalTextValue(node: Text, currentValue: string, refreshBase = false): string {
