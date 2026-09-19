@@ -12,6 +12,7 @@ export interface ArticleI18nConfig {
   targetPosts?: string[];
   scheme?: 'primary' | 'extraction' | 'auto';
   enableOcr?: boolean;
+  protectEncrypted?: boolean;
 }
 
 export interface TranslateArticleOptions {
@@ -51,6 +52,17 @@ export const LOCALE_NAMES: Record<string, { native: string; english: string }> =
 const PROMPT_TEMPLATE_PATH = path.resolve(process.cwd(), 'src/config/article-i18n-prompt.md');
 
 /**
+ * Checks if an article has access control, password protection, or external encrypts.
+ */
+export function isArticleEncryptedOrProtected(meta: Record<string, any> = {}, rawContent = ''): boolean {
+  if (meta.access) return true;
+  if (meta.externalEncrypt || meta.externalEncrypts) return true;
+  if (meta.encrypt || meta.encrypted) return true;
+  if (/^access\s*:/m.test(rawContent) || /^externalEncrypt(s)?\s*:/m.test(rawContent)) return true;
+  return false;
+}
+
+/**
  * Reads and compiles the article localization system prompt.
  */
 export function compileSystemPrompt(sourceLocale = 'zh-CN', targetLocale = 'en'): string {
@@ -77,14 +89,41 @@ export function compileSystemPrompt(sourceLocale = 'zh-CN', targetLocale = 'en')
 
 /**
  * Compiles a compact body-only system prompt for chunk translation.
+ * Fully bidirectional: handles Chinese-to-foreign, foreign-to-Chinese, and cross-language translations.
  * Does NOT include frontmatter instructions.
  */
-function compileChunkSystemPrompt(targetLocale: string): string {
+function compileChunkSystemPrompt(targetLocale: string, sourceLocale = 'zh-CN'): string {
   const targetMeta = LOCALE_NAMES[targetLocale] || { native: targetLocale, english: targetLocale };
+  const sourceMeta = LOCALE_NAMES[sourceLocale] || { native: sourceLocale, english: sourceLocale };
   const localeName = `${targetMeta.english} (${targetMeta.native})`;
+  const sourceName = `${sourceMeta.english} (${sourceMeta.native})`;
+
+  let fidelityRule = '';
+  if (targetLocale === 'zh-CN') {
+    fidelityRule = [
+      `7. TARGET FIDELITY (SIMPLIFIED CHINESE):`,
+      `   - Translate the source ${sourceName} text faithfully into modern, idiomatic, technical Simplified Chinese (简体中文).`,
+      `   - All prose paragraphs, titles, descriptions, and user-facing explanations MUST be translated into Simplified Chinese.`,
+      `   - Do NOT echo the source foreign words verbatim; provide clear and natural Chinese technical phrasing.`,
+    ].join('\n');
+  } else if (targetLocale === 'zh-Hant') {
+    fidelityRule = [
+      `7. TARGET FIDELITY (TRADITIONAL CHINESE):`,
+      `   - Translate the source ${sourceName} text faithfully into standard, idiomatic Traditional Chinese (繁體中文).`,
+      `   - Use standard Traditional Chinese characters and authentic terminology (e.g. 程式碼, 專案, 伺服器, 演算法, 陣列, 介面).`,
+      `   - Do NOT echo the source foreign words verbatim.`,
+    ].join('\n');
+  } else {
+    fidelityRule = [
+      `7. CHINESE CHARACTER PROHIBITION (CRITICAL for non-Chinese locales):`,
+      `   - This translation is for ${localeName}. After translating, ZERO Chinese characters (Unicode range U+4E00–U+9FFF) should appear in the output EXCEPT inside code fences (\`\`\`....\`\`\`), LaTeX blocks ($$...$$), or HTML attribute values that are part of data-encrypt/data-hash/data-key technical identifiers.`,
+      `   - If you encounter a section that you cannot translate (e.g., due to length), DO NOT fall back to the original Chinese. Instead, provide your best translation attempt.`,
+    ].join('\n');
+  }
+
   return [
     `You are a professional technical translator and documentation specialist.`,
-    `Translate the provided Markdown body text into natural, idiomatic, professional ${localeName}.`,
+    `Translate the provided Markdown body text from ${sourceName} into natural, idiomatic, professional ${localeName}.`,
     `CRITICAL STRUCTURAL RULES:`,
     `1. Output ONLY the translated Markdown text. Do NOT add preamble, conversational remarks, or postscript.`,
     `2. Do NOT add YAML frontmatter or --- header delimiters.`,
@@ -100,20 +139,18 @@ function compileChunkSystemPrompt(targetLocale: string): string {
     `   - Strictly keep technical attributes and their values unchanged: class, id, data-level, data-single, data-animate, data-sound, data-hash, data-default, data-video-type, viewBox, etc.`,
     `   - TRANSLATE human-readable text inside user-facing HTML attributes: data-title="...", placeholder="...", aria-label="...", alt="...", title="...", and data-hint="...". Translate ONLY their natural language values into ${localeName}.`,
     `   - IMPORTANT — Widget container tags: For tags like <div class="interactive-unit-converter" data-title="..."> or similar self-closing widget divs, the data-title attribute MUST be translated into ${localeName}. NEVER leave Chinese characters in data-title for non-Chinese locales.`,
-    `   - IMPORTANT — Tab button text: For <button class="article-tabs__button" ...> elements inside <div class="article-tabs__nav">, the button text labels (like "🌟 渲染效果呈现", "💻 LaTeX 源码") MUST be translated into ${localeName}. Never leave Chinese in tab button text.`,
+    `   - IMPORTANT — Tab button text: For <button class="article-tabs__button" ...> elements inside <div class="article-tabs__nav">, the button text labels (like "🌟 渲染效果呈现", "💻 LaTeX 源码") MUST be translated into ${localeName}. Never leave untranslated text in tab button text.`,
     `   - IMPORTANT — Task trackers & checklists: For <div class="task-tracker__status-card ..."> elements, badges (e.g. "⏳ 待办就绪中", "🎉 全部前置检查已通过"), progress titles, descriptions, <label class="task-item-label">, and <div class="task-item-desc"> MUST be fully translated into ${localeName}.`,
     `   - IMPORTANT — Chat & Dialogue streams: All chat messages (<div class="chat-message ...">), author roles/names (<div class="chat-author">), and dialogue bubbles (<div class="chat-bubble">) MUST be translated into ${localeName} and remain strictly nested inside their parent <div class="article-chat" ...> container.`,
     `   - IMPORTANT — Dropdowns & Select options: All <option ...> label texts and human-readable data-desc="..." attributes in <select class="article-select ..."> MUST be translated into ${localeName}.`,
-    `   - IMPORTANT — Encrypted boxes & Gate cards: Titles (<div class="encrypted-box__title">), descriptions (<div class="encrypted-box__desc">), badges (<span class="badge ...">), and hint attributes (data-hint="...") MUST be translated into ${localeName}.`,
-    `   - IMPORTANT — Footnotes & References: Markdown footnote definitions (e.g. [^1]: ..., [^ref-spec]: ...) MUST be fully translated into ${localeName}. Keep footnote identifiers ([^1], [^ref-spec]) identical to the source, but TRANSLATE the explanatory text completely. Never leave Chinese text inside footnote definitions.`,
+    `   - IMPORTANT — Encrypted boxes & Gate cards: Titles (<div class="encrypted-box__title">), descriptions (<div class="encrypted-box__desc">), badges (<span class="badge ...">), and hint attributes (data-hint="...") MUST be translated into ${localeName}. Keep technical encryption tokens intact.`,
+    `   - IMPORTANT — Footnotes & References: Markdown footnote definitions (e.g. [^1]: ..., [^ref-spec]: ...) MUST be fully translated into ${localeName}. Keep footnote identifiers ([^1], [^ref-spec]) identical to the source, but TRANSLATE the explanatory text completely.`,
     `   - IMPORTANT — Encrypted entry banners & hints: For any custom hints, badges, and button labels inside or referencing encrypted components (<div class="ext-encrypt-entry-banner" ...>, etc.), ALL descriptive text MUST be fully translated into ${localeName}.`,
     `   - All accordions (<details class="article-accordion" ...>) must remain strictly inside <div class="article-accordion-group" ...>.`,
     `6. CONTEXT & CONTINUITY:`,
     `   - If any [REFERENCE CONTEXT] is provided, use it strictly for terminology continuity. Do NOT translate or echo the reference context in your output.`,
     `   - Translate ALL text under [TEXT TO TRANSLATE]. Do not truncate or summarize.`,
-    `7. CHINESE CHARACTER PROHIBITION (CRITICAL for non-Chinese locales):`,
-    `   - This translation is for ${localeName}. After translating, ZERO Chinese characters (Unicode range U+4E00–U+9FFF) should appear in the output EXCEPT inside code fences (\`\`\`....\`\`\`), LaTeX blocks ($$...$$), or HTML attribute values that are part of data-encrypt/data-hash/data-key technical identifiers.`,
-    `   - If you encounter a section that you cannot translate (e.g., due to length), DO NOT fall back to the original Chinese. Instead, provide your best translation attempt.`,
+    fidelityRule,
   ].join('\n');
 }
 
@@ -273,6 +310,11 @@ export function resolveArticleI18nConfig(): ArticleI18nConfig {
     rawScheme === 'extraction' ? 'extraction' : rawScheme === 'primary' ? 'primary' : 'auto';
   const enableOcr = process.env.ENABLE_IMAGE_OCR !== 'false';
 
+  // Confidentiality Protection Switch:
+  // Defaults to TRUE (protect confidential/encrypted articles from being sent to external AI).
+  // When false, user explicitly disables protection for test/verification purposes.
+  const protectEncrypted = process.env.ARTICLE_I18N_PROTECT_ENCRYPTED !== 'false';
+
   return {
     enabled,
     targetLocales: targetLocales.length > 0 ? targetLocales : ['en', 'zh-Hant', 'fr', 'es', 'de'],
@@ -284,6 +326,7 @@ export function resolveArticleI18nConfig(): ArticleI18nConfig {
     targetPosts,
     scheme,
     enableOcr,
+    protectEncrypted,
   };
 }
 
@@ -756,6 +799,15 @@ export async function translateFrontmatterOnly(
             continue;
           }
         }
+      } else if (options.sourceLocale && options.sourceLocale !== 'zh-CN' && options.sourceLocale !== 'zh-Hant') {
+        const titleMatch = out.match(/title:\s*["']?(.*?)["']?\r?\n/);
+        if (titleMatch && !/[\u4e00-\u9fa5]/.test(titleMatch[1])) {
+          console.warn(`[Article-i18n] Frontmatter title in ${targetLocale} contains no Chinese ("${titleMatch[1]}"). Retrying...`);
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+        }
       }
 
       return out.trim();
@@ -781,10 +833,10 @@ export async function translateBodyChunk(
   options: TranslateArticleOptions,
   prevContext?: string,
 ): Promise<{ text: string; provider: string; model: string }> {
-  const { i18nKey, targetLocale } = options;
+  const { i18nKey, targetLocale, sourceLocale = 'zh-CN' } = options;
   const targetMeta = LOCALE_NAMES[targetLocale] || { native: targetLocale, english: targetLocale };
   const localeName = `${targetMeta.english} (${targetMeta.native})`;
-  const systemPrompt = compileChunkSystemPrompt(targetLocale);
+  const systemPrompt = compileChunkSystemPrompt(targetLocale, sourceLocale);
 
   const parts: string[] = [];
   parts.push(`Translate Chunk ${chunkIndex + 1} of ${totalChunks} of the article body into ${localeName}.`);
@@ -847,7 +899,7 @@ export async function translateBodyChunk(
         }
       }
 
-      // Validate that chunk did not fail translation by simply echoing Chinese
+      // Validate translation output quality
       if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
         const textCheck = translated
           .replace(/<pre[\s\S]*?<\/pre>/gi, '')
@@ -867,6 +919,27 @@ export async function translateBodyChunk(
         const nonCodeLen = textCheck.replace(/\s+/g, '').length;
         if (zh.length > 20 || (nonCodeLen > 120 && (zh.length / nonCodeLen) > 0.04)) {
           console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${zh.length} residual Chinese chars (${(zh.length / Math.max(1, nonCodeLen) * 100).toFixed(1)}%), retrying attempt ${attempt}...`);
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, 4000));
+            continue;
+          }
+        }
+      } else if (sourceLocale && sourceLocale !== 'zh-CN' && sourceLocale !== 'zh-Hant') {
+        // When translating foreign language into Chinese, verify that Chinese characters were actually generated
+        const textCheck = translated
+          .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+          .replace(/<code[\s\S]*?<\/code>/gi, '')
+          .replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/```[\s\S]*?```/g, '')
+          .replace(/`[^`\r\n]+`/g, '')
+          .replace(/\$\$[\s\S]*?\$\$/g, '')
+          .replace(/\$[^$\r\n]+\$/g, '')
+          .replace(/<[^>]+>/g, '');
+        const zh = textCheck.match(/[\u4e00-\u9fa5]/g) || [];
+        const nonCodeLen = textCheck.replace(/\s+/g, '').length;
+        if (nonCodeLen > 80 && zh.length < Math.min(10, nonCodeLen * 0.08)) {
+          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} into ${targetLocale} did not produce adequate Chinese text (${zh.length} chars in ${nonCodeLen} text), retrying attempt ${attempt}...`);
           if (attempt < MAX_RETRIES) {
             await new Promise((r) => setTimeout(r, 4000));
             continue;
@@ -1322,6 +1395,26 @@ export function validateTranslatedFormat(
         valid: false,
         reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`
       };
+    }
+  } else {
+    // When translating foreign language into Chinese, verify adequate Chinese text is generated
+    let srcTextWithoutCode = sourceMarkdown
+      .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/<[^>]+>/g, '');
+    const srcChineseMatches = srcTextWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
+    if (srcTextWithoutCode.length > 100 && srcChineseMatches.length < 20) {
+      let textWithoutCode = translatedMarkdown
+        .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/<[^>]+>/g, '');
+      const chineseMatches = textWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
+      if (chineseMatches.length < 20) {
+        return {
+          valid: false,
+          reason: `Insufficient Chinese output for ${targetLocale}: only ${chineseMatches.length} Chinese characters produced from non-Chinese source. Translation likely failed or echoed verbatim.`
+        };
+      }
     }
   }
 

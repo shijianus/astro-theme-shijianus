@@ -19,11 +19,11 @@ async function verifyLive() {
   const tgHandle = await page.$('.topGroup');
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_01_default_light.png') });
-    console.log('Saved live_backboard_01_default_light.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_01_default_light.png') });
+    console.log('Saved live_backboard_streamlined_01_default_light.png');
   }
 
-  // 1. Live Alignment Measurement
+  // 1. Live Alignment Measurement & Absence of Redundant Header/Badge
   const liveMetrics = await page.evaluate(() => {
     const banner = document.querySelector('#bannerGroup').getBoundingClientRect();
     const tg = document.querySelector('.topGroup').getBoundingClientRect();
@@ -47,49 +47,58 @@ async function verifyLive() {
       bottomDiff: Math.abs(Math.round(banner.bottom) - Math.round(tg.bottom)),
       rightDiff: Math.abs(Math.round(profile.right) - Math.round(tg.right)),
       hasBackboard: Boolean(backboard),
-      hasHeader: Boolean(header),
-      hasReturnBadge: Boolean(returnBadge)
+      noRedundantHeader: !Boolean(header),
+      noRedundantBadge: !Boolean(returnBadge),
+      backboardTitle: backboard ? backboard.getAttribute('title') : null
     };
   });
 
   console.log('Live Production Alignment Metrics:', JSON.stringify(liveMetrics, null, 2));
 
-  if (!liveMetrics.hasBackboard || !liveMetrics.hasHeader || !liveMetrics.hasReturnBadge) {
-    throw new Error('FAIL: Backboard, header, or return badge missing in live DOM!');
+  if (!liveMetrics.hasBackboard) {
+    throw new Error('FAIL: Backboard missing in live production DOM!');
+  }
+  if (!liveMetrics.noRedundantHeader) {
+    throw new Error('FAIL: Redundant .topGroup__header still exists on live production!');
+  }
+  if (!liveMetrics.noRedundantBadge) {
+    throw new Error('FAIL: Redundant #topGroup-backboard-badge still exists on live production!');
+  }
+  if (liveMetrics.backboardTitle) {
+    throw new Error(`FAIL: Backboard still has title="${liveMetrics.backboardTitle}" on live production!`);
   }
   if (liveMetrics.topDiff > 1 || liveMetrics.bottomDiff > 1) {
-    throw new Error(`FAIL: Vertical alignment mismatch! topDiff=${liveMetrics.topDiff}, bottomDiff=${liveMetrics.bottomDiff}`);
+    throw new Error(`FAIL: Vertical alignment mismatch on live production! topDiff=${liveMetrics.topDiff}, bottomDiff=${liveMetrics.bottomDiff}`);
   }
   if (liveMetrics.rightDiff > 1) {
-    throw new Error(`FAIL: Right edge alignment mismatch! rightDiff=${liveMetrics.rightDiff}, tgRight=${liveMetrics.tgRight}, profileRight=${liveMetrics.profileRight}`);
+    throw new Error(`FAIL: Right edge alignment mismatch on live production! rightDiff=${liveMetrics.rightDiff}, tgRight=${liveMetrics.tgRight}, profileRight=${liveMetrics.profileRight}`);
   }
 
   // 2. Click banner button to flip open deck
   const bannerBtn = await page.$('.banner-button[for="today-card-toggle"]');
   if (!bannerBtn) {
-    throw new Error('FAIL: .banner-button[for="today-card-toggle"] not found!');
+    throw new Error('FAIL: .banner-button[for="today-card-toggle"] not found on live production!');
   }
   await bannerBtn.click();
   await page.waitForTimeout(500);
 
   const isCheckedFlipped = await page.$eval('#today-card-toggle', el => el.checked);
   if (!isCheckedFlipped) {
-    throw new Error('FAIL: Banner button click did not toggle #today-card-toggle on production!');
+    throw new Error('FAIL: Banner button click did not toggle #today-card-toggle on live production!');
   }
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_02_cards_toggled_light.png') });
-    console.log('Saved live_backboard_02_cards_toggled_light.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_02_cards_toggled_light.png') });
+    console.log('Saved live_backboard_streamlined_02_cards_toggled_light.png');
   }
   if (tgHandle) {
-    await tgHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_03_topgroup_cards_light.png') });
-    console.log('Saved live_backboard_03_topgroup_cards_light.png');
+    await tgHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_03_topgroup_cards_light.png') });
+    console.log('Saved live_backboard_streamlined_03_topgroup_cards_light.png');
   }
 
-  // 3. Verify Layout Audit on live production
+  // 3. Verify Layout Audit on live production: zero overlap, zero text cut off, clean balanced grid
   const layoutAudit = await page.evaluate(() => {
-    const header = document.querySelector('.topGroup__header').getBoundingClientRect();
-    const returnBadge = document.querySelector('#topGroup-backboard-badge').getBoundingClientRect();
+    const tg = document.querySelector('.topGroup').getBoundingClientRect();
     const cards = Array.from(document.querySelectorAll('.topGroup .recent-post-item'));
 
     const cardAudits = cards.map((c, i) => {
@@ -100,9 +109,9 @@ async function verifyLive() {
 
       return {
         index: i,
-        cardHeight: cr.height,
-        cardWidth: cr.width,
-        isBelowHeader: cr.top >= header.bottom - 1,
+        cardHeight: Math.round(cr.height),
+        cardWidth: Math.round(cr.width),
+        isInsideTopGroup: cr.top >= tg.top && cr.bottom <= tg.bottom && cr.left >= tg.left && cr.right <= tg.right,
         isTitleInside: tr.bottom <= cr.bottom,
         isClamped: titleStyle.webkitLineClamp === '2',
         titleText: title.innerText.trim()
@@ -110,91 +119,82 @@ async function verifyLive() {
     });
 
     return {
-      headerVisible: header.height > 0 && returnBadge.width > 0,
-      allCardsBelowHeader: cardAudits.every(c => c.isBelowHeader),
+      cardCount: cards.length,
+      allCardsInside: cardAudits.every(c => c.isInsideTopGroup),
       allTitlesInside: cardAudits.every(c => c.isTitleInside),
       cardAudits
     };
   });
 
   console.log('Live Production Layout Audit:', JSON.stringify(layoutAudit, null, 2));
-  if (!layoutAudit.headerVisible || !layoutAudit.allCardsBelowHeader || !layoutAudit.allTitlesInside) {
-    throw new Error('FAIL: Live layout audit failed!');
+
+  if (layoutAudit.cardCount !== 6) {
+    throw new Error(`FAIL: Expected 6 cards on live production, found ${layoutAudit.cardCount}!`);
+  }
+  if (!layoutAudit.allCardsInside) {
+    throw new Error('FAIL: Some cards overflow topGroup container on live production!');
+  }
+  if (!layoutAudit.allTitlesInside) {
+    throw new Error('FAIL: Some card titles overflow or are cut off on live production!');
   }
 
-  // 4. Test Return via Return Badge
-  console.log('Live test: Clicking return badge (#topGroup-backboard-badge)...');
-  await page.click('#topGroup-backboard-badge');
-  await page.waitForTimeout(400);
+  // 4. Test Return via clicking exposed backboard padding
+  console.log('Testing rollback via clicking exposed backboard padding on live production...');
+  await page.click('#topGroup-backboard', { position: { x: 30, y: 4 } });
+  await page.waitForTimeout(500);
 
-  const isCheckedAfterBadgeClick = await page.$eval('#today-card-toggle', el => el.checked);
-  console.log('Live state after return badge click: isChecked =', isCheckedAfterBadgeClick);
-  if (isCheckedAfterBadgeClick !== false) {
-    throw new Error('FAIL: Clicking return badge did not rollback on production!');
+  const isCheckedAfterBackboardClick = await page.$eval('#today-card-toggle', el => el.checked);
+  console.log('State after live backboard click: isChecked =', isCheckedAfterBackboardClick);
+  if (isCheckedAfterBackboardClick !== false) {
+    throw new Error('FAIL: Direct click on live #topGroup-backboard did not rollback #today-card-toggle!');
   }
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_04_returned_todaycard.png') });
-    console.log('Saved live_backboard_04_returned_todaycard.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_04_returned_todaycard.png') });
+    console.log('Saved live_backboard_streamlined_04_returned_todaycard.png');
   }
 
-  // 5. Test Return via Backboard Click
+  // 5. Re-open and test ESC key rollback on live production
   await bannerBtn.click();
-  await page.waitForTimeout(300);
-  console.log('Live test: Clicking backboard (#topGroup-backboard)...');
-  await page.click('#topGroup-backboard', { position: { x: 30, y: 15 } });
   await page.waitForTimeout(400);
-
-  const isCheckedAfterBackboardClick = await page.$eval('#today-card-toggle', el => el.checked);
-  console.log('Live state after backboard click: isChecked =', isCheckedAfterBackboardClick);
-  if (isCheckedAfterBackboardClick !== false) {
-    throw new Error('FAIL: Clicking backboard did not rollback on production!');
-  }
-
-  // 6. Test Return via ESC key
-  await bannerBtn.click();
-  await page.waitForTimeout(300);
-  console.log('Live test: Pressing Escape key...');
+  console.log('Testing rollback via Escape key on live production...');
   await page.keyboard.press('Escape');
   await page.waitForTimeout(400);
 
   const isCheckedAfterEsc = await page.$eval('#today-card-toggle', el => el.checked);
-  console.log('Live state after Escape: isChecked =', isCheckedAfterEsc);
+  console.log('State after live Escape key: isChecked =', isCheckedAfterEsc);
   if (isCheckedAfterEsc !== false) {
-    throw new Error('FAIL: Escape key did not rollback on production!');
+    throw new Error('FAIL: Pressing Escape on live production did not rollback #today-card-toggle!');
   }
 
-  // 7. Dark Mode Test
+  // 6. Test Dark Mode on live production
   await bannerBtn.click();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(400);
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(400);
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_05_cards_toggled_dark.png') });
-    console.log('Saved live_backboard_05_cards_toggled_dark.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_05_cards_toggled_dark.png') });
+    console.log('Saved live_backboard_streamlined_05_cards_toggled_dark.png');
   }
   if (tgHandle) {
-    await tgHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_06_topgroup_cards_dark.png') });
-    console.log('Saved live_backboard_06_topgroup_cards_dark.png');
+    await tgHandle.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_06_topgroup_cards_dark.png') });
+    console.log('Saved live_backboard_streamlined_06_topgroup_cards_dark.png');
   }
 
-  // 8. Mobile Viewport Test (390 x 844)
-  const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await mobilePage.goto('https://blog.epocanvas.com/', { waitUntil: 'networkidle' });
-  await mobilePage.waitForTimeout(500);
+  // 7. Mobile Viewport Check (390x844)
+  console.log('Testing mobile layout on live production...');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(1000);
 
-  const mobileTg = await mobilePage.$('.topGroup');
-  if (mobileTg) {
-    await mobileTg.screenshot({ path: path.join(evidenceDir, 'live_backboard_07_mobile.png') });
-    console.log('Saved live_backboard_07_mobile.png');
+  const mobileHero = await page.$('#home_top');
+  if (mobileHero) {
+    await mobileHero.screenshot({ path: path.join(evidenceDir, 'live_backboard_streamlined_07_mobile.png') });
+    console.log('Saved live_backboard_streamlined_07_mobile.png');
   }
-  await mobilePage.close();
 
-  console.log('\n============================================================');
-  console.log('>>> PRODUCTION (https://blog.epocanvas.com/) E2E VERIFIED! <<<');
-  console.log('============================================================\n');
-
+  console.log('\n>>> ALL LIVE PRODUCTION STREAMLINED BACKBOARD & ALIGNMENT TESTS PASSED 100%! <<<');
   await browser.close();
 }
 

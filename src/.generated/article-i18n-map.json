@@ -560,10 +560,10 @@
       }
     }
   },
-  "media-capability": {
-    "i18nKey": "media-capability",
+  "media-capability-lab": {
+    "i18nKey": "media-capability-lab",
     "translations": {
-      "lab": {
+      "zh-CN": {
         "filename": "media-capability-lab.md",
         "slug": "media-capability-lab",
         "title": "封面、图床与视频适配实验室",

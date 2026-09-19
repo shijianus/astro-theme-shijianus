@@ -23,11 +23,13 @@ import {
   translateArticleByExtraction,
   translateArticleAuto,
   resolveArticleI18nConfig,
+  isArticleEncryptedOrProtected,
 } from '../src/lib/server-article-i18n.ts';
 
 const POSTS_DIR = path.resolve(process.cwd(), 'src/content/posts');
 const GENERATED_DIR = path.resolve(process.cwd(), 'src/.generated');
 const I18N_MAP_PATH = path.resolve(GENERATED_DIR, 'article-i18n-map.json');
+const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
 
 // Ensure .generated directory exists
 if (!fs.existsSync(GENERATED_DIR)) {
@@ -62,21 +64,23 @@ function inspectArticle(filename, fullPath) {
 
   const baseStem = filename.replace(/\.(md|mdx)$/, '');
   
-  // Check if filename has language suffix, e.g. hello-world-en, hello-world.en, hello-world-fr
-  const suffixMatch = baseStem.match(/^(.*?)[.-]([a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?)$/);
+  // Use exact language whitelist regex to prevent false positives like -lab
+  const suffixMatch = baseStem.match(LANG_SUFFIX_REGEX);
   
   let inferredKey = baseStem;
   let inferredLang = 'zh-CN';
 
   if (suffixMatch) {
-    inferredKey = suffixMatch[1];
-    inferredLang = suffixMatch[2];
+    inferredKey = baseStem.replace(LANG_SUFFIX_REGEX, '');
+    const matched = suffixMatch[1].toLowerCase();
+    inferredLang = matched === 'zh-hant' ? 'zh-Hant' : matched === 'zh-cn' ? 'zh-CN' : matched;
   }
 
   const i18nKey = meta.i18nKey || inferredKey;
   const lang = meta.lang || inferredLang;
   // An article is AI-generated if it has aiTranslatedFrom or isAiGenerated (legacy)
   const isAiGenerated = Boolean(meta.isAiGenerated || meta.aiTranslatedFrom);
+  const isProtected = isArticleEncryptedOrProtected(meta, raw);
   const title = meta.title || baseStem;
 
   return {
@@ -85,6 +89,7 @@ function inspectArticle(filename, fullPath) {
     i18nKey,
     lang,
     isAiGenerated,
+    isProtected,
     title,
     raw,
     body,
@@ -143,8 +148,11 @@ async function main() {
 
   console.log(`[Article-i18n] AI article translation build assistant is ACTIVE!`);
   console.log(`[Article-i18n]    Target Locales: ${config.targetLocales.join(', ')}`);
+  console.log(`[Article-i18n]    Confidentiality Protection: ${config.protectEncrypted ? 'ENABLED (Skipping encrypted/access-controlled articles)' : 'DISABLED (Translating encrypted articles)'}`);
   if (config.targetPosts && config.targetPosts.length > 0) {
     console.log(`[Article-i18n]    Target Post Scope: ${config.targetPosts.join(', ')}`);
+  } else {
+    console.log(`[Article-i18n]    Target Post Scope: ALL ARTICLES (${articleGroups.size} groups)`);
   }
 
   let generatedCount = 0;
@@ -166,7 +174,24 @@ async function main() {
 
     if (!sourceArticle) continue;
 
-    for (const targetLang of config.targetLocales) {
+    // Confidentiality Protection Guard
+    // When protectEncrypted is true (default), articles with access / externalEncrypt are skipped to protect confidential data.
+    // When false, user explicitly permits translating encrypted articles (e.g. for testing chunked translation).
+    if (config.protectEncrypted && sourceArticle.isProtected) {
+      console.log(`[Article-i18n] 🛡️ Article "${key}" is protected/encrypted. Skipping translation to protect confidential data (ARTICLE_I18N_PROTECT_ENCRYPTED=true).`);
+      skippedCount++;
+      continue;
+    } else if (sourceArticle.isProtected) {
+      console.log(`[Article-i18n] ⚠️ Confidentiality protection disabled (ARTICLE_I18N_PROTECT_ENCRYPTED=false). Translating encrypted article "${key}" for verification...`);
+    }
+
+    // Dynamically calculate target locales for this article (ensuring bidirectional support)
+    let localesToTranslate = [...config.targetLocales];
+    if (sourceArticle.lang !== 'zh-CN' && !localesToTranslate.includes('zh-CN')) {
+      localesToTranslate.push('zh-CN');
+    }
+
+    for (const targetLang of localesToTranslate) {
       if (targetLang === sourceArticle.lang) continue;
 
       const existingTranslation = group.find((g) => g.lang === targetLang);
@@ -197,6 +222,7 @@ async function main() {
               .replace(/`[^`\r\n]+`/g, '')
               .replace(/\$\$[\s\S]*?\$\$/g, '')
               .replace(/<!--[\s\S]*?-->/g, '')
+              .replace(/<ruby[\s\S]*?<\/ruby>/gi, '')
               .replace(/<[^>]+>/g, '');
             const chineseMatches = rawWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
             chineseCount = chineseMatches.length;
@@ -244,9 +270,8 @@ async function main() {
       if (
         result.ok &&
         result.translatedMarkdown &&
-        result.translatedMarkdown.length > 500 &&
-        result.translatedMarkdown.includes('title:') &&
-        result.translatedMarkdown.includes('pubDate:')
+        result.translatedMarkdown.length >= Math.min(100, sourceArticle.raw.length * 0.35) &&
+        result.translatedMarkdown.includes('title:')
       ) {
         const targetFilename = `${key}-${targetLang}.md`;
         const targetFilePath = path.join(POSTS_DIR, targetFilename);
