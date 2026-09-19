@@ -1303,10 +1303,42 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   pointer-events: auto !important;
 }
 
+/* Console Theme Tones: Light Mode (Light Blue) & Dark Mode (Deep Navy Blue) */
+:root[data-theme='light'] #console,
+#console {
+  --console-theme-color: #425aef;
+  --console-theme-bg: rgba(240, 246, 255, 0.94);
+  --console-theme-border: rgba(66, 90, 239, 0.16);
+  --console-theme-shadow: 0 10px 30px -5px rgba(66, 90, 239, 0.1);
+  --console-stat-bg: rgba(66, 90, 239, 0.06);
+  --console-btn-bg: rgba(240, 246, 255, 0.92);
+  --console-btn-border: rgba(66, 90, 239, 0.2);
+}
+
+:root[data-theme='light'] #console .console-mask,
+#console .console-mask {
+  background: rgba(225, 238, 255, 0.8) !important;
+}
+
+:root[data-theme='dark'] #console {
+  --console-theme-color: #3b82f6;
+  --console-theme-bg: #0b1426;
+  --console-theme-border: rgba(59, 130, 246, 0.28);
+  --console-theme-shadow: 0 12px 36px rgba(0, 8, 28, 0.72);
+  --console-stat-bg: rgba(30, 58, 138, 0.32);
+  --console-btn-bg: #0f1c36;
+  --console-btn-border: rgba(59, 130, 246, 0.35);
+}
+
+:root[data-theme='dark'] #console .console-mask {
+  background: rgba(5, 10, 24, 0.88) !important;
+}
+
 #console .console-card {
     margin: 0 !important;
-    background: var(--card-bg) !important;
-    border: var(--style-border-always) !important;
+    background: var(--console-theme-bg, var(--card-bg)) !important;
+    border: 1px solid var(--console-theme-border, var(--card-border)) !important;
+    box-shadow: var(--console-theme-shadow, var(--shadow-border)) !important;
     border-radius: 16px !important;
     padding: 20px !important;
     display: flex !important;
@@ -1314,6 +1346,21 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     overflow: visible !important; 
     position: relative !important;
     transition: z-index 0s !important;
+}
+
+#console .console-close-btn {
+    background: var(--console-theme-color, #425aef) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+}
+
+#console .console-stat-grid span {
+    background: var(--console-stat-bg) !important;
+    border-radius: 8px !important;
+}
+
+:root[data-theme='dark'] #console .author-content-item-tips,
+:root[data-theme='dark'] #console .info-icon {
+    color: var(--console-theme-color) !important;
 }
 
 #console .console-card:hover {
@@ -1781,16 +1828,17 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   width: 48px !important;
   height: 48px !important;
   border-radius: 50% !important; /* Circular for independent look */
-  background: var(--card-bg-op) !important;
+  background: var(--console-btn-bg, var(--card-bg-op)) !important;
   /* [PERF] backdrop-filter: blur(10px); */
-  border: var(--style-border-always) !important;
+  border: 1px solid var(--console-btn-border, var(--card-border)) !important;
   box-shadow: var(--shadow-border) !important;
   color: var(--font-color);
   transition: 0.3s;
 }
 
 #console .console-btn-item:hover {
-  background: var(--theme-main) !important;
+  background: var(--console-theme-color, var(--theme-main)) !important;
+  border-color: var(--console-theme-color, var(--theme-main)) !important;
   color: var(--white) !important;
   transform: translateY(-4px);
   box-shadow: var(--shadow-theme);
@@ -7602,8 +7650,6 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
       on <html> via the Page Visibility API. This saves CPU/GPU when the user
       is not even looking at the page. */
 html[data-page-visible="false"] #web_bg,
-html[data-page-visible="false"] #web_bg::before,
-html[data-page-visible="false"] #web_bg::after,
 html[data-page-visible="false"] .post-hero__waves-group use {
   animation-play-state: paused !important;
 }

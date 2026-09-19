@@ -65,12 +65,31 @@ export function resolveBackgroundSource(
   return 'manual';
 }
 
+const DEPRECATED_BACKGROUNDS = new Set([
+  'starfield',
+  'daybreak',
+  'twilight',
+  'snow',
+  'grid',
+  'nebula',
+  'aurora',
+  'matrix',
+]);
+
 export function resolveInitialBackground(
   theme: ThemeMode,
   storedBackground: string | null,
   strategy: BackgroundStrategy,
   source?: BackgroundSource,
 ) {
+  if (storedBackground && DEPRECATED_BACKGROUNDS.has(storedBackground)) {
+    try {
+      window.localStorage.removeItem(BACKGROUND_KEY);
+      window.localStorage.removeItem(BACKGROUND_SOURCE_KEY);
+    } catch {}
+    storedBackground = null;
+    source = 'auto';
+  }
   const backgroundSource = source ?? resolveBackgroundSource(storedBackground, null, strategy);
   if (backgroundSource === 'manual' && storedBackground) return storedBackground;
   return theme === 'dark' ? strategy.darkBackground : strategy.defaultBackground;

@@ -963,7 +963,7 @@ body[data-type='tag-detail'] .page-main {
 }
 
 [data-theme='dark'] .post-hero__waves-group use:nth-child(4) {
-  fill: var(--global-bg, #18171d);
+  fill: var(--global-bg, #0d0d14);
 }
 
 .post-page-shell {

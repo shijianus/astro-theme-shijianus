@@ -887,10 +887,15 @@ export function ThemeOverlays({
   };
 
   const cycleBackground = () => {
+    if (backgroundModes.length <= 1) {
+      emitActivity('当前为统一纯色背景');
+      return;
+    }
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
     const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
     markBackgroundAsManual(nextBackground);
     setBackground(nextBackground);
+    emitActivity('已切换页面背景');
   };
 
   useEffect(() => {
@@ -1927,7 +1932,6 @@ export function ThemeOverlays({
               className="console-btn-item"
               onClick={() => {
                 cycleBackground();
-                emitActivity('已切换页面背景');
               }}
               title={t('console.btn.bg', '背景切换')}
               tabIndex={consoleOpen ? 0 : -1}

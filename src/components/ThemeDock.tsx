@@ -55,6 +55,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: string;
     hideDock: string;
     backToTop: string;
+    toggleMusicPocket: string;
+    musicPocketActive: string;
   }
 > = {
   'zh-CN': {
@@ -74,6 +76,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: '切换背景',
     hideDock: '隐藏选单',
     backToTop: '返回顶部',
+    toggleMusicPocket: '随身音乐口袋 (默认隐藏)',
+    musicPocketActive: '隐藏音乐口袋',
   },
   'zh-Hant': {
     exitReadMode: '退出閱讀模式',
@@ -92,6 +96,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: '切換背景',
     hideDock: '隱藏選單',
     backToTop: '返回頂部',
+    toggleMusicPocket: '隨身音樂口袋 (預設隱藏)',
+    musicPocketActive: '隱藏音樂口袋',
   },
   en: {
     exitReadMode: 'Exit Reading Mode',
@@ -110,6 +116,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Toggle Background',
     hideDock: 'Hide Quick Menu',
     backToTop: 'Back to Top',
+    toggleMusicPocket: 'Music Pocket (Hidden by default)',
+    musicPocketActive: 'Hide Music Pocket',
   },
   fr: {
     exitReadMode: 'Quitter le mode lecture',
@@ -128,6 +136,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Changer le fond',
     hideDock: 'Masquer le menu',
     backToTop: 'Retour en haut',
+    toggleMusicPocket: 'Lecteur de musique (Masqué par défaut)',
+    musicPocketActive: 'Masquer le lecteur de musique',
   },
   es: {
     exitReadMode: 'Salir del modo lectura',
@@ -146,6 +156,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Cambiar fondo',
     hideDock: 'Ocultar menú rápido',
     backToTop: 'Volver arriba',
+    toggleMusicPocket: 'Reproductor de música (Oculto por defecto)',
+    musicPocketActive: 'Ocultar reproductor de música',
   },
   de: {
     exitReadMode: 'Lesemodus beenden',
@@ -164,6 +176,8 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Hintergrund wechseln',
     hideDock: 'Menü ausblenden',
     backToTop: 'Nach oben scrollen',
+    toggleMusicPocket: 'Musik-Player (Standardmäßig ausgeblendet)',
+    musicPocketActive: 'Musik-Player ausblenden',
   },
 };
 
@@ -180,6 +194,7 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [readMode, setReadMode] = useState(false);
   const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
   const [tocDepth, setTocDepth] = useState('all');
+  const [musicPocketVisible, setMusicPocketVisible] = useState(false);
 
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
@@ -332,6 +347,10 @@ export function ThemeDock(_props: ThemeDockProps) {
 
   const toggleBackground = () => {
     if (!_props.backgroundModes.length) return;
+    if (_props.backgroundModes.length <= 1) {
+      emitActivity('当前为统一纯色背景');
+      return;
+    }
     const currentIndex = _props.backgroundModes.findIndex(mode => mode.id === background);
     const nextIndex = (currentIndex + 1) % _props.backgroundModes.length;
     const nextBackground = _props.backgroundModes[nextIndex].id;

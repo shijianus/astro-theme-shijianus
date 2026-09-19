@@ -3079,3 +3079,25 @@
 - [x] **上游 GDStudio 音乐源请求头加固与 Cloudflare Bot 520 阻断彻底解决**:
   1. 针对 Cloudflare-to-Cloudflare 请求时可能出现的 Bot Protection 520 阻断，注入真实浏览器 `User-Agent` 与 GDStudio `Referer`，并补充请求随机签名；
   2. 经生产端真实验证，`https://cfsolara-dho.pages.dev/api/music/search` 与 `https://cfsolara-dho.pages.dev/api/music/stream` 全量返回 HTTP 200 与 9.5MB 真实音频数据流。
+
+### Task 137: 劣质与历史背景全面清理、纯色基底最小化统一与扩展插槽安全固化 (Complete Deprecated Background Cleanup & Pure Solid Baseline)
+- [x] **最小修改原则下彻底清除劣质/历史背景与伪元素压制 (`src/styles/`)**:
+  1. `src/styles/global.css`: 彻底移除 `#web_bg::before, #web_bg::after` 和 `#universe` 的暴力隐藏规则，固化 `#web_bg` 为极简、干净、高性能的纯色视口图层；
+  2. `src/styles/final-pass.css`: 清理针对已废弃伪元素的动画暂停规则；
+  3. `src/styles/rebuild.css`: 将深色模式下第 4 层水波纹的 fallback 色值统一更新为标准深色纯色 `--global-bg: #0d0d14`；
+  4. 彻底删除 76KB 遗留历史备份文件 `src/styles/final-pass.css.bak`，消除所有旧版 `daybreak`、`starfield` 劣质光斑规则的潜在混淆。
+- [x] **消除空壳组件水合与布局解绑 (`src/layouts/BlogLayout.astro`)**:
+  1. 从主布局中移除已置空的 `<ThemeUniverse client:visible />` 孤岛组件挂载与对应 import 语句，节省 React 客户端水合开销；
+  2. 保留 `src/components/ThemeUniverse.tsx` 纯净插槽导出契约，为后续开发标准化普适性背景预留清晰插槽。
+- [x] **历史脏缓存平滑清洗与单模式交互保护 (`src/lib/` & `src/components/`)**:
+  1. `src/lib/client-theme.ts`: 在 `resolveInitialBackground` 中注入废弃背景模式集合（`starfield`, `daybreak`, `twilight`, `snow`, `grid`, `nebula`, `aurora`, `matrix`）自动感知与清除逻辑，杜绝旧访客浏览器脏 LocalStorage 影响页面状态；
+  2. `src/components/ThemeDock.tsx` & `src/components/ThemeOverlays.tsx`: 在目前单背景模式（纯色）下点击按钮提供真实友好的「当前为统一纯色背景」提示，消除空转假提示；
+  3. `src/lib/client-locale.ts`: 补齐「当前为统一纯色背景」的英法西德多语言国际化词条。
+- [x] **自动化端到端测试全绿通过 (`scripts/verify-clean-solid-background.mjs`)**:
+  1. 首页浅色模式 `#web_bg` 纯色 `rgb(247, 249, 254)`（`#f7f9fe`）校验 100% 通过，无任何渐变图片或伪元素杂斑；
+  2. 首页深色模式 `#web_bg` 纯色 `rgb(13, 13, 20)`（`#0d0d14`）校验 100% 通过；
+  3. DOM 中彻底不存在 `#universe` 僵尸元素；
+  4. 文章页浅色与深色模式纯色基底校验通过；
+  5. 脏缓存自动清洗恢复验证通过；
+  6. 全站 241 个页面静态编译构建 0 错误通过。
+

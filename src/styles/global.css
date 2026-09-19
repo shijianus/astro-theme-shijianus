@@ -205,16 +205,6 @@ img {
   background-repeat: no-repeat;
 }
 
-#web_bg::before,
-#web_bg::after {
-  display: none !important;
-  content: none !important;
-}
-
-#universe {
-  display: none !important;
-}
-
 
 .page {
   position: relative;
