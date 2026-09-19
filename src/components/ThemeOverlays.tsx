@@ -81,6 +81,7 @@ import {
 import { 
   applyLocaleVariant, 
   readStoredLocaleVariant, 
+  normaliseLocaleVariant,
   LOCALE_METADATA, 
   SUPPORTED_LOCALES,
   getI18nText,
@@ -387,14 +388,14 @@ export function ThemeOverlays({
       nextIds = current.filter((id) => id !== badgeId);
     } else {
       if (current.length >= 4) {
-        showUnifiedToast('最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。');
+        showUnifiedToast(t('toast.maxTitles', '最多可同时佩戴 4 个称号，请先点击已佩戴称号取消后再添加。'));
         return;
       }
       nextIds = [...current, badgeId];
     }
     setEquippedBadgeIds(nextIds);
     writeEquippedBadges(nextIds);
-    emitActivity('更新了名片佩戴称号');
+    emitActivity(t('toast.updateTitles', '更新了名片佩戴称号'));
   };
 
   const [userStatus, setUserStatus] = useState<UserStatus>(() => readUserStatus());
@@ -416,7 +417,7 @@ export function ThemeOverlays({
         : { emoji: preset.emoji, text: preset.text };
     setUserStatus(next);
     writeUserStatus(next);
-    emitActivity(`更新了用户状态: ${next.emoji} ${next.text}`);
+    emitActivity(`${t('toast.updateStatus', '更新了用户状态')}: ${next.emoji} ${next.text}`);
   };
 
   const handleCustomStatusChange = (emoji: string, text: string) => {
@@ -618,51 +619,51 @@ export function ThemeOverlays({
 
     return [
       {
-        label: '本站总字数',
+        label: t('console.status.totalWords', '本站总字数'),
         value: `${sWords.toLocaleString()} 字`,
-        tooltip: '基于全站 Markdown 节点物理扫描精算的实时总字数'
+        tooltip: t('console.status.totalWordsTooltip', '基于全站 Markdown 节点物理扫描精算的实时总字数'),
       },
       {
-        label: '安全运行天数',
+        label: t('console.status.uptime', '安全运行天数'),
         value: `${uptimeDays} 天`,
-        tooltip: '自 2024-01-01 以来稳定运行的物理时长记录'
+        tooltip: t('console.status.uptimeTooltip', '自 2024-01-01 以来稳定运行的物理时长记录'),
       },
       {
-        label: '最后推送',
+        label: t('console.status.latestPost', '最后推送'),
         value: latestPost?.date || '今天',
         href: latestPost?.href,
-        tooltip: '系统实时检索的全站最新内容或特性的精确时间戳。'
+        tooltip: t('console.status.latestPostTooltip', '系统实时检索的全站最新内容或特性的精确时间戳。'),
       },
       {
-        label: '版本协议',
+        label: t('console.status.protocol', '版本协议'),
         value: 'v2.6.0-shijianus',
-        tooltip: 'shijianus-blog 核心引擎版本及开发协议',
-        href: '/version'
+        tooltip: t('console.status.protocolTooltip', 'shijianus-blog 核心引擎版本及开发协议'),
+        href: '/version',
       },
       {
-        label: '活跃等级',
+        label: t('console.status.activityLevel', '活跃等级'),
         value: activeLevel,
-        tooltip: `基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`,
-        href: '/standards'
+        tooltip: t('console.status.activityLevelTooltip', `基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`),
+        href: '/standards',
       },
       {
-        label: '内容密度',
+        label: t('console.status.density', '内容密度'),
         value: densityLevel,
-        tooltip: `基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`,
-        href: '/standards'
+        tooltip: t('console.status.densityTooltip', `基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`),
+        href: '/standards',
       },
       {
-        label: '全站阅读',
+        label: t('console.status.readingTime', '全站阅读'),
         value: `${sReading} min`,
-        tooltip: '涵盖所有公开内容的平均总阅读时长'
+        tooltip: t('console.status.readingTimeTooltip', '涵盖所有公开内容的平均总阅读时长'),
       },
       {
-        label: '系统架构',
+        label: t('console.status.architecture', '系统架构'),
         value: 'Astro Edge',
-        tooltip: '基于 Astro 核心引擎与 Edge Functions 的现代响应式架构',
+        tooltip: t('console.status.architectureTooltip', '基于 Astro 核心引擎与 Edge Functions 的现代响应式架构'),
       },
     ];
-  }, [stats, posts]);
+  }, [stats, posts, t]);
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => ({
       left: `${(index * 37) % 100}%`,
@@ -1114,8 +1115,9 @@ export function ThemeOverlays({
       setBackground(customEvent.detail ?? defaultBackground);
     };
     const onLocaleChange = (event: Event) => {
-      const customEvent = event as CustomEvent<LocaleVariant>;
-      setLocaleVariant(customEvent.detail ?? readStoredLocaleVariant());
+      const detail = (event as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      setLocaleVariant(normaliseLocaleVariant(raw || readStoredLocaleVariant()));
       setUserPersona(ensureUserPersona());
     };
     const onKeyDown = (event: KeyboardEvent) => {
@@ -1205,13 +1207,13 @@ export function ThemeOverlays({
     });
     setTheme(nextTheme);
     setBackground(nextBackground);
-    emitActivity(nextTheme === 'dark' ? '已切换为深色模式' : '已切换为浅色模式');
+    emitActivity(nextTheme === 'dark' ? t('toast.themeDark', '已切换为深色模式') : t('toast.themeLight', '已切换为浅色模式'));
   };
 
   const saveAccount = () => {
     const name = accountForm.name.trim();
     if (!name) {
-      setAccountNotice('请先填写昵称。');
+      setAccountNotice(t('toast.fillNickname', '请先填写昵称。'));
       setAccountNeedsAttention(true);
       return;
     }
@@ -1228,9 +1230,9 @@ export function ThemeOverlays({
 
     writeCommentIdentity(nextAccount);
     setAccount(nextAccount);
-    setAccountNotice(account ? '账号资料已更新。' : '账号已创建。');
+    setAccountNotice(account ? t('toast.profileUpdated', '账号资料已更新。') : t('toast.profileCreated', '账号已创建。'));
     setAccountNeedsAttention(false);
-    emitActivity(account ? '已更新账号资料' : '已创建评论账号');
+    emitActivity(account ? t('toast.profileUpdated', '已更新账号资料') : t('toast.profileCreated', '已创建评论账号'));
   };
 
   const clearAccount = () => {
@@ -1243,9 +1245,9 @@ export function ThemeOverlays({
       avatar: '',
       showLocation: true,
     });
-    setAccountNotice('当前账号已退出，评论将恢复只读。');
+    setAccountNotice(t('toast.loggedOut', '当前账号已退出，评论将恢复只读。'));
     setAccountNeedsAttention(false);
-    emitActivity('已退出当前账号');
+    emitActivity(t('toast.loggedOut', '已退出当前账号'));
   };
 
   useEffect(() => {
@@ -1258,7 +1260,7 @@ export function ThemeOverlays({
       if (event.data?.type === 'EPOMAIL_OAUTH_SUCCESS' && event.data.code) {
         const code = event.data.code;
         setIsAuthorizing(true);
-        showUnifiedToast('正在验证 Epomail 凭据并同步账号...');
+        showUnifiedToast(t('toast.epomailVerifying', '正在验证 Epomail 凭据并同步账号...'));
         try {
           const redirectUri = `${window.location.origin}/auth/callback`;
           const result = await exchangeEpomailCode(code, redirectUri);
@@ -1276,10 +1278,10 @@ export function ThemeOverlays({
             location: result.user.location || '',
             showLocation: result.user.showLocation ?? true,
           });
-          showUnifiedToast(`Epomail 授权登录成功！欢迎，${result.user.name}`);
+          showUnifiedToast(`${t('toast.epomailSuccess', 'Epomail 授权登录成功！欢迎，')}${result.user.name}`);
         } catch (err: any) {
           console.error('[ThemeOverlays] EPOMAIL_OAUTH_SUCCESS exchange error:', err);
-          showUnifiedToast(err?.message || 'Epomail 授权凭据交换失败，请重试');
+          showUnifiedToast(err?.message || t('toast.epomailError', 'Epomail 授权凭据交换失败，请重试'));
         } finally {
           setIsAuthorizing(false);
         }
@@ -1307,7 +1309,7 @@ export function ThemeOverlays({
           location: user.location || '',
           showLocation: user.showLocation ?? true,
         });
-        showUnifiedToast(`Epomail 授权登录成功！欢迎，${user.name}`);
+        showUnifiedToast(`${t('toast.epomailSuccess', 'Epomail 授权登录成功！欢迎，')}${user.name}`);
       }
     };
     window.addEventListener('message', onWindowMessage);
@@ -1316,7 +1318,7 @@ export function ThemeOverlays({
 
   const handleEpomailOAuth = () => {
     setIsAuthorizing(true);
-    showUnifiedToast('请在弹出的 Epomail 窗口中完成授权...');
+    showUnifiedToast(t('toast.epomailWindow', '请在弹出的 Epomail 窗口中完成授权...'));
     try {
       sessionStorage.setItem('epomail_auth_return', window.location.href);
     } catch {}
@@ -1746,10 +1748,10 @@ export function ThemeOverlays({
                 <div className="console-webinfo-grid">
                   {[
                     ...siteStats,
-                    { label: '构建引擎', value: 'Astro / Vite', tooltip: '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染，支持高度优化的分块策略。' },
-                    { label: '样式底层', value: 'Tailwind CSS', tooltip: '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系，具备极高的运行时性能优势。' },
-                    { label: '部署节点', value: 'Vercel / CF', tooltip: '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发与无服务器函数响应。' },
-                    { label: '运行反馈', value: '< 50ms', tooltip: '极致优化的边缘预渲染与资源调度，确保首屏加载与交互响应均低于感知阈值。' },
+                    { label: t('console.status.buildEngine', '构建引擎'), value: 'Astro / Vite', tooltip: t('console.status.buildEngineTooltip', '基于现代化的 Vite 构建工具及 Astro 框架的极速静态生成与混合渲染，支持高度优化的分块策略。') },
+                    { label: t('console.status.styling', '样式底层'), value: 'Tailwind CSS', tooltip: t('console.status.stylingTooltip', '采用原子级 CSS 框架实现的高性能、响应式且易于扩展的视觉体系，具备极高的运行时性能优势。') },
+                    { label: t('console.status.deployNodes', '部署节点'), value: 'Vercel / CF', tooltip: t('console.status.deployNodesTooltip', '依托全球分布式边缘计算节点（Vercel 或 Cloudflare）实现的全时段低延迟分发与无服务器函数响应。') },
+                    { label: t('console.status.latency', '运行反馈'), value: '< 50ms', tooltip: t('console.status.latencyTooltip', '极致优化的边缘预渲染与资源调度，确保首屏加载与交互响应均低于感知阈值。') },
                   ].map((stat, i) => (
                     <div className="webinfo-item" key={i}>
                       <div className="webinfo-item-label">

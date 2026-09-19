@@ -935,9 +935,9 @@ export async function translateBodyChunk(
         const textCheck = translated
           .replace(/<pre[\s\S]*?<\/pre>/gi, '')
           .replace(/<code[\s\S]*?<\/code>/gi, '')
-          .replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
-          .replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
-          .replace(/```[\s\S]*?```/g, '')
+          .replace(/^(`{4,}|~{4,})(?!mindmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/^(`{3}|~{3})(?!mindmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/```(?!mindmap|mermaid)[a-z0-9_-]*[\s\S]*?```/gi, '')
           .replace(/`[^`\r\n]+`/g, '')
           .replace(/\$\$[\s\S]*?\$\$/g, '')
           .replace(/\$[^$\r\n]+\$/g, '')
@@ -950,6 +950,24 @@ export async function translateBodyChunk(
         const nonCodeLen = textCheck.replace(/\s+/g, '').length;
         if (zh.length > 20 || (nonCodeLen > 120 && (zh.length / nonCodeLen) > 0.04)) {
           console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${zh.length} residual Chinese chars (${(zh.length / Math.max(1, nonCodeLen) * 100).toFixed(1)}%), retrying attempt ${attempt}...`);
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, 4000));
+            continue;
+          }
+        }
+      } else if (targetLocale === 'zh-Hant') {
+        const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/g;
+        const textCheck = translated
+          .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+          .replace(/<code[\s\S]*?<\/code>/gi, '')
+          .replace(/^(`{3,}|~{3,})(?!mindmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+          .replace(/```(?!mindmap|mermaid)[a-z0-9_-]*[\s\S]*?```/gi, '')
+          .replace(/`[^`\r\n]+`/g, '')
+          .replace(/\$\$[\s\S]*?\$\$/g, '')
+          .replace(/\$[^$\r\n]+\$/g, '');
+        const simp = textCheck.match(SIMPLIFIED_CHARS) || [];
+        if (simp.length > 8) {
+          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} output has ${simp.length} Simplified Chinese chars for zh-Hant, retrying attempt ${attempt}...`);
           if (attempt < MAX_RETRIES) {
             await new Promise((r) => setTimeout(r, 4000));
             continue;
@@ -1032,6 +1050,21 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
       return {
         ok: false,
         error: `Frontmatter translation contained residual Chinese for ${targetLocale}`,
+        targetLocale,
+        i18nKey,
+        provider: 'fallback-source',
+        model: 'error',
+        translatedMarkdown: '',
+      };
+    }
+  } else if (targetLocale === 'zh-Hant') {
+    const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/;
+    const fmTitle = translatedFm.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+    if (fmTitle && SIMPLIFIED_CHARS.test(fmTitle[1])) {
+      console.warn(`[Article-i18n] ❌ Frontmatter translation failed for "${i18nKey}" -> zh-Hant. Simplified Chinese detected in title. Aborting Scheme 1.`);
+      return {
+        ok: false,
+        error: 'Frontmatter translation contained Simplified Chinese for zh-Hant',
         targetLocale,
         i18nKey,
         provider: 'fallback-source',
@@ -1458,10 +1491,10 @@ export function validateTranslatedFormat(
     textWithoutCode = textWithoutCode.replace(/<code[\s\S]*?<\/code>/gi, '');
     textWithoutCode = textWithoutCode.replace(/<video[\s\S]*?<\/video>/gi, '');
     textWithoutCode = textWithoutCode.replace(/<audio[\s\S]*?<\/audio>/gi, '');
-    textWithoutCode = textWithoutCode.replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
-    textWithoutCode = textWithoutCode.replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
+    textWithoutCode = textWithoutCode.replace(/^(`{4,}|~{4,})(?!mindmap|markmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
+    textWithoutCode = textWithoutCode.replace(/^(`{3}|~{3})(?!mindmap|markmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '');
     textWithoutCode = textWithoutCode
-      .replace(/```[\s\S]*?```/g, '')
+      .replace(/```(?!mindmap|markmap|mermaid)[a-z0-9_-]*[\s\S]*?```/gi, '')
       .replace(/`[^`\r\n]+`/g, '')
       .replace(/\$\$[\s\S]*?\$\$/g, '')
       .replace(/\$[^$\r\n]+\$/g, '')
@@ -1479,6 +1512,22 @@ export function validateTranslatedFormat(
       return {
         valid: false,
         reason: `Excessive residual Chinese text in ${targetLocale} translation: ${chineseMatches.length} characters (${(chineseRatio * 100).toFixed(1)}% of body). Likely chunk translation failure or dropped translation.`
+      };
+    }
+  } else if (targetLocale === 'zh-Hant') {
+    const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/g;
+    let textForHant = translatedMarkdown
+      .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+      .replace(/<pre[\s\S]*?<\/pre>/gi, '')
+      .replace(/<code[\s\S]*?<\/code>/gi, '')
+      .replace(/^(`{3,}|~{3,})(?!mindmap|mermaid)[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
+      .replace(/```(?!mindmap|mermaid)[a-z0-9_-]*[\s\S]*?```/gi, '')
+      .replace(/`[^`\r\n]+`/g, '');
+    const simpMatches = textForHant.match(SIMPLIFIED_CHARS) || [];
+    if (simpMatches.length > 20) {
+      return {
+        valid: false,
+        reason: `Excessive Simplified Chinese characters in zh-Hant translation: ${simpMatches.length} characters found. Translation did not properly localize to Traditional Chinese.`
       };
     }
   } else {
@@ -1548,6 +1597,36 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
 
   console.log(`[Article-i18n] [Scheme 2: Extraction] Translating frontmatter for "${i18nKey}"...`);
   const translatedFm = await translateFrontmatterOnly(rawFrontmatter, options);
+  if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
+    const fmTitle = translatedFm.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+    if (fmTitle && /[\u4e00-\u9fa5]/.test(fmTitle[1])) {
+      console.warn(`[Article-i18n] [Scheme 2] Frontmatter translation failed for "${i18nKey}" -> ${targetLocale}. Residual Chinese in title.`);
+      return {
+        ok: false,
+        error: `Frontmatter translation contained residual Chinese for ${targetLocale} in Scheme 2`,
+        targetLocale,
+        i18nKey,
+        provider: 'fallback-source',
+        model: 'error',
+        translatedMarkdown: '',
+      };
+    }
+  } else if (targetLocale === 'zh-Hant') {
+    const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/;
+    const fmTitle = translatedFm.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+    if (fmTitle && SIMPLIFIED_CHARS.test(fmTitle[1])) {
+      console.warn(`[Article-i18n] [Scheme 2] Frontmatter title in zh-Hant contains Simplified Chinese.`);
+      return {
+        ok: false,
+        error: 'Frontmatter title in zh-Hant contains Simplified Chinese in Scheme 2',
+        targetLocale,
+        i18nKey,
+        provider: 'fallback-source',
+        model: 'error',
+        translatedMarkdown: '',
+      };
+    }
+  }
 
   // 1. Mask non-translatable blocks into protected tokens
   const protectedTokens: string[] = [];
@@ -1559,8 +1638,8 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
 
   let template = rawBody;
 
-  // Mask fenced code blocks (``` ... ```)
-  template = template.replace(/```[a-z0-9_-]*\r?\n[\s\S]*?\r?\n```/gi, (m) => mask(m));
+  // Mask non-diagram fenced code blocks (``` ... ```)
+  template = template.replace(/```(?!mindmap|markmap|mermaid)[a-z0-9_-]*\r?\n[\s\S]*?\r?\n```/gi, (m) => mask(m));
 
   // Mask block math ($$ ... $$)
   template = template.replace(/\$\$[\s\S]*?\$\$/g, (m) => mask(m));
@@ -1610,6 +1689,18 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
   for (let line of lines) {
     const trimmed = line.trim();
     if (!trimmed) {
+      templatedLines.push(line);
+      continue;
+    }
+
+    // Preserve fence lines
+    if (/^\s*(`{3,}|~{3,})/.test(line)) {
+      templatedLines.push(line);
+      continue;
+    }
+
+    // Preserve diagram syntax declarations (mindmap, flowchart, etc.)
+    if (/^\s*(?:mindmap|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph)\b/i.test(line)) {
       templatedLines.push(line);
       continue;
     }

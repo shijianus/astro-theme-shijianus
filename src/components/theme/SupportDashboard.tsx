@@ -23,6 +23,7 @@ import {
   getLocalCurrencyByCountry,
   convertByLocalPPP,
 } from '../../config/support';
+import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText, type LocaleVariant } from '../../lib/client-locale';
 
 /* ── SVG Brand Icons ── */
 const WeChatIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -294,6 +295,21 @@ function formatSponsorDate(dateStr?: string): string {
 }
 
 export const SupportDashboard: React.FC = () => {
+  // ── 0. i18n Locale State ──
+  const [locale, setLocale] = useState<LocaleVariant>(() => readStoredLocaleVariant());
+
+  useEffect(() => {
+    const onLocaleChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      setLocale(normaliseLocaleVariant(raw || readStoredLocaleVariant()));
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange);
+  }, []);
+
+  const t = useCallback((token: string, fallback: string) => getI18nText(token, locale, fallback), [locale]);
+
   // ── 1. Country & Dual-Currency State ──
   const [detectedCountry, setDetectedCountry] = useState<string>(() => detectClientCountry());
   const [activeCurrencyType, setActiveCurrencyType] = useState<'local' | 'global'>('local');
@@ -612,15 +628,15 @@ export const SupportDashboard: React.FC = () => {
       <section className="support-hero relative overflow-hidden rounded-3xl p-6 sm:p-10 md:p-12 text-center bg-gradient-to-b from-blue-50/70 via-white to-slate-50/50 dark:from-[#151a2e]/80 dark:via-[#0e121f] dark:to-[#0a0d17] border border-blue-100/80 dark:border-white/[0.08] shadow-sm">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-100/80 dark:bg-blue-500/20 text-[#425aef] dark:text-blue-300 border border-blue-200/60 dark:border-blue-500/30 mb-4">
           <Coffee className="w-4 h-4 text-[#425aef]" />
-          <span>{supportConfig.subtitle}</span>
+          <span>{t('support.heroBadge', supportConfig.subtitle)}</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight mb-4">
-          {supportConfig.title}
+          {t('support.heroTitle', supportConfig.title)}
         </h1>
 
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-          {supportConfig.description}
+          {t('support.heroDesc', supportConfig.description)}
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 max-w-3xl mx-auto">
@@ -641,13 +657,13 @@ export const SupportDashboard: React.FC = () => {
         <div className="lg:col-span-7 bg-white dark:bg-[#121520] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col justify-between space-y-4 sm:space-y-5">
           <div className="space-y-4">
             {/* Header with 2-Currency Switcher (Local Currency & Unified Currency) */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-white/[0.06]">
+            <div className="support-section-header flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-white/[0.06]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400">
-                  Stripe 国际收银台
+                  {t('support.stripeTitle', 'Stripe 国际收银台')}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-                  自选金额与寄语
+                  {t('support.stripeSubtitle', '自选金额与寄语')}
                 </h2>
               </div>
 
@@ -661,7 +677,7 @@ export const SupportDashboard: React.FC = () => {
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title={`本地货币 (${localCurrencyOption.name})`}
+                  title={`${t('support.localCurrency', '本地货币')} (${localCurrencyOption.name})`}
                 >
                   <span aria-hidden="true">{localCurrencyOption.flag}</span>
                   <span>
@@ -676,7 +692,7 @@ export const SupportDashboard: React.FC = () => {
                       ? 'bg-white dark:bg-[#1e2233] text-[#425aef] dark:text-blue-400 font-bold shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title={`统一结算货币 (${globalCurrencyOption.name})`}
+                  title={`${t('support.globalCurrency', '统一结算货币')} (${globalCurrencyOption.name})`}
                 >
                   <span aria-hidden="true">{globalCurrencyOption.flag}</span>
                   <span>
@@ -690,15 +706,15 @@ export const SupportDashboard: React.FC = () => {
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  推荐支持档位
+                  {t('support.recommendedTiers', '推荐支持档位')}
                 </label>
                 {activeCurrencyType === 'global' ? (
                   <span className="text-[11px] text-[#425aef] dark:text-blue-400 font-medium">
-                    ⚡ 已随本地购买力（PPP）汇率自适应
+                    {t('support.pppNotice', '⚡ 已随本地购买力（PPP）汇率自适应')}
                   </span>
                 ) : (
                   <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                    自适应常用赞赏梯度
+                    {t('support.gradientNotice', '自适应常用赞赏梯度')}
                   </span>
                 )}
               </div>
@@ -721,25 +737,30 @@ export const SupportDashboard: React.FC = () => {
                       className={`relative overflow-hidden py-2 px-3 sm:px-3.5 rounded-xl sm:rounded-2xl text-left transition-all duration-200 cursor-pointer select-none border group flex items-center justify-between min-h-[50px] sm:min-h-[54px] max-h-[54px] ${
                         isSelected ? tier.selected : tier.unselected
                       }`}
-                      title={`赞赏支持 ${activeCurrencySymbol}${amt} ${activeCurrencyCode.toUpperCase()}`}
+                      title={`${t(`support.tier${idx}.title`, `Tier ${idx + 1}`)} (${activeCurrencySymbol}${amt})`}
                       aria-label={`${activeCurrencySymbol}${amt}`}
                     >
-                      {/* Left: Warm Bold Amount + Currency Code (Clean & Minimalist without redundant checkmark) */}
+                      {/* Left: Warm Bold Amount + Currency Code + Localized Coffee Tier Title */}
                       <div className="relative z-10 flex flex-col justify-center select-none shrink-0 pointer-events-none">
-                        <span
-                          className={`text-base sm:text-lg font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
-                            isSelected ? tier.amountSelected : tier.amountUnselected
-                          }`}
-                        >
-                          {activeCurrencySymbol}{amt}
-                        </span>
-                        <span
-                          className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase leading-none mt-1 ${
-                            isSelected ? tier.codeSelected : tier.codeUnselected
-                          }`}
-                        >
-                          {activeCurrencyCode}
-                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span
+                            className={`text-base sm:text-lg font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
+                              isSelected ? tier.amountSelected : tier.amountUnselected
+                            }`}
+                          >
+                            {activeCurrencySymbol}{amt}
+                          </span>
+                          <span
+                            className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase leading-none ${
+                              isSelected ? tier.codeSelected : tier.codeUnselected
+                            }`}
+                          >
+                            {activeCurrencyCode}
+                          </span>
+                        </div>
+                        <strong className="support-tier-btn text-[10px] font-semibold tracking-tight mt-0.5 truncate max-w-[105px] opacity-90 block">
+                          {t(`support.tier${idx}.title`, `Tier ${idx + 1}`)}
+                        </strong>
                       </div>
 
                       {/* Right: Sleek Minimalist Coffee Glyph Watermark */}
@@ -779,7 +800,7 @@ export const SupportDashboard: React.FC = () => {
                         ? 100
                         : 1
                     }
-                    placeholder={`自定义金额（${activeCurrencySymbol}${activeMin} ~ ${activeCurrencySymbol}${activeMax}）`}
+                    placeholder={`${t('support.customAmountLabel', '自定义赞助金额')}（${activeCurrencySymbol}${activeMin} ~ ${activeCurrencySymbol}${activeMax}）`}
                     value={customAmount}
                     onFocus={() => setIsCustomMode(true)}
                     onChange={(e) => {
@@ -796,7 +817,7 @@ export const SupportDashboard: React.FC = () => {
                 </label>
                 {isCustomMode && isCustomInvalid && (
                   <div className="text-[11px] text-red-500 dark:text-red-400 px-1 font-medium">
-                    请输入 {activeCurrencySymbol}{activeMin} ~ {activeCurrencySymbol}{activeMax} 之间的金额
+                    {t('support.customInvalid', '请输入有效金额')} ({activeCurrencySymbol}{activeMin} ~ {activeCurrencySymbol}{activeMax})
                   </div>
                 )}
               </div>
@@ -805,17 +826,17 @@ export const SupportDashboard: React.FC = () => {
             {/* Supporter Inputs */}
             <div className="space-y-2.5 pt-0.5">
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                留下你的名字与寄语（可选）
+                {t('support.supporterName', '留下你的名字与寄语（可选）')}
               </label>
               <div className="space-y-2.5">
                 <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                    👤 称呼或社交账号 (Name or social handle) (可选)
+                    👤 {t('support.supporterName', '称呼或社交账号')} (可选)
                   </label>
                   <input
                     type="text"
                     maxLength={32}
-                    placeholder="例如：@github_username 或 Shijian Friend"
+                    placeholder={t('support.namePlaceholder', '例如：@github_username 或 Shijian Friend')}
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
                     className="w-full px-4 py-2 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 transition-all"
@@ -824,12 +845,12 @@ export const SupportDashboard: React.FC = () => {
 
                 <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                    💬 留言寄语 (Say something nice) (可选)
+                    💬 {t('support.supporterMessage', '留言寄语')} (可选)
                   </label>
                   <textarea
                     rows={2}
                     maxLength={120}
-                    placeholder="写下想对作者说的话或鼓励..."
+                    placeholder={t('support.messagePlaceholder', '写下想对作者说的话或鼓励...')}
                     value={donorMessage}
                     onChange={(e) => setDonorMessage(e.target.value)}
                     className="w-full px-4 py-2 text-xs sm:text-sm rounded-xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#425aef]/40 resize-none transition-all"
@@ -845,17 +866,17 @@ export const SupportDashboard: React.FC = () => {
               type="button"
               disabled={!isAmountValid}
               onClick={handleTriggerStripe}
-              className="w-full group relative overflow-hidden py-3.5 px-6 rounded-2xl text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-blue-500/25 transition-all duration-200 bg-[linear-gradient(115deg,#3B82F6_0%,#425AEF_50%,#7C3AED_100%)] hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="support-checkout-btn w-full group relative overflow-hidden py-3.5 px-6 rounded-2xl text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-blue-500/25 transition-all duration-200 bg-[linear-gradient(115deg,#3B82F6_0%,#425AEF_50%,#7C3AED_100%)] hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <CreditCard className="w-5 h-5 text-white/90" />
               <span>
-                前往 Stripe 安全收银台支付 — {activeCurrencySymbol}
+                {t('support.checkoutBtn', '前往 Stripe 安全收银台支付')} — {activeCurrencySymbol}
                 {effectiveAmount} {activeCurrencyCode}
               </span>
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
             <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-              🔒 由 Stripe 提供金融级加密结账 · 支持 Apple Pay / Google Pay / 国际信用卡
+              🔒 {t('support.stripeFootnote', '由 Stripe 提供金融级加密结账 · 支持 Apple Pay / Google Pay / 国际信用卡')}
             </p>
           </div>
         </div>
@@ -865,7 +886,7 @@ export const SupportDashboard: React.FC = () => {
           <div className="space-y-3.5 flex-1 flex flex-col">
             <div className="pb-3 border-b border-slate-100 dark:border-white/[0.06]">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                本地与跨国支付通道
+                {t('support.channelsTitle', '本地与跨国支付通道')}
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
                 微信 / 支付宝 / PayPal / Web3
@@ -884,7 +905,7 @@ export const SupportDashboard: React.FC = () => {
                 }`}
               >
                 <span aria-hidden="true">🇨🇳</span>
-                <span>国内扫码</span>
+                <span>{t('support.tabCn', '国内扫码')}</span>
               </button>
               <button
                 type="button"
@@ -896,7 +917,7 @@ export const SupportDashboard: React.FC = () => {
                 }`}
               >
                 <span aria-hidden="true">🇭🇰</span>
-                <span>港澳渠道</span>
+                <span>{t('support.tabHk', '港澳渠道')}</span>
               </button>
               <button
                 type="button"
@@ -908,7 +929,7 @@ export const SupportDashboard: React.FC = () => {
                 }`}
               >
                 <PayPalIcon className="w-3.5 h-3.5" />
-                <span>PayPal</span>
+                <span>{t('support.tabPaypal', 'PayPal')}</span>
               </button>
               <button
                 type="button"
@@ -920,7 +941,7 @@ export const SupportDashboard: React.FC = () => {
                 }`}
               >
                 <Coins className="w-3.5 h-3.5 text-emerald-500" />
-                <span>USDT</span>
+                <span>{t('support.tabCrypto', 'USDT')}</span>
               </button>
             </div>
 
@@ -1176,16 +1197,16 @@ export const SupportDashboard: React.FC = () => {
       {/* ── 3. Part 2: Supporter Roster (公开致谢名册与资金公示) ────────────────── */}
       <section id="sponsor-records" className="space-y-6 pt-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
+          <div className="support-section-header">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#425aef] dark:text-blue-400 mb-1">
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-              <span>公开致谢名册</span>
+              <span>{t('support.rosterBadge', '公开致谢名册')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              支援名录与资金公示
+              {t('support.records.title', '支援名录与资金公示')}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              致谢每一位慷慨支持的读者与同行，真实资金去向透明挂钩，未动用部分严谨显示“-”。
+              {t('support.records.subtitle', '致谢每一位慷慨支持的读者与同行，真实资金去向透明挂钩，未动用部分严谨显示“-”。')}
             </p>
           </div>
 
@@ -1194,7 +1215,7 @@ export const SupportDashboard: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="搜索支持者、寄语或渠道..."
+              placeholder={t('support.search.placeholder', '搜索支持者、寄语或渠道...')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -1314,19 +1335,19 @@ export const SupportDashboard: React.FC = () => {
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200/80 dark:border-white/[0.07] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
-                  <th scope="col" className="px-5 py-3.5">赞赏支持者</th>
-                  <th scope="col" className="px-4 py-3.5">支持金额</th>
-                  <th scope="col" className="px-4 py-3.5">祝福与寄语</th>
-                  <th scope="col" className="px-4 py-3.5">支付渠道</th>
-                  <th scope="col" className="px-4 py-3.5">资金去向 / 消费公示</th>
-                  <th scope="col" className="px-5 py-3.5 text-right">日期</th>
+                  <th scope="col" className="px-5 py-3.5">{t('support.table.sponsor', '赞赏支持者')}</th>
+                  <th scope="col" className="px-4 py-3.5">{t('support.table.amount', '支持金额')}</th>
+                  <th scope="col" className="px-4 py-3.5">{t('support.table.message', '祝福与寄语')}</th>
+                  <th scope="col" className="px-4 py-3.5">{t('support.table.channel', '支付渠道')}</th>
+                  <th scope="col" className="px-4 py-3.5">{t('support.table.purpose', '资金去向 / 消费公示')}</th>
+                  <th scope="col" className="px-5 py-3.5 text-right">{t('support.table.date', '日期')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
                 {isLoadingSponsors ? (
                   <tr>
                     <td colSpan={6} className="py-14 text-center text-sm text-slate-400 dark:text-slate-500">
-                      正在从数据库读取公开致谢名册…
+                      {t('support.records.loading', '正在从数据库读取公开致谢名册…')}
                     </td>
                   </tr>
                 ) : paginatedSponsors.length > 0 ? (
@@ -1541,7 +1562,7 @@ export const SupportDashboard: React.FC = () => {
             FAQ & Transparency
           </span>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-            常見問題與透明度承諾
+            {t('support.faqTitle', '常見問題與透明度承諾')}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
             关于资金流向、多币种换算、退款机制与隐私安全的坦诚说明

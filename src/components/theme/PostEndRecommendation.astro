@@ -2,12 +2,22 @@
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
+import articleI18nMap from '../../.generated/article-i18n-map.json';
 
 interface Props {
   nextPost?: CollectionEntry<'posts'> | null;
 }
 
 const { nextPost = null } = Astro.props;
+
+const nextI18nKey = nextPost?.data.i18nKey || nextPost?.id.replace(/(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i, '');
+const nextTranslations = nextI18nKey ? ((articleI18nMap as Record<string, any>)[nextI18nKey]?.translations || {}) : {};
+const nextTitlesByLang: Record<string, string> = {
+  'zh-CN': nextPost?.data.title || '',
+};
+for (const [l, meta] of Object.entries(nextTranslations)) {
+  if ((meta as any)?.title) nextTitlesByLang[l] = (meta as any).title;
+}
 ---
 
 {nextPost && (
@@ -25,7 +35,7 @@ const { nextPost = null } = Astro.props;
       />
       <span class="pagination-info">
         <span class="label" data-pagination-label>接着读</span>
-        <strong class="next-info">{nextPost.data.title}</strong>
+        <strong class="next-info" data-next-post-title data-titles={JSON.stringify(nextTitlesByLang)}>{nextPost.data.title}</strong>
       </span>
     </a>
     <button type="button" class="pagination-close" data-pagination-close aria-label="收起这条推荐">×</button>
@@ -67,6 +77,20 @@ const { nextPost = null } = Astro.props;
           if (labelEl) labelEl.textContent = t.label;
           if (closeButton) closeButton.setAttribute('aria-label', t.closeAria);
           root.setAttribute('aria-label', t.navAria);
+
+          const titleEl = root.querySelector('[data-next-post-title]');
+          if (titleEl && titleEl.dataset.titles) {
+            try {
+              const dict = JSON.parse(titleEl.dataset.titles);
+              if (dict[normalized]) {
+                titleEl.textContent = dict[normalized];
+              } else if (dict['en'] && !normalized.startsWith('zh')) {
+                titleEl.textContent = dict['en'];
+              } else if (dict['zh-CN']) {
+                titleEl.textContent = dict['zh-CN'];
+              }
+            } catch (_) {}
+          }
         };
 
         const curLang = document.documentElement.lang || 'zh-CN';

@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getPostPath, resolveCover, resolveCoverAlt } from '../../lib/content';
 import { formatDisplayDate } from '../../lib/theme';
+import articleI18nMap from '../../.generated/article-i18n-map.json';
 
 interface Props {
   posts: CollectionEntry<'posts'>[];
@@ -11,6 +12,18 @@ interface Props {
 }
 
 const { posts, eyebrow, title } = Astro.props;
+
+function getPostTitlesByLang(post: CollectionEntry<'posts'>): Record<string, string> {
+  const i18nKey = post.data.i18nKey || post.id.replace(/(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i, '');
+  const translations = (articleI18nMap as Record<string, any>)[i18nKey]?.translations || {};
+  const titles: Record<string, string> = {
+    'zh-CN': post.data.title,
+  };
+  for (const [l, meta] of Object.entries(translations)) {
+    if ((meta as any)?.title) titles[l] = (meta as any).title;
+  }
+  return titles;
+}
 ---
 
 <section class="relatedPosts">
@@ -25,24 +38,27 @@ const { posts, eyebrow, title } = Astro.props;
   </div>
 
   <div class="relatedPosts-list">
-    {posts.map((post, index) => (
-      <a class="relatedPosts-item" href={getPostPath(post)}>
-        <img
-          src={resolveCover(post)}
-          alt={resolveCoverAlt(post)}
-          loading="lazy"
-          decoding="async"
-          data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
-          data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
-          onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
-        />
-        <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
-        <div class="content">
-          <div class="date">{formatDisplayDate(post.data.pubDate)}</div>
-          <div class="title">{post.data.title}</div>
-        </div>
-      </a>
-    ))}
+    {posts.map((post, index) => {
+      const titlesByLang = getPostTitlesByLang(post);
+      return (
+        <a class="relatedPosts-item" href={getPostPath(post)}>
+          <img
+            src={resolveCover(post)}
+            alt={resolveCoverAlt(post)}
+            loading="lazy"
+            decoding="async"
+            data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+            data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+            onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
+          />
+          <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
+          <div class="content">
+            <div class="date">{formatDisplayDate(post.data.pubDate)}</div>
+            <div class="title" data-related-post-title data-titles={JSON.stringify(titlesByLang)}>{post.data.title}</div>
+          </div>
+        </a>
+      );
+    })}
   </div>
 
   <script is:inline>
@@ -98,6 +114,20 @@ const { posts, eyebrow, title } = Astro.props;
         const count = parseInt(metaEl.getAttribute('data-count') || '0', 10);
         metaEl.textContent = t.meta(count);
       }
+
+      // Update related post titles according to active language
+      document.querySelectorAll('[data-related-post-title]').forEach((el) => {
+        try {
+          const dict = JSON.parse(el.dataset.titles || '{}');
+          if (dict[normalized]) {
+            el.textContent = dict[normalized];
+          } else if (dict['en'] && !normalized.startsWith('zh')) {
+            el.textContent = dict['en'];
+          } else if (dict['zh-CN']) {
+            el.textContent = dict['zh-CN'];
+          }
+        } catch (_) {}
+      });
     };
 
     const curLang = document.documentElement.lang || 'zh-CN';

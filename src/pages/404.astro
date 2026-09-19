@@ -3,8 +3,21 @@ import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
 import { siteConfig } from '../config/site';
 import { getDisplayPostTitle, getPostPath, getPublicPosts, resolveDisplayCover, resolveDisplayCoverAlt } from '../lib/content';
+import articleI18nMap from '../.generated/article-i18n-map.json';
 
 const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
+
+const postTitlesMap = posts.map((entry) => {
+  const i18nKey = entry.data.i18nKey || entry.id.replace(/(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i, '');
+  const translations = i18nKey ? ((articleI18nMap as Record<string, any>)[i18nKey]?.translations || {}) : {};
+  const titlesByLang: Record<string, string> = {
+    'zh-CN': entry.data.title || '',
+  };
+  for (const [l, meta] of Object.entries(translations)) {
+    if ((meta as any)?.title) titlesByLang[l] = (meta as any).title;
+  }
+  return { entry, titlesByLang };
+});
 ---
 
 <BlogLayout title="404" showAside={false} pageType="404">
@@ -18,19 +31,19 @@ const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
         <div class="error-info">
           <p class="error-eyebrow">404 / Not Found</p>
           <h1 class="error_title">404</h1>
-          <p class="error_subtitle">这条路还没有被记录下来</p>
-          <p class="error-summary">返回首页继续浏览，或者直接从最近更新进入现有文章，不把读者留在死路里。</p>
+          <p class="error_subtitle" data-404-subtitle>这条路还没有被记录下来</p>
+          <p class="error-summary" data-404-summary>返回首页继续浏览，或者直接从最近更新进入现有文章，不把读者留在死路里。</p>
           <div class="error-actions">
-            <a href="/" class="theme-button">返回首页</a>
-            <a href="/archives/" class="theme-button theme-button--ghost">查看归档</a>
+            <a href="/" class="theme-button" data-404-home>返回首页</a>
+            <a href="/archives/" class="theme-button theme-button--ghost" data-404-archives>查看归档</a>
           </div>
         </div>
       </div>
     </div>
 
-    {posts.length > 0 && (
+    {postTitlesMap.length > 0 && (
       <div class="error-feed">
-        {posts.map((entry) => (
+        {postTitlesMap.map(({ entry, titlesByLang }) => (
           <article class="error-feed__item theme-card theme-card--interactive">
             <a class="error-feed__thumb" href={getPostPath(entry)}>
               <img
@@ -44,7 +57,7 @@ const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
               />
             </a>
             <div class="error-feed__body">
-              <a href={getPostPath(entry)}>{getDisplayPostTitle(entry, true)}</a>
+              <a href={getPostPath(entry)} data-error-feed-title data-titles={JSON.stringify(titlesByLang)}>{getDisplayPostTitle(entry, true)}</a>
               <time datetime={entry.data.pubDate.toISOString()}>{entry.data.pubDate.toLocaleDateString('zh-CN')}</time>
             </div>
           </article>
@@ -52,4 +65,88 @@ const posts = getPublicPosts(await getCollection('posts')).slice(0, 4);
       </div>
     )}
   </section>
+
+  <script is:inline>
+    (() => {
+      const ERROR_404_I18N = {
+        'zh-CN': {
+          subtitle: '这条路还没有被记录下来',
+          summary: '返回首页继续浏览，或者直接从最近更新进入现有文章，不把读者留在死路里。',
+          home: '返回首页',
+          archives: '查看归档',
+        },
+        'zh-Hant': {
+          subtitle: '這條路還沒有被記錄下來',
+          summary: '返回首頁繼續瀏覽，或者直接從最近更新進入現有文章，不把讀者留在死路裏。',
+          home: '返回首頁',
+          archives: '查看歸檔',
+        },
+        'en': {
+          subtitle: 'This path has not been recorded yet',
+          summary: 'Return to the home page or browse recent updates to explore available articles.',
+          home: 'Back to Home',
+          archives: 'View Archives',
+        },
+        'es': {
+          subtitle: 'Esta ruta aún no ha sido registrada',
+          summary: 'Regrese a la página de inicio o explore las publicaciones recientes.',
+          home: 'Volver al Inicio',
+          archives: 'Ver Archivos',
+        },
+        'de': {
+          subtitle: 'Dieser Pfad wurde noch nicht aufgezeichnet',
+          summary: 'Kehren Sie zur Startseite zurück oder stöbern Sie in den neuesten Beiträgen.',
+          home: 'Zur Startseite',
+          archives: 'Archiv anzeigen',
+        },
+        'fr': {
+          subtitle: 'Ce chemin n\'a pas encore été répertorié',
+          summary: 'Retournez à la page d\'accueil ou explorez les articles récents.',
+          home: 'Retour à l\'accueil',
+          archives: 'Voir les archives',
+        },
+      };
+
+      const update404I18n = (lang) => {
+        const normalized = (lang || '').toLowerCase().startsWith('zh-hant') ? 'zh-Hant'
+          : (lang || '').toLowerCase().startsWith('zh') ? 'zh-CN'
+          : ['en', 'es', 'de', 'fr'].includes((lang || '').split('-')[0]) ? (lang || '').split('-')[0]
+          : 'zh-CN';
+        const t = ERROR_404_I18N[normalized] || ERROR_404_I18N['zh-CN'];
+
+        const subtitleEl = document.querySelector('[data-404-subtitle]');
+        if (subtitleEl) subtitleEl.textContent = t.subtitle;
+
+        const summaryEl = document.querySelector('[data-404-summary]');
+        if (summaryEl) summaryEl.textContent = t.summary;
+
+        const homeEl = document.querySelector('[data-404-home]');
+        if (homeEl) homeEl.textContent = t.home;
+
+        const archivesEl = document.querySelector('[data-404-archives]');
+        if (archivesEl) archivesEl.textContent = t.archives;
+
+        document.querySelectorAll('[data-error-feed-title]').forEach((el) => {
+          try {
+            const dict = JSON.parse(el.dataset.titles || '{}');
+            if (dict[normalized]) {
+              el.textContent = dict[normalized];
+            } else if (dict['en'] && !normalized.startsWith('zh')) {
+              el.textContent = dict['en'];
+            } else if (dict['zh-CN']) {
+              el.textContent = dict['zh-CN'];
+            }
+          } catch (_) {}
+        });
+      };
+
+      const curLang = document.documentElement.lang || 'zh-CN';
+      update404I18n(curLang);
+
+      window.addEventListener('shijianus:localechange', (e) => {
+        const next = typeof e?.detail === 'string' ? e.detail : (e?.detail?.lang || document.documentElement.lang || 'zh-CN');
+        update404I18n(next);
+      });
+    })();
+  </script>
 </BlogLayout>

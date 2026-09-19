@@ -446,10 +446,10 @@ export const RewardModal: React.FC<RewardModalProps> = ({
     updateLocale();
 
     const onLocaleChange = (e: Event) => {
-      const customEvent = e as CustomEvent<string>;
-      const next = customEvent.detail as LocaleKey;
-      if (['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'].includes(next)) {
-        setLocaleVariant(next);
+      const detail = (e as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      if (raw && ['zh-CN', 'zh-Hant', 'en', 'fr', 'es', 'de'].includes(raw)) {
+        setLocaleVariant(raw as LocaleKey);
       } else {
         setLocaleVariant('zh-CN');
       }

@@ -11,6 +11,7 @@
     "preview:host": "astro preview --host 0.0.0.0",
     "broadcast:sync": "node scripts/sync-broadcast.mjs",
     "sync:i18n": "node scripts/sync-post-i18n.mjs",
+    "i18n:translate": "node scripts/sync-post-i18n.mjs --cli",
     "prebuild": "node scripts/sync-broadcast.mjs && node scripts/sync-post-i18n.mjs",
     "build": "node scripts/sync-broadcast.mjs && node scripts/sync-post-i18n.mjs && BLOG_BUILD_TARGET=static PUBLIC_STATIC_EXPORT=1 astro build",
     "build:static": "node scripts/sync-broadcast.mjs && node scripts/sync-post-i18n.mjs && BLOG_BUILD_TARGET=static PUBLIC_STATIC_EXPORT=1 astro build",

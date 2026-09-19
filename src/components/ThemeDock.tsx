@@ -256,10 +256,10 @@ export function ThemeDock(_props: ThemeDockProps) {
       setLocale(stored);
     }
     const onLocaleChange = (event: Event) => {
-      const custom = event as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
-      const detail = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
-      if (detail) {
-        setLocale(normaliseLocaleVariant(detail));
+      const detail = (event as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      if (raw) {
+        setLocale(normaliseLocaleVariant(raw));
       }
     };
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);

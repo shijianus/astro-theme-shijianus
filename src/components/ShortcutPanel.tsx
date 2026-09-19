@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from 'react';
+import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText, type LocaleVariant } from '../lib/client-locale';
 
-type ShortcutItem = {
+type ShortcutDef = {
   key: string;
-  label: string;
+  token: string;
+  defaultLabel: string;
   action?: () => void;
   event?: string;
 };
 
-const shortcuts: ShortcutItem[] = [
-  { key: 'K', label: '唤起搜索面板', event: 'shijianus:open-search' },
-  { key: 'A', label: '打开控制台', event: 'shijianus:open-console' },
-  { key: 'D', label: '深浅模式切换', event: 'shijianus:toggle-theme' },
-  { key: 'M', label: '播放器切换', event: 'shijianus:music-toggle' },
-  { key: 'R', label: '随机前往文章', action: () => {
+const SHORTCUT_DEFS: ShortcutDef[] = [
+  { key: 'K', token: 'shortcut.search', defaultLabel: '唤起搜索面板', event: 'shijianus:open-search' },
+  { key: 'A', token: 'shortcut.console', defaultLabel: '打开控制台', event: 'shijianus:open-console' },
+  { key: 'D', token: 'shortcut.theme', defaultLabel: '深浅模式切换', event: 'shijianus:toggle-theme' },
+  { key: 'M', token: 'shortcut.music', defaultLabel: '播放器切换', event: 'shijianus:music-toggle' },
+  { key: 'R', token: 'shortcut.random', defaultLabel: '随机前往文章', action: () => {
     const randomBtn = document.querySelector('#random-banner') as HTMLAnchorElement;
     if (randomBtn) randomBtn.click();
   }},
-  { key: 'H', label: '返回首页', action: () => window.location.href = '/' },
+  { key: 'H', token: 'shortcut.home', defaultLabel: '返回首页', action: () => window.location.href = '/' },
 ];
 
 export function ShortcutPanel() {
   const [visible, setVisible] = useState(false);
   const [shiftPressed, setShiftPressed] = useState(false);
+  const [locale, setLocale] = useState<LocaleVariant>(() => readStoredLocaleVariant());
+
+  useEffect(() => {
+    const onLocaleChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      setLocale(normaliseLocaleVariant(raw || readStoredLocaleVariant()));
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', onLocaleChange);
+  }, []);
 
   useEffect(() => {
     let timer: number | null = null;
@@ -38,7 +51,7 @@ export function ShortcutPanel() {
 
       if (e.shiftKey) {
         const key = e.key.toUpperCase();
-        const shortcut = shortcuts.find(s => s.key === key);
+        const shortcut = SHORTCUT_DEFS.find(s => s.key === key);
         if (shortcut) {
           e.preventDefault();
           if (shortcut.action) {
@@ -80,15 +93,15 @@ export function ShortcutPanel() {
 
   return (
     <div id="keyboard-tips" className="shortcut-panel show" aria-hidden="true">
-      <div className="keyboardTitle">快捷键提示</div>
+      <div className="keyboardTitle">{getI18nText('shortcut.title', locale, '快捷键提示')}</div>
       <div className="keybordList">
-        {shortcuts.map((item) => (
+        {SHORTCUT_DEFS.map((item) => (
           <div className="keybordItem" key={item.key}>
             <div className="keyGroup">
               <kbd className="key">Shift + {item.key}</kbd>
             </div>
             <div className="keyContent">
-              <span className="content">{item.label}</span>
+              <span className="content">{getI18nText(item.token, locale, item.defaultLabel)}</span>
             </div>
           </div>
         ))}

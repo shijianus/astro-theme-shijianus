@@ -1,6 +1,6 @@
 # 文章全量多语言翻译与 .article-translation-variant Playwright 自动化审计报告
 
-> **审计执行时间**: 2026-09-19T08:15:37.085Z  
+> **审计执行时间**: 2026-09-19T12:20:23.922Z  
 > **审计目标环境**: 本地静态构建生产产物 (`dist/` 静态环境，PORT: 4329)  
 > **测试引擎**: Playwright (Chromium Headless, 无头浏览器深度视觉与 DOM 断言)  
 > **测试结果概要**: 总计断言 112 项，通过 112 项，失败 0 项 (通过率: 100.0%)  
@@ -52,8 +52,10 @@
    - 默认激活主语系（`zh-CN`），其余语系应用 `display: none`，通过前端无缝切换，实现无需页面刷新的即时语言变体切换体验。
 
 4. **控制台与页面渲染健康度**:
-   - 控制台致命 JS 报错数: 267  
+   - 控制台致命 JS 报错数: 240  
    - 报错详情: 
+     - Failed to load resource: the server responded with a status of 404 (Not Found)
+     - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
@@ -76,7 +78,6 @@
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Error: <path> attribute d: Expected arc flag ('0' or '1'), "….5 3 5.5a7 0 1 1-14 0c0-1.153.43…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
-     - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
@@ -88,46 +89,6 @@
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
@@ -145,8 +106,47 @@
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
-     - Failed to load resource: the server responded with a status of 404 (Not Found)
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
@@ -192,46 +192,9 @@
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Failed to load resource: the server responded with a status of 404 (Not Found)
+     - Failed to load resource: the server responded with a status of 404 (Not Found)
+     - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
@@ -264,27 +227,37 @@
      - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
+     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
-     - Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N…".
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)
      - Failed to load resource: the server responded with a status of 404 (Not Found)

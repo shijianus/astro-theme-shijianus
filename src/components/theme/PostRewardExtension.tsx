@@ -108,9 +108,9 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
 
   useEffect(() => {
     const onLocaleChange = (event: Event) => {
-      const custom = event as CustomEvent<LocaleVariant | { variant?: LocaleVariant }>;
-      const next = typeof custom.detail === 'string' ? custom.detail : custom.detail?.variant;
-      if (next) setLocale(next);
+      const detail = (event as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      if (raw) setLocale(normaliseLocaleVariant(raw));
     };
     window.addEventListener('shijianus:localechange', onLocaleChange);
     return () => window.removeEventListener('shijianus:localechange', onLocaleChange);

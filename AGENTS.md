@@ -2942,5 +2942,19 @@
   2. 全量构建通过（`214 page(s) built in 47.80s`）；
   3. Playwright 桌面与移动端端到端测试断言全部通过（`ghbdagesGone: true`，`iconButtonsCount: 0`，`ccIconsCount: 4`，`hasOverlap: false`）。
 
-
-
+### Task 131: 全站 UI i18n 完整优化、AI 文章翻译严格架构隔离与定制模型参数接入
+- [x] **AI 文章翻译与全站基础 UI (Button/Nav/Modal/Toast/Controls) 严格架构隔离**:
+  1. 架构级隔离：AI 翻译管线仅且只允许针对 `src/content/posts/*.md` 文章正文执行，严禁侵入或翻译全站基础 UI（Button、导航、设置、模态框、操作条、Toast 等）；
+  2. 极速构建默认保障：`ENABLE_ARTICLE_AI_I18N=false` 作为全局默认配置，SSG 构建期 0 网络请求、0 耗时增量，杜绝 CI/CD 构建超时；
+  3. 开放定制化 CLI 翻译接口：开发 `npm run i18n:translate` 命令行接口，支持 `--post <slug>`、`--posts`、`--model <model>`、`--base-url <url>`、`--api-key <key>`、`--locales <langs>`、`--force` 等专属参数，允许用户在本地或自建流程中灵活调用自定义第三方模型进行离线文章精翻。
+- [x] **全站基础 UI 多语言完整支持与字典库重构 (`src/lib/client-locale.ts`)**:
+  1. 修复字典错位：清除 `LOCALE_METADATA` 中的残留键值，归位并补全 `I18N_STRINGS` 6 种语言字典（`zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de`）；
+  2. 支持赞赏收银看板 (`SupportDashboard.tsx`)：全量覆盖咖啡阶梯档位标题、自定义金额、致谢名册表头、通道选择、Stripe 支付按钮等；
+  3. 支持快捷键面板 (`ShortcutPanel.tsx`)：覆盖全部快捷键指令、按键提示与弹窗标题；
+  4. 支持控制台与状态卡片 (`ThemeOverlays.tsx`)：动态呈现 12 项系统指标（总字数、稳定天数、最新推送、架构、引擎、样式层、节点、延迟等）；
+  5. 支持 404 页面 (`404.astro`)：无缝支持 404 引导文案、返回首页按钮与查看归档按钮多语言转换；
+  6. 支持文章页动态组件 (`AiSummaryPanel.astro`, `RelatedPosts.astro`, `PostEndRecommendation.astro`)：支持 Chronral 7 大提炼按键、相关推荐眉题与下一篇推荐提示多语系自适应；
+  7. 解决 React 孤岛 (Astro Island) 与 DOM 翻译树冲突：在 `isIgnoredSubtree` 中阻断 `astro-island`、`#keyboard-tips`、`.support-dashboard`，实现 React 组件与静态 SSG 树清晰权责划分。
+- [x] **Playwright 真实端到端自动化测试验证 (33/33 全绿)**:
+  1. 编写全覆盖自动化测试套件 `scripts/verify-i18n-comprehensive.mjs`；
+  2. 全量验证赞赏台 6 语言动态切换、快捷键面板多语言展示、控制台 12 项指标、404 页面多语言流转、文章页动态组件与 AI 隔离默认配置，33 项断言 100% 通过。

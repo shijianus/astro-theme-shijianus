@@ -12,7 +12,7 @@ import { siteConfig, type SiteNavItem } from '../config/site';
 import { readAllLocalThreads, readCommentIdentity } from '../lib/comment-client';
 import { readStorage, resolveBackgroundSource, resolveInitialBackground } from '../lib/client-theme';
 import type { LocaleVariant } from '../lib/user-persona.ts';
-import { readStoredLocaleVariant, normaliseLocaleVariant } from '../lib/client-locale';
+import { readStoredLocaleVariant, normaliseLocaleVariant, getI18nText } from '../lib/client-locale';
 
 const NAV_TRANSLATIONS: Record<LocaleVariant, {
   userCenter: string;
@@ -707,7 +707,7 @@ export function SiteHeader({
                       </a>
 
                       {hasChildren && (
-                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} 子页面`} aria-hidden={!submenuOpen}>
+                        <div className="site-page-submenu" role="menu" aria-label={`${item.label} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`} aria-hidden={!submenuOpen}>
                           {item.children.slice(0, 3).map((child) => {
                             return (
                               <a
@@ -915,10 +915,10 @@ export function SiteHeader({
           <div 
             className="site-mobile-panel-backdrop" 
             onClick={() => setMenuOpen(false)} 
-            aria-label="关闭移动端导航菜单" 
+            aria-label={getI18nText('nav.mobileCloseAria', currentLocale, '关闭移动端导航菜单')} 
           />
           <div className="site-mobile-panel">
-            <nav className="site-mobile-panel__group" aria-label="移动端导航">
+            <nav className="site-mobile-panel__group" aria-label={getI18nText('nav.mobileNavAria', currentLocale, '移动端导航')}>
               {primary.map((item) => (
                 <div key={item.href} className="site-mobile-link-group">
                   <a

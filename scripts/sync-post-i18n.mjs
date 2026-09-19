@@ -16,6 +16,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import yaml from 'js-yaml';
 import {
   translateArticle,
@@ -137,18 +138,65 @@ async function main() {
   // Save generated mapping table
   fs.writeFileSync(I18N_MAP_PATH, JSON.stringify(i18nMap, null, 2), 'utf8');
 
-  const config = resolveArticleI18nConfig();
+  const HASHES_PATH = path.resolve(GENERATED_DIR, 'article-i18n-hashes.json');
+  let knownHashes = {};
+  try {
+    if (fs.existsSync(HASHES_PATH)) {
+      knownHashes = JSON.parse(fs.readFileSync(HASHES_PATH, 'utf8'));
+    }
+  } catch (_) {}
+
+  // Parse CLI flags
+  const args = process.argv.slice(2);
+  const isCli = args.includes('--cli');
+  const forceRegenerate = args.includes('--force') || process.env.FORCE_REGENERATE_TRANSLATION === 'true';
+
+  let cliPost = null;
+  const postIdx = args.indexOf('--post');
+  if (postIdx !== -1 && args[postIdx + 1]) cliPost = args[postIdx + 1];
+  const postsIdx = args.indexOf('--posts');
+  if (postsIdx !== -1 && args[postsIdx + 1]) cliPost = args[postsIdx + 1];
+
+  let cliModel = null;
+  const modelIdx = args.indexOf('--model');
+  if (modelIdx !== -1 && args[modelIdx + 1]) cliModel = args[modelIdx + 1];
+
+  let cliBaseUrl = null;
+  const baseIdx = args.indexOf('--base-url');
+  if (baseIdx !== -1 && args[baseIdx + 1]) cliBaseUrl = args[baseIdx + 1];
+
+  let cliApiKey = null;
+  const keyIdx = args.indexOf('--api-key');
+  if (keyIdx !== -1 && args[keyIdx + 1]) cliApiKey = args[keyIdx + 1];
+
+  let cliLocales = null;
+  const locIdx = args.indexOf('--locales');
+  if (locIdx !== -1 && args[locIdx + 1]) cliLocales = args[locIdx + 1].split(',').map((s) => s.trim()).filter(Boolean);
+
+  const baseConfig = resolveArticleI18nConfig();
+  const config = {
+    ...baseConfig,
+    enabled: isCli ? true : baseConfig.enabled,
+    apiKey: cliApiKey || baseConfig.apiKey,
+    baseUrl: cliBaseUrl || baseConfig.baseUrl,
+    model: cliModel || baseConfig.model,
+    targetLocales: cliLocales || baseConfig.targetLocales,
+    targetPosts: cliPost ? cliPost.split(',').map((s) => s.trim()).filter(Boolean) : baseConfig.targetPosts,
+  };
 
   if (!config.enabled) {
-    console.log('[Article-i18n] AI article translation build assistant is disabled (ENABLE_ARTICLE_AI_I18N=false).');
-    console.log('[Article-i18n]    To enable, set ENABLE_ARTICLE_AI_I18N=true in .env / build environment.');
-    console.log(`[Article-i18n]    Indexed ${articleGroups.size} article groups across ${articles.length} posts.`);
+    console.log('[Article-i18n] AI article translation is DISABLED by default (ENABLE_ARTICLE_AI_I18N=false).');
+    console.log('[Article-i18n]    -> Safe zero-lag build mode active (0 network requests).');
+    console.log('[Article-i18n]    -> To translate articles on-demand locally, run: npm run i18n:translate -- --post <slug>');
+    console.log(`[Article-i18n]    -> Indexed ${articleGroups.size} article groups across ${articles.length} posts.`);
     return;
   }
 
-  console.log(`[Article-i18n] AI article translation build assistant is ACTIVE!`);
+  console.log(`[Article-i18n] AI article translation assistant is ACTIVE!`);
+  console.log(`[Article-i18n]    Provider Endpoint: ${config.baseUrl || 'https://ai.121628.xyz/v1'}`);
+  console.log(`[Article-i18n]    Active Model: ${config.model || 'kimi-k3-free'}`);
   console.log(`[Article-i18n]    Target Locales: ${config.targetLocales.join(', ')}`);
-  console.log(`[Article-i18n]    Confidentiality Protection: ${config.protectEncrypted ? 'ENABLED (Skipping encrypted/access-controlled articles)' : 'DISABLED (Translating encrypted articles)'}`);
+  console.log(`[Article-i18n]    Confidentiality Protection: ${config.protectEncrypted ? 'ENABLED (Skipping encrypted articles)' : 'DISABLED'}`);
   if (config.targetPosts && config.targetPosts.length > 0) {
     console.log(`[Article-i18n]    Target Post Scope: ${config.targetPosts.join(', ')}`);
   } else {

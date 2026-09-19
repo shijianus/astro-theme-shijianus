@@ -1,5 +1,5 @@
 import React, { type CSSProperties, useState, useEffect } from 'react';
-import { convertText, readStoredLocaleVariant, type LocaleVariant } from '../lib/client-locale';
+import { convertText, readStoredLocaleVariant, normaliseLocaleVariant, type LocaleVariant } from '../lib/client-locale';
 
 const renderMarkdown = (text: string) => {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
@@ -42,6 +42,10 @@ export function ProfileWidget({
   cover,
   email,
   variant,
+  postCount = 0,
+  wordCount = 0,
+  readingTimeMinutes = 0,
+  posts = [],
 }: ProfileWidgetProps) {
   const [sayHiIndex, setSayHiIndex] = useState(0);
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => {
@@ -50,8 +54,10 @@ export function ProfileWidget({
   });
 
   useEffect(() => {
-    const onLocaleChange = (e: CustomEvent<LocaleVariant>) => {
-      setLocaleVariant(e.detail || readStoredLocaleVariant());
+    const onLocaleChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
+      setLocaleVariant(normaliseLocaleVariant(raw || readStoredLocaleVariant()));
     };
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     return () => window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);

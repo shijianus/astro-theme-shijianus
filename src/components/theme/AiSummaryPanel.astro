@@ -46,14 +46,15 @@ const detailedAuthorIntrosEn = [
   `${siteConfig.site.author.name} is an INFJ / Builder driven by deep thinking and hands-on craftsmanship. Viewing the blog as an external brain and long-term product, he continuously polishes this SSR + Islands architecture. Believing that "purposeful construction matters far more than fleeting spectacle," he documents research experiments, architectural decisions, and the balance between geek aesthetics and ultimate readability.`,
 ];
 
-const isEnglishArticle = articleLang === 'en';
-const initialBrandTitle = isEnglishArticle ? 'Chronral Summary' : 'Chronral 摘要';
-const initialLoadingText = isEnglishArticle
-  ? 'Distilling key insights and architectural takeaways via Chronral...'
-  : '正在通过 Chronral 智能提炼文章核心信息...';
-
-const initialActions = isEnglishArticle
-  ? {
+const SSR_I18N: Record<string, {
+  brandTitle: string;
+  loadingText: string;
+  actions: Record<string, { label: string; title: string }>;
+}> = {
+  'en': {
+    brandTitle: 'Chronral Summary',
+    loadingText: 'Distilling key insights and architectural takeaways via Chronral...',
+    actions: {
       point: { label: '💡 Key Points', title: 'Extract core architectural arguments & technical decisions' },
       audience: { label: '🎯 Audience', title: 'Target readership and engineering challenges addressed' },
       quick: { label: '⏱️ 30s Read', title: 'Rapid 3-sentence executive overview' },
@@ -61,8 +62,64 @@ const initialActions = isEnglishArticle
       intro: { label: '👤 About Author', title: "Discover the author's background and craft philosophy" },
       related: { label: '📚 Related Posts', title: 'AI rationale for curated follow-up readings' },
       top: { label: '🔝 Back to Top', title: 'Smooth scroll back to post top' },
-    }
-  : {
+    },
+  },
+  'de': {
+    brandTitle: 'Chronral Zusammenfassung',
+    loadingText: 'Wichtigste Erkenntnisse und Systemarchitektur werden via Chronral destilliert...',
+    actions: {
+      point: { label: '💡 Kernpunkte', title: 'Wichtigste Architekturargumente extrahieren' },
+      audience: { label: '🎯 Zielgruppe', title: 'Zielgruppe und gelöste technische Probleme' },
+      quick: { label: '⏱️ 30s Überblick', title: 'Schneller 3-Satz-Überblick' },
+      insight: { label: '🧠 Praxistipps', title: 'Architekturentscheidungen und Fallstricke' },
+      intro: { label: '👤 Über den Autor', title: 'Hintergrund des Autors und Bauphilosophie' },
+      related: { label: '📚 Ähnliche Beiträge', title: 'KI-Empfehlungen zur Vertiefung' },
+      top: { label: '🔝 Nach oben', title: 'Sanft nach oben scrollen' },
+    },
+  },
+  'es': {
+    brandTitle: 'Resumen Chronral',
+    loadingText: 'Sintetizando puntos clave y arquitectura técnica mediante Chronral...',
+    actions: {
+      point: { label: '💡 Puntos Clave', title: 'Extraer argumentos y decisiones arquitectónicas' },
+      audience: { label: '🎯 Destinatarios', title: 'Lectores objetivo y desafíos resueltos' },
+      quick: { label: '⏱️ Lectura 30s', title: 'Resumen ejecutivo en 3 oraciones' },
+      insight: { label: '🧠 Aprendizajes', title: 'Reflexiones prácticas y errores a evitar' },
+      intro: { label: '👤 Sobre el Autor', title: 'Conoce al autor y su filosofía de desarrollo' },
+      related: { label: '📚 Relacionados', title: 'Lecturas recomendadas para continuar' },
+      top: { label: '🔝 Ir Arriba', title: 'Volver arriba suavemente' },
+    },
+  },
+  'fr': {
+    brandTitle: 'Résumé Chronral',
+    loadingText: 'Synthèse des points clés et de l\'architecture via Chronral en cours...',
+    actions: {
+      point: { label: '💡 Points Clés', title: 'Extraire les arguments et décisions d\'architecture' },
+      audience: { label: '🎯 Public Cible', title: 'Profil des lecteurs et problèmes résolus' },
+      quick: { label: '⏱️ Lecture 30s', title: 'Aperçu rapide en 3 phrases' },
+      insight: { label: '🧠 Enseignements', title: 'Retours d\'expérience et pièges à éviter' },
+      intro: { label: '👤 À propos', title: 'Présentation de l\'auteur et démarche d\'ingénierie' },
+      related: { label: '📚 Articles Connexes', title: 'Recommandations pour approfondir' },
+      top: { label: '🔝 Haut de Page', title: 'Retour fluide en haut de page' },
+    },
+  },
+  'zh-Hant': {
+    brandTitle: 'Chronral 摘要',
+    loadingText: '正在透過 Chronral 智慧提煉文章核心資訊...',
+    actions: {
+      point: { label: '💡 核心論點', title: '提煉核心論点與關鍵技術方案' },
+      audience: { label: '🎯 適用讀者', title: '分析目標受眾與解決的問題' },
+      quick: { label: '⏱️ 30秒速讀', title: '30秒極速三句話概覽' },
+      insight: { label: '🧠 實踐啟示', title: '實踐啟示與工程思考' },
+      intro: { label: '👤 關於作者', title: '深入了解站長與站點理念' },
+      related: { label: '📚 推薦相關', title: 'AI 分析推薦理由並展開延伸閱讀' },
+      top: { label: '🔝 回到頂部', title: '平滑回到文章頂部' },
+    },
+  },
+  'zh-CN': {
+    brandTitle: 'Chronral 摘要',
+    loadingText: '正在通过 Chronral 智能提炼文章核心信息...',
+    actions: {
       point: { label: '💡 核心论点', title: '提炼核心论点与关键技术方案' },
       audience: { label: '🎯 适用读者', title: '分析目标受众与解决的问题' },
       quick: { label: '⏱️ 30秒速读', title: '30秒极速三句话概览' },
@@ -70,7 +127,22 @@ const initialActions = isEnglishArticle
       intro: { label: '👤 关于作者', title: '深入了解博主与站点理念' },
       related: { label: '📚 推荐相关', title: 'AI 分析推荐理由并展开延伸阅读' },
       top: { label: '🔝 回到顶部', title: '平滑回到文章顶部' },
-    };
+    },
+  },
+};
+
+const normalizedArticleLang = articleLang?.toLowerCase().startsWith('zh-hant')
+  ? 'zh-Hant'
+  : articleLang?.toLowerCase().startsWith('zh')
+  ? 'zh-CN'
+  : ['en', 'de', 'es', 'fr'].includes((articleLang || '').split('-')[0].toLowerCase())
+  ? (articleLang || '').split('-')[0].toLowerCase()
+  : 'zh-CN';
+
+const ssrConfig = SSR_I18N[normalizedArticleLang] || SSR_I18N['zh-CN'];
+const initialBrandTitle = ssrConfig.brandTitle;
+const initialLoadingText = ssrConfig.loadingText;
+const initialActions = ssrConfig.actions;
 ---
 
 <section

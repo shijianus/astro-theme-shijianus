@@ -404,7 +404,15 @@ export function buildQuestionPrompt(input: {
 }) {
   const level = input.level || 'low';
   const lang = normalizeSummaryLocale(input.lang);
-  const relatedListStr = (input.related || []).map((r, i) => `${i + 1}. 《${r.title}》`).join('、');
+  const formatRelated = (items: Array<{ title: string; href: string }>, targetLang: string) => {
+    if (!items || items.length === 0) return '';
+    if (targetLang === 'en') return items.map((r, i) => `${i + 1}. "${r.title}"`).join(', ');
+    if (targetLang === 'de') return items.map((r, i) => `${i + 1}. „${r.title}“`).join(', ');
+    if (targetLang === 'es') return items.map((r, i) => `${i + 1}. «${r.title}»`).join(', ');
+    if (targetLang === 'fr') return items.map((r, i) => `${i + 1}. « ${r.title} »`).join(', ');
+    return items.map((r, i) => `${i + 1}. 《${r.title}》`).join('、');
+  };
+  const relatedListStr = formatRelated(input.related || [], lang);
 
   if (lang === 'en') {
     const typeMapEn: Record<string, string> = {
@@ -446,6 +454,126 @@ export function buildQuestionPrompt(input: {
     ].join('\n');
   }
 
+  if (lang === 'de') {
+    const typeMapDe: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Analysieren Sie als leitender Systemarchitekt die gesamte Wissensbasis von "${input.title}" und extrahieren Sie die 2-3 wichtigsten Architekturargumente und technischen Entscheidungen sowie deren Begründung und Abwägungen.`
+          : `Extrahieren Sie präzise die 2-3 wichtigsten technischen Argumente und Architekturschlüsse aus "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analysieren Sie das Zielpublikum aus Entwicklern und Architekten und erläutern Sie, wie dieser Beitrag deren technische Perspektive schärft oder zentrale Herausforderungen löst.`
+          : `Analysieren Sie, für wen "${input.title}" am wertvollsten ist und welche konkreten technischen Herausforderungen gelöst werden.`,
+      quick:
+        `Geben Sie einen schnellen 30-Sekunden-Überblick in genau drei kohärenten Sätzen: 1. Ausgangssituation & Problemstellung; 2. Technische Umsetzung & Design; 3. Ergebnisse & dauerhafter Mehrwert.`,
+      insight:
+        level === 'high'
+          ? `Extrahieren Sie zentrale Praxiserkenntnisse, typische Fallstricke und architektonische Leitlinien für Führungskräfte in der Softwareentwicklung.`
+          : `Fassen Sie die wertvollsten praktischen Erkenntnisse, Architekturlektionen oder Empfehlungen aus "${input.title}" zusammen.`,
+      intro:
+        'Erstellen Sie ein präzises, handwerklich orientiertes Autorenprofil für Shijianus: Allround-Softwareentwickler, Student und langfristiger Autor, der sich für inhaltsorientierte, strukturierte und nachhaltige persönliche Softwaresysteme engagiert.',
+      related_reason:
+        `Erläutern Sie im Zusammenhang mit "${input.title}", warum die folgenden empfohlenen Artikel (${relatedListStr || 'verwandte technische Themen'}) eine wertvolle weiterführende Lektüre darstellen.`,
+    };
+
+    const instruction = typeMapDe[input.questionType] || `Bitte fassen Sie "${input.title}" zusammen und destillieren Sie Kernpunkte heraus.`;
+    const wordLimit = level === 'high' ? '110-180 Wörter' : level === 'medium' ? '90-140 Wörter' : '80-120 Wörter';
+
+    return [
+      instruction,
+      'Vorgaben:',
+      '- Ausgabesprache: STRENG auf natürlichem, professionellem Deutsch.',
+      `- Umfang: ${wordLimit} zusammenhängender Fließtext.`,
+      '- Sachlich, hohe Informationsdichte, keine Begrüßung, keine Markdown-Listen oder Überschriften.',
+      '- Strikt auf der bereitgestellten Wissensbasis basierend.',
+      '',
+      `Titel: ${input.title}`,
+      `URL: ${input.url}`,
+      `Autorennotiz: ${input.summary || 'Keine'}`,
+      `Wissensbasis:\n${input.content}`,
+    ].join('\n');
+  }
+
+  if (lang === 'es') {
+    const typeMapEs: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Desde la perspectiva de un arquitecto de sistemas principal, analiza la base de conocimiento completa de "${input.title}" y extrae los 2-3 argumentos arquitectónicos y decisiones técnicas más cruciales, explicando sus motivos y compensaciones.`
+          : `Extrae con precisión los 2-3 argumentos técnicos y conclusiones arquitectónicas esenciales de "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analiza el perfil de ingeniería destinatario (p. ej., arquitectos frontend, desarrolladores full-stack) y explica cómo este artículo transforma su perspectiva técnica o resuelve cuellos de botella clave.`
+          : `Analiza quién se beneficiará más de leer "${input.title}" y qué desafíos de ingeniería concretos resuelve.`,
+      quick:
+        `Ofrece una visión general rápida de 30 segundos en exactamente tres oraciones coherentes: 1. Problema de fondo y contexto; 2. Implementación técnica y diseño; 3. Resultados y aprendizajes duraderos.`,
+      insight:
+        level === 'high'
+          ? `Extrae los aprendizajes prácticos fundamentales, errores comunes a evitar y perspectivas arquitectónicas para líderes técnicos en sistemas reales.`
+          : `Resume las lecciones prácticas, reflexiones arquitectónicas o pautas de ingeniería más valiosas de "${input.title}".`,
+      intro:
+        'Genera un perfil de autor integral y orientado al oficio para Shijianus: creador de software generalista, estudiante y escritor constante enfocado en sistemas personales estructurados y de alta calidad.',
+      related_reason:
+        `En conexión con "${input.title}", explica por qué los siguientes artículos recomendados (${relatedListStr || 'temas técnicos relacionados'}) ofrecen un valor complementario significativo.`,
+    };
+
+    const instruction = typeMapEs[input.questionType] || `Por favor resume y extrae perspectivas clave para "${input.title}".`;
+    const wordLimit = level === 'high' ? '110-180 palabras' : level === 'medium' ? '90-140 palabras' : '80-120 palabras';
+
+    return [
+      instruction,
+      'Requisitos:',
+      '- Idioma de salida: ESTRICTAMENTE en español natural y profesional.',
+      `- Extensión: ${wordLimit} de texto continuo.`,
+      '- Objetivo, alta densidad de información, sin saludos, sin listas Markdown ni encabezados.',
+      '- Estrictamente basado en el contexto proporcionado.',
+      '',
+      `Título: ${input.title}`,
+      `URL: ${input.url}`,
+      `Nota del autor: ${input.summary || 'Ninguna'}`,
+      `Base de conocimiento:\n${input.content}`,
+    ].join('\n');
+  }
+
+  if (lang === 'fr') {
+    const typeMapFr: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Du point de vue d'un architecte système principal, analysez l'ensemble de la base de connaissances de "${input.title}" et dégagez les 2-3 arguments architecturaux et décisions techniques les plus critiques en explicitant leurs compromis.`
+          : `Extrayez avec précision les 2-3 arguments techniques et conclusions d'architecture essentiels de "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analysez le profil technique cible et expliquez en quoi cet article fait évoluer leurs perspectives ou résout des blocages d'ingénierie majeurs.`
+          : `Analysez à qui s'adresse "${input.title}" et quels défis concrets d'ingénierie cet article résout.`,
+      quick:
+        `Fournissez une vue d'ensemble rapide en 30 secondes en exactement trois phrases fluides : 1. Contexte & problématique ; 2. Mise en œuvre technique & conception ; 3. Résultats & enseignements durables.`,
+      insight:
+        level === 'high'
+          ? `Dégagez les retours d'expérience concrets majeurs, les pièges à éviter et les perspectives d'architecture pour les concepteurs de systèmes réels.`
+          : `Résumez les enseignements pratiques et réflexions d'ingénierie les plus précieux de "${input.title}".`,
+      intro:
+        `Rédigez un profil d'auteur soigné pour Shijianus : concepteur logiciel généraliste, étudiant et auteur régulier dédié à des systèmes pérennes, structurés et axés sur le contenu.`,
+      related_reason:
+        `En lien avec "${input.title}", expliquez pourquoi les articles recommandés suivants (${relatedListStr || 'sujets techniques connexes'}) apportent une valeur d'approfondissement complémentaire.`,
+    };
+
+    const instruction = typeMapFr[input.questionType] || `Veuillez synthétiser et extraire les points essentiels de "${input.title}".`;
+    const wordLimit = level === 'high' ? '110-180 mots' : level === 'medium' ? '90-140 mots' : '80-120 mots';
+
+    return [
+      instruction,
+      'Exigences :',
+      '- Langue de sortie : STRICTEMENT en français naturel et professionnel.',
+      `- Longueur : ${wordLimit} de texte fluide.`,
+      '- Objectif, haute densité d\'information, pas de salutations, pas de listes Markdown ni de titres.',
+      '- Strictement fondé sur le contexte fourni.',
+      '',
+      `Titre : ${input.title}`,
+      `URL : ${input.url}`,
+      `Note de l'auteur : ${input.summary || 'Aucune'}`,
+      `Base de connaissances :\n${input.content}`,
+    ].join('\n');
+  }
+
   if (lang === 'zh-Hant') {
     const typeMapHant: Record<string, string> = {
       point:
@@ -484,6 +612,126 @@ export function buildQuestionPrompt(input: {
       `連結：${input.url}`,
       `作者手記：${input.summary || '無'}`,
       `正文知識庫：\n${input.content}`,
+    ].join('\n');
+  }
+
+  if (lang === 'fr') {
+    const typeMapFr: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Du point de vue d'un architecte système principal, analysez l'article "${input.title}" et extrayez les 2-3 arguments d'architecture et décisions techniques les plus critiques, en expliquant leurs compromis.`
+          : `Extrayez avec précision les 2-3 arguments techniques et conclusions d'architecture essentiels de "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analysez le profil technique ciblé et expliquez comment cet article fait évoluer leur perspective ou résout des défis critiques d'ingénierie.`
+          : `Analysez qui bénéficiera le plus de la lecture de "${input.title}" et quels défis concrets cela résout.`,
+      quick:
+        `Fournissez un aperçu rapide de 30 secondes en exactement trois phrases fluides : 1. Contexte & problème ; 2. Solution technique ; 3. Résultats & leçons durables.`,
+      insight:
+        level === 'high'
+          ? `Extrayez les enseignements pratiques majeurs, les pièges à éviter et les perspectives d'architecture pour des systèmes réels.`
+          : `Résumez les leçons pratiques clés et recommandations d'ingénierie issues de "${input.title}".`,
+      intro:
+        `Générez une présentation soignée de l'auteur Shijianus : développeur logiciel généraliste, étudiant et auteur engagé dans les systèmes personnels centrés sur le contenu et la structure.`,
+      related_reason:
+        `Expliquez pourquoi les lectures complémentaires recommandées (${relatedListStr || 'sujets techniques associés'}) offrent une continuité technique précieuse avec "${input.title}".`,
+    };
+
+    const instruction = typeMapFr[input.questionType] || `Veuillez résumer et extraire les points clés pour "${input.title}".`;
+    const wordLimit = level === 'high' ? '110-180 mots' : level === 'medium' ? '90-140 mots' : '80-120 mots';
+
+    return [
+      instruction,
+      'Exigences :',
+      '- Langue de sortie : STRICTEMENT rédigé en français naturel et professionnel.',
+      `- Longueur : ${wordLimit} de texte brut continu.`,
+      '- Objectif, dense, sans salutations, sans listes Markdown ni titres.',
+      '- Strictement basé sur le contexte fourni.',
+      '',
+      `Titre : ${input.title}`,
+      `URL : ${input.url}`,
+      `Note de l'auteur : ${input.summary || 'Aucune'}`,
+      `Base de connaissances :\n${input.content}`,
+    ].join('\n');
+  }
+
+  if (lang === 'es') {
+    const typeMapEs: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Desde la perspectiva de un arquitecto principal de sistemas, analiza "${input.title}" y extrae los 2-3 argumentos de arquitectura y decisiones técnicas más críticos, explicando sus compromisos.`
+          : `Extrae con precisión los 2-3 argumentos técnicos y conclusiones de arquitectura más esenciales de "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analiza el perfil de ingeniería objetivo y explica cómo este artículo transforma su perspectiva técnica o resuelve desafíos críticos de ingeniería.`
+          : `Analiza quién se beneficiará más de la lectura de "${input.title}" y qué problemas concretos de ingeniería resuelve.`,
+      quick:
+        `Proporciona una descripción general rápida de 30 segundos en exactamente tres oraciones: 1. Contexto y problema central; 2. Implementación técnica; 3. Resultados y conclusiones duraderas.`,
+      insight:
+        level === 'high'
+          ? `Extrae las lecciones prácticas más valiosas, errores a evitar y principios de arquitectura para la evolución de sistemas reales.`
+          : `Resume las lecciones prácticas clave y recomendaciones de ingeniería derivadas de "${input.title}".`,
+      intro:
+        `Genera una presentación detallada del autor Shijianus: creador de software generalista, estudiante y escritor enfocado en sistemas personales guiados por el contenido y la arquitectura.`,
+      related_reason:
+        `Explica por qué las lecturas complementarias recomendadas (${relatedListStr || 'temas técnicos relacionados'}) aportan continuidad y valor técnico respecto a "${input.title}".`,
+    };
+
+    const instruction = typeMapEs[input.questionType] || `Por favor resume y extrae las ideas clave para "${input.title}".`;
+    const wordLimit = level === 'high' ? '110-180 palabras' : level === 'medium' ? '90-140 palabras' : '80-120 palabras';
+
+    return [
+      instruction,
+      'Requisitos:',
+      '- Idioma de salida: ESTRICTAMENTE redactado en español natural y profesional.',
+      `- Longitud: ${wordLimit} de texto plano y fluido.`,
+      '- Objetivo, denso en información, sin saludos, sin listas Markdown ni títulos.',
+      '- Estrictamente basado en el contexto proporcionado.',
+      '',
+      `Título: ${input.title}`,
+      `URL: ${input.url}`,
+      `Nota del autor: ${input.summary || 'Ninguna'}`,
+      `Base de conocimiento:\n${input.content}`,
+    ].join('\n');
+  }
+
+  if (lang === 'de') {
+    const typeMapDe: Record<string, string> = {
+      point:
+        level === 'high'
+          ? `Analysieren Sie aus der Perspektive eines leitenden Systemarchitekten "${input.title}" und arbeiten Sie die 2-3 wichtigsten Architekturargumente und technischen Entscheidungen samt Vor- und Nachteilen heraus.`
+          : `Extrahieren Sie präzise die 2-3 wesentlichsten technischen Argumente und Architekturschlüsse aus "${input.title}".`,
+      audience:
+        level === 'high'
+          ? `Analysieren Sie die technische Zielgruppe und erläutern Sie, wie dieser Beitrag ihre Denkweise schärft oder zentrale Engineering-Herausforderungen löst.`
+          : `Analysieren Sie, wer am meisten von der Lektüre von "${input.title}" profitiert und welche konkreten technischen Herausforderungen gelöst werden.`,
+      quick:
+        `Liefern Sie einen kompakten 30-Sekunden-Überblick in genau drei Sätzen: 1. Hintergrund & Problem; 2. Technische Lösung; 3. Resultate & dauerhafte Erkenntnisse.`,
+      insight:
+        level === 'high'
+          ? `Fassen Sie die wertvollsten Praxis-Erkenntnisse, Fallstricke und Architekturrichtlinien für reale Softwaresysteme zusammen.`
+          : `Fassen Sie die wichtigsten praktischen Erkenntnisse und Architekturempfehlungen aus "${input.title}" zusammen.`,
+      intro:
+        `Erstellen Sie ein aussagekräftiges Autorenprofil für Shijianus: vielseitiger Softwareentwickler, Student und Autor mit Fokus auf content-first und strukturorientierte persönliche Systeme.`,
+      related_reason:
+        `Erläutern Sie, warum die empfohlenen Folgeartikel (${relatedListStr || 'verwandte Fachthemen'}) eine wertvolle thematische Ergänzung zu "${input.title}" bieten.`,
+    };
+
+    const instruction = typeMapDe[input.questionType] || `Bitte fassen Sie die Kernaussagen für "${input.title}" zusammen.`;
+    const wordLimit = level === 'high' ? '110-180 Wörter' : level === 'medium' ? '90-140 Wörter' : '80-120 Wörter';
+
+    return [
+      instruction,
+      'Anforderungen:',
+      '- Ausgabesprache: STRENG in natürlichem, professionellem Deutsch verfasst.',
+      `- Länge: ${wordLimit} Fließtext.`,
+      '- Sachlich, hohe Informationsdichte, keine Begrüßung, keine Markdown-Listen oder Überschriften.',
+      '- Streng basierend auf dem bereitgestellten Kontext.',
+      '',
+      `Titel: ${input.title}`,
+      `URL: ${input.url}`,
+      `Autorennotiz: ${input.summary || 'Keine'}`,
+      `Wissensbasis:\n${input.content}`,
     ].join('\n');
   }
 
