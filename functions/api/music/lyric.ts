@@ -1,5 +1,5 @@
 import { jsonResponse, optionsResponse } from '../../_lib/http';
-import { fetchMusicLyrics } from '../../_lib/music-provider';
+import { fetchMusicLyrics, parseLrcLyrics } from '../../_lib/music-provider';
 import { enforceRateLimit, envLimit } from '../../_lib/rate-limit';
 import type { AppEnv } from '../../_lib/types';
 
@@ -30,5 +30,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
   }
 
   const lyric = await fetchMusicLyrics(env, id, source);
-  return jsonResponse(request, env, { ok: true, lyric });
+  const parsed = parseLrcLyrics(lyric);
+  return jsonResponse(request, env, { ok: true, lyric, parsed, lineCount: parsed.length });
 }
+

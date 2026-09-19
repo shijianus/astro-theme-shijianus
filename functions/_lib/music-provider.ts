@@ -110,6 +110,31 @@ export async function resolveMusicStream(env: AppEnv, id: string, source: string
   return typeof (payload as { url?: unknown }).url === 'string' ? (payload as { url: string }).url : '';
 }
 
+export function parseLrcLyrics(rawLrc: string): { time: number; text: string }[] {
+  if (!rawLrc) return [];
+  const lines = rawLrc.split('\n');
+  const result: { time: number; text: string }[] = [];
+  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+
+  for (const line of lines) {
+    const text = line.replace(timeRegex, '').trim();
+    if (!text) continue;
+
+    timeRegex.lastIndex = 0;
+    let match;
+    while ((match = timeRegex.exec(line)) !== null) {
+      const minutes = parseInt(match[1], 10);
+      const seconds = parseInt(match[2], 10);
+      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
+      const time = minutes * 60 + seconds + milliseconds / 1000;
+      result.push({ time, text });
+    }
+  }
+
+  result.sort((a, b) => a.time - b.time);
+  return result;
+}
+
 export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) {
   const payload = await fetchProviderJson(env, {
     types: 'lyric',
@@ -121,3 +146,4 @@ export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) 
   if (!payload || typeof payload !== 'object') return '';
   return typeof (payload as { lyric?: unknown }).lyric === 'string' ? (payload as { lyric: string }).lyric : '';
 }
+
