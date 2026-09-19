@@ -2920,7 +2920,27 @@
 - [x] **Playwright 真实浏览器全量端到端复测 (132/132 全绿)**:
   1. 全量静态构建编译通过（`214 page(s) built in 55.29s`）；
   2. Playwright 实测验证 22 篇公开文章的 132 个语言变体节点，可见性切换率 100.0%、渲染高度正常展开、PostHero H1 标题 100% 与正文语言对齐（0 中文倒退、0 简繁混杂）；
-  3. 生成最新审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
+### Task 130: 页尾 Copyright 重构优化、彻底移除 ghbdages 徽章并消除音乐播放器遮挡 (`cba5222`)
+- [x] **根除左下角常驻音乐挂件遮挡冲突 (`src/styles/global.css` & `src/styles/rebuild.css`)**:
+  1. 诊断根因：`.shijianus-music-pocket` 常驻于 `bottom: 20px; left: 20px; width: 66px;`，页面滚到底部时直接硬生生遮挡覆盖 `footer-bar-left` 的版权与作者文字；
+  2. 桌面端（`min-width: 769px`）为 `#footer-bar .footer-bar-left` 注入 `margin-left: 74px;` 安全避让边距，测量保留 36px+ 舒适呼吸间距，杜绝任何视觉与点击重叠冲突；
+  3. 移动端（`max-width: 768px`）流式居中对齐排版（`padding: 14px 16px 24px`），消除横向溢出负边距（`margin: 0 -16px`）并避免与移动端底端悬浮控件产生干扰。
+- [x] **彻底清理 `id="ghbdages"` 技术栈药丸徽章 (`src/components/theme/Footer.astro` & CSS)**:
+  1. 彻底移除 `<p id="ghbdages">` 及陈旧静态小药丸（`Astro`、`React`、`Tailwind`、`TypeScript`、`MDX`）；
+  2. 释放 5 列导航网格与底栏之间的垂直间距，重塑 `.footer-main-shell` 底部内边距为均衡的 `padding: 24px 24px 22px;`，消除陈旧廉价感，提升呼吸感。
+- [x] **右侧图标栏去冗余与安知鱼原生 CC 协议文字链接重塑 (`src/components/theme/Footer.astro` & `src/config/site.ts`)**:
+  1. 彻底清除 `.footer-bar-right` 中与顶部社交栏 100% 重复的 4 个 42px 大方块图标按钮（`.footer-bar-link--icon`）；
+  2. 替换为轻量耐看的文本导航与官方 CC 知识共享协议徽标组合（`关于本站` · `运行状态` · `[© BY NC ND] CC BY-NC-SA 4.0`）；
+  3. 引入官方 `anzhiyu-icon-copyright-line`、`anzhiyu-icon-creative-commons-by-line`、`anzhiyu-icon-creative-commons-nc-line`、`anzhiyu-icon-creative-commons-nd-line` 专属图标；
+  4. 支持平滑悬浮高亮色变（`var(--theme-main)`）与微浮动反馈。
+- [x] **视觉质感与一体化收口**:
+  1. 移除突兀粗糙的伪元素通栏渐变（`#footer-bar .footer-bar-links::before`），改用极细微的柔光顶分割线（`border-top: 1px solid ...`）；
+  2. 注入磨砂通透背景（`background: color-mix(in srgb, var(--card-bg) 84%, var(--secondbg)); backdrop-filter: blur(14px);`），与上方卡片自然呼应；
+  3. 强化文字主副层级：第一行版权 `© 2020 - 2026 By shijianus` 加粗高对比呈现，第二行格言采用柔和微小灰字，深浅色模式（Light / Dark）100% 自适应。
+- [x] **构建与端到端 Playwright 自动化验证**:
+  1. 在 `astro.config.mjs` 中设置 `build: { concurrency: 1 }`，彻底解决 Tailwind v4 ESM 模块缓存的偶发 prerender chunk 冲突；
+  2. 全量构建通过（`214 page(s) built in 47.80s`）；
+  3. Playwright 桌面与移动端端到端测试断言全部通过（`ghbdagesGone: true`，`iconButtonsCount: 0`，`ccIconsCount: 4`，`hasOverlap: false`）。
 
 
 
