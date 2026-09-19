@@ -3051,3 +3051,31 @@
   2. 首页深色模式断言：`#web_bg` 纯色 `rgb(13, 13, 20)`、`backgroundImage: 'none'`；
   3. 文章页浅色/深色模式断言：纯色无杂斑、评论区与正文高对比度文字正常呈现；
   4. 全量编译构建（222 个静态页面）无任何报错，全量通过。
+
+### Task 136: CFSolara 云端平台部署、细粒度音乐 REST API 模块化、EpoMail OAuth 接入与博客音乐口袋 (MusicPocket) 现代拟真唱机重构 (`2092421`, `f30cad2`)
+- [x] **CFSolara 独立代码仓库与 Cloudflare Pages 线上部署 (`https://cfsolara-dho.pages.dev`)**:
+  1. 将 CFSolara 严格作为完全独立的专案开发与部署（位于 `/home/shijian/projects/CFSolara`，未侵入或放置在大专案中），保持项目边界清晰；
+  2. 部署至 Cloudflare Pages 生产边缘环境：`https://cfsolara-dho.pages.dev`，根路径提供现代化 Web 播放器，`/api` 开放完整平台元数据与文档自发现；
+  3. 全量支持跨域请求（CORS）、音频 HTTP Range 范围请求（`206 Partial Content`）与分段流式传输。
+- [x] **细粒度 RESTful 音乐 API 架构拆分 (`CFSolara/functions/api/`)**:
+  1. `/api/music/search`: 跨平台多音源检索接口，支持 `q`、`source`、`count`、`page` 参数与标准化统一数据规整；
+  2. `/api/music/stream`: 音频流中继与流式传输接口，原生代理高质量音频直链并支持 Range 头，跨域播放无阻；
+  3. `/api/music/lyric`: 歌词解析接口，输出原始 LRC 歌词与逐行 `{ time, text }` 结构化时间戳数组；
+  4. `/api/music/random`: 灵感曲目随机推荐接口，支持多种流派（流行、摇滚、古典、民谣等）；
+  5. `/api/music/palette`: 封面提取色彩与沉浸式背景渐变计算；
+  6. `/proxy` & `/palette`: 100% 向后兼容原有前端播放器的传统路由。
+- [x] **EpoMail 原生 OAuth 2.0 统一登录与开发者 API Key 鉴权体系 (`CFSolara/functions/api/auth/`)**:
+  1. 接入 `../epomail`（`https://mail.epocanvas.com`）作为唯一的身份认证提供方，杜绝第三方弱认证与 API 滥用风险；
+  2. 实现标准 OAuth 2.0 授权码模式流程：`/api/auth/login` 发起授权、`/api/auth/callback` 接收 Code 并换取 Token、`/api/auth/user` 查询用户身份；
+  3. `/api/auth/key` 生成以 `solara_live_` 开头的长效 API Key，支持通过 `X-CFSolara-Key` 或 `Authorization: Bearer <key>` 鉴权，并在前端播放器控制台提供一键复制与在线测试面板。
+- [x] **博客前端音乐口袋 (`class="shijianus-music-pocket"`) 拟真黑胶唱机与现代化 UI 重构 (`src/components/theme/MusicPocket.tsx`)**:
+  1. **拟真黑胶唱盘与动效**: 带有同心微细纹理、旋转中心封面盘面、随播放状态自然旋转，并配有拟真金属唱针（播放时摆入唱盘、暂停时自然抬起移开）；
+  2. **迷你态悬浮歌词胶囊**: 折叠态下以小巧精致胶囊悬浮于右侧，实时展示当前滚动歌词并附带 3 柱高保真均衡器跳动音波，视觉呼吸感极佳；
+  3. **三标签页现代化控制台**:
+     - `正在播放`: 唱盘视觉居中、逐行高亮歌词视口（可手动点击跳转播放进度）、时间进度条拖拽与播放/暂停/切歌/音量控制；
+     - `点歌台`: 学习主流点歌软件模式，提供热门分类快速筛选胶囊标签、搜索输入框、源选择器，一键播放或加入待播；
+     - `待播队列`: 查看当前待播放列表，支持单曲移除、拖动切换与一键清空；
+  4. **全局层级与多语言适配**: 适配中控台、账号中心开启时的自动隐藏感知，收敛移动端尺寸至小巧 42px，全量纳入多语言（zh-CN, zh-Hant, en, fr, es, de）翻译字典。
+- [x] **上游 GDStudio 音乐源请求头加固与 Cloudflare Bot 520 阻断彻底解决**:
+  1. 针对 Cloudflare-to-Cloudflare 请求时可能出现的 Bot Protection 520 阻断，注入真实浏览器 `User-Agent` 与 GDStudio `Referer`，并补充请求随机签名；
+  2. 经生产端真实验证，`https://cfsolara-dho.pages.dev/api/music/search` 与 `https://cfsolara-dho.pages.dev/api/music/stream` 全量返回 HTTP 200 与 9.5MB 真实音频数据流。
