@@ -88,6 +88,7 @@ function inspectArticle(filename, fullPath) {
     filename,
     fullPath,
     i18nKey,
+    inferredKey,
     lang,
     isAiGenerated,
     isProtected,
@@ -109,13 +110,22 @@ async function main() {
   const files = fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
   const articles = files.map((file) => inspectArticle(file, path.join(POSTS_DIR, file)));
 
-  // Group articles by i18nKey
+  // Group articles by i18nKey, with fallback to inferredKey matching
   const articleGroups = new Map();
   for (const art of articles) {
-    if (!articleGroups.has(art.i18nKey)) {
-      articleGroups.set(art.i18nKey, []);
+    let matchedGroupKey = art.i18nKey;
+    if (!articleGroups.has(matchedGroupKey)) {
+      for (const [key, group] of articleGroups.entries()) {
+        if (group.some((item) => item.inferredKey === art.inferredKey || item.i18nKey === art.inferredKey || item.inferredKey === art.i18nKey)) {
+          matchedGroupKey = key;
+          break;
+        }
+      }
     }
-    articleGroups.get(art.i18nKey).push(art);
+    if (!articleGroups.has(matchedGroupKey)) {
+      articleGroups.set(matchedGroupKey, []);
+    }
+    articleGroups.get(matchedGroupKey).push(art);
   }
 
   // Build current mapping table

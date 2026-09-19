@@ -1,4 +1,5 @@
 import React, { startTransition, useEffect, useRef, useState } from 'react';
+import { convertText, type LocaleVariant } from '../../lib/client-locale';
 import {
   Disc,
   ListMusic,
@@ -114,6 +115,39 @@ async function fetchJson<T>(url: string): Promise<T> {
 export function MusicPocket({ apiBase }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const lyricContainerRef = useRef<HTMLDivElement>(null);
+
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+
+  useEffect(() => {
+    const readCurrentLocale = (): LocaleVariant => {
+      if (typeof window === 'undefined') return 'zh-CN';
+      const stored = window.localStorage.getItem('shijianus-locale-variant');
+      if (stored === 'en' || stored === 'zh-Hant' || stored === 'fr' || stored === 'es' || stored === 'de') {
+        return stored;
+      }
+      const docVariant = document.documentElement.getAttribute('data-locale-variant');
+      if (docVariant === 'en' || docVariant === 'zh-Hant' || docVariant === 'fr' || docVariant === 'es' || docVariant === 'de') {
+        return docVariant;
+      }
+      return 'zh-CN';
+    };
+
+    setLocaleVariant(readCurrentLocale());
+
+    const handleLocaleChange = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === 'en' || detail === 'zh-Hant' || detail === 'fr' || detail === 'es' || detail === 'de' || detail === 'zh-CN') {
+        setLocaleVariant(detail as LocaleVariant);
+      } else {
+        setLocaleVariant(readCurrentLocale());
+      }
+    };
+
+    window.addEventListener('shijianus:localechange', handleLocaleChange);
+    return () => window.removeEventListener('shijianus:localechange', handleLocaleChange);
+  }, []);
+
+  const t = (text: string) => convertText(text, localeVariant);
 
   // Playback & UI States
   const [open, setOpen] = useState(false);
@@ -512,7 +546,7 @@ export function MusicPocket({ apiBase }: Props) {
           onClick={() => setOpen(true)}
           role="button"
           tabIndex={0}
-          title="点击展开音乐播放器"
+          title={t('点击展开音乐播放器')}
         >
           <div className="shijianus-music-pocket__equalizer" aria-hidden="true">
             <span className="eq-bar eq-bar--1" />
@@ -529,7 +563,7 @@ export function MusicPocket({ apiBase }: Props) {
               e.stopPropagation();
               setFloatingLyricVisible(false);
             }}
-            aria-label="收起悬浮歌词"
+            aria-label={t('收起悬浮歌词')}
           >
             <X size={12} aria-hidden="true" />
           </button>
@@ -542,7 +576,7 @@ export function MusicPocket({ apiBase }: Props) {
         className="shijianus-music-pocket__toggle"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        aria-label={open ? '收起音乐播放器' : '展开音乐点歌台'}
+        aria-label={open ? t('收起音乐播放器') : t('展开音乐点歌台')}
       >
         {/* Subtle dynamic sound wave ring */}
         <span className="shijianus-music-pocket__wave-pulse" aria-hidden="true" />
@@ -576,7 +610,7 @@ export function MusicPocket({ apiBase }: Props) {
         {/* Hover Mini Badge */}
         <span className="shijianus-music-pocket__toggle-copy">
           <strong>{currentTrack ? currentTrack.name : 'Solara Radio'}</strong>
-          <small>{currentTrack ? `${currentTrack.artist} · ${currentTrack.album || '单曲'}` : '点歌 / 随机曲库'}</small>
+          <small>{currentTrack ? `${currentTrack.artist} · ${currentTrack.album || t('单曲')}` : t('点歌 / 随机曲库')}</small>
         </span>
       </button>
 
@@ -599,7 +633,7 @@ export function MusicPocket({ apiBase }: Props) {
                 onClick={() => setActiveTab('player')}
               >
                 <Disc size={15} aria-hidden="true" />
-                <span>正在播放</span>
+                <span>{t('正在播放')}</span>
               </button>
               <button
                 type="button"
@@ -607,7 +641,7 @@ export function MusicPocket({ apiBase }: Props) {
                 onClick={() => setActiveTab('search')}
               >
                 <Search size={15} aria-hidden="true" />
-                <span>点歌台</span>
+                <span>{t('点歌台')}</span>
               </button>
               <button
                 type="button"
@@ -615,7 +649,7 @@ export function MusicPocket({ apiBase }: Props) {
                 onClick={() => setActiveTab('queue')}
               >
                 <ListMusic size={15} aria-hidden="true" />
-                <span>待播 ({queue.length})</span>
+                <span>{t('待播')} ({queue.length})</span>
               </button>
             </div>
 
@@ -623,7 +657,7 @@ export function MusicPocket({ apiBase }: Props) {
               type="button"
               className="shijianus-music-pocket__close-btn"
               onClick={() => setOpen(false)}
-              aria-label="关闭播放器面板"
+              aria-label={t('关闭播放器面板')}
             >
               <X size={18} aria-hidden="true" />
             </button>

@@ -145,11 +145,11 @@ const inferredKey = postEntry.id.replace(langSuffixRegex, '');
 const currentI18nKey = postEntry.data.i18nKey || inferredKey;
 const currentLang = postEntry.data.lang || normalizedInferredLang || 'zh-CN';
 
-// Find all sibling translations with the same i18nKey
+// Find all sibling translations with the same i18nKey or shared base slug
 const siblingTranslations = allPosts.filter((p) => {
   const pInferredKey = p.id.replace(langSuffixRegex, '');
   const pKey = p.data.i18nKey || pInferredKey;
-  return pKey === currentI18nKey;
+  return pKey === currentI18nKey || pInferredKey === inferredKey;
 });
 
 const typedAiSummaries = aiSummaries as Record<string, { summary: string; model?: string }>;
@@ -428,6 +428,14 @@ const heroSummary = isUnlocked
         />
       )}
       <link rel="canonical" href={new URL(`/posts/${canonicalSlug}/`, siteConfig.site.url).href} />
+      {hasTranslations && (
+        <>
+          <link rel="alternate" hreflang="x-default" href={new URL(`/posts/${canonicalSlug}/`, siteConfig.site.url).href} />
+          {renderedVariants.map((v) => (
+            <link rel="alternate" hreflang={v.lang} href={new URL(`/posts/${canonicalSlug}/`, siteConfig.site.url).href} />
+          ))}
+        </>
+      )}
     </Fragment>
 
     <Fragment slot="hero">
@@ -786,6 +794,17 @@ const heroSummary = isUnlocked
 
             if (initialLang && availableLangs.includes(initialLang)) {
               window.switchArticleLanguage(initialLang);
+            }
+
+            // Calibrate hash scroll anchor to the active variant
+            if (window.location.hash) {
+              const rawHash = window.location.hash.slice(1);
+              try {
+                const target = document.querySelector('.article-translation-variant:not([style*="display: none"]) [id="' + CSS.escape(decodeURIComponent(rawHash)) + '"]');
+                if (target) {
+                  setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 120);
+                }
+              } catch (_) {}
             }
           })();
         </script>

@@ -6,7 +6,7 @@ draft: false
 toc: true
 tags: ["Beispiel", "Präsentation", "Klappfeld", "Dropdown"]
 category: "Beispiel"
-series: "功能示例"
+series: "Funktionsbeispiele"
 math: false
 mermaid: false
 i18nKey: "example-details-collapse"
@@ -116,11 +116,11 @@ Wenn ein Element geöffnet wird, schließen sich andere geöffnete Elemente inne
 
 ```html
 <div class="article-select-box">
-  <label><span>选择运行时架构：</span></label>
+  <label><span>Laufzeitarchitektur auswählen:</span></label>
   <select class="article-select">
-    <option value="static">🚀 纯静态交付 (SSG - 推荐)</option>
-    <option value="ssr">⚙️ 混合服务端渲染 (SSR)</option>
-    <option value="edge">🌐 边缘计算流式渲染 (Edge)</option>
+    <option value="static">🚀 Rein statische Auslieferung (SSG - Empfohlen)</option>
+    <option value="ssr">⚙️ Hybrides Server-Side Rendering (SSR)</option>
+    <option value="edge">🌐 Edge Computing Streaming-Rendering (Edge)</option>
   </select>
 </div>
 ```
@@ -150,16 +150,16 @@ Bei Auswahl verschiedener Optionen werden die entsprechenden Netzwerk- und Hardw
 ```html
 <div class="interactive-calc-select">
   <div class="article-select-box">
-    <label><span>选择视频输出规格：</span></label>
+    <label><span>Videoausgabespezifikationen auswählen:</span></label>
     <select class="article-select">
-      <option value="1080p" data-desc="1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps">1080P 全高清 (1080p60)</option>
-      <option value="2k" data-desc="2560 × 1440 @ 60fps · 码率 12,000 Kbps · 推荐带宽 30 Mbps">2K 极清 (1440p60)</option>
-      <option value="4k" data-desc="3840 × 2160 @ 60fps · 码率 25,000 Kbps · 推荐带宽 60 Mbps">4K 超高清 (2160p60 HDR)</option>
+      <option value="1080p" data-desc="1920 × 1080 @ 60fps · Bitrate 6.000 Kbps · Empfohlene Bandbreite 15 Mbps">1080P Full HD (1080p60)</option>
+      <option value="2k" data-desc="2560 × 1440 @ 60fps · Bitrate 12.000 Kbps · Empfohlene Bandbreite 30 Mbps">2K Ultra HD (1440p60)</option>
+      <option value="4k" data-desc="3840 × 2160 @ 60fps · Bitrate 25.000 Kbps · Empfohlene Bandbreite 60 Mbps">4K Ultra HD (2160p60 HDR)</option>
     </select>
   </div>
   <div class="calc-output-box">
-    <span>📊 <strong>推算指标</strong>：</span>
-    <span class="calc-output-value">1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps</span>
+    <span>📊 <strong>Berechnete Metriken</strong>:</span>
+    <span class="calc-output-value">1920 × 1080 @ 60fps · Bitrate 6.000 Kbps · Empfohlene Bandbreite 15 Mbps</span>
   </div>
 </div>
 ```

@@ -6,7 +6,7 @@ draft: false
 toc: true
 tags: ["ejemplo", "demostración", "plegable", "desplegable"]
 category: "Ejemplo"
-series: "功能示例"
+series: "Ejemplos de Funciones"
 math: false
 mermaid: false
 i18nKey: "example-details-collapse"
@@ -116,11 +116,11 @@ Al expandir cualquier elemento, los demás elementos expandidos del mismo grupo 
 
 ```html
 <div class="article-select-box">
-  <label><span>选择运行时架构：</span></label>
+  <label><span>Seleccionar arquitectura de ejecución:</span></label>
   <select class="article-select">
-    <option value="static">🚀 纯静态交付 (SSG - 推荐)</option>
-    <option value="ssr">⚙️ 混合服务端渲染 (SSR)</option>
-    <option value="edge">🌐 边缘计算流式渲染 (Edge)</option>
+    <option value="static">🚀 Entrega estática pura (SSG - Recomendado)</option>
+    <option value="ssr">⚙️ Renderizado híbrido del servidor (SSR)</option>
+    <option value="edge">🌐 Renderizado en streaming Edge Computing (Edge)</option>
   </select>
 </div>
 ```
@@ -150,16 +150,16 @@ Al seleccionar diferentes opciones, las especificaciones de red y hardware corre
 ```html
 <div class="interactive-calc-select">
   <div class="article-select-box">
-    <label><span>选择视频输出规格：</span></label>
+    <label><span>Seleccionar especificaciones de salida de video:</span></label>
     <select class="article-select">
-      <option value="1080p" data-desc="1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps">1080P 全高清 (1080p60)</option>
-      <option value="2k" data-desc="2560 × 1440 @ 60fps · 码率 12,000 Kbps · 推荐带宽 30 Mbps">2K 极清 (1440p60)</option>
-      <option value="4k" data-desc="3840 × 2160 @ 60fps · 码率 25,000 Kbps · 推荐带宽 60 Mbps">4K 超高清 (2160p60 HDR)</option>
+      <option value="1080p" data-desc="1920 × 1080 @ 60fps · Tasa de bits 6,000 Kbps · Ancho de banda recomendado 15 Mbps">1080P Full HD (1080p60)</option>
+      <option value="2k" data-desc="2560 × 1440 @ 60fps · Tasa de bits 12,000 Kbps · Ancho de banda recomendado 30 Mbps">2K Ultra Claro (1440p60)</option>
+      <option value="4k" data-desc="3840 × 2160 @ 60fps · Tasa de bits 25,000 Kbps · Ancho de banda recomendado 60 Mbps">4K Ultra HD (2160p60 HDR)</option>
     </select>
   </div>
   <div class="calc-output-box">
-    <span>📊 <strong>推算指标</strong>：</span>
-    <span class="calc-output-value">1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps</span>
+    <span>📊 <strong>Métricas estimadas</strong>:</span>
+    <span class="calc-output-value">1920 × 1080 @ 60fps · Tasa de bits 6,000 Kbps · Ancho de banda recomendado 15 Mbps</span>
   </div>
 </div>
 ```

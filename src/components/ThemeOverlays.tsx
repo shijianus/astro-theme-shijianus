@@ -1668,7 +1668,7 @@ export function ThemeOverlays({
                     />
                     <span className="search-result-item__content">
                       <span className="search-result-item__meta">
-                        {post.category} / {post.date}
+                        {convertText(post.category, localeVariant)} / {convertText(post.date, localeVariant)}
                       </span>
                       <strong>{post.title}</strong>
                       <span>{post.description}</span>
@@ -1738,7 +1738,7 @@ export function ThemeOverlays({
                     <h2 className="author-content-item-title">{t('console.overview', '站点概览')}</h2>
                   </div>
                   <div 
-                    data-tooltip="数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。"
+                    data-tooltip={convertText('数据是系统的脉络，客观映射着每一次渲染与交互的物理回响。', localeVariant)}
                     style={{ position: 'relative', cursor: 'pointer', overflow: 'visible' }}
                   >
                     <Info className="h-5 w-5 text-theme-main info-icon" />
@@ -1783,8 +1783,8 @@ export function ThemeOverlays({
 
             <div className="console-card-group-right">
               <section className="console-card tags">
-                <p className="author-content-item-tips">热门话题</p>
-                <h2 className="author-content-item-title">内容发现</h2>
+                <p className="author-content-item-tips">{convertText('热门话题', localeVariant)}</p>
+                <h2 className="author-content-item-title">{convertText('内容发现', localeVariant)}</h2>
                 <div className="card-tag-cloud" style={{ fontSize: tagData.fontSize }}>
                   {tagData.items.map((tag) => (
                     <a href={tag.href} key={tag.href}>
@@ -2048,11 +2048,11 @@ export function ThemeOverlays({
                 <Camera className="h-4 w-4" />
                 <span>{t('hero.avatarChange', '更换')}</span>
               </div>
-              <span className="account-hero-card__avatar-badge" title="点击更换头像">
+              <span className="account-hero-card__avatar-badge" title={convertText('点击更换头像', localeVariant)}>
                 <Camera className="h-2.5 w-2.5" />
               </span>
               {account?.provider === 'epomail' && (
-                <span className="account-hero-card__badge-icon" title="Epomail 认证身份">
+                <span className="account-hero-card__badge-icon" title={convertText('Epomail 认证身份', localeVariant)}>
                   ⚡
                 </span>
               )}
@@ -2069,7 +2069,7 @@ export function ThemeOverlays({
                   <span className="account-pill account-pill--guest">{t('hero.badge.guest')}</span>
                 )}
                 {userStatus.emoji && (
-                  <span className="account-status-chip" title={userStatus.text || '当前状态'}>
+                  <span className="account-status-chip" title={convertText(userStatus.text || '当前状态', localeVariant)}>
                     {userStatus.emoji}
                   </span>
                 )}
@@ -2085,12 +2085,12 @@ export function ThemeOverlays({
               {(accountForm.location || accountForm.timezone || account?.location || account?.timezone) && (
                 <div className="account-hero-card__meta-row">
                   {(accountForm.location || account?.location) && (
-                    <span className="account-meta-badge" title="所在位置">
+                    <span className="account-meta-badge" title={convertText('所在位置', localeVariant)}>
                       📍 {accountForm.location || account?.location}
                     </span>
                   )}
                   {(accountForm.timezone || account?.timezone) && (
-                    <span className="account-meta-badge" title="当前时区">
+                    <span className="account-meta-badge" title={convertText('当前时区', localeVariant)}>
                       🕒 {accountForm.timezone || account?.timezone}
                     </span>
                   )}
@@ -2323,9 +2323,9 @@ export function ThemeOverlays({
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
                     <Smile className="h-5 w-5 text-theme-main" />
-                    <h3 className="account-card__title">我的当前状态</h3>
+                    <h3 className="account-card__title">{convertText('我的当前状态', localeVariant)}</h3>
                     {userStatus.emoji && (
-                      <span className="account-status-chip" title={userStatus.text || '当前状态'}>
+                      <span className="account-status-chip" title={convertText(userStatus.text || '当前状态', localeVariant)}>
                         {userStatus.emoji}
                       </span>
                     )}
@@ -2341,10 +2341,10 @@ export function ThemeOverlays({
                           type="button"
                           className={`account-status-preset-btn ${isActive ? 'is-active' : ''}`}
                           onClick={() => handleSetPresetStatus(opt)}
-                          title={opt.text}
+                          title={convertText(opt.text, localeVariant)}
                         >
                           <span className="status-preset-emoji">{opt.emoji}</span>
-                          <span className="status-preset-text">{opt.text}</span>
+                          <span className="status-preset-text">{convertText(opt.text, localeVariant)}</span>
                         </button>
                       );
                     })}
@@ -2354,8 +2354,8 @@ export function ThemeOverlays({
                       type="button"
                       className={`account-status-emoji-trigger ${showStatusEmojiPicker ? 'is-active' : ''}`}
                       onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
-                      title="点击选择状态 Emoji 表情"
-                      aria-label="选择状态 Emoji 表情"
+                      title={convertText('点击选择状态 Emoji 表情', localeVariant)}
+                      aria-label={convertText('选择状态 Emoji 表情', localeVariant)}
                     >
                       <span className="current-status-emoji">{userStatus.emoji || '☕'}</span>
                       <ChevronDown className="h-3 w-3 opacity-60" />
@@ -2364,10 +2364,10 @@ export function ThemeOverlays({
                       type="text"
                       className="account-status-text-input"
                       value={userStatus.text}
-                      placeholder="输入自定义状态说明（如：忙碌中）"
+                      placeholder={convertText('输入自定义状态说明（如：忙碌中）', localeVariant)}
                       maxLength={30}
                       onChange={(e) => handleCustomStatusChange(userStatus.emoji || '☕', e.target.value)}
-                      title="自定义状态说明"
+                      title={convertText('自定义状态说明', localeVariant)}
                     />
                     {userStatus.emoji && (
                       <button
@@ -2380,9 +2380,9 @@ export function ThemeOverlays({
                           setShowStatusEmojiPicker(false);
                           showUnifiedToast('已清除当前状态');
                         }}
-                        title="清除当前状态"
+                        title={convertText('清除当前状态', localeVariant)}
                       >
-                        清除
+                        {convertText('清除', localeVariant)}
                       </button>
                     )}
                   </div>
@@ -2390,12 +2390,12 @@ export function ThemeOverlays({
                   {showStatusEmojiPicker && (
                     <div className="account-status-emoji-palette">
                       <div className="account-status-emoji-palette__header">
-                        <span className="account-status-emoji-palette__title">选择状态 Emoji</span>
+                        <span className="account-status-emoji-palette__title">{convertText('选择状态 Emoji', localeVariant)}</span>
                         <button
                           type="button"
                           className="account-status-emoji-palette__close"
                           onClick={() => setShowStatusEmojiPicker(false)}
-                          aria-label="关闭选择面板"
+                          aria-label={convertText('关闭选择面板', localeVariant)}
                         >
                           ✕
                         </button>
@@ -2473,14 +2473,14 @@ export function ThemeOverlays({
                     <div className="account-badges-header">
                       <div className="flex items-center gap-1.5">
                         <Award className="h-4 w-4 text-theme-main" />
-                        <h4 className="account-badges-title">已解锁称号与名片佩戴</h4>
+                        <h4 className="account-badges-title">{convertText('已解锁称号与名片佩戴', localeVariant)}</h4>
                       </div>
                       <span className="account-badges-counter">
-                        已佩戴 <strong>{equippedBadgeIds.length}</strong> / 4
+                        {convertText('已佩戴', localeVariant)} <strong>{equippedBadgeIds.length}</strong> / 4
                       </span>
                     </div>
                     <p className="account-badges-desc">
-                      展示已获得的专属称号。按需选择最多 4 个称号佩戴展示于评论名片中：
+                      {convertText('展示已获得的专属称号。按需选择最多 4 个称号佩戴展示于评论名片中：', localeVariant)}
                     </p>
                     <div className="account-badges-grid">
                       {unlockedBadges.map((badge) => {
@@ -2490,13 +2490,13 @@ export function ThemeOverlays({
                             key={badge.id}
                             type="button"
                             className={`account-badge-card ${isEquipped ? 'is-equipped' : ''}`}
-                            title={badge.description}
+                            title={convertText(badge.description, localeVariant)}
                             onClick={() => handleToggleBadge(badge.id)}
                             aria-pressed={isEquipped}
                           >
                             <div className="badge-card-main">
                               <span className="badge-card-icon">{badge.icon}</span>
-                              <span className="badge-card-name">{badge.name}</span>
+                              <span className="badge-card-name">{convertText(badge.name, localeVariant)}</span>
                             </div>
                           </button>
                         );
@@ -3201,7 +3201,7 @@ export function ThemeOverlays({
             type="button"
             className="search-mask"
             onClick={() => setConsoleNoticeOpen(false)}
-            aria-label="关闭控制台提示"
+            aria-label={convertText('关闭控制台提示', localeVariant)}
           />
           <div className="search-dialog console-notice-dialog" role="alertdialog" aria-modal="true" aria-label={t('console.notice.title', '控制台提示')}>
             <div className="search-dialog__head">
@@ -3314,17 +3314,17 @@ export function ThemeOverlays({
               {quickActions.slice(0, 2).map((item) => (
                 <a className="rightMenu-item" href={item.href} key={item.href}>
                   <ExternalLink aria-hidden="true" />
-                  <span>{item.label}</span>
+                  <span>{convertText(item.label, localeVariant)}</span>
                 </a>
               ))}
               <a className="rightMenu-item" href="/categories/">
                 <Tags aria-hidden="true" />
-                <span>博客分类</span>
+                <span>{convertText('博客分类', localeVariant)}</span>
               </a>
               {navItems.slice(2, 5).map((item) => (
                 <a className="rightMenu-item" href={item.href} key={item.href}>
                   <ExternalLink aria-hidden="true" />
-                  <span>{item.label}</span>
+                  <span>{convertText(item.label, localeVariant)}</span>
                 </a>
               ))}
             </div>

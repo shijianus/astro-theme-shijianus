@@ -941,5 +941,22 @@
         "isAiGenerated": false
       }
     }
+  },
+  "test-i18n-resilience": {
+    "i18nKey": "test-i18n-resilience",
+    "translations": {
+      "en": {
+        "filename": "test-i18n-resilience-en.md",
+        "slug": "test-i18n-resilience-en",
+        "title": "Testing i18n Bidirectional Fallback Article",
+        "isAiGenerated": false
+      },
+      "zh-CN": {
+        "filename": "test-i18n-resilience.md",
+        "slug": "test-i18n-resilience",
+        "title": "测试i18n双向容错解析文章",
+        "isAiGenerated": false
+      }
+    }
   }
 }
