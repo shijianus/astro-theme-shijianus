@@ -19,11 +19,11 @@ async function verifyBackboard() {
   const tgHandle = await page.$('.topGroup');
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_01_default_light.png') });
-    console.log('Saved backboard_01_default_light.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_01_default_light.png') });
+    console.log('Saved backboard_streamlined_01_default_light.png');
   }
 
-  // Check initial alignment
+  // Check initial alignment & absence of redundant buttons/headers
   const initialMetrics = await page.evaluate(() => {
     const banner = document.querySelector('#bannerGroup').getBoundingClientRect();
     const tg = document.querySelector('.topGroup').getBoundingClientRect();
@@ -47,8 +47,9 @@ async function verifyBackboard() {
       bottomDiff: Math.abs(Math.round(banner.bottom) - Math.round(tg.bottom)),
       rightDiff: Math.abs(Math.round(profile.right) - Math.round(tg.right)),
       hasBackboard: Boolean(backboard),
-      hasHeader: Boolean(header),
-      hasReturnBadge: Boolean(returnBadge)
+      noRedundantHeader: !Boolean(header),
+      noRedundantBadge: !Boolean(returnBadge),
+      backboardTitle: backboard ? backboard.getAttribute('title') : null
     };
   });
 
@@ -57,8 +58,14 @@ async function verifyBackboard() {
   if (!initialMetrics.hasBackboard) {
     throw new Error('FAIL: .topGroup__backboard element was not found in DOM!');
   }
-  if (!initialMetrics.hasHeader || !initialMetrics.hasReturnBadge) {
-    throw new Error('FAIL: .topGroup__header or #topGroup-backboard-badge was not found in DOM!');
+  if (!initialMetrics.noRedundantHeader) {
+    throw new Error('FAIL: .topGroup__header exists in DOM! User requested removal of redundant header/精选文章.');
+  }
+  if (!initialMetrics.noRedundantBadge) {
+    throw new Error('FAIL: #topGroup-backboard-badge exists in DOM! User requested removal of redundant badge/button.');
+  }
+  if (initialMetrics.backboardTitle) {
+    throw new Error(`FAIL: backboard still has title="${initialMetrics.backboardTitle}"! User requested removal of title.`);
   }
   if (initialMetrics.topDiff > 1 || initialMetrics.bottomDiff > 1) {
     throw new Error(`FAIL: Vertical alignment mismatch with bannerGroup! topDiff=${initialMetrics.topDiff}, bottomDiff=${initialMetrics.bottomDiff}`);
@@ -81,18 +88,17 @@ async function verifyBackboard() {
   }
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_02_cards_toggled_light.png') });
-    console.log('Saved backboard_02_cards_toggled_light.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_02_cards_toggled_light.png') });
+    console.log('Saved backboard_streamlined_02_cards_toggled_light.png');
   }
   if (tgHandle) {
-    await tgHandle.screenshot({ path: path.join(evidenceDir, 'backboard_03_topgroup_cards_light.png') });
-    console.log('Saved backboard_03_topgroup_cards_light.png');
+    await tgHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_03_topgroup_cards_light.png') });
+    console.log('Saved backboard_streamlined_03_topgroup_cards_light.png');
   }
 
-  // 3. Verify cards and header layout: zero overlap, zero text cut off
+  // 3. Verify cards layout: zero overlap, zero text cut off, clean balanced grid
   const layoutAudit = await page.evaluate(() => {
-    const header = document.querySelector('.topGroup__header').getBoundingClientRect();
-    const returnBadge = document.querySelector('#topGroup-backboard-badge').getBoundingClientRect();
+    const tg = document.querySelector('.topGroup').getBoundingClientRect();
     const cards = Array.from(document.querySelectorAll('.topGroup .recent-post-item'));
 
     const cardAudits = cards.map((c, i) => {
@@ -103,9 +109,9 @@ async function verifyBackboard() {
 
       return {
         index: i,
-        cardHeight: cr.height,
-        cardWidth: cr.width,
-        isBelowHeader: cr.top >= header.bottom - 1, // Card top must be below header
+        cardHeight: Math.round(cr.height),
+        cardWidth: Math.round(cr.width),
+        isInsideTopGroup: cr.top >= tg.top && cr.bottom <= tg.bottom && cr.left >= tg.left && cr.right <= tg.right,
         isTitleInside: tr.bottom <= cr.bottom,
         isClamped: titleStyle.webkitLineClamp === '2',
         titleText: title.innerText.trim()
@@ -113,57 +119,41 @@ async function verifyBackboard() {
     });
 
     return {
-      headerVisible: header.height > 0 && returnBadge.width > 0,
-      allCardsBelowHeader: cardAudits.every(c => c.isBelowHeader),
+      cardCount: cards.length,
+      allCardsInside: cardAudits.every(c => c.isInsideTopGroup),
       allTitlesInside: cardAudits.every(c => c.isTitleInside),
       cardAudits
     };
   });
 
   console.log('Layout Audit:', JSON.stringify(layoutAudit, null, 2));
-  if (!layoutAudit.headerVisible) {
-    throw new Error('FAIL: .topGroup__header is not visible in toggled state!');
+  if (layoutAudit.cardCount !== 6) {
+    throw new Error(`FAIL: Expected 6 cards, found ${layoutAudit.cardCount}!`);
   }
-  if (!layoutAudit.allCardsBelowHeader) {
-    throw new Error('FAIL: Some cards overlap with the header bar!');
+  if (!layoutAudit.allCardsInside) {
+    throw new Error('FAIL: Some cards overflow the topGroup container!');
   }
   if (!layoutAudit.allTitlesInside) {
     throw new Error('FAIL: Some card titles overflow or are cut off!');
   }
 
-  // 4. Test Return via clicking the Return Badge
-  console.log('Clicking return badge (#topGroup-backboard-badge)...');
-  await page.click('#topGroup-backboard-badge');
-  await page.waitForTimeout(400);
-
-  const isCheckedAfterBadgeClick = await page.$eval('#today-card-toggle', el => el.checked);
-  console.log('State after return badge click: isChecked =', isCheckedAfterBadgeClick);
-  if (isCheckedAfterBadgeClick !== false) {
-    throw new Error('FAIL: Clicking #topGroup-backboard-badge did not rollback #today-card-toggle!');
-  }
-
-  if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_04_returned_todaycard.png') });
-    console.log('Saved backboard_04_returned_todaycard.png');
-  }
-
-  // 5. Re-open and test Return via clicking the Backboard background
-  await bannerBtn.click();
-  await page.waitForTimeout(300);
-  const isCheckedReopen1 = await page.$eval('#today-card-toggle', el => el.checked);
-  if (!isCheckedReopen1) throw new Error('FAIL: Re-opening failed!');
-
-  console.log('Clicking backboard (#topGroup-backboard) at exposed header region...');
-  await page.click('#topGroup-backboard', { position: { x: 30, y: 15 } });
+  // 4. Test Return via directly clicking the exposed Backboard padding/border
+  console.log('Clicking backboard (#topGroup-backboard) at exposed top padding (x: 30, y: 4)...');
+  await page.click('#topGroup-backboard', { position: { x: 30, y: 4 } });
   await page.waitForTimeout(400);
 
   const isCheckedAfterBackboardClick = await page.$eval('#today-card-toggle', el => el.checked);
-  console.log('State after backboard click: isChecked =', isCheckedAfterBackboardClick);
+  console.log('State after direct backboard click: isChecked =', isCheckedAfterBackboardClick);
   if (isCheckedAfterBackboardClick !== false) {
-    throw new Error('FAIL: Clicking #topGroup-backboard did not rollback #today-card-toggle!');
+    throw new Error('FAIL: Direct click on #topGroup-backboard did not rollback #today-card-toggle!');
   }
 
-  // 6. Re-open and test Return via ESC key
+  if (swiperHandle) {
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_04_returned_todaycard.png') });
+    console.log('Saved backboard_streamlined_04_returned_todaycard.png');
+  }
+
+  // 5. Re-open and test Return via ESC key
   await bannerBtn.click();
   await page.waitForTimeout(300);
   const isCheckedReopen2 = await page.$eval('#today-card-toggle', el => el.checked);
@@ -179,22 +169,22 @@ async function verifyBackboard() {
     throw new Error('FAIL: Pressing Escape did not rollback #today-card-toggle!');
   }
 
-  // 7. Test Dark Mode styling
+  // 6. Test Dark Mode styling
   await bannerBtn.click();
   await page.waitForTimeout(300);
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await page.waitForTimeout(300);
 
   if (swiperHandle) {
-    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_05_cards_toggled_dark.png') });
-    console.log('Saved backboard_05_cards_toggled_dark.png');
+    await swiperHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_05_cards_toggled_dark.png') });
+    console.log('Saved backboard_streamlined_05_cards_toggled_dark.png');
   }
   if (tgHandle) {
-    await tgHandle.screenshot({ path: path.join(evidenceDir, 'backboard_06_topgroup_cards_dark.png') });
-    console.log('Saved backboard_06_topgroup_cards_dark.png');
+    await tgHandle.screenshot({ path: path.join(evidenceDir, 'backboard_streamlined_06_topgroup_cards_dark.png') });
+    console.log('Saved backboard_streamlined_06_topgroup_cards_dark.png');
   }
 
-  console.log('\n>>> ALL BACKBOARD & ALIGNMENT & ROLLBACK TESTS PASSED PERFECTLY! <<<');
+  console.log('\n>>> ALL STREAMLINED BACKBOARD & ALIGNMENT & ROLLBACK TESTS PASSED PERFECTLY! <<<');
   await browser.close();
 }
 
