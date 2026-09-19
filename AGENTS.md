@@ -2767,4 +2767,34 @@
   3. 实拍对比截图留存：`scheme_a_selected_final.png` 与 `scheme_a_grid_final.png`；
   4. Commit 成功提交并打印短 Hash：`3e45d7f`。
 
+### Task 123: topGroup 彻底去除多余按钮与说明文字、极简背板直出与点击背板回退全链路优化 (`0368dc6`)
+- [x] **遵照用户最高明确指示彻底精简与去多余化**:
+  1. 彻底移除 `class="topGroup__backboard-badge"` 悬浮按钮（“返回今日推荐”按钮），杜绝视觉冗余与画蛇添足；
+  2. 彻底移除 `title="点击返回今日推荐"` 与 `title="点击背板返回今日推荐"` 等所有多余 tooltip 说明文本；
+  3. 彻底移除“精选文章”控制栏（`.topGroup__header`），解除原本顶部 34px 的空间压缩，消除视觉干扰；
+  4. 恢复大方、纯粹、极简的无感直出交互：**直接点击背板即可翻转回退今日推荐！**
+- [x] **网格空间重构与像素级完美平衡**:
+  1. 解除原本顶部 34px 占位后，`.topGroup` 容器四周内边距恢复为对称且精致的 `padding: 8px !important; gap: 8px !important;`；
+  2. 6 张推荐卡片高度重新平衡扩展为 `height: 162px`，卡片封面图片高度调整为 `92px`，信息区域扩展为 `70px`，标题高度约束在 `36px`（双行优雅截断），彻底实现零遮挡、零截断、零文字拥挤；
+  3. 保持与 `#bannerGroup`（高 348px）及 `.card-widget.card-info`（右侧 1416px）**0px 绝对像素级严丝合缝平齐**（`topDiff: 0`, `bottomDiff: 0`, `rightDiff: 0`）；
+- [x] **无感直出背板交互与点击回退机制**:
+  1. 背板容器 `.topGroup__backboard` 统一设置 `pointer-events: auto; cursor: pointer;`；
+  2. 点击外围 8px 衬垫区域或卡片之间的 8px 缝隙，直接穿透并平滑触发 `#today-card-toggle` 关闭回退；
+  3. 阻断卡片本身（`.recent-post-item`）的点击冒泡，点击卡片或文章标题正常平滑打开文章，杜绝误触；
+  4. 保留键盘 `Escape` 按键快捷监听，随时按 Esc 一键返回今日推荐。
+- [x] **生产端 (Cloudflare Pages) 真实链路 Playwright E2E 验证 100% 满分通过**:
+  1. 本地 Playwright 端到端全量自动化审计通过（`scripts/verify-backboard-alignment.mjs`）；
+  2. 提交 commit（`0368dc6`）并双远端推送至 `origin` 与 `cf` (`main -> main`)；
+  3. 全量构建 154 个页面并部署至 Cloudflare Pages 生产边缘环境（`a27e47a5.shijianus-blog.pages.dev`）；
+  4. 针对生产真实域名 `https://blog.epocanvas.com/` 执行真实自动化端到端测试（`scripts/verify-live-epocanvas-backboard.mjs`），断言全部绿灯：
+     - `noRedundantHeader: true`（精选文章控制栏彻底清零）；
+     - `noRedundantBadge: true`（返回今日推荐按钮彻底清零）；
+     - `backboardTitle: null`（多余 tooltip 彻底清零）；
+     - `topDiff: 0, bottomDiff: 0, rightDiff: 0`（像素级对齐）；
+     - `allCardsInside: true, allTitlesInside: true`（100% 卡片与标题完好排版）；
+     - `State after live backboard click: isChecked = false`（点击背板顺畅回退成功）；
+     - `State after live Escape key: isChecked = false`（键盘 Esc 顺畅回退成功）；
+     - 浅色模式、深色模式与移动端自适应全量验证通过；
+     - 生产实拍证据链留存：`live_backboard_streamlined_01_default_light.png`、`live_backboard_streamlined_02_cards_toggled_light.png`、`live_backboard_streamlined_03_topgroup_cards_light.png`、`live_backboard_streamlined_04_returned_todaycard.png`、`live_backboard_streamlined_05_cards_toggled_dark.png`、`live_backboard_streamlined_06_topgroup_cards_dark.png`、`live_backboard_streamlined_07_mobile.png`。
+
 
