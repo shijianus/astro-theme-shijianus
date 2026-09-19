@@ -227,20 +227,106 @@ function updateHomeSticky(topOffset: number, isMobile: boolean) {
     document.querySelector<HTMLElement>('body[data-type="home"] #recent-posts');
   const card = document.querySelector<HTMLElement>('body[data-type="home"] .card-feature-panel--overview');
   const track = document.getElementById('aside-track-overview');
+  const feed = document.getElementById('recent-posts');
+  const stickyGroup = document.getElementById('home-posts-sticky-group');
+  const pageAside = document.querySelector<HTMLElement>('.page-aside');
+  const asideContent = document.getElementById('aside-content');
 
-  if (!boundary || !card) return;
+  if (!boundary || !feed) return;
 
-  if (isMobile) {
+  const isAsideCollapsed =
+    document.documentElement.getAttribute('data-aside') === 'collapsed' ||
+    document.body.classList.contains('read-mode') ||
+    document.documentElement.getAttribute('data-readmode') === 'true';
+
+  const hasVisibleAside =
+    !isMobile &&
+    !isAsideCollapsed &&
+    Boolean(pageAside) &&
+    Boolean(asideContent) &&
+    pageAside?.offsetParent !== null;
+
+  // 1. 如果处于移动端，或者用户收起了右侧边栏（无对比侧边栏）：
+  // 则直接没有粘性卡片，左右侧均按应有的普通流正常拼接
+  if (isMobile || !hasVisibleAside) {
+    document.body.removeAttribute('data-home-sticky');
+    feed.removeAttribute('data-home-sticky');
+    if (stickyGroup) {
+      stickyGroup.style.removeProperty('--home-left-sticky-top');
+    }
     if (track) {
       track.style.height = 'auto';
       track.style.minHeight = '0px';
     }
-    card.style.transform = 'none';
-    card.dataset.stickyState = 'static';
-    card.classList.remove('is-sticky-active');
-    card.classList.add('is-static-layout');
+    if (card) {
+      card.style.transform = 'none';
+      card.dataset.stickyState = 'static';
+      card.classList.remove('is-sticky-active');
+      card.classList.add('is-static-layout');
+    }
     return;
   }
+
+  // 2. 判定是否为最后一页：
+  // 仅在主页最后一页才会考虑左侧组合体粘性
+  const feedPage = Number.parseInt(feed.dataset.feedPage || '1', 10);
+  const feedPages = Number.parseInt(feed.dataset.feedPages || '1', 10);
+  const isLastPage = feed.dataset.isLastPage === 'true' || (feedPage >= feedPages && feedPages > 0);
+
+  // 3. 在最后一页时，精确测量左侧组合体与右侧侧边栏的高度差：
+  // 必须是：左侧较少内容（左侧大量空白），右侧存在大量内容时才触发
+  let enableLeftSticky = false;
+  if (isLastPage && stickyGroup && asideContent) {
+    const categoryBar = document.getElementById('categoryBar');
+    const categoryBarHeight = categoryBar?.offsetHeight ?? 0;
+    const groupHeight = stickyGroup.offsetHeight;
+    const leftContentHeight = categoryBarHeight + groupHeight;
+    const asideHeight = asideContent.offsetHeight;
+
+    // 当且仅当左侧内容高度显著小于右侧内容高度（差值 >= 60px）时判定为左侧较少、右侧较多
+    if (leftContentHeight < asideHeight - 60) {
+      enableLeftSticky = true;
+    }
+  }
+
+  // 4. 执行状态分支：
+  if (enableLeftSticky && stickyGroup) {
+    // 激活左侧粘性，右侧彻底取消粘性
+    document.body.setAttribute('data-home-sticky', 'left');
+    feed.dataset.homeSticky = 'left';
+
+    // 计算视口自适应粘性偏移：
+    const groupHeight = stickyGroup.offsetHeight;
+    const viewportAvailable = window.innerHeight - topOffset;
+    const leftStickyTop = groupHeight <= viewportAvailable
+      ? topOffset
+      : Math.max(16, window.innerHeight - groupHeight - 16);
+
+    stickyGroup.style.setProperty('--home-left-sticky-top', `${Math.round(leftStickyTop)}px`);
+
+    // 右侧卡片与轨道取消粘性，还原为自然流
+    if (track) {
+      track.style.height = 'auto';
+      track.style.minHeight = '0px';
+    }
+    if (card) {
+      card.style.transform = 'none';
+      card.dataset.stickyState = 'static';
+      card.classList.remove('is-sticky-active');
+      card.classList.add('is-static-layout');
+    }
+    return;
+  }
+
+  // 5. 否则（非最后一页，或者最后一页左侧内容充实不比右侧少）：
+  // 恢复原本的右侧粘性逻辑
+  document.body.removeAttribute('data-home-sticky');
+  feed.removeAttribute('data-home-sticky');
+  if (stickyGroup) {
+    stickyGroup.style.removeProperty('--home-left-sticky-top');
+  }
+
+  if (!card) return;
 
   const docScrollY = window.scrollY;
   const boundaryRect = boundary.getBoundingClientRect();
@@ -849,6 +935,7 @@ export function initStickySidebar() {
     document.getElementById('aside-track-overview'),
     document.getElementById('aside-sticky-box-overview'),
     document.getElementById('recent-posts'),
+    document.getElementById('home-posts-sticky-group'),
     document.getElementById('home-pagination'),
   ].filter((el): el is HTMLElement => Boolean(el));
 

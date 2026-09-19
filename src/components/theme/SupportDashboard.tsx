@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Coffee,
   CreditCard,
@@ -283,6 +283,16 @@ function detectClientCountry(): string {
   return 'CN';
 }
 
+function formatSponsorDate(dateStr?: string): string {
+  if (!dateStr || dateStr === '近期') return '近期';
+  const clean = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.split(' ')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3) {
+    return `${parts[1]}月${parts[2]}日`;
+  }
+  return clean || '近期';
+}
+
 export const SupportDashboard: React.FC = () => {
   // ── 1. Country & Dual-Currency State ──
   const [detectedCountry, setDetectedCountry] = useState<string>(() => detectClientCountry());
@@ -312,6 +322,38 @@ export const SupportDashboard: React.FC = () => {
   const [showJumpPopover, setShowJumpPopover] = useState<boolean>(false);
   const pageSize = 5;
 
+  // 3. 拉取 D1 真实致谢记录（绝无 mock 伪造，支持跨会话零刷新实时更新）
+  const fetchSponsors = useCallback((isInitial = false) => {
+    if (isInitial) setIsLoadingSponsors(true);
+    fetch(`/api/sponsorships?limit=50&_t=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data: any) => {
+        if (data?.ok && Array.isArray(data.list)) {
+          const apiItems: SponsorItem[] = data.list.map((item: any) => {
+            const rawDate = item.createdAt || item.date || '';
+            const cleanDate = rawDate.includes('T')
+              ? rawDate.split('T')[0]
+              : rawDate.split(' ')[0] || '近期';
+            return {
+              id: item.id,
+              name: item.name || '匿名支持者',
+              amount: Number(item.amount) || 0,
+              currency: (item.currency || 'USD').toUpperCase(),
+              message: item.message || '',
+              channel: item.channel || 'Stripe (国际收银台)',
+              allocation: item.allocation || '-',
+              date: cleanDate,
+            };
+          });
+          setSponsors(apiItems);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsLoadingSponsors(false);
+      });
+  }, []);
+
   // Auto-detect country & live sponsors on mount
   useEffect(() => {
     // 1. 同步确认客户端时区属地
@@ -331,30 +373,29 @@ export const SupportDashboard: React.FC = () => {
       })
       .catch(() => {});
 
-    // 3. 拉取 D1 真实致谢记录（绝无 mock 伪造）
-    setIsLoadingSponsors(true);
-    fetch(`/api/sponsorships?limit=50&_t=${Date.now()}`, { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data: any) => {
-        if (data?.ok && Array.isArray(data.list)) {
-          const apiItems: SponsorItem[] = data.list.map((item: any) => ({
-            id: item.id,
-            name: item.name || '匿名支持者',
-            amount: item.amount,
-            currency: item.currency,
-            message: item.message,
-            channel: item.channel || 'Stripe (国际收银台)',
-            allocation: item.allocation || '-',
-            date: item.createdAt ? item.createdAt.split('T')[0] : '近期',
-          }));
-          setSponsors(apiItems);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        setIsLoadingSponsors(false);
-      });
-  }, []);
+    // 3. 初始读取 D1 致谢数据
+    fetchSponsors(true);
+
+    // 4. 监听全局赞赏成功事件与可见性恢复，实现即时无感联动
+    const handleSponsorshipUpdate = () => {
+      fetchSponsors(false);
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSponsors(false);
+      }
+    };
+
+    window.addEventListener('shijianus:sponsorship-updated', handleSponsorshipUpdate);
+    window.addEventListener('shijianus:donation-completed', handleSponsorshipUpdate);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('shijianus:sponsorship-updated', handleSponsorshipUpdate);
+      window.removeEventListener('shijianus:donation-completed', handleSponsorshipUpdate);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchSponsors]);
 
   // Compute the 2 allowed currency options based on detected location:
   // 1. Local Currency: IP-detected local fiat
@@ -470,14 +511,33 @@ export const SupportDashboard: React.FC = () => {
       totalCups += cups;
     });
 
-    const latestDonor =
-      sponsors.length > 0 ? (sponsors[0]?.name || '热心读者') : '虚位以待 · 期待支持 ✨';
+    const latest = sponsors.length > 0 ? sponsors[0] : null;
+    const latestCurrencyCode = (latest?.currency || 'USD').toUpperCase();
+    const currencyConfig = supportConfig.currencies[latestCurrencyCode];
+    const symbol = currencyConfig?.symbol || '';
+    const formattedAmount = latest ? `${symbol}${latest.amount}` : '';
+    const formattedDate = latest ? formatSponsorDate(latest.date) : '';
+    const latestDonor = latest?.name || '虚位以待 · 期待支持 ✨';
 
     return {
       totalSupporters,
       totalCups,
       currencyCount: currencies.size,
       latestDonor,
+      latestSponsor: latest
+        ? {
+            id: latest.id,
+            name: latest.name || '匿名支持者',
+            amount: latest.amount,
+            currency: latestCurrencyCode,
+            symbol,
+            formattedAmount,
+            date: formattedDate,
+            rawDate: latest.date,
+            channel: latest.channel,
+            message: latest.message,
+          }
+        : null,
     };
   }, [sponsors]);
 
@@ -1209,14 +1269,41 @@ export const SupportDashboard: React.FC = () => {
               <span>最新支持</span>
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             </div>
-            <div
-              className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 truncate"
-              title={metrics.latestDonor}
-            >
-              {isLoadingSponsors ? '同步中…' : metrics.latestDonor}
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
+              {isLoadingSponsors ? (
+                <span className="text-slate-400 text-lg font-normal">加载中…</span>
+              ) : metrics.latestSponsor ? (
+                <div className="flex items-baseline gap-1.5 truncate">
+                  <span className="truncate">{metrics.latestSponsor.formattedAmount}</span>
+                  <span className="text-xs font-normal text-slate-400 shrink-0">
+                    {metrics.latestSponsor.currency}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-slate-400 text-base font-medium">虚位以待</span>
+              )}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">
-              {sponsors.length > 0 ? '实时入库同步' : '虚位以待'}
+            <div
+              className="text-[10px] text-slate-400 mt-0.5 truncate"
+              title={
+                metrics.latestSponsor
+                  ? `${metrics.latestSponsor.name} · ${metrics.latestSponsor.date}${metrics.latestSponsor.message ? ` · “${metrics.latestSponsor.message}”` : ''}`
+                  : undefined
+              }
+            >
+              {isLoadingSponsors ? (
+                <span>正在同步名册…</span>
+              ) : metrics.latestSponsor ? (
+                <span className="inline-flex items-center gap-1 max-w-full truncate">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
+                    {metrics.latestSponsor.name}
+                  </span>
+                  <span className="opacity-40 shrink-0">·</span>
+                  <span className="shrink-0">{metrics.latestSponsor.date}</span>
+                </span>
+              ) : (
+                <span>期待第一位支持者 ✨</span>
+              )}
             </div>
           </div>
         </div>

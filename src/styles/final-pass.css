@@ -7172,6 +7172,77 @@ body[data-type='home'] #aside-content #aside-sticky-box-overview {
   transition: none !important;
 }
 
+/* ==========================================================================
+   Home Last Page Adaptive Sticky: Left Posts Group Sticky (When Left < Right)
+   ========================================================================== */
+.home-posts-sticky-group {
+  width: 100%;
+  box-sizing: border-box;
+  transition: top 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 当且仅当激活左侧 sticky 状态时 (最后一页且左侧内容少于右侧侧边栏) */
+body[data-type='home'][data-home-sticky='left'] #content-inner.layout {
+  align-items: stretch !important;
+}
+
+body[data-type='home'][data-home-sticky='left'] .page-main {
+  height: 100% !important;
+  min-height: 100% !important;
+  align-self: stretch !important;
+}
+
+body[data-type='home'][data-home-sticky='left'] #recent-posts {
+  position: relative !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body[data-type='home'][data-home-sticky='left'] #home-posts-sticky-group {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--home-left-sticky-top, var(--sticky-column-top, 80px)) !important;
+  z-index: 10 !important;
+  will-change: transform, top;
+}
+
+/* 激活左侧 sticky 时，右侧彻底取消粘性卡片，恢复为自然静态流 */
+body[data-type='home'][data-home-sticky='left'] #aside-content #home-sticky-layout,
+body[data-type='home'][data-home-sticky='left'] #aside-content #aside-track-overview {
+  position: relative !important;
+  top: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+body[data-type='home'][data-home-sticky='left'] #aside-content #aside-sticky-box-overview {
+  position: static !important;
+  position: relative !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+/* 特殊规则：如果在没有右侧边栏的情况下 (例如用户收起了右侧边栏 :root[data-aside='collapsed'])，
+   则由于没有对比的侧边栏直接没有粘性卡片而直接按照应有的拼接 */
+:root[data-aside='collapsed'] #home-posts-sticky-group,
+html[data-readmode='true'] #home-posts-sticky-group,
+body.read-mode #home-posts-sticky-group {
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+@media screen and (max-width: 1199px) {
+  body[data-type='home'] #home-posts-sticky-group {
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
+  }
+}
+
+
 
 body.read-mode[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box,
 html[data-readmode='true'] body[data-type='post'] #aside-content #post-sticky-layout .aside-sticky-box,

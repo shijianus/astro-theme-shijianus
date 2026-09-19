@@ -98,11 +98,22 @@ export async function onRequest(context: {
       };
     });
 
-    return jsonResponse(request, env, {
-      ok: true,
-      list,
-      total,
-    });
+    return jsonResponse(
+      request,
+      env,
+      {
+        ok: true,
+        list,
+        total,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      },
+    );
   } catch (err: any) {
     console.error('Error fetching sponsorships:', err);
     return jsonResponse(

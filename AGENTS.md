@@ -2870,3 +2870,23 @@
   4. 验证客户端即时无刷新切换机制正常工作；
   5. 生成完整本地审计报告 `ARTICLE_I18N_VERIFICATION_REPORT.md`。
 
+### Task 127: 主页最后一页少内容自适应文章组合体粘性卡片 (Left Posts Sticky Group) 与右侧互斥联动
+- [x] **主页文章列表与分页导航组合化封装 (`src/components/theme/HomeFeed.astro`)**:
+  1. 将 `class="grid grid-cols-1 md:grid-cols-2 gap-3"` 文章网格与 `class="theme-card home-pagination"` 分页卡片封装为一体化组合容器 `<div class="home-posts-sticky-group" id="home-posts-sticky-group">`；
+  2. 动态注入 `data-is-last-page` 标识与页码元数据（`data-feed-page`、`data-feed-pages`），精准识别主页最后一页。
+- [x] **严格限定条件与自适应高度对比算法 (`src/scripts/sticky-sidebar.ts`)**:
+  1. **严格限定仅在主页最后一页生效**: 非最后一页（如第 1 页或中间页）绝对不触发左侧粘性，完全保留原本右侧概览卡片粘性行为；
+  2. **严格限定左侧内容较少且右侧存在大量内容时生效**: 动态计算左侧组合体真实物理高度（`leftContentHeight`）与右侧侧边栏高度（`asideHeight`），当且仅当 `leftContentHeight < asideHeight - 60` 时激活左侧粘性模式；若最后一页左侧内容充实不比右侧少，则不触发左侧粘性；
+  3. **左侧粘性与右侧粘性互斥联动**: 左侧激活粘性时，右侧彻底取消粘性卡片（`#aside-sticky-box-overview` 变为普通静态流，`#aside-track-overview` 高度自适应），右侧全部卡片自然跟随页面滚动向上浏览；
+  4. **无右侧边栏特殊场景优雅回退**: 当用户收起右侧边栏（`:root[data-aside='collapsed']`）、进入阅读模式或在移动端（`< 1200px`）无右侧边栏时，直接无粘性卡片，左右侧均按应有的普通流正常拼接；
+  5. **视口智能适配粘性偏移**: 依据 `window.innerHeight` 动态计算最佳吸附偏移（`--home-left-sticky-top`），确保无论屏幕高矮，分页卡片与文章卡片均完美完整展现在视口内。
+- [x] **UI/UX 视觉打磨与布局体系加固 (`src/styles/final-pass.css`)**:
+  1. 为 `body[data-type='home'][data-home-sticky='left']` 配置专用伸缩与粘性规则，保障 `#content-inner`、`.page-main` 与 `#recent-posts` 完整撑满与右侧齐平的高度轨道；
+  2. 保持原生卡片质感，不添加生硬背景或大黑框，让文章卡片与分页卡片在悬浮吸附状态下保持自然光泽与平滑位移过渡；
+  3. 滚动至页面最底部时，左侧组合体平滑跟随容器底部停驻，与右侧侧边栏底部齐平收束进入页脚。
+- [x] **全景 Playwright 自动化端到端测试套件 (4/4 全绿)**:
+  1. 编写专用测试套件 `scripts/verify-home-last-page-sticky.mjs`；
+  2. 覆盖场景 1（最后一页左少右多粘性吸附与右侧滚动）、场景 2（侧边栏收起立即取消粘性回退普通流）、场景 3（第 1 页非最后一页严格保持右侧粘性）、场景 4（移动端窄屏单列流无粘性）；
+  3. 测试断言 100% 通过（4/4 Passed），并在 `scratch/screenshots/` 留存全流程视觉截图证据链。
+
+

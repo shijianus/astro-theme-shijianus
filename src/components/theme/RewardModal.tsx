@@ -470,6 +470,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
       pendingNotificationRef.current = true;
       setStep('success');
       setIsOpen(true);
+      window.dispatchEvent(new CustomEvent('shijianus:sponsorship-updated'));
       const clean = new URL(window.location.href);
       ['stripe_return', 'session_id', 'amount'].forEach(k => clean.searchParams.delete(k));
       window.history.replaceState({}, '', clean.toString());
@@ -639,6 +640,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
             pendingNotificationRef.current = true;
             setPaidAmount(currentAmount);
             setStep('success');
+            window.dispatchEvent(new CustomEvent('shijianus:sponsorship-updated'));
           },
         });
         checkoutInstanceRef.current = checkout;
@@ -707,7 +709,11 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           paymentMethod: 'Stripe Checkout (Cards / Apple Pay / Google Pay / Link)',
           trigger: triggerReason,
         }),
-      }).catch(() => {});
+      })
+        .then(() => {
+          window.dispatchEvent(new CustomEvent('shijianus:sponsorship-updated'));
+        })
+        .catch(() => {});
     } catch {}
   };
 

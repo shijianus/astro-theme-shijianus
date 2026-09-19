@@ -26,6 +26,8 @@ const {
   categories,
   categoryRail,
 } = Astro.props;
+
+const isLastPage = currentPage >= lastPage;
 ---
 
 <div
@@ -33,6 +35,7 @@ const {
   class="recent-posts"
   data-feed-page={currentPage}
   data-feed-pages={lastPage}
+  data-is-last-page={isLastPage ? 'true' : 'false'}
 >
   <div id="categoryBar">
     <div class="category-bar" id="category-bar">
@@ -59,11 +62,13 @@ const {
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-    {posts.map((entry, index) => (
-      <PostCard entry={entry} index={index} />
-    ))}
-  </div>
+  <div class="home-posts-sticky-group" id="home-posts-sticky-group">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {posts.map((entry, index) => (
+        <PostCard entry={entry} index={index} />
+      ))}
+    </div>
 
-  <HomePagination currentPage={currentPage} lastPage={lastPage} total={total} />
+    <HomePagination currentPage={currentPage} lastPage={lastPage} total={total} />
+  </div>
 </div>
