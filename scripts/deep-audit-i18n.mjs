@@ -70,13 +70,15 @@ const PAGES_TO_AUDIT = [
   '/posts/hello-world/',
 ];
 
+const LOCALES_TO_TEST = ['en', 'fr', 'es', 'de'];
+
 async function scanPageForChinese(page, targetLocale) {
   // Switch to targetLocale
   await page.evaluate((loc) => {
     window.localStorage.setItem('shijianus-locale-variant', loc);
     window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: loc }));
   }, targetLocale);
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(600);
 
   // Extract all text nodes that still contain Chinese characters
   // We exclude the actual post body content of the article (because AI translation of articles is disabled by default)
@@ -110,14 +112,6 @@ async function scanPageForChinese(page, targetLocale) {
           // Ignore article body itself (since article content AI translation is isolated)
           if (isInsideArticleBody(parent)) {
             return NodeFilter.FILTER_REJECT;
-          }
-
-          // Check if visible
-          const rect = parent.getBoundingClientRect();
-          const style = window.getComputedStyle(parent);
-          if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
-            // Also inspect hidden modals if they are supposed to show
-            // return NodeFilter.FILTER_ACCEPT;
           }
 
           return NodeFilter.FILTER_ACCEPT;
@@ -159,78 +153,99 @@ async function runAudit() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
   const summary = {};
+  let totalLeakCount = 0;
 
-  for (const pagePath of PAGES_TO_AUDIT) {
-    console.log(`\nScanning ${pagePath}...`);
-    await page.goto(`http://127.0.0.1:${PORT}${pagePath}`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
+  console.log('=== STARTING MULTILINGUAL PLAYWRIGHT UI AUDIT ===\n');
 
-    // Scan English
-    const enLeaks = await scanPageForChinese(page, 'en');
-    summary[pagePath] = { en: enLeaks };
-    console.log(`  -> Found ${enLeaks.length} text nodes with Chinese in English mode`);
-    for (const item of enLeaks.slice(0, 10)) {
-      console.log(`     [${item.selector}] "${item.text}"`);
+  for (const loc of LOCALES_TO_TEST) {
+    console.log(`\n================ Testing Locale: [${loc}] ================\n`);
+    summary[loc] = {};
+
+    for (const pagePath of PAGES_TO_AUDIT) {
+      await page.goto(`http://127.0.0.1:${PORT}${pagePath}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(300);
+
+      const leaks = await scanPageForChinese(page, loc);
+      summary[loc][pagePath] = leaks;
+      totalLeakCount += leaks.length;
+
+      if (leaks.length === 0) {
+        console.log(`  ✓ ${pagePath.padEnd(24)} -> 0 Chinese leaks`);
+      } else {
+        console.error(`  ✗ ${pagePath.padEnd(24)} -> ${leaks.length} LEAKS!`);
+        for (const item of leaks.slice(0, 5)) {
+          console.error(`     [${item.selector}] "${item.text}"`);
+        }
+      }
     }
-    if (enLeaks.length > 10) {
-      console.log(`     ... and ${enLeaks.length - 10} more`);
-    }
-  }
 
-  // Also check modals and drawers by triggering them on homepage
-  console.log('\nScanning modals & drawers on homepage in English mode...');
-  await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });
-  await page.evaluate(() => {
-    window.localStorage.setItem('shijianus-locale-variant', 'en');
-    window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: 'en' }));
-  });
-  await page.waitForTimeout(500);
+    // Also test overlays in this locale
+    console.log(`  --- Testing Overlays in [${loc}] ---`);
+    await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });
+    await page.evaluate((l) => {
+      window.localStorage.setItem('shijianus-locale-variant', l);
+      window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: l }));
+    }, loc);
+    await page.waitForTimeout(300);
 
-  // 1. Console modal
-  console.log('  -> Opening Console...');
-  await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
-  await page.waitForTimeout(500);
-  const consoleLeaks = await scanPageForChinese(page, 'en');
-  console.log(`     Found ${consoleLeaks.length} Chinese text nodes with Console open`);
-  for (const item of consoleLeaks.filter(i => i.selector.includes('console') || i.selector.includes('author') || i.selector.includes('webinfo')).slice(0, 10)) {
-    console.log(`     [${item.selector}] "${item.text}"`);
-  }
+    // 1. Console
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
+    await page.waitForTimeout(400);
+    const consoleLeaks = await scanPageForChinese(page, loc);
+    const consoleFiltered = consoleLeaks.filter(i => i.selector.includes('console') || i.selector.includes('author') || i.selector.includes('webinfo'));
+    console.log(`  ${consoleFiltered.length === 0 ? '✓' : '✗'} Console Overlay: ${consoleFiltered.length} leaks`);
+    if (consoleFiltered.length > 0) totalLeakCount += consoleFiltered.length;
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:close-overlay')));
+    await page.waitForTimeout(200);
 
-  // 2. Account drawer
-  console.log('  -> Opening Account Drawer...');
-  await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-notifications')));
-  await page.waitForTimeout(500);
-  const accountLeaks = await scanPageForChinese(page, 'en');
-  console.log(`     Found ${accountLeaks.length} Chinese text nodes with Account Drawer open`);
-  for (const item of accountLeaks.filter(i => i.selector.includes('drawer') || i.selector.includes('account') || i.selector.includes('panel')).slice(0, 10)) {
-    console.log(`     [${item.selector}] "${item.text}"`);
-  }
+    // 2. Account Drawer
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-notifications')));
+    await page.waitForTimeout(400);
+    const drawerLeaks = await scanPageForChinese(page, loc);
+    const drawerFiltered = drawerLeaks.filter(i => i.selector.includes('drawer') || i.selector.includes('account') || i.selector.includes('panel'));
+    console.log(`  ${drawerFiltered.length === 0 ? '✓' : '✗'} Account Drawer: ${drawerFiltered.length} leaks`);
+    if (drawerFiltered.length > 0) totalLeakCount += drawerFiltered.length;
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:close-overlay')));
+    await page.waitForTimeout(200);
 
-  // 3. Search modal
-  console.log('  -> Opening Search Modal...');
-  await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-search')));
-  await page.waitForTimeout(500);
-  const searchLeaks = await scanPageForChinese(page, 'en');
-  console.log(`     Found ${searchLeaks.length} Chinese text nodes with Search open`);
-  for (const item of searchLeaks.filter(i => i.selector.includes('search') || i.selector.includes('local')).slice(0, 10)) {
-    console.log(`     [${item.selector}] "${item.text}"`);
-  }
+    // 3. Search
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-search')));
+    await page.waitForTimeout(400);
+    const searchLeaks = await scanPageForChinese(page, loc);
+    const searchFiltered = searchLeaks.filter(i => i.selector.includes('search') || i.selector.includes('local'));
+    console.log(`  ${searchFiltered.length === 0 ? '✓' : '✗'} Search Modal: ${searchFiltered.length} leaks`);
+    if (searchFiltered.length > 0) totalLeakCount += searchFiltered.length;
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:close-overlay')));
+    await page.waitForTimeout(200);
 
-  // 4. Keyboard Shortcuts
-  console.log('  -> Opening Shortcut Panel...');
-  await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', bubbles: true })));
-  await page.waitForTimeout(500);
-  const shortcutLeaks = await scanPageForChinese(page, 'en');
-  console.log(`     Found ${shortcutLeaks.length} Chinese text nodes with Shortcuts open`);
-  for (const item of shortcutLeaks.filter(i => i.selector.includes('keyboard')).slice(0, 10)) {
-    console.log(`     [${item.selector}] "${item.text}"`);
+    // 4. Music Pocket (open panel)
+    await page.evaluate(() => {
+      const toggle = document.querySelector('.shijianus-music-pocket__toggle');
+      if (toggle) toggle.click();
+    });
+    await page.waitForTimeout(400);
+    const musicLeaks = await scanPageForChinese(page, loc);
+    const musicFiltered = musicLeaks.filter(i => i.selector.includes('music-pocket'));
+    console.log(`  ${musicFiltered.length === 0 ? '✓' : '✗'} Music Pocket: ${musicFiltered.length} leaks`);
+    if (musicFiltered.length > 0) totalLeakCount += musicFiltered.length;
+    await page.evaluate(() => {
+      const closeBtn = document.querySelector('.shijianus-music-pocket__close-btn');
+      if (closeBtn) closeBtn.click();
+    });
+    await page.waitForTimeout(200);
   }
 
   await browser.close();
   server.close();
 
   fs.writeFileSync('scratch/i18n-raw-audit.json', JSON.stringify(summary, null, 2));
-  console.log('\nAudit complete! Raw report written to scratch/i18n-raw-audit.json');
+  console.log(`\n======================================================`);
+  console.log(`Audit Finished! Total Leaks Detected: ${totalLeakCount}`);
+  console.log(`======================================================\n`);
+
+  if (totalLeakCount > 0) {
+    process.exit(1);
+  }
 }
 
 runAudit();

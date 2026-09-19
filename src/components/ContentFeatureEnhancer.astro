@@ -197,6 +197,19 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       return 'zh-CN';
     };
 
+    const resolveUiLang = () => {
+      const docVariant = normalizeLang(document.documentElement.getAttribute('data-locale-variant'));
+      if (docVariant) return docVariant;
+      try {
+        const stored = normalizeLang(
+          window.localStorage.getItem('shijianus-locale-variant') ||
+          window.localStorage.getItem('shijianus-manual-locale-selected')
+        );
+        if (stored) return stored;
+      } catch (_) {}
+      return resolveContentLang();
+    };
+
     const ENCRYPTED_MODAL_I18N = {
       'zh-CN': {
         title: '验证安全访问凭证',
@@ -788,19 +801,21 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
       _modalOverlay = document.querySelector('.encrypted-modal-overlay');
       if (!_modalOverlay) {
+        const initLang = resolveUiLang();
+        const initLoc = ENCRYPTED_MODAL_I18N[initLang] || ENCRYPTED_MODAL_I18N['zh-CN'];
         _modalOverlay = document.createElement('div');
         _modalOverlay.className = 'encrypted-modal-overlay';
         _modalOverlay.innerHTML = `
           <div class="encrypted-modal-card">
             <div class="encrypted-modal__icon">🔐</div>
             <div class="encrypted-modal__level-tag" style="margin-bottom:0.5rem;"></div>
-            <h3 class="encrypted-modal__title">验证安全访问凭证</h3>
-            <p class="encrypted-modal__hint">该部分为受保护加密内容，请输入密码进行校验。</p>
-            <input type="password" class="encrypted-modal__input" placeholder="输入访问密钥 / 密码" autocomplete="current-password" />
-            <div class="encrypted-modal__error" style="display:none;color:#ef4444;font-size:0.84rem;font-weight:600;margin-bottom:0.8rem;">凭证校验失败，请重新输入</div>
+            <h3 class="encrypted-modal__title">${initLoc.title}</h3>
+            <p class="encrypted-modal__hint">${initLoc.hint}</p>
+            <input type="password" class="encrypted-modal__input" placeholder="${initLoc.placeholder}" autocomplete="current-password" />
+            <div class="encrypted-modal__error" style="display:none;color:#ef4444;font-size:0.84rem;font-weight:600;margin-bottom:0.8rem;">${initLoc.error}</div>
             <div class="encrypted-modal__actions">
-              <button type="button" class="encrypted-modal__cancel">取消</button>
-              <button type="button" class="encrypted-modal__submit">验证并解密</button>
+              <button type="button" class="encrypted-modal__cancel">${initLoc.cancel}</button>
+              <button type="button" class="encrypted-modal__submit">${initLoc.submit}</button>
             </div>
           </div>
         `;
@@ -918,7 +933,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     // -------------------------------------------------------
     const openModal = (target, levelTag, hint) => {
       _currentActiveTarget = target;
-      const lang = resolveContentLang();
+      const lang = resolveUiLang();
       const locModal = ENCRYPTED_MODAL_I18N[lang] || ENCRYPTED_MODAL_I18N['zh-CN'];
 
       if (_modalOverlay) {

@@ -3012,3 +3012,23 @@
 - [x] **Playwright 真实浏览器端到端自动化测试通过**:
   1. 执行 `scripts/verify-music-pocket.mjs`，黑胶唱片与唱针臂元素、面板三选项卡流转、点歌搜索输入与推荐标签、待播队列、悬浮歌词、面板收起与移动端 42px 尺寸断言全绿通过。
 
+### Task 134: 文章多语言变体 (.article-translation-variant) 深度源码审计、双向容错关联兜底、hreflang SEO 注入与多语言打磨 (`15efa55`)
+- [x] **全站文章多语言翻译系统 (`.article-translation-variant`) 全矩阵 Playwright 审计**:
+  1. 覆盖全站 22 篇既有公开文章及受限文章，编写并执行深度端到端 Playwright 提取套件（`scratch/verify-translation-matrix.mjs`）；
+  2. 提取并核验 132 个兄弟翻译变体（`zh-CN`, `zh-Hant`, `en`, `es`, `de`, `fr`），实测 140 次无刷新即时语言切换全部 100% 成功（目标语言自然展开，非目标语言 `display: none`，TOC 与 PostHero 状态精准联动）；
+  3. 查明受保护文章 `access-control-lab` 初始渲染 0 个变体的原因（系服务端访问权限控制隔离，未解锁时不向 DOM 输出敏感变体，杜绝爬虫抓取泄密）；
+  4. 产出全量审计报告归档于 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
+- [x] **架构级双向容错关联推导兜底 (`src/pages/posts/[slug].astro` & `scripts/sync-post-i18n.mjs`)**:
+  1. 根除因写作者疏漏 `i18nKey` 导致的“翻译文件存在却在页面漏显示”隐患；
+  2. 在 `[slug].astro` 中重构兄弟变体匹配逻辑为 `pKey === currentI18nKey || pInferredKey === inferredKey`，即便子篇 Frontmatter 未显式声明 `i18nKey`，只要其文件名遵循标准后缀即可自动基于文件名基名双向匹配挂载；
+  3. 在 `sync-post-i18n.mjs` 中增加基于 `inferredKey` 的多向归纳算法，防止生成孤立脱节的映射条目。
+- [x] **国际化 SEO hreflang 标签标准注入**:
+  1. 在 `src/pages/posts/[slug].astro` 的 `<Fragment slot="head">` 中为包含多语言版本的文章标准化注入 `<link rel="alternate" hreflang="x-default" ... />` 及全部可用变体代码（`zh-CN`, `zh-Hant`, `en`, `es`, `de`, `fr`）；
+  2. 满足 Google / Bing 等全球搜索引擎多语言本地化索引收录规范。
+- [x] **URL Hash 深度链接与活跃变体平滑锚点校准**:
+  1. 在客户端启动脚本中注入针对 `window.location.hash` 的作用域校准逻辑，当读者通过外部带 `#hash` 链接直接访问非中文版本时，自动跳过隐藏的中文变体，平滑定位至激活语言变体内的真实锚点元素。
+- [x] **示例文章残留中文净化与实验博文全链路测试验证**:
+  1. 彻底净化 `example-details-collapse-es.md` 与 `example-details-collapse-de.md` 中的残留中文系列名称与代码块 `<option>` 标签；
+  2. 注入专用边界测试博文 `test-i18n-resilience`（主篇带自定义 `i18nKey`，英文篇故意不带 `i18nKey`）；
+  3. 编写并运行 Playwright 验证脚本 `scratch/verify-i18n-polishing.mjs`，15 项断言全绿通过（双向容错挂载 2 个变体并流畅切换、7 个 hreflang 标签注入验证、德西选择器本地化验证、Hash 锚点校准验证 100% 通过）。
+

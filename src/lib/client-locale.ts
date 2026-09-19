@@ -2385,9 +2385,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '主题重构': { en: 'Theme Refactor', fr: 'Refonte du thème', es: 'Refactorización del tema', de: 'Theme-Refaktorisierung' },
   '主题格式': { en: 'Theme Formats', fr: 'Formats du thème', es: 'Formatos del tema', de: 'Theme-Formate' },
   '媒体适配': { en: 'Media Adaptation', fr: 'Adaptation multimédia', es: 'Adaptación de medios', de: 'Medienanpassung' },
-  '安知鱼': { en: 'Anzhiyu', fr: 'Anzhiyu', es: 'Anzhiyu', de: 'Anzhiyu' },
   '徽章系统': { en: 'Badge System', fr: 'Système de badges', es: 'Sistema de insignias', de: 'Abzeichensystem' },
-  '思维导图': { en: 'Mind Map', fr: 'Carte mentale', es: 'Mapa mental', de: 'Mindmap' },
   '等级阶梯': { en: 'Trust Levels', fr: 'Niveaux de confiance', es: 'Niveles de confianza', de: 'Vertrauensstufen' },
 
   // User Status & Badges
@@ -2412,8 +2410,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   'Epomail 认证身份': { en: 'Epomail Verified Identity', fr: 'Identité vérifiée Epomail', es: 'Identidad verificada de Epomail', de: 'Epomail-verifizierte Identität' },
   '所在位置': { en: 'Location', fr: 'Emplacement', es: 'Ubicación', de: 'Standort' },
   '当前时区': { en: 'Current Timezone', fr: 'Fuseau horaire actuel', es: 'Zona horaria actual', de: 'Aktuelle Zeitzone' },
-  '博客分类': { en: 'Blog Categories', fr: 'Catégories du blog', es: 'Categorías del blog', de: 'Blog-Kategorien' },
-  '关闭控制台提示': { en: 'Close console notice', fr: 'Fermer la notice de console', es: 'Cerrar aviso de consola', de: 'Konsolenhinweis schließen' },
 
   // Music Pocket Player
   '点击展开音乐播放器': { en: 'Click to expand music player', fr: 'Cliquer pour ouvrir le lecteur', es: 'Haga clic para expandir reproductor', de: 'Klicken, um Musikplayer zu öffnen' },
@@ -3124,13 +3120,13 @@ export function convertText(value: string, variant: LocaleVariant): string {
     const trans = zhToEnMap.get(sourceZh);
     if (trans !== undefined) return value.replace(trimmed, trans);
   } else if (variant === 'fr') {
-    const trans = zhToFrMap.get(sourceZh);
+    const trans = zhToFrMap.get(sourceZh) ?? zhToEnMap.get(sourceZh);
     if (trans !== undefined) return value.replace(trimmed, trans);
   } else if (variant === 'es') {
-    const trans = zhToEsMap.get(sourceZh);
+    const trans = zhToEsMap.get(sourceZh) ?? zhToEnMap.get(sourceZh);
     if (trans !== undefined) return value.replace(trimmed, trans);
   } else if (variant === 'de') {
-    const trans = zhToDeMap.get(sourceZh);
+    const trans = zhToDeMap.get(sourceZh) ?? zhToEnMap.get(sourceZh);
     if (trans !== undefined) return value.replace(trimmed, trans);
   }
 
@@ -3150,7 +3146,7 @@ export function convertText(value: string, variant: LocaleVariant): string {
     for (const rule of DYNAMIC_PATTERNS) {
       const match = sourceZh.match(rule.pattern);
       if (match) {
-        const replacer = rule.replace[variant];
+        const replacer = rule.replace[variant] ?? rule.replace['en'];
         if (replacer) {
           return value.replace(trimmed, replacer(match));
         }

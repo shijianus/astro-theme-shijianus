@@ -684,7 +684,7 @@ export function MusicPocket({ apiBase }: Props) {
                 <div className="shijianus-music-pocket__meta">
                   <div className="shijianus-music-pocket__title-row">
                     <strong className="shijianus-music-pocket__song-title">
-                      {currentTrack ? currentTrack.name : '暂无正在播放的歌曲'}
+                      {currentTrack ? currentTrack.name : t('暂无正在播放的歌曲')}
                     </strong>
                     {currentTrack?.source && (
                       <span className="shijianus-music-pocket__source-tag">
@@ -693,7 +693,7 @@ export function MusicPocket({ apiBase }: Props) {
                     )}
                   </div>
                   <p className="shijianus-music-pocket__song-artist">
-                    {currentTrack ? `${currentTrack.artist}${currentTrack.album ? ` — 《${currentTrack.album}》` : ''}` : '点击下方“随机曲库”或在点歌台点播'}
+                    {currentTrack ? `${currentTrack.artist}${currentTrack.album ? ` — 《${currentTrack.album}》` : ''}` : t('点击下方“随机曲库”或在点歌台点播')}
                   </p>
                 </div>
               </div>
@@ -721,7 +721,7 @@ export function MusicPocket({ apiBase }: Props) {
                   })
                 ) : (
                   <div className="shijianus-music-pocket__lyrics-empty">
-                    <p>{rawLyric || '暂无滚动歌词'}</p>
+                    <p>{rawLyric ? t(rawLyric) : t('暂无滚动歌词')}</p>
                   </div>
                 )}
               </div>
@@ -737,7 +737,7 @@ export function MusicPocket({ apiBase }: Props) {
                   value={currentTime}
                   onChange={handleSeek}
                   className="shijianus-music-pocket__seek-slider"
-                  aria-label="音频进度条"
+                  aria-label={t('音频进度条')}
                 />
                 <span className="shijianus-music-pocket__time">{formatTime(duration)}</span>
               </div>
@@ -748,7 +748,7 @@ export function MusicPocket({ apiBase }: Props) {
                   type="button"
                   className="shijianus-music-pocket__icon-btn"
                   onClick={cyclePlayMode}
-                  title={`当前: ${playMode === 'single' ? '单曲循环' : playMode === 'shuffle' ? '随机播放' : '列表循环'}`}
+                  title={`${t('当前')}: ${playMode === 'single' ? t('单曲循环') : playMode === 'shuffle' ? t('随机播放') : t('列表循环')}`}
                 >
                   {playMode === 'single' ? <Repeat1 size={17} /> : playMode === 'shuffle' ? <Shuffle size={17} /> : <Repeat size={17} />}
                 </button>
@@ -758,7 +758,7 @@ export function MusicPocket({ apiBase }: Props) {
                   className="shijianus-music-pocket__icon-btn"
                   onClick={() => skipTrack(-1)}
                   disabled={queue.length <= 1}
-                  aria-label="上一首"
+                  aria-label={t('上一首')}
                 >
                   <SkipBack size={19} />
                 </button>
@@ -767,7 +767,7 @@ export function MusicPocket({ apiBase }: Props) {
                   type="button"
                   className="shijianus-music-pocket__play-btn"
                   onClick={() => void togglePlayback()}
-                  aria-label={isPlaying ? '暂停' : '播放'}
+                  aria-label={isPlaying ? t('暂停') : t('播放')}
                 >
                   {isPlaying ? <Pause size={22} /> : <Play size={22} className="play-icon-offset" />}
                 </button>
@@ -777,7 +777,7 @@ export function MusicPocket({ apiBase }: Props) {
                   className="shijianus-music-pocket__icon-btn"
                   onClick={() => skipTrack(1)}
                   disabled={queue.length <= 1}
-                  aria-label="下一首"
+                  aria-label={t('下一首')}
                 >
                   <SkipForward size={19} />
                 </button>
@@ -788,7 +788,7 @@ export function MusicPocket({ apiBase }: Props) {
                     type="button"
                     className="shijianus-music-pocket__icon-btn"
                     onClick={() => setIsMuted((v) => !v)}
-                    title={isMuted ? '恢复声音' : '静音'}
+                    title={isMuted ? t('恢复声音') : t('静音')}
                   >
                     {isMuted || volume === 0 ? <VolumeX size={17} /> : <Volume2 size={17} />}
                   </button>
@@ -803,7 +803,7 @@ export function MusicPocket({ apiBase }: Props) {
                       setIsMuted(false);
                     }}
                     className="shijianus-music-pocket__volume-slider"
-                    aria-label="音量调节"
+                    aria-label={t('音量调节')}
                   />
                 </div>
 
@@ -815,7 +815,7 @@ export function MusicPocket({ apiBase }: Props) {
                     setFloatingLyricVisible((v) => !v);
                     showToast(floatingLyricVisible ? '已关闭桌面悬浮歌词' : '已开启桌面悬浮歌词');
                   }}
-                  title={floatingLyricVisible ? '关闭悬浮歌词' : '开启悬浮歌词'}
+                  title={floatingLyricVisible ? t('关闭悬浮歌词') : t('开启悬浮歌词')}
                 >
                   <MessageSquare size={16} />
                 </button>
@@ -832,7 +832,7 @@ export function MusicPocket({ apiBase }: Props) {
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
                   className="shijianus-music-pocket__source-select"
-                  aria-label="音源曲库"
+                  aria-label={t('音源曲库')}
                 >
                   {SOURCES.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -849,7 +849,7 @@ export function MusicPocket({ apiBase }: Props) {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void searchMusic();
                     }}
-                    placeholder="点播歌曲、歌手或专辑..."
+                    placeholder={t('点播歌曲、歌手或专辑...')}
                     className="shijianus-music-pocket__input"
                   />
                   {query && (
@@ -857,7 +857,7 @@ export function MusicPocket({ apiBase }: Props) {
                       type="button"
                       className="shijianus-music-pocket__input-clear"
                       onClick={() => setQuery('')}
-                      aria-label="清空输入"
+                      aria-label={t('清空输入')}
                     >
                       <X size={14} />
                     </button>
@@ -868,7 +868,7 @@ export function MusicPocket({ apiBase }: Props) {
                   type="button"
                   className="shijianus-music-pocket__search-submit"
                   onClick={() => void searchMusic()}
-                  aria-label="搜索"
+                  aria-label={t('搜索')}
                   disabled={loading}
                 >
                   <Search size={16} />
@@ -877,7 +877,7 @@ export function MusicPocket({ apiBase }: Props) {
 
               {/* Quick Tags / Recommended Moods */}
               <div className="shijianus-music-pocket__quick-tags">
-                <span className="shijianus-music-pocket__tags-label">热门推荐：</span>
+                <span className="shijianus-music-pocket__tags-label">{t('热门推荐：')}</span>
                 {QUICK_TAGS.map((tag) => (
                   <button
                     key={tag}
@@ -894,12 +894,12 @@ export function MusicPocket({ apiBase }: Props) {
                   onClick={() => void fetchRandom()}
                 >
                   <Sparkles size={12} />
-                  <span>随机推荐</span>
+                  <span>{t('随机推荐')}</span>
                 </button>
               </div>
 
               {/* Search Status & Errors */}
-              {loading && <div className="shijianus-music-pocket__status">🔍 正在检索全网高质音源...</div>}
+              {loading && <div className="shijianus-music-pocket__status">🔍 {t('正在检索全网高质音源...')}</div>}
               {error && <div className="shijianus-music-pocket__error">{error}</div>}
 
               {/* Results List */}
@@ -935,19 +935,19 @@ export function MusicPocket({ apiBase }: Props) {
                           type="button"
                           className="shijianus-music-pocket__action-btn shijianus-music-pocket__action-btn--play"
                           onClick={() => enqueueTrack(track, true)}
-                          title="立即点播"
+                          title={t('立即点播')}
                         >
                           <Play size={14} />
-                          <span>播放</span>
+                          <span>{t('播放')}</span>
                         </button>
                         <button
                           type="button"
                           className="shijianus-music-pocket__action-btn shijianus-music-pocket__action-btn--queue"
                           onClick={() => enqueueTrack(track, false)}
-                          title="加入待播列表"
+                          title={t('加入待播列表')}
                         >
                           <Plus size={14} />
-                          <span>加待播</span>
+                          <span>{t('加待播')}</span>
                         </button>
                       </div>
                     </div>
@@ -961,7 +961,7 @@ export function MusicPocket({ apiBase }: Props) {
           {activeTab === 'queue' && (
             <div className="shijianus-music-pocket__tab-content shijianus-music-pocket__tab-content--queue">
               <div className="shijianus-music-pocket__queue-header">
-                <span>待播序列清单 ({queue.length} 首)</span>
+                <span>{t('待播序列清单')} ({queue.length})</span>
                 {queue.length > 0 && (
                   <button
                     type="button"
@@ -969,7 +969,7 @@ export function MusicPocket({ apiBase }: Props) {
                     onClick={clearQueue}
                   >
                     <Trash2 size={13} />
-                    <span>清空队列</span>
+                    <span>{t('清空队列')}</span>
                   </button>
                 )}
               </div>
@@ -1004,7 +1004,7 @@ export function MusicPocket({ apiBase }: Props) {
                           type="button"
                           className="shijianus-music-pocket__remove-btn"
                           onClick={(e) => removeTrack(idx, e)}
-                          title="移出播放队列"
+                          title={t('移出播放队列')}
                         >
                           <X size={14} />
                         </button>
@@ -1014,14 +1014,14 @@ export function MusicPocket({ apiBase }: Props) {
                 ) : (
                   <div className="shijianus-music-pocket__queue-empty">
                     <Music size={36} />
-                    <p>当前播放队列为空</p>
+                    <p>{t('当前播放队列为空')}</p>
                     <button
                       type="button"
                       className="shijianus-music-pocket__btn-primary"
                       onClick={() => void fetchRandom()}
                     >
                       <Sparkles size={14} />
-                      <span>一键导入随机推荐曲目</span>
+                      <span>{t('一键导入随机推荐曲目')}</span>
                     </button>
                   </div>
                 )}
