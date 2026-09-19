@@ -2849,3 +2849,24 @@
   1. 双远端全量同步：`git push origin main && git push cf main` 均已推进至最新 commit；
   2. 部署全量 214 页面及 Functions 运行时至 Cloudflare Pages 生产环境（部署标识：`https://b02b92ad.shijianus-blog.pages.dev`），实时更新绑定生产主域 `https://blog.epocanvas.com`；
   3. 再次运行端到端自动化审计套件（`scripts/verify-live-support-clean.mjs`），生产环境实测 100% 绿灯（0 勾选、0 深沉暗黑、0 荧光刺眼、6 档色彩明度平衡）。
+
+### Task 126: 全量文章多语言翻译分片与双向架构优化、敏感文章保密防护、138 篇 Markdown 矩阵与 Playwright 全景端到端审计 (`8a3e021`)
+- [x] **双向翻译保真体系与分片围栏修复**:
+  1. 在 `src/lib/server-article-i18n.ts` 中重构双向多语言提示词 `compileChunkSystemPrompt`，支持中译外、外译中（`zh-CN` 与 `zh-Hant`）、跨语言无损保真；
+  2. 修复长文分片拼接时因模型包裹外层代码围栏引发的代码块奇偶校验缺陷（Unbalanced Code Fences），通过智能剥离与首尾围栏校验实现 100% 格式对齐；
+  3. Gemini 接口多 Key 轮转优化与超时防挂死加固（12s 超时即刻无缝回退到 Groq 高速推理与多模型灾备）。
+- [x] **全量文章范围圈定与 100% 矩阵补齐**:
+  1. 圈定全库全体文章范围（共 23 组独立文章，138 篇多语言 Markdown 变体）；
+  2. 补齐所有缺失语言变体（`anzhiyu-markdown-showcase`、`content-first-homepage`、`example-callouts`、`example-gallery-figure`、`example-math`、`example-mermaid`、`example-mindmap`、`markdown-scan-showcase`、`media-capability-lab`、`readable-geek-interfaces` 等），实现 23 / 23 文章组跨 6 大语系（`zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de`）100% 全覆盖；
+  3. 彻底修复 `markdown-scan-showcase-es.md` 等西语译本的中文残留，实现零中文泄漏。
+- [x] **敏感文章保密防护体系**:
+  1. 默认强制启用保密开关 `ARTICLE_I18N_PROTECT_ENCRYPTED=true`；
+  2. 受密码保护与访问控制的文章（如 `access-control-lab` 与 `content-formats-and-markup-mastery`）自动触发保密拦截，严禁未授权向外部 AI 接口发送敏感文章数据；
+  3. 静态构建产物中受保护文章严格渲染 `.content-access-panel`，杜绝任何明文个资泄漏。
+- [x] **Playwright 真实浏览器端到端视觉与 DOM 深度审计**:
+  1. 编写并执行专用自动化审计套件 `scripts/verify-all-user-i18n.mjs`；
+  2. 对全库 23 篇独立文章组进行真实浏览器 DOM 与视觉审计，112 项断言全部通过（通过率 100.0%）；
+  3. 验证 22 篇公开文章的正文容器 `#article-container` 内均精准挂载 6 个 `.article-translation-variant`（`zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de`），且内容完整度均大于 30 字符；
+  4. 验证客户端即时无刷新切换机制正常工作；
+  5. 生成完整本地审计报告 `ARTICLE_I18N_VERIFICATION_REPORT.md`。
+
