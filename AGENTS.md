@@ -2962,3 +2962,15 @@
   1. 通过 Wrangler 成功部署最新 SSG 运行时至 Cloudflare Pages 生产边缘节点（部署实例：`https://3bc1e756.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
   2. 针对生产真实域名 `https://blog.epocanvas.com` 启动 Playwright 自动化验证套件（`scripts/verify-live-i18n.mjs`）；
   3. 全链路覆盖验证：赞赏支持看板 6 语言动态切换（咖啡档位/致谢表头/Stripe 按钮）、快捷键面板、控制台 12 项系统指标、404 页面多语言跳转、文章页相关推荐与 Chronral AI 摘要 7 大提炼操作，24 项断言 100% 通过，控制台 0 致命 JS 报错。
+
+### Task 132: 页尾专属精致小按钮组恢复、内联 CC 4.0 协议集成与品牌特色美化 (`26f17e2`)
+- [x] **恢复专属精致小按钮组 (`.footer-bar-link--icon`)**:
+  1. 依据用户明确偏好，不照搬安知鱼纯文本链接，回归精致小按钮形态（GitHub 开源仓库、文章归档总览、标签关键词索引、关于站点与作者）；
+  2. 尺寸收敛至克制耐看的 34px × 34px（消除原本 42px 粗笨感），圆角统一为 8px 方圆角（对齐 Task 16 全站圆角收敛规范）；
+  3. 表面材质升级：浅色模式半透磨砂玻璃 + 1px 极细微高光边框；深色模式石墨暗灰 + 柔光边线，悬浮激活主题蓝（`#425aef`）与流光投影（`box-shadow: 0 6px 16px -2px rgba(66, 90, 239, 0.45)`）。
+- [x] **内联集成 CC BY-NC-SA 4.0 协议**:
+  1. 在左侧版权行自然嵌入分隔点与协议链接：`© 2020 - 2026 By shijianus · CC BY-NC-SA 4.0`；
+  2. 既满足合规协议公示需求，又释放了右侧按钮栏的空间纯度，形成独具特色的页尾视觉语言。
+- [x] **多端全量同步与生产端 (Cloudflare Pages) 真实链路 Playwright E2E 审计**:
+  1. 生产边缘节点全量部署（实例：`https://307c6ec7.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
+  2. Playwright 真实生产环境端到端验证通过（按钮尺寸 34px 精准对齐、CC 协议文本内联渲染、桌面端避让间距 36px 严格无遮挡、移动端整齐居中）。
