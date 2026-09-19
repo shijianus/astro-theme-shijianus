@@ -1,12 +1,12 @@
 ---
-title: "Exemple : Affichage complet des encadrés et des cartes d'information"
-description: "Démonstration complète des 13 types sémantiques d'encadrés pris en charge, comparaison des versions par défaut dépliées/repliées et du code source Markdown."
+title: "Exemple : Présentation complète des encadrés d'alerte (Callouts)"
+description: "Présentation exhaustive des 13 types sémantiques de Callouts pris en charge, des versions dépliées/repliées par défaut et de la comparaison avec le code source Markdown."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["exemple", "vitrine", "encadrés"]
-category: "Exemple"
-series: "功能示例"
+tags: ["exemple", "démonstration", "callouts"]
+category: "Exemples"
+series: "Exemples de fonctionnalités"
 math: false
 mermaid: false
 i18nKey: "example-callouts"
@@ -14,131 +14,131 @@ lang: "fr"
 aiTranslatedFrom: "zh-CN"
 ---
 
-Cet exemple est dédié à la validation et aux tests de la capacité de rendu des **Callouts / Admonitions / boîtes d’avertissement** du thème du blog dans la zone de contenu.
+Cet exemple est spécifiquement conçu pour vérifier et tester la capacité de rendu des **Callouts / Admonitions / Encadrés d'alerte** dans la colonne de contenu du thème de blog.
 
-Basé sur la spécification GitHub Alerts et l’esthétique de conception AnZhiYu, ce thème prend en charge nativement 13 types de cartes d’alerte colorées avec des sémantiques différentes, toutes les cartes s’adaptent automatiquement côté client aux modes clair et sombre avec des couleurs à fort contraste.
+Basé sur la spécification GitHub Alerts et l'esthétique de conception d'Anzhiyu, ce thème prend nativement en charge 13 types de cartes d'information colorées aux sémantiques distinctes. Toutes les cartes s'adaptent automatiquement côté client aux couleurs à fort contraste des modes clair et sombre.
 
 ---
 
-## Boîtes d’avertissement standard (Standard Callouts)
+## Encadrés d'alerte standards (Standard Callouts)
 
-Utilisez la syntaxe `[!TYPE]` sur la première ligne d’un bloc de citation pour déclarer la carte correspondante.
+Utilisez la syntaxe `[!TYPE]` sur la première ligne d'un bloc de citation pour déclarer la carte correspondante.
 
-### 1. Note (remarque courante)
+### 1. Note (Remarque standard)
 
 > [!NOTE]
-> Ceci est une boîte d’avertissement **Note** standard, utilisée pour fournir le contexte de fond et des remarques générales.
+> C'est un encadré **Note** standard, utilisé pour fournir le contexte et les remarques courantes.
 
 ```markdown
 > [!NOTE]
-> 这是标准的 **Note** 提示框，用于交代背景上下文与常规提示。
+> C'est un encadré **Note** standard, utilisé pour fournir le contexte et les remarques courantes.
 ```
 
-### 2. Tip (astuce pratique)
+### 2. Tip (Astuce pratique)
 
 > [!TIP]
-> **Astuce de recherche rapide** : appuyez sur <kbd>Ctrl</kbd> + <kbd>K</kbd> pour faire apparaître rapidement la palette de recherche globale des articles !
+> **Astuce de recherche rapide** : appuyez sur <kbd>Ctrl</kbd> + <kbd>K</kbd> pour invoquer instantanément la palette de recherche globale des articles !
 
 ```markdown
 > [!TIP]
-> **快捷搜索技巧**：按下 <kbd>Ctrl</kbd> + <kbd>K</kbd> 即可快速唤起全局文章搜索调色板！
+> **Astuce de recherche rapide** : appuyez sur <kbd>Ctrl</kbd> + <kbd>K</kbd> pour invoquer instantanément la palette de recherche globale des articles !
 ```
 
-### 3. Important (attention particulière)
+### 3. Important (Point crucial)
 
 > [!IMPORTANT]
-> Avant de construire la version de production, il faut s’assurer que la variable d’environnement `BLOG_BUILD_TARGET=static` est correctement appliquée.
+> Avant de générer la version de production, assurez-vous que la variable d'environnement `BLOG_BUILD_TARGET=static` est correctement appliquée.
 
 ```markdown
 > [!IMPORTANT]
-> 在构建生产版本前，必须确认环境变量 `BLOG_BUILD_TARGET=static` 已正确生效。
+> Avant de générer la version de production, assurez-vous que la variable d'environnement `BLOG_BUILD_TARGET=static` est correctement appliquée.
 ```
 
-### 4. Warning (avertissement de risque)
+### 4. Warning (Avertissement de risque)
 
 > [!WARNING]
-> Ne soumettez pas de clés privées de base de données ou d’AccessKey de services cloud dans un dépôt de code public.
+> Ne commitez jamais de clés privées de base de données ou de clés d'accès (AccessKey) de services cloud dans un dépôt de code public.
 
 ```markdown
 > [!WARNING]
-> 请勿在公开代码仓库中提交数据库私钥或云服务 AccessKey。
+> Ne commitez jamais de clés privées de base de données ou de clés d'accès (AccessKey) de services cloud dans un dépôt de code public.
 ```
 
-### 5. Caution & Danger (mise en garde et danger)
+### 5. Caution & Danger (Alertes de danger)
 
 > [!CAUTION]
-> Avant d’effectuer une refonte de la base de données, assurez‑vous d’avoir réalisé une sauvegarde complète des données.
+> Effectuez impérativement une sauvegarde complète des données avant d'exécuter toute opération de refactoring de la base de données.
 
 > [!DANGER]
-> Supprimer directement la base de données de production entraînera la perte permanente de tous les commentaires et des actifs des utilisateurs.
+> La suppression directe de la base de données de production entraînera la destruction permanente de tous les commentaires et des actifs des utilisateurs.
 
 ```markdown
 > [!CAUTION]
-> 执行数据库重构操作前请务必完成数据全量备份。
+> Effectuez impérativement une sauvegarde complète des données avant d'exécuter toute opération de refactoring de la base de données.
 
 > [!DANGER]
-> 直接删除生产数据库将导致全部评论与用户资产永久损毁。
+> La suppression directe de la base de données de production entraînera la destruction permanente de tous les commentaires et des actifs des utilisateurs.
 ```
 
-### 6. Success (opération réussie)
+### 6. Success (Opération réussie)
 
 > [!SUCCESS]
-> La construction statique s’est terminée avec succès, toutes les routes statiques ont été générées !
+> La génération statique s'est terminée avec succès, toutes les routes statiques ont été générées !
 
 ```markdown
 > [!SUCCESS]
-> 静态构建已顺利完成，所有静态路由生成完毕！
+> La génération statique s'est terminée avec succès, toutes les routes statiques ont été générées !
 ```
 
 ### 7. Question, Quote, Info, Todo, Bug, Example
 
 > [!QUESTION]
-> Comment implémenter une recherche en texte intégral à la milliseconde près sans dépendance côté serveur ?
+> Comment implémenter une recherche plein texte en millisecondes sans aucune dépendance côté serveur ?
 
 > [!QUOTE]
-> « Le code élégant ne se contente pas d’être exécuté par la machine, il transmet également des idées aux humains comme un poème. »
+> « Un code élégant ne se contente pas d'être exécuté par des machines, il transmet des idées aux humains comme un poème. »
 
 > [!INFO]
-> Ce blog est construit avec Astro 6 et Tailwind 4, et exporté entièrement en mode statique.
+> Ce blog est construit avec Astro 6 et Tailwind 4, avec une exportation entièrement statique du site.
 
-> [!À FAIRE]
-> Il est prévu d'introduire la recherche de segmentation de mots côté client WebAssembly dans la prochaine version.
+> [!TODO]
+> Il est prévu d'introduire la recherche par tokenisation côté client via WebAssembly dans la prochaine version.
 
 > [!BUG]
-> Correction du problème de mise en page où les tableaux étaient tronqués horizontalement sur les appareils à écran extrêmement étroit dans les anciennes versions.
+> Le problème de mise en page entraînant la troncature horizontale des tableaux sur les écrans extrêmement étroits a été corrigé dans les anciennes versions.
 
-> [!EXEMPLE]
-> Les données d'exemple sont prêtes, vous pouvez copier directement le code source pour un développement secondaire.
+> [!EXAMPLE]
+> Les données d'exemple sont prêtes, vous pouvez copier le code source directement pour le réutiliser.
 
 ```markdown
 > [!QUESTION]
-> 如何在零服务端依赖的前提下实现毫秒级全文检索？
+> Comment implémenter une recherche plein texte en millisecondes sans aucune dépendance côté serveur ?
 
 > [!QUOTE]
-> “优雅的代码不仅能被机器执行，更能像诗歌一样向人类传达思想。”
+> « Un code élégant ne se contente pas d'être exécuté par des machines, il transmet des idées aux humains comme un poème. »
 
 > [!INFO]
-> 本博客基于 Astro 6 与 Tailwind 4 构建，全站纯静态导出。
+> Ce blog est construit avec Astro 6 et Tailwind 4, avec une exportation entièrement statique du site.
 
 > [!TODO]
-> 计划在下一个版本引入 WebAssembly 客户端分词检索。
+> Il est prévu d'introduire la recherche par tokenisation côté client via WebAssembly dans la prochaine version.
 
 > [!BUG]
-> 已修复旧版本在极端窄屏设备下表格横向截断的排版问题。
+> Le problème de mise en page entraînant la troncature horizontale des tableaux sur les écrans extrêmement étroits a été corrigé dans les anciennes versions.
 
 > [!EXAMPLE]
-> 示例数据已就绪，可直接复制源码进行二次开发。
+> Les données d'exemple sont prêtes, vous pouvez copier le code source directement pour le réutiliser.
 ```
 
 ---
 
-## Boîtes d'avertissement dépliables (Collapsible Details Admonitions)
+## Encadrés d'alerte repliables (Collapsible Details Admonitions)
 
-En suivant le type de balise avec `-` (plié par défaut) ou `+` (déplié par défaut), vous pouvez générer des cartes pliables natives :
+Ajoutez un `-` (replié par défaut) ou un `+` (déplié par défaut) immédiatement après le type de marqueur pour générer une carte repliable native :
 
-### 1. Boîte d'avertissement dépliable (pliée par défaut) (`[!TIP]-`)
+### 1. Encadré replié par défaut (`[!TIP]-`)
 
-> [!TIP]- Cliquez pour développer et voir : Configuration du cache à long terme de Nginx en environnement de production
+> [!TIP]- Cliquez pour déplier : Configuration de cache long terme Nginx pour l'environnement de production
 > ```nginx
 > location ~* \.(?:css|js|woff2?|svg|png|jpg|webp)$ {
 >     expires 1y;
@@ -148,7 +148,7 @@ En suivant le type de balise avec `-` (plié par défaut) ou `+` (déplié par d
 > ```
 
 ```markdown
-> [!TIP]- Cliquez pour développer et voir : Configuration du cache à long terme de Nginx en environnement de production
+> [!TIP]- Cliquez pour déplier : Configuration de cache long terme Nginx pour l'environnement de production
 > ```nginx
 > location ~* \.(?:css|js|woff2?|svg|png|jpg|webp)$ {
 >     expires 1y;
@@ -158,12 +158,12 @@ En suivant le type de balise avec `-` (plié par défaut) ou `+` (déplié par d
 > ```
 ```
 
-### 2. Boîte d'avertissement dépliable (dépliée par défaut) (`[!NOTE]+`)
+### 2. Encadré déplié par défaut (`[!NOTE]+`)
 
-> [!NOTE]+ Description de la conception architecturale (dépliée par défaut)
+> [!NOTE]+ Explication de la conception architecturale dépliée par défaut
 > Cette zone est dépliée par défaut. Cliquez sur la barre de titre pour la replier en douceur et économiser de l'espace à l'écran.
 
 ```markdown
-> [!NOTE]+ 默认展开的架构设计说明
-> 该区域默认处于展开状态，点击标题栏可以将其平滑收起以节省屏幕空间。
+> [!NOTE]+ Explication de la conception architecturale dépliée par défaut
+> Cette zone est dépliée par défaut. Cliquez sur la barre de titre pour la replier en douceur et économiser de l'espace à l'écran.
 ```

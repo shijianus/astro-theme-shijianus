@@ -1,17 +1,17 @@
 ---
-title: "封面、图床与视频适配实验室"
+title: "Labor für Cover-, Bildhosting- und Video-Anpassung"
 pubDate: 2026-04-26
 updatedDate: 2026-04-26
-description: "集中验证文章头图、远程图床、本地资源、视频封面、失效回退和不同宽度下的媒体展示效果。"
+description: "Zentrale Überprüfung von Artikel-Titelbildern, Remote-Bildhosting, lokalen Ressourcen, Video-Covern, Fallbacks bei Fehlern und Medienanzeige-Effekten bei verschiedenen Breiten."
 author: "shijianus"
-category: "前端工程"
-group: "媒体适配"
+category: "Frontend-Engineering"
+group: "Medien-Anpassung"
 coverVideo: "/media/shijianus/avatar-dynamic.mp4"
 coverVideoPoster: "/media/shijianus/workbench.jpg"
-coverAlt: "封面与媒体适配实验室"
+coverAlt: "Labor für Cover- und Medien-Anpassung"
 featured: true
 sticky: 2
-tags: ["媒体适配", "Markdown", "主题重构", "Astro"]
+tags: ["Medien-Anpassung", "Markdown", "Theme-Neugestaltung", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "de"
 aiTranslatedFrom: "zh-CN"

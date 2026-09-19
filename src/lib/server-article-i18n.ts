@@ -116,7 +116,8 @@ function compileChunkSystemPrompt(targetLocale: string, sourceLocale = 'zh-CN'):
   } else {
     fidelityRule = [
       `7. CHINESE CHARACTER PROHIBITION (CRITICAL for non-Chinese locales):`,
-      `   - This translation is for ${localeName}. After translating, ZERO Chinese characters (Unicode range U+4E00–U+9FFF) should appear in the output EXCEPT inside code fences (\`\`\`....\`\`\`), LaTeX blocks ($$...$$), or HTML attribute values that are part of data-encrypt/data-hash/data-key technical identifiers.`,
+      `   - This translation is for ${localeName}. After translating, ZERO Chinese characters (Unicode range U+4E00–U+9FFF) should appear in the output EXCEPT inside programming language code blocks (\`\`\`typescript, \`\`\`python, \`\`\`bash, etc.), LaTeX blocks ($$...$$), or HTML attribute values that are part of data-encrypt/data-hash/data-key technical identifiers.`,
+      `   - CRITICAL: Diagram blocks like \`\`\`mindmap and \`\`\`mermaid are NOT exempt and MUST be completely translated into ${localeName} with ZERO Chinese characters!`,
       `   - If you encounter a section that you cannot translate (e.g., due to length), DO NOT fall back to the original Chinese. Instead, provide your best translation attempt.`,
     ].join('\n');
   }
@@ -792,16 +793,28 @@ export async function translateFrontmatterOnly(
       if (out.endsWith('```')) out = out.replace(/\r?\n```$/, '');
 
       if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
-        const titleMatch = out.match(/title:\s*["']?(.*?)["']?\r?\n/);
-        if (titleMatch && /[\u4e00-\u9fa5]/.test(titleMatch[1])) {
-          console.warn(`[Article-i18n] Frontmatter title in ${targetLocale} contains residual Chinese ("${titleMatch[1]}"). Retrying...`);
+        const titleMatch = out.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+        const descMatch = out.match(/description:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+        const hasChinese = (titleMatch && /[\u4e00-\u9fa5]/.test(titleMatch[1])) || (descMatch && /[\u4e00-\u9fa5]/.test(descMatch[1]));
+        if (hasChinese) {
+          console.warn(`[Article-i18n] Frontmatter in ${targetLocale} contains residual Chinese. Retrying...`);
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+        }
+      } else if (targetLocale === 'zh-Hant') {
+        const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/;
+        const titleMatch = out.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+        if (titleMatch && SIMPLIFIED_CHARS.test(titleMatch[1])) {
+          console.warn(`[Article-i18n] Frontmatter title in zh-Hant contains Simplified Chinese characters. Retrying...`);
           if (attempt < 3) {
             await new Promise((r) => setTimeout(r, 2000));
             continue;
           }
         }
       } else if (options.sourceLocale && options.sourceLocale !== 'zh-CN' && options.sourceLocale !== 'zh-Hant') {
-        const titleMatch = out.match(/title:\s*["']?(.*?)["']?\r?\n/);
+        const titleMatch = out.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
         if (titleMatch && !/[\u4e00-\u9fa5]/.test(titleMatch[1])) {
           console.warn(`[Article-i18n] Frontmatter title in ${targetLocale} contains no Chinese ("${titleMatch[1]}"). Retrying...`);
           if (attempt < 3) {
@@ -1012,6 +1025,21 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
 
   // Step 1: Translate frontmatter
   const translatedFm = await translateFrontmatterOnly(rawFrontmatter, options);
+  if (targetLocale !== 'zh-CN' && targetLocale !== 'zh-Hant') {
+    const fmTitle = translatedFm.match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+    if (fmTitle && /[\u4e00-\u9fa5]/.test(fmTitle[1])) {
+      console.warn(`[Article-i18n] ❌ Frontmatter translation failed for "${i18nKey}" -> ${targetLocale}. Residual Chinese in title. Aborting Scheme 1.`);
+      return {
+        ok: false,
+        error: `Frontmatter translation contained residual Chinese for ${targetLocale}`,
+        targetLocale,
+        i18nKey,
+        provider: 'fallback-source',
+        model: 'error',
+        translatedMarkdown: '',
+      };
+    }
+  }
 
   // Brief pause before body chunks
   await new Promise((r) => setTimeout(r, 1500));

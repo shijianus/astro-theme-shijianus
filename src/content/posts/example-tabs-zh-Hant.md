@@ -1,12 +1,12 @@
 ---
-title: "示例：多标签页与多代码版本切换展示"
-description: "全面展示交互式 Tabs 标签页与基于下拉框的多语言代码切换器组件。"
+title: "範例：多分頁與多程式碼版本切換展示"
+description: "全面展示互動式 Tabs 分頁與基於下拉選單的多語言程式碼切換器組件。"
 pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["範例", "展示", "分頁", "程式碼組"]
-category: "示例"
-series: "功能示例"
+category: "範例"
+series: "功能範例"
 math: false
 mermaid: false
 i18nKey: "example-tabs"

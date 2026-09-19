@@ -1,13 +1,13 @@
 ---
-title: "Markdown 扫描与展示能力全量示例"
+title: "Vollständiges Beispiel für Markdown-Scanning und Anzeige-Funktionen"
 pubDate: 2026-04-25
-description: "用一篇长文把当前的 Markdown 扫描、目录层级、隐藏内容、GFM 表格、脚注、代码块和特殊格式一次性跑全。"
+description: "Nutzen Sie einen ausführlichen Artikel, um das aktuelle Markdown-Scanning, Inhaltsverzeichnis-Ebenen, versteckte Inhalte, GFM-Tabellen, Fußnoten, Codeblöcke und Sonderformate auf einmal zu testen."
 author: "shijianus"
-category: "系统设计"
-group: "Markdown 示例"
+category: "Systemdesign"
+group: "Markdown-Beispiele"
 cover: "/media/shijianus/system.jpg"
-coverAlt: "markdown showcase board"
-tags: ["Markdown", "Astro", "Config", "UI", "主题重构"]
+coverAlt: "Markdown-Showcase-Board"
+tags: ["Markdown", "Astro", "Konfiguration", "UI", "Theme-Neugestaltung"]
 featured: true
 sticky: 4
 i18nKey: "markdown-scan-showcase"

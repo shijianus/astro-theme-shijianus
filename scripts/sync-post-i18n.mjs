@@ -210,15 +210,24 @@ async function main() {
           let hasChineseLeakage = false;
           let chineseCount = 0;
           if (targetLang !== 'zh-CN' && targetLang !== 'zh-Hant') {
+            // 1. Check Frontmatter title & description
+            const fmMatch = existingTranslation.raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+            let fmHasChinese = false;
+            if (fmMatch) {
+              const titleMatch = fmMatch[1].match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+              const descMatch = fmMatch[1].match(/description:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+              if (titleMatch && /[\u4e00-\u9fa5]/.test(titleMatch[1])) fmHasChinese = true;
+              if (descMatch && /[\u4e00-\u9fa5]/.test(descMatch[1])) fmHasChinese = true;
+            }
+
+            // 2. Check body, but DO NOT strip mindmap or mermaid code blocks
             let rawWithoutCode = existingTranslation.raw
               .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
               .replace(/<pre[\s\S]*?<\/pre>/gi, '')
               .replace(/<code[\s\S]*?<\/code>/gi, '')
               .replace(/<video[\s\S]*?<\/video>/gi, '')
               .replace(/<audio[\s\S]*?<\/audio>/gi, '')
-              .replace(/^(`{4,}|~{4,})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
-              .replace(/^(`{3}|~{3})[^\n]*\r?\n[\s\S]*?\r?\n\1\s*$/gm, '')
-              .replace(/```[\s\S]*?```/g, '')
+              .replace(/^(`{3}|~{3})(?:typescript|javascript|ts|js|python|py|bash|sh|shell|html|css|json|yaml|yml|sql|go|rust|c|cpp|tsx|jsx)[\s\S]*?\r?\n\1\s*$/gm, '')
               .replace(/`[^`\r\n]+`/g, '')
               .replace(/\$\$[\s\S]*?\$\$/g, '')
               .replace(/<!--[\s\S]*?-->/g, '')
@@ -226,7 +235,18 @@ async function main() {
               .replace(/<[^>]+>/g, '');
             const chineseMatches = rawWithoutCode.match(/[\u4e00-\u9fa5]/g) || [];
             chineseCount = chineseMatches.length;
-            hasChineseLeakage = chineseCount > 20;
+            hasChineseLeakage = fmHasChinese || chineseCount > 20;
+          } else if (targetLang === 'zh-Hant') {
+            // Check for simplified Chinese character leakage in zh-Hant frontmatter
+            const SIMPLIFIED_CHARS = /[这为个们时后点国发对经学现实动应开关门车头经书见长变带门质电条结标页码统计]/;
+            const fmMatch = existingTranslation.raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+            if (fmMatch) {
+              const titleMatch = fmMatch[1].match(/title:\s*["']?(.*?)["']?(?:\r?\n|$)/m);
+              if (titleMatch && SIMPLIFIED_CHARS.test(titleMatch[1])) {
+                hasChineseLeakage = true;
+                chineseCount = 1;
+              }
+            }
           }
 
           if (existingTranslation.mtime >= sourceArticle.mtime && !isUndersized && !hasChineseLeakage) {

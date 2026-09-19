@@ -298,7 +298,7 @@
       "en": {
         "filename": "example-callouts-en.md",
         "slug": "example-callouts-en",
-        "title": "Example: Complete Display of Callouts and Hint Cards",
+        "title": "Example: Full Display of Callouts and Hint Cards",
         "isAiGenerated": true
       },
       "es": {
@@ -310,7 +310,7 @@
       "fr": {
         "filename": "example-callouts-fr.md",
         "slug": "example-callouts-fr",
-        "title": "Exemple : Affichage complet des encadrés et des cartes d'information",
+        "title": "Exemple : Présentation complète des encadrés d'alerte (Callouts)",
         "isAiGenerated": true
       },
       "zh-Hant": {
@@ -685,7 +685,7 @@
       "zh-Hant": {
         "filename": "example-tabs-zh-Hant.md",
         "slug": "example-tabs-zh-Hant",
-        "title": "示例：多标签页与多代码版本切换展示",
+        "title": "範例：多分頁與多程式碼版本切換展示",
         "isAiGenerated": true
       },
       "zh-CN": {
@@ -784,7 +784,7 @@
       "de": {
         "filename": "markdown-scan-showcase-de.md",
         "slug": "markdown-scan-showcase-de",
-        "title": "Markdown 扫描与展示能力全量示例",
+        "title": "Vollständiges Beispiel für Markdown-Scanning und Anzeige-Funktionen",
         "isAiGenerated": true
       },
       "en": {
@@ -866,7 +866,7 @@
       "de": {
         "filename": "media-capability-lab-de.md",
         "slug": "media-capability-lab-de",
-        "title": "封面、图床与视频适配实验室",
+        "title": "Labor für Cover-, Bildhosting- und Video-Anpassung",
         "isAiGenerated": true
       },
       "en": {
@@ -878,7 +878,7 @@
       "es": {
         "filename": "media-capability-lab-es.md",
         "slug": "media-capability-lab-es",
-        "title": "封面、图床与视频适配实验室",
+        "title": "Laboratorio de Adaptación de Portadas, Alojamiento de Imágenes y Videos",
         "isAiGenerated": true
       },
       "fr": {
