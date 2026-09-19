@@ -1,10 +1,10 @@
 ---
-title: "Beispiel: Vollständige Demonstration der Code‑Block‑Erweiterungsfunktionen"
-description: "Zeigt umfassend die macOS‑ähnliche Verkehrslicht‑Steuerleiste, Sprach‑Badges, Hinzufügen/Entfernen‑Diff, Ein‑Klick‑Kopieren und die automatische Faltung bei langen Code‑Blöcken."
+title: "Beispiel: Umfassende Codeblock-Erweiterungen"
+description: "Umfassende Demonstration der macOS-Semafor-Steuerleiste, Sprach-Badges, Diff-Hervorhebung für Hinzufügungen/Löschungen, Ein-Klick-Kopieren und automatisches Zusammenklappen langer Codeblöcke."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["Beispiel", "Demonstration", "Code", "shiki"]
+tags: ["Beispiel", "Demonstration", "Code", "Shiki"]
 category: "Beispiel"
 series: "Funktionsbeispiele"
 math: false
@@ -14,15 +14,15 @@ lang: "de"
 aiTranslatedFrom: "zh-CN"
 ---
 
-Dieses Beispiel dient ausschließlich der Verifizierung und dem Testen der **Code‑Block‑Erweiterungen** im Blog‑Inhalt.
+Dieses Beispiel dient der Validierung und dem Testen der **Codeblock-Erweiterungen** im Blogbeitrag.
 
-Das Theme fügt allen Code‑Blöcken **macOS‑ähnliche Verkehrslicht‑Steuerleiste, Sprach‑Badges, Hinzufügen/Entfernen‑Diff‑Vergleich, Ein‑Klick‑Kopieren** sowie **automatisches Falten bei zu langen Code‑Blöcken** hinzu.
+Das Theme integriert für alle Codeblöcke die **macOS-Semafor-Steuerleiste, Sprach-Badges, Diff-Hervorhebung für hinzugefügte/gelöschte Zeilen, Ein-Klick-Kopieren** und das **automatische Zusammenklappen von überlangen Codeblöcken**.
 
 ---
 
-## 1. Diff‑Code‑Block mit Hinzufügen/Entfernen‑Vergleich (Diff Highlighting)
+## 1. Diff-Codeblöcke mit Hinzufügungs-/Löschungs-Vergleich (Diff Highlighting)
 
-Zeigt hinzugefügte und entfernte Zeilen bei Versions‑ und Konfigurationsänderungen im Code‑Block:
+Zeigt hinzugefügte und gelöschte Zeilen in Codeblöcken bei Versions-Upgrades und Konfigurationsänderungen an:
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -31,10 +31,10 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://shijian.us',
-- output: 'server', // altes serverseitiges Rendering‑Modell
-+ output: 'static', // Upgrade zu ultraschnellem rein statischem Export‑Modus
+- output: 'server', // Alter serverseitiger Rendering-Modus
++ output: 'static', // Upgrade auf den ultraschnellen statischen Exportmodus
   markdown: {
-+   remarkPlugins: [remarkMath], // KaTeX‑Formel‑Parsing einbinden
++   remarkPlugins: [remarkMath], // KaTeX-Formel-Parsing injizieren
 +   rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {
@@ -48,15 +48,15 @@ export default defineConfig({
 
 ---
 
-## 2. Automatisches Falten bei langen Code‑Blöcken (Code Collapse)
+## 2. Demonstration des automatischen Code-Zusammenklappens (Code Collapse)
 
-Wenn die Code‑Zeilenzahl zu groß wird, aktiviert das Theme bei einer Höhe von über 380 px automatisch einen halbtransparenten Überzug und einen „Code ausklappen“-Kapsel‑Button:
+Wenn die Anzahl der Codezeilen zu groß ist, aktiviert das Theme automatisch eine halbtransparente Überlagerung und einen „Code erweitern“-Button, sobald die Höhe 380px überschreitet:
 
 ```json
 {
   "name": "shijianus-blog",
   "version": "2.0.0",
-  "description": "Basierend auf Astro 6 und dem Anzhi‑Fish‑Design für ein hochperformantes, geek‑freundliches Einzelblog",
+  "description": "Ein hochperformanter, unabhängiger Geek-Blog basierend auf Astro 6 und der Designästhetik von Anzhiyu",
   "author": "shijianus",
   "license": "MIT",
   "scripts": {

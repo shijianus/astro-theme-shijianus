@@ -1,12 +1,12 @@
 ---
 title: "Ejemplo: Demostración Completa de Mejoras en Bloques de Código"
-description: "Muestra completamente la barra de control de semáforo de macOS, insignias de lenguaje, diferencias de adición/eliminación (Diff), copia con un clic y la característica de plegado automático para código largo."
+description: "Muestra completamente las características de la barra de control de semáforos de macOS, insignias de lenguaje, diferencias de adición/eliminación (Diff), copia con un clic y plegado automático para código largo."
 pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["ejemplo", "demostración", "código", "shiki"]
 category: "Ejemplo"
-series: "功能示例"
+series: "Ejemplos de Funcionalidades"
 math: false
 mermaid: false
 i18nKey: "example-code-enhancements"
@@ -14,15 +14,15 @@ lang: "es"
 aiTranslatedFrom: "zh-CN"
 ---
 
-Este artículo de ejemplo está dedicado a la verificación y prueba de las funcionalidades de **Mejoras en Bloques de Código (Code Block Enhancements)** dentro del cuerpo del blog.
+Este artículo de ejemplo está dedicado a la verificación y prueba de las funcionalidades de **Mejoras en Bloques de Código** dentro del cuerpo del blog.
 
-El tema inyecta en todos los bloques de código la **barra de control de semáforo de macOS, insignias de lenguaje, comparación de diferencias de líneas (Diff), copia con un clic** y el **plegado automático de altura limitada para código excesivamente largo**.
+El tema inyecta en todos los bloques de código: la **barra de control de semáforos de macOS (skeuomorphic), insignias de lenguaje, comparación de diferencias de líneas (Diff), copia con un clic** y **plegado automático con límite de altura para código excesivamente largo**.
 
 ---
 
 ## 1. Bloques de Código Diff con Comparación de Líneas Añadidas/Eliminadas (Diff Highlighting)
 
-Muestra las líneas añadidas y eliminadas en los bloques de código al actualizar versiones y cambiar configuraciones:
+Muestra las líneas añadidas y eliminadas al actualizar versiones o cambiar configuraciones dentro de los bloques de código:
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -32,7 +32,7 @@ import rehypeKatex from 'rehype-katex';
 export default defineConfig({
   site: 'https://shijian.us',
 - output: 'server', // Antiguo modo de renderizado del lado del servidor
-+ output: 'static', // Actualizado a modo de exportación estática ultrarrápida
++ output: 'static', // Actualizado a modo de exportación estática pura y ultrarrápida
   markdown: {
 +   remarkPlugins: [remarkMath], // Inyecta el análisis de fórmulas KaTeX
 +   rehypePlugins: [rehypeKatex],
@@ -48,7 +48,7 @@ export default defineConfig({
 
 ---
 
-## 2. Demostración de Plegado Automático de Código Largo (Code Collapse)
+## 2. Demostración de Plegado Automático para Código Largo (Code Collapse)
 
 Cuando el número de líneas de código es excesivo, el tema activará automáticamente una superposición semitransparente y un botón de cápsula "Expandir código" cuando la altura exceda los 380px:
 

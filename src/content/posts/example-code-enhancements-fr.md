@@ -1,6 +1,6 @@
 ---
-title: "Exemple : Démonstration des fonctionnalités avancées des blocs de code"
-description: "Présentation exhaustive des fonctionnalités : barre de contrôle skeuomorphique de style feux de circulation macOS, badges de langage, affichage des différences (Diff), copie en un clic et pliage automatique pour les blocs de code longs."
+title: "Exemple : Démonstration complète des améliorations des blocs de code"
+description: "Présentation complète des fonctionnalités : barre de contrôle de type feux de circulation macOS, badges de langage, diff d'ajout/suppression, copie en un clic et pliage automatique des blocs de code longs."
 pubDate: 2026-08-28
 draft: false
 toc: true
@@ -14,15 +14,15 @@ lang: "fr"
 aiTranslatedFrom: "zh-CN"
 ---
 
-Cet article d'exemple est conçu pour valider et tester les fonctionnalités des **blocs de code (Code Block Enhancements)** dans le corps des articles de blog.
+Cet exemple est dédié à la validation et au test des fonctionnalités d'**amélioration des blocs de code** dans le corps des articles de blog.
 
-Le thème injecte dans tous les blocs de code une **barre de contrôle skeuomorphique de style feux de circulation macOS**, des **badges de langage**, la **comparaison des différences (Diff) d'ajout/suppression de lignes**, la **copie en un clic** et le **pliage automatique avec hauteur limitée pour les codes longs**.
+Le thème injecte dans tous les blocs de code : une **barre de contrôle de type feux de circulation macOS, des badges de langage, la comparaison Diff des lignes ajoutées/supprimées, la copie en un clic** et le **pliage automatique des blocs de code longs**.
 
 ---
 
-## 1. Blocs de code Diff avec surbrillance des différences (Diff Highlighting)
+## 1. Blocs de code Diff avec comparaison des lignes ajoutées/supprimées (Diff Highlighting)
 
-Affiche dans les blocs de code les lignes ajoutées et supprimées lors des mises à jour de version et des modifications de configuration :
+Affiche les lignes ajoutées et supprimées lors des mises à jour de version et des modifications de configuration dans les blocs de code :
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -31,10 +31,10 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://shijian.us',
-- output: 'server', // Ancien mode de rendu côté serveur
-+ output: 'static', // Mise à niveau vers le mode d'exportation statique pur et ultra-rapide
+- output: 'server', // 旧的服务端渲染模式
++ output: 'static', // 升级为极速纯静态导出模式
   markdown: {
-+   remarkPlugins: [remarkMath], // Injection de l'analyseur de formules KaTeX
++   remarkPlugins: [remarkMath], // 注入 KaTeX 公式解析
 +   rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {
@@ -48,9 +48,9 @@ export default defineConfig({
 
 ---
 
-## 2. Démonstration du pliage automatique des codes longs (Code Collapse)
+## 2. Démonstration du pliage automatique des blocs de code longs (Code Collapse)
 
-Lorsque le nombre de lignes de code est trop élevé, le thème active automatiquement, lorsque la hauteur dépasse 380px, un masque semi-transparent et un bouton « Déplier le code » de style capsule :
+Lorsque le nombre de lignes de code est trop élevé, le thème active automatiquement un masque semi-transparent et un bouton « Déplier le code » lorsque la hauteur dépasse 380px :
 
 ```json
 {

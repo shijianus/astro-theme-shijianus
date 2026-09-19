@@ -1,6 +1,6 @@
 ---
 title: "Example: Full Code Block Enhancement Showcase"
-description: "A comprehensive demonstration of macOS skeuomorphic traffic light controls, language badges, diff highlighting, one-click copy, and automatic long code collapse."
+description: "A comprehensive demonstration of macOS skeuomorphic traffic light controls, language badges, diff highlighting, one-click copy, and long code block collapsing."
 pubDate: 2026-08-28
 draft: false
 toc: true
@@ -14,15 +14,15 @@ lang: "en"
 aiTranslatedFrom: "zh-CN"
 ---
 
-This example article is dedicated to verifying and testing the **Code Block Enhancements** feature within blog posts.
+This example article is dedicated to verifying and testing the **Code Block Enhancements** feature within the blog's main content.
 
-The theme injects **macOS skeuomorphic traffic light controls, language badges, line addition/deletion diff highlighting, one-click copy**, and **automatic height-limited collapse for extra-long code blocks** into all code blocks.
+The theme injects **macOS skeuomorphic traffic light controls, language badges, diff highlighting for added/removed lines, one-click copy**, and **automatic height-limited collapsing for excessively long code blocks** into all code blocks.
 
 ---
 
-## 1. Diff Code Blocks with Line Highlighting (Diff Highlighting)
+## 1. Diff Code Blocks with Added/Removed Line Comparison (Diff Highlighting)
 
-Displays added and deleted lines when showing version upgrades and configuration changes within code blocks:
+Demonstrates added and removed lines in code blocks during version upgrades and configuration changes:
 
 ```typescript
 import { defineConfig } from 'astro/config';
@@ -31,10 +31,10 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://shijian.us',
-- output: 'server', // Old server-side rendering mode
-+ output: 'static', // Upgraded to ultra-fast static export mode
+- output: 'server', // 旧的服务端渲染模式
++ output: 'static', // 升级为极速纯静态导出模式
   markdown: {
-+   remarkPlugins: [remarkMath], // Injects KaTeX formula parsing
++   remarkPlugins: [remarkMath], // 注入 KaTeX 公式解析
 +   rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {
@@ -48,9 +48,9 @@ export default defineConfig({
 
 ---
 
-## 2. Automatic Code Collapse for Long Blocks (Code Collapse)
+## 2. Automatic Long Code Block Collapse Demo (Code Collapse)
 
-When code blocks contain too many lines, the theme automatically enables a translucent overlay and an "Expand Code" capsule button when the height exceeds 380px:
+When a code block contains too many lines, the theme automatically enables a translucent overlay and an 'Expand Code' capsule button when its height exceeds 380px:
 
 ```json
 {

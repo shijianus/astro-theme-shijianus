@@ -1,5 +1,5 @@
 ---
-title: "範例：程式碼區塊完整增強功能展示"
+title: "範例：程式碼區塊全面強化功能展示"
 description: "全面展示 macOS 擬物交通燈控制條、語言徽章、增刪 Diff、一鍵複製與超長摺疊特性。"
 pubDate: 2026-08-28
 draft: false
@@ -14,7 +14,7 @@ lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
 ---
 
-本篇範例專用於驗證與測試部落格正文中的 **程式碼區塊（Code Block Enhancements）** 功能。
+本篇範例專用於驗證與測試部落格內文中的 **程式碼區塊（Code Block Enhancements）** 功能。
 
 主題為所有程式碼區塊注入了 **macOS 擬物交通燈控制條、語言徽章、增刪行 Diff 對比、一鍵複製** 以及 **超長程式碼自動限高摺疊**。
 

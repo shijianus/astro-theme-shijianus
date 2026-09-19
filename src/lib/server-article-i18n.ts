@@ -867,15 +867,7 @@ export async function translateBodyChunk(
     if (result.ok && result.text.trim()) {
       let translated = result.text.trim();
 
-      // Smart wrapper stripping: only strip artificial outer ```markdown ... ``` wrapper if the source chunk did not start with a code fence
-      const sourceStartsWithFence = /^(`{3,}|~{3,})/i.test(chunk.trim());
-      const sourceEndsWithFence = /(`{3,}|~{3,})$/i.test(chunk.trim());
-
-      if (!sourceStartsWithFence && /^```(?:markdown)?\r?\n/i.test(translated) && /\r?\n```$/.test(translated)) {
-        translated = translated.replace(/^```(?:markdown)?\r?\n/i, '').replace(/\r?\n```$/, '').trim();
-      }
-
-      // Strip echoed prompt markers and reference context
+      // 1. Strip echoed prompt markers and reference context
       translated = translated.replace(/\[REFERENCE CONTEXT[\s\S]*?\[END REFERENCE CONTEXT\]/gi, '').trim();
       translated = translated.replace(/<!--\s*context from previous chunk\s*-->[\s\S]*?<!--\s*end context\s*-->/gi, '').trim();
       translated = translated.replace(/<!--\s*context from previous chunk\s*-->/gi, '').trim();
@@ -883,10 +875,35 @@ export async function translateBodyChunk(
       translated = translated.replace(/^\[TEXT TO TRANSLATE\]:\s*\r?\n?/i, '').trim();
       translated = translated.replace(/\[END TEXT TO TRANSLATE\]\s*$/i, '').trim();
 
-      // Strip conversational intros (e.g. "Here is the translation:", "Aquí tienes la traducción...", "Voici la traduction :", etc.)
+      // 2. Strip conversational intros (e.g. "Here is the translation:", "Aquí tienes la traducción...", "Voici la traduction :", etc.)
       translated = translated.replace(/^(?:(?:Aquí tienes|Here is|Voici|Hier ist|Claro|Sure|Below is|Here's|Voici la|Este es)[\s\S]*?:\s*\r?\n+)/i, '').trim();
       // Strip conversational outros
       translated = translated.replace(/\r?\n+(?:(?:Espero que|Hope this|J'espère que|Ich hoffe|Si tienes alguna)[\s\S]*)$/i, '').trim();
+
+      // 3. Smart wrapper stripping: only strip artificial outer ```markdown ... ``` wrapper if the source chunk did not start with a code fence
+      const sourceStartsWithFence = /^(`{3,}|~{3,})/i.test(chunk.trim());
+      const sourceEndsWithFence = /(`{3,}|~{3,})$/i.test(chunk.trim());
+      const srcFenceCount = (chunk.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+
+      // 3. Normalize outer code fence wrappers
+      if (!sourceStartsWithFence && /^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i.test(translated)) {
+        translated = translated.replace(/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i, '').trim();
+      }
+      if (!sourceEndsWithFence && /\r?\n\s*(`{3,}|~{3,})\s*$/.test(translated)) {
+        translated = translated.replace(/\r?\n\s*(`{3,}|~{3,})\s*$/, '').trim();
+      }
+
+      // 4. Parity check on fences within the chunk
+      let chunkFenceLines = (translated.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+      if (srcFenceCount % 2 === 0 && chunkFenceLines % 2 !== 0) {
+        if (!sourceStartsWithFence && /^\s*(`{3,}|~{3,})/i.test(translated)) {
+          translated = translated.replace(/^\s*(`{3,}|~{3,})[^\n]*\r?\n/i, '').trim();
+          chunkFenceLines = (translated.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+        }
+        if (chunkFenceLines % 2 !== 0 && !sourceEndsWithFence && /\r?\n\s*(`{3,}|~{3,})\s*$/.test(translated)) {
+          translated = translated.replace(/\r?\n\s*(`{3,}|~{3,})\s*$/, '').trim();
+        }
+      }
 
       // Strip accidental frontmatter block ONLY if it contains YAML metadata keys
       if (translated.startsWith('---')) {
@@ -1035,6 +1052,8 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
       };
     }
 
+    const chunkFences = (chunkRes.text.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+    console.log(`[Article-i18n] 📦 Chunk ${i + 1}/${chunks.length} fence lines: ${chunkFences}`);
     translatedChunks.push(chunkRes.text);
     lastProvider = chunkRes.provider;
     lastModel = chunkRes.model;
@@ -1044,12 +1063,15 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   let translatedBody = translatedChunks.join('\n\n');
 
   // Balance code fences if LLM produced an unmatched wrapper fence
-  const transFenceLines = (translatedBody.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+  let transFenceLines = (translatedBody.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
   if (transFenceLines % 2 !== 0) {
-    if (/\r?\n(`{3,}|~{3,})\s*$/.test(translatedBody)) {
-      translatedBody = translatedBody.replace(/\r?\n(`{3,}|~{3,})\s*$/, '');
-    } else if (/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i.test(translatedBody)) {
+    if (/\r?\n\s*(`{3,}|~{3,})\s*$/.test(translatedBody)) {
+      translatedBody = translatedBody.replace(/\r?\n\s*(`{3,}|~{3,})\s*$/, '');
+      transFenceLines = (translatedBody.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+    }
+    if (transFenceLines % 2 !== 0 && /^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i.test(translatedBody)) {
       translatedBody = translatedBody.replace(/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i, '');
+      transFenceLines = (translatedBody.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
     }
   }
 
@@ -1059,9 +1081,19 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   let cleaned = cleanAiArticleOutput(reconstructed, i18nKey, targetLocale, sourceLocale);
 
   // Final parity check on full output
-  const finalFences = (cleaned.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
-  if (finalFences % 2 !== 0 && /\r?\n(`{3,}|~{3,})\s*$/.test(cleaned)) {
-    cleaned = cleaned.replace(/\r?\n(`{3,}|~{3,})\s*$/, '');
+  let finalFences = (cleaned.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+  if (finalFences % 2 !== 0) {
+    if (/\r?\n\s*(`{3,}|~{3,})\s*$/.test(cleaned)) {
+      cleaned = cleaned.replace(/\r?\n\s*(`{3,}|~{3,})\s*$/, '');
+      finalFences = (cleaned.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+    }
+    const fmEndIdx = cleaned.indexOf('---', 3);
+    if (finalFences % 2 !== 0 && fmEndIdx !== -1) {
+      const afterFm = cleaned.slice(fmEndIdx + 3);
+      if (/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i.test(afterFm)) {
+        cleaned = cleaned.slice(0, fmEndIdx + 3) + afterFm.replace(/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i, '');
+      }
+    }
   }
 
   if (cleaned && cleaned.includes('---')) {
@@ -1311,8 +1343,15 @@ export function validateTranslatedFormat(
   }
 
   // Check code block parity (even count of code fence lines)
-  const totalFenceLines = (translatedMarkdown.match(/^\s*(`{3,}|~{3,})/gim) || []).length;
+  const fenceLines: string[] = [];
+  translatedMarkdown.split('\n').forEach((l, idx) => {
+    if (/^\s*(`{3,}|~{3,})/.test(l)) {
+      fenceLines.push(`Line ${idx + 1}: ${JSON.stringify(l)}`);
+    }
+  });
+  const totalFenceLines = fenceLines.length;
   if (totalFenceLines % 2 !== 0) {
+    console.warn(`[Article-i18n] ⚠️ Code fence parity debug (${totalFenceLines} fences found):\n${fenceLines.join('\n')}`);
     return { valid: false, reason: `Unbalanced code fences (odd number of code fence lines: ${totalFenceLines})` };
   }
 

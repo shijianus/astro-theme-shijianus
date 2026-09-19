@@ -43,6 +43,18 @@
   "anzhiyu-markdown-showcase": {
     "i18nKey": "anzhiyu-markdown-showcase",
     "translations": {
+      "en": {
+        "filename": "anzhiyu-markdown-showcase-en.md",
+        "slug": "anzhiyu-markdown-showcase-en",
+        "title": "Anzhiyu-style Markdown Capability Review: Table of Contents, Formatting, Hidden Content, Media, and Content Blocks",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "anzhiyu-markdown-showcase-zh-Hant.md",
+        "slug": "anzhiyu-markdown-showcase-zh-Hant",
+        "title": "安知魚式 Markdown 能力總檢：目錄、格式、隱藏內容、媒體與內容塊",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "anzhiyu-markdown-showcase.md",
         "slug": "anzhiyu-markdown-showcase",
