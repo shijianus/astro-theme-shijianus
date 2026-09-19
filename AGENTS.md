@@ -2974,3 +2974,41 @@
 - [x] **多端全量同步与生产端 (Cloudflare Pages) 真实链路 Playwright E2E 审计**:
   1. 生产边缘节点全量部署（实例：`https://307c6ec7.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
   2. Playwright 真实生产环境端到端验证通过（按钮尺寸 34px 精准对齐、CC 协议文本内联渲染、桌面端避让间距 36px 严格无遮挡、移动端整齐居中）。
+
+### Task 133: CFSolara 开放音乐 API 平台化拆分、EpoMail OAuth 接入与播放器 (.shijianus-music-pocket) 现代点歌黑胶视觉升级 (`2f8e819`, `2601dd4`)
+- [x] **CFSolara 独立专案微服务拆分与 EpoMail OAuth 2.0 平台化接入 (`CFSolara` 仓库 `2f8e819`)**:
+  1. 保持独立专案架构隔离：作为独立远程仓库（`https://github.com/shijianus/CFSolara.git`）开发并部署，绝不侵入主博客工程，实现微服务架构分散解耦；
+  2. 提取细粒度 RESTful API：
+     - `GET /api/music/search`：跨站多音源搜索（网易云、酷我、QQ），支持分页与关键词聚合；
+     - `GET /api/music/stream`：高兼容音频流直连代理，支持 HTTP Range 拖拽快进与多档音质（128k/192k/320k/flac）；
+     - `GET /api/music/lyric`：歌词获取并支持结构化逐行时间戳解析（`{ time, text }`）；
+     - `GET /api/music/random`：基于风格分类的推荐好歌随机池；
+     - `GET /api/music/palette`：专辑封面色板提取与背景渐变计算；
+     - `GET /proxy` & `GET /palette`：100% 向前兼容原 Solara 网页播放器；
+  3. 接入 EpoMail OAuth 2.0 作为唯一授权登录方式防滥用：
+     - 实现 `GET /api/auth/login`、`GET /api/auth/callback`、`GET /api/auth/user`、`GET /api/auth/key`；
+     - 验证 EpoMail 官方身份并签发专属 `solara_live_...` API Key；
+     - 支持第三方专案携带 `X-CFSolara-Key: <key>` 或 `Authorization: Bearer <key>` 鉴权；未授权高频请求受限流保护，彻底解决公网 API 被刷滥用风险；
+  4. Solara Web 端 UI 升级：新增 EpoMail 快捷登录入口与开发者专案接入凭证弹窗，并撰写全量接口接入文档 `API.md`；
+  5. CFSolara 已推送到远程仓库 `git@github.com:shijianus/CFSolara.git` (Commit: `2f8e819`)。
+- [x] **博客音乐挂件 (.shijianus-music-pocket) 拟真黑胶唱片与光影美化 (`2601dd4`)**:
+  1. 拟真黑胶唱盘：运用 `conic-gradient` 与多重微环线打造写实同心音轨与反射光芒；
+  2. 唱片中心标签动态呈现当前播放歌曲专辑封面（随播放平滑旋转 `shijianus-record-spin`）；
+  3. 拟真金属唱针臂（Tonearm）：播放时自然摆动切入唱片表面（`rotate(14deg)`），暂停时平滑回位；
+  4. 明暗主题自适应：深色模式黑曜石基底 + 主题蓝/青色柔和环境光晕（`rgba(66, 90, 239, 0.45)`），浅色模式银白金属包边与微高光，播放时带有声波涟漪光环（Wave Pulse）。
+- [x] **学习主流点歌软体模式与现代感面板重构 (三大选项卡架构)**:
+  1. 彻底告别原本丑陋拥挤的布局，重构成 420px 黄金比例的现代通透毛玻璃面板（`backdrop-filter: blur(28px)`）；
+  2. **Tab 1: 正在播放**: 大唱盘动态旋转展示、实时逐行高亮同步滚动歌词（支持点击任意行精准跳播）、进度拖动滑动条（00:00 / 03:45）、播放模式循环切换（列表/单曲/随机）、音量调节滑块与悬浮歌词切换；
+  3. **Tab 2: 点歌台**: 现代点歌搜索栏（支持快捷清空、回车搜索与多音源切换）、8大热门点歌推荐标签（流行热歌、周杰伦、陈奕迅、治愈纯音、经典老歌等一键直点）、结果卡片直观呈现“立即点播”与“加入待播”按钮；
+  4. **Tab 3: 待播队列**: 队列计数、一键清空、单曲移除、点击即播、空队列一键导入推荐曲目。
+- [x] **桌面/页面级动态悬浮歌词胶囊 (Floating Lyric Pill)**:
+  1. 面板折叠且正在播放时，在磁盘旁自然浮现精巧半透明歌词胶囊；
+  2. 内嵌三频段微跳动音量跳条动效与流光歌词文本；
+  3. 点击悬浮歌词条可即时展开播放器主面板，悬浮轻触可收起。
+- [x] **全站 UI 避让与层级严格兼容**:
+  1. 左下角独立停靠，完全不干扰右侧 `#rightside` 与右下角 `.pagination-post`；
+  2. 严格响应全局遮罩（`body.theme-overlay-open`、`#console.show`、`.theme-account-overlay.show`、`body.reward-modal-open`），唤起控制台/账号中心时即时隐匿；
+  3. 移动端自适应微型化（42px 唱盘），杜绝横向溢出与交互冲突。
+- [x] **Playwright 真实浏览器端到端自动化测试通过**:
+  1. 执行 `scripts/verify-music-pocket.mjs`，黑胶唱片与唱针臂元素、面板三选项卡流转、点歌搜索输入与推荐标签、待播队列、悬浮歌词、面板收起与移动端 42px 尺寸断言全绿通过。
+
