@@ -3031,4 +3031,23 @@
   1. 彻底净化 `example-details-collapse-es.md` 与 `example-details-collapse-de.md` 中的残留中文系列名称与代码块 `<option>` 标签；
   2. 注入专用边界测试博文 `test-i18n-resilience`（主篇带自定义 `i18nKey`，英文篇故意不带 `i18nKey`）；
   3. 编写并运行 Playwright 验证脚本 `scratch/verify-i18n-polishing.mjs`，15 项断言全绿通过（双向容错挂载 2 个变体并流畅切换、7 个 hreflang 标签注入验证、德西选择器本地化验证、Hash 锚点校准验证 100% 通过）。
-
+### Task 135: 全局背景系统彻底清理、纯色基底统一与样式强耦合解绑 (Complete Background Cleanup & Solid Tone Unification)
+- [x] **全量杂乱背景与光斑漂移动画彻底清除**:
+  1. `src/styles/alignment.css`: 彻底清理 lines 32~62 的 4 重径向光斑 (`daybreak`)、`light-breeze` 微风动画与网格覆盖；
+  2. `src/styles/final-pass.css`: 彻底清理 lines 6330~6373 对 `daybreak` 及 `starfield` 的第三套冗余光斑渐变覆盖；
+  3. `src/styles/global.css`: 彻底重置 `#web_bg` 为全屏平铺纯色基底（`background: var(--global-bg);`），永久隐藏 `::before` 与 `::after` 伪元素遮罩（`display: none !important;`），全面清除 `starfield`、`nebula`、`aurora`、`grid` 杂乱渐变与 `@keyframes starfield-drift`、`aurora-drift`；
+  4. `src/styles/rebuild.css`: 清理 lines 46~77 的 `grid`/`clean` 杂乱光斑，清除 `@keyframes light-breeze`。
+- [x] **暗色组件样式与星空背景错误强耦合彻底解绑 (`rebuild.css` & `global.css`)**:
+  1. 将全部 54 处错误绑死在 `:root[data-theme='dark'][data-background='starfield']` 上的样式批量解绑为标准的 `:root[data-theme='dark']`；
+  2. 涵盖文章正文 `.article-body.post-content`、引用块 `blockquote`、分割线 `hr`、上下篇卡片 `.postNav`、相关推荐 `.relatedPosts`、评论区容器 `#post-comment`、评论表单 `.comment-surface`、评论流、目录高亮 `#card-toc .toc-current`、分类标签卡片 `.taxonomy-hero-card` 与归档卡片 `.archive-hero-card`；
+  3. 确保后续切换任何背景模式时，暗色模式组件样式稳定可用，绝不发生断裂或白底黑字。
+- [x] **Canvas 粒子渲染彻底停用与干净插槽固化 (`src/components/ThemeUniverse.tsx`)**:
+  1. 停用 609 行的 Canvas 粒子微粒/流星/代码雨渲染逻辑，直接返回 `null`，降低 CPU/GPU 负载并消除视觉干扰；
+  2. 保留组件导出契约，为后续开发标准化普适性背景预留清晰插槽。
+- [x] **背景模式配置收敛为纯净纯色 (`src/config/site.ts`)**:
+  1. 将默认浅色与深色背景统一配置为 `clean`（纯净纯色），平滑兼容控制台与右侧 Dock 按钮。
+- [x] **自动化端到端测试与真实渲染断言全绿通过 (`scripts/verify-clean-solid-background.mjs`)**:
+  1. 首页浅色模式断言：`#web_bg` 纯色 `rgb(247, 249, 254)`、`backgroundImage: 'none'`、伪元素 `display: 'none'`、Canvas `display: 'none'`；
+  2. 首页深色模式断言：`#web_bg` 纯色 `rgb(13, 13, 20)`、`backgroundImage: 'none'`；
+  3. 文章页浅色/深色模式断言：纯色无杂斑、评论区与正文高对比度文字正常呈现；
+  4. 全量编译构建（222 个静态页面）无任何报错，全量通过。
