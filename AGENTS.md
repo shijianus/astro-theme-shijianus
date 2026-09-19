@@ -2958,3 +2958,7 @@
 - [x] **Playwright 真实端到端自动化测试验证 (33/33 全绿)**:
   1. 编写全覆盖自动化测试套件 `scripts/verify-i18n-comprehensive.mjs`；
   2. 全量验证赞赏台 6 语言动态切换、快捷键面板多语言展示、控制台 12 项指标、404 页面多语言流转、文章页动态组件与 AI 隔离默认配置，33 项断言 100% 通过。
+- [x] **生产端 (Cloudflare Pages) 真实链路 Playwright E2E 验证 (24/24 全绿)**:
+  1. 通过 Wrangler 成功部署最新 SSG 运行时至 Cloudflare Pages 生产边缘节点（部署实例：`https://3bc1e756.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com` 启动 Playwright 自动化验证套件（`scripts/verify-live-i18n.mjs`）；
+  3. 全链路覆盖验证：赞赏支持看板 6 语言动态切换（咖啡档位/致谢表头/Stripe 按钮）、快捷键面板、控制台 12 项系统指标、404 页面多语言跳转、文章页相关推荐与 Chronral AI 摘要 7 大提炼操作，24 项断言 100% 通过，控制台 0 致命 JS 报错。
