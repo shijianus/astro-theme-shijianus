@@ -172,79 +172,91 @@ const SceneColdBrewTower: React.FC<{ isSelected?: boolean }> = () => (
   </svg>
 );
 
-/* ── 6 个档位专属咖啡品类主题配置 (100% 咖啡主题、层次递进) ── */
+/* ── 6 个档位专属咖啡品类主题配置 (色彩明度平衡：浅色不浓重深暗，暗色不刺眼过亮) ── */
 const TIER_STYLES = [
   {
     name: 'amber',
     scene: SceneInstantCoffee,
     selected:
-      'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 border-amber-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-amber-400 to-amber-500 border-amber-400 text-white shadow-sm shadow-amber-500/20 ring-2 ring-amber-400/30 dark:from-[#483416] dark:to-[#34240d] dark:border-amber-500/50 dark:text-amber-100 dark:ring-1 dark:ring-amber-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-amber-50/90 via-amber-50/40 to-orange-50/25 dark:from-amber-950/25 dark:via-amber-950/15 dark:to-slate-900/60 border-amber-200/80 dark:border-amber-800/40 text-amber-950 dark:text-amber-100 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-amber-600/35 dark:text-amber-400/35 group-hover:text-amber-600/70 dark:group-hover:text-amber-300/70',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-amber-950 dark:text-amber-100',
+      'bg-amber-50/40 dark:bg-amber-950/15 border-amber-200/60 dark:border-amber-800/30 text-slate-800 dark:text-slate-200 hover:border-amber-300 dark:hover:border-amber-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-amber-200/40 dark:group-hover:text-amber-200/70',
+    sceneColorUnselected: 'text-amber-500/40 dark:text-amber-400/30 group-hover:text-amber-600/70 dark:group-hover:text-amber-300/70',
+    amountSelected: 'text-white dark:text-amber-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-amber-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
   {
     name: 'orange',
     scene: SceneTakeawayCup,
     selected:
-      'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-orange-400 to-orange-500 border-orange-400 text-white shadow-sm shadow-orange-500/20 ring-2 ring-orange-400/30 dark:from-[#4c2714] dark:to-[#361a0b] dark:border-orange-500/50 dark:text-orange-100 dark:ring-1 dark:ring-orange-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-orange-50/90 via-orange-50/40 to-amber-50/25 dark:from-orange-950/25 dark:via-orange-950/15 dark:to-slate-900/60 border-orange-200/80 dark:border-orange-800/40 text-orange-950 dark:text-orange-100 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-orange-600/35 dark:text-orange-400/35 group-hover:text-orange-600/70 dark:group-hover:text-orange-300/70',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-orange-950 dark:text-orange-100',
+      'bg-orange-50/40 dark:bg-orange-950/15 border-orange-200/60 dark:border-orange-800/30 text-slate-800 dark:text-slate-200 hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-orange-200/40 dark:group-hover:text-orange-200/70',
+    sceneColorUnselected: 'text-orange-500/40 dark:text-orange-400/30 group-hover:text-orange-600/70 dark:group-hover:text-orange-300/70',
+    amountSelected: 'text-white dark:text-orange-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-orange-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
   {
     name: 'blue',
     scene: SceneLatteArt,
     selected:
-      'bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700 border-[#425aef] text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-[#4f6bf7] to-[#3b53e8] border-[#4f6bf7] text-white shadow-sm shadow-blue-500/20 ring-2 ring-blue-500/25 dark:from-[#233175] dark:to-[#1a2356] dark:border-blue-500/50 dark:text-blue-100 dark:ring-1 dark:ring-blue-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-blue-50/90 via-indigo-50/40 to-blue-50/25 dark:from-blue-950/25 dark:via-blue-950/15 dark:to-slate-900/60 border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-[#425aef]/40 dark:text-blue-400/35 group-hover:text-[#425aef]/75 dark:group-hover:text-blue-300/75',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-blue-950 dark:text-blue-100',
+      'bg-blue-50/40 dark:bg-blue-950/15 border-blue-200/60 dark:border-blue-800/30 text-slate-800 dark:text-slate-200 hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-blue-200/40 dark:group-hover:text-blue-200/70',
+    sceneColorUnselected: 'text-[#425aef]/40 dark:text-blue-400/30 group-hover:text-[#425aef]/70 dark:group-hover:text-blue-300/70',
+    amountSelected: 'text-white dark:text-blue-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-blue-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
   {
     name: 'emerald',
     scene: SceneMokaPot,
     selected:
-      'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 border-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-emerald-400 to-emerald-500 border-emerald-400 text-white shadow-sm shadow-emerald-500/20 ring-2 ring-emerald-400/30 dark:from-[#133d2e] dark:to-[#0c2a1f] dark:border-emerald-500/50 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-emerald-50/90 via-teal-50/40 to-emerald-50/25 dark:from-emerald-950/25 dark:via-emerald-950/15 dark:to-slate-900/60 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-emerald-600/35 dark:text-emerald-400/35 group-hover:text-emerald-600/70 dark:group-hover:text-emerald-300/70',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-emerald-950 dark:text-emerald-100',
+      'bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-200/60 dark:border-emerald-800/30 text-slate-800 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-emerald-200/40 dark:group-hover:text-emerald-200/70',
+    sceneColorUnselected: 'text-emerald-500/40 dark:text-emerald-400/30 group-hover:text-emerald-600/70 dark:group-hover:text-emerald-300/70',
+    amountSelected: 'text-white dark:text-emerald-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-emerald-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
   {
     name: 'purple',
     scene: ScenePourOver,
     selected:
-      'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 border-purple-500 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-purple-400 to-purple-500 border-purple-400 text-white shadow-sm shadow-purple-500/20 ring-2 ring-purple-400/30 dark:from-[#351d52] dark:to-[#241339] dark:border-purple-500/50 dark:text-purple-100 dark:ring-1 dark:ring-purple-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-purple-50/90 via-violet-50/40 to-purple-50/25 dark:from-purple-950/25 dark:via-purple-950/15 dark:to-slate-900/60 border-purple-200/80 dark:border-purple-800/40 text-purple-950 dark:text-purple-100 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-purple-600/35 dark:text-purple-400/35 group-hover:text-purple-600/70 dark:group-hover:text-purple-300/70',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-purple-950 dark:text-purple-100',
+      'bg-purple-50/40 dark:bg-purple-950/15 border-purple-200/60 dark:border-purple-800/30 text-slate-800 dark:text-slate-200 hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-purple-200/40 dark:group-hover:text-purple-200/70',
+    sceneColorUnselected: 'text-purple-500/40 dark:text-purple-400/30 group-hover:text-purple-600/70 dark:group-hover:text-purple-300/70',
+    amountSelected: 'text-white dark:text-purple-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-purple-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
   {
     name: 'rose',
     scene: SceneColdBrewTower,
     selected:
-      'bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 border-rose-500 text-white shadow-md shadow-rose-500/25 ring-2 ring-rose-400/50 scale-[1.02]',
+      'bg-gradient-to-br from-rose-400 to-rose-500 border-rose-400 text-white shadow-sm shadow-rose-500/20 ring-2 ring-rose-400/30 dark:from-[#491626] dark:to-[#340d1a] dark:border-rose-500/50 dark:text-rose-100 dark:ring-1 dark:ring-rose-500/25 dark:shadow-none scale-[1.02]',
     unselected:
-      'bg-gradient-to-b from-rose-50/90 via-pink-50/40 to-rose-50/25 dark:from-rose-950/25 dark:via-rose-950/15 dark:to-slate-900/60 border-rose-200/80 dark:border-rose-800/40 text-rose-950 dark:text-rose-100 hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-xs',
-    sceneColorSelected: 'text-white/40 group-hover:text-white/70',
-    sceneColorUnselected: 'text-rose-600/35 dark:text-rose-400/35 group-hover:text-rose-600/70 dark:group-hover:text-rose-300/70',
-    amountSelected: 'text-white',
-    amountUnselected: 'text-rose-950 dark:text-rose-100',
+      'bg-rose-50/40 dark:bg-rose-950/15 border-rose-200/60 dark:border-rose-800/30 text-slate-800 dark:text-slate-200 hover:border-rose-300 dark:hover:border-rose-500/50 hover:shadow-xs',
+    sceneColorSelected: 'text-white/50 group-hover:text-white/80 dark:text-rose-200/40 dark:group-hover:text-rose-200/70',
+    sceneColorUnselected: 'text-rose-500/40 dark:text-rose-400/30 group-hover:text-rose-600/70 dark:group-hover:text-rose-300/70',
+    amountSelected: 'text-white dark:text-rose-100',
+    amountUnselected: 'text-slate-800 dark:text-slate-200',
+    codeSelected: 'text-white/80 dark:text-rose-200/70',
+    codeUnselected: 'text-slate-400 dark:text-slate-500',
   },
 ];
 
@@ -652,25 +664,18 @@ export const SupportDashboard: React.FC = () => {
                       title={`赞赏支持 ${activeCurrencySymbol}${amt} ${activeCurrencyCode.toUpperCase()}`}
                       aria-label={`${activeCurrencySymbol}${amt}`}
                     >
-                      {/* Left: Warm Bold Amount + Currency Code + Active Checkmark */}
+                      {/* Left: Warm Bold Amount + Currency Code (Clean & Minimalist without redundant checkmark) */}
                       <div className="relative z-10 flex flex-col justify-center select-none shrink-0 pointer-events-none">
-                        <div className="flex items-baseline gap-1.5">
-                          <span
-                            className={`text-base sm:text-lg font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
-                              isSelected ? tier.amountSelected : tier.amountUnselected
-                            }`}
-                          >
-                            {activeCurrencySymbol}{amt}
-                          </span>
-                          {isSelected && (
-                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-white/25 text-white shadow-2xs">
-                              <Check className="w-2.5 h-2.5 stroke-[3]" />
-                            </span>
-                          )}
-                        </div>
+                        <span
+                          className={`text-base sm:text-lg font-black tracking-tight leading-none transition-transform duration-200 group-hover:scale-105 ${
+                            isSelected ? tier.amountSelected : tier.amountUnselected
+                          }`}
+                        >
+                          {activeCurrencySymbol}{amt}
+                        </span>
                         <span
                           className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase leading-none mt-1 ${
-                            isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'
+                            isSelected ? tier.codeSelected : tier.codeUnselected
                           }`}
                         >
                           {activeCurrencyCode}
