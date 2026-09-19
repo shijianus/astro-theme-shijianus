@@ -2744,3 +2744,27 @@
      - 浅色/深色主题与移动端响应式布局均完美验证；
      - 视觉实拍证据链留存：`live_backboard_01_default_light.png`、`live_backboard_02_cards_toggled_light.png`、`live_backboard_03_topgroup_cards_light.png`、`live_backboard_04_returned_todaycard.png`、`live_backboard_05_cards_toggled_dark.png`、`live_backboard_06_topgroup_cards_dark.png`、`live_backboard_07_mobile.png`。
 
+### Task 122: 赞赏界面预设档位卡片 Scheme A 极简单色几何浮水印重构与动画抖动彻底消除 (`3e45d7f`)
+- [x] **深度 UI/UX 审计与痛点清零**:
+  1. 遵照用户指令对 `https://blog.epocanvas.com/support/` 界面处于选中激活态的卡片（Tier 2 意式拿铁档位，`bg-gradient-to-br from-[#425aef] via-blue-600 to-indigo-700`）及全套卡片进行矢量视觉审计；
+  2. 根除旧版 6 大视觉硬伤：低劣微缩剪贴画画风、硬编码 Hex 棕黄脏色与电光蓝底剧烈冲撞、卡片顶端 `overflow: hidden` 导致蒸气断头切平、160 行无休止抽搐的 infinite 抖动动画、右侧容器尺寸失控膨胀挤压文字排版、多币种与浅色/深色主题适配割裂；
+- [x] **落地实施方案 A（现代极简纯几何徽标 / 品牌单色浮水印）**:
+  1. **全套 6 档位 SVG 矢量图标重构**（`SceneInstantCoffee`、`SceneTakeawayCup`、`SceneLatteArt`、`SceneMokaPot`、`ScenePourOver`、`SceneColdBrewTower`）：
+     - 统一采用标准 `viewBox="0 0 48 48"` 现代几何栅格，线条宽度收敛至 `strokeWidth="1.8"`；
+     - 100% 采用 `currentColor` 矢量着色机制，彻底废除硬编码 Hex 色值；
+     - 融入层次丰富的分层透明度（`fillOpacity="0.12 ~ 0.25"` 与 `strokeOpacity="0.85 ~ 0.95"`）；
+     - 控制蒸汽与主体最高顶点坐标在 `Y >= 4`，杜绝任何上边框断头切平；
+  2. **激活与未激活状态专属主题适配**:
+     - 选中状态（Selected）：统一适配为高透半透明白光浮水印（`text-white/40 group-hover:text-white/70`），与深蓝渐变底色浑然一体；
+     - 未选中状态（Unselected）：自适应各档位色彩（琥珀金、暖橙、翡翠绿、紫罗兰、玫瑰粉等）的低透明度水印，在浅色与深色模式下均极具呼吸感；
+  3. **彻底清除 160 行抽搐抖动 Keyframes 动画**:
+     - 移除全部 `@keyframes coffeeSteamRise...`、`animate-coffee-...` 类，杜绝持续 GPU 消耗与卡片抽搐，收敛为统一丝滑的 `group-hover` 微交互过渡；
+  4. **右侧容器尺寸与呼吸留白优化**:
+     - 将原本膨胀的 `w-16 sm:w-28 md:w-32` 严格收敛至精致的 `w-12 sm:w-14 pr-1 sm:pr-1.5`，确保金额、币种与勾选徽标拥有充足横向空间。
+- [x] **全流程自动化端到端测试与视觉证据链验证通过**:
+  1. 编写专用自动化断言测试脚本（`scripts/verify-support-scheme-a.mjs`）；
+  2. 6 档位卡片数量、`viewBox 0 0 48 48`、`currentColor` 穿透、0 硬编码杂色、0 动画抖动残留全量断言通过；
+  3. 实拍对比截图留存：`scheme_a_selected_final.png` 与 `scheme_a_grid_final.png`；
+  4. Commit 成功提交并打印短 Hash：`3e45d7f`。
+
+
