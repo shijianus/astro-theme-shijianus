@@ -2942,7 +2942,7 @@
   2. 全量构建通过（`214 page(s) built in 47.80s`）；
   3. Playwright 桌面与移动端端到端测试断言全部通过（`ghbdagesGone: true`，`iconButtonsCount: 0`，`ccIconsCount: 4`，`hasOverlap: false`）。
 
-### Task 131: 全站 UI i18n 完整优化、AI 文章翻译严格架构隔离与定制模型参数接入
+### Task 131: 全站 UI i18n 完整优化、AI 文章翻译严格架构隔离与定制模型参数接入 (`e681ab0`)
 - [x] **AI 文章翻译与全站基础 UI (Button/Nav/Modal/Toast/Controls) 严格架构隔离**:
   1. 架构级隔离：AI 翻译管线仅且只允许针对 `src/content/posts/*.md` 文章正文执行，严禁侵入或翻译全站基础 UI（Button、导航、设置、模态框、操作条、Toast 等）；
   2. 极速构建默认保障：`ENABLE_ARTICLE_AI_I18N=false` 作为全局默认配置，SSG 构建期 0 网络请求、0 耗时增量，杜绝 CI/CD 构建超时；
