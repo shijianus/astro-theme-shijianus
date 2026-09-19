@@ -538,14 +538,16 @@ export const siteConfig = {
       workDetail: '目前正在同步打磨首页、文章页、页脚、按钮反馈与交互动效。',
     },
     barLinks: [
-      { label: '关于本站', href: '/about/' },
-      { label: '运行状态', href: '/status/' },
-      { label: 'CC BY-NC-SA 4.0', href: 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh', external: true, icon: 'link' },
+      { label: 'GitHub · 开源仓库', href: 'https://github.com/shijianus', external: true, icon: 'github' },
+      { label: '归档 · 时间线总览', href: '/archives/', icon: 'archive' },
+      { label: '标签 · 关键词索引', href: '/tags/', icon: 'tags' },
+      { label: '关于 · 站点与作者', href: '/about/', icon: 'about' },
     ] satisfies SiteNavItem[],
     links: [
-      { label: '关于本站', href: '/about/' },
-      { label: '运行状态', href: '/status/' },
-      { label: 'CC BY-NC-SA 4.0', href: 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh', external: true, icon: 'link' },
+      { label: 'GitHub · 开源仓库', href: 'https://github.com/shijianus', external: true, icon: 'github' },
+      { label: '归档 · 时间线总览', href: '/archives/', icon: 'archive' },
+      { label: '标签 · 关键词索引', href: '/tags/', icon: 'tags' },
+      { label: '关于 · 站点与作者', href: '/about/', icon: 'about' },
     ] satisfies SiteNavItem[],
     groups: [
       {

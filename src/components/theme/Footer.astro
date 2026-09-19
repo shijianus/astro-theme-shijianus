@@ -115,6 +115,16 @@ const iconMap: Record<string, LucideIcon> = {
           <div class="copyright">
             <span>© {siteConfig.footer.since} - {new Date().getFullYear()} By</span>
             <a class="footer-bar-link author" href="/" title={siteConfig.site.name}>{siteConfig.site.name}</a>
+            <span class="copyright-separator">·</span>
+            <a
+              class="copyright-license"
+              href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"
+              target="_blank"
+              rel="noreferrer"
+              title="知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议"
+            >
+              CC BY-NC-SA 4.0
+            </a>
           </div>
           {siteConfig.footer.quote && (
             <div id="footer-type-tips">
@@ -124,25 +134,18 @@ const iconMap: Record<string, LucideIcon> = {
         </div>
       </div>
       <div class="footer-bar-right">
-        {(siteConfig.footer.barLinks ?? siteConfig.footer.links).map((item) => {
-          const isCC = item.label.toLowerCase().includes('cc');
+        {siteConfig.footer.links.map((item) => {
+          const Icon = iconMap[item.icon ?? 'home'] ?? Home;
           return (
             <a
-              class={`footer-bar-link ${isCC ? 'cc' : ''}`}
+              class="footer-bar-link footer-bar-link--icon"
               href={item.href}
               title={item.label}
+              aria-label={item.label}
               target={item.external ? '_blank' : undefined}
               rel={item.external ? 'noreferrer' : undefined}
             >
-              {isCC && (
-                <span class="cc-icons" aria-hidden="true">
-                  <i class="anzhiyufont anzhiyu-icon-copyright-line" />
-                  <i class="anzhiyufont anzhiyu-icon-creative-commons-by-line" />
-                  <i class="anzhiyufont anzhiyu-icon-creative-commons-nc-line" />
-                  <i class="anzhiyufont anzhiyu-icon-creative-commons-nd-line" />
-                </span>
-              )}
-              <span class="footer-bar-link__label">{item.label}</span>
+              <Icon className="footer-bar-link__icon" aria-hidden="true" />
             </a>
           );
         })}
