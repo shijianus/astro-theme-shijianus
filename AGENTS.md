@@ -2889,4 +2889,20 @@
   2. 覆盖场景 1（最后一页左少右多粘性吸附与右侧滚动）、场景 2（侧边栏收起立即取消粘性回退普通流）、场景 3（第 1 页非最后一页严格保持右侧粘性）、场景 4（移动端窄屏单列流无粘性）；
   3. 测试断言 100% 通过（4/4 Passed），并在 `scratch/screenshots/` 留存全流程视觉截图证据链。
 
+### Task 128: 赞赏支持页 (Support Dashboard) 指标卡「最新支持」数据真实联动与零刷新同步优化 (`2fdd886`)
+- [x] **根除「实时入库同步」误导性静态占位符并重构指标卡视觉呈现 (`src/components/theme/SupportDashboard.tsx`)**:
+  1. 彻底清除卡片底部生硬的硬编码占位文字 `'实时入库同步'`（原实现导致用户误以为数据仍在后台挂起或同步未成功）；
+  2. 主数值行采用高对比大字号 `text-2xl font-black text-emerald-600 dark:text-emerald-400`，动态提取最新真实支持金额与币种徽章（如 `RM13 MYR`、`$25 USD`），与前三张指标卡（累计人次、咖啡杯数、汇聚币种）的 `text-2xl` 基线排版 100% 视觉对齐；
+  3. 副文本行结构化展示支持者昵称与格式化日期（如 `Stripe 链路自动化验收官 · 09月14日`），并通过 `title` 气泡悬浮展示包含寄语文本在内的全量上下文；
+  4. 完善空状态（`虚位以待` / `期待第一位支持者 ✨`）与加载态（`加载中…` / `正在同步名册…`）的平滑过渡。
+- [x] **全链路即时响应与跨组件零刷新联动 (`src/components/theme/RewardModal.tsx` & `src/components/theme/SupportDashboard.tsx`)**:
+  1. 在 `RewardModal.tsx` 的 Stripe Checkout `onComplete`、`stripe_return` 识别以及寄语提交 `record-blessing` 后端落库回调中，广播全局自研事件 `shijianus:sponsorship-updated`；
+  2. 在 `SupportDashboard.tsx` 中封装 `fetchSponsors` 回调并设置 `cache: 'no-store'`，挂载 `shijianus:sponsorship-updated`、`shijianus:donation-completed` 及页面可见性恢复（`visibilitychange`）监听器，无需刷新即可毫秒级动态更新上方 4 大指标卡与下方公开致谢表格。
+- [x] **边缘 API 防缓存加固 (`functions/api/sponsorships.ts`)**:
+  1. 为 `/api/sponsorships` 显式注入 `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate`、`Pragma: no-cache` 与 `Expires: 0` 响应头，杜绝边缘 CDN 节点与中间代理缓存致谢名册数据。
+- [x] **自动化端到端测试与生产环境实测验证 (`scripts/verify-support-latest-sponsor.mjs`)**:
+  1. 本地 Playwright 自动化套件（3 场景 100% 全绿）：验证初次加载真实金额与支持者渲染、事件驱动无感动态同步、优雅空状态呈现；
+  2. 生产环境 `https://blog.epocanvas.com/support/` 真实链路审计：确认生产端已成功渲染 `RM13 MYR` 及 `Stripe 链路自动化验收官 · 09月14日`，完全消除「实时入库同步」占位文本。
+
+
 
