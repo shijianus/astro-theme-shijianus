@@ -17,7 +17,7 @@
       "es": {
         "filename": "access-control-lab-es.md",
         "slug": "access-control-lab-es",
-        "title": "Laboratorio de Control de Acceso para Artículos",
+        "title": "Laboratorio de Control de Acceso a Artículos",
         "isAiGenerated": true
       },
       "fr": {
@@ -500,6 +500,36 @@
   "learning-through-rebuilds": {
     "i18nKey": "learning-through-rebuilds",
     "translations": {
+      "de": {
+        "filename": "learning-through-rebuilds-de.md",
+        "slug": "learning-through-rebuilds-de",
+        "title": "Durch Refactoring lernen: Effektiver als bloßes Kopieren",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "learning-through-rebuilds-en.md",
+        "slug": "learning-through-rebuilds-en",
+        "title": "Learning Through Refactoring: More Effective Than Simple Imitation",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "learning-through-rebuilds-es.md",
+        "slug": "learning-through-rebuilds-es",
+        "title": "Aprender refactorizando: más allá de la imitación superficial",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "learning-through-rebuilds-fr.md",
+        "slug": "learning-through-rebuilds-fr",
+        "title": "Apprendre par le refactoring : plus efficace que la simple imitation",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "learning-through-rebuilds-zh-Hant.md",
+        "slug": "learning-through-rebuilds-zh-Hant",
+        "title": "透過重構來學習，比單純臨摹更有效",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "learning-through-rebuilds.md",
         "slug": "learning-through-rebuilds",

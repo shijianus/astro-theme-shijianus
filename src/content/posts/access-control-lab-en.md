@@ -2,10 +2,10 @@
 title: "Article Access Control Lab"
 pubDate: 2026-04-26
 updatedDate: 2026-04-26
-description: "Verifies that password-based access control functions according to server-side rules and ensures restricted content is not directly rendered to the page when locked."
+description: "This lab article verifies that password-based access control functions correctly according to server-side rules, ensuring restricted content is not directly rendered to the page when locked."
 author: "shijianus"
 category: "System Design"
-group: "Security Experiments"
+group: "Security Experiment"
 cover: "/media/shijianus/system.jpg"
 coverAlt: "Article Access Control Lab"
 featured: false
@@ -19,33 +19,33 @@ lang: "en"
 aiTranslatedFrom: "zh-CN"
 ---
 
-# This is a Protected Article
+# This Is a Protected Article
 
-If you view this article without unlocking it, the content below will not be output to the page by the server; it won't simply be output first and then hidden by the frontend.
+If you view this article without unlocking it, the content below will not be output to the page by the server; it won't simply be output and then hidden by the frontend.
 
 ## What You Should Verify After Unlocking
 
-1.  When no password is entered, the article content should not appear in the HTML.
+1.  When no password is entered, the main content should not appear in the HTML.
 2.  After entering the correct password `12345`, the server will issue a short-term access token.
-3.  When refreshing the current article, you should not need to re-enter the password.
+3.  When refreshing the current article again, you should not need to re-enter the password.
 4.  Homepage cards, recent articles, and summaries should not leak protected content.
 
-## What This Rule Layer Currently Supports
+## What This Layer of Rules Currently Supports
 
--   Password access
--   Visible to specified IPs
--   Invisible to specified IPs
--   Visible to specified countries or regions
--   Invisible to specified countries or regions
+-   Password Access
+-   Visible to Specific IPs
+-   Invisible to Specific IPs
+-   Visible to Specific Countries or Regions
+-   Invisible to Specific Countries or Regions
 
-## Frontmatter Usage Examples
+## Frontmatter Configuration Examples
 
-The following snippets can be directly placed into an article's frontmatter:
+The following configurations can be directly placed into the article's frontmatter:
 
 ```yaml
 access:
   passwordHash: "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
-  message: "Continue reading after entering the correct password."
+  message: "Enter the correct password to continue reading."
 ```
 
 ```yaml
@@ -67,18 +67,18 @@ access:
   allowedCountries: ["US", "GB", "HK"]
 ```
 
-## Why `passwordHash` is Recommended
+## Why passwordHash Is Recommended
 
-While directly writing `password` is still compatible, it is more recommended to only use `passwordHash` in Markdown. This way, the theme will only perform comparisons on the server side, eliminating the need to store plain-text passwords in the content configuration.
+Although direct `password` entry is still compatible, it is highly recommended to only use `passwordHash` in Markdown. This way, the theme performs comparisons solely on the server side, eliminating the need to store plaintext passwords in content configurations.
 
-If you need to generate the hash yourself, the current theme internally uses `SHA-256`. It is recommended to convert the password to a hash locally first, then write it into the frontmatter, rather than placing the plain-text password directly into the article source file.
+If you need to generate the hash yourself, the current theme internally uses `SHA-256`. It is recommended to convert the password to a hash locally first, then write it into the frontmatter, rather than placing the plaintext password directly into the article source file.
 
 ## Why This Layer Prevents Premature Leakage of Restricted Content
 
 This implementation does not "output the full text first, then hide it with the frontend." Restricted article pages are determined server-side:
 
 1.  When password or region/IP rules are not met, the server only returns the lock panel.
-2.  The article body, table of contents, related articles, and public summaries will not be rendered into the page when it's locked.
+2.  The main content, table of contents, related articles, and public summaries will not be rendered into the page when it's locked.
 3.  The homepage, pagination, recent articles, search index, and sidebar will also not include restricted articles.
 
 ## Conclusion

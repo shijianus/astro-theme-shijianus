@@ -1041,11 +1041,28 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   }
 
   // Step 4: Reassemble translated frontmatter + body
-  const translatedBody = translatedChunks.join('\n\n');
+  let translatedBody = translatedChunks.join('\n\n');
+
+  // Balance code fences if LLM produced an unmatched wrapper fence
+  const transFenceLines = (translatedBody.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+  if (transFenceLines % 2 !== 0) {
+    if (/\r?\n(`{3,}|~{3,})\s*$/.test(translatedBody)) {
+      translatedBody = translatedBody.replace(/\r?\n(`{3,}|~{3,})\s*$/, '');
+    } else if (/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i.test(translatedBody)) {
+      translatedBody = translatedBody.replace(/^\s*(`{3,}|~{3,})(?:markdown|md)?\r?\n/i, '');
+    }
+  }
+
   const reconstructed = `---\n${translatedFm}\n---\n${translatedBody}`;
 
   // Step 5: Clean and finalize
   let cleaned = cleanAiArticleOutput(reconstructed, i18nKey, targetLocale, sourceLocale);
+
+  // Final parity check on full output
+  const finalFences = (cleaned.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+  if (finalFences % 2 !== 0 && /\r?\n(`{3,}|~{3,})\s*$/.test(cleaned)) {
+    cleaned = cleaned.replace(/\r?\n(`{3,}|~{3,})\s*$/, '');
+  }
 
   if (cleaned && cleaned.includes('---')) {
     if (options.enableOcr !== false) {
@@ -1712,12 +1729,31 @@ export async function translateArticleAuto(options: TranslateArticleOptions): Pr
 
   console.log(`[Article-i18n] Running Scheme 1 (Format In, Format Out) for "${options.i18nKey}"...`);
   const bodyLength = options.sourceMarkdown.length;
+  const codeFenceCount = (options.sourceMarkdown.match(/^\s*(`{3,}|~{3,})/gm) || []).length;
+  const shouldChunk = bodyLength > 4200 || (bodyLength > 2800 && codeFenceCount >= 4);
+
   let primaryResult: TranslateArticleResult;
 
-  if (bodyLength > 8000) {
+  if (shouldChunk) {
+    console.log(`[Article-i18n] Article "${options.i18nKey}" matches chunked criteria (length: ${bodyLength} chars, code blocks: ${Math.floor(codeFenceCount / 2)}). Activating Chunked Pipeline...`);
     primaryResult = await translateArticleChunked(options);
   } else {
     primaryResult = await translateArticle(options);
+  }
+
+  // If single-call failed or dropped structure, attempt rescue via Chunked Pipeline
+  if (!primaryResult.ok || (primaryResult.translatedMarkdown && !validateTranslatedFormat(options.sourceMarkdown, primaryResult.translatedMarkdown, options.targetLocale).valid)) {
+    if (!shouldChunk) {
+      console.warn(`[Article-i18n] Single-call translation for "${options.i18nKey}" did not pass validation. Attempting rescue via Chunked Pipeline...`);
+      const rescueResult = await translateArticleChunked(options);
+      if (rescueResult.ok && rescueResult.translatedMarkdown) {
+        const rescueValidation = validateTranslatedFormat(options.sourceMarkdown, rescueResult.translatedMarkdown, options.targetLocale);
+        if (rescueValidation.valid) {
+          console.log(`[Article-i18n] ✅ Chunked rescue succeeded for "${options.i18nKey}"!`);
+          primaryResult = rescueResult;
+        }
+      }
+    }
   }
 
   if (primaryResult.ok && primaryResult.translatedMarkdown) {
