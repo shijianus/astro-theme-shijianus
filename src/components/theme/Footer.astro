@@ -105,12 +105,6 @@ const iconMap: Record<string, LucideIcon> = {
           </section>
         ))}
       </div>
-
-      <p id="ghbdages">
-        {siteConfig.footer.badges.map((badge) => (
-          <span class="github-badge">{badge}</span>
-        ))}
-      </p>
     </div>
   </div>
 
@@ -119,27 +113,36 @@ const iconMap: Record<string, LucideIcon> = {
       <div class="footer-bar-left">
         <div id="footer-bar-tips">
           <div class="copyright">
-            © {siteConfig.footer.since} - {new Date().getFullYear()} By
-            <a class="footer-bar-link" href="/" title={siteConfig.site.name}>{siteConfig.site.name}</a>
+            <span>© {siteConfig.footer.since} - {new Date().getFullYear()} By</span>
+            <a class="footer-bar-link author" href="/" title={siteConfig.site.name}>{siteConfig.site.name}</a>
           </div>
-          <div id="footer-type-tips">
-            <span>{siteConfig.footer.quote}</span>
-          </div>
+          {siteConfig.footer.quote && (
+            <div id="footer-type-tips">
+              <span>{siteConfig.footer.quote}</span>
+            </div>
+          )}
         </div>
       </div>
       <div class="footer-bar-right">
-        {siteConfig.footer.links.map((item) => {
-          const Icon = iconMap[item.icon ?? 'home'] ?? Home;
+        {(siteConfig.footer.barLinks ?? siteConfig.footer.links).map((item) => {
+          const isCC = item.label.toLowerCase().includes('cc');
           return (
             <a
-              class="footer-bar-link footer-bar-link--icon"
+              class={`footer-bar-link ${isCC ? 'cc' : ''}`}
               href={item.href}
               title={item.label}
-              aria-label={item.label}
               target={item.external ? '_blank' : undefined}
               rel={item.external ? 'noreferrer' : undefined}
             >
-              <Icon className="footer-bar-link__icon" aria-hidden="true" />
+              {isCC && (
+                <span class="cc-icons" aria-hidden="true">
+                  <i class="anzhiyufont anzhiyu-icon-copyright-line" />
+                  <i class="anzhiyufont anzhiyu-icon-creative-commons-by-line" />
+                  <i class="anzhiyufont anzhiyu-icon-creative-commons-nc-line" />
+                  <i class="anzhiyufont anzhiyu-icon-creative-commons-nd-line" />
+                </span>
+              )}
+              <span class="footer-bar-link__label">{item.label}</span>
             </a>
           );
         })}

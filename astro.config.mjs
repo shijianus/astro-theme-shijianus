@@ -641,6 +641,9 @@ export default defineConfig({
   site,
   base,
   output: isStaticBuild ? 'static' : 'server',
+  build: {
+    concurrency: 1,
+  },
   ...(isStaticBuild
     ? {}
     : {
