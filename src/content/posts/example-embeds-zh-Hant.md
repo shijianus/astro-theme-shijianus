@@ -4,17 +4,16 @@ description: "全面展示 WordPress 風格文章格式、影音黑膠唱片、�
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["範例", "展示", "embeds", "post-formats"]
+tags: ["範例", "展示", "嵌入", "文章格式"]
 category: "範例"
-series: "功能範例"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-embeds"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
 ---
-
-本篇範例專用於展示與測試部落格正文中的 **富媒體嵌入（Embeds）、WordPress 文章格式（Post Formats）與雙人對話流（Chat Dialogue）**。
+本篇範例專用於展示與測試部落格正文中的 **富媒體嵌入（Embeds）、WordPress 文章格式與雙人對話流（Chat Dialogue）**。
 
 ---
 
@@ -42,7 +41,7 @@ aiTranslatedFrom: "zh-CN"
     </div>
   </div>
   <p class="article-status__content">
-    今天終於完成了正文欄全部格式擴展與視覺重構！從 KaTeX、Mermaid 到互動式下拉選單與黑膠唱片，靜態交付太棒了 🚀✨
+    今天終於完成了正文欄全部格式擴展與視覺重構！從 KaTeX、Mermaid 到互動式下拉選單與黑膠唱片，靜態交付太爽了 🚀✨
   </p>
 </div>
 
@@ -50,7 +49,7 @@ aiTranslatedFrom: "zh-CN"
 
 ## 二、黑膠唱片音訊卡片（Audio Vinyl Card）
 
-音訊播放時，唱片封面將自動觸發無級平滑旋轉動效：
+音訊播放時，唱片封面將自動觸發無級平滑旋轉動態效果：
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
@@ -70,7 +69,7 @@ aiTranslatedFrom: "zh-CN"
 <a class="article-bookmark" href="https://github.com/anzhiyu-c/hexo-theme-anzhiyu" target="_blank" rel="noopener">
   <div class="article-bookmark__content">
     <div class="article-bookmark__title">anzhiyu-c / hexo-theme-anzhiyu (安知魚主題官方儲存庫)</div>
-    <p class="article-bookmark__desc">AnZhiYu 是 Hexo 平臺上廣受讚譽的極客部落格主題，以出色的微動效與資訊密度設計成為業界標竿。</p>
+    <p class="article-bookmark__desc">AnZhiYu 是 Hexo 平台上廣受讚譽的極客部落格主題，以出色的微動態效果與資訊密度設計成為業界標竿。</p>
     <div class="article-bookmark__site">
       <span class="badge badge-primary">GitHub</span>
       <span>github.com · ⭐ 2.8k Stars</span>
@@ -81,11 +80,9 @@ aiTranslatedFrom: "zh-CN"
   </div>
 </a>
 
----
-
 ## 四、雙人聊天氣泡對話流（Organic Animated Dialogue Stream）
 
-配置 `data-animate="true"` 啟用真實打字時序傳送動效、動態頭像（`footer_mini_logo__media`）與專屬提示音，首次滑入時觸發：
+配置 `data-animate="true"` 啟用真實打字時序發送動態效果、動態頭像（`footer_mini_logo__media`）與專屬提示音，首次滑入時觸發：
 
 <div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">

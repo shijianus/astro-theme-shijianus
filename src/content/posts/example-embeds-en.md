@@ -1,32 +1,31 @@
 ---
-title: "Example: Rich Media Embeds, Post Formats, and Chat Bubbles Showcase"
-description: "A comprehensive showcase of WordPress-style Post Formats, video/audio vinyl records, bookmark cards, and chat bubble dialogue streams."
+title: "Example: Rich Media Embeds, Post Formats, and Chat Bubble Display"
+description: "A comprehensive showcase of WordPress-style Post Formats, video/audio vinyl records, bookmark cards, and chat bubble dialogue flow."
 pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["example", "showcase", "embeds", "post-formats"]
-category: "Examples"
-series: "Feature Examples"
+category: "Example"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-embeds"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
 ---
-
-This example article is dedicated to showcasing and testing **Rich Media Embeds, WordPress Post Formats, and Two-Person Chat Dialogue** within blog post content.
+This example is dedicated to showcasing and testing **Rich Media Embeds, WordPress Post Formats, and Chat Dialogue** within blog posts.
 
 ---
 
-## I. Asides and Status Updates
+## I. Notes and Micro-Quotes (Aside & Status)
 
-### 1. Aside Cards
+### 1. Aside Note Card
 
 <div class="article-aside">
-  <p><strong>💡 Quick Note</strong>: The true value of static sites isn't about showing off technical prowess, but about delivering a pure reading experience that's lightning-fast and free from server-side maintenance burdens.</p>
+  <p><strong>💡 Memo</strong>: The true value of a static site isn't about showing off technical prowess, but about delivering a pure reading experience with extreme speed and zero server-side maintenance burden.</p>
 </div>
 
-### 2. Status Updates
+### 2. Status Update
 
 <div class="article-status">
   <div class="article-status__header">
@@ -42,19 +41,19 @@ This example article is dedicated to showcasing and testing **Rich Media Embeds,
     </div>
   </div>
   <p class="article-status__content">
-    Today, I finally completed all format extensions and visual refactoring for the main content area! From KaTeX and Mermaid to interactive dropdowns and vinyl record players, static delivery is just awesome! 🚀✨
+    Finally completed all format extensions and visual refactoring for the main content column today! From KaTeX and Mermaid to interactive dropdowns and vinyl records, static delivery is just awesome 🚀✨
   </p>
 </div>
 
 ---
 
-## II. Audio Vinyl Cards
+## II. Audio Vinyl Card
 
-When audio plays, the record cover will automatically trigger a smooth, stepless rotation animation:
+When audio plays, the album cover will automatically trigger a stepless smooth rotation animation:
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
-    <img src="/media/shijianus/workbench.jpg" alt="Record Cover" />
+    <img src="/media/shijianus/workbench.jpg" alt="Album Cover" />
   </div>
   <div class="audio-card__info">
     <div class="audio-card__title">Stellar Stroll (Ambient Focus)</div>
@@ -65,12 +64,12 @@ When audio plays, the record cover will automatically trigger a smooth, stepless
 
 ---
 
-## III. External Link Bookmark Cards
+## III. External Link Bookmark Card
 
 <a class="article-bookmark" href="https://github.com/anzhiyu-c/hexo-theme-anzhiyu" target="_blank" rel="noopener">
   <div class="article-bookmark__content">
     <div class="article-bookmark__title">anzhiyu-c / hexo-theme-anzhiyu (AnZhiYu Theme Official Repository)</div>
-    <p class="article-bookmark__desc">AnZhiYu is a highly acclaimed geek blog theme for the Hexo platform, setting an industry standard with its excellent micro-animations and information density design.</p>
+    <p class="article-bookmark__desc">AnZhiYu is a highly acclaimed geek blog theme on the Hexo platform, setting an industry standard with its excellent micro-animations and information density design.</p>
     <div class="article-bookmark__site">
       <span class="badge badge-primary">GitHub</span>
       <span>github.com · ⭐ 2.8k Stars</span>
@@ -81,9 +80,7 @@ When audio plays, the record cover will automatically trigger a smooth, stepless
   </div>
 </a>
 
----
-
-## IV. Organic Animated Dialogue Stream
+## 4. Two-Person Chat Bubble Dialogue Stream (Organic Animated Dialogue Stream)
 
 Configure `data-animate="true"` to enable realistic typing animation, dynamic avatars (`footer_mini_logo__media`), and exclusive notification sounds, triggered on first scroll-in:
 
@@ -98,17 +95,17 @@ Configure `data-animate="true"` to enable realistic typing animation, dynamic av
     <div class="chat-body">
       <div class="chat-author">Developer <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        Hello! Will implementing static rendering of `KaTeX` and `Mermaid` in Astro slow down frontend page load speed?
+        Hello! Will implementing static rendering of <code>KaTeX</code> and <code>Mermaid</code> in Astro slow down front-end page loading speed?
       </div>
     </div>
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architect shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
     <div class="chat-body">
       <div class="chat-author">Architect <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        Not at all! Because `remark-math` and `rehype-katex` compile formulas into pure HTML/MathML strings during the build-time, there's **zero JS runtime burden** on the browser side; and Mermaid diagrams are also dynamically loaded as ESM modules on demand, making the initial page load extremely fast! ⚡
+        Not at all! Because <code>remark-math</code> and <code>rehype-katex</code> compile formulas into pure HTML/MathML strings during the build phase (Build-time), there's <strong>0 JS runtime burden</strong> on the browser side; and Mermaid diagrams are dynamically loaded as ESM modules on demand, making the initial screen extremely fast! ⚡
       </div>
     </div>
   </div>
@@ -123,7 +120,7 @@ Configure `data-animate="true"` to enable realistic typing animation, dynamic av
     <div class="chat-body">
       <div class="chat-author">Developer <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:17</div>
       <div class="chat-bubble">
-        That's fantastic! The typing animation that varies with message length and the dynamic avatar effect are both excellent! 🎉
+        Awesome! This typing animation that varies with message length and the dynamic avatar effect are fantastic! 🎉
       </div>
     </div>
   </div>
@@ -131,6 +128,6 @@ Configure `data-animate="true"` to enable realistic typing animation, dynamic av
 
 ---
 
-## V. Interactive High-Precision Unit and Currency Converter
+## 5. Interactive Unit and Exchange Rate High-Precision Converter (Interactive Unit Converter)
 
 <div class="interactive-unit-converter" data-default="1"></div>

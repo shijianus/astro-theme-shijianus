@@ -1,32 +1,31 @@
 ---
-title: "Ejemplo: Incrustaciones de Medios Ricos, Formatos de Publicación y Burbujas de Chat"
-description: "Demostración completa de los Formatos de Publicación estilo WordPress, tarjetas de audio/video de vinilo, tarjetas de marcadores y flujos de diálogo de burbujas de chat."
+title: "Ejemplo: Inserciones de medios enriquecidos, formatos de publicación y burbujas de chat"
+description: "Demostración completa de formatos de publicación estilo WordPress, discos de vinilo de video/audio, tarjetas de marcadores y flujos de diálogo de burbujas de chat."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["ejemplo", "demostración", "incrustaciones", "formatos-de-publicación"]
+tags: ["ejemplo", "escaparate", "incrustaciones", "formatos-de-publicación"]
 category: "Ejemplo"
-series: "Ejemplos de Funcionalidades"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-embeds"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
 ---
-
-Este ejemplo está dedicado a mostrar y probar las **incrustaciones de medios ricos (Embeds), los formatos de publicación de WordPress y los flujos de diálogo de chat para dos personas** dentro del cuerpo del blog.
+Este ejemplo está dedicado a mostrar y probar **incrustaciones de medios enriquecidos (Embeds), formatos de publicación de WordPress y flujos de diálogo de chat (Chat Dialogue)** en el cuerpo de la publicación del blog.
 
 ---
 
-## I. Notas y Micro-citas (Aside & Status)
+## I. Notas y Microrrelatos (Aside & Status)
 
-### 1. Tarjeta de Nota (Aside)
+### 1. Tarjeta de nota al margen (Aside)
 
 <div class="article-aside">
-  <p><strong>💡 Nota rápida</strong>: El verdadero valor de los sitios estáticos no reside en la ostentación tecnológica, sino en ofrecer una experiencia de lectura pura, ultrarrápida y sin carga de mantenimiento del lado del servidor.</p>
+  <p><strong>💡 Nota rápida</strong>: El verdadero valor de los sitios estáticos no reside en la ostentación técnica, sino en ofrecer una experiencia de lectura pura, ultrarrápida y con cero carga de mantenimiento del servidor.</p>
 </div>
 
-### 2. Estado Dinámico (Status)
+### 2. Actualización de estado (Status)
 
 <div class="article-status">
   <div class="article-status__header">
@@ -38,19 +37,19 @@ Este ejemplo está dedicado a mostrar y probar las **incrustaciones de medios ri
       </div>
     </div>
     <div class="article-status__badge">
-      <span>📱 Desde Geek Workshop Mac Studio</span>
+      <span>📱 Desde Mac Studio de Geek Workshop</span>
     </div>
   </div>
   <p class="article-status__content">
-    ¡Hoy finalmente he completado todas las extensiones de formato y la reestructuración visual de la columna de contenido! Desde KaTeX y Mermaid hasta los desplegables interactivos y las tarjetas de vinilo, ¡la entrega estática es increíble! 🚀✨
+    ¡Hoy finalmente he completado la expansión de todos los formatos y la reestructuración visual de la columna de texto principal! Desde KaTeX y Mermaid hasta los desplegables interactivos y los discos de vinilo, la entrega estática es increíble 🚀✨
   </p>
 </div>
 
 ---
 
-## II. Tarjeta de Audio de Vinilo
+## II. Tarjeta de audio de disco de vinilo (Audio Vinyl Card)
 
-Cuando se reproduce el audio, la portada del disco activará automáticamente un efecto de rotación suave y continuo:
+Al reproducir el audio, la portada del disco activará automáticamente un efecto de rotación suave y continua:
 
 <div class="article-audio-card">
   <div class="audio-card__cover">
@@ -65,7 +64,7 @@ Cuando se reproduce el audio, la portada del disco activará automáticamente un
 
 ---
 
-## III. Tarjeta de Marcador de Enlace Externo (Bookmark Card)
+## III. Tarjeta de marcador de enlace externo (Bookmark Card)
 
 <a class="article-bookmark" href="https://github.com/anzhiyu-c/hexo-theme-anzhiyu" target="_blank" rel="noopener">
   <div class="article-bookmark__content">
@@ -73,7 +72,7 @@ Cuando se reproduce el audio, la portada del disco activará automáticamente un
     <p class="article-bookmark__desc">AnZhiYu es un tema de blog geek muy aclamado en la plataforma Hexo, que se ha convertido en un referente de la industria por sus excelentes microanimaciones y diseño de densidad de información.</p>
     <div class="article-bookmark__site">
       <span class="badge badge-primary">GitHub</span>
-      <span>github.com · ⭐ 2.8k Stars</span>
+      <span>github.com · ⭐ 2.8k Estrellas</span>
     </div>
   </div>
   <div class="article-bookmark__icon">
@@ -81,11 +80,9 @@ Cuando se reproduce el audio, la portada del disco activará automáticamente un
   </div>
 </a>
 
----
+## IV. Flujo de Diálogo con Burbujas de Chat para Dos Personas (Organic Animated Dialogue Stream)
 
-## IV. Flujo de Diálogo Animado con Burbujas de Chat para Dos Personas (Organic Animated Dialogue Stream)
-
-Configura `data-animate="true"` para activar el efecto de envío con secuencia de escritura real, el avatar dinámico (`footer_mini_logo__media`) y el sonido de notificación exclusivo, que se activa al deslizarse por primera vez:
+Configure `data-animate="true"` para activar el efecto de animación de envío con secuencia de escritura real, avatares dinámicos (`footer_mini_logo__media`) y tonos de notificación exclusivos, que se activan al deslizarse por primera vez:
 
 <div class="article-chat" data-animate="true" data-sound="true">
   <div class="chat-message chat-left">
@@ -98,7 +95,7 @@ Configura `data-animate="true"` para activar el efecto de envío con secuencia d
     <div class="chat-body">
       <div class="chat-author">Desarrollador <a href="https://github.com/LeonBoven" target="_blank" rel="noopener noreferrer">Léon Boven</a> · 10:15</div>
       <div class="chat-bubble">
-        ¡Hola! ¿La implementación de la renderización estática de <code>KaTeX</code> y <code>Mermaid</code> en Astro ralentizará la velocidad de carga de la página frontend?
+        ¡Hola! ¿La renderización estática de <code>KaTeX</code> y <code>Mermaid</code> en Astro ralentizará la velocidad de carga de la página frontend?
       </div>
     </div>
   </div>
@@ -108,7 +105,7 @@ Configura `data-animate="true"` para activar el efecto de envío con secuencia d
     <div class="chat-body">
       <div class="chat-author">Arquitecto <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">
-        ¡Para nada! Porque <code>remark-math</code> y <code>rehype-katex</code> ya compilan las fórmulas en cadenas puras de HTML/MathML durante el tiempo de construcción (Build-time), lo que significa <strong>0 carga de tiempo de ejecución de JS</strong> en el navegador; y los diagramas de Mermaid también se cargan de forma asíncrona y bajo demanda como módulos ESM, ¡haciendo que la primera pantalla sea extremadamente rápida! ⚡
+        ¡En absoluto! Porque <code>remark-math</code> y <code>rehype-katex</code> ya compilan las fórmulas a cadenas puras de HTML/MathML durante el tiempo de construcción (Build-time), lo que significa <strong>0 carga de tiempo de ejecución de JS</strong> en el navegador; y los diagramas de Mermaid también se cargan de forma asíncrona y bajo demanda como módulos ESM, ¡haciendo que la primera pantalla sea extremadamente rápida! ⚡
       </div>
     </div>
   </div>

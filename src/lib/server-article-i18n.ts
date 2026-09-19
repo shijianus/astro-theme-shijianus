@@ -378,20 +378,20 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
     for (const gModel of candidateGeminiModels) {
       const now = Date.now();
       const availableKeys = candidateGeminiKeys.filter(
-        (k) => !badGeminiModelKeys.has(`${k}:${gModel}`) && (rateLimitedGeminiKeys.get(`${k}:${gModel}`) || 0) <= now,
+        (k) => !badGeminiKeys.has(k) && !badGeminiModelKeys.has(`${k}:${gModel}`) && (rateLimitedGeminiKeys.get(`${k}:${gModel}`) || 0) <= now,
       );
-      const nonBannedKeys = candidateGeminiKeys.filter((k) => !badGeminiModelKeys.has(`${k}:${gModel}`));
+      const nonBannedKeys = candidateGeminiKeys.filter((k) => !badGeminiKeys.has(k) && !badGeminiModelKeys.has(`${k}:${gModel}`));
       if (nonBannedKeys.length === 0) continue;
 
       const keysToTry = availableKeys.length > 0 ? availableKeys : nonBannedKeys;
-      const maxKeyAttempts = Math.min(keysToTry.length * 2, 20);
+      const maxKeyAttempts = Math.min(keysToTry.length, 5);
 
       for (let kAttempt = 0; kAttempt < maxKeyAttempts; kAttempt++) {
         const gKey = keysToTry[geminiKeyIndex % keysToTry.length];
         geminiKeyIndex++;
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 45000);
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${encodeURIComponent(gKey)}`;
           const response = await fetch(url, {
             method: 'POST',
@@ -421,6 +421,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
             const errText = await response.text().catch(() => '');
             if (response.status === 404 || response.status === 403 || response.status === 401) {
               badGeminiKeys.add(gKey);
+              badGeminiModelKeys.add(`${gKey}:${gModel}`);
               console.warn(`[Article-i18n] Gemini key marked permanently inactive (status ${response.status})`);
             } else if (response.status === 429) {
               rateLimitedGeminiKeys.set(`${gKey}:${gModel}`, Date.now() + 20000);
@@ -454,7 +455,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
     for (const gModel of candidateGroqModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         const estimatedInputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 3);
         const safeMaxTokens = Math.max(1500, Math.min(3600, 7500 - estimatedInputTokens));
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

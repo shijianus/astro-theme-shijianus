@@ -1,56 +1,55 @@
 ---
-title: "Beispiel: Aufklappbare Panels, Akkordeons und Dropdown-Selektoren"
-description: "Umfassende Demonstration nativer Details-Elemente, Akkordeon-Gruppen, verschachtelter Aufklappbereiche und spezieller Dropdown-Selektor-Komponenten."
+title: "Beispiel: Anzeigeformate für Klappfelder, Akkordeons und Dropdown-Menüs"
+description: "Umfassende Demonstration nativer Details, Akkordeon-Klappgruppen, verschachtelter Klappfelder und spezieller Dropdown-Auswahlkomponenten."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["Beispiel", "Showcase", "Aufklappen", "Dropdown"]
-category: "Beispiele"
-series: "Funktionsbeispiele"
+tags: ["Beispiel", "Präsentation", "Klappfeld", "Dropdown"]
+category: "Beispiel"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-details-collapse"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
 ---
+Dieses Beispiel dient der Validierung und dem Testen der folgenden Komponenten im Blog-Text: **Klappfelder (Details)**, **Akkordeongruppen (Accordions)** sowie **spezieller Dropdown-Auswahlfelder (Dropdown Selectors)**.
 
-Dieses Beispiel dient ausschließlich der Verifikation und dem Testen der Komponenten **Aufklappbare Panels (Details), Akkordeon-Gruppen (Accordions) sowie spezielle Dropdown-Selektoren** im Bloginhalt.
-
-Alle Komponenten basieren bevorzugt auf nativen Browser-Semantiken oder einer leichten Islands-Architektur, um eine null- oder minimalen Client-Overhead zu gewährleisten.
+Alle Komponenten basieren vorzugsweise auf nativer Browser-Semantik oder einer leichtgewichtigen Islands-Architektur, um null oder minimale Client-Overheads zu gewährleisten.
 
 ---
 
-## 1. Nativer, stilisierter Aufklappbereich (Single Details / Summary)
+## 1. Native, verschönerte Klappfelder (Einzelne Details / Summary)
 
-Unterstützt eine sanfte Rotationsanimation des Pfeils und einen fließenden Lichteffekt am Kartenrand.
+Unterstützt flüssige Pfeil-Rotationsanimationen und fließende Rahmenbeleuchtung für Karten.
 
 <details class="article-accordion" open>
   <summary>
-    <span>💡 Warum können statische Site-Generatoren eine extrem hohe Konnektivität erreichen?</span>
+    <span>💡 Warum können statische Seitengeneratoren eine extrem hohe Parallelität erreichen?</span>
     <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
   </summary>
   <div class="accordion-content">
-    <p>Weil statische Generatoren während des Build-Prozesses alle Markdown-Inhalte und Komponenten in reine HTML/CSS-Dateien kompilieren. CDN-Knoten beantworten Anfragen direkt, ohne Datenbankabfragen oder Backend-Berechnungen, sodass die theoretische Obergrenze der Konnektivität vom Netzwerk-Durchsatz abhängt.</p>
+    <p>Weil statische Generatoren während der Build-Phase alle Markdown-Dateien und Komponenten in reine HTML/CSS-Statikdateien kompilieren. CDN-Knoten antworten direkt auf Anfragen, ohne Datenbankabfragen oder Backend-Berechnungen durchführen zu müssen. Die theoretische Obergrenze der Parallelität hängt vom Netzwerkdurchsatz ab.</p>
   </div>
 </details>
 
 ```html
 <details class="article-accordion" open>
   <summary>
-    <span>💡 Warum können statische Site-Generatoren eine extrem hohe Konnektivität erreichen?</span>
+    <span>💡 Warum können statische Seitengeneratoren eine extrem hohe Parallelität erreichen?</span>
     <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
   </summary>
   <div class="accordion-content">
-    <p>Weil statische Generatoren während des Build-Prozesses alle Markdown-Inhalte und Komponenten in reine HTML/CSS-Dateien kompilieren...</p>
+    <p>Weil statische Generatoren während der Build-Phase alle Markdown-Dateien und Komponenten in reine HTML/CSS-Statikdateien kompilieren...</p>
   </div>
 </details>
 ```
 
 ---
 
-## 2. Exklusive Akkordeon-Gruppe (Single-Open Accordion Group)
+## 2. Exklusive Akkordeon-Klappgruppe (Single-Open Akkordeongruppe)
 
-Wenn ein Element aufgeklappt wird, schließen sich die anderen aufgeklappten Elemente in derselben Gruppe automatisch sanft:
+Wenn ein Element geöffnet wird, schließen sich andere geöffnete Elemente innerhalb derselben Gruppe automatisch und fließend:
 
 <div class="article-accordion-group" data-single="true">
   <details class="article-accordion" open>
@@ -59,17 +58,17 @@ Wenn ein Element aufgeklappt wird, schließen sich die anderen aufgeklappten Ele
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Ohne öffentliche Datenbank-Verbindungsstrings und dynamische Backend-Prozesse ist die Architektur vollständig immun gegen SQL-Injection- und Server-Side-Command-Injection-Angriffe.</p>
+      <p>Ohne öffentliche Datenbankverbindungszeichenketten und dynamische Backend-Prozesse ist es vollständig immun gegen SQL-Injection- und Server-Side-Command-Injection-Angriffe.</p>
     </div>
   </details>
 
   <details class="article-accordion">
     <summary>
-      <span>⚡ 2. Millisekunden-schnelle globale CDN-Lieferung</span>
+      <span>⚡ 2. Millisekunden-schnelle globale CDN-Bereitstellung</span>
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>Statische Dateien sind auf hunderten CDN-Edge-Knoten weltweit verteilt, was zu extrem schnellen Cache-Hits führt. Die TTFB-Werte liegen in der Regel unter 20 ms.</p>
+      <p>Statische Dateien sind auf Hunderten von CDN-Edge-Knoten weltweit verteilt, was eine extrem schnelle lokale Trefferquote ermöglicht. Die TTFB liegt in der Regel unter 20 ms.</p>
     </div>
   </details>
 
@@ -79,7 +78,7 @@ Wenn ein Element aufgeklappt wird, schließen sich die anderen aufgeklappten Ele
       <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <div class="accordion-content">
-      <p>In Kombination mit Hosting-Plattformen wie Cloudflare Pages kann die Anwendung stabil laufen, ohne dass teure Server-Hosts gekauft werden müssen.</p>
+      <p>In Verbindung mit Hosting-Plattformen wie Cloudflare Pages ist ein stabiler Betrieb ohne den Kauf teurer Server-Hosts möglich.</p>
     </div>
   </details>
 </div>
@@ -91,7 +90,7 @@ Wenn ein Element aufgeklappt wird, schließen sich die anderen aufgeklappten Ele
     <div class="accordion-content">...</div>
   </details>
   <details class="article-accordion">
-    <summary><span>⚡ 2. Millisekunden-schnelle globale CDN-Lieferung</span>...</summary>
+    <summary><span>⚡ 2. Millisekunden-schnelle globale CDN-Bereitstellung</span>...</summary>
     <div class="accordion-content">...</div>
   </details>
 </div>
@@ -99,35 +98,68 @@ Wenn ein Element aufgeklappt wird, schließen sich die anderen aufgeklappten Ele
 
 ---
 
-## 3. Spezielle Dropdown-Formate (Dropdown Selectors & Interactive Calc)
+## 3. Spezielle Dropdown-Formate (Dropdown-Auswahlfelder & Interaktiver Rechner)
 
-### 1. Nativer, stilisierter Dropdown-Selektor (Custom Styled Select)
+### 1. Nativ gestylte Dropdown-Auswahl
 
 <div class="article-select-box">
   <label>
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-    <span>Runtime-Architektur auswählen:</span>
+    <span>Laufzeitarchitektur auswählen:</span>
   </label>
   <select class="article-select">
-    <option value="static">🚀 Reine statische Auslieferung (SSG - Empfohlen)</option>
-    <option value="ssr">⚙️ Hybrid Server-Side Rendering (SSR)</option>
-    <option value="edge">🌐 Edge-Computing Streaming Rendering (Edge)</option>
+    <option value="static">🚀 Rein statische Bereitstellung (SSG - Empfohlen)</option>
+    <option value="ssr">⚙️ Hybrides serverseitiges Rendering (SSR)</option>
+    <option value="edge">🌐 Edge Computing Streaming-Rendering (Edge)</option>
   </select>
 </div>
 
 ```html
 <div class="article-select-box">
-  <label><span>Runtime-Architektur auswählen:</span></label>
+  <label><span>选择运行时架构：</span></label>
   <select class="article-select">
-    <option value="static">🚀 Reine statische Auslieferung (SSG - Empfohlen)</option>
-    <option value="ssr">⚙️ Hybrid Server-Side Rendering (SSR)</option>
-    <option value="edge">🌐 Edge-Computing Streaming Rendering (Edge)</option>
+    <option value="static">🚀 纯静态交付 (SSG - 推荐)</option>
+    <option value="ssr">⚙️ 混合服务端渲染 (SSR)</option>
+    <option value="edge">🌐 边缘计算流式渲染 (Edge)</option>
   </select>
 </div>
 ```
 
-### 2. Interaktiver Dropdown-Spezifikationsrechner (Interactive Calc Dropdown)
+### 2. Interaktiver Dropdown-Spezifikationsrechner
 
-Bei der Auswahl verschiedener Optionen werden die entsprechenden Netzwerk- und Hardware-Spezifikationen in Echtzeit berechnet und rechts angezeigt:
+Bei Auswahl verschiedener Optionen werden die entsprechenden Netzwerk- und Hardwarespezifikationen auf der rechten Seite in Echtzeit berechnet und angezeigt:
 
-<div class
+<div class="interactive-calc-select">
+  <div class="article-select-box">
+    <label>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span>Videoausgabespezifikationen auswählen:</span>
+    </label>
+    <select class="article-select">
+      <option value="1080p" data-desc="1920 × 1080 @ 60fps · Bitrate 6.000 Kbps · Empfohlene Bandbreite 15 Mbps">1080P Full HD (1080p60)</option>
+      <option value="2k" data-desc="2560 × 1440 @ 60fps · Bitrate 12.000 Kbps · Empfohlene Bandbreite 30 Mbps">2K Ultra HD (1440p60)</option>
+      <option value="4k" data-desc="3840 × 2160 @ 60fps · Bitrate 25.000 Kbps · Empfohlene Bandbreite 60 Mbps">4K Ultra HD (2160p60 HDR)</option>
+    </select>
+  </div>
+  <div class="calc-output-box">
+    <span>📊 <strong>Berechnete Metriken</strong>:</span>
+    <span class="calc-output-value">1920 × 1080 @ 60fps · Bitrate 6.000 Kbps · Empfohlene Bandbreite 15 Mbps</span>
+  </div>
+</div>
+
+```html
+<div class="interactive-calc-select">
+  <div class="article-select-box">
+    <label><span>选择视频输出规格：</span></label>
+    <select class="article-select">
+      <option value="1080p" data-desc="1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps">1080P 全高清 (1080p60)</option>
+      <option value="2k" data-desc="2560 × 1440 @ 60fps · 码率 12,000 Kbps · 推荐带宽 30 Mbps">2K 极清 (1440p60)</option>
+      <option value="4k" data-desc="3840 × 2160 @ 60fps · 码率 25,000 Kbps · 推荐带宽 60 Mbps">4K 超高清 (2160p60 HDR)</option>
+    </select>
+  </div>
+  <div class="calc-output-box">
+    <span>📊 <strong>推算指标</strong>：</span>
+    <span class="calc-output-value">1920 × 1080 @ 60fps · 码率 6,000 Kbps · 推荐带宽 15 Mbps</span>
+  </div>
+</div>
+```
