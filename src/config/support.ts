@@ -23,6 +23,19 @@ export interface SponsorItem {
   featured?: boolean;
 }
 
+export interface SupportFaqItem {
+  question: string;
+  answer: string;
+  i18n?: {
+    en?: { question: string; answer: string };
+    fr?: { question: string; answer: string };
+    es?: { question: string; answer: string };
+    de?: { question: string; answer: string };
+    'zh-Hant'?: { question: string; answer: string };
+    [key: string]: { question: string; answer: string } | undefined;
+  };
+}
+
 export interface SupportConfig {
   title: string;
   subtitle: string;
@@ -30,7 +43,7 @@ export interface SupportConfig {
   trustPills: string[];
   currencies: Record<string, CurrencyPresetConfig>;
   seedSponsors: SponsorItem[];
-  faqs: Array<{ question: string; answer: string }>;
+  faqs: SupportFaqItem[];
 }
 
 export const supportConfig: SupportConfig = {
@@ -209,76 +222,181 @@ export const supportConfig: SupportConfig = {
       question: '赞赏的资金将如何使用？实际去向与技术投入如何公示？',
       answer:
         '为了维持博客高速、稳定与纯粹的阅读与交互体验，本博客完全基于现代化 Serverless 边缘架构自建。所有赞赏资金主要用于承担站点基础设施的实际开销，包括全球 CDN 边缘算力服务、D1 关系型数据库、高可用存储、顶级域名续费及网络安全防护等。赞赏在形式上是请博主喝一杯咖啡的心意表达，实际资金均投入于真实的技术运维与创作。我们致力于公开透明，在下方“支援名录与资金公示”中，我们会将真实发生的技术支出（如云服务续费、API 算力工具等）与支持记录进行关联展示；尚未实际使用的资金或尚在流转的部分，均在名录中使用“-”严格标注，杜绝虚假记录。',
+      i18n: {
+        en: {
+          question: 'How are sponsorship funds used? How are expenses and technical investments disclosed?',
+          answer:
+            'To maintain high performance, stability, and a clean reading experience, this blog is entirely built on modern serverless edge architecture. All sponsorships directly offset actual infrastructure costs, including global edge CDN services, D1 relational databases, high-availability storage, domain renewals, and security protections. Sponsorship is expressed as buying a cup of coffee, while funds are committed to technical operations and writing. In the supporter directory below, verified technical expenses are linked to records. Unallocated funds are transparently marked with "-" to prevent artificial figures.',
+        },
+      },
     },
     {
       question: '为什么收银台仅提供两种结算货币？金额是如何折算的？',
       answer:
         '为了避免过多币种带来的选择干扰，收银台仅提供两款货币选项：① 本地货币：系统基于您当前访问的网络 IP 智能推荐您所在地区的当地法币；② 统一结算货币：全球统一采用 USD（若本地货币本身为美元区，则自适应切换为 HKD）作为国际结算桥梁。各档位金额严格根据对应货币的当前生活咖啡消费标准与汇率整洁换算（最低金额严格不低于 1 当前货币单位，上限以 1,000 HKD 等价货币取整化 0 为准）。支持者可根据自己的付款习惯自由切换选择。',
+      i18n: {
+        en: {
+          question: 'Why does the checkout offer only two currencies? How are amounts converted?',
+          answer:
+            'To eliminate clutter, the checkout provides two curated currency options: (1) Local Currency, automatically detected based on your IP region; and (2) Base Settlement Currency, standardized as USD (or HKD for USD-region visitors) as an international settlement bridge. Tier amounts are carefully adjusted according to purchasing power standards and neat exchange roundings. You can switch between them seamlessly.',
+        },
+      },
     },
     {
       question: '如果我持有的银行卡非结算货币，可以完成支付吗？银行如何结算？',
       answer:
         '完全可以。Stripe 国际收银台支持全球超过 135+ 种法定货币的跨国结算。即使您的信用卡或借记卡是以其他币种（如英镑、日元、澳元等）开立，在结账时系统会自动向您的发卡行发起扣款请求，由您的发卡行按照结算当天的国际实时银行汇率自动折算为扣款货币，您只需在收银台确认当前显示的金额即可，无需手动兑换外币。',
+      i18n: {
+        en: {
+          question: 'Can I pay if my bank card is issued in a different currency? How does the bank process it?',
+          answer:
+            'Yes, absolutely. The Stripe checkout gateway supports cross-border settlement in over 135+ fiat currencies. Even if your credit or debit card is denominated in another currency (such as GBP, JPY, or AUD), your card issuer will automatically convert the charge at the real-time bank exchange rate. You only need to confirm the displayed amount without manual foreign exchange.',
+        },
+      },
     },
     {
       question: 'Stripe 国际收银台的到账与致谢名册记录机制是怎样的？',
       answer:
         'Stripe 国际收银台（支持 Apple Pay、Google Pay、国际信用卡及 Link 快捷支付）全流程采用自动化链路。当您在收银台完成支付后，Stripe 会通过安全 Webhook 即时向站点边缘接口发送履约通知，系统会自动将您的称呼、金额与寄语记录入库并即时更新至下方支援名册中，无需人工介入等待。',
+      i18n: {
+        en: {
+          question: 'How does the recording mechanism work for Stripe checkout and the supporter directory?',
+          answer:
+            'The Stripe checkout (supporting Apple Pay, Google Pay, international cards, and Link) is fully automated. Upon successful payment, Stripe sends an instant verified webhook to our edge API. The system immediately records your name, amount, and message into the database and refreshes the supporter directory in real time without manual delays.',
+        },
+      },
     },
     {
       question: '通过微信、支付宝扫码赞赏后，如何收录到致谢名册？',
       answer:
         '微信支付与支付宝赞赏码属于第三方独立收款通道，无法向本站提供对外公开的实时 Webhook 自动化接口。因此，扫码赞赏后需要博主在核对官方账单到账后，手动将您的信息录入至下方支援名册。若希望在名录中展示您的昵称与祝福，请在转账时于附言中备注；若转账时未填写备注，系统将默认以“匿名支持者”收录。如核对发现遗漏，欢迎随时发送邮件至 shijianus@epocanvas.com，博主会在查验后及时补充。',
+      i18n: {
+        en: {
+          question: 'How are WeChat Pay and Alipay QR code sponsorships added to the supporter directory?',
+          answer:
+            'WeChat Pay and Alipay QR codes are third-party receiving channels without public automated webhook endpoints. After scanning, the author manually verifies billing statements and records details into the database. If you wish to display your name and message, please include them in the transfer memo. Unlabeled transfers default to "Anonymous Supporter". If any entry is missing, email shijianus@epocanvas.com for prompt verification and update.',
+        },
+      },
     },
     {
       question: 'PayPal 与 Web3 (USDT) 赞赏的手续费与网络成本如何理解？',
       answer:
         '各个支付通道均存在其客观的规则与成本，本站绝不作“完全免手续费”的虚假承诺：① PayPal 属于国际商业支付平台，转账通常存在平台手续费或跨境汇率折算损耗，推荐使用同货币的 PayPal 转账来打赏以减少货币转换手续费；② Web3 USDT（Arbitrum One 网络）属于点对点去中心化链上转账，虽然 Arbitrum 的网络拥堵费极低（通常单笔 Gas 费低于 $0.01），但发起方钱包仍需承担该笔链上矿工费。转账完成后，您可将交易单号或 TxHash 发送邮件告知博主以便核对收录。',
+      i18n: {
+        en: {
+          question: 'How do transaction fees and network costs apply to PayPal and Web3 (USDT)?',
+          answer:
+            'Each channel has clear cost structures: (1) PayPal is a commercial platform subject to merchant fees and cross-border currency conversion margins—sending in matching currencies minimizes charges; (2) Web3 USDT on Arbitrum One is a peer-to-peer on-chain transfer with ultra-low gas (~$0.01), paid by the sender\'s wallet. After sending, you may email your transaction ID or TxHash for verification.',
+        },
+      },
     },
     {
       question: '如果赞赏出现误操作或需要退款，该如何申请？资金变动如何公示？',
       answer:
         '赞赏支持纯属自愿心意。如果在操作过程中因网络延迟、重复点击导致多次扣款，或者因误操作希望撤销赞赏，博主完全支持原路退回。申请退款请发送邮件至 shijianus@epocanvas.com，并请提供：① 支付渠道（Stripe、微信、支付宝或 PayPal）；② 支付凭单或交易单号（如 Stripe Receipt、微信/支付宝转账单号等）；③ 付款时间与金额。博主查阅邮件核对账目后会在后台发起原路退款。为了保障资金流向的绝对公开透明，所有因误操作退款或原路退回导致的资金变动，均会在下方支援名册中以公示标识如实注明撤销与结案情况，公示实际资金变动情况，确保账目全流程真实可溯。因个人精力有限，邮件通常在 24~48 小时内处理，敬请理解。',
+      i18n: {
+        en: {
+          question: 'How can I request a refund if an accidental charge occurs? How are balance adjustments disclosed?',
+          answer:
+            'All sponsorships are voluntary. If network delays or accidental multiple clicks result in unintended payments, full refunds back to the original method are readily supported. To request a refund, email shijianus@epocanvas.com with payment channel, transaction ID/receipt, and timestamp. For complete financial transparency, any refunded transactions are noted with a status badge in the directory below. Requests are usually handled within 24–48 hours.',
+        },
+      },
     },
     {
       question: '赞赏后如何获取电子收据凭单 (Stripe Receipt)？',
       answer:
         '在通过 Stripe 国际收银台支付时，只要您在结账页面填写了电子邮箱，Stripe 官方金融网关会在支付成功后第一时间自动向您的邮箱发送一份具备唯一交易流水号与明细清单的正式电子收据（Stripe Receipt）。该凭单可作为您本次支持的完整履约凭证。',
+      i18n: {
+        en: {
+          question: 'How do I obtain an official electronic receipt (Stripe Receipt) after sponsoring?',
+          answer:
+            'When using the Stripe checkout, entering your email address automatically generates an official Stripe electronic receipt with a unique transaction reference number and itemized breakdown, sent directly to your inbox upon successful payment.',
+        },
+      },
     },
     {
       question: '如果我想保持完全匿名可以吗？隐私与安全如何保障？',
       answer:
         '当然可以。在 Stripe 国际收银台或微信/支付宝转账附言中留空称呼与留言即可，系统将统一以“匿名支持者”形式收录致谢。在前台公开展示的支援名册中，绝不公开展示任何邮箱地址、信用卡号、网络 IP 地址或个人敏感信息。同时，Stripe 国际收银台采用金融级 PCI-DSS Level 1 最高安全标准加密沙箱结算，本站服务器完全无法获取且绝不存储任何银行卡数据，切实保障每一位支持者的数字隐私。',
+      i18n: {
+        en: {
+          question: 'Can I remain completely anonymous? How is privacy and data security protected?',
+          answer:
+            'Yes, absolutely. Leaving the supporter name and message blank in Stripe or transfer memos records your entry as "Anonymous Supporter". The public directory never displays email addresses, card numbers, IP addresses, or sensitive personal data. Stripe adheres to PCI-DSS Level 1 security standards; our servers never receive or store raw card data.',
+        },
+      },
     },
     {
       question: '赞赏支持能否提升社区等级 (LV) 或解锁付费文章？',
       answer:
         '完全不能，赞赏支持与社区等级 100% 独立脱钩。本博客所有文章与技术分享永久开源免费，绝不设立任何付费墙（Paywall）或赞助者专属隐藏专栏。同时，读者成长体系（LV.0 至 LV.4）与信任等级（TL）完全由系统根据读者的实际阅读深度、评论交流质量与日常互动等客观行为指标自动计算，绝无任何付费充值或赞赏特权通道。所有读者在社区中均享有完全平等的阅读、评论与互动权益。',
+      i18n: {
+        en: {
+          question: 'Does sponsoring increase community level (LV) or unlock paid articles?',
+          answer:
+            'No, sponsorships are 100% decoupled from community progression. All articles and research on this blog are free and open-source forever, with zero paywalls or exclusive content. Reader levels (LV.0 to LV.4) and trust tiers (TL) are calculated solely from objective reading and discussion engagement, ensuring equal access for all readers.',
+        },
+      },
     },
     {
       question: '为什么博客选择独立自建赞赏收银台，而不是使用第三方打赏平台？',
       answer:
         '自建最大的初衷是“纯粹、去中介与尊重隐私”。商业托管平台通常会扣除 5%~12% 的高额抽成与跨境手续费，并强制要求读者注册第三方账号或收集过多的营销偏好数据。本站通过接入原生 Stripe Financial API 与本地扫码直收，全流程无需注册账号即可完成心意传递，资金直接用于站点基础设施运维，将最纯净、安心的阅读与赞赏体验归还给读者。',
+      i18n: {
+        en: {
+          question: 'Why does the blog use a custom self-hosted checkout instead of third-party creator platforms?',
+          answer:
+            'The primary motivation is purity, disintermediation, and privacy. Commercial creator platforms often levy 5%–12% cuts and require mandatory account signups. By integrating directly with native Stripe APIs and local QR codes, support is conveyed with zero third-party registration, directing 100% of net proceeds into site infrastructure.',
+        },
+      },
     },
     {
       question: '在 Stripe 收银台使用 Apple Pay 或 Google Pay 的环境要求是什么？',
       answer:
         'Apple Pay 与 Google Pay 属于设备硬件原生级快捷支付：① Apple Pay 需在 Apple 原生硬件（iPhone、iPad、Mac）上使用 Safari 浏览器访问，且设备的 Apple Wallet 中已绑定并激活支持跨国支付的银行卡；② Google Pay 需在支持的环境（如 Android Chrome 或登录了 Google 账号并保存支付方式的桌面 Chrome）中使用。若当前环境未满足硬件唤起条件，收银台会自动切换为通用国际信用卡/借记卡输入表单，同样支持全球各类银行卡安全支付。',
+      i18n: {
+        en: {
+          question: 'What are the environment requirements for using Apple Pay or Google Pay on Stripe?',
+          answer:
+            'Apple Pay and Google Pay operate as native hardware-level payment methods: (1) Apple Pay requires Safari on Apple devices (iPhone, iPad, Mac) with an active card in Apple Wallet; (2) Google Pay requires a supported environment like Chrome on Android or desktop Chrome with saved payment cards. If unavailable, the checkout seamlessly provides a universal card form.',
+        },
+      },
     },
     {
       question: '如果我暂时预算有限，还有什么其他方式可以支持博主？',
       answer:
         '赞赏从来不是支持博主的唯一方式，甚至不是最重要的方式！每一个真诚的文字互动都是极好的动力：① 在文章底部的评论区分享你的见解、交流技术心得或指出文章勘误；② 将有价值的博文分享给身边的技术朋友或社区；③ 在 GitHub 上为博客相关项目点一颗 Star。每一次驻足阅读与思想共鸣，都是在为这个独立站点注入持久生命力。',
+      i18n: {
+        en: {
+          question: 'If my budget is limited, what other ways can I support the author?',
+          answer:
+            'Monetary sponsorship is never the only or most important form of support. Engaging genuinely in article discussions, sharing helpful posts with friends and developer communities, or starring related repositories on GitHub gives this independent site lasting vitality.',
+        },
+      },
     },
     {
       question: '如果致谢名册中的信息写错了或后续希望修改，该如何处理？',
       answer:
         '完全可以随时修正。无论是 Stripe 自动化收录还是人工录入的支持记录，若您在提交后希望修改昵称称呼、更新留言寄语，或者申请撤下称呼转为完全匿名，均可随时发送邮件至 shijianus@epocanvas.com。提供赞赏时间与对应金额以便核实后，博主会在后台直接协助更新数据库致谢名册。',
+      i18n: {
+        en: {
+          question: 'What if my entry in the supporter directory contains a typo or needs updating?',
+          answer:
+            'You can update details anytime. Whether automated or manual, if you need to edit your displayed name, message, or switch to complete anonymity, email shijianus@epocanvas.com with payment time and amount for direct database updates.',
+        },
+      },
     },
     {
       question: '除了在公开名录中展示，我的赞赏留言博主能及时看到吗？',
       answer:
         '是的，每一份留言都会被认真阅读。站点边缘 Functions 配置了 Telegram 私有 Bot 异步通知链路，每当一笔赞赏成功完成（包含留言与称呼），系统会在毫秒级向博主的私人 Telegram 推送格式化通知。如果您在留言中附带了联系方式或交流问题，博主也会在查阅后专程回信交流。',
+      i18n: {
+        en: {
+          question: 'Beyond the public directory, will the author receive my sponsorship message promptly?',
+          answer:
+            'Yes, every message is read personally. Our edge Functions trigger instant Telegram bot alerts to the author\'s private channel within milliseconds of transaction completion. If contact information is included, the author can also follow up directly.',
+        },
+      },
     },
   ],
 };

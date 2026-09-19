@@ -831,7 +831,7 @@ export const SupportDashboard: React.FC = () => {
               <div className="space-y-2.5">
                 <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                    👤 {t('support.supporterName', '称呼或社交账号')} (可选)
+                    👤 {t('support.supporterName', '称呼或社交账号')} ({t('support.optional', '可选')})
                   </label>
                   <input
                     type="text"
@@ -845,7 +845,7 @@ export const SupportDashboard: React.FC = () => {
 
                 <div className="space-y-1">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                    💬 {t('support.supporterMessage', '留言寄语')} (可选)
+                    💬 {t('support.supporterMessage', '留言寄语')} ({t('support.optional', '可选')})
                   </label>
                   <textarea
                     rows={2}
@@ -1582,7 +1582,11 @@ export const SupportDashboard: React.FC = () => {
                   onClick={() => setExpandedFaq(isOpen ? null : idx)}
                   className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 font-bold text-sm text-slate-900 dark:text-white hover:text-[#425aef] dark:hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <span>{convertText(faq.question, locale)}</span>
+                  <span>
+                    {locale === 'zh-CN'
+                      ? faq.question
+                      : (faq.i18n?.[locale]?.question ?? faq.i18n?.en?.question ?? convertText(faq.question, locale))}
+                  </span>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
                       isOpen ? 'rotate-180 text-[#425aef]' : ''
@@ -1591,7 +1595,9 @@ export const SupportDashboard: React.FC = () => {
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-white/[0.06] pt-3 animate-in fade-in">
-                    {convertText(faq.answer, locale)}
+                    {locale === 'zh-CN'
+                      ? faq.answer
+                      : (faq.i18n?.[locale]?.answer ?? faq.i18n?.en?.answer ?? convertText(faq.answer, locale))}
                   </div>
                 )}
               </div>

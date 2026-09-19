@@ -85,14 +85,14 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
       <!-- 文章标题：两行截断，字号 15px~16px -->
       <a
         href={link}
-        class="text-[15px] sm:text-[16px] font-bold line-clamp-2 leading-snug text-[var(--font-color)] group-hover:text-[var(--theme-main)] transition-colors"
+        class="article-title post-card-title text-[15px] sm:text-[16px] font-bold line-clamp-2 leading-snug text-[var(--font-color)] group-hover:text-[var(--theme-main)] transition-colors"
       >
         {title}
       </a>
 
       <!-- 摘要文字：单行或精简两行，让卡片高度大幅收拢 -->
       {summary && (
-        <p class="text-[12px] line-clamp-1 sm:line-clamp-2 leading-relaxed text-[var(--text-soft)] opacity-80 m-0">
+        <p class="post-card-excerpt text-[12px] line-clamp-1 sm:line-clamp-2 leading-relaxed text-[var(--text-soft)] opacity-80 m-0">
           {summary}
         </p>
       )}

@@ -533,7 +533,7 @@ export function MusicPocket({ apiBase }: Props) {
     ? parsedLyrics[activeLyricIndex].text
     : currentTrack
       ? `${currentTrack.name} - ${currentTrack.artist}`
-      : 'EpoCanvas 纯净背景音乐';
+      : t('EpoCanvas 纯净背景音乐');
 
   return (
     <div className={`shijianus-music-pocket ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''}`}>

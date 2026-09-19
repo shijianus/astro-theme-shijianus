@@ -67,6 +67,10 @@ const PAGES_TO_AUDIT = [
   '/version/',
   '/status/',
   '/support/',
+  '/friends/',
+  '/roadmap/',
+  '/lab/',
+  '/404.html',
   '/posts/hello-world/',
 ];
 
@@ -77,19 +81,35 @@ async function scanPageForChinese(page, targetLocale) {
   await page.evaluate((loc) => {
     window.localStorage.setItem('shijianus-locale-variant', loc);
     window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: loc }));
+    if (window.__shijianus_applyLocaleVariant) {
+      window.__shijianus_applyLocaleVariant(loc);
+    }
   }, targetLocale);
   await page.waitForTimeout(600);
 
   // Extract all text nodes that still contain Chinese characters
-  // We exclude the actual post body content of the article (because AI translation of articles is disabled by default)
+  // We exclude the actual post body content and markdown post title/headings of the article (because AI translation of articles is disabled by default)
   // But we DO inspect header, navigation, sidebar, widgets, comments section, modals, buttons, drawers, footers!
   const leaks = await page.evaluate(() => {
     const zhRegex = /[\u4e00-\u9fa5]/;
     const results = [];
 
-    // Filter out article markdown body since article body AI translation is isolated
-    const isInsideArticleBody = (el) => {
-      return el.closest('#article-container, .article-body, .post-content');
+    // Filter out article markdown body and markdown titles/excerpts/TOC since article body AI translation is isolated
+    const isInsideArticleContent = (el) => {
+      // Ignore elements inside closed modals or overlays when running general page audit
+      if (el.closest('#search-dialog:not(.show), #console:not(.show), .theme-account-overlay:not(.show), .theme-account-drawer:not(.show)')) {
+        return true;
+      }
+
+      return Boolean(el.closest(
+        '#article-container, .article-body, .post-content, #card-toc, .toc-content, .mobile-toc-text, #mobile-toc, ' +
+        '.shijianus-ai-summary__output, .ai-explanation, .article-title, .article-sort-item-title, ' +
+        '.home-mobile-focus-card__title, .postNav-title, .post-hero__title, ' +
+        '.card-recent-post strong, .card-recent-post span.line-clamp-2, .card-recent-post .line-clamp-1, ' +
+        '.card-recent-post .title, .aside-list .title, ' +
+        '.recent-post-info p, a.article-title, .search-result-item__content strong, .search-result-item__content span, ' +
+        '.post-card-title, .post-card-excerpt, .recent-post-item a, .recent-post-item p'
+      ));
     };
 
     const walker = document.createTreeWalker(
@@ -109,8 +129,8 @@ async function scanPageForChinese(page, targetLocale) {
             return NodeFilter.FILTER_REJECT;
           }
 
-          // Ignore article body itself (since article content AI translation is isolated)
-          if (isInsideArticleBody(parent)) {
+          // Ignore article body and markdown title/excerpt/headings itself
+          if (isInsideArticleContent(parent)) {
             return NodeFilter.FILTER_REJECT;
           }
 
