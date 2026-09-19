@@ -1,12 +1,12 @@
 ---
-title: "Beispiel: Interaktive Tabs und Dropdown‑Switcher für mehrere Code‑Versionen"
-description: "Umfassende Demonstration interaktiver Tabs und eines auf Dropdown‑Basis mehrsprachigen Code‑Switchers."
+title: "Beispiel: Mehrere Registerkarten und Code-Versionen Umschalten"
+description: "Umfassende Demonstration interaktiver Registerkarten und einer Dropdown-basierten mehrsprachigen Code-Umschalter-Komponente."
 pubDate: 2026-08-28
 draft: false
 toc: true
-tags: ["beispiel", "vorführung", "tabs", "code-gruppe"]
+tags: ["Beispiel", "Vorführung", "Registerkarten", "Code-Gruppe"]
 category: "Beispiel"
-series: "Funktionsbeispiele"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-tabs"
@@ -14,13 +14,13 @@ lang: "de"
 aiTranslatedFrom: "zh-CN"
 ---
 
-Dieses Beispiel dient ausschließlich der Demonstration und dem Test von **interaktiven Tabs (Interactive Tabs) und einem Dropdown‑Switcher für mehrere Versionen (Dropdown Switcher)** im Blog‑Inhalt.
+Dieses Beispiel dient ausschließlich dazu, die **Mehrfach-Tab-Umschaltung (Interactive Tabs) und die Mehrversions-Dropdown-Umschaltung (Dropdown Switcher)** im Blog-Text zu demonstrieren und zu testen.
 
 ---
 
-## 1. Paketmanager‑Installationsbefehle (Interactive Tabs)
+## 1. Paketmanager-Installationsbefehle-Tab (Interactive Tabs)
 
-Benutzer können verschiedene Registerkarten anklicken, um die jeweiligen Installationsbefehle des Paketmanagers schnell zu kopieren:
+Der Benutzer kann durch Klicken auf verschiedene Tabs die entsprechenden Paketmanager-Installationsbefehle schnell kopieren:
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
@@ -64,15 +64,15 @@ Benutzer können verschiedene Registerkarten anklicken, um die jeweiligen Instal
 
 ---
 
-## 2. Dropdown‑Switcher für mehrere Frontend‑Frameworks (Interactive Dropdown Switcher)
+## 2. Mehrere Frontend-Framework-Implementierungen für Dropdown-Umschalter (Interactive Dropdown Switcher)
 
-Durch das Dropdown‑Menü im Text können Sie das gewünschte Frontend‑Framework auswählen; das darunterliegende Inhalts‑Panel wird automatisch synchron umgeschaltet:
+Durch Auswahl des Ziel-Frameworks im Dropdown-Menü im Text wird die darunterliegende Inhaltsanzeige automatisch synchronisiert:
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
     <div class="article-dropdown-switcher__title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
-      <span>Wählen Sie die Frontend‑Framework‑Implementierung:</span>
+      <span>Wählen Sie die Frontend-Framework-Implementierung:</span>
     </div>
     <select class="article-select dropdown-switcher__select">
       <option value="react-code">⚛️ React 19 (Hooks)</option>
@@ -81,4 +81,40 @@ Durch das Dropdown‑Menü im Text können Sie das gewünschte Frontend‑Framew
       <option value="svelte-code">🟠 Svelte 5 (Runes)</option>
     </select>
   </div>
-  <div class="
+  <div class="article-dropdown-switcher__body">
+    <div class="article-dropdown-panel is-active" data-panel="react-code">
+      <div class="article-dropdown-panel__title">⚛️ React 19 Zähler-Code:</div>
+      <pre class="no-code-enhance"><code class="language-tsx">import { useState } from 'react';
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount((c) => c + 1)}>Count: {count}</button>;
+}</code></pre>
+    </div>
+    <div class="article-dropdown-panel" data-panel="vue-code">
+      <div class="article-dropdown-panel__title">🟢 Vue 3.5 Zähler-Code：</div>
+      <pre class="no-code-enhance"><code class="language-html"><script setup lang="ts">
+import { ref } from 'vue';
+const count = ref(0);
+</script>
+<template>
+  <button @click="count++">Zähler: {{ count }}</button>
+</template></code></pre>
+    </div>
+    <div class="article-dropdown-panel" data-panel="astro-code">
+      <div class="article-dropdown-panel__title">🚀 Astro 6 Insel-Komponenten-Code：</div>
+      <pre class="no-code-enhance"><code class="language-astro">---
+const { label = "Astro statische Komponente" } = Astro.props;
+---
+<div class="astro-card">
+  <h3>{{label}}</h3>
+</div></code></pre>
+    </div>
+    <div class="article-dropdown-panel" data-panel="svelte-code">
+      <div class="article-dropdown-panel__title">🟠 Svelte 5 Zähler-Code：</div>
+      <pre class="no-code-enhance"><code class="language-svelte"><script lang="ts">
+  let count = $state(0);
+</script>
+<button onclick=() => count++>Zähler: {count}</button></code></pre>
+    </div>
+  </div>
+</div>

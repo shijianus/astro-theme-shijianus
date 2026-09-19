@@ -43,10 +43,28 @@
   "anzhiyu-markdown-showcase": {
     "i18nKey": "anzhiyu-markdown-showcase",
     "translations": {
+      "de": {
+        "filename": "anzhiyu-markdown-showcase-de.md",
+        "slug": "anzhiyu-markdown-showcase-de",
+        "title": "Anzhiyu-Stil Markdown-Fähigkeitsprüfung: Inhaltsverzeichnis, Formatierung, versteckte Inhalte, Medien und Inhaltsblöcke",
+        "isAiGenerated": true
+      },
       "en": {
         "filename": "anzhiyu-markdown-showcase-en.md",
         "slug": "anzhiyu-markdown-showcase-en",
         "title": "Anzhiyu-style Markdown Capability Review: Table of Contents, Formatting, Hidden Content, Media, and Content Blocks",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "anzhiyu-markdown-showcase-es.md",
+        "slug": "anzhiyu-markdown-showcase-es",
+        "title": "Revisión completa de las capacidades de Markdown al estilo Anzhiyu: tabla de contenido, formato, contenido oculto, medios y bloques de contenido",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "anzhiyu-markdown-showcase-fr.md",
+        "slug": "anzhiyu-markdown-showcase-fr",
+        "title": "Bilan complet des capacités Markdown de An Zhi Yu : Table des matières, formatage, contenu caché, médias et blocs de contenu",
         "isAiGenerated": true
       },
       "zh-Hant": {
@@ -148,6 +166,36 @@
   "content-first-homepage": {
     "i18nKey": "content-first-homepage",
     "translations": {
+      "de": {
+        "filename": "content-first-homepage-de.md",
+        "slug": "content-first-homepage-de",
+        "title": "Inhaltsorientierte Startseiten: Langlebiger als eine Ansammlung von Funktionen",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "content-first-homepage-en.md",
+        "slug": "content-first-homepage-en",
+        "title": "Content-First Homepages: Why They're More Durable Than Feature Stacks",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "content-first-homepage-es.md",
+        "slug": "content-first-homepage-es",
+        "title": "La página de inicio con contenido primero: por qué es más duradera que una pila de funciones",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "content-first-homepage-fr.md",
+        "slug": "content-first-homepage-fr",
+        "title": "Une page d'accueil axée sur le contenu : plus durable qu'une accumulation de fonctionnalités",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "content-first-homepage-zh-Hant.md",
+        "slug": "content-first-homepage-zh-Hant",
+        "title": "內容優先的首頁，為什麼比功能堆疊更耐用",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "content-first-homepage.md",
         "slug": "content-first-homepage",
@@ -241,6 +289,36 @@
   "example-callouts": {
     "i18nKey": "example-callouts",
     "translations": {
+      "de": {
+        "filename": "example-callouts-de.md",
+        "slug": "example-callouts-de",
+        "title": "Beispiel: Vollständige Übersicht der Callout-Hinweisboxen",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-callouts-en.md",
+        "slug": "example-callouts-en",
+        "title": "Example: Complete Display of Callouts and Hint Cards",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-callouts-es.md",
+        "slug": "example-callouts-es",
+        "title": "Ejemplo: Demostración completa de Callouts y tarjetas de aviso",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-callouts-fr.md",
+        "slug": "example-callouts-fr",
+        "title": "Exemple : Affichage complet des encadrés et des cartes d'information",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-callouts-zh-Hant.md",
+        "slug": "example-callouts-zh-Hant",
+        "title": "範例：Callouts 告示框與提示卡完整展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-callouts.md",
         "slug": "example-callouts",
@@ -255,7 +333,7 @@
       "de": {
         "filename": "example-code-enhancements-de.md",
         "slug": "example-code-enhancements-de",
-        "title": "Beispiel: Vollständige Demonstration der Code‑Block‑Erweiterungsfunktionen",
+        "title": "Beispiel: Umfassende Codeblock-Erweiterungen",
         "isAiGenerated": true
       },
       "en": {
@@ -273,13 +351,13 @@
       "fr": {
         "filename": "example-code-enhancements-fr.md",
         "slug": "example-code-enhancements-fr",
-        "title": "Exemple : Démonstration des fonctionnalités avancées des blocs de code",
+        "title": "Exemple : Démonstration complète des améliorations des blocs de code",
         "isAiGenerated": true
       },
       "zh-Hant": {
         "filename": "example-code-enhancements-zh-Hant.md",
         "slug": "example-code-enhancements-zh-Hant",
-        "title": "範例：程式碼區塊完整增強功能展示",
+        "title": "範例：程式碼區塊全面強化功能展示",
         "isAiGenerated": true
       },
       "zh-CN": {
@@ -296,7 +374,7 @@
       "de": {
         "filename": "example-details-collapse-de.md",
         "slug": "example-details-collapse-de",
-        "title": "Beispiel: Aufklappbare Panels, Akkordeons und Dropdown-Selektoren",
+        "title": "Beispiel: Anzeigeformate für Klappfelder, Akkordeons und Dropdown-Menüs",
         "isAiGenerated": true
       },
       "en": {
@@ -308,7 +386,7 @@
       "es": {
         "filename": "example-details-collapse-es.md",
         "slug": "example-details-collapse-es",
-        "title": "Ejemplo: Paneles plegables, acordeones y selectores desplegables",
+        "title": "Ejemplo: Demostración de paneles plegables, acordeones y menús desplegables",
         "isAiGenerated": true
       },
       "fr": {
@@ -337,25 +415,25 @@
       "de": {
         "filename": "example-embeds-de.md",
         "slug": "example-embeds-de",
-        "title": "Beispiel: Rich Media Einbettungen, Post-Formate und Chat-Dialoge",
+        "title": "Beispiel: Rich-Media-Einbettungen, Post-Formate und Chatblasen-Anzeige",
         "isAiGenerated": true
       },
       "en": {
         "filename": "example-embeds-en.md",
         "slug": "example-embeds-en",
-        "title": "Example: Rich Media Embeds, Post Formats, and Chat Bubbles Showcase",
+        "title": "Example: Rich Media Embeds, Post Formats, and Chat Bubble Display",
         "isAiGenerated": true
       },
       "es": {
         "filename": "example-embeds-es.md",
         "slug": "example-embeds-es",
-        "title": "Ejemplo: Incrustaciones de Medios Ricos, Formatos de Publicación y Burbujas de Chat",
+        "title": "Ejemplo: Inserciones de medios enriquecidos, formatos de publicación y burbujas de chat",
         "isAiGenerated": true
       },
       "fr": {
         "filename": "example-embeds-fr.md",
         "slug": "example-embeds-fr",
-        "title": "Exemple : Intégrations de médias riches, formats de publication et bulles de chat",
+        "title": "Exemple : Intégration de médias riches, formats de publication et affichage de bulles de chat",
         "isAiGenerated": true
       },
       "zh-Hant": {
@@ -375,6 +453,36 @@
   "example-frontmatter-fields": {
     "i18nKey": "example-frontmatter-fields",
     "translations": {
+      "de": {
+        "filename": "example-frontmatter-fields-de.md",
+        "slug": "example-frontmatter-fields-de",
+        "title": "Beispiel: Erweiterte Front Matter Felder und Zod Validierung",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-frontmatter-fields-en.md",
+        "slug": "example-frontmatter-fields-en",
+        "title": "Example: Front Matter Extended Fields and Zod Validation Showcase",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-frontmatter-fields-es.md",
+        "slug": "example-frontmatter-fields-es",
+        "title": "Ejemplo: Campos extendidos de Front Matter y demostración de validación con Zod",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-frontmatter-fields-fr.md",
+        "slug": "example-frontmatter-fields-fr",
+        "title": "Exemple : Champs étendus du Front Matter et démonstration de validation Zod",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-frontmatter-fields-zh-Hant.md",
+        "slug": "example-frontmatter-fields-zh-Hant",
+        "title": "範例：Front Matter 擴充欄位與 Zod 驗證展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-frontmatter-fields.md",
         "slug": "example-frontmatter-fields",
@@ -386,6 +494,36 @@
   "example-gallery-figure": {
     "i18nKey": "example-gallery-figure",
     "translations": {
+      "de": {
+        "filename": "example-gallery-figure-de.md",
+        "slug": "example-gallery-figure-de",
+        "title": "Beispiel: Bildergalerie, Polaroid-Fotos und Lightbox-Anzeige",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-gallery-figure-en.md",
+        "slug": "example-gallery-figure-en",
+        "title": "Example: Image Gallery, Polaroid Style Photos, and Lightbox Display",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-gallery-figure-es.md",
+        "slug": "example-gallery-figure-es",
+        "title": "Ejemplo: Galería de imágenes, fotos estilo Polaroid y visor de pantalla completa",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-gallery-figure-fr.md",
+        "slug": "example-gallery-figure-fr",
+        "title": "Exemple : Galerie d'images, photos Polaroid et Lightbox",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-gallery-figure-zh-Hant.md",
+        "slug": "example-gallery-figure-zh-Hant",
+        "title": "範例：圖片畫廊、拍立得相紙與燈箱展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-gallery-figure.md",
         "slug": "example-gallery-figure",
@@ -397,6 +535,36 @@
   "example-math": {
     "i18nKey": "example-math",
     "translations": {
+      "de": {
+        "filename": "example-math-de.md",
+        "slug": "example-math-de",
+        "title": "Beispiel: KaTeX-Mathematikformel-Rendering-Demonstration",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-math-en.md",
+        "slug": "example-math-en",
+        "title": "Example: KaTeX Math Formula Rendering Display",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-math-es.md",
+        "slug": "example-math-es",
+        "title": "Ejemplo: Demostración de renderizado de fórmulas matemáticas con KaTeX",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-math-fr.md",
+        "slug": "example-math-fr",
+        "title": "Exemple : rendu des formules mathématiques avec KaTeX",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-math-zh-Hant.md",
+        "slug": "example-math-zh-Hant",
+        "title": "範例：KaTeX 數學公式呈現展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-math.md",
         "slug": "example-math",
@@ -408,6 +576,36 @@
   "example-mermaid": {
     "i18nKey": "example-mermaid",
     "translations": {
+      "de": {
+        "filename": "example-mermaid-de.md",
+        "slug": "example-mermaid-de",
+        "title": "Beispiel: Mermaid 11 Diagramme und Visualisierungen",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-mermaid-en.md",
+        "slug": "example-mermaid-en",
+        "title": "Example: Mermaid 11 Diagrams and Visualizations",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-mermaid-es.md",
+        "slug": "example-mermaid-es",
+        "title": "Ejemplo: Diagramas y visualizaciones con Mermaid 11",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-mermaid-fr.md",
+        "slug": "example-mermaid-fr",
+        "title": "Exemple : Graphiques et visualisations Mermaid 11",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-mermaid-zh-Hant.md",
+        "slug": "example-mermaid-zh-Hant",
+        "title": "範例：Mermaid 11 圖表與視覺化展示",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-mermaid.md",
         "slug": "example-mermaid",
@@ -419,6 +617,36 @@
   "example-mindmap": {
     "i18nKey": "example-mindmap",
     "translations": {
+      "de": {
+        "filename": "example-mindmap-de.md",
+        "slug": "example-mindmap-de",
+        "title": "Beispiel: Markmap dynamische interaktive Mindmap mit unbegrenzter Hierarchie-Erweiterung",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "example-mindmap-en.md",
+        "slug": "example-mindmap-en",
+        "title": "Example: Markmap Dynamic Interactive Mind Map with Infinite Hierarchy Expansion",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "example-mindmap-es.md",
+        "slug": "example-mindmap-es",
+        "title": "Ejemplo: Mapa mental dinámico e interactivo de Markmap con expansión de niveles infinitos",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "example-mindmap-fr.md",
+        "slug": "example-mindmap-fr",
+        "title": "Exemple : Carte mentale interactive dynamique Markmap et extension à niveaux illimités",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "example-mindmap-zh-Hant.md",
+        "slug": "example-mindmap-zh-Hant",
+        "title": "示例：Markmap 動態交互式思維導圖與無限層級擴展",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "example-mindmap.md",
         "slug": "example-mindmap",
@@ -433,31 +661,31 @@
       "de": {
         "filename": "example-tabs-de.md",
         "slug": "example-tabs-de",
-        "title": "Beispiel: Interaktive Tabs und Dropdown‑Switcher für mehrere Code‑Versionen",
+        "title": "Beispiel: Mehrere Registerkarten und Code-Versionen Umschalten",
         "isAiGenerated": true
       },
       "en": {
         "filename": "example-tabs-en.md",
         "slug": "example-tabs-en",
-        "title": "Example: Interactive Tabs and Multi‑Code Version Switcher Showcase",
+        "title": "Example: Multi-Tab and Multi-Code Version Switch Showcase",
         "isAiGenerated": true
       },
       "es": {
         "filename": "example-tabs-es.md",
         "slug": "example-tabs-es",
-        "title": "Ejemplo: Pestañas interactivas y conmutador de versiones de código",
+        "title": "Ejemplo: demostración de pestañas múltiples y cambio de versiones de código",
         "isAiGenerated": true
       },
       "fr": {
         "filename": "example-tabs-fr.md",
         "slug": "example-tabs-fr",
-        "title": "Exemple : affichage avec onglets multiples et bascule de versions de code",
+        "title": "Exemple : affichage de plusieurs onglets et de plusieurs versions de code",
         "isAiGenerated": true
       },
       "zh-Hant": {
         "filename": "example-tabs-zh-Hant.md",
         "slug": "example-tabs-zh-Hant",
-        "title": "範例：多分頁與多程式碼版本切換展示",
+        "title": "示例：多标签页与多代码版本切换展示",
         "isAiGenerated": true
       },
       "zh-CN": {
@@ -553,6 +781,36 @@
   "markdown-scan-showcase": {
     "i18nKey": "markdown-scan-showcase",
     "translations": {
+      "de": {
+        "filename": "markdown-scan-showcase-de.md",
+        "slug": "markdown-scan-showcase-de",
+        "title": "Markdown 扫描与展示能力全量示例",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "markdown-scan-showcase-en.md",
+        "slug": "markdown-scan-showcase-en",
+        "title": "Full Example of Markdown Scanning and Display Capabilities",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "markdown-scan-showcase-es.md",
+        "slug": "markdown-scan-showcase-es",
+        "title": "Ejemplo completo de capacidades de escaneo y visualización de Markdown",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "markdown-scan-showcase-fr.md",
+        "slug": "markdown-scan-showcase-fr",
+        "title": "Exemple complet de numérisation et d'affichage Markdown",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "markdown-scan-showcase-zh-Hant.md",
+        "slug": "markdown-scan-showcase-zh-Hant",
+        "title": "Markdown 掃描與展示能力全量示例",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "markdown-scan-showcase.md",
         "slug": "markdown-scan-showcase",
@@ -605,6 +863,36 @@
   "media-capability-lab": {
     "i18nKey": "media-capability-lab",
     "translations": {
+      "de": {
+        "filename": "media-capability-lab-de.md",
+        "slug": "media-capability-lab-de",
+        "title": "封面、图床与视频适配实验室",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "media-capability-lab-en.md",
+        "slug": "media-capability-lab-en",
+        "title": "Cover, Image Hosting, and Video Adaptation Lab",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "media-capability-lab-es.md",
+        "slug": "media-capability-lab-es",
+        "title": "封面、图床与视频适配实验室",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "media-capability-lab-fr.md",
+        "slug": "media-capability-lab-fr",
+        "title": "Laboratoire d'adaptation des couvertures, des hébergements d'images et des vidéos",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "media-capability-lab-zh-Hant.md",
+        "slug": "media-capability-lab-zh-Hant",
+        "title": "封面、圖床與影片適配實驗室",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "media-capability-lab.md",
         "slug": "media-capability-lab",
@@ -616,6 +904,36 @@
   "readable-geek-interfaces": {
     "i18nKey": "readable-geek-interfaces",
     "translations": {
+      "de": {
+        "filename": "readable-geek-interfaces-de.md",
+        "slug": "readable-geek-interfaces-de",
+        "title": "Warum ein geekiges Interface mehr Lesbarkeit benötigt",
+        "isAiGenerated": true
+      },
+      "en": {
+        "filename": "readable-geek-interfaces-en.md",
+        "slug": "readable-geek-interfaces-en",
+        "title": "Why Geeky Interfaces Need Readability Even More",
+        "isAiGenerated": true
+      },
+      "es": {
+        "filename": "readable-geek-interfaces-es.md",
+        "slug": "readable-geek-interfaces-es",
+        "title": "Por qué las interfaces con estética geek necesitan más legibilidad",
+        "isAiGenerated": true
+      },
+      "fr": {
+        "filename": "readable-geek-interfaces-fr.md",
+        "slug": "readable-geek-interfaces-fr",
+        "title": "Pourquoi l'interface geek a-t-elle davantage besoin de lisibilité",
+        "isAiGenerated": true
+      },
+      "zh-Hant": {
+        "filename": "readable-geek-interfaces-zh-Hant.md",
+        "slug": "readable-geek-interfaces-zh-Hant",
+        "title": "極客感介面為何更需要可讀性",
+        "isAiGenerated": true
+      },
       "zh-CN": {
         "filename": "readable-geek-interfaces.md",
         "slug": "readable-geek-interfaces",

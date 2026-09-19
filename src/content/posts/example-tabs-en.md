@@ -1,30 +1,29 @@
 ---
-title: "Example: Interactive Tabs and Multi‑Code Version Switcher Showcase"
-description: "Comprehensively demonstrate interactive Tabs and a dropdown‑based multi‑language code switcher component."
+title: "Example: Multi-Tab and Multi-Code Version Switch Showcase"
+description: "Comprehensive showcase of interactive Tabs and a dropdown-based multilingual code switcher component."
 pubDate: 2026-08-28
 draft: false
 toc: true
 tags: ["example", "showcase", "tabs", "code-group"]
 category: "Example"
-series: "Feature Examples"
+series: "功能示例"
 math: false
 mermaid: false
 i18nKey: "example-tabs"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
 ---
-
-This example is dedicated to demonstrating and testing **interactive tab switching (Interactive Tabs) and multi‑version dropdown switcher (Dropdown Switcher)** within blog content.
+This example is dedicated to demonstrating and testing **Interactive Tabs and Dropdown Switchers** within blog post bodies.
 
 ---
 
 ## 1. Package Manager Installation Command Tabs (Interactive Tabs)
 
-Users can click different tabs to quickly copy the corresponding package manager installation command:
+Users can click on different tabs to quickly copy the installation commands for the corresponding package manager:
 
 <div class="article-tabs">
   <div class="article-tabs__nav">
-    <button class="article-tabs__button is-active" type="button">pnpm (recommended)</button>
+    <button class="article-tabs__button is-active" type="button">pnpm (Recommended)</button>
     <button class="article-tabs__button" type="button">npm</button>
     <button class="article-tabs__button" type="button">yarn</button>
     <button class="article-tabs__button" type="button">bun</button>
@@ -64,9 +63,9 @@ Users can click different tabs to quickly copy the corresponding package manager
 
 ---
 
-## 2. Multi‑Framework Dropdown Switcher (Interactive Dropdown Switcher)
+## II. Implementing an Interactive Dropdown Switcher Across Multiple Frontend Frameworks
 
-Select the target frontend framework implementation from the dropdown menu in the article, and the content panel below will automatically switch accordingly:
+Select a target technology framework from the dropdown menu in the body text, and the content panel below will automatically switch in sync:
 
 <div class="article-dropdown-switcher">
   <div class="article-dropdown-switcher__header">
@@ -91,4 +90,30 @@ export function Counter() &#123;
 &#125;</code></pre>
     </div>
     <div class="article-dropdown-panel" data-panel="vue-code">
-      <div class="article-dropdown-panel
+      <div class="article-dropdown-panel__title">🟢 Vue 3.5 Counter Code:</div>
+      <pre class="no-code-enhance"><code class="language-html">&lt;script setup lang="ts"&gt;
+import &#123; ref &#125; from 'vue';
+const count = ref(0);
+&lt;/script&gt;
+&lt;template&gt;
+  &lt;button @click="count++"&gt;Count: &#123;&#123; count &#125;&#125;&lt;/button&gt;
+&lt;/template&gt;</code></pre>
+    </div>
+    <div class="article-dropdown-panel" data-panel="astro-code">
+      <div class="article-dropdown-panel__title">🚀 Astro 6 Island Component Code:</div>
+      <pre class="no-code-enhance"><code class="language-astro">---
+const &#123; label = "Astro Static Component" &#125; = Astro.props;
+---
+&lt;div class="astro-card"&gt;
+  &lt;h3&gt;&#123;label&#125;&lt;/h3&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+    <div class="article-dropdown-panel" data-panel="svelte-code">
+      <div class="article-dropdown-panel__title">🟠 Svelte 5 Counter Code:</div>
+      <pre class="no-code-enhance"><code class="language-svelte">&lt;script lang="ts"&gt;
+  let count = $state(0);
+&lt;/script&gt;
+&lt;button onclick=&#123;() =&gt; count++&#125;&gt;Count: &#123;count&#125;&lt;/button&gt;</code></pre>
+    </div>
+  </div>
+</div>
