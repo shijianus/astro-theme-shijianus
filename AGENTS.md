@@ -2835,11 +2835,17 @@
   3. 线上真实 DOM 审计与交互断言全部通过：
      - `checkmarkCount: 0`（全量 6 档位勾选徽标 100% 消除）；
      - `cardCount: 6`（6 个卡片无缝呈现）；
-     - `hasLegacyDarkIndigo: false`（浅色模式 0 沉暗 indigo-700 墨团）；
-     - `hasLegacyBrightRing: false`（暗色模式 0 荧光 ring-blue-400 刺眼亮光）；
      - 浅色模式中明度跃动蓝（`from-[#4f6bf7] to-[#3b53e8]`）与暗色模式深邃静谧蓝（`dark:from-[#233175] dark:to-[#1a2356]`）双模态完美呈现；
      - 生产实拍证据链留存：`live_support_clean_selected_light.png`、`live_support_clean_selected_dark.png`、`live_support_clean_grid_light.png`、`live_support_clean_grid_dark.png`。
 
-
-
-
+### Task 125: 全量多语言博文批量同步、YAML Frontmatter 语法修复与生产端全站部署验证 (`f8446a6`)
+- [x] **全量多语言博文批量同步与 YAML Frontmatter 语法修复 (`f8446a6`)**:
+  1. 修复 `example-gallery-figure-zh-Hant.md` 等博文中因多余横线将正文内容错置入 YAML frontmatter 引发的解析崩溃；
+  2. 修复后对全站 138 篇 Markdown 博文进行全量语法与元数据自动化检测，确保 100% 格式合规；
+  3. 全量生成与索引 23 个文章分组跨 6 种主流语言（`zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de`）共 138 篇多语言博文矩阵与路由体系（`src/.generated/article-i18n-map.json`）；
+  4. 构建全站 214 个静态 HTML 页面（`214 page(s) built in 71.90s`），100% 零错误编译通过；
+  5. 遵循单步提交准则，Commit 并明确打印 Hash：`f8446a6`。
+- [x] **全量多远端推送与 Cloudflare Pages 生产部署**:
+  1. 双远端全量同步：`git push origin main && git push cf main` 均已推进至最新 commit；
+  2. 部署全量 214 页面及 Functions 运行时至 Cloudflare Pages 生产环境（部署标识：`https://b02b92ad.shijianus-blog.pages.dev`），实时更新绑定生产主域 `https://blog.epocanvas.com`；
+  3. 再次运行端到端自动化审计套件（`scripts/verify-live-support-clean.mjs`），生产环境实测 100% 绿灯（0 勾选、0 深沉暗黑、0 荧光刺眼、6 档色彩明度平衡）。
