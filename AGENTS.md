@@ -3130,7 +3130,7 @@
   5. 探索标签页与点歌交互断言通过；
   6. 全站 222 个静态页面生产编译构建 0 错误通过。
 
-### Task 139: 文章多语言翻译变体 (.article-translation-variant) 渲染与路由死锁修复、Frontmatter大小写规范化与证据链固化 (`cf3acac`)
+### Task 139: 文章多语言翻译变体 (.article-translation-variant) 渲染与路由死锁修复、Frontmatter大小写规范化与证据链固化 (`827a58c`)
 - [x] **根因排查与静态路由死锁修复 (`src/pages/posts/[slug].astro` & `src/lib/content.ts`)**:
   1. 修复双后缀/纯外语主篇造成的客户端重定向死锁与 404：在 `getStaticPaths()` 中自动聚合所有规范基名 (`getPostCanonicalSlug`) 注入静态路由表；
   2. 增强 `entry` 解析器：增加多层二级回退算法，当请求纯规范基名但磁盘不存在同名根文件时，自动命中该组首个主翻译篇；
