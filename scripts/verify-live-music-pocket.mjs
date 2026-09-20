@@ -68,6 +68,20 @@ async function main() {
     if (!toggleDisc) {
       throw new Error('Toggle button .shijianus-music-pocket__toggle not found!');
     }
+
+    const toyTonearm = await page.$('.shijianus-music-pocket__tonearm');
+    console.log(`- 粗糙玩具唱针是否存在: ${toyTonearm !== null} (期望: false - 已移除)`);
+    if (toyTonearm !== null) {
+      throw new Error('Unpolished toy tonearm needle MUST be removed from toggle button!');
+    }
+
+    const miniEqBadge = await page.$('.shijianus-music-pocket__mini-eq');
+    console.log(`- 极客微型动态音阶徽标是否存在: ${miniEqBadge !== null} (期望: true)`);
+    if (!miniEqBadge) {
+      throw new Error('Mini dynamic EQ badge .shijianus-music-pocket__mini-eq must be present on toggle disc!');
+    }
+    console.log('✓ 悬浮按钮材质与微型声学微标升级完好！');
+
     const initialBox = await toggleDisc.boundingBox();
     console.log(`- 初始坐标: x=${initialBox.x.toFixed(1)}, y=${initialBox.y.toFixed(1)}`);
 
@@ -132,6 +146,13 @@ async function main() {
     const lyricRibbon = await page.$('.shijianus-music-pocket__lyric-ribbon');
     if (!lyricRibbon) throw new Error('Missing lyric ribbon in deck!');
 
+    const ribbonText = await page.$eval('.shijianus-music-pocket__lyric-ribbon', (el) => el.textContent || '');
+    console.log(`- 歌词视口文本内容: "${ribbonText.trim()}"`);
+    if (/\[\d{2}:\d{2}/.test(ribbonText)) {
+      throw new Error(`CRITICAL BUG: Raw LRC timestamp leaked into UI: "${ribbonText}"`);
+    }
+    console.log('✓ 歌词格式纯净，绝无原始时间戳泄漏！');
+
     const playBtn = await page.$('.shijianus-music-pocket__play-btn');
     if (!playBtn) throw new Error('Missing play button!');
     console.log('✓ 双行同步歌词视口与核心控制器渲染完好！');
@@ -145,19 +166,28 @@ async function main() {
       throw new Error('Missing search box, pills row, or track list in unified stream!');
     }
 
+    const searchInput = await page.$('.shijianus-music-pocket__search-input');
+    if (!searchInput) throw new Error('Search input not found!');
+    const placeholder = await searchInput.getAttribute('placeholder');
+    console.log(`- 搜索框占位文本: "${placeholder}"`);
+    if (placeholder.includes('全网聚合搜索 (网易/QQ/酷我)')) {
+      throw new Error('Search placeholder should NOT contain verbose debug text!');
+    }
+    if (!placeholder.includes('检索')) {
+      throw new Error('Search placeholder should clearly indicate search/检索!');
+    }
+    console.log('✓ 搜索框占位符精简干净！');
+
     const pills = await page.$$eval('.shijianus-music-pocket__pill', (els) => els.map((e) => e.textContent.trim()));
     console.log(`- 灵感标签胶囊: ${pills.slice(0, 5).join(' / ')} ...`);
 
     // 模拟搜索周杰伦
-    const searchInput = await page.$('.shijianus-music-pocket__search-input');
-    if (searchInput) {
-      await searchInput.fill('周杰伦');
-      const searchSubmitBtn = await page.$('.search-btn');
-      if (searchSubmitBtn) await searchSubmitBtn.click();
-      await page.waitForTimeout(1000);
-      const itemsCount = await page.$$eval('.shijianus-music-pocket__track-item', (els) => els.length);
-      console.log(`- 搜索聚合命中曲目数: ${itemsCount}`);
-    }
+    await searchInput.fill('周杰伦');
+    const searchSubmitBtn = await page.$('.search-btn');
+    if (searchSubmitBtn) await searchSubmitBtn.click();
+    await page.waitForTimeout(1000);
+    const itemsCount = await page.$$eval('.shijianus-music-pocket__track-item', (els) => els.length);
+    console.log(`- 搜索聚合命中曲目数: ${itemsCount}`);
     console.log('✓ 全网多平台免选择聚合搜索流运转正常！');
 
     // 验证 10: 核心用户诉求！验证 HUD 叉号关闭仅隐藏面板，浮动图标依然保留在屏幕上，后台持续播放！

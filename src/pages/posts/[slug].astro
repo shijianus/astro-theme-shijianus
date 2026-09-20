@@ -182,7 +182,18 @@ const currentLang = normalizeLangCode(postEntry.data.lang) || normalizedInferred
 const siblingTranslations = allPosts.filter((p) => {
   const pInferredKey = getPostCanonicalSlug(p.id);
   const pKey = p.data.i18nKey || pInferredKey;
+
+  const normCurrentKey = (currentI18nKey || '').toLowerCase().replace(/[._-]+/g, '-');
+  const normInferredKey = (inferredKey || '').toLowerCase().replace(/[._-]+/g, '-');
+  const normCanonicalSlug = (canonicalSlug || '').toLowerCase().replace(/[._-]+/g, '-');
+  const normPKey = (pKey || '').toLowerCase().replace(/[._-]+/g, '-');
+  const normPInferredKey = (pInferredKey || '').toLowerCase().replace(/[._-]+/g, '-');
+
   return (
+    normPKey === normCurrentKey ||
+    normPInferredKey === normInferredKey ||
+    normPInferredKey === normCanonicalSlug ||
+    normPKey === normCanonicalSlug ||
     pKey === currentI18nKey ||
     pInferredKey === inferredKey ||
     pInferredKey === canonicalSlug ||
@@ -850,6 +861,12 @@ const heroSummary = isUnlocked
 
               // 9. Re-trigger content feature enhancement & code block enhancers
               window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: targetLang }));
+              document.documentElement.lang = targetLang;
+              document.documentElement.dataset.localeVariant = targetLang;
+              setTimeout(() => {
+                document.documentElement.lang = targetLang;
+                document.documentElement.dataset.localeVariant = targetLang;
+              }, 0);
             };
 
             // Attach click listeners to PostHero language buttons

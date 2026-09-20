@@ -10,13 +10,13 @@ export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
 export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
-export const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
+export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
 
 export function normalizeLangCode(raw?: string): string {
   if (!raw) return 'zh-CN';
-  const trimmed = String(raw).trim().toLowerCase().replace('_', '-');
+  const trimmed = String(raw).trim().toLowerCase().replace(/_/g, '-');
   if (trimmed === 'zh-cn' || trimmed === 'zh' || trimmed === 'zh-hans') return 'zh-CN';
-  if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk') return 'zh-Hant';
+  if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk' || trimmed === 'zh-mo') return 'zh-Hant';
   if (trimmed.startsWith('en')) return 'en';
   if (trimmed.startsWith('es')) return 'es';
   if (trimmed.startsWith('de')) return 'de';
@@ -39,7 +39,7 @@ export function getPostCanonicalSlug(id: string): string {
   while (LANG_SUFFIX_REGEX.test(current)) {
     current = current.replace(LANG_SUFFIX_REGEX, '');
   }
-  return current;
+  return current.replace(/[._-]+$/, '');
 }
 
 export function getPostPath(entry: Pick<PostEntry, 'id'>) {

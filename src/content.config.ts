@@ -72,7 +72,11 @@ const ExternalEncryptEntrySchema = z.object({
 });
 
 const postsCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/posts" }),
+  loader: glob({
+    pattern: '**/[^_]*.{md,mdx}',
+    base: "./src/content/posts",
+    generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/i, ''),
+  }),
   schema: z.object({
     title: z.string(),
     shortTitle: z.string().optional(),
