@@ -71,6 +71,11 @@ function formatTime(seconds: number): string {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
+function cleanLyricText(str: string): string {
+  if (!str) return '';
+  return str.replace(/\[\d{2}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+}
+
 function parseLrc(raw: string): LyricLine[] {
   if (!raw) return [];
   const lines = raw.split('\n');
@@ -530,13 +535,13 @@ export function MusicPocket({ apiBase }: Props) {
           : parseLrc(text);
 
         startTransition(() => {
-          setRawLyric(text || '当前曲目纯音无歌词，请享受沉浸旋律。');
+          setRawLyric(lines.length > 0 ? '' : '当前曲目纯音无歌词，请享受沉浸旋律。');
           setParsedLyrics(lines);
         });
       })
       .catch(() => {
         if (!active) return;
-        setRawLyric('当前曲目暂时没有可用歌词。');
+        setRawLyric('当前曲目暂无可用歌词');
         setParsedLyrics([]);
       });
 
@@ -839,19 +844,21 @@ export function MusicPocket({ apiBase }: Props) {
             {currentTrack?.coverUrl ? (
               <img src={currentTrack.coverUrl} alt="" className="shijianus-music-pocket__toggle-art" />
             ) : (
-              <span className="shijianus-music-pocket__toggle-core" />
+              <Music size={15} className="shijianus-music-pocket__toggle-icon" />
             )}
           </span>
         </span>
 
-        <span className="shijianus-music-pocket__tonearm" aria-hidden="true">
-          <span className="shijianus-music-pocket__tonearm-pivot" />
-          <span className="shijianus-music-pocket__tonearm-stick" />
-          <span className="shijianus-music-pocket__tonearm-head" />
+        {/* 动态微型均衡器徽标 (Mini EQ Badge) */}
+        <span className={`shijianus-music-pocket__mini-eq ${isPlaying ? 'is-active' : ''}`} aria-hidden="true">
+          <span className="mini-eq-bar mini-eq-bar-1" />
+          <span className="mini-eq-bar mini-eq-bar-2" />
+          <span className="mini-eq-bar mini-eq-bar-3" />
         </span>
 
         {!isDragging && (
           <span className={`shijianus-music-pocket__toggle-copy ${isRightHalf ? 'align-left' : 'align-right'}`}>
+            <span className="toggle-copy-status">{isPlaying ? t('正在播放') : t('随身音乐')}</span>
             <strong>{currentTrack ? currentTrack.name : 'EpoAudio Radio'}</strong>
             <small>{currentTrack ? `${currentTrack.artist} · ${currentTrack.album || t('单曲')}` : t('点击展开随身听 (可自由拖拽)')}</small>
           </span>
@@ -953,18 +960,27 @@ export function MusicPocket({ apiBase }: Props) {
                   title={t('点击跳转至该句')}
                 >
                   <span className="ribbon-time">{formatTime(parsedLyrics[activeLyricIndex]?.time ?? 0)}</span>
-                  <span className="ribbon-text">{parsedLyrics[activeLyricIndex]?.text}</span>
+                  <span className="ribbon-text">{cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}</span>
                 </div>
                 {parsedLyrics[activeLyricIndex + 1] && (
                   <div className="shijianus-music-pocket__lyric-next">
-                    <span className="ribbon-next-text">{parsedLyrics[activeLyricIndex + 1].text}</span>
+                    <span className="ribbon-next-text">{cleanLyricText(parsedLyrics[activeLyricIndex + 1].text)}</span>
                   </div>
                 )}
               </>
+            ) : parsedLyrics.length > 0 ? (
+              <div className="shijianus-music-pocket__lyric-current is-preview">
+                <span className="ribbon-time">00:00</span>
+                <span className="ribbon-text">
+                  {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
+                </span>
+              </div>
             ) : (
               <div className="shijianus-music-pocket__lyric-current is-empty">
-                <Radio size={13} className="empty-icon" />
-                <span className="ribbon-text">{rawLyric || '♫ 静心享受好音乐 ♫'}</span>
+                <Radio size={12} className="empty-icon" />
+                <span className="ribbon-text">
+                  {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
+                </span>
               </div>
             )}
           </div>
@@ -1068,7 +1084,7 @@ export function MusicPocket({ apiBase }: Props) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder={t('全网聚合搜索 (网易/QQ/酷我)...')}
+                placeholder={t('检索音乐、歌手...')}
                 className="shijianus-music-pocket__search-input"
               />
               {query && (
