@@ -3,7 +3,6 @@ import {
   applyThemeWithBackground,
   readStorage,
   syncAside,
-  syncBackground,
   type ThemeMode,
 } from '../lib/client-theme';
 import { 
@@ -377,7 +376,10 @@ export function ThemeDock(_props: ThemeDockProps) {
     const nextIndex = (currentIndex + 1) % _props.backgroundModes.length;
     const nextBackground = _props.backgroundModes[nextIndex].id;
     
-    syncBackground(nextBackground);
+    document.documentElement.dataset.background = nextBackground;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('shijianus-background', nextBackground);
+    }
     setBackground(nextBackground);
     emitActivity(`已切换背景：${_props.backgroundModes[nextIndex].label}`);
   };

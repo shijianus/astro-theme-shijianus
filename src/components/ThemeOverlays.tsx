@@ -892,11 +892,10 @@ export function ThemeOverlays({
       return;
     }
     const currentIndex = Math.max(0, backgroundModes.findIndex((mode) => mode.id === background));
-    const nextMode = backgroundModes[(currentIndex + 1) % backgroundModes.length] ?? backgroundModes[0];
-    const nextBackground = nextMode?.id ?? defaultBackground;
+    const nextBackground = backgroundModes[(currentIndex + 1) % backgroundModes.length]?.id ?? defaultBackground;
     markBackgroundAsManual(nextBackground);
     setBackground(nextBackground);
-    emitActivity(`已切换背景：${nextMode?.label || nextBackground}`);
+    emitActivity('已切换页面背景');
   };
 
   useEffect(() => {
