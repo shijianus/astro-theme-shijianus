@@ -12,6 +12,18 @@ export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
 export const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|fr|es|de)$/i;
 
+export function normalizeLangCode(raw?: string): string {
+  if (!raw) return 'zh-CN';
+  const trimmed = String(raw).trim().toLowerCase().replace('_', '-');
+  if (trimmed === 'zh-cn' || trimmed === 'zh' || trimmed === 'zh-hans') return 'zh-CN';
+  if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk') return 'zh-Hant';
+  if (trimmed.startsWith('en')) return 'en';
+  if (trimmed.startsWith('es')) return 'es';
+  if (trimmed.startsWith('de')) return 'de';
+  if (trimmed.startsWith('fr')) return 'fr';
+  return trimmed;
+}
+
 export function getPostCanonicalSlug(id: string): string {
   return id.replace(LANG_SUFFIX_REGEX, '');
 }

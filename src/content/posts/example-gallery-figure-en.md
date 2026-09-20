@@ -6,7 +6,7 @@ draft: false
 toc: true
 tags: ["example", "showcase", "gallery", "lightbox"]
 category: "Example"
-series: "功能示例"
+series: "Feature Examples"
 math: false
 mermaid: false
 i18nKey: "example-gallery-figure"
@@ -43,8 +43,8 @@ Clicking any image will activate a full-screen, centered lightbox, which can be 
 <div class="article-gallery">
   <div class="gallery-grid gallery-grid-3">
     <div class="gallery-item">
-      <img src="/media/shijianus/workbench.jpg" alt="工作台研发全景" />
-      <div class="gallery-item__caption">工作台研发全景</div>
+      <img src="/media/shijianus/workbench.jpg" alt="Workbench R&D Panorama" />
+      <div class="gallery-item__caption">Workbench R&D Panorama</div>
     </div>
     ...
   </div>
@@ -69,8 +69,8 @@ Clicking any image will activate a full-screen, centered lightbox, which can be 
 ```html
 <div class="gallery-polaroid">
   <div class="polaroid-card">
-    <img src="/media/shijianus/workbench.jpg" alt="2026 研发展望" />
-    <div class="polaroid-card__caption">2026.04 杭州·研发工坊</div>
+    <img src="/media/shijianus/workbench.jpg" alt="2026 R&D Outlook" />
+    <div class="polaroid-card__caption">2026.04 Hangzhou · R&D Workshop</div>
   </div>
 </div>
 ```

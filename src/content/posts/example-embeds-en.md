@@ -6,7 +6,7 @@ draft: false
 toc: true
 tags: ["example", "showcase", "embeds", "post-formats"]
 category: "Example"
-series: "功能示例"
+series: "Feature Examples"
 math: false
 mermaid: false
 i18nKey: "example-embeds"
@@ -101,7 +101,7 @@ Configure `data-animate="true"` to enable realistic typing animation, dynamic av
   </div>
 
   <div class="chat-message chat-right">
-    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="架构师 shijianus" />
+    <img class="chat-avatar" src="/media/shijianus/avatar.jpg" alt="Architect shijianus" />
     <div class="chat-body">
       <div class="chat-author">Architect <a href="https://github.com/shijianus" target="_blank" rel="noopener noreferrer">shijianus</a> · 10:16</div>
       <div class="chat-bubble">

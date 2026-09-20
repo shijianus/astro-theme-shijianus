@@ -958,5 +958,56 @@
         "isAiGenerated": false
       }
     }
+  },
+  "test-matrix-casing": {
+    "i18nKey": "test-matrix-casing",
+    "translations": {
+      "EN": {
+        "filename": "test-matrix-casing-en.md",
+        "slug": "test-matrix-casing-en",
+        "title": "Test Matrix: Language Code Casing Resilience",
+        "isAiGenerated": false
+      },
+      "zh-CN": {
+        "filename": "test-matrix-casing.md",
+        "slug": "test-matrix-casing",
+        "title": "测试矩阵：大小写不规范测试主篇",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "test-matrix-native-en": {
+    "i18nKey": "test-matrix-native-en",
+    "translations": {
+      "zh-CN": {
+        "filename": "test-matrix-native-en-zh-CN.md",
+        "slug": "test-matrix-native-en-zh-CN",
+        "title": "测试矩阵：双后缀文件名下的中文翻译",
+        "isAiGenerated": false
+      },
+      "en": {
+        "filename": "test-matrix-native-en.md",
+        "slug": "test-matrix-native-en",
+        "title": "Test Matrix: Native English Suffixed Primary Article",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "test-native-english-clean": {
+    "i18nKey": "test-native-english-clean",
+    "translations": {
+      "zh-CN": {
+        "filename": "test-native-english-clean-zh-CN.md",
+        "slug": "test-native-english-clean-zh-CN",
+        "title": "测试矩阵：原生英文主篇的中文变体",
+        "isAiGenerated": false
+      },
+      "en": {
+        "filename": "test-native-english-clean.md",
+        "slug": "test-native-english-clean",
+        "title": "Test Matrix: Native English Canonical Post",
+        "isAiGenerated": false
+      }
+    }
   }
 }

@@ -1,5 +1,6 @@
 ---
 import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, Globe, type LucideIcon } from 'lucide-react';
+import { normalizeLangCode } from '../../lib/content';
 
 type PostHeroMetaItem = {
   label: string;
@@ -141,13 +142,14 @@ const hasMedia = Boolean(image || video);
         </span>
         <div class="post-hero__translations-list">
           {translationEntries.map(([langKey, item]) => {
-            const isActive = langKey === currentLang;
-            const meta = LOCALE_NAMES[langKey] || { native: langKey };
+            const normalizedKey = normalizeLangCode(langKey);
+            const isActive = normalizedKey === normalizeLangCode(currentLang);
+            const meta = LOCALE_NAMES[normalizedKey] || LOCALE_NAMES[langKey] || { native: langKey };
             return (
               <button
                 type="button"
                 class:list={['post-hero__lang-tag', isActive && 'is-active']}
-                data-target-lang={langKey}
+                data-target-lang={normalizedKey}
                 aria-current={isActive ? 'page' : undefined}
                 title={isActive ? `当前语言: ${meta.native}` : `切换至 ${meta.native}`}
               >

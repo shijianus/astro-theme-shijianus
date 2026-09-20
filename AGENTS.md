@@ -3130,4 +3130,24 @@
   5. 探索标签页与点歌交互断言通过；
   6. 全站 222 个静态页面生产编译构建 0 错误通过。
 
+### Task 139: 文章多语言翻译变体 (.article-translation-variant) 渲染与路由死锁修复、Frontmatter大小写规范化与证据链固化 (`cf3acac`)
+- [x] **根因排查与静态路由死锁修复 (`src/pages/posts/[slug].astro` & `src/lib/content.ts`)**:
+  1. 修复双后缀/纯外语主篇造成的客户端重定向死锁与 404：在 `getStaticPaths()` 中自动聚合所有规范基名 (`getPostCanonicalSlug`) 注入静态路由表；
+  2. 增强 `entry` 解析器：增加多层二级回退算法，当请求纯规范基名但磁盘不存在同名根文件时，自动命中该组首个主翻译篇；
+  3. `siblingTranslations` 匹配鲁棒性增强：加入 `canonicalSlug` 双重保底，彻底避免同组变体因命名模式无法匹配而丢失；
+  4. 变体渲染循环注入 `normalizeLangCode` 与规范去重，保证主变体与从属变体在 DOM 中 1:1 挂载。
+- [x] **语言代码大小写归一化与 UI 健壮性保障 (`src/lib/content.ts`, `src/pages/posts/[slug].astro`, `src/components/theme/PostHero.astro`)**:
+  1. 新增 `normalizeLangCode(raw?: string): string`，支持将 `EN`, `zh-cn`, `zh_CN`, `zh_TW`, `en-US` 等全自动归一化为规范代码 (`en`, `zh-CN`, `zh-Hant`, `es`, `de`, `fr`)；
+  2. 客户端脚本 `window.switchArticleLanguage()` 注入 `normalizeLang`，支持不区分大小写检索；
+  3. `PostHero.astro` 修复 `LOCALE_NAMES` 在大小写不一致时返回原始字符的瑕疵，正确映射至本地化全名（如 "English"）。
+- [x] **外文 Markdown 内嵌 HTML 属性与图注中文残留清理 (`src/content/posts/`)**:
+  1. `example-gallery-figure-en.md`: 图注 `gallery-item__caption`、`alt` 属性与 `series` 彻底本地化为地道英文；
+  2. `example-embeds-en.md`: 对话头像 `alt` 属性与 `series` 彻底本地化为地道英文。
+- [x] **极限测试博文矩阵与 Playwright 自动化审计套件 (`scripts/audit-article-translation-variants.mjs` & `test-matrix-*.md`)**:
+  1. 构造多套极限测试博文覆盖双后缀独立命名、大小写混用、纯外文主篇等极端场景；
+  2. 新增端到端 Playwright 审计脚本 `scripts/audit-article-translation-variants.mjs`，并注入 `package.json` 的 `npm run test:i18n`；
+  3. 全量覆盖 27 组文章（23 篇正式博文 + 4 组极限测试矩阵）、**1089 项断言 100% 全部通过 (1089/1089 PASS, 0 FAIL)**；
+  4. 产出本地权威唯一审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
+
+
 

@@ -25,6 +25,7 @@ import {
   resolveCoverAlt,
   sortPostsByDate,
   getPostCanonicalSlug,
+  normalizeLangCode,
   LANG_SUFFIX_REGEX,
 } from '../../lib/content';
 import { hasConfiguredCommentDatabase } from '../../lib/comment-integration';
@@ -46,14 +47,33 @@ export async function getStaticPaths() {
   const existingPostIds = new Set(posts.map((p) => p.id));
 
   const paths = [];
+  const registeredSlugs = new Set<string>();
+  function pushSlug(s: string) {
+    if (!s || registeredSlugs.has(s)) return;
+    registeredSlugs.add(s);
+    paths.push({ params: { slug: s } });
+  }
+
   for (const post of posts) {
-    paths.push({ params: { slug: post.id } });
+    pushSlug(post.id);
     if (post.id.toLowerCase() !== post.id) {
-      paths.push({ params: { slug: post.id.toLowerCase() } });
+      pushSlug(post.id.toLowerCase());
     }
     if (post.id.includes('.')) {
-      paths.push({ params: { slug: post.id.replace(/\./g, '-') } });
-      paths.push({ params: { slug: post.id.replace(/\./g, '-').toLowerCase() } });
+      pushSlug(post.id.replace(/\./g, '-'));
+      pushSlug(post.id.replace(/\./g, '-').toLowerCase());
+    }
+    // Also guarantee canonical slug is generated even if all sibling files have language suffixes
+    const canonical = getPostCanonicalSlug(post.id);
+    if (canonical) {
+      pushSlug(canonical);
+      if (canonical.toLowerCase() !== canonical) {
+        pushSlug(canonical.toLowerCase());
+      }
+      if (canonical.includes('.')) {
+        pushSlug(canonical.replace(/\./g, '-'));
+        pushSlug(canonical.replace(/\./g, '-').toLowerCase());
+      }
     }
   }
 
@@ -65,7 +85,7 @@ export async function getStaticPaths() {
   }
 
   for (const encSlug of slugMap.keys()) {
-    paths.push({ params: { slug: encSlug } });
+    pushSlug(encSlug);
   }
 
   return paths;
@@ -76,9 +96,7 @@ const langSuffixRegex = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
 const isSuffixRoute = langSuffixRegex.test(slug ?? '');
 const canonicalSlug = (slug ?? '').replace(langSuffixRegex, '');
 const matchLang = (slug ?? '').match(langSuffixRegex);
-const targetLang = matchLang
-  ? (matchLang[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : matchLang[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : matchLang[1].toLowerCase())
-  : 'zh-CN';
+const targetLang = matchLang ? normalizeLangCode(matchLang[1]) : 'zh-CN';
 
 // In SSR mode, immediately redirect legacy language URLs to canonical without rendering
 if (isSuffixRoute && !STATIC_EXPORT) {
@@ -102,6 +120,23 @@ let entry = allPosts.find((post) =>
     post.id.replace(/\./g, '-').toLowerCase() === canonicalSlug.toLowerCase()
   ))
 );
+
+// Fallback for canonical routes of groups where all files have language suffixes
+if (!entry) {
+  entry = allPosts.find((post) => {
+    const pCanon = getPostCanonicalSlug(post.id);
+    const pKey = post.data.i18nKey || pCanon;
+    const target = canonicalSlug || slug || '';
+    return (
+      pCanon === target ||
+      pCanon.toLowerCase() === target.toLowerCase() ||
+      pCanon.replace(/\./g, '-') === target ||
+      pCanon.replace(/\./g, '-').toLowerCase() === target.toLowerCase() ||
+      pKey === target ||
+      pKey.toLowerCase() === target.toLowerCase()
+    );
+  });
+}
 
 // ── Encrypted route lookup ──────────────────────────────────────────────────
 let matchedEncryptConfig = null;
@@ -138,18 +173,21 @@ const allEncryptConfigs = postEntry ? getPostEncryptConfigs(postEntry.data) : []
 
 // ──── Multilingual i18n Translation Resolution ─────────────────────────────
 const inferredLangMatch = postEntry.id.match(langSuffixRegex);
-const normalizedInferredLang = inferredLangMatch
-  ? (inferredLangMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : inferredLangMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : inferredLangMatch[1].toLowerCase())
-  : undefined;
+const normalizedInferredLang = inferredLangMatch ? normalizeLangCode(inferredLangMatch[1]) : undefined;
 const inferredKey = postEntry.id.replace(langSuffixRegex, '');
 const currentI18nKey = postEntry.data.i18nKey || inferredKey;
-const currentLang = postEntry.data.lang || normalizedInferredLang || 'zh-CN';
+const currentLang = normalizeLangCode(postEntry.data.lang) || normalizedInferredLang || 'zh-CN';
 
 // Find all sibling translations with the same i18nKey or shared base slug
 const siblingTranslations = allPosts.filter((p) => {
   const pInferredKey = p.id.replace(langSuffixRegex, '');
   const pKey = p.data.i18nKey || pInferredKey;
-  return pKey === currentI18nKey || pInferredKey === inferredKey;
+  return (
+    pKey === currentI18nKey ||
+    pInferredKey === inferredKey ||
+    pInferredKey === canonicalSlug ||
+    pKey === canonicalSlug
+  );
 });
 
 const typedAiSummaries = aiSummaries as Record<string, { summary: string; model?: string }>;
@@ -233,10 +271,8 @@ const variantHeadings: Record<string, Awaited<ReturnType<typeof render>>['headin
 if (!isSuffixRoute && isUnlocked) {
   for (const p of siblingTranslations) {
     const pSuffixMatch = p.id.match(langSuffixRegex);
-    const pNormLang = pSuffixMatch
-      ? (pSuffixMatch[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffixMatch[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffixMatch[1].toLowerCase())
-      : undefined;
-    const vLang = p.data.lang || pNormLang || 'zh-CN';
+    const pNormLang = pSuffixMatch ? normalizeLangCode(pSuffixMatch[1]) : undefined;
+    const vLang = normalizeLangCode(p.data.lang) || pNormLang || 'zh-CN';
 
     const existingIdx = renderedVariants.findIndex((v) => v.lang === vLang);
     if (existingIdx >= 0) {
@@ -267,8 +303,8 @@ if (!isSuffixRoute && isUnlocked) {
     variantHeadings[vLang] = rendered.headings;
   }
 
-  // Ensure canonical entry is present
-  if (!renderedVariants.some((v) => v.post.id === contentSourceEntry.id)) {
+  // Ensure canonical entry is present (check by id and by normalized lang)
+  if (!renderedVariants.some((v) => v.post.id === contentSourceEntry.id || v.lang === currentLang)) {
     const rendered = await render(contentSourceEntry);
     renderedVariants.unshift({
       lang: currentLang,
@@ -658,6 +694,18 @@ const heroSummary = isUnlocked
 
             const { availableLangs = [], variantsMeta = {}, staticSummariesByLang = {}, defaultLang = 'zh-CN' } = config;
 
+            function normalizeLang(raw) {
+              if (!raw) return 'zh-CN';
+              const trimmed = String(raw).trim().toLowerCase().replace('_', '-');
+              if (trimmed === 'zh-cn' || trimmed === 'zh' || trimmed === 'zh-hans') return 'zh-CN';
+              if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk') return 'zh-Hant';
+              if (trimmed.startsWith('en')) return 'en';
+              if (trimmed.startsWith('es')) return 'es';
+              if (trimmed.startsWith('de')) return 'de';
+              if (trimmed.startsWith('fr')) return 'fr';
+              return trimmed;
+            }
+
             const TOC_I18N = {
               'zh-CN': { title: '文章目录', unit: '节' },
               'zh-Hant': { title: '文章目錄', unit: '節' },
@@ -668,8 +716,11 @@ const heroSummary = isUnlocked
             };
 
             window.switchArticleLanguage = function (targetLang) {
+              targetLang = normalizeLang(targetLang);
               if (!availableLangs.includes(targetLang)) {
-                targetLang = defaultLang;
+                const match = availableLangs.find((l) => l.toLowerCase() === targetLang.toLowerCase());
+                if (match) targetLang = match;
+                else targetLang = defaultLang;
               }
 
               // 1. Switch visible variant

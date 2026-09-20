@@ -30,6 +30,7 @@
     "repo:publish": "node scripts/repo-publish.mjs",
     "brand": "node scripts/brand-banner.mjs",
     "test:brand": "node scripts/brand-banner.mjs",
+    "test:i18n": "node scripts/audit-article-translation-variants.mjs",
     "test": "node scripts/brand-banner.mjs",
     "preview": "astro preview",
     "astro": "astro"
