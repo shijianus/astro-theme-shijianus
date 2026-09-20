@@ -3168,7 +3168,7 @@
   1. 同步全量提交至 `origin` 与 `cf` 仓库；
   2. 生产环境实测桌面端、暗色模式与移动端视觉截图归档于 `scratch/`。
 
-### Task 141: 文章翻译变体 (.article-translation-variant) 通用语言正则扩展、Intl.DisplayNames 兜底、单跳规范解析与阅读锚点平滑补偿
+### Task 141: 文章翻译变体 (.article-translation-variant) 通用语言正则扩展、Intl.DisplayNames 兜底、单跳规范解析与阅读锚点平滑补偿 (`24ef329`)
 - [x] **通用语言代码与正则升级 (`src/lib/content.ts` & `src/pages/posts/[slug].astro`)**:
   1. 升级 `LANG_SUFFIX_REGEX` 支持更广阔的国际语言（`ja`, `ko`, `ru`, `it`, `pt`, `vi`, `ar`, `nl`, `pl`, `tr` 等）及多段变体（`zh-hans`, `zh-tw`, `zh-hk` 等），杜绝扩展新语言时被误判为独立文章；
   2. 统一全站正则引用，移除 `[slug].astro` 内的局部硬编码枚举。
