@@ -3247,6 +3247,21 @@
 - [x] **保留并精修多平台来源徽标**:
   1. 完美保留并在列表与展台中美化 `.track-source-tag`（网易云、QQ音乐、酷我、精选本地），统一字重与对比度。
 
-
-
-
+### Task 145: 文章多语言翻译系统漏洞彻底修复与极端边界容错优化
+- [x] **根治点号语法文件名剥离致命缺陷 (`src/content.config.ts`)**:
+  1. 在 `postsCollection` 的 `glob` loader 中显式注入 `generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/i, '')`；
+  2. 彻底杜绝 Astro 默认 `github-slugger` 将点号语法（如 `post.en.md`）吞点剥离为无分隔符字符串（如 `posten`）的恶性 Bug；
+  3. 保留原汁原味的文件名作为 Entry ID，确保规范化主篇路由与所有多语言点号变体 100% 正确归集。
+- [x] **扩展语言后缀多格式兼容与 Canonical Slug 清理 (`src/lib/content.ts` & `scripts/sync-post-i18n.mjs`)**:
+  1. 将核心正则 `LANG_SUFFIX_REGEX` 扩展为 `(?:[._-])(...)`，全面兼容破折号 `-`、点号 `.` 与下划线 `_`（如 `post_en.md`）；
+  2. 增强 `getPostCanonicalSlug`，剥离语言后缀后自动清理尾随的分隔符号（`/[._-]+$/`），杜绝产生残留点号；
+  3. `normalizeLangCode` 支持全局将下划线 `_` 规整化为 `-` 并支持 `zh-mo` 语言识别。
+- [x] **兄弟翻译聚合健壮性提升与不敏感匹配 (`src/pages/posts/[slug].astro`)**:
+  1. 在 `siblingTranslations` 筛选中引入大小写与分隔符容错规范化对比（`.toLowerCase().replace(/[._-]+/g, '-')`）；
+  2. 彻底杜绝作者在 Frontmatter 中手误写成大小写混杂（如 `i18nKey: "MyPost"` 与 `mypost`）时导致的跨篇匹配脱靶。
+- [x] **扩展语言（日/俄/韩等）切换全局降级缺陷修复 (`src/lib/client-locale.ts` & `src/pages/posts/[slug].astro`)**:
+  1. 在 `src/lib/client-locale.ts` 的 `syncLocaleVariant` 中增加文章专属扩展语言保护逻辑，遇到非全站 6 类 UI 语言时不错误覆写 `documentElement.lang`；
+  2. 在 `[slug].astro` 的 `switchArticleLanguage` 中固化 `document.documentElement.lang = targetLang` 与 `dataset.localeVariant = targetLang`，消除根语言标签被覆写回 `zh-CN` 的状态割裂；
+- [x] **Playwright 真实浏览器端到端全量审计与 31 个文章组 1168 项断言 100% 通过**:
+  1. 覆盖 27 组既有正式博文与 4 组包含点号、下划线、扩展多语言及解耦 i18nKey 的极端边界测试组；
+  2. 1168/1168 项断言全绿通过（0 失败），证明变体渲染、初始可见性、文本纯度与交互切换均处于最高水准。

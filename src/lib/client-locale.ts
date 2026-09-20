@@ -3620,17 +3620,24 @@ export function initLocaleRuntime() {
 
   const syncLocaleVariant = (event?: Event) => {
     let next: LocaleVariant;
+    let isArticleSpecific = false;
     if (event instanceof CustomEvent && event.detail) {
       const raw = typeof event.detail === 'string' ? event.detail : (event.detail.locale || event.detail.variant);
       next = normaliseLocaleVariant(raw);
+      const cleanRaw = String(raw || '').trim().toLowerCase();
+      if (cleanRaw && !['zh-cn', 'zh-hans', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'en', 'fr', 'es', 'de'].includes(cleanRaw)) {
+        isArticleSpecific = true;
+      }
     } else {
       next = readStoredLocaleVariant();
     }
     // Only skip if variant changed from state and NOT coming from storage or custom event
     if (next === state.currentVariant && !(event instanceof StorageEvent) && !(event instanceof CustomEvent)) return;
     state.currentVariant = next;
-    document.documentElement.dataset.localeVariant = next;
-    document.documentElement.lang = next;
+    if (!isArticleSpecific) {
+      document.documentElement.dataset.localeVariant = next;
+      document.documentElement.lang = next;
+    }
     syncLocaleObserver();
     queueLocaleTranslation(state.currentVariant, true);
   };
