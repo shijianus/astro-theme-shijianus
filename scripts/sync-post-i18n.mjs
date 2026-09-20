@@ -30,7 +30,7 @@ import {
 const POSTS_DIR = path.resolve(process.cwd(), 'src/content/posts');
 const GENERATED_DIR = path.resolve(process.cwd(), 'src/.generated');
 const I18N_MAP_PATH = path.resolve(GENERATED_DIR, 'article-i18n-map.json');
-const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
+const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
 
 // Ensure .generated directory exists
 if (!fs.existsSync(GENERATED_DIR)) {
@@ -72,9 +72,13 @@ function inspectArticle(filename, fullPath) {
   let inferredLang = 'zh-CN';
 
   if (suffixMatch) {
-    inferredKey = baseStem.replace(LANG_SUFFIX_REGEX, '');
+    let currentKey = baseStem;
+    while (LANG_SUFFIX_REGEX.test(currentKey)) {
+      currentKey = currentKey.replace(LANG_SUFFIX_REGEX, '');
+    }
+    inferredKey = currentKey;
     const matched = suffixMatch[1].toLowerCase();
-    inferredLang = matched === 'zh-hant' ? 'zh-Hant' : matched === 'zh-cn' ? 'zh-CN' : matched;
+    inferredLang = (matched === 'zh-hant' || matched === 'zh-tw' || matched === 'zh-hk') ? 'zh-Hant' : (matched === 'zh-cn' || matched === 'zh-hans') ? 'zh-CN' : matched;
   }
 
   const i18nKey = meta.i18nKey || inferredKey;

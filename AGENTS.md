@@ -3167,3 +3167,21 @@
 - [x] **全量多远端推送与证据链存档**:
   1. 同步全量提交至 `origin` 与 `cf` 仓库；
   2. 生产环境实测桌面端、暗色模式与移动端视觉截图归档于 `scratch/`。
+
+### Task 141: 文章翻译变体 (.article-translation-variant) 通用语言正则扩展、Intl.DisplayNames 兜底、单跳规范解析与阅读锚点平滑补偿
+- [x] **通用语言代码与正则升级 (`src/lib/content.ts` & `src/pages/posts/[slug].astro`)**:
+  1. 升级 `LANG_SUFFIX_REGEX` 支持更广阔的国际语言（`ja`, `ko`, `ru`, `it`, `pt`, `vi`, `ar`, `nl`, `pl`, `tr` 等）及多段变体（`zh-hans`, `zh-tw`, `zh-hk` 等），杜绝扩展新语言时被误判为独立文章；
+  2. 统一全站正则引用，移除 `[slug].astro` 内的局部硬编码枚举。
+- [x] **递归单跳规范基名解析与防重定向链 (`getPostCanonicalSlug`)**:
+  1. 在 `src/lib/content.ts` 与路由解析器中引入 `while` 循环递归剥离，无论存在多少层堆叠后缀，均能一次性解析至最终规范主 Slug（如 `test-matrix-native-en-zh-CN` $\rightarrow$ `test-matrix-native`）；
+  2. 彻底消除多重 301 链条，提升 SEO 规范性与页面流转速度。
+- [x] **本地化母语与小语种优雅降级 (`PostHero.astro` & `[slug].astro`)**:
+  1. 在 `PostHero.astro` 新增 `getLocaleMeta` 辅助函数，内置原生 `Intl.DisplayNames` 动态降级，为任意未硬编码语言自动生成正规首字母大写母语名称（如 `日本語`、`한국어`、`Русский` 等）；
+  2. 在 `[slug].astro` 扩充 `TOC_I18N` 目录字典并提供分段回退策略。
+- [x] **语言切换阅读视口高度平滑补偿 (`src/pages/posts/[slug].astro`)**:
+  1. 在 `window.switchArticleLanguage` 中记录切换前视口上方最近锚定标题；
+  2. 切换显隐后自适应对齐新语言变体中的对应章节，消除因西文/法文长度膨胀导致的读者视觉脱节。
+- [x] **扩充语言脚注样式与构建验证 (`src/styles/markdown-enhancements.css`)**:
+  1. 补齐 `ja`, `ko`, `ru`, `it`, `pt` 脚注伪元素标题提示（如 `📑 脚注・参考文献`、`📑 각주 및 참고문헌`）；
+  2. 运行 `npm run build:static` 与 `node scripts/audit-article-translation-variants.mjs`，全站 27 组文章、1089 项 Playwright 断言全部通过。
+

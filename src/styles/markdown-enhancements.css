@@ -2269,6 +2269,41 @@ html[lang='fr'] section[data-footnotes]::before,
   content: '📑 Notes de bas de page et références';
 }
 
+html[lang='ja'] .article-body .footnotes::before,
+html[lang='ja'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='ja'] .footnotes::before,
+.article-translation-variant[data-lang='ja'] section[data-footnotes]::before {
+  content: '📑 脚注・参考文献';
+}
+
+html[lang='ko'] .article-body .footnotes::before,
+html[lang='ko'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='ko'] .footnotes::before,
+.article-translation-variant[data-lang='ko'] section[data-footnotes]::before {
+  content: '📑 각주 및 참고문헌';
+}
+
+html[lang='ru'] .article-body .footnotes::before,
+html[lang='ru'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='ru'] .footnotes::before,
+.article-translation-variant[data-lang='ru'] section[data-footnotes]::before {
+  content: '📑 Сноски и примечания';
+}
+
+html[lang='it'] .article-body .footnotes::before,
+html[lang='it'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='it'] .footnotes::before,
+.article-translation-variant[data-lang='it'] section[data-footnotes]::before {
+  content: '📑 Note a piè di pagina e riferimenti';
+}
+
+html[lang='pt'] .article-body .footnotes::before,
+html[lang='pt'] section[data-footnotes]::before,
+.article-translation-variant[data-lang='pt'] .footnotes::before,
+.article-translation-variant[data-lang='pt'] section[data-footnotes]::before {
+  content: '📑 Notas de rodapé e referências';
+}
+
 .article-body .footnotes #footnote-label,
 section[data-footnotes] #footnote-label,
 .article-body .footnotes .sr-only {

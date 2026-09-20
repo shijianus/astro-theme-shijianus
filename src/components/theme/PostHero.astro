@@ -38,7 +38,29 @@ const LOCALE_NAMES: Record<string, { native: string; english: string }> = {
   es: { native: 'Español', english: 'Spanish' },
   de: { native: 'Deutsch', english: 'German' },
   fr: { native: 'Français', english: 'French' },
+  ja: { native: '日本語', english: 'Japanese' },
+  ko: { native: '한국어', english: 'Korean' },
+  ru: { native: 'Русский', english: 'Russian' },
+  it: { native: 'Italiano', english: 'Italian' },
+  pt: { native: 'Português', english: 'Portuguese' },
+  vi: { native: 'Tiếng Việt', english: 'Vietnamese' },
+  ar: { native: 'العربية', english: 'Arabic' },
 };
+
+function getLocaleMeta(langCode: string): { native: string; english: string } {
+  const normalized = normalizeLangCode(langCode);
+  if (LOCALE_NAMES[normalized]) return LOCALE_NAMES[normalized];
+  if (LOCALE_NAMES[langCode]) return LOCALE_NAMES[langCode];
+  try {
+    const nativeName = new Intl.DisplayNames([normalized], { type: 'language' }).of(normalized);
+    const englishName = new Intl.DisplayNames(['en'], { type: 'language' }).of(normalized);
+    if (nativeName) {
+      const capitalized = nativeName.charAt(0).toUpperCase() + nativeName.slice(1);
+      return { native: capitalized, english: englishName || capitalized };
+    }
+  } catch (_) {}
+  return { native: langCode, english: langCode };
+}
 
 const {
   slug,
@@ -144,7 +166,7 @@ const hasMedia = Boolean(image || video);
           {translationEntries.map(([langKey, item]) => {
             const normalizedKey = normalizeLangCode(langKey);
             const isActive = normalizedKey === normalizeLangCode(currentLang);
-            const meta = LOCALE_NAMES[normalizedKey] || LOCALE_NAMES[langKey] || { native: langKey };
+            const meta = getLocaleMeta(normalizedKey);
             return (
               <button
                 type="button"

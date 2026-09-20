@@ -10,7 +10,7 @@ export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
 export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
-export const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|fr|es|de)$/i;
+export const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
 
 export function normalizeLangCode(raw?: string): string {
   if (!raw) return 'zh-CN';
@@ -21,11 +21,25 @@ export function normalizeLangCode(raw?: string): string {
   if (trimmed.startsWith('es')) return 'es';
   if (trimmed.startsWith('de')) return 'de';
   if (trimmed.startsWith('fr')) return 'fr';
+  if (trimmed.startsWith('ja')) return 'ja';
+  if (trimmed.startsWith('ko')) return 'ko';
+  if (trimmed.startsWith('ru')) return 'ru';
+  if (trimmed.startsWith('it')) return 'it';
+  if (trimmed.startsWith('pt')) return 'pt';
+  if (trimmed.startsWith('vi')) return 'vi';
+  if (trimmed.startsWith('ar')) return 'ar';
+  if (trimmed.startsWith('nl')) return 'nl';
+  if (trimmed.startsWith('pl')) return 'pl';
+  if (trimmed.startsWith('tr')) return 'tr';
   return trimmed;
 }
 
 export function getPostCanonicalSlug(id: string): string {
-  return id.replace(LANG_SUFFIX_REGEX, '');
+  let current = id;
+  while (LANG_SUFFIX_REGEX.test(current)) {
+    current = current.replace(LANG_SUFFIX_REGEX, '');
+  }
+  return current;
 }
 
 export function getPostPath(entry: Pick<PostEntry, 'id'>) {

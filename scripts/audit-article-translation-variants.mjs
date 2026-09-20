@@ -17,7 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { normalizeLangCode } from '../src/lib/content.ts';
+import { normalizeLangCode, LANG_SUFFIX_REGEX, getPostCanonicalSlug } from '../src/lib/content.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -79,9 +79,6 @@ function startStaticServer() {
   });
 }
 
-// Regex for stripping language suffix
-const LANG_SUFFIX_REGEX = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
-
 function parseFrontmatterSimple(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return { meta: {}, body: content };
@@ -113,11 +110,11 @@ function scanAllSourcePosts() {
     const { meta, body } = parseFrontmatterSimple(raw);
     const baseStem = file.replace(/\.(md|mdx)$/, '');
     const suffixMatch = baseStem.match(LANG_SUFFIX_REGEX);
-    const inferredBase = baseStem.replace(LANG_SUFFIX_REGEX, '');
+    const inferredBase = getPostCanonicalSlug(baseStem);
     let inferredLang = 'zh-CN';
     if (suffixMatch) {
       const s = suffixMatch[1].toLowerCase();
-      inferredLang = s === 'zh-hant' ? 'zh-Hant' : s === 'zh-cn' ? 'zh-CN' : s;
+      inferredLang = (s === 'zh-hant' || s === 'zh-tw' || s === 'zh-hk') ? 'zh-Hant' : (s === 'zh-cn' || s === 'zh-hans') ? 'zh-CN' : s;
     }
 
     const lang = normalizeLangCode(meta.lang) || inferredLang;

@@ -92,9 +92,9 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const langSuffixRegex = /(?:[.-])(en|zh-Hant|zh-CN|fr|es|de)$/i;
+const langSuffixRegex = LANG_SUFFIX_REGEX;
 const isSuffixRoute = langSuffixRegex.test(slug ?? '');
-const canonicalSlug = (slug ?? '').replace(langSuffixRegex, '');
+const canonicalSlug = getPostCanonicalSlug(slug ?? '');
 const matchLang = (slug ?? '').match(langSuffixRegex);
 const targetLang = matchLang ? normalizeLangCode(matchLang[1]) : 'zh-CN';
 
@@ -174,13 +174,13 @@ const allEncryptConfigs = postEntry ? getPostEncryptConfigs(postEntry.data) : []
 // ──── Multilingual i18n Translation Resolution ─────────────────────────────
 const inferredLangMatch = postEntry.id.match(langSuffixRegex);
 const normalizedInferredLang = inferredLangMatch ? normalizeLangCode(inferredLangMatch[1]) : undefined;
-const inferredKey = postEntry.id.replace(langSuffixRegex, '');
+const inferredKey = getPostCanonicalSlug(postEntry.id);
 const currentI18nKey = postEntry.data.i18nKey || inferredKey;
 const currentLang = normalizeLangCode(postEntry.data.lang) || normalizedInferredLang || 'zh-CN';
 
 // Find all sibling translations with the same i18nKey or shared base slug
 const siblingTranslations = allPosts.filter((p) => {
-  const pInferredKey = p.id.replace(langSuffixRegex, '');
+  const pInferredKey = getPostCanonicalSlug(p.id);
   const pKey = p.data.i18nKey || pInferredKey;
   return (
     pKey === currentI18nKey ||
@@ -703,6 +703,13 @@ const heroSummary = isUnlocked
               if (trimmed.startsWith('es')) return 'es';
               if (trimmed.startsWith('de')) return 'de';
               if (trimmed.startsWith('fr')) return 'fr';
+              if (trimmed.startsWith('ja')) return 'ja';
+              if (trimmed.startsWith('ko')) return 'ko';
+              if (trimmed.startsWith('ru')) return 'ru';
+              if (trimmed.startsWith('it')) return 'it';
+              if (trimmed.startsWith('pt')) return 'pt';
+              if (trimmed.startsWith('vi')) return 'vi';
+              if (trimmed.startsWith('ar')) return 'ar';
               return trimmed;
             }
 
@@ -713,6 +720,12 @@ const heroSummary = isUnlocked
               es: { title: 'Contenido', unit: 'secciones' },
               de: { title: 'Inhalt', unit: 'Abschnitte' },
               fr: { title: 'Sommaire', unit: 'sections' },
+              ja: { title: '目次', unit: '節' },
+              ko: { title: '목차', unit: '절' },
+              ru: { title: 'Содержание', unit: 'разделов' },
+              it: { title: 'Indice', unit: 'sezioni' },
+              pt: { title: 'Conteúdo', unit: 'seções' },
+              vi: { title: 'Mục lục', unit: 'mục' },
             };
 
             window.switchArticleLanguage = function (targetLang) {
@@ -721,6 +734,21 @@ const heroSummary = isUnlocked
                 const match = availableLangs.find((l) => l.toLowerCase() === targetLang.toLowerCase());
                 if (match) targetLang = match;
                 else targetLang = defaultLang;
+              }
+
+              // 0. Capture current reading position anchor before switching
+              let anchorSelector = null;
+              const currentVariant = document.querySelector('.article-translation-variant:not([style*="display: none"])');
+              if (currentVariant && window.scrollY > 150) {
+                const headings = Array.from(currentVariant.querySelectorAll('h1, h2, h3, h4, [id]'));
+                for (let i = headings.length - 1; i >= 0; i--) {
+                  const h = headings[i];
+                  const rect = h.getBoundingClientRect();
+                  if (rect.top <= 140 && rect.bottom >= -600) {
+                    anchorSelector = { index: i, id: h.id };
+                    break;
+                  }
+                }
               }
 
               // 1. Switch visible variant
@@ -778,7 +806,7 @@ const heroSummary = isUnlocked
               }
 
               // 6. Update TOC: title, count, and active variant TOC
-              const tMeta = TOC_I18N[targetLang] || TOC_I18N['zh-CN'];
+              const tMeta = TOC_I18N[targetLang] || TOC_I18N[targetLang.split('-')[0]] || (targetLang.startsWith('zh') ? TOC_I18N['zh-CN'] : TOC_I18N['en']);
               const tocTitleEl = document.querySelector('#card-toc [data-i18n-toc-title]');
               if (tocTitleEl) tocTitleEl.textContent = tMeta.title;
 
@@ -799,7 +827,28 @@ const heroSummary = isUnlocked
                 window.localStorage.setItem('shijianus-locale-variant', targetLang);
               } catch (_) {}
 
-              // 8. Re-trigger content feature enhancement & code block enhancers
+              // 8. Restore reading scroll position gently if midway through reading
+              if (anchorSelector) {
+                const newVariant = document.querySelector('.article-translation-variant:not([style*="display: none"])');
+                if (newVariant) {
+                  let targetNode = null;
+                  if (anchorSelector.id) {
+                    try {
+                      targetNode = newVariant.querySelector('[id="' + CSS.escape(anchorSelector.id) + '"]');
+                    } catch (_) {}
+                  }
+                  if (!targetNode && typeof anchorSelector.index === 'number') {
+                    const newHeadings = Array.from(newVariant.querySelectorAll('h1, h2, h3, h4, [id]'));
+                    targetNode = newHeadings[anchorSelector.index] || newHeadings[0];
+                  }
+                  if (targetNode) {
+                    const targetTop = targetNode.getBoundingClientRect().top + window.scrollY - 110;
+                    window.scrollTo({ top: Math.max(0, targetTop), behavior: 'instant' });
+                  }
+                }
+              }
+
+              // 9. Re-trigger content feature enhancement & code block enhancers
               window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: targetLang }));
             };
 
