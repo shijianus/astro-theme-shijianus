@@ -3205,7 +3205,25 @@
 - [x] **博客安知鱼极客美学深度融合与移动端防遮挡**:
   1. 采用通透毛玻璃卡片（`backdrop-filter: blur(28px)`）、安知鱼品牌蓝（`#425aef`）与等宽极客字体，浅色深色自适应对齐；
   2. 移动端展开时 `#rightside` 控制栏自动滑出避让（`transform: translateX(120%)`）。
-- [x] **Cloudflare Pages 生产部署与真实全链路 Playwright 端到端审计通过**:
-  1. 部署至 `shijianus-blog`（`https://34956712.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`）与 `shijianus-github-io`（`https://83af7140.shijianus-github-io.pages.dev`）；
-  2. 针对生产真实域名 `https://blog.epocanvas.com` 执行 Playwright 审计全绿通过（包含默认隐藏、拖拽防误触、单界面无 Tab、Canvas 真实频谱、双行歌词、多平台聚合搜索、叉号收起后台续播、暗色与移动端避让等 12 项断言 100% 通过）。
+### Task 143: 首页冬日雪境普适性背景与独立全矩阵卡片积雪覆盖系统重构 (`55d13bb`)
+- [x] **完全保留已有基础、外来独立覆盖层架构重构 (`src/components/theme/SnowCover.astro` & `src/styles/snow-theme.css`)**:
+  1. 彻底遵循零侵入原则，不修改 `--global-bg`，不修改现有任何卡片的布局、边框、阴影、内边距与字体样式；
+  2. 新增独立封装类 `.snow-cover`，作为纯粹外来的独立覆盖图层（`position: absolute; pointer-events: none; z-index: 30;`），实现“原先UI卡片 + 一层雪覆盖”的解耦架构；
+  3. 纯色模式联动：当切换至 `clean`（纯净纯色）背景时，`.snow-cover` 全量 `display: none !important;`，页面 100% 恢复纯色基底。
+- [x] **全矩阵独立雪花背景与多样化成积 UI 覆盖**:
+  1. 今日卡片 (`.snow-cover--today`)：24px 白雪覆顶 + 融雪双垂滴；
+  2. 随机横幅 (`.snow-cover--banner`)：22px 迎风斜雪脊；
+  3. 顶通公告 (`.snow-cover--notice`)：14px 轻量顶通雪痕；
+  4. 分类按钮 1~3 (`.snow-cover--category-1~3`)：双子峰、厚雪包、右倾斜坡 3 态各异轮廓；
+  5. 文章卡片流 1~16 (`.snow-cover--post-1~4`)：4 态轮转（挂滴灵动型、饱满厚雪型、风蚀左倾型、双鞍雪谷型），相邻文章绝不雷同；
+  6. 侧栏卡片 (`.snow-cover--profile` & `.snow-cover--aside`)：博主名片专属厚雪冠与侧栏通用精致雪冠。
+- [x] **60FPS 轻量三层景深下雪 Canvas 引擎集成 (`src/components/ThemeUniverse.tsx`)**:
+  1. 三层景深粒子物理模拟（远景微尘、中景雪花、近景雪绒），正弦三频风摆飘落；
+  2. 智能节流防掉帧机制：滚动时触发 `scrollPause` 节流，后台静置时自动暂停，保障全局 60FPS；
+  3. 浅色清透冰蓝与深色月光冷辉（`drop-shadow` 滤镜）昼夜自适应。
+- [x] **Playwright 全链路端到端自动化测试与多视口验证通过 (`scripts/verify-snow-homepage.mjs`)**:
+  1. 浅色雪景（Canvas 激活、16/16 篇文章卡片覆雪、3 态分类多样性、4 态文章流多样性）断言 100% 通过；
+  2. 深色雪夜月光辉光滤镜断言通过；
+  3. 纯色背景与雪景双向平滑切换断言通过；
+  4. 全屏高分辨率截图审计归档（`snow-homepage-light.png` / `snow-homepage-dark.png` / `*-full.png`）。
 
