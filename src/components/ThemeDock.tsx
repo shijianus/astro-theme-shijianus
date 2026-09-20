@@ -223,6 +223,27 @@ export function ThemeDock(_props: ThemeDockProps) {
   }, []);
 
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('shijianus-music-pocket-visible');
+      if (saved === 'true') {
+        setMusicPocketVisible(true);
+      }
+    } catch {}
+
+    const onMusicPocketVis = (e: Event) => {
+      const detail = (e as CustomEvent<{ visible?: boolean }>).detail;
+      if (detail && typeof detail.visible === 'boolean') {
+        setMusicPocketVisible(detail.visible);
+      }
+    };
+
+    window.addEventListener('shijianus:music-pocket-visibility-change', onMusicPocketVis as EventListener);
+    return () => {
+      window.removeEventListener('shijianus:music-pocket-visibility-change', onMusicPocketVis as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
     const nextTheme = (readStorage('shijianus-theme') as ThemeMode | null) ?? (root.dataset.theme as ThemeMode | undefined) ?? 'light';
     const nextAside = readStorage('shijianus-aside') ?? root.dataset.aside ?? 'expanded';
@@ -451,6 +472,16 @@ export function ThemeDock(_props: ThemeDockProps) {
     emitActivity('已收起快捷菜单（鼠标移至屏幕右侧可重新唤出）');
   };
 
+  const handleToggleMusicPocket = () => {
+    const next = !musicPocketVisible;
+    setMusicPocketVisible(next);
+    try {
+      window.localStorage.setItem('shijianus-music-pocket-visible', String(next));
+    } catch {}
+    window.dispatchEvent(new CustomEvent('shijianus:toggle-music-pocket', { detail: { visible: next } }));
+    emitActivity(next ? '已开启随身音乐口袋' : '已隐藏随身音乐口袋');
+  };
+
   const tD = DOCK_TRANSLATIONS[locale] || DOCK_TRANSLATIONS['zh-CN'];
 
   return (
@@ -639,6 +670,31 @@ export function ThemeDock(_props: ThemeDockProps) {
               </svg>
             </button>
           )}
+
+          <button
+            type="button"
+            id="toggle-music-pocket"
+            title={musicPocketVisible ? tD.musicPocketActive : tD.toggleMusicPocket}
+            aria-label={musicPocketVisible ? tD.musicPocketActive : tD.toggleMusicPocket}
+            className={musicPocketVisible ? 'is-active' : ''}
+            onClick={handleToggleMusicPocket}
+          >
+            <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+              <svg 
+                className="rightside-icon" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+            </div>
+          </button>
 
           <button
             type="button"

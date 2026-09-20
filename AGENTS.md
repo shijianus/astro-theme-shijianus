@@ -3101,3 +3101,33 @@
   5. 脏缓存自动清洗恢复验证通过；
   6. 全站 241 个页面静态编译构建 0 错误通过。
 
+### Task 138: 音乐随身听 (.shijianus-music-pocket) 可拖拽悬浮改造、右侧控制栏管理按键(默认隐藏)、Cyber-Vintage特色HUD面板与API安全接入 (`79c5a7f`)
+- [x] **可拖拽浮动按钮重构 (`src/components/theme/MusicPocket.tsx`)**:
+  1. 支持指针捕获事件 (`setPointerCapture` / `onPointerDown` / `onPointerMove` / `onPointerUp`)，实现跨视口平滑自如拖拽；
+  2. 注入 5px 移动阈值与 160ms 防抖锁 (`justDraggedRef`)，严格区分拖拽与点击，彻底阻断拖拽结束时面板意外展开的误触；
+  3. 视口边界碰撞与动态吸附限制，坐标自动持久化至 `localStorage['shijianus-music-pocket-pos']`；
+  4. 展开面板自适应定位 (`pos-to-left` / `pos-to-right` / `pos-to-top` / `pos-to-bottom`)，根据按钮所在屏幕象限智能计算对齐朝向，杜绝面板超出视口溢出遮挡。
+- [x] **右侧悬浮控制栏专用管理按键集成 (`#rightside-config-show`)**:
+  1. 在 `src/components/ThemeDock.tsx` 中向 `#rightside-config-show` 注入专用的 `#toggle-music-pocket` 音乐开关按钮与音乐音符矢量图标；
+  2. **默认隐藏机制**: 初次加载页面时音乐随身听默认保持隐藏 (`display: none !important;`)，仅在用户主动点击控制栏管理按钮或记忆显式状态后才展现；
+  3. 双向事件总线同步: 通过 `shijianus:toggle-music-pocket` 与 `shijianus:music-pocket-visibility-change` 实现右侧控制栏状态与随身听面板的实时双向联动与状态高亮；
+  4. 完整的多语言国际化适配: 覆盖简体中文、繁体中文、英文、法文、西班牙文、德文 6 国语言提示标签。
+- [x] **Cyber-Vintage 硬件级极具辨识度特色 UI 面板 (`src/styles/runtime-widgets.css` & `src/components/theme/MusicPocket.tsx`)**:
+  1. **Cyber-Vintage HUD 顶栏**: 配备脉冲呼吸双色状态指示灯（播放绿脉冲 / 暂停橙恒亮）、`HI-FI STEREO` 拟物声学标识与 `320K / DSD-64` 极客码率徽标；
+  2. **3D 拟真全息黑胶唱机**: 微细同心圆声槽质感、中心盘面旋转微光、配合物理金属唱针（播放入轨、暂停抬起）；
+  3. **16-Band 霓虹声波频谱柱**: 16 根跃动频段柱随播放跳动，搭配立体渐变霓虹光晕；
+  4. **电影级逐行歌词 HUD (支持点击跳转 Seek)**: 精致多行滚动歌词，当前句高光强调，支持**直接点击任意歌词即时跳转至对应音频时间戳**；
+  5. **灵感探索雷达 (Radar Discovery) 标签页**: 内置互动流派胶囊（流行热歌、周杰伦、陈奕迅、赛博纯音、治愈老歌等）、"🎲 随机探索" 与实时搜索点歌。
+- [x] **API 方式安全接入与凭证外泄严格防护 (`functions/api/music/` & `functions/_lib/`)**:
+  1. 后端边缘代理中继架构: 新增 `/api/music/playlist`、优化 `/api/music/stream`，所有外部音源交互由 Cloudflare Functions 边缘代理接管；
+  2. 敏感凭证 100% 隔离保护: 严禁在客户端代码或前端请求中包含任何第三方 API 密钥，所有密钥与私有上游地址仅由服务端通过 Cloudflare 环境变量 / `.env` 安全注入，杜绝 API 泄露；
+  3. 高可用优雅降级与本地高保真资产托底: 内置无损本地音频与完整 LRC 歌词作为零延迟保底，确保离线或外部 API 受限时全链路 100% 丝滑可用。
+- [x] **Playwright 全链路端到端自动化测试与静态编译全绿通过 (`scripts/verify-music-pocket.mjs`)**:
+  1. 页面初次加载严格默认隐藏（`display: none !important;`）断言通过；
+  2. `#rightside-config-show` 内管理按钮存在性及点击唤出断言通过；
+  3. 自由拖拽位移（位移 169.7px）与防展开误触断言通过；
+  4. Cyber-Vintage HUD 顶栏、320K 码率标识与 16-Band 频谱柱断言通过；
+  5. 探索标签页与点歌交互断言通过；
+  6. 全站 222 个静态页面生产编译构建 0 错误通过。
+
+

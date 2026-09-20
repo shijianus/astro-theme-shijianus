@@ -1,13 +1,15 @@
-import React, { startTransition, useEffect, useRef, useState } from 'react';
+import React, { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
 import {
   Disc,
+  Flame,
   ListMusic,
-  MessageSquare,
+  Minus,
   Music,
   Pause,
   Play,
   Plus,
+  Radio,
   Repeat,
   Repeat1,
   Search,
@@ -43,13 +45,16 @@ type Props = {
 };
 
 const STORAGE_KEY = 'shijianus-radio-state';
+const POS_STORAGE_KEY = 'shijianus-music-pocket-pos';
+const VISIBLE_STORAGE_KEY = 'shijianus-music-pocket-visible';
+
 const SOURCES = [
   { value: 'netease', label: '网易云' },
   { value: 'kuwo', label: '酷我' },
   { value: 'qq', label: 'QQ音乐' },
 ];
 
-const QUICK_TAGS = ['流行热歌', '周杰伦', '陈奕迅', '治愈纯音', '经典老歌', 'ACG动漫', '轻音乐', '摇滚'];
+const QUICK_TAGS = ['流行热歌', '周杰伦', '陈奕迅', '赛博纯音', '治愈老歌', 'ACG动漫', 'Lo-Fi轻音', '摇滚巅峰'];
 
 function getDeviceId(): string {
   try {
@@ -115,6 +120,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 export function MusicPocket({ apiBase }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const lyricContainerRef = useRef<HTMLDivElement>(null);
+  const pocketContainerRef = useRef<HTMLDivElement>(null);
 
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
 
@@ -148,6 +154,159 @@ export function MusicPocket({ apiBase }: Props) {
   }, []);
 
   const t = (text: string) => convertText(text, localeVariant);
+
+  // 1. 显隐控制 (默认隐藏，严格遵从用户需求)
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VISIBLE_STORAGE_KEY);
+      if (saved === 'true') {
+        setVisible(true);
+      }
+    } catch {}
+
+    const handleTogglePocket = (e: Event) => {
+      const detail = (e as CustomEvent<{ visible?: boolean }>).detail;
+      if (detail && typeof detail.visible === 'boolean') {
+        setVisible(detail.visible);
+      } else {
+        setVisible((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('shijianus:toggle-music-pocket', handleTogglePocket);
+    return () => window.removeEventListener('shijianus:toggle-music-pocket', handleTogglePocket);
+  }, []);
+
+  const hideMusicPocket = () => {
+    setVisible(false);
+    setOpen(false);
+    try {
+      window.localStorage.setItem(VISIBLE_STORAGE_KEY, 'false');
+    } catch {}
+    window.dispatchEvent(new CustomEvent('shijianus:music-pocket-visibility-change', { detail: { visible: false } }));
+  };
+
+  // 2. 拖拽坐标管理与防止微小位移误触
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({
+    startX: 0,
+    startY: 0,
+    initPosX: 0,
+    initPosY: 0,
+    hasMoved: false,
+  });
+  const justDraggedRef = useRef(false);
+
+  // 初始化拖拽坐标
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const rawPos = window.localStorage.getItem(POS_STORAGE_KEY);
+      if (rawPos) {
+        const parsed = JSON.parse(rawPos) as { x: number; y: number };
+        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+          // 校验边界
+          const maxX = Math.max(12, window.innerWidth - 72);
+          const maxY = Math.max(12, window.innerHeight - 72);
+          setPosition({
+            x: Math.min(Math.max(12, parsed.x), maxX),
+            y: Math.min(Math.max(12, parsed.y), maxY),
+          });
+          return;
+        }
+      }
+    } catch {}
+
+    // 默认左下角
+    setPosition({
+      x: 24,
+      y: Math.max(24, window.innerHeight - 96),
+    });
+  }, []);
+
+  // 窗口调整时自适应 clamp
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      setPosition((prev) => {
+        if (!prev) return prev;
+        const maxX = Math.max(12, window.innerWidth - 72);
+        const maxY = Math.max(12, window.innerHeight - 72);
+        return {
+          x: Math.min(Math.max(12, prev.x), maxX),
+          y: Math.min(Math.max(12, prev.y), maxY),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    // 仅允许主按键触发拖动
+    if (e.button !== 0) return;
+    const curX = position ? position.x : 24;
+    const curY = position ? position.y : window.innerHeight - 96;
+
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initPosX: curX,
+      initPosY: curY,
+      hasMoved: false,
+    };
+
+    // 捕获指针事件
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragRef.current.startX === 0 && dragRef.current.startY === 0) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > 5) {
+      if (!dragRef.current.hasMoved) {
+        dragRef.current.hasMoved = true;
+        setIsDragging(true);
+      }
+      const maxX = Math.max(12, window.innerWidth - 72);
+      const maxY = Math.max(12, window.innerHeight - 72);
+      const nextX = Math.min(Math.max(12, dragRef.current.initPosX + dx), maxX);
+      const nextY = Math.min(Math.max(12, dragRef.current.initPosY + dy), maxY);
+      setPosition({ x: nextX, y: nextY });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragRef.current.hasMoved) {
+      justDraggedRef.current = true;
+      window.setTimeout(() => {
+        justDraggedRef.current = false;
+      }, 160);
+
+      // 持久化当前位置
+      if (position) {
+        try {
+          window.localStorage.setItem(POS_STORAGE_KEY, JSON.stringify(position));
+        } catch {}
+      }
+    }
+
+    dragRef.current = { startX: 0, startY: 0, initPosX: 0, initPosY: 0, hasMoved: false };
+    setIsDragging(false);
+
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+  };
 
   // Playback & UI States
   const [open, setOpen] = useState(false);
@@ -183,31 +342,52 @@ export function MusicPocket({ apiBase }: Props) {
     window.setTimeout(() => setToast(''), 2600);
   };
 
-  // Restore saved state on mount
-  useEffect(() => {
+  // 加载初始精选歌单 (通过安全 API 接入)
+  const loadInitialPlaylist = useCallback(async () => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as {
-        queue?: MusicTrack[];
-        currentIndex?: number;
-        currentTime?: number;
-        source?: string;
-        volume?: number;
-        playMode?: 'loop' | 'single' | 'shuffle';
-        floatingLyricVisible?: boolean;
-      };
-      if (Array.isArray(parsed.queue) && parsed.queue.length > 0) setQueue(parsed.queue);
-      if (typeof parsed.currentIndex === 'number') setCurrentIndex(parsed.currentIndex);
-      if (typeof parsed.source === 'string') setSource(parsed.source);
-      if (typeof parsed.volume === 'number') setVolume(parsed.volume);
-      if (parsed.playMode) setPlayMode(parsed.playMode);
-      if (typeof parsed.floatingLyricVisible === 'boolean') setFloatingLyricVisible(parsed.floatingLyricVisible);
-      if (audioRef.current && typeof parsed.currentTime === 'number') {
-        audioRef.current.currentTime = parsed.currentTime;
+      const payload = await fetchJson<{ ok: boolean; tracks: MusicTrack[] }>(`${apiBase}/music/playlist`);
+      if (payload.ok && Array.isArray(payload.tracks) && payload.tracks.length > 0) {
+        setQueue(payload.tracks);
+        setCurrentIndex(0);
       }
     } catch {}
-  }, []);
+  }, [apiBase]);
+
+  // Restore saved state on mount
+  useEffect(() => {
+    let hasLoadedQueue = false;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          queue?: MusicTrack[];
+          currentIndex?: number;
+          currentTime?: number;
+          source?: string;
+          volume?: number;
+          playMode?: 'loop' | 'single' | 'shuffle';
+          floatingLyricVisible?: boolean;
+        };
+        if (Array.isArray(parsed.queue) && parsed.queue.length > 0) {
+          setQueue(parsed.queue);
+          hasLoadedQueue = true;
+        }
+        if (typeof parsed.currentIndex === 'number') setCurrentIndex(parsed.currentIndex);
+        if (typeof parsed.source === 'string') setSource(parsed.source);
+        if (typeof parsed.volume === 'number') setVolume(parsed.volume);
+        if (parsed.playMode) setPlayMode(parsed.playMode);
+        if (typeof parsed.floatingLyricVisible === 'boolean') setFloatingLyricVisible(parsed.floatingLyricVisible);
+        if (audioRef.current && typeof parsed.currentTime === 'number') {
+          audioRef.current.currentTime = parsed.currentTime;
+        }
+      }
+    } catch {}
+
+    // 若本地没有队列缓存，通过 API 自动加载初始推荐歌单
+    if (!hasLoadedQueue) {
+      void loadInitialPlaylist();
+    }
+  }, [loadInitialPlaylist]);
 
   // Persist state on change
   useEffect(() => {
@@ -235,7 +415,7 @@ export function MusicPocket({ apiBase }: Props) {
     }
   }, [volume, isMuted]);
 
-  // Resolve audio stream when track changes
+  // Resolve audio stream when track changes (全链路走 /api/music/stream 安全反向代理)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
@@ -245,7 +425,7 @@ export function MusicPocket({ apiBase }: Props) {
     void audio.play().catch(() => setIsPlaying(false));
   }, [apiBase, currentTrack]);
 
-  // Fetch & synchronize lyrics when track changes
+  // Fetch & synchronize lyrics when track changes (全链路走 /api/music/lyric 安全获取)
   useEffect(() => {
     if (!currentTrack?.id) {
       setRawLyric('');
@@ -255,7 +435,7 @@ export function MusicPocket({ apiBase }: Props) {
     }
 
     let active = true;
-    setRawLyric('正在同步歌词...');
+    setRawLyric('正在同步时空声波歌词...');
     setParsedLyrics([]);
     setActiveLyricIndex(-1);
 
@@ -271,7 +451,7 @@ export function MusicPocket({ apiBase }: Props) {
           : parseLrc(text);
 
         startTransition(() => {
-          setRawLyric(text || '当前曲目暂时没有可用歌词。');
+          setRawLyric(text || '当前曲目纯音无歌词，请享受沉浸旋律。');
           setParsedLyrics(lines);
         });
       })
@@ -307,7 +487,7 @@ export function MusicPocket({ apiBase }: Props) {
         }
         setActiveLyricIndex(matched);
 
-        // Auto scroll lyrics container if open
+        // Auto scroll lyrics container
         if (lyricContainerRef.current && matched >= 0) {
           const activeEl = lyricContainerRef.current.children[matched] as HTMLElement | undefined;
           if (activeEl) {
@@ -341,7 +521,7 @@ export function MusicPocket({ apiBase }: Props) {
       setCurrentIndex((prev) => {
         const next = prev + 1;
         if (next >= queue.length) {
-          return 0; // loop back to first
+          return 0;
         }
         return next;
       });
@@ -365,12 +545,47 @@ export function MusicPocket({ apiBase }: Props) {
     };
   }, [parsedLyrics, playMode, queue.length]);
 
-  // Seek audio timeline
-  const handleSeek = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextTime = parseFloat(event.target.value);
-    setCurrentTime(nextTime);
-    if (audioRef.current) {
-      audioRef.current.currentTime = nextTime;
+  // Search through backend API
+  const handleSearch = async (overrideKeyword?: string) => {
+    const keyword = (overrideKeyword || query).trim();
+    if (!keyword) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const payload = await fetchJson<{ ok: boolean; tracks: MusicTrack[] }>(
+        `${apiBase}/music/search?q=${encodeURIComponent(keyword)}&source=${encodeURIComponent(source)}&count=10`,
+      );
+      if (payload.ok && Array.isArray(payload.tracks)) {
+        setResults(payload.tracks);
+        if (payload.tracks.length === 0) {
+          setError(t('未找到匹配的高质曲目，请尝试其他关键词。'));
+        }
+      }
+    } catch (err: any) {
+      setError(err?.message || t('曲目检索请求异常，请稍候重试。'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Random Discovery through backend API
+  const handleRandom = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = await fetchJson<{ ok: boolean; tracks: MusicTrack[]; keyword: string }>(
+        `${apiBase}/music/random?count=8`,
+      );
+      if (payload.ok && Array.isArray(payload.tracks)) {
+        setResults(payload.tracks);
+        showToast(`已探索精选灵感风格: ${payload.keyword || '随机'}`);
+      }
+    } catch (err: any) {
+      setError(err?.message || t('随机灵感获取失败，请稍后重试。'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -386,16 +601,17 @@ export function MusicPocket({ apiBase }: Props) {
     }
   };
 
-  // Add a song to queue (点歌 / 加待播)
-  const enqueueTrack = (track: MusicTrack, playNow = false) => {
-    const existingIndex = queue.findIndex((item) => item.id === track.id && item.source === track.source);
+  // Add to queue or play now
+  const addTrack = (track: MusicTrack, playNow = false) => {
     let nextQueue = [...queue];
+    const existingIndex = nextQueue.findIndex((item) => item.id === track.id);
 
     if (existingIndex >= 0) {
       if (playNow) {
         playTrack(existingIndex);
+        showToast(`正在播放: ${track.name}`);
       } else {
-        showToast(`已在播放队列: ${track.name}`);
+        showToast('该歌曲已在待播列表中');
       }
       return;
     }
@@ -408,7 +624,7 @@ export function MusicPocket({ apiBase }: Props) {
     } else {
       nextQueue.push(track);
       setQueue(nextQueue);
-      showToast(`已点歌并加入待播: ${track.name}`);
+      showToast(`已加入待播: ${track.name}`);
     }
   };
 
@@ -423,7 +639,8 @@ export function MusicPocket({ apiBase }: Props) {
         setIsPlaying(false);
         if (audioRef.current) audioRef.current.src = '';
       } else {
-        setCurrentIndex(Math.min(index, nextQueue.length - 1));
+        const nextIdx = index >= nextQueue.length ? 0 : index;
+        playTrack(nextIdx, nextQueue);
       }
     } else if (index < currentIndex) {
       setCurrentIndex((prev) => prev - 1);
@@ -440,63 +657,37 @@ export function MusicPocket({ apiBase }: Props) {
     showToast('待播队列已清空');
   };
 
-  // Random tracks
-  const fetchRandom = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const payload = await fetchJson<{ tracks: MusicTrack[] }>(`${apiBase}/music/random?count=8`);
-      const nextTracks = payload.tracks || [];
-      startTransition(() => {
-        setResults(nextTracks);
-        if (nextTracks.length > 0) {
-          playTrack(0, nextTracks);
-          showToast('已随机载入 8 首精选好歌');
-        }
-      });
-    } catch (err: any) {
-      setError(err?.message || '随机曲库获取失败');
-    } finally {
-      setLoading(false);
+  // Seek timeline
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetTime = parseFloat(e.target.value);
+    setCurrentTime(targetTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = targetTime;
     }
   };
 
-  // Search tracks
-  const searchMusic = async (customQuery?: string) => {
-    const text = (customQuery ?? query).trim();
-    if (!text) return;
-    if (customQuery) setQuery(text);
-    setLoading(true);
-    setError('');
-    try {
-      const payload = await fetchJson<{ tracks: MusicTrack[] }>(
-        `${apiBase}/music/search?q=${encodeURIComponent(text)}&source=${encodeURIComponent(source)}&count=15&page=1`,
-      );
-      startTransition(() => {
-        setResults(payload.tracks || []);
-        setActiveTab('search');
-        if (!payload.tracks || payload.tracks.length === 0) {
-          setError('未搜索到相关歌曲，尝试切换音源或更换关键词');
-        }
-      });
-    } catch (err: any) {
-      setError(err?.message || '搜索失败，请重试');
-    } finally {
-      setLoading(false);
+  // Lyric line click to seek
+  const handleLyricClick = (time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+      if (!isPlaying) {
+        void audioRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      }
     }
   };
 
-  // Toggle playback
-  const togglePlayback = async () => {
+  // Play / Pause toggle
+  const togglePlay = async () => {
     const audio = audioRef.current;
     if (!audio) return;
+
     if (!currentTrack) {
       if (queue.length > 0) {
         playTrack(0);
-      } else if (results.length > 0) {
-        playTrack(0, results);
       } else {
-        void fetchRandom();
+        await loadInitialPlaylist();
       }
       return;
     }
@@ -529,29 +720,53 @@ export function MusicPocket({ apiBase }: Props) {
     showToast(`播放模式: ${labels[next]}`);
   };
 
+  const handleToggleOpen = () => {
+    if (justDraggedRef.current) return;
+    setOpen((prev) => !prev);
+  };
+
   const currentLyricText = activeLyricIndex >= 0 && parsedLyrics[activeLyricIndex]
     ? parsedLyrics[activeLyricIndex].text
     : currentTrack
       ? `${currentTrack.name} - ${currentTrack.artist}`
-      : t('EpoCanvas 纯净背景音乐');
+      : t('EpoCanvas 空间声波随身听');
+
+  // 判断弹出面板的自适应朝向 (避免出屏)
+  const isRightHalf = position ? position.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 600) : false;
+  const isTopHalf = position ? position.y < (typeof window !== 'undefined' ? window.innerHeight / 2 : 400) : false;
+
+  const containerStyle: React.CSSProperties = {
+    position: 'fixed',
+    left: position ? `${position.x}px` : '24px',
+    top: position ? `${position.y}px` : 'auto',
+    bottom: position ? 'auto' : '24px',
+    right: 'auto',
+    transform: 'none',
+    display: visible ? 'block' : 'none',
+  };
 
   return (
-    <div className={`shijianus-music-pocket ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''}`}>
+    <div
+      ref={pocketContainerRef}
+      className={`shijianus-music-pocket ${!visible ? 'is-hidden' : ''} ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''} ${isDragging ? 'is-dragging' : ''}`}
+      style={containerStyle}
+    >
       <audio ref={audioRef} preload="none" />
 
-      {/* Floating Dynamic Lyric Pill (When minimized or playing) */}
+      {/* 悬浮流动歌词胶囊 (当折叠且开启歌词浮现时展示) */}
       {!open && floatingLyricVisible && (
         <div
-          className="shijianus-music-pocket__floating-lyric"
+          className={`shijianus-music-pocket__floating-lyric ${isRightHalf ? 'align-left' : 'align-right'}`}
           onClick={() => setOpen(true)}
           role="button"
           tabIndex={0}
-          title={t('点击展开音乐播放器')}
+          title={t('点击展开音乐随身听')}
         >
           <div className="shijianus-music-pocket__equalizer" aria-hidden="true">
             <span className="eq-bar eq-bar--1" />
             <span className="eq-bar eq-bar--2" />
             <span className="eq-bar eq-bar--3" />
+            <span className="eq-bar eq-bar--4" />
           </div>
           <div className="shijianus-music-pocket__floating-text">
             <span>{currentLyricText}</span>
@@ -563,34 +778,36 @@ export function MusicPocket({ apiBase }: Props) {
               e.stopPropagation();
               setFloatingLyricVisible(false);
             }}
-            aria-label={t('收起悬浮歌词')}
+            aria-label={t('收起桌面歌词')}
           >
             <X size={12} aria-hidden="true" />
           </button>
         </div>
       )}
 
-      {/* Modern Photorealistic Vinyl Disc Toggle Button */}
+      {/* 可拖动黑胶唱机浮动 Button */}
       <button
         type="button"
         className="shijianus-music-pocket__toggle"
-        onClick={() => setOpen((value) => !value)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onClick={handleToggleOpen}
         aria-expanded={open}
-        aria-label={open ? t('收起音乐播放器') : t('展开音乐点歌台')}
+        aria-label={open ? t('收起音乐播放器') : t('展开随身音乐点歌台')}
+        title={t('按住可自由拖拽，点击展开音乐随身听')}
       >
-        {/* Subtle dynamic sound wave ring */}
+        {/* 声波涟漪光晕环 */}
         <span className="shijianus-music-pocket__wave-pulse" aria-hidden="true" />
 
-        {/* Vinyl Disc Body */}
+        {/* 物理光泽黑胶盘身 */}
         <span className="shijianus-music-pocket__toggle-disc" aria-hidden="true">
-          {/* Micro Vinyl Grooves */}
           <span className="shijianus-music-pocket__toggle-groove-outer" />
           <span className="shijianus-music-pocket__toggle-groove-inner" />
-
-          {/* Dynamic Light Sheen */}
           <span className="shijianus-music-pocket__toggle-shine" />
 
-          {/* Center Record Label / Artwork */}
+          {/* 黑胶内盘中心标 */}
           <span className="shijianus-music-pocket__toggle-label">
             {currentTrack?.coverUrl ? (
               <img src={currentTrack.coverUrl} alt="" className="shijianus-music-pocket__toggle-art" />
@@ -600,157 +817,189 @@ export function MusicPocket({ apiBase }: Props) {
           </span>
         </span>
 
-        {/* Realistic Tonearm (留声机唱针臂) */}
+        {/* 动态唱针臂 (Tonearm) */}
         <span className="shijianus-music-pocket__tonearm" aria-hidden="true">
           <span className="shijianus-music-pocket__tonearm-pivot" />
           <span className="shijianus-music-pocket__tonearm-stick" />
           <span className="shijianus-music-pocket__tonearm-head" />
         </span>
 
-        {/* Hover Mini Badge */}
-        <span className="shijianus-music-pocket__toggle-copy">
-          <strong>{currentTrack ? currentTrack.name : 'Solara Radio'}</strong>
-          <small>{currentTrack ? `${currentTrack.artist} · ${currentTrack.album || t('单曲')}` : t('点歌 / 随机曲库')}</small>
-        </span>
+        {/* Hover 微提示徽标 */}
+        {!isDragging && (
+          <span className={`shijianus-music-pocket__toggle-copy ${isRightHalf ? 'align-left' : 'align-right'}`}>
+            <strong>{currentTrack ? currentTrack.name : 'EpoCanvas Radio'}</strong>
+            <small>{currentTrack ? `${currentTrack.artist} · ${currentTrack.album || t('单曲')}` : t('点歌 / 随身曲库 (可拖拽)')}</small>
+          </span>
+        )}
       </button>
 
-      {/* Toast Notification */}
+      {/* 轻量级 Toast 提示 */}
       {toast && (
         <div className="shijianus-music-pocket__toast" role="status">
           {toast}
         </div>
       )}
 
-      {/* Expanded Modern Glassmorphic Player Panel */}
+      {/* 展开的特色 Cyber-Vintage 播放器面板 */}
       {open && (
-        <div className="shijianus-music-pocket__panel">
-          {/* Panel Navigation Header */}
-          <div className="shijianus-music-pocket__panel-head">
-            <div className="shijianus-music-pocket__tabs">
-              <button
-                type="button"
-                className={`shijianus-music-pocket__tab ${activeTab === 'player' ? 'is-active' : ''}`}
-                onClick={() => setActiveTab('player')}
-              >
-                <Disc size={15} aria-hidden="true" />
-                <span>{t('正在播放')}</span>
-              </button>
-              <button
-                type="button"
-                className={`shijianus-music-pocket__tab ${activeTab === 'search' ? 'is-active' : ''}`}
-                onClick={() => setActiveTab('search')}
-              >
-                <Search size={15} aria-hidden="true" />
-                <span>{t('点歌台')}</span>
-              </button>
-              <button
-                type="button"
-                className={`shijianus-music-pocket__tab ${activeTab === 'queue' ? 'is-active' : ''}`}
-                onClick={() => setActiveTab('queue')}
-              >
-                <ListMusic size={15} aria-hidden="true" />
-                <span>{t('待播')} ({queue.length})</span>
-              </button>
+        <div
+          className={`shijianus-music-pocket__panel ${isRightHalf ? 'pos-to-left' : 'pos-to-right'} ${isTopHalf ? 'pos-to-bottom' : 'pos-to-top'}`}
+        >
+          {/* 1. 复古硬件 HUD 顶栏 */}
+          <div className="shijianus-music-pocket__hud-head">
+            <div className="shijianus-music-pocket__hud-indicator">
+              <span className={`hud-dot ${isPlaying ? 'is-active' : ''}`} />
+              <span className="hud-label">HI-FI STEREO</span>
+              <span className="hud-badge">320K</span>
             </div>
 
+            <div className="shijianus-music-pocket__panel-actions">
+              <button
+                type="button"
+                className="shijianus-music-pocket__hud-btn"
+                onClick={() => setOpen(false)}
+                title={t('最小化面板')}
+                aria-label={t('最小化面板')}
+              >
+                <Minus size={14} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="shijianus-music-pocket__hud-btn shijianus-music-pocket__hud-btn--close"
+                onClick={hideMusicPocket}
+                title={t('完全隐藏音乐口袋 (可在右侧控制台重新开启)')}
+                aria-label={t('完全隐藏音乐口袋')}
+              >
+                <X size={14} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* 2. 交互选项卡 Tabs */}
+          <div className="shijianus-music-pocket__tabs-bar">
             <button
               type="button"
-              className="shijianus-music-pocket__close-btn"
-              onClick={() => setOpen(false)}
-              aria-label={t('关闭播放器面板')}
+              className={`shijianus-music-pocket__tab ${activeTab === 'player' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('player')}
             >
-              <X size={18} aria-hidden="true" />
+              <Disc size={14} aria-hidden="true" />
+              <span>{t('唱机')}</span>
+            </button>
+            <button
+              type="button"
+              className={`shijianus-music-pocket__tab ${activeTab === 'search' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('search')}
+            >
+              <Search size={14} aria-hidden="true" />
+              <span>{t('探索')}</span>
+            </button>
+            <button
+              type="button"
+              className={`shijianus-music-pocket__tab ${activeTab === 'queue' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('queue')}
+            >
+              <ListMusic size={14} aria-hidden="true" />
+              <span>{t('待播')} ({queue.length})</span>
             </button>
           </div>
 
-          {/* TAB 1: NOW PLAYING */}
+          {/* 3. TAB 1: 唱机与声波歌词视图 */}
           {activeTab === 'player' && (
             <div className="shijianus-music-pocket__tab-content shijianus-music-pocket__tab-content--player">
-              {/* Turntable / Track Visual Area */}
-              <div className="shijianus-music-pocket__now-banner">
+              <div className="shijianus-music-pocket__deck-showcase">
+                {/* 物理黑胶转盘 */}
                 <div className="shijianus-music-pocket__turntable">
                   <div className={`shijianus-music-pocket__big-disc ${isPlaying ? 'is-rotating' : ''}`}>
                     <div className="shijianus-music-pocket__big-disc-grooves" />
+                    <div className="shijianus-music-pocket__big-disc-sheen" />
                     <div className="shijianus-music-pocket__big-disc-center">
                       {currentTrack?.coverUrl ? (
                         <img src={currentTrack.coverUrl} alt={currentTrack.name} />
                       ) : (
-                        <Music size={28} className="shijianus-music-pocket__disc-icon" />
+                        <Music size={26} className="shijianus-music-pocket__disc-icon" />
                       )}
                     </div>
                   </div>
                 </div>
 
+                {/* 歌曲信息与来源 */}
                 <div className="shijianus-music-pocket__meta">
                   <div className="shijianus-music-pocket__title-row">
-                    <strong className="shijianus-music-pocket__song-title">
-                      {currentTrack ? currentTrack.name : t('暂无正在播放的歌曲')}
+                    <strong className="shijianus-music-pocket__song-title" title={currentTrack?.name || '未知曲目'}>
+                      {currentTrack ? currentTrack.name : t('暂无播放曲目')}
                     </strong>
-                    {currentTrack?.source && (
+                    {currentTrack && (
                       <span className="shijianus-music-pocket__source-tag">
-                        {currentTrack.source === 'netease' ? '网易云' : currentTrack.source === 'kuwo' ? '酷我' : currentTrack.source}
+                        {currentTrack.source === 'local' ? '精选本地' : currentTrack.source.toUpperCase()}
                       </span>
                     )}
                   </div>
                   <p className="shijianus-music-pocket__song-artist">
-                    {currentTrack ? `${currentTrack.artist}${currentTrack.album ? ` — 《${currentTrack.album}》` : ''}` : t('点击下方“随机曲库”或在点歌台点播')}
+                    {currentTrack ? `${currentTrack.artist} · ${currentTrack.album || t('单曲')}` : t('请在探索页点歌或加载精选曲库')}
                   </p>
                 </div>
               </div>
 
-              {/* Synchronized Scrolling Lyrics View */}
+              {/* 16-Band 霓虹赛博声波频谱律动柱 */}
+              <div className={`shijianus-music-pocket__visualizer ${isPlaying ? 'is-active' : ''}`} aria-hidden="true">
+                {Array.from({ length: 16 }).map((_, idx) => (
+                  <span key={idx} className={`spectrum-bar bar-${idx + 1}`} />
+                ))}
+              </div>
+
+              {/* 电影级时间轴同步歌词 (支持点击跳转 Seek) */}
               <div className="shijianus-music-pocket__lyrics-viewport" ref={lyricContainerRef}>
                 {parsedLyrics.length > 0 ? (
-                  parsedLyrics.map((item, idx) => {
+                  parsedLyrics.map((line, idx) => {
                     const isActive = idx === activeLyricIndex;
                     return (
                       <div
-                        key={`${item.time}-${idx}`}
+                        key={`${line.time}-${idx}`}
                         className={`shijianus-music-pocket__lyric-line ${isActive ? 'is-active' : ''}`}
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = item.time;
-                            setCurrentTime(item.time);
-                          }
-                        }}
-                        title={`跳转至 ${formatTime(item.time)}`}
+                        onClick={() => handleLyricClick(line.time)}
+                        title={t('点击跳转至该句播放')}
                       >
-                        {item.text}
+                        <span className="lyric-time">{formatTime(line.time)}</span>
+                        <span className="lyric-text">{line.text}</span>
                       </div>
                     );
                   })
                 ) : (
                   <div className="shijianus-music-pocket__lyrics-empty">
-                    <p>{rawLyric ? t(rawLyric) : t('暂无滚动歌词')}</p>
+                    <Radio size={20} className="empty-icon" />
+                    <p>{rawLyric || t('当前曲目暂无歌词。静心享受旋律吧。')}</p>
                   </div>
                 )}
               </div>
 
-              {/* Scrubber Timeline */}
+              {/* 时间刻度与进度拖拽条 */}
               <div className="shijianus-music-pocket__scrubber">
                 <span className="shijianus-music-pocket__time">{formatTime(currentTime)}</span>
                 <input
                   type="range"
-                  min={0}
+                  min="0"
                   max={duration || 100}
-                  step={0.5}
+                  step="0.1"
                   value={currentTime}
                   onChange={handleSeek}
                   className="shijianus-music-pocket__seek-slider"
-                  aria-label={t('音频进度条')}
+                  aria-label={t('播放进度')}
                 />
                 <span className="shijianus-music-pocket__time">{formatTime(duration)}</span>
               </div>
 
-              {/* Player Controls Bar */}
+              {/* 核心声控播放台 */}
               <div className="shijianus-music-pocket__controls">
                 <button
                   type="button"
                   className="shijianus-music-pocket__icon-btn"
                   onClick={cyclePlayMode}
-                  title={`${t('当前')}: ${playMode === 'single' ? t('单曲循环') : playMode === 'shuffle' ? t('随机播放') : t('列表循环')}`}
+                  title={playMode === 'loop' ? '列表循环' : playMode === 'single' ? '单曲循环' : '随机播放'}
+                  aria-label={t('切换播放模式')}
                 >
-                  {playMode === 'single' ? <Repeat1 size={17} /> : playMode === 'shuffle' ? <Shuffle size={17} /> : <Repeat size={17} />}
+                  {playMode === 'loop' && <Repeat size={16} />}
+                  {playMode === 'single' && <Repeat1 size={16} />}
+                  {playMode === 'shuffle' && <Shuffle size={16} />}
                 </button>
 
                 <button
@@ -758,18 +1007,20 @@ export function MusicPocket({ apiBase }: Props) {
                   className="shijianus-music-pocket__icon-btn"
                   onClick={() => skipTrack(-1)}
                   disabled={queue.length <= 1}
+                  title={t('上一首')}
                   aria-label={t('上一首')}
                 >
-                  <SkipBack size={19} />
+                  <SkipBack size={18} />
                 </button>
 
                 <button
                   type="button"
                   className="shijianus-music-pocket__play-btn"
-                  onClick={() => void togglePlayback()}
+                  onClick={togglePlay}
+                  title={isPlaying ? t('暂停') : t('播放')}
                   aria-label={isPlaying ? t('暂停') : t('播放')}
                 >
-                  {isPlaying ? <Pause size={22} /> : <Play size={22} className="play-icon-offset" />}
+                  {isPlaying ? <Pause size={22} /> : <Play size={22} className="play-offset" />}
                 </button>
 
                 <button
@@ -777,62 +1028,51 @@ export function MusicPocket({ apiBase }: Props) {
                   className="shijianus-music-pocket__icon-btn"
                   onClick={() => skipTrack(1)}
                   disabled={queue.length <= 1}
+                  title={t('下一首')}
                   aria-label={t('下一首')}
                 >
-                  <SkipForward size={19} />
+                  <SkipForward size={18} />
                 </button>
 
-                {/* Volume slider toggle */}
+                {/* 音量控制 */}
                 <div className="shijianus-music-pocket__volume-wrapper">
                   <button
                     type="button"
                     className="shijianus-music-pocket__icon-btn"
                     onClick={() => setIsMuted((v) => !v)}
-                    title={isMuted ? t('恢复声音') : t('静音')}
+                    title={isMuted ? t('取消静音') : t('静音')}
+                    aria-label={t('音量开关')}
                   >
-                    {isMuted || volume === 0 ? <VolumeX size={17} /> : <Volume2 size={17} />}
+                    {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
                   </button>
                   <input
                     type="range"
-                    min={0}
-                    max={1}
-                    step={0.02}
+                    min="0"
+                    max="1"
+                    step="0.01"
                     value={isMuted ? 0 : volume}
                     onChange={(e) => {
                       setVolume(parseFloat(e.target.value));
-                      setIsMuted(false);
+                      if (isMuted) setIsMuted(false);
                     }}
                     className="shijianus-music-pocket__volume-slider"
                     aria-label={t('音量调节')}
                   />
                 </div>
-
-                {/* Floating lyrics toggle */}
-                <button
-                  type="button"
-                  className={`shijianus-music-pocket__icon-btn ${floatingLyricVisible ? 'is-highlight' : ''}`}
-                  onClick={() => {
-                    setFloatingLyricVisible((v) => !v);
-                    showToast(floatingLyricVisible ? '已关闭桌面悬浮歌词' : '已开启桌面悬浮歌词');
-                  }}
-                  title={floatingLyricVisible ? t('关闭悬浮歌词') : t('开启悬浮歌词')}
-                >
-                  <MessageSquare size={16} />
-                </button>
               </div>
             </div>
           )}
 
-          {/* TAB 2: SONG REQUEST & SEARCH (点歌台) */}
+          {/* 4. TAB 2: 探索与点歌台 */}
           {activeTab === 'search' && (
             <div className="shijianus-music-pocket__tab-content shijianus-music-pocket__tab-content--search">
-              {/* Search Bar */}
+              {/* 搜索控制条 */}
               <div className="shijianus-music-pocket__search-bar">
                 <select
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
                   className="shijianus-music-pocket__source-select"
-                  aria-label={t('音源曲库')}
+                  aria-label={t('音源平台')}
                 >
                   {SOURCES.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -846,108 +1086,116 @@ export function MusicPocket({ apiBase }: Props) {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') void searchMusic();
-                    }}
-                    placeholder={t('点播歌曲、歌手或专辑...')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder={t('搜索歌曲、歌手或专辑...')}
                     className="shijianus-music-pocket__input"
                   />
                   {query && (
                     <button
                       type="button"
-                      className="shijianus-music-pocket__input-clear"
                       onClick={() => setQuery('')}
+                      className="shijianus-music-pocket__input-clear"
                       aria-label={t('清空输入')}
                     >
-                      <X size={14} />
+                      <X size={12} />
                     </button>
                   )}
                 </div>
 
                 <button
                   type="button"
+                  onClick={() => handleSearch()}
+                  disabled={loading || !query.trim()}
                   className="shijianus-music-pocket__search-submit"
-                  onClick={() => void searchMusic()}
-                  aria-label={t('搜索')}
-                  disabled={loading}
                 >
-                  <Search size={16} />
+                  <Search size={14} />
+                  <span>{t('检索')}</span>
                 </button>
               </div>
 
-              {/* Quick Tags / Recommended Moods */}
+              {/* 热门精选胶囊与随机探索 */}
               <div className="shijianus-music-pocket__quick-tags">
-                <span className="shijianus-music-pocket__tags-label">{t('热门推荐：')}</span>
+                <span className="shijianus-music-pocket__tags-label">
+                  <Flame size={12} className="tag-icon" />
+                  {t('探索灵感：')}
+                </span>
                 {QUICK_TAGS.map((tag) => (
                   <button
                     key={tag}
                     type="button"
+                    onClick={() => {
+                      setQuery(tag);
+                      handleSearch(tag);
+                    }}
                     className="shijianus-music-pocket__tag-pill"
-                    onClick={() => void searchMusic(tag)}
                   >
                     {tag}
                   </button>
                 ))}
                 <button
                   type="button"
+                  onClick={handleRandom}
                   className="shijianus-music-pocket__tag-pill shijianus-music-pocket__tag-pill--random"
-                  onClick={() => void fetchRandom()}
+                  title={t('通过 API 随机探索高质音源')}
                 >
-                  <Sparkles size={12} />
-                  <span>{t('随机推荐')}</span>
+                  <Sparkles size={11} />
+                  <span>{t('随机探索')}</span>
                 </button>
               </div>
 
-              {/* Search Status & Errors */}
-              {loading && <div className="shijianus-music-pocket__status">🔍 {t('正在检索全网高质音源...')}</div>}
+              {/* 状态与错误 */}
+              {loading && <div className="shijianus-music-pocket__status">🔍 {t('正在通过安全 API 检索全网高质音源...')}</div>}
               {error && <div className="shijianus-music-pocket__error">{error}</div>}
 
-              {/* Results List */}
+              {/* 检索结果列表 */}
               <div className="shijianus-music-pocket__results-list">
                 {results.map((track, idx) => {
                   const isCurrent = currentTrack?.id === track.id;
                   return (
                     <div
-                      key={`${track.source}-${track.id}-${idx}`}
+                      key={`${track.id}-${idx}`}
                       className={`shijianus-music-pocket__track-card ${isCurrent ? 'is-current' : ''}`}
                     >
-                      <div className="shijianus-music-pocket__track-num">
-                        {isCurrent && isPlaying ? (
-                          <div className="shijianus-music-pocket__mini-eq">
+                      <div className="shijianus-music-pocket__track-cover-box">
+                        {track.coverUrl ? (
+                          <img src={track.coverUrl} alt="" className="track-cover-img" />
+                        ) : (
+                          <Music size={16} className="track-cover-fallback" />
+                        )}
+                        {isCurrent && isPlaying && (
+                          <div className="track-playing-badge">
                             <span />
                             <span />
                             <span />
                           </div>
-                        ) : (
-                          <span>{String(idx + 1).padStart(2, '0')}</span>
                         )}
                       </div>
 
                       <div className="shijianus-music-pocket__track-info">
                         <strong className="shijianus-music-pocket__track-name">{track.name}</strong>
                         <small className="shijianus-music-pocket__track-artist">
-                          {track.artist} {track.album ? `· ${track.album}` : ''}
+                          {track.artist} · {track.album || t('未知专辑')}
                         </small>
                       </div>
 
                       <div className="shijianus-music-pocket__track-actions">
                         <button
                           type="button"
+                          onClick={() => addTrack(track, true)}
                           className="shijianus-music-pocket__action-btn shijianus-music-pocket__action-btn--play"
-                          onClick={() => enqueueTrack(track, true)}
-                          title={t('立即点播')}
+                          title={t('立即播放')}
                         >
-                          <Play size={14} />
+                          <Play size={13} />
                           <span>{t('播放')}</span>
                         </button>
                         <button
                           type="button"
+                          onClick={() => addTrack(track, false)}
                           className="shijianus-music-pocket__action-btn shijianus-music-pocket__action-btn--queue"
-                          onClick={() => enqueueTrack(track, false)}
-                          title={t('加入待播列表')}
+                          title={t('加入待播队列')}
                         >
-                          <Plus size={14} />
-                          <span>{t('加待播')}</span>
+                          <Plus size={13} />
+                          <span>{t('待播')}</span>
                         </button>
                       </div>
                     </div>
@@ -957,19 +1205,20 @@ export function MusicPocket({ apiBase }: Props) {
             </div>
           )}
 
-          {/* TAB 3: PLAYBACK QUEUE (待播队列) */}
+          {/* 5. TAB 3: 待播队列 */}
           {activeTab === 'queue' && (
             <div className="shijianus-music-pocket__tab-content shijianus-music-pocket__tab-content--queue">
               <div className="shijianus-music-pocket__queue-header">
-                <span>{t('待播序列清单')} ({queue.length})</span>
+                <span>{t('播放序列清单')} ({queue.length} 首)</span>
                 {queue.length > 0 && (
                   <button
                     type="button"
-                    className="shijianus-music-pocket__clear-queue-btn"
                     onClick={clearQueue}
+                    className="shijianus-music-pocket__clear-queue-btn"
+                    title={t('清空全部待播曲目')}
                   >
-                    <Trash2 size={13} />
-                    <span>{t('清空队列')}</span>
+                    <Trash2 size={12} />
+                    <span>{t('清空')}</span>
                   </button>
                 )}
               </div>
@@ -980,13 +1229,13 @@ export function MusicPocket({ apiBase }: Props) {
                     const isActive = idx === currentIndex;
                     return (
                       <div
-                        key={`${track.source}-${track.id}-${idx}`}
+                        key={`${track.id}-${idx}`}
                         className={`shijianus-music-pocket__queue-item ${isActive ? 'is-active' : ''}`}
                         onClick={() => playTrack(idx)}
                       >
                         <div className="shijianus-music-pocket__queue-item-left">
                           {isActive && isPlaying ? (
-                            <div className="shijianus-music-pocket__mini-eq">
+                            <div className="shijianus-music-pocket__mini-eq" aria-hidden="true">
                               <span />
                               <span />
                               <span />
@@ -1002,9 +1251,10 @@ export function MusicPocket({ apiBase }: Props) {
 
                         <button
                           type="button"
-                          className="shijianus-music-pocket__remove-btn"
                           onClick={(e) => removeTrack(idx, e)}
-                          title={t('移出播放队列')}
+                          className="shijianus-music-pocket__remove-btn"
+                          title={t('从待播队列中移除')}
+                          aria-label={t('移除')}
                         >
                           <X size={14} />
                         </button>
@@ -1013,15 +1263,15 @@ export function MusicPocket({ apiBase }: Props) {
                   })
                 ) : (
                   <div className="shijianus-music-pocket__queue-empty">
-                    <Music size={36} />
-                    <p>{t('当前播放队列为空')}</p>
+                    <ListMusic size={32} className="empty-icon" />
+                    <p>{t('待播队列空空如也。')}</p>
                     <button
                       type="button"
+                      onClick={loadInitialPlaylist}
                       className="shijianus-music-pocket__btn-primary"
-                      onClick={() => void fetchRandom()}
                     >
                       <Sparkles size={14} />
-                      <span>{t('一键导入随机推荐曲目')}</span>
+                      <span>{t('加载精选曲库')}</span>
                     </button>
                   </div>
                 )}
@@ -1033,4 +1283,5 @@ export function MusicPocket({ apiBase }: Props) {
     </div>
   );
 }
+
 export default MusicPocket;

@@ -285,7 +285,7 @@ const paypalUkMeUrl =
         backgroundModes={siteConfig.theme.background.modes}
         pageType={pageType}
       />
-      <MusicPocket client:visible apiBase={musicApiBase} />
+      <MusicPocket client:load apiBase={musicApiBase} />
       <ThemeOverlays
         client:load
         brandName={siteConfig.site.name}

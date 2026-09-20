@@ -5,9 +5,9 @@ import type { AppEnv } from '../../_lib/types';
 
 const SAFE_RESPONSE_HEADERS = ['content-type', 'cache-control', 'accept-ranges', 'content-length', 'content-range', 'etag', 'last-modified', 'expires'];
 
-function sanitizeTarget(rawUrl: string) {
+function sanitizeTarget(rawUrl: string, baseOrigin?: string) {
   try {
-    const parsed = new URL(rawUrl);
+    const parsed = rawUrl.startsWith('/') && baseOrigin ? new URL(rawUrl, baseOrigin) : new URL(rawUrl);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
     return parsed;
   } catch {
@@ -44,7 +44,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
   }
 
   const streamUrl = await resolveMusicStream(env, id, source, quality);
-  const target = sanitizeTarget(streamUrl);
+  const target = sanitizeTarget(streamUrl, request.url);
   if (!target) {
     return jsonResponse(request, env, { ok: false, error: 'No playable stream URL.' }, { status: 502 });
   }

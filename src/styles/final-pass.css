@@ -2172,11 +2172,9 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     height: 220px !important;
   }
 
-  /* Mobile Music Pocket: compact 42px disc to prevent blocking UI interactions */
+  /* Mobile Music Pocket: compact 48px disc to prevent blocking UI interactions while preserving drag coordinates */
   .shijianus-music-pocket {
-    left: 10px !important;
-    bottom: 74px !important;
-    z-index: 60 !important;
+    z-index: 75 !important;
     width: auto !important;
   }
 
