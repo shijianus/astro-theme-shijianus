@@ -3222,10 +3222,12 @@
   2. 智能节流防掉帧机制：滚动时触发 `scrollPause` 节流，后台静置时自动暂停，保障全局 60FPS；
   3. 浅色清透冰蓝与深色月光冷辉（`drop-shadow` 滤镜）昼夜自适应；
   4. SSG 静态 Canvas 直出挂载，杜绝 React hydration 延迟与多余 DOM 节点。
-- [x] **Playwright 全链路端到端自动化测试与多视口验证通过 (`scripts/verify-snow-homepage.mjs`)**:
-  1. 浅色雪景（Canvas 激活、16/16 篇文章卡片覆雪、3 态分类多样性、4 态文章流多样性）断言 100% 通过；
-  2. 深色雪夜月光辉光滤镜断言通过；
-  3. 纯色背景与雪景双向平滑切换断言通过；
-  4. 全屏高分辨率截图审计归档（`snow-homepage-light.png` / `snow-homepage-dark.png` / `*-full.png`）。
+- [x] **生产端 (Cloudflare Pages) 真实链路验证与 Playwright 自动化实测通过 (`ed54ecc`)**:
+  1. 生产环境（`https://blog.epocanvas.com/`）通过 `scripts/verify-live-snow-homepage.mjs` 真实浏览器端到端检验；
+  2. 验证 Canvas Snow Universe 处于活跃且透明度为 1，无任何控制台 JS 致命报错；
+  3. 验证今日卡片、随机横幅、顶通公告、3 类分类按钮、16 篇流式文章卡片与侧边栏各卡片 `.snow-cover` 真实渲染且具备 4 态拓扑差异；
+  4. 生产端深色模式月光冷辉滤镜与 Clean 纯色模式即时隐藏/恢复双向闭环断言通过；
+  5. 真实生产环境浅色与深色高清截图审计归档（`live-snow-homepage-light.png` / `live-snow-homepage-dark.png`）。
+
 
 
