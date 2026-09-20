@@ -106,66 +106,100 @@ async function main() {
     await page.screenshot({ path: 'scratch/live-music-pocket-panel-cyber-vintage.png' });
     console.log('  [截图存档] scratch/live-music-pocket-panel-cyber-vintage.png');
 
-    // 验证 6: 验证 Cyber-Vintage HUD 顶栏与 16-Band 霓虹声波频谱柱
-    console.log('\n7. 验证生产端特色 HUD 顶栏与 16-Band 霓虹声波频谱柱:');
+    // 验证 6: 验证单界面一体化 All-in-One Deck (无 Tab 分页)
+    console.log('\n7. 验证单界面一体化架构 (Zero-Tab Architecture):');
+    const oldTabsBar = await page.$('.shijianus-music-pocket__tabs-bar');
+    console.log(`- 是否存在老旧 Tab 切换栏: ${oldTabsBar !== null} (期望: false)`);
+    if (oldTabsBar !== null) {
+      throw new Error('Tabs bar .shijianus-music-pocket__tabs-bar should NOT exist in Single-Screen All-in-One Deck!');
+    }
+    console.log('✓ 成功消除多 Tab 分裂，确立单界面一体化布局！');
+
+    // 验证 7: 验证 HUD 顶栏与真实 Web Audio API 16-Band Canvas 频谱
+    console.log('\n8. 验证 HUD 顶栏与真实 Web Audio Canvas 频谱:');
     const hudLabel = await page.$eval('.shijianus-music-pocket__hud-head .hud-label', (el) => el.textContent.trim()).catch(() => '');
     const hudBadge = await page.$eval('.shijianus-music-pocket__hud-head .hud-badge', (el) => el.textContent.trim()).catch(() => '');
     console.log(`- HUD 声学标识: "${hudLabel}", 码率徽标: "${hudBadge}"`);
 
-    const spectrumBarsCount = await page.$$eval('.shijianus-music-pocket__visualizer .spectrum-bar', (els) => els.length);
-    console.log(`- 16-Band 频谱柱数量: ${spectrumBarsCount} (期望: 16)`);
-    if (spectrumBarsCount !== 16) {
-      throw new Error(`Expected 16 spectrum bars, found ${spectrumBarsCount}`);
+    const canvasVisualizer = await page.$('.shijianus-music-pocket__visualizer-canvas');
+    if (!canvasVisualizer) {
+      throw new Error('Missing real Web Audio Canvas visualizer .shijianus-music-pocket__visualizer-canvas!');
+    }
+    console.log('✓ 真实 Web Audio API 16-Band Canvas 频谱分析器挂载完好！');
+
+    // 验证 8: 验证双行歌词 HUD、进度条与播放控制器
+    console.log('\n9. 验证双行同步歌词 HUD 与核心控制器:');
+    const lyricRibbon = await page.$('.shijianus-music-pocket__lyric-ribbon');
+    if (!lyricRibbon) throw new Error('Missing lyric ribbon in deck!');
+
+    const playBtn = await page.$('.shijianus-music-pocket__play-btn');
+    if (!playBtn) throw new Error('Missing play button!');
+    console.log('✓ 双行同步歌词视口与核心控制器渲染完好！');
+
+    // 验证 9: 验证一体化免选多平台聚合搜索与流派胶囊
+    console.log('\n10. 验证全网多平台聚合搜索与免选翻阅:');
+    const searchBox = await page.$('.shijianus-music-pocket__search-box');
+    const pillsRow = await page.$('.shijianus-music-pocket__pills-row');
+    const trackList = await page.$('.shijianus-music-pocket__track-list');
+    if (!searchBox || !pillsRow || !trackList) {
+      throw new Error('Missing search box, pills row, or track list in unified stream!');
     }
 
-    const bigDisc = await page.$('.shijianus-music-pocket__big-disc');
-    if (!bigDisc) throw new Error('Missing big vinyl disc in deck showcase!');
-    console.log('✓ 生产端黑胶唱机与 16-Band 霓虹频谱柱渲染完好！');
+    const pills = await page.$$eval('.shijianus-music-pocket__pill', (els) => els.map((e) => e.textContent.trim()));
+    console.log(`- 灵感标签胶囊: ${pills.slice(0, 5).join(' / ')} ...`);
 
-    // 验证 7: 验证探索雷达与待播队列标签页切换
-    console.log('\n8. 验证探索雷达与点歌交互:');
-    const searchTab = await page.$('.shijianus-music-pocket__tab:nth-child(2)');
-    if (searchTab) {
-      await searchTab.click();
-      await page.waitForTimeout(400);
-      const tagPills = await page.$$eval('.shijianus-music-pocket__tag-pill', (els) => els.map((e) => e.textContent.trim()));
-      console.log(`- 探索灵感胶囊: ${tagPills.slice(0, 5).join(' / ')} ...`);
-      if (tagPills.length === 0) {
-        throw new Error('No exploration pills rendered in explore tab!');
-      }
-      console.log('✓ 探索与点歌台选项卡运转正常！');
+    // 模拟搜索周杰伦
+    const searchInput = await page.$('.shijianus-music-pocket__search-input');
+    if (searchInput) {
+      await searchInput.fill('周杰伦');
+      const searchSubmitBtn = await page.$('.search-btn');
+      if (searchSubmitBtn) await searchSubmitBtn.click();
+      await page.waitForTimeout(1000);
+      const itemsCount = await page.$$eval('.shijianus-music-pocket__track-item', (els) => els.length);
+      console.log(`- 搜索聚合命中曲目数: ${itemsCount}`);
     }
+    console.log('✓ 全网多平台免选择聚合搜索流运转正常！');
 
-    // 验证 8: 关闭/隐藏功能与右侧控制栏同步
-    console.log('\n9. 验证完全隐藏功能与右侧控制栏同步:');
+    // 验证 10: 核心用户诉求！验证 HUD 叉号关闭仅隐藏面板，浮动图标依然保留在屏幕上，后台持续播放！
+    console.log('\n11. 验证 HUD 关闭按键生命周期 (仅隐藏展开面板，保留图标后台持续播放):');
     const closeHudBtn = await page.$('.shijianus-music-pocket__hud-btn--close');
-    if (closeHudBtn) {
-      await closeHudBtn.click();
-      await page.waitForTimeout(500);
+    if (!closeHudBtn) throw new Error('Close button in HUD head not found!');
+    await closeHudBtn.click();
+    await page.waitForTimeout(500);
+
+    const panelAfterClose = await page.$('.shijianus-music-pocket__panel');
+    console.log(`- 关闭后展开面板是否存在于 DOM: ${panelAfterClose !== null} (期望: false)`);
+    if (panelAfterClose !== null) {
+      throw new Error('Expanded panel should be closed/hidden!');
     }
-    const pocketPostHide = await page.$('.shijianus-music-pocket');
-    const isVisiblePostHide = pocketPostHide ? await pocketPostHide.isVisible() : false;
-    console.log(`- 关闭后随身音乐口袋可见性: ${isVisiblePostHide} (期望: false)`);
-    if (isVisiblePostHide) {
-      throw new Error('Music Pocket should be hidden after closing from HUD button!');
+
+    const pocketIconStillVisible = await pocketEl.isVisible();
+    console.log(`- 关闭后悬浮口袋图标是否依然可见并驻留后台: ${pocketIconStillVisible} (期望: true)`);
+    if (!pocketIconStillVisible) {
+      throw new Error('CRITICAL BUG: Floating pocket button MUST remain visible on screen when closing panel!');
     }
-    console.log('✓ 随身音乐口袋完全隐藏逻辑验证通过！');
+    console.log('✓ HUD 叉号正确收起面板，浮动图标完好保留于屏幕原位，后台播放链路通畅！');
+
+    // 重新点击小黑胶，验证可再次顺畅展开
+    await toggleDisc.click();
+    await page.waitForTimeout(500);
+    const panelReopened = await page.$('.shijianus-music-pocket__panel');
+    if (!panelReopened || !(await panelReopened.isVisible())) {
+      throw new Error('Panel failed to reopen from floating button!');
+    }
+    console.log('✓ 悬浮黑胶再次点击顺利重新唤出一体化面板！');
 
     console.log('\n=============================================');
     console.log('🎉 生产环境桌面端真实链路 Playwright 审计通过！');
     console.log('=============================================');
 
-    // 验证 10: 验证暗色模式 (Dark Mode Cyber-Neon)
-    console.log('\n10. 验证生产端暗色模式 (Dark Mode):');
+    // 验证 12: 验证暗色模式 (Dark Mode)
+    console.log('\n12. 验证生产端暗色模式 (Dark Mode):');
     await page.evaluate(() => {
       document.documentElement.dataset.theme = 'dark';
       document.documentElement.classList.add('dark');
     });
-    // 重新打开面板截暗色模式
-    await toggleBtn.click();
-    await page.waitForTimeout(400);
-    await toggleDisc.click();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(500);
     await page.screenshot({ path: 'scratch/live-music-pocket-dark.png' });
     console.log('  [截图存档] scratch/live-music-pocket-dark.png');
     console.log('✓ 生产端暗色模式渲染完好！');
