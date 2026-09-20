@@ -1,5 +1,5 @@
 import { jsonResponse, optionsResponse } from '../../_lib/http';
-import { searchMusic } from '../../_lib/music-provider';
+import { searchMusic, searchMusicAggregated } from '../../_lib/music-provider';
 import { enforceRateLimit, envLimit } from '../../_lib/rate-limit';
 import type { AppEnv } from '../../_lib/types';
 
@@ -24,14 +24,19 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
   const url = new URL(request.url);
   const q = url.searchParams.get('q')?.trim() || '';
-  const source = url.searchParams.get('source')?.trim() || env.MUSIC_DEFAULT_SOURCE || 'netease';
-  const count = Math.max(1, Math.min(20, Number.parseInt(url.searchParams.get('count') || '8', 10) || 8));
+  const source = url.searchParams.get('source')?.trim() || 'all';
+  const count = Math.max(1, Math.min(30, Number.parseInt(url.searchParams.get('count') || '12', 10) || 12));
   const page = Math.max(1, Number.parseInt(url.searchParams.get('page') || '1', 10) || 1);
 
   if (!q) {
     return jsonResponse(request, env, { ok: false, error: 'Missing search query.' }, { status: 400 });
   }
 
-  const tracks = await searchMusic(env, q, source, count, page);
+  const tracks =
+    source === 'all'
+      ? await searchMusicAggregated(env, q, Math.max(4, Math.floor(count / 2)), page)
+      : await searchMusic(env, q, source, count, page);
+
   return jsonResponse(request, env, { ok: true, q, source, tracks });
 }
+

@@ -188,6 +188,50 @@ export async function searchMusic(env: AppEnv, keyword: string, source: string, 
   }
 }
 
+export async function searchMusicAggregated(env: AppEnv, keyword: string, countPerSource: number, page: number): Promise<MusicTrack[]> {
+  const sources = ['netease', 'qq', 'kuwo'];
+  const results = await Promise.allSettled(
+    sources.map((s) => searchMusic(env, keyword, s, countPerSource, page))
+  );
+
+  const lists: MusicTrack[][] = results.map((r) => (r.status === 'fulfilled' ? r.value : []));
+
+  // 本地精选优先匹配
+  const lower = keyword.toLowerCase();
+  const localMatches: MusicTrack[] = CURATED_LOCAL_TRACKS.filter(
+    (track) => track.name.toLowerCase().includes(lower) || track.artist.toLowerCase().includes(lower)
+  ).map((t) => ({
+    id: t.id,
+    name: t.name,
+    artist: t.artist,
+    album: t.album,
+    source: t.source,
+    picId: t.picId,
+    coverUrl: t.coverUrl,
+    lyricId: t.lyricId,
+  }));
+
+  const aggregated: MusicTrack[] = [...localMatches];
+  const seenKeys = new Set(localMatches.map((t) => `${t.name.trim()}-${t.artist.trim()}`.toLowerCase()));
+  const maxLen = Math.max(...lists.map((l) => l.length), 0);
+
+  // 交替轮转组合各平台歌曲，实现三平台均衡展示
+  for (let i = 0; i < maxLen; i++) {
+    for (const list of lists) {
+      if (list[i]) {
+        const item = list[i];
+        const key = `${item.name.trim()}-${item.artist.trim()}`.toLowerCase();
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          aggregated.push(item);
+        }
+      }
+    }
+  }
+
+  return aggregated;
+}
+
 export async function getCuratedPlaylist(env: AppEnv): Promise<MusicTrack[]> {
   // 基础精选本地优质音轨
   const baseTracks: MusicTrack[] = CURATED_LOCAL_TRACKS.map((t) => ({
