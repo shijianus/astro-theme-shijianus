@@ -1,0 +1,24 @@
+---
+interface Props {
+  variant?:
+    | 'today'
+    | 'banner'
+    | 'notice'
+    | 'profile'
+    | 'aside'
+    | 'post-1'
+    | 'post-2'
+    | 'post-3'
+    | 'post-4'
+    | 'category-1'
+    | 'category-2'
+    | 'category-3'
+    | 'category-4'
+    | string;
+  className?: string;
+}
+
+const { variant = 'aside', className = '' } = Astro.props;
+---
+
+<div class:list={['snow-cover', `snow-cover--${variant}`, className]} aria-hidden="true"></div>

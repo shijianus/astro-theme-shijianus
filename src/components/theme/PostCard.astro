@@ -11,6 +11,7 @@ import {
   resolveDisplayCover,
 } from '../../lib/content';
 import { formatDisplayDate } from '../../lib/theme';
+import SnowCover from './SnowCover.astro';
 
 interface Props {
   entry: CollectionEntry<'posts'>;
@@ -36,6 +37,7 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
   class="group recent-post-item relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
   onclick={`location.href='${link}'`}
 >
+  <SnowCover variant={`post-${(index % 4) + 1}`} />
   <div class="h-32 sm:h-36 w-full overflow-hidden relative bg-[var(--secondbg)] shrink-0">
     <img
       class="object-cover w-full h-full transition-all duration-500 group-hover:scale-105 group-hover:brightness-[0.92]"

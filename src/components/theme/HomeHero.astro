@@ -3,6 +3,7 @@ import { BookOpen, Boxes, CodeXml, Compass, type LucideIcon } from 'lucide-react
 import type { CollectionEntry } from 'astro:content';
 import { siteConfig } from '../../config/site';
 import { getExcerpt, getPostPath, hasPostAccess, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+import SnowCover from './SnowCover.astro';
 
 interface Props {
   featuredPosts: CollectionEntry<'posts'>[];
@@ -52,6 +53,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   <input id="today-card-toggle" class="today-card-toggle" type="checkbox" aria-hidden="true" />
 
   <div class="home-top-notice">
+    <SnowCover variant="notice" />
     <span class="home-top-notice__label">最新动态</span>
     <p>{siteConfig.home.announcement.summary}</p>
     <a href={siteConfig.home.announcement.href} data-tooltip="更多" class="notice-more-btn" aria-label="更多">
@@ -64,6 +66,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   <div class="swiper_container_card">
     <div id="bannerGroup">
       <a id="random-banner" href={randomHref} aria-label={siteConfig.navigation.quickActions[0]?.label ?? '随机文章'}>
+        <SnowCover variant="banner" />
         <div class="random-banner__content">
           <span class="random-banner__eyebrow">{showcase.eyebrow}</span>
           <span class="random-banner__title">
@@ -111,11 +114,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       </a>
 
         <div class="categoryGroup" aria-label="首页分类入口">
-          {categoryItems.map((item) => {
+          {categoryItems.map((item, catIdx) => {
             const CategoryIcon = categoryIconMap[item.icon];
             return (
               <div class="categoryItem">
                 <a class={`categoryButton ${item.accent}`} href={item.href}>
+                  <SnowCover variant={`category-${catIdx + 1}`} />
                   <div class="categoryItem-content">
                     <span class="categoryButtonText">{item.label}</span>
                     <div class="divider"></div>
@@ -130,6 +134,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
       {mobileFocusPost && (
         <article class="home-mobile-focus-card">
+          <SnowCover variant="post-1" />
           <a href={getPostPath(mobileFocusPost)} title={mobileFocusPost.data.title}>
             <img
               src={resolveCover(mobileFocusPost)}
@@ -158,6 +163,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
       {stackPosts.map((entry, index) => (
         <div class="recent-post-item" data-card-link={getPostPath(entry)}>
+          <SnowCover variant={`post-${(index % 4) + 1}`} />
           <div class="post_cover left_radius">
             <a href={getPostPath(entry)} title={entry.data.title}>
               <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>
@@ -183,6 +189,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
       {todayCardConfig && (
         <article class="todayCard">
+          <SnowCover variant="today" />
           <a
             class="todayCard-link"
             href={todayCardConfig.href}
