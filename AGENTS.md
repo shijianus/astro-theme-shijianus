@@ -3149,5 +3149,20 @@
   3. 全量覆盖 27 组文章（23 篇正式博文 + 4 组极限测试矩阵）、**1089 项断言 100% 全部通过 (1089/1089 PASS, 0 FAIL)**；
   4. 产出本地权威唯一审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
 
-
-
+### Task 140: 音乐随身听生产环境部署 (Cloudflare Pages)、移动端避让与生产真实链路审计 (`5189f78`, `b33c11c`, `24d0771`)
+- [x] **Cloudflare Pages 生产部署与真实全链路验证 (`https://blog.epocanvas.com`)**:
+  1. 通过 Wrangler 部署完整生产制品至 `shijianus-blog`（绑定自定义域名 `https://blog.epocanvas.com`，部署 ID `8a47d735`）与 `shijianus-github-io`（部署 ID `59a2ff91`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com` 执行 Playwright 端到端全链路自动化测试 (`scripts/verify-live-music-pocket.mjs`)；
+  3. 初始加载严格默认隐藏（`isVisible: false`）断言通过；
+  4. `#rightside-config-show` 专属管理按钮存在性与激活展开断言通过；
+  5. 浮动按钮鼠标拖拽（实际位移 169.7px）与防误触点击展开断言通过；
+  6. Cyber-Vintage 特色 HUD 顶栏（`HI-FI STEREO`、`320K`、双色呼吸灯）与 16-Band 霓虹频谱柱渲染断言通过；
+  7. 灵感探索雷达（流行热歌/周杰伦/陈奕迅/赛博纯音/治愈老歌）与点歌台交互断言通过；
+  8. 暗色模式（Dark Mode Cyber-Neon）与本地高保真资产回退断言通过。
+- [x] **移动端与右侧悬浮控制栏避让防遮挡优化 (`src/styles/final-pass.css` & `src/styles/runtime-widgets.css`)**:
+  1. 提升随身听展开态层级至 `z-index: 95 !important`，确保在任何视口均优于 `#rightside`；
+  2. 引入移动端纯 CSS 响应式避让规则：当移动端屏幕（≤768px）展开音乐随身听面板时，通过 `body:has(.shijianus-music-pocket.is-open) #rightside` 自动将右侧控制栏向右滑出视口（`opacity: 0 !important; pointer-events: none !important; transform: translateX(120%) !important;`），彻底根除手机端面板与右侧按钮重叠遮挡；
+  3. 移动端真实端到端测试（iPhone 14，390x844）截屏审计通过。
+- [x] **全量多远端推送与证据链存档**:
+  1. 同步全量提交至 `origin` 与 `cf` 仓库；
+  2. 生产环境实测桌面端、暗色模式与移动端视觉截图归档于 `scratch/`。
