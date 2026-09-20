@@ -241,7 +241,9 @@ async function main() {
       userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1 Antigravity-Mobile-Audit',
     });
     const mobilePage = await mobileContext.newPage();
-    await mobilePage.goto(TARGET_URL, { waitUntil: 'networkidle', timeout: 45000 });
+    await mobilePage.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await mobilePage.waitForLoadState('load');
+    await mobilePage.waitForTimeout(1200);
 
     const mobileToggleBtn = await mobilePage.$('#toggle-music-pocket');
     if (!mobileToggleBtn) throw new Error('Mobile toggle button not found!');
