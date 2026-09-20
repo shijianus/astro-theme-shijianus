@@ -3147,7 +3147,8 @@
   1. 构造多套极限测试博文覆盖双后缀独立命名、大小写混用、纯外文主篇等极端场景；
   2. 新增端到端 Playwright 审计脚本 `scripts/audit-article-translation-variants.mjs`，并注入 `package.json` 的 `npm run test:i18n`；
   3. 全量覆盖 27 组文章（23 篇正式博文 + 4 组极限测试矩阵）、**1089 项断言 100% 全部通过 (1089/1089 PASS, 0 FAIL)**；
-  4. 产出本地权威唯一审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`。
+  4. 产出本地权威唯一审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`；
+  5. **Cloudflare Pages 生产环境 (https://blog.epocanvas.com) 真实链路 E2E 审计**：支持 `TEST_BASE_URL` 远程无缝审计，线上 1089 项断言 100% 全部通过。
 
 ### Task 140: 音乐随身听生产环境部署 (Cloudflare Pages)、移动端避让与生产真实链路审计 (`5189f78`, `b33c11c`, `24d0771`)
 - [x] **Cloudflare Pages 生产部署与真实全链路验证 (`https://blog.epocanvas.com`)**:

@@ -24,7 +24,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DIST_DIR = path.resolve(ROOT, 'dist');
 const POSTS_DIR = path.resolve(ROOT, 'src/content/posts');
 const PORT = 4335;
-const BASE_URL = `http://127.0.0.1:${PORT}`;
+const BASE_URL = process.env.TEST_BASE_URL ? process.env.TEST_BASE_URL.replace(/\/+$/, '') : `http://127.0.0.1:${PORT}`;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -169,7 +169,12 @@ async function runAudit() {
   const { postInfoList, groups } = scanAllSourcePosts();
   console.log(`[Source Analysis] Found ${postInfoList.length} total markdown files across ${groups.size} post groups.\n`);
 
-  const server = await startStaticServer();
+  let server = null;
+  if (!process.env.TEST_BASE_URL) {
+    server = await startStaticServer();
+  } else {
+    console.log(`[Remote Test] 🌐 Targeting live remote host: ${BASE_URL}\n`);
+  }
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
@@ -490,7 +495,7 @@ async function runAudit() {
   );
 
   await browser.close();
-  server.close();
+  if (server) server.close();
 }
 
 runAudit().catch((err) => {
