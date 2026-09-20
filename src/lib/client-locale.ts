@@ -2348,6 +2348,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '已打开站内搜索': { en: 'Search opened', fr: 'Recherche ouverte', es: 'Búsqueda abierta', de: 'Suche geöffnet' },
   '已切换页面背景': { en: 'Page background switched', fr: 'Arrière-plan changé', es: 'Fondo de página cambiado', de: 'Seitenhintergrund gewechselt' },
   '当前为统一纯色背景': { en: 'Currently using unified solid background', fr: 'Arrière-plan monochrome unifié actuel', es: 'Fondo de color sólido unificado actual', de: 'Aktuell einheitlicher Volltonhintergrund' },
+  '冬日雪境': { en: 'Winter Snowscape', fr: 'Paysage enneigé', es: 'Paisaje invernal', de: 'Winterliche Schneelandschaft' },
   '已打开通知中心': { en: 'Notification center opened', fr: 'Centre de notifications ouvert', es: 'Centro de notificaciones abierto', de: 'Benachrichtigungszentrum geöffnet' },
   '已复制代码块': { en: 'Code copied', fr: 'Code copié', es: 'Código copiado', de: 'Code kopiert' },
   '代码复制失败': { en: 'Failed to copy code', fr: 'Échec de la copie du code', es: 'Error al copiar el código', de: 'Fehler beim Kopieren des Codes' },
