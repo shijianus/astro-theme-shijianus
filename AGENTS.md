@@ -3101,7 +3101,7 @@
   5. 脏缓存自动清洗恢复验证通过；
   6. 全站 241 个页面静态编译构建 0 错误通过。
 
-### Task 138: 音乐随身听 (.shijianus-music-pocket) 可拖拽悬浮改造、右侧控制栏管理按键(默认隐藏)、Cyber-Vintage特色HUD面板与API安全接入 (`79c5a7f`)
+### Task 138: 音乐随身听 (.shijianus-music-pocket) 可拖拽悬浮改造、右侧控制栏管理按键(默认隐藏)、Cyber-Vintage特色HUD面板与API安全接入 (`7c2ef90`)
 - [x] **可拖拽浮动按钮重构 (`src/components/theme/MusicPocket.tsx`)**:
   1. 支持指针捕获事件 (`setPointerCapture` / `onPointerDown` / `onPointerMove` / `onPointerUp`)，实现跨视口平滑自如拖拽；
   2. 注入 5px 移动阈值与 160ms 防抖锁 (`justDraggedRef`)，严格区分拖拽与点击，彻底阻断拖拽结束时面板意外展开的误触；
