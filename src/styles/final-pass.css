@@ -2178,6 +2178,17 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     width: auto !important;
   }
 
+  .shijianus-music-pocket.is-open {
+    z-index: 95 !important;
+  }
+
+  /* When music pocket panel is open on mobile, automatically slide rightside dock away to avoid occlusion */
+  body:has(.shijianus-music-pocket.is-open) #rightside {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateX(120%) !important;
+  }
+
   .shijianus-music-pocket__toggle {
     width: 42px !important;
     min-width: 42px !important;

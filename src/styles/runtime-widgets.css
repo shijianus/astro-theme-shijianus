@@ -622,9 +622,13 @@ html.dark .shijianus-ai-summary__related span {
   pointer-events: none !important;
 }
 
+.shijianus-music-pocket.is-dragging,
+.shijianus-music-pocket.is-open {
+  z-index: 95 !important;
+}
+
 .shijianus-music-pocket.is-dragging {
   cursor: grabbing !important;
-  z-index: 95;
   transition: none !important;
 }
 
