@@ -250,7 +250,7 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     try {
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {}
   };
 
@@ -291,7 +291,7 @@ export function MusicPocket({ apiBase }: Props) {
     setIsDragging(false);
 
     try {
-      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
   };
 

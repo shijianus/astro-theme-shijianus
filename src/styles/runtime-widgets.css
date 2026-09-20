@@ -653,6 +653,10 @@ html.dark .shijianus-ai-summary__related span {
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
+.shijianus-music-pocket__toggle > * {
+  pointer-events: none;
+}
+
 .shijianus-music-pocket.is-dragging .shijianus-music-pocket__toggle {
   cursor: grabbing !important;
   transform: scale(1.08);

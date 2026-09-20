@@ -15,7 +15,6 @@ import {
 import type { SidebarData } from '../../lib/theme';
 import { ProfileWidget } from '../ProfileWidget';
 import PromoWidgetCard from './PromoWidgetCard.astro';
-import SnowCover from './SnowCover.astro';
 
 interface Props extends SidebarData {
   pageType?: string;
@@ -436,7 +435,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
     <>
       {showAnnouncement && (
         <section class="card-widget card-announcement">
-          <SnowCover variant="aside" />
           <div class="item-headline">
             <Megaphone className="aside-title-icon" aria-hidden="true" />
             <span>公告</span>
@@ -453,7 +451,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
       {showCategories && (
         <section class="card-widget card-categories">
-          <SnowCover variant="aside" />
           <div class="item-headline">
             <FolderOpen className="aside-title-icon" aria-hidden="true" />
             <span>分类</span>
@@ -482,7 +479,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
                 class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"
                 id="card-tag-cloud-overview"
               >
-                <SnowCover variant="aside" />
                 <!-- 1. 热门标签板块 (设置展示上限 24 个，避免无限制扩展) -->
                 <div class="overview-section overview-section--tags">
                   <div class="item-headline">
@@ -564,7 +560,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
         {showTags && (
           <section class="card-widget card-tags">
-            <SnowCover variant="aside" />
             <div class="item-headline">
               <Tags className="aside-title-icon" aria-hidden="true" />
               <span>标签</span>
@@ -581,7 +576,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
         {showArchives && (
           <section class="card-widget card-archives">
-            <SnowCover variant="aside" />
             <div class="item-headline">
               <Archive className="aside-title-icon" aria-hidden="true" />
               <span>归档</span>
@@ -604,7 +598,6 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
         {showWebInfo && (
           <section class="card-widget card-webinfo">
-            <SnowCover variant="aside" />
             <div class="item-headline">
               <Info className="aside-title-icon" aria-hidden="true" />
               <span>网站资讯</span>
