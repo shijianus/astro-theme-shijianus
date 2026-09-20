@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from '../../config/site';
+import SnowCover from './SnowCover.astro';
 
 interface Props {
   id?: string;
@@ -133,6 +134,7 @@ const themesJson = JSON.stringify({
       
       <!-- Front Face -->
       <div class="face front-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
+        <SnowCover variant="aside" />
         <!-- Theme Toggle Button (stops propagation to avoid opening link) -->
         <button class="theme-toggle-btn" aria-label="切换色调" onclick="event.stopPropagation(); window.togglePromoTheme(this)">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -165,6 +167,7 @@ const themesJson = JSON.stringify({
 
       <!-- Back Face -->
       <div class="back face back-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
+        <SnowCover variant="aside" />
         <div class="promo-back-grid">
           <div class="promo-back-info">
             <div class="promo-back-title">{finalConfig.backTitle}</div>

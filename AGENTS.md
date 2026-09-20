@@ -3182,6 +3182,30 @@
   1. 在 `window.switchArticleLanguage` 中记录切换前视口上方最近锚定标题；
   2. 切换显隐后自适应对齐新语言变体中的对应章节，消除因西文/法文长度膨胀导致的读者视觉脱节。
 - [x] **扩充语言脚注样式与构建验证 (`src/styles/markdown-enhancements.css`)**:
-  1. 补齐 `ja`, `ko`, `ru`, `it`, `pt` 脚注伪元素标题提示（如 `📑 脚注・参考文献`、`📑 각주 및 참고문헌`）；
+  1. 补齐 `ja`, `ko`, `ru`, `it`, `pt` 脚注伪元素标题提示（如 `📑 脚注・参考文献`、`📑 각주 및 참고文헌`）；
   2. 运行 `npm run build:static` 与 `node scripts/audit-article-translation-variants.mjs`，全站 27 组文章、1089 项 Playwright 断言全部通过。
+
+### Task 142: 音乐随身听单界面一体化 (All-in-One Compact Deck) 重构、Web Audio API 真实 Canvas 频谱与关闭生命周期修正 (`3f87fd0`, `7a8e78b`, `9881ea4`)
+- [x] **HUD 关闭按键交互生命周期彻底修正 (`src/components/theme/MusicPocket.tsx`)**:
+  1. 彻底根除点击 HUD 叉号把整个浮动口袋组件抹除（`visible: false`）的逻辑错误，改为仅收起面板（`setOpen(false)`）；
+  2. 悬浮黑胶按钮完好留在屏幕原位（保留拖拽位置），音频持续后台无缝播放；
+  3. 再次点击悬浮黑胶即可瞬间重新唤出一体化面板；仅当点击 `#rightside-config-show` 的管理按键时才控制组件是否在屏幕上展现。
+- [x] **单界面一体化极客播放器架构 (Zero-Tab All-in-One Compact Deck)**:
+  1. 彻底淘汰老旧 3-Tab 分页（移除 `.shijianus-music-pocket__tabs-bar`），消除功能割裂；
+  2. 收敛尺寸为 `clamp(310px, 92vw, 360px)`，高度精细约束在 `min(calc(100vh - 120px), 520px)`，绝不臃肿；
+  3. 自上而下整合流：HUD 状态顶栏 $\rightarrow$ 黑胶唱片展台 $\rightarrow$ 实时 Web Audio Canvas 频谱 $\rightarrow$ 双行时间轴高亮歌词（支持点击跳转 Seek） $\rightarrow$ 进度拖拽条与流体控制器 $\rightarrow$ 全网聚合搜索框与灵感胶囊 $\rightarrow$ 待播与搜索多源一体化滚动流。
+- [x] **Web Audio API 真实 16-Band Canvas 频谱分析引擎**:
+  1. 前端配置 `<audio crossOrigin="anonymous">`，与后端代理 `Access-Control-Allow-Origin: *` 形成完整 CORS 闭环；
+  2. 封装单例 `AudioContext` 与 `MediaElementAudioSourceNode`，杜绝重复创建抛错；
+  3. 挂载 `<canvas>` 2D 60FPS 渲染引擎（`analyser.fftSize = 64`），物理重力缓降算法驱动真实 16 根等宽微圆角声波柱随音频节拍起伏。
+- [x] **全网多平台免选择并行聚合检索 (`functions/api/music/search.ts` & `functions/_lib/music-provider.ts`)**:
+  1. 升级后端支持 `source=all`，利用 `Promise.allSettled` 并行并发抓取网易云、QQ 音乐与酷我音乐；
+  2. 智能交替组合各平台命中曲目与本地精选，去重后统一返回，各曲目自带来源徽标（`[网易云]`、`[QQ音乐]`、`[酷我]`、`[精选本地]`）；
+  3. 移出前端单选下拉框，用户只需输入歌名或点击灵感胶囊即可直接在下方流中翻阅试听。
+- [x] **博客安知鱼极客美学深度融合与移动端防遮挡**:
+  1. 采用通透毛玻璃卡片（`backdrop-filter: blur(28px)`）、安知鱼品牌蓝（`#425aef`）与等宽极客字体，浅色深色自适应对齐；
+  2. 移动端展开时 `#rightside` 控制栏自动滑出避让（`transform: translateX(120%)`）。
+- [x] **Cloudflare Pages 生产部署与真实全链路 Playwright 端到端审计通过**:
+  1. 部署至 `shijianus-blog`（`https://34956712.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`）与 `shijianus-github-io`（`https://83af7140.shijianus-github-io.pages.dev`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com` 执行 Playwright 审计全绿通过（包含默认隐藏、拖拽防误触、单界面无 Tab、Canvas 真实频谱、双行歌词、多平台聚合搜索、叉号收起后台续播、暗色与移动端避让等 12 项断言 100% 通过）。
 
