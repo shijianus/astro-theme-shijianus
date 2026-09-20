@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
 interface Particle {
   x: number;
@@ -22,10 +22,8 @@ interface Particle {
  * - 0 DOM interference: pointer-events: none, completely non-blocking
  */
 export function ThemeUniverse() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -256,25 +254,7 @@ export function ThemeUniverse() {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      id="theme-snow-universe"
-      className="theme-snow-universe"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: -1,
-        transition: 'opacity 0.4s ease',
-        opacity: 0,
-      }}
-      aria-hidden="true"
-    />
-  );
+  return null;
 }
 
 export default ThemeUniverse;
