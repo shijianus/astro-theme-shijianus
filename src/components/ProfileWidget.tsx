@@ -100,7 +100,6 @@ export function ProfileWidget({
 
   return (
     <section className={`card-widget card-info profile-card ${variantClass}`} style={style}>
-      <div className="snow-cover snow-cover--profile" aria-hidden="true" />
       <div className="card-content">
         <div className="author-info__sayhi-wrap">
           <div 
