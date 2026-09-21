@@ -69,6 +69,7 @@ const DEPRECATED_BACKGROUNDS = new Set([
   'starfield',
   'daybreak',
   'twilight',
+  'snow',
   'grid',
   'nebula',
   'aurora',

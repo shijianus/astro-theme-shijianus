@@ -224,10 +224,9 @@ export const siteConfig = {
   theme: {
     defaultMode: 'light',
     background: {
-      defaultMode: 'snow',
-      darkMode: 'snow',
+      defaultMode: 'clean',
+      darkMode: 'clean',
       modes: [
-        { id: 'snow', label: '冬日雪境' },
         { id: 'clean', label: '纯净纯色' },
       ],
     },
