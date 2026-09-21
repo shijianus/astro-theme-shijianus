@@ -3298,7 +3298,7 @@
   1. 本地 Playwright 10 步全链路端到端自动化测试全部 PASS；
   2. 259 个 SSG 静态页面顺利编译，完全清除 Node ESM loader 冲突。
 
-### Task 148: 文章多语言翻译变体 (.article-translation-variant) 全量深度审计、前缀容错与 SSR-客户端水合零报错交付
+### Task 148: 文章多语言翻译变体 (.article-translation-variant) 全量深度审计、前缀容错与 SSR-客户端水合零报错交付 (`f960b14`)
 - [x] **深度排查与根因修复 (`src/content.config.ts` & `src/pages/posts/[slug].astro`)**:
   1. 修复由于 Zod Schema 强加 `lang: z.string().default('zh-CN').optional()` 导致的未填 `lang` 的外语变体被误识别为中文主篇并同名覆盖的深层短路 Bug；
   2. 修复 `normalizeLangCode(undefined)` 返回 `'zh-CN'` 导致 `|| pNormLang` 成为死代码的缺陷，调整优先级为 `(p.data.lang ? normalizeLangCode(p.data.lang) : undefined) || pNormLang || 'zh-CN'`；
