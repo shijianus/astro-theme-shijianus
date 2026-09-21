@@ -6,7 +6,7 @@ async function main() {
   const baseUrl = process.env.LIVE_URL || 'https://blog.epocanvas.com';
   const targetUrl = `${baseUrl.replace(/\/$/, '')}/posts/content-formats-and-markup-mastery/`;
   console.log(`Navigating to live production article: ${targetUrl} ...`);
-  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForSelector('#article-container', { state: 'attached', timeout: 15000 });
   await page.waitForTimeout(500);
 
