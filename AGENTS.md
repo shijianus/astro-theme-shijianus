@@ -3353,7 +3353,7 @@
   1. 本地 Playwright 真实浏览器端到端测试 100% 通过（卡片内污染计数为 0，双 Canvas 层级合规）；
   2. 浅色、深色、鼠标悬停滑脱、底部分页栏滚屏等高分辨率截图全部留档审查通过。
 
-### Task 151: 文章多语言翻译变体深度打磨、首发语言自适应防白屏、阅读位置平滑锁定与全语种 A11y 强化
+### Task 151: 文章多语言翻译变体深度打磨、首发语言自适应防白屏、阅读位置平滑锁定与全语种 A11y 强化 (`25c5483`)
 - [x] **根治纯外语文章（无中文底稿）首屏白屏隐患 (`effectiveCurrentLang`)**:
   1. 在 `src/pages/posts/[slug].astro` 中重构主首发语言解析，引入 `effectiveCurrentLang`：当文章组未包含 `currentLang`（如纯英文、纯德文或小语种博文）时，自动回退到第一个有效变体，保证服务端直出（SSR/SSG）必然有且仅有一个主变体可见（`style=""`），彻底根除因 `vLang === currentLang` 均判为 false 导致全部变体被 `display: none` 的白屏与闪烁隐患；
   2. 同步将 `effectiveCurrentLang` 传入 `PostHero`、`#article-container` 的 `data-lang`、`AiSummaryPanel` 以及客户端 JSON 配置（`defaultLang`），保证全生命周期数据一致性。
