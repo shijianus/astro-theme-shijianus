@@ -3312,7 +3312,7 @@
   2. 生产环境真实链路 (`scripts/verify-live-translation-variants.mjs`)：对 `https://blog.epocanvas.com` 真实文章提取 DOM 变体，10/10 篇代表作多语言切换全部 PASS；
   3. 生成完整核验报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`，确保证据链完整闭环。
 
-### Task 149: 文章多语言翻译变体工程化、系统化收敛与平滑过渡架构升级 (`8a7f46f`)
+### Task 149: 文章多语言翻译变体工程化、系统化收敛与平滑过渡架构升级 (`ea472f9`)
 - [x] **全局多语言注册表工程化架构 (`src/config/i18n.ts`)**:
   1. 新增 `src/config/i18n.ts`，作为全站多语言元数据的唯一真实源（Single Source of Truth）；
   2. 统一收敛 23+ 种语言的规范代码、原生名称（Native）、英文名称、TOC 目录标题（`tocTitle`）与计数单位（`tocUnit`）、排版方向（`dir: ltr/rtl`）与标签文案；
