@@ -815,6 +815,7 @@ const heroSummary = isUnlocked
               document.querySelectorAll('.post-hero__lang-tag').forEach((btn) => {
                 const isMatch = btn.dataset.targetLang === targetLang;
                 btn.classList.toggle('is-active', isMatch);
+                btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
                 if (isMatch) btn.setAttribute('aria-current', 'page');
                 else btn.removeAttribute('aria-current');
               });
