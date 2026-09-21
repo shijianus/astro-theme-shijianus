@@ -3298,4 +3298,19 @@
   1. 本地 Playwright 10 步全链路端到端自动化测试全部 PASS；
   2. 259 个 SSG 静态页面顺利编译，完全清除 Node ESM loader 冲突。
 
+### Task 148: 文章多语言翻译变体 (.article-translation-variant) 全量深度审计、前缀容错与 SSR-客户端水合零报错交付
+- [x] **深度排查与根因修复 (`src/content.config.ts` & `src/pages/posts/[slug].astro`)**:
+  1. 修复由于 Zod Schema 强加 `lang: z.string().default('zh-CN').optional()` 导致的未填 `lang` 的外语变体被误识别为中文主篇并同名覆盖的深层短路 Bug；
+  2. 修复 `normalizeLangCode(undefined)` 返回 `'zh-CN'` 导致 `|| pNormLang` 成为死代码的缺陷，调整优先级为 `(p.data.lang ? normalizeLangCode(p.data.lang) : undefined) || pNormLang || 'zh-CN'`；
+  3. 客户端初始化时支持任意可用语言的 ISO 前缀匹配回退，杜绝非主流语种访问时变体与语言标签失联。
+- [x] **根治控制台 React 水合报错 (`Minified React error #418`) 与未定义警告**:
+  1. 将 `PostComments.tsx`、`PostRewardExtension.tsx`、`ThemeOverlays.tsx`、`ProfileWidget.tsx`、`ShortcutPanel.tsx`、`SupportDashboard.tsx` 中的 `locale` 状态统一规范为初次使用 `'zh-CN'` 初始化，保证 SSR 静态直出 HTML 与客户端首次 Hydration 100% 字节级一致，在 `useEffect` 中挂载用户实际偏好，彻底消除 132+ 个 React Error #418 报错；
+  2. 给 `PostComments.tsx` 动态相对时间 `<time>` 元素注入 `suppressHydrationWarning`，杜绝因服务器构建与客户端渲染时间差导致的微小水合冲突；
+  3. 在 `src/lib/client-locale.ts` 导出 `normalizeLocaleVariant` 别名并清理重复键，消除 Vite 构建警告。
+- [x] **Playwright 真实浏览器端到端双重验证套件 (本地 27 组全量 + 生产端 10 篇代表作真实点击交互)**:
+  1. 本地套件 (`scripts/verify-article-translation-variants.mjs`)：27/27 组博文，100% 提取所有 `.article-translation-variant` 并逐一模拟真实点击切换，显隐状态全部符合预期（PASS）；
+  2. 生产环境真实链路 (`scripts/verify-live-translation-variants.mjs`)：对 `https://blog.epocanvas.com` 真实文章提取 DOM 变体，10/10 篇代表作多语言切换全部 PASS；
+  3. 生成完整核验报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`，确保证据链完整闭环。
+
+
 

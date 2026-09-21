@@ -48,12 +48,13 @@ export function ProfileWidget({
   posts = [],
 }: ProfileWidgetProps) {
   const [sayHiIndex, setSayHiIndex] = useState(0);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => {
-    if (typeof window !== 'undefined') return readStoredLocaleVariant();
-    return 'zh-CN';
-  });
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
+    const stored = readStoredLocaleVariant();
+    if (stored && stored !== 'zh-CN') {
+      setLocaleVariant(stored);
+    }
     const onLocaleChange = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);

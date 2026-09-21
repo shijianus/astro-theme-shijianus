@@ -104,9 +104,13 @@ export const PostRewardExtension: React.FC<PostRewardExtensionProps> = ({
   const [isManualOverride, setIsManualOverride] = useState(false);
   const [popoverPos, setPopoverPos] = useState<'up' | 'down'>('up');
   const [copied, setCopied] = useState(false);
-  const [locale, setLocale] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
+  const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
+    const initialStored = readStoredLocaleVariant();
+    if (initialStored && initialStored !== 'zh-CN') {
+      setLocale(initialStored);
+    }
     const onLocaleChange = (event: Event) => {
       const detail = (event as CustomEvent).detail;
       const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);

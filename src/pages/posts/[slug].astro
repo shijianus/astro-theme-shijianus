@@ -907,6 +907,10 @@ const heroSummary = isUnlocked
               else if (navLang.startsWith('fr')) initialLang = 'fr';
               else if (navLang === 'zh-tw' || navLang === 'zh-hk' || navLang.includes('hant')) initialLang = 'zh-Hant';
               else if (navLang.startsWith('zh')) initialLang = 'zh-CN';
+              else {
+                const prefix = navLang.split('-')[0];
+                if (availableLangs.includes(prefix)) initialLang = prefix;
+              }
             }
 
             if (initialLang && availableLangs.includes(initialLang)) {

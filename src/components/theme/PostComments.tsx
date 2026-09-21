@@ -224,8 +224,8 @@ export function PostComments({
   emptyTitle = '还没有公开评论',
   emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
 }: PostCommentsProps) {
-  // Locale state
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN');
+  // Locale state (strictly initialize to 'zh-CN' for identical SSR-client hydration)
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();
@@ -2569,7 +2569,7 @@ export function PostComments({
                             </span>
                           )}
 
-                          <time className="tk-time">{formatCommentTime(item.createdAt, currentLocale)}</time>
+                          <time className="tk-time" suppressHydrationWarning>{formatCommentTime(item.createdAt, currentLocale)}</time>
                           {edited && (
                             <span className="tk-edited-mark">
                               <span className="tk-edited-bracket">(</span>
@@ -2961,7 +2961,7 @@ export function PostComments({
                                             </span>
                                           )}
 
-                                          <time className="tk-time">{formatCommentTime(reply.createdAt, currentLocale)}</time>
+                                          <time className="tk-time" suppressHydrationWarning>{formatCommentTime(reply.createdAt, currentLocale)}</time>
                                           {isReplyEdited && (
                                             <span className="tk-edited-mark">
                                               <span className="tk-edited-bracket">(</span>

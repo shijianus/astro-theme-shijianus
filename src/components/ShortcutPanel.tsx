@@ -24,9 +24,13 @@ const SHORTCUT_DEFS: ShortcutDef[] = [
 export function ShortcutPanel() {
   const [visible, setVisible] = useState(false);
   const [shiftPressed, setShiftPressed] = useState(false);
-  const [locale, setLocale] = useState<LocaleVariant>(() => readStoredLocaleVariant());
+  const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
+    const stored = readStoredLocaleVariant();
+    if (stored && stored !== 'zh-CN') {
+      setLocale(stored);
+    }
     const onLocaleChange = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
