@@ -3369,9 +3369,10 @@
 - [x] **多语言注册表 (`src/config/i18n.ts`) 扩容至 28 种语言体系**:
   1. 扩充捷克语 (`cs`)、希腊语 (`el`)、希伯来语 (`he`，RTL 自动支持)、罗马尼亚语 (`ro`)、匈牙利语 (`hu`) 的规范定义（代码、原生名称、英文名称、TOC 标题与单位）；
   2. `src/lib/content.ts` 中的 `LANG_SUFFIX_REGEX` 同步扩展上述后缀，实现全球主要语种的全链路覆盖。
-- [x] **全量 Playwright 真实浏览器端到端回归验证通过 (`scripts/verify-article-translation-variants.mjs`)**:
+- [x] **全量 Playwright 真实浏览器端到端回归验证与生产端 (Cloudflare Pages) 真实链路审计通过 (`scripts/verify-article-translation-variants.mjs` & `scripts/verify-live-translation.mjs`)**:
   1. 全站 27 组文章（140 个变体）100% 提取与切换验证通过，无遗漏、无空白、无切换失败；
-  2. 受保护文章 `access-control-lab` 验证通过，成功呈现包含 6 种语言译本指引。
+  2. 受保护文章 `access-control-lab` 验证通过，成功呈现包含 6 种语言译本指引；
+  3. 生产端 (`https://blog.epocanvas.com`) 真实链路审计通过：提取 6 种语言变体，完成中英文双向实时切换，并修复动态同步 `aria-pressed` 无障碍属性状态 (`81477bb`, `d281abf`)。
 
 ### Task 152: 随身音乐口袋 (Music Pocket) 全链路深度重构、64px真实专辑封面展台、32频段紧密频谱、纯Icon工具栏与歌词系统深度修复 (`22d2ff6`)
 - [x] **根治歌词加载失败与接口数据契约回退**:
