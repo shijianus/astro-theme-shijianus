@@ -12,7 +12,7 @@ export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
 import { normalizeLang } from '../config/i18n.ts';
 
-export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr|sv|no|da|fi|th|id|uk)$/i;
+export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr|sv|no|da|fi|th|id|uk|cs|el|he|ro|hu)$/i;
 
 export const normalizeLangCode = normalizeLang;
 

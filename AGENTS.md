@@ -3353,6 +3353,54 @@
   1. 本地 Playwright 真实浏览器端到端测试 100% 通过（卡片内污染计数为 0，双 Canvas 层级合规）；
   2. 浅色、深色、鼠标悬停滑脱、底部分页栏滚屏等高分辨率截图全部留档审查通过。
 
+### Task 151: 文章多语言翻译变体深度打磨、首发语言自适应防白屏、阅读位置平滑锁定与全语种 A11y 强化
+- [x] **根治纯外语文章（无中文底稿）首屏白屏隐患 (`effectiveCurrentLang`)**:
+  1. 在 `src/pages/posts/[slug].astro` 中重构主首发语言解析，引入 `effectiveCurrentLang`：当文章组未包含 `currentLang`（如纯英文、纯德文或小语种博文）时，自动回退到第一个有效变体，保证服务端直出（SSR/SSG）必然有且仅有一个主变体可见（`style=""`），彻底根除因 `vLang === currentLang` 均判为 false 导致全部变体被 `display: none` 的白屏与闪烁隐患；
+  2. 同步将 `effectiveCurrentLang` 传入 `PostHero`、`#article-container` 的 `data-lang`、`AiSummaryPanel` 以及客户端 JSON 配置（`defaultLang`），保证全生命周期数据一致性。
+- [x] **阅读位置平滑锁定与视口跳动抑制**:
+  1. 在 `switchArticleLanguage` 执行定位恢复（`anchorSelector`）时，临时将 `document.documentElement.style.scrollBehavior` 设置为 `'auto'`，并在下一帧无缝复原；
+  2. 彻底消除在已声明 `scroll-behavior: smooth` 的现代浏览器中切换语言变体时发生的视口回顶反弹与视觉抖动。
+- [x] **PostHero 语言切换按钮 A11y 无障碍与微交互打磨**:
+  1. 为 `.post-hero__lang-tag` 增加 `aria-pressed={isActive ? 'true' : 'false'}` 明确可访问性状态；
+  2. 在 `src/styles/final-pass.css` 中注入 `user-select: none` 杜绝频繁点击选中文本，并添加 `:active:not(.is-active) { transform: scale(0.96); }` 触摸轻按物理反馈。
+- [x] **密码保护加密文章多语言指引增强**:
+  1. 在受保护文章未解锁面板（`content-access-panel`）中，当检测到存在多语言版本时（`siblingTranslations.length > 1`），动态呈现 `.content-access-panel__i18n-hint`（“包含 X 种语言译本，解锁后可自由切换阅读”）；
+  2. 配备 Lucide Globe 矢量图标与柔和蓝光微徽标，提升读者的解锁阅读指引与内容价值认知，同时正文变体保持 0 泄露的绝对安全隔离。
+- [x] **多语言注册表 (`src/config/i18n.ts`) 扩容至 28 种语言体系**:
+  1. 扩充捷克语 (`cs`)、希腊语 (`el`)、希伯来语 (`he`，RTL 自动支持)、罗马尼亚语 (`ro`)、匈牙利语 (`hu`) 的规范定义（代码、原生名称、英文名称、TOC 标题与单位）；
+  2. `src/lib/content.ts` 中的 `LANG_SUFFIX_REGEX` 同步扩展上述后缀，实现全球主要语种的全链路覆盖。
+- [x] **全量 Playwright 真实浏览器端到端回归验证通过 (`scripts/verify-article-translation-variants.mjs`)**:
+  1. 全站 27 组文章（140 个变体）100% 提取与切换验证通过，无遗漏、无空白、无切换失败；
+  2. 受保护文章 `access-control-lab` 验证通过，成功呈现包含 6 种语言译本指引。
 
-
+### Task 152: 随身音乐口袋 (Music Pocket) 全链路深度重构、64px真实专辑封面展台、32频段紧密频谱、纯Icon工具栏与歌词系统深度修复
+- [x] **根治歌词加载失败与接口数据契约回退**:
+  1. 深入排查 `functions/api/music/lyric.ts` 与前端数据契约脱节的根因：后端返回 `{ ok: true, lyric: "..." }`，前端原先只读取 `res.lrc` 导致必然命中 `undefined`；
+  2. 修复前后端契约：在 `lyric.ts` 响应中同时输出 `lyric` 与 `lrc: lyric`，并向下解析返回 `parsed` 行数组；
+  3. 在 `MusicPocket.tsx` 中建立三重回退机制（优先本地内置曲目与离线预载歌词，其次 API 请求并兼容 `res.lyric || res.lrc`，解析失败时平滑降级展示歌名与艺人），彻底解决歌词无输出问题。
+- [x] **全网封面解析代理与 64px 真实艺术封面卡片 (`.shijianus-music-pocket__big-disc-center`)**:
+  1. 排查全网搜索曲目缺失封面图的根因：上游 API 的 `pic_id` 为纯数字 ID（如 `"109951163038292176"`），旧逻辑判断 `pic.startsWith('http')` 导致 100% 丢失封面；
+  2. 新增 Cloudflare Edge Function 代理接口 `functions/api/music/cover.ts`，支持上游真实 CDN 地址解析与 HTTP 302 重定向；
+  3. 移除玩具级 26px CSS 伪转盘，全面升级为 64×64px 高清艺术唱片封面展台（`.shijianus-music-pocket__big-disc-center`），右侧微露唱片暗纹边缘（`.shijianus-music-pocket__vinyl-edge`）。
+- [x] **声波频谱 (Visualizer) 密集度与真实动效重构**:
+  1. 修复原 16 频段频谱因柱宽仅 3.5px、间距高达 8.3px 导致的“松垮失真”问题；
+  2. 全面升级为紧密 32 频段 Canvas 实时音频渲染（柱宽 3px，间距 1.7px，高度 24px），注入阻尼峰值下落衰减（`peaks * 0.88`）与音频权限受限时的平滑律动兜底。
+- [x] **解除按钮“三明治”过度堆叠，全面重构为纯 Icon 固定尺寸实用工具栏 (Zero Reflow)**:
+  1. 彻底移除底部与顶部重复冗余的页面导航按键（“滚动歌词”、“播放列表”、“搜索点歌”等）；
+  2. 全面收敛为 5 大固定几何尺寸（32×32px）纯 Icon 辅助工具按键，所有说明文字统一置于原生 `title` 与 `aria-label` 中，彻底消除文本长短变化引发的按钮重绘与布局抖动：
+     - `[❤️]` 纯 Icon 喜欢/收藏：一键点赞并本地持久化；
+     - `[⏱️]` 睡眠定时器：支持关/15分/30分/60分/播完当前曲目多档位轮转，配有右上角纯数字微标与倒计时；
+     - `[⚡]` 播放倍速切换：支持 1.0x -> 1.25x -> 1.5x -> 0.75x 循环，原生 title 实时提示；
+     - `[🖥️]` 桌面悬浮歌词 HUD 显隐开关；
+     - `[🔗]` 歌曲快捷分享：一键复制曲名与艺人至剪贴板。
+- [x] **歌词排版美化与全局 i18n 多语言彻底收敛**:
+  1. 在 `runtime-widgets.css` 中为 `.lyrics-line` 注入完备排版样式，时间戳采用等宽字体（monospace），高亮行配备专属左侧指示条与浅蓝微光，杜绝文本挤占；
+  2. 修复中文环境泄漏英文单词 “Queue” 的缺陷，将所有音乐台状态与文案绑定至 `document.documentElement.lang`，并在 `src/lib/client-locale.ts` 中补齐 6 大语种（简/繁/英/法/西/德）的全部翻译词条。
+- [x] **彻底根治堆叠上下文陷阱与雪花穿透缺陷 (`BlogLayout.astro`)**:
+  1. 深入定位雪花冰挂（`#theme-snow-fg`）横切面板的本质根因：`.page`（`#body-wrap`）声明了 `position: relative; z-index: 1;` 形成了独立的堆叠上下文，导致其内部任何元素均无法突破 `z-index: 1`，从而被外部 `z-index: 35` 的雪花前景画布无情覆盖；
+  2. 将 `<MusicPocket />` 移至 `#body-wrap` 闭合标签之后，作为 `<body>` 的直接子节点，使其原生继承 `z-index: 85/95`，从物理层超越雪花画布；同时将面板背景透明度收敛至 `0.98`，彻底消除背景卡片与高对比雪景的穿透噪点。
+- [x] **端到端 Playwright 自动化测试与全平台视觉审计通过 (`scripts/verify-music-pocket.mjs`)**:
+  1. 覆盖默认隐藏、管理按键激活、防误触拖拽、展开收起生命周期；
+  2. 验证 64px 真实专辑封面卡片、32 频段密集频谱、5 大纯 Icon 工具按键、喜欢/定时器/倍速/桌面歌词 HUD 交互；
+  3. 浅色、深色、卡拉OK歌词与桌面 HUD 截图全部审计通过。
 

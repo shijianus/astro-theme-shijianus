@@ -7494,9 +7494,13 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   font-size: 11.5px !important;
   font-weight: 600 !important;
   color: rgba(255, 255, 255, 0.9) !important;
-  text-decoration: none !important;
-  background: rgba(255, 255, 255, 0.12) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
   transition: all 0.18s ease !important;
+}
+
+.post-hero__lang-tag:active:not(.is-active) {
+  transform: scale(0.96) !important;
 }
 
 .post-hero__lang-tag:hover {

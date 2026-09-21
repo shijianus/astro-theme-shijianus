@@ -145,6 +145,7 @@ const hasMedia = Boolean(image || video);
                 class:list={['post-hero__lang-tag', isActive && 'is-active']}
                 data-target-lang={normalizedKey}
                 aria-current={isActive ? 'page' : undefined}
+                aria-pressed={isActive ? 'true' : 'false'}
                 title={isActive ? `当前语言: ${meta.native}` : `切换至 ${meta.native}`}
               >
                 <span class="lang-dot"></span>

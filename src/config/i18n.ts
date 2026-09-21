@@ -227,6 +227,51 @@ export const SUPPORTED_LOCALES: Record<string, LocaleMeta> = {
     translationsLabel: 'Мови:',
     dir: 'ltr',
   },
+  cs: {
+    code: 'cs',
+    native: 'Čeština',
+    english: 'Czech',
+    tocTitle: 'Obsah',
+    tocUnit: 'sekcí',
+    translationsLabel: 'Jazyky:',
+    dir: 'ltr',
+  },
+  el: {
+    code: 'el',
+    native: 'Ελληνικά',
+    english: 'Greek',
+    tocTitle: 'Περιεχόμενα',
+    tocUnit: 'ενότητες',
+    translationsLabel: 'Γλώσσες:',
+    dir: 'ltr',
+  },
+  he: {
+    code: 'he',
+    native: 'עברית',
+    english: 'Hebrew',
+    tocTitle: 'תוכן העניינים',
+    tocUnit: 'קטעים',
+    translationsLabel: 'שפות:',
+    dir: 'rtl',
+  },
+  ro: {
+    code: 'ro',
+    native: 'Română',
+    english: 'Romanian',
+    tocTitle: 'Cuprins',
+    tocUnit: 'secțiuni',
+    translationsLabel: 'Limbi:',
+    dir: 'ltr',
+  },
+  hu: {
+    code: 'hu',
+    native: 'Magyar',
+    english: 'Hungarian',
+    tocTitle: 'Tartalomjegyzék',
+    tocUnit: 'szakasz',
+    translationsLabel: 'Nyelvek:',
+    dir: 'ltr',
+  },
 };
 
 /**
@@ -258,6 +303,11 @@ export function normalizeLang(raw?: string): string {
   if (trimmed.startsWith('th')) return 'th';
   if (trimmed.startsWith('id')) return 'id';
   if (trimmed.startsWith('uk')) return 'uk';
+  if (trimmed.startsWith('cs')) return 'cs';
+  if (trimmed.startsWith('el')) return 'el';
+  if (trimmed.startsWith('he')) return 'he';
+  if (trimmed.startsWith('ro')) return 'ro';
+  if (trimmed.startsWith('hu')) return 'hu';
   return trimmed;
 }
 

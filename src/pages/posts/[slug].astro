@@ -1,5 +1,6 @@
 ---
 import { getCollection, getEntry, render } from 'astro:content';
+import { Globe } from 'lucide-react';
 import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
 import AiSummaryPanel from '../../components/theme/AiSummaryPanel.astro';
 import PostHero from '../../components/theme/PostHero.astro';
@@ -331,7 +332,10 @@ if (!isSuffixRoute && isUnlocked) {
 }
 
 // Canonical content & headings fallback
-const primaryVariant = renderedVariants.find((v) => v.lang === currentLang) || renderedVariants[0];
+const effectiveCurrentLang = renderedVariants.some((v) => v.lang === currentLang)
+  ? currentLang
+  : (renderedVariants[0]?.lang || currentLang);
+const primaryVariant = renderedVariants.find((v) => v.lang === effectiveCurrentLang) || renderedVariants[0];
 let Content = primaryVariant?.Content ?? null;
 let headings = primaryVariant?.headings ?? [];
 
@@ -501,7 +505,7 @@ const heroSummary = isUnlocked
         meta={meta}
         runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
         translations={translationsByLang}
-        currentLang={currentLang}
+        currentLang={effectiveCurrentLang}
       />
     </Fragment>
 
@@ -513,7 +517,7 @@ const heroSummary = isUnlocked
           summary={(postEntry.data as any).aiSummary || (postEntry.data as any).ai_summary || (postEntry.data as any).summary || postEntry.data.description || ''}
           staticSummary={typedAiSummaries[postEntry.id]?.summary || ''}
           staticSummariesByLang={staticSummariesByLang}
-          articleLang={currentLang}
+          articleLang={effectiveCurrentLang}
           url={Astro.url.href}
           related={relatedPosts.map((post) => ({
             title: post.data.title,
@@ -527,14 +531,14 @@ const heroSummary = isUnlocked
         class="article-body post-content"
         data-content-features={isUnlocked ? 'true' : undefined}
         data-route={isEncryptedRoute ? 'encrypted' : 'normal'}
-        data-lang={currentLang}
+        data-lang={effectiveCurrentLang}
       >
         {isUnlocked && renderedVariants.length > 0 ? (
           renderedVariants.map(({ lang: vLang, Content: VariantContent }) => (
             <div
               class="article-translation-variant"
               data-lang={vLang}
-              style={vLang === currentLang ? '' : 'display: none;'}
+              style={vLang === effectiveCurrentLang ? '' : 'display: none;'}
             >
               <VariantContent />
             </div>
@@ -551,6 +555,12 @@ const heroSummary = isUnlocked
                 <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
                 <button type="submit">解锁文章</button>
               </form>
+            )}
+            {siblingTranslations.length > 1 && (
+              <div class="content-access-panel__i18n-hint">
+                <Globe className="content-access-panel__i18n-icon" aria-hidden="true" />
+                <span>包含 {siblingTranslations.length} 种语言译本，解锁后可自由切换阅读</span>
+              </div>
             )}
             {!accessState.locationAllowed && (
               <div class="content-access-panel__status" data-state="error">
@@ -674,7 +684,7 @@ const heroSummary = isUnlocked
           type="application/json"
           set:html={JSON.stringify({
             canonicalSlug,
-            defaultLang: currentLang,
+            defaultLang: effectiveCurrentLang,
             availableLangs: renderedVariants.map((v) => v.lang),
             tocDictionary: getSerializedTocDictionary(),
             variantsMeta: Object.fromEntries(
@@ -864,8 +874,13 @@ const heroSummary = isUnlocked
                     targetNode = newHeadings[anchorSelector.index] || newHeadings[0];
                   }
                   if (targetNode) {
+                    const prevBehavior = document.documentElement.style.scrollBehavior;
+                    document.documentElement.style.scrollBehavior = 'auto';
                     const targetTop = targetNode.getBoundingClientRect().top + window.scrollY - 110;
                     window.scrollTo({ top: Math.max(0, targetTop), behavior: 'instant' });
+                    requestAnimationFrame(() => {
+                      document.documentElement.style.scrollBehavior = prevBehavior;
+                    });
                   }
                 }
               }
@@ -918,6 +933,13 @@ const heroSummary = isUnlocked
               else if (navLang.startsWith('es')) initialLang = 'es';
               else if (navLang.startsWith('de')) initialLang = 'de';
               else if (navLang.startsWith('fr')) initialLang = 'fr';
+              else if (navLang.startsWith('ja')) initialLang = 'ja';
+              else if (navLang.startsWith('ko')) initialLang = 'ko';
+              else if (navLang.startsWith('ru')) initialLang = 'ru';
+              else if (navLang.startsWith('it')) initialLang = 'it';
+              else if (navLang.startsWith('pt')) initialLang = 'pt';
+              else if (navLang.startsWith('vi')) initialLang = 'vi';
+              else if (navLang.startsWith('ar')) initialLang = 'ar';
               else if (navLang === 'zh-tw' || navLang === 'zh-hk' || navLang.includes('hant')) initialLang = 'zh-Hant';
               else if (navLang.startsWith('zh')) initialLang = 'zh-CN';
               else {
@@ -926,7 +948,7 @@ const heroSummary = isUnlocked
               }
             }
 
-            if (initialLang && availableLangs.includes(initialLang)) {
+            if (initialLang && availableLangs.includes(initialLang) && initialLang !== defaultLang) {
               window.switchArticleLanguage(initialLang);
             }
 

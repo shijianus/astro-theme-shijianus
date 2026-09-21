@@ -210,6 +210,27 @@ body[data-type='post'] #card-toc .toc-content {
   font-weight: 800;
 }
 
+.content-access-panel__i18n-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--font-color, #4c4948);
+  background: rgba(66, 90, 239, 0.06);
+  border: 1px solid rgba(66, 90, 239, 0.18);
+}
+
+.content-access-panel__i18n-icon {
+  width: 13px;
+  height: 13px;
+  color: var(--theme-main, #425aef);
+  flex-shrink: 0;
+}
+
 body[data-type='home'] .swiper_container_card {
   height: 348px;
   padding: 0;
