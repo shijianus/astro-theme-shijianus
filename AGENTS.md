@@ -3329,6 +3329,30 @@
   1. 运行全量 Playwright 真实浏览器端到端套件，1089 项断言全部 PASS（0 FAIL）；
   2. 产出详尽专业的本地专项报告 `docs/ARTICLE_TRANSLATION_VARIANT_AUDIT_REPORT.md`，确保证据链完整闭环。
 
+### Task 150: 博客冬日雪境普适性背景与外部全矩阵积雪物理引擎（物理级自治世界层落地与视觉验证交付）
+- [x] **业务卡片 100% 纯净（Zero In-Card Pollution）**:
+  1. 卡片内绝对禁止嵌入 `<SnowCover>` 或任何雪相关标签，卡片保持最干净的纯色 UI；
+  2. 所有雪景与物理仿真完全由外部独立的视口 Canvas 统一驱动，彼此解耦，各自开源演进。
+- [x] **超越卡片圆角边界（Corner-Wrapping Spline）**:
+  1. 在 `recent-post-item`、`todayCard`、`random-banner` 等所有卡片上，雪冠起点自外边界延伸（`vx - 2.5px` 至 `vx + w + 2.5px`），自然包裹跨越 `rounded-xl`（12px/16px）圆角顶点；
+  2. 彻底打破卡片内部 `overflow: hidden` 的物理裁剪，实现真正的外延积雪感。
+- [x] **板块分明与互斥感知（Discrete Matrix & Mutex Awareness）**:
+  1. 每个显式矩形（顶部通知栏、大横幅、分类按钮、流式卡片、博主名片、侧边栏各小组件、底部分页 `home-pagination` 等）作为独立物理承载面，轮廓分明、各自成积，交界处界限清晰；
+  2. 智能感知 `#today-card-toggle` 状态：当 `todayCard` 显示时自动压制并隐藏被遮蔽的 4 个底层推荐卡片，杜绝重叠双层积雪。
+- [x] **上下分异呈现（Top vs. Bottom Heterogeneity）**:
+  1. 上表面：承受垂直降雪，平缓松软堆积，根据卡片尺寸自适应 4.5px ~ 9.5px 优雅厚度；
+  2. 下边缘：高卡片底部展现微小晶莹霜点与向下延伸的自然晶莹冰挂（Icicles / Frost Drips），小按钮与分页条则保持平整清爽。
+- [x] **真实物理逻辑与级联滑脱堆积（Snow Cascading & Splatter Simulation）**:
+  1. 雪块自然滑脱（$y = y_0 + v_0 t + \frac{1}{2}gt^2$）或鼠标 Hover 微震动触发；
+  2. 滑落雪块下落碰撞检测：击中下方表面（如击中 `.home-pagination` 或下一排卡片）触发撞击碎裂飞溅粒子（Splatter Puff）并递增次级积雪。
+- [x] **双层画布世界（Dual-Canvas Architecture）与动效全生命周期**:
+  1. 背景天幕层（`#theme-snow-bg`，`z-index: -1`）：三层纵深静谧雪花柔和降落；
+  2. 前景物理层（`#theme-snow-fg`，`z-index: 35`，`pointer-events: none`）：轻量高保真物理渲染，零 DOM 回流，完全不阻碍任何页面点击交互；
+  3. 支持通过设置/控制台在“冬日雪境”与“纯净纯色”间平滑淡入淡出切换，支持 Astro 页面过渡无缝刷新表面矩阵。
+- [x] **端到端 Playwright 自动化测试与全量视觉审计通过 (`scripts/verify-physics-snow.mjs`)**:
+  1. 本地 Playwright 真实浏览器端到端测试 100% 通过（卡片内污染计数为 0，双 Canvas 层级合规）；
+  2. 浅色、深色、鼠标悬停滑脱、底部分页栏滚屏等高分辨率截图全部留档审查通过。
+
 
 
 

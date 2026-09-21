@@ -287,7 +287,6 @@ const paypalUkMeUrl =
         backgroundModes={siteConfig.theme.background.modes}
         pageType={pageType}
       />
-      <MusicPocket client:load apiBase={musicApiBase} />
       <ThemeOverlays
         client:load
         brandName={siteConfig.site.name}
@@ -323,6 +322,8 @@ const paypalUkMeUrl =
         paypalUkMeUrl={paypalUkMeUrl}
       />
     </div>
+
+    <MusicPocket client:load apiBase={musicApiBase} />
 
     <!-- Global Universal Activity & Anzhiyu Snackbar Notification (对应 id="nav" 顶部位置展示) -->
     <div
