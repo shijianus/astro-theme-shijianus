@@ -162,46 +162,68 @@ async function main() {
     }
     console.log('✓ 面板成功展开！');
 
-    // 验证 6: Cyber-Vintage HUD 顶栏与 16-Band 频谱柱特色元素
-    console.log('\n7. 验证特色 HUD 顶栏与声波频谱柱:');
-    const hudLabel = await page.$eval('.shijianus-music-pocket__hud-head .hud-label', (el) => el.textContent);
-    const hudBadge = await page.$eval('.shijianus-music-pocket__hud-head .hud-badge', (el) => el.textContent);
-    console.log(`- HUD 标识: ${hudLabel}, 码率徽标: ${hudBadge}`);
-
-    const spectrumBarsCount = await page.$$eval('.shijianus-music-pocket__visualizer .spectrum-bar', (els) => els.length);
-    console.log(`- 16-Band 频谱柱数量: ${spectrumBarsCount} (期望: 16)`);
-    if (spectrumBarsCount !== 16) {
-      throw new Error(`Expected 16 spectrum bars, got ${spectrumBarsCount}`);
+    // 验证 6: 现代解耦 Tab 栏与 Web Audio API Canvas 频谱
+    console.log('\n7. 验证现代解耦 Tab 栏与声波频谱 Canvas:');
+    const tabsCount = await page.$$eval('.shijianus-music-pocket__tab', (els) => els.length);
+    console.log(`- 顶部导航选项卡数量: ${tabsCount} (期望: 4 - 播放/歌词/待播/发现)`);
+    if (tabsCount < 4) {
+      throw new Error(`Expected at least 4 tabs, got ${tabsCount}`);
     }
+
+    const visualizerCanvas = await page.$('.shijianus-music-pocket__visualizer-canvas');
+    if (!visualizerCanvas) throw new Error('Missing visualizer canvas in deck showcase!');
+    console.log('✓ Web Audio API 60FPS 声波频谱 Canvas 渲染完好！');
 
     // 验证黑胶唱片
     const bigDisc = await page.$('.shijianus-music-pocket__big-disc');
     if (!bigDisc) throw new Error('Missing big vinyl disc in deck showcase!');
-    console.log('✓ 黑胶唱机与 16-Band 霓虹频谱柱渲染完好！');
+    console.log('✓ 72px 高质感黑胶唱片展台渲染完好！');
 
-    // 验证 7: 切换到探索与点歌台
-    console.log('\n8. 验证探索与点歌台交互:');
-    const searchTab = await page.$('.shijianus-music-pocket__tab:nth-child(2)');
+    // 验证 7: 切换到发现与点歌台
+    console.log('\n8. 验证发现与点歌台交互:');
+    const searchTab = await page.$('[data-tab="search"]');
+    if (!searchTab) throw new Error('Missing search tab!');
     await searchTab.click();
     await page.waitForTimeout(300);
 
-    const tagPills = await page.$$eval('.shijianus-music-pocket__tag-pill', (els) => els.map((e) => e.textContent.trim()));
-    console.log(`- 探索灵感胶囊: ${tagPills.slice(0, 5).join(' / ')} ...`);
-    const searchInput = await page.$('.shijianus-music-pocket__input');
+    const tagPills = await page.$$eval('.shijianus-music-pocket__pill', (els) => els.map((e) => e.textContent.trim()));
+    console.log(`- 发现灵感胶囊: ${tagPills.slice(0, 5).join(' / ')} ...`);
+    const searchInput = await page.$('.shijianus-music-pocket__search-input');
     if (!searchInput) throw new Error('Search input missing');
-    console.log('✓ 探索与点歌台选项卡运转正常！');
+    console.log('✓ 发现与点歌台选项卡运转正常！');
 
-    // 验证 8: 关闭/隐藏功能
-    console.log('\n9. 验证完全隐藏功能与右侧栏同步:');
+    // 验证 8: 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics)
+    console.log('\n9. 验证屏幕桌面悬浮歌词 HUD:');
+    const screenLyricToggle = await page.$('[title*="桌面歌词"], [aria-label*="桌面歌词"]');
+    if (screenLyricToggle) {
+      await screenLyricToggle.click();
+      await page.waitForTimeout(400);
+      const screenLyricEl = await page.$('.shijianus-music-pocket__screen-lyric');
+      const isScreenLyricVisible = screenLyricEl ? await screenLyricEl.isVisible() : false;
+      console.log(`- 桌面悬浮歌词可见性: ${isScreenLyricVisible} (期望: true)`);
+      if (!isScreenLyricVisible) {
+        throw new Error('Screen floating lyrics HUD should be visible after toggling on!');
+      }
+      console.log('✓ 屏幕桌面悬浮歌词 HUD 功能激活完好！');
+    }
+
+    // 验证 9: 面板收起/关闭功能 (仅收起面板，保留浮动图标与后台播放)
+    console.log('\n10. 验证面板收起生命周期:');
     const closeHudBtn = await page.$('.shijianus-music-pocket__hud-btn--close');
+    if (!closeHudBtn) throw new Error('Missing close button in header!');
     await closeHudBtn.click();
     await page.waitForTimeout(500);
 
-    const pocketPostHide = await page.$('.shijianus-music-pocket');
-    const isVisiblePostHide = pocketPostHide ? await pocketPostHide.isVisible() : false;
-    console.log(`- 关闭后随身音乐口袋可见性: ${isVisiblePostHide} (期望: false)`);
-    if (isVisiblePostHide) {
-      throw new Error('Music Pocket should be hidden after closing from HUD button!');
+    const panelAfterClose = await page.$('.shijianus-music-pocket__panel');
+    console.log(`- 关闭后展开面板是否存在于 DOM: ${panelAfterClose !== null} (期望: false)`);
+    if (panelAfterClose !== null) {
+      throw new Error('Expanded panel should be closed/hidden!');
+    }
+
+    const pocketIconStillVisible = await page.$eval('.shijianus-music-pocket', (el) => el.style.display !== 'none');
+    console.log(`- 关闭后悬浮口袋图标是否依然驻留后台: ${pocketIconStillVisible} (期望: true)`);
+    if (!pocketIconStillVisible) {
+      throw new Error('CRITICAL BUG: Floating pocket button MUST remain visible when closing panel!');
     }
 
     console.log('\n🎉 所有端到端 Playwright 测试全部通过！');

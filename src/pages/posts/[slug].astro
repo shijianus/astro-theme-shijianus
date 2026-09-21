@@ -176,7 +176,7 @@ const inferredLangMatch = postEntry.id.match(langSuffixRegex);
 const normalizedInferredLang = inferredLangMatch ? normalizeLangCode(inferredLangMatch[1]) : undefined;
 const inferredKey = getPostCanonicalSlug(postEntry.id);
 const currentI18nKey = postEntry.data.i18nKey || inferredKey;
-const currentLang = normalizeLangCode(postEntry.data.lang) || normalizedInferredLang || 'zh-CN';
+const currentLang = (postEntry.data.lang ? normalizeLangCode(postEntry.data.lang) : undefined) || normalizedInferredLang || 'zh-CN';
 
 // Find all sibling translations with the same i18nKey or shared base slug
 const siblingTranslations = allPosts.filter((p) => {
@@ -208,8 +208,8 @@ if (typedAiSummaries[postEntry.id]?.summary) {
 }
 for (const p of siblingTranslations) {
   const pSuffix = p.id.match(langSuffixRegex);
-  const pNorm = pSuffix ? (pSuffix[1].toLowerCase() === 'zh-hant' ? 'zh-Hant' : pSuffix[1].toLowerCase() === 'zh-cn' ? 'zh-CN' : pSuffix[1].toLowerCase()) : undefined;
-  const pLang = p.data.lang || pNorm || 'zh-CN';
+  const pNorm = pSuffix ? normalizeLangCode(pSuffix[1]) : undefined;
+  const pLang = (p.data.lang ? normalizeLangCode(p.data.lang) : undefined) || pNorm || 'zh-CN';
   const pSum = typedAiSummaries[p.id]?.summary;
   if (pSum && !staticSummariesByLang[pLang]) {
     staticSummariesByLang[pLang] = pSum;
@@ -283,7 +283,7 @@ if (!isSuffixRoute && isUnlocked) {
   for (const p of siblingTranslations) {
     const pSuffixMatch = p.id.match(langSuffixRegex);
     const pNormLang = pSuffixMatch ? normalizeLangCode(pSuffixMatch[1]) : undefined;
-    const vLang = normalizeLangCode(p.data.lang) || pNormLang || 'zh-CN';
+    const vLang = (p.data.lang ? normalizeLangCode(p.data.lang) : undefined) || pNormLang || 'zh-CN';
 
     const existingIdx = renderedVariants.findIndex((v) => v.lang === vLang);
     if (existingIdx >= 0) {

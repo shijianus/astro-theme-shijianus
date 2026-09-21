@@ -120,14 +120,14 @@ async function main() {
     await page.screenshot({ path: 'scratch/live-music-pocket-panel-cyber-vintage.png' });
     console.log('  [截图存档] scratch/live-music-pocket-panel-cyber-vintage.png');
 
-    // 验证 6: 验证单界面一体化 All-in-One Deck (无 Tab 分页)
-    console.log('\n7. 验证单界面一体化架构 (Zero-Tab Architecture):');
-    const oldTabsBar = await page.$('.shijianus-music-pocket__tabs-bar');
-    console.log(`- 是否存在老旧 Tab 切换栏: ${oldTabsBar !== null} (期望: false)`);
-    if (oldTabsBar !== null) {
-      throw new Error('Tabs bar .shijianus-music-pocket__tabs-bar should NOT exist in Single-Screen All-in-One Deck!');
+    // 验证 6: 现代解耦 Tab 栏与 Web Audio API Canvas 频谱
+    console.log('\n7. 验证现代解耦 Tab 栏与声波频谱 Canvas:');
+    const tabsCount = await page.$$eval('.shijianus-music-pocket__tab', (els) => els.length);
+    console.log(`- 顶部导航选项卡数量: ${tabsCount} (期望: 4 - 播放/歌词/待播/发现)`);
+    if (tabsCount < 4) {
+      throw new Error(`Expected at least 4 tabs, got ${tabsCount}`);
     }
-    console.log('✓ 成功消除多 Tab 分裂，确立单界面一体化布局！');
+    console.log('✓ 现代解耦 4-Tab 控制栏挂载完好！');
 
     // 验证 7: 验证 HUD 顶栏与真实 Web Audio API 16-Band Canvas 频谱
     console.log('\n8. 验证 HUD 顶栏与真实 Web Audio Canvas 频谱:');
@@ -157,8 +157,13 @@ async function main() {
     if (!playBtn) throw new Error('Missing play button!');
     console.log('✓ 双行同步歌词视口与核心控制器渲染完好！');
 
-    // 验证 9: 验证一体化免选多平台聚合搜索与流派胶囊
+    // 验证 9: 验证全网多平台聚合搜索与流派胶囊
     console.log('\n10. 验证全网多平台聚合搜索与免选翻阅:');
+    const searchTab = await page.$('[data-tab="search"]');
+    if (searchTab) {
+      await searchTab.click();
+      await page.waitForTimeout(300);
+    }
     const searchBox = await page.$('.shijianus-music-pocket__search-box');
     const pillsRow = await page.$('.shijianus-music-pocket__pills-row');
     const trackList = await page.$('.shijianus-music-pocket__track-list');
@@ -189,6 +194,21 @@ async function main() {
     const itemsCount = await page.$$eval('.shijianus-music-pocket__track-item', (els) => els.length);
     console.log(`- 搜索聚合命中曲目数: ${itemsCount}`);
     console.log('✓ 全网多平台免选择聚合搜索流运转正常！');
+
+    // 验证 9.5: 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics)
+    console.log('\n10.5 验证屏幕桌面悬浮歌词 HUD:');
+    const screenLyricToggle = await page.$('[title*="桌面歌词"], [aria-label*="桌面歌词"]');
+    if (screenLyricToggle) {
+      await screenLyricToggle.click();
+      await page.waitForTimeout(400);
+      const screenLyricEl = await page.$('.shijianus-music-pocket__screen-lyric');
+      const isScreenLyricVisible = screenLyricEl ? await screenLyricEl.isVisible() : false;
+      console.log(`- 桌面悬浮歌词可见性: ${isScreenLyricVisible} (期望: true)`);
+      if (!isScreenLyricVisible) {
+        throw new Error('Screen floating lyrics HUD should be visible after toggling on!');
+      }
+      console.log('✓ 屏幕桌面悬浮歌词 HUD 功能激活完好！');
+    }
 
     // 验证 10: 核心用户诉求！验证 HUD 叉号关闭仅隐藏面板，浮动图标依然保留在屏幕上，后台持续播放！
     console.log('\n11. 验证 HUD 关闭按键生命周期 (仅隐藏展开面板，保留图标后台持续播放):');

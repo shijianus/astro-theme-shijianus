@@ -692,7 +692,6 @@ export default defineConfig({
     css: {
       postcss: {
         plugins: [
-          tailwindPostcss(), // Use the correct postcss plugin here
           autoprefixer(),
         ],
       },

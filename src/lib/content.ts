@@ -10,7 +10,7 @@ export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
 export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
-export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
+export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr|sv|no|da|fi|th|id|uk)$/i;
 
 export function normalizeLangCode(raw?: string): string {
   if (!raw) return 'zh-CN';
@@ -31,6 +31,13 @@ export function normalizeLangCode(raw?: string): string {
   if (trimmed.startsWith('nl')) return 'nl';
   if (trimmed.startsWith('pl')) return 'pl';
   if (trimmed.startsWith('tr')) return 'tr';
+  if (trimmed.startsWith('sv')) return 'sv';
+  if (trimmed.startsWith('no')) return 'no';
+  if (trimmed.startsWith('da')) return 'da';
+  if (trimmed.startsWith('fi')) return 'fi';
+  if (trimmed.startsWith('th')) return 'th';
+  if (trimmed.startsWith('id')) return 'id';
+  if (trimmed.startsWith('uk')) return 'uk';
   return trimmed;
 }
 

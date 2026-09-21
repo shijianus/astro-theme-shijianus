@@ -30,7 +30,7 @@ import {
 const POSTS_DIR = path.resolve(process.cwd(), 'src/content/posts');
 const GENERATED_DIR = path.resolve(process.cwd(), 'src/.generated');
 const I18N_MAP_PATH = path.resolve(GENERATED_DIR, 'article-i18n-map.json');
-const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr)$/i;
+const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr|sv|no|da|fi|th|id|uk)$/i;
 
 // Ensure .generated directory exists
 if (!fs.existsSync(GENERATED_DIR)) {
