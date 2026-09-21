@@ -227,19 +227,6 @@ async function main() {
     if (!speedTitle.includes('1.25x')) throw new Error('Speed button failed to cycle rate to 1.25x!');
     console.log('✓ 纯 Icon 播放倍速切换与原生 title 提示正常！');
 
-    const zDiag = await page.evaluate(() => {
-      const fg = document.getElementById('theme-snow-fg');
-      const pocket = document.querySelector('.shijianus-music-pocket');
-      const panel = document.querySelector('.shijianus-music-pocket__panel');
-      return {
-        fgZ: fg ? window.getComputedStyle(fg).zIndex : 'none',
-        pocketZ: pocket ? window.getComputedStyle(pocket).zIndex : 'none',
-        panelZ: panel ? window.getComputedStyle(panel).zIndex : 'none',
-        pocketParent: pocket ? pocket.parentElement.tagName : 'none',
-      };
-    });
-    console.log('Z-Index Diagnostics:', zDiag);
-
     // 截图存档：浅色模式播放舱
     await page.screenshot({ path: '/root/.gemini/antigravity-cli/brain/7f275222-9f3b-4793-a25b-89e0e40eb60b/music-pocket-v3-light.png' });
     console.log('  [截图归档] music-pocket-v3-light.png');

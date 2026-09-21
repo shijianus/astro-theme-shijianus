@@ -129,17 +129,31 @@ async function main() {
     }
     console.log('✓ 现代解耦 4-Tab 控制栏挂载完好！');
 
-    // 验证 7: 验证 HUD 顶栏与真实 Web Audio API 16-Band Canvas 频谱
-    console.log('\n8. 验证 HUD 顶栏与真实 Web Audio Canvas 频谱:');
-    const hudLabel = await page.$eval('.shijianus-music-pocket__hud-head .hud-label', (el) => el.textContent.trim()).catch(() => '');
-    const hudBadge = await page.$eval('.shijianus-music-pocket__hud-head .hud-badge', (el) => el.textContent.trim()).catch(() => '');
-    console.log(`- HUD 声学标识: "${hudLabel}", 码率徽标: "${hudBadge}"`);
+    // 验证 7: 验证真实专辑封面卡片与 32-Band Canvas 频谱
+    console.log('\n8. 验证真实专辑封面与真实 Web Audio Canvas 频谱:');
+    const albumCover = await page.$('.shijianus-music-pocket__big-disc-center');
+    if (!albumCover) {
+      throw new Error('Missing real album cover .shijianus-music-pocket__big-disc-center!');
+    }
+    const coverBox = await albumCover.boundingBox();
+    console.log(`- 专辑封面尺寸: width=${coverBox.width.toFixed(1)}px, height=${coverBox.height.toFixed(1)}px (期望 ~64px)`);
 
     const canvasVisualizer = await page.$('.shijianus-music-pocket__visualizer-canvas');
     if (!canvasVisualizer) {
       throw new Error('Missing real Web Audio Canvas visualizer .shijianus-music-pocket__visualizer-canvas!');
     }
-    console.log('✓ 真实 Web Audio API 16-Band Canvas 频谱分析器挂载完好！');
+    console.log('✓ 64px 真实专辑封面与 32-Band Canvas 频谱分析器挂载完好！');
+
+    // 验证 7.2: 验证纯 Icon 实用工具栏 (5 大纯图标辅助按键)
+    console.log('\n8.2 验证纯 Icon 实用工具栏 (5 大纯图标辅助按键):');
+    const utilityToolbar = await page.$('.shijianus-music-pocket__utility-toolbar');
+    if (!utilityToolbar) throw new Error('Missing utility toolbar .shijianus-music-pocket__utility-toolbar!');
+    const toolBtns = await page.$$('.shijianus-music-pocket__tool-btn');
+    console.log(`- 工具栏纯 Icon 按键数: ${toolBtns.length} (期望: 5)`);
+    if (toolBtns.length !== 5) {
+      throw new Error(`Expected exactly 5 tool buttons, got ${toolBtns.length}`);
+    }
+    console.log('✓ 纯 Icon 5-Tool 工具栏挂载完好！');
 
     // 验证 8: 验证双行歌词 HUD、进度条与播放控制器
     console.log('\n9. 验证双行同步歌词 HUD 与核心控制器:');
@@ -212,7 +226,7 @@ async function main() {
 
     // 验证 10: 核心用户诉求！验证 HUD 叉号关闭仅隐藏面板，浮动图标依然保留在屏幕上，后台持续播放！
     console.log('\n11. 验证 HUD 关闭按键生命周期 (仅隐藏展开面板，保留图标后台持续播放):');
-    const closeHudBtn = await page.$('.shijianus-music-pocket__hud-btn--close');
+    const closeHudBtn = await page.$('.shijianus-music-pocket__btn--close, .shijianus-music-pocket__hud-btn--close');
     if (!closeHudBtn) throw new Error('Close button in HUD head not found!');
     await closeHudBtn.click();
     await page.waitForTimeout(500);
