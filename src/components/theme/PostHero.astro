@@ -31,36 +31,8 @@ interface Props {
   currentLang?: string;
 }
 
-const LOCALE_NAMES: Record<string, { native: string; english: string }> = {
-  'zh-CN': { native: '简体中文', english: 'Chinese (Simplified)' },
-  'zh-Hant': { native: '繁體中文', english: 'Chinese (Traditional)' },
-  en: { native: 'English', english: 'English' },
-  es: { native: 'Español', english: 'Spanish' },
-  de: { native: 'Deutsch', english: 'German' },
-  fr: { native: 'Français', english: 'French' },
-  ja: { native: '日本語', english: 'Japanese' },
-  ko: { native: '한국어', english: 'Korean' },
-  ru: { native: 'Русский', english: 'Russian' },
-  it: { native: 'Italiano', english: 'Italian' },
-  pt: { native: 'Português', english: 'Portuguese' },
-  vi: { native: 'Tiếng Việt', english: 'Vietnamese' },
-  ar: { native: 'العربية', english: 'Arabic' },
-};
+import { getLocaleMeta } from '../../config/i18n';
 
-function getLocaleMeta(langCode: string): { native: string; english: string } {
-  const normalized = normalizeLangCode(langCode);
-  if (LOCALE_NAMES[normalized]) return LOCALE_NAMES[normalized];
-  if (LOCALE_NAMES[langCode]) return LOCALE_NAMES[langCode];
-  try {
-    const nativeName = new Intl.DisplayNames([normalized], { type: 'language' }).of(normalized);
-    const englishName = new Intl.DisplayNames(['en'], { type: 'language' }).of(normalized);
-    if (nativeName) {
-      const capitalized = nativeName.charAt(0).toUpperCase() + nativeName.slice(1);
-      return { native: capitalized, english: englishName || capitalized };
-    }
-  } catch (_) {}
-  return { native: langCode, english: langCode };
-}
 
 const {
   slug,

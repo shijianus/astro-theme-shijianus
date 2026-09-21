@@ -10,36 +10,11 @@ export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';
 export const PROTECTED_POST_COVER = DEFAULT_POST_COVER;
 
+import { normalizeLang } from '../config/i18n.ts';
+
 export const LANG_SUFFIX_REGEX = /(?:[._-])(en|zh-hant|zh-cn|zh-hans|zh-tw|zh-hk|zh-mo|fr|es|de|ja|ko|ru|it|pt|pt-br|vi|ar|nl|pl|tr|sv|no|da|fi|th|id|uk)$/i;
 
-export function normalizeLangCode(raw?: string): string {
-  if (!raw) return 'zh-CN';
-  const trimmed = String(raw).trim().toLowerCase().replace(/_/g, '-');
-  if (trimmed === 'zh-cn' || trimmed === 'zh' || trimmed === 'zh-hans') return 'zh-CN';
-  if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk' || trimmed === 'zh-mo') return 'zh-Hant';
-  if (trimmed.startsWith('en')) return 'en';
-  if (trimmed.startsWith('es')) return 'es';
-  if (trimmed.startsWith('de')) return 'de';
-  if (trimmed.startsWith('fr')) return 'fr';
-  if (trimmed.startsWith('ja')) return 'ja';
-  if (trimmed.startsWith('ko')) return 'ko';
-  if (trimmed.startsWith('ru')) return 'ru';
-  if (trimmed.startsWith('it')) return 'it';
-  if (trimmed.startsWith('pt')) return 'pt';
-  if (trimmed.startsWith('vi')) return 'vi';
-  if (trimmed.startsWith('ar')) return 'ar';
-  if (trimmed.startsWith('nl')) return 'nl';
-  if (trimmed.startsWith('pl')) return 'pl';
-  if (trimmed.startsWith('tr')) return 'tr';
-  if (trimmed.startsWith('sv')) return 'sv';
-  if (trimmed.startsWith('no')) return 'no';
-  if (trimmed.startsWith('da')) return 'da';
-  if (trimmed.startsWith('fi')) return 'fi';
-  if (trimmed.startsWith('th')) return 'th';
-  if (trimmed.startsWith('id')) return 'id';
-  if (trimmed.startsWith('uk')) return 'uk';
-  return trimmed;
-}
+export const normalizeLangCode = normalizeLang;
 
 export function getPostCanonicalSlug(id: string): string {
   let current = id;

@@ -31,6 +31,6 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
   const lyric = await fetchMusicLyrics(env, id, source);
   const parsed = parseLrcLyrics(lyric);
-  return jsonResponse(request, env, { ok: true, lyric, parsed, lineCount: parsed.length });
+  return jsonResponse(request, env, { ok: true, lyric, lrc: lyric, parsed, lineCount: parsed.length });
 }
 

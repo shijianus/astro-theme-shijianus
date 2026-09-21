@@ -111,17 +111,19 @@ function normalizeTrack(source: string, payload: Record<string, unknown>): Music
         ? payload.ar.map((item) => (item && typeof item === 'object' ? String((item as { name?: string }).name || '') : '')).filter(Boolean).join(' / ')
         : '';
 
-  const pic = String(payload.pic_id || payload.pic || payload.cover || payload.picUrl || '');
-  const id = String(payload.id || '');
+  const targetSource = String(payload.source || source || 'netease');
+  const coverUrl = pic.startsWith('http')
+    ? pic
+    : `/api/music/cover?id=${encodeURIComponent(id)}&picId=${encodeURIComponent(pic)}&source=${encodeURIComponent(targetSource)}`;
 
   return {
     id,
     name: String(payload.name || payload.title || '未知曲目'),
     artist: artist || '未知艺术家',
     album: String(payload.album || ''),
-    source: String(payload.source || source || 'netease'),
+    source: targetSource,
     picId: pic,
-    coverUrl: pic.startsWith('http') ? pic : undefined,
+    coverUrl,
     lyricId: String(payload.lyric_id || payload.id || id),
   };
 }
@@ -364,3 +366,36 @@ export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) 
     return '';
   }
 }
+
+export async function resolveMusicPic(env: AppEnv, id: string, picId: string, source: string): Promise<string> {
+  // 1. 本地精选音轨直接命中
+  const localMatch = CURATED_LOCAL_TRACKS.find((t) => t.id === id || t.picId === picId);
+  if (localMatch && localMatch.coverUrl) {
+    return localMatch.coverUrl;
+  }
+
+  // 2. 如果 picId 自身是 http 链接直接返回
+  if (picId.startsWith('http://') || picId.startsWith('https://')) {
+    return picId;
+  }
+
+  // 3. 请求上游 API 解析 pic 地址
+  const targetId = picId || id;
+  if (!targetId) return '';
+
+  try {
+    const payload = await fetchProviderJson(env, {
+      types: 'pic',
+      id: targetId,
+      source,
+      s: signature(),
+    });
+
+    if (!payload || typeof payload !== 'object') return '';
+    const url = typeof (payload as { url?: unknown }).url === 'string' ? (payload as { url: string }).url : '';
+    return url;
+  } catch {
+    return '';
+  }
+}
+

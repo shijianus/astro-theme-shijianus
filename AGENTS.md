@@ -3312,5 +3312,23 @@
   2. 生产环境真实链路 (`scripts/verify-live-translation-variants.mjs`)：对 `https://blog.epocanvas.com` 真实文章提取 DOM 变体，10/10 篇代表作多语言切换全部 PASS；
   3. 生成完整核验报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md`，确保证据链完整闭环。
 
+### Task 149: 文章多语言翻译变体工程化、系统化收敛与平滑过渡架构升级 (`8a7f46f`)
+- [x] **全局多语言注册表工程化架构 (`src/config/i18n.ts`)**:
+  1. 新增 `src/config/i18n.ts`，作为全站多语言元数据的唯一真实源（Single Source of Truth）；
+  2. 统一收敛 23+ 种语言的规范代码、原生名称（Native）、英文名称、TOC 目录标题（`tocTitle`）与计数单位（`tocUnit`）、排版方向（`dir: ltr/rtl`）与标签文案；
+  3. 提供智能动态 `Intl.DisplayNames` 回退能力与 `getSerializedTocDictionary()` 服务端序列化契约。
+- [x] **组件与模板去中心化收敛 (`PostHero.astro`, `Sidebar.astro`, `content.ts`)**:
+  1. 彻底移除 `PostHero.astro` 中散落的硬编码 `LOCALE_NAMES`，改用统一的 `getLocaleMeta`；
+  2. 彻底移除 `Sidebar.astro` 中散落的硬编码 `TOC_I18N`，改用统一的 `getTocMeta`，全动态支持日韩俄等任意扩展语言目录；
+  3. 重构 `src/lib/content.ts` 中的 `normalizeLangCode` 委托给 `src/config/i18n.ts`，确保全站语言规范化逻辑 100% 一致。
+- [x] **客户端状态机与平滑过渡打磨 (`[slug].astro` & `markdown-enhancements.css`)**:
+  1. 在 `[slug].astro` 注入集中式 `tocDictionary`，解耦客户端 TOC 标题与单位映射；
+  2. 增强 `switchArticleLanguage`：引入 60ms 连击防抖保护；切换后派发全局 `window.dispatchEvent(new Event('resize'))`，确保 Mermaid 流程图、KaTeX 数学公式、代码行号与复制按钮在变体显隐切换后即刻完成对齐重绘；
+  3. 在 `src/styles/markdown-enhancements.css` 注入 `variantFadeIn` 平滑淡入微动效与 `prefers-reduced-motion` 保护，消除内容切换时的生硬撕裂感。
+- [x] **测试套件与详尽报告交付 (`docs/ARTICLE_TRANSLATION_VARIANT_AUDIT_REPORT.md`)**:
+  1. 运行全量 Playwright 真实浏览器端到端套件，1089 项断言全部 PASS（0 FAIL）；
+  2. 产出详尽专业的本地专项报告 `docs/ARTICLE_TRANSLATION_VARIANT_AUDIT_REPORT.md`，确保证据链完整闭环。
+
+
 
 

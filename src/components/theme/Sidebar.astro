@@ -47,15 +47,9 @@ const {
   lang: currentLang = 'zh-CN',
 } = Astro.props;
 
-const TOC_I18N: Record<string, { title: string; unit: string }> = {
-  'zh-CN': { title: '文章目录', unit: '节' },
-  'zh-Hant': { title: '文章目錄', unit: '節' },
-  en: { title: 'Contents', unit: 'sections' },
-  es: { title: 'Contenido', unit: 'secciones' },
-  de: { title: 'Inhalt', unit: 'Abschnitte' },
-  fr: { title: 'Sommaire', unit: 'sections' },
-};
-const defaultTocMeta = TOC_I18N[currentLang] || TOC_I18N['zh-CN'];
+import { getTocMeta } from '../../config/i18n';
+
+const defaultTocMeta = getTocMeta(currentLang);
 
 // Fetch real data for dynamic widgets
 const allPublicPosts = await getCollection('posts', ({ data }) => !data.draft);
@@ -337,7 +331,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
               <div class="toc-content">
                 {variantTocEntries.length > 0 ? (
                   variantTocEntries.map(({ lang: vLang, tree: vTree, count: vCount }) => {
-                    const vMeta = TOC_I18N[vLang] || TOC_I18N['zh-CN'];
+                    const vMeta = getTocMeta(vLang);
                     return (
                       <div
                         class="variant-toc-list"

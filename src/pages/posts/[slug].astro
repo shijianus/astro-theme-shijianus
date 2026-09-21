@@ -9,6 +9,7 @@ import PostEndRecommendation from '../../components/theme/PostEndRecommendation.
 import PostOutdateNotice from '../../components/theme/PostOutdateNotice.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
+import { getSerializedTocDictionary } from '../../config/i18n';
 import aiSummaries from '../../data/ai-summaries.json';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
@@ -675,6 +676,7 @@ const heroSummary = isUnlocked
             canonicalSlug,
             defaultLang: currentLang,
             availableLangs: renderedVariants.map((v) => v.lang),
+            tocDictionary: getSerializedTocDictionary(),
             variantsMeta: Object.fromEntries(
               renderedVariants.map((v) => [
                 v.lang,
@@ -703,13 +705,19 @@ const heroSummary = isUnlocked
               return;
             }
 
-            const { availableLangs = [], variantsMeta = {}, staticSummariesByLang = {}, defaultLang = 'zh-CN' } = config;
+            const {
+              availableLangs = [],
+              variantsMeta = {},
+              staticSummariesByLang = {},
+              defaultLang = 'zh-CN',
+              tocDictionary = {},
+            } = config;
 
             function normalizeLang(raw) {
               if (!raw) return 'zh-CN';
-              const trimmed = String(raw).trim().toLowerCase().replace('_', '-');
+              const trimmed = String(raw).trim().toLowerCase().replace(/_/g, '-');
               if (trimmed === 'zh-cn' || trimmed === 'zh' || trimmed === 'zh-hans') return 'zh-CN';
-              if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk') return 'zh-Hant';
+              if (trimmed === 'zh-hant' || trimmed === 'zh-tw' || trimmed === 'zh-hk' || trimmed === 'zh-mo') return 'zh-Hant';
               if (trimmed.startsWith('en')) return 'en';
               if (trimmed.startsWith('es')) return 'es';
               if (trimmed.startsWith('de')) return 'de';
@@ -721,25 +729,26 @@ const heroSummary = isUnlocked
               if (trimmed.startsWith('pt')) return 'pt';
               if (trimmed.startsWith('vi')) return 'vi';
               if (trimmed.startsWith('ar')) return 'ar';
+              if (trimmed.startsWith('nl')) return 'nl';
+              if (trimmed.startsWith('pl')) return 'pl';
+              if (trimmed.startsWith('tr')) return 'tr';
+              if (trimmed.startsWith('sv')) return 'sv';
+              if (trimmed.startsWith('no')) return 'no';
+              if (trimmed.startsWith('da')) return 'da';
+              if (trimmed.startsWith('fi')) return 'fi';
+              if (trimmed.startsWith('th')) return 'th';
+              if (trimmed.startsWith('id')) return 'id';
+              if (trimmed.startsWith('uk')) return 'uk';
               return trimmed;
             }
 
-            const TOC_I18N = {
-              'zh-CN': { title: '文章目录', unit: '节' },
-              'zh-Hant': { title: '文章目錄', unit: '節' },
-              en: { title: 'Contents', unit: 'sections' },
-              es: { title: 'Contenido', unit: 'secciones' },
-              de: { title: 'Inhalt', unit: 'Abschnitte' },
-              fr: { title: 'Sommaire', unit: 'sections' },
-              ja: { title: '目次', unit: '節' },
-              ko: { title: '목차', unit: '절' },
-              ru: { title: 'Содержание', unit: 'разделов' },
-              it: { title: 'Indice', unit: 'sezioni' },
-              pt: { title: 'Conteúdo', unit: 'seções' },
-              vi: { title: 'Mục lục', unit: 'mục' },
-            };
+            let lastSwitchTime = 0;
 
             window.switchArticleLanguage = function (targetLang) {
+              const now = Date.now();
+              if (now - lastSwitchTime < 60) return;
+              lastSwitchTime = now;
+
               targetLang = normalizeLang(targetLang);
               if (!availableLangs.includes(targetLang)) {
                 const match = availableLangs.find((l) => l.toLowerCase() === targetLang.toLowerCase());
@@ -816,10 +825,12 @@ const heroSummary = isUnlocked
                 }
               }
 
-              // 6. Update TOC: title, count, and active variant TOC
-              const tMeta = TOC_I18N[targetLang] || TOC_I18N[targetLang.split('-')[0]] || (targetLang.startsWith('zh') ? TOC_I18N['zh-CN'] : TOC_I18N['en']);
+              // 6. Update TOC: title, count, and active variant TOC (from centralized config)
+              const tMeta = tocDictionary[targetLang] ||
+                            tocDictionary[targetLang.split('-')[0]] ||
+                            (targetLang.startsWith('zh') ? tocDictionary['zh-CN'] : (tocDictionary['en'] || { title: 'Contents', unit: 'sections' }));
               const tocTitleEl = document.querySelector('#card-toc [data-i18n-toc-title]');
-              if (tocTitleEl) tocTitleEl.textContent = tMeta.title;
+              if (tocTitleEl && tMeta) tocTitleEl.textContent = tMeta.title;
 
               document.querySelectorAll('.variant-toc-list').forEach((vtoc) => {
                 const isActive = vtoc.dataset.lang === targetLang;
@@ -859,14 +870,16 @@ const heroSummary = isUnlocked
                 }
               }
 
-              // 9. Re-trigger content feature enhancement & code block enhancers
+              // 9. Re-trigger content feature enhancement & trigger global resize for Mermaid / KaTeX / code blocks
               window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: targetLang }));
+              window.dispatchEvent(new Event('resize'));
               document.documentElement.lang = targetLang;
               document.documentElement.dataset.localeVariant = targetLang;
               setTimeout(() => {
                 document.documentElement.lang = targetLang;
                 document.documentElement.dataset.localeVariant = targetLang;
-              }, 0);
+                window.dispatchEvent(new Event('resize'));
+              }, 10);
             };
 
             // Attach click listeners to PostHero language buttons
