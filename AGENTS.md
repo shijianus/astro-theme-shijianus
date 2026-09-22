@@ -3597,7 +3597,7 @@
   1. 验证构建产物 HTML 中 100% 不存在任何明文机密正文、标题与密码哈希；
   2. 验证前端正确密码可 100% 还原解密原始 HTML，错误密码被 WebCrypto OperationError 拦截；测试 100% PASS 通过。
 
-### Task 166: 随身听 (MusicPocket) 播放崩溃全面修复、黑胶拟真唱针唱臂互动、待播移除防消失、统一博客通知、歌词高亮跟随与生产端全链路 E2E 真实审计
+### Task 166: 随身听 (MusicPocket) 播放崩溃全面修复、黑胶拟真唱针唱臂互动、待播移除防消失、统一博客通知、歌词高亮跟随与生产端全链路 E2E 真实审计 (`8cd5483`)
 - [x] **根除跨域 CORS 拦截致命阻断与生产端 CORS 修复 (`functions/_lib/http.ts`)**：
   1. 修复生产环境下 `functions/_lib/http.ts` 的 `resolveOrigin` 函数中，由于 Cloudflare Pages 环境变量配置的 `ALLOW_ORIGINS` 未包含主域名而导致跨域请求被错误返回本地调试地址（`http://127.0.0.1:8788`）的致命缺陷；
   2. 显式放行同源请求、`*.epocanvas.com`、`*.pages.dev` 及本地调试端口，保证 `<audio crossOrigin="anonymous">` 无论在本地还是生产环境请求 `/api/music/stream` 均 100% 获得合规匹配的 `Access-Control-Allow-Origin: https://blog.epocanvas.com`。
