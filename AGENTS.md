@@ -3447,4 +3447,12 @@
   2. 编写并执行受限文章解锁测试 `scripts/verify-static-unlock.mjs`，100% PASS 通过；
   3. 输出客观翔实的《文章多语言翻译系统白盒审计与打磨交付报告》(`TRANSLATION_AUDIT_REPORT.md`)。
 
+### Task 155: 文章翻译变体 (.article-translation-variant) 全量深入核验、赞赏组件语言切换报错修复与小语种 RTL 排版完善 (`66609bc`)
+- [x] **全量源码白盒推导与从零核验**：全站 159 篇 Markdown 文章 100% 完整收敛映射至 30 个文章族群，每个语种译本均在 DOM 中生成专属的 `.article-translation-variant[data-lang="..."]`，不存在任何遗漏或丢失现象；
+- [x] **注入独立测试博文现场实测证据链**：注入 `test-evidence-chain-matrix` 家族（覆盖中、英、日三语），Playwright 端到端实时提取验证变体节点、互斥显示与属性联动，验证后恢复干净状态，确保全流程证据链闭环；
+- [x] **赞赏扩展组件语言切换未定义报错根除 (`src/components/theme/PostRewardExtension.tsx`)**：在顶部导入中补齐缺失的 `normaliseLocaleVariant`，彻底根除了切换文章语言时在控制台高频抛出的 `ReferenceError: normaliseLocaleVariant is not defined` 异常；
+- [x] **小语种 RTL 双向文字排版完善 (`src/pages/posts/[slug].astro` & `src/styles/markdown-enhancements.css`)**：打通 `getLocaleMeta(lang).dir` 动态绑定，支持在切换至阿拉伯语（`ar`）、希伯来语（`he`）等 RTL 语言时，自动将 `#article-container`、`<html>` 与变体容器的 `dir` 属性同步设为 `rtl`，并补充专属文本对齐与引用块反向样式；
+- [x] **Playwright 全量测试套件 (1,189 项断言) 与专项验证 100% PASS 通过**：本地生产构建 1,189 项断言零失败，语言切换控制台零 JS 报错，输出客观权威审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md` 并生成视觉证据截图。
+
+
 
