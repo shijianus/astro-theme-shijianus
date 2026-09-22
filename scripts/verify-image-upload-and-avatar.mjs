@@ -93,7 +93,7 @@ function startStaticServer() {
 
         // Forward to real Telegram image host or simulate
         try {
-          const imageHostToken = process.env.IMAGE_HOST_TOKEN || 'epocanvas_secret_2026_image_key';
+          const imageHostToken = process.env.IMAGE_HOST_TOKEN || 'test_mock_image_key';
           const upstreamRes = await fetch('https://img.epocanvas.com/upload', {
             method: 'POST',
             headers: {

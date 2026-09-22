@@ -1,5 +1,6 @@
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse } from '../_lib/http.ts';
+import { enforceRateLimit, envLimit } from '../_lib/rate-limit.ts';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -24,6 +25,17 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
   }
 
   try {
+    const rate = await enforceRateLimit({
+      namespace: 'image-upload',
+      request,
+      env,
+      limit: envLimit(env, 'IMAGE_UPLOAD_PER_MINUTE', 15),
+      windowSeconds: 60,
+    });
+    if (!rate.allowed) {
+      return jsonResponse(request, env, { ok: false, error: '上传过于频繁，请稍后再试', resetAt: rate.resetAt }, { status: 429 });
+    }
+
     const contentType = request.headers.get('content-type') || '';
     if (!contentType.includes('multipart/form-data')) {
       return jsonResponse(request, env, { ok: false, error: '请求类型必须为 multipart/form-data' }, { status: 400 });
@@ -38,9 +50,9 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
     const imageFile = file as File;
 
-    // Validate MIME type
+    // Validate MIME type against strict whitelist
     const mime = imageFile.type.toLowerCase().trim();
-    if (!mime.startsWith('image/') && !ALLOWED_IMAGE_TYPES.has(mime)) {
+    if (!ALLOWED_IMAGE_TYPES.has(mime)) {
       return jsonResponse(
         request,
         env,
@@ -61,7 +73,27 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
     // Relay to Telegram-backed Image Host (img.epocanvas.com)
     const imageHostUrl = (env.IMAGE_HOST_URL || 'https://img.epocanvas.com').replace(/\/+$/, '');
-    const imageHostToken = env.IMAGE_HOST_TOKEN || 'epocanvas_secret_2026_image_key';
+    const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'));
+    const imageHostToken = env.IMAGE_HOST_TOKEN;
+    if (!imageHostToken) {
+      if (isDev) {
+        return jsonResponse(request, env, {
+          ok: true,
+          code: 200,
+          url: 'https://img.epocanvas.com/file/dev-mock-image.png',
+          id: 'dev_mock_file',
+          name: imageFile.name,
+          size: imageFile.size,
+          type: mime,
+        });
+      }
+      return jsonResponse(
+        request,
+        env,
+        { ok: false, error: '图床服务未配置授权凭证 (IMAGE_HOST_TOKEN)' },
+        { status: 503 }
+      );
+    }
 
     const forwardForm = new FormData();
     forwardForm.append('file', imageFile, imageFile.name || 'image.png');

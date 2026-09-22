@@ -3541,4 +3541,20 @@
   3. 验证未携带有效 session 时提交评论被强制降级为 `visitor` 并执行限流保护；
   4. 验证 Telegram HTML 注入字符彻底转义；测试 100% PASS 通过。
 
+### Task 162: 音乐封面开放式重定向漏洞与图床中继安全加固 (SEC-08, SEC-12)
+- [x] **根除音乐封面代理开放重定向漏洞 (SEC-08)**:
+  1. **漏洞根因**：原 `functions/api/music/cover.ts` 在接收到带 `http://` 或 `https://` 的 `picId` 时，未经验证直接执行 `Response.redirect(picId, 302)`，攻击者可诱导受害者通过官方博客主域跳板至钓鱼网站；
+  2. **加固修复**：构建封面来源安全域名白名单（`music.126.net`, `gtimg.cn`, `qq.com`, `kugou.com`, `kuwo.cn`, `migu.cn`, `epocanvas.com`, `unsplash.com`, `githubusercontent.com` 等），引入 `isAllowedCoverUrl` 对 `picId` 及上游解析 URL 进行严格校验；凡未命中白名单者，直接返回 400 拦截或平滑降级至本地 SVG 封面。
+- [x] **图床中继 MIME 校验修复、凭证硬编码清理与频次保护 (SEC-12)**:
+  1. **漏洞根因**：原 `functions/api/upload-image.ts` 的 MIME 校验逻辑 `!mime.startsWith('image/') && !ALLOWED_IMAGE_TYPES.has(mime)` 因布尔逻辑反转使白名单彻底失效；且包含 `'epocanvas_secret_2026_image_key'` 硬编码兜底凭证；且缺少防滥用限流；
+  2. **加固修复**：
+     - 将 MIME 校验重构为对 `ALLOWED_IMAGE_TYPES` 白名单的严格命中检查，彻底拦截任意非标或伪造图片类型；
+     - 彻底清除硬编码密钥，严格遵循环境变量隔离；缺失凭证时生产环境安全返回 503，开发环境返回安全 mock；
+     - 接入 `enforceRateLimit`，施加每分钟 15 次频次限流保护，阻断自动化滥用。
+- [x] **自动化测试套件通过 (`scripts/test-cover-and-image-upload-fix.mjs`)**：
+  1. 验证恶意钓鱼域名与子域名欺骗 100% 被拦截并返回 400；合法音乐 CDN URL 正常 302 重定向；
+  2. 验证非白名单 MIME 上传被 400 拦截；
+  3. 验证未配置凭证的生产模式返回 503 且无任何密钥泄漏；测试 100% PASS 通过。
+
+
 

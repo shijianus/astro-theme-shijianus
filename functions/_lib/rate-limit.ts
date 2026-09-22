@@ -1,6 +1,6 @@
-import { readClientIp, readDeviceId } from './client';
-import { sha256Hex } from './hash';
-import { numberFromEnv } from './http';
+import { readClientIp, readDeviceId } from './client.ts';
+import { sha256Hex } from './hash.ts';
+import { numberFromEnv } from './http.ts';
 import type { AppEnv } from './types';
 
 type LimitOptions = {

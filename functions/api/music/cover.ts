@@ -1,6 +1,6 @@
-import { jsonResponse, optionsResponse, withCors } from '../../_lib/http';
-import { resolveMusicPic } from '../../_lib/music-provider';
-import { enforceRateLimit, envLimit } from '../../_lib/rate-limit';
+import { jsonResponse, optionsResponse, withCors } from '../../_lib/http.ts';
+import { resolveMusicPic } from '../../_lib/music-provider.ts';
+import { enforceRateLimit, envLimit } from '../../_lib/rate-limit.ts';
 import type { AppEnv } from '../../_lib/types';
 
 const DEFAULT_COVER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
@@ -14,6 +14,29 @@ const DEFAULT_COVER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="300" h
   <circle cx="150" cy="150" r="70" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="6"/>
   <path d="M140 115v50a18 18 0 1 1-14-17.5V125h36v25a18 18 0 1 1-14-17.5V115z" fill="#ffffff"/>
 </svg>`;
+
+const ALLOWED_COVER_DOMAINS = [
+  'music.126.net',
+  'gtimg.cn',
+  'qq.com',
+  'kugou.com',
+  'kuwo.cn',
+  'migu.cn',
+  'epocanvas.com',
+  'unsplash.com',
+  'githubusercontent.com',
+];
+
+export function isAllowedCoverUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+    const hostname = parsed.hostname.toLowerCase();
+    return ALLOWED_COVER_DOMAINS.some(domain => hostname === domain || hostname.endsWith('.' + domain));
+  } catch {
+    return false;
+  }
+}
 
 export async function onRequest(context: { request: Request; env: AppEnv }) {
   const { request, env } = context;
@@ -39,15 +62,20 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
   const picId = url.searchParams.get('picId')?.trim() || '';
   const source = url.searchParams.get('source')?.trim() || env.MUSIC_DEFAULT_SOURCE || 'netease';
 
-  // 1. 如果 picId 本身已经是完整 HTTP 链接，直接返回 302 重定向
+  // 1. 如果 picId 本身已经是完整 HTTP 链接，先做域名白名单校验，防止开放重定向
   if (picId.startsWith('http://') || picId.startsWith('https://')) {
-    return Response.redirect(picId, 302);
+    if (isAllowedCoverUrl(picId)) {
+      return Response.redirect(picId, 302);
+    }
+    return jsonResponse(request, env, { ok: false, error: '非法的封面图片链接或不受信任的外部域名' }, { status: 400 });
   }
 
-  // 2. 通过提供商解析真实图片地址
+  // 2. 通过提供商解析真实图片地址并同样校验安全白名单
   const resolvedUrl = await resolveMusicPic(env, id, picId, source);
   if (resolvedUrl && (resolvedUrl.startsWith('http://') || resolvedUrl.startsWith('https://'))) {
-    return Response.redirect(resolvedUrl, 302);
+    if (isAllowedCoverUrl(resolvedUrl)) {
+      return Response.redirect(resolvedUrl, 302);
+    }
   }
 
   // 3. 兜底返回高质量 SVG 封面
