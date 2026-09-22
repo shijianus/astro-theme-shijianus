@@ -3541,7 +3541,7 @@
   3. 验证未携带有效 session 时提交评论被强制降级为 `visitor` 并执行限流保护；
   4. 验证 Telegram HTML 注入字符彻底转义；测试 100% PASS 通过。
 
-### Task 162: 音乐封面开放式重定向漏洞与图床中继安全加固 (SEC-08, SEC-12)
+### Task 162: 音乐封面开放式重定向漏洞与图床中继安全加固 (SEC-08, SEC-12) (`b80008b`)
 - [x] **根除音乐封面代理开放重定向漏洞 (SEC-08)**:
   1. **漏洞根因**：原 `functions/api/music/cover.ts` 在接收到带 `http://` 或 `https://` 的 `picId` 时，未经验证直接执行 `Response.redirect(picId, 302)`，攻击者可诱导受害者通过官方博客主域跳板至钓鱼网站；
   2. **加固修复**：构建封面来源安全域名白名单（`music.126.net`, `gtimg.cn`, `qq.com`, `kugou.com`, `kuwo.cn`, `migu.cn`, `epocanvas.com`, `unsplash.com`, `githubusercontent.com` 等），引入 `isAllowedCoverUrl` 对 `picId` 及上游解析 URL 进行严格校验；凡未命中白名单者，直接返回 400 拦截或平滑降级至本地 SVG 封面。
