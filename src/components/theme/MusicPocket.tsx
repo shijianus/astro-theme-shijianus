@@ -15,6 +15,7 @@ import {
   Pause,
   Play,
   Plus,
+  Quote,
   Radio,
   Repeat,
   Repeat1,
@@ -546,18 +547,23 @@ export function MusicPocket({ apiBase }: Props) {
       }
 
       for (let i = 0; i < barCount; i++) {
-        let rawVal = 0;
+        let targetHeight = 2.5;
         if (hasRawSignal) {
           const binIndex = Math.min(63, Math.floor(Math.pow(i / (barCount - 1), 1.25) * 48));
           rawVal = freqData[binIndex] || 0;
+          targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
         } else if (isPlaying) {
           // 节拍环境律动引擎：跨域或静音保护时保持澎湃紧密声浪
           const wave1 = Math.sin(rhythmStep + i * 0.28);
           const wave2 = Math.cos(rhythmStep * 0.7 + i * 0.15);
           rawVal = Math.max(0, (wave1 * 0.5 + wave2 * 0.5) * 190 + 45);
+          targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
+        } else {
+          // 待机轻音呼吸态：呈现优雅微弧度的和声音阶
+          const restingWave = Math.sin((i / (barCount - 1)) * Math.PI);
+          const breath = Math.sin(rhythmStep * 0.6) * 1.2;
+          targetHeight = Math.max(2.5, restingWave * 6 + 2.5 + breath);
         }
-
-        const targetHeight = isPlaying ? Math.max(2, (rawVal / 255) * (cssHeight - 2)) : 2;
 
         if (targetHeight >= peaks[i]) {
           peaks[i] = targetHeight;
@@ -1320,7 +1326,7 @@ export function MusicPocket({ apiBase }: Props) {
                   {parsedLyrics.length > 0 && activeLyricIndex >= 0 ? (
                     <>
                       <div className="shijianus-music-pocket__lyric-current">
-                        <span className="ribbon-time">{formatTime(parsedLyrics[activeLyricIndex]?.time ?? 0)}</span>
+                        <Quote size={11} className="ribbon-icon" aria-hidden="true" />
                         <span className="ribbon-text">{cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}</span>
                       </div>
                       {parsedLyrics[activeLyricIndex + 1] && (
@@ -1331,14 +1337,14 @@ export function MusicPocket({ apiBase }: Props) {
                     </>
                   ) : parsedLyrics.length > 0 ? (
                     <div className="shijianus-music-pocket__lyric-current is-preview">
-                      <span className="ribbon-time">00:00</span>
+                      <Quote size={11} className="ribbon-icon" aria-hidden="true" />
                       <span className="ribbon-text">
                         {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
                       </span>
                     </div>
                   ) : (
                     <div className="shijianus-music-pocket__lyric-current is-empty">
-                      <Radio size={12} className="empty-icon" />
+                      <Radio size={11} className="empty-icon" aria-hidden="true" />
                       <span className="ribbon-text">
                         {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
                       </span>
@@ -1469,12 +1475,7 @@ export function MusicPocket({ apiBase }: Props) {
                     title={`${t('播放倍速')}: ${playbackRate}x`}
                     aria-label={t('播放倍速')}
                   >
-                    <Zap size={15} />
-                    {playbackRate !== 1.0 && (
-                      <span className="shijianus-music-pocket__tool-badge">
-                        {playbackRate}x
-                      </span>
-                    )}
+                    <span className="tool-rate-text">{playbackRate}x</span>
                   </button>
 
                   <button
