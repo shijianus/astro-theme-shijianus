@@ -9,6 +9,7 @@ import {
   Heart,
   LayoutList,
   ListMusic,
+  Lock,
   Minus,
   Monitor,
   Music,
@@ -19,13 +20,18 @@ import {
   Radio,
   Repeat,
   Repeat1,
+  RotateCcw,
   Search,
+  Settings,
   Share2,
   Shuffle,
   SkipBack,
   SkipForward,
+  Sliders,
   Sparkles,
   Trash2,
+  Type,
+  Unlock,
   Volume2,
   VolumeX,
   X,
@@ -59,7 +65,24 @@ const POS_STORAGE_KEY = 'shijianus-music-pocket-pos';
 const VISIBLE_STORAGE_KEY = 'shijianus-music-pocket-visible';
 const SCREEN_LYRIC_KEY = 'shijianus-screen-lyric';
 const SCREEN_LYRIC_POS_KEY = 'shijianus-screen-lyric-pos';
+const SCREEN_LYRIC_SETTINGS_KEY = 'shijianus-screen-lyric-settings';
 const FAVORITES_KEY = 'shijianus-music-favorites';
+
+export type ScreenLyricSettings = {
+  fontSize: 'sm' | 'md' | 'lg' | 'xl';
+  opacity: 'glass' | 'semi' | 'transparent';
+  dualLine: boolean;
+  locked: boolean;
+  colorTheme: 'blue' | 'green' | 'pink' | 'amber';
+};
+
+const DEFAULT_SCREEN_LYRIC_SETTINGS: ScreenLyricSettings = {
+  fontSize: 'md',
+  opacity: 'glass',
+  dualLine: true,
+  locked: false,
+  colorTheme: 'blue',
+};
 
 const QUICK_TAGS = ['流行热歌', '周杰伦', '陈奕迅', '赛博纯音', '治愈老歌', 'ACG动漫', 'Lo-Fi', '精选本地'];
 
@@ -374,6 +397,9 @@ export function MusicPocket({ apiBase }: Props) {
   const [activeTab, setActiveTab] = useState<'player' | 'lyrics' | 'queue' | 'search'>('player');
   const [showScreenLyric, setShowScreenLyric] = useState(false);
   const [screenLyricPos, setScreenLyricPos] = useState<{ x: number; y: number } | null>(null);
+  const [screenLyricSettings, setScreenLyricSettings] = useState<ScreenLyricSettings>(DEFAULT_SCREEN_LYRIC_SETTINGS);
+  const [screenLyricSettingsOpen, setScreenLyricSettingsOpen] = useState(false);
+  const screenLyricRef = useRef<HTMLDivElement | null>(null);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MusicTrack[]>([]);
@@ -455,8 +481,22 @@ export function MusicPocket({ apiBase }: Props) {
       if (savedPos) {
         setScreenLyricPos(JSON.parse(savedPos));
       }
+      const savedSettings = window.localStorage.getItem(SCREEN_LYRIC_SETTINGS_KEY);
+      if (savedSettings) {
+        setScreenLyricSettings((prev) => ({ ...prev, ...JSON.parse(savedSettings) }));
+      }
     } catch {}
   }, []);
+
+  const updateScreenLyricSettings = (partial: Partial<ScreenLyricSettings>) => {
+    setScreenLyricSettings((prev) => {
+      const next = { ...prev, ...partial };
+      try {
+        window.localStorage.setItem(SCREEN_LYRIC_SETTINGS_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const toggleScreenLyric = () => {
     setShowScreenLyric((prev) => {
@@ -868,6 +908,42 @@ export function MusicPocket({ apiBase }: Props) {
     }
   }, [activeLyricIndex, activeTab]);
 
+  // High-precision animation loop for fluid karaoke word-by-word sweeping
+  useEffect(() => {
+    if (!isPlaying) return;
+    let rafId: number;
+    let lastTime = 0;
+    const tick = () => {
+      const audio = audioRef.current;
+      if (audio && !audio.paused) {
+        const cur = audio.currentTime;
+        if (Math.abs(cur - lastTime) >= 0.035) {
+          lastTime = cur;
+          setCurrentTime(cur);
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [isPlaying]);
+
+  // Compute fluid karaoke fill progress for active lyric line
+  const activeLine = activeLyricIndex >= 0 && activeLyricIndex < parsedLyrics.length ? parsedLyrics[activeLyricIndex] : null;
+  const nextLine = activeLyricIndex >= 0 && activeLyricIndex + 1 < parsedLyrics.length ? parsedLyrics[activeLyricIndex + 1] : null;
+
+  let activeLineProgress = 0;
+  if (activeLine) {
+    const lineStart = activeLine.time;
+    const lineEnd = nextLine && nextLine.time > lineStart
+      ? nextLine.time
+      : (duration > lineStart ? Math.min(duration, lineStart + 6) : lineStart + 4.5);
+    const lineDuration = Math.max(0.5, lineEnd - lineStart);
+    activeLineProgress = Math.min(100, Math.max(0, ((currentTime - lineStart) / lineDuration) * 100));
+  }
+
   // 搜索处理
   const handleSearch = async (e?: React.FormEvent, keywordOverride?: string) => {
     if (e) e.preventDefault();
@@ -1148,11 +1224,15 @@ export function MusicPocket({ apiBase }: Props) {
   });
 
   const handleScreenLyricDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (screenLyricSettings.locked) return;
     if (e.button !== 0) return;
-    if ((e.target as HTMLElement).closest('button')) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('.screen-lyric__settings-popover') || target.closest('input')) {
+      return;
+    }
 
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
+    const currentTarget = e.currentTarget;
+    const rect = currentTarget.getBoundingClientRect();
     screenLyricDragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -1161,18 +1241,21 @@ export function MusicPocket({ apiBase }: Props) {
       hasMoved: false,
     };
     try {
-      target.setPointerCapture(e.pointerId);
+      currentTarget.setPointerCapture(e.pointerId);
     } catch {}
   };
 
   const handleScreenLyricDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (screenLyricSettings.locked) return;
     if (screenLyricDragRef.current.startX === 0) return;
     const dx = e.clientX - screenLyricDragRef.current.startX;
     const dy = e.clientY - screenLyricDragRef.current.startY;
     if (Math.hypot(dx, dy) > 4) {
       screenLyricDragRef.current.hasMoved = true;
-      const nextX = Math.max(10, Math.min(window.innerWidth - 240, screenLyricDragRef.current.initX + dx));
-      const nextY = Math.max(10, Math.min(window.innerHeight - 70, screenLyricDragRef.current.initY + dy));
+      const hudWidth = screenLyricRef.current ? screenLyricRef.current.offsetWidth : 360;
+      const hudHeight = screenLyricRef.current ? screenLyricRef.current.offsetHeight : 64;
+      const nextX = Math.max(10, Math.min(window.innerWidth - hudWidth - 10, screenLyricDragRef.current.initX + dx));
+      const nextY = Math.max(10, Math.min(window.innerHeight - hudHeight - 10, screenLyricDragRef.current.initY + dy));
       setScreenLyricPos({ x: nextX, y: nextY });
     }
   };
@@ -1417,7 +1500,12 @@ export function MusicPocket({ apiBase }: Props) {
                     <>
                       <div className="shijianus-music-pocket__lyric-current">
                         <Quote size={11} className="ribbon-icon" aria-hidden="true" />
-                        <span className="ribbon-text">{cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}</span>
+                        <span
+                          className="ribbon-text is-karaoke"
+                          style={{ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties}
+                        >
+                          {cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}
+                        </span>
                       </div>
                       {parsedLyrics[activeLyricIndex + 1] && (
                         <div className="shijianus-music-pocket__lyric-next">
@@ -1630,8 +1718,12 @@ export function MusicPocket({ apiBase }: Props) {
                           title={`${formatTime(line.time)} - 点击试听`}
                         >
                           <span className="lyrics-line__time">{formatTime(line.time)}</span>
-                          <span className="lyrics-line__text">{cleanLyricText(line.text)}</span>
-                          {isPassed && <span className="lyrics-line__check" aria-hidden="true">✓</span>}
+                          <span
+                            className={`lyrics-line__text ${isActive ? 'is-karaoke' : ''}`}
+                            style={isActive ? ({ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties) : undefined}
+                          >
+                            {cleanLyricText(line.text)}
+                          </span>
                         </div>
                       );
                     })
@@ -1910,75 +2002,273 @@ export function MusicPocket({ apiBase }: Props) {
       {/* 5. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics) */}
       {showScreenLyric && (
         <div
-          className="shijianus-music-pocket__screen-lyric"
+          ref={screenLyricRef}
+          className={`shijianus-music-pocket__screen-lyric size-${screenLyricSettings.fontSize} opacity-${screenLyricSettings.opacity} theme-${screenLyricSettings.colorTheme} ${screenLyricSettings.locked ? 'is-locked' : ''} ${screenLyricSettingsOpen ? 'settings-open' : ''}`}
           style={{
             position: 'fixed',
             left: screenLyricPos ? `${screenLyricPos.x}px` : '50%',
             top: screenLyricPos ? `${screenLyricPos.y}px` : 'auto',
             bottom: screenLyricPos ? 'auto' : '88px',
             transform: screenLyricPos ? 'none' : 'translateX(-50%)',
-          }}
+            '--karaoke-pct': `${activeLineProgress.toFixed(1)}%`,
+          } as React.CSSProperties}
           onPointerDown={handleScreenLyricDragStart}
           onPointerMove={handleScreenLyricDragMove}
           onPointerUp={handleScreenLyricDragEnd}
           onPointerCancel={handleScreenLyricDragEnd}
-          title={t('按住可自由拖拽位置')}
+          title={screenLyricSettings.locked ? t('桌面字幕（已锁定位置）') : t('按住可自由拖拽位置')}
         >
+          {/* 旋转唱片指示器 */}
           <div className="screen-lyric__disc" aria-hidden="true">
             <div className={`screen-lyric__disc-inner ${isPlaying ? 'is-spinning' : ''}`}>
               <Disc3 size={15} />
             </div>
           </div>
 
-          <div className="screen-lyric__content">
+          {/* 歌词主文本区 */}
+          <div
+            className="screen-lyric__content"
+            onClick={() => {
+              if (!open) setOpen(true);
+              setActiveTab('lyrics');
+            }}
+            title={t('点击呼出播放器完整歌词')}
+          >
             {parsedLyrics.length > 0 && activeLyricIndex >= 0 ? (
               <>
                 <div className="screen-lyric__current-line">
-                  {cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}
+                  <span
+                    className="screen-lyric__karaoke-text"
+                    style={{ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties}
+                  >
+                    {cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}
+                  </span>
                 </div>
-                {parsedLyrics[activeLyricIndex + 1] && (
+                {screenLyricSettings.dualLine && parsedLyrics[activeLyricIndex + 1] && (
                   <div className="screen-lyric__next-line">
-                    {cleanLyricText(parsedLyrics[activeLyricIndex + 1].text)}
+                    <span className="screen-lyric__next-text">
+                      {cleanLyricText(parsedLyrics[activeLyricIndex + 1].text)}
+                    </span>
                   </div>
                 )}
               </>
             ) : parsedLyrics.length > 0 ? (
               <div className="screen-lyric__current-line">
-                {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
+                <span className="screen-lyric__static-text">
+                  {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
+                </span>
               </div>
             ) : (
               <div className="screen-lyric__current-line">
-                {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
+                <span className="screen-lyric__static-text">
+                  {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
+                </span>
               </div>
             )}
           </div>
 
+          {/* 快捷悬浮控制坞 */}
           <div className="screen-lyric__controls">
             <button
               type="button"
               className="screen-lyric__btn"
+              onClick={() => skipTrack(-1)}
+              disabled={queue.length <= 1}
+              title={t('上一首')}
+              aria-label={t('上一首')}
+            >
+              <SkipBack size={13} />
+            </button>
+            <button
+              type="button"
+              className="screen-lyric__btn screen-lyric__btn--play"
               onClick={togglePlay}
               title={isPlaying ? t('暂停') : t('播放')}
+              aria-label={isPlaying ? t('暂停') : t('播放')}
             >
-              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              {isPlaying ? <Pause size={13} /> : <Play size={13} className="play-offset" />}
             </button>
             <button
               type="button"
               className="screen-lyric__btn"
               onClick={() => skipTrack(1)}
+              disabled={queue.length <= 1}
               title={t('下一首')}
+              aria-label={t('下一首')}
             >
-              <SkipForward size={12} />
+              <SkipForward size={13} />
+            </button>
+            <button
+              type="button"
+              className={`screen-lyric__btn screen-lyric__btn--settings ${screenLyricSettingsOpen ? 'is-active' : ''}`}
+              onClick={() => setScreenLyricSettingsOpen((v) => !v)}
+              title={t('桌面字幕外观与个性化设置')}
+              aria-label={t('桌面字幕设置')}
+            >
+              <Settings size={13} />
+            </button>
+            <button
+              type="button"
+              className={`screen-lyric__btn screen-lyric__btn--lock ${screenLyricSettings.locked ? 'is-locked' : ''}`}
+              onClick={() => updateScreenLyricSettings({ locked: !screenLyricSettings.locked })}
+              title={screenLyricSettings.locked ? t('已锁定位置（点击解锁）') : t('未锁定位置（点击锁定）')}
+              aria-label={screenLyricSettings.locked ? t('解锁桌面歌词位置') : t('锁定桌面歌词位置')}
+            >
+              {screenLyricSettings.locked ? <Lock size={13} /> : <Unlock size={13} />}
             </button>
             <button
               type="button"
               className="screen-lyric__btn screen-lyric__btn--close"
               onClick={toggleScreenLyric}
               title={t('关闭屏幕桌面歌词')}
+              aria-label={t('关闭桌面歌词')}
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
+
+          {/* 桌面歌词专属设置悬浮卡片 */}
+          {screenLyricSettingsOpen && (
+            <div
+              className={`screen-lyric__settings-popover ${screenLyricPos && screenLyricPos.y < 280 ? 'settings-popover--below' : 'settings-popover--above'}`}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="settings-popover__header">
+                <span className="settings-popover__title">
+                  <Sliders size={13} className="settings-icon" />
+                  {t('桌面字幕个性化设置')}
+                </span>
+                <div className="settings-popover__header-actions">
+                  <button
+                    type="button"
+                    className="settings-reset-btn"
+                    onClick={() => {
+                      setScreenLyricSettings(DEFAULT_SCREEN_LYRIC_SETTINGS);
+                      try {
+                        window.localStorage.removeItem(SCREEN_LYRIC_SETTINGS_KEY);
+                      } catch {}
+                      showToast(t('已恢复默认字幕设置'));
+                    }}
+                    title={t('恢复默认设置')}
+                  >
+                    <RotateCcw size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    className="settings-close-btn"
+                    onClick={() => setScreenLyricSettingsOpen(false)}
+                    title={t('关闭设置面板')}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-popover__section">
+                <label className="settings-label">
+                  <Type size={12} />
+                  <span>{t('字幕字号')}</span>
+                </label>
+                <div className="settings-btn-group">
+                  {(['sm', 'md', 'lg', 'xl'] as const).map((sz) => {
+                    const labels: Record<string, string> = {
+                      sm: t('小 (15px)'),
+                      md: t('中 (18px)'),
+                      lg: t('大 (22px)'),
+                      xl: t('特大 (26px)'),
+                    };
+                    return (
+                      <button
+                        key={sz}
+                        type="button"
+                        className={`settings-opt-btn ${screenLyricSettings.fontSize === sz ? 'is-active' : ''}`}
+                        onClick={() => updateScreenLyricSettings({ fontSize: sz })}
+                      >
+                        {labels[sz]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="settings-popover__section">
+                <label className="settings-label">
+                  <Sparkles size={12} />
+                  <span>{t('背景透明度')}</span>
+                </label>
+                <div className="settings-btn-group">
+                  {(['glass', 'semi', 'transparent'] as const).map((op) => {
+                    const opLabels: Record<string, string> = {
+                      glass: t('毛玻璃 (85%)'),
+                      semi: t('半透明 (45%)'),
+                      transparent: t('全透极简 (0%)'),
+                    };
+                    return (
+                      <button
+                        key={op}
+                        type="button"
+                        className={`settings-opt-btn ${screenLyricSettings.opacity === op ? 'is-active' : ''}`}
+                        onClick={() => updateScreenLyricSettings({ opacity: op })}
+                      >
+                        {opLabels[op]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="settings-popover__section">
+                <label className="settings-label">
+                  <ListMusic size={12} />
+                  <span>{t('排布行数')}</span>
+                </label>
+                <div className="settings-btn-group">
+                  <button
+                    type="button"
+                    className={`settings-opt-btn ${screenLyricSettings.dualLine ? 'is-active' : ''}`}
+                    onClick={() => updateScreenLyricSettings({ dualLine: true })}
+                  >
+                    {t('双行预览 (当前+下句)')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`settings-opt-btn ${!screenLyricSettings.dualLine ? 'is-active' : ''}`}
+                    onClick={() => updateScreenLyricSettings({ dualLine: false })}
+                  >
+                    {t('单行沉浸')}
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-popover__section">
+                <label className="settings-label">
+                  <Flame size={12} />
+                  <span>{t('高亮主题色')}</span>
+                </label>
+                <div className="settings-color-group">
+                  {[
+                    { key: 'blue', label: t('极光蓝'), color: '#425aef' },
+                    { key: 'green', label: t('翡翠绿'), color: '#10b981' },
+                    { key: 'pink', label: t('霓虹粉'), color: '#ec4899' },
+                    { key: 'amber', label: t('星辉金'), color: '#f59e0b' },
+                  ].map((c) => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      className={`settings-color-btn ${screenLyricSettings.colorTheme === c.key ? 'is-active' : ''}`}
+                      onClick={() => updateScreenLyricSettings({ colorTheme: c.key as any })}
+                      style={{ '--theme-btn-color': c.color } as React.CSSProperties}
+                      title={c.label}
+                    >
+                      <span className="color-indicator" style={{ backgroundColor: c.color }} />
+                      <span className="color-label">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

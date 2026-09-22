@@ -2052,18 +2052,9 @@ html.dark .shijianus-ai-summary__related span {
   color: #93c5fd;
 }
 
-.lyrics-line__check {
-  font-size: 10px;
-  font-weight: 700;
-  color: #10b981;
-  margin-left: 6px;
-  opacity: 0.85;
-  flex-shrink: 0;
-}
-
 .lyrics-line.is-active,
 .lyrics-line-item.is-active {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #425aef;
   background: rgba(66, 90, 239, 0.12);
@@ -2115,6 +2106,41 @@ html.dark .shijianus-ai-summary__related span {
 .lyrics-line__text {
   flex: 1;
   word-break: break-word;
+  transition: color 0.15s ease;
+}
+
+/* 动态卡拉OK逐字平滑填充高亮 (精准根据时间进度百分比横向流光填充) */
+.lyrics-line.is-active .lyrics-line__text.is-karaoke,
+.ribbon-text.is-karaoke {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--karaoke-sung-color, #425aef) 0%,
+    var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
+    rgba(100, 116, 139, 0.45) var(--karaoke-pct, 0%),
+    rgba(100, 116, 139, 0.45) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  transition: background 0.04s linear;
+}
+
+:root[data-theme='dark'] .lyrics-line.is-active .lyrics-line__text.is-karaoke,
+:root[data-theme='dark'] .ribbon-text.is-karaoke {
+  background: linear-gradient(
+    90deg,
+    var(--karaoke-sung-dark, #818cf8) 0%,
+    var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
+    rgba(148, 163, 184, 0.4) var(--karaoke-pct, 0%),
+    rgba(148, 163, 184, 0.4) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
 .lyrics-empty {
@@ -2695,8 +2721,11 @@ html.dark .shijianus-ai-summary__related span {
   to { transform: rotate(360deg); }
 }
 
-/* 3. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics) */
+/* 3. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics - Modern Desktop Music Player Style) */
 .shijianus-music-pocket__screen-lyric {
+  --karaoke-sung-color: #425aef;
+  --karaoke-sung-dark: #818cf8;
+  --karaoke-glow: rgba(66, 90, 239, 0.45);
   position: fixed;
   bottom: 24px;
   left: 50%;
@@ -2704,9 +2733,53 @@ html.dark .shijianus-ai-summary__related span {
   z-index: 96;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 12px;
+  padding: 8px 16px;
   border-radius: 999px;
+  user-select: none;
+  cursor: grab;
+  animation: screen-lyric-fade 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: min(640px, calc(100vw - 32px));
+  min-width: min(320px, calc(100vw - 32px));
+  box-sizing: border-box;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shijianus-music-pocket__screen-lyric:active {
+  cursor: grabbing;
+}
+
+.shijianus-music-pocket__screen-lyric.is-locked {
+  cursor: default !important;
+}
+
+/* 主题色彩变量 (Theme Colors) */
+.shijianus-music-pocket__screen-lyric.theme-blue {
+  --karaoke-sung-color: #425aef;
+  --karaoke-sung-dark: #818cf8;
+  --karaoke-glow: rgba(66, 90, 239, 0.45);
+}
+
+.shijianus-music-pocket__screen-lyric.theme-green {
+  --karaoke-sung-color: #10b981;
+  --karaoke-sung-dark: #34d399;
+  --karaoke-glow: rgba(16, 185, 129, 0.45);
+}
+
+.shijianus-music-pocket__screen-lyric.theme-pink {
+  --karaoke-sung-color: #ec4899;
+  --karaoke-sung-dark: #f472b6;
+  --karaoke-glow: rgba(236, 72, 153, 0.45);
+}
+
+.shijianus-music-pocket__screen-lyric.theme-amber {
+  --karaoke-sung-color: #f59e0b;
+  --karaoke-sung-dark: #fbbf24;
+  --karaoke-glow: rgba(245, 158, 11, 0.45);
+}
+
+/* 背景透明度档位 (Transparency / Glass Presets) */
+.shijianus-music-pocket__screen-lyric.opacity-glass {
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--card-border, #e3e8f7);
   box-shadow: 
@@ -2715,17 +2788,9 @@ html.dark .shijianus-ai-summary__related span {
     0 0 0 1px rgba(255, 255, 255, 0.9) inset;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  user-select: none;
-  cursor: grab;
-  animation: screen-lyric-fade 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  max-width: min(520px, calc(100vw - 32px));
 }
 
-.shijianus-music-pocket__screen-lyric:active {
-  cursor: grabbing;
-}
-
-:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric {
+:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric.opacity-glass {
   background: rgba(18, 20, 30, 0.90);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 
@@ -2734,26 +2799,57 @@ html.dark .shijianus-ai-summary__related span {
   color: #f8fafc;
 }
 
+.shijianus-music-pocket__screen-lyric.opacity-semi {
+  background: rgba(15, 23, 42, 0.52) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  color: #ffffff;
+}
+
+.shijianus-music-pocket__screen-lyric.opacity-transparent {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #ffffff;
+}
+
+.shijianus-music-pocket__screen-lyric.opacity-transparent:hover,
+.shijianus-music-pocket__screen-lyric.opacity-transparent.settings-open {
+  background: rgba(15, 23, 42, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
 @keyframes screen-lyric-fade {
   from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-.screen-lyric__drag-badge {
-  display: flex;
-  align-items: center;
-  color: #425aef;
-  cursor: grab;
+/* 旋转唱片图标 */
+.screen-lyric__disc {
+  flex-shrink: 0;
+  color: var(--karaoke-sung-color, #425aef);
+  display: grid;
+  place-items: center;
 }
 
-:root[data-theme='dark'] .screen-lyric__drag-badge {
-  color: #818cf8;
+:root[data-theme='dark'] .screen-lyric__disc,
+.opacity-semi .screen-lyric__disc,
+.opacity-transparent .screen-lyric__disc {
+  color: var(--karaoke-sung-dark, #818cf8);
 }
 
-.screen-lyric__disc.is-spinning {
+.screen-lyric__disc-inner.is-spinning {
   animation: shijianus-record-spin 6s linear infinite;
 }
 
+/* 歌词主内容区 */
 .screen-lyric__content {
   flex: 1;
   min-width: 0;
@@ -2765,57 +2861,138 @@ html.dark .shijianus-ai-summary__related span {
   padding: 0 4px;
 }
 
-.screen-lyric__current {
+.screen-lyric__current-line {
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.screen-lyric__text {
-  font-size: 13px;
+/* 字号尺寸阶梯 (Font Scaling - sm, md, lg, xl) */
+.shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__current-line {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__next-line {
+  font-size: 12px;
+}
+
+.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__current-line {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__next-line {
+  font-size: 13.5px;
+}
+
+.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__current-line {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__next-line {
+  font-size: 15px;
+}
+
+.shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__current-line {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__next-line {
+  font-size: 17px;
+}
+
+/* 动态逐字/逐音节横向卡拉OK流光高亮 */
+.screen-lyric__karaoke-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+  background: linear-gradient(
+    90deg,
+    var(--karaoke-sung-color, #425aef) 0%,
+    var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
+    #475569 var(--karaoke-pct, 0%),
+    #475569 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  transition: background 0.04s linear;
+}
+
+:root[data-theme='dark'] .screen-lyric__karaoke-text,
+.opacity-semi .screen-lyric__karaoke-text,
+.opacity-transparent .screen-lyric__karaoke-text {
+  background: linear-gradient(
+    90deg,
+    var(--karaoke-sung-dark, #818cf8) 0%,
+    var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.72) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.72) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+}
+
+.screen-lyric__static-text {
   font-weight: 700;
   color: #0f172a;
-  letter-spacing: 0.01em;
 }
 
-:root[data-theme='dark'] .screen-lyric__text {
-  color: #f8fafc;
-  text-shadow: 0 0 10px rgba(129, 140, 248, 0.35);
+:root[data-theme='dark'] .screen-lyric__static-text,
+.opacity-semi .screen-lyric__static-text,
+.opacity-transparent .screen-lyric__static-text {
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
 }
 
-.screen-lyric__text.is-empty {
-  font-size: 12px;
+/* 下一句歌词预备预览 (双行模式) */
+.screen-lyric__next-line {
+  margin-top: 2px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.78;
   color: #64748b;
   font-weight: 500;
 }
 
-:root[data-theme='dark'] .screen-lyric__text.is-empty {
-  color: #94a3b8;
+:root[data-theme='dark'] .screen-lyric__next-line,
+.opacity-semi .screen-lyric__next-line,
+.opacity-transparent .screen-lyric__next-line {
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
 }
 
-.screen-lyric__next {
-  font-size: 10px;
-  color: #94a3b8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  margin-top: 1px;
-}
-
-.screen-lyric__actions {
+/* 快捷悬浮控制坞 */
+.screen-lyric__controls {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 
 .screen-lyric__btn {
   border: none;
   background: transparent;
   color: #64748b;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -2823,23 +3000,248 @@ html.dark .shijianus-ai-summary__related span {
   transition: all 0.16s ease;
 }
 
-:root[data-theme='dark'] .screen-lyric__btn {
-  color: #94a3b8;
+:root[data-theme='dark'] .screen-lyric__btn,
+.opacity-semi .screen-lyric__btn,
+.opacity-transparent .screen-lyric__btn {
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .screen-lyric__btn:hover {
+  background: rgba(66, 90, 239, 0.12);
+  color: var(--karaoke-sung-color, #425aef);
+  transform: scale(1.08);
+}
+
+:root[data-theme='dark'] .screen-lyric__btn:hover,
+.opacity-semi .screen-lyric__btn:hover,
+.opacity-transparent .screen-lyric__btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.screen-lyric__btn--settings.is-active {
+  background: var(--karaoke-sung-color, #425aef) !important;
+  color: #ffffff !important;
+}
+
+.screen-lyric__btn--lock.is-locked {
+  color: #f59e0b !important;
+}
+
+.screen-lyric__btn--close:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+}
+
+/* 桌面歌词专属设置悬浮卡片 (Settings Popover) */
+.screen-lyric__settings-popover {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 350px;
+  max-width: calc(100vw - 32px);
+  z-index: 105;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--card-border, #e3e8f7);
+  border-radius: 16px;
+  box-shadow: 
+    0 24px 50px -10px rgba(15, 23, 42, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  padding: 14px 16px;
+  user-select: none;
+  cursor: default;
+  animation: popover-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #0f172a;
+}
+
+.screen-lyric__settings-popover.settings-popover--above {
+  bottom: calc(100% + 14px);
+}
+
+.screen-lyric__settings-popover.settings-popover--below {
+  top: calc(100% + 14px);
+}
+
+:root[data-theme='dark'] .screen-lyric__settings-popover {
+  background: rgba(20, 23, 36, 0.96);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 24px 56px -8px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  color: #f8fafc;
+}
+
+@keyframes popover-fade-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.settings-popover__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border, #f1f5f9);
+}
+
+:root[data-theme='dark'] .settings-popover__header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.settings-popover__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settings-popover__title .settings-icon {
+  color: var(--karaoke-sung-color, #425aef);
+}
+
+.settings-popover__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-reset-btn,
+.settings-close-btn {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.settings-reset-btn:hover {
   background: rgba(66, 90, 239, 0.1);
   color: #425aef;
 }
 
-:root[data-theme='dark'] .screen-lyric__btn:hover {
-  background: rgba(129, 140, 248, 0.16);
-  color: #c7d2fe;
+.settings-close-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
 }
 
-.screen-lyric__btn--close:hover {
-  background: rgba(239, 68, 68, 0.12) !important;
-  color: #ef4444 !important;
+:root[data-theme='dark'] .settings-reset-btn,
+:root[data-theme='dark'] .settings-close-btn {
+  color: #94a3b8;
+}
+
+.settings-popover__section {
+  margin-top: 10px;
+}
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+:root[data-theme='dark'] .settings-label {
+  color: #94a3b8;
+}
+
+.settings-btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.settings-opt-btn {
+  flex: 1;
+  min-width: fit-content;
+  padding: 5px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--card-border, #e2e8f0);
+  background: rgba(0, 0, 0, 0.02);
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  text-align: center;
+}
+
+:root[data-theme='dark'] .settings-opt-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+.settings-opt-btn:hover {
+  border-color: var(--karaoke-sung-color, #425aef);
+  color: var(--karaoke-sung-color, #425aef);
+}
+
+.settings-opt-btn.is-active {
+  background: var(--karaoke-sung-color, #425aef) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 8px var(--karaoke-glow, rgba(66, 90, 239, 0.35));
+}
+
+.settings-color-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.settings-color-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border, #e2e8f0);
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  transition: all 0.16s ease;
+}
+
+:root[data-theme='dark'] .settings-color-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.settings-color-btn .color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-color-btn:hover {
+  border-color: var(--theme-btn-color, #425aef);
+}
+
+.settings-color-btn.is-active {
+  border-color: var(--theme-btn-color, #425aef);
+  background: rgba(66, 90, 239, 0.08);
+  font-weight: 700;
+  color: var(--theme-btn-color, #425aef);
+}
+
+:root[data-theme='dark'] .settings-color-btn.is-active {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 
