@@ -3374,7 +3374,7 @@
   2. 受保护文章 `access-control-lab` 验证通过，成功呈现包含 6 种语言译本指引；
   3. 生产端 (`https://blog.epocanvas.com`) 真实链路审计通过：提取 6 种语言变体，完成中英文双向实时切换，并修复动态同步 `aria-pressed` 无障碍属性状态 (`81477bb`, `d281abf`)。
 
-### Task 152: 随身音乐口袋 (Music Pocket) 全链路深度重构、64px真实专辑封面展台、32频段紧密频谱、纯Icon工具栏与歌词系统深度修复 (`22d2ff6`, `341bd30`, `f2ede2a`, `5313fce`)
+### Task 152: 随身音乐口袋 (Music Pocket) 全链路深度重构、64px真实专辑封面展台、32频段紧密频谱、纯Icon工具栏与歌词系统深度修复 (`22d2ff6`, `341bd30`, `f2ede2a`, `5313fce`, `1b95ffb`)
 - [x] **根治歌词加载失败与接口数据契约回退**:
   1. 深入排查 `functions/api/music/lyric.ts` 与前端数据契约脱节的根因：后端返回 `{ ok: true, lyric: "..." }`，前端原先只读取 `res.lrc` 导致必然命中 `undefined`；
   2. 修复前后端契约：在 `lyric.ts` 响应中同时输出 `lyric` 与 `lrc: lyric`，并向下解析返回 `parsed` 行数组；
