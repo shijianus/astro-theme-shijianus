@@ -3569,7 +3569,7 @@
   2. 验证伪造会话 ID（如恶意构造 $1,000,000 赞助）被 403 Forbidden 拦截且 D1 数据库零写入；
   3. 验证合法会话更新时，客户端篡改的巨额金额被自动丢弃，始终保留服务端核验的真实赞赏金额；测试 100% PASS 通过。
 
-### Task 164: 黑胶随身口袋 (MusicPocket) 播放体验、本地曲目直链与歌词平滑滚动优化
+### Task 164: 黑胶随身口袋 (MusicPocket) 播放体验、本地曲目直链与歌词平滑滚动优化 (`08bb134`)
 - [x] **本地音频直接解析与流式代理 302 重定向**:
   1. 在 `functions/_lib/music-provider.ts` 为本地精选曲目（Way Back Home、彼女は旅に出る等）自动注入 `urlId: t.localPath`；
   2. 在 `functions/api/music/stream.ts` 中针对本地音频路径返回 302 Location 重定向并附带 CORS 响应头，消除本地音频代理中继造成的 502/网络延迟；
