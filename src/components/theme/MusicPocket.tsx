@@ -213,6 +213,7 @@ export function MusicPocket({ apiBase }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pocketContainerRef = useRef<HTMLDivElement>(null);
   const activeLyricRef = useRef<HTMLDivElement>(null);
+  const lyricsContainerRef = useRef<HTMLDivElement>(null);
 
   // Web Audio API Singletons
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -410,8 +411,21 @@ export function MusicPocket({ apiBase }: Props) {
   const currentTrack = currentIndex >= 0 && currentIndex < queue.length ? queue[currentIndex] : null;
 
   const showToast = (message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(''), 2400);
+    if (typeof window !== 'undefined') {
+      if (typeof (window as any).snackbarShow === 'function') {
+        (window as any).snackbarShow(message, false, 2400);
+        return;
+      }
+      if (typeof (window as any).showToast === 'function') {
+        (window as any).showToast(message, 2400);
+        return;
+      }
+      window.dispatchEvent(
+        new CustomEvent('shijianus:activity', {
+          detail: { message, duration: 2400 },
+        }),
+      );
+    }
   };
 
   // Load screen lyric preferences on mount
@@ -518,70 +532,76 @@ export function MusicPocket({ apiBase }: Props) {
     let rhythmStep = 0;
 
     const render = () => {
-      animId = requestAnimationFrame(render);
-      rhythmStep += 0.08;
+      try {
+        animId = requestAnimationFrame(render);
+        rhythmStep += 0.08;
 
-      let hasRawSignal = false;
-      if (analyserRef.current && isPlaying) {
-        analyserRef.current.getByteFrequencyData(freqData);
-        for (let j = 0; j < 16; j++) {
-          if (freqData[j] > 0) {
-            hasRawSignal = true;
-            break;
+        let hasRawSignal = false;
+        if (analyserRef.current && isPlaying && !isMuted && volume > 0) {
+          analyserRef.current.getByteFrequencyData(freqData);
+          for (let j = 0; j < freqData.length; j++) {
+            if (freqData[j] > 2) {
+              hasRawSignal = true;
+              break;
+            }
           }
         }
-      }
 
-      ctx.clearRect(0, 0, cssWidth, cssHeight);
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      const gradient = ctx.createLinearGradient(0, cssHeight, 0, 0);
-      if (isDark) {
-        gradient.addColorStop(0, '#6366f1');
-        gradient.addColorStop(0.5, '#818cf8');
-        gradient.addColorStop(1, '#38bdf8');
-      } else {
-        gradient.addColorStop(0, '#425aef');
-        gradient.addColorStop(0.5, '#3b82f6');
-        gradient.addColorStop(1, '#60a5fa');
-      }
-
-      for (let i = 0; i < barCount; i++) {
-        let targetHeight = 2.5;
-        if (hasRawSignal) {
-          const binIndex = Math.min(63, Math.floor(Math.pow(i / (barCount - 1), 1.25) * 48));
-          rawVal = freqData[binIndex] || 0;
-          targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
-        } else if (isPlaying) {
-          // 节拍环境律动引擎：跨域或静音保护时保持澎湃紧密声浪
-          const wave1 = Math.sin(rhythmStep + i * 0.28);
-          const wave2 = Math.cos(rhythmStep * 0.7 + i * 0.15);
-          rawVal = Math.max(0, (wave1 * 0.5 + wave2 * 0.5) * 190 + 45);
-          targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        const gradient = ctx.createLinearGradient(0, cssHeight, 0, 0);
+        if (isDark) {
+          gradient.addColorStop(0, '#6366f1');
+          gradient.addColorStop(0.5, '#818cf8');
+          gradient.addColorStop(1, '#38bdf8');
         } else {
-          // 待机轻音呼吸态：呈现优雅微弧度的和声音阶
-          const restingWave = Math.sin((i / (barCount - 1)) * Math.PI);
-          const breath = Math.sin(rhythmStep * 0.6) * 1.2;
-          targetHeight = Math.max(2.5, restingWave * 6 + 2.5 + breath);
+          gradient.addColorStop(0, '#425aef');
+          gradient.addColorStop(0.5, '#3b82f6');
+          gradient.addColorStop(1, '#60a5fa');
         }
 
-        if (targetHeight >= peaks[i]) {
-          peaks[i] = targetHeight;
-        } else {
-          peaks[i] = Math.max(2, peaks[i] * 0.88 - 0.3);
-        }
+        for (let i = 0; i < barCount; i++) {
+          let targetHeight = 2.5;
+          let rawVal = 0;
+          if (hasRawSignal) {
+            const binIndex = Math.min(63, Math.floor(Math.pow(i / (barCount - 1), 1.35) * 48) + 1);
+            rawVal = freqData[binIndex] || 0;
+            targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
+          } else if (isPlaying && !isMuted && volume > 0) {
+            const curT = audioRef.current?.currentTime || 0;
+            const beatTime = curT * 2.5;
+            const wave1 = Math.sin(beatTime * Math.PI + i * 0.35);
+            const wave2 = Math.cos(beatTime * 0.5 * Math.PI + i * 0.2);
+            const beatKick = Math.pow(Math.max(0, Math.sin(beatTime * Math.PI)), 3) * 80;
+            rawVal = Math.max(0, (wave1 * 0.4 + wave2 * 0.3) * 120 + beatKick + 40);
+            targetHeight = Math.max(3, (rawVal / 255) * (cssHeight - 2));
+          } else {
+            const restingWave = Math.sin((i / (barCount - 1)) * Math.PI);
+            const breath = Math.sin(rhythmStep * 0.6) * 1.2;
+            targetHeight = Math.max(2.5, restingWave * 5 + 2.5 + breath);
+          }
 
-        const x = i * (barWidth + gap);
-        const y = cssHeight - peaks[i];
+          if (targetHeight >= peaks[i]) {
+            peaks[i] = targetHeight;
+          } else {
+            peaks[i] = Math.max(2, peaks[i] * 0.85 - 0.35);
+          }
 
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        if (typeof ctx.roundRect === 'function') {
-          ctx.roundRect(x, y, barWidth, peaks[i], [2, 2, 0, 0]);
-        } else {
-          ctx.rect(x, y, barWidth, peaks[i]);
+          const x = i * (barWidth + gap);
+          const y = cssHeight - peaks[i];
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(x, y, barWidth, peaks[i], [2, 2, 0, 0]);
+          } else {
+            ctx.rect(x, y, barWidth, peaks[i]);
+          }
+          ctx.fill();
         }
-        ctx.fill();
+      } catch {
+        // Guard against any animation frame error breaking React
       }
     };
 
@@ -590,7 +610,7 @@ export function MusicPocket({ apiBase }: Props) {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [open, isPlaying, activeTab]);
+  }, [open, isPlaying, activeTab, isMuted, volume]);
 
   // Load initial playlist
   const loadInitialPlaylist = useCallback(async () => {
@@ -815,10 +835,13 @@ export function MusicPocket({ apiBase }: Props) {
 
   // Auto-scroll lyrics view to active line
   useEffect(() => {
-    if (activeTab === 'lyrics' && activeLyricRef.current) {
-      activeLyricRef.current.scrollIntoView({
+    if (activeTab === 'lyrics' && lyricsContainerRef.current && activeLyricRef.current) {
+      const container = lyricsContainerRef.current;
+      const activeEl = activeLyricRef.current;
+      const targetTop = activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
+      container.scrollTo({
+        top: Math.max(0, targetTop),
         behavior: 'smooth',
-        block: 'center',
       });
     }
   }, [activeLyricIndex, activeTab]);
@@ -907,21 +930,25 @@ export function MusicPocket({ apiBase }: Props) {
   // 移出待播队列
   const removeTrack = (index: number, event: React.MouseEvent) => {
     event.stopPropagation();
-    const nextQueue = queue.filter((_, i) => i !== index);
-    setQueue(nextQueue);
-    if (index === currentIndex) {
-      if (nextQueue.length === 0) {
-        setCurrentIndex(-1);
-        setIsPlaying(false);
-        if (audioRef.current) audioRef.current.src = '';
-      } else {
-        const nextIdx = index >= nextQueue.length ? 0 : index;
-        playTrack(nextIdx, nextQueue);
+    try {
+      const nextQueue = queue.filter((_, i) => i !== index);
+      setQueue(nextQueue);
+      if (index === currentIndex) {
+        if (nextQueue.length === 0) {
+          setCurrentIndex(-1);
+          setIsPlaying(false);
+          if (audioRef.current) audioRef.current.src = '';
+        } else {
+          const nextIdx = index >= nextQueue.length ? 0 : index;
+          playTrack(nextIdx, nextQueue);
+        }
+      } else if (index < currentIndex) {
+        setCurrentIndex((prev) => Math.max(0, prev - 1));
       }
-    } else if (index < currentIndex) {
-      setCurrentIndex((prev) => prev - 1);
+      showToast(t('已从待播移除'));
+    } catch (err) {
+      console.error('Error removing track from queue:', err);
     }
-    showToast(t('已从待播移除'));
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1167,6 +1194,14 @@ export function MusicPocket({ apiBase }: Props) {
           <span className="mini-eq-bar mini-eq-bar-3" />
         </span>
 
+        {/* 拟真黑胶唱机唱针指针 (Vinyl Tonearm & Stylus) */}
+        <span className={`shijianus-music-pocket__tonearm ${isPlaying ? 'is-playing' : ''}`} aria-hidden="true">
+          <span className="tonearm-pivot" />
+          <span className="tonearm-arm" />
+          <span className="tonearm-head" />
+          <span className="tonearm-needle" />
+        </span>
+
         {!isDragging && (
           <span className={`shijianus-music-pocket__toggle-copy ${isRightHalf ? 'align-left' : 'align-right'}`}>
             <span className="toggle-copy-status">{isPlaying ? t('正在播放') : t('随身音乐')}</span>
@@ -1175,12 +1210,6 @@ export function MusicPocket({ apiBase }: Props) {
           </span>
         )}
       </button>
-
-      {toast && (
-        <div className="shijianus-music-pocket__toast" role="status">
-          {toast}
-        </div>
-      )}
 
       {/* 现代双色调解耦音乐面板 (Modern Decoupled Dock Deck) */}
       {open && (
@@ -1286,6 +1315,14 @@ export function MusicPocket({ apiBase }: Props) {
                       <div className={`shijianus-music-pocket__vinyl-edge ${isPlaying ? 'is-spinning' : ''}`} aria-hidden="true" />
                       {/* 兼容自动化测试选择器的 .shijianus-music-pocket__big-disc */}
                       <div className={`shijianus-music-pocket__big-disc ${isPlaying ? 'is-rotating' : ''}`} aria-hidden="true" />
+                    </div>
+
+                    {/* 唱机展台拟真黑胶大唱臂与唱针 (Stage Turntable Tonearm) */}
+                    <div className={`shijianus-music-pocket__stage-tonearm ${isPlaying ? 'is-playing' : ''}`} aria-hidden="true">
+                      <div className="stage-tonearm-base" />
+                      <div className="stage-tonearm-lever" />
+                      <div className="stage-tonearm-cartridge" />
+                      <div className="stage-tonearm-stylus" />
                     </div>
                   </div>
 
@@ -1520,7 +1557,7 @@ export function MusicPocket({ apiBase }: Props) {
                   </button>
                 </div>
 
-                <div className="lyrics-view__scroll-container">
+                <div ref={lyricsContainerRef} className="lyrics-view__scroll-container">
                   {parsedLyrics.length === 0 ? (
                     <div className="lyrics-empty-state">
                       <p>{t('当前曲目暂时没有可用歌词。')}</p>
@@ -1529,16 +1566,19 @@ export function MusicPocket({ apiBase }: Props) {
                   ) : (
                     parsedLyrics.map((line, idx) => {
                       const isActive = idx === activeLyricIndex;
+                      const isPassed = activeLyricIndex >= 0 && idx < activeLyricIndex;
+                      const isFuture = activeLyricIndex >= 0 && idx > activeLyricIndex;
                       return (
                         <div
                           key={`${line.time}-${idx}`}
                           ref={isActive ? activeLyricRef : null}
-                          className={`lyrics-line ${isActive ? 'is-active' : ''}`}
+                          className={`lyrics-line ${isActive ? 'is-active is-current' : ''} ${isPassed ? 'is-passed is-sung' : ''} ${isFuture ? 'is-future' : ''}`}
                           onClick={() => handleLyricClick(line.time)}
                           title={`${formatTime(line.time)} - 点击试听`}
                         >
                           <span className="lyrics-line__time">{formatTime(line.time)}</span>
                           <span className="lyrics-line__text">{cleanLyricText(line.text)}</span>
+                          {isPassed && <span className="lyrics-line__check" aria-hidden="true">✓</span>}
                         </div>
                       );
                     })

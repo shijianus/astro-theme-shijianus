@@ -778,6 +778,84 @@ html.dark .shijianus-ai-summary__related span {
   color: #ffffff;
 }
 
+/* 拟真黑胶唱机唱针指针 (Vinyl Tonearm & Stylus) */
+.shijianus-music-pocket__tonearm {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  width: 20px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 5;
+  transform-origin: 15px 4px;
+  transform: rotate(-32deg);
+  transition: transform 0.46s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.shijianus-music-pocket.is-playing .shijianus-music-pocket__tonearm,
+.shijianus-music-pocket__tonearm.is-playing {
+  transform: rotate(0deg);
+  animation: shijianus-tonearm-groove 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes shijianus-tonearm-groove {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(0.9deg) translateY(-0.2px); }
+  100% { transform: rotate(-0.6deg); }
+}
+
+.shijianus-music-pocket__tonearm .tonearm-pivot {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f8fafc 20%, #94a3b8 70%, #334155 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 0 1px #fff;
+  z-index: 3;
+}
+
+.shijianus-music-pocket__tonearm .tonearm-arm {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  width: 2px;
+  height: 18px;
+  background: linear-gradient(to right, #f1f5f9, #cbd5e1, #64748b);
+  border-radius: 1px;
+  transform: rotate(16deg);
+  transform-origin: top center;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.shijianus-music-pocket__tonearm .tonearm-head {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  width: 6px;
+  height: 7px;
+  background: linear-gradient(135deg, #334155, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1.5px;
+  transform: rotate(-14deg);
+  z-index: 3;
+}
+
+.shijianus-music-pocket__tonearm .tonearm-needle {
+  position: absolute;
+  bottom: 0px;
+  left: 3px;
+  width: 1.5px;
+  height: 3px;
+  background: #ef4444;
+  border-radius: 50% 50% 0 0;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.85);
+  z-index: 4;
+}
+
 /* 动态微型均衡器微标 (Mini EQ Badge) */
 .shijianus-music-pocket__mini-eq {
   position: absolute;
@@ -1336,6 +1414,84 @@ html.dark .shijianus-ai-summary__related span {
   animation: shijianus-record-spin 6s linear infinite;
 }
 
+/* 正在播放展台黑胶大唱臂与红宝石唱针 (Stage Turntable Tonearm) */
+.shijianus-music-pocket__stage-tonearm {
+  position: absolute;
+  top: -6px;
+  right: -16px;
+  width: 28px;
+  height: 48px;
+  pointer-events: none;
+  z-index: 4;
+  transform-origin: 20px 6px;
+  transform: rotate(-32deg);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+}
+
+.shijianus-music-pocket.is-playing .shijianus-music-pocket__stage-tonearm,
+.shijianus-music-pocket__stage-tonearm.is-playing {
+  transform: rotate(0deg);
+  animation: shijianus-stage-tonearm-groove 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes shijianus-stage-tonearm-groove {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(1deg) translateY(-0.3px); }
+  100% { transform: rotate(-0.7deg); }
+}
+
+.stage-tonearm-base {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 25%, #cbd5e1 60%, #475569 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), inset 0 0 2px #fff;
+  z-index: 3;
+}
+
+.stage-tonearm-lever {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 2.5px;
+  height: 30px;
+  background: linear-gradient(to right, #f8fafc, #cbd5e1, #64748b);
+  border-radius: 1px;
+  transform: rotate(16deg);
+  transform-origin: top center;
+  box-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.stage-tonearm-cartridge {
+  position: absolute;
+  bottom: 4px;
+  left: 3px;
+  width: 8px;
+  height: 9px;
+  background: linear-gradient(135deg, #334155, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  transform: rotate(-12deg);
+  z-index: 3;
+}
+
+.stage-tonearm-stylus {
+  position: absolute;
+  bottom: 2px;
+  left: 6px;
+  width: 2px;
+  height: 4px;
+  background: #ef4444;
+  border-radius: 50% 50% 0 0;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.9);
+  z-index: 4;
+}
+
 /* 保留兼容自动化测试选择器的 .shijianus-music-pocket__big-disc */
 .shijianus-music-pocket__big-disc {
   position: absolute;
@@ -1871,21 +2027,63 @@ html.dark .shijianus-ai-summary__related span {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.lyrics-line.is-passed,
+.lyrics-line-item.is-passed {
+  color: #3b82f6;
+  opacity: 0.88;
+  font-weight: 500;
+}
+
+:root[data-theme='dark'] .lyrics-line.is-passed,
+:root[data-theme='dark'] .lyrics-line-item.is-passed {
+  color: #93c5fd;
+  opacity: 0.85;
+}
+
+.lyrics-line.is-passed .lyrics-line__time,
+.lyrics-line-item.is-passed .lyrics-line__time {
+  color: #60a5fa;
+  opacity: 0.9;
+}
+
+:root[data-theme='dark'] .lyrics-line.is-passed .lyrics-line__time,
+:root[data-theme='dark'] .lyrics-line-item.is-passed .lyrics-line__time {
+  color: #93c5fd;
+}
+
+.lyrics-line__check {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  margin-left: 6px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
 .lyrics-line.is-active,
 .lyrics-line-item.is-active {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: #425aef;
-  background: rgba(66, 90, 239, 0.08);
-  border-left: 3px solid #425aef;
-  padding-left: 7px;
+  background: rgba(66, 90, 239, 0.12);
+  border-left: 3.5px solid #425aef;
+  padding-left: 8px;
+  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.16);
+  transform: scale(1.015);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root[data-theme='dark'] .lyrics-line.is-active,
 :root[data-theme='dark'] .lyrics-line-item.is-active {
-  color: #a5b4fc;
-  background: rgba(129, 140, 248, 0.15);
+  color: #c7d2fe;
+  background: rgba(129, 140, 248, 0.22);
   border-left-color: #818cf8;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+}
+
+.lyrics-line.is-future,
+.lyrics-line-item.is-future {
+  opacity: 0.45;
 }
 
 .lyrics-line__time {

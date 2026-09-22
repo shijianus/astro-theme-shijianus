@@ -702,6 +702,14 @@ export default defineConfig({
     optimizeDeps: {
       include: ['lucide-react'],
     },
+    server: {
+      cors: true,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      },
+    },
   },
 });
 
