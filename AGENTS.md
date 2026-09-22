@@ -3525,3 +3525,20 @@
   1. 验证恶意传入站长邮箱时立即被拦截并友好提示（`400` 报错并阻断）；
   2. 验证合法普通读者会话正常签发（`role: reader`）；测试 100% PASS 通过。
 
+### Task 161: 访客限流穿透与伪造点赞阻断及 Telegram 消息转义安全加固 (SEC-09, SEC-10, SEC-11) (`891747d`)
+- [x] **阻断访客伪造 `authorRole: 'reader'` 绕过频次限流 (SEC-09)**:
+  1. **漏洞根因**：原评论提交接口盲目信任请求体中的 `payload.authorRole === 'reader'`，未经验证即将 `authorRole` 设为 `reader`，导致 `isVisitor = false` 从而跳过 1 小时最多 3 条普通评论/5 条 Boost 的安全防滥用限流；
+  2. **加固修复**：严格只根据服务端有效凭证（`isAdmin` 或 `getUserBySessionToken(sessionToken, env)`）判定 `authorRole`；未携带合法已登录凭证的用户一律强制归入 `visitor`，确保频次限流 100% 无法绕过。
+- [x] **未认证用户/访客伪造点赞与冒充他人反应拦截 (SEC-10)**:
+  1. **漏洞根因**：`action === 'like' || action === 'reaction'` 原代码仅检查 `payload.authorRole !== 'visitor'`，攻击者只需构造 `authorRole: 'reader'` 与任意 `authorId` 即可伪造身份点赞或清空他人点赞；
+  2. **加固修复**：点赞/表情互动必须经过 sessionToken/isAdmin 鉴权（`isAuthorized = Boolean(authUser || isAdmin)`），未登录一律返回 403 明确提示登录；有效互动用户 ID 强制绑定经过服务端验签的 `authUser.id` 或 `'admin'`，阻断 ID 冒充与跨用户篡改。
+- [x] **Telegram 通知 HTML 实体全面转义防注入与丢包 (SEC-11)**:
+  1. **漏洞根因**：Telegram 发送文本使用 `parse_mode: 'HTML'`，直接内联未经转义的 `authorName`、`message`、`ip` 等字段；当输入含有未闭合尖括号（如 `<test>`）时，Telegram 返回 400 Bad Request 导致通知整体丢失；
+  2. **加固修复**：引入 `sanitizeTgHtml` 对 `&`、`<`、`>`、`"`、`'` 进行全量转义，URL `slug` 经过 `encodeURIComponent` 处理，彻底杜绝 HTML 模式解析崩溃。
+- [x] **自动化测试套件通过 (`scripts/test-comment-abuse-prevention.mjs`)**：
+  1. 验证未登录伪造 `authorRole: 'reader'` 点赞时 100% 拦截并返回 403 Forbidden；
+  2. 验证管理员/登录用户点赞、点赞数递增及再次点击取消点赞全链路；
+  3. 验证未携带有效 session 时提交评论被强制降级为 `visitor` 并执行限流保护；
+  4. 验证 Telegram HTML 注入字符彻底转义；测试 100% PASS 通过。
+
+

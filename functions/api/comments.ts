@@ -208,6 +208,15 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
   };
 }
 
+function sanitizeTgHtml(str: string): string {
+  return (str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 async function sendTelegramCommentNotification(
   env: AppEnv,
   data: {
@@ -231,11 +240,11 @@ async function sendTelegramCommentNotification(
   const text = [
     `<b>博客新互动提醒 (${typeIcon})</b>`,
     `----------------------------------------`,
-    `📝 <b>文章</b>: <code>/posts/${data.slug}/</code>`,
-    `👤 <b>发言人</b>: <b>${data.authorName}</b>`,
-    `💬 <b>内容</b>:\n${data.message}`,
-    `🌍 <b>来源地</b>: ${countryInfo.flag} <code>${countryInfo.name}</code> (${data.ip || 'Unknown'})`,
-    `🆔 <b>编号</b>: <code>${data.id}</code>${data.parentId ? ` (父级: <code>${data.parentId}</code>)` : ''}`,
+    `📝 <b>文章</b>: <code>/posts/${encodeURIComponent(data.slug)}/</code>`,
+    `👤 <b>发言人</b>: <b>${sanitizeTgHtml(data.authorName)}</b>`,
+    `💬 <b>内容</b>:\n${sanitizeTgHtml(data.message)}`,
+    `🌍 <b>来源地</b>: ${countryInfo.flag} <code>${countryInfo.name}</code> (${sanitizeTgHtml(data.ip || 'Unknown')})`,
+    `🆔 <b>编号</b>: <code>${sanitizeTgHtml(data.id)}</code>${data.parentId ? ` (父级: <code>${sanitizeTgHtml(data.parentId)}</code>)` : ''}`,
     `⏰ <b>时间</b>: <code>${new Date().toISOString()}</code>`,
     `----------------------------------------`,
   ].join('\n');
@@ -585,15 +594,13 @@ export async function onRequest(context: {
     const rawMessage = (payload.message || '').trim();
     const postType = (payload.postType === 'boost' ? 'boost' : (payload.postType === 'emoji' ? 'emoji' : 'comment'));
     let authorRole: 'admin' | 'reader' | 'visitor' = 'visitor';
-    if (sessionToken) {
+    if (isAdmin) {
+      authorRole = 'admin';
+    } else if (sessionToken) {
       const authUser = await getUserBySessionToken(sessionToken, env);
       if (authUser) {
         authorRole = authUser.role === 'admin' ? 'admin' : 'reader';
-      } else if (payload.authorRole === 'reader') {
-        authorRole = 'reader';
       }
-    } else if (payload.authorRole === 'reader') {
-      authorRole = 'reader';
     }
     const isVisitor = authorRole === 'visitor';
 
@@ -878,22 +885,26 @@ export async function onRequest(context: {
     return jsonResponse(request, env, { ok: true, message: '评论已删除' });
   }
 
-  // 4. LIKE / REACTION (Only registered/logged users allowed, visitors strictly rejected)
+  // 4. LIKE / REACTION (Strictly verify session/admin token; visitors rejected)
   if (action === 'like' || action === 'reaction') {
     const id = (payload.id || url.searchParams.get('id') || '').trim();
     if (!id) {
       return jsonResponse(request, env, { ok: false, error: '缺少评论 ID' }, { status: 400 });
     }
 
-    const authorRole = (payload.authorRole || 'visitor').toLowerCase();
-    const authorId = (payload.authorId || '').trim();
+    const authUser = sessionToken ? await getUserBySessionToken(sessionToken, env) : null;
+    const isAuthorized = Boolean(authUser || isAdmin);
 
-    // 严禁访客点赞：访客无点赞与表情互动权限！
-    if (authorRole === 'visitor' || !authorId) {
+    if (!isAuthorized) {
       return jsonResponse(request, env, {
         ok: false,
-        error: '访客无点赞权限，仅注册/登录用户可点赞或进行表情互动',
+        error: '访客无点赞权限，仅注册/登录用户可点赞或进行表情互动，请先登录账号',
       }, { status: 403 });
+    }
+
+    const effectiveUserId = authUser ? authUser.id : (isAdmin ? 'admin' : (payload.authorId || '').trim());
+    if (!effectiveUserId) {
+      return jsonResponse(request, env, { ok: false, error: '无法识别互动用户身份' }, { status: 400 });
     }
 
     const targetEmoji = (payload.emoji || '👍').trim();
@@ -929,12 +940,12 @@ export async function onRequest(context: {
         rxData.summary['👍'] = row.likes_count;
       }
 
-      const existingUserEmoji = rxData.users[authorId];
+      const existingUserEmoji = rxData.users[effectiveUserId];
       let newUserEmoji: string | null = null;
 
       if (existingUserEmoji === targetEmoji) {
         // 用户再次点击相同表情 -> 取消表达
-        delete rxData.users[authorId];
+        delete rxData.users[effectiveUserId];
         rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
         if (rxData.summary[targetEmoji] === 0) {
           delete rxData.summary[targetEmoji];
@@ -947,7 +958,7 @@ export async function onRequest(context: {
             delete rxData.summary[existingUserEmoji];
           }
         }
-        rxData.users[authorId] = targetEmoji;
+        rxData.users[effectiveUserId] = targetEmoji;
         rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
         newUserEmoji = targetEmoji;
       }
@@ -994,11 +1005,11 @@ export async function onRequest(context: {
       rxData.summary['👍'] = item.likes_count;
     }
 
-    const existingUserEmoji = rxData.users[authorId];
+    const existingUserEmoji = rxData.users[effectiveUserId];
     let newUserEmoji: string | null = null;
 
     if (existingUserEmoji === targetEmoji) {
-      delete rxData.users[authorId];
+      delete rxData.users[effectiveUserId];
       rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
       if (rxData.summary[targetEmoji] === 0) delete rxData.summary[targetEmoji];
     } else {
@@ -1006,7 +1017,7 @@ export async function onRequest(context: {
         rxData.summary[existingUserEmoji] = Math.max(0, rxData.summary[existingUserEmoji] - 1);
         if (rxData.summary[existingUserEmoji] === 0) delete rxData.summary[existingUserEmoji];
       }
-      rxData.users[authorId] = targetEmoji;
+      rxData.users[effectiveUserId] = targetEmoji;
       rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
       newUserEmoji = targetEmoji;
     }
