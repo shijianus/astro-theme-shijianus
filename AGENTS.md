@@ -3630,3 +3630,30 @@
   6. 点击播放曲目 3 (`アイロニ.mp3`)，实测 `paused: false, currentTime: 1.23s` 播放成功；
   7. 执行移出待播歌曲操作，实测面板保持展开 (`is-open is-playing`)，零意外消失；
   8. 控制台错误数 **0**，CORS 拦截数 **0**，全链路 100% 验收通过！
+
+### Task 167: 屏幕桌面歌词 (Screen Floating Lyrics HUD) 专业级重构与个性化设置中心、字号/毛玻璃与全透极简模式调节、彻底清除打勾并实现高精卡拉OK逐字/逐音节流光高亮与生产端真实 E2E 审计 (`fb2bd99`)
+- [x] **彻底清除打勾符号 (`.lyrics-line__check` / `✓`)**：
+  1. 彻底清除原本生硬的打勾标识，不再使用打勾标记已唱行；
+  2. 已唱出歌词优雅呈现高亮主题色，未唱歌词柔和半透，视觉自然沉浸。
+- [x] **实现高精度卡拉OK逐字/逐音节流光填充高亮 (Karaoke Word-by-Word Sweeping)**：
+  1. 引入 30+ FPS 高精度 `requestAnimationFrame` 动画刷新循环，以 ~30ms 极高刷新率实时计算当前活跃行在音频时间线内的百分比进度（`activeLineProgress`）；
+  2. 采用现代 Web 音乐播放器黄金标准 CSS 线性渐变文字裁切技术（`background: linear-gradient(90deg, var(--karaoke-sung-color) 0%, var(--karaoke-sung-color) var(--karaoke-pct), ...); -webkit-background-clip: text; -webkit-text-fill-color: transparent;`）；
+  3. 将文本容器设为精准的 `display: inline-block`，使 0%~100% 的渐变严格与文字起始字符到末尾字符完全对齐，让歌词随着歌手演唱从左到右平滑逐字/逐音节流光充盈；
+  4. 全面同步至全景滚动歌词视图（`.lyrics-line__text.is-karaoke`）、随身听面板卡拉OK预览条（`.ribbon-text.is-karaoke`）以及屏幕桌面悬浮歌词 HUD（`.screen-lyric__karaoke-text`）。
+- [x] **专业桌面音乐播放器级屏幕悬浮字幕 HUD (`.shijianus-music-pocket__screen-lyric`)**：
+  1. 彻底摒弃以往小、细、窄的简陋样式，重构为现代大字体、高辨识度、带微阴影与艺术律动唱片的桌面音乐悬浮条；
+  2. 支持**双行模式 (Dual-line Mode)** 与 **单行沉浸模式 (Single-line Mode)**：双行模式下主行显示当前演唱卡拉OK高亮歌词，副行预览下一句预备歌词，体验完全对标网易云/QQ音乐/Apple Music桌面歌词；
+  3. 支持**字号无级调节**：小号 (15px)、中号标准 (18px)、大号沉浸 (22px)、特大舞台 (26px)，满足不同视力与桌面排版需求；
+  4. 支持**背景透明度档位**：
+     - 毛玻璃经典模式 (`opacity-glass`，85% 高质感模糊背景，适合各色网页底纹)；
+     - 半透明模式 (`opacity-semi`，45% 适度沉浸)；
+     - **全透极简纯字模式 (`opacity-transparent`，0% 底色，仅悬浮文字)**：采用强对比 drop-shadow / 描边强化，在纯白或复杂网页背景下依然清晰无阻，鼠标悬停时平滑呼出微磨砂控制底板方便拖拽与操作；
+  5. 支持**四大高亮主题色**自由切换：极光蓝 (`#425aef`)、翡翠绿 (`#10b981`)、霓虹粉 (`#ec4899`)、星辉金 (`#f59e0b`)；
+  6. 支持**位置锁定 (`is-locked`)**：一键锁定桌面歌词悬浮位置，防止阅读文章或点击屏幕时误触拖拽；
+  7. 提供**专属设置弹窗 (`.screen-lyric__settings-popover`)**，点击设置齿轮即刻弹出完整调节面板，且配置全量自动持久化于 `localStorage` (`shijianus-screen-lyric-settings`)。
+- [x] **自动化端到端测试与本地验证 100% 通过 (`scratch/verify-screen-lyric-karaoke.mjs`)**：
+  1. 验证 `checkCount === 0`，打勾彻底根除；
+  2. 验证活跃行实时卡拉OK样式 `--karaoke-pct` 正常填充；
+  3. 验证桌面歌词 HUD 呼出、双行预备歌词渲染；
+  4. 验证设置面板呼出，字号调整为 22px、透明度调为半透明与全透极简模式、切换翡翠绿主题色、切换单行/双行排布、锁定与解锁全流程通过。
+
