@@ -77,6 +77,8 @@ async function notifyTelegramBot(
   }
 }
 
+const ZERO_DECIMAL_CURRENCIES = new Set(['bif','clp','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
+
 async function recordInD1(
   db: any,
   data: {
@@ -109,6 +111,9 @@ async function recordInD1(
       )
       .run();
 
+    const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has((data.currency || '').toLowerCase());
+    const humanAmount = isZeroDecimal ? data.amount : data.amount / 100;
+
     await db
       .prepare(
         `INSERT OR REPLACE INTO sponsorships (id, amount, currency, name, message, country, ip, status, updated_at)
@@ -116,7 +121,7 @@ async function recordInD1(
       )
       .bind(
         data.id,
-        data.amount / 100,
+        humanAmount,
         data.currency.toUpperCase(),
         data.name || 'Anonymous',
         data.message || '',
@@ -142,7 +147,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   }
 
   const payload = await safeReadJson<PaymentIntentPayload>(request);
-  const rawAmount = typeof payload?.amount === 'number' ? payload.amount : 5;
+  const rawAmount = typeof payload?.amount === 'number' && Number.isFinite(payload.amount) && payload.amount > 0 ? payload.amount : 5;
   const currency = (payload?.currency || 'usd').toLowerCase();
   const name = payload?.name?.trim() || '';
   const message = payload?.message?.trim() || '';
@@ -150,13 +155,21 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
   const paymentMethod = payload?.paymentMethod || 'Stripe';
 
-  // Validate amount: support dollar amount (e.g., 5 => 500 cents) or already in cents
-  let amountInCents = Math.round(rawAmount >= 50 && Number.isInteger(rawAmount) ? rawAmount : rawAmount * 100);
-  if (amountInCents < 50) {
-    amountInCents = 50; // Minimum $0.50 per Stripe rules
-  }
-  if (amountInCents > 100000) {
-    amountInCents = 100000; // Cap at $1000
+  // Standardize amount conversion:
+  // Zero-decimal currencies (e.g. JPY, KRW) take integer units.
+  // Standard currencies (e.g. USD, EUR, GBP, CAD, AUD, HKD) convert dollars to cents (x100).
+  const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(currency);
+  let amountInCents: number;
+  if (isZeroDecimal) {
+    amountInCents = Math.max(50, Math.min(10000000, Math.round(rawAmount)));
+  } else {
+    amountInCents = Math.round(rawAmount * 100);
+    if (amountInCents < 50) {
+      amountInCents = 50; // Minimum $0.50 per Stripe requirements
+    }
+    if (amountInCents > 10000000) {
+      amountInCents = 10000000; // Cap at $100,000
+    }
   }
 
   const stripeSecretKey =
