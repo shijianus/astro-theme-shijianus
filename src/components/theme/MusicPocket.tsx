@@ -54,7 +54,7 @@ type Props = {
   apiBase: string;
 };
 
-const STORAGE_KEY = 'shijianus-radio-state';
+const STORAGE_KEY = 'shijianus-radio-state-v3';
 const POS_STORAGE_KEY = 'shijianus-music-pocket-pos';
 const VISIBLE_STORAGE_KEY = 'shijianus-music-pocket-visible';
 const SCREEN_LYRIC_KEY = 'shijianus-screen-lyric';
