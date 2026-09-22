@@ -3412,7 +3412,7 @@
   3. 浅色、深色、卡拉OK歌词与桌面 HUD 截图全部审计通过；
   4. 生产环境（`https://blog.epocanvas.com`）真实链路端到端自动化测试 100% 全绿通过（覆盖桌面端 1440×900、深色模式 Dark Mode 与移动端 390×844 iPhone 视口 #rightside 避让）。
 
-### Task 153: 雪境物理实验安全回退至 0b965e9 稳定基底、深度排查卡顿根因与动态缺陷总结报告
+### Task 153: 雪境物理实验安全回退至 0b965e9 稳定基底、深度排查卡顿根因与动态缺陷总结报告 (`76f22c4`)
 - [x] **文件级别精确回退至 0b965e9 稳定纯净基座（禁止回退 Commit，持续向前推进）**:
   1. `src/components/ThemeUniverse.tsx`：精确回退至 `0b965e9` 的极简三层景深天幕降雪画布引擎，彻底剥离实验性前景物理层；
   2. `src/layouts/BlogLayout.astro`：精确回退 `<canvas id="theme-snow-universe" ...>` 与 `<ThemeUniverse client:idle />` 静态节点直出；
