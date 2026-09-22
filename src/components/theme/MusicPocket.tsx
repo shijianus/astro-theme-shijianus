@@ -1547,15 +1547,21 @@ export function MusicPocket({ apiBase }: Props) {
 
                 {/* 底部微型控制器 */}
                 <div className="lyrics-view__mini-dock">
-                  <button type="button" className="dock-btn" onClick={() => skipTrack(-1)} disabled={queue.length <= 1} title={t('上一首')}>
-                    <SkipBack size={15} />
-                  </button>
-                  <button type="button" className="dock-play-btn" onClick={togglePlay} title={isPlaying ? t('暂停') : t('播放')}>
-                    {isPlaying ? <Pause size={17} /> : <Play size={17} className="play-offset" />}
-                  </button>
-                  <button type="button" className="dock-btn" onClick={() => skipTrack(1)} disabled={queue.length <= 1} title={t('下一首')}>
-                    <SkipForward size={15} />
-                  </button>
+                  <div className="lyrics-mini-info">
+                    <span className="lyrics-mini-label">{isPlaying ? t('正在播放') : t('已暂停')}</span>
+                    <strong className="lyrics-mini-title">{currentTrack ? currentTrack.name : t('未就绪')}</strong>
+                  </div>
+                  <div className="lyrics-mini-controls">
+                    <button type="button" className="dock-btn" onClick={() => skipTrack(-1)} disabled={queue.length <= 1} title={t('上一首')}>
+                      <SkipBack size={14} />
+                    </button>
+                    <button type="button" className="dock-play-btn" onClick={togglePlay} title={isPlaying ? t('暂停') : t('播放')}>
+                      {isPlaying ? <Pause size={15} /> : <Play size={15} className="play-offset" />}
+                    </button>
+                    <button type="button" className="dock-btn" onClick={() => skipTrack(1)} disabled={queue.length <= 1} title={t('下一首')}>
+                      <SkipForward size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1662,15 +1668,15 @@ export function MusicPocket({ apiBase }: Props) {
                 {/* 底部微型播放指示 */}
                 <div className="queue-view__mini-dock">
                   <div className="queue-mini-info">
-                    <span className="queue-mini-label">{isPlaying ? t('正在播放') : t('暂停')}</span>
-                    <strong>{currentTrack ? currentTrack.name : t('未就绪')}</strong>
+                    <span className="queue-mini-label">{isPlaying ? t('正在播放') : t('已暂停')}</span>
+                    <strong className="queue-mini-title">{currentTrack ? currentTrack.name : t('未就绪')}</strong>
                   </div>
                   <div className="queue-mini-controls">
                     <button type="button" className="dock-btn" onClick={() => skipTrack(-1)} disabled={queue.length <= 1} title={t('上一首')}>
                       <SkipBack size={14} />
                     </button>
                     <button type="button" className="dock-play-btn" onClick={togglePlay} title={isPlaying ? t('暂停') : t('播放')}>
-                      {isPlaying ? <Pause size={16} /> : <Play size={16} className="play-offset" />}
+                      {isPlaying ? <Pause size={15} /> : <Play size={15} className="play-offset" />}
                     </button>
                     <button type="button" className="dock-btn" onClick={() => skipTrack(1)} disabled={queue.length <= 1} title={t('下一首')}>
                       <SkipForward size={14} />
@@ -1785,15 +1791,17 @@ export function MusicPocket({ apiBase }: Props) {
 
                 {/* 底部快捷状态 */}
                 <div className="search-view__mini-dock">
-                  <span className="search-status-text">
-                    {loading ? t('正在检索...') : results.length > 0 ? `${t('找到')} ${results.length} ${t('首曲目')}` : t('多平台高质音源')}
-                  </span>
+                  <div className="search-mini-info">
+                    <span className="search-status-text">
+                      {loading ? t('正在检索...') : results.length > 0 ? `${t('找到')} ${results.length} ${t('首曲目')}` : (currentTrack ? `${t('正在播放')} · ${currentTrack.name}` : t('多平台高质音源'))}
+                    </span>
+                  </div>
                   <div className="search-dock-controls">
                     <button type="button" className="dock-btn" onClick={() => skipTrack(-1)} disabled={queue.length <= 1} title={t('上一首')}>
                       <SkipBack size={14} />
                     </button>
                     <button type="button" className="dock-play-btn" onClick={togglePlay} title={isPlaying ? t('暂停') : t('播放')}>
-                      {isPlaying ? <Pause size={16} /> : <Play size={16} className="play-offset" />}
+                      {isPlaying ? <Pause size={15} /> : <Play size={15} className="play-offset" />}
                     </button>
                     <button type="button" className="dock-btn" onClick={() => skipTrack(1)} disabled={queue.length <= 1} title={t('下一首')}>
                       <SkipForward size={14} />
