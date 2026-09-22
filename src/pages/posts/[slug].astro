@@ -793,41 +793,53 @@ const heroSummary = isUnlocked
               tocDictionary = {},
             } = config;
 
-            // Client-side instant unlock for protected articles in static hosting mode
+            // Client-side secure unlock for protected articles in static hosting mode
             const accessForm = document.getElementById('content-access-unlock-form');
+            const encryptedPayload = document.getElementById('shijianus-protected-encrypted-payload');
             const protectedTemplate = document.getElementById('shijianus-protected-variants-template');
-            if (accessForm && protectedTemplate) {
-              const expectedHash = (protectedTemplate.dataset.expectedHash || '').toLowerCase();
-              const postId = protectedTemplate.dataset.postId || '';
 
-              function applyUnlockedVariants() {
+            if (accessForm && (encryptedPayload || protectedTemplate)) {
+              const postId = (encryptedPayload?.dataset.postId || protectedTemplate?.dataset.postId || '');
+
+              function applyUnlockedHtml(htmlContent: string) {
                 const container = document.getElementById('article-container');
                 const panel = document.querySelector('.content-access-panel--server');
                 if (panel) panel.remove();
-                if (container && protectedTemplate.content) {
-                  const fragment = protectedTemplate.content.cloneNode(true);
-                  container.appendChild(fragment);
+                if (container) {
+                  const tempTmpl = document.createElement('template');
+                  tempTmpl.innerHTML = htmlContent;
+                  container.appendChild(tempTmpl.content.cloneNode(true));
                   container.dataset.contentFeatures = 'true';
                 }
-                const heroTranslations = document.querySelector('.post-hero__translations');
+                const heroTranslations = document.querySelector('.post-hero__translations') as HTMLElement | null;
                 if (heroTranslations) heroTranslations.style.display = '';
                 const current = document.documentElement.dataset.localeVariant || document.documentElement.lang || defaultLang;
-                if (window.switchArticleLanguage) {
-                  window.switchArticleLanguage(current);
+                if ((window as any).switchArticleLanguage) {
+                  (window as any).switchArticleLanguage(current);
                 }
                 window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: current }));
                 window.dispatchEvent(new Event('resize'));
               }
 
-              // Auto-unlock if session already granted
+              // Auto-unlock if session already cached
               try {
-                if (window.sessionStorage.getItem('shijianus-post-access:' + postId) === 'unlocked') {
-                  applyUnlockedVariants();
+                const cachedHtml = window.sessionStorage.getItem('shijianus-post-access-html:' + postId);
+                if (cachedHtml) {
+                  applyUnlockedHtml(cachedHtml);
+                } else if (protectedTemplate && window.sessionStorage.getItem('shijianus-post-access:' + postId) === 'unlocked') {
+                  const fragment = (protectedTemplate as HTMLTemplateElement).content.cloneNode(true);
+                  const container = document.getElementById('article-container');
+                  const panel = document.querySelector('.content-access-panel--server');
+                  if (panel) panel.remove();
+                  if (container) {
+                    container.appendChild(fragment);
+                    container.dataset.contentFeatures = 'true';
+                  }
                 }
               } catch (_) {}
 
               accessForm.addEventListener('submit', async function (e) {
-                const pwInput = accessForm.querySelector('input[name="post-password"]');
+                const pwInput = accessForm.querySelector('input[name="post-password"]') as HTMLInputElement | null;
                 const val = pwInput ? pwInput.value.trim() : '';
                 if (!val) return;
                 e.preventDefault();
@@ -838,20 +850,65 @@ const heroSummary = isUnlocked
                   const hashArr = Array.from(new Uint8Array(hashBuf));
                   const hex = hashArr.map((b) => b.toString(16).padStart(2, '0')).join('').toLowerCase();
 
-                  if (hex === expectedHash) {
+                  if (encryptedPayload) {
+                    // Modern AES-256-GCM client-side decryption
+                    const saltHex = encryptedPayload.dataset.salt || '';
+                    const ivHex = encryptedPayload.dataset.iv || '';
+                    const tagHex = encryptedPayload.dataset.tag || '';
+                    const ciphertextBase64 = encryptedPayload.dataset.ciphertext || '';
+
+                    const saltBytes = new Uint8Array((saltHex.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16)));
+                    const hashBytes = enc.encode(hex);
+                    const combined = new Uint8Array(saltBytes.length + hashBytes.length);
+                    combined.set(saltBytes, 0);
+                    combined.set(hashBytes, saltBytes.length);
+
+                    const clientKeyHash = await crypto.subtle.digest('SHA-256', combined);
+                    const cryptoKey = await crypto.subtle.importKey('raw', clientKeyHash, { name: 'AES-GCM' }, false, ['decrypt']);
+
+                    const ivBytes = new Uint8Array((ivHex.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16)));
+                    const tagBytes = new Uint8Array((tagHex.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16)));
+                    const cipherBytes = Uint8Array.from(atob(ciphertextBase64), c => c.charCodeAt(0));
+
+                    const ciphertextWithTag = new Uint8Array(cipherBytes.length + tagBytes.length);
+                    ciphertextWithTag.set(cipherBytes, 0);
+                    ciphertextWithTag.set(tagBytes, cipherBytes.length);
+
+                    const decryptedBuf = await crypto.subtle.decrypt(
+                      { name: 'AES-GCM', iv: ivBytes },
+                      cryptoKey,
+                      ciphertextWithTag
+                    );
+                    const decryptedHtml = new TextDecoder().decode(decryptedBuf);
+
                     try {
-                      window.sessionStorage.setItem('shijianus-post-access:' + postId, 'unlocked');
+                      window.sessionStorage.setItem('shijianus-post-access-html:' + postId, decryptedHtml);
                     } catch (_) {}
-                    applyUnlockedVariants();
-                  } else {
-                    const errEl = document.getElementById('content-access-client-error');
-                    if (errEl) {
-                      errEl.textContent = '密码不正确，请重试。';
-                      errEl.style.display = 'block';
+                    applyUnlockedHtml(decryptedHtml);
+                  } else if (protectedTemplate) {
+                    const expectedHash = ((protectedTemplate as HTMLElement).dataset.expectedHash || '').toLowerCase();
+                    if (hex === expectedHash) {
+                      try {
+                        window.sessionStorage.setItem('shijianus-post-access:' + postId, 'unlocked');
+                      } catch (_) {}
+                      const fragment = (protectedTemplate as HTMLTemplateElement).content.cloneNode(true);
+                      const container = document.getElementById('article-container');
+                      const panel = document.querySelector('.content-access-panel--server');
+                      if (panel) panel.remove();
+                      if (container) {
+                        container.appendChild(fragment);
+                        container.dataset.contentFeatures = 'true';
+                      }
+                    } else {
+                      throw new Error('Invalid password');
                     }
                   }
-                } catch (_) {
-                  accessForm.submit();
+                } catch (err) {
+                  const errEl = document.getElementById('content-access-client-error');
+                  if (errEl) {
+                    errEl.textContent = '密码不正确，请重试。';
+                    errEl.style.display = 'block';
+                  }
                 }
               });
             }

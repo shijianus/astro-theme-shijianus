@@ -3585,6 +3585,19 @@
   2. 验证精选歌单本地曲目 100% 绑定有效音频路径；
   3. 验证本地音频流请求正常返回 302 重定向；测试 100% PASS 通过。
 
+### Task 165: 静态导出受保护文章端到端客户端 AES-256-GCM 加密重构 (SEC-07 源码明文与哈希泄露修复)
+- [x] **根除静态 HTML 中明文正文裸奔与密码哈希直接暴露缺陷 (SEC-07)**:
+  1. **漏洞根因**：在静态导出模式（`STATIC_EXPORT = true`）下，受密码保护的文章（如 `access-control-lab`）将全部明文正文注入 HTML `<template id="shijianus-protected-variants-template">`，并直接标注 `data-expected-hash`，任何访客无需输入密码即可查看完整正文或离线碰撞密码哈希；
+  2. **加固重构**：
+     - 构建 Astro 构建期安全加密集成 (`secureProtectedPostsIntegration`)：在 `astro:build:done` 阶段自动扫描所有输出的 HTML 文件，若发现受保护模板，立即提取内容并通过随机 Salt、IV 与密钥衍生函数进行 **AES-256-GCM 强加密**；
+     - 彻底清除静态 HTML 中的明文模板与 `data-expected-hash`，替换为仅包含密文与认证标签的 `<div id="shijianus-protected-encrypted-payload">`；
+     - 前端客户端使用 WebCrypto 原生 `crypto.subtle.decrypt` 进行就地解密。密码正确时无缝还原并渲染正文，密码错误时触发 GCM 标签校验失败阻断渲染，并持久化当前会话缓存；
+     - 彻底清除 `astro.config.mjs` 中的硬编码开发默认密钥。
+- [x] **自动化测试套件通过 (`scripts/test-protected-posts-encryption.mjs`)**：
+  1. 验证构建产物 HTML 中 100% 不存在任何明文机密正文、标题与密码哈希；
+  2. 验证前端正确密码可 100% 还原解密原始 HTML，错误密码被 WebCrypto OperationError 拦截；测试 100% PASS 通过。
+
+
 
 
 

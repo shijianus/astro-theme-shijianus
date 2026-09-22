@@ -591,7 +591,7 @@ function imageUploadDevIntegration() {
                 env: {
                   ...process.env,
                   IMAGE_HOST_URL: getEnvVar('IMAGE_HOST_URL') || 'https://img.epocanvas.com',
-                  IMAGE_HOST_TOKEN: getEnvVar('IMAGE_HOST_TOKEN') || 'epocanvas_secret_2026_image_key',
+                  IMAGE_HOST_TOKEN: getEnvVar('IMAGE_HOST_TOKEN') || '',
                 },
               });
 
@@ -612,6 +612,66 @@ function imageUploadDevIntegration() {
           }
           next();
         });
+      },
+    },
+  };
+}
+
+function secureProtectedPostsIntegration() {
+  return {
+    name: 'secure-protected-posts',
+    hooks: {
+      'astro:build:done': async ({ dir }) => {
+        const outDir = dir instanceof URL ? dir.pathname : String(dir);
+        const postsDir = path.resolve(outDir, 'posts');
+        if (!fs.existsSync(postsDir)) return;
+
+        const crypto = await import('node:crypto');
+
+        function processHtmlFile(filePath) {
+          let html = fs.readFileSync(filePath, 'utf8');
+          const templateRegex = /<template\s+id="shijianus-protected-variants-template"\s+data-expected-hash="([a-f0-9]{64})"\s+data-post-id="([^"]+)">([\s\S]*?)<\/template>/gi;
+
+          let match;
+          let modified = false;
+          while ((match = templateRegex.exec(html)) !== null) {
+            const fullMatch = match[0];
+            const hash = match[1];
+            const postId = match[2];
+            const rawContent = match[3];
+
+            // Cryptographically encrypt rawContent using AES-256-GCM
+            const salt = crypto.randomBytes(16);
+            const iv = crypto.randomBytes(12);
+            const derivedKey = crypto.createHash('sha256').update(Buffer.concat([salt, Buffer.from(hash, 'utf8')])).digest();
+            const cipher = crypto.createCipheriv('aes-256-gcm', derivedKey, iv);
+            const encrypted = Buffer.concat([cipher.update(rawContent, 'utf8'), cipher.final()]);
+            const tag = cipher.getAuthTag();
+
+            const encryptedPayloadTag = `<div id="shijianus-protected-encrypted-payload" data-post-id="${postId}" data-salt="${salt.toString('hex')}" data-iv="${iv.toString('hex')}" data-tag="${tag.toString('hex')}" data-ciphertext="${encrypted.toString('base64')}"></div>`;
+
+            html = html.replace(fullMatch, encryptedPayloadTag);
+            modified = true;
+          }
+
+          if (modified) {
+            fs.writeFileSync(filePath, html, 'utf8');
+            console.log(`[SecureProtectedPosts] Encrypted protected variants in: ${path.relative(process.cwd(), filePath)}`);
+          }
+        }
+
+        function walk(currentDir) {
+          for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+            const fullPath = path.join(currentDir, entry.name);
+            if (entry.isDirectory()) {
+              walk(fullPath);
+            } else if (entry.isFile() && entry.name.endsWith('.html')) {
+              processHtmlFile(fullPath);
+            }
+          }
+        }
+
+        walk(postsDir);
       },
     },
   };
@@ -661,6 +721,7 @@ export default defineConfig({
     commentsDevIntegration(),
     authDevIntegration(),
     imageUploadDevIntegration(),
+    secureProtectedPostsIntegration(),
     react(),
     mdx(),
   ],
