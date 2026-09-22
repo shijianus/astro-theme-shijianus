@@ -3411,3 +3411,19 @@
   2. 验证 64px 真实专辑封面卡片、32 频段密集频谱、5 大纯 Icon 工具按键、喜欢/定时器/倍速/桌面歌词 HUD 交互；
   3. 浅色、深色、卡拉OK歌词与桌面 HUD 截图全部审计通过；
   4. 生产环境（`https://blog.epocanvas.com`）真实链路端到端自动化测试 100% 全绿通过（覆盖桌面端 1440×900、深色模式 Dark Mode 与移动端 390×844 iPhone 视口 #rightside 避让）。
+
+### Task 153: 雪境物理实验安全回退至 0b965e9 稳定基底、深度排查卡顿根因与动态缺陷总结报告
+- [x] **文件级别精确回退至 0b965e9 稳定纯净基座（禁止回退 Commit，持续向前推进）**:
+  1. `src/components/ThemeUniverse.tsx`：精确回退至 `0b965e9` 的极简三层景深天幕降雪画布引擎，彻底剥离实验性前景物理层；
+  2. `src/layouts/BlogLayout.astro`：精确回退 `<canvas id="theme-snow-universe" ...>` 与 `<ThemeUniverse client:idle />` 静态节点直出；
+  3. 保持业务卡片代码 100% 纯净（零 `<SnowCover>`、零侵入），`npm run build` 284 页面 0 报错通过。
+- [x] **“彻底卡顿”与极端性能瓶颈根因深度剖析**:
+  1. **Canvas `shadowBlur` 高斯模糊灾难**：在 60FPS RAF 循环中对 15+ 处卡片路径、10+ 颗雪块和上百颗雪花连续执行 `ctx.shadowBlur`，触发浏览器 2D 图形库（Skia/CoreGraphics）每秒执行超过 10,000 次离屏高斯模糊卷积，造成 GPU/CPU 极度管线阻塞；
+  2. **双层全屏 DPR 2 画布巨幅过度绘制（Overdraw）**：在 Retina 屏上双画布每帧清理并重绘超过 1,036 万像素，每秒向显存抛出逾 6.2 亿像素着色负荷；
+  3. **逐帧重复创建 Gradient 与 Path 对象引发 GC 垃圾回收假死**：在 RAF 中无缓存反复 `createLinearGradient` / `createRadialGradient`，诱发 V8 引擎持续内存回收卡顿；
+  4. **滚动期间未执行降频跳帧抑制**：旧版包含滚动期 50% 跳帧保护（`isScrolling` 降频），实验版本移除保护导致滚动时合成器与渲染管线争抢主线程。
+- [x] **动态形变穿帮与“假圆角”根因全景排查并固化报告 (`docs/DYNAMIC_SNOW_PHYSICS_AUDIT_REPORT.md`)**:
+  1. 静态坐标缓存缺陷：无法响应 `.categoryButton.lime` 的 `flex: 1.85`（膨胀 102px）与卡片 `hover:-translate-y-0.5` 动态位移；
+  2. 人工同心圆角虚假感：旧贝塞尔算法机械拟合 12px 圆角，违背重力沉积与自然雪檐悬挑规律；
+  3. 全矩阵表面漏雪：系统性查明 `#categoryBar`、`#footer-wrap`、`#footer-bar`、`#post-comment`、`.relatedPosts-item` 等缺失表面。
+
