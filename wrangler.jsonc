@@ -14,7 +14,6 @@
       "binding": "DB",
       "database_name": "shijianus-blog-db",
       "database_id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f",
-      "preview_database_id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f",
       "migrations_dir": "migrations"
     }
   ]

@@ -35,8 +35,13 @@ functions/generated/
 *-screenshot*.png
 verification-screenshots/
 scripts/audit_screenshots/
+playwright-report/
+test-results/
+*.trace.zip
+*.webm
 __pycache__/
 *.pyc
 trace_*.json
 .comments-dev.json
 scratch/
+

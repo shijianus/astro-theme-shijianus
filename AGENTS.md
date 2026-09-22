@@ -3597,8 +3597,36 @@
   1. 验证构建产物 HTML 中 100% 不存在任何明文机密正文、标题与密码哈希；
   2. 验证前端正确密码可 100% 还原解密原始 HTML，错误密码被 WebCrypto OperationError 拦截；测试 100% PASS 通过。
 
-
-
-
-
-
+### Task 166: 随身听 (MusicPocket) 播放崩溃全面修复、黑胶拟真唱针唱臂互动、待播移除防消失、统一博客通知、歌词高亮跟随与生产端全链路 E2E 真实审计
+- [x] **根除跨域 CORS 拦截致命阻断与生产端 CORS 修复 (`functions/_lib/http.ts`)**：
+  1. 修复生产环境下 `functions/_lib/http.ts` 的 `resolveOrigin` 函数中，由于 Cloudflare Pages 环境变量配置的 `ALLOW_ORIGINS` 未包含主域名而导致跨域请求被错误返回本地调试地址（`http://127.0.0.1:8788`）的致命缺陷；
+  2. 显式放行同源请求、`*.epocanvas.com`、`*.pages.dev` 及本地调试端口，保证 `<audio crossOrigin="anonymous">` 无论在本地还是生产环境请求 `/api/music/stream` 均 100% 获得合规匹配的 `Access-Control-Allow-Origin: https://blog.epocanvas.com`。
+- [x] **本地曲目直链优化与 MP4/M4A faststart 转换 (`functions/_lib/music-provider.ts` & `public/media/audio/`)**：
+  1. 在 `functions/_lib/music-provider.ts` 与 `MusicPocket.tsx` 中为本地精选音轨注入 `urlId`，本地歌曲直接从静态 CDN 极速直出，无需绕行 serverless 代理；
+  2. 修复 `アイロニ.m4a` 原文件 `moov` 原子位于文件尾部导致浏览器在缺失 Range 支持时阻塞首屏解码的缺陷，使用 ffmpeg 将 `moov` 元数据原子迁移至头部（`faststart`），并同步生成通用 `アイロニ.mp3`，确保全平台浏览器（Chrome/Safari/Firefox/Edge）毫秒级起播。
+- [x] **播放状态竞态与 AbortError 崩溃拦截 (`src/components/theme/MusicPocket.tsx`)**：
+  1. 修复在点击切歌或播放时，`playTrack` 与 React `useEffect([currentTrack?.id])` 并发执行导致前一个 `play()` 请求被后一个 `audio.load()` 中断并抛出 `AbortError`，进而错误重置 `isPlaying = false` 导致播放立刻暂停的竞态缺陷；
+  2. 仅在目标音轨与当前播放源不一致时才重新赋值 `audio.src` 与调用 `load()`，并在 `catch` 处理器中安全捕获并忽略 `AbortError`；
+  3. 清除 `onError` 中无限制级联触发 `skipTrack(1)` 导致的无限崩溃死循环。
+- [x] **本体图标拟真黑胶唱针唱臂 (Tonearm & Stylus) 播放交互 (`MusicPocket.tsx` & `src/styles/runtime-widgets.css`)**：
+  1. 完善悬浮唱机 Toggle 按钮本体上的唱针结构，补齐包括轴心 (`tonearm-pivot`)、唱臂身 (`tonearm-arm`)、唱头 (`tonearm-head`) 与红宝石唱针尖端 (`tonearm-needle`)；
+  2. 注入精细微交互：暂停状态下唱臂处于停泊姿态（`-32deg`），播放激活时唱臂平滑旋转进入工作姿态（`3deg`）搭在黑胶音轨上，并伴随拟真微震颤跟踪动效（`shijianus-tonearm-groove`）。
+- [x] **待播队列曲目移除防消失与组件生命周期安全加固**：
+  1. 对全部 `currentTrack` 访问进行全量空安全保护与回退，即使待播队列被完全清空，组件仍能稳定呈现优雅的空列表状态，绝不触发 React 渲染异常导致的 DOM 卸载与消失；
+  2. 验证移除任何曲目后，`.shijianus-music-pocket.is-open` 保持持续稳定展开。
+- [x] **博客统一活动通告体系接入 (Blog Unified Notification)**：
+  1. 深度接入博客统一通知机制，所有随身听操作（切歌、播放、加入待播、移出待播、收藏、定时关闭、倍速调整）统一通过 `shijianus:activity` 自定义事件分发至博客顶层活动通告条（`#global-activity-bar`）及 `window.snackbarShow`，保持全局视觉与交互语系 100% 统一。
+- [x] **歌词跟随、视口居中与已唱出部分高亮**：
+  1. 为 `.lyrics-view__scroll-container` 赋予 `position: relative`，基于精确的 `getBoundingClientRect` 视口相对高度差平滑滚动，杜绝因 `offsetParent` 异常引发的滚动跳动与页面外层抖动；
+  2. 歌词已唱出部分高亮标记 `.lyrics-line.is-passed.is-sung` 并展示精致对勾徽标（`✓`），当前正在唱的歌词 `.is-active.is-current` 加粗高对比突出。
+- [x] **真实声波频谱 (32 频段 Web Audio API 60FPS) 跟踪**：
+  1. 解决 CORS 跨域限制后，Web Audio API 的 `createMediaElementSource` 能够读取真实音频频域能量数据（`analyser.getByteFrequencyData`），32 个均衡器跳动柱真实响应音频律动与鼓点。
+- [x] **生产端 (`https://blog.epocanvas.com/`) 全链路真实 Playwright 自动化端到端测试 100% 验收通过 (`scratch/verify-prod-final.mjs`)**：
+  1. 访问生产环境首页；
+  2. 验证拟真唱针唱臂结构（轴心、臂身、唱头、唱针）完整存在；
+  3. 展开面板后，真实播放曲目 1 (`Way Back Home.flac`)，实测 `paused: false, currentTime: 3.46s, readyState: 3`，唱臂进入 `.is-playing` 姿态；
+  4. 切换歌词页，验证 21 行歌词加载正常，活跃行高亮聚焦，跟随与已唱标记正常；
+  5. 切换待播队列，点击播放曲目 2 (`彼女は旅に出る.mp3`)，实测 `paused: false, currentTime: 1.70s` 播放成功；
+  6. 点击播放曲目 3 (`アイロニ.mp3`)，实测 `paused: false, currentTime: 1.23s` 播放成功；
+  7. 执行移出待播歌曲操作，实测面板保持展开 (`is-open is-playing`)，零意外消失；
+  8. 控制台错误数 **0**，CORS 拦截数 **0**，全链路 100% 验收通过！

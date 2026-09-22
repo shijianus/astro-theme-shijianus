@@ -78,7 +78,7 @@ const CURATED_LOCAL_TRACKS: (MusicTrack & { lrc: string; localPath: string })[] 
     picId: 'irony_scop',
     coverUrl: '/media/audio/covers/irony_scop.jpg',
     lyricId: 'local-irony',
-    localPath: '/media/audio/アイロニ.m4a',
+    localPath: '/media/audio/アイロニ.mp3',
     lrc: `[00:00.00]すこっぷ - アイロニ (Irony)
 [00:14.00]少し歩き疲れたんだ
 [00:18.00]少し息も白くなってきた
