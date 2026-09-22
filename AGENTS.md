@@ -3454,5 +3454,34 @@
 - [x] **小语种 RTL 双向文字排版完善 (`src/pages/posts/[slug].astro` & `src/styles/markdown-enhancements.css`)**：打通 `getLocaleMeta(lang).dir` 动态绑定，支持在切换至阿拉伯语（`ar`）、希伯来语（`he`）等 RTL 语言时，自动将 `#article-container`、`<html>` 与变体容器的 `dir` 属性同步设为 `rtl`，并补充专属文本对齐与引用块反向样式；
 - [x] **Playwright 全量测试套件 (1,189 项断言) 与专项验证 100% PASS 通过**：本地生产构建 1,189 项断言零失败，语言切换控制台零 JS 报错，输出客观权威审计报告 `ARTICLE_TRANSLATION_AUDIT_REPORT.md` 并生成视觉证据截图。
 
+### Task 156: 随身音乐口袋 (.shijianus-music-pocket) 拟真黑胶唱针指针、移除歌曲崩溃根除、博客统一提示接入、卡拉OK歌词跟随与真实旋律频谱跟随 (`692b7aa`)
+- [x] **拟真黑胶唱机唱针指针结构与动态物理交互 (Vinyl Tonearm & Stylus)**：
+  1. 在本体胶片图标（`.shijianus-music-pocket__toggle`）与 64px 艺术封面展台（`.shijianus-music-pocket__cover-stage`）注入拟真黑胶唱针与金属唱臂结构（`.shijianus-music-pocket__tonearm` 与 `.shijianus-music-pocket__stage-tonearm`）；
+  2. 包含金属基座（`.tonearm-pivot`）、唱臂轴杆（`.tonearm-arm`）、唱头（`.tonearm-head`）与红宝石唱针指针（`.tonearm-needle`）；
+  3. 动态物理交互：暂停时唱臂旋转退回休止架（`-32deg`），播放时平滑旋入黑胶唱片音轨（`0deg`）并伴随 `@keyframes shijianus-tonearm-groove` 微振颤动效，真实反馈唱片旋转寻道状态。
+- [x] **根治播放/移除歌曲时面板意外消失崩溃的底层 Bug (Fixed Disappearance Crash)**：
+  1. **底层根因排查**：在 `MusicPocket.tsx` 的 Canvas 渲染循环中，局部变量 `rawVal` 未使用 `let` 声明。在严格模式或曲目切换触发 `requestAnimationFrame` 时，每秒抛出 60 次未捕获的 `ReferenceError: rawVal is not defined` 异常，导致 React 19 崩溃并将 `<MusicPocket>` 整个组件从 DOM 树卸载，使 `.shijianus-music-pocket.is-open` 彻底消失；
+  2. **加固修复**：显式声明 `let rawVal`，将 60FPS RAF 渲染循环包裹在 `try/catch` 容错块内，并在 `removeTrack` 与切歌操作中对曲目边界与索引进行严格前置校验，确保操作与曲目移除后随身口袋面板持续稳定展开。
+- [x] **接入博客统一通知体系 (Unified Blog Snackbar Integration)**：
+  1. 废弃组件自建的隔离式小提示框（`.shijianus-music-pocket__toast`），全面接入博客主站顶部居中的活动提示栏（`window.snackbarShow`、`window.showToast` 与 `shijianus:activity` 广播）；
+  2. 无论是曲目添加、移除、倍速切换、睡眠倒计时设定还是音频加载提示，统一在博客顶部居中活动栏优雅呈现，强化插件与博客宿主的视觉与逻辑联系。
+- [x] **卡拉OK歌词视口内精准平滑跟随与已唱出部分高亮 (Lyrics Tracking & Sung State)**：
+  1. 废弃导致外层整页窗口上下跳动的 `scrollIntoView()`，重构为基于歌词滚动容器自身的相对位移计算：`lyricsContainerRef.current.scrollTo({ top: offset, behavior: 'smooth' })`，视口滚动严格锁定在播放器内部；
+  2. 歌词状态层次强化：
+     - 已唱出部分：`.lyrics-line.is-passed.is-sung`，弱化字色并呈现专属已唱出对勾微标（`.lyrics-line__check`）；
+     - 当前正在唱部分：`.lyrics-line.is-active.is-current`，字号加粗放大、标志性主题蓝（`#425aef`）发光高亮、专属左侧指示光条；
+     - 未唱出部分：`.lyrics-line.is-future`，保持次级浅灰文字等待推进。
+- [x] **Web Audio API 真实音频旋律与频率声波跟随 (Real Spectrum Audio Following)**：
+  1. **底层根因排查**：本地媒体静态资源（`/media/audio/*.flac`）在 Vite 开发服务器中缺少跨域头，导致 `<audio>` 媒体元素被浏览器标记为 CORS-tainted，Web Audio API 的 `analyser.getByteFrequencyData()` 因安全策略强制返回全 0，触发了组件的数学正弦波回退（`Math.sin(rhythmStep + ...)`），呈现虚拟跳动；
+  2. **环境与算法重构**：在 `astro.config.mjs` 中为 Vite 开发服务器配置 `server.cors: true` 与 `Access-Control-Allow-Origin: *`，彻底打通跨域音频频谱通道；
+  3. 优化 Canvas 频谱分析仪为对数 32 频段音频频谱分布，注入峰值阻尼衰减机制与真实低频/中频/高频振幅映射，使音跳真实且细腻地跟随歌曲旋律节奏起伏。
+- [x] **Playwright 真实浏览器全流程端到端自动化测试通过 (`scripts/verify-music-pocket.mjs`)**：
+  1. 全流程覆盖拟真唱针唱臂存在性与播放旋转状态断言；
+  2. 覆盖待播列表中移除曲目后面板不消失断言（`isPanelStillOpen === true`）；
+  3. 覆盖博客主导航活动提示栏统一事件触发断言；
+  4. 覆盖卡拉OK歌词跳转、当前行高亮与已唱出行数与对勾断言；
+  5. 覆盖真实 Web Audio Canvas 60FPS 声波频谱渲染断言，测试 100% PASS 全绿通过。
+
+
 
 
