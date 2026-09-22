@@ -246,19 +246,19 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
         finalUserId = existing.id;
       }
 
-      // 2. Upsert user safely by email conflict
+      // 2. Upsert user safely by email conflict (strictly prevent admin demotion or local provider overwriting Epomail)
       await db
         .prepare(`
           INSERT INTO users (id, email, name, avatar, website, role, provider, external_id, bio, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(email) DO UPDATE SET
-            name = excluded.name,
-            avatar = excluded.avatar,
-            website = excluded.website,
-            role = excluded.role,
-            provider = excluded.provider,
-            external_id = excluded.external_id,
-            bio = excluded.bio,
+            name = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.name ELSE excluded.name END,
+            avatar = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.avatar ELSE (CASE WHEN excluded.avatar != '' THEN excluded.avatar ELSE users.avatar END) END,
+            website = CASE WHEN excluded.website != '' THEN excluded.website ELSE users.website END,
+            role = CASE WHEN users.role = 'admin' AND excluded.role != 'admin' THEN 'admin' ELSE excluded.role END,
+            provider = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.provider ELSE excluded.provider END,
+            external_id = COALESCE(excluded.external_id, users.external_id),
+            bio = CASE WHEN excluded.bio != '' THEN excluded.bio ELSE users.bio END,
             updated_at = CURRENT_TIMESTAMP
         `)
         .bind(
@@ -662,6 +662,32 @@ export async function authenticateLocalReader(
 
   if (!name) {
     throw new Error('昵称不能为空');
+  }
+
+  // Security guard: Check against authoritative admin emails
+  const configuredAdminEmail = (env.ADMIN_EMAIL || CANONICAL_ADMIN_EMAIL).trim().toLowerCase();
+  if (email && (email === configuredAdminEmail || email === CANONICAL_ADMIN_EMAIL)) {
+    throw new Error('该邮箱属于站点管理员，请使用官方 Epomail 授权方式登录');
+  }
+
+  // Security guard: If a user with this email already exists with Epomail, prevent local takeover
+  const db = resolveActiveDb(env);
+  if (db && email) {
+    await ensureAuthTables(db);
+    try {
+      const existing = await db
+        .prepare('SELECT id, provider, role FROM users WHERE email = ? LIMIT 1')
+        .bind(email)
+        .first<{ id: string; provider: string; role: string }>();
+
+      if (existing) {
+        if (existing.role === 'admin' || existing.provider === 'epomail') {
+          throw new Error('该账号已绑定 Epomail 官方认证身份，请使用 Epomail OAuth 授权登录');
+        }
+      }
+    } catch (e: any) {
+      if (e?.message?.includes('Epomail')) throw e;
+    }
   }
 
   const userId = `local_u_${email ? email.replace(/[^a-z0-9]/g, '_') : generateRandomHex(8)}`;

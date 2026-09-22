@@ -3514,3 +3514,14 @@
   1. 校验 `optionsResponse` 在跨域预检场景下 100% 成功返回 204 及 CORS 响应头；
   2. 校验管理员令牌判定在全场景下零 `ReferenceError` 抛出，测试 100% PASS 通过。
 
+### Task 160: 身份认证与权限覆写防线加固 (SEC-03 本地认证防劫持与管理员防降权)
+- [x] **阻断通过本地认证接口篡改/劫持管理员身份的严重缺陷 (`functions/_lib/auth-service.ts`)**：
+  1. **漏洞根因**：原 `authenticateLocalReader` 与 `createSessionForUser` 允许直接使用任意邮箱执行冲突更新，`ON CONFLICT(email)` 导致现有管理员账号被降权为 reader 并覆盖资料；
+  2. **加固重构**：
+     - 在 `authenticateLocalReader` 中注入强力前置防线：严禁以管理员邮箱（`ADMIN_EMAIL` / `CANONICAL_ADMIN_EMAIL`）或已绑定 Epomail 的邮箱进行本地读者快速创建，强制要求走官方 Epomail OAuth 认证；
+     - 在 D1 SQLite 数据库更新策略中固化权限不可逆保护：`role = CASE WHEN users.role = 'admin' AND excluded.role != 'admin' THEN 'admin' ELSE excluded.role END`，在数据库层杜绝任何降权风险；
+     - 对 Epomail 认证账号属性提供隔离保护，禁止 local 身份覆盖已绑定的 avatar/name 等核心凭证。
+- [x] **自动化功能与安全测试通过 (`scripts/test-auth-hardening.mjs`)**：
+  1. 验证恶意传入站长邮箱时立即被拦截并友好提示（`400` 报错并阻断）；
+  2. 验证合法普通读者会话正常签发（`role: reader`）；测试 100% PASS 通过。
+
