@@ -1,5 +1,5 @@
 import type { AppEnv } from '../_lib/types';
-import { jsonResponse, optionsResponse } from '../_lib/http';
+import { jsonResponse, optionsResponse } from '../_lib/http.ts';
 
 export interface SponsorRecord {
   id: string;
