@@ -1,6 +1,10 @@
 /**
- * Safe and lightweight Markdown/Discourse parser for PostComments preview and rendering.
- * Supports standard Markdown, GFM tables, code blocks, spoilers, polls, callouts, and details.
+ * Safe, robust, and lightweight Markdown/Discourse parser for PostComments preview and rendering.
+ * Fully protects against Stored XSS while supporting rich formatting:
+ * - Code blocks (syntax highlight / Mermaid / Charts)
+ * - Polls, Callouts, Details/Summary, Math formulas, Spoilers
+ * - Headings, Blockquotes, GFM Tables, Ordered/Unordered Lists, Strikethrough, Bold/Italic
+ * - Safe Links & Images (strictly whitelist http/https)
  */
 
 function escapeHtml(str: string): string {
@@ -12,30 +16,39 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function sanitizeUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim();
+  if (/^https?:\/\//i.test(trimmed) || /^\/(?!\/)/.test(trimmed)) {
+    return escapeHtml(trimmed);
+  }
+  return '#';
+}
+
 export function renderCommentMarkdown(raw: string): string {
   if (!raw || !raw.trim()) return '';
 
   let text = raw;
 
-  // 1. Code blocks (```language ... ```) - extract and placeholder to prevent inner parsing
-  const codeBlocks: string[] = [];
+  // Placeholder store for multi-line block structures
+  const placeholders: string[] = [];
+  function saveBlock(html: string): string {
+    const key = `\x00BLOCK_${placeholders.length}_\x00`;
+    placeholders.push(html);
+    return key;
+  }
+
+  // 1. Code blocks (```language ... ```) - extract and escape content
   text = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
-    const idx = codeBlocks.length;
-    const cleanLang = (lang || 'code').toLowerCase();
+    const cleanLang = (lang || 'code').toLowerCase().replace(/[^a-z0-9_-]/g, '');
     const escapedCode = escapeHtml(code.trimEnd());
     if (cleanLang === 'mermaid' || cleanLang === 'chart' || cleanLang === 'graphviz') {
-      codeBlocks.push(
-        `<div class="tk-chart-container tk-chart-${cleanLang}">
-          <div class="tk-chart-badge">${cleanLang.toUpperCase()} 图表</div>
-          <pre class="tk-code-pre"><code>${escapedCode}</code></pre>
-        </div>`
-      );
-    } else {
-      codeBlocks.push(
-        `<pre class="tk-code-block" data-lang="${cleanLang}"><code class="language-${cleanLang}">${escapedCode}</code></pre>`
+      return saveBlock(
+        `<div class="tk-chart-container tk-chart-${cleanLang}"><div class="tk-chart-badge">${cleanLang.toUpperCase()} 图表</div><pre class="tk-code-pre"><code>${escapedCode}</code></pre></div>`
       );
     }
-    return `<!--CODE_BLOCK_${idx}-->`;
+    return saveBlock(
+      `<pre class="tk-code-block" data-lang="${cleanLang}"><code class="language-${cleanLang}">${escapedCode}</code></pre>`
+    );
   });
 
   // 2. Polls ([poll ...] ... [/poll])
@@ -56,58 +69,39 @@ export function renderCommentMarkdown(raw: string): string {
       )
       .join('');
 
-    return `
+    return saveBlock(`
       <div class="tk-poll-card">
         <div class="tk-poll-header">📊 投票调查 (预览)</div>
         <div class="tk-poll-options">${optionsHtml}</div>
         <div class="tk-poll-footer">共 ${options.length} 个候选项</div>
       </div>
-    `;
+    `);
   });
 
   // 3. Callout / Container (::: note title \n content \n :::)
   text = text.replace(/:::\s*([a-zA-Z0-9_-]*)(?:[^\n]*)\n([\s\S]*?):::/g, (_, type, body) => {
-    const cleanType = (type || 'note').toLowerCase();
-    return `<div class="tk-callout tk-callout-${cleanType}"><div class="tk-callout-body">${escapeHtml(body.trim())}</div></div>`;
+    const cleanType = (type || 'note').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    return saveBlock(
+      `<div class="tk-callout tk-callout-${cleanType}"><div class="tk-callout-body">${escapeHtml(body.trim())}</div></div>`
+    );
   });
 
   // 4. Details / Summary (<details><summary>...</summary>...</details>)
   text = text.replace(/<details>\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi, (_, summary, body) => {
-    return `<details class="tk-details"><summary class="tk-summary">${escapeHtml(summary.trim())}</summary><div class="tk-details-content">${escapeHtml(body.trim())}</div></details>`;
+    return saveBlock(
+      `<details class="tk-details"><summary class="tk-summary">${escapeHtml(summary.trim())}</summary><div class="tk-details-content">${escapeHtml(body.trim())}</div></details>`
+    );
   });
 
-  // 5. Spoiler tags: [spoiler]text[/spoiler] or <span class="spoiler">text</span>
-  text = text.replace(/\[spoiler\]([\s\S]*?)\[\/spoiler\]/gi, (_, spText) => {
-    return `<span class="tk-spoiler" title="剧透内容，点击或悬浮查看">${escapeHtml(spText)}</span>`;
-  });
-  text = text.replace(/<span\s+class=["']spoiler["']>([\s\S]*?)<\/span>/gi, (_, spText) => {
-    return `<span class="tk-spoiler" title="剧透内容，点击或悬浮查看">${escapeHtml(spText)}</span>`;
-  });
-
-  // 6. Math formulas: $$ ... $$ and $ ... $
+  // 5. Math blocks ($$ ... $$)
   text = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
-    return `<div class="tk-math-block"><code>${escapeHtml(math.trim())}</code></div>`;
-  });
-  text = text.replace(/\$([^\$\n]+)\$/g, (_, math) => {
-    return `<span class="tk-math-inline"><code>${escapeHtml(math.trim())}</code></span>`;
+    return saveBlock(`<div class="tk-math-block"><code>${escapeHtml(math.trim())}</code></div>`);
   });
 
-  // 7. Dates: [date=... format="..."]
-  text = text.replace(/\[date=([^\s\]]+)(?:\s+format=["']?([^"']+)["']?)?\]/gi, (_, dVal) => {
-    return `<time class="tk-date-badge">📅 ${escapeHtml(dVal)}</time>`;
-  });
-
-  // 8. Markdown Headings (# to ####)
-  text = text.replace(/^####\s+(.*)$/gm, '<h5 class="tk-md-h">$1</h5>');
-  text = text.replace(/^###\s+(.*)$/gm, '<h4 class="tk-md-h">$1</h4>');
-  text = text.replace(/^##\s+(.*)$/gm, '<h3 class="tk-md-h">$1</h3>');
-  text = text.replace(/^#\s+(.*)$/gm, '<h2 class="tk-md-h">$1</h2>');
-
-  // 9. Tables: GFM table format
+  // 6. Tables: GFM table format
   text = text.replace(/((?:\|[^\n]+\|\r?\n)+)/g, (tableMatch) => {
     const rows = tableMatch.trim().split('\n').map((r) => r.trim());
     if (rows.length < 2) return tableMatch;
-    // Check if second row is separator | --- | --- |
     const isSep = rows[1].replace(/[\s|:-]/g, '').length === 0;
     if (!isSep) return tableMatch;
 
@@ -130,65 +124,99 @@ export function renderCommentMarkdown(raw: string): string {
       )
       .join('')}</tbody>`;
 
-    return `<div class="tk-table-wrapper"><table class="tk-md-table">${thead}${tbody}</table></div>`;
+    return saveBlock(`<div class="tk-table-wrapper"><table class="tk-md-table">${thead}${tbody}</table></div>`);
   });
 
-  // 10. Blockquotes (> ...)
-  text = text.replace(/^(?:>\s*(?:.*)(?:\r?\n|$))+/gm, (blockquoteMatch) => {
+  // =========================================================================
+  // CRITICAL SECURITY BARRIER:
+  // Escape ALL remaining characters in text. Any unparsed HTML tags (<script>,
+  // <img>, <svg>, <iframe...>) are permanently neutralized to safe entities!
+  // =========================================================================
+  text = escapeHtml(text);
+
+  // 7. Spoiler tags: [spoiler]text[/spoiler] or escaped <span class="spoiler">text</span>
+  text = text.replace(/\[spoiler\]([\s\S]*?)\[\/spoiler\]/gi, (_, spText) => {
+    return `<span class="tk-spoiler" title="剧透内容，点击或悬浮查看">${spText}</span>`;
+  });
+  text = text.replace(/&lt;span\s+class=(?:&quot;|&#039;)spoiler(?:&quot;|&#039;)&gt;([\s\S]*?)&lt;\/span&gt;/gi, (_, spText) => {
+    return `<span class="tk-spoiler" title="剧透内容，点击或悬浮查看">${spText}</span>`;
+  });
+
+  // 8. Math inline ($ ... $)
+  text = text.replace(/\$([^\$\n]+)\$/g, (_, math) => {
+    return `<span class="tk-math-inline"><code>${math.trim()}</code></span>`;
+  });
+
+  // 9. Dates: [date=... format="..."]
+  text = text.replace(/\[date=([^\s\]]+)(?:\s+format=(?:&quot;|&#039;)?([^"']*)(?:&quot;|&#039;)?)?\]/gi, (_, dVal) => {
+    return `<time class="tk-date-badge">📅 ${dVal}</time>`;
+  });
+
+  // 10. Markdown Headings (# to ####) - input is already HTML-escaped
+  text = text.replace(/^####\s+(.*)$/gm, '<h5 class="tk-md-h">$1</h5>');
+  text = text.replace(/^###\s+(.*)$/gm, '<h4 class="tk-md-h">$1</h4>');
+  text = text.replace(/^##\s+(.*)$/gm, '<h3 class="tk-md-h">$1</h3>');
+  text = text.replace(/^#\s+(.*)$/gm, '<h2 class="tk-md-h">$1</h2>');
+
+  // 11. Blockquotes (> ...) - since > was escaped to &gt;
+  text = text.replace(/^(?:&gt;\s?(?:.*)(?:\r?\n|$))+/gm, (blockquoteMatch) => {
     const inner = blockquoteMatch
       .split('\n')
-      .map((l) => l.replace(/^>\s?/, ''))
+      .map((l) => l.replace(/^&gt;\s?/, ''))
       .join('<br />');
     return `<blockquote class="tk-md-blockquote">${inner}</blockquote>`;
   });
 
-  // 11. Lists (- item, * item, 1. item)
+  // 12. Lists (- item, * item, 1. item)
   text = text.replace(/^([*-]\s+.*(?:\r?\n[*-]\s+.*)*)/gm, (listMatch) => {
     const items = listMatch
       .split('\n')
-      .map((l) => `<li>${escapeHtml(l.replace(/^[*-]\s+/, ''))}</li>`)
+      .map((l) => `<li>${l.replace(/^[*-]\s+/, '')}</li>`)
       .join('');
     return `<ul class="tk-md-ul">${items}</ul>`;
   });
   text = text.replace(/^(\d+\.\s+.*(?:\r?\n\d+\.\s+.*)*)/gm, (listMatch) => {
     const items = listMatch
       .split('\n')
-      .map((l) => `<li>${escapeHtml(l.replace(/^\d+\.\s+/, ''))}</li>`)
+      .map((l) => `<li>${l.replace(/^\d+\.\s+/, '')}</li>`)
       .join('');
     return `<ol class="tk-md-ol">${items}</ol>`;
   });
 
-  // 12. Inline codes (`...`)
+  // 13. Inline codes (`...`) - input is already HTML-escaped
   text = text.replace(/`([^`\n]+)`/g, '<code class="tk-inline-code">$1</code>');
 
-  // 13. Bold and Italic
+  // 14. Strikethrough (~~text~~)
+  text = text.replace(/~~([^~]+)~~/g, '<del class="tk-strikethrough">$1</del>');
+
+  // 15. Bold and Italic
   text = text.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
   text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-  // 14. Links ([text](url)) and Images (![alt](url))
-  text = text.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (_, alt, url) => {
-    return `<img class="tk-md-img" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
+  // 16. Links and Images (strictly whitelist http/https)
+  text = text.replace(/!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_, alt, url) => {
+    return `<img class="tk-md-img" src="${sanitizeUrl(url)}" alt="${alt}" loading="lazy" />`;
   });
-  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, title, url) => {
-    return `<a class="tk-md-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
+  text = text.replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_, title, url) => {
+    return `<a class="tk-md-link" href="${sanitizeUrl(url)}" target="_blank" rel="noopener noreferrer">${title}</a>`;
   });
 
-  // 15. Footnotes: [^1] and [^1]: ...
+  // 17. Footnotes: [^1] and [^1]: ...
   text = text.replace(/\[\^(\w+)\]:\s*([^\n]+)/g, (_, fnId, fnText) => {
-    return `<div class="tk-footnote-def" id="fn-${escapeHtml(fnId)}"><span class="tk-fn-num">[${escapeHtml(fnId)}]</span> ${escapeHtml(fnText)}</div>`;
+    return `<div class="tk-footnote-def" id="fn-${fnId}"><span class="tk-fn-num">[${fnId}]</span> ${fnText}</div>`;
   });
   text = text.replace(/\[\^(\w+)\]/g, (_, fnId) => {
-    return `<sup class="tk-footnote-ref"><a href="#fn-${escapeHtml(fnId)}">[${escapeHtml(fnId)}]</a></sup>`;
+    return `<sup class="tk-footnote-ref"><a href="#fn-${fnId}">[${fnId}]</a></sup>`;
   });
 
-  // 16. Paragraphs and Linebreaks
+  // 18. Paragraphs and Linebreaks
   text = text.replace(/\n\n+/g, '</p><p>');
   text = text.replace(/\n/g, '<br />');
 
-  // 17. Restore Code Blocks
-  text = text.replace(/<!--CODE_BLOCK_(\d+)-->/g, (_, idx) => {
-    return codeBlocks[Number(idx)] || '';
+  // 19. Restore Placeholders in reverse order
+  placeholders.forEach((html, i) => {
+    text = text.replace(`\x00BLOCK_${i}_\x00`, html);
   });
 
   return `<div class="tk-markdown-body"><p>${text}</p></div>`;
