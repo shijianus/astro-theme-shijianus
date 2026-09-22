@@ -3525,7 +3525,7 @@
   1. 验证恶意传入站长邮箱时立即被拦截并友好提示（`400` 报错并阻断）；
   2. 验证合法普通读者会话正常签发（`role: reader`）；测试 100% PASS 通过。
 
-### Task 161: 访客限流穿透与伪造点赞阻断及 Telegram 消息转义安全加固 (SEC-09, SEC-10, SEC-11) (`891747d`)
+### Task 161: 访客限流穿透与伪造点赞阻断及 Telegram 消息转义安全加固 (SEC-09, SEC-10, SEC-11) (`2839a6b`)
 - [x] **阻断访客伪造 `authorRole: 'reader'` 绕过频次限流 (SEC-09)**:
   1. **漏洞根因**：原评论提交接口盲目信任请求体中的 `payload.authorRole === 'reader'`，未经验证即将 `authorRole` 设为 `reader`，导致 `isVisitor = false` 从而跳过 1 小时最多 3 条普通评论/5 条 Boost 的安全防滥用限流；
   2. **加固修复**：严格只根据服务端有效凭证（`isAdmin` 或 `getUserBySessionToken(sessionToken, env)`）判定 `authorRole`；未携带合法已登录凭证的用户一律强制归入 `visitor`，确保频次限流 100% 无法绕过。
