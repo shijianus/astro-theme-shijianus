@@ -942,6 +942,99 @@
       }
     }
   },
+  "test-audit-dot-casing": {
+    "i18nKey": "test-audit-dot-casing",
+    "translations": {
+      "EN": {
+        "filename": "test-audit-dot-casing.en.md",
+        "slug": "test-audit-dot-casing.en",
+        "title": "Dot Notation Casing Test (English)",
+        "isAiGenerated": false
+      },
+      "ZH-CN": {
+        "filename": "test-audit-dot-casing.zh-CN.md",
+        "slug": "test-audit-dot-casing.zh-CN",
+        "title": "点号命名与混合大小写测试 (中文版)",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "test-audit-monolingual-single": {
+    "i18nKey": "test-audit-monolingual-single",
+    "translations": {
+      "zh-CN": {
+        "filename": "test-audit-monolingual-single.md",
+        "slug": "test-audit-monolingual-single",
+        "title": "单语言独立文章隔离审计测试",
+        "isAiGenerated": false
+      }
+    }
+  },
+  "test-audit-polyglot-matrix": {
+    "i18nKey": "test-audit-polyglot-matrix",
+    "translations": {
+      "de": {
+        "filename": "test-audit-polyglot-matrix-de.md",
+        "slug": "test-audit-polyglot-matrix-de",
+        "title": "Polyglotte Matrix-Prüfung (Deutsch)",
+        "isAiGenerated": false
+      },
+      "en": {
+        "filename": "test-audit-polyglot-matrix-en.md",
+        "slug": "test-audit-polyglot-matrix-en",
+        "title": "Polyglot Matrix Audit Verification (English)",
+        "isAiGenerated": false
+      },
+      "es": {
+        "filename": "test-audit-polyglot-matrix-es.md",
+        "slug": "test-audit-polyglot-matrix-es",
+        "title": "Verificación de matriz políglota (Español)",
+        "isAiGenerated": false
+      },
+      "fr": {
+        "filename": "test-audit-polyglot-matrix-fr.md",
+        "slug": "test-audit-polyglot-matrix-fr",
+        "title": "Vérification de la matrice polyglotte (Français)",
+        "isAiGenerated": false
+      },
+      "it": {
+        "filename": "test-audit-polyglot-matrix-it.md",
+        "slug": "test-audit-polyglot-matrix-it",
+        "title": "Verifica matrice multilingue (Italiano)",
+        "isAiGenerated": false
+      },
+      "ja": {
+        "filename": "test-audit-polyglot-matrix-ja.md",
+        "slug": "test-audit-polyglot-matrix-ja",
+        "title": "多言語マトリックス監査検証 (日本語)",
+        "isAiGenerated": false
+      },
+      "ko": {
+        "filename": "test-audit-polyglot-matrix-ko.md",
+        "slug": "test-audit-polyglot-matrix-ko",
+        "title": "다국어 매트릭스 감사 검증 (한국어)",
+        "isAiGenerated": false
+      },
+      "ru": {
+        "filename": "test-audit-polyglot-matrix-ru.md",
+        "slug": "test-audit-polyglot-matrix-ru",
+        "title": "Проверка полиглотической матрицы (Русский)",
+        "isAiGenerated": false
+      },
+      "zh-Hant": {
+        "filename": "test-audit-polyglot-matrix-zh-Hant.md",
+        "slug": "test-audit-polyglot-matrix-zh-Hant",
+        "title": "多語言全矩陣極限審計測試 (繁體中文)",
+        "isAiGenerated": false
+      },
+      "zh-CN": {
+        "filename": "test-audit-polyglot-matrix.md",
+        "slug": "test-audit-polyglot-matrix",
+        "title": "多语言全矩阵极限审计测试 (中文版)",
+        "isAiGenerated": false
+      }
+    }
+  },
   "test-i18n-resilience": {
     "i18nKey": "test-i18n-resilience",
     "translations": {

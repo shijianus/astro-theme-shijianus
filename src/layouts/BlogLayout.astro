@@ -188,6 +188,9 @@ const paypalUkMeUrl =
     <script is:inline>
       (() => {
         try {
+          if (document.documentElement.dataset.localeResolved === 'true') {
+            return;
+          }
           const docLang = document.documentElement.getAttribute('lang') || document.documentElement.lang;
           // If the page was rendered with an explicit locale (e.g. es, fr, de, en, zh-Hant), respect it!
           if (docLang && docLang !== 'zh-CN') {

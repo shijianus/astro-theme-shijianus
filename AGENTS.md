@@ -3425,5 +3425,26 @@
 - [x] **动态形变穿帮与“假圆角”根因全景排查并固化报告 (`docs/DYNAMIC_SNOW_PHYSICS_AUDIT_REPORT.md`)**:
   1. 静态坐标缓存缺陷：无法响应 `.categoryButton.lime` 的 `flex: 1.85`（膨胀 102px）与卡片 `hover:-translate-y-0.5` 动态位移；
   2. 人工同心圆角虚假感：旧贝塞尔算法机械拟合 12px 圆角，违背重力沉积与自然雪檐悬挑规律；
-  3. 全矩阵表面漏雪：系统性查明 `#categoryBar`、`#footer-wrap`、`#footer-bar`、`#post-comment`、`.relatedPosts-item` 等缺失表面。
+
+### Task 154: 文章多语言翻译变体 (article-translation-variant) 全量白盒审计、Zero-FOUC 极速渲染与无刷新受限解锁加固 (`PENDING`)
+- [x] **源码级白盒审计与 Canonical 组全量映射**:
+  1. 系统性扫描 146 篇物理 Markdown 文章，100% 完整收敛映射至 30 个 Canonical 组，建立双向映射表 (`src/.generated/article-i18n-map.json`)；
+  2. 针对极端边缘边界构建测试矩阵博文：10 语言全矩阵 (`test-audit-polyglot-matrix*.md`)、单语言独立文章 (`test-audit-monolingual-single.md`)、点号与大小写混合命名 (`test-audit-dot-casing*.md`)；
+  3. 白盒审计证明：所有带有翻译版本的文章均能在 DOM 中完整挂载对应的 `.article-translation-variant`，且初始状态严格唯独激活 1 个当前语言变体。
+- [x] **Zero-FOUC 极速渲染与双重 CSS 安全兜底**:
+  1. `<head>` 早期注入语言判定脚本与动态内联 CSS 选择器规则，页面解析首帧即通过属性选择器锁定目标变体，彻底根除切换语言或刷新时的闪烁 (FOUC)；
+  2. 在 `[slug].astro` 注入 CSS 集合级否定伪类兜底选择器（`html[data-locale-variant]:not(...) .article-translation-variant[data-lang="..."]`），确保即使遇到未知或不匹配的语言属性时，默认语言变体亦恒定保持展示，杜绝任何白屏或 0 变体可见异常；
+  3. 在 `src/layouts/BlogLayout.astro` 注入 `document.documentElement.dataset.localeResolved === 'true'` 守卫，杜绝全局布局脚本盲目用硬编码语言覆盖当前博文的特有语言集合。
+- [x] **受限密码文章 (Password-Protected) 静态模式客户端安全解锁**:
+  1. 结合 `accessPasswordHash` 与原生 Web Crypto API (SHA-256)，在 SSG 静态生成环境下实现客户端免刷新实时安全校验与解锁；
+  2. 解锁后利用 `sessionStorage` 维持授权状态，支持解锁后无缝切换 6 语言译本并保留阅读记忆；
+  3. 解锁前通过 `Globe` 徽标友好提示译本数量（如“包含 6 种语言译本，解锁后可自由切换阅读”）。
+- [x] **阅读位置无缝衔接与双保险视口恢复**:
+  1. 读者在切换语言时，优先捕获当前视口中阅读章节的 Heading ID / Index 并在目标译本中平滑卷动对齐；
+  2. 若遇到译本标题结构差异，自动通过容器相对百分比 `ratio` 进行智能兜底恢复，保障沉浸式跨语言阅读体验。
+- [x] **自动化端到端测试全景通过与客观报告沉淀**:
+  1. 编写并执行全量 Playwright 验证脚本 `scripts/verify-all-translation-variants-e2e.mjs`，30 组文章全矩阵 100% PASS 通过；
+  2. 编写并执行受限文章解锁测试 `scripts/verify-static-unlock.mjs`，100% PASS 通过；
+  3. 输出客观翔实的《文章多语言翻译系统白盒审计与打磨交付报告》(`TRANSLATION_AUDIT_REPORT.md`)。
+
 

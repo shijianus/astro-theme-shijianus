@@ -281,7 +281,7 @@ type RenderedVariant = {
 const renderedVariants: RenderedVariant[] = [];
 const variantHeadings: Record<string, Awaited<ReturnType<typeof render>>['headings']> = {};
 
-if (!isSuffixRoute && isUnlocked) {
+if (!isSuffixRoute && (isUnlocked || (STATIC_EXPORT && Boolean(accessPasswordHash)))) {
   for (const p of siblingTranslations) {
     const pSuffixMatch = p.id.match(langSuffixRegex);
     const pNormLang = pSuffixMatch ? normalizeLangCode(pSuffixMatch[1]) : undefined;
@@ -488,6 +488,53 @@ const heroSummary = isUnlocked
           ))}
         </>
       )}
+      {renderedVariants.length > 0 && (
+        <>
+          <script is:inline set:html={`
+            try {
+              var available = ${JSON.stringify(renderedVariants.map((v) => v.lang))};
+              var defaultLang = ${JSON.stringify(effectiveCurrentLang)};
+              var stored = window.localStorage.getItem('shijianus-manual-locale-selected') ||
+                           window.localStorage.getItem('shijianus-locale-variant');
+              var chosen = stored;
+              if (!chosen) {
+                var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                if (nav.startsWith('en')) chosen = 'en';
+                else if (nav.startsWith('es')) chosen = 'es';
+                else if (nav.startsWith('de')) chosen = 'de';
+                else if (nav.startsWith('fr')) chosen = 'fr';
+                else if (nav.startsWith('ja')) chosen = 'ja';
+                else if (nav.startsWith('ko')) chosen = 'ko';
+                else if (nav.startsWith('ru')) chosen = 'ru';
+                else if (nav.startsWith('it')) chosen = 'it';
+                else if (nav.startsWith('pt')) chosen = 'pt';
+                else if (nav.startsWith('vi')) chosen = 'vi';
+                else if (nav.startsWith('ar')) chosen = 'ar';
+                else if (nav === 'zh-tw' || nav === 'zh-hk' || nav.indexOf('hant') !== -1) chosen = 'zh-Hant';
+                else if (nav.startsWith('zh')) chosen = 'zh-CN';
+                else chosen = nav.split('-')[0];
+              }
+              if (chosen && available.indexOf(chosen) !== -1) {
+                document.documentElement.lang = chosen;
+                document.documentElement.dataset.localeVariant = chosen;
+              } else {
+                document.documentElement.lang = defaultLang;
+                document.documentElement.dataset.localeVariant = defaultLang;
+              }
+              document.documentElement.dataset.localeResolved = 'true';
+            } catch (_) {}
+          `} />
+          <style is:inline set:html={`
+            html[data-locale-variant] .article-translation-variant {
+              display: none !important;
+            }
+            ${renderedVariants.map((v) => `html[data-locale-variant="${v.lang}"] .article-translation-variant[data-lang="${v.lang}"] { display: block !important; }`).join('\n')}
+            html[data-locale-variant]${renderedVariants.map((v) => `:not([data-locale-variant="${v.lang}"])`).join('')} .article-translation-variant[data-lang="${effectiveCurrentLang}"] {
+              display: block !important;
+            }
+          `} />
+        </>
+      )}
     </Fragment>
 
     <Fragment slot="hero">
@@ -546,33 +593,50 @@ const heroSummary = isUnlocked
         ) : isUnlocked && Content ? (
           <Content />
         ) : (
-          <section class="content-access-panel content-access-panel--server">
-            <span class="content-access-panel__eyebrow">访问验证</span>
-            <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
-            <p>{unlockErrorMessage || accessState.denialReason}</p>
-            {accessState.requiresPassword && accessState.locationAllowed && (
-              <form method="post" class="content-access-panel__form">
-                <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
-                <button type="submit">解锁文章</button>
-              </form>
+          <>
+            <section class="content-access-panel content-access-panel--server" data-access-post-id={postEntry.id}>
+              <span class="content-access-panel__eyebrow">访问验证</span>
+              <h2>{accessState.locationAllowed ? '这篇文章需要解锁后阅读' : '当前网络环境不可访问这篇文章'}</h2>
+              <p>{unlockErrorMessage || accessState.denialReason}</p>
+              {accessState.requiresPassword && accessState.locationAllowed && (
+                <form method="post" class="content-access-panel__form" id="content-access-unlock-form">
+                  <input type="password" name="post-password" autocomplete="current-password" placeholder="输入文章密码" required />
+                  <button type="submit">解锁文章</button>
+                </form>
+              )}
+              {siblingTranslations.length > 1 && (
+                <div class="content-access-panel__i18n-hint">
+                  <Globe className="content-access-panel__i18n-icon" aria-hidden="true" />
+                  <span>包含 {siblingTranslations.length} 种语言译本，解锁后可自由切换阅读</span>
+                </div>
+              )}
+              {!accessState.locationAllowed && (
+                <div class="content-access-panel__status" data-state="error">
+                  已根据当前请求地址与地区策略拦截访问。
+                </div>
+              )}
+              {unlockErrorMessage && (
+                <div class="content-access-panel__status" data-state="error">
+                  {unlockErrorMessage}
+                </div>
+              )}
+              <div class="content-access-panel__status" data-state="error" id="content-access-client-error" style="display: none;"></div>
+            </section>
+
+            {!isUnlocked && renderedVariants.length > 0 && accessPasswordHash && (
+              <template id="shijianus-protected-variants-template" data-expected-hash={accessPasswordHash} data-post-id={postEntry.id}>
+                {renderedVariants.map(({ lang: vLang, Content: VariantContent }) => (
+                  <div
+                    class="article-translation-variant"
+                    data-lang={vLang}
+                    style={vLang === effectiveCurrentLang ? '' : 'display: none;'}
+                  >
+                    <VariantContent />
+                  </div>
+                ))}
+              </template>
             )}
-            {siblingTranslations.length > 1 && (
-              <div class="content-access-panel__i18n-hint">
-                <Globe className="content-access-panel__i18n-icon" aria-hidden="true" />
-                <span>包含 {siblingTranslations.length} 种语言译本，解锁后可自由切换阅读</span>
-              </div>
-            )}
-            {!accessState.locationAllowed && (
-              <div class="content-access-panel__status" data-state="error">
-                已根据当前请求地址与地区策略拦截访问。
-              </div>
-            )}
-            {unlockErrorMessage && (
-              <div class="content-access-panel__status" data-state="error">
-                {unlockErrorMessage}
-              </div>
-            )}
-          </section>
+          </>
         )}
       </article>
 
@@ -723,6 +787,69 @@ const heroSummary = isUnlocked
               tocDictionary = {},
             } = config;
 
+            // Client-side instant unlock for protected articles in static hosting mode
+            const accessForm = document.getElementById('content-access-unlock-form');
+            const protectedTemplate = document.getElementById('shijianus-protected-variants-template');
+            if (accessForm && protectedTemplate) {
+              const expectedHash = (protectedTemplate.dataset.expectedHash || '').toLowerCase();
+              const postId = protectedTemplate.dataset.postId || '';
+
+              function applyUnlockedVariants() {
+                const container = document.getElementById('article-container');
+                const panel = document.querySelector('.content-access-panel--server');
+                if (panel) panel.remove();
+                if (container && protectedTemplate.content) {
+                  const fragment = protectedTemplate.content.cloneNode(true);
+                  container.appendChild(fragment);
+                  container.dataset.contentFeatures = 'true';
+                }
+                const heroTranslations = document.querySelector('.post-hero__translations');
+                if (heroTranslations) heroTranslations.style.display = '';
+                const current = document.documentElement.dataset.localeVariant || document.documentElement.lang || defaultLang;
+                if (window.switchArticleLanguage) {
+                  window.switchArticleLanguage(current);
+                }
+                window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: current }));
+                window.dispatchEvent(new Event('resize'));
+              }
+
+              // Auto-unlock if session already granted
+              try {
+                if (window.sessionStorage.getItem('shijianus-post-access:' + postId) === 'unlocked') {
+                  applyUnlockedVariants();
+                }
+              } catch (_) {}
+
+              accessForm.addEventListener('submit', async function (e) {
+                const pwInput = accessForm.querySelector('input[name="post-password"]');
+                const val = pwInput ? pwInput.value.trim() : '';
+                if (!val) return;
+                e.preventDefault();
+
+                try {
+                  const enc = new TextEncoder();
+                  const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(val));
+                  const hashArr = Array.from(new Uint8Array(hashBuf));
+                  const hex = hashArr.map((b) => b.toString(16).padStart(2, '0')).join('').toLowerCase();
+
+                  if (hex === expectedHash) {
+                    try {
+                      window.sessionStorage.setItem('shijianus-post-access:' + postId, 'unlocked');
+                    } catch (_) {}
+                    applyUnlockedVariants();
+                  } else {
+                    const errEl = document.getElementById('content-access-client-error');
+                    if (errEl) {
+                      errEl.textContent = '密码不正确，请重试。';
+                      errEl.style.display = 'block';
+                    }
+                  }
+                } catch (_) {
+                  accessForm.submit();
+                }
+              });
+            }
+
             function normalizeLang(raw) {
               if (!raw) return 'zh-CN';
               const trimmed = String(raw).trim().toLowerCase().replace(/_/g, '-');
@@ -770,12 +897,17 @@ const heroSummary = isUnlocked
               let anchorSelector = null;
               const currentVariant = document.querySelector('.article-translation-variant:not([style*="display: none"])');
               if (currentVariant && window.scrollY > 150) {
+                const cRect = currentVariant.getBoundingClientRect();
+                const scrollProgress = cRect.height > 0 ? Math.max(0, -cRect.top / cRect.height) : 0;
+                anchorSelector = { ratio: scrollProgress };
+
                 const headings = Array.from(currentVariant.querySelectorAll('h1, h2, h3, h4, [id]'));
                 for (let i = headings.length - 1; i >= 0; i--) {
                   const h = headings[i];
                   const rect = h.getBoundingClientRect();
                   if (rect.top <= 140 && rect.bottom >= -600) {
-                    anchorSelector = { index: i, id: h.id };
+                    anchorSelector.index = i;
+                    anchorSelector.id = h.id;
                     break;
                   }
                 }
@@ -872,17 +1004,24 @@ const heroSummary = isUnlocked
                   }
                   if (!targetNode && typeof anchorSelector.index === 'number') {
                     const newHeadings = Array.from(newVariant.querySelectorAll('h1, h2, h3, h4, [id]'));
-                    targetNode = newHeadings[anchorSelector.index] || newHeadings[0];
+                    targetNode = newHeadings[anchorSelector.index];
                   }
+
+                  const prevBehavior = document.documentElement.style.scrollBehavior;
+                  document.documentElement.style.scrollBehavior = 'auto';
+
                   if (targetNode) {
-                    const prevBehavior = document.documentElement.style.scrollBehavior;
-                    document.documentElement.style.scrollBehavior = 'auto';
                     const targetTop = targetNode.getBoundingClientRect().top + window.scrollY - 110;
                     window.scrollTo({ top: Math.max(0, targetTop), behavior: 'instant' });
-                    requestAnimationFrame(() => {
-                      document.documentElement.style.scrollBehavior = prevBehavior;
-                    });
+                  } else if (typeof anchorSelector.ratio === 'number' && anchorSelector.ratio > 0) {
+                    const nRect = newVariant.getBoundingClientRect();
+                    const targetTop = window.scrollY + nRect.top + (nRect.height * anchorSelector.ratio);
+                    window.scrollTo({ top: Math.max(0, targetTop), behavior: 'instant' });
                   }
+
+                  requestAnimationFrame(() => {
+                    document.documentElement.style.scrollBehavior = prevBehavior;
+                  });
                 }
               }
 
@@ -951,6 +1090,9 @@ const heroSummary = isUnlocked
 
             if (initialLang && availableLangs.includes(initialLang) && initialLang !== defaultLang) {
               window.switchArticleLanguage(initialLang);
+            } else if (!availableLangs.includes(initialLang) || initialLang === defaultLang) {
+              document.documentElement.lang = defaultLang;
+              document.documentElement.dataset.localeVariant = defaultLang;
             }
 
             // Calibrate hash scroll anchor to the active variant
