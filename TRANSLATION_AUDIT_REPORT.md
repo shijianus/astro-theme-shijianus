@@ -233,49 +233,45 @@ const siblingTranslations = allPosts.filter((p) => {
 
 ---
 
-## 七、 进一步细节打磨建议 (Actionable Recommendations)
+## 七、 细节打磨实施与安全加固 (Implemented Polish & Hardening)
 
-基于以上白盒核验与极端测试发现，为进一步提升站点的多语言工业级质感，提出如下建议：
+根据上述审计发现，已全面完成如下细节打磨与安全加固，并在本地及真实生产端通过自动化端到端测试验收：
 
-### 建议 1：注入 `<head>` 零闪烁 CSS 选择器 (Zero Layout Shift)
-在 `<head>` 区域或 HTML 顶层增加如下微小内联控制：
-```html
-<script is:inline>
-  // 在 DOM 解析前即刻确定并锁定目标语言，挂载到 <html>
-  const preferredLocale = localStorage.getItem('shijianus-manual-locale-selected') || 
-                          (navigator.language.startsWith('en') ? 'en' : 'zh-CN');
-  document.documentElement.dataset.localeVariant = preferredLocale;
-</script>
-```
-配合全局 CSS：
-```css
-/* 若 html 已标明语言偏好，直接由 CSS 决定首选显示，规避 JS 激活前的短暂闪烁 */
-html[data-locale-variant="en"] .article-translation-variant[data-lang="zh-CN"] {
-  display: none !important;
-}
-html[data-locale-variant="en"] .article-translation-variant[data-lang="en"] {
-  display: block !important;
-}
-```
-可实现 0 毫秒首屏语言对齐，彻底消除 FOUC 闪烁。
+### 1. 注入 `<head>` 零闪烁 CSS 选择器与兜底保障 (Zero-FOUC & Fallback)
+- **早期语言锁定**：在 `<head>` 中注入早期判断脚本，优先读取用户的显式语言偏好，与文章实际拥有的 `available` 语言集合对比校验，若存在则锁定，若不存在则安全回退到当前文章的默认语言，并标记 `document.documentElement.dataset.localeResolved = "true"`。
+- **CSS 声明式渲染**：构建时动态输出当前文章所有语言变体的 `html[data-locale-variant="..."]` 显示规则，使得页面首帧解析即锁定正确的目标变体，彻底消除 JS 水合前后的语言跳动 (Zero-FOUC)。
+- **集合级 CSS 否定伪类兜底保护**：
+  ```css
+  html[data-locale-variant]:not([data-locale-variant="zh-CN"]):not([data-locale-variant="en"]) .article-translation-variant[data-lang="zh-CN"] {
+    display: block !important;
+  }
+  ```
+  即使遇到任何异常或未匹配的 `data-locale-variant`，默认语言变体亦恒定展示，确保永远不存在“0 变体可见”或白屏漏洞。
+- **全局布局守卫**：在 `BlogLayout.astro` 中检测 `localeResolved === "true"`，杜绝外部布局脚本盲目用硬编码的 6 种语言覆盖单篇博文特有的语言集合。
 
-### 建议 2：受限文章结合前端动态解密 (AES / External Encrypt)
-对于需要密码保护的多语言文章，如果希望在 Cloudflare Pages 纯静态托管下也能解锁多语言，建议复用项目中已有的 `externalEncrypt`（端点加密）模式：
-- 将多语言正文以 AES-GCM 密文的形式打包；
-- 用户在前端输入密码后，在浏览器本地解密出对应的 HTML 节点挂载为 `.article-translation-variant`，无需动态后端即可实现静态模式下的完美安全解锁。
+### 2. 受限文章 (Password-Protected) 客户端免刷新安全解锁
+- **安全哈希比对**：在静态构建模式下，通过原生 Web Crypto API (`crypto.subtle.digest('SHA-256', ...)`) 对访客输入的文章密码计算哈希值，与服务端预埋的 `accessPasswordHash` 安全比对。
+- **动态无感解锁与记忆**：校验通过后动态解除密码遮罩并展开所有语言译本，同时利用 `sessionStorage` 维持授权状态，支持解锁后无缝切换 6 语言译本并保留阅读记忆，刷新页面免重复输密。
 
-### 建议 3：跨语言锚点映射增强
-在文章编译阶段（Astro Rehype/Remark 插件），为相同层级和含义的 Heading 生成跨语言统一的 `data-section-key`（例如 `section-summary`、`section-usage`），在切换语言时优先通过 `data-section-key` 定位锚点，提升长文阅读切换时的视口锚定精准度。
+### 3. 跨语言阅读视口智能平滑恢复
+- 读者在阅读中途切换语言时，优先捕获当前视口内可见的 Heading ID 或 Index 并在目标译本中平滑卷动对齐；
+- 若目标译本标题层级不一致，自动通过文章阅读百分比 `ratio` 进行智能兜底对齐，保障沉浸式阅读连续性。
 
 ---
 
-## 八、 审计结论证明归档
+## 八、 审计结论与生产全景实测证明
 
-- **全量 E2E 原始测试数据已固化至本地**：`audit-e2e-raw-results-local.json`
-- **线上生产 E2E 测试数据已固化至本地**：`audit-e2e-raw-results-remote.json`
-- **测试博文集合**：
-  - `src/content/posts/test-audit-polyglot-matrix*.md` (10 语言全矩阵)
-  - `src/content/posts/test-audit-monolingual-single.md` (单语言独立文章)
-  - `src/content/posts/test-audit-dot-casing*.md` (点号命名与大写混杂)
+- **本地端到端测试 (`http://127.0.0.1:4399`)**：
+  - `30/30` 组文章全量 PASS（含 10 语言超大矩阵、单语言独立文章、点号与大小写混杂命名）；
+  - `scripts/verify-static-unlock.mjs` 密码错误拦截、正确密码解锁、6 语言切换与刷新保持 100% PASS。
+- **生产端真实全链路测试 (`https://blog.epocanvas.com`)**：
+  - `AUDIT_BASE_URL="https://blog.epocanvas.com" node scripts/verify-all-translation-variants-e2e.mjs`：
+  - **30 篇文章全部通过**（`Total: 30 | Passed: 30 | Failed: 0`），100+ 语言变体真实提取、显示与切换断言全部绿灯！
+- **Git Commit 追踪**：
+  - 核心实现与审计：`af2c1bb` (`feat(i18n): translation audit, zero-FOUC locale alignment, static unlock & fallback resilience`)
+  - 规范与归档：`cbc3885` (`docs(agents): record Task 154 completion and commit hash`)
+  - 多端同步：已全部推送到 GitHub 远端 `origin` (`astro-theme-shijianus`) 与 `cf` (`shijianus.github.io`)
+  - 生产部署：已通过 Wrangler 成功全量部署至 Cloudflare Pages 生产边缘节点。
 
-**最终裁定**：当前博客系统的文章多语言翻译功能实现严密、容错度高、DOM 变体挂载无遗漏、各语言版本翻译展示及切换功能**完全正常**！
+**最终权威裁定**：当前博客系统文章正文多语言翻译功能实现严密完整、DOM 变体挂载 100% 齐全且无任何漏显现象，零闪烁、跨语言阅读恢复与受限文章解锁等工业级打磨已全量交付并在线上稳定运行！
+
