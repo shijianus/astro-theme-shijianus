@@ -3426,7 +3426,7 @@
   1. 静态坐标缓存缺陷：无法响应 `.categoryButton.lime` 的 `flex: 1.85`（膨胀 102px）与卡片 `hover:-translate-y-0.5` 动态位移；
   2. 人工同心圆角虚假感：旧贝塞尔算法机械拟合 12px 圆角，违背重力沉积与自然雪檐悬挑规律；
 
-### Task 154: 文章多语言翻译变体 (article-translation-variant) 全量白盒审计、Zero-FOUC 极速渲染与无刷新受限解锁加固 (`PENDING`)
+### Task 154: 文章多语言翻译变体 (article-translation-variant) 全量白盒审计、Zero-FOUC 极速渲染与无刷新受限解锁加固 (`af2c1bb`)
 - [x] **源码级白盒审计与 Canonical 组全量映射**:
   1. 系统性扫描 146 篇物理 Markdown 文章，100% 完整收敛映射至 30 个 Canonical 组，建立双向映射表 (`src/.generated/article-i18n-map.json`)；
   2. 针对极端边缘边界构建测试矩阵博文：10 语言全矩阵 (`test-audit-polyglot-matrix*.md`)、单语言独立文章 (`test-audit-monolingual-single.md`)、点号与大小写混合命名 (`test-audit-dot-casing*.md`)；
