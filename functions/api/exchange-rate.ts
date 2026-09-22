@@ -21,7 +21,7 @@ const FALLBACK_RATES: Record<string, number> = {
 
 export const onRequest: PagesFunction<AppEnv> = async (context) => {
   if (context.request.method === 'OPTIONS') {
-    return optionsResponse();
+    return optionsResponse(context.request, context.env);
   }
 
   const url = new URL(context.request.url);

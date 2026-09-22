@@ -3502,3 +3502,15 @@
 - [x] **功能测试与金额矩阵验证全量通过 (`scripts/test-payment-intent-fix.mjs`)**：
   1. 覆盖 $5, $15, $30, $49, $50, $60, $100, $500 及 JPY/KRW 等全档位币种换算测试；
   2. 验证修复后 $50 -> 5000 cents ($50.00)、$100 -> 10000 cents ($100.00)，准确率 100% PASS。
+
+### Task 159: 边缘运行时未捕获崩溃缺陷修复 (SEC-04 评论管理未定义变量 & SEC-05 跨域预检调用异常)
+- [x] **修复评论管理端未定义变量 `adminToken` 导致的 500 崩溃 (`functions/api/comments.ts`)**：
+  1. **漏洞根因**：在 `edit` 与 `delete` 动作中误将令牌变量写作未声明的 `adminToken`，导致在配置 `ADMIN_TOKEN` 的生产环境中抛出 `ReferenceError: adminToken is not defined`；
+  2. **加固修复**：统一接入已提取的 `candidateToken` 与已校验的 `isAdmin` 状态，恢复管理员对评论编辑与软删除的合法操作。
+- [x] **修复汇率服务 CORS OPTIONS 预检请求抛出 TypeError 崩溃 (`functions/api/exchange-rate.ts`)**：
+  1. **漏洞根因**：预检处理函数直接调用无参 `optionsResponse()`，引发内部解构 `env.ALLOW_ORIGINS` 时抛出 `TypeError: Cannot read properties of undefined`；
+  2. **加固修复**：补齐参数调用 `optionsResponse(context.request, context.env)`，确保 OPTIONS 预检请求统一返回合规的 204 No Content 与 CORS 头。
+- [x] **自动化功能测试通过 (`scripts/test-runtime-crashes-fix.mjs`)**：
+  1. 校验 `optionsResponse` 在跨域预检场景下 100% 成功返回 204 及 CORS 响应头；
+  2. 校验管理员令牌判定在全场景下零 `ReferenceError` 抛出，测试 100% PASS 通过。
+

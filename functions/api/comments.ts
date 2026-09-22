@@ -795,7 +795,7 @@ export async function onRequest(context: {
         isSessionAdmin = true;
       }
     }
-    const isAuthorizedAdmin = Boolean((env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN) || isSessionAdmin);
+    const isAuthorizedAdmin = Boolean(isAdmin || (env.ADMIN_TOKEN && candidateToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
     if (env.DB) {
       await ensureTable(env.DB);
@@ -844,7 +844,7 @@ export async function onRequest(context: {
         isSessionAdmin = true;
       }
     }
-    const isAuthorizedAdmin = Boolean((env.ADMIN_TOKEN && adminToken === env.ADMIN_TOKEN) || isSessionAdmin);
+    const isAuthorizedAdmin = Boolean(isAdmin || (env.ADMIN_TOKEN && candidateToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
     if (env.DB) {
       await ensureTable(env.DB);
