@@ -410,21 +410,37 @@ export function MusicPocket({ apiBase }: Props) {
 
   const currentTrack = currentIndex >= 0 && currentIndex < queue.length ? queue[currentIndex] : null;
 
+  const resolveTrackAudioSrc = useCallback((track: MusicTrack | null): string => {
+    if (!track) return '';
+    if (track.source === 'local') {
+      const localMatch = DEFAULT_TRACKS.find((t) => t.id === track.id);
+      const candidate = track.urlId || localMatch?.urlId;
+      if (candidate) return candidate;
+    }
+    if (track.urlId && (track.urlId.startsWith('http://') || track.urlId.startsWith('https://') || track.urlId.startsWith('/'))) {
+      return track.urlId;
+    }
+    return `${apiBase}/music/stream?id=${encodeURIComponent(track.id)}&source=${encodeURIComponent(track.source || 'netease')}&quality=320`;
+  }, [apiBase]);
+
   const showToast = (message: string) => {
     if (typeof window !== 'undefined') {
-      if (typeof (window as any).snackbarShow === 'function') {
-        (window as any).snackbarShow(message, false, 2400);
-        return;
-      }
-      if (typeof (window as any).showToast === 'function') {
-        (window as any).showToast(message, 2400);
-        return;
-      }
+      const activeLocale = localeVariant || 'zh-CN';
+      const translated = convertText(message, activeLocale);
+
+      // 1. 深度接入博客统一活动通知 (Blog Activity Bar #global-activity-bar)
       window.dispatchEvent(
         new CustomEvent('shijianus:activity', {
-          detail: { message, duration: 2400 },
+          detail: { message: translated, duration: 2400 },
         }),
       );
+
+      // 2. 博客全局 Snackbar / Toast 接入
+      if (typeof (window as any).snackbarShow === 'function') {
+        (window as any).snackbarShow(translated, false, 2400);
+      } else if (typeof (window as any).showToast === 'function') {
+        (window as any).showToast(translated, 2400);
+      }
     }
   };
 
@@ -732,10 +748,8 @@ export function MusicPocket({ apiBase }: Props) {
 
     const onError = () => {
       setIsPlaying(false);
-      showToast(t('音频加载失败，尝试下一首'));
-      if (queue.length > 1) {
-        window.setTimeout(() => skipTrack(1), 1200);
-      }
+      console.warn('Audio playback error on track:', currentTrack?.name, audio.error);
+      showToast(t('音频加载遇到问题，请重试'));
     };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
@@ -767,16 +781,21 @@ export function MusicPocket({ apiBase }: Props) {
     if (!currentTrack || !audioRef.current) return;
     const audio = audioRef.current;
 
-    // 本地歌曲优先直出，网络歌曲走代理
-    if (currentTrack.source === 'local' && currentTrack.urlId) {
-      audio.src = currentTrack.urlId;
-    } else {
-      audio.src = `${apiBase}/music/stream?id=${encodeURIComponent(currentTrack.id)}&source=${encodeURIComponent(currentTrack.source)}&quality=320`;
+    const targetSrc = resolveTrackAudioSrc(currentTrack);
+    const currentSrc = audio.src;
+    const isSameSrc = currentSrc === targetSrc || currentSrc.endsWith(targetSrc);
+
+    if (!isSameSrc) {
+      audio.src = targetSrc;
+      audio.load();
     }
-    audio.load();
 
     if (isPlaying) {
-      void audio.play().catch(() => setIsPlaying(false));
+      audio.play().catch((err) => {
+        if (err?.name === 'AbortError') return;
+        console.warn('Audio play interrupted or failed:', err);
+        setIsPlaying(false);
+      });
     }
 
     // 优先读取本地内联歌词 (消除 SSG 或网络断开时的 404 缺陷)
@@ -810,7 +829,7 @@ export function MusicPocket({ apiBase }: Props) {
       .catch(() => {
         setRawLyric(t('暂无可用歌词'));
       });
-  }, [currentTrack?.id, apiBase]);
+  }, [currentTrack?.id, apiBase, resolveTrackAudioSrc]);
 
   // Sync active lyric line to current time
   useEffect(() => {
@@ -838,9 +857,12 @@ export function MusicPocket({ apiBase }: Props) {
     if (activeTab === 'lyrics' && lyricsContainerRef.current && activeLyricRef.current) {
       const container = lyricsContainerRef.current;
       const activeEl = activeLyricRef.current;
-      const targetTop = activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
+      const containerRect = container.getBoundingClientRect();
+      const activeRect = activeEl.getBoundingClientRect();
+      const offsetFromContainerTop = activeRect.top - containerRect.top;
+      const targetScrollTop = container.scrollTop + offsetFromContainerTop - container.clientHeight / 2 + activeRect.height / 2;
       container.scrollTo({
-        top: Math.max(0, targetTop),
+        top: Math.max(0, targetScrollTop),
         behavior: 'smooth',
       });
     }
@@ -890,14 +912,30 @@ export function MusicPocket({ apiBase }: Props) {
   // 播放指定曲目
   const playTrack = (index: number, nextQueue?: MusicTrack[]) => {
     const targetQueue = nextQueue ?? queue;
-    if (!targetQueue[index]) return;
+    const targetTrack = targetQueue[index];
+    if (!targetTrack) return;
     if (nextQueue) setQueue(nextQueue);
     setCurrentIndex(index);
     setIsPlaying(true);
     ensureAudioContext();
-    if (audioRef.current) {
-      void audioRef.current.play().catch(() => {});
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const targetSrc = resolveTrackAudioSrc(targetTrack);
+    const currentSrc = audio.src;
+    const isSameSrc = currentSrc === targetSrc || currentSrc.endsWith(targetSrc);
+
+    if (!isSameSrc) {
+      audio.src = targetSrc;
+      audio.load();
     }
+
+    audio.play().catch((err) => {
+      if (err?.name === 'AbortError') return;
+      console.warn('Audio play interrupted or failed:', err);
+      setIsPlaying(false);
+    });
   };
 
   // 添加到待播队列或立即播放
@@ -937,7 +975,11 @@ export function MusicPocket({ apiBase }: Props) {
         if (nextQueue.length === 0) {
           setCurrentIndex(-1);
           setIsPlaying(false);
-          if (audioRef.current) audioRef.current.src = '';
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.removeAttribute('src');
+            audioRef.current.load();
+          }
         } else {
           const nextIdx = index >= nextQueue.length ? 0 : index;
           playTrack(nextIdx, nextQueue);
@@ -987,7 +1029,18 @@ export function MusicPocket({ apiBase }: Props) {
     }
 
     if (audio.paused) {
-      await audio.play().catch(() => setIsPlaying(false));
+      const targetSrc = resolveTrackAudioSrc(currentTrack);
+      const currentSrc = audio.src;
+      const isSameSrc = currentSrc === targetSrc || currentSrc.endsWith(targetSrc);
+      if (!isSameSrc || !audio.src) {
+        audio.src = targetSrc;
+        audio.load();
+      }
+      await audio.play().catch((err) => {
+        if (err?.name === 'AbortError') return;
+        console.warn('Audio play interrupted or failed:', err);
+        setIsPlaying(false);
+      });
     } else {
       audio.pause();
     }
@@ -1299,7 +1352,7 @@ export function MusicPocket({ apiBase }: Props) {
                       {currentTrack?.coverUrl ? (
                         <img
                           src={currentTrack.coverUrl}
-                          alt={currentTrack.name}
+                          alt={currentTrack?.name || ''}
                           className="shijianus-music-pocket__album-cover-img"
                           loading="lazy"
                           onError={(e) => {

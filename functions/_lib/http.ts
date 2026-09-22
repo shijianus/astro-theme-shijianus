@@ -1,19 +1,36 @@
 import type { AppEnv } from './types';
 
 function resolveAllowedOrigins(env: AppEnv) {
-  return (env.ALLOW_ORIGINS || '*')
+  return (env?.ALLOW_ORIGINS || '*')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
 export function resolveOrigin(request: Request, env: AppEnv) {
-  const allowedOrigins = resolveAllowedOrigins(env);
-  if (allowedOrigins.includes('*')) return '*';
-
   const origin = request.headers.get('origin') || '';
-  if (!origin) return allowedOrigins[0] || '*';
-  return allowedOrigins.includes(origin) ? origin : allowedOrigins[0] || '*';
+  if (!origin) return '*';
+
+  try {
+    const requestUrl = new URL(request.url);
+    if (origin === requestUrl.origin) return origin; // Same-origin is ALWAYS permitted
+    const originUrl = new URL(origin);
+    if (
+      originUrl.hostname === 'epocanvas.com' ||
+      originUrl.hostname.endsWith('.epocanvas.com') ||
+      originUrl.hostname.endsWith('.pages.dev') ||
+      originUrl.hostname === 'localhost' ||
+      originUrl.hostname === '127.0.0.1' ||
+      originUrl.hostname === '0.0.0.0'
+    ) {
+      return origin;
+    }
+  } catch {}
+
+  const allowedOrigins = resolveAllowedOrigins(env);
+  if (allowedOrigins.includes('*')) return origin;
+  if (allowedOrigins.includes(origin)) return origin;
+  return origin || allowedOrigins[0] || '*';
 }
 
 export function withCors(request: Request, env: AppEnv, init?: HeadersInit) {

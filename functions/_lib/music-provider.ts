@@ -186,6 +186,7 @@ export async function searchMusic(env: AppEnv, keyword: string, source: string, 
       picId: t.picId,
       coverUrl: t.coverUrl,
       lyricId: t.lyricId,
+      urlId: t.localPath,
     }));
   }
 }
@@ -211,6 +212,7 @@ export async function searchMusicAggregated(env: AppEnv, keyword: string, countP
     picId: t.picId,
     coverUrl: t.coverUrl,
     lyricId: t.lyricId,
+    urlId: t.localPath,
   }));
 
   const aggregated: MusicTrack[] = [...localMatches];
@@ -245,6 +247,7 @@ export async function getCuratedPlaylist(env: AppEnv): Promise<MusicTrack[]> {
     picId: t.picId,
     coverUrl: t.coverUrl,
     lyricId: t.lyricId,
+    urlId: t.localPath,
   }));
 
   // 如果配置了自定义歌单 MUSIC_PLAYLIST_ID，尝试安全拉取

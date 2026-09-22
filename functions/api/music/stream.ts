@@ -1,6 +1,6 @@
-import { jsonResponse, optionsResponse, withCors } from '../../_lib/http';
-import { resolveMusicStream } from '../../_lib/music-provider';
-import { enforceRateLimit, envLimit } from '../../_lib/rate-limit';
+import { jsonResponse, optionsResponse, withCors } from '../../_lib/http.ts';
+import { resolveMusicStream } from '../../_lib/music-provider.ts';
+import { enforceRateLimit, envLimit } from '../../_lib/rate-limit.ts';
 import type { AppEnv } from '../../_lib/types';
 
 const SAFE_RESPONSE_HEADERS = ['content-type', 'cache-control', 'accept-ranges', 'content-length', 'content-range', 'etag', 'last-modified', 'expires'];
@@ -44,6 +44,12 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
   }
 
   const streamUrl = await resolveMusicStream(env, id, source, quality);
+  if (streamUrl.startsWith('/')) {
+    const headers = withCors(request, env);
+    headers.set('Location', streamUrl);
+    return new Response(null, { status: 302, headers });
+  }
+
   const target = sanitizeTarget(streamUrl, request.url);
   if (!target) {
     return jsonResponse(request, env, { ok: false, error: 'No playable stream URL.' }, { status: 502 });

@@ -1984,6 +1984,7 @@ html.dark .shijianus-ai-summary__related span {
 
 .lyrics-view__scroll-container,
 .lyrics-view__scroll-list {
+  position: relative;
   flex: 1;
   max-height: 240px;
   overflow-y: auto;

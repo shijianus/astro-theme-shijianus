@@ -3569,6 +3569,23 @@
   2. 验证伪造会话 ID（如恶意构造 $1,000,000 赞助）被 403 Forbidden 拦截且 D1 数据库零写入；
   3. 验证合法会话更新时，客户端篡改的巨额金额被自动丢弃，始终保留服务端核验的真实赞赏金额；测试 100% PASS 通过。
 
+### Task 164: 黑胶随身口袋 (MusicPocket) 播放体验、本地曲目直链与歌词平滑滚动优化
+- [x] **本地音频直接解析与流式代理 302 重定向**:
+  1. 在 `functions/_lib/music-provider.ts` 为本地精选曲目（Way Back Home、彼女は旅に出る等）自动注入 `urlId: t.localPath`；
+  2. 在 `functions/api/music/stream.ts` 中针对本地音频路径返回 302 Location 重定向并附带 CORS 响应头，消除本地音频代理中继造成的 502/网络延迟；
+  3. 在 `src/components/theme/MusicPocket.tsx` 中引入 `resolveTrackAudioSrc`，本地曲目优先本地直出，网络歌曲走代理，切换歌曲时不重复重载相同源。
+- [x] **音频错误恢复与无侵入状态反馈**:
+  1. 修复音频加载遇到网络波动时频繁跳歌且连续弹 Toast 的问题，改用平滑错误恢复与友好国际化提示；
+  2. 深度打通博客全局活动通告（`#global-activity-bar` 与 `shijianus:activity` 自定义事件），提供细腻的全局交互反馈。
+- [x] **歌词容器相对定位与视口居中平滑滚动**:
+  1. 在 `runtime-widgets.css` 为 `.lyrics-view__scroll-container` 补齐 `position: relative`；
+  2. 基于 `getBoundingClientRect()` 计算当前歌词相对于滚动视口的准确高度差，消除 `offsetTop` 在嵌套容器中的位移偏差，实现每一句歌词精准视口居中。
+- [x] **自动化测试套件通过 (`scripts/test-music-pocket-improvements.mjs`)**：
+  1. 验证 `resolveOrigin` 在 `env` 未定义时的空安全及子域名合规；
+  2. 验证精选歌单本地曲目 100% 绑定有效音频路径；
+  3. 验证本地音频流请求正常返回 302 重定向；测试 100% PASS 通过。
+
+
 
 
 
