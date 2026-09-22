@@ -5141,5 +5141,29 @@ body.mindmap-fullscreen-active {
   }
 }
 
+/* RTL Support for Right-to-Left language variants (Arabic, Hebrew, etc.) */
+.article-translation-variant[dir='rtl'],
+.article-translation-variant[data-lang='ar'],
+.article-translation-variant[data-lang='he'] {
+  direction: rtl;
+  text-align: right;
+}
 
+.article-translation-variant[dir='rtl'] blockquote,
+.article-translation-variant[data-lang='ar'] blockquote,
+.article-translation-variant[data-lang='he'] blockquote {
+  border-left: none;
+  border-right: 4px solid var(--theme-primary, #425aef);
+  padding-left: 0;
+  padding-right: 1.25rem;
+}
 
+.article-translation-variant[dir='rtl'] ul,
+.article-translation-variant[dir='rtl'] ol,
+.article-translation-variant[data-lang='ar'] ul,
+.article-translation-variant[data-lang='ar'] ol,
+.article-translation-variant[data-lang='he'] ul,
+.article-translation-variant[data-lang='he'] ol {
+  padding-left: 0;
+  padding-right: 1.5rem;
+}

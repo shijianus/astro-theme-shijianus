@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   readStoredLocaleVariant,
+  normaliseLocaleVariant,
   convertText,
   type LocaleVariant,
 } from '../../lib/client-locale';

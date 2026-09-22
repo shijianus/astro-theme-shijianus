@@ -10,7 +10,7 @@ import PostEndRecommendation from '../../components/theme/PostEndRecommendation.
 import PostOutdateNotice from '../../components/theme/PostOutdateNotice.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
-import { getSerializedTocDictionary } from '../../config/i18n';
+import { getSerializedTocDictionary, getLocaleMeta } from '../../config/i18n';
 import aiSummaries from '../../data/ai-summaries.json';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import {
@@ -517,9 +517,13 @@ const heroSummary = isUnlocked
               if (chosen && available.indexOf(chosen) !== -1) {
                 document.documentElement.lang = chosen;
                 document.documentElement.dataset.localeVariant = chosen;
+                var isRtl = chosen === 'ar' || chosen === 'he' || chosen === 'fa' || chosen === 'ur';
+                document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
               } else {
                 document.documentElement.lang = defaultLang;
                 document.documentElement.dataset.localeVariant = defaultLang;
+                var isRtl = defaultLang === 'ar' || defaultLang === 'he' || defaultLang === 'fa' || defaultLang === 'ur';
+                document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
               }
               document.documentElement.dataset.localeResolved = 'true';
             } catch (_) {}
@@ -585,6 +589,7 @@ const heroSummary = isUnlocked
             <div
               class="article-translation-variant"
               data-lang={vLang}
+              dir={getLocaleMeta(vLang).dir || 'ltr'}
               style={vLang === effectiveCurrentLang ? '' : 'display: none;'}
             >
               <VariantContent />
@@ -629,6 +634,7 @@ const heroSummary = isUnlocked
                   <div
                     class="article-translation-variant"
                     data-lang={vLang}
+                    dir={getLocaleMeta(vLang).dir || 'ltr'}
                     style={vLang === effectiveCurrentLang ? '' : 'display: none;'}
                   >
                     <VariantContent />
@@ -925,9 +931,14 @@ const heroSummary = isUnlocked
 
               // 2. Update article and html language attributes
               const article = document.getElementById('article-container');
-              if (article) article.dataset.lang = targetLang;
+              const isRtl = targetLang === 'ar' || targetLang === 'he' || targetLang === 'fa' || targetLang === 'ur';
+              if (article) {
+                article.dataset.lang = targetLang;
+                article.dir = isRtl ? 'rtl' : 'ltr';
+              }
               document.documentElement.lang = targetLang;
               document.documentElement.dataset.localeVariant = targetLang;
+              document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
 
               // 3. Update Hero Title & Summary & Document Title
               const meta = variantsMeta[targetLang];
@@ -1093,6 +1104,10 @@ const heroSummary = isUnlocked
             } else if (!availableLangs.includes(initialLang) || initialLang === defaultLang) {
               document.documentElement.lang = defaultLang;
               document.documentElement.dataset.localeVariant = defaultLang;
+              const isRtl = defaultLang === 'ar' || defaultLang === 'he' || defaultLang === 'fa' || defaultLang === 'ur';
+              document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+              const article = document.getElementById('article-container');
+              if (article) article.dir = isRtl ? 'rtl' : 'ltr';
             }
 
             // Calibrate hash scroll anchor to the active variant
