@@ -68,28 +68,45 @@ export async function enforceRateLimit(options: LimitOptions): Promise<RateLimit
     actorHash,
   };
 
-  const existing = await options.env.DB!.prepare(
-    `SELECT count
-       FROM rate_limits
-      WHERE namespace = ? AND bucket = ? AND actor_hash = ?`
-  ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash).first<{ count?: number }>();
+  let used = 1;
+  try {
+    const res = await options.env.DB!.prepare(
+      `INSERT INTO rate_limits (namespace, bucket, actor_hash, count, updated_at)
+        VALUES (?, ?, ?, 1, ?)
+        ON CONFLICT(namespace, bucket, actor_hash) DO UPDATE SET
+          count = rate_limits.count + 1,
+          updated_at = excluded.updated_at
+        RETURNING count`
+    ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash, now).first<{ count: number }>();
 
-  const currentCount = existing?.count ?? 0;
-  const nextCount = currentCount + 1;
+    if (res?.count !== undefined && res?.count !== null) {
+      used = Number(res.count);
+    } else {
+      const row = await options.env.DB!.prepare(
+        `SELECT count FROM rate_limits WHERE namespace = ? AND bucket = ? AND actor_hash = ?`
+      ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash).first<{ count: number }>();
+      used = Number(row?.count ?? 1);
+    }
+  } catch {
+    await options.env.DB!.prepare(
+      `INSERT INTO rate_limits (namespace, bucket, actor_hash, count, updated_at)
+        VALUES (?, ?, ?, 1, ?)
+        ON CONFLICT(namespace, bucket, actor_hash) DO UPDATE SET
+          count = rate_limits.count + 1,
+          updated_at = excluded.updated_at`
+    ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash, now).run();
 
-  await options.env.DB!.prepare(
-    `INSERT INTO rate_limits (namespace, bucket, actor_hash, count, updated_at)
-      VALUES (?, ?, ?, 1, ?)
-      ON CONFLICT(namespace, bucket, actor_hash) DO UPDATE SET
-        count = rate_limits.count + 1,
-        updated_at = excluded.updated_at`
-  ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash, now).run();
+    const row = await options.env.DB!.prepare(
+      `SELECT count FROM rate_limits WHERE namespace = ? AND bucket = ? AND actor_hash = ?`
+    ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash).first<{ count: number }>();
+    used = Number(row?.count ?? 1);
+  }
 
   return {
-    allowed: nextCount <= options.limit,
-    remaining: Math.max(0, options.limit - nextCount),
+    allowed: used <= options.limit,
+    remaining: Math.max(0, options.limit - used),
     resetAt,
-    used: nextCount,
+    used,
   };
 }
 
