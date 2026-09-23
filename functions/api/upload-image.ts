@@ -9,7 +9,6 @@ const ALLOWED_IMAGE_TYPES = new Set([
   'image/png',
   'image/gif',
   'image/webp',
-  'image/svg+xml',
   'image/avif',
 ]);
 
@@ -50,13 +49,22 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
     const imageFile = file as File;
 
-    // Validate MIME type against strict whitelist
+    // Validate MIME type against strict whitelist (strictly disallow image/svg+xml)
     const mime = imageFile.type.toLowerCase().trim();
+    if (mime.includes('svg') || (imageFile.name && imageFile.name.toLowerCase().endsWith('.svg'))) {
+      return jsonResponse(
+        request,
+        env,
+        { ok: false, error: '安全策略限制：暂不支持上传 SVG 矢量图格式，仅允许上传主流位图 (PNG, JPG, WebP, GIF, AVIF)' },
+        { status: 400 }
+      );
+    }
+
     if (!ALLOWED_IMAGE_TYPES.has(mime)) {
       return jsonResponse(
         request,
         env,
-        { ok: false, error: `不支持的文件格式: ${mime || '未知'}，仅允许上传主流图片格式 (PNG, JPG, GIF, WebP, SVG, AVIF)` },
+        { ok: false, error: `不支持的文件格式: ${mime || '未知'}，仅允许上传主流图片格式 (PNG, JPG, GIF, WebP, AVIF)` },
         { status: 400 }
       );
     }
@@ -67,6 +75,44 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
         request,
         env,
         { ok: false, error: `图片文件体积 ${(imageFile.size / 1024 / 1024).toFixed(1)}MB 超过上限 (最大 10MB)` },
+        { status: 400 }
+      );
+    }
+
+    // Verify magic bytes to prevent polyglot / executable script injection
+    const buffer = await imageFile.slice(0, 32).arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let isValidImage = false;
+
+    // JPEG: FF D8 FF
+    if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+      isValidImage = true;
+    }
+    // PNG: 89 50 4E 47
+    else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+      isValidImage = true;
+    }
+    // GIF: GIF87a or GIF89a (47 49 46 38)
+    else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+      isValidImage = true;
+    }
+    // WebP: RIFF....WEBP (0..3 'RIFF' and 8..11 'WEBP')
+    else if (
+      bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+    ) {
+      isValidImage = true;
+    }
+    // AVIF: ISO Media File Format (bytes 4..7 'ftyp')
+    else if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
+      isValidImage = true;
+    }
+
+    if (!isValidImage) {
+      return jsonResponse(
+        request,
+        env,
+        { ok: false, error: '文件头魔数校验失败：上传内容不是合法的图片二进制文件，已被安全拦截' },
         { status: 400 }
       );
     }
