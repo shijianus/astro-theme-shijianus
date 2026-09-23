@@ -296,12 +296,40 @@ export async function onRequest(context: {
     const isUserFeed = actionParam === 'user_feed' || url.searchParams.get('feed') === 'user';
 
     if (isUserFeed || (!url.searchParams.get('slug') && (url.searchParams.has('author_name') || url.searchParams.has('user_id')))) {
-      const authorName = url.searchParams.get('author_name')?.trim() || '';
-      const authorId = url.searchParams.get('author_id')?.trim() || url.searchParams.get('user_id')?.trim() || '';
-      const authorEmail = url.searchParams.get('email')?.trim() || '';
-      const sessionToken = url.searchParams.get('session_token')?.trim() || request.headers.get('X-Comment-Session-Token') || '';
+      const sessionToken = url.searchParams.get('session_token')?.trim() || candidateToken || '';
 
-      if (!authorName && !authorId && !authorEmail && !sessionToken) {
+      // Strict Access Control: Notifications & user feed require authentication or visitor session
+      if (!sessionToken && !isAdmin) {
+        return jsonResponse(request, env, {
+          ok: false,
+          error: '查看互动与私信通知需要提供有效的会话令牌 (Unauthorized)',
+          userComments: [],
+          notifications: [],
+        }, { status: 401 });
+      }
+
+      let authUser = sessionToken ? await getUserBySessionToken(sessionToken, env).catch(() => null) : null;
+
+      // If not admin, restrict query scope exclusively to current authenticated user or visitor session
+      let authorName = '';
+      let authorId = '';
+      let authorEmail = '';
+      let effectiveSessionToken = sessionToken;
+
+      if (isAdmin) {
+        authorName = url.searchParams.get('author_name')?.trim() || '';
+        authorId = url.searchParams.get('author_id')?.trim() || url.searchParams.get('user_id')?.trim() || '';
+        authorEmail = url.searchParams.get('email')?.trim() || '';
+      } else if (authUser) {
+        authorId = authUser.id;
+        authorEmail = authUser.email;
+        authorName = authUser.name;
+        effectiveSessionToken = sessionToken;
+      } else {
+        effectiveSessionToken = sessionToken;
+      }
+
+      if (!authorName && !authorId && !authorEmail && !effectiveSessionToken) {
         return jsonResponse(request, env, { ok: true, userComments: [], notifications: [] });
       }
 
@@ -324,7 +352,7 @@ export async function onRequest(context: {
             LIMIT 30
           `;
           const myRes = await env.DB.prepare(myCommentsQuery)
-            .bind(authorName, authorName, authorId, authorId, authorEmail, authorEmail, sessionToken, sessionToken)
+            .bind(authorName, authorName, authorId, authorId, authorEmail, authorEmail, effectiveSessionToken, effectiveSessionToken)
             .all<RawCommentRow>();
           const userComments = (myRes.results || []).map((r) => mapRowToClientComment(r, isAdmin));
 
@@ -357,11 +385,11 @@ export async function onRequest(context: {
               authorName, authorName,
               authorId, authorId,
               authorEmail, authorEmail,
-              sessionToken, sessionToken,
+              effectiveSessionToken, effectiveSessionToken,
               authorName, authorName,
               authorId, authorId,
               authorEmail, authorEmail,
-              sessionToken, sessionToken
+              effectiveSessionToken, effectiveSessionToken
             )
             .all<any>();
 
@@ -434,7 +462,7 @@ export async function onRequest(context: {
           (authorName && c.author_name === authorName) ||
           (authorId && c.author_id === authorId) ||
           (authorEmail && c.author_email === authorEmail) ||
-          (sessionToken && c.session_token === sessionToken)
+          (effectiveSessionToken && c.session_token === effectiveSessionToken)
         )
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .map((r) => mapRowToClientComment(r, isAdmin));
@@ -447,7 +475,7 @@ export async function onRequest(context: {
         if (authorName && c.author_name === authorName) continue;
         if (authorId && c.author_id === authorId) continue;
         if (authorEmail && c.author_email === authorEmail) continue;
-        if (sessionToken && c.session_token === sessionToken) continue;
+        if (effectiveSessionToken && c.session_token === effectiveSessionToken) continue;
 
         if (c.parent_id && myCommentIds.has(c.parent_id)) {
           const parentComm = allComments.find((p) => p.id === c.parent_id);
