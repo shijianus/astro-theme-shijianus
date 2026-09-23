@@ -600,7 +600,7 @@ export async function onRequest(context: {
   // POST / PUT / DELETE Actions
   // ----------------------------------------------------
   const payload = (await safeReadJson<any>(request)) || {};
-  const action = (payload.action || (method === 'PUT' ? 'edit' : method === 'DELETE' ? 'delete' : 'create')).toLowerCase();
+  const action = (payload.action || url.searchParams.get('action') || (method === 'PUT' ? 'edit' : method === 'DELETE' ? 'delete' : 'create')).toLowerCase();
   const headerSessionToken = request.headers.get('X-Comment-Session-Token');
   const sessionToken = payload.sessionToken || headerSessionToken || '';
   const clientIp =
@@ -946,7 +946,7 @@ export async function onRequest(context: {
       }, { status: 403 });
     }
 
-    const effectiveUserId = authUser ? authUser.id : (isAdmin ? 'admin' : (payload.authorId || '').trim());
+    const effectiveUserId = authUser ? authUser.id : (isAdmin ? ((payload.authorId || '').trim() || 'admin') : (payload.authorId || '').trim());
     if (!effectiveUserId) {
       return jsonResponse(request, env, { ok: false, error: '无法识别互动用户身份' }, { status: 400 });
     }
