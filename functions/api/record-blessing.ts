@@ -12,20 +12,23 @@ export async function verifySessionRecord(
 ): Promise<{ valid: boolean; amount?: number; currency?: string }> {
   if (!sessionId) return { valid: false };
 
-  // 1. Check if record exists in D1 sponsorships table
+  const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
+
+  // 1. Check if record exists in D1 sponsorships table and is already marked completed
+  let existingInDb: { id: string; amount: number; currency: string; status: string } | null = null;
   if (env.DB) {
     try {
-      const existing = await env.DB.prepare(
+      existingInDb = await env.DB.prepare(
         'SELECT id, amount, currency, status FROM sponsorships WHERE id = ? LIMIT 1'
       )
         .bind(sessionId)
         .first<{ id: string; amount: number; currency: string; status: string }>();
 
-      if (existing) {
+      if (existingInDb && (existingInDb.status === 'completed' || existingInDb.status === 'succeeded' || existingInDb.status === 'form_submitted')) {
         return {
           valid: true,
-          amount: existing.amount,
-          currency: existing.currency,
+          amount: existingInDb.amount,
+          currency: existingInDb.currency,
         };
       }
     } catch (e) {
@@ -33,15 +36,16 @@ export async function verifySessionRecord(
     }
   }
 
-  // 2. Fallback: If not in D1 or DB query failed, verify via Stripe API if key is available
-  if (env.STRIPE_SECRET_KEY && (sessionId.startsWith('cs_') || sessionId.startsWith('pi_'))) {
+  // 2. Authoritative verification via Stripe API
+  const stripeKey = env.STRIPE_SECRET_KEY || (typeof process !== 'undefined' && process.env?.STRIPE_SECRET_KEY);
+  if (stripeKey && (sessionId.startsWith('cs_') || sessionId.startsWith('pi_'))) {
     try {
       const endpoint = sessionId.startsWith('cs_')
         ? `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`
         : `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(sessionId)}`;
 
       const res = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+        headers: { Authorization: `Bearer ${stripeKey}` },
       });
       if (res.ok) {
         const stripeData = (await res.json()) as any;
@@ -56,6 +60,9 @@ export async function verifySessionRecord(
             amount: humanAmount,
             currency: cur.toUpperCase(),
           };
+        } else {
+          // Explicitly unpaid on Stripe
+          return { valid: false };
         }
       }
     } catch (e) {
@@ -63,10 +70,13 @@ export async function verifySessionRecord(
     }
   }
 
-  // 3. Local dev bypass if DB is not bound and not in production
-  const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
-  if (isDev) {
-    return { valid: true };
+  // 3. In dev mode without Stripe credentials, allow existing record for testing
+  if (isDev && existingInDb) {
+    return {
+      valid: true,
+      amount: existingInDb.amount,
+      currency: existingInDb.currency,
+    };
   }
 
   return { valid: false };
