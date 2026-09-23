@@ -1,13 +1,14 @@
 import type { AppEnv } from './types';
 
-function resolveAllowedOrigins(env: AppEnv) {
-  return (env?.ALLOW_ORIGINS || '*')
+function resolveAllowedOrigins(env: AppEnv): string[] {
+  if (!env?.ALLOW_ORIGINS) return [];
+  return env.ALLOW_ORIGINS
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
-export function resolveOrigin(request: Request, env: AppEnv) {
+export function resolveOrigin(request: Request, env: AppEnv): string {
   const origin = request.headers.get('origin') || '';
   if (!origin) return '*';
 
@@ -15,22 +16,32 @@ export function resolveOrigin(request: Request, env: AppEnv) {
     const requestUrl = new URL(request.url);
     if (origin === requestUrl.origin) return origin; // Same-origin is ALWAYS permitted
     const originUrl = new URL(origin);
+    const host = originUrl.hostname.toLowerCase();
+
+    // Strict whitelist: official production domains, specific pages.dev deployment, and local dev
     if (
-      originUrl.hostname === 'epocanvas.com' ||
-      originUrl.hostname.endsWith('.epocanvas.com') ||
-      originUrl.hostname.endsWith('.pages.dev') ||
-      originUrl.hostname === 'localhost' ||
-      originUrl.hostname === '127.0.0.1' ||
-      originUrl.hostname === '0.0.0.0'
+      host === 'epocanvas.com' ||
+      host.endsWith('.epocanvas.com') ||
+      host === 'shijianus-blog.pages.dev' ||
+      host.endsWith('.shijianus-blog.pages.dev') ||
+      host === 'shijianus.github.io' ||
+      ((host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') &&
+        (originUrl.protocol === 'http:' || originUrl.protocol === 'https:'))
     ) {
       return origin;
     }
   } catch {}
 
   const allowedOrigins = resolveAllowedOrigins(env);
-  if (allowedOrigins.includes('*')) return origin;
-  if (allowedOrigins.includes(origin)) return origin;
-  return origin || allowedOrigins[0] || '*';
+  if (allowedOrigins.includes(origin)) {
+    return origin;
+  }
+  if (allowedOrigins.includes('*')) {
+    return '*';
+  }
+
+  // Refuse reflection of arbitrary untrusted origin
+  return 'https://blog.epocanvas.com';
 }
 
 export function withCors(request: Request, env: AppEnv, init?: HeadersInit) {
