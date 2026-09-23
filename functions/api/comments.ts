@@ -718,10 +718,26 @@ export async function onRequest(context: {
 
     const commentId = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const effectiveSessionToken = sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
-    const authorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
+    const rawAuthorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
+    const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
+    let authorName = rawAuthorName;
+    if (authorRole !== 'admin') {
+      const lower = rawAuthorName.toLowerCase().replace(/[\s_\-\.]+/g, '');
+      if (RESERVED_NAMES.has(lower) || lower.includes('shijianus') || lower.includes('站长') || lower.includes('博主')) {
+        authorName = isVisitor ? '访客' : '读者';
+      }
+    }
+
     let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
-    if (!authorAvatar && authorRole === 'admin') {
-      authorAvatar = '/media/shijianus/avatar.jpg';
+    if (authorRole === 'admin') {
+      if (!authorAvatar) {
+        authorAvatar = '/media/shijianus/avatar.jpg';
+      }
+    } else {
+      // Non-admin users cannot copy the official admin avatar
+      if (authorAvatar.includes('shijianus/avatar.jpg')) {
+        authorAvatar = '';
+      }
     }
     const authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
     const authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
