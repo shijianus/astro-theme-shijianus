@@ -230,9 +230,17 @@ function providerBase(env: AppEnv) {
   return env.MUSIC_PROVIDER_API_BASE || 'https://music-api.gdstudio.xyz/api.php';
 }
 
-function normalizeTrack(source: string, payload: Record<string, unknown>): MusicTrack {
+export function normalizeTrack(source: string, payload: Record<string, unknown>): MusicTrack {
   const id = String(payload.id || payload.url_id || '');
-  const pic = String(payload.pic_id || payload.pic || payload.picUrl || '');
+  const pic = String(
+    payload.pic_id ||
+    payload.pic ||
+    payload.picUrl ||
+    (payload.al as any)?.picUrl ||
+    (payload.album as any)?.picUrl ||
+    (payload.album as any)?.cover ||
+    ''
+  );
   const artist = Array.isArray(payload.artist)
     ? payload.artist.join(' / ')
     : typeof payload.artist === 'string'

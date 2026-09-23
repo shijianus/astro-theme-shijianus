@@ -129,10 +129,20 @@ export function formatAmount(amount?: number, currency: string = 'usd'): string 
   if (typeof amount !== 'number' || isNaN(amount)) {
     return '已支付 ✓';
   }
+  const symbolMap: Record<string, string> = {
+    cny: '¥',
+    usd: '$',
+    eur: '€',
+    gbp: '£',
+    jpy: '¥',
+    hkd: 'HK$',
+    twd: 'NT$',
+  };
+  const symbol = symbolMap[cur] || '';
   if (ZERO_DECIMAL_CURRENCIES.has(cur)) {
-    return `${Math.round(amount)} ${cur.toUpperCase()}`;
+    return `${symbol}${Math.round(amount)} ${cur.toUpperCase()}`.trim();
   }
-  return `$${amount.toFixed(2)} ${cur.toUpperCase()}`;
+  return `${symbol}${amount.toFixed(2)} ${cur.toUpperCase()}`.trim();
 }
 
 /**
