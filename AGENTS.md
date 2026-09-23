@@ -3727,7 +3727,7 @@
 - [x] **综合打磨与多币种符号增强** (`2d2dd9d`): 音乐提供商支持嵌套 `al.picUrl` / `album.picUrl` 解析；Telegram 通知支持 CNY、USD、EUR、GBP、JPY 等多币种符号映射。
 - [x] **全量自动化审计测试与生产构建验证** (`scratch/verify-all-fixes.mjs`): 11/11 漏洞防御测试全数 PASS 通过；`npm run build` 284 页面 0 错误编译完成。
 
-### Task 171: 桌面歌词 (Screen Lyric HUD) 软件化体验深度升级、无唱片图标全域拖拽、背景自适应翻转与高精度音轨对齐
+### Task 171: 桌面歌词 (Screen Lyric HUD) 软件化体验深度升级、无唱片图标全域拖拽、背景自适应翻转与高精度音轨对齐 (`e3ef0d9`)
 - [x] **彻底取消 `.screen-lyric__disc-badge` 唱片按钮**：从 DOM 和 CSS 中彻底清除唱片图标，释放左右空间；将歌词文本设为 100% 绝对水平与垂直居中，全框任意位置悬停与按住均可自由拖拽。
 - [x] **未唱普通文本随背景自适应翻转 (mix-blend-mode: difference)**：
   1. 重构卡拉OK渲染机制为双层结构（底层 `.screen-lyric__karaoke-text--base`，顶层已唱高亮裁剪容器 `.screen-lyric__karaoke-overlay` 与 `.screen-lyric__karaoke-text--sung`）；
