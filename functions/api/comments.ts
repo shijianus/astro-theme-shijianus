@@ -955,70 +955,97 @@ export async function onRequest(context: {
 
     if (env.DB) {
       await ensureTable(env.DB);
-      const row = await env.DB.prepare(
-        `SELECT id, likes_count, reactions FROM comments WHERE id = ?`
-      ).bind(id).first<{ id: string; likes_count: number; reactions?: string }>();
+      let success = false;
+      let finalTotalLikes = 0;
+      let finalRxData: any = null;
+      let finalUserEmoji: string | null = null;
 
-      if (!row) {
-        return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
-      }
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const row = await env.DB.prepare(
+          `SELECT id, likes_count, reactions FROM comments WHERE id = ?`
+        ).bind(id).first<{ id: string; likes_count: number; reactions?: string }>();
 
-      let rxData: { summary: Record<string, number>; users: Record<string, string> } = {
-        summary: {},
-        users: {},
-      };
-
-      if (row.reactions) {
-        try {
-          const p = JSON.parse(row.reactions);
-          if (p && typeof p === 'object') {
-            rxData = {
-              summary: p.summary || {},
-              users: p.users || {},
-            };
-          }
-        } catch {}
-      }
-
-      if (Object.keys(rxData.summary).length === 0 && (row.likes_count || 0) > 0) {
-        rxData.summary['👍'] = row.likes_count;
-      }
-
-      const existingUserEmoji = rxData.users[effectiveUserId];
-      let newUserEmoji: string | null = null;
-
-      if (existingUserEmoji === targetEmoji) {
-        // 用户再次点击相同表情 -> 取消表达
-        delete rxData.users[effectiveUserId];
-        rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
-        if (rxData.summary[targetEmoji] === 0) {
-          delete rxData.summary[targetEmoji];
+        if (!row) {
+          return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
         }
-      } else {
-        // 用户切换表情或首次表达
-        if (existingUserEmoji && rxData.summary[existingUserEmoji]) {
-          rxData.summary[existingUserEmoji] = Math.max(0, rxData.summary[existingUserEmoji] - 1);
-          if (rxData.summary[existingUserEmoji] === 0) {
-            delete rxData.summary[existingUserEmoji];
-          }
+
+        const currentReactionsRaw = row.reactions ?? '';
+        let rxData: { summary: Record<string, number>; users: Record<string, string> } = {
+          summary: {},
+          users: {},
+        };
+
+        if (row.reactions) {
+          try {
+            const p = JSON.parse(row.reactions);
+            if (p && typeof p === 'object') {
+              rxData = {
+                summary: p.summary || {},
+                users: p.users || {},
+              };
+            }
+          } catch {}
         }
-        rxData.users[effectiveUserId] = targetEmoji;
-        rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
-        newUserEmoji = targetEmoji;
+
+        if (Object.keys(rxData.summary).length === 0 && (row.likes_count || 0) > 0) {
+          rxData.summary['👍'] = row.likes_count;
+        }
+
+        const existingUserEmoji = rxData.users[effectiveUserId];
+        let newUserEmoji: string | null = null;
+
+        if (existingUserEmoji === targetEmoji) {
+          // 用户再次点击相同表情 -> 取消表达
+          delete rxData.users[effectiveUserId];
+          rxData.summary[targetEmoji] = Math.max(0, (rxData.summary[targetEmoji] || 1) - 1);
+          if (rxData.summary[targetEmoji] === 0) {
+            delete rxData.summary[targetEmoji];
+          }
+        } else {
+          // 用户切换表情或首次表达
+          if (existingUserEmoji && rxData.summary[existingUserEmoji]) {
+            rxData.summary[existingUserEmoji] = Math.max(0, rxData.summary[existingUserEmoji] - 1);
+            if (rxData.summary[existingUserEmoji] === 0) {
+              delete rxData.summary[existingUserEmoji];
+            }
+          }
+          rxData.users[effectiveUserId] = targetEmoji;
+          rxData.summary[targetEmoji] = (rxData.summary[targetEmoji] || 0) + 1;
+          newUserEmoji = targetEmoji;
+        }
+
+        const newTotalLikes = Object.values(rxData.summary).reduce((a, b) => a + b, 0);
+        const rxJson = JSON.stringify(rxData);
+
+        // Optimistic concurrency control: update ONLY IF reactions hasn't changed since SELECT
+        const updateRes = await env.DB.prepare(`
+          UPDATE comments 
+          SET likes_count = ?, reactions = ?, updated_at = CURRENT_TIMESTAMP 
+          WHERE id = ? AND (reactions = ? OR (reactions IS NULL AND ? = ''))
+        `).bind(newTotalLikes, rxJson, id, currentReactionsRaw, currentReactionsRaw).run();
+
+        const changes = updateRes?.meta?.changes ?? (updateRes as any)?.changes;
+        if (changes === undefined || changes > 0) {
+          success = true;
+          finalTotalLikes = newTotalLikes;
+          finalRxData = rxData;
+          finalUserEmoji = newUserEmoji;
+          break;
+        }
+
+        // Concurrency collision detected: short backoff jitter before retry
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 20 + 10));
       }
 
-      const newTotalLikes = Object.values(rxData.summary).reduce((a, b) => a + b, 0);
-      const rxJson = JSON.stringify(rxData);
-
-      await env.DB.prepare(`
-        UPDATE comments SET likes_count = ?, reactions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-      `).bind(newTotalLikes, rxJson, id).run();
+      if (!success) {
+        return jsonResponse(request, env, { ok: false, error: '互动过于频繁或并发冲突，请稍后重试' }, { status: 409 });
+      }
 
       return jsonResponse(request, env, {
         ok: true,
-        likesCount: newTotalLikes,
-        reactions: rxData,
-        userReaction: newUserEmoji,
+        likesCount: finalTotalLikes,
+        reactions: finalRxData,
+        userReaction: finalUserEmoji,
       });
     }
 

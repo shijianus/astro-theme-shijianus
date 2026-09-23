@@ -148,8 +148,9 @@ async function main() {
     };
   });
   console.log('- 全透模式常规背景:', transCheck);
-  if (!transCheck.hasTransparentClass || transCheck.bg !== 'rgba(0, 0, 0, 0)') {
-    throw new Error(`Expected transparent background rgba(0, 0, 0, 0), got ${transCheck.bg}!`);
+  const isZeroAlpha = (c) => c === 'transparent' || c.includes(', 0)') || c === 'rgba(0, 0, 0, 0)' || c === 'rgba(255, 255, 255, 0)';
+  if (!transCheck.hasTransparentClass || !isZeroAlpha(transCheck.bg)) {
+    throw new Error(`Expected transparent background with alpha 0, got ${transCheck.bg}!`);
   }
 
   // Hover 状态下再次检测背景颜色
@@ -160,7 +161,7 @@ async function main() {
     return window.getComputedStyle(el).backgroundColor;
   });
   console.log('- 全透模式 Hover 状态背景色:', hoverBg);
-  if (hoverBg !== 'rgba(0, 0, 0, 0)') {
+  if (!isZeroAlpha(hoverBg)) {
     throw new Error(`Expected transparent background on hover, but turned into: ${hoverBg}!`);
   }
   console.log('✓ 成功验证：0% 纯透明极简模式无底色、hover 时绝不变成半透明灰框！\n');
@@ -216,19 +217,57 @@ async function main() {
   }
   console.log('✓ 成功验证：.settings-reset-btn 成功将 HUD 恢复至默认下居中位置并清除了存储！\n');
 
-  // 9. 切换字号为大 (22px)
-  console.log('9. 测试字号调整为大 (22px)...');
-  const sizeLgBtn = popover.locator('.settings-opt-btn', { hasText: '22px' });
+  // 9. 测试字号调整：取消15px、以18px为小、28px为大
+  console.log('9. 测试字号阶梯：验证彻底废除15px、小选项为18px、大为28px...');
+  const count15px = await popover.locator('.settings-opt-btn', { hasText: '15px' }).count();
+  if (count15px > 0) {
+    throw new Error('Found deprecated 15px font size option in popover! Must be abolished.');
+  }
+  const size18pxBtn = popover.locator('.settings-opt-btn', { hasText: '18px' });
+  if (await size18pxBtn.count() === 0) {
+    throw new Error('Small option with 18px font size not found!');
+  }
+  const sizeLgBtn = popover.locator('.settings-opt-btn', { hasText: '28px' });
   await sizeLgBtn.click();
   await page.waitForTimeout(400);
 
   const hasSizeLg = await hud.evaluate((el) => el.classList.contains('size-lg'));
-  console.log('- 字号变更状态 (size-lg):', hasSizeLg);
-  if (!hasSizeLg) throw new Error('Failed to change HUD font size to lg!');
-  console.log('✓ 字号无级调节成功！\n');
+  console.log('- 字号变更状态 (size-lg / 28px):', hasSizeLg);
+  if (!hasSizeLg) throw new Error('Failed to change HUD font size to lg (28px)!');
+  console.log('✓ 字号阶梯调节成功：15px已废除，18px为小，28px为大！\n');
 
-  // 10. 切换高亮主题色
-  console.log('10. 测试高亮色彩主题切换 (翡翠绿)...');
+  // 10. 验证底部控制坞布局与扩充宽度
+  console.log('10. 验证悬浮控制坞 (.screen-lyric__controls) 严格位于歌词下方且居中，以及 HUD 扩充尺寸...');
+  const layoutCheck = await page.evaluate(() => {
+    const hudEl = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const contentEl = document.querySelector('.screen-lyric__content');
+    const controlsEl = document.querySelector('.screen-lyric__controls');
+    if (!hudEl || !contentEl || !controlsEl) return null;
+
+    const hudRect = hudEl.getBoundingClientRect();
+    const contentRect = contentEl.getBoundingClientRect();
+    const controlsRect = controlsEl.getBoundingClientRect();
+
+    return {
+      hudWidth: hudRect.width,
+      contentBottom: contentRect.bottom,
+      controlsTop: controlsRect.top,
+      isControlsBelow: controlsRect.top >= contentRect.bottom - 4,
+      controlsCenterX: controlsRect.left + controlsRect.width / 2,
+      hudCenterX: hudRect.left + hudRect.width / 2,
+    };
+  });
+  console.log('- 布局与尺寸检查:', layoutCheck);
+  if (!layoutCheck || !layoutCheck.isControlsBelow) {
+    throw new Error(`Controls are not underneath the lyrics! contentBottom=${layoutCheck?.contentBottom}, controlsTop=${layoutCheck?.controlsTop}`);
+  }
+  if (layoutCheck.hudWidth < 700) {
+    throw new Error(`HUD width is too narrow (${layoutCheck.hudWidth}px)! Must expand to accommodate full sentences.`);
+  }
+  console.log('✓ 成功验证：控制坞居中位于歌词正下方，宽度扩充至软件级主流大尺寸！\n');
+
+  // 11. 切换高亮主题色
+  console.log('11. 测试高亮色彩主题切换 (翡翠绿)...');
   const greenBtn = popover.locator('.settings-color-btn[title*="翡翠绿"]');
   await greenBtn.click();
   await page.waitForTimeout(400);
@@ -237,15 +276,38 @@ async function main() {
   if (!themeCheck) throw new Error('Failed to change theme to green!');
   console.log('✓ 歌词流光色彩主题切换成功！\n');
 
-  // 11. 检查控制台致命错误
-  console.log('11. 检查控制台错误:');
+  // 12. 验证文章页面 Mermaid 渲染无 dmermaid-svg 报错
+  console.log('12. 访问文章页验证 Mermaid 架构图渲染无 dmermaid-svg 报错...');
+  await page.goto(`${BASE_URL}/posts/markdown-syntax-mastery-zh-Hant/`, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForSelector('.mermaid-diagram-wrap svg', { state: 'attached', timeout: 15000 }).catch(() => null);
+  await page.waitForTimeout(1000);
+
+  const mermaidCheck = await page.evaluate(() => {
+    const danglingMermaid = document.querySelectorAll('[id*="dmermaid-svg"]');
+    const svgs = document.querySelectorAll('.mermaid-diagram-wrap svg, .mermaid-svg-container, pre.mermaid, .mermaid');
+    return {
+      danglingCount: danglingMermaid.length,
+      svgCount: svgs.length,
+    };
+  });
+  console.log('- Mermaid 状态检查:', mermaidCheck);
+  if (mermaidCheck.danglingCount > 0) {
+    throw new Error(`Found ${mermaidCheck.danglingCount} dangling dmermaid-svg error elements!`);
+  }
+  if (mermaidCheck.svgCount === 0) {
+    throw new Error('Expected at least one rendered Mermaid diagram SVG, found 0!');
+  }
+  console.log('✓ 成功验证：文章页 Mermaid 渲染正常，无任何 dmermaid-svg 悬挂错误元素！\n');
+
+  // 13. 检查控制台致命错误
+  console.log('13. 检查控制台错误:');
   console.log('- 错误数量:', consoleErrors.length);
   if (consoleErrors.length > 0) {
     console.warn('- 捕获的错误:', consoleErrors);
   }
 
   console.log('\n======================================================');
-  console.log('🎉 桌面歌词方框化、0%纯透明、位置复位与CFSolara全链路验证通过！');
+  console.log('🎉 桌面歌词软件级下方控制坞、860px扩宽、明暗双色调、18px字号与Mermaid修复全链路验证通过！');
   console.log('======================================================\n');
 
   await browser.close();

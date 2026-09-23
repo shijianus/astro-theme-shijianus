@@ -2722,25 +2722,42 @@ html.dark .shijianus-ai-summary__related span {
 }
 
 /* 3. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics - Modern Desktop Music Player Style) */
+:root {
+  --screen-lyric-unsung-color: #334155;
+  --screen-lyric-unsung-sub: #64748b;
+  --screen-lyric-text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 1px rgba(0, 0, 0, 0.25);
+  --screen-lyric-btn-bg: rgba(241, 245, 249, 0.9);
+  --screen-lyric-btn-color: #334155;
+  --screen-lyric-btn-border: rgba(148, 163, 184, 0.35);
+}
+
+:root[data-theme='dark'] {
+  --screen-lyric-unsung-color: rgba(248, 250, 252, 0.72);
+  --screen-lyric-unsung-sub: rgba(148, 163, 184, 0.7);
+  --screen-lyric-text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.9);
+  --screen-lyric-btn-bg: rgba(15, 23, 42, 0.65);
+  --screen-lyric-btn-color: #ffffff;
+  --screen-lyric-btn-border: rgba(255, 255, 255, 0.2);
+}
+
 .shijianus-music-pocket__screen-lyric {
-  --karaoke-sung-color: #425aef;
-  --karaoke-sung-dark: #818cf8;
-  --karaoke-glow: rgba(66, 90, 239, 0.45);
   position: fixed;
   bottom: 88px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 96;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  justify-content: center;
+  padding: 10px 24px;
   border-radius: 8px !important;
   user-select: none;
   cursor: grab;
   animation: screen-lyric-fade 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  max-width: min(640px, calc(100vw - 32px));
-  min-width: min(320px, calc(100vw - 32px));
+  width: min(860px, calc(100vw - 32px));
+  min-width: min(480px, calc(100vw - 32px));
+  max-width: min(920px, calc(100vw - 32px));
   box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2755,15 +2772,15 @@ html.dark .shijianus-ai-summary__related span {
 
 /* 主题色彩变量 (Theme Colors) */
 .shijianus-music-pocket__screen-lyric.theme-blue {
-  --karaoke-sung-color: #425aef;
+  --karaoke-sung-color: #3b5bf5;
   --karaoke-sung-dark: #818cf8;
-  --karaoke-glow: rgba(66, 90, 239, 0.45);
+  --karaoke-glow: rgba(59, 91, 245, 0.45);
 }
 
 .shijianus-music-pocket__screen-lyric.theme-green {
-  --karaoke-sung-color: #10b981;
+  --karaoke-sung-color: #059669;
   --karaoke-sung-dark: #34d399;
-  --karaoke-glow: rgba(16, 185, 129, 0.45);
+  --karaoke-glow: rgba(5, 150, 105, 0.45);
 }
 
 .shijianus-music-pocket__screen-lyric.theme-pink {
@@ -2773,9 +2790,9 @@ html.dark .shijianus-ai-summary__related span {
 }
 
 .shijianus-music-pocket__screen-lyric.theme-amber {
-  --karaoke-sung-color: #f59e0b;
+  --karaoke-sung-color: #d97706;
   --karaoke-sung-dark: #fbbf24;
-  --karaoke-glow: rgba(245, 158, 11, 0.45);
+  --karaoke-glow: rgba(217, 119, 6, 0.45);
 }
 
 /* 背景透明度档位 (Transparency / Glass Presets) */
@@ -2832,17 +2849,21 @@ html.dark .shijianus-ai-summary__related span {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* 旋转唱片图标 */
-.screen-lyric__disc {
-  flex-shrink: 0;
+/* 旋转唱片图标小徽标 (左侧居中微贴靠) */
+.screen-lyric__disc-badge {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--karaoke-sung-color, #425aef);
   display: grid;
   place-items: center;
+  opacity: 0.85;
 }
 
-:root[data-theme='dark'] .screen-lyric__disc,
-.opacity-semi .screen-lyric__disc,
-.opacity-transparent .screen-lyric__disc {
+:root[data-theme='dark'] .screen-lyric__disc-badge,
+.opacity-semi .screen-lyric__disc-badge,
+.opacity-transparent .screen-lyric__disc-badge {
   color: var(--karaoke-sung-dark, #818cf8);
 }
 
@@ -2850,16 +2871,18 @@ html.dark .shijianus-ai-summary__related span {
   animation: shijianus-record-spin 6s linear infinite;
 }
 
-/* 歌词主内容区 */
+/* 歌词主内容区：占满整行宽度，杜绝右侧控制按钮挤压 */
 .screen-lyric__content {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 0 4px;
+  padding: 0 28px;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .screen-lyric__current-line {
@@ -2872,44 +2895,44 @@ html.dark .shijianus-ai-summary__related span {
   align-items: center;
 }
 
-/* 字号尺寸阶梯 (Font Scaling - sm, md, lg, xl) */
+/* 字号尺寸阶梯 (Font Scaling - sm: 18px, md: 22px, lg: 28px, xl: 34px - 彻底废除 15px) */
 .shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__current-line {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.35;
 }
 .shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__next-line {
-  font-size: 12px;
-}
-
-.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__current-line {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.35;
-}
-.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__next-line {
   font-size: 13.5px;
 }
 
-.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__current-line {
+.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__current-line {
   font-size: 22px;
   font-weight: 800;
   line-height: 1.35;
 }
-.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__next-line {
+.shijianus-music-pocket__screen-lyric.size-md .screen-lyric__next-line {
   font-size: 15px;
 }
 
+.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__current-line {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__next-line {
+  font-size: 17px;
+}
+
 .shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__current-line {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1.3;
 }
 .shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__next-line {
-  font-size: 17px;
+  font-size: 19px;
 }
 
-/* 动态逐字/逐音节横向卡拉OK流光高亮 */
+/* 动态逐字/逐音节流光高亮与明暗双色调自适应 (明色模式深灰岩色底，暗色模式柔亮银白底) */
 .screen-lyric__karaoke-text {
   display: inline-block;
   max-width: 100%;
@@ -2921,77 +2944,73 @@ html.dark .shijianus-ai-summary__related span {
     90deg,
     var(--karaoke-sung-color, #425aef) 0%,
     var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
-    #475569 var(--karaoke-pct, 0%),
-    #475569 100%
+    var(--screen-lyric-unsung-color, #334155) var(--karaoke-pct, 0%),
+    var(--screen-lyric-unsung-color, #334155) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  filter: var(--screen-lyric-text-shadow);
   transition: background 0.04s linear;
 }
 
-:root[data-theme='dark'] .screen-lyric__karaoke-text,
-.opacity-semi .screen-lyric__karaoke-text,
-.opacity-transparent .screen-lyric__karaoke-text {
+:root[data-theme='dark'] .screen-lyric__karaoke-text {
   background: linear-gradient(
     90deg,
     var(--karaoke-sung-dark, #818cf8) 0%,
     var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.72) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.72) 100%
+    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72)) var(--karaoke-pct, 0%),
+    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72)) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
 }
 
 .screen-lyric__static-text {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--screen-lyric-unsung-color, #334155);
+  filter: var(--screen-lyric-text-shadow);
 }
 
-:root[data-theme='dark'] .screen-lyric__static-text,
-.opacity-semi .screen-lyric__static-text,
-.opacity-transparent .screen-lyric__static-text {
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+:root[data-theme='dark'] .screen-lyric__static-text {
+  color: var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72));
 }
 
 /* 下一句歌词预备预览 (双行模式) */
 .screen-lyric__next-line {
-  margin-top: 2px;
+  margin-top: 3px;
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: 0.78;
-  color: #64748b;
+  opacity: 0.82;
+  color: var(--screen-lyric-unsung-sub, #64748b);
   font-weight: 500;
+  filter: var(--screen-lyric-text-shadow);
 }
 
-:root[data-theme='dark'] .screen-lyric__next-line,
-.opacity-semi .screen-lyric__next-line,
-.opacity-transparent .screen-lyric__next-line {
-  color: rgba(255, 255, 255, 0.65);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+:root[data-theme='dark'] .screen-lyric__next-line {
+  color: var(--screen-lyric-unsung-sub, rgba(148, 163, 184, 0.7));
 }
 
-/* 快捷悬浮控制坞 */
+/* 快捷悬浮控制坞：居中位于歌词下方，不挤占歌词左右展示空间 */
 .screen-lyric__controls {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
 }
 
 .screen-lyric__btn {
-  border: none;
-  background: transparent;
-  color: #64748b;
+  border: 1px solid var(--screen-lyric-btn-border, rgba(148, 163, 184, 0.35));
+  background: var(--screen-lyric-btn-bg, rgba(241, 245, 249, 0.85));
+  color: var(--screen-lyric-btn-color, #334155);
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -2999,11 +3018,15 @@ html.dark .shijianus-ai-summary__related span {
   place-items: center;
   cursor: pointer;
   transition: all 0.16s ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 :root[data-theme='dark'] .screen-lyric__btn,
 .opacity-semi .screen-lyric__btn {
-  color: rgba(255, 255, 255, 0.78);
+  background: rgba(15, 23, 42, 0.65);
+  color: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .opacity-transparent .screen-lyric__btn {
@@ -3015,15 +3038,17 @@ html.dark .shijianus-ai-summary__related span {
 }
 
 .screen-lyric__btn:hover {
-  background: rgba(66, 90, 239, 0.12);
-  color: var(--karaoke-sung-color, #425aef);
+  background: var(--karaoke-sung-color, #425aef);
+  border-color: transparent;
+  color: #ffffff !important;
   transform: scale(1.08);
 }
 
 :root[data-theme='dark'] .screen-lyric__btn:hover,
 .opacity-semi .screen-lyric__btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: var(--karaoke-sung-dark, #818cf8);
+  border-color: transparent;
+  color: #ffffff !important;
 }
 
 .opacity-transparent .screen-lyric__btn:hover {

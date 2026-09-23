@@ -29,15 +29,15 @@ const CURATED_LOCAL_TRACKS: (MusicTrack & { lrc: string; localPath: string })[] 
     lrc: `[00:00.00] 作词 : 李智慧/JQ
 [00:00.09] 作曲 : SHAUN
 [00:00.18] 编曲 : SHAUN
-[00:00.28]멈춘 시간 속
-[00:02.36]잠든 너를 찾아가
-[00:05.17]아무리 막아도
-[00:06.93]결국 너의 곁인 걸
-[00:09.60]길고 긴 여행을 끝내
-[00:12.34]이젠 돌아가
-[00:14.80]너라는 집으로
-[00:16.50]지금 다시
-[00:17.97]way back home
+[00:00.28]<0.28,0.68>멈춘 <0.96,0.62>시간 <1.58,0.72>속
+[00:02.36]<2.36,0.60>잠든 <2.96,0.52>너를 <3.48,0.92>찾아가
+[00:05.17]<5.17,0.60>아무리 <5.77,0.85>막아도
+[00:06.93]<6.93,0.70>결국 <7.63,0.60>너의 <8.23,0.95>곁인 걸
+[00:09.60]<9.60,0.50>길고 <10.10,0.50>긴 <10.60,0.80>여행을 <11.40,0.88>끝내
+[00:12.34]<12.34,0.60>이젠 <12.94,1.25>돌아가
+[00:14.80]<14.80,0.80>너라는 <15.60,0.85>집으로
+[00:16.50]<16.50,0.60>지금 <17.10,0.75>다시
+[00:17.97]<17.97,0.60>way <18.57,0.60>back <19.17,1.80>home
 [00:39.33]아무리 힘껏 닫아도
 [00:41.75]다시 열린 서랍 같아
 [00:44.36]하늘로 높이 날린 넌
@@ -453,28 +453,100 @@ export async function resolveMusicStream(env: AppEnv, id: string, source: string
   }
 }
 
-export function parseLrcLyrics(rawLrc: string): { time: number; text: string }[] {
+export interface LyricWord {
+  text: string;
+  start: number;
+  end: number;
+}
+
+export interface LyricLine {
+  time: number;
+  text: string;
+  words?: LyricWord[];
+}
+
+export function parseLrcLyrics(rawLrc: string): LyricLine[] {
   if (!rawLrc) return [];
   const lines = rawLrc.split('\n');
-  const result: { time: number; text: string }[] = [];
+  const result: LyricLine[] = [];
   const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
 
   for (const line of lines) {
-    const text = line.replace(timeRegex, '').trim();
-    if (!text) continue;
-
+    const timeMatches: number[] = [];
     timeRegex.lastIndex = 0;
     let match;
     while ((match = timeRegex.exec(line)) !== null) {
       const minutes = parseInt(match[1], 10);
       const seconds = parseInt(match[2], 10);
       const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
-      const time = minutes * 60 + seconds + milliseconds / 1000;
-      result.push({ time, text });
+      timeMatches.push(minutes * 60 + seconds + milliseconds / 1000);
+    }
+    if (timeMatches.length === 0) continue;
+
+    const rawLineBody = line.replace(timeRegex, '').trim();
+    if (!rawLineBody) continue;
+
+    // Check for word/syllable tags <start, dur>word or <time>word
+    const wordTagRegex = /<([\d.]+)(?:,\s*([\d.]+))?>([^<]+)/g;
+    const words: LyricWord[] = [];
+    let wordMatch;
+    while ((wordMatch = wordTagRegex.exec(rawLineBody)) !== null) {
+      const wStart = parseFloat(wordMatch[1]);
+      const wDur = wordMatch[2] ? parseFloat(wordMatch[2]) : 0.4;
+      const wText = wordMatch[3];
+      words.push({
+        text: wText,
+        start: wStart,
+        end: wStart + wDur,
+      });
+    }
+
+    const cleanText = rawLineBody
+      .replace(/<[\d.,\s]+>/g, '')
+      .replace(/\([\d.,\s]+\)/g, '')
+      .trim();
+
+    for (const t of timeMatches) {
+      result.push({
+        time: t,
+        text: cleanText,
+        words: words.length > 0 ? words : undefined,
+      });
     }
   }
 
   result.sort((a, b) => a.time - b.time);
+
+  // Synthesize musical cadential cadence for plain lines without word tags
+  for (let i = 0; i < result.length; i++) {
+    const cur = result[i];
+    if (cur.words && cur.words.length > 0) continue;
+    const next = i + 1 < result.length ? result[i + 1] : null;
+    const lineStart = cur.time;
+    const lineEnd = next ? next.time : lineStart + 4.2;
+    const rawGap = Math.max(0.6, lineEnd - lineStart);
+    const activeDur = rawGap > 6 ? Math.min(rawGap * 0.72, 4.2) : (rawGap > 2.5 ? rawGap * 0.8 : Math.max(0.5, rawGap - 0.2));
+
+    const tokens = cur.text.split(/(\s+)/).filter(Boolean);
+    if (tokens.length === 0) continue;
+
+    const totalWeight = tokens.reduce((acc, _, idx) => acc + (idx === tokens.length - 1 ? 1.6 : 1.0), 0);
+    let curTime = lineStart;
+    const synthesizedWords: LyricWord[] = [];
+    for (let cIdx = 0; cIdx < tokens.length; cIdx++) {
+      const token = tokens[cIdx];
+      const weight = cIdx === tokens.length - 1 ? 1.6 : 1.0;
+      const tokenDur = (weight / totalWeight) * activeDur;
+      synthesizedWords.push({
+        text: token,
+        start: curTime,
+        end: curTime + tokenDur,
+      });
+      curTime += tokenDur;
+    }
+    cur.words = synthesizedWords;
+  }
+
   return result;
 }
 

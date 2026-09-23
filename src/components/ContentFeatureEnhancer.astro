@@ -3081,7 +3081,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
     let counter = 0;
     for (const article of articles) {
       const mermaidPreBlocks = article.querySelectorAll<HTMLElement>(
-        'pre[data-language="mermaid"], pre:has(code.language-mermaid), pre:has(code[data-language="mermaid"]), pre.mermaid, code.language-mermaid'
+        'pre[data-language="mermaid"], pre:has(code.language-mermaid), pre:has(code[data-language="mermaid"]), pre.mermaid'
       );
       if (!mermaidPreBlocks.length) continue;
 
@@ -3107,6 +3107,8 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
           }
         } catch (err) {
           console.warn('Mermaid render error:', err);
+          const dangling = document.getElementById('d' + graphId) || document.getElementById(graphId);
+          if (dangling) dangling.remove();
         }
       }
     }
@@ -3154,6 +3156,8 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
         wrap.innerHTML = svg;
       } catch (err) {
         console.warn('Mermaid re-render error:', err);
+        const dangling = document.getElementById('d' + graphId) || document.getElementById(graphId);
+        if (dangling) dangling.remove();
       }
     }
   };

@@ -139,13 +139,13 @@ pie title 部落格技術棧程式碼佔比
 ```mermaid
 gitGraph
    commit id: "初始化 v1.0"
-   branch 功能/Markdown
-   checkout 功能/Markdown
+   branch feature/markdown
+   checkout feature/markdown
    commit id: "新增 KaTeX 與數學公式"
    commit id: "修正表格佈局"
    commit id: "新增告示框"
    checkout main
-   merge 功能/Markdown id: "合併 Markdown 增強功能"
+   merge feature/markdown id: "合併 Markdown 增強功能"
    commit id: "發佈 v2.0" tag: "v2.0.0"
 ```
 
