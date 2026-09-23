@@ -95,50 +95,119 @@ const DEFAULT_TRACKS: (MusicTrack & { lrc: string })[] = [
     source: 'local',
     picId: 'way_back_home',
     coverUrl: '/media/audio/covers/way_back_home.jpg',
-    lyricId: 'local-way-back-home',
+    lyricId: '863046037',
     urlId: '/media/audio/WayBackHome.flac',
-    lrc: `[00:00.00]SHAUN - Way Back Home
-[00:08.50]멈춘 시간 속 잠든 너를 찾아가
-[00:13.20]아무리 막아도 결국 너의 곁인 걸
-[00:18.00]길고 긴 여행을 끝내 이젠 돌아가
-[00:22.60]너라는 집으로 지금 다시 Way back home
-[00:28.00]아무리 힘껏 닫아도 다시 열린 서랍 같아
-[00:32.80]하늘로 높이 날린 넌 자꾸 내게 되돌아와
-[00:37.50]힘들었던 시간만큼 간절했던 기억들
-[00:42.20]헤매이다 마주친 너와 나의 사랑
-[00:47.00]눈을 감으면 소리 없이 밀려와
-[00:51.60]이 마음이 널 부르고 있어
-[00:56.50]세상이 멈춰도 끝없이 달릴 텐데
-[01:01.20]오직 한 사람 너의 곁으로
-[01:06.00]멈춘 시간 속 잠든 너를 찾아가
-[01:10.80]아무리 막아도 결국 너의 곁인 걸
-[01:15.50]길고 긴 여행을 끝내 이젠 돌아가
-[01:20.20]너라는 집으로 지금 다시 Way back home
-[01:30.00]조용히 잠든 밤을 깨워 너의 곁으로
-[01:35.00]수많은 별들 중에서도 너만을 향해
-[01:40.00]아득한 길 끝에서 다시 만날 그날까지
-[01:45.00]너라는 집으로 지금 다시 Way back home`,
+    lrc: `[00:00.00] 作词 : 李智慧/JQ
+[00:00.09] 作曲 : SHAUN
+[00:00.18] 编曲 : SHAUN
+[00:00.28]멈춘 시간 속
+[00:02.36]잠든 너를 찾아가
+[00:05.17]아무리 막아도
+[00:06.93]결국 너의 곁인 걸
+[00:09.60]길고 긴 여행을 끝내
+[00:12.34]이젠 돌아가
+[00:14.80]너라는 집으로
+[00:16.50]지금 다시
+[00:17.97]way back home
+[00:39.33]아무리 힘껏 닫아도
+[00:41.75]다시 열린 서랍 같아
+[00:44.36]하늘로 높이 날린 넌
+[00:46.12]자꾸 내게 되돌아와
+[00:49.02]힘들게 삼킨 이별도
+[00:51.40]다 그대로인 걸
+[00:53.48]oh oh oh
+[00:57.46]수없이 떠난 길 위에서
+[00:59.94]난 너를 발견하고
+[01:02.39]비우려 했던 맘은 또
+[01:04.62]이렇게 너로 차올라
+[01:07.06]발걸음의 끝에
+[01:09.14]늘 니가 부딪혀
+[01:11.58]그만
+[01:14.16]그만
+[01:17.05]멈춘 시간 속
+[01:18.82]잠든 너를 찾아가
+[01:21.24]아무리 막아도
+[01:23.64]결국 너의 곁인 걸
+[01:25.70]길고 긴 여행을 끝내
+[01:29.15]이젠 돌아가
+[01:31.09]너라는 집으로
+[01:33.29]지금 다시
+[01:34.86]way back home
+[01:55.40]조용히 잠든 방을 열어
+[01:57.73]기억을 꺼내 들어
+[02:00.07]부서진 시간 위에서
+[02:02.18]선명히 너는 떠올라
+[02:04.33]길 잃은 맘 속에
+[02:07.20]널 가둔 채 살아
+[02:09.24]그만
+[02:11.67]그만
+[02:14.72]멈춘 시간 속
+[02:16.41]잠든 너를 찾아가
+[02:19.08]아무리 막아도
+[02:21.12]결국 너의 곁인 걸
+[02:23.67]길고 긴 여행을 끝내
+[02:26.44]이젠 돌아가
+[02:28.37]너라는 집으로
+[02:31.16]지금 다시
+[02:32.36]way back home
+[02:34.72]세상을 뒤집어
+[02:36.86]찾으려 해
+[02:39.05]오직 너로 완결된
+[02:41.19]이야기를
+[02:44.09]모든 걸 잃어도
+[02:49.04]난 너 하나면 돼
+[03:03.58]빛이 다 꺼진 여기
+[03:05.26]나를 안아줘
+[03:12.14]눈을 감으면
+[03:14.27]소리 없이 밀려와
+[03:16.50]이 마음 그 위로
+[03:18.99]넌 또 한 겹 쌓여가
+[03:21.51]내겐 그 누구도 아닌
+[03:24.49]니가 필요해
+[03:26.61]돌아와 내 곁에
+[03:28.74]그날까지
+[03:30.15]I’m not done`,
   },
   {
     id: 'local-kanojo',
     name: '彼女は旅に出る',
-    artist: '三月的パンタシア',
+    artist: '三月のパンタシア',
     album: 'ガールズブルー・ハッピーエンド',
     source: 'local',
     picId: 'kanojo_wa_tabi_ni_deru',
     coverUrl: '/media/audio/covers/kanojo_wa_tabi_ni_deru.jpg',
-    lyricId: 'local-kanojo',
+    lyricId: '509106775',
     urlId: '/media/audio/彼女は旅に出る.mp3',
-    lrc: `[00:00.00]三月的パンタシア - 彼女は旅に出る
-[00:12.50]ねえ　いつかの約束をまだ覚えてる？
-[00:18.20]夕焼けの空に滲んだ夢の続き
-[00:24.00]迷いながら歩いた街並み
-[00:29.80]風がそっと背中を押してくれた
-[00:36.50]彼女は旅に出る　新しい朝を探して
-[00:43.00]遠く離れても　心はずっと繋がっているから
-[00:50.00]さよならは言わないよ
-[00:54.20]いつかまた笑い合える日まで
-[01:01.00]光射す道の先へ　駆け出してゆく`,
+    lrc: `[00:00.00] 作词 : 鎖那
+[00:01.00] 作曲 : 鎖那
+[00:02.00] 编曲 : Misumi
+[00:15.11]白昼夢 繋いでいて
+[00:18.83]優しいの 冷たいの
+[00:22.57]最終章 詰め込んでね
+[00:26.37]どこへいこう どこへいこう
+[00:30.02]あ、あ、あたしの黒猫はしゃべらないままだな
+[00:37.55]ママホウキの乗り方も教えてくれなかった
+[00:45.11]飛び出していった きみは帰らない
+[00:47.50]重ねた手と手 掛け違えたボタンも
+[00:52.53]汚いくらいに 思い出になるよ
+[00:55.87]飽きちゃったラムネ頬張ってみたけど
+[00:59.20]バイバイ
+[01:32.04]満天の宇宙(ソラ) 昇っていくきみの
+[01:35.46]願いは叶ったの？
+[01:38.78]掴み損ねた泡になるみたいに
+[01:42.87]まだ飛べないままでいるんだ
+[01:46.44]Take me with you！
+[01:53.96]Take me with you！
+[02:01.85]白昼夢 繋いでいて
+[02:05.89]優しいの 冷たいの
+[02:09.38]最终章 詰め込んでね
+[02:13.38]どこへいこう どこへいこう
+[02:16.77]あ、あ、あたしの黒猫は喋らないままだな
+[02:24.38]パパ明日は晴れるかな？待つのはもうやめたの
+[02:33.67]追いかけていった もうね戻れない
+[02:36.22]離れた手と手 すり切れた心にも
+[02:41.26]神様もきっと知らない涙 星屑のシャワー
+[02:46.22]さよならした バイバイ！`,
   },
   {
     id: 'local-irony',
@@ -148,20 +217,79 @@ const DEFAULT_TRACKS: (MusicTrack & { lrc: string })[] = [
     source: 'local',
     picId: 'irony_scop',
     coverUrl: '/media/audio/covers/irony_scop.jpg',
-    lyricId: 'local-irony',
+    lyricId: '31421442',
     urlId: '/media/audio/アイロニ.mp3',
-    lrc: `[00:00.00]すこっぷ - アイロニ (Irony)
-[00:14.00]少し歩き疲れたんだ
-[00:18.00]少し息も白くなってきた
-[00:22.00]時の流れは早くて
-[00:25.50]置いていかれそうになるよ
-[00:30.00]だけどもう少しだけ　前を向いて歩いてみる
-[00:38.00]弱音ばかり吐いていたって
-[00:42.00]明日はやってくるから
-[00:46.00]下手くそな笑顔でも
-[00:50.00]谁かの温もりに触れたくて
-[00:55.00]少しずつ進んでいくんだ
-[01:01.00]僕だけの小さな歩幅で`,
+    lrc: `[00:00.00] 作词 : すこっぷ
+[00:00.37] 作曲 : すこっぷ
+[00:00.75]少し歩き疲れたんだ
+[00:03.34]少し歩き疲れたんだ
+[00:06.05]月並みな表現だけど
+[00:08.23]人生とかいう長い道を
+[00:11.44]少し休みたいんだ
+[00:13.94]少し休みたいんだけど
+[00:16.81]時間は刻一刻残酷と
+[00:19.67]私を 引っぱっていくんだ
+[00:38.18]うまくいきそうなんだけど
+[00:40.76]うまくいかないことばかりで
+[00:43.39]迂闊にも泣いてしまいそうになる
+[00:46.09]情けない本当にな
+[00:48.93]惨めな気持ちなんか
+[00:51.19]嫌というほど味わってきたし
+[00:54.13]とっくに悔しさなんてものは
+[00:56.84]捨ててきたはずなのに
+[00:59.72]絶望抱くほど
+[01:01.01]悪いわけじゃないけど
+[01:02.39]欲しいものは
+[01:03.19]いつも少し手には届かない
+[01:04.91]そんな半端だとねなんか
+[01:07.51]期待してしまうから
+[01:11.46]それならもういっそのこと
+[01:15.00]ドン底まで突き落としてよ
+[01:20.84]答えなんて言われたって
+[01:23.47]人によってすり替わってって
+[01:26.04]だから絶対なんて絶対
+[01:28.50]信じらんないよねぇ
+[01:31.50]苦しみって誰にもあるって
+[01:33.71]そんなのわかってるから何だって
+[01:36.76]なら笑って済ませばいいの？
+[01:39.16]もうわかんないよバカ！
+[01:52.83]散々言われてきたくせに
+[01:55.53]なんだまんざらでもないんだ
+[01:58.14]簡単に考えたら楽なことも
+[02:01.06]難関に考えてたんだ
+[02:03.48]段々と色々めんどくなってもう
+[02:06.38]淡々と終わらせちゃおうか
+[02:08.88]「病んだ？」とかもう嫌になったから
+[02:11.56]やんわりと終わればもういいじゃんか
+[02:14.42]夢だとか希望とか
+[02:15.69]生きてる意味とか
+[02:17.06]別にそんなものはさして
+[02:18.21]必要ないから
+[02:19.55]具体的でわかりやすい
+[02:22.24]機会をください
+[02:26.24]泣き場所探すうちに
+[02:29.88]もう泣き疲れちゃったよ
+[02:35.31]きれいごとって嫌いだって
+[02:38.11]期待しちゃっても形になんなくて
+[02:40.74]「星が僕ら見守って」って
+[02:43.22]夜しかいないじゃん　ねぇ
+[02:46.08]君のその優しいとこ
+[02:48.77]不覚にも求めちゃうから
+[02:51.41]この心やらかいとこ
+[02:53.90]もう触んないで　ヤダ！
+[03:17.94]もうほっといて
+[03:20.69]もう置いてって
+[03:23.15]汚れきったこの道は
+[03:25.91]もう変わんないよ嗚呼
+[03:30.19]疲れちゃって弱気になって
+[03:32.78]逃げ出したって無駄なんだって
+[03:35.35]だから内面耳塞いで
+[03:37.80]もう最低だって泣いて
+[03:40.61]人生って何なのって
+[03:43.40]わかんなくても生きてるだけで
+[03:46.24]幸せって思えばいいの？
+[03:48.50]もうわかんないよバカ！
+[03:57.11]終わり`,
   },
 ];
 
@@ -853,18 +981,30 @@ export function MusicPocket({ apiBase }: Props) {
     setActiveLyricIndex(-1);
 
     const lyricId = currentTrack.lyricId || currentTrack.id;
-    void fetchJson<{ ok: boolean; lyric?: string; lrc?: string; parsed?: LyricLine[] }>(
-      `${apiBase}/music/lyric?id=${encodeURIComponent(lyricId)}&source=${encodeURIComponent(currentTrack.source)}`,
-    )
-      .then((res) => {
+    const fetchLyricWithFallback = async () => {
+      // 1. 本地/当前站点 API 检索
+      try {
+        const res = await fetchJson<{ ok: boolean; lyric?: string; lrc?: string; parsed?: LyricLine[] }>(
+          `${apiBase}/music/lyric?id=${encodeURIComponent(lyricId)}&source=${encodeURIComponent(currentTrack.source)}`,
+        );
         const text = res.lyric || res.lrc || '';
-        if (res.ok && text) {
-          setRawLyric(text);
-          const parsed = res.parsed && res.parsed.length > 0 ? res.parsed : parseLrc(text);
-          setParsedLyrics(parsed);
-        } else if (res.parsed && res.parsed.length > 0) {
-          setParsedLyrics(res.parsed);
-        }
+        if (res.ok && text) return { text, parsed: res.parsed };
+      } catch {}
+
+      // 2. CFSolara 官方高精歌词引擎微服务自动回退兜底
+      const cfSolaraUrl = `https://cfsolara-dho.pages.dev/api/music/lyric?id=${encodeURIComponent(lyricId)}&source=${encodeURIComponent(currentTrack.source || 'netease')}`;
+      const cfRes = await fetchJson<{ ok: boolean; lyric?: string; lrc?: string; parsed?: LyricLine[] }>(cfSolaraUrl);
+      const cfText = cfRes.lyric || cfRes.lrc || '';
+      if (cfRes.ok && cfText) return { text: cfText, parsed: cfRes.parsed };
+
+      throw new Error('No lyrics available');
+    };
+
+    fetchLyricWithFallback()
+      .then(({ text, parsed }) => {
+        setRawLyric(text);
+        const parsedResult = parsed && parsed.length > 0 ? parsed : parseLrc(text);
+        setParsedLyrics(parsedResult);
       })
       .catch(() => {
         setRawLyric(t('暂无可用歌词'));
@@ -940,7 +1080,8 @@ export function MusicPocket({ apiBase }: Props) {
     const lineEnd = nextLine && nextLine.time > lineStart
       ? nextLine.time
       : (duration > lineStart ? Math.min(duration, lineStart + 6) : lineStart + 4.5);
-    const lineDuration = Math.max(0.5, lineEnd - lineStart);
+    const rawGap = lineEnd - lineStart;
+    const lineDuration = rawGap > 8 ? Math.min(rawGap, 5.0) : Math.max(0.5, rawGap);
     activeLineProgress = Math.min(100, Math.max(0, ((currentTime - lineStart) / lineDuration) * 100));
   }
 
@@ -2145,12 +2286,14 @@ export function MusicPocket({ apiBase }: Props) {
                     className="settings-reset-btn"
                     onClick={() => {
                       setScreenLyricSettings(DEFAULT_SCREEN_LYRIC_SETTINGS);
+                      setScreenLyricPos(null);
                       try {
                         window.localStorage.removeItem(SCREEN_LYRIC_SETTINGS_KEY);
+                        window.localStorage.removeItem(SCREEN_LYRIC_POS_KEY);
                       } catch {}
-                      showToast(t('已恢复默认字幕设置'));
+                      showToast(t('已恢复默认字幕设置与位置'));
                     }}
-                    title={t('恢复默认设置')}
+                    title={t('恢复默认设置与位置')}
                   >
                     <RotateCcw size={12} />
                   </button>
@@ -2265,6 +2408,19 @@ export function MusicPocket({ apiBase }: Props) {
                       <span className="color-label">{c.label}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* CFSolara 实时歌词同步引擎状态 */}
+              <div className="settings-popover__section settings-popover__section--engine">
+                <div className="settings-engine-card">
+                  <div className="settings-engine-title">
+                    <span className="settings-engine-dot" />
+                    <strong>CFSolara 字幕同步引擎 v2.0</strong>
+                  </div>
+                  <p className="settings-engine-desc">
+                    {t('实时音轨锚定 · 毫秒级时间戳对齐 · CFSolara API 官方接入')}
+                  </p>
                 </div>
               </div>
             </div>

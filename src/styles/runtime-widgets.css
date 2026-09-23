@@ -2727,7 +2727,7 @@ html.dark .shijianus-ai-summary__related span {
   --karaoke-sung-dark: #818cf8;
   --karaoke-glow: rgba(66, 90, 239, 0.45);
   position: fixed;
-  bottom: 24px;
+  bottom: 88px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 96;
@@ -2735,7 +2735,7 @@ html.dark .shijianus-ai-summary__related span {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: 8px !important;
   user-select: none;
   cursor: grab;
   animation: screen-lyric-fade 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2808,9 +2808,10 @@ html.dark .shijianus-ai-summary__related span {
   color: #ffffff;
 }
 
+/* 0% 极致纯透明模式：即使 hover 或展开设置也绝对不恢复底色，纯粹字幕透显 */
 .shijianus-music-pocket__screen-lyric.opacity-transparent {
   background: transparent !important;
-  border: 1px solid transparent !important;
+  border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -2819,11 +2820,11 @@ html.dark .shijianus-ai-summary__related span {
 
 .shijianus-music-pocket__screen-lyric.opacity-transparent:hover,
 .shijianus-music-pocket__screen-lyric.opacity-transparent.settings-open {
-  background: rgba(15, 23, 42, 0.35) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 @keyframes screen-lyric-fade {
@@ -3001,9 +3002,16 @@ html.dark .shijianus-ai-summary__related span {
 }
 
 :root[data-theme='dark'] .screen-lyric__btn,
-.opacity-semi .screen-lyric__btn,
-.opacity-transparent .screen-lyric__btn {
+.opacity-semi .screen-lyric__btn {
   color: rgba(255, 255, 255, 0.78);
+}
+
+.opacity-transparent .screen-lyric__btn {
+  color: #ffffff !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(4px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .screen-lyric__btn:hover {
@@ -3013,10 +3021,16 @@ html.dark .shijianus-ai-summary__related span {
 }
 
 :root[data-theme='dark'] .screen-lyric__btn:hover,
-.opacity-semi .screen-lyric__btn:hover,
-.opacity-transparent .screen-lyric__btn:hover {
+.opacity-semi .screen-lyric__btn:hover {
   background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
+}
+
+.opacity-transparent .screen-lyric__btn:hover {
+  background: var(--karaoke-sung-color, #425aef) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.45);
 }
 
 .screen-lyric__btn--settings.is-active {
@@ -3244,6 +3258,69 @@ html.dark .shijianus-ai-summary__related span {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* CFSolara 实时歌词同步引擎状态卡片 */
+.settings-popover__section--engine {
+  border-top: 1px solid var(--card-border, #e3e8f7);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+:root[data-theme='dark'] .settings-popover__section--engine {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.settings-engine-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(66, 90, 239, 0.06);
+  border: 1px solid rgba(66, 90, 239, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+:root[data-theme='dark'] .settings-engine-card {
+  background: rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.2);
+}
+
+.settings-engine-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--karaoke-sung-color, #425aef);
+}
+
+:root[data-theme='dark'] .settings-engine-title {
+  color: #a5b4fc;
+}
+
+.settings-engine-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.settings-engine-desc {
+  margin: 0;
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+:root[data-theme='dark'] .settings-engine-desc {
+  color: #94a3b8;
+}
 
 /* 移动端视口自适应 (保留拖动自由度并防止截断) */
 @media (max-width: 768px) {

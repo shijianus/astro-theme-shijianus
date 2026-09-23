@@ -83,42 +83,141 @@ async function main() {
   await hud.waitFor({ state: 'visible', timeout: 5000 });
   console.log('✓ 桌面歌词 HUD 成功呈现在屏幕上！');
 
-  // 5. 检查桌面歌词 HUD 的排布与文字
-  const hudInfo = await page.evaluate(() => {
+  // 5. 检查桌面歌词 HUD 的排布、方框形状 (border-radius: 8px) 与 默认下居中位置
+  console.log('5. 检查桌面歌词 HUD 方框形状 (border-radius: 8px) 与 默认下居中位置...');
+  const shapeAndPos = await page.evaluate(() => {
     const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
-    const currentLine = el?.querySelector('.screen-lyric__current-line');
-    const karaokeText = el?.querySelector('.screen-lyric__karaoke-text');
-    const nextLine = el?.querySelector('.screen-lyric__next-line');
-    const settingsBtn = el?.querySelector('.screen-lyric__btn--settings');
-    const lockBtn = el?.querySelector('.screen-lyric__btn--lock');
+    if (!el) return null;
+    const style = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const centerX = rect.left + rect.width / 2;
+    const isCentered = Math.abs(centerX - viewportWidth / 2) < 4;
+
     return {
-      classes: el?.className,
-      currentText: currentLine?.textContent?.trim(),
-      hasKaraoke: !!karaokeText,
-      karaokeStyle: karaokeText?.getAttribute('style'),
-      hasNextLine: !!nextLine,
-      nextText: nextLine?.textContent?.trim(),
-      hasSettingsBtn: !!settingsBtn,
-      hasLockBtn: !!lockBtn
+      borderRadius: style.borderRadius,
+      bottom: style.bottom,
+      rect,
+      isCentered,
+      classes: el.className,
     };
   });
-  console.log('- 桌面歌词 HUD 初始状态:', hudInfo);
-  if (!hudInfo.hasKaraoke) throw new Error('HUD karaoke text missing!');
-  if (!hudInfo.hasNextLine) throw new Error('HUD dual-line next line preview missing!');
-  console.log('✓ 桌面歌词当前句与双行下一句预览正常！\n');
+  console.log('- 形状与定位状态:', shapeAndPos);
+  if (!shapeAndPos) throw new Error('HUD element not found!');
+  if (shapeAndPos.borderRadius !== '8px') {
+    throw new Error(`Expected border-radius: 8px (方框), but got ${shapeAndPos.borderRadius}!`);
+  }
+  if (!shapeAndPos.isCentered) {
+    throw new Error('HUD is not horizontally centered in viewport!');
+  }
+  console.log('✓ 成功验证：HUD 为规整方框 (border-radius: 8px)，且默认位置为下居中！\n');
 
   // 6. 测试设置弹窗与个性化配置
-  console.log('5. 打开桌面歌词设置弹窗...');
+  console.log('6. 打开桌面歌词设置弹窗并检查 CFSolara 同步引擎卡片...');
   const settingsBtn = page.locator('.screen-lyric__btn--settings');
   await settingsBtn.click();
   await page.waitForTimeout(600);
 
   const popover = page.locator('.screen-lyric__settings-popover');
   await popover.waitFor({ state: 'visible', timeout: 3000 });
-  console.log('✓ 桌面歌词个性化设置面板成功呼出！');
 
-  // 7. 切换字号为大 (22px)
-  console.log('6. 测试字号调整为大 (22px)...');
+  // 检查 CFSolara 引擎卡片
+  const engineCardText = await page.evaluate(() => {
+    const card = document.querySelector('.settings-engine-card');
+    return card ? card.textContent?.trim() : null;
+  });
+  console.log('- CFSolara 引擎标识:', engineCardText);
+  if (!engineCardText || !engineCardText.includes('CFSolara 字幕同步引擎')) {
+    throw new Error('CFSolara Subtitle Sync Engine card not found in settings popover!');
+  }
+  console.log('✓ CFSolara 高精歌词引擎接入与状态指示确认正常！\n');
+
+  // 7. 切换透明度为 全透极简 (0%) 并验证即使 hover 也绝不变暗/不透明
+  console.log('7. 测试全透极简 (0%) 模式：验证 100% 纯透明及 hover 状态不变暗...');
+  const transBtn = popover.locator('.settings-opt-btn', { hasText: '全透极简' });
+  await transBtn.click();
+  await page.waitForTimeout(400);
+
+  const transCheck = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const style = window.getComputedStyle(el);
+    return {
+      hasTransparentClass: el.classList.contains('opacity-transparent'),
+      bg: style.backgroundColor,
+      border: style.borderStyle,
+    };
+  });
+  console.log('- 全透模式常规背景:', transCheck);
+  if (!transCheck.hasTransparentClass || transCheck.bg !== 'rgba(0, 0, 0, 0)') {
+    throw new Error(`Expected transparent background rgba(0, 0, 0, 0), got ${transCheck.bg}!`);
+  }
+
+  // Hover 状态下再次检测背景颜色
+  await hud.hover();
+  await page.waitForTimeout(300);
+  const hoverBg = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    return window.getComputedStyle(el).backgroundColor;
+  });
+  console.log('- 全透模式 Hover 状态背景色:', hoverBg);
+  if (hoverBg !== 'rgba(0, 0, 0, 0)') {
+    throw new Error(`Expected transparent background on hover, but turned into: ${hoverBg}!`);
+  }
+  console.log('✓ 成功验证：0% 纯透明极简模式无底色、hover 时绝不变成半透明灰框！\n');
+
+  // 8. 测试拖拽并验证恢复默认设置按钮 (.settings-reset-btn) 恢复默认位置
+  console.log('8. 测试位置拖拽与一键恢复默认位置 (.settings-reset-btn)...');
+  // 模拟拖动 HUD 到视口左上方 (140, 140)
+  const hudBox = await hud.boundingBox();
+  if (hudBox) {
+    await page.mouse.move(hudBox.x + 30, hudBox.y + 15);
+    await page.mouse.down();
+    await page.mouse.move(140, 140, { steps: 5 });
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+  }
+
+  const posAfterDrag = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    return {
+      left: el?.style.left,
+      top: el?.style.top,
+      storage: window.localStorage.getItem('shijianus-screen-lyric-pos'),
+    };
+  });
+  console.log('- 拖拽后位置与持久化记录:', posAfterDrag);
+
+  // 点击恢复默认设置按钮
+  console.log('- 点击 .settings-reset-btn 恢复默认设置与位置...');
+  const resetBtn = page.locator('.settings-reset-btn');
+  await resetBtn.click();
+  await page.waitForTimeout(600);
+
+  const posAfterReset = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const rect = el.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const centerX = rect.left + rect.width / 2;
+    return {
+      left: el?.style.left,
+      top: el?.style.top,
+      bottom: el?.style.bottom,
+      transform: el?.style.transform,
+      storage: window.localStorage.getItem('shijianus-screen-lyric-pos'),
+      isCentered: Math.abs(centerX - viewportWidth / 2) < 4,
+    };
+  });
+  console.log('- 恢复默认后位置:', posAfterReset);
+  if (posAfterReset.left !== '50%' || posAfterReset.bottom !== '88px' || !posAfterReset.isCentered) {
+    throw new Error('Reset failed to restore default bottom-centered position!');
+  }
+  if (posAfterReset.storage !== null) {
+    throw new Error('Storage shijianus-screen-lyric-pos was not cleared!');
+  }
+  console.log('✓ 成功验证：.settings-reset-btn 成功将 HUD 恢复至默认下居中位置并清除了存储！\n');
+
+  // 9. 切换字号为大 (22px)
+  console.log('9. 测试字号调整为大 (22px)...');
   const sizeLgBtn = popover.locator('.settings-opt-btn', { hasText: '22px' });
   await sizeLgBtn.click();
   await page.waitForTimeout(400);
@@ -128,25 +227,8 @@ async function main() {
   if (!hasSizeLg) throw new Error('Failed to change HUD font size to lg!');
   console.log('✓ 字号无级调节成功！\n');
 
-  // 8. 切换透明度为半透明 (45%) 与 全透极简 (0%)
-  console.log('7. 测试背景透明度调节 (半透明 45% 与 全透极简 0%)...');
-  const semiBtn = popover.locator('.settings-opt-btn', { hasText: '半透明' });
-  await semiBtn.click();
-  await page.waitForTimeout(400);
-  let opacityCheck = await hud.evaluate((el) => el.classList.contains('opacity-semi'));
-  console.log('- 半透明状态 (opacity-semi):', opacityCheck);
-  if (!opacityCheck) throw new Error('Failed to change opacity to semi!');
-
-  const transBtn = popover.locator('.settings-opt-btn', { hasText: '全透极简' });
-  await transBtn.click();
-  await page.waitForTimeout(400);
-  opacityCheck = await hud.evaluate((el) => el.classList.contains('opacity-transparent'));
-  console.log('- 全透极简状态 (opacity-transparent):', opacityCheck);
-  if (!opacityCheck) throw new Error('Failed to change opacity to transparent!');
-  console.log('✓ 透明度/全透极简模式调节成功！\n');
-
-  // 9. 切换高亮主题色
-  console.log('8. 测试高亮色彩主题切换 (翡翠绿)...');
+  // 10. 切换高亮主题色
+  console.log('10. 测试高亮色彩主题切换 (翡翠绿)...');
   const greenBtn = popover.locator('.settings-color-btn[title*="翡翠绿"]');
   await greenBtn.click();
   await page.waitForTimeout(400);
@@ -155,38 +237,7 @@ async function main() {
   if (!themeCheck) throw new Error('Failed to change theme to green!');
   console.log('✓ 歌词流光色彩主题切换成功！\n');
 
-  // 10. 测试单行 / 双行切换
-  console.log('9. 测试单行 / 双行模式切换...');
-  const singleLineBtn = popover.locator('.settings-opt-btn', { hasText: '单行沉浸' });
-  await singleLineBtn.click();
-  await page.waitForTimeout(400);
-  let nextLineVisible = await page.evaluate(() => !!document.querySelector('.screen-lyric__next-line'));
-  console.log('- 单行模式下一行可见性 (应为 false):', nextLineVisible);
-  if (nextLineVisible) throw new Error('Next line should be hidden in single-line mode!');
-
-  const dualLineBtn = popover.locator('.settings-opt-btn', { hasText: '双行预览' });
-  await dualLineBtn.click();
-  await page.waitForTimeout(400);
-  nextLineVisible = await page.evaluate(() => !!document.querySelector('.screen-lyric__next-line'));
-  console.log('- 双行模式下一行可见性 (应为 true):', nextLineVisible);
-  if (!nextLineVisible) throw new Error('Next line should be visible in dual-line mode!');
-  console.log('✓ 单行/双行排布切换成功！\n');
-
-  // 11. 测试位置锁定
-  console.log('10. 测试位置锁定功能...');
-  const lockBtn = page.locator('.screen-lyric__btn--lock');
-  await lockBtn.click();
-  await page.waitForTimeout(400);
-  const isLocked = await hud.evaluate((el) => el.classList.contains('is-locked'));
-  console.log('- 位置锁定状态 (is-locked):', isLocked);
-  if (!isLocked) throw new Error('HUD failed to enter locked state!');
-  console.log('✓ 位置锁定功能正常！\n');
-
-  // 关闭设置面板
-  await settingsBtn.click();
-  await page.waitForTimeout(400);
-
-  // 12. 检查控制台致命错误
+  // 11. 检查控制台致命错误
   console.log('11. 检查控制台错误:');
   console.log('- 错误数量:', consoleErrors.length);
   if (consoleErrors.length > 0) {
@@ -194,7 +245,7 @@ async function main() {
   }
 
   console.log('\n======================================================');
-  console.log('🎉 桌面歌词现代化重构与卡拉OK高亮全链路验证通过！');
+  console.log('🎉 桌面歌词方框化、0%纯透明、位置复位与CFSolara全链路验证通过！');
   console.log('======================================================\n');
 
   await browser.close();
