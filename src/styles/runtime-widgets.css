@@ -2825,23 +2825,31 @@ html.dark .shijianus-ai-summary__related span {
   color: #ffffff;
 }
 
-/* 0% 极致纯透明模式：即使 hover 或展开设置也绝对不恢复底色，纯粹字幕透显 */
+/* 0% 极致纯透明模式：常态下完全纯透明，悬停时以微光虚线框与半透明蒙版圈出实际大小与范围 */
 .shijianus-music-pocket__screen-lyric.opacity-transparent {
   background: transparent !important;
-  border: none !important;
+  border: 1px dashed transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   color: #ffffff;
 }
 
+/* 悬停时的方框范围蒙版与提示边框 (Hover Bounding Box & Guide Mask) */
 .shijianus-music-pocket__screen-lyric.opacity-transparent:hover,
 .shijianus-music-pocket__screen-lyric.opacity-transparent.settings-open {
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  background: rgba(15, 23, 42, 0.22) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.12) inset !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric.opacity-transparent:hover,
+:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric.opacity-transparent.settings-open {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.18) inset !important;
 }
 
 @keyframes screen-lyric-fade {
@@ -2849,29 +2857,7 @@ html.dark .shijianus-ai-summary__related span {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* 旋转唱片图标小徽标 (左侧居中微贴靠) */
-.screen-lyric__disc-badge {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--karaoke-sung-color, #425aef);
-  display: grid;
-  place-items: center;
-  opacity: 0.85;
-}
-
-:root[data-theme='dark'] .screen-lyric__disc-badge,
-.opacity-semi .screen-lyric__disc-badge,
-.opacity-transparent .screen-lyric__disc-badge {
-  color: var(--karaoke-sung-dark, #818cf8);
-}
-
-.screen-lyric__disc-inner.is-spinning {
-  animation: shijianus-record-spin 6s linear infinite;
-}
-
-/* 歌词主内容区：占满整行宽度，杜绝右侧控制按钮挤压 */
+/* 歌词主内容区：占满整行宽度，完美水平与垂直居中，杜绝任何左右偏移 */
 .screen-lyric__content {
   width: 100%;
   cursor: pointer;
@@ -2880,7 +2866,7 @@ html.dark .shijianus-ai-summary__related span {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 28px;
+  padding: 0 16px;
   position: relative;
   box-sizing: border-box;
 }
@@ -2893,6 +2879,7 @@ html.dark .shijianus-ai-summary__related span {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 /* 字号尺寸阶梯 (Font Scaling - sm: 18px, md: 22px, lg: 28px, xl: 34px - 彻底废除 15px) */
@@ -2932,79 +2919,127 @@ html.dark .shijianus-ai-summary__related span {
   font-size: 19px;
 }
 
-/* 动态逐字/逐音节流光高亮与明暗双色调自适应 (明色模式深灰岩色底，暗色模式柔亮银白底) */
-.screen-lyric__karaoke-text {
-  display: inline-block;
+/* 双层卡拉OK文本容器 */
+.screen-lyric__karaoke-box {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   max-width: 100%;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+/* 底层普通文本：随背景自适应反转 (mix-blend-mode: difference + 纯白底色，在白底上自动变黑，在黑底上自动变白) */
+.screen-lyric__karaoke-text--base,
+.screen-lyric__static-text,
+.screen-lyric__interlude-text {
+  display: inline-block;
+  color: #ffffff;
+  mix-blend-mode: difference;
   letter-spacing: 0.02em;
-  background: linear-gradient(
-    90deg,
-    var(--karaoke-sung-color, #425aef) 0%,
-    var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
-    var(--screen-lyric-unsung-color, #334155) var(--karaoke-pct, 0%),
-    var(--screen-lyric-unsung-color, #334155) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-  filter: var(--screen-lyric-text-shadow);
-  transition: background 0.04s linear;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+  user-select: none;
+  font-weight: 800;
 }
 
-:root[data-theme='dark'] .screen-lyric__karaoke-text {
-  background: linear-gradient(
-    90deg,
-    var(--karaoke-sung-dark, #818cf8) 0%,
-    var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
-    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72)) var(--karaoke-pct, 0%),
-    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72)) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
+/* 顶层已唱高亮裁剪容器：宽度由卡拉OK进度百分比精确驱动 */
+.screen-lyric__karaoke-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--karaoke-pct, 0%);
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
-.screen-lyric__static-text {
-  font-weight: 700;
-  color: var(--screen-lyric-unsung-color, #334155);
-  filter: var(--screen-lyric-text-shadow);
+/* 顶层已唱文字：保持纯正的主题定制色彩，mix-blend-mode: normal 不随背景翻转 */
+.screen-lyric__karaoke-text--sung {
+  display: inline-block;
+  color: var(--karaoke-sung-color, #425aef);
+  mix-blend-mode: normal !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 14px var(--karaoke-glow);
+  white-space: nowrap;
+  font-weight: 800;
 }
 
-:root[data-theme='dark'] .screen-lyric__static-text {
-  color: var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.72));
+:root[data-theme='dark'] .screen-lyric__karaoke-text--sung {
+  color: var(--karaoke-sung-dark, #818cf8);
+}
+
+/* 间奏指示器 */
+.screen-lyric__interlude-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.92;
+  font-size: 0.9em;
+  letter-spacing: 0.05em;
+}
+
+.screen-lyric__interlude-icon {
+  font-size: 1.1em;
+  animation: interlude-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes interlude-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
 }
 
 /* 下一句歌词预备预览 (双行模式) */
 .screen-lyric__next-line {
-  margin-top: 3px;
+  margin-top: 4px;
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.screen-lyric__next-text {
+  display: inline-block;
+  color: #ffffff;
+  mix-blend-mode: difference;
   opacity: 0.82;
-  color: var(--screen-lyric-unsung-sub, #64748b);
-  font-weight: 500;
-  filter: var(--screen-lyric-text-shadow);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
 }
 
-:root[data-theme='dark'] .screen-lyric__next-line {
-  color: var(--screen-lyric-unsung-sub, rgba(148, 163, 184, 0.7));
-}
-
-/* 快捷悬浮控制坞：居中位于歌词下方，不挤占歌词左右展示空间 */
+/* 快捷悬浮控制坞：不悬停时彻底隐藏，悬停时向下滑出 */
 .screen-lyric__controls {
+  position: relative;
+  z-index: 5;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
-  transition: all 0.2s ease;
+  margin-top: 0;
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease, max-height 0.25s ease, margin-top 0.22s ease;
+}
+
+.shijianus-music-pocket__screen-lyric:hover .screen-lyric__controls,
+.shijianus-music-pocket__screen-lyric.settings-open .screen-lyric__controls {
+  opacity: 1;
+  pointer-events: auto;
+  max-height: 42px;
+  margin-top: 10px;
+  overflow: visible;
+  transform: translateY(0);
 }
 
 .screen-lyric__btn {

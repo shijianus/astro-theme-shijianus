@@ -112,8 +112,10 @@ async function main() {
   }
   console.log('✓ 成功验证：HUD 为规整方框 (border-radius: 8px)，且默认位置为下居中！\n');
 
-  // 6. 测试设置弹窗与个性化配置
-  console.log('6. 打开桌面歌词设置弹窗并检查 CFSolara 同步引擎卡片...');
+  // 6. 测试设置弹窗与个性化配置 (悬停呼出控制坞并点击设置)
+  console.log('6. 鼠标悬停桌面歌词呼出控制坞，打开设置弹窗并检查 CFSolara 同步引擎卡片...');
+  await hud.hover();
+  await page.waitForTimeout(400);
   const settingsBtn = page.locator('.screen-lyric__btn--settings');
   await settingsBtn.click();
   await page.waitForTimeout(600);
@@ -132,39 +134,100 @@ async function main() {
   }
   console.log('✓ CFSolara 高精歌词引擎接入与状态指示确认正常！\n');
 
-  // 7. 切换透明度为 全透极简 (0%) 并验证即使 hover 也绝不变暗/不透明
-  console.log('7. 测试全透极简 (0%) 模式：验证 100% 纯透明及 hover 状态不变暗...');
+  // 6.5. 验证彻底废除 .screen-lyric__disc-badge 唱片按钮
+  console.log('6.5. 检查是否已彻底清除 .screen-lyric__disc-badge 唱片图标小徽标...');
+  const discCount = await page.locator('.screen-lyric__disc-badge').count();
+  console.log('- 唱片小徽标数量:', discCount);
+  if (discCount > 0) {
+    throw new Error(`Expected 0 .screen-lyric__disc-badge elements, but found ${discCount}!`);
+  }
+  console.log('✓ 成功验证：已彻底废除 .screen-lyric__disc-badge，全框任意位置均可自由拖拽！\n');
+
+  // 6.6. 验证双层卡拉OK文本与背景翻转对比度
+  console.log('6.6. 检查双层卡拉OK文本结构与底层背景翻转 (mix-blend-mode: difference)...');
+  const dualLayerCheck = await page.evaluate(() => {
+    const baseText = document.querySelector('.screen-lyric__karaoke-text--base');
+    const sungText = document.querySelector('.screen-lyric__karaoke-text--sung');
+    const overlay = document.querySelector('.screen-lyric__karaoke-overlay');
+    if (!baseText) return null;
+    const baseStyle = window.getComputedStyle(baseText);
+    const sungStyle = sungText ? window.getComputedStyle(sungText) : null;
+    return {
+      hasBase: !!baseText,
+      hasSung: !!sungText,
+      hasOverlay: !!overlay,
+      baseBlendMode: baseStyle.mixBlendMode,
+      sungBlendMode: sungStyle ? sungStyle.mixBlendMode : null,
+    };
+  });
+  console.log('- 双层卡拉OK结构:', dualLayerCheck);
+  if (!dualLayerCheck || !dualLayerCheck.hasBase) {
+    throw new Error('Dual-layer karaoke structure (.screen-lyric__karaoke-text--base) not found!');
+  }
+  if (dualLayerCheck.baseBlendMode !== 'difference') {
+    throw new Error(`Expected base text mix-blend-mode: difference, got ${dualLayerCheck.baseBlendMode}!`);
+  }
+  console.log('✓ 成功验证：底层普通文本采用 mix-blend-mode: difference 随背景自适应翻转，顶层高亮保持纯正主题色！\n');
+
+  // 7. 切换透明度为 全透极简 (0%) 并验证常态纯透明 & 悬停时以虚线框与半透蒙版圈出实际大小
+  console.log('7. 测试全透极简 (0%) 模式：验证常态 100% 纯透明及悬停时以虚线框和半透明蒙版圈出大小范围...');
   const transBtn = popover.locator('.settings-opt-btn', { hasText: '全透极简' });
   await transBtn.click();
   await page.waitForTimeout(400);
 
+  // 关闭设置面板以进入常态测试
+  const closeSettingsBtn = popover.locator('.settings-close-btn');
+  await closeSettingsBtn.click();
+  await page.waitForTimeout(400);
+
+  // 鼠标移开视口边缘
+  await page.mouse.move(50, 50);
+  await page.waitForTimeout(300);
+
   const transCheck = await page.evaluate(() => {
     const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
     const style = window.getComputedStyle(el);
+    const controls = document.querySelector('.screen-lyric__controls');
+    const controlsStyle = controls ? window.getComputedStyle(controls) : null;
     return {
       hasTransparentClass: el.classList.contains('opacity-transparent'),
       bg: style.backgroundColor,
-      border: style.borderStyle,
+      controlsOpacity: controlsStyle?.opacity,
     };
   });
-  console.log('- 全透模式常规背景:', transCheck);
+  console.log('- 全透模式常规背景与未悬停控制坞状态:', transCheck);
   const isZeroAlpha = (c) => c === 'transparent' || c.includes(', 0)') || c === 'rgba(0, 0, 0, 0)' || c === 'rgba(255, 255, 255, 0)';
   if (!transCheck.hasTransparentClass || !isZeroAlpha(transCheck.bg)) {
     throw new Error(`Expected transparent background with alpha 0, got ${transCheck.bg}!`);
   }
-
-  // Hover 状态下再次检测背景颜色
-  await hud.hover();
-  await page.waitForTimeout(300);
-  const hoverBg = await page.evaluate(() => {
-    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
-    return window.getComputedStyle(el).backgroundColor;
-  });
-  console.log('- 全透模式 Hover 状态背景色:', hoverBg);
-  if (!isZeroAlpha(hoverBg)) {
-    throw new Error(`Expected transparent background on hover, but turned into: ${hoverBg}!`);
+  if (transCheck.controlsOpacity !== '0') {
+    throw new Error(`Expected un-hovered controls opacity: 0, got ${transCheck.controlsOpacity}!`);
   }
-  console.log('✓ 成功验证：0% 纯透明极简模式无底色、hover 时绝不变成半透明灰框！\n');
+  console.log('✓ 成功确认：常态下 100% 纯透明极简，控制坞隐藏！');
+
+  // 悬停状态下检测蒙版范围与控制坞滑出
+  console.log('- 鼠标悬停进入桌面歌词 HUD...');
+  await hud.hover();
+  await page.waitForTimeout(400);
+  const hoverCheck = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const style = window.getComputedStyle(el);
+    const controls = document.querySelector('.screen-lyric__controls');
+    const controlsStyle = controls ? window.getComputedStyle(controls) : null;
+    return {
+      bg: style.backgroundColor,
+      borderStyle: style.borderStyle,
+      controlsOpacity: controlsStyle?.opacity,
+    };
+  });
+  console.log('- 全透模式 Hover 状态下背景蒙版与边框:', hoverCheck);
+  if (hoverCheck.borderStyle !== 'dashed') {
+    throw new Error(`Expected dashed border guide mask on hover, got ${hoverCheck.borderStyle}!`);
+  }
+  if (hoverCheck.controlsOpacity !== '1') {
+    throw new Error(`Expected hovered controls opacity: 1, got ${hoverCheck.controlsOpacity}!`);
+  }
+  console.log('✓ 成功验证：悬停时以虚线框与半透明蒙版圈出实际大小范围，控制坞自然滑出！\n');
 
   // 8. 测试拖拽并验证恢复默认设置按钮 (.settings-reset-btn) 恢复默认位置
   console.log('8. 测试位置拖拽与一键恢复默认位置 (.settings-reset-btn)...');
@@ -187,6 +250,12 @@ async function main() {
     };
   });
   console.log('- 拖拽后位置与持久化记录:', posAfterDrag);
+
+  // 悬停并打开设置弹窗
+  await hud.hover();
+  await page.waitForTimeout(300);
+  await settingsBtn.click();
+  await page.waitForTimeout(400);
 
   // 点击恢复默认设置按钮
   console.log('- 点击 .settings-reset-btn 恢复默认设置与位置...');
@@ -275,6 +344,63 @@ async function main() {
   console.log('- 主题色切换状态 (theme-green):', themeCheck);
   if (!themeCheck) throw new Error('Failed to change theme to green!');
   console.log('✓ 歌词流光色彩主题切换成功！\n');
+
+  // 11.5. 测试锁定状态、双击解锁与重启桌面歌词自动解除锁定
+  console.log('11.5. 测试锁定状态、双击解锁与重启自动解除锁定...');
+  // 悬停并点击锁定按钮
+  await hud.hover();
+  await page.waitForTimeout(300);
+  const lockBtn = page.locator('.screen-lyric__btn--lock');
+  await lockBtn.click();
+  await page.waitForTimeout(400);
+
+  let isLocked = await hud.evaluate((el) => el.classList.contains('is-locked'));
+  console.log('- 锁定状态 (is-locked):', isLocked);
+  if (!isLocked) throw new Error('Failed to lock screen lyric HUD!');
+
+  // 测试双击桌面歌词内容解锁
+  console.log('- 双击桌面歌词区域尝试解锁...');
+  const lyricContent = page.locator('.screen-lyric__content');
+  await lyricContent.dblclick();
+  await page.waitForTimeout(400);
+
+  isLocked = await hud.evaluate((el) => el.classList.contains('is-locked'));
+  console.log('- 双击后锁定状态:', isLocked);
+  if (isLocked) throw new Error('Failed to unlock via double click!');
+  console.log('✓ 成功验证：双击桌面字幕区域可立即解锁！');
+
+  // 再次锁定并测试重启（关闭后重新开启）自动解除锁定
+  await hud.hover();
+  await page.waitForTimeout(300);
+  await lockBtn.click();
+  await page.waitForTimeout(400);
+
+  isLocked = await hud.evaluate((el) => el.classList.contains('is-locked'));
+  console.log('- 再次锁定状态:', isLocked);
+  if (!isLocked) throw new Error('Failed to lock screen lyric HUD again!');
+
+  // 点击关闭按钮
+  const closeHudBtn = page.locator('.screen-lyric__btn--close');
+  await closeHudBtn.click();
+  await page.waitForTimeout(600);
+
+  const hudVisibleAfterClose = await page.locator('.shijianus-music-pocket__screen-lyric').count();
+  console.log('- 关闭后 HUD 数量:', hudVisibleAfterClose);
+  if (hudVisibleAfterClose !== 0) throw new Error('HUD failed to close!');
+
+  // 重新打开桌面歌词
+  console.log('- 重新开启屏幕桌面歌词...');
+  await hudBtn.click();
+  await page.waitForTimeout(600);
+
+  const newHud = page.locator('.shijianus-music-pocket__screen-lyric');
+  await newHud.waitFor({ state: 'visible', timeout: 5000 });
+  const isLockedAfterRestart = await newHud.evaluate((el) => el.classList.contains('is-locked'));
+  console.log('- 重启后锁定状态:', isLockedAfterRestart);
+  if (isLockedAfterRestart) {
+    throw new Error('HUD should automatically unlock upon restart/reopen!');
+  }
+  console.log('✓ 成功验证：重启桌面字幕时已全自动解除锁定！\n');
 
   // 12. 验证文章页面 Mermaid 渲染无 dmermaid-svg 报错
   console.log('12. 访问文章页验证 Mermaid 架构图渲染无 dmermaid-svg 报错...');

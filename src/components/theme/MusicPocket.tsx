@@ -1,4 +1,4 @@
-import React, { startTransition, useCallback, useEffect, useRef, useState } from 'react';
+import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
 import {
   Clock,
@@ -331,6 +331,84 @@ function cleanLyricText(str: string): string {
     .trim();
 }
 
+function isLyricMetadataLine(text: string): boolean {
+  if (!text) return true;
+  const trimmed = text.trim();
+  return /^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(trimmed);
+}
+
+function computeActiveLineProgress(
+  time: number,
+  lyrics: LyricLine[],
+  lineIndex: number,
+  trackDuration: number,
+): { progress: number; isInterlude: boolean } {
+  if (lineIndex < 0 || lineIndex >= lyrics.length) return { progress: 0, isInterlude: false };
+  const cur = lyrics[lineIndex];
+  if (isLyricMetadataLine(cur.text)) return { progress: 0, isInterlude: false };
+
+  let nextLine: LyricLine | null = null;
+  for (let j = lineIndex + 1; j < lyrics.length; j++) {
+    if (!isLyricMetadataLine(lyrics[j].text)) {
+      nextLine = lyrics[j];
+      break;
+    }
+  }
+
+  const lineStart = cur.time;
+  const lineEnd = nextLine ? nextLine.time : (trackDuration > lineStart ? Math.min(trackDuration, lineStart + 6) : lineStart + 4.5);
+  const gap = Math.max(0.6, lineEnd - lineStart);
+
+  if (cur.words && cur.words.length > 0) {
+    const words = cur.words;
+    const firstWord = words[0];
+    const lastWord = words[words.length - 1];
+
+    if (time <= firstWord.start) return { progress: 0, isInterlude: false };
+    if (time >= lastWord.end) {
+      if (gap > 4.5 && time > lastWord.end + 1.0 && time < lineEnd - 1.5) {
+        return { progress: 0, isInterlude: true };
+      }
+      return { progress: 100, isInterlude: false };
+    }
+
+    const totalChars = words.reduce((sum, w) => sum + Math.max(1, w.text.length), 0);
+    let accumulatedChars = 0;
+    for (let wIdx = 0; wIdx < words.length; wIdx++) {
+      const w = words[wIdx];
+      const wLen = Math.max(1, w.text.length);
+      if (time >= w.end) {
+        accumulatedChars += wLen;
+      } else if (time >= w.start && time < w.end) {
+        const wordDur = Math.max(0.01, w.end - w.start);
+        const wordPct = Math.min(1, Math.max(0, (time - w.start) / wordDur));
+        accumulatedChars += wLen * wordPct;
+        break;
+      } else {
+        break;
+      }
+    }
+    const pct = Math.min(100, Math.max(0, (accumulatedChars / Math.max(1, totalChars)) * 100));
+    return { progress: pct, isInterlude: false };
+  }
+
+  const vocalDur = gap > 7 ? Math.min(gap * 0.72, 4.5) : (gap > 2.5 ? gap * 0.8 : Math.max(0.6, gap - 0.25));
+  const elapsed = time - lineStart;
+
+  if (elapsed <= 0) return { progress: 0, isInterlude: false };
+  if (elapsed >= vocalDur) {
+    if (gap > 4.5 && time > lineStart + vocalDur + 1.0 && time < lineEnd - 1.5) {
+      return { progress: 0, isInterlude: true };
+    }
+    return { progress: 100, isInterlude: false };
+  }
+
+  const linearT = elapsed / vocalDur;
+  const naturalT = Math.sin((linearT * Math.PI) / 2);
+  const pct = Math.min(100, Math.max(0, (linearT * 0.45 + naturalT * 0.55) * 100));
+  return { progress: pct, isInterlude: false };
+}
+
 function parseLrc(raw: string): LyricLine[] {
   if (!raw) return [];
   const lines = raw.split('\n');
@@ -441,6 +519,17 @@ export function MusicPocket({ apiBase }: Props) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+
+  // Interpolated Audio Clock for 60FPS fluid audio-visual synchronization
+  const audioClockRef = useRef<{
+    anchorAudioTime: number;
+    anchorPerfTime: number;
+    playbackRate: number;
+  }>({
+    anchorAudioTime: 0,
+    anchorPerfTime: 0,
+    playbackRate: 1,
+  });
 
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
 
@@ -700,6 +789,10 @@ export function MusicPocket({ apiBase }: Props) {
   const toggleScreenLyric = () => {
     setShowScreenLyric((prev) => {
       const next = !prev;
+      if (next) {
+        // 重启时自动解除锁定，确保用户可以随时重新调整位置
+        updateScreenLyricSettings({ locked: false });
+      }
       try {
         window.localStorage.setItem(SCREEN_LYRIC_KEY, String(next));
       } catch {}
@@ -944,6 +1037,9 @@ export function MusicPocket({ apiBase }: Props) {
     if (!audio) return;
 
     const onTimeUpdate = () => {
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      audioClockRef.current.anchorPerfTime = performance.now();
+      audioClockRef.current.playbackRate = audio.playbackRate || 1;
       setCurrentTime(audio.currentTime);
     };
 
@@ -952,12 +1048,23 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     const onPlay = () => {
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      audioClockRef.current.anchorPerfTime = performance.now();
+      audioClockRef.current.playbackRate = audio.playbackRate || 1;
       setIsPlaying(true);
       ensureAudioContext();
     };
 
     const onPause = () => {
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      audioClockRef.current.anchorPerfTime = performance.now();
       setIsPlaying(false);
+    };
+
+    const onSeeked = () => {
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      audioClockRef.current.anchorPerfTime = performance.now();
+      setCurrentTime(audio.currentTime);
     };
 
     const onEnded = () => {
@@ -995,6 +1102,7 @@ export function MusicPocket({ apiBase }: Props) {
     audio.addEventListener('durationchange', onDurationChange);
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
+    audio.addEventListener('seeked', onSeeked);
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('error', onError);
 
@@ -1003,6 +1111,7 @@ export function MusicPocket({ apiBase }: Props) {
       audio.removeEventListener('durationchange', onDurationChange);
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('seeked', onSeeked);
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
     };
@@ -1119,81 +1228,128 @@ export function MusicPocket({ apiBase }: Props) {
     }
   }, [activeLyricIndex, activeTab]);
 
-  // High-precision animation loop for fluid karaoke word-by-word sweeping
+  // High-precision animation loop with Audio Clock Interpolation for 60FPS fluid sweeping
   useEffect(() => {
     if (!isPlaying) return;
     let rafId: number;
-    let lastTime = 0;
+    let lastThrottledTime = 0;
+
     const tick = () => {
       const audio = audioRef.current;
       if (audio && !audio.paused) {
-        const cur = audio.currentTime;
-        if (Math.abs(cur - lastTime) >= 0.035) {
-          lastTime = cur;
-          setCurrentTime(cur);
+        const now = performance.now();
+        const rate = audioClockRef.current.playbackRate || 1;
+        const elapsed = ((now - audioClockRef.current.anchorPerfTime) / 1000) * rate;
+        let accurateTime = audioClockRef.current.anchorAudioTime + elapsed;
+
+        // Snap check if audio drifted or seek occurred
+        if (Math.abs(accurateTime - audio.currentTime) > 0.35) {
+          accurateTime = audio.currentTime;
+          audioClockRef.current.anchorAudioTime = audio.currentTime;
+          audioClockRef.current.anchorPerfTime = now;
+        }
+
+        // 1. Direct 60FPS DOM update for --karaoke-pct
+        if (screenLyricRef.current) {
+          const calc = computeActiveLineProgress(accurateTime, parsedLyrics, activeLyricIndex, duration);
+          screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
+        }
+
+        // 2. Throttled update to React state (every 75ms)
+        if (Math.abs(accurateTime - lastThrottledTime) >= 0.075) {
+          lastThrottledTime = accurateTime;
+          setCurrentTime(accurateTime);
         }
       }
       rafId = requestAnimationFrame(tick);
     };
+
     rafId = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(rafId);
     };
-  }, [isPlaying]);
+  }, [isPlaying, parsedLyrics, activeLyricIndex, duration]);
 
-  // Compute syllable-accurate vocal progress for active lyric line
-  const activeLine = activeLyricIndex >= 0 && activeLyricIndex < parsedLyrics.length ? parsedLyrics[activeLyricIndex] : null;
-  const nextLine = activeLyricIndex >= 0 && activeLyricIndex + 1 < parsedLyrics.length ? parsedLyrics[activeLyricIndex + 1] : null;
+  // Compute active lyric line progress & display data
+  const activeLineProgress = computeActiveLineProgress(currentTime, parsedLyrics, activeLyricIndex, duration).progress;
 
-  let activeLineProgress = 0;
-  if (activeLine) {
-    const words = activeLine.words;
-    if (words && words.length > 0) {
-      const firstWord = words[0];
-      const lastWord = words[words.length - 1];
-      if (currentTime <= firstWord.start) {
-        activeLineProgress = 0;
-      } else if (currentTime >= lastWord.end) {
-        activeLineProgress = 100;
-      } else {
-        const totalChars = words.reduce((sum, w) => sum + Math.max(1, w.text.length), 0);
-        let accumulatedChars = 0;
-        for (let wIdx = 0; wIdx < words.length; wIdx++) {
-          const w = words[wIdx];
-          const wLen = Math.max(1, w.text.length);
-          if (currentTime >= w.end) {
-            accumulatedChars += wLen;
-          } else if (currentTime >= w.start && currentTime < w.end) {
-            const wordDur = Math.max(0.01, w.end - w.start);
-            const wordPct = Math.min(1, Math.max(0, (currentTime - w.start) / wordDur));
-            accumulatedChars += wLen * wordPct;
-            break;
-          } else {
-            // In breath/rest gap before word w: hold accumulatedChars
-            break;
-          }
-        }
-        activeLineProgress = Math.min(100, Math.max(0, (accumulatedChars / Math.max(1, totalChars)) * 100));
-      }
-    } else {
-      const lineStart = activeLine.time;
-      const lineEnd = nextLine && nextLine.time > lineStart
-        ? nextLine.time
-        : (duration > lineStart ? Math.min(duration, lineStart + 6) : lineStart + 4.5);
-      const rawGap = Math.max(0.6, lineEnd - lineStart);
-      const lineDuration = rawGap > 8 ? Math.min(rawGap * 0.75, 5.0) : Math.max(0.5, rawGap * 0.85);
-      const elapsed = currentTime - lineStart;
-      if (elapsed <= 0) {
-        activeLineProgress = 0;
-      } else if (elapsed >= lineDuration) {
-        activeLineProgress = 100;
-      } else {
-        const linearT = elapsed / lineDuration;
-        const naturalT = Math.sin((linearT * Math.PI) / 2);
-        activeLineProgress = Math.min(100, Math.max(0, (linearT * 0.5 + naturalT * 0.5) * 100));
+  const displayLyric = useMemo(() => {
+    if (parsedLyrics.length === 0) {
+      return {
+        activeText: cleanLyricText(rawLyric),
+        nextText: '',
+        isInterlude: false,
+      };
+    }
+
+    // 1. 查找第一个真实人声歌词行（跳过作词/作曲/编曲等元数据行）
+    const firstVocalIndex = parsedLyrics.findIndex((l) => !isLyricMetadataLine(l.text));
+    const firstVocalLine = firstVocalIndex >= 0 ? parsedLyrics[firstVocalIndex] : parsedLyrics[0];
+
+    // 2. 前奏判定：如果还没到第一句真实人声
+    if (firstVocalLine && currentTime < firstVocalLine.time - 0.3) {
+      return {
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
+        nextText: cleanLyricText(firstVocalLine.text),
+        isInterlude: false,
+      };
+    }
+
+    // 3. 当前有效行定位
+    if (activeLyricIndex < 0 || activeLyricIndex >= parsedLyrics.length) {
+      return {
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬',
+        nextText: firstVocalLine ? cleanLyricText(firstVocalLine.text) : '',
+        isInterlude: false,
+      };
+    }
+
+    const curLine = parsedLyrics[activeLyricIndex];
+    if (isLyricMetadataLine(curLine.text) && firstVocalLine && currentTime < firstVocalLine.time) {
+      return {
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
+        nextText: cleanLyricText(firstVocalLine.text),
+        isInterlude: false,
+      };
+    }
+
+    let nextVocalIndex = -1;
+    for (let j = activeLyricIndex + 1; j < parsedLyrics.length; j++) {
+      if (!isLyricMetadataLine(parsedLyrics[j].text)) {
+        nextVocalIndex = j;
+        break;
       }
     }
-  }
+    const nextLine = nextVocalIndex >= 0 ? parsedLyrics[nextVocalIndex] : null;
+
+    // 4. 间奏（Interlude）检测与停顿判定
+    let vocalEnd = curLine.time;
+    if (curLine.words && curLine.words.length > 0) {
+      vocalEnd = curLine.words[curLine.words.length - 1].end;
+    } else if (nextLine) {
+      const rawGap = nextLine.time - curLine.time;
+      vocalEnd = curLine.time + (rawGap > 7 ? Math.min(rawGap * 0.72, 4.5) : (rawGap > 2.5 ? rawGap * 0.8 : Math.max(0.6, rawGap - 0.25)));
+    } else {
+      vocalEnd = curLine.time + 4.0;
+    }
+
+    const nextStart = nextLine ? nextLine.time : (duration || curLine.time + 10);
+    const gap = nextStart - curLine.time;
+
+    if (gap > 4.5 && currentTime > vocalEnd + 1.0 && currentTime < nextStart - 1.5) {
+      return {
+        activeText: '',
+        nextText: nextLine ? cleanLyricText(nextLine.text) : '',
+        isInterlude: true,
+      };
+    }
+
+    return {
+      activeText: cleanLyricText(curLine.text),
+      nextText: nextLine ? cleanLyricText(nextLine.text) : '',
+      isInterlude: false,
+    };
+  }, [parsedLyrics, activeLyricIndex, currentTime, duration, currentTrack, rawLyric]);
 
   // 搜索处理
   const handleSearch = async (e?: React.FormEvent, keywordOverride?: string) => {
@@ -2267,9 +2423,15 @@ export function MusicPocket({ apiBase }: Props) {
           onPointerMove={handleScreenLyricDragMove}
           onPointerUp={handleScreenLyricDragEnd}
           onPointerCancel={handleScreenLyricDragEnd}
-          title={screenLyricSettings.locked ? t('桌面字幕（已锁定位置）') : t('按住可自由拖拽位置')}
+          onDoubleClick={() => {
+            if (screenLyricSettings.locked) {
+              updateScreenLyricSettings({ locked: false });
+              showToast(t('已解除桌面歌词锁定'));
+            }
+          }}
+          title={screenLyricSettings.locked ? t('桌面字幕（已锁定，双击或悬停解锁）') : t('按住可自由拖拽位置')}
         >
-          {/* 歌词主文本区 */}
+          {/* 歌词主文本区：占满整宽，无 disc-badge 小徽标 */}
           <div
             className="screen-lyric__content"
             onClick={() => {
@@ -2278,46 +2440,52 @@ export function MusicPocket({ apiBase }: Props) {
             }}
             title={t('点击呼出播放器完整歌词')}
           >
-            {/* 旋转唱片指示器小徽标 */}
-            <div className="screen-lyric__disc-badge" aria-hidden="true">
-              <div className={`screen-lyric__disc-inner ${isPlaying ? 'is-spinning' : ''}`}>
-                <Disc3 size={15} />
+            {displayLyric.isInterlude ? (
+              <div className="screen-lyric__current-line">
+                <span className="screen-lyric__interlude-text">
+                  <span className="screen-lyric__interlude-icon">♬</span>
+                  {t('间奏演奏中')}
+                  <span className="screen-lyric__interlude-icon">♬</span>
+                </span>
               </div>
-            </div>
-            {parsedLyrics.length > 0 && activeLyricIndex >= 0 ? (
-              <>
-                <div className="screen-lyric__current-line">
+            ) : displayLyric.activeText ? (
+              <div className="screen-lyric__current-line">
+                <div className="screen-lyric__karaoke-box">
+                  {/* 底层：随背景自适应反转的普通未唱文本 (白色 + mix-blend-mode: difference) */}
+                  <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--base">
+                    {displayLyric.activeText}
+                  </span>
+                  {/* 顶层：已唱高亮裁剪容器，保持定制主题色 (极光蓝/翡翠绿/霓虹粉/星辉金)，mix-blend-mode: normal */}
                   <span
-                    className="screen-lyric__karaoke-text"
-                    style={{ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties}
+                    className="screen-lyric__karaoke-overlay"
+                    style={{ width: `var(--karaoke-pct, ${activeLineProgress.toFixed(1)}%)` }}
+                    aria-hidden="true"
                   >
-                    {cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}
+                    <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--sung">
+                      {displayLyric.activeText}
+                    </span>
                   </span>
                 </div>
-                {screenLyricSettings.dualLine && parsedLyrics[activeLyricIndex + 1] && (
-                  <div className="screen-lyric__next-line">
-                    <span className="screen-lyric__next-text">
-                      {cleanLyricText(parsedLyrics[activeLyricIndex + 1].text)}
-                    </span>
-                  </div>
-                )}
-              </>
-            ) : parsedLyrics.length > 0 ? (
-              <div className="screen-lyric__current-line">
-                <span className="screen-lyric__static-text">
-                  {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
-                </span>
               </div>
             ) : (
               <div className="screen-lyric__current-line">
                 <span className="screen-lyric__static-text">
-                  {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬')}
+                  {currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬'}
+                </span>
+              </div>
+            )}
+
+            {/* 下一句预备预览 (双行模式或间奏模式) */}
+            {screenLyricSettings.dualLine && displayLyric.nextText && (
+              <div className="screen-lyric__next-line">
+                <span className="screen-lyric__next-text">
+                  {displayLyric.nextText}
                 </span>
               </div>
             )}
           </div>
 
-          {/* 快捷悬浮控制坞 */}
+          {/* 快捷悬浮控制坞：不悬停时彻底隐藏，悬停时向下滑出 */}
           <div className="screen-lyric__controls">
             <button
               type="button"
@@ -2361,7 +2529,7 @@ export function MusicPocket({ apiBase }: Props) {
               type="button"
               className={`screen-lyric__btn screen-lyric__btn--lock ${screenLyricSettings.locked ? 'is-locked' : ''}`}
               onClick={() => updateScreenLyricSettings({ locked: !screenLyricSettings.locked })}
-              title={screenLyricSettings.locked ? t('已锁定位置（点击解锁）') : t('未锁定位置（点击锁定）')}
+              title={screenLyricSettings.locked ? t('已锁定位置（点击或双击字幕解锁）') : t('未锁定位置（点击锁定）')}
               aria-label={screenLyricSettings.locked ? t('解锁桌面歌词位置') : t('锁定桌面歌词位置')}
             >
               {screenLyricSettings.locked ? <Lock size={13} /> : <Unlock size={13} />}

@@ -3727,3 +3727,25 @@
 - [x] **综合打磨与多币种符号增强** (`2d2dd9d`): 音乐提供商支持嵌套 `al.picUrl` / `album.picUrl` 解析；Telegram 通知支持 CNY、USD、EUR、GBP、JPY 等多币种符号映射。
 - [x] **全量自动化审计测试与生产构建验证** (`scratch/verify-all-fixes.mjs`): 11/11 漏洞防御测试全数 PASS 通过；`npm run build` 284 页面 0 错误编译完成。
 
+### Task 171: 桌面歌词 (Screen Lyric HUD) 软件化体验深度升级、无唱片图标全域拖拽、背景自适应翻转与高精度音轨对齐
+- [x] **彻底取消 `.screen-lyric__disc-badge` 唱片按钮**：从 DOM 和 CSS 中彻底清除唱片图标，释放左右空间；将歌词文本设为 100% 绝对水平与垂直居中，全框任意位置悬停与按住均可自由拖拽。
+- [x] **未唱普通文本随背景自适应翻转 (mix-blend-mode: difference)**：
+  1. 重构卡拉OK渲染机制为双层结构（底层 `.screen-lyric__karaoke-text--base`，顶层已唱高亮裁剪容器 `.screen-lyric__karaoke-overlay` 与 `.screen-lyric__karaoke-text--sung`）；
+  2. 底层普通未唱文本采用 `color: #ffffff; mix-blend-mode: difference;`，在白底背景上自动翻转为深黑，在深底背景上自动翻转为纯白，无论页面滚动到何处均保持极致对比度与清晰度；
+  3. 顶层已唱高亮文本保持 `mix-blend-mode: normal`，呈现纯正鲜明的个性化主题色（极光蓝、翡翠绿、霓虹粉、星辉金），不被背景反转干扰。
+- [x] **歌词节奏、听觉视觉对齐与间奏停顿深度解决**：
+  1. 引入高精度插值音频时钟（Interpolated Audio Clock）：利用 `performance.now()` 补间 HTML5 `<audio>` 粗粒度（250ms）时间戳更新，在 RAF 帧循环中直接操作 DOM CSS 变量 `--karaoke-pct`，实现 60FPS/120FPS 丝滑逐字流光，根除卡顿与顿挫感；
+  2. 前奏过滤（Intro Filter）：自动跳过作词、作曲、编曲等元数据行，歌曲前奏期间优雅展示曲名与歌手，直至真实人声第一句即将开唱；
+  3. 间奏停顿判定（Interlude Detection）：当歌词行间隙大于 4.5 秒（伴奏/Solo/EDM Drop）且当前句已唱完时，自动切换至 `♬ 间奏演奏中 ♬` 动效状态并预备下一句人声，彻底告别歌词在间奏期冻结 20 秒造成的“停顿不同步”错觉。
+- [x] **软件级控制坞悬停展示与锁定/解锁逻辑**：
+  1. `.screen-lyric__controls` 默认常态完全隐藏（`opacity: 0; pointer-events: none; max-height: 0;`），保持字幕极致清爽；
+  2. 鼠标悬停进入桌面歌词 HUD 时，控制坞平滑向下滑出，离开时优雅收起；
+  3. 即使处于锁定状态，悬停依然展示控制坞，可随时点击锁图标解锁；
+  4. 支持双击桌面字幕区域直接解锁（Double Click to Unlock）；
+  5. 关闭后重新开启桌面字幕时，自动恢复未锁定状态，杜绝意外困死。
+- [x] **0% 全透极简模式悬停提示框与定位中心化**：
+  1. 在 `opacity-transparent` 模式下，常态 100% 纯透明（透明度为 0%），悬停时以微光虚线框（`border: 1px dashed rgba(...)`）与柔和半透明蒙版圈出实际大小与拖拽范围；
+  2. 文本居中与容器几何尺寸重新精确校准，杜绝任何视觉偏心。
+- [x] **全流程自动化 Playwright 端到端测试通过 (`scripts/verify-screen-lyric-karaoke.mjs`)**。
+
+
