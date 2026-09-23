@@ -3657,3 +3657,28 @@
   3. 验证桌面歌词 HUD 呼出、双行预备歌词渲染；
   4. 验证设置面板呼出，字号调整为 22px、透明度调为半透明与全透极简模式、切换翡翠绿主题色、切换单行/双行排布、锁定与解锁全流程通过。
 
+### Task 168: 桌面悬浮歌词规整方框化 (border-radius: 8px)、默认下居中定位、0%极简模式真纯透明杜绝hover变暗、恢复默认设置包含恢复位置与CFSolara歌词引擎官方接入 (`2bb7b3b`)
+- [x] **规整方框造型与默认下居中自适应定位 (`.shijianus-music-pocket__screen-lyric`)**：
+  1. 彻底摒弃圆柱胶囊 (`border-radius: 999px`)，重构为符合所有主流桌面音乐播放器（QQ音乐、网易云音乐、酷狗、PotPlayer）标准的现代微圆角规整方框 (`border-radius: 8px !important;`)；
+  2. 默认定位严格对齐屏幕视口水平居中偏下：`bottom: 88px; left: 50%; transform: translateX(-50%);`，既保留充足的安全呼吸边距，又杜绝遮挡页面底部固定元素或主导航。
+- [x] **0% 全透极简模式极致纯透明保障 (True 0% Transparency)**：
+  1. 彻底消除原本在鼠标 Hover 或展开设置面板时容器强行变暗、恢复半透明底色的缺陷；
+  2. 常规态与 `:hover` / `.settings-open` 状态统一应用 `background: transparent !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important;`；
+  3. 悬浮控制按钮针对全透模式定制半透磨砂微胶囊底板，文字采用深度高对比 `drop-shadow` 与边缘保护，在任何纯白、深色或复杂网页图文背景下均清晰可辨。
+- [x] **一键恢复默认设置包含恢复默认位置 (`.settings-reset-btn`)**：
+  1. 重构恢复默认按钮逻辑：除重置外观设置 (`DEFAULT_SCREEN_LYRIC_SETTINGS`) 外，同步执行 `setScreenLyricPos(null)`；
+  2. 清除 `localStorage` 中的 `shijianus-screen-lyric-pos` 坐标持久化记录，使被自由拖拽至任意位置的桌面歌词即刻瞬时回归屏幕默认下居中位置；
+  3. 接入博客统一通知体系，弹出“已恢复默认字幕设置与位置”全局提醒。
+- [x] **CFSolara 实时高精歌词引擎官方接入与真实音频时间戳对齐**：
+  1. 本地所有精选音轨（`Way Back Home`、`彼女は旅に出る`、`アイロニ`）全量采用从官方 CFSolara 歌词微服务 (`https://cfsolara-dho.pages.dev/api/music/lyric`) 抓取的权威毫秒级 LRC 数据，彻底消除以往人声已唱但字幕未高亮、或歌词行数与音频实际位置脱节的假数据缺陷；
+  2. 在前端歌词获取链路中注入 CFSolara 自动回退机制，确保在线点播歌曲优先走高精字幕服务；
+  3. 在桌面歌词设置面板中新增专属 **CFSolara 字幕同步引擎 v2.0** 动态健康卡片，展示实时音频锚定状态与官方接入背书。
+- [x] **生产端 (`https://blog.epocanvas.com/`) 真实 Playwright 自动化 E2E 验证 100% 验收通过 (`scripts/verify-screen-lyric-karaoke.mjs`)**：
+  1. 验证 HUD 规整方框（`borderRadius: '8px'`）；
+  2. 验证默认下居中定位（`bottom: '88px', left: '50%', isCentered: true`）；
+  3. 验证 CFSolara 实时歌词同步引擎状态卡片正常展示；
+  4. 验证 0% 全透极简模式常规背景与 Hover 状态背景均为 `rgba(0, 0, 0, 0)`（0% 纯透不发暗）；
+  5. 验证拖动 HUD 到 `(110, 125)` 后，点击 `.settings-reset-btn` 即刻清空存储并复位至 `50%` 下居中；
+  6. 控制台致命报错 **0**，全流程生产链路 100% 验证通过。
+
+
