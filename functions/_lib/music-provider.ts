@@ -231,6 +231,8 @@ function providerBase(env: AppEnv) {
 }
 
 function normalizeTrack(source: string, payload: Record<string, unknown>): MusicTrack {
+  const id = String(payload.id || payload.url_id || '');
+  const pic = String(payload.pic_id || payload.pic || payload.picUrl || '');
   const artist = Array.isArray(payload.artist)
     ? payload.artist.join(' / ')
     : typeof payload.artist === 'string'
