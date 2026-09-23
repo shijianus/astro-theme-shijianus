@@ -3711,3 +3711,19 @@
   6. 验证文章页 Mermaid 渲染正常（`svgCount: 5`, `danglingCount: 0`）；
   7. 控制台错误数量为 0。
 
+### Task 170: 底层代码深度安全与架构漏洞全量修复与多端闭环交付 (Underlying Codebase Security & Architecture Full Remediation)
+- [x] **编制底层代码深度安全与架构审计报告** (`b3bb615`): 输出 `UNDERLYING_CODEBASE_DEEP_AUDIT_REPORT.md`，完整记录 12 项确认漏洞与 4 项架构缺陷的证据链与测试逻辑。
+- [x] **VULN-01 修复** (`3bdf8a3`): 重构 `functions/api/comments.ts` 中的 `isUserFeed` / 私信通知分支，强制要求必须提供有效会话 Token，并收敛查询范围至自身账户或访客会话，根除未鉴权 IDOR 遍历拖库。
+- [x] **VULN-02 修复** (`5607224`): 在 `functions/api/auth.ts` 和 `functions/_lib/auth-service.ts` 中对既有读者邮箱实施所有权校验，禁止无会话凭证随意接管已有账号（Account Takeover）。
+- [x] **VULN-03 修复** (`8ef4581`): 重构 `functions/api/record-blessing.ts` 中的 `verifySessionRecord`，严格要求必须处于 `completed`/`succeeded` 或经过 Stripe API 验证为真实支付，杜绝未付款订单伪造转正与 TG 假通知。
+- [x] **VULN-04 & VULN-05 修复** (`1c38b00`): 统一 D1 `sponsorships` 数据库金额存储量纲为标准“元”（修复 `functions/api/create-checkout-session.ts` 中存分错误）；修复 `functions/_lib/telegram-config.ts` 中 `formatAmount` 二次除以 100 造成的 99% 金额缩水。
+- [x] **VULN-06 修复** (`6bf32f4`): 在 `functions/_lib/music-provider.ts` 的 `normalizeTrack` 中解构声明 `id` 与 `pic`，解决未定义变量引起的运行时 `ReferenceError`，成功恢复全网歌曲搜索。
+- [x] **VULN-07 修复** (`8c47e47`): 重构数据库限流器为单语句原子 `INSERT ... ON CONFLICT DO UPDATE ... RETURNING count`，彻底消除并发 TOCTOU 竞态漏洞。
+- [x] **VULN-08 修复** (`8cf40ff`): 引入乐观并发控制 (OCC) 与冲突退避重试循环，杜绝高并发下表情与点赞状态互相覆盖丢失。
+- [x] **VULN-09 修复** (`23c955c`): 在 `functions/api/comments.ts` 中对非管理员访客评论的 `authorName` 和 `authorAvatar` 进行保留名名单与官方头像脱敏，彻底杜绝冒充博主欺诈发言。
+- [x] **VULN-10 修复** (`977ce58`): 增加 `0006_user_profile_fields.sql` 迁移，在 `users` 表与 `updateUserProfile` / `getUserBySessionToken` 中完整持久化 `timezone` 与 `location`，解决边缘节点冷启动数据丢失问题。
+- [x] **VULN-11 修复** (`8ffe23c`): 图床接口全面剔除 `image/svg+xml` 支持，增加文件二进制魔数（Magic Bytes）深度校验，彻底封杀 SVG 脚本注入与伪造图片文件攻击。
+- [x] **VULN-12 修复** (`a3f8adc`): CORS 规则移除对 `*.pages.dev` 泛信任，收敛至站长自身域名，拒绝反射任意攻击者 Origin 头部。
+- [x] **综合打磨与多币种符号增强** (`2d2dd9d`): 音乐提供商支持嵌套 `al.picUrl` / `album.picUrl` 解析；Telegram 通知支持 CNY、USD、EUR、GBP、JPY 等多币种符号映射。
+- [x] **全量自动化审计测试与生产构建验证** (`scratch/verify-all-fixes.mjs`): 11/11 漏洞防御测试全数 PASS 通过；`npm run build` 284 页面 0 错误编译完成。
+
