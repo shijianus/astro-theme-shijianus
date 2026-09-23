@@ -3681,4 +3681,33 @@
   5. 验证拖动 HUD 到 `(110, 125)` 后，点击 `.settings-reset-btn` 即刻清空存储并复位至 `50%` 下居中；
   6. 控制台致命报错 **0**，全流程生产链路 100% 验证通过。
 
+### Task 169: 桌面悬浮歌词控制坞移至歌词下方、宽度大幅扩充 (860px)、明暗双色调自适应杜绝白底白字、彻底废除15px字号（18px为小）、音节/字级真实人声快慢律动与Mermaid架构图报错根治 (`1260ef9`)
+- [x] **Mermaid 图表解析错误与 `dmermaid-svg-...` 悬挂报错彻底根治**：
+  1. 排查并修复 `src/content/posts/markdown-syntax-mastery-zh-Hant.md` 中 Mermaid gitGraph 包含非 ASCII 字符分支名（`branch 功能/Markdown` 与 `merge 功能/Markdown`）导致 Mermaid v11 词法解析器报错并向 `document.body` 注入悬挂 `<div id="dmermaid-svg-...">` 错误节点的缺陷，统一替换为合规的 `feature/markdown`；
+  2. 在 `src/components/ContentFeatureEnhancer.astro` 中对 Mermaid 渲染异常进行安全兜底，一旦发生渲染异常立即自清理任何残留的 `#d${graphId}` 悬挂 DOM 节点，保障页面整洁无报错。
+- [x] **桌面悬浮歌词 HUD 控制坞下移与视口宽度扩充**：
+  1. 将 `.screen-lyric__controls` 快捷控制按钮完全从歌词右侧迁移至**歌词正下方**水平居中排布，彻底消除控制坞对歌词横向展示空间的挤压与截断，使歌词可以完整展示而无需频繁变更框体尺寸；
+  2. 将 HUD 容器基础宽度由原先狭窄的 ~640px 大幅扩充至专业桌面软件级大尺寸：`width: min(860px, calc(100vw - 32px))`，即使两行超长歌词也能完整容纳，无任何溢出或省略截断；
+  3. 将旋转唱片指示器重构为轻巧微徽标（`.screen-lyric__disc-badge`），绝对定位附着于歌词左侧，既保留黑胶旋律动效又零占位阻碍。
+- [x] **明暗双色调自适应 (Dual-Tone Text Adaptation) 杜绝白底白字**：
+  1. 彻底根除浅色模式下未唱出歌词默认采用纯白/浅灰半透明停靠导致的“白底白字”无法看清问题，引入动态 CSS 变量：
+     - 浅色模式：未唱歌词停靠深灰岩色 `--screen-lyric-unsung-color: #334155`（副行 `#64748b`），搭配清晰立体 drop-shadow；
+     - 深色模式：未唱歌词自动流转为柔亮银白 `--screen-lyric-unsung-color: rgba(248, 250, 252, 0.75)`；
+  2. 杜绝在 `.screen-lyric__current-line` 上简单叠加不透明蒙版，而是通过文字裁切梯度（`-webkit-background-clip: text`）将已唱的主题流光色（粉/蓝/绿/金）与未唱底色自然无缝交织。
+- [x] **字号档位标准重塑：彻底废除 15px 过小选项，以 18px 为小号基准**：
+  1. 彻底清理不符合人眼舒适阅读体验的 15px 字号；
+  2. 重构字号四级阶梯：小号 (18px)、中号标准 (22px)、大号沉浸 (28px)、特大舞台 (34px)；
+  3. 设置面板选项标签与 CSS 规则 100% 同步更新，满足不同视力与桌面距离的最佳阅读需求。
+- [x] **人声律动与音节/字级时间对齐（告别匀速假流动）**：
+  1. 在 `MusicPocket.tsx` 与 `music-provider.ts` 引入 `LyricWord`（`{ text, start, end }`）音节/字级时间戳体系，解析 LRC 中的 `<start, dur>word` 标签；
+  2. 重构 `activeLineProgress` 算法：当具有音节时间戳时，根据每个音节的真实发音起止时间逐字点亮；在歌手拖长音、停顿、换气时高亮精准暂停，不再以整行首尾机械进行恒速线性扫除；
+  3. 对无微观标签的普通歌词，根据词语长短与人声起承转合自然曲线（Attack-Sustain-Release 拟真曲线）合成逼真的人声呼吸节奏。
+- [x] **自动化测试与全链路 Playwright 端到端验收 100% 通过 (`scripts/verify-screen-lyric-karaoke.mjs`)**：
+  1. 验证 HUD 控制坞在歌词正下方居中 (`controlsTop: 244 > contentBottom: 236`)；
+  2. 验证 HUD 宽度扩充至 860px；
+  3. 验证 15px 选项已彻底清除，18px 为小，28px 为大；
+  4. 验证 0% 全透模式真透明；
+  5. 验证恢复默认按钮恢复默认下居中并清除存储；
+  6. 验证文章页 Mermaid 渲染正常（`svgCount: 5`, `danglingCount: 0`）；
+  7. 控制台错误数量为 0。
 
