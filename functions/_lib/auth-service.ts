@@ -191,10 +191,19 @@ async function ensureAuthTables(db?: D1DatabaseLike) {
         provider TEXT NOT NULL DEFAULT 'epomail',
         external_id TEXT DEFAULT NULL,
         bio TEXT NOT NULL DEFAULT '',
+        timezone TEXT NOT NULL DEFAULT '',
+        location TEXT NOT NULL DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `).bind().run();
+
+    try {
+      await db.prepare(`ALTER TABLE users ADD COLUMN timezone TEXT NOT NULL DEFAULT '';`).bind().run();
+    } catch {}
+    try {
+      await db.prepare(`ALTER TABLE users ADD COLUMN location TEXT NOT NULL DEFAULT '';`).bind().run();
+    } catch {}
 
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS user_sessions (
@@ -249,8 +258,8 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
       // 2. Upsert user safely by email conflict (strictly prevent admin demotion or local provider overwriting Epomail)
       await db
         .prepare(`
-          INSERT INTO users (id, email, name, avatar, website, role, provider, external_id, bio, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          INSERT INTO users (id, email, name, avatar, website, role, provider, external_id, bio, timezone, location, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(email) DO UPDATE SET
             name = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.name ELSE excluded.name END,
             avatar = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.avatar ELSE (CASE WHEN excluded.avatar != '' THEN excluded.avatar ELSE users.avatar END) END,
@@ -259,6 +268,8 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
             provider = CASE WHEN users.provider = 'epomail' AND excluded.provider = 'local' THEN users.provider ELSE excluded.provider END,
             external_id = COALESCE(excluded.external_id, users.external_id),
             bio = CASE WHEN excluded.bio != '' THEN excluded.bio ELSE users.bio END,
+            timezone = CASE WHEN excluded.timezone != '' THEN excluded.timezone ELSE users.timezone END,
+            location = CASE WHEN excluded.location != '' THEN excluded.location ELSE users.location END,
             updated_at = CURRENT_TIMESTAMP
         `)
         .bind(
@@ -270,7 +281,9 @@ export async function createSessionForUser(user: UserProfile, env: AppEnv): Prom
           safeRole,
           user.provider || 'epomail',
           user.externalId || null,
-          user.bio || ''
+          user.bio || '',
+          user.timezone || '',
+          user.location || ''
         )
         .run();
 
@@ -317,7 +330,7 @@ export async function getUserBySessionToken(token: string, env: AppEnv): Promise
     await ensureAuthTables(db);
     try {
       const row = await db.prepare(`
-        SELECT u.id, u.email, u.name, u.avatar, u.website, u.role, u.provider, u.external_id, u.bio, u.created_at, s.expires_at
+        SELECT u.id, u.email, u.name, u.avatar, u.website, u.role, u.provider, u.external_id, u.bio, u.timezone, u.location, u.created_at, s.expires_at
         FROM user_sessions s
         JOIN users u ON s.user_id = u.id
         WHERE s.token = ? AND datetime(s.expires_at) > datetime('now')
@@ -335,6 +348,8 @@ export async function getUserBySessionToken(token: string, env: AppEnv): Promise
           provider: row.provider || 'epomail',
           externalId: row.external_id,
           bio: row.bio || '',
+          timezone: row.timezone || '',
+          location: row.location || '',
           createdAt: row.created_at,
         };
         memoryUsers.set(user.id, user);
@@ -390,13 +405,15 @@ export async function updateUserProfile(
     try {
       await db.prepare(`
         UPDATE users
-        SET name = ?, avatar = ?, website = ?, bio = ?, updated_at = CURRENT_TIMESTAMP
+        SET name = ?, avatar = ?, website = ?, bio = ?, timezone = ?, location = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `).bind(
         updatedUser.name,
         updatedUser.avatar,
         updatedUser.website,
         updatedUser.bio || '',
+        updatedUser.timezone || '',
+        updatedUser.location || '',
         updatedUser.id
       ).run();
     } catch (err) {
