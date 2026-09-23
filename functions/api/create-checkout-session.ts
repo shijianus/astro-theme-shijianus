@@ -204,7 +204,7 @@ export async function onRequest(context: {
     if (env.DB) {
       const d1Task = recordInD1(env.DB, {
         id: data.id,
-        amount: unitAmount,
+        amount: amount,
         currency,
         name,
         message,

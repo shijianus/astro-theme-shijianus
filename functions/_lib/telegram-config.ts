@@ -130,9 +130,9 @@ export function formatAmount(amount?: number, currency: string = 'usd'): string 
     return '已支付 ✓';
   }
   if (ZERO_DECIMAL_CURRENCIES.has(cur)) {
-    return `${amount} ${cur.toUpperCase()}`;
+    return `${Math.round(amount)} ${cur.toUpperCase()}`;
   }
-  return `$${(amount / 100).toFixed(2)} ${cur.toUpperCase()}`;
+  return `$${amount.toFixed(2)} ${cur.toUpperCase()}`;
 }
 
 /**
