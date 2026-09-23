@@ -654,7 +654,7 @@ export async function directEpomailAuthorize(
  * Note: Local readers are STRICTLY confined to the 'reader' role.
  */
 export async function authenticateLocalReader(
-  data: { name: string; email: string; website?: string; avatar?: string },
+  data: { name: string; email: string; website?: string; avatar?: string; sessionToken?: string },
   env: AppEnv
 ): Promise<AuthSession> {
   const name = (data.name || '').trim();
@@ -670,7 +670,7 @@ export async function authenticateLocalReader(
     throw new Error('该邮箱属于站点管理员，请使用官方 Epomail 授权方式登录');
   }
 
-  // Security guard: If a user with this email already exists with Epomail, prevent local takeover
+  // Security guard: If a user with this email already exists, prevent unauthorized takeover
   const db = resolveActiveDb(env);
   if (db && email) {
     await ensureAuthTables(db);
@@ -684,9 +684,38 @@ export async function authenticateLocalReader(
         if (existing.role === 'admin' || existing.provider === 'epomail') {
           throw new Error('该账号已绑定 Epomail 官方认证身份，请使用 Epomail OAuth 授权登录');
         }
+
+        // For local readers: verify session token ownership before issuing new session or updating
+        let isOwner = false;
+        if (data.sessionToken) {
+          const authUser = await getUserBySessionToken(data.sessionToken, env);
+          if (authUser && authUser.id === existing.id) {
+            isOwner = true;
+          }
+        }
+        if (!isOwner) {
+          throw new Error('该读者邮箱已存在。为保护账号安全，请使用原设备会话访问或更换邮箱');
+        }
       }
     } catch (e: any) {
-      if (e?.message?.includes('Epomail')) throw e;
+      if (e?.message) throw e;
+    }
+  }
+
+  // Also check memoryUsers store during dev
+  if (email) {
+    const existingMemUser = Array.from(memoryUsers.values()).find((u) => u.email === email);
+    if (existingMemUser) {
+      let isOwner = false;
+      if (data.sessionToken) {
+        const sess = memorySessions.get(data.sessionToken);
+        if (sess && sess.userId === existingMemUser.id) {
+          isOwner = true;
+        }
+      }
+      if (!isOwner) {
+        throw new Error('该读者邮箱已存在。为保护账号安全，请使用原设备会话访问或更换邮箱');
+      }
     }
   }
 
