@@ -3034,6 +3034,31 @@ html.dark .shijianus-ai-summary__related span {
   color: var(--karaoke-sung-dark, #818cf8);
 }
 
+/* 行级模式容器与纯粹高亮文本：整行过渡，杜绝伪流光插值 */
+.screen-lyric__line-box {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.screen-lyric__line-text--highlight {
+  display: inline-block;
+  color: var(--karaoke-sung-color, #425aef);
+  mix-blend-mode: normal !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 14px var(--karaoke-glow);
+  white-space: nowrap;
+  font-weight: 800;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme='dark'] .screen-lyric__line-text--highlight {
+  color: var(--karaoke-sung-dark, #818cf8);
+}
+
 /* 间奏指示器 */
 .screen-lyric__interlude-text {
   display: inline-flex;

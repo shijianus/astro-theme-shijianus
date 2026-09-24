@@ -88,18 +88,13 @@ async function enforceRateLimitInternal(options: LimitOptions): Promise<RateLimi
       used = Number(row?.count ?? 1);
     }
   } catch {
-    await options.env.DB!.prepare(
-      `INSERT INTO rate_limits (namespace, bucket, actor_hash, count, updated_at)
-        VALUES (?, ?, ?, 1, ?)
-        ON CONFLICT(namespace, bucket, actor_hash) DO UPDATE SET
-          count = rate_limits.count + 1,
-          updated_at = excluded.updated_at`
-    ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash, now).run();
-
-    const row = await options.env.DB!.prepare(
-      `SELECT count FROM rate_limits WHERE namespace = ? AND bucket = ? AND actor_hash = ?`
-    ).bind(keyRow.namespace, keyRow.bucket, keyRow.actorHash).first<{ count: number }>();
-    used = Number(row?.count ?? 1);
+    // 优雅降级：若 D1 未初始化或无对应表，直接安全放行
+    return {
+      allowed: true,
+      remaining: options.limit,
+      resetAt,
+      used: 0,
+    };
   }
 
   return {

@@ -65,6 +65,16 @@ function resolveCountryInfo(countryCode: string) {
   return { code, name, englishName, flag };
 }
 
+function generateSecureId(prefix: string, bytesCount = 12): string {
+  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+    const array = new Uint8Array(bytesCount);
+    crypto.getRandomValues(array);
+    const hex = Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `${prefix}_${Date.now()}_${hex}`;
+  }
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+}
+
 // In-memory fallback store when running without D1 binding
 const memoryFallbackStore = new Map<string, RawCommentRow>();
 
@@ -135,10 +145,6 @@ async function ensureTable(db: any) {
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments (parent_id);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON comments (ip, created_at);`).run();
 
-    // In case reactions column was missing in older schema
-    try {
-      await db.prepare(`ALTER TABLE comments ADD COLUMN reactions TEXT DEFAULT '{}';`).run();
-    } catch {}
     tableEnsured = true;
   } catch (err) {
     console.error('[Comments] Table ensure error:', err);
@@ -284,13 +290,16 @@ export async function onRequest(context: {
   }
 
   const url = new URL(request.url);
-  const headerAdminToken = request.headers.get('X-Admin-Token');
-  const authHeader = request.headers.get('Authorization')?.replace('Bearer ', '');
-  const sessionTokenHeader = request.headers.get('X-Comment-Session-Token');
+  const headerAdminToken = request.headers.get('X-Admin-Token')?.trim();
+  const authHeader = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')?.trim();
+  const sessionTokenHeader = request.headers.get('X-Comment-Session-Token')?.trim();
   const querySessionToken = url.searchParams.get('session_token')?.trim();
-  const candidateToken = headerAdminToken || authHeader || sessionTokenHeader || querySessionToken;
 
-  let isAdmin = Boolean(env.ADMIN_TOKEN && candidateToken && candidateToken === env.ADMIN_TOKEN);
+  // Strict Privilege Separation: ADMIN_TOKEN is strictly ONLY accepted via secure HTTP request headers
+  const secureHeaderToken = headerAdminToken || authHeader;
+  let isAdmin = Boolean(env.ADMIN_TOKEN && secureHeaderToken && secureHeaderToken === env.ADMIN_TOKEN);
+
+  const candidateToken = secureHeaderToken || sessionTokenHeader || querySessionToken;
   let currentUserId = '';
   let authUser: any = null;
   if (candidateToken) {
@@ -763,8 +772,8 @@ export async function onRequest(context: {
       }
     }
 
-    const commentId = `cm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const effectiveSessionToken = sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+    const commentId = generateSecureId('cm', 8);
+    const effectiveSessionToken = sessionToken || generateSecureId('st', 16);
     const rawAuthorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
     const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
 
@@ -772,7 +781,7 @@ export async function onRequest(context: {
     let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
     let authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
     let authorEmail = '';
-    let authorId = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    let authorId = generateSecureId('vis', 8);
 
     // Authenticated reader / admin: bind author fields authoritatively to authenticated profile
     if (authorRole === 'admin') {

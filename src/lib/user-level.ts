@@ -239,6 +239,33 @@ export function readUserStats(): UserStats {
     const parsed = JSON.parse(raw);
     const today = new Date().toISOString().slice(0, 10);
     const activeDates = Array.isArray(parsed.activeDates) ? parsed.activeDates : [today];
+
+    // Authenticate isWebmaster and customLevel against active account session
+    let isWebmaster = false;
+    let customLevel: number | undefined = undefined;
+
+    try {
+      const activeRaw =
+        window.localStorage.getItem('shijianus-comment-account') ||
+        window.localStorage.getItem('shijianus-comment-identity') ||
+        window.localStorage.getItem('shijianus_comment_identity_v1');
+      if (activeRaw) {
+        const active = JSON.parse(activeRaw);
+        const role = active?.role;
+        const email = typeof active?.email === 'string' ? active.email.trim().toLowerCase() : '';
+        if (role === 'admin' || email === 'admin@epomail.bond') {
+          isWebmaster = true;
+          if (parsed.customLevel !== undefined) {
+            customLevel = Number(parsed.customLevel);
+          }
+        } else if (role === 'admin_moderator') {
+          if (parsed.customLevel !== undefined) {
+            customLevel = Number(parsed.customLevel);
+          }
+        }
+      }
+    } catch {}
+
     return {
       hasAccount: Boolean(parsed.hasAccount),
       hasReadAny: Boolean(parsed.hasReadAny),
@@ -248,8 +275,8 @@ export function readUserStats(): UserStats {
       activeDays: Math.max(1, activeDates.length),
       activeDates,
       firstSeenAt: parsed.firstSeenAt || new Date().toISOString(),
-      isWebmaster: Boolean(parsed.isWebmaster),
-      customLevel: parsed.customLevel !== undefined ? Number(parsed.customLevel) : undefined,
+      isWebmaster,
+      customLevel,
     };
   } catch {
     return getDefaultUserStats();
@@ -410,7 +437,11 @@ export function computeUserLevel(
   email?: string,
   extra?: Partial<UserBadgeContext>
 ): UserLevelInfo {
-  const isOwner = stats.isWebmaster || accountRole === 'admin' || (email && email.toLowerCase() === 'admin@epomail.bond');
+  const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const isOwner =
+    accountRole === 'admin' ||
+    cleanEmail === 'admin@epomail.bond' ||
+    (Boolean(stats.isWebmaster) && (accountRole === 'admin' || cleanEmail === 'admin@epomail.bond'));
 
   // 1. LV.4 站长 (Webmaster) - All-site ONLY square avatar, TL 100, absolute content penetration
   if (isOwner) {
@@ -430,7 +461,7 @@ export function computeUserLevel(
   }
 
   // 2. LV.4 核心成员 / 管理员 (Admin / Core Member) - Standard Circular avatar, TL 91 ~ 99
-  if (stats.customLevel === 4 || accountRole === 'admin_moderator') {
+  if (accountRole === 'admin_moderator' || (stats.customLevel === 4 && (accountRole === 'admin_moderator' || isOwner))) {
     const adminTL = calculateEarnedTrustLevel(stats, 95, 99);
     return {
       level: 4,
@@ -739,10 +770,11 @@ export function getAuthorGroups(author: {
   if (author.groups && author.groups.length > 0) {
     return author.groups;
   }
+  const cleanEmail = typeof author.email === 'string' ? author.email.trim().toLowerCase() : '';
   const isOwner =
-    author.isWebmaster ||
     author.role === 'admin' ||
-    (author.email && author.email.toLowerCase() === 'admin@epomail.bond');
+    cleanEmail === 'admin@epomail.bond' ||
+    (Boolean(author.isWebmaster) && (author.role === 'admin' || cleanEmail === 'admin@epomail.bond'));
 
   if (isOwner) {
     return ['站长团队', '核心架构师'];
@@ -863,7 +895,7 @@ export function evaluateUserBadges(
   const levelInfo = computeUserLevel(statsForLevel, merged.role, merged.email, merged);
 
   // 1. 【等级主称号】（互斥取最高级，权重 100）
-  if (levelInfo.isWebmaster || merged.isWebmaster) {
+  if (levelInfo.isWebmaster) {
     unlocked.push({
       id: 'tier_webmaster',
       name: '站长',

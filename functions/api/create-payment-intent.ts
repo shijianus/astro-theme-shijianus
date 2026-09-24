@@ -161,7 +161,8 @@ export async function onRequest(context: { request: Request; env: AppEnv }): Pro
   const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(currency);
   let amountInCents: number;
   if (isZeroDecimal) {
-    amountInCents = Math.max(50, Math.min(10000000, Math.round(rawAmount)));
+    const minUnit = currency === 'krw' ? 500 : 50;
+    amountInCents = Math.max(minUnit, Math.min(10000000, Math.round(rawAmount)));
   } else {
     amountInCents = Math.round(rawAmount * 100);
     if (amountInCents < 50) {

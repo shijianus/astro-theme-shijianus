@@ -78,93 +78,17 @@ async function writeCachedSummary(
 
 export async function onRequestPost(context: { request: Request; env: AppEnv }) {
   const { request, env } = context;
-  const globalMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_MINUTE', 10);
-  const globalHourLimit = envLimit(env, 'AI_SUMMARY_PER_HOUR', 40);
-  const deviceMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_MINUTE', 6);
-  const deviceHourLimit = envLimit(env, 'AI_SUMMARY_PER_DEVICE_HOUR', 20);
-  const ipMinuteLimit = envLimit(env, 'AI_SUMMARY_PER_IP_MINUTE', 12);
-  const ipHourLimit = envLimit(env, 'AI_SUMMARY_PER_IP_HOUR', 50);
+  const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'));
 
-  const globalMinuteRate = await enforceRateLimit({
-    namespace: 'ai-summary-minute',
-    request,
-    env,
-    limit: globalMinuteLimit,
-    windowSeconds: 60,
-  });
-  const globalHourRate = await enforceRateLimit({
-    namespace: 'ai-summary-hour',
-    request,
-    env,
-    limit: globalHourLimit,
-    windowSeconds: 60 * 60,
-  });
-  const deviceMinuteRate = await enforceRateLimit({
-    namespace: 'ai-summary-device-minute',
-    request,
-    env,
-    limit: deviceMinuteLimit,
-    windowSeconds: 60,
-    scope: 'device',
-  });
-  const deviceHourRate = await enforceRateLimit({
-    namespace: 'ai-summary-device-hour',
-    request,
-    env,
-    limit: deviceHourLimit,
-    windowSeconds: 60 * 60,
-    scope: 'device',
-  });
-  const ipMinuteRate = await enforceRateLimit({
-    namespace: 'ai-summary-ip-minute',
-    request,
-    env,
-    limit: ipMinuteLimit,
-    windowSeconds: 60,
-    scope: 'ip',
-  });
-  const ipHourRate = await enforceRateLimit({
-    namespace: 'ai-summary-ip-hour',
-    request,
-    env,
-    limit: ipHourLimit,
-    windowSeconds: 60 * 60,
-    scope: 'ip',
-  });
-
-  if (
-    !globalMinuteRate.allowed
-    || !globalHourRate.allowed
-    || !deviceMinuteRate.allowed
-    || !deviceHourRate.allowed
-    || !ipMinuteRate.allowed
-    || !ipHourRate.allowed
-  ) {
-    const failingRate = [
-      globalMinuteRate,
-      globalHourRate,
-      deviceMinuteRate,
-      deviceHourRate,
-      ipMinuteRate,
-      ipHourRate,
-    ].find((item) => !item.allowed);
-
-    return jsonResponse(
-      request,
-      env,
-      {
-        ok: false,
-        error: 'Chronral 摘要服务请求频次较高，请稍候再试。',
-        resetAt: failingRate?.resetAt || Math.floor(Date.now() / 1000) + 60,
-      },
-      { status: 429 },
-    );
-  }
-
-  // Validate origin / referer if present to prevent unauthorized third-party site abuse
+  // Validate origin / referer: prevent unauthorized direct scraping or third-party site abuse
   const originHeader = request.headers.get('origin');
   const refererHeader = request.headers.get('referer');
   const callerUrl = originHeader || refererHeader;
+
+  if (!callerUrl && !isDev) {
+    return jsonResponse(request, env, { ok: false, error: 'Forbidden: missing Origin/Referer header.' }, { status: 403 });
+  }
+
   if (callerUrl) {
     try {
       const parsedHost = new URL(callerUrl).hostname.toLowerCase();
@@ -178,7 +102,44 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
       if (!isAllowedHost) {
         return jsonResponse(request, env, { ok: false, error: 'Forbidden cross-origin summary request.' }, { status: 403 });
       }
-    } catch {}
+    } catch {
+      return jsonResponse(request, env, { ok: false, error: 'Invalid origin or referer header.' }, { status: 403 });
+    }
+  }
+
+  // Consolidated 2-tier Rate Limiting (Minute + Hour) to prevent D1 database write amplification
+  const minuteLimit = envLimit(env, 'AI_SUMMARY_PER_IP_MINUTE', 12);
+  const hourLimit = envLimit(env, 'AI_SUMMARY_PER_IP_HOUR', 50);
+
+  const minuteRate = await enforceRateLimit({
+    namespace: 'ai-summary-minute',
+    request,
+    env,
+    limit: minuteLimit,
+    windowSeconds: 60,
+    scope: 'ip',
+  });
+  const hourRate = await enforceRateLimit({
+    namespace: 'ai-summary-hour',
+    request,
+    env,
+    limit: hourLimit,
+    windowSeconds: 60 * 60,
+    scope: 'ip',
+  });
+
+  if (!minuteRate.allowed || !hourRate.allowed) {
+    const failingRate = !minuteRate.allowed ? minuteRate : hourRate;
+    return jsonResponse(
+      request,
+      env,
+      {
+        ok: false,
+        error: 'Chronral 摘要服务请求频次较高，请稍候再试。',
+        resetAt: failingRate?.resetAt || Math.floor(Date.now() / 1000) + 60,
+      },
+      { status: 429 },
+    );
   }
 
   const body = await safeReadJson<SummaryRequest>(request);

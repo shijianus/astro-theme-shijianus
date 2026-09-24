@@ -1,4 +1,5 @@
 import type { AppEnv, D1DatabaseLike } from './types';
+import { sha256Hex } from './hash.ts';
 
 export interface UserProfile {
   id: string;
@@ -197,14 +198,6 @@ async function ensureAuthTables(db?: D1DatabaseLike) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `).bind().run();
-
-    try {
-      await db.prepare(`ALTER TABLE users ADD COLUMN timezone TEXT NOT NULL DEFAULT '';`).bind().run();
-    } catch {}
-    try {
-      await db.prepare(`ALTER TABLE users ADD COLUMN location TEXT NOT NULL DEFAULT '';`).bind().run();
-    } catch {}
-
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS user_sessions (
         id TEXT PRIMARY KEY,
@@ -690,7 +683,7 @@ export async function directEpomailAuthorize(
  * Note: Local readers are STRICTLY confined to the 'reader' role.
  */
 export async function authenticateLocalReader(
-  data: { name: string; email: string; website?: string; avatar?: string; sessionToken?: string },
+  data: { name: string; email: string; website?: string; avatar?: string; sessionToken?: string; passcode?: string },
   env: AppEnv
 ): Promise<AuthSession> {
   const name = (data.name || '').trim();
@@ -728,6 +721,11 @@ export async function authenticateLocalReader(
   }
 
   let finalUserId = `local_u_${email.replace(/[^a-z0-9]/g, '_')}`;
+  let externalId: string | null = null;
+  if (data.passcode && data.passcode.trim().length >= 4) {
+    const pinHash = await sha256Hex(`reader_pin:${email}:${data.passcode.trim()}`);
+    externalId = `pin_${pinHash.slice(0, 32)}`;
+  }
 
   // Security guard: If a user with this email already exists, prevent unauthorized takeover
   const db = resolveActiveDb(env);
@@ -735,32 +733,50 @@ export async function authenticateLocalReader(
     await ensureAuthTables(db);
     try {
       const existing = await db
-        .prepare('SELECT id, provider, role, name, email FROM users WHERE email = ? LIMIT 1')
+        .prepare('SELECT id, provider, role, name, email, external_id FROM users WHERE email = ? LIMIT 1')
         .bind(email)
-        .first<{ id: string; provider: string; role: string; name: string; email: string }>();
+        .first<{ id: string; provider: string; role: string; name: string; email: string; external_id?: string }>();
 
       if (existing) {
         if (existing.role === 'admin' || existing.provider === 'epomail') {
           throw new Error('该账号已绑定 Epomail 官方认证身份，请使用 Epomail OAuth 授权登录');
         }
 
-        // For local readers: verify session token ownership OR matching reader name on new device
+        // For local readers: verify session token ownership OR valid reader passcode
         let isOwner = false;
         if (data.sessionToken) {
           const authUser = await getUserBySessionToken(data.sessionToken, env);
           if (authUser && authUser.id === existing.id) {
             isOwner = true;
+          } else {
+            // Also check if data.sessionToken was previously issued to this user even if expired
+            const prevSession = await db
+              .prepare('SELECT user_id FROM user_sessions WHERE token = ? AND user_id = ? LIMIT 1')
+              .bind(data.sessionToken, existing.id)
+              .first<{ user_id: string }>();
+            if (prevSession) {
+              isOwner = true;
+            }
           }
         }
         if (!isOwner) {
-          // If accessing without previous session, verify name identity matches existing profile
-          if (existing.name && existing.name.trim().toLowerCase() === name.toLowerCase()) {
-            isOwner = true;
-          } else {
-            throw new Error('该读者邮箱已被绑定。如为您本人，请输入绑定的原昵称进行验证');
+          if (existing.external_id && existing.external_id.startsWith('pin_')) {
+            const submittedPasscode = (data.passcode || '').trim();
+            if (submittedPasscode) {
+              const checkHash = `pin_${(await sha256Hex(`reader_pin:${email}:${submittedPasscode}`)).slice(0, 32)}`;
+              if (checkHash === existing.external_id) {
+                isOwner = true;
+              } else {
+                throw new Error('读者访问码验证失败，无法登录该账号');
+              }
+            }
           }
         }
+        if (!isOwner) {
+          throw new Error('该读者邮箱已在其他设备绑定。请在原登录设备访问，或提供绑定的读者访问码');
+        }
         finalUserId = existing.id;
+        externalId = existing.external_id || externalId;
       }
     } catch (e: any) {
       if (e?.message) throw e;
@@ -779,13 +795,23 @@ export async function authenticateLocalReader(
         }
       }
       if (!isOwner) {
-        if (existingMemUser.name && existingMemUser.name.trim().toLowerCase() === name.toLowerCase()) {
-          isOwner = true;
-        } else {
-          throw new Error('该读者邮箱已被绑定。如为您本人，请输入绑定的原昵称进行验证');
+        if (existingMemUser.externalId && existingMemUser.externalId.startsWith('pin_')) {
+          const submittedPasscode = (data.passcode || '').trim();
+          if (submittedPasscode) {
+            const checkHash = `pin_${(await sha256Hex(`reader_pin:${email}:${submittedPasscode}`)).slice(0, 32)}`;
+            if (checkHash === existingMemUser.externalId) {
+              isOwner = true;
+            } else {
+              throw new Error('读者访问码验证失败，无法登录该账号');
+            }
+          }
         }
       }
+      if (!isOwner) {
+        throw new Error('该读者邮箱已在其他设备绑定。请在原登录设备访问，或提供绑定的读者访问码');
+      }
       finalUserId = existingMemUser.id;
+      externalId = existingMemUser.externalId || externalId;
     }
   }
 
@@ -800,6 +826,7 @@ export async function authenticateLocalReader(
     website,
     role,
     provider: 'local',
+    externalId,
     bio: '本站本地读者身份',
   };
 

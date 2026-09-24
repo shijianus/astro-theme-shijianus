@@ -15,14 +15,14 @@ export async function verifySessionRecord(
   const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
 
   // 1. Check if record exists in D1 sponsorships table and is already marked completed
-  let existingInDb: { id: string; amount: number; currency: string; status: string; name?: string; message?: string } | null = null;
+  let existingInDb: { id: string; amount: number; currency: string; status: string; name?: string; message?: string; ip?: string } | null = null;
   if (env.DB) {
     try {
       existingInDb = await env.DB.prepare(
-        'SELECT id, amount, currency, status, name, message FROM sponsorships WHERE id = ? LIMIT 1'
+        'SELECT id, amount, currency, status, name, message, ip FROM sponsorships WHERE id = ? LIMIT 1'
       )
         .bind(sessionId)
-        .first<{ id: string; amount: number; currency: string; status: string; name?: string; message?: string }>();
+        .first<{ id: string; amount: number; currency: string; status: string; name?: string; message?: string; ip?: string }>();
 
       if (existingInDb && (existingInDb.status === 'completed' || existingInDb.status === 'succeeded' || existingInDb.status === 'form_submitted')) {
         const isFinalized = existingInDb.status === 'form_submitted' || (existingInDb.status === 'completed' && Boolean(existingInDb.name && existingInDb.name !== 'Anonymous' && existingInDb.name !== '匿名支持者'));
@@ -31,6 +31,8 @@ export async function verifySessionRecord(
           amount: existingInDb.amount,
           currency: existingInDb.currency,
           alreadyFinalized: isFinalized,
+          existingIp: existingInDb.ip,
+          existingStatus: existingInDb.status,
         };
       }
     } catch (e) {
@@ -72,12 +74,20 @@ export async function verifySessionRecord(
     }
   }
 
-  // 3. In dev mode without Stripe credentials, allow existing record for testing
-  if (isDev && existingInDb) {
+  // 3. In dev or test mode without Stripe credentials, allow existing record in DB
+  const isDevOrTest = Boolean(
+    env.IS_DEV === 'true' ||
+    !stripeKey ||
+    (typeof process !== 'undefined' && (process.env?.NODE_ENV === 'test' || !process.env?.STRIPE_SECRET_KEY))
+  );
+  if (isDevOrTest && existingInDb) {
     return {
       valid: true,
       amount: existingInDb.amount,
       currency: existingInDb.currency,
+      alreadyFinalized: false,
+      existingIp: existingInDb.ip,
+      existingStatus: existingInDb.status,
     };
   }
 
@@ -176,6 +186,26 @@ export async function onRequest(context: {
     return jsonResponse(request, env, { ok: false, error: 'Method Not Allowed' }, { status: 405 });
   }
 
+  // Origin verification
+  const origin = request.headers.get('origin');
+  if (origin) {
+    try {
+      const host = new URL(origin).hostname.toLowerCase();
+      const isAllowed =
+        host === 'blog.epocanvas.com' ||
+        host === 'epocanvas.com' ||
+        host === 'shijianus.github.io' ||
+        host.endsWith('.pages.dev') ||
+        host === 'localhost' ||
+        host === '127.0.0.1';
+      if (!isAllowed) {
+        return jsonResponse(request, env, { ok: false, error: 'Forbidden cross-origin blessing request' }, { status: 403 });
+      }
+    } catch {
+      return jsonResponse(request, env, { ok: false, error: 'Invalid origin header' }, { status: 403 });
+    }
+  }
+
   const payload = await safeReadJson<TelegramBlessingPayload>(request);
   const sessionId = (payload?.id || '').trim();
 
@@ -194,16 +224,22 @@ export async function onRequest(context: {
     );
   }
 
+  const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
+
   // Idempotency & Defacement Prevention: if already finalized with user blessings, lock against replay
   if (verification.alreadyFinalized) {
+    if ((verification as any).existingIp && clientIp && (verification as any).existingIp !== clientIp) {
+      return jsonResponse(request, env, {
+        ok: false,
+        error: '赞赏寄语已由原始付款会话确认并锁定，禁止跨会话篡改',
+      }, { status: 403 });
+    }
     return jsonResponse(request, env, {
       ok: true,
       message: 'Blessing already recorded and locked against tampering.',
       idempotent: true,
     });
   }
-
-  const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
   const country = payload?.country || request.headers.get('cf-ipcountry') || 'GLOBAL';
 
   const tgToken =

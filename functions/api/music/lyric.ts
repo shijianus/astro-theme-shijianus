@@ -1,5 +1,5 @@
 import { jsonResponse, optionsResponse } from '../../_lib/http';
-import { fetchMusicLyrics, parseLrcLyrics } from '../../_lib/music-provider';
+import { fetchHighPrecisionLyrics } from '../../_lib/music-provider';
 import { enforceRateLimit, envLimit } from '../../_lib/rate-limit';
 import type { AppEnv } from '../../_lib/types';
 
@@ -14,7 +14,7 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
     namespace: 'music-lyric',
     request,
     env,
-    limit: envLimit(env, 'MUSIC_LYRIC_PER_MINUTE', 40),
+    limit: envLimit(env, 'MUSIC_LYRIC_PER_MINUTE', 60),
     windowSeconds: 60,
   });
 
@@ -29,8 +29,13 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
     return jsonResponse(request, env, { ok: false, error: 'Missing track id.' }, { status: 400 });
   }
 
-  const lyric = await fetchMusicLyrics(env, id, source);
-  const parsed = parseLrcLyrics(lyric);
-  return jsonResponse(request, env, { ok: true, lyric, lrc: lyric, parsed, lineCount: parsed.length });
+  const payload = await fetchHighPrecisionLyrics(env, id, source);
+  return jsonResponse(request, env, {
+    ...payload,
+    // 向前兼容历史调用
+    lyric: payload.rawLyric,
+    lrc: payload.rawLyric,
+    parsed: payload.lines,
+  });
 }
 

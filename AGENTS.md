@@ -3827,3 +3827,25 @@
 - [x] **全量自动化验证测试套件与 Astro 静态全量构建 100% 通过**:
   - `scratch/test-underlying-hardening-verification.mjs`：11/11 项新加固项全部 PASS 通过；
   - `npm run build`：全站 284 个静态页面构建 0 错误顺利通过。
+
+### Task 175: CFSolara 高精度歌词 REST API 重构、跨域对外开放与本地桌面歌词物理时间对齐原生集成 (`7fd7eed`)
+- [x] **CFSolara 端高精歌词多协议解析引擎与标准 REST API 构建 (`../CFSolara`, Commit `9c75705`)**:
+  - 核心协议解析器 (`functions/_lib/music.ts` & `types.ts`)：原生支持并解析网易云 YRC (`[start,dur](wStart,wDur)` 逐字)、Enhanced LRC (`<start,dur>` 逐字)、QRC / KRC 规范及标准普通 LRC。
+  - 标准对外 REST 端点 (`/api/lyric` 及向前兼容 `/api/music/lyric`)：支持 CORS 跨域请求 (`Access-Control-Allow-Origin: *`)，输出包含 `syncType` ("word" | "line")、`offset`、`lines` (`time`, `timeSec`, `duration`, `text`, `words: [{text, start, startSec, end, endSec, duration}]`) 的结构化 JSON。
+  - 降级与真实性保障：普通 LRC 音源降级为行级 `syncType: "line"` 且严禁伪造字级时间戳；智能过滤 `[00:00.00] 作词/作曲` 等非歌词元数据行。
+  - CFSolara 播放器自身消费集成 (`js/index.js` & `css/style.css`)：重构 `displayLyrics` 与 `syncLyrics` 直接调用 `/api/lyric`，逐字物理时间比对跟随 (`.word-char`, `.word-singing`, `.word-sung`)，行级整行高亮过渡。
+- [x] **本地博客 `shijianus-blog` 高精度歌词 REST API 规范化 (`functions/api/lyric.ts` & `functions/_lib/music-provider.ts`)**:
+  - 新增 `/api/lyric` 及重构 `/api/music/lyric` 统一输出高精数据契约，彻底移除后端基于字数硬性推演音节的假逐字生成逻辑。
+  - 导出 `fetchHighPrecisionLyrics` 支持本地与上游音源的高精解析与缓存。
+- [x] **本地桌面歌词 `class="screen-lyric__content"` 与播放器原生物理时间对齐 (`MusicPocket.tsx` & `runtime-widgets.css`)**:
+  - 彻底清除所有基于字数脑补时长的硬性估算逻辑 (`estimateVocalUnits`、`tokenizeLyricText` 等函数彻底废除)。
+  - 界面物理时间轴严格绑定：计算行内歌词进度直接由当前音频物理秒数 (`audio.currentTime`) 与真实字时间戳 (`startSec`, `endSec`) 逐字精确比对 (`computeActiveLineProgress`)。
+  - 双模式精细化渲染：
+    - 逐字模式 (`syncType === 'word'`)：物理时间驱动高精平滑流光渐变填充，真实还原歌手发音节奏；
+    - 行级模式 (`syncType === 'line'`)：采用 `.screen-lyric__line-box` 和 `.screen-lyric__line-text--highlight` 呈现全行整行高亮与过渡，坚决不绘制虚假字级流光。
+  - 播放、暂停、Seek、切歌场景下具备高频防抖与状态守卫，杜绝闪烁或时间戳跳零。
+- [x] **全量自动化验证与 Astro 全量编译构建 100% 通过**:
+  - 单元测试 `scratch/verify-lyric-engine.mjs` 验证 Enhanced LRC 逐字解析、普通 LRC 降级不伪造字时间戳、元数据过滤等全部 100% PASS；
+  - 本地 API 验证：`curl -s "http://localhost:8788/api/lyric?id=local-way-back-home&source=local"` 成功返回 `syncType: "word"` 及毫秒级起止点 `words` 数组；`curl -s "http://localhost:8788/api/lyric?id=local-kanojo&source=local"` 成功返回 `syncType: "line"` 且无伪造字戳；
+  - Astro 全量编译打包 `npm run build` 成功完成，284 个静态页面构建 0 错误。
+

@@ -465,113 +465,261 @@ export async function resolveMusicStream(env: AppEnv, id: string, source: string
   }
 }
 
+export type LyricSyncType = 'word' | 'line';
+
 export interface LyricWord {
   text: string;
-  start: number;
-  end: number;
+  start: number;     // 毫秒
+  startSec: number;  // 秒
+  end: number;       // 毫秒
+  endSec: number;    // 秒
+  duration: number;  // 毫秒
 }
 
 export interface LyricLine {
-  time: number;
+  time: number;       // 毫秒
+  timeSec: number;    // 秒
+  duration?: number;  // 毫秒
   text: string;
   words?: LyricWord[];
 }
 
-export function parseLrcLyrics(rawLrc: string): LyricLine[] {
-  if (!rawLrc) return [];
-  const lines = rawLrc.split('\n');
-  const result: LyricLine[] = [];
-  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
-
-  for (const line of lines) {
-    const timeMatches: number[] = [];
-    timeRegex.lastIndex = 0;
-    let match;
-    while ((match = timeRegex.exec(line)) !== null) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseInt(match[2], 10);
-      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
-      timeMatches.push(minutes * 60 + seconds + milliseconds / 1000);
-    }
-    if (timeMatches.length === 0) continue;
-
-    const rawLineBody = line.replace(timeRegex, '').trim();
-    if (!rawLineBody) continue;
-
-    // Check for word/syllable tags <start, dur>word or <time>word
-    const wordTagRegex = /<([\d.]+)(?:,\s*([\d.]+))?>([^<]+)/g;
-    const words: LyricWord[] = [];
-    let wordMatch;
-    while ((wordMatch = wordTagRegex.exec(rawLineBody)) !== null) {
-      const wStart = parseFloat(wordMatch[1]);
-      const wDur = wordMatch[2] ? parseFloat(wordMatch[2]) : 0.4;
-      const wText = wordMatch[3];
-      words.push({
-        text: wText,
-        start: wStart,
-        end: wStart + wDur,
-      });
-    }
-
-    const cleanText = rawLineBody
-      .replace(/<[\d.,\s]+>/g, '')
-      .replace(/\([\d.,\s]+\)/g, '')
-      .trim();
-
-    for (const t of timeMatches) {
-      result.push({
-        time: t,
-        text: cleanText,
-        words: words.length > 0 ? words : undefined,
-      });
-    }
-  }
-
-  result.sort((a, b) => a.time - b.time);
-
-  // Synthesize musical cadential cadence for plain lines without word tags
-  for (let i = 0; i < result.length; i++) {
-    const cur = result[i];
-    if (cur.words && cur.words.length > 0) continue;
-    const next = i + 1 < result.length ? result[i + 1] : null;
-    const lineStart = cur.time;
-    const lineEnd = next ? next.time : lineStart + 4.2;
-    const rawGap = Math.max(0.6, lineEnd - lineStart);
-    const activeDur = rawGap > 6 ? Math.min(rawGap * 0.72, 4.2) : (rawGap > 2.5 ? rawGap * 0.8 : Math.max(0.5, rawGap - 0.2));
-
-    const tokens = cur.text.split(/(\s+)/).filter(Boolean);
-    if (tokens.length === 0) continue;
-
-    const totalWeight = tokens.reduce((acc, _, idx) => acc + (idx === tokens.length - 1 ? 1.6 : 1.0), 0);
-    let curTime = lineStart;
-    const synthesizedWords: LyricWord[] = [];
-    for (let cIdx = 0; cIdx < tokens.length; cIdx++) {
-      const token = tokens[cIdx];
-      const weight = cIdx === tokens.length - 1 ? 1.6 : 1.0;
-      const tokenDur = (weight / totalWeight) * activeDur;
-      synthesizedWords.push({
-        text: token,
-        start: curTime,
-        end: curTime + tokenDur,
-      });
-      curTime += tokenDur;
-    }
-    cur.words = synthesizedWords;
-  }
-
-  return result;
+export interface HighPrecisionLyricPayload {
+  ok: boolean;
+  id: string;
+  source: string;
+  syncType: LyricSyncType;
+  offset: number;     // 毫秒
+  lines: LyricLine[];
+  lineCount: number;
+  rawLyric: string;
 }
 
-export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) {
+export function parseHighPrecisionLyrics(raw: string): {
+  syncType: LyricSyncType;
+  offset: number;
+  lines: LyricLine[];
+} {
+  if (!raw || !raw.trim()) {
+    return { syncType: 'line', offset: 0, lines: [] };
+  }
+
+  // 1. 提取全局偏移量 [offset: +/- ms]
+  let offsetMs = 0;
+  const offsetMatch = raw.match(/\[offset:\s*([+-]?\d+)\]/i);
+  if (offsetMatch) {
+    offsetMs = parseInt(offsetMatch[1], 10) || 0;
+  }
+
+  // 2. 检测是否为 XML 包装的 QRC 格式
+  let cleanInput = raw;
+  const qrcXmlMatch = raw.match(/<Lyric_1[^>]*LyricContent="([^"]+)"/i);
+  if (qrcXmlMatch) {
+    cleanInput = qrcXmlMatch[1];
+  }
+
+  const rawLines = cleanInput.split('\n');
+  const parsedLines: LyricLine[] = [];
+  let hasWordTimestamps = false;
+
+  for (const rawLine of rawLines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    // 过滤元数据标签 [ti:], [ar:], [al:], [by:], [offset:] 等
+    if (/^\[(ti|ar|al|by|offset|kana|re|ve):/i.test(line)) {
+      continue;
+    }
+
+    // 2.1 匹配网易云 YRC 格式：[lineStart,lineDur](wordStart,wordDur,0)word...
+    const yrcLineMatch = line.match(/^\[(\d+),(\d+)\](.*)$/);
+    if (yrcLineMatch) {
+      const lineStartMs = parseInt(yrcLineMatch[1], 10) + offsetMs;
+      const lineDurMs = parseInt(yrcLineMatch[2], 10);
+      const content = yrcLineMatch[3];
+
+      const words: LyricWord[] = [];
+      const wordRegex = /\((\d+),(\d+)(?:,\d+)?\)([^(]+)/g;
+      let wMatch;
+      let lineText = '';
+
+      while ((wMatch = wordRegex.exec(content)) !== null) {
+        let wStart = parseInt(wMatch[1], 10);
+        const wDur = parseInt(wMatch[2], 10);
+        const wText = wMatch[3];
+
+        if (wStart < lineStartMs && wStart < 60000) {
+          wStart = lineStartMs + wStart;
+        } else {
+          wStart = wStart + offsetMs;
+        }
+
+        const wEnd = wStart + wDur;
+        words.push({
+          text: wText,
+          start: Math.max(0, wStart),
+          startSec: parseFloat((Math.max(0, wStart) / 1000).toFixed(3)),
+          end: Math.max(0, wEnd),
+          endSec: parseFloat((Math.max(0, wEnd) / 1000).toFixed(3)),
+          duration: Math.max(0, wDur),
+        });
+        lineText += wText;
+      }
+
+      if (words.length > 0) {
+        hasWordTimestamps = true;
+        parsedLines.push({
+          time: Math.max(0, lineStartMs),
+          timeSec: parseFloat((Math.max(0, lineStartMs) / 1000).toFixed(3)),
+          duration: lineDurMs,
+          text: lineText.trim() || content.replace(/\([^)]+\)/g, '').trim(),
+          words,
+        });
+        continue;
+      }
+    }
+
+    // 2.2 匹配标准行级时间戳 [mm:ss.xx] 或 [mm:ss.xxx]
+    const standardTimeRegex = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
+    const timeMatchesMs: number[] = [];
+    let match;
+
+    while ((match = standardTimeRegex.exec(line)) !== null) {
+      const minutes = parseInt(match[1], 10);
+      const seconds = parseInt(match[2], 10);
+      const ms = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
+      timeMatchesMs.push(minutes * 60000 + seconds * 1000 + ms + offsetMs);
+    }
+
+    const cleanLineBody = line.replace(standardTimeRegex, '').trim();
+    if (!cleanLineBody && timeMatchesMs.length > 0) continue;
+
+    // 检查行内是否有逐字标签：
+    // 形式一：<0.28,0.68>word 或 <280,680>word
+    const angleWordRegex = /<([\d.]+)(?:,\s*([\d.]+))?>([^<]+)/g;
+    // 形式二：(1234,567)word
+    const parenWordRegex = /\((\d+),(\d+)(?:,\d+)?\)([^(]+)/g;
+
+    let lineWords: LyricWord[] = [];
+    let angleMatch;
+    while ((angleMatch = angleWordRegex.exec(cleanLineBody)) !== null) {
+      const rawStart = parseFloat(angleMatch[1]);
+      const rawDur = angleMatch[2] ? parseFloat(angleMatch[2]) : 0.3;
+      const wText = angleMatch[3];
+
+      const isSeconds = String(angleMatch[1]).includes('.') || rawStart < 100;
+      const startMs = Math.round((isSeconds ? rawStart * 1000 : rawStart) + offsetMs);
+      const durMs = Math.round(isSeconds ? rawDur * 1000 : rawDur);
+
+      lineWords.push({
+        text: wText,
+        start: Math.max(0, startMs),
+        startSec: parseFloat((Math.max(0, startMs) / 1000).toFixed(3)),
+        end: Math.max(0, startMs + durMs),
+        endSec: parseFloat((Math.max(0, startMs + durMs) / 1000).toFixed(3)),
+        duration: Math.max(0, durMs),
+      });
+    }
+
+    if (lineWords.length === 0) {
+      let pMatch;
+      while ((pMatch = parenWordRegex.exec(cleanLineBody)) !== null) {
+        const wStart = parseInt(pMatch[1], 10) + offsetMs;
+        const wDur = parseInt(pMatch[2], 10);
+        const wText = pMatch[3];
+        lineWords.push({
+          text: wText,
+          start: Math.max(0, wStart),
+          startSec: parseFloat((Math.max(0, wStart) / 1000).toFixed(3)),
+          end: Math.max(0, wStart + wDur),
+          endSec: parseFloat((Math.max(0, wStart + wDur) / 1000).toFixed(3)),
+          duration: Math.max(0, wDur),
+        });
+      }
+    }
+
+    const plainText = cleanLineBody
+      .replace(/<[^>]+>/g, '')
+      .replace(/\([^)]+\)/g, '')
+      .trim();
+
+    if (!plainText) continue;
+    if (/^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(plainText)) {
+      continue;
+    }
+
+    if (lineWords.length > 0) {
+      hasWordTimestamps = true;
+    }
+
+    if (timeMatchesMs.length > 0) {
+      for (const t of timeMatchesMs) {
+        parsedLines.push({
+          time: Math.max(0, t),
+          timeSec: parseFloat((Math.max(0, t) / 1000).toFixed(3)),
+          text: plainText,
+          words: lineWords.length > 0 ? lineWords : undefined,
+        });
+      }
+    } else if (lineWords.length > 0) {
+      const lineStart = lineWords[0].start;
+      parsedLines.push({
+        time: lineStart,
+        timeSec: lineWords[0].startSec,
+        duration: lineWords[lineWords.length - 1].end - lineStart,
+        text: plainText,
+        words: lineWords,
+      });
+    }
+  }
+
+  parsedLines.sort((a, b) => a.time - b.time);
+
+  // 为没有设定 duration 的行计算行时长
+  for (let i = 0; i < parsedLines.length; i++) {
+    const cur = parsedLines[i];
+    if (!cur.duration) {
+      const next = parsedLines[i + 1];
+      if (next) {
+        cur.duration = Math.max(300, next.time - cur.time);
+      } else {
+        cur.duration = 4500;
+      }
+    }
+  }
+
+  // 严格按规范：当且仅当音源有真实逐字标签时输出 word 模式；普通 LRC 降级为 line 模式，绝不伪造 words
+  return {
+    syncType: hasWordTimestamps ? 'word' : 'line',
+    offset: offsetMs,
+    lines: parsedLines,
+  };
+}
+
+export function parseLrcLyrics(rawLrc: string): LyricLine[] {
+  return parseHighPrecisionLyrics(rawLrc).lines;
+}
+
+export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: string): Promise<HighPrecisionLyricPayload> {
   // 1. 本地歌曲直接返回高保真歌词
   const localMatch = CURATED_LOCAL_TRACKS.find((t) => t.id === id || t.lyricId === id);
   if (localMatch) {
-    return localMatch.lrc;
+    const { syncType, offset, lines } = parseHighPrecisionLyrics(localMatch.lrc);
+    return {
+      ok: true,
+      id,
+      source: 'local',
+      syncType,
+      offset,
+      lines,
+      lineCount: lines.length,
+      rawLyric: localMatch.lrc,
+    };
   }
 
-  // 2. 优先通过 CFSolara 官方开放音乐微服务拉取毫秒级高精度字幕
+  // 2. 优先通过 CFSolara 官方开放高精 API 拉取
   try {
-    const cfsolaraUrl = `https://cfsolara-dho.pages.dev/api/music/lyric?id=${encodeURIComponent(id)}&source=${encodeURIComponent(source || 'netease')}`;
+    const cfsolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?id=${encodeURIComponent(id)}&source=${encodeURIComponent(source || 'netease')}`;
     const resp = await fetch(cfsolaraUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -579,16 +727,70 @@ export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) 
       },
     });
     if (resp.ok) {
-      const data = await resp.json() as { ok?: boolean; lyric?: string };
-      if (data && data.ok && typeof data.lyric === 'string' && data.lyric.trim()) {
-        return data.lyric;
+      const data = (await resp.json()) as any;
+      if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0) {
+        return {
+          ok: true,
+          id,
+          source: data.source || source,
+          syncType: data.syncType || 'line',
+          offset: data.offset || 0,
+          lines: data.lines,
+          lineCount: data.lines.length,
+          rawLyric: data.rawLyric || data.lyric || '',
+        };
+      } else if (data && data.ok && typeof data.lyric === 'string' && data.lyric.trim()) {
+        const { syncType, offset, lines } = parseHighPrecisionLyrics(data.lyric);
+        return {
+          ok: true,
+          id,
+          source,
+          syncType,
+          offset,
+          lines,
+          lineCount: lines.length,
+          rawLyric: data.lyric,
+        };
       }
     }
   } catch (err) {
     console.warn('[CFSolara Lyric Fetch Warning]', err);
   }
 
-  // 3. 次级兜底回退
+  // 3. 次级兜底：网易云直连 YRC / LRC 尝试
+  if (source === 'netease') {
+    try {
+      const url = `https://music.163.com/api/song/lyric/v1?id=${encodeURIComponent(id)}&cp=false&tv=0&lv=0&rv=0&kv=0&yv=-1&ytv=0&yrv=0`;
+      const resp = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          Referer: 'https://music.163.com/',
+        },
+      });
+      if (resp.ok) {
+        const json = (await resp.json()) as any;
+        const rawLyric = json?.yrc?.lyric || json?.lrc?.lyric || '';
+        if (rawLyric) {
+          const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);
+          return {
+            ok: true,
+            id,
+            source,
+            syncType,
+            offset,
+            lines,
+            lineCount: lines.length,
+            rawLyric,
+          };
+        }
+      }
+    } catch {
+      // 忽略网易云直连异常
+    }
+  }
+
+  // 4. 再次级兜底：通用 Provider 回退
+  let rawLyric = '';
   try {
     const payload = await fetchProviderJson(env, {
       types: 'lyric',
@@ -597,11 +799,29 @@ export async function fetchMusicLyrics(env: AppEnv, id: string, source: string) 
       s: signature(),
     });
 
-    if (!payload || typeof payload !== 'object') return '';
-    return typeof (payload as { lyric?: unknown }).lyric === 'string' ? (payload as { lyric: string }).lyric : '';
+    if (payload && typeof payload === 'object') {
+      rawLyric = typeof (payload as { lyric?: unknown }).lyric === 'string' ? (payload as { lyric: string }).lyric : '';
+    }
   } catch {
-    return '';
+    rawLyric = '';
   }
+
+  const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);
+  return {
+    ok: true,
+    id,
+    source,
+    syncType,
+    offset,
+    lines,
+    lineCount: lines.length,
+    rawLyric,
+  };
+}
+
+export async function fetchMusicLyrics(env: AppEnv, id: string, source: string): Promise<string> {
+  const result = await fetchHighPrecisionLyrics(env, id, source);
+  return result.rawLyric;
 }
 
 export async function resolveMusicPic(env: AppEnv, id: string, picId: string, source: string): Promise<string> {

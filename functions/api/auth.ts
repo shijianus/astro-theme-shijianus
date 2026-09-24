@@ -169,13 +169,13 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
   // 6. POST /api/auth/local (Local reader identity creation or login)
   if (pathname === '/api/auth/local' && request.method === 'POST') {
     try {
-      const body = await safeReadJson<{ name: string; email: string; website?: string; avatar?: string; token?: string }>(request);
+      const body = await safeReadJson<{ name: string; email: string; website?: string; avatar?: string; token?: string; passcode?: string }>(request);
       if (!body?.name) {
         return jsonResponse(request, env, { ok: false, error: '昵称不能为空' }, { status: 400 });
       }
 
       const existingToken = extractSessionToken(request, body);
-      const session = await authenticateLocalReader({ ...body, sessionToken: existingToken }, env);
+      const session = await authenticateLocalReader({ ...body, sessionToken: existingToken, passcode: body?.passcode }, env);
 
       return jsonResponse(request, env, {
         ok: true,

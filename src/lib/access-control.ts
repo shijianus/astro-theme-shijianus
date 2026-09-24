@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { open, type Reader } from 'maxmind';
 
 type PostAccess = {
@@ -53,9 +53,17 @@ const DEFAULT_IPINFO_TRANSIENT_COOLDOWN_SECONDS = 60 * 15;
 const providerCooldownState = new Map<string, number>();
 let geoLiteReaderPromise: Promise<Reader<Record<string, unknown>> | null> | null = null;
 
-const ACCESS_COOKIE_SALT =
-  (typeof process !== 'undefined' && (process.env?.ACCESS_COOKIE_SALT || process.env?.AUTH_JWT_SECRET)) ||
-  'shijianus-secure-post-access-salt-2026';
+const RUNTIME_EPHEMERAL_SALT = randomBytes(32).toString('hex');
+
+export function getAccessCookieSalt(): string {
+  if (typeof process !== 'undefined') {
+    const configured = process.env?.ACCESS_COOKIE_SALT || process.env?.AUTH_JWT_SECRET;
+    if (configured && configured.trim().length > 0) {
+      return configured.trim();
+    }
+  }
+  return RUNTIME_EPHEMERAL_SALT;
+}
 
 function sha256Hex(value: string) {
   return createHash('sha256').update(value).digest('hex');
@@ -292,7 +300,7 @@ export async function evaluatePostAccess({
   const blockedIps = normalizeRuleList(access?.blockedIps);
   const passwordHash = getAccessPasswordHash(access);
   const cookieName = `shijianus-post-access:${slug}`;
-  const expectedCookieValue = passwordHash ? sha256Hex(`${ACCESS_COOKIE_SALT}:${slug}:${passwordHash}`) : '';
+  const expectedCookieValue = passwordHash ? sha256Hex(`${getAccessCookieSalt()}:${slug}:${passwordHash}`) : '';
   const clientIp = readHeader(headers, IP_HEADER_KEYS);
   let countryCode = readHeader(headers, COUNTRY_HEADER_KEYS).toUpperCase();
 
