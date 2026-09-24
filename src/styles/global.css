@@ -203,6 +203,33 @@ img {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  transition: background 0.5s ease;
+}
+
+/* Winter Snowscape Ambient Atmosphere (Light Mode) */
+:root:not([data-theme='dark'])[data-background='snow'] #web_bg,
+:root[data-theme='light'][data-background='snow'] #web_bg {
+  background: linear-gradient(180deg, #dce8f8 0%, #ebf3fc 45%, #f7f9fe 100%);
+}
+
+/* Winter Snowscape Ambient Atmosphere (Dark Mode) */
+:root[data-theme='dark'][data-background='snow'] #web_bg {
+  background: linear-gradient(180deg, #090c16 0%, #0d101c 45%, #0d0d14 100%);
+}
+
+/* Clean Mode - 100% Solid Color Baseline */
+:root[data-background='clean'] #web_bg {
+  background: var(--global-bg) !important;
+}
+
+/* Suppress foreground floating snow during active overlay / modal sessions */
+body.theme-overlay-open #theme-snow-foreground,
+body.reward-modal-open #theme-snow-foreground,
+body.console-open #theme-snow-foreground,
+html[data-console-open="true"] #theme-snow-foreground {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 
