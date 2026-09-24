@@ -9,26 +9,28 @@ import {
 export async function verifySessionRecord(
   env: AppEnv,
   sessionId: string,
-): Promise<{ valid: boolean; amount?: number; currency?: string }> {
+): Promise<{ valid: boolean; amount?: number; currency?: string; alreadyFinalized?: boolean }> {
   if (!sessionId) return { valid: false };
 
   const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
 
   // 1. Check if record exists in D1 sponsorships table and is already marked completed
-  let existingInDb: { id: string; amount: number; currency: string; status: string } | null = null;
+  let existingInDb: { id: string; amount: number; currency: string; status: string; name?: string; message?: string } | null = null;
   if (env.DB) {
     try {
       existingInDb = await env.DB.prepare(
-        'SELECT id, amount, currency, status FROM sponsorships WHERE id = ? LIMIT 1'
+        'SELECT id, amount, currency, status, name, message FROM sponsorships WHERE id = ? LIMIT 1'
       )
         .bind(sessionId)
-        .first<{ id: string; amount: number; currency: string; status: string }>();
+        .first<{ id: string; amount: number; currency: string; status: string; name?: string; message?: string }>();
 
       if (existingInDb && (existingInDb.status === 'completed' || existingInDb.status === 'succeeded' || existingInDb.status === 'form_submitted')) {
+        const isFinalized = existingInDb.status === 'form_submitted' || (existingInDb.status === 'completed' && Boolean(existingInDb.name && existingInDb.name !== 'Anonymous' && existingInDb.name !== '匿名支持者'));
         return {
           valid: true,
           amount: existingInDb.amount,
           currency: existingInDb.currency,
+          alreadyFinalized: isFinalized,
         };
       }
     } catch (e) {
@@ -113,39 +115,46 @@ async function updateD1Record(
     const finalAmount = verifiedAmount ?? (typeof data.amount === 'number' ? data.amount : 5);
     const finalCurrency = (verifiedCurrency || data.currency || 'USD').toUpperCase();
 
+    const targetStatus = data.trigger === 'form_submitted' ? 'form_submitted' : 'completed';
+
     // Use UPDATE if record already exists to preserve original server-set amount & creation date
     const res = await db
       .prepare(
         `UPDATE sponsorships
-         SET name = ?, message = ?, country = ?, ip = ?, status = 'completed', updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?`,
+         SET name = ?, message = ?, country = ?, ip = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND (status NOT IN ('form_submitted') OR status IS NULL)`,
       )
       .bind(
         cleanName,
         cleanMessage,
         data.country || 'GLOBAL',
         data.ip || '',
+        targetStatus,
         data.id,
       )
       .run();
 
     // If no row was updated (e.g. verified from Stripe but wasn't in DB yet), INSERT it
     if (!res?.meta?.changes || res.meta.changes === 0) {
-      await db
-        .prepare(
-          `INSERT OR REPLACE INTO sponsorships (id, amount, currency, name, message, country, ip, status, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)`,
-        )
-        .bind(
-          data.id,
-          finalAmount,
-          finalCurrency,
-          cleanName,
-          cleanMessage,
-          data.country || 'GLOBAL',
-          data.ip || '',
-        )
-        .run();
+      const exists = await db.prepare('SELECT id FROM sponsorships WHERE id = ?').bind(data.id).first();
+      if (!exists) {
+        await db
+          .prepare(
+            `INSERT INTO sponsorships (id, amount, currency, name, message, country, ip, status, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+          )
+          .bind(
+            data.id,
+            finalAmount,
+            finalCurrency,
+            cleanName,
+            cleanMessage,
+            data.country || 'GLOBAL',
+            data.ip || '',
+            targetStatus,
+          )
+          .run();
+      }
     }
   } catch (dbErr) {
     console.error('D1 update error:', dbErr);
@@ -183,6 +192,15 @@ export async function onRequest(context: {
       { ok: false, error: '未找到有效的支付赞助会话或支付未完成，无法提交赞赏记录' },
       { status: 403 }
     );
+  }
+
+  // Idempotency & Defacement Prevention: if already finalized with user blessings, lock against replay
+  if (verification.alreadyFinalized) {
+    return jsonResponse(request, env, {
+      ok: true,
+      message: 'Blessing already recorded and locked against tampering.',
+      idempotent: true,
+    });
   }
 
   const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';

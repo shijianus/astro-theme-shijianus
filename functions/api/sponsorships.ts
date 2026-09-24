@@ -1,5 +1,6 @@
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse } from '../_lib/http.ts';
+import { sha256Hex } from '../_lib/hash.ts';
 
 export interface SponsorRecord {
   id: string;
@@ -82,21 +83,25 @@ export async function onRequest(context: {
     const rawRows = recordsResult?.results || [];
     const total = countResult?.count || rawRows.length;
 
-    const list: SponsorRecord[] = rawRows.map((r) => {
-      const rawName = (r.name || '').trim();
-      const displayName = rawName && rawName.toLowerCase() !== 'anonymous' ? rawName : '匿名支持者';
-      return {
-        id: r.id,
-        name: displayName,
-        amount: Number(r.amount) || 0,
-        currency: (r.currency || 'USD').toUpperCase(),
-        message: (r.message || '').trim(),
-        country: r.country || 'GLOBAL',
-        channel: r.id?.startsWith('cs_') ? 'Stripe (国际收银台)' : '赞赏支持',
-        status: r.status,
-        createdAt: r.created_at || r.updated_at || new Date().toISOString(),
-      };
-    });
+    const list: SponsorRecord[] = await Promise.all(
+      rawRows.map(async (r, index) => {
+        const rawName = (r.name || '').trim();
+        const displayName = rawName && rawName.toLowerCase() !== 'anonymous' ? rawName : '匿名支持者';
+        const hash = await sha256Hex(r.id || `anon_${index}`);
+        const safeId = `sp_${hash.slice(0, 16)}`;
+        return {
+          id: safeId,
+          name: displayName,
+          amount: Number(r.amount) || 0,
+          currency: (r.currency || 'USD').toUpperCase(),
+          message: (r.message || '').trim(),
+          country: r.country || 'GLOBAL',
+          channel: (r.id?.startsWith('cs_') || r.id?.startsWith('pi_')) ? 'Stripe (国际收银台)' : '赞赏支持',
+          status: r.status,
+          createdAt: r.created_at || r.updated_at || new Date().toISOString(),
+        };
+      })
+    );
 
     return jsonResponse(
       request,
