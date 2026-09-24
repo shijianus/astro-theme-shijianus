@@ -43,7 +43,7 @@ async function buildActorHash({ request, env, namespace, extraKey = '', scope = 
   return sha256Hex([salt, namespace, 'hybrid', ip, deviceId, userAgent, extraKey].join('|'));
 }
 
-export async function enforceRateLimit(options: LimitOptions): Promise<RateLimitResult> {
+async function enforceRateLimitInternal(options: LimitOptions): Promise<RateLimitResult> {
   const actorHash = await buildActorHash(options);
   const now = Math.floor(Date.now() / 1000);
   const bucket = Math.floor(now / options.windowSeconds);
@@ -108,6 +108,31 @@ export async function enforceRateLimit(options: LimitOptions): Promise<RateLimit
     resetAt,
     used,
   };
+}
+
+export async function enforceRateLimit(options: LimitOptions): Promise<RateLimitResult> {
+  const scope = options.scope || 'hybrid';
+  if (scope === 'hybrid') {
+    // 1. Enforce strict IP-level rate limit first to defeat header rotation attacks
+    const ipCheck = await enforceRateLimitInternal({
+      ...options,
+      scope: 'ip',
+    });
+    if (!ipCheck.allowed) {
+      return ipCheck;
+    }
+    // 2. Also track and enforce device-level if device ID is present
+    const deviceId = readDeviceId(options.request);
+    if (deviceId) {
+      return enforceRateLimitInternal({
+        ...options,
+        scope: 'device',
+      });
+    }
+    return ipCheck;
+  }
+
+  return enforceRateLimitInternal(options);
 }
 
 export function envLimit(env: AppEnv, key: keyof AppEnv, fallback: number) {
