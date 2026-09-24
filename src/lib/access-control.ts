@@ -37,21 +37,25 @@ const COUNTRY_HEADER_KEYS = [
   'x-appengine-country',
 ];
 const IP_HEADER_KEYS = [
-  'forwarded',
   'cf-connecting-ip',
-  'x-nf-client-connection-ip',
-  'x-real-ip',
-  'x-forwarded-for',
-  'x-vercel-forwarded-for',
-  'x-client-ip',
   'true-client-ip',
+  'x-real-ip',
+  'x-client-ip',
   'fly-client-ip',
+  'x-nf-client-connection-ip',
+  'x-vercel-forwarded-for',
+  'x-forwarded-for',
+  'forwarded',
 ];
 const DEFAULT_IPINFO_INVALID_COOLDOWN_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_IPINFO_RATE_LIMIT_COOLDOWN_SECONDS = 60 * 60 * 24;
 const DEFAULT_IPINFO_TRANSIENT_COOLDOWN_SECONDS = 60 * 15;
 const providerCooldownState = new Map<string, number>();
 let geoLiteReaderPromise: Promise<Reader<Record<string, unknown>> | null> | null = null;
+
+const ACCESS_COOKIE_SALT =
+  (typeof process !== 'undefined' && (process.env?.ACCESS_COOKIE_SALT || process.env?.AUTH_JWT_SECRET)) ||
+  'shijianus-secure-post-access-salt-2026';
 
 function sha256Hex(value: string) {
   return createHash('sha256').update(value).digest('hex');
@@ -288,7 +292,7 @@ export async function evaluatePostAccess({
   const blockedIps = normalizeRuleList(access?.blockedIps);
   const passwordHash = getAccessPasswordHash(access);
   const cookieName = `shijianus-post-access:${slug}`;
-  const expectedCookieValue = passwordHash ? sha256Hex(`${slug}:${passwordHash}`) : '';
+  const expectedCookieValue = passwordHash ? sha256Hex(`${ACCESS_COOKIE_SALT}:${slug}:${passwordHash}`) : '';
   const clientIp = readHeader(headers, IP_HEADER_KEYS);
   let countryCode = readHeader(headers, COUNTRY_HEADER_KEYS).toUpperCase();
 
