@@ -307,7 +307,7 @@ export async function onRequest(context: {
       authUser = await getUserBySessionToken(candidateToken, env);
       if (authUser) {
         currentUserId = authUser.id;
-        if (authUser.role === 'admin') {
+        if (authUser.role === 'admin' && Boolean(secureHeaderToken || sessionTokenHeader)) {
           isAdmin = true;
         }
       } else {
