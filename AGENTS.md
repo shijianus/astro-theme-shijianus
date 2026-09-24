@@ -3850,13 +3850,13 @@
   - 本地 API 验证：`curl -s "http://localhost:8788/api/lyric?id=local-way-back-home&source=local"` 成功返回 `syncType: "word"` 及毫秒级起止点 `words` 数组；`curl -s "http://localhost:8788/api/lyric?id=local-kanojo&source=local"` 成功返回 `syncType: "line"` 且无伪造字戳；
   - Astro 全量编译打包 `npm run build` 成功完成，284 个静态页面构建 0 错误。
 
-### Task 176: 底层架构深度安全审计与 8 大隐蔽设计漏洞全景加固修复 (Underlying Codebase Security & Architectural Flaws Comprehensive Remediation)
+### Task 176: 底层架构深度安全审计与 8 大隐蔽设计漏洞全景加固修复 (Underlying Codebase Security & Architectural Flaws Comprehensive Remediation, Commits `dc42008`, `9ab82f6`, `754cd0a`)
 - [x] **VULN-ARCH-01 & 02: 本地读者认证接管防御与昵称枚举预言机彻底消除 (`functions/_lib/auth-service.ts`, `functions/api/auth.ts`)**:
   - 本地读者登录流程引入 `passcode`（PIN 访问码）并建立历史会话所有权溯源校验；
   - 彻底阻断仅凭公开邮箱与昵称即可无密码接管他人 reader 账号并生成 14 天有效会话的漏洞；
   - 消除认证失败时明文反射已绑定用户昵称的预言机泄漏。
-- [x] **VULN-ARCH-03: 管理员凭证 Query 参数传输阻断与 CSPRNG 密钥生成 (`functions/api/comments.ts`)**:
-  - 管理员身份（`isAdmin`）严格仅从安全 HTTP 请求头（`X-Admin-Token` 或 `Authorization: Bearer`）提取校验，严禁在 URL Query 中接收管理员 Token；
+- [x] **VULN-ARCH-03: 管理员凭证 Query 参数传输阻断与 CSPRNG 密钥生成 (`functions/api/comments.ts`, `754cd0a`)**:
+  - 管理员身份（`isAdmin`）严格仅从安全 HTTP 请求头（`X-Admin-Token` 或 `Authorization: Bearer`）提取校验，严禁在 URL Query 中接收管理员 Token 或通过 Query 参数 Session 提权；
   - 避免凭证泄露于 Web 服务器 Access Log、CDN 缓存及 HTTP Referer 头；
   - 访客临时 Token 与 ID 生成升级为密码学安全的 CSPRNG（`crypto.getRandomValues`，48 字符十六进制）；
   - 清除请求热路径中冗余的冷启动 `ALTER TABLE` 重复 DDL 操作。
@@ -3877,5 +3877,6 @@
   - `scripts/test-record-blessing-integrity.mjs`：3/3 项赞赏完整性断言 100% PASS；
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
+
 
 
