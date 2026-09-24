@@ -145,7 +145,7 @@ async function ensureTable(db: any) {
   }
 }
 
-function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
+function mapRowToClientComment(row: RawCommentRow, isAdmin = false, currentUserId = '') {
   const isVisitor = row.author_role === 'visitor';
   const showLoc = isVisitor ? true : Boolean(row.show_location);
   const countryInfo = resolveCountryInfo(row.ip_country || 'GLOBAL');
@@ -179,6 +179,14 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
     reactionsParsed.summary['👍'] = Number(row.likes_count);
   }
 
+  // Security: Never leak other readers' user IDs or session tokens to public viewers
+  let clientUsers: Record<string, string> = {};
+  if (isAdmin) {
+    clientUsers = reactionsParsed.users;
+  } else if (currentUserId && reactionsParsed.users[currentUserId]) {
+    clientUsers = { [currentUserId]: reactionsParsed.users[currentUserId] };
+  }
+
   return {
     id: row.id,
     postSlug: row.post_slug,
@@ -193,7 +201,10 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false) {
     authorRole: row.author_role || 'visitor',
     message: row.message,
     likesCount: Number(row.likes_count || summaryTotal || 0),
-    reactions: reactionsParsed,
+    reactions: {
+      summary: reactionsParsed.summary,
+      users: clientUsers,
+    },
     status: row.status || 'published',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -276,16 +287,26 @@ export async function onRequest(context: {
   const headerAdminToken = request.headers.get('X-Admin-Token');
   const authHeader = request.headers.get('Authorization')?.replace('Bearer ', '');
   const sessionTokenHeader = request.headers.get('X-Comment-Session-Token');
-  const candidateToken = headerAdminToken || authHeader || sessionTokenHeader;
+  const querySessionToken = url.searchParams.get('session_token')?.trim();
+  const candidateToken = headerAdminToken || authHeader || sessionTokenHeader || querySessionToken;
 
   let isAdmin = Boolean(env.ADMIN_TOKEN && candidateToken && candidateToken === env.ADMIN_TOKEN);
-  if (!isAdmin && candidateToken) {
+  let currentUserId = '';
+  let authUser: any = null;
+  if (candidateToken) {
     try {
-      const authUser = await getUserBySessionToken(candidateToken, env);
-      if (authUser && authUser.role === 'admin') {
-        isAdmin = true;
+      authUser = await getUserBySessionToken(candidateToken, env);
+      if (authUser) {
+        currentUserId = authUser.id;
+        if (authUser.role === 'admin') {
+          isAdmin = true;
+        }
+      } else {
+        currentUserId = candidateToken;
       }
-    } catch {}
+    } catch {
+      currentUserId = candidateToken;
+    }
   }
 
   // ----------------------------------------------------
@@ -354,7 +375,7 @@ export async function onRequest(context: {
           const myRes = await env.DB.prepare(myCommentsQuery)
             .bind(authorName, authorName, authorId, authorId, authorEmail, authorEmail, effectiveSessionToken, effectiveSessionToken)
             .all<RawCommentRow>();
-          const userComments = (myRes.results || []).map((r) => mapRowToClientComment(r, isAdmin));
+          const userComments = (myRes.results || []).map((r) => mapRowToClientComment(r, isAdmin, authorId || currentUserId));
 
           // 2. Fetch notifications: comments that reply to or quote user's comments
           // Note: Strictly exclude any operations performed by user themselves!
@@ -417,27 +438,32 @@ export async function onRequest(context: {
           }
 
           // Also check likes on user's own comments - ONLY count reactions from OTHER users!
-          for (const comm of userComments) {
-            const rxUsers = comm.reactions?.users || {};
+          for (const r of myRes.results || []) {
+            let rxUsers: Record<string, string> = {};
+            if (r.reactions) {
+              try {
+                rxUsers = JSON.parse(r.reactions)?.users || {};
+              } catch {}
+            }
             const otherReactors = Object.entries(rxUsers).filter(([uKey]) => {
               if (authorId && uKey === authorId) return false;
-              if (comm.authorId && uKey === comm.authorId) return false;
+              if (r.author_id && uKey === r.author_id) return false;
               if (authorName && (uKey === authorName || uKey === `name-${authorName}`)) return false;
               return true;
             });
             const otherCount = otherReactors.length;
             if (otherCount > 0) {
               notifications.push({
-                id: `like-${comm.id}`,
+                id: `like-${r.id}`,
                 type: 'like',
                 title: `你的留言收到了来自读者的 ${otherCount} 次点赞 👍`,
                 actorName: '读者',
                 actorAvatar: '',
                 actorRole: 'reader',
-                message: comm.message,
-                postSlug: comm.postSlug,
-                commentId: comm.id,
-                createdAt: comm.updatedAt || comm.createdAt,
+                message: r.message,
+                postSlug: r.post_slug,
+                commentId: r.id,
+                createdAt: r.updated_at || r.created_at,
               });
             }
           }
@@ -457,15 +483,15 @@ export async function onRequest(context: {
 
       // In-memory fallback (local dev)
       const allComments = Array.from(memoryFallbackStore.values()).filter((c) => c.status !== 'deleted');
-      const userComments = allComments
+      const matchedComments = allComments
         .filter((c) =>
           (authorName && c.author_name === authorName) ||
           (authorId && c.author_id === authorId) ||
           (authorEmail && c.author_email === authorEmail) ||
           (effectiveSessionToken && c.session_token === effectiveSessionToken)
         )
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .map((r) => mapRowToClientComment(r, isAdmin));
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const userComments = matchedComments.map((r) => mapRowToClientComment(r, isAdmin, authorId || currentUserId));
 
       const myCommentIds = new Set(userComments.map((c) => c.id));
       const notifications: any[] = [];
@@ -510,27 +536,32 @@ export async function onRequest(context: {
         }
       }
 
-      for (const comm of userComments) {
-        const rxUsers = comm.reactions?.users || {};
+      for (const r of matchedComments) {
+        let rxUsers: Record<string, string> = {};
+        if (r.reactions) {
+          try {
+            rxUsers = JSON.parse(r.reactions)?.users || {};
+          } catch {}
+        }
         const otherReactors = Object.entries(rxUsers).filter(([uKey]) => {
           if (authorId && uKey === authorId) return false;
-          if (comm.authorId && uKey === comm.authorId) return false;
+          if (r.author_id && uKey === r.author_id) return false;
           if (authorName && (uKey === authorName || uKey === `name-${authorName}`)) return false;
           return true;
         });
         const otherCount = otherReactors.length;
         if (otherCount > 0) {
           notifications.push({
-            id: `like-${comm.id}`,
+            id: `like-${r.id}`,
             type: 'like',
             title: `你的留言收到了来自读者的 ${otherCount} 次点赞 👍`,
             actorName: '读者',
             actorAvatar: '',
             actorRole: 'reader',
-            message: comm.message,
-            postSlug: comm.postSlug,
-            commentId: comm.id,
-            createdAt: comm.updatedAt || comm.createdAt,
+            message: r.message,
+            postSlug: r.post_slug,
+            commentId: r.id,
+            createdAt: r.updated_at || r.created_at,
           });
         }
       }
@@ -574,7 +605,7 @@ export async function onRequest(context: {
         return jsonResponse(request, env, {
           ok: true,
           sort,
-          comments: rows.map((r) => mapRowToClientComment(r, isAdmin)),
+          comments: rows.map((r) => mapRowToClientComment(r, isAdmin, currentUserId)),
         });
       } catch (dbErr: any) {
         console.error('[Comments] DB query error:', dbErr);
@@ -594,7 +625,7 @@ export async function onRequest(context: {
         }
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       })
-      .map((r) => mapRowToClientComment(r, isAdmin));
+      .map((r) => mapRowToClientComment(r, isAdmin, currentUserId));
 
     return jsonResponse(request, env, { ok: true, sort, comments: list });
   }
@@ -740,16 +771,25 @@ export async function onRequest(context: {
     let authorName = rawAuthorName;
     let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
     let authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
-    let authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
-    let authorId = (payload.authorId || `vis_${Date.now()}`).trim();
+    let authorEmail = '';
+    let authorId = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
-    // Authenticated reader: bind author fields authoritatively to authenticated profile
-    if (authUser) {
+    // Authenticated reader / admin: bind author fields authoritatively to authenticated profile
+    if (authorRole === 'admin') {
+      authorId = 'admin';
+      authorEmail = env.ADMIN_EMAIL || '';
+      authorName = 'shijianus';
+      if (!authorAvatar) authorAvatar = '/media/shijianus/avatar.jpg';
+    } else if (authUser) {
       authorId = authUser.id;
       authorEmail = authUser.email;
       authorName = authUser.name || authorName;
       if (!authorAvatar && authUser.avatar) authorAvatar = authUser.avatar;
       if (!authorWebsite && authUser.website) authorWebsite = authUser.website;
+    } else {
+      // Unauthenticated visitors CANNOT specify or forge authorEmail or authorId
+      authorEmail = '';
+      authorId = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     }
 
     if (authorRole !== 'admin') {
@@ -872,11 +912,14 @@ export async function onRequest(context: {
     }
 
     let isSessionAdmin = false;
+    let editAuthUser: any = null;
     if (sessionToken) {
-      const authUser = await getUserBySessionToken(sessionToken, env);
-      if (authUser && authUser.role === 'admin') {
-        isSessionAdmin = true;
-      }
+      try {
+        editAuthUser = await getUserBySessionToken(sessionToken, env);
+        if (editAuthUser && editAuthUser.role === 'admin') {
+          isSessionAdmin = true;
+        }
+      } catch {}
     }
     const isAuthorizedAdmin = Boolean(isAdmin || (env.ADMIN_TOKEN && candidateToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
@@ -887,7 +930,10 @@ export async function onRequest(context: {
         return jsonResponse(request, env, { ok: false, error: '评论不存在或已被删除' }, { status: 404 });
       }
 
-      const isOwner = Boolean(sessionToken && row.session_token === sessionToken);
+      const isOwner = Boolean(
+        (sessionToken && row.session_token === sessionToken) ||
+        (editAuthUser && row.author_id && editAuthUser.id === row.author_id)
+      );
       if (!isOwner && !isAuthorizedAdmin) {
         return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效（无法验证身份）' }, { status: 403 });
       }
@@ -903,7 +949,10 @@ export async function onRequest(context: {
     if (!item || item.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
     }
-    const isOwner = Boolean(sessionToken && item.session_token === sessionToken);
+    const isOwner = Boolean(
+      (sessionToken && item.session_token === sessionToken) ||
+      (editAuthUser && item.author_id && editAuthUser.id === item.author_id)
+    );
     if (!isOwner && !isAuthorizedAdmin) {
       return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效' }, { status: 403 });
     }
@@ -921,11 +970,14 @@ export async function onRequest(context: {
     }
 
     let isSessionAdmin = false;
+    let delAuthUser: any = null;
     if (sessionToken) {
-      const authUser = await getUserBySessionToken(sessionToken, env);
-      if (authUser && authUser.role === 'admin') {
-        isSessionAdmin = true;
-      }
+      try {
+        delAuthUser = await getUserBySessionToken(sessionToken, env);
+        if (delAuthUser && delAuthUser.role === 'admin') {
+          isSessionAdmin = true;
+        }
+      } catch {}
     }
     const isAuthorizedAdmin = Boolean(isAdmin || (env.ADMIN_TOKEN && candidateToken === env.ADMIN_TOKEN) || isSessionAdmin);
 
@@ -936,7 +988,10 @@ export async function onRequest(context: {
         return jsonResponse(request, env, { ok: false, error: '评论不存在或已删除' }, { status: 404 });
       }
 
-      const isOwner = Boolean(sessionToken && row.session_token === sessionToken);
+      const isOwner = Boolean(
+        (sessionToken && row.session_token === sessionToken) ||
+        (delAuthUser && row.author_id && delAuthUser.id === row.author_id)
+      );
       if (!isOwner && !isAuthorizedAdmin) {
         return jsonResponse(request, env, { ok: false, error: '无权删除此评论或访客会话已失效' }, { status: 403 });
       }
@@ -952,7 +1007,10 @@ export async function onRequest(context: {
     if (!item || item.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '评论不存在' }, { status: 404 });
     }
-    const isOwner = Boolean(sessionToken && item.session_token === sessionToken);
+    const isOwner = Boolean(
+      (sessionToken && item.session_token === sessionToken) ||
+      (delAuthUser && item.author_id && delAuthUser.id === item.author_id)
+    );
     if (!isOwner && !isAuthorizedAdmin) {
       return jsonResponse(request, env, { ok: false, error: '无权删除此评论' }, { status: 403 });
     }
@@ -1073,10 +1131,15 @@ export async function onRequest(context: {
         return jsonResponse(request, env, { ok: false, error: '互动过于频繁或并发冲突，请稍后重试' }, { status: 409 });
       }
 
+      const clientRxData = isAdmin ? finalRxData : {
+        summary: finalRxData.summary,
+        users: finalUserEmoji ? { [effectiveUserId]: finalUserEmoji } : {},
+      };
+
       return jsonResponse(request, env, {
         ok: true,
         likesCount: finalTotalLikes,
-        reactions: finalRxData,
+        reactions: clientRxData,
         userReaction: finalUserEmoji,
       });
     }
@@ -1130,10 +1193,15 @@ export async function onRequest(context: {
     item.reactions = JSON.stringify(rxData);
     syncDevStore('save');
 
+    const clientRxData = isAdmin ? rxData : {
+      summary: rxData.summary,
+      users: newUserEmoji ? { [effectiveUserId]: newUserEmoji } : {},
+    };
+
     return jsonResponse(request, env, {
       ok: true,
       likesCount: newTotalLikes,
-      reactions: rxData,
+      reactions: clientRxData,
       userReaction: newUserEmoji,
     });
   }
