@@ -468,21 +468,17 @@ async function main() {
   console.log('11.8. 测试跨歌曲歌词同步引擎：切换至第二首日文歌 (彼女は旅に出る) 并验证任意歌曲毫秒级对齐与间奏...');
   await newHud.hover();
   await page.waitForTimeout(300);
-  const nextTrackBtn = newHud.locator('.screen-lyric__btn', { hasText: '' }).filter({ has: page.locator('svg.lucide-skip-forward') });
+  const nextTrackBtn = page.locator('.screen-lyric__btn[title*="下一首"]');
   if (await nextTrackBtn.count() > 0) {
     await nextTrackBtn.click();
     await page.waitForTimeout(1000);
   }
 
-  // 模拟推进音频到第一句人声 (16.2秒, 对应 [00:15.11]白昼夢 繋いでいて)
+  // 通过官方 shijianus:music-seek 推进音频至第一句人声 (16.2秒, 对应 [00:15.11]白昼夢 繋いでいて)
   await page.evaluate(() => {
-    const audio = document.querySelector('audio');
-    if (audio) {
-      audio.currentTime = 16.2;
-      audio.dispatchEvent(new Event('timeupdate'));
-    }
+    window.dispatchEvent(new CustomEvent('shijianus:music-seek', { detail: { time: 16.2 } }));
   });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(600);
 
   const lyricSyncCheck1 = await page.evaluate(() => {
     const curLine = document.querySelector('.screen-lyric__current-line');
@@ -503,15 +499,11 @@ async function main() {
   }
   console.log('✓ 成功验证：日文歌词行即时毫秒级定位，卡拉OK流光准确驱动！');
 
-  // 模拟推进音频到间奏阶段 (62.0秒, 对应 [00:59.20]バイバイ 唱完后进入间奏)
+  // 推进音频至间奏阶段 (62.0秒, 对应 [00:59.20]バイバイ 唱完后进入间奏)
   await page.evaluate(() => {
-    const audio = document.querySelector('audio');
-    if (audio) {
-      audio.currentTime = 62.0;
-      audio.dispatchEvent(new Event('timeupdate'));
-    }
+    window.dispatchEvent(new CustomEvent('shijianus:music-seek', { detail: { time: 62.0 } }));
   });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(600);
 
   const interludeCheck = await page.evaluate(() => {
     const curLine = document.querySelector('.screen-lyric__current-line');

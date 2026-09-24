@@ -3777,7 +3777,24 @@
 - [x] **全量自动化验证测试套件与 Astro 静态全量构建 100% 通过**:
   1. `scratch/verify-underlying-fixes.mjs`：12/12 新修复测试全数 PASS 通过，证据链确凿；
   2. `scratch/verify-all-fixes.mjs`：11/11 历史修复回归测试全数 PASS 通过；
-  3. `npm run build`：全站 284 页面 0 警告 0 报错完成编译与静态资源加密。
-
-
-
+### Task 173: 桌面字幕 (Screen Lyric HUD) 0%全透明边框、22px小字号、水平居中磁力辅助线与跨歌曲通用歌词同步引擎
+- [x] **透明度预设深度规范与真全透/现代毛玻璃落地**：
+  1. `opacity-transparent` (全透极简)：常态与悬停均保持 100% 纯透明（`background: transparent !important; backdrop-filter: none !important;`），悬停时仅显示细腻虚线边框（`border: 1.5px dashed rgba(...)`）框选范围，杜绝任何灰色蒙版或不透明背景污染；
+  2. `opacity-glass` (毛玻璃)：真实现代毛玻璃质感（`backdrop-filter: blur(20px) saturate(1.8)`，浅色 `rgba(255, 255, 255, 0.24)`，深色 `rgba(15, 23, 42, 0.32)`）；
+  3. `opacity-semi` (半透明)：45% 适度通透黑曜石质感（`rgba(15, 23, 42, 0.45)` + `blur(12px)`）。
+- [x] **字号阶梯放大重构（彻底废除 15px 与 18px）**：
+  1. 彻底淘汰 15px 与 18px 小字号；
+  2. 全新主歌词字号阶梯：小 (22px)、中 (28px)、大 (36px)、特大 (44px)；
+  3. 双行副歌词自适应阶梯：16px / 20px / 24px / 28px；
+  4. 同步更新设置面板选项文字与说明，提升桌面阅读清晰度。
+- [x] **绝对水平居中定位与磁力中心吸附辅助线系统**：
+  1. 默认位置校准为标准下居中（`left: 50%; transform: translateX(-50%); bottom: 64px;`）；
+  2. 磁力居中吸附：拖拽靠近屏幕水平中心线 $\le 24$px 时自动磁力吸附至绝对正中，并弹出全屏垂直辅助线（`.screen-lyric__guide-line`）与吸附徽标（`.screen-lyric__guide-badge` "📍 已吸附至屏幕水平中心线 (50%)"）；
+  3. 恢复默认按钮（`.settings-reset-btn`）一键重置设置与位置，清除本地位置偏移（`screenLyricPos = null`），恢复绝对居中并闪烁居中辅助线反馈。
+- [x] **跨歌曲全景通用高精歌词同步引擎 (Multi-Song Universal Sync Engine)**：
+  1. 引入音轨漂移与 Seek 守卫（`lastSeekTimeRef`）：在 `onTimeUpdate`、`onPlay`、`onPause`、`onSeeked` 以及 60FPS RAF `tick()` 循环中建立防冲撞窗口，杜绝 HTML5 音频加载或无头环境下 `currentTime` 瞬间跳零引发的歌词重置；
+  2. 针对任意歌曲（韩语、日语、英语、纯音等）建立通用字符/音节权重计算发音时长算法，配合 `[offset: ms]` 偏置解析与前奏跳过，实现精准到毫秒级的歌词行定位；
+  3. 智能间奏判定（`♬ 间奏演奏中 ♬`）：歌词唱毕且间隙 $> 4.5$ 秒时自动进入间奏动效，杜绝整句冻结假停顿；
+  4. 双层卡拉OK文本底层采用 `mix-blend-mode: difference` 随任意背景自适应翻转，顶层流光保持鲜明主题色。
+- [x] **自动化端到端测试 100% PASS (`scripts/verify-screen-lyric-karaoke.mjs`)**：
+  - 13/13 项全量自动化测试断言全数通过（0 打勾符号、8px 方圆角、CFSolara 同步引擎、无唱片图标、底层背景翻转、现代毛玻璃、0% 纯透明+虚线边框、磁力吸附与辅助线、重置默认位置、22px~36px 字号阶梯、下方控制坞、多歌曲跨曲目毫秒级同步与间奏判定、Mermaid 0 错误）。

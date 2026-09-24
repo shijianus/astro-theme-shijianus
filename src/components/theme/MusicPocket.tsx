@@ -780,6 +780,8 @@ export function MusicPocket({ apiBase }: Props) {
   const [showCenterGuide, setShowCenterGuide] = useState(false);
   const guideTimerRef = useRef<number | null>(null);
   const screenLyricRef = useRef<HTMLDivElement | null>(null);
+  const lastSeekTimeRef = useRef<number>(0);
+  const parsedLyricsRef = useRef<LyricLine[]>([]);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MusicTrack[]>([]);
@@ -814,6 +816,10 @@ export function MusicPocket({ apiBase }: Props) {
   const [parsedLyrics, setParsedLyrics] = useState<LyricLine[]>(parseLrc(DEFAULT_TRACKS[0]?.lrc || ''));
   const [activeLyricIndex, setActiveLyricIndex] = useState(-1);
   const activeLyricIndexRef = useRef(-1);
+
+  useEffect(() => {
+    parsedLyricsRef.current = parsedLyrics;
+  }, [parsedLyrics]);
 
   const currentTrack = currentIndex >= 0 && currentIndex < queue.length ? queue[currentIndex] : null;
 
@@ -1130,6 +1136,10 @@ export function MusicPocket({ apiBase }: Props) {
     if (!audio) return;
 
     const onTimeUpdate = () => {
+      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
+      if (isRecentlySeeked && Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) > 0.35) {
+        return;
+      }
       audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       audioClockRef.current.playbackRate = audio.playbackRate || 1;
@@ -1141,7 +1151,10 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     const onPlay = () => {
-      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
+      if (!isRecentlySeeked || Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) <= 0.35) {
+        audioClockRef.current.anchorAudioTime = audio.currentTime;
+      }
       audioClockRef.current.anchorPerfTime = performance.now();
       audioClockRef.current.playbackRate = audio.playbackRate || 1;
       setIsPlaying(true);
@@ -1149,15 +1162,23 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     const onPause = () => {
+      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
+      if (isRecentlySeeked && Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) > 0.35) {
+        setIsPlaying(false);
+        return;
+      }
       audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       setIsPlaying(false);
     };
 
     const onSeeked = () => {
-      audioClockRef.current.anchorAudioTime = audio.currentTime;
-      audioClockRef.current.anchorPerfTime = performance.now();
-      setCurrentTime(audio.currentTime);
+      if (Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) <= 0.35) {
+        lastSeekTimeRef.current = 0;
+        audioClockRef.current.anchorAudioTime = audio.currentTime;
+        audioClockRef.current.anchorPerfTime = performance.now();
+        setCurrentTime(audio.currentTime);
+      }
     };
 
     const onEnded = () => {
@@ -1191,6 +1212,28 @@ export function MusicPocket({ apiBase }: Props) {
       showToast(t('音频加载遇到问题，请重试'));
     };
 
+    const onGlobalSeek = (e: Event) => {
+      const custom = e as CustomEvent<{ time: number }>;
+      if (typeof custom.detail?.time === 'number') {
+        const t = custom.detail.time;
+        lastSeekTimeRef.current = performance.now();
+        audioClockRef.current.anchorAudioTime = t;
+        audioClockRef.current.anchorPerfTime = performance.now();
+        setCurrentTime(t);
+        const liveLyrics = parsedLyricsRef.current;
+        const liveIndex = findActiveLyricIndex(t, liveLyrics);
+        activeLyricIndexRef.current = liveIndex;
+        setActiveLyricIndex(liveIndex);
+        if (screenLyricRef.current) {
+          const calc = computeActiveLineProgress(t, liveLyrics, liveIndex, audio.duration || 0);
+          screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
+        }
+        try {
+          audio.currentTime = t;
+        } catch {}
+      }
+    };
+
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('durationchange', onDurationChange);
     audio.addEventListener('play', onPlay);
@@ -1198,6 +1241,7 @@ export function MusicPocket({ apiBase }: Props) {
     audio.addEventListener('seeked', onSeeked);
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('error', onError);
+    window.addEventListener('shijianus:music-seek', onGlobalSeek);
 
     return () => {
       audio.removeEventListener('timeupdate', onTimeUpdate);
@@ -1207,6 +1251,7 @@ export function MusicPocket({ apiBase }: Props) {
       audio.removeEventListener('seeked', onSeeked);
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
+      window.removeEventListener('shijianus:music-seek', onGlobalSeek);
     };
   }, [queue, currentIndex, playMode, sleepTimer, ensureAudioContext]);
 
@@ -1325,17 +1370,24 @@ export function MusicPocket({ apiBase }: Props) {
 
     const tick = () => {
       const audio = audioRef.current;
-      if (audio && !audio.paused) {
-        const now = performance.now();
-        const rate = audioClockRef.current.playbackRate || 1;
-        const elapsed = ((now - audioClockRef.current.anchorPerfTime) / 1000) * rate;
-        let accurateTime = audioClockRef.current.anchorAudioTime + elapsed;
+      const now = performance.now();
+      const isRecentlySeeked = now - lastSeekTimeRef.current < 2500;
 
-        // Snap check if audio drifted or seek occurred
-        if (Math.abs(accurateTime - audio.currentTime) > 0.35) {
-          accurateTime = audio.currentTime;
-          audioClockRef.current.anchorAudioTime = audio.currentTime;
-          audioClockRef.current.anchorPerfTime = now;
+      if (audio) {
+        let accurateTime: number;
+        if (!audio.paused) {
+          const rate = audioClockRef.current.playbackRate || 1;
+          const elapsed = ((now - audioClockRef.current.anchorPerfTime) / 1000) * rate;
+          accurateTime = audioClockRef.current.anchorAudioTime + elapsed;
+
+          // Snap check if audio drifted or seek occurred (bypass during recent seek window)
+          if (!isRecentlySeeked && Math.abs(accurateTime - audio.currentTime) > 0.35) {
+            accurateTime = audio.currentTime;
+            audioClockRef.current.anchorAudioTime = audio.currentTime;
+            audioClockRef.current.anchorPerfTime = now;
+          }
+        } else {
+          accurateTime = audioClockRef.current.anchorAudioTime;
         }
 
         // Real-time zero-lag active lyric line resolution
@@ -1502,6 +1554,12 @@ export function MusicPocket({ apiBase }: Props) {
     if (nextQueue) setQueue(nextQueue);
     setCurrentIndex(index);
     setIsPlaying(true);
+    audioClockRef.current.anchorAudioTime = 0;
+    audioClockRef.current.anchorPerfTime = performance.now();
+    lastSeekTimeRef.current = 0;
+    setCurrentTime(0);
+    setActiveLyricIndex(-1);
+    activeLyricIndexRef.current = -1;
     ensureAudioContext();
 
     const audio = audioRef.current;
@@ -1580,16 +1638,40 @@ export function MusicPocket({ apiBase }: Props) {
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const targetTime = parseFloat(e.target.value);
+    lastSeekTimeRef.current = performance.now();
+    audioClockRef.current.anchorAudioTime = targetTime;
+    audioClockRef.current.anchorPerfTime = performance.now();
     setCurrentTime(targetTime);
+    const liveIndex = findActiveLyricIndex(targetTime, parsedLyrics);
+    activeLyricIndexRef.current = liveIndex;
+    setActiveLyricIndex(liveIndex);
+    if (screenLyricRef.current) {
+      const calc = computeActiveLineProgress(targetTime, parsedLyrics, liveIndex, duration);
+      screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
+    }
     if (audioRef.current) {
-      audioRef.current.currentTime = targetTime;
+      try {
+        audioRef.current.currentTime = targetTime;
+      } catch {}
     }
   };
 
   const handleLyricClick = (time: number) => {
+    lastSeekTimeRef.current = performance.now();
+    audioClockRef.current.anchorAudioTime = time;
+    audioClockRef.current.anchorPerfTime = performance.now();
+    setCurrentTime(time);
+    const liveIndex = findActiveLyricIndex(time, parsedLyrics);
+    activeLyricIndexRef.current = liveIndex;
+    setActiveLyricIndex(liveIndex);
+    if (screenLyricRef.current) {
+      const calc = computeActiveLineProgress(time, parsedLyrics, liveIndex, duration);
+      screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
+    }
     if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
+      try {
+        audioRef.current.currentTime = time;
+      } catch {}
       if (!isPlaying) {
         ensureAudioContext();
         void audioRef.current.play().catch(() => {});
