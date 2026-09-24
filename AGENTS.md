@@ -3798,3 +3798,32 @@
   4. 双层卡拉OK文本底层采用 `mix-blend-mode: difference` 随任意背景自适应翻转，顶层流光保持鲜明主题色。
 - [x] **自动化端到端测试 100% PASS (`scripts/verify-screen-lyric-karaoke.mjs`)**：
   - 13/13 项全量自动化测试断言全数通过（0 打勾符号、8px 方圆角、CFSolara 同步引擎、无唱片图标、底层背景翻转、现代毛玻璃、0% 纯透明+虚线边框、磁力吸附与辅助线、重置默认位置、22px~36px 字号阶梯、下方控制坞、多歌曲跨曲目毫秒级同步与间奏判定、Mermaid 0 错误）。
+
+### Task 174: 2026 底层核心架构第二轮深度审计与全景漏洞加固落地 (Underlying Codebase 2026 Deep Audit Hardening Round 2)
+- [x] **VULN-NEW-14: 消除认证昵称预言机泄漏 (`ea5c9e3`)**:
+  - `functions/_lib/auth-service.ts` 中移除抛错信息对已绑定用户 `existing.name` 的明文反射披露，替换为防探测的通用提示信息，杜绝攻击者逆向爆破邮箱与昵称对应关系。
+- [x] **VULN-NEW-15: 评论互动 Reactions 用户 ID 字典过滤脱敏 (`84dcfc6`)**:
+  - `functions/api/comments.ts` 中 `mapRowToClientComment` 对非管理员请求过滤 `reactions.users`；
+  - 仅向经过身份验证的调用者反映自身选择的 Emoji 表情，对普通访客与第三方彻底隐藏全局点赞用户列表（`local_u_...`），杜绝用户网络图谱与内部 ID 枚举。
+- [x] **VULN-NEW-16: 评论所有权编辑与删除认证加固 (`84dcfc6`)**:
+  - `functions/api/comments.ts` 中将评论编辑（`edit`）与删除（`delete`）的鉴权逻辑升级为双重绑定：支持 `sessionToken === row.session_token` 以及已登录用户 `authUser && authUser.id === row.author_id`；
+  - 解决因会话轮换或跨设备登录导致原作者无法管理自己历史评论的缺陷，同时严格拦截非原作者越权操作。
+- [x] **VULN-NEW-17: 访客匿名评论 authorEmail 与 authorId 伪造拦截 (`84dcfc6`)**:
+  - `functions/api/comments.ts` 中针对未认证访客强行清空 `authorEmail = ''`，并强制生成以 `vis_` 为前缀的独立访客 ID；
+  - 彻底切断访客伪造他人邮箱发表违规言论污染其他读者等级、统计数据与社区徽章的攻击链路。
+- [x] **VULN-NEW-18 & 24: Stripe 收银台 returnUrl 开放重定向防御与金额边界加固 (`75a16c1`)**:
+  - `functions/api/create-checkout-session.ts` 引入 `validateReturnUrl`，白名单校验重定向域名（`blog.epocanvas.com`, `epocanvas.com`, `shijianus-blog.pages.dev`, `localhost` 等），杜绝钓鱼重定向；
+  - 增加 `Number.isFinite` 校验与日元等无小数位货币（JPY/KRW）最低 50 单位门槛校验，防止 Stripe API 校验失败与异常金额扣款。
+- [x] **VULN-NEW-19: AI 摘要代理跨站滥用与规范 Slug / 边界校验 (`d9eb0be`)**:
+  - `functions/api/ai-summary.ts` 严格校验 `slug` 格式（正则 `/^[a-zA-Z0-9_\-\.\/]{1,150}$/`）、标题长度与内容上下限（20~80000 字符）；
+  - 校验 `mode` 白名单及调用方 `origin`/`referer` 来源，杜绝攻击者构造任意 Payload 将博客接口作为免费大模型代理消耗后端 Token 配额。
+- [x] **VULN-NEW-20 & 21: 受保护文章加盐 Cookie 防伪与 CF 权威 IP 优先级保障 (`f7be266`)**:
+  - `src/lib/access-control.ts` 引入服务器密钥加盐 `ACCESS_COOKIE_SALT`，阻断攻击者通过公开的 frontmatter `passwordHash` 本地计算离线伪造解锁 Cookie；
+  - `IP_HEADER_KEYS` 调整为 `cf-connecting-ip` 位于首位，阻断利用伪造 `forwarded` / `x-forwarded-for` 请求头规避 IP 黑白名单风控策略。
+- [x] **VULN-NEW-22: 混合限流器消除 D1 双写放大 (`b05db36`)**:
+  - `functions/_lib/rate-limit.ts` 将 `hybrid` 模式直接对齐权威客户端 IP，彻底消除单个请求执行两次 D1 写入的性能瓶颈与设备 ID 轮换掩盖真实 IP 计数的问题。
+- [x] **VULN-NEW-23: 音乐流媒体代理盲 SSRF 纵深防御 (`b05db36`)**:
+  - `functions/api/music/stream.ts` 注入 `isPrivateOrLoopbackHost` 过滤，全面拦截回环地址（`127.0.0.1`, `localhost`）、内网私有地址（`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`）及云元数据地址（`169.254.169.254`）。
+- [x] **全量自动化验证测试套件与 Astro 静态全量构建 100% 通过**:
+  - `scratch/test-underlying-hardening-verification.mjs`：11/11 项新加固项全部 PASS 通过；
+  - `npm run build`：全站 284 个静态页面构建 0 错误顺利通过。
