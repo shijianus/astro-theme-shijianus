@@ -386,11 +386,30 @@ export async function updateUserProfile(
     throw new Error('未登录或会话已失效');
   }
 
+  const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
+  let cleanName = updates.name !== undefined && updates.name.trim() ? updates.name.trim() : currentUser.name;
+  let cleanAvatar = updates.avatar !== undefined ? updates.avatar.trim() : currentUser.avatar;
+  let cleanWebsite = updates.website !== undefined ? updates.website.trim() : currentUser.website;
+
+  if (currentUser.role !== 'admin') {
+    const lowerName = cleanName.toLowerCase().replace(/[\s_\-\.]+/g, '');
+    if (RESERVED_NAMES.has(lowerName) || lowerName.includes('shijianus') || lowerName.includes('站长') || lowerName.includes('博主')) {
+      throw new Error('不能使用保留或管理员名称作为昵称');
+    }
+    if (cleanAvatar.includes('shijianus/avatar.jpg')) {
+      throw new Error('非管理员读者无法使用站长官方专属头像');
+    }
+  }
+
+  if (cleanWebsite && !/^https?:\/\//i.test(cleanWebsite)) {
+    throw new Error('个人主页链接必须以 http:// 或 https:// 开头');
+  }
+
   const updatedUser: UserProfile = {
     ...currentUser,
-    name: updates.name !== undefined && updates.name.trim() ? updates.name.trim() : currentUser.name,
-    avatar: updates.avatar !== undefined ? updates.avatar.trim() : currentUser.avatar,
-    website: updates.website !== undefined ? updates.website.trim() : currentUser.website,
+    name: cleanName,
+    avatar: cleanAvatar,
+    website: cleanWebsite,
     bio: updates.bio !== undefined ? updates.bio.trim() : currentUser.bio,
     timezone: updates.timezone !== undefined ? updates.timezone.trim() : currentUser.timezone,
     location: updates.location !== undefined ? updates.location.trim() : currentUser.location,
@@ -681,11 +700,34 @@ export async function authenticateLocalReader(
     throw new Error('昵称不能为空');
   }
 
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email)) {
+    throw new Error('请输入有效的电子邮箱地址');
+  }
+
+  const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
+  const lowerName = name.toLowerCase().replace(/[\s_\-\.]+/g, '');
+  if (RESERVED_NAMES.has(lowerName) || lowerName.includes('shijianus') || lowerName.includes('站长') || lowerName.includes('博主')) {
+    throw new Error('不能使用保留或管理员名称作为昵称');
+  }
+
+  let avatar = (data.avatar || '').trim();
+  if (avatar.includes('shijianus/avatar.jpg')) {
+    avatar = '';
+  }
+
+  let website = (data.website || '').trim();
+  if (website && !/^https?:\/\//i.test(website)) {
+    website = '';
+  }
+
   // Security guard: Check against authoritative admin emails
   const configuredAdminEmail = (env.ADMIN_EMAIL || CANONICAL_ADMIN_EMAIL).trim().toLowerCase();
   if (email && (email === configuredAdminEmail || email === CANONICAL_ADMIN_EMAIL)) {
     throw new Error('该邮箱属于站点管理员，请使用官方 Epomail 授权方式登录');
   }
+
+  let finalUserId = `local_u_${email.replace(/[^a-z0-9]/g, '_')}`;
 
   // Security guard: If a user with this email already exists, prevent unauthorized takeover
   const db = resolveActiveDb(env);
@@ -693,16 +735,16 @@ export async function authenticateLocalReader(
     await ensureAuthTables(db);
     try {
       const existing = await db
-        .prepare('SELECT id, provider, role FROM users WHERE email = ? LIMIT 1')
+        .prepare('SELECT id, provider, role, name, email FROM users WHERE email = ? LIMIT 1')
         .bind(email)
-        .first<{ id: string; provider: string; role: string }>();
+        .first<{ id: string; provider: string; role: string; name: string; email: string }>();
 
       if (existing) {
         if (existing.role === 'admin' || existing.provider === 'epomail') {
           throw new Error('该账号已绑定 Epomail 官方认证身份，请使用 Epomail OAuth 授权登录');
         }
 
-        // For local readers: verify session token ownership before issuing new session or updating
+        // For local readers: verify session token ownership OR matching reader name on new device
         let isOwner = false;
         if (data.sessionToken) {
           const authUser = await getUserBySessionToken(data.sessionToken, env);
@@ -711,8 +753,14 @@ export async function authenticateLocalReader(
           }
         }
         if (!isOwner) {
-          throw new Error('该读者邮箱已存在。为保护账号安全，请使用原设备会话访问或更换邮箱');
+          // If accessing without previous session, verify name identity matches existing profile
+          if (existing.name && existing.name.trim().toLowerCase() === name.toLowerCase()) {
+            isOwner = true;
+          } else {
+            throw new Error(`该读者邮箱已被 "${existing.name}" 绑定。如为您本人，请输入原昵称登录`);
+          }
         }
+        finalUserId = existing.id;
       }
     } catch (e: any) {
       if (e?.message) throw e;
@@ -731,21 +779,25 @@ export async function authenticateLocalReader(
         }
       }
       if (!isOwner) {
-        throw new Error('该读者邮箱已存在。为保护账号安全，请使用原设备会话访问或更换邮箱');
+        if (existingMemUser.name && existingMemUser.name.trim().toLowerCase() === name.toLowerCase()) {
+          isOwner = true;
+        } else {
+          throw new Error(`该读者邮箱已被 "${existingMemUser.name}" 绑定。如为您本人，请输入原昵称登录`);
+        }
       }
+      finalUserId = existingMemUser.id;
     }
   }
 
-  const userId = `local_u_${email ? email.replace(/[^a-z0-9]/g, '_') : generateRandomHex(8)}`;
   // Local readers can NEVER possess the admin role!
   const role: 'reader' = 'reader';
 
   const user: UserProfile = {
-    id: userId,
+    id: finalUserId,
     name,
-    email: email || `${name.toLowerCase()}@reader.local`,
-    avatar: data.avatar || '',
-    website: data.website || '',
+    email,
+    avatar,
+    website,
     role,
     provider: 'local',
     bio: '本站本地读者身份',

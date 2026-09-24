@@ -104,19 +104,20 @@ export async function onRequest(context: { request: Request; env: AppEnv; params
   // 3.5 GET /api/auth/user-level (Query blog user activity level & mapped Epomail role)
   if (pathname === '/api/auth/user-level' && request.method === 'GET') {
     try {
-      let email = url.searchParams.get('email') || '';
-      if (!email) {
-        const token = extractSessionToken(request);
-        if (token) {
-          const sessionUser = await getUserBySessionToken(token, env);
-          if (sessionUser?.email) {
-            email = sessionUser.email;
-          }
-        }
+      const token = extractSessionToken(request);
+      if (!token) {
+        return jsonResponse(request, env, { ok: false, error: '未提供会话令牌 (Unauthorized)' }, { status: 401 });
       }
 
-      if (!email) {
-        return jsonResponse(request, env, { ok: false, error: '缺少用户 email 参数或会话已失效' }, { status: 400 });
+      const sessionUser = await getUserBySessionToken(token, env);
+      if (!sessionUser) {
+        return jsonResponse(request, env, { ok: false, error: '会话已过期或无效' }, { status: 401 });
+      }
+
+      let email = sessionUser.email;
+      const requestedEmail = url.searchParams.get('email');
+      if (requestedEmail && sessionUser.role === 'admin') {
+        email = requestedEmail.trim().toLowerCase();
       }
 
       const levelInfo = await calculateUserLevel(email, env);
