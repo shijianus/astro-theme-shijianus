@@ -103,9 +103,12 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
     ) {
       isValidImage = true;
     }
-    // AVIF: ISO Media File Format (bytes 4..7 'ftyp')
+    // AVIF: ISO Media File Format (bytes 4..7 'ftyp' with major or compatible brand containing 'avif' or 'avis')
     else if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
-      isValidImage = true;
+      const ftypBrand = String.fromCharCode(...bytes.slice(8, 16));
+      if (ftypBrand.includes('avif') || ftypBrand.includes('avis')) {
+        isValidImage = true;
+      }
     }
 
     if (!isValidImage) {

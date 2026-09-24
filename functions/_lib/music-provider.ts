@@ -258,7 +258,11 @@ export function normalizeTrack(source: string, payload: Record<string, unknown>)
     id,
     name: String(payload.name || payload.title || '未知曲目'),
     artist: artist || '未知艺术家',
-    album: String(payload.album || ''),
+    album: typeof payload.album === 'string'
+      ? payload.album
+      : typeof payload.album === 'object' && payload.album !== null
+        ? String((payload.album as { name?: string; title?: string }).name || (payload.album as { name?: string; title?: string }).title || '')
+        : (typeof (payload.al as any)?.name === 'string' ? (payload.al as any).name : ''),
     source: targetSource,
     picId: pic,
     coverUrl,
