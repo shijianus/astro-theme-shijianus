@@ -3888,7 +3888,7 @@
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
 
-### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`)
+### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`)
 - [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`)**:
   - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #dce8f8 0%, #ebf3fc 45%, #f7f9fe 100%)`）；
   - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供 15%~20% 冷色天幕对比基底；
@@ -3901,10 +3901,12 @@
   - **光学双层复合着色**：中景雪花采用冰晶折射外边框（`rgba(120, 162, 215, 0.62)`）包裹高亮纯白内芯（`rgba(255, 255, 255, 0.98)`），远景微尘采用冰霜蓝，近景大雪绒采用三层晶莹光晕；
   - **前景漫落近景浮雪**：将约 15% 的近景大雪绒置于前景画布，缓缓在卡片、横幅与文字上方漫落，彻底解决“雪花全被白色卡片挡在后面”的视觉割裂感；
   - 完整保留滚动主动节流（`isScrolling`）与 Page Visibility API 自动挂起机制。
-- [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`)**:
+- [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`, `scripts/verify-live-phase1-snow.mjs`, `a1c94d4`)**:
   - 涵盖白天雪境（Light Mode）、夜间雪境（Dark Mode）、纯净背景（Clean Mode）与遮罩抽屉弹出等场景断言全部 100% PASS；
+  - Cloudflare Pages 生产边缘节点部署（`5c6f47f5.shijianus-blog.pages.dev`）及真实线上域名（`https://blog.epocanvas.com/`）实机审计 100% PASS；
   - 控制台 0 错误（Total Console Errors: 0）；
-  - 高清视觉截图完整留档归档（`phase1-daylight-snow-full.png` 与 `phase1-night-snow-full.png`）。
+  - 高清视觉截图完整留档归档（`live-daylight-snow.png` 与 `live-night-snow.png`）。
+
 
 
 
