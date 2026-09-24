@@ -3837,18 +3837,23 @@
 - [x] **本地博客 `shijianus-blog` 高精度歌词 REST API 规范化 (`functions/api/lyric.ts` & `functions/_lib/music-provider.ts`)**:
   - 新增 `/api/lyric` 及重构 `/api/music/lyric` 统一输出高精数据契约，彻底移除后端基于字数硬性推演音节的假逐字生成逻辑。
   - 导出 `fetchHighPrecisionLyrics` 支持本地与上游音源的高精解析与缓存。
-- [x] **本地桌面歌词 `class="screen-lyric__content"` 与播放器原生物理时间对齐 (`MusicPocket.tsx` & `runtime-widgets.css`, Commits `dc42008`, `6477b45`)**:
+- [x] **本地桌面歌词 `class="screen-lyric__content"` 与播放器原生物理时间对齐 (`MusicPocket.tsx` & `runtime-widgets.css`, Commits `dc42008`, `6477b45`, `be36200`)**:
   - 彻底清除所有基于字数脑补时长的硬性估算逻辑 (`estimateVocalUnits`、`tokenizeLyricText` 等函数彻底废除)。
   - 严格统一全链路秒级时间契约 (`normalizeLyricLines`)：将从本地内联、当前站点 API 及 CFSolara 微服务获取到的歌词时间戳统一标准化为秒（Seconds），消除因毫秒/秒单位失配导致的时间轴永久不匹配（`-1` 状态）缺陷。
+  - 桌面浮动 HUD 独立化解耦 (`be36200`)：将 `.shijianus-music-pocket__screen-lyric` 移至顶层 Fragment，彻底消除原先被收敛在 `.shijianus-music-pocket.is-hidden`（`display: none !important`）容器内部导致常态下桌面歌词被连带隐藏的结构缺陷，实现播放器收起/关闭时桌面悬浮歌词依然自由独立悬浮。
   - 界面物理时间轴严格绑定：计算行内歌词进度直接由当前音频物理秒数 (`audio.currentTime`) 与真实字时间戳 (`startSec`, `endSec`) 逐字精确比对 (`computeActiveLineProgress`)，修复 `words` 作用域缺失。
   - 双模式精细化渲染：
     - 逐字模式 (`syncType === 'word'`)：物理时间驱动高精平滑流光渐变填充，真实还原歌手发音节奏；
     - 行级模式 (`syncType === 'line'`)：采用 `.screen-lyric__line-box` 和 `.screen-lyric__line-text--highlight` 呈现全行整行高亮与过渡，坚决不绘制虚假字级流光。
   - 播放、暂停、Seek、切歌场景下具备高频防抖与状态守卫，杜绝闪烁或时间戳跳零。
-- [x] **全量自动化验证与 Astro 全量编译构建 100% 通过**:
-  - 单元测试 `scratch/verify-lyric-engine.mjs` 验证 Enhanced LRC 逐字解析、普通 LRC 降级不伪造字时间戳、元数据过滤等全部 100% PASS；
-  - 本地 API 验证：`curl -s "http://localhost:8788/api/lyric?id=local-way-back-home&source=local"` 成功返回 `syncType: "word"` 及毫秒级起止点 `words` 数组；`curl -s "http://localhost:8788/api/lyric?id=local-kanojo&source=local"` 成功返回 `syncType: "line"` 且无伪造字戳；
-  - Astro 全量编译打包 `npm run build` 成功完成，284 个静态页面构建 0 错误。
+- [x] **生产端 (`https://blog.epocanvas.com/`) 全量上线部署与无头真实浏览器端到端视觉审计通过**:
+  - Cloudflare Pages 生产边缘节点全量部署：`shijianus-blog`（`49122aa6.shijianus-blog.pages.dev`）与 `cfsolara`（`2461c29f.cfsolara-dho.pages.dev`）均已全量上线生效。
+  - 线上 API 验证：`curl -s "https://blog.epocanvas.com/api/lyric?id=local-way-back-home&source=local"` 200 OK 成功返回结构化逐字数据（67 行，毫秒级起止点）；
+  - Playwright / Puppeteer 真实浏览器端到端测试套件（`scripts/verify-live-lyric-sync.mjs`）全景审计通过：
+    1. 1.2s 时精准锁定第一句「멈춘 시간 속」，逐字物理流光进度 59.4%；
+    2. 3.2s 时自动切换至「잠든 너를 찾아가」；5.5s 时平滑流转至「아무리 막아도」；
+    3. 切歌至普通 LRC 音轨（彼女は旅に出る）16.5s 时激活整行高亮「白昼夢 繋いでいて」，无虚假字级流光；
+    4. 0 控制台致命 JS 报错，视觉截图已完整归档。
 
 ### Task 176: 底层架构深度安全审计与 8 大隐蔽设计漏洞全景加固修复 (Underlying Codebase Security & Architectural Flaws Comprehensive Remediation, Commits `dc42008`, `9ab82f6`, `754cd0a`)
 - [x] **VULN-ARCH-01 & 02: 本地读者认证接管防御与昵称枚举预言机彻底消除 (`functions/_lib/auth-service.ts`, `functions/api/auth.ts`)**:
