@@ -169,8 +169,25 @@ async function main() {
   }
   console.log('✓ 成功验证：底层普通文本采用 mix-blend-mode: difference 随背景自适应翻转，顶层高亮保持纯正主题色！\n');
 
-  // 7. 切换透明度为 全透极简 (0%) 并验证常态纯透明 & 悬停时以虚线框与半透蒙版圈出实际大小
-  console.log('7. 测试全透极简 (0%) 模式：验证常态 100% 纯透明及悬停时以虚线框和半透明蒙版圈出大小范围...');
+  // 6.7. 验证真实毛玻璃 (opacity-glass) 滤镜与半透明底色
+  console.log('6.7. 检查毛玻璃预设 (opacity-glass) 是否为真实现代毛玻璃 (backdrop-filter: blur)...');
+  const glassCheck = await page.evaluate(() => {
+    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    if (!el) return null;
+    const style = window.getComputedStyle(el);
+    return {
+      backdropFilter: style.backdropFilter || style.webkitBackdropFilter,
+      bg: style.backgroundColor,
+    };
+  });
+  console.log('- 毛玻璃滤镜与背景:', glassCheck);
+  if (!glassCheck?.backdropFilter || !glassCheck.backdropFilter.includes('blur')) {
+    throw new Error(`Expected backdrop-filter with blur for frosted glass, got ${glassCheck?.backdropFilter}!`);
+  }
+  console.log('✓ 成功验证：毛玻璃档位具备真实高质感 blur 模糊滤镜！\n');
+
+  // 7. 切换透明度为 全透极简 (0%) 并验证常态纯透明 & 悬停时以虚线框圈出实际大小 (无不透明蒙版)
+  console.log('7. 测试全透极简 (0%) 模式：验证常态 100% 纯透明及悬停时以虚线框圈出大小范围 (背景保持纯透明)...');
   const transBtn = popover.locator('.settings-opt-btn', { hasText: '全透极简' });
   await transBtn.click();
   await page.waitForTimeout(400);
@@ -184,6 +201,8 @@ async function main() {
   await page.mouse.move(50, 50);
   await page.waitForTimeout(300);
 
+  const isZeroAlpha = (c) => c === 'transparent' || c.includes(', 0)') || c === 'rgba(0, 0, 0, 0)' || c === 'rgba(255, 255, 255, 0)';
+
   const transCheck = await page.evaluate(() => {
     const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
     const style = window.getComputedStyle(el);
@@ -196,7 +215,6 @@ async function main() {
     };
   });
   console.log('- 全透模式常规背景与未悬停控制坞状态:', transCheck);
-  const isZeroAlpha = (c) => c === 'transparent' || c.includes(', 0)') || c === 'rgba(0, 0, 0, 0)' || c === 'rgba(255, 255, 255, 0)';
   if (!transCheck.hasTransparentClass || !isZeroAlpha(transCheck.bg)) {
     throw new Error(`Expected transparent background with alpha 0, got ${transCheck.bg}!`);
   }
@@ -205,7 +223,7 @@ async function main() {
   }
   console.log('✓ 成功确认：常态下 100% 纯透明极简，控制坞隐藏！');
 
-  // 悬停状态下检测蒙版范围与控制坞滑出
+  // 悬停状态下检测边框范围与控制坞滑出 (背景必须保持 0% 纯透明，不得使用灰色蒙版)
   console.log('- 鼠标悬停进入桌面歌词 HUD...');
   await hud.hover();
   await page.waitForTimeout(400);
@@ -220,36 +238,55 @@ async function main() {
       controlsOpacity: controlsStyle?.opacity,
     };
   });
-  console.log('- 全透模式 Hover 状态下背景蒙版与边框:', hoverCheck);
+  console.log('- 全透模式 Hover 状态下边框与背景:', hoverCheck);
   if (hoverCheck.borderStyle !== 'dashed') {
-    throw new Error(`Expected dashed border guide mask on hover, got ${hoverCheck.borderStyle}!`);
+    throw new Error(`Expected dashed border guide on hover, got ${hoverCheck.borderStyle}!`);
+  }
+  if (!isZeroAlpha(hoverCheck.bg)) {
+    throw new Error(`Expected 0% transparent background even on hover for opacity-transparent, but got ${hoverCheck.bg}!`);
   }
   if (hoverCheck.controlsOpacity !== '1') {
     throw new Error(`Expected hovered controls opacity: 1, got ${hoverCheck.controlsOpacity}!`);
   }
-  console.log('✓ 成功验证：悬停时以虚线框与半透明蒙版圈出实际大小范围，控制坞自然滑出！\n');
+  console.log('✓ 成功验证：全透极简悬停时背景保持 0% 纯透明，仅以精细虚线框标示方框大小，控制坞自然滑出！\n');
 
-  // 8. 测试拖拽并验证恢复默认设置按钮 (.settings-reset-btn) 恢复默认位置
-  console.log('8. 测试位置拖拽与一键恢复默认位置 (.settings-reset-btn)...');
-  // 模拟拖动 HUD 到视口左上方 (140, 140)
+  // 8. 测试磁力中心吸附辅助线与一键恢复默认设置与位置 (.settings-reset-btn)
+  console.log('8. 测试磁力水平中心吸附与对齐辅助线 (.screen-lyric__guide-line)...');
   const hudBox = await hud.boundingBox();
   if (hudBox) {
-    await page.mouse.move(hudBox.x + 30, hudBox.y + 15);
+    // 模拟拖动 HUD 靠近屏幕水平中心线 (1440 / 2 = 720)
+    await page.mouse.move(hudBox.x + hudBox.width / 2, hudBox.y + 15);
+    await page.mouse.down();
+    await page.mouse.move(720, 320, { steps: 8 });
+    await page.waitForTimeout(400);
+
+    const snapCheck = await page.evaluate(() => {
+      const guide = document.querySelector('.screen-lyric__guide-line');
+      const badge = document.querySelector('.screen-lyric__guide-badge');
+      const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+      return {
+        hasGuide: !!guide,
+        badgeText: badge?.textContent?.trim(),
+        isSnapped: el?.classList.contains('is-snapped'),
+      };
+    });
+    console.log('- 磁力吸附与基准线状态:', snapCheck);
+    if (!snapCheck.hasGuide || !snapCheck.badgeText?.includes('50%')) {
+      throw new Error('Magnetic center snapping guide line or badge failed to trigger near center!');
+    }
+    console.log('✓ 成功验证：拖拽靠近屏幕中心线时，磁力吸附并呈现居中对齐辅助线与提示徽标！');
+
+    // 释放拖拽并移走
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    // 再次拖动到视口左上方 (140, 140) 以测试一键恢复
+    await page.mouse.move(720, 320);
     await page.mouse.down();
     await page.mouse.move(140, 140, { steps: 5 });
     await page.mouse.up();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(400);
   }
-
-  const posAfterDrag = await page.evaluate(() => {
-    const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
-    return {
-      left: el?.style.left,
-      top: el?.style.top,
-      storage: window.localStorage.getItem('shijianus-screen-lyric-pos'),
-    };
-  });
-  console.log('- 拖拽后位置与持久化记录:', posAfterDrag);
 
   // 悬停并打开设置弹窗
   await hud.hover();
@@ -265,6 +302,7 @@ async function main() {
 
   const posAfterReset = await page.evaluate(() => {
     const el = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const guide = document.querySelector('.screen-lyric__guide-line');
     const rect = el.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const centerX = rect.left + rect.width / 2;
@@ -275,35 +313,59 @@ async function main() {
       transform: el?.style.transform,
       storage: window.localStorage.getItem('shijianus-screen-lyric-pos'),
       isCentered: Math.abs(centerX - viewportWidth / 2) < 4,
+      hasGuideLineOnReset: !!guide,
     };
   });
-  console.log('- 恢复默认后位置:', posAfterReset);
-  if (posAfterReset.left !== '50%' || posAfterReset.bottom !== '88px' || !posAfterReset.isCentered) {
-    throw new Error('Reset failed to restore default bottom-centered position!');
+  console.log('- 恢复默认后位置与基准线反馈:', posAfterReset);
+  if (posAfterReset.left !== '50%' || posAfterReset.bottom !== '64px' || !posAfterReset.isCentered) {
+    throw new Error(`Reset failed to restore default bottom-centered position (left: 50%, bottom: 64px)! Got: left=${posAfterReset.left}, bottom=${posAfterReset.bottom}`);
   }
   if (posAfterReset.storage !== null) {
     throw new Error('Storage shijianus-screen-lyric-pos was not cleared!');
   }
-  console.log('✓ 成功验证：.settings-reset-btn 成功将 HUD 恢复至默认下居中位置并清除了存储！\n');
+  if (!posAfterReset.hasGuideLineOnReset) {
+    throw new Error('Expected center guide line to flash upon clicking reset!');
+  }
+  console.log('✓ 成功验证：.settings-reset-btn 成功将 HUD 恢复至绝对下居中位置 (bottom: 64px) 并闪烁辅助线证明居中！\n');
 
-  // 9. 测试字号调整：取消15px、以18px为小、28px为大
-  console.log('9. 测试字号阶梯：验证彻底废除15px、小选项为18px、大为28px...');
+  // 9. 测试字号阶梯：验证彻底废除15px与18px、小选项为22px、大为36px
+  console.log('9. 测试字号阶梯：验证彻底废除15px与18px、小选项为22px、大为36px...');
   const count15px = await popover.locator('.settings-opt-btn', { hasText: '15px' }).count();
-  if (count15px > 0) {
-    throw new Error('Found deprecated 15px font size option in popover! Must be abolished.');
+  const count18px = await popover.locator('.settings-opt-btn', { hasText: '18px' }).count();
+  if (count15px > 0 || count18px > 0) {
+    throw new Error(`Found deprecated font size options: 15px (${count15px}), 18px (${count18px})! Must be abolished.`);
   }
-  const size18pxBtn = popover.locator('.settings-opt-btn', { hasText: '18px' });
-  if (await size18pxBtn.count() === 0) {
-    throw new Error('Small option with 18px font size not found!');
+
+  const size22pxBtn = popover.locator('.settings-opt-btn', { hasText: '22px' });
+  if (await size22pxBtn.count() === 0) {
+    throw new Error('Small option with 22px font size not found!');
   }
-  const sizeLgBtn = popover.locator('.settings-opt-btn', { hasText: '28px' });
-  await sizeLgBtn.click();
-  await page.waitForTimeout(400);
+  await size22pxBtn.click();
+  await page.waitForTimeout(300);
+
+  const smFontCheck = await page.evaluate(() => {
+    const el = document.querySelector('.screen-lyric__current-line');
+    return el ? window.getComputedStyle(el).fontSize : null;
+  });
+  console.log('- 小字号实际 computed font-size:', smFontCheck);
+  if (smFontCheck !== '22px') {
+    throw new Error(`Expected computed font-size: 22px for size-sm, got ${smFontCheck}!`);
+  }
+
+  const size36pxBtn = popover.locator('.settings-opt-btn', { hasText: '36px' });
+  await size36pxBtn.click();
+  await page.waitForTimeout(300);
 
   const hasSizeLg = await hud.evaluate((el) => el.classList.contains('size-lg'));
-  console.log('- 字号变更状态 (size-lg / 28px):', hasSizeLg);
-  if (!hasSizeLg) throw new Error('Failed to change HUD font size to lg (28px)!');
-  console.log('✓ 字号阶梯调节成功：15px已废除，18px为小，28px为大！\n');
+  const lgFontCheck = await page.evaluate(() => {
+    const el = document.querySelector('.screen-lyric__current-line');
+    return el ? window.getComputedStyle(el).fontSize : null;
+  });
+  console.log('- 大字号变更状态 (size-lg / 36px):', hasSizeLg, lgFontCheck);
+  if (!hasSizeLg || lgFontCheck !== '36px') {
+    throw new Error(`Expected computed font-size: 36px for size-lg, got ${lgFontCheck}!`);
+  }
+  console.log('✓ 字号阶梯调节成功：15px与18px已废除，22px为小，36px为大！\n');
 
   // 10. 验证底部控制坞布局与扩充宽度
   console.log('10. 验证悬浮控制坞 (.screen-lyric__controls) 严格位于歌词下方且居中，以及 HUD 扩充尺寸...');
@@ -401,6 +463,65 @@ async function main() {
     throw new Error('HUD should automatically unlock upon restart/reopen!');
   }
   console.log('✓ 成功验证：重启桌面字幕时已全自动解除锁定！\n');
+
+  // 11.8. 验证跨歌曲全局歌词同步引擎 (Multi-Song Universal Lyric Sync)
+  console.log('11.8. 测试跨歌曲歌词同步引擎：切换至第二首日文歌 (彼女は旅に出る) 并验证任意歌曲毫秒级对齐与间奏...');
+  await newHud.hover();
+  await page.waitForTimeout(300);
+  const nextTrackBtn = newHud.locator('.screen-lyric__btn', { hasText: '' }).filter({ has: page.locator('svg.lucide-skip-forward') });
+  if (await nextTrackBtn.count() > 0) {
+    await nextTrackBtn.click();
+    await page.waitForTimeout(1000);
+  }
+
+  // 模拟推进音频到第一句人声 (16.2秒, 对应 [00:15.11]白昼夢 繋いでいて)
+  await page.evaluate(() => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      audio.currentTime = 16.2;
+      audio.dispatchEvent(new Event('timeupdate'));
+    }
+  });
+  await page.waitForTimeout(500);
+
+  const lyricSyncCheck1 = await page.evaluate(() => {
+    const curLine = document.querySelector('.screen-lyric__current-line');
+    const hudEl = document.querySelector('.shijianus-music-pocket__screen-lyric');
+    const karaokePct = hudEl ? hudEl.style.getPropertyValue('--karaoke-pct') : null;
+    return {
+      text: curLine?.textContent?.trim(),
+      karaokePct,
+    };
+  });
+  console.log('- 16.2s 人声歌词行同步状态:', lyricSyncCheck1);
+  if (!lyricSyncCheck1.text?.includes('白昼夢')) {
+    throw new Error(`Expected active lyric text to contain "白昼夢", got "${lyricSyncCheck1.text}"!`);
+  }
+  const pctVal1 = parseFloat(lyricSyncCheck1.karaokePct || '0');
+  if (pctVal1 <= 0 || pctVal1 > 100) {
+    throw new Error(`Expected active karaoke percentage between 0% and 100%, got ${lyricSyncCheck1.karaokePct}!`);
+  }
+  console.log('✓ 成功验证：日文歌词行即时毫秒级定位，卡拉OK流光准确驱动！');
+
+  // 模拟推进音频到间奏阶段 (62.0秒, 对应 [00:59.20]バイバイ 唱完后进入间奏)
+  await page.evaluate(() => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      audio.currentTime = 62.0;
+      audio.dispatchEvent(new Event('timeupdate'));
+    }
+  });
+  await page.waitForTimeout(500);
+
+  const interludeCheck = await page.evaluate(() => {
+    const curLine = document.querySelector('.screen-lyric__current-line');
+    return curLine?.textContent?.trim();
+  });
+  console.log('- 62.0s 间奏检测状态:', interludeCheck);
+  if (!interludeCheck?.includes('间奏')) {
+    throw new Error(`Expected interlude "间奏演奏中", got "${interludeCheck}"!`);
+  }
+  console.log('✓ 成功验证：唱毕后精准判定间奏，杜绝硬编码时间与超时拖拉！\n');
 
   // 12. 验证文章页面 Mermaid 渲染无 dmermaid-svg 报错
   console.log('12. 访问文章页验证 Mermaid 架构图渲染无 dmermaid-svg 报错...');

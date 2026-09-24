@@ -337,6 +337,50 @@ function isLyricMetadataLine(text: string): boolean {
   return /^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(trimmed);
 }
 
+function estimateVocalUnits(text: string): number {
+  const cleaned = cleanLyricText(text);
+  if (!cleaned) return 1;
+  const stripped = cleaned.replace(/\([^)]*\)/g, '').replace(/\[[^\]]*\]/g, '').trim();
+  if (!stripped) return 1;
+
+  // CJK characters: 1 unit each
+  const cjkChars = stripped.match(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/g) || [];
+  // Latin / Alphanumeric words
+  const nonCjkWords = stripped
+    .replace(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/g, ' ')
+    .match(/[a-zA-Z0-9']+/g) || [];
+
+  const latinUnits = nonCjkWords.reduce((sum, word) => {
+    if (word.length <= 3) return sum + 1;
+    if (word.length <= 7) return sum + 1.8;
+    return sum + 2.5;
+  }, 0);
+
+  return Math.max(1, cjkChars.length + latinUnits);
+}
+
+function tokenizeLyricText(text: string): string[] {
+  const cleaned = cleanLyricText(text);
+  if (!cleaned) return [];
+  // Match individual CJK characters, Latin words, or punctuation/spaces
+  const regex = /[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]|[a-zA-Z0-9']+|[^\s\w\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]+|\s+/g;
+  const matches = cleaned.match(regex);
+  return matches ? matches.filter(Boolean) : [cleaned];
+}
+
+export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number {
+  if (!lyrics || lyrics.length === 0) return -1;
+  let found = -1;
+  for (let i = 0; i < lyrics.length; i++) {
+    if (time >= lyrics[i].time) {
+      found = i;
+    } else {
+      break;
+    }
+  }
+  return found;
+}
+
 function computeActiveLineProgress(
   time: number,
   lyrics: LyricLine[],
@@ -366,7 +410,7 @@ function computeActiveLineProgress(
 
     if (time <= firstWord.start) return { progress: 0, isInterlude: false };
     if (time >= lastWord.end) {
-      if (gap > 4.5 && time > lastWord.end + 1.0 && time < lineEnd - 1.5) {
+      if (gap > 4.5 && time > lastWord.end + 0.8 && time < lineEnd - 1.2) {
         return { progress: 0, isInterlude: true };
       }
       return { progress: 100, isInterlude: false };
@@ -392,28 +436,51 @@ function computeActiveLineProgress(
     return { progress: pct, isInterlude: false };
   }
 
-  const vocalDur = gap > 7 ? Math.min(gap * 0.72, 4.5) : (gap > 2.5 ? gap * 0.8 : Math.max(0.6, gap - 0.25));
+  // Universal character & syllable-aware vocal duration estimation
+  const units = estimateVocalUnits(cur.text);
+  const estimatedSingingTime = units * 0.28 + 0.55;
+
+  let vocalDur: number;
+  if (gap <= 1.2) {
+    vocalDur = Math.max(0.5, gap - 0.15);
+  } else if (gap > 5.5) {
+    // Interlude or long pause: line ends when singer finishes
+    vocalDur = Math.min(gap - 1.0, Math.max(1.2, Math.min(estimatedSingingTime, 8.5)));
+  } else {
+    // Normal line gap: leave natural breath buffer before next line
+    vocalDur = Math.min(gap - 0.35, Math.max(0.8, estimatedSingingTime));
+  }
+
   const elapsed = time - lineStart;
 
   if (elapsed <= 0) return { progress: 0, isInterlude: false };
   if (elapsed >= vocalDur) {
-    if (gap > 4.5 && time > lineStart + vocalDur + 1.0 && time < lineEnd - 1.5) {
+    if (gap > 4.5 && time > lineStart + vocalDur + 0.8 && time < lineEnd - 1.2) {
       return { progress: 0, isInterlude: true };
     }
     return { progress: 100, isInterlude: false };
   }
 
-  const linearT = elapsed / vocalDur;
+  const linearT = Math.min(1, Math.max(0, elapsed / vocalDur));
   const naturalT = Math.sin((linearT * Math.PI) / 2);
-  const pct = Math.min(100, Math.max(0, (linearT * 0.45 + naturalT * 0.55) * 100));
+  const pct = Math.min(100, Math.max(0, (linearT * 0.38 + naturalT * 0.62) * 100));
   return { progress: pct, isInterlude: false };
 }
 
 function parseLrc(raw: string): LyricLine[] {
   if (!raw) return [];
+
+  // Parse [offset: +/- ms] tag
+  let offsetSec = 0;
+  const offsetMatch = raw.match(/\[offset:\s*([+-]?\d+)\]/i);
+  if (offsetMatch) {
+    offsetSec = (parseInt(offsetMatch[1], 10) || 0) / 1000;
+  }
+
   const lines = raw.split('\n');
   const result: LyricLine[] = [];
-  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+  // Flexible regex matching 1 or 2 digit minutes, seconds, and optional milliseconds
+  const timeRegex = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
 
   for (const line of lines) {
     const timeMatches: number[] = [];
@@ -423,7 +490,8 @@ function parseLrc(raw: string): LyricLine[] {
       const minutes = parseInt(match[1], 10);
       const seconds = parseInt(match[2], 10);
       const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
-      timeMatches.push(minutes * 60 + seconds + milliseconds / 1000);
+      const t = Math.max(0, minutes * 60 + seconds + milliseconds / 1000 + offsetSec);
+      timeMatches.push(t);
     }
     if (timeMatches.length === 0) continue;
 
@@ -435,13 +503,13 @@ function parseLrc(raw: string): LyricLine[] {
     const words: LyricWord[] = [];
     let wordMatch;
     while ((wordMatch = wordTagRegex.exec(rawLineBody)) !== null) {
-      const wStart = parseFloat(wordMatch[1]);
+      const wStart = parseFloat(wordMatch[1]) + offsetSec;
       const wDur = wordMatch[2] ? parseFloat(wordMatch[2]) : 0.4;
       const wText = wordMatch[3];
       words.push({
         text: wText,
-        start: wStart,
-        end: wStart + wDur,
+        start: Math.max(0, wStart),
+        end: Math.max(0, wStart + wDur),
       });
     }
 
@@ -465,22 +533,43 @@ function parseLrc(raw: string): LyricLine[] {
   for (let i = 0; i < result.length; i++) {
     const cur = result[i];
     if (cur.words && cur.words.length > 0) continue;
+    if (isLyricMetadataLine(cur.text)) continue;
+
     const next = i + 1 < result.length ? result[i + 1] : null;
     const lineStart = cur.time;
     const lineEnd = next ? next.time : lineStart + 4.2;
     const rawGap = Math.max(0.6, lineEnd - lineStart);
-    const activeDur = rawGap > 6 ? Math.min(rawGap * 0.72, 4.2) : (rawGap > 2.5 ? rawGap * 0.8 : Math.max(0.5, rawGap - 0.2));
 
-    const tokens = cur.text.split(/(\s+)/).filter(Boolean);
+    const units = estimateVocalUnits(cur.text);
+    const estimatedSingingTime = units * 0.28 + 0.55;
+    let activeDur: number;
+    if (rawGap <= 1.2) {
+      activeDur = Math.max(0.5, rawGap - 0.15);
+    } else if (rawGap > 5.5) {
+      activeDur = Math.min(rawGap - 1.0, Math.max(1.2, Math.min(estimatedSingingTime, 8.5)));
+    } else {
+      activeDur = Math.min(rawGap - 0.35, Math.max(0.8, estimatedSingingTime));
+    }
+
+    const tokens = tokenizeLyricText(cur.text);
     if (tokens.length === 0) continue;
 
-    const totalWeight = tokens.reduce((acc, _, idx) => acc + (idx === tokens.length - 1 ? 1.6 : 1.0), 0);
+    const weights = tokens.map((token, idx) => {
+      const isLast = idx === tokens.length - 1;
+      const isSpaceOrPunct = /^[\s.,!?;:，。！？；：“”‘’"'-]+$/.test(token);
+      if (isSpaceOrPunct) return 0.2;
+      const isCjk = /[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/.test(token);
+      if (isCjk) return isLast ? 1.8 : 1.0;
+      return isLast ? 2.0 : Math.max(1.0, token.length * 0.35);
+    });
+
+    const totalWeight = weights.reduce((acc, w) => acc + w, 0);
     let curTime = lineStart;
     const synthesizedWords: LyricWord[] = [];
     for (let cIdx = 0; cIdx < tokens.length; cIdx++) {
       const token = tokens[cIdx];
-      const weight = cIdx === tokens.length - 1 ? 1.6 : 1.0;
-      const tokenDur = (weight / totalWeight) * activeDur;
+      const weight = weights[cIdx];
+      const tokenDur = (weight / Math.max(0.01, totalWeight)) * activeDur;
       synthesizedWords.push({
         text: token,
         start: curTime,
@@ -687,6 +776,9 @@ export function MusicPocket({ apiBase }: Props) {
   const [screenLyricPos, setScreenLyricPos] = useState<{ x: number; y: number } | null>(null);
   const [screenLyricSettings, setScreenLyricSettings] = useState<ScreenLyricSettings>(DEFAULT_SCREEN_LYRIC_SETTINGS);
   const [screenLyricSettingsOpen, setScreenLyricSettingsOpen] = useState(false);
+  const [isCenterSnapped, setIsCenterSnapped] = useState(false);
+  const [showCenterGuide, setShowCenterGuide] = useState(false);
+  const guideTimerRef = useRef<number | null>(null);
   const screenLyricRef = useRef<HTMLDivElement | null>(null);
 
   const [query, setQuery] = useState('');
@@ -721,6 +813,7 @@ export function MusicPocket({ apiBase }: Props) {
   const [rawLyric, setRawLyric] = useState(DEFAULT_TRACKS[0]?.lrc || '');
   const [parsedLyrics, setParsedLyrics] = useState<LyricLine[]>(parseLrc(DEFAULT_TRACKS[0]?.lrc || ''));
   const [activeLyricIndex, setActiveLyricIndex] = useState(-1);
+  const activeLyricIndexRef = useRef(-1);
 
   const currentTrack = currentIndex >= 0 && currentIndex < queue.length ? queue[currentIndex] : null;
 
@@ -1194,20 +1287,16 @@ export function MusicPocket({ apiBase }: Props) {
   // Sync active lyric line to current time
   useEffect(() => {
     if (parsedLyrics.length === 0) {
-      setActiveLyricIndex(-1);
+      if (activeLyricIndexRef.current !== -1) {
+        activeLyricIndexRef.current = -1;
+        setActiveLyricIndex(-1);
+      }
       return;
     }
 
-    let found = -1;
-    for (let i = 0; i < parsedLyrics.length; i++) {
-      if (currentTime >= parsedLyrics[i].time) {
-        found = i;
-      } else {
-        break;
-      }
-    }
-
-    if (found !== activeLyricIndex) {
+    const found = findActiveLyricIndex(currentTime, parsedLyrics);
+    if (found !== activeLyricIndexRef.current) {
+      activeLyricIndexRef.current = found;
       setActiveLyricIndex(found);
     }
   }, [currentTime, parsedLyrics]);
@@ -1249,9 +1338,16 @@ export function MusicPocket({ apiBase }: Props) {
           audioClockRef.current.anchorPerfTime = now;
         }
 
+        // Real-time zero-lag active lyric line resolution
+        const liveLyricIndex = findActiveLyricIndex(accurateTime, parsedLyrics);
+        if (liveLyricIndex !== activeLyricIndexRef.current) {
+          activeLyricIndexRef.current = liveLyricIndex;
+          setActiveLyricIndex(liveLyricIndex);
+        }
+
         // 1. Direct 60FPS DOM update for --karaoke-pct
         if (screenLyricRef.current) {
-          const calc = computeActiveLineProgress(accurateTime, parsedLyrics, activeLyricIndex, duration);
+          const calc = computeActiveLineProgress(accurateTime, parsedLyrics, liveLyricIndex, duration);
           screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
         }
 
@@ -1268,7 +1364,7 @@ export function MusicPocket({ apiBase }: Props) {
     return () => {
       cancelAnimationFrame(rafId);
     };
-  }, [isPlaying, parsedLyrics, activeLyricIndex, duration]);
+  }, [isPlaying, parsedLyrics, duration]);
 
   // Compute active lyric line progress & display data
   const activeLineProgress = computeActiveLineProgress(currentTime, parsedLyrics, activeLyricIndex, duration).progress;
@@ -1328,15 +1424,21 @@ export function MusicPocket({ apiBase }: Props) {
       vocalEnd = curLine.words[curLine.words.length - 1].end;
     } else if (nextLine) {
       const rawGap = nextLine.time - curLine.time;
-      vocalEnd = curLine.time + (rawGap > 7 ? Math.min(rawGap * 0.72, 4.5) : (rawGap > 2.5 ? rawGap * 0.8 : Math.max(0.6, rawGap - 0.25)));
+      const units = estimateVocalUnits(curLine.text);
+      const estimatedSingingTime = units * 0.28 + 0.55;
+      const vDur = rawGap > 5.5
+        ? Math.min(rawGap - 1.0, Math.max(1.2, Math.min(estimatedSingingTime, 8.5)))
+        : Math.min(rawGap - 0.35, Math.max(0.8, estimatedSingingTime));
+      vocalEnd = curLine.time + vDur;
     } else {
-      vocalEnd = curLine.time + 4.0;
+      const units = estimateVocalUnits(curLine.text);
+      vocalEnd = curLine.time + (units * 0.28 + 0.55);
     }
 
     const nextStart = nextLine ? nextLine.time : (duration || curLine.time + 10);
     const gap = nextStart - curLine.time;
 
-    if (gap > 4.5 && currentTime > vocalEnd + 1.0 && currentTime < nextStart - 1.5) {
+    if (gap > 4.5 && currentTime > vocalEnd + 0.8 && currentTime < nextStart - 1.2) {
       return {
         activeText: '',
         nextText: nextLine ? cleanLyricText(nextLine.text) : '',
@@ -1659,20 +1761,59 @@ export function MusicPocket({ apiBase }: Props) {
     const dy = e.clientY - screenLyricDragRef.current.startY;
     if (Math.hypot(dx, dy) > 4) {
       screenLyricDragRef.current.hasMoved = true;
-      const hudWidth = screenLyricRef.current ? screenLyricRef.current.offsetWidth : 360;
+      const hudWidth = screenLyricRef.current ? screenLyricRef.current.offsetWidth : 480;
       const hudHeight = screenLyricRef.current ? screenLyricRef.current.offsetHeight : 64;
-      const nextX = Math.max(10, Math.min(window.innerWidth - hudWidth - 10, screenLyricDragRef.current.initX + dx));
+      const rawX = screenLyricDragRef.current.initX + dx;
+      const screenCenter = window.innerWidth / 2;
+      const hudCenterX = rawX + hudWidth / 2;
+      const distFromCenter = Math.abs(hudCenterX - screenCenter);
+
+      let nextX: number;
+      if (distFromCenter <= 24) {
+        // 磁力吸附到屏幕水平绝对中心线
+        nextX = Math.round(screenCenter - hudWidth / 2);
+        setIsCenterSnapped(true);
+        setShowCenterGuide(true);
+      } else {
+        nextX = Math.max(10, Math.min(window.innerWidth - hudWidth - 10, rawX));
+        setIsCenterSnapped(false);
+        setShowCenterGuide(false);
+      }
+
       const nextY = Math.max(10, Math.min(window.innerHeight - hudHeight - 10, screenLyricDragRef.current.initY + dy));
       setScreenLyricPos({ x: nextX, y: nextY });
     }
   };
 
   const handleScreenLyricDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (screenLyricDragRef.current.hasMoved && screenLyricPos) {
-      try {
-        window.localStorage.setItem(SCREEN_LYRIC_POS_KEY, JSON.stringify(screenLyricPos));
-      } catch {}
+    if (screenLyricDragRef.current.hasMoved) {
+      if (isCenterSnapped) {
+        // 如果处于吸附状态且靠底，重置为绝对居中标准样式 (left: 50%, transform: translateX(-50%))
+        const hudHeight = screenLyricRef.current ? screenLyricRef.current.offsetHeight : 64;
+        const isNearBottom = screenLyricPos ? screenLyricPos.y > window.innerHeight - hudHeight - 110 : true;
+        if (isNearBottom) {
+          setScreenLyricPos(null);
+          try {
+            window.localStorage.removeItem(SCREEN_LYRIC_POS_KEY);
+          } catch {}
+        } else if (screenLyricPos) {
+          try {
+            window.localStorage.setItem(SCREEN_LYRIC_POS_KEY, JSON.stringify(screenLyricPos));
+          } catch {}
+        }
+      } else if (screenLyricPos) {
+        try {
+          window.localStorage.setItem(SCREEN_LYRIC_POS_KEY, JSON.stringify(screenLyricPos));
+        } catch {}
+      }
     }
+
+    if (guideTimerRef.current) window.clearTimeout(guideTimerRef.current);
+    guideTimerRef.current = window.setTimeout(() => {
+      setShowCenterGuide(false);
+      setIsCenterSnapped(false);
+    }, 1200);
+
     screenLyricDragRef.current.startX = 0;
     screenLyricDragRef.current.startY = 0;
     try {
@@ -2408,21 +2549,31 @@ export function MusicPocket({ apiBase }: Props) {
 
       {/* 5. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics) */}
       {showScreenLyric && (
-        <div
-          ref={screenLyricRef}
-          className={`shijianus-music-pocket__screen-lyric size-${screenLyricSettings.fontSize} opacity-${screenLyricSettings.opacity} theme-${screenLyricSettings.colorTheme} ${screenLyricSettings.locked ? 'is-locked' : ''} ${screenLyricSettingsOpen ? 'settings-open' : ''}`}
-          style={{
-            position: 'fixed',
-            left: screenLyricPos ? `${screenLyricPos.x}px` : '50%',
-            top: screenLyricPos ? `${screenLyricPos.y}px` : 'auto',
-            bottom: screenLyricPos ? 'auto' : '88px',
-            transform: screenLyricPos ? 'none' : 'translateX(-50%)',
-            '--karaoke-pct': `${activeLineProgress.toFixed(1)}%`,
-          } as React.CSSProperties}
-          onPointerDown={handleScreenLyricDragStart}
-          onPointerMove={handleScreenLyricDragMove}
-          onPointerUp={handleScreenLyricDragEnd}
-          onPointerCancel={handleScreenLyricDragEnd}
+        <>
+          {/* 居中对齐参考辅助线与提示徽标 (Center Alignment Magnetic Snapping Guide Line) */}
+          {showCenterGuide && (
+            <div className="screen-lyric__guide-line" aria-hidden="true">
+              <div className="screen-lyric__guide-badge">
+                <span className="guide-dot" />
+                <span>{t('已吸附至屏幕水平中心线 (50%)')}</span>
+              </div>
+            </div>
+          )}
+          <div
+            ref={screenLyricRef}
+            className={`shijianus-music-pocket__screen-lyric size-${screenLyricSettings.fontSize} opacity-${screenLyricSettings.opacity} theme-${screenLyricSettings.colorTheme} ${screenLyricSettings.locked ? 'is-locked' : ''} ${screenLyricSettingsOpen ? 'settings-open' : ''} ${isCenterSnapped ? 'is-snapped' : ''}`}
+            style={{
+              position: 'fixed',
+              left: screenLyricPos ? `${screenLyricPos.x}px` : '50%',
+              top: screenLyricPos ? `${screenLyricPos.y}px` : 'auto',
+              bottom: screenLyricPos ? 'auto' : '64px',
+              transform: screenLyricPos ? 'none' : 'translateX(-50%)',
+              '--karaoke-pct': `${activeLineProgress.toFixed(1)}%`,
+            } as React.CSSProperties}
+            onPointerDown={handleScreenLyricDragStart}
+            onPointerMove={handleScreenLyricDragMove}
+            onPointerUp={handleScreenLyricDragEnd}
+            onPointerCancel={handleScreenLyricDragEnd}
           onDoubleClick={() => {
             if (screenLyricSettings.locked) {
               updateScreenLyricSettings({ locked: false });
@@ -2568,7 +2719,14 @@ export function MusicPocket({ apiBase }: Props) {
                         window.localStorage.removeItem(SCREEN_LYRIC_SETTINGS_KEY);
                         window.localStorage.removeItem(SCREEN_LYRIC_POS_KEY);
                       } catch {}
-                      showToast(t('已恢复默认字幕设置与位置'));
+                      setIsCenterSnapped(true);
+                      setShowCenterGuide(true);
+                      if (guideTimerRef.current) window.clearTimeout(guideTimerRef.current);
+                      guideTimerRef.current = window.setTimeout(() => {
+                        setShowCenterGuide(false);
+                        setIsCenterSnapped(false);
+                      }, 2200);
+                      showToast(t('已恢复默认字幕设置并居中'));
                     }}
                     title={t('恢复默认设置与位置')}
                   >
@@ -2593,10 +2751,10 @@ export function MusicPocket({ apiBase }: Props) {
                 <div className="settings-btn-group">
                   {(['sm', 'md', 'lg', 'xl'] as const).map((sz) => {
                     const labels: Record<string, string> = {
-                      sm: t('小 (18px)'),
-                      md: t('中 (22px)'),
-                      lg: t('大 (28px)'),
-                      xl: t('特大 (34px)'),
+                      sm: t('小 (22px)'),
+                      md: t('中 (28px)'),
+                      lg: t('大 (36px)'),
+                      xl: t('特大 (44px)'),
                     };
                     return (
                       <button
@@ -2703,6 +2861,7 @@ export function MusicPocket({ apiBase }: Props) {
             </div>
           )}
         </div>
+      </>
       )}
     </div>
   );
