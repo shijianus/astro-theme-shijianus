@@ -27,14 +27,19 @@ class MockD1Database {
           return { success: true, meta: { changes: 1 } };
         }
         if (sql.includes('UPDATE sponsorships')) {
-          const [name, message, country, ip, id] = boundParams;
+          const id = boundParams[boundParams.length - 1];
+          const name = boundParams[0];
+          const message = boundParams[1];
+          const country = boundParams[2];
+          const ip = boundParams[3];
+          const status = boundParams.length === 6 ? boundParams[4] : 'completed';
           const existing = db.sponsorships.get(id);
           if (existing) {
             existing.name = name;
             existing.message = message;
             existing.country = country;
             existing.ip = ip;
-            existing.status = 'completed';
+            existing.status = status;
             return { success: true, meta: { changes: 1 } };
           }
           return { success: true, meta: { changes: 0 } };
@@ -42,7 +47,7 @@ class MockD1Database {
         return { success: true };
       },
       async first() {
-        if (sql.includes('SELECT id, amount, currency, status FROM sponsorships WHERE id = ?')) {
+        if (sql.includes('FROM sponsorships WHERE id = ?')) {
           const [id] = boundParams;
           return db.sponsorships.get(id) || null;
         }

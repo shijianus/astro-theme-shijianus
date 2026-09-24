@@ -55,12 +55,17 @@ export type LyricWord = {
   text: string;
   start: number;
   end: number;
+  duration?: number;
+  startSec?: number;
+  endSec?: number;
 };
 
 export type LyricLine = {
   time: number;
   text: string;
   words?: LyricWord[];
+  duration?: number;
+  timeSec?: number;
 };
 
 type Props = {
@@ -337,11 +342,86 @@ function isLyricMetadataLine(text: string): boolean {
   return /^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(trimmed);
 }
 
+export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
+  if (!Array.isArray(rawLines)) return [];
+  return rawLines
+    .filter((line) => line && typeof line.text === 'string' && line.text.trim())
+    .map((line) => {
+      const timeSec =
+        typeof line.timeSec === 'number'
+          ? line.timeSec
+          : typeof line.time === 'number' && (line.time > 100 || !String(line.time).includes('.'))
+          ? line.time / 1000
+          : Number(line.time) || 0;
+
+      const durSec =
+        typeof line.durationSec === 'number'
+          ? line.durationSec
+          : typeof line.duration === 'number'
+          ? line.duration > 100
+            ? line.duration / 1000
+            : line.duration
+          : undefined;
+
+      let words: LyricWord[] | undefined = undefined;
+      if (Array.isArray(line.words) && line.words.length > 0) {
+        words = line.words.map((w: any) => {
+          const wStartSec =
+            typeof w.startSec === 'number'
+              ? w.startSec
+              : typeof w.start === 'number' && (w.start > 100 || !String(w.start).includes('.'))
+              ? w.start / 1000
+              : Number(w.start) || 0;
+
+          const wDurSec =
+            typeof w.durationSec === 'number'
+              ? w.durationSec
+              : typeof w.duration === 'number'
+              ? w.duration > 100
+                ? w.duration / 1000
+                : w.duration
+              : 0.3;
+
+          const wEndSec =
+            typeof w.endSec === 'number'
+              ? w.endSec
+              : typeof w.end === 'number' && (w.end > 100 || !String(w.end).includes('.'))
+              ? w.end / 1000
+              : wStartSec + wDurSec;
+
+          return {
+            text: String(w.text || ''),
+            start: wStartSec,
+            end: wEndSec,
+            duration: Math.max(0.01, wEndSec - wStartSec),
+            startSec: wStartSec,
+            endSec: wEndSec,
+          };
+        });
+      }
+
+      return {
+        time: timeSec,
+        timeSec,
+        text: String(line.text || '').trim(),
+        duration: durSec,
+        words,
+      };
+    })
+    .sort((a, b) => a.time - b.time);
+}
+
 export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number {
   if (!lyrics || lyrics.length === 0) return -1;
   let found = -1;
   for (let i = 0; i < lyrics.length; i++) {
-    if (time >= lyrics[i].time) {
+    const lTime =
+      typeof (lyrics[i] as any).timeSec === 'number'
+        ? (lyrics[i] as any).timeSec
+        : lyrics[i].time > 100
+        ? lyrics[i].time / 1000
+        : lyrics[i].time;
+    if (time >= lTime) {
       found = i;
     } else {
       break;
@@ -369,16 +449,46 @@ function computeActiveLineProgress(
     }
   }
 
-  const lineStart = cur.time;
-  const lineEnd = nextLine ? nextLine.time : (trackDuration > lineStart ? Math.min(trackDuration, lineStart + 6) : lineStart + 4.5);
+  const lineStart =
+    typeof (cur as any).timeSec === 'number'
+      ? (cur as any).timeSec
+      : cur.time > 100
+      ? cur.time / 1000
+      : cur.time;
+
+  const nextStart = nextLine
+    ? typeof (nextLine as any).timeSec === 'number'
+      ? (nextLine as any).timeSec
+      : nextLine.time > 100
+      ? nextLine.time / 1000
+      : nextLine.time
+    : null;
+
+  const lineEnd =
+    nextStart !== null
+      ? nextStart
+      : trackDuration > lineStart
+      ? Math.min(trackDuration, lineStart + 6)
+      : lineStart + 4.5;
   const gap = Math.max(0.6, lineEnd - lineStart);
 
   // 1. 逐字模式：真实物理时间轴严格比对，歌手发音跟随
   if (syncType === 'word' && cur.words && cur.words.length > 0) {
+    const words = cur.words;
     const firstWord = words[0];
     const lastWord = words[words.length - 1];
-    const firstStart = typeof (firstWord as any).startSec === 'number' ? (firstWord as any).startSec : (firstWord.start > 100 ? firstWord.start / 1000 : firstWord.start);
-    const lastEnd = typeof (lastWord as any).endSec === 'number' ? (lastWord as any).endSec : (lastWord.end > 100 ? lastWord.end / 1000 : lastWord.end);
+    const firstStart =
+      typeof (firstWord as any).startSec === 'number'
+        ? (firstWord as any).startSec
+        : firstWord.start > 100
+        ? firstWord.start / 1000
+        : firstWord.start;
+    const lastEnd =
+      typeof (lastWord as any).endSec === 'number'
+        ? (lastWord as any).endSec
+        : lastWord.end > 100
+        ? lastWord.end / 1000
+        : lastWord.end;
 
     if (time < firstStart) return { progress: 0, isInterlude: false };
     if (time >= lastEnd) {
@@ -392,8 +502,18 @@ function computeActiveLineProgress(
     let accumulatedChars = 0;
     for (let wIdx = 0; wIdx < words.length; wIdx++) {
       const w = words[wIdx];
-      const wStart = typeof (w as any).startSec === 'number' ? (w as any).startSec : (w.start > 100 ? w.start / 1000 : w.start);
-      const wEnd = typeof (w as any).endSec === 'number' ? (w as any).endSec : (w.end > 100 ? w.end / 1000 : w.end);
+      const wStart =
+        typeof (w as any).startSec === 'number'
+          ? (w as any).startSec
+          : w.start > 100
+          ? w.start / 1000
+          : w.start;
+      const wEnd =
+        typeof (w as any).endSec === 'number'
+          ? (w as any).endSec
+          : w.end > 100
+          ? w.end / 1000
+          : w.end;
       const wLen = Math.max(1, w.text.length);
       if (time >= wEnd) {
         accumulatedChars += wLen;
@@ -412,7 +532,7 @@ function computeActiveLineProgress(
 
   // 2. 行级模式：整行高亮过渡，彻底移除所有基于字数脑补时长的硬性估算逻辑
   const lineDur = cur.duration || 3.5;
-  const vocalEnd = cur.time + lineDur;
+  const vocalEnd = lineStart + lineDur;
   if (gap > 4.5 && time > vocalEnd + 0.8 && time < lineEnd - 1.2) {
     return { progress: 100, isInterlude: true };
   }
@@ -599,7 +719,7 @@ export function parseHighPrecisionLrc(raw: string): {
   return {
     syncType: hasWordTimestamps ? 'word' : 'line',
     offset: Math.round(offsetSec * 1000),
-    lines: result,
+    lines: normalizeLyricLines(result),
   };
 }
 
@@ -805,7 +925,6 @@ export function MusicPocket({ apiBase }: Props) {
   const guideTimerRef = useRef<number | null>(null);
   const screenLyricRef = useRef<HTMLDivElement | null>(null);
   const lastSeekTimeRef = useRef<number>(0);
-  const parsedLyricsRef = useRef<LyricLine[]>([]);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MusicTrack[]>([]);
@@ -840,6 +959,7 @@ export function MusicPocket({ apiBase }: Props) {
   const [rawLyric, setRawLyric] = useState(DEFAULT_TRACKS[0]?.lrc || '');
   const [parsedLyrics, setParsedLyrics] = useState<LyricLine[]>(initialLyricResult.lines);
   const [lyricSyncType, setLyricSyncType] = useState<LyricSyncType>(initialLyricResult.syncType);
+  const parsedLyricsRef = useRef<LyricLine[]>(initialLyricResult.lines);
   const lyricSyncTypeRef = useRef<LyricSyncType>(initialLyricResult.syncType);
   const [activeLyricIndex, setActiveLyricIndex] = useState(-1);
   const activeLyricIndexRef = useRef(-1);
@@ -1317,17 +1437,24 @@ export function MusicPocket({ apiBase }: Props) {
     if (currentTrack.lrc || (localMatch && localMatch.lrc)) {
       const lrcText = currentTrack.lrc || localMatch!.lrc;
       const parsedData = parseHighPrecisionLrc(lrcText);
+      const normalized = normalizeLyricLines(parsedData.lines);
       setRawLyric(lrcText);
       setLyricSyncType(parsedData.syncType);
-      setParsedLyrics(parsedData.lines);
+      lyricSyncTypeRef.current = parsedData.syncType;
+      setParsedLyrics(normalized);
+      parsedLyricsRef.current = normalized;
       setActiveLyricIndex(-1);
+      activeLyricIndexRef.current = -1;
       return;
     }
 
     setRawLyric('');
     setParsedLyrics([]);
+    parsedLyricsRef.current = [];
     setLyricSyncType('line');
+    lyricSyncTypeRef.current = 'line';
     setActiveLyricIndex(-1);
+    activeLyricIndexRef.current = -1;
 
     const lyricId = currentTrack.lyricId || currentTrack.id;
     const fetchLyricWithFallback = async () => {
@@ -1348,13 +1475,13 @@ export function MusicPocket({ apiBase }: Props) {
             return {
               text: res.rawLyric || res.lyric || res.lrc || '',
               syncType: res.syncType || 'line',
-              lines: res.lines,
+              lines: normalizeLyricLines(res.lines),
             };
           }
           const raw = res.rawLyric || res.lyric || res.lrc || '';
           if (raw) {
             const parsedData = parseHighPrecisionLrc(raw);
-            return { text: raw, syncType: parsedData.syncType, lines: parsedData.lines };
+            return { text: raw, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
           }
         }
       } catch {}
@@ -1374,13 +1501,13 @@ export function MusicPocket({ apiBase }: Props) {
             return {
               text: cfRes.rawLyric || cfRes.lyric || '',
               syncType: cfRes.syncType || 'line',
-              lines: cfRes.lines,
+              lines: normalizeLyricLines(cfRes.lines),
             };
           }
           const raw = cfRes.rawLyric || cfRes.lyric || '';
           if (raw) {
             const parsedData = parseHighPrecisionLrc(raw);
-            return { text: raw, syncType: parsedData.syncType, lines: parsedData.lines };
+            return { text: raw, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
           }
         }
       } catch {}
@@ -1390,14 +1517,23 @@ export function MusicPocket({ apiBase }: Props) {
 
     fetchLyricWithFallback()
       .then(({ text, syncType, lines }) => {
+        const normalized = normalizeLyricLines(lines);
         setRawLyric(text);
         setLyricSyncType(syncType);
-        setParsedLyrics(lines);
+        lyricSyncTypeRef.current = syncType;
+        setParsedLyrics(normalized);
+        parsedLyricsRef.current = normalized;
+        setActiveLyricIndex(-1);
+        activeLyricIndexRef.current = -1;
       })
       .catch(() => {
         setRawLyric(t('暂无可用歌词'));
         setLyricSyncType('line');
+        lyricSyncTypeRef.current = 'line';
         setParsedLyrics([]);
+        parsedLyricsRef.current = [];
+        setActiveLyricIndex(-1);
+        activeLyricIndexRef.current = -1;
       });
   }, [currentTrack?.id, apiBase, resolveTrackAudioSrc]);
 
@@ -1463,7 +1599,8 @@ export function MusicPocket({ apiBase }: Props) {
         }
 
         // Real-time zero-lag active lyric line resolution
-        const liveLyricIndex = findActiveLyricIndex(accurateTime, parsedLyrics);
+        const currentLyrics = parsedLyricsRef.current.length > 0 ? parsedLyricsRef.current : parsedLyrics;
+        const liveLyricIndex = findActiveLyricIndex(accurateTime, currentLyrics);
         if (liveLyricIndex !== activeLyricIndexRef.current) {
           activeLyricIndexRef.current = liveLyricIndex;
           setActiveLyricIndex(liveLyricIndex);
@@ -1471,7 +1608,7 @@ export function MusicPocket({ apiBase }: Props) {
 
         // 1. Direct 60FPS DOM update for --karaoke-pct
         if (screenLyricRef.current) {
-          const calc = computeActiveLineProgress(accurateTime, parsedLyrics, liveLyricIndex, duration, lyricSyncTypeRef.current);
+          const calc = computeActiveLineProgress(accurateTime, currentLyrics, liveLyricIndex, duration, lyricSyncTypeRef.current);
           screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
         }
 

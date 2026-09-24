@@ -3837,9 +3837,10 @@
 - [x] **本地博客 `shijianus-blog` 高精度歌词 REST API 规范化 (`functions/api/lyric.ts` & `functions/_lib/music-provider.ts`)**:
   - 新增 `/api/lyric` 及重构 `/api/music/lyric` 统一输出高精数据契约，彻底移除后端基于字数硬性推演音节的假逐字生成逻辑。
   - 导出 `fetchHighPrecisionLyrics` 支持本地与上游音源的高精解析与缓存。
-- [x] **本地桌面歌词 `class="screen-lyric__content"` 与播放器原生物理时间对齐 (`MusicPocket.tsx` & `runtime-widgets.css`)**:
+- [x] **本地桌面歌词 `class="screen-lyric__content"` 与播放器原生物理时间对齐 (`MusicPocket.tsx` & `runtime-widgets.css`, Commits `dc42008`, `6477b45`)**:
   - 彻底清除所有基于字数脑补时长的硬性估算逻辑 (`estimateVocalUnits`、`tokenizeLyricText` 等函数彻底废除)。
-  - 界面物理时间轴严格绑定：计算行内歌词进度直接由当前音频物理秒数 (`audio.currentTime`) 与真实字时间戳 (`startSec`, `endSec`) 逐字精确比对 (`computeActiveLineProgress`)。
+  - 严格统一全链路秒级时间契约 (`normalizeLyricLines`)：将从本地内联、当前站点 API 及 CFSolara 微服务获取到的歌词时间戳统一标准化为秒（Seconds），消除因毫秒/秒单位失配导致的时间轴永久不匹配（`-1` 状态）缺陷。
+  - 界面物理时间轴严格绑定：计算行内歌词进度直接由当前音频物理秒数 (`audio.currentTime`) 与真实字时间戳 (`startSec`, `endSec`) 逐字精确比对 (`computeActiveLineProgress`)，修复 `words` 作用域缺失。
   - 双模式精细化渲染：
     - 逐字模式 (`syncType === 'word'`)：物理时间驱动高精平滑流光渐变填充，真实还原歌手发音节奏；
     - 行级模式 (`syncType === 'line'`)：采用 `.screen-lyric__line-box` 和 `.screen-lyric__line-text--highlight` 呈现全行整行高亮与过渡，坚决不绘制虚假字级流光。
@@ -3848,4 +3849,33 @@
   - 单元测试 `scratch/verify-lyric-engine.mjs` 验证 Enhanced LRC 逐字解析、普通 LRC 降级不伪造字时间戳、元数据过滤等全部 100% PASS；
   - 本地 API 验证：`curl -s "http://localhost:8788/api/lyric?id=local-way-back-home&source=local"` 成功返回 `syncType: "word"` 及毫秒级起止点 `words` 数组；`curl -s "http://localhost:8788/api/lyric?id=local-kanojo&source=local"` 成功返回 `syncType: "line"` 且无伪造字戳；
   - Astro 全量编译打包 `npm run build` 成功完成，284 个静态页面构建 0 错误。
+
+### Task 176: 底层架构深度安全审计与 8 大隐蔽设计漏洞全景加固修复 (Underlying Codebase Security & Architectural Flaws Comprehensive Remediation)
+- [x] **VULN-ARCH-01 & 02: 本地读者认证接管防御与昵称枚举预言机彻底消除 (`functions/_lib/auth-service.ts`, `functions/api/auth.ts`)**:
+  - 本地读者登录流程引入 `passcode`（PIN 访问码）并建立历史会话所有权溯源校验；
+  - 彻底阻断仅凭公开邮箱与昵称即可无密码接管他人 reader 账号并生成 14 天有效会话的漏洞；
+  - 消除认证失败时明文反射已绑定用户昵称的预言机泄漏。
+- [x] **VULN-ARCH-03: 管理员凭证 Query 参数传输阻断与 CSPRNG 密钥生成 (`functions/api/comments.ts`)**:
+  - 管理员身份（`isAdmin`）严格仅从安全 HTTP 请求头（`X-Admin-Token` 或 `Authorization: Bearer`）提取校验，严禁在 URL Query 中接收管理员 Token；
+  - 避免凭证泄露于 Web 服务器 Access Log、CDN 缓存及 HTTP Referer 头；
+  - 访客临时 Token 与 ID 生成升级为密码学安全的 CSPRNG（`crypto.getRandomValues`，48 字符十六进制）；
+  - 清除请求热路径中冗余的冷启动 `ALTER TABLE` 重复 DDL 操作。
+- [x] **VULN-ARCH-04: Stripe 收银台韩元/日元零小数位货币最低额度与寄语篡改防护 (`functions/api/create-payment-intent.ts`, `functions/api/create-checkout-session.ts`, `functions/api/record-blessing.ts`)**:
+  - 修复韩元（KRW）Stripe 规则不兼容缺陷，建立货币感知保底机制：KRW 最低 500、JPY 最低 50、美元/欧元 50 美分；
+  - 赞赏寄语更新接口执行严格的来源（Origin）与客户端 IP 溯源校验，已锁定寄语禁止跨会话篡改。
+- [x] **VULN-ARCH-05 & 06: AI 摘要代理防滥用校验与 D1 写入放大削减 66.7% (`functions/api/ai-summary.ts`)**:
+  - 严格校验 `Origin` / `Referer` 来源合法性，拦截缺失来源的外部脚本与爬虫（HTTP 403）；
+  - 将每个请求 6 次 D1 写入的过度限流方案合并为 2 次（分钟与小时），减少 66.7% 写入放大，避免 SQLite 事务锁竞争。
+- [x] **VULN-ARCH-07: 文章访问控制静态 Salt 离线解密防线加固 (`src/lib/access-control.ts`)**:
+  - 废弃硬编码默认 Salt，未配置环境变量时启动自动生成 256 位动态强随机内存 Salt（`randomBytes(32)`）；
+  - 彻底阻断攻击者通过公开代码库中的固定 Salt 结合 frontmatter 的 `passwordHash` 进行离线彩虹表预计算。
+- [x] **VULN-ARCH-08: 客户端 localStorage 站长特权自决越权漏洞封堵 (`src/lib/user-level.ts`)**:
+  - `readUserStats()` 与 `computeUserLevel()` 严格校对当前已登录会话有效性（`role === 'admin'` 或 `admin@epomail.bond`）；
+  - 彻底阻断普通访客通过在浏览器控制台篡改 `localStorage` 获得方形头像、站长勋章及 TL 100 全站穿透特权。
+- [x] **自动化端到端测试与全站构建全量通过**:
+  - `scratch/verify-underlying-codebase-hardening.mjs`：6/6 项核心安全加固断言 100% PASS；
+  - `scripts/test-record-blessing-integrity.mjs`：3/3 项赞赏完整性断言 100% PASS；
+  - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
+  - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
+
 
