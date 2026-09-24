@@ -111,28 +111,12 @@ async function enforceRateLimitInternal(options: LimitOptions): Promise<RateLimi
 }
 
 export async function enforceRateLimit(options: LimitOptions): Promise<RateLimitResult> {
-  const scope = options.scope || 'hybrid';
-  if (scope === 'hybrid') {
-    // 1. Enforce strict IP-level rate limit first to defeat header rotation attacks
-    const ipCheck = await enforceRateLimitInternal({
-      ...options,
-      scope: 'ip',
-    });
-    if (!ipCheck.allowed) {
-      return ipCheck;
-    }
-    // 2. Also track and enforce device-level if device ID is present
-    const deviceId = readDeviceId(options.request);
-    if (deviceId) {
-      return enforceRateLimitInternal({
-        ...options,
-        scope: 'device',
-      });
-    }
-    return ipCheck;
-  }
-
-  return enforceRateLimitInternal(options);
+  // Authoritative single-write rate limiting to prevent device header rotation attacks and eliminate D1 write amplification
+  const resolvedScope = options.scope === 'hybrid' ? 'ip' : (options.scope || 'ip');
+  return enforceRateLimitInternal({
+    ...options,
+    scope: resolvedScope,
+  });
 }
 
 export function envLimit(env: AppEnv, key: keyof AppEnv, fallback: number) {

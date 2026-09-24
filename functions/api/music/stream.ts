@@ -5,10 +5,55 @@ import type { AppEnv } from '../../_lib/types';
 
 const SAFE_RESPONSE_HEADERS = ['content-type', 'cache-control', 'accept-ranges', 'content-length', 'content-range', 'etag', 'last-modified', 'expires'];
 
+function isPrivateOrLoopbackHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (
+    host === 'localhost' ||
+    host === 'metadata.google.internal' ||
+    host === 'instance-data' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.local')
+  ) {
+    return true;
+  }
+
+  // IPv6 loopback and link-local
+  if (host === '::1' || host === '[::1]' || host.startsWith('fe80:') || host.startsWith('[fe80:')) {
+    return true;
+  }
+
+  // IPv4 checks (Loopback, Link-Local/Metadata, RFC1918 Private, CGNAT)
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const match = host.match(ipv4Regex);
+  if (match) {
+    const octets = [Number(match[1]), Number(match[2]), Number(match[3]), Number(match[4])];
+    if (octets.some((o) => o > 255)) return true;
+
+    // 127.0.0.0/8 Loopback
+    if (octets[0] === 127) return true;
+    // 0.0.0.0/8
+    if (octets[0] === 0) return true;
+    // 169.254.0.0/16 Link-local / Cloud metadata
+    if (octets[0] === 169 && octets[1] === 254) return true;
+    // 10.0.0.0/8 Private
+    if (octets[0] === 10) return true;
+    // 172.16.0.0/12 Private
+    if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return true;
+    // 192.168.0.0/16 Private
+    if (octets[0] === 192 && octets[1] === 168) return true;
+    // 100.64.0.0/10 Carrier-grade NAT
+    if (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127) return true;
+  }
+
+  return false;
+}
+
 function sanitizeTarget(rawUrl: string, baseOrigin?: string) {
   try {
     const parsed = rawUrl.startsWith('/') && baseOrigin ? new URL(rawUrl, baseOrigin) : new URL(rawUrl);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    if (isPrivateOrLoopbackHost(parsed.hostname)) return null;
     return parsed;
   } catch {
     return null;
