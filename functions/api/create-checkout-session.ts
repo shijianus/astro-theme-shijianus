@@ -76,6 +76,28 @@ async function recordInD1(
 
 const ZERO_DECIMAL_CURRENCIES = new Set(['bif','clp','gnf','jpy','kmf','krw','mga','pyg','rwf','ugx','vnd','xaf','xof','xpf']);
 
+function validateReturnUrl(rawUrl: string | undefined): string {
+  const DEFAULT_RETURN_URL = 'https://blog.epocanvas.com/?stripe_return=1&session_id={CHECKOUT_SESSION_ID}';
+  if (!rawUrl || typeof rawUrl !== 'string') return DEFAULT_RETURN_URL;
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    const isAllowedHost =
+      host === 'blog.epocanvas.com' ||
+      host === 'epocanvas.com' ||
+      host === 'shijianus.github.io' ||
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.endsWith('.pages.dev');
+    if (!isAllowedHost) {
+      return DEFAULT_RETURN_URL;
+    }
+    return rawUrl;
+  } catch {
+    return DEFAULT_RETURN_URL;
+  }
+}
+
 export async function onRequest(context: {
   request: Request;
   env: AppEnv;
@@ -92,19 +114,25 @@ export async function onRequest(context: {
   }
 
   const payload = await safeReadJson<CheckoutSessionPayload>(request);
-  const amount = typeof payload?.amount === 'number' ? payload.amount : 5;
+  const rawAmount = typeof payload?.amount === 'number' && Number.isFinite(payload.amount) && payload.amount > 0 ? payload.amount : 5;
   const currency = (payload?.currency || 'usd').toLowerCase();
   const name = payload?.name?.trim() || '';
   const message = payload?.message?.trim() || '';
   const clientCountry = payload?.country || request.headers.get('cf-ipcountry') || 'GLOBAL';
   const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
-  const returnUrl = payload?.returnUrl || 'https://blog.epocanvas.com/?stripe_return=1&session_id={CHECKOUT_SESSION_ID}';
+  const returnUrl = validateReturnUrl(payload?.returnUrl);
 
-  let unitAmount = amount;
-  if (!ZERO_DECIMAL_CURRENCIES.has(currency)) {
-    unitAmount = Math.round(amount * 100);
+  const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(currency);
+  let unitAmount: number;
+  if (isZeroDecimal) {
+    unitAmount = Math.max(50, Math.min(10000000, Math.round(rawAmount)));
+  } else {
+    unitAmount = Math.round(rawAmount * 100);
     if (unitAmount < 50) {
       unitAmount = 50;
+    }
+    if (unitAmount > 10000000) {
+      unitAmount = 10000000;
     }
   }
 
