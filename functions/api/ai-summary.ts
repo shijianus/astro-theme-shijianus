@@ -161,24 +161,56 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
     );
   }
 
+  // Validate origin / referer if present to prevent unauthorized third-party site abuse
+  const originHeader = request.headers.get('origin');
+  const refererHeader = request.headers.get('referer');
+  const callerUrl = originHeader || refererHeader;
+  if (callerUrl) {
+    try {
+      const parsedHost = new URL(callerUrl).hostname.toLowerCase();
+      const isAllowedHost =
+        parsedHost === 'blog.epocanvas.com' ||
+        parsedHost === 'epocanvas.com' ||
+        parsedHost === 'shijianus.github.io' ||
+        parsedHost === 'localhost' ||
+        parsedHost === '127.0.0.1' ||
+        parsedHost.endsWith('.pages.dev');
+      if (!isAllowedHost) {
+        return jsonResponse(request, env, { ok: false, error: 'Forbidden cross-origin summary request.' }, { status: 403 });
+      }
+    } catch {}
+  }
+
   const body = await safeReadJson<SummaryRequest>(request);
-  const title = body?.title?.trim() || '';
-  const url = body?.url?.trim() || '';
-  const summary = body?.summary?.trim() || '';
-  const slug = body?.slug?.trim() || title;
+  const title = (body?.title || '').trim().slice(0, 250);
+  const rawSlug = (body?.slug || '').trim();
+  const summary = (body?.summary || '').trim().slice(0, 1000);
   const mode = body?.mode || 'auto';
-  const questionType = body?.questionType || '';
-  const related = body?.related || [];
+  const questionType = (body?.questionType || '').trim().slice(0, 50);
+  const related = Array.isArray(body?.related) ? body.related.slice(0, 10) : [];
+
+  // Enforce slug validation: must match valid post slug syntax and not exceed 150 chars
+  const SLUG_REGEX = /^[a-zA-Z0-9_\-\.\/]{1,150}$/;
+  if (!rawSlug || !SLUG_REGEX.test(rawSlug)) {
+    return jsonResponse(request, env, { ok: false, error: 'Invalid or missing canonical post slug.' }, { status: 400 });
+  }
+  const slug = rawSlug;
+
+  const ALLOWED_MODES = new Set(['auto', 'instance', 'llmgpt', 'question']);
+  if (!ALLOWED_MODES.has(mode)) {
+    return jsonResponse(request, env, { ok: false, error: 'Invalid AI summary mode.' }, { status: 400 });
+  }
+
+  const rawContent = (body?.content || '').trim();
+  if (!title || !rawContent || rawContent.length < 20 || rawContent.length > 80000) {
+    return jsonResponse(request, env, { ok: false, error: 'Missing or out-of-bounds title/content.' }, { status: 400 });
+  }
 
   // 获取站长配置的档位（默认低档位 low，可随时切回）
   const level = getSummaryLevel(env.AI_SUMMARY_LEVEL);
   const lang = normalizeSummaryLocale(body?.lang || body?.locale);
   // 根据档位处理正文内容：low 截取前 3500 字，medium 截取前 15000 字，high 保留全量知识库上下文
-  const content = normalizeArticleText(body?.content || '', level);
-
-  if (!title || !content) {
-    return jsonResponse(request, env, { ok: false, error: 'Missing title or content.' }, { status: 400 });
-  }
+  const content = normalizeArticleText(rawContent, level);
 
   // 缓存 key 加入 level 与 lang，并基于正文全量内容哈希，彻底杜绝切片截断导致的缓存投毒
   const contentHash = await sha256Hex(content);
