@@ -7,27 +7,34 @@ interface Particle {
   speedY: number;
   speedX: number;
   opacity: number;
-  layer: number; // 0: far, 1: mid, 2: near
+  layer: number; // 0: far (bg), 1: mid (bg), 2: near (fg)
   phase: number;
   phaseSpeed: number;
 }
 
 /**
  * ThemeUniverse: Ultra-smooth, hardware-accelerated Winter Snowscape particle engine.
- * Renders an atmospheric falling snow canvas strictly behind content (z-index: -1).
- * Features:
- * - 3-depth particle simulation (micro-dust, classic flake, near-field snow puffs)
- * - Anti-stutter scroll-throttling: reduces RAF updates during active scrolling
- * - Page Visibility API integration: pauses loop when tab is backgrounded
+ * Renders atmospheric falling snow across a dual-depth visual stack:
+ * - Background Canvas (#theme-snow-universe, z-index: -1): Far ice-dust and mid-field crisp snowflakes
+ * - Foreground Canvas (#theme-snow-foreground, z-index: 25): Soft crystalline puffs drifting in front of cards
+ * 
+ * Optical & Performance Features:
+ * - Daylight High Contrast: Dual-layer ice-crystal refraction edge + pure white core (visible against both white cards and sky)
+ * - Zero shadowBlur: Eliminates all CPU/GPU Gaussian blur convolution lag, locking 60FPS
+ * - Anti-stutter scroll-throttling: Skips unnecessary calculations during active scrolling
+ * - Page Visibility API: Pauses loop when tab is backgrounded
+ * - Clean Mode Suppression: 100% opacity 0 and RAF stopped when switched to clean mode
  * - 0 DOM interference: pointer-events: none, completely non-blocking
  */
 export function ThemeUniverse() {
   useEffect(() => {
-    const canvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
-    if (!canvas) return;
+    const bgCanvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
+    const fgCanvas = document.getElementById('theme-snow-foreground') as HTMLCanvasElement | null;
+    if (!bgCanvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
+    const bgCtx = bgCanvas.getContext('2d', { alpha: true });
+    const fgCtx = fgCanvas ? fgCanvas.getContext('2d', { alpha: true }) : null;
+    if (!bgCtx) return;
 
     let animId: number = 0;
     let isRunning = false;
@@ -53,42 +60,51 @@ export function ThemeUniverse() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      bgCanvas.width = Math.round(width * dpr);
+      bgCanvas.height = Math.round(height * dpr);
+      bgCanvas.style.width = `${width}px`;
+      bgCanvas.style.height = `${height}px`;
+      bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (fgCanvas && fgCtx) {
+        fgCanvas.width = Math.round(width * dpr);
+        fgCanvas.height = Math.round(height * dpr);
+        fgCanvas.style.width = `${width}px`;
+        fgCanvas.style.height = `${height}px`;
+        fgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
       initParticles();
     };
 
-    // Initialize 3-layer particles
+    // Initialize 3-layer particles (40% far bg, 45% mid bg, 15% near fg)
     const initParticles = () => {
-      // Density based on viewport area (approx 75 particles per 1000px width on desktop)
-      const count = Math.min(160, Math.max(45, Math.round((width * height) / 14000)));
+      // Density based on viewport area: approx 80-120 particles on standard desktop
+      const count = Math.min(150, Math.max(45, Math.round((width * height) / 13000)));
       particles = [];
 
       for (let i = 0; i < count; i++) {
-        // Distribute layers: 45% far, 40% mid, 15% near
         const rand = Math.random();
         let layer = 1;
         let radius = 2.0;
         let speedY = 1.2;
         let opacity = 0.7;
 
-        if (rand < 0.45) {
-          layer = 0; // far
-          radius = 0.8 + Math.random() * 0.8;
-          speedY = 0.4 + Math.random() * 0.6;
-          opacity = 0.25 + Math.random() * 0.35;
+        if (rand < 0.40) {
+          layer = 0; // far background ice dust
+          radius = 0.8 + Math.random() * 0.9;
+          speedY = 0.4 + Math.random() * 0.5;
+          opacity = 0.4 + Math.random() * 0.4;
         } else if (rand < 0.85) {
-          layer = 1; // mid
-          radius = 1.8 + Math.random() * 1.2;
-          speedY = 1.0 + Math.random() * 1.0;
-          opacity = 0.55 + Math.random() * 0.35;
+          layer = 1; // mid background crisp flakes
+          radius = 1.8 + Math.random() * 1.3;
+          speedY = 1.0 + Math.random() * 0.9;
+          opacity = 0.6 + Math.random() * 0.35;
         } else {
-          layer = 2; // near
+          layer = 2; // near foreground gentle floating puffs
           radius = 3.2 + Math.random() * 2.2;
-          speedY = 2.0 + Math.random() * 1.6;
+          speedY = 1.6 + Math.random() * 1.2;
           opacity = 0.75 + Math.random() * 0.25;
         }
 
@@ -97,7 +113,7 @@ export function ThemeUniverse() {
           y: Math.random() * height,
           radius,
           speedY,
-          speedX: (Math.random() - 0.5) * 0.4,
+          speedX: (Math.random() - 0.5) * 0.45,
           opacity,
           layer,
           phase: Math.random() * Math.PI * 2,
@@ -115,13 +131,14 @@ export function ThemeUniverse() {
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
-      // If scrolling, skip heavy redraw every second frame to guarantee 60FPS interaction
+      // If scrolling, throttle to skip heavy redraw and preserve 60FPS
       if (isScrolling && Math.random() > 0.5) {
         animId = requestAnimationFrame(render);
         return;
       }
 
-      ctx.clearRect(0, 0, width, height);
+      bgCtx.clearRect(0, 0, width, height);
+      if (fgCtx) fgCtx.clearRect(0, 0, width, height);
 
       const dark = isDarkMode();
       const globalWind = Math.sin(now * 0.0006) * 0.8 + Math.sin(now * 0.0018) * 0.3;
@@ -130,49 +147,79 @@ export function ThemeUniverse() {
         const p = particles[i];
         p.phase += p.phaseSpeed;
 
-        // Position update
-        const sway = Math.sin(p.phase) * (p.layer === 2 ? 1.4 : p.layer === 1 ? 0.8 : 0.4);
-        p.x += (p.speedX + sway + globalWind * (p.layer * 0.4 + 0.6)) * dt * 60;
+        // Position update with sinusoidal natural sway
+        const sway = Math.sin(p.phase) * (p.layer === 2 ? 1.5 : p.layer === 1 ? 0.9 : 0.45);
+        p.x += (p.speedX + sway + globalWind * (p.layer * 0.35 + 0.65)) * dt * 60;
         p.y += p.speedY * dt * 60;
 
         // Boundary wrap-around
-        if (p.y > height + p.radius + 10) {
-          p.y = -p.radius - 5;
+        if (p.y > height + p.radius + 12) {
+          p.y = -p.radius - 6;
           p.x = Math.random() * width;
         }
-        if (p.x < -p.radius - 10) p.x = width + p.radius;
-        else if (p.x > width + p.radius + 10) p.x = -p.radius;
+        if (p.x < -p.radius - 12) p.x = width + p.radius;
+        else if (p.x > width + p.radius + 12) p.x = -p.radius;
 
-        // Render particle
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        // ── RENDER ACCORDING TO LAYER ──
+        if (p.layer === 0) {
+          // Far layer: Atmospheric ice dust (on bgCanvas)
+          bgCtx.beginPath();
+          bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          if (dark) {
+            bgCtx.fillStyle = `rgba(175, 210, 255, ${p.opacity * 0.55})`;
+          } else {
+            bgCtx.fillStyle = `rgba(130, 168, 220, ${p.opacity * 0.72})`;
+          }
+          bgCtx.fill();
+        } else if (p.layer === 1) {
+          // Mid layer: Crisp snowflakes (on bgCanvas)
+          // 1. Ice refraction rim for crisp contrast
+          bgCtx.beginPath();
+          bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          if (dark) {
+            bgCtx.fillStyle = `rgba(140, 195, 255, ${p.opacity * 0.45})`;
+          } else {
+            bgCtx.fillStyle = `rgba(120, 162, 215, ${p.opacity * 0.62})`;
+          }
+          bgCtx.fill();
 
-        if (dark) {
-          // Night: Moonlit crystal glow
-          if (p.layer === 2) {
-            ctx.fillStyle = `rgba(220, 240, 255, ${p.opacity * 0.9})`;
-            ctx.shadowColor = 'rgba(180, 220, 255, 0.5)';
-            ctx.shadowBlur = 4;
+          // 2. Pure crystalline snow core
+          bgCtx.beginPath();
+          bgCtx.arc(p.x, p.y, p.radius * 0.72, 0, Math.PI * 2);
+          if (dark) {
+            bgCtx.fillStyle = `rgba(230, 245, 255, ${p.opacity * 0.92})`;
           } else {
-            ctx.fillStyle = `rgba(200, 225, 255, ${p.opacity * 0.8})`;
-            ctx.shadowBlur = 0;
+            bgCtx.fillStyle = `rgba(255, 255, 255, ${p.opacity * 0.98})`;
           }
-        } else {
-          // Day: Pure crisp snowfall with slight cool ice-blue tint
-          if (p.layer === 2) {
-            ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity * 0.95})`;
-            ctx.shadowColor = 'rgba(140, 175, 225, 0.3)';
-            ctx.shadowBlur = 3;
-          } else if (p.layer === 1) {
-            ctx.fillStyle = `rgba(240, 246, 255, ${p.opacity * 0.85})`;
-            ctx.shadowBlur = 0;
+          bgCtx.fill();
+        } else if (fgCtx) {
+          // Near layer: Soft foreground snow puffs floating over cards (on fgCanvas)
+          // 1. Outer subtle ice refraction halo
+          fgCtx.beginPath();
+          fgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          if (dark) {
+            fgCtx.fillStyle = `rgba(150, 205, 255, ${p.opacity * 0.4})`;
           } else {
-            ctx.fillStyle = `rgba(215, 230, 255, ${p.opacity * 0.6})`;
-            ctx.shadowBlur = 0;
+            fgCtx.fillStyle = `rgba(115, 155, 210, ${p.opacity * 0.55})`;
           }
+          fgCtx.fill();
+
+          // 2. Middle soft snow mantle
+          fgCtx.beginPath();
+          fgCtx.arc(p.x, p.y, p.radius * 0.74, 0, Math.PI * 2);
+          if (dark) {
+            fgCtx.fillStyle = `rgba(215, 238, 255, ${p.opacity * 0.88})`;
+          } else {
+            fgCtx.fillStyle = `rgba(238, 246, 255, ${p.opacity * 0.92})`;
+          }
+          fgCtx.fill();
+
+          // 3. Inner crystal core
+          fgCtx.beginPath();
+          fgCtx.arc(p.x, p.y, p.radius * 0.42, 0, Math.PI * 2);
+          fgCtx.fillStyle = `rgba(255, 255, 255, ${p.opacity * 0.98})`;
+          fgCtx.fill();
         }
-
-        ctx.fill();
       }
 
       animId = requestAnimationFrame(render);
@@ -188,16 +235,19 @@ export function ThemeUniverse() {
     const stopLoop = () => {
       isRunning = false;
       if (animId) cancelAnimationFrame(animId);
-      if (ctx) ctx.clearRect(0, 0, width, height);
+      if (bgCtx) bgCtx.clearRect(0, 0, width, height);
+      if (fgCtx) fgCtx.clearRect(0, 0, width, height);
     };
 
     const updateState = () => {
       const active = isSnowActive();
       if (active) {
-        canvas.style.opacity = '1';
+        if (bgCanvas) bgCanvas.style.opacity = '1';
+        if (fgCanvas) fgCanvas.style.opacity = '1';
         startLoop();
       } else {
-        canvas.style.opacity = '0';
+        if (bgCanvas) bgCanvas.style.opacity = '0';
+        if (fgCanvas) fgCanvas.style.opacity = '0';
         setTimeout(() => {
           if (!isSnowActive()) stopLoop();
         }, 300);
