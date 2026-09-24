@@ -757,7 +757,7 @@ export async function authenticateLocalReader(
           if (existing.name && existing.name.trim().toLowerCase() === name.toLowerCase()) {
             isOwner = true;
           } else {
-            throw new Error(`该读者邮箱已被 "${existing.name}" 绑定。如为您本人，请输入原昵称登录`);
+            throw new Error('该读者邮箱已被绑定。如为您本人，请输入绑定的原昵称进行验证');
           }
         }
         finalUserId = existing.id;
@@ -782,7 +782,7 @@ export async function authenticateLocalReader(
         if (existingMemUser.name && existingMemUser.name.trim().toLowerCase() === name.toLowerCase()) {
           isOwner = true;
         } else {
-          throw new Error(`该读者邮箱已被 "${existingMemUser.name}" 绑定。如为您本人，请输入原昵称登录`);
+          throw new Error('该读者邮箱已被绑定。如为您本人，请输入绑定的原昵称进行验证');
         }
       }
       finalUserId = existingMemUser.id;
