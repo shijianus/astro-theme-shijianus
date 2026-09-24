@@ -2121,9 +2121,10 @@ export function MusicPocket({ apiBase }: Props) {
   };
 
   return (
-    <div
-      ref={pocketContainerRef}
-      className={`shijianus-music-pocket ${!visible ? 'is-hidden' : ''} ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''} ${isDragging ? 'is-dragging' : ''}`}
+    <>
+      <div
+        ref={pocketContainerRef}
+        className={`shijianus-music-pocket ${!visible ? 'is-hidden' : ''} ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''} ${isDragging ? 'is-dragging' : ''}`}
       style={containerStyle}
     >
       <audio ref={audioRef} crossOrigin="anonymous" preload="none" />
@@ -2832,8 +2833,9 @@ export function MusicPocket({ apiBase }: Props) {
           </div>
         </div>
       )}
+      </div>
 
-      {/* 5. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics) */}
+      {/* 5. 屏幕桌面悬浮歌词 HUD (Screen Floating Lyrics - Independent top-level HUD) */}
       {showScreenLyric && (
         <>
           {/* 居中对齐参考辅助线与提示徽标 (Center Alignment Magnetic Snapping Guide Line) */}
@@ -3158,6 +3160,6 @@ export function MusicPocket({ apiBase }: Props) {
         </div>
       </>
       )}
-    </div>
+    </>
   );
 }
