@@ -3748,4 +3748,36 @@
   2. 文本居中与容器几何尺寸重新精确校准，杜绝任何视觉偏心。
 - [x] **全流程自动化 Playwright 端到端测试通过 (`scripts/verify-screen-lyric-karaoke.mjs`)**。
 
+### Task 172: 2026 底层代码全景漏洞深度稽核与系统性防御修复全链路落地 (Underlying Codebase 2026 Deep Audit Remediation)
+- [x] **深度只读安全稽核报告与证据链构建** (`c6446ec`): 编制 `UNDERLYING_CODEBASE_DEEP_AUDIT_REPORT.md`，执行 `scratch/test-underlying-deep-audit.mjs`，捕获 13 项深层代码实现漏洞（VULN-NEW-01 至 13）与 5 项架构隐患真实运行证据链。
+- [x] **VULN-NEW-01, 06, 08: 存储型 XSS 根除、评论身份绑定与分页 DoS 防护** (`acb5c6b`):
+  1. 前后端双重防御：`functions/api/comments.ts` 强制只允许 `^https?://` 协议，非法伪协议置空；`src/components/theme/PostComments.tsx` 引入 `sanitizeWebsiteUrl` 过滤与 `resolveAuthorProfile` 安全收敛；
+  2. 认证用户身份权威绑定：后端权威提取 `authUser.email` / `id` / `name`，杜绝客户端注入受害者邮箱伪造评论指标；
+  3. 分页防御：`GET /api/comments` 查询增加 `LIMIT ? OFFSET ?`（默认 100，最大 200），阻断内存与 CPU 耗尽 DoS。
+- [x] **VULN-NEW-02: 赞赏公网标识脱敏与篡改/重放封杀** (`5778f94`):
+  1. `functions/api/sponsorships.ts` 输出公网主键通过 `sha256Hex` 脱敏为 `sp_<hash>`，隐藏底层 Stripe `cs_...` 会话标识；
+  2. `functions/api/record-blessing.ts` 引入 `alreadyFinalized` 幂等检测与 D1 状态锁（`status NOT IN ('form_submitted')`），彻底杜绝重复提交篡改支持者姓名/寄语与 Telegram 通知重放滥用。
+- [x] **VULN-NEW-03: 混合限流器分桶穿透与 D1 膨胀防御** (`6a7b8cd`):
+  1. `functions/_lib/rate-limit.ts` 对 `scope === 'hybrid'` 强制施加 IP 物理层级硬上限配额；
+  2. 单 IP 伪造轮换 `x-shijianus-device-id` 穿透限流的攻击被完全压制（穿透率从 100% 降至 0%），杜绝向 D1 插入无限垃圾桶行。
+- [x] **VULN-NEW-04, 07, 09, 10: 本地读者认证加固、账号锁死恢复与资料冒用封堵** (`f388aca`, `0647229`):
+  1. `authenticateLocalReader` 强制要求合法格式电子邮箱（正则校验），杜绝空邮箱或匿名账号碰撞；
+  2. 修复多设备账号永久锁死：支持合法老读者在清除 Cookies 或更换设备后凭原昵称无障碍找回会话；不同昵称篡改尝试被严格拦截；
+  3. `updateUserProfile` 强制实施 `RESERVED_NAMES`（`shijianus`, `admin`, `站长`, `博主`）检查与站长专属头像脱敏，阻止普通读者改名冒充；
+  4. `GET /api/auth/user-level` 强制要求提供有效会话 Token，封杀未授权枚举探测他人邮箱与积分。
+- [x] **VULN-NEW-05: AI 摘要缓存切片截断与提示词注入投毒防御** (`37ad9c2`):
+  1. `functions/api/ai-summary.ts` 将 `cacheKey` 基础从前 1000 字切片改为文章全量内容 SHA-256 哈希；
+  2. 任何在 1000 字后的恶意 Prompt 注入均产生完全不同的缓存键，无法污染合法文章的 7 天全局缓存。
+- [x] **VULN-NEW-11, 12, 13 & ARCH-05: 音乐专辑对象提取、遗留代理加固、AVIF 魔数精细化与全局 CSP** (`ff37be4`):
+  1. `functions/_lib/music-provider.ts` `normalizeTrack` 安全解构 `payload.album` / `payload.al` 对象，根除 `[object Object]` 字符串化缺陷；
+  2. `functions/api/proxy.ts` 接入 `enforceRateLimit` 限流（30次/分）并使用 `jsonResponse` / `withCors` 严格白名单过滤，移除 `Access-Control-Allow-Origin: *`；
+  3. `functions/api/upload-image.ts` 细化 AVIF 魔数校验：检查 ISOBMFF `ftyp` 容器的 major/compatible brand 是否包含 `avif` 或 `avis`，阻断标准 MP4 视频伪装上传；
+  4. `functions/_middleware.ts` 注入全局 `Content-Security-Policy`，封锁 XSS、Frame 嵌套与未授权外链连接。
+- [x] **HUD 悬浮歌词磁力吸附辅助线与字号阶梯打磨** (`375084d`): 引入 50% 屏幕中心线磁力吸附与提示徽标，优化 Mica 毛玻璃与纯透明悬停态，字号阶梯升至 22px ~ 44px。
+- [x] **全量自动化验证测试套件与 Astro 静态全量构建 100% 通过**:
+  1. `scratch/verify-underlying-fixes.mjs`：12/12 新修复测试全数 PASS 通过，证据链确凿；
+  2. `scratch/verify-all-fixes.mjs`：11/11 历史修复回归测试全数 PASS 通过；
+  3. `npm run build`：全站 284 页面 0 警告 0 报错完成编译与静态资源加密。
+
+
 
