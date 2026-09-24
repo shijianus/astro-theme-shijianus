@@ -3777,7 +3777,7 @@
 - [x] **全量自动化验证测试套件与 Astro 静态全量构建 100% 通过**:
   1. `scratch/verify-underlying-fixes.mjs`：12/12 新修复测试全数 PASS 通过，证据链确凿；
   2. `scratch/verify-all-fixes.mjs`：11/11 历史修复回归测试全数 PASS 通过；
-### Task 173: 桌面字幕 (Screen Lyric HUD) 0%全透明边框、22px小字号、水平居中磁力辅助线与跨歌曲通用歌词同步引擎
+### Task 173: 桌面字幕 (Screen Lyric HUD) 0%全透明边框、22px小字号、水平居中磁力辅助线与跨歌曲通用歌词同步引擎 (`0437a05`)
 - [x] **透明度预设深度规范与真全透/现代毛玻璃落地**：
   1. `opacity-transparent` (全透极简)：常态与悬停均保持 100% 纯透明（`background: transparent !important; backdrop-filter: none !important;`），悬停时仅显示细腻虚线边框（`border: 1.5px dashed rgba(...)`）框选范围，杜绝任何灰色蒙版或不透明背景污染；
   2. `opacity-glass` (毛玻璃)：真实现代毛玻璃质感（`backdrop-filter: blur(20px) saturate(1.8)`，浅色 `rgba(255, 255, 255, 0.24)`，深色 `rgba(15, 23, 42, 0.32)`）；
