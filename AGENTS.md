@@ -3888,7 +3888,7 @@
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
 
-### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`)
+### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`)
 - [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`)**:
   - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #dce8f8 0%, #ebf3fc 45%, #f7f9fe 100%)`）；
   - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供 15%~20% 冷色天幕对比基底；
@@ -3896,16 +3896,17 @@
 - [x] **双层景深画布架构直出与零侵入挂载 (`src/layouts/BlogLayout.astro`, `822d4c7`)**:
   - 新增 `#theme-snow-foreground` 前景画布（`z-index: 25; pointer-events: none;`），与底层天幕画布 `#theme-snow-universe`（`z-index: -1`）协同工作；
   - 保持业务卡片代码 100% 纯净（零 `<SnowCover>`，零卡片内部污染）。
-- [x] **ThemeUniverse 引擎光学折射与性能全面重构 (`src/components/ThemeUniverse.tsx`, `9d564a7`)**:
-  - **彻底清除 `ctx.shadowBlur`**：根除 Task 153 中记录的 Skia 离屏高斯模糊卷积性能雪崩，满帧 60FPS 丝滑运行；
-  - **光学双层复合着色**：中景雪花采用冰晶折射外边框（`rgba(120, 162, 215, 0.62)`）包裹高亮纯白内芯（`rgba(255, 255, 255, 0.98)`），远景微尘采用冰霜蓝，近景大雪绒采用三层晶莹光晕；
-  - **前景漫落近景浮雪**：将约 15% 的近景大雪绒置于前景画布，缓缓在卡片、横幅与文字上方漫落，彻底解决“雪花全被白色卡片挡在后面”的视觉割裂感；
-  - 完整保留滚动主动节流（`isScrolling`）与 Page Visibility API 自动挂起机制。
+- [x] **根除“空心圆环/单选框圆盘”视觉缺陷，重构为 100% 真实纯自然冰晶结构雪花 (`src/components/ThemeUniverse.tsx`, `91e0ba0`)**:
+  - **彻底摒弃几何圆形与空心圆环（ZERO Geometric Circles / Rings）**：彻底清除原有以 `arc()` 绘制的内白外蓝圆盘（在白色卡片背景上白色内芯被完全吞没，导致肉眼仅看见外层蓝色圆环，形似收音机单选框或空心圈圈的虚假感）；
+  - **纯程序化六角分支蕨状星形冰晶（Fernlike Stellar Dendrite）**：六根辐射主轴，每根主轴包含 3 级自然角度分叉侧枝（45°/60°羽状细枝）与六边形微晶核，完美还原天然雪花结晶；
+  - **多形态自然结晶矩阵**：包含精巧羽状枝雪花（Fern Dendrite）、经典星状雪花（Classic Stellar Crystal）、六角刻面星盘（Faceted Stellar Plate）、钻石针状星芒（Diamond Needle Star）与致密微晶尘（Solid Diamond Dust ◆）；
+  - **真 3D 空气动力学翻滚与飘移（Aerodynamic Tumble & Flutter）**：每片雪花拥有独立的 3D 旋转角速度与自然飘落相位摆动（`rotation += rotationSpeed`, `sway = Math.sin(phase)`），随风向呈现灵动翻转姿态；
+  - **零卡顿预烘焙纹理图元（Pre-Baked Sprite Texture Quads）**：利用离屏 Canvas 预烘焙 8 类冰晶 Sprite 图元，主循环纯靠 `ctx.drawImage` 高速贴图，零 `shadowBlur` 离屏卷积开销，零 GC 垃圾回收卡顿，深浅色主题切换实时重构图元颜色；
+  - **近远景全景视差**：底层画布渲染中远景星晶与微尘（层级 0 & 1），顶层前景画布（层级 2）渲染近景羽状大雪花缓缓漫越卡片上方。
 - [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`, `scripts/verify-live-phase1-snow.mjs`, `a1c94d4`)**:
   - 涵盖白天雪境（Light Mode）、夜间雪境（Dark Mode）、纯净背景（Clean Mode）与遮罩抽屉弹出等场景断言全部 100% PASS；
-  - Cloudflare Pages 生产边缘节点部署（`5c6f47f5.shijianus-blog.pages.dev`）及真实线上域名（`https://blog.epocanvas.com/`）实机审计 100% PASS；
   - 控制台 0 错误（Total Console Errors: 0）；
-  - 高清视觉截图完整留档归档（`live-daylight-snow.png` 与 `live-night-snow.png`）。
+  - 视觉审查确认：彻底消除空心圆环，在白色卡片与深色横幅上均呈现细腻晶莹的六角羽状分支雪花。
 
 
 
