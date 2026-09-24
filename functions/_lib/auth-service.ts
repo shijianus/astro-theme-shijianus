@@ -387,16 +387,16 @@ export async function updateUserProfile(
   }
 
   const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
-  let cleanName = updates.name !== undefined && updates.name.trim() ? updates.name.trim() : currentUser.name;
-  let cleanAvatar = updates.avatar !== undefined ? updates.avatar.trim() : currentUser.avatar;
-  let cleanWebsite = updates.website !== undefined ? updates.website.trim() : currentUser.website;
+  let cleanName = updates.name !== undefined && updates.name.trim() ? updates.name.trim() : (currentUser.name || '');
+  let cleanAvatar = updates.avatar !== undefined ? updates.avatar.trim() : (currentUser.avatar || '');
+  let cleanWebsite = updates.website !== undefined ? updates.website.trim() : (currentUser.website || '');
 
   if (currentUser.role !== 'admin') {
     const lowerName = cleanName.toLowerCase().replace(/[\s_\-\.]+/g, '');
     if (RESERVED_NAMES.has(lowerName) || lowerName.includes('shijianus') || lowerName.includes('站长') || lowerName.includes('博主')) {
       throw new Error('不能使用保留或管理员名称作为昵称');
     }
-    if (cleanAvatar.includes('shijianus/avatar.jpg')) {
+    if (cleanAvatar && cleanAvatar.includes('shijianus/avatar.jpg')) {
       throw new Error('非管理员读者无法使用站长官方专属头像');
     }
   }
