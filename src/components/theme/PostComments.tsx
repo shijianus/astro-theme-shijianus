@@ -200,6 +200,15 @@ function isEdited(created: string, updated?: string) {
   }
 }
 
+function sanitizeWebsiteUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return null;
+}
+
 function computeReactionsMeta(comment: BlogComment, currentUserId?: string) {
   const summary = comment.reactions?.summary || {};
   const entries = Object.entries(summary).filter(([_, count]) => count > 0);
@@ -485,11 +494,12 @@ export function PostComments({
         ? (account?.bio ?? (comment as any).authorBio ?? '')
         : ((comment as any).authorBio ?? ''));
 
-    const authorWebsite = isCurrentAccount
+    const rawAuthorWebsite = isCurrentAccount
       ? (account?.website || comment.authorWebsite || '')
       : (isWebmaster
         ? (comment.authorWebsite || (account?.role === 'admin' ? account?.website : undefined) || 'https://blog.epocanvas.com')
         : (comment.authorWebsite || ''));
+    const authorWebsite = sanitizeWebsiteUrl(rawAuthorWebsite) || '';
 
     const authorEmail = isCurrentAccount
       ? (account?.email || comment.authorEmail || (isWebmaster ? 'shijianus@epocanvas.com' : undefined))
@@ -4285,11 +4295,11 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
                             </span>
                           </div>
                         )}
-                        {profilePopover.author.website && (
+                        {Boolean(profilePopover.author.website && sanitizeWebsiteUrl(profilePopover.author.website)) && (
                           <div className="profile-popover-website-line">
                             <Globe size={11} className="profile-popover-website-icon" />
                             <a
-                              href={profilePopover.author.website}
+                              href={sanitizeWebsiteUrl(profilePopover.author.website)!}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="profile-popover-website-link"

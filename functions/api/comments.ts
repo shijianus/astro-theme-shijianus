@@ -546,6 +546,8 @@ export async function onRequest(context: {
 
     const slug = url.searchParams.get('slug')?.trim();
     const sort = (url.searchParams.get('sort') || 'new').toLowerCase();
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '100', 10), 1), 200);
+    const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0);
 
     if (!slug) {
       return jsonResponse(request, env, { ok: false, error: 'Slug parameter is required' }, { status: 400 });
@@ -565,8 +567,9 @@ export async function onRequest(context: {
           FROM comments
           WHERE post_slug = ? AND status != 'deleted'
           ${orderClause}
+          LIMIT ? OFFSET ?
         `;
-        const res = await env.DB.prepare(query).bind(slug).all<RawCommentRow>();
+        const res = await env.DB.prepare(query).bind(slug, limit, offset).all<RawCommentRow>();
         const rows = res.results || [];
         return jsonResponse(request, env, {
           ok: true,
@@ -621,11 +624,12 @@ export async function onRequest(context: {
     const slug = (payload.slug || url.searchParams.get('slug') || '').trim();
     const rawMessage = (payload.message || '').trim();
     const postType = (payload.postType === 'boost' ? 'boost' : (payload.postType === 'emoji' ? 'emoji' : 'comment'));
+    let authUser: any = null;
     let authorRole: 'admin' | 'reader' | 'visitor' = 'visitor';
     if (isAdmin) {
       authorRole = 'admin';
     } else if (sessionToken) {
-      const authUser = await getUserBySessionToken(sessionToken, env);
+      authUser = await getUserBySessionToken(sessionToken, env);
       if (authUser) {
         authorRole = authUser.role === 'admin' ? 'admin' : 'reader';
       }
@@ -649,9 +653,11 @@ export async function onRequest(context: {
 
     const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
 
-    // Anti-abuse & Rate limiting for Visitors (1 hour window)
-    if (isVisitor && !isDev) {
+    // Anti-abuse & Rate limiting (1 hour window)
+    if (!isAdmin && !isDev) {
       const oneHourAgo = Date.now() - 3600 * 1000;
+      const maxComments = isVisitor ? 3 : 30;
+      const maxBoosts = isVisitor ? 5 : 50;
 
       if (env.DB) {
         await ensureTable(env.DB);
@@ -669,32 +675,36 @@ export async function onRequest(context: {
           }, { status: 400 });
         }
 
-        // B. Rate limit: Max 3 normal comments per 1 hour per IP
+        // B. Rate limit: normal comments per 1 hour per IP
         if (postType === 'comment') {
           const countRow = await env.DB.prepare(`
             SELECT COUNT(*) as cnt FROM comments
             WHERE ip = ? AND post_type = 'comment' AND created_at > datetime('now', '-1 hour') AND status != 'deleted'
           `).bind(clientIp).first<{ cnt: number }>();
 
-          if (countRow && countRow.cnt >= 3) {
+          if (countRow && countRow.cnt >= maxComments) {
             return jsonResponse(request, env, {
               ok: false,
-              error: '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号',
+              error: isVisitor
+                ? '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号'
+                : '读者发言频率受限：1小时内最多发表 30 条评论，请稍后再试',
             }, { status: 429 });
           }
         }
 
-        // C. Rate limit: Max 5 Boosts per 1 hour per IP
+        // C. Rate limit: Boosts per 1 hour per IP
         if (postType === 'boost') {
           const boostCountRow = await env.DB.prepare(`
             SELECT COUNT(*) as cnt FROM comments
             WHERE ip = ? AND post_type = 'boost' AND created_at > datetime('now', '-1 hour') AND status != 'deleted'
           `).bind(clientIp).first<{ cnt: number }>();
 
-          if (boostCountRow && boostCountRow.cnt >= 5) {
+          if (boostCountRow && boostCountRow.cnt >= maxBoosts) {
             return jsonResponse(request, env, {
               ok: false,
-              error: '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试',
+              error: isVisitor
+                ? '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试'
+                : '读者 Boost 频率受限：1小时内最多发表 50 次 Boost，请稍后再试',
             }, { status: 429 });
           }
         }
@@ -707,11 +717,17 @@ export async function onRequest(context: {
         if (hasDup) {
           return jsonResponse(request, env, { ok: false, error: '请勿在1小时内重复发表完全相同的评论内容' }, { status: 400 });
         }
-        if (postType === 'comment' && recentFromIp.filter((c) => c.post_type === 'comment').length >= 3) {
-          return jsonResponse(request, env, { ok: false, error: '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号' }, { status: 429 });
+        if (postType === 'comment' && recentFromIp.filter((c) => c.post_type === 'comment').length >= maxComments) {
+          return jsonResponse(request, env, {
+            ok: false,
+            error: isVisitor ? '访客发言频率受限：1小时内最多发表 3 条评论，请稍后再试或登录账号' : '读者发言频率受限：1小时内最多发表 30 条评论，请稍后再试',
+          }, { status: 429 });
         }
-        if (postType === 'boost' && recentFromIp.filter((c) => c.post_type === 'boost').length >= 5) {
-          return jsonResponse(request, env, { ok: false, error: '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试' }, { status: 429 });
+        if (postType === 'boost' && recentFromIp.filter((c) => c.post_type === 'boost').length >= maxBoosts) {
+          return jsonResponse(request, env, {
+            ok: false,
+            error: isVisitor ? '访客 Boost 频率受限：1小时内最多发表 5 次 Boost，请稍后再试' : '读者 Boost 频率受限：1小时内最多发表 50 次 Boost，请稍后再试',
+          }, { status: 429 });
         }
       }
     }
@@ -720,15 +736,29 @@ export async function onRequest(context: {
     const effectiveSessionToken = sessionToken || `st_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
     const rawAuthorName = (payload.authorName || (isVisitor ? '访客' : '用户')).trim().slice(0, 50);
     const RESERVED_NAMES = new Set(['shijianus', 'admin', 'administrator', '站长', '博主', 'shijian', 'root']);
+
     let authorName = rawAuthorName;
+    let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
+    let authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
+    let authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
+    let authorId = (payload.authorId || `vis_${Date.now()}`).trim();
+
+    // Authenticated reader: bind author fields authoritatively to authenticated profile
+    if (authUser) {
+      authorId = authUser.id;
+      authorEmail = authUser.email;
+      authorName = authUser.name || authorName;
+      if (!authorAvatar && authUser.avatar) authorAvatar = authUser.avatar;
+      if (!authorWebsite && authUser.website) authorWebsite = authUser.website;
+    }
+
     if (authorRole !== 'admin') {
-      const lower = rawAuthorName.toLowerCase().replace(/[\s_\-\.]+/g, '');
+      const lower = authorName.toLowerCase().replace(/[\s_\-\.]+/g, '');
       if (RESERVED_NAMES.has(lower) || lower.includes('shijianus') || lower.includes('站长') || lower.includes('博主')) {
         authorName = isVisitor ? '访客' : '读者';
       }
     }
 
-    let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
     if (authorRole === 'admin') {
       if (!authorAvatar) {
         authorAvatar = '/media/shijianus/avatar.jpg';
@@ -739,9 +769,11 @@ export async function onRequest(context: {
         authorAvatar = '';
       }
     }
-    const authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
-    const authorEmail = (payload.authorEmail || '').trim().slice(0, 200);
-    const authorId = (payload.authorId || `vis_${Date.now()}`).trim();
+
+    // Protocol whitelist: strictly only http:// and https:// allowed
+    if (authorWebsite && !/^https?:\/\//i.test(authorWebsite)) {
+      authorWebsite = '';
+    }
     const parentId = payload.parentId ? String(payload.parentId).trim() : null;
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
     const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 500) : '';
