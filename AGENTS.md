@@ -29,6 +29,11 @@
   - 对核心功能（如文章目录 TOC、Stripe 国际收银台、Google Pay / Apple Pay / Link 快捷支付、微信/支付宝/PayPal 赞赏码、多币种自适应等）进行**真实点击、模态框弹出、交互逻辑与视觉呈现全链路审计**。
   - 确认无控制台致命 JS 报错、无样式错位、网络 API 请求正常，经完整链路测试通过后方可正式交付给用户。
 
+### 4. 严禁未提交/未部署即交付准则 (Strict Prohibition of Uncommitted or Undeployed Delivery)
+- **绝对红线：严禁未提交即交付**：任何未经完整 `git commit`、未生成并打印 Commit Hash、未同步推送所有远端分支（`origin` 与 `cf`）就交付的行为被**严格绝对禁止**。
+- **强制全量部署 Cloudflare**：凡涉及功能性、UI 交互或 API 变更的任务，**必须确保全量编译（`npm run pages:build` / `npm run build`）并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（包括 `shijianus-blog` 以及相关项目 `shijianus-github-io`、`cfsolara`）**，绝不允许仅在本地跑通就草率交付。
+- **强制生产端实机全链路审计**：部署生效后，**必须通过无头浏览器（Playwright / Puppeteer）或真实网络工具，在生产域名（`https://blog.epocanvas.com/`）上进行实际访问与功能交互验证**，确保 0 控制台报错、UI 渲染正常、数据流正常。必须出示端到端验证通过的直接证据后，方可正式向用户交付。
+
 ---
 
 ## 历史任务与 Commit Hash 追踪记录 (Task History & Tracking)
