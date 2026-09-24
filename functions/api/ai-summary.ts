@@ -180,8 +180,9 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
     return jsonResponse(request, env, { ok: false, error: 'Missing title or content.' }, { status: 400 });
   }
 
-  // 缓存 key 加入 level 与 lang，保证多语言与档位切换后不读取旧缓存
-  const cacheKey = await sha256Hex([slug, title, summary, mode, questionType, level, lang, content.slice(0, 1000)].join('|'));
+  // 缓存 key 加入 level 与 lang，并基于正文全量内容哈希，彻底杜绝切片截断导致的缓存投毒
+  const contentHash = await sha256Hex(content);
+  const cacheKey = await sha256Hex([slug, title, summary, mode, questionType, level, lang, contentHash].join('|'));
   
   // Only use server D1 cache for non-instance and non-question requests, or when cached
   if (mode !== 'instance') {
