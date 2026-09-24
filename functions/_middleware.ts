@@ -26,12 +26,12 @@ export const onRequest: PagesFunction = async (context) => {
   // Defense-in-depth: Content-Security-Policy (ARCH-05)
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://challenges.cloudflare.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://api.stripe.com https://img.epocanvas.com https://mail.epocanvas.com https://music-api.gdstudio.xyz https:",
+    "connect-src 'self' https://api.stripe.com https://img.epocanvas.com https://mail.epocanvas.com https://music-api.gdstudio.xyz https://static.cloudflareinsights.com https:",
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
     "frame-ancestors 'self'",
     "object-src 'none'",
