@@ -1680,7 +1680,7 @@ export function MusicPocket({ apiBase }: Props) {
   // Auto-scroll lyrics view to active line (with user manual scroll protection)
   useEffect(() => {
     if (userScrollingLyricsRef.current) return;
-    if (activeTab === 'lyrics' && lyricsContainerRef.current && activeLyricRef.current) {
+    if (open && activeTab === 'lyrics' && lyricsContainerRef.current && activeLyricRef.current) {
       const container = lyricsContainerRef.current;
       const activeEl = activeLyricRef.current;
       const containerRect = container.getBoundingClientRect();
@@ -1692,7 +1692,7 @@ export function MusicPocket({ apiBase }: Props) {
         behavior: 'smooth',
       });
     }
-  }, [activeLyricIndex, activeTab]);
+  }, [activeLyricIndex, activeTab, open]);
 
   // High-precision animation loop with Audio Clock Interpolation for 60FPS fluid sweeping
   useEffect(() => {
@@ -1920,7 +1920,7 @@ export function MusicPocket({ apiBase }: Props) {
     } else {
       nextQueue.push(track);
       setQueue(nextQueue);
-      showToast(`${t('加待播')}: ${track.name}`);
+      showToast(`${t('已添加至待播')}: ${track.name}`);
     }
   };
 
@@ -1973,6 +1973,13 @@ export function MusicPocket({ apiBase }: Props) {
   };
 
   const handleLyricClick = (time: number) => {
+    // 立即解除手动滚动保护，恢复自动对齐吸附
+    userScrollingLyricsRef.current = false;
+    if (userScrollingTimeoutRef.current) {
+      window.clearTimeout(userScrollingTimeoutRef.current);
+      userScrollingTimeoutRef.current = null;
+    }
+
     lastSeekTimeRef.current = performance.now();
     audioClockRef.current.anchorAudioTime = time;
     audioClockRef.current.anchorPerfTime = performance.now();
@@ -1994,6 +2001,22 @@ export function MusicPocket({ apiBase }: Props) {
         setIsPlaying(true);
       }
     }
+
+    // 立即平滑居中展示所点击歌词
+    requestAnimationFrame(() => {
+      if (lyricsContainerRef.current && activeLyricRef.current) {
+        const container = lyricsContainerRef.current;
+        const activeEl = activeLyricRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const activeRect = activeEl.getBoundingClientRect();
+        const offsetFromContainerTop = activeRect.top - containerRect.top;
+        const targetScrollTop = container.scrollTop + offsetFromContainerTop - container.clientHeight / 2 + activeRect.height / 2;
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth',
+        });
+      }
+    });
   };
 
   const togglePlay = async () => {

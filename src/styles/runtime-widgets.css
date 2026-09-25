@@ -2019,58 +2019,74 @@ html.dark .shijianus-ai-summary__related span {
 .lyrics-line:hover,
 .lyrics-line-item:hover {
   color: #1e293b;
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(66, 90, 239, 0.06);
+  transform: translateX(3px);
 }
 
 :root[data-theme='dark'] .lyrics-line:hover,
 :root[data-theme='dark'] .lyrics-line-item:hover {
   color: #f8fafc;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(129, 140, 248, 0.08);
+  transform: translateX(3px);
+}
+
+.lyrics-line:hover .lyrics-line__time,
+.lyrics-line-item:hover .lyrics-line__time {
+  color: #425aef;
+  font-weight: 600;
+  opacity: 1;
+}
+
+:root[data-theme='dark'] .lyrics-line:hover .lyrics-line__time,
+:root[data-theme='dark'] .lyrics-line-item:hover .lyrics-line__time {
+  color: #818cf8;
 }
 
 .lyrics-line.is-passed,
 .lyrics-line-item.is-passed {
-  color: #3b82f6;
-  opacity: 0.88;
+  color: rgba(100, 116, 139, 0.65);
+  opacity: 0.72;
   font-weight: 500;
 }
 
 :root[data-theme='dark'] .lyrics-line.is-passed,
 :root[data-theme='dark'] .lyrics-line-item.is-passed {
-  color: #93c5fd;
-  opacity: 0.85;
+  color: rgba(148, 163, 184, 0.6);
+  opacity: 0.68;
 }
 
 .lyrics-line.is-passed .lyrics-line__time,
 .lyrics-line-item.is-passed .lyrics-line__time {
-  color: #60a5fa;
-  opacity: 0.9;
+  color: #94a3b8;
+  opacity: 0.6;
 }
 
 :root[data-theme='dark'] .lyrics-line.is-passed .lyrics-line__time,
 :root[data-theme='dark'] .lyrics-line-item.is-passed .lyrics-line__time {
-  color: #93c5fd;
+  color: #64748b;
+  opacity: 0.6;
 }
 
 .lyrics-line.is-active,
 .lyrics-line-item.is-active {
   font-size: 14.5px;
-  font-weight: 700;
+  font-weight: 750;
   color: #425aef;
-  background: rgba(66, 90, 239, 0.12);
+  background: rgba(66, 90, 239, 0.08);
   border-left: 3.5px solid #425aef;
-  padding-left: 8px;
-  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.16);
-  transform: scale(1.015);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding-left: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.12);
+  transform: scale(1.02);
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root[data-theme='dark'] .lyrics-line.is-active,
 :root[data-theme='dark'] .lyrics-line-item.is-active {
-  color: #c7d2fe;
-  background: rgba(129, 140, 248, 0.22);
+  color: #818cf8;
+  background: rgba(129, 140, 248, 0.15);
   border-left-color: #818cf8;
-  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.25);
 }
 
 .lyrics-line.is-future,
@@ -3496,13 +3512,65 @@ html.dark .shijianus-ai-summary__related span {
     max-width: none !important;
     max-height: 72vh !important;
   }
+
+  /* 移动端桌面歌词 HUD 响应式自适应 */
+  .shijianus-music-pocket__screen-lyric {
+    min-width: 0 !important;
+    width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    transform: none !important;
+    padding: 8px 12px !important;
+    bottom: 56px !important;
+  }
+
+  .shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__current-line {
+    font-size: 16px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-md .screen-lyric__current-line {
+    font-size: 18px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__current-line {
+    font-size: 22px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__current-line {
+    font-size: 26px !important;
+  }
+
+  .shijianus-music-pocket__screen-lyric.size-sm .screen-lyric__next-line {
+    font-size: 12px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-md .screen-lyric__next-line {
+    font-size: 13px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-lg .screen-lyric__next-line {
+    font-size: 15px !important;
+  }
+  .shijianus-music-pocket__screen-lyric.size-xl .screen-lyric__next-line {
+    font-size: 17px !important;
+  }
 }
 
-/* 顶层模态框开启时优雅抑制 */
+/* 顶层模态框开启时优雅抑制 (同时抑制播放器坞与桌面歌词浮窗) */
 body.theme-overlay-open .shijianus-music-pocket,
+body.theme-overlay-open .shijianus-music-pocket__screen-lyric,
+body.reward-modal-open .shijianus-music-pocket,
+body.reward-modal-open .shijianus-music-pocket__screen-lyric,
+body.modal-scroll-locked .shijianus-music-pocket,
+body.modal-scroll-locked .shijianus-music-pocket__screen-lyric,
+body.ext-gate-open .shijianus-music-pocket,
+body.ext-gate-open .shijianus-music-pocket__screen-lyric,
+#console.show ~ * .shijianus-music-pocket,
+#console.show ~ * .shijianus-music-pocket__screen-lyric,
 #console.show ~ .shijianus-music-pocket,
+#console.show ~ .shijianus-music-pocket__screen-lyric,
+.theme-account-overlay.show ~ * .shijianus-music-pocket,
+.theme-account-overlay.show ~ * .shijianus-music-pocket__screen-lyric,
 .theme-account-overlay.show ~ .shijianus-music-pocket,
-body.reward-modal-open .shijianus-music-pocket {
+.theme-account-overlay.show ~ .shijianus-music-pocket__screen-lyric,
+.theme-search.show ~ * .shijianus-music-pocket,
+.theme-search.show ~ * .shijianus-music-pocket__screen-lyric,
+.theme-search.show ~ .shijianus-music-pocket,
+.theme-search.show ~ .shijianus-music-pocket__screen-lyric {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
