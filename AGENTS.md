@@ -4036,6 +4036,32 @@
     3. 切换本地音轨 2《彼女は旅に出る》：在 36.0s 长伴奏间隙处，`hasInterlude: false`（彻底消除了多余间奏字符），稳定停留在上一句 `あ、あ、あたしの黒猫はしゃべらないままだな`，且高亮保持为 `100.0%`；
   - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
 
+### Task 183: 歌词同步体验深度打磨与“半成品感”彻底终结 (Single-DOM 流光裁剪、Apple Music 级整行沉浸柔光聚焦与歌词抽屉防扯动滚动) (`061cc56`)
+- [x] **深度排查“半成品感”的三大核心病灶并彻底重构 (Root Causes Solved)**:
+  1. **病灶一：机械匀速伪流光抢跑与违和感**：
+     - **原因**：市面上绝大多数歌曲只有行级时间戳（Line-level LRC），没有逐字级（Word-level）发音起止数据；之前对所有歌曲强行通过 `(currentTime - lineStart) / duration` 线性计算百分比并裁切流光，而真实歌手演唱绝对不是匀速的（有长音、快吐音、颤音），匀速流光必然导致严重的“抢跑”或“滞后”，带来浓厚的“假卡拉OK半成品感”；
+     - **工业级解决方案（分流架构）**：学习 Apple Music / Spotify 行业工业级标准做法：
+       - **逐字级歌词（Word-level）**：启用 `-webkit-background-clip: text` 渐变流光，字字发音毫秒对齐；
+       - **行级歌词（Line-level）**：摒弃机械伪流光，重构为 Apple Music 标志性的**整行沉浸柔光聚焦**（`.is-line-focused`：`transform: scale(1.02)`，柔和文字光晕 `text-shadow: 0 0 16px var(--karaoke-glow)`，纯正字重 800，丝滑贝塞尔曲线过渡），到点整行平滑聚焦，唱完稳定保持，杜绝伪流光的机械跳跃与违和感。
+  2. **病灶二：双层 DOM 渲染重影与文本双倍抓取**：
+     - **原因**：原 HUD 使用底层白色文本 + 顶层绝对定位裁剪容器，由于浏览器文本亚像素渲染与居中对齐差异，在快速移动时产生微小边缘模糊与重影；且读屏器或自动化抓取会获取到两份拼接的重复字符串（如 `currentLine: 'xxx · yyyxxx · yyy'`）；
+     - **单文本节点重构**：彻底消除双层 DOM（彻底移除 `.screen-lyric__karaoke-overlay` 与 `.screen-lyric__karaoke-text--base`），重构为单一 `<span className="screen-lyric__vocal-text ...">`；单文本节点背景渐变裁切，0 重叠重影，0 亚像素模糊，DOM 抓取纯净单行。
+  3. **病灶三：歌词抽屉阅读暴力抢焦点与扯动**：
+     - **原因**：用户在歌词抽屉中向上或向下手动滑动翻看歌词时，下一句歌词一到，播放器立即粗暴调用 `scrollTo` 强制将容器扯回到正在播放的行，破坏用户的自主翻看体验；
+     - **智能避让保护**：新增 `userScrollingLyricsRef` 与 `handleLyricsUserScroll` 监听机制；一旦用户手动滚动浏览歌词，自动滚动立即暂停并开启 3.5 秒保护窗口；3.5 秒内无进一步操作后才平滑恢复自动吸附，实现丝滑人性化的阅读交互。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://d9f90c82.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://88c80ea5.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 E2E 自动化审计 (`scripts/verify-polished-lyric-experience.mjs`)**:
+  - 全真访问生产主域名 `https://blog.epocanvas.com/`；
+  - **STAGE 1 真实 API 校验**：网关 API 正常返回 42 行歌词（`syncType: line`）；
+  - **STAGE 2 真实浏览器 E2E 审计**：
+    1. 桌面歌词 HUD 成功挂载；
+    2. 单 DOM 架构严格审计：`hasVocalText: true`，`hasOldOverlay: false`（彻底消灭旧裁切层），`hasOldBase: false`（彻底消灭旧底层），展示文本为纯净单行无重复拼接（`優しいの 冷たいの`）；
+    3. 行级沉浸模式审计：`isLineFocused: true`，激活 Apple Music 级沉浸柔光 `textShadow: rgba(59, 91, 245, 0.45) 0px 0px 16px`；
+    4. 歌词抽屉滑动保护审计：用户滑动后进入保护态，`isProtected: true`，300px 滚动偏移在音频播放期间稳定保持不被暴力拽回；
+  - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
+
 
 
 
