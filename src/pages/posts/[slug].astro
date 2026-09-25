@@ -801,7 +801,7 @@ const heroSummary = isUnlocked
             if (accessForm && (encryptedPayload || protectedTemplate)) {
               const postId = (encryptedPayload?.dataset.postId || protectedTemplate?.dataset.postId || '');
 
-              function applyUnlockedHtml(htmlContent: string) {
+              function applyUnlockedHtml(htmlContent) {
                 const container = document.getElementById('article-container');
                 const panel = document.querySelector('.content-access-panel--server');
                 if (panel) panel.remove();
@@ -811,11 +811,11 @@ const heroSummary = isUnlocked
                   container.appendChild(tempTmpl.content.cloneNode(true));
                   container.dataset.contentFeatures = 'true';
                 }
-                const heroTranslations = document.querySelector('.post-hero__translations') as HTMLElement | null;
+                const heroTranslations = document.querySelector('.post-hero__translations');
                 if (heroTranslations) heroTranslations.style.display = '';
                 const current = document.documentElement.dataset.localeVariant || document.documentElement.lang || defaultLang;
-                if ((window as any).switchArticleLanguage) {
-                  (window as any).switchArticleLanguage(current);
+                if (window.switchArticleLanguage) {
+                  window.switchArticleLanguage(current);
                 }
                 window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: current }));
                 window.dispatchEvent(new Event('resize'));
@@ -827,7 +827,7 @@ const heroSummary = isUnlocked
                 if (cachedHtml) {
                   applyUnlockedHtml(cachedHtml);
                 } else if (protectedTemplate && window.sessionStorage.getItem('shijianus-post-access:' + postId) === 'unlocked') {
-                  const fragment = (protectedTemplate as HTMLTemplateElement).content.cloneNode(true);
+                  const fragment = protectedTemplate.content.cloneNode(true);
                   const container = document.getElementById('article-container');
                   const panel = document.querySelector('.content-access-panel--server');
                   if (panel) panel.remove();
@@ -839,7 +839,7 @@ const heroSummary = isUnlocked
               } catch (_) {}
 
               accessForm.addEventListener('submit', async function (e) {
-                const pwInput = accessForm.querySelector('input[name="post-password"]') as HTMLInputElement | null;
+                const pwInput = accessForm.querySelector('input[name="post-password"]');
                 const val = pwInput ? pwInput.value.trim() : '';
                 if (!val) return;
                 e.preventDefault();
@@ -886,12 +886,12 @@ const heroSummary = isUnlocked
                     } catch (_) {}
                     applyUnlockedHtml(decryptedHtml);
                   } else if (protectedTemplate) {
-                    const expectedHash = ((protectedTemplate as HTMLElement).dataset.expectedHash || '').toLowerCase();
+                    const expectedHash = (protectedTemplate.dataset.expectedHash || '').toLowerCase();
                     if (hex === expectedHash) {
                       try {
                         window.sessionStorage.setItem('shijianus-post-access:' + postId, 'unlocked');
                       } catch (_) {}
-                      const fragment = (protectedTemplate as HTMLTemplateElement).content.cloneNode(true);
+                      const fragment = protectedTemplate.content.cloneNode(true);
                       const container = document.getElementById('article-container');
                       const panel = document.querySelector('.content-access-panel--server');
                       if (panel) panel.remove();
