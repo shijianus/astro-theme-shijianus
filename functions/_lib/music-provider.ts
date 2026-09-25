@@ -493,6 +493,7 @@ export interface HighPrecisionLyricPayload {
   lines: LyricLine[];
   lineCount: number;
   rawLyric: string;
+  isPureMusic?: boolean;
 }
 
 export function isMetadataLine(text: string): boolean {
@@ -957,6 +958,7 @@ export async function fetchHighPrecisionLyrics(
   }
 
   const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);
+  const isPure = lines.length === 0 || /纯音乐/i.test(rawLyric);
   return {
     ok: true,
     id: id || searchQuery,
@@ -966,6 +968,7 @@ export async function fetchHighPrecisionLyrics(
     lines,
     lineCount: lines.length,
     rawLyric,
+    isPureMusic: isPure,
   };
 }
 

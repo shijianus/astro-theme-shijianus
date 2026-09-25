@@ -461,10 +461,10 @@ function computeActiveLineProgress(
   lineIndex: number,
   trackDuration: number,
   syncType: LyricSyncType = 'line',
-): { progress: number; isInterlude: boolean } {
-  if (lineIndex < 0 || lineIndex >= lyrics.length) return { progress: 0, isInterlude: false };
+): { progress: number } {
+  if (lineIndex < 0 || lineIndex >= lyrics.length) return { progress: 0 };
   const cur = lyrics[lineIndex];
-  if (isLyricMetadataLine(cur.text)) return { progress: 0, isInterlude: false };
+  if (isLyricMetadataLine(cur.text)) return { progress: 0 };
 
   let nextLine: LyricLine | null = null;
   for (let j = lineIndex + 1; j < lyrics.length; j++) {
@@ -487,7 +487,7 @@ function computeActiveLineProgress(
       : lineStart + (cur.durationSec || cur.duration || 4.5);
   const gap = Math.max(0.6, lineEnd - lineStart);
 
-  // 1. 逐字模式：真实物理时间轴严格比对，歌手发音逐字跟随
+  // 1. 逐字模式：真实物理时间轴严格对齐，末尾快音平滑保护，杜绝跳字与提前抢跑
   if (syncType === 'word' && cur.words && cur.words.length > 0) {
     const words = cur.words;
     const firstWord = words[0];
@@ -495,67 +495,62 @@ function computeActiveLineProgress(
     const firstStart = typeof firstWord.startSec === 'number' ? firstWord.startSec : firstWord.start;
     const lastEnd = typeof lastWord.endSec === 'number' ? lastWord.endSec : lastWord.end;
 
-    if (time < firstStart) return { progress: 0, isInterlude: false };
-    if (time >= lastEnd) {
-      // 间奏判定：距离下一句开唱前 0.3 秒退出间奏
-      if (gap > 3.8 && time > lastEnd + 0.5 && time < lineEnd - 0.3) {
-        return { progress: 0, isInterlude: true };
-      }
-      // 间奏退出预备下一句临界区：归零进度，防止下一句文本被染成 100% 全蓝
-      if (time >= lineEnd - 0.3 && time < lineEnd) {
-        return { progress: 0, isInterlude: false };
-      }
-      return { progress: 100, isInterlude: false };
-    }
+    // 尚未开唱：保持 0%
+    if (time < firstStart) return { progress: 0 };
+    // 已经唱完最后字：稳定停留在 100%（停留在本句高亮，直到下一句切入）
+    if (time >= lastEnd) return { progress: 100 };
 
+    // 字符级精确映射
     const totalChars = words.reduce((sum, w) => sum + Math.max(1, w.text.length), 0);
     let accumulatedChars = 0;
+
     for (let wIdx = 0; wIdx < words.length; wIdx++) {
       const w = words[wIdx];
       const wStart = typeof w.startSec === 'number' ? w.startSec : w.start;
       const wEnd = typeof w.endSec === 'number' ? w.endSec : w.end;
       const wLen = Math.max(1, w.text.length);
+
       if (time >= wEnd) {
+        // 该词已唱完
         accumulatedChars += wLen;
       } else if (time >= wStart && time < wEnd) {
-        const wordDur = Math.max(0.001, wEnd - wStart);
-        const wordPct = Math.min(1, Math.max(0, (time - wStart) / wordDur));
+        // 正在唱当前词：单字内线性流光推进
+        const rawDur = Math.max(0.001, wEnd - wStart);
+        const wordPct = Math.min(1, Math.max(0, (time - wStart) / rawDur));
         accumulatedChars += wLen * wordPct;
         break;
       } else {
+        // 停留在词间微停顿处
         break;
       }
     }
+
     const pct = Math.min(100, Math.max(0, (accumulatedChars / Math.max(1, totalChars)) * 100));
-    return { progress: pct, isInterlude: false };
+    return { progress: pct };
   }
 
-  // 2. 行级模式：基于当前行起止物理时间线性流光跟随，拒绝静态全蓝卡死
-  const naturalDur = Math.max(1.8, Math.min(gap - 0.4, cur.text.length * 0.32));
-  const lineVocalDur = cur.durationSec && cur.durationSec < gap - 0.4
-    ? cur.durationSec
-    : Math.min(naturalDur, gap);
+  // 2. 行级模式：基于两行物理间隙与歌手发音自然语速，杜绝抢跑（提前结束）与落后
+  let lineVocalDur: number;
+  if (gap > 4.5) {
+    // 间隙较长时：依据文本长度自然估算发音时长（每个字符约 0.38s，最少 2.2s）
+    const naturalDur = Math.max(2.2, Math.min(gap - 0.5, cur.text.length * 0.38));
+    lineVocalDur = cur.durationSec && cur.durationSec < gap - 0.4 ? cur.durationSec : naturalDur;
+  } else {
+    // 连续歌词：平滑铺展整个 gap，留出 0.35s 换气停顿，杜绝提前数秒提前结束跑满
+    lineVocalDur = Math.max(0.8, gap - 0.35);
+  }
+
   const vocalEnd = lineStart + lineVocalDur;
 
-  if (time < lineStart) return { progress: 0, isInterlude: false };
-
-  // 间奏检测：当人声唱完且距离下一句开唱有较长空白（> 3.8秒）
-  if (gap > 3.8 && time > vocalEnd + 0.5 && time < lineEnd - 0.3) {
-    return { progress: 0, isInterlude: true };
-  }
-
-  // 间奏退出预备下一句临界区：归零进度，防止下一句文本被染成 100% 全蓝
-  if (time >= lineEnd - 0.3 && time < lineEnd) {
-    return { progress: 0, isInterlude: false };
-  }
-
+  if (time < lineStart) return { progress: 0 };
+  // 唱完后牢牢停在 100%（停留在上一句已唱完高亮态，绝不跳出多余的间奏中）
   if (time >= vocalEnd) {
-    return { progress: 100, isInterlude: false };
+    return { progress: 100 };
   }
 
   // 在物理人声持续时间内，真实平滑流光推进
   const pct = Math.min(100, Math.max(0, ((time - lineStart) / Math.max(0.1, lineVocalDur)) * 100));
-  return { progress: pct, isInterlude: false };
+  return { progress: pct };
 }
 
 export function parseHighPrecisionLrc(raw: string): {
@@ -1734,11 +1729,18 @@ export function MusicPocket({ apiBase }: Props) {
   const activeLineProgress = computeActiveLineProgress(currentTime, parsedLyrics, activeLyricIndex, duration, lyricSyncType).progress;
 
   const displayLyric = useMemo(() => {
-    if (parsedLyrics.length === 0) {
+    // 0. 纯音乐判定：无可用人声歌词、歌名含纯音乐/伴奏/BGM、或歌词直接标记为纯音乐
+    const isPure =
+      parsedLyrics.length === 0 ||
+      !parsedLyrics.some((l) => !isLyricMetadataLine(l.text)) ||
+      (currentTrack && /(纯音乐|伴奏|instrumental|bgm|piano)/i.test(`${currentTrack.name} ${currentTrack.album || ''}`)) ||
+      /纯音乐/i.test(rawLyric);
+
+    if (isPure) {
       return {
-        activeText: cleanLyricText(rawLyric),
+        activeText: t('纯音乐，请欣赏'),
         nextText: '',
-        isInterlude: false,
+        isPureMusic: true,
       };
     }
 
@@ -1749,30 +1751,30 @@ export function MusicPocket({ apiBase }: Props) {
       ? (typeof firstVocalLine.timeSec === 'number' ? firstVocalLine.timeSec : firstVocalLine.time)
       : 0;
 
-    // 2. 前奏判定：如果还没到第一句真实人声
-    if (firstVocalLine && currentTime < firstVocalTime - 0.3) {
+    // 2. 前奏判定：还没到第一句真实人声
+    if (firstVocalLine && currentTime < firstVocalTime) {
       return {
-        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: cleanLyricText(firstVocalLine.text),
-        isInterlude: false,
+        isPureMusic: false,
       };
     }
 
     // 3. 当前有效行定位
     if (activeLyricIndex < 0 || activeLyricIndex >= parsedLyrics.length) {
       return {
-        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬',
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: firstVocalLine ? cleanLyricText(firstVocalLine.text) : '',
-        isInterlude: false,
+        isPureMusic: false,
       };
     }
 
     const curLine = parsedLyrics[activeLyricIndex];
     if (isLyricMetadataLine(curLine.text) && firstVocalLine && currentTime < firstVocalTime) {
       return {
-        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
+        activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: cleanLyricText(firstVocalLine.text),
-        isInterlude: false,
+        isPureMusic: false,
       };
     }
 
@@ -1785,50 +1787,13 @@ export function MusicPocket({ apiBase }: Props) {
     }
     const nextLine = nextVocalIndex >= 0 ? parsedLyrics[nextVocalIndex] : null;
 
-    // 4. 间奏（Interlude）检测与停顿判定：物理时间严格比对，无需字数脑补
-    const curTime = typeof curLine.timeSec === 'number' ? curLine.timeSec : curLine.time;
-    let vocalEnd = curTime;
-    if (curLine.words && curLine.words.length > 0) {
-      const lastWord = curLine.words[curLine.words.length - 1];
-      vocalEnd = typeof lastWord.endSec === 'number' ? lastWord.endSec : lastWord.end;
-    } else if (curLine.durationSec || curLine.duration) {
-      vocalEnd = curTime + (curLine.durationSec || curLine.duration || 3.5);
-    } else if (nextLine) {
-      const nextTime = typeof nextLine.timeSec === 'number' ? nextLine.timeSec : nextLine.time;
-      vocalEnd = Math.min(curTime + 3.8, nextTime - 0.4);
-    } else {
-      vocalEnd = curTime + 3.8;
-    }
-
-    const nextStart = nextLine
-      ? (typeof nextLine.timeSec === 'number' ? nextLine.timeSec : nextLine.time)
-      : (duration || curTime + 10);
-    const gap = nextStart - curTime;
-
-    // 间奏检测：一直持续到下一句开唱前 0.3 秒
-    if (gap > 3.8 && currentTime > vocalEnd + 0.5 && currentTime < nextStart - 0.3) {
-      return {
-        activeText: '',
-        nextText: nextLine ? cleanLyricText(nextLine.text) : '',
-        isInterlude: true,
-      };
-    }
-
-    // 如果间奏刚结束（在 nextStart - 0.3 到 nextStart 之间），直接无缝切换显示下一句（准备唱响），坚决不倒带显示上一句！
-    if (nextLine && currentTime >= nextStart - 0.3 && currentTime < nextStart) {
-      return {
-        activeText: cleanLyricText(nextLine.text),
-        nextText: '',
-        isInterlude: false,
-      };
-    }
-
+    // 4. 有歌词时：唱完后直接停留在本句（上一句），双行下一行预览下一句，彻底移除任何多余的间奏中显示
     return {
       activeText: cleanLyricText(curLine.text),
       nextText: nextLine ? cleanLyricText(nextLine.text) : '',
-      isInterlude: false,
+      isPureMusic: false,
     };
-  }, [parsedLyrics, activeLyricIndex, currentTime, duration, currentTrack, rawLyric]);
+  }, [parsedLyrics, activeLyricIndex, currentTime, currentTrack, rawLyric]);
 
   // 搜索处理
   const handleSearch = async (e?: React.FormEvent, keywordOverride?: string) => {
@@ -2655,10 +2620,10 @@ export function MusicPocket({ apiBase }: Props) {
                 </div>
 
                 <div ref={lyricsContainerRef} className="lyrics-view__scroll-container">
-                  {parsedLyrics.length === 0 ? (
+                  {parsedLyrics.length === 0 || displayLyric.isPureMusic ? (
                     <div className="lyrics-empty-state">
-                      <p>{t('当前曲目暂时没有可用歌词。')}</p>
-                      <small>{t('点击下方“随机曲库”或在点歌台点播')}</small>
+                      <p className="lyrics-empty-state__title">♬ {t('纯音乐，请欣赏')} ♬</p>
+                      <small>{t('当前曲目为器乐演奏或无填词纯音')}</small>
                     </div>
                   ) : (
                     parsedLyrics.map((line, idx) => {
@@ -3000,12 +2965,12 @@ export function MusicPocket({ apiBase }: Props) {
             }}
             title={t('点击呼出播放器完整歌词')}
           >
-            {displayLyric.isInterlude ? (
+            {displayLyric.isPureMusic ? (
               <div className="screen-lyric__current-line">
-                <span className="screen-lyric__interlude-text">
-                  <span className="screen-lyric__interlude-icon">♬</span>
-                  {t('间奏演奏中')}
-                  <span className="screen-lyric__interlude-icon">♬</span>
+                <span className="screen-lyric__pure-music-text">
+                  <span className="screen-lyric__pure-music-icon">♬</span>
+                  {t('纯音乐，请欣赏')}
+                  <span className="screen-lyric__pure-music-icon">♬</span>
                 </span>
               </div>
             ) : displayLyric.activeText ? (
@@ -3030,7 +2995,7 @@ export function MusicPocket({ apiBase }: Props) {
             ) : (
               <div className="screen-lyric__current-line">
                 <span className="screen-lyric__static-text">
-                  {currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ EpoAudio Pocket ♬'}
+                  {currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐，请欣赏 ♬'}
                 </span>
               </div>
             )}
