@@ -15,32 +15,32 @@ interface CinematicSnowParticle {
 }
 
 /**
- * ThemeUniverse: Cinematic, Photorealistic Multi-Layer Snowfall Engine.
+ * ThemeUniverse: EpoCanvas Cinematic Snowfall Engine (时简 / EpoCanvas 自研电影级多层雪境引擎).
  * 
- * Inspired by and modeled after react-cinematic-snow (https://github.com/khoama/react-cinematic-snow):
- * 1. Organic Smooth Clump Aggregates:
- *    - Procedural 5-8 vertex natural snow clumps connected with quadratic curves through midpoints.
- *    - Completely eliminates artificial straight-polygon razor corners and geometric vector stamps.
- * 2. Physical Size-Speed Correlation & Parallax:
- *    - Terminal velocity strictly proportional to radius (v_y = (radius / 2.5) * sMult).
- *    - Larger flakes sway and fall faster; tiny background ice dust drifts lazily.
- * 3. Dynamic Multi-Scale Harmonic Wind System:
- *    - Slow primary wave (~20-40s directional drift)
- *    - Medium oscillation & rapid flutter
- *    - Random natural gusts (2-5s sinusoidal bursts)
- *    - Dual-frequency wobble sway with aerodynamic tilt
- * 4. 3-Canvas True Depth-of-Field Architectural Layering:
- *    - Background Canvas (#theme-snow-universe, z-index: -1): Layer 0 (distant atmospheric dust behind cards).
- *    - Content Snow Canvas (#theme-snow-mid, z-index: 20): Layer 1 (in-focus organic snowflakes drifting over cards).
- *    - Foreground Bokeh Canvas (#theme-snow-foreground, z-index: 25): Layer 2 (front flakes) + Layer 3 (camera close calls)
- *      with hardware compositor CSS `filter: blur(2.5px)`.
- * 5. High-Visibility Directional Winter Light Model (Daylight & Nighttime):
- *    - Daylight Mode: Top pure snow white (#fff) -> crisp snow core -> underside soft ambient winter shadow (rgba(138, 172, 210, 0.94)).
- *      Flakes are 100% clearly visible over pure white cards (#ffffff) without any hollow rings, cartoon outlines, or dark dirty borders.
- *    - Dark Mode: Pure luminous white with delicate glints against the deep night sky.
- * 6. High Performance & Zero DOM Pollution:
- *    - Zero ctx.shadowBlur (avoiding Skia offscreen Gaussian blur CPU lag), locked at 60FPS.
- *    - All cards remain 100% clean DOM with pointer-events: none on all canvases.
+ * 架构核心特性 (Architecture Pillars):
+ * 1. Organic Smooth Clump Aggregates (自研有机贝塞尔雪絮团簇算法):
+ *    - 程序化 5~8 顶点不规则偏移并在相邻中点间绘制二次贝塞尔曲线 (quadraticCurveTo)。
+ *    - 彻底消除生硬多边形尖角、剪纸矢量印章与空心圆环，还原真实自然落雪质感。
+ * 2. Physical Size-Speed Correlation & Parallax (空气动力学物理终端速度与视差关联):
+ *    - 终端速度严格正比于雪片半径 (v_y = (radius / 2.5) * sMult)。
+ *    - 大雪团受重力影响快速降落且摆动幅度大，远景微小冰尘轻盈缓漂。
+ * 3. Dynamic Multi-Scale Harmonic Wind System (三频谐波多尺度动态风场模拟):
+ *    - 慢速主波长换向 (~20-40s 宏观漂移)
+ *    - 中频环境气流复合扰动与高频微风颤动
+ *    - 随机自然阵风爆发 (Gusts, 2-5s 平滑正弦渐变)
+ *    - 双频阻力左右摇曳与倾角翻仰 (aerodynamic tilt)
+ * 4. 3-Canvas True Depth-of-Field Layering (3层视口全景景深空间架构):
+ *    - 天幕底层画布 (#theme-snow-universe, z-index: -1): Layer 0 远景微尘，漫漫悬浮于卡片后方；
+ *    - 正文聚焦雪画布 (#theme-snow-mid, z-index: 20): Layer 1 清晰聚焦雪絮，优雅漫越于所有卡片与正文上方；
+ *    - 镜头散景前景画布 (#theme-snow-foreground, z-index: 25): Layer 2 近景与 Layer 3 掠镜超大雪球，
+ *      配合 GPU 硬件级 CSS filter: blur(2.5px) 营造电影级镜头散景 (Bokeh)。
+ * 5. Directional Winter Light Model (白昼定向冬日光影模型):
+ *    - 白昼模式：迎光面纯白 (#fff) -> 晶莹粉雪芯 -> 背光面微冷天幕散射自阴影 (rgba(138, 172, 210, 0.94))，
+ *      在纯白卡片 (#ffffff) 上立体鲜明、柔和自然，杜绝空心蓝环与黑脏描边；
+ *    - 夜间模式：纯净皎洁白光与晶莹冰蓝折射。
+ * 6. High Performance & Zero DOM Pollution (极致性能与纯净架构):
+ *    - 严格 0 ctx.shadowBlur，锁定 60FPS 丝滑流畅；
+ *    - 画布配置 pointer-events: none，全站 UI 交互穿透率 100%；卡片 DOM 保持零污染。
  */
 export function ThemeUniverse() {
   useEffect(() => {
@@ -112,7 +112,7 @@ export function ThemeUniverse() {
       ctx.closePath();
     };
 
-    // Dynamic multi-scale wind simulation (from react-cinematic-snow)
+    // EpoCanvas Dynamic multi-scale harmonic wind simulation
     const windState = {
       time: 0,
       gustTime: 0,

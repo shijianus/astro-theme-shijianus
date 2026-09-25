@@ -3910,10 +3910,11 @@
     - 完整吸收 react-cinematic-snow 的三频谐波风浪（慢速 20~40s 大转向、中速复合振荡、快速微颤）与随机阵风爆发机制（Gusts 持续 2~5s 正弦波渐变）；
     - 终端速度严格与尺寸正相关（`baseSpeed = (radius / 2.5) * sMult`），配合双频摆动与左右偏航倾角（`rotate(sin(wobble))`）；
     - 严格杜绝 `ctx.shadowBlur`，保持丝滑 60FPS。
-- [x] **本地构建、全流程端到端自动化测试与视觉核验 100% 通过**:
-  - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过；
-  - 本地实机运行测试（`scripts/verify-local-built-snow.mjs`）：3 层画布全部就绪（z-index: -1, 20, 25），白昼与夜间全景截图审计通过，确认纯白卡片上方雪花清晰漫越、柔和自然；
-  - 视觉实验室（`scratch/snow-daylight-models.html`）6 种光学模型对比审计确立最优 Directional Winter Light 模型。
+- [x] **本地品牌化封装与外部参考仓库全面清理**:
+  - 将降雪引擎完整内化与本地品牌化命名为 **EpoCanvas Cinematic Snowfall Engine (时简 / EpoCanvas 自研电影级多层雪境引擎)**；
+  - 彻底清除外部临时 clone 仓库（`/tmp/react-cinematic-snow`），杜绝任何外部 submodule 或嵌套 git 目录；
+  - 全面清理开发过程中的临时测试页面与图像草稿，保持仓库纯净；
+  - 多端（`origin` 与 `cf`）全量同步并更新生产环境。
 
 
 
