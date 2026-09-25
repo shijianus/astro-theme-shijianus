@@ -206,7 +206,7 @@ export function SiteHeader({
   const themeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const cloudTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();
@@ -964,7 +964,7 @@ export function SiteHeader({
                   rel={item.external ? 'noreferrer' : undefined}
                   className="site-mobile-link"
                 >
-                  <span>{item.label}</span>
+                  <span>{convertText(item.label, currentLocale)}</span>
                   {item.external && <ExternalLink className="h-3.5 w-3.5" />}
                 </a>
               ))}

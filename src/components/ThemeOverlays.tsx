@@ -296,7 +296,7 @@ export function ThemeOverlays({
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
   const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
 
   const showUnifiedToast = useCallback((message: string, overrideLocale?: LocaleVariant) => {
@@ -620,17 +620,17 @@ export function ThemeOverlays({
     return [
       {
         label: t('console.status.totalWords', '本站总字数'),
-        value: `${sWords.toLocaleString()} 字`,
+        value: convertText(`${sWords.toLocaleString()} 字`, localeVariant),
         tooltip: t('console.status.totalWordsTooltip', '基于全站 Markdown 节点物理扫描精算的实时总字数'),
       },
       {
         label: t('console.status.uptime', '安全运行天数'),
-        value: `${uptimeDays} 天`,
+        value: convertText(`${uptimeDays} 天`, localeVariant),
         tooltip: t('console.status.uptimeTooltip', '自 2024-01-01 以来稳定运行的物理时长记录'),
       },
       {
         label: t('console.status.latestPost', '最后推送'),
-        value: latestPost?.date || '今天',
+        value: latestPost?.date || convertText('今天', localeVariant),
         href: latestPost?.href,
         tooltip: t('console.status.latestPostTooltip', '系统实时检索的全站最新内容或特性的精确时间戳。'),
       },
@@ -643,13 +643,13 @@ export function ThemeOverlays({
       {
         label: t('console.status.activityLevel', '活跃等级'),
         value: activeLevel,
-        tooltip: t('console.status.activityLevelTooltip', `基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`),
+        tooltip: t('console.status.activityLevelTooltip', convertText(`基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`, localeVariant)),
         href: '/standards',
       },
       {
         label: t('console.status.density', '内容密度'),
         value: densityLevel,
-        tooltip: t('console.status.densityTooltip', `基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`),
+        tooltip: t('console.status.densityTooltip', convertText(`基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`, localeVariant)),
         href: '/standards',
       },
       {
@@ -663,7 +663,7 @@ export function ThemeOverlays({
         tooltip: t('console.status.architectureTooltip', '基于 Astro 核心引擎与 Edge Functions 的现代响应式架构'),
       },
     ];
-  }, [stats, posts, t]);
+  }, [stats, posts, t, localeVariant]);
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => ({
       left: `${(index * 37) % 100}%`,

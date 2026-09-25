@@ -385,7 +385,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({
 
   const [country, setCountry]           = useState('');
   const [currencyConfig, setCurrencyConfig] = useState<CurrencyConfig>(DEFAULT_CONFIG);
-  const [localeVariant, setLocaleVariant]   = useState<LocaleKey>('zh-CN');
+  const [localeVariant, setLocaleVariant]   = useState<LocaleKey>(() => (typeof window !== 'undefined' ? ((document.documentElement.dataset.localeVariant || window.localStorage.getItem('shijianus-locale-variant') || 'zh-CN') as LocaleKey) : 'zh-CN'));
 
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [customAmount, setCustomAmount]     = useState('');

@@ -1707,7 +1707,16 @@ export function getI18nText(key: string, locale: LocaleVariant, fallback?: strin
     const rawZh = fallback !== undefined ? fallback : (I18N_STRINGS['zh-CN']?.[key] ?? key);
     return convertText(rawZh, 'zh-Hant');
   }
-  return I18N_STRINGS['en']?.[key] ?? I18N_STRINGS['zh-CN']?.[key] ?? fallback ?? key;
+  const found = I18N_STRINGS[locale]?.[key] ?? (locale !== 'en' ? I18N_STRINGS['en']?.[key] : undefined);
+  if (found !== undefined) return found;
+
+  const rawZh = fallback !== undefined ? fallback : I18N_STRINGS['zh-CN']?.[key];
+  if (rawZh !== undefined) {
+    const converted = convertText(rawZh, locale);
+    if (converted && converted !== rawZh) return converted;
+    return rawZh;
+  }
+  return key;
 }
 
 const zhPattern = /[\u3400-\u9fff]/;
@@ -2702,6 +2711,9 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '关于我': { en: 'About Me', fr: 'À propos de moi', es: 'Sobre mí', de: 'Über mich' },
   '未读': { en: 'Unread', fr: 'Non lu', es: 'No leído', de: 'Ungelesen' },
   '最新': { en: 'Latest', fr: 'Récents', es: 'Reciente', de: 'Neueste' },
+  '已收起快捷菜单（鼠标移至屏幕右侧可重新唤出）': { en: 'Quick menu collapsed (hover right edge to restore)', fr: 'Menu rapide masqué (survoler le bord droit pour restaurer)', es: 'Menú rápido oculto (pase el ratón por el borde derecho para restaurar)', de: 'Schnellmenü eingeklappt (rechten Bildschirmrand berühren zum Wiederherstellen)' },
+  '已开启随身音乐口袋': { en: 'Pocket player opened', fr: 'Lecteur de poche ouvert', es: 'Reproductor de bolsillo abierto', de: 'Pocket-Player geöffnet' },
+  '已隐藏随身音乐口袋': { en: 'Pocket player hidden', fr: 'Lecteur de poche masqué', es: 'Reproductor de bolsillo oculto', de: 'Pocket-Player ausgeblendet' },
 };
 
 export interface PatternRule {

@@ -193,7 +193,7 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [background, setBackground] = useState(_props.defaultBackground);
   const [panelHidden, setPanelHidden] = useState(true);
   const [readMode, setReadMode] = useState(false);
-  const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
+  const [locale, setLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
   const [tocDepth, setTocDepth] = useState('all');
   const [musicPocketVisible, setMusicPocketVisible] = useState(false);
 
@@ -651,8 +651,8 @@ export function ThemeDock(_props: ThemeDockProps) {
               type="button"
               id="mobile-toc-quick"
               className="mobile-toc-quick-btn"
-              title={locale === 'en' ? 'Table of Contents' : '文章目录'}
-              aria-label={locale === 'en' ? 'Table of Contents' : '文章目录'}
+              title={convertText('文章目录', locale)}
+              aria-label={convertText('文章目录', locale)}
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('shijianus:toggle-mobile-toc'));
                 emitActivity('已打开文章目录抽屉');
