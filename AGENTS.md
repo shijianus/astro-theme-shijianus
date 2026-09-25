@@ -3984,6 +3984,36 @@
   - 执行 `node scripts/verify-interlude-and-opening-sync.mjs` 直接审计生产主域名 `https://blog.epocanvas.com/`；
   - 验证项全部通过：前奏展示歌曲信息与首句预告（无乱序）、间奏期间展示「♬ 间奏演奏中 ♬」、间奏退出前 0.3s 进度归零（0% 杜绝全蓝）、下一句开唱平滑流光、在线歌曲（晴天/乌梅子酱）无乱码物理跟随、0 控制台致命报错。
 
+### Task 181: 彻底移除多余“间奏中”、唱完保持上一句高亮、纯音乐专属呈现与歌词物理同步精细化优化 (`25c1212`, CFSolara `f51d4a3`)
+- [x] **用户核心痛点彻底根除 (User Requirements Addressed)**:
+  1. **彻底移除多余“间奏中”**：
+     - 用户明确指示无需多余的“♬ 间奏演奏中 ♬”文字显式；
+     - 清除前端与样式中所有 `isInterlude` 逻辑，在两句歌词间隔期间不再倒带、不再插入任何间奏文字；
+  2. **唱完牢牢停留在上一句 (Line Retention)**：
+     - 在 `computeActiveLineProgress` 中，当歌曲唱完本句（`time >= vocalEnd`）后，直接保持 `progress: 100`；
+     - 桌面歌词 HUD 与播放器界面稳定停留在上一句已唱完高亮态，双行模式下一行自然预览下一句，直至下一句正式唱响无缝切入；
+  3. **纯音乐专属呈现 (Pure Music Support)**：
+     - 在 CFSolara 后端微服务与前端音乐提供层新增 `isPureMusic` 标识；
+     - 当曲目无歌词、歌名/专辑包含纯音乐/伴奏/BGM/Piano、或歌词直接标记为纯音乐时，统一优雅展示“♬ 纯音乐，请欣赏 ♬”，彻底杜绝纯音乐被“间奏”误带歪；
+  4. **彻底消除抢跑、落后与快音跳字 (Sync Precision Overhaul)**：
+     - **抢跑消除**：移除原先粗暴按 `length * 0.32` 计算发音时间的逻辑，连续歌词自适应铺展为 `Math.max(0.8, gap - 0.35)`，留出自然的换气微停顿，杜绝提前数秒提前跑满卡死；
+     - **落后消除**：根据实际两行时间轴间隔自适应推进，下一句开唱瞬间时间轴严格对齐；
+     - **末尾快音跳字根除**：逐字模式下在跨过最后一个词结束时间后稳定停留在 100%，单字流光线性映射，保证每个字都有完整高亮反馈，绝无跳字漏字。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - CFSolara 微服务：部署至 Cloudflare Pages `https://6089a58c.cfsolara-dho.pages.dev`；
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://99552a1d.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://7f9701d0.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 E2E 自动化审计 (`scripts/verify-no-interlude-and-lyric-sync.mjs`)**:
+  - 全真访问生产主域名 `https://blog.epocanvas.com/`；
+  - **STAGE 1 真实 API 校验**：CFSolara API 晴天 42 行成功返回（`isPureMusic: false`），李荣浩《乌梅子酱》无乱码成功返回；
+  - **STAGE 2 真实浏览器 E2E 审计**：
+    1. 《彼女は旅に出る》前奏状态：显示歌曲信息，完全无多余间奏字符；
+    2. 长间隙期间（36.0s，距离下一句还有 4 秒）：`hasInterludeElement: false`，`hasInterludeText: false`（彻底消除了间奏中），且稳定停留在上一句 `あ、あ、あたしの黒猫はしゃべらないままだな`，且高亮保持为 `100.0%`；
+    3. 下一句切入（40.5s）：按时进场，自然平滑推进至 `63.1%`；
+    4. 纯音乐真实点播与呈现：通过 UI 检索并点播“赛博纯音”，桌面 HUD 准确呈现 `♬纯音乐，请欣赏♬`，歌词面板同步显示 `♬ 纯音乐，请欣赏 ♬`；
+  - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
+
+
 
 
 
