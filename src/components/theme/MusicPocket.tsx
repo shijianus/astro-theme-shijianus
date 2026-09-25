@@ -1805,8 +1805,8 @@ export function MusicPocket({ apiBase }: Props) {
       : (duration || curTime + 10);
     const gap = nextStart - curTime;
 
-    // 间奏检测：一直持续到下一句开唱前 0.2 秒
-    if (gap > 4.5 && currentTime > vocalEnd + 0.6 && currentTime < nextStart - 0.2) {
+    // 间奏检测：一直持续到下一句开唱前 0.3 秒
+    if (gap > 3.8 && currentTime > vocalEnd + 0.5 && currentTime < nextStart - 0.3) {
       return {
         activeText: '',
         nextText: nextLine ? cleanLyricText(nextLine.text) : '',
@@ -1814,8 +1814,8 @@ export function MusicPocket({ apiBase }: Props) {
       };
     }
 
-    // 如果间奏刚结束（在 nextStart - 0.2 到 nextStart 之间），直接无缝切换显示下一句（准备唱响），坚决不倒带显示上一句！
-    if (nextLine && currentTime >= nextStart - 0.2 && currentTime < nextStart) {
+    // 如果间奏刚结束（在 nextStart - 0.3 到 nextStart 之间），直接无缝切换显示下一句（准备唱响），坚决不倒带显示上一句！
+    if (nextLine && currentTime >= nextStart - 0.3 && currentTime < nextStart) {
       return {
         activeText: cleanLyricText(nextLine.text),
         nextText: '',
