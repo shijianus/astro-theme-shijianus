@@ -3916,6 +3916,29 @@
   - 全面清理开发过程中的临时测试页面与图像草稿，保持仓库纯净；
   - 多端（`origin` 与 `cf`）全量同步并更新生产环境。
 
+### Task 178: CFSolara 全网高精度歌词爬虫与解析 API 微服务构建及播放器真实物理时间同步原生重构 (`3580093`, `b898eb3`)
+- [x] **CFSolara 全网多源聚合瀑布实时爬虫与解析引擎 (`CFSolara: functions/_lib/music.ts`, Commit `3580093`)**:
+  - 构建多源实时爬虫瀑布：网易云 (NetEase) -> QQ 音乐 (QQ Music) -> LRCLIB 国际公共库 -> 酷狗 (Kugou)，全面覆盖中文热歌、欧美流行、小众独立及二次元歌曲；
+  - 深度解析网易云 JSON Lines 歌词（`{"t":..., "c":[{"tx":"...", "t":..., "d":...}]}`）、网易云 YRC 格式（`[start,dur](wstart,wdur)...`）、QQ 音乐 XML QRC、尖括号逐字 `<start,dur>` 与标准行级 LRC；
+  - 自动过滤作词、作曲、编曲、制作人、监制等元数据杂音噪声，输出毫秒级起止时间与持续时长。
+- [x] **开放高精度歌词 REST API (`/api/lyric`)**:
+  - 独立路由支持任意第三方项目无缝接入，天然支持 CORS（`Access-Control-Allow-Origin: *`）；
+  - 参数灵活：支持通过 `title`、`artist`、`q` 智能模糊检索，或直接携带 `id`、`source`、`duration`；
+  - 结构化数据契约：明确返回 `syncType` ("word" 或 "line")、整体时间偏置 `offset`、`lines` 结构化时间戳列表及 `rawLyric`。
+- [x] **播放器歌词同步层物理时间轴重构 (`shijianus-blog: src/components/theme/MusicPocket.tsx`, Commit `b898eb3`)**:
+  - 播放器歌词获取收敛：直接请求本地 `/api/music/lyric` 并自动回退至 CFSolara 全网微服务（`https://cfsolara-dho.pages.dev/api/lyric`）；
+  - 彻底根除基于字数或行时长的脑补硬性估算逻辑：
+    - 逐字模式：根据音频真实物理时间（`audio.currentTime`）比对字级时间戳，驱动 `--karaoke-pct` 严格跟随歌手发音；
+    - 行级模式：整行高亮与过渡，不再伪装假流光；
+    - 间奏判定：基于前一句结束时间与下一句起始时间的物理静默间隔精准判定，杜绝闪烁。
+- [x] **多端全量同步与生产端 (Cloudflare Pages) 实机端到端全链路验证**:
+  - CFSolara 边缘部署：`https://cfsolara-dho.pages.dev/api/lyric` 实时响应；
+  - shijianus-blog 生产环境部署：全量编译通过并通过 Wrangler 部署至 `shijianus-blog`（挂载生产域名 `https://blog.epocanvas.com/`）及 `shijianus-github-io`；
+  - 编写并执行自动化测试套件（`scripts/verify-live-universal-lyric-sync.mjs`）：
+    1. REST API 契约验证：中文在线歌曲「晴天」（42 行结构化歌词，首句 29.36s 命中）与英文在线歌曲「Shape of You」（90 行结构化歌词，首句 15.82s 命中）全量通过；
+    2. 真实生产环境（`https://blog.epocanvas.com/`）浏览器端到端实机验证：在播放器搜索在线歌曲「晴天」及「Shape of You」，真实点播后桌面 HUD（`.screen-lyric__content`）动态渲染爬取的全网歌词，推进音频物理时间轴，歌词高亮与行推进 100% 严格吻合，0 控制台致命 JS 报错。
+
+
 
 
 
