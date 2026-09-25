@@ -3888,7 +3888,7 @@
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
 
-### Task 177: 冬日雪境背景阶段一深度优化：3层画布真实景深、平滑有机雪团、天幕定向冬日光影与白天高可视度全面达成 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`, `949b7bf`, `b898eb3`, `1013945`)
+### Task 177: 冬日雪境背景阶段一深度优化：3层画布真实景深、平滑有机雪团、天幕定向冬日光影与白天高可视度全面达成 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`, `949b7bf`, `b898eb3`, `1013945`, `afcb94f`, `745ccee`)
 - [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`, `949b7bf`)**:
   - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #c4dbf6 0%, #d5e7f8 35%, #e5f1fb 70%, #eff5fd 100%) !important;`）；
   - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供清晰的自然冷色天幕对比基底；
