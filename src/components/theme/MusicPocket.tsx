@@ -347,55 +347,69 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
   return rawLines
     .filter((line) => line && typeof line.text === 'string' && line.text.trim())
     .map((line) => {
-      const timeSec =
-        typeof line.timeSec === 'number'
-          ? line.timeSec
-          : typeof line.time === 'number' && (line.time > 100 || !String(line.time).includes('.'))
-          ? line.time / 1000
-          : Number(line.time) || 0;
+      // 统一度量衡：优先使用明确的 timeSec（秒）与 durationSec（秒）
+      let timeSec: number;
+      if (typeof line.timeSec === 'number' && !isNaN(line.timeSec)) {
+        timeSec = line.timeSec;
+      } else if (typeof line.time === 'number' && !isNaN(line.time)) {
+        // 仅当数值大于 600（> 10分钟）时才视为毫秒除以 1000；绝不盲目基于 >100 或判断小数点！
+        timeSec = line.time > 600 ? line.time / 1000 : line.time;
+      } else {
+        timeSec = 0;
+      }
+      timeSec = Math.max(0, parseFloat(timeSec.toFixed(3)));
 
-      const durSec =
-        typeof line.durationSec === 'number'
-          ? line.durationSec
-          : typeof line.duration === 'number'
-          ? line.duration > 100
-            ? line.duration / 1000
-            : line.duration
-          : undefined;
+      let durSec: number | undefined = undefined;
+      if (typeof line.durationSec === 'number' && !isNaN(line.durationSec)) {
+        durSec = line.durationSec;
+      } else if (typeof line.duration === 'number' && !isNaN(line.duration)) {
+        durSec = line.duration > 300 ? line.duration / 1000 : line.duration;
+      }
+      if (typeof durSec === 'number') {
+        durSec = Math.max(0.1, parseFloat(durSec.toFixed(3)));
+      }
 
       let words: LyricWord[] | undefined = undefined;
       if (Array.isArray(line.words) && line.words.length > 0) {
         words = line.words.map((w: any) => {
-          const wStartSec =
-            typeof w.startSec === 'number'
-              ? w.startSec
-              : typeof w.start === 'number' && (w.start > 100 || !String(w.start).includes('.'))
-              ? w.start / 1000
-              : Number(w.start) || 0;
+          let wStartSec: number;
+          if (typeof w.startSec === 'number' && !isNaN(w.startSec)) {
+            wStartSec = w.startSec;
+          } else if (typeof w.start === 'number' && !isNaN(w.start)) {
+            wStartSec = w.start > 600 ? w.start / 1000 : w.start;
+          } else {
+            wStartSec = timeSec;
+          }
+          wStartSec = Math.max(0, parseFloat(wStartSec.toFixed(3)));
 
-          const wDurSec =
-            typeof w.durationSec === 'number'
-              ? w.durationSec
-              : typeof w.duration === 'number'
-              ? w.duration > 100
-                ? w.duration / 1000
-                : w.duration
-              : 0.3;
+          let wDurSec: number;
+          if (typeof w.durationSec === 'number' && !isNaN(w.durationSec)) {
+            wDurSec = w.durationSec;
+          } else if (typeof w.duration === 'number' && !isNaN(w.duration)) {
+            wDurSec = w.duration > 300 ? w.duration / 1000 : w.duration;
+          } else {
+            wDurSec = 0.3;
+          }
+          wDurSec = Math.max(0.01, parseFloat(wDurSec.toFixed(3)));
 
-          const wEndSec =
-            typeof w.endSec === 'number'
-              ? w.endSec
-              : typeof w.end === 'number' && (w.end > 100 || !String(w.end).includes('.'))
-              ? w.end / 1000
-              : wStartSec + wDurSec;
+          let wEndSec: number;
+          if (typeof w.endSec === 'number' && !isNaN(w.endSec)) {
+            wEndSec = w.endSec;
+          } else if (typeof w.end === 'number' && !isNaN(w.end)) {
+            wEndSec = w.end > 600 ? w.end / 1000 : w.end;
+          } else {
+            wEndSec = wStartSec + wDurSec;
+          }
+          wEndSec = Math.max(wStartSec + 0.01, parseFloat(wEndSec.toFixed(3)));
 
           return {
             text: String(w.text || ''),
             start: wStartSec,
             end: wEndSec,
-            duration: Math.max(0.01, wEndSec - wStartSec),
+            duration: Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3))),
             startSec: wStartSec,
             endSec: wEndSec,
+            durationSec: Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3))),
           };
         });
       }
@@ -405,22 +419,18 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
         timeSec,
         text: String(line.text || '').trim(),
         duration: durSec,
+        durationSec: durSec,
         words,
       };
     })
-    .sort((a, b) => a.time - b.time);
+    .sort((a, b) => a.timeSec - b.timeSec);
 }
 
 export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number {
   if (!lyrics || lyrics.length === 0) return -1;
   let found = -1;
   for (let i = 0; i < lyrics.length; i++) {
-    const lTime =
-      typeof (lyrics[i] as any).timeSec === 'number'
-        ? (lyrics[i] as any).timeSec
-        : lyrics[i].time > 100
-        ? lyrics[i].time / 1000
-        : lyrics[i].time;
+    const lTime = typeof lyrics[i].timeSec === 'number' ? lyrics[i].timeSec : lyrics[i].time;
     if (time >= lTime) {
       found = i;
     } else {
@@ -449,50 +459,31 @@ function computeActiveLineProgress(
     }
   }
 
-  const lineStart =
-    typeof (cur as any).timeSec === 'number'
-      ? (cur as any).timeSec
-      : cur.time > 100
-      ? cur.time / 1000
-      : cur.time;
-
+  const lineStart = typeof cur.timeSec === 'number' ? cur.timeSec : cur.time;
   const nextStart = nextLine
-    ? typeof (nextLine as any).timeSec === 'number'
-      ? (nextLine as any).timeSec
-      : nextLine.time > 100
-      ? nextLine.time / 1000
-      : nextLine.time
+    ? (typeof nextLine.timeSec === 'number' ? nextLine.timeSec : nextLine.time)
     : null;
 
   const lineEnd =
     nextStart !== null
       ? nextStart
       : trackDuration > lineStart
-      ? Math.min(trackDuration, lineStart + 6)
-      : lineStart + 4.5;
+      ? Math.min(trackDuration, lineStart + (cur.durationSec || cur.duration || 5))
+      : lineStart + (cur.durationSec || cur.duration || 4.5);
   const gap = Math.max(0.6, lineEnd - lineStart);
 
-  // 1. 逐字模式：真实物理时间轴严格比对，歌手发音跟随
+  // 1. 逐字模式：真实物理时间轴严格比对，歌手发音逐字跟随
   if (syncType === 'word' && cur.words && cur.words.length > 0) {
     const words = cur.words;
     const firstWord = words[0];
     const lastWord = words[words.length - 1];
-    const firstStart =
-      typeof (firstWord as any).startSec === 'number'
-        ? (firstWord as any).startSec
-        : firstWord.start > 100
-        ? firstWord.start / 1000
-        : firstWord.start;
-    const lastEnd =
-      typeof (lastWord as any).endSec === 'number'
-        ? (lastWord as any).endSec
-        : lastWord.end > 100
-        ? lastWord.end / 1000
-        : lastWord.end;
+    const firstStart = typeof firstWord.startSec === 'number' ? firstWord.startSec : firstWord.start;
+    const lastEnd = typeof lastWord.endSec === 'number' ? lastWord.endSec : lastWord.end;
 
     if (time < firstStart) return { progress: 0, isInterlude: false };
     if (time >= lastEnd) {
-      if (gap > 4.5 && time > lastEnd + 0.8 && time < lineEnd - 1.2) {
+      // 间奏判定：距离下一句开唱前 0.2 秒退出间奏
+      if (gap > 4.5 && time > lastEnd + 0.6 && time < lineEnd - 0.2) {
         return { progress: 0, isInterlude: true };
       }
       return { progress: 100, isInterlude: false };
@@ -502,18 +493,8 @@ function computeActiveLineProgress(
     let accumulatedChars = 0;
     for (let wIdx = 0; wIdx < words.length; wIdx++) {
       const w = words[wIdx];
-      const wStart =
-        typeof (w as any).startSec === 'number'
-          ? (w as any).startSec
-          : w.start > 100
-          ? w.start / 1000
-          : w.start;
-      const wEnd =
-        typeof (w as any).endSec === 'number'
-          ? (w as any).endSec
-          : w.end > 100
-          ? w.end / 1000
-          : w.end;
+      const wStart = typeof w.startSec === 'number' ? w.startSec : w.start;
+      const wEnd = typeof w.endSec === 'number' ? w.endSec : w.end;
       const wLen = Math.max(1, w.text.length);
       if (time >= wEnd) {
         accumulatedChars += wLen;
@@ -530,14 +511,26 @@ function computeActiveLineProgress(
     return { progress: pct, isInterlude: false };
   }
 
-  // 2. 行级模式：整行高亮过渡，彻底移除所有基于字数脑补时长的硬性估算逻辑
-  const lineDur = cur.duration || 3.5;
-  const vocalEnd = lineStart + lineDur;
-  if (gap > 4.5 && time > vocalEnd + 0.8 && time < lineEnd - 1.2) {
-    return { progress: 100, isInterlude: true };
+  // 2. 行级模式：基于当前行起止物理时间线性流光跟随，拒绝静态全蓝卡死
+  const lineVocalDur = cur.durationSec || cur.duration
+    ? Math.min(cur.durationSec || cur.duration || 3.5, gap)
+    : Math.max(1, Math.min(gap - 0.4, 4.5));
+  const vocalEnd = lineStart + lineVocalDur;
+
+  if (time < lineStart) return { progress: 0, isInterlude: false };
+
+  // 间奏检测：当人声唱完且距离下一句开唱有较长空白（> 4.5秒）
+  if (gap > 4.5 && time > vocalEnd + 0.6 && time < lineEnd - 0.2) {
+    return { progress: 0, isInterlude: true };
   }
 
-  return { progress: 100, isInterlude: false };
+  if (time >= vocalEnd) {
+    return { progress: 100, isInterlude: false };
+  }
+
+  // 在物理人声持续时间内，真实平滑流光推进
+  const pct = Math.min(100, Math.max(0, ((time - lineStart) / Math.max(0.1, lineVocalDur)) * 100));
+  return { progress: pct, isInterlude: false };
 }
 
 export function parseHighPrecisionLrc(raw: string): {
@@ -606,7 +599,9 @@ export function parseHighPrecisionLrc(raw: string): {
 
           result.push({
             time: lineTimeSec,
+            timeSec: lineTimeSec,
             duration: lineDurSec,
+            durationSec: lineDurSec,
             text: cleanText,
             words: words.length > 0 ? words : undefined,
           });
@@ -644,6 +639,9 @@ export function parseHighPrecisionLrc(raw: string): {
           start: wStartSec,
           end: wStartSec + wDurSec,
           duration: wDurSec,
+          startSec: wStartSec,
+          endSec: wStartSec + wDurSec,
+          durationSec: wDurSec,
         });
         lineText += wText;
       }
@@ -652,7 +650,9 @@ export function parseHighPrecisionLrc(raw: string): {
         hasWordTimestamps = true;
         result.push({
           time: lineStartSec,
+          timeSec: lineStartSec,
           duration: lineDurSec,
+          durationSec: lineDurSec,
           text: lineText.trim() || content.replace(/\([^)]+\)/g, '').trim(),
           words,
         });
@@ -687,15 +687,18 @@ export function parseHighPrecisionLrc(raw: string): {
       const rawDur = angleMatch[2] ? parseFloat(angleMatch[2]) : 0.3;
       const wText = angleMatch[3];
 
-      const isSeconds = String(angleMatch[1]).includes('.') || rawStart < 100;
-      const startSec = Math.max(0, (isSeconds ? rawStart : rawStart / 1000) + offsetSec);
-      const durSec = isSeconds ? rawDur : rawDur / 1000;
+      const isMs = rawStart > 600;
+      const startSec = Math.max(0, (isMs ? rawStart / 1000 : rawStart) + offsetSec);
+      const durSec = isMs ? rawDur / 1000 : rawDur;
 
       lineWords.push({
         text: wText,
         start: startSec,
         end: startSec + durSec,
         duration: durSec,
+        startSec,
+        endSec: startSec + durSec,
+        durationSec: durSec,
       });
     }
 
@@ -712,6 +715,9 @@ export function parseHighPrecisionLrc(raw: string): {
           start: startSec,
           end: startSec + durSec,
           duration: durSec,
+          startSec,
+          endSec: startSec + durSec,
+          durationSec: durSec,
         });
       }
     }
@@ -732,6 +738,7 @@ export function parseHighPrecisionLrc(raw: string): {
       for (const t of timeMatches) {
         result.push({
           time: t,
+          timeSec: t,
           text: plainText,
           words: lineWords.length > 0 ? lineWords : undefined,
         });
@@ -740,7 +747,9 @@ export function parseHighPrecisionLrc(raw: string): {
       const lineStart = lineWords[0].start;
       result.push({
         time: lineStart,
+        timeSec: lineStart,
         duration: lineWords[lineWords.length - 1].end - lineStart,
+        durationSec: lineWords[lineWords.length - 1].end - lineStart,
         text: plainText,
         words: lineWords,
       });
@@ -760,6 +769,7 @@ export function parseHighPrecisionLrc(raw: string): {
         cur.duration = 4.5;
       }
     }
+    cur.durationSec = cur.duration;
   }
 
   return {
@@ -1704,9 +1714,12 @@ export function MusicPocket({ apiBase }: Props) {
     // 1. 查找第一个真实人声歌词行（跳过作词/作曲/编曲等元数据行）
     const firstVocalIndex = parsedLyrics.findIndex((l) => !isLyricMetadataLine(l.text));
     const firstVocalLine = firstVocalIndex >= 0 ? parsedLyrics[firstVocalIndex] : parsedLyrics[0];
+    const firstVocalTime = firstVocalLine
+      ? (typeof firstVocalLine.timeSec === 'number' ? firstVocalLine.timeSec : firstVocalLine.time)
+      : 0;
 
     // 2. 前奏判定：如果还没到第一句真实人声
-    if (firstVocalLine && currentTime < firstVocalLine.time - 0.3) {
+    if (firstVocalLine && currentTime < firstVocalTime - 0.3) {
       return {
         activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
         nextText: cleanLyricText(firstVocalLine.text),
@@ -1724,7 +1737,7 @@ export function MusicPocket({ apiBase }: Props) {
     }
 
     const curLine = parsedLyrics[activeLyricIndex];
-    if (isLyricMetadataLine(curLine.text) && firstVocalLine && currentTime < firstVocalLine.time) {
+    if (isLyricMetadataLine(curLine.text) && firstVocalLine && currentTime < firstVocalTime) {
       return {
         activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐前奏 ♬',
         nextText: cleanLyricText(firstVocalLine.text),
@@ -1742,25 +1755,40 @@ export function MusicPocket({ apiBase }: Props) {
     const nextLine = nextVocalIndex >= 0 ? parsedLyrics[nextVocalIndex] : null;
 
     // 4. 间奏（Interlude）检测与停顿判定：物理时间严格比对，无需字数脑补
-    let vocalEnd = curLine.time;
+    const curTime = typeof curLine.timeSec === 'number' ? curLine.timeSec : curLine.time;
+    let vocalEnd = curTime;
     if (curLine.words && curLine.words.length > 0) {
-      vocalEnd = curLine.words[curLine.words.length - 1].end;
-    } else if (curLine.duration) {
-      vocalEnd = curLine.time + curLine.duration;
+      const lastWord = curLine.words[curLine.words.length - 1];
+      vocalEnd = typeof lastWord.endSec === 'number' ? lastWord.endSec : lastWord.end;
+    } else if (curLine.durationSec || curLine.duration) {
+      vocalEnd = curTime + (curLine.durationSec || curLine.duration || 3.5);
     } else if (nextLine) {
-      vocalEnd = Math.min(curLine.time + 3.8, nextLine.time - 0.4);
+      const nextTime = typeof nextLine.timeSec === 'number' ? nextLine.timeSec : nextLine.time;
+      vocalEnd = Math.min(curTime + 3.8, nextTime - 0.4);
     } else {
-      vocalEnd = curLine.time + 3.8;
+      vocalEnd = curTime + 3.8;
     }
 
-    const nextStart = nextLine ? nextLine.time : (duration || curLine.time + 10);
-    const gap = nextStart - curLine.time;
+    const nextStart = nextLine
+      ? (typeof nextLine.timeSec === 'number' ? nextLine.timeSec : nextLine.time)
+      : (duration || curTime + 10);
+    const gap = nextStart - curTime;
 
-    if (gap > 4.5 && currentTime > vocalEnd + 0.8 && currentTime < nextStart - 1.2) {
+    // 间奏检测：一直持续到下一句开唱前 0.2 秒
+    if (gap > 4.5 && currentTime > vocalEnd + 0.6 && currentTime < nextStart - 0.2) {
       return {
         activeText: '',
         nextText: nextLine ? cleanLyricText(nextLine.text) : '',
         isInterlude: true,
+      };
+    }
+
+    // 如果间奏刚结束（在 nextStart - 0.2 到 nextStart 之间），直接无缝切换显示下一句（准备唱响），坚决不倒带显示上一句！
+    if (nextLine && currentTime >= nextStart - 0.2 && currentTime < nextStart) {
+      return {
+        activeText: cleanLyricText(nextLine.text),
+        nextText: '',
+        isInterlude: false,
       };
     }
 
@@ -2951,31 +2979,22 @@ export function MusicPocket({ apiBase }: Props) {
               </div>
             ) : displayLyric.activeText ? (
               <div className={`screen-lyric__current-line ${lyricSyncType === 'word' ? 'is-word-sync' : 'is-line-sync'}`}>
-                {lyricSyncType === 'word' ? (
-                  <div className="screen-lyric__karaoke-box">
-                    {/* 底层：随背景自适应反转的普通未唱文本 (白色 + mix-blend-mode: difference) */}
-                    <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--base">
+                <div className="screen-lyric__karaoke-box">
+                  {/* 底层：随背景自适应反转的普通未唱文本 (白色 + mix-blend-mode: difference) */}
+                  <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--base">
+                    {displayLyric.activeText}
+                  </span>
+                  {/* 顶层：物理发音时间严格绑定的已唱高亮裁剪容器 */}
+                  <span
+                    className="screen-lyric__karaoke-overlay"
+                    style={{ width: `var(--karaoke-pct, ${activeLineProgress.toFixed(1)}%)` }}
+                    aria-hidden="true"
+                  >
+                    <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--sung">
                       {displayLyric.activeText}
                     </span>
-                    {/* 顶层：物理发音时间严格绑定的已唱高亮裁剪容器 */}
-                    <span
-                      className="screen-lyric__karaoke-overlay"
-                      style={{ width: `var(--karaoke-pct, ${activeLineProgress.toFixed(1)}%)` }}
-                      aria-hidden="true"
-                    >
-                      <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--sung">
-                        {displayLyric.activeText}
-                      </span>
-                    </span>
-                  </div>
-                ) : (
-                  /* 行级模式：整行高亮过渡呈现，不伪装字级假流光 */
-                  <div className="screen-lyric__line-box">
-                    <span className="screen-lyric__line-text screen-lyric__line-text--highlight">
-                      {displayLyric.activeText}
-                    </span>
-                  </div>
-                )}
+                  </span>
+                </div>
               </div>
             ) : (
               <div className="screen-lyric__current-line">

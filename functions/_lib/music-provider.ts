@@ -737,6 +737,7 @@ export function parseHighPrecisionLyrics(raw: string): {
         cur.duration = 4500;
       }
     }
+    cur.durationSec = parseFloat((cur.duration / 1000).toFixed(3));
   }
 
   // 严格按规范：当且仅当音源有真实逐字标签时输出 word 模式；普通 LRC 降级为 line 模式，绝不伪造 words
@@ -745,6 +746,20 @@ export function parseHighPrecisionLyrics(raw: string): {
     offset: offsetMs,
     lines: parsedLines,
   };
+}
+
+export function isValidLyric(raw: string): boolean {
+  if (!raw || typeof raw !== 'string') return false;
+  const trimmed = raw.trim();
+  if (!trimmed) return false;
+  if (/^\[00:00(?:\.00+)?\]\s*(暂无歌词|纯音乐，请欣赏|没有填词|纯音乐)/i.test(trimmed)) return false;
+  const lines = trimmed.split('\n').filter((l) => l.trim() && !/^\[(ti|ar|al|by|offset|kana|re|ve|hash|sign|qq|total):/i.test(l.trim()));
+  const validVocalLines = lines.filter((l) => {
+    const textOnly = l.replace(/\[[^\]]+\]/g, '').replace(/<[^>]+>/g, '').replace(/\([^)]+\)/g, '').trim();
+    if (!textOnly) return false;
+    return !/^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(textOnly);
+  });
+  return validVocalLines.length > 0;
 }
 
 export function parseLrcLyrics(rawLrc: string): LyricLine[] {
@@ -810,7 +825,7 @@ export async function fetchHighPrecisionLyrics(
     });
     if (resp.ok) {
       const data = (await resp.json()) as any;
-      if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0) {
+      if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0 && isValidLyric(data.rawLyric || data.lyric || '')) {
         return {
           ok: true,
           id: data.id || id,
@@ -823,7 +838,7 @@ export async function fetchHighPrecisionLyrics(
           lineCount: data.lines.length,
           rawLyric: data.rawLyric || data.lyric || '',
         };
-      } else if (data && data.ok && typeof data.lyric === 'string' && data.lyric.trim()) {
+      } else if (data && data.ok && typeof data.lyric === 'string' && isValidLyric(data.lyric)) {
         const { syncType, offset, lines } = parseHighPrecisionLyrics(data.lyric);
         return {
           ok: true,
@@ -856,7 +871,7 @@ export async function fetchHighPrecisionLyrics(
       if (resp.ok) {
         const json = (await resp.json()) as any;
         const rawLyric = json?.yrc?.lyric || json?.lrc?.lyric || '';
-        if (rawLyric) {
+        if (rawLyric && isValidLyric(rawLyric)) {
           const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);
           return {
             ok: true,
@@ -886,7 +901,7 @@ export async function fetchHighPrecisionLyrics(
       const lrcResp = await fetch(lrcUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
       if (lrcResp.ok) {
         const lrcJson = (await lrcResp.json()) as any;
-        const synced = Array.isArray(lrcJson) ? lrcJson.find((x: any) => x.syncedLyrics)?.syncedLyrics : lrcJson?.syncedLyrics;
+        const synced = Array.isArray(lrcJson) ? lrcJson.find((x: any) => x.syncedLyrics && isValidLyric(x.syncedLyrics))?.syncedLyrics : (isValidLyric(lrcJson?.syncedLyrics) ? lrcJson?.syncedLyrics : null);
         if (synced) {
           const { syncType, offset, lines } = parseHighPrecisionLyrics(synced);
           return {
