@@ -3954,6 +3954,26 @@
   - 覆盖 1080p (1440x900)、1366p (1366x768)、1280p (1280x800)、1200p (1200x800)、1024p (1024x768) 及移动端（375x667）；
   - 全流程验证：默认状态 3 张卡片尺寸、高度 86px、悬停手风琴展开、未悬停卡片零文字截断、零折行吞半截，断言全部通过。
 
+### Task 180: CFSolara 与全网歌词间奏过渡、防乱序开场、无缝流光指示及 UTF-8 编码深度修复 (`aa18f21`, CFSolara `c713253`)
+- [x] **三大核心缺陷彻底根除 (Root Causes Remedied)**:
+  1. **间奏中后回退至全高亮无高亮模式**：
+     - 根因：原逻辑在间奏退出的前 0.2s（`[nextStart - 0.2, nextStart)`）提前展示下一句歌词，但活跃行索引仍指向上一句已唱完的歌词，导致上一句的 `progress: 100` 直接污染下一句；且旧版行级模式直接套用静态全蓝类名 `.screen-lyric__line-text--highlight`，整行从第 0 秒全亮无进度指示；
+     - 修复：在 `computeActiveLineProgress` 中精确引入间奏结束预备下一句临界区（`[lineEnd - 0.3, lineEnd)`），强制将流光进度归零（`progress: 0`）；且统一行级与字级渲染架构为双层 `.screen-lyric__karaoke-box`（底层自适应反转底色 + 顶层 `--karaoke-pct` 裁剪的主题蓝），彻底消除静态全高亮，实现流畅物理发音跟随。
+  2. **很多歌曲一开始就直接失效**：
+     - 根因 1（时间戳单位混淆导致乱序塌陷）：原代码基于 `line.time > 600` 判断毫秒，导致前奏第 0.25 秒（`time: 250`）的行被误当成 250 秒丢到歌曲末尾，彻底撕裂时间轴；修复为全组时间戳先根据整组最大时间 `maxRawTime > 1000` 统一识别时间基准体系，绝不再单独基于 600 切割；
+     - 根因 2（纯元数据行伪装为第一句歌词）：如《青花瓷》开头的 `青花瓷 - 周杰伦` 未匹配作词/作曲正则，被误当成第 0 秒的人声唱词并持续 22 秒；修复：增强 `isLyricMetadataLine` / `isMetadataLine`，自动过滤形如 `歌名 - 歌手` 及 `演唱/原唱/歌手/制作/发行` 等，确保前奏阶段正确识别为前奏态。
+  3. **间奏时长全量侵占与 UTF-8 解码乱码**：
+     - 根因 1（间奏被整行 duration 吞噬）：若两句歌词间隔 15 秒，原解析器直接将间隙全部赋给当前行，导致人声持续 15 秒缓慢流光且无法触发间奏；修复：若 `gap > 4.5s`，当前行人声时长按自然语速估算（`Math.min(gap - 2.0, Math.max(2.0, text.length * 0.35))`），留出充足间奏展示空间；
+     - 根因 2（酷狗/第三方爬虫中文字符乱码）：Base64 解码直接使用 `atob` 产生 Latin-1 乱码；修复为 `new TextDecoder('utf-8').decode(Uint8Array.from(atob(content), c => c.charCodeAt(0)))`，李荣浩《乌梅子酱》等歌曲中文字符恢复清晰显示。
+- [x] **生产全量部署与云端边缘生效**:
+  - CFSolara 部署至 `https://cfsolara-dho.pages.dev`；
+  - shijianus-blog 部署至 `https://adc7aaed.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 `shijianus-github-io` 部署至 `https://ec803ac1.shijianus-github-io.pages.dev`（绑定域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 Playwright E2E 验证**:
+  - 执行 `node scripts/verify-interlude-and-opening-sync.mjs` 直接审计生产主域名 `https://blog.epocanvas.com/`；
+  - 验证项全部通过：前奏展示歌曲信息与首句预告（无乱序）、间奏期间展示「♬ 间奏演奏中 ♬」、间奏退出前 0.3s 进度归零（0% 杜绝全蓝）、下一句开唱平滑流光、在线歌曲（晴天/乌梅子酱）无乱码物理跟随、0 控制台致命报错。
+
+
 
 
 
