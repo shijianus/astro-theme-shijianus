@@ -568,10 +568,56 @@ export function parseHighPrecisionLrc(raw: string): {
   for (const rawLine of rawLines) {
     const line = rawLine.trim();
     if (!line) continue;
-    if (/^\[(ti|ar|al|by|offset|kana|re|ve):/i.test(line)) continue;
+    if (/^\[(ti|ar|al|by|offset|kana|re|ve|hash|sign|qq|total):/i.test(line)) continue;
+
+    // 0. JSON 行格式 (NetEase / smart-lyric)
+    if (line.startsWith('{') && line.endsWith('}')) {
+      try {
+        const json = JSON.parse(line);
+        if (Array.isArray(json.c)) {
+          let lineText = '';
+          const words: LyricWord[] = [];
+          let hasWordInfo = false;
+          const lineBaseSec = (typeof json.t === 'number' ? json.t : 0) / 1000;
+
+          for (const item of json.c) {
+            const tx = item.tx || '';
+            lineText += tx;
+            if (typeof item.t === 'number' && typeof item.d === 'number') {
+              hasWordInfo = true;
+              const wStartSec = Math.max(0, item.t / 1000 + offsetSec);
+              const wDurSec = Math.max(0, item.d / 1000);
+              words.push({
+                text: tx,
+                start: wStartSec,
+                end: wStartSec + wDurSec,
+                duration: wDurSec,
+              });
+            }
+          }
+
+          const cleanText = lineText.trim();
+          if (!cleanText) continue;
+          if (isLyricMetadataLine(cleanText)) continue;
+
+          if (hasWordInfo && words.length > 0) hasWordTimestamps = true;
+          const lineTimeSec = words.length > 0 ? words[0].start : Math.max(0, lineBaseSec + offsetSec);
+          const lineDurSec = words.length > 0 ? words[words.length - 1].end - lineTimeSec : undefined;
+
+          result.push({
+            time: lineTimeSec,
+            duration: lineDurSec,
+            text: cleanText,
+            words: words.length > 0 ? words : undefined,
+          });
+          continue;
+        }
+      } catch {}
+    }
 
     // 1. 匹配 YRC 格式：[lineStartMs,lineDurMs](wordStart,wordDur)word...
     const yrcMatch = line.match(/^\[(\d+),(\d+)\](.*)$/);
+
     if (yrcMatch) {
       const lineStartSec = Math.max(0, parseInt(yrcMatch[1], 10) / 1000 + offsetSec);
       const lineDurSec = parseInt(yrcMatch[2], 10) / 1000;
@@ -1456,7 +1502,18 @@ export function MusicPocket({ apiBase }: Props) {
     setActiveLyricIndex(-1);
     activeLyricIndexRef.current = -1;
 
-    const lyricId = currentTrack.lyricId || currentTrack.id;
+    const lyricId = currentTrack.lyricId || currentTrack.id || '';
+    const songTitle = currentTrack.name || '';
+    const songArtist = currentTrack.artist || '';
+    const songSource = currentTrack.source || 'netease';
+
+    const params = new URLSearchParams();
+    if (lyricId) params.set('id', lyricId);
+    if (songSource) params.set('source', songSource);
+    if (songTitle) params.set('title', songTitle);
+    if (songArtist) params.set('artist', songArtist);
+    const queryStr = params.toString();
+
     const fetchLyricWithFallback = async () => {
       // 1. 本地/当前站点 API 检索
       try {
@@ -1467,9 +1524,7 @@ export function MusicPocket({ apiBase }: Props) {
           lyric?: string;
           lrc?: string;
           rawLyric?: string;
-        }>(
-          `${apiBase}/music/lyric?id=${encodeURIComponent(lyricId)}&source=${encodeURIComponent(currentTrack.source)}`,
-        );
+        }>(`${apiBase}/music/lyric?${queryStr}`);
         if (res.ok) {
           if (Array.isArray(res.lines) && res.lines.length > 0) {
             return {
@@ -1486,9 +1541,9 @@ export function MusicPocket({ apiBase }: Props) {
         }
       } catch {}
 
-      // 2. CFSolara 官方高精歌词引擎微服务自动回退兜底 (/api/lyric)
+      // 2. CFSolara 官方全网高精歌词引擎微服务自动回退兜底 (/api/lyric)
       try {
-        const cfSolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?id=${encodeURIComponent(lyricId)}&source=${encodeURIComponent(currentTrack.source || 'netease')}`;
+        const cfSolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?${queryStr}`;
         const cfRes = await fetchJson<{
           ok: boolean;
           syncType?: LyricSyncType;
@@ -1512,8 +1567,15 @@ export function MusicPocket({ apiBase }: Props) {
         }
       } catch {}
 
+      // 3. 内联歌词兜底
+      if (currentTrack.lrc) {
+        const parsedData = parseHighPrecisionLrc(currentTrack.lrc);
+        return { text: currentTrack.lrc, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
+      }
+
       throw new Error('No lyrics available');
     };
+
 
     fetchLyricWithFallback()
       .then(({ text, syncType, lines }) => {

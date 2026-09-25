@@ -527,12 +527,63 @@ export function parseHighPrecisionLyrics(raw: string): {
     if (!line) continue;
 
     // 过滤元数据标签 [ti:], [ar:], [al:], [by:], [offset:] 等
-    if (/^\[(ti|ar|al|by|offset|kana|re|ve):/i.test(line)) {
+    if (/^\[(ti|ar|al|by|offset|kana|re|ve|hash|sign|qq|total):/i.test(line)) {
       continue;
+    }
+
+    // 2.0 网易云 / smart-lyric JSON 行格式
+    if (line.startsWith('{') && line.endsWith('}')) {
+      try {
+        const json = JSON.parse(line);
+        if (Array.isArray(json.c)) {
+          let lineText = '';
+          const words: LyricWord[] = [];
+          let hasWordInfo = false;
+          const lineBaseTime = typeof json.t === 'number' ? json.t : 0;
+
+          for (const item of json.c) {
+            const tx = item.tx || '';
+            lineText += tx;
+            if (typeof item.t === 'number' && typeof item.d === 'number') {
+              hasWordInfo = true;
+              const wStart = item.t + offsetMs;
+              const wEnd = wStart + item.d;
+              words.push({
+                text: tx,
+                start: Math.max(0, wStart),
+                startSec: parseFloat((Math.max(0, wStart) / 1000).toFixed(3)),
+                end: Math.max(0, wEnd),
+                endSec: parseFloat((Math.max(0, wEnd) / 1000).toFixed(3)),
+                duration: Math.max(0, item.d),
+              });
+            }
+          }
+
+          const cleanText = lineText.trim();
+          if (!cleanText) continue;
+          if (/^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(cleanText)) {
+            continue;
+          }
+
+          if (hasWordInfo && words.length > 0) hasWordTimestamps = true;
+          const lineTime = words.length > 0 ? words[0].start : (lineBaseTime + offsetMs);
+          const lineDur = words.length > 0 ? (words[words.length - 1].end - lineTime) : undefined;
+
+          parsedLines.push({
+            time: Math.max(0, lineTime),
+            timeSec: parseFloat((Math.max(0, lineTime) / 1000).toFixed(3)),
+            duration: lineDur,
+            text: cleanText,
+            words: words.length > 0 ? words : undefined,
+          });
+          continue;
+        }
+      } catch {}
     }
 
     // 2.1 匹配网易云 YRC 格式：[lineStart,lineDur](wordStart,wordDur,0)word...
     const yrcLineMatch = line.match(/^\[(\d+),(\d+)\](.*)$/);
+
     if (yrcLineMatch) {
       const lineStartMs = parseInt(yrcLineMatch[1], 10) + offsetMs;
       const lineDurMs = parseInt(yrcLineMatch[2], 10);
@@ -700,14 +751,37 @@ export function parseLrcLyrics(rawLrc: string): LyricLine[] {
   return parseHighPrecisionLyrics(rawLrc).lines;
 }
 
-export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: string): Promise<HighPrecisionLyricPayload> {
+export interface LyricFetchOptions {
+  id?: string;
+  source?: string;
+  title?: string;
+  artist?: string;
+  q?: string;
+  duration?: number;
+}
+
+export async function fetchHighPrecisionLyrics(
+  env: AppEnv,
+  target: string | LyricFetchOptions,
+  legacySource?: string,
+): Promise<HighPrecisionLyricPayload> {
+  const options: LyricFetchOptions = typeof target === 'string' ? { id: target, source: legacySource || 'netease' } : target;
+  const id = options.id || '';
+  const source = options.source || 'netease';
+  const title = options.title || '';
+  const artist = options.artist || '';
+  const q = options.q || '';
+  const duration = options.duration;
+
   // 1. 本地歌曲直接返回高保真歌词
-  const localMatch = CURATED_LOCAL_TRACKS.find((t) => t.id === id || t.lyricId === id);
+  const localMatch = CURATED_LOCAL_TRACKS.find(
+    (t) => (id && (t.id === id || t.lyricId === id)) || (title && t.name.toLowerCase() === title.toLowerCase()),
+  );
   if (localMatch) {
     const { syncType, offset, lines } = parseHighPrecisionLyrics(localMatch.lrc);
     return {
       ok: true,
-      id,
+      id: localMatch.id,
       source: 'local',
       syncType,
       offset,
@@ -717,9 +791,17 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
     };
   }
 
-  // 2. 优先通过 CFSolara 官方开放高精 API 拉取
+  // 2. 优先通过 CFSolara 官方全网高精歌词引擎微服务拉取 (/api/lyric)
   try {
-    const cfsolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?id=${encodeURIComponent(id)}&source=${encodeURIComponent(source || 'netease')}`;
+    const params = new URLSearchParams();
+    if (id) params.set('id', id);
+    if (source) params.set('source', source);
+    if (title) params.set('title', title);
+    if (artist) params.set('artist', artist);
+    if (q) params.set('q', q);
+    if (duration) params.set('duration', String(duration));
+
+    const cfsolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?${params.toString()}`;
     const resp = await fetch(cfsolaraUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -731,10 +813,12 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
       if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0) {
         return {
           ok: true,
-          id,
+          id: data.id || id,
           source: data.source || source,
           syncType: data.syncType || 'line',
           offset: data.offset || 0,
+          title: data.title || title || undefined,
+          artist: data.artist || artist || undefined,
           lines: data.lines,
           lineCount: data.lines.length,
           rawLyric: data.rawLyric || data.lyric || '',
@@ -743,10 +827,12 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
         const { syncType, offset, lines } = parseHighPrecisionLyrics(data.lyric);
         return {
           ok: true,
-          id,
-          source,
+          id: data.id || id,
+          source: data.source || source,
           syncType,
           offset,
+          title: data.title || title || undefined,
+          artist: data.artist || artist || undefined,
           lines,
           lineCount: lines.length,
           rawLyric: data.lyric,
@@ -758,7 +844,7 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
   }
 
   // 3. 次级兜底：网易云直连 YRC / LRC 尝试
-  if (source === 'netease') {
+  if (source === 'netease' && id) {
     try {
       const url = `https://music.163.com/api/song/lyric/v1?id=${encodeURIComponent(id)}&cp=false&tv=0&lv=0&rv=0&kv=0&yv=-1&ytv=0&yrv=0`;
       const resp = await fetch(url, {
@@ -784,32 +870,63 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
           };
         }
       }
-    } catch {
-      // 忽略网易云直连异常
-    }
+    } catch {}
   }
 
-  // 4. 再次级兜底：通用 Provider 回退
-  let rawLyric = '';
-  try {
-    const payload = await fetchProviderJson(env, {
-      types: 'lyric',
-      id,
-      source,
-      s: signature(),
-    });
+  // 4. 再次级兜底：LRCLIB 实时检索
+  const searchQuery = (q || `${title} ${artist}`).trim();
+  if (searchQuery) {
+    try {
+      let lrcUrl = '';
+      if (title) {
+        lrcUrl = `https://lrclib.net/api/get?track_name=${encodeURIComponent(title)}${artist ? `&artist_name=${encodeURIComponent(artist)}` : ''}`;
+      } else {
+        lrcUrl = `https://lrclib.net/api/search?q=${encodeURIComponent(searchQuery)}`;
+      }
+      const lrcResp = await fetch(lrcUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      if (lrcResp.ok) {
+        const lrcJson = (await lrcResp.json()) as any;
+        const synced = Array.isArray(lrcJson) ? lrcJson.find((x: any) => x.syncedLyrics)?.syncedLyrics : lrcJson?.syncedLyrics;
+        if (synced) {
+          const { syncType, offset, lines } = parseHighPrecisionLyrics(synced);
+          return {
+            ok: true,
+            id: id || searchQuery,
+            source: 'lrclib',
+            syncType,
+            offset,
+            lines,
+            lineCount: lines.length,
+            rawLyric: synced,
+          };
+        }
+      }
+    } catch {}
+  }
 
-    if (payload && typeof payload === 'object') {
-      rawLyric = typeof (payload as { lyric?: unknown }).lyric === 'string' ? (payload as { lyric: string }).lyric : '';
+  // 5. 再次级兜底：通用 Provider 回退
+  let rawLyric = '';
+  if (id) {
+    try {
+      const payload = await fetchProviderJson(env, {
+        types: 'lyric',
+        id,
+        source,
+        s: signature(),
+      });
+
+      if (payload && typeof payload === 'object') {
+        rawLyric = typeof (payload as { lyric?: unknown }).lyric === 'string' ? (payload as { lyric: string }).lyric : '';
+      }
+    } catch {
+      rawLyric = '';
     }
-  } catch {
-    rawLyric = '';
   }
 
   const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);
   return {
     ok: true,
-    id,
+    id: id || searchQuery,
     source,
     syncType,
     offset,
@@ -820,6 +937,7 @@ export async function fetchHighPrecisionLyrics(env: AppEnv, id: string, source: 
 }
 
 export async function fetchMusicLyrics(env: AppEnv, id: string, source: string): Promise<string> {
+
   const result = await fetchHighPrecisionLyrics(env, id, source);
   return result.rawLyric;
 }
