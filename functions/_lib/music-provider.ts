@@ -807,31 +807,23 @@ export async function fetchHighPrecisionLyrics(
   const q = options.q || '';
   const duration = options.duration;
 
-  // 1. 本地歌曲直接返回高保真歌词
+  // 1. 本地歌曲查找本地精选音轨作为备用兜底模板 (fallback)
   const localMatch = CURATED_LOCAL_TRACKS.find(
     (t) => (id && (t.id === id || t.lyricId === id)) || (title && t.name.toLowerCase() === title.toLowerCase()),
   );
-  if (localMatch) {
-    const { syncType, offset, lines } = parseHighPrecisionLyrics(localMatch.lrc);
-    return {
-      ok: true,
-      id: localMatch.id,
-      source: 'local',
-      syncType,
-      offset,
-      lines,
-      lineCount: lines.length,
-      rawLyric: localMatch.lrc,
-    };
-  }
 
   // 2. 优先通过 CFSolara 官方全网高精歌词引擎微服务拉取 (/api/lyric)
   try {
     const params = new URLSearchParams();
-    if (id) params.set('id', id);
-    if (source) params.set('source', source);
-    if (title) params.set('title', title);
-    if (artist) params.set('artist', artist);
+    const effectiveId = id && id !== 'local' && !id.startsWith('local-') ? id : (localMatch?.lyricId || '');
+    const effectiveSource = source === 'local' ? 'netease' : (source || 'netease');
+    const effectiveTitle = title || localMatch?.name || '';
+    const effectiveArtist = artist || localMatch?.artist || '';
+
+    if (effectiveId) params.set('id', effectiveId);
+    if (effectiveSource) params.set('source', effectiveSource);
+    if (effectiveTitle) params.set('title', effectiveTitle);
+    if (effectiveArtist) params.set('artist', effectiveArtist);
     if (q) params.set('q', q);
     if (duration) params.set('duration', String(duration));
 
@@ -847,29 +839,29 @@ export async function fetchHighPrecisionLyrics(
       if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0 && isValidLyric(data.rawLyric || data.lyric || '')) {
         return {
           ok: true,
-          id: data.id || id,
-          source: data.source || source,
+          id: data.id || effectiveId || id,
+          source: data.source || effectiveSource || source,
           syncType: data.syncType || 'line',
           offset: data.offset || 0,
-          title: data.title || title || undefined,
-          artist: data.artist || artist || undefined,
+          title: data.title || effectiveTitle || undefined,
+          artist: data.artist || effectiveArtist || undefined,
           lines: data.lines,
           lineCount: data.lines.length,
           rawLyric: data.rawLyric || data.lyric || '',
+          isPureMusic: Boolean(data.isPureMusic),
         };
       } else if (data && data.ok && typeof data.lyric === 'string' && isValidLyric(data.lyric)) {
         const { syncType, offset, lines } = parseHighPrecisionLyrics(data.lyric);
         return {
           ok: true,
-          id: data.id || id,
-          source: data.source || source,
+          id: data.id || effectiveId || id,
+          source: data.source || effectiveSource || source,
           syncType,
           offset,
-          title: data.title || title || undefined,
-          artist: data.artist || artist || undefined,
+          title: data.title || effectiveTitle || undefined,
+          artist: data.artist || effectiveArtist || undefined,
           lines,
           lineCount: lines.length,
-          rawLyric: data.lyric,
         };
       }
     }
@@ -954,7 +946,11 @@ export async function fetchHighPrecisionLyrics(
       }
     } catch {
       rawLyric = '';
-    }
+  }
+
+  // 4. 若全网在线拉取失败，且命中本地精选音轨，则使用本地模板进行离线兜底
+  if (!isValidLyric(rawLyric) && localMatch && localMatch.lrc) {
+    rawLyric = localMatch.lrc;
   }
 
   const { syncType, offset, lines } = parseHighPrecisionLyrics(rawLyric);

@@ -1514,34 +1514,35 @@ export function MusicPocket({ apiBase }: Props) {
       });
     }
 
-    // 优先读取本地内联歌词 (消除 SSG 或网络断开时的 404 缺陷)
+    // 1. 本地歌曲先存本地模板即时渲染（便于离线懒加载与零等待无缝过渡）
     const localMatch = DEFAULT_TRACKS.find((t) => t.id === currentTrack.id);
-    if (currentTrack.lrc || (localMatch && localMatch.lrc)) {
-      const lrcText = currentTrack.lrc || localMatch!.lrc;
-      const parsedData = parseHighPrecisionLrc(lrcText);
+    const fallbackLrc = currentTrack.lrc || localMatch?.lrc || '';
+    if (fallbackLrc) {
+      const parsedData = parseHighPrecisionLrc(fallbackLrc);
       const normalized = normalizeLyricLines(parsedData.lines);
-      setRawLyric(lrcText);
+      setRawLyric(fallbackLrc);
       setLyricSyncType(parsedData.syncType);
       lyricSyncTypeRef.current = parsedData.syncType;
       setParsedLyrics(normalized);
       parsedLyricsRef.current = normalized;
       setActiveLyricIndex(-1);
       activeLyricIndexRef.current = -1;
-      return;
+    } else {
+      setRawLyric('');
+      setParsedLyrics([]);
+      parsedLyricsRef.current = [];
+      setLyricSyncType('line');
+      lyricSyncTypeRef.current = 'line';
+      setActiveLyricIndex(-1);
+      activeLyricIndexRef.current = -1;
     }
 
-    setRawLyric('');
-    setParsedLyrics([]);
-    parsedLyricsRef.current = [];
-    setLyricSyncType('line');
-    lyricSyncTypeRef.current = 'line';
-    setActiveLyricIndex(-1);
-    activeLyricIndexRef.current = -1;
-
-    const lyricId = currentTrack.lyricId || currentTrack.id || '';
-    const songTitle = currentTrack.name || '';
-    const songArtist = currentTrack.artist || '';
-    const songSource = currentTrack.source || 'netease';
+    // 2. 无论是否为本地歌曲，优先使用 API 接入实际的高精度歌词跟随效果！
+    let isCancelled = false;
+    const lyricId = currentTrack.lyricId || localMatch?.lyricId || (currentTrack.source !== 'local' ? currentTrack.id : '');
+    const songTitle = currentTrack.name || localMatch?.name || '';
+    const songArtist = currentTrack.artist || localMatch?.artist || '';
+    const songSource = currentTrack.source === 'local' ? 'netease' : (currentTrack.source || 'netease');
 
     const params = new URLSearchParams();
     if (lyricId) params.set('id', lyricId);
@@ -1603,36 +1604,48 @@ export function MusicPocket({ apiBase }: Props) {
         }
       } catch {}
 
-      // 3. 内联歌词兜底
-      if (currentTrack.lrc) {
-        const parsedData = parseHighPrecisionLrc(currentTrack.lrc);
-        return { text: currentTrack.lrc, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
+      // 3. 内联/本地歌词模板兜底
+      if (fallbackLrc) {
+        const parsedData = parseHighPrecisionLrc(fallbackLrc);
+        return { text: fallbackLrc, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
       }
 
       throw new Error('No lyrics available');
     };
 
-
     fetchLyricWithFallback()
       .then(({ text, syncType, lines }) => {
-        const normalized = normalizeLyricLines(lines);
-        setRawLyric(text);
-        setLyricSyncType(syncType);
-        lyricSyncTypeRef.current = syncType;
-        setParsedLyrics(normalized);
-        parsedLyricsRef.current = normalized;
-        setActiveLyricIndex(-1);
-        activeLyricIndexRef.current = -1;
+        if (isCancelled) return;
+        if (lines && lines.length > 0) {
+          const normalized = normalizeLyricLines(lines);
+          setRawLyric(text);
+          setLyricSyncType(syncType);
+          lyricSyncTypeRef.current = syncType;
+          setParsedLyrics(normalized);
+          parsedLyricsRef.current = normalized;
+          if (audioRef.current) {
+            const liveIndex = findActiveLyricIndex(audioRef.current.currentTime, normalized);
+            setActiveLyricIndex(liveIndex);
+            activeLyricIndexRef.current = liveIndex;
+          }
+        }
       })
       .catch(() => {
-        setRawLyric(t('暂无可用歌词'));
-        setLyricSyncType('line');
-        lyricSyncTypeRef.current = 'line';
-        setParsedLyrics([]);
-        parsedLyricsRef.current = [];
-        setActiveLyricIndex(-1);
-        activeLyricIndexRef.current = -1;
+        if (isCancelled) return;
+        if (!fallbackLrc) {
+          setRawLyric(t('暂无可用歌词'));
+          setLyricSyncType('line');
+          lyricSyncTypeRef.current = 'line';
+          setParsedLyrics([]);
+          parsedLyricsRef.current = [];
+          setActiveLyricIndex(-1);
+          activeLyricIndexRef.current = -1;
+        }
       });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [currentTrack?.id, apiBase, resolveTrackAudioSrc]);
 
   // Sync active lyric line to current time
