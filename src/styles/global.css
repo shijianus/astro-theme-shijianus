@@ -209,12 +209,17 @@ img {
 /* Winter Snowscape Ambient Atmosphere (Light Mode) */
 :root:not([data-theme='dark'])[data-background='snow'] #web_bg,
 :root[data-theme='light'][data-background='snow'] #web_bg {
-  background: linear-gradient(180deg, #dce8f8 0%, #ebf3fc 45%, #f7f9fe 100%);
+  background: linear-gradient(180deg, #c4dbf6 0%, #d5e7f8 35%, #e5f1fb 70%, #eff5fd 100%) !important;
 }
 
 /* Winter Snowscape Ambient Atmosphere (Dark Mode) */
 :root[data-theme='dark'][data-background='snow'] #web_bg {
-  background: linear-gradient(180deg, #090c16 0%, #0d101c 45%, #0d0d14 100%);
+  background: linear-gradient(180deg, #090c16 0%, #0d101c 45%, #0d0d14 100%) !important;
+}
+
+/* Cinematic Depth of Field: Out-of-focus camera lens blur for near-field flakes */
+#theme-snow-foreground {
+  filter: blur(2.5px);
 }
 
 /* Clean Mode - 100% Solid Color Baseline */

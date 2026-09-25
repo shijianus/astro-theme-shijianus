@@ -1,32 +1,39 @@
 import React, { useEffect } from 'react';
 
-interface CrystalParticle {
+interface CinematicSnowParticle {
   x: number;
   y: number;
-  size: number;
-  speedY: number;
-  speedX: number;
+  radius: number;
   opacity: number;
-  layer: number; // 0: far (bg), 1: mid (bg), 2: near (fg)
-  rotation: number;
-  rotationSpeed: number;
-  wobblePhase: number;
+  vx: number;
+  vy: number;
+  wobble: number;
   wobbleSpeed: number;
-  spriteIndex: number;
+  swayAmplitude: number;
+  shapeOffsets: { x: number; y: number }[];
+  layer: number; // 0: back (distant dust), 1: mid (standard snow), 2: front (close flakes), 3: camera (lens flakes)
 }
 
 /**
- * ThemeUniverse: Photorealistic, hardware-accelerated Winter Snowscape particle engine.
+ * ThemeUniverse: Cinematic, Photorealistic Multi-Layer Snowfall Engine.
  * 
- * True Natural Optical Simulation:
- * - 100% Pure Crystalline Ice Geometries: Intricate 6-arm fern dendrites, classic stellar crystals,
- *   faceted stellar plates, diamond needle stars, and micro diamond dust.
- * - ZERO Hollow Rings / ZERO Geometric Circles: Completely eliminates artificial circular strokes and bubble-rings.
- * - Aerodynamic Tumble & Flutter: Each snowflake spins and rotates organically in 3D air resistance.
- * - Dual-Depth Optical Stacking:
- *   - Background Canvas (#theme-snow-universe, z-index: -1): Mid/far crystalline snowflakes and diamond dust.
- *   - Foreground Canvas (#theme-snow-foreground, z-index: 25): Soft, fluttering near-field dendritic snowflakes.
- * - High-Performance Pre-Baked Sprites: Renders via offscreen texture quads with ZERO shadowBlur and ZERO GC thrashing.
+ * Inspired by and modeled after react-cinematic-snow (https://github.com/khoama/react-cinematic-snow):
+ * 1. Organic Irregular Polygons: Procedural 5-8 vertex natural snow clumps/aggregates (zero clipart, zero geometric circles).
+ * 2. Physical Size-Speed Correlation: Larger flakes have higher terminal velocity and fall faster; tiny flakes drift slowly.
+ * 3. Dynamic Multi-Scale Wind System:
+ *    - Slow directional oscillation (~20-40s primary wave)
+ *    - Medium oscillation & rapid flutter
+ *    - Random natural gusts with smooth sinusoidal fade in/out
+ *    - Dual-frequency sway and aerodynamic back-and-forth tilt
+ * 4. Cinematic Depth-of-Field Layering:
+ *    - Background Canvas (#theme-snow-universe, z-index: -1): Layer 0 (distant atmospheric dust) + Layer 1 (in-focus mid-plane snow)
+ *    - Foreground Canvas (#theme-snow-foreground, z-index: 25): Layer 2 (close snow) + Layer 3 (camera out-of-focus close-call flakes)
+ *      Offloaded to hardware compositor via CSS `filter: blur(2.5px)`.
+ * 5. High-Contrast Natural Daylight Shading:
+ *    - Light Mode: Dual-pass optical scattering (soft cool atmospheric ice fringe + pure white body) ensures
+ *      complete, natural visibility across pure white cards (#ffffff) without artificial black/dark lines.
+ *    - Dark Mode: Luminous crystalline white and soft ice-blue glints against the deep night sky.
+ * 6. High Performance: Zero ctx.shadowBlur (avoiding Skia offscreen Gaussian blur CPU lag), locked at 60FPS.
  */
 export function ThemeUniverse() {
   useEffect(() => {
@@ -43,8 +50,7 @@ export function ThemeUniverse() {
     let width = 0;
     let height = 0;
     let dpr = 1;
-    let particles: CrystalParticle[] = [];
-    let sprites: HTMLCanvasElement[] = [];
+    let particles: CinematicSnowParticle[] = [];
     let isScrolling = false;
     let scrollTimeout: any = null;
 
@@ -57,301 +63,145 @@ export function ThemeUniverse() {
       return document.documentElement.dataset.theme === 'dark';
     };
 
-    // ── PROCEDURAL CRYSTAL SPRITE GENERATORS ──
+    // Helper: random number in range [min, max]
+    const random = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    // 1. Fernlike Stellar Dendrite (Intricate branching 6-arm crystal)
-    const createFernDendrite = (size: number, dark: boolean) => {
-      const cvs = document.createElement('canvas');
-      cvs.width = size;
-      cvs.height = size;
-      const ctx = cvs.getContext('2d');
-      if (!ctx) return cvs;
+    // Helper: Create irregular 5-8 vertex polygon shape (from react-cinematic-snow)
+    const createIrregularShape = (radius: number, rough: number) => {
+      const points = 5 + Math.floor(Math.random() * 4); // 5 to 8 vertices
+      const offsets: { x: number; y: number }[] = [];
+      for (let i = 0; i < points; i++) {
+        const angle = (i / points) * Math.PI * 2;
+        const variance = 1 + (Math.random() - 0.5) * rough;
+        offsets.push({
+          x: Math.cos(angle) * radius * variance,
+          y: Math.sin(angle) * radius * variance,
+        });
+      }
+      return offsets;
+    };
 
-      const cx = size / 2;
-      const cy = size / 2;
-      const r = size * 0.44;
+    // Dynamic multi-scale wind simulation (from react-cinematic-snow)
+    const windState = {
+      time: 0,
+      gustTime: 0,
+      gustStrength: 0,
+      gustDirection: 1,
+    };
 
-      ctx.save();
-      ctx.translate(cx, cy);
+    const getDynamicWind = (baseWind: number) => {
+      windState.time += 0.016; // ~60fps step
 
-      const mainColor = dark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(105, 135, 175, 0.88)';
-      const coreColor = dark ? 'rgba(220, 240, 255, 0.9)' : 'rgba(255, 255, 255, 0.98)';
+      // Slow primary wave (shifts direction every ~20-40s)
+      const slowWave = Math.sin(windState.time * 0.05) * 0.7;
+      // Secondary medium oscillation
+      const mediumWave = Math.sin(windState.time * 0.15) * 0.3;
+      // Tertiary rapid flutter
+      const quickWave = Math.sin(windState.time * 0.8) * 0.1;
 
-      ctx.lineCap = 'round';
-
-      for (let i = 0; i < 6; i++) {
-        ctx.save();
-        ctx.rotate((i * Math.PI) / 3);
-
-        // Ambient facet line
-        ctx.strokeStyle = mainColor;
-        ctx.lineWidth = Math.max(1.1, size * 0.038);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -r);
-
-        // 3 tiers of angled branches
-        const tiers = [
-          { pos: 0.38, len: 0.28, angle: Math.PI / 3 },
-          { pos: 0.62, len: 0.24, angle: Math.PI / 3 },
-          { pos: 0.82, len: 0.15, angle: Math.PI / 3 },
-        ];
-
-        for (const t of tiers) {
-          const y = -r * t.pos;
-          const bl = r * t.len;
-          const dx = bl * Math.sin(t.angle);
-          const dy = -bl * Math.cos(t.angle);
-          ctx.moveTo(0, y);
-          ctx.lineTo(-dx, y + dy);
-          ctx.moveTo(0, y);
-          ctx.lineTo(dx, y + dy);
+      // Occasional random wind gusts (every 25-45s)
+      windState.gustTime -= 0.016;
+      if (windState.gustTime <= 0) {
+        if (Math.random() < 0.0008) {
+          windState.gustStrength = 0.5 + Math.random() * 1.5;
+          windState.gustDirection = Math.random() > 0.5 ? 1 : -1;
+          windState.gustTime = 2 + Math.random() * 3; // 2-5 seconds
         }
-        ctx.stroke();
-
-        // Inner brilliant crystal core line
-        ctx.strokeStyle = coreColor;
-        ctx.lineWidth = Math.max(0.6, size * 0.02);
-        ctx.stroke();
-
-        ctx.restore();
       }
 
-      // Central nucleus
-      ctx.fillStyle = dark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(125, 155, 195, 0.85)';
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3;
-        const hx = Math.sin(a) * (r * 0.16);
-        const hy = Math.cos(a) * (r * 0.16);
-        if (i === 0) ctx.moveTo(hx, hy);
-        else ctx.lineTo(hx, hy);
-      }
-      ctx.closePath();
-      ctx.fill();
+      const gustFactor = windState.gustTime > 0
+        ? Math.sin((windState.gustTime / 3) * Math.PI) * windState.gustStrength * windState.gustDirection
+        : 0;
 
-      // High-light center glint
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(1, size * 0.06), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-      return cvs;
+      return baseWind * (1 + slowWave + mediumWave + quickWave + gustFactor);
     };
 
-    // 2. Classic Stellar Crystal (Airy 6-arm star with barb pairs)
-    const createClassicCrystal = (size: number, dark: boolean) => {
-      const cvs = document.createElement('canvas');
-      cvs.width = size;
-      cvs.height = size;
-      const ctx = cvs.getContext('2d');
-      if (!ctx) return cvs;
+    // Generate particles for a specific optical depth tier
+    const createTierParticles = (
+      count: number,
+      rMin: number,
+      rMax: number,
+      sMult: number,
+      layer: number,
+      roughness: number
+    ): CinematicSnowParticle[] => {
+      const list: CinematicSnowParticle[] = [];
+      for (let i = 0; i < count; i++) {
+        const radius = random(rMin, rMax);
+        const sizeFactor = (radius - rMin) / (rMax - rMin || 1);
 
-      const cx = size / 2;
-      const cy = size / 2;
-      const r = size * 0.44;
+        // Opacity: larger flakes are more solid, smaller are hazy
+        let opacity = 0.25 + (sizeFactor * 0.55) + (Math.random() * 0.3 - 0.15);
+        opacity = Math.max(0.2, Math.min(1.0, opacity));
 
-      ctx.save();
-      ctx.translate(cx, cy);
+        // Speed: physically correlated with radius (larger flakes fall faster)
+        const baseSpeed = (radius / 2.5) * sMult;
+        const speedVariance = random(0.85, 1.15);
+        const sizeScale = Math.max(0.5, radius / 2.5);
 
-      const mainColor = dark ? 'rgba(245, 250, 255, 0.95)' : 'rgba(110, 140, 180, 0.85)';
-      const coreColor = dark ? 'rgba(220, 240, 255, 0.9)' : 'rgba(255, 255, 255, 0.98)';
-
-      ctx.lineCap = 'round';
-
-      for (let i = 0; i < 6; i++) {
-        ctx.save();
-        ctx.rotate((i * Math.PI) / 3);
-
-        ctx.strokeStyle = mainColor;
-        ctx.lineWidth = Math.max(1.0, size * 0.035);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -r);
-
-        const y = -r * 0.55;
-        const bl = r * 0.32;
-        const dx = bl * 0.866;
-        const dy = -bl * 0.5;
-        ctx.moveTo(0, y);
-        ctx.lineTo(-dx, y + dy);
-        ctx.moveTo(0, y);
-        ctx.lineTo(dx, y + dy);
-        ctx.stroke();
-
-        ctx.fillStyle = coreColor;
-        ctx.beginPath();
-        ctx.arc(0, -r, Math.max(0.8, size * 0.03), 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
+        list.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius,
+          opacity,
+          vx: random(-0.1, 0.1) * sizeScale,
+          vy: baseSpeed * speedVariance,
+          wobble: Math.random() * Math.PI * 2,
+          wobbleSpeed: random(0.006, 0.026),
+          swayAmplitude: random(0.3, 0.8) * sizeScale,
+          shapeOffsets: createIrregularShape(radius, roughness),
+          layer,
+        });
       }
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(1, size * 0.08), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-      return cvs;
+      return list;
     };
 
-    // 3. Stellar Plate Crystal (6-pointed faceted ice plate)
-    const createStellarPlate = (size: number, dark: boolean) => {
-      const cvs = document.createElement('canvas');
-      cvs.width = size;
-      cvs.height = size;
-      const ctx = cvs.getContext('2d');
-      if (!ctx) return cvs;
+    // Initialize 4-tier optical layering
+    const initParticles = () => {
+      const density = Math.min(260, Math.max(130, Math.round((width * height) / 8500)));
+      const roughness = 0.85;
 
-      const cx = size / 2;
-      const cy = size / 2;
-      const r = size * 0.44;
+      // 1. Back: Distant snow dust & micro flakes (small, slow, hazy on bgCanvas)
+      const backParticles = createTierParticles(
+        Math.floor(density * 0.48),
+        0.5,
+        1.6,
+        0.55,
+        0,
+        roughness
+      );
 
-      ctx.save();
-      ctx.translate(cx, cy);
+      // 2. Mid: In-focus standard snow flakes (crisp on bgCanvas)
+      const midParticles = createTierParticles(
+        Math.floor(density * 0.38),
+        1.5,
+        3.2,
+        0.95,
+        1,
+        roughness
+      );
 
-      const edgeColor = dark ? 'rgba(225, 242, 255, 0.9)' : 'rgba(100, 130, 175, 0.85)';
-      const faceColor = dark ? 'rgba(195, 225, 255, 0.35)' : 'rgba(240, 248, 255, 0.9)';
+      // 3. Front: Fast close flakes (drifting over cards on fgCanvas)
+      const frontParticles = createTierParticles(
+        Math.floor(density * 0.11),
+        3.2,
+        5.5,
+        1.45,
+        2,
+        roughness
+      );
 
-      ctx.beginPath();
-      for (let i = 0; i < 12; i++) {
-        const a = (i * Math.PI) / 6;
-        const rad = i % 2 === 0 ? r : r * 0.5;
-        const x = Math.cos(a) * rad;
-        const y = Math.sin(a) * rad;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = faceColor;
-      ctx.fill();
-      ctx.strokeStyle = edgeColor;
-      ctx.lineWidth = Math.max(0.8, size * 0.03);
-      ctx.stroke();
+      // 4. Camera: Rare massive lens flakes (cinematic out-of-focus close calls)
+      const cameraParticles = createTierParticles(
+        Math.max(2, Math.floor(density * 0.018)),
+        6.5,
+        13.0,
+        1.95,
+        3,
+        roughness
+      );
 
-      ctx.strokeStyle = edgeColor;
-      ctx.lineWidth = Math.max(0.6, size * 0.02);
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3;
-        ctx.moveTo(0, 0);
-        ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-      }
-      ctx.stroke();
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(1, r * 0.2), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-      return cvs;
-    };
-
-    // 4. Diamond Needle Star Crystal (Sparkling 4-point/8-point ice star)
-    const createDiamondStar = (size: number, dark: boolean) => {
-      const cvs = document.createElement('canvas');
-      cvs.width = size;
-      cvs.height = size;
-      const ctx = cvs.getContext('2d');
-      if (!ctx) return cvs;
-
-      const cx = size / 2;
-      const cy = size / 2;
-      const r = size * 0.44;
-
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      const edgeColor = dark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(105, 135, 175, 0.88)';
-
-      for (let i = 0; i < 4; i++) {
-        ctx.save();
-        ctx.rotate((i * Math.PI) / 2);
-        ctx.beginPath();
-        ctx.moveTo(0, -r);
-        ctx.lineTo(r * 0.18, 0);
-        ctx.lineTo(0, r * 0.18);
-        ctx.lineTo(-r * 0.18, 0);
-        ctx.closePath();
-        ctx.fillStyle = edgeColor;
-        ctx.fill();
-        ctx.restore();
-      }
-
-      for (let i = 0; i < 4; i++) {
-        ctx.save();
-        ctx.rotate((i * Math.PI) / 2 + Math.PI / 4);
-        ctx.beginPath();
-        ctx.moveTo(0, -r * 0.55);
-        ctx.lineTo(r * 0.12, 0);
-        ctx.lineTo(0, r * 0.12);
-        ctx.lineTo(-r * 0.12, 0);
-        ctx.closePath();
-        ctx.fillStyle = edgeColor;
-        ctx.fill();
-        ctx.restore();
-      }
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(1, r * 0.22), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-      return cvs;
-    };
-
-    // 5. Solid Diamond Dust (Solid 4-point diamond micro-facet, NO hollow ring)
-    const createDiamondDust = (size: number, dark: boolean) => {
-      const cvs = document.createElement('canvas');
-      cvs.width = size;
-      cvs.height = size;
-      const ctx = cvs.getContext('2d');
-      if (!ctx) return cvs;
-
-      const cx = size / 2;
-      const cy = size / 2;
-      const r = size * 0.42;
-
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      // Solid diamond polygon
-      ctx.beginPath();
-      ctx.moveTo(0, -r);
-      ctx.lineTo(r * 0.72, 0);
-      ctx.lineTo(0, r);
-      ctx.lineTo(-r * 0.72, 0);
-      ctx.closePath();
-      ctx.fillStyle = dark ? 'rgba(240, 248, 255, 0.95)' : 'rgba(110, 140, 185, 0.85)';
-      ctx.fill();
-
-      // Micro white glint core
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0.6, r * 0.35), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-      return cvs;
-    };
-
-    // Rebuild all procedural sprite canvases for current theme mode
-    const rebuildSprites = () => {
-      const dark = isDarkMode();
-      sprites = [
-        createFernDendrite(56, dark),   // 0: Large Fern Dendrite
-        createFernDendrite(38, dark),   // 1: Mid Fern Dendrite
-        createClassicCrystal(42, dark), // 2: Mid Classic Crystal
-        createClassicCrystal(28, dark), // 3: Small Classic Crystal
-        createStellarPlate(34, dark),   // 4: Mid Stellar Plate
-        createStellarPlate(22, dark),   // 5: Small Stellar Plate
-        createDiamondStar(30, dark),    // 6: Diamond Needle Star
-        createDiamondDust(12, dark),    // 7: Solid Diamond Dust
-      ];
+      particles = [...backParticles, ...midParticles, ...frontParticles, ...cameraParticles];
     };
 
     // Responsive Canvas Resize
@@ -374,96 +224,29 @@ export function ThemeUniverse() {
         fgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
-      rebuildSprites();
       initParticles();
     };
 
-    // Initialize particles across dual visual depths
-    const initParticles = () => {
-      const count = Math.min(130, Math.max(45, Math.round((width * height) / 14000)));
-      particles = [];
-
-      for (let i = 0; i < count; i++) {
-        const rand = Math.random();
-        let layer = 1;
-        let size = 28;
-        let speedY = 1.0;
-        let opacity = 0.8;
-        let spriteIndex = 0;
-
-        if (rand < 0.40) {
-          // Layer 0: Far background diamond dust & micro crystals (on bgCanvas)
-          layer = 0;
-          if (Math.random() < 0.6) {
-            spriteIndex = 7; // diamondDust
-            size = 6 + Math.random() * 4;
-          } else {
-            spriteIndex = 5; // plateSmall
-            size = 12 + Math.random() * 6;
-          }
-          speedY = 0.35 + Math.random() * 0.45;
-          opacity = 0.45 + Math.random() * 0.35;
-        } else if (rand < 0.78) {
-          // Layer 1: Midground classic crystals, plates & stars (on bgCanvas)
-          layer = 1;
-          const rType = Math.random();
-          if (rType < 0.34) {
-            spriteIndex = 2; // classicMid
-            size = 24 + Math.random() * 10;
-          } else if (rType < 0.68) {
-            spriteIndex = 4; // plateMid
-            size = 22 + Math.random() * 8;
-          } else {
-            spriteIndex = 6; // diamondStar
-            size = 20 + Math.random() * 8;
-          }
-          speedY = 0.8 + Math.random() * 0.7;
-          opacity = 0.65 + Math.random() * 0.3;
-        } else {
-          // Layer 2: Near foreground intricate dendrites & prominent crystals (on fgCanvas)
-          layer = 2;
-          const rType = Math.random();
-          if (rType < 0.6) {
-            spriteIndex = 0; // fernLarge
-            size = 38 + Math.random() * 14;
-          } else if (rType < 0.85) {
-            spriteIndex = 1; // fernMid
-            size = 30 + Math.random() * 8;
-          } else {
-            spriteIndex = 2; // classicMid
-            size = 32 + Math.random() * 8;
-          }
-          speedY = 1.3 + Math.random() * 0.9;
-          opacity = 0.8 + Math.random() * 0.2;
+    // Draw single irregular polygon
+    const drawPolygonPath = (ctx: CanvasRenderingContext2D, p: CinematicSnowParticle) => {
+      if (p.shapeOffsets.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(p.shapeOffsets[0].x, p.shapeOffsets[0].y);
+        for (let j = 1; j < p.shapeOffsets.length; j++) {
+          ctx.lineTo(p.shapeOffsets[j].x, p.shapeOffsets[j].y);
         }
-
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          size,
-          speedY,
-          speedX: (Math.random() - 0.5) * 0.4,
-          opacity,
-          layer,
-          rotation: Math.random() * Math.PI * 2,
-          rotationSpeed: (Math.random() - 0.5) * 0.02,
-          wobblePhase: Math.random() * Math.PI * 2,
-          wobbleSpeed: 0.012 + Math.random() * 0.018,
-          spriteIndex,
-        });
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
       }
     };
 
-    let lastTime = performance.now();
-
-    // Render loop with natural wind drift, wobble flutter, and rotation tumble
-    const render = (now: number) => {
+    // Main animation render loop
+    const render = () => {
       if (!isRunning) return;
 
-      const dt = Math.min((now - lastTime) / 1000, 0.1);
-      lastTime = now;
-
-      // If scrolling, throttle to skip heavy redraw and preserve 60FPS
+      // Throttle under heavy scroll to maintain 60FPS responsiveness
       if (isScrolling && Math.random() > 0.5) {
         animId = requestAnimationFrame(render);
         return;
@@ -472,38 +255,84 @@ export function ThemeUniverse() {
       bgCtx.clearRect(0, 0, width, height);
       if (fgCtx) fgCtx.clearRect(0, 0, width, height);
 
-      const globalWind = Math.sin(now * 0.0005) * 0.7 + Math.sin(now * 0.0015) * 0.25;
+      const isDark = isDarkMode();
+      const currentWind = getDynamicWind(0.32);
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.wobblePhase += p.wobbleSpeed;
-        p.rotation += p.rotationSpeed;
+        p.wobble += p.wobbleSpeed;
 
-        // Position update with sinusoidal natural sway & rotation tumble
-        const sway = Math.sin(p.wobblePhase) * (p.layer === 2 ? 1.4 : p.layer === 1 ? 0.85 : 0.4);
-        p.x += (p.speedX + sway + globalWind * (p.layer * 0.35 + 0.65)) * dt * 60;
-        p.y += p.speedY * dt * 60;
+        // Dual-frequency aerodynamic sway
+        const primarySway = Math.sin(p.wobble) * p.swayAmplitude;
+        const secondarySway = Math.cos(p.wobble * 1.8 + p.y * 0.01) * (p.swayAmplitude * 0.2);
+
+        // Wind multiplier based on optical depth
+        const wMult = p.layer === 0 ? 0.55 : p.layer === 1 ? 1.0 : 1.5;
+
+        // Position update
+        p.x += currentWind * wMult + p.vx + primarySway + secondarySway;
+        p.y += p.vy;
 
         // Boundary wrap-around
-        if (p.y > height + p.size + 15) {
-          p.y = -p.size - 10;
+        if (p.y > height + p.radius * 2.5) {
+          p.y = -p.radius * 2;
           p.x = Math.random() * width;
         }
-        if (p.x < -p.size - 15) p.x = width + p.size;
-        else if (p.x > width + p.size + 15) p.x = -p.size;
+        if (p.x > width + p.radius * 2.5) {
+          p.x = -p.radius * 2;
+        } else if (p.x < -p.radius * 2.5) {
+          p.x = width + p.radius * 2;
+        }
 
-        // Select context: layer 0 & 1 -> bgCtx, layer 2 -> fgCtx
-        const targetCtx = p.layer === 2 && fgCtx ? fgCtx : bgCtx;
-        const sprite = sprites[p.spriteIndex];
-        if (!sprite) continue;
+        // Target context: Layer 0 & 1 -> bgCtx, Layer 2 & 3 -> fgCtx
+        const isForeground = p.layer >= 2;
+        const targetCtx = isForeground && fgCtx ? fgCtx : bgCtx;
+        const layerOpacity = p.layer === 0 ? 0.45 : p.layer === 1 ? 0.75 : 0.85;
+        const alpha = Math.min(1, p.opacity * layerOpacity);
 
         targetCtx.save();
         targetCtx.translate(p.x, p.y);
-        if (p.spriteIndex !== 7) {
-          targetCtx.rotate(p.rotation);
+        // Aerodynamic oscillation rocking
+        targetCtx.rotate(Math.sin(p.wobble));
+
+        if (isDark) {
+          // ── NIGHT SCENARIO ──
+          drawPolygonPath(targetCtx, p);
+          if (isForeground) {
+            targetCtx.fillStyle = `rgba(220, 240, 255, ${alpha * 0.78})`;
+          } else {
+            targetCtx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.95})`;
+          }
+          targetCtx.fill();
+        } else {
+          // ── DAYLIGHT SCENARIO (HIGH VISIBILITY OVER WHITE CARDS) ──
+          if (isForeground) {
+            // Foreground / camera flakes on blurred canvas: soft frost bokeh
+            drawPolygonPath(targetCtx, p);
+            targetCtx.fillStyle = `rgba(225, 240, 255, ${alpha * 0.82})`;
+            targetCtx.fill();
+          } else if (p.layer === 1 && p.radius > 1.0) {
+            // Mid in-focus flakes: Dual-pass optical scattering
+            // 1. Soft atmospheric winter ice fringe (provides crisp silhouette on pure white #ffffff)
+            targetCtx.save();
+            targetCtx.scale(1.22, 1.22);
+            drawPolygonPath(targetCtx, p);
+            targetCtx.fillStyle = `rgba(125, 155, 195, ${alpha * 0.62})`;
+            targetCtx.fill();
+            targetCtx.restore();
+
+            // 2. High-brightness pure snow body
+            drawPolygonPath(targetCtx, p);
+            targetCtx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.98})`;
+            targetCtx.fill();
+          } else {
+            // Layer 0 distant atmospheric ice dust
+            drawPolygonPath(targetCtx, p);
+            targetCtx.fillStyle = `rgba(135, 165, 205, ${alpha * 0.75})`;
+            targetCtx.fill();
+          }
         }
-        targetCtx.globalAlpha = p.opacity;
-        targetCtx.drawImage(sprite, -p.size / 2, -p.size / 2, p.size, p.size);
+
         targetCtx.restore();
       }
 
@@ -513,7 +342,6 @@ export function ThemeUniverse() {
     const startLoop = () => {
       if (isRunning) return;
       isRunning = true;
-      lastTime = performance.now();
       animId = requestAnimationFrame(render);
     };
 
@@ -539,7 +367,7 @@ export function ThemeUniverse() {
       }
     };
 
-    // Scroll-pause listener to keep frame rates locked at 60FPS
+    // Scroll listener for frame budget preservation
     const handleScroll = () => {
       isScrolling = true;
       if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -560,9 +388,6 @@ export function ThemeUniverse() {
     // Mutation observer for data-background and data-theme changes
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
-        if (m.attributeName === 'data-theme') {
-          rebuildSprites();
-        }
         if (m.attributeName === 'data-background' || m.attributeName === 'data-theme') {
           updateState();
         }
