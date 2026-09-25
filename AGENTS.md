@@ -4013,6 +4013,30 @@
     4. 纯音乐真实点播与呈现：通过 UI 检索并点播“赛博纯音”，桌面 HUD 准确呈现 `♬纯音乐，请欣赏♬`，歌词面板同步显示 `♬ 纯音乐，请欣赏 ♬`；
   - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
 
+### Task 182: 整体直接套用 API 歌词系统、本地歌曲优先在线高精跟随与离线模板即时懒加载架构优化 (`56301d5`, `90646df`)
+- [x] **架构痛点深度剖析与根除 (Root Causes Solved)**:
+  1. **本地歌曲糟糕跟随的根因**：
+     - 现象：联网音乐走 API 同步高精流畅，而本地歌曲（如《Way Back Home》）出现严重滞后或从 1分18秒才开始匹配；
+     - 根因 1（前端硬拦截）：前端切歌 `useEffect` 存在 `if (localMatch.lrc) { ... return; }`，直接强行返回阻断向 API 发起请求，导致本地歌曲永远无法享受 CFSolara API 的高精度毫秒级歌词系统；
+     - 根因 2（后端拦截截胡）：后端 `fetchHighPrecisionLyrics` 第一步就使用 `localMatch` 静态模板截胡返回，没有优先向 CFSolara API 检索；
+  2. **全面套用 API 接入的歌词系统 (Unified API Prioritization)**：
+     - **离线模板即时加载**：切换到本地歌曲时，先将本地模板作为初始状态极速渲染，实现零空白延迟，离线断网环境下依然 100% 可用；
+     - **优先异步 API 接入**：解除直接 `return` 阻断，利用本地歌曲的真实网易云 `lyricId`（如 863046037、509106775、31421442）及歌名歌手发起在线 API 请求；
+     - **高精数据无缝覆盖**：API 成功返回后，以 60FPS 极速平滑流光覆盖时间轴，首句歌词从 0.28s 毫秒级精准切入，完美解决本地歌曲歌词不同步与错位；
+     - **离线与断网保障**：若网络超时或离线，静默保持本地模板兜底，绝不报错或中断播放。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://02c55ec4.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://aad87529.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 Playwright E2E 自动化审计 (`scripts/verify-local-track-api-sync.mjs`)**:
+  - 全真访问生产主域名 `https://blog.epocanvas.com/`；
+  - **STAGE 1 网关 API 校验**：本地曲目《Way Back Home》通过网关成功拉取 67 行官方歌词（首句 [0.28s] "멈춘 시간 속"），《彼女は旅に出る》成功拉取 27 行高精歌词；
+  - **STAGE 2 真实浏览器 E2E 审计**：
+    1. 点击播放本地音轨 1《Way Back Home》：成功捕获到向网关发起的真实歌词 API 请求（`https://blog.epocanvas.com/api/music/lyric?id=863046037&source=netease&title=Way+Back+Home`）；
+    2. 1.0s 时精准跟随首句歌词 `멈춘 시간 속`，下一句自然预览 `잠든 너를 찾아가`，彻底终结滞后与错位；
+    3. 切换本地音轨 2《彼女は旅に出る》：在 36.0s 长伴奏间隙处，`hasInterlude: false`（彻底消除了多余间奏字符），稳定停留在上一句 `あ、あ、あたしの黒猫はしゃべらないままだな`，且高亮保持为 `100.0%`；
+  - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
+
+
 
 
 
