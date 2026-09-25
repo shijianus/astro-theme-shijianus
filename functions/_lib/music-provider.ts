@@ -946,6 +946,7 @@ export async function fetchHighPrecisionLyrics(
       }
     } catch {
       rawLyric = '';
+    }
   }
 
   // 4. 若全网在线拉取失败，且命中本地精选音轨，则使用本地模板进行离线兜底
