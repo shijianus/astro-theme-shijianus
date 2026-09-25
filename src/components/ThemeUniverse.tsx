@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { SnowMantleEngine } from '../lib/snow-mantle';
 
 interface CinematicSnowParticle {
   x: number;
@@ -62,6 +63,10 @@ export function ThemeUniverse() {
     let particles: CinematicSnowParticle[] = [];
     let isScrolling = false;
     let scrollTimeout: any = null;
+    let snowMantleEngine: SnowMantleEngine | null = null;
+    if (midCtx) {
+      snowMantleEngine = new SnowMantleEngine(midCtx);
+    }
 
     const isSnowActive = () => {
       const bg = document.documentElement.dataset.background;
@@ -402,6 +407,7 @@ export function ThemeUniverse() {
         if (bgCanvas) bgCanvas.style.opacity = '1';
         if (midCanvas) midCanvas.style.opacity = '1';
         if (fgCanvas) fgCanvas.style.opacity = '1';
+        if (snowMantleEngine) snowMantleEngine.scanCards();
         startLoop();
       } else {
         if (bgCanvas) bgCanvas.style.opacity = '0';
@@ -455,6 +461,7 @@ export function ThemeUniverse() {
 
     return () => {
       stopLoop();
+      if (snowMantleEngine) snowMantleEngine.destroy();
       observer.disconnect();
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', handleScroll);

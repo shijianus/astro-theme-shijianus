@@ -15554,13 +15554,13 @@ body[data-type='home'] .categoryGroup .categoryItem {
   border-radius: 12px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
-  transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  transition: flex 0.65s cubic-bezier(0.25, 1, 0.5, 1), transform 0.35s ease, box-shadow 0.35s ease !important;
 }
 
 /* 核心特效：当前悬停的按钮横向拉长，并微微上浮 */
 body[data-type='home'] .categoryGroup .categoryItem:hover,
 body[data-type='home'] .categoryGroup .categoryItem:focus-within {
-  flex: 1.85 1 0% !important;
+  flex: 1.45 1 0% !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16) !important;
   z-index: 10 !important;

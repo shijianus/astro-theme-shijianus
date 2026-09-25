@@ -3938,6 +3938,22 @@
     1. REST API 契约验证：中文在线歌曲「晴天」（42 行结构化歌词，首句 29.36s 命中）与英文在线歌曲「Shape of You」（90 行结构化歌词，首句 15.82s 命中）全量通过；
     2. 真实生产环境（`https://blog.epocanvas.com/`）浏览器端到端实机验证：在播放器搜索在线歌曲「晴天」及「Shape of You」，真实点播后桌面 HUD（`.screen-lyric__content`）动态渲染爬取的全网歌词，推进音频物理时间轴，歌词高亮与行推进 100% 严格吻合，0 控制台致命 JS 报错。
 
+### Task 179: 首页分类卡片 (.categoryItem) 拥挤感消除与描述文本 (.categoryButtonDesc) 折行吞截断根治优化
+- [x] **根因排查与痛点破译 (Root-Cause Discovery)**:
+  - 根因 1: 容器高度过窄（76px~80px）但塞入 `font-size: 1.15rem` 标题、分割线及描述，纵向无呼吸空间；
+  - 根因 2: 鼠标悬停手风琴伸缩比例失衡（`flex: 1.85 1 0%`），导致单卡悬停拉伸至 ~338px 时，其余两张未悬停卡片被剧烈压缩至 180px 以下甚至 130px；
+  - 根因 3: 未悬停卡片由于宽度不足，中文字符被强制折行为 2 行；而在原固定高度与 `justify-content: center` 限制下，两行文本总高度超出容器容纳极限，导致第 2 行文字直接被卡片底沿水平削平切除（“吞掉一半”）。
+- [x] **分类卡片核心排版与纵向呼吸感重构 (`src/components/theme/HomeHero.astro`, `src/styles/final-pass.css`, `src/styles/rebuild.css`)**:
+  - 容器高度提升：`.categoryGroup` 高度由 76px~80px 统一升至 `86px`（移动端保持自适应 64px-76px），赋予卡片充裕的纵向呼吸感，并与冬日雪幔顶层积雪保持自然安全间隙；
+  - 内容区分布均衡：`.categoryItem-content` 内边距优化为 `padding: 10px 14px 10px 12px !important;`，消除靠左死贴感；
+  - 标题排版微调：`.categoryButtonText` 字号由偏大粗重的 1.15rem 收敛为精致有力的 `1.05rem`（16.8px），行高 1.2，底距 3px，字间距微调；
+  - 分割线轻量化：`.divider` 尺寸微调为 `20px * 2.5px`，圆角 2px，底距 4px，细腻雅致；
+  - 介绍文本单行防折叠吞半截保护：`.categoryButtonDesc` 字号微调为 `0.8rem`（12.8px），采用 `white-space: nowrap !important; text-overflow: ellipsis !important; overflow: hidden !important;`，彻底根除被挤压时的突兀跳行与横向截半问题；
+  - 黄金手风琴伸缩比例调优：悬停项调整为 `flex: 1.45 1 0% !important;`，未悬停兄弟项保持充足展示宽度（~207px），在 1440p/1366p/1280p 标准分辨率下描述文字 100% 完整显示；过渡动画提速为丝滑响应的 `0.65s cubic-bezier(0.25, 1, 0.5, 1)`。
+- [x] **全景自动化审计套件 (`scripts/verify-category-fix.mjs`) 验证全量通过**:
+  - 覆盖 1080p (1440x900)、1366p (1366x768)、1280p (1280x800)、1200p (1200x800)、1024p (1024x768) 及移动端（375x667）；
+  - 全流程验证：默认状态 3 张卡片尺寸、高度 86px、悬停手风琴展开、未悬停卡片零文字截断、零折行吞半截，断言全部通过。
+
 
 
 

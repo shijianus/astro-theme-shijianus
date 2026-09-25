@@ -282,14 +282,14 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     content: none !important;
   }
 
-  /* 修正内容区对齐：居中聚拢、向左靠齐 */
+  /* 修正内容区对齐：居中聚拢、向左靠齐，预留呼吸间距 */
   body[data-type='home'] .categoryItem-content {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: center !important; 
-    padding: 8px 12px 8px 8px !important; /* 确保距离上下边界有足够距离，左侧极致贴近 */
-    height: auto !important;
+    padding: 10px 14px 10px 12px !important; /* 确保距离上下边界有足够呼吸感，左右分布均衡 */
+    height: 100% !important;
     box-sizing: border-box !important;
     z-index: 2 !important;
     position: relative !important;
@@ -303,6 +303,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   body[data-type='home'] .categoryButton {
     display: flex !important;
     flex: 1 1 100% !important;
+    height: 100% !important;
     align-items: center !important;
     position: relative !important;
     overflow: hidden !important;
@@ -310,36 +311,36 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     text-decoration: none !important;
     transform: none !important;
     transition: background 0.3s ease !important;
-    overflow: hidden !important;
-    border-radius: 12px !important;
     max-width: none !important;
     min-width: 0 !important;
   }
 
   /* 分割线样式：原址替换，并推开下方的介绍文本 */
   body[data-type='home'] .categoryItem-content .divider {
-    width: 24px !important;
-    height: 3px !important;
+    width: 20px !important;
+    height: 2.5px !important;
     background-color: currentColor !important;
     border-radius: 2px !important;
     margin-top: 0 !important;
-    margin-bottom: 2px !important; /* 介绍文本离分割线的距离 > 标题离分割线的距离 - 缩小空隙 */
-    opacity: 0.8 !important;
+    margin-bottom: 4px !important;
+    opacity: 0.82 !important;
     flex-shrink: 0 !important;
   }
 
-  /* 标题样式：紧贴分割线 */
+  /* 标题样式：精致比例，不压迫空间 */
   body[data-type='home'] .categoryButtonText {
-    font-size: 1.15rem !important;
+    font-size: 1.05rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
-    margin-bottom: 2px !important; /* 与分割线保持极近距离 */
-    white-space: nowrap !important; /* 标题绝对锁定 */
-    min-width: 90px !important;
-    overflow: visible !important;
-    width: 100% !important;
+    margin-bottom: 3px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: auto !important;
+    max-width: 100% !important;
     text-align: left !important;
     display: block !important;
+    letter-spacing: -0.01em !important;
   }
 
   /* Remove any existing pseudo-element dividers */
@@ -347,18 +348,20 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: none !important;
   }
 
-  /* Removing truncation */
+  /* 介绍文本展示：优雅单行防挤压截断，溢出省略号，彻底消除折行被吞半截问题 */
   body[data-type='home'] .categoryButtonDesc {
-    font-size: 0.85rem !important;
-    opacity: 0.8 !important;
-    line-height: 1.4 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.35 !important;
+    opacity: 0.88 !important;
     width: 100% !important;
+    max-width: 100% !important;
     text-align: left !important;
-    white-space: normal !important;
-    word-break: break-all !important;
-    margin-top: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    display: block !important;
+    margin: 0 !important;
+    transition: opacity 0.3s ease !important;
   }
 
   /* Flex/Grid Elastic Hover Interaction */
@@ -371,7 +374,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     box-sizing: border-box !important;
   }
 
-  /* 注意：严格保留对 .categoryGroup 的正确 Flex 设置 */
+  /* 注意：严格保留对 .categoryGroup 的正确 Flex 设置，高度提升至 86px 赋予充足纵向呼吸空间 */
   body[data-type='home'] .categoryGroup {
     display: flex !important;
     flex-direction: row !important;
@@ -380,8 +383,8 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     gap: 8px !important;
     margin: 0 !important;
     width: 100% !important;
-    height: 80px !important;
-    min-height: 80px !important;
+    height: 86px !important;
+    min-height: 86px !important;
     align-items: stretch !important;
     padding: 0 !important;
     box-sizing: border-box !important;
@@ -391,13 +394,13 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     display: flex !important;
     flex: 1 1 0% !important;
     width: auto !important;
-    /* 核心动效：纯单调平滑缓动曲线，杜绝过冲反弹，确保悬停即拉伸、解除悬停即时无延时回缩 */
-    transition: flex 1.8s cubic-bezier(0.25, 1, 0.5, 1),
-                transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
-                box-shadow 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    /* 核心动效：顺滑灵动缓动曲线，悬停即伸展、解除悬停即时平滑回缩 */
+    transition: flex 0.65s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.35s ease,
+                box-shadow 0.35s ease !important;
     overflow: hidden !important;
     border-radius: 12px !important;
-    height: auto !important;
+    height: 100% !important;
     position: relative !important;
     margin: 0 !important;
     box-sizing: border-box !important;
@@ -410,21 +413,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
 
   body[data-type='home'] .categoryItem:hover,
   body[data-type='home'] .categoryItem:focus-within {
-    flex: 1.85 1 0% !important; /* 仅作用于当前悬停元素，其余卡片由 flexbox 自然均摊压缩，杜绝二次突变 */
+    flex: 1.45 1 0% !important; /* 黄金比例伸缩：悬停项获得显著展开，同时保障兄弟项充足展示空间不被过度挤压 */
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16) !important;
     z-index: 10 !important;
-  }
-
-  /* 介绍文本展示 */
-  body[data-type='home'] .categoryButtonDesc {
-    display: block !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    line-height: 1.4 !important;
-    max-height: 2.8em !important;
-    overflow: hidden !important;
-    font-size: 0.85em !important;
   }
 
   /* categoryButton & 按钮背景渐变平滑流动优化 */
@@ -470,10 +462,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     right: 8px !important;
     bottom: -15px !important;
     opacity: 0.18 !important;
-    transition: transform 1.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.2s ease, filter 1.2s ease !important;
+    transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, filter 0.4s ease !important;
     z-index: 1 !important;
-    width: 70px !important;
-    height: 70px !important;
+    width: 68px !important;
+    height: 68px !important;
     filter: blur(0.5px);
   }
 
