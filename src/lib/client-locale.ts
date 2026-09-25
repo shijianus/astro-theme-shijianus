@@ -1700,8 +1700,12 @@ export const I18N_STRINGS: Record<SupportedLocale, Record<string, string>> = {
 export function getI18nText(key: string, locale: LocaleVariant, fallback?: string): string {
   const table = I18N_STRINGS[locale] || I18N_STRINGS['zh-CN'];
   if (table && table[key] !== undefined) return table[key];
-  if ((locale === 'zh-CN' || locale === 'zh-Hant') && fallback !== undefined) {
+  if (locale === 'zh-CN' && fallback !== undefined) {
     return fallback;
+  }
+  if (locale === 'zh-Hant') {
+    const rawZh = fallback !== undefined ? fallback : (I18N_STRINGS['zh-CN']?.[key] ?? key);
+    return convertText(rawZh, 'zh-Hant');
   }
   return I18N_STRINGS['en']?.[key] ?? I18N_STRINGS['zh-CN']?.[key] ?? fallback ?? key;
 }
@@ -2667,6 +2671,37 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   // Author Bio
   '00后在读大学生 · Web 全栈初探者 · 数字花园建造者': { en: 'Gen-Z Undergrad · Web Full-Stack Explorer · Digital Garden Builder', fr: 'Étudiant Gen-Z · Explorateur Web Full-Stack · Bâtisseur de jardin numérique', es: 'Estudiante universitario Gen-Z · Explorador Web Full-Stack · Constructor de jardín digital', de: 'Gen-Z Student · Web-Full-Stack-Entdecker · Erbauer digitaler Gärten' },
   '主题重构启动记录': { en: 'Theme Refactoring Genesis', fr: 'Genèse de la refonte du thème', es: 'Génesis de la refactorización del tema', de: 'Start der Theme-Neugestaltung' },
+
+  // Homepage, Feed, Navigation & Console Toasts
+  '生活明朗，万物可爱': { en: 'Life is bright and lovely', fr: 'La vie est radieuse et charmante', es: 'La vida est brillante y encantadora', de: 'Das Leben ist hell und liebenswert' },
+  '今日推荐': { en: 'Recommended Today', fr: 'Recommandé aujourd\'hui', es: 'Recomendado hoy', de: 'Heute empfohlen' },
+  '热门精选': { en: 'Popular Picks', fr: 'Sélection populaire', es: 'Selección popular', de: 'Beliebte Auswahl' },
+  '查看全部': { en: 'View All', fr: 'Voir tout', es: 'Ver todo', de: 'Alle anzeigen' },
+  '查看全部分类': { en: 'View all categories', fr: 'Voir toutes les catégories', es: 'Ver todas las categorías', de: 'Alle Kategorien anzeigen' },
+  '关注 Telegram 频道': { en: 'Follow Telegram Channel', fr: 'Suivre le canal Telegram', es: 'Seguir el canal de Telegram', de: 'Telegram-Kanal folgen' },
+  '加入频道': { en: 'Join Channel', fr: 'Rejoindre le canal', es: 'Unirse al canal', de: 'Kanal beitreten' },
+  'Telegram 频道二维码': { en: 'Telegram Channel QR Code', fr: 'Code QR du canal Telegram', es: 'Código QR del canal de Telegram', de: 'Telegram-Kanal QR-Code' },
+  '已复制标题与文章链接': { en: 'Title and link copied', fr: 'Titre et lien copiés', es: 'Título y enlace copiados', de: 'Titel und Link kopiert' },
+  '已复制文本': { en: 'Text copied', fr: 'Texte copié', es: 'Texto copiado', de: 'Text kopiert' },
+  '已刷新页面': { en: 'Page refreshed', fr: 'Page actualisée', es: 'Página actualizada', de: 'Seite aktualisiert' },
+  '深色模式已开启': { en: 'Dark mode enabled', fr: 'Mode sombre activé', es: 'Modo oscuro activado', de: 'Dunkelmodus aktiviert' },
+  '浅色模式已开启': { en: 'Light mode enabled', fr: 'Mode clair activé', es: 'Modo clair activé', de: 'Hellmodus aktiviert' },
+  '已返回上一页': { en: 'Navigated back', fr: 'Page précédente', es: 'Regresado a página anterior', de: 'Zurückgekehrt' },
+  '已前往下一页': { en: 'Navigated forward', fr: 'Page suivante', es: 'Avanzado a página siguiente', de: 'Weitergegangen' },
+  '已回到页面顶部': { en: 'Scrolled to top', fr: 'Haut de page atteint', es: 'Desplazado al inicio', de: 'Nach oben gescrollt' },
+  '引用已填入评论框': { en: 'Quote inserted into comment', fr: 'Citation insérée dans le commentaire', es: 'Cita insertada en el comentario', de: 'Zitat in Kommentar eingefügt' },
+  '搜索面板已唤起': { en: 'Search panel opened', fr: 'Panneau de recherche ouvert', es: 'Panel de búsqueda abierto', de: 'Suchleiste geöffnet' },
+  '文库': { en: 'Library', fr: 'Bibliothèque', es: 'Biblioteca', de: 'Bibliothek' },
+  '专栏': { en: 'Columns', fr: 'Rubriques', es: 'Columnas', de: 'Kolumnen' },
+  '随想': { en: 'Musings', fr: 'Pensées', es: 'Reflexiones', de: 'Gedanken' },
+  '动态': { en: 'Moments', fr: 'Moments', es: 'Momentos', de: 'Momente' },
+  '开往': { en: 'Travelling', fr: 'En route', es: 'En camino', de: 'Reisen' },
+  '致谢': { en: 'Acknowledgements', fr: 'Remerciements', es: 'Agradecimientos', de: 'Danksagung' },
+  '相册': { en: 'Gallery', fr: 'Galerie', es: 'Galería', de: 'Galerie' },
+  '设备': { en: 'Gear', fr: 'Équipement', es: 'Equipo', de: 'Ausrüstung' },
+  '关于我': { en: 'About Me', fr: 'À propos de moi', es: 'Sobre mí', de: 'Über mich' },
+  '未读': { en: 'Unread', fr: 'Non lu', es: 'No leído', de: 'Ungelesen' },
+  '最新': { en: 'Latest', fr: 'Récents', es: 'Reciente', de: 'Neueste' },
 };
 
 export interface PatternRule {
@@ -2725,7 +2760,7 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
     },
   },
   {
-    pattern: /^共\s*(\d+)\s*篇$/,
+    pattern: /^共\s*([\d,]+)\s*篇$/,
     replace: {
       'zh-CN': (m) => `共 ${m[1]} 篇`,
       'zh-Hant': (m) => `共 ${m[1]} 篇`,
@@ -2733,6 +2768,50 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
       fr: (m) => `${m[1]} articles au total`,
       es: (m) => `${m[1]} publicaciones en total`,
       de: (m) => `${m[1]} Beiträge insgesamt`,
+    },
+  },
+  {
+    pattern: /^共\s*([\d,]+)\s*篇文章$/,
+    replace: {
+      'zh-CN': (m) => `共 ${m[1]} 篇文章`,
+      'zh-Hant': (m) => `共 ${m[1]} 篇文章`,
+      en: (m) => `${m[1]} articles in total`,
+      fr: (m) => `${m[1]} articles au total`,
+      es: (m) => `${m[1]} artículos en total`,
+      de: (m) => `${m[1]} Artikel insgesamt`,
+    },
+  },
+  {
+    pattern: /^共\s*([\d,]+)\s*个分类$/,
+    replace: {
+      'zh-CN': (m) => `共 ${m[1]} 个分类`,
+      'zh-Hant': (m) => `共 ${m[1]} 個分類`,
+      en: (m) => `${m[1]} categories in total`,
+      fr: (m) => `${m[1]} catégories au total`,
+      es: (m) => `${m[1]} categorías en total`,
+      de: (m) => `${m[1]} Kategorien insgesamt`,
+    },
+  },
+  {
+    pattern: /^共\s*([\d,]+)\s*个标签$/,
+    replace: {
+      'zh-CN': (m) => `共 ${m[1]} 个标签`,
+      'zh-Hant': (m) => `共 ${m[1]} 個標籤`,
+      en: (m) => `${m[1]} tags in total`,
+      fr: (m) => `${m[1]} étiquettes au total`,
+      es: (m) => `${m[1]} etiquetas en total`,
+      de: (m) => `${m[1]} Tags insgesamt`,
+    },
+  },
+  {
+    pattern: /^第\s*(\d+)\s*\/\s*(\d+)\s*页$/i,
+    replace: {
+      'zh-CN': (m) => `第 ${m[1]} / ${m[2]} 页`,
+      'zh-Hant': (m) => `第 ${m[1]} / ${m[2]} 頁`,
+      en: (m) => `Page ${m[1]} / ${m[2]}`,
+      fr: (m) => `Page ${m[1]} / ${m[2]}`,
+      es: (m) => `Página ${m[1]} / ${m[2]}`,
+      de: (m) => `Seite ${m[1]} / ${m[2]}`,
     },
   },
   {
@@ -3055,6 +3134,50 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
       de: (m) => ` Zuletzt aktualisiert ${m[1]}.`,
     },
   },
+  {
+    pattern: /^已在此停留\s*([\d.]+)\s*分钟$/i,
+    replace: {
+      'zh-CN': (m) => `已在此停留 ${m[1]} 分钟`,
+      'zh-Hant': (m) => `已在此停留 ${m[1]} 分鐘`,
+      en: (m) => `Stayed here for ${m[1]} mins`,
+      fr: (m) => `Ici depuis ${m[1]} min`,
+      es: (m) => `Permanecido aquí ${m[1]} min`,
+      de: (m) => `Seit ${m[1]} Min. hier`,
+    },
+  },
+  {
+    pattern: /^近30天发布\s*(\d+)\s*篇$/i,
+    replace: {
+      'zh-CN': (m) => `近30天发布 ${m[1]} 篇`,
+      'zh-Hant': (m) => `近30天發布 ${m[1]} 篇`,
+      en: (m) => `${m[1]} posts in last 30 days`,
+      fr: (m) => `${m[1]} articles ces 30 derniers jours`,
+      es: (m) => `${m[1]} publicaciones en los últimos 30 días`,
+      de: (m) => `${m[1]} Beiträge in den letzten 30 Tagen`,
+    },
+  },
+  {
+    pattern: /^提醒阈值\s*(\d+)\s*天$/i,
+    replace: {
+      'zh-CN': (m) => `提醒阈值 ${m[1]} 天`,
+      'zh-Hant': (m) => `提醒閾值 ${m[1]} 天`,
+      en: (m) => `Reminder threshold ${m[1]} days`,
+      fr: (m) => `Seuil de rappel ${m[1]} jours`,
+      es: (m) => `Umbral de recordatorio ${m[1]} días`,
+      de: (m) => `Erinnerungsschwelle ${m[1]} Tage`,
+    },
+  },
+  {
+    pattern: /^已切换大纲层级[：:]\s*(.+)$/i,
+    replace: {
+      'zh-CN': (m) => `已切换大纲层级：${m[1]}`,
+      'zh-Hant': (m) => `已切換大綱層級：${m[1]}`,
+      en: (m) => `TOC depth: ${m[1]}`,
+      fr: (m) => `Niveau de plan : ${m[1]}`,
+      es: (m) => `Nivel de esquema: ${m[1]}`,
+      de: (m) => `Gliederungstiefe: ${m[1]}`,
+    },
+  },
 ];
 
 // Pre-indexed fast maps for O(1) instantaneous lookups
@@ -3249,7 +3372,7 @@ export function isIgnoredSubtree(el: Element): boolean {
   return false;
 }
 
-const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail|年|月|日|页/;
+const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail|年|月|日|页|共|第|已|提醒|停留|阈值|深度|大纲/;
 
 /**
  * Text translation router based on variant (O(1) exact mapping + dynamic pattern rules)
