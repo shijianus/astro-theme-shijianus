@@ -4062,6 +4062,38 @@
     4. 歌词抽屉滑动保护审计：用户滑动后进入保护态，`isProtected: true`，300px 滚动偏移在音频播放期间稳定保持不被暴力拽回；
   - **STAGE 3 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
 
+### Task 184: UI/UX 深度打磨、歌词视觉层级重构、即时点击试听居中与移动端自适应 (`6cdcd32`)
+- [x] **UI/UX 与功能完整性深度优化 (UI/UX & Functional Polishing)**:
+  1. **歌词瀑布流视觉层级重构 (Apple Music / Spotify 标准)**：
+     - **病因**：之前已唱过的历史歌词行（`.lyrics-line.is-passed`）被全部高亮为鲜艳蓝色（`#3b82f6`），当歌曲播放到后半段时，全屏都是刺眼的亮蓝文字，严重削弱了对“当前正在唱的句子”的视觉聚焦感；
+     - **优化**：将已唱行重构为优雅内敛的静谧冷灰板岩色（`rgba(100, 116, 139, 0.65)`，深色模式 `rgba(148, 163, 184, 0.6)`，`opacity: 0.72`），与当前行形成鲜明清晰的视觉焦点；
+     - **当前行聚焦**：`.lyrics-line.is-active` 采用品牌主题蓝/靛青，配以 `transform: scale(1.02)`、3.5px 高亮左边条与精致柔光投影；
+     - **交互质感提升**：歌词行 hover 新增 `transform: translateX(3px)` 微动效与时间戳高亮，赋予其明确的“可点击试听”感知反馈。
+  2. **歌词点击试听（Click-to-Seek）与即刻居中闭环**：
+     - **病因**：之前用户在滑动歌词抽屉时，若点击某一歌词行试听，由于之前激活的 3.5 秒防扯动锁仍在运行，抽屉不会立即居中对齐该行；
+     - **优化**：在 `handleLyricClick` 中，当用户主动点击某一行时，判定为显式用户目标指令，立即清除用户手动滚动避让状态（`userScrollingLyricsRef.current = false`），并借助 `requestAnimationFrame` 将被点击歌词行平滑滚动至容器正中心（实机测试偏移误差仅 0.25px）。
+  3. **抽屉打开瞬间自动居中对齐**：
+     - **优化**：在歌词自动滚动 `useEffect` 中追加 `open` 状态监听，当用户从外部点击呼出播放器歌词抽屉时，无论此前滚动停留在何处，均会立即平滑居中对齐当前播放句，消除打开时的错位感。
+  4. **移动端 (Mobile Viewport <= 768px) 响应式自适应**：
+     - **病因**：桌面歌词 HUD 浮窗此前在手机竖屏（375px~390px）下可能由于固定最小宽度或过大字号（28px/36px）导致歌词过快被截断；
+     - **优化**：在 `@media (max-width: 768px)` 中添加专有自适应规则，宽度自适应为 `calc(100vw - 24px)`，各档位字号平滑降阶（`size-md` 缩敛至 18px，`size-sm` 16px），底距收敛至 56px，移动端屏幕贴合度 100%。
+  5. **顶层模态框全域抑制加固**：
+     - 将桌面歌词 HUD（`.shijianus-music-pocket__screen-lyric`）纳入顶层抑制体系，当全站搜索框（`theme-search`）、控制台（`#console`）、账号中心（`theme-account-overlay`）或打赏模态框弹出时，桌面歌词自动隐去，关闭后无缝淡入。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://4ba60081.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://92e64a33.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 E2E 自动化审计 (`scripts/verify-ui-ux-polished.mjs`)**:
+  - 全真访问生产主域名 `https://blog.epocanvas.com/`；
+  - **STAGE 1 API 验证**：晴天 42 行歌词 200 OK 正常返回；
+  - **STAGE 2 桌面视觉层级与点击居中**：
+    1. 历史歌词行 `passedOpacity: 0.72`，静谧冷灰；当前行 `scale: 1.02`，主题蓝高对比聚焦；
+    2. 点击试听第 5 行，音频瞬间跳转至 30.6s，歌词行平滑居中（`distFromCenter: 0.25px`，`isCentered: true`）；
+  - **STAGE 3 移动端视口 (375x667 iPhone SE) 审计**：
+    1. HUD 宽度 343px 完美容纳于 375px 屏幕（`fitsInScreen: true`）；
+    2. 字号自动适应缩小至 18px（`scaledDown: true`），0 横向溢出；
+  - **STAGE 4 模态框全域抑制**：激活遮罩状态时 `isHidden: true`，HUD 自动隐藏；
+  - **STAGE 5 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
+
 
 
 
