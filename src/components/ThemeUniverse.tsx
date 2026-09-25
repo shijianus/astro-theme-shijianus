@@ -267,17 +267,14 @@ export function ThemeUniverse() {
       }
 
       initParticles();
+      if (snowMantleEngine) {
+        snowMantleEngine.scanCards();
+      }
     };
 
     // Main animation render loop
     const render = () => {
       if (!isRunning) return;
-
-      // Throttle under heavy scroll to maintain 60FPS responsiveness
-      if (isScrolling && Math.random() > 0.5) {
-        animId = requestAnimationFrame(render);
-        return;
-      }
 
       bgCtx.clearRect(0, 0, width, height);
       if (midCtx) midCtx.clearRect(0, 0, width, height);
@@ -285,6 +282,13 @@ export function ThemeUniverse() {
 
       const isDark = isDarkMode();
       const currentWind = getDynamicWind(0.32);
+
+      // ── Render Procedural Snow Mantles (积雪/雪幔) on all visible cards on midCtx ──
+      if (midCtx && snowMantleEngine) {
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const scrollX = window.scrollX || window.pageXOffset || 0;
+        snowMantleEngine.render(scrollY, scrollX, isDark, windState.time);
+      }
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];

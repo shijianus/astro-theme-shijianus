@@ -3916,7 +3916,7 @@
   - 全面清理开发过程中的临时测试页面与图像草稿，保持仓库纯净；
   - 多端（`origin` 与 `cf`）全量同步并更新生产环境。
 
-### Task 178: CFSolara 全网高精度歌词爬虫与解析 API 微服务构建及播放器真实物理时间同步原生重构 (`3580093`, `b898eb3`)
+### Task 178: CFSolara 全网高精度歌词爬虫与解析 API 微服务构建及播放器真实物理时间同步原生重构 (`3580093`, `b898eb3`, `8c226eb`)
 - [x] **CFSolara 全网多源聚合瀑布实时爬虫与解析引擎 (`CFSolara: functions/_lib/music.ts`, Commit `3580093`)**:
   - 构建多源实时爬虫瀑布：网易云 (NetEase) -> QQ 音乐 (QQ Music) -> LRCLIB 国际公共库 -> 酷狗 (Kugou)，全面覆盖中文热歌、欧美流行、小众独立及二次元歌曲；
   - 深度解析网易云 JSON Lines 歌词（`{"t":..., "c":[{"tx":"...", "t":..., "d":...}]}`）、网易云 YRC 格式（`[start,dur](wstart,wdur)...`）、QQ 音乐 XML QRC、尖括号逐字 `<start,dur>` 与标准行级 LRC；
