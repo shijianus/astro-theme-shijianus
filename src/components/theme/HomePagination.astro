@@ -16,7 +16,7 @@ const items = getHomePaginationItems(currentPage, lastPage);
     <div class="home-pagination__status" aria-live="polite">
       <span class="home-pagination__badge">
         <span class="home-pagination__badge-dot" aria-hidden="true"></span>
-        <span>第 <strong>{currentPage}</strong> / {lastPage} 页</span>
+        <span>第 {currentPage} / {lastPage} 页</span>
       </span>
       {typeof total === 'number' && total > 0 && (
         <span class="home-pagination__total">共 {total} 篇</span>

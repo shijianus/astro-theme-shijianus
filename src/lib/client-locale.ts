@@ -2714,6 +2714,11 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '已收起快捷菜单（鼠标移至屏幕右侧可重新唤出）': { en: 'Quick menu collapsed (hover right edge to restore)', fr: 'Menu rapide masqué (survoler le bord droit pour restaurer)', es: 'Menú rápido oculto (pase el ratón por el borde derecho para restaurar)', de: 'Schnellmenü eingeklappt (rechten Bildschirmrand berühren zum Wiederherstellen)' },
   '已开启随身音乐口袋': { en: 'Pocket player opened', fr: 'Lecteur de poche ouvert', es: 'Reproductor de bolsillo abierto', de: 'Pocket-Player geöffnet' },
   '已隐藏随身音乐口袋': { en: 'Pocket player hidden', fr: 'Lecteur de poche masqué', es: 'Reproductor de bolsillo oculto', de: 'Pocket-Player ausgeblendet' },
+  '阅读量': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
+  '浏览量': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
+  '语言版本:': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
+  '语言版本：': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
+  '知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议': { en: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License', fr: 'Licence Creative Commons Attribution - Pas d\'Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International', es: 'Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional', de: 'Creative Commons Namensnennung - Nicht-kommerziell - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz' },
 };
 
 export interface PatternRule {
