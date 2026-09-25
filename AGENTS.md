@@ -3888,25 +3888,33 @@
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
 
-### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`)
-- [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`)**:
-  - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #dce8f8 0%, #ebf3fc 45%, #f7f9fe 100%)`）；
-  - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供 15%~20% 冷色天幕对比基底；
+### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`, `949b7bf`, `b898eb3`)
+- [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`, `949b7bf`)**:
+  - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #c4dbf6 0%, #d5e7f8 35%, #e5f1fb 70%, #eff5fd 100%) !important;`）；
+  - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供清晰的自然冷色天幕对比基底；
   - 完善纯色 Clean 模式（`#web_bg` 100% 恢复纯色基底）与控制台/账号抽屉开启时的前端浮雪即时隐藏抑制（`body.theme-overlay-open #theme-snow-foreground { opacity: 0 !important; }`）。
-- [x] **双层景深画布架构直出与零侵入挂载 (`src/layouts/BlogLayout.astro`, `822d4c7`)**:
-  - 新增 `#theme-snow-foreground` 前景画布（`z-index: 25; pointer-events: none;`），与底层天幕画布 `#theme-snow-universe`（`z-index: -1`）协同工作；
-  - 保持业务卡片代码 100% 纯净（零 `<SnowCover>`，零卡片内部污染）。
-- [x] **根除“空心圆环/单选框圆盘”视觉缺陷，重构为 100% 真实纯自然冰晶结构雪花 (`src/components/ThemeUniverse.tsx`, `91e0ba0`)**:
-  - **彻底摒弃几何圆形与空心圆环（ZERO Geometric Circles / Rings）**：彻底清除原有以 `arc()` 绘制的内白外蓝圆盘（在白色卡片背景上白色内芯被完全吞没，导致肉眼仅看见外层蓝色圆环，形似收音机单选框或空心圈圈的虚假感）；
-  - **纯程序化六角分支蕨状星形冰晶（Fernlike Stellar Dendrite）**：六根辐射主轴，每根主轴包含 3 级自然角度分叉侧枝（45°/60°羽状细枝）与六边形微晶核，完美还原天然雪花结晶；
-  - **多形态自然结晶矩阵**：包含精巧羽状枝雪花（Fern Dendrite）、经典星状雪花（Classic Stellar Crystal）、六角刻面星盘（Faceted Stellar Plate）、钻石针状星芒（Diamond Needle Star）与致密微晶尘（Solid Diamond Dust ◆）；
-  - **真 3D 空气动力学翻滚与飘移（Aerodynamic Tumble & Flutter）**：每片雪花拥有独立的 3D 旋转角速度与自然飘落相位摆动（`rotation += rotationSpeed`, `sway = Math.sin(phase)`），随风向呈现灵动翻转姿态；
-  - **零卡顿预烘焙纹理图元（Pre-Baked Sprite Texture Quads）**：利用离屏 Canvas 预烘焙 8 类冰晶 Sprite 图元，主循环纯靠 `ctx.drawImage` 高速贴图，零 `shadowBlur` 离屏卷积开销，零 GC 垃圾回收卡顿，深浅色主题切换实时重构图元颜色；
-  - **近远景全景视差**：底层画布渲染中远景星晶与微尘（层级 0 & 1），顶层前景画布（层级 2）渲染近景羽状大雪花缓缓漫越卡片上方。
-- [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`, `scripts/verify-live-phase1-snow.mjs`, `a1c94d4`)**:
+- [x] **参考 react-cinematic-snow 专案全面重构自然电影级雪花引擎 (`src/components/ThemeUniverse.tsx`, `src/styles/global.css`, `src/layouts/BlogLayout.astro`, `949b7bf`)**:
+  - **根除“做作”的数学矢量剪纸感**：彻底摒弃刻意勾勒的 6 臂枝桠图标，采用程序化 5~8 顶点有机不规则多边形（`createIrregularShape(radius, roughness)`），模拟自然空中飘凝的真实雪絮与雪花团簇（Aggregate Snow Flakes）；
+  - **真实的终端速度与尺寸物理关联（Size-Speed Physical Correlation）**：严格依循空气动力学物理计算下落速度（`baseSpeed = (radius / 2.5) * sMult`），大雪片由于重力与终端速度下落较快，微小远景雪尘则轻柔悬浮慢漂；
+  - **动态多尺度风力模拟系统（Dynamic Wind Engine）**：
+    - 主慢速波浪振荡（周期约 20~40s，自然风向缓慢转向）；
+    - 中速复合扰动与快速微颤振荡；
+    - 随机自然阵风爆发（Gusts，持续 2~5s，正弦包络平滑淡入淡出）；
+    - 双频空气阻力摆动（`primarySway` + `secondarySway`）与空气动力学左右翻仰（`ctx.rotate(Math.sin(p.wobble))`）；
+  - **四层光学景深与电影级虚化（Cinematic Depth of Field Blur）**：
+    - **Back 层（底层天幕，z-index: -1）**：远景微小雪尘（0.5~1.6px），慢速漂浮，大气雾感；
+    - **Mid 层（底层天幕，z-index: -1）**：中景清晰聚焦真实雪片（1.5~3.2px），在卡片后方清晰漫落；
+    - **Front 层（顶层前景，z-index: 25）**：近景大雪花（3.2~5.5px），漫越在所有卡片与正文上方；
+    - **Camera 层（顶层前景，z-index: 25）**：罕见超大掠镜雪球（6.5~13.0px，全屏仅 2~4 片），模拟紧贴摄影机镜头的掠过感；
+    - **GPU 硬件虚化合成**：在 `#theme-snow-foreground` 前景画布直接应用 CSS `filter: blur(2.5px)`，由浏览器合成器在 GPU 显存内极速渲染镜头景深焦外散景（Bokeh），彻底杜绝 `ctx.shadowBlur` 离屏 CPU 卷积卡顿；
+  - **白昼模式高对比度自然光学散射着色（Natural Daylight Optical Scattering）**：
+    - 在白昼纯白卡片（`#ffffff`）上方，为雪花叠加 1.22x 外层自然冬日冰散微冷边缘（`rgba(125, 155, 195, 0.62)`）与高纯度纯白内芯（`rgba(255, 255, 255, 0.98)`）；
+    - 绝非人工突兀黑线或空心圆圈，而是呈现犹如阳光穿透冰晶边缘折射的柔和自然轮廓，在纯白卡片与深色横幅上皆具备极佳可视度与晶莹质感；
+    - 夜间模式自适应恢复高亮晶白与微冷冰蓝微光。
+- [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`, `scripts/verify-live-phase1-snow.mjs`)**:
   - 涵盖白天雪境（Light Mode）、夜间雪境（Dark Mode）、纯净背景（Clean Mode）与遮罩抽屉弹出等场景断言全部 100% PASS；
   - 控制台 0 错误（Total Console Errors: 0）；
-  - 视觉审查确认：彻底消除空心圆环，在白色卡片与深色横幅上均呈现细腻晶莹的六角羽状分支雪花。
+  - 视觉审查确认：消除刻意做作感，完美展现电影级景深虚化与自然白昼雪花流动。
 
 
 
