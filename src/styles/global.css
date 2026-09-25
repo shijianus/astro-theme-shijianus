@@ -228,9 +228,13 @@ img {
 }
 
 /* Suppress foreground floating snow during active overlay / modal sessions */
+body.theme-overlay-open #theme-snow-mid,
 body.theme-overlay-open #theme-snow-foreground,
+body.reward-modal-open #theme-snow-mid,
 body.reward-modal-open #theme-snow-foreground,
+body.console-open #theme-snow-mid,
 body.console-open #theme-snow-foreground,
+html[data-console-open="true"] #theme-snow-mid,
 html[data-console-open="true"] #theme-snow-foreground {
   opacity: 0 !important;
   visibility: hidden !important;
