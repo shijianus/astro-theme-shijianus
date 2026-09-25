@@ -339,21 +339,36 @@ function cleanLyricText(str: string): string {
 function isLyricMetadataLine(text: string): boolean {
   if (!text) return true;
   const trimmed = text.trim();
-  return /^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|Written by|Composed by|Arranged by|Produced by|Lyrics by|Music by)\s*[:：]/i.test(trimmed);
+  if (/^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|演唱|原唱|歌手|专辑|发行|出品|Written|Composed|Arranged|Produced|Lyrics|Music|Vocal|Singer)\s*[:：]/i.test(trimmed)) {
+    return true;
+  }
+  // 过滤歌曲名/歌手名标题行（如 "青花瓷 - 周杰伦" 或 "Song - Artist"）
+  if (/^[^-–—]+[-–—][^-–—]+$/.test(trimmed) && trimmed.length < 50) {
+    return true;
+  }
+  return false;
 }
 
 export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
   if (!Array.isArray(rawLines)) return [];
-  return rawLines
-    .filter((line) => line && typeof line.text === 'string' && line.text.trim())
+  const valid = rawLines.filter((line) => line && typeof line.text === 'string' && line.text.trim());
+  if (valid.length === 0) return [];
+
+  // 判断整组歌词是否主要以毫秒计（例如最大原始时间戳 > 1000）
+  const maxRawTime = valid.reduce((max, l) => {
+    const t = typeof l.timeSec === 'number' ? l.timeSec : (typeof l.time === 'number' ? l.time : 0);
+    return Math.max(max, t);
+  }, 0);
+  const isLikelyMs = maxRawTime > 1000;
+
+  return valid
     .map((line) => {
       // 统一度量衡：优先使用明确的 timeSec（秒）与 durationSec（秒）
       let timeSec: number;
       if (typeof line.timeSec === 'number' && !isNaN(line.timeSec)) {
         timeSec = line.timeSec;
       } else if (typeof line.time === 'number' && !isNaN(line.time)) {
-        // 仅当数值大于 600（> 10分钟）时才视为毫秒除以 1000；绝不盲目基于 >100 或判断小数点！
-        timeSec = line.time > 600 ? line.time / 1000 : line.time;
+        timeSec = isLikelyMs ? line.time / 1000 : line.time;
       } else {
         timeSec = 0;
       }
@@ -363,7 +378,7 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
       if (typeof line.durationSec === 'number' && !isNaN(line.durationSec)) {
         durSec = line.durationSec;
       } else if (typeof line.duration === 'number' && !isNaN(line.duration)) {
-        durSec = line.duration > 300 ? line.duration / 1000 : line.duration;
+        durSec = isLikelyMs || line.duration > 300 ? line.duration / 1000 : line.duration;
       }
       if (typeof durSec === 'number') {
         durSec = Math.max(0.1, parseFloat(durSec.toFixed(3)));
@@ -376,7 +391,7 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
           if (typeof w.startSec === 'number' && !isNaN(w.startSec)) {
             wStartSec = w.startSec;
           } else if (typeof w.start === 'number' && !isNaN(w.start)) {
-            wStartSec = w.start > 600 ? w.start / 1000 : w.start;
+            wStartSec = isLikelyMs || w.start > 600 ? w.start / 1000 : w.start;
           } else {
             wStartSec = timeSec;
           }
@@ -386,7 +401,7 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
           if (typeof w.durationSec === 'number' && !isNaN(w.durationSec)) {
             wDurSec = w.durationSec;
           } else if (typeof w.duration === 'number' && !isNaN(w.duration)) {
-            wDurSec = w.duration > 300 ? w.duration / 1000 : w.duration;
+            wDurSec = isLikelyMs || w.duration > 300 ? w.duration / 1000 : w.duration;
           } else {
             wDurSec = 0.3;
           }
@@ -396,7 +411,7 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
           if (typeof w.endSec === 'number' && !isNaN(w.endSec)) {
             wEndSec = w.endSec;
           } else if (typeof w.end === 'number' && !isNaN(w.end)) {
-            wEndSec = w.end > 600 ? w.end / 1000 : w.end;
+            wEndSec = isLikelyMs || w.end > 600 ? w.end / 1000 : w.end;
           } else {
             wEndSec = wStartSec + wDurSec;
           }
@@ -482,9 +497,13 @@ function computeActiveLineProgress(
 
     if (time < firstStart) return { progress: 0, isInterlude: false };
     if (time >= lastEnd) {
-      // 间奏判定：距离下一句开唱前 0.2 秒退出间奏
-      if (gap > 4.5 && time > lastEnd + 0.6 && time < lineEnd - 0.2) {
+      // 间奏判定：距离下一句开唱前 0.3 秒退出间奏
+      if (gap > 3.8 && time > lastEnd + 0.5 && time < lineEnd - 0.3) {
         return { progress: 0, isInterlude: true };
+      }
+      // 间奏退出预备下一句临界区：归零进度，防止下一句文本被染成 100% 全蓝
+      if (time >= lineEnd - 0.3 && time < lineEnd) {
+        return { progress: 0, isInterlude: false };
       }
       return { progress: 100, isInterlude: false };
     }
@@ -512,16 +531,22 @@ function computeActiveLineProgress(
   }
 
   // 2. 行级模式：基于当前行起止物理时间线性流光跟随，拒绝静态全蓝卡死
-  const lineVocalDur = cur.durationSec || cur.duration
-    ? Math.min(cur.durationSec || cur.duration || 3.5, gap)
-    : Math.max(1, Math.min(gap - 0.4, 4.5));
+  const naturalDur = Math.max(1.8, Math.min(gap - 0.4, cur.text.length * 0.32));
+  const lineVocalDur = cur.durationSec && cur.durationSec < gap - 0.4
+    ? cur.durationSec
+    : Math.min(naturalDur, gap);
   const vocalEnd = lineStart + lineVocalDur;
 
   if (time < lineStart) return { progress: 0, isInterlude: false };
 
-  // 间奏检测：当人声唱完且距离下一句开唱有较长空白（> 4.5秒）
-  if (gap > 4.5 && time > vocalEnd + 0.6 && time < lineEnd - 0.2) {
+  // 间奏检测：当人声唱完且距离下一句开唱有较长空白（> 3.8秒）
+  if (gap > 3.8 && time > vocalEnd + 0.5 && time < lineEnd - 0.3) {
     return { progress: 0, isInterlude: true };
+  }
+
+  // 间奏退出预备下一句临界区：归零进度，防止下一句文本被染成 100% 全蓝
+  if (time >= lineEnd - 0.3 && time < lineEnd) {
+    return { progress: 0, isInterlude: false };
   }
 
   if (time >= vocalEnd) {
@@ -758,13 +783,19 @@ export function parseHighPrecisionLrc(raw: string): {
 
   result.sort((a, b) => a.time - b.time);
 
-  // 计算行时长
+  // 计算行时长，如果两行之间包含间奏，估算自然人声时长，保留间奏空间
   for (let i = 0; i < result.length; i++) {
     const cur = result[i];
     if (!cur.duration) {
       const next = result[i + 1];
       if (next) {
-        cur.duration = Math.max(0.3, next.time - cur.time);
+        const gap = next.time - cur.time;
+        if (gap > 4.5) {
+          const naturalSec = Math.min(gap - 2.0, Math.max(2.0, cur.text.length * 0.35));
+          cur.duration = naturalSec;
+        } else {
+          cur.duration = Math.max(0.3, gap);
+        }
       } else {
         cur.duration = 4.5;
       }

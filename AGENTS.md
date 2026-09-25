@@ -3938,7 +3938,7 @@
     1. REST API 契约验证：中文在线歌曲「晴天」（42 行结构化歌词，首句 29.36s 命中）与英文在线歌曲「Shape of You」（90 行结构化歌词，首句 15.82s 命中）全量通过；
     2. 真实生产环境（`https://blog.epocanvas.com/`）浏览器端到端实机验证：在播放器搜索在线歌曲「晴天」及「Shape of You」，真实点播后桌面 HUD（`.screen-lyric__content`）动态渲染爬取的全网歌词，推进音频物理时间轴，歌词高亮与行推进 100% 严格吻合，0 控制台致命 JS 报错。
 
-### Task 179: 首页分类卡片 (.categoryItem) 拥挤感消除与描述文本 (.categoryButtonDesc) 折行吞截断根治优化
+### Task 179: 首页分类卡片 (.categoryItem) 拥挤感消除与描述文本 (.categoryButtonDesc) 折行吞截断根治优化 (`0298b34`)
 - [x] **根因排查与痛点破译 (Root-Cause Discovery)**:
   - 根因 1: 容器高度过窄（76px~80px）但塞入 `font-size: 1.15rem` 标题、分割线及描述，纵向无呼吸空间；
   - 根因 2: 鼠标悬停手风琴伸缩比例失衡（`flex: 1.85 1 0%`），导致单卡悬停拉伸至 ~338px 时，其余两张未悬停卡片被剧烈压缩至 180px 以下甚至 130px；
