@@ -3888,33 +3888,33 @@
   - `scripts/test-auth-hardening.mjs`、`scripts/test-payment-intent-fix.mjs`、`scripts/test-comment-abuse-prevention.mjs`、`scripts/test-protected-posts-encryption.mjs` 全部 100% PASS；
   - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过。
 
-### Task 177: 冬日雪境背景阶段一优化：解决白天雪花不可见、天幕冷调微环境与高保真双景深粒子降雪体系 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`, `949b7bf`, `b898eb3`)
+### Task 177: 冬日雪境背景阶段一深度优化：3层画布真实景深、平滑有机雪团、天幕定向冬日光影与白天高可视度全面达成 (`822d4c7`, `9d564a7`, `a1c94d4`, `91e0ba0`, `949b7bf`, `b898eb3`, `1013945`)
 - [x] **白昼高对比度冬日天幕微环境重构 (`src/styles/global.css`, `822d4c7`, `949b7bf`)**:
   - 在 `:root:not([data-theme='dark'])[data-background='snow'] #web_bg` 注入清透纯净的冬日晨光天际线冷调微渐变（`linear-gradient(180deg, #c4dbf6 0%, #d5e7f8 35%, #e5f1fb 70%, #eff5fd 100%) !important;`）；
   - 彻底打破白底白雪无对比度的物理痛点，在不破坏卡片白底质感的前提下提供清晰的自然冷色天幕对比基底；
   - 完善纯色 Clean 模式（`#web_bg` 100% 恢复纯色基底）与控制台/账号抽屉开启时的前端浮雪即时隐藏抑制（`body.theme-overlay-open #theme-snow-foreground { opacity: 0 !important; }`）。
-- [x] **参考 react-cinematic-snow 专案全面重构自然电影级雪花引擎 (`src/components/ThemeUniverse.tsx`, `src/styles/global.css`, `src/layouts/BlogLayout.astro`, `949b7bf`)**:
-  - **根除“做作”的数学矢量剪纸感**：彻底摒弃刻意勾勒的 6 臂枝桠图标，采用程序化 5~8 顶点有机不规则多边形（`createIrregularShape(radius, roughness)`），模拟自然空中飘凝的真实雪絮与雪花团簇（Aggregate Snow Flakes）；
-  - **真实的终端速度与尺寸物理关联（Size-Speed Physical Correlation）**：严格依循空气动力学物理计算下落速度（`baseSpeed = (radius / 2.5) * sMult`），大雪片由于重力与终端速度下落较快，微小远景雪尘则轻柔悬浮慢漂；
-  - **动态多尺度风力模拟系统（Dynamic Wind Engine）**：
-    - 主慢速波浪振荡（周期约 20~40s，自然风向缓慢转向）；
-    - 中速复合扰动与快速微颤振荡；
-    - 随机自然阵风爆发（Gusts，持续 2~5s，正弦包络平滑淡入淡出）；
-    - 双频空气阻力摆动（`primarySway` + `secondarySway`）与空气动力学左右翻仰（`ctx.rotate(Math.sin(p.wobble))`）；
-  - **四层光学景深与电影级虚化（Cinematic Depth of Field Blur）**：
-    - **Back 层（底层天幕，z-index: -1）**：远景微小雪尘（0.5~1.6px），慢速漂浮，大气雾感；
-    - **Mid 层（底层天幕，z-index: -1）**：中景清晰聚焦真实雪片（1.5~3.2px），在卡片后方清晰漫落；
-    - **Front 层（顶层前景，z-index: 25）**：近景大雪花（3.2~5.5px），漫越在所有卡片与正文上方；
-    - **Camera 层（顶层前景，z-index: 25）**：罕见超大掠镜雪球（6.5~13.0px，全屏仅 2~4 片），模拟紧贴摄影机镜头的掠过感；
-    - **GPU 硬件虚化合成**：在 `#theme-snow-foreground` 前景画布直接应用 CSS `filter: blur(2.5px)`，由浏览器合成器在 GPU 显存内极速渲染镜头景深焦外散景（Bokeh），彻底杜绝 `ctx.shadowBlur` 离屏 CPU 卷积卡顿；
-  - **白昼模式高对比度自然光学散射着色（Natural Daylight Optical Scattering）**：
-    - 在白昼纯白卡片（`#ffffff`）上方，为雪花叠加 1.22x 外层自然冬日冰散微冷边缘（`rgba(125, 155, 195, 0.62)`）与高纯度纯白内芯（`rgba(255, 255, 255, 0.98)`）；
-    - 绝非人工突兀黑线或空心圆圈，而是呈现犹如阳光穿透冰晶边缘折射的柔和自然轮廓，在纯白卡片与深色横幅上皆具备极佳可视度与晶莹质感；
-    - 夜间模式自适应恢复高亮晶白与微冷冰蓝微光。
-- [x] **Playwright 真实浏览器全场景端到端测试与视觉审计 100% 通过 (`scripts/verify-phase1-snow.mjs`, `scripts/verify-live-phase1-snow.mjs`)**:
-  - 涵盖白天雪境（Light Mode）、夜间雪境（Dark Mode）、纯净背景（Clean Mode）与遮罩抽屉弹出等场景断言全部 100% PASS；
-  - 控制台 0 错误（Total Console Errors: 0）；
-  - 视觉审查确认：消除刻意做作感，完美展现电影级景深虚化与自然白昼雪花流动。
+- [x] **深度参考 react-cinematic-snow 专案攻克白昼不可见与做作感核心根因 (`1013945`)**:
+  - **白昼看不见雪花之根本原因破译与解决**：
+    - 根因：此前 88% 的雪花（Layer 0 远景微尘 + Layer 1 中景清晰雪花）均渲染在 `z-index: -1` 的底层背景画布上，导致在白天浏览时被不透明的纯白卡片（`#page`, `.card-widget` 等）彻底遮挡；卡片上方仅存 12% 且带有 2.5px 虚化滤镜的微弱残影，因而产生“白天看不见雪花”的视觉缺陷；
+    - 解决方案：架构级引入 **3 层全景画布分层体系**（3-Canvas True Depth Architecture）：
+      1. **天幕底层画布 (`#theme-snow-universe`, z-index: -1)**：承载 Layer 0 远景微小冰尘（0.5~1.5px），轻柔慢速漂浮在卡片后方天际线与间隙中，构筑深邃的大气层级；
+      2. **正文聚焦雪画布 (`#theme-snow-mid`, z-index: 20)**：承载 Layer 1 清晰雪花团簇（1.8~3.8px），直接在所有正文、卡片、代码块与图文上方优雅漫落，全屏清晰可见；配置 `pointer-events: none` 彻底保障 100% 穿透点击；
+      3. **镜头散景前景画布 (`#theme-snow-foreground`, z-index: 25)**：承载 Layer 2 前景大雪（3.5~5.8px）与 Layer 3 掠镜超大雪球（7.5~13.0px），应用 GPU 硬件级 CSS `filter: blur(2.5px)` 呈现柔和电影级散景（Bokeh）。
+  - **彻底告别生硬剪纸与空心圆环（消除“做作感”）**：
+    - 摒弃刻意的 6 臂枝桠矢量图标，也消除单纯多边形直线的生硬尖角与双层放大 1.22x 产生的空心蓝环（Hollow Ring）缺陷；
+    - 采用**平滑有机雪絮团簇算法（Smooth Organic Clump Contours）**：通过 5~8 顶点不规则偏移并在顶点中点之间绘制二次贝塞尔曲线（`quadraticCurveTo`），生成自然圆润、柔和絮状的真实雪团外廓；
+  - **定向冬日光影模型（Directional Winter Light Gradient）**：
+    - 模拟自然冬日天幕光照物理特性：雪团上表面接收天光直射呈现纯净白雪（`rgba(255, 255, 255, 0.98)`），核心为晶莹粉雪（`rgba(238, 246, 255, 0.96)`），下部边缘呈现微冷天幕环境散射自阴影（`rgba(138, 172, 210, 0.94)`）；
+    - 在纯白卡片（`#ffffff`）上自然凸显出极其清晰立体的 3D 浮雪质感，绝无任何黑脏描边或卡通空心感；在深色横幅与夜间模式下则自动绽放纯白皎洁荧光；
+  - **动态多尺度风力模拟系统与真实物理关联**：
+    - 完整吸收 react-cinematic-snow 的三频谐波风浪（慢速 20~40s 大转向、中速复合振荡、快速微颤）与随机阵风爆发机制（Gusts 持续 2~5s 正弦波渐变）；
+    - 终端速度严格与尺寸正相关（`baseSpeed = (radius / 2.5) * sMult`），配合双频摆动与左右偏航倾角（`rotate(sin(wobble))`）；
+    - 严格杜绝 `ctx.shadowBlur`，保持丝滑 60FPS。
+- [x] **本地构建、全流程端到端自动化测试与视觉核验 100% 通过**:
+  - `npm run build`：全站 284 个静态页面构建 0 错误全部顺利通过；
+  - 本地实机运行测试（`scripts/verify-local-built-snow.mjs`）：3 层画布全部就绪（z-index: -1, 20, 25），白昼与夜间全景截图审计通过，确认纯白卡片上方雪花清晰漫越、柔和自然；
+  - 视觉实验室（`scratch/snow-daylight-models.html`）6 种光学模型对比审计确立最优 Directional Winter Light 模型。
+
 
 
 

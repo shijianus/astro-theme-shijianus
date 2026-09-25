@@ -40,10 +40,12 @@ async function runLiveAudit() {
 
     const liveLightAudit = await page.evaluate(() => {
       const bgCanvas = document.getElementById('theme-snow-universe');
+      const midCanvas = document.getElementById('theme-snow-mid');
       const fgCanvas = document.getElementById('theme-snow-foreground');
       const webBg = document.getElementById('web_bg');
 
       const bgStyle = bgCanvas ? window.getComputedStyle(bgCanvas) : null;
+      const midStyle = midCanvas ? window.getComputedStyle(midCanvas) : null;
       const fgStyle = fgCanvas ? window.getComputedStyle(fgCanvas) : null;
       const webBgStyle = webBg ? window.getComputedStyle(webBg) : null;
 
@@ -55,6 +57,12 @@ async function runLiveAudit() {
           zIndex: bgStyle ? bgStyle.zIndex : null,
           opacity: bgStyle ? bgStyle.opacity : null,
           pointerEvents: bgStyle ? bgStyle.pointerEvents : null,
+        },
+        midCanvas: {
+          exists: !!midCanvas,
+          zIndex: midStyle ? midStyle.zIndex : null,
+          opacity: midStyle ? midStyle.opacity : null,
+          pointerEvents: midStyle ? midStyle.pointerEvents : null,
         },
         fgCanvas: {
           exists: !!fgCanvas,
@@ -70,6 +78,9 @@ async function runLiveAudit() {
 
     if (!liveLightAudit.bgCanvas.exists || liveLightAudit.bgCanvas.opacity !== '1') {
       throw new Error('Live background snow canvas missing or not opacity 1');
+    }
+    if (!liveLightAudit.midCanvas.exists || liveLightAudit.midCanvas.opacity !== '1') {
+      throw new Error('Live mid snow canvas missing or not opacity 1');
     }
     if (!liveLightAudit.fgCanvas.exists || liveLightAudit.fgCanvas.opacity !== '1') {
       throw new Error('Live foreground snow canvas missing or not opacity 1');
@@ -87,18 +98,20 @@ async function runLiveAudit() {
 
     const liveDarkAudit = await page.evaluate(() => {
       const bgCanvas = document.getElementById('theme-snow-universe');
+      const midCanvas = document.getElementById('theme-snow-mid');
       const fgCanvas = document.getElementById('theme-snow-foreground');
       const webBg = document.getElementById('web_bg');
       return {
         theme: document.documentElement.dataset.theme,
         bgOpacity: bgCanvas ? window.getComputedStyle(bgCanvas).opacity : null,
+        midOpacity: midCanvas ? window.getComputedStyle(midCanvas).opacity : null,
         fgOpacity: fgCanvas ? window.getComputedStyle(fgCanvas).opacity : null,
         webBgImage: webBg ? window.getComputedStyle(webBg).backgroundImage : null,
       };
     });
 
     console.log('Live Dark Mode Audit Result:', JSON.stringify(liveDarkAudit, null, 2));
-    if (liveDarkAudit.bgOpacity !== '1' || liveDarkAudit.fgOpacity !== '1') {
+    if (liveDarkAudit.bgOpacity !== '1' || liveDarkAudit.midOpacity !== '1' || liveDarkAudit.fgOpacity !== '1') {
       throw new Error('Live canvases not active in dark mode');
     }
 
@@ -115,15 +128,17 @@ async function runLiveAudit() {
 
     const liveCleanAudit = await page.evaluate(() => {
       const bgCanvas = document.getElementById('theme-snow-universe');
+      const midCanvas = document.getElementById('theme-snow-mid');
       const fgCanvas = document.getElementById('theme-snow-foreground');
       return {
         bgOpacity: bgCanvas ? window.getComputedStyle(bgCanvas).opacity : null,
+        midOpacity: midCanvas ? window.getComputedStyle(midCanvas).opacity : null,
         fgOpacity: fgCanvas ? window.getComputedStyle(fgCanvas).opacity : null,
       };
     });
 
     console.log('Live Clean Mode Audit Result:', JSON.stringify(liveCleanAudit, null, 2));
-    if (liveCleanAudit.bgOpacity !== '0' || liveCleanAudit.fgOpacity !== '0') {
+    if (liveCleanAudit.bgOpacity !== '0' || liveCleanAudit.midOpacity !== '0' || liveCleanAudit.fgOpacity !== '0') {
       throw new Error('Live canvases did not fade to 0 in clean mode');
     }
 
