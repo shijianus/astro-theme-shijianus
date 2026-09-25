@@ -829,6 +829,18 @@ export function MusicPocket({ apiBase }: Props) {
   const pocketContainerRef = useRef<HTMLDivElement>(null);
   const activeLyricRef = useRef<HTMLDivElement>(null);
   const lyricsContainerRef = useRef<HTMLDivElement>(null);
+  const userScrollingLyricsRef = useRef(false);
+  const userScrollingTimeoutRef = useRef<number | null>(null);
+
+  const handleLyricsUserScroll = useCallback(() => {
+    userScrollingLyricsRef.current = true;
+    if (userScrollingTimeoutRef.current) {
+      window.clearTimeout(userScrollingTimeoutRef.current);
+    }
+    userScrollingTimeoutRef.current = window.setTimeout(() => {
+      userScrollingLyricsRef.current = false;
+    }, 3500);
+  }, []);
 
   // Web Audio API Singletons
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1665,8 +1677,9 @@ export function MusicPocket({ apiBase }: Props) {
     }
   }, [currentTime, parsedLyrics]);
 
-  // Auto-scroll lyrics view to active line
+  // Auto-scroll lyrics view to active line (with user manual scroll protection)
   useEffect(() => {
+    if (userScrollingLyricsRef.current) return;
     if (activeTab === 'lyrics' && lyricsContainerRef.current && activeLyricRef.current) {
       const container = lyricsContainerRef.current;
       const activeEl = activeLyricRef.current;
@@ -2632,7 +2645,12 @@ export function MusicPocket({ apiBase }: Props) {
                   </button>
                 </div>
 
-                <div ref={lyricsContainerRef} className="lyrics-view__scroll-container">
+                <div
+                  ref={lyricsContainerRef}
+                  className="lyrics-view__scroll-container"
+                  onWheel={handleLyricsUserScroll}
+                  onTouchMove={handleLyricsUserScroll}
+                >
                   {parsedLyrics.length === 0 || displayLyric.isPureMusic ? (
                     <div className="lyrics-empty-state">
                       <p className="lyrics-empty-state__title">♬ {t('纯音乐，请欣赏')} ♬</p>
@@ -2643,6 +2661,7 @@ export function MusicPocket({ apiBase }: Props) {
                       const isActive = idx === activeLyricIndex;
                       const isPassed = activeLyricIndex >= 0 && idx < activeLyricIndex;
                       const isFuture = activeLyricIndex >= 0 && idx > activeLyricIndex;
+                      const isWordSync = lyricSyncType === 'word';
                       return (
                         <div
                           key={`${line.time}-${idx}`}
@@ -2653,8 +2672,8 @@ export function MusicPocket({ apiBase }: Props) {
                         >
                           <span className="lyrics-line__time">{formatTime(line.time)}</span>
                           <span
-                            className={`lyrics-line__text ${isActive ? 'is-karaoke' : ''}`}
-                            style={isActive ? ({ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties) : undefined}
+                            className={`lyrics-line__text ${isActive && isWordSync ? 'is-karaoke' : ''}`}
+                            style={isActive && isWordSync ? ({ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties) : undefined}
                           >
                             {cleanLyricText(line.text)}
                           </span>
@@ -2988,22 +3007,12 @@ export function MusicPocket({ apiBase }: Props) {
               </div>
             ) : displayLyric.activeText ? (
               <div className={`screen-lyric__current-line ${lyricSyncType === 'word' ? 'is-word-sync' : 'is-line-sync'}`}>
-                <div className="screen-lyric__karaoke-box">
-                  {/* 底层：随背景自适应反转的普通未唱文本 (白色 + mix-blend-mode: difference) */}
-                  <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--base">
-                    {displayLyric.activeText}
-                  </span>
-                  {/* 顶层：物理发音时间严格绑定的已唱高亮裁剪容器 */}
-                  <span
-                    className="screen-lyric__karaoke-overlay"
-                    style={{ width: `var(--karaoke-pct, ${activeLineProgress.toFixed(1)}%)` }}
-                    aria-hidden="true"
-                  >
-                    <span className="screen-lyric__karaoke-text screen-lyric__karaoke-text--sung">
-                      {displayLyric.activeText}
-                    </span>
-                  </span>
-                </div>
+                <span
+                  className={`screen-lyric__vocal-text ${lyricSyncType === 'word' ? 'is-karaoke-stream' : 'is-line-focused'}`}
+                  style={lyricSyncType === 'word' ? ({ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties) : undefined}
+                >
+                  {displayLyric.activeText}
+                </span>
               </div>
             ) : (
               <div className="screen-lyric__current-line">

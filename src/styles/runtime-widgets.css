@@ -2982,20 +2982,65 @@ html.dark .shijianus-ai-summary__related span {
   font-size: 28px;
 }
 
-/* 双层卡拉OK文本容器 */
-.screen-lyric__karaoke-box {
-  position: relative;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
+/* 单文本节点流光体系 (消除双层 DOM 重影与亚像素抖动) */
+.screen-lyric__vocal-text {
+  display: inline-block;
   max-width: 100%;
   white-space: nowrap;
+  user-select: none;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
 }
 
-/* 底层普通文本：随背景自适应反转 (mix-blend-mode: difference + 纯白底色，在白底上自动变黑，在黑底上自动变白) */
-.screen-lyric__karaoke-text--base,
-.screen-lyric__static-text,
-.screen-lyric__interlude-text {
+/* 1. 逐字模式：单文本节点背景渐变裁切 (毫秒级字发音跟随，0 重叠重影) */
+.screen-lyric__vocal-text.is-karaoke-stream {
+  background: linear-gradient(
+    to right,
+    var(--karaoke-sung-color, #425aef) 0%,
+    var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.95) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  will-change: background;
+}
+
+:root[data-theme='dark'] .screen-lyric__vocal-text.is-karaoke-stream {
+  background: linear-gradient(
+    to right,
+    var(--karaoke-sung-dark, #818cf8) 0%,
+    var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.9) var(--karaoke-pct, 0%),
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* 2. 行级模式：Apple Music 工业级整行沉浸柔光聚焦 (彻底消除机械假流光的抢跑与滞后违和感) */
+.screen-lyric__vocal-text.is-line-focused {
+  color: var(--karaoke-sung-color, #425aef);
+  text-shadow: 0 0 16px var(--karaoke-glow, rgba(66, 90, 239, 0.45));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  transform: scale(1.02);
+  transform-origin: center center;
+  transition: color 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.28s ease;
+}
+
+:root[data-theme='dark'] .screen-lyric__vocal-text.is-line-focused {
+  color: var(--karaoke-sung-dark, #818cf8);
+  text-shadow: 0 0 18px rgba(129, 140, 248, 0.5);
+}
+
+/* 底层普通静态文本与前奏信息 */
+.screen-lyric__static-text {
   display: inline-block;
   color: #ffffff;
   mix-blend-mode: difference;
@@ -3003,60 +3048,6 @@ html.dark .shijianus-ai-summary__related span {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
   user-select: none;
   font-weight: 800;
-}
-
-/* 顶层已唱高亮裁剪容器：宽度由卡拉OK进度百分比精确驱动 */
-.screen-lyric__karaoke-overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--karaoke-pct, 0%);
-  overflow: hidden;
-  white-space: nowrap;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-}
-
-/* 顶层已唱文字：保持纯正的主题定制色彩，mix-blend-mode: normal 不随背景翻转 */
-.screen-lyric__karaoke-text--sung {
-  display: inline-block;
-  color: var(--karaoke-sung-color, #425aef);
-  mix-blend-mode: normal !important;
-  letter-spacing: 0.02em;
-  text-shadow: 0 0 14px var(--karaoke-glow);
-  white-space: nowrap;
-  font-weight: 800;
-}
-
-:root[data-theme='dark'] .screen-lyric__karaoke-text--sung {
-  color: var(--karaoke-sung-dark, #818cf8);
-}
-
-/* 行级模式容器与纯粹高亮文本：整行过渡，杜绝伪流光插值 */
-.screen-lyric__line-box {
-  position: relative;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.screen-lyric__line-text--highlight {
-  display: inline-block;
-  color: var(--karaoke-sung-color, #425aef);
-  mix-blend-mode: normal !important;
-  letter-spacing: 0.02em;
-  text-shadow: 0 0 14px var(--karaoke-glow);
-  white-space: nowrap;
-  font-weight: 800;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:root[data-theme='dark'] .screen-lyric__line-text--highlight {
-  color: var(--karaoke-sung-dark, #818cf8);
 }
 
 /* 纯音乐指示器 */
