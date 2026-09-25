@@ -3953,6 +3953,17 @@
 - [x] **全景自动化审计套件 (`scripts/verify-category-fix.mjs`) 验证全量通过**:
   - 覆盖 1080p (1440x900)、1366p (1366x768)、1280p (1280x800)、1200p (1200x800)、1024p (1024x768) 及移动端（375x667）；
   - 全流程验证：默认状态 3 张卡片尺寸、高度 86px、悬停手风琴展开、未悬停卡片零文字截断、零折行吞半截，断言全部通过。
+- [x] **Cloudflare Pages 生产边缘节点全量部署与绑定生效**:
+  - 全量静态编译打包（284 个静态页面构建 0 错误）；
+  - 通过 Wrangler 上传至生产边缘节点（部署标识：`https://fde5d087.shijianus-blog.pages.dev`），实时绑定至线上生产主域 `https://blog.epocanvas.com/`。
+- [x] **生产端真实线上环境 (Live Production) Playwright E2E 自动化审计 (`scripts/verify-live-category.mjs`)**:
+  - 双目标生产环境全真访问：生产主域名 `https://blog.epocanvas.com/` 与边缘部署 `https://fde5d087.shijianus-blog.pages.dev/`；
+  - 跨 1080p 桌面、1200p 标准屏、375p 移动端全视口实测：
+    1. HTTP 状态码 200 OK，0 控制台致命 JS 报错；
+    2. `.categoryGroup` 默认高度达到宽裕的 84.7px ~ 86.0px（对比旧版 76px 彻底消除拥挤感）；
+    3. 悬停展开时被挤压的兄弟项宽度保持在 143.2px ~ 207.0px，描述文本高度严格保持在 17.0px ~ 17.3px（单行展示，零折行，零文字截半）；
+    4. 在 1200p 极限压缩场景下，描述文本优雅应用省略号（如“界面、组件和体...”），杜绝任何纵向溢出与截半缺陷；
+  - 生产端视网膜截图归档审查：`live_Live_Production__Custom_Domain__1080p Desktop_hover0.png`、`live_Live_Production__Custom_Domain__1200p Standard_hover0.png`，视觉排版与手风琴动效 100% PASS 全绿通过。
 
 ### Task 180: CFSolara 与全网歌词间奏过渡、防乱序开场、无缝流光指示及 UTF-8 编码深度修复 (`aa18f21`, CFSolara `c713253`)
 - [x] **三大核心缺陷彻底根除 (Root Causes Remedied)**:
