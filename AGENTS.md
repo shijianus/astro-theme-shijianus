@@ -4130,6 +4130,9 @@
   4. **行时长估算与换气缓冲打磨**：
      - 优先采用 API 下发的 `cur.durationSec` 物理发音时长；
      - 估算逻辑优化为 `Math.max(0.6, gap - 0.2)`，平滑铺满整句发音，杜绝快音跳字与提前数秒跑满。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://3504d435.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://edca4cf6.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
 - [x] **生产端实机截图与真实视觉审计证据 (Visual Proof from Live Production)**:
   - 针对真实生产主域名 `https://blog.epocanvas.com/` 执行高精 Playwright/Puppeteer 审计（`scripts/verify-real-karaoke-stream.mjs`）：
   - **截图 1 (起唱阶段 18.95s, `scripts/hud-18s-start.png`)**：
@@ -4137,7 +4140,7 @@
     - 实机视觉："優" 字为亮蓝色 (`#425aef`)，"し" 处于过渡边界，其余 "いの 冷たいの" 为深板岩色 (`#334155`)；
   - **截图 2 (唱中阶段 20.40s, `scripts/hud-19s-midway.png`)**：
     - 歌词："優しいの 冷たいの"
-    - 实机视觉："優しいの 冷" 全部变为亮蓝，"た" 正在过渡，"いの" 仍为深板岩色，精确推进至 61.3%！
+    - 实机视觉："優しいの 冷" 全部变为亮蓝，"た" 正在过渡，"いの" 仍为深板岩色，精确推进至 62.3%！
   - **截图 3 (抽屉内部 00:22, `scripts/drawer-karaoke.png`)**：
     - 歌词："最終章 詰め込んでね"
     - 实机视觉："最終章 詰め" 为鲜明蓝色，"込" 正在流光横扫，"んでね" 为浅灰色，证明抽屉内部与桌面 HUD 同样实现毫秒级流光染色！
