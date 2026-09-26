@@ -23,7 +23,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.todayCard',
   '.categoryItem',
   '.home-mobile-focus-card',
-  '#recent-posts > .recent-post-item',
+  '.recent-post-item',
   '#aside-content .card-widget',
   '#card-toc',
   '#page',
@@ -37,6 +37,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.archive-hero-card',
   '.taxonomy-index-card',
   '.taxonomy-hero-card',
+  '.taxonomy-section-card',
   '.friends-page__panel',
   '.friends-page__hero',
   '.author-content-item',
@@ -178,8 +179,9 @@ export class SnowMantleEngine {
       let isNestedDuplicate = false;
       for (const parent of seenElements) {
         if (parent.contains(el)) {
-          // Allow specific known sub-cards like .relatedPosts-item or .postNav-card
+          // Allow specific known sub-cards like .recent-post-item, .relatedPosts-item or .postNav-card
           const isAllowedSubCard =
+            el.classList.contains('recent-post-item') ||
             el.classList.contains('relatedPosts-item') ||
             el.classList.contains('postNav-card') ||
             el.classList.contains('post-copyright') ||
@@ -268,9 +270,9 @@ export class SnowMantleEngine {
       baseDrop = 0.8;
     } else if (isCardInfo) {
       // Profile card: keep snow clear of the welcome badge
-      H = 11;
-      maxDroop = 3.5;
-      baseDrop = 1.0;
+      H = 8;
+      maxDroop = 2.0;
+      baseDrop = 0.6;
     } else if (isShort) {
       H = Math.min(10, H_card * 0.15);
       maxDroop = Math.min(3.5, H_card * 0.05);
