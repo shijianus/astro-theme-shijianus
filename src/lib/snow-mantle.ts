@@ -19,7 +19,6 @@
  */
 
 export const CLOSED_BOX_SELECTORS = [
-  '.home-top-notice',
   '#random-banner',
   '.todayCard',
   '.categoryItem',
@@ -32,7 +31,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.post-page-shell',
   '.post-copyright',
   '.relatedPosts-item',
-  '#post-comment',
+  '.postNav-card',
   '.pagination-post',
   '.theme-card',
   '.archive-hero-card',
@@ -179,10 +178,10 @@ export class SnowMantleEngine {
       let isNestedDuplicate = false;
       for (const parent of seenElements) {
         if (parent.contains(el)) {
-          // Allow specific known sub-cards like .relatedPosts-item or #post-comment
+          // Allow specific known sub-cards like .relatedPosts-item or .postNav-card
           const isAllowedSubCard =
             el.classList.contains('relatedPosts-item') ||
-            el.id === 'post-comment' ||
+            el.classList.contains('postNav-card') ||
             el.classList.contains('post-copyright') ||
             el.classList.contains('card-widget');
           if (!isAllowedSubCard) {
