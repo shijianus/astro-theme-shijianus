@@ -4219,3 +4219,27 @@
   2. 桌面端 (1440x950)、平板端 (768x1024)、移动端 (375x812) 实机验证，所有卡片 `hasHorizontalOverflow = false`；
   3. 文章详情页（TOC 目录、延伸阅读、阅读导航）多语言切换测试通过；
   4. 0 控制台致命报错，测试 100% 通过。
+
+### Task 190: 卡片原生吸附式程序化矢量雪幔系统 (Attached In-Card Vector Snow Mantle) 全面升级、圆角自适应弧度包裹、0 延迟 GPU 合成器同步与生产端实机全链路审计 (`c8e833c`)
+- [x] **病因根治与架构重构 (Architecture Paradigm Shift)**:
+  1. **摒弃全局固定 Canvas 假吸附方案**：根除旧版 `#theme-snow-mid` 固定全屏 Canvas 导致的 Compositor 线程与 JS 滚动主线程 1~2 帧（16~33ms）物理时间差带来的滑动撕裂、抖动与目眩感；
+  2. **原生注入闭合卡片矢量雪幔 (Attached In-Card Vector Snow Mantle)**：改用直接向各闭合卡片 DOM 元素尾部内嵌 `<svg class="card-snow-svg">`（结合 `overflow: visible !important`），实现卡片滚动、Hover translateY、3D 翻转、弹性 Flex 伸缩时由浏览器 GPU 合成器一同位移，物理延迟绝对为 0ms！
+- [x] **圆角自适应弧度包裹 (Radius Conformance & Corner Wrap)**:
+  1. 动态感知各卡片的 `border-top-left/right-radius`（如 8px、12px、16px）；
+  2. 在两端圆角处依据圆弧方程 $y(x) = (R - \sqrt{R^2 - (\Delta x)^2}) \times 0.65$ 自然向下弯折包裹并顺滑下垂至卡片肩膀处，彻底根治直线木板雪条在圆角外“突兀悬空浮起”的致命穿模。
+- [x] **交互变形与 3D 翻转物理同步 (Interactive Flex & Flip Synchronization)**:
+  1. `.categoryItem` 在 Hover 时触发 `flex: 1.45` 弹性伸缩，雪幔伴随卡片宽度（`width: 100%` / `viewBox` 自适应）同步平滑拉伸展开与缩回，无任何位置脱节；
+  2. `.todayCard` 翻转时（`opacity: 0`, `pointer-events: none`），由于雪幔存在于内部，自然随卡片同步渐隐，彻底消除翻转后雪条依旧悬浮的灵异现象；
+  3. 底层卡片在未激活时不再穿透展示幽灵雪。
+- [x] **多层立体光影与深浅模式反差**:
+  - 接触面环境光遮挡 (feDropShadow AO Shadow)；
+  - 垂直天光散射自阴影渐变 (Volumetric Skylight Gradient)；
+  - 迎光拱面高光 (Inner Volumetric Dome) 与晶莹顶沿高光线 (Specular Rim)；
+  - 微细冰晶闪烁动画 (@keyframes snow-sparkle)。
+- [x] **全自动化测试套件与生产端真实链路验证**:
+  - `scripts/verify-incard-snow.mjs` 本地全套件 100% 通过；
+  - `scripts/verify-live-incard-snow.mjs` 生产端主域名 `https://blog.epocanvas.com/` 全真 Playwright 审计 100% 通过（涵盖首页、分类弹性 hover、今日卡片翻转、600px 滚动、深色模式、文章详情页、移动端 375x812 视口，0 致命 JS 报错）。
+- [x] **全量多端生产部署与远端分支同步**:
+  - `shijianus-blog` (`https://92a92188.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://398ced52.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功；
+  - 同步推送所有远端分支（`origin` 与 `cf`）。
