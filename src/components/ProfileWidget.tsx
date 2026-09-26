@@ -73,8 +73,10 @@ export function ProfileWidget({
 
   // Bio logic
   const rawBioZh = `深耕系统重构与网络工程领域的**真实折腾记录**。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。\n持续构筑*外脑知识库*，期冀这些极客向的碎片随笔，能提供些许实战参考。`;
-  const rawBio = (localeVariant === 'zh-CN' || localeVariant === 'zh-Hant')
+  const rawBio = localeVariant === 'zh-CN'
     ? rawBioZh
+    : localeVariant === 'zh-Hant'
+    ? convertText(rawBioZh, 'zh-Hant')
     : convertText('深耕系统重构与网络工程领域的真实折腾记录。拒绝宏大叙事，致力于提炼底层的硬核逻辑与避坑指南。持续构筑外脑知识库，期冀这些极客向的碎片随笔，能提供些许实战参考。', localeVariant);
 
   let paragraphs = rawBio.split('\n').map(p => p.trim()).filter(Boolean);
