@@ -419,6 +419,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     z-index: 10 !important;
   }
 
+  /* 积雪主题下允许雪幔自然向上隆起 */
+  html[data-background='snow'] body[data-type='home'] .categoryItem,
+  html[data-background='snow'] body[data-type='home'] .topGroup .recent-post-item {
+    overflow: visible !important;
+  }
+
   /* categoryButton & 按钮背景渐变平滑流动优化 */
   body[data-type='home'] .categoryButton {
     background-size: 200% 100% !important;

@@ -122,14 +122,14 @@ async function main() {
     console.log('✓ Captured screenshot: scripts/hud-18s-start.png');
   }
 
-  console.log('\n--- [TEST B: Middle of Line (20.4s) - Wiping in Progress] ---');
+  console.log('\n--- [TEST B: Middle of Line (19.8s) - Wiping in Progress] ---');
   await page.evaluate(() => {
     const audio = document.querySelector('audio');
     if (audio) {
-      audio.currentTime = 20.4;
+      audio.currentTime = 19.8;
     }
   });
-  await new Promise((r) => setTimeout(r, 800));
+  await new Promise((r) => setTimeout(r, 200));
 
   const midAudit = await page.evaluate(() => {
     const vocalText = document.querySelector('.screen-lyric__vocal-text');

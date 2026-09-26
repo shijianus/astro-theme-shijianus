@@ -86,9 +86,9 @@ export function generateSnowMantleSvg(
   let baseDrop = 2.0;
 
   if (isCategory) {
-    H = 8;
-    maxDroop = 2.0;
-    baseDrop = 0.8;
+    H = 9;
+    maxDroop = 2.5;
+    baseDrop = 1.0;
   } else if (isCardInfo) {
     H = 8;
     maxDroop = 2.0;

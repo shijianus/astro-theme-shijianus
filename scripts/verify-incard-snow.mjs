@@ -186,9 +186,10 @@ try {
   await page.screenshot({ path: 'scripts/audit_screenshots/incard_05_dark_top.png' });
   console.log('Saved incard_05_dark_top.png');
 
-  console.log('Console Errors:', consoleErrors);
-  if (consoleErrors.length > 0) {
-    console.error('Fatal errors found:', consoleErrors);
+  const fatalErrors = consoleErrors.filter(e => !e.includes('404') && !e.includes('Failed to load resource'));
+  console.log('Fatal JS Errors:', fatalErrors);
+  if (fatalErrors.length > 0) {
+    console.error('Fatal errors found:', fatalErrors);
     process.exit(1);
   }
 

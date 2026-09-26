@@ -99,6 +99,7 @@ function inspectArticle(filename, fullPath) {
     title,
     raw,
     body,
+    meta,
     mtime: fs.statSync(fullPath).mtimeMs,
   };
 }

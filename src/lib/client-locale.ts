@@ -9,6 +9,7 @@ import {
   updateCandidatePairWithManualChoice,
 } from './user-persona.ts';
 import { aboutI18nDictionary } from '../config/about';
+import { POST_TRANSLATIONS } from '../data/post-i18n.generated';
 
 export type { SupportedLocale, LocaleVariant };
 export { SUPPORTED_LOCALES, LOCALE_VARIANT_KEY, MANUAL_LOCALE_KEY };
@@ -1726,7 +1727,7 @@ let zhToTraditional: ((value: string) => string) | null = null;
 let zhToSimplified: ((value: string) => string) | null = null;
 let chineseConverterPromise: Promise<void> | null = null;
 
-export type TranslationDict = Record<'en' | 'fr' | 'es' | 'de', string>;
+export type TranslationDict = Record<'en' | 'fr' | 'es' | 'de', string> & { 'zh-Hant'?: string };
 
 /**
  * Multilingual dictionaries covering navigation, actions, controls, widgets, comments, and profile drawers.
@@ -1734,6 +1735,8 @@ export type TranslationDict = Record<'en' | 'fr' | 'es' | 'de', string>;
 export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   // Dedicated About Page Configuration Dictionary (covers 100% of about page text in en/fr/es/de)
   ...aboutI18nDictionary,
+  // Complete Post Titles, Descriptions, and Excerpts across all 6 languages
+  ...POST_TRANSLATIONS,
 
   // Navigation & Core Pages
   '首页': { en: 'Home', fr: 'Accueil', es: 'Inicio', de: 'Startseite' },
@@ -1746,14 +1749,27 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '实验室': { en: 'Lab', fr: 'Laboratoire', es: 'Laboratorio', de: 'Labor' },
   '友链与社群': { en: 'Community', fr: 'Communauté', es: 'Comunidad', de: 'Community' },
   '友链与社群入口': { en: 'Community entry', fr: 'Entrée communauté', es: 'Entrada comunidad', de: 'Community-Zugang' },
+  '友链 / 社群': { en: 'Links / Community', fr: 'Liens / Communauté', es: 'Enlaces / Comunidad', de: 'Links / Community' },
   '站点状态': { en: 'Status', fr: 'Statut', es: 'Estado', de: 'Status' },
   '主题路线': { en: 'Roadmap', fr: 'Feuille de route', es: 'Hoja de ruta', de: 'Roadmap' },
-  '交换建议': { en: 'Exchange guide', fr: 'Guide déchange', es: 'Guía de intercambio', de: 'Austausch-Leitfaden' },
+  '交换建议': { en: 'Exchange guide', fr: 'Guide d\'échange', es: 'Guía de intercambio', de: 'Austausch-Leitfaden' },
   '适合互链的站点': { en: 'Sites for link exchange', fr: 'Sites recommandés', es: 'Sitios para intercambio', de: 'Websites für Linktausch' },
+  '内容持续维护，能稳定访问，不是短期测试页。': { en: 'Continuously maintained, stably accessible, and not a temporary test page.', fr: 'Contenu maintenu régulièrement, accessible de façon stable.', es: 'Contenido actualizado periódicamente y accesible de forma estable.', de: 'Regelmäßig gepflegte Inhalte mit stabiler Erreichbarkeit.' },
+  '有明确作者信息、归档结构和基本页面说明。': { en: 'Clear author bio, archive structure, and basic documentation.', fr: 'Auteur identifié, structure d\'archives et documentation claire.', es: 'Información clara del autor, archivo y documentación.', de: 'Klare Autorenangaben, Archivstruktur und grundlegende Dokumentation.' },
+  '风格可以不同，但至少要保证阅读体验和基础可访问性。': { en: 'Styles may vary, but reading comfort and baseline accessibility are required.', fr: 'Les styles peuvent varier, mais le confort de lecture et l\'accessibilité sont requis.', es: 'Los estilos pueden variar, pero se requiere buena lectura y accesibilidad básica.', de: 'Verschiedene Stile willkommen, gute Lesbarkeit und Zugänglichkeit vorausgesetzt.' },
   '联系路径': { en: 'Contact', fr: 'Contact', es: 'Contacto', de: 'Kontakt' },
   '优先通过 TG 联系': { en: 'Prefer Telegram', fr: 'Contact via TG', es: 'Preferir Telegram', de: 'Bevorzugt via Telegram' },
+  '海外读者和合作站点优先通过 TG 频道或群组联系，后续更新、测试通知和互链整理都会先在这里同步。': { en: 'Overseas readers and partner sites are encouraged to connect via Telegram for updates and announcements.', fr: 'Lecteurs et partenaires sont invités à nous contacter via Telegram.', es: 'Lectores y sitios asociados pueden conectarse vía Telegram.', de: 'Internationale Leser und Partner-Websites sind eingeladen, uns über Telegram zu kontaktieren.' },
+  '如果你只想留言，也可以直接在任意文章评论区附上站点地址和简介。': { en: 'You can also leave a comment with your URL and bio under any article.', fr: 'Vous pouvez également laisser un commentaire avec votre URL sous n\'importe quel article.', es: 'También puede dejar un comentario con su dirección web en cualquier artículo.', de: 'Alternativ können Sie einen Kommentar mit Ihrer Website unter jedem Artikel hinterlassen.' },
   '当前状态': { en: 'Current status', fr: 'Statut actuel', es: 'Estado actual', de: 'Aktueller Status' },
   '现在已经是正式入口': { en: 'Official entry', fr: 'Entrée officielle', es: 'Entrada oficial', de: 'Offizieller Zugang' },
+  '这个页面已经从占位态切到正式可扩展页面，后续只需要继续补充互链清单、申请格式和推荐站点，不需要再拆结构。': { en: 'This page is a fully functional hub ready for expanding link rosters and applications without structural rebuilds.', fr: 'Cette page est un hub opérationnel prêt à accueillir de nouveaux échanges sans refonte.', es: 'Esta página es un centro operativo listo para añadir intercambios sin cambiar su estructura.', de: 'Diese Seite ist ein voll funktionsfähiger Hub für künftige Verlinkungen ohne Strukturänderungen.' },
+  '这里不再保留空白占位，而是直接把互链说明、社群二维码和后续交流路径放成可用页面。如果你希望接收更新通知、参与小范围测试，或讨论互链合作，可以优先从这里进入。': { en: 'An active hub providing exchange guidelines, community QR codes, and direct communication paths for updates, beta testing, and link exchanges.', fr: 'Un hub actif fournissant des directives d\'échange, des QR codes communautaires et des canaux de communication directs.', es: 'Un centro activo con pautas de intercambio, códigos QR y canales directos para novedades y colaboración.', de: 'Ein aktiver Hub mit Austauschrichtlinien, Community-QR-Codes und direkten Kommunikationskanälen.' },
+  '加入 Telegram': { en: 'Join Telegram', fr: 'Rejoindre Telegram', es: 'Unirse a Telegram', de: 'Telegram beitreten' },
+  '查看站点说明': { en: 'About Site', fr: 'À propos du site', es: 'Acerca del sitio', de: 'Über diese Seite' },
+  '返回首页': { en: 'Back to Home', fr: 'Retour à l\'accueil', es: 'Volver al inicio', de: 'Zurück zur Startseite' },
+  '查看归档': { en: 'View Archives', fr: 'Voir les archives', es: 'Ver archivos', de: 'Archive ansehen' },
+  '当前页面已预留完成，后续内容可以直接在这个路由上继续扩展。': { en: 'This route is reserved and ready for direct feature expansion.', fr: 'Cette page est prête pour l\'ajout direct de contenu.', es: 'Esta ruta está lista para la incorporación directa de funciones.', de: 'Diese Route ist für den direkten Ausbau vorbereitet.' },
   '偏好': { en: 'Preferences', fr: 'Préférences', es: 'Preferencias', de: 'Einstellungen' },
   '上一页': { en: 'Prev', fr: 'Précédent', es: 'Anterior', de: 'Zurück' },
   '下一页': { en: 'Next', fr: 'Suivant', es: 'Siguiente', de: 'Weiter' },
@@ -1923,6 +1939,72 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '标签索引': { en: 'Tag index', fr: 'Index des étiquettes', es: 'Índice de etiquetas', de: 'Schlagwort-Index' },
   '该分类下的文章': { en: 'Posts in this category', fr: 'Articles de cette catégorie', es: 'Artículos en esta categoría', de: 'Beiträge in dieser Kategorie' },
   '该标签下的文章': { en: 'Posts with this tag', fr: 'Articles avec cette étiquette', es: 'Artículos con esta etiqueta', de: 'Beiträge mit diesem Schlagwort' },
+  '分类文章': { en: 'Category Articles', fr: 'Articles de la catégorie', es: 'Artículos de la categoría', de: 'Kategorie-Artikel' },
+  '标签文章': { en: 'Tagged Articles', fr: 'Articles étiquetés', es: 'Artículos etiquetados', de: 'Verschlagwortete Artikel' },
+  '全部分类': { en: 'All Categories', fr: 'Toutes les catégories', es: 'Todas las categorías', de: 'Alle Kategorien' },
+  '全部标签': { en: 'All Tags', fr: 'Toutes les étiquettes', es: 'Todas las etiquetas', de: 'Alle Schlagwörter' },
+  '归档时间线': { en: 'Archive Timeline', fr: 'Chronologie des archives', es: 'Línea de tiempo de archivos', de: 'Archiv-Zeitleiste' },
+  '把所有文章按年份连续展开，保留明确时间顺序、封面信息和最短阅读路径。': { en: 'All articles arranged continuously by year, preserving chronological order, covers, and direct reading paths.', fr: 'Tous les articles organisés par année, préservant l\'ordre chronologique, les couvertures et un accès direct.', es: 'Todos los artículos organizados cronológicamente por año, con portadas y rutas de lectura directa.', de: 'Alle Artikel chronologisch nach Jahren geordnet, mit Cover-Vorschau und direktem Lesezugriff.' },
+  '最近归档': { en: 'Latest Archive', fr: 'Archives récentes', es: 'Archivo reciente', de: 'Neuestes Archiv' },
+  '年份': { en: 'Years', fr: 'Années', es: 'Años', de: 'Jahre' },
+  '文章': { en: 'Articles', fr: 'Articles', es: 'Artículos', de: 'Artikel' },
+  '最近年份': { en: 'Latest Year', fr: 'Année récente', es: 'Año reciente', de: 'Neuestes Jahr' },
+  '起始年份': { en: 'Starting Year', fr: 'Année de début', es: 'Año inicial', de: 'Startjahr' },
+  '继续使用站内统一卡片体系，便于和首页、归档页保持一致阅读节奏。': { en: 'Consistent card system maintained across home, archives, and topic feeds.', fr: 'Système de cartes cohérent sur l\'accueil, les archives et les flux thématiques.', es: 'Sistema de tarjetas coherente en la página principal, archivos y temas.', de: 'Einheitliches Kartensystem auf Startseite, Archiv und Themenübersichten.' },
+  '架构与思考': { en: 'Architecture & Thinking', fr: 'Architecture & Réflexion', es: 'Arquitectura y Pensamiento', de: 'Architektur & Denken' },
+  '演进与记录': { en: 'Evolution & Logs', fr: 'Évolution & Journaux', es: 'Evolución y Registros', de: 'Evolution & Protokolle' },
+  '前端工程与实践': { en: 'Frontend Engineering', fr: 'Ingénierie Frontend', es: 'Ingeniería Frontend', de: 'Frontend-Engineering' },
+  '组件、界面与手感': { en: 'Components, UI & Feel', fr: 'Composants, UI & Ergonomie', es: 'Componentes, UI y Tacto', de: 'Komponenten, UI & Haptik' },
+  '生活与随笔': { en: 'Life & Essays', fr: 'Vie & Essais', es: 'Vida y Ensayos', de: 'Leben & Essays' },
+  '日常、思考与记录': { en: 'Routine, Thoughts & Logs', fr: 'Quotidien, Pensées & Notes', es: 'Rutina, Pensamientos y Notas', de: 'Alltag, Gedanken & Notizen' },
+  '工具、写作与产品判断': { en: 'Tools, Writing & Product Insights', fr: 'Outils, écriture et vision produit', es: 'Herramientas, escritura y visión de producto', de: 'Werkzeuge, Schreiben & Produkteinblicke' },
+  '创意工坊': { en: 'Workshop', fr: 'Atelier', es: 'Taller', de: 'Werkstatt' },
+  '更多推荐': { en: 'More', fr: 'Plus', es: 'Más', de: 'Mehr' },
+  '打开当前推荐文章': { en: 'Open featured post', fr: 'Ouvrir l\'article recommandé', es: 'Abrir artículo recomendado', de: 'Empfohlenen Beitrag öffnen' },
+  '把真正的主题感和交互密度做出来': { en: 'Delivering authentic theme tactility and interaction density', fr: 'Donner vie au thème avec une vraie densité d\'interaction', es: 'Logrando verdadera identidad visual y densidad interactiva', de: 'Echte Theme-Haptik und Interaktionsdichte schaffen' },
+  '这一步不再停留在“有内容的默认壳子”，而是把头图、导航、卡片、侧栏、按钮反馈、开场过渡和页面层次一起重新做完整。': { en: 'Moving beyond a basic content shell, fully completing hero, nav, cards, sidebar, button feedback, and page depth.', fr: 'Aller au-delà d\'une simple coquille en parachevant hero, navigation, cartes, barre latérale et retours haptiques.', es: 'Superando la plantilla básica, completando cabecera, navegación, tarjetas, barra lateral y respuesta táctil.', de: 'Über das bloße Inhaltsgerüst hinaus: Hero, Navigation, Karten, Seitenleiste und Haptik vollständig vollendet.' },
+  '设计对齐': { en: 'Design Align', fr: 'Alignement design', es: 'Alineación de diseño', de: 'Design-Abstimmung' },
+  '重构进度': { en: 'Progress', fr: 'Progression', es: 'Progreso', de: 'Fortschritt' },
+  '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
+  '文章总数': { en: 'Total Posts', fr: 'Total articles', es: 'Total de publicaciones', de: 'Beiträge gesamt' },
+  '建站天数': { en: 'Uptime Days', fr: 'Jours en ligne', es: 'Días activo', de: 'Tage online' },
+  '全站字数': { en: 'Total Words', fr: 'Total mots', es: 'Total de palabras', de: 'Wörter gesamt' },
+  '最后推送': { en: 'Last Push', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Letzte Aktualisierung' },
+  '标签总数': { en: 'Total Tags', fr: 'Total étiquettes', es: 'Total de etiquetas', de: 'Schlagwörter gesamt' },
+  '版本协议': { en: 'Version Protocol', fr: 'Protocole de version', es: 'Protocolo de versión', de: 'Versionsprotokoll' },
+  '活跃等级': { en: 'Activity Level', fr: 'Niveau d\'activité', es: 'Nivel de actividad', de: 'Aktivitätsgrad' },
+  '内容密度': { en: 'Content Density', fr: 'Densité de contenu', es: 'Densidad de contenido', de: 'Inhaltsdichte' },
+  '阅读时长': { en: 'Reading Time', fr: 'Temps de lecture', es: 'Tiempo de lectura', de: 'Lesezeit' },
+  '系统架构': { en: 'Architecture', fr: 'Architecture', es: 'Arquitectura', de: 'Architektur' },
+  '热门标签': { en: 'Popular Tags', fr: 'Étiquettes populaires', es: 'Etiquetas populares', de: 'Beliebte Schlagwörter' },
+  '查看全部标签': { en: 'View all tags', fr: 'Voir toutes les étiquettes', es: 'Ver todas las etiquetas', de: 'Alle Schlagwörter anzeigen' },
+  '精选分类': { en: 'Featured Categories', fr: 'Catégories en vedette', es: 'Categorías destacadas', de: 'Ausgewählte Kategorien' },
+  '查看全部分类': { en: 'View all categories', fr: 'Voir toutes les catégories', es: 'Ver todas las categorías', de: 'Alle Kategorien anzeigen' },
+  '站点资讯': { en: 'Site Pulse', fr: 'Informations du site', es: 'Información del sitio', de: 'Seiten-Info' },
+  '正常运行': { en: 'Operational', fr: 'Opérationnel', es: 'Operativo', de: 'Betriebsbereit' },
+  '核心架构版本与协议规范': { en: 'Core architecture version and protocol specifications', fr: 'Version de l\'architecture et spécifications de protocole', es: 'Versión de arquitectura central y protocolo', de: 'Architekturversion und Protokollspezifikationen' },
+  '基于 Astro 核心引擎与 Edge Functions': { en: 'Powered by Astro core engine & Edge Functions', fr: 'Propulsé par le moteur Astro et Edge Functions', es: 'Impulsado por el motor Astro y Edge Functions', de: 'Basierend auf Astro-Core und Edge Functions' },
+  '原创': { en: 'Original', fr: 'Original', es: 'Original', de: 'Original' },
+  '转载': { en: 'Reprint', fr: 'Reproduction', es: 'Reproducción', de: 'Nachdruck' },
+  '文章原创标识': { en: 'Article Original Badge', fr: 'Badge d\'article original', es: 'Insignia de artículo original', de: 'Originalartikel-Abzeichen' },
+  '手机扫码阅读': { en: 'Read on Mobile', fr: 'Lire sur mobile', es: 'Leer en móvil', de: 'Auf dem Handy lesen' },
+  '复制文章链接': { en: 'Copy Article Link', fr: 'Copier le lien', es: 'Copiar enlace', de: 'Artikellink kopieren' },
+  '分享到 QQ': { en: 'Share to QQ', fr: 'Partager sur QQ', es: 'Compartir en QQ', de: 'Auf QQ teilen' },
+  '分享到 QQ 空间': { en: 'Share to QZone', fr: 'Partager sur QZone', es: 'Compartir en QZone', de: 'Auf QZone teilen' },
+  '分享到哔哩哔哩': { en: 'Share to Bilibili', fr: 'Partager sur Bilibili', es: 'Compartir en Bilibili', de: 'Auf Bilibili teilen' },
+  '分享到 Telegram': { en: 'Share to Telegram', fr: 'Partager sur Telegram', es: 'Compartir en Telegram', de: 'Auf Telegram teilen' },
+  '分享到 X': { en: 'Share to X', fr: 'Partager sur X', es: 'Compartir en X', de: 'Auf X teilen' },
+  '分享到 Facebook': { en: 'Share to Facebook', fr: 'Partager sur Facebook', es: 'Compartir en Facebook', de: 'Auf Facebook teilen' },
+  '分享到 LinkedIn': { en: 'Share to LinkedIn', fr: 'Partager sur LinkedIn', es: 'Compartir en LinkedIn', de: 'Auf LinkedIn teilen' },
+  '分享到 Reddit': { en: 'Share to Reddit', fr: 'Partager sur Reddit', es: 'Compartir en Reddit', de: 'Auf Reddit teilen' },
+  '分享到 Snapchat': { en: 'Share to Snapchat', fr: 'Partager sur Snapchat', es: 'Compartir en Snapchat', de: 'Auf Snapchat teilen' },
+  '通过邮件分享': { en: 'Share via Email', fr: 'Partager par e-mail', es: 'Compartir por correo', de: 'Per E-Mail teilen' },
+  '文章二维码': { en: 'Article QR Code', fr: 'QR Code de l\'article', es: 'Código QR del artículo', de: 'Artikel-QR-Code' },
+  '使用手机扫码（点击复制二维码）': { en: 'Scan with mobile (click to copy QR)', fr: 'Scannez avec un mobile (cliquez pour copier)', es: 'Escanear con móvil (clic para copiar)', de: 'Mit Handy scannen (Klick zum Kopieren)' },
+  '点击直接将二维码图片复制到剪贴板': { en: 'Click to copy QR image to clipboard', fr: 'Cliquer pour copier l\'image QR', es: 'Haga clic para copiar imagen QR', de: 'Klicken zum Kopieren des QR-Codes' },
+  '手机访问': { en: 'Mobile Access', fr: 'Accès mobile', es: 'Acceso móvil', de: 'Mobilzugriff' },
+  '点击复制完整标题与链接': { en: 'Click to copy full title and URL', fr: 'Cliquer pour copier le titre et le lien', es: 'Haga clic para copiar título y enlace', de: 'Klicken zum Kopieren von Titel und Link' },
+  '知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议': { en: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License', fr: 'Licence Creative Commons Attribution - Pas d\'Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International', es: 'Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional', de: 'Creative Commons Namensnennung-Nicht kommerziell-Share Alike 4.0 International Lizenz' },
 
   // Recommendation & Post End
   '顺着这条线继续读': { en: 'Keep Reading Along This Line', fr: 'Continuer sur cette lancée', es: 'Continúa por esta línea', de: 'Weiter auf diesem Pfad' },
@@ -3191,6 +3273,127 @@ export const DYNAMIC_PATTERNS: PatternRule[] = [
       de: (m) => `Gliederungstiefe: ${m[1]}`,
     },
   },
+  {
+    pattern: /^当前分类下共有\s*(\d+)\s*篇文章，沿用统一文章卡片顺序展开。$/i,
+    replace: {
+      'zh-CN': (m) => `当前分类下共有 ${m[1]} 篇文章，沿用统一文章卡片顺序展开。`,
+      'zh-Hant': (m) => `當前分類下共有 ${m[1]} 篇文章，沿用統一文章卡片順序展開。`,
+      en: (m) => `${m[1]} articles in this category, displayed in unified card order.`,
+      fr: (m) => `${m[1]} articles dans cette catégorie, affichés dans l'ordre unifié des cartes.`,
+      es: (m) => `${m[1]} artículos en esta categoría, mostrados en orden uniforme de tarjetas.`,
+      de: (m) => `${m[1]} Artikel in dieser Kategorie, in einheitlicher Kartenreihenfolge dargestellt.`,
+    },
+  },
+  {
+    pattern: /^当前标签下共有\s*(\d+)\s*篇文章，沿用统一文章卡片顺序展开。$/i,
+    replace: {
+      'zh-CN': (m) => `当前标签下共有 ${m[1]} 篇文章，沿用统一文章卡片顺序展开。`,
+      'zh-Hant': (m) => `當前標籤下共有 ${m[1]} 篇文章，沿用統一文章卡片順序展開。`,
+      en: (m) => `${m[1]} articles with this tag, displayed in unified card order.`,
+      fr: (m) => `${m[1]} articles avec cette étiquette, affichés dans l'ordre unifié des cartes.`,
+      es: (m) => `${m[1]} artículos con esta etiqueta, mostrados en orden uniforme de tarjetas.`,
+      de: (m) => `${m[1]} Artikel mit diesem Schlagwort, in einheitlicher Kartenreihenfolge dargestellt.`,
+    },
+  },
+  {
+    pattern: /^已发布\s*(\d+)\s*篇公开文章$/i,
+    replace: {
+      'zh-CN': (m) => `已发布 ${m[1]} 篇公开文章`,
+      'zh-Hant': (m) => `已發布 ${m[1]} 篇公開文章`,
+      en: (m) => `${m[1]} public posts published`,
+      fr: (m) => `${m[1]} articles publics publiés`,
+      es: (m) => `${m[1]} publicaciones públicas`,
+      de: (m) => `${m[1]} öffentliche Beiträge veröffentlicht`,
+    },
+  },
+  {
+    pattern: /^安全稳定运行\s*(\d+)\s*天$/i,
+    replace: {
+      'zh-CN': (m) => `安全稳定运行 ${m[1]} 天`,
+      'zh-Hant': (m) => `安全穩定運行 ${m[1]} 天`,
+      en: (m) => `Operational for ${m[1]} days`,
+      fr: (m) => `En ligne de manière stable depuis ${m[1]} jours`,
+      es: (m) => `Operativo de forma segura durante ${m[1]} días`,
+      de: (m) => `Sicher und stabil in Betrieb seit ${m[1]} Tagen`,
+    },
+  },
+  {
+    pattern: /^基于全站\s*(\d+)\s*篇文章精算\s*\(([\d,]+)\s*字\)$/i,
+    replace: {
+      'zh-CN': (m) => `基于全站 ${m[1]} 篇文章精算 (${m[2]} 字)`,
+      'zh-Hant': (m) => `基於全站 ${m[1]} 篇文章精算 (${m[2]} 字)`,
+      en: (m) => `Calculated from ${m[1]} posts (${m[2]} words)`,
+      fr: (m) => `Calculé sur ${m[1]} articles (${m[2]} mots)`,
+      es: (m) => `Calculado en base a ${m[1]} artículos (${m[2]} palabras)`,
+      de: (m) => `Berechnet aus ${m[1]} Beiträgen (${m[2]} Wörter)`,
+    },
+  },
+  {
+    pattern: /^最新发布[：:]\s*(.+)$/i,
+    replace: {
+      'zh-CN': (m) => `最新发布: ${m[1]}`,
+      'zh-Hant': (m) => `最新發布: ${m[1]}`,
+      en: (m) => `Latest: ${m[1]}`,
+      fr: (m) => `Dernière mise à jour : ${m[1]}`,
+      es: (m) => `Última publicación: ${m[1]}`,
+      de: (m) => `Zuletzt veröffentlicht: ${m[1]}`,
+    },
+  },
+  {
+    pattern: /^共涵盖\s*(\d+)\s*个技术标签$/i,
+    replace: {
+      'zh-CN': (m) => `共涵盖 ${m[1]} 个技术标签`,
+      'zh-Hant': (m) => `共涵蓋 ${m[1]} 個技術標籤`,
+      en: (m) => `Covering ${m[1]} technical tags`,
+      fr: (m) => `Couvrant ${m[1]} étiquettes techniques`,
+      es: (m) => `Abarcando ${m[1]} etiquetas técnicas`,
+      de: (m) => `Umfasst ${m[1]} technische Schlagwörter`,
+    },
+  },
+  {
+    pattern: /^平均单篇字数约\s*(\d+)\s*字$/i,
+    replace: {
+      'zh-CN': (m) => `平均单篇字数约 ${m[1]} 字`,
+      'zh-Hant': (m) => `平均單篇字數約 ${m[1]} 字`,
+      en: (m) => `Avg words per post: ~${m[1]}`,
+      fr: (m) => `Moyenne par article : ~${m[1]} mots`,
+      es: (m) => `Promedio de palabras por artículo: ~${m[1]}`,
+      de: (m) => `Durchschnittliche Wortanzahl: ~${m[1]}`,
+    },
+  },
+  {
+    pattern: /^预估全站平均总阅读时长\s*(\d+)\s*分钟$/i,
+    replace: {
+      'zh-CN': (m) => `预估全站平均总阅读时长 ${m[1]} 分钟`,
+      'zh-Hant': (m) => `預估全站平均總閱讀時長 ${m[1]} 分鐘`,
+      en: (m) => `Est. total reading time: ${m[1]} min`,
+      fr: (m) => `Temps de lecture total estimé : ${m[1]} min`,
+      es: (m) => `Tiempo de lectura total estimado: ${m[1]} min`,
+      de: (m) => `Geschätzte Gesamtlesezeit: ${m[1]} Min.`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*篇$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 篇`,
+      'zh-Hant': (m) => `${m[1]} 篇`,
+      en: (m) => `${m[1]} posts`,
+      fr: (m) => `${m[1]} art.`,
+      es: (m) => `${m[1]} art.`,
+      de: (m) => `${m[1]} Btr.`,
+    },
+  },
+  {
+    pattern: /^(\d+)\s*篇文章$/i,
+    replace: {
+      'zh-CN': (m) => `${m[1]} 篇文章`,
+      'zh-Hant': (m) => `${m[1]} 篇文章`,
+      en: (m) => `${m[1]} posts`,
+      fr: (m) => `${m[1]} articles`,
+      es: (m) => `${m[1]} artículos`,
+      de: (m) => `${m[1]} Beiträge`,
+    },
+  },
 ];
 
 // Pre-indexed fast maps for O(1) instantaneous lookups
@@ -3198,6 +3401,7 @@ const zhToEnMap = new Map<string, string>();
 const zhToFrMap = new Map<string, string>();
 const zhToEsMap = new Map<string, string>();
 const zhToDeMap = new Map<string, string>();
+const zhToZhHantMap = new Map<string, string>();
 
 const allForeignToZhMap = new Map<string, string>();
 
@@ -3206,6 +3410,10 @@ for (const [zh, trans] of Object.entries(MULTILINGUAL_DICTIONARY)) {
   zhToFrMap.set(zh, trans.fr);
   zhToEsMap.set(zh, trans.es);
   zhToDeMap.set(zh, trans.de);
+  if (trans['zh-Hant']) {
+    zhToZhHantMap.set(zh, trans['zh-Hant']);
+    allForeignToZhMap.set(trans['zh-Hant'], zh);
+  }
 
   if (trans.en) allForeignToZhMap.set(trans.en, zh);
   if (trans.fr) allForeignToZhMap.set(trans.fr, zh);
@@ -3385,7 +3593,7 @@ export function isIgnoredSubtree(el: Element): boolean {
   return false;
 }
 
-const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail|年|月|日|页|共|第|已|提醒|停留|阈值|深度|大纲/;
+const DYNAMIC_PATTERN_QUICK_TEST = /\d|查看|收起|始于|起始于|博客|节|篇|字|分钟|次|天|切换|正在|欢迎|复制|Epomail|年|月|日|页|共|第|已|提醒|停留|阈值|深度|大纲|安全|稳定|运行|精算|涵盖|预估|最近更新于|当前分类|当前标签/;
 
 /**
  * Text translation router based on variant (O(1) exact mapping + dynamic pattern rules)
@@ -3433,6 +3641,10 @@ export function convertText(value: string, variant: LocaleVariant): string {
 
   // 4. Target is Traditional Chinese
   if (variant === 'zh-Hant') {
+    const directZhHant = zhToZhHantMap.get(lookupKey) ?? zhToZhHantMap.get(sourceZh);
+    if (directZhHant) {
+      return value.replace(trimmed, directZhHant);
+    }
     if (zhPattern.test(sourceZh)) {
       const converted = zhToTraditional ? zhToTraditional(sourceZh) : sourceZh;
       return value.replace(trimmed, converted);
