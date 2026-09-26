@@ -1,21 +1,24 @@
 /**
- * EpoCanvas Cinematic Snow Mantle & Procedural Accumulation Engine (积雪/雪幔引擎)
+ * EpoCanvas In-Card Procedural Snow Mantle System (卡片原生吸附式程序化立体雪幔系统)
  * 
- * 架构核心特性 (Architecture Pillars):
- * 1. 2.5D Volumetric Organic Contour (自研程序化起伏雪丘与有机雪舌下垂模型):
- *    - 基于确定性 PRNG 种子 (Mulberry32) 生成每张卡片独一无二的波浪波丘与雪幔几何形态。
- *    - 顶面柔和起伏高地 (Undulating Dunes)，以连续中点二次贝塞尔弧线平滑连接。
- *    - 底缘下垂雪舌 (Drooping Lobes / Cornices)，以非均匀间距自然垂挂于卡片顶沿前端。
- * 2. Multi-Pass Volumetric Shading & Daylight Contrast (多层立体光影与白昼高反差冬日光照模型):
- *    - Pass 1: 接触面微环境光遮挡阴影 (Contact AO Shadow)，将雪体牢牢压在卡片顶沿，彻底消除浮空感；
- *    - Pass 2: 垂直天光散射自阴影渐变 (Volumetric Skylight Gradient)，顶沿向阳面纯白晶莹 (#ffffff)，
- *             底端雪舌微冷天光散射 (Daylight: rgba(148, 178, 210, 0.94))，在纯白卡片 (#ffffff) 上呈现极高清晰度与真实感；
- *    - Pass 3: 顶层迎光弧面微凸层次 (Inner Volumetric Dome) 与晶莹高光线 (Sunlit Specular Rim)；
- *    - Pass 4: 微细冰晶闪光 (Micro Crystalline Sparkles)，随时间轻微闪烁。
- * 3. Zero DOM Pollution & 60FPS Performance (零 DOM 污染与视口视差同步渲染):
- *    - 完全在固定视口 Canvas (#theme-snow-mid, z-index: 20) 上绘制，卡片内部 DOM 保持 100% 纯净；
- *    - 文档绝对坐标预计算与视锥剔除 (Frustum Culling)，滚动时直接基于 screenY = docTop - scrollY 投影；
- *    - 严格 0 ctx.shadowBlur，避免 GPU/Skia CPU 模糊开销，保障上下动态滑动稳定 60FPS。
+ * 核心架构升级 (Architectural Pillars):
+ * 1. 0 延迟硬件级合成器同步 (Zero-Lag GPU Compositor Sync):
+ *    - 摒弃旧版全局固定 Canvas 覆盖方案（Compositor 线程与 JS 主线程 1~2 帧物理延迟导致滑动撕裂与目眩）；
+ *    - 采用原生注入各闭合卡片顶沿的独立矢量雪幔 (Attached In-Card Vector Snow Mantle)；
+ *    - 卡片滚动、Hover translateY、3D 翻转、flex 宽度伸缩时，雪幔由浏览器合成器一同位移，物理延迟绝对为 0ms！
+ * 2. 圆角自适应弧度包裹 (Radius Conformance & Corner Wrap):
+ *    - 动态读取各卡片的 border-top-left/right-radius（如 8px, 12px, 16px）；
+ *    - 在两端圆角处自然向下弧形包裹下垂（Drape to (0, R*0.65) and (W, R*0.65)），
+ *      彻底根除旧版直线木板排列在圆角外“悬空浮起”的致命缺陷！
+ * 3. 交互变形与 3D 翻转物理同步 (Interactive Flex & Flip Synchronization):
+ *    - .categoryItem 在 hover 时触发 flex: 1.45 弹性展开，矢量雪幔伴随 width: 100% 同步拉伸与回缩；
+ *    - .todayCard 翻转时（opacity: 0, scale: 0.96），雪幔自然伴随渐隐缩放；
+ *    - 底层遮盖的卡片由于 DOM 层级与 z-index 遮挡，不再产生“穿透幽灵雪”！
+ * 4. 真实 2.5D 冬日光照与微细冰晶闪光:
+ *    - 接触面环境光遮挡 (feDropShadow AO Shadow)；
+ *    - 垂直天光散射自阴影渐变 (Volumetric Skylight Gradient)；
+ *    - 迎光拱面高光 (Inner Volumetric Dome) 与晶莹顶沿高光线 (Specular Rim)；
+ *    - 微细冰晶闪烁动画 (@keyframes snow-sparkle)。
  */
 
 export const CLOSED_BOX_SELECTORS = [
@@ -23,10 +26,9 @@ export const CLOSED_BOX_SELECTORS = [
   '.todayCard',
   '.categoryItem',
   '.home-mobile-focus-card',
-  '.recent-post-item',
+  '#recent-posts .recent-post-item',
   '#aside-content .card-widget',
   '#card-toc',
-  '#page',
   '#post',
   '.post-page-shell',
   '.post-copyright',
@@ -44,35 +46,6 @@ export const CLOSED_BOX_SELECTORS = [
   '.home-pagination',
   '.support-dashboard-card',
 ];
-
-interface Sparkle {
-  x: number;
-  y: number;
-  r: number;
-  phase: number;
-}
-
-interface SnowMantleGeometry {
-  bodyPath: Path2D;
-  innerPath: Path2D;
-  rimPath: Path2D;
-  shadowPath: Path2D;
-  sparkles: Sparkle[];
-  lightGrad: CanvasGradient;
-  darkGrad: CanvasGradient;
-}
-
-interface TrackedCard {
-  element: HTMLElement;
-  id: string;
-  seed: number;
-  docTop: number;
-  docLeft: number;
-  width: number;
-  height: number;
-  isSticky: boolean;
-  mantle: SnowMantleGeometry;
-}
 
 function hashString(str: string): number {
   let hash = 0;
@@ -93,33 +66,246 @@ function createPRNG(seed: number) {
   };
 }
 
-export class SnowMantleEngine {
-  private ctx: CanvasRenderingContext2D;
-  private cards: TrackedCard[] = [];
-  private resizeObserver: ResizeObserver | null = null;
-  private resizeTimeout: any = null;
-  private scrollEndTimeout: any = null;
-  private isDestroyed = false;
+/**
+ * Generate Procedural SVG Snow Mantle with Corner Radius Wrapping
+ */
+export function generateSnowMantleSvg(
+  W: number,
+  H_card: number,
+  radius: number,
+  seed: number,
+  className: string = ''
+): string {
+  const prng = createPRNG(seed);
+  const isCategory = className.includes('categoryItem');
+  const isCardInfo = className.includes('card-info');
+  const isShort = H_card < 120;
 
-  constructor(ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx;
+  let H = 14;
+  let maxDroop = 7;
+  let baseDrop = 2.0;
+
+  if (isCategory) {
+    H = 8;
+    maxDroop = 2.0;
+    baseDrop = 0.8;
+  } else if (isCardInfo) {
+    H = 8;
+    maxDroop = 2.0;
+    baseDrop = 0.6;
+  } else if (isShort) {
+    H = Math.min(10, H_card * 0.15);
+    maxDroop = Math.min(3.5, H_card * 0.05);
+    baseDrop = 1.0;
+  } else {
+    H = Math.min(16, Math.max(10, H_card * 0.12));
+    maxDroop = Math.min(8, H_card * 0.08);
+  }
+
+  const yOffset = Math.round(H + 8);
+  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 8);
+
+  // 1. Generate top points with Corner Roll-off
+  const numTop = Math.max(16, Math.min(48, Math.round(W / 20)));
+  const topPoints: { x: number; y: number }[] = [];
+  const phi1 = prng() * Math.PI * 2;
+  const phi2 = prng() * Math.PI * 2;
+
+  for (let i = 0; i < numTop; i++) {
+    const u = i / (numTop - 1);
+    const x = u * W;
+
+    // Corner roll-off: conforms to card radius!
+    const dLeft = Math.min(1, x / (radius + 1e-4));
+    const dRight = Math.min(1, (W - x) / (radius + 1e-4));
+    const cornerFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);
+
+    const w1 = Math.sin(u * Math.PI) * 0.32;
+    const w2 = Math.sin(u * Math.PI * 3 + phi1) * 0.20;
+    const w3 = Math.cos(u * Math.PI * 5 + phi2) * 0.10;
+
+    const thickness = H * (0.8 + w1 + w2 + w3) * (0.15 + 0.85 * cornerFactor);
+    let cornerY = 0;
+    if (x < radius) {
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - x, 2)))) * 0.65;
+    } else if (x > W - radius) {
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(x - (W - radius), 2)))) * 0.65;
+    }
+
+    const y = yOffset - thickness + cornerY;
+    topPoints.push({ x, y });
+  }
+
+  // 2. Generate drooping lobes (雪舌 / 垂挂雪檐)
+  const numLobes = isCategory ? 2 : W < 220 ? 2 : W < 450 ? 3 : 5;
+  const lobes: { cx: number; lw: number; ld: number }[] = [];
+  for (let k = 0; k < numLobes; k++) {
+    const targetU = (k + 0.5 + (prng() - 0.5) * 0.4) / numLobes;
+    const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
+    const lw = (isCategory ? 20 : 28) + prng() * (isCategory ? 15 : 30);
+    const ld = (isCategory ? 1.0 : 2.5) + prng() * maxDroop;
+    lobes.push({ cx, lw, ld: Math.min(ld, maxDroop) });
+  }
+
+  // Sample bottom contour from right to left
+  const numBottom = Math.max(20, Math.min(60, Math.round(W / 15)));
+  const bottomPoints: { x: number; y: number }[] = [];
+  for (let i = numBottom - 1; i >= 0; i--) {
+    const u = i / (numBottom - 1);
+    const x = u * W;
+
+    let droop = 0;
+    for (let k = 0; k < lobes.length; k++) {
+      const lb = lobes[k];
+      const dist = Math.abs(x - lb.cx);
+      if (dist < lb.lw * 0.5) {
+        const norm = dist / (lb.lw * 0.5);
+        droop += lb.ld * Math.pow(1 - norm * norm, 1.8);
+      }
+    }
+
+    const dLeft = Math.min(1, x / (radius + 1e-4));
+    const dRight = Math.min(1, (W - x) / (radius + 1e-4));
+    const cornerFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);
+
+    let cornerY = 0;
+    if (x < radius) {
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - x, 2)))) * 0.75;
+    } else if (x > W - radius) {
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(x - (W - radius), 2)))) * 0.75;
+    }
+
+    const y = yOffset + (baseDrop + droop) * cornerFactor + cornerY;
+    bottomPoints.push({ x, y });
+  }
+
+  // Build SVG Path strings
+  let pathD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
+  for (let i = 0; i < topPoints.length - 1; i++) {
+    const curr = topPoints[i];
+    const next = topPoints[i + 1];
+    const mx = (curr.x + next.x) * 0.5;
+    const my = (curr.y + next.y) * 0.5;
+    pathD += ` Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  const lastTop = topPoints[topPoints.length - 1];
+  pathD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
+
+  for (let i = 0; i < bottomPoints.length - 1; i++) {
+    const curr = bottomPoints[i];
+    const next = bottomPoints[i + 1];
+    const mx = (curr.x + next.x) * 0.5;
+    const my = (curr.y + next.y) * 0.5;
+    pathD += ` Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  pathD += ' Z';
+
+  // Inner Dome Path (highlight)
+  let domeD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
+  for (let i = 0; i < topPoints.length - 1; i++) {
+    const curr = topPoints[i];
+    const next = topPoints[i + 1];
+    const mx = (curr.x + next.x) * 0.5;
+    const my = (curr.y + next.y) * 0.5;
+    domeD += ` Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  domeD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
+  for (let i = topPoints.length - 1; i >= 0; i--) {
+    const pt = topPoints[i];
+    const inY = yOffset - (yOffset - pt.y) * 0.45;
+    domeD += ` L ${pt.x.toFixed(1)} ${inY.toFixed(1)}`;
+  }
+  domeD += ' Z';
+
+  // Rim Stroke Path
+  let rimD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
+  for (let i = 0; i < topPoints.length - 1; i++) {
+    const curr = topPoints[i];
+    const next = topPoints[i + 1];
+    const mx = (curr.x + next.x) * 0.5;
+    const my = (curr.y + next.y) * 0.5;
+    rimD += ` Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  rimD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
+
+  // Sparkles
+  const numSparkles = isCategory ? 2 : Math.max(3, Math.min(8, Math.round(W / 80)));
+  let sparklesSvg = '';
+  for (let s = 0; s < numSparkles; s++) {
+    const ptIdx = Math.floor(prng() * (topPoints.length - 2)) + 1;
+    const pt = topPoints[ptIdx];
+    const sx = (pt.x + (prng() - 0.5) * 8).toFixed(1);
+    const sy = (pt.y + 1.5 + prng() * 3).toFixed(1);
+    const sr = (0.7 + prng() * 0.5).toFixed(1);
+    const delay = (prng() * 3).toFixed(1);
+    sparklesSvg += `<circle cx="${sx}" cy="${sy}" r="${sr}" fill="#ffffff" style="animation: snow-sparkle 2.5s ease-in-out ${delay}s infinite;" />`;
+  }
+
+  const gradId = 'snow_g_' + seed;
+  const filterId = 'snow_f_' + seed;
+
+  return `
+<svg class="card-snow-svg" data-snow-seed="${seed}" viewBox="0 0 ${W} ${svgHeight}" preserveAspectRatio="none" style="--snow-svg-top: -${yOffset}px; height: ${svgHeight}px;">
+  <defs>
+    <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+      <stop offset="50%" stop-color="#f3f8fc" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="var(--snow-lobe-color, #94b2d2)" stop-opacity="0.92" />
+    </linearGradient>
+    <filter id="${filterId}" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="var(--snow-ao-color, rgba(70,95,130,0.32))" />
+    </filter>
+  </defs>
+  <path class="snow-body" d="${pathD}" fill="url(#${gradId})" filter="url(#${filterId})" />
+  <path class="snow-dome" d="${domeD}" fill="var(--snow-dome-color, rgba(255, 255, 255, 0.65))" />
+  <path class="snow-rim" d="${rimD}" fill="none" stroke="var(--snow-rim-color, rgba(255, 255, 255, 0.95))" stroke-width="1.2" stroke-linecap="round" />
+  <g class="snow-sparkles">${sparklesSvg}</g>
+</svg>
+`.trim();
+}
+
+/**
+ * SnowMantleEngine: In-Card Attached DOM Vector Snow Mantle Controller
+ */
+export class SnowMantleEngine {
+  private resizeTimeout: any = null;
+  private isDestroyed = false;
+  private mutationObserver: MutationObserver | null = null;
+
+  constructor(_ctx?: CanvasRenderingContext2D) {
     this.init();
   }
 
   private init() {
     this.scanCards();
 
-    // Listen to document layout changes
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this.handleResize, { passive: true });
-      window.addEventListener('scroll', this.handleScrollCheck, { passive: true });
       document.addEventListener('astro:page-load', this.handlePageLoad);
 
-      if (typeof ResizeObserver !== 'undefined' && document.body) {
-        this.resizeObserver = new ResizeObserver(() => {
-          this.handleResize();
+      if (typeof MutationObserver !== 'undefined' && document.body) {
+        this.mutationObserver = new MutationObserver((mutations) => {
+          let hasRelevantMutation = false;
+          for (const m of mutations) {
+            if (m.type === 'childList' && m.addedNodes.length > 0) {
+              for (let i = 0; i < m.addedNodes.length; i++) {
+                const node = m.addedNodes[i];
+                if (node instanceof HTMLElement && !node.classList.contains('card-snow-svg')) {
+                  hasRelevantMutation = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (hasRelevantMutation) {
+            this.handleResize();
+          }
         });
-        this.resizeObserver.observe(document.body);
+
+        this.mutationObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
       }
     }
   }
@@ -129,434 +315,113 @@ export class SnowMantleEngine {
     this.resizeTimeout = setTimeout(() => {
       if (this.isDestroyed) return;
       this.scanCards();
-    }, 120);
-  };
-
-  private handleScrollCheck = () => {
-    // When scroll settles, verify coordinates in case of dynamic lazy-load layout shift
-    if (this.scrollEndTimeout) clearTimeout(this.scrollEndTimeout);
-    this.scrollEndTimeout = setTimeout(() => {
-      if (this.isDestroyed) return;
-      this.refreshPositions();
-    }, 200);
+    }, 150);
   };
 
   private handlePageLoad = () => {
     setTimeout(() => {
       if (this.isDestroyed) return;
       this.scanCards();
-    }, 100);
+    }, 80);
   };
 
   /**
-   * Rescan DOM for all target closed-box cards and generate cached snow mantle geometry
+   * Rescan DOM and dynamically attach tailored SVG Snow Mantles directly inside cards
    */
   public scanCards() {
-    if (typeof document === 'undefined' || !this.ctx) return;
+    if (typeof document === 'undefined') return;
 
     const selector = CLOSED_BOX_SELECTORS.join(', ');
     const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    const scrollX = window.scrollX || window.pageXOffset || 0;
 
-    const newCards: TrackedCard[] = [];
-    const seenElements = new Set<HTMLElement>();
+    const seen = new Set<HTMLElement>();
 
     for (let index = 0; index < elements.length; index++) {
       const el = elements[index];
-      if (seenElements.has(el)) continue;
+      if (seen.has(el)) continue;
 
-      // Filter out hidden or collapsed elements
+      // Filter out hidden elements
       if (el.offsetParent === null) continue;
-      const rect = el.getBoundingClientRect();
-      if (rect.width < 50 || rect.height < 30) continue;
+      const computed = window.getComputedStyle(el);
+      if (computed.display === 'none' || computed.visibility === 'hidden' || computed.opacity === '0') continue;
 
-      // Filter out hidden styles
-      const style = window.getComputedStyle(el);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
-
-      // Avoid nested boxes within another box unless it's a distinct structural block
-      let isNestedDuplicate = false;
-      for (const parent of seenElements) {
+      // Avoid nested duplicates (except distinct cards like relatedPosts-item or postNav-card)
+      let isNested = false;
+      for (const parent of seen) {
         if (parent.contains(el)) {
-          // Allow specific known sub-cards like .recent-post-item, .relatedPosts-item or .postNav-card
-          const isAllowedSubCard =
+          const isAllowed =
             el.classList.contains('recent-post-item') ||
             el.classList.contains('relatedPosts-item') ||
             el.classList.contains('postNav-card') ||
             el.classList.contains('post-copyright') ||
             el.classList.contains('card-widget');
-          if (!isAllowedSubCard) {
-            isNestedDuplicate = true;
+          if (!isAllowed) {
+            isNested = true;
             break;
           }
         }
       }
-      if (isNestedDuplicate) continue;
+      if (isNested) continue;
+      seen.add(el);
 
-      seenElements.add(el);
+      const W = Math.round(el.offsetWidth);
+      const H_card = Math.round(el.offsetHeight);
+      if (W < 40 || H_card < 20) continue;
 
-      const docTop = rect.top + scrollY;
-      const docLeft = rect.left + scrollX;
-      const w = Math.round(rect.width);
-      const h = Math.round(rect.height);
+      // Check if card already has a snow mantle SVG
+      const existingSvg = el.querySelector<SVGElement>(':scope > .card-snow-svg');
+      if (existingSvg) {
+        // If width hasn't changed significantly, keep existing
+        const oldW = parseInt(existingSvg.getAttribute('viewBox')?.split(' ')[2] || '0');
+        if (Math.abs(oldW - W) <= 25) {
+          continue;
+        }
+        existingSvg.remove();
+      }
 
-      // Check if sticky
-      const isSticky = style.position === 'sticky' || style.position === 'fixed' || el.closest('.aside-sticky-box') !== null;
+      // Read border-top-left-radius
+      const rawRadius = parseFloat(computed.borderTopLeftRadius) || 12;
+      const radius = Math.max(4, Math.min(24, Math.round(rawRadius)));
 
       const id = el.id || el.className.split(' ')[0] || `card-${index}`;
-      const className = el.className || '';
-      const seed = hashString(`${id}-${w}-${index}`);
+      const seed = hashString(`${id}-${index}`);
 
-      const mantle = this.generateMantle(w, h, seed, className);
+      const svgString = generateSnowMantleSvg(W, H_card, radius, seed, el.className || '');
 
-      newCards.push({
-        element: el,
-        id,
-        className,
-        seed,
-        docTop,
-        docLeft,
-        width: w,
-        height: h,
-        isSticky,
-        mantle,
-      });
-    }
-
-    this.cards = newCards;
-  }
-
-  /**
-   * Fast position refresh (0 geometry re-generation)
-   */
-  public refreshPositions() {
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    const scrollX = window.scrollX || window.pageXOffset || 0;
-
-    for (let i = 0; i < this.cards.length; i++) {
-      const card = this.cards[i];
-      if (!card.element || !card.element.isConnected) continue;
-      const rect = card.element.getBoundingClientRect();
-      card.docTop = rect.top + scrollY;
-      card.docLeft = rect.left + scrollX;
-      // If width changed significantly (> 10px), regenerate mantle
-      const newW = Math.round(rect.width);
-      if (Math.abs(newW - card.width) > 10) {
-        card.width = newW;
-        card.height = Math.round(rect.height);
-        card.mantle = this.generateMantle(newW, card.height, card.seed, card.className);
+      // Ensure card has relative/absolute positioning and visible overflow
+      if (computed.position === 'static') {
+        el.style.position = 'relative';
       }
+      el.style.setProperty('overflow', 'visible', 'important');
+
+      // Insert as last child of the card so it renders above background and images
+      el.insertAdjacentHTML('beforeend', svgString);
     }
   }
 
   /**
-   * Generate 2.5D Volumetric Snow Mantle Geometry with Bezier Curves and Multi-layer Passes
+   * Backwards compatible no-op render method
    */
-  private generateMantle(W: number, H_card: number, seed: number, className: string = ''): SnowMantleGeometry {
-    const prng = createPRNG(seed);
-    const isCategory = className.includes('categoryItem');
-    const isCardInfo = className.includes('card-info');
-    const isShort = H_card < 120;
-
-    let H = 16;
-    let maxDroop = 9;
-    let baseDrop = 2.0;
-
-    if (isCategory) {
-      // Category buttons: height ~86px, text is close to top border
-      H = 8;
-      maxDroop = 2.0;
-      baseDrop = 0.8;
-    } else if (isCardInfo) {
-      // Profile card: keep snow clear of the welcome badge
-      H = 8;
-      maxDroop = 2.0;
-      baseDrop = 0.6;
-    } else if (isShort) {
-      H = Math.min(10, H_card * 0.15);
-      maxDroop = Math.min(3.5, H_card * 0.05);
-      baseDrop = 1.0;
-    } else {
-      const baseH = W < 260 ? 12 : W < 700 ? 16 : 20;
-      H = Math.max(8, Math.min(baseH, H_card * 0.20));
-      maxDroop = Math.min(10, H_card * 0.10);
-      baseDrop = Math.max(1.5, Math.min(2.5, H_card * 0.035));
-    }
-    const radius = 8; // standard card radius
-
-    // 1. Generate top crest points (undulating dunes)
-    const numTopPoints = Math.max(16, Math.min(48, Math.round(W / 24)));
-    const topPoints: { x: number; y: number }[] = [];
-    const phi1 = prng() * Math.PI * 2;
-    const phi2 = prng() * Math.PI * 2;
-
-    for (let i = 0; i < numTopPoints; i++) {
-      const u = i / (numTopPoints - 1);
-      const x = u * W;
-
-      // Corner roll-off: snow curves smoothly over the rounded corners
-      const dLeft = Math.min(1, x / (radius * 1.6));
-      const dRight = Math.min(1, (W - x) / (radius * 1.6));
-      const edgeFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);
-
-      // Harmonic waves for natural dune undulation
-      const w1 = Math.sin(u * Math.PI) * 0.35;
-      const w2 = Math.sin(u * Math.PI * 3 + phi1) * 0.25;
-      const w3 = Math.cos(u * Math.PI * 5 + phi2) * 0.15;
-      const micro = (prng() - 0.5) * 0.12;
-
-      const thickness = H * (0.75 + w1 + w2 + w3 + micro) * (0.35 + 0.65 * edgeFactor);
-      const y = -(thickness + 2.0);
-      topPoints.push({ x, y });
-    }
-
-    // 2. Generate bottom drooping lobes (雪舌 / 垂挂雪檐)
-    const numLobes = isCategory ? 2 : W < 220 ? 2 : W < 450 ? 3 + Math.floor(prng() * 2) : 5 + Math.floor(prng() * 4);
-    const lobes: { cx: number; lw: number; ld: number }[] = [];
-    for (let k = 0; k < numLobes; k++) {
-      const targetU = (k + 0.5 + (prng() - 0.5) * 0.5) / numLobes;
-      const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
-      const lw = (isCategory ? 24 : 32) + prng() * (isCategory ? 20 : 45); // lobe width
-      const rawLd = isCategory ? 1.0 + prng() * 1.0 : 4.0 + prng() * 6.5; // droop depth
-      const ld = Math.min(rawLd, maxDroop);
-      lobes.push({ cx, lw, ld });
-    }
-
-    // Sample bottom contour from right to left
-    const numBottomPoints = Math.max(20, Math.min(60, Math.round(W / 18)));
-    const bottomPoints: { x: number; y: number }[] = [];
-
-    for (let i = numBottomPoints - 1; i >= 0; i--) {
-      const u = i / (numBottomPoints - 1);
-      const x = u * W;
-
-      let droop = 0;
-      for (let k = 0; k < lobes.length; k++) {
-        const lb = lobes[k];
-        const dist = Math.abs(x - lb.cx);
-        if (dist < lb.lw * 0.5) {
-          const norm = dist / (lb.lw * 0.5);
-          droop += lb.ld * Math.pow(1 - norm * norm, 1.8);
-        }
-      }
-
-      // Edge taper for corners
-      const dLeft = Math.min(1, x / radius);
-      const dRight = Math.min(1, (W - x) / radius);
-      const cornerFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);
-
-      const y = (baseDrop + droop) * cornerFactor;
-      bottomPoints.push({ x, y });
-    }
-
-    // 3. Assemble Bezier Paths
-    // A. Main Snow Body Path
-    const bodyPath = new Path2D();
-    bodyPath.moveTo(-2, 2.5);
-    bodyPath.quadraticCurveTo(-2.5, topPoints[0].y * 0.4, topPoints[0].x, topPoints[0].y);
-
-    for (let i = 0; i < topPoints.length - 1; i++) {
-      const curr = topPoints[i];
-      const next = topPoints[i + 1];
-      const mx = (curr.x + next.x) * 0.5;
-      const my = (curr.y + next.y) * 0.5;
-      bodyPath.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    const lastTop = topPoints[topPoints.length - 1];
-    bodyPath.lineTo(lastTop.x, lastTop.y);
-
-    bodyPath.quadraticCurveTo(W + 2.5, lastTop.y * 0.4, W + 2, 2.5);
-
-    for (let i = 0; i < bottomPoints.length - 1; i++) {
-      const curr = bottomPoints[i];
-      const next = bottomPoints[i + 1];
-      const mx = (curr.x + next.x) * 0.5;
-      const my = (curr.y + next.y) * 0.5;
-      bodyPath.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    bodyPath.closePath();
-
-    // B. Inner Volumetric Crest Path (for 2.5D puffy highlight dome)
-    const innerPath = new Path2D();
-    innerPath.moveTo(topPoints[0].x, topPoints[0].y);
-    for (let i = 0; i < topPoints.length - 1; i++) {
-      const curr = topPoints[i];
-      const next = topPoints[i + 1];
-      const mx = (curr.x + next.x) * 0.5;
-      const my = (curr.y + next.y) * 0.5;
-      innerPath.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    innerPath.lineTo(lastTop.x, lastTop.y);
-    for (let i = topPoints.length - 1; i >= 0; i--) {
-      const pt = topPoints[i];
-      const inY = pt.y * 0.45;
-      if (i === topPoints.length - 1) innerPath.lineTo(pt.x, inY);
-      else {
-        const prevPt = topPoints[i + 1];
-        const mx = (pt.x + prevPt.x) * 0.5;
-        const my = (inY + prevPt.y * 0.45) * 0.5;
-        innerPath.quadraticCurveTo(pt.x, inY, mx, my);
-      }
-    }
-    innerPath.closePath();
-
-    // C. Rim Path (Top crest highlight stroke)
-    const rimPath = new Path2D();
-    rimPath.moveTo(topPoints[0].x, topPoints[0].y);
-    for (let i = 0; i < topPoints.length - 1; i++) {
-      const curr = topPoints[i];
-      const next = topPoints[i + 1];
-      const mx = (curr.x + next.x) * 0.5;
-      const my = (curr.y + next.y) * 0.5;
-      rimPath.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    rimPath.lineTo(lastTop.x, lastTop.y);
-
-    // D. Contact Shadow Path (soft AO layer underneath drooping lobes)
-    const shadowPath = new Path2D();
-    shadowPath.moveTo(bottomPoints[0].x, bottomPoints[0].y);
-    for (let i = 0; i < bottomPoints.length - 1; i++) {
-      const curr = bottomPoints[i];
-      const next = bottomPoints[i + 1];
-      const mx = (curr.x + next.x) * 0.5;
-      const my = (curr.y + next.y) * 0.5;
-      shadowPath.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    shadowPath.lineTo(bottomPoints[bottomPoints.length - 1].x, bottomPoints[bottomPoints.length - 1].y + 2.5);
-    for (let i = bottomPoints.length - 1; i > 0; i--) {
-      const curr = bottomPoints[i];
-      const prev = bottomPoints[i - 1];
-      const mx = (curr.x + prev.x) * 0.5;
-      const my = (curr.y + prev.y) * 0.5 + 2.5;
-      shadowPath.quadraticCurveTo(curr.x, curr.y + 2.5, mx, my);
-    }
-    shadowPath.closePath();
-
-    // E. Micro sparkles near crest
-    const numSparkles = Math.max(4, Math.min(12, Math.round(W / 75)));
-    const sparkles: Sparkle[] = [];
-    for (let s = 0; s < numSparkles; s++) {
-      const ptIdx = Math.floor(prng() * (topPoints.length - 2)) + 1;
-      const pt = topPoints[ptIdx];
-      sparkles.push({
-        x: pt.x + (prng() - 0.5) * 10,
-        y: pt.y + 2.0 + prng() * 4,
-        r: 0.8 + prng() * 0.6,
-        phase: prng() * Math.PI * 2,
-      });
-    }
-
-    // Gradients
-    const minY = -H * 1.45;
-    const maxY = 15;
-
-    // Daylight mode gradient:
-    // Top: pure white -> mid: luminous crisp snow -> bottom: cold sky shadow blue
-    const lightGrad = this.ctx.createLinearGradient(0, minY, 0, maxY);
-    lightGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.99)');
-    lightGrad.addColorStop(0.35, 'rgba(246, 250, 255, 0.98)');
-    lightGrad.addColorStop(0.68, 'rgba(226, 238, 250, 0.96)');
-    lightGrad.addColorStop(0.88, 'rgba(182, 208, 234, 0.94)');
-    lightGrad.addColorStop(1.0, 'rgba(148, 178, 210, 0.94)');
-
-    // Dark mode gradient:
-    const darkGrad = this.ctx.createLinearGradient(0, minY, 0, maxY);
-    darkGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.97)');
-    darkGrad.addColorStop(0.4, 'rgba(235, 244, 255, 0.94)');
-    darkGrad.addColorStop(0.75, 'rgba(185, 210, 240, 0.88)');
-    darkGrad.addColorStop(1.0, 'rgba(135, 165, 205, 0.86)');
-
-    return {
-      bodyPath,
-      innerPath,
-      rimPath,
-      shadowPath,
-      sparkles,
-      lightGrad,
-      darkGrad,
-    };
-  }
-
-  /**
-   * Render Snow Mantles on all visible cards
-   */
-  public render(scrollY: number, scrollX: number, isDark: boolean, time: number) {
-    if (this.cards.length === 0) return;
-
-    const ctx = this.ctx;
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-
-    for (let i = 0; i < this.cards.length; i++) {
-      const card = this.cards[i];
-
-      let screenY: number;
-      let screenX: number;
-
-      if (card.isSticky) {
-        // Sticky elements: sample their real-time client rect
-        const rect = card.element.getBoundingClientRect();
-        screenY = rect.top;
-        screenX = rect.left;
-      } else {
-        // Normal flow elements: zero DOM query! 100% fast math projection
-        screenY = card.docTop - scrollY;
-        screenX = card.docLeft - scrollX;
-      }
-
-      // Frustum culling:
-      // Skip cards that are outside the visible viewport
-      if (screenY + 40 < 0 || screenY - 20 > viewportHeight) continue;
-      if (screenX + card.width < 0 || screenX > viewportWidth) continue;
-
-      ctx.save();
-      ctx.translate(screenX, screenY);
-
-      // 1. Contact AO shadow
-      ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.38)' : 'rgba(110, 140, 175, 0.28)';
-      ctx.fill(card.mantle.shadowPath);
-
-      // 2. Snow body
-      ctx.fillStyle = isDark ? card.mantle.darkGrad : card.mantle.lightGrad;
-      ctx.fill(card.mantle.bodyPath);
-
-      // 2.5 Inner volumetric crest highlight (pillowy dome)
-      ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.65)';
-      ctx.fill(card.mantle.innerPath);
-
-      // 3. Crest rim highlight
-      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke(card.mantle.rimPath);
-
-      // 4. Micro specular sparkles
-      for (let s = 0; s < card.mantle.sparkles.length; s++) {
-        const sp = card.mantle.sparkles[s];
-        const spAlpha = Math.max(0.2, Math.min(1.0, 0.5 + 0.45 * Math.sin(time * 2.5 + sp.phase)));
-        ctx.fillStyle = `rgba(255, 255, 255, ${spAlpha})`;
-        ctx.beginPath();
-        ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      ctx.restore();
-    }
+  public render(_scrollY: number, _scrollX: number, _isDark: boolean, _time: number) {
+    // In-Card attached SVGs render directly in DOM on the GPU compositor thread.
+    // Zero canvas draw cost every frame!
   }
 
   public destroy() {
     this.isDestroyed = true;
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      this.resizeObserver = null;
-    }
     if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
-    if (this.scrollEndTimeout) clearTimeout(this.scrollEndTimeout);
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+      this.mutationObserver = null;
+    }
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.handleResize);
-      window.removeEventListener('scroll', this.handleScrollCheck);
       document.removeEventListener('astro:page-load', this.handlePageLoad);
     }
-    this.cards = [];
+    // Remove all attached SVGs
+    if (typeof document !== 'undefined') {
+      const svgs = document.querySelectorAll('.card-snow-svg');
+      svgs.forEach((svg) => svg.remove());
+    }
   }
 }

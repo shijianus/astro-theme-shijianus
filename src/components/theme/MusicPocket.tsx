@@ -455,6 +455,19 @@ export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number 
   return found;
 }
 
+export function estimateVocalDuration(text: string, gapSec: number): number {
+  const clean = text.replace(/\[[^\]]+\]/g, '').replace(/<[^>]+>/g, '').replace(/\([^)]+\)/g, '').trim();
+  if (!clean) return Math.min(gapSec > 0 ? gapSec : 2.5, 2.0);
+  const vocalChars = clean.replace(/[\s\p{P}\p{S}]/gu, '').length;
+  const count = Math.max(1, vocalChars);
+  const naturalDuration = Math.max(1.2, count * 0.24 + 0.35);
+  if (gapSec <= 0) return naturalDuration;
+  if (naturalDuration >= gapSec - 0.2) {
+    return Math.max(0.4, Math.min(gapSec, gapSec - 0.15));
+  }
+  return Math.min(gapSec - 0.25, naturalDuration);
+}
+
 function computeActiveLineProgress(
   time: number,
   lyrics: LyricLine[],
@@ -529,18 +542,12 @@ function computeActiveLineProgress(
     return { progress: pct };
   }
 
-  // 2. 行级模式：基于两行物理间隙与歌手发音自然语速，杜绝抢跑（提前结束）与落后
+  // 2. 行级模式：基于人声自然语速声学模型与物理间隙，严格对齐真实吐字
   let lineVocalDur: number;
   if (cur.durationSec && cur.durationSec > 0.5 && cur.durationSec <= gap) {
-    // 优先采用 API 下发的行级真实发音时长
     lineVocalDur = cur.durationSec;
-  } else if (gap > 4.5) {
-    // 间隙较长时：依据文本长度自然估算发音时长（每个字符约 0.36s，最少 2.2s）
-    const naturalDur = Math.max(2.2, Math.min(gap - 0.4, cur.text.length * 0.36));
-    lineVocalDur = naturalDur;
   } else {
-    // 连续歌词：平滑铺展整个 gap，留出 0.2s 自然换气，杜绝提前结束跑满与跳字
-    lineVocalDur = Math.max(0.6, gap - 0.2);
+    lineVocalDur = estimateVocalDuration(cur.text, gap);
   }
 
   const vocalEnd = lineStart + lineVocalDur;
@@ -781,22 +788,13 @@ export function parseHighPrecisionLrc(raw: string): {
 
   result.sort((a, b) => a.time - b.time);
 
-  // 计算行时长，如果两行之间包含间奏，估算自然人声时长，保留间奏空间
+  // 为普通行级歌词基于人声自然语速声学模型计算发音时长，保留间奏与伴奏呼吸空间
   for (let i = 0; i < result.length; i++) {
     const cur = result[i];
     if (!cur.duration) {
       const next = result[i + 1];
-      if (next) {
-        const gap = next.time - cur.time;
-        if (gap > 4.5) {
-          const naturalSec = Math.min(gap - 2.0, Math.max(2.0, cur.text.length * 0.35));
-          cur.duration = naturalSec;
-        } else {
-          cur.duration = Math.max(0.3, gap);
-        }
-      } else {
-        cur.duration = 4.5;
-      }
+      const gap = next ? next.time - cur.time : 4.5;
+      cur.duration = estimateVocalDuration(cur.text, gap);
     }
     cur.durationSec = cur.duration;
   }
@@ -1021,6 +1019,9 @@ export function MusicPocket({ apiBase }: Props) {
   const [showCenterGuide, setShowCenterGuide] = useState(false);
   const guideTimerRef = useRef<number | null>(null);
   const screenLyricRef = useRef<HTMLDivElement | null>(null);
+  const screenLyricTextRef = useRef<HTMLSpanElement | null>(null);
+  const activeLyricTextRef = useRef<HTMLSpanElement | null>(null);
+  const ribbonLyricTextRef = useRef<HTMLSpanElement | null>(null);
   const lastSeekTimeRef = useRef<number>(0);
 
   const [query, setQuery] = useState('');
@@ -1388,7 +1389,6 @@ export function MusicPocket({ apiBase }: Props) {
       audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       audioClockRef.current.playbackRate = audio.playbackRate || 1;
-      setCurrentTime(audio.currentTime);
     };
 
     const onDurationChange = () => {
@@ -1733,18 +1733,27 @@ export function MusicPocket({ apiBase }: Props) {
           setActiveLyricIndex(liveLyricIndex);
         }
 
-        // 1. Direct 60FPS DOM update for --karaoke-pct
+        // 1. Direct 60FPS DOM update for --karaoke-pct (Zero React Re-render Overhead)
         const calc = computeActiveLineProgress(accurateTime, currentLyrics, liveLyricIndex, duration, lyricSyncTypeRef.current);
         const pctStr = `${calc.progress.toFixed(1)}%`;
         if (screenLyricRef.current) {
           screenLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
         }
+        if (screenLyricTextRef.current) {
+          screenLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+        }
         if (activeLyricRef.current) {
           activeLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
         }
+        if (activeLyricTextRef.current) {
+          activeLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+        }
+        if (ribbonLyricTextRef.current) {
+          ribbonLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+        }
 
-        // 2. Throttled update to React state (every 75ms)
-        if (Math.abs(accurateTime - lastThrottledTime) >= 0.075) {
+        // 2. Throttled update to React state (every 250ms for low-cost timeline display)
+        if (Math.abs(accurateTime - lastThrottledTime) >= 0.25) {
           lastThrottledTime = accurateTime;
           setCurrentTime(accurateTime);
         }
@@ -1757,9 +1766,6 @@ export function MusicPocket({ apiBase }: Props) {
       cancelAnimationFrame(rafId);
     };
   }, [isPlaying, parsedLyrics, duration]);
-
-  // Compute active lyric line progress & display data
-  const activeLineProgress = computeActiveLineProgress(currentTime, parsedLyrics, activeLyricIndex, duration, lyricSyncType).progress;
 
   const displayLyric = useMemo(() => {
     // 0. 纯音乐判定：无可用人声歌词、歌名含纯音乐/伴奏/BGM、或歌词直接标记为纯音乐
@@ -1968,10 +1974,13 @@ export function MusicPocket({ apiBase }: Props) {
     const liveIndex = findActiveLyricIndex(targetTime, parsedLyrics);
     activeLyricIndexRef.current = liveIndex;
     setActiveLyricIndex(liveIndex);
-    if (screenLyricRef.current) {
-      const calc = computeActiveLineProgress(targetTime, parsedLyrics, liveIndex, duration, lyricSyncTypeRef.current);
-      screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
-    }
+    const calc = computeActiveLineProgress(targetTime, parsedLyrics, liveIndex, duration, lyricSyncTypeRef.current);
+    const pctStr = `${calc.progress.toFixed(1)}%`;
+    if (screenLyricRef.current) screenLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (screenLyricTextRef.current) screenLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (activeLyricRef.current) activeLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (activeLyricTextRef.current) activeLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (ribbonLyricTextRef.current) ribbonLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
     if (audioRef.current) {
       try {
         audioRef.current.currentTime = targetTime;
@@ -1994,10 +2003,13 @@ export function MusicPocket({ apiBase }: Props) {
     const liveIndex = findActiveLyricIndex(time, parsedLyrics);
     activeLyricIndexRef.current = liveIndex;
     setActiveLyricIndex(liveIndex);
-    if (screenLyricRef.current) {
-      const calc = computeActiveLineProgress(time, parsedLyrics, liveIndex, duration, lyricSyncTypeRef.current);
-      screenLyricRef.current.style.setProperty('--karaoke-pct', `${calc.progress.toFixed(1)}%`);
-    }
+    const calc = computeActiveLineProgress(time, parsedLyrics, liveIndex, duration, lyricSyncTypeRef.current);
+    const pctStr = `${calc.progress.toFixed(1)}%`;
+    if (screenLyricRef.current) screenLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (screenLyricTextRef.current) screenLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (activeLyricRef.current) activeLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (activeLyricTextRef.current) activeLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
+    if (ribbonLyricTextRef.current) ribbonLyricTextRef.current.style.setProperty('--karaoke-pct', pctStr);
     if (audioRef.current) {
       try {
         audioRef.current.currentTime = time;
@@ -2478,8 +2490,8 @@ export function MusicPocket({ apiBase }: Props) {
                       <div className="shijianus-music-pocket__lyric-current">
                         <Quote size={11} className="ribbon-icon" aria-hidden="true" />
                         <span
+                          ref={ribbonLyricTextRef}
                           className="ribbon-text is-karaoke"
-                          style={{ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties}
                         >
                           {cleanLyricText(parsedLyrics[activeLyricIndex]?.text)}
                         </span>
@@ -2702,8 +2714,8 @@ export function MusicPocket({ apiBase }: Props) {
                         >
                           <span className="lyrics-line__time">{formatTime(line.time)}</span>
                           <span
+                            ref={isActive ? activeLyricTextRef : null}
                             className={`lyrics-line__text ${isActive ? 'is-karaoke' : ''}`}
-                            style={isActive ? ({ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties) : undefined}
                           >
                             {cleanLyricText(line.text)}
                           </span>
@@ -3004,7 +3016,6 @@ export function MusicPocket({ apiBase }: Props) {
               top: screenLyricPos ? `${screenLyricPos.y}px` : 'auto',
               bottom: screenLyricPos ? 'auto' : '64px',
               transform: screenLyricPos ? 'none' : 'translateX(-50%)',
-              '--karaoke-pct': `${activeLineProgress.toFixed(1)}%`,
             } as React.CSSProperties}
             onPointerDown={handleScreenLyricDragStart}
             onPointerMove={handleScreenLyricDragMove}
@@ -3038,8 +3049,8 @@ export function MusicPocket({ apiBase }: Props) {
             ) : displayLyric.activeText ? (
               <div className={`screen-lyric__current-line ${lyricSyncType === 'word' ? 'is-word-sync' : 'is-line-sync'}`}>
                 <span
+                  ref={screenLyricTextRef}
                   className="screen-lyric__vocal-text is-karaoke-stream"
-                  style={{ '--karaoke-pct': `${activeLineProgress.toFixed(1)}%` } as React.CSSProperties}
                 >
                   {displayLyric.activeText}
                 </span>

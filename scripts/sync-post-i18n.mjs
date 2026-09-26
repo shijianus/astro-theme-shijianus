@@ -152,6 +152,62 @@ async function main() {
   // Save generated mapping table
   fs.writeFileSync(I18N_MAP_PATH, JSON.stringify(i18nMap, null, 2), 'utf8');
 
+  // Also emit post-i18n.generated.ts so client and SSR UI components can translate post titles & summaries
+  const POST_I18N_PATH = path.resolve(process.cwd(), 'src/data/post-i18n.generated.ts');
+  const postDict = {};
+  for (const [key, group] of articleGroups.entries()) {
+    const zh = group.find((i) => i.lang === 'zh-CN') || group.find((i) => i.lang === 'zh-Hant') || group[0];
+    if (!zh || !zh.title) continue;
+
+    const findLang = (l) => group.find((i) => i.lang === l);
+    const en = findLang('en');
+    const fr = findLang('fr');
+    const es = findLang('es');
+    const de = findLang('de');
+    const zhHant = findLang('zh-Hant');
+
+    const addDictEntry = (source, enVal, frVal, esVal, deVal, zhHantVal) => {
+      if (!source || !source.trim()) return;
+      const k = source.trim();
+      postDict[k] = {
+        en: (enVal || k).trim(),
+        fr: (frVal || enVal || k).trim(),
+        es: (esVal || enVal || k).trim(),
+        de: (deVal || enVal || k).trim(),
+        'zh-Hant': (zhHantVal || k).trim(),
+      };
+    };
+
+    // Full title
+    addDictEntry(zh.title, en?.title, fr?.title, es?.title, de?.title, zhHant?.title);
+
+    // Full description & 80-char excerpt
+    const zhDesc = zh.meta?.description;
+    if (zhDesc && zhDesc.length > 5) {
+      addDictEntry(
+        zhDesc,
+        en?.meta?.description,
+        fr?.meta?.description,
+        es?.meta?.description,
+        de?.meta?.description,
+        zhHant?.meta?.description
+      );
+
+      const trunc = (txt) => (txt && txt.length > 80 ? txt.slice(0, 80).trim() + '...' : txt);
+      addDictEntry(
+        trunc(zhDesc),
+        trunc(en?.meta?.description) || trunc(zhDesc),
+        trunc(fr?.meta?.description) || trunc(en?.meta?.description) || trunc(zhDesc),
+        trunc(es?.meta?.description) || trunc(en?.meta?.description) || trunc(zhDesc),
+        trunc(de?.meta?.description) || trunc(en?.meta?.description) || trunc(zhDesc),
+        trunc(zhHant?.meta?.description) || trunc(zhDesc)
+      );
+    }
+  }
+
+  const postDictTs = `/**\n * Auto-generated post translations dictionary\n * Extracted from sibling markdown files in src/content/posts/\n */\n\nexport const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: string; de: string; "zh-Hant": string }> = ${JSON.stringify(postDict, null, 2)};\n`;
+  fs.writeFileSync(POST_I18N_PATH, postDictTs, 'utf8');
+
   const HASHES_PATH = path.resolve(GENERATED_DIR, 'article-i18n-hashes.json');
   let knownHashes = {};
   try {

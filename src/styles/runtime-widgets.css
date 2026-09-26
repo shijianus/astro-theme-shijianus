@@ -2141,7 +2141,6 @@ html.dark .shijianus-ai-summary__related span {
   background-clip: text;
   color: transparent;
   font-weight: 700;
-  transition: background 0.04s linear;
 }
 
 :root[data-theme='dark'] .lyrics-line.is-active .lyrics-line__text.is-karaoke,

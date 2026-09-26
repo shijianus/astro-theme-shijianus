@@ -241,6 +241,81 @@ html[data-console-open="true"] #theme-snow-foreground {
   pointer-events: none !important;
 }
 
+/* ==========================================================================
+   EpoCanvas In-Card Procedural Snow Mantle System
+   ========================================================================== */
+:root {
+  --snow-lobe-color: #94b2d2;
+  --snow-ao-color: rgba(70, 95, 130, 0.32);
+  --snow-dome-color: rgba(255, 255, 255, 0.65);
+  --snow-rim-color: rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme='dark'] {
+  --snow-lobe-color: #64748b;
+  --snow-ao-color: rgba(0, 0, 0, 0.65);
+  --snow-dome-color: rgba(255, 255, 255, 0.22);
+  --snow-rim-color: rgba(255, 255, 255, 0.85);
+}
+
+.card-snow-svg {
+  position: absolute;
+  top: var(--snow-svg-top, -18px);
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 25;
+  overflow: visible;
+  transition: opacity 0.3s ease;
+}
+
+html:not([data-background='snow']) .card-snow-svg {
+  display: none !important;
+}
+
+@keyframes snow-sparkle {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* Allow procedural snow caps to rise naturally above card borders when snow theme is active */
+html[data-background='snow'] .categoryItem,
+html[data-background='snow'] .recent-post-item,
+html[data-background='snow'] .todayCard,
+html[data-background='snow'] #random-banner,
+html[data-background='snow'] #aside-content .card-widget,
+html[data-background='snow'] #card-toc,
+html[data-background='snow'] #post,
+html[data-background='snow'] .relatedPosts-item,
+html[data-background='snow'] .postNav-card,
+html[data-background='snow'] .theme-card,
+html[data-background='snow'] .archive-hero-card,
+html[data-background='snow'] .taxonomy-hero-card,
+html[data-background='snow'] .taxonomy-index-card,
+html[data-background='snow'] .taxonomy-section-card,
+html[data-background='snow'] .friends-page__panel,
+html[data-background='snow'] .friends-page__hero,
+html[data-background='snow'] .support-dashboard-card {
+  overflow: visible !important;
+}
+
+/* Ensure inner card media retains rounded corners */
+html[data-background='snow'] .categoryItem .categoryButton {
+  overflow: hidden !important;
+  border-radius: inherit !important;
+}
+
+html[data-background='snow'] .recent-post-item > div:first-child {
+  overflow: hidden !important;
+  border-top-left-radius: inherit !important;
+  border-top-right-radius: inherit !important;
+}
 
 .page {
   position: relative;
