@@ -204,13 +204,15 @@ export class SnowMantleEngine {
       const isSticky = style.position === 'sticky' || style.position === 'fixed' || el.closest('.aside-sticky-box') !== null;
 
       const id = el.id || el.className.split(' ')[0] || `card-${index}`;
+      const className = el.className || '';
       const seed = hashString(`${id}-${w}-${index}`);
 
-      const mantle = this.generateMantle(w, h, seed);
+      const mantle = this.generateMantle(w, h, seed, className);
 
       newCards.push({
         element: el,
         id,
+        className,
         seed,
         docTop,
         docLeft,
@@ -242,7 +244,7 @@ export class SnowMantleEngine {
       if (Math.abs(newW - card.width) > 10) {
         card.width = newW;
         card.height = Math.round(rect.height);
-        card.mantle = this.generateMantle(newW, card.height, card.seed);
+        card.mantle = this.generateMantle(newW, card.height, card.seed, card.className);
       }
     }
   }
@@ -250,12 +252,36 @@ export class SnowMantleEngine {
   /**
    * Generate 2.5D Volumetric Snow Mantle Geometry with Bezier Curves and Multi-layer Passes
    */
-  private generateMantle(W: number, H_card: number, seed: number): SnowMantleGeometry {
+  private generateMantle(W: number, H_card: number, seed: number, className: string = ''): SnowMantleGeometry {
     const prng = createPRNG(seed);
-    // Base snow depth: generous, pillowy volume
-    const baseH = W < 260 ? 12 : W < 700 ? 16 : 20;
-    // Cap thickness on short elements (buttons/notices) so text is not covered
-    const H = Math.max(5, Math.min(baseH, H_card * 0.22));
+    const isCategory = className.includes('categoryItem');
+    const isCardInfo = className.includes('card-info');
+    const isShort = H_card < 120;
+
+    let H = 16;
+    let maxDroop = 9;
+    let baseDrop = 2.0;
+
+    if (isCategory) {
+      // Category buttons: height ~86px, text is close to top border
+      H = 8;
+      maxDroop = 2.0;
+      baseDrop = 0.8;
+    } else if (isCardInfo) {
+      // Profile card: keep snow clear of the welcome badge
+      H = 11;
+      maxDroop = 3.5;
+      baseDrop = 1.0;
+    } else if (isShort) {
+      H = Math.min(10, H_card * 0.15);
+      maxDroop = Math.min(3.5, H_card * 0.05);
+      baseDrop = 1.0;
+    } else {
+      const baseH = W < 260 ? 12 : W < 700 ? 16 : 20;
+      H = Math.max(8, Math.min(baseH, H_card * 0.20));
+      maxDroop = Math.min(10, H_card * 0.10);
+      baseDrop = Math.max(1.5, Math.min(2.5, H_card * 0.035));
+    }
     const radius = 8; // standard card radius
 
     // 1. Generate top crest points (undulating dunes)
@@ -285,14 +311,13 @@ export class SnowMantleEngine {
     }
 
     // 2. Generate bottom drooping lobes (雪舌 / 垂挂雪檐)
-    const maxDroop = Math.max(2.5, H_card * 0.14);
-    const numLobes = W < 220 ? 2 : W < 450 ? 3 + Math.floor(prng() * 2) : 5 + Math.floor(prng() * 4);
+    const numLobes = isCategory ? 2 : W < 220 ? 2 : W < 450 ? 3 + Math.floor(prng() * 2) : 5 + Math.floor(prng() * 4);
     const lobes: { cx: number; lw: number; ld: number }[] = [];
     for (let k = 0; k < numLobes; k++) {
       const targetU = (k + 0.5 + (prng() - 0.5) * 0.5) / numLobes;
       const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
-      const lw = 32 + prng() * 45; // lobe width
-      const rawLd = 5.5 + prng() * 7.5; // droop depth (5.5px to 13px)
+      const lw = (isCategory ? 24 : 32) + prng() * (isCategory ? 20 : 45); // lobe width
+      const rawLd = isCategory ? 1.0 + prng() * 1.0 : 4.0 + prng() * 6.5; // droop depth
       const ld = Math.min(rawLd, maxDroop);
       lobes.push({ cx, lw, ld });
     }
@@ -300,7 +325,6 @@ export class SnowMantleEngine {
     // Sample bottom contour from right to left
     const numBottomPoints = Math.max(20, Math.min(60, Math.round(W / 18)));
     const bottomPoints: { x: number; y: number }[] = [];
-    const baseDrop = Math.max(1.2, Math.min(2.8, H_card * 0.05));
 
     for (let i = numBottomPoints - 1; i >= 0; i--) {
       const u = i / (numBottomPoints - 1);
