@@ -1040,14 +1040,7 @@ export function MusicPocket({ apiBase }: Props) {
   const [playMode, setPlayMode] = useState<'loop' | 'single' | 'shuffle'>('loop');
 
   // Real Audio App Utility States: Favorites, Sleep Timer, Playback Rate
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const saved = window.localStorage.getItem(FAVORITES_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [sleepTimer, setSleepTimer] = useState<number | 'end' | null>(null);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const [playbackRate, setPlaybackRate] = useState<number>(1.0);
@@ -1348,6 +1341,13 @@ export function MusicPocket({ apiBase }: Props) {
           }
           hasLoadedQueue = true;
         }
+      }
+    } catch {}
+
+    try {
+      const savedFavs = window.localStorage.getItem(FAVORITES_KEY);
+      if (savedFavs) {
+        setFavorites(JSON.parse(savedFavs));
       }
     } catch {}
 

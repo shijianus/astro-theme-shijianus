@@ -65,6 +65,7 @@ import {
   fetchUserFeed,
   readUserPreferences,
   writeUserPreferences,
+  DEFAULT_USER_PREFERENCES,
   type CommentIdentity,
   type PublicAuthConfig,
   type UserPreferences,
@@ -97,6 +98,7 @@ import { resolveGeoInfo } from '../lib/geo-names.ts';
 import {
   computeUserLevel,
   readUserStats,
+  getDefaultUserStats,
   updateUserStats,
   recordReadingActivity,
   recordDailyVisit,
@@ -333,7 +335,7 @@ export function ThemeOverlays({
   const [accountNeedsAttention, setAccountNeedsAttention] = useState(false);
   const [accountTab, setAccountTab] = useState<'auth' | 'notifications' | 'settings'>('notifications');
   const [notifPartition, setNotifPartition] = useState<'broadcast' | 'personal'>('personal');
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => readUserPreferences());
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
   const [userFeed, setUserFeed] = useState<{
     userComments: any[];
     notifications: UserInteractionNotification[];
@@ -352,12 +354,20 @@ export function ThemeOverlays({
   const [syncStats, setSyncStats] = useState(stats);
   const [closeBtnStyle, setCloseBtnStyle] = useState<React.CSSProperties>({});
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
-  const [userStats, setUserStats] = useState<UserStats>(() => readUserStats());
+  const [userStats, setUserStats] = useState<UserStats>(getDefaultUserStats());
   const userLevel = useMemo(() => {
     return computeUserLevel(userStats, account?.role, account?.email);
   }, [userStats, account?.role, account?.email]);
 
-  const [equippedBadgeIds, setEquippedBadgeIds] = useState<string[]>(() => readEquippedBadges());
+  const [equippedBadgeIds, setEquippedBadgeIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Sync stored preferences, stats, badges, and status on client mount to eliminate SSR mismatch #418
+    setUserPreferences(readUserPreferences());
+    setUserStats(readUserStats());
+    setEquippedBadgeIds(readEquippedBadges());
+    setUserStatus(readUserStatus());
+  }, []);
 
   useEffect(() => {
     const handleBadgesUpdate = (e: Event) => {
@@ -399,7 +409,7 @@ export function ThemeOverlays({
     emitActivity(t('toast.updateTitles', '更新了名片佩戴称号'));
   };
 
-  const [userStatus, setUserStatus] = useState<UserStatus>(() => readUserStatus());
+  const [userStatus, setUserStatus] = useState<UserStatus>({ emoji: '', text: '' });
   const [showStatusEmojiPicker, setShowStatusEmojiPicker] = useState(false);
 
   useEffect(() => {

@@ -259,7 +259,7 @@ export function PostComments({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sortOrder, setSortOrder] = useState<'hot' | 'new'>('new');
-  const [currentUserStatus, setCurrentUserStatus] = useState<{ emoji: string; text: string }>(() => readUserStatus());
+  const [currentUserStatus, setCurrentUserStatus] = useState<{ emoji: string; text: string }>({ emoji: '', text: '' });
 
   // Tab: 'edit' | 'preview'
   const [editorTab, setEditorTab] = useState<'edit' | 'preview'>('edit');
@@ -1271,6 +1271,7 @@ export function PostComments({
 
   useEffect(() => {
     setMounted(true);
+    setCurrentUserStatus(readUserStatus());
   }, []);
 
   useEffect(() => {

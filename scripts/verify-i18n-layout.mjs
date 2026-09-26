@@ -69,10 +69,12 @@ try {
   const page = await context.newPage();
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
+      console.log(`[Console Error at ${page.url()}]: ${msg.text()}`);
       consoleErrors.push(msg.text());
     }
   });
   page.on('pageerror', (err) => {
+    console.log(`[Page Error at ${page.url()}]: ${err.message}`);
     consoleErrors.push(err.message);
   });
 
@@ -239,14 +241,14 @@ try {
       const tocCount = document.querySelector('[data-i18n-toc-count]')?.textContent?.trim();
       const relatedEyebrow = document.querySelector('[data-related-eyebrow]')?.textContent?.trim();
       const relatedTitle = document.querySelector('[data-related-title]')?.textContent?.trim();
-      const postNavTitle = document.querySelector('.postNav__title')?.textContent?.trim();
+      const hasRecommendation = Boolean(document.querySelector('#pagination.pagination-post, .pagination-post'));
 
       return {
         tocTitle,
         tocCount,
         relatedEyebrow,
         relatedTitle,
-        postNavTitle,
+        hasRecommendation,
       };
     });
     console.log(`Post Page Audit [${lang}]:`, postPageAudit);

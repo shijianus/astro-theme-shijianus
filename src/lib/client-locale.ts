@@ -1962,7 +1962,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '更多推荐': { en: 'More', fr: 'Plus', es: 'Más', de: 'Mehr' },
   '打开当前推荐文章': { en: 'Open featured post', fr: 'Ouvrir l\'article recommandé', es: 'Abrir artículo recomendado', de: 'Empfohlenen Beitrag öffnen' },
   '把真正的主题感和交互密度做出来': { en: 'Delivering authentic theme tactility and interaction density', fr: 'Donner vie au thème avec une vraie densité d\'interaction', es: 'Logrando verdadera identidad visual y densidad interactiva', de: 'Echte Theme-Haptik und Interaktionsdichte schaffen' },
-  '这一步不再停留在“有内容的默认壳子”，而是把头图、导航、卡片、侧栏、按钮反馈、开场过渡和页面层次一起重新做完整。': { en: 'Moving beyond a basic content shell, fully completing hero, nav, cards, sidebar, button feedback, and page depth.', fr: 'Aller au-delà d\'une simple coquille en parachevant hero, navigation, cartes, barre latérale et retours haptiques.', es: 'Superando la plantilla básica, completando cabecera, navegación, tarjetas, barra lateral y respuesta táctil.', de: 'Über das bloße Inhaltsgerüst hinaus: Hero, Navigation, Karten, Seitenleiste und Haptik vollständig vollendet.' },
   '设计对齐': { en: 'Design Align', fr: 'Alignement design', es: 'Alineación de diseño', de: 'Design-Abstimmung' },
   '重构进度': { en: 'Progress', fr: 'Progression', es: 'Progreso', de: 'Fortschritt' },
   '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
@@ -2004,7 +2003,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '点击直接将二维码图片复制到剪贴板': { en: 'Click to copy QR image to clipboard', fr: 'Cliquer pour copier l\'image QR', es: 'Haga clic para copiar imagen QR', de: 'Klicken zum Kopieren des QR-Codes' },
   '手机访问': { en: 'Mobile Access', fr: 'Accès mobile', es: 'Acceso móvil', de: 'Mobilzugriff' },
   '点击复制完整标题与链接': { en: 'Click to copy full title and URL', fr: 'Cliquer pour copier le titre et le lien', es: 'Haga clic para copiar título y enlace', de: 'Klicken zum Kopieren von Titel und Link' },
-  '知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议': { en: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License', fr: 'Licence Creative Commons Attribution - Pas d\'Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International', es: 'Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional', de: 'Creative Commons Namensnennung-Nicht kommerziell-Share Alike 4.0 International Lizenz' },
+  '知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议': { en: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License', fr: 'Licence Creative Commons Attribution - Pas d\'Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International', es: 'Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional', de: 'Creative Commons Namensnennung - Nicht-kommerziell - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz' },
 
   // Recommendation & Post End
   '顺着这条线继续读': { en: 'Keep Reading Along This Line', fr: 'Continuer sur cette lancée', es: 'Continúa por esta línea', de: 'Weiter auf diesem Pfad' },
@@ -2769,7 +2768,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '今日推荐': { en: 'Recommended Today', fr: 'Recommandé aujourd\'hui', es: 'Recomendado hoy', de: 'Heute empfohlen' },
   '热门精选': { en: 'Popular Picks', fr: 'Sélection populaire', es: 'Selección popular', de: 'Beliebte Auswahl' },
   '查看全部': { en: 'View All', fr: 'Voir tout', es: 'Ver todo', de: 'Alle anzeigen' },
-  '查看全部分类': { en: 'View all categories', fr: 'Voir toutes les catégories', es: 'Ver todas las categorías', de: 'Alle Kategorien anzeigen' },
   '关注 Telegram 频道': { en: 'Follow Telegram Channel', fr: 'Suivre le canal Telegram', es: 'Seguir el canal de Telegram', de: 'Telegram-Kanal folgen' },
   '加入频道': { en: 'Join Channel', fr: 'Rejoindre le canal', es: 'Unirse al canal', de: 'Kanal beitreten' },
   'Telegram 频道二维码': { en: 'Telegram Channel QR Code', fr: 'Code QR du canal Telegram', es: 'Código QR del canal de Telegram', de: 'Telegram-Kanal QR-Code' },
@@ -2797,7 +2795,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '浏览量': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
   '语言版本:': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
   '语言版本：': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
-  '知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议': { en: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License', fr: 'Licence Creative Commons Attribution - Pas d\'Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International', es: 'Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional', de: 'Creative Commons Namensnennung - Nicht-kommerziell - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz' },
 };
 
 export interface PatternRule {

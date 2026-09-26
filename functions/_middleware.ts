@@ -32,7 +32,7 @@ export const onRequest: PagesFunction = async (context) => {
     "media-src 'self' blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://api.stripe.com https://img.epocanvas.com https://mail.epocanvas.com https://music-api.gdstudio.xyz https://static.cloudflareinsights.com https:",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://player.bilibili.com https://www.bilibili.com https://www.youtube.com https://www.youtube-nocookie.com",
     "frame-ancestors 'self'",
     "object-src 'none'",
     "base-uri 'self'",

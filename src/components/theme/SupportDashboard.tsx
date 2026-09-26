@@ -315,7 +315,7 @@ export const SupportDashboard: React.FC = () => {
   const t = useCallback((token: string, fallback: string) => getI18nText(token, locale, fallback), [locale]);
 
   // ── 1. Country & Dual-Currency State ──
-  const [detectedCountry, setDetectedCountry] = useState<string>(() => detectClientCountry());
+  const [detectedCountry, setDetectedCountry] = useState<string>('CN');
   const [activeCurrencyType, setActiveCurrencyType] = useState<'local' | 'global'>('local');
   const [selectedTierIndex, setSelectedTierIndex] = useState<number>(2); // Default tier index (Americano/Latte)
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
