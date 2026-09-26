@@ -395,7 +395,7 @@
 
       const mm = Markmap.create(svg, {
         duration: 350,
-        autoFit: true,
+        autoFit: false,
         fitRatio: 0.92,
         maxInitialScale: 1.8,
         initialExpandLevel: initialExpandLevel,
@@ -417,19 +417,32 @@
           try {
             mm.fit();
           } catch (_) {}
+        } else {
+          // Clean up any stray NaN transform if created when zero-width
+          const g = svg.querySelector('g');
+          if (g && g.getAttribute('transform')?.includes('NaN')) {
+            g.removeAttribute('transform');
+          }
         }
       };
 
-      // Fit view nicely after mounting or when becoming visible (e.g. tab switch)
-      const visibilityObserver = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.boundingClientRect.width > 20) {
-            safeFit();
-            visibilityObserver.disconnect();
+      // Clean any initial NaN transform before first fit
+      const initialG = svg.querySelector('g');
+      if (initialG && initialG.getAttribute('transform')?.includes('NaN')) {
+        initialG.removeAttribute('transform');
+      }
+
+      // Automatically fit view when SVG container acquires real layout dimensions (tabs, accordion, etc.)
+      if (typeof ResizeObserver !== 'undefined') {
+        const resizeObserver = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.contentRect.width > 20 && entry.contentRect.height > 20) {
+              safeFit();
+            }
           }
-        }
-      });
-      visibilityObserver.observe(wrapper);
+        });
+        resizeObserver.observe(svg);
+      }
 
       requestAnimationFrame(() => {
         setTimeout(safeFit, 150);
