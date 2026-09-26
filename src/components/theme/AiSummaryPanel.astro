@@ -679,7 +679,7 @@ const initialActions = ssrConfig.actions;
         relatedBox instanceof HTMLElement && (relatedBox.hidden = true);
 
         const article = document.querySelector('#article-container');
-        const content = article?.textContent?.replace(/\s+/g, ' ').trim() || '';
+        const content = (article?.textContent?.replace(/\s+/g, ' ').trim() || '').slice(0, 80000);
         if (!content) {
           typeInto(output, primerSummary || get429ErrorMessage(params.mode || 'instance'));
           return;

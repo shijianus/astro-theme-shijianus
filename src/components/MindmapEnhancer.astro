@@ -410,11 +410,29 @@
         spacingVertical: 8,
       }, root);
 
-      // Fit view nicely after mounting
+      const safeFit = () => {
+        if (!svg.isConnected) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width > 20 && rect.height > 20) {
+          try {
+            mm.fit();
+          } catch (_) {}
+        }
+      };
+
+      // Fit view nicely after mounting or when becoming visible (e.g. tab switch)
+      const visibilityObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.boundingClientRect.width > 20) {
+            safeFit();
+            visibilityObserver.disconnect();
+          }
+        }
+      });
+      visibilityObserver.observe(wrapper);
+
       requestAnimationFrame(() => {
-        setTimeout(() => {
-          mm.fit();
-        }, 150);
+        setTimeout(safeFit, 150);
       });
 
       // Hide hint pill on first interaction
@@ -438,7 +456,7 @@
             }
           }
           setTimeout(() => {
-            mm.fit();
+            safeFit();
           }, 380);
           if (stateTag) {
             stateTag.textContent = loc.stateExpanded;
@@ -479,7 +497,7 @@
       fitBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         dismissHint();
-        mm.fit();
+        safeFit();
         window.dispatchEvent(new CustomEvent('shijianus:activity', {
           detail: { message: loc.actFitView }
         }));
@@ -491,7 +509,7 @@
         unfoldAllNodes(root);
         mm.renderData(root);
         setTimeout(() => {
-          mm.fit();
+          safeFit();
         }, 380);
         if (stateTag) {
           stateTag.textContent = loc.stateAllExpanded;
@@ -508,7 +526,7 @@
         setFoldLevel(root, 0, 1);
         mm.renderData(root);
         setTimeout(() => {
-          mm.fit();
+          safeFit();
         }, 380);
         if (stateTag) {
           stateTag.textContent = loc.stateAllCollapsed;
@@ -564,7 +582,7 @@
         }
 
         setTimeout(() => {
-          mm.fit();
+          safeFit();
         }, 160);
       };
 
@@ -608,7 +626,7 @@
 
       // Handle window resize & orientation change
       window.addEventListener('resize', () => {
-        mm.fit();
+        safeFit();
       });
     });
   };

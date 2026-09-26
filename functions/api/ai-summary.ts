@@ -168,15 +168,16 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
   }
 
   const rawContent = (body?.content || '').trim();
-  if (!title || !rawContent || rawContent.length < 20 || rawContent.length > 80000) {
+  if (!title || !rawContent || rawContent.length < 20) {
     return jsonResponse(request, env, { ok: false, error: 'Missing or out-of-bounds title/content.' }, { status: 400 });
   }
+  const boundedContent = rawContent.slice(0, 120000);
 
   // 获取站长配置的档位（默认低档位 low，可随时切回）
   const level = getSummaryLevel(env.AI_SUMMARY_LEVEL);
   const lang = normalizeSummaryLocale(body?.lang || body?.locale);
   // 根据档位处理正文内容：low 截取前 3500 字，medium 截取前 15000 字，high 保留全量知识库上下文
-  const content = normalizeArticleText(rawContent, level);
+  const content = normalizeArticleText(boundedContent, level);
 
   // 缓存 key 加入 level 与 lang，并基于正文全量内容哈希，彻底杜绝切片截断导致的缓存投毒
   const contentHash = await sha256Hex(content);
