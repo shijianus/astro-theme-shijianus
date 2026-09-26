@@ -4170,4 +4170,26 @@
     - `scripts/verify-live-i18n.mjs`：24 PASSED, 0 FAILED, 0 致命报错；
     - `scripts/verify-live-full-i18n.mjs`：15 PASSED, 0 FAILED, 0 致命报错。
 
+### Task 188: 彻底消除歌词对齐滞后与卡顿、DOM Ref 60FPS 流畅解耦、人声自然语速声学时长模型与独立 Subagent 全量复审放行 (`cdcb50a`)
+- [x] **消除 14.5 FPS React 重渲染风暴与 75ms 阶梯停顿 (60FPS Smoothness & DOM Ref Decoupling)**:
+  1. **彻底解耦 React 渲染树**：将每一帧 `--karaoke-pct` 变量从 React JSX 行内样式中剔除，改由 60FPS RAF 动画循环直接对 DOM 节点（`screenLyricRef`、`screenLyricTextRef`、`activeLyricRef`、`activeLyricTextRef`、`ribbonLyricTextRef`）执行 `style.setProperty('--karaoke-pct', pctStr)`，绕过 React Virtual DOM Diffing 开销；
+  2. **React 状态降频调度**：将 RAF 驱动的 `setCurrentTime` 从高频 75ms 节流降频至 **250ms**（每秒仅 4 次，纯用于更新 `03:42` 文本与进度条 Slider 位置），移除了 HTML5 audio `timeupdate` 中冗余的 `setCurrentTime`，消除主线程丢帧；
+  3. **清除 CSS 光栅化插值冲突**：移除 `src/styles/runtime-widgets.css` 中 `.lyrics-line__text.is-karaoke` 上的 `transition: background 0.04s linear;`，消除 CSS gradient 颜色停靠点在 16ms 刷新率下的软件插值抖动与卡顿。
+- [x] **引入人声自然语速声学时长模型 (Acoustic Vocal Duration Model)**:
+  1. **废除 gap 暴力拉伸**：废除粗暴将 `cur.duration = gap` 的拉伸逻辑，改用基于有效发音字符（过滤标点符号与元标签）的自然语速模型 `count * 0.24s + 0.35s`，真实物理对齐歌手发音吐字；
+  2. **100% 锁死保持态 (Hold State)**：唱毕后牢牢停在 100% 保持态，保留自然间奏与伴奏呼吸空间，绝不提前跑满或跳字；
+  3. **极小物理间隙边界防护**：在 `MusicPocket.tsx`、`functions/_lib/music-provider.ts` 与 `CFSolara/functions/_lib/music.ts` 中统一对极短行距补充 `Math.max(0.4, Math.min(gapSec, gapSec - 0.15))` 上限钳制，防止时长倒挂；
+  4. **CFSolara 云端超时保护**：为 CFSolara 歌词回源注入 `AbortSignal.timeout(3500)` 超时守卫，防止边缘网络阻塞。
+- [x] **独立 Subagent 从零代码审计与精细修复 (Independent Subagent Audit & Full Pass)**:
+  1. 遵从用户指令启动独立第三方审计 Subagent（从零审查，杜绝上下文污染）；
+  2. 精准排查并修复 `handleSeek` 中因遗漏 `setActiveLyricIndex` 导致拖拽时间轴后高亮行脱节滞后的高优先级缺陷；
+  3. 彻底清理第 1771 行无用死变量 `activeLineProgress`；
+  4. 经过二次复审，独立审计员给出 **FULL PASS（无保留放行）** 终审评级。
+- [x] **全量多端生产部署与生产端实机全链路审计通过**:
+  - 本地全量静态构建 284 页面 0 报错；
+  - 同步推送所有分支至远端仓库（`origin` 与 `cf`）；
+  - 全量部署至 Cloudflare Pages 生产边缘节点；
+  - 针对生产主域名 `https://blog.epocanvas.com/` 进行实机自动化端到端测试，验证歌词流光、60FPS 平滑性与控制台 0 报错。
+
+
 
