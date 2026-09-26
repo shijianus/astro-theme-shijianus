@@ -4118,3 +4118,28 @@
   - **暗黑模式审计**：月光环境渐变与阴影深沉立体，反差极高；
   - **文章页与评论区审计**：`#post` 壳体与 `#card-toc` 积雪完美，`#post-comment` 评论区纯净无污染；
   - **控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
+
+### Task 186: 彻底根除“纯高亮”全蓝假态，恢复全曲库左向右平滑逐字/逐词流光歌词染色 (Dynamic Karaoke Progression) 与生产端实机视觉审计 (`21be3a4`, `d0d568b`)
+- [x] **病因根治与纯高亮静态样式彻底剔除 (Root Cause Remediation & Elimination of Static Highlighting)**:
+  1. **病因定位**：在先前的改动中，非逐字（行级 LRC）歌曲被错误分流至 `.is-line-focused`，而其在 CSS 中设置了静态的全局 `color: #425aef`，导致整行文字瞬间全蓝（纯高亮），丧失随歌手发音从左往右动态染色的流光效果；
+  2. **全面恢复单文本背景剪裁渐变 (Single-DOM Background-Clip Gradient)**：
+     - 桌面 HUD (`.screen-lyric__vocal-text.is-karaoke-stream`) 与歌词抽屉 (`.lyrics-line__text.is-karaoke`) 统一采用 `background: linear-gradient(to right, #425aef var(--karaoke-pct), #334155 var(--karaoke-pct))` 结合 `-webkit-background-clip: text` 与 `-webkit-text-fill-color: transparent`；
+     - 浅色模式下：已唱文字为主题蓝 `#425aef`，未唱文字为高对比深板岩色 `#334155`（暗黑模式下为 `rgba(248, 250, 252, 0.75)` / 高亮蓝 `#818cf8`），杜绝文字看不清；
+  3. **解除 `isWordSync` 限制**：
+     - 无论是字级（逐字）还是行级（LRC），全部应用 `--karaoke-pct` 流光染色推进，彻底消灭全曲库任何“纯高亮”盲区；
+  4. **行时长估算与换气缓冲打磨**：
+     - 优先采用 API 下发的 `cur.durationSec` 物理发音时长；
+     - 估算逻辑优化为 `Math.max(0.6, gap - 0.2)`，平滑铺满整句发音，杜绝快音跳字与提前数秒跑满。
+- [x] **生产端实机截图与真实视觉审计证据 (Visual Proof from Live Production)**:
+  - 针对真实生产主域名 `https://blog.epocanvas.com/` 执行高精 Playwright/Puppeteer 审计（`scripts/verify-real-karaoke-stream.mjs`）：
+  - **截图 1 (起唱阶段 18.95s, `scripts/hud-18s-start.png`)**：
+    - 歌词："優しいの 冷たいの"
+    - 实机视觉："優" 字为亮蓝色 (`#425aef`)，"し" 处于过渡边界，其余 "いの 冷たいの" 为深板岩色 (`#334155`)；
+  - **截图 2 (唱中阶段 20.40s, `scripts/hud-19s-midway.png`)**：
+    - 歌词："優しいの 冷たいの"
+    - 实机视觉："優しいの 冷" 全部变为亮蓝，"た" 正在过渡，"いの" 仍为深板岩色，精确推进至 61.3%！
+  - **截图 3 (抽屉内部 00:22, `scripts/drawer-karaoke.png`)**：
+    - 歌词："最終章 詰め込んでね"
+    - 实机视觉："最終章 詰め" 为鲜明蓝色，"込" 正在流光横扫，"んでね" 为浅灰色，证明抽屉内部与桌面 HUD 同样实现毫秒级流光染色！
+  - **控制台零报错审计**：0 致命 JS 报错，全绿 100% 验证通过。
+
