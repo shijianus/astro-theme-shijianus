@@ -258,7 +258,7 @@ const paypalUkMeUrl =
 
     <div class="page" id="body-wrap">
       <SiteHeader
-        client:idle
+        client:load
         brandName={siteConfig.site.name}
         domainLabel={siteConfig.site.domainLabel}
         currentPath={Astro.url.pathname}
@@ -302,7 +302,7 @@ const paypalUkMeUrl =
       )}
 
       <ThemeDock
-        client:visible
+        client:load
         defaultBackground={siteConfig.theme.background.defaultMode}
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}

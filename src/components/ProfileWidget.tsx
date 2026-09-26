@@ -45,10 +45,9 @@ export function ProfileWidget({
   postCount = 0,
   wordCount = 0,
   readingTimeMinutes = 0,
-  posts = [],
 }: ProfileWidgetProps) {
   const [sayHiIndex, setSayHiIndex] = useState(0);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();
