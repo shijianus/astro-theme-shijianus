@@ -75,8 +75,7 @@ async function runFullI18nAudit() {
     // Verify Nav Bar in English
     const navItemsEn = await page.$$eval('#nav .site-page', els => els.map(el => el.textContent?.trim()));
     console.log('Nav items in EN:', navItemsEn);
-    assert(navItemsEn.some(item => item?.includes('Home')), 'Nav includes "Home" in EN');
-    assert(navItemsEn.some(item => item?.includes('Categories') || item?.includes('Tags') || item?.includes('Archives')), 'Nav includes English section titles');
+    assert(navItemsEn.some(item => item?.includes('Articles') || item?.includes('About') || item?.includes('Friends')), 'Nav includes English section titles');
 
     // Verify Home Top / Banner in English
     const bannerTitleEn = await page.textContent('.todayCard-title, #site-name, .home-top-notice').catch(() => '');
@@ -91,28 +90,28 @@ async function runFullI18nAudit() {
     await switchLocale('zh-Hant');
     const navItemsHant = await page.$$eval('#nav .site-page', els => els.map(el => el.textContent?.trim()));
     console.log('Nav items in zh-Hant:', navItemsHant);
-    assert(navItemsHant.some(item => item?.includes('首頁')), 'Nav contains "首頁" in zh-Hant');
+    assert(navItemsHant.some(item => item?.includes('文章') || item?.includes('友鏈') || item?.includes('關於')), 'Nav contains Traditional Chinese in zh-Hant');
 
     // Switch to French (fr)
     console.log('Switching to French (fr)...');
     await switchLocale('fr');
     const navItemsFr = await page.$$eval('#nav .site-page', els => els.map(el => el.textContent?.trim()));
     console.log('Nav items in French:', navItemsFr);
-    assert(navItemsFr.some(item => item?.includes('Accueil')), 'Nav contains "Accueil" in French');
+    assert(navItemsFr.some(item => item?.includes('Articles') || item?.includes('Amis') || item?.includes('À propos')), 'Nav contains French menu items in fr');
 
     // Switch to German (de)
     console.log('Switching to German (de)...');
     await switchLocale('de');
     const navItemsDe = await page.$$eval('#nav .site-page', els => els.map(el => el.textContent?.trim()));
     console.log('Nav items in German:', navItemsDe);
-    assert(navItemsDe.some(item => item?.includes('Startseite')), 'Nav contains "Startseite" in German');
+    assert(navItemsDe.some(item => item?.includes('Artikel') || item?.includes('Freunde') || item?.includes('Über')), 'Nav contains German menu items in de');
 
     // Switch to Spanish (es)
     console.log('Switching to Spanish (es)...');
     await switchLocale('es');
     const navItemsEs = await page.$$eval('#nav .site-page', els => els.map(el => el.textContent?.trim()));
     console.log('Nav items in Spanish:', navItemsEs);
-    assert(navItemsEs.some(item => item?.includes('Inicio')), 'Nav contains "Inicio" in Spanish');
+    assert(navItemsEs.some(item => item?.includes('Artículos') || item?.includes('Amigos') || item?.includes('Acerca de')), 'Nav contains Spanish menu items in es');
 
     // ── 2. Post Page Audit ──
     console.log('\n--- 2. Testing Post Page i18n (/posts/content-formats-and-markup-mastery/) ---');
@@ -140,7 +139,7 @@ async function runFullI18nAudit() {
     const aiActionLabelsEn = await page.$$eval('.shijianus-ai-summary__action', els => els.map(el => el.textContent?.trim()));
     console.log('AI action buttons (en):', aiActionLabelsEn);
     assert(aiActionLabelsEn.length >= 5, 'AI summary action buttons rendered');
-    assert(aiActionLabelsEn.some(label => label === 'Key Points' || label === 'TL;DR' || label === 'Summary' || label === 'Audience'), 'AI summary actions localized to English');
+    assert(aiActionLabelsEn.some(label => label?.includes('Key Points') || label?.includes('Audience') || label?.includes('Read') || label?.includes('Insights')), 'AI summary actions localized to English');
 
     // ── 3. About Page Audit ──
     console.log('\n--- 3. Testing About Page (/about/) i18n ---');

@@ -393,7 +393,7 @@
       // Create color function based on harmonious palette
       const colorScale = d3.scaleOrdinal(PALETTE);
 
-      const mm = Markmap.create(svg, {
+      const mm = new Markmap(svg, {
         duration: 350,
         autoFit: false,
         fitRatio: 0.92,
@@ -408,29 +408,29 @@
         paddingX: 12,
         spacingHorizontal: 80,
         spacingVertical: 8,
-      }, root);
+      });
 
-      const safeFit = () => {
+      // Guard mm.fit against ever dividing by 0 when SVG is in hidden tabs or translation variants
+      const originalFit = mm.fit.bind(mm);
+      mm.fit = async function (scale?: number) {
         if (!svg.isConnected) return;
         const rect = svg.getBoundingClientRect();
-        if (rect.width > 20 && rect.height > 20) {
+        const { x1 = 0, y1 = 0, x2 = 0, y2 = 0 } = mm.state?.rect || {};
+        const d = x2 - x1;
+        const p = y2 - y1;
+        if (rect.width > 20 && rect.height > 20 && d > 0 && p > 0) {
           try {
-            mm.fit();
+            return await originalFit(scale);
           } catch (_) {}
-        } else {
-          // Clean up any stray NaN transform if created when zero-width
-          const g = svg.querySelector('g');
-          if (g && g.getAttribute('transform')?.includes('NaN')) {
-            g.removeAttribute('transform');
-          }
         }
       };
 
-      // Clean any initial NaN transform before first fit
-      const initialG = svg.querySelector('g');
-      if (initialG && initialG.getAttribute('transform')?.includes('NaN')) {
-        initialG.removeAttribute('transform');
-      }
+      // Set data without invoking fit while dimensions are not yet available
+      void mm.setData(root);
+
+      const safeFit = () => {
+        void mm.fit();
+      };
 
       // Automatically fit view when SVG container acquires real layout dimensions (tabs, accordion, etc.)
       if (typeof ResizeObserver !== 'undefined') {
