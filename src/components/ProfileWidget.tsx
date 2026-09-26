@@ -46,8 +46,9 @@ export function ProfileWidget({
   wordCount = 0,
   readingTimeMinutes = 0,
 }: ProfileWidgetProps) {
+  // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
   const [sayHiIndex, setSayHiIndex] = useState(0);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();

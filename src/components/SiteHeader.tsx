@@ -206,7 +206,8 @@ export function SiteHeader({
   const themeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const cloudTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
+  // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();

@@ -233,8 +233,8 @@ export function PostComments({
   emptyTitle = '还没有公开评论',
   emptySummary = '留下第一条反馈后，评论会直接出现在下方的公开评论流中。',
 }: PostCommentsProps) {
-  // Locale state (lazily initialize to stored variant or fallback to 'zh-CN')
-  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
+  // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
+  const [currentLocale, setCurrentLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();

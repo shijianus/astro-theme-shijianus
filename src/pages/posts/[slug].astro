@@ -733,7 +733,7 @@ const heroSummary = isUnlocked
 
       {commentsEnabled && (
         <PostComments
-          client:load
+          client:idle
           slug={canonicalSlug}
           title={publicFacingTitle}
           heading={siteConfig.post.comments.title}

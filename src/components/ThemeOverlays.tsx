@@ -296,7 +296,8 @@ export function ThemeOverlays({
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
-  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
+  // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
+  const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
   const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
 
   const showUnifiedToast = useCallback((message: string, overrideLocale?: LocaleVariant) => {

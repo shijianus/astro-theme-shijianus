@@ -3009,20 +3009,20 @@ html.dark .shijianus-ai-summary__related span {
   line-height: 1.25;
 }
 
-/* 1. 逐字模式：单文本节点背景渐变裁切 (毫秒级字发音跟随，0 重叠重影) */
+/* 单文本节点背景渐变裁切卡拉OK流光 (毫秒级字发音跟随，0 重叠重影) */
 .screen-lyric__vocal-text.is-karaoke-stream {
   background: linear-gradient(
     to right,
     var(--karaoke-sung-color, #425aef) 0%,
     var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.95) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.95) 100%
+    var(--screen-lyric-unsung-color, #334155) var(--karaoke-pct, 0%),
+    var(--screen-lyric-unsung-color, #334155) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
   will-change: background;
 }
 
@@ -3031,8 +3031,8 @@ html.dark .shijianus-ai-summary__related span {
     to right,
     var(--karaoke-sung-dark, #818cf8) 0%,
     var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.9) var(--karaoke-pct, 0%),
-    rgba(255, 255, 255, 0.9) 100%
+    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.75)) var(--karaoke-pct, 0%),
+    var(--screen-lyric-unsung-color, rgba(248, 250, 252, 0.75)) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -3040,19 +3040,36 @@ html.dark .shijianus-ai-summary__related span {
   color: transparent;
 }
 
-/* 2. 行级模式：Apple Music 工业级整行沉浸柔光聚焦 (彻底消除机械假流光的抢跑与滞后违和感) */
-.screen-lyric__vocal-text.is-line-focused {
-  color: var(--karaoke-sung-color, #425aef);
-  text-shadow: 0 0 16px var(--karaoke-glow, rgba(66, 90, 239, 0.45));
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
-  transform: scale(1.02);
-  transform-origin: center center;
-  transition: color 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.28s ease;
+.shijianus-music-pocket__screen-lyric.opacity-transparent .screen-lyric__vocal-text.is-karaoke-stream,
+.shijianus-music-pocket__screen-lyric.opacity-semi .screen-lyric__vocal-text.is-karaoke-stream {
+  background: linear-gradient(
+    to right,
+    var(--karaoke-sung-color, #425aef) 0%,
+    var(--karaoke-sung-color, #425aef) var(--karaoke-pct, 0%),
+    #ffffff var(--karaoke-pct, 0%),
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
 }
 
-:root[data-theme='dark'] .screen-lyric__vocal-text.is-line-focused {
-  color: var(--karaoke-sung-dark, #818cf8);
-  text-shadow: 0 0 18px rgba(129, 140, 248, 0.5);
+:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric.opacity-transparent .screen-lyric__vocal-text.is-karaoke-stream,
+:root[data-theme='dark'] .shijianus-music-pocket__screen-lyric.opacity-semi .screen-lyric__vocal-text.is-karaoke-stream {
+  background: linear-gradient(
+    to right,
+    var(--karaoke-sung-dark, #818cf8) 0%,
+    var(--karaoke-sung-dark, #818cf8) var(--karaoke-pct, 0%),
+    #ffffff var(--karaoke-pct, 0%),
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95));
 }
 
 /* 底层普通静态文本与前奏信息 */

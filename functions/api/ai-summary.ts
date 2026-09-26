@@ -63,17 +63,21 @@ async function writeCachedSummary(
   if (!env.DB?.prepare) return;
 
   const now = Math.floor(Date.now() / 1000);
-  await env.DB.prepare(
-    `INSERT INTO ai_summary_cache (cache_key, slug, summary, provider, model, created_at, expires_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(cache_key) DO UPDATE SET
-        slug = excluded.slug,
-        summary = excluded.summary,
-        provider = excluded.provider,
-        model = excluded.model,
-        created_at = excluded.created_at,
-        expires_at = excluded.expires_at`
-  ).bind(cacheKey, slug, summary, provider, model, now, now + ttlSeconds).run();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO ai_summary_cache (cache_key, slug, summary, provider, model, created_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(cache_key) DO UPDATE SET
+          slug = excluded.slug,
+          summary = excluded.summary,
+          provider = excluded.provider,
+          model = excluded.model,
+          created_at = excluded.created_at,
+          expires_at = excluded.expires_at`
+    ).bind(cacheKey, slug, summary, provider, model, now, now + ttlSeconds).run();
+  } catch (err) {
+    console.error('writeCachedSummary failed:', err);
+  }
 }
 
 export async function onRequestPost(context: { request: Request; env: AppEnv }) {
@@ -145,6 +149,7 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
   const body = await safeReadJson<SummaryRequest>(request);
   const title = (body?.title || '').trim().slice(0, 250);
   const rawSlug = (body?.slug || '').trim();
+  const url = (body?.url || '').trim().slice(0, 500);
   const summary = (body?.summary || '').trim().slice(0, 1000);
   const mode = body?.mode || 'auto';
   const questionType = (body?.questionType || '').trim().slice(0, 50);
@@ -267,9 +272,22 @@ export async function onRequestPost(context: { request: Request; env: AppEnv }) 
 
 export async function onRequest(context: { request: Request; env: AppEnv }) {
   const { request, env } = context;
-  if (request.method === 'OPTIONS') return optionsResponse(request, env);
-  if (request.method !== 'POST') {
-    return jsonResponse(request, env, { ok: false, error: 'Method not allowed' }, { status: 405 });
+  try {
+    if (request.method === 'OPTIONS') return optionsResponse(request, env);
+    if (request.method !== 'POST') {
+      return jsonResponse(request, env, { ok: false, error: 'Method not allowed' }, { status: 405 });
+    }
+    return await onRequestPost(context);
+  } catch (err: any) {
+    console.error('[ai-summary] Uncaught error in onRequest:', err);
+    return jsonResponse(
+      request,
+      env,
+      {
+        ok: false,
+        error: 'Chronral 摘要服务暂时离线，请稍后再试。',
+      },
+      { status: 503 },
+    );
   }
-  return onRequestPost(context);
 }

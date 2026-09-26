@@ -295,8 +295,8 @@ function formatSponsorDate(dateStr?: string): string {
 }
 
 export const SupportDashboard: React.FC = () => {
-  // ── 0. i18n Locale State ──
-  const [locale, setLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
+  // ── 0. i18n Locale State: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale ──
+  const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
 
   useEffect(() => {
     const stored = readStoredLocaleVariant();

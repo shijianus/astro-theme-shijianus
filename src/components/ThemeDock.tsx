@@ -193,7 +193,8 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [background, setBackground] = useState(_props.defaultBackground);
   const [panelHidden, setPanelHidden] = useState(true);
   const [readMode, setReadMode] = useState(false);
-  const [locale, setLocale] = useState<LocaleVariant>(() => (typeof window !== 'undefined' ? readStoredLocaleVariant() : 'zh-CN'));
+  // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
+  const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
   const [tocDepth, setTocDepth] = useState('all');
   const [musicPocketVisible, setMusicPocketVisible] = useState(false);
 
