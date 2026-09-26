@@ -4094,12 +4094,27 @@
   - **STAGE 4 模态框全域抑制**：激活遮罩状态时 `isHidden: true`，HUD 自动隐藏；
   - **STAGE 5 控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
 
-
-
-
-
-
-
-
-
-
+### Task 185: EpoCanvas 程序化 2.5D 真实闭合卡片积雪系统 (Snow Mantle & Procedural Accumulation) 全域覆盖、动态滚动自适应与生产端全链路验证 (`d9489c8`)
+- [x] **2.5D 程序化立体雪丘与有机雪舌下垂模型 (Volumetric Organic Contour & PRNG Seed)**:
+  1. **零 DOM 污染与视口视差渲染**：雪幔完全渲染在固定全屏视口 Canvas (`#theme-snow-mid`, `z-index: 20`) 上，卡片内部 DOM 结构与 `overflow: hidden` 属性保持 100% 纯净，绝不在卡片内插入任何伪元素或贴图；
+  2. **确定性 Mulberry32 PRNG 种子发生器**：为每个闭合卡片分配专属确定性种子 (`hashString(id-w-index)`)，生成平滑相连的起伏雪丘 (Undulating Dunes) 与非均匀下垂雪舌 (Drooping Lobes / Cornices)；
+  3. **极致性能保障 (Zero ctx.shadowBlur)**：全量移除耗费 GPU/Skia CPU 模糊算力的 `shadowBlur`，改用硬算多层贝塞尔填充与接触面微环境光遮挡 (AO Shadow)，保障页面上下滚动稳定 60FPS。
+- [x] **多层立体光影与白昼/暗黑双模式高反差 (Multi-Pass Volumetric Shading)**:
+  1. **Pass 1 接触面微环境光遮挡 (Contact AO Shadow)**：在纯白与深色卡片顶沿生成细腻的冷灰色/暗青接触阴影，彻底消除“雪体浮空飘浮”或“白色贴纸”的廉价感；
+  2. **Pass 2 垂直天光散射与自阴影渐变 (Volumetric Skylight Gradient)**：向阳面顶端纯白晶莹 (`#ffffff`)，底部雪舌呈现散射微冷天光 (`rgba(148, 178, 210, 0.94)`)，在白天纯白卡片上轮廓清晰挺拔；
+  3. **Pass 3 顶面迎光弧面 (Inner Volumetric Dome) 与高光线 (Specular Rim)**：呈现凸起蓬松质感；
+  4. **Pass 4 微细冰晶闪光 (Micro Crystalline Sparkles)**：沿迎光顶脊随机分布微小闪烁晶体。
+- [x] **全网闭合框覆盖与文字/徽标智能避让 (Closed Box Coverage & Text Clearance)**:
+  1. **覆盖全网闭合卡片 (Closed Boxes)**：涵盖 `#random-banner`、`.todayCard`、`.categoryItem`、`.recent-post-item` (16 张首页文章卡片)、`#aside-content .card-widget` (个人信息、公告、Telegram 翻转卡片、热门标签、精选分类等)、`#card-toc`、`#post`、`.relatedPosts-item`、`.postNav-card` 等；
+  2. **智能排除非卡片元素**：排除顶部通知跑马灯 (`.home-top-notice`) 与无框透明评论区 (`#post-comment`)，杜绝突兀悬空雪线与横幅遮挡；
+  3. **文字与徽标避让**：针对紧凑分类卡片 (`.categoryItem` 高度 86px) 紧缩下垂幅度 (`maxDroop = 2.0px`, `baseDrop = 0.8px`)，中文分类名 100% 露出一览无余；针对个人信息卡片 (`.card-info`) 将雪幔高度缩敛至 8px，完全避让顶部的“✨ 欢迎探索 💡”徽章。
+- [x] **全量多端生产部署 (Production Deployment)**:
+  - shijianus-blog 仓库：部署至 Cloudflare Pages `https://5731f17e.shijianus-blog.pages.dev`；
+  - 生产主域名仓库 shijianus-github-io：部署至 Cloudflare Pages `https://f02971d6.shijianus-github-io.pages.dev`（绑定主域名 `https://blog.epocanvas.com/`）。
+- [x] **生产端 (Cloudflare Pages) 实机全链路 E2E 自动化审计 (`scripts/verify-live-snow-mantle.mjs`)**:
+  - 全真访问生产主域名 `https://blog.epocanvas.com/`；
+  - **白昼模式全景审计**：16 张 `.recent-post-item`、3 张 `.categoryItem`、侧边栏全部卡片及头部横幅立体积雪全部正确就位；
+  - **动态滚动审计**：向下滚动 600px、1400px 及快速回滚，视锥剔除与坐标投影精准平滑，0 视差抖动；
+  - **暗黑模式审计**：月光环境渐变与阴影深沉立体，反差极高；
+  - **文章页与评论区审计**：`#post` 壳体与 `#card-toc` 积雪完美，`#post-comment` 评论区纯净无污染；
+  - **控制台零报错审计**：0 致命 JS 报错，全绿 100% 通过。
