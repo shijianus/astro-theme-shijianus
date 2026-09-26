@@ -3,7 +3,7 @@ import fs from 'fs';
 
 const LIVE_TARGETS = [
   'https://blog.epocanvas.com',
-  'https://7c7a1193.shijianus-blog.pages.dev',
+  'https://9595612e.shijianus-blog.pages.dev',
 ];
 
 fs.mkdirSync('scripts/audit_screenshots', { recursive: true });
@@ -27,12 +27,14 @@ try {
       if (msg.type() === 'error') {
         const text = msg.text();
         if (!text.includes('Failed to load resource') && !text.includes('404')) {
-          consoleErrors.push(`[${baseUrl}] ${text}`);
+          console.log(`>>> CAUGHT CONSOLE ERROR at ${page.url()}: ${text}`);
+          consoleErrors.push(`[${baseUrl} @ ${page.url()}] ${text}`);
         }
       }
     });
     page.on('pageerror', (err) => {
-      consoleErrors.push(`[${baseUrl}] ${err.message}`);
+      console.log(`>>> CAUGHT PAGE ERROR at ${page.url()}: ${err.message}`);
+      consoleErrors.push(`[${baseUrl} @ ${page.url()}] ${err.message}`);
     });
 
     // 1. Visit Home
