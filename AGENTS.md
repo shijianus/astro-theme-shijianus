@@ -4146,3 +4146,28 @@
     - 实机视觉："最終章 詰め" 为鲜明蓝色，"込" 正在流光横扫，"んでね" 为浅灰色，证明抽屉内部与桌面 HUD 同样实现毫秒级流光染色！
   - **控制台零报错审计**：0 致命 JS 报错，全绿 100% 验证通过。
 
+### Task 187: 全站多语言 (i18n) 界面语言展示深度同步、React 岛状组件客户端水合对齐、AI 摘要长正文兼容与思维导图 (Markmap) 零报错治理 (`d576dd5`, `72c0206`, `efce9ed`, `47891a3`, `39c7525`, `1757de7`, `21be3a4`, `6b70003`, `e35c4ac`, `0197c3a`)
+- [x] **全站多语言词典与动态模式引擎升级 (`src/lib/client-locale.ts`)**:
+  1. 扩充 `MULTILINGUAL_DICTIONARY`，完整覆盖 `zh-CN`、`zh-Hant`、`en`、`fr`、`de`、`es` 六大语言体系；
+  2. 繁体中文（`zh-Hant`）地道转换规则与词库，对未显式定义词条通过正體字符映射表优雅降级回退；
+  3. 增强动态模式与占位符匹配引擎（如时间戳、字数、分页页码、支持金额、系统状态等），支持参数化动态替换。
+- [x] **React 岛状组件与静态组件客户端水合及语种同步**:
+  1. 修复 SSR 与客户端水合初态不一致：统一组件状态初始值为 `'zh-CN'` 并通过 `useEffect` 挂载即时同步 `localStorage` 中选中的语种，消除 React 18 水合不匹配警告；
+  2. 修复 `ProfileWidget.tsx` 的 `sayHiIndex` ReferenceError 异常；
+  3. 导航栏（文章、友链、工坊、关于）、右侧悬浮控制台、中控台快捷键、赞赏支持面板、打赏咖啡阶梯与 Stripe 结账按钮、文章相关推荐、下一篇卡片、AI 摘要面板等全部与用户当前选定语种精准对齐联动。
+- [x] **AI 摘要 API 长正文容错与正文切片优化 (`functions/api/ai-summary.ts`, `src/components/theme/AiSummaryPanel.astro`)**:
+  1. 修复超长文章（如 289k 字符展示博文）导致后端 `rawContent.length > 80000` 抛出 HTTP 400 异常；
+  2. 前端发送前智能切片至 80,000 字符，节省网络带宽传输；后端平滑截取至 120,000 字符并按站长设定档位（low/medium/high）规范化正文，彻底消除 400 失败。
+- [x] **思维导图 (Markmap) 零报错治理与 SVG 弧形语法修复 (`src/components/MindmapEnhancer.astro`, 4 篇 Markdown 文件)**:
+  1. 根治 Markmap 在未展示的标签页或折叠块中初始化时除以 0 计算导致的 `translate(NaN, NaN) scale(NaN)` 控制台报错；
+  2. 移除 `Markmap.create` 对 `root` 的无条件自拟合调用，采用 `new Markmap(svg, options)` 并对 `mm.fit` 注入安全守卫（仅在宽度/高度 > 20px 且内容包围盒正向时执行）；配合 `ResizeObserver` 保证标签页切换展示时平滑自适应；
+  3. 修复 4 篇 Markdown 中 SVG 路径弧形命令缺失 radius y 的语法错误（`a7 0 1 1-14 0` -> `a7 7 0 1 1-14 0`）。
+- [x] **全量多端生产部署与生产端实机 E2E 验证**:
+  - 全量静态编译 284 页面无任何报错；
+  - 部署至 Cloudflare Pages 生产边缘节点：`shijianus-blog` (`https://4609f43c.shijianus-blog.pages.dev`) 与 `shijianus-github-io` (`https://48b9c166.shijianus-github-io.pages.dev`，生产域名 `https://blog.epocanvas.com`)；
+  - 推送至所有远端分支（`origin` 与 `cf`）；
+  - 生产域名实机端到端 Playwright 自动化验证双套件 100% 通过：
+    - `scripts/verify-live-i18n.mjs`：24 PASSED, 0 FAILED, 0 致命报错；
+    - `scripts/verify-live-full-i18n.mjs`：15 PASSED, 0 FAILED, 0 致命报错。
+
+
