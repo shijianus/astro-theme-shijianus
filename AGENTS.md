@@ -4404,6 +4404,29 @@
     - **Test 4 (全网歌曲检索与回放)**：灵感标签点播周杰伦《想你就写信 (Live)》，302 封面、206 音频流、200 高精歌词加载完毕，30s 间奏识别与 80s 唱句 `周杰伦：你说想哭就弹琴` 精准匹配；
     - **控制台报错**：0 个致命 JS 报错（`Console Errors: 0`），全量断言通过（`🎉 ALL AUDIT CHECKS PASSED PERFECTLY!`）。
 
+### Task 198: 卡片吸附式矢量雪幔 16 种形态模子升级、两端丰满圆角雪冠、全域方框补齐与 0 遮挡间隙自适应引擎 (Commit: `b88039c`, `1ac0474`)
+- [x] **16 种全新程序化形态原型升级 (`SNOW_ARCHETYPES`)**:
+  - 扩充并落地 16 种截然不同的雪幔几何原型：`windswept-left` (左偏风吹聚雪)、`windswept-right` (右偏风吹聚雪)、`dual-crest-saddle` (深鞍双波枕)、`triple-dome` (连绵三重雪丘)、`thick-plateau` (松软平原厚雪层)、`icicle-curtain` (冰挂帘栊型)、`corner-caps` (**两端厚中间平，完全颠覆旧缺陷**)、`scalloped-crest` (扇形贝贝浪纹)、`alpine-ridge` (阿尔卑斯孤峰)、`sawtooth-drift` (锯齿风蚀雪阶)、`puffy-cumulus` (棉絮云朵积雪)、`heavy-cornice` (重檐深垂型)、`gentle-powder` (细腻松粉轻霜)、`wave-cascade` (斜向涌动波涛)、`center-dip-valley` (V形谷心漫雪)、`droop-cluster` (错落雪珠垂挂)。
+  - 在 `recent-post-item` 列表中按容器上下文解耦种子与原型选择，确保相邻卡片 100% 轮换呈现截然不同的几何特征，彻底根除“模子相似/单一”缺陷。
+- [x] **根除“两头细中间粗”的硬式范式 (Volumetric Crown Overhang)**:
+  - 彻底移除了原 topPoints 中将雪顶向下拉拽的 `+ cornerY` 塌陷算法；雪顶在 `x=0` 至 `x=W` 全跨度保持高耸丰满的雪冠厚度；
+  - bottomPoints 严格顺应卡片真实圆角向下自然垂挂包裹（`cardCornerDrop * 0.85`），在卡片圆角两端形成厚实饱满的包角雪帽，彻底消除了边缘向下溜、变细成针尖的失真感。
+- [x] **全域闭合方框查漏补缺 (Full Box Coverage)**:
+  - 在 `CLOSED_BOX_SELECTORS` 和 CSS `overflow: visible` 规则池中补齐所有遗漏容器：`#category-bar`、`.category-bar`、`.footer-main-shell`、`.footer-bar-links`、`#post-comment`、`.profile-card` 等，并在嵌套扫描中赋予白名单豁免，保证全域方框自然顶覆积雪。
+- [x] **防遮挡间隙自适应引擎 (Zero-Occlusion Clearance Engine)**:
+  - 动态测量卡片与其垂直正上方元素（同列上一行卡片如 `.topGroup`、文章列表网格或前置兄弟节点）的真实物理距离 `verticalGap`；
+  - 严格限制 `maxAllowedRise = Math.max(2.5, gap - 2.5)` 并将负位移 `yOffset` 上限制动于 `maxAllowedRise` 内；
+  - 完美实现“可以紧挨（留有至少 2.5px 呼吸缝隙），但绝对不遮挡上方组件”。
+- [x] **生产全量编译与双节点部署**:
+  - `npm run pages:build` 284 个静态页面 100% 编译通过；
+  - `shijianus-blog` (`https://251bed14.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://6a5ff218.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **生产环境实机 Playwright 全链路端到端审计 (`scripts/verify-snow-subagent.mjs`)**:
+  - 方框检测：`categoryBar: true`, `footerMainShell: true`, `footerBarLinks: true`, `recentPostsCount: 16`, `profileCardSnow: true`, `totalSvgs: 29` 全部正常生效；
+  - 原型多样性：实测页面自然命中 14 种不同雪原型，各卡片种子与形态完全独立；
+  - 垂直遮挡：`Occlusion Issues: 0`，卡片间距保持安全呼吸空间，0 重叠 0 遮挡；
+  - 控制台健康度：0 个致命 JS 报错（`Console Errors: 0`）。
+
 
 
 
