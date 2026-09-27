@@ -140,6 +140,10 @@ export function generateSnowMantleSvg(
 
   // 1. Select from 16 Rich Archetypes
   let archetypeIndex = Math.abs(seed) % SNOW_ARCHETYPES.length;
+  if (className.includes('recent-post-item')) {
+    // Dynamically varied across the 16 distinct archetypes using resolved index offset
+    archetypeIndex = (Math.abs(seed) + Math.abs(seed >> 4)) % SNOW_ARCHETYPES.length;
+  }
   if (isCategory) {
     archetypeIndex = 4; // categoryItem uses compact thick-plateau
   } else if (isCardInfo) {
@@ -182,11 +186,13 @@ export function generateSnowMantleSvg(
 
   // Strictly enforce the zero-occlusion clearance limit:
   // Snow can snuggle right against the element above ("可以紧挨"), but NEVER overlaps ("绝不遮挡")!
+  let yOffset = Math.round(H + 2);
   if (maxAllowedRise > 0) {
-    H = Math.min(H, Math.max(3.5, maxAllowedRise - 2.5));
+    const safeMaxRise = Math.max(2.5, maxAllowedRise);
+    H = Math.min(H, Math.max(2.0, safeMaxRise - 2.0));
+    yOffset = Math.min(Math.round(H + 1.5), Math.max(2, Math.floor(safeMaxRise)));
   }
 
-  const yOffset = Math.round(H + 2);
   const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 10);
 
   const phi1 = prng() * Math.PI * 2;
@@ -612,7 +618,8 @@ export class SnowMantleEngine {
           ? parseInt(cardIndexAttr, 10)
           : index;
 
-      const seed = hashString(`${cardKey}-${resolvedIndex}`);
+      const containerTag = el.closest('.topGroup') ? 'topdeck' : el.closest('#recent-posts') ? 'recentfeed' : 'page';
+      const seed = hashString(`${containerTag}-${cardKey}-${resolvedIndex}-${index}`);
 
       // Compute actual available clearance above this box
       let maxAllowedRise = 14; // Default pleasant snow rise
@@ -627,25 +634,21 @@ export class SnowMantleEngine {
       if (prev) {
         const prevRect = prev.getBoundingClientRect();
         const verticalGap = elRect.top - prevRect.bottom;
-        if (verticalGap > 0) {
+        if (verticalGap > 0 && verticalGap < 60) {
           // Leave at least 2.5px breathing air: can snuggle close ("可以紧挨"), but never overlap ("绝不遮挡")!
-          maxAllowedRise = Math.min(maxAllowedRise, Math.max(4, Math.floor(verticalGap - 2.5)));
+          maxAllowedRise = Math.min(maxAllowedRise, Math.max(2.5, Math.floor(verticalGap - 2.5)));
         }
       }
 
-      // 2. For elements inside grid (e.g. .recent-post-item in .grid)
-      const gridParent = el.closest('.grid, #recent-posts, .home-posts-sticky-group, #site-footer-grid');
-      if (gridParent) {
-        const allCards = Array.from(gridParent.querySelectorAll<HTMLElement>('.recent-post-item, .card-widget'));
-        for (const other of allCards) {
-          if (other === el || other.offsetParent === null) continue;
-          const otherRect = other.getBoundingClientRect();
-          const overlapX = Math.min(elRect.right, otherRect.right) - Math.max(elRect.left, otherRect.left);
-          if (overlapX > 30 && otherRect.bottom <= elRect.top) {
-            const gap = elRect.top - otherRect.bottom;
-            if (gap > 0) {
-              maxAllowedRise = Math.min(maxAllowedRise, Math.max(4, Math.floor(gap - 2.5)));
-            }
+      // 2. Universal clearance detection against ANY preceding card vertically above this card
+      for (const other of seen) {
+        if (other === el || other.offsetParent === null) continue;
+        const otherRect = other.getBoundingClientRect();
+        const overlapX = Math.min(elRect.right, otherRect.right) - Math.max(elRect.left, otherRect.left);
+        if (overlapX > 25 && otherRect.bottom <= elRect.top) {
+          const gap = elRect.top - otherRect.bottom;
+          if (gap > 0 && gap < 60) {
+            maxAllowedRise = Math.min(maxAllowedRise, Math.max(2.5, Math.floor(gap - 2.5)));
           }
         }
       }
