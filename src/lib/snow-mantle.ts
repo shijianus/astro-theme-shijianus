@@ -27,7 +27,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.categoryItem',
   '.home-mobile-focus-card',
   '#recent-posts .recent-post-item',
-  '#aside-content .card-widget',
+  '#aside-content .card-widget:not(.card-info):not(.profile-card)',
   '#card-toc',
   '#post',
   '.post-page-shell',
@@ -340,8 +340,9 @@ export class SnowMantleEngine {
       const el = elements[index];
       if (seen.has(el)) continue;
 
-      // Filter out hidden elements
+      // Filter out hidden elements or specialized cards like profile-card whose morphology must remain strictly intact
       if (el.offsetParent === null) continue;
+      if (el.classList.contains('profile-card') || el.classList.contains('card-info')) continue;
       const computed = window.getComputedStyle(el);
       if (computed.display === 'none' || computed.visibility === 'hidden' || computed.opacity === '0') continue;
 

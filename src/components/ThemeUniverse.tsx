@@ -43,12 +43,13 @@ interface CinematicSnowParticle {
  *    - 严格 0 ctx.shadowBlur，锁定 60FPS 丝滑流畅；
  *    - 画布配置 pointer-events: none，全站 UI 交互穿透率 100%；卡片 DOM 保持零污染。
  */
-export function ThemeUniverse() {
-  useEffect(() => {
-    const bgCanvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
-    const midCanvas = document.getElementById('theme-snow-mid') as HTMLCanvasElement | null;
-    const fgCanvas = document.getElementById('theme-snow-foreground') as HTMLCanvasElement | null;
-    if (!bgCanvas) return;
+export function initThemeUniverse(): (() => void) | undefined {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return undefined;
+
+  const bgCanvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
+  const midCanvas = document.getElementById('theme-snow-mid') as HTMLCanvasElement | null;
+  const fgCanvas = document.getElementById('theme-snow-foreground') as HTMLCanvasElement | null;
+  if (!bgCanvas) return undefined;
 
     const bgCtx = bgCanvas.getContext('2d', { alpha: true });
     const midCtx = midCanvas ? midCanvas.getContext('2d', { alpha: true }) : null;
@@ -468,6 +469,11 @@ export function ThemeUniverse() {
       document.removeEventListener('visibilitychange', handleVisibility);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
+}
+
+export function ThemeUniverse() {
+  useEffect(() => {
+    return initThemeUniverse();
   }, []);
 
   return null;

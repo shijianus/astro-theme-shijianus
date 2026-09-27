@@ -2344,7 +2344,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '分享到 LinkedIn': { en: 'Share to LinkedIn', fr: 'Partager sur LinkedIn', es: 'Compartir en LinkedIn', de: 'Auf LinkedIn teilen' },
   '分享到 Reddit': { en: 'Share to Reddit', fr: 'Partager sur Reddit', es: 'Compartir en Reddit', de: 'Auf Reddit teilen' },
   '分享到 Snapchat': { en: 'Share to Snapchat', fr: 'Partager sur Snapchat', es: 'Compartir en Snapchat', de: 'Auf Snapchat teilen' },
-  '通过邮件分享': { en: 'Share via Email', fr: 'Partager par e-mail', es: 'Compartir por correo', de: 'Per E-Mail teilen' },
   '已唤起系统分享': { en: 'System share opened', fr: 'Partage système ouvert', es: 'Compartir del sistema abierto', de: 'System-Freigabe geöffnet' },
   '当前环境不支持系统分享，已复制链接': { en: 'System share unavailable, link copied', fr: 'Partage système non supporté, lien copié', es: 'Compartir no disponible, enlace copiado', de: 'Systemfreigabe nicht verfügbar, Link kopiert' },
 

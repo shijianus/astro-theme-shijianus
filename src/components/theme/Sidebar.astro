@@ -13,7 +13,7 @@ import {
   estimateWordCount,
 } from '../../lib/content';
 import type { SidebarData } from '../../lib/theme';
-import { ProfileWidget } from '../ProfileWidget';
+import ProfileCard from './ProfileCard.astro';
 import PromoWidgetCard from './PromoWidgetCard.astro';
 
 interface Props extends SidebarData {
@@ -290,8 +290,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
 
 <div class="aside-content" id={asideId} data-toc-compact={isShortToc ? 'true' : 'false'}>
   {showAuthorCard && (
-    <ProfileWidget
-      client:visible
+    <ProfileCard
       name={siteConfig.site.author.name}
       role={siteConfig.site.author.role}
       motto={siteConfig.site.author.motto}

@@ -4,13 +4,14 @@ import { convertText, readStoredLocaleVariant, normaliseLocaleVariant, type Loca
 const renderMarkdown = (text: string) => {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
   return parts.map((part, index) => {
+    if (!part) return null;
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong style={{ fontWeight: 'bold' }} key={index}>{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('*') && part.endsWith('*')) {
       return <em style={{ fontStyle: 'italic' }} key={index}>{part.slice(1, -1)}</em>;
     }
-    return part;
+    return <span key={index}>{part}</span>;
   });
 };
 
@@ -176,11 +177,12 @@ export function ProfileWidget({
       <style dangerouslySetInnerHTML={{ __html: `
         .profile-card {
           position: relative;
-          overflow: hidden;
+          overflow: hidden !important;
           background-color: #111 !important;
           z-index: 1;
           border: none !important;
           min-height: 360px !important;
+          border-radius: 8px !important;
         }
 
         /* 第一层：底图 */
@@ -191,6 +193,7 @@ export function ProfileWidget({
           background-image: var(--profile-cover);
           background-size: cover;
           background-position: center;
+          border-radius: 8px !important;
           z-index: 0;
           transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -208,6 +211,7 @@ export function ProfileWidget({
           );
           background-size: 400% 400%;
           animation: profile-gradient-pan 15s ease infinite !important;
+          border-radius: 8px !important;
           z-index: 1;
           pointer-events: none;
           opacity: 0.8;

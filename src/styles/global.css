@@ -289,7 +289,7 @@ html[data-background='snow'] .categoryItem,
 html[data-background='snow'] .recent-post-item,
 html[data-background='snow'] .todayCard,
 html[data-background='snow'] #random-banner,
-html[data-background='snow'] #aside-content .card-widget,
+html[data-background='snow'] #aside-content .card-widget:not(.profile-card):not(.card-info),
 html[data-background='snow'] #card-toc,
 html[data-background='snow'] #post,
 html[data-background='snow'] .relatedPosts-item,
@@ -305,7 +305,15 @@ html[data-background='snow'] .support-dashboard-card {
   overflow: visible !important;
 }
 
-/* Ensure inner card media retains rounded corners */
+/* Maintain strict original morphology and boundary clipping for ProfileCard / AuthorWidget */
+#aside-content .profile-card,
+#aside-content .card-info,
+.card-widget.card-info.profile-card {
+  overflow: hidden !important;
+  border-radius: 8px !important;
+}
+
+/* Ensure inner card media and pseudo-elements retain rounded corner clipping */
 html[data-background='snow'] .categoryItem .categoryButton {
   overflow: hidden !important;
   border-radius: inherit !important;
@@ -315,6 +323,15 @@ html[data-background='snow'] .recent-post-item > div:first-child {
   overflow: hidden !important;
   border-top-left-radius: inherit !important;
   border-top-right-radius: inherit !important;
+}
+
+html[data-background='snow'] .topGroup .todayCard::after,
+html[data-background='snow'] .topGroup .todayCard .todayCard-cover,
+html[data-background='snow'] .relatedPosts-item img,
+html[data-background='snow'] .relatedPosts-item::after,
+html[data-background='snow'] .postNav-card img,
+html[data-background='snow'] .postNav-card::after {
+  border-radius: inherit !important;
 }
 
 .page {
@@ -1959,11 +1976,14 @@ html.theme-ready body.theme-body #footer {
 .profile-card {
   min-height: 320px;
   padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
 }
 
 .profile-card::before {
   position: absolute;
   inset: 0;
+  border-radius: 8px !important;
   content: "";
   background:
     linear-gradient(-25deg, rgba(66, 90, 239, 0.96), rgba(88, 80, 255, 0.82), rgba(53, 139, 255, 0.96), rgba(66, 90, 239, 0.9)),
@@ -1980,6 +2000,7 @@ html.theme-ready body.theme-body #footer {
 .profile-card::after {
   position: absolute;
   inset: 0;
+  border-radius: 8px !important;
   content: "";
   background:
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.18), transparent 24%),
