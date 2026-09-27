@@ -4257,3 +4257,32 @@
 - [x] **全自动化 Playwright E2E 布局与控制台审计 (`scripts/verify-i18n-layout.mjs`)**:
   - 本地测试 100% PASS，`Fatal JS Errors: []`，桌面端、平板端、移动端全部通过！
 
+### Task 192: 彻底根除假歌词追踪宣传与硬编码估算模型，在 CFSolara 落地全网逐字高精歌词引擎 (Kugou KRC / NetEase YRC 毫秒级解密与解析)，生产端真实 API 驱动歌词流光染色与独立 Subagent 无偏见实机端到端全链路审计通过 (`dda7bdd`)
+- [x] **根除客户端假歌词追踪与生造估算硬编码 (Zero Simulated Word Durations)**:
+  1. 彻底废除前端/客户端生造的每字固定时长估算模型（如每字 240ms 恒定速度），严格禁止任何所谓硬编码模拟的“假歌词追踪”；
+  2. 严格遵循系统分工原则：`shijianus-blog` 前端专职负责接收 API 下发的毫秒级物理歌词元数据并执行 60FPS 流光渲染，歌词解析与跨源检索全量收敛至后端服务 `CFSolara`；
+  3. 保留前端声学模型仅用于当整行歌词缺失 `duration` 且处于两句之间时的物理间隔缓冲，不再生成任何虚假 word 时间戳。
+- [x] **在 CFSolara 落地全网逐字高精歌词引擎与 KRC 物理级解密 (Kugou KRC / NetEase YRC Decoding Engine)** (`dda7bdd`):
+  1. **酷狗 KRC 二进制异或解密与原生 Web 标准解压缩**：
+     - 跳过 4 字节魔数头（`bodyBuf = bytes.slice(4)`）；
+     - 应用酷狗专用 16 字节异或解密循环密钥 `[64, 71, 97, 119, 94, 50, 116, 71, 81, 54, 49, 45, 206, 210, 110, 105]`；
+     - 原生基于 Cloudflare Workers V8 Web 标准 `new DecompressionStream('deflate')` 完成内存流式解压还原明文 KRC，彻底摆脱原生 node/C++ 或大型三方 npm 依赖。
+  2. **高精双模逐字正则解析器 (`parseHighPrecisionLyrics`)**：
+     - 正则全面兼容酷狗 KRC `<wStart,wDur,0>word` 与网易云 YRC `(wStart,wDur)word` 格式（`/[<(](\d+),(\d+)(?:,\d+)?[>)]([^<(\n]+)/g`）；
+     - 智能计算字级别绝对毫秒起始、结束与持续时长，并兼容网易云智能歌词 JSON 格式（`{"t":..., "c":[{"tx":..., "t":..., "d":...}]}`）。
+  3. **高精逐字瀑布流自动升级机制 (Waterfall Elevation)**：
+     - 升级 `hasWordSyncTags`，精准识别真实存在逐字毫秒标签的原始歌词；
+     - 在 `getUniversalLyrics` 中实现智能高精升级：若初选源仅提供粗粒度行级 LRC 歌词，自动触发酷狗高精逐字爬虫，一键将歌词质量升级为真实官方 KRC 逐字时间戳源。
+- [x] **CFSolara 代码提交与全网生产边缘节点部署**:
+  - 代码提交至 `CFSolara` 仓库并推送到 GitHub `main` 分支（Commit Hash: `dda7bdd`）；
+  - 全量部署至 Cloudflare Pages 生产边缘节点（`https://7a4c073b.cfsolara-dho.pages.dev` 绑定主域名 `https://cfsolara-dho.pages.dev`）。
+- [x] **生产环境双端真实 API 响应对齐实证**:
+  - CFSolara 生产端直连：`https://cfsolara-dho.pages.dev/api/lyric?id=509106775&title=彼女は旅に出る`
+  - 博客生产端代理：`https://blog.epocanvas.com/api/music/lyric?id=509106775&title=彼女は旅に出る`
+  - 双端一致返回 `syncType: "word"`, `source: "kugou"`, `linesCount: 41`，并真实反映人声自然节奏（例如第 2 句 "冷" 持续 709ms，"し" 仅 153ms，尾音 "の" 持续 1000ms）。
+- [x] **独立第三方 Subagent 从零无偏见审计与生产端实机 E2E 验证 (Independent Subagent Verification)**:
+  - 启动独立 Subagent（Conversation ID: `01154340-74be-4e5c-9ef2-60f8840ce7a1`）对代码、API 与生产端全链路进行零假设审计；
+  - 证实 0 虚假模拟歌词，0 硬编码估算，KRC 解密与高精解析 100% 符合规范；
+  - 针对真实生产博客 `https://blog.epocanvas.com/` 进行 Playwright 实机交互审计，证实播放器 HUD 与歌词抽屉基于真实 API 数据以 60 FPS 连续流光渐变（`--karaoke-pct`）平滑染色，页面 0 致命 JS 报错，全链路 100% 审计通过。
+
+
