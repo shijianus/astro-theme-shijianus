@@ -3,7 +3,7 @@ import fs from 'fs';
 
 const LIVE_TARGETS = [
   'https://blog.epocanvas.com',
-  'https://9595612e.shijianus-blog.pages.dev',
+  'https://de2cb54f.shijianus-blog.pages.dev',
 ];
 
 fs.mkdirSync('scripts/audit_screenshots', { recursive: true });
