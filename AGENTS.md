@@ -4243,3 +4243,17 @@
   - `shijianus-blog` (`https://92a92188.shijianus-blog.pages.dev`) 部署成功；
   - `shijianus-github-io` (`https://398ced52.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功；
   - 同步推送所有远端分支（`origin` 与 `cf`）。
+
+### Task 191: 全站多语言 (i18n) 视觉防裂与 React Hydration Error #418 彻底清零治理、ProfileCard 原生化重构与生产端实机全链路审计 (`0068fcc`)
+- [x] **根治 React 18/19 Hydration Mismatch Error #418 (Zero Fatal Errors)**:
+  1. 彻底排查客户端 React Island 组件（`ProfileWidget.tsx`、`ThemeUniverse.tsx`、`RewardModal.tsx`、`MusicPocket.tsx`、`ThemeOverlays.tsx`、`PostComments.tsx`、`SupportDashboard.tsx`）：消除在 `useState` 初始化阶段读取 `localStorage`、`document.documentElement` 或客户端时区的行为，统一规范为初次使用静态确定值（`zh-CN` 或默认空数组/默认状态）直出，在 `useEffect` 中挂载并同步客户端真实状态；
+  2. 将 `ThemeUniverse` 纯无 UI 副作用的画布渲染引擎解耦并原生化（`initThemeUniverse`），通过 Astro 原生 `<script>` 驱动，彻底消除 `client:idle` 组件返回 `null` 导致的 React Hydration 崩溃；
+  3. 创建原生 Astro 组件 `ProfileCard.astro` 替代原 React Island `<ProfileWidget client:visible>`，彻底解决侧边栏个人名片在文章详情页中因 HTML 注释剥离造成的文本节点边界不匹配（`args[]=text`）问题，同时完美保留一键寄语切换、社交图标与多语言实时转换能力。
+- [x] **全站卡片防御性布局与长词多语言防崩优化 (Defensive Layout & i18n Anti-Breakage)**:
+  1. 彻底解决德语、英语、法语、西班牙语与繁体中文在文章卡片（`PostCard.astro`）中因长词折行导致的高低不平与挤压问题：徽章与日期强制 `shrink-0 whitespace-nowrap`，分类标题强制 `truncate max-w-[110px]`，标题与摘要分别设定 `min-h-[2.6em]` 和 `min-h-[2.8em]` 等高保护，网格高度全语言严格 100% 保持一致；
+  2. 修复词典中重复键名与缺少条目问题，支持 6 种语言实时平滑切换。
+- [x] **博主名片 ProfileCard 边界与形态保护 (Mantle Isolation)**:
+  1. 在 `snow-mantle.ts` 中针对 `.profile-card` 及 `.card-info` 建立保护规则，杜绝雪幔引擎修改其 `overflow: hidden` 与 `border-radius: 8px`，确保其渐变背景与内阴影形态绝对完整。
+- [x] **全自动化 Playwright E2E 布局与控制台审计 (`scripts/verify-i18n-layout.mjs`)**:
+  - 本地测试 100% PASS，`Fatal JS Errors: []`，桌面端、平板端、移动端全部通过！
+
