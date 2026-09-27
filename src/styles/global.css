@@ -289,7 +289,7 @@ html[data-background='snow'] .categoryItem,
 html[data-background='snow'] .recent-post-item,
 html[data-background='snow'] .todayCard,
 html[data-background='snow'] #random-banner,
-html[data-background='snow'] #aside-content .card-widget:not(.profile-card):not(.card-info),
+html[data-background='snow'] #aside-content .card-widget,
 html[data-background='snow'] #card-toc,
 html[data-background='snow'] #post,
 html[data-background='snow'] .relatedPosts-item,
@@ -305,12 +305,17 @@ html[data-background='snow'] .support-dashboard-card {
   overflow: visible !important;
 }
 
-/* Maintain strict original morphology and boundary clipping for ProfileCard / AuthorWidget */
-#aside-content .profile-card,
-#aside-content .card-info,
-.card-widget.card-info.profile-card {
+/* Maintain strict boundary clipping on the backdrop and content of ProfileCard */
+.profile-card__backdrop,
+.profile-card .card-content {
   overflow: hidden !important;
   border-radius: 8px !important;
+  contain: paint !important;
+  isolation: isolate !important;
+}
+
+html[data-background='snow'] .profile-card {
+  overflow: visible !important;
 }
 
 /* Ensure inner card media and pseudo-elements retain rounded corner clipping */
@@ -1999,11 +2004,21 @@ html.theme-ready body.theme-body #footer {
 .profile-card {
   min-height: 320px;
   padding: 0 !important;
-  overflow: hidden !important;
   border-radius: 8px !important;
 }
 
-.profile-card::before {
+.profile-card__backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  contain: paint !important;
+  isolation: isolate !important;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.profile-card__backdrop::before {
   position: absolute;
   inset: 0;
   border-radius: 8px !important;
@@ -2020,7 +2035,7 @@ html.theme-ready body.theme-body #footer {
   animation: gradient-pan 15s ease infinite;
 }
 
-.profile-card::after {
+.profile-card__backdrop::after {
   position: absolute;
   inset: 0;
   border-radius: 8px !important;
@@ -2031,12 +2046,18 @@ html.theme-ready body.theme-body #footer {
   pointer-events: none;
 }
 
-:root[data-theme='dark'] .profile-card::before {
+:root[data-theme='dark'] .profile-card__backdrop::before {
   filter: brightness(0.82);
 }
 
-.profile-card:hover::before {
+.profile-card:hover .profile-card__backdrop::before {
   transform: scale(1.06);
+}
+
+.profile-card::before,
+.profile-card::after {
+  content: none !important;
+  display: none !important;
 }
 
 .profile-card .card-content {

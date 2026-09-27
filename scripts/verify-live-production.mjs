@@ -18,17 +18,33 @@ async function verifyLive() {
   const profileCard = await page.evaluate(() => {
     const el = document.querySelector('.card-widget.card-info.profile-card');
     if (!el) return null;
+    const backdrop = el.querySelector('.profile-card__backdrop');
+    const content = el.querySelector('.card-content');
+    const snowSvg = el.querySelector('.card-snow-svg');
     const style = window.getComputedStyle(el);
     const rect = el.getBoundingClientRect();
     return {
       exists: true,
-      overflow: style.overflow,
-      borderRadius: style.borderRadius,
-      contain: style.contain,
-      isolation: style.isolation,
+      cardOverflow: style.overflow,
+      cardBorderRadius: style.borderRadius,
+      backdrop: backdrop ? {
+        overflow: window.getComputedStyle(backdrop).overflow,
+        borderRadius: window.getComputedStyle(backdrop).borderRadius,
+        contain: window.getComputedStyle(backdrop).contain,
+        isolation: window.getComputedStyle(backdrop).isolation,
+      } : null,
+      content: content ? {
+        overflow: window.getComputedStyle(content).overflow,
+        borderRadius: window.getComputedStyle(content).borderRadius,
+      } : null,
+      snow: snowSvg ? {
+        exists: true,
+        height: window.getComputedStyle(snowSvg).height,
+        top: window.getComputedStyle(snowSvg).top,
+        zIndex: window.getComputedStyle(snowSvg).zIndex,
+      } : null,
       width: Math.round(rect.width),
       height: Math.round(rect.height),
-      hasSnowInside: !!el.querySelector('.snow-mantle')
     };
   });
 
@@ -48,7 +64,7 @@ async function verifyLive() {
     const cards = Array.from(document.querySelectorAll('#random-banner, .todayCard, .categoryItem, .recent-post-item'));
     return {
       count: cards.length,
-      withSnow: cards.filter(c => c.querySelector('.snow-mantle')).length
+      withSnow: cards.filter(c => c.querySelector('.card-snow-svg')).length
     };
   });
   console.log('Live Home Cards Audit:', JSON.stringify(homeCards, null, 2));

@@ -27,7 +27,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.categoryItem',
   '.home-mobile-focus-card',
   '#recent-posts .recent-post-item',
-  '#aside-content .card-widget:not(.card-info):not(.profile-card)',
+  '#aside-content .card-widget',
   '#card-toc',
   '#post',
   '.post-page-shell',
@@ -78,7 +78,7 @@ export function generateSnowMantleSvg(
 ): string {
   const prng = createPRNG(seed);
   const isCategory = className.includes('categoryItem');
-  const isCardInfo = className.includes('card-info');
+  const isCardInfo = className.includes('card-info') || className.includes('profile-card');
   const isShort = H_card < 120;
 
   let H = 14;
@@ -340,9 +340,8 @@ export class SnowMantleEngine {
       const el = elements[index];
       if (seen.has(el)) continue;
 
-      // Filter out hidden elements or specialized cards like profile-card whose morphology must remain strictly intact
+      // Filter out hidden elements
       if (el.offsetParent === null) continue;
-      if (el.classList.contains('profile-card') || el.classList.contains('card-info')) continue;
       const computed = window.getComputedStyle(el);
       if (computed.display === 'none' || computed.visibility === 'hidden' || computed.opacity === '0') continue;
 

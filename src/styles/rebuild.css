@@ -16139,6 +16139,13 @@ html[data-readmode='true'] #to_comment {
   overflow: hidden !important;
 }
 
+html[data-background='snow'] #aside-content .profile-card,
+html[data-background='snow'] #aside-content .card-info,
+html[data-background='snow'] #aside-content .promo-widget,
+html[data-background='snow'] #aside-content #card-telegram {
+  overflow: visible !important;
+}
+
 /* Sticky layout container for Dual Track Architecture */
 #aside-content .sticky_layout {
   position: relative !important;

@@ -104,6 +104,7 @@ export function ProfileWidget({
 
   return (
     <section className={`card-widget card-info profile-card ${variantClass}`} style={style}>
+      <div className="profile-card__backdrop" aria-hidden="true" />
       <div className="card-content">
         <div className="author-info__sayhi-wrap">
           <div 
@@ -177,21 +178,37 @@ export function ProfileWidget({
       <style dangerouslySetInnerHTML={{ __html: `
         .profile-card {
           position: relative;
-          overflow: hidden !important;
-          background-color: #111 !important;
+          background-color: transparent !important;
           z-index: 1;
           border: none !important;
           min-height: 360px !important;
           border-radius: 8px !important;
+        }
+
+        html[data-background='snow'] .profile-card {
+          overflow: visible !important;
+        }
+
+        html:not([data-background='snow']) .profile-card {
+          overflow: hidden !important;
+        }
+
+        /* 独立背景层：严格 8px 圆角与 paint 隔离，100% 杜绝底部动态动画泄露 */
+        .profile-card__backdrop {
+          position: absolute;
+          inset: 0;
+          border-radius: 8px !important;
+          overflow: hidden !important;
           isolation: isolate !important;
           contain: paint !important;
-          -webkit-mask-image: -webkit-radial-gradient(white, black);
-          mask-image: radial-gradient(white, black);
           transform: translateZ(0);
+          z-index: 0;
+          pointer-events: none;
+          background-color: #111 !important;
         }
 
         /* 第一层：底图 */
-        .profile-card::before {
+        .profile-card__backdrop::before {
           content: "";
           position: absolute;
           inset: 0;
@@ -204,8 +221,12 @@ export function ProfileWidget({
           transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .profile-card:hover .profile-card__backdrop::before {
+          transform: scale(1.02);
+        }
+
         /* 第二层：动态渐变遮罩 */
-        .profile-card::after {
+        .profile-card__backdrop::after {
           content: "";
           position: absolute;
           inset: 0;
@@ -222,6 +243,12 @@ export function ProfileWidget({
           z-index: 1;
           pointer-events: none;
           opacity: 0.8;
+        }
+
+        .profile-card::before,
+        .profile-card::after {
+          content: none !important;
+          display: none !important;
         }
 
         @keyframes profile-gradient-pan {
