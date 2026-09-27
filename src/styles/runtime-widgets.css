@@ -3674,3 +3674,29 @@ body.ext-gate-open .shijianus-music-pocket__screen-lyric,
   }
 }
 
+/* ==========================================================
+   MusicPocket & ScreenLyric Internationalization (i18n) Defensive Rules
+   ========================================================== */
+html:not([lang^="zh"]) .shijianus-music-pocket__panel {
+  width: clamp(330px, 94vw, 380px) !important;
+}
+
+html:not([lang^="zh"]) .shijianus-music-pocket__tab {
+  font-size: 10.5px !important;
+  padding: 3px 5px !important;
+  gap: 3px !important;
+  letter-spacing: -0.01em !important;
+}
+
+html:not([lang^="zh"]) .screen-lyric__settings-popover {
+  width: clamp(340px, 92vw, 385px) !important;
+  max-width: 95vw !important;
+}
+
+html:not([lang^="zh"]) .settings-color-btn .color-label {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+

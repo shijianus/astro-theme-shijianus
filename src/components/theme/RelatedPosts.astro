@@ -42,15 +42,17 @@ function getPostTitlesByLang(post: CollectionEntry<'posts'>): Record<string, str
       const titlesByLang = getPostTitlesByLang(post);
       return (
         <a class="relatedPosts-item" href={getPostPath(post)}>
-          <img
-            src={resolveCover(post)}
-            alt={resolveCoverAlt(post)}
-            loading="lazy"
-            decoding="async"
-            data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
-            data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
-            onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
-          />
+          <div class="relatedPosts-item__cover">
+            <img
+              src={resolveCover(post)}
+              alt={resolveCoverAlt(post)}
+              loading="lazy"
+              decoding="async"
+              data-fallback-src={siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}
+              data-remote-fallback-src={siteConfig.post.hero.remoteFallbackImage || '/media/shijianus/default.png'}
+              onerror={`if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';if(!this.src.endsWith('${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}')){this.src='${siteConfig.post.hero.fallbackImage || '/media/shijianus/default.png'}';}else{this.onerror=null;}}else{this.onerror=null;}`}
+            />
+          </div>
           <span class="relatedPosts-item__index">{String(index + 1).padStart(2, '0')}</span>
           <div class="content">
             <div class="date">{formatDisplayDate(post.data.pubDate)}</div>

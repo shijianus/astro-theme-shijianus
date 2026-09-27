@@ -334,6 +334,29 @@ html[data-background='snow'] .postNav-card::after {
   border-radius: inherit !important;
 }
 
+.relatedPosts-item__cover,
+.postNav-card__cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+  border-radius: inherit !important;
+  pointer-events: none;
+}
+
+/* Soften high-saturation cover images in dark mode for gentle night immersion */
+:root[data-theme='dark'] .relatedPosts-item img,
+:root[data-theme='dark'] .postNav-card img {
+  filter: brightness(0.85);
+  transition: filter 0.3s ease, transform 0.45s ease;
+}
+
+:root[data-theme='dark'] .relatedPosts-item:hover img,
+:root[data-theme='dark'] .postNav-card:hover img {
+  filter: brightness(1);
+}
+
 .page {
   position: relative;
   z-index: 1;

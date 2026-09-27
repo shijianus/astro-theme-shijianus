@@ -1264,7 +1264,8 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     display: flex !important;
     flex-direction: column !important;
     gap: var(--console-gap) !important;
-    width: max-content !important;
+    width: clamp(340px, 32%, 385px) !important;
+    max-width: 400px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
 }
@@ -1394,9 +1395,11 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 /* Activity Heatmap - Precision GitHub Refactor */
 #console .activity-grid-container { 
     display: flex !important; 
-    justify-content: center !important;
+    justify-content: flex-start !important;
     margin-top: 14px !important;
-    overflow: visible !important; 
+    overflow-x: auto !important; 
+    max-width: 100% !important;
+    scrollbar-width: none !important;
 }
 
 #console .heatmap-internal-wrapper {
@@ -1404,6 +1407,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     flex-direction: column !important;
     position: relative !important;
     overflow: visible !important;
+    margin: 0 auto !important;
 }
 
 #console .activity-month-labels {
@@ -1511,8 +1515,10 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     padding: 6px 12px !important;
     font-size: 12px !important;
     font-weight: 500 !important;
-    white-space: nowrap !important;
-    line-height: 1.2 !important;
+    max-width: min(320px, 85vw) !important;
+    width: max-content !important;
+    white-space: normal !important;
+    line-height: 1.35 !important;
     text-align: center !important;
     
     /* 隐藏状态 */
@@ -1610,8 +1616,22 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   box-shadow: var(--shadow-theme);
 }
 
-.webinfo-item-label { display: flex; align-items: center; gap: 4px; }
-.webinfo-item span { font-size: 9px !important; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.webinfo-item-label { display: flex; align-items: center; gap: 4px; max-width: 100%; min-width: 0; }
+.webinfo-item span { 
+  font-size: 9px !important; 
+  font-weight: 700; 
+  color: var(--text-muted); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+html:not([lang^="zh"]) .webinfo-item span {
+  font-size: clamp(8px, 1.8vw, 8.8px) !important;
+  letter-spacing: 0.2px !important;
+}
 .webinfo-item strong { font-size: 12px !important; color: var(--font-color); font-family: var(--font-family-mono); line-height: 1.1 !important; }
 
 /* Tooltip Fix for SVG Icons - Restored and moved to parents */
@@ -2092,6 +2112,7 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     min-height: 0 !important;
     padding: 0 12px !important;
     border-radius: 12px !important;
+    margin-top: 6px !important;
     margin-bottom: 16px !important;
     overflow: hidden !important;
     box-sizing: border-box !important;

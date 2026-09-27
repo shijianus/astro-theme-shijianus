@@ -183,6 +183,11 @@ export function ProfileWidget({
           border: none !important;
           min-height: 360px !important;
           border-radius: 8px !important;
+          isolation: isolate !important;
+          contain: paint !important;
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+          mask-image: radial-gradient(white, black);
+          transform: translateZ(0);
         }
 
         /* 第一层：底图 */
@@ -194,6 +199,7 @@ export function ProfileWidget({
           background-size: cover;
           background-position: center;
           border-radius: 8px !important;
+          overflow: hidden !important;
           z-index: 0;
           transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -212,6 +218,7 @@ export function ProfileWidget({
           background-size: 400% 400%;
           animation: profile-gradient-pan 15s ease infinite !important;
           border-radius: 8px !important;
+          overflow: hidden !important;
           z-index: 1;
           pointer-events: none;
           opacity: 0.8;
@@ -227,7 +234,8 @@ export function ProfileWidget({
         .profile-card .card-content {
           position: relative;
           z-index: 2; /* 确保在所有伪元素之上 */
-          overflow: hidden;
+          overflow: hidden !important;
+          border-radius: 8px !important;
           background: rgba(255, 255, 255, 0.02) !important;
           backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -250,6 +258,7 @@ export function ProfileWidget({
           left: -150%;
           width: 80%;
           height: 100%;
+          border-radius: 8px !important;
           background: linear-gradient(
             to right,
             transparent,

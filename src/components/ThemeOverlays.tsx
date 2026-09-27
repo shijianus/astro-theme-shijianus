@@ -1478,7 +1478,7 @@ export function ThemeOverlays({
     setAccountNeedsAttention(false);
 
     const trimmedName = accountForm.name.trim();
-    const effectiveName = trimmedName || (account?.name ? account.name : '访客朋友');
+    const effectiveName = trimmedName || (account?.name ? account.name : convertText('访客朋友', localeVariant));
     const safeBio = accountForm.bio.trim().slice(0, 100);
 
     try {
@@ -1563,8 +1563,8 @@ export function ThemeOverlays({
     emitActivity(`已切换为${meta ? meta.nativeName : applied}界面`, applied);
   };
 
-  const accountAccessLabel = account ? '已登录' : '访客';
-  const accountBridgeLabel = accountPanel.remoteConnected ? accountPanel.providerLabel : '本地身份';
+  const accountAccessLabel = account ? convertText('已登录', localeVariant) : convertText('访客', localeVariant);
+  const accountBridgeLabel = accountPanel.remoteConnected ? accountPanel.providerLabel : convertText('本地身份', localeVariant);
   const accountBridgeNote = accountPanel.remoteConnected ? `当前已接入 ${accountPanel.providerLabel}。` : accountPanel.disabledNotice;
 
   const copyText = async (value: string) => {
@@ -1638,7 +1638,7 @@ export function ThemeOverlays({
 
       {features.searchPanel && (
         <section id="local-search" className={`theme-search ${searchOpen ? 'show' : ''}`} aria-hidden={!searchOpen}>
-          <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label="关闭搜索面板" />
+          <button type="button" className="search-mask" onClick={() => setSearchOpen(false)} aria-label={convertText('关闭搜索面板', localeVariant)} />
           <div className="search-dialog" role="dialog" aria-modal="true" aria-label={t('search.title', '站内搜索')}>
             <div className="search-dialog__head">
               <div>
@@ -1701,15 +1701,15 @@ export function ThemeOverlays({
 
       {features.centerConsole && (
         <section id="console" className={consoleOpen ? 'show' : ''} aria-hidden={!consoleOpen}>
-          <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label="关闭控制台" />
+          <button type="button" className="console-mask" onClick={() => setConsoleOpen(false)} aria-label={convertText('关闭控制台', localeVariant)} />
           
           {/* === 安知鱼纯正血统：中控台独立关闭按钮 (映射对齐) === */}
           <button 
             type="button" 
             className="console-close-btn" 
             onClick={() => setConsoleOpen(false)} 
-            aria-label="关闭中控台"
-            title="关闭 (Esc)"
+            aria-label={convertText('关闭中控台', localeVariant)}
+            title={`${convertText('关闭', localeVariant)} (Esc)`}
             style={{ 
               position: 'fixed', 
               margin: 0, 
@@ -1913,12 +1913,12 @@ export function ThemeOverlays({
             </div>
           </div>
 
-          <div className="button-group" aria-label="控制台快捷操作" style={{ pointerEvents: consoleOpen ? 'auto' : 'none' }}>
+          <div className="button-group" aria-label={convertText('控制台快捷操作', localeVariant)} style={{ pointerEvents: consoleOpen ? 'auto' : 'none' }}>
             <button
               type="button"
               className={`console-btn-item ${theme === 'dark' ? 'on' : ''}`}
               onClick={toggleTheme}
-              title="切换深浅色"
+              title={convertText('切换深浅色', localeVariant)}
               tabIndex={consoleOpen ? 0 : -1}
               disabled={!consoleOpen}
             >
@@ -1999,7 +1999,7 @@ export function ThemeOverlays({
           type="button"
           className="theme-account-overlay__mask"
           onClick={() => setNotificationOpen(false)}
-          aria-label="关闭账号面板"
+          aria-label={convertText('关闭账号面板', localeVariant)}
         />
         <div className="theme-account-drawer" role="dialog" aria-modal="true" aria-label={t('drawer.title', '账号中心')}>
           {/* 1. Header */}
@@ -2051,7 +2051,7 @@ export function ThemeOverlays({
               ) : account?.role === 'admin' ? (
                 <img src="/media/shijianus/avatar.jpg" alt={account.name || brandName} loading="lazy" />
               ) : accountForm.avatar ? (
-                <img src={accountForm.avatar} alt={accountForm.name || '读者'} loading="lazy" />
+                <img src={accountForm.avatar} alt={accountForm.name || convertText('读者', localeVariant)} loading="lazy" />
               ) : account ? (
                 <span>{getCommentInitials(account.name || brandName)}</span>
               ) : accountForm.name ? (
@@ -2467,7 +2467,7 @@ export function ThemeOverlays({
                             <span className="account-level-separator"> / </span>
                             <span className="account-level-target-val">{req.target} {req.unit}</span>
                             {req.isMet ? (
-                              <span className="account-level-status is-met">✓ 已满足</span>
+                              <span className="account-level-status is-met">✓ {convertText('已满足', localeVariant)}</span>
                             ) : (
                               <span className={`account-level-status is-${req.colorTier}`}>{req.progressPercent}%</span>
                             )}

@@ -3201,6 +3201,8 @@ body[data-type='post'] hr.custom-hr {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   padding-bottom: 12px;
   border-bottom: 2px dashed rgba(161, 172, 247, 0.2);
 }
@@ -16816,15 +16818,16 @@ html:not([lang^="zh"]) body[data-type='post'] #pagination .next-info {
 
 /* 5. Account Drawer Layout & Segmented Tabs */
 html:not([lang^="zh"]) .account-nav-tab {
-  font-size: 0.8rem !important;
-  padding: 0 6px !important;
-  gap: 5px !important;
+  font-size: clamp(10px, 2.7vw, 11.5px) !important;
+  padding: 0 4px !important;
+  gap: 3.5px !important;
+  letter-spacing: -0.015em !important;
 }
 
 html:not([lang^="zh"]) .account-nav-tab svg {
   flex-shrink: 0 !important;
-  width: 16px !important;
-  height: 16px !important;
+  width: 14px !important;
+  height: 14px !important;
 }
 
 html:not([lang^="zh"]) .account-tab-badge {
@@ -17029,13 +17032,14 @@ html:not([lang^="zh"]) #post-comment .comment-randomInfo a {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 8px !important;
+  flex-wrap: wrap !important;
+  gap: 8px 12px !important;
+  row-gap: 8px !important;
 }
 
 html:not([lang^="zh"]) #post-comment .tk-comments-count {
   font-size: clamp(11.5px, 3.2vw, 13px) !important;
   letter-spacing: -0.015em !important;
-  white-space: nowrap !important;
   display: inline-flex !important;
   align-items: center !important;
   line-height: 1.2 !important;
@@ -17046,6 +17050,7 @@ html:not([lang^="zh"]) #post-comment .tk-sort-group {
   align-items: center !important;
   gap: 3px !important;
   flex-shrink: 0 !important;
+  max-width: 100% !important;
 }
 
 html:not([lang^="zh"]) #post-comment .tk-sort-btn {

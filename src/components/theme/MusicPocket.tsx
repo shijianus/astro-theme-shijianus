@@ -2113,7 +2113,10 @@ export function MusicPocket({ apiBase }: Props) {
     setSleepTimer(nextVal);
     if (nextVal === null) showToast(t('定时休眠已关闭'));
     else if (nextVal === 'end') showToast(t('当前曲目播完后暂停'));
-    else showToast(`${nextVal} ${t('15分钟后自动暂停').replace('15', String(nextVal))}`);
+    else if (nextVal === 15) showToast(t('15分钟后自动暂停'));
+    else if (nextVal === 30) showToast(t('30分钟后自动暂停'));
+    else if (nextVal === 60) showToast(t('60分钟后自动暂停'));
+    else showToast(`${nextVal}m`);
   };
 
   const cyclePlaybackRate = () => {
@@ -2151,15 +2154,15 @@ export function MusicPocket({ apiBase }: Props) {
   const getSourceLabel = (src: string) => {
     switch (src) {
       case 'local':
-        return '精选本地';
+        return t('精选本地');
       case 'netease':
-        return '网易云';
+        return t('网易云');
       case 'qq':
-        return 'QQ音乐';
+        return t('QQ音乐');
       case 'kuwo':
-        return '酷我';
+        return t('酷我');
       default:
-        return src ? src.toUpperCase() : 'CLOUD';
+        return src ? src.toUpperCase() : t('云端');
     }
   };
 
@@ -2453,7 +2456,7 @@ export function MusicPocket({ apiBase }: Props) {
 
                   <div className="shijianus-music-pocket__stage-meta">
                     <div className="shijianus-music-pocket__title-row">
-                      <strong className="shijianus-music-pocket__song-title" title={currentTrack?.name || '未知曲目'}>
+                      <strong className="shijianus-music-pocket__song-title" title={currentTrack?.name || t('未知曲目')}>
                         {currentTrack ? currentTrack.name : t('暂无播放曲目')}
                       </strong>
                       {currentTrack && (
@@ -2467,7 +2470,7 @@ export function MusicPocket({ apiBase }: Props) {
                     </p>
 
                     {/* 真实 32 频段高密声波频谱 (Web Audio API 60FPS) */}
-                    <div className="shijianus-music-pocket__visualizer-wrapper" title="实时音轨频谱 (Web Audio API 60FPS)">
+                    <div className="shijianus-music-pocket__visualizer-wrapper" title={`${t('实时音轨频谱')} (Web Audio API 60FPS)`}>
                       <canvas
                         ref={canvasRef}
                         className="shijianus-music-pocket__visualizer-canvas"
@@ -2506,14 +2509,14 @@ export function MusicPocket({ apiBase }: Props) {
                     <div className="shijianus-music-pocket__lyric-current is-preview">
                       <Quote size={11} className="ribbon-icon" aria-hidden="true" />
                       <span className="ribbon-text">
-                        {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
+                        {cleanLyricText(parsedLyrics[0]?.text) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('♫ 静心享受好音乐 ♫'))}
                       </span>
                     </div>
                   ) : (
                     <div className="shijianus-music-pocket__lyric-current is-empty">
                       <Radio size={11} className="empty-icon" aria-hidden="true" />
                       <span className="ribbon-text">
-                        {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♫ 静心享受好音乐 ♫')}
+                        {cleanLyricText(rawLyric) || (currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('♫ 静心享受好音乐 ♫'))}
                       </span>
                     </div>
                   )}
@@ -2710,7 +2713,7 @@ export function MusicPocket({ apiBase }: Props) {
                           ref={isActive ? activeLyricRef : null}
                           className={`lyrics-line ${isActive ? 'is-active is-current' : ''} ${isPassed ? 'is-passed is-sung' : ''} ${isFuture ? 'is-future' : ''}`}
                           onClick={() => handleLyricClick(line.time)}
-                          title={`${formatTime(line.time)} - 点击试听`}
+                          title={`${formatTime(line.time)} - ${t('点击试听')}`}
                         >
                           <span className="lyrics-line__time">{formatTime(line.time)}</span>
                           <span
@@ -2896,11 +2899,11 @@ export function MusicPocket({ apiBase }: Props) {
                       type="button"
                       className="shijianus-music-pocket__pill"
                       onClick={() => {
-                        setQuery(tag);
+                        setQuery(t(tag));
                         handleSearch(undefined, tag);
                       }}
                     >
-                      {tag}
+                      {t(tag)}
                     </button>
                   ))}
                 </div>
@@ -3058,7 +3061,7 @@ export function MusicPocket({ apiBase }: Props) {
             ) : (
               <div className="screen-lyric__current-line">
                 <span className="screen-lyric__static-text">
-                  {currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : '♬ 纯音乐，请欣赏 ♬'}
+                  {currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('♬ 纯音乐，请欣赏 ♬')}
                 </span>
               </div>
             )}
@@ -3288,7 +3291,7 @@ export function MusicPocket({ apiBase }: Props) {
                 <div className="settings-engine-card">
                   <div className="settings-engine-title">
                     <span className="settings-engine-dot" />
-                    <strong>CFSolara 字幕同步引擎 v2.0</strong>
+                    <strong>CFSolara {t('字幕同步引擎')} v2.0</strong>
                   </div>
                   <p className="settings-engine-desc">
                     {t('实时音轨锚定 · 毫秒级时间戳对齐 · CFSolara API 官方接入')}
