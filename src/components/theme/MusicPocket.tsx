@@ -1382,10 +1382,6 @@ export function MusicPocket({ apiBase }: Props) {
     if (!audio) return;
 
     const onTimeUpdate = () => {
-      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
-      if (isRecentlySeeked && Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) > 0.35) {
-        return;
-      }
       audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       audioClockRef.current.playbackRate = audio.playbackRate || 1;
@@ -1396,10 +1392,7 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     const onPlay = () => {
-      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
-      if (!isRecentlySeeked || Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) <= 0.35) {
-        audioClockRef.current.anchorAudioTime = audio.currentTime;
-      }
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       audioClockRef.current.playbackRate = audio.playbackRate || 1;
       setIsPlaying(true);
@@ -1407,23 +1400,16 @@ export function MusicPocket({ apiBase }: Props) {
     };
 
     const onPause = () => {
-      const isRecentlySeeked = performance.now() - lastSeekTimeRef.current < 3000;
-      if (isRecentlySeeked && Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) > 0.35) {
-        setIsPlaying(false);
-        return;
-      }
       audioClockRef.current.anchorAudioTime = audio.currentTime;
       audioClockRef.current.anchorPerfTime = performance.now();
       setIsPlaying(false);
     };
 
     const onSeeked = () => {
-      if (Math.abs(audio.currentTime - audioClockRef.current.anchorAudioTime) <= 0.35) {
-        lastSeekTimeRef.current = 0;
-        audioClockRef.current.anchorAudioTime = audio.currentTime;
-        audioClockRef.current.anchorPerfTime = performance.now();
-        setCurrentTime(audio.currentTime);
-      }
+      lastSeekTimeRef.current = 0;
+      audioClockRef.current.anchorAudioTime = audio.currentTime;
+      audioClockRef.current.anchorPerfTime = performance.now();
+      setCurrentTime(audio.currentTime);
     };
 
     const onEnded = () => {
@@ -1632,6 +1618,26 @@ export function MusicPocket({ apiBase }: Props) {
       .then(({ text, syncType, lines }) => {
         if (isCancelled) return;
         if (lines && lines.length > 0) {
+          // 本地歌曲专属对齐防护：若远端返回的歌词版本首句时差与本地音频严重不一致（如本地为剪辑版/短前奏），坚守本地高精模板
+          if (currentTrack.source === 'local' && fallbackLrc) {
+            const localParsed = parseHighPrecisionLrc(fallbackLrc);
+            const firstLocalVocal = localParsed.lines.find((l) => !isLyricMetadataLine(l.text));
+            const firstRemoteVocal = lines.find((l) => !isLyricMetadataLine(l.text));
+            if (firstLocalVocal && firstRemoteVocal) {
+              const localT = typeof firstLocalVocal.timeSec === 'number' ? firstLocalVocal.timeSec : firstLocalVocal.time;
+              const remoteT = typeof firstRemoteVocal.timeSec === 'number' ? firstRemoteVocal.timeSec : (firstRemoteVocal.time > 1000 ? firstRemoteVocal.time / 1000 : firstRemoteVocal.time);
+              if (Math.abs(localT - remoteT) > 4.5) {
+                const normLocal = normalizeLyricLines(localParsed.lines);
+                setRawLyric(fallbackLrc);
+                setLyricSyncType(localParsed.syncType);
+                lyricSyncTypeRef.current = localParsed.syncType;
+                setParsedLyrics(normLocal);
+                parsedLyricsRef.current = normLocal;
+                return;
+              }
+            }
+          }
+
           const normalized = normalizeLyricLines(lines);
           setRawLyric(text);
           setLyricSyncType(syncType);
@@ -1706,24 +1712,12 @@ export function MusicPocket({ apiBase }: Props) {
     const tick = () => {
       const audio = audioRef.current;
       const now = performance.now();
-      const isRecentlySeeked = now - lastSeekTimeRef.current < 2500;
 
       if (audio) {
-        let accurateTime: number;
-        if (!audio.paused) {
-          const rate = audioClockRef.current.playbackRate || 1;
-          const elapsed = ((now - audioClockRef.current.anchorPerfTime) / 1000) * rate;
-          accurateTime = audioClockRef.current.anchorAudioTime + elapsed;
-
-          // Snap check if audio drifted or seek occurred (bypass during recent seek window)
-          if (!isRecentlySeeked && Math.abs(accurateTime - audio.currentTime) > 0.35) {
-            accurateTime = audio.currentTime;
-            audioClockRef.current.anchorAudioTime = audio.currentTime;
-            audioClockRef.current.anchorPerfTime = now;
-          }
-        } else {
-          accurateTime = audioClockRef.current.anchorAudioTime;
-        }
+        // Direct hardware-accurate audio position (zero-drift, zero-lag, eliminates 350ms stutter jumps)
+        const accurateTime = audio.currentTime;
+        audioClockRef.current.anchorAudioTime = accurateTime;
+        audioClockRef.current.anchorPerfTime = now;
 
         // Real-time zero-lag active lyric line resolution
         const currentLyrics = parsedLyricsRef.current.length > 0 ? parsedLyricsRef.current : parsedLyrics;
@@ -1826,7 +1820,41 @@ export function MusicPocket({ apiBase }: Props) {
     }
     const nextLine = nextVocalIndex >= 0 ? parsedLyrics[nextVocalIndex] : null;
 
-    // 4. 有歌词时：唱完后直接停留在本句（上一句），双行下一行预览下一句，彻底移除任何多余的间奏中显示
+    // 4. 间奏判定与优雅过渡 (Interlude Graceful Transition)
+    // 当两句歌词之间间隔较长 (>= 4.2 秒) 时，避免歌词在唱完后长时间呆滞在上一句，
+    // 而是自然过渡为音乐节拍间奏提示，并在下一句开唱前 1.0 秒自然切入预备态。
+    const curStart = typeof curLine.timeSec === 'number' ? curLine.timeSec : curLine.time;
+    let curEnd: number;
+    if (curLine.words && curLine.words.length > 0) {
+      const lastW = curLine.words[curLine.words.length - 1];
+      curEnd = typeof lastW.endSec === 'number' ? lastW.endSec : (typeof lastW.end === 'number' ? (lastW.end > 1000 ? lastW.end / 1000 : lastW.end) : curStart + (curLine.durationSec || 3.0));
+    } else {
+      const dur = typeof curLine.durationSec === 'number' ? curLine.durationSec : (curLine.duration || 3.5);
+      curEnd = curStart + dur;
+    }
+
+    const nextStart = nextLine
+      ? (typeof nextLine.timeSec === 'number' ? nextLine.timeSec : (nextLine.time > 1000 ? nextLine.time / 1000 : nextLine.time))
+      : null;
+
+    const interludeGap = nextStart !== null ? nextStart - curEnd : 0;
+    if (nextLine && interludeGap >= 4.2) {
+      if (currentTime >= curEnd + 0.8 && currentTime < nextStart - 1.0) {
+        return {
+          activeText: t('♪ 间奏中 ··· ♪'),
+          nextText: cleanLyricText(nextLine.text),
+          isPureMusic: false,
+        };
+      }
+      if (currentTime >= nextStart - 1.0 && currentTime < nextStart) {
+        return {
+          activeText: cleanLyricText(nextLine.text),
+          nextText: '',
+          isPureMusic: false,
+        };
+      }
+    }
+
     return {
       activeText: cleanLyricText(curLine.text),
       nextText: nextLine ? cleanLyricText(nextLine.text) : '',

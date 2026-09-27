@@ -1778,8 +1778,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '上页': { en: 'Prev', fr: 'Préc', es: 'Ant', de: 'Zurück' },
   '下页': { en: 'Next', fr: 'Suiv', es: 'Sig', de: 'Weiter' },
   '文章分页': { en: 'Pagination', fr: 'Pagination', es: 'Paginación', de: 'Seitennummerierung' },
-  '返回首页': { en: 'Back to Home', fr: 'Retour à l\'accueil', es: 'Volver al inicio', de: 'Zur Startseite' },
-  '查看归档': { en: 'View Archives', fr: 'Voir les archives', es: 'Ver archivos', de: 'Archiv ansehen' },
   '这条路还没有被记录下来': { en: 'This path has not been charted yet', fr: 'Ce chemin n\'a pas encore été exploré', es: 'Este camino aún no ha sido trazado', de: 'Dieser Pfad wurde noch nicht erfasst' },
   '返回首页继续浏览，或者直接从最近更新进入现有文章，不把读者留在死路里。': { en: 'Return home to keep browsing, or jump straight to recent posts to avoid dead ends.', fr: 'Retournez à l\'accueil ou explorez les publications récentes pour continuer.', es: 'Vuelve al inicio o explora publicaciones recientes para continuar.', de: 'Zurück zur Startseite oder zu den neuesten Beiträgen wechseln.' },
 
@@ -1943,7 +1941,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '标签文章': { en: 'Tagged Articles', fr: 'Articles étiquetés', es: 'Artículos etiquetados', de: 'Verschlagwortete Artikel' },
   '全部分类': { en: 'All Categories', fr: 'Toutes les catégories', es: 'Todas las categorías', de: 'Alle Kategorien' },
   '全部标签': { en: 'All Tags', fr: 'Toutes les étiquettes', es: 'Todas las etiquetas', de: 'Alle Schlagwörter' },
-  '归档时间线': { en: 'Archive Timeline', fr: 'Chronologie des archives', es: 'Línea de tiempo de archivos', de: 'Archiv-Zeitleiste' },
   '把所有文章按年份连续展开，保留明确时间顺序、封面信息和最短阅读路径。': { en: 'All articles arranged continuously by year, preserving chronological order, covers, and direct reading paths.', fr: 'Tous les articles organisés par année, préservant l\'ordre chronologique, les couvertures et un accès direct.', es: 'Todos los artículos organizados cronológicamente por año, con portadas y rutas de lectura directa.', de: 'Alle Artikel chronologisch nach Jahren geordnet, mit Cover-Vorschau und direktem Lesezugriff.' },
   '最近归档': { en: 'Latest Archive', fr: 'Archives récentes', es: 'Archivo reciente', de: 'Neuestes Archiv' },
   '年份': { en: 'Years', fr: 'Années', es: 'Años', de: 'Jahre' },
@@ -1965,16 +1962,8 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '设计对齐': { en: 'Design Align', fr: 'Alignement design', es: 'Alineación de diseño', de: 'Design-Abstimmung' },
   '重构进度': { en: 'Progress', fr: 'Progression', es: 'Progreso', de: 'Fortschritt' },
   '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
-  '文章总数': { en: 'Total Posts', fr: 'Total articles', es: 'Total de publicaciones', de: 'Beiträge gesamt' },
   '建站天数': { en: 'Uptime Days', fr: 'Jours en ligne', es: 'Días activo', de: 'Tage online' },
   '全站字数': { en: 'Total Words', fr: 'Total mots', es: 'Total de palabras', de: 'Wörter gesamt' },
-  '最后推送': { en: 'Last Push', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Letzte Aktualisierung' },
-  '标签总数': { en: 'Total Tags', fr: 'Total étiquettes', es: 'Total de etiquetas', de: 'Schlagwörter gesamt' },
-  '版本协议': { en: 'Version Protocol', fr: 'Protocole de version', es: 'Protocolo de versión', de: 'Versionsprotokoll' },
-  '活跃等级': { en: 'Activity Level', fr: 'Niveau d\'activité', es: 'Nivel de actividad', de: 'Aktivitätsgrad' },
-  '内容密度': { en: 'Content Density', fr: 'Densité de contenu', es: 'Densidad de contenido', de: 'Inhaltsdichte' },
-  '阅读时长': { en: 'Reading Time', fr: 'Temps de lecture', es: 'Tiempo de lectura', de: 'Lesezeit' },
-  '系统架构': { en: 'Architecture', fr: 'Architecture', es: 'Arquitectura', de: 'Architektur' },
   '热门标签': { en: 'Popular Tags', fr: 'Étiquettes populaires', es: 'Etiquetas populares', de: 'Beliebte Schlagwörter' },
   '查看全部标签': { en: 'View all tags', fr: 'Voir toutes les étiquettes', es: 'Ver todas las etiquetas', de: 'Alle Schlagwörter anzeigen' },
   '精选分类': { en: 'Featured Categories', fr: 'Catégories en vedette', es: 'Categorías destacadas', de: 'Ausgewählte Kategorien' },
@@ -1983,8 +1972,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '正常运行': { en: 'Operational', fr: 'Opérationnel', es: 'Operativo', de: 'Betriebsbereit' },
   '核心架构版本与协议规范': { en: 'Core architecture version and protocol specifications', fr: 'Version de l\'architecture et spécifications de protocole', es: 'Versión de arquitectura central y protocolo', de: 'Architekturversion und Protokollspezifikationen' },
   '基于 Astro 核心引擎与 Edge Functions': { en: 'Powered by Astro core engine & Edge Functions', fr: 'Propulsé par le moteur Astro et Edge Functions', es: 'Impulsado por el motor Astro y Edge Functions', de: 'Basierend auf Astro-Core und Edge Functions' },
-  '原创': { en: 'Original', fr: 'Original', es: 'Original', de: 'Original' },
-  '转载': { en: 'Reprint', fr: 'Reproduction', es: 'Reproducción', de: 'Nachdruck' },
   '文章原创标识': { en: 'Article Original Badge', fr: 'Badge d\'article original', es: 'Insignia de artículo original', de: 'Originalartikel-Abzeichen' },
   '手机扫码阅读': { en: 'Read on Mobile', fr: 'Lire sur mobile', es: 'Leer en móvil', de: 'Auf dem Handy lesen' },
   '复制文章链接': { en: 'Copy Article Link', fr: 'Copier le lien', es: 'Copiar enlace', de: 'Artikellink kopieren' },
@@ -2058,14 +2045,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
 
   // Sidebar & Web Info
   '文章分类': { en: 'Categories', fr: 'Catégories', es: 'Categorías', de: 'Kategorien' },
-  '热门标签': { en: 'Popular Tags', fr: 'Étiquettes populaires', es: 'Etiquetas populares', de: 'Beliebte Schlagwörter' },
-  '精选分类': { en: 'Featured Categories', fr: 'Catégories en vedette', es: 'Categorías destacadas', de: 'Empfohlene Kategorien' },
-  '正常运行': { en: 'Operational', fr: 'Opérationnel', es: 'Operativo', de: 'Betriebsbereit' },
-  '查看全部标签': { en: 'View all tags', fr: 'Voir toutes les étiquettes', es: 'Ver todas las etiquetas', de: 'Alle Schlagwörter anzeigen' },
-  '查看全部分类': { en: 'View all categories', fr: 'Voir toutes les catégories', es: 'Ver todas las categorías', de: 'Alle Kategorien anzeigen' },
-  '核心架构版本与协议规范': { en: 'Core architecture version and protocol specification', fr: 'Version de l architecture centrale et spécifications', es: 'Versión de arquitectura central y especificaciones', de: 'Kernarchitektur-Version und Protokollspezifikation' },
-  '基于 Astro 核心引擎与 Edge Functions': { en: 'Built on Astro core engine & Edge Functions', fr: 'Basé sur le moteur Astro et les fonctions Edge', es: 'Basado en el motor central de Astro y Edge Functions', de: 'Basiert auf Astro Core Engine und Edge Functions' },
-  '站点资讯': { en: 'Site Info', fr: 'Infos du site', es: 'Información del sitio', de: 'Website-Info' },
   '网站资讯': { en: 'Site Info', fr: 'Infos du site', es: 'Información del sitio', de: 'Website-Info' },
   '文章总数 :': { en: 'Total Posts :', fr: 'Total des articles :', es: 'Artículos totales :', de: 'Beiträge gesamt :' },
   '建站天数 :': { en: 'Days Online :', fr: 'Jours en ligne :', es: 'Días en línea :', de: 'Tage online :' },
@@ -2073,8 +2052,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '文章总数:': { en: 'Total Posts:', fr: 'Total des articles:', es: 'Artículos totales:', de: 'Beiträge gesamt:' },
   '建站天数:': { en: 'Days Online:', fr: 'Jours en ligne:', es: 'Días en línea:', de: 'Tage online:' },
   '全站字数:': { en: 'Total Words:', fr: 'Nombre de mots:', es: 'Palabras totales:', de: 'Wörter gesamt:' },
-  '全站字数': { en: 'Total Words', fr: 'Nombre de mots', es: 'Palabras totales', de: 'Wörter gesamt' },
-  '建站天数': { en: 'Days Online', fr: 'Jours en ligne', es: 'Días en línea', de: 'Tage online' },
   '运行时间': { en: 'Uptime', fr: 'Temps de fonctionnement', es: 'Tiempo activo', de: 'Betriebszeit' },
   '最后更新': { en: 'Last Updated', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Zuletzt aktualisiert' },
   '本站访客数': { en: 'Total Visitors', fr: 'Visiteurs uniques', es: 'Visitantes uniques', de: 'Besucher gesamt' },
@@ -2133,7 +2110,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '为你我保留一处专注慢思考': { en: 'Preserving a space for focused deep thought', fr: 'Préserver un espace propice à la réflexion posée', es: 'Preservando un espacio para el pensamiento profundo', de: 'Einen Raum für fokussiertes Nachdenken bewahren' },
 
   // Placeholder, Roadmap, Lab & Friends Pages
-  '当前页面已预留完成，后续内容可以直接在这个路由上继续扩展。': { en: 'This page route has been reserved, and future content will expand directly here.', fr: 'Cet itinéraire est réservé et le contenu futur sera développé directement ici.', es: 'Esta ruta de página está reservada y el contenido futuro se ampliará directamente aquí.', de: 'Diese Seite ist reserviert und künftige Inhalte werden direkt hier erweitert.' },
   '专题 / 路线': { en: 'Special / Roadmap', fr: 'Dossier / Feuille de route', es: 'Especial / Hoja de ruta', de: 'Themen / Roadmap' },
   '这里预留给专题整理、系列文章索引和模板升级路线。当前先占住这个入口，后续再把结构化内容逐步填进来。': { en: 'Reserved for topics, article index, and theme upgrade roadmap. Structured content will be added gradually.', fr: 'Réservé aux dossiers thématiques, index d articles et feuille de route des mises à jour. Le contenu structuré sera complété progressivement.', es: 'Reservado para temas, índice de artículos y hoja de ruta de actualización. El contenido estructurado se irá completando progresivamente.', de: 'Reserviert für Themensammlungen, Beitragsindex und Theme-Roadmap. Strukturierte Inhalte werden schrittweise ergänzt.' },
   '路线图整理中': { en: 'Roadmap in progress', fr: 'Feuille de route en cours', es: 'Hoja de ruta en preparación', de: 'Roadmap in Vorbereitung' },
@@ -2146,18 +2122,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '优先放不影响主阅读流的功能实验，再决定是否升级成正式页面。': { en: 'Priority is given to functional experiments that do not disrupt the reading flow, before upgrading to official pages.', fr: 'La priorité est donnée aux expérimentations qui ne perturbent pas la lecture principale avant toute intégration définitive.', es: 'Se da prioridad a experimentos funcionales que no interrumpan la lectura antes de pasarlos a páginas oficiales.', de: 'Funktionale Experimente ohne Beeinträchtigung des Leseflusses haben Vorrang vor der Freigabe als offizielle Seiten.' },
   '占位页已经预留好路径和风格，后续只需要补内容，不必重新搭导航。': { en: 'Placeholder pages already have routes and styles established; future work only involves adding content.', fr: 'Ces pages ont déjà leurs chemins et styles établis ; il suffit d y ajouter du contenu sans reconstruire la navigation.', es: 'Las páginas de reserva ya tienen rutas y estilos listos; solo queda añadir contenido sin reconstruir la navegación.', de: 'Platzhalterseiten haben bereits Pfade und Stile definiert; künftig müssen nur Inhalte nachgetragen werden.' },
   '这里的页面语义和入口关系已经统一进整站主题体系，后续只需要继续填内容。': { en: 'Page semantics and navigation hierarchy are unified into the theme architecture, ready for content.', fr: 'La sémantique et la hiérarchie de navigation sont déjà unifiées dans l architecture du thème.', es: 'La semántica y la jerarquía de navegación ya están unificadas en la arquitectura del tema.', de: 'Seitensemantik und Navigationshierarchie sind bereits in das Theme-System integriert.' },
-  '友链 / 社群': { en: 'Links / Community', fr: 'Liens / Communauté', es: 'Enlaces / Comunidad', de: 'Links / Community' },
-  '这里不再保留空白占位，而是直接把互链说明、社群二维码和后续交流路径放成可用页面。如果你希望接收更新通知、参与小范围测试，或讨论互链合作，可以优先从这里进入。': { en: 'No blank placeholders: friend link guidelines, community QR codes, and contact channels are available directly here for updates, testing, and link exchanges.', fr: 'Aucun espace réservé vide : directives d échange de liens, QR codes et canaux de contact sont disponibles ici pour les mises à jour et partenariats.', es: 'Sin marcadores de posición vacíos: las pautas de intercambio de enlaces, códigos QR y canales de contacto están listos aquí para actualizaciones y colaboraciones.', de: 'Keine leeren Platzhalter: Richtlinien für Linktausch, Community-QR-Codes und Kontaktkanäle stehen hier für Updates und Kooperationen bereit.' },
-  '加入 Telegram': { en: 'Join Telegram', fr: 'Rejoindre Telegram', es: 'Unirse a Telegram', de: 'Telegram beitreten' },
-  '查看站点说明': { en: 'View Site Documentation', fr: 'Voir la documentation du site', es: 'Ver documentation du site', de: 'Website-Dokumentation ansehen' },
-  '内容持续维护，能稳定访问，不是短期测试页。': { en: 'Continuously maintained content with reliable uptime, not a short-term test page.', fr: 'Contenu maintenu régulièrement, accès stable, et non une page de test éphémère.', es: 'Contenido mantenido activamente con acceso estable, no una página temporal de prueba.', de: 'Regelmäßig gepflegte Inhalte mit stabiler Erreichbarkeit, keine kurzfristige Testseite.' },
-  '有明确作者信息、归档结构和基本页面说明。': { en: 'Clear author information, archive structure, and essential page documentation.', fr: 'Informations d auteur claires, structure d archives et documentation de base.', es: 'Información clara del autor, estructura de archivo y documentation esencial de la página.', de: 'Klare Autorenangaben, Archivstruktur und grundlegende Seitendokumentation.' },
-  '风格可以不同，但至少要保证阅读体验和基础可访问性。': { en: 'Styles can vary, but good reading experience and fundamental accessibility must be guaranteed.', fr: 'Les styles peuvent varier, mais le confort de lecture et l accessibilité de base doivent être assurés.', es: 'Los estilos pueden variar, pero debe garantizarse una buena experiencia de lectura y accesibilidad básica.', de: 'Stile können variieren, aber Lesbarkeit und grundlegende Barrierefreiheit müssen gewährleistet sein.' },
-  '海外读者和合作站点优先通过 TG 频道或群组联系，后续更新、测试通知和互链整理都会先在这里同步。': { en: 'International readers and partner sites are encouraged to connect via TG channel or group for updates, tests, and link syncs.', fr: 'Les lecteurs internationaux et sites partenaires sont invités à nous contacter via TG pour les annonces et tests.', es: 'Se recomienda a los lectores internacionales y sitios asociados comunicarse por TG para novedades y pruebas.', de: 'Internationale Leser und Partnerseiten kontaktieren uns am besten über Telegram für Updates und Tests.' },
-  '如果你只想留言，也可以直接在任意文章评论区附上站点地址和简介。': { en: 'If you simply wish to leave a message, you can also leave your site URL and bio in any post comments section.', fr: 'Si vous souhaitez simplement laisser un message, vous pouvez mentionner l URL de votre site en commentaire d un article.', es: 'Si solo deseas dejar un mensaje, también puedes incluir la URL de tu sitio y una breve descripción en los comentarios.', de: 'Wenn Sie nur eine Nachricht hinterlassen möchten, können Sie Ihre Website-URL auch in den Kommentaren posten.' },
-  '这个页面已经从占位态切到正式可扩展页面，后续只需要继续补充互链清单、申请格式和推荐站点，不需要再拆结构。': { en: 'This page has transitioned from a placeholder into an extensible official entry, ready for links and guidelines.', fr: 'Cette page est passée d un simple état d attente à un portail officiel évolutif, prêt à accueillir la liste des partenaires.', es: 'Esta página ha pasado de ser un marcador de posición a un portal oficial ampliable, listo para listas de enlaces y pautas.', de: 'Diese Seite ist vom Platzhalterstatus zu einer erweiterbaren offiziellen Seite übergegangen.' },
-
-  // Unit suffixes (standalone — used as separate text nodes in count groups, e.g. category cards)
   '篇': { en: 'posts', fr: 'articles', es: 'posts', de: 'Beiträge' },
   '最近更新于': { en: 'Last updated', fr: 'Dernière mise à jour', es: 'Última actualización', de: 'Zuletzt aktualisiert' },
 
@@ -2172,16 +2136,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '受限': { en: 'Restricted', fr: 'Accès restreint', es: 'Restringido', de: 'Eingeschränkt' },
 
   // Copyright, Sharing & Rewards
-  '手机扫码阅读': { en: 'Scan QR to read on mobile', fr: 'Scanner pour lire sur mobile', es: 'Escanear QR para leer en móvil', de: 'QR scannen für Mobilansicht' },
-  '使用手机扫码（点击复制二维码）': { en: 'Scan with mobile (Click to copy QR)', fr: 'Scanner avec mobile (Cliquer pour copier le QR)', es: 'Escanear con móvil (Clic para copiar QR)', de: 'Mit Handy scannen (Klicken zum Kopieren)' },
-  '复制文章链接': { en: 'Copy post link', fr: 'Copier le lien', es: 'Copiar enlace', de: 'Link kopieren' },
-  '文章原创标识': { en: 'Original post badge', fr: 'Badge d originalité', es: 'Insignia de original', de: 'Original-Beitrags-Kennzeichnung' },
-  '分享到 QQ': { en: 'Share to QQ', fr: 'Partager sur QQ', es: 'Compartir en QQ', de: 'Auf QQ teilen' },
-  '分享到 QQ 空间': { en: 'Share to Qzone', fr: 'Partager sur Qzone', es: 'Compartir en Qzone', de: 'Auf Qzone teilen' },
-  '分享到哔哩哔哩': { en: 'Share to Bilibili', fr: 'Partager sur Bilibili', es: 'Compartir en Bilibili', de: 'Auf Bilibili teilen' },
   '分享到新浪微博': { en: 'Share to Weibo', fr: 'Partager sur Weibo', es: 'Compartir en Weibo', de: 'Auf Weibo teilen' },
-  '文章二维码': { en: 'Post QR Code', fr: 'QR Code de l article', es: 'Código QR del artículo', de: 'Beitrags-QR-Code' },
-  '点击直接将二维码图片复制到剪贴板': { en: 'Click to copy QR image to clipboard', fr: 'Cliquer pour copier l image QR', es: 'Clic para copiar imagen QR', de: 'Klicken, um QR-Bild zu kopieren' },
   '已复制到剪贴板': { en: 'Copied to clipboard', fr: 'Copié dans le presse-papier', es: 'Copiado al portapapeles', de: 'In die Zwischenablage kopiert' },
   '链接已复制': { en: 'Link copied', fr: 'Lien copié', es: 'Enlace copiado', de: 'Link kopiert' },
   '赞赏支持': { en: 'Support & Sponsor', fr: 'Soutien & Don', es: 'Patrocinio & Apoyo', de: 'Unterstützung & Spende' },
@@ -2190,9 +2145,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '推荐': { en: 'Recommended', fr: 'Recommandé', es: 'Recomendado', de: 'Empfohlen' },
   '信用卡 · Apple Pay · Google Pay · Link': { en: 'Credit Card · Apple Pay · Google Pay · Link', fr: 'Carte bancaire · Apple Pay · Google Pay · Link', es: 'Tarjeta de crédito · Apple Pay · Google Pay · Link', de: 'Kreditkarte · Apple Pay · Google Pay · Link' },
   '赞赏支持扩展栏': { en: 'Sponsor Extension Panel', fr: 'Panneau de soutien', es: 'Panel de apoyo', de: 'Unterstützer-Bereich' },
-  '手机访问': { en: 'Mobile Access', fr: 'Accès mobile', es: 'Acceso móvil', de: 'Mobilzugriff' },
-
-  // Comments System
   '正在加载评论...': { en: 'Loading comments...', fr: 'Chargement des commentaires...', es: 'Cargando comentarios...', de: 'Kommentare werden geladen...' },
   '⏱️ 最新': { en: '⏱️ Latest', fr: '⏱️ Récents', es: '⏱️ Más recientes', de: '⏱️ Neueste' },
   '🔥 最热': { en: '🔥 Hottest', fr: '🔥 Populaires', es: '🔥 Más populares', de: '🔥 Beliebteste' },
@@ -2223,9 +2175,6 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   },
   '运行状态': { en: 'Operational Status', fr: 'État du système', es: 'Estado del sistema', de: 'Betriebsstatus' },
   '持续维护中': { en: 'Under Active Maintenance', fr: 'En maintenance active', es: 'En mantenimiento activo', de: 'Wird aktiv gepflegt' },
-  '设计对齐': { en: 'Design Alignment', fr: 'Alignement du design', es: 'Alineación de diseño', de: 'Design-Ausrichtung' },
-  '重构进度': { en: 'Refactor Progress', fr: 'Progression de la refonte', es: 'Progreso de refactorización', de: 'Refaktorierungsfortschritt' },
-  '内容系统': { en: 'Content System', fr: 'Système de contenu', es: 'Sistema de contenido', de: 'Inhaltssystem' },
   '系统设计': { en: 'Systems', fr: 'Systèmes', es: 'Sistemas', de: 'Systeme' },
   '前端工程': { en: 'Frontend', fr: 'Frontend', es: 'Frontend', de: 'Frontend' },
   '学习笔记': { en: 'Notes', fr: 'Notes', es: 'Notas', de: 'Notizen' },
@@ -2270,21 +2219,11 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
     es: 'Conecta temas relacionados mediante palabras clave precisas.',
     de: 'Verwandte Themen mit präzisen Schlagwörtern vernetzen.'
   },
-  '把所有文章按年份连续展开，保留明确时间顺序、封面信息和最短阅读路径。': {
-    en: 'Display all articles chronologically by year with covers and clear reading paths.',
-    fr: 'Affichez tous les articles par année avec couvertures et lecture directe.',
-    es: 'Muestra todos los artículos por año con portadas y lectura directa.',
-    de: 'Alle Artikel chronologisch nach Jahr mit Titelbildern anzeigen.'
-  },
-  '年份': { en: 'Years', fr: 'Années', es: 'Años', de: 'Jahre' },
-  '最近归档': { en: 'Latest archive', fr: 'Archive récente', es: 'Archivo reciente', de: 'Letztes Archiv' },
-
   '关于本站': { en: 'About Site', fr: 'À propos du site', es: 'Acerca del sitio', de: 'Über die Website' },
   '前往友链': { en: 'Visit Friends', fr: 'Voir les amis', es: 'Visitar amigos', de: 'Zu den Freunden' },
   '文章总览': { en: 'Archive Overview', fr: 'Vue d ensemble', es: 'Visión general', de: 'Gesamtübersicht' },
 
   // Navigation & Submenus
-  '文章': { en: 'Articles', fr: 'Articles', es: 'Artículos', de: 'Artikel' },
   '全部文章': { en: 'All Posts', fr: 'Tous les articles', es: 'Todos los artículos', de: 'Alle Beiträge' },
   '时间线总览': { en: 'Timeline Overview', fr: 'Chronologie globale', es: 'Visión general', de: 'Zeitleisten-Übersicht' },
   '按主题浏览文章': { en: 'Browse by topic', fr: 'Parcourir par thème', es: 'Explorar por tema', de: 'Nach Themen durchsuchen' },
@@ -2869,6 +2808,7 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '浏览量': { en: 'Views', fr: 'Vues', es: 'Vistas', de: 'Aufrufe' },
   '语言版本:': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
   '语言版本：': { en: 'Language:', fr: 'Langue :', es: 'Idioma:', de: 'Sprache:' },
+
 };
 
 export interface PatternRule {

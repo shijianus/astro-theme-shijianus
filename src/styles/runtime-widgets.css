@@ -3677,6 +3677,38 @@ body.ext-gate-open .shijianus-music-pocket__screen-lyric,
 /* ==========================================================
    MusicPocket & ScreenLyric Internationalization (i18n) Defensive Rules
    ========================================================== */
+.shijianus-music-pocket__tab {
+  white-space: nowrap !important;
+  min-width: 0 !important;
+}
+
+.shijianus-music-pocket__tab span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+
+.shijianus-music-pocket__title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.shijianus-music-pocket__song-title {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.shijianus-music-pocket__source-pill {
+  flex-shrink: 0 !important;
+}
+
 html:not([lang^="zh"]) .shijianus-music-pocket__panel {
   width: clamp(330px, 94vw, 380px) !important;
 }
@@ -3688,15 +3720,52 @@ html:not([lang^="zh"]) .shijianus-music-pocket__tab {
   letter-spacing: -0.01em !important;
 }
 
+@media (max-width: 480px) {
+  .shijianus-music-pocket__tabs {
+    gap: 1.5px !important;
+    padding: 2px !important;
+  }
+  .shijianus-music-pocket__tab {
+    padding: 3.5px 5px !important;
+    font-size: 10px !important;
+    gap: 2.5px !important;
+  }
+  .shijianus-music-pocket__tab svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+}
+
+.settings-color-group {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+.settings-color-btn {
+  min-width: 0 !important;
+  padding: 5px 3px !important;
+}
+
+.settings-color-btn .color-label {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 10.5px !important;
+}
+
 html:not([lang^="zh"]) .screen-lyric__settings-popover {
   width: clamp(340px, 92vw, 385px) !important;
   max-width: 95vw !important;
 }
 
-html:not([lang^="zh"]) .settings-color-btn .color-label {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+@media (max-width: 480px) {
+  .settings-color-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
 }
+
 
 

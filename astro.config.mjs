@@ -8,7 +8,6 @@ import mdx from '@astrojs/mdx';
 import remarkGfm from 'remark-gfm';
 // import tailwindcss from 'tailwindcss'; // REMOVED: PostCSS plugin is @tailwindcss/postcss
 import autoprefixer from 'autoprefixer';
-import tailwindPostcss from '@tailwindcss/postcss'; // ADDED: Correct PostCSS plugin
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';

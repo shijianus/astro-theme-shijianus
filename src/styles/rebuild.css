@@ -17037,6 +17037,18 @@ html:not([lang^="zh"]) #post-comment .comment-randomInfo a {
   row-gap: 8px !important;
 }
 
+@media (max-width: 480px) {
+  #post-comment .tk-comments-title {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  #post-comment .tk-sort-group {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+}
+
 html:not([lang^="zh"]) #post-comment .tk-comments-count {
   font-size: clamp(11.5px, 3.2vw, 13px) !important;
   letter-spacing: -0.015em !important;
