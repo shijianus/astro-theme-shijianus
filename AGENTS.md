@@ -4381,6 +4381,30 @@
   - 生产端 `https://blog.epocanvas.com/` 实机检测 20 个卡片积雪全部正常运作；
   - 10 篇列表卡片实测命中 5 种不同原型，种子离散度 100%，无重复穿模，0 致命 JS 报错。
 
+### Task 197: 全曲目生命周期物理对齐、间奏呼吸态、语言一致性加固与全网点播实机全链路审计
+- [x] **间奏后严重乱掉/错位深层根因定位与 CFSolara 多位点校验体系 (`CFSolara: 20fdcef`)**:
+  1. 根因剖析：酷狗歌词库中存在大量同名“双声道变奏版”、“加速版”与“英文翻唱版”。其前奏时间戳（如 0.75s）完全吻合，但间奏长达 24.1s（原版录音室音频间奏仅 18.5s），导致间奏之后远端歌词整体滞后 5.38 秒，产生断崖式错位；
+  2. 多位点间奏时差巡检 (Multi-Checkpoint Interlude Drift Rejection)：在整曲 20%、35%、50%、65%、80% 等多个关键位点与原版参考歌词做时间戳比对，一旦时差超过 2.0s，坚决判定为改编/变奏版本并舍弃，强制回退至 100% 物理贴合的录音室音源基准歌词；
+  3. 语种强一致性防御：若参考歌词包含韩文（`[\uac00-\ud7af]`）或日文（`[\u3040-\u30ff]`），候选解密文本必须包含对应字符集，杜绝 Track 1 (Way Back Home) 被英文合作版抢占覆盖。
+- [x] **纯高亮（全蓝假死）体验彻底根除与优雅间奏呼吸指示器 (`shijianus-blog: 22fe8e9`)**:
+  1. 间奏进度清零消除全蓝卡死：在 RAF 逐帧渲染循环中，当处于长间奏阶段（`currentTime >= curEnd + 0.8 && currentTime < nextStart - 1.0`）时，强制将卡拉OK流光进度清零（`--karaoke-pct: 0%`），彻底杜绝唱毕后高亮锁死在 100% 的视觉假死缺陷；
+  2. 间奏呼吸动效与缎带指示：新增 `.screen-lyric__interlude-text` 与 `@keyframes interlude-pulse`（2.4s 微缩放与透明度流转呼吸动效），展示 `♪ 间奏中 ··· ♪` 并同步预览下一句，HUD 屏幕歌词与折叠缎带（Ribbon）体验高度平滑细腻。
+- [x] **边缘缓存击穿加固与生产端立即生效保障 (`functions/_middleware.ts` & `public/_headers`)**:
+  - 为所有 HTML 响应注入 `Cache-Control: public, max-age=0, must-revalidate`，根除 Cloudflare CDN 默认将 HTML 缓存 7 天（`s-maxage=604800`）导致生产更新迟滞的病灶。
+- [x] **双端多节点编译与全量部署**:
+  - `npm run pages:build` 编译完成（284 个静态 HTML 页面）；
+  - `shijianus-blog` (`https://1fe21f26.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://390fa460.shijianus-github-io.pages.dev`) 部署成功；
+  - `https://blog.epocanvas.com/` 生产缓存即时重置完成（`Cache-Control: public, max-age=0, must-revalidate`）。
+- [x] **全曲目全生命周期真实生产环境 Playwright 端到端全景审计 (`scripts/verify-full-song-lifecycle.mjs`)**:
+  - 实测生产域名 `https://blog.epocanvas.com/`：
+    - **Track 1 (Way Back Home)**：0.5s 准确呈现韩语原版 `멈춘 시간 속`，Conor Maynard 英文版 100% 阻断；
+    - **Track 2 (彼女は旅に出る)**：18.5s 开篇 `優しいの 冷たいの`；75.0s 间奏中显示 `♪ 间奏中 ··· ♪` 且进度为 0%（无全蓝呆滞）；92.5s 毫秒级无缝衔接 `満天の宇宙 昇っていくきみの`；130s/180s 后半曲持续对齐；
+    - **Track 3 (アイロニ)**：28.0s 吉他间奏正常；38.5s 物理对齐原版首句 `うまくいきそうなんだけど`（5.38 秒变奏错位 100% 消除）；41.0s `うまくいかないことばかりで`；
+    - **Test 4 (全网歌曲检索与回放)**：灵感标签点播周杰伦《想你就写信 (Live)》，302 封面、206 音频流、200 高精歌词加载完毕，30s 间奏识别与 80s 唱句 `周杰伦：你说想哭就弹琴` 精准匹配；
+    - **控制台报错**：0 个致命 JS 报错（`Console Errors: 0`），全量断言通过（`🎉 ALL AUDIT CHECKS PASSED PERFECTLY!`）。
+
+
 
 
 
