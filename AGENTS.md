@@ -4306,5 +4306,31 @@
   - 实测生产端 `https://blog.epocanvas.com/posts/markdown-syntax-mastery/`：Profile Card 呈现标准 `overflow: hidden`、`borderRadius: 8px`、`contain: paint`、`isolation: isolate`，底部无任何渐变揭出或动画溢出；
   - 实测生产端首页 `https://blog.epocanvas.com/`：21 个卡片排布与交互正常，0 致命 JS 报错。
 
+### Task 194: 随身听组件全量国际化 i18n 补齐、双 Subagent 全量视觉与布局审查、长词防御与生产端实机全链路审计 (`9f21cee`)
+- [x] **MusicPocket 随身听与屏幕歌词全量 i18n 覆盖**:
+  1. 在 `src/lib/client-locale.ts` 补齐 50+ 个国际化键值，覆盖德语 (`de`)、法语 (`fr`)、西班牙语 (`es`)、繁体中文 (`zh-Hant`) 与英语 (`en`)；
+  2. 全量国际化音源标识（`精选本地`、`网易云`、`QQ音乐`、`酷我`、`云端`）、状态气泡、灵感标签（`流行热歌`、`周杰伦`、`赛博纯音`等）、频谱标题、纯音占位符与 CFSolara 官方引擎背书；
+  3. 修复定时休眠 Toast 字符串拼接多语言 Bug，杜绝出现 `"30 Pause in 30 mins"` 等错位表达；
+  4. 消除 `client-locale.ts` 中全部 51 处重复字典定义，Vite 构建 0 告警，字典 100% 幂等。
+- [x] **独立 Subagent 全域视觉与布局审查与 7 项防御性修复 (Visual & Layout Audit)**:
+  1. **[Defect 1 评论区移动端排序溢出]**：`#post-comment .tk-comments-title` 注入 `flex-wrap: wrap !important; gap: 8px 12px;`，在 `<= 480px` 时采用纵向流排版，彻底根除德语 "Öffentliche Kommentare (1)" 与排序按钮向右溢出屏幕 36px 撞上侧边栏 dock 的缺陷；
+  2. **[Defect 2 随身听导航标签垂直多行换行]**：在 `runtime-widgets.css` 施加 `.shijianus-music-pocket__tab { white-space: nowrap !important; min-width: 0; }` 及 `text-overflow: ellipsis`，并在 `<= 480px` 调整内边距与字号，德语 "Warteschlange (3)" 与法语 "File d'attente (3)" 完美单行居中排布（`lines: 1`）；
+  3. **[Defect 3 屏幕歌词调色板溢出]**：`.settings-color-group` 采用 `grid-template-columns: repeat(4, minmax(0, 1fr))` 并在 `<= 480px` 平滑降级为 2 列网格，文字单行截断，彻底消除 "Verde esmeralda" / "Vert émeraude" 导致的 popover 破坏；
+  4. **[Defect 4 控制台 Webinfo 卡片溢出与热力图左穿模]**：将 `#console .console-card-group-left` 宽度严格约束为 `clamp(340px, 32%, 385px)`，活动热力图 `.activity-grid-container` 注入 `justify-content: flex-start; overflow-x: auto; margin: 0 auto;`，彻底根除德文长词让左卡暴增至 520px 并导致右侧热力图向左反向穿模 55px 叠入左卡的缺陷；
+  5. **[Defect 5 随身听长歌名挤出音源徽章]**：`.shijianus-music-pocket__title-row` 赋予 `min-width: 0; width: 100%;`，歌名 `flex: 1 1 auto; min-width: 0; text-overflow: ellipsis;`，超长歌名不再挤压右侧音源徽标；
+  6. **[Defect 6 账号中心复合长词换行]**：为 `.account-pref-title` 增加 `overflow-wrap: break-word; hyphens: auto;`，德语 "Standard-Kommentarsortierung" 优雅断词；
+  7. **[Defect 7 TOC 目录长标题换行保护]**：`#card-toc .toc-link` 注入 `word-break: break-word; overflow-wrap: break-word;`。
+- [x] **全量编译与 Cloudflare Pages 生产边缘节点部署**:
+  - 本地全量构建 `npm run build` 284 页面 100% 成功（59.90s，0 错误，0 告警）；
+  - `shijianus-blog` (`https://faf054be.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://aac0571e.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **生产环境实机 Playwright 全链路审计验证 (`scripts/verify-live-multilingual.mjs`)**:
+  - 实测生产端 `https://blog.epocanvas.com` 全视口（Desktop 1440x950、Mobile 375x812）与全语言（zh-CN、en、de、fr、es）；
+  - 随身听标签 100% 单行无折行（lines: 1）；账号中心设置标签 "Einstellungen" 108px 零截断；
+  - 控制台热力图左侧穿模 0 发生（`heatmapOverlapLeft = false`）；
+  - 评论区标题与排序组在 375px 移动端零溢出（`sortExceeds = false`）；
+  - 0 控制台致命 JS 报错，全链路 100% 审计通过。
+
+
 
 
