@@ -3071,6 +3071,43 @@ html.dark .shijianus-ai-summary__related span {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95));
 }
 
+/* 间奏指示器与脉冲动效 (Interlude Indicator - 优雅呼吸态，杜绝 100% 蓝高亮呆滞) */
+.screen-lyric__vocal-text.screen-lyric__interlude-text {
+  color: var(--karaoke-sung-color, #425aef);
+  opacity: 0.88;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  animation: interlude-pulse 2.4s ease-in-out infinite;
+}
+
+:root[data-theme='dark'] .screen-lyric__vocal-text.screen-lyric__interlude-text {
+  color: var(--karaoke-sung-dark, #818cf8);
+}
+
+@keyframes interlude-pulse {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
+.shijianus-music-pocket__lyric-current.is-interlude .ribbon-text.is-interlude-indicator {
+  color: #425aef;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+:root[data-theme='dark'] .shijianus-music-pocket__lyric-current.is-interlude .ribbon-text.is-interlude-indicator {
+  color: #818cf8;
+}
+
 /* 底层普通静态文本与前奏信息 */
 .screen-lyric__static-text {
   display: inline-block;

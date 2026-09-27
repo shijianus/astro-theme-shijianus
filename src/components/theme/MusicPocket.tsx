@@ -1,4 +1,4 @@
-import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
 import {
   Clock,
@@ -35,7 +35,6 @@ import {
   Volume2,
   VolumeX,
   X,
-  Zap,
 } from 'lucide-react';
 
 export type MusicTrack = {
@@ -1618,23 +1617,67 @@ export function MusicPocket({ apiBase }: Props) {
       .then(({ text, syncType, lines }) => {
         if (isCancelled) return;
         if (lines && lines.length > 0) {
-          // 本地歌曲专属对齐防护：若远端返回的歌词版本首句时差与本地音频严重不一致（如本地为剪辑版/短前奏），坚守本地高精模板
-          if (currentTrack.source === 'local' && fallbackLrc) {
+          // 本地歌曲专属对齐防护：若远端返回的歌词语种不符、首句时差或间奏后中段时差与本地音频严重不一致，坚守本地 100% 物理对齐高精模板
+          if (fallbackLrc) {
             const localParsed = parseHighPrecisionLrc(fallbackLrc);
-            const firstLocalVocal = localParsed.lines.find((l) => !isLyricMetadataLine(l.text));
-            const firstRemoteVocal = lines.find((l) => !isLyricMetadataLine(l.text));
-            if (firstLocalVocal && firstRemoteVocal) {
-              const localT = typeof firstLocalVocal.timeSec === 'number' ? firstLocalVocal.timeSec : firstLocalVocal.time;
-              const remoteT = typeof firstRemoteVocal.timeSec === 'number' ? firstRemoteVocal.timeSec : (firstRemoteVocal.time > 1000 ? firstRemoteVocal.time / 1000 : firstRemoteVocal.time);
-              if (Math.abs(localT - remoteT) > 4.5) {
-                const normLocal = normalizeLyricLines(localParsed.lines);
-                setRawLyric(fallbackLrc);
-                setLyricSyncType(localParsed.syncType);
-                lyricSyncTypeRef.current = localParsed.syncType;
-                setParsedLyrics(normLocal);
-                parsedLyricsRef.current = normLocal;
-                return;
+            const localVocal = localParsed.lines.filter((l) => !isLyricMetadataLine(l.text) && l.text.length >= 2);
+            const remoteVocal = lines.filter((l) => !isLyricMetadataLine(l.text) && l.text.length >= 2);
+
+            let shouldRejectRemote = false;
+
+            if (localVocal.length >= 4 && remoteVocal.length >= 4) {
+              // 1. 语言一致性校验（韩语/日语强校验，杜绝韩文歌曲被强行替换为合作英文版）
+              const localHasKorean = localVocal.some((l) => /[\uac00-\ud7af]/.test(l.text));
+              const remoteHasKorean = remoteVocal.some((l) => /[\uac00-\ud7af]/.test(l.text));
+              if (localHasKorean && !remoteHasKorean) {
+                shouldRejectRemote = true;
               }
+
+              const localHasJapanese = localVocal.some((l) => /[\u3040-\u30ff]/.test(l.text));
+              const remoteHasJapanese = remoteVocal.some((l) => /[\u3040-\u30ff]/.test(l.text));
+              if (localHasJapanese && !remoteHasJapanese) {
+                shouldRejectRemote = true;
+              }
+
+              // 2. 首句时间戳校验 (门限 2.5s)
+              const firstLocalT = localVocal[0].timeSec ?? localVocal[0].time;
+              const firstRemoteT = remoteVocal[0].timeSec ?? (remoteVocal[0].time > 1000 ? remoteVocal[0].time / 1000 : remoteVocal[0].time);
+              if (Math.abs(firstLocalT - firstRemoteT) > 2.5) {
+                shouldRejectRemote = true;
+              }
+
+              // 3. 间奏后（中段 40% ~ 70%）时间戳物理对齐校验：杜绝变奏版/双声道版导致间奏后直接乱掉
+              const midIdx = Math.floor(localVocal.length * 0.5);
+              const midLocalLine = localVocal[midIdx];
+              const midLocalT = midLocalLine.timeSec ?? midLocalLine.time;
+              const midLocalClean = midLocalLine.text.replace(/\s+/g, '').slice(0, 4);
+
+              const matchingRemote = remoteVocal.find((rl) => {
+                const rClean = rl.text.replace(/\s+/g, '');
+                return rClean.includes(midLocalClean) || midLocalClean.includes(rClean.slice(0, 4));
+              });
+
+              if (matchingRemote) {
+                const midRemoteT = matchingRemote.timeSec ?? (matchingRemote.time > 1000 ? matchingRemote.time / 1000 : matchingRemote.time);
+                if (Math.abs(midLocalT - midRemoteT) > 2.0) {
+                  shouldRejectRemote = true;
+                }
+              }
+            }
+
+            if (shouldRejectRemote) {
+              const normLocal = normalizeLyricLines(localParsed.lines);
+              setRawLyric(fallbackLrc);
+              setLyricSyncType(localParsed.syncType);
+              lyricSyncTypeRef.current = localParsed.syncType;
+              setParsedLyrics(normLocal);
+              parsedLyricsRef.current = normLocal;
+              if (audioRef.current) {
+                const liveIndex = findActiveLyricIndex(audioRef.current.currentTime, normLocal);
+                setActiveLyricIndex(liveIndex);
+                activeLyricIndexRef.current = liveIndex;
+              }
+              return;
             }
           }
 
@@ -1727,9 +1770,39 @@ export function MusicPocket({ apiBase }: Props) {
           setActiveLyricIndex(liveLyricIndex);
         }
 
+        // Check if currently in interlude (prevent freezing with 100% blue highlight during interlude)
+        let isInterlude = false;
+        if (liveLyricIndex >= 0 && liveLyricIndex < currentLyrics.length) {
+          const cLine = currentLyrics[liveLyricIndex];
+          const cStart = typeof cLine.timeSec === 'number' ? cLine.timeSec : cLine.time;
+          let cEnd: number;
+          if (cLine.words && cLine.words.length > 0) {
+            const lw = cLine.words[cLine.words.length - 1];
+            cEnd = typeof lw.endSec === 'number' ? lw.endSec : (typeof lw.end === 'number' ? (lw.end > 1000 ? lw.end / 1000 : lw.end) : cStart + (cLine.durationSec || 3.0));
+          } else {
+            cEnd = cStart + (cLine.durationSec || 3.5);
+          }
+          let nVocalLine: LyricLine | null = null;
+          for (let j = liveLyricIndex + 1; j < currentLyrics.length; j++) {
+            if (!isLyricMetadataLine(currentLyrics[j].text)) {
+              nVocalLine = currentLyrics[j];
+              break;
+            }
+          }
+          if (nVocalLine) {
+            const nStart = typeof nVocalLine.timeSec === 'number' ? nVocalLine.timeSec : (nVocalLine.time > 1000 ? nVocalLine.time / 1000 : nVocalLine.time);
+            if (nStart - cEnd >= 4.2 && accurateTime >= cEnd + 0.8 && accurateTime < nStart) {
+              isInterlude = true;
+            }
+          }
+        }
+
         // 1. Direct 60FPS DOM update for --karaoke-pct (Zero React Re-render Overhead)
-        const calc = computeActiveLineProgress(accurateTime, currentLyrics, liveLyricIndex, duration, lyricSyncTypeRef.current);
-        const pctStr = `${calc.progress.toFixed(1)}%`;
+        let pctStr = '0%';
+        if (!isInterlude) {
+          const calc = computeActiveLineProgress(accurateTime, currentLyrics, liveLyricIndex, duration, lyricSyncTypeRef.current);
+          pctStr = `${calc.progress.toFixed(1)}%`;
+        }
         if (screenLyricRef.current) {
           screenLyricRef.current.style.setProperty('--karaoke-pct', pctStr);
         }
@@ -1774,6 +1847,7 @@ export function MusicPocket({ apiBase }: Props) {
         activeText: t('纯音乐，请欣赏'),
         nextText: '',
         isPureMusic: true,
+        isInterlude: false,
       };
     }
 
@@ -1790,6 +1864,7 @@ export function MusicPocket({ apiBase }: Props) {
         activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: cleanLyricText(firstVocalLine.text),
         isPureMusic: false,
+        isInterlude: false,
       };
     }
 
@@ -1799,6 +1874,7 @@ export function MusicPocket({ apiBase }: Props) {
         activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: firstVocalLine ? cleanLyricText(firstVocalLine.text) : '',
         isPureMusic: false,
+        isInterlude: false,
       };
     }
 
@@ -1808,6 +1884,7 @@ export function MusicPocket({ apiBase }: Props) {
         activeText: currentTrack ? `${currentTrack.name} · ${currentTrack.artist}` : t('纯音乐，请欣赏'),
         nextText: cleanLyricText(firstVocalLine.text),
         isPureMusic: false,
+        isInterlude: false,
       };
     }
 
@@ -1822,7 +1899,7 @@ export function MusicPocket({ apiBase }: Props) {
 
     // 4. 间奏判定与优雅过渡 (Interlude Graceful Transition)
     // 当两句歌词之间间隔较长 (>= 4.2 秒) 时，避免歌词在唱完后长时间呆滞在上一句，
-    // 而是自然过渡为音乐节拍间奏提示，并在下一句开唱前 1.0 秒自然切入预备态。
+    // 而是自然过渡为音乐节拍间奏提示，并在下一句开唱前预览下一句。
     const curStart = typeof curLine.timeSec === 'number' ? curLine.timeSec : curLine.time;
     let curEnd: number;
     if (curLine.words && curLine.words.length > 0) {
@@ -1839,18 +1916,12 @@ export function MusicPocket({ apiBase }: Props) {
 
     const interludeGap = nextStart !== null ? nextStart - curEnd : 0;
     if (nextLine && interludeGap >= 4.2) {
-      if (currentTime >= curEnd + 0.8 && currentTime < nextStart - 1.0) {
+      if (currentTime >= curEnd + 0.8 && currentTime < nextStart) {
         return {
           activeText: t('♪ 间奏中 ··· ♪'),
           nextText: cleanLyricText(nextLine.text),
           isPureMusic: false,
-        };
-      }
-      if (currentTime >= nextStart - 1.0 && currentTime < nextStart) {
-        return {
-          activeText: cleanLyricText(nextLine.text),
-          nextText: '',
-          isPureMusic: false,
+          isInterlude: true,
         };
       }
     }
@@ -1859,6 +1930,7 @@ export function MusicPocket({ apiBase }: Props) {
       activeText: cleanLyricText(curLine.text),
       nextText: nextLine ? cleanLyricText(nextLine.text) : '',
       isPureMusic: false,
+      isInterlude: false,
     };
   }, [parsedLyrics, activeLyricIndex, currentTime, currentTrack, rawLyric]);
 
@@ -2516,7 +2588,21 @@ export function MusicPocket({ apiBase }: Props) {
                   onClick={() => setActiveTab('lyrics')}
                   title={t('点击展开完整滚动歌词')}
                 >
-                  {parsedLyrics.length > 0 && activeLyricIndex >= 0 ? (
+                  {displayLyric.isInterlude ? (
+                    <>
+                      <div className="shijianus-music-pocket__lyric-current is-interlude">
+                        <Quote size={11} className="ribbon-icon" aria-hidden="true" />
+                        <span className="ribbon-text is-interlude-indicator">
+                          {displayLyric.activeText}
+                        </span>
+                      </div>
+                      {displayLyric.nextText && (
+                        <div className="shijianus-music-pocket__lyric-next">
+                          <span className="ribbon-next-text">{displayLyric.nextText}</span>
+                        </div>
+                      )}
+                    </>
+                  ) : parsedLyrics.length > 0 && activeLyricIndex >= 0 ? (
                     <>
                       <div className="shijianus-music-pocket__lyric-current">
                         <Quote size={11} className="ribbon-icon" aria-hidden="true" />
@@ -3075,6 +3161,12 @@ export function MusicPocket({ apiBase }: Props) {
                   <span className="screen-lyric__pure-music-icon">♬</span>
                   {t('纯音乐，请欣赏')}
                   <span className="screen-lyric__pure-music-icon">♬</span>
+                </span>
+              </div>
+            ) : displayLyric.isInterlude ? (
+              <div className="screen-lyric__current-line is-interlude">
+                <span className="screen-lyric__vocal-text screen-lyric__interlude-text">
+                  {displayLyric.activeText}
                 </span>
               </div>
             ) : displayLyric.activeText ? (
