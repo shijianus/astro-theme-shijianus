@@ -4331,6 +4331,30 @@
   - 评论区标题与排序组在 375px 移动端零溢出（`sortExceeds = false`）；
   - 0 控制台致命 JS 报错，全链路 100% 审计通过。
 
+### Task 195: ProfileCard 积雪 UI 彻底回归、独立背景层隔离截断 (Isolated Backdrop Containment) 与生产端实机全链路审计 (`b134eb8`)
+- [x] **ProfileCard 积雪 UI 彻底恢复与专属参数对齐 (Snow Mantle Restoration)**:
+  1. 将 `#aside-content .card-widget` 重新纳入 `CLOSED_BOX_SELECTORS`，彻底消除对 `.profile-card` / `.card-info` 的拦截排除；
+  2. 激活专门针对作者名片的轻量精致积雪参数（`isCardInfo = true`, `H = 8`, `maxDroop = 2.0`, `baseDrop = 0.6`），雪顶高度 27px（顶距 `-16px`，卡片内下垂仅 2.6px），与下方 19.2px 处的寄语切换徽章保持超过 16px 呼吸间距，兼具晶莹落雪质感与完整交互能力；
+  3. 雪景开启时赋予卡片容器 `overflow: visible !important`，确保顶沿雪幔、迎光拱面高光（Dome）与冰晶粒子闪烁（Sparkle）无损渲染。
+- [x] **独立背景层 (.profile-card__backdrop) 根治底部移动动态揭出 (Zero Dynamic Leakage)**:
+  1. 在 `ProfileCard.astro` 与 `ProfileWidget.tsx` 引入专属 DOM 容器 `<div class="profile-card__backdrop" aria-hidden="true" />`；
+  2. 将 cover 底图（含 `hover: scale(1.02)`）与动态流光渐变（`profile-gradient-pan 15s ease infinite`）全量迁移至 `.profile-card__backdrop::before` 与 `::after`，容器强制施加 `overflow: hidden !important; contain: paint !important; isolation: isolate !important; border-radius: 8px !important;`；
+  3. 彻底根除导致底边形成椭圆曲线的 `mask-image: radial-gradient(white, black)`，名片底边 100% 水平平齐、8px 方圆角利落收敛，动态背景动画在容器内流动，底部零外溢；
+  4. `.profile-card .card-content` 同样强制 `overflow: hidden !important; border-radius: 8px !important; contain: paint !important;`，扫光动画严格锁定在圆角之内。
+- [x] **全量编译与 Cloudflare Pages 生产边缘节点部署**:
+  - 本地全量生产编译 `npm run pages:build` 284 页面 100% 成功（52.82s，0 错误，0 告警）；
+  - `shijianus-blog` (`https://3a53dee8.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://928cad6e.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **生产环境真实链路 Playwright 端到端全景审计 (`scripts/verify-live-production.mjs`)**:
+  - 实测生产域名 `https://blog.epocanvas.com/posts/markdown-syntax-mastery/`：
+    - `cardOverflow: "visible"`, `cardBorderRadius: "8px"`;
+    - `snow.exists: true`（`height: 27px`, `top: -16px`, `zIndex: 25`），积雪完美覆于卡片顶沿；
+    - `backdrop.overflow: "hidden"`, `backdrop.contain: "paint"`, `backdrop.borderRadius: "8px"`, 底部零外泄；
+    - `content.overflow: "hidden"`, `content.borderRadius: "8px"`;
+  - 生产端首页 `https://blog.epocanvas.com/`：15 个核心卡片积雪正常生成；
+  - 控制台 0 致命 JS 报错（`Fatal JS Errors: []`），全链路通过。
+
+
 
 
 
