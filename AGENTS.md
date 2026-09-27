@@ -4285,4 +4285,26 @@
   - 证实 0 虚假模拟歌词，0 硬编码估算，KRC 解密与高精解析 100% 符合规范；
   - 针对真实生产博客 `https://blog.epocanvas.com/` 进行 Playwright 实机交互审计，证实播放器 HUD 与歌词抽屉基于真实 API 数据以 60 FPS 连续流光渐变（`--karaoke-pct`）平滑染色，页面 0 致命 JS 报错，全链路 100% 审计通过。
 
+### Task 193: ProfileCard 名片形态与边界截断治理、解耦相关卡片封面缩放图层、多语言长词防御与生产端实机全链路审计 (`5137a21`, `96bba9e`)
+- [x] **ProfileCard 形态与边界严格截断防漏 (Strict Containment & Boundary Integrity)**:
+  1. 根治底部移动动态/渐变光晕揭出与穿模缺陷：为 `.profile-card` 及 `.card-content` 强制施加 `isolation: isolate !important; contain: paint !important; overflow: hidden !important; border-radius: 8px !important; -webkit-mask-image: -webkit-radial-gradient(white, black); mask-image: radial-gradient(white, black); transform: translateZ(0);`；
+  2. 多层伪元素严格约束：为 `::before`（背景底图 `gradient-pan`）、`::after`（动态渐变 `profile-gradient-pan`）与 `card-content::after`（扫光层）全量绑定 `border-radius: 8px !important; overflow: hidden !important;`，彻底杜绝 `scale(1.02)` 放大后动态光斑向外穿出；
+  3. 雪幔引擎隔离防护：在 `src/lib/snow-mantle.ts` 中排除 `.profile-card` 与 `.card-info`，杜绝任何将名片设为 `overflow: visible` 的外部副作用，且严禁在名片内部/顶部附着雪幔。
+- [x] **相关卡片 (RelatedPosts / PostNav) 解耦封面缩放图层 (Decoupled Cover Zoom Containment)**:
+  1. 在 `RelatedPosts.astro` 与 `PostNav.astro` 引入独立的 `.relatedPosts-item__cover` 与 `.postNav-card__cover` 容器；
+  2. 容器应用 `overflow: hidden !important; border-radius: inherit !important;`，使子图片悬浮缩放（`transform: scale(1.06)`）在圆角内平滑放大，杜绝外部开启 `overflow: visible` 时的圆角穿模；
+  3. 深色模式暗化优化：为深色主题下的相关文章封面与导航封面增加 `filter: brightness(0.85); hover: brightness(1);`，避免高亮图片破坏沉浸感。
+- [x] **独立 Subagent 全域深度审计与防御性布局增强**:
+  1. 移动端呼吸间距优化：在 `src/styles/final-pass.css` 为 `@media (max-width: 768px)` 注入 `.home-top-notice { margin-top: 6px !important; }`，消除移动端顶部贴边压迫感；
+  2. 清理 `client-locale.ts` 中的重复字典键名（`创意工坊`、`更多推荐`、`打开当前推荐文章`），杜绝 Vite 编译告警；
+  3. 音乐口袋 `MusicPocket` 与屏幕歌词 `ScreenLyric` 的多语言长词自适应断行与面板宽度保护。
+- [x] **全量编译与 Cloudflare Pages 生产边缘节点部署**:
+  - 本地生产编译 `npm run pages:build` 284 页面 100% 成功（53.73s，0 错误，0 告警）；
+  - `shijianus-blog` (`https://81a3a45e.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://814cd2d4.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **生产环境实机 Playwright 全链路审计验证 (`scripts/verify-live-production.mjs`)**:
+  - 实测生产端 `https://blog.epocanvas.com/posts/markdown-syntax-mastery/`：Profile Card 呈现标准 `overflow: hidden`、`borderRadius: 8px`、`contain: paint`、`isolation: isolate`，底部无任何渐变揭出或动画溢出；
+  - 实测生产端首页 `https://blog.epocanvas.com/`：21 个卡片排布与交互正常，0 致命 JS 报错。
+
+
 
