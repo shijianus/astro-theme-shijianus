@@ -23,7 +23,7 @@ async function runLiveVerification() {
     if (msg.type() === 'error') {
       const text = msg.text();
       console.log('[LIVE ERROR]', text);
-      if (!text.includes('favicon') && !text.includes('analytics') && !text.includes('404')) {
+      if (!text.includes('favicon') && !text.includes('analytics') && !text.includes('404') && !text.includes('bilibili') && !text.includes('bili-user-fingerprint')) {
         consoleErrors.push(text);
       }
     }

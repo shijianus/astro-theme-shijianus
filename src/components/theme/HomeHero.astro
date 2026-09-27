@@ -157,7 +157,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
       ></label>
 
       {stackPosts.map((entry, index) => (
-        <div class="recent-post-item" data-card-link={getPostPath(entry)}>
+        <div
+          class="recent-post-item"
+          data-card-link={getPostPath(entry)}
+          data-card-id={entry.slug || getPostPath(entry)}
+          data-card-index={index}
+        >
           <div class="post_cover left_radius">
             <a href={getPostPath(entry)} title={entry.data.title}>
               <span class="recent-post-top-text">{index === 0 ? topDeck.primaryCardBadge : topDeck.secondaryCardBadge}</span>

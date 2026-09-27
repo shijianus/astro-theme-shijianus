@@ -4354,6 +4354,34 @@
   - 生产端首页 `https://blog.epocanvas.com/`：15 个核心卡片积雪正常生成；
   - 控制台 0 致命 JS 报错（`Fatal JS Errors: []`），全链路通过。
 
+### Task 196: 雪幔程序化形态全景重构（根除“两头细中间粗”单一性）、6大形态原型、卡片唯一样式离散化与阶段二全景验收准入 (`pending`)
+- [x] **根除“两头细中间粗”单一形态模型 (Snow Morphology Diversity Overhaul)**:
+  1. 深度剖析并根除旧版 `Math.sin(u * Math.PI)` 强制中置大单峰与两端 `0.15` 边缘挤压缺陷；
+  2. 确立 6 种完全不同的程序化雪幔形态原型（`SNOW_ARCHETYPES`）：
+     - `windswept`（风吹偏积型）：风向单侧偏聚峰值，顺风背风侧悬垂不对称长雪舌，迎风侧平缓舒展；
+     - `dual-crest`（双峰波枕型）：0.26 与 0.74 呈现双起伏枕状雪峰，中部形成自然马鞍谷地，彻底打破“中间凸起”千篇一律；
+     - `level-blanket`（松软平覆厚雪毯）：卡片全跨度 80% 保持丰满均匀积雪，底部带有 4~5 个微小细密垂滴；
+     - `crystalline-scallops`（晶莹微贝冰幔型）：3~4 组节奏性贝壳弧浪起伏，边缘带锐利冰晶折光感；
+     - `mountain-ridge`（偏移山峦积雪型）：0.36 或 0.64 处孤峰挺拔，正下方挂垂长垂檐；
+     - `cascade-cornice`（错落连环檐雪型）：多段错落宽窄不一的阶梯状有机雪舌。
+- [x] **圆角肩部丰满度与弧形下垂保留 (Corner Shoulder Wrap & Non-Pinching)**:
+  - 两端圆角处引入 `shoulderFactor = 0.60 + 0.40 * cornerFactor`，确保在卡片圆角边缘依然保留至少 60% 丰满雪厚；
+  - 顶沿与底沿严格遵循 `(radius - Math.sqrt(radius^2 - dx^2)) * 0.70` 沿卡片圆角自然下垂包裹，杜绝两头收缩为针尖细线的失真现象。
+- [x] **卡片唯一性哈希离散化 (`recent-post-item` 专属互异性保障)**:
+  - 在 `PostCard.astro` 与 `HomeHero.astro` 显式注入 `data-card-id={entry.slug || link}`、`data-card-slug` 与 `data-card-index`；
+  - `scanCards()` 深度提取卡片 slug、标题与序号生成唯一种子，使相邻文章卡片哈希离散，轮换命中不同雪幔原型（如文章卡片按顺序分别展现 mountain-ridge、dual-crest、cascade-cornice、level-blanket、windswept 等）；
+  - 实机断言相邻文章卡片形态互异率 100%，杜绝完全相同的积雪视觉复制。
+- [x] **独立 Subagent 阶段二全景验收审计与阶段三准入评估**:
+  - 0 延迟合成器同步、圆角贴合、Hover 弹性伸缩、翻转渐隐、ProfileCard 隔离全量核验通过（Pass 率 100%）；
+  - 正式出具准入结论，并制定第三阶段（物理粒子碰撞微动力学、鼠标掠雪飘散、自适应天气与性能自愈）架构实施蓝图。
+- [x] **全量编译与 Cloudflare Pages 生产边缘节点双端部署**:
+  - `shijianus-blog` (`https://25af7df9.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://b997fe00.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **生产端实机 Playwright 端到端全链路审计 (`scripts/verify-live-incard-snow.mjs` & `scripts/verify-snow-archetypes.mjs`)**:
+  - 生产端 `https://blog.epocanvas.com/` 实机检测 20 个卡片积雪全部正常运作；
+  - 10 篇列表卡片实测命中 5 种不同原型，种子离散度 100%，无重复穿模，0 致命 JS 报错。
+
+
 
 
 

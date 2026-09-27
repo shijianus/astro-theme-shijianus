@@ -66,20 +66,48 @@ function createPRNG(seed: number) {
   };
 }
 
+export type SnowArchetype =
+  | 'windswept'
+  | 'dual-crest'
+  | 'level-blanket'
+  | 'crystalline-scallops'
+  | 'mountain-ridge'
+  | 'cascade-cornice';
+
+export const SNOW_ARCHETYPES: SnowArchetype[] = [
+  'windswept',
+  'dual-crest',
+  'level-blanket',
+  'crystalline-scallops',
+  'mountain-ridge',
+  'cascade-cornice',
+];
+
 /**
- * Generate Procedural SVG Snow Mantle with Corner Radius Wrapping
+ * Generate Procedural SVG Snow Mantle with 6 Diverse Archetypes & Corner Radius Wrapping
  */
 export function generateSnowMantleSvg(
   W: number,
   H_card: number,
   radius: number,
   seed: number,
-  className: string = ''
+  className: string = '',
+  _cardKey: string = ''
 ): string {
   const prng = createPRNG(seed);
   const isCategory = className.includes('categoryItem');
   const isCardInfo = className.includes('card-info') || className.includes('profile-card');
+  const isRecentPost = className.includes('recent-post-item');
   const isShort = H_card < 120;
+
+  // Select Archetype: recent-post-item cycles through all 6 archetypes based on seed
+  let archetypeIndex = Math.abs(seed) % SNOW_ARCHETYPES.length;
+  if (isCategory) {
+    archetypeIndex = 2; // Category uses compact level-blanket
+  } else if (isCardInfo) {
+    archetypeIndex = 2; // ProfileCard uses delicate level-blanket
+  }
+  const archetypeName = SNOW_ARCHETYPES[archetypeIndex];
 
   let H = 14;
   let maxDroop = 7;
@@ -98,53 +126,178 @@ export function generateSnowMantleSvg(
     maxDroop = Math.min(3.5, H_card * 0.05);
     baseDrop = 1.0;
   } else {
-    H = Math.min(16, Math.max(10, H_card * 0.12));
-    maxDroop = Math.min(8, H_card * 0.08);
+    H = Math.min(16, Math.max(11, H_card * 0.12));
+    maxDroop = Math.min(8.5, H_card * 0.08);
   }
 
   const yOffset = Math.round(H + 8);
   const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 8);
 
-  // 1. Generate top points with Corner Roll-off
-  const numTop = Math.max(16, Math.min(48, Math.round(W / 20)));
-  const topPoints: { x: number; y: number }[] = [];
   const phi1 = prng() * Math.PI * 2;
   const phi2 = prng() * Math.PI * 2;
+
+  // 1. Archetype Profile Function
+  // Returns normalized thickness factor (approx 0.6 to 1.35)
+  const getArchetypeProfile = (u: number): number => {
+    switch (archetypeName) {
+      case 'windswept': {
+        // Asymmetric windward/leeward drift: thick on one side, tapering across
+        const windRight = seed % 2 === 0;
+        const peakU = windRight ? 0.22 + prng() * 0.08 : 0.78 - prng() * 0.08;
+        const slope = windRight ? (1 - u) * 0.38 : u * 0.38;
+        const mound = Math.exp(-Math.pow((u - peakU) / 0.32, 2)) * 0.65;
+        return 0.52 + mound + slope;
+      }
+      case 'dual-crest': {
+        // Twin-pillow saddle: peaks at ~0.26 and ~0.74, valley at center (breaks thick-middle trap!)
+        const p1 = Math.exp(-Math.pow((u - 0.26) / 0.20, 2)) * 0.58;
+        const p2 = Math.exp(-Math.pow((u - 0.74) / 0.20, 2)) * 0.58;
+        const ripple = 0.08 * Math.sin(u * Math.PI * 6 + phi1);
+        return 0.52 + p1 + p2 + ripple;
+      }
+      case 'level-blanket': {
+        // Fluffy, consistent thickness across 80% of width
+        return 0.94 + 0.12 * Math.sin(u * Math.PI * 4 + phi1) + 0.06 * Math.cos(u * Math.PI * 2);
+      }
+      case 'crystalline-scallops': {
+        // Rhythmic wave crests with delicate scalloped scallops
+        return 0.72 + 0.24 * Math.cos(u * Math.PI * 4 + phi1) + 0.10 * Math.sin(u * Math.PI * 8 + phi2);
+      }
+      case 'mountain-ridge': {
+        // Offset prominent mountain ridge at ~0.38 or ~0.62
+        const ridgePeak = (seed % 3 === 0) ? 0.36 : (seed % 3 === 1) ? 0.64 : 0.42;
+        return 0.48 + 0.72 * Math.exp(-Math.pow((u - ridgePeak) / 0.26, 2)) + 0.14 * Math.cos(u * Math.PI * 3 + phi1);
+      }
+      case 'cascade-cornice':
+      default: {
+        // Multi-tier organic cascading waves
+        return 0.66 + 0.28 * Math.sin(u * Math.PI * 2.5 + phi1) + 0.18 * Math.cos(u * Math.PI * 5 + phi2);
+      }
+    }
+  };
+
+  // Generate top points with Corner Roll-off & Shoulder Retention
+  const numTop = Math.max(16, Math.min(48, Math.round(W / 20)));
+  const topPoints: { x: number; y: number }[] = [];
 
   for (let i = 0; i < numTop; i++) {
     const u = i / (numTop - 1);
     const x = u * W;
 
-    // Corner roll-off: conforms to card radius!
+    // Corner roll-off conforms to card radius
     const dLeft = Math.min(1, x / (radius + 1e-4));
     const dRight = Math.min(1, (W - x) / (radius + 1e-4));
     const cornerFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);
 
-    const w1 = Math.sin(u * Math.PI) * 0.32;
-    const w2 = Math.sin(u * Math.PI * 3 + phi1) * 0.20;
-    const w3 = Math.cos(u * Math.PI * 5 + phi2) * 0.10;
+    // Shoulder retention: maintains at least 60% thickness near corner curve
+    const shoulderFactor = 0.60 + 0.40 * cornerFactor;
 
-    const thickness = H * (0.8 + w1 + w2 + w3) * (0.15 + 0.85 * cornerFactor);
+    const baseProf = getArchetypeProfile(u);
+    const microTexture = 0.06 * Math.sin(u * Math.PI * 10 + phi1) + 0.04 * Math.cos(u * Math.PI * 16 + phi2);
+    const thickness = H * (baseProf + microTexture) * shoulderFactor;
+
     let cornerY = 0;
     if (x < radius) {
-      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - x, 2)))) * 0.65;
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - x, 2)))) * 0.70;
     } else if (x > W - radius) {
-      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(x - (W - radius), 2)))) * 0.65;
+      cornerY = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(x - (W - radius), 2)))) * 0.70;
     }
 
     const y = yOffset - thickness + cornerY;
     topPoints.push({ x, y });
   }
 
-  // 2. Generate drooping lobes (雪舌 / 垂挂雪檐)
-  const numLobes = isCategory ? 2 : W < 220 ? 2 : W < 450 ? 3 : 5;
+  // 2. Generate Drooping Lobes (雪舌 / 垂挂雪檐) Tailored to Archetype
   const lobes: { cx: number; lw: number; ld: number }[] = [];
-  for (let k = 0; k < numLobes; k++) {
-    const targetU = (k + 0.5 + (prng() - 0.5) * 0.4) / numLobes;
-    const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
-    const lw = (isCategory ? 20 : 28) + prng() * (isCategory ? 15 : 30);
-    const ld = (isCategory ? 1.0 : 2.5) + prng() * maxDroop;
-    lobes.push({ cx, lw, ld: Math.min(ld, maxDroop) });
+
+  if (archetypeName === 'windswept') {
+    // Sheltered side gets lobes, windward side is smooth
+    const windRight = seed % 2 === 0;
+    if (windRight) {
+      lobes.push({
+        cx: Math.min(W - radius - 20, W * (0.45 + prng() * 0.1)),
+        lw: 32 + prng() * 16,
+        ld: Math.min(maxDroop * 0.75, maxDroop),
+      });
+      lobes.push({
+        cx: Math.min(W - radius - 15, W * (0.75 + prng() * 0.1)),
+        lw: 38 + prng() * 20,
+        ld: Math.min(maxDroop * 0.95, maxDroop),
+      });
+    } else {
+      lobes.push({
+        cx: Math.max(radius + 15, W * (0.25 - prng() * 0.1)),
+        lw: 38 + prng() * 20,
+        ld: Math.min(maxDroop * 0.95, maxDroop),
+      });
+      lobes.push({
+        cx: Math.max(radius + 20, W * (0.55 - prng() * 0.1)),
+        lw: 32 + prng() * 16,
+        ld: Math.min(maxDroop * 0.75, maxDroop),
+      });
+    }
+  } else if (archetypeName === 'dual-crest') {
+    // Exactly 2 prominent lobes, aligned directly under the twin peaks!
+    lobes.push({
+      cx: Math.max(radius + 20, W * 0.28 + (prng() - 0.5) * 15),
+      lw: 36 + prng() * 14,
+      ld: Math.min(maxDroop * 0.85, maxDroop),
+    });
+    lobes.push({
+      cx: Math.min(W - radius - 20, W * 0.72 + (prng() - 0.5) * 15),
+      lw: 36 + prng() * 14,
+      ld: Math.min(maxDroop * 0.85, maxDroop),
+    });
+  } else if (archetypeName === 'level-blanket') {
+    // 4-5 fine regular micro-droops
+    const numL = isCategory ? 2 : W < 260 ? 3 : 5;
+    for (let k = 0; k < numL; k++) {
+      const targetU = (k + 0.5 + (prng() - 0.5) * 0.2) / numL;
+      const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
+      lobes.push({
+        cx,
+        lw: 24 + prng() * 12,
+        ld: Math.min(maxDroop * 0.55, 3.5),
+      });
+    }
+  } else if (archetypeName === 'crystalline-scallops') {
+    // 3-4 rhythmic scallops with medium droop
+    const numL = W < 260 ? 2 : 4;
+    for (let k = 0; k < numL; k++) {
+      const targetU = (k + 0.5 + (prng() - 0.5) * 0.25) / numL;
+      const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
+      lobes.push({
+        cx,
+        lw: 28 + prng() * 14,
+        ld: Math.min(maxDroop * 0.80, maxDroop),
+      });
+    }
+  } else if (archetypeName === 'mountain-ridge') {
+    // 1 dominant deep lobe directly under the ridge peak + 1 minor companion
+    const ridgePeak = (seed % 3 === 0) ? 0.36 : (seed % 3 === 1) ? 0.64 : 0.42;
+    lobes.push({
+      cx: Math.max(radius + 20, Math.min(W - radius - 20, ridgePeak * W)),
+      lw: 44 + prng() * 16,
+      ld: Math.min(maxDroop, maxDroop),
+    });
+    const flankU = ridgePeak > 0.5 ? 0.25 : 0.75;
+    lobes.push({
+      cx: Math.max(radius + 15, Math.min(W - radius - 15, flankU * W)),
+      lw: 28 + prng() * 12,
+      ld: Math.min(maxDroop * 0.50, 3.0),
+    });
+  } else {
+    // cascade-cornice: 2-3 asymmetric lobes with high length variance
+    const numL = W < 260 ? 2 : 3;
+    for (let k = 0; k < numL; k++) {
+      const targetU = (k + 0.5 + (prng() - 0.5) * 0.35) / numL;
+      const cx = Math.max(radius + 15, Math.min(W - radius - 15, targetU * W));
+      lobes.push({
+        cx,
+        lw: 26 + prng() * 26,
+        ld: Math.min(maxDroop * (0.45 + prng() * 0.55), maxDroop),
+      });
+    }
   }
 
   // Sample bottom contour from right to left
@@ -245,7 +398,7 @@ export function generateSnowMantleSvg(
   const filterId = 'snow_f_' + seed;
 
   return `
-<svg class="card-snow-svg" data-snow-seed="${seed}" viewBox="0 0 ${W} ${svgHeight}" preserveAspectRatio="none" style="--snow-svg-top: -${yOffset}px; height: ${svgHeight}px;">
+<svg class="card-snow-svg" data-snow-seed="${seed}" data-snow-archetype="${archetypeName}" viewBox="0 0 ${W} ${svgHeight}" preserveAspectRatio="none" style="--snow-svg-top: -${yOffset}px; height: ${svgHeight}px;">
   <defs>
     <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
@@ -383,10 +536,26 @@ export class SnowMantleEngine {
       const rawRadius = parseFloat(computed.borderTopLeftRadius) || 12;
       const radius = Math.max(4, Math.min(24, Math.round(rawRadius)));
 
-      const id = el.id || el.className.split(' ')[0] || `card-${index}`;
-      const seed = hashString(`${id}-${index}`);
+      const cardKey =
+        el.getAttribute('data-card-id') ||
+        el.getAttribute('data-card-slug') ||
+        el.getAttribute('data-card-link') ||
+        el.querySelector('a')?.getAttribute('href') ||
+        el.querySelector('img')?.getAttribute('alt') ||
+        el.querySelector('.article-title, h1, h2, h3, h4')?.textContent?.trim() ||
+        el.id ||
+        el.className.split(' ')[0] ||
+        `card-${index}`;
 
-      const svgString = generateSnowMantleSvg(W, H_card, radius, seed, el.className || '');
+      const cardIndexAttr = el.getAttribute('data-card-index');
+      const resolvedIndex =
+        cardIndexAttr !== null && !isNaN(parseInt(cardIndexAttr, 10))
+          ? parseInt(cardIndexAttr, 10)
+          : index;
+
+      const seed = hashString(`${cardKey}-${resolvedIndex}`);
+
+      const svgString = generateSnowMantleSvg(W, H_card, radius, seed, el.className || '', cardKey);
 
       // Ensure card has relative/absolute positioning and visible overflow
       if (computed.position === 'static') {

@@ -6,6 +6,13 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
+# HTML pages must revalidate so new deployments are served immediately
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Cache control for immutable Astro assets
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

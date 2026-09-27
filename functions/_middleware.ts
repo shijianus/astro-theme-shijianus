@@ -39,6 +39,12 @@ export const onRequest: PagesFunction = async (context) => {
   ].join('; ');
   headers.set('Content-Security-Policy', csp);
 
+  // Prevent stale HTML cache on Cloudflare Pages edge deployments
+  const contentType = headers.get('Content-Type') || '';
+  if (contentType.includes('text/html')) {
+    headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+  }
+
   if (url.protocol === 'https:') {
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
