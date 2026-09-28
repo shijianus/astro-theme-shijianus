@@ -4505,6 +4505,36 @@
      - 防遮挡呼吸间距安全，判定【通过】；
      - 独立审计结论：核心视觉标准全面达标，准许进入阶段三。
 
+### Task 202: 消除哑铃型极端形态、根除宽卡片平切、#footer-bar 100vw 全屏覆盖与双 Subagent 独立闭环审计通过 (`0b39b0a`)
+- [x] **根除“两头粗中间细/哑铃型”极端形态，还原多品类自然雪丘家族**:
+  1. 解耦卡片左右圆角垂落因子（`leftDropFactor` 与 `rightDropFactor`），彻底废除全局硬编码 `radius * 0.95` 导致的对称肉疙瘩堆积；
+  2. 构建四大自然形态族系：
+     - **自然山丘/丘陵家族 (Center-Thick Dunes)**：占原型 50%，中心厚度充沛（14-18px），向两侧以自然柔和坡度下垂（6-8px，`dropFactor: 0.30`），重现优美经典的自然积雪形态；
+     - **迎风非对称堆积家族 (Windswept Asymmetry)**：占原型 25%，一侧顺风厚堆（`dropFactor: 0.65`），另一侧轻盈舒缓（`dropFactor: 0.20`）；
+     - **均匀厚毯家族 (Level Blanket)**：占原型 15%，全局平缓微浪；
+     - **角部雪帽家族 (Corner-Caps)**：仅特定小比例原型保留较厚雪帽。
+- [x] **宽卡片顶沿“平切”现象根除与多周期波浪动态缩放**:
+  1. 引入随宽度动态缩放的波浪周期模型（`waveCycles = Math.max(2, Math.min(8, Math.round(W / 240)))`），杜绝 1400px+ 宽卡片单周期低斜率导致的直尺平视感；
+  2. 动态波幅（`waveAmplitude = Math.max(4.0, Math.min(9.0, targetRise * 0.58))`）与乘法平滑缩放，波峰波谷保留 6px-9px 自然落差，彻底根除水平死线；
+  3. 保留边沿微圆角封头（`Q (totalW + 1.2) ...` / `Q (-1.2) ...`），杜绝生硬直角切断。
+- [x] **#footer-bar 全屏宽屏（1920x1080）覆盖完整度根治**:
+  1. 排查发现原本代码跳过 `#footer-bar` 而挂在内层 `.footer-bar-links`（`max-width: 1400px`），导致在 1920px 屏幕两侧各有 260px 空白断层；
+  2. 重构雪幔吸附逻辑：将雪幔直接挂载在 100vw 的 `#footer-bar` 容器上；
+  3. 为 `#footer-bar` 启用全宽无缝模式（`padX = 0`, `leftOffset = 0`, `viewBox="0 0 W H"`, 左右平直平齐封闭），1920px 实测从 0px 至 1920px（雪幔 1936px）100% 满覆盖，彻底消除截断与空白。
+- [x] **正文 Markdown 告示块与代码块呼吸间隙加固**:
+  1. `src/styles/global.css` 注入 `padding-top: 20px !important` 针对 `.markdown-alert`、`.article-callout`、`.admonition`，保障充足垂向头部呼吸空间；
+  2. 为 `.code-block-header` 注入 `position: relative; z-index: 28 !important`，确保复制与语言标签按钮不被雪幔遮挡或吞噬。
+- [x] **双 Subagent 独立闭环审计与生产端实机 0 报错验证**:
+  1. Subagent 1 (`70636189-557d-47f5-a1fa-bd4b0fcf09f4`) 深度剖析并出具问题排查报告；
+  2. 修复代码后全量静态编译构建（284 pages built in 56.88s），通过 Wrangler 双端部署至生产边缘节点（`shijianus-blog` 及 `shijianus-github-io`）；
+  3. 启动 Subagent 2 (`121fd2f3-fcd4-40df-a76d-6037e8184a9c`)，在真实生产环境 `https://blog.epocanvas.com` 进行 1920x1080、1440x900、390x844 全视口 Playwright 客观实测：
+     - `#footer-bar` 1920x1080 满屏覆盖 100% 达成（0px 起始，无截断无留白）；
+     - 捕获超 12 种独立形态原型（自然山丘、迎风、厚毯等），极端哑铃型彻底消除；
+     - 宽卡片（`.category-bar` 1032px、`.footer-main-shell` 1896px、`#post-comment` 968px）波动曲线自然，平切线 0 残留；
+     - 呼吸间距与防遮挡安全达标；控制台错误为 0；
+     - 独立审计结论：完全达标，准予交付。
+
+
 
 
 
