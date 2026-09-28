@@ -57,6 +57,7 @@ export type LyricWord = {
   duration?: number;
   startSec?: number;
   endSec?: number;
+  durationSec?: number;
 };
 
 export type LyricLine = {
@@ -65,6 +66,7 @@ export type LyricLine = {
   words?: LyricWord[];
   duration?: number;
   timeSec?: number;
+  durationSec?: number;
 };
 
 type Props = {
@@ -353,21 +355,14 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
   const valid = rawLines.filter((line) => line && typeof line.text === 'string' && line.text.trim());
   if (valid.length === 0) return [];
 
-  // 判断整组歌词是否主要以毫秒计（例如最大原始时间戳 > 1000）
-  const maxRawTime = valid.reduce((max, l) => {
-    const t = typeof l.timeSec === 'number' ? l.timeSec : (typeof l.time === 'number' ? l.time : 0);
-    return Math.max(max, t);
-  }, 0);
-  const isLikelyMs = maxRawTime > 1000;
-
   return valid
     .map((line) => {
       // 统一度量衡：优先使用明确的 timeSec（秒）与 durationSec（秒）
       let timeSec: number;
       if (typeof line.timeSec === 'number' && !isNaN(line.timeSec)) {
-        timeSec = line.timeSec;
+        timeSec = line.timeSec > 1000 ? line.timeSec / 1000 : line.timeSec;
       } else if (typeof line.time === 'number' && !isNaN(line.time)) {
-        timeSec = isLikelyMs ? line.time / 1000 : line.time;
+        timeSec = line.time > 1000 ? line.time / 1000 : line.time;
       } else {
         timeSec = 0;
       }
@@ -375,9 +370,9 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
 
       let durSec: number | undefined = undefined;
       if (typeof line.durationSec === 'number' && !isNaN(line.durationSec)) {
-        durSec = line.durationSec;
+        durSec = line.durationSec > 60 ? line.durationSec / 1000 : line.durationSec;
       } else if (typeof line.duration === 'number' && !isNaN(line.duration)) {
-        durSec = isLikelyMs || line.duration > 300 ? line.duration / 1000 : line.duration;
+        durSec = line.duration > 45 ? line.duration / 1000 : line.duration;
       }
       if (typeof durSec === 'number') {
         durSec = Math.max(0.1, parseFloat(durSec.toFixed(3)));
@@ -388,42 +383,42 @@ export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
         words = line.words.map((w: any) => {
           let wStartSec: number;
           if (typeof w.startSec === 'number' && !isNaN(w.startSec)) {
-            wStartSec = w.startSec;
+            wStartSec = w.startSec > 1000 ? w.startSec / 1000 : w.startSec;
           } else if (typeof w.start === 'number' && !isNaN(w.start)) {
-            wStartSec = isLikelyMs || w.start > 600 ? w.start / 1000 : w.start;
+            const isMs = w.start > 600 || (typeof w.duration === 'number' && w.duration > 20);
+            wStartSec = isMs ? w.start / 1000 : w.start;
           } else {
             wStartSec = timeSec;
           }
           wStartSec = Math.max(0, parseFloat(wStartSec.toFixed(3)));
 
-          let wDurSec: number;
-          if (typeof w.durationSec === 'number' && !isNaN(w.durationSec)) {
-            wDurSec = w.durationSec;
-          } else if (typeof w.duration === 'number' && !isNaN(w.duration)) {
-            wDurSec = isLikelyMs || w.duration > 300 ? w.duration / 1000 : w.duration;
-          } else {
-            wDurSec = 0.3;
-          }
-          wDurSec = Math.max(0.01, parseFloat(wDurSec.toFixed(3)));
-
           let wEndSec: number;
           if (typeof w.endSec === 'number' && !isNaN(w.endSec)) {
-            wEndSec = w.endSec;
+            wEndSec = w.endSec > 1000 ? w.endSec / 1000 : w.endSec;
           } else if (typeof w.end === 'number' && !isNaN(w.end)) {
-            wEndSec = isLikelyMs || w.end > 600 ? w.end / 1000 : w.end;
+            const isMs = w.end > 600 || (typeof w.duration === 'number' && w.duration > 20);
+            wEndSec = isMs ? w.end / 1000 : w.end;
+          } else if (typeof w.durationSec === 'number' && !isNaN(w.durationSec)) {
+            const d = w.durationSec > 20 ? w.durationSec / 1000 : w.durationSec;
+            wEndSec = wStartSec + d;
+          } else if (typeof w.duration === 'number' && !isNaN(w.duration)) {
+            const d = w.duration > 20 ? w.duration / 1000 : w.duration;
+            wEndSec = wStartSec + d;
           } else {
-            wEndSec = wStartSec + wDurSec;
+            wEndSec = wStartSec + 0.3;
           }
           wEndSec = Math.max(wStartSec + 0.01, parseFloat(wEndSec.toFixed(3)));
+
+          const wDurSec = Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3)));
 
           return {
             text: String(w.text || ''),
             start: wStartSec,
             end: wEndSec,
-            duration: Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3))),
+            duration: wDurSec,
             startSec: wStartSec,
             endSec: wEndSec,
-            durationSec: Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3))),
+            durationSec: wDurSec,
           };
         });
       }
@@ -444,7 +439,10 @@ export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number 
   if (!lyrics || lyrics.length === 0) return -1;
   let found = -1;
   for (let i = 0; i < lyrics.length; i++) {
-    const lTime = typeof lyrics[i].timeSec === 'number' ? lyrics[i].timeSec : lyrics[i].time;
+    let lTime = typeof lyrics[i].timeSec === 'number' ? lyrics[i].timeSec : lyrics[i].time;
+    if (typeof lTime === 'number' && lTime > 1000) {
+      lTime = lTime / 1000;
+    }
     if (time >= lTime) {
       found = i;
     } else {
@@ -614,6 +612,9 @@ export function parseHighPrecisionLrc(raw: string): {
                 start: wStartSec,
                 end: wStartSec + wDurSec,
                 duration: wDurSec,
+                startSec: wStartSec,
+                endSec: wStartSec + wDurSec,
+                durationSec: wDurSec,
               });
             }
           }
@@ -1639,27 +1640,31 @@ export function MusicPocket({ apiBase }: Props) {
                 shouldRejectRemote = true;
               }
 
-              // 2. 首句时间戳校验 (门限 2.5s)
-              const firstLocalT = localVocal[0].timeSec ?? localVocal[0].time;
+              // 2. 首句时间戳校验 (门限 3.0s)
+              const firstLocalT = localVocal[0].timeSec ?? (localVocal[0].time > 1000 ? localVocal[0].time / 1000 : localVocal[0].time);
               const firstRemoteT = remoteVocal[0].timeSec ?? (remoteVocal[0].time > 1000 ? remoteVocal[0].time / 1000 : remoteVocal[0].time);
-              if (Math.abs(firstLocalT - firstRemoteT) > 2.5) {
+              if (Math.abs(firstLocalT - firstRemoteT) > 3.0) {
                 shouldRejectRemote = true;
               }
 
               // 3. 间奏后（中段 40% ~ 70%）时间戳物理对齐校验：杜绝变奏版/双声道版导致间奏后直接乱掉
+              // 约束时间窗口在 midLocalT 附近 +/- 10s 内比对，杜绝因副歌重复句误匹配到前段副歌导致误判
               const midIdx = Math.floor(localVocal.length * 0.5);
               const midLocalLine = localVocal[midIdx];
-              const midLocalT = midLocalLine.timeSec ?? midLocalLine.time;
-              const midLocalClean = midLocalLine.text.replace(/\s+/g, '').slice(0, 4);
+              const midLocalT = midLocalLine.timeSec ?? (midLocalLine.time > 1000 ? midLocalLine.time / 1000 : midLocalLine.time);
+              const midLocalClean = midLocalLine.text.replace(/[\s\p{P}\p{S}]/gu, '');
 
               const matchingRemote = remoteVocal.find((rl) => {
-                const rClean = rl.text.replace(/\s+/g, '');
-                return rClean.includes(midLocalClean) || midLocalClean.includes(rClean.slice(0, 4));
+                const rlT = rl.timeSec ?? (rl.time > 1000 ? rl.time / 1000 : rl.time);
+                if (Math.abs(rlT - midLocalT) > 10.0) return false;
+                const rClean = rl.text.replace(/[\s\p{P}\p{S}]/gu, '');
+                if (!rClean || !midLocalClean) return false;
+                return rClean.includes(midLocalClean) || midLocalClean.includes(rClean);
               });
 
               if (matchingRemote) {
                 const midRemoteT = matchingRemote.timeSec ?? (matchingRemote.time > 1000 ? matchingRemote.time / 1000 : matchingRemote.time);
-                if (Math.abs(midLocalT - midRemoteT) > 2.0) {
+                if (Math.abs(midLocalT - midRemoteT) > 3.0) {
                   shouldRejectRemote = true;
                 }
               }

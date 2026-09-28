@@ -833,11 +833,11 @@ export async function fetchHighPrecisionLyrics(
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         Referer: 'https://blog.epocanvas.com/',
       },
-      signal: AbortSignal.timeout(3500),
+      signal: AbortSignal.timeout(8000),
     });
     if (resp.ok) {
       const data = (await resp.json()) as any;
-      if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0 && isValidLyric(data.rawLyric || data.lyric || '')) {
+      if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0 && (isValidLyric(data.rawLyric || data.lyric || '') || data.lines.some((l: any) => l && l.text && l.text.trim()))) {
         return {
           ok: true,
           id: data.id || effectiveId || id,
