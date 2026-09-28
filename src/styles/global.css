@@ -330,6 +330,18 @@ html[data-background='snow'] .support-dashboard-card {
   overflow: visible !important;
 }
 
+/* Breathing headroom for in-card snow in snow mode */
+html[data-background='snow'] .markdown-alert,
+html[data-background='snow'] .article-callout,
+html[data-background='snow'] .admonition {
+  padding-top: 20px !important;
+}
+
+html[data-background='snow'] .code-block-header {
+  position: relative;
+  z-index: 28 !important;
+}
+
 /* Maintain strict boundary clipping on the backdrop and content of ProfileCard */
 .profile-card__backdrop,
 .profile-card .card-content {
