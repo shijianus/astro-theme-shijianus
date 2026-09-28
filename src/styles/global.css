@@ -261,9 +261,9 @@ html[data-console-open="true"] #theme-snow-foreground {
 .card-snow-svg {
   position: absolute !important;
   top: var(--snow-svg-top, -18px) !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
+  left: var(--snow-svg-left, 0px) !important;
+  right: auto !important;
+  width: var(--snow-svg-width, 100%) !important;
   pointer-events: none !important;
   z-index: 25 !important;
   overflow: visible !important;
@@ -310,7 +310,12 @@ html[data-background='snow'] .article-audio-card,
 html[data-background='snow'] .article-encrypted-box,
 html[data-background='snow'] .article-tabs,
 html[data-background='snow'] .admonition,
+html[data-background='snow'] .admonition-details,
+html[data-background='snow'] .markdown-alert,
+html[data-background='snow'] .article-callout,
 html[data-background='snow'] .code-block-shell,
+html[data-background='snow'] figure.highlight,
+html[data-background='snow'] .article-table-wrap,
 html[data-background='snow'] .home-pagination,
 html[data-background='snow'] .relatedPosts-item,
 html[data-background='snow'] .postNav-card,
