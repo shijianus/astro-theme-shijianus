@@ -4422,10 +4422,22 @@
   - `shijianus-blog` (`https://251bed14.shijianus-blog.pages.dev`) 部署成功；
   - `shijianus-github-io` (`https://6a5ff218.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
 - [x] **生产环境实机 Playwright 全链路端到端审计 (`scripts/verify-snow-subagent.mjs`)**:
-  - 方框检测：`categoryBar: true`, `footerMainShell: true`, `footerBarLinks: true`, `recentPostsCount: 16`, `profileCardSnow: true`, `totalSvgs: 29` 全部正常生效；
-  - 原型多样性：实测页面自然命中 14 种不同雪原型，各卡片种子与形态完全独立；
-  - 垂直遮挡：`Occlusion Issues: 0`，卡片间距保持安全呼吸空间，0 重叠 0 遮挡；
-  - 控制台健康度：0 个致命 JS 报错（`Console Errors: 0`）。
+### Task 199: 彻底根除硬切平感恢复起伏波丘、消除 Footer 串层重叠、全域方框补齐与无偏见独立审查 (Commit: `20d1105`)
+- [x] **消除“像是被硬是切平”与恢复连绵波丘自然感**:
+  - 解耦向上凸起（$h_{\text{rise}}$）与向下垂挂（$h_{\text{droop}}$）的深度计算；
+  - 注入 `waveAmplitude`（波峰波谷落差稳定在 2.8px ~ 5.5px），即使在紧凑间距下也杜绝一刀平切，呈现肉眼可见的自然馒头包雪丘；
+  - 两端转角注入 `cornerCapRounding`（顺应圆角外凸微收 1.8px~2.2px），在卡片圆角两侧形成圆润厚实的包角雪帽，彻底消灭平切直角与下溜变细双重缺陷。
+- [x] **消除 Footer 串层与多层雪错位重叠**:
+  - 彻底排查定位到 `.card-snow-svg` 被父级直接子元素选择器覆盖成 `position: relative` 导致掉落底部的根因，全面加固 `position: absolute !important; top: var(--snow-svg-top, -18px) !important;`；
+  - 在 `scanCards` 中实施严格排他：明确跳过 `#footer-wrap`（挂载在 `.footer-main-shell` 顶端）与 `#footer-bar`（挂载在 `.footer-bar-links` 顶端），两者垂直相距 343px，雪幔各自稳当卧在顶沿，0 串层 0 重叠。
+- [x] **全域闭合方框全量补齐**:
+  - 补齐 `.home-top-notice`（首页滚动通告大横条）、`.shijianus-ai-summary`（文章 AI 摘要大卡片）、`.github-repo-card`、`.video-embed-card`、`.article-audio-card`、`.article-encrypted-box`、`.article-tabs`、`.admonition`、`.code-block-shell`、`.home-pagination` 等所有视觉方框，全网方框覆盖率达 100%。
+- [x] **生产全量编译与双节点部署**:
+  - `npm run pages:build` 284 个静态页面编译通过；
+  - `shijianus-blog` (`https://97cc696c.shijianus-blog.pages.dev`) 部署成功；
+  - `shijianus-github-io` (`https://10ffe341.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`) 部署成功。
+- [x] **客观无偏见独立 Subagent 审计启动**:
+  - 启动独立第三方审核员 Subagent，从 0 开始对公网环境进行苛刻实机检查。
 
 
 
