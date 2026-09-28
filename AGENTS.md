@@ -4473,6 +4473,38 @@
      - 逆向拖拽测试（160s → 0.8s）瞬移定位第 0 行，0 累积漂移；
   3. 视听结合完美，先前的错位问题已被彻底根除。
 
+### Task 201: 雪景系统第二阶段（卡片吸附式矢量雪幔）深度重构与生产端客观独立验收通过 (`1143a43`)
+- [x] **24 种富形态程序化雪幔模型扩容与独占 Seed 分散**:
+  1. 将基础雪幔模型体系由原先单一简陋模式全面扩展至 24 种截然不同的立体雪景范式（`windswept-left/right`、`dual-crest-saddle`、`triple-dome`、`quad-hill`、`thick-plateau`、`icicle-curtain`、`corner-caps`、`scalloped-crest`、`alpine-ridge-left/right`、`center-peak`、`heavy-cornice-left/right`、`puffy-cumulus`、`sawtooth-drift`、`gentle-powder`、`wave-cascade`、`center-dip-valley`、`droop-cluster-left/right`、`dual-plateau`、`frost-pillow`、`asymmetric-dune`）；
+  2. 针对 `.recent-post-item` 等核心文章卡片，引入基于卡片标题、路径、索引及特征哈希的复合色散算法（`Math.abs(seed) + Math.abs(seed >> 3) * 7 + Math.abs(seed >> 7)`），彻底根除“千篇一律同一个模子”的单一机械感。
+- [x] **彻底根除“一刀切平”与“两头细中间粗”硬式范式**:
+  1. 彻底解决“切平”：废除原先将波峰暴力裁剪到极低固定天花板的错误算法，重构坐标系裕量（`yOffset = Math.round(Math.max(22, targetRise * 1.6 + 8))`），解耦垂直呼吸间距与波幅，波峰波谷自然落差保留 3.2px ~ 6.5px，完全由连续贝塞尔曲线 (`Q`) 拟合连绵起伏的小雪包与馒头丘陵质感；
+  2. 彻底解决“两端细成针尖与直角死线”：
+     - 重构双向外溢模型（`padX = Math.round(Math.max(6.0, Math.min(14.0, radius * 0.75)))`，`leftOffset = padX + 4`），SVG 画布向两侧自然探出；
+     - 解决 CSS 级 `left: 0 !important; width: 100% !important;` 暴力压缩内缩的根因，转为动态变量 `--snow-svg-left` 与 `--snow-svg-width`；
+     - 在卡片两端边缘形成包裹圆角的立体厚重雪帽（Corner Cap），雪层沿圆角外侧下垂深达 26.5px；
+     - 在左右两侧外封头采用向外圆弧拱面（Bulbous Curved Cap Domes：`Q (totalW + 2.5) ...` 与 `Q (-2.5) ...`），彻底消灭垂直刀切与尖角，呈现饱满圆润的雪团质感。
+- [x] **全域方框对象全量覆盖与动态排版自愈 (ResizeObserver)**:
+  1. 补齐选择器：`.category-bar`、`.footer-main-shell`、`.footer-bar-links`、`.markdown-alert`、`.article-callout`、`.admonition`、`.admonition-details`、`.code-block-shell`、`figure.highlight`、`.article-table-wrap` 等；
+  2. 引入 `ResizeObserver` 深度监听 `document.body` 及所有未渲染完成方框（`W < 40`），彻底消除动态代码块及多语言切换因排版延迟导致的雪幔丢失；
+  3. 注入 `overflow: visible !important` 全域加固。
+- [x] **Footer 区域反串层与层次排查**:
+  1. 跳过 `#footer-wrap` 与 `#footer-bar`，严格仅挂载在真正内容卡片 `.footer-main-shell` 与 `.footer-bar-links` 上，杜绝多层雪重叠打架。
+- [x] **防遮挡安全（紧挨但不遮挡）**:
+  1. 上下卡片存在紧凑间距时，采用平滑等比收缩而非死硬切平，严格保障 3.2px 空气呼吸间距，杜绝侵入上方组件文字或按钮。
+- [x] **多端推送、生产部署与独立第三方 Subagent 从 0 盲测验收通过**:
+  1. `git commit -m ...` 生成 Commit Hash：`1143a43`；
+  2. 全量推送至多远端分支：`git push origin main && git push cf main`；
+  3. `npm run pages:build` 284 页面 100% 编译成功；
+  4. Wrangler 部署至生产边缘节点：`shijianus-blog` (`https://30986815.shijianus-blog.pages.dev`) 及 `shijianus-github-io` (`https://f65184d7.shijianus-github-io.pages.dev`，主域名 `https://blog.epocanvas.com`)；
+  5. 启动独立客观第三方 Subagent（Model: `pro`，ID: `f64378c7-22c5-4206-87c8-77f436fed44c`），在生产公网环境从 0 开始进行严苛 Playwright 实机抓轨与数据测量：
+     - 实测路径坐标完全由连续贝塞尔曲线构成，起伏连绵自然，判定【通过】；
+     - 左右边界展现出外探且深垂达 26.5px 的饱满雪帽，消除针尖与平切，判定【通过】；
+     - 首页 16 张卡片 Seed 均独立相异，呈现显著多样性，判定【通过】；
+     - Footer 层次分明无串层，判定【通过】；
+     - 防遮挡呼吸间距安全，判定【通过】；
+     - 独立审计结论：核心视觉标准全面达标，准许进入阶段三。
+
 
 
 
