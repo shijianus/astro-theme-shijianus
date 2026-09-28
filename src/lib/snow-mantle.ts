@@ -49,13 +49,18 @@ export const CLOSED_BOX_SELECTORS = [
   '.postNav-card',
   '.pagination-post',
   '#post-comment',
+  '.markdown-alert',
+  '.article-callout',
+  '.admonition',
+  '.admonition-details',
+  '.code-block-shell',
+  'figure.highlight',
+  '.article-table-wrap',
   '.github-repo-card',
   '.video-embed-card',
   '.article-audio-card',
   '.article-encrypted-box',
   '.article-tabs',
-  '.admonition',
-  '.code-block-shell',
   '.home-pagination',
   '.footer-main-shell',
   '.footer-bar-links',
@@ -162,45 +167,50 @@ export function generateSnowMantleSvg(
   }
   const archetypeName = SNOW_ARCHETYPES[archetypeIndex];
 
+  // 0. Overhang padding to allow snow to wrap naturally around card corners
+  const padX = Math.min(6.0, Math.max(3.5, radius * 0.35));
+  const totalW = Math.round(W + padX * 2);
+  const cardLeft = padX;
+  const cardRight = padX + W;
+
   // Base thickness & droop calibration (Decoupled upwards rise vs downwards drape)
-  let targetRise = Math.min(10.5, Math.max(6.5, H_card * 0.085));
-  let baseDrop = 2.0;
-  let maxDroop = Math.min(7.5, Math.max(3.8, H_card * 0.055));
+  let targetRise = Math.min(11.5, Math.max(7.5, H_card * 0.09));
+  let baseDrop = 2.2;
+  let maxDroop = Math.min(8.0, Math.max(4.2, H_card * 0.06));
 
   if (isCategory) {
-    targetRise = 5.2;
+    targetRise = 5.5;
     baseDrop = 1.2;
-    maxDroop = 2.8;
+    maxDroop = 3.0;
   } else if (isCardInfo) {
-    targetRise = 6.8;
-    baseDrop = 1.4;
-    maxDroop = 3.6;
+    targetRise = 7.5;
+    baseDrop = 1.5;
+    maxDroop = 4.0;
   } else if (isCategoryBar) {
-    targetRise = 4.8;
+    targetRise = 5.0;
     baseDrop = 1.0;
-    maxDroop = 2.4;
+    maxDroop = 2.5;
   } else if (isFooterBarLinks) {
-    targetRise = 5.2;
+    targetRise = 5.5;
     baseDrop = 1.2;
-    maxDroop = 2.8;
+    maxDroop = 3.0;
   } else if (isFooterMain) {
-    targetRise = 8.8;
-    baseDrop = 2.2;
-    maxDroop = 5.2;
+    targetRise = 9.5;
+    baseDrop = 2.5;
+    maxDroop = 5.5;
   } else if (isShort) {
-    targetRise = Math.min(6.5, H_card * 0.09);
-    maxDroop = Math.min(3.2, H_card * 0.045);
-    baseDrop = 1.2;
+    targetRise = Math.min(7.0, H_card * 0.095);
+    maxDroop = Math.min(3.5, H_card * 0.05);
+    baseDrop = 1.4;
   }
 
-  // Strictly enforce the zero-occlusion clearance limit:
-  // Snow can snuggle right against the element above ("可以紧挨"), but NEVER overlaps ("绝不遮挡")!
+  // Strictly enforce the zero-occlusion clearance limit when close to upper card:
   if (maxAllowedRise > 0) {
-    targetRise = Math.min(targetRise, Math.max(3.6, maxAllowedRise - 3.5));
+    targetRise = Math.min(targetRise, Math.max(3.8, maxAllowedRise - 3.2));
   }
 
   const yOffset = Math.round(targetRise + 3.0);
-  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 14);
+  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 16);
 
   const phi1 = prng() * Math.PI * 2;
   const phi2 = prng() * Math.PI * 2;
@@ -286,34 +296,44 @@ export function generateSnowMantleSvg(
   };
 
   // 3. Top Points Generation:
-  // 彻底消灭“像被硬是切平”！
-  // 即使在紧凑间距下，也注入生动自然的丘陵与凹凸起伏（Wave Amplitude）！
-  const numTop = Math.max(24, Math.min(60, Math.round(W / 16)));
+  // 彻底消灭“像被硬是切平”！引入双向外溢 (padX Overhang) 与高低起伏连绵大雪包！
+  const numTop = Math.max(28, Math.min(68, Math.round(totalW / 14)));
   const topPoints: { x: number; y: number }[] = [];
 
-  // 保证波峰波谷落差至少有 2.6px ~ 5.2px，肉眼可见连绵起伏的小雪包与馒头丘陵
-  const waveAmplitude = Math.max(2.6, Math.min(5.2, targetRise * 0.42));
+  // 保证波峰波谷落差至少有 3.2px ~ 6.5px，肉眼可见连绵起伏的小雪包与馒头丘陵
+  const waveAmplitude = Math.max(3.2, Math.min(6.5, targetRise * 0.46));
 
   for (let i = 0; i < numTop; i++) {
-    const u = i / (numTop - 1);
-    const x = u * W;
+    const uTotal = i / (numTop - 1);
+    const x = uTotal * totalW;
 
-    const baseProf = getArchetypeProfile(u);
+    // 映射到卡片内部相对坐标 u in [0, 1]
+    const uCard = Math.max(0, Math.min(1, (x - cardLeft) / W));
+    const baseProf = getArchetypeProfile(uCard);
     // 自然微细风纹
-    const microTexture = 0.08 * Math.sin(u * Math.PI * 8 + phi1) + 0.04 * Math.cos(u * Math.PI * 16 + phi2);
+    const microTexture = 0.08 * Math.sin(uTotal * Math.PI * 8 + phi1) + 0.04 * Math.cos(uTotal * Math.PI * 16 + phi2);
     
     // 雪顶向上凸起高度计算：中心基准高度 + 动态波形落差，形成起伏连绵山丘
     const waveOffset = (baseProf - 1.0) * waveAmplitude;
-    const snowRise = Math.max(2.0, Math.min(targetRise + waveOffset + microTexture * targetRise, yOffset - 1.5));
+    const snowRise = Math.max(2.2, Math.min(targetRise + waveOffset + microTexture * targetRise, yOffset - 1.5));
 
-    // 两端圆角雪帽圆润处理 (Corner Crown Wrap):
-    // 距两端最近边缘的距离
-    const distToEdge = Math.min(x, W - x);
+    // 两端外溢与圆角雪帽圆润处理 (Overhang & Crown Wrap):
     let cornerCapRounding = 0;
-    if (distToEdge < radius) {
-      // 随着接近边缘，呈现温润的凸圆拱下收（最多微收 1.8px~2.2px），绝不是平切直角，更不是尖锐塌陷！
-      const t = distToEdge / radius; // 0 在端点, 1 在内侧
-      cornerCapRounding = (1 - Math.sin(t * Math.PI * 0.5)) * Math.min(2.2, radius * 0.22);
+    if (x < cardLeft) {
+      // 左外溢区：雪从卡片左端向外探出，优雅外凸微垂（最多下弯 2.2px）
+      const tOut = (cardLeft - x) / padX; // 0在卡片边缘, 1在最外端
+      cornerCapRounding = Math.pow(tOut, 1.4) * 2.2;
+    } else if (x > cardRight) {
+      // 右外溢区：雪从卡片右端向外探出，优雅外凸微垂（最多下弯 2.2px）
+      const tOut = (x - cardRight) / padX;
+      cornerCapRounding = Math.pow(tOut, 1.4) * 2.2;
+    } else {
+      // 卡片内部靠近两端圆角处：微拱自然过渡（最多 1.2px）
+      const distToEdge = Math.min(x - cardLeft, cardRight - x);
+      if (distToEdge < radius) {
+        const t = distToEdge / radius;
+        cornerCapRounding = (1 - Math.sin(t * Math.PI * 0.5)) * 1.2;
+      }
     }
 
     // SVG 坐标：yOffset 是卡片顶沿，y 越小越向上凸起
@@ -325,55 +345,52 @@ export function generateSnowMantleSvg(
   const lobes: { cx: number; lw: number; ld: number }[] = [];
 
   if (archetypeName === 'windswept-left') {
-    lobes.push({ cx: Math.min(W * 0.20, W - 20), lw: 36 + prng() * 14, ld: maxDroop * 0.95 });
-    lobes.push({ cx: Math.min(W * 0.44, W - 20), lw: 30 + prng() * 12, ld: maxDroop * 0.70 });
+    lobes.push({ cx: cardLeft + Math.min(W * 0.20, W - 20), lw: 36 + prng() * 14, ld: maxDroop * 0.95 });
+    lobes.push({ cx: cardLeft + Math.min(W * 0.44, W - 20), lw: 30 + prng() * 12, ld: maxDroop * 0.70 });
   } else if (archetypeName === 'windswept-right') {
-    lobes.push({ cx: Math.max(W * 0.80, 20), lw: 36 + prng() * 14, ld: maxDroop * 0.95 });
-    lobes.push({ cx: Math.max(W * 0.56, 20), lw: 30 + prng() * 12, ld: maxDroop * 0.70 });
+    lobes.push({ cx: cardLeft + Math.max(W * 0.80, 20), lw: 36 + prng() * 14, ld: maxDroop * 0.95 });
+    lobes.push({ cx: cardLeft + Math.max(W * 0.56, 20), lw: 30 + prng() * 12, ld: maxDroop * 0.70 });
   } else if (archetypeName === 'dual-crest-saddle') {
-    lobes.push({ cx: Math.max(radius + 15, W * 0.24), lw: 34 + prng() * 12, ld: maxDroop * 0.88 });
-    lobes.push({ cx: Math.min(W - radius - 15, W * 0.76), lw: 34 + prng() * 12, ld: maxDroop * 0.88 });
+    lobes.push({ cx: cardLeft + Math.max(radius + 15, W * 0.24), lw: 34 + prng() * 12, ld: maxDroop * 0.88 });
+    lobes.push({ cx: cardLeft + Math.min(W - radius - 15, W * 0.76), lw: 34 + prng() * 12, ld: maxDroop * 0.88 });
   } else if (archetypeName === 'triple-dome') {
-    lobes.push({ cx: Math.max(radius + 10, W * 0.18), lw: 26 + prng() * 10, ld: maxDroop * 0.75 });
-    lobes.push({ cx: W * 0.50, lw: 32 + prng() * 12, ld: maxDroop * 0.90 });
-    lobes.push({ cx: Math.min(W - radius - 10, W * 0.82), lw: 26 + prng() * 10, ld: maxDroop * 0.75 });
+    lobes.push({ cx: cardLeft + Math.max(radius + 10, W * 0.18), lw: 26 + prng() * 10, ld: maxDroop * 0.75 });
+    lobes.push({ cx: cardLeft + W * 0.50, lw: 32 + prng() * 12, ld: maxDroop * 0.90 });
+    lobes.push({ cx: cardLeft + Math.min(W - radius - 10, W * 0.82), lw: 26 + prng() * 10, ld: maxDroop * 0.75 });
   } else if (archetypeName === 'icicle-curtain') {
-    // 5-7 narrow pointed icicles
     const numIcicles = W < 260 ? 4 : Math.min(7, Math.round(W / 55));
     for (let k = 0; k < numIcicles; k++) {
       const targetU = (k + 0.5 + (prng() - 0.5) * 0.25) / numIcicles;
       lobes.push({
-        cx: Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
+        cx: cardLeft + Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
         lw: 16 + prng() * 8,
         ld: Math.min(maxDroop, 3.5 + prng() * 3.5),
       });
     }
   } else if (archetypeName === 'corner-caps') {
-    // Lobes on the corner shoulders
-    lobes.push({ cx: Math.max(12, W * 0.12), lw: 32 + prng() * 10, ld: maxDroop * 0.80 });
-    lobes.push({ cx: Math.min(W - 12, W * 0.88), lw: 32 + prng() * 10, ld: maxDroop * 0.80 });
+    lobes.push({ cx: cardLeft + Math.max(12, W * 0.12), lw: 32 + prng() * 10, ld: maxDroop * 0.80 });
+    lobes.push({ cx: cardLeft + Math.min(W - 12, W * 0.88), lw: 32 + prng() * 10, ld: maxDroop * 0.80 });
   } else if (archetypeName === 'alpine-ridge') {
     const peakU = seed % 2 === 0 ? 0.34 : 0.66;
-    lobes.push({ cx: peakU * W, lw: 44 + prng() * 16, ld: maxDroop });
+    lobes.push({ cx: cardLeft + peakU * W, lw: 44 + prng() * 16, ld: maxDroop });
     const flankU = peakU > 0.5 ? 0.22 : 0.78;
-    lobes.push({ cx: flankU * W, lw: 24 + prng() * 8, ld: maxDroop * 0.45 });
+    lobes.push({ cx: cardLeft + flankU * W, lw: 24 + prng() * 8, ld: maxDroop * 0.45 });
   } else if (archetypeName === 'thick-plateau') {
     const numL = isCategory ? 2 : W < 260 ? 3 : 5;
     for (let k = 0; k < numL; k++) {
       const targetU = (k + 0.5 + (prng() - 0.5) * 0.2) / numL;
       lobes.push({
-        cx: Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
+        cx: cardLeft + Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
         lw: 24 + prng() * 10,
         ld: Math.min(maxDroop * 0.50, 2.5),
       });
     }
   } else {
-    // General organic multi-lobe
     const numL = W < 260 ? 2 : 3;
     for (let k = 0; k < numL; k++) {
       const targetU = (k + 0.5 + (prng() - 0.5) * 0.3) / numL;
       lobes.push({
-        cx: Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
+        cx: cardLeft + Math.max(radius + 10, Math.min(W - radius - 10, targetU * W)),
         lw: 26 + prng() * 18,
         ld: Math.min(maxDroop * (0.45 + prng() * 0.55), maxDroop),
       });
@@ -381,12 +398,12 @@ export function generateSnowMantleSvg(
   }
 
   // 5. Bottom Points Generation:
-  // Hugs the card surface and drapes down the card's rounded corners!
-  const numBottom = Math.max(24, Math.min(64, Math.round(W / 14)));
+  // 顺应卡片真实圆角向下自然包裹（Corner Wrap），形成立体包角雪帽与外溢雪爪
+  const numBottom = Math.max(28, Math.min(68, Math.round(totalW / 14)));
   const bottomPoints: { x: number; y: number }[] = [];
   for (let i = numBottom - 1; i >= 0; i--) {
-    const u = i / (numBottom - 1);
-    const x = u * W;
+    const uTotal = i / (numBottom - 1);
+    const x = uTotal * totalW;
 
     let droop = 0;
     for (let k = 0; k < lobes.length; k++) {
@@ -398,15 +415,27 @@ export function generateSnowMantleSvg(
       }
     }
 
-    // Card corner drop follows the actual circular border-radius of the card
+    // 卡片圆角及两端外溢区向下圆弧垂挂量
     let cardCornerDrop = 0;
-    if (x < radius) {
-      cardCornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - x, 2)))) * 0.85;
-    } else if (x > W - radius) {
-      cardCornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(x - (W - radius), 2)))) * 0.85;
+    if (x < cardLeft) {
+      // 左外溢悬檐：抱紧卡片左外圆角
+      const tOut = (cardLeft - x) / padX;
+      cardCornerDrop = radius * 0.95 + tOut * 2.5;
+    } else if (x > cardRight) {
+      // 右外溢悬檐：抱紧卡片右外圆角
+      const tOut = (x - cardRight) / padX;
+      cardCornerDrop = radius * 0.95 + tOut * 2.5;
+    } else {
+      // 卡片内部圆角区
+      const xCard = x - cardLeft;
+      if (xCard < radius) {
+        cardCornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(radius - xCard, 2)))) * 0.95;
+      } else if (xCard > W - radius) {
+        cardCornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - Math.pow(xCard - (W - radius), 2)))) * 0.95;
+      }
     }
 
-    // Card top is at yOffset. Snow bottom drapes down by cardCornerDrop + baseDrop + droop!
+    // 雪底向下垂挂：基准垂挂 + 雪舌下垂 + 卡片圆角包裹
     const y = yOffset + baseDrop + droop + cardCornerDrop;
     bottomPoints.push({ x, y });
   }
@@ -477,7 +506,7 @@ export function generateSnowMantleSvg(
   const filterId = 'snow_f_' + seed;
 
   return `
-<svg class="card-snow-svg" data-snow-seed="${seed}" data-snow-archetype="${archetypeName}" viewBox="0 0 ${W} ${svgHeight}" preserveAspectRatio="none" style="--snow-svg-top: -${yOffset}px; height: ${svgHeight}px;">
+<svg class="card-snow-svg" data-snow-seed="${seed}" data-snow-archetype="${archetypeName}" viewBox="0 0 ${totalW} ${svgHeight}" preserveAspectRatio="none" style="--snow-svg-top: -${yOffset}px; height: ${svgHeight}px; left: -${padX}px; width: calc(100% + ${padX * 2}px);">
   <defs>
     <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
@@ -503,6 +532,7 @@ export class SnowMantleEngine {
   private resizeTimeout: any = null;
   private isDestroyed = false;
   private mutationObserver: MutationObserver | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor(_ctx?: CanvasRenderingContext2D) {
     this.init();
@@ -537,6 +567,12 @@ export class SnowMantleEngine {
         this.mutationObserver.observe(document.body, {
           childList: true,
           subtree: true,
+        });
+      }
+
+      if (typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.handleResize();
         });
       }
     }
@@ -596,9 +632,18 @@ export class SnowMantleEngine {
             el.id === 'category-bar' ||
             el.classList.contains('home-top-notice') ||
             el.classList.contains('shijianus-ai-summary') ||
+            el.classList.contains('markdown-alert') ||
+            el.classList.contains('article-callout') ||
             el.classList.contains('admonition') ||
+            el.classList.contains('admonition-details') ||
             el.classList.contains('github-repo-card') ||
+            el.classList.contains('video-embed-card') ||
+            el.classList.contains('article-audio-card') ||
+            el.classList.contains('article-encrypted-box') ||
+            el.classList.contains('article-tabs') ||
             el.classList.contains('code-block-shell') ||
+            el.matches('figure.highlight') ||
+            el.classList.contains('article-table-wrap') ||
             el.classList.contains('footer-main-shell') ||
             el.classList.contains('footer-bar-links') ||
             el.id === 'post-comment';
@@ -610,6 +655,11 @@ export class SnowMantleEngine {
       }
       if (isNested) continue;
       seen.add(el);
+
+      // Register with ResizeObserver to handle dynamic layout / tab changes
+      if (this.resizeObserver) {
+        this.resizeObserver.observe(el);
+      }
 
       const W = Math.round(el.offsetWidth);
       const H_card = Math.round(el.offsetHeight);
@@ -722,6 +772,10 @@ export class SnowMantleEngine {
     if (this.mutationObserver) {
       this.mutationObserver.disconnect();
       this.mutationObserver = null;
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.handleResize);
