@@ -27,6 +27,7 @@ export const CLOSED_BOX_SELECTORS = [
   '.categoryItem',
   '#category-bar',
   '.category-bar',
+  '.home-top-notice',
   '.home-mobile-focus-card',
   '#recent-posts .recent-post-item',
   '.recent-post-item',
@@ -42,11 +43,20 @@ export const CLOSED_BOX_SELECTORS = [
   '.card-widget',
   '#post',
   '.post-page-shell',
+  '.shijianus-ai-summary',
   '.post-copyright',
   '.relatedPosts-item',
   '.postNav-card',
   '.pagination-post',
   '#post-comment',
+  '.github-repo-card',
+  '.video-embed-card',
+  '.article-audio-card',
+  '.article-encrypted-box',
+  '.article-tabs',
+  '.admonition',
+  '.code-block-shell',
+  '.home-pagination',
   '.footer-main-shell',
   '.footer-bar-links',
   '.theme-card',
@@ -57,7 +67,6 @@ export const CLOSED_BOX_SELECTORS = [
   '.friends-page__panel',
   '.friends-page__hero',
   '.author-content-item',
-  '.home-pagination',
   '.support-dashboard-card',
 ];
 
@@ -153,47 +162,45 @@ export function generateSnowMantleSvg(
   }
   const archetypeName = SNOW_ARCHETYPES[archetypeIndex];
 
-  // Base thickness & droop calibration
-  let H = Math.min(13, Math.max(7.5, H_card * 0.10));
-  let maxDroop = Math.min(6.0, H_card * 0.06);
-  let baseDrop = 1.4;
+  // Base thickness & droop calibration (Decoupled upwards rise vs downwards drape)
+  let targetRise = Math.min(10.5, Math.max(6.5, H_card * 0.085));
+  let baseDrop = 2.0;
+  let maxDroop = Math.min(7.5, Math.max(3.8, H_card * 0.055));
 
   if (isCategory) {
-    H = 6.5;
-    maxDroop = 1.8;
-    baseDrop = 0.6;
+    targetRise = 5.2;
+    baseDrop = 1.2;
+    maxDroop = 2.8;
   } else if (isCardInfo) {
-    H = 7.5;
-    maxDroop = 1.8;
-    baseDrop = 0.5;
+    targetRise = 6.8;
+    baseDrop = 1.4;
+    maxDroop = 3.6;
   } else if (isCategoryBar) {
-    H = 5.0;
-    maxDroop = 1.5;
-    baseDrop = 0.4;
+    targetRise = 4.8;
+    baseDrop = 1.0;
+    maxDroop = 2.4;
   } else if (isFooterBarLinks) {
-    H = 4.5;
-    maxDroop = 1.2;
-    baseDrop = 0.4;
+    targetRise = 5.2;
+    baseDrop = 1.2;
+    maxDroop = 2.8;
   } else if (isFooterMain) {
-    H = 8.5;
-    maxDroop = 2.5;
-    baseDrop = 0.8;
+    targetRise = 8.8;
+    baseDrop = 2.2;
+    maxDroop = 5.2;
   } else if (isShort) {
-    H = Math.min(7.5, H_card * 0.11);
-    maxDroop = Math.min(2.2, H_card * 0.04);
-    baseDrop = 0.6;
+    targetRise = Math.min(6.5, H_card * 0.09);
+    maxDroop = Math.min(3.2, H_card * 0.045);
+    baseDrop = 1.2;
   }
 
   // Strictly enforce the zero-occlusion clearance limit:
   // Snow can snuggle right against the element above ("可以紧挨"), but NEVER overlaps ("绝不遮挡")!
-  let yOffset = Math.round(H + 2);
   if (maxAllowedRise > 0) {
-    const safeMaxRise = Math.max(2.5, maxAllowedRise);
-    H = Math.min(H, Math.max(2.0, safeMaxRise - 2.0));
-    yOffset = Math.min(Math.round(H + 1.5), Math.max(2, Math.floor(safeMaxRise)));
+    targetRise = Math.min(targetRise, Math.max(3.6, maxAllowedRise - 3.5));
   }
 
-  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 10);
+  const yOffset = Math.round(targetRise + 3.0);
+  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + 14);
 
   const phi1 = prng() * Math.PI * 2;
   const phi2 = prng() * Math.PI * 2;
@@ -279,26 +286,38 @@ export function generateSnowMantleSvg(
   };
 
   // 3. Top Points Generation:
-  // RADICAL FIX FOR "两头细中间粗": The TOP of the snow NEVER dives or collapses down!
-  // Snow sits proudly as a thick volumetric crown across the entire width!
-  const numTop = Math.max(20, Math.min(54, Math.round(W / 18)));
+  // 彻底消灭“像被硬是切平”！
+  // 即使在紧凑间距下，也注入生动自然的丘陵与凹凸起伏（Wave Amplitude）！
+  const numTop = Math.max(24, Math.min(60, Math.round(W / 16)));
   const topPoints: { x: number; y: number }[] = [];
+
+  // 保证波峰波谷落差至少有 2.6px ~ 5.2px，肉眼可见连绵起伏的小雪包与馒头丘陵
+  const waveAmplitude = Math.max(2.6, Math.min(5.2, targetRise * 0.42));
 
   for (let i = 0; i < numTop; i++) {
     const u = i / (numTop - 1);
     const x = u * W;
 
     const baseProf = getArchetypeProfile(u);
-    const microTexture = 0.05 * Math.sin(u * Math.PI * 10 + phi1) + 0.03 * Math.cos(u * Math.PI * 18 + phi2);
-    const thickness = H * (baseProf + microTexture);
+    // 自然微细风纹
+    const microTexture = 0.08 * Math.sin(u * Math.PI * 8 + phi1) + 0.04 * Math.cos(u * Math.PI * 16 + phi2);
+    
+    // 雪顶向上凸起高度计算：中心基准高度 + 动态波形落差，形成起伏连绵山丘
+    const waveOffset = (baseProf - 1.0) * waveAmplitude;
+    const snowRise = Math.max(2.0, Math.min(targetRise + waveOffset + microTexture * targetRise, yOffset - 1.5));
 
-    // Soft bevel (max 1.2px) at the absolute outer 3px edge so it's not a razor vertical cut
+    // 两端圆角雪帽圆润处理 (Corner Crown Wrap):
+    // 距两端最近边缘的距离
     const distToEdge = Math.min(x, W - x);
-    const edgeBevel = distToEdge < 3 ? (3 - distToEdge) * 0.35 : 0;
+    let cornerCapRounding = 0;
+    if (distToEdge < radius) {
+      // 随着接近边缘，呈现温润的凸圆拱下收（最多微收 1.8px~2.2px），绝不是平切直角，更不是尖锐塌陷！
+      const t = distToEdge / radius; // 0 在端点, 1 在内侧
+      cornerCapRounding = (1 - Math.sin(t * Math.PI * 0.5)) * Math.min(2.2, radius * 0.22);
+    }
 
-    // yOffset is reference card top. In SVG, smaller y = higher!
-    // No cornerY dragging the top down! Snow crown stays tall and proud across whole card!
-    const y = yOffset - thickness + edgeBevel;
+    // SVG 坐标：yOffset 是卡片顶沿，y 越小越向上凸起
+    const y = yOffset - snowRise + cornerCapRounding;
     topPoints.push({ x, y });
   }
 
@@ -553,6 +572,11 @@ export class SnowMantleEngine {
       const el = elements[index];
       if (seen.has(el)) continue;
 
+      // 彻底消除串层：#footer-wrap 跳过（雪挂在里面的 .footer-main-shell 上）
+      if (el.id === 'footer-wrap') continue;
+      // #footer-bar 跳过（雪挂在里面的 .footer-bar-links 上）
+      if (el.id === 'footer-bar') continue;
+
       // Filter out hidden elements
       if (el.offsetParent === null) continue;
       const computed = window.getComputedStyle(el);
@@ -570,6 +594,11 @@ export class SnowMantleEngine {
             el.classList.contains('card-widget') ||
             el.classList.contains('category-bar') ||
             el.id === 'category-bar' ||
+            el.classList.contains('home-top-notice') ||
+            el.classList.contains('shijianus-ai-summary') ||
+            el.classList.contains('admonition') ||
+            el.classList.contains('github-repo-card') ||
+            el.classList.contains('code-block-shell') ||
             el.classList.contains('footer-main-shell') ||
             el.classList.contains('footer-bar-links') ||
             el.id === 'post-comment';
@@ -635,8 +664,8 @@ export class SnowMantleEngine {
         const prevRect = prev.getBoundingClientRect();
         const verticalGap = elRect.top - prevRect.bottom;
         if (verticalGap > 0 && verticalGap < 60) {
-          // Leave at least 2.5px breathing air: can snuggle close ("可以紧挨"), but never overlap ("绝不遮挡")!
-          maxAllowedRise = Math.min(maxAllowedRise, Math.max(2.5, Math.floor(verticalGap - 2.5)));
+          // Leave at least 3.5px breathing air: can snuggle close ("可以紧挨"), but never overlap ("绝不遮挡")!
+          maxAllowedRise = Math.min(maxAllowedRise, Math.max(3.8, Math.floor(verticalGap - 3.5)));
         }
       }
 
@@ -648,20 +677,22 @@ export class SnowMantleEngine {
         if (overlapX > 25 && otherRect.bottom <= elRect.top) {
           const gap = elRect.top - otherRect.bottom;
           if (gap > 0 && gap < 60) {
-            maxAllowedRise = Math.min(maxAllowedRise, Math.max(2.5, Math.floor(gap - 2.5)));
+            maxAllowedRise = Math.min(maxAllowedRise, Math.max(3.8, Math.floor(gap - 3.5)));
           }
         }
       }
 
       // 3. Special slender components:
       if (el.classList.contains('category-bar') || el.id === 'category-bar') {
-        maxAllowedRise = Math.min(maxAllowedRise, 8);
+        maxAllowedRise = Math.min(maxAllowedRise, 8.5);
       } else if (el.classList.contains('footer-bar-links')) {
-        maxAllowedRise = Math.min(maxAllowedRise, 6);
+        maxAllowedRise = Math.min(maxAllowedRise, 8.0);
       } else if (el.classList.contains('categoryItem')) {
-        maxAllowedRise = Math.min(maxAllowedRise, 8);
+        maxAllowedRise = Math.min(maxAllowedRise, 8.0);
       } else if (el.classList.contains('footer-main-shell')) {
-        maxAllowedRise = Math.min(maxAllowedRise, 12);
+        maxAllowedRise = Math.min(maxAllowedRise, 13.5);
+      } else if (el.classList.contains('home-top-notice')) {
+        maxAllowedRise = Math.min(maxAllowedRise, 7.5);
       }
 
       const svgString = generateSnowMantleSvg(W, H_card, radius, seed, el.className || '', cardKey, maxAllowedRise);
