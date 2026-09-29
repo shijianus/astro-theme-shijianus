@@ -116,6 +116,10 @@ async function runAudit() {
           morphology = 'windswept';
         }
 
+        const isFooterOrBar = card.id === 'footer-bar' || card.className.includes('footer-bar');
+        const isFlatCutEnd = !isFooterOrBar && (thick0 >= thickMid * 0.88 && thickW >= thickMid * 0.88);
+        const hasOrganicAsymmetry = Math.abs(thick0 - thickW) > 0.3 || Math.abs(dropLeft - dropRight) > 0.3;
+
         results.push({
           className: card.className,
           W,
@@ -124,6 +128,8 @@ async function runAudit() {
           thick0, thickMid, thickW,
           morphology,
           isHorizontalConstrained,
+          isFlatCutEnd,
+          hasOrganicAsymmetry,
           isDumbbell: (thick0 > thickMid + 10 && thickW > thickMid + 10)
         });
       });
@@ -164,11 +170,12 @@ async function runAudit() {
       morphCounts[stat.morphology] = (morphCounts[stat.morphology] || 0) + 1;
       
       let hasSteepDrop = stat.dropLeft > 15 || stat.dropRight > 15;
-      if (hasSteepDrop || stat.isDumbbell || !stat.isHorizontalConstrained) {
+      if (hasSteepDrop || stat.isDumbbell || !stat.isHorizontalConstrained || stat.isFlatCutEnd) {
         failCount++;
         console.log(`  ❌ Violating Card (${stat.className.substring(0,25)}): W=${Math.round(stat.W)}`);
         if (hasSteepDrop) console.log(`     -> Steep drop detected: LeftDrop=${Math.round(stat.dropLeft)}px, RightDrop=${Math.round(stat.dropRight)}px`);
         if (stat.isDumbbell) console.log(`     -> Dumbbell shape detected! Thick0=${Math.round(stat.thick0)}, Mid=${Math.round(stat.thickMid)}, W=${Math.round(stat.thickW)}`);
+        if (stat.isFlatCutEnd) console.log(`     -> Flat cut end detected! Thick0=${Math.round(stat.thick0)}, Mid=${Math.round(stat.thickMid)}, W=${Math.round(stat.thickW)}`);
         if (!stat.isHorizontalConstrained) console.log(`     -> SVG overflows horizontal card bounds!`);
       }
     }
@@ -179,7 +186,7 @@ async function runAudit() {
     }
 
     if (failCount === 0 && cardStats.results.length > 0) {
-      console.log(`✅ PASSED: No steep corner cliffs or dumbbell shapes found. All SVGs constrained.`);
+      console.log(`✅ PASSED: No flat cut ends, no steep corner cliffs, no dumbbells. All SVGs constrained with organic rollover.`);
     }
   }
 

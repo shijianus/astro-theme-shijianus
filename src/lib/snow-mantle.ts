@@ -360,7 +360,42 @@ export function generateSnowMantleSvg(
     }
   };
 
-  // 7. Top Points Generation: Natural Morphological Profiles (No Artificial Steep Cliff)
+  // 7. Organic Asymmetric Rollover & Edge Slump Parameters (Eliminate Flat Cut Sides & Sterile Perfection)
+  // Real snow drifts are never mathematically symmetrical and never end in a vertical knife-cut cliff.
+  // Independent left and right rollover transition zones ensure the sides never look like identical mirror cuts.
+  const isScreenEdge = isFooterBar;
+  const transL = isScreenEdge ? 12 : Math.max(18, Math.min(42, radius + 14 + prng() * 16));
+  const transR = isScreenEdge ? 12 : Math.max(18, Math.min(42, radius + 12 + prng() * 18));
+
+  // Organic crest shift: Nature doesn't place the mountain crest at exact 50.00% center
+  const centerShift = (prng() - 0.5) * 0.16; // -0.08 to +0.08 shift
+  const peakU = Math.max(0.38, Math.min(0.62, 0.5 + centerShift));
+
+  // Asymmetric slope curvature exponents for natural convex-concave rollover
+  const curvePowL = 1.3 + prng() * 0.5;
+  const curvePowR = 1.3 + prng() * 0.5;
+
+  // Calibrate residual edge toe factor per morphology (plush, soft natural thickness, NO flat vertical cliff and NO thin downward wire)
+  let toeL = 0.32 + prng() * 0.12;
+  let toeR = 0.30 + prng() * 0.12;
+  if (isScreenEdge) {
+    toeL = 0.75;
+    toeR = 0.75;
+  } else if (morphology === 'level-blanket') {
+    // Blanket is plush across width, softly easing down near edges with natural asymmetry
+    toeL = 0.44 + prng() * 0.12; // ~44% - 56% of targetRise
+    toeR = 0.40 + prng() * 0.12; // ~40% - 52% of targetRise
+  } else if (morphology === 'windswept-left') {
+    // Thick windward rollover on left, sleeker leeward taper on right
+    toeL = 0.46 + prng() * 0.10;
+    toeR = 0.24 + prng() * 0.08;
+  } else if (morphology === 'windswept-right') {
+    // Sleeker leeward taper on left, thick windward rollover on right
+    toeL = 0.24 + prng() * 0.08;
+    toeR = 0.46 + prng() * 0.10;
+  }
+
+  // 8. Top Points Generation: Natural Morphological Profiles with Organic Relief
   const numTop = Math.max(36, Math.min(140, Math.round(W / 12)));
   const topPoints: { x: number; y: number }[] = [];
 
@@ -368,45 +403,51 @@ export function generateSnowMantleSvg(
     const u = i / (numTop - 1); // 0.0 to 1.0 across card width
     const x = u * W;
 
-    // A. Morphological family envelope:
-    // Natural physical distributions across the FULL card width (never an artificial steep cliff)
+    // A. Morphological family envelope with organic crest shift:
     let envelope = 1.0;
     if (morphology === 'level-blanket') {
-      // "两头和中间差不多": Plush uniform blanket, ends are ~82% of center, smooth & gentle
-      envelope = 0.82 + 0.18 * Math.sin(u * Math.PI);
+      // Plush uniform blanket with gentle natural drift
+      const uShifted = Math.pow(u, 0.95 + centerShift * 0.25);
+      envelope = 0.82 + 0.18 * Math.sin(uShifted * Math.PI);
     } else if (morphology === 'windswept-left') {
-      // Windward thick on left (~1.0), gently tapering across whole width to ~0.15 on right (diff > 16px)
       const uW = Math.max(0, Math.min(1, 1 - u));
-      envelope = 0.15 + 0.85 * Math.sin(Math.pow(uW, 0.65) * (Math.PI * 0.5));
+      envelope = 0.18 + 0.82 * Math.sin(Math.pow(uW, 0.65 + centerShift * 0.4) * (Math.PI * 0.5));
     } else if (morphology === 'windswept-right') {
-      // Windward thick on right (~1.0), gently tapering across whole width to ~0.15 on left (diff > 16px)
       const uW = Math.max(0, Math.min(1, u));
-      envelope = 0.15 + 0.85 * Math.sin(Math.pow(uW, 0.65) * (Math.PI * 0.5));
+      envelope = 0.18 + 0.82 * Math.sin(Math.pow(uW, 0.65 - centerShift * 0.4) * (Math.PI * 0.5));
     } else {
       // 'center-thick' / natural rolling dunes:
-      // Peak in center (1.08), gently tapering to ~0.25 at ends across hundreds of pixels (slope < 3°-5°)
-      envelope = 0.25 + 0.83 * Math.sin(u * Math.PI);
+      // Peak near peakU, gently sloping across hundreds of pixels
+      const distFromPeak = u < peakU ? u / peakU : (1 - u) / (1 - peakU);
+      envelope = 0.28 + 0.78 * Math.sin(distFromPeak * (Math.PI * 0.5));
     }
 
     // B. Archetype base profile (individual personality per card)
     const baseProf = getArchetypeProfile(u);
 
-    // C. Multi-frequency organic waves for living snow relief (never ruler-flat)
-    const wave1 = Math.sin(u * Math.PI * 2 * waveCycles + phi1) * 0.16;
-    const wave2 = Math.cos(u * Math.PI * 3.8 * waveCycles + phi2) * 0.10;
-    const microPuff = Math.sin(u * Math.PI * 9.5 * waveCycles + phi1 * 1.3) * 0.05;
-    const organicRelief = Math.max(0.45, baseProf * 0.85 + wave1 + wave2 + microPuff);
+    // C. Multi-frequency organic waves & granular micro-texture for living snow relief (never ruler-flat, never synthetic)
+    const wave1 = Math.sin(u * Math.PI * 1.85 * waveCycles + phi1) * 0.14;
+    const wave2 = Math.cos(u * Math.PI * 3.65 * waveCycles + phi2) * 0.08;
+    const microPuff = Math.sin(u * Math.PI * 8.9 * waveCycles + phi1 * 1.4) * 0.04;
+    // Granular drift perturbation (organic natural lumpiness, breaks mathematical perfection)
+    const organicTexture = (Math.sin(u * 31.7 + phi2 * 1.9) * 0.5 + Math.cos(u * 47.3 + phi1 * 2.3) * 0.5) * 0.035;
+    const organicRelief = Math.max(0.42, baseProf * 0.85 + wave1 + wave2 + microPuff + organicTexture);
 
-    // D. Subtle edge rounding: In the extreme 5px, soften slightly (12%) for a gentle rounded brow
-    let edgeSoftening = 1.0;
-    if (x < 6) {
-      edgeSoftening = 0.88 + 0.12 * Math.sin((x / 6) * Math.PI * 0.5);
-    } else if (x > W - 6) {
-      edgeSoftening = 0.88 + 0.12 * Math.sin(((W - x) / 6) * Math.PI * 0.5);
+    // D. Organic Edge Rollover (Natural Slumping & Rounded Brow at the Ends)
+    // Over transL / transR, snow naturally rolls down in a convex-concave dome towards the corner
+    let edgeFactor = 1.0;
+    if (x < transL) {
+      const t = x / transL;
+      const smoothT = Math.pow(3 * t * t - 2 * t * t * t, curvePowL * 0.5);
+      edgeFactor = toeL + (1.0 - toeL) * smoothT;
+    } else if (x > W - transR) {
+      const t = (W - x) / transR;
+      const smoothT = Math.pow(3 * t * t - 2 * t * t * t, curvePowR * 0.5);
+      edgeFactor = toeR + (1.0 - toeR) * smoothT;
     }
 
     // Snow height above baseline (targetRise)
-    const snowHeight = targetRise * envelope * organicRelief * edgeSoftening;
+    const snowHeight = targetRise * envelope * organicRelief * edgeFactor;
 
     // Snow top: stays natural, fluffy, and undulating (NO steep corner drop!)
     const y = yOffset - snowHeight;
