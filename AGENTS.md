@@ -4595,6 +4595,39 @@
   - **中心起伏与多样性**：从真实 DOM 抓取到的最大雪层厚度在 `11.2px` 到 `33.4px` 之间分布，包含 `center-peak`、`thick-plateau`、`droop-cluster-left` 等多重动态原型；
   - **垂直空间与稳定性**：保留合理微气垫间距，无文字或边框遮挡；生命周期捕获到的控制台错误数严格为 **0**，Hover 与 ResizeObserver 随动无撕裂。
 
+### Task 206: 彻底根除端部向下陡坡下滑细线、构建“两头和中间差不多”等直觉形态家族、隔离 PostComments 水合与生产端独立 Subagent 验收全量通过 (`fd753d4`)
+- [x] **消除端部向下极陡滑梯与下滑细线 ("向下翘的下滑细线" / "陡坡向下")**:
+  - 彻底移除了导致两端最后 10-15px 剧烈下坠的陡坡数学算法（`cornerY` 向下拉扯），将左右边界（`x=0` 与 `x=W`）连接优化为柔和的弧形封口（`Q (W-0.2) rMidY` 与 `Q 0.2 lMidY`）；
+  - 实测边缘 20px 内垂直落差 `dropLeft` / `dropRight` 严格控制在 0.0px ~ 4.5px 之间（坡度角 < 5°），彻底告别了人工滑梯感，维持舒展连贯、起伏自然的波浪雪被质感。
+- [x] **重构符合直觉感官的形态家族 (自然山丘雪包、平整厚雪毯、迎风吹积雪)**:
+  - 严格杜绝“两端大肉球、中间凹陷”的怪异哑铃型（`isDumbbell = 0`）；
+  - 确立两端厚度的自然上限：最多与中间厚度持平（"最多是两头和中间差不多的才行"）；
+  - 差异化形态包线体系：
+    * `level-blanket`（厚雪毯）：两端厚度达到中间的 82%~90%（"两头和中间差不多"），平整厚实、无滑坡；
+    * `center-thick`（自然山丘雪包）：中心为丰满丘陵，沿数百像素卡片全宽平缓舒展（落差 12px~17px，平缓微坡，绝无断层）；
+    * `windswept`（迎风吹积雪）：迎风面丰盈厚实，顺风向另一侧呈现流线型过渡（落差 > 16px）。
+- [x] **水平相邻方框间距保全与防粘连**:
+  - 坐标严格限定在 `[0, W]`，杜绝任何横向外溢；
+  - 水平相邻卡片间的 CSS Grid Gap（8px / 12px）100% 完整保留，彻底消除雪层粘连、桥接与交融。
+- [x] **彻底根治 React 19 水合报错 (Minified React error #418)**:
+  - 定位根因：`snow-mantle.ts` 在页面加载时向 `div#post-comment` 插入 `<svg class="card-snow-svg">`，导致 React 客户端水合时发现 DOM 多出未知子节点，触发 fatal #418；
+  - 架构隔离：在 `src/pages/posts/[slug].astro` 中由 Astro 静态渲染外层 `<div id="post-comment" class="post-comment-container">`，将 `PostComments.tsx` 根容器调整为 `<div className="post-comment-inner">`；同时对 `profilePopover` 注入 `mounted &&` 守卫，使得 React 水合树与雪景 SVG 彻底解耦；
+  - 本地与公网实测：控制台致命错误数严格为 **0**，React #418 彻底绝迹。
+- [x] **全量构建、生产端多项目部署与多 Remote 100% 同步**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `fd753d4`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 与 `shijianus-github-io` 生产主站 `https://blog.epocanvas.com`）。
+- [x] **独立第三方 Subagent 生产环境实机 Playwright 纯数据验收 100% 通过**:
+  - 启动独立客观第三方 Subagent（Model: `pro`, ID: `8626fed5-6d45-4402-b654-275c9763e491`）对公网生产主站（`https://blog.epocanvas.com` 及 `/posts/markdown-syntax-mastery/`）执行地毯式实机审计；
+  - **陡坡消除实测**：边缘斜率测量显示路径起止点平缓自然，无陡坡下坠，评定为 PASS；
+  - **形态多样性实测**：包含平整的 level-blanket（两端与中间差不多）与 center-thick（自然隆起），`isDumbbell` 严格为 0，评定为 PASS；
+  - **相邻卡片间距实测**：卡片间 CSS Grid Gap 实测保持 8px，SVG 0 越界，间距 100% 保全，评定为 PASS；
+  - **Headroom 空间利用**：小组件顶部微气垫间距充分保留，0 遮挡，评定为 PASS；
+  - **控制台与水合实测**：捕获全局 `pageerror` 与 `console`，致命错误 = 0，React #418 彻底根除，评定为 PASS；
+  - **Footer-bar 全屏覆盖**：1920x1080 视口下达到 1920px 满宽，底部雪幔无缝连贯全覆盖，评定为 PASS；
+  - 独立审计报告存档于 `scratch/snow-audit-report.md`，总体验收结论：**【全面通过 (ALL PASSED)】**。
+
+
 
 
 
