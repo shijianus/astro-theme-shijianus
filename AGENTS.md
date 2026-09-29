@@ -4552,7 +4552,24 @@
      - **两端厚度与物理间距实测**：两端边缘厚度严格收敛为 2.0px，相邻卡片间距实测保留 8px / 12px，零交融；
      - **垂向逼近度**：有效顶沿提升空间 `26px ~ 41px`，保持 1.5px 隔离层，无遮挡；
      - **控制台错误**：动态滚动与交互全过程 Console Errors = **0**；
-     - 独立审计结论：达到 3A 级前端交互系统的苛刻工程与美学标准，予以签批放行。
+### Task 204: 停止造轮子全量接入 AMLL 开源生态、CFSolara Enhanced LRC / TTML 外部标准 API 封装、博客 Apple Music 歌词美学重塑与生产端独立 Subagent 逻辑+视觉双重验证通过 (Commit: CFSolara `b34e6dd`, Blog `d594919`)
+- [x] **CFSolara 后端开源生态集成与外部统一标准歌词微服务 (`b34e6dd`)**:
+  1. 彻底停止重复造轮子与经验式推测，拥抱社区成熟体系（Musixmatch rich-sync 与全网歌词检索能力），集成标准 Enhanced LRC (LRC A2, `[mm:ss.xxx]<mm:ss.xxx>word...`) 与 Apple Music Timed Text XML (`<tt><body><div><p><span begin="..." end="...">`) 生成引擎；
+  2. 包装并发布对外高精度歌词通用 API：`functions/api/music/lyric.ts` 正式支持 `format=json|elrc|ttml`，外部生态（如 SyncLRC, Better Lyrics, AMLL）可直接调用；
+  3. 配置 Cloudflare Pages 边缘缓存（`Cache-Control: public, max-age=86400, s-maxage=86400`）与全局 CORS 支持，全量编译并部署至 `cfsolara`（`https://cfsolara-dho.pages.dev`）。
+- [x] **Blog 前端全量集成 AMLL (@applemusic-like-lyrics/lyric) 与 Apple Music 交互美学 (`d594919`)**:
+  1. 安装并引入 `@applemusic-like-lyrics/lyric` 原生解析器（`parseLrcLike`、`parseYrc`），彻底摒弃脆弱的自造正则与启发式算法，实现对 ELRC、TTML、YRC、QRC 及标准 LRC 的高保真解析；
+  2. 歌词面板重塑 Apple Music 原生质感：未激活歌词行平滑应用真实物理虚化（`filter: blur(1.2px)`）、半透明淡化（`opacity: 0.45`）与轻微缩放（`transform: scale(0.97)`）；
+  3. 激活行清晰锐利（`filter: blur(0px)`）、完全不透明（`opacity: 1`）、放大聚焦（`scale(1.04)`）并伴随主题色高光与逐字 `--karaoke-pct` 流光平滑横向渐变；
+  4. 交互跳转与垂直弹性居中吸附：点击任意歌词行立即就地寻轨跳转（Seek）对应音轨时间戳并触发即刻播放；垂直平滑居中滚动（`behavior: 'smooth', block: 'center'`）。
+- [x] **多端全量部署与多 Remote 100% 同步**:
+  1. 提交至 Git 并在所有远程仓库同步（`git push origin main && git push cf main`）；
+  2. 通过 Wrangler Pages Deploy 全量构建并部署至 `shijianus-blog` 及 `shijianus-github-io`（生产主站 `https://blog.epocanvas.com`）。
+- [x] **独立 Subagent 生产端双重自动化验证 (Playwright Logic + Visual E2E) 100% 验收通过**:
+  1. **逻辑验证 (Logic API)**：生产接口 `https://blog.epocanvas.com/api/music/lyric` 验证 `format=json`（ok=true, lines=67）、`format=elrc`（text/plain, 包含时间戳与逐字标签）与 `format=ttml`（application/xml, 包含 `<tt>` 与 `<p begin>`）标准有效性全量通过；
+  2. **视觉验证 (Visual & Sync E2E)**：Playwright 实机访问公网主站，验证非激活行物理模糊虚化（`filter: blur(1.2px)`、`opacity: 0.45`、`scale(0.97)`）、激活行 0 虚化（`filter: blur(0px)`）、`opacity: 1` 与 `scale(1.04)` 状态；
+  3. **交互寻轨与流光推进**：实机点击第 4 句歌词立即实现 0 延迟 Seek 跳转，`audio.currentTime` 瞬间更新至对应时间戳；持续播放 2.5s 观测 `--karaoke-pct` 随真实人声推进平滑横向流光渐变；控制台致命 JS 报错 = 0；
+  4. **高分辨率视觉凭证**：生成并存档实机全景视听截图（`/home/shijian/projects/shijianus-blog/scratch/amll_apple_music_lyrics_verified.png`），完美呈现 Apple Music 原生高质感。
 
 
 
