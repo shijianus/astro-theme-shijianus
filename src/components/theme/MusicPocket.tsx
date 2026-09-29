@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { parseLrcLike, parseYrc } from '@applemusic-like-lyrics/lyric';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
 import {
   Clock,
@@ -580,6 +581,77 @@ export function parseHighPrecisionLrc(raw: string): {
   if (qrcXmlMatch) {
     cleanInput = qrcXmlMatch[1];
   }
+
+  // 1. 采用 AMLL (@applemusic-like-lyrics/lyric) 原生引擎优先解析 Enhanced LRC / TTML / YRC
+  try {
+    let amllLines: any[] = [];
+    if (/^\[\d+,\d+\]/m.test(cleanInput)) {
+      amllLines = parseYrc(cleanInput);
+    } else {
+      const parsed = parseLrcLike(cleanInput);
+      if (parsed && Array.isArray(parsed.lines)) {
+        amllLines = parsed.lines;
+      }
+    }
+
+    if (Array.isArray(amllLines) && amllLines.length > 0) {
+      const hasWordTimestamps = amllLines.some((l) => Array.isArray(l.words) && l.words.length > 1);
+      const converted: LyricLine[] = amllLines.map((line) => {
+        const timeSec = Math.max(0, parseFloat((line.startTime / 1000 + offsetSec).toFixed(3)));
+        const durSec = line.endTime > line.startTime && line.endTime < 59000000
+          ? Math.max(0.1, parseFloat(((line.endTime - line.startTime) / 1000).toFixed(3)))
+          : undefined;
+
+        const words: LyricWord[] | undefined = Array.isArray(line.words) && line.words.length > 0
+          ? line.words.map((w: any) => {
+              const wStartSec = Math.max(0, parseFloat((w.startTime / 1000 + offsetSec).toFixed(3)));
+              const wEndSec = Math.max(wStartSec + 0.01, parseFloat((w.endTime / 1000 + offsetSec).toFixed(3)));
+              const wDurSec = Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3)));
+              return {
+                text: String(w.word || ''),
+                start: wStartSec,
+                end: wEndSec,
+                duration: wDurSec,
+                startSec: wStartSec,
+                endSec: wEndSec,
+                durationSec: wDurSec,
+              };
+            })
+          : undefined;
+
+        const fullText = words && words.length > 0
+          ? words.map((w) => w.text).join('')
+          : (line.text || '');
+
+        return {
+          time: timeSec,
+          timeSec,
+          duration: durSec,
+          durationSec: durSec,
+          text: fullText.trim(),
+          words: words && words.length > 1 ? words : undefined,
+        };
+      });
+
+      const filtered = converted.filter((l) => l.text && !isLyricMetadataLine(l.text));
+      if (filtered.length > 0) {
+        for (let i = 0; i < filtered.length; i++) {
+          const cur = filtered[i];
+          if (!cur.duration) {
+            const next = filtered[i + 1];
+            const gap = next ? next.time - cur.time : 4.5;
+            cur.duration = estimateVocalDuration(cur.text, gap);
+            cur.durationSec = cur.duration;
+          }
+        }
+        return {
+          syncType: hasWordTimestamps ? 'word' : 'line',
+          offset: Math.round(offsetSec * 1000),
+          lines: normalizeLyricLines(filtered),
+        };
+      }
+    }
+  } catch {}
 
   const rawLines = cleanInput.split('\n');
   const result: LyricLine[] = [];
@@ -1559,19 +1631,31 @@ export function MusicPocket({ apiBase }: Props) {
           ok: boolean;
           syncType?: LyricSyncType;
           lines?: LyricLine[];
+          elrc?: string;
+          ttml?: string;
           lyric?: string;
           lrc?: string;
           rawLyric?: string;
-        }>(`${apiBase}/music/lyric?${queryStr}`);
+        }>(`${apiBase}/music/lyric?${queryStr}&format=json`);
         if (res.ok) {
+          if (res.elrc) {
+            const parsedData = parseHighPrecisionLrc(res.elrc);
+            if (parsedData.lines.length > 0) {
+              return {
+                text: res.elrc,
+                syncType: parsedData.syncType,
+                lines: parsedData.lines,
+              };
+            }
+          }
           if (Array.isArray(res.lines) && res.lines.length > 0) {
             return {
-              text: res.rawLyric || res.lyric || res.lrc || '',
+              text: res.elrc || res.rawLyric || res.lyric || res.lrc || '',
               syncType: res.syncType || 'line',
               lines: normalizeLyricLines(res.lines),
             };
           }
-          const raw = res.rawLyric || res.lyric || res.lrc || '';
+          const raw = res.elrc || res.rawLyric || res.lyric || res.lrc || '';
           if (raw) {
             const parsedData = parseHighPrecisionLrc(raw);
             return { text: raw, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };
@@ -1581,23 +1665,35 @@ export function MusicPocket({ apiBase }: Props) {
 
       // 2. CFSolara 官方全网高精歌词引擎微服务自动回退兜底 (/api/lyric)
       try {
-        const cfSolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?${queryStr}`;
+        const cfSolaraUrl = `https://cfsolara-dho.pages.dev/api/lyric?${queryStr}&format=json`;
         const cfRes = await fetchJson<{
           ok: boolean;
           syncType?: LyricSyncType;
           lines?: LyricLine[];
+          elrc?: string;
+          ttml?: string;
           lyric?: string;
           rawLyric?: string;
         }>(cfSolaraUrl);
         if (cfRes.ok) {
+          if (cfRes.elrc) {
+            const parsedData = parseHighPrecisionLrc(cfRes.elrc);
+            if (parsedData.lines.length > 0) {
+              return {
+                text: cfRes.elrc,
+                syncType: parsedData.syncType,
+                lines: parsedData.lines,
+              };
+            }
+          }
           if (Array.isArray(cfRes.lines) && cfRes.lines.length > 0) {
             return {
-              text: cfRes.rawLyric || cfRes.lyric || '',
+              text: cfRes.elrc || cfRes.rawLyric || cfRes.lyric || '',
               syncType: cfRes.syncType || 'line',
               lines: normalizeLyricLines(cfRes.lines),
             };
           }
-          const raw = cfRes.rawLyric || cfRes.lyric || '';
+          const raw = cfRes.elrc || cfRes.rawLyric || cfRes.lyric || '';
           if (raw) {
             const parsedData = parseHighPrecisionLrc(raw);
             return { text: raw, syncType: parsedData.syncType, lines: normalizeLyricLines(parsedData.lines) };

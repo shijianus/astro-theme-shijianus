@@ -2001,33 +2001,38 @@ html.dark .shijianus-ai-summary__related span {
   display: flex;
   align-items: baseline;
   width: 100%;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12.5px;
-  color: rgba(100, 116, 139, 0.75);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(100, 116, 139, 0.7);
   cursor: pointer;
-  transition: all 0.22s ease;
   line-height: 1.5;
   gap: 12px;
+  filter: blur(1.2px);
+  opacity: 0.45;
+  transform: scale(0.97);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease, opacity 0.3s ease, background 0.2s ease, color 0.2s ease;
 }
 
 :root[data-theme='dark'] .lyrics-line,
 :root[data-theme='dark'] .lyrics-line-item {
-  color: rgba(148, 163, 184, 0.7);
+  color: rgba(148, 163, 184, 0.65);
 }
 
 .lyrics-line:hover,
 .lyrics-line-item:hover {
   color: #1e293b;
   background: rgba(66, 90, 239, 0.06);
-  transform: translateX(3px);
+  filter: blur(0px);
+  opacity: 0.88;
+  transform: scale(1.0);
 }
 
 :root[data-theme='dark'] .lyrics-line:hover,
 :root[data-theme='dark'] .lyrics-line-item:hover {
   color: #f8fafc;
   background: rgba(129, 140, 248, 0.08);
-  transform: translateX(3px);
 }
 
 .lyrics-line:hover .lyrics-line__time,
@@ -2044,41 +2049,45 @@ html.dark .shijianus-ai-summary__related span {
 
 .lyrics-line.is-passed,
 .lyrics-line-item.is-passed {
-  color: rgba(100, 116, 139, 0.65);
-  opacity: 0.72;
+  color: rgba(100, 116, 139, 0.6);
+  filter: blur(1.2px);
+  opacity: 0.42;
   font-weight: 500;
+  transform: scale(0.97);
 }
 
 :root[data-theme='dark'] .lyrics-line.is-passed,
 :root[data-theme='dark'] .lyrics-line-item.is-passed {
-  color: rgba(148, 163, 184, 0.6);
-  opacity: 0.68;
+  color: rgba(148, 163, 184, 0.55);
 }
 
 .lyrics-line.is-passed .lyrics-line__time,
 .lyrics-line-item.is-passed .lyrics-line__time {
   color: #94a3b8;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 :root[data-theme='dark'] .lyrics-line.is-passed .lyrics-line__time,
 :root[data-theme='dark'] .lyrics-line-item.is-passed .lyrics-line__time {
   color: #64748b;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .lyrics-line.is-active,
 .lyrics-line-item.is-active {
-  font-size: 14.5px;
-  font-weight: 750;
+  font-size: 15px;
+  font-weight: 800;
   color: #425aef;
   background: rgba(66, 90, 239, 0.08);
   border-left: 3.5px solid #425aef;
-  padding-left: 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(66, 90, 239, 0.12);
-  transform: scale(1.02);
-  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding-left: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(66, 90, 239, 0.15);
+  filter: blur(0px) !important;
+  opacity: 1 !important;
+  transform: scale(1.04) !important;
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease, opacity 0.25s ease, background 0.2s ease;
 }
 
 :root[data-theme='dark'] .lyrics-line.is-active,
@@ -2086,12 +2095,14 @@ html.dark .shijianus-ai-summary__related span {
   color: #818cf8;
   background: rgba(129, 140, 248, 0.15);
   border-left-color: #818cf8;
-  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.28);
 }
 
 .lyrics-line.is-future,
 .lyrics-line-item.is-future {
-  opacity: 0.45;
+  filter: blur(1.2px);
+  opacity: 0.42;
+  transform: scale(0.97);
 }
 
 .lyrics-line__time {

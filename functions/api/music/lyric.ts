@@ -37,12 +37,47 @@ export async function onRequest(context: { request: Request; env: AppEnv }) {
 
   const payload = await fetchHighPrecisionLyrics(env, { id, source, title, artist, q, duration });
 
-  return jsonResponse(request, env, {
-    ...payload,
-    // 向前兼容历史调用
-    lyric: payload.rawLyric,
-    lrc: payload.rawLyric,
-    parsed: payload.lines,
-  });
+  const format = url.searchParams.get('format')?.toLowerCase() || 'json';
+
+  const cacheHeaders = {
+    'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  };
+
+  if (format === 'ttml' || format === 'xml') {
+    return new Response(payload.ttml || '', {
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        ...cacheHeaders,
+      },
+    });
+  }
+
+  if (format === 'elrc' || format === 'lrc' || format === 'text') {
+    return new Response(payload.elrc || payload.rawLyric || '', {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        ...cacheHeaders,
+      },
+    });
+  }
+
+  return jsonResponse(
+    request,
+    env,
+    {
+      ...payload,
+      // 向前兼容历史调用与外部生态 (AMLL, Better Lyrics, SyncLRC)
+      lyric: payload.rawLyric,
+      lrc: payload.rawLyric,
+      parsed: payload.lines,
+      elrc: payload.elrc,
+      ttml: payload.ttml,
+    },
+    {
+      headers: cacheHeaders,
+    },
+  );
 }
 

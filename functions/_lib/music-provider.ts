@@ -494,6 +494,8 @@ export interface HighPrecisionLyricPayload {
   lineCount: number;
   rawLyric: string;
   isPureMusic?: boolean;
+  elrc?: string;
+  ttml?: string;
 }
 
 export function isMetadataLine(text: string): boolean {
@@ -781,6 +783,75 @@ export function isValidLyric(raw: string): boolean {
   return validVocalLines.length > 0;
 }
 
+function formatLrcTimestamp(ms: number): string {
+  const totalSec = Math.max(0, ms / 1000);
+  const mins = Math.floor(totalSec / 60);
+  const secs = (totalSec % 60).toFixed(3);
+  return `${String(mins).padStart(2, '0')}:${secs.padStart(6, '0')}`;
+}
+
+function formatTtmlTimestamp(ms: number): string {
+  const totalSec = Math.max(0, ms / 1000);
+  const hours = Math.floor(totalSec / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = (totalSec % 60).toFixed(3);
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${secs.padStart(6, '0')}`;
+}
+
+export function generateEnhancedLrc(lines: LyricLine[]): string {
+  return lines
+    .map((line) => {
+      const lineTimeStr = formatLrcTimestamp(line.time);
+      if (line.words && line.words.length > 0) {
+        const wordsStr = line.words
+          .map((w) => `<${formatLrcTimestamp(w.start)}>${w.text}`)
+          .join('');
+        const endStr = `<${formatLrcTimestamp(line.words[line.words.length - 1].end)}>`;
+        return `[${lineTimeStr}]${wordsStr}${endStr}`;
+      }
+      return `[${lineTimeStr}]${line.text}`;
+    })
+    .join('\n');
+}
+
+export function generateTtml(lines: LyricLine[], title?: string, artist?: string): string {
+  const paragraphs = lines
+    .map((line) => {
+      const pBegin = formatTtmlTimestamp(line.time);
+      const lineDur = line.duration || (line.words && line.words.length > 0 ? (line.words[line.words.length - 1].end - line.time) : 3000);
+      const pEnd = formatTtmlTimestamp(line.time + lineDur);
+      if (line.words && line.words.length > 0) {
+        const spans = line.words
+          .map((w) => {
+            const sBegin = formatTtmlTimestamp(w.start);
+            const sEnd = formatTtmlTimestamp(w.end);
+            const escaped = w.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `        <span begin="${sBegin}" end="${sEnd}">${escaped}</span>`;
+          })
+          .join('\n');
+        return `      <p begin="${pBegin}" end="${pEnd}">\n${spans}\n      </p>`;
+      }
+      const escapedText = line.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `      <p begin="${pBegin}" end="${pEnd}">${escapedText}</p>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:itunes="http://music.apple.com/lyric-ttml-extensions">
+  <head>
+    <metadata>
+      <ttm:title>${(title || '').replace(/&/g, '&amp;')}</ttm:title>
+      <ttm:agent type="person">${(artist || '').replace(/&/g, '&amp;')}</ttm:agent>
+    </metadata>
+  </head>
+  <body>
+    <div>
+${paragraphs}
+    </div>
+  </body>
+</tt>`;
+}
+
 export function parseLrcLyrics(rawLrc: string): LyricLine[] {
   return parseHighPrecisionLyrics(rawLrc).lines;
 }
@@ -838,6 +909,9 @@ export async function fetchHighPrecisionLyrics(
     if (resp.ok) {
       const data = (await resp.json()) as any;
       if (data && data.ok && Array.isArray(data.lines) && data.lines.length > 0 && (isValidLyric(data.rawLyric || data.lyric || '') || data.lines.some((l: any) => l && l.text && l.text.trim()))) {
+        const lines = data.lines;
+        const elrc = data.elrc || generateEnhancedLrc(lines);
+        const ttml = data.ttml || generateTtml(lines, data.title || effectiveTitle, data.artist || effectiveArtist);
         return {
           ok: true,
           id: data.id || effectiveId || id,
@@ -846,13 +920,17 @@ export async function fetchHighPrecisionLyrics(
           offset: data.offset || 0,
           title: data.title || effectiveTitle || undefined,
           artist: data.artist || effectiveArtist || undefined,
-          lines: data.lines,
-          lineCount: data.lines.length,
+          lines,
+          lineCount: lines.length,
           rawLyric: data.rawLyric || data.lyric || '',
           isPureMusic: Boolean(data.isPureMusic),
+          elrc,
+          ttml,
         };
       } else if (data && data.ok && typeof data.lyric === 'string' && isValidLyric(data.lyric)) {
         const { syncType, offset, lines } = parseHighPrecisionLyrics(data.lyric);
+        const elrc = data.elrc || generateEnhancedLrc(lines);
+        const ttml = data.ttml || generateTtml(lines, data.title || effectiveTitle, data.artist || effectiveArtist);
         return {
           ok: true,
           id: data.id || effectiveId || id,
@@ -863,6 +941,10 @@ export async function fetchHighPrecisionLyrics(
           artist: data.artist || effectiveArtist || undefined,
           lines,
           lineCount: lines.length,
+          rawLyric: data.lyric || '',
+          isPureMusic: Boolean(data.isPureMusic),
+          elrc,
+          ttml,
         };
       }
     }
@@ -894,6 +976,8 @@ export async function fetchHighPrecisionLyrics(
             lines,
             lineCount: lines.length,
             rawLyric,
+            elrc: generateEnhancedLrc(lines),
+            ttml: generateTtml(lines, title, artist),
           };
         }
       }
@@ -925,6 +1009,8 @@ export async function fetchHighPrecisionLyrics(
             lines,
             lineCount: lines.length,
             rawLyric: synced,
+            elrc: generateEnhancedLrc(lines),
+            ttml: generateTtml(lines, title, artist),
           };
         }
       }
@@ -967,6 +1053,8 @@ export async function fetchHighPrecisionLyrics(
     lineCount: lines.length,
     rawLyric,
     isPureMusic: isPure,
+    elrc: generateEnhancedLrc(lines),
+    ttml: generateTtml(lines, title || localMatch?.name, artist || localMatch?.artist),
   };
 }
 
