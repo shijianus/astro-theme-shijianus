@@ -376,23 +376,23 @@ export function generateSnowMantleSvg(
   const curvePowR = 1.3 + prng() * 0.5;
 
   // Calibrate residual edge toe factor per morphology (plush, soft natural thickness, NO flat vertical cliff and NO thin downward wire)
-  let toeL = 0.32 + prng() * 0.12;
-  let toeR = 0.30 + prng() * 0.12;
+  let toeL = 0.28 + prng() * 0.10;
+  let toeR = 0.26 + prng() * 0.10;
   if (isScreenEdge) {
     toeL = 0.75;
     toeR = 0.75;
   } else if (morphology === 'level-blanket') {
-    // Blanket is plush across width, softly easing down near edges with natural asymmetry
-    toeL = 0.44 + prng() * 0.12; // ~44% - 56% of targetRise
-    toeR = 0.40 + prng() * 0.12; // ~40% - 52% of targetRise
+    // Blanket is plush across width, softly easing down near edges with natural asymmetry (ends ~38%-48% of peak)
+    toeL = 0.38 + prng() * 0.10;
+    toeR = 0.35 + prng() * 0.10;
   } else if (morphology === 'windswept-left') {
     // Thick windward rollover on left, sleeker leeward taper on right
-    toeL = 0.46 + prng() * 0.10;
-    toeR = 0.24 + prng() * 0.08;
+    toeL = 0.40 + prng() * 0.08;
+    toeR = 0.20 + prng() * 0.08;
   } else if (morphology === 'windswept-right') {
     // Sleeker leeward taper on left, thick windward rollover on right
-    toeL = 0.24 + prng() * 0.08;
-    toeR = 0.46 + prng() * 0.10;
+    toeL = 0.20 + prng() * 0.08;
+    toeR = 0.40 + prng() * 0.08;
   }
 
   // 8. Top Points Generation: Natural Morphological Profiles with Organic Relief
@@ -530,15 +530,15 @@ export function generateSnowMantleSvg(
     }
     const droop = rawDroop * lobeEnvelope;
 
-    // Corner conforming for bottom edge (hugging card rounded corners)
+    // Corner conforming for bottom edge (hugging card rounded corners gently without ballooning)
     let cornerDrop = 0;
     if (radius > 0) {
       if (x < radius) {
         const xOffset = radius - x;
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.50;
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.22;
       } else if (x > W - radius) {
         const xOffset = x - (W - radius);
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.50;
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.22;
       }
     }
 

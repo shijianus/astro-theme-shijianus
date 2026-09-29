@@ -69,50 +69,53 @@ async function runAudit() {
         const vW = viewBox[2];
         const vH = viewBox[3];
 
-        function getTopYAtX(localX) {
+        function getProfileAtX(localX) {
           pt.x = Math.max(0.5, Math.min(vW - 0.5, (localX / Math.max(1, svgRect.width)) * vW));
+          let topY = null, botY = null;
           for (let y = 0; y <= vH; y += 0.5) {
             pt.y = y;
             if (path.isPointInFill(pt)) {
-              return (y / Math.max(1, vH)) * svgRect.height;
+              if (topY === null) topY = y;
+              botY = y;
             }
           }
-          return svgRect.height;
+          const scaleY = svgRect.height / Math.max(1, vH);
+          return {
+            topY: (topY ?? vH) * scaleY,
+            botY: (botY ?? vH) * scaleY,
+            thick: (topY !== null && botY !== null) ? (botY - topY) * scaleY : 0
+          };
         }
 
         const W = svgRect.width;
         // Sample points
-        const y0 = getTopYAtX(0);
-        const y10 = getTopYAtX(10);
-        const y20 = getTopYAtX(20);
-        const yMid = getTopYAtX(W / 2);
-        const yW_20 = getTopYAtX(W - 20);
-        const yW_10 = getTopYAtX(W - 10);
-        const yW = getTopYAtX(W);
+        const p0 = getProfileAtX(0);
+        const p20 = getProfileAtX(20);
+        const pMid = getProfileAtX(W / 2);
+        const pW_20 = getProfileAtX(W - 20);
+        const pW = getProfileAtX(W);
+
+        const y0 = p0.topY;
+        const y20 = p20.topY;
+        const yMid = pMid.topY;
+        const yW_20 = pW_20.topY;
+        const yW = pW.topY;
 
         // Calculate slopes (dy/dx) at edges
-        // left edge slope: (y20 - y0) / 20
-        // right edge slope: (yW - yW_20) / 20
-        const slopeLeft = (y20 - y0) / 20;
-        const slopeRight = (yW - yW_20) / 20; // yW is rightmost, so (yW - yW_20)/20. If it dips down, yW > yW_20, slope > 0.
-        // Wait, typical "steep drop" means Y increases rapidly at the edges.
-        // So y0 is large, y20 is small. slopeLeft = (small - large)/20 < 0, meaning it drops from the center.
-        // Let's just calculate absolute drop:
         const dropLeft = Math.abs(y20 - y0);
         const dropRight = Math.abs(yW - yW_20);
 
-        // Determine morphology
-        // Thickness is roughly (height - Y)
-        const thick0 = svgRect.height - y0;
-        const thickMid = svgRect.height - yMid;
-        const thickW = svgRect.height - yW;
+        // Determine true thickness of snow body
+        const thick0 = p0.thick;
+        const thickMid = pMid.thick;
+        const thickW = pW.thick;
 
         let morphology = 'unknown';
-        if (Math.abs(thick0 - thickMid) < 10 && Math.abs(thickW - thickMid) < 10) {
+        if (Math.abs(thick0 - thickMid) < 8 && Math.abs(thickW - thickMid) < 8) {
           morphology = 'level-blanket';
-        } else if (thickMid > thick0 + 10 && thickMid > thickW + 10) {
+        } else if (thickMid > thick0 + 3 && thickMid > thickW + 3) {
           morphology = 'center-thick';
-        } else if (Math.abs(thick0 - thickW) > 15) {
+        } else if (Math.abs(thick0 - thickW) > 5) {
           morphology = 'windswept';
         }
 
