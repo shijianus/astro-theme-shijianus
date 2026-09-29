@@ -369,21 +369,23 @@ export function generateSnowMantleSvg(
     const x = u * W;
 
     // A. Morphological family envelope:
-    // Natural physical distributions across the FULL card width (never a steep 12px drop)
+    // Natural physical distributions across the FULL card width (never an artificial steep cliff)
     let envelope = 1.0;
     if (morphology === 'level-blanket') {
-      // "两头和中间差不多": Plush uniform blanket, ends are ~78% of center, smooth & gentle
-      envelope = 0.78 + 0.22 * Math.sin(u * Math.PI);
+      // "两头和中间差不多": Plush uniform blanket, ends are ~82% of center, smooth & gentle
+      envelope = 0.82 + 0.18 * Math.sin(u * Math.PI);
     } else if (morphology === 'windswept-left') {
-      // Windward thick on left (~0.85), peak around 0.28, gently tapering to ~0.42 on right
-      envelope = 0.42 + 0.58 * Math.sin(Math.pow(Math.max(0, 1.05 - u), 0.75) * Math.PI * 0.90);
+      // Windward thick on left (~1.0), gently tapering across whole width to ~0.15 on right (diff > 16px)
+      const uW = Math.max(0, Math.min(1, 1 - u));
+      envelope = 0.15 + 0.85 * Math.sin(Math.pow(uW, 0.65) * (Math.PI * 0.5));
     } else if (morphology === 'windswept-right') {
-      // Windward thick on right (~0.85), peak around 0.72, gently tapering to ~0.42 on left
-      envelope = 0.42 + 0.58 * Math.sin(Math.pow(Math.max(0, 0.05 + u), 0.75) * Math.PI * 0.90);
+      // Windward thick on right (~1.0), gently tapering across whole width to ~0.15 on left (diff > 16px)
+      const uW = Math.max(0, Math.min(1, u));
+      envelope = 0.15 + 0.85 * Math.sin(Math.pow(uW, 0.65) * (Math.PI * 0.5));
     } else {
       // 'center-thick' / natural rolling dunes:
-      // Peak in center (1.0), gently tapering to ~0.46 at ends across hundreds of pixels
-      envelope = 0.46 + 0.54 * Math.sin(u * Math.PI);
+      // Peak in center (1.08), gently tapering to ~0.25 at ends across hundreds of pixels (slope < 3°-5°)
+      envelope = 0.25 + 0.83 * Math.sin(u * Math.PI);
     }
 
     // B. Archetype base profile (individual personality per card)

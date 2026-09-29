@@ -1819,7 +1819,7 @@ export function PostComments({
   }, [comments]);
 
   return (
-    <div id="post-comment">
+    <div className="post-comment-inner">
       {/* Header bar */}
       <div className="comment-head">
         <h3 className="comment-headline">
@@ -4172,7 +4172,8 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
         )}
 
       {/* Author Profile Popover (Discourse / LinuxDo Landscape Card) */}
-      {typeof document !== 'undefined' &&
+      {mounted &&
+        typeof document !== 'undefined' &&
         profilePopover.isOpen &&
         profilePopover.author &&
         profilePopover.anchorRect &&

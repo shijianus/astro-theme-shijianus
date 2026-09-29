@@ -732,20 +732,22 @@ const heroSummary = isUnlocked
       {commentsEnabled && <hr class="custom-hr" />}
 
       {commentsEnabled && (
-        <PostComments
-          client:idle
-          slug={canonicalSlug}
-          title={publicFacingTitle}
-          heading={siteConfig.post.comments.title}
-          policyLabel={siteConfig.post.comments.policyLabel}
-          notice={siteConfig.post.comments.notice}
-          submitLabel={siteConfig.post.comments.submitLabel}
-          previewLabel={siteConfig.post.comments.previewLabel}
-          emptyTitle={siteConfig.post.comments.emptyTitle}
-          emptySummary={siteConfig.post.comments.emptySummary}
-          tips={siteConfig.post.comments.tips}
-          integration={siteConfig.integrations.comments}
-        />
+        <div id="post-comment" class="post-comment-container">
+          <PostComments
+            client:idle
+            slug={canonicalSlug}
+            title={publicFacingTitle}
+            heading={siteConfig.post.comments.title}
+            policyLabel={siteConfig.post.comments.policyLabel}
+            notice={siteConfig.post.comments.notice}
+            submitLabel={siteConfig.post.comments.submitLabel}
+            previewLabel={siteConfig.post.comments.previewLabel}
+            emptyTitle={siteConfig.post.comments.emptyTitle}
+            emptySummary={siteConfig.post.comments.emptySummary}
+            tips={siteConfig.post.comments.tips}
+            integration={siteConfig.integrations.comments}
+          />
+        </div>
       )}
 
       {hasTranslations && (
