@@ -4571,6 +4571,29 @@
   3. **交互寻轨与流光推进**：实机点击第 4 句歌词立即实现 0 延迟 Seek 跳转，`audio.currentTime` 瞬间更新至对应时间戳；持续播放 2.5s 观测 `--karaoke-pct` 随真实人声推进平滑横向流光渐变；控制台致命 JS 报错 = 0；
   4. **高分辨率视觉凭证**：生成并存档实机全景视听截图（`/home/shijian/projects/shijianus-blog/scratch/amll_apple_music_lyrics_verified.png`），完美呈现 Apple Music 原生高质感。
 
+### Task 205: 根除“两头粗”极端形态、实现纯正“两头细”(0px纯尖收口)与彻底杜绝相邻方框粘连、生产端独立 Subagent Playwright 纯数据审计全量通过 (`d4c56f3`)
+- [x] **根除一切“两头粗”原型与极端形态**:
+  - 在 `SNOW_ARCHETYPES` 与形态分类家族中全面清理 `corner-caps` 与 `center-dip-valley` 等容易产生两端笨重肉疙瘩或哑铃型的形态，替换为自然舒缓的 `central-cushion`（平滑中央雪枕）与 `alpine-dune`（高山雪丘）；
+  - 彻底移除了导致两端过厚粗壮的形态学分支。
+- [x] **纯正自然“两头细”数学建模与闭环几何收敛 (`cornerFactor`)**:
+  - 引入左右两端对称自然滚落因子：`dLeft = Math.min(1, x / (radius + 1e-4)); dRight = Math.min(1, (W - x) / (radius + 1e-4)); cornerFactor = Math.sin(dLeft * Math.PI * 0.5) * Math.sin(dRight * Math.PI * 0.5);`；
+  - 严格确保在 `x = 0` 与 `x = W` 两端，雪层隆起与下垂厚度完全归零（精确为 **`0px` pure tapered tip**），使得雪层在两端紧密自然伏贴卡片圆角边缘，杜绝任何端部垂直平切台阶、肉疙瘩或粗厚下垂；
+  - 路径从顶部 `(W, yOffset + cornerY)` 平滑过渡到底部 `bottomPoints[0]`，并由 `lastBottom` 在 `(0, yOffset + cornerY)` 处精确与起点闭合，形成连续无缝的几何环路。
+- [x] **相邻方框物理隔离与彻底杜绝交融粘连**:
+  - 雪幔包围盒严格限制在 `0` 到 `W` 之内，横向溢出为 0；
+  - 水平相邻卡片之间的 CSS 物理间距（如分类卡片 8px、文章列表网格 12px）100% 完整保留，彻底消除原本两端粗大下垂导致的雪层视觉交融、互相粘连恶劣观感。
+- [x] **中心有机起伏与丰富原型库**:
+  - 维持 `11px ~ 33px` 自然饱满的中心隆起高度，由多频三重傅里叶自然波与 24 种数学形态拓扑随机分散，消除一刀切平直感。
+- [x] **全量构建、生产端多项目部署与多 Remote 100% 同步**:
+  - 全量编译 284 页面无报错；
+  - 部署至 Cloudflare Pages 双项目：`shijianus-blog`（`fed17878.shijianus-blog.pages.dev`）与 `shijianus-github-io`（生产主站 `https://blog.epocanvas.com`）；
+  - 全量同步推送至 GitHub 远端 `origin` 和 `cf` (`4816afb..d4c56f3`)。
+- [x] **独立第三方 Subagent 生产环境实机 Playwright 纯数据验收 100% 通过**:
+  - 启动独立客观第三方 Subagent（Model: `pro`, ID: `9365fbca-da3b-4efc-a71f-f7a1c9609920`）执行纯数据端到端实机审计；
+  - **两端厚度实测**：提取 SVG 路径坐标，左右两端点厚度计算值均为精确的 `0px`（左 `34.6px - 34.6px = 0px`，右 `34.6px - 34.6px = 0px`），彻底杜绝粗壮下垂与边缘肉疙瘩；
+  - **水平间距实测**：测量水平相邻方框连续物理间距，分类卡片严格保持 8px，文章网格严格保持 12px，SVG 边界无溢出，物理隔离 100% 达成，零粘连；
+  - **中心起伏与多样性**：从真实 DOM 抓取到的最大雪层厚度在 `11.2px` 到 `33.4px` 之间分布，包含 `center-peak`、`thick-plateau`、`droop-cluster-left` 等多重动态原型；
+  - **垂直空间与稳定性**：保留合理微气垫间距，无文字或边框遮挡；生命周期捕获到的控制台错误数严格为 **0**，Hover 与 ResizeObserver 随动无撕裂。
 
 
 
