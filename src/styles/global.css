@@ -252,10 +252,10 @@ html[data-console-open="true"] #theme-snow-foreground {
 }
 
 :root[data-theme='dark'] {
-  --snow-lobe-color: #64748b;
-  --snow-ao-color: rgba(0, 0, 0, 0.65);
-  --snow-dome-color: rgba(255, 255, 255, 0.22);
-  --snow-rim-color: rgba(255, 255, 255, 0.85);
+  --snow-lobe-color: #6388b4;
+  --snow-ao-color: rgba(10, 20, 45, 0.75);
+  --snow-dome-color: rgba(186, 215, 255, 0.38);
+  --snow-rim-color: rgba(224, 238, 255, 0.95);
 }
 
 .card-snow-svg {
@@ -268,8 +268,55 @@ html[data-console-open="true"] #theme-snow-foreground {
   z-index: 25 !important;
   overflow: visible !important;
   margin: 0 !important;
-  transform: none !important;
-  transition: opacity 0.3s ease;
+  transform: translate3d(0, 0, 0);
+  transform-origin: center bottom;
+  transition: transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.3s ease;
+}
+
+/* Card hover micro-physics cushion: snow gently depresses and springs back */
+html[data-background='snow'] :is(.recent-post-item, .todayCard, .categoryItem, .card-widget, .home-top-notice, #random-banner, .code-block-shell, .footer-main-shell):hover > .card-snow-svg,
+html[data-background='snow'] :hover > .card-snow-svg {
+  transform: scaleY(1.025) translateY(-0.8px) !important;
+}
+
+/* Detaching micro-snowflakes on card hover */
+.snow-detached-flake {
+  position: absolute;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 40%, rgba(200, 225, 255, 0.9) 100%);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.85);
+  pointer-events: none !important;
+  z-index: 30 !important;
+  animation: snow-flake-detach var(--drift-duration, 1.3s) cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--drift-delay, 0s) forwards;
+  will-change: transform, opacity;
+}
+
+:root[data-theme='dark'] .snow-detached-flake {
+  background: radial-gradient(circle, #ffffff 30%, rgba(175, 215, 255, 0.95) 100%);
+  box-shadow: 0 0 8px rgba(186, 225, 255, 0.9);
+}
+
+@keyframes snow-flake-detach {
+  0% {
+    opacity: 0.95;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  35% {
+    opacity: 0.9;
+    transform: translate3d(calc(var(--drift-x, 8px) * 0.45), calc(var(--drift-y, 35px) * 0.4), 0) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift-x, 12px), var(--drift-y, 50px), 0) scale(0.25);
+  }
+}
+
+/* Viewport off-screen optimization: pause CSS sparkle animations on off-screen cards */
+.card-snow-svg.is-offscreen .snow-sparkles circle,
+.card-snow-svg.is-offscreen {
+  animation-play-state: paused !important;
 }
 
 html:not([data-background='snow']) .card-snow-svg {

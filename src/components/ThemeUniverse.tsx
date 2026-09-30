@@ -278,6 +278,43 @@ export function initThemeUniverse(): (() => void) | undefined {
       }
     };
 
+    // Stage 3: Aerodynamic cursor interaction field
+    let pointerX = -1000;
+    let pointerY = -1000;
+    let pointerVx = 0;
+    let pointerVy = 0;
+    let lastPointerX = -1000;
+    let lastPointerY = -1000;
+    let lastPointerTime = 0;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+      const now = performance.now();
+      const dt = Math.max(16, now - lastPointerTime);
+      lastPointerTime = now;
+
+      pointerX = e.clientX;
+      pointerY = e.clientY;
+
+      if (lastPointerX > -500) {
+        const rawVx = (pointerX - lastPointerX) / (dt / 16.6);
+        const rawVy = (pointerY - lastPointerY) / (dt / 16.6);
+        pointerVx = Math.max(-12, Math.min(12, pointerVx * 0.65 + rawVx * 0.35));
+        pointerVy = Math.max(-12, Math.min(12, pointerVy * 0.65 + rawVy * 0.35));
+      }
+      lastPointerX = pointerX;
+      lastPointerY = pointerY;
+    };
+
+    const handlePointerLeave = () => {
+      pointerX = -1000;
+      pointerY = -1000;
+      pointerVx = 0;
+      pointerVy = 0;
+      lastPointerX = -1000;
+      lastPointerY = -1000;
+    };
+
     // Main animation render loop
     const render = () => {
       if (!isRunning) return;
@@ -288,6 +325,12 @@ export function initThemeUniverse(): (() => void) | undefined {
 
       const isDark = isDarkMode();
       const currentWind = getDynamicWind(0.32);
+
+      // Aerodynamic decay
+      pointerVx *= 0.90;
+      pointerVy *= 0.90;
+      if (Math.abs(pointerVx) < 0.02) pointerVx = 0;
+      if (Math.abs(pointerVy) < 0.02) pointerVy = 0;
 
       // ── Render Procedural Snow Mantles (积雪/雪幔) on all visible cards on midCtx ──
       if (midCtx && snowMantleEngine) {
@@ -310,6 +353,23 @@ export function initThemeUniverse(): (() => void) | undefined {
         // Position update
         p.x += currentWind * wMult + p.vx + primarySway + secondarySway;
         p.y += p.vy;
+
+        // Stage 3: Aerodynamic cursor interaction field (radial scatter + slipstream wake within 120px)
+        if (pointerX > -500) {
+          const dx = p.x - pointerX;
+          const dy = p.y - pointerY;
+          const distSq = dx * dx + dy * dy;
+          const interactRadius = 120;
+          if (distSq < interactRadius * interactRadius && distSq > 4) {
+            const dist = Math.sqrt(distSq);
+            const force = 1 - dist / interactRadius;
+            const depthWeight = p.layer === 0 ? 0.35 : p.layer === 1 ? 0.9 : 1.35;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            p.x += nx * force * 3.2 * depthWeight + pointerVx * force * 0.22;
+            p.y += ny * force * 1.8 * depthWeight + pointerVy * force * 0.18;
+          }
+        }
 
         // Boundary wrap-around
         if (p.y > height + p.radius * 2.5) {
@@ -341,14 +401,14 @@ export function initThemeUniverse(): (() => void) | undefined {
         targetCtx.rotate(Math.sin(p.wobble));
 
         if (isDark) {
-          // ── NIGHT SCENARIO (PURE LUMINOUS WHITE WITH OPTICAL DEPTH) ──
+          // ── NIGHT SCENARIO (PURE LUMINOUS WHITE WITH MOONLIT ICY OPTICAL DEPTH) ──
           pathSmoothClump(targetCtx, p.shapeOffsets, p.radius);
           if (p.layer === 0) {
-            targetCtx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.50})`;
+            targetCtx.fillStyle = `rgba(195, 220, 255, ${alpha * 0.45})`;
           } else if (p.layer === 1) {
             targetCtx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.95})`;
           } else {
-            targetCtx.fillStyle = `rgba(235, 245, 255, ${alpha * 0.85})`;
+            targetCtx.fillStyle = `rgba(215, 238, 255, ${alpha * 0.88})`;
           }
           targetCtx.fill();
         } else {
@@ -454,6 +514,8 @@ export function initThemeUniverse(): (() => void) | undefined {
 
     window.addEventListener('resize', resize, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerleave', handlePointerLeave, { passive: true });
     document.addEventListener('visibilitychange', handleVisibility);
 
     // Initial setup
@@ -466,6 +528,8 @@ export function initThemeUniverse(): (() => void) | undefined {
       observer.disconnect();
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerleave', handlePointerLeave);
       document.removeEventListener('visibilitychange', handleVisibility);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };

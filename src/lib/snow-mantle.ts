@@ -655,6 +655,7 @@ export class SnowMantleEngine {
   private isDestroyed = false;
   private mutationObserver: MutationObserver | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private intersectionObserver: IntersectionObserver | null = null;
 
   constructor(_ctx?: CanvasRenderingContext2D) {
     this.init();
@@ -666,6 +667,29 @@ export class SnowMantleEngine {
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this.handleResize, { passive: true });
       document.addEventListener('astro:page-load', this.handlePageLoad);
+
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              const svg = entry.target.querySelector<SVGElement>(':scope > .card-snow-svg');
+              if (svg) {
+                if (entry.isIntersecting) {
+                  svg.classList.remove('is-offscreen');
+                } else {
+                  svg.classList.add('is-offscreen');
+                }
+              }
+            }
+          },
+          { rootMargin: '200px 0px 200px 0px' }
+        );
+      }
+
+      if (typeof document !== 'undefined') {
+        document.addEventListener('pointerenter', this.handlePointerEnter, true);
+        document.addEventListener('pointerover', this.handlePointerEnter, { passive: true });
+      }
 
       if (typeof MutationObserver !== 'undefined') {
         if (document.body) {
@@ -716,6 +740,62 @@ export class SnowMantleEngine {
           this.resizeObserver.observe(document.body);
         }
       }
+    }
+  }
+
+  private handlePointerEnter = (e: PointerEvent) => {
+    if (this.isDestroyed) return;
+    if (e.pointerType === 'touch') return; // Ignore mobile touch taps
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    const card = target.closest<HTMLElement>(CLOSED_BOX_SELECTORS.join(', '));
+    if (!card) return;
+    const svg = card.querySelector<SVGElement>(':scope > .card-snow-svg');
+    if (!svg) return;
+
+    // Debounce per card (1.2s cooldown)
+    const now = performance.now();
+    const lastTime = Number(card.dataset.snowLastFlakeTime || 0);
+    if (now - lastTime < 1200) return;
+    card.dataset.snowLastFlakeTime = String(now);
+
+    this.spawnMicroFlakes(card);
+  };
+
+  private spawnMicroFlakes(card: HTMLElement) {
+    const W = card.offsetWidth;
+    if (W < 40) return;
+
+    // Spawn 2~3 detaching micro-snowflakes from the snow lobes
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const flake = document.createElement('div');
+      flake.className = 'snow-detached-flake';
+
+      const startX = Math.round(W * 0.15 + Math.random() * (W * 0.70));
+      const startY = Math.round(14 + Math.random() * 10);
+      const driftX = (Math.random() - 0.45) * 22;
+      const driftY = 32 + Math.random() * 28;
+      const duration = 1.1 + Math.random() * 0.45;
+      const delay = i * 0.12;
+
+      flake.style.left = `${startX}px`;
+      flake.style.top = `${startY}px`;
+      flake.style.setProperty('--drift-x', `${driftX.toFixed(1)}px`);
+      flake.style.setProperty('--drift-y', `${driftY.toFixed(1)}px`);
+      flake.style.setProperty('--drift-duration', `${duration.toFixed(2)}s`);
+      flake.style.setProperty('--drift-delay', `${delay.toFixed(2)}s`);
+
+      card.appendChild(flake);
+
+      const cleanup = () => {
+        if (flake.parentElement) {
+          flake.remove();
+        }
+      };
+
+      flake.addEventListener('animationend', cleanup, { once: true });
+      setTimeout(cleanup, 2200);
     }
   }
 
@@ -811,6 +891,9 @@ export class SnowMantleEngine {
         // If width hasn't changed significantly, keep existing
         const oldW = parseInt(existingSvg.getAttribute('viewBox')?.split(' ')[2] || '0');
         if (Math.abs(oldW - W) <= 25) {
+          if (this.intersectionObserver) {
+            this.intersectionObserver.observe(el);
+          }
           continue;
         }
         existingSvg.remove();
@@ -884,6 +967,10 @@ export class SnowMantleEngine {
 
       // Insert as last child of the card so it renders above background and images
       el.insertAdjacentHTML('beforeend', svgString);
+
+      if (this.intersectionObserver) {
+        this.intersectionObserver.observe(el);
+      }
     }
   }
 
@@ -906,12 +993,19 @@ export class SnowMantleEngine {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+      this.intersectionObserver = null;
+    }
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.handleResize);
       document.removeEventListener('astro:page-load', this.handlePageLoad);
     }
-    // Remove all attached SVGs
     if (typeof document !== 'undefined') {
+      document.removeEventListener('pointerenter', this.handlePointerEnter, true);
+      document.removeEventListener('pointerover', this.handlePointerEnter);
+      const detachedFlakes = document.querySelectorAll('.snow-detached-flake');
+      detachedFlakes.forEach((flake) => flake.remove());
       const svgs = document.querySelectorAll('.card-snow-svg');
       svgs.forEach((svg) => svg.remove());
     }
