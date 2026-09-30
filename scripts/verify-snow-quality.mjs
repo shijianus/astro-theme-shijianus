@@ -118,22 +118,27 @@ async function runAudit() {
         } else if (Math.abs(thick0 - thickW) > 5) {
           morphology = 'windswept';
         }
+        let thickMax = 0;
+        for (let x = 0; x <= W; x += Math.max(10, W / 20)) {
+          const p = getProfileAtX(x);
+          if (p.thick > thickMax) thickMax = p.thick;
+        }
 
         const isFooterOrBar = card.id === 'footer-bar' || card.className.includes('footer-bar');
-        const isFlatCutEnd = !isFooterOrBar && (thick0 >= thickMid * 0.88 && thickW >= thickMid * 0.88);
-        const hasOrganicAsymmetry = Math.abs(thick0 - thickW) > 0.3 || Math.abs(dropLeft - dropRight) > 0.3;
+        const isFlatCutEnd = !isFooterOrBar && thickMax > 5 && (thick0 >= thickMax * 0.85 && thickW >= thickMax * 0.85);
+        const hasOrganicAsymmetry = Math.abs(thick0 - thickW) > 0.2 || Math.abs(dropLeft - dropRight) > 0.2;
 
         results.push({
           className: card.className,
           W,
           y0, y20, yMid, yW_20, yW,
           dropLeft, dropRight,
-          thick0, thickMid, thickW,
+          thick0, thickMid, thickW, thickMax,
           morphology,
           isHorizontalConstrained,
           isFlatCutEnd,
           hasOrganicAsymmetry,
-          isDumbbell: (thick0 > thickMid + 10 && thickW > thickMid + 10)
+          isDumbbell: (thick0 > thickMax + 2 || thickW > thickMax + 2)
         });
       });
 

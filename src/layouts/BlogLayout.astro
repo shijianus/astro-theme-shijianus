@@ -364,7 +364,7 @@ const paypalUkMeUrl =
       />
     </div>
 
-    <MusicPocket client:load apiBase={musicApiBase} />
+    <MusicPocket client:only="react" apiBase={musicApiBase} />
 
     <!-- Global Universal Activity & Anzhiyu Snackbar Notification (对应 id="nav" 顶部位置展示) -->
     <div
