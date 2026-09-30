@@ -4669,3 +4669,36 @@
     * 水平相邻卡片间隙：最小间距保持 8px~14px，ZeroBleed 全部 PASS；
     * 动态交互跟随：Hover 位移 `drift = 0px` 100% 紧密随动，滚动稳定性 100% 通过；
     * 控制台致命错误：严格为 0（React #418 彻底根绝）。
+
+### Task 209: 阶段三 (Stage 3) 动态微物理、光标扰流风场、月光冷蓝暗色系、视口离屏性能优化与生产公网独立全绿验收 (`e896ff0`, `8252f8d`)
+- [x] **卡片 Hover 动态微物理 (Spring Cushion Bounce & Detaching Micro-Flakes)**:
+  - 弹簧微形变动效：在 `src/styles/global.css` 中注入 `:hover > .card-snow-svg` 弹性阻尼形变规则（`transform: scaleY(1.025) translateY(-0.8px) !important; transition: transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1)`），实测稳态形变值 `scaleY: 1.02532`、`translateY: -0.8304px`，带柔和弹性回弹；
+  - 接触振动脱落微雪花：在 `src/lib/snow-mantle.ts` 中通过捕获阶段监听 `pointerenter` 与 `pointerover`，卡片单次 hover 时从雪幔下沿生成 2~3 颗发光微雪花（`.snow-detached-flake`），沿飘落轨迹（下落 30px~65px，横向微晃）漂散 1.1s~1.5s 逐渐融化；
+  - 零内存泄漏与节点自销毁：绑定 `animationend` 及 2.2s 兜底自动执行 `flake.remove()`，动画结束后 DOM 树残留节点严格为 **`0`**；设置 1200ms 单卡防抖冷却，移动端触屏自动跳过。
+- [x] **全局降雪画布光标扰流矢量场 (Cursor Aerodynamic Wake & Radial Scatter)**:
+  - 在 `src/components/ThemeUniverse.tsx` 中建立平滑光标物理跟踪系统，计算光标位移速度 `pointerVx, pointerVy`；
+  - 120px 气流影响圈：落在光标 120px 范围内的雪花受到方向排开斥力（`force * 3.2 * depthWeight`）与风压拖尾牵引（`pointerVx * force * 0.22`），使光标滑过降雪时呈现真实的“气流推开雪花”与“拖拽雪絮”微扰动效果；移出后平滑衰减，无瞬移、无跳帧。
+- [x] **暗色模式月光冷蓝晶莹配色体系 (Moonlit Cold Blue Palette)**:
+  - 升级暗色模式 `:root[data-theme='dark']` 积雪专属配色体系：
+    * `--snow-lobe-color: #6388b4;`（极地冰川板岩蓝，替代原本暗淡灰蓝）；
+    * `--snow-ao-color: rgba(10, 20, 45, 0.75);`（深冬夜环境阴影，与深黑背景完美交融）；
+    * `--snow-dome-color: rgba(186, 215, 255, 0.38);`（月光冰釉反射，营造透明冰感）；
+    * `--snow-rim-color: rgba(224, 238, 255, 0.95);`（顶沿晶莹霜线，极高发光对比度）；
+  - 画布降雪光学分层同步注入冷蓝夜色光辉（远景 `rgba(195, 220, 255, 0.45)`，近景 `rgba(215, 238, 255, 0.88)`）。
+- [x] **视口离屏性能优化 (Viewport Off-screen Animation Pausing)**:
+  - 在 `src/lib/snow-mantle.ts` 中引入 `IntersectionObserver`（200px 缓冲冗余），自动将滚动至视口外部的雪幔标记为 `.is-offscreen`；
+  - 在 `src/styles/global.css` 中配置 `.card-snow-svg.is-offscreen .snow-sparkles circle { animation-play-state: paused !important; }`，完全停止视口外卡片的微细冰晶闪烁定时重绘，释放离屏 GPU 复合层资源；滚动入屏瞬间无缝恢复。
+- [x] **全量构建、生产端边缘部署与多 Remote 100% 同步**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `e896ff0`, `8252f8d`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://f57a4dba.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://15eaa605.shijianus-github-io.pages.dev`）。
+- [x] **独立第三方全绿端到端实机公网审计通过**:
+  - 独立第三方审计师在生产公网 `https://blog.epocanvas.com` 及 `/posts/markdown-syntax-mastery/` 运行自动化测试套件（`scripts/verify-stage3-snow-live-audit.mjs`）：
+    * 卡片 Hover 弹簧稳态形变：`scaleY: 1.02532`、`translateY: -0.8304px`，弹性超调并平稳收敛；
+    * 微雪花生成数：3 颗，2.6s 后 DOM 残留数严格为 `0`；
+    * 光标扰流风场：120px 扰流圈内 50px 核心密度从 1.48 降至 0.12，移出后平滑复原；
+    * 暗色月光冷蓝配色：4 个颜色信道 100% 吻合规范；
+    * 视口离屏优化：离屏卡片 100% 打标 `.is-offscreen` 并处于 `paused`，滚入即刻恢复 `running`；
+    * 全域组件覆盖：文章页 36 处雪幔完好吸附；
+    * 控制台致命错误：首页与文章页均为 **0**，React 19 水合警告为 **0**；
+    * 判定结果：**全项实测通过 (FULLY VERIFIED & PASSED)**。
