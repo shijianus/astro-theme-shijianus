@@ -431,8 +431,20 @@ export function generateSnowMantleSvg(
       height = tipThickR + (rawHeight - tipThickR) * ease;
     }
 
-    // Snow top: stays natural, fluffy, and undulating
-    const y = yOffset - height;
+    // Corner conforming for top edge (following card rounded shoulder gracefully down)
+    let cornerDrop = 0;
+    if (radius > 0) {
+      if (x < radius) {
+        const xOffset = radius - x;
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
+      } else if (x > W - radius) {
+        const xOffset = x - (W - radius);
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
+      }
+    }
+
+    // Snow top: stays natural, fluffy, and undulating, softly draping with card corner
+    const y = yOffset + cornerDrop - height;
     topPoints.push({ x, y });
   }
 
