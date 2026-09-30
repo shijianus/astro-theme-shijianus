@@ -4702,3 +4702,25 @@
     * 全域组件覆盖：文章页 36 处雪幔完好吸附；
     * 控制台致命错误：首页与文章页均为 **0**，React 19 水合警告为 **0**；
     * 判定结果：**全项实测通过 (FULLY VERIFIED & PASSED)**。
+
+### Task 210: 消除方框顶沿分割线与彻底根除薄膜感，构建实心全遮光底座、大幅下垂雪幔 (6.5px~9.5px) 与自然波动下沿 (`f274750`)
+- [x] **根除方框顶边分割线露出与薄膜挂牌感 (Root Cause Eradication)**:
+  - 深度排查根本成因：此前各大卡片顶部存在原生的 `border-top: 1px solid var(--card-border)` 以及封面图片顶部边界，而雪幔 SVG 在两雪舌之间的下沿下垂极浅（`baseDrop` 仅为 1.8px），且 SVG 渐变底端设置了 `stop-opacity="0.92"` 的半透明度，两端在 `x=0` 与 `x=W` 处 `endEase` 直坠为 0，导致高对比度的卡片顶线和封面顶沿透过白雪清晰可见，形成“像在方框上挂了一层透明塑料蒙皮”的生硬塑料感；
+  - 卡片顶部边框彻底隐藏：在 `src/styles/global.css` 中为所有积雪卡片（`.recent-post-item`、`.card-widget`、`.categoryItem`、`.friends-page__panel`、`.support-dashboard-card` 等）在激活 `html[data-background='snow']` 时注入 `border-top-color: transparent !important;`，物理消除卡片本身在雪下的直线边框，让积雪成为卡片货真价实的物理顶沿；
+  - 100% 实心全遮光底座注入：在 `src/lib/snow-mantle.ts` 中，为 `<svg class="card-snow-svg">` 注入全遮光实心路径层 `<path class="snow-solid-base" d="${pathD}" fill="#ffffff" />`（暗色模式自适应 `#6388b4 !important`），并将上层渐变图层所有 stop 全部锁定为 `stop-opacity="1"`，达成 100% 物理级绝对遮光，杜绝任何深色图片或高对比度方框背景向上透光隐现。
+- [x] **物理积雪大幅下垂垂挂感与连绵波动下沿 (Generous Physical Drape & Undulating Bottom Wave)**:
+  - 大幅提升积雪堆积垂挂深度：将卡片基础下垂深度 `baseDrop` 从此前的 1.8px 翻倍扩展至 `6.5px ~ 9.5px`（随卡片高度比例动态自适应），雪舌最大下垂 `maxDroop` 扩展至 `8.5px ~ 16px`，页脚、分类栏与代码块等各方框组件均同步获得真实重力堆积感；
+  - 连绵起伏自然活态波动（Bottom Wave）：在下沿点集 `bottomPoints` 中引入复合正弦/余弦微谐波连续波动算法 `(sin(u * 3.8π + φ1) * 0.55 + cos(u * 7.2π + φ2) * 0.35) * (baseDrop * 0.35)`，彻底消除原本两雪舌间死板水平直尺切线，使雪幔下沿呈现柔软活态的松软垂沿；
+  - 两端转角柔和抱覆（Corner Wrap）：重构两端收敛曲线，将端部基底 `endEase` 最低保底值提升至 `0.55`，使积雪在卡片 `x=0` 与 `x=W` 圆角转弯处顺着卡片圆角自然下垂抱紧肩部（下垂达 4.5px~5.5px，`cornerDrop * 0.32`），彻底包裹住原本裸露的方角。
+- [x] **全量构建、生产端边缘部署与多 Remote 100% 同步**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `f274750`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://53684de1.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://476b35c8.shijianus-github-io.pages.dev`）。
+- [x] **公网真实生产环境 (`https://blog.epocanvas.com`) 实机端到端全绿验收**:
+  - 执行 `scratch/verify-live-snow-mantle.mjs` 对生产主站及文章内页实测抽样：
+    * 实心底座存在性：`hasSolidBase = true` 100% 存在；
+    * 顶边框透明度：`borderTopColor = rgba(0, 0, 0, 0)` 100% 生效，0 分割线可见；
+    * 下垂覆盖深度：卡片实测积雪纵向高度达 78px，下垂深度 7.5px~14.5px 完美包裹封面图顶部；
+    * 文章页全量组件：36 处方框雪幔全部正确渲染实心底座与透明顶沿；
+    * 控制台致命错误：严格为 **0**。
+
