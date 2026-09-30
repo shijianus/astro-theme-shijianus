@@ -1,0 +1,296 @@
+{
+  "meta": {
+    "timestamp": "2026-09-30T17:32:05.444Z",
+    "productionUrl": "https://blog.epocanvas.com",
+    "postUrl": "https://blog.epocanvas.com/posts/markdown-syntax-mastery/"
+  },
+  "task1_hoverPhysics": {
+    "beforeHoverTransform": "matrix(1, 0, 0, 1, 0, 0)",
+    "steadyHoverTransform": "matrix(1, 0, 0, 1.02532, 0, -0.830434)",
+    "scaleY": 1.02532,
+    "translateY": -0.830434,
+    "scaleYPass": true,
+    "translateYPass": true,
+    "flakeCount": 3,
+    "flakeCountPass": true,
+    "flakeAttributesPass": true,
+    "flakesSample": [
+      {
+        "left": "148px",
+        "top": "18px",
+        "driftX": "10.2px",
+        "driftY": "40.1px",
+        "duration": "1.23s",
+        "delay": "0.00s",
+        "computedAnimation": "snow-flake-detach",
+        "opacity": "0.95"
+      },
+      {
+        "left": "94px",
+        "top": "22px",
+        "driftX": "-5.8px",
+        "driftY": "53.1px",
+        "duration": "1.20s",
+        "delay": "0.12s",
+        "computedAnimation": "snow-flake-detach",
+        "opacity": "1"
+      },
+      {
+        "left": "103px",
+        "top": "18px",
+        "driftX": "-8.6px",
+        "driftY": "53.4px",
+        "duration": "1.39s",
+        "delay": "0.24s",
+        "computedAnimation": "snow-flake-detach",
+        "opacity": "1"
+      }
+    ],
+    "postHoverFlakeResidual": 0,
+    "zeroLeakPass": true
+  },
+  "task2_cursorWake": {
+    "baselineStats": {
+      "frameCount": 25,
+      "avgInCircle": 7.16,
+      "avgInCore": 1.48
+    },
+    "activeStats": {
+      "frameCount": 25,
+      "avgInCircle": 4.4,
+      "avgInCore": 0.12
+    },
+    "recoveryStats": {
+      "frameCount": 25,
+      "avgInCircle": 3.36,
+      "avgInCore": 0
+    },
+    "frameStats": {
+      "fps": 16,
+      "avgDelta": 63.27,
+      "minDelta": 16.6,
+      "maxDelta": 250.1,
+      "freezes": 16
+    },
+    "coreRepulsionActive": true,
+    "smoothPass": false
+  },
+  "task3_darkPalette": {
+    "lightColors": {
+      "theme": "light",
+      "lobe": "#94b2d2",
+      "ao": "#465f8252",
+      "dome": "#ffffffa6",
+      "rim": "#fffffff2"
+    },
+    "darkColorsRaw": {
+      "theme": "dark",
+      "lobe": "#6388b4",
+      "ao": "#0a142dbf",
+      "dome": "#bad7ff61",
+      "rim": "#e0eefff2",
+      "stops": [
+        {
+          "offset": "0%",
+          "stopColor": "#ffffff"
+        },
+        {
+          "offset": "50%",
+          "stopColor": "#f3f8fc"
+        },
+        {
+          "offset": "100%",
+          "stopColor": "var(--snow-lobe-color, #94b2d2)"
+        }
+      ]
+    },
+    "parsedLobe": {
+      "r": 99,
+      "g": 136,
+      "b": 180,
+      "a": 1
+    },
+    "parsedAo": {
+      "r": 10,
+      "g": 20,
+      "b": 45,
+      "a": 0.75
+    },
+    "parsedDome": {
+      "r": 186,
+      "g": 215,
+      "b": 255,
+      "a": 0.38
+    },
+    "parsedRim": {
+      "r": 224,
+      "g": 238,
+      "b": 255,
+      "a": 0.95
+    },
+    "darkLobePass": true,
+    "darkAoPass": true,
+    "darkDomePass": true,
+    "darkRimPass": true,
+    "allPalettePass": true
+  },
+  "task4_viewportOffscreen": {
+    "viewportAudit": {
+      "totalCards": 25,
+      "offscreenCount": 9,
+      "onscreenCount": 15,
+      "sampleOffscreen": [
+        {
+          "className": "group",
+          "id": "",
+          "top": 1297,
+          "bottom": 1634,
+          "physicallyOffscreen": true,
+          "physicallyOnscreen": false,
+          "hasSvg": true,
+          "isOffscreenClass": true,
+          "computedState": "paused",
+          "sparkleState": "paused"
+        },
+        {
+          "className": "group",
+          "id": "",
+          "top": 1297,
+          "bottom": 1634,
+          "physicallyOffscreen": true,
+          "physicallyOnscreen": false,
+          "hasSvg": true,
+          "isOffscreenClass": true,
+          "computedState": "paused",
+          "sparkleState": "paused"
+        },
+        {
+          "className": "group",
+          "id": "",
+          "top": 1646,
+          "bottom": 1983,
+          "physicallyOffscreen": true,
+          "physicallyOnscreen": false,
+          "hasSvg": true,
+          "isOffscreenClass": true,
+          "computedState": "paused",
+          "sparkleState": "paused"
+        }
+      ],
+      "sampleOnscreen": [
+        {
+          "className": "categoryItem",
+          "id": "",
+          "top": 404,
+          "bottom": 490,
+          "physicallyOffscreen": false,
+          "physicallyOnscreen": true,
+          "hasSvg": true,
+          "isOffscreenClass": false,
+          "computedState": "running",
+          "sparkleState": "running"
+        },
+        {
+          "className": "categoryItem",
+          "id": "",
+          "top": 404,
+          "bottom": 490,
+          "physicallyOffscreen": false,
+          "physicallyOnscreen": true,
+          "hasSvg": true,
+          "isOffscreenClass": false,
+          "computedState": "running",
+          "sparkleState": "running"
+        },
+        {
+          "className": "categoryItem",
+          "id": "",
+          "top": 404,
+          "bottom": 490,
+          "physicallyOffscreen": false,
+          "physicallyOnscreen": true,
+          "hasSvg": true,
+          "isOffscreenClass": false,
+          "computedState": "running",
+          "sparkleState": "running"
+        }
+      ]
+    },
+    "afterScrollAudit": {
+      "hasFooterSvg": true,
+      "isOffscreenClass": false,
+      "sparklePlayState": "running"
+    },
+    "offscreenPausePass": true,
+    "onscreenRunningPass": true,
+    "scrollResumePass": true
+  },
+  "task5_postCoverage": {
+    "totalSnowSvgs": 36,
+    "components": [
+      {
+        "name": "Code Block Shell",
+        "selector": ".code-block-shell",
+        "foundCount": 18,
+        "withSnowCount": 3,
+        "mounted": true
+      },
+      {
+        "name": "Highlight Figure",
+        "selector": "figure.highlight",
+        "foundCount": 0,
+        "withSnowCount": 0,
+        "mounted": true
+      },
+      {
+        "name": "Admonition / Alert / Callout",
+        "selector": ".markdown-alert, .article-callout, .admonition",
+        "foundCount": 51,
+        "withSnowCount": 9,
+        "mounted": true
+      },
+      {
+        "name": "Table Wrapper",
+        "selector": ".article-table-wrap, table",
+        "foundCount": 12,
+        "withSnowCount": 1,
+        "mounted": true
+      },
+      {
+        "name": "AI Summary Card",
+        "selector": ".shijianus-ai-summary",
+        "foundCount": 1,
+        "withSnowCount": 1,
+        "mounted": true
+      },
+      {
+        "name": "Related Posts",
+        "selector": ".relatedPosts-item",
+        "foundCount": 6,
+        "withSnowCount": 6,
+        "mounted": true
+      },
+      {
+        "name": "Post Nav Card",
+        "selector": ".postNav-card",
+        "foundCount": 0,
+        "withSnowCount": 0,
+        "mounted": true
+      },
+      {
+        "name": "Card TOC / Aside Widget",
+        "selector": "#card-toc, #aside-content .card-widget",
+        "foundCount": 5,
+        "withSnowCount": 5,
+        "mounted": true
+      }
+    ],
+    "allMountedPass": true
+  },
+  "task6_consoleErrors": {
+    "homepageErrors": [],
+    "postErrors": [],
+    "hydrationWarnings": [],
+    "zeroErrorsPass": true
+  }
+}
