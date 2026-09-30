@@ -219,46 +219,47 @@ export function generateSnowMantleSvg(
   const cardRight = W;
 
   // 4. Base Thickness & Droop Calibration: Rich natural peaks reaching towards upper bounds
+  // Generous drape over card top edge (eliminating naked border lines and sheer membrane effect)
   let targetRise = Math.min(22.0, Math.max(13.0, H_card * 0.12));
-  let baseDrop = 1.8;
-  let maxDroop = Math.min(13.0, Math.max(5.5, H_card * 0.08));
+  let baseDrop = Math.min(9.5, Math.max(6.5, H_card * 0.04));
+  let maxDroop = Math.min(16.0, Math.max(8.5, H_card * 0.08));
 
   if (isCategoryBar) {
     targetRise = 14.0;
-    baseDrop = 1.2;
-    maxDroop = 4.2;
+    baseDrop = 4.8;
+    maxDroop = 6.8;
   } else if (isFooterBar) {
     targetRise = 12.5;
-    baseDrop = 1.5;
-    maxDroop = 4.8;
+    baseDrop = 4.2;
+    maxDroop = 6.2;
   } else if (isFooterMain) {
     targetRise = 15.0;
-    baseDrop = 2.0;
-    maxDroop = 6.5;
+    baseDrop = 6.5;
+    maxDroop = 9.5;
   } else if (isNotice) {
     targetRise = 6.5;
-    baseDrop = 1.0;
-    maxDroop = 2.4;
+    baseDrop = 3.2;
+    maxDroop = 4.5;
   } else if (isCodeBlock) {
     targetRise = 6.0;
-    baseDrop = 1.2;
-    maxDroop = 2.8;
+    baseDrop = 3.5;
+    maxDroop = 4.8;
   } else if (isCallout) {
     targetRise = 7.0;
-    baseDrop = 1.4;
-    maxDroop = 3.2;
+    baseDrop = 3.8;
+    maxDroop = 5.2;
   } else if (isCategory) {
     targetRise = 8.0;
-    baseDrop = 1.4;
-    maxDroop = 3.8;
+    baseDrop = 4.0;
+    maxDroop = 5.8;
   } else if (isCardInfo) {
     targetRise = 14.5;
-    baseDrop = 1.8;
-    maxDroop = 5.5;
+    baseDrop = 6.5;
+    maxDroop = 9.5;
   } else if (isShort) {
     targetRise = Math.min(9.0, H_card * 0.11);
-    maxDroop = Math.min(4.5, H_card * 0.06);
-    baseDrop = 1.4;
+    maxDroop = Math.min(6.5, H_card * 0.07);
+    baseDrop = 3.8;
   }
 
   // Smooth clearance constraint: Reach generously up to upper baseline without exceeding or occluding
@@ -511,6 +512,9 @@ export function generateSnowMantleSvg(
     const u = i / (numBottom - 1);
     const x = u * W;
 
+    // Organic living drape wave along bottom edge (continuous natural sag, never a flat ruler line)
+    const bottomWave = (Math.sin(u * Math.PI * 3.8 + phi1) * 0.55 + Math.cos(u * Math.PI * 7.2 + phi2) * 0.35) * (baseDrop * 0.35);
+
     // Central drooping lobes (hanging snow tongues, naturally centered)
     const lobeEnvelope = Math.pow(Math.sin(u * Math.PI), 0.75);
     let rawDroop = 0;
@@ -524,27 +528,30 @@ export function generateSnowMantleSvg(
     }
     const droop = rawDroop * lobeEnvelope;
 
-    // Corner conforming for bottom edge (hugging card rounded corners gently without ballooning)
+    // Corner conforming for bottom edge (wrapping card rounded corners gracefully down)
     let cornerDrop = 0;
     if (radius > 0) {
       if (x < radius) {
         const xOffset = radius - x;
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.32;
       } else if (x > W - radius) {
         const xOffset = x - (W - radius);
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
+        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.32;
       }
     }
 
-    // At extreme ends x=0 and x=W, gently ease bottom to meet the tip smoothly (soft rounded corner convergence)
+    // Wrap around corner shoulders: keep at least 55% baseDrop so the corner border is fully draped
     let endEase = 1.0;
-    if (x < 6) {
-      endEase = x / 6;
-    } else if (x > W - 6) {
-      endEase = (W - x) / 6;
+    const cornerTransition = Math.max(14, radius * 0.9);
+    if (x < cornerTransition) {
+      const t = x / cornerTransition;
+      endEase = 0.55 + 0.45 * (0.5 - 0.5 * Math.cos(t * Math.PI));
+    } else if (x > W - cornerTransition) {
+      const t = (W - x) / cornerTransition;
+      endEase = 0.55 + 0.45 * (0.5 - 0.5 * Math.cos(t * Math.PI));
     }
 
-    const y = yOffset + (baseDrop + droop) * endEase + cornerDrop;
+    const y = yOffset + (baseDrop + bottomWave + droop) * endEase + cornerDrop;
     bottomPoints.push({ x, y });
   }
 
@@ -631,14 +638,16 @@ export function generateSnowMantleSvg(
 <svg class="card-snow-svg" data-snow-seed="${seed}" data-snow-archetype="${archetypeName}" viewBox="${svgViewBox}" preserveAspectRatio="none" style="${svgStyle}">
   <defs>
     <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
-      <stop offset="50%" stop-color="#f3f8fc" stop-opacity="0.95" />
-      <stop offset="100%" stop-color="var(--snow-lobe-color, #94b2d2)" stop-opacity="0.92" />
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="55%" stop-color="#f8fafc" stop-opacity="1" />
+      <stop offset="85%" stop-color="#eef5fc" stop-opacity="1" />
+      <stop offset="100%" stop-color="var(--snow-lobe-color, #94b2d2)" stop-opacity="1" />
     </linearGradient>
     <filter id="${filterId}" x="-10%" y="-10%" width="120%" height="130%">
       <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="var(--snow-ao-color, rgba(70,95,130,0.32))" />
     </filter>
   </defs>
+  <path class="snow-solid-base" d="${pathD}" fill="#ffffff" />
   <path class="snow-body" d="${pathD}" fill="url(#${gradId})" filter="url(#${filterId})" />
   <path class="snow-dome" d="${domeD}" fill="var(--snow-dome-color, rgba(255, 255, 255, 0.65))" />
   <path class="snow-rim" d="${rimD}" fill="none" stroke="var(--snow-rim-color, rgba(255, 255, 255, 0.95))" stroke-width="1.2" stroke-linecap="round" />

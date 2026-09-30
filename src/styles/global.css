@@ -335,6 +335,7 @@ html:not([data-background='snow']) .card-snow-svg {
 }
 
 /* Allow procedural snow caps to rise naturally above card borders when snow theme is active */
+/* Eradicate artificial dividing lines under snow: hide card top border so snow is the true top edge */
 html[data-background='snow'] .categoryItem,
 html[data-background='snow'] .recent-post-item,
 html[data-background='snow'] .todayCard,
@@ -375,6 +376,15 @@ html[data-background='snow'] .friends-page__panel,
 html[data-background='snow'] .friends-page__hero,
 html[data-background='snow'] .support-dashboard-card {
   overflow: visible !important;
+  border-top-color: transparent !important;
+}
+
+.card-snow-svg .snow-solid-base {
+  fill: #ffffff !important;
+}
+
+:root[data-theme='dark'] .card-snow-svg .snow-solid-base {
+  fill: #6388b4 !important;
 }
 
 /* Breathing headroom for in-card snow in snow mode */
