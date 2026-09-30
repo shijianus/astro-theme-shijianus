@@ -4640,3 +4640,32 @@
   - `isDumbbell` 严格为 0；
   - 坐标严格限定在 `[0, W]`，水平相邻方框 CSS Grid Gap（8px/12px）100% 保持；
   - 页脚 `#footer-bar` 全屏 1920px 覆盖完整。
+
+### Task 208: 根除两端垂直平面刀切切口与全域双边圆角自适应收敛、MusicPocket 水合彻底解耦与公网实机全绿端到端验收 (`34f7040`, `cd5c5bc`)
+- [x] **根除两端平切立面与完美数学感 ("两边也不要像现在这样切得这么平，太完美了也不真实！")**:
+  - 核心根因：此前两端在 `x=0` 与 `x=W` 处由于只在底边应用 `cornerDrop`，导致大圆角卡片两端底部下沉而顶部未随动，留有 5px~6px 的高度差并在左右边界以直切线闭合，形成垂直方刀切口；且平滑插值在端部导数为 0 形成死板水平切线；
+  - 解决方案：
+    1. 引入双边余弦柔和滚落（Soft Cosine Rollover）：在 22px~48px 的宽过渡带内，雪层表面呈自然凸圆弧过渡至端部软质雪尖（$tipThick \approx 0.8\text{px} \sim 1.8\text{px}$）；
+    2. 顶沿与底沿双向圆角曲率自适应（Dual-Edge Corner Conforming）：顶沿 `topPoints` 与底沿 `bottomPoints` 同步注入 `cornerDrop` 计算，使得大圆角卡片（如 `code-block-shell` 的 22px、`footer-main-shell` 的 24px）在转角处厚度不发生任何堆积膨胀，雪幔顺应卡片圆角自然垂贴收敛，端点厚度严格稳定在 1.0px~1.8px；
+    3. 消除端部垂直线段：`pathD` 起止点在 `x=0` 与 `x=W` 处以微小凸圆弧（Soft Rounded Fillet）平滑闭合，彻底根除任何垂直刀切平面；
+    4. 自然非对称与微粒肌理：左右过渡宽度独立随机、波峰自然在 40%~60% 之间漂移，加入多频非对称微谐波与风吹雪颗粒扰动，彻底打破 CAD 绘制的死板完美感。
+- [x] **MusicPocket 水合彻底解耦与控制台 0 报错**:
+  - 定位并根除 React 19 客户端水合报错（`Minified React error #418`）：将 `src/layouts/BlogLayout.astro` 中的 `<MusicPocket client:load />` 调整为 `<MusicPocket client:only="react" />`，避免无 SEO 价值的动态抽屉播放器在服务端与客户端由于本地存储/语言/环境差异发生文本水合不匹配；
+  - 生产主站（首页与文章内页）控制台致命错误数严格降为 **0**。
+- [x] **水平相邻方框间距保全与零外溢**:
+  - 所有卡片雪幔 SVG 严格约束在 `[0, W]` 范围内部，水平相邻卡片间（如分类条小卡片、文章网格卡片）实测保留 8px~14px 物理空气呼吸间隙，彻底杜绝任何雪幔桥接、交融或粘连；
+  - 严格杜绝两头粗哑铃型（`thick0 / thickW <= 3.5px`，`isDumbbell = 0`）。
+- [x] **全量构建、生产端边缘部署与多 Remote 100% 同步**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `34f7040`, `cd5c5bc`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://c5cff003.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://1e5a27b9.shijianus-github-io.pages.dev`）。
+- [x] **独立自动化测试套件全量通过**:
+  - 执行 `scripts/verify-snow-audit-independent.mjs` 与 `scripts/verify-snow-quality.mjs` 对生产主站（`https://blog.epocanvas.com/` 及 `/posts/markdown-syntax-mastery/`）进行实机全景审计：
+    * 首页 28 个雪幔组件、文章页 17 个雪幔组件全部完成采样；
+    * 垂直平切切口违规数：`0 / 17`（100% 消除）；
+    * 柔和滚落圆角收敛率：`17 / 17`（100% 达标）；
+    * 哑铃型异常数：`0 / 17`（100% 杜绝）；
+    * 非对称自然度：`17 / 17`（100% 验证通过）；
+    * 水平相邻卡片间隙：最小间距保持 8px~14px，ZeroBleed 全部 PASS；
+    * 动态交互跟随：Hover 位移 `drift = 0px` 100% 紧密随动，滚动稳定性 100% 通过；
+    * 控制台致命错误：严格为 0（React #418 彻底根绝）。
