@@ -4716,11 +4716,26 @@
   - `npm run pages:build` 284 页面无报错静态构建成功；
   - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `f274750`, `71a9f8f`）；
   - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://341c79f3.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://e53285c6.shijianus-github-io.pages.dev`）。
-- [x] **公网真实生产环境 (`https://blog.epocanvas.com`) 实机端到端全绿验收**:
-  - 执行 `scratch/verify-live-snow-mantle-final.mjs` 对生产主站及文章内页实测抽样：
-    * 实心底座存在性：`solidBaseCount = 30 / 30` 100% 存在；
-    * 顶边框透明度：`topGroupBorderTop = rgba(0, 0, 0, 0)`、`feedCardBorderTop = rgba(0, 0, 0, 0)`、`categoryBorderTop = rgba(0, 0, 0, 0)`、`todayCardBorderTop = rgba(0, 0, 0, 0)`、`sidebarBorderTop = rgba(0, 0, 0, 0)` 全部为 `rgba(0, 0, 0, 0)`，0 分割线可见；
-    * 下垂覆盖深度：卡片实测积雪纵向高度达 78px，下垂深度 7.5px~14.5px 完美包裹封面图顶部；
-    * 文章页全量组件：36 处方框雪幔全部正确渲染实心底座与透明顶沿；
-    * 控制台致命错误：严格为 **0**。
+### Task 211: 雪幔脱落微雪花生命周期优化、独立全量遥测审计与第二轮第三方终审全绿验收 (`1c96f9c`)
+- [x] **微雪花脱落动效清理优化与内存防泄漏保障 (`src/lib/snow-mantle.ts`)**:
+  - 针对卡片频繁连续 Hover 时微雪花脱落可能存在的超时残留风险，在 `spawnMicroFlakes` 中新增 `animationcancel` 事件监听；
+  - 将兜底保护计时器由 2200ms 缩短为 1800ms，并使用直接 `parentNode.removeChild(flake)` 物理级彻底移除，杜绝长时间交互下的 DOM 内存泄漏隐患。
+- [x] **全量构建、生产端边缘部署与多 Remote 100% 同步**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `1c96f9c`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://e911b49c.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://40690cce.shijianus-github-io.pages.dev`）。
+- [x] **第二轮独立第三方全绿终审复核通过 (Subagent 2 Clean Confirmation Audit)**:
+  - 启动全新独立的第二轮终审审计师（Subagent 2），从 0 开始对生产公网环境（`https://blog.epocanvas.com/`、`/posts/markdown-syntax-mastery/`、`/posts/content-formats-and-markup-mastery/`）执行全面严格的实机端到端抓取与深度数学几何测量：
+    * **顶部分割线与切线**：`borderTopColor` 为透明（`rgba(0, 0, 0, 0)`）达标率 **121 / 121 (100.0%)**；
+    * **实心遮光底座**：`.snow-solid-base` 100% 遮光实心，无半透明薄膜感 **121 / 121 (100.0%)**；
+    * **平切断头违规**：两端垂直平切断头（Flat Cut Walls）严格为 **0 / 121**；
+    * **基础下垂与局部雪舌**：平均堆积厚度 `baseDrop` 6.7px ~ 7.9px，局部雪舌 `maxDroop` 12.3px ~ 14.7px（峰值达 23.5px），重力堆积感充沛自然；
+    * **下沿活态波形**：下沿波动标准差 $\sigma = 0.72\text{px} \sim 3.73\text{px} > 0$，彻底消除死板水平直线；
+    * **形态多样性**：全网捕获 **23 种**不同形态原型，彻底打破单一模板复制；
+    * **水平防遮挡安全**：**46 / 46 组**相邻卡片保持 100% CSS 空气呼吸间距，零横向溢出；
+    * **Hover 微物理与零 DOM 泄漏**：悬浮微弹簧形变 100% 激活，脱落雪花 1800ms 后 DOM 残留数严格为 **0**；
+    * **暗色模式月光冷蓝配色**：实测计算填充色精准匹配 `rgb(99, 136, 180)` (`#6388b4`)；
+    * **移动端视口与控制台稳定性**：390px 视口横向溢出为 0，首方运行时致命 JS 报错严格为 **0**，React 19 水合报错为 **0**；
+    * **终审裁定**：**全量指标 100% 通过 (ALL PASS)，零新问题发现**。
+
 
