@@ -75,6 +75,53 @@ export const CLOSED_BOX_SELECTORS = [
   '.support-dashboard-card',
 ];
 
+export const INTERACTIVE_CARD_SELECTORS = [
+  '#recent-posts .recent-post-item',
+  '.recent-post-item',
+  '.todayCard',
+  '.categoryItem',
+  '#random-banner',
+  '.relatedPosts-item',
+  '.postNav-card',
+  '.pagination-post',
+  '.home-mobile-focus-card',
+  '.github-repo-card',
+  '.theme-card',
+  '.taxonomy-index-card',
+];
+
+export const STATIC_CONTAINER_SELECTORS = [
+  '.site-footer',
+  '#footer',
+  '#footer-wrap',
+  '.footer-main-shell',
+  '#footer-bar',
+  '#post',
+  '.post-page-shell',
+  '#post-comment',
+  '.code-block-shell',
+  'figure.highlight',
+  '.markdown-alert',
+  '.article-callout',
+  '.admonition',
+  '.admonition-details',
+  '.article-table-wrap',
+  '.shijianus-ai-summary',
+  '.post-copyright',
+  '.home-top-notice',
+  '#category-bar',
+  '.category-bar',
+  '.home-pagination',
+  '#card-toc',
+  '#aside-content .card-widget',
+  '.card-widget',
+  '.friends-page__panel',
+  '.friends-page__hero',
+  '.archive-hero-card',
+  '.taxonomy-hero-card',
+  '.support-dashboard-card',
+];
+
 function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -757,7 +804,14 @@ export class SnowMantleEngine {
     if (e.pointerType === 'touch') return; // Ignore mobile touch taps
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const card = target.closest<HTMLElement>(CLOSED_BOX_SELECTORS.join(', '));
+
+    // 1. Strict defense: if within any static structural container or reading block, bail out immediately!
+    if (target.closest(STATIC_CONTAINER_SELECTORS.join(', '))) {
+      return;
+    }
+
+    // 2. Strict whitelist: only trigger for truly interactive, clickable cards
+    const card = target.closest<HTMLElement>(INTERACTIVE_CARD_SELECTORS.join(', '));
     if (!card) return;
     const svg = card.querySelector<SVGElement>(':scope > .card-snow-svg');
     if (!svg) return;

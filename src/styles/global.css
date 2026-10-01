@@ -273,11 +273,90 @@ html[data-console-open="true"] #theme-snow-foreground {
   transition: transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.3s ease;
 }
 
-/* Card hover micro-physics cushion: snow gently depresses and springs back */
-html[data-background='snow'] :is(.recent-post-item, .todayCard, .categoryItem, .card-widget, .home-top-notice, #random-banner, .code-block-shell, .footer-main-shell):hover > .card-snow-svg,
-html[data-background='snow'] :hover > .card-snow-svg {
+/* Card hover micro-physics cushion: ONLY applied to strictly interactive, clickable cards */
+html[data-background='snow'] :is(
+  .recent-post-item,
+  .todayCard,
+  .categoryItem,
+  #random-banner,
+  .relatedPosts-item,
+  .postNav-card,
+  .pagination-post,
+  .home-mobile-focus-card,
+  .github-repo-card,
+  .theme-card,
+  .taxonomy-index-card
+):hover > .card-snow-svg {
   transform: scaleY(1.025) translateY(-0.8px) !important;
 }
+
+/* Defensive Lockdown: Completely static structural containers and reading areas NEVER transform or animate on hover */
+html[data-background='snow'] :is(
+  .site-footer,
+  #footer,
+  #footer-wrap,
+  .footer-main-shell,
+  #footer-bar,
+  #post,
+  .post-page-shell,
+  #post-comment,
+  .code-block-shell,
+  figure.highlight,
+  .markdown-alert,
+  .article-callout,
+  .admonition,
+  .admonition-details,
+  .article-table-wrap,
+  .shijianus-ai-summary,
+  .post-copyright,
+  .home-top-notice,
+  #category-bar,
+  .category-bar,
+  .home-pagination,
+  #card-toc,
+  #aside-content .card-widget,
+  .card-widget,
+  .friends-page__panel,
+  .friends-page__hero,
+  .archive-hero-card,
+  .taxonomy-hero-card,
+  .support-dashboard-card
+) > .card-snow-svg,
+html[data-background='snow'] :is(
+  .site-footer,
+  #footer,
+  #footer-wrap,
+  .footer-main-shell,
+  #footer-bar,
+  #post,
+  .post-page-shell,
+  #post-comment,
+  .code-block-shell,
+  figure.highlight,
+  .markdown-alert,
+  .article-callout,
+  .admonition,
+  .admonition-details,
+  .article-table-wrap,
+  .shijianus-ai-summary,
+  .post-copyright,
+  .home-top-notice,
+  #category-bar,
+  .category-bar,
+  .home-pagination,
+  #card-toc,
+  #aside-content .card-widget,
+  .card-widget,
+  .friends-page__panel,
+  .friends-page__hero,
+  .archive-hero-card,
+  .taxonomy-hero-card,
+  .support-dashboard-card
+):hover > .card-snow-svg {
+  transform: none !important;
+  transition: none !important;
+}
+
 
 /* Detaching micro-snowflakes on card hover */
 .snow-detached-flake {
