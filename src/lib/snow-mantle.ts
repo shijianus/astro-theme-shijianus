@@ -798,13 +798,14 @@ export class SnowMantleEngine {
       card.appendChild(flake);
 
       const cleanup = () => {
-        if (flake.parentElement) {
-          flake.remove();
+        if (flake && flake.parentNode) {
+          flake.parentNode.removeChild(flake);
         }
       };
 
       flake.addEventListener('animationend', cleanup, { once: true });
-      setTimeout(cleanup, 2200);
+      flake.addEventListener('animationcancel', cleanup, { once: true });
+      setTimeout(cleanup, 1800);
     }
   }
 

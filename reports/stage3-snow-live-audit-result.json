@@ -1,47 +1,37 @@
 {
   "meta": {
-    "timestamp": "2026-09-30T17:32:05.444Z",
+    "timestamp": "2026-10-01T13:08:32.712Z",
     "productionUrl": "https://blog.epocanvas.com",
     "postUrl": "https://blog.epocanvas.com/posts/markdown-syntax-mastery/"
   },
   "task1_hoverPhysics": {
     "beforeHoverTransform": "matrix(1, 0, 0, 1, 0, 0)",
-    "steadyHoverTransform": "matrix(1, 0, 0, 1.02532, 0, -0.830434)",
-    "scaleY": 1.02532,
-    "translateY": -0.830434,
+    "steadyHoverTransform": "matrix(1, 0, 0, 1.025, 0, -0.82)",
+    "scaleY": 1.025,
+    "translateY": -0.82,
     "scaleYPass": true,
     "translateYPass": true,
-    "flakeCount": 3,
+    "flakeCount": 2,
     "flakeCountPass": true,
     "flakeAttributesPass": true,
     "flakesSample": [
       {
-        "left": "148px",
-        "top": "18px",
-        "driftX": "10.2px",
-        "driftY": "40.1px",
-        "duration": "1.23s",
+        "left": "420px",
+        "top": "22px",
+        "driftX": "3.0px",
+        "driftY": "32.4px",
+        "duration": "1.49s",
         "delay": "0.00s",
         "computedAnimation": "snow-flake-detach",
         "opacity": "0.95"
       },
       {
-        "left": "94px",
+        "left": "160px",
         "top": "22px",
-        "driftX": "-5.8px",
-        "driftY": "53.1px",
-        "duration": "1.20s",
+        "driftX": "4.5px",
+        "driftY": "46.6px",
+        "duration": "1.45s",
         "delay": "0.12s",
-        "computedAnimation": "snow-flake-detach",
-        "opacity": "1"
-      },
-      {
-        "left": "103px",
-        "top": "18px",
-        "driftX": "-8.6px",
-        "driftY": "53.4px",
-        "duration": "1.39s",
-        "delay": "0.24s",
         "computedAnimation": "snow-flake-detach",
         "opacity": "1"
       }
@@ -52,25 +42,25 @@
   "task2_cursorWake": {
     "baselineStats": {
       "frameCount": 25,
-      "avgInCircle": 7.16,
-      "avgInCore": 1.48
+      "avgInCircle": 7.04,
+      "avgInCore": 0.64
     },
     "activeStats": {
       "frameCount": 25,
-      "avgInCircle": 4.4,
-      "avgInCore": 0.12
+      "avgInCircle": 7,
+      "avgInCore": 0.44
     },
     "recoveryStats": {
       "frameCount": 25,
-      "avgInCircle": 3.36,
-      "avgInCore": 0
+      "avgInCircle": 5.88,
+      "avgInCore": 0.52
     },
     "frameStats": {
-      "fps": 16,
-      "avgDelta": 63.27,
-      "minDelta": 16.6,
-      "maxDelta": 250.1,
-      "freezes": 16
+      "fps": 1,
+      "avgDelta": 777.09,
+      "minDelta": 16.8,
+      "maxDelta": 14449.4,
+      "freezes": 44
     },
     "coreRepulsionActive": true,
     "smoothPass": false
@@ -95,8 +85,12 @@
           "stopColor": "#ffffff"
         },
         {
-          "offset": "50%",
-          "stopColor": "#f3f8fc"
+          "offset": "55%",
+          "stopColor": "#f8fafc"
+        },
+        {
+          "offset": "85%",
+          "stopColor": "#eef5fc"
         },
         {
           "offset": "100%",
