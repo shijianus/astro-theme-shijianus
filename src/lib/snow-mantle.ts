@@ -973,6 +973,7 @@ export class SnowMantleEngine {
         el.style.position = 'relative';
       }
       el.style.setProperty('overflow', 'visible', 'important');
+      el.style.setProperty('border-top-color', 'transparent', 'important');
 
       // Insert as last child of the card so it renders above background and images
       el.insertAdjacentHTML('beforeend', svgString);
@@ -1016,7 +1017,12 @@ export class SnowMantleEngine {
       const detachedFlakes = document.querySelectorAll('.snow-detached-flake');
       detachedFlakes.forEach((flake) => flake.remove());
       const svgs = document.querySelectorAll('.card-snow-svg');
-      svgs.forEach((svg) => svg.remove());
+      svgs.forEach((svg) => {
+        if (svg.parentElement) {
+          svg.parentElement.style.removeProperty('border-top-color');
+        }
+        svg.remove();
+      });
     }
   }
 }
