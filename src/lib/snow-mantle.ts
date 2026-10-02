@@ -314,185 +314,183 @@ export function generateSnowMantleSvg(
     targetRise = Math.max(3.8, maxAllowedRise);
   }
 
-  const yOffset = Math.round(Math.max(26, targetRise * 1.5 + 8));
-  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + radius + 14);
+  const yOffset = Math.round(Math.max(28, targetRise * 1.6 + 10));
+  const svgHeight = Math.round(yOffset + maxDroop + baseDrop + radius + 20);
 
   const phi1 = prng() * Math.PI * 2;
   const phi2 = prng() * Math.PI * 2;
 
-  // 5. Width-Scaled Wave Cycles: Across wide cards/bars (W > 500px), generate multiple rolling dunes every ~200px
-  const waveCycles = Math.max(1, Math.min(8, Math.round(W / 200)));
+  // 5. Width-Scaled Wave Cycles: Across wide cards/bars (W > 500px), generate multiple rolling dunes every ~180px
+  const waveCycles = Math.max(1, Math.min(8, Math.round(W / 180)));
   const waveAmplitude = Math.max(3.5, Math.min(8.5, targetRise * 0.50));
 
   // 6. Archetype Profile Function: Evaluates thickness multiplier at u in [0, 1]
+  // Every archetype provides vibrant, organic topography with ZERO ruler-flat tabletop segments
   const getArchetypeProfile = (u: number): number => {
     switch (archetypeName) {
       case 'windswept-left': {
-        return 0.60 + 0.45 * Math.exp(-Math.pow(u / 0.35, 2)) + (1 - u) * 0.25;
+        return 0.55 + 0.55 * Math.exp(-Math.pow(u / 0.38, 2)) + (1 - u) * 0.20 + 0.08 * Math.sin(u * Math.PI * 3 + phi1);
       }
       case 'windswept-right': {
-        return 0.60 + 0.45 * Math.exp(-Math.pow((1 - u) / 0.35, 2)) + u * 0.25;
+        return 0.55 + 0.55 * Math.exp(-Math.pow((1 - u) / 0.38, 2)) + u * 0.20 + 0.08 * Math.sin(u * Math.PI * 3 + phi1);
       }
       case 'dual-crest-saddle': {
-        const p1 = Math.exp(-Math.pow((u - 0.28) / 0.20, 2)) * 0.45;
-        const p2 = Math.exp(-Math.pow((u - 0.72) / 0.20, 2)) * 0.45;
-        return 0.55 + p1 + p2 + 0.08 * Math.sin(u * Math.PI * 4 + phi1);
+        const p1 = Math.exp(-Math.pow((u - 0.26) / 0.18, 2)) * 0.48;
+        const p2 = Math.exp(-Math.pow((u - 0.74) / 0.18, 2)) * 0.48;
+        return 0.50 + p1 + p2 + 0.10 * Math.sin(u * Math.PI * 4 + phi1);
       }
       case 'triple-dome': {
-        const p1 = Math.exp(-Math.pow((u - 0.20) / 0.16, 2)) * 0.40;
-        const p2 = Math.exp(-Math.pow((u - 0.50) / 0.18, 2)) * 0.45;
-        const p3 = Math.exp(-Math.pow((u - 0.80) / 0.16, 2)) * 0.40;
-        return 0.55 + p1 + p2 + p3;
+        const p1 = Math.exp(-Math.pow((u - 0.20) / 0.15, 2)) * 0.42;
+        const p2 = Math.exp(-Math.pow((u - 0.50) / 0.16, 2)) * 0.50;
+        const p3 = Math.exp(-Math.pow((u - 0.80) / 0.15, 2)) * 0.42;
+        return 0.48 + p1 + p2 + p3;
       }
       case 'quad-hill': {
-        return 0.65 + 0.35 * Math.sin(u * Math.PI * 4 * waveCycles + phi1);
+        return 0.60 + 0.38 * Math.sin(u * Math.PI * 4 * waveCycles + phi1) + 0.10 * Math.cos(u * Math.PI * 2 + phi2);
       }
       case 'thick-plateau': {
-        return 0.85 + 0.18 * Math.sin(u * Math.PI * 2 * waveCycles + phi1) + 0.08 * Math.cos(u * Math.PI * 4);
+        return 0.65 + 0.28 * Math.sin(u * Math.PI * 2 * waveCycles + phi1) + 0.16 * Math.cos(u * Math.PI * 3.5 * waveCycles + phi2);
       }
       case 'icicle-curtain': {
-        return 0.75 + 0.20 * Math.sin(u * Math.PI * 3 * waveCycles + phi1);
+        return 0.62 + 0.32 * Math.sin(u * Math.PI * 3 * waveCycles + phi1) + 0.10 * Math.sin(u * Math.PI * 6 + phi2);
       }
       case 'central-cushion': {
-        return 0.72 + 0.32 * Math.exp(-Math.pow((u - 0.50) / 0.30, 2));
+        return 0.58 + 0.48 * Math.exp(-Math.pow((u - 0.50) / 0.28, 2)) + 0.10 * Math.sin(u * Math.PI * 3 + phi1);
       }
       case 'scalloped-crest': {
-        return 0.65 + 0.35 * Math.abs(Math.sin(u * Math.PI * 3 * waveCycles + phi1));
+        return 0.58 + 0.40 * Math.abs(Math.sin(u * Math.PI * 2.5 * waveCycles + phi1)) + 0.08 * Math.cos(u * Math.PI * 5);
       }
       case 'alpine-ridge-left': {
-        return 0.50 + 0.60 * Math.exp(-Math.pow((u - 0.30) / 0.24, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
+        return 0.50 + 0.58 * Math.exp(-Math.pow((u - 0.30) / 0.22, 2)) + 0.12 * Math.sin(u * Math.PI * 2.5 + phi1);
       }
       case 'alpine-ridge-right': {
-        return 0.50 + 0.60 * Math.exp(-Math.pow((u - 0.70) / 0.24, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
+        return 0.50 + 0.58 * Math.exp(-Math.pow((u - 0.70) / 0.22, 2)) + 0.12 * Math.sin(u * Math.PI * 2.5 + phi1);
       }
       case 'center-peak': {
-        return 0.50 + 0.65 * Math.exp(-Math.pow((u - 0.50) / 0.25, 2));
+        return 0.48 + 0.68 * Math.exp(-Math.pow((u - 0.50) / 0.24, 2)) + 0.08 * Math.sin(u * Math.PI * 4 + phi1);
       }
       case 'heavy-cornice-left': {
-        return 0.55 + 0.50 * Math.exp(-Math.pow((u - 0.25) / 0.28, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
+        return 0.52 + 0.54 * Math.exp(-Math.pow((u - 0.25) / 0.26, 2)) + 0.12 * Math.sin(u * Math.PI * 2 + phi1);
       }
       case 'heavy-cornice-right': {
-        return 0.55 + 0.50 * Math.exp(-Math.pow((u - 0.75) / 0.28, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
+        return 0.52 + 0.54 * Math.exp(-Math.pow((u - 0.75) / 0.26, 2)) + 0.12 * Math.sin(u * Math.PI * 2 + phi1);
       }
       case 'sawtooth-drift': {
-        return 0.60 + ((u * waveCycles * 2 + phi1 / Math.PI) % 1.0) * 0.38;
+        return 0.55 + ((u * waveCycles * 2 + phi1 / Math.PI) % 1.0) * 0.42;
       }
       case 'puffy-cumulus': {
-        return 0.60 + 0.40 * Math.abs(Math.sin(u * Math.PI * 2.5 * waveCycles + phi1));
+        return 0.56 + 0.42 * Math.abs(Math.sin(u * Math.PI * 2.2 * waveCycles + phi1)) + 0.10 * Math.cos(u * Math.PI * 4.4 + phi2);
       }
       case 'gentle-powder': {
-        return 0.80 + 0.20 * Math.sin(u * Math.PI * 2 * waveCycles + phi1);
+        return 0.68 + 0.26 * Math.sin(u * Math.PI * 2 * waveCycles + phi1) + 0.12 * Math.cos(u * Math.PI * 3.8 + phi2);
       }
       case 'wave-cascade': {
-        return 0.60 + 0.35 * Math.sin(u * Math.PI * 2 * waveCycles + phi1) + 0.15 * Math.sin(u * Math.PI * 4 * waveCycles + phi2);
+        return 0.58 + 0.34 * Math.sin(u * Math.PI * 2 * waveCycles + phi1) + 0.16 * Math.sin(u * Math.PI * 4.2 * waveCycles + phi2);
       }
       case 'alpine-dune': {
-        return 0.55 + 0.50 * Math.sin(Math.pow(u, 0.8) * Math.PI) + 0.10 * Math.sin(u * Math.PI * 3 + phi1);
+        return 0.52 + 0.52 * Math.sin(Math.pow(u, 0.8) * Math.PI) + 0.12 * Math.sin(u * Math.PI * 3 + phi1);
       }
       case 'droop-cluster-left': {
-        return 0.55 + 0.45 * Math.exp(-Math.pow((u - 0.25) / 0.25, 2));
+        return 0.54 + 0.48 * Math.exp(-Math.pow((u - 0.25) / 0.24, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
       }
       case 'droop-cluster-right': {
-        return 0.55 + 0.45 * Math.exp(-Math.pow((u - 0.75) / 0.25, 2));
+        return 0.54 + 0.48 * Math.exp(-Math.pow((u - 0.75) / 0.24, 2)) + 0.10 * Math.sin(u * Math.PI * 2 + phi1);
       }
       case 'dual-plateau': {
-        return 0.72 + 0.25 * (u < 0.5 ? 0.8 : 0.5) + 0.10 * Math.sin(u * Math.PI * 2 * waveCycles + phi1);
+        return 0.62 + 0.28 * (u < 0.5 ? 0.75 : 0.45) + 0.16 * Math.sin(u * Math.PI * 2 * waveCycles + phi1);
       }
       case 'frost-pillow': {
-        return 0.72 + 0.32 * Math.sin(u * Math.PI);
+        return 0.65 + 0.38 * Math.sin(u * Math.PI) + 0.10 * Math.cos(u * Math.PI * 3 + phi1);
       }
       case 'asymmetric-dune':
       default: {
-        return 0.52 + 0.52 * Math.sin(Math.pow(u, 0.7) * Math.PI);
+        return 0.52 + 0.54 * Math.sin(Math.pow(u, 0.7) * Math.PI) + 0.10 * Math.sin(u * Math.PI * 2.5 + phi2);
       }
     }
   };
 
-  // 7. Organic Asymmetric Rollover & Edge Rolloff Parameters (Eliminate Flat Cut Sides & Sterile Perfection)
-  // Real snow drifts are never mathematically symmetrical and never end in a vertical knife-cut cliff.
-  // Independent left and right rollover transition zones ensure the sides never look like identical mirror cuts.
+  // 7. Organic Shoulder & Rollover Parameters (Eradicate Artificial Flat Boundary Slicing)
+  // Real snow drifts form rounded volumetric crowns that naturally cap the corner shoulders of objects.
   const isScreenEdge = isFooterBar;
-  const transL = isScreenEdge ? 12 : Math.max(22, Math.min(48, radius + 16 + prng() * 16));
-  const transR = isScreenEdge ? 12 : Math.max(22, Math.min(48, radius + 14 + prng() * 18));
+  const shoulderL = isScreenEdge ? 10 : Math.max(14, Math.min(W * 0.28, radius * 1.35 + 4 + prng() * 4));
+  const shoulderR = isScreenEdge ? 10 : Math.max(14, Math.min(W * 0.28, radius * 1.35 + 4 + prng() * 4));
 
   // Organic crest shift: Nature doesn't place the mountain crest at exact 50.00% center
   const centerShift = (prng() - 0.5) * 0.16; // -0.08 to +0.08 shift
   const peakU = Math.max(0.40, Math.min(0.60, 0.5 + centerShift));
 
-  // Soft tip convergence parameter:
-  // At x=0 and x=W, the snow naturally converges to a soft rounded corner cap (thickness ~1.2px)
-  // instead of a vertical flat cut wall!
-  // For screen edges (footer-bar), keep full height at edges
-  const tipThickL = isScreenEdge ? targetRise * 0.75 : Math.max(0.8, Math.min(1.8, 1.2 + (prng() - 0.5) * 0.6));
-  const tipThickR = isScreenEdge ? targetRise * 0.75 : Math.max(0.8, Math.min(1.8, 1.2 + (prng() - 0.5) * 0.6));
+  // Volumetric corner snow cap thickness: genuine substance (never an artificial 1.2px shaved wire!)
+  const cornerThickL = isScreenEdge
+    ? targetRise * 0.82
+    : Math.max(5.5, Math.min(targetRise * 0.55, targetRise * 0.44 + (prng() - 0.5) * 1.6));
+  const cornerThickR = isScreenEdge
+    ? targetRise * 0.82
+    : Math.max(5.5, Math.min(targetRise * 0.55, targetRise * 0.44 + (prng() - 0.5) * 1.6));
 
   // 8. Top Points Generation: Natural Morphological Profiles with Organic Relief
-  const numTop = Math.max(40, Math.min(150, Math.round(W / 10)));
+  const inset = isScreenEdge ? 0 : 1.5;
+  const numTop = Math.max(48, Math.min(160, Math.round(W / 8)));
   const topPoints: { x: number; y: number }[] = [];
 
   for (let i = 0; i < numTop; i++) {
     const u = i / (numTop - 1); // 0.0 to 1.0 across card width
-    const x = u * W;
+    const x = inset + u * (W - 2 * inset);
 
     // A. Morphological family envelope with organic crest shift:
     let envelope = 1.0;
     if (morphology === 'level-blanket') {
       const uShifted = Math.pow(u, 0.95 + centerShift * 0.25);
-      envelope = 0.85 + 0.15 * Math.sin(uShifted * Math.PI);
+      envelope = 0.72 + 0.22 * Math.sin(uShifted * Math.PI) + 0.10 * Math.sin(u * Math.PI * 2 * waveCycles + phi1);
     } else if (morphology === 'windswept-left') {
       const uW = Math.max(0, Math.min(1, 1 - u));
-      envelope = 0.20 + 0.80 * Math.sin(Math.pow(uW, 0.65 + centerShift * 0.4) * (Math.PI * 0.5));
+      envelope = 0.22 + 0.78 * Math.sin(Math.pow(uW, 0.65 + centerShift * 0.4) * (Math.PI * 0.5));
     } else if (morphology === 'windswept-right') {
       const uW = Math.max(0, Math.min(1, u));
-      envelope = 0.20 + 0.80 * Math.sin(Math.pow(uW, 0.65 - centerShift * 0.4) * (Math.PI * 0.5));
+      envelope = 0.22 + 0.78 * Math.sin(Math.pow(uW, 0.65 - centerShift * 0.4) * (Math.PI * 0.5));
     } else {
       // 'center-thick' / natural rolling dunes:
-      // Peak near peakU, gently sloping across hundreds of pixels
       const distFromPeak = u < peakU ? u / peakU : (1 - u) / (1 - peakU);
-      envelope = 0.32 + 0.74 * Math.sin(distFromPeak * (Math.PI * 0.5));
+      envelope = 0.35 + 0.70 * Math.sin(distFromPeak * (Math.PI * 0.5));
     }
 
     // B. Archetype base profile (individual personality per card)
     const baseProf = getArchetypeProfile(u);
 
     // C. Multi-frequency organic waves & granular micro-texture for living snow relief (never ruler-flat, never synthetic)
-    const wave1 = Math.sin(u * Math.PI * 2.0 * waveCycles + phi1) * 0.12;
-    const wave2 = Math.cos(u * Math.PI * 4.2 * waveCycles + phi2) * 0.06;
-    const microPuff = Math.sin(u * Math.PI * 9.5 * waveCycles + phi1 * 1.5) * 0.035;
+    const wave1 = Math.sin(u * Math.PI * 2.0 * waveCycles + phi1) * 0.16;
+    const wave2 = Math.cos(u * Math.PI * 4.2 * waveCycles + phi2) * 0.08;
+    const microPuff = Math.sin(u * Math.PI * 9.5 * waveCycles + phi1 * 1.5) * 0.045;
     // Granular drift perturbation (organic natural lumpiness, breaks mathematical perfection)
-    const organicNoise = (Math.sin(u * 37.3 + phi2 * 2.1) * 0.5 + Math.cos(u * 53.1 + phi1 * 1.7) * 0.5) * 0.025;
-    const organicRelief = Math.max(0.45, baseProf * 0.85 + wave1 + wave2 + microPuff + organicNoise);
+    const organicNoise = (Math.sin(u * 37.3 + phi2 * 2.1) * 0.5 + Math.cos(u * 53.1 + phi1 * 1.7) * 0.5) * 0.035;
+    const organicRelief = Math.max(0.48, baseProf * 0.82 + wave1 + wave2 + microPuff + organicNoise);
 
     // D. Target full snow height without edge decay
     const rawHeight = targetRise * envelope * organicRelief;
 
-    // E. Smooth, gentle rollover to the soft tip at x=0 and x=W
-    // Using a soft cosine roll (smooth S-curve) so it curves gently without steep cliff and without flat cut
-    let height = rawHeight;
-    if (x < transL) {
-      const t = x / transL;
-      const ease = 0.5 - 0.5 * Math.cos(t * Math.PI);
-      height = tipThickL + (rawHeight - tipThickL) * ease;
-    } else if (x > W - transR) {
-      const t = (W - x) / transR;
-      const ease = 0.5 - 0.5 * Math.cos(t * Math.PI);
-      height = tipThickR + (rawHeight - tipThickR) * ease;
-    }
+    // E. Natural shoulder rollover with cubic smoothstep (smooth tangent at corner and main body)
+    let snowThick = rawHeight;
+    let cardCornerDrop = 0;
 
-    // Corner conforming for top edge (following card rounded shoulder gracefully down)
-    let cornerDrop = 0;
-    if (radius > 0) {
-      if (x < radius) {
+    if (x < shoulderL) {
+      const t = x / shoulderL;
+      const s = t * t * (3 - 2 * t);
+      snowThick = cornerThickL + (rawHeight - cornerThickL) * s;
+      if (radius > 0 && x < radius) {
         const xOffset = radius - x;
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
-      } else if (x > W - radius) {
+        cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
+      }
+    } else if (x > W - shoulderR) {
+      const t = (W - x) / shoulderR;
+      const s = t * t * (3 - 2 * t);
+      snowThick = cornerThickR + (rawHeight - cornerThickR) * s;
+      if (radius > 0 && x > W - radius) {
         const xOffset = x - (W - radius);
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.20;
+        cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
       }
     }
 
-    // Snow top: stays natural, fluffy, and undulating, softly draping with card corner
-    const y = yOffset + cornerDrop - height;
+    // Snow top: softly crowns the corner shoulder with a smooth convex dome
+    const y = yOffset + cardCornerDrop * 0.68 - snowThick;
     topPoints.push({ x, y });
   }
 
@@ -552,12 +550,12 @@ export function generateSnowMantleSvg(
   }
 
   // 9. Bottom Points Generation: Sampled from Right (W) to Left (0)
-  const numBottom = Math.max(40, Math.min(150, Math.round(W / 10)));
+  const numBottom = Math.max(48, Math.min(160, Math.round(W / 8)));
   const bottomPoints: { x: number; y: number }[] = [];
 
   for (let i = numBottom - 1; i >= 0; i--) {
     const u = i / (numBottom - 1);
-    const x = u * W;
+    const x = inset + u * (W - 2 * inset);
 
     // Organic living drape wave along bottom edge (continuous natural sag, never a flat ruler line)
     const bottomWave = (Math.sin(u * Math.PI * 3.8 + phi1) * 0.55 + Math.cos(u * Math.PI * 7.2 + phi2) * 0.35) * (baseDrop * 0.35);
@@ -576,33 +574,33 @@ export function generateSnowMantleSvg(
     const droop = rawDroop * lobeEnvelope;
 
     // Corner conforming for bottom edge (wrapping card rounded corners gracefully down)
-    let cornerDrop = 0;
-    if (radius > 0) {
-      if (x < radius) {
+    let cardCornerDrop = 0;
+    let endDrape = 1.0;
+
+    if (x < shoulderL) {
+      const t = x / shoulderL;
+      const s = t * t * (3 - 2 * t);
+      endDrape = 0.65 + 0.35 * s;
+      if (radius > 0 && x < radius) {
         const xOffset = radius - x;
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.32;
-      } else if (x > W - radius) {
+        cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
+      }
+    } else if (x > W - shoulderR) {
+      const t = (W - x) / shoulderR;
+      const s = t * t * (3 - 2 * t);
+      endDrape = 0.65 + 0.35 * s;
+      if (radius > 0 && x > W - radius) {
         const xOffset = x - (W - radius);
-        cornerDrop = (radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset))) * 0.32;
+        cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
       }
     }
 
-    // Wrap around corner shoulders: keep at least 55% baseDrop so the corner border is fully draped
-    let endEase = 1.0;
-    const cornerTransition = Math.max(14, radius * 0.9);
-    if (x < cornerTransition) {
-      const t = x / cornerTransition;
-      endEase = 0.55 + 0.45 * (0.5 - 0.5 * Math.cos(t * Math.PI));
-    } else if (x > W - cornerTransition) {
-      const t = (W - x) / cornerTransition;
-      endEase = 0.55 + 0.45 * (0.5 - 0.5 * Math.cos(t * Math.PI));
-    }
-
-    const y = yOffset + (baseDrop + bottomWave + droop) * endEase + cornerDrop;
+    // Wrap around corner shoulders: cardCornerDrop * 0.95 ensures snow completely wraps past the corner curve
+    const y = yOffset + (baseDrop + bottomWave + droop) * endDrape + cardCornerDrop * 0.95;
     bottomPoints.push({ x, y });
   }
 
-  // 10. Build SVG Path strings: Clean Boundary Fillets (Zero Lateral Protrusion)
+  // 10. Build SVG Path strings: Clean Boundary Fillets & Smooth Convex Connectors
   let pathD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
   for (let i = 0; i < topPoints.length - 1; i++) {
     const curr = topPoints[i];
@@ -614,10 +612,13 @@ export function generateSnowMantleSvg(
   const lastTop = topPoints[topPoints.length - 1];
   pathD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
 
-  // Right edge connection at x = W: soft, rounded fillet strictly within W (no vertical knife-cut flat line)
+  // Right edge connection: smooth convex rounded dome (zero flat-cut vertical cliff)
   const rBot = bottomPoints[0];
-  const rMidY = (lastTop.y + rBot.y) * 0.5;
-  pathD += ` Q ${(W).toFixed(1)} ${rMidY.toFixed(1)} ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
+  if (isScreenEdge) {
+    pathD += ` L ${W.toFixed(1)} ${lastTop.y.toFixed(1)} L ${W.toFixed(1)} ${rBot.y.toFixed(1)} L ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
+  } else {
+    pathD += ` C ${W.toFixed(1)} ${lastTop.y.toFixed(1)} ${W.toFixed(1)} ${rBot.y.toFixed(1)} ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
+  }
 
   for (let i = 0; i < bottomPoints.length - 1; i++) {
     const curr = bottomPoints[i];
@@ -629,10 +630,13 @@ export function generateSnowMantleSvg(
   const lastBottom = bottomPoints[bottomPoints.length - 1];
   pathD += ` L ${lastBottom.x.toFixed(1)} ${lastBottom.y.toFixed(1)}`;
 
-  // Left edge connection at x = 0: soft, rounded fillet strictly at x >= 0 (no vertical knife-cut flat line)
+  // Left edge connection: smooth convex rounded dome (zero flat-cut vertical cliff)
   const lTop = topPoints[0];
-  const lMidY = (lastBottom.y + lTop.y) * 0.5;
-  pathD += ` Q ${(0).toFixed(1)} ${lMidY.toFixed(1)} ${lTop.x.toFixed(1)} ${lTop.y.toFixed(1)} Z`;
+  if (isScreenEdge) {
+    pathD += ` L 0.0 ${lastBottom.y.toFixed(1)} L 0.0 ${lTop.y.toFixed(1)} Z`;
+  } else {
+    pathD += ` C 0.0 ${lastBottom.y.toFixed(1)} 0.0 ${lTop.y.toFixed(1)} ${lTop.x.toFixed(1)} ${lTop.y.toFixed(1)} Z`;
+  }
 
   // Inner Dome Path (highlight)
   let domeD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
@@ -646,7 +650,7 @@ export function generateSnowMantleSvg(
   domeD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
   for (let i = topPoints.length - 1; i >= 0; i--) {
     const pt = topPoints[i];
-    const inY = yOffset - (yOffset - pt.y) * 0.45;
+    const inY = yOffset - (yOffset - pt.y) * 0.40;
     domeD += ` L ${pt.x.toFixed(1)} ${inY.toFixed(1)}`;
   }
   domeD += ' Z';
