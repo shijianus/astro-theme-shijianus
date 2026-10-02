@@ -467,14 +467,23 @@ export function generateSnowMantleSvg(
     // D. Target full snow height without edge decay
     const rawHeight = targetRise * envelope * organicRelief;
 
-    // E. Natural shoulder rollover with cubic smoothstep (smooth tangent at corner and main body)
+    // E. Natural shoulder rollover with cubic smoothstep + organic grain texture at edges
+    // Real snow crystal structure at boundaries: high-frequency micro-irregularity, NOT a smooth mathematical arc
     let snowThick = rawHeight;
     let cardCornerDrop = 0;
 
     if (x < shoulderL) {
       const t = x / shoulderL;
       const s = t * t * (3 - 2 * t);
-      snowThick = cornerThickL + (rawHeight - cornerThickL) * s;
+      // Edge crystalline grain: multi-frequency noise strongest at x=0, fading toward body
+      // This breaks the mathematically perfect smoothstep curve with organic micro-protrusions
+      const edgeGrain = (
+        Math.sin(x * 11.7 + phi1 * 3.2) * 0.40 +
+        Math.cos(x * 7.3 + phi2 * 1.9) * 0.25 +
+        Math.sin(x * 21.9 + phi1 * 0.8) * 0.16 +
+        Math.cos(x * 4.1 + phi2 * 2.7) * 0.12
+      ) * cornerThickL * 0.18 * (1 - s);
+      snowThick = cornerThickL + (rawHeight - cornerThickL) * s + edgeGrain;
       if (radius > 0 && x < radius) {
         const xOffset = radius - x;
         cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
@@ -482,7 +491,15 @@ export function generateSnowMantleSvg(
     } else if (x > W - shoulderR) {
       const t = (W - x) / shoulderR;
       const s = t * t * (3 - 2 * t);
-      snowThick = cornerThickR + (rawHeight - cornerThickR) * s;
+      // Edge crystalline grain at right shoulder
+      const dx = W - x;
+      const edgeGrain = (
+        Math.sin(dx * 11.7 + phi2 * 3.2) * 0.40 +
+        Math.cos(dx * 7.3 + phi1 * 1.9) * 0.25 +
+        Math.sin(dx * 21.9 + phi2 * 0.8) * 0.16 +
+        Math.cos(dx * 4.1 + phi1 * 2.7) * 0.12
+      ) * cornerThickR * 0.18 * (1 - s);
+      snowThick = cornerThickR + (rawHeight - cornerThickR) * s + edgeGrain;
       if (radius > 0 && x > W - radius) {
         const xOffset = x - (W - radius);
         cardCornerDrop = radius - Math.sqrt(Math.max(0, radius * radius - xOffset * xOffset));
@@ -612,12 +629,31 @@ export function generateSnowMantleSvg(
   const lastTop = topPoints[topPoints.length - 1];
   pathD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
 
-  // Right edge connection: smooth convex rounded dome (zero flat-cut vertical cliff)
+  // Right edge connection: Organic multi-waypoint path (eliminates mathematically perfect arc illusion)
+  // Real snow at card edges doesn't end in a smooth mathematical curve - it has micro-fractures & drips
   const rBot = bottomPoints[0];
   if (isScreenEdge) {
     pathD += ` L ${W.toFixed(1)} ${lastTop.y.toFixed(1)} L ${W.toFixed(1)} ${rBot.y.toFixed(1)} L ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
   } else {
-    pathD += ` C ${W.toFixed(1)} ${lastTop.y.toFixed(1)} ${W.toFixed(1)} ${rBot.y.toFixed(1)} ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
+    // Build organic right-edge connector with 4 intermediate waypoints carrying random Y perturbations
+    // This creates the "natural snow drip/fracture" texture instead of a clean geometric arc
+    const rTopY = lastTop.y;
+    const rBotY = rBot.y;
+    const rSpanY = rBotY - rTopY;
+    const rEdgeX = W - inset * 0.5; // slightly inside W to wrap the corner organically
+    // 4 waypoints at different Y progress ratios with sinusoidal X ripple toward the wall
+    const rWaypoints = [
+      { t: 0.18, xBulge: Math.sin(phi1 * 2.3 + 1.1) * 1.8 + 1.2 },
+      { t: 0.40, xBulge: Math.cos(phi2 * 1.7 + 0.8) * 2.2 - 0.5 },
+      { t: 0.62, xBulge: Math.sin(phi1 * 3.1 + 2.4) * 1.6 + 0.8 },
+      { t: 0.82, xBulge: Math.cos(phi2 * 2.5 + 1.6) * 1.4 - 0.3 },
+    ];
+    for (const wp of rWaypoints) {
+      const wy = rTopY + rSpanY * wp.t;
+      const wx = Math.min(W, rEdgeX + Math.abs(wp.xBulge));
+      pathD += ` L ${wx.toFixed(1)} ${wy.toFixed(1)}`;
+    }
+    pathD += ` L ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
   }
 
   for (let i = 0; i < bottomPoints.length - 1; i++) {
@@ -630,13 +666,31 @@ export function generateSnowMantleSvg(
   const lastBottom = bottomPoints[bottomPoints.length - 1];
   pathD += ` L ${lastBottom.x.toFixed(1)} ${lastBottom.y.toFixed(1)}`;
 
-  // Left edge connection: smooth convex rounded dome (zero flat-cut vertical cliff)
+  // Left edge connection: Organic multi-waypoint path (mirrors right-edge treatment for consistent natural feel)
   const lTop = topPoints[0];
   if (isScreenEdge) {
     pathD += ` L 0.0 ${lastBottom.y.toFixed(1)} L 0.0 ${lTop.y.toFixed(1)} Z`;
   } else {
-    pathD += ` C 0.0 ${lastBottom.y.toFixed(1)} 0.0 ${lTop.y.toFixed(1)} ${lTop.x.toFixed(1)} ${lTop.y.toFixed(1)} Z`;
+    // Build organic left-edge connector with 4 intermediate waypoints
+    const lBotY = lastBottom.y;
+    const lTopY = lTop.y;
+    const lSpanY = lTopY - lBotY; // negative span (going upward from bottom to top)
+    const lEdgeX = inset * 0.5; // slightly inside 0 to wrap the corner
+    // Mirror of right-side waypoints with phase-shifted noise for asymmetry
+    const lWaypoints = [
+      { t: 0.18, xBulge: Math.cos(phi2 * 2.3 + 0.8) * 1.8 + 1.2 },
+      { t: 0.40, xBulge: Math.sin(phi1 * 1.7 + 1.5) * 2.0 - 0.4 },
+      { t: 0.62, xBulge: Math.cos(phi2 * 3.1 + 1.9) * 1.6 + 0.6 },
+      { t: 0.82, xBulge: Math.sin(phi1 * 2.5 + 0.9) * 1.4 - 0.2 },
+    ];
+    for (const wp of lWaypoints) {
+      const wy = lBotY + lSpanY * wp.t;
+      const wx = Math.max(0, lEdgeX - Math.abs(wp.xBulge));
+      pathD += ` L ${wx.toFixed(1)} ${wy.toFixed(1)}`;
+    }
+    pathD += ` L ${lTop.x.toFixed(1)} ${lTop.y.toFixed(1)} Z`;
   }
+
 
   // Inner Dome Path (highlight)
   let domeD = `M ${topPoints[0].x.toFixed(1)} ${topPoints[0].y.toFixed(1)}`;
