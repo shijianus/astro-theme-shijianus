@@ -422,13 +422,14 @@ export function generateSnowMantleSvg(
   // Volumetric corner snow cap thickness: genuine substance (never an artificial 1.2px shaved wire!)
   const cornerThickL = isScreenEdge
     ? targetRise * 0.82
-    : Math.max(5.5, Math.min(targetRise * 0.55, targetRise * 0.44 + (prng() - 0.5) * 1.6));
+    : Math.max(6.0, Math.min(targetRise * 0.50, targetRise * 0.40 + (prng() - 0.5) * 1.5));
   const cornerThickR = isScreenEdge
     ? targetRise * 0.82
-    : Math.max(5.5, Math.min(targetRise * 0.55, targetRise * 0.44 + (prng() - 0.5) * 1.6));
+    : Math.max(6.0, Math.min(targetRise * 0.50, targetRise * 0.40 + (prng() - 0.5) * 1.5));
 
   // 8. Top Points Generation: Natural Morphological Profiles with Organic Relief
-  const inset = isScreenEdge ? 0 : 1.5;
+  // Inset provides horizontal runway for convex bulbous corner domes that wrap around edges
+  const inset = isScreenEdge ? 0 : Math.max(2.4, Math.min(3.6, radius > 0 ? radius * 0.28 : 2.5));
   const numTop = Math.max(48, Math.min(160, Math.round(W / 8)));
   const topPoints: { x: number; y: number }[] = [];
 
@@ -507,7 +508,7 @@ export function generateSnowMantleSvg(
     }
 
     // Snow top: softly crowns the corner shoulder with a smooth convex dome
-    const y = yOffset + cardCornerDrop * 0.68 - snowThick;
+    const y = yOffset + cardCornerDrop * 0.70 - snowThick;
     topPoints.push({ x, y });
   }
 
@@ -612,8 +613,8 @@ export function generateSnowMantleSvg(
       }
     }
 
-    // Wrap around corner shoulders: cardCornerDrop * 0.95 ensures snow completely wraps past the corner curve
-    const y = yOffset + (baseDrop + bottomWave + droop) * endDrape + cardCornerDrop * 0.95;
+    // Wrap around corner shoulders: cardCornerDrop * 0.72 ensures snow smoothly rounds over the corner curve
+    const y = yOffset + (baseDrop + bottomWave + droop) * endDrape + cardCornerDrop * 0.72;
     bottomPoints.push({ x, y });
   }
 
@@ -629,28 +630,23 @@ export function generateSnowMantleSvg(
   const lastTop = topPoints[topPoints.length - 1];
   pathD += ` L ${lastTop.x.toFixed(1)} ${lastTop.y.toFixed(1)}`;
 
-  // Right edge connection: Organic multi-waypoint path (eliminates mathematically perfect arc illusion)
-  // Real snow at card edges doesn't end in a smooth mathematical curve - it has micro-fractures & drips
+  // Right edge connection: Organic convex bulbous dome (soft rounded nose, zero sliced flat wall)
+  // Real snow forms a rounded convex cap over corners rather than being sliced flush vertically
   const rBot = bottomPoints[0];
   if (isScreenEdge) {
     pathD += ` L ${W.toFixed(1)} ${lastTop.y.toFixed(1)} L ${W.toFixed(1)} ${rBot.y.toFixed(1)} L ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
   } else {
-    // Build organic right-edge connector with 4 intermediate waypoints carrying random Y perturbations
-    // This creates the "natural snow drip/fracture" texture instead of a clean geometric arc
-    const rTopY = lastTop.y;
-    const rBotY = rBot.y;
-    const rSpanY = rBotY - rTopY;
-    const rEdgeX = W - inset * 0.5; // slightly inside W to wrap the corner organically
-    // 4 waypoints at different Y progress ratios with sinusoidal X ripple toward the wall
-    const rWaypoints = [
-      { t: 0.18, xBulge: Math.sin(phi1 * 2.3 + 1.1) * 1.8 + 1.2 },
-      { t: 0.40, xBulge: Math.cos(phi2 * 1.7 + 0.8) * 2.2 - 0.5 },
-      { t: 0.62, xBulge: Math.sin(phi1 * 3.1 + 2.4) * 1.6 + 0.8 },
-      { t: 0.82, xBulge: Math.cos(phi2 * 2.5 + 1.6) * 1.4 - 0.3 },
-    ];
-    for (const wp of rWaypoints) {
-      const wy = rTopY + rSpanY * wp.t;
-      const wx = Math.min(W, rEdgeX + Math.abs(wp.xBulge));
+    // Convex bulbous dome: curves smoothly from lastTop outward to card edge and into rBot
+    const rSpanY = rBot.y - lastTop.y;
+    const numSteps = 8;
+    const maxBulge = Math.max(1.8, inset - 0.4);
+    for (let k = 1; k < numSteps; k++) {
+      const t = k / numSteps;
+      const wy = lastTop.y + rSpanY * t;
+      const bulge = Math.sin(t * Math.PI) * maxBulge;
+      // Gentle crystalline grain noise that fades at the two endpoints
+      const grain = (Math.sin(t * 13.7 + phi1 * 2.1) * 0.15 + Math.cos(t * 7.3 + phi2 * 1.5) * 0.10) * Math.sin(t * Math.PI);
+      const wx = Math.min(W - 0.2, (W - inset) + bulge + grain);
       pathD += ` L ${wx.toFixed(1)} ${wy.toFixed(1)}`;
     }
     pathD += ` L ${rBot.x.toFixed(1)} ${rBot.y.toFixed(1)}`;
@@ -666,26 +662,21 @@ export function generateSnowMantleSvg(
   const lastBottom = bottomPoints[bottomPoints.length - 1];
   pathD += ` L ${lastBottom.x.toFixed(1)} ${lastBottom.y.toFixed(1)}`;
 
-  // Left edge connection: Organic multi-waypoint path (mirrors right-edge treatment for consistent natural feel)
+  // Left edge connection: Organic convex bulbous dome (soft rounded nose, zero sliced flat wall)
+  // Curves smoothly from lastBottom outward to left edge and into lTop
   const lTop = topPoints[0];
   if (isScreenEdge) {
     pathD += ` L 0.0 ${lastBottom.y.toFixed(1)} L 0.0 ${lTop.y.toFixed(1)} Z`;
   } else {
-    // Build organic left-edge connector with 4 intermediate waypoints
-    const lBotY = lastBottom.y;
-    const lTopY = lTop.y;
-    const lSpanY = lTopY - lBotY; // negative span (going upward from bottom to top)
-    const lEdgeX = inset * 0.5; // slightly inside 0 to wrap the corner
-    // Mirror of right-side waypoints with phase-shifted noise for asymmetry
-    const lWaypoints = [
-      { t: 0.18, xBulge: Math.cos(phi2 * 2.3 + 0.8) * 1.8 + 1.2 },
-      { t: 0.40, xBulge: Math.sin(phi1 * 1.7 + 1.5) * 2.0 - 0.4 },
-      { t: 0.62, xBulge: Math.cos(phi2 * 3.1 + 1.9) * 1.6 + 0.6 },
-      { t: 0.82, xBulge: Math.sin(phi1 * 2.5 + 0.9) * 1.4 - 0.2 },
-    ];
-    for (const wp of lWaypoints) {
-      const wy = lBotY + lSpanY * wp.t;
-      const wx = Math.max(0, lEdgeX - Math.abs(wp.xBulge));
+    const lSpanY = lTop.y - lastBottom.y;
+    const numSteps = 8;
+    const maxBulge = Math.max(1.8, inset - 0.4);
+    for (let k = 1; k < numSteps; k++) {
+      const t = k / numSteps;
+      const wy = lastBottom.y + lSpanY * t;
+      const bulge = Math.sin(t * Math.PI) * maxBulge;
+      const grain = (Math.cos(t * 13.7 + phi2 * 2.1) * 0.15 + Math.sin(t * 7.3 + phi1 * 1.5) * 0.10) * Math.sin(t * Math.PI);
+      const wx = Math.max(0.2, inset - bulge - grain);
       pathD += ` L ${wx.toFixed(1)} ${wy.toFixed(1)}`;
     }
     pathD += ` L ${lTop.x.toFixed(1)} ${lTop.y.toFixed(1)} Z`;
