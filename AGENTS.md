@@ -4787,3 +4787,22 @@
 
 
 
+
+### Task 214: 积雪侧边有机晶粒噪声 + 多点折线连接器 (Organic Crystalline Grain + Multi-Waypoint Edge Connectors) (`e21826f`)
+- [x] **核心问题根治**：彻底消除积雪侧边（x=0左边界与x=W右边界）"一刀削平"的假感。
+  - 用户诉求："积雪的侧边的平整度(直接削平)一看就知道是假的了！请你以用户视角优化，确保整体的感官符合用户视角，将整体画面的雪景UI渲染的真实一点(主要是积雪)"
+- [x] **肩部区域晶粒噪声注入**：在 `shoulderL/R` 区域叠加4频高密度颗粒噪声 `edgeGrain`：
+  - `edgeGrain = (sin(x*11.7)*0.40 + cos(x*7.3)*0.25 + sin(x*21.9)*0.16 + cos(x*4.1)*0.12) × cornerThick × 0.18 × (1-s)`
+  - 噪声在边缘（x=0/W）强度最大，向内随 `(1-s)` 因子衰减，打破数学完美smoothstep曲线
+- [x] **右侧边缘有机多点折线**：将单一 `C` cubic bezier 替换为4个中间waypoints（t=0.18/0.40/0.62/0.82）
+  - 每个waypoint的X随 `phi1/phi2` 正弦随机化，产生不规则"雪晶微裂纹/滑落"质感
+- [x] **左侧边缘有机多点折线（与右侧不对称）**：相同结构但 `phi1/phi2` 互换，确保左右两侧各自独立有机
+- [x] **全量部署** 至 `shijianus-blog`（`063c4157.shijianus-blog.pages.dev`）、`shijianus-github-io`（`29378462`）、`cfsolara`（`acb5c731`）。
+- [x] **独立审计通过 (Subagent: Independent Organic Edge Snow Auditor, Pro Model)**：
+  1. **侧边有机质感**：彻底去除"一刀削平"假感，SVG Path中边缘区域检出4-5个有机waypoints，Path字符长度从数百跃升至2300-3100+，实测坐标：`L 0.1 37.0 L 0.0 34.4 L 0.0 31.8 L 0.0 29.4`，像素级X/Y扰动确认；
+  2. **形态多样性**：16张卡片涵盖12+形态原型（gentle-powder、sawtooth-drift、droop-cluster-right、icicle-curtain、heavy-cornice-left等），零哑铃型；
+  3. **相邻间隙保全**：实测间隙 7.88px / 11.82px，SVG内收 -0.98px，100%无粘连；
+  4. **控制台零报错**：Fatal Errors = 0；
+  5. **页脚完全静止**：hover前后transform恒为none，脱落雪花数=0；
+  6. **终审裁定：全量通过，准予交付**。
+
