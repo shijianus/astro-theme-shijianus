@@ -230,6 +230,23 @@ export const siteConfig = {
         { id: 'snow', label: '冬日雪境' },
         { id: 'clean', label: '纯净纯色' },
       ],
+      /**
+       * 冬日雪境成积/积雪精细化控制参数 (后端配置，不暴露在UI设置面板中)
+       */
+      snow: {
+        /**
+         * 是否开启卡片积雪/成积特效 (Snow Mantle Accumulation)
+         * - false (默认): 仅保留天幕飘雪粒子，不在卡片上生成积雪
+         * - true: 允许站长开启卡片立体雪幔积雪特效
+         */
+        enableMantle: false as boolean,
+        /**
+         * 卡片积雪是否仅对首页生效 (Only apply accumulation on home page)
+         * - false (默认): 若开启积雪，全局所有页面卡片均展示积雪
+         * - true: 积雪特效仅在首页生效，文章页及其它界面保持纯净不展示积雪
+         */
+        homeOnly: false as boolean,
+      },
     },
     snackbar: {
       enable: true,
