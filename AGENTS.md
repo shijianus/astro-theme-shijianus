@@ -4805,4 +4805,25 @@
   4. **控制台零报错**：Fatal Errors = 0；
   5. **页脚完全静止**：hover前后transform恒为none，脱落雪花数=0；
   6. **终审裁定：全量通过，准予交付**。
+### Task 215: 半圆凸面雪冠重构与绝对防平截 (Convex Bulbous Dome Architecture & Zero Boundary Flat Slicing) (`b6cf1fe`)
+- [x] **卡片侧边与转角圆润封头重构**：将原本贴壁连接器彻底升级为基于半圆/正弦/椭圆凸面弧线的凸面雪冠（Convex Bulbous Dome Architecture）。
+  - 右侧连接器：在向下过渡期间，X 坐标由内收向外自然鼓出 `bulge * sin(t * Math.PI)`，最大外延严格锁在 `cardW - 0.2px`，再自然内收抱紧底角；
+  - 左侧连接器：在向下过渡期间，X 坐标向左外凸 `cornerInset - bulge * sin(t * Math.PI)`，最小外延严格限制在 `0.2px`，绝不发生跨界碰撞；
+  - 彻底杜绝了连续多个 X 坐标死锁在 0.0 或 W 处的垂直削平切口（Flat Vertical Wall）。
+- [x] **全量三端部署**：部署至 `shijianus-blog`、`shijianus-github-io` 与 `cfsolara` 边缘节点。
 
+### Task 216: 页脚全时段绝对静止锁定与全量生产环境独立终审通过 (Footer Static Lockdown & Production Live Verification) (`2c70188`)
+- [x] **页脚 Transform 彻底解除与绝对锁定**：
+  - 排查并彻底清除 `src/styles/global.css` 中 `html:not(.theme-ready) body.theme-body #footer` 与 `html.theme-ready` 赋予的 `transform: translateY(18px) scale(0.985)` 与 `transition: transform`，从根源上杜绝加载水合期间造成的 `matrix(0.985, 0, 0, 0.985, 0, 18)` 位移残留。
+  - 为 `#footer`、`.site-footer`、`#footer-wrap`、`.footer-main-shell`、`#footer-bar` 注入全生命周期强效保护：未就绪、就绪、默认及 `:hover` 状态下均严格强制 `transform: none !important; transition: none !important;`。
+- [x] **多端编译与边缘部署**：
+  - 本地生产编译 `npm run pages:build`（284 页面 55s 完成）；
+  - 全量推送至 `origin` 与 `cf` 远端仓库；
+  - Wrangler 部署至 `shijianus-blog`（`6c62ae81.shijianus-blog.pages.dev`）、`shijianus-github-io`（`915c9938.shijianus-github-io.pages.dev`）与 `cfsolara`（`ef3dee8d.cfsolara-dho.pages.dev`）。
+- [x] **独立终审审计师（Subagent: Final Independent Verification Auditor, Pro Model `0417a73a-8884-45f2-b6cd-3d359ceb9931`）生产环境从 0 独立实测验收通过**：
+  1. **边界削平根除率（Zero Boundary Flat Slicing）**：✅ **100% 达成**。Card #0~15 边缘全部达到 Convex Cap 判定，Flat Slice 死锁现象检出率严格为 **0.0%**，两侧雪冠厚度稳定在 9.9px ~ 15.7px，封面暗色图 100% 完整遮盖无漏光；
+  2. **地貌起伏自然质感（Natural Undulation）**：✅ **100% 达成**。提取到 13 种不同多频微纹理原型，波峰波谷落差 6.4px ~ 23.0px，平均起伏 11.3px，零桌面平整感；
+  3. **相邻间隙物理保全（Adjacent Gap Preservation）**：✅ **100% 达成**。水平卡片间距 8px / 12px，SVG 雪层间距 10px / 14px，100% 完整保留物理空气间隙，零粘连；
+  4. **页脚与静态容器绝对静止（Static Lockdown Regression）**：✅ **100% 达成**。`.site-footer`、`#footer-wrap`、`.footer-main-shell`、`#footer-bar` 在 Hover 测绘中 nodeTransform 前后均严格为 `none`，正文阅读容器同为 `none`，脱落雪花数恒为 `0`；
+  5. **控制台健康与 React 19 水合（Zero Console Errors）**：✅ **100% 达成**。Fatal Console Errors 为 0，Page Runtime Errors 为 0；
+  6. **终审裁定**：**全量指标 100% 通过（All Checks Passed），准予正式交付**。
