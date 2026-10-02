@@ -658,8 +658,7 @@ html[data-background='snow'] .postNav-card::after {
 
 html:not(.theme-ready) body.theme-body #page-header,
 html:not(.theme-ready) body.theme-body .page-shell__hero,
-html:not(.theme-ready) body.theme-body #content-inner,
-html:not(.theme-ready) body.theme-body #footer {
+html:not(.theme-ready) body.theme-body #content-inner {
   opacity: 0;
   filter: blur(10px);
   transform: translateY(18px) scale(0.985);
@@ -667,13 +666,46 @@ html:not(.theme-ready) body.theme-body #footer {
 
 html.theme-ready body.theme-body #page-header,
 html.theme-ready body.theme-body .page-shell__hero,
-html.theme-ready body.theme-body #content-inner,
-html.theme-ready body.theme-body #footer {
+html.theme-ready body.theme-body #content-inner {
   transition:
     opacity 0.55s var(--animation-in),
     filter 0.55s var(--animation-in),
     transform 0.55s var(--animation-in);
 }
+
+/* Footer Strict Static Lockdown: 100% static across all loading, hydration, hover, and interaction states */
+html:not(.theme-ready) body.theme-body #footer,
+html:not(.theme-ready) body.theme-body .site-footer {
+  opacity: 0;
+  filter: blur(10px);
+  transform: none !important;
+}
+
+html.theme-ready body.theme-body #footer,
+html.theme-ready body.theme-body .site-footer {
+  transform: none !important;
+  transition:
+    opacity 0.55s var(--animation-in),
+    filter 0.55s var(--animation-in) !important;
+}
+
+#footer,
+.site-footer,
+#footer-wrap,
+.footer-main-shell,
+#footer-bar {
+  transform: none !important;
+}
+
+#footer:hover,
+.site-footer:hover,
+#footer-wrap:hover,
+.footer-main-shell:hover,
+#footer-bar:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
 
 #page-header {
   position: sticky;
