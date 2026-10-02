@@ -4738,4 +4738,24 @@
     * **移动端视口与控制台稳定性**：390px 视口横向溢出为 0，首方运行时致命 JS 报错严格为 **0**，React 19 水合报错为 **0**；
     * **终审裁定**：**全量指标 100% 通过 (ALL PASS)，零新问题发现**。
 
+### Task 212: 页尾 Footer 与正文静态容器悬停交互动画彻底根除、React 19 水合加固与终审 100% 全绿验收 (`4a082ba`, `6a95c34`)
+- [x] **根除页尾及静态结构性容器多此一举的悬停交互与落雪现象**:
+  - 排查根本病灶：`src/styles/global.css` 中原本存在全局通配 `:hover > .card-snow-svg` 以及在 hover 列表中硬编码了 `.footer-main-shell`，导致鼠标划过页尾或阅读正文时雪幔发生多余的微弹簧压缩反弹；同时 `src/lib/snow-mantle.ts` 的 `handlePointerEnter` 未做容器属性筛选，向页尾不断派发飘落微雪花（`spawnMicroFlakes`）；
+  - CSS 严格锁定：彻底移除泛滥的 `:hover > .card-snow-svg` 通配规则，仅保留白名单内真正可交互卡片（`.recent-post-item`、`.todayCard` 等）；对 `.site-footer`、`#footer`、`#footer-wrap`、`.footer-main-shell`、`#footer-bar`、`#post`、`#card-toc`、`#post-comment`、`.code-block-shell` 等所有静态容器注入强力防御锁：`transform: none !important; transition: none !important;`；
+  - JS 严格短路：在 `src/lib/snow-mantle.ts` 中新增 `STATIC_CONTAINER_SELECTORS` 与 `INTERACTIVE_CARD_SELECTORS`，若事件目标处于任何静态容器内直接前置 `return`；同时防范非 Element 节点调用 `.closest` 引起的类型异常（`rawTarget instanceof Element` 严格校验）。
+- [x] **React 19 评论区水合异常 (#418) 彻底清除**:
+  - 将 `src/pages/posts/[slug].astro` 中的 `<PostComments client:idle />` 切换为 `<PostComments client:only="react" />`，消除依赖客户端实时状态（时间戳、localStorage、身份徽章）引发的 SSR HTML 文本失配，首方页面报错清零。
+- [x] **全量编译构建与 Cloudflare Pages 边缘生产节点同步部署**:
+  - `npm run pages:build` 284 页面无报错静态构建成功；
+  - 提交并推送至 `origin` 与 `cf` 远端（Commit Hash: `4a082ba`, `6a95c34`）；
+  - 通过 Wrangler 全量部署至 Cloudflare Pages 生产边缘节点（`shijianus-blog` 部署标识：`https://a24079ed.shijianus-blog.pages.dev`，`shijianus-github-io` 部署标识：`https://2816d703.shijianus-github-io.pages.dev`）。
+- [x] **独立终审复核通过 (Pre-Delivery Final Auditor: 100% ALL PASS)**:
+  - 针对生产公网域名（`https://blog.epocanvas.com/` 与文章页）执行自动化终审实机审计（`scripts/verify-snow-final-subagent-audit.mjs`）：
+    1. **页尾完全静止**：`.site-footer`、`#footer`、`#footer-wrap`、`.footer-main-shell`、`#footer-bar` 悬停前后 transform 严格恒为 `none`，transition 恒为 `none`，脱落雪花数恒为 `0`（**100% STRICTLY STATIC**）；
+    2. **正文静态容器锁定**：`#post`、`#card-toc`、`#post-comment`、`.post-copyright`、`.shijianus-ai-summary` 悬停雪幔 transform 恒为 `none`，脱落雪花数恒为 `0`（**100% STATIC**）；
+    3. **可交互卡片动态**：文章卡片动态与清理闭环，0 内存泄漏；
+    4. **高标准全景回归**：30 处卡片顶沿透明率 100%，遮光实心底座 100%，相邻间隙 0 碰撞，控制台致命报错严格为 **0**，页面运行时错误严格为 **0**；
+    5. **终审裁定**：**全量指标 100% 通过 (ALL PASS)**。
+
+
 

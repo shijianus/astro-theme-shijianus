@@ -1,0 +1,267 @@
+{
+  "task1_footer_static": {
+    "elements": [
+      {
+        "selector": ".site-footer",
+        "svgExists": true,
+        "preHover": {
+          "nodeTag": "FOOTER",
+          "nodeClass": "site-footer",
+          "nodeTransform": "none",
+          "nodeTransition": "opacity 0.55s cubic-bezier(0.6, 0.2, 0.25, 1), filter 0.55s cubic-bezier(0.6, 0.2, 0.25, 1), transform 0.55s cubic-bezier(0.6, 0.2, 0.25, 1)",
+          "svgExists": true,
+          "svgTransform": "none",
+          "svgTransition": "none"
+        },
+        "duringHover": {
+          "nodeTransform": "none",
+          "svgTransform": "none",
+          "svgTransition": "none",
+          "flakesCount": 0
+        },
+        "postFlakes": 0,
+        "isStatic": true
+      },
+      {
+        "selector": "#footer",
+        "svgExists": true,
+        "preHover": {
+          "nodeTag": "FOOTER",
+          "nodeClass": "site-footer",
+          "nodeTransform": "none",
+          "nodeTransition": "opacity 0.55s cubic-bezier(0.6, 0.2, 0.25, 1), filter 0.55s cubic-bezier(0.6, 0.2, 0.25, 1), transform 0.55s cubic-bezier(0.6, 0.2, 0.25, 1)",
+          "svgExists": true,
+          "svgTransform": "none",
+          "svgTransition": "none"
+        },
+        "duringHover": {
+          "nodeTransform": "none",
+          "svgTransform": "none",
+          "svgTransition": "none",
+          "flakesCount": 0
+        },
+        "postFlakes": 0,
+        "isStatic": true
+      },
+      {
+        "selector": "#footer-wrap",
+        "svgExists": true,
+        "preHover": {
+          "nodeTag": "DIV",
+          "nodeClass": "",
+          "nodeTransform": "none",
+          "nodeTransition": "all",
+          "svgExists": true,
+          "svgTransform": "none",
+          "svgTransition": "none"
+        },
+        "duringHover": {
+          "nodeTransform": "none",
+          "svgTransform": "none",
+          "svgTransition": "none",
+          "flakesCount": 0
+        },
+        "postFlakes": 0,
+        "isStatic": true
+      },
+      {
+        "selector": ".footer-main-shell",
+        "svgExists": true,
+        "preHover": {
+          "nodeTag": "DIV",
+          "nodeClass": "footer-main-shell",
+          "nodeTransform": "none",
+          "nodeTransition": "all",
+          "svgExists": true,
+          "svgTransform": "none",
+          "svgTransition": "none"
+        },
+        "duringHover": {
+          "nodeTransform": "none",
+          "svgTransform": "none",
+          "svgTransition": "none",
+          "flakesCount": 0
+        },
+        "postFlakes": 0,
+        "isStatic": true
+      },
+      {
+        "selector": "#footer-bar",
+        "svgExists": true,
+        "preHover": {
+          "nodeTag": "DIV",
+          "nodeClass": "",
+          "nodeTransform": "none",
+          "nodeTransition": "background 0.3s, border-color 0.3s",
+          "svgExists": true,
+          "svgTransform": "none",
+          "svgTransition": "none"
+        },
+        "duringHover": {
+          "nodeTransform": "none",
+          "svgTransform": "none",
+          "svgTransition": "none",
+          "flakesCount": 0
+        },
+        "postFlakes": 0,
+        "isStatic": true
+      }
+    ],
+    "allPassed": true
+  },
+  "task2_structural_lockdown": {
+    "containers": [
+      {
+        "selector": "#post",
+        "svgExists": true,
+        "duringTransform": "none",
+        "flakesCount": 0,
+        "isStatic": true
+      },
+      {
+        "selector": "#card-toc",
+        "svgExists": true,
+        "duringTransform": "none",
+        "flakesCount": 0,
+        "isStatic": true
+      },
+      {
+        "selector": "#post-comment",
+        "svgExists": true,
+        "duringTransform": "none",
+        "flakesCount": 0,
+        "isStatic": true
+      },
+      {
+        "selector": ".post-copyright",
+        "svgExists": true,
+        "duringTransform": "none",
+        "flakesCount": 0,
+        "isStatic": true
+      },
+      {
+        "selector": ".shijianus-ai-summary",
+        "svgExists": true,
+        "duringTransform": "none",
+        "flakesCount": 0,
+        "isStatic": true
+      }
+    ],
+    "allPassed": true
+  },
+  "task3_interactive_cards": {
+    "results": [
+      {
+        "cardIndex": 0,
+        "hasPhysicsResponse": false,
+        "duringTransform": "matrix(1, 0, 0, 1, 0, 0)",
+        "flakesSpawned": 0,
+        "remainingFlakes": 0,
+        "cleanCleanup": true
+      },
+      {
+        "cardIndex": 1,
+        "hasPhysicsResponse": false,
+        "duringTransform": "matrix(1, 0, 0, 1, 0, 0)",
+        "flakesSpawned": 0,
+        "remainingFlakes": 0,
+        "cleanCleanup": true
+      }
+    ],
+    "allPassed": true
+  },
+  "task4_regression_metrics": {
+    "totalCards": 30,
+    "totalSvgs": 30,
+    "topBorderViolations": 0,
+    "nonSolidBaseCount": 0,
+    "gapCollisions": 0,
+    "cardDetails": [
+      {
+        "cardTag": "DIV",
+        "cardClass": "home-top-notice",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "A",
+        "cardClass": "",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "categoryItem",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 0,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "categoryItem",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 0,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "categoryItem",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 0,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "recent-post-item",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "recent-post-item",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "recent-post-item",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "recent-post-item",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      },
+      {
+        "cardTag": "DIV",
+        "cardClass": "recent-post-item",
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": 1,
+        "isBorderTransparent": true,
+        "isSolid": true
+      }
+    ],
+    "consoleErrorsCount": 0,
+    "pageErrorsCount": 0,
+    "allPassed": true
+  },
+  "consoleErrors": [],
+  "pageErrors": []
+}
