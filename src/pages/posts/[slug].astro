@@ -734,7 +734,7 @@ const heroSummary = isUnlocked
       {commentsEnabled && (
         <div id="post-comment" class="post-comment-container">
           <PostComments
-            client:idle
+            client:only="react"
             slug={canonicalSlug}
             title={publicFacingTitle}
             heading={siteConfig.post.comments.title}

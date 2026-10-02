@@ -802,8 +802,10 @@ export class SnowMantleEngine {
   private handlePointerEnter = (e: PointerEvent) => {
     if (this.isDestroyed) return;
     if (e.pointerType === 'touch') return; // Ignore mobile touch taps
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
+    const rawTarget = e.target;
+    if (!rawTarget) return;
+    const target = (rawTarget instanceof Element ? rawTarget : (rawTarget as Node).parentElement) as HTMLElement | null;
+    if (!target || typeof target.closest !== 'function') return;
 
     // 1. Strict defense: if within any static structural container or reading block, bail out immediately!
     if (target.closest(STATIC_CONTAINER_SELECTORS.join(', '))) {
