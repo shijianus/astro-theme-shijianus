@@ -4827,3 +4827,28 @@
   4. **页脚与静态容器绝对静止（Static Lockdown Regression）**：✅ **100% 达成**。`.site-footer`、`#footer-wrap`、`.footer-main-shell`、`#footer-bar` 在 Hover 测绘中 nodeTransform 前后均严格为 `none`，正文阅读容器同为 `none`，脱落雪花数恒为 `0`；
   5. **控制台健康与 React 19 水合（Zero Console Errors）**：✅ **100% 达成**。Fatal Console Errors 为 0，Page Runtime Errors 为 0；
   6. **终审裁定**：**全量指标 100% 通过（All Checks Passed），准予正式交付**。
+
+### Task 217: 雪花成积独立关闭参数与仅首页生效参数隔离改造 (Snow Mantle Accumulation Toggle & Homepage-Only Restriction) (`981954f`, `f7d2d7d`, `8365660`, `6f91002`, `192599c`)
+- [x] **后端精细化参数定义与零 UI 暴露 (`src/config/site.ts`)**：
+  - 新增 `siteConfig.theme.background.snow.enableMantle: false`：默认仅保留天幕降雪特效，不在任何方框卡片上生成积雪（允许站长随时开启）；
+  - 新增 `siteConfig.theme.background.snow.homeOnly: false`：开启积雪时是否仅对首页生效，其它文章页、归档页等保持纯净不展示积雪；
+  - 严格确保参数仅由后端控制，绝不在前端设置菜单（`ThemeDock`、`ThemeOverlays` 等）暴露任何控件或复选框，杜绝 UI 泄露。
+- [x] **雪幔引擎分级管控与逻辑矩阵完备 (`src/lib/snow-mantle.ts`)**：
+  - 实现 `isMantleActiveOnCurrentPage()`、`isHomePage()`（支持 `/`、`/page/\d+` 及 `data-type="home"`）、`clearAllMantles()` 与 `updateConfig()`；
+  - 严格优先执行 `if (!enableMantle) return false;`，再判定 `if (homeOnly) return this.isHomePage();`；
+  - 支持 SSR 数据属性（`data-snow-mantle-enabled` / `data-snow-mantle-home-only`）与运行时对象（`window.__SNOW_MANTLE_CONFIG__`）分层合并。
+- [x] **排版样式绝对隔离与零侵入原生保全 (`src/styles/global.css`)**：
+  - 将 `border-top-color: transparent !important` 与 `overflow: visible !important` 严格限定于 `:not([data-snow-mantle='disabled']):has(> .card-snow-svg)`；
+  - 确保积雪关闭状态下，卡片原生边框（`rgb(227, 232, 247)`）、原有裁切（`overflow: hidden`）与文章页告示块内边距（`17.6px`）100% 保持原生呈现，无任何视觉撕裂或空隙变形。
+- [x] **自动化测试套件构建与全排列验证 (`scripts/verify-snow-backend-params.mjs`)**：
+  - 编写并执行全覆盖测试套件，全面审计源码、生产公网首页、文章页、11 项排列逻辑矩阵与控制台健康状况；
+  - 全部 5 项验证 100% 通过，生成确凿证据报告 `reports/snow-backend-params-audit-report.json`。
+- [x] **生产多端同步与边缘部署生效**：
+  - 推送全量提交至 `origin` 与 `cf` 远端；
+  - Cloudflare Pages 边缘节点（`shijianus-blog`、`shijianus-github-io`、`cfsolara`）全量部署通过。
+- [x] **独立第三方审计师（Subagent: Independent Snow Parameters & Delivery Auditor, Model `f948c14b-84a4-4803-8a2c-1c1c762214a9`）从 0 独立实测验收通过**：
+  1. **代码库与零 UI 泄露**：`enableMantle: false`，`homeOnly: false`，ThemeUniverse/ThemeOverlays/ThemeDock 0 控件泄露（PASS）；
+  2. **生产公网实机验证 (`https://blog.epocanvas.com`)**：天幕降雪画布激活运行，首页与文章页卡片雪幔 SVG 严格为 0，卡片边框与内边距 100% 原生未改动，Fatal Console Errors 严格为 0（PASS）；
+  3. **逻辑矩阵 11 项全排列**：默认、开启+仅首页、开启+全局全场景测试 100% 吻合数学预期（PASS）；
+  4. **Stage 4 准入评估**：完全符合准入下一阶段条件，规划了流体融雪动画、落雪堆叠刮雪物理引擎与季节昼夜光照自适应三大专业蓝图；
+  5. **终审裁定**：**【全票通过 (PASSED) / 准予正式交付】**。

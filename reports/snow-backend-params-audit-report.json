@@ -1,0 +1,140 @@
+{
+  "timestamp": "2026-10-03T16:10:16.968Z",
+  "tests": {
+    "sourceAudit": {
+      "hasEnableMantle": true,
+      "hasHomeOnly": true,
+      "zeroUiExposure": true
+    },
+    "liveHome": {
+      "background": "snow",
+      "snowMantle": "disabled",
+      "snowMantleEnabled": "false",
+      "snowMantleHomeOnly": "false",
+      "winConfig": {
+        "enableMantle": false,
+        "homeOnly": false
+      },
+      "svgCount": 0,
+      "hasSnowUniverseCanvas": true,
+      "cardBorderTopColor": "rgb(227, 232, 247)",
+      "cardOverflow": "hidden"
+    },
+    "livePost": {
+      "background": "snow",
+      "snowMantle": "disabled",
+      "snowMantleEnabled": "false",
+      "snowMantleHomeOnly": "false",
+      "winConfig": {
+        "enableMantle": false,
+        "homeOnly": false
+      },
+      "svgCount": 0,
+      "hasSnowUniverseCanvas": true,
+      "alertPaddingTop": "17.6px"
+    },
+    "logicMatrix": [
+      {
+        "desc": "Defaults on Home",
+        "enable": false,
+        "homeOnly": false,
+        "path": "/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Defaults on Post",
+        "enable": false,
+        "homeOnly": false,
+        "path": "/posts/intro/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Defaults on Archives",
+        "enable": false,
+        "homeOnly": false,
+        "path": "/archives/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly ON on Home (/)",
+        "enable": true,
+        "homeOnly": true,
+        "path": "/",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly ON on Home Page 2 (/page/2)",
+        "enable": true,
+        "homeOnly": true,
+        "path": "/page/2",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly ON on Post (/posts/xyz/)",
+        "enable": true,
+        "homeOnly": true,
+        "path": "/posts/xyz/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly ON on Archives (/archives/)",
+        "enable": true,
+        "homeOnly": true,
+        "path": "/archives/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly ON on Categories (/categories/)",
+        "enable": true,
+        "homeOnly": true,
+        "path": "/categories/",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly OFF on Home (/)",
+        "enable": true,
+        "homeOnly": false,
+        "path": "/",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly OFF on Post (/posts/xyz/)",
+        "enable": true,
+        "homeOnly": false,
+        "path": "/posts/xyz/",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "desc": "Mantle ON + homeOnly OFF on Archives (/archives/)",
+        "enable": true,
+        "homeOnly": false,
+        "path": "/archives/",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      }
+    ]
+  },
+  "passed": true,
+  "fatalErrors": []
+}
