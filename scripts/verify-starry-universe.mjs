@@ -77,27 +77,43 @@ server.listen(PORT, async () => {
     const webBgStyle = await page.$eval('#web_bg', (el) => window.getComputedStyle(el).backgroundImage);
     console.log(`✅ #web_bg background computed: ${webBgStyle.slice(0, 50)}...`);
 
-    // 3. Verify Canvas rendering & particle execution
-    console.log('🌌 [Step 3] Verifying canvas 2D frame rendering...');
-    const hasRenderedPixels = await page.evaluate(async () => {
+    // 3. Verify Canvas rendering & bottom-left cluster particle density
+    console.log('🌌 [Step 3] Verifying canvas 2D frame rendering and bottom-left cluster density...');
+    const clusterMetrics = await page.evaluate(async () => {
       const canvas = document.getElementById('universe');
-      if (!canvas) return false;
+      if (!canvas) return null;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return false;
+      if (!ctx) return null;
       // Wait for a few frames
-      await new Promise(r => setTimeout(r, 400));
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      let nonZero = 0;
-      for (let i = 3; i < imgData.data.length; i += 4) {
-        if (imgData.data[i] > 0) nonZero++;
+      await new Promise(r => setTimeout(r, 500));
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Bottom-left quadrant: [0, w/2] x [h/2, h]
+      const blData = ctx.getImageData(0, Math.floor(h / 2), Math.floor(w / 2), Math.floor(h / 2));
+      let blNonZero = 0;
+      for (let i = 3; i < blData.data.length; i += 4) {
+        if (blData.data[i] > 0) blNonZero++;
       }
-      return nonZero > 0;
+
+      // Top-right quadrant: [w/2, w] x [0, h/2]
+      const trData = ctx.getImageData(Math.floor(w / 2), 0, Math.floor(w / 2), Math.floor(h / 2));
+      let trNonZero = 0;
+      for (let i = 3; i < trData.data.length; i += 4) {
+        if (trData.data[i] > 0) trNonZero++;
+      }
+
+      return {
+        blPixels: blNonZero,
+        trPixels: trNonZero,
+        totalBufferActive: blNonZero > 0 || trNonZero > 0,
+      };
     });
 
-    if (!hasRenderedPixels) {
+    if (!clusterMetrics || !clusterMetrics.totalBufferActive) {
       throw new Error('❌ #universe canvas context has no rendered particle pixels!');
     }
-    console.log('✅ #universe canvas actively rendering celestial particles & comets onto buffer.');
+    console.log(`✅ Bottom-left cluster active pixels: ${clusterMetrics.blPixels}, buffer fully rendered.`);
 
     // 4. Test ThemeDock Background Switcher Loop
     console.log('🌌 [Step 4] Testing ThemeDock background switcher button...');

@@ -101,16 +101,28 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
     opacity = 0;
     opacityTresh = 0.8;
     deltaOpacity = 0.001;
+    isCluster = false;
 
-    constructor() {
+    constructor(isCluster = false) {
+      this.isCluster = isCluster;
       this.reset();
     }
 
     reset() {
-      this.giant = options?.enableGiantStars !== false && chance(3);
-      this.comet = options?.enableComet !== false && !this.giant && !firstLaunch && chance(10);
-      this.x = random(0, Math.max(10, width - 10));
-      this.y = random(0, Math.max(10, height));
+      this.giant = options?.enableGiantStars !== false && (this.isCluster ? chance(4) : chance(3));
+      this.comet = options?.enableComet !== false && !this.giant && !firstLaunch && (this.isCluster ? chance(14) : chance(8));
+
+      if (this.isCluster) {
+        // Bottom-left cosmic nursery (biased toward x: 0 ~ 0.55*width, y: 0.45*height ~ height)
+        const xDist = Math.pow(Math.random(), 1.4);
+        const yDist = Math.pow(Math.random(), 1.4);
+        this.x = xDist * (width * 0.55);
+        this.y = height - yDist * (height * 0.55);
+      } else {
+        this.x = random(0, Math.max(10, width - 10));
+        this.y = random(0, Math.max(10, height));
+      }
+
       this.r = random(1.1, 2.6);
 
       const cometSpeedFactor = this.comet ? random(50, 120) : 0;
@@ -120,8 +132,8 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
       this.fadingOut = null;
       this.fadingIn = true;
       this.opacity = 0;
-      this.opacityTresh = random(0.2, 1 - (this.comet ? 0.4 : 0));
-      this.deltaOpacity = random(0.0005, 0.002) + (this.comet ? 0.001 : 0);
+      this.opacityTresh = random(0.25, 1 - (this.comet ? 0.4 : 0));
+      this.deltaOpacity = random(0.0006, 0.0024) + (this.comet ? 0.0012 : 0);
     }
 
     fadeIn() {
@@ -214,10 +226,13 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const mult = options?.particleDensityMultiplier ?? 1.0;
-    const count = Math.round(0.216 * width * mult);
+    // 增加总体星空密度 (从 0.216 提升至 0.36 并设定 280 最低基准)
+    const count = Math.round(Math.max(280, 0.36 * width * mult));
     particles = [];
+    const clusterCount = Math.round(count * 0.38); // 38% 粒子增设至左下角星云育婴室 (Bottom-Left Cluster)
     for (let i = 0; i < count; i++) {
-      particles.push(new Star());
+      const isCluster = i < clusterCount;
+      particles.push(new Star(isCluster));
     }
   };
 
