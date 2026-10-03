@@ -217,6 +217,38 @@ img {
   background: linear-gradient(180deg, #090c16 0%, #0d101c 45%, #0d0d14 100%) !important;
 }
 
+/* Starry Universe Ambient Atmosphere (Deep Space Nebula & Galaxy Gradient) */
+:root:not([data-theme='dark'])[data-background='universe'] #web_bg,
+:root[data-theme='light'][data-background='universe'] #web_bg {
+  background: radial-gradient(circle at 50% 0%, rgba(26, 34, 64, 0.55) 0%, rgba(13, 16, 28, 0.95) 60%, #0d0f18 100%), #0d0f18 !important;
+}
+
+:root[data-theme='dark'][data-background='universe'] #web_bg {
+  background: radial-gradient(circle at 50% -10%, rgba(30, 42, 82, 0.55) 0%, rgba(13, 15, 24, 0.96) 60%, #0a0b12 100%), #0a0b12 !important;
+}
+
+/* Anzhiyu Universe Canvas Layering */
+#universe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+html[data-background='universe'] #universe {
+  opacity: 1;
+}
+
+html:not([data-background='universe']) #universe {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Cinematic Depth of Field: Out-of-focus camera lens blur for near-field flakes */
 #theme-snow-foreground {
   filter: blur(2.5px);

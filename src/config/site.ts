@@ -245,9 +245,10 @@ export const siteConfig = {
     defaultMode: 'light',
     background: {
       defaultMode: 'snow',
-      darkMode: 'snow',
+      darkMode: 'universe',
       modes: [
         { id: 'snow', label: '冬日雪境' },
+        { id: 'universe', label: '深空星海' },
         { id: 'clean', label: '纯净纯色' },
       ],
       snow: {
@@ -265,6 +266,14 @@ export const siteConfig = {
          * 注：此为后端站点配置参数，不在前端 UI/控制台中显式展示
          */
         homeOnly: false,
+      },
+      universe: {
+        /**
+         * 离子彗星/流星与幽蓝巨星开关 (Anzhiyu Comet & Giant Stars)
+         */
+        enableComet: true,
+        enableGiantStars: true,
+        enableMouseInteraction: true,
       },
     },
     snackbar: {
