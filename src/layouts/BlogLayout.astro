@@ -261,7 +261,7 @@ const isMantleActiveOnThisPage = snowConfig.enableMantle && (!snowConfig.homeOnl
       aria-hidden="true"
     ></canvas>
     <script define:vars={{ snowMantleConfig: { enableMantle: snowConfig.enableMantle, homeOnly: snowConfig.homeOnly } }}>
-      window.__SNOW_MANTLE_CONFIG__ = snowMantleConfig;
+      window.__SNOW_MANTLE_CONFIG__ = Object.assign({}, snowMantleConfig, window.__SNOW_MANTLE_CONFIG__ || {});
     </script>
     <script>
       import { initThemeUniverse } from '../components/ThemeUniverse';
