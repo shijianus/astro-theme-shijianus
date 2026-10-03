@@ -469,7 +469,8 @@ export function initThemeUniverse(options?: SnowMantleOptions): (() => void) | u
         if (midCanvas) midCanvas.style.opacity = '1';
         if (fgCanvas) fgCanvas.style.opacity = '1';
         if (snowMantleEngine) {
-          snowMantleEngine.updateConfig(options);
+          const winConfig = typeof window !== 'undefined' ? (window as any).__SNOW_MANTLE_CONFIG__ : undefined;
+          snowMantleEngine.updateConfig(winConfig ? { ...options, ...winConfig } : options);
         }
         startLoop();
       } else {

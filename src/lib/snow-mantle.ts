@@ -799,40 +799,40 @@ export class SnowMantleEngine {
     let enableMantle = siteConfig.theme.background.snow?.enableMantle ?? false;
     let homeOnly = siteConfig.theme.background.snow?.homeOnly ?? false;
 
+    // 1. SSR HTML attributes
+    if (root?.dataset?.snowMantleEnabled !== undefined) {
+      enableMantle = root.dataset.snowMantleEnabled === 'true';
+    }
+    if (root?.dataset?.snowMantleHomeOnly !== undefined) {
+      homeOnly = root.dataset.snowMantleHomeOnly === 'true';
+    }
+
+    // 2. Engine constructor options
     if (this.options?.enableMantle !== undefined) {
       enableMantle = this.options.enableMantle;
     } else if (this.options?.enableAccumulation !== undefined) {
       enableMantle = this.options.enableAccumulation;
     }
-
-    if (win.__SNOW_MANTLE_CONFIG__?.enableMantle !== undefined) {
-      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableMantle;
-    } else if (win.__SNOW_MANTLE_CONFIG__?.enableAccumulation !== undefined) {
-      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableAccumulation;
-    }
-
-    if (root?.dataset?.snowMantleEnabled !== undefined) {
-      enableMantle = root.dataset.snowMantleEnabled === 'true';
-    }
-
-    if (!enableMantle) {
-      return false;
-    }
-
     if (this.options?.homeOnly !== undefined) {
       homeOnly = this.options.homeOnly;
     } else if (this.options?.onlyHome !== undefined) {
       homeOnly = this.options.onlyHome;
     }
 
+    // 3. Runtime window.__SNOW_MANTLE_CONFIG__ (highest priority for live tests and stationmaster dynamic scripts)
+    if (win.__SNOW_MANTLE_CONFIG__?.enableMantle !== undefined) {
+      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableMantle;
+    } else if (win.__SNOW_MANTLE_CONFIG__?.enableAccumulation !== undefined) {
+      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableAccumulation;
+    }
     if (win.__SNOW_MANTLE_CONFIG__?.homeOnly !== undefined) {
       homeOnly = !!win.__SNOW_MANTLE_CONFIG__.homeOnly;
     } else if (win.__SNOW_MANTLE_CONFIG__?.onlyHome !== undefined) {
       homeOnly = !!win.__SNOW_MANTLE_CONFIG__.onlyHome;
     }
 
-    if (root?.dataset?.snowMantleHomeOnly !== undefined) {
-      homeOnly = root.dataset.snowMantleHomeOnly === 'true';
+    if (!enableMantle) {
+      return false;
     }
 
     if (homeOnly) {
