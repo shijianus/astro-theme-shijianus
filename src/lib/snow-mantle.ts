@@ -801,6 +801,11 @@ export class SnowMantleEngine {
     const win = window as any;
     const root = document.documentElement;
 
+    const currentBg = root?.dataset?.background || siteConfig.theme.background.defaultMode;
+    if (currentBg !== 'snow') {
+      return false;
+    }
+
     let enableMantle = siteConfig.theme.background.snow?.enableMantle ?? false;
     let homeOnly = siteConfig.theme.background.snow?.homeOnly ?? false;
 
@@ -936,7 +941,11 @@ export class SnowMantleEngine {
         const themeObserver = new MutationObserver((mutations) => {
           for (const m of mutations) {
             if (m.attributeName === 'data-background' || m.attributeName === 'data-theme') {
-              this.handleResize();
+              if (document.documentElement.dataset.background !== 'snow') {
+                this.clearAllMantles();
+              } else {
+                this.scanCards();
+              }
               break;
             }
           }
