@@ -4902,6 +4902,11 @@
   - 在 `siteConfig.theme.background.modes` 新增 `{ id: 'universe', label: '深空星海' }`；
   - 将 `darkMode` 默认指向 `'universe'`，实现夜间模式专属星空自适应；
   - ThemeDock 与 ThemeOverlays 控制台完美支持三档背景轮转（冬日雪境 -> 深空星海 -> 纯净纯色），并伴随全局 Snackbar 状态通知。
-- [x] **全流程自动化 E2E 测试套件验证 (`scripts/verify-starry-universe.mjs`)**：
-  - 覆盖 DOM 挂载、Canvas 2D 粒子像素活跃绘制、30阶流星拖尾、背景轮转切换、深色模式联动与文章页跨页生命周期断言，全部测试通过。
+- [x] **全流程自动化 E2E 测试套件与公网生产端全链路验证 (`scripts/verify-starry-universe.mjs`, `scripts/verify-starry-universe-prod.mjs`)**：
+  - 本地与公网双端实测：覆盖 DOM 挂载、Canvas 2D 粒子像素活跃绘制、30阶流星拖尾、背景轮转切换、深色模式联动与文章页跨页生命周期断言，全部测试 100% 通过；
+  - 生产公网实机（`https://blog.epocanvas.com/`）Playwright 真实浏览器交互审计通过，0 致命控制台报错，`#universe` 画布渲染活跃。
+- [x] **生产全端部署与多远端全量同步 (`814f94c`, `8f6b4a1`)**：
+  - 代码全量推送至 `origin` 与 `cf` 远端仓库；
+  - Wrangler 部署成功上线三大 Pages 生产边缘节点（`shijianus-blog`、`shijianus-github-io`、`cfsolara`）。
+
 
