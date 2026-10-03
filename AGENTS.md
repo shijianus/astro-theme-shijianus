@@ -4883,3 +4883,25 @@
   - 代码全量推送至 `origin` 与 `cf`；
   - Wrangler 部署成功上线三大 Pages 生产边缘节点（`shijianus-blog`、`shijianus-github-io`、`cfsolara`）；
   - 生产公网实机全链路 Playwright 验证通过，无任何控制台报错。
+
+### Task 220: 安知鱼夜晚星空背景复刻、三层天体物理模型与深空科技感质感打磨 (`07b1320`)
+- [x] **安知鱼夜晚星空粒子动力学深度复刻与现代升级 (`src/lib/starry-universe.ts`)**：
+  - **三分类天体物理粒子模型**：
+    1. **幽蓝巨星 (Giant Stars, ~3%)**：冷紫蓝光核 (`rgba(180, 184, 240, alpha)`)，圆形实体光斑，慢速优雅漂移与平滑呼吸；
+    2. **离子彗星 (Comets/Meteors, ~1%)**：纯银白冷光 (`rgba(226, 225, 224, alpha)`)，**30阶线性衰减离子拖尾算法**，50~120倍高速破空划过夜空；
+    3. **漫天恒星 (Regular Stars, ~96%)**：微暖金黄小方点 (`rgba(226, 225, 142, alpha)`)，漫天呼吸闪烁，平滑淡入淡出。
+  - **科技感与性能进阶**：
+    - High-DPI Retina 硬件级像素矩阵映射（`setTransform` 适配 2K/4K/Mac 高清屏）；
+    - 鼠标微引力场扰动 (Gravitational Micro-Lensing)，交互时星光轻微偏转；
+    - 零冗余 RAF 挂起与状态感知（仅在 `data-background='universe'` 且 Tab 可见时运算，浅色与非星空模式彻底暂停，0 CPU/GPU 浪费）。
+- [x] **深空星云渐变与全局画布层级挂载 (`src/styles/global.css`, `BlogLayout.astro`)**：
+  - 在 `#web_bg` 注入专属深空星云与星系径向弥散微光渐变 (`radial-gradient`)，增强空间纵深感；
+  - 在 `BlogLayout.astro` 挂载独立固定画布 `<canvas id="universe">`，实现平滑 `opacity 0.4s` 淡入淡出切换；
+  - 在 `BlogLayout.astro` 客户端脚本中打通 `initStarryUniverse` 与 `initThemeUniverse` 双引擎生命周期管理（支持 Astro SPA 视图切换与清理）。
+- [x] **多背景切换系统与夜间专属默认配置 (`src/config/site.ts`)**：
+  - 在 `siteConfig.theme.background.modes` 新增 `{ id: 'universe', label: '深空星海' }`；
+  - 将 `darkMode` 默认指向 `'universe'`，实现夜间模式专属星空自适应；
+  - ThemeDock 与 ThemeOverlays 控制台完美支持三档背景轮转（冬日雪境 -> 深空星海 -> 纯净纯色），并伴随全局 Snackbar 状态通知。
+- [x] **全流程自动化 E2E 测试套件验证 (`scripts/verify-starry-universe.mjs`)**：
+  - 覆盖 DOM 挂载、Canvas 2D 粒子像素活跃绘制、30阶流星拖尾、背景轮转切换、深色模式联动与文章页跨页生命周期断言，全部测试通过。
+
