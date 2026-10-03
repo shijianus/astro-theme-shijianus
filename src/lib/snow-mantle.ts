@@ -1,5 +1,3 @@
-import { siteConfig } from '../config/site';
-
 /**
  * EpoCanvas In-Card Procedural Snow Mantle System (卡片原生吸附式程序化立体雪幔系统)
  * 
@@ -754,13 +752,6 @@ export function generateSnowMantleSvg(
 `.trim();
 }
 
-export interface SnowMantleOptions {
-  enableMantle?: boolean;
-  homeOnly?: boolean;
-  enableAccumulation?: boolean; // alias for enableMantle
-  onlyHome?: boolean; // alias for homeOnly
-}
-
 /**
  * SnowMantleEngine: In-Card Attached DOM Vector Snow Mantle Controller
  */
@@ -770,104 +761,9 @@ export class SnowMantleEngine {
   private mutationObserver: MutationObserver | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private intersectionObserver: IntersectionObserver | null = null;
-  private options?: SnowMantleOptions;
 
-  constructor(_ctx?: CanvasRenderingContext2D, options?: SnowMantleOptions) {
-    this.options = options;
+  constructor(_ctx?: CanvasRenderingContext2D) {
     this.init();
-  }
-
-  public updateConfig(options?: SnowMantleOptions) {
-    if (options) {
-      this.options = { ...this.options, ...options };
-    }
-    if (!this.isMantleActiveOnCurrentPage()) {
-      this.clearAllMantles();
-    } else {
-      this.scanCards();
-    }
-  }
-
-  /**
-   * Determine whether snow mantle accumulation is enabled and active on the current page
-   */
-  public isMantleActiveOnCurrentPage(): boolean {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return false;
-
-    const win = window as any;
-    const root = document.documentElement;
-    let enableMantle = siteConfig.theme.background.snow?.enableMantle ?? false;
-    let homeOnly = siteConfig.theme.background.snow?.homeOnly ?? false;
-
-    // 1. SSR HTML attributes
-    if (root?.dataset?.snowMantleEnabled !== undefined) {
-      enableMantle = root.dataset.snowMantleEnabled === 'true';
-    }
-    if (root?.dataset?.snowMantleHomeOnly !== undefined) {
-      homeOnly = root.dataset.snowMantleHomeOnly === 'true';
-    }
-
-    // 2. Engine constructor options
-    if (this.options?.enableMantle !== undefined) {
-      enableMantle = this.options.enableMantle;
-    } else if (this.options?.enableAccumulation !== undefined) {
-      enableMantle = this.options.enableAccumulation;
-    }
-    if (this.options?.homeOnly !== undefined) {
-      homeOnly = this.options.homeOnly;
-    } else if (this.options?.onlyHome !== undefined) {
-      homeOnly = this.options.onlyHome;
-    }
-
-    // 3. Runtime window.__SNOW_MANTLE_CONFIG__ (highest priority for live tests and stationmaster dynamic scripts)
-    if (win.__SNOW_MANTLE_CONFIG__?.enableMantle !== undefined) {
-      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableMantle;
-    } else if (win.__SNOW_MANTLE_CONFIG__?.enableAccumulation !== undefined) {
-      enableMantle = !!win.__SNOW_MANTLE_CONFIG__.enableAccumulation;
-    }
-    if (win.__SNOW_MANTLE_CONFIG__?.homeOnly !== undefined) {
-      homeOnly = !!win.__SNOW_MANTLE_CONFIG__.homeOnly;
-    } else if (win.__SNOW_MANTLE_CONFIG__?.onlyHome !== undefined) {
-      homeOnly = !!win.__SNOW_MANTLE_CONFIG__.onlyHome;
-    }
-
-    if (!enableMantle) {
-      return false;
-    }
-
-    if (homeOnly) {
-      return this.isHomePage();
-    }
-
-    return true;
-  }
-
-  public isHomePage(): boolean {
-    if (typeof document === 'undefined') return false;
-    const pageType = document.body?.getAttribute('data-type') || document.body?.dataset?.type;
-    if (pageType === 'home') return true;
-    if (pageType && pageType !== 'home') return false;
-
-    if (typeof window !== 'undefined') {
-      const p = window.location.pathname.replace(/\/+$/, '') || '/';
-      return p === '/' || /^\/(?:page\/\d+)$/.test(p);
-    }
-    return false;
-  }
-
-  public clearAllMantles() {
-    if (typeof document === 'undefined') return;
-    document.documentElement.dataset.snowMantle = 'disabled';
-    const detachedFlakes = document.querySelectorAll('.snow-detached-flake');
-    detachedFlakes.forEach((flake) => flake.remove());
-    const svgs = document.querySelectorAll('.card-snow-svg');
-    svgs.forEach((svg) => {
-      if (svg.parentElement) {
-        svg.parentElement.style.removeProperty('border-top-color');
-        svg.parentElement.style.removeProperty('overflow');
-      }
-      svg.remove();
-    });
   }
 
   private init() {
@@ -953,7 +849,7 @@ export class SnowMantleEngine {
   }
 
   private handlePointerEnter = (e: PointerEvent) => {
-    if (this.isDestroyed || !this.isMantleActiveOnCurrentPage()) return;
+    if (this.isDestroyed) return;
     if (e.pointerType === 'touch') return; // Ignore mobile touch taps
     const rawTarget = e.target;
     if (!rawTarget) return;
@@ -1038,13 +934,6 @@ export class SnowMantleEngine {
    */
   public scanCards() {
     if (typeof document === 'undefined') return;
-
-    if (!this.isMantleActiveOnCurrentPage()) {
-      this.clearAllMantles();
-      return;
-    }
-
-    document.documentElement.dataset.snowMantle = 'active';
 
     const selector = CLOSED_BOX_SELECTORS.join(', ');
     const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
@@ -1231,7 +1120,15 @@ export class SnowMantleEngine {
     if (typeof document !== 'undefined') {
       document.removeEventListener('pointerenter', this.handlePointerEnter, true);
       document.removeEventListener('pointerover', this.handlePointerEnter);
-      this.clearAllMantles();
+      const detachedFlakes = document.querySelectorAll('.snow-detached-flake');
+      detachedFlakes.forEach((flake) => flake.remove());
+      const svgs = document.querySelectorAll('.card-snow-svg');
+      svgs.forEach((svg) => {
+        if (svg.parentElement) {
+          svg.parentElement.style.removeProperty('border-top-color');
+        }
+        svg.remove();
+      });
     }
   }
 }

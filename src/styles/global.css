@@ -398,8 +398,7 @@ html[data-background='snow'] :is(
   animation-play-state: paused !important;
 }
 
-html:not([data-background='snow']) .card-snow-svg,
-html[data-snow-mantle='disabled'] .card-snow-svg {
+html:not([data-background='snow']) .card-snow-svg {
   display: none !important;
 }
 
@@ -414,53 +413,51 @@ html[data-snow-mantle='disabled'] .card-snow-svg {
   }
 }
 
-/* Allow procedural snow caps to rise naturally above card borders ONLY when an in-card snow mantle is actually active and attached */
+/* Allow procedural snow caps to rise naturally above card borders when snow theme is active */
 /* Eradicate artificial dividing lines under snow: hide card top border so snow is the true top edge */
-html[data-background='snow']:not([data-snow-mantle='disabled']) :is(
-  .categoryItem,
-  .recent-post-item,
-  body .topGroup .recent-post-item,
-  body[data-type='home'] .recent-post-item,
-  body[data-type='home'] .topGroup .recent-post-item,
-  body[data-type='home'] .topGroup .todayCard,
-  .todayCard,
-  #random-banner,
-  #category-bar,
-  .category-bar,
-  .home-top-notice,
-  #footer-wrap,
-  .footer-main-shell,
-  #footer-bar,
-  .footer-bar-links,
-  #aside-content .card-widget,
-  #card-toc,
-  #post,
-  #post-comment,
-  .shijianus-ai-summary,
-  .github-repo-card,
-  .video-embed-card,
-  .article-audio-card,
-  .article-encrypted-box,
-  .article-tabs,
-  .admonition,
-  .admonition-details,
-  .markdown-alert,
-  .article-callout,
-  .code-block-shell,
-  figure.highlight,
-  .article-table-wrap,
-  .home-pagination,
-  .relatedPosts-item,
-  .postNav-card,
-  .theme-card,
-  .archive-hero-card,
-  .taxonomy-hero-card,
-  .taxonomy-index-card,
-  .taxonomy-section-card,
-  .friends-page__panel,
-  .friends-page__hero,
-  .support-dashboard-card
-):has(> .card-snow-svg) {
+html[data-background='snow'] .categoryItem,
+html[data-background='snow'] .recent-post-item,
+html[data-background='snow'] body .topGroup .recent-post-item,
+html[data-background='snow'] body[data-type='home'] .recent-post-item,
+html[data-background='snow'] body[data-type='home'] .topGroup .recent-post-item,
+html[data-background='snow'] body[data-type='home'] .topGroup .todayCard,
+html[data-background='snow'] .todayCard,
+html[data-background='snow'] #random-banner,
+html[data-background='snow'] #category-bar,
+html[data-background='snow'] .category-bar,
+html[data-background='snow'] .home-top-notice,
+html[data-background='snow'] #footer-wrap,
+html[data-background='snow'] .footer-main-shell,
+html[data-background='snow'] #footer-bar,
+html[data-background='snow'] .footer-bar-links,
+html[data-background='snow'] #aside-content .card-widget,
+html[data-background='snow'] #card-toc,
+html[data-background='snow'] #post,
+html[data-background='snow'] #post-comment,
+html[data-background='snow'] .shijianus-ai-summary,
+html[data-background='snow'] .github-repo-card,
+html[data-background='snow'] .video-embed-card,
+html[data-background='snow'] .article-audio-card,
+html[data-background='snow'] .article-encrypted-box,
+html[data-background='snow'] .article-tabs,
+html[data-background='snow'] .admonition,
+html[data-background='snow'] .admonition-details,
+html[data-background='snow'] .markdown-alert,
+html[data-background='snow'] .article-callout,
+html[data-background='snow'] .code-block-shell,
+html[data-background='snow'] figure.highlight,
+html[data-background='snow'] .article-table-wrap,
+html[data-background='snow'] .home-pagination,
+html[data-background='snow'] .relatedPosts-item,
+html[data-background='snow'] .postNav-card,
+html[data-background='snow'] .theme-card,
+html[data-background='snow'] .archive-hero-card,
+html[data-background='snow'] .taxonomy-hero-card,
+html[data-background='snow'] .taxonomy-index-card,
+html[data-background='snow'] .taxonomy-section-card,
+html[data-background='snow'] .friends-page__panel,
+html[data-background='snow'] .friends-page__hero,
+html[data-background='snow'] .support-dashboard-card {
   overflow: visible !important;
   border-top-color: transparent !important;
 }
@@ -474,11 +471,9 @@ html[data-background='snow']:not([data-snow-mantle='disabled']) :is(
 }
 
 /* Breathing headroom for in-card snow in snow mode */
-html[data-background='snow']:not([data-snow-mantle='disabled']) :is(
-  .markdown-alert,
-  .article-callout,
-  .admonition
-):has(> .card-snow-svg) {
+html[data-background='snow'] .markdown-alert,
+html[data-background='snow'] .article-callout,
+html[data-background='snow'] .admonition {
   padding-top: 20px !important;
 }
 
@@ -496,7 +491,7 @@ html[data-background='snow'] .code-block-header {
   isolation: isolate !important;
 }
 
-html[data-background='snow']:not([data-snow-mantle='disabled']) .profile-card:has(> .card-snow-svg) {
+html[data-background='snow'] .profile-card {
   overflow: visible !important;
 }
 

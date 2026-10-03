@@ -164,10 +164,6 @@ const paypalUkMeUrl =
   import.meta.env.PUBLIC_PAYPAL_UK_ME_URL ||
   process.env.PUBLIC_PAYPAL_UK_ME_URL ||
   'https://www.paypal.com/paypalme/shijianus';
-
-const isHomePage = pageType === 'home';
-const snowConfig = siteConfig.theme.background.snow || { enableMantle: false, homeOnly: false };
-const isMantleActiveOnThisPage = snowConfig.enableMantle && (!snowConfig.homeOnly || isHomePage);
 ---
 
 <!doctype html>
@@ -176,9 +172,6 @@ const isMantleActiveOnThisPage = snowConfig.enableMantle && (!snowConfig.homeOnl
   data-theme={siteConfig.theme.defaultMode}
   data-aside="expanded"
   data-background={siteConfig.theme.background.defaultMode}
-  data-snow-mantle={isMantleActiveOnThisPage ? 'active' : 'disabled'}
-  data-snow-mantle-enabled={snowConfig.enableMantle ? 'true' : 'false'}
-  data-snow-mantle-home-only={snowConfig.homeOnly ? 'true' : 'false'}
   data-locale-variant={lang}
 >
   <head>
@@ -260,21 +253,14 @@ const isMantleActiveOnThisPage = snowConfig.enableMantle && (!snowConfig.homeOnl
       style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; opacity: 0; transition: opacity 0.4s ease; filter: blur(2.5px);"
       aria-hidden="true"
     ></canvas>
-    <script define:vars={{ snowMantleConfig: { enableMantle: snowConfig.enableMantle, homeOnly: snowConfig.homeOnly } }}>
-      window.__SNOW_MANTLE_CONFIG__ = Object.assign({}, snowMantleConfig, window.__SNOW_MANTLE_CONFIG__ || {});
-    </script>
     <script>
       import { initThemeUniverse } from '../components/ThemeUniverse';
 
       let cleanup: (() => void) | undefined;
       function startSnow() {
         if (cleanup) cleanup();
-        const cfg = (window as any).__SNOW_MANTLE_CONFIG__;
-        cleanup = initThemeUniverse(cfg);
+        cleanup = initThemeUniverse();
       }
-
-      (window as any).__START_SNOW__ = startSnow;
-      window.addEventListener('shijianus:snow-config-changed', startSnow);
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', startSnow, { once: true });

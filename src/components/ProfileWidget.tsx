@@ -185,12 +185,11 @@ export function ProfileWidget({
           border-radius: 8px !important;
         }
 
-        html[data-background='snow']:not([data-snow-mantle='disabled']) .profile-card:has(> .card-snow-svg) {
+        html[data-background='snow'] .profile-card {
           overflow: visible !important;
         }
 
-        html:not([data-background='snow']) .profile-card,
-        html[data-snow-mantle='disabled'] .profile-card {
+        html:not([data-background='snow']) .profile-card {
           overflow: hidden !important;
         }
 

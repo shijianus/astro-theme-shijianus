@@ -4852,3 +4852,13 @@
   3. **逻辑矩阵 11 项全排列**：默认、开启+仅首页、开启+全局全场景测试 100% 吻合数学预期（PASS）；
   4. **Stage 4 准入评估**：完全符合准入下一阶段条件，规划了流体融雪动画、落雪堆叠刮雪物理引擎与季节昼夜光照自适应三大专业蓝图；
   5. **终审裁定**：**【全票通过 (PASSED) / 准予正式交付】**。
+
+### Task 218: 文件状态精准回退至 91f12b6 稳定基线与生产边缘部署 (Rollback Files to 91f12b6 Stable State & Cloudflare Deployment)
+- [x] **源码文件精准回退至 `91f12b6`**：
+  - 将近期修改的全部源码文件（`src/config/site.ts`、`src/lib/snow-mantle.ts`、`src/styles/global.css`、`src/layouts/BlogLayout.astro`、`src/components/ThemeUniverse.tsx`、`src/components/ProfileWidget.tsx`、`src/components/theme/HomeHero.astro`、`src/components/theme/ProfileCard.astro`）精确回退至 Commit `91f12b6` 的稳定基线状态；
+  - 严格保持 Git Commit 历史单向向前推进，不改写历史 commit。
+- [x] **本地全量编译与 Cloudflare Pages 生产边缘部署**：
+  - 执行 `npm run pages:build` 重新全量静态编译；
+  - 通过 Wrangler 将稳定版本全量部署至 `shijianus-blog`、`shijianus-github-io`、`cfsolara` 三大边缘项目。
+- [x] **全量远端同步推送**：
+  - 推送最新提交至 `origin` 与 `cf` 远端仓库，确保所有分支 100% 保持一致。
