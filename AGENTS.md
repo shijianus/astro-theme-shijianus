@@ -4862,3 +4862,24 @@
   - 通过 Wrangler 将稳定版本全量部署至 `shijianus-blog`、`shijianus-github-io`、`cfsolara` 三大边缘项目。
 - [x] **全量远端同步推送**：
   - 推送最新提交至 `origin` 与 `cf` 远端仓库，确保所有分支 100% 保持一致。
+
+### Task 219: 雪花成积独立关闭参数与仅首页生效参数深度优化与无侵入样式隔离交付 (Snow Accumulation Backend Toggle & Homepage-Only Restriction Final Pass) (`b6e6dda`, `f6571e2`, `70cc6e4`)
+- [x] **后端专用关闭参数设计与零 UI 暴露 (`src/config/site.ts`)**：
+  - 新增 `siteConfig.theme.background.snow.enableMantle: false`（别名 `enableAccumulation`）：默认仅保留全屏下雪天幕粒子特效，不在卡片上生成任何雪花成积/雪幔效果（允许站长在后端配置随时开启）；
+  - 新增 `siteConfig.theme.background.snow.homeOnly: false`（别名 `onlyHome`）：成积特效默认全站展示；若站长开启此参数，则严格仅对首页（`/` 及分页）生效，其它界面（文章、归档、标签等）绝不受影响，100% 保持正常展示；
+  - 导出严格类型 `SnowEffectConfig`，彻底不在前端控制台（ThemeDock、ThemeOverlays 等）暴露任何 UI 复选框或控件，严守站长后端配置原则。
+- [x] **双层门禁与无侵入样式隔离 (`src/styles/global.css`, `HomeHero.astro`, `ProfileCard.astro`, `ProfileWidget.tsx`)**：
+  - 将 `border-top-color: transparent !important` 与 `overflow: visible !important` 严格限定于 `:not([data-snow-mantle='disabled']):has(> .card-snow-svg)`；
+  - 文章页告示块（`.markdown-alert, .article-callout, .admonition`）的 `padding-top: 20px !important;` 同样严格限定为 `:has(> .card-snow-svg)`；
+  - 确保成积关闭或在非首页关闭时，卡片原生边框（`rgb(227, 232, 247)`）、溢出裁切（`overflow: hidden`）与文章内部内边距（`17.6px`）100% 保持原生呈现，无任何视觉撕裂或空隙变形。
+- [x] **雪幔引擎分级管控与实时动态响应 (`src/lib/snow-mantle.ts`, `ThemeUniverse.tsx`, `BlogLayout.astro`)**：
+  - 在 `SnowMantleEngine.isMantleActiveOnCurrentPage()` 中建立三级权威优先级（SSR 属性 -> 实例 options -> 运行时 `window.__SNOW_MANTLE_CONFIG__`），并优先判定 `data-background === 'snow'` 与 `!enableMantle`；
+  - 实现非雪景背景立即清退机制（`clearAllMantles` 彻底清除 SVG 并复原卡片内联 border/overflow 样式）；
+  - 在 `ThemeUniverse.tsx` 中新增 `shijianus:snow-config-update` 事件监听，支持站长动态脚本与测试套件即时更新配置。
+- [x] **全景自动化 E2E 测试矩阵本地与生产双重 100% 验证 (`scripts/verify-snow-matrix-local.mjs`, `scripts/audit_snow_params_production.cjs`)**：
+  - 本地与生产双端实测：7 项 / 6 项大场景全矩阵全绿（默认首页 0 积雪、默认文章页 0 积雪、首页成积开启 30 SVGs、文章页仅首页限制 0 SVGs、全站开启 36 SVGs、纯净模式即时清零、0 控制台报错）；
+  - 生成确凿证据报告 `reports/snow-backend-params-audit-report.json` 与 `reports/snow-params-audit-result.json`。
+- [x] **生产全端部署与真实公网验证 (`https://blog.epocanvas.com/`)**：
+  - 代码全量推送至 `origin` 与 `cf`；
+  - Wrangler 部署成功上线三大 Pages 生产边缘节点（`shijianus-blog`、`shijianus-github-io`、`cfsolara`）；
+  - 生产公网实机全链路 Playwright 验证通过，无任何控制台报错。

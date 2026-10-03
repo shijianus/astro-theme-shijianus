@@ -216,7 +216,7 @@ async function runAudit() {
       passHomeDefault &&
       passPostDefault &&
       passHomeOverride &&
-      passHomeOnlyPost &&
+      passPostHomeOnly &&
       passPostSiteWide &&
       passErrors;
 

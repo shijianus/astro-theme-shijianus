@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-10-03T18:02:57.427Z",
+  "tests": {
+    "homeDefault": {
+      "bg": "snow",
+      "mantle": "disabled",
+      "mantleEnabled": "false",
+      "mantleHomeOnly": "false",
+      "winConfig": {
+        "enableMantle": false,
+        "homeOnly": false
+      },
+      "bgCanvasExists": true,
+      "svgCount": 0,
+      "cardCount": 16,
+      "cardBorderTop": "rgb(227, 232, 247)"
+    },
+    "homeOverride": {
+      "mantle": "active",
+      "svgCount": 30
+    },
+    "postDefault": {
+      "bg": "snow",
+      "mantle": "disabled",
+      "mantleEnabled": "false",
+      "mantleHomeOnly": "false",
+      "winConfig": {
+        "enableMantle": false,
+        "homeOnly": false
+      },
+      "bgCanvasExists": true,
+      "svgCount": 0,
+      "hasAlert": false,
+      "alertPaddingTop": null
+    },
+    "postHomeOnlyOverride": {
+      "mantle": "disabled",
+      "svgCount": 0
+    },
+    "postSiteWideOverride": {
+      "mantle": "active",
+      "svgCount": 36
+    }
+  },
+  "passed": true,
+  "consoleErrors": [],
+  "evaluations": {
+    "passHomeDefault": true,
+    "passPostDefault": true,
+    "passHomeOverride": true,
+    "passPostHomeOnly": true,
+    "passPostSiteWide": true,
+    "passErrors": true
+  }
+}
