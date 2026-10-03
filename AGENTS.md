@@ -4909,4 +4909,16 @@
   - 代码全量推送至 `origin` 与 `cf` 远端仓库；
   - Wrangler 部署成功上线三大 Pages 生产边缘节点（`shijianus-blog`、`shijianus-github-io`、`cfsolara`）。
 
+### Task 221: 星空总体密度提升与左下角星云育婴室 (Bottom-Left Cluster) 专项加密 (`fe02baf`)
+- [x] **星空粒子总体基准密度提升 (`src/lib/starry-universe.ts`)**：
+  - 将基准星体密度乘数由 `0.216` 大幅提升至 `0.36`，并设置 `280` 粒子最低基准保障，标准 1440p 屏幕粒子数提升至 520+ 颗，夜空繁星层次更加细腻丰满；
+- [x] **左下角星云育婴室 (Bottom-Left Cluster) 结构化增设 (`src/lib/starry-universe.ts`, `global.css`)**：
+  - **物理分布非线性加权**：划分 38% 粒子专属绑定为左下角星云育婴室粒子（`isCluster = true`），采用非线性幂次分布（`x = Math.pow(r, 1.4) * 0.55W`，`y = H - Math.pow(r, 1.4) * 0.55H`），使粒子自然汇聚于左下角并沿对角线斜向右上扩散；
+  - **彗星与巨星生成偏置**：左下角育婴室赋予更高的流星/彗星生成概率（`chance(14)`），自然形成流星自左下破空掠向右上的壮丽天文景观；
+  - **背景渐变星云光晕**：在 `#web_bg` 注入左下角专属星云微光渐变（`radial-gradient(circle at 12% 88%, rgba(50, 70, 140, 0.45) 0%, transparent 55%)`）。
+- [x] **全流程自动化 E2E 测试矩阵与生产公网双端 100% 验证 (`scripts/verify-starry-universe.mjs`, `scripts/verify-starry-universe-prod.mjs`)**：
+  - 本地与公网（`https://blog.epocanvas.com/`）实测：左下角活跃粒子像素达 4845+ 像素，流星轨迹与星群全景渲染丝滑，0 控制台报错；
+  - 全量多远端同步推送至 `origin` 与 `cf`，Wrangler 全量部署至三大生产边缘节点。
+
+
 
