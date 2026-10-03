@@ -424,10 +424,12 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
     z-index: 10 !important;
   }
 
-  /* 积雪主题下允许雪幔自然向上隆起并消除顶部分割线 */
-  html[data-background='snow'] body[data-type='home'] .categoryItem,
-  html[data-background='snow'] body[data-type='home'] .topGroup .recent-post-item,
-  html[data-background='snow'] body[data-type='home'] .topGroup .todayCard {
+  /* 积雪主题下允许雪幔自然向上隆起并消除顶部分割线（仅当积雪开启且卡片实际挂载雪幔时） */
+  html[data-background='snow']:not([data-snow-mantle='disabled']) body[data-type='home'] :is(
+    .categoryItem,
+    .topGroup .recent-post-item,
+    .topGroup .todayCard
+  ):has(> .card-snow-svg) {
     overflow: visible !important;
     border-top-color: transparent !important;
   }
