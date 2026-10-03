@@ -258,10 +258,12 @@
         "isSolid": true
       }
     ],
-    "consoleErrorsCount": 0,
+    "consoleErrorsCount": 1,
     "pageErrorsCount": 0,
-    "allPassed": true
+    "allPassed": false
   },
-  "consoleErrors": [],
+  "consoleErrors": [
+    "@bilibili/bili-user-fingerprint(report): report is not found"
+  ],
   "pageErrors": []
 }

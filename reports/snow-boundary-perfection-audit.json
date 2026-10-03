@@ -1,0 +1,850 @@
+{
+  "metadata": {
+    "site": "https://blog.epocanvas.com/",
+    "post": "https://blog.epocanvas.com/posts/markdown-syntax-mastery/",
+    "timestamp": "2026-10-02T14:47:02.537Z"
+  },
+  "section1_boundary_caps": {
+    "recentPosts": [
+      {
+        "type": "recent-post-item",
+        "index": 0,
+        "archetype": "gentle-powder",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 12.8,
+        "rightThickness": 11.8,
+        "leftTop": {
+          "x": 3.4,
+          "y": 34.4
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 35.7
+        },
+        "dropRelief": 20.2,
+        "avgSlope": 0.86
+      },
+      {
+        "type": "recent-post-item",
+        "index": 1,
+        "archetype": "sawtooth-drift",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 11.2,
+        "rightThickness": 10.3,
+        "leftTop": {
+          "x": 3.4,
+          "y": 36.6
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 36.3
+        },
+        "dropRelief": 18.7,
+        "avgSlope": 0.92
+      },
+      {
+        "type": "recent-post-item",
+        "index": 2,
+        "archetype": "droop-cluster-right",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 13.2,
+        "rightThickness": 12.7,
+        "leftTop": {
+          "x": 3.4,
+          "y": 35.9
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 36.1
+        },
+        "dropRelief": 23,
+        "avgSlope": 1.04
+      },
+      {
+        "type": "recent-post-item",
+        "index": 3,
+        "archetype": "icicle-curtain",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 10.7,
+        "rightThickness": 11,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.6
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 25.2
+        },
+        "dropRelief": 8.2,
+        "avgSlope": 0.41
+      },
+      {
+        "type": "recent-post-item",
+        "index": 4,
+        "archetype": "heavy-cornice-left",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 11.6,
+        "rightThickness": 10.3,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.5
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 25.5
+        },
+        "dropRelief": 11.3,
+        "avgSlope": 0.47
+      },
+      {
+        "type": "recent-post-item",
+        "index": 5,
+        "archetype": "triple-dome",
+        "width": 197,
+        "height": 162,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 9.9,
+        "rightThickness": 10.8,
+        "leftTop": {
+          "x": 3.4,
+          "y": 25
+        },
+        "rightTop": {
+          "x": 193.6,
+          "y": 24.5
+        },
+        "dropRelief": 12,
+        "avgSlope": 0.55
+      },
+      {
+        "type": "recent-post-item",
+        "index": 6,
+        "archetype": "scalloped-crest",
+        "width": 510,
+        "height": 339,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 15.7,
+        "rightThickness": 15.5,
+        "leftTop": {
+          "x": 3.4,
+          "y": 38.9
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 38.5
+        },
+        "dropRelief": 15.5,
+        "avgSlope": 1.83
+      },
+      {
+        "type": "recent-post-item",
+        "index": 7,
+        "archetype": "frost-pillow",
+        "width": 510,
+        "height": 339,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 14.8,
+        "rightThickness": 14.9,
+        "leftTop": {
+          "x": 3.4,
+          "y": 39.3
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 38.7
+        },
+        "dropRelief": 15.8,
+        "avgSlope": 1.63
+      },
+      {
+        "type": "recent-post-item",
+        "index": 8,
+        "archetype": "droop-cluster-right",
+        "width": 510,
+        "height": 339,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 13.2,
+        "rightThickness": 12.9,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.8
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24.8
+        },
+        "dropRelief": 7.4,
+        "avgSlope": 0.5
+      },
+      {
+        "type": "recent-post-item",
+        "index": 9,
+        "archetype": "central-cushion",
+        "width": 510,
+        "height": 339,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 11.7,
+        "rightThickness": 12.7,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.4
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24.4
+        },
+        "dropRelief": 7.3,
+        "avgSlope": 0.64
+      },
+      {
+        "type": "recent-post-item",
+        "index": 10,
+        "archetype": "dual-crest-saddle",
+        "width": 510,
+        "height": 337,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 10.2,
+        "rightThickness": 11.6,
+        "leftTop": {
+          "x": 3.4,
+          "y": 25.2
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 25
+        },
+        "dropRelief": 6.4,
+        "avgSlope": 0.66
+      },
+      {
+        "type": "recent-post-item",
+        "index": 11,
+        "archetype": "frost-pillow",
+        "width": 510,
+        "height": 337,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 12,
+        "rightThickness": 11.2,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.5
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24.7
+        },
+        "dropRelief": 6.7,
+        "avgSlope": 0.75
+      },
+      {
+        "type": "recent-post-item",
+        "index": 12,
+        "archetype": "windswept-left",
+        "width": 510,
+        "height": 337,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 11.7,
+        "rightThickness": 13.4,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.3
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24.8
+        },
+        "dropRelief": 8.6,
+        "avgSlope": 0.65
+      },
+      {
+        "type": "recent-post-item",
+        "index": 13,
+        "archetype": "alpine-ridge-left",
+        "width": 510,
+        "height": 337,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 13.4,
+        "rightThickness": 13.7,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.1
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24.5
+        },
+        "dropRelief": 6.9,
+        "avgSlope": 0.56
+      },
+      {
+        "type": "recent-post-item",
+        "index": 14,
+        "archetype": "dual-crest-saddle",
+        "width": 510,
+        "height": 332,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 10.4,
+        "rightThickness": 11,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.8
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 25.5
+        },
+        "dropRelief": 6.6,
+        "avgSlope": 0.66
+      },
+      {
+        "type": "recent-post-item",
+        "index": 15,
+        "archetype": "alpine-ridge-right",
+        "width": 510,
+        "height": 332,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 10.9,
+        "rightThickness": 12.7,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.3
+        },
+        "rightTop": {
+          "x": 506.6,
+          "y": 24
+        },
+        "dropRelief": 6.8,
+        "avgSlope": 0.54
+      }
+    ],
+    "categoryItems": [
+      {
+        "type": "categoryItem",
+        "index": 0,
+        "archetype": "gentle-powder",
+        "width": 238,
+        "height": 86,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "0px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 8,
+        "rightThickness": 8.7,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.8
+        },
+        "rightTop": {
+          "x": 234.6,
+          "y": 24.5
+        },
+        "dropRelief": 6.1,
+        "avgSlope": 0.44
+      },
+      {
+        "type": "categoryItem",
+        "index": 1,
+        "archetype": "gentle-powder",
+        "width": 238,
+        "height": 86,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "0px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 8.3,
+        "rightThickness": 8.4,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.7
+        },
+        "rightTop": {
+          "x": 234.6,
+          "y": 24.9
+        },
+        "dropRelief": 6.1,
+        "avgSlope": 0.36
+      },
+      {
+        "type": "categoryItem",
+        "index": 2,
+        "archetype": "gentle-powder",
+        "width": 238,
+        "height": 86,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "0px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 9.1,
+        "rightThickness": 8.6,
+        "leftTop": {
+          "x": 3.4,
+          "y": 24.8
+        },
+        "rightTop": {
+          "x": 234.6,
+          "y": 24.9
+        },
+        "dropRelief": 5.2,
+        "avgSlope": 0.35
+      }
+    ],
+    "asideWidgets": [
+      {
+        "type": "aside-card-widget",
+        "index": 0,
+        "archetype": "thick-plateau",
+        "width": 320,
+        "height": 362,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 11.5,
+        "rightThickness": 11.2,
+        "leftTop": {
+          "x": 2.4,
+          "y": 28.3
+        },
+        "rightTop": {
+          "x": 317.6,
+          "y": 28
+        },
+        "dropRelief": 9.6,
+        "avgSlope": 0.73
+      },
+      {
+        "type": "aside-card-widget",
+        "index": 1,
+        "archetype": "center-peak",
+        "width": 320,
+        "height": 154,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 9.6,
+        "rightThickness": 10.3,
+        "leftTop": {
+          "x": 2.4,
+          "y": 28.4
+        },
+        "rightTop": {
+          "x": 317.6,
+          "y": 28.1
+        },
+        "dropRelief": 13.9,
+        "avgSlope": 0.8
+      },
+      {
+        "type": "aside-card-widget",
+        "index": 2,
+        "archetype": "thick-plateau",
+        "width": 320,
+        "height": 120,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 9.5,
+        "rightThickness": 11.2,
+        "leftTop": {
+          "x": 2.4,
+          "y": 28.3
+        },
+        "rightTop": {
+          "x": 317.6,
+          "y": 27.9
+        },
+        "dropRelief": 11.4,
+        "avgSlope": 0.82
+      },
+      {
+        "type": "aside-card-widget",
+        "index": 3,
+        "archetype": "droop-cluster-left",
+        "width": 320,
+        "height": 640,
+        "borderTopColor": "rgba(0, 0, 0, 0)",
+        "borderTopWidth": "1px",
+        "hasSvg": true,
+        "hasCubicLeft": false,
+        "hasCubicRight": false,
+        "hasConvexLeft": true,
+        "hasConvexRight": true,
+        "hasFlatSliceLeft": false,
+        "hasFlatSliceRight": false,
+        "leftThickness": 12.8,
+        "rightThickness": 13.5,
+        "leftTop": {
+          "x": 2.4,
+          "y": 27.4
+        },
+        "rightTop": {
+          "x": 317.6,
+          "y": 27.3
+        },
+        "dropRelief": 13.3,
+        "avgSlope": 0.81
+      }
+    ],
+    "postBoundaryPassed": true,
+    "otherBoxesPassed": true,
+    "allPassed": true
+  },
+  "section2_natural_undulation": {
+    "uniqueArchetypesCount": 13,
+    "archetypesList": [
+      "gentle-powder",
+      "sawtooth-drift",
+      "droop-cluster-right",
+      "icicle-curtain",
+      "heavy-cornice-left",
+      "triple-dome",
+      "scalloped-crest",
+      "frost-pillow",
+      "central-cushion",
+      "dual-crest-saddle",
+      "windswept-left",
+      "alpine-ridge-left",
+      "alpine-ridge-right"
+    ],
+    "minRelief": 6.4,
+    "maxRelief": 23,
+    "avgRelief": 11.3,
+    "zeroTabletopPassed": true
+  },
+  "section3_adjacent_gaps": {
+    "gapPairs": [
+      {
+        "cardA": 0,
+        "cardB": 1,
+        "cardGap": 8,
+        "snowGap": 10,
+        "collision": false,
+        "cardAWidth": 197,
+        "svgAWidth": 195
+      },
+      {
+        "cardA": 1,
+        "cardB": 2,
+        "cardGap": 8,
+        "snowGap": 10,
+        "collision": false,
+        "cardAWidth": 197,
+        "svgAWidth": 195
+      },
+      {
+        "cardA": 3,
+        "cardB": 4,
+        "cardGap": 8,
+        "snowGap": 10,
+        "collision": false,
+        "cardAWidth": 197,
+        "svgAWidth": 195
+      },
+      {
+        "cardA": 4,
+        "cardB": 5,
+        "cardGap": 8,
+        "snowGap": 10,
+        "collision": false,
+        "cardAWidth": 197,
+        "svgAWidth": 195
+      },
+      {
+        "cardA": 6,
+        "cardB": 7,
+        "cardGap": 12,
+        "snowGap": 14,
+        "collision": false,
+        "cardAWidth": 510,
+        "svgAWidth": 508
+      },
+      {
+        "cardA": 8,
+        "cardB": 9,
+        "cardGap": 12,
+        "snowGap": 14,
+        "collision": false,
+        "cardAWidth": 510,
+        "svgAWidth": 508
+      },
+      {
+        "cardA": 10,
+        "cardB": 11,
+        "cardGap": 12,
+        "snowGap": 14,
+        "collision": false,
+        "cardAWidth": 510,
+        "svgAWidth": 508
+      },
+      {
+        "cardA": 12,
+        "cardB": 13,
+        "cardGap": 12,
+        "snowGap": 14,
+        "collision": false,
+        "cardAWidth": 510,
+        "svgAWidth": 508
+      },
+      {
+        "cardA": 14,
+        "cardB": 15,
+        "cardGap": 12,
+        "snowGap": 14,
+        "collision": false,
+        "cardAWidth": 510,
+        "svgAWidth": 508
+      }
+    ],
+    "gapPassed": true
+  },
+  "section4_static_lockdown": {
+    "footer": [
+      {
+        "selector": ".site-footer",
+        "svgExists": true,
+        "nodeTransformPre": "none",
+        "nodeTransformHover": "none",
+        "svgTransformHover": "none",
+        "isStatic": true
+      },
+      {
+        "selector": "#footer-wrap",
+        "svgExists": true,
+        "nodeTransformPre": "none",
+        "nodeTransformHover": "none",
+        "svgTransformHover": "none",
+        "isStatic": true
+      },
+      {
+        "selector": ".footer-main-shell",
+        "svgExists": true,
+        "nodeTransformPre": "none",
+        "nodeTransformHover": "none",
+        "svgTransformHover": "none",
+        "isStatic": true
+      },
+      {
+        "selector": "#footer-bar",
+        "svgExists": true,
+        "nodeTransformPre": "none",
+        "nodeTransformHover": "none",
+        "svgTransformHover": "none",
+        "isStatic": true
+      }
+    ],
+    "article": [
+      {
+        "selector": "#post",
+        "svgExists": true,
+        "isStatic": true
+      },
+      {
+        "selector": "#card-toc",
+        "svgExists": true,
+        "isStatic": true
+      },
+      {
+        "selector": "#post-comment",
+        "svgExists": true,
+        "isStatic": true
+      },
+      {
+        "selector": ".post-copyright",
+        "svgExists": true,
+        "isStatic": true
+      },
+      {
+        "selector": ".shijianus-ai-summary",
+        "svgExists": true,
+        "isStatic": true
+      }
+    ],
+    "allStaticPassed": true
+  },
+  "section5_console_health": {
+    "consoleErrorsCount": 0,
+    "pageErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "consoleHealthPassed": true
+  },
+  "overall_verdict": {
+    "boundary_caps_passed": true,
+    "natural_undulation_passed": true,
+    "adjacent_gap_passed": true,
+    "static_lockdown_passed": true,
+    "console_health_passed": true,
+    "finalPassed": true,
+    "readyForDelivery": true
+  }
+}
