@@ -273,6 +273,9 @@ const isMantleActiveOnThisPage = snowConfig.enableMantle && (!snowConfig.homeOnl
         cleanup = initThemeUniverse(cfg);
       }
 
+      (window as any).__START_SNOW__ = startSnow;
+      window.addEventListener('shijianus:snow-config-changed', startSnow);
+
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', startSnow, { once: true });
       } else {
