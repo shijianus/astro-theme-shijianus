@@ -201,6 +201,26 @@ export type SharePlatform = {
   accent: string;
 };
 
+export type SnowEffectConfig = {
+  /**
+   * 雪花成积/雪幔特效开关 (Snow Mantle Accumulation Toggle)
+   * - false (默认): 仅保留天幕降雪飘落动画，卡片不生成任何积雪成积效果
+   * - true: 允许站长开启卡片顶部程序化有机雪幔与融雪成积特效
+   * 注：此为后端站点配置参数，不在前端 UI/控制台中显式展示
+   */
+  enableMantle?: boolean;
+  /**
+   * 仅在首页展示雪花成积特效 (Homepage Only Snow Accumulation)
+   * - false (默认): 开启成积特效后全站（文章页、归档等）均展示
+   * - true: 开启成积特效后仅对首页 (/) 生效，其它界面保持正常无积雪排版，绝不影响正常展示
+   * 注：此为后端站点配置参数，不在前端 UI/控制台中显式展示
+   */
+  homeOnly?: boolean;
+  /** 兼容别名 */
+  enableAccumulation?: boolean;
+  onlyHome?: boolean;
+};
+
 export const siteConfig = {
   site: {
     name: 'shijianus',
@@ -230,6 +250,22 @@ export const siteConfig = {
         { id: 'snow', label: '冬日雪境' },
         { id: 'clean', label: '纯净纯色' },
       ],
+      snow: {
+        /**
+         * 雪花成积/雪幔特效开关 (Snow Mantle Accumulation Toggle)
+         * - false (默认): 仅保留天幕降雪飘落动画，卡片不生成任何积雪成积效果
+         * - true: 允许站长开启卡片顶部程序化有机雪幔与融雪成积特效
+         * 注：此为后端站点配置参数，不在前端 UI/控制台中显式展示
+         */
+        enableMantle: false,
+        /**
+         * 仅在首页展示雪花成积特效 (Homepage Only Snow Accumulation)
+         * - false (默认): 开启成积特效后全站（文章页、归档等）均展示
+         * - true: 开启成积特效后仅对首页 (/) 生效，其它界面保持正常无积雪排版，绝不影响正常展示
+         * 注：此为后端站点配置参数，不在前端 UI/控制台中显式展示
+         */
+        homeOnly: false,
+      },
     },
     snackbar: {
       enable: true,

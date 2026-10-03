@@ -164,6 +164,13 @@ const paypalUkMeUrl =
   import.meta.env.PUBLIC_PAYPAL_UK_ME_URL ||
   process.env.PUBLIC_PAYPAL_UK_ME_URL ||
   'https://www.paypal.com/paypalme/shijianus';
+
+const isHomePage = pageType === 'home' || Astro.url.pathname === '/' || /^\/(?:page\/\d+)$/.test(Astro.url.pathname);
+const snowConfig = siteConfig.theme.background.snow || { enableMantle: false, homeOnly: false };
+const isMantleActiveOnThisPage = Boolean(
+  (snowConfig.enableMantle ?? snowConfig.enableAccumulation ?? false) &&
+  (!(snowConfig.homeOnly ?? snowConfig.onlyHome ?? false) || isHomePage)
+);
 ---
 
 <!doctype html>
@@ -172,6 +179,9 @@ const paypalUkMeUrl =
   data-theme={siteConfig.theme.defaultMode}
   data-aside="expanded"
   data-background={siteConfig.theme.background.defaultMode}
+  data-snow-mantle={isMantleActiveOnThisPage ? 'active' : 'disabled'}
+  data-snow-mantle-enabled={(snowConfig.enableMantle ?? snowConfig.enableAccumulation ?? false) ? 'true' : 'false'}
+  data-snow-mantle-home-only={(snowConfig.homeOnly ?? snowConfig.onlyHome ?? false) ? 'true' : 'false'}
   data-locale-variant={lang}
 >
   <head>
@@ -253,13 +263,17 @@ const paypalUkMeUrl =
       style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; opacity: 0; transition: opacity 0.4s ease; filter: blur(2.5px);"
       aria-hidden="true"
     ></canvas>
+    <script define:vars={{ snowMantleConfig: { enableMantle: snowConfig.enableMantle ?? false, homeOnly: snowConfig.homeOnly ?? false } }}>
+      window.__SNOW_MANTLE_CONFIG__ = Object.assign({}, snowMantleConfig, window.__SNOW_MANTLE_CONFIG__ || {});
+    </script>
     <script>
       import { initThemeUniverse } from '../components/ThemeUniverse';
 
       let cleanup: (() => void) | undefined;
       function startSnow() {
         if (cleanup) cleanup();
-        cleanup = initThemeUniverse();
+        const cfg = (window as any).__SNOW_MANTLE_CONFIG__;
+        cleanup = initThemeUniverse(cfg);
       }
 
       if (document.readyState === 'loading') {

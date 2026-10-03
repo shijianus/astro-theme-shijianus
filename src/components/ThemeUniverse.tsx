@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { SnowMantleEngine } from '../lib/snow-mantle';
+import { SnowMantleEngine, type SnowMantleOptions } from '../lib/snow-mantle';
 
 interface CinematicSnowParticle {
   x: number;
@@ -43,7 +43,7 @@ interface CinematicSnowParticle {
  *    - 严格 0 ctx.shadowBlur，锁定 60FPS 丝滑流畅；
  *    - 画布配置 pointer-events: none，全站 UI 交互穿透率 100%；卡片 DOM 保持零污染。
  */
-export function initThemeUniverse(): (() => void) | undefined {
+export function initThemeUniverse(options?: SnowMantleOptions): (() => void) | undefined {
   if (typeof window === 'undefined' || typeof document === 'undefined') return undefined;
 
   const bgCanvas = document.getElementById('theme-snow-universe') as HTMLCanvasElement | null;
@@ -66,7 +66,9 @@ export function initThemeUniverse(): (() => void) | undefined {
     let scrollTimeout: any = null;
     let snowMantleEngine: SnowMantleEngine | null = null;
     if (midCtx) {
-      snowMantleEngine = new SnowMantleEngine(midCtx);
+      const winConfig = typeof window !== 'undefined' ? (window as any).__SNOW_MANTLE_CONFIG__ : undefined;
+      const mergedOptions = winConfig ? { ...options, ...winConfig } : options;
+      snowMantleEngine = new SnowMantleEngine(midCtx, mergedOptions);
     }
 
     const isSnowActive = () => {
@@ -468,15 +470,30 @@ export function initThemeUniverse(): (() => void) | undefined {
         if (bgCanvas) bgCanvas.style.opacity = '1';
         if (midCanvas) midCanvas.style.opacity = '1';
         if (fgCanvas) fgCanvas.style.opacity = '1';
-        if (snowMantleEngine) snowMantleEngine.scanCards();
+        if (snowMantleEngine) {
+          const winConfig = typeof window !== 'undefined' ? (window as any).__SNOW_MANTLE_CONFIG__ : undefined;
+          snowMantleEngine.updateConfig(winConfig ? { ...options, ...winConfig } : options);
+        }
         startLoop();
       } else {
         if (bgCanvas) bgCanvas.style.opacity = '0';
         if (midCanvas) midCanvas.style.opacity = '0';
         if (fgCanvas) fgCanvas.style.opacity = '0';
+        if (snowMantleEngine) {
+          snowMantleEngine.clearAllMantles();
+        }
         setTimeout(() => {
           if (!isSnowActive()) stopLoop();
         }, 300);
+      }
+    };
+
+    // Dynamic config event listener
+    const handleConfigUpdate = (e?: any) => {
+      if (snowMantleEngine) {
+        const detail = e?.detail;
+        const winConfig = typeof window !== 'undefined' ? (window as any).__SNOW_MANTLE_CONFIG__ : undefined;
+        snowMantleEngine.updateConfig(detail || winConfig);
       }
     };
 
@@ -516,6 +533,7 @@ export function initThemeUniverse(): (() => void) | undefined {
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerleave', handlePointerLeave, { passive: true });
+    window.addEventListener('shijianus:snow-config-update', handleConfigUpdate);
     document.addEventListener('visibilitychange', handleVisibility);
 
     // Initial setup
@@ -530,6 +548,7 @@ export function initThemeUniverse(): (() => void) | undefined {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerleave', handlePointerLeave);
+      window.removeEventListener('shijianus:snow-config-update', handleConfigUpdate);
       document.removeEventListener('visibilitychange', handleVisibility);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };

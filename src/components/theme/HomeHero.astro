@@ -425,9 +425,11 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
   }
 
   /* 积雪主题下允许雪幔自然向上隆起并消除顶部分割线 */
-  html[data-background='snow'] body[data-type='home'] .categoryItem,
-  html[data-background='snow'] body[data-type='home'] .topGroup .recent-post-item,
-  html[data-background='snow'] body[data-type='home'] .topGroup .todayCard {
+  html[data-background='snow']:not([data-snow-mantle='disabled']) body[data-type='home'] :is(
+    .categoryItem,
+    .topGroup .recent-post-item,
+    .topGroup .todayCard
+  ):has(> .card-snow-svg) {
     overflow: visible !important;
     border-top-color: transparent !important;
   }
