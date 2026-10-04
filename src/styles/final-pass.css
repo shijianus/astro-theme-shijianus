@@ -8164,13 +8164,61 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
-/* Explicit transparency guarantee for post card inner content container requested by user:
+/* Explicit transparency and frosted glass guarantee for post card inner content container requested by user:
    class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5" */
 :is(.recent-post-item, #recent-posts > .recent-post-item) > .p-3.sm\:p-3\.5,
-:is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"] {
+:is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"],
+.recent-post-item .p-3.sm\:p-3\.5 {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border-top: 1px solid var(--card-border) !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* User-specified target: class="aside-sticky-box" and its sticky card tree */
+.aside-sticky-box,
+#aside-content .aside-sticky-box,
+[id^="aside-sticky-box"] {
   background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.aside-sticky-box > .card-widget,
+.aside-sticky-box .card-widget,
+.aside-sticky-box #card-tag-cloud-overview,
+.aside-sticky-box #card-toc,
+.aside-sticky-box .card-recent-post,
+.aside-sticky-box .support-dashboard-card,
+.aside-sticky-box .card-feature-panel--overview {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  overflow: visible !important;
+}
+
+/* Deep refinement: make all tag-cloud items and category chips inside aside-sticky-box translucent frosted glass pills */
+.aside-sticky-box .card-tag-cloud a.tag-cloud-item,
+.aside-sticky-box .tag-cloud-item,
+.aside-sticky-box .card-category-chips a.category-chip,
+.aside-sticky-box .category-chip {
+  background: color-mix(in srgb, var(--card-bg) 50%, transparent) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important;
+  color: var(--font-color) !important;
+}
+
+.aside-sticky-box .card-tag-cloud a.tag-cloud-item:hover,
+.aside-sticky-box .card-category-chips a.category-chip:hover {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
 /* Anzhiyu Native Transparent Footer Directives */
@@ -8195,7 +8243,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
 /* Ensure sticky overview and feature panel have no blocking ::before masks */
 #aside-content .card-widget.card-feature-panel::before,
 #aside-content .card-widget.card-feature-panel--overview::before,
-#card-tag-cloud-overview::before {
+#card-tag-cloud-overview::before,
+.aside-sticky-box .card-widget::before {
   content: none !important;
   display: none !important;
 }
@@ -8276,6 +8325,20 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border: 1px solid var(--card-border) !important;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08) !important;
+}
+
+:root[data-card-style='transparent'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border-top: 1px solid var(--card-border) !important;
+}
+
+:root[data-card-style='transparent'] .aside-sticky-box > .card-widget {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
 }
 
 :root[data-theme='dark'][data-card-style='transparent'] :is(
@@ -8404,6 +8467,21 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
+:root[data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
+:root[data-translucent='false'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid #e3e8f7 !important;
+}
+
+:root[data-card-style='solid'] .aside-sticky-box > .card-widget,
+:root[data-translucent='false'] .aside-sticky-box > .card-widget {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 :root[data-theme='dark'][data-card-style='solid'] :is(
   .theme-card,
   .surface-panel,
@@ -8490,6 +8568,21 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-theme='dark'][data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
+:root[data-theme='dark'][data-translucent='false'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
+  background: #121212 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid #252535 !important;
+}
+
+:root[data-theme='dark'][data-card-style='solid'] .aside-sticky-box > .card-widget,
+:root[data-theme='dark'][data-translucent='false'] .aside-sticky-box > .card-widget {
+  background: #121212 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ==========================================================================

@@ -55,29 +55,50 @@ async function run() {
   assert.ok(postCardData.inner, 'Post card inner container must exist');
   assert.match(postCardData.card.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Card background must be 0.70 translucent white in gray mode');
   assert.match(postCardData.card.backdropFilter, /blur\(16px\)/, 'Card must have blur(16px) backdrop filter');
-  assert.equal(postCardData.inner.bg, 'rgba(0, 0, 0, 0)', 'Post card inner content area MUST be transparent');
+  assert.match(postCardData.inner.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Post card inner container MUST explicitly have 0.70 frosted glass background');
+  assert.match(postCardData.inner.backdropFilter, /blur\(16px\)/, 'Post card inner container MUST explicitly have blur(16px) frosted glass backdrop filter');
 
-  // 2. Audit sidebar overview sticky card (class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active")
+  // 2. Audit sidebar overview sticky card (class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active") and .aside-sticky-box
   const sidebarData = await page.evaluate(() => {
+    const stickyBox = document.querySelector('.aside-sticky-box');
     const el = document.querySelector('.card-feature-panel--overview') || document.querySelector('#card-tag-cloud-overview');
-    if (!el) return null;
-    const s = window.getComputedStyle(el);
-    const beforeS = window.getComputedStyle(el, '::before');
+    const tagItem = stickyBox ? stickyBox.querySelector('.tag-cloud-item') : null;
+
+    const sbStyle = stickyBox ? window.getComputedStyle(stickyBox) : null;
+    const s = el ? window.getComputedStyle(el) : null;
+    const beforeS = el ? window.getComputedStyle(el, '::before') : null;
+    const tagStyle = tagItem ? window.getComputedStyle(tagItem) : null;
+
     return {
-      className: el.className,
-      bg: s.backgroundColor,
-      backdropFilter: s.backdropFilter,
-      boxShadow: s.boxShadow,
-      beforeContent: beforeS.content,
-      beforeDisplay: beforeS.display
+      stickyBox: sbStyle ? {
+        bg: sbStyle.backgroundColor,
+        border: sbStyle.borderWidth,
+        boxShadow: sbStyle.boxShadow
+      } : null,
+      card: s ? {
+        className: el.className,
+        bg: s.backgroundColor,
+        backdropFilter: s.backdropFilter,
+        boxShadow: s.boxShadow,
+        beforeContent: beforeS.content,
+        beforeDisplay: beforeS.display
+      } : null,
+      tagItem: tagStyle ? {
+        bg: tagStyle.backgroundColor,
+        backdropFilter: tagStyle.backdropFilter
+      } : null
     };
   });
 
   console.log('Sidebar Overview Sticky Card Data:', JSON.stringify(sidebarData, null, 2));
-  assert.ok(sidebarData, 'Sidebar overview card must exist');
-  assert.match(sidebarData.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Overview card must inherit translucent 0.70 frosted glass');
-  assert.doesNotMatch(sidebarData.bg, /rgba\(87,\s*189,\s*106/, 'Overview card MUST NOT have green opaque gradient');
-  assert.match(sidebarData.backdropFilter, /blur\(16px\)/, 'Overview card must have blur(16px) backdrop filter');
+  assert.ok(sidebarData.card, 'Sidebar overview card must exist');
+  assert.match(sidebarData.card.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Overview card must inherit translucent 0.70 frosted glass');
+  assert.doesNotMatch(sidebarData.card.bg, /rgba\(87,\s*189,\s*106/, 'Overview card MUST NOT have green opaque gradient');
+  assert.match(sidebarData.card.backdropFilter, /blur\(16px\)/, 'Overview card must have blur(16px) backdrop filter');
+  assert.equal(sidebarData.stickyBox.bg, 'rgba(0, 0, 0, 0)', '.aside-sticky-box MUST be transparent with no blocking solid background');
+  if (sidebarData.tagItem) {
+    assert.match(sidebarData.tagItem.backdropFilter, /blur\(6px\)/, 'Tag cloud items in aside-sticky-box must have blur(6px) frosted glass');
+  }
 
   // 3. Audit footer (#footer-wrap and .footer-main-shell)
   const footerData = await page.evaluate(() => {
