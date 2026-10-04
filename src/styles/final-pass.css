@@ -6831,10 +6831,10 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout, #post-secondary-aside
   }
 }
 
-/* 2026-04-28 performance trim */
-
 #page-header.nav-fixed #nav {
-  backdrop-filter: none !important;
+  background: var(--anzhiyu-maskbgdeep) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
 }
 
 body[data-type='home'] #recent-posts > .recent-post-item,
@@ -6909,8 +6909,9 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 }
 
 [data-theme='dark'] #page-header.nav-fixed #nav {
-  background: rgba(0, 0, 0, 0.7) !important;
-  /* [PERF-DOUBLE] backdrop-filter: saturate(180%) blur(20px); */
+  background: var(--anzhiyu-maskbgdeep) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -8124,6 +8125,11 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
+  #aside-content .card-widget.card-feature-panel,
+  #aside-content .card-widget.card-feature-panel--overview,
+  #aside-content .card-widget.card-tag-cloud-panel,
+  #card-tag-cloud-overview,
+  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,
@@ -8156,6 +8162,42 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border-color: var(--card-border) !important;
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+}
+
+/* Explicit transparency guarantee for post card inner content container requested by user:
+   class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5" */
+:is(.recent-post-item, #recent-posts > .recent-post-item) > .p-3.sm\:p-3\.5,
+:is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"] {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Anzhiyu Native Transparent Footer Directives */
+#footer-wrap,
+#footer-wrap .footer-main-shell {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#footer {
+  position: relative !important;
+  background: linear-gradient(180deg, var(--card-bg-none, rgba(255, 255, 255, 0)) 0%, color-mix(in srgb, var(--card-bg) 65%, transparent) 40%, var(--card-bg) 100%) !important;
+}
+
+:root[data-theme='dark'] #footer {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, color-mix(in srgb, var(--card-bg) 65%, transparent) 40%, var(--card-bg) 100%) !important;
+}
+
+/* Ensure sticky overview and feature panel have no blocking ::before masks */
+#aside-content .card-widget.card-feature-panel::before,
+#aside-content .card-widget.card-feature-panel--overview::before,
+#card-tag-cloud-overview::before {
+  content: none !important;
+  display: none !important;
 }
 
 :root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) :is(
@@ -8209,6 +8251,11 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
+  #aside-content .card-widget.card-feature-panel,
+  #aside-content .card-widget.card-feature-panel--overview,
+  #aside-content .card-widget.card-tag-cloud-panel,
+  #card-tag-cloud-overview,
+  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,
@@ -8245,6 +8292,11 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
+  #aside-content .card-widget.card-feature-panel,
+  #aside-content .card-widget.card-feature-panel--overview,
+  #aside-content .card-widget.card-tag-cloud-panel,
+  #card-tag-cloud-overview,
+  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,

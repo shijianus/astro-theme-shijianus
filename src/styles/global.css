@@ -313,10 +313,13 @@ img {
   transition: background 0.5s ease;
 }
 
-/* Winter Snowscape Ambient Atmosphere (Light Mode) */
+/* Winter Snowscape Ambient Atmosphere (Light Mode) - Anzhiyu Translucent Foundation */
 :root:not([data-theme='dark'])[data-background='snow'] #web_bg,
 :root[data-theme='light'][data-background='snow'] #web_bg {
-  background: linear-gradient(180deg, #c4dbf6 0%, #d5e7f8 35%, #e5f1fb 70%, #eff5fd 100%) !important;
+  background: 
+    radial-gradient(circle at 85% 20%, rgba(66, 90, 239, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 15% 70%, rgba(53, 138, 245, 0.10) 0%, transparent 50%),
+    linear-gradient(180deg, #b9d6f6 0%, #cae0f7 25%, #d8e9f9 50%, #e1effa 75%, #e7f3fc 100%) !important;
 }
 
 /* Winter Snowscape Ambient Atmosphere (Dark Mode) */
@@ -2674,21 +2677,18 @@ div#category,
 }
 
 #aside-content .card-widget.card-feature-panel {
-  overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(87, 189, 106, 0.92), rgba(29, 201, 138, 0.92)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(8, 14, 24, 0.2));
-  color: var(--white);
+  overflow: visible;
+  background: var(--card-bg);
+  backdrop-filter: var(--card-backdrop-filter);
+  -webkit-backdrop-filter: var(--card-backdrop-filter);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  color: var(--font-color);
 }
 
 #aside-content .card-widget.card-feature-panel::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background:
-    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.18), transparent 20%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 45%);
-  pointer-events: none;
+  content: none !important;
+  display: none !important;
 }
 
 .feature-card__eyebrow {
@@ -3695,32 +3695,27 @@ div#category,
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 48px 20px 0;
+  padding: 40px 20px 0;
   color: var(--font-color);
   text-align: center;
+  background: transparent !important;
 }
 
 .footer-main-shell {
   position: relative;
-  overflow: hidden;
-  padding: 24px 24px 22px;
-  border: 1px solid color-mix(in srgb, var(--theme-main) 10%, var(--card-border));
-  border-radius: 30px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 92%, rgba(255, 255, 255, 0.9)), color-mix(in srgb, var(--card-bg) 98%, #f8fbff));
-  box-shadow: 0 -16px 40px -34px rgba(34, 56, 110, 0.24);
-  backdrop-filter: none;
+  overflow: visible;
+  padding: 12px 20px 20px;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .footer-main-shell::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background:
-    radial-gradient(circle at 12% 16%, rgba(66, 90, 239, 0.12), transparent 26%),
-    radial-gradient(circle at 84% 14%, rgba(242, 185, 75, 0.1), transparent 20%);
-  opacity: 0.9;
-  pointer-events: none;
+  content: none !important;
+  display: none !important;
 }
 
 .footer-main-shell > *:not(.card-snow-svg) {
@@ -3729,18 +3724,14 @@ div#category,
 }
 
 :root[data-theme='dark'] .footer-main-shell {
-  border-color: color-mix(in srgb, var(--theme-main) 18%, rgba(255, 255, 255, 0.08));
-  background:
-    linear-gradient(180deg, rgba(16, 24, 40, 0.95), rgba(9, 14, 24, 0.98) 62%, rgba(6, 10, 18, 0.99) 100%);
-  box-shadow:
-    0 -22px 44px -36px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root[data-theme='dark'] .footer-main-shell::before {
-  background:
-    radial-gradient(circle at 14% 18%, rgba(0, 118, 229, 0.18), transparent 30%),
-    radial-gradient(circle at 86% 16%, rgba(242, 185, 75, 0.12), transparent 18%);
+  content: none !important;
+  display: none !important;
 }
 
 #footer_deal {
