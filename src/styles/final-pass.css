@@ -8132,6 +8132,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .card-archives,
   .card-webinfo,
   .promo-widget,
+  #flip-wrapper,
+  #flip-content,
   .todayCard,
   #random-banner,
   .categoryItem,
@@ -8145,7 +8147,9 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .author-content-item,
   .console-card,
   .theme-account-drawer,
-  .theme-account-panel
+  .theme-account-panel,
+  #post-comment,
+  .post-comment-container
 ) {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
@@ -8179,7 +8183,9 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .ai-summary,
   .support-dashboard-card,
   .flink-list-item,
-  .author-content-item
+  .author-content-item,
+  #post-comment,
+  .post-comment-container
 ) {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
@@ -8213,7 +8219,9 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .ai-summary,
   .support-dashboard-card,
   .flink-list-item,
-  .author-content-item
+  .author-content-item,
+  #post-comment,
+  .post-comment-container
 ) {
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.3) !important;
 }
@@ -8241,6 +8249,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .card-archives,
   .card-webinfo,
   .promo-widget,
+  #flip-wrapper,
+  #flip-content,
   .todayCard,
   #random-banner,
   .categoryItem,
@@ -8254,7 +8264,9 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .author-content-item,
   .console-card,
   .theme-account-drawer,
-  .theme-account-panel
+  .theme-account-panel,
+  #post-comment,
+  .post-comment-container
 ),
 :root[data-translucent='false'] :is(
   .theme-card,
@@ -8278,6 +8290,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .card-archives,
   .card-webinfo,
   .promo-widget,
+  #flip-wrapper,
+  #flip-content,
   .todayCard,
   #random-banner,
   .categoryItem,
@@ -8291,7 +8305,9 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .author-content-item,
   .console-card,
   .theme-account-drawer,
-  .theme-account-panel
+  .theme-account-panel,
+  #post-comment,
+  .post-comment-container
 ) {
   background: var(--card-bg) !important;
   backdrop-filter: none !important;
