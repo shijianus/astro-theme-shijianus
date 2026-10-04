@@ -28,13 +28,13 @@ body, html, #content-inner {
   --background: #f7f9fe;
 
   /* Card Style System: Solid (纯色), Gray (磨砂), Transparent (透明) */
-  /* Default: Gray / Frosted Glass (85% translucent + 16px blur) */
-  --card-opacity: 0.85;
+  /* Default: Gray / Frosted Glass (70% translucent + 16px blur) */
+  --card-opacity: 0.70;
   --card-blur: 16px;
   --card-saturate: 180%;
   --card-bg-translucent: rgba(255, 255, 255, var(--card-opacity));
   --secondbg-translucent: rgba(247, 247, 249, var(--card-opacity));
-  --card-border-translucent: rgba(227, 232, 247, 0.85);
+  --card-border-translucent: rgba(227, 232, 247, 0.80);
   --card-backdrop-filter: saturate(var(--card-saturate)) blur(var(--card-blur));
   --card-webkit-backdrop-filter: saturate(var(--card-saturate)) blur(var(--card-blur));
 
@@ -104,9 +104,9 @@ html[data-theme='dark'],
   --secondtext: #a1a2b8;
 
   /* Dark Translucent & Frosted Glass Baseline (Gray Mode) */
-  --card-bg-translucent: rgba(29, 30, 34, var(--card-opacity));
-  --secondbg-translucent: rgba(33, 35, 42, var(--card-opacity));
-  --card-border-translucent: rgba(66, 68, 74, 0.70);
+  --card-bg-translucent: rgba(24, 25, 30, var(--card-opacity));
+  --secondbg-translucent: rgba(30, 32, 40, var(--card-opacity));
+  --card-border-translucent: rgba(66, 68, 74, 0.65);
 
   --card-bg: var(--card-bg-translucent);
   --anzhiyu-card-bg: var(--card-bg);
@@ -164,27 +164,27 @@ html[data-theme='dark'],
    Card Style Mode 2: 磨砂模式 (Gray Frosted Glass - Anzhiyu Standard)
    ========================================================================== */
 :root[data-card-style='gray'] {
-  --card-opacity: 0.85;
+  --card-opacity: 0.70;
   --card-blur: 16px;
   --card-saturate: 180%;
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --anzhiyu-card-bg: rgba(255, 255, 255, 0.85);
-  --secondbg: rgba(247, 247, 249, 0.85);
-  --card-btn-bg: rgba(237, 240, 247, 0.85);
-  --card-border: rgba(227, 232, 247, 0.85);
+  --card-bg: rgba(255, 255, 255, 0.70);
+  --anzhiyu-card-bg: rgba(255, 255, 255, 0.70);
+  --secondbg: rgba(247, 247, 249, 0.70);
+  --card-btn-bg: rgba(237, 240, 247, 0.75);
+  --card-border: rgba(227, 232, 247, 0.80);
   --card-backdrop-filter: saturate(180%) blur(16px);
   --card-webkit-backdrop-filter: saturate(180%) blur(16px);
 }
 
 :root[data-theme='dark'][data-card-style='gray'] {
-  --card-opacity: 0.85;
+  --card-opacity: 0.72;
   --card-blur: 16px;
   --card-saturate: 180%;
-  --card-bg: rgba(29, 30, 34, 0.85);
-  --anzhiyu-card-bg: rgba(29, 30, 34, 0.85);
-  --secondbg: rgba(33, 35, 42, 0.85);
-  --card-btn-bg: rgba(37, 37, 53, 0.85);
-  --card-border: rgba(66, 68, 74, 0.70);
+  --card-bg: rgba(24, 25, 30, 0.72);
+  --anzhiyu-card-bg: rgba(24, 25, 30, 0.72);
+  --secondbg: rgba(30, 32, 40, 0.72);
+  --card-btn-bg: rgba(37, 37, 53, 0.72);
+  --card-border: rgba(66, 68, 74, 0.65);
   --card-backdrop-filter: saturate(180%) blur(16px);
   --card-webkit-backdrop-filter: saturate(180%) blur(16px);
 }

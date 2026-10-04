@@ -919,6 +919,21 @@ export function ThemeOverlays({
     emitActivity(`已切换背景：${nextMode?.label || nextBackground}`);
   };
 
+  const cycleCardStyle = () => {
+    const modes: Array<CardStyle> = ['solid', 'gray', 'transparent'];
+    const currentIndex = modes.indexOf(cardStyle);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    syncCardStyle(nextMode);
+    setCardStyle(nextMode);
+    setTranslucent(nextMode !== 'solid');
+    const labels: Record<CardStyle, string> = {
+      solid: t('settings.visual.cardStyle.solid', '纯色模式 (Solid)'),
+      gray: t('settings.visual.cardStyle.gray', '磨砂模式 (Frosted / Gray)'),
+      transparent: t('settings.visual.cardStyle.transparent', '透明模式 (Transparent)'),
+    };
+    emitActivity(`${t('settings.visual.cardStyle.title', '卡片质感')}：${labels[nextMode] || nextMode}`);
+  };
+
   useEffect(() => {
     const syncAccount = () => {
       const next = readCommentIdentity();
@@ -1981,6 +1996,18 @@ export function ThemeOverlays({
               disabled={!consoleOpen}
             >
               <Sparkles aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="console-btn-item"
+              onClick={() => {
+                cycleCardStyle();
+              }}
+              title={t('console.btn.card_style', '质感切换 (纯色/磨砂/透明)')}
+              tabIndex={consoleOpen ? 0 : -1}
+              disabled={!consoleOpen}
+            >
+              <Layers aria-hidden="true" />
             </button>
             <button
               type="button"

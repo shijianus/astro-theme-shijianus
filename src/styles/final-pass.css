@@ -8155,6 +8155,43 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border-color: var(--card-border) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+}
+
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) :is(
+  .theme-card,
+  .surface-panel,
+  .post-page-shell,
+  div#post,
+  div#page,
+  div#archive,
+  div#tag,
+  div#category,
+  .recent-post-item,
+  #recent-posts > .recent-post-item,
+  .topGroup .recent-post-item,
+  #aside-content .card-widget,
+  .card-widget,
+  #card-toc,
+  .card-info,
+  .card-recent-post,
+  .todayCard,
+  #random-banner,
+  .categoryItem,
+  .relatedPosts-item,
+  .postNav-card,
+  .ai-summary,
+  .support-dashboard-card,
+  .flink-list-item,
+  .author-content-item,
+  #post-comment,
+  .post-comment-container
+) {
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35) !important;
+}
+
+:is(.recent-post-item, #aside-content .card-widget, .card-widget, .relatedPosts-item):hover {
+  box-shadow: 0 12px 24px -4px rgba(44, 45, 48, 0.09) !important;
 }
 
 /* Explicit Transparent Mode Styling Refinements */
@@ -8191,7 +8228,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border: 1px solid var(--card-border) !important;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08) !important;
 }
 
 :root[data-theme='dark'][data-card-style='transparent'] :is(
@@ -8223,7 +8260,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   #post-comment,
   .post-comment-container
 ) {
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Solid Mode (Pure Opaque, No Backdrop Filter) */
@@ -8309,9 +8346,98 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   #post-comment,
   .post-comment-container
 ) {
-  background: var(--card-bg) !important;
+  background: #ffffff !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+}
+
+:root[data-theme='dark'][data-card-style='solid'] :is(
+  .theme-card,
+  .surface-panel,
+  .post-page-shell,
+  div#post,
+  div#page,
+  div#archive,
+  div#tag,
+  div#category,
+  .recent-post-item,
+  #recent-posts > .recent-post-item,
+  .topGroup .recent-post-item,
+  #aside-content .card-widget,
+  .card-widget,
+  #card-toc,
+  .card-info,
+  .card-recent-post,
+  .card-categories,
+  .card-tags,
+  .card-archives,
+  .card-webinfo,
+  .promo-widget,
+  #flip-wrapper,
+  #flip-content,
+  .todayCard,
+  #random-banner,
+  .categoryItem,
+  .relatedPosts-item,
+  .postNav-card,
+  .postNav,
+  .ai-summary,
+  .ai-summary-content,
+  .support-dashboard-card,
+  .flink-list-item,
+  .author-content-item,
+  .console-card,
+  .theme-account-drawer,
+  .theme-account-panel,
+  #post-comment,
+  .post-comment-container
+),
+:root[data-theme='dark'][data-translucent='false'] :is(
+  .theme-card,
+  .surface-panel,
+  .post-page-shell,
+  div#post,
+  div#page,
+  div#archive,
+  div#tag,
+  div#category,
+  .recent-post-item,
+  #recent-posts > .recent-post-item,
+  .topGroup .recent-post-item,
+  #aside-content .card-widget,
+  .card-widget,
+  #card-toc,
+  .card-info,
+  .card-recent-post,
+  .card-categories,
+  .card-tags,
+  .card-archives,
+  .card-webinfo,
+  .promo-widget,
+  #flip-wrapper,
+  #flip-content,
+  .todayCard,
+  #random-banner,
+  .categoryItem,
+  .relatedPosts-item,
+  .postNav-card,
+  .postNav,
+  .ai-summary,
+  .ai-summary-content,
+  .support-dashboard-card,
+  .flink-list-item,
+  .author-content-item,
+  .console-card,
+  .theme-account-drawer,
+  .theme-account-panel,
+  #post-comment,
+  .post-comment-container
+) {
+  background: #121212 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35) !important;
 }
 
 /* ==========================================================================

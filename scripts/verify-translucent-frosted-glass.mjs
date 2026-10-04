@@ -216,6 +216,58 @@ async function runLocalAndLiveTest(isProduction = false) {
       }
     }
 
+    // Close account drawer
+    await page.evaluate(() => {
+      const mask = document.querySelector('.theme-account-overlay__mask');
+      if (mask) mask.click();
+    });
+    await page.waitForTimeout(500);
+
+    // 7.5 Test Console Button Group Quick-Toggle (Layers button)
+    console.log('\n[Step 6.5] Testing Console Quick-Toggle Button (Layers)...');
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:open-console'));
+    });
+    await page.waitForTimeout(600);
+
+    const consoleOpened = await page.evaluate(() => {
+      const c = document.getElementById('console');
+      return c && c.classList.contains('show');
+    });
+    console.log(`✅ Console opened: ${consoleOpened}`);
+
+    const currentStyleBeforeCycle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
+    console.log(`Current card style before quick cycle: "${currentStyleBeforeCycle}"`);
+
+    // Find and click the Layers button in #console .button-group
+    const layersBtn = await page.$('#console .button-group button[title*="质感"], #console .button-group button[title*="Texture"], #console .button-group button[title*="card_style"]');
+    if (layersBtn) {
+      console.log('👉 Clicking Layers button in console button-group...');
+      await layersBtn.click();
+      await page.waitForTimeout(400);
+      const styleAfterClick1 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
+      console.log(`✅ Style after quick cycle 1: "${styleAfterClick1}"`);
+
+      await layersBtn.click();
+      await page.waitForTimeout(400);
+      const styleAfterClick2 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
+      console.log(`✅ Style after quick cycle 2: "${styleAfterClick2}"`);
+
+      await layersBtn.click();
+      await page.waitForTimeout(400);
+      const styleAfterClick3 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
+      console.log(`✅ Style after quick cycle 3: "${styleAfterClick3}"`);
+    } else {
+      console.warn('⚠️ Console Layers button not found in .button-group');
+    }
+
+    // Close console
+    await page.evaluate(() => {
+      const mask = document.querySelector('#console-mask');
+      if (mask) mask.click();
+    });
+    await page.waitForTimeout(500);
+
     // 8. Test Post Page (div#post)
     console.log('\n[Step 7] Visiting Post Page...');
     const postPageRes = await page.goto(`${targetUrl}posts/content-formats-and-markup-mastery/`, {
