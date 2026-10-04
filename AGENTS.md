@@ -5007,5 +5007,44 @@
   1. 补充 `console.btn.card_style` 与 70% 磨砂模式说明至所有 6 种支持语言（zh-CN、zh-Hant、en、fr、es、de）；
   2. 自动化测试套件全量跑通，覆盖初始默认 0.70 磨砂态、纯色/透明/深色样式断言、账号中心抽屉切换及控制台 `Layers` 按钮 3 轮循环切换。
 
+### Task 226: 安知鱼透明对象全量对齐、PostCard内容区/侧边栏Sticky/页脚绝对通透重构与真实公网链路验收 (`9946640`)
+- [x] **深入解析安知鱼主题 (`hexo-theme-anzhiyu`) 原生透明对象架构与全景扫描**：
+  1. 完整克隆并深度审计安知鱼官方源码中关于 `backdrop-filter`、`--anzhiyu-maskbg`、`linear-gradient` 与 `card-bg` 的全部实现；
+  2. 归纳提取安知鱼原生 12 类透明对象规范：
+     - 固定导航栏（`#page-header.nav-fixed #nav`，`var(--anzhiyu-maskbgdeep)` + `blur(20px)`）；
+     - 中控台遮罩（`#console`, `.console-mask`，`var(--anzhiyu-maskbgdeep)` + `saturate(180%) blur(20px)`）；
+     - 评论弹幕（`commentBarrage`，`var(--anzhiyu-maskbgdeep)` + `saturate(180%) blur(20px)`）；
+     - 即热通知与横幅（`top_group_banner`, `.banner-button`，`rgba(255, 255, 255, 0.2)` + `saturate(180%) blur(20px)`）；
+     - 快捷键弹窗与提示（`#keyboard-tips`, `shortcutKey`，`var(--anzhiyu-maskbgdeep)` + `saturate(180%) blur(20px)`）；
+     - 侧边栏滑出菜单（`#sidebar-menus`，`var(--anzhiyu-maskbg)` + `saturate(180%) blur(20px)`）；
+     - 搜索面板与遮罩（`#search-mask`，`var(--anzhiyu-maskbg)` + `blur(12px)`）；
+     - 页脚区域（`#footer` 顶部渐变透明 `linear-gradient(180deg, var(--card-bg-none) 0%, var(--card-bg) 25%)`；`#footer-wrap` **完全透明直出，无白色大框挡板**）；
+     - Twikoo/原生评论区（`#post-comment`，半透毛玻璃浮层）；
+     - 首页顶部分类条 / 今日推荐胶囊（`backdrop-filter: blur(15px)` / `blur(5px)`）；
+     - 音乐播放器卡片（`backdrop-filter: saturate(180%) blur(20px)`）；
+     - 关于页个人卡片（`var(--anzhiyu-maskbg)` + `saturate(180%) blur(20px)`）。
+- [x] **针对用户点名要求的三大核心痛点彻底根治与架构重构**：
+  1. **文章卡片信息内容容器 (`class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`)**：
+     - 明确定位到 `PostCard.astro` 中下半部信息承载容器；在 `final-pass.css` 中注入显式通透性规则（`background: transparent !important; backdrop-filter: none !important;`），杜绝任何 Tailwind 背景或全局样式干扰，文字与日期自然漂浮在毛玻璃基底之上；
+     - 优化外层 `.recent-post-item` 的毛玻璃折射与弥散投影，使其晶莹透光。
+  2. **侧边栏黏性卡片 (`class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`)**：
+     - 彻底清除 `global.css` 中历史硬编码的 `#aside-content .card-widget.card-feature-panel` 绿色实心渐变背景与 `::before` 遮罩；
+     - 在 `final-pass.css` 中显式针对该卡片及其所有别名选择器覆盖标准 `--card-bg` 与 `blur(16px)` 毛玻璃，彻底消除阻挡，恢复纯粹通透质感。
+  3. **页脚容器 (`id="footer-wrap"`) 与外层 `#footer`**：
+     - 彻底粉碎 `.footer-main-shell` 内部写死的白色实心渐变背景、边框、大阴影及 `::before` 遮罩；
+     - 将 `#footer-wrap` 与 `.footer-main-shell` 彻底透明化（`background: transparent !important; border: none !important; box-shadow: none !important;`），实现 0px 边框与 0 阻挡；
+     - 将 `#footer` 严格重构为安知鱼原生渐变过渡（`linear-gradient(180deg, var(--card-bg-none) 0%, color-mix(in srgb, var(--card-bg) 65%, transparent) 40%, var(--card-bg) 100%)`），上虚下实自然融入。
+- [x] **根除“虚幻地以为透明”：背景环境光漫反射与固定导航栏毛玻璃恢复**：
+  1. **背景环境光穿透增强**：在 `global.css` 中重构 `#web_bg` 渐变色系与光晕分布（双重径向柔光光斑 + 浅蓝天空阶梯），从根源杜绝视口中下方近乎纯白导致的“白卡盖白底、肉眼无反差”的感知盲区，确保卡片无论位于视口何处都能产生真实的折射透光；
+  2. **恢复固定导航栏毛玻璃**：彻底清除 `final-pass.css` 中遗留的 `#page-header.nav-fixed #nav { backdrop-filter: none !important; }`，全面恢复安知鱼标志性的滚动导航栏毛玻璃（`saturate(180%) blur(20px)`，深浅色自适应）。
+- [x] **自动化端到端测试套件 100% 验收通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 覆盖文章卡片 0.70 毛玻璃与 `.p-3.sm:p-3.5` 绝对透明断言；
+  - 覆盖侧边栏 overview 黏性卡片 0.70 毛玻璃、0 绿色实心底色、0 伪元素遮罩断言；
+  - 覆盖 `#footer-wrap` 及 `.footer-main-shell` 绝对透明、0px 边框、0 阴影及 `#footer` 渐变断言；
+  - 覆盖固定导航栏滚动时 `blur(20px)` 毛玻璃断言；本地预览测试全部 PASS。
+- [x] **全量多远端同步与 Cloudflare Pages 生产边缘节点全量部署**：
+  - 代码推送至 `origin` 与 `cf`；
+  - Wrangler 部署至生产边缘节点（`shijianus-blog`、`shijianus-github-io`），生产端实机全链路审计验证通过。
+
 
 
