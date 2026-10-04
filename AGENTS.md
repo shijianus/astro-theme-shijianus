@@ -4961,6 +4961,33 @@
     - 验证切换至 `transparent` 透明模式为 `rgba(255, 255, 255, 0.35)` + `saturate(1.8) blur(8px)`；
     - 验证暗色模式（Dark Mode）下 3 种模式的背景色与毛玻璃滤镜自适应；
     - 验证偏好设置抽屉 UI 交互点击（点击 Solid、Transparent、Gray 选项）即时更新 `data-card-style`；
+  - 全量多远端同步推送至 `origin` 与 `cf` 仓库，Wrangler 生产边缘节点全量部署上线（`shijianus-blog`、`shijianus-github-io`）。
+
+### Task 224: 安知鱼透明与毛玻璃设计深度打磨、12 大组件群全量覆盖与公网生产全链路验证 (`77093a9`)
+- [x] **深度对齐安知鱼原生透明架构 (`themes/anzhiyu/source/css/`)**：
+  1. 深入审计安知鱼 Stylus 源码中的卡片与背景处理机制（`var.styl`, `_global/index.styl`, `_layout/`, `custom.css`）；
+  2. 严禁容器层直接设置全局 `opacity`，严格采用 Alpha 色彩通道（`rgba` / `color-mix`）+ 硬件加速滤镜（`backdrop-filter: saturate(...) blur(...)`）+ 高对比度微边框（`1px solid rgba(...)`）的三位一体毛玻璃体系，确保容器通透的同时文字、按钮与代码块具备 100% 锐利可读性；
+  3. 优化 `transparent` 透明模式参数：浅色模式 `rgba(255, 255, 255, 0.35)` / 深色模式 `rgba(18, 18, 24, 0.40)`，滤镜升级为 `saturate(200%) blur(8px)`，大幅提升背景深空星海与冬日雪境的色彩穿透力，并注入 `1px solid rgba(255, 255, 255, 0.65)`（深色 `0.16`）高光水晶微边框；
+  4. 固化 `gray` 磨砂模式为安知鱼原生经典 85% 半透 + 16px 视网膜模糊（`saturate(180%) blur(16px)`）；
+  5. 固化 `solid` 纯色模式为 100% 实色（`#ffffff` / `#121212`）与 `backdrop-filter: none !important`。
+- [x] **全站 12 大核心组件群全量样式选择器矩阵加固 (`global.css`, `final-pass.css`)**：
+  - 首页文章流与特性卡（`.recent-post-item`、`#recent-posts > .recent-post-item`、`.topGroup .recent-post-item`、`.todayCard`、`#random-banner`、`.categoryItem`）；
+  - 侧边栏全部件（`#aside-content .card-widget`、`#card-toc`、`.card-info`、`.card-recent-post`、`.card-categories`、`.card-tags`、`.card-archives`、`.card-webinfo`）；
+  - 正文与各独立页面外壳（`div#post`、`div#page`、`div#archive`、`div#tag`、`div#category`、`.post-page-shell`）；
+  - 推广翻转卡片（`#flip-wrapper`、`#flip-content`、`.promo-widget`、`.face`）；
+  - 推荐与导航组件（`.relatedPosts-item`、`.postNav-card`、`.postNav`）；
+  - 智能 AI 摘要面板（`.ai-summary`、`.ai-summary-content`）；
+  - 原生自建评论区（`#post-comment`、`.post-comment-container`、`.comment-head`、`.tk-submit`、`.tk-comments-container`）；
+  - 国际打赏与收银台（`.support-dashboard-card`、`RewardModal`）；
+  - 控制台与账号中心（`#console`、`.console-card`、`.theme-account-drawer`、`.theme-account-panel`）；
+  - 友链与关于页卡片（`.flink-list-item`、`.author-content-item`）。
+- [x] **全流程自动化 E2E 测试矩阵与生产公网双端 100% 验证 (`scripts/verify-translucent-frosted-glass.mjs`)**：
+  - 本地与公网生产端（`https://blog.epocanvas.com/`）实测全绿：
+    - 验证默认 `data-card-style="gray"` 且 Computed 为 `rgba(255, 255, 255, 0.85)` + `saturate(1.8) blur(16px)`；
+    - 验证切换至 `solid` 纯色模式为 `rgba(255, 255, 255, 0.99)` + `backdrop-filter: none`；
+    - 验证切换至 `transparent` 透明模式为 `rgba(255, 255, 255, 0.35)` + `saturate(2) blur(8px)`；
+    - 验证暗色模式（Dark Mode）下 3 种模式的背景色与毛玻璃滤镜自适应；
+    - 验证偏好设置抽屉 UI 交互点击（点击 Solid、Transparent、Gray 选项）即时更新 `data-card-style` 并持久化存储；
     - 验证文章页 `div#post` 样式正常，全流程 0 致命控制台报错；
   - 全量多远端同步推送至 `origin` 与 `cf` 仓库，Wrangler 生产边缘节点全量部署上线（`shijianus-blog`、`shijianus-github-io`）。
 
