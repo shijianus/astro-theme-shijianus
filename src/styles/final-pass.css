@@ -8106,6 +8106,67 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   overflow-wrap: break-word !important;
 }
 
+/* ==========================================================================
+   Anzhiyu Translucent Cards & Frosted Glass Master Directives
+   ========================================================================== */
+:root:not([data-translucent='false']) :is(
+  .theme-card,
+  .surface-panel,
+  .post-page-shell,
+  div#post,
+  div#page,
+  div#archive,
+  div#tag,
+  div#category,
+  .recent-post-item,
+  .topGroup .recent-post-item,
+  #aside-content .card-widget,
+  .card-widget,
+  #card-toc,
+  .card-info,
+  .card-recent-post,
+  .todayCard,
+  #random-banner,
+  .categoryItem,
+  .relatedPosts-item,
+  .postNav-card,
+  .ai-summary,
+  .support-dashboard-card
+) {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+}
+
+:root[data-translucent='false'] :is(
+  .theme-card,
+  .surface-panel,
+  .post-page-shell,
+  div#post,
+  div#page,
+  div#archive,
+  div#tag,
+  div#category,
+  .recent-post-item,
+  .topGroup .recent-post-item,
+  #aside-content .card-widget,
+  .card-widget,
+  #card-toc,
+  .card-info,
+  .card-recent-post,
+  .todayCard,
+  #random-banner,
+  .categoryItem,
+  .relatedPosts-item,
+  .postNav-card,
+  .ai-summary,
+  .support-dashboard-card
+) {
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 
 
 

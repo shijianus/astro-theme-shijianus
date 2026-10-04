@@ -276,6 +276,29 @@ export const siteConfig = {
         enableMouseInteraction: true,
       },
     },
+    translucent: {
+      /**
+       * 方框/卡片半透明毛玻璃模式开关 (Translucent Frosted Glass)
+       * - true (默认): 开启全局卡片、侧边栏、正文框等容器的半透明与毛玻璃 (backdrop-filter) 特效
+       * - false: 纯色不透明卡片模式 (Solid Opaque Cards)
+       */
+      enable: true,
+      /**
+       * 卡片不透明度 (0.0 ~ 1.0)
+       * 默认 0.85 (85% 卡片质感，15% 透底)
+       */
+      cardOpacity: 0.85,
+      /**
+       * 毛玻璃模糊半径 (Backdrop Blur Radius in px)
+       * 默认 16 (16px 视网膜级柔和模糊)
+       */
+      blurRadius: 16,
+      /**
+       * 饱和度提升比例 (Saturate Filter, 100% ~ 200%)
+       * 默认 180% (苹果/安知鱼经典鲜活通透感)
+       */
+      saturate: 180,
+    },
     snackbar: {
       enable: true,
       position: 'top-center',

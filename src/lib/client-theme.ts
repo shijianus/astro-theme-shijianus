@@ -9,6 +9,24 @@ type BackgroundStrategy = {
 
 const BACKGROUND_KEY = 'shijianus-background';
 const BACKGROUND_SOURCE_KEY = 'shijianus-background-source';
+export const TRANSLUCENT_KEY = 'shijianus-translucent';
+
+export function readTranslucent(): boolean {
+  try {
+    const val = window.localStorage.getItem(TRANSLUCENT_KEY);
+    if (val === 'false') return false;
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+export function syncTranslucent(enabled: boolean) {
+  const stateStr = enabled ? 'true' : 'false';
+  document.documentElement.dataset.translucent = stateStr;
+  writeStorage(TRANSLUCENT_KEY, stateStr);
+  window.dispatchEvent(new CustomEvent('shijianus:translucentchange', { detail: enabled }));
+}
 
 function normalizeBackgroundSource(value: string | null | undefined): BackgroundSource | null {
   if (value === 'auto' || value === 'manual') return value;

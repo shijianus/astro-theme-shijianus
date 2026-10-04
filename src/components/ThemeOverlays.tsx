@@ -75,6 +75,8 @@ import {
   applyThemeWithBackground,
   markBackgroundAsManual,
   readStorage,
+  readTranslucent,
+  syncTranslucent,
   resolveBackgroundSource,
   resolveInitialBackground,
   type ThemeMode,
@@ -298,6 +300,7 @@ export function ThemeOverlays({
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
+  const [translucent, setTranslucent] = useState(true);
   // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
   const t = useCallback((key: string, fallback?: string) => getI18nText(key, localeVariant, fallback), [localeVariant]);
@@ -1076,6 +1079,10 @@ export function ThemeOverlays({
         savedBackgroundSource,
       );
 
+    const savedTranslucent = readTranslucent();
+    root.dataset.translucent = savedTranslucent ? 'true' : 'false';
+    setTranslucent(savedTranslucent);
+
     root.dataset.theme = savedTheme;
     root.dataset.aside = savedAside;
     root.dataset.background = savedBackground;
@@ -1130,6 +1137,10 @@ export function ThemeOverlays({
       const customEvent = event as CustomEvent<string>;
       setBackground(customEvent.detail ?? defaultBackground);
     };
+    const onTranslucentChange = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setTranslucent(customEvent.detail ?? true);
+    };
     const onLocaleChange = (event: Event) => {
       const detail = (event as CustomEvent).detail;
       const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant);
@@ -1180,6 +1191,7 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:close-notifications', closeNotifications);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+    window.addEventListener('shijianus:translucentchange', onTranslucentChange as EventListener);
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('contextmenu', onContextMenu);
@@ -1194,6 +1206,7 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:close-notifications', closeNotifications);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+      window.removeEventListener('shijianus:translucentchange', onTranslucentChange as EventListener);
       window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('contextmenu', onContextMenu);
@@ -2953,6 +2966,43 @@ export function ThemeOverlays({
                       </button>
                     );
                   })}
+                </div>
+              </section>
+
+              {/* 视觉风格与半透明设置 */}
+              <section className="account-card">
+                <div className="account-card__head">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-theme-main" />
+                    <h3 className="account-card__title">{t('settings.visual.title', '视觉风格与卡片质感')}</h3>
+                  </div>
+                </div>
+
+                <div className="account-prefs-group">
+                  <div className="account-pref-card">
+                    <div className="account-pref-info">
+                      <span className="account-pref-title">
+                        <span>{t('settings.visual.translucent.title', '安知鱼半透明与毛玻璃 (Translucent & Frosted Glass)')}</span>
+                      </span>
+                      <span className="account-pref-desc">
+                        {t('settings.visual.translucent.desc', '开启后全局卡片、侧边栏与正文容器应用柔和半透明与视网膜级磨砂毛玻璃效果；关闭则呈现纯色不透明卡片。')}
+                      </span>
+                    </div>
+                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={translucent}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          syncTranslucent(val);
+                          setTranslucent(val);
+                          showUnifiedToast(val ? '已开启半透明与毛玻璃效果' : '已切换为纯色不透明卡片');
+                        }}
+                      />
+                      <div className="theme-switch-slider"></div>
+                    </label>
+                  </div>
                 </div>
               </section>
 

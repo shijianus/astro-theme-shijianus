@@ -26,11 +26,23 @@ body, html, #content-inner {
   --text-muted: #858585;
   --secondtext: rgba(60, 60, 67, 0.8);
   --background: #f7f9fe;
-  --card-bg: #ffffff;
+
+  /* Translucent & Frosted Glass Baseline (Anzhiyu Standard) */
+  --card-opacity: 0.85;
+  --card-blur: 16px;
+  --card-saturate: 180%;
+  --card-bg-translucent: rgba(255, 255, 255, var(--card-opacity));
+  --secondbg-translucent: rgba(247, 247, 249, var(--card-opacity));
+  --card-border-translucent: rgba(227, 232, 247, 0.85);
+  --card-backdrop-filter: saturate(var(--card-saturate)) blur(var(--card-blur));
+  --card-webkit-backdrop-filter: saturate(var(--card-saturate)) blur(var(--card-blur));
+
+  --card-bg: var(--card-bg-translucent);
+  --anzhiyu-card-bg: var(--card-bg);
   --card-bg-none: rgba(255, 255, 255, 0);
-  --secondbg: #f7f7f9;
-  --card-btn-bg: #edf0f7;
-  --card-border: #e3e8f7;
+  --secondbg: var(--secondbg-translucent);
+  --card-btn-bg: rgba(237, 240, 247, var(--card-opacity));
+  --card-border: var(--card-border-translucent);
   --line: #e3e8f7;
   --line-strong: #d0d7e8;
   --white: #ffffff;
@@ -73,7 +85,9 @@ body, html, #content-inner {
   --font-mono: consolas, Menlo, "PingFang SC", "Microsoft YaHei", monospace;
 }
 
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+html[data-theme='dark'],
+[data-theme='dark'] {
   --global-bg: #0d0d14;
   --theme-main: #f2b94b;
   --theme-deep: #0076e5;
@@ -87,13 +101,19 @@ body, html, #content-inner {
   --text-soft: #a1a2b8;
   --text-muted: #a1a2b8;
   --secondtext: #a1a2b8;
-  --card-bg: #121212;
-  --anzhiyu-card-bg: #121212;
+
+  /* Dark Translucent & Frosted Glass Baseline */
+  --card-bg-translucent: rgba(29, 30, 34, var(--card-opacity));
+  --secondbg-translucent: rgba(33, 35, 42, var(--card-opacity));
+  --card-border-translucent: rgba(66, 68, 74, 0.70);
+
+  --card-bg: var(--card-bg-translucent);
+  --anzhiyu-card-bg: var(--card-bg);
   --tag-bg: #252535;
   --tag-text: #a1a2b8;
-  --secondbg: #181825;
-  --card-btn-bg: #252535;
-  --card-border: #252535;
+  --secondbg: var(--secondbg-translucent);
+  --card-btn-bg: rgba(37, 37, 53, var(--card-opacity));
+  --card-border: var(--card-border-translucent);
   --line: #252535;
   --line-strong: #363645;
   --maskbg: rgba(0, 0, 0, 0.75);
@@ -108,7 +128,27 @@ body, html, #content-inner {
   --surface-elevated: var(--card-bg);
   --bg: var(--global-bg);
   --bg-elevated: var(--card-bg);
-  --grid: rgba(242, 185, 75, 0.08);
+}
+
+/* Fallback: When translucent is explicitly disabled by user (Solid Mode) */
+:root[data-translucent='false'] {
+  --card-bg: #ffffff;
+  --anzhiyu-card-bg: #ffffff;
+  --secondbg: #f7f7f9;
+  --card-btn-bg: #edf0f7;
+  --card-border: #e3e8f7;
+  --card-backdrop-filter: none !important;
+  --card-webkit-backdrop-filter: none !important;
+}
+
+:root[data-theme='dark'][data-translucent='false'] {
+  --card-bg: #121212;
+  --anzhiyu-card-bg: #121212;
+  --secondbg: #181825;
+  --card-btn-bg: #252535;
+  --card-border: #252535;
+  --card-backdrop-filter: none !important;
+  --card-webkit-backdrop-filter: none !important;
 }
 
 * {
@@ -1112,8 +1152,34 @@ html.theme-ready body.theme-body .site-footer {
   border: var(--style-border-always);
   border-radius: var(--radius-md);
   background: var(--card-bg);
+  backdrop-filter: var(--card-backdrop-filter);
+  -webkit-backdrop-filter: var(--card-webkit-backdrop-filter);
   box-shadow: var(--shadow-border);
   transition: all 0.3s ease 0s;
+}
+
+/* Anzhiyu Translucent Card & Container Frosted Glass Rules */
+.post-page-shell,
+div#post,
+div#page,
+div#archive,
+div#tag,
+div#category,
+.recent-post-item,
+.topGroup .recent-post-item,
+#aside-content .card-widget,
+.card-widget,
+#card-toc,
+.card-info,
+.card-recent-post,
+.todayCard,
+#random-banner,
+.categoryItem,
+.relatedPosts-item,
+.postNav-card,
+.ai-summary {
+  backdrop-filter: var(--card-backdrop-filter);
+  -webkit-backdrop-filter: var(--card-webkit-backdrop-filter);
 }
 
 .theme-card:hover,
