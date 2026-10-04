@@ -4937,5 +4937,32 @@
   - 本地与公网生产端（`https://blog.epocanvas.com/`）实测全绿：断言默认 `data-translucent="true"`、卡片 Computed 背景为 `rgba(255, 255, 255, 0.85)`、`backdrop-filter` 为 `saturate(1.8) blur(16px)`、切至纯色模式 `backdrop-filter` 为 `none`、文章页 `div#post` 样式正常、0 致命控制台报错；
   - 全量多远端同步推送至 `origin` 与 `cf` 仓库，Wrangler 生产边缘节点全量编译并部署上线（`shijianus-blog`、`shijianus-github-io`）。
 
+### Task 223: 卡片视觉质感三种模式 (纯色 solid / 磨砂 gray / 透明 transparent) 架构实现、安知鱼全组件覆盖与公网全链路验证 (`cea01d4`)
+- [x] **卡片视觉系统 3 档模式定义与底层参数架构 (`src/config/site.ts`, `src/lib/client-theme.ts`)**：
+  1. **纯色模式 (`solid`)**：100% 不透明卡片（浅色 `#ffffff` / 深色 `#121212`），停用 `backdrop-filter`，经典扎实无模糊开销；
+  2. **磨砂模式 (`gray`)**：使用英文 token `gray`，85% 半透明（`rgba(255, 255, 255, 0.85)` / `rgba(29, 30, 34, 0.85)`）+ 16px 视网膜磨砂毛玻璃（`saturate(180%) blur(16px)`），安知鱼标准默认模式；
+  3. **透明模式 (`transparent`)**：使用英文 token `transparent`，35% 高透明清透玻璃（`rgba(255, 255, 255, 0.35)` / `rgba(18, 18, 24, 0.45)`）+ 8px 晶莹毛玻璃（`saturate(180%) blur(8px)`）及微光边框（`rgba(255, 255, 255, 0.60)` / `0.15`），背景冬日雪境与深空星海深度透光；
+  4. 封装 `readCardStyle()` 与 `syncCardStyle(style: CardStyle)`，在 `localStorage`（键名 `'shijianus-card-style'`）持久化并广播 `shijianus:cardstylechange` 事件，同时兼容 legacy `shijianus-translucent`。
+- [x] **Astro 布局与防闪烁早执行脚本 (`src/layouts/BlogLayout.astro`)**：
+  - 在 `<html>` 标签注入 `data-card-style="gray"` 默认属性；
+  - `<head>` 注入原生行内阻塞恢复脚本，页面渲染前瞬时读取 `localStorage` 恢复 `data-card-style`，100% 杜绝 FOUC 样式闪烁。
+- [x] **全局 CSS 变量与安知鱼 12 类组件全量样式覆盖 (`global.css`, `final-pass.css`)**：
+  - 声明 `:root[data-card-style='solid']`、`:root[data-card-style='gray']`、`:root[data-card-style='transparent']` 及 Dark Mode 变量矩阵；
+  - 全量覆盖 12 类安知鱼核心组件：首页文章流（`.recent-post-item`）、顶栏与特性卡（`.topGroup .recent-post-item`、`.todayCard`、`#random-banner`）、侧边栏全卡片（`#aside-content .card-widget`、`#card-toc`、`.card-info`、`.card-categories` 等）、正文及页面外壳（`div#post`、`div#page`、`div#archive`、`div#tag`、`div#category`）、推荐组件（`.relatedPosts-item`、`.postNav-card`）、AI 总结面板（`.ai-summary`）、评论区（`#post-comment`）、控制台与抽屉（`#console`、`.console-card`、`.theme-account-drawer`）等；
+  - 透明模式（`transparent`）专项优化微光边框与高对比度文字阴影，保障背景流星雪花清晰透出的同时正文阅读舒适度一流。
+- [x] **偏好设置中心 3 态卡片交互选择器与多语言体系 (`src/components/ThemeOverlays.tsx`, `src/lib/client-locale.ts`)**：
+  - 在偏好设置中心（`accountTab === 'settings'`）重构“视觉风格与卡片质感”卡片，提供纯色（Solid）、磨砂（Gray，默认标）、透明（Transparent，清透标）三态单选卡片网格（`.account-card-style-grid` 与 `.card-style-option`）；
+  - 点击即时切换 `data-card-style` 属性并触发对应的多语言 Toast 反馈；
+  - 针对 6 大主流语言（`zh-CN`, `zh-Hant`, `en`, `fr`, `es`, `de`）注入完整的 `settings.visual.cardStyle.*` 翻译词条。
+- [x] **全流程自动化 E2E 测试套件与公网生产端全链路验证 (`scripts/verify-translucent-frosted-glass.mjs`)**：
+  - 本地与公网生产端（`https://blog.epocanvas.com/`）实测全绿：
+    - 验证默认 `data-card-style="gray"` 且 Computed 为 `rgba(255, 255, 255, 0.85)` + `saturate(1.8) blur(16px)`；
+    - 验证切换至 `solid` 纯色模式为 `rgba(255, 255, 255, 0.99)` + `backdrop-filter: none`；
+    - 验证切换至 `transparent` 透明模式为 `rgba(255, 255, 255, 0.35)` + `saturate(1.8) blur(8px)`；
+    - 验证暗色模式（Dark Mode）下 3 种模式的背景色与毛玻璃滤镜自适应；
+    - 验证偏好设置抽屉 UI 交互点击（点击 Solid、Transparent、Gray 选项）即时更新 `data-card-style`；
+    - 验证文章页 `div#post` 样式正常，全流程 0 致命控制台报错；
+  - 全量多远端同步推送至 `origin` 与 `cf` 仓库，Wrangler 生产边缘节点全量部署上线（`shijianus-blog`、`shijianus-github-io`）。
+
 
 
