@@ -5046,5 +5046,26 @@
   - 代码推送至 `origin` 与 `cf`；
   - Wrangler 部署至生产边缘节点（`shijianus-blog`、`shijianus-github-io`），生产端实机全链路审计验证通过。
 
+### Task 227: 文章卡片内容区 (.p-3.sm:p-3.5) 显式毛玻璃注入与 aside-sticky-box 卡片树微晶气泡深度优化 (`cc016d4`)
+- [x] **精准根治文章卡片内容容器 (`class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`) 审查不透明盲区**：
+  1. 彻底解决前一轮将该容器声明为 `background: transparent; backdrop-filter: none` 导致用户在 DevTools 直接审查此元素时看到 `backdrop-filter: none` 的认知冲突与无滤镜缺陷；
+  2. 显式为 `.recent-post-item > .p-3.sm\:p-3\.5`（以及 `[class*="justify-between"]`）注入标准 `--card-bg` 与 `backdrop-filter: var(--card-backdrop-filter) !important;`（磨砂模式下为 `rgba(255, 255, 255, 0.70)` + `saturate(180%) blur(16px)`）；
+  3. 注入 `border-top: 1px solid var(--card-border) !important;` 微光分割线，使文章内容区呈现出独立、晶莹、与封面图完美衔接的水晶磨砂面板质感。
+- [x] **全面重塑 `class="aside-sticky-box"` 及其卡片树通透体系**：
+  1. 固化 `.aside-sticky-box` 自身为纯净透明布局容器（`background: transparent !important; border: none !important; box-shadow: none !important;`），杜绝容器层产生多余的实心遮挡；
+  2. 为 `.aside-sticky-box > .card-widget`、`.aside-sticky-box #card-tag-cloud-overview`、`#card-toc`、`.card-recent-post` 等卡片注入最高优先级 `--card-bg` 与 `blur(16px)` 毛玻璃及弥散微投影；
+  3. 彻底改造 `.aside-sticky-box` 内部的标签云（`.tag-cloud-item`）与分类胶囊（`.category-chip`）：由原本厚重灰白实心块全面升级为半透明晶莹微气泡（`color-mix(in srgb, var(--card-bg) 50%, transparent)` + `backdrop-filter: blur(6px)` + 微光边框），消除密集色块遮蔽，背景雪花与光晕可透过每个标签自然穿透！
+- [x] **纯色 (Solid)、磨砂 (Gray)、透明 (Transparent) 三态矩阵全量加固**：
+  - 针对透明模式（`transparent`）：内容容器与 sticky 卡片自适应继承 `0.35` 高透光与 `blur(8px)`；
+  - 针对纯色模式（`solid`）：内容容器与 sticky 卡片自适应继承 `#ffffff` / `#121212` 且安全停用 `backdrop-filter`。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 严格断言 `.p-3.sm:p-3.5` 自身计算样式包含 `blur(16px)` 与 `0.70` 半透白；
+  - 严格断言 `.aside-sticky-box` 纯净透明且其子标签具备 `blur(6px)` 微晶毛玻璃；
+  - 保持 `#footer` 与固定导航栏验证全部全绿通过。
+- [x] **全量多远端推送与 Cloudflare Pages 生产边缘节点全量部署**：
+  - 推送代码至 `origin` 与 `cf`；
+  - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。
+
+
 
 
