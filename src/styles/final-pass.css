@@ -8269,6 +8269,21 @@ body[data-type='home'] .card-webinfo-grid .webinfo-item,
   border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
 }
 
+/* User Choice A4: Anzhiyu Native Transparent Pagination Directives */
+#home-pagination,
+.home-pagination,
+nav#home-pagination,
+body[data-type='home'] #home-pagination,
+body[data-type='home'] .home-pagination,
+body[data-type='home'] nav#home-pagination {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* Anzhiyu Native Transparent Footer Directives */
 #footer-wrap,
 #footer-wrap .footer-main-shell {
