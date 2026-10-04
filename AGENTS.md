@@ -5066,6 +5066,27 @@
   - 推送代码至 `origin` 与 `cf`；
   - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。
 
-
-
-
+### Task 228: 核心四大组件 (#random-banner、home-pagination、post-card-inner、overview-card) 通透性重构与安知鱼原生纯正复刻
+- [x] **追问与决策闭环 (User Alignment)**：
+  - 针对用户重点指示的四大组件（`#random-banner`、`.home-pagination`、`.p-3.sm:p-3.5`、`card-feature-panel--overview`），通过交互追问全面明确需求；
+  - 用户全量确认推荐方案：A1（对齐安知鱼原生单层透明结构）、A2（彻底移除 random-banner 实心遮罩）、A3（深度通透毛玻璃 + 极简微气泡）、A4（彻底复刻安知鱼原生分页透明容器与悬浮磨砂按钮）。
+- [x] **首页首屏推荐卡片 (`id="random-banner"`) 遮罩清理与通透化 (A2)**：
+  - 彻底清除 `global.css` 中 hardcoded 的 `0.99` 实心渐变与 `rgba(255, 255, 255, 0.98)` `::before` 遮罩（以及 `rebuild.css` 中暗黑模式下的实心伪元素遮罩）；
+  - 统一赋予 `--card-bg`（`0.70` 半透白）与 `saturate(180%) blur(16px)` 毛玻璃，让背景动画、粒子、光斑自然穿透。
+- [x] **文章卡片内容区域 (`class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`) 消除双层叠加 (A1)**：
+  - 彻底解决外层卡片与内层容器双层叠加造成的 91% 实心感；
+  - 对齐安知鱼原生架构：外层卡片统一承载单层 `--card-bg` 与 `blur(16px)` 毛玻璃，内层内容容器保持纯净透明（`background: transparent !important; backdrop-filter: none !important;`）与微光顶分割线。
+- [x] **侧边栏吸顶总览卡片 (`class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`) 微气泡轻量化 (A3)**：
+  - 卡片底板保持精致 `0.70` 毛玻璃；
+  - 内部标签（`.tag-cloud-item`）、分类胶囊（`.category-chip`）与站点统计（`.webinfo-item`）全面升级为 4% 超轻微光气泡，消除厚重色块大面积遮蔽，使背景通透感最大化。
+- [x] **文章列表分页导航栏 (`class="theme-card home-pagination"`) 安知鱼原生复刻 (A4)**：
+  - 外层 `#home-pagination` 导航容器彻底透明化（`background: transparent !important; border: none !important; box-shadow: none !important;`）；
+  - 分页按钮（`.home-pagination__num`、`.home-pagination__btn`）与状态徽章（`.home-pagination__badge`）独立悬浮呈现精致半透微晶毛玻璃（`var(--card-bg)` + `blur(16px)` + 微光边框）。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 严格断言 `#random-banner` 具备 `0.70` 半透白、`blur(16px)` 且无 `::before` 遮罩；
+  - 严格断言 `.p-3.sm:p-3.5` 纯透明（0 双层实心叠加）；
+  - 严格断言 `.card-feature-panel--overview` 毛玻璃与 `.aside-sticky-box` 纯透明；
+  - 严格断言 `#home-pagination` 外层无边框/底色/阴影，翻页按钮与徽章具备 `blur(16px)` 微晶毛玻璃。
+- [x] **全量多远端推送与 Cloudflare Pages 生产边缘节点全量部署**：
+  - 代码推送至 `origin` 与 `cf`；
+  - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。

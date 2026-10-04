@@ -24,9 +24,8 @@ async function run() {
   await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
   await page.waitForTimeout(2000);
 
-  // 1. Audit post card and inner content container
+  // 1. Audit post card and inner content container (User Choice A1: Anzhiyu alignment)
   const postCardData = await page.evaluate(() => {
-    // Specifically locate the PostCard element containing class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"
     const allCards = Array.from(document.querySelectorAll('.recent-post-item'));
     const targetCard = allCards.find(c => c.querySelector('[class*="justify-between"]') || c.querySelector('.p-3')) || allCards[0];
     const innerContent = targetCard ? targetCard.querySelector('[class*="justify-between"]') || targetCard.querySelector('.p-3') : null;
@@ -55,10 +54,30 @@ async function run() {
   assert.ok(postCardData.inner, 'Post card inner container must exist');
   assert.match(postCardData.card.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Card background must be 0.70 translucent white in gray mode');
   assert.match(postCardData.card.backdropFilter, /blur\(16px\)/, 'Card must have blur(16px) backdrop filter');
-  assert.match(postCardData.inner.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Post card inner container MUST explicitly have 0.70 frosted glass background');
-  assert.match(postCardData.inner.backdropFilter, /blur\(16px\)/, 'Post card inner container MUST explicitly have blur(16px) frosted glass backdrop filter');
+  assert.equal(postCardData.inner.bg, 'rgba(0, 0, 0, 0)', 'Post card inner container MUST be transparent (User Choice A1: eliminate 91% double-stacking)');
 
-  // 2. Audit sidebar overview sticky card (class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active") and .aside-sticky-box
+  // 2. Audit #random-banner (User Choice A2: clean mask and solid gradient, enable standard frosted glass)
+  const randomBannerData = await page.evaluate(() => {
+    const el = document.querySelector('#random-banner');
+    if (!el) return null;
+    const cs = window.getComputedStyle(el);
+    const before = window.getComputedStyle(el, '::before');
+    return {
+      bg: cs.backgroundColor,
+      backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+      boxShadow: cs.boxShadow,
+      beforeDisplay: before.display,
+      beforeContent: before.content
+    };
+  });
+
+  console.log('Random Banner Data:', JSON.stringify(randomBannerData, null, 2));
+  assert.ok(randomBannerData, '#random-banner must exist');
+  assert.match(randomBannerData.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, '#random-banner must have 0.70 translucent white in gray mode');
+  assert.match(randomBannerData.backdropFilter, /blur\(16px\)/, '#random-banner must have blur(16px) backdrop filter');
+  assert.ok(randomBannerData.beforeDisplay === 'none' || randomBannerData.beforeContent === 'none', '#random-banner::before opaque mask MUST be eliminated');
+
+  // 3. Audit sidebar overview sticky card (class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active") and .aside-sticky-box (User Choice A3)
   const sidebarData = await page.evaluate(() => {
     const stickyBox = document.querySelector('.aside-sticky-box');
     const el = document.querySelector('.card-feature-panel--overview') || document.querySelector('#card-tag-cloud-overview');
@@ -96,11 +115,39 @@ async function run() {
   assert.doesNotMatch(sidebarData.card.bg, /rgba\(87,\s*189,\s*106/, 'Overview card MUST NOT have green opaque gradient');
   assert.match(sidebarData.card.backdropFilter, /blur\(16px\)/, 'Overview card must have blur(16px) backdrop filter');
   assert.equal(sidebarData.stickyBox.bg, 'rgba(0, 0, 0, 0)', '.aside-sticky-box MUST be transparent with no blocking solid background');
-  if (sidebarData.tagItem) {
-    assert.match(sidebarData.tagItem.backdropFilter, /blur\(6px\)/, 'Tag cloud items in aside-sticky-box must have blur(6px) frosted glass');
+
+  // 4. Audit home pagination (class="theme-card home-pagination") (User Choice A4: Anzhiyu native transparent pagination)
+  const paginationData = await page.evaluate(() => {
+    const nav = document.querySelector('#home-pagination') || document.querySelector('.home-pagination');
+    if (!nav) return null;
+    const navStyle = window.getComputedStyle(nav);
+    const num = nav.querySelector('.home-pagination__num:not(.is-current)');
+    const badge = nav.querySelector('.home-pagination__badge');
+    const numStyle = num ? window.getComputedStyle(num) : null;
+    const badgeStyle = badge ? window.getComputedStyle(badge) : null;
+
+    return {
+      navBg: navStyle.backgroundColor,
+      navBorder: navStyle.borderWidth,
+      navBoxShadow: navStyle.boxShadow,
+      numBg: numStyle ? numStyle.backgroundColor : null,
+      numBackdropFilter: numStyle ? (numStyle.backdropFilter || numStyle.webkitBackdropFilter) : null,
+      badgeBg: badgeStyle ? badgeStyle.backgroundColor : null,
+      badgeBackdropFilter: badgeStyle ? (badgeStyle.backdropFilter || badgeStyle.webkitBackdropFilter) : null
+    };
+  });
+
+  console.log('Home Pagination Data:', JSON.stringify(paginationData, null, 2));
+  assert.ok(paginationData, '#home-pagination must exist');
+  assert.equal(paginationData.navBg, 'rgba(0, 0, 0, 0)', 'Pagination container MUST be transparent (User Choice A4: replicate Anzhiyu native)');
+  assert.equal(paginationData.navBorder, '0px', 'Pagination container MUST have no border');
+  assert.equal(paginationData.navBoxShadow, 'none', 'Pagination container MUST have no box-shadow');
+  if (paginationData.numBg) {
+    assert.match(paginationData.numBg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Pagination buttons must have frosted glass card-bg');
+    assert.match(paginationData.numBackdropFilter, /blur\(16px\)/, 'Pagination buttons must have blur(16px) frosted glass');
   }
 
-  // 3. Audit footer (#footer-wrap and .footer-main-shell)
+  // 5. Audit footer (#footer-wrap and .footer-main-shell)
   const footerData = await page.evaluate(() => {
     const footer = document.querySelector('#footer');
     const footerWrap = document.querySelector('#footer-wrap');
@@ -126,7 +173,7 @@ async function run() {
   assert.equal(footerData.shellBorder, '0px', '.footer-main-shell MUST have 0px border (no box frame)');
   assert.equal(footerData.shellBoxShadow, 'none', '.footer-main-shell MUST have no box shadow');
 
-  // 4. Audit scrolled navigation (#nav)
+  // 6. Audit scrolled navigation (#nav)
   await page.evaluate(() => window.scrollTo(0, 600));
   await page.waitForTimeout(1000);
 

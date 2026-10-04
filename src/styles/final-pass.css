@@ -5717,19 +5717,23 @@ body[data-type='home'] .feature-panel-recent .aside-list {
 /* ==========================================================================
    Refined Modern Home Pagination (Anzhiyu & Modern Aesthetic Alignment)
    ========================================================================== */
-body[data-type='home'] #home-pagination {
+body[data-type='home'] #home-pagination,
+body[data-type='home'] .home-pagination,
+body[data-type='home'] nav#home-pagination.theme-card {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   flex-wrap: wrap !important;
   gap: 12px !important;
   margin-top: 28px !important;
-  padding: 10px 18px !important;
+  padding: 10px 0 !important;
   min-height: 54px !important;
-  border-radius: 12px !important;
-  background: var(--card-bg) !important;
-  border: 1px solid var(--card-border) !important;
-  box-shadow: var(--anzhiyu-shadow-border) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   box-sizing: border-box !important;
 }
 
@@ -5746,10 +5750,13 @@ body[data-type='home'] .home-pagination__badge {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 6px !important;
-  background: color-mix(in srgb, var(--font-color) 4%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--anzhiyu-shadow-border) !important;
   font-size: 12.5px !important;
   font-weight: 500 !important;
   color: var(--font-color) !important;
@@ -5791,6 +5798,9 @@ body[data-type='home'] .home-pagination__btn {
   border-radius: 8px !important;
   border: 1px solid var(--card-border) !important;
   background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  box-shadow: var(--anzhiyu-shadow-border) !important;
   color: var(--font-color) !important;
   font-size: 13.5px !important;
   font-weight: 600 !important;
@@ -8164,17 +8174,42 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
-/* Explicit transparency and frosted glass guarantee for post card inner content container requested by user:
-   class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5" */
+/* Alignment with Anzhiyu: User Choice A1
+   Outer .recent-post-item carries single-layer card-bg + blur(16px), inner container is transparent to eliminate 91% double-layer opacity stacking */
 :is(.recent-post-item, #recent-posts > .recent-post-item) > .p-3.sm\:p-3\.5,
 :is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"],
-.recent-post-item .p-3.sm\:p-3\.5 {
+.recent-post-item .p-3.sm\:p-3\.5,
+.recent-post-item .recent-post-info {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* User Choice A2: #random-banner complete removal of opaque mask and hardcoded gradient */
+#random-banner,
+body[data-type='home'] #random-banner {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border-top: 1px solid var(--card-border) !important;
-  position: relative !important;
-  z-index: 2 !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+}
+
+#random-banner::before,
+#random-banner::after,
+body[data-type='home'] #random-banner::before,
+body[data-type='home'] #random-banner::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+body[data-type='home'] #random-banner .random-banner__content {
+  background: transparent !important;
 }
 
 /* User-specified target: class="aside-sticky-box" and its sticky card tree */
@@ -8192,7 +8227,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
 .aside-sticky-box #card-toc,
 .aside-sticky-box .card-recent-post,
 .aside-sticky-box .support-dashboard-card,
-.aside-sticky-box .card-feature-panel--overview {
+.aside-sticky-box .card-feature-panel--overview,
+.card-widget.card-feature-panel--overview {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
@@ -8201,24 +8237,36 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   overflow: visible !important;
 }
 
-/* Deep refinement: make all tag-cloud items and category chips inside aside-sticky-box translucent frosted glass pills */
+/* User Choice A3: Ultra-light micro-bubbles for tags and category chips to eliminate 70% opaque block masking */
+.card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
+.card-tag-cloud-panel .tag-cloud-item,
 .aside-sticky-box .card-tag-cloud a.tag-cloud-item,
 .aside-sticky-box .tag-cloud-item,
+.card-tag-cloud-panel .card-category-chips a.category-chip,
+.card-tag-cloud-panel .category-chip,
 .aside-sticky-box .card-category-chips a.category-chip,
 .aside-sticky-box .category-chip {
-  background: color-mix(in srgb, var(--card-bg) 50%, transparent) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
   color: var(--font-color) !important;
 }
 
-.aside-sticky-box .card-tag-cloud a.tag-cloud-item:hover,
-.aside-sticky-box .card-category-chips a.category-chip:hover {
+.card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item:hover,
+.aside-sticky-box .tag-cloud-item:hover,
+.card-tag-cloud-panel .card-category-chips a.category-chip:hover,
+.aside-sticky-box .category-chip:hover {
   background: var(--theme-main, #425aef) !important;
   color: #ffffff !important;
   border-color: var(--theme-main, #425aef) !important;
   box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='home'] .card-webinfo-grid .webinfo-item,
+.aside-sticky-box .card-webinfo-grid .webinfo-item {
+  background: color-mix(in srgb, var(--font-color) 3%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
 }
 
 /* Anzhiyu Native Transparent Footer Directives */
@@ -8469,7 +8517,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
 
 :root[data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
 :root[data-translucent='false'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
-  background: #ffffff !important;
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-top: 1px solid #e3e8f7 !important;
@@ -8572,7 +8620,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
 
 :root[data-theme='dark'][data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
 :root[data-theme='dark'][data-translucent='false'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
-  background: #121212 !important;
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-top: 1px solid #252535 !important;
