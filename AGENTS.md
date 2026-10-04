@@ -4918,7 +4918,24 @@
   - **背景渐变星云光晕**：在 `#web_bg` 注入左下角专属星云微光渐变（`radial-gradient(circle at 12% 88%, rgba(50, 70, 140, 0.45) 0%, transparent 55%)`）。
 - [x] **全流程自动化 E2E 测试矩阵与生产公网双端 100% 验证 (`scripts/verify-starry-universe.mjs`, `scripts/verify-starry-universe-prod.mjs`)**：
   - 本地与公网（`https://blog.epocanvas.com/`）实测：左下角活跃粒子像素达 4845+ 像素，流星轨迹与星群全景渲染丝滑，0 控制台报错；
-  - 全量多远端同步推送至 `origin` 与 `cf`，Wrangler 全量部署至三大生产边缘节点。
+### Task 222: 安知鱼方框半透明与毛玻璃 (Translucent & Frosted Glass) 架构设计、底层参数增设与公网部署上线 (`0299c4c`)
+- [x] **深入学习安知鱼方框半透明处理机制 (`themes/anzhiyu/source/css/`)**：
+  - 深度逆向安知鱼 Stylus/CSS 样式与核心实现：通过 `rgba(255, 255, 255, 0.85)` / `rgba(29, 30, 34, 0.85)`、`backdrop-filter: saturate(180%) blur(16px)`、`1px` 极细微边框以及自然环境光阴影，实现晶莹通透的毛玻璃卡片质感；
+  - 纯色模式协同（Clean Mode）：在纯色底色背景（浅色 `#f7f9fe` / 深色 `#0d0d14`）下，半透明方框依然提供优雅的浮空立体层次感。
+- [x] **配置底层与运行时可调节参数增设 (`src/config/site.ts`, `src/lib/client-theme.ts`)**：
+  - 在 `siteConfig.theme` 中增设 `translucent` 配置块（`enable: true` 默认开启半透明、`cardOpacity: 0.85`、`blurRadius: 16`、`saturate: 180`）；
+  - 在 `client-theme.ts` 中封装 `readTranslucent` 与 `syncTranslucent`，支持 LocalStorage 持久化存储与 `shijianus:translucentchange` 自定义事件广播；
+  - 在 `BlogLayout.astro` 中注入早期属性（`data-translucent="true"`）与 `<head>` 瞬时恢复脚本，彻底消除页面刷新样式闪烁。
+- [x] **全局 CSS 自定义属性与容器毛玻璃统一样式 (`global.css`, `final-pass.css`)**：
+  - 声明 `--card-bg-translucent`、`--secondbg-translucent`、`--card-border-translucent` 及 `--card-backdrop-filter: saturate(180%) blur(16px)`；
+  - 覆盖首页与归档卡片（`.recent-post-item`、`.topGroup .recent-post-item`）、侧边栏（`#aside-content .card-widget`、`#card-toc`、`.card-info`）、正文容器（`div#post`、`div#page`、`div#archive`、`div#tag`、`div#category`）、推荐组件（`.relatedPosts-item`、`.postNav-card`）及 AI 摘要面板（`.ai-summary`）；
+  - 优雅降级机制：当用户在设置中选择关闭半透明（`data-translucent="false"`）时，自动无缝回退至纯色不透明卡片（`#ffffff` / `#121212`）并停用 `backdrop-filter`。
+- [x] **全站控制台与偏好中心交互集成 (`src/components/ThemeOverlays.tsx`)**：
+  - 在全站偏好设置中心（`accountTab === 'settings'`）增设“视觉风格与卡片质感”专属设置卡，提供“安知鱼半透明与毛玻璃”动态开关；
+  - 支持即时动态切换并触发全局状态通知（Toast），0ms 毫秒级无刷新生效。
+- [x] **全流程自动化 E2E 测试矩阵与生产公网双端 100% 验证 (`scripts/verify-translucent-frosted-glass.mjs`)**：
+  - 本地与公网生产端（`https://blog.epocanvas.com/`）实测全绿：断言默认 `data-translucent="true"`、卡片 Computed 背景为 `rgba(255, 255, 255, 0.85)`、`backdrop-filter` 为 `saturate(1.8) blur(16px)`、切至纯色模式 `backdrop-filter` 为 `none`、文章页 `div#post` 样式正常、0 致命控制台报错；
+  - 全量多远端同步推送至 `origin` 与 `cf` 仓库，Wrangler 生产边缘节点全量编译并部署上线（`shijianus-blog`、`shijianus-github-io`）。
 
 
 
