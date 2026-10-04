@@ -5066,7 +5066,7 @@
   - 推送代码至 `origin` 与 `cf`；
   - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。
 
-### Task 228: 核心四大组件 (#random-banner、home-pagination、post-card-inner、overview-card) 通透性重构与安知鱼原生纯正复刻
+### Task 228: 核心四大组件 (#random-banner、home-pagination、post-card-inner、overview-card) 通透性重构与安知鱼原生纯正复刻 (611d903, aceb465)
 - [x] **追问与决策闭环 (User Alignment)**：
   - 针对用户重点指示的四大组件（`#random-banner`、`.home-pagination`、`.p-3.sm:p-3.5`、`card-feature-panel--overview`），通过交互追问全面明确需求；
   - 用户全量确认推荐方案：A1（对齐安知鱼原生单层透明结构）、A2（彻底移除 random-banner 实心遮罩）、A3（深度通透毛玻璃 + 极简微气泡）、A4（彻底复刻安知鱼原生分页透明容器与悬浮磨砂按钮）。
