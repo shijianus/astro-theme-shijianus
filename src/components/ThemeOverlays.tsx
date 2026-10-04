@@ -44,6 +44,9 @@ import {
   VolumeX,
   Award,
   Smile,
+  Layers,
+  Droplets,
+  Eye,
 } from 'lucide-react';
 import type { SiteBroadcastData } from '../lib/broadcast';
 import { siteConfig } from '../config/site';
@@ -77,6 +80,9 @@ import {
   readStorage,
   readTranslucent,
   syncTranslucent,
+  readCardStyle,
+  syncCardStyle,
+  type CardStyle,
   resolveBackgroundSource,
   resolveInitialBackground,
   type ThemeMode,
@@ -300,6 +306,7 @@ export function ThemeOverlays({
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [background, setBackground] = useState(defaultBackground);
+  const [cardStyle, setCardStyle] = useState<CardStyle>('gray');
   const [translucent, setTranslucent] = useState(true);
   // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
   const [localeVariant, setLocaleVariant] = useState<LocaleVariant>('zh-CN');
@@ -1079,9 +1086,11 @@ export function ThemeOverlays({
         savedBackgroundSource,
       );
 
-    const savedTranslucent = readTranslucent();
-    root.dataset.translucent = savedTranslucent ? 'true' : 'false';
-    setTranslucent(savedTranslucent);
+    const savedCardStyle = readCardStyle();
+    root.dataset.cardStyle = savedCardStyle;
+    root.dataset.translucent = savedCardStyle === 'solid' ? 'false' : 'true';
+    setCardStyle(savedCardStyle);
+    setTranslucent(savedCardStyle !== 'solid');
 
     root.dataset.theme = savedTheme;
     root.dataset.aside = savedAside;
@@ -1137,9 +1146,17 @@ export function ThemeOverlays({
       const customEvent = event as CustomEvent<string>;
       setBackground(customEvent.detail ?? defaultBackground);
     };
+    const onCardStyleChange = (event: Event) => {
+      const customEvent = event as CustomEvent<CardStyle>;
+      const next = customEvent.detail ?? 'gray';
+      setCardStyle(next);
+      setTranslucent(next !== 'solid');
+    };
     const onTranslucentChange = (event: Event) => {
       const customEvent = event as CustomEvent<boolean>;
-      setTranslucent(customEvent.detail ?? true);
+      const enabled = customEvent.detail ?? true;
+      setTranslucent(enabled);
+      setCardStyle(enabled ? 'gray' : 'solid');
     };
     const onLocaleChange = (event: Event) => {
       const detail = (event as CustomEvent).detail;
@@ -1191,6 +1208,7 @@ export function ThemeOverlays({
     window.addEventListener('shijianus:close-notifications', closeNotifications);
     window.addEventListener('shijianus:themechange', onThemeChange as EventListener);
     window.addEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+    window.addEventListener('shijianus:cardstylechange', onCardStyleChange as EventListener);
     window.addEventListener('shijianus:translucentchange', onTranslucentChange as EventListener);
     window.addEventListener('shijianus:localechange', onLocaleChange as EventListener);
     window.addEventListener('keydown', onKeyDown);
@@ -1206,6 +1224,7 @@ export function ThemeOverlays({
       window.removeEventListener('shijianus:close-notifications', closeNotifications);
       window.removeEventListener('shijianus:themechange', onThemeChange as EventListener);
       window.removeEventListener('shijianus:backgroundchange', onBackgroundChange as EventListener);
+      window.removeEventListener('shijianus:cardstylechange', onCardStyleChange as EventListener);
       window.removeEventListener('shijianus:translucentchange', onTranslucentChange as EventListener);
       window.removeEventListener('shijianus:localechange', onLocaleChange as EventListener);
       window.removeEventListener('keydown', onKeyDown);
@@ -2969,7 +2988,7 @@ export function ThemeOverlays({
                 </div>
               </section>
 
-              {/* 视觉风格与半透明设置 */}
+              {/* 视觉风格与卡片质感设置 (3-Mode Card Style) */}
               <section className="account-card">
                 <div className="account-card__head">
                   <div className="flex items-center gap-2">
@@ -2979,29 +2998,97 @@ export function ThemeOverlays({
                 </div>
 
                 <div className="account-prefs-group">
-                  <div className="account-pref-card">
-                    <div className="account-pref-info">
+                  <div className="account-pref-card flex-col items-start gap-3">
+                    <div className="account-pref-info w-full">
                       <span className="account-pref-title">
-                        <span>{t('settings.visual.translucent.title', '安知鱼半透明与毛玻璃 (Translucent & Frosted Glass)')}</span>
+                        <span>{t('settings.visual.cardStyle.title', '卡片透明质感模式 (Card Visual Style)')}</span>
                       </span>
                       <span className="account-pref-desc">
-                        {t('settings.visual.translucent.desc', '开启后全局卡片、侧边栏与正文容器应用柔和半透明与视网膜级磨砂毛玻璃效果；关闭则呈现纯色不透明卡片。')}
+                        {t('settings.visual.cardStyle.desc', '自由调节全局卡片、侧边栏及正文框的透明度与毛玻璃质感，背景星空与雪境随心透出。')}
                       </span>
                     </div>
-                    <label className="theme-switch-label relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={translucent}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          syncTranslucent(val);
-                          setTranslucent(val);
-                          showUnifiedToast(val ? '已开启半透明与毛玻璃效果' : '已切换为纯色不透明卡片');
+
+                    <div className="account-card-style-grid w-full" role="radiogroup" aria-label={t('settings.visual.cardStyle.title', '卡片透明质感模式')}>
+                      {/* Option 1: 纯色 Solid */}
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={cardStyle === 'solid'}
+                        className={`card-style-option card-style-option--solid ${cardStyle === 'solid' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          syncCardStyle('solid');
+                          setCardStyle('solid');
+                          setTranslucent(false);
+                          const msg = t('settings.visual.toast.solid', '已切换为纯色不透明卡片');
+                          showUnifiedToast(msg);
+                          emitActivity(msg);
                         }}
-                      />
-                      <div className="theme-switch-slider"></div>
-                    </label>
+                      >
+                        <div className="card-style-option__indicator">
+                          <span className="card-style-option__dot" />
+                        </div>
+                        <div className="card-style-option__content">
+                          <div className="card-style-option__title-row">
+                            <span className="card-style-option__title">{t('settings.visual.cardStyle.solid', '纯色模式 (Solid)')}</span>
+                          </div>
+                          <span className="card-style-option__desc">{t('settings.visual.cardStyle.solid_desc', '100% 扎实不透明，无模糊开销')}</span>
+                        </div>
+                      </button>
+
+                      {/* Option 2: 磨砂 Gray (Default) */}
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={cardStyle === 'gray'}
+                        className={`card-style-option card-style-option--gray ${cardStyle === 'gray' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          syncCardStyle('gray');
+                          setCardStyle('gray');
+                          setTranslucent(true);
+                          const msg = t('settings.visual.toast.gray', '已切换为磨砂毛玻璃模式 (Gray)');
+                          showUnifiedToast(msg);
+                          emitActivity(msg);
+                        }}
+                      >
+                        <div className="card-style-option__indicator">
+                          <span className="card-style-option__dot" />
+                        </div>
+                        <div className="card-style-option__content">
+                          <div className="card-style-option__title-row">
+                            <span className="card-style-option__title">{t('settings.visual.cardStyle.gray', '磨砂模式 (Frosted / Gray)')}</span>
+                            <span className="card-style-option__badge">默认</span>
+                          </div>
+                          <span className="card-style-option__desc">{t('settings.visual.cardStyle.gray_desc', '85% 半透明 + 16px 视网膜毛玻璃 (安知鱼经典)')}</span>
+                        </div>
+                      </button>
+
+                      {/* Option 3: 透明 Transparent */}
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={cardStyle === 'transparent'}
+                        className={`card-style-option card-style-option--transparent ${cardStyle === 'transparent' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          syncCardStyle('transparent');
+                          setCardStyle('transparent');
+                          setTranslucent(true);
+                          const msg = t('settings.visual.toast.transparent', '已切换为清透透明模式 (Transparent)');
+                          showUnifiedToast(msg);
+                          emitActivity(msg);
+                        }}
+                      >
+                        <div className="card-style-option__indicator">
+                          <span className="card-style-option__dot" />
+                        </div>
+                        <div className="card-style-option__content">
+                          <div className="card-style-option__title-row">
+                            <span className="card-style-option__title">{t('settings.visual.cardStyle.transparent', '透明模式 (Transparent)')}</span>
+                            <span className="card-style-option__badge card-style-option__badge--crystal">清透</span>
+                          </div>
+                          <span className="card-style-option__desc">{t('settings.visual.cardStyle.transparent_desc', '35% 清透透明 + 8px 晶莹毛玻璃，背景星海雪境深度透光')}</span>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </section>

@@ -179,7 +179,8 @@ const isMantleActiveOnThisPage = Boolean(
   data-theme={siteConfig.theme.defaultMode}
   data-aside="expanded"
   data-background={siteConfig.theme.background.defaultMode}
-  data-translucent={siteConfig.theme.translucent?.enable !== false ? 'true' : 'false'}
+  data-card-style={siteConfig.theme.cardStyle || 'gray'}
+  data-translucent={siteConfig.theme.cardStyle === 'solid' ? 'false' : 'true'}
   data-snow-mantle={isMantleActiveOnThisPage ? 'active' : 'disabled'}
   data-snow-mantle-enabled={(snowConfig.enableMantle ?? snowConfig.enableAccumulation ?? false) ? 'true' : 'false'}
   data-snow-mantle-home-only={(snowConfig.homeOnly ?? snowConfig.onlyHome ?? false) ? 'true' : 'false'}
@@ -198,12 +199,13 @@ const isMantleActiveOnThisPage = Boolean(
     <script is:inline>
       (() => {
         try {
-          const savedTranslucent = window.localStorage.getItem('shijianus-translucent');
-          if (savedTranslucent === 'false') {
-            document.documentElement.dataset.translucent = 'false';
-          } else {
-            document.documentElement.dataset.translucent = 'true';
+          let style = window.localStorage.getItem('shijianus-card-style');
+          if (!style || (style !== 'solid' && style !== 'gray' && style !== 'transparent')) {
+            const legacyTranslucent = window.localStorage.getItem('shijianus-translucent');
+            style = legacyTranslucent === 'false' ? 'solid' : 'gray';
           }
+          document.documentElement.dataset.cardStyle = style;
+          document.documentElement.dataset.translucent = style === 'solid' ? 'false' : 'true';
         } catch {}
       })();
     </script>

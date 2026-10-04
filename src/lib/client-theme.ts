@@ -1,6 +1,7 @@
 export type ThemeMode = 'light' | 'dark';
 export type AsideState = 'expanded' | 'collapsed';
 export type BackgroundSource = 'auto' | 'manual';
+export type CardStyle = 'solid' | 'gray' | 'transparent';
 
 type BackgroundStrategy = {
   defaultBackground: string;
@@ -9,23 +10,39 @@ type BackgroundStrategy = {
 
 const BACKGROUND_KEY = 'shijianus-background';
 const BACKGROUND_SOURCE_KEY = 'shijianus-background-source';
+export const CARD_STYLE_KEY = 'shijianus-card-style';
 export const TRANSLUCENT_KEY = 'shijianus-translucent';
 
-export function readTranslucent(): boolean {
+export function readCardStyle(): CardStyle {
   try {
-    const val = window.localStorage.getItem(TRANSLUCENT_KEY);
-    if (val === 'false') return false;
-    return true;
+    const val = window.localStorage.getItem(CARD_STYLE_KEY);
+    if (val === 'solid' || val === 'gray' || val === 'transparent') {
+      return val;
+    }
+    // Backward compatibility with legacy translucent boolean
+    const oldTranslucent = window.localStorage.getItem(TRANSLUCENT_KEY);
+    if (oldTranslucent === 'false') return 'solid';
+    return 'gray';
   } catch {
-    return true;
+    return 'gray';
   }
 }
 
+export function syncCardStyle(style: CardStyle) {
+  document.documentElement.dataset.cardStyle = style;
+  document.documentElement.dataset.translucent = style === 'solid' ? 'false' : 'true';
+  writeStorage(CARD_STYLE_KEY, style);
+  writeStorage(TRANSLUCENT_KEY, style === 'solid' ? 'false' : 'true');
+  window.dispatchEvent(new CustomEvent('shijianus:cardstylechange', { detail: style }));
+  window.dispatchEvent(new CustomEvent('shijianus:translucentchange', { detail: style !== 'solid' }));
+}
+
+export function readTranslucent(): boolean {
+  return readCardStyle() !== 'solid';
+}
+
 export function syncTranslucent(enabled: boolean) {
-  const stateStr = enabled ? 'true' : 'false';
-  document.documentElement.dataset.translucent = stateStr;
-  writeStorage(TRANSLUCENT_KEY, stateStr);
-  window.dispatchEvent(new CustomEvent('shijianus:translucentchange', { detail: enabled }));
+  syncCardStyle(enabled ? 'gray' : 'solid');
 }
 
 function normalizeBackgroundSource(value: string | null | undefined): BackgroundSource | null {
