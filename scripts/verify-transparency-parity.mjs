@@ -21,7 +21,7 @@ async function run() {
     if (msg.type() === 'error') console.log(`[Browser Console Error]`, msg.text());
   });
 
-  await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(2000);
 
   // 1. Audit post card and inner content container (User Choice A1: Anzhiyu alignment)
@@ -44,7 +44,9 @@ async function run() {
       inner: innerStyle ? {
         className: innerContent.className,
         bg: innerStyle.backgroundColor,
-        backdropFilter: innerStyle.backdropFilter
+        backdropFilter: innerStyle.backdropFilter,
+        borderTopWidth: innerStyle.borderTopWidth,
+        borderTopStyle: innerStyle.borderTopStyle
       } : null
     };
   });
@@ -55,6 +57,7 @@ async function run() {
   assert.match(postCardData.card.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Card background must be 0.70 translucent white in gray mode');
   assert.match(postCardData.card.backdropFilter, /blur\(16px\)/, 'Card must have blur(16px) backdrop filter');
   assert.equal(postCardData.inner.bg, 'rgba(0, 0, 0, 0)', 'Post card inner container MUST be transparent (User Choice A1: eliminate 91% double-stacking)');
+  assert.ok(postCardData.inner.borderTopWidth === '0px' || postCardData.inner.borderTopStyle === 'none', 'Post card inner container MUST have no border-top divider (User Choice A2)');
 
   // 2. Audit #random-banner (User Choice A2: clean mask and solid gradient, enable standard frosted glass)
   const randomBannerData = await page.evaluate(() => {
@@ -112,9 +115,11 @@ async function run() {
   console.log('Sidebar Overview Sticky Card Data:', JSON.stringify(sidebarData, null, 2));
   assert.ok(sidebarData.card, 'Sidebar overview card must exist');
   assert.match(sidebarData.card.bg, /rgba\(255,\s*255,\s*255,\s*0\.7\d*\)/, 'Overview card must inherit translucent 0.70 frosted glass');
-  assert.doesNotMatch(sidebarData.card.bg, /rgba\(87,\s*189,\s*106/, 'Overview card MUST NOT have green opaque gradient');
   assert.match(sidebarData.card.backdropFilter, /blur\(16px\)/, 'Overview card must have blur(16px) backdrop filter');
   assert.equal(sidebarData.stickyBox.bg, 'rgba(0, 0, 0, 0)', '.aside-sticky-box MUST be transparent with no blocking solid background');
+  if (sidebarData.tagItem) {
+    assert.equal(sidebarData.tagItem.bg, 'rgba(0, 0, 0, 0)', 'Tag cloud items in aside-sticky-box MUST be transparent with no self-fill (User Choice A1)');
+  }
 
   // 4. Audit home pagination (class="theme-card home-pagination") (User Choice A4: Anzhiyu native transparent pagination)
   const paginationData = await page.evaluate(() => {

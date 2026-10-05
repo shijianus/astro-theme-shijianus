@@ -5090,3 +5090,27 @@
 - [x] **全量多远端推送与 Cloudflare Pages 生产边缘节点全量部署**：
   - 代码推送至 `origin` 与 `cf`；
   - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。
+
+### Task 229: 非色彩框深度透明化与四大核心组件安知鱼原生纯净透光完善
+- [x] **追问闭环与决策落地 (User Alignment via ask_question)**：
+  - 针对用户重点指示的四大组件（`card-feature-panel--overview card-tag-cloud-panel`、`p-3.sm:p-3.5`、`theme-card home-pagination`、`#random-banner`）及大部分非色彩框进行定向多选题交互追问；
+  - 用户全量确认并批准推荐方案：
+    - A1: 侧边栏吸顶总览卡片外层统一单层毛玻璃，内部标签云与所有子容器 100% 纯透明（彻底移除微气泡底色与边框，绝不自加填充）；
+    - A2: 首页文章卡片内容区域 100% 绝对透明且彻底移除顶部 border-top 分割线，整卡浑然一体透出网页背景；
+    - A3: 分页导航条外层彻底 100% 透明（移除 theme-card 容器背景、边框与阴影），各个独立页码按钮保持轻量悬浮毛玻璃；
+    - A4: 首页推荐卡片彻底移除实心渐变与伪元素遮罩，采用标准单层毛玻璃（0.70 半透 + blur），清晰透过后方背景底色与动效。
+- [x] **吸顶总览卡片与非色彩框“绝不自加填充”重构 (A1)**：
+  - 在 `Sidebar.astro` 与 `final-pass.css` 中彻底清除 `.card-tag-cloud-panel .tag-cloud-item`、`.aside-sticky-box .tag-cloud-item`、`.category-chip` 的写死背景与边框，设为 100% `background: transparent !important; border: 1px solid transparent !important;`，仅在 hover 时展示主题色；
+  - 彻底清除分类链接 `.card-categories .card-category-list-link` 的 `color-mix` 80% 实心背景；
+  - 彻底清除站点统计 `.webinfo-item` 的背景填充与 `.category-chip__count` 的色块填充；
+  - 消除卡片内部多层嵌套遮挡，使整块卡片完全透出后方网页背景环境光。
+- [x] **文章卡片内容容器无缝一体化 (A2)**：
+  - 在 `final-pass.css` 中彻底清除所有模式下（磨砂、透明、纯色）`.recent-post-item` 内层 `.p-3.sm:p-3.5` 的 `border-top` 分割线，将其固化为 `border-top: none !important;`；
+  - 杜绝图片与文字区的割裂感，实现整卡水晶单层通透一体化。
+- [x] **分页导航栏与 random-banner 安知鱼对齐加固 (A3, A4)**：
+  - 固化 `#home-pagination`、`.home-pagination`、`nav#home-pagination`、`.theme-card.home-pagination` 绝对全透明（0 背景、0 边框、0 阴影、0 滤镜）；
+  - 固化 `#random-banner` 单层毛玻璃，移除所有 `::before` 遮罩与硬编码实心渐变。
+- [x] **自动化测试套件与真实端到端断言更新 (`scripts/verify-transparency-parity.mjs`)**：
+  - 新增文章内容容器 `border-top: 0px / none` 严格断言；
+  - 新增侧边栏标签元素 `bg: rgba(0, 0, 0, 0)` 纯透明断言；
+  - 本地与线上环境验证全部全绿 PASS。
