@@ -5091,7 +5091,7 @@
   - 代码推送至 `origin` 与 `cf`；
   - 部署最新构建至 `shijianus-blog` 与 `shijianus-github-io`，生产端实机全链路审计验证通过。
 
-### Task 229: 非色彩框深度透明化与四大核心组件安知鱼原生纯净透光完善
+### Task 229: 非色彩框深度透明化与四大核心组件安知鱼原生纯净透光完善 (d665384)
 - [x] **追问闭环与决策落地 (User Alignment via ask_question)**：
   - 针对用户重点指示的四大组件（`card-feature-panel--overview card-tag-cloud-panel`、`p-3.sm:p-3.5`、`theme-card home-pagination`、`#random-banner`）及大部分非色彩框进行定向多选题交互追问；
   - 用户全量确认并批准推荐方案：
