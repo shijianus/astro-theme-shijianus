@@ -5150,4 +5150,21 @@
   - 清理本次新增的测试脚本 `scripts/verify-transparency-parity.mjs`，确保除文档外工作区与基线 `904c549` / `bb97d12` 完全一致；
   - 确保 `#footer-wrap` 及其环境完整恢复至原始正确状态。
 
+### Task 233: 依用户严格指令执行退化操作：向前提交回退至 811947f 前完全稳定基线 (b458a1d)
+- [x] **回退节点精准校正 (Precise Target Rollback to b458a1d)**：
+  - 纠正前次误退回至 `bb97d12`（遗漏了 Task 229 对 `#footer` 稳定渐变及透明配置）的失误；
+  - 严格遵守“commit不动，只是文件上的回退和继续发展向前新的commit”原则，绝不执行任何 `git reset` 或历史重写；
+  - 将所有受影响文件（`src/`、`scripts/` 全部文件）精准检出恢复至 `b458a1d`（811947f 前的完全稳定基线）；
+  - 执行 `git diff b458a1d -- . ':(exclude)AGENTS.md'` 严谨核验，确认所有源码、组件与样式文件与 `b458a1d` 100% 逐字节一致。
+- [x] **#footer 与 #footer-wrap 稳定材质 100% 恢复**：
+  - 完整恢复 `#footer-wrap` 与 `.footer-main-shell` 纯透明规范（`background: transparent !important; backdrop-filter: none !important; border: none !important; box-shadow: none !important;`）；
+  - 完整恢复 `#footer` 经典平滑渐变底（`linear-gradient(180deg, var(--card-bg-none, rgba(255, 255, 255, 0)) 0%, color-mix(in srgb, var(--card-bg) 65%, transparent) 40%, var(--card-bg) 100%) !important;`）；
+  - 绝不引入任何多余修改与新功能，全量专注基线退化与稳定性恢复。
+- [x] **全量构建与部署验证 (Build, Multi-Push & CF Pages Deploy)**：
+  - 本地执行 `npm run build` 成功完成全量 284 页面编译；
+  - 多端推送 `origin main` 与 `cf main`；
+  - 全量部署生产端 Cloudflare Pages（`shijianus-blog` 与 `shijianus-github-io`）；
+  - Playwright 实测生产环境 `https://blog.epocanvas.com/` 验证 `#footer`、`#footer-wrap` 样式与 0 控制台报错。
+
+
 
