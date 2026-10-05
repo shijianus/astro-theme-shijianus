@@ -5750,16 +5750,18 @@ body[data-type='home'] .home-pagination__badge {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  padding: 6px 12px !important;
-  border-radius: 8px !important;
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
-  box-shadow: var(--anzhiyu-shadow-border) !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
   font-size: 12.5px !important;
   font-weight: 500 !important;
-  color: var(--font-color) !important;
+  color: var(--secondtext) !important;
 }
 
 body[data-type='home'] .home-pagination__badge-dot {
@@ -8144,11 +8146,6 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
-  #aside-content .card-widget.card-feature-panel,
-  #aside-content .card-widget.card-feature-panel--overview,
-  #aside-content .card-widget.card-tag-cloud-panel,
-  #card-tag-cloud-overview,
-  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,
@@ -8160,7 +8157,6 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8183,29 +8179,46 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
-/* Alignment with Anzhiyu: User Choice A1
-   Outer .recent-post-item carries single-layer card-bg + blur(16px), inner container is transparent to eliminate 91% double-layer opacity stacking */
+/* Alignment with Anzhiyu: Zero Self-Fill on Post Card Inner Container
+   class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"
+   Matches id="footer-wrap" material: pure transparent, zero self-fill, zero border, zero shadow */
 :is(.recent-post-item, #recent-posts > .recent-post-item) > .p-3.sm\:p-3\.5,
 :is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"],
 .recent-post-item .p-3.sm\:p-3\.5,
-.recent-post-item .recent-post-info {
+.recent-post-item .recent-post-info,
+.recent-post-item > div[class*="justify-between"] {
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  border: none !important;
   border-top: none !important;
+  box-shadow: none !important;
   position: relative !important;
   z-index: 2 !important;
 }
 
-/* User Choice A2: #random-banner complete removal of opaque mask and hardcoded gradient */
+/* Anzhiyu Parity: #random-banner Zero Self-Fill Transparent Directives
+   Matches id="footer-wrap" material: pure transparent, zero self-fill, zero border, zero shadow */
 #random-banner,
-body[data-type='home'] #random-banner {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+body[data-type='home'] #random-banner,
+#bannerGroup #random-banner {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#random-banner:hover,
+body[data-type='home'] #random-banner:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 #random-banner::before,
@@ -8217,8 +8230,14 @@ body[data-type='home'] #random-banner::after {
   background: none !important;
 }
 
-body[data-type='home'] #random-banner .random-banner__content {
+body[data-type='home'] #random-banner .random-banner__content,
+#random-banner .random-banner__content {
   background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* User-specified target: class="aside-sticky-box" and its sticky card tree */
@@ -8230,19 +8249,40 @@ body[data-type='home'] #random-banner .random-banner__content {
   box-shadow: none !important;
 }
 
-.aside-sticky-box > .card-widget,
-.aside-sticky-box .card-widget,
-.aside-sticky-box #card-tag-cloud-overview,
+/* Aside Sticky Box General Cards */
+.aside-sticky-box > .card-widget:not(.card-feature-panel--overview):not(.card-tag-cloud-panel),
+.aside-sticky-box .card-widget:not(.card-feature-panel--overview):not(.card-tag-cloud-panel),
 .aside-sticky-box #card-toc,
 .aside-sticky-box .card-recent-post,
-.aside-sticky-box .support-dashboard-card,
-.aside-sticky-box .card-feature-panel--overview,
-.card-widget.card-feature-panel--overview {
+.aside-sticky-box .support-dashboard-card {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border: 1px solid var(--card-border) !important;
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  overflow: visible !important;
+}
+
+/* Anzhiyu Parity: Sticky Overview Panel Zero Self-Fill Transparent Directives
+   class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"
+   Matches id="footer-wrap" material: pure transparent, zero self-fill, zero border, zero shadow */
+#aside-content .card-widget.card-feature-panel,
+#aside-content .card-widget.card-feature-panel--overview,
+#aside-content .card-widget.card-tag-cloud-panel,
+#card-tag-cloud-overview,
+.card-feature-panel--overview,
+.card-widget.card-feature-panel--overview,
+.card-widget.card-feature-panel.card-feature-panel--overview.card-tag-cloud-panel.is-sticky-active,
+.aside-sticky-box .card-feature-panel--overview,
+.aside-sticky-box #card-tag-cloud-overview,
+.aside-sticky-box > .card-feature-panel--overview {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
   overflow: visible !important;
 }
 
@@ -8283,15 +8323,26 @@ body[data-type='home'] .card-webinfo-grid .webinfo-item,
   border: 1px solid color-mix(in srgb, var(--card-border) 40%, transparent) !important;
 }
 
-/* User Choice A4: Anzhiyu Native Transparent Pagination Directives */
+/* Anzhiyu Parity: Home Pagination Zero Self-Fill Transparent Directives
+   class="theme-card home-pagination"
+   Matches id="footer-wrap" material: pure transparent, zero self-fill, zero border, zero shadow */
 #home-pagination,
 .home-pagination,
 nav#home-pagination,
+.theme-card.home-pagination,
+nav#home-pagination.theme-card,
 body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
-body[data-type='home'] nav#home-pagination {
+body[data-type='home'] nav#home-pagination,
+body[data-type='home'] nav#home-pagination.theme-card,
+body[data-type='home'] .theme-card.home-pagination,
+#home-pagination .home-pagination__status,
+#home-pagination .home-pagination__badge,
+.home-pagination .home-pagination__status,
+.home-pagination .home-pagination__badge {
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
@@ -8344,7 +8395,6 @@ body[data-type='home'] nav#home-pagination {
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8377,16 +8427,10 @@ body[data-type='home'] nav#home-pagination {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
-  #aside-content .card-widget.card-feature-panel,
-  #aside-content .card-widget.card-feature-panel--overview,
-  #aside-content .card-widget.card-tag-cloud-panel,
-  #card-tag-cloud-overview,
-  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8433,16 +8477,10 @@ body[data-type='home'] nav#home-pagination {
   .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
-  #aside-content .card-widget.card-feature-panel,
-  #aside-content .card-widget.card-feature-panel--overview,
-  #aside-content .card-widget.card-tag-cloud-panel,
-  #card-tag-cloud-overview,
-  .card-feature-panel--overview,
   #card-toc,
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8482,7 +8520,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8523,7 +8560,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8585,7 +8621,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8626,7 +8661,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
