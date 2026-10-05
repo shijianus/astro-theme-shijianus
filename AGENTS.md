@@ -5124,3 +5124,23 @@
   - 将受影响的业务与样式文件（`HomePagination.astro`、`Sidebar.astro`、`final-pass.css`、`global.css`、`rebuild.css`）恢复至基线提交 `bb97d12` 时的无修改版本；
   - 移除临时调试脚本，使源码树严格恢复至无修改基线状态，为后续重点追问与精准开发提供干净的基础。
 
+### Task 231: 对齐安知鱼非色彩框透明化架构并实现与 #footer-wrap 材质等同处理 (811947f)
+- [x] **#footer-wrap 材质标准对照与严守红线 (Footer Wrap Parity Standard)**：
+  - 严守用户红线：“禁止修改 id="footer-wrap" 部分，只是要求对效果对比，达成专案内同样的效果”；
+  - 实测 `#footer-wrap` 核心材质：100% 纯净透明（`background: rgba(0, 0, 0, 0)`）、0 滤镜阻隔（`backdrop-filter: none`）、0 边框与微光遮蔽（`border: 0px / none`）、0 阴影框框（`box-shadow: none`），使底层动态星空与背景环境光浑然一体自然透过，绝不再自加填充。
+- [x] **四大重点核心组件等同材质透明化改造落地**：
+  1. `class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`：
+     - 在 `Sidebar.astro` 与 `final-pass.css` 中从大卡片列表严格排除，并赋予 `background: transparent !important; backdrop-filter: none !important; border: none !important; box-shadow: none !important;`；
+     - 内部标签云（`.tag-cloud-item`）、分类胶囊（`.category-chip`）与站点统计（`.webinfo-item`）全面清除实心遮蔽背景（`rgba(0, 0, 0, 0)`），仅保留自然文字与微光悬浮态；
+  2. `class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`：
+     - 文章卡片内容容器严格固化为纯净透明（`background: transparent !important; backdrop-filter: none !important; border-top: none !important; border: none !important; box-shadow: none !important;`），杜绝双层叠加导致的厚重感与顶部分割线割裂；
+  3. `class="theme-card home-pagination"`：
+     - 在 `HomePagination.astro` 中彻底移除 `theme-card` 容器类名，使其恢复为纯导航 `<nav id="home-pagination" class="home-pagination">`；
+     - 在 CSS 中赋予绝对透明（0 背景、0 边框、0 阴影、0 滤镜），独立翻页按钮与计数标签优雅悬浮于背景之上；
+  4. `id="random-banner"`：
+     - 彻底清除实心卡片列表规则及 `::before`、`::after` 遮罩伪元素，赋予纯透明背景（`rgba(0, 0, 0, 0)`）与 `backdrop-filter: none !important; box-shadow: none !important;`，完美达成透过可见后方底色而不再自加填充。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 实测断言 Light Mode 与 Dark Mode 下全部 4 大目标组件及子元素计算样式达到 100% `rgba(0, 0, 0, 0)` 与 `backdrop-filter: none`；
+  - 自动化测试全绿通过（ALL TRANSPARENCY VERIFICATION TESTS PASSED SUCCESSFULLY）。
+
+
