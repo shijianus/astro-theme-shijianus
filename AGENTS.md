@@ -5114,3 +5114,13 @@
   - 新增文章内容容器 `border-top: 0px / none` 严格断言；
   - 新增侧边栏标签元素 `bg: rgba(0, 0, 0, 0)` 纯透明断言；
   - 本地与线上环境验证全部全绿 PASS。
+
+### Task 230: 依据用户准则完成代码全量备份与向前提交回退至无修改基线状态 (bb97d12)
+- [x] **全量备份当前试验代码 (Full WIP Backup)**：
+  - 创建独立分支 `backup/transparency-experiments`，将当前工作区所有改动（含 `final-pass.css`、`inspect-transparency-parity.mjs` 等）完整提交保存（Commit: `45f2c72`）；
+  - 打上专用永久标签 `backup-transparency-before-rollback`，确保任何历史试验状态 100% 完整可追溯。
+- [x] **保持 Git 历史向前提交，文件内容干净回退到基础状态 (Forward History Rollback)**：
+  - 严格遵守用户指示（“commit记录修改，但是不认可修改；commit一直向前发展，变的只是文件”）；
+  - 将受影响的业务与样式文件（`HomePagination.astro`、`Sidebar.astro`、`final-pass.css`、`global.css`、`rebuild.css`）恢复至基线提交 `bb97d12` 时的无修改版本；
+  - 移除临时调试脚本，使源码树严格恢复至无修改基线状态，为后续重点追问与精准开发提供干净的基础。
+
