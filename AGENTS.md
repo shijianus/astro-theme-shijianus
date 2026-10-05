@@ -5143,4 +5143,11 @@
   - 实测断言 Light Mode 与 Dark Mode 下全部 4 大目标组件及子元素计算样式达到 100% `rgba(0, 0, 0, 0)` 与 `backdrop-filter: none`；
   - 自动化测试全绿通过（ALL TRANSPARENCY VERIFICATION TESTS PASSED SUCCESSFULLY）。
 
+### Task 232: 依指令向前提交还原全部受影响文件至无修改基准状态
+- [x] **严格向前提交，还原受影响文件 (Forward Rollback of Modified Files)**：
+  - 严格遵守用户指示（“撤销本次修改！还原你本次修改的文件，commit继续向前发展不允许回退，只能向前推进，回退只是对文件的回退！”）；
+  - 彻底撤销 Task 231 对 `HomePagination.astro`、`Sidebar.astro`、`final-pass.css` 的全部修改，将其 100% 恢复至基线状态；
+  - 清理本次新增的测试脚本 `scripts/verify-transparency-parity.mjs`，确保除文档外工作区与基线 `904c549` / `bb97d12` 完全一致；
+  - 确保 `#footer-wrap` 及其环境完整恢复至原始正确状态。
+
 
