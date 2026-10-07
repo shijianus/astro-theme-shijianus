@@ -177,7 +177,26 @@ async function run() {
   assert.ok(isNoShadow(randomBannerData.boxShadow), '#random-banner MUST have no box shadow');
   assert.ok(randomBannerData.beforeDisplay === 'none' || randomBannerData.beforeContent === 'none', '#random-banner::before opaque mask MUST be eliminated');
 
-  // 6. Audit in Dark Mode
+  // 6. Audit Target 5: Category Bar (#category-bar / .category-bar)
+  const categoryBarData = await page.evaluate(() => {
+    const el = document.querySelector('#category-bar') || document.querySelector('.category-bar');
+    if (!el) return null;
+    const cs = window.getComputedStyle(el);
+    return {
+      bg: cs.backgroundColor,
+      filter: cs.backdropFilter || cs.webkitBackdropFilter,
+      shadow: cs.boxShadow
+    };
+  });
+
+  if (categoryBarData) {
+    console.log('Category Bar Data:', JSON.stringify(categoryBarData, null, 2));
+    assert.equal(categoryBarData.bg, 'rgba(0, 0, 0, 0)', '#category-bar MUST match #footer-wrap transparent material');
+    assert.ok(isNoFilter(categoryBarData.filter), '#category-bar MUST have no backdrop filter');
+    assert.ok(isNoShadow(categoryBarData.shadow), '#category-bar MUST have no box shadow');
+  }
+
+  // 7. Audit in Dark Mode
   console.log('\n--- Switching to Dark Mode ---');
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await page.waitForTimeout(500);
@@ -199,7 +218,8 @@ async function run() {
       stickyOverview: getStyles('.card-feature-panel--overview'),
       postCardInner: getStyles('.recent-post-item > div:last-child, .recent-post-info'),
       homePagination: getStyles('#home-pagination'),
-      randomBanner: getStyles('#random-banner')
+      randomBanner: getStyles('#random-banner'),
+      categoryBar: getStyles('#category-bar, .category-bar')
     };
   });
 
@@ -211,6 +231,10 @@ async function run() {
   assert.equal(darkAudit.homePagination.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Home pagination must be transparent');
   assert.equal(darkAudit.randomBanner.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Random banner must be transparent');
   assert.ok(isNoFilter(darkAudit.randomBanner.filter), 'Dark mode: Random banner must have no filter');
+  if (darkAudit.categoryBar) {
+    assert.equal(darkAudit.categoryBar.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Category bar must be transparent');
+    assert.ok(isNoFilter(darkAudit.categoryBar.filter), 'Dark mode: Category bar must have no filter');
+  }
 
   // Screenshots
   await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
