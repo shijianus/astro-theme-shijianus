@@ -8160,7 +8160,6 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8198,14 +8197,16 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   z-index: 2 !important;
 }
 
-/* User Choice A2: #random-banner complete removal of opaque mask and hardcoded gradient */
+/* User Choice A2: #random-banner transparent material matching #footer-wrap */
 #random-banner,
 body[data-type='home'] #random-banner {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 #random-banner::before,
@@ -8230,19 +8231,30 @@ body[data-type='home'] #random-banner .random-banner__content {
   box-shadow: none !important;
 }
 
-.aside-sticky-box > .card-widget,
-.aside-sticky-box .card-widget,
-.aside-sticky-box #card-tag-cloud-overview,
+.aside-sticky-box > .card-widget:not(.card-feature-panel--overview):not(#card-tag-cloud-overview),
+.aside-sticky-box .card-widget:not(.card-feature-panel--overview):not(#card-tag-cloud-overview),
 .aside-sticky-box #card-toc,
 .aside-sticky-box .card-recent-post,
-.aside-sticky-box .support-dashboard-card,
-.aside-sticky-box .card-feature-panel--overview,
-.card-widget.card-feature-panel--overview {
+.aside-sticky-box .support-dashboard-card {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border: 1px solid var(--card-border) !important;
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  overflow: visible !important;
+}
+
+.aside-sticky-box #card-tag-cloud-overview,
+.aside-sticky-box .card-feature-panel--overview,
+.card-widget.card-feature-panel--overview,
+.card-feature-panel--overview {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
   overflow: visible !important;
 }
 
@@ -8344,7 +8356,6 @@ body[data-type='home'] nav#home-pagination {
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8386,7 +8397,6 @@ body[data-type='home'] nav#home-pagination {
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8442,7 +8452,6 @@ body[data-type='home'] nav#home-pagination {
   .card-info,
   .card-recent-post,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8482,7 +8491,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8523,7 +8531,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8585,7 +8592,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8626,7 +8632,6 @@ body[data-type='home'] nav#home-pagination {
   #flip-wrapper,
   #flip-content,
   .todayCard,
-  #random-banner,
   .categoryItem,
   .relatedPosts-item,
   .postNav-card,
@@ -8785,6 +8790,142 @@ body[data-type='home'] nav#home-pagination {
   line-height: 1.4;
   opacity: 0.85;
 }
+
+/* ==========================================================================
+   Anzhiyu Transparency Alignment: Non-Colored Boxes Pure Transparency
+   Material Parity with #footer-wrap (Zero self-added fill, see-through background)
+   ========================================================================== */
+
+/* 1. Target: class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active" */
+:root .card-feature-panel--overview,
+:root #card-tag-cloud-overview,
+:root #aside-content .card-feature-panel--overview,
+:root #aside-content #card-tag-cloud-overview,
+:root .aside-sticky-box > .card-widget.card-feature-panel--overview,
+:root .aside-sticky-box #card-tag-cloud-overview,
+body[data-type='home'] .card-feature-panel--overview,
+body[data-type='home'] #card-tag-cloud-overview,
+.card-feature-panel--overview.is-sticky-active,
+.card-widget.card-feature-panel--overview,
+.card-feature-panel--overview,
+#card-tag-cloud-overview,
+.aside-sticky-box {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Sub-elements inside sticky overview: tags, category chips, webinfo items - Zero self-fill */
+.card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
+.card-tag-cloud-panel .tag-cloud-item,
+.aside-sticky-box .card-tag-cloud a.tag-cloud-item,
+.aside-sticky-box .tag-cloud-item,
+body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item,
+.card-tag-cloud-panel .category-chip,
+.aside-sticky-box .card-category-chips a.category-chip,
+.aside-sticky-box .category-chip,
+body[data-type='home'] .category-chip {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  color: var(--font-color) !important;
+}
+
+body[data-type='home'] .category-chip__count {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+body[data-type='home'] .card-webinfo-grid .webinfo-item,
+.aside-sticky-box .card-webinfo-grid .webinfo-item,
+body[data-type='home'] .webinfo-item {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 40%, transparent) !important;
+  box-shadow: none !important;
+}
+
+/* 2. Target: class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5" */
+.recent-post-item > div:last-child,
+.recent-post-item .recent-post-info,
+.recent-post-item :is(.p-3, [class*="justify-between"]),
+:root :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
+:root[data-card-style='gray'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
+:root[data-card-style='transparent'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
+:root[data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 3. Target: class="theme-card home-pagination" */
+#home-pagination,
+.home-pagination,
+nav#home-pagination,
+.theme-card.home-pagination,
+body[data-type='home'] #home-pagination,
+body[data-type='home'] .home-pagination,
+body[data-type='home'] nav#home-pagination,
+body[data-type='home'] nav#home-pagination.theme-card {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 4. Target: id="random-banner" */
+:root:not([data-card-style='__none__']):not([data-translucent='__none__']) #bannerGroup #random-banner,
+:root:not([data-card-style='__none__']):not([data-translucent='__none__']) #random-banner,
+:root[data-theme='dark']:not([data-card-style='__none__']):not([data-translucent='__none__']) #bannerGroup #random-banner,
+:root[data-theme='dark']:not([data-card-style='__none__']):not([data-translucent='__none__']) #random-banner,
+:root #bannerGroup #random-banner,
+:root #random-banner,
+:root body[data-type='home'] #random-banner,
+body[data-type='home'] #bannerGroup #random-banner,
+#bannerGroup > #random-banner,
+#random-banner,
+body[data-type='home'] #random-banner,
+:root[data-theme='dark'] body[data-type='home'] #random-banner {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#random-banner::before,
+#random-banner::after,
+body[data-type='home'] #random-banner::before,
+body[data-type='home'] #random-banner::after,
+:root[data-theme='dark'] body[data-type='home'] #random-banner::before,
+:root[data-theme='dark'] body[data-type='home'] #random-banner::after {
+  display: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  content: none !important;
+}
+
 
 
 
