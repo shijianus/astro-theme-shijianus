@@ -5166,5 +5166,26 @@
   - 全量部署生产端 Cloudflare Pages（`shijianus-blog` 与 `shijianus-github-io`）；
   - Playwright 实测生产环境 `https://blog.epocanvas.com/` 验证 `#footer`、`#footer-wrap` 样式与 0 控制台报错。
 
+### Task 234: 严守最小修改原则与红线实现四大非色彩框组件与 #footer-wrap 材质等同透明化 (ac2ac78)
+- [x] **红线与基线严格坚守 (Zero Regression Redline & Minimal Modification Principle)**：
+  - 稳定基线锁定：`e325c32`（100% 对应 `b458a1d`）；
+  - 严守绝对红线：“禁止修改 id="footer-wrap"，最终修改如若导致 id="footer-wrap" 等正常通通组件失效(视觉验收对比)认定任务直接失败”；
+  - 坚持最小修改原则：0 修改 `Footer.astro`，0 修改 `global.css`，0 修改 `rebuild.css`，0 修改其他无关组件，将所有样式精准收敛至 `final-pass.css`，杜绝任何对页脚与底座的串层污染。
+- [x] **四大非色彩框组件对齐 #footer-wrap 材质（0 自加填充、纯透明透过背景）全量落地**：
+  1. `class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`：
+     - 在 `final-pass.css` 中赋予与 `#footer-wrap` 完全一致的材质（`background: transparent !important; backdrop-filter: none !important; border: none !important; box-shadow: none !important;`）；
+     - 内部标签云（`.tag-cloud-item`）、分类胶囊（`.category-chip`）与站点统计（`.webinfo-item`）保持纯透明（`rgba(0, 0, 0, 0)`），杜绝任何自加背景填充，底图自然通透穿透；
+  2. `class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`：
+     - 文章卡片内容容器严格固化为 100% 纯净透明（`background: transparent !important; backdrop-filter: none !important; border-top: none !important; border: none !important; box-shadow: none !important;`），杜绝双层叠加导致的厚重感；
+  3. `class="theme-card home-pagination"`：
+     - 分页导航容器（`#home-pagination`、`.home-pagination`、`.theme-card.home-pagination`）全面赋予绝对透明（0 背景、0 边框、0 阴影、0 滤镜），对齐 `#footer-wrap` 纯净材质；
+  4. `id="random-banner"`：
+     - 从 `final-pass.css` 所有实心卡片列表彻底剔除，并赋予高优先级透明规则（`background: transparent !important; backdrop-filter: none !important; border: none !important; box-shadow: none !important;`），清理 `::before`、`::after` 遮罩，达成与 `#footer-wrap` 完全等同的通透材质。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 实测断言 Light Mode 与 Dark Mode 下全部 4 大目标组件及子元素计算样式达到 100% `rgba(0, 0, 0, 0)`、`backdrop-filter: none`、`box-shadow: none`，与 `#footer-wrap` 材质完全等同；
+  - 严格校验 `#footer` 渐变背景与 `#footer-wrap` 纯透明规范 100% 保持正常（零失效）；
+  - 本地预览与生产端实测全绿 PASS。
+
+
 
 
