@@ -5186,6 +5186,19 @@
   - 严格校验 `#footer` 渐变背景与 `#footer-wrap` 纯透明规范 100% 保持正常（零失效）；
   - 本地预览与生产端实测全绿 PASS。
 
-
-
-
+### Task 235: 完善全站非色彩框组件对齐 #footer-wrap 材质等同透明化与深度追问验收 (4f95843)
+- [x] **红线与基线严格坚守 (Zero Regression Redline & Minimal Modification Principle)**：
+  - 稳定基线锁定：`e325c32`；
+  - 绝对红线坚守：0 修改 `Footer.astro`，0 修改 `global.css`，0 修改 `rebuild.css`，`#footer-wrap` 及其环境保持 100% 原始正确材质；
+  - 坚持最小修改原则：将所有新增样式集中收敛于 `src/styles/final-pass.css`，杜绝任何对底座和组件的破坏性改动。
+- [x] **四大核心组件与全站非色彩框对齐 #footer-wrap 材质（0 自加填充、纯透明透过背景底色）全量落地**：
+  1. `class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active"`：吸顶总览卡片、标签云、分类胶囊与站点统计彻底清除实心底色与伪元素边框，达成 100% 纯透明（`rgba(0, 0, 0, 0)`、0 滤镜、0 阴影、0 边框）；
+  2. `class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"`：文章卡片内容区域 100% 绝对纯净透明，彻底清除内层底色与 `border-top` 分割线，整卡通透浑然一体；
+  3. `class="theme-card home-pagination"`：分页导航外层容器绝对全透明（0 背景、0 边框、0 阴影、0 滤镜），对齐 `#footer-wrap` 纯净材质；
+  4. `id="random-banner"`：彻底移除 0.98/0.99 遮罩伪元素与写死渐变，达成纯透明透过可见后方底色壁纸与雪花粒子；
+  5. `id="category-bar"` / `.category-bar`：顶部分类条彻底移除 70% 白色渐变底色，实现 100% 纯透明（`rgba(0, 0, 0, 0)`、0 滤镜、0 阴影）；
+  6. 其它非色彩卡片（`.aside-sticky-box > .card-widget`、`.card-categories`、`.card-recent-post`、`.card-tags`、`.card-webinfo`、`.card-announcement`、`.support-dashboard-card`、`#card-toc`、`.post-copyright`、`.relatedPosts-item`、`.postNav-card` 等）：全面对齐透明化，消除所有自加填充，使背景底色自然穿透。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 断言 Light Mode 与 Dark Mode 下全部目标组件及子元素计算样式达到 100% `rgba(0, 0, 0, 0)`、`backdrop-filter: none`、`box-shadow: none`，与 `#footer-wrap` 材质 100% 完全等同；
+  - 严格校验 `#footer` 渐变背景与 `#footer-wrap` 纯透明规范 100% 保持正常（零失效）；
+  - 本地预览全绿 PASS，截图视觉审计完成。
