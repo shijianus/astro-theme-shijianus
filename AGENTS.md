@@ -5275,7 +5275,7 @@
     - `linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32))`（Alpha ≤ 0.45 半透明主题色，雪花与底层图标通透可见）；
   - `#footer` 与 `#footer-wrap` 现有样式 100% 保持不动。
 
-### Task 240: 主页 aside-sticky-box-overview 安知鱼半透明卡片重构与动态底层背景穿透 (PENDING_HASH)
+### Task 240: 主页 aside-sticky-box-overview 安知鱼半透明卡片重构与动态底层背景穿透 (2fd6aad)
 - [x] **重构主页吸顶框为半透明独立卡片框 (class="aside-sticky-box" id="aside-sticky-box-overview")**：
   - 参考安知鱼官方 `sticky_layout` 架构，将 `#aside-sticky-box-overview` 转换为具备完整外边框与高质感圆角的实体卡片框：
     - 浅色模式（亮色调白色透明）：`--home-sticky-card-bg: rgba(255, 255, 255, 0.52)`，边框 `1px solid rgba(227, 232, 247, 0.85)`，模糊度 `saturate(140%) blur(8px)`；
