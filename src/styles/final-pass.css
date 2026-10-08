@@ -8839,31 +8839,31 @@ body[data-type='home'] .home-pagination__num.is-current {
 }
 
 /* ==========================================================================
-   Genuine Colored Translucent Frosted Glass System (有色透明色板规范)
-   - 浅色模式: rgba(255, 255, 255, 0.32) | saturate(160%) blur(14px) | 1px 细边框
-   - 深色模式: rgba(22, 25, 35, 0.38)     | saturate(180%) blur(14px) | 1px 暗夜微边框
-   - 子微色块: 浅色 0.45 / 深色 0.09 (形成立体浮雕微层级)
-   - 悬浮/激活: 半透明主题色渐变 (Alpha 0.40~0.45，底层雪花清晰穿透)
+   Genuine Colored Translucent Frosted Glass System (真正的有色透明色板规范)
+   - 浅色模式: rgba(255, 255, 255, 0.24) | saturate(160%) blur(14px) | 1px 细微光边框 (0.45)
+   - 深色模式: rgba(20, 22, 30, 0.30)     | saturate(180%) blur(14px) | 1px 暗夜微边框 (0.12)
+   - 子微色块: 浅色 0.40 / 深色 0.09 (形成立体浮雕微层级)
+   - 悬浮/激活: 半透明主题色渐变 (Alpha 0.38/0.35 ≤ 0.45，底层雪花清晰穿透)
    ========================================================================== */
 
 :root {
-  --card-bg-translucent: rgba(255, 255, 255, 0.32);
-  --card-border-translucent: rgba(255, 255, 255, 0.55);
+  --card-bg-translucent: rgba(255, 255, 255, 0.24);
+  --card-border-translucent: rgba(255, 255, 255, 0.45);
   --card-filter-translucent: saturate(160%) blur(14px);
   --card-shadow-translucent: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
 
-  --sub-block-bg-translucent: rgba(255, 255, 255, 0.45);
-  --sub-block-border-translucent: rgba(255, 255, 255, 0.40);
+  --sub-block-bg-translucent: rgba(255, 255, 255, 0.40);
+  --sub-block-border-translucent: rgba(255, 255, 255, 0.35);
   --sub-block-shadow-translucent: 0 2px 6px -2px rgba(44, 45, 48, 0.04);
 
-  --hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.45), rgba(0, 118, 229, 0.38));
-  --hover-plate-border-translucent: rgba(66, 90, 239, 0.65);
+  --hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32));
+  --hover-plate-border-translucent: rgba(66, 90, 239, 0.55);
 }
 
 :root[data-theme='dark'],
 html[data-theme='dark'],
 [data-theme='dark'] {
-  --card-bg-translucent: rgba(22, 25, 35, 0.38);
+  --card-bg-translucent: rgba(20, 22, 30, 0.30);
   --card-border-translucent: rgba(255, 255, 255, 0.12);
   --card-filter-translucent: saturate(180%) blur(14px);
   --card-shadow-translucent: 0 8px 16px -4px rgba(0, 0, 0, 0.25);
@@ -8872,8 +8872,8 @@ html[data-theme='dark'],
   --sub-block-border-translucent: rgba(255, 255, 255, 0.10);
   --sub-block-shadow-translucent: 0 2px 6px -2px rgba(0, 0, 0, 0.2);
 
-  --hover-plate-translucent: linear-gradient(135deg, rgba(242, 185, 75, 0.42), rgba(0, 132, 255, 0.36));
-  --hover-plate-border-translucent: rgba(242, 185, 75, 0.65);
+  --hover-plate-translucent: linear-gradient(135deg, rgba(242, 185, 75, 0.35), rgba(0, 132, 255, 0.30));
+  --hover-plate-border-translucent: rgba(242, 185, 75, 0.55);
 }
 
 /* 1. Target: class="aside-sticky-box" 及其内部卡片与子微色块 */
