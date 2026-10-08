@@ -30,6 +30,14 @@ async function run() {
   const isTranslucentNotColorless = (val) => {
     if (!val || val === 'transparent' || val === 'rgba(0, 0, 0, 0)') return false;
     // Check that it contains rgba with alpha < 1, or is colored
+    if (val.startsWith('rgba(')) {
+      const match = val.match(/rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/);
+      if (match) {
+        const alpha = parseFloat(match[1]);
+        // Strict assertion for "有色透明": must have visible tint (> 0.15) but must be genuinely transparent (<= 0.55)
+        return alpha >= 0.15 && alpha <= 0.55;
+      }
+    }
     return val.startsWith('rgba(') || val.startsWith('rgb(');
   };
   const hasFilter = (val) => Boolean(val && val !== 'none');
