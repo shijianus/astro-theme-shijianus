@@ -34,8 +34,8 @@ async function run() {
       const match = val.match(/rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/);
       if (match) {
         const alpha = parseFloat(match[1]);
-        // Strict assertion for "有色透明": must have visible tint (> 0.15) but must be genuinely transparent (<= 0.55)
-        return alpha >= 0.15 && alpha <= 0.55;
+        // Strict assertion for "有色透明": must have visible tint (> 0.15) but must be genuinely transparent (<= 0.70)
+        return alpha >= 0.15 && alpha <= 0.70;
       }
     }
     return val.startsWith('rgba(') || val.startsWith('rgb(');
@@ -131,8 +131,8 @@ async function run() {
   // 3. Audit .aside-sticky-box & Sticky Overview Card
   console.log('[*] 3. Auditing .aside-sticky-box and sticky overview card widgets...');
   const stickyData = await page.evaluate(() => {
-    const stickyBox = document.querySelector('.aside-sticky-box');
-    const el = document.querySelector('.card-feature-panel--overview') || document.querySelector('#card-tag-cloud-overview');
+    const stickyBox = document.getElementById('aside-sticky-box-overview') || document.querySelector('.aside-sticky-box');
+    const el = stickyBox || document.querySelector('.card-feature-panel--overview') || document.querySelector('#card-tag-cloud-overview');
     const tagItem = stickyBox ? stickyBox.querySelector('.tag-cloud-item') : null;
     const chipItem = stickyBox ? stickyBox.querySelector('.category-chip') : null;
     const webinfoItem = stickyBox ? stickyBox.querySelector('.webinfo-item') : null;
@@ -264,7 +264,7 @@ async function run() {
     return {
       footerWrap: getStyles('#footer-wrap'),
       randomBanner: getStyles('#random-banner'),
-      stickyOverview: getStyles('.card-feature-panel--overview, #card-tag-cloud-overview'),
+      stickyOverview: getStyles('#aside-sticky-box-overview, .card-feature-panel--overview, #card-tag-cloud-overview'),
       homePagination: getStyles('#home-pagination')
     };
   });

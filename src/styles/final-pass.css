@@ -8233,24 +8233,19 @@ body[data-type='home'] #random-banner .random-banner__content {
 }
 
 /* User-specified target: class="aside-sticky-box" and its sticky card tree */
-.aside-sticky-box,
-#aside-content .aside-sticky-box,
-[id^="aside-sticky-box"] {
+.aside-sticky-box:not(#aside-sticky-box-overview),
+#aside-content .aside-sticky-box:not(#aside-sticky-box-overview),
+[id^="aside-sticky-box"]:not(#aside-sticky-box-overview) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.aside-sticky-box > .card-widget,
-.aside-sticky-box .card-widget,
+.aside-sticky-box:not(#aside-sticky-box-overview) > .card-widget,
+.aside-sticky-box:not(#aside-sticky-box-overview) .card-widget,
 .aside-sticky-box #card-toc,
 .aside-sticky-box .card-recent-post,
-.aside-sticky-box .support-dashboard-card,
-.aside-sticky-box #card-tag-cloud-overview,
-.aside-sticky-box .card-feature-panel--overview,
-.card-widget.card-feature-panel--overview,
-.card-feature-panel--overview,
-#card-tag-cloud-overview {
+.aside-sticky-box .support-dashboard-card {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
@@ -8858,6 +8853,16 @@ body[data-type='home'] .home-pagination__num.is-current {
 
   --hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32));
   --hover-plate-border-translucent: rgba(66, 90, 239, 0.55);
+
+  /* Home Sticky Overview Card: Light mode translucent white palette */
+  --home-sticky-card-bg: rgba(255, 255, 255, 0.52);
+  --home-sticky-card-border: rgba(227, 232, 247, 0.85);
+  --home-sticky-card-filter: saturate(140%) blur(8px);
+  --home-sticky-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+
+  --home-sticky-sub-bg: rgba(255, 255, 255, 0.35);
+  --home-sticky-sub-border: rgba(227, 232, 247, 0.70);
+  --home-sticky-sub-shadow: none;
 }
 
 :root[data-theme='dark'],
@@ -8874,32 +8879,71 @@ html[data-theme='dark'],
 
   --hover-plate-translucent: linear-gradient(135deg, rgba(242, 185, 75, 0.35), rgba(0, 132, 255, 0.30));
   --hover-plate-border-translucent: rgba(242, 185, 75, 0.55);
+
+  /* Home Sticky Overview Card: Dark mode translucent dark-toned grey palette */
+  --home-sticky-card-bg: rgba(26, 28, 36, 0.50);
+  --home-sticky-card-border: rgba(255, 255, 255, 0.12);
+  --home-sticky-card-filter: saturate(140%) blur(8px);
+  --home-sticky-card-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.35);
+
+  --home-sticky-sub-bg: rgba(255, 255, 255, 0.06);
+  --home-sticky-sub-border: rgba(255, 255, 255, 0.09);
+  --home-sticky-sub-shadow: none;
 }
 
-/* 1. Target: class="aside-sticky-box" 及其内部卡片与子微色块 */
-.aside-sticky-box,
-#aside-content .aside-sticky-box,
-[id^="aside-sticky-box"] {
+/* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
+body[data-type='home'] #aside-content #aside-sticky-box-overview,
+body[data-type='home'] .aside-sticky-box#aside-sticky-box-overview,
+body[data-type='home'] #aside-sticky-box-overview {
+  background: var(--home-sticky-card-bg) !important;
+  backdrop-filter: var(--home-sticky-card-filter) !important;
+  -webkit-backdrop-filter: var(--home-sticky-card-filter) !important;
+  border: 1px solid var(--home-sticky-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--home-sticky-card-shadow) !important;
+  padding: 20px 22px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: var(--sticky-column-top, 80px) !important;
+  overflow: visible !important;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* 消除主页内部 card-feature-panel--overview 的双重背景与内边距，确保一体化纯净卡片 */
+body[data-type='home'] #aside-sticky-box-overview > #card-tag-cloud-overview,
+body[data-type='home'] #aside-sticky-box-overview > .card-widget,
+body[data-type='home'] #aside-sticky-box-overview > .card-feature-panel--overview {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+/* 1b. Post Page sticky boxes remain transparent structural containers */
+.aside-sticky-box:not(#aside-sticky-box-overview),
+#aside-content .aside-sticky-box:not(#aside-sticky-box-overview),
+[id^="aside-sticky-box"]:not(#aside-sticky-box-overview) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-:root .card-feature-panel--overview,
-:root #card-tag-cloud-overview,
-:root #aside-content .card-feature-panel--overview,
-:root #aside-content #card-tag-cloud-overview,
-:root .aside-sticky-box > .card-widget,
-:root .aside-sticky-box .card-widget,
+:root .card-feature-panel--overview:not(#aside-sticky-box-overview *),
+:root #card-tag-cloud-overview:not(#aside-sticky-box-overview *),
+:root .aside-sticky-box:not(#aside-sticky-box-overview) > .card-widget,
+:root .aside-sticky-box:not(#aside-sticky-box-overview) .card-widget,
 :root .aside-sticky-box #card-toc,
 :root .aside-sticky-box .card-recent-post,
-:root .aside-sticky-box .support-dashboard-card,
-body[data-type='home'] .card-feature-panel--overview,
-body[data-type='home'] #card-tag-cloud-overview,
-.card-feature-panel--overview.is-sticky-active,
-.card-widget.card-feature-panel--overview,
-.card-feature-panel--overview,
-#card-tag-cloud-overview {
+:root .aside-sticky-box .support-dashboard-card {
   background: var(--card-bg-translucent) !important;
   backdrop-filter: var(--card-filter-translucent) !important;
   -webkit-backdrop-filter: var(--card-filter-translucent) !important;
@@ -8909,24 +8953,48 @@ body[data-type='home'] #card-tag-cloud-overview,
   overflow: visible !important;
 }
 
-/* 内部子微色块: 标签云、分类胶囊、网站资讯统计格 */
-#aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
-.card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
-.card-tag-cloud-panel .tag-cloud-item,
-.aside-sticky-box .card-tag-cloud a.tag-cloud-item,
-.aside-sticky-box .tag-cloud-item,
-body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item,
+/* 内部微色块: 标签云、分类胶囊、网站资讯统计格 (轻量半透明透光，底层雪花与星光清晰直穿) */
+body[data-type='home'] #aside-sticky-box-overview .tag-cloud-item,
+body[data-type='home'] #aside-sticky-box-overview .card-tag-cloud a.tag-cloud-item,
+body[data-type='home'] #aside-sticky-box-overview .category-chip,
+body[data-type='home'] #aside-sticky-box-overview .card-category-chips a.category-chip,
+body[data-type='home'] #aside-sticky-box-overview .card-webinfo-grid .webinfo-item,
+body[data-type='home'] #aside-sticky-box-overview .webinfo-item {
+  background: var(--home-sticky-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--home-sticky-sub-border) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--home-sticky-sub-shadow) !important;
+  color: var(--font-color) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='home'] #aside-sticky-box-overview .tag-cloud-item:hover,
+body[data-type='home'] #aside-sticky-box-overview .category-chip:hover,
+body[data-type='home'] #aside-sticky-box-overview .webinfo-item--link:hover {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='home'] #aside-sticky-box-overview .category-chip__count {
+  background: color-mix(in srgb, var(--home-sticky-card-bg) 80%, transparent) !important;
+  border-radius: 4px !important;
+}
+
+#aside-content .card-tag-cloud-panel:not(#aside-sticky-box-overview *) .card-tag-cloud a.tag-cloud-item,
+.card-tag-cloud-panel:not(#aside-sticky-box-overview *) .card-tag-cloud a.tag-cloud-item,
+.card-tag-cloud-panel:not(#aside-sticky-box-overview *) .tag-cloud-item,
+.aside-sticky-box:not(#aside-sticky-box-overview) .card-tag-cloud a.tag-cloud-item,
+.aside-sticky-box:not(#aside-sticky-box-overview) .tag-cloud-item,
 #aside-content .card-category-chips a.category-chip,
 .card-category-chips a.category-chip,
-.card-tag-cloud-panel .category-chip,
-.aside-sticky-box .card-category-chips a.category-chip,
-.aside-sticky-box .category-chip,
-body[data-type='home'] .category-chip,
-body[data-type='home'] .card-webinfo-grid .webinfo-item,
-.aside-sticky-box .card-webinfo-grid .webinfo-item,
-#aside-content .card-webinfo-grid .webinfo-item,
-body[data-type='home'] .webinfo-item,
-.card-webinfo-grid .webinfo-item {
+.card-tag-cloud-panel:not(#aside-sticky-box-overview *) .category-chip,
+.aside-sticky-box:not(#aside-sticky-box-overview) .card-category-chips a.category-chip,
+.aside-sticky-box:not(#aside-sticky-box-overview) .category-chip,
+.card-webinfo-grid:not(#aside-sticky-box-overview *) .webinfo-item {
   background: var(--sub-block-bg-translucent) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;

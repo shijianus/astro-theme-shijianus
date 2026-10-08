@@ -5275,4 +5275,19 @@
     - `linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32))`（Alpha ≤ 0.45 半透明主题色，雪花与底层图标通透可见）；
   - `#footer` 与 `#footer-wrap` 现有样式 100% 保持不动。
 
+### Task 240: 主页 aside-sticky-box-overview 安知鱼半透明卡片重构与动态底层背景穿透 (PENDING_HASH)
+- [x] **重构主页吸顶框为半透明独立卡片框 (class="aside-sticky-box" id="aside-sticky-box-overview")**：
+  - 参考安知鱼官方 `sticky_layout` 架构，将 `#aside-sticky-box-overview` 转换为具备完整外边框与高质感圆角的实体卡片框：
+    - 浅色模式（亮色调白色透明）：`--home-sticky-card-bg: rgba(255, 255, 255, 0.52)`，边框 `1px solid rgba(227, 232, 247, 0.85)`，模糊度 `saturate(140%) blur(8px)`；
+    - 深色模式（暗色调灰色透明）：`--home-sticky-card-bg: rgba(26, 28, 36, 0.50)`，边框 `1px solid rgba(255, 255, 255, 0.12)`，模糊度 `saturate(140%) blur(8px)`；
+    - 几何规范：`border-radius: 8px`，内边距 `20px 22px`，吸顶偏移 `top: 80px`，宽度严格对齐侧边栏（320px）；
+  - **杜绝双层套框与内外双边框**：将内部子容器 `#aside-sticky-box-overview > #card-tag-cloud-overview` 及 `.card-feature-panel--overview` 的 background、border、padding、backdrop-filter 全量归零（`transparent !important`），确保仅有单层利落卡片框；
+  - **确保雪花与星光底层背景通透穿透**：将标签云（`.tag-cloud-item`）、分类胶囊（`.category-chip`）与站点统计（`.webinfo-item`）调整为轻量半透明微色块（浅色 `0.35`，深色 `0.06`）且 `backdrop-filter: none`，消除背景马赛克遮挡，雪花与星光流动清晰可见；
+  - **页面级作用域隔离**：文章页目录与最新文章吸顶框（`#aside-sticky-box-toc`, `#aside-sticky-box-recent`）严格保持纯透明结构容器不变。
+- [x] **自动化端到端测试覆盖与验证 (`scripts/verify-home-sticky-overview-card.mjs` & `scripts/verify-transparency-parity.mjs`)**：
+  - 严格断言浅色模式 `rgba(255, 255, 255, alpha)` 介于 0.50~0.85；
+  - 严格断言深色模式 `rgba(r, g, b, alpha)` 最大 RGB ≤ 60 且 alpha 介于 0.45~0.75；
+  - 严格断言 8px 圆角、1px 实线边框、零双层嵌套、与 profile-card 对齐及滚屏吸顶固定状态。
+
+
 
