@@ -5515,7 +5515,8 @@ body[data-type='home'] #bannerGroup {
   box-sizing: border-box !important;
 }
 
-body[data-type='home'] #random-hover {
+body[data-type='home'] #random-hover,
+#random-hover {
   min-width: 0 !important;
   position: absolute !important;
   inset: -1px !important;
@@ -5526,18 +5527,22 @@ body[data-type='home'] #random-hover {
   flex: 1 1 auto;
   align-items: center;
   padding: 24px 28px;
+  background: var(--card-bg-translucent) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.35s ease, padding-left 0.35s ease, background 0.35s ease !important;
 }
 
-body[data-type='home'] #random-banner:hover #random-hover {
+body[data-type='home'] #random-banner:hover #random-hover,
+#random-banner:hover #random-hover {
   opacity: 1 !important;
   pointer-events: auto !important;
   padding-left: 28px !important;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main, #425aef) 88%, #06101f), color-mix(in srgb, var(--theme-deep, #0076e5) 78%, #04070f)) !important;
-  backdrop-filter: saturate(180%) blur(16px) !important;
-  -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
+  background: var(--hover-plate-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--hover-plate-border-translucent) !important;
+  box-shadow: 0 8px 24px -4px rgba(66, 90, 239, 0.25) !important;
   color: #ffffff !important;
 }
 
@@ -8201,16 +8206,17 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   z-index: 2 !important;
 }
 
-/* User Choice A2: #random-banner transparent material matching #footer-wrap */
+/* Target: #random-banner authentic colored translucent plate */
 #random-banner,
 body[data-type='home'] #random-banner {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 #random-banner::before,
@@ -8833,33 +8839,77 @@ body[data-type='home'] .home-pagination__num.is-current {
 }
 
 /* ==========================================================================
-   Anzhiyu Palette Regional Division: Translucent Frosted Color Blocks
-   "透明但是不是无色" (Translucent Frosted Glass + Region Boundary Demarcation)
+   Genuine Colored Translucent Frosted Glass System (有色透明色板规范)
+   - 浅色模式: rgba(255, 255, 255, 0.32) | saturate(160%) blur(14px) | 1px 细边框
+   - 深色模式: rgba(22, 25, 35, 0.38)     | saturate(180%) blur(14px) | 1px 暗夜微边框
+   - 子微色块: 浅色 0.45 / 深色 0.09 (形成立体浮雕微层级)
+   - 悬浮/激活: 半透明主题色渐变 (Alpha 0.40~0.45，底层雪花清晰穿透)
    ========================================================================== */
 
-/* 1. Target: Aside Sticky Box & Overview Card (Tags, Categories, Webinfo) */
+:root {
+  --card-bg-translucent: rgba(255, 255, 255, 0.32);
+  --card-border-translucent: rgba(255, 255, 255, 0.55);
+  --card-filter-translucent: saturate(160%) blur(14px);
+  --card-shadow-translucent: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+
+  --sub-block-bg-translucent: rgba(255, 255, 255, 0.45);
+  --sub-block-border-translucent: rgba(255, 255, 255, 0.40);
+  --sub-block-shadow-translucent: 0 2px 6px -2px rgba(44, 45, 48, 0.04);
+
+  --hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.45), rgba(0, 118, 229, 0.38));
+  --hover-plate-border-translucent: rgba(66, 90, 239, 0.65);
+}
+
+:root[data-theme='dark'],
+html[data-theme='dark'],
+[data-theme='dark'] {
+  --card-bg-translucent: rgba(22, 25, 35, 0.38);
+  --card-border-translucent: rgba(255, 255, 255, 0.12);
+  --card-filter-translucent: saturate(180%) blur(14px);
+  --card-shadow-translucent: 0 8px 16px -4px rgba(0, 0, 0, 0.25);
+
+  --sub-block-bg-translucent: rgba(255, 255, 255, 0.09);
+  --sub-block-border-translucent: rgba(255, 255, 255, 0.10);
+  --sub-block-shadow-translucent: 0 2px 6px -2px rgba(0, 0, 0, 0.2);
+
+  --hover-plate-translucent: linear-gradient(135deg, rgba(242, 185, 75, 0.42), rgba(0, 132, 255, 0.36));
+  --hover-plate-border-translucent: rgba(242, 185, 75, 0.65);
+}
+
+/* 1. Target: class="aside-sticky-box" 及其内部卡片与子微色块 */
+.aside-sticky-box,
+#aside-content .aside-sticky-box,
+[id^="aside-sticky-box"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 :root .card-feature-panel--overview,
 :root #card-tag-cloud-overview,
 :root #aside-content .card-feature-panel--overview,
 :root #aside-content #card-tag-cloud-overview,
-:root .aside-sticky-box > .card-widget.card-feature-panel--overview,
-:root .aside-sticky-box #card-tag-cloud-overview,
+:root .aside-sticky-box > .card-widget,
+:root .aside-sticky-box .card-widget,
+:root .aside-sticky-box #card-toc,
+:root .aside-sticky-box .card-recent-post,
+:root .aside-sticky-box .support-dashboard-card,
 body[data-type='home'] .card-feature-panel--overview,
 body[data-type='home'] #card-tag-cloud-overview,
 .card-feature-panel--overview.is-sticky-active,
 .card-widget.card-feature-panel--overview,
 .card-feature-panel--overview,
 #card-tag-cloud-overview {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
   overflow: visible !important;
 }
 
-/* Sub-elements inside sticky overview: tags, category chips, webinfo items */
+/* 内部子微色块: 标签云、分类胶囊、网站资讯统计格 */
 #aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
 .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
 .card-tag-cloud-panel .tag-cloud-item,
@@ -8867,23 +8917,30 @@ body[data-type='home'] #card-tag-cloud-overview,
 .aside-sticky-box .tag-cloud-item,
 body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item,
 #aside-content .card-category-chips a.category-chip,
+.card-category-chips a.category-chip,
 .card-tag-cloud-panel .category-chip,
 .aside-sticky-box .card-category-chips a.category-chip,
 .aside-sticky-box .category-chip,
-body[data-type='home'] .category-chip {
-  background: var(--card-btn-bg) !important;
+body[data-type='home'] .category-chip,
+body[data-type='home'] .card-webinfo-grid .webinfo-item,
+.aside-sticky-box .card-webinfo-grid .webinfo-item,
+#aside-content .card-webinfo-grid .webinfo-item,
+body[data-type='home'] .webinfo-item,
+.card-webinfo-grid .webinfo-item {
+  background: var(--sub-block-bg-translucent) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  border: 1px solid var(--sub-block-border-translucent) !important;
   border-radius: 6px !important;
-  box-shadow: none !important;
+  box-shadow: var(--sub-block-shadow-translucent) !important;
   color: var(--font-color) !important;
-  transition: all 0.25s ease !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item:hover,
 .aside-sticky-box .tag-cloud-item:hover,
 body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item:hover,
+.card-category-chips a.category-chip:hover,
 .card-tag-cloud-panel .category-chip:hover,
 .aside-sticky-box .category-chip:hover,
 body[data-type='home'] .category-chip:hover {
@@ -8894,22 +8951,11 @@ body[data-type='home'] .category-chip:hover {
 }
 
 body[data-type='home'] .category-chip__count {
-  background: color-mix(in srgb, var(--card-bg) 80%, transparent) !important;
+  background: color-mix(in srgb, var(--card-bg-translucent) 80%, transparent) !important;
   border-radius: 4px !important;
 }
 
-body[data-type='home'] .card-webinfo-grid .webinfo-item,
-.aside-sticky-box .card-webinfo-grid .webinfo-item,
-body[data-type='home'] .webinfo-item {
-  background: var(--card-btn-bg) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 50%, transparent) !important;
-  border-radius: 6px !important;
-}
-
-/* 2. Target: class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"
-   Inner container stays transparent to avoid nested double-card frames */
+/* 2. Target: 首页文章卡片内部透明容器 (避免嵌套产生双层白框) */
 .recent-post-item > div:last-child,
 .recent-post-item .recent-post-info,
 .recent-post-item :is(.p-3, [class*="justify-between"]),
@@ -8924,8 +8970,7 @@ body[data-type='home'] .webinfo-item {
   box-shadow: none !important;
 }
 
-/* 3. Target: class="theme-card home-pagination"
-   Anzhiyu Translucent Pagination Card with Distinct Region Division */
+/* 3. Target: id="home-pagination" 首页分页色板与页码子微色块 */
 #home-pagination,
 .home-pagination,
 nav#home-pagination,
@@ -8934,12 +8979,12 @@ body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
   padding: 12px 20px !important;
   margin-top: 24px !important;
   display: flex !important;
@@ -8948,8 +8993,35 @@ body[data-type='home'] nav#home-pagination.theme-card {
   box-sizing: border-box !important;
 }
 
-/* 4. Target: id="random-banner" & id="random-hover"
-   Translucent Banner Card Surface + Vibrant Theme Hover Plate */
+body[data-type='home'] .home-pagination__badge,
+body[data-type='home'] .home-pagination__num,
+body[data-type='home'] .home-pagination__btn {
+  background: var(--sub-block-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--sub-block-border-translucent) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--sub-block-shadow-translucent) !important;
+  color: var(--font-color) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='home'] .home-pagination__num:hover:not(.is-current),
+body[data-type='home'] .home-pagination__btn:hover:not(.is-disabled) {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='home'] .home-pagination__num.is-current {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+/* 4. Target: id="random-banner" & id="random-hover" 有色半透主卡片与悬浮磨砂主题板 */
 :root #bannerGroup #random-banner,
 :root #random-banner,
 :root body[data-type='home'] #random-banner,
@@ -8957,12 +9029,12 @@ body[data-type='home'] #bannerGroup #random-banner,
 #bannerGroup > #random-banner,
 #random-banner,
 body[data-type='home'] #random-banner {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
   overflow: hidden !important;
   position: relative !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
@@ -8970,7 +9042,7 @@ body[data-type='home'] #random-banner {
 
 #random-banner:hover,
 body[data-type='home'] #random-banner:hover {
-  border-color: color-mix(in srgb, var(--theme-main) 40%, var(--card-border)) !important;
+  border-color: color-mix(in srgb, var(--theme-main) 40%, var(--card-border-translucent)) !important;
   box-shadow: 0 16px 32px -16px rgba(66, 90, 239, 0.28) !important;
   transform: translateY(-2px);
 }
@@ -8984,22 +9056,22 @@ body[data-type='home'] #random-banner::after {
   content: none !important;
 }
 
-/* 5. Target: Category Bar (#category-bar / .category-bar) */
+/* 5. Target: id="category-bar" / .category-bar 首页分类导航条 */
 :root #category-bar,
 :root .category-bar,
 #category-bar,
 .category-bar,
 body[data-type='home'] #category-bar,
 body[data-type='home'] .category-bar {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
 }
 
-/* 6. Target: Sidebar Card Widgets (.card-categories, .card-recent-post, .card-tags, .card-webinfo, etc.) */
+/* 6. Target: 侧边栏全量卡片 (.card-categories, .card-recent-post, .card-tags, .card-webinfo 等) */
 :root .aside-sticky-box > .card-widget,
 :root .aside-sticky-box .card-widget,
 .aside-sticky-box > .card-widget,
@@ -9013,22 +9085,27 @@ body[data-type='home'] .category-bar {
 #aside-content .card-archives,
 #aside-content .card-webinfo,
 #aside-content .card-announcement,
+#aside-content .card-widget,
 .card-categories,
 .card-recent-post,
 .card-tags,
 .card-archives,
 .card-webinfo,
 .card-announcement,
+.card-widget,
 .support-dashboard-card {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
 }
 
-/* 7. Target: Article Reading & Layout Cards (TOC, copyright, postNav, relatedPosts, notice) */
+/* 7. Target: 首页文章卡片与文章内全量方格区域 (TOC, copyright, postNav, relatedPosts, notice 等) */
+.recent-post-item,
+:root #recent-posts > .recent-post-item,
+body[data-type='home'] .recent-post-item,
 #card-toc,
 .post-copyright,
 .relatedPosts-item,
@@ -9040,12 +9117,12 @@ div#tag,
 div#category,
 .archive-hero-card,
 .taxonomy-hero-card {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: var(--card-filter-translucent) !important;
+  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
 }
 
 

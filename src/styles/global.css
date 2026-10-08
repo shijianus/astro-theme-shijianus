@@ -42,7 +42,7 @@ body, html, #content-inner {
   --anzhiyu-card-bg: var(--card-bg);
   --card-bg-none: rgba(255, 255, 255, 0);
   --secondbg: var(--secondbg-translucent);
-  --card-btn-bg: rgba(255, 255, 255, 0.42);
+  --card-btn-bg: rgba(255, 255, 255, 0.45);
   --card-border: var(--card-border-translucent);
   --line: #e3e8f7;
   --line-strong: #d0d7e8;
@@ -104,16 +104,19 @@ html[data-theme='dark'],
   --secondtext: #a1a2b8;
 
   /* Dark Translucent & Frosted Glass Baseline (Gray Mode) */
-  --card-bg-translucent: rgba(24, 25, 30, var(--card-opacity));
-  --secondbg-translucent: rgba(30, 32, 40, var(--card-opacity));
-  --card-border-translucent: rgba(66, 68, 74, 0.65);
+  --card-opacity: 0.38;
+  --card-blur: 14px;
+  --card-saturate: 180%;
+  --card-bg-translucent: rgba(22, 25, 35, var(--card-opacity));
+  --secondbg-translucent: rgba(28, 32, 45, var(--card-opacity));
+  --card-border-translucent: rgba(255, 255, 255, 0.12);
 
   --card-bg: var(--card-bg-translucent);
   --anzhiyu-card-bg: var(--card-bg);
   --tag-bg: #252535;
   --tag-text: #a1a2b8;
   --secondbg: var(--secondbg-translucent);
-  --card-btn-bg: rgba(37, 37, 53, var(--card-opacity));
+  --card-btn-bg: rgba(255, 255, 255, 0.09);
   --card-border: var(--card-border-translucent);
   --line: #252535;
   --line-strong: #363645;
