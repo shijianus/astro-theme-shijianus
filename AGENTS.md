@@ -5222,7 +5222,19 @@
 - [x] **红线绝对坚守 (Zero Regression Redline)**：
   - 严守 `#footer` 与 `#footer-wrap` 绝对红线：0 修改 `Footer.astro`，`#footer` 稳定渐变底与 `#footer-wrap` 纯透明外框 100% 保持原有正确材质；
   - 文章列表卡片内层文字区域（`.recent-post-item > div:last-child`）保持无缝透明，杜绝双层套框。
-- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
-  - 覆盖 Playwright 实机测试：断言 `#random-banner` 及悬浮时 `#random-hover` 的色块与渐变、`.aside-sticky-box` 卡片及子元素色块、`#home-pagination` 色块、`#category-bar` 细边框，以及深浅双主题计算样式；
-  - 自动化断言 100% 全部通过 (7/7 PASS)。
+### Task 237: 根治“有色不透明”——全面落地正统有色毛玻璃半透色块体系 (e7f6ab7)
+- [x] **深度领会“有色透明”本质与痛点根治**：
+  - 用户痛点：此前将 `var(--card-bg)` 设置为 70%~72% 实心白/深灰，导致虽有色但遮光蔽日、完全不透明（“有色也不透明了”）；
+  - 核心调整：将全局毛玻璃色板透明度精准收敛至正统有色半透区间（浅色模式 32%~35%，深色模式 40%~42%），使底层天空蓝背景、径向光晕与飘落雪花清晰穿透；同时通过 `1px solid rgba(255,255,255,0.55)` 边缘微光、柔和投影与 `14px` 毛玻璃模糊维持明确的实体边界与区域划分；
+  - 内部子组件微色块模板：标签云（`.tag-cloud-item`）、分类胶囊（`.category-chip`）、站点统计（`.webinfo-item`）及分页按钮赋予清晰的 42%~45% 次级有色透明模板，hover 平滑过渡至主题蓝高光。
+- [x] **三大核心组件及全局卡片计算样式全量收敛**：
+  - `id="random-banner"`：计算样式为 `rgba(255, 255, 255, 0.35)` + `blur(14px)` + 1px 微边框，雪花晶莹穿透；
+  - `id="random-hover"`：悬浮时精准呈现 `0.998` 饱满主题蓝渐变板（`#425aef` 88% 渐变）与高对比纯白文字；
+  - `class="aside-sticky-box"`：吸顶卡片呈现 `0.35` 有色透明毛玻璃底座，内部子项呈现 `0.45` 独立微色块；
+  - `id="home-pagination"`：外层为 `0.35` 极简半透底座，页码与按钮为 `0.45` 微色块，激活页保持高亮主题蓝；
+  - 严格保持 `#footer` 与 `#footer-wrap` 零回退、零污染。
+- [x] **自动化端到端测试与数学严格约束 (`scripts/verify-transparency-parity.mjs`)**：
+  - 引入严格 Alpha 介值断言：断言所有卡片透明度严格位于 `0.15 <= alpha <= 0.55` 有色透明黄金区间，彻底杜绝 `alpha >= 0.70` 不透明厚重白板与 `alpha == 0` 空白悬浮；
+  - 本地 Playwright 实机测试 100% 全部通过 (7/7 PASS)。
+
 
