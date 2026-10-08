@@ -5257,4 +5257,22 @@
 - [x] **Playwright 自动化测试全量通过**：
   - `scripts/verify-transparency-parity.mjs` 在浅色和深色模式下 100% 通过（7/7 PASS）。
 
+### Task 239: 深度调优“有色透明”参数——卡片 Alpha 精准收敛至 0.24/0.30 确保雪花晶莹穿透与利落微边框 (2456e94)
+- [x] **前置多维度计算样式实测并公示**：
+  - 生产环境实测：`#random-banner` (0.32), `aside-sticky-box` 卡片 (0.32), `home-pagination` (0.32), `recent-post-item` (0.35), `aside-content .card-widget` (0.35)；
+  - 安知鱼官方主题架构审计：`var(--anzhiyu-card-bg)` 在暗夜模式与磨砂模式下的级联规则；
+  - `#footer` 与 `#footer-wrap` 基准审计：`#footer` 为 `linear-gradient` 渐变底，`#footer-wrap` 为 0px 纯透明容器。
+- [x] **参数严格重定至真正黄金有色透明区间**：
+  - 主卡片底座（`#random-banner`、`.recent-post-item`、`.aside-sticky-box`、`#home-pagination`、`#category-bar`）：
+    - 浅色：`rgba(255, 255, 255, 0.24)`（位于 0.22~0.30 黄金通透区间，比原 0.32 更低，雪花粒子清晰穿透）；
+    - 深色：`rgba(20, 22, 30, 0.30)`（位于 0.28~0.36 晶体暗空区间）；
+    - 滤镜：`backdrop-filter: saturate(160%) blur(14px)`（深色 `180% / 14px`）；
+    - 边界：`1px solid rgba(255, 255, 255, 0.45)` 细微光边框与轻柔投影。
+  - 子微色块（标签、按钮、页码、统计格）：
+    - 浅色：`rgba(255, 255, 255, 0.40)`（位于 0.38~0.48，高出主卡片 0.16 形成自然立体微浮雕）；
+    - 深色：`rgba(255, 255, 255, 0.09)`（位于 0.08~0.12 暗夜珠光）。
+  - `#random-hover` 悬停态：
+    - `linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32))`（Alpha ≤ 0.45 半透明主题色，雪花与底层图标通透可见）；
+  - `#footer` 与 `#footer-wrap` 现有样式 100% 保持不动。
+
 
