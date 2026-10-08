@@ -5526,12 +5526,19 @@ body[data-type='home'] #random-hover {
   flex: 1 1 auto;
   align-items: center;
   padding: 24px 28px;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.35s ease, padding-left 0.35s ease, background 0.35s ease !important;
 }
 
 body[data-type='home'] #random-banner:hover #random-hover {
-  padding-left: 28px;
-  background: color-mix(in srgb, var(--theme-main) 78%, transparent);
-  /* [PERF] backdrop-filter: blur(16px); */
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  padding-left: 28px !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-main, #425aef) 88%, #06101f), color-mix(in srgb, var(--theme-deep, #0076e5) 78%, #04070f)) !important;
+  backdrop-filter: saturate(180%) blur(16px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
+  color: #ffffff !important;
 }
 
 body[data-type='home'] .random-hover__lead {
@@ -5935,12 +5942,9 @@ body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item {
   align-items: center !important;
   gap: 3px !important;
   padding: 4px 10px !important;
-  border-radius: 8px !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  border-radius: 6px !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  background: var(--card-btn-bg) !important;
   color: var(--font-color) !important;
   font-size: 12.5px !important;
   text-decoration: none !important;
@@ -8231,34 +8235,26 @@ body[data-type='home'] #random-banner .random-banner__content {
   box-shadow: none !important;
 }
 
-.aside-sticky-box > .card-widget:not(.card-feature-panel--overview):not(#card-tag-cloud-overview),
-.aside-sticky-box .card-widget:not(.card-feature-panel--overview):not(#card-tag-cloud-overview),
+.aside-sticky-box > .card-widget,
+.aside-sticky-box .card-widget,
 .aside-sticky-box #card-toc,
 .aside-sticky-box .card-recent-post,
-.aside-sticky-box .support-dashboard-card {
+.aside-sticky-box .support-dashboard-card,
+.aside-sticky-box #card-tag-cloud-overview,
+.aside-sticky-box .card-feature-panel--overview,
+.card-widget.card-feature-panel--overview,
+.card-feature-panel--overview,
+#card-tag-cloud-overview {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
   border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
   box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
   overflow: visible !important;
 }
 
-.aside-sticky-box #card-tag-cloud-overview,
-.aside-sticky-box .card-feature-panel--overview,
-.card-widget.card-feature-panel--overview,
-.card-feature-panel--overview {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-}
-
-/* User Choice A1: Pure transparent native Anzhiyu tags and category chips, zero opaque block masking */
+/* Anzhiyu sub-element color blocks: Tags and category chips inside sticky overview */
 .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
 .card-tag-cloud-panel .tag-cloud-item,
 .aside-sticky-box .card-tag-cloud a.tag-cloud-item,
@@ -8267,13 +8263,14 @@ body[data-type='home'] #random-banner .random-banner__content {
 .card-tag-cloud-panel .category-chip,
 .aside-sticky-box .card-category-chips a.category-chip,
 .aside-sticky-box .category-chip {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--card-btn-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid transparent !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  border-radius: 6px !important;
   box-shadow: none !important;
   color: var(--font-color) !important;
+  transition: all 0.25s ease !important;
 }
 
 .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item:hover,
@@ -8286,28 +8283,72 @@ body[data-type='home'] #random-banner .random-banner__content {
   box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
-body[data-type='home'] .card-webinfo-grid .webinfo-item,
-.aside-sticky-box .card-webinfo-grid .webinfo-item {
-  background: transparent !important;
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 40%, transparent) !important;
+.category-chip__count {
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent) !important;
+  border-radius: 4px !important;
 }
 
-/* User Choice A4: Anzhiyu Native Transparent Pagination Directives */
+body[data-type='home'] .card-webinfo-grid .webinfo-item,
+.aside-sticky-box .card-webinfo-grid .webinfo-item {
+  background: var(--card-btn-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 50%, transparent) !important;
+  border-radius: 6px !important;
+}
+
+/* Anzhiyu Color Block Template: Home Pagination Card */
 #home-pagination,
 .home-pagination,
 nav#home-pagination,
+.theme-card.home-pagination,
 body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
-body[data-type='home'] nav#home-pagination {
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+body[data-type='home'] nav#home-pagination,
+body[data-type='home'] nav#home-pagination.theme-card {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  padding: 12px 20px !important;
+  margin-top: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+body[data-type='home'] .home-pagination__badge {
+  background: var(--card-btn-bg) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 50%, transparent) !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+}
+
+body[data-type='home'] .home-pagination__num,
+body[data-type='home'] .home-pagination__btn {
+  background: var(--card-btn-bg) !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 40%, transparent) !important;
+  border-radius: 6px !important;
+  color: var(--font-color) !important;
+  transition: all 0.25s ease !important;
+}
+
+body[data-type='home'] .home-pagination__num:hover:not(.is-current),
+body[data-type='home'] .home-pagination__btn:hover:not(.is-disabled) {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='home'] .home-pagination__num.is-current {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
 /* Anzhiyu Native Transparent Footer Directives */
@@ -8792,11 +8833,11 @@ body[data-type='home'] nav#home-pagination {
 }
 
 /* ==========================================================================
-   Anzhiyu Transparency Alignment: Non-Colored Boxes Pure Transparency
-   Material Parity with #footer-wrap (Zero self-added fill, see-through background)
+   Anzhiyu Palette Regional Division: Translucent Frosted Color Blocks
+   "透明但是不是无色" (Translucent Frosted Glass + Region Boundary Demarcation)
    ========================================================================== */
 
-/* 1. Target: class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active" */
+/* 1. Target: Aside Sticky Box & Overview Card (Tags, Categories, Webinfo) */
 :root .card-feature-panel--overview,
 :root #card-tag-cloud-overview,
 :root #aside-content .card-feature-panel--overview,
@@ -8808,62 +8849,71 @@ body[data-type='home'] #card-tag-cloud-overview,
 .card-feature-panel--overview.is-sticky-active,
 .card-widget.card-feature-panel--overview,
 .card-feature-panel--overview,
-#card-tag-cloud-overview,
-.aside-sticky-box {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
+#card-tag-cloud-overview {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  overflow: visible !important;
 }
 
-/* Sub-elements inside sticky overview: tags, category chips, webinfo items - Zero self-fill */
+/* Sub-elements inside sticky overview: tags, category chips, webinfo items */
+#aside-content .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
 .card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item,
 .card-tag-cloud-panel .tag-cloud-item,
 .aside-sticky-box .card-tag-cloud a.tag-cloud-item,
 .aside-sticky-box .tag-cloud-item,
 body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item,
+#aside-content .card-category-chips a.category-chip,
 .card-tag-cloud-panel .category-chip,
 .aside-sticky-box .card-category-chips a.category-chip,
 .aside-sticky-box .category-chip,
 body[data-type='home'] .category-chip {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+  background: var(--card-btn-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid transparent !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent) !important;
+  border-radius: 6px !important;
   box-shadow: none !important;
   color: var(--font-color) !important;
+  transition: all 0.25s ease !important;
+}
+
+.card-tag-cloud-panel .card-tag-cloud a.tag-cloud-item:hover,
+.aside-sticky-box .tag-cloud-item:hover,
+body[data-type='home'] .card-tag-cloud-panel .tag-cloud-item:hover,
+.card-tag-cloud-panel .category-chip:hover,
+.aside-sticky-box .category-chip:hover,
+body[data-type='home'] .category-chip:hover {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
 body[data-type='home'] .category-chip__count {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent) !important;
+  border-radius: 4px !important;
 }
 
 body[data-type='home'] .card-webinfo-grid .webinfo-item,
 .aside-sticky-box .card-webinfo-grid .webinfo-item,
 body[data-type='home'] .webinfo-item {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+  background: var(--card-btn-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid color-mix(in srgb, var(--card-border) 40%, transparent) !important;
-  box-shadow: none !important;
+  border: 1px solid color-mix(in srgb, var(--card-border) 50%, transparent) !important;
+  border-radius: 6px !important;
 }
 
-/* 2. Target: class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5" */
+/* 2. Target: class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5"
+   Inner container stays transparent to avoid nested double-card frames */
 .recent-post-item > div:last-child,
 .recent-post-item .recent-post-info,
 .recent-post-item :is(.p-3, [class*="justify-between"]),
-:root :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
-:root[data-card-style='gray'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
-:root[data-card-style='transparent'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]),
-:root[data-card-style='solid'] :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
+:root :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -8874,7 +8924,8 @@ body[data-type='home'] .webinfo-item {
   box-shadow: none !important;
 }
 
-/* 3. Target: class="theme-card home-pagination" */
+/* 3. Target: class="theme-card home-pagination"
+   Anzhiyu Translucent Pagination Card with Distinct Region Division */
 #home-pagination,
 .home-pagination,
 nav#home-pagination,
@@ -8883,65 +8934,72 @@ body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  padding: 12px 20px !important;
+  margin-top: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
 }
 
-/* 4. Target: id="random-banner" */
-:root:not([data-card-style='__none__']):not([data-translucent='__none__']) #bannerGroup #random-banner,
-:root:not([data-card-style='__none__']):not([data-translucent='__none__']) #random-banner,
-:root[data-theme='dark']:not([data-card-style='__none__']):not([data-translucent='__none__']) #bannerGroup #random-banner,
-:root[data-theme='dark']:not([data-card-style='__none__']):not([data-translucent='__none__']) #random-banner,
+/* 4. Target: id="random-banner" & id="random-hover"
+   Translucent Banner Card Surface + Vibrant Theme Hover Plate */
 :root #bannerGroup #random-banner,
 :root #random-banner,
 :root body[data-type='home'] #random-banner,
 body[data-type='home'] #bannerGroup #random-banner,
 #bannerGroup > #random-banner,
 #random-banner,
-body[data-type='home'] #random-banner,
-:root[data-theme='dark'] body[data-type='home'] #random-banner {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
+body[data-type='home'] #random-banner {
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+#random-banner:hover,
+body[data-type='home'] #random-banner:hover {
+  border-color: color-mix(in srgb, var(--theme-main) 40%, var(--card-border)) !important;
+  box-shadow: 0 16px 32px -16px rgba(66, 90, 239, 0.28) !important;
+  transform: translateY(-2px);
 }
 
 #random-banner::before,
 #random-banner::after,
 body[data-type='home'] #random-banner::before,
-body[data-type='home'] #random-banner::after,
-:root[data-theme='dark'] body[data-type='home'] #random-banner::before,
-:root[data-theme='dark'] body[data-type='home'] #random-banner::after {
+body[data-type='home'] #random-banner::after {
   display: none !important;
-  background: transparent !important;
-  background-image: none !important;
+  background: none !important;
   content: none !important;
 }
 
-/* 5. Target: Category Bar (#category-bar / .category-bar) - Zero self-fill transparency */
+/* 5. Target: Category Bar (#category-bar / .category-bar) */
 :root #category-bar,
 :root .category-bar,
 #category-bar,
 .category-bar,
 body[data-type='home'] #category-bar,
 body[data-type='home'] .category-bar {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
-/* 6. Target: Other Sidebar Non-Colored Card Widgets (.card-categories, .card-recent-post, .card-tags, .card-webinfo, etc.) */
+/* 6. Target: Sidebar Card Widgets (.card-categories, .card-recent-post, .card-tags, .card-webinfo, etc.) */
 :root .aside-sticky-box > .card-widget,
 :root .aside-sticky-box .card-widget,
 .aside-sticky-box > .card-widget,
@@ -8962,15 +9020,15 @@ body[data-type='home'] .category-bar {
 .card-webinfo,
 .card-announcement,
 .support-dashboard-card {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
-/* 7. Target: Article Reading & Layout Non-Colored Boxes (TOC, copyright, postNav, relatedPosts, notice) */
+/* 7. Target: Article Reading & Layout Cards (TOC, copyright, postNav, relatedPosts, notice) */
 #card-toc,
 .post-copyright,
 .relatedPosts-item,
@@ -8982,12 +9040,12 @@ div#tag,
 div#category,
 .archive-hero-card,
 .taxonomy-hero-card {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: var(--card-backdrop-filter) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
 }
 
 

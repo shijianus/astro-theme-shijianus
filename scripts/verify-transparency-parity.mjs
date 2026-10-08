@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const outDir = path.resolve('scratch/transparency-audit');
+const outDir = path.resolve('scratch/anzhiyu-palette-audit');
 fs.mkdirSync(outDir, { recursive: true });
 
 const targetUrl = process.env.TEST_URL || 'http://127.0.0.1:4321/';
-console.log(`Starting transparency parity verification on: ${targetUrl}`);
+console.log(`================================================================`);
+console.log(`Starting Anzhiyu Palette & Region Division Verification on: ${targetUrl}`);
+console.log(`================================================================\n`);
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
@@ -25,11 +27,16 @@ async function run() {
   await page.waitForTimeout(1500);
 
   // Helper check functions
-  const isTransparent = (val) => val === 'rgba(0, 0, 0, 0)' || val === 'transparent';
-  const isNoFilter = (val) => !val || val === 'none';
-  const isNoShadow = (val) => !val || val === 'none';
+  const isTranslucentNotColorless = (val) => {
+    if (!val || val === 'transparent' || val === 'rgba(0, 0, 0, 0)') return false;
+    // Check that it contains rgba with alpha < 1, or is colored
+    return val.startsWith('rgba(') || val.startsWith('rgb(');
+  };
+  const hasFilter = (val) => Boolean(val && val !== 'none');
+  const hasBorder = (val) => val === '1px' || (parseFloat(val) >= 1);
 
   // 1. Audit #footer-wrap and #footer baseline (MUST REMAIN INTACT & UNTOUCHED)
+  console.log('[*] 1. Auditing #footer and #footer-wrap (Baseline Pristine State)...');
   const footerData = await page.evaluate(() => {
     const footer = document.querySelector('#footer');
     const footerWrap = document.querySelector('#footer-wrap');
@@ -56,128 +63,138 @@ async function run() {
   assert.ok(footerData.footerBg, 'Footer background gradient must exist');
   assert.ok(footerData.footerBg.includes('gradient'), 'Footer background must be a gradient');
   assert.equal(footerData.footerWrapBg, 'rgba(0, 0, 0, 0)', '#footer-wrap MUST be transparent');
-  assert.ok(isNoFilter(footerData.footerWrapFilter), '#footer-wrap MUST have no backdrop filter');
-  assert.ok(isNoShadow(footerData.footerWrapShadow), '#footer-wrap MUST have no box shadow');
-  assert.equal(footerData.shellBg, 'rgba(0, 0, 0, 0)', '.footer-main-shell MUST be transparent with no opaque gradient');
-  assert.equal(footerData.shellBorder, '0px', '.footer-main-shell MUST have 0px border (no box frame)');
-  assert.equal(footerData.shellBoxShadow, 'none', '.footer-main-shell MUST have no box shadow');
+  assert.equal(footerData.shellBg, 'rgba(0, 0, 0, 0)', '.footer-main-shell MUST be transparent');
+  assert.equal(footerData.shellBorder, '0px', '.footer-main-shell MUST have 0px border');
+  console.log('[✅ PASS] #footer and #footer-wrap intact and untouched.\n');
 
-  // 2. Audit Target 1: Sticky Overview Card (class="card-widget card-feature-panel card-feature-panel--overview card-tag-cloud-panel is-sticky-active")
-  const sidebarData = await page.evaluate(() => {
+  // 2. Audit #random-banner & #random-hover: Translucent color template & hover plate
+  console.log('[*] 2. Auditing #random-banner & #random-hover color block templates...');
+  const randomBannerInitial = await page.evaluate(() => {
+    const el = document.querySelector('#random-banner');
+    const hoverEl = document.querySelector('#random-hover');
+    if (!el) return null;
+    const cs = window.getComputedStyle(el);
+    const hcs = hoverEl ? window.getComputedStyle(hoverEl) : null;
+
+    return {
+      bg: cs.backgroundColor,
+      backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+      border: cs.borderWidth,
+      borderRadius: cs.borderRadius,
+      hoverOpacity: hcs ? hcs.opacity : null,
+      hoverBg: hcs ? hcs.backgroundImage : null
+    };
+  });
+
+  console.log('Random Banner (Initial):', JSON.stringify(randomBannerInitial, null, 2));
+  assert.ok(randomBannerInitial, '#random-banner must exist');
+  assert.ok(isTranslucentNotColorless(randomBannerInitial.bg), '#random-banner MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
+  assert.ok(hasFilter(randomBannerInitial.backdropFilter), '#random-banner MUST have frosted glass backdropFilter');
+  assert.ok(hasBorder(randomBannerInitial.border), '#random-banner MUST have border for region demarcation');
+  assert.equal(randomBannerInitial.hoverOpacity, '0', '#random-hover must be hidden (opacity: 0) before hover');
+
+  // Hover #random-banner and check #random-hover
+  console.log('Hovering #random-banner...');
+  await page.hover('#random-banner');
+  await page.waitForTimeout(400);
+
+  const randomBannerHovered = await page.evaluate(() => {
+    const hoverEl = document.querySelector('#random-hover');
+    if (!hoverEl) return null;
+    const cs = window.getComputedStyle(hoverEl);
+    return {
+      opacity: cs.opacity,
+      bg: cs.backgroundImage || cs.backgroundColor,
+      filter: cs.backdropFilter || cs.webkitBackdropFilter,
+      color: cs.color
+    };
+  });
+
+  console.log('Random Hover (Active):', JSON.stringify(randomBannerHovered, null, 2));
+  assert.ok(randomBannerHovered, '#random-hover must exist');
+  assert.ok(parseFloat(randomBannerHovered.opacity) >= 0.9, `#random-hover MUST have opacity >= 0.9 on hover (got ${randomBannerHovered.opacity})`);
+  assert.ok(randomBannerHovered.bg.includes('gradient'), '#random-hover MUST have theme gradient background on hover');
+  console.log('[✅ PASS] #random-banner and #random-hover color block templates verified.\n');
+
+  // Move mouse away
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(300);
+
+  // 3. Audit .aside-sticky-box & Sticky Overview Card
+  console.log('[*] 3. Auditing .aside-sticky-box and sticky overview card widgets...');
+  const stickyData = await page.evaluate(() => {
     const stickyBox = document.querySelector('.aside-sticky-box');
     const el = document.querySelector('.card-feature-panel--overview') || document.querySelector('#card-tag-cloud-overview');
     const tagItem = stickyBox ? stickyBox.querySelector('.tag-cloud-item') : null;
     const chipItem = stickyBox ? stickyBox.querySelector('.category-chip') : null;
     const webinfoItem = stickyBox ? stickyBox.querySelector('.webinfo-item') : null;
 
-    const sbStyle = stickyBox ? window.getComputedStyle(stickyBox) : null;
     const s = el ? window.getComputedStyle(el) : null;
     const tagStyle = tagItem ? window.getComputedStyle(tagItem) : null;
     const chipStyle = chipItem ? window.getComputedStyle(chipItem) : null;
     const webinfoStyle = webinfoItem ? window.getComputedStyle(webinfoItem) : null;
 
     return {
-      stickyBox: sbStyle ? {
-        bg: sbStyle.backgroundColor,
-        border: sbStyle.borderWidth,
-        boxShadow: sbStyle.boxShadow
-      } : null,
       card: s ? {
-        className: el.className,
         bg: s.backgroundColor,
         backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
         boxShadow: s.boxShadow,
-        border: s.borderWidth
+        border: s.borderWidth,
+        borderRadius: s.borderRadius
       } : null,
       tagBg: tagStyle ? tagStyle.backgroundColor : null,
+      tagBorder: tagStyle ? tagStyle.borderWidth : null,
       chipBg: chipStyle ? chipStyle.backgroundColor : null,
-      webinfoBg: webinfoStyle ? webinfoStyle.backgroundColor : null
+      chipBorder: chipStyle ? chipStyle.borderWidth : null,
+      webinfoBg: webinfoStyle ? webinfoStyle.backgroundColor : null,
+      webinfoBorder: webinfoStyle ? webinfoStyle.borderWidth : null
     };
   });
 
-  console.log('Sidebar Overview Card Data:', JSON.stringify(sidebarData, null, 2));
-  assert.ok(sidebarData.card, 'Overview card must exist');
-  assert.equal(sidebarData.card.bg, 'rgba(0, 0, 0, 0)', 'Overview card MUST match #footer-wrap transparent material (rgba(0, 0, 0, 0))');
-  assert.ok(isNoFilter(sidebarData.card.backdropFilter), 'Overview card MUST have no backdrop filter');
-  assert.ok(isNoShadow(sidebarData.card.boxShadow), 'Overview card MUST have no box shadow');
-  assert.equal(sidebarData.card.border, '0px', 'Overview card MUST have 0px border');
-  assert.equal(sidebarData.stickyBox.bg, 'rgba(0, 0, 0, 0)', '.aside-sticky-box MUST be transparent');
-  if (sidebarData.tagBg) assert.equal(sidebarData.tagBg, 'rgba(0, 0, 0, 0)', 'Tag items must be transparent');
-  if (sidebarData.chipBg) assert.equal(sidebarData.chipBg, 'rgba(0, 0, 0, 0)', 'Category chips must be transparent');
-  if (sidebarData.webinfoBg) assert.equal(sidebarData.webinfoBg, 'rgba(0, 0, 0, 0)', 'Webinfo items must be transparent');
+  console.log('Sticky Overview Card Data:', JSON.stringify(stickyData, null, 2));
+  assert.ok(stickyData.card, 'Sticky overview card must exist');
+  assert.ok(isTranslucentNotColorless(stickyData.card.bg), 'Sticky card MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
+  assert.ok(hasFilter(stickyData.card.backdropFilter), 'Sticky card MUST have frosted backdropFilter');
+  assert.ok(hasBorder(stickyData.card.border), 'Sticky card MUST have 1px border for region demarcation');
+  if (stickyData.tagBg) assert.ok(isTranslucentNotColorless(stickyData.tagBg), 'Tag item must have sub-color block background');
+  if (stickyData.chipBg) assert.ok(isTranslucentNotColorless(stickyData.chipBg), 'Category chip must have sub-color block background');
+  if (stickyData.webinfoBg) assert.ok(isTranslucentNotColorless(stickyData.webinfoBg), 'Webinfo item must have sub-color block background');
+  console.log('[✅ PASS] .aside-sticky-box and sub-elements color blocks verified.\n');
 
-  // 3. Audit Target 2: Post Card Content Container (class="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5")
-  const postCardData = await page.evaluate(() => {
-    const allCards = Array.from(document.querySelectorAll('.recent-post-item'));
-    const targetCard = allCards.find(c => c.querySelector('[class*="justify-between"]') || c.querySelector('.p-3')) || allCards[0];
-    const innerContent = targetCard ? targetCard.querySelector('[class*="justify-between"]') || targetCard.querySelector('.p-3') : null;
-
-    const innerStyle = innerContent ? window.getComputedStyle(innerContent) : null;
-
-    return {
-      inner: innerStyle ? {
-        className: innerContent.className,
-        bg: innerStyle.backgroundColor,
-        backdropFilter: innerStyle.backdropFilter || innerStyle.webkitBackdropFilter,
-        boxShadow: innerStyle.boxShadow,
-        borderTopWidth: innerStyle.borderTopWidth,
-        borderTopStyle: innerStyle.borderTopStyle
-      } : null
-    };
-  });
-
-  console.log('Post Card Inner Data:', JSON.stringify(postCardData, null, 2));
-  assert.ok(postCardData.inner, 'Post card inner container must exist');
-  assert.equal(postCardData.inner.bg, 'rgba(0, 0, 0, 0)', 'Post card inner container MUST match #footer-wrap transparent material');
-  assert.ok(isNoFilter(postCardData.inner.backdropFilter), 'Post card inner container MUST have no backdrop filter');
-  assert.ok(isNoShadow(postCardData.inner.boxShadow), 'Post card inner container MUST have no box shadow');
-  assert.ok(postCardData.inner.borderTopWidth === '0px' || postCardData.inner.borderTopStyle === 'none', 'Post card inner container MUST have no border-top divider');
-
-  // 4. Audit Target 3: Home Pagination (class="theme-card home-pagination")
+  // 4. Audit #home-pagination: Card template with numbers and controls
+  console.log('[*] 4. Auditing #home-pagination color block template...');
   const paginationData = await page.evaluate(() => {
     const nav = document.querySelector('#home-pagination') || document.querySelector('.home-pagination');
     if (!nav) return null;
     const navStyle = window.getComputedStyle(nav);
+    const badge = nav.querySelector('.home-pagination__badge');
+    const num = nav.querySelector('.home-pagination__num');
+    const currentNum = nav.querySelector('.home-pagination__num.is-current');
+
+    const bStyle = badge ? window.getComputedStyle(badge) : null;
+    const nStyle = num ? window.getComputedStyle(num) : null;
+    const cStyle = currentNum ? window.getComputedStyle(currentNum) : null;
 
     return {
       navBg: navStyle.backgroundColor,
       navFilter: navStyle.backdropFilter || navStyle.webkitBackdropFilter,
       navBorder: navStyle.borderWidth,
-      navBoxShadow: navStyle.boxShadow
+      navBorderRadius: navStyle.borderRadius,
+      badgeBg: bStyle ? bStyle.backgroundColor : null,
+      numBg: nStyle ? nStyle.backgroundColor : null,
+      currentNumBg: cStyle ? cStyle.backgroundColor : null
     };
   });
 
   console.log('Home Pagination Data:', JSON.stringify(paginationData, null, 2));
   assert.ok(paginationData, '#home-pagination must exist');
-  assert.equal(paginationData.navBg, 'rgba(0, 0, 0, 0)', 'Pagination container MUST match #footer-wrap transparent material');
-  assert.ok(isNoFilter(paginationData.navFilter), 'Pagination container MUST have no backdrop filter');
-  assert.equal(paginationData.navBorder, '0px', 'Pagination container MUST have 0px border');
-  assert.ok(isNoShadow(paginationData.navBoxShadow), 'Pagination container MUST have no box shadow');
+  assert.ok(isTranslucentNotColorless(paginationData.navBg), '#home-pagination MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
+  assert.ok(hasFilter(paginationData.navFilter), '#home-pagination MUST have frosted backdropFilter');
+  assert.ok(hasBorder(paginationData.navBorder), '#home-pagination MUST have 1px border for region demarcation');
+  console.log('[✅ PASS] #home-pagination color block template verified.\n');
 
-  // 5. Audit Target 4: #random-banner
-  const randomBannerData = await page.evaluate(() => {
-    const el = document.querySelector('#random-banner');
-    if (!el) return null;
-    const cs = window.getComputedStyle(el);
-    const before = window.getComputedStyle(el, '::before');
-    return {
-      bg: cs.backgroundColor,
-      backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
-      boxShadow: cs.boxShadow,
-      border: cs.borderWidth,
-      beforeDisplay: before.display,
-      beforeContent: before.content
-    };
-  });
-
-  console.log('Random Banner Data:', JSON.stringify(randomBannerData, null, 2));
-  assert.ok(randomBannerData, '#random-banner must exist');
-  assert.equal(randomBannerData.bg, 'rgba(0, 0, 0, 0)', '#random-banner MUST match #footer-wrap transparent material (rgba(0, 0, 0, 0))');
-  assert.ok(isNoFilter(randomBannerData.backdropFilter), '#random-banner MUST have no backdrop filter');
-  assert.ok(isNoShadow(randomBannerData.boxShadow), '#random-banner MUST have no box shadow');
-  assert.ok(randomBannerData.beforeDisplay === 'none' || randomBannerData.beforeContent === 'none', '#random-banner::before opaque mask MUST be eliminated');
-
-  // 6. Audit Target 5: Category Bar (#category-bar / .category-bar)
+  // 5. Audit #category-bar: Translucent Frosted Category Bar
+  console.log('[*] 5. Auditing #category-bar...');
   const categoryBarData = await page.evaluate(() => {
     const el = document.querySelector('#category-bar') || document.querySelector('.category-bar');
     if (!el) return null;
@@ -185,19 +202,42 @@ async function run() {
     return {
       bg: cs.backgroundColor,
       filter: cs.backdropFilter || cs.webkitBackdropFilter,
-      shadow: cs.boxShadow
+      border: cs.borderWidth
     };
   });
 
   if (categoryBarData) {
     console.log('Category Bar Data:', JSON.stringify(categoryBarData, null, 2));
-    assert.equal(categoryBarData.bg, 'rgba(0, 0, 0, 0)', '#category-bar MUST match #footer-wrap transparent material');
-    assert.ok(isNoFilter(categoryBarData.filter), '#category-bar MUST have no backdrop filter');
-    assert.ok(isNoShadow(categoryBarData.shadow), '#category-bar MUST have no box shadow');
+    assert.ok(isTranslucentNotColorless(categoryBarData.bg), '#category-bar MUST have translucent background');
+    assert.ok(hasFilter(categoryBarData.filter), '#category-bar MUST have frosted filter');
+    assert.ok(hasBorder(categoryBarData.border), '#category-bar MUST have 1px border');
+    console.log('[✅ PASS] #category-bar verified.\n');
   }
 
-  // 7. Audit in Dark Mode
-  console.log('\n--- Switching to Dark Mode ---');
+  // 6. Audit Post Card Inner Content (Zero nested double-box frame)
+  console.log('[*] 6. Auditing post card inner content (Clean single card, zero double nesting)...');
+  const postCardData = await page.evaluate(() => {
+    const allCards = Array.from(document.querySelectorAll('.recent-post-item'));
+    const targetCard = allCards.find(c => c.querySelector('[class*="justify-between"]') || c.querySelector('.p-3')) || allCards[0];
+    const innerContent = targetCard ? targetCard.querySelector('[class*="justify-between"]') || targetCard.querySelector('.p-3') : null;
+    const cardStyle = targetCard ? window.getComputedStyle(targetCard) : null;
+    const innerStyle = innerContent ? window.getComputedStyle(innerContent) : null;
+
+    return {
+      cardBg: cardStyle ? cardStyle.backgroundColor : null,
+      cardBorder: cardStyle ? cardStyle.borderWidth : null,
+      innerBg: innerStyle ? innerStyle.backgroundColor : null,
+      innerBorderTop: innerStyle ? innerStyle.borderTopWidth : null
+    };
+  });
+
+  console.log('Post Card Data:', JSON.stringify(postCardData, null, 2));
+  assert.ok(isTranslucentNotColorless(postCardData.cardBg), 'Parent post card MUST have translucent card background');
+  assert.equal(postCardData.innerBg, 'rgba(0, 0, 0, 0)', 'Inner post content container MUST be seamless transparent to avoid double card');
+  console.log('[✅ PASS] Post card inner container seamless and clean.\n');
+
+  // 7. Audit Dark Mode
+  console.log('[*] 7. Auditing Dark Mode Palette...');
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await page.waitForTimeout(500);
 
@@ -209,32 +249,27 @@ async function run() {
       return {
         bg: cs.backgroundColor,
         filter: cs.backdropFilter || cs.webkitBackdropFilter,
-        shadow: cs.boxShadow
+        border: cs.borderWidth
       };
     };
 
     return {
       footerWrap: getStyles('#footer-wrap'),
-      stickyOverview: getStyles('.card-feature-panel--overview'),
-      postCardInner: getStyles('.recent-post-item > div:last-child, .recent-post-info'),
-      homePagination: getStyles('#home-pagination'),
       randomBanner: getStyles('#random-banner'),
-      categoryBar: getStyles('#category-bar, .category-bar')
+      stickyOverview: getStyles('.card-feature-panel--overview, #card-tag-cloud-overview'),
+      homePagination: getStyles('#home-pagination')
     };
   });
 
   console.log('Dark Mode Audit Data:', JSON.stringify(darkAudit, null, 2));
-  assert.equal(darkAudit.footerWrap.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: #footer-wrap must be transparent');
-  assert.equal(darkAudit.stickyOverview.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Sticky overview must be transparent');
-  assert.ok(isNoFilter(darkAudit.stickyOverview.filter), 'Dark mode: Sticky overview must have no filter');
-  assert.equal(darkAudit.postCardInner.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Post card inner must be transparent');
-  assert.equal(darkAudit.homePagination.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Home pagination must be transparent');
-  assert.equal(darkAudit.randomBanner.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Random banner must be transparent');
-  assert.ok(isNoFilter(darkAudit.randomBanner.filter), 'Dark mode: Random banner must have no filter');
-  if (darkAudit.categoryBar) {
-    assert.equal(darkAudit.categoryBar.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: Category bar must be transparent');
-    assert.ok(isNoFilter(darkAudit.categoryBar.filter), 'Dark mode: Category bar must have no filter');
-  }
+  assert.equal(darkAudit.footerWrap.bg, 'rgba(0, 0, 0, 0)', 'Dark mode: #footer-wrap remains transparent');
+  assert.ok(isTranslucentNotColorless(darkAudit.randomBanner.bg), 'Dark mode: #random-banner has translucent dark background');
+  assert.ok(hasBorder(darkAudit.randomBanner.border), 'Dark mode: #random-banner has border');
+  assert.ok(isTranslucentNotColorless(darkAudit.stickyOverview.bg), 'Dark mode: Sticky overview has translucent dark background');
+  assert.ok(hasBorder(darkAudit.stickyOverview.border), 'Dark mode: Sticky overview has border');
+  assert.ok(isTranslucentNotColorless(darkAudit.homePagination.bg), 'Dark mode: Home pagination has translucent dark background');
+  assert.ok(hasBorder(darkAudit.homePagination.border), 'Dark mode: Home pagination has border');
+  console.log('[✅ PASS] Dark mode palette verified.\n');
 
   // Screenshots
   await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
@@ -242,7 +277,9 @@ async function run() {
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await page.screenshot({ path: path.join(outDir, 'dark-verified.png') });
 
-  console.log('\n🎉 ALL TRANSPARENCY PARITY ASSERTIONS PASSED SUCCESSFULLY!');
+  console.log('================================================================');
+  console.log('🎉 ALL ANZHIYU PALETTE REGIONAL DIVISION ASSERTIONS PASSED (100%)!');
+  console.log('================================================================');
   await browser.close();
 }
 

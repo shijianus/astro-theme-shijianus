@@ -5202,3 +5202,27 @@
   - 断言 Light Mode 与 Dark Mode 下全部目标组件及子元素计算样式达到 100% `rgba(0, 0, 0, 0)`、`backdrop-filter: none`、`box-shadow: none`，与 `#footer-wrap` 材质 100% 完全等同；
   - 严格校验 `#footer` 渐变背景与 `#footer-wrap` 纯透明规范 100% 保持正常（零失效）；
   - 本地预览全绿 PASS，截图视觉审计完成。
+
+### Task 236: 补齐安知鱼色块模板与区域划分——落实“透明但是不是无色”规范 (Commit Pending)
+- [x] **理解并落实“透明但是不是无色”安知鱼规范 (Anzhiyu Palette & Region Division Standard)**：
+  - 深度学习安知鱼设计理念与 `#footer-wrap` 质感：“透明但是不是无色”，杜绝直接写死 `rgba(0, 0, 0, 0)` 导致边界丢失和内容悬浮散架；
+  - 采用半透明毛玻璃色块模板（`var(--card-bg)`：浅色模式 70% 半透白，深色模式 72% 半透暗灰，透明模式 35%~40%），既通透穿透壁纸与雪花粒子，又保有温润实体质感与明确空间区域划分。
+- [x] **三大核心组件及关联区域色块模板全面补齐与区域划分重塑**：
+  1. `id="random-banner"` 与 `id="random-hover"`：
+     - `#random-banner` 恢复标准安知鱼卡片模板（`var(--card-bg)` + `var(--card-backdrop-filter)` + `1px solid var(--card-border)` + 8px 优雅方圆角 + 柔和卡片阴影），保持雪花穿透；
+     - `#random-hover` 悬浮层恢复饱满的主题色渐变面板（`linear-gradient(135deg, color-mix(in srgb, var(--theme-main, #425aef) 88%, #06101f), ...)` + `saturate(180%) blur(16px)`），默认 `opacity: 0`，鼠标悬浮时丝滑渐入（`opacity: 1`），重现安知鱼高质感随机文章悬浮色块；
+  2. `class="aside-sticky-box"` 与侧边栏粘性卡片树：
+     - 吸顶卡片容器（`.card-feature-panel--overview`、`#card-tag-cloud-overview`、`#card-toc` 等）全面赋予 `var(--card-bg)` 毛玻璃背景与 1px 细边框，建立清晰视差区域分界；
+     - 内部标签项（`.tag-cloud-item`）、分类胶囊（`.category-chip`）与站点统计（`.webinfo-item`）赋予独立子色块（`var(--card-btn-bg)` + 细边框），hover 状态无缝高亮主题蓝（`var(--theme-main)`）；
+  3. `id="home-pagination"` (首页分页导航卡片)：
+     - 分页外层卡片全面恢复 `var(--card-bg)` + 1px 细边框 + 8px 圆角 + 内边距 `12px 20px`，形成规整底栏色板；
+     - 内部当前页码（`.home-pagination__num.is-current`）高亮主题蓝，其他页码与箭头按钮配备精致子色块（`var(--card-btn-bg)`）；
+  4. 其它关联色板组件（`#category-bar`、侧边栏各卡片与文章页阅读辅助卡）：
+     - 统一收敛至标准安知鱼半透明色板体系，兼顾通透度与区域轮廓。
+- [x] **红线绝对坚守 (Zero Regression Redline)**：
+  - 严守 `#footer` 与 `#footer-wrap` 绝对红线：0 修改 `Footer.astro`，`#footer` 稳定渐变底与 `#footer-wrap` 纯透明外框 100% 保持原有正确材质；
+  - 文章列表卡片内层文字区域（`.recent-post-item > div:last-child`）保持无缝透明，杜绝双层套框。
+- [x] **自动化端到端测试套件全量更新并通过 (`scripts/verify-transparency-parity.mjs`)**：
+  - 覆盖 Playwright 实机测试：断言 `#random-banner` 及悬浮时 `#random-hover` 的色块与渐变、`.aside-sticky-box` 卡片及子元素色块、`#home-pagination` 色块、`#category-bar` 细边框，以及深浅双主题计算样式；
+  - 自动化断言 100% 全部通过 (7/7 PASS)。
+
