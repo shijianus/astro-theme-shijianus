@@ -5235,6 +5235,26 @@
   - 严格保持 `#footer` 与 `#footer-wrap` 零回退、零污染。
 - [x] **自动化端到端测试与数学严格约束 (`scripts/verify-transparency-parity.mjs`)**：
   - 引入严格 Alpha 介值断言：断言所有卡片透明度严格位于 `0.15 <= alpha <= 0.55` 有色透明黄金区间，彻底杜绝 `alpha >= 0.70` 不透明厚重白板与 `alpha == 0` 空白悬浮；
-  - 本地 Playwright 实机测试 100% 全部通过 (7/7 PASS)。
+### Task 238: 彻底对齐与深度打磨“有色透明”——毛玻璃专属色板体系与全域色块模板补齐 (49d9913)
+- [x] **建立统一有色透明色板体系 (Genuine Translucent Glassmorphism Palette Tokens)**：
+  - 定义标准主卡片底座变量：浅色模式 `--card-bg-translucent: rgba(255, 255, 255, 0.32)` + `saturate(160%) blur(14px)` + `1px solid rgba(255, 255, 255, 0.55)`；深色模式 `--card-bg-translucent: rgba(22, 25, 35, 0.38)` + `saturate(180%) blur(14px)` + `1px solid rgba(255, 255, 255, 0.12)`；
+  - 定义次级子微色块变量：浅色 `--sub-block-bg-translucent: rgba(255, 255, 255, 0.45)`（比父级高 0.13 形成清晰立体浮雕层级），深色 `--sub-block-bg-translucent: rgba(255, 255, 255, 0.09)`；
+  - 定义半透明主题色渐变悬浮板：`--hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.45), rgba(0, 118, 229, 0.38))`，悬浮时 Alpha 严格控制在 0.40~0.45，彻底根治之前 100% 实心渐变遮光遮雪花的致命问题。
+- [x] **必须补齐色块模板的目标元素全域挂载与历史冲突彻底清理**：
+  1. `id="random-banner"` & `id="random-hover"`：
+     - 清除历史残留的 `background: transparent !important; border: none;` 规则；
+     - `#random-banner` 绑定标准有色半透色板；
+     - `#random-hover` 悬浮层应用半透明主题色渐变板，雪花与粒子在悬浮时依然晶莹穿透；
+  2. `class="aside-sticky-box"` 及其内部粘性卡片树：
+     - 吸顶卡片容器（`.card-widget`、`#card-toc`、`#card-tag-cloud-overview` 等）绑定标准主卡片色板；
+     - 内部子组件（标签云 `.tag-cloud-item`、分类胶囊 `.category-chip`、站点统计 `.webinfo-item`）绑定独立子微色块变量，悬浮平滑过渡至主题蓝高光；
+  3. `id="home-pagination"` (首页分页导航卡片)：
+     - 分页外层卡片绑定主卡片色板，分页按钮与标签绑定子微色块，激活页保持高对比主题蓝；
+  4. 全局方格区域（`.recent-post-item`、`#category-bar`、侧边栏全量卡片与阅读辅助卡）：
+     - 全部统一挂载有色透明色板，保持视觉统一与利落空间划分。
+- [x] **红线绝对恪守 (Zero Regression)**：
+  - `#footer` 与 `#footer-wrap` 现有样式零改动、零污染、零回退。
+- [x] **Playwright 自动化测试全量通过**：
+  - `scripts/verify-transparency-parity.mjs` 在浅色和深色模式下 100% 通过（7/7 PASS）。
 
 
