@@ -5302,6 +5302,19 @@
   - 成功捕获并固化流星及长离子尾穿越 `#aside-sticky-box-overview` 内部的实机截图证据（`scratch/sticky-overview-audit/meteor-frame-2.png`）；
   - 浅色/深色双模态计算样式与吸顶状态 100% PASS。
 
+### Task 242: 遵照用户指示全量回退背景星空逻辑，保留板块框优化成果 (PENDING_HASH)
+- [x] **全量回退星空背景代码 (`src/lib/starry-universe.ts`)**：
+  - 彻底撤销 Task 241 中对 `starry-universe.ts` 粒子逻辑的所有改动，100% 还原至基线原始版本；
+  - 恢复原本的星空生成算法、粒子分布及流动速率，不改变底背景的任何既有特性；
+- [x] **100% 保留板块框优化成果 (`src/styles/final-pass.css`)**：
+  - 严格保留用户认可的主页 `class="aside-sticky-box" id="aside-sticky-box-overview"` 实体卡片框优化；
+  - 浅色模式（亮色调白色透明 `--home-sticky-card-bg: rgba(255, 255, 255, 0.38)`）与深色模式（暗色调灰色透明 `--home-sticky-card-bg: rgba(22, 25, 34, 0.28)`）精准保留；
+  - 8px 方圆角、1px 细微光边框、零双层套框与吸顶对齐结构全部保持生效；
+- [x] **自动化端到端测试与全链路验证**：
+  - 构建本地静态站点并通过 Playwright 验证；
+  - 部署至 Cloudflare Pages 并在生产端（`https://blog.epocanvas.com/`）完成全量实机验证。
+
+
 
 
 
