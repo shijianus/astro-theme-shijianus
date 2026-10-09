@@ -5314,7 +5314,18 @@
   - 构建本地静态站点并通过 Playwright 验证；
   - 部署至 Cloudflare Pages 并在生产端（`https://blog.epocanvas.com/`）完成全量实机验证。
 
-
-
-
-
+### Task 243: aside-sticky-box 透过度进一步增加、消除模糊感、整体改为灰色色调区分 (829b903)
+- [x] **进一步提升透过度 (Higher Translucency / Lower Alpha)**：
+  - 亮色模式透明度由 0.38 进一步降低至 `0.16`（`rgba(120, 126, 138, 0.16)`），透光率显著提升至 84%；
+  - 暗色模式透明度由 0.28 进一步降低至 `0.18`（`rgba(80, 88, 102, 0.18)`），底层星空宇宙与降雪动态清晰通透穿透；
+- [x] **消除后方透过的模糊感 (Zero Blur / None)**：
+  - 将 `--home-sticky-card-filter` 由 `blur(3px)` / `blur(2px)` 调整为 `none`，彻底消除卡片背后的毛玻璃雾化/弥散感；
+  - 底层动态流星、闪烁恒星与雪花粒子直穿卡片，呈现晶莹剔透的高清无糊感；
+- [x] **整体改为灰色色调方便颜色区分 (Overall Grey Palette for Clear Distinction)**：
+  - 亮色模式：采用优雅冷灰质感（`rgba(120, 126, 138, 0.16)`，搭配 `1px solid rgba(120, 126, 138, 0.32)` 边框），与周围白色内容卡片形成明晰色彩区分；
+  - 暗色模式：采用石板烟灰质感（`rgba(80, 88, 102, 0.18)`，搭配 `1px solid rgba(145, 155, 175, 0.25)` 边框），与纯黑背景形成清晰边界与层次区分；
+  - 内部微色块（标签、分类、网站统计）：同步适配同色系轻微半透灰，保持卡片内在协调统一；
+- [x] **严格保持既有状态与结构规范**：
+  - 100% 保持 8px 圆角、320px 宽度严格对齐上方个人信息卡片、74px~80px 粘性吸顶及内部子卡片零双层套框；
+- [x] **Playwright 本地与全链路验证**：
+  - 更新 `scripts/verify-home-sticky-overview-card.mjs` 与 `scripts/verify-transparency-parity.mjs`，本地验证 100% PASS。
