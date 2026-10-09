@@ -104,7 +104,7 @@ async function run() {
   // Hover #random-banner and check #random-hover
   console.log('Hovering #random-banner...');
   await page.hover('#random-banner');
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(800);
 
   const randomBannerHovered = await page.evaluate(() => {
     const hoverEl = document.querySelector('#random-hover');
