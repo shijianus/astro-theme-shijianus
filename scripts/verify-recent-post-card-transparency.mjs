@@ -86,7 +86,7 @@ async function run() {
   const lb = parseInt(lbStr);
   const lightAlpha = parseFloat(lightAlphaStr);
   assert.ok(lb > lr && lb > lg, `Light mode card MUST preserve authentic blue character (b > r && b > g, got R:${lr} G:${lg} B:${lb})`);
-  assert.ok(lightAlpha >= 0.20 && lightAlpha <= 0.36, `Light mode card alpha must be translucent between 0.20 and 0.36 (got ${lightAlpha})`);
+  assert.ok(lightAlpha >= 0.15 && lightAlpha <= 0.36, `Light mode card alpha must be translucent between 0.15 and 0.36 (got ${lightAlpha})`);
 
   // Assertions: Zero blur / reduced blur (learned from aside-sticky-box)
   assert.ok(
@@ -94,11 +94,19 @@ async function run() {
     `Card backdropFilter blur MUST be removed/zero per aside-sticky-box method (got ${lightStyles.card.backdropFilter})`
   );
 
-  // Assertions: Cover image and inner containers must be translucent / transparent to allow light transmission
-  assert.ok(
-    lightStyles.infoWrapperBg === 'rgba(0, 0, 0, 0)' || lightStyles.infoWrapperBg === 'transparent',
-    'Info wrapper must be transparent'
-  );
+  // Assertions: Info wrapper must be rendered in translucent blue, NOT completely colorless
+  assert.ok(lightStyles.infoWrapperBg !== 'rgba(0, 0, 0, 0)' && lightStyles.infoWrapperBg !== 'transparent', 'Info wrapper must NOT be completely colorless');
+  const lightInfoMatch = lightStyles.infoWrapperBg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  assert.ok(lightInfoMatch, 'Info wrapper must have rgba color with alpha');
+  const [liFull, iLrStr, iLgStr, iLbStr, iLaStr] = lightInfoMatch;
+  const iLr = parseInt(iLrStr);
+  const iLg = parseInt(iLgStr);
+  const iLb = parseInt(iLbStr);
+  const iLa = parseFloat(iLaStr);
+  assert.ok(iLb > iLr && iLb > iLg, `Info wrapper MUST be rendered as blue (b > r && b > g, got R:${iLr} G:${iLg} B:${iLb})`);
+  assert.ok(iLa >= 0.20 && iLa <= 0.45, `Info wrapper MUST be translucent between 0.20 and 0.45 (got ${iLa})`);
+
+  // Assertions: Cover wrapper must be transparent to prevent light obstruction
   assert.ok(
     lightStyles.coverWrapperBg === 'rgba(0, 0, 0, 0)' || lightStyles.coverWrapperBg === 'transparent',
     'Cover wrapper must be transparent'
@@ -167,7 +175,7 @@ async function run() {
   const darkAlpha = parseFloat(darkAlphaStr);
   assert.ok(db > dr && db > dg, `Dark mode card MUST preserve sapphire blue tone (b > r && b > g, got R:${dr} G:${dg} B:${db})`);
   assert.ok(db >= 50, `Dark mode blue component must be at least 50 (got ${db})`);
-  assert.ok(darkAlpha >= 0.20 && darkAlpha <= 0.40, `Dark mode card alpha must be translucent between 0.20 and 0.40 (got ${darkAlpha})`);
+  assert.ok(darkAlpha >= 0.15 && darkAlpha <= 0.40, `Dark mode card alpha must be translucent between 0.15 and 0.40 (got ${darkAlpha})`);
 
   // Assertions: Zero blur / reduced blur
   assert.ok(
@@ -180,6 +188,18 @@ async function run() {
     const dImgOp = parseFloat(darkStyles.coverImgOpacity);
     assert.ok(dImgOp >= 0.65 && dImgOp <= 0.88, `Dark mode cover image must have translucency between 0.65 and 0.88 (got ${dImgOp})`);
   }
+
+  // Assertions: Dark mode info wrapper must be rendered in translucent sapphire blue
+  assert.ok(darkStyles.infoWrapperBg !== 'rgba(0, 0, 0, 0)' && darkStyles.infoWrapperBg !== 'transparent', 'Dark mode info wrapper must NOT be completely colorless');
+  const darkInfoMatch = darkStyles.infoWrapperBg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  assert.ok(darkInfoMatch, 'Dark mode info wrapper must have rgba color with alpha');
+  const [dIFull, diRStr, diGStr, diBStr, diAStr] = darkInfoMatch;
+  const diR = parseInt(diRStr);
+  const diG = parseInt(diGStr);
+  const diB = parseInt(diBStr);
+  const diA = parseFloat(diAStr);
+  assert.ok(diB > diR && diB > diG, `Dark mode info wrapper MUST be rendered as blue (b > r && b > g, got R:${diR} G:${diG} B:${diB})`);
+  assert.ok(diA >= 0.20 && diA <= 0.45, `Dark mode info wrapper MUST be translucent between 0.20 and 0.45 (got ${diA})`);
 
   // Screenshot dark mode card
   if (firstCard) {

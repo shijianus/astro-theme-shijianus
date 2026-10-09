@@ -240,9 +240,9 @@ async function run() {
   });
 
   console.log('Post Card Data:', JSON.stringify(postCardData, null, 2));
-  assert.ok(isTranslucentNotColorless(postCardData.cardBg), 'Parent post card MUST have translucent card background');
-  assert.equal(postCardData.innerBg, 'rgba(0, 0, 0, 0)', 'Inner post content container MUST be seamless transparent to avoid double card');
-  console.log('[✅ PASS] Post card inner container seamless and clean.\n');
+  assert.ok(isTranslucentNotColorless(postCardData.innerBg), 'Inner post content container MUST be translucent blue, not completely colorless');
+  assert.equal(postCardData.innerBorderTop, '0px', 'Inner post content container must have zero top border to avoid card nesting');
+  console.log('[✅ PASS] Post card inner container translucent blue and clean.\n');
 
   // 7. Audit Dark Mode
   console.log('[*] 7. Auditing Dark Mode Palette...');

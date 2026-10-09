@@ -8194,8 +8194,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
 :is(.recent-post-item, #recent-posts > .recent-post-item) > [class*="justify-between"],
 .recent-post-item .p-3.sm\:p-3\.5,
 .recent-post-item .recent-post-info {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--recent-post-info-bg) !important;
+  background-color: var(--recent-post-info-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-top: none !important;
@@ -8859,10 +8859,11 @@ body[data-type='home'] .home-pagination__num.is-current {
   --home-sticky-sub-shadow: none;
 
   /* Recent Post Card: Light mode translucent blue tone with background light transmission & zero blur */
-  --recent-post-card-bg: rgba(195, 216, 255, 0.28);
+  --recent-post-card-bg: rgba(195, 216, 255, 0.18);
   --recent-post-card-border: rgba(66, 90, 239, 0.32);
   --recent-post-card-filter: none;
   --recent-post-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.08);
+  --recent-post-info-bg: rgba(195, 218, 255, 0.32);
   --recent-post-cover-opacity: 0.82;
   --recent-post-cover-hover-opacity: 0.98;
 }
@@ -8893,10 +8894,11 @@ html[data-theme='dark'],
   --home-sticky-sub-shadow: none;
 
   /* Recent Post Card: Dark mode translucent sapphire blue tone with background light transmission & zero blur */
-  --recent-post-card-bg: rgba(18, 34, 72, 0.32);
+  --recent-post-card-bg: rgba(18, 34, 72, 0.22);
   --recent-post-card-border: rgba(66, 90, 239, 0.40);
   --recent-post-card-filter: none;
   --recent-post-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45);
+  --recent-post-info-bg: rgba(20, 38, 78, 0.38);
   --recent-post-cover-opacity: 0.78;
   --recent-post-cover-hover-opacity: 0.96;
 }
@@ -9034,15 +9036,27 @@ body[data-type='home'] .category-chip__count {
   border-radius: 4px !important;
 }
 
-/* 2. Target: 首页文章卡片内部透明容器 (避免嵌套产生双层白框或遮光层) */
+/* 2a. Target: 首页文章卡片封面包裹容器 (保持透明，避免遮光) */
 .recent-post-item > div:first-child,
-.recent-post-item .post_cover,
+.recent-post-item > [class*="h-32"],
+.recent-post-item .post_cover {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 2b. Target: 首页文章卡片内容区域 p-3 (保持透明可见底面背景的前提条件下，颜色渲染为蓝色而非无色) */
 .recent-post-item > div:last-child,
 .recent-post-item .recent-post-info,
 .recent-post-item :is(.p-3, [class*="justify-between"]),
 :root :is(.recent-post-item, #recent-posts > .recent-post-item) > :is(.p-3, [class*="justify-between"]) {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--recent-post-info-bg) !important;
+  background-color: var(--recent-post-info-bg) !important;
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
