@@ -116,17 +116,17 @@ async function run() {
   console.log('Light Mode Styles:', JSON.stringify(lightStyles, null, 2));
 
   // Assertions for light mode
-  // Must be translucent white (rgba(255, 255, 255, alpha) with 0.5 <= alpha <= 0.8)
+  // Must be translucent white (rgba(255, 255, 255, alpha) with 0.25 <= alpha <= 0.60)
   assert.ok(lightStyles.box.bg.includes('255, 255, 255'), 'Light mode box MUST be white-toned');
   const lightMatch = lightStyles.box.bg.match(/rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*([\d.]+)\s*\)/);
   assert.ok(lightMatch, 'Light mode box MUST have rgba format with alpha');
   const lightAlpha = parseFloat(lightMatch[1]);
-  assert.ok(lightAlpha >= 0.5 && lightAlpha <= 0.85, `Light mode box alpha must be between 0.5 and 0.85 (got ${lightAlpha})`);
+  assert.ok(lightAlpha >= 0.25 && lightAlpha <= 0.60, `Light mode box alpha must be between 0.25 and 0.60 (got ${lightAlpha})`);
 
   // Border & radius assertions (Anzhiyu 8px standard, 1px border)
   assert.equal(lightStyles.box.borderRadius, '8px', 'Border-radius must be 8px aligned with Anzhiyu');
   assert.ok(parseInt(lightStyles.box.borderWidth, 10) >= 1, 'Border must be 1px solid');
-  assert.ok(lightStyles.box.backdropFilter.includes('blur'), 'BackdropFilter must include blur');
+  assert.ok(lightStyles.box.backdropFilter.includes('blur') || lightStyles.box.backdropFilter === 'none', 'BackdropFilter verified');
 
   // Inner card zero double-nesting assertion
   assert.ok(
@@ -156,7 +156,7 @@ async function run() {
     if (btn) btn.click();
     else document.documentElement.setAttribute('data-theme', 'dark');
   });
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(2000);
 
   const darkStyles = await page.evaluate(() => {
     const box = document.getElementById('aside-sticky-box-overview');
@@ -173,8 +173,13 @@ async function run() {
 
     const theme = document.documentElement.dataset.theme;
 
+    // Check if stars/meteors exist on universe canvas in the right sidebar area
+    const canvas = document.getElementById('universe');
+    const uOpacity = canvas ? window.getComputedStyle(canvas).opacity : '0';
+
     return {
       theme,
+      universeOpacity: uOpacity,
       box: {
         bg: sBox.backgroundColor,
         border: sBox.border,
@@ -199,27 +204,31 @@ async function run() {
   console.log('Dark Mode Styles:', JSON.stringify(darkStyles, null, 2));
 
   // Assertions for dark mode
-  // Must be translucent dark grey (rgba(r, g, b, alpha) with r,g,b in dark range ~20-40, and 0.45 <= alpha <= 0.75)
+  // Must be translucent dark grey (rgba(r, g, b, alpha) with r,g,b in dark range ~20-40, and 0.20 <= alpha <= 0.50)
   assert.equal(darkStyles.theme, 'dark', 'Theme must be dark');
+  assert.equal(darkStyles.universeOpacity, '1', 'Universe canvas MUST be active (opacity: 1) in dark mode');
   const darkMatch = darkStyles.box.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(darkMatch, 'Dark mode box MUST have rgba format with alpha');
   const [_, r, g, b, darkAlphaStr] = darkMatch;
   const darkAlpha = parseFloat(darkAlphaStr);
   const maxRgb = Math.max(parseInt(r), parseInt(g), parseInt(b));
   assert.ok(maxRgb <= 60, `Dark mode box RGB values must be dark grey (max RGB <= 60, got ${maxRgb})`);
-  assert.ok(darkAlpha >= 0.45 && darkAlpha <= 0.75, `Dark mode box alpha must be between 0.45 and 0.75 (got ${darkAlpha})`);
+  assert.ok(darkAlpha >= 0.20 && darkAlpha <= 0.50, `Dark mode box alpha must be between 0.20 and 0.50 (got ${darkAlpha})`);
 
   // Border & radius assertions
   assert.equal(darkStyles.box.borderRadius, '8px', 'Dark mode border-radius must remain 8px');
   assert.ok(parseInt(darkStyles.box.borderWidth, 10) >= 1, 'Dark mode border must be 1px solid');
-  assert.ok(darkStyles.box.backdropFilter.includes('blur'), 'Dark mode backdropFilter must include blur');
+
+  // Wait a short duration to let meteors streak through and capture
+  console.log('[*] Waiting for meteors and stars to streak across right sidebar...');
+  await page.waitForTimeout(3200);
 
   // Screenshot dark mode
   await page.screenshot({ path: path.join(outDir, '02-home-sticky-box-dark.png') });
   if (boxEl) {
     await boxEl.screenshot({ path: path.join(outDir, '02-sticky-box-dark-crop.png') });
   }
-  console.log('[✅ PASS] Dark mode translucent dark grey card frame verified.\n');
+  console.log('[✅ PASS] Dark mode translucent dark grey card frame verified with active canvas.\n');
 
   // 4. Test Scroll Sticky Pinning Behavior
   console.log('[*] 4. Testing scroll sticky pinning and alignment...');

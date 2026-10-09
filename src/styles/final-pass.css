@@ -8855,13 +8855,13 @@ body[data-type='home'] .home-pagination__num.is-current {
   --hover-plate-border-translucent: rgba(66, 90, 239, 0.55);
 
   /* Home Sticky Overview Card: Light mode translucent white palette */
-  --home-sticky-card-bg: rgba(255, 255, 255, 0.52);
+  --home-sticky-card-bg: rgba(255, 255, 255, 0.38);
   --home-sticky-card-border: rgba(227, 232, 247, 0.85);
-  --home-sticky-card-filter: saturate(140%) blur(8px);
+  --home-sticky-card-filter: saturate(130%) blur(3px);
   --home-sticky-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
 
-  --home-sticky-sub-bg: rgba(255, 255, 255, 0.35);
-  --home-sticky-sub-border: rgba(227, 232, 247, 0.70);
+  --home-sticky-sub-bg: rgba(255, 255, 255, 0.22);
+  --home-sticky-sub-border: rgba(227, 232, 247, 0.60);
   --home-sticky-sub-shadow: none;
 }
 
@@ -8881,13 +8881,13 @@ html[data-theme='dark'],
   --hover-plate-border-translucent: rgba(242, 185, 75, 0.55);
 
   /* Home Sticky Overview Card: Dark mode translucent dark-toned grey palette */
-  --home-sticky-card-bg: rgba(26, 28, 36, 0.50);
-  --home-sticky-card-border: rgba(255, 255, 255, 0.12);
-  --home-sticky-card-filter: saturate(140%) blur(8px);
+  --home-sticky-card-bg: rgba(22, 25, 34, 0.28);
+  --home-sticky-card-border: rgba(255, 255, 255, 0.14);
+  --home-sticky-card-filter: saturate(140%) blur(2px);
   --home-sticky-card-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.35);
 
-  --home-sticky-sub-bg: rgba(255, 255, 255, 0.06);
-  --home-sticky-sub-border: rgba(255, 255, 255, 0.09);
+  --home-sticky-sub-bg: rgba(255, 255, 255, 0.04);
+  --home-sticky-sub-border: rgba(255, 255, 255, 0.08);
   --home-sticky-sub-shadow: none;
 }
 

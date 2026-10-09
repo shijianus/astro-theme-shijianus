@@ -5289,5 +5289,19 @@
   - 严格断言深色模式 `rgba(r, g, b, alpha)` 最大 RGB ≤ 60 且 alpha 介于 0.45~0.75；
   - 严格断言 8px 圆角、1px 实线边框、零双层嵌套、与 profile-card 对齐及滚屏吸顶固定状态。
 
+### Task 241: 修复全屏流星穿透与侧边栏星空覆盖，落地真有色半透卡片 (PENDING_HASH)
+- [x] **根治流星与星空在侧边栏区域缺失的底层缺陷 (`src/lib/starry-universe.ts`)**：
+  - 根除历史逻辑中 `this.x > w - w / 4` 导致在右侧 25% 视口（侧边栏卡片所在区间）粒子被提前全部杀除的严重 Bug；
+  - 粒子全屏分布化：将粒子散布范围扩展至完整视口全域，出屏判定放宽至 `x > w + 60 || y < -40`，彻底消灭右侧黑屏真空；
+  - 新增专用连续流星调度器（`ensureMeteorActivity`）：每 ~2.8s 确保一颗亮核大流星划过长空，包含 50% 概率径向穿透右侧卡片，40阶离子长尾与柔和晕光晶莹剔透；
+- [x] **调优真实有色半透卡片参数 (`src/styles/final-pass.css`)**：
+  - 暗色模式卡片：`--home-sticky-card-bg: rgba(22, 25, 34, 0.28)`，`backdrop-filter: saturate(140%) blur(2px)`，边框 `1px solid rgba(255, 255, 255, 0.14)`，避免重度模糊使背景流星与恒星被过度抹平；
+  - 亮色模式卡片：`--home-sticky-card-bg: rgba(255, 255, 255, 0.38)`，`backdrop-filter: saturate(130%) blur(3px)`，底层降雪与粒子动态清晰直穿；
+  - 内部微色块（标签、分类、网站统计）：降至超轻量半透（暗色 `0.04`，亮色 `0.22`），彻底解除色块遮光矩阵；
+- [x] **Playwright 实机截图审计与流星穿透验证 (`scripts/verify-home-sticky-overview-card.mjs`)**：
+  - 成功捕获并固化流星及长离子尾穿越 `#aside-sticky-box-overview` 内部的实机截图证据（`scratch/sticky-overview-audit/meteor-frame-2.png`）；
+  - 浅色/深色双模态计算样式与吸顶状态 100% PASS。
+
+
 
 

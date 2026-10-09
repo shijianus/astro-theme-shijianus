@@ -110,30 +110,50 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
 
     reset() {
       this.giant = options?.enableGiantStars !== false && (this.isCluster ? chance(4) : chance(3));
-      this.comet = options?.enableComet !== false && !this.giant && !firstLaunch && (this.isCluster ? chance(14) : chance(8));
+      this.comet = options?.enableComet !== false && !this.giant && !firstLaunch && (this.isCluster ? chance(16) : chance(12));
 
-      if (this.isCluster) {
-        // Bottom-left cosmic nursery (biased toward x: 0 ~ 0.55*width, y: 0.45*height ~ height)
-        const xDist = Math.pow(Math.random(), 1.4);
-        const yDist = Math.pow(Math.random(), 1.4);
-        this.x = xDist * (width * 0.55);
-        this.y = height - yDist * (height * 0.55);
+      if (this.comet) {
+        // Shooting star / Meteor: spawn along bottom or left edge to streak across the entire sky
+        if (Math.random() < 0.65) {
+          this.x = random(-60, width * 0.85);
+          this.y = random(height * 0.45, height + 40);
+        } else {
+          this.x = random(-60, width * 0.35);
+          this.y = random(height * 0.2, height);
+        }
+        this.r = random(2.2, 3.4);
+        const cometSpeed = random(6.5, 12);
+        this.dx = cometSpeed * random(0.9, 1.3);
+        this.dy = -cometSpeed * random(0.65, 1.05);
+        this.opacity = 0;
+        this.opacityTresh = random(0.85, 1.0);
+        this.deltaOpacity = random(0.04, 0.08); // Rapid luminous entry
+      } else if (this.isCluster) {
+        // Bottom-left cosmic nursery enhancement (gentle density bias)
+        const xDist = Math.pow(Math.random(), 1.2);
+        const yDist = Math.pow(Math.random(), 1.2);
+        this.x = xDist * (width * 0.65);
+        this.y = height - yDist * (height * 0.65);
+        this.r = this.giant ? random(2.2, 3.6) : random(1.1, 2.4);
+        this.dx = random(baseSpeed, 4 * baseSpeed);
+        this.dy = -random(baseSpeed, 4 * baseSpeed);
+        this.opacity = firstLaunch ? random(0.1, 0.7) : 0;
+        this.opacityTresh = random(0.35, 0.95);
+        this.deltaOpacity = random(0.0008, 0.0028);
       } else {
-        this.x = random(0, Math.max(10, width - 10));
-        this.y = random(0, Math.max(10, height));
+        // Uniform distribution across full screen (including right sidebar at x: 1096~1416)
+        this.x = random(0, width);
+        this.y = random(0, height);
+        this.r = this.giant ? random(2.2, 3.6) : random(1.1, 2.4);
+        this.dx = random(baseSpeed, 4 * baseSpeed);
+        this.dy = -random(baseSpeed, 4 * baseSpeed);
+        this.opacity = firstLaunch ? random(0.1, 0.7) : 0;
+        this.opacityTresh = random(0.35, 0.95);
+        this.deltaOpacity = random(0.0008, 0.0028);
       }
-
-      this.r = random(1.1, 2.6);
-
-      const cometSpeedFactor = this.comet ? random(50, 120) : 0;
-      this.dx = random(baseSpeed, 6 * baseSpeed) + cometSpeedFactor * baseSpeed + 2 * baseSpeed;
-      this.dy = -random(baseSpeed, 6 * baseSpeed) - cometSpeedFactor * baseSpeed;
 
       this.fadingOut = null;
       this.fadingIn = true;
-      this.opacity = 0;
-      this.opacityTresh = random(0.25, 1 - (this.comet ? 0.4 : 0));
-      this.deltaOpacity = random(0.0006, 0.0024) + (this.comet ? 0.0012 : 0);
     }
 
     fadeIn() {
@@ -147,7 +167,7 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
       if (this.fadingOut) {
         this.fadingOut = this.opacity >= 0;
         this.opacity -= this.deltaOpacity / 2;
-        if (this.x > width || this.y < 0) {
+        if (this.x > width + 80 || this.y < -50) {
           this.fadingOut = false;
           this.reset();
         }
@@ -177,7 +197,9 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
         this.reset();
       }
 
-      if (this.x > w - w / 4 || this.y < 0) {
+      // ONLY fade out when particle actually exits off-screen (reaches beyond right/top edges)
+      // Removed previous premature `this.x > w - w / 4` cutoff which left the right sidebar in pitch black!
+      if (this.x > w + 60 || this.y < -40) {
         this.fadingOut = true;
       }
     }
@@ -187,21 +209,33 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
       const alpha = Math.max(0, Math.min(1, this.opacity));
 
       if (this.giant) {
-        // 幽蓝巨星 (Giant Star): 冷紫蓝圆形光斑
+        // 幽蓝巨星 (Giant Star): 冷紫蓝圆形光斑 + 柔和光晕
+        c.fillStyle = `rgba(${giantColor}, ${alpha * 0.35})`;
+        c.arc(this.x, this.y, this.r * 2.2, 0, 2 * Math.PI, false);
+        c.fill();
         c.fillStyle = `rgba(${giantColor}, ${alpha})`;
-        c.arc(this.x, this.y, 2, 0, 2 * Math.PI, false);
+        c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
         c.fill();
       } else if (this.comet) {
-        // 离子彗星 (Comet): 银白光核 + 30 阶衰减残影离子拖尾
-        c.fillStyle = `rgba(${cometColor}, ${alpha})`;
-        c.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, false);
+        // 离子彗星/流星 (Comet/Meteor): 纯银白亮核 + 离子晕光 + 40阶衰减长离子拖尾
+        c.fillStyle = `rgba(190, 215, 255, ${alpha * 0.65})`;
+        c.arc(this.x, this.y, this.r * 2.2, 0, 2 * Math.PI, false);
         c.fill();
 
-        for (let t = 0; t < 30; t++) {
-          const trailOpacity = alpha - (alpha / 20) * t;
-          if (trailOpacity > 0) {
-            c.fillStyle = `rgba(${cometColor}, ${trailOpacity})`;
-            c.fillRect(this.x - (this.dx / 4) * t, this.y - (this.dy / 4) * t - 2, 2, 2);
+        c.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+        c.fill();
+
+        // 40 阶离子拖尾
+        const trailSteps = 40;
+        for (let t = 1; t <= trailSteps; t++) {
+          const trailOpacity = alpha * (1 - t / trailSteps);
+          if (trailOpacity > 0.02) {
+            const tx = this.x - (this.dx / 3.6) * t;
+            const ty = this.y - (this.dy / 3.6) * t;
+            const tw = Math.max(1, this.r * (1 - (t / trailSteps) * 0.55));
+            c.fillStyle = `rgba(${cometColor}, ${trailOpacity * 0.9})`;
+            c.fillRect(tx, ty - tw / 2, tw, tw);
           }
         }
       } else {
@@ -226,13 +260,45 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const mult = options?.particleDensityMultiplier ?? 1.0;
-    // 增加总体星空密度 (从 0.216 提升至 0.36 并设定 280 最低基准)
-    const count = Math.round(Math.max(280, 0.36 * width * mult));
+    // 增加总体星空密度并设定 320 最低基准
+    const count = Math.round(Math.max(320, 0.42 * width * mult));
     particles = [];
-    const clusterCount = Math.round(count * 0.38); // 38% 粒子增设至左下角星云育婴室 (Bottom-Left Cluster)
+    const clusterCount = Math.round(count * 0.25); // 25% 粒子微偏左下角星云育婴室，其余 75% 全屏均匀散布
     for (let i = 0; i < count; i++) {
       const isCluster = i < clusterCount;
       particles.push(new Star(isCluster));
+    }
+  };
+
+  // Dedicated continuous meteor generator (流星生成调度器)
+  let lastMeteorTime = 0;
+  const ensureMeteorActivity = () => {
+    const now = Date.now();
+    if (now - lastMeteorTime > 2800) { // Every ~2.8s ensure a meteor streaks through
+      lastMeteorTime = now;
+      // Find an available inactive or fading star to turn into a brilliant meteor
+      const candidate = particles.find(p => !p.comet && (p.fadingOut || p.opacity < 0.2));
+      if (candidate) {
+        candidate.giant = false;
+        candidate.comet = true;
+        candidate.fadingOut = false;
+        candidate.fadingIn = true;
+        // 50% chance to streak across the right half (through sidebar)
+        if (Math.random() < 0.5) {
+          candidate.x = random(width * 0.4, width * 0.85);
+          candidate.y = random(height * 0.5, height + 20);
+        } else {
+          candidate.x = random(-40, width * 0.5);
+          candidate.y = random(height * 0.4, height + 20);
+        }
+        candidate.r = random(2.4, 3.6);
+        const speed = random(7, 12);
+        candidate.dx = speed * random(0.95, 1.25);
+        candidate.dy = -speed * random(0.7, 1.05);
+        candidate.opacity = 0;
+        candidate.opacityTresh = random(0.9, 1.0);
+        candidate.deltaOpacity = 0.06;
+      }
     }
   };
 
@@ -241,6 +307,7 @@ export function initStarryUniverse(options?: StarryUniverseOptions): (() => void
 
     ctx.clearRect(0, 0, width, height);
     const isDark = isDarkMode();
+    ensureMeteorActivity();
 
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
