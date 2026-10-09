@@ -5302,7 +5302,7 @@
   - 成功捕获并固化流星及长离子尾穿越 `#aside-sticky-box-overview` 内部的实机截图证据（`scratch/sticky-overview-audit/meteor-frame-2.png`）；
   - 浅色/深色双模态计算样式与吸顶状态 100% PASS。
 
-### Task 242: 遵照用户指示全量回退背景星空逻辑，保留板块框优化成果 (PENDING_HASH)
+### Task 242: 遵照用户指示全量回退背景星空逻辑，保留板块框优化成果 (6cd7c35)
 - [x] **全量回退星空背景代码 (`src/lib/starry-universe.ts`)**：
   - 彻底撤销 Task 241 中对 `starry-universe.ts` 粒子逻辑的所有改动，100% 还原至基线原始版本；
   - 恢复原本的星空生成算法、粒子分布及流动速率，不改变底背景的任何既有特性；
