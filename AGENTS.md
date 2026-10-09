@@ -5373,4 +5373,17 @@
   - 更新 `scripts/verify-recent-post-card-transparency.mjs`，严格断言浅色与深色卡片背景的蓝色通道显著主导（`b > r && b > g`）及透明度黄金区间；
   - 自动化测试与 parity 校验 100% PASS。
 
+### Task 247: 文章卡片内容区域 p-3 渲染通透蓝调，保持透明可见后方背景且告别完全无色 (8ec3f6f)
+- [x] **内容区域 p-3 渲染正统通透蓝色，根治完全无色 (Render Info Container in Translucent Blue)**：
+  - 遵照用户明确指示（"当前的class=\"p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5\"需要保持当前的透明可见底面的背景的前提条件下，对于颜色渲染为蓝色，而非完全无色！请进一步优化！"）；
+  - 解除 `p-3` 区域历史写死的 `background: transparent !important` 完全无色限制；
+  - 浅色模式为 `.recent-post-item > .p-3.sm:p-3.5` 赋予专属透明冰蓝底色 `--recent-post-info-bg: rgba(195, 218, 255, 0.32)`，深色模式赋予幽夜深蓝宝底色 `--recent-post-info-bg: rgba(20, 38, 78, 0.38)`；
+  - 保持 `backdrop-filter: none !important;` 零模糊，底层星空宇宙、闪烁恒星与降雪粒子通透可见、锐利高清；
+- [x] **封面图片区域与整体卡片通透协同 (Cover & Card Coordination)**：
+  - 封面包裹容器（`[class*="h-32"]`）保持 `background: transparent !important;`，配合图片 0.82/0.78 透明度，上部与下部形成自然通透蓝调交融；
+  - 悬浮态（Hover）平滑提升封面图片不透明度至 `0.98`，边框高亮激活主题蓝光晕；
+- [x] **自动化端到端测试与全链路验证**：
+  - 更新 `scripts/verify-recent-post-card-transparency.mjs` 与 `scripts/verify-transparency-parity.mjs`，断言 `infoWrapperBg` 呈现正统有色蓝色（$B > R$ 且 $B > G$）且透明度在黄金区间，全量断言 100% PASS。
+
+
 
