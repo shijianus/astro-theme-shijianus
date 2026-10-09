@@ -5344,3 +5344,19 @@
 - [x] **Playwright 自动化测试全量通过**：
   - 新增专用端到端审计脚本 `scripts/verify-recent-post-card-transparency.mjs`；
   - 双模态（浅色/深色）色彩计算样式、零模糊、内部透明层及悬浮交互 100% PASS。
+
+### Task 245: 文章卡片封面图片 (h-32 sm:h-36) 添加通透性与背景光穿透，保持内容容器 p-3 完全不变 (eb0bfac)
+- [x] **严格保持内容容器 p-3 现有状态与通透感不变 (Preserve Content Info Container Untouched)**：
+  - 遵照用户明确指示（"当前class=\"p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-1.5\"的通透做的挺好的，不要改了！专注于修改...图片的通透性"）；
+  - `PostCard.astro` 中内容区域的类名、结构、标题与元信息渲染 100% 保持不动，无任何侵入式修改；
+- [x] **封面图片容器彻底解除纯色底衬 (Remove Opaque Background Behind Cover)**：
+  - 将 `PostCard.astro` 中封面包裹容器的 `bg-[var(--secondbg)]` 改为 `bg-transparent`；
+  - 在 `src/styles/final-pass.css` 中强制该容器及父层级 `background: transparent !important; backdrop-filter: none !important;`，消除所有阻隔光线穿透的实体底色与模糊遮罩；
+- [x] **封面图片注入适度通透性与背景光穿透 (Cover Image Translucency & Light Permeability)**：
+  - 亮色模式定义 `--recent-post-cover-opacity: 0.82`，暗色模式定义 `--recent-post-cover-opacity: 0.78`；
+  - 使底层的动态雪花粒子、恒星闪烁与星空光效能自然透过封面图片隐约呈现，兼顾图片内容辨识度与背景通透灵动感；
+  - 悬浮态（Hover）平滑提升透明度至 `0.96` ~ `0.98`（`--recent-post-cover-hover-opacity`），带来平滑顺畅的交互对焦反馈；
+- [x] **自动化端到端测试与全链路验证**：
+  - 扩展 `scripts/verify-recent-post-card-transparency.mjs`，包含对封面包裹层透明背景与封面图片自身透明度的精准断言；
+  - 桌面端、移动端、浅色/深色双模态及 Hover 状态断言 100% PASS。
+
