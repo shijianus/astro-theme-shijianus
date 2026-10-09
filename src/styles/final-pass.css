@@ -8148,9 +8148,6 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   div#archive,
   div#tag,
   div#category,
-  .recent-post-item,
-  #recent-posts > .recent-post-item,
-  .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
   #aside-content .card-widget.card-feature-panel,
@@ -8425,9 +8422,6 @@ body[data-type='home'] .home-pagination__num.is-current {
   div#archive,
   div#tag,
   div#category,
-  .recent-post-item,
-  #recent-posts > .recent-post-item,
-  .topGroup .recent-post-item,
   #aside-content .card-widget,
   .card-widget,
   #aside-content .card-widget.card-feature-panel,
@@ -8863,6 +8857,12 @@ body[data-type='home'] .home-pagination__num.is-current {
   --home-sticky-sub-bg: rgba(120, 126, 138, 0.10);
   --home-sticky-sub-border: rgba(120, 126, 138, 0.20);
   --home-sticky-sub-shadow: none;
+
+  /* Recent Post Card: Light mode translucent white palette with light transmission & zero blur */
+  --recent-post-card-bg: rgba(255, 255, 255, 0.22);
+  --recent-post-card-border: rgba(255, 255, 255, 0.45);
+  --recent-post-card-filter: none;
+  --recent-post-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
 }
 
 :root[data-theme='dark'],
@@ -8889,6 +8889,12 @@ html[data-theme='dark'],
   --home-sticky-sub-bg: rgba(145, 155, 175, 0.08);
   --home-sticky-sub-border: rgba(145, 155, 175, 0.16);
   --home-sticky-sub-shadow: none;
+
+  /* Recent Post Card: Dark mode translucent dark palette with light transmission & zero blur */
+  --recent-post-card-bg: rgba(20, 22, 30, 0.25);
+  --recent-post-card-border: rgba(255, 255, 255, 0.12);
+  --recent-post-card-filter: none;
+  --recent-post-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35);
 }
 
 /* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
@@ -9024,7 +9030,9 @@ body[data-type='home'] .category-chip__count {
   border-radius: 4px !important;
 }
 
-/* 2. Target: 首页文章卡片内部透明容器 (避免嵌套产生双层白框) */
+/* 2. Target: 首页文章卡片内部透明容器 (避免嵌套产生双层白框或遮光层) */
+.recent-post-item > div:first-child,
+.recent-post-item .post_cover,
 .recent-post-item > div:last-child,
 .recent-post-item .recent-post-info,
 .recent-post-item :is(.p-3, [class*="justify-between"]),
@@ -9171,10 +9179,43 @@ body[data-type='home'] .category-bar {
   box-shadow: var(--card-shadow-translucent) !important;
 }
 
-/* 7. Target: 首页文章卡片与文章内全量方格区域 (TOC, copyright, postNav, relatedPosts, notice 等) */
-.recent-post-item,
+/* 7a. Target: 首页文章卡片与置顶卡片 (.recent-post-item) 具有透光性且可直视后方背景 (学习 aside-sticky-box 无模糊处理) */
+:root body[data-type='home'] #recent-posts .recent-post-item,
+:root body[data-type='home'] .topGroup .recent-post-item,
+:root body[data-type='home'] .recent-post-item,
 :root #recent-posts > .recent-post-item,
+:root .recent-post-item,
+body[data-type='home'] #recent-posts > .recent-post-item,
 body[data-type='home'] .recent-post-item,
+.topGroup .recent-post-item,
+.recent-post-item {
+  background: var(--recent-post-card-bg) !important;
+  backdrop-filter: var(--recent-post-card-filter) !important;
+  -webkit-backdrop-filter: var(--recent-post-card-filter) !important;
+  border: 1px solid var(--recent-post-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--recent-post-card-shadow) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+.recent-post-item:hover,
+:root #recent-posts > .recent-post-item:hover,
+body[data-type='home'] .recent-post-item:hover,
+.topGroup .recent-post-item:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 12px 24px -4px rgba(44, 45, 48, 0.12) !important;
+}
+
+:root[data-theme='dark'] .recent-post-item:hover,
+:root[data-theme='dark'] #recent-posts > .recent-post-item:hover,
+:root[data-theme='dark'] body[data-type='home'] .recent-post-item:hover,
+:root[data-theme='dark'] .topGroup .recent-post-item:hover {
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 7b. Target: 文章内全量方格区域 (TOC, copyright, postNav, relatedPosts, notice 等) */
 #card-toc,
 .post-copyright,
 .relatedPosts-item,
