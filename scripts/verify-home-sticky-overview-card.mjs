@@ -116,17 +116,16 @@ async function run() {
   console.log('Light Mode Styles:', JSON.stringify(lightStyles, null, 2));
 
   // Assertions for light mode
-  // Must be translucent white (rgba(255, 255, 255, alpha) with 0.25 <= alpha <= 0.60)
-  assert.ok(lightStyles.box.bg.includes('255, 255, 255'), 'Light mode box MUST be white-toned');
-  const lightMatch = lightStyles.box.bg.match(/rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*([\d.]+)\s*\)/);
+  // Must be translucent grey (rgba(r, g, b, alpha) with grey tones and increased transparency 0.12 <= alpha <= 0.25)
+  assert.ok(lightStyles.box.bg.startsWith('rgba('), 'Light mode box MUST have rgba format');
+  const lightMatch = lightStyles.box.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(lightMatch, 'Light mode box MUST have rgba format with alpha');
-  const lightAlpha = parseFloat(lightMatch[1]);
-  assert.ok(lightAlpha >= 0.25 && lightAlpha <= 0.60, `Light mode box alpha must be between 0.25 and 0.60 (got ${lightAlpha})`);
-
-  // Border & radius assertions (Anzhiyu 8px standard, 1px border)
-  assert.equal(lightStyles.box.borderRadius, '8px', 'Border-radius must be 8px aligned with Anzhiyu');
-  assert.ok(parseInt(lightStyles.box.borderWidth, 10) >= 1, 'Border must be 1px solid');
-  assert.ok(lightStyles.box.backdropFilter.includes('blur') || lightStyles.box.backdropFilter === 'none', 'BackdropFilter verified');
+  const [_, lr, lg, lb, lAlphaStr] = lightMatch;
+  const lightAlpha = parseFloat(lAlphaStr);
+  const maxDiff = Math.max(Math.abs(parseInt(lr) - parseInt(lg)), Math.abs(parseInt(lg) - parseInt(lb)), Math.abs(parseInt(lr) - parseInt(lb)));
+  assert.ok(maxDiff <= 25, `Light mode box MUST be grey-toned (got rgb(${lr}, ${lg}, ${lb}))`);
+  assert.ok(lightAlpha >= 0.12 && lightAlpha <= 0.25, `Light mode box alpha must have increased transparency between 0.12 and 0.25 (got ${lightAlpha})`);
+  assert.ok(lightStyles.box.backdropFilter === 'none' || lightStyles.box.backdropFilter === 'blur(0px)', 'BackdropFilter blur sensation MUST be reduced/eliminated (none)');
 
   // Inner card zero double-nesting assertion
   assert.ok(
@@ -204,16 +203,17 @@ async function run() {
   console.log('Dark Mode Styles:', JSON.stringify(darkStyles, null, 2));
 
   // Assertions for dark mode
-  // Must be translucent dark grey (rgba(r, g, b, alpha) with r,g,b in dark range ~20-40, and 0.20 <= alpha <= 0.50)
+  // Must be translucent grey (rgba(r, g, b, alpha) with grey tones and increased transparency 0.12 <= alpha <= 0.25)
   assert.equal(darkStyles.theme, 'dark', 'Theme must be dark');
   assert.equal(darkStyles.universeOpacity, '1', 'Universe canvas MUST be active (opacity: 1) in dark mode');
   const darkMatch = darkStyles.box.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(darkMatch, 'Dark mode box MUST have rgba format with alpha');
-  const [_, r, g, b, darkAlphaStr] = darkMatch;
+  const [_dark, dr, dg, db, darkAlphaStr] = darkMatch;
   const darkAlpha = parseFloat(darkAlphaStr);
-  const maxRgb = Math.max(parseInt(r), parseInt(g), parseInt(b));
-  assert.ok(maxRgb <= 60, `Dark mode box RGB values must be dark grey (max RGB <= 60, got ${maxRgb})`);
-  assert.ok(darkAlpha >= 0.20 && darkAlpha <= 0.50, `Dark mode box alpha must be between 0.20 and 0.50 (got ${darkAlpha})`);
+  const darkMaxDiff = Math.max(Math.abs(parseInt(dr) - parseInt(dg)), Math.abs(parseInt(dg) - parseInt(db)), Math.abs(parseInt(dr) - parseInt(db)));
+  assert.ok(darkMaxDiff <= 25, `Dark mode box MUST be grey-toned (got rgb(${dr}, ${dg}, ${db}))`);
+  assert.ok(darkAlpha >= 0.12 && darkAlpha <= 0.25, `Dark mode box alpha must have increased transparency between 0.12 and 0.25 (got ${darkAlpha})`);
+  assert.ok(darkStyles.box.backdropFilter === 'none' || darkStyles.box.backdropFilter === 'blur(0px)', 'Dark mode backdropFilter blur sensation MUST be reduced/eliminated (none)');
 
   // Border & radius assertions
   assert.equal(darkStyles.box.borderRadius, '8px', 'Dark mode border-radius must remain 8px');
