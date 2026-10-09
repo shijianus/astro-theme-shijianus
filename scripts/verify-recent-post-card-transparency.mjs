@@ -50,6 +50,8 @@ async function run() {
     const sCard = window.getComputedStyle(card);
     const coverWrapper = card.querySelector('div:first-child');
     const sCover = coverWrapper ? window.getComputedStyle(coverWrapper) : null;
+    const coverImg = card.querySelector('div:first-child img, .post_cover img');
+    const sCoverImg = coverImg ? window.getComputedStyle(coverImg) : null;
     const infoWrapper = card.querySelector('.recent-post-info') || card.children[1];
     const sInfo = infoWrapper ? window.getComputedStyle(infoWrapper) : null;
     const title = card.querySelector('.article-title');
@@ -66,6 +68,7 @@ async function run() {
         boxShadow: sCard.boxShadow
       },
       coverWrapperBg: sCover ? sCover.backgroundColor : null,
+      coverImgOpacity: sCoverImg ? sCoverImg.opacity : null,
       infoWrapperBg: sInfo ? sInfo.backgroundColor : null,
       infoBackdropFilter: sInfo ? (sInfo.backdropFilter || sInfo.webkitBackdropFilter) : null,
       titleColor: sTitle ? sTitle.color : null
@@ -87,7 +90,7 @@ async function run() {
     `Card backdropFilter blur MUST be removed/zero per aside-sticky-box method (got ${lightStyles.card.backdropFilter})`
   );
 
-  // Assertions: Inner containers must be transparent to allow light transmission
+  // Assertions: Cover image and inner containers must be translucent / transparent to allow light transmission
   assert.ok(
     lightStyles.infoWrapperBg === 'rgba(0, 0, 0, 0)' || lightStyles.infoWrapperBg === 'transparent',
     'Info wrapper must be transparent'
@@ -96,13 +99,17 @@ async function run() {
     lightStyles.coverWrapperBg === 'rgba(0, 0, 0, 0)' || lightStyles.coverWrapperBg === 'transparent',
     'Cover wrapper must be transparent'
   );
+  if (lightStyles.coverImgOpacity) {
+    const lImgOp = parseFloat(lightStyles.coverImgOpacity);
+    assert.ok(lImgOp >= 0.70 && lImgOp <= 0.90, `Cover image must have translucency between 0.70 and 0.90 (got ${lImgOp})`);
+  }
 
   // Screenshot light mode card
   const firstCard = await page.$('#recent-posts .recent-post-item, .recent-post-item');
   if (firstCard) {
     await firstCard.screenshot({ path: path.join(outDir, '01-recent-post-card-light.png') });
   }
-  console.log('[✅ PASS] Light mode translucent white card verified.\n');
+  console.log('[✅ PASS] Light mode translucent white card & translucent cover image verified.\n');
 
   // 3. Audit Dark Mode Card Transparency and Initial Color Tone
   console.log('[*] 3. Toggling Dark Mode and auditing Translucent Dark Card (Original Color Intact, Zero Blur)...');
@@ -118,6 +125,8 @@ async function run() {
     const sCard = window.getComputedStyle(card);
     const coverWrapper = card.querySelector('div:first-child');
     const sCover = coverWrapper ? window.getComputedStyle(coverWrapper) : null;
+    const coverImg = card.querySelector('div:first-child img, .post_cover img');
+    const sCoverImg = coverImg ? window.getComputedStyle(coverImg) : null;
     const infoWrapper = card.querySelector('.recent-post-info') || card.children[1];
     const sInfo = infoWrapper ? window.getComputedStyle(infoWrapper) : null;
     const theme = document.documentElement.dataset.theme;
@@ -134,6 +143,7 @@ async function run() {
         color: sCard.color
       },
       coverWrapperBg: sCover ? sCover.backgroundColor : null,
+      coverImgOpacity: sCoverImg ? sCoverImg.opacity : null,
       infoWrapperBg: sInfo ? sInfo.backgroundColor : null
     };
   });
@@ -156,11 +166,17 @@ async function run() {
     `Dark mode backdropFilter blur MUST be removed/zero (got ${darkStyles.card.backdropFilter})`
   );
 
+  // Assertions: Dark mode cover image translucency
+  if (darkStyles.coverImgOpacity) {
+    const dImgOp = parseFloat(darkStyles.coverImgOpacity);
+    assert.ok(dImgOp >= 0.65 && dImgOp <= 0.88, `Dark mode cover image must have translucency between 0.65 and 0.88 (got ${dImgOp})`);
+  }
+
   // Screenshot dark mode card
   if (firstCard) {
     await firstCard.screenshot({ path: path.join(outDir, '02-recent-post-card-dark.png') });
   }
-  console.log('[✅ PASS] Dark mode translucent dark card verified.\n');
+  console.log('[✅ PASS] Dark mode translucent dark card & translucent cover image verified.\n');
 
   // 4. Test Hover Interaction and Completeness
   console.log('[*] 4. Testing hover state and visual completeness...');
@@ -173,15 +189,22 @@ async function run() {
     const hoverStyles = await page.evaluate(() => {
       const card = document.querySelector('#recent-posts .recent-post-item');
       const s = window.getComputedStyle(card);
+      const coverImg = card.querySelector('div:first-child img, .post_cover img');
+      const sImg = coverImg ? window.getComputedStyle(coverImg) : null;
       return {
         transform: s.transform,
         boxShadow: s.boxShadow,
-        borderColor: s.borderColor
+        borderColor: s.borderColor,
+        coverImgOpacity: sImg ? sImg.opacity : null
       };
     });
 
     console.log('Hover Styles:', JSON.stringify(hoverStyles, null, 2));
     assert.ok(hoverStyles.transform !== 'none', 'Hover transform must be active');
+    if (hoverStyles.coverImgOpacity) {
+      const hOp = parseFloat(hoverStyles.coverImgOpacity);
+      assert.ok(hOp >= 0.90, `Hover cover image opacity should increase towards 1.0 (got ${hOp})`);
+    }
     console.log('[✅ PASS] Hover interaction verified.\n');
   }
 

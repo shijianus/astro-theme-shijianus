@@ -8863,6 +8863,8 @@ body[data-type='home'] .home-pagination__num.is-current {
   --recent-post-card-border: rgba(255, 255, 255, 0.45);
   --recent-post-card-filter: none;
   --recent-post-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  --recent-post-cover-opacity: 0.82;
+  --recent-post-cover-hover-opacity: 0.98;
 }
 
 :root[data-theme='dark'],
@@ -8895,6 +8897,8 @@ html[data-theme='dark'],
   --recent-post-card-border: rgba(255, 255, 255, 0.12);
   --recent-post-card-filter: none;
   --recent-post-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35);
+  --recent-post-cover-opacity: 0.78;
+  --recent-post-cover-hover-opacity: 0.96;
 }
 
 /* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
@@ -9213,6 +9217,34 @@ body[data-type='home'] .recent-post-item:hover,
 :root[data-theme='dark'] .topGroup .recent-post-item:hover {
   border-color: var(--theme-main, #425aef) !important;
   box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 7a-2. Target: 文章卡片封面图片通透性 (添加适度半透明与无模糊透光，使底层星空/雪花自然穿透) */
+.recent-post-item > div:first-child,
+.recent-post-item > [class*="h-32"],
+.recent-post-item .post_cover {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.recent-post-item > div:first-child img,
+.recent-post-item > [class*="h-32"] img,
+.recent-post-item .post_cover img,
+.recent-post-item img.object-cover,
+.recent-post-item img.post_bg {
+  opacity: var(--recent-post-cover-opacity) !important;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s ease, filter 0.5s ease !important;
+}
+
+.recent-post-item:hover > div:first-child img,
+.recent-post-item:hover > [class*="h-32"] img,
+.recent-post-item:hover .post_cover img,
+.recent-post-item:hover img.object-cover,
+.recent-post-item:hover img.post_bg {
+  opacity: var(--recent-post-cover-hover-opacity) !important;
 }
 
 /* 7b. Target: 文章内全量方格区域 (TOC, copyright, postNav, relatedPosts, notice 等) */
