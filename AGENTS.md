@@ -5329,3 +5329,18 @@
   - 100% 保持 8px 圆角、320px 宽度严格对齐上方个人信息卡片、74px~80px 粘性吸顶及内部子卡片零双层套框；
 - [x] **Playwright 本地与全链路验证**：
   - 更新 `scripts/verify-home-sticky-overview-card.mjs` 与 `scripts/verify-transparency-parity.mjs`，本地验证 100% PASS。
+
+### Task 244: recent-post-item 文章卡片学习 aside-sticky-box 透光处理，保留最初基准色调 (acdb34c)
+- [x] **学习 aside-sticky-box 消除后方透过模糊感 (Zero Blur / None)**：
+  - 将 `.recent-post-item` 的 `backdrop-filter` 由 14px 重度模糊调整为 `none`；
+  - 彻底解除模糊雾化对底层背景的遮蔽，后方雪花微粒、宇宙恒星与流星晶莹剔透、锐利可见；
+- [x] **保持颜色不变的最初状态并具备高透光性 (Original Colors Intact & High Translucency)**：
+  - 亮色模式：保留最初白色调半透基准（`rgba(255, 255, 255, 0.22)`，配以 `1px solid rgba(255, 255, 255, 0.45)` 边框），不改变色调且透光率达 78%；
+  - 暗色模式：保留最初暗夜深黑调半透基准（`rgba(20, 22, 30, 0.25)`，配以 `1px solid rgba(255, 255, 255, 0.12)` 边框），保持原生视觉质感同时具备良好透光性；
+- [x] **确保卡片可见完整性与结构纯净 (Completeness & Clean Hierarchy)**：
+  - 内部容器（`.recent-post-info`、`.p-3`、封面包裹容器 `div:first-child`）保持无缝透明（`background: transparent !important`），杜绝局部暗块阻挡光线穿透；
+  - 文章封面、标题、置顶标签、最新徽标、分类链接、日期与未读标记完整清晰、高对比可读；
+  - 悬浮过渡（`translateY(-2px)` 与阴影微光）平滑自然；
+- [x] **Playwright 自动化测试全量通过**：
+  - 新增专用端到端审计脚本 `scripts/verify-recent-post-card-transparency.mjs`；
+  - 双模态（浅色/深色）色彩计算样式、零模糊、内部透明层及悬浮交互 100% PASS。
