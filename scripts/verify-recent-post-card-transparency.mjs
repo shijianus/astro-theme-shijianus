@@ -44,9 +44,9 @@ async function run() {
   assert.ok(cardCount >= 1, 'At least 1 .recent-post-item must exist');
 
   // 2. Audit Light Mode Card Transparency and Initial Color Tone
-  console.log('[*] 2. Auditing Light Mode Translucent White Card (Original Color Intact, Zero Blur)...');
+  console.log('[*] 2. Auditing Light Mode Translucent Blue Tone Card (Inherent Blue Character, Zero Blur)...');
   const lightStyles = await page.evaluate(() => {
-    const card = document.querySelector('#recent-posts .recent-post-item') || document.querySelector('.recent-post-item');
+    const card = document.querySelector('#recent-posts .recent-post-item.group, .recent-post-item.group') || document.querySelector('.recent-post-item');
     const sCard = window.getComputedStyle(card);
     const coverWrapper = card.querySelector('div:first-child');
     const sCover = coverWrapper ? window.getComputedStyle(coverWrapper) : null;
@@ -77,12 +77,16 @@ async function run() {
 
   console.log('Light Mode Styles:', JSON.stringify(lightStyles, null, 2));
 
-  // Assertions: Light mode must be original translucent white (rgba(255, 255, 255, alpha))
-  assert.ok(lightStyles.card.bg.includes('255, 255, 255'), 'Light mode card MUST preserve original white-toned color');
-  const lightMatch = lightStyles.card.bg.match(/rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*([\d.]+)\s*\)/);
+  // Assertions: Light mode must preserve authentic blue tone (rgba(r, g, b, alpha) with b > r && b > g)
+  const lightMatch = lightStyles.card.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(lightMatch, 'Light mode card MUST have rgba format with alpha');
-  const lightAlpha = parseFloat(lightMatch[1]);
-  assert.ok(lightAlpha >= 0.15 && lightAlpha <= 0.35, `Light mode card alpha must be translucent between 0.15 and 0.35 (got ${lightAlpha})`);
+  const [_, lrStr, lgStr, lbStr, lightAlphaStr] = lightMatch;
+  const lr = parseInt(lrStr);
+  const lg = parseInt(lgStr);
+  const lb = parseInt(lbStr);
+  const lightAlpha = parseFloat(lightAlphaStr);
+  assert.ok(lb > lr && lb > lg, `Light mode card MUST preserve authentic blue character (b > r && b > g, got R:${lr} G:${lg} B:${lb})`);
+  assert.ok(lightAlpha >= 0.20 && lightAlpha <= 0.36, `Light mode card alpha must be translucent between 0.20 and 0.36 (got ${lightAlpha})`);
 
   // Assertions: Zero blur / reduced blur (learned from aside-sticky-box)
   assert.ok(
@@ -105,14 +109,16 @@ async function run() {
   }
 
   // Screenshot light mode card
-  const firstCard = await page.$('#recent-posts .recent-post-item, .recent-post-item');
+  const firstCard = await page.$('#recent-posts .recent-post-item.group, .recent-post-item.group');
   if (firstCard) {
+    await firstCard.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
     await firstCard.screenshot({ path: path.join(outDir, '01-recent-post-card-light.png') });
   }
-  console.log('[✅ PASS] Light mode translucent white card & translucent cover image verified.\n');
+  console.log('[✅ PASS] Light mode translucent blue card & translucent cover image verified.\n');
 
   // 3. Audit Dark Mode Card Transparency and Initial Color Tone
-  console.log('[*] 3. Toggling Dark Mode and auditing Translucent Dark Card (Original Color Intact, Zero Blur)...');
+  console.log('[*] 3. Toggling Dark Mode and auditing Translucent Dark Blue Card (Sapphire Blue Tone, Zero Blur)...');
   await page.evaluate(() => {
     const btn = document.getElementById('darkmode');
     if (btn) btn.click();
@@ -121,7 +127,7 @@ async function run() {
   await page.waitForTimeout(1500);
 
   const darkStyles = await page.evaluate(() => {
-    const card = document.querySelector('#recent-posts .recent-post-item') || document.querySelector('.recent-post-item');
+    const card = document.querySelector('#recent-posts .recent-post-item.group, .recent-post-item.group') || document.querySelector('.recent-post-item');
     const sCard = window.getComputedStyle(card);
     const coverWrapper = card.querySelector('div:first-child');
     const sCover = coverWrapper ? window.getComputedStyle(coverWrapper) : null;
@@ -150,15 +156,18 @@ async function run() {
 
   console.log('Dark Mode Styles:', JSON.stringify(darkStyles, null, 2));
 
-  // Assertions: Dark mode must preserve original dark-toned color (rgba(r, g, b, alpha) with r,g,b in dark range ~15-40)
+  // Assertions: Dark mode must preserve authentic sapphire blue tone (rgba(r, g, b, alpha) with b > r && b > g)
   assert.equal(darkStyles.theme, 'dark', 'Theme must be dark');
   const darkMatch = darkStyles.card.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(darkMatch, 'Dark mode card MUST have rgba format with alpha');
-  const [_, dr, dg, db, darkAlphaStr] = darkMatch;
+  const [dFull, drStr, dgStr, dbStr, darkAlphaStr] = darkMatch;
+  const dr = parseInt(drStr);
+  const dg = parseInt(dgStr);
+  const db = parseInt(dbStr);
   const darkAlpha = parseFloat(darkAlphaStr);
-  const maxDarkRgb = Math.max(parseInt(dr), parseInt(dg), parseInt(db));
-  assert.ok(maxDarkRgb <= 50, `Dark mode card MUST preserve original dark tone (max RGB <= 50, got ${maxDarkRgb})`);
-  assert.ok(darkAlpha >= 0.15 && darkAlpha <= 0.35, `Dark mode card alpha must be translucent between 0.15 and 0.35 (got ${darkAlpha})`);
+  assert.ok(db > dr && db > dg, `Dark mode card MUST preserve sapphire blue tone (b > r && b > g, got R:${dr} G:${dg} B:${db})`);
+  assert.ok(db >= 50, `Dark mode blue component must be at least 50 (got ${db})`);
+  assert.ok(darkAlpha >= 0.20 && darkAlpha <= 0.40, `Dark mode card alpha must be translucent between 0.20 and 0.40 (got ${darkAlpha})`);
 
   // Assertions: Zero blur / reduced blur
   assert.ok(
@@ -174,20 +183,22 @@ async function run() {
 
   // Screenshot dark mode card
   if (firstCard) {
+    await firstCard.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
     await firstCard.screenshot({ path: path.join(outDir, '02-recent-post-card-dark.png') });
   }
-  console.log('[✅ PASS] Dark mode translucent dark card & translucent cover image verified.\n');
+  console.log('[✅ PASS] Dark mode translucent sapphire blue card & translucent cover image verified.\n');
 
   // 4. Test Hover Interaction and Completeness
   console.log('[*] 4. Testing hover state and visual completeness...');
-  const listCard = await page.$('#recent-posts .recent-post-item');
+  const listCard = await page.$('#recent-posts .recent-post-item.group, .recent-post-item.group');
   if (listCard) {
     await listCard.scrollIntoViewIfNeeded();
     await listCard.hover();
     await page.waitForTimeout(400);
 
     const hoverStyles = await page.evaluate(() => {
-      const card = document.querySelector('#recent-posts .recent-post-item');
+      const card = document.querySelector('#recent-posts .recent-post-item.group, .recent-post-item.group');
       const s = window.getComputedStyle(card);
       const coverImg = card.querySelector('div:first-child img, .post_cover img');
       const sImg = coverImg ? window.getComputedStyle(coverImg) : null;

@@ -8858,11 +8858,11 @@ body[data-type='home'] .home-pagination__num.is-current {
   --home-sticky-sub-border: rgba(120, 126, 138, 0.20);
   --home-sticky-sub-shadow: none;
 
-  /* Recent Post Card: Light mode translucent white palette with light transmission & zero blur */
-  --recent-post-card-bg: rgba(255, 255, 255, 0.22);
-  --recent-post-card-border: rgba(255, 255, 255, 0.45);
+  /* Recent Post Card: Light mode translucent blue tone with background light transmission & zero blur */
+  --recent-post-card-bg: rgba(195, 216, 255, 0.28);
+  --recent-post-card-border: rgba(66, 90, 239, 0.32);
   --recent-post-card-filter: none;
-  --recent-post-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  --recent-post-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.08);
   --recent-post-cover-opacity: 0.82;
   --recent-post-cover-hover-opacity: 0.98;
 }
@@ -8892,11 +8892,11 @@ html[data-theme='dark'],
   --home-sticky-sub-border: rgba(145, 155, 175, 0.16);
   --home-sticky-sub-shadow: none;
 
-  /* Recent Post Card: Dark mode translucent dark palette with light transmission & zero blur */
-  --recent-post-card-bg: rgba(20, 22, 30, 0.25);
-  --recent-post-card-border: rgba(255, 255, 255, 0.12);
+  /* Recent Post Card: Dark mode translucent sapphire blue tone with background light transmission & zero blur */
+  --recent-post-card-bg: rgba(18, 34, 72, 0.32);
+  --recent-post-card-border: rgba(66, 90, 239, 0.40);
   --recent-post-card-filter: none;
-  --recent-post-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35);
+  --recent-post-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45);
   --recent-post-cover-opacity: 0.78;
   --recent-post-cover-hover-opacity: 0.96;
 }
@@ -9208,7 +9208,7 @@ body[data-type='home'] .recent-post-item:hover,
 .topGroup .recent-post-item:hover {
   transform: translateY(-2px) !important;
   border-color: var(--theme-main, #425aef) !important;
-  box-shadow: 0 12px 24px -4px rgba(44, 45, 48, 0.12) !important;
+  box-shadow: 0 12px 24px -4px rgba(66, 90, 239, 0.20) !important;
 }
 
 :root[data-theme='dark'] .recent-post-item:hover,
@@ -9216,7 +9216,7 @@ body[data-type='home'] .recent-post-item:hover,
 :root[data-theme='dark'] body[data-type='home'] .recent-post-item:hover,
 :root[data-theme='dark'] .topGroup .recent-post-item:hover {
   border-color: var(--theme-main, #425aef) !important;
-  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.55), 0 0 16px 2px rgba(66, 90, 239, 0.25) !important;
 }
 
 /* 7a-2. Target: 文章卡片封面图片通透性 (添加适度半透明与无模糊透光，使底层星空/雪花自然穿透) */
