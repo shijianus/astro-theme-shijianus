@@ -31,7 +31,7 @@
 
 ### 4. 严禁未提交/未部署即交付准则 (Strict Prohibition of Uncommitted or Undeployed Delivery)
 - **绝对红线：严禁未提交即交付**：任何未经完整 `git commit`、未生成并打印 Commit Hash、未同步推送所有远端分支（`origin` 与 `cf`）就交付的行为被**严格绝对禁止**。
-- **强制全量部署 Cloudflare**：凡涉及功能性、UI 交互或 API 变更的任务，**必须确保全量编译（`npm run pages:build` / `npm run build`）并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（包括 `shijianus-blog` 以及相关项目 `shijianus-github-io`、`cfsolara`）**，绝不允许仅在本地跑通就草率交付。
+- **强制全量部署 Cloudflare**：凡涉及功能性、UI 交互或 API 变更的任务，**必须确保全量编译并在各自项目目录中通过 Wrangler 部署至各自对应的 Cloudflare Pages 生产边缘节点（shijianus-blog 仅部署至 shijianus-blog 项目；cfsolara 必须且只能在 CFSolara 专案目录下编译后部署至 cfsolara，严禁跨项目混淆部署）**，绝不允许仅在本地跑通就草率交付。
 - **强制生产端实机全链路审计**：部署生效后，**必须通过无头浏览器（Playwright / Puppeteer）或真实网络工具，在生产域名（`https://blog.epocanvas.com/`）上进行实际访问与功能交互验证**，确保 0 控制台报错、UI 渲染正常、数据流正常。必须出示端到端验证通过的直接证据后，方可正式向用户交付。
 
 ---
