@@ -5383,7 +5383,17 @@
   - 封面包裹容器（`[class*="h-32"]`）保持 `background: transparent !important;`，配合图片 0.82/0.78 透明度，上部与下部形成自然通透蓝调交融；
   - 悬浮态（Hover）平滑提升封面图片不透明度至 `0.98`，边框高亮激活主题蓝光晕；
 - [x] **自动化端到端测试与全链路验证**：
-  - 更新 `scripts/verify-recent-post-card-transparency.mjs` 与 `scripts/verify-transparency-parity.mjs`，断言 `infoWrapperBg` 呈现正统有色蓝色（$B > R$ 且 $B > G$）且透明度在黄金区间，全量断言 100% PASS。
+### Task 248: aside-sticky-box 亮色调恢复对齐白色透明，暗色调严格保持灰色透明 (9004b0a)
+- [x] **纠正失误并精准对齐配色规范 (Align Aside Sticky Box Palettes)**：
+  - 遵照用户明确指示（"发现一个失误需要你进行优化：class=\"aside-sticky-box\"id=\"aside-sticky-box-overview\"只有暗色调是灰色，亮色调保持原本的白色透明即可！你当前亮色调的颜色是灰色需要修改对齐为白色！请进一步优化"）；
+  - **亮色模式 (Light Mode)**：恢复为纯净白色透明 `--home-sticky-card-bg: rgba(255, 255, 255, 0.24)`，微光白色半透边框 `rgba(255, 255, 255, 0.45)`，内部微色块（标签云、分类、统计等）对齐为白色透明 `--home-sticky-sub-bg: rgba(255, 255, 255, 0.32)`；
+  - **暗色模式 (Dark Mode)**：严格保留灰色透明 `--home-sticky-card-bg: rgba(80, 88, 102, 0.18)`，灰色微边框 `rgba(145, 155, 175, 0.25)`，微色块 `rgba(145, 155, 175, 0.08)`；
+- [x] **维持底层粒子高清透视与零模糊 (Zero Blur & Background Visibility)**：
+  - 双模态均维持 `--home-sticky-card-filter: none;`，彻底消除卡片背后的雾化与毛玻璃漫反射，底层的降雪、动态流星轨迹与闪烁星尘清晰直穿；
+  - 卡片内部零双重嵌套（`#aside-sticky-box-overview > .card-feature-panel--overview` 透明直出）；
+- [x] **自动化端到端测试与全链路验证**：
+  - 更新 `scripts/verify-home-sticky-overview-card.mjs` 与 `scripts/verify-transparency-parity.mjs`，断言亮色模式下卡片背景严格为白色高透（$R \ge 240, G \ge 240, B \ge 240$，透明度 $0.15 \le \alpha \le 0.35$），暗色模式严格为灰色高透（$|R-G| \le 25, |G-B| \le 25$）；
+  - Playwright 本地与线上环境验证 100% PASS。
 
 
 
