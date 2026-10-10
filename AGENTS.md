@@ -5420,3 +5420,15 @@
 
 
 
+### Task 250: id="categoryBar" 与 id="home-pagination" 固有蓝色本色保留与高通透零模糊改造 (3acbc5a)
+- [x] **色彩校正与蓝色通透色板系统 (Translucent Blue Palette System)**：
+  - 遵照用户明确指示（"id=\"categoryBar\"和id=\"home-pagination\"本来是蓝色的，需要保留原来的颜色啊！修改为透明的同时(透明效果做的好)需要保证颜色保留蓝色啊"）；
+  - **亮色模式 (Light Mode)**：采用高通透浅天蓝 `--home-blue-card-bg: rgba(195, 218, 255, 0.28)`，蓝调细边框 `--home-blue-card-border: rgba(66, 90, 239, 0.32)`，蓝调微阴影 `--home-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10)`；内部胶囊与微色块对齐浅蓝微色块 `--home-blue-sub-bg: rgba(215, 230, 255, 0.36)`，蓝调微边框 `--home-blue-sub-border: rgba(66, 90, 239, 0.25)`；
+  - **暗色模式 (Dark Mode)**：采用深邃蓝宝石暗蓝 `--home-blue-card-bg: rgba(18, 36, 78, 0.34)`，蓝调边框 `--home-blue-card-border: rgba(66, 90, 239, 0.40)`，蓝宝石微阴影与主题辉光 `--home-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20)`；内部微色块 `--home-blue-sub-bg: rgba(26, 46, 90, 0.38)`，蓝调微边框 `--home-blue-sub-border: rgba(66, 90, 239, 0.30)`；
+- [x] **维持底层流星与星空画布零模糊透射 (Zero Blur & Background Visibility)**：
+  - 坚决杜绝雾化模糊漫反射，保持 `backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`，底层雪花、星空和动态流星完全清晰透视直穿；
+- [x] **全量优先级与样式防覆盖保障 (Specificity Safeguards)**：
+  - 在 `:root:not([data-card-style='solid']):not([data-translucent='false'])` 顶层通用规则中将 `.theme-card` 排除 `.home-pagination`（`.theme-card:not(.home-pagination)`），彻底杜绝全局毛玻璃规则与变量覆盖；
+  - 在 `#categoryBar` 与 `#home-pagination` 维持高特异性 `:root:not(...):not(...)` 选择器链；
+- [x] **自动化端到端测试与全链路验证**：
+  - 更新 `scripts/verify-transparency-parity.mjs`，增加亮色与暗色模式下 `b > r && b > g` 严格蓝色通道断言与 `filter === 'none'` 零模糊断言，本地与生产端全量通过。
