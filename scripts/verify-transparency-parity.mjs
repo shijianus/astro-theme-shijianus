@@ -202,11 +202,11 @@ async function run() {
   console.log('Home Pagination Data:', JSON.stringify(paginationData, null, 2));
   assert.ok(paginationData, '#home-pagination must exist');
   assert.ok(isTranslucentNotColorless(paginationData.navBg), '#home-pagination MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
-  assert.ok(hasFilter(paginationData.navFilter), '#home-pagination MUST have frosted backdropFilter');
+  assert.equal(paginationData.navFilter, 'none', '#home-pagination MUST have zero-blur backdropFilter for background transparency');
   assert.ok(hasBorder(paginationData.navBorder), '#home-pagination MUST have 1px border for region demarcation');
   console.log('[✅ PASS] #home-pagination color block template verified.\n');
 
-  // 5. Audit #category-bar: Translucent Frosted Category Bar
+  // 5. Audit #category-bar: Translucent Category Bar (Zero Blur)
   console.log('[*] 5. Auditing #category-bar...');
   const categoryBarData = await page.evaluate(() => {
     const el = document.querySelector('#category-bar') || document.querySelector('.category-bar');
@@ -222,9 +222,31 @@ async function run() {
   if (categoryBarData) {
     console.log('Category Bar Data:', JSON.stringify(categoryBarData, null, 2));
     assert.ok(isTranslucentNotColorless(categoryBarData.bg), '#category-bar MUST have translucent background');
-    assert.ok(hasFilter(categoryBarData.filter), '#category-bar MUST have frosted filter');
+    assert.equal(categoryBarData.filter, 'none', '#category-bar MUST have zero-blur filter for background transparency');
     assert.ok(hasBorder(categoryBarData.border), '#category-bar MUST have 1px border');
     console.log('[✅ PASS] #category-bar verified.\n');
+  }
+
+  // 5b. Audit .card-announcement: Translucent Announcement Card (Zero Blur)
+  console.log('[*] 5b. Auditing .card-announcement...');
+  const announcementData = await page.evaluate(() => {
+    const el = document.querySelector('.card-announcement');
+    if (!el) return null;
+    const cs = window.getComputedStyle(el);
+    return {
+      bg: cs.backgroundColor,
+      filter: cs.backdropFilter || cs.webkitBackdropFilter,
+      border: cs.borderWidth,
+      borderRadius: cs.borderRadius
+    };
+  });
+
+  if (announcementData) {
+    console.log('Announcement Card Data:', JSON.stringify(announcementData, null, 2));
+    assert.ok(isTranslucentNotColorless(announcementData.bg), '.card-announcement MUST have translucent background');
+    assert.equal(announcementData.filter, 'none', '.card-announcement MUST have zero blur (none) for background transparency');
+    assert.ok(hasBorder(announcementData.border), '.card-announcement MUST have 1px border');
+    console.log('[✅ PASS] .card-announcement verified.\n');
   }
 
   // 6. Audit Post Card Inner Content (Zero nested double-box frame)
@@ -270,7 +292,9 @@ async function run() {
       footerWrap: getStyles('#footer-wrap'),
       randomBanner: getStyles('#random-banner'),
       stickyOverview: getStyles('#aside-sticky-box-overview, .card-feature-panel--overview, #card-tag-cloud-overview'),
-      homePagination: getStyles('#home-pagination')
+      homePagination: getStyles('#home-pagination'),
+      categoryBar: getStyles('#category-bar, .category-bar'),
+      announcement: getStyles('.card-announcement')
     };
   });
 
@@ -287,7 +311,18 @@ async function run() {
   }
   assert.ok(hasBorder(darkAudit.stickyOverview.border), 'Dark mode: Sticky overview has border');
   assert.ok(isTranslucentNotColorless(darkAudit.homePagination.bg), 'Dark mode: Home pagination has translucent dark background');
+  assert.equal(darkAudit.homePagination.filter, 'none', 'Dark mode: Home pagination has zero blur (none)');
   assert.ok(hasBorder(darkAudit.homePagination.border), 'Dark mode: Home pagination has border');
+  if (darkAudit.categoryBar) {
+    assert.ok(isTranslucentNotColorless(darkAudit.categoryBar.bg), 'Dark mode: Category bar has translucent dark background');
+    assert.equal(darkAudit.categoryBar.filter, 'none', 'Dark mode: Category bar has zero blur (none)');
+    assert.ok(hasBorder(darkAudit.categoryBar.border), 'Dark mode: Category bar has border');
+  }
+  if (darkAudit.announcement) {
+    assert.ok(isTranslucentNotColorless(darkAudit.announcement.bg), 'Dark mode: Announcement card has translucent dark background');
+    assert.equal(darkAudit.announcement.filter, 'none', 'Dark mode: Announcement card has zero blur (none)');
+    assert.ok(hasBorder(darkAudit.announcement.border), 'Dark mode: Announcement card has border');
+  }
   console.log('[✅ PASS] Dark mode palette verified.\n');
 
   // Screenshots

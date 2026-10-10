@@ -8148,8 +8148,8 @@ html[data-theme='dark'] #article-container font[color='#000'] {
   div#archive,
   div#tag,
   div#category,
-  #aside-content .card-widget,
-  .card-widget,
+  #aside-content .card-widget:not(.card-announcement),
+  .card-widget:not(.card-announcement),
   #aside-content .card-widget.card-feature-panel,
   #aside-content .card-widget.card-feature-panel--overview,
   #aside-content .card-widget.card-tag-cloud-panel,
@@ -8304,12 +8304,12 @@ body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
-  background: var(--card-bg) !important;
-  backdrop-filter: var(--card-backdrop-filter) !important;
-  -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
-  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
   padding: 12px 20px !important;
   margin-top: 24px !important;
   display: flex !important;
@@ -9066,6 +9066,7 @@ body[data-type='home'] .category-chip__count {
 }
 
 /* 3. Target: id="home-pagination" 首页分页色板与页码子微色块 */
+:root:not([data-card-style='solid']):not([data-translucent='false']) :is(#home-pagination, .home-pagination, nav#home-pagination, .theme-card.home-pagination),
 #home-pagination,
 .home-pagination,
 nav#home-pagination,
@@ -9075,8 +9076,8 @@ body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
   background: var(--card-bg-translucent) !important;
-  backdrop-filter: var(--card-filter-translucent) !important;
-  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--card-shadow-translucent) !important;
@@ -9151,19 +9152,60 @@ body[data-type='home'] #random-banner::after {
   content: none !important;
 }
 
-/* 5. Target: id="category-bar" / .category-bar 首页分类导航条 */
+/* 5. Target: id="categoryBar" / id="category-bar" / .category-bar 首页分类导航条 (透明可见后方背景，保持原有色彩，零模糊) */
+#categoryBar,
+body[data-type='home'] #categoryBar {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-card-style='solid']):not([data-translucent='false']) :is(#categoryBar, #category-bar, .category-bar),
+:root #categoryBar #category-bar,
 :root #category-bar,
 :root .category-bar,
+#categoryBar #category-bar,
 #category-bar,
 .category-bar,
 body[data-type='home'] #category-bar,
 body[data-type='home'] .category-bar {
   background: var(--card-bg-translucent) !important;
-  backdrop-filter: var(--card-filter-translucent) !important;
-  -webkit-backdrop-filter: var(--card-filter-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--card-shadow-translucent) !important;
+}
+
+#category-bar #catalog-bar,
+#category-bar #catalog-list {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#category-bar .catalog-list-item a,
+#category-bar .category-bar-next,
+#category-bar .catalog-more {
+  background: var(--sub-block-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--sub-block-border-translucent) !important;
+  border-radius: var(--radius-full, 9999px) !important;
+  color: var(--font-color) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#category-bar .catalog-list-item.is-active a,
+#category-bar .catalog-list-item a:hover,
+#category-bar .category-bar-next:hover,
+#category-bar .catalog-more:hover {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
 /* 6. Target: 侧边栏全量卡片 (.card-categories, .card-recent-post, .card-tags, .card-webinfo 等) */
@@ -9179,15 +9221,13 @@ body[data-type='home'] .category-bar {
 #aside-content .card-tags,
 #aside-content .card-archives,
 #aside-content .card-webinfo,
-#aside-content .card-announcement,
-#aside-content .card-widget,
+#aside-content .card-widget:not(.card-announcement),
 .card-categories,
 .card-recent-post,
 .card-tags,
 .card-archives,
 .card-webinfo,
-.card-announcement,
-.card-widget,
+.card-widget:not(.card-announcement),
 .support-dashboard-card {
   background: var(--card-bg-translucent) !important;
   backdrop-filter: var(--card-filter-translucent) !important;
@@ -9195,6 +9235,29 @@ body[data-type='home'] .category-bar {
   border: 1px solid var(--card-border-translucent) !important;
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--card-shadow-translucent) !important;
+}
+
+/* 6a. Target: class="card-widget card-announcement" 公告卡片 (透明可见后方背景，保持原有色彩，零模糊) */
+:root:not([data-card-style='solid']):not([data-translucent='false']) :is(#aside-content .card-announcement, .card-widget.card-announcement, .card-announcement),
+:root #aside-content .card-announcement,
+:root .card-widget.card-announcement,
+:root .card-announcement,
+#aside-content .card-announcement,
+.card-widget.card-announcement,
+.card-announcement {
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
+}
+
+.card-announcement .item-headline,
+.card-announcement .announcement_content {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* 7a. Target: 首页文章卡片与置顶卡片 (.recent-post-item) 具有透光性且可直视后方背景 (学习 aside-sticky-box 无模糊处理) */
