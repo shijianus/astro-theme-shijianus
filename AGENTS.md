@@ -5393,7 +5393,30 @@
   - 卡片内部零双重嵌套（`#aside-sticky-box-overview > .card-feature-panel--overview` 透明直出）；
 - [x] **自动化端到端测试与全链路验证**：
   - 更新 `scripts/verify-home-sticky-overview-card.mjs` 与 `scripts/verify-transparency-parity.mjs`，断言亮色模式下卡片背景严格为白色高透（$R \ge 240, G \ge 240, B \ge 240$，透明度 $0.15 \le \alpha \le 0.35$），暗色模式严格为灰色高透（$|R-G| \le 25, |G-B| \le 25$）；
-  - Playwright 本地与线上环境验证 100% PASS。
+### Task 249: card-announcement, categoryBar 与 home-pagination 零模糊高透光与固有色彩保留改造 (4bc1f0e)
+- [x] **版本打标签归档稳定基线 (Stable Release Tagging)**：
+  - 遵照用户指示（"将当前的版本tag为稳定版本以方便后续回退"）；
+  - 创建并多端推送 Git Tag：`v2.1.0-translucent-stable` 至 `origin` 和 `cf` (`shijianus.github.io`) 远端。
+- [x] **目标元素透明化、透光性与零模糊改造 (Zero-Blur Translucency Transformation)**：
+  - 遵照用户指示（"请进一步将class=\"card-widget card-announcement\"、id=\"categoryBar\"、id=\"home-pagination\"也做类似的处理将其改为透明(可以透过后方背景的内容)同时保证其原有颜色的不变！"）；
+  - **`card-announcement` 公告卡片**：
+    - 亮色保持白透 `rgba(255, 255, 255, 0.24)`，暗色保持深墨灰透 `rgba(20, 22, 30, 0.30)`；
+    - 移除 `blur(14px)` 雾化，设为 `backdrop-filter: none !important;`，底层雪花与星空完全透射直穿；
+    - 内部 `item-headline` 和 `announcement_content` 保持无色透明，无叠层阻隔；
+  - **`id="categoryBar"` / `id="category-bar"` 分类导航条**：
+    - 外层 `#categoryBar` 保持纯净透明结构容器；
+    - 内层 `#category-bar` 亮色保持 `rgba(255, 255, 255, 0.24)`，暗色保持 `rgba(20, 22, 30, 0.30)`；
+    - 消除 `blur(14px)`，设为 `backdrop-filter: none !important;` 零模糊透底；
+    - 子元素（胶囊选项、箭头、更多分类）采用 `var(--sub-block-bg-translucent)` 并保留 active/hover 标志性主题蓝（`#425aef`）；
+  - **`id="home-pagination"` 首页分页栏**：
+    - 亮色保持 `rgba(255, 255, 255, 0.24)`，暗色保持 `rgba(20, 22, 30, 0.30)`；
+    - 消除 `blur(14px)`，设为 `backdrop-filter: none !important;` 零模糊透底；
+    - 页码子微色块、徽标与翻页按钮保留精致独立微色块与主题蓝高亮；
+- [x] **根除 CSS 优先级被全量覆盖缺陷 (Specificity Safeguards)**：
+  - 在 `:root:not([data-card-style='solid']):not([data-translucent='false'])` 顶层通用规则中将 `.card-announcement` 剔除（`:not(.card-announcement)`）；
+  - 为 `card-announcement`、`categoryBar` 和 `home-pagination` 添加同等权重的 `:root:not(...):not(...)` 前缀，杜绝被通用毛玻璃样式覆盖；
+- [x] **自动化端到端测试与全链路验证**：
+  - 更新 `scripts/verify-transparency-parity.mjs`，断言三项核心组件均具备透明底色且 `filter === 'none'`，全量测试 100% PASS。
 
 
 
