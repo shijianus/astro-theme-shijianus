@@ -116,15 +116,14 @@ async function run() {
   console.log('Light Mode Styles:', JSON.stringify(lightStyles, null, 2));
 
   // Assertions for light mode
-  // Must be translucent grey (rgba(r, g, b, alpha) with grey tones and increased transparency 0.12 <= alpha <= 0.25)
+  // Must be translucent white (rgba(255, 255, 255, alpha) with high transparency 0.15 <= alpha <= 0.35 and zero blur)
   assert.ok(lightStyles.box.bg.startsWith('rgba('), 'Light mode box MUST have rgba format');
   const lightMatch = lightStyles.box.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
   assert.ok(lightMatch, 'Light mode box MUST have rgba format with alpha');
   const [_, lr, lg, lb, lAlphaStr] = lightMatch;
   const lightAlpha = parseFloat(lAlphaStr);
-  const maxDiff = Math.max(Math.abs(parseInt(lr) - parseInt(lg)), Math.abs(parseInt(lg) - parseInt(lb)), Math.abs(parseInt(lr) - parseInt(lb)));
-  assert.ok(maxDiff <= 25, `Light mode box MUST be grey-toned (got rgb(${lr}, ${lg}, ${lb}))`);
-  assert.ok(lightAlpha >= 0.12 && lightAlpha <= 0.25, `Light mode box alpha must have increased transparency between 0.12 and 0.25 (got ${lightAlpha})`);
+  assert.ok(parseInt(lr) >= 240 && parseInt(lg) >= 240 && parseInt(lb) >= 240, `Light mode box MUST be white (got rgb(${lr}, ${lg}, ${lb}))`);
+  assert.ok(lightAlpha >= 0.15 && lightAlpha <= 0.35, `Light mode box alpha must have transparency between 0.15 and 0.35 (got ${lightAlpha})`);
   assert.ok(lightStyles.box.backdropFilter === 'none' || lightStyles.box.backdropFilter === 'blur(0px)', 'BackdropFilter blur sensation MUST be reduced/eliminated (none)');
 
   // Inner card zero double-nesting assertion

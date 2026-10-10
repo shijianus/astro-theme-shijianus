@@ -162,6 +162,11 @@ async function run() {
   console.log('Sticky Overview Card Data:', JSON.stringify(stickyData, null, 2));
   assert.ok(stickyData.card, 'Sticky overview card must exist');
   assert.ok(isTranslucentNotColorless(stickyData.card.bg), 'Sticky card MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
+  const lightStickyMatch = stickyData.card.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (lightStickyMatch) {
+    const [_, sr, sg, sb] = lightStickyMatch;
+    assert.ok(parseInt(sr) >= 240 && parseInt(sg) >= 240 && parseInt(sb) >= 240, `Light mode sticky card MUST be white translucent (got rgb(${sr}, ${sg}, ${sb}))`);
+  }
   assert.ok(stickyData.card.backdropFilter === 'none' || hasFilter(stickyData.card.backdropFilter), 'Sticky card backdropFilter verified');
   assert.ok(hasBorder(stickyData.card.border), 'Sticky card MUST have 1px border for region demarcation');
   if (stickyData.tagBg) assert.ok(isTranslucentNotColorless(stickyData.tagBg), 'Tag item must have sub-color block background');
@@ -274,6 +279,12 @@ async function run() {
   assert.ok(isTranslucentNotColorless(darkAudit.randomBanner.bg), 'Dark mode: #random-banner has translucent dark background');
   assert.ok(hasBorder(darkAudit.randomBanner.border), 'Dark mode: #random-banner has border');
   assert.ok(isTranslucentNotColorless(darkAudit.stickyOverview.bg), 'Dark mode: Sticky overview has translucent dark background');
+  const darkStickyMatch = darkAudit.stickyOverview.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (darkStickyMatch) {
+    const [_, dr, dg, db] = darkStickyMatch;
+    const darkDiff = Math.max(Math.abs(parseInt(dr) - parseInt(dg)), Math.abs(parseInt(dg) - parseInt(db)));
+    assert.ok(darkDiff <= 25 && parseInt(dr) < 150, `Dark mode sticky overview MUST be grey-toned (got rgb(${dr}, ${dg}, ${db}))`);
+  }
   assert.ok(hasBorder(darkAudit.stickyOverview.border), 'Dark mode: Sticky overview has border');
   assert.ok(isTranslucentNotColorless(darkAudit.homePagination.bg), 'Dark mode: Home pagination has translucent dark background');
   assert.ok(hasBorder(darkAudit.homePagination.border), 'Dark mode: Home pagination has border');

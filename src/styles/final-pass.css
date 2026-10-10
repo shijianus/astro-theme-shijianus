@@ -8848,14 +8848,14 @@ body[data-type='home'] .home-pagination__num.is-current {
   --hover-plate-translucent: linear-gradient(135deg, rgba(66, 90, 239, 0.38), rgba(0, 118, 229, 0.32));
   --hover-plate-border-translucent: rgba(66, 90, 239, 0.55);
 
-  /* Home Sticky Overview Card: Light mode translucent grey palette */
-  --home-sticky-card-bg: rgba(120, 126, 138, 0.16);
-  --home-sticky-card-border: rgba(120, 126, 138, 0.32);
+  /* Home Sticky Overview Card: Light mode translucent white palette (White translucent, zero blur) */
+  --home-sticky-card-bg: rgba(255, 255, 255, 0.24);
+  --home-sticky-card-border: rgba(255, 255, 255, 0.45);
   --home-sticky-card-filter: none;
   --home-sticky-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
 
-  --home-sticky-sub-bg: rgba(120, 126, 138, 0.10);
-  --home-sticky-sub-border: rgba(120, 126, 138, 0.20);
+  --home-sticky-sub-bg: rgba(255, 255, 255, 0.32);
+  --home-sticky-sub-border: rgba(255, 255, 255, 0.35);
   --home-sticky-sub-shadow: none;
 
   /* Recent Post Card: Light mode translucent blue tone with background light transmission & zero blur */
