@@ -204,9 +204,14 @@ async function run() {
   assert.ok(isTranslucentNotColorless(paginationData.navBg), '#home-pagination MUST have translucent card background (NOT rgba(0, 0, 0, 0))');
   assert.equal(paginationData.navFilter, 'none', '#home-pagination MUST have zero-blur backdropFilter for background transparency');
   assert.ok(hasBorder(paginationData.navBorder), '#home-pagination MUST have 1px border for region demarcation');
+  const pagMatch = paginationData.navBg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (pagMatch) {
+    const [_, pr, pg, pb] = pagMatch;
+    assert.ok(parseInt(pb) > parseInt(pr) && parseInt(pb) > parseInt(pg), `#home-pagination MUST retain blue character in light mode (b > r && b > g, got ${paginationData.navBg})`);
+  }
   console.log('[✅ PASS] #home-pagination color block template verified.\n');
 
-  // 5. Audit #category-bar: Translucent Category Bar (Zero Blur)
+  // 5. Audit #category-bar: Translucent Category Bar (Zero Blur, Blue Tone)
   console.log('[*] 5. Auditing #category-bar...');
   const categoryBarData = await page.evaluate(() => {
     const el = document.querySelector('#category-bar') || document.querySelector('.category-bar');
@@ -224,6 +229,11 @@ async function run() {
     assert.ok(isTranslucentNotColorless(categoryBarData.bg), '#category-bar MUST have translucent background');
     assert.equal(categoryBarData.filter, 'none', '#category-bar MUST have zero-blur filter for background transparency');
     assert.ok(hasBorder(categoryBarData.border), '#category-bar MUST have 1px border');
+    const catMatch = categoryBarData.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+    if (catMatch) {
+      const [_, cr, cg, cb] = catMatch;
+      assert.ok(parseInt(cb) > parseInt(cr) && parseInt(cb) > parseInt(cg), `#category-bar MUST retain blue character in light mode (b > r && b > g, got ${categoryBarData.bg})`);
+    }
     console.log('[✅ PASS] #category-bar verified.\n');
   }
 
@@ -313,10 +323,20 @@ async function run() {
   assert.ok(isTranslucentNotColorless(darkAudit.homePagination.bg), 'Dark mode: Home pagination has translucent dark background');
   assert.equal(darkAudit.homePagination.filter, 'none', 'Dark mode: Home pagination has zero blur (none)');
   assert.ok(hasBorder(darkAudit.homePagination.border), 'Dark mode: Home pagination has border');
+  const darkPagMatch = darkAudit.homePagination.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (darkPagMatch) {
+    const [_, dpr, dpg, dpb] = darkPagMatch;
+    assert.ok(parseInt(dpb) > parseInt(dpr) && parseInt(dpb) > parseInt(dpg), `Dark mode: Home pagination MUST retain blue character (b > r && b > g, got ${darkAudit.homePagination.bg})`);
+  }
   if (darkAudit.categoryBar) {
     assert.ok(isTranslucentNotColorless(darkAudit.categoryBar.bg), 'Dark mode: Category bar has translucent dark background');
     assert.equal(darkAudit.categoryBar.filter, 'none', 'Dark mode: Category bar has zero blur (none)');
     assert.ok(hasBorder(darkAudit.categoryBar.border), 'Dark mode: Category bar has border');
+    const darkCatMatch = darkAudit.categoryBar.bg.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+    if (darkCatMatch) {
+      const [_, dcr, dcg, dcb] = darkCatMatch;
+      assert.ok(parseInt(dcb) > parseInt(dcr) && parseInt(dcb) > parseInt(dcg), `Dark mode: Category bar MUST retain blue character (b > r && b > g, got ${darkAudit.categoryBar.bg})`);
+    }
   }
   if (darkAudit.announcement) {
     assert.ok(isTranslucentNotColorless(darkAudit.announcement.bg), 'Dark mode: Announcement card has translucent dark background');

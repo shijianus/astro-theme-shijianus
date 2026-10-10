@@ -8140,7 +8140,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
    Anzhiyu Card Style Master Directives: Solid, Gray (Frosted), Transparent
    ========================================================================== */
 :root:not([data-card-style='solid']):not([data-translucent='false']) :is(
-  .theme-card,
+  .theme-card:not(.home-pagination),
   .surface-panel,
   .post-page-shell,
   div#post,
@@ -8304,12 +8304,12 @@ body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
-  background: var(--card-bg-translucent) !important;
+  background: var(--home-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--home-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
   padding: 12px 20px !important;
   margin-top: 24px !important;
   display: flex !important;
@@ -8866,6 +8866,13 @@ body[data-type='home'] .home-pagination__num.is-current {
   --recent-post-info-bg: rgba(195, 218, 255, 0.32);
   --recent-post-cover-opacity: 0.82;
   --recent-post-cover-hover-opacity: 0.98;
+
+  /* Translucent Blue Cards (Category Bar & Home Pagination): Light mode translucent blue tone with zero blur */
+  --home-blue-card-bg: rgba(195, 218, 255, 0.28);
+  --home-blue-card-border: rgba(66, 90, 239, 0.32);
+  --home-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10);
+  --home-blue-sub-bg: rgba(215, 230, 255, 0.36);
+  --home-blue-sub-border: rgba(66, 90, 239, 0.25);
 }
 
 :root[data-theme='dark'],
@@ -8901,6 +8908,13 @@ html[data-theme='dark'],
   --recent-post-info-bg: rgba(20, 38, 78, 0.38);
   --recent-post-cover-opacity: 0.78;
   --recent-post-cover-hover-opacity: 0.96;
+
+  /* Translucent Blue Cards (Category Bar & Home Pagination): Dark mode translucent sapphire blue tone with zero blur */
+  --home-blue-card-bg: rgba(18, 36, 78, 0.34);
+  --home-blue-card-border: rgba(66, 90, 239, 0.40);
+  --home-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20);
+  --home-blue-sub-bg: rgba(26, 46, 90, 0.38);
+  --home-blue-sub-border: rgba(66, 90, 239, 0.30);
 }
 
 /* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
@@ -9065,7 +9079,7 @@ body[data-type='home'] .category-chip__count {
   box-shadow: none !important;
 }
 
-/* 3. Target: id="home-pagination" 首页分页色板与页码子微色块 */
+/* 3. Target: id="home-pagination" 首页分页蓝色通透色板与页码子微色块 (保留蓝色本色，零模糊透光) */
 :root:not([data-card-style='solid']):not([data-translucent='false']) :is(#home-pagination, .home-pagination, nav#home-pagination, .theme-card.home-pagination),
 #home-pagination,
 .home-pagination,
@@ -9075,12 +9089,12 @@ body[data-type='home'] #home-pagination,
 body[data-type='home'] .home-pagination,
 body[data-type='home'] nav#home-pagination,
 body[data-type='home'] nav#home-pagination.theme-card {
-  background: var(--card-bg-translucent) !important;
+  background: var(--home-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--home-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
   padding: 12px 20px !important;
   margin-top: 24px !important;
   display: flex !important;
@@ -9092,12 +9106,12 @@ body[data-type='home'] nav#home-pagination.theme-card {
 body[data-type='home'] .home-pagination__badge,
 body[data-type='home'] .home-pagination__num,
 body[data-type='home'] .home-pagination__btn {
-  background: var(--sub-block-bg-translucent) !important;
+  background: var(--home-blue-sub-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--sub-block-border-translucent) !important;
+  border: 1px solid var(--home-blue-sub-border) !important;
   border-radius: 6px !important;
-  box-shadow: var(--sub-block-shadow-translucent) !important;
+  box-shadow: none !important;
   color: var(--font-color) !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -9152,7 +9166,7 @@ body[data-type='home'] #random-banner::after {
   content: none !important;
 }
 
-/* 5. Target: id="categoryBar" / id="category-bar" / .category-bar 首页分类导航条 (透明可见后方背景，保持原有色彩，零模糊) */
+/* 5. Target: id="categoryBar" / id="category-bar" / .category-bar 首页分类导航条 (透明可见后方背景，保留蓝色本色，零模糊) */
 #categoryBar,
 body[data-type='home'] #categoryBar {
   background: transparent !important;
@@ -9171,12 +9185,12 @@ body[data-type='home'] #categoryBar {
 .category-bar,
 body[data-type='home'] #category-bar,
 body[data-type='home'] .category-bar {
-  background: var(--card-bg-translucent) !important;
+  background: var(--home-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--home-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
 }
 
 #category-bar #catalog-bar,
@@ -9189,10 +9203,10 @@ body[data-type='home'] .category-bar {
 #category-bar .catalog-list-item a,
 #category-bar .category-bar-next,
 #category-bar .catalog-more {
-  background: var(--sub-block-bg-translucent) !important;
+  background: var(--home-blue-sub-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--sub-block-border-translucent) !important;
+  border: 1px solid var(--home-blue-sub-border) !important;
   border-radius: var(--radius-full, 9999px) !important;
   color: var(--font-color) !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
