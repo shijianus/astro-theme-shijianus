@@ -5432,3 +5432,26 @@
   - 在 `#categoryBar` 与 `#home-pagination` 维持高特异性 `:root:not(...):not(...)` 选择器链；
 - [x] **自动化端到端测试与全链路验证**：
   - 更新 `scripts/verify-transparency-parity.mjs`，增加亮色与暗色模式下 `b > r && b > g` 严格蓝色通道断言与 `filter === 'none'` 零模糊断言，本地与生产端全量通过。
+
+### Task 251: 文章页 (Post Page) 核心组件原有色彩保留与透明零模糊改造 (bf194ca)
+- [x] **作用域严格限制与最小修改原则 (Strict Post-Page Scoping & Least Modification)**：
+  - 遵照用户明确指示（"接下来继续保留其原本颜色的同时，确保透明化组件，包括class=\"aside-sticky-box\"、class=\"page-main\"、class=\"aside-sticky-box\"、class=\"card-widget card-categories\"，请将其原本颜色保持不变且仅添加透明特效！确保符合要求再交付！现在作用的都是文章页，请确保最小修改原则，不影响已有的正确的功能和UI组件！"）；
+  - 全量规则严格约束在文章页作用域 `body[data-type='post']` 内，绝不侵入或破坏主页、归档页或任何已有组件的功能与视觉系统；
+- [x] **组件原有色彩保留与通透零模糊特效 (Original Color Preservation & Zero Blur)**：
+  - **`class="page-main"` 文章主容器**：
+    - 赋予原有卡片本色之半透明底板（亮色 `rgba(255, 255, 255, 0.24)`，暗色 `rgba(20, 22, 30, 0.30)`），搭配 1px 细微光边框与平滑圆角；
+    - 消除毛玻璃漫反射雾感，固化 `backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`，让背景星空与雪花清晰可见；
+    - 内部包裹的 `#post` 与 `.post-page-shell` 重置为 `transparent` 且边框 0px，彻底避免双层嵌套卡片与白边层叠；
+  - **`class="aside-sticky-box"` 侧边栏卡片组 (`#aside-sticky-box-toc`, `#aside-sticky-box-recent`)**：
+    - 侧边栏粘性卡片容器赋予原本卡片本色之半透明底板（亮色 `rgba(255, 255, 255, 0.24)`，暗色 `rgba(20, 22, 30, 0.30)`），1px 细边框，8px 圆角；
+    - 设为 `backdrop-filter: none !important;` 零模糊透视；
+    - 内部直属的 `.card-widget` (`#card-toc`, `.card-recent-post`) 设为纯透明容器，避免产生双重边框与双层卡片叠加；
+  - **`class="card-widget card-categories"` 分类卡片**：
+    - 赋予原本卡片色彩半透明底板（亮色 `rgba(255, 255, 255, 0.24)`，暗色 `rgba(20, 22, 30, 0.30)`），1px 细边框与 8px 圆角；
+    - 设为 `backdrop-filter: none !important;` 零模糊，与侧边栏整体风格高度统一；
+- [x] **选择器特异性加固与优先级隔离 (Specificity Safeguards)**：
+  - 将历史通用 `.aside-sticky-box:not(#aside-sticky-box-overview)` 规则精确限定为 `body:not([data-type='post'])`，解除其对文章页粘性卡片的优先级冲突；
+  - 为文章页核心卡片注入最高优先级 `:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content ...` 选择器链及暗色专用覆写；
+- [x] **自动化端到端测试与全链路验证**：
+  - 新增专用 Playwright 测试套件 `scripts/verify-post-transparency.mjs`，断言亮色与暗色模式下 `page-main`、`aside-sticky-box`、`card-widget card-categories` 均为半透明、`filter === 'none'` 且 1px 边框；
+  - 运行全量主页与文章页测试套件，均 100% PASS。
