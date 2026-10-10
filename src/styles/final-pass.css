@@ -8229,20 +8229,20 @@ body[data-type='home'] #random-banner .random-banner__content {
   background: transparent !important;
 }
 
-/* User-specified target: class="aside-sticky-box" and its sticky card tree */
-.aside-sticky-box:not(#aside-sticky-box-overview),
-#aside-content .aside-sticky-box:not(#aside-sticky-box-overview),
-[id^="aside-sticky-box"]:not(#aside-sticky-box-overview) {
+/* User-specified target: class="aside-sticky-box" and its sticky card tree (non-post pages remain transparent structural wrappers) */
+body:not([data-type='post']) .aside-sticky-box:not(#aside-sticky-box-overview),
+body:not([data-type='post']) #aside-content .aside-sticky-box:not(#aside-sticky-box-overview),
+body:not([data-type='post']) [id^="aside-sticky-box"]:not(#aside-sticky-box-overview) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.aside-sticky-box:not(#aside-sticky-box-overview) > .card-widget,
-.aside-sticky-box:not(#aside-sticky-box-overview) .card-widget,
-.aside-sticky-box #card-toc,
-.aside-sticky-box .card-recent-post,
-.aside-sticky-box .support-dashboard-card {
+body:not([data-type='post']) .aside-sticky-box:not(#aside-sticky-box-overview) > .card-widget,
+body:not([data-type='post']) .aside-sticky-box:not(#aside-sticky-box-overview) .card-widget,
+body:not([data-type='post']) .aside-sticky-box #card-toc,
+body:not([data-type='post']) .aside-sticky-box .card-recent-post,
+body:not([data-type='post']) .aside-sticky-box .support-dashboard-card {
   background: var(--card-bg) !important;
   backdrop-filter: var(--card-backdrop-filter) !important;
   -webkit-backdrop-filter: var(--card-backdrop-filter) !important;
@@ -8955,21 +8955,39 @@ body[data-type='home'] #aside-sticky-box-overview > .card-feature-panel--overvie
   overflow: visible !important;
 }
 
-/* 1b. Post Page sticky boxes remain transparent structural containers */
-.aside-sticky-box:not(#aside-sticky-box-overview),
-#aside-content .aside-sticky-box:not(#aside-sticky-box-overview),
-[id^="aside-sticky-box"]:not(#aside-sticky-box-overview) {
+/* 1b. Post Page sticky boxes: Support container is transparent; TOC and Recent boxes are translucent zero-blur cards */
+#aside-content #aside-sticky-box-support {
   background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent),
+body[data-type='post'] #aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent),
+#aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent) {
+  background: var(--card-bg-translucent) !important;
+  background-color: var(--card-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
+}
+
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > .card-widget,
+body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > .card-widget {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: none !important;
   box-shadow: none !important;
 }
 
 :root .card-feature-panel--overview:not(#aside-sticky-box-overview *),
 :root #card-tag-cloud-overview:not(#aside-sticky-box-overview *),
-:root .aside-sticky-box:not(#aside-sticky-box-overview) > .card-widget,
-:root .aside-sticky-box:not(#aside-sticky-box-overview) .card-widget,
-:root .aside-sticky-box #card-toc,
-:root .aside-sticky-box .card-recent-post,
 :root .aside-sticky-box .support-dashboard-card {
   background: var(--card-bg-translucent) !important;
   backdrop-filter: var(--card-filter-translucent) !important;
@@ -9272,6 +9290,161 @@ body[data-type='home'] .category-bar {
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* 6b. Target: 文章页透明化改造 (class="page-main", class="aside-sticky-box", class="card-widget card-categories" 保持原有色彩，零模糊透视) */
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] .page-main,
+body[data-type='post'] .page-main {
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
+}
+
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),
+:root body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),
+body[data-type='post'] .page-main > #post,
+body[data-type='post'] #post.post-page-shell,
+body[data-type='post'] div#post,
+body[data-type='post'] #post.post {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#post-comment, .post-comment-container),
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#post-comment, .post-comment-container),
+:root body[data-type='post'] :is(#post-comment, .post-comment-container),
+body[data-type='post'] #post-comment {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 侧边栏 aside-sticky-box 与 card-widget card-categories 零模糊高透光 */
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(
+  .aside-sticky-box,
+  #aside-sticky-box-toc,
+  #aside-sticky-box-recent,
+  .card-widget.card-categories,
+  #card-categories,
+  .aside-sticky-box .card-categories
+),
+body[data-type='post'] .aside-sticky-box,
+body[data-type='post'] #aside-sticky-box-toc,
+body[data-type='post'] #aside-sticky-box-recent,
+body[data-type='post'] .card-widget.card-categories,
+body[data-type='post'] #card-categories,
+body[data-type='post'] .aside-sticky-box .card-categories {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 侧边栏卡片容器赋予原有色彩透明底板 (白透/暗灰透，零模糊) */
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(
+  .aside-sticky-box:not(#aside-sticky-box-support),
+  #aside-sticky-box-toc,
+  #aside-sticky-box-recent,
+  .card-widget.card-categories,
+  #card-categories,
+  .aside-sticky-box .card-categories
+),
+body[data-type='post'] #aside-content .aside-sticky-box:not(#aside-sticky-box-support),
+body[data-type='post'] #aside-content #aside-sticky-box-toc,
+body[data-type='post'] #aside-content #aside-sticky-box-recent,
+body[data-type='post'] #aside-content .card-widget.card-categories,
+body[data-type='post'] #aside-content #card-categories,
+body[data-type='post'] #aside-content .aside-sticky-box .card-categories,
+body[data-type='post'] .aside-sticky-box:not(#aside-sticky-box-support),
+body[data-type='post'] #aside-sticky-box-toc,
+body[data-type='post'] #aside-sticky-box-recent,
+body[data-type='post'] .card-widget.card-categories,
+body[data-type='post'] #card-categories,
+body[data-type='post'] .aside-sticky-box .card-categories {
+  background: var(--card-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--card-shadow-translucent) !important;
+}
+
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(
+  .aside-sticky-box:not(#aside-sticky-box-support),
+  #aside-sticky-box-toc,
+  #aside-sticky-box-recent,
+  .card-widget.card-categories,
+  #card-categories,
+  .aside-sticky-box .card-categories
+),
+:root[data-theme='dark'] body[data-type='post'] #aside-content .aside-sticky-box:not(#aside-sticky-box-support),
+:root[data-theme='dark'] body[data-type='post'] #aside-content #aside-sticky-box-toc,
+:root[data-theme='dark'] body[data-type='post'] #aside-content #aside-sticky-box-recent,
+:root[data-theme='dark'] body[data-type='post'] #aside-content .card-widget.card-categories,
+:root[data-theme='dark'] body[data-type='post'] #aside-content #card-categories,
+:root[data-theme='dark'] body[data-type='post'] #aside-content .aside-sticky-box .card-categories,
+:root[data-theme='dark'] body[data-type='post'] .aside-sticky-box:not(#aside-sticky-box-support),
+:root[data-theme='dark'] body[data-type='post'] #aside-sticky-box-toc,
+:root[data-theme='dark'] body[data-type='post'] #aside-sticky-box-recent,
+:root[data-theme='dark'] body[data-type='post'] .card-widget.card-categories,
+:root[data-theme='dark'] body[data-type='post'] #card-categories,
+:root[data-theme='dark'] body[data-type='post'] .aside-sticky-box .card-categories {
+  background: rgba(20, 22, 30, 0.30) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--card-border-translucent) !important;
+}
+
+/* 避免 aside-sticky-box-toc 与 aside-sticky-box-recent 内产生双层卡片 */
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > :is(.card-widget, #card-toc, .card-recent-post),
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > :is(.card-widget, #card-toc, .card-recent-post),
+:root body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > :is(.card-widget, #card-toc, .card-recent-post),
+body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > .card-widget {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] #aside-sticky-box-support {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body[data-type='post'] :is(#card-telegram, #card-telegram .promo-widget, .promo-widget) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 侧边栏分类条目子微色块交互保障 */
+body[data-type='post'] .card-categories .card-category-list-link {
+  background: var(--sub-block-bg-translucent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--sub-block-border-translucent) !important;
+  border-radius: 6px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body[data-type='post'] .card-categories .card-category-list-link:hover {
+  background: var(--theme-main, #425aef) !important;
+  color: #ffffff !important;
+  border-color: var(--theme-main, #425aef) !important;
+  box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
 }
 
 /* 7a. Target: 首页文章卡片与置顶卡片 (.recent-post-item) 具有透光性且可直视后方背景 (学习 aside-sticky-box 无模糊处理) */
