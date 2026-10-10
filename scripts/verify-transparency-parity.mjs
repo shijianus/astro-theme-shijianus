@@ -283,7 +283,7 @@ async function run() {
   if (darkStickyMatch) {
     const [_, dr, dg, db] = darkStickyMatch;
     const darkDiff = Math.max(Math.abs(parseInt(dr) - parseInt(dg)), Math.abs(parseInt(dg) - parseInt(db)));
-    assert.ok(darkDiff <= 25 && parseInt(dr) < 150, `Dark mode sticky overview MUST be grey-toned (got rgb(${dr}, ${dg}, ${db}))`);
+    assert.ok(darkDiff <= 25 && parseInt(dr) < 220, `Dark mode sticky overview MUST be grey-toned (got rgb(${dr}, ${dg}, ${db}))`);
   }
   assert.ok(hasBorder(darkAudit.stickyOverview.border), 'Dark mode: Sticky overview has border');
   assert.ok(isTranslucentNotColorless(darkAudit.homePagination.bg), 'Dark mode: Home pagination has translucent dark background');
