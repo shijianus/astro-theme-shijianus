@@ -5470,3 +5470,20 @@
   - 严格保持 `backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`，杜绝任何磨砂雾化阻隔，后方雪花与星尘清晰直穿；
 - [x] **自动化端到端测试与全链路验证**：
   - 更新 `scripts/verify-post-transparency.mjs`，增加严格的蓝色通道主导性断言（`b > r && b >= g`，透明度 $0.10 \le \alpha \le 0.60$）及零模糊断言，本地与生产端全量 100% PASS。
+
+### Task 253: 分页面方框卡片透明化完善与原本色彩完整还原 (对齐安知鱼设计规范)
+- [x] **原本色彩严格保留与分页面语义调色体系 (Original Color & Semantic Palette Preservation)**：
+  - 遵照用户明确指示（"对齐 安知鱼 的blog的组件推荐，帮我优化包括class=\"archive-hero-card theme-card\"、class=\"taxonomy-index-card theme-card\"、class=\"taxonomy-index-card theme-card\"等在内的分页面的透明化完善！其中所有的方框卡片均需要保持其原本色彩！请确保优化完善后再交付给我"）；
+  - 全面还原并保护各分页面的标志性专属色彩通道：
+    1. **归档页 (`/archives/`)**：经典品牌蓝体系（亮色 `--archive-blue-card-bg: rgba(195, 218, 255, 0.28)`，暗色 `rgba(18, 36, 78, 0.34)`）；统计项 (`.archive-hero-card__stats span`)、归档组 (`.article-sort-group`)、归档项 (`.article-sort-item`) 均采用蓝调专属微色块；
+    2. **分类页 (`/categories/` & `/categories/[slug]`)**：晴空蓝体系（亮色 `--category-blue-card-bg: rgba(195, 218, 255, 0.28)` + 晴空蓝微渐变，暗色 `rgba(18, 36, 78, 0.34)`）；内部分类标签项 (`#tag-page-tags a`) 采用半透明晴空蓝并在悬浮时激活 `#5b8cff` 品牌蓝光辉；
+    3. **标签页 (`/tags/` & `/tags/[slug]`)**：活力珊瑚橙体系（亮色 `--tag-coral-card-bg: rgba(255, 238, 232, 0.30)` + 珊瑚橙渐变，暗色 `rgba(42, 28, 24, 0.38)`）；内部标签胶囊与统计项保持专属珊瑚橙微色块；
+    4. **友链页 (`/friends/`)**：冰川蓝体系（亮色 `--home-blue-card-bg: rgba(195, 218, 255, 0.28)`，暗色 `rgba(18, 36, 78, 0.34)`）；
+- [x] **透明零模糊与安知鱼精致方圆角规范 (Zero Blur & 8px Radius Alignment)**：
+  - 彻底解除全局 `.theme-card` 泛用毛玻璃与不透明底色劫持，将所有分页面卡片 (`.archive-hero-card`, `.taxonomy-index-card`, `.taxonomy-hero-card`, `.friends-page__hero`, `.friends-page__panel`) 及容器 (`div#archive`, `div#tag`, `div#category`) 从顶层全局磨砂规则中排除；
+  - 固化 `backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`，底层雪花与粒子星尘纯净穿透、清晰可见；
+  - 统一固化 1px 细微光边框与安知鱼标准 8px 方圆角（`border-radius: var(--radius-md, 8px) !important;`）；
+- [x] **自动化端到端测试套件全覆盖 (`scripts/verify-subpage-transparency.mjs`)**：
+  - 覆盖 `/archives/`、`/categories/`、`/tags/`、`/friends/` 四大分页面的 8 大核心方框卡片组件；
+  - 在亮色与暗色模式下全量断言透明度（`rgba`）、零模糊（`filter === 'none'`）、1px 细边框及 8px 标准圆角，24 项断言全部 100% PASS 通过。
+

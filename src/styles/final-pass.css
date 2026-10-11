@@ -8140,14 +8140,11 @@ html[data-theme='dark'] #article-container font[color='#000'] {
    Anzhiyu Card Style Master Directives: Solid, Gray (Frosted), Transparent
    ========================================================================== */
 :root:not([data-card-style='solid']):not([data-translucent='false']) :is(
-  .theme-card:not(.home-pagination),
+  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel),
   .surface-panel,
   .post-page-shell,
   div#post,
   div#page,
-  div#archive,
-  div#tag,
-  div#category,
   #aside-content .card-widget:not(.card-announcement),
   .card-widget:not(.card-announcement),
   #aside-content .card-widget.card-feature-panel,
@@ -8414,14 +8411,11 @@ body[data-type='home'] .home-pagination__num.is-current {
 
 /* Explicit Transparent Mode Styling Refinements */
 :root[data-card-style='transparent'] :is(
-  .theme-card,
+  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel),
   .surface-panel,
   .post-page-shell,
   div#post,
   div#page,
-  div#archive,
-  div#tag,
-  div#category,
   #aside-content .card-widget,
   .card-widget,
   #aside-content .card-widget.card-feature-panel,
@@ -8873,6 +8867,34 @@ body[data-type='home'] .home-pagination__num.is-current {
   --home-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10);
   --home-blue-sub-bg: rgba(215, 230, 255, 0.36);
   --home-blue-sub-border: rgba(66, 90, 239, 0.25);
+
+  /* Category Blue Palette Variables */
+  --category-blue-card-bg: rgba(195, 218, 255, 0.28);
+  --category-blue-card-border: rgba(91, 140, 255, 0.32);
+  --category-blue-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  --category-blue-sub-bg: rgba(215, 232, 255, 0.38);
+  --category-blue-sub-border: rgba(91, 140, 255, 0.28);
+  --category-blue-gradient: linear-gradient(180deg, rgba(91, 140, 255, 0.14), transparent 190px), radial-gradient(circle at 100% 0, rgba(91, 140, 255, 0.12), transparent 28%);
+
+  /* Tag Coral Palette Variables */
+  --tag-coral-card-bg: rgba(255, 238, 232, 0.30);
+  --tag-coral-card-border: rgba(255, 125, 85, 0.32);
+  --tag-coral-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  --tag-coral-sub-bg: rgba(255, 235, 228, 0.38);
+  --tag-coral-sub-border: rgba(255, 125, 85, 0.28);
+  --tag-coral-gradient: linear-gradient(180deg, rgba(255, 125, 85, 0.14), transparent 190px), radial-gradient(circle at 100% 0, rgba(255, 125, 85, 0.12), transparent 28%);
+
+  /* Archive Blue Palette Variables */
+  --archive-blue-card-bg: rgba(195, 218, 255, 0.28);
+  --archive-blue-card-border: rgba(66, 90, 239, 0.32);
+  --archive-blue-card-shadow: 0 8px 16px -4px rgba(44, 45, 48, 0.05);
+  --archive-blue-sub-bg: rgba(215, 230, 255, 0.36);
+  --archive-blue-sub-border: rgba(66, 90, 239, 0.28);
+  --archive-blue-item-bg: rgba(195, 218, 255, 0.32);
+  --archive-blue-item-border: rgba(66, 90, 239, 0.24);
+  --archive-blue-group-bg: rgba(195, 218, 255, 0.24);
+  --archive-blue-group-border: rgba(66, 90, 239, 0.26);
+  --archive-blue-gradient: linear-gradient(180deg, rgba(66, 90, 239, 0.12), transparent 200px), radial-gradient(circle at 100% 0, rgba(66, 90, 239, 0.10), transparent 30%);
 }
 
 :root[data-theme='dark'],
@@ -8915,6 +8937,34 @@ html[data-theme='dark'],
   --home-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20);
   --home-blue-sub-bg: rgba(26, 46, 90, 0.38);
   --home-blue-sub-border: rgba(66, 90, 239, 0.30);
+
+  /* Category Blue Palette Variables (Dark) */
+  --category-blue-card-bg: rgba(18, 36, 78, 0.34);
+  --category-blue-card-border: rgba(91, 140, 255, 0.38);
+  --category-blue-card-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.55), 0 0 16px 2px rgba(91, 140, 255, 0.20);
+  --category-blue-sub-bg: rgba(26, 42, 80, 0.40);
+  --category-blue-sub-border: rgba(91, 140, 255, 0.34);
+  --category-blue-gradient: linear-gradient(180deg, rgba(91, 140, 255, 0.16), transparent 190px), radial-gradient(circle at 100% 0, rgba(91, 140, 255, 0.14), transparent 30%);
+
+  /* Tag Coral Palette Variables (Dark) */
+  --tag-coral-card-bg: rgba(42, 28, 24, 0.38);
+  --tag-coral-card-border: rgba(255, 125, 85, 0.38);
+  --tag-coral-card-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.55), 0 0 16px 2px rgba(255, 125, 85, 0.20);
+  --tag-coral-sub-bg: rgba(54, 32, 28, 0.42);
+  --tag-coral-sub-border: rgba(255, 125, 85, 0.34);
+  --tag-coral-gradient: linear-gradient(180deg, rgba(255, 125, 85, 0.16), transparent 190px), radial-gradient(circle at 100% 0, rgba(255, 125, 85, 0.14), transparent 30%);
+
+  /* Archive Blue Palette Variables (Dark) */
+  --archive-blue-card-bg: rgba(18, 36, 78, 0.34);
+  --archive-blue-card-border: rgba(66, 90, 239, 0.40);
+  --archive-blue-card-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.55), 0 0 16px 2px rgba(66, 90, 239, 0.20);
+  --archive-blue-sub-bg: rgba(26, 42, 80, 0.40);
+  --archive-blue-sub-border: rgba(66, 90, 239, 0.36);
+  --archive-blue-item-bg: rgba(22, 38, 76, 0.38);
+  --archive-blue-item-border: rgba(66, 90, 239, 0.28);
+  --archive-blue-group-bg: rgba(18, 36, 78, 0.30);
+  --archive-blue-group-border: rgba(66, 90, 239, 0.32);
+  --archive-blue-gradient: linear-gradient(180deg, rgba(66, 90, 239, 0.16), transparent 200px), radial-gradient(circle at 100% 0, rgba(66, 90, 239, 0.14), transparent 30%);
 }
 
 /* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
@@ -9527,12 +9577,7 @@ body[data-type='home'] .recent-post-item:hover,
 .relatedPosts-item,
 .postNav-card,
 .postNav,
-.home-top-notice,
-div#archive,
-div#tag,
-div#category,
-.archive-hero-card,
-.taxonomy-hero-card {
+.home-top-notice {
   background: var(--card-bg-translucent) !important;
   backdrop-filter: var(--card-filter-translucent) !important;
   -webkit-backdrop-filter: var(--card-filter-translucent) !important;
@@ -9540,6 +9585,210 @@ div#category,
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--card-shadow-translucent) !important;
 }
+
+/* ==========================================================================
+   8. Target: 分页面 (Archives, Categories, Tags, Taxonomy Detail, Friends)
+      方框卡片透明化完善与原本色彩还原 (对齐安知鱼设计规范)
+   ========================================================================== */
+
+/* --- 8a. 归档页 (/archives/) 经典蓝调透明方框体系 --- */
+body[data-type='archives'] .archive-hero-card,
+body[data-type='archives'] header.archive-hero-card.theme-card,
+.archive-hero-card.theme-card {
+  background: var(--archive-blue-gradient), var(--archive-blue-card-bg) !important;
+  background-color: var(--archive-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--archive-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--archive-blue-card-shadow) !important;
+}
+
+body[data-type='archives'] .archive-hero-card__stats span {
+  background: var(--archive-blue-sub-bg) !important;
+  background-color: var(--archive-blue-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--archive-blue-sub-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 4px 12px -4px rgba(66, 90, 239, 0.15) !important;
+}
+
+body[data-type='archives'] .article-sort-group {
+  background-image: linear-gradient(180deg, rgba(66, 90, 239, 0.08), transparent 220px) !important;
+  background-color: var(--archive-blue-group-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--archive-blue-group-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--archive-blue-card-shadow) !important;
+}
+
+body[data-type='archives'] .article-sort-item {
+  background: var(--archive-blue-item-bg) !important;
+  background-color: var(--archive-blue-item-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--archive-blue-item-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 4px 12px -4px rgba(66, 90, 239, 0.12) !important;
+  transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease !important;
+}
+
+body[data-type='archives'] .article-sort-item:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(66, 90, 239, 0.65) !important;
+  box-shadow: 0 10px 20px -6px rgba(66, 90, 239, 0.25) !important;
+}
+
+body[data-type='archives'] .article-sort-item.year small {
+  background: rgba(66, 90, 239, 0.14) !important;
+  border: 1px solid var(--archive-blue-sub-border) !important;
+  color: var(--theme-main, #425aef) !important;
+  border-radius: 6px !important;
+}
+
+
+/* --- 8b. 分类索引与详情页 (/categories/ & /categories/[slug]) 晴空蓝调透明方框体系 --- */
+body[data-type='categories'] .taxonomy-index-card,
+body[data-type='categories'] .taxonomy-index-card.theme-card,
+body[data-type='category-detail'] .taxonomy-hero-card,
+body[data-type='category-detail'] .taxonomy-hero-card.theme-card {
+  background: var(--category-blue-gradient), var(--category-blue-card-bg) !important;
+  background-color: var(--category-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--category-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--category-blue-card-shadow) !important;
+}
+
+body[data-type='categories'] .taxonomy-index-card__meta span,
+body[data-type='category-detail'] .taxonomy-hero-card__stats span {
+  background: var(--category-blue-sub-bg) !important;
+  background-color: var(--category-blue-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--category-blue-sub-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 4px 12px -4px rgba(91, 140, 255, 0.15) !important;
+}
+
+body[data-type='categories'] #tag-page-tags a,
+body[data-type='category-detail'] .taxonomy-cloud a {
+  background: var(--category-blue-sub-bg) !important;
+  background-color: var(--category-blue-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--category-blue-sub-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  transition: transform 0.24s ease, border-color 0.24s ease, background 0.24s ease, box-shadow 0.24s ease !important;
+}
+
+body[data-type='categories'] #tag-page-tags a:hover,
+body[data-type='category-detail'] .taxonomy-cloud a:hover {
+  background: #5b8cff !important;
+  border-color: #5b8cff !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 18px -4px rgba(91, 140, 255, 0.40) !important;
+}
+
+body[data-type='categories'] .tagsPageCount {
+  background: rgba(91, 140, 255, 0.15) !important;
+  border: 1px solid var(--category-blue-sub-border) !important;
+  border-radius: 6px !important;
+}
+
+body[data-type='category-detail'] .taxonomy-section-card {
+  background-image: linear-gradient(180deg, rgba(91, 140, 255, 0.08), transparent 180px) !important;
+  background-color: var(--category-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--category-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--category-blue-card-shadow) !important;
+}
+
+
+/* --- 8c. 标签索引与详情页 (/tags/ & /tags/[slug]) 活力珊瑚橙调透明方框体系 --- */
+body[data-type='tags'] .taxonomy-index-card,
+body[data-type='tags'] .taxonomy-index-card.theme-card,
+body[data-type='tag-detail'] .taxonomy-hero-card,
+body[data-type='tag-detail'] .taxonomy-hero-card.theme-card {
+  background: var(--tag-coral-gradient), var(--tag-coral-card-bg) !important;
+  background-color: var(--tag-coral-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--tag-coral-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--tag-coral-card-shadow) !important;
+}
+
+body[data-type='tags'] .taxonomy-index-card__meta span,
+body[data-type='tag-detail'] .taxonomy-hero-card__stats span {
+  background: var(--tag-coral-sub-bg) !important;
+  background-color: var(--tag-coral-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--tag-coral-sub-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: 0 4px 12px -4px rgba(255, 125, 85, 0.15) !important;
+}
+
+body[data-type='tags'] #tag-page-tags a,
+body[data-type='tag-detail'] .taxonomy-cloud a {
+  background: var(--tag-coral-sub-bg) !important;
+  background-color: var(--tag-coral-sub-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--tag-coral-sub-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  transition: transform 0.24s ease, border-color 0.24s ease, background 0.24s ease, box-shadow 0.24s ease !important;
+}
+
+body[data-type='tags'] #tag-page-tags a:hover,
+body[data-type='tag-detail'] .taxonomy-cloud a:hover {
+  background: #ff7d55 !important;
+  border-color: #ff7d55 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 18px -4px rgba(255, 125, 85, 0.40) !important;
+}
+
+body[data-type='tags'] .tagsPageCount {
+  background: rgba(255, 125, 85, 0.15) !important;
+  border: 1px solid var(--tag-coral-sub-border) !important;
+  border-radius: 6px !important;
+}
+
+body[data-type='tag-detail'] .taxonomy-section-card {
+  background-image: linear-gradient(180deg, rgba(255, 125, 85, 0.08), transparent 180px) !important;
+  background-color: var(--tag-coral-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--tag-coral-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--tag-coral-card-shadow) !important;
+}
+
+
+/* --- 8d. 友链与社群页 (/friends/) 冰川蓝调透明方框体系 --- */
+body[data-type='page'] .friends-page__hero,
+body[data-type='page'] .friends-page__hero.theme-card,
+body[data-type='page'] .friends-page__panel,
+body[data-type='page'] .friends-page__panel.theme-card,
+.friends-page__hero.theme-card,
+.friends-page__panel.theme-card {
+  background: var(--home-blue-card-bg) !important;
+  background-color: var(--home-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--home-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
+}
+
 
 
 
