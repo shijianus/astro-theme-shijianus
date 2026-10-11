@@ -5455,3 +5455,19 @@
 - [x] **自动化端到端测试与全链路验证**：
   - 新增专用 Playwright 测试套件 `scripts/verify-post-transparency.mjs`，断言亮色与暗色模式下 `page-main`、`aside-sticky-box`、`card-widget card-categories` 均为半透明、`filter === 'none'` 且 1px 边框；
   - 运行全量主页与文章页测试套件，均 100% PASS。
+
+### Task 252: 文章页 (Post Page) 固有经典蓝调恢复与高通透零模糊视觉增强 (d32b850)
+- [x] **色彩校正与安知鱼经典蓝调色板系统 (Signature Translucent Blue Tone)**：
+  - 遵照用户明确指示（"当前的蓝色底色(原本的颜色)完全变成无色了！请进一步优化！确保透明的同时保证原本的颜色(蓝色)"）；
+  - 彻底清除将文章页卡片误作为无色白透的处理，对齐主题安知鱼经典纯正蓝调：
+  - **亮色模式 (Light Mode)**：采用高通透浅天蓝 `--post-blue-card-bg: rgba(195, 218, 255, 0.28)`，蓝调细边框 `--post-blue-card-border: rgba(66, 90, 239, 0.32)`，蓝调微阴影 `--post-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10)`；侧边栏分类条目微色块对齐浅蓝微色块 `--post-blue-sub-bg: rgba(215, 230, 255, 0.36)`，蓝调微边框 `--post-blue-sub-border: rgba(66, 90, 239, 0.25)`；
+  - **暗色模式 (Dark Mode)**：采用深邃蓝宝石暗蓝 `--post-blue-card-bg: rgba(18, 36, 78, 0.34)`，蓝调边框 `--post-blue-card-border: rgba(66, 90, 239, 0.40)`，蓝宝石微阴影与主题辉光 `--post-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20)`；分类条目微色块 `--post-blue-sub-bg: rgba(26, 46, 90, 0.38)`，蓝调微边框 `--post-blue-sub-border: rgba(66, 90, 239, 0.30)`；
+- [x] **目标元素蓝调与高通透零模糊全景改造**：
+  - **`class="page-main"` 文章主容器**：亮色赋予浅天蓝半透，暗色赋予深邃蓝宝石半透，零模糊透视底板，内部 `#post` 保持透明，杜绝双层边框；
+  - **`class="aside-sticky-box"` 侧边栏卡片组 (`#aside-sticky-box-toc`, `#aside-sticky-box-recent`)**：亮暗双态通透蓝调，零模糊直穿背景星空与雪花，内部直属卡片保持透明；
+  - **`class="card-widget card-categories"` 分类卡片**：亮暗双态通透蓝调，零模糊透视底板，内部每个分类链接胶囊对齐蓝调子微色块；
+- [x] **自动化端到端测试更新与 100% 断言保障 (`scripts/verify-post-transparency.mjs`)**：
+  - 增加严格的 `isBlueTranslucent` 算法校验（确保 $B > R$ 且 $B \ge G$，透明度通道 $\alpha \in [0.10, 0.60]$）与 `filter === 'none'` 零模糊断言；
+  - 验证亮色模式与暗色模式下 `page-main`、`aside-sticky-box`、`card-widget card-categories` 均 100% 具备纯正通透蓝调与零模糊透底；
+  - 运行全量 `verify-transparency-parity.mjs` 与 `verify-post-transparency.mjs`，所有断言 100% PASS。
+
