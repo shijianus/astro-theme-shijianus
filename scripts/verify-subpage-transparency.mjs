@@ -3,12 +3,53 @@ import { chromium } from 'playwright';
 const BASE_URL = process.env.TEST_URL || 'http://localhost:4399';
 
 async function run() {
-  console.log(`[TEST] Starting subpage box card transparency verification on ${BASE_URL}...`);
+  console.log(`[TEST] Starting subpage box card transparency & submenu solid check on ${BASE_URL}...`);
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
   const results = [];
 
+  // 1. Verify site-page-submenu is strictly solid opaque (NOT transparent)
+  console.log(`\nTesting Navigation Submenu (${BASE_URL}/)...`);
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+  await page.addStyleTag({
+    content: `*, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }`
+  });
+
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((t) => {
+      document.documentElement.dataset.theme = t;
+      void document.body.offsetHeight;
+    }, theme);
+    await page.waitForTimeout(50);
+
+    const submenuData = await page.evaluate(() => {
+      const el = document.querySelector('.site-page-submenu');
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        bgColor: cs.backgroundColor,
+        bg: cs.background,
+        filter: cs.backdropFilter,
+      };
+    });
+
+    if (submenuData) {
+      console.log(`  [${theme.toUpperCase()}] .site-page-submenu:`);
+      console.log(`    - bgColor: ${submenuData.bgColor}`);
+      console.log(`    - backdropFilter: ${submenuData.filter || 'none'}`);
+
+      // Must be solid: rgb(...) with no alpha, or rgba with alpha 1
+      const isSolid = (theme === 'light' && (submenuData.bgColor === 'rgb(255, 255, 255)' || submenuData.bgColor === 'rgba(255, 255, 255, 1)')) ||
+                      (theme === 'dark' && (submenuData.bgColor === 'rgb(24, 23, 29)' || submenuData.bgColor.startsWith('rgb(')));
+      if (!isSolid) {
+        throw new Error(`Expected solid non-transparent background for .site-page-submenu, got ${submenuData.bgColor}`);
+      }
+      results.push({ test: 'site-page-submenu', theme, status: 'PASS' });
+    }
+  }
+
+  // 2. Verify subpage box cards transparency
   const pagesToTest = [
     {
       url: `${BASE_URL}/archives/`,
@@ -19,7 +60,6 @@ async function run() {
         { key: 'sortGroup', sel: '.article-sort-group', expectedVar: '--archive-blue-group-bg' },
         { key: 'sortItem', sel: '.article-sort-item', expectedVar: '--archive-blue-item-bg' },
       ],
-      expectedFamily: 'blue'
     },
     {
       url: `${BASE_URL}/categories/`,
@@ -29,7 +69,6 @@ async function run() {
         { key: 'metaSpan', sel: '.taxonomy-index-card__meta span', expectedVar: '--category-blue-sub-bg' },
         { key: 'tagA', sel: '#tag-page-tags a', expectedVar: '--category-blue-sub-bg' },
       ],
-      expectedFamily: 'sky-blue'
     },
     {
       url: `${BASE_URL}/tags/`,
@@ -39,7 +78,6 @@ async function run() {
         { key: 'metaSpan', sel: '.taxonomy-index-card__meta span', expectedVar: '--tag-coral-sub-bg' },
         { key: 'tagA', sel: '#tag-page-tags a', expectedVar: '--tag-coral-sub-bg' },
       ],
-      expectedFamily: 'coral-orange'
     },
     {
       url: `${BASE_URL}/friends/`,
@@ -48,15 +86,28 @@ async function run() {
         { key: 'hero', sel: '.friends-page__hero', expectedVar: '--home-blue-card-bg' },
         { key: 'panel', sel: '.friends-page__panel', expectedVar: '--home-blue-card-bg' },
       ],
-      expectedFamily: 'ice-blue'
-    }
+    },
+    {
+      url: `${BASE_URL}/support/`,
+      name: 'Support Page (w-full space-y-3 FAQs)',
+      selectors: [
+        { key: 'faqItem', sel: '.w-full.space-y-3 > div', expectedVar: '--home-blue-card-bg' },
+      ],
+    },
+    {
+      url: `${BASE_URL}/status/`,
+      name: 'Status Page (placeholder-page)',
+      selectors: [
+        { key: 'hero', sel: '.placeholder-page .placeholder-page__hero', expectedVar: '--home-blue-card-bg' },
+        { key: 'notes', sel: '.placeholder-page .placeholder-page__notes', expectedVar: '--home-blue-card-bg' },
+      ],
+    },
   ];
 
   for (const pageConfig of pagesToTest) {
     console.log(`\nTesting ${pageConfig.name} (${pageConfig.url})...`);
     await page.goto(pageConfig.url, { waitUntil: 'domcontentloaded' });
 
-    // Inject temporary transition freeze for instantaneous test assertions
     await page.addStyleTag({
       content: `*, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }`
     });
@@ -129,7 +180,7 @@ async function run() {
   }
 
   await browser.close();
-  console.log(`\n[SUCCESS] All ${results.length} subpage card assertions PASSED!`);
+  console.log(`\n[SUCCESS] All ${results.length} assertions (submenu solid + transparent cards) PASSED!`);
 }
 
 run().catch((err) => {

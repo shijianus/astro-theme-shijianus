@@ -7081,13 +7081,16 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   display: none !important;
 }
 
-/* 6. Horizontal Capsule Submenu Remodeling */
+/* 6. Horizontal Capsule Submenu Remodeling (Solid Opaque, No Transparency) */
 .site-page-submenu {
   position: absolute !important;
   top: calc(100% + 12px) !important;
   left: 50% !important;
   transform: translateX(-50%) translateY(10px) !important;
-  background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: var(--style-border-always) !important;
   border-radius: 8px !important;
   box-shadow: var(--shadow-nav) !important;
@@ -7107,6 +7110,13 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   z-index: 100 !important;
   will-change: transform, opacity !important;
   overflow: hidden !important; /* Clip any inner overflow */
+}
+
+:root[data-theme='dark'] .site-page-submenu,
+html[data-theme='dark'] .site-page-submenu,
+[data-theme='dark'] .site-page-submenu {
+  background: #18171d !important;
+  background-color: #18171d !important;
 }
 
 .menus_item:hover .site-page-submenu,
@@ -8140,7 +8150,7 @@ html[data-theme='dark'] #article-container font[color='#000'] {
    Anzhiyu Card Style Master Directives: Solid, Gray (Frosted), Transparent
    ========================================================================== */
 :root:not([data-card-style='solid']):not([data-translucent='false']) :is(
-  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel),
+  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel):not(.placeholder-page__hero):not(.placeholder-page__notes),
   .surface-panel,
   .post-page-shell,
   div#post,
@@ -8411,7 +8421,7 @@ body[data-type='home'] .home-pagination__num.is-current {
 
 /* Explicit Transparent Mode Styling Refinements */
 :root[data-card-style='transparent'] :is(
-  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel),
+  .theme-card:not(.home-pagination):not(.archive-hero-card):not(.taxonomy-index-card):not(.taxonomy-hero-card):not(.friends-page__hero):not(.friends-page__panel):not(.placeholder-page__hero):not(.placeholder-page__notes),
   .surface-panel,
   .post-page-shell,
   div#post,
@@ -9788,6 +9798,73 @@ body[data-type='page'] .friends-page__panel.theme-card,
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--home-blue-card-shadow) !important;
 }
+
+
+/* --- 8e. class="w-full space-y-3" FAQ 折叠卡片组 (支持页 /support/) 透明化与原有色彩保留 --- */
+.w-full.space-y-3 {
+  background: transparent !important;
+}
+
+.w-full.space-y-3 > div {
+  background: var(--home-blue-card-bg) !important;
+  background-color: var(--home-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--home-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
+  transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease !important;
+}
+
+.w-full.space-y-3 > div:hover {
+  border-color: rgba(66, 90, 239, 0.65) !important;
+  box-shadow: 0 8px 20px -6px rgba(66, 90, 239, 0.25) !important;
+}
+
+.w-full.space-y-3 > div > button {
+  background: transparent !important;
+}
+
+.w-full.space-y-3 > div > div {
+  border-top: 1px solid var(--home-blue-sub-border) !important;
+  background: var(--home-blue-sub-bg) !important;
+}
+
+
+/* --- 8f. class="placeholder-page" 状态/实验/路线图预留页 (/status/, /lab/, /roadmap/) 透明化与原有色彩保留 --- */
+.placeholder-page {
+  background: transparent !important;
+}
+
+.placeholder-page .placeholder-page__hero,
+.placeholder-page .placeholder-page__hero.theme-card,
+.placeholder-page__hero.theme-card,
+.placeholder-page .placeholder-page__notes,
+.placeholder-page .placeholder-page__notes.theme-card,
+.placeholder-page__notes.theme-card {
+  background: var(--home-blue-card-bg) !important;
+  background-color: var(--home-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--home-blue-card-border) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--home-blue-card-shadow) !important;
+}
+
+.placeholder-page .placeholder-page__status img {
+  border-radius: var(--radius-md, 8px) !important;
+}
+
+.placeholder-page .placeholder-page__eyebrow {
+  background: var(--home-blue-sub-bg) !important;
+  border: 1px solid var(--home-blue-sub-border) !important;
+  border-radius: 6px !important;
+}
+
+.placeholder-page .placeholder-page__note {
+  border-bottom: 1px dashed var(--home-blue-sub-border) !important;
+}
+
 
 
 

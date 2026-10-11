@@ -5471,7 +5471,7 @@
 - [x] **自动化端到端测试与全链路验证**：
   - 更新 `scripts/verify-post-transparency.mjs`，增加严格的蓝色通道主导性断言（`b > r && b >= g`，透明度 $0.10 \le \alpha \le 0.60$）及零模糊断言，本地与生产端全量 100% PASS。
 
-### Task 253: 分页面方框卡片透明化完善与原本色彩完整还原 (对齐安知鱼设计规范)
+### Task 253: 分页面方框卡片透明化完善与原本色彩完整还原 (对齐安知鱼设计规范) (1fe102d)
 - [x] **原本色彩严格保留与分页面语义调色体系 (Original Color & Semantic Palette Preservation)**：
   - 遵照用户明确指示（"对齐 安知鱼 的blog的组件推荐，帮我优化包括class=\"archive-hero-card theme-card\"、class=\"taxonomy-index-card theme-card\"、class=\"taxonomy-index-card theme-card\"等在内的分页面的透明化完善！其中所有的方框卡片均需要保持其原本色彩！请确保优化完善后再交付给我"）；
   - 全面还原并保护各分页面的标志性专属色彩通道：
@@ -5486,4 +5486,23 @@
 - [x] **自动化端到端测试套件全覆盖 (`scripts/verify-subpage-transparency.mjs`)**：
   - 覆盖 `/archives/`、`/categories/`、`/tags/`、`/friends/` 四大分页面的 8 大核心方框卡片组件；
   - 在亮色与暗色模式下全量断言透明度（`rgba`）、零模糊（`filter === 'none'`）、1px 细边框及 8px 标准圆角，24 项断言全部 100% PASS 通过。
+
+### Task 254: 恢复导航下拉菜单为实体不透明背景，补充常见问题 FAQ 与占位页卡片通透蓝化
+- [x] **严格纠正导航下拉子菜单 (`.site-page-submenu`) 为纯实体不透明背景 (Strictly Solid Opaque Submenu)**：
+  - 遵循用户指令（"有点过头了，包括class=\"site-page-submenu\"在内的不应该进行透明化操作，其它的保持现状！"）；
+  - 彻底清除 `.site-page-submenu` 的半透明底色，显式设置为实体不透明纯色底板：
+    - 亮色模式：`background: #ffffff !important; background-color: #ffffff !important;`；
+    - 暗色模式：`background: #18171d !important; background-color: #18171d !important;`；
+  - 显式设置 `backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`，确保菜单文字与图标拥有极致清晰的对比度与可读性；
+  - 维持现有所有已生效的正确 UI 组件及动画行为原样不变（"其它的保持现状！"）；
+- [x] **补充 `class="w-full space-y-3"` 常见问题 FAQ 折叠卡片组通透蓝化 (`/support/`)**：
+  - 容器 `.w-full.space-y-3` 设置为透明直出；
+  - 每个 FAQ 折叠卡片项 `.w-full.space-y-3 > div` 采用标志性通透蓝底色（`var(--home-blue-card-bg)`：亮色 `rgba(195, 218, 255, 0.28)` / 暗色 `rgba(18, 36, 78, 0.34)`）；
+  - 移除毛玻璃模糊阻隔（`backdrop-filter: none !important;`），保留 1px 微光蓝边框与标准 8px 圆角（`var(--radius-md, 8px)`），悬浮微动交互；
+- [x] **补充 `class="placeholder-page"` 预留与状态页卡片通透蓝化 (`/status/`, `/lab/`, `/roadmap/`)**：
+  - 从全局磨砂规则排除 `.placeholder-page__hero` 与 `.placeholder-page__notes`，注入标志性通透蓝底板与 1px 边框；
+  - 零模糊直穿底层星尘粒子，图片 `.placeholder-page__status img` 精确收敛为 8px 方圆角；
+- [x] **端到端自动化测试验证 (`scripts/verify-subpage-transparency.mjs`)**：
+  - 扩充测试套件覆盖导航下拉菜单、FAQ 折叠卡片与占位页 Hero/Notes 卡片，全平台 32 项断言 100% PASS 通过。
+
 
