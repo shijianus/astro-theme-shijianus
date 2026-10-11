@@ -5487,7 +5487,7 @@
   - 覆盖 `/archives/`、`/categories/`、`/tags/`、`/friends/` 四大分页面的 8 大核心方框卡片组件；
   - 在亮色与暗色模式下全量断言透明度（`rgba`）、零模糊（`filter === 'none'`）、1px 细边框及 8px 标准圆角，24 项断言全部 100% PASS 通过。
 
-### Task 254: 恢复导航下拉菜单为实体不透明背景，补充常见问题 FAQ 与占位页卡片通透蓝化
+### Task 254: 恢复导航下拉菜单为实体不透明背景，补充常见问题 FAQ 与占位页卡片通透蓝化 (312d78f)
 - [x] **严格纠正导航下拉子菜单 (`.site-page-submenu`) 为纯实体不透明背景 (Strictly Solid Opaque Submenu)**：
   - 遵循用户指令（"有点过头了，包括class=\"site-page-submenu\"在内的不应该进行透明化操作，其它的保持现状！"）；
   - 彻底清除 `.site-page-submenu` 的半透明底色，显式设置为实体不透明纯色底板：
