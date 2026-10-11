@@ -29,16 +29,18 @@ async function run() {
   await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(1500);
 
-  const isTranslucent = (val) => {
+  const isBlueTranslucent = (val) => {
     if (!val || val === 'transparent' || val === 'rgba(0, 0, 0, 0)') return false;
-    if (val.startsWith('rgba(')) {
-      const match = val.match(/rgba\(\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/);
-      if (match) {
-        const alpha = parseFloat(match[1]);
-        return alpha >= 0.05 && alpha <= 0.70;
-      }
-    }
-    return val.startsWith('rgba(');
+    const match = val.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+    if (!match) return false;
+    const r = parseInt(match[1], 10);
+    const g = parseInt(match[2], 10);
+    const b = parseInt(match[3], 10);
+    const a = parseFloat(match[4]);
+    // Blue dominance check: b > r and b >= g
+    const isBlueChannel = b > r && b >= g;
+    const isAlphaTranslucent = a >= 0.10 && a <= 0.60;
+    return isBlueChannel && isAlphaTranslucent;
   };
   const hasBorder = (val) => val === '1px' || (parseFloat(val) >= 1);
 
@@ -59,13 +61,13 @@ async function run() {
     };
   });
   console.log('Page Main Data (Light):', JSON.stringify(pageMainData, null, 2));
-  assert.ok(isTranslucent(pageMainData.pmBg), 'class="page-main" MUST have translucent background');
+  assert.ok(isBlueTranslucent(pageMainData.pmBg), 'class="page-main" MUST have translucent blue background');
   assert.equal(pageMainData.pmFilter, 'none', 'class="page-main" MUST have zero blur (none) for starry background visibility');
   assert.ok(hasBorder(pageMainData.pmBorder), 'class="page-main" MUST have 1px border');
   assert.equal(pageMainData.postBg, 'rgba(0, 0, 0, 0)', 'Inner #post MUST be transparent to avoid double card');
   assert.equal(pageMainData.postFilter, 'none', 'Inner #post MUST have zero blur');
   assert.equal(pageMainData.postBorder, '0px', 'Inner #post MUST have 0px border to prevent card nesting');
-  console.log('[✅ PASS] class="page-main" translucent and clean.\n');
+  console.log('[✅ PASS] class="page-main" translucent blue and clean.\n');
 
   // 2. Audit class="aside-sticky-box" on post page (Light mode)
   console.log('[*] 2. Auditing class="aside-sticky-box" on post page (Light Mode)...');
@@ -89,13 +91,13 @@ async function run() {
     };
   });
   console.log('Sticky Boxes Data (Light):', JSON.stringify(stickyData, null, 2));
-  assert.ok(isTranslucent(stickyData.firstSticky.bg), 'First .aside-sticky-box MUST have translucent background');
+  assert.ok(isBlueTranslucent(stickyData.firstSticky.bg), 'First .aside-sticky-box MUST have translucent blue background');
   assert.equal(stickyData.firstSticky.filter, 'none', 'First .aside-sticky-box MUST have zero blur');
   assert.ok(hasBorder(stickyData.firstSticky.border), 'First .aside-sticky-box MUST have 1px border');
-  assert.ok(isTranslucent(stickyData.recentBox.bg), '#aside-sticky-box-recent MUST have translucent background');
+  assert.ok(isBlueTranslucent(stickyData.recentBox.bg), '#aside-sticky-box-recent MUST have translucent blue background');
   assert.equal(stickyData.recentBox.filter, 'none', '#aside-sticky-box-recent MUST have zero blur');
   assert.ok(hasBorder(stickyData.recentBox.border), '#aside-sticky-box-recent MUST have 1px border');
-  console.log('[✅ PASS] class="aside-sticky-box" translucent and zero-blur.\n');
+  console.log('[✅ PASS] class="aside-sticky-box" translucent blue and zero-blur.\n');
 
   // 3. Audit class="card-widget card-categories" on post page (Light mode)
   console.log('[*] 3. Auditing class="card-widget card-categories" on post page (Light Mode)...');
@@ -112,15 +114,18 @@ async function run() {
   });
   console.log('Card Categories Data (Light):', JSON.stringify(catData, null, 2));
   assert.ok(catData, '.card-widget.card-categories must exist');
-  assert.ok(isTranslucent(catData.bg), '.card-widget.card-categories MUST have translucent background');
+  assert.ok(isBlueTranslucent(catData.bg), '.card-widget.card-categories MUST have translucent blue background');
   assert.equal(catData.filter, 'none', '.card-widget.card-categories MUST have zero blur');
   assert.ok(hasBorder(catData.border), '.card-widget.card-categories MUST have 1px border');
-  console.log('[✅ PASS] class="card-widget card-categories" translucent and zero-blur.\n');
+  console.log('[✅ PASS] class="card-widget card-categories" translucent blue and zero-blur.\n');
 
   // 4. Audit Dark Mode
   console.log('[*] 4. Auditing Dark Mode on post page...');
-  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
-  await page.waitForTimeout(500);
+  await page.evaluate(() => {
+    localStorage.setItem('theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  });
+  await page.waitForTimeout(600);
 
   const darkData = await page.evaluate(() => {
     const getS = (sel) => {
@@ -141,23 +146,35 @@ async function run() {
     };
   });
   console.log('Dark Mode Data:', JSON.stringify(darkData, null, 2));
-  assert.ok(isTranslucent(darkData.pm.bg), 'Dark mode: .page-main MUST have translucent dark background');
+  assert.ok(isBlueTranslucent(darkData.pm.bg), 'Dark mode: .page-main MUST have translucent sapphire blue background');
   assert.equal(darkData.pm.filter, 'none', 'Dark mode: .page-main MUST have zero blur');
   assert.ok(hasBorder(darkData.pm.border), 'Dark mode: .page-main MUST have 1px border');
 
-  assert.ok(isTranslucent(darkData.firstSticky.bg), 'Dark mode: .aside-sticky-box MUST have translucent dark background');
+  assert.ok(isBlueTranslucent(darkData.firstSticky.bg), 'Dark mode: .aside-sticky-box MUST have translucent sapphire blue background');
   assert.equal(darkData.firstSticky.filter, 'none', 'Dark mode: .aside-sticky-box MUST have zero blur');
   assert.ok(hasBorder(darkData.firstSticky.border), 'Dark mode: .aside-sticky-box MUST have 1px border');
 
-  assert.ok(isTranslucent(darkData.categories.bg), 'Dark mode: .card-widget.card-categories MUST have translucent dark background');
+  assert.ok(isBlueTranslucent(darkData.recentBox.bg), 'Dark mode: #aside-sticky-box-recent MUST have translucent sapphire blue background');
+  assert.equal(darkData.recentBox.filter, 'none', 'Dark mode: #aside-sticky-box-recent MUST have zero blur');
+  assert.ok(hasBorder(darkData.recentBox.border), 'Dark mode: #aside-sticky-box-recent MUST have 1px border');
+
+  assert.ok(isBlueTranslucent(darkData.categories.bg), 'Dark mode: .card-widget.card-categories MUST have translucent sapphire blue background');
   assert.equal(darkData.categories.filter, 'none', 'Dark mode: .card-widget.card-categories MUST have zero blur');
   assert.ok(hasBorder(darkData.categories.border), 'Dark mode: .card-widget.card-categories MUST have 1px border');
   console.log('[✅ PASS] Dark Mode on post page verified.\n');
 
   // Screenshots
-  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
+  await page.evaluate(() => {
+    localStorage.setItem('theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+  });
+  await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(outDir, 'post-light-verified.png') });
-  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await page.evaluate(() => {
+    localStorage.setItem('theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  });
+  await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(outDir, 'post-dark-verified.png') });
 
   await browser.close();

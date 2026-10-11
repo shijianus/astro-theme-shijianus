@@ -8873,6 +8873,13 @@ body[data-type='home'] .home-pagination__num.is-current {
   --home-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10);
   --home-blue-sub-bg: rgba(215, 230, 255, 0.36);
   --home-blue-sub-border: rgba(66, 90, 239, 0.25);
+
+  /* Post Page Translucent Blue Cards: Light mode translucent blue tone with zero blur */
+  --post-blue-card-bg: rgba(195, 218, 255, 0.28);
+  --post-blue-card-border: rgba(66, 90, 239, 0.32);
+  --post-blue-card-shadow: 0 8px 16px -4px rgba(66, 90, 239, 0.10);
+  --post-blue-sub-bg: rgba(215, 230, 255, 0.36);
+  --post-blue-sub-border: rgba(66, 90, 239, 0.25);
 }
 
 :root[data-theme='dark'],
@@ -8915,6 +8922,13 @@ html[data-theme='dark'],
   --home-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20);
   --home-blue-sub-bg: rgba(26, 46, 90, 0.38);
   --home-blue-sub-border: rgba(66, 90, 239, 0.30);
+
+  /* Post Page Translucent Blue Cards: Dark mode translucent sapphire blue tone with zero blur */
+  --post-blue-card-bg: rgba(18, 36, 78, 0.34);
+  --post-blue-card-border: rgba(66, 90, 239, 0.40);
+  --post-blue-card-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20);
+  --post-blue-sub-bg: rgba(26, 46, 90, 0.38);
+  --post-blue-sub-border: rgba(66, 90, 239, 0.30);
 }
 
 /* 1. Target: 主页 class="aside-sticky-box" id="aside-sticky-box-overview" 卡片框本体 */
@@ -8967,13 +8981,12 @@ body[data-type='home'] #aside-sticky-box-overview > .card-feature-panel--overvie
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent),
 body[data-type='post'] #aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent),
 #aside-content :is(#aside-sticky-box-toc, #aside-sticky-box-recent) {
-  background: var(--card-bg-translucent) !important;
-  background-color: var(--card-bg-translucent) !important;
+  background: var(--post-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--post-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--post-blue-card-shadow) !important;
 }
 
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(#aside-sticky-box-toc, #aside-sticky-box-recent) > .card-widget,
@@ -9292,15 +9305,24 @@ body[data-type='home'] .category-bar {
   -webkit-backdrop-filter: none !important;
 }
 
-/* 6b. Target: 文章页透明化改造 (class="page-main", class="aside-sticky-box", class="card-widget card-categories" 保持原有色彩，零模糊透视) */
+/* 6b. Target: 文章页透明化改造 (class="page-main", class="aside-sticky-box", class="card-widget card-categories" 保持固有经典蓝调，零模糊透视) */
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] .page-main,
 body[data-type='post'] .page-main {
-  background: var(--card-bg-translucent) !important;
+  background: var(--post-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--post-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--post-blue-card-shadow) !important;
+}
+
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] .page-main,
+:root[data-theme='dark'] body[data-type='post'] .page-main {
+  background: var(--post-blue-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--post-blue-card-border) !important;
+  box-shadow: var(--post-blue-card-shadow) !important;
 }
 
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),
@@ -9349,7 +9371,7 @@ body[data-type='post'] .aside-sticky-box .card-categories {
   -webkit-backdrop-filter: none !important;
 }
 
-/* 侧边栏卡片容器赋予原有色彩透明底板 (白透/暗灰透，零模糊) */
+/* 侧边栏卡片容器赋予原有色彩透明底板 (浅天蓝高透/深邃蓝宝石透，零模糊) */
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(
   .aside-sticky-box:not(#aside-sticky-box-support),
   #aside-sticky-box-toc,
@@ -9370,12 +9392,12 @@ body[data-type='post'] #aside-sticky-box-recent,
 body[data-type='post'] .card-widget.card-categories,
 body[data-type='post'] #card-categories,
 body[data-type='post'] .aside-sticky-box .card-categories {
-  background: var(--card-bg-translucent) !important;
+  background: var(--post-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--post-blue-card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--card-shadow-translucent) !important;
+  box-shadow: var(--post-blue-card-shadow) !important;
 }
 
 :root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] #aside-content :is(
@@ -9398,10 +9420,11 @@ body[data-type='post'] .aside-sticky-box .card-categories {
 :root[data-theme='dark'] body[data-type='post'] .card-widget.card-categories,
 :root[data-theme='dark'] body[data-type='post'] #card-categories,
 :root[data-theme='dark'] body[data-type='post'] .aside-sticky-box .card-categories {
-  background: rgba(20, 22, 30, 0.30) !important;
+  background: var(--post-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--card-border-translucent) !important;
+  border: 1px solid var(--post-blue-card-border) !important;
+  box-shadow: var(--post-blue-card-shadow) !important;
 }
 
 /* 避免 aside-sticky-box-toc 与 aside-sticky-box-recent 内产生双层卡片 */
@@ -9432,10 +9455,10 @@ body[data-type='post'] :is(#card-telegram, #card-telegram .promo-widget, .promo-
 
 /* 侧边栏分类条目子微色块交互保障 */
 body[data-type='post'] .card-categories .card-category-list-link {
-  background: var(--sub-block-bg-translucent) !important;
+  background: var(--post-blue-sub-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--sub-block-border-translucent) !important;
+  border: 1px solid var(--post-blue-sub-border) !important;
   border-radius: 6px !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
