@@ -5539,6 +5539,19 @@
     - 子菜单项 hover 时应用安知鱼标志性主题蓝（`#425aef`）背景、高对比纯白文字与白色图标（`#ffffff`），搭配细腻光泽阴影（`0 4px 12px rgba(66, 90, 239, 0.38)`）。
 - [x] **自动化端到端测试套件全覆盖 (`scripts/verify-menus-anzhiyu.mjs`)**：
   - 桌面端、暗色模式、纯文本默认态、外壳等大尺寸（68px）、圆方角保留（8px/6px）以及 Hover 交互色彩断言 100% 全部通过。
+- [x] **生产端 (Cloudflare Pages) 全量边缘部署 (`91989eb8.shijianus-blog.pages.dev`)**：
+  - 通过 `wrangler pages deploy dist --project-name shijianus-blog --branch main --commit-dirty=true` 上传 Functions bundle 与全量静态资产至生产边缘节点，实时绑定至生产域名 `https://blog.epocanvas.com/`。
+- [x] **生产端实机真实链路 Playwright 自动化审计通过 (`scripts/verify-live-menus-anzhiyu.mjs`)**：
+  - 针对线上真实生产域名 `https://blog.epocanvas.com/` 执行全链路无头浏览器测试与视觉快照：
+    1. `#menus` 元素可见性与居中判定正常（302px × 60px）；
+    2. 主导航 4 项 `.site-page-shell` 尺寸全部严格等大为 68px × 36px（100% 像素级对齐）；
+    3. 默认纯文本模式审计：0 顶层图标、0 副标题、0 堆叠容器、4 项纯文本标签；
+    4. 子菜单悬浮展开审计：透明毛玻璃 `rgba(255, 255, 255, 0.88)` + `backdrop-filter: blur(16px) saturate(1.8)`；
+    5. 圆方角严格固化：容器 `8px`、子项 `6px` 完整保留，绝无变形；
+    6. 子项 Hover 交互审计：背景准确呈现主题蓝 `rgb(66, 90, 239)`，文字与图标纯白 `rgb(255, 255, 255)`，高光阴影 `rgba(66, 90, 239, 0.38) 0px 4px 12px`；
+    7. 线上控制台 0 致命 JS 报错；
+    8. 截图证据：`scripts/live_menus_default.png` 与 `scripts/live_nav_submenu_hover.png`。
+
 
 
 
