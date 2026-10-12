@@ -5522,4 +5522,23 @@
 - [x] **自动化端到端测试套件全覆盖 (`scripts/verify-footer-deal.mjs`)**：
   - 全面覆盖桌面端 1440px 亮暗模式颜色反转检测、垂直中心线像素级对齐断言、悬浮动效断言以及移动端 375px、414px、768px 对称网格断言，所有测试 100% PASS 通过。
 
+### Task 256: 主导航 (#menus) 纯文本简洁化重构、等大外壳驱动、配置开关体系与子菜单交互深度优化
+- [x] **配置开关体系与底层默认兜底 (Config Switch Matrix & Fallback Icons)**：
+  - 在 `src/config/site.ts` 引入 `showIcon: false`（默认关闭主导航图标，纯文本简洁）、`showSubtitle: false`（默认关闭副标题，仅保留纯中文主标题）、`showSubmenuIcon: true`（子菜单保留图标指引）；
+  - `SiteNavItem` 支持单项开关覆写（`showIcon` / `showSubtitle`）；
+  - 在 `src/components/SiteHeader.tsx` 底层内置默认图标映射兜底库（`NAV_FALLBACK_DEFAULT_ICONS`），覆盖常用路由（`/`、`/archives/`、`/categories/`、`/tags/`、`/friends/`、`/lab/`、`/about/`、`/status/`、`/roadmap/`、`/support/` 等），仅在创作者显式开启开关但未配置具体 icon 时作为兜底生效。
+- [x] **纯文本与等大尺寸外壳驱动 (Equal-Sized Shells & Pure Text Minimalism)**：
+  - 默认开关关闭状态下，彻底清除顶部主导航项的图标与双语副标题容器，`class="site-page__label"` 完整且精准居中占有整个 `class="site-page-shell"`；
+  - 规范所有 `.site-page-shell` 为等大尺寸（`width: 68px !important; min-width: 68px !important; height: 36px !important;`），结合字间距对称微调（`letter-spacing: 3px; margin-right: -3px;`），呈现如同安知鱼原生的极简秩序与平衡美感。
+- [x] **子菜单 (`class="site-page-submenu"`) 交互颜色与深度优化 (Submenu Depth & Frosted Glass)**：
+  - **严格保留已有圆方角规范**：容器严格保持 `border-radius: 8px !important;`，子项保持 `border-radius: 6px !important;`；
+  - **交互颜色与毛玻璃深度重构**：
+    - 亮色模式引入高质感毛玻璃（`rgba(255, 255, 255, 0.88)` + `backdrop-filter: blur(16px) saturate(180%)` + 柔和层次阴影 `box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.06)`）；
+    - 暗色模式应用深空毛玻璃（`rgba(24, 23, 29, 0.88)` + `border: 1px solid rgba(255, 255, 255, 0.1)` + 深度星夜阴影）；
+    - 注入 `.site-page-submenu::before` 悬浮桥接区，确保鼠标平滑划入下拉框不失焦；
+    - 子菜单项 hover 时应用安知鱼标志性主题蓝（`#425aef`）背景、高对比纯白文字与白色图标（`#ffffff`），搭配细腻光泽阴影（`0 4px 12px rgba(66, 90, 239, 0.38)`）。
+- [x] **自动化端到端测试套件全覆盖 (`scripts/verify-menus-anzhiyu.mjs`)**：
+  - 桌面端、暗色模式、纯文本默认态、外壳等大尺寸（68px）、圆方角保留（8px/6px）以及 Hover 交互色彩断言 100% 全部通过。
+
+
 

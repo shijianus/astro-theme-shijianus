@@ -72,7 +72,7 @@ const NAV_TRANSLATIONS: Record<LocaleVariant, {
   },
 };
 
-type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children'>;
+type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children' | 'showIcon' | 'showSubtitle'>;
 
 type SiteHeaderProps = {
   brandName: string;
@@ -85,6 +85,12 @@ type SiteHeaderProps = {
   showNotificationTrigger: boolean;
   isAccountEnabled: boolean;
   hasDatabase: boolean;
+  /** 主导航图标全局开关，默认 false (纯文本简洁) */
+  showNavIcon?: boolean;
+  /** 主导航副标题全局开关，默认 false (纯文本简洁) */
+  showNavSubtitle?: boolean;
+  /** 子菜单图标全局开关，默认 true */
+  showSubmenuIcon?: boolean;
   /** Named slot from Astro — renders the center console trigger icon (e.g. AnzhiyuDashboardIcon) */
   consoleIcon?: React.ReactNode;
 };
@@ -176,6 +182,32 @@ function renderNavIcon(iconName: string | undefined, className: string) {
   );
 }
 
+/**
+ * 底层代码内置默认图标映射兜底库 (Underlying Built-in Fallback Default Icons)
+ * 仅在配置文件中开启了 showIcon 开关但未在具体项中写入特定 icon 时作为兜底生效。
+ * 默认情况下该开关为关闭状态 (showIcon = false)，保持纯文本纯粹体验。
+ */
+const NAV_FALLBACK_DEFAULT_ICONS: Record<string, string> = {
+  '/': 'home',
+  '/archives/': 'book',
+  '/categories/': 'category',
+  '/tags/': 'tags',
+  '/friends/': 'link',
+  '/lab/': 'flask',
+  '/about/': 'circle-info',
+  '/status/': 'chart-bar',
+  '/roadmap/': 'compass',
+  '/support/': 'mug-hot',
+};
+
+function resolveDefaultNavIcon(href: string, fallback = 'home'): string {
+  if (NAV_FALLBACK_DEFAULT_ICONS[href]) return NAV_FALLBACK_DEFAULT_ICONS[href];
+  for (const [key, icon] of Object.entries(NAV_FALLBACK_DEFAULT_ICONS)) {
+    if (key !== '/' && href.startsWith(key)) return icon;
+  }
+  return fallback;
+}
+
 export function SiteHeader({
   brandName,
   domainLabel,
@@ -187,6 +219,9 @@ export function SiteHeader({
   showNotificationTrigger,
   isAccountEnabled,
   hasDatabase,
+  showNavIcon = false,
+  showNavSubtitle = false,
+  showSubmenuIcon = true,
   consoleIcon,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -639,8 +674,15 @@ export function SiteHeader({
             <div className="menus_items">
               {primary.map((item) => {
                 const itemActive = isActive(currentPath, item.href) || Boolean(item.children?.some((child) => isActive(currentPath, child.href)));
-                const hasChildren = Boolean(item.children && item.children.length > 1);
+                const hasChildren = Boolean(item.children && item.children.length > 0);
                 const submenuOpen = hasChildren && openSubmenuHref === item.href;
+
+                // 开关判定：单项设置优先于全局开关，未显式开启时严格默认为 false (如安知鱼般纯文本极简)
+                const isIconEnabled = item.showIcon ?? showNavIcon ?? false;
+                const isSubtitleEnabled = item.showSubtitle ?? showNavSubtitle ?? false;
+
+                // 底层内置默认图标：当开关开启但未配置 icon 时作为兜底生效
+                const effectiveIcon = item.icon || resolveDefaultNavIcon(item.href, 'book');
 
                 return (
                   <div
@@ -670,46 +712,35 @@ export function SiteHeader({
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
-                        {renderNavIcon(item.icon, 'site-page__icon')}
-                        <div className="site-page__bilingual-stack" style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          textAlign: 'center', 
-                          minWidth: '32px', 
-                          gap: '0px'
-                        }}>
-                          <span className="site-page__label" style={{ 
-                            letterSpacing: '4px', 
-                            marginRight: '-4px', 
-                            fontSize: '14px', 
-                            fontWeight: 700, 
-                            lineHeight: 1.1,
-                            display: 'block'
-                          }}>
+                        {isIconEnabled && renderNavIcon(effectiveIcon, 'site-page__icon')}
+                        {isSubtitleEnabled ? (
+                          <div className="site-page__bilingual-stack">
+                            <span className="site-page__label">
+                              {convertText(item.label, currentLocale)}
+                            </span>
+                            {item.description && (
+                              <span className="site-page__subtitle">
+                                {convertText(item.description, currentLocale)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="site-page__label">
                             {convertText(item.label, currentLocale)}
                           </span>
-                          {item.description && (
-                            <span className="site-page__subtitle" style={{ 
-                              letterSpacing: '2.5px', 
-                              marginRight: '-2.5px', 
-                              fontSize: '9px', 
-                              fontWeight: 600, 
-                              opacity: 0.8, 
-                              lineHeight: 1, 
-                              marginTop: '2px',
-                              display: 'block'
-                            }}>
-                              {convertText(item.description, currentLocale)}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </a>
 
                       {hasChildren && (
-                        <div className="site-page-submenu" role="menu" aria-label={`${convertText(item.label, currentLocale)} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`} aria-hidden={!submenuOpen}>
-                          {item.children.slice(0, 3).map((child) => {
+                        <div
+                          className="site-page-submenu"
+                          role="menu"
+                          aria-label={`${convertText(item.label, currentLocale)} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`}
+                          aria-hidden={!submenuOpen}
+                        >
+                          {item.children.map((child) => {
+                            const childIconEnabled = child.showIcon ?? showSubmenuIcon ?? true;
+                            const childEffectiveIcon = child.icon || resolveDefaultNavIcon(child.href, 'link');
                             return (
                               <a
                                 key={child.href}
@@ -718,7 +749,7 @@ export function SiteHeader({
                                 role="menuitem"
                                 title={child.description ? convertText(child.description, currentLocale) : convertText(child.label, currentLocale)}
                               >
-                                {renderNavIcon(child.icon, 'site-page-submenu__icon')}
+                                {childIconEnabled && renderNavIcon(childEffectiveIcon, 'site-page-submenu__icon')}
                                 <span className="site-page-submenu__label">{convertText(child.label, currentLocale)}</span>
                               </a>
                             );

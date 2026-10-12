@@ -336,6 +336,9 @@ const isMantleActiveOnThisPage = Boolean(
         showNotificationTrigger={true}
         isAccountEnabled={remoteDbConfigured && accountPanel.enabled}
         hasDatabase={commentsEnabled}
+        showNavIcon={siteConfig.navigation.showIcon ?? false}
+        showNavSubtitle={siteConfig.navigation.showSubtitle ?? false}
+        showSubmenuIcon={siteConfig.navigation.showSubmenuIcon ?? true}
       >
         <AnzhiyuDashboardIcon slot="consoleIcon" />
       </SiteHeader>

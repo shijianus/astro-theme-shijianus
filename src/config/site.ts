@@ -21,14 +21,43 @@ export type SiteNavItem = {
   href: string;
   description?: string;
   external?: boolean;
+  /** 可单项覆盖全局图标开关 */
+  showIcon?: boolean;
+  /** 可单项覆盖全局副标题开关 */
+  showSubtitle?: boolean;
   children?: Array<{
     label: string;
     href: string;
     description?: string;
     external?: boolean;
     icon?: SiteNavIcon;
+    showIcon?: boolean;
   }>;
   icon?: SiteNavIcon;
+};
+
+export type SiteNavigationConfig = {
+  /**
+   * 是否在主导航顶部按钮中显示图标 (Nav Icon Switch)
+   * - false (默认): 关闭图标，保留纯文本，向安知鱼纯文本极简看齐
+   * - true: 开启图标显示。若未在具体项中单独配置 icon，则由底层内置默认映射兜底
+   */
+  showIcon?: boolean;
+  /**
+   * 是否在主导航顶部按钮中显示副标题/英文缩写 (Nav Subtitle Switch)
+   * - false (默认): 关闭副标题，仅保留纯中文主标题
+   * - true: 开启副标题显示 (class="site-page__subtitle")
+   */
+  showSubtitle?: boolean;
+  /**
+   * 是否在子菜单下拉列表中显示图标 (Submenu Icon Switch)
+   * - true (默认): 子菜单显示图标以增强指引性
+   * - false: 子菜单隐藏图标
+   */
+  showSubmenuIcon?: boolean;
+  primary: SiteNavItem[];
+  utility: SiteNavItem[];
+  quickActions: SiteNavItem[];
 };
 
 export type HomeCategory = {
@@ -355,6 +384,9 @@ export const siteConfig = {
     },
   },
   navigation: {
+    showIcon: false, // 默认关闭图标，纯文本简洁优雅（向安知鱼纯文本极简看齐）
+    showSubtitle: false, // 默认关闭副标题（可由用户/创作者在配置中开启，默认不显示）
+    showSubmenuIcon: true, // 子菜单项保留图标指引
     primary: [
       {
         label: '文章',
