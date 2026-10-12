@@ -5505,4 +5505,21 @@
 - [x] **端到端自动化测试验证 (`scripts/verify-subpage-transparency.mjs`)**：
   - 扩充测试套件覆盖导航下拉菜单、FAQ 折叠卡片与占位页 Hero/Notes 卡片，全平台 32 项断言 100% PASS 通过。
 
+### Task 255: 页脚社交栏 (#footer_deal) 错位消除、对齐优化与 deal_link 亮暗色调反转矫正 (532c54b)
+- [x] **矫正 `.deal_link` 亮色调与暗色调反转缺陷 (Color Tone Inversion Correction)**：
+  - 根除原实现中 `background: var(--font-color); color: var(--card-bg);` 导致亮色模式下呈现深黑死板圆圈、暗色模式下呈现刺眼纯白反转的问题；
+  - **亮色模式**：重构为轻盈通透毛玻璃底色 `color-mix(in srgb, var(--card-bg) 88%, var(--secondbg))`，边框融入 `1px solid color-mix(in srgb, var(--theme-main) 12%, var(--card-border))`，图标文字采用清晰纯粹深灰字体色 `var(--font-color)` (`#363636`)；
+  - **暗色模式**：重构为深邃透明星空底板 `color-mix(in srgb, #161c2a 85%, transparent)`，边框融入微光 `rgba(255, 255, 255, 0.12)`，图标文字呈现明亮通透浅色 `var(--font-color)` (`#f7f7fa`)；
+  - **微交互与悬浮光辉**：双模式在悬停状态平滑过渡至品牌主色 `var(--theme-main)`，图标纯白并在悬停时激活 `scale(1.1)` 微放大动效与 `0 8px 18px -2px rgba(66, 90, 239, 0.45)` 发光阴影，彻底消除深色模式下特定选择器优先级导致的悬停底色失效。
+- [x] **消除 `#footer_deal` 错位、不均匀间距与上下偏移 (Alignment & Layout Optimization)**：
+  - 彻底清除 `.deal_link` 与 `.footer_mini_logo` 混乱混用的外边距（原 10px 8px 与 0 1rem），统一将边距清零归一；
+  - 容器启用严谨纯粹的 flex `gap: 16px`，确保所有 8 个社交链接与中心 Logo 在横向与纵向拥有 100.0% 相同的中心对齐基线（`centerY` 零像素偏差）；
+  - 将 `.footer_mini_logo` 尺寸精准对齐为 54px，边框光晕与 38px `.deal_link` 形成完美视觉锚点；
+  - 为 `<button class="footer_mini_logo">` 补全 `aria-label="返回顶部"` 提升无障碍访问规范。
+- [x] **移动端与窄屏响应式网格防错位重构 (Responsive 4x2 Grid on Mobile)**：
+  - 参考安知鱼官方标准，在 `<= 768px` 移动端断点显式隐藏 `.footer_mini_logo` (`display: none !important;`)，防止在狭窄视口内强制折行导致 Logo 偏向一侧或遗留单项成行；
+  - 针对 `<= 768px` 视口将 `#footer_deal` 重构为严谨对称的 4x2 CSS Grid (`grid-template-columns: repeat(4, 38px); justify-content: center; gap: 12px 18px;`)，首行 4 个项与次行 4 个项完美居中对称，杜绝任何换行错位。
+- [x] **自动化端到端测试套件全覆盖 (`scripts/verify-footer-deal.mjs`)**：
+  - 全面覆盖桌面端 1440px 亮暗模式颜色反转检测、垂直中心线像素级对齐断言、悬浮动效断言以及移动端 375px、414px、768px 对称网格断言，所有测试 100% PASS 通过。
+
 
