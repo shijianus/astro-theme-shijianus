@@ -5522,7 +5522,7 @@
 - [x] **自动化端到端测试套件全覆盖 (`scripts/verify-footer-deal.mjs`)**：
   - 全面覆盖桌面端 1440px 亮暗模式颜色反转检测、垂直中心线像素级对齐断言、悬浮动效断言以及移动端 375px、414px、768px 对称网格断言，所有测试 100% PASS 通过。
 
-### Task 256: 主导航 (#menus) 纯文本简洁化重构、等大外壳驱动、配置开关体系与子菜单交互深度优化
+### Task 256: 主导航 (#menus) 纯文本简洁化重构、等大外壳驱动、配置开关体系与子菜单交互深度优化 (2410ef1)
 - [x] **配置开关体系与底层默认兜底 (Config Switch Matrix & Fallback Icons)**：
   - 在 `src/config/site.ts` 引入 `showIcon: false`（默认关闭主导航图标，纯文本简洁）、`showSubtitle: false`（默认关闭副标题，仅保留纯中文主标题）、`showSubmenuIcon: true`（子菜单保留图标指引）；
   - `SiteNavItem` 支持单项开关覆写（`showIcon` / `showSubtitle`）；
