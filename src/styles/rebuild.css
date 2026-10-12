@@ -9496,11 +9496,11 @@ body[data-type='post'] #card-toc .toc-content {
 }
 
 #footer_deal {
-  gap: 8px 10px;
+  gap: 16px;
 }
 
 .deal_link {
-  margin: 10px 8px;
+  margin: 0;
 }
 
 .footer_custom_text {
