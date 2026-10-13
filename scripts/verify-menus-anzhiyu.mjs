@@ -79,6 +79,14 @@ async function runTests() {
     const allEqualWidth = shellSizes.every(s => Math.abs(s.width - firstWidth) <= 1);
     console.log(`[Test 2] All shells equal width (${firstWidth}px): ${allEqualWidth}`);
     if (!allEqualWidth) throw new Error('Not all .site-page-shell elements have equal width');
+    if (firstWidth < 80) throw new Error(`Shell width ${firstWidth}px is too cramped! Expected >= 80px`);
+
+    // Verify Gap between items
+    const menusGap = await page.$eval('#menus .menus_items', el => {
+      return window.getComputedStyle(el).gap;
+    });
+    console.log(`[Test 2.1] #menus .menus_items gap: ${menusGap}`);
+    if (parseInt(menusGap) < 16) throw new Error(`Menus gap ${menusGap} is too tight! Expected >= 16px`);
 
     // 3. Verify Pure Text Mode by default (No top-level icons, no subtitles)
     const pureTextCheck = await page.evaluate(() => {
@@ -100,6 +108,32 @@ async function runTests() {
     if (pureTextCheck.bilingualStackCount !== 0) throw new Error('Expected 0 bilingual stacks by default');
     if (pureTextCheck.topLabelCount < 4) throw new Error('Expected at least 4 pure labels');
 
+    // Take screenshot of default navigation
+    await page.screenshot({ path: 'scripts/test_new_menus.png', clip: { x: 0, y: 0, width: 1440, height: 120 } });
+
+    // 3.1 Test Top Link Hover: Solid Theme Blue Pill (#425aef) + Pure White Text
+    const secondItem = await page.$('#menus .menus_item:nth-child(2)');
+    if (secondItem) {
+      await secondItem.hover();
+      await new Promise(r => setTimeout(r, 300));
+      const topHover = await page.evaluate(() => {
+        const item = document.querySelector('#menus .menus_item:nth-child(2) .site-page');
+        if (!item) return null;
+        const comp = window.getComputedStyle(item);
+        return {
+          bg: comp.backgroundColor,
+          color: comp.color,
+          radius: comp.borderRadius,
+          boxShadow: comp.boxShadow,
+        };
+      });
+      console.log(`[Test 3.1] Top nav hover audit:`, topHover);
+      const isBlue = topHover.bg.includes('66, 90, 239');
+      const isWhite = topHover.color === 'rgb(255, 255, 255)';
+      if (!isBlue) throw new Error(`Expected solid theme blue top hover, got ${topHover.bg}`);
+      if (!isWhite) throw new Error(`Expected white text on hover, got ${topHover.color}`);
+    }
+
     // 4. Verify Submenu appearance, frosted glass, and preserved rounded corners
     const hasChildrenItem = await page.$('#menus .menus_item.has-children');
     if (!hasChildrenItem) throw new Error('No .menus_item.has-children found');
@@ -107,6 +141,7 @@ async function runTests() {
     // Hover over the has-children item
     await page.hover('#menus .menus_item.has-children');
     await new Promise(r => setTimeout(r, 400));
+    await page.screenshot({ path: 'scripts/test_new_submenu_hover.png', clip: { x: 0, y: 0, width: 1440, height: 200 } });
 
     const submenuAudit = await page.evaluate(() => {
       const sub = document.querySelector('#menus .site-page-submenu');

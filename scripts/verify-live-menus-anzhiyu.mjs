@@ -61,6 +61,15 @@ async function verifyLiveMenus() {
     if (!allEqual) {
       throw new Error('Not all .site-page-shell elements are equal width on live production');
     }
+    if (targetWidth < 80) {
+      throw new Error(`Shell width ${targetWidth}px is too cramped on live! Expected >= 80px`);
+    }
+
+    const menusGap = await page.$eval('#menus .menus_items', el => window.getComputedStyle(el).gap);
+    console.log(`[Live Audit 2.1] Menus gap: ${menusGap}`);
+    if (parseInt(menusGap) < 16) {
+      throw new Error(`Menus gap ${menusGap} is too tight! Expected >= 16px`);
+    }
 
     // 3. Verify Pure Text Mode by default (No top-level icons, no subtitles)
     const pureTextCheck = await page.evaluate(() => {
@@ -86,6 +95,29 @@ async function verifyLiveMenus() {
     if (menusEl) {
       await menusEl.screenshot({ path: 'scripts/live_menus_default.png' });
       console.log('Saved scripts/live_menus_default.png');
+    }
+
+    // 3.1 Test Top Link Hover: Solid Theme Blue Pill (#425aef) + Pure White Text
+    const secondItem = await page.$('#menus .menus_item:nth-child(2)');
+    if (secondItem) {
+      await secondItem.hover();
+      await page.waitForTimeout(300);
+      const topHover = await page.evaluate(() => {
+        const item = document.querySelector('#menus .menus_item:nth-child(2) .site-page');
+        if (!item) return null;
+        const comp = window.getComputedStyle(item);
+        return {
+          bg: comp.backgroundColor,
+          color: comp.color,
+          radius: comp.borderRadius,
+          boxShadow: comp.boxShadow,
+        };
+      });
+      console.log(`[Live Audit 3.1] Top nav hover audit:`, topHover);
+      const isBlue = topHover.bg.includes('66, 90, 239');
+      const isWhite = topHover.color === 'rgb(255, 255, 255)';
+      if (!isBlue) throw new Error(`Expected solid theme blue top hover, got ${topHover.bg}`);
+      if (!isWhite) throw new Error(`Expected white text on hover, got ${topHover.color}`);
     }
 
     // 4. Hover over first .menus_item.has-children to trigger submenu
