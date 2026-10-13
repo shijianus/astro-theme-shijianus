@@ -5581,8 +5581,11 @@
   - 在 `SiteHeader.tsx` 将关闭容错缓冲延时由 `140ms` 增加至黄金标准 `280ms`，并在 `.site-page-submenu` 增加直接指针监听保护，彻底消除斜向滑动鼠标时的意外关闭。
 - [x] **创新性暗色星夜内发光 (Dark Mode Luminescent Glow)**：
   - 暗色模式下子菜单除半透明主题蓝描边外，叠加 `inset 0 0 14px rgba(66, 90, 239, 0.12)` 细腻微弱内发光，契合深空星海主题。
-- [x] **本地端到端测试 100% PASS 通过 (`scripts/verify-menus-anzhiyu.mjs`)**：
-  - 验证等宽子项 104px、高度 36px、字重 800/700、圆角 8px/6px、纯蓝悬浮态全量绿灯通过。
+- [x] **Cloudflare Pages 双生产项目全量边缘同步部署 (`shijianus-blog` & `shijianus-github-io`)**：
+  - 通过 Wrangler 将最新生产构建分别部署至 `shijianus-blog`（绑定主域 `https://blog.epocanvas.com/`，部署 ID `e7d99d07`）与 `shijianus-github-io`（绑定主域 `https://blog.shijian.qzz.io/` / `https://shijianus-github-io.pages.dev/`，部署 ID `7f0cfcd0`）；
+  - 创建 `.nvmrc` 与 `.node-version` 明确指定 Node.js 22.12.0，彻底消除 Cloudflare Git CI 容器与 Astro 6 的 Node 版本不兼容问题。
+- [x] **双平台公网实机端到端全链路审计 100% 通过 (`scripts/verify-live-menus-anzhiyu.mjs`)**：
+  - 针对 `https://blog.epocanvas.com/` 与 `https://shijianus-github-io.pages.dev/` 双平台进行真实 Playwright 点击、悬浮、方格尺寸、字重与无报错审计，双平台全项绿灯通过。
 
 
 

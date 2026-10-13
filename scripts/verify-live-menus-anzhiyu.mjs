@@ -1,8 +1,12 @@
 import { chromium } from 'playwright';
 
-async function verifyLiveMenus() {
-  console.log('🚀 Starting live production E2E verification for #menus at https://blog.epocanvas.com/ ...');
-  const browser = await chromium.launch({ headless: true });
+const TARGET_URLS = [
+  'https://blog.epocanvas.com/',
+  'https://shijianus-github-io.pages.dev/'
+];
+
+async function verifyUrl(browser, targetUrl) {
+  console.log(`\n🚀 Starting live production E2E verification for #menus at ${targetUrl} ...`);
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 }
   });
@@ -19,7 +23,7 @@ async function verifyLiveMenus() {
   });
 
   try {
-    await page.goto('https://blog.epocanvas.com/', { waitUntil: 'networkidle', timeout: 45000 });
+    await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 });
     await page.waitForTimeout(2000);
 
     // 1. Verify #menus exists and is visible on desktop
@@ -199,13 +203,25 @@ async function verifyLiveMenus() {
       console.warn('Console warnings detected:', fatal);
     }
 
-    console.log('\n🎉 ALL LIVE PRODUCTION AUDITS PASSED 100%! 🎉');
+    console.log(`\n🎉 ALL LIVE PRODUCTION AUDITS PASSED 100% FOR ${targetUrl}! 🎉`);
+  } finally {
+    await context.close();
+  }
+}
+
+async function verifyAll() {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    for (const url of TARGET_URLS) {
+      await verifyUrl(browser, url);
+    }
+    console.log('\n🌟 ALL PRODUCTION PLATFORMS (shijianus-blog & shijianus-github-io) PASSED 100%! 🌟');
   } finally {
     await browser.close();
   }
 }
 
-verifyLiveMenus().catch(err => {
+verifyAll().catch(err => {
   console.error('❌ Live production verification failed:', err);
   process.exit(1);
 });
