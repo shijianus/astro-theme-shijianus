@@ -5568,6 +5568,22 @@
 - [x] **本地与线上自动化测试套件双重升级 (`verify-menus-anzhiyu.mjs` & `verify-live-menus-anzhiyu.mjs`)**：
   - 全量断言等大外壳（84px >= 80px）、间隙（20px >= 16px）、纯文本默认态、主导航纯蓝悬浮态、子菜单主题蓝描边及圆角保持。
 
+### Task 258: 导航方格尺寸全网格协调匹配 (104px等宽子项/36px对称高度)、加粗自信字体 (800重度排版)、磁吸悬浮桥接防掉落与暗色微光创新
+- [x] **方格尺寸协调统一与自适应包容 (Uniform Submenu Boxes & Height Symmetry)**：
+  - 彻底根除子菜单原本各子项宽度长短不一与“保不住”的缺陷，子项全部统一为 `min-width: 104px` 规整等宽卡片；
+  - 高度固化为 `36px`（`min-height: 36px; max-height: 36px`），与主导航 36px 黄金高度达成严格数学网格对称；
+  - 主导航外壳升级为 `min-width: 84px; width: max-content`，内边距 `0 16px`，从容兼顾 2 字默认极简等大与长字符/副标题自适应，永不被截断溢出。
+- [x] **字体全量加粗升级 (Bold & Striking Typography)**：
+  - 主导航文本 `.site-page__label` 字号增至 `16px`，字重加粗至 `800`，字距 `4px`（带 `-4px` 右补偿），视觉自信有力；
+  - 子菜单项 `.site-page-submenu__item` 字号增至 `14.5px`，字重加粗至 `700`，层级清晰饱满。
+- [x] **磁吸防掉落悬浮桥接 (Magnetic Hit-Test Guard & Pointer Resilience)**：
+  - 放大 `.site-page-submenu::before` 悬浮桥接至 `top: -24px; height: 28px; left: -20px; right: -20px;`，覆盖主导航到子菜单全量斜切三角区域；
+  - 在 `SiteHeader.tsx` 将关闭容错缓冲延时由 `140ms` 增加至黄金标准 `280ms`，并在 `.site-page-submenu` 增加直接指针监听保护，彻底消除斜向滑动鼠标时的意外关闭。
+- [x] **创新性暗色星夜内发光 (Dark Mode Luminescent Glow)**：
+  - 暗色模式下子菜单除半透明主题蓝描边外，叠加 `inset 0 0 14px rgba(66, 90, 239, 0.12)` 细腻微弱内发光，契合深空星海主题。
+- [x] **本地端到端测试 100% PASS 通过 (`scripts/verify-menus-anzhiyu.mjs`)**：
+  - 验证等宽子项 104px、高度 36px、字重 800/700、圆角 8px/6px、纯蓝悬浮态全量绿灯通过。
+
 
 
 

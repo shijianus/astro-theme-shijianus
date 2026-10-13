@@ -98,7 +98,7 @@ async function verifyLiveMenus() {
     }
 
     // 3.1 Test Top Link Hover: Solid Theme Blue Pill (#425aef) + Pure White Text
-    const secondItem = await page.$('#menus .menus_item:nth-child(2)');
+    const secondItem = await page.$('#menus .menus_item:nth-child(2) .site-page');
     if (secondItem) {
       await secondItem.hover();
       await page.waitForTimeout(300);
@@ -138,11 +138,23 @@ async function verifyLiveMenus() {
         backgroundColor: comp.backgroundColor,
         boxShadow: comp.boxShadow,
         itemBorderRadius: itemComp ? itemComp.borderRadius : null,
+        itemHeight: itemComp ? parseInt(itemComp.height) : null,
+        itemMinWidth: itemComp ? parseInt(itemComp.minWidth) : null,
+        itemFontWeight: itemComp ? parseInt(itemComp.fontWeight) : null,
       };
     });
     console.log('[Live Audit 4] Submenu Audit on Hover:', submenuAudit);
     if (!submenuAudit || submenuAudit.opacity !== '1' || submenuAudit.visibility !== 'visible') {
       throw new Error('Submenu failed to become visible on hover on live production');
+    }
+    if (submenuAudit.itemHeight !== 36) {
+      throw new Error(`Submenu item height should be 36px, got ${submenuAudit.itemHeight}`);
+    }
+    if (submenuAudit.itemMinWidth < 100) {
+      throw new Error(`Submenu item minWidth should be >= 100px, got ${submenuAudit.itemMinWidth}`);
+    }
+    if (submenuAudit.itemFontWeight < 700) {
+      throw new Error(`Submenu item font-weight should be >= 700, got ${submenuAudit.itemFontWeight}`);
     }
 
     // 5. Preserved Corner Radiuses

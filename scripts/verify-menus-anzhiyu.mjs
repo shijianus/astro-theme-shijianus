@@ -112,7 +112,7 @@ async function runTests() {
     await page.screenshot({ path: 'scripts/test_new_menus.png', clip: { x: 0, y: 0, width: 1440, height: 120 } });
 
     // 3.1 Test Top Link Hover: Solid Theme Blue Pill (#425aef) + Pure White Text
-    const secondItem = await page.$('#menus .menus_item:nth-child(2)');
+    const secondItem = await page.$('#menus .menus_item:nth-child(2) .site-page');
     if (secondItem) {
       await secondItem.hover();
       await new Promise(r => setTimeout(r, 300));
@@ -160,12 +160,24 @@ async function runTests() {
         boxShadow: subStyle.boxShadow,
         itemBorderRadius: itemStyle ? itemStyle.borderRadius : null,
         itemColor: itemStyle ? itemStyle.color : null,
+        itemHeight: itemStyle ? parseInt(itemStyle.height) : null,
+        itemMinWidth: itemStyle ? parseInt(itemStyle.minWidth) : null,
+        itemFontWeight: itemStyle ? parseInt(itemStyle.fontWeight) : null,
       };
     });
 
     console.log(`[Test 4] Submenu Audit on Hover:`, submenuAudit);
     if (!submenuAudit || submenuAudit.opacity !== '1' || submenuAudit.visibility !== 'visible') {
       throw new Error('Submenu should be visible on hover');
+    }
+    if (submenuAudit.itemHeight !== 36) {
+      throw new Error(`Submenu item height should be 36px matching top nav, got ${submenuAudit.itemHeight}`);
+    }
+    if (submenuAudit.itemMinWidth < 100) {
+      throw new Error(`Submenu item minWidth should be >= 100px for uniform boxes, got ${submenuAudit.itemMinWidth}`);
+    }
+    if (submenuAudit.itemFontWeight < 700) {
+      throw new Error(`Submenu item font weight should be >= 700 bold, got ${submenuAudit.itemFontWeight}`);
     }
 
     // Verify STRICT rule: corner radiuses preserved

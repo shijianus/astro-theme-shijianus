@@ -640,7 +640,7 @@ export function SiteHeader({
     setOpenSubmenuHref(href);
   };
 
-  const queueSubmenuClose = (href?: string, delay = 140) => {
+  const queueSubmenuClose = (href?: string, delay = 280) => {
     clearSubmenuCloseTimer();
     submenuCloseTimerRef.current = window.setTimeout(() => {
       setOpenSubmenuHref((current) => {
@@ -737,6 +737,13 @@ export function SiteHeader({
                           role="menu"
                           aria-label={`${convertText(item.label, currentLocale)} ${getI18nText('nav.submenuAria', currentLocale, '子页面')}`}
                           aria-hidden={!submenuOpen}
+                          onPointerEnter={() => {
+                            clearSubmenuCloseTimer();
+                            openSubmenu(item.href);
+                          }}
+                          onPointerLeave={() => {
+                            queueSubmenuClose(item.href);
+                          }}
                         >
                           {item.children.map((child) => {
                             const childIconEnabled = child.showIcon ?? showSubmenuIcon ?? true;
