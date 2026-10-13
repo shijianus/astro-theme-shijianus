@@ -177,11 +177,8 @@ async function verifyLiveMenus() {
     if (!isWhiteText) throw new Error(`Expected white text on hover, got ${itemHover.color}`);
 
     // Screenshot hovered submenu
-    const navEl = await page.$('#nav');
-    if (navEl) {
-      await navEl.screenshot({ path: 'scripts/live_nav_submenu_hover.png' });
-      console.log('Saved scripts/live_nav_submenu_hover.png');
-    }
+    await page.screenshot({ path: 'scripts/live_nav_submenu_hover.png', clip: { x: 0, y: 0, width: 1440, height: 160 } });
+    console.log('Saved scripts/live_nav_submenu_hover.png');
 
     // 7. Fatal console error check
     const fatal = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('analytics') && !e.includes('advertisement') && !e.includes('cloudflare'));
