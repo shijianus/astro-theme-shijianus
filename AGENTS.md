@@ -5552,7 +5552,7 @@
     7. 线上控制台 0 致命 JS 报错；
     8. 截图证据：`scripts/live_menus_default.png` 与 `scripts/live_nav_submenu_hover.png`。
 
-### Task 257: 对标安知鱼重构主导航 (#menus) 呼吸感间距、等大外壳扩展 (84px)、间距倍增 (20px)、标志性主题蓝纯色胶囊与毛玻璃子菜单全景升级
+### Task 257: 对标安知鱼重构主导航 (#menus) 呼吸感间距、等大外壳扩展 (84px)、间距倍增 (20px)、标志性主题蓝纯色胶囊与毛玻璃子菜单全景升级 (50f148e)
 - [x] **间距彻底释放与呼吸感空间重构 (Spacious Breathing Room & Layout Grid)**：
   - 彻底根除紧凑挤压与杂糅感，将 `#menus .menus_items` 的项间距从过小的 `10px` 翻倍扩展为舒展大气的 `20px`。
 - [x] **等大外壳尺寸升级 (Equal-Sized Shell Expansion)**：
