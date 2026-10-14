@@ -5599,7 +5599,7 @@
 - [x] **自动化测试套件全覆盖 (`scripts/verify-active-palette.mjs` & `scripts/verify-menus-anzhiyu.mjs`)**：
   - 本地静态服务器与 Playwright 双重审计：常态激活透明底、无冲突内阴影、悬停实心纯蓝白字、暗色模式同步审计全部 100% PASS 通过。
 
-### Task 260: 导航下拉框距离优化、彻底根除幽灵重叠冲突与磁吸桥接超限修复
+### Task 260: 导航下拉框距离优化、彻底根除幽灵重叠冲突与磁吸桥接超限修复 (1cd153c)
 - [x] **根除下拉框并发重叠与幽灵残留 (Eliminate Concurrent Dropdown Conflicts)**：
   - 彻底清除 `SiteHeader.tsx` 中鼠标离开时人为注入的 280ms 延时残留逻辑（`queueSubmenuClose` 调整为即时释放，0ms 延时），当鼠标滑向相邻导航项时前一个子菜单立即销毁，杜绝相邻菜单同时展开并造成 200px+ 视觉严重重叠；
   - 移除多重激活伪状态，子菜单展开严格受控于 `:hover` 与 `:focus-within`，从物理机制上保障全局视口内有且仅有一个下拉菜单呈现（`active submenu count === 1`）。
