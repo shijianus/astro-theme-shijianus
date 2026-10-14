@@ -188,7 +188,9 @@ async function verifyUrl(browser, targetUrl) {
     console.log('[Live Audit 5.1] Dropdown Isolation: All 4 menus open exclusively with 0 overlap conflict!');
 
     // 6. Submenu Item Hover state (Brand Blue #425aef, White Text & Icon)
-    await page.hover('#menus .site-page-submenu__item');
+    await page.hover('#menus .menus_item:nth-child(1) .site-page');
+    await page.waitForTimeout(300);
+    await page.hover('#menus .menus_item:nth-child(1) .site-page-submenu__item:first-child');
     await page.waitForTimeout(400);
 
     const itemHover = await page.evaluate(() => {
