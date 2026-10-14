@@ -5613,7 +5613,7 @@
   - 极速横扫防幽灵重叠测试（100% 无残留）；
   - 垂直距离与导航栏相切像素断言（`verticalGapFromNav = 0px`，`verticalGapFromButton = 13px`）。
 
-### Task 261: 导航扩展栏 (.site-page-submenu) 完整容纳栏重构、0-4 项自适应与防挤压抗冲突全面优化 (f87d1ba)
+### Task 261: 导航扩展栏 (.site-page-submenu) 完整容纳栏重构、0-4 项自适应与防挤压抗冲突全面优化 (b17402a)
 - [x] **0~4 项完整容纳栏动态自适应 (Adaptive Submenu Container for 0 to 4 Items)**：
   - 彻底清除 `rebuild.css` 中历史遗留的 `max-width: min(440px, ...)` 与仅匹配 3 列的网格限制（`grid-template-columns: repeat(auto-fit, minmax(132px, max-content))`），允许 4 项完整水平舒展排列；
   - 0 项保护：当子项为 0（无子页面或空数据）时，组件彻底不渲染，同时通过 `.site-page-submenu:empty` 与 `#menus .menus_item:not(.has-children) .site-page-submenu` 应用 `display: none !important; opacity: 0 !important;` 彻底闭合；
