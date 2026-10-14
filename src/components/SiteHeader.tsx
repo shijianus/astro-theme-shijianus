@@ -5,7 +5,7 @@ import {
   User, ChartBar, Compass, MessageCircle, ChevronDown,
   Search, SunMedium, MoonStar, Dices, ArrowUp, Menu,
   Dice1, Dice2, Dice3, Dice4, Dice5, Dice6,
-  Cloud,
+  Cloud, Coffee,
   type LucideIcon 
 } from 'lucide-react';
 import { siteConfig, type SiteNavItem } from '../config/site';
@@ -137,6 +137,8 @@ const lucideIconMap: Record<string, LucideIcon> = {
   compass: Compass,
   'circle-info': Info,
   message: MessageCircle,
+  'mug-hot': Coffee,
+  coffee: Coffee,
 };
 
 const shijianusIconMap: Record<string, string> = {
@@ -156,12 +158,15 @@ const shijianusIconMap: Record<string, string> = {
   compass: 'shijianus-icon-compass',
   'circle-info': 'shijianus-icon-circle-info',
   message: 'shijianus-icon-comments',
+  'mug-hot': 'shijianus-icon-mug-hot',
+  coffee: 'shijianus-icon-mug-hot',
 };
 
 const forceLucideIcons = [
   'home', 'archive', 'category', 'tags', 'about', 'book', 
   'rss', 'link', 'flask', 'music', 'video', 'user', 
-  'chart-bar', 'compass', 'circle-info', 'message'
+  'chart-bar', 'compass', 'circle-info', 'message',
+  'mug-hot', 'coffee'
 ];
 
 function renderNavIcon(iconName: string | undefined, className: string) {
@@ -728,7 +733,7 @@ export function SiteHeader({
                         )}
                       </a>
 
-                      {hasChildren && (
+                      {hasChildren && item.children && item.children.length > 0 && (
                         <div
                           className="site-page-submenu"
                           role="menu"
@@ -742,7 +747,7 @@ export function SiteHeader({
                             queueSubmenuClose(item.href);
                           }}
                         >
-                          {item.children.map((child) => {
+                          {item.children.slice(0, 4).map((child) => {
                             const childIconEnabled = child.showIcon ?? showSubmenuIcon ?? true;
                             const childEffectiveIcon = child.icon || resolveDefaultNavIcon(child.href, 'link');
                             return (
@@ -966,9 +971,9 @@ export function SiteHeader({
                     {renderNavIcon(item.icon, 'site-mobile-link__icon')}
                     {convertText(item.label, currentLocale)}
                   </a>
-                  {item.children && item.children.length > 1 && (
+                  {item.children && item.children.length > 0 && (
                     <div className="site-mobile-sublinks">
-                      {item.children.slice(0, 3).map((child) => (
+                      {item.children.slice(0, 4).map((child) => (
                         <a
                           key={child.href}
                           href={child.href}

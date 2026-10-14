@@ -7161,11 +7161,13 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   box-shadow: 0 8px 24px -4px rgba(66, 90, 239, 0.2), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
   padding: 6px 8px !important;
   display: flex !important;
-  flex-direction: row !important; /* 水平排布 */
+  flex-direction: row !important; /* 水平排布完整容纳栏 */
   flex-wrap: nowrap !important;
   align-items: center !important;
   justify-content: center !important;
+  width: max-content !important;
   min-width: max-content !important;
+  max-width: none !important; /* 彻底清除 440px 限制，动态自适应容纳 0-4 项不挤压 */
   gap: 8px !important;
   opacity: 0 !important;
   visibility: hidden !important;
@@ -7177,6 +7179,35 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   z-index: 100 !important;
   will-change: transform, opacity !important;
   overflow: visible !important;
+}
+
+/* 0个元素或未包含子菜单兜底保护：彻底隐藏并关闭，确保下栏为0个时无任何残留幽灵框 */
+.site-page-submenu:empty,
+#menus .menus_item:not(.has-children) .site-page-submenu {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* 导航右侧末项 (关于 About 及末尾扩展栏) 智能右侧防溢出碰撞保护，绝不侵入 nav-right */
+#menus .menus_item:last-child .site-page-submenu {
+  left: auto !important;
+  right: -10px !important;
+  transform: translateY(-6px) scale(0.96) !important;
+  transform-origin: right top !important;
+}
+
+#menus .menus_item:last-child:hover > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child:focus-within > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child.is-open:hover > .site-page-shell > .site-page-submenu {
+  transform: translateY(0) scale(1) !important;
+}
+
+#menus .menus_item:last-child .site-page-submenu::before {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
 }
 
 /* 精准垂直磁吸桥接区：严格限定在下拉框正上方（width: 100%），横向绝不外扩超限，杜绝遮挡临近导航项 */
@@ -7212,6 +7243,12 @@ html[data-theme='dark'] .site-page-submenu,
   transform: translateX(-50%) translateY(0) scale(1) !important;
 }
 
+#menus .menus_item:last-child:hover > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child:focus-within > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child.is-open:hover > .site-page-shell > .site-page-submenu {
+  transform: translateY(0) scale(1) !important;
+}
+
 /* 子菜单项方格尺寸规整统一 (Uniform & Harmonized Submenu Cards) */
 #menus .site-page-submenu__item,
 .site-page-submenu__item {
@@ -7220,7 +7257,8 @@ html[data-theme='dark'] .site-page-submenu,
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  min-width: 104px !important; /* 统一规整方格，彻底解决大小不匹配与装不下 */
+  min-width: 100px !important; /* 统一规整方格，彻底解决大小不匹配与装不下 */
+  width: max-content !important;
   height: 36px !important;    /* 与主导航 36px 黄金高度严格一致 */
   min-height: 36px !important;
   max-height: 36px !important;
@@ -7238,6 +7276,7 @@ html[data-theme='dark'] .site-page-submenu,
   background-color: transparent !important;
   box-shadow: none !important;
   white-space: nowrap !important;
+  flex-shrink: 0 !important; /* 严禁子项被挤压变形 */
   transition: background-color 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               color 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               box-shadow 0.22s ease,
@@ -7249,10 +7288,21 @@ html[data-theme='dark'] .site-page-submenu,
   align-items: center !important;
   justify-content: center !important;
   font-size: 15px !important;
-  width: 15px !important;
-  height: 15px !important;
+  width: 16px !important;
+  height: 16px !important;
   color: inherit !important;
+  flex-shrink: 0 !important; /* 图标绝不挤压 */
   transition: color 0.22s ease !important;
+}
+
+.site-page-submenu__item .site-page-submenu__label {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important; /* 文本绝不挤压，杜绝与icon交错冲突 */
+  line-height: 1 !important;
+  color: inherit !important;
 }
 
 /* 子菜单悬浮态：与主导航悬浮框配色 100% 同步纯蓝纯白，无任何颜色割裂 */

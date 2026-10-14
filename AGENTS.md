@@ -5613,6 +5613,24 @@
   - 极速横扫防幽灵重叠测试（100% 无残留）；
   - 垂直距离与导航栏相切像素断言（`verticalGapFromNav = 0px`，`verticalGapFromButton = 13px`）。
 
+### Task 261: 导航扩展栏 (.site-page-submenu) 完整容纳栏重构、0-4 项自适应与防挤压抗冲突全面优化 (f87d1ba)
+- [x] **0~4 项完整容纳栏动态自适应 (Adaptive Submenu Container for 0 to 4 Items)**：
+  - 彻底清除 `rebuild.css` 中历史遗留的 `max-width: min(440px, ...)` 与仅匹配 3 列的网格限制（`grid-template-columns: repeat(auto-fit, minmax(132px, max-content))`），允许 4 项完整水平舒展排列；
+  - 0 项保护：当子项为 0（无子页面或空数据）时，组件彻底不渲染，同时通过 `.site-page-submenu:empty` 与 `#menus .menus_item:not(.has-children) .site-page-submenu` 应用 `display: none !important; opacity: 0 !important;` 彻底闭合；
+  - 1~4 项自适应：容器采用 `width: max-content; min-width: max-content;`，子项数量为 1/2/3/4 时宽度自适应收放（115px / 221px / 326px / 450px），绝无多余留白或拥挤溢出。
+- [x] **文本与图标挤压交错冲突根治 (Eliminate Text & Icon Overlap / Clash)**：
+  - 子项 `.site-page-submenu__item`、图标 `.site-page-submenu__icon` 与文字 `.site-page-submenu__label` 全量注入 `flex-shrink: 0 !important; white-space: nowrap !important;`，彻底杜绝在任何视口下子项被压缩导致的文字与图标叠合、交错或溢出；
+  - 修复“请喝咖啡”缺损图标：为 `mug-hot` 与 `coffee` 引入官方 Lucide `Coffee` 图标组件（`Coffee` from `'lucide-react'`），替换原先误降级的 House 兜底图标，语义精准契合。
+- [x] **右侧末项智能防溢出与 #nav-right 碰撞消除 (Smart Right Boundary Alignment)**：
+  - 针对末项（About 关于）在标准屏与窄屏桌面（1280px / 1100px / 1024px）居中展开时右侧 220px 延伸直接倒插碰撞 `#nav-right` 快捷操作区（通知、搜索、主题、随机、控制台）的问题，为 `#menus .menus_item:last-child .site-page-submenu` 引入智能右贴靠保护（`right: -10px !important; left: auto !important;`）；
+  - 彻底消除末项与右侧导航按钮的物理碰撞（在 1024px/1100px/1280px/1440px 视口下与 `#nav-right` 间距保持 41px ~ 233px 纯净呼吸空间，碰撞率降为 0）。
+- [x] **移动端抽屉导航 1~4 项支持打通**：
+  - 清除 `SiteHeader.tsx` 移动端 `item.children.length > 1` 与 `item.children.slice(0, 3)` 的 3 项硬编码切片，升级为 `item.children.length > 0` 与 `item.children.slice(0, 4)`，移动端与桌面端保持一致能力。
+- [x] **全量自动化端到端测试覆盖 (`scripts/verify-submenu-optimization.mjs`)**：
+  - 1024px ~ 1440px 全视口 4 项展开无碰撞、图标与文字 0 重叠、Lucide Coffee 图标存在性断言；
+  - 0 项彻底隐藏、1~3 项动态收缩阶梯断言；
+  - 暗色模式与圆角（容器 8px、子项 6px）、高度 36px 规范 100% PASS 通过。
+
 
 
 
