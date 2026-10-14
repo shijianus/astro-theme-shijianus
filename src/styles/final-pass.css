@@ -7148,9 +7148,10 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* 保持已有的圆方角规范：容器 border-radius: 8px，子项 border-radius: 6px */
 .site-page-submenu {
   position: absolute !important;
-  top: calc(100% + 8px) !important;
+  top: calc(100% + 12px) !important; /* 距离优化：精准悬停于主导航下方，底线无缝吻合 */
   left: 50% !important;
-  transform: translateX(-50%) translateY(8px) !important;
+  transform: translateX(-50%) translateY(-6px) scale(0.96) !important;
+  transform-origin: center top !important;
   background: rgba(255, 255, 255, 0.98) !important;
   background-color: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
@@ -7170,23 +7171,24 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   visibility: hidden !important;
   white-space: nowrap !important;
   pointer-events: none !important;
-  transition: transform 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              opacity 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              visibility 0.24s ease !important;
+  transition: transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              visibility 0.18s ease !important;
   z-index: 100 !important;
   will-change: transform, opacity !important;
   overflow: visible !important;
 }
 
-/* 全覆盖磁吸悬浮桥接区：覆盖主导航到底部子菜单的全量斜切三角区域，确保鼠标移动绝不掉落 (Magnetic Hit-Test Guard) */
+/* 精准垂直磁吸桥接区：严格限定在下拉框正上方（width: 100%），横向绝不外扩超限，杜绝遮挡临近导航项 */
 .site-page-submenu::before {
   content: '' !important;
   display: block !important;
   position: absolute !important;
-  top: -24px !important;
-  left: -20px !important;
-  right: -20px !important;
-  height: 28px !important;
+  top: -14px !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 16px !important;
   background: transparent !important;
   pointer-events: auto !important;
 }
@@ -7200,12 +7202,14 @@ html[data-theme='dark'] .site-page-submenu,
   box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.75), 0 4px 16px -2px rgba(66, 90, 239, 0.25) !important;
 }
 
-.menus_item:hover .site-page-submenu,
-.menus_item.is-open .site-page-submenu {
+/* 仅在直接悬停或聚焦时激活展开，彻底杜绝多菜单同时展开冲突与残留幽灵框 */
+#menus .menus_item:hover > .site-page-shell > .site-page-submenu,
+#menus .menus_item:focus-within > .site-page-shell > .site-page-submenu,
+#menus .menus_item.is-open:hover > .site-page-shell > .site-page-submenu {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
-  transform: translateX(-50%) translateY(0) !important;
+  transform: translateX(-50%) translateY(0) scale(1) !important;
 }
 
 /* 子菜单项方格尺寸规整统一 (Uniform & Harmonized Submenu Cards) */

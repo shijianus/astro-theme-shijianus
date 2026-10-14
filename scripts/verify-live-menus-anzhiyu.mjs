@@ -170,6 +170,23 @@ async function verifyUrl(browser, targetUrl) {
       throw new Error(`Submenu item border-radius must be 6px, got ${submenuAudit.itemBorderRadius}`);
     }
 
+    // 5.1 Test Dropdown Isolation across items (Zero ghost overlap / conflicts)
+    for (let i = 1; i <= 4; i++) {
+      await page.hover(`#menus .menus_item:nth-child(${i}) .site-page`);
+      await page.waitForTimeout(250);
+      const openCount = await page.evaluate(() => {
+        const subs = Array.from(document.querySelectorAll('#menus .site-page-submenu'));
+        return subs.filter(s => {
+          const cs = window.getComputedStyle(s);
+          return cs.visibility === 'visible' && parseFloat(cs.opacity) > 0.8;
+        }).length;
+      });
+      if (openCount !== 1) {
+        throw new Error(`Hovered item ${i}: expected strictly 1 open dropdown, got ${openCount}`);
+      }
+    }
+    console.log('[Live Audit 5.1] Dropdown Isolation: All 4 menus open exclusively with 0 overlap conflict!');
+
     // 6. Submenu Item Hover state (Brand Blue #425aef, White Text & Icon)
     await page.hover('#menus .site-page-submenu__item');
     await page.waitForTimeout(400);

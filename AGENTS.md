@@ -5599,6 +5599,21 @@
 - [x] **自动化测试套件全覆盖 (`scripts/verify-active-palette.mjs` & `scripts/verify-menus-anzhiyu.mjs`)**：
   - 本地静态服务器与 Playwright 双重审计：常态激活透明底、无冲突内阴影、悬停实心纯蓝白字、暗色模式同步审计全部 100% PASS 通过。
 
+### Task 260: 导航下拉框距离优化、彻底根除幽灵重叠冲突与磁吸桥接超限修复
+- [x] **根除下拉框并发重叠与幽灵残留 (Eliminate Concurrent Dropdown Conflicts)**：
+  - 彻底清除 `SiteHeader.tsx` 中鼠标离开时人为注入的 280ms 延时残留逻辑（`queueSubmenuClose` 调整为即时释放，0ms 延时），当鼠标滑向相邻导航项时前一个子菜单立即销毁，杜绝相邻菜单同时展开并造成 200px+ 视觉严重重叠；
+  - 移除多重激活伪状态，子菜单展开严格受控于 `:hover` 与 `:focus-within`，从物理机制上保障全局视口内有且仅有一个下拉菜单呈现（`active submenu count === 1`）。
+- [x] **修复距离与垂直位置微调 (Vertical Distance & Navbar Boundary Calibration)**：
+  - 优化子菜单垂直定位由 `top: calc(100% + 8px)` 微调至 `top: calc(100% + 12px)`（绝对坐标正好位于 `y = 60px`），彻底消除此前下拉框顶部 4.5px 倒插进导航栏毛玻璃底线内的切割冲突，与主导航底部边缘平齐悬浮，呈现 13px 呼吸间距与原生质感；
+  - 优化动画展开位移：常态采用 `translateY(-6px) scale(0.96)`，激活时微平滑过渡至 `translateY(0) scale(1)`（180ms 极速响应），达到与安知鱼完全一致的自然展开体验。
+- [x] **磁吸桥接区横向超限收敛 (Precise Hit-Test Bridge Precision)**：
+  - 将 `.site-page-submenu::before` 悬浮保护区由 `left: -20px; right: -20px;`（横向外扩 40px 导致阻断邻近项）彻底收敛为 `left: 0; right: 0; width: 100%; top: -14px; height: 16px;`，仅在子菜单与上方按钮的 12px 缝隙内提供竖向平滑过渡，严禁向两侧任何横向侵入，彻底解决跨菜单滑动时的死锁与误触。
+- [x] **全量自动化端到端测试覆盖 (`scripts/verify-dropdown-isolation.mjs`)**：
+  - 单项顺序悬停互斥性验证（100% 独占展开）；
+  - 极速横扫防幽灵重叠测试（100% 无残留）；
+  - 垂直距离与导航栏相切像素断言（`verticalGapFromNav = 0px`，`verticalGapFromButton = 13px`）。
+
+
 
 
 

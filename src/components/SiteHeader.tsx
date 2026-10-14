@@ -640,15 +640,12 @@ export function SiteHeader({
     setOpenSubmenuHref(href);
   };
 
-  const queueSubmenuClose = (href?: string, delay = 280) => {
+  const queueSubmenuClose = (href?: string) => {
     clearSubmenuCloseTimer();
-    submenuCloseTimerRef.current = window.setTimeout(() => {
-      setOpenSubmenuHref((current) => {
-        if (!href || current === href) return null;
-        return current;
-      });
-      submenuCloseTimerRef.current = null;
-    }, delay);
+    setOpenSubmenuHref((current) => {
+      if (!href || current === href) return null;
+      return current;
+    });
   };
 
   return (
