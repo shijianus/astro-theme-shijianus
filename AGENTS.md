@@ -5636,10 +5636,17 @@
   - 证实关于扩展栏与 `#nav-right` 保持 153px 安全呼吸间距（Collision = false）；
   - 证实 4 个子项文字与图标重叠判定全为 false，且“请喝咖啡”呈现标准的 Lucide Coffee 咖啡杯图标（isSvgCoffee = true）；
   - 截图存档：`scripts/live_prod_submenu.png`。
-
-
-
-
-
-
-
+### Task 262: 导航下拉扩展栏全景水平居中对齐、恢复 100% UI 一致性与 0-4 项自适应规范固化 (5ee3855)
+- [x] **根除右贴靠偏移、恢复严格水平居中 (Strict Universal Horizontal Centering & 100% UI Consistency)**：
+  - 彻底移除对末项（`#menus .menus_item:last-child .site-page-submenu`）的历史右偏向规则（`right: -10px !important; left: auto !important;`），消除破坏对称美感与导致不同项对齐方式割裂的问题；
+  - 统一固化所有子菜单（文章、友邻、工坊、关于）严格遵循水平中心轴对齐：`left: 50% !important; right: auto !important; transform: translateX(-50%) translateY(-6px) scale(0.96) !important; transform-origin: center top !important;`，展开时平滑位移至 `transform: translateX(-50%) translateY(0) scale(1) !important;`；
+  - 所有子菜单的几何中心与对应父级胶囊按钮中心 100% 绝对重合（中心偏差偏移量 `offset === 0px`）。
+- [x] **0~4 项完整自适应容纳栏与 UI 一致性全量保障**：
+  - 0 项：彻底关闭、无幽灵边框、无残留背景（`display: none !important; opacity: 0 !important;`）；
+  - 1~4 项：自适应扩展（1项 118px、2项 226px、3项 334px、4项 442px），全流程保持严格居中；
+  - 规整方格：所有子项维持 36px 黄金高度、`min-width: 100px`、容器 8px 圆方角、子项 6px 方圆角，文字与图标 0 重叠 0 挤压；
+  - 磁吸桥接：`.site-page-submenu::before` 垂直居中铺满 100% 宽度，消除死锁与误触。
+- [x] **全量自动化端到端测试覆盖 (`scripts/verify-submenu-centering.mjs`)**：
+  - 4 个主导航下拉框（文章、友邻、工坊、关于）全量实机居中审计通过（`offset = 0px`，`isStrictlyCentered = true`）；
+  - 子项文字与图标重叠检测 100% PASS（`hasClash = false`）；
+  - 0-4 项动态变化全链路居中与隐藏测试 100% PASS。
