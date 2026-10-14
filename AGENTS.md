@@ -5630,6 +5630,12 @@
   - 1024px ~ 1440px 全视口 4 项展开无碰撞、图标与文字 0 重叠、Lucide Coffee 图标存在性断言；
   - 0 项彻底隐藏、1~3 项动态收缩阶梯断言；
   - 暗色模式与圆角（容器 8px、子项 6px）、高度 36px 规范 100% PASS 通过。
+- [x] **Cloudflare Pages 生产边缘部署与真实线上全链路审计 100% 通过 (`scripts/verify-live-submenu.mjs`)**：
+  - 编译并在 `shijianus-blog` 部署成功（`https://dd6ff327.shijianus-blog.pages.dev`）；
+  - 针对真实生产环境 `https://blog.epocanvas.com/` 进行 Playwright 浏览器全链路审计；
+  - 证实关于扩展栏与 `#nav-right` 保持 153px 安全呼吸间距（Collision = false）；
+  - 证实 4 个子项文字与图标重叠判定全为 false，且“请喝咖啡”呈现标准的 Lucide Coffee 咖啡杯图标（isSvgCoffee = true）；
+  - 截图存档：`scripts/live_prod_submenu.png`。
 
 
 
