@@ -5585,7 +5585,7 @@
   - 通过 Wrangler 将最新生产构建分别部署至 `shijianus-blog`（绑定主域 `https://blog.epocanvas.com/`，部署 ID `e7d99d07`）与 `shijianus-github-io`（绑定主域 `https://blog.shijian.qzz.io/` / `https://shijianus-github-io.pages.dev/`，部署 ID `7f0cfcd0`）；
   - 创建 `.nvmrc` 与 `.node-version` 明确指定 Node.js 22.12.0，彻底消除 Cloudflare Git CI 容器与 Astro 6 的 Node 版本不兼容问题。
 - [x] **双平台公网实机端到端全链路审计 100% 通过 (`scripts/verify-live-menus-anzhiyu.mjs`)**：
-### Task 259: 主导航与子菜单配色全景同步对标安知鱼、彻底根除选框色调与描边阴影冲突 (Selection Box Color Synchronization)
+### Task 259: 主导航与子菜单配色全景同步对标安知鱼、彻底根除选框色调与描边阴影冲突 (48a8fdc)
 - [x] **色彩基因全景对标安知鱼 (Anzhiyu Unified Palette Alignment)**：
   - 逆向分析 `https://hexo.anheyu.com/` 与安知鱼官方样式系统：导航栏与子菜单统一锚定单一品牌色 `var(--theme-main, #425aef)`，杜绝多重透明度或冲突混杂；
   - 主导航顶层项悬停（`.menus_item:hover > .site-page`）应用纯色高辨识度胶囊（`#425aef`）搭配纯白文字（`#ffffff`）与柔和阴影（`0 8px 16px -4px rgba(66, 90, 239, 0.35)`）；
