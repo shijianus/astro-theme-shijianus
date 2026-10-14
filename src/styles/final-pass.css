@@ -7150,6 +7150,7 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   position: absolute !important;
   top: calc(100% + 12px) !important; /* 距离优化：精准悬停于主导航下方，底线无缝吻合 */
   left: 50% !important;
+  right: auto !important;
   transform: translateX(-50%) translateY(-6px) scale(0.96) !important;
   transform-origin: center top !important;
   background: rgba(255, 255, 255, 0.98) !important;
@@ -7190,24 +7191,14 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   pointer-events: none !important;
 }
 
-/* 导航右侧末项 (关于 About 及末尾扩展栏) 智能右侧防溢出碰撞保护，绝不侵入 nav-right */
+/* 全局统一下拉菜单严格水平居中 (Strict Universal Horizontal Centering & UI Consistency) */
+/* 所有下拉菜单（包含“关于”及所有子项扩展栏）严格以父导航按钮中心为基准居中对齐，绝不产生偏移与视觉不对称 */
+#menus .menus_item .site-page-submenu,
 #menus .menus_item:last-child .site-page-submenu {
-  left: auto !important;
-  right: -10px !important;
-  transform: translateY(-6px) scale(0.96) !important;
-  transform-origin: right top !important;
-}
-
-#menus .menus_item:last-child:hover > .site-page-shell > .site-page-submenu,
-#menus .menus_item:last-child:focus-within > .site-page-shell > .site-page-submenu,
-#menus .menus_item:last-child.is-open:hover > .site-page-shell > .site-page-submenu {
-  transform: translateY(0) scale(1) !important;
-}
-
-#menus .menus_item:last-child .site-page-submenu::before {
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) translateY(-6px) scale(0.96) !important;
+  transform-origin: center top !important;
 }
 
 /* 精准垂直磁吸桥接区：严格限定在下拉框正上方（width: 100%），横向绝不外扩超限，杜绝遮挡临近导航项 */
@@ -7233,20 +7224,17 @@ html[data-theme='dark'] .site-page-submenu,
   box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.75), 0 4px 16px -2px rgba(66, 90, 239, 0.25) !important;
 }
 
-/* 仅在直接悬停或聚焦时激活展开，彻底杜绝多菜单同时展开冲突与残留幽灵框 */
+/* 仅在直接悬停或聚焦时激活展开，严格统一以中心为轴平滑展开 */
 #menus .menus_item:hover > .site-page-shell > .site-page-submenu,
 #menus .menus_item:focus-within > .site-page-shell > .site-page-submenu,
-#menus .menus_item.is-open:hover > .site-page-shell > .site-page-submenu {
+#menus .menus_item.is-open:hover > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child:hover > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child:focus-within > .site-page-shell > .site-page-submenu,
+#menus .menus_item:last-child.is-open:hover > .site-page-shell > .site-page-submenu {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
   transform: translateX(-50%) translateY(0) scale(1) !important;
-}
-
-#menus .menus_item:last-child:hover > .site-page-shell > .site-page-submenu,
-#menus .menus_item:last-child:focus-within > .site-page-shell > .site-page-submenu,
-#menus .menus_item:last-child.is-open:hover > .site-page-shell > .site-page-submenu {
-  transform: translateY(0) scale(1) !important;
 }
 
 /* 子菜单项方格尺寸规整统一 (Uniform & Harmonized Submenu Cards) */
