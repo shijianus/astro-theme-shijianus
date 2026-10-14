@@ -5585,7 +5585,20 @@
   - 通过 Wrangler 将最新生产构建分别部署至 `shijianus-blog`（绑定主域 `https://blog.epocanvas.com/`，部署 ID `e7d99d07`）与 `shijianus-github-io`（绑定主域 `https://blog.shijian.qzz.io/` / `https://shijianus-github-io.pages.dev/`，部署 ID `7f0cfcd0`）；
   - 创建 `.nvmrc` 与 `.node-version` 明确指定 Node.js 22.12.0，彻底消除 Cloudflare Git CI 容器与 Astro 6 的 Node 版本不兼容问题。
 - [x] **双平台公网实机端到端全链路审计 100% 通过 (`scripts/verify-live-menus-anzhiyu.mjs`)**：
-  - 针对 `https://blog.epocanvas.com/` 与 `https://shijianus-github-io.pages.dev/` 双平台进行真实 Playwright 点击、悬浮、方格尺寸、字重与无报错审计，双平台全项绿灯通过。
+### Task 259: 主导航与子菜单配色全景同步对标安知鱼、彻底根除选框色调与描边阴影冲突 (Selection Box Color Synchronization)
+- [x] **色彩基因全景对标安知鱼 (Anzhiyu Unified Palette Alignment)**：
+  - 逆向分析 `https://hexo.anheyu.com/` 与安知鱼官方样式系统：导航栏与子菜单统一锚定单一品牌色 `var(--theme-main, #425aef)`，杜绝多重透明度或冲突混杂；
+  - 主导航顶层项悬停（`.menus_item:hover > .site-page`）应用纯色高辨识度胶囊（`#425aef`）搭配纯白文字（`#ffffff`）与柔和阴影（`0 8px 16px -4px rgba(66, 90, 239, 0.35)`）；
+  - 子菜单容器与边框同步：亮色与暗色模式统一采用安知鱼标志性 `1px solid var(--theme-main, #425aef)` 纯正描边，亮色底板 `rgba(255, 255, 255, 0.98)`，暗色底板 `rgba(29, 30, 34, 0.98)`；
+  - 子菜单项悬停态（`.site-page-submenu__item:hover`）应用与主导航 100% 相同的主题蓝（`#425aef`）实心背景、纯白文字与白色图标（`#ffffff`），搭配细腻光影（`0 4px 14px rgba(66, 90, 239, 0.35)`）。
+- [x] **彻底根除被选框色调与描边冲突 (Eliminate Selection Box Conflicts)**：
+  - 彻底清除历史遗留的 `color-mix`、`rgba(66, 90, 239, 0.12)` 与内描边 `box-shadow: inset 0 0 0 1px ...`，杜绝子菜单项激活时出现灰淡浅蓝方框或割裂内边框；
+  - 常态激活态（`.site-page-submenu__item.is-active:not(:hover)` 与 `.site-page.is-active:not(:hover)`）在亮色与暗色模式下统一为清爽透明背景（`background: transparent !important;`）与零阴影（`box-shadow: none !important;`），仅保留 `color: #425aef !important;` 文字高亮，与安知鱼官方逻辑 100% 同步。
+- [x] **严格固化已有圆方角规范**：
+  - 容器严格保持 `border-radius: 8px !important;`，子项严格保持 `border-radius: 6px !important;`，坚决不破坏既有设计。
+- [x] **自动化测试套件全覆盖 (`scripts/verify-active-palette.mjs` & `scripts/verify-menus-anzhiyu.mjs`)**：
+  - 本地静态服务器与 Playwright 双重审计：常态激活透明底、无冲突内阴影、悬停实心纯蓝白字、暗色模式同步审计全部 100% PASS 通过。
+
 
 
 

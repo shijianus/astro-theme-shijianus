@@ -196,9 +196,44 @@ async function verifyUrl(browser, targetUrl) {
     await page.screenshot({ path: 'scripts/live_nav_submenu_hover.png', clip: { x: 0, y: 0, width: 1440, height: 160 } });
     console.log('Saved scripts/live_nav_submenu_hover.png');
 
-    // 7. Fatal console error check
+    // 7. Test Active Route (/categories/) for Color Synchronization & No Conflicting Selection Boxes
+    const categoriesUrl = new URL('/categories/', targetUrl).toString();
+    console.log(`[Live Audit 7] Checking color synchronization on ${categoriesUrl} ...`);
+    await page.goto(categoriesUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const activeNavCheck = await page.evaluate(() => {
+      const activeParent = document.querySelector('#menus .menus_item:first-child .site-page');
+      const activeSubItem = document.querySelector('#menus .menus_item:first-child .site-page-submenu__item.is-active');
+      const parentCs = activeParent ? window.getComputedStyle(activeParent) : null;
+      const subCs = activeSubItem ? window.getComputedStyle(activeSubItem) : null;
+      return {
+        parent: parentCs ? {
+          bg: parentCs.backgroundColor,
+          color: parentCs.color,
+          shadow: parentCs.boxShadow
+        } : null,
+        subItem: subCs ? {
+          bg: subCs.backgroundColor,
+          color: subCs.color,
+          shadow: subCs.boxShadow
+        } : null
+      };
+    });
+    console.log('[Live Audit 7] Active items on /categories/:', activeNavCheck);
+    if (!activeNavCheck.parent || activeNavCheck.parent.bg !== 'rgba(0, 0, 0, 0)') {
+      throw new Error(`Active parent should have transparent background, got ${activeNavCheck.parent?.bg}`);
+    }
+    if (!activeNavCheck.subItem || activeNavCheck.subItem.bg !== 'rgba(0, 0, 0, 0)') {
+      throw new Error(`Active submenu item should not have a conflicting background box, got ${activeNavCheck.subItem?.bg}`);
+    }
+    if (activeNavCheck.subItem.shadow !== 'none') {
+      throw new Error(`Active submenu item should not have an inset box shadow box, got ${activeNavCheck.subItem.shadow}`);
+    }
+
+    // 8. Fatal console error check
     const fatal = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('analytics') && !e.includes('advertisement') && !e.includes('cloudflare'));
-    console.log('[Live Audit 7] Fatal Console Errors:', fatal);
+    console.log('[Live Audit 8] Fatal Console Errors:', fatal);
     if (fatal.length > 0) {
       console.warn('Console warnings detected:', fatal);
     }
