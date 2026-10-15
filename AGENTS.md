@@ -5650,3 +5650,16 @@
   - 4 个主导航下拉框（文章、友邻、工坊、关于）全量实机居中审计通过（`offset = 0px`，`isStrictlyCentered = true`）；
   - 子项文字与图标重叠检测 100% PASS（`hasClash = false`）；
   - 0-4 项动态变化全链路居中与隐藏测试 100% PASS。
+
+### Task 263: 今日推荐卡片 (.todayCard-cover) 替换为霓虹书写动态 SVG、底色优化与独立资源持久化 (edbbf7a)
+- [x] **SVG 直接嵌入与最小修改原则**：
+  - 将 `src/components/theme/HomeHero.astro` 中的 `<img class="todayCard-cover" ...>` 精准替换为用户提供的动态连笔书写 SVG（"hello, welcome to epocanvas"）；
+  - 保留 `class="todayCard-cover"`、宽高及 role/aria-label，保留内部完整渐变与 Keyframe 动画；
+  - 严格保持 `todayCard-info` 等其它所有现有元素与结构 100% 不变。
+- [x] **独立 SVG 静态资源持久化**：
+  - 在 `public/media/shijianus/todayCard-cover.svg` 创建独立完整的 SVG 文件，包含 XML 头与全部源码，便于后续独立查看与维护。
+- [x] **卡片底色与边缘融合优化**：
+  - 在 `src/styles/global.css` 中为 `.topGroup svg.todayCard-cover` 补充 `background: #fff;`，消除原先黑色默认图片背景对 SVG 边角的渗透，实现无论任何视口比例下卡片与白色背景的无缝融合。
+- [x] **全流程端到端自动化测试与实机验证通过 (`scripts/verify-live-todaycard.mjs`)**：
+  - 本地与生产端真实渲染验证通过，Neon 笔画动画正常播放，`todayCard-info` 标题与提示完好无损。
+
