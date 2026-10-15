@@ -5651,7 +5651,7 @@
   - 子项文字与图标重叠检测 100% PASS（`hasClash = false`）；
   - 0-4 项动态变化全链路居中与隐藏测试 100% PASS。
 
-### Task 263: 今日推荐卡片 (.todayCard-cover) 替换为霓虹书写动态 SVG、底色优化与独立资源持久化 (edbbf7a)
+### Task 263: 今日推荐卡片 (.todayCard-cover) 替换为霓虹书写动态 SVG、底色优化与独立资源持久化 (bb727a3)
 - [x] **SVG 直接嵌入与最小修改原则**：
   - 将 `src/components/theme/HomeHero.astro` 中的 `<img class="todayCard-cover" ...>` 精准替换为用户提供的动态连笔书写 SVG（"hello, welcome to epocanvas"）；
   - 保留 `class="todayCard-cover"`、宽高及 role/aria-label，保留内部完整渐变与 Keyframe 动画；
