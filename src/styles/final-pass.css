@@ -7074,6 +7074,12 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
   color: #ffffff !important;
 }
 
+/* 父级死按钮模式 (Dead Parent Button)：提示不可直接导航页面，仅供展开并点击下拉菜单 */
+#menus .menus_item.has-children > .site-page-shell > .site-page.is-dead-button {
+  cursor: default !important;
+  user-select: none;
+}
+
 /* 主导航常态/非悬浮激活态：纯文本清爽模式，与安知鱼高度统一，杜绝突兀背景框 */
 #menus .site-page.is-active:not(:hover),
 :root[data-theme='dark'] #menus .site-page.is-active:not(:hover),

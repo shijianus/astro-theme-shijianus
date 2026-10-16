@@ -5722,4 +5722,19 @@
     - 左侧留白 `leftGap: 43.8px`；
     - 截取暗色与浅色模式实机高清截图（`scripts/live_todaycard_complete_dark.png` 与 `scripts/live_todaycard_complete_light.png`），字迹圆环完整饱满，零截断，UI 视觉极为惊艳。
 
+### Task 267: 导航菜单 (#menus) 带有子菜单父级按钮 (has-children) 死按钮开关与配置文件完善 (`d8b29ac`)
+- [x] **需求分析与配置体系设计**：
+  - 针对 `#menus` 中 `class="menus_item has-children "` 设置开关，允许站长将其配置为无法直接使用的死 button（点击不跳转到新界面），而只有展开后的下拉子菜单按钮（`.site-page-submenu__item`）才能跳转；
+  - 该开关默认严格为关闭状态（`disableParentNav: false`），默认保留 URL 直接跳转到对应界面；
+  - 在 `src/config/site.ts` 完善配置项与类型定义：在 `SiteNavigationConfig` 与 `siteConfig.navigation` 中加入 `disableParentNav: false`（附带详尽中英文注释与使用说明），并在 `SiteNavItem` 中支持单项独立覆盖。
+- [x] **组件实现与交互无障碍加固**：
+  - 在 `src/components/SiteHeader.tsx` 中引入 `disableParentNav` 开关与单项优先级逻辑（`item.disableParentNav ?? disableParentNav ?? false`）；
+  - 当开关开启时，将带有 children 的父级按钮 `href` 设为 `undefined`（规避 React 内部对 `javascript:` URL 的安全拦截），拦截点击默认跳转事件，添加 `is-dead-button` 类名与 `role="button"`，支持键盘 Space / Enter 展开子菜单；
+  - 在 `src/layouts/BlogLayout.astro` 中打通 `disableParentNav` 属性传递；
+  - 在 `src/styles/final-pass.css` 中为 `.is-dead-button` 注入优雅的 `cursor: default` 与 `user-select: none`，视觉反馈更加明确。
+- [x] **自动化端到端测试覆盖**：
+  - 编写 Playwright / Puppeteer 自动化测试脚本 `scripts/verify-dead-parent-menu.mjs`；
+  - 验证默认模式（`disableParentNav: false`）：父级按钮拥有各自有效跳转 URL，点击正常导航；
+  - 验证死按钮模式（`disableParentNav: true`）：父级按钮变为死 button，点击不发生跳转，悬浮展开下拉菜单后点击子菜单项正常导航；0 控制台报错。
+
 

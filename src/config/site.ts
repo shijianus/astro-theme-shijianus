@@ -25,6 +25,12 @@ export type SiteNavItem = {
   showIcon?: boolean;
   /** 可单项覆盖全局副标题开关 */
   showSubtitle?: boolean;
+  /**
+   * 可单项覆盖父级死按钮开关（仅当存在 children 时有效）
+   * - false: 保持父级按钮独立 URL，点击可直接跳转到新界面
+   * - true: 将该父级按钮设为死按钮 (href="javascript:void(0);" 且阻止跳转)，仅作为下拉容器，只有子菜单项才有用
+   */
+  disableParentNav?: boolean;
   children?: Array<{
     label: string;
     href: string;
@@ -55,6 +61,12 @@ export type SiteNavigationConfig = {
    * - false: 子菜单隐藏图标
    */
   showSubmenuIcon?: boolean;
+  /**
+   * 是否将带有子菜单的父级菜单项设置为不可跳转的死按钮 (Disable Parent Nav Switch)
+   * - false (默认): 默认关闭死按钮模式，父级按钮保留 URL，点击直接跳转到新界面
+   * - true: 开启死按钮模式，所有 class="menus_item has-children" 的父级按钮变为无法直接使用的死 button (href="javascript:void(0);" 且拦截跳转)，仅展开下拉列表，只有下方的下拉子菜单项点击才生效
+   */
+  disableParentNav?: boolean;
   primary: SiteNavItem[];
   utility: SiteNavItem[];
   quickActions: SiteNavItem[];
@@ -387,6 +399,7 @@ export const siteConfig = {
     showIcon: false, // 默认关闭图标，纯文本简洁优雅（向安知鱼纯文本极简看齐）
     showSubtitle: false, // 默认关闭副标题（可由用户/创作者在配置中开启，默认不显示）
     showSubmenuIcon: true, // 子菜单项保留图标指引
+    disableParentNav: false, // 带有子菜单的父级按钮是否设为死按钮（默认 false：关闭死按钮，保留 URL 正常跳转；设为 true 则变为死 button，只有下拉菜单项才有用）
     primary: [
       {
         label: '文章',

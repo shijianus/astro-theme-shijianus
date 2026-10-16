@@ -72,7 +72,7 @@ const NAV_TRANSLATIONS: Record<LocaleVariant, {
   },
 };
 
-type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children' | 'showIcon' | 'showSubtitle'>;
+type NavItem = Pick<SiteNavItem, 'label' | 'href' | 'description' | 'external' | 'icon' | 'children' | 'showIcon' | 'showSubtitle' | 'disableParentNav'>;
 
 type SiteHeaderProps = {
   brandName: string;
@@ -91,6 +91,8 @@ type SiteHeaderProps = {
   showNavSubtitle?: boolean;
   /** 子菜单图标全局开关，默认 true */
   showSubmenuIcon?: boolean;
+  /** 带有子菜单的父级按钮是否全局设为死按钮（无法跳转到新界面），默认 false */
+  disableParentNav?: boolean;
   /** Named slot from Astro — renders the center console trigger icon (e.g. AnzhiyuDashboardIcon) */
   consoleIcon?: React.ReactNode;
 };
@@ -227,6 +229,7 @@ export function SiteHeader({
   showNavIcon = false,
   showNavSubtitle = false,
   showSubmenuIcon = true,
+  disableParentNav = false,
   consoleIcon,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -683,6 +686,9 @@ export function SiteHeader({
                 const isIconEnabled = item.showIcon ?? showNavIcon ?? false;
                 const isSubtitleEnabled = item.showSubtitle ?? showNavSubtitle ?? false;
 
+                // 父级死按钮开关判定：仅当存在子菜单 (hasChildren) 时生效；单项设置优先于全局开关，未显式开启时严格默认为 false (默认可跳转)
+                const isParentNavDisabled = hasChildren && (item.disableParentNav ?? disableParentNav ?? false);
+
                 // 底层内置默认图标：当开关开启但未配置 icon 时作为兜底生效
                 const effectiveIcon = item.icon || resolveDefaultNavIcon(item.href, 'book');
 
@@ -708,9 +714,24 @@ export function SiteHeader({
                   >
                     <div className="site-page-shell">
                       <a
-                        href={item.href}
-                        className={`site-page ${itemActive ? 'is-active' : ''}`}
+                        href={isParentNavDisabled ? undefined : item.href}
+                        onClick={isParentNavDisabled ? (e) => {
+                          e.preventDefault();
+                        } : undefined}
+                        onKeyDown={isParentNavDisabled ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!submenuOpen) {
+                              openSubmenu(item.href);
+                            } else {
+                              queueSubmenuClose(item.href, 0);
+                            }
+                          }
+                        } : undefined}
+                        className={`site-page ${itemActive ? 'is-active' : ''} ${isParentNavDisabled ? 'is-dead-button' : ''}`}
                         data-subtitle={item.description ? convertText(item.description, currentLocale) : undefined}
+                        role={isParentNavDisabled ? 'button' : undefined}
+                        tabIndex={isParentNavDisabled ? 0 : undefined}
                         aria-haspopup={hasChildren ? 'menu' : undefined}
                         aria-expanded={hasChildren ? submenuOpen : undefined}
                       >
