@@ -5698,4 +5698,28 @@
   - 全量构建并通过 Wrangler 部署至生产边缘节点（`https://cf5e9ff0.shijianus-blog.pages.dev` 与 `https://blog.epocanvas.com/`）；
   - 执行真实生产端自动化测试（`scripts/verify-live-todaycard-e2e.mjs`）：HTTP 200，0 控制台致命报错，`preserveAspectRatio="xMidYMid slice"` 与双模渐变矩阵完全生效，深浅色切换即时流畅，视觉呈现与专案整体无缝融合。
 
+### Task 266: 今日推荐卡片 (todayCard-cover) hello 向上归位至左上角截断修复与三行排版垂直韵律平衡 (`e183abe`)
+- [x] **排查并确诊切顶根因 (Root Cause Diagnostics)**：
+  - 原版归位坐标 `translate(115.0, 235.0) scale(0.2291, -0.2291)` 下，`hello` 的最高笔触（$y_{raw}=737.16$）映射到 SVG 坐标系的 $Y = 235 - 737.16 \times 0.2291 \approx 51.6$；
+  - 在标准桌面端卡片容器（$644 \times 348\text{px}$，纵横比 1.85）中，`preserveAspectRatio="xMidYMid slice"` 上下均匀裁切，卡片顶部从 SVG $Y=67.7$ 处切断。导致 $Y=51.6 \sim 67.7$（约 6.5px 渲染高度）直接超出卡片视口，`h`、`l`、`l` 的顶部圆环被硬生生切平。
+- [x] **数学坐标重构与开场居中逆推补偿 (Mathematical Coordinate Refactor & Park Compensation)**：
+  - **归位目标点调整**：将 `hello` 的 translate 由 $(115.0, 235.0)$ 优化为 $(135.0, 290.0)$。此时最高点 $Y = 290 - 737.16 \times 0.2291 = 106.6$（渲染顶边距达 $26.7\text{px}$，左边距 $43.8\text{px}$），彻底避开顶部裁切线（$Y=67.7$）与卡片 16px 圆角；
+  - **开场居中逆推补偿**：根据开场绝对居中方程 $\text{init\_center} = \text{translate} + 0.8086 \times \text{park\_center} = (800.0, 500.0)$，精确解算出 `.hello-park` 开场偏移量由 `(496.0px, 378.0px)` 同步修正为 `translate(479.1px, 333.0px) scale(0.8086, 0.8086)`。实机验证居中误差 $< 0.01\text{px}$，开场 0s ~ 3.7s 书写阶段依然严格在 1600x1000 画布的几何中心；
+  - **垂直节奏与黄金行间距微调**：将 Line 1 (`welcome to`) translate Y 由 $520.0 \to 535.0$、Line 2 (`epocanvas`) translate Y 由 $700.0 \to 715.0$。三行文字垂直间距黄金均衡（行间距 ~24px ~ 28px），为左下角“创意工坊 / EpoCanvas”及右下角“更多推荐”保留充裕呼吸空间。
+- [x] **保持动画时序与笔触完整性**：
+  - 所有前景笔触 path 的 `d` 属性、描边线宽、动画时长（0.4s ~ 18.4s）、笔尖追光彗星、双模极光丝绸背景 100% 保持纯正未损；
+  - 同步更新了 `src/components/theme/HomeHero.astro` 与 `public/media/shijianus/todayCard-cover.svg`。
+- [x] **代码提交、全量多远端推送与 Cloudflare Pages 生产部署**：
+  - 代码 Commit: `e183abe`；
+  - 双远端推送：`git push origin main && git push cf main`；
+  - 生产部署：通过 Wrangler 编译部署至 Cloudflare Pages 生产边缘节点（`https://c81ee5bc.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com/`）。
+- [x] **真实生产端 Playwright / Puppeteer 实机 E2E 验证**：
+  - 执行脚本 `scripts/verify-hello-park-e2e.mjs`，成功获取生产环境 200 OK 响应，0 控制台致命报错；
+  - 真实渲染几何测绘结果：
+    - 卡片尺寸：`624 x 348 px`；
+    - `hello` 归位后包围盒：`top: 168.7px, left: 835.8px, width: 223.0px, height: 66.4px`；
+    - 顶部留白 `topGap: 26.7px`（$\ge 15\text{px}$ 安全范围，未被顶部裁切 `isClippedTop: false`）；
+    - 左侧留白 `leftGap: 43.8px`；
+    - 截取暗色与浅色模式实机高清截图（`scripts/live_todaycard_complete_dark.png` 与 `scripts/live_todaycard_complete_light.png`），字迹圆环完整饱满，零截断，UI 视觉极为惊艳。
+
 
