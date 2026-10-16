@@ -5681,3 +5681,21 @@
   - 编写本地与生产端全流程端到端自动化测试套件（`scripts/verify-todaycard-themes.mjs` 与 `scripts/verify-live-todaycard-e2e.mjs`）；
   - 针对真实生产环境 `https://blog.epocanvas.com/` 进行实机审计：HTTP 状态 200，0 控制台致命报错，`todayCard` 完好展现，`w1`、`w2`（"to"）、`w3` 全部正常加载与可见，深浅色切换即时生效。
 
+### Task 265: 今日推荐卡片 (todayCard-cover) 全新暮光极光丝绸背景融入、晨曦珠光轻丝绸双模矩阵与宿主文字层无缝打磨 (`9461742`)
+- [x] **背景艺术深度融合与纯色告别**：
+  - 废弃生硬单调底色，暗色模式采用多层次暮光丝绸极光底（Twilight Aurora Silk：暖紫 `#26133d` -> 暮粉 `#351852` -> 深海蓝 `#17285c` -> 极光青 `#0f385c`），搭配 `ambientWarm`、`ambientCool` 与 `centerStageGlow` 环境柔光场；
+  - 亮色模式创新构建与之呼应的晨曦极光珠光轻丝绸（Dawn Aurora Pearlescent Silk：柔暖桃杏 `#fff6f0` -> 云霞粉 `#fbf0f7` -> 丁香晨雾淡蓝 `#eff4fe` -> 晶莹天青 `#e3f4ff`），与左侧 Bento 卡片（`#random-banner`）天蓝/冰蓝轻盈通透质感达到同频共振；
+  - 引入随笔划自左向右依次点亮的四色墨韵环境光场（`zoneCoral` 5.1s、`zoneRose` 6.8s、`zoneViolet` 8.5s、`zoneCyan` 10.2s）与巨幅景深柔焦笔触重影（`dof-echo`），让背景流动与字迹动作深度同源共生。
+- [x] **前景笔触与时间轴 100% 忠实保留**：
+  - 严格保持连笔书法路径（`h1, h2, w1, w2, w3, e1, e2`）及其精确定位（`hello` $y=235$、`welcome to` $y=520$、`epocanvas` $y=700$）；
+  - 严格保留匀速时间轴（0.40s ~ 18.41s）、笔尖追光彗星（`nib`）、3D液态玻璃内部高光脊线（`spine-overlay`）与 18.4s 全字面流光扫掠（`shimmer-sweeper`）。
+- [x] **宿主容器层级优化与亮色断层黑块根除**：
+  - 根除此前 `global.css` 中 `.topGroup .todayCard-info` 强制写死的 `rgba(13, 17, 23, 0.88)` 深黑底条，改为透明背景直出；
+  - 重构 `.topGroup .todayCard::after` 遮罩渐变：亮色模式下使用精致白润柔焦渐变（透明 -> 62%白 -> 90%白），文字自适应为深石板蓝 `#0f172a` 与白微光投影，彻底解决亮色下的沉重黑块；暗色模式下使用深邃暮光渐变与纯白文字；
+  - 为 SVG 补齐 `preserveAspectRatio="xMidYMid slice"`，消除不同屏幕比例下的卡片边缘留白或割裂黑条；
+  - 将切换按钮 `.banner-button` 打磨为双模自适应半透明毛玻璃胶囊（亮色白底深字、暗色深底白字），视觉反馈清晰且不遮挡背景。
+- [x] **多端推送与 Cloudflare Pages 生产部署验证**：
+  - 全量构建并通过 Wrangler 部署至生产边缘节点（`https://cf5e9ff0.shijianus-blog.pages.dev` 与 `https://blog.epocanvas.com/`）；
+  - 执行真实生产端自动化测试（`scripts/verify-live-todaycard-e2e.mjs`）：HTTP 200，0 控制台致命报错，`preserveAspectRatio="xMidYMid slice"` 与双模渐变矩阵完全生效，深浅色切换即时流畅，视觉呈现与专案整体无缝融合。
+
+

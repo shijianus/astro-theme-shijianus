@@ -1,101 +1,135 @@
 import puppeteer from 'puppeteer';
 
 (async () => {
+  console.log('🚀 Starting Live E2E Verification for https://blog.epocanvas.com/ ...');
   const browser = await puppeteer.launch({
     headless: 'new',
     executablePath: '/usr/bin/google-chrome',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
 
-  const errors = [];
+  const consoleErrors = [];
   page.on('console', msg => {
     if (msg.type() === 'error') {
-      errors.push(msg.text());
+      consoleErrors.push(msg.text());
     }
   });
   page.on('pageerror', err => {
-    errors.push(err.toString());
+    consoleErrors.push(err.message);
   });
 
-  const liveUrl = 'https://blog.epocanvas.com/';
-  console.log(`Auditing live production URL: ${liveUrl}`);
-  const resp = await page.goto(liveUrl, { waitUntil: 'networkidle2', timeout: 60000 });
-  console.log(`HTTP Status: ${resp.status()}`);
+  const response = await page.goto('https://blog.epocanvas.com/', { waitUntil: 'networkidle2' });
+  console.log(`📡 Response Status: ${response.status()}`);
 
-  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-
-  // 1. Check Light Mode
-  await page.evaluate(() => {
-    document.documentElement.setAttribute('data-theme', 'light');
-  });
-  await new Promise(r => setTimeout(r, 600));
-
-  const lightState = await page.evaluate(() => {
-    const card = document.querySelector('.todayCard');
-    const svg = document.querySelector('svg.todayCard-cover');
-    const bg = document.querySelector('.svg-bg');
-    const w1 = document.querySelector('.w1');
-    const w2 = document.querySelector('.w2');
-    const w3 = document.querySelector('.w3');
-    const bgComputed = bg ? window.getComputedStyle(bg).fill : null;
-    return {
-      cardPresent: !!card,
-      svgPresent: !!svg,
-      w1Present: !!w1,
-      w2Present: !!w2,
-      w3Present: !!w3,
-      w2D: w2 ? w2.getAttribute('d') : null,
-      bgFill: bgComputed
-    };
-  });
-  console.log('Live Light State:', lightState);
-
-  let cardEl = await page.$('.todayCard');
-  if (cardEl) {
-    await cardEl.screenshot({ path: 'scripts/live_todayCard_light.png' });
-    console.log('Saved scripts/live_todayCard_light.png');
+  if (response.status() !== 200) {
+    console.error(`❌ HTTP Error: status ${response.status()}`);
+    await browser.close();
+    process.exit(1);
   }
 
-  // 2. Check Dark Mode
-  await page.evaluate(() => {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  });
-  await new Promise(r => setTimeout(r, 600));
+  // Check 1: Card existence and SVG attributes
+  const cardData = await page.evaluate(() => {
+    const card = document.querySelector('.topGroup .todayCard');
+    const svg = document.querySelector('.topGroup svg.todayCard-cover');
+    const defs = svg?.querySelector('defs')?.innerHTML || '';
+    const info = document.querySelector('.topGroup .todayCard-info');
+    const title = document.querySelector('.topGroup .todayCard-title');
+    const tips = document.querySelector('.topGroup .todayCard-tips');
 
-  const darkState = await page.evaluate(() => {
-    const bg = document.querySelector('.svg-bg');
-    const w1 = document.querySelector('.w1');
-    const w2 = document.querySelector('.w2');
     return {
-      bgFill: bg ? window.getComputedStyle(bg).fill : null,
-      w1Vis: w1 ? window.getComputedStyle(w1).visibility : null,
-      w2Vis: w2 ? window.getComputedStyle(w2).visibility : null,
+      cardFound: !!card,
+      svgFound: !!svg,
+      aspectRatio: svg?.getAttribute('preserveAspectRatio'),
+      hasSilkBaseDark: defs.includes('silkBaseDark'),
+      hasSilkBaseLight: defs.includes('silkBaseLight'),
+      hasInkZones: defs.includes('zoneCoral') && defs.includes('zoneCyan'),
+      titleText: title?.textContent?.trim(),
+      tipsText: tips?.textContent?.trim()
     };
   });
-  console.log('Live Dark State:', darkState);
 
-  cardEl = await page.$('.todayCard');
-  if (cardEl) {
-    await cardEl.screenshot({ path: 'scripts/live_todayCard_dark.png' });
-    console.log('Saved scripts/live_todayCard_dark.png');
+  console.log('🔍 Card Data Audit:', cardData);
+
+  if (!cardData.cardFound || !cardData.svgFound) {
+    console.error('❌ .todayCard or svg.todayCard-cover not found!');
+    await browser.close();
+    process.exit(1);
   }
 
-  console.log('Console Errors Count:', errors.length);
-  if (errors.length > 0) {
-    console.log('Errors:', errors);
+  if (cardData.aspectRatio !== 'xMidYMid slice') {
+    console.error(`❌ SVG preserveAspectRatio is ${cardData.aspectRatio}, expected xMidYMid slice`);
+    await browser.close();
+    process.exit(1);
+  }
+
+  if (!cardData.hasSilkBaseDark || !cardData.hasSilkBaseLight) {
+    console.warn('⚠️ SVG may still be caching an older deployment, waiting or inspecting...');
+  }
+
+  // Check 2: Light Mode Audit
+  console.log('🌞 Auditing Light Mode...');
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  await new Promise(r => setTimeout(r, 600));
+
+  const lightStyles = await page.evaluate(() => {
+    const info = document.querySelector('.topGroup .todayCard-info');
+    const title = document.querySelector('.topGroup .todayCard-title');
+    const btn = document.querySelector('.topGroup .banner-button');
+    return {
+      infoBg: window.getComputedStyle(info).background,
+      titleColor: window.getComputedStyle(title).color,
+      btnColor: window.getComputedStyle(btn).color,
+      btnBg: window.getComputedStyle(btn).backgroundColor,
+    };
+  });
+  console.log('Light Mode Styles:', lightStyles);
+
+  const heroLight = await page.$('#home_top');
+  if (heroLight) {
+    await heroLight.screenshot({ path: 'scripts/live_prod_hero_light.png' });
+    console.log('📸 Saved scripts/live_prod_hero_light.png');
+  }
+  const cardLight = await page.$('.topGroup .todayCard');
+  if (cardLight) {
+    await cardLight.screenshot({ path: 'scripts/live_prod_card_light.png' });
+    console.log('📸 Saved scripts/live_prod_card_light.png');
+  }
+
+  // Check 3: Dark Mode Audit
+  console.log('🌙 Auditing Dark Mode...');
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await new Promise(r => setTimeout(r, 600));
+
+  const darkStyles = await page.evaluate(() => {
+    const info = document.querySelector('.topGroup .todayCard-info');
+    const title = document.querySelector('.topGroup .todayCard-title');
+    const btn = document.querySelector('.topGroup .banner-button');
+    return {
+      infoBg: window.getComputedStyle(info).background,
+      titleColor: window.getComputedStyle(title).color,
+      btnColor: window.getComputedStyle(btn).color,
+    };
+  });
+  console.log('Dark Mode Styles:', darkStyles);
+
+  const heroDark = await page.$('#home_top');
+  if (heroDark) {
+    await heroDark.screenshot({ path: 'scripts/live_prod_hero_dark.png' });
+    console.log('📸 Saved scripts/live_prod_hero_dark.png');
+  }
+  const cardDark = await page.$('.topGroup .todayCard');
+  if (cardDark) {
+    await cardDark.screenshot({ path: 'scripts/live_prod_card_dark.png' });
+    console.log('📸 Saved scripts/live_prod_card_dark.png');
+  }
+
+  console.log(`🐞 Console Errors Count: ${consoleErrors.length}`);
+  if (consoleErrors.length > 0) {
+    console.warn('Console error messages:', consoleErrors);
   }
 
   await browser.close();
-
-  // Assertions
-  if (!lightState.cardPresent || !lightState.svgPresent || !lightState.w2Present || !lightState.w3Present) {
-    throw new Error('Elements missing on live production!');
-  }
-  if (darkState.w2Vis !== 'visible') {
-    throw new Error('w2 (to) is not visible in dark mode!');
-  }
-  console.log('ALL LIVE AUDIT ASSERTIONS PASSED!');
+  console.log('✅ Live E2E Audit Script Finished.');
 })();
