@@ -1936,6 +1936,10 @@ div#category,
   background: #fff;
 }
 
+:root[data-theme='dark'] .topGroup svg.todayCard-cover {
+  background: #070810;
+}
+
 .topGroup .todayCard:hover .todayCard-cover {
   transform: scale(1.06);
 }
