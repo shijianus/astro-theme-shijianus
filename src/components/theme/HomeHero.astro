@@ -199,17 +199,9 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
               <div class="todayCard-tips">{todayCardConfig.tips}</div>
               <div class="todayCard-title">{todayCardConfig.title}</div>
             </div>
-            <svg
-              class="todayCard-cover"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-label="hello, welcome to epocanvas"
-              height="100%"
-              role="img"
-              viewBox="0 0 1600 1000"
-              width="100%"
-            >
+            <svg class="todayCard-cover" xmlns="http://www.w3.org/2000/svg" aria-label="hello, welcome to epocanvas" height="100%" preserveAspectRatio="xMidYMid slice" role="img" viewBox="0 0 1600 1000" width="100%">
               <defs>
-                <!-- 1. 核心四色流光渐变 -->
+                <!-- 1. 笔触四色流光渐变（核心连笔母色彩） -->
                 <linearGradient gradientUnits="userSpaceOnUse" id="inkH" x1="-109.0607" x2="2395" y1="0" y2="0">
                   <stop offset="0" stop-color="#ff6a3d"/>
                   <stop offset=".35" stop-color="#ff3d9a"/>
@@ -229,15 +221,75 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                   <stop offset="1" stop-color="#18b6ff"/>
                 </linearGradient>
 
-                <!-- 横向流光预热束渐变（暗色） -->
-                <linearGradient id="beamGrad" x1="0%" x2="100%" y1="0%" y2="0%">
-                  <stop offset="0%" stop-color="#ff6a3d" stop-opacity="0"/>
-                  <stop offset="25%" stop-color="#ff3d9a" stop-opacity="0.9"/>
-                  <stop offset="75%" stop-color="#7a5cff" stop-opacity="0.9"/>
-                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
+                <!-- 2. 暗色模式：多层次暮光丝绸底色（暖紫 -> 暮粉 -> 深海蓝 -> 极光青） -->
+                <linearGradient id="silkBaseDark" x1="0%" x2="100%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#26133d"/>
+                  <stop offset="32%" stop-color="#351852"/>
+                  <stop offset="68%" stop-color="#17285c"/>
+                  <stop offset="100%" stop-color="#0f385c"/>
                 </linearGradient>
 
-                <!-- 18.4s 收尾流光蒙版渐变 -->
+                <!-- 亮色模式：多层次晨曦极光轻丝绸（柔暖桃杏 -> 暮云粉霞 -> 丁香薰衣草 -> 晶莹天青） -->
+                <linearGradient id="silkBaseLight" x1="0%" x2="100%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#fff5f0"/>
+                  <stop offset="32%" stop-color="#fdf0f7"/>
+                  <stop offset="68%" stop-color="#eff2fe"/>
+                  <stop offset="100%" stop-color="#e5f5ff"/>
+                </linearGradient>
+
+                <!-- 暗色对角环境柔光层 -->
+                <radialGradient cx="18%" cy="22%" id="ambientWarmDark" r="65%">
+                  <stop offset="0%" stop-color="#ff5e62" stop-opacity="0.34"/>
+                  <stop offset="45%" stop-color="#b82578" stop-opacity="0.16"/>
+                  <stop offset="100%" stop-color="#26133d" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="84%" cy="78%" id="ambientCoolDark" r="68%">
+                  <stop offset="0%" stop-color="#00c6ff" stop-opacity="0.32"/>
+                  <stop offset="48%" stop-color="#5b38ff" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#0f385c" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="50%" cy="52%" id="centerStageGlowDark" r="55%">
+                  <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.24"/>
+                  <stop offset="55%" stop-color="#ec4899" stop-opacity="0.09"/>
+                  <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                </radialGradient>
+
+                <!-- 亮色对角环境柔光层 -->
+                <radialGradient cx="18%" cy="22%" id="ambientWarmLight" r="65%">
+                  <stop offset="0%" stop-color="#ff7a59" stop-opacity="0.15"/>
+                  <stop offset="45%" stop-color="#ff3d9a" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#fff5f0" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="84%" cy="78%" id="ambientCoolLight" r="68%">
+                  <stop offset="0%" stop-color="#00b4d8" stop-opacity="0.14"/>
+                  <stop offset="48%" stop-color="#7a5cff" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#e5f5ff" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="50%" cy="52%" id="centerStageGlowLight" r="55%">
+                  <stop offset="0%" stop-color="#7a5cff" stop-opacity="0.08"/>
+                  <stop offset="55%" stop-color="#ec4899" stop-opacity="0.04"/>
+                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                </radialGradient>
+
+                <!-- 3. 随笔触从左至右依次点亮的四色墨韵光场（与笔触四色严格对应） -->
+                <radialGradient cx="50%" cy="50%" id="zoneCoral" r="50%">
+                  <stop offset="0%" stop-color="#ff6a3d" stop-opacity="0.42"/>
+                  <stop offset="100%" stop-color="#ff6a3d" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="50%" cy="50%" id="zoneRose" r="50%">
+                  <stop offset="0%" stop-color="#ff3d9a" stop-opacity="0.40"/>
+                  <stop offset="100%" stop-color="#ff3d9a" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="50%" cy="50%" id="zoneViolet" r="50%">
+                  <stop offset="0%" stop-color="#7a5cff" stop-opacity="0.44"/>
+                  <stop offset="100%" stop-color="#7a5cff" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient cx="50%" cy="50%" id="zoneCyan" r="50%">
+                  <stop offset="0%" stop-color="#18b6ff" stop-opacity="0.42"/>
+                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
+                </radialGradient>
+
+                <!-- 4. 18.4s 收尾字面高光遮罩 -->
                 <linearGradient id="shimmerMaskGrad" x1="0%" x2="100%" y1="0%" y2="0%">
                   <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
                   <stop offset="25%" stop-color="#ffffff" stop-opacity="0.25"/>
@@ -245,75 +297,26 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                   <stop offset="75%" stop-color="#ffffff" stop-opacity="0.25"/>
                   <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
                 </linearGradient>
+                <mask height="1000" id="shimmerMask" maskContentUnits="userSpaceOnUse" maskUnits="userSpaceOnUse" width="1600" x="0" y="0">
+                  <g transform="skewX(-22)">
+                    <rect class="shimmer-sweeper" fill="url(#shimmerMaskGrad)" height="1400" width="460" x="-520" y="-200"/>
+                  </g>
+                </mask>
 
-                <!-- 18.4s 收尾字面高光色彩（暗色：冰蓝-炽白-流金霓虹折射） -->
-                <linearGradient id="shimmerPrism" x1="0%" x2="100%" y1="0%" y2="100%">
-                  <stop offset="0%" stop-color="#ffd6ec"/>
-                  <stop offset="50%" stop-color="#ffffff"/>
-                  <stop offset="100%" stop-color="#b8ebff"/>
-                </linearGradient>
-
-                <!-- 18.4s 空间扫掠光幕（暗色） -->
-                <linearGradient id="stageCurtainGrad" x1="0%" x2="100%" y1="0%" y2="0%">
-                  <stop offset="0%" stop-color="#ff3d9a" stop-opacity="0"/>
-                  <stop offset="45%" stop-color="#7a5cff" stop-opacity="0.06"/>
-                  <stop offset="50%" stop-color="#ffffff" stop-opacity="0.14"/>
-                  <stop offset="55%" stop-color="#18b6ff" stop-opacity="0.06"/>
-                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
-                </linearGradient>
-
-                <!-- 亮色 18.4s 空间扫掠光幕 -->
-                <linearGradient id="stageCurtainGradLight" x1="0%" x2="100%" y1="0%" y2="0%">
-                  <stop offset="0%" stop-color="#ff3d9a" stop-opacity="0"/>
-                  <stop offset="45%" stop-color="#7a5cff" stop-opacity="0.08"/>
-                  <stop offset="50%" stop-color="#425aef" stop-opacity="0.16"/>
-                  <stop offset="55%" stop-color="#18b6ff" stop-opacity="0.08"/>
-                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
-                </linearGradient>
-
-                <!-- 深空暗曜基底 -->
-                <radialGradient cx="50%" cy="50%" id="voidBg" r="75%">
-                  <stop offset="0%" stop-color="#0d101d"/>
-                  <stop offset="65%" stop-color="#070810"/>
-                  <stop offset="100%" stop-color="#030408"/>
-                </radialGradient>
-
-                <!-- 亮色晶曜白璧基底 -->
-                <radialGradient cx="50%" cy="50%" id="lightBg" r="75%">
-                  <stop offset="0%" stop-color="#ffffff"/>
-                  <stop offset="60%" stop-color="#f6f8fe"/>
-                  <stop offset="100%" stop-color="#e8eefa"/>
-                </radialGradient>
-
-                <!-- 暗色中心舞台环境聚光 -->
-                <radialGradient cx="50%" cy="50%" id="stageSpot" r="50%">
-                  <stop offset="0%" stop-color="#7a5cff" stop-opacity="0.16"/>
-                  <stop offset="45%" stop-color="#ff3d9a" stop-opacity="0.06"/>
-                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
-                </radialGradient>
-
-                <!-- 亮色中心环境聚光 -->
-                <radialGradient cx="50%" cy="50%" id="lightSpot" r="50%">
-                  <stop offset="0%" stop-color="#425aef" stop-opacity="0.10"/>
-                  <stop offset="45%" stop-color="#ff3d9a" stop-opacity="0.06"/>
-                  <stop offset="100%" stop-color="#18b6ff" stop-opacity="0"/>
-                </radialGradient>
-
-                <!-- 空间微光学网格（随镜头推拉产生视差） -->
-                <pattern height="60" id="spatialGrid" patternUnits="userSpaceOnUse" width="60">
-                  <path class="spatial-grid-line" d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"/>
-                  <circle class="spatial-grid-dot" cx="0" cy="0" fill="#ffffff" fill-opacity="0.14" r="1.2"/>
-                </pattern>
-
-                <!-- 实时体积光晕染滤镜 -->
-                <filter filterUnits="userSpaceOnUse" height="1000" id="volumetricBloom" width="1600" x="0" y="0">
-                  <feGaussianBlur stdDeviation="55"/>
+                <!-- 巨幅背景景深重影滤镜（将笔触放大模糊为背景流体光带） -->
+                <filter filterUnits="userSpaceOnUse" height="1000" id="dofBlur" width="1600" x="0" y="0">
+                  <feGaussianBlur stdDeviation="68"/>
                 </filter>
 
-                <!-- 追光彗星与收尾流光辉光滤镜 -->
+                <!-- 贴身同轨墨晕滤镜 -->
+                <filter filterUnits="userSpaceOnUse" height="1000" id="inkHalo" width="1600" x="0" y="0">
+                  <feGaussianBlur stdDeviation="32"/>
+                </filter>
+
+                <!-- 笔尖追光彗星滤镜 -->
                 <filter filterUnits="userSpaceOnUse" height="1000" id="cometGlow" width="1600" x="0" y="0">
-                  <feGaussianBlur result="blur1" stdDeviation="6"/>
-                  <feGaussianBlur result="blur2" stdDeviation="22"/>
+                  <feGaussianBlur result="blur1" stdDeviation="5"/>
+                  <feGaussianBlur result="blur2" stdDeviation="18"/>
                   <feMerge>
                     <feMergeNode in="blur2"/>
                     <feMergeNode in="blur1"/>
@@ -321,75 +324,58 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                   </feMerge>
                 </filter>
 
-                <!-- 18.4s 字面流光动态遮罩（精确锁定所有字面轮廓） -->
-                <mask height="1000" id="shimmerMask" maskContentUnits="userSpaceOnUse" maskUnits="userSpaceOnUse" width="1600" x="0" y="0">
-                  <g transform="skewX(-22)">
-                    <rect class="shimmer-sweeper" fill="url(#shimmerMaskGrad)" height="1400" width="460" x="-520" y="-200"/>
-                  </g>
-                </mask>
-
                 <style>
-                  /* ================= 1. 镜头视差与舞台动作 ================= */
-                  #cameraStage {
-                    transform-origin: 800px 500px;
-                    transform: translate(110px, 65px) scale(1.32);
-                    animation: cameraPullBack 1.2s cubic-bezier(.65, 0, .35, 1) 3.7s forwards;
-                  }
-                  @keyframes cameraPullBack {
-                    to { transform: translate(0px, 0px) scale(1); }
-                  }
-
-                  /* 0.4s 起笔波纹、3.7s 镜头拉远冲击波、18.4s 收笔定格波纹 */
-                  .ripple {
-                    fill: none;
-                    stroke: url(#beamGrad);
+                  /* ================= 1. 随书写进程依次唤醒的背景四色光场 ================= */
+                  .ink-zone {
                     opacity: 0;
                   }
-                  .r-start {
-                    transform-origin: 800px 500px;
-                    stroke-width: 2;
-                    animation: pulseWave 1.6s cubic-bezier(.16, 1, .3, 1) 0.4s forwards;
+                  .z-coral {
+                    transform-origin: 260px 580px;
+                    animation: zoneAwake 2.8s ease-out 5.1s forwards, zoneBreathe 7s ease-in-out 7.9s infinite alternate;
                   }
-                  .r-park {
-                    transform-origin: 800px 500px;
-                    stroke-width: 3;
-                    animation: pulseWave 1.8s cubic-bezier(.16, 1, .3, 1) 3.7s forwards;
+                  .z-rose {
+                    transform-origin: 640px 560px;
+                    animation: zoneAwake 2.8s ease-out 6.8s forwards, zoneBreathe 8s ease-in-out 9.6s infinite alternate-reverse;
                   }
-                  .r-finale {
-                    transform-origin: 1434px 870px;
-                    stroke-width: 2.5;
-                    animation: finaleWave 1.4s cubic-bezier(.16, 1, .3, 1) 18.40s forwards;
+                  .z-violet {
+                    transform-origin: 1020px 620px;
+                    animation: zoneAwake 2.8s ease-out 8.5s forwards, zoneBreathe 7.5s ease-in-out 11.3s infinite alternate;
                   }
-                  @keyframes pulseWave {
-                    0%   { transform: scale(0.1); opacity: 0.85; }
-                    100% { transform: scale(2.4); opacity: 0; }
+                  .z-cyan {
+                    transform-origin: 1380px 600px;
+                    animation: zoneAwake 2.8s ease-out 10.2s forwards, zoneBreathe 8.5s ease-in-out 13.0s infinite alternate-reverse;
                   }
-                  @keyframes finaleWave {
-                    0%   { transform: scale(0.05); opacity: 1; }
-                    100% { transform: scale(1.8); opacity: 0; }
+                  @keyframes zoneAwake {
+                    0%   { opacity: 0; transform: scale(0.6); }
+                    100% { opacity: 0.85; transform: scale(1); }
                   }
-
-                  /* 行间流光预热引导线 */
-                  .horizon-beam {
-                    fill: none;
-                    stroke: url(#beamGrad);
-                    stroke-width: 3;
-                    stroke-linecap: round;
-                    stroke-dasharray: 1 2;
-                    stroke-dashoffset: 1;
-                    opacity: 0;
-                    filter: url(#cometGlow);
-                  }
-                  .beam-1 { animation: beamSweep 0.9s cubic-bezier(.2, 0, .2, 1) 4.65s forwards; }
-                  .beam-2 { animation: beamSweep 0.9s cubic-bezier(.2, 0, .2, 1) 11.20s forwards; }
-                  @keyframes beamSweep {
-                    0%   { stroke-dashoffset: 1; opacity: 0; }
-                    20%  { opacity: 1; }
-                    70%  { opacity: 0.9; }
-                    100% { stroke-dashoffset: -1; opacity: 0; }
+                  @keyframes zoneBreathe {
+                    0%   { opacity: 0.85; transform: scale(1) translate(0px, 0px); }
+                    100% { opacity: 1;    transform: scale(1.12) translate(25px, -20px); }
                   }
 
-                  /* ================= 2. 笔触与追光彗星核心样式 ================= */
+                  /* ================= 2. 笔触景深重影层（Depth-of-Field Calligraphy Echo） ================= */
+                  .dof-echo {
+                    filter: url(#dofBlur);
+                    transform-origin: 800px 540px;
+                    transform: scale(1.38) translateY(-18px);
+                    pointer-events: none;
+                  }
+
+                  /* 贴合字面的同轨体积光晕 */
+                  .ink-halo {
+                    filter: url(#inkHalo);
+                    pointer-events: none;
+                    transform-origin: 800px 560px;
+                    animation: haloFinale 2.2s cubic-bezier(.25, 0, .2, 1) 18.40s forwards;
+                  }
+                  @keyframes haloFinale {
+                    0%   { opacity: 0.68; transform: scale(1); }
+                    45%  { opacity: 1;    transform: scale(1.03); }
+                    100% { opacity: 0.78; transform: scale(1); }
+                  }
+
+                  /* ================= 3. 核心笔触与追光彗星 ================= */
                   .h, .w, .e {
                     fill: none;
                     stroke-linecap: round;
@@ -398,38 +384,16 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                     stroke-dashoffset: 1;
                     visibility: hidden;
                   }
-                  /* 统一三行画布实际渲染线宽（~29.05px） */
                   .h { stroke: url(#inkH); stroke-width: 127; }
                   .w { stroke: url(#ink1); stroke-width: 326; }
                   .e { stroke: url(#ink2); stroke-width: 305; }
 
-                  /* 3D 液态玻璃内部高光脊线层 */
-                  .glass-spine {
-                    filter: drop-shadow(0px 10px 24px rgba(0, 0, 0, 0.65));
-                  }
                   .spine-overlay {
-                    opacity: 0.32;
-                    mix-blend-mode: screen;
                     transform: translate(-2px, -3px);
                     pointer-events: none;
                   }
 
-                  /* 实时同轨体积光晕层（18.4s 配合收尾流光产生全画布呼吸高潮） */
-                  .bloom-layer {
-                    filter: url(#volumetricBloom);
-                    opacity: 0.72;
-                    mix-blend-mode: screen;
-                    pointer-events: none;
-                    transform-origin: 800px 550px;
-                    animation: bloomFinale 2.2s cubic-bezier(.25, 0, .2, 1) 18.40s forwards;
-                  }
-                  @keyframes bloomFinale {
-                    0%   { opacity: 0.72; transform: scale(1); }
-                    45%  { opacity: 1;    transform: scale(1.03); }
-                    100% { opacity: 0.82; transform: scale(1); }
-                  }
-
-                  /* 笔尖追光彗星 */
+                  /* 笔尖实时追光彗星 */
                   .nib {
                     fill: none;
                     stroke: #ffffff;
@@ -457,46 +421,10 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                     to { transform: translate(0px, 0px) scale(1, 1); }
                   }
 
-                  /* ================= 3. 18.4s 全字面流光扫掠（Shimmer Finale） ================= */
-                  .shimmer-sweeper {
-                    animation: shimmerPass 1.65s cubic-bezier(.22, 1, .36, 1) 18.40s forwards;
-                  }
-                  @keyframes shimmerPass {
-                    0%   { transform: translateX(0px); }
-                    100% { transform: translateX(2650px); }
-                  }
-
-                  /* 伴随字面高光的微弱背景折射光幕 */
-                  .stage-curtain {
-                    opacity: 0;
-                    mix-blend-mode: screen;
-                    pointer-events: none;
-                    animation: curtainPass 1.65s cubic-bezier(.22, 1, .36, 1) 18.40s forwards;
-                  }
-                  @keyframes curtainPass {
-                    0%   { transform: translateX(0px); opacity: 0; }
-                    15%  { opacity: 1; }
-                    85%  { opacity: 1; }
-                    100% { transform: translateX(2650px); opacity: 0; }
-                  }
-
-                  /* 叠在字面上的双层高光（外层霓虹耀斑 + 内层纯白镜面反光） */
-                  .shimmer-flare {
-                    filter: url(#cometGlow) brightness(1.9) saturate(1.4);
-                    mix-blend-mode: screen;
-                    pointer-events: none;
-                  }
-                  .shimmer-specular {
-                    filter: brightness(3.2) contrast(1.5);
-                    mix-blend-mode: overlay;
-                    opacity: 0.95;
-                    pointer-events: none;
-                  }
-
                   /* ================= 4. 严格同步的匀速时间轴 (628.9 px/s) ================= */
-                  /* Line 0: hello */
+                  /* Line 0: hello（开场居中，3.7s 平滑归位至左上角 y=235） */
                   .hello-park {
-                    transform: translate(495.2px, 358.1px) scale(0.8086, 0.8086);
+                    transform: translate(496.0px, 378.0px) scale(0.8086, 0.8086);
                     animation: park 1.2s cubic-bezier(.65, 0, .35, 1) 3.7s forwards;
                   }
                   .h1  { animation: draw    0.90s cubic-bezier(.4, 0, .4, 1) 0.40s forwards; }
@@ -504,7 +432,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                   .h2  { animation: draw    2.40s linear 1.30s forwards; }
                   .nh2 { animation: nibDraw 2.40s linear 1.30s forwards; }
 
-                  /* Line 1: welcome to */
+                  /* Line 1: welcome to（位于画布黄金中心上行 y=520） */
                   .w1  { animation: draw    4.72s linear 5.10s forwards; }
                   .nw1 { animation: nibDraw 4.72s linear 5.10s forwards; }
                   .w2  { animation: draw    1.25s linear 9.94s forwards; }
@@ -512,85 +440,106 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                   .w3  { animation: draw    0.12s linear 11.27s forwards; }
                   .nw3 { animation: nibDraw 0.12s linear 11.27s forwards; }
 
-                  /* Line 2: epocanvas */
+                  /* Line 2: epocanvas（位于画布黄金中心下行 y=700） */
                   .e1  { animation: draw    1.67s linear 11.65s forwards; }
                   .ne1 { animation: nibDraw 1.67s linear 11.65s forwards; }
                   .e2  { animation: draw    5.01s linear 13.40s forwards; }
                   .ne2 { animation: nibDraw 5.01s linear 13.40s forwards; }
 
-                  /* ================= 5. 暗色调与亮色调主题自适应系统 ================= */
-                  /* 5.1 基础/亮色模式 (Light Theme Default) */
-                  .svg-bg { fill: url(#lightBg); }
-                  .svg-spot { fill: url(#lightSpot); }
-                  .spatial-grid-line { stroke: #000000; stroke-opacity: 0.04; }
-                  .spatial-grid-dot { fill: #425aef; fill-opacity: 0.14; }
-                  .glass-spine { filter: drop-shadow(0px 8px 20px rgba(66, 90, 239, 0.22)); }
-                  .spine-overlay { opacity: 0.28; mix-blend-mode: multiply; }
-                  .bloom-layer { opacity: 0.38; mix-blend-mode: multiply; }
-                  .stage-curtain { fill: url(#stageCurtainGradLight); mix-blend-mode: multiply; }
+                  /* ================= 5. 18.4s 全字面流光扫掠（Shimmer Finale） ================= */
+                  .shimmer-sweeper {
+                    animation: shimmerPass 1.65s cubic-bezier(.22, 1, .36, 1) 18.40s forwards;
+                  }
+                  @keyframes shimmerPass {
+                    0%   { transform: translateX(0px); }
+                    100% { transform: translateX(2650px); }
+                  }
+                  .shimmer-flare {
+                    pointer-events: none;
+                  }
+                  .shimmer-specular {
+                    pointer-events: none;
+                  }
+
+                  /* ================= 6. 深浅色无缝自适应系统 (Theme Adaptive Matrix) ================= */
+                  /* 6.1 亮色模式 (Light Mode Default) */
+                  .bg-base { fill: url(#silkBaseLight); }
+                  .bg-warm { fill: url(#ambientWarmLight); }
+                  .bg-cool { fill: url(#ambientCoolLight); }
+                  .bg-center { fill: url(#centerStageGlowLight); }
+                  .ink-zone { mix-blend-mode: multiply; opacity: 0.52; }
+                  .dof-echo { opacity: 0.12; mix-blend-mode: multiply; }
+                  .ink-halo { opacity: 0.28; mix-blend-mode: multiply; }
+                  .stroke-shadow { filter: drop-shadow(0px 8px 20px rgba(66, 90, 239, 0.20)); }
+                  .spine-overlay { opacity: 0.42; mix-blend-mode: overlay; }
                   .shimmer-flare { filter: url(#cometGlow) brightness(1.2) saturate(1.4); mix-blend-mode: multiply; }
                   .shimmer-specular { filter: brightness(1.8) contrast(1.2); mix-blend-mode: overlay; opacity: 0.85; }
 
-                  /* 5.2 系统级深色模式 (OS-level Dark Mode Preference) */
+                  /* 6.2 系统级深色模式 (OS-level Dark Mode Preference) */
                   @media (prefers-color-scheme: dark) {
-                    .svg-bg { fill: url(#voidBg); }
-                    .svg-spot { fill: url(#stageSpot); }
-                    .spatial-grid-line { stroke: #ffffff; stroke-opacity: 0.03; }
-                    .spatial-grid-dot { fill: #ffffff; fill-opacity: 0.14; }
-                    .glass-spine { filter: drop-shadow(0px 10px 24px rgba(0, 0, 0, 0.65)); }
-                    .spine-overlay { opacity: 0.32; mix-blend-mode: screen; }
-                    .bloom-layer { opacity: 0.72; mix-blend-mode: screen; }
-                    .stage-curtain { fill: url(#stageCurtainGrad); mix-blend-mode: screen; }
+                    .bg-base { fill: url(#silkBaseDark); }
+                    .bg-warm { fill: url(#ambientWarmDark); }
+                    .bg-cool { fill: url(#ambientCoolDark); }
+                    .bg-center { fill: url(#centerStageGlowDark); }
+                    .ink-zone { mix-blend-mode: screen; }
+                    .dof-echo { opacity: 0.42; mix-blend-mode: screen; }
+                    .ink-halo { opacity: 0.68; mix-blend-mode: screen; }
+                    .stroke-shadow { filter: drop-shadow(0px 14px 26px rgba(8, 5, 20, 0.62)); }
+                    .spine-overlay { opacity: 0.34; mix-blend-mode: screen; }
                     .shimmer-flare { filter: url(#cometGlow) brightness(1.9) saturate(1.4); mix-blend-mode: screen; }
                     .shimmer-specular { filter: brightness(3.2) contrast(1.5); mix-blend-mode: overlay; opacity: 0.95; }
                   }
 
-                  /* 5.3 页面显式深色模式覆盖 (Page Attribute: data-theme="dark") */
-                  :root[data-theme='dark'] .svg-bg,
-                  [data-theme='dark'] .svg-bg { fill: url(#voidBg) !important; }
-                  :root[data-theme='dark'] .svg-spot,
-                  [data-theme='dark'] .svg-spot { fill: url(#stageSpot) !important; }
-                  :root[data-theme='dark'] .spatial-grid-line,
-                  [data-theme='dark'] .spatial-grid-line { stroke: #ffffff !important; stroke-opacity: 0.03 !important; }
-                  :root[data-theme='dark'] .spatial-grid-dot,
-                  [data-theme='dark'] .spatial-grid-dot { fill: #ffffff !important; fill-opacity: 0.14 !important; }
-                  :root[data-theme='dark'] .glass-spine,
-                  [data-theme='dark'] .glass-spine { filter: drop-shadow(0px 10px 24px rgba(0, 0, 0, 0.65)) !important; }
+                  /* 6.3 页面显式深色模式覆盖 (Page Attribute: data-theme="dark") */
+                  :root[data-theme='dark'] .bg-base,
+                  [data-theme='dark'] .bg-base { fill: url(#silkBaseDark) !important; }
+                  :root[data-theme='dark'] .bg-warm,
+                  [data-theme='dark'] .bg-warm { fill: url(#ambientWarmDark) !important; }
+                  :root[data-theme='dark'] .bg-cool,
+                  [data-theme='dark'] .bg-cool { fill: url(#ambientCoolDark) !important; }
+                  :root[data-theme='dark'] .bg-center,
+                  [data-theme='dark'] .bg-center { fill: url(#centerStageGlowDark) !important; }
+                  :root[data-theme='dark'] .ink-zone,
+                  [data-theme='dark'] .ink-zone { mix-blend-mode: screen !important; }
+                  :root[data-theme='dark'] .dof-echo,
+                  [data-theme='dark'] .dof-echo { opacity: 0.42 !important; mix-blend-mode: screen !important; }
+                  :root[data-theme='dark'] .ink-halo,
+                  [data-theme='dark'] .ink-halo { opacity: 0.68 !important; mix-blend-mode: screen !important; }
+                  :root[data-theme='dark'] .stroke-shadow,
+                  [data-theme='dark'] .stroke-shadow { filter: drop-shadow(0px 14px 26px rgba(8, 5, 20, 0.62)) !important; }
                   :root[data-theme='dark'] .spine-overlay,
-                  [data-theme='dark'] .spine-overlay { opacity: 0.32 !important; mix-blend-mode: screen !important; }
-                  :root[data-theme='dark'] .bloom-layer,
-                  [data-theme='dark'] .bloom-layer { opacity: 0.72 !important; mix-blend-mode: screen !important; }
-                  :root[data-theme='dark'] .stage-curtain,
-                  [data-theme='dark'] .stage-curtain { fill: url(#stageCurtainGrad) !important; mix-blend-mode: screen !important; }
+                  [data-theme='dark'] .spine-overlay { opacity: 0.34 !important; mix-blend-mode: screen !important; }
                   :root[data-theme='dark'] .shimmer-flare,
                   [data-theme='dark'] .shimmer-flare { filter: url(#cometGlow) brightness(1.9) saturate(1.4) !important; mix-blend-mode: screen !important; }
                   :root[data-theme='dark'] .shimmer-specular,
                   [data-theme='dark'] .shimmer-specular { filter: brightness(3.2) contrast(1.5) !important; mix-blend-mode: overlay !important; opacity: 0.95 !important; }
 
-                  /* 5.4 页面显式浅色模式覆盖 (Page Attribute: data-theme="light") */
-                  :root[data-theme='light'] .svg-bg,
-                  [data-theme='light'] .svg-bg { fill: url(#lightBg) !important; }
-                  :root[data-theme='light'] .svg-spot,
-                  [data-theme='light'] .svg-spot { fill: url(#lightSpot) !important; }
-                  :root[data-theme='light'] .spatial-grid-line,
-                  [data-theme='light'] .spatial-grid-line { stroke: #000000 !important; stroke-opacity: 0.04 !important; }
-                  :root[data-theme='light'] .spatial-grid-dot,
-                  [data-theme='light'] .spatial-grid-dot { fill: #425aef !important; fill-opacity: 0.14 !important; }
-                  :root[data-theme='light'] .glass-spine,
-                  [data-theme='light'] .glass-spine { filter: drop-shadow(0px 8px 20px rgba(66, 90, 239, 0.22)) !important; }
+                  /* 6.4 页面显式浅色模式覆盖 (Page Attribute: data-theme="light") */
+                  :root[data-theme='light'] .bg-base,
+                  [data-theme='light'] .bg-base { fill: url(#silkBaseLight) !important; }
+                  :root[data-theme='light'] .bg-warm,
+                  [data-theme='light'] .bg-warm { fill: url(#ambientWarmLight) !important; }
+                  :root[data-theme='light'] .bg-cool,
+                  [data-theme='light'] .bg-cool { fill: url(#ambientCoolLight) !important; }
+                  :root[data-theme='light'] .bg-center,
+                  [data-theme='light'] .bg-center { fill: url(#centerStageGlowLight) !important; }
+                  :root[data-theme='light'] .ink-zone,
+                  :root[data-theme='light'] .ink-zone, [data-theme='light'] .ink-zone { mix-blend-mode: multiply !important; opacity: 0.52 !important; }
+                  :root[data-theme='light'] .dof-echo,
+                  :root[data-theme='light'] .dof-echo, [data-theme='light'] .dof-echo { opacity: 0.12 !important; mix-blend-mode: multiply !important; }
+                  :root[data-theme='light'] .ink-halo,
+                  [data-theme='light'] .ink-halo { opacity: 0.28 !important; mix-blend-mode: multiply !important; }
+                  :root[data-theme='light'] .stroke-shadow,
+                  [data-theme='light'] .stroke-shadow { filter: drop-shadow(0px 8px 20px rgba(66, 90, 239, 0.20)) !important; }
                   :root[data-theme='light'] .spine-overlay,
-                  [data-theme='light'] .spine-overlay { opacity: 0.28 !important; mix-blend-mode: multiply !important; }
-                  :root[data-theme='light'] .bloom-layer,
-                  [data-theme='light'] .bloom-layer { opacity: 0.38 !important; mix-blend-mode: multiply !important; }
-                  :root[data-theme='light'] .stage-curtain,
-                  [data-theme='light'] .stage-curtain { fill: url(#stageCurtainGradLight) !important; mix-blend-mode: multiply !important; }
+                  [data-theme='light'] .spine-overlay { opacity: 0.42 !important; mix-blend-mode: overlay !important; }
                   :root[data-theme='light'] .shimmer-flare,
                   [data-theme='light'] .shimmer-flare { filter: url(#cometGlow) brightness(1.2) saturate(1.4) !important; mix-blend-mode: multiply !important; }
                   :root[data-theme='light'] .shimmer-specular,
                   [data-theme='light'] .shimmer-specular { filter: brightness(1.8) contrast(1.2) !important; mix-blend-mode: overlay !important; opacity: 0.85 !important; }
 
                   @media (prefers-reduced-motion: reduce) {
-                    .h, .w, .e, .nib, .hello-park, #cameraStage, .ripple, .horizon-beam, .shimmer-sweeper, .stage-curtain, .bloom-layer {
+                    .h, .w, .e, .nib, .hello-park, .ink-zone, .shimmer-sweeper, .ink-halo {
                       animation-duration: .01s !important;
                       animation-delay: 0s !important;
                     }
@@ -598,81 +547,184 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
                 </style>
               </defs>
 
-              <!-- 1. 舞台底膜 -->
-              <rect class="svg-bg" height="1000" width="1600"/>
+              <!-- 1. 多层次丝绸极光底纹（自适应昼夜光泽） -->
+              <rect class="bg-base" height="1000" width="1600"/>
+              <rect class="bg-warm" height="1000" width="1600"/>
+              <rect class="bg-cool" height="1000" width="1600"/>
+              <rect class="bg-center" height="1000" width="1600"/>
 
-              <!-- 2. 镜头视差舞台层（随 hello 归位同步拉远镜头） -->
-              <g id="cameraStage">
-                <ellipse class="svg-spot" cx="800" cy="500" rx="760" ry="480"/>
-                <rect fill="url(#spatialGrid)" height="1400" width="2200" x="-300" y="-200"/>
-                <!-- 0.4s 起笔波纹、3.7s 镜头切换冲击波、18.4s 收笔波纹 -->
-                <circle class="ripple r-start" cx="800" cy="500" r="260"/>
-                <circle class="ripple r-park" cx="800" cy="500" r="320"/>
-                <circle class="ripple r-finale" cx="1434" cy="870" r="220"/>
-              </g>
+              <!-- 2. 随笔触推进依次唤醒的四色环境光场 -->
+              <ellipse class="ink-zone z-coral" cx="260" cy="580" fill="url(#zoneCoral)" rx="480" ry="360"/>
+              <ellipse class="ink-zone z-rose" cx="640" cy="560" fill="url(#zoneRose)" rx="500" ry="380"/>
+              <ellipse class="ink-zone z-violet" cx="1020" cy="620" fill="url(#zoneViolet)" rx="500" ry="380"/>
+              <ellipse class="ink-zone z-cyan" cx="1380" cy="600" fill="url(#zoneCyan)" rx="480" ry="360"/>
 
-              <!-- 3. 落笔前的横向流光激活束 -->
-              <line class="horizon-beam beam-1" pathLength="1" x1="80" x2="1520" y1="680" y2="680"/>
-              <line class="horizon-beam beam-2" pathLength="1" x1="80" x2="1520" y1="860" y2="860"/>
+              <!-- 3. 背景巨幅柔焦笔触重影（Depth-of-Field Echo：将书写动作投射为背景流体光带） -->
+              <use class="dof-echo" href="#inkMaster"/>
 
-              <!-- 4. 实时同轨体积光晕（笔尖写到哪，背景网格就亮到哪，并在 18.4s 迎来整体高潮脉冲） -->
-              <use class="bloom-layer" href="#inkMaster"/>
+              <!-- 4. 贴合字面的实时同轨光晕 -->
+              <use class="ink-halo" href="#inkMaster"/>
 
-              <!-- 5. 主体一笔连写墨水层 -->
-              <g class="glass-spine" id="inkMaster">
-                <!-- Line 0: hello -->
+              <!-- 5. 主体一笔连写墨水层（无任何方框，welcome to epocanvas 严格居中） -->
+              <g class="stroke-shadow" id="inkMaster">
+                <!-- Line 0: hello（开场居中，3.7s 移至左上角 y=235） -->
                 <g class="hello-park">
-                  <g transform="translate(115.0,258.9) scale(0.2291,-0.2291)">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
                     <path class="h h1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
                     <path class="h h2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
                   </g>
                 </g>
 
-                <!-- Line 1: welcome to -->
-                <g transform="translate(100.0,700) scale(0.08911)">
+                <!-- Line 1: welcome to（位于画布黄金中心上行：x=88, y=520） -->
+                <g transform="translate(88.0,520.0) scale(0.08911)">
                   <path class="w w1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
                   <path class="w w2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
                   <path class="w w3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
                 </g>
 
-                <!-- Line 2: epocanvas -->
-                <g transform="translate(100.0,880) scale(0.09526)">
+                <!-- Line 2: epocanvas（位于画布黄金中心下行：x=100, y=700） -->
+                <g transform="translate(100.0,700.0) scale(0.09526)">
                   <path class="e e1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
                   <path class="e e2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
                 </g>
               </g>
 
-              <!-- 6. 3D 液态玻璃高光脊线层 -->
+              <!-- 6. 3D 液态玻璃内部高光脊线 -->
               <use class="spine-overlay" href="#inkMaster"/>
 
               <!-- 7. 笔尖实时追光彗星层（Comet Nib） -->
               <g filter="url(#cometGlow)">
                 <!-- hello 追光笔尖 -->
                 <g class="hello-park">
-                  <g transform="translate(115.0,258.9) scale(0.2291,-0.2291)">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
                     <path class="nib nh nh1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
                     <path class="nib nh nh2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
                   </g>
                 </g>
 
                 <!-- welcome to 追光笔尖 -->
-                <g transform="translate(100.0,700) scale(0.08911)">
+                <g transform="translate(88.0,520.0) scale(0.08911)">
                   <path class="nib nw nw1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
                   <path class="nib nw nw2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
                   <path class="nib nw nw3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
                 </g>
 
                 <!-- epocanvas 追光笔尖 -->
-                <g transform="translate(100.0,880) scale(0.09526)">
+                <g transform="translate(100.0,700.0) scale(0.09526)">
                   <path class="nib ne ne1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
                   <path class="nib ne ne2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
                 </g>
               </g>
 
-              <!-- 8. 18.4s 收尾高潮动作：全画布微光光幕 + 锁定字面的双层流光扫掠 (Shimmer Finale) -->
-              <g transform="skewX(-22)">
-                <rect class="stage-curtain" fill="url(#stageCurtainGrad)" height="1400" width="460" x="-520" y="-200"/>
+              <!-- 6. 3D 液态玻璃内部高光脊线 -->
+              <use class="spine-overlay" href="#inkMaster"/>
+
+              <!-- 7. 笔尖实时追光彗星层（Comet Nib） -->
+              <g filter="url(#cometGlow)">
+                <!-- hello 追光笔尖 -->
+                <g class="hello-park">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
+                    <path class="nib nh nh1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
+                    <path class="nib nh nh2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
+                  </g>
+                </g>
+
+                <!-- welcome to 追光笔尖 -->
+                <g transform="translate(88.0,520.0) scale(0.08911)">
+                  <path class="nib nw nw1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
+                  <path class="nib nw nw2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
+                  <path class="nib nw nw3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
+                </g>
+
+                <!-- epocanvas 追光笔尖 -->
+                <g transform="translate(100.0,700.0) scale(0.09526)">
+                  <path class="nib ne ne1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
+                  <path class="nib ne ne2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
+                </g>
               </g>
+
+              <!-- 6. 3D 液态玻璃内部高光脊线 -->
+              <use class="spine-overlay" href="#inkMaster"/>
+
+              <!-- 7. 笔尖实时追光彗星层（Comet Nib） -->
+              <g filter="url(#cometGlow)">
+                <!-- hello 追光笔尖 -->
+                <g class="hello-park">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
+                    <path class="nib nh nh1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
+                    <path class="nib nh nh2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
+                  </g>
+                </g>
+
+                <!-- welcome to 追光笔尖 -->
+                <g transform="translate(88.0,520.0) scale(0.08911)">
+                  <path class="nib nw nw1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
+                  <path class="nib nw nw2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
+                  <path class="nib nw nw3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
+                </g>
+
+                <!-- epocanvas 追光笔尖 -->
+                <g transform="translate(100.0,700.0) scale(0.09526)">
+                  <path class="nib ne ne1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
+                  <path class="nib ne ne2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
+                </g>
+              </g>
+
+              <!-- 6. 3D 液态玻璃内部高光脊线 -->
+              <use class="spine-overlay" href="#inkMaster"/>
+
+              <!-- 7. 笔尖实时追光彗星层（Comet Nib） -->
+              <g filter="url(#cometGlow)">
+                <!-- hello 追光笔尖 -->
+                <g class="hello-park">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
+                    <path class="nib nh nh1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
+                    <path class="nib nh nh2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
+                  </g>
+                </g>
+
+                <!-- welcome to 追光笔尖 -->
+                <g transform="translate(88.0,520.0) scale(0.08911)">
+                  <path class="nib nw nw1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
+                  <path class="nib nw nw2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
+                  <path class="nib nw nw3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
+                </g>
+
+                <!-- epocanvas 追光笔尖 -->
+                <g transform="translate(100.0,700.0) scale(0.09526)">
+                  <path class="nib ne ne1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
+                  <path class="nib ne ne2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
+                </g>
+              </g>
+
+              <!-- 6. 3D 液态玻璃内部高光脊线 -->
+              <use class="spine-overlay" href="#inkMaster"/>
+
+              <!-- 7. 笔尖实时追光彗星层（Comet Nib） -->
+              <g filter="url(#cometGlow)">
+                <!-- hello 追光笔尖 -->
+                <g class="hello-park">
+                  <g transform="translate(115.0,235.0) scale(0.2291,-0.2291)">
+                    <path class="nib nh nh1" d="M-109.06069946289062,95.92639923095703 C1.9544999599456787,157.6403045654297 103.11389923095703,236.9969940185547 217.881103515625,372.07550048828125 C296,464.2846984863281 337.9999084472656,569.5725708007812 340,642.1939697265625 C341,696.1920166015625 314.6702880859375,737.156005859375 266,737.156005859375 C212,737.156005859375 178,696.1920166015625 157,602.1610107421875 C134,498.82000732421875 117,380.239990234375 74,0" pathLength="1"/>
+                    <path class="nib nh nh2" d="M78.21453094482422,37.160953521728516 C100.22924041748047,230.68260192871094 184,372 291,372 C355,372 395.6745910644531,321 384.1253967285156,248 C377.6238098144531,205 370.0873107910156,161 361.3063049316406,110 C351.0714111328125,46 380.3254089355469,-4 468.96173095703125,-4 C598.2246704101562,-4 739.2435302734375,67.83381652832031 811.4124145507812,179.0941619873047 C836,217 846,251 847,284 C848,344 814,389 754,389 C678,389 620,303 620,193 C620,75 684,-8 819.9180908203125,-8 C1004.7244873046875,-8 1209.4246826171875,213.84754943847656 1303.4808349609375,461.42327880859375 C1330.037353515625,531.3258056640625 1340,596.2349243164062 1340,641.593994140625 C1340,695.3764038085938 1323,736.673583984375 1275,736.673583984375 C1228,736.673583984375 1197,700.1784057617188 1169,642.5543823242188 C1136.1939697265625,575.7216186523438 1111.927734375,479.32598876953125 1102,370.3599853515625 C1077,96.94000244140625 1133,-4 1266.152099609375,-4 C1427.6083984375,-4 1607.1151123046875,220.92921447753906 1698.771728515625,462.18878173828125 C1725.037353515625,531.3258056640625 1735,596.2349243164062 1735,641.593994140625 C1735,695.3764038085938 1718,736.673583984375 1670,736.673583984375 C1623,736.673583984375 1592,700.1784057617188 1564,642.5543823242188 C1531.1939697265625,575.7216186523438 1506.927734375,479.32598876953125 1497,370.3599853515625 C1472,96.94000244140625 1528,-4 1646.906005859375,-4 C1765.623779296875,-4 1830.114990234375,99.48485565185547 1868.77880859375,209.3712158203125 C1907,318 1954,385 2052,385 C2133,385 2197,325 2197,212 C2197,87 2115.90087890625,-7 2013.41845703125,-8 C1923.234130859375,-9 1864,64 1870,174 C1877,296 1951,385 2048,385 C2104,385 2151.03564453125,360.1071472167969 2188,333 C2288.21435546875,259.8928527832031 2365.4287109375,305.0714416503906 2395,377.3571472167969" pathLength="1"/>
+                  </g>
+                </g>
+
+                <!-- welcome to 追光笔尖 -->
+                <g transform="translate(88.0,520.0) scale(0.08911)">
+                  <path class="nib nw nw1" d="M150,-741 C210,-945 335,-1097 501,-1097 C710,-1097 765,-890 741,-760 C715,-620 676,-460 676,-340 C676,-165 785,-62 935,-62 C1120,-62 1275,-230 1352,-423 C1410,-570 1440,-880 1464,-1029 C1435,-850 1405,-660 1405,-460 C1405,-210 1530,-72 1722,-72 C1945,-72 2157,-350 2157,-691 C2157,-850 2095,-990 2033,-1095 C2045,-980 2055,-915 2080,-843 C2195,-510 2490,-365 2837,-365 C3120,-365 3375,-465 3481,-634 C3525,-705 3541,-780 3541,-854 C3541,-995 3435,-1103 3283,-1103 C3055,-1103 2898,-850 2898,-559 C2898,-465 2915,-388 2946,-323 C3035,-135 3225,-37 3481,-37 C3850,-37 4185,-250 4427,-505 C4585,-670 4700,-895 4782,-1108 C4885,-1375 4936,-1595 4936,-1781 C4936,-1935 4845,-2044 4714,-2044 C4545,-2044 4415,-1790 4339,-1464 C4290,-1255 4271,-1045 4271,-846 C4271,-695 4288,-555 4324,-443 C4410,-175 4595,-59 4825,-59 C5110,-59 5335,-365 5458,-699 C5555,-960 5720,-1100 5917,-1100 C6055,-1100 6165,-1045 6255,-963 C6165,-1045 6055,-1100 5917,-1100 C5635,-1100 5443,-855 5443,-548 C5443,-468 5456,-398 5481,-337 C5565,-135 5745,-38 5978,-38 C6335,-38 6615,-275 6783,-617 C6910,-875 7080,-1101 7300,-1101 C7550,-1101 7713,-885 7713,-635 C7713,-315 7495,-62 7212,-62 C6975,-62 6808,-255 6808,-523 C6808,-845 7010,-1101 7300,-1101 C7360,-1101 7418,-1088 7470,-1066 C7685,-965 7915,-710 8128,-710 C8355,-710 8545,-915 8667,-1101 L8510,-56 C8560,-390 8615,-735 8720,-915 C8805,-1055 8925,-1112 9060,-1112 C9255,-1112 9365,-975 9365,-775 C9365,-585 9305,-310 9265,-57 C9325,-390 9395,-735 9500,-910 C9585,-1050 9695,-1105 9815,-1105 C10005,-1105 10108,-965 10108,-775 C10108,-595 10055,-415 10069,-254 C10082,-115 10205,-48 10392,-48 C10685,-48 11185,-225 11412,-562 C11460,-635 11482,-720 11482,-811 C11482,-975 11365,-1101 11214,-1101 C10995,-1101 10853,-865 10853,-594 C10853,-255 11065,-27 11376,-27 C11585,-27 11765,-130 11913,-267" pathLength="1"/>
+                  <path class="nib nw nw2" d="M12761,-46 C13055,-230 13265,-520 13370,-860 C13430,-1055 13475,-1280 13515,-1512 C13455,-1165 13350,-685 13350,-395 C13350,-185 13495,-63 13719,-63 C14055,-63 14335,-445 14492,-767 C14615,-1015 14775,-1098 14943,-1098 C15185,-1098 15358,-925 15358,-659 C15358,-325 15135,-61 14847,-61 C14615,-61 14446,-235 14446,-499 C14446,-835 14655,-1098 14943,-1098 C15145,-1098 15315,-957 15484,-957 C15615,-957 15730,-1020 15832,-1118" pathLength="1"/>
+                  <path class="nib nw nw3" d="M13113,-1092 C13375,-1093 13640,-1093 13902,-1092" pathLength="1"/>
+                </g>
+
+                <!-- epocanvas 追光笔尖 -->
+                <g transform="translate(100.0,700.0) scale(0.09526)">
+                  <path class="nib ne ne1" d="M66,-141 C450,-155 785,-265 985,-495 C1085,-610 1136,-720 1136,-821 C1136,-980 1030,-1101 890,-1101 C670,-1101 514,-865 514,-574 C514,-440 550,-315 623,-226 C735,-90 895,-34 1089,-34 C1445,-34 1735,-285 1910,-640 C1985,-790 2045,-950 2097,-1101 L1770,931 L1970,-313 C2020,-625 2110,-895 2245,-1010 C2325,-1075 2415,-1099 2513,-1099 C2705,-1099 2842,-945 2842,-727 C2842,-365 2610,-66 2309,-66 C2175,-66 2055,-140 1954,-225" pathLength="1"/>
+                  <path class="nib ne ne2" d="M3074,-74 C3365,-175 3555,-345 3715,-645 C3835,-870 3995,-1101 4219,-1101 C4465,-1101 4632,-885 4632,-635 C4632,-315 4415,-62 4131,-62 C3895,-62 3727,-255 3727,-523 C3727,-845 3930,-1101 4219,-1101 C4280,-1101 4338,-1088 4389,-1066 C4605,-965 4865,-709 5101,-709 C5275,-709 5405,-830 5506,-954 C5600,-1060 5705,-1101 5828,-1101 C5965,-1101 6075,-1045 6168,-963 C6075,-1045 5965,-1101 5828,-1101 C5545,-1101 5358,-835 5358,-493 C5358,-220 5565,-38 5883,-38 C6285,-38 6610,-335 6774,-700 C6895,-965 7055,-1104 7248,-1104 C7395,-1104 7505,-1035 7607,-946 C7505,-1035 7395,-1104 7248,-1104 C6950,-1104 6740,-825 6740,-488 C6740,-225 6875,-51 7077,-51 C7325,-51 7490,-385 7565,-755 C7590,-880 7610,-995 7629,-1107 C7580,-795 7524,-495 7524,-355 C7524,-165 7635,-57 7814,-57 C8125,-57 8435,-545 8601,-1101 L8438,-63 C8505,-420 8585,-765 8715,-935 C8805,-1055 8915,-1107 9045,-1107 C9240,-1107 9361,-975 9361,-800 C9361,-615 9305,-435 9305,-325 C9305,-160 9410,-62 9580,-62 C9885,-62 10095,-585 10229,-952 C10285,-1045 10375,-1087 10475,-1087 C10635,-1087 10729,-975 10729,-817 C10729,-655 10660,-510 10660,-380 C10660,-185 10790,-59 10979,-59 C11225,-59 11406,-335 11406,-650 C11406,-815 11355,-965 11280,-1097 C11415,-855 11605,-706 11836,-706 C12035,-706 12205,-805 12329,-929 C12435,-1035 12555,-1103 12691,-1103 C12835,-1103 12950,-1035 13054,-945 C12950,-1035 12835,-1103 12691,-1103 C12395,-1103 12183,-825 12183,-485 C12183,-225 12320,-50 12525,-50 C12775,-50 12935,-385 13012,-755 C13038,-880 13058,-990 13077,-1101 C13025,-790 12966,-490 12966,-355 C12966,-170 13075,-66 13245,-66 C13565,-66 13965,-565 14135,-997 C14162,-1065 14182,-1135 14198,-1203 C14265,-995 14640,-685 14640,-402 C14640,-165 14485,-17 14273,-17 C14175,-17 14085,-50 14003,-106" pathLength="1"/>
+                </g>
+              </g>
+
+              <!-- 8. 18.4s 收尾字面流光扫掠（Shimmer Finale） -->
               <g mask="url(#shimmerMask)">
                 <use class="shimmer-flare" href="#inkMaster"/>
                 <use class="shimmer-specular" href="#inkMaster"/>
