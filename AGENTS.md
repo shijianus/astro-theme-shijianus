@@ -5663,3 +5663,21 @@
 - [x] **全流程端到端自动化测试与实机验证通过 (`scripts/verify-live-todaycard.mjs`)**：
   - 本地与生产端真实渲染验证通过，Neon 笔画动画正常播放，`todayCard-info` 标题与提示完好无损。
 
+### Task 264: 今日推荐卡片 (todayCard-cover) 深度打磨、字符丢失修复与深浅色无缝自适应系统 (f0081b8)
+- [x] **修复 "to" 字符丢失与仅剩 "-" 问题**：
+  - 排查确认前版本中由于 `w2` 的无效回环贝塞尔曲线及与横线 `w3` 的时序冲突，导致在待机显式中 `to` 主体缺失；
+  - 重构 `w2` 笔划为标准单向连笔，并调整书写时序为 9.94s~11.19s（紧随 5.10s~9.82s 的 `w1`），先于 11.27s 开始的 `w3` 短横线，彻底解决待机与书写状态下 "to" 丢失缺陷。
+- [x] **升级全套视觉动效系统**：
+  - **镜头视差推拉 (Camera Stage Pullback)**：0~3.7s 聚焦局部放大（scale 1.32），3.7s 随 "hello" 归位平滑拉远至全景（scale 1.0）；
+  - **行间流光预热引导线 (Horizon Beam)**：4.65s 与 11.20s 快速扫过第 1、2 行提示落笔；
+  - **笔尖追光彗星 (Comet Nib)**：高亮纯白彗星笔尖同步跟随笔迹流动，书写完成后自然淡出；
+  - **3D 液态玻璃高光脊线 (Spine Overlay) 与实时同轨体积光晕 (Volumetric Bloom)**；
+  - **18.4s 全字面流光扫掠 (Shimmer Finale)**：倾斜光幕横扫全画布，并使用精确 SVG Mask 锁定双层高光（霓虹耀斑 + 镜面反光）。
+- [x] **引入深浅色主题自适应系统 (Dark / Light Theme Adaptive Matrix)**：
+  - **晶曜白璧模式 (Light Mode)**：浅色渐变底膜（`#lightBg`：`#ffffff` -> `#f6f8fe` -> `#e8eefa`）、柔和环境光（`#lightSpot`）、深色微光学网格（`stroke: #000000; stroke-opacity: 0.04;`）与正片叠底（`multiply`）光晕与流光；
+  - **深空暗曜模式 (Dark Mode)**：深曜基底（`#voidBg`：`#0d101d` -> `#070810` -> `#030408`）、紫色环境聚光（`#stageSpot`）、纯白微光学网格与滤色（`screen`）高光滤镜；
+  - **CSS 自适应层级**：同时覆盖 `:root[data-theme='dark']`、`[data-theme='dark']`、`:root[data-theme='light']`、`[data-theme='light']` 及 `@media (prefers-color-scheme: dark)`，杜绝 CSS 语法错误，并在 `src/styles/global.css` 中为暗色模式配置 `:root[data-theme='dark'] .topGroup svg.todayCard-cover { background: #070810; }`，彻底根除白色闪烁。
+- [x] **全量自动化测试与真实生产端验证**：
+  - 编写本地与生产端全流程端到端自动化测试套件（`scripts/verify-todaycard-themes.mjs` 与 `scripts/verify-live-todaycard-e2e.mjs`）；
+  - 针对真实生产环境 `https://blog.epocanvas.com/` 进行实机审计：HTTP 状态 200，0 控制台致命报错，`todayCard` 完好展现，`w1`、`w2`（"to"）、`w3` 全部正常加载与可见，深浅色切换即时生效。
+
