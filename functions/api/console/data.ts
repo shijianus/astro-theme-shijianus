@@ -16,20 +16,20 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
   }
 
   try {
-    // 优先读取静态打包生成的预编译指标与热力图 JSON (同源边缘快速响应)
     const url = new URL(context.request.url);
     const assetUrl = new URL('/data/console-metrics.json', url.origin);
     
     let baseData: any = null;
     try {
-      const res = await fetch(assetUrl.toString(), {
-        headers: { Accept: 'application/json' },
-      });
-      if (res.ok) {
+      const assetBinding = (context.env as any)?.ASSETS;
+      const res = assetBinding
+        ? await assetBinding.fetch(new Request(assetUrl.toString()))
+        : await fetch(assetUrl.toString());
+      if (res && res.ok) {
         baseData = await res.json();
       }
     } catch (e) {
-      // Ignore static asset fetch error and fallback
+      // Fallback seamlessly if assets fetch fails
     }
 
     const now = new Date();
@@ -37,7 +37,6 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
     const dynamicUptimeDays = Math.floor((now.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
 
     if (baseData && baseData.ok) {
-      // 动态校准最新运行天数与时间戳
       baseData.stats.uptimeDays = dynamicUptimeDays;
       baseData.servedAt = now.toISOString();
 

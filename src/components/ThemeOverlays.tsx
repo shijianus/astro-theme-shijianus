@@ -492,20 +492,29 @@ export function ThemeOverlays({
     if (!consoleOpen) return;
 
     const syncConsoleData = async () => {
+      let data: any = null;
       try {
         const response = await fetch('/api/console/data');
         if (response.ok) {
-          const data = await response.json();
-          if (data && data.ok) {
-            if (data.stats) setSyncStats(data.stats);
-            if (Array.isArray(data.activity) && data.activity.length > 0) {
-              setDynamicActivity(data.activity);
-            }
-          }
-        } else {
-          setSyncStats(stats);
+          data = await response.json();
         }
-      } catch (error) {
+      } catch (_) {}
+
+      if (!data || !data.ok) {
+        try {
+          const fallbackRes = await fetch('/data/console-metrics.json');
+          if (fallbackRes.ok) {
+            data = await fallbackRes.json();
+          }
+        } catch (_) {}
+      }
+
+      if (data && data.ok) {
+        if (data.stats) setSyncStats(data.stats);
+        if (Array.isArray(data.activity) && data.activity.length > 0) {
+          setDynamicActivity(data.activity);
+        }
+      } else {
         setSyncStats(stats);
       }
     };
