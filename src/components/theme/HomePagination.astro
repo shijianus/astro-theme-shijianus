@@ -29,20 +29,22 @@ const items = getHomePaginationItems(currentPage, lastPage);
           class="home-pagination__btn home-pagination__prev"
           href={buildHomePageUrl(currentPage - 1)}
           rel="prev"
-          title="上一页"
+          data-tooltip="上一页"
           aria-label="上一页"
+          title="上一页"
         >
           <i class="anzhiyufont anzhiyu-icon-angle-left" aria-hidden="true"></i>
-          <span class="home-pagination__btn-text">上页</span>
         </a>
       ) : (
         <span
           class="home-pagination__btn home-pagination__prev is-disabled"
           aria-disabled="true"
+          data-tooltip="已是第一页"
+          aria-label="已是第一页"
           title="已是第一页"
+          tabindex="0"
         >
           <i class="anzhiyufont anzhiyu-icon-angle-left" aria-hidden="true"></i>
-          <span class="home-pagination__btn-text">上页</span>
         </span>
       )}
 
@@ -50,7 +52,7 @@ const items = getHomePaginationItems(currentPage, lastPage);
         {items.map((item) =>
           item === 'ellipsis' ? (
             <details class="home-pagination__jump-dropdown">
-              <summary class="home-pagination__num home-pagination__ellipsis" title="快速跳转页码" aria-label="快速跳转页码">
+              <summary class="home-pagination__num home-pagination__ellipsis" title="快速跳转页码" aria-label="快速跳转页码" data-tooltip="快速跳转">
                 <span class="home-pagination__ellipsis-dots">…</span>
               </summary>
               <form class="home-pagination__jump-popup" data-home-pagination-jump data-max-page={lastPage}>
@@ -64,18 +66,18 @@ const items = getHomePaginationItems(currentPage, lastPage);
                     required
                     aria-label="输入目标页码"
                   />
-                  <button type="submit" class="home-pagination__jump-submit" title="前往">
+                  <button type="submit" class="home-pagination__jump-submit" title="前往" data-tooltip="跳转">
                     前往
                   </button>
                 </div>
               </form>
             </details>
           ) : item === currentPage ? (
-            <span class="home-pagination__num is-current" aria-current="page">
+            <span class="home-pagination__num is-current" aria-current="page" data-tooltip={`第 ${item} 页`}>
               {item}
             </span>
           ) : (
-            <a class="home-pagination__num" href={buildHomePageUrl(item)} title={`前往第 ${item} 页`}>
+            <a class="home-pagination__num" href={buildHomePageUrl(item)} title={`前往第 ${item} 页`} data-tooltip={`第 ${item} 页`}>
               {item}
             </a>
           ),
@@ -87,19 +89,21 @@ const items = getHomePaginationItems(currentPage, lastPage);
           class="home-pagination__btn home-pagination__next"
           href={buildHomePageUrl(currentPage + 1)}
           rel="next"
-          title="下一页"
+          data-tooltip="下一页"
           aria-label="下一页"
+          title="下一页"
         >
-          <span class="home-pagination__btn-text">下页</span>
           <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
         </a>
       ) : (
         <span
           class="home-pagination__btn home-pagination__next is-disabled"
           aria-disabled="true"
+          data-tooltip="已是最后一页"
+          aria-label="已是最后一页"
           title="已是最后一页"
+          tabindex="0"
         >
-          <span class="home-pagination__btn-text">下页</span>
           <i class="anzhiyufont anzhiyu-icon-angle-right" aria-hidden="true"></i>
         </span>
       )}
@@ -109,23 +113,230 @@ const items = getHomePaginationItems(currentPage, lastPage);
 
 <script is:inline>
   (() => {
-    const forms = document.querySelectorAll('[data-home-pagination-jump]');
-    if (forms.length === 0) return;
+    // 1. Maintain in-memory feed cache for 0ms instantaneous page transitions
+    const feedCache = (window.__HOME_FEED_CACHE__ = window.__HOME_FEED_CACHE__ || new Map());
 
-    forms.forEach((form) => {
-      if (!(form instanceof HTMLFormElement)) return;
-      if (form.dataset.bound === 'true') return;
-      form.dataset.bound = 'true';
+    const isHomeFeedPath = (path) => {
+      return path === '/' || /^\/page\/\d+\/?$/.test(path);
+    };
 
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const maxPage = Number.parseInt(form.dataset.maxPage || '1', 10);
-        const input = form.querySelector('input');
-        if (!(input instanceof HTMLInputElement)) return;
-        const requestedPage = Number.parseInt(input.value || '1', 10);
-        const nextPage = Math.min(Math.max(1, requestedPage), Math.max(1, maxPage));
-        window.location.href = nextPage <= 1 ? '/' : `/page/${nextPage}/`;
+    const normalizeUrl = (urlStr) => {
+      try {
+        const u = new URL(urlStr, window.location.origin);
+        return u.pathname;
+      } catch {
+        return urlStr;
+      }
+    };
+
+    const prefetchFeedPage = async (url) => {
+      const normalized = normalizeUrl(url);
+      if (!isHomeFeedPath(normalized) || feedCache.has(normalized)) return;
+      try {
+        const resp = await fetch(normalized, {
+          headers: { 'X-Requested-With': 'HomeFeedNav', 'Accept': 'text/html' }
+        });
+        if (resp.ok) {
+          const text = await resp.text();
+          feedCache.set(normalized, text);
+        }
+      } catch (_) {}
+    };
+
+    // 2. Seamless in-place feed switcher
+    let isNavigating = false;
+    const switchHomeFeed = async (targetUrl, shouldPushState = true) => {
+      if (isNavigating) return;
+      const normalizedTarget = normalizeUrl(targetUrl);
+      const currentNormalized = normalizeUrl(window.location.pathname);
+      if (normalizedTarget === currentNormalized) return;
+
+      const stickyGroup = document.getElementById('home-posts-sticky-group');
+      const recentPosts = document.getElementById('recent-posts');
+      if (!stickyGroup || !recentPosts) {
+        window.location.href = targetUrl;
+        return;
+      }
+
+      isNavigating = true;
+
+      try {
+        let html = feedCache.get(normalizedTarget);
+        if (!html) {
+          stickyGroup.classList.add('feed-switching');
+          const resp = await fetch(normalizedTarget, {
+            headers: { 'X-Requested-With': 'HomeFeedNav', 'Accept': 'text/html' }
+          });
+          if (!resp.ok) throw new Error('Network error: ' + resp.status);
+          html = await resp.text();
+          feedCache.set(normalizedTarget, html);
+        } else {
+          stickyGroup.classList.add('feed-switching');
+        }
+
+        const parser = new DOMParser();
+        const newDoc = parser.parseFromString(html, 'text/html');
+        const newStickyGroup = newDoc.getElementById('home-posts-sticky-group');
+        const newRecentPosts = newDoc.getElementById('recent-posts');
+
+        if (!newStickyGroup) {
+          throw new Error('New feed sticky group not found');
+        }
+
+        // Brief smooth cross-fade animation duration
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Swap DOM content
+        stickyGroup.innerHTML = newStickyGroup.innerHTML;
+
+        // Synchronize dataset attributes on #recent-posts
+        if (newRecentPosts) {
+          ['data-feed-page', 'data-feed-pages', 'data-is-last-page'].forEach((attr) => {
+            const val = newRecentPosts.getAttribute(attr);
+            if (val !== null) recentPosts.setAttribute(attr, val);
+          });
+        }
+
+        // Update Document Title
+        if (newDoc.title) {
+          document.title = newDoc.title;
+        }
+
+        // Update domain URL in address bar without full page reload
+        if (shouldPushState) {
+          window.history.pushState({ path: normalizedTarget, isHomeFeed: true }, '', normalizedTarget);
+        }
+
+        // Re-bind interactive form triggers and image fallbacks
+        bindJumpForms();
+        bindCardImageFallbacks();
+
+        // Smooth scroll to top of article feed if scrolled down
+        const nav = document.getElementById('nav');
+        const navHeight = nav ? nav.offsetHeight : 60;
+        const rect = recentPosts.getBoundingClientRect();
+        if (rect.top < navHeight) {
+          const scrollTarget = window.scrollY + rect.top - navHeight - 14;
+          window.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+        }
+
+        // Notify sticky sidebar and observers
+        window.dispatchEvent(new CustomEvent('shijianus:home-feed-updated', { detail: { url: normalizedTarget } }));
+        window.dispatchEvent(new CustomEvent('scroll'));
+        window.dispatchEvent(new CustomEvent('resize'));
+      } catch (err) {
+        console.warn('Seamless in-place feed switch fallback:', err);
+        window.location.href = targetUrl;
+      } finally {
+        stickyGroup.classList.remove('feed-switching');
+        isNavigating = false;
+      }
+    };
+
+    // 3. Jump form binding
+    const bindJumpForms = () => {
+      const forms = document.querySelectorAll('[data-home-pagination-jump]');
+      forms.forEach((form) => {
+        if (!(form instanceof HTMLFormElement)) return;
+        if (form.dataset.bound === 'true') return;
+        form.dataset.bound = 'true';
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const maxPage = Number.parseInt(form.dataset.maxPage || '1', 10);
+          const input = form.querySelector('input');
+          if (!(input instanceof HTMLInputElement)) return;
+          const requestedPage = Number.parseInt(input.value || '1', 10);
+          const nextPage = Math.min(Math.max(1, requestedPage), Math.max(1, maxPage));
+          const targetUrl = nextPage <= 1 ? '/' : `/page/${nextPage}/`;
+          switchHomeFeed(targetUrl, true);
+        });
       });
-    });
+    };
+
+    // 4. Ensure card images are properly lazy loaded and resilient
+    const bindCardImageFallbacks = () => {
+      const DEFAULT_FALLBACK = '/media/shijianus/default.png';
+      document.querySelectorAll('#home-posts-sticky-group img').forEach((img) => {
+        if (!(img instanceof HTMLImageElement)) return;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        if (img.dataset.fallbackBound === 'true') return;
+        img.dataset.fallbackBound = 'true';
+        img.addEventListener('error', () => {
+          if (!img.src.endsWith(DEFAULT_FALLBACK)) {
+            img.src = DEFAULT_FALLBACK;
+          }
+        });
+      });
+    };
+
+    // 5. Global Delegated Click & Hover Prefetch
+    if (!window.__HOME_FEED_NAV_BOUND__) {
+      window.__HOME_FEED_NAV_BOUND__ = true;
+
+      // Click delegation
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof HTMLElement ? event.target : event.target?.parentElement;
+        if (!(target instanceof HTMLElement)) return;
+
+        // Check pagination links
+        const paginationLink = target.closest('#home-pagination a');
+        if (paginationLink instanceof HTMLAnchorElement) {
+          const href = paginationLink.getAttribute('href');
+          if (href && isHomeFeedPath(normalizeUrl(href))) {
+            event.preventDefault();
+            event.stopPropagation();
+            switchHomeFeed(href, true);
+            return;
+          }
+        }
+
+        // Check disabled pagination button click
+        const disabledBtn = target.closest('#home-pagination .home-pagination__btn.is-disabled');
+        if (disabledBtn) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
+        // Check catalog bar '首页' link while on /page/2/
+        const catalogHomeLink = target.closest('#catalog-bar .catalog-list-item a[href="/"]');
+        if (catalogHomeLink instanceof HTMLAnchorElement && isHomeFeedPath(window.location.pathname) && window.location.pathname !== '/') {
+          event.preventDefault();
+          event.stopPropagation();
+          switchHomeFeed('/', true);
+          return;
+        }
+      });
+
+      // Hover / touchstart prefetch for ultra-fast instant response
+      document.addEventListener('pointerenter', (event) => {
+        const target = event.target instanceof HTMLElement ? event.target : event.target?.parentElement;
+        if (!(target instanceof HTMLElement)) return;
+        const paginationLink = target.closest('#home-pagination a');
+        if (paginationLink instanceof HTMLAnchorElement) {
+          const href = paginationLink.getAttribute('href');
+          if (href) prefetchFeedPage(href);
+        }
+      }, true);
+
+      // Popstate handling for browser back/forward buttons
+      window.addEventListener('popstate', () => {
+        if (isHomeFeedPath(window.location.pathname)) {
+          switchHomeFeed(window.location.pathname, false);
+        }
+      });
+
+      // Pre-warm page 2 in idle time if currently on home page
+      if ('requestIdleCallback' in window && window.location.pathname === '/') {
+        window.requestIdleCallback(() => {
+          prefetchFeedPage('/page/2/');
+        });
+      }
+    }
+
+    bindJumpForms();
+    bindCardImageFallbacks();
   })();
 </script>

@@ -5830,10 +5830,15 @@ body[data-type='home'] .home-pagination__num {
 }
 
 body[data-type='home'] .home-pagination__btn {
+  width: 36px !important;
   min-width: 36px !important;
-  padding: 0 12px !important;
-  gap: 4px !important;
-  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 body[data-type='home'] .home-pagination__num:hover:not(.is-current),
@@ -5855,9 +5860,41 @@ body[data-type='home'] .home-pagination__num.is-current {
 
 body[data-type='home'] .home-pagination__btn.is-disabled {
   opacity: 0.38 !important;
-  pointer-events: none !important;
+  pointer-events: auto !important;
   cursor: not-allowed !important;
   border-color: var(--card-border) !important;
+}
+
+body[data-type='home'] .home-pagination__btn.is-disabled:hover {
+  background: var(--home-blue-sub-bg, var(--card-bg)) !important;
+  color: var(--font-color) !important;
+  border-color: var(--card-border) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Tooltip on Home Pagination: elevated above buttons to prevent clipping */
+#home-pagination [data-tooltip]::before,
+body[data-type='home'] #home-pagination [data-tooltip]::before {
+  top: auto !important;
+  bottom: calc(100% + 8px) !important;
+  transform: translateX(-50%) translateY(4px) !important;
+}
+#home-pagination [data-tooltip]:hover::before,
+body[data-type='home'] #home-pagination [data-tooltip]:hover::before {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+/* Home Feed seamless in-place switching micro-animation */
+#home-posts-sticky-group {
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#home-posts-sticky-group.feed-switching {
+  opacity: 0.22 !important;
+  transform: translateY(6px) !important;
+  pointer-events: none !important;
 }
 
 /* Fast Jump / Ellipsis popup */

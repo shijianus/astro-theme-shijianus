@@ -253,6 +253,77 @@ const isMantleActiveOnThisPage = Boolean(
         );
       })();
     </script>
+    <!-- Modern Speculation Rules: Native Instant Page Prefetch on Hover -->
+    <script type="speculationrules" is:inline>
+      {
+        "prefetch": [
+          {
+            "where": {
+              "and": [
+                { "href_matches": "/*" },
+                { "not": { "href_matches": "/api/*" } },
+                { "not": { "href_matches": "/auth/*" } },
+                { "not": { "href_matches": "/*\\?*" } },
+                { "not": { "href_matches": "/*#*" } }
+              ]
+            },
+            "eagerness": "moderate"
+          }
+        ]
+      }
+    </script>
+    <!-- Universal Link Prefetcher & Image Lazy Loading Engine (Cross-Browser) -->
+    <script is:inline>
+      (() => {
+        // Fallback prefetching for non-SpeculationRules browsers (Firefox, Safari)
+        if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('speculationrules')) {
+          const prefetchedUrls = new Set();
+          const prefetchDocument = (url) => {
+            if (!url || prefetchedUrls.has(url)) return;
+            prefetchedUrls.add(url);
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = url;
+            link.as = 'document';
+            document.head.appendChild(link);
+          };
+
+          let hoverTimer = null;
+          document.addEventListener(
+            'mouseover',
+            (e) => {
+              const anchor = e.target instanceof HTMLElement ? e.target.closest('a') : null;
+              if (!anchor || !anchor.href) return;
+              try {
+                const u = new URL(anchor.href, window.location.origin);
+                if (u.origin !== window.location.origin) return;
+                if (u.pathname.startsWith('/api/') || u.pathname.startsWith('/auth/')) return;
+                if (u.pathname === window.location.pathname) return;
+                clearTimeout(hoverTimer);
+                hoverTimer = setTimeout(() => prefetchDocument(u.pathname), 100);
+              } catch (_) {}
+            },
+            { passive: true }
+          );
+        }
+
+        // Automatic Global Image Lazy Loading & Async Decoding Enhancer
+        const applyLazyLoading = (root = document) => {
+          root.querySelectorAll('img:not([loading])').forEach((img) => {
+            if (img.classList.contains('loading-img') || img.classList.contains('page-hero__image')) return;
+            img.loading = 'lazy';
+            img.decoding = 'async';
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => applyLazyLoading());
+        } else {
+          applyLazyLoading();
+        }
+        document.addEventListener('astro:page-load', () => applyLazyLoading());
+      })();
+    </script>
   </head>
   <body class:list={bodyClasses} data-type={pageType}>
     {siteConfig.theme.features.loadingScreen && (

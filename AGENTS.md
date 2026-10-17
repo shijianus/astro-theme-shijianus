@@ -5782,6 +5782,31 @@
     - 标签与水波纹层级严格分明，`metaGrid` 位于水波纹之上（z-index 12 > 2）；
     - 默认统一度严格受控（425.5px < 50vh: 450px），零半屏越界。
 
+### Task 271: 首页分页导航 (#home-pagination) 纯图标与悬浮注释重构、同级页面无刷新流式切换与全站智能懒加载预取
+- [x] **按钮文字移除与悬停注释规范重构 (`src/components/theme/HomePagination.astro` & `src/styles/final-pass.css`)**：
+  - 彻底移除 `home-pagination__btn home-pagination__prev` 与 `home-pagination__next` 内部显式文字（删除 `<span class="home-pagination__btn-text">上页</span>` 与 `下页`）；
+  - 保留并居中呈现标志性矢量方向图标（`<i class="anzhiyufont anzhiyu-icon-angle-left"></i>` 与 `anzhiyu-icon-angle-right`）；
+  - 重构按钮几何尺寸为标准方形 `36px x 36px`，与相邻页码数字按钮（`.home-pagination__num`）完美并排对齐；
+  - 接入全站高保真 `data-tooltip` 注释体系，鼠标悬停时动态浮现解释文本（上一页 / 下一页，禁用态浮现“已是第一页” / “已是最后一页”，页码按钮浮现“第 X 页”，省略号浮现“快速跳转”）；
+  - 修复禁用按钮鼠标事件，配置 `pointer-events: auto !important; cursor: not-allowed !important;` 确保用户在禁用态下悬停依然能清晰阅读解释提示；
+  - 优化 Tooltip 浮现方位（`bottom: calc(100% + 8px)`），悬浮于分页条上方，杜绝被视口底部或页脚遮挡。
+- [x] **同级页面 (首页流式列表) 无刷新切换与 Domain URL 严格同步**：
+  - 针对同一一级界面（`/` 与 `/page/\d+/`），拦截点击事件与快捷跳转表单，杜绝整页重新加载（消除页面重绘、避免音乐播放器断流、星空与雪花画布重置）；
+  - 引入内存缓存池（`feedCache`），并在鼠标悬停分页按钮时进行预测性预加载（Pointerenter Prefetch），实现点击时 0ms 闪电切换；
+  - 采用平滑渐变动画（`opacity: 0.22` + `translateY(6px)` 微位移过渡），就地精准替换 `#home-posts-sticky-group` 内容；
+  - 保持 Domain URL 与浏览器历史记录 100% 同步：通过 `window.history.pushState` 实时切换地址栏 URL，并支持浏览器前进/后退（`popstate`）无缝响应；
+  - 实时更新 `document.title`、重新绑定卡片图片兜底与粘性侧边栏观察器。
+- [x] **全站跨页面渐进式懒加载与现代 Speculation Rules 预取推进 (`src/layouts/BlogLayout.astro`)**：
+  - 注入现代 Chromium `speculationrules` 原生投机预取标准（`eagerness: "moderate"`），在用户悬停站内链接时内核级预热文档；
+  - 注入跨浏览器防抖 hover prefetch 引擎，在 Safari / Firefox 下平滑回退；
+  - 全局自动扫描并强制非首屏图片应用 `loading="lazy"` 与 `decoding="async"`，极大减少网络请求次数；
+  - 严格保留跨界面跳转时的必要站点内过渡动效与完整布局渲染（“站点内跨度必须保留”）。
+- [x] **自动化端到端测试覆盖 (`scripts/verify-home-pagination-lazy.mjs`)**：
+  - 编写并执行全流程 Playwright E2E 自动化测试套件；
+  - 验证 Prev/Next 按钮无显式文字、图标存在、方形尺寸（36px x 36px）、悬停 Tooltip 正常浮现；
+  - 验证切换分页时全局 Probe `window.__NO_RELOAD_TEST_PROBE__` 完美保留（证明 0 硬刷新）、URL 准确更新、双向导航正常；全部断言 100% PASS。
+
+
 
 
 
