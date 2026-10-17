@@ -200,6 +200,8 @@ export type OverlayPostItem = {
   category: string;
   cover: string;
   date: string;
+  isoDate?: string;
+  updatedDate?: string;
 };
 
 export type OverlayTagItem = {
@@ -483,21 +485,28 @@ export function ThemeOverlays({
   // 避免每次点击都触发整个 ThemeOverlays re-render
   const rightMenuOpenRef = useRef(false);
 
-  // Data Sync Framework Placeholder
+  const [dynamicActivity, setDynamicActivity] = useState<any[] | null>(null);
+
+  // Data Sync Framework (Live Cloudflare Edge + Fallback)
   useEffect(() => {
     if (!consoleOpen) return;
 
     const syncConsoleData = async () => {
       try {
-        // Future API endpoint: const response = await fetch('/api/console/data');
-        // const data = await response.json();
-        // setSyncStats(data.stats);
-        // setActivityRecords(data.activity);
-        
-        // Currently using static mock data structure for stability
-        setSyncStats(stats);
+        const response = await fetch('/api/console/data');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.ok) {
+            if (data.stats) setSyncStats(data.stats);
+            if (Array.isArray(data.activity) && data.activity.length > 0) {
+              setDynamicActivity(data.activity);
+            }
+          }
+        } else {
+          setSyncStats(stats);
+        }
       } catch (error) {
-        console.error('Failed to sync console data:', error);
+        setSyncStats(stats);
       }
     };
 
@@ -523,6 +532,18 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
+    if (dynamicActivity && dynamicActivity.length > 0) {
+      return dynamicActivity.map((day: any) => {
+        if (!day) return null;
+        return {
+          ...day,
+          dateKey: day.date,
+          displayDate: day.displayDate || day.date,
+          rawDate: new Date(day.date),
+        };
+      });
+    }
+
     const now = new Date();
     const utc8Time = now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000);
     const today = new Date(utc8Time);
@@ -531,6 +552,31 @@ export function ThemeOverlays({
     const totalSlots = 52 * 7;
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - today.getDay() - (51 * 7));
+
+    // 建立文章发布与更新索引表
+    const postDateMap = new Map<string, { title: string; href: string; type: string }[]>();
+    for (const p of posts) {
+      const pubKey = p.isoDate || (p.date ? (() => {
+        const d = new Date(p.date);
+        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+      })() : '');
+
+      if (pubKey) {
+        const list = postDateMap.get(pubKey) || [];
+        if (!list.some(x => x.href === p.href)) {
+          list.push({ title: p.title, href: p.href, type: 'publish' });
+          postDateMap.set(pubKey, list);
+        }
+      }
+
+      if (p.updatedDate && p.updatedDate !== pubKey) {
+        const list = postDateMap.get(p.updatedDate) || [];
+        if (!list.some(x => x.href === p.href)) {
+          list.push({ title: `${p.title} (更新)`, href: p.href, type: 'update' });
+          postDateMap.set(p.updatedDate, list);
+        }
+      }
+    }
 
     const data = [];
     for (let i = 0; i < totalSlots; i++) {
@@ -542,28 +588,36 @@ export function ThemeOverlays({
         continue;
       }
 
-      const postsOnDate = posts.filter(p => {
-        const d = new Date(p.date);
-        return d.getFullYear() === currentDate.getFullYear() && 
-               d.getMonth() === currentDate.getMonth() && 
-               d.getDate() === currentDate.getDate();
-      });
-      
-      const level = postsOnDate.length === 0 ? 0 : Math.min(4, postsOnDate.length);
+      const y = currentDate.getFullYear();
+      const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const d = String(currentDate.getDate()).padStart(2, '0');
+      const dateKey = `${y}-${m}-${d}`;
+      const displayDate = `${y}/${parseInt(m, 10)}/${parseInt(d, 10)}`;
+
+      const dayPosts = postDateMap.get(dateKey) || [];
+      const count = dayPosts.length;
+
+      let level = 0;
+      if (count >= 7) level = 4;
+      else if (count >= 4) level = 3;
+      else if (count >= 2) level = 2;
+      else if (count >= 1) level = 1;
 
       data.push({
-        date: currentDate.toLocaleDateString('zh-CN'),
+        dateKey,
+        date: dateKey,
+        displayDate,
         rawDate: currentDate,
         level,
-        posts: postsOnDate.map(p => ({ title: p.title, href: p.href })),
+        posts: dayPosts,
       });
     }
     return data;
-  }, [posts]);
+  }, [posts, dynamicActivity]);
 
   const selectedActivity = useMemo(() => {
     if (!selectedActivityDate) return null;
-    return activityData.find(d => d && d.date === selectedActivityDate);
+    return activityData.find(d => d && (d.dateKey === selectedActivityDate || d.date === selectedActivityDate));
   }, [selectedActivityDate, activityData]);
 
   const activityPagination = useMemo(() => {
@@ -1900,20 +1954,25 @@ export function ThemeOverlays({
                         <span />
                       </div>
                       <div className="console-activity-grid">
-                        {activityData.map((day, i) => (
-                          <div 
-                            key={i} 
-                            className={day ? `activity-cell level-${day.level}` : 'activity-cell hidden'} 
-                            style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
-                            data-tooltip={day ? `${day.date}${day.posts.length > 0 ? '\n' + day.posts.map(p => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined}
-                            onClick={() => {
-                              if (day) {
-                                setSelectedActivityDate(day.date);
-                                setSelectedActivityPage(1);
-                              }
-                            }}
-                          />
-                        ))}
+                        {activityData.map((day: any, i: number) => {
+                          const dateKey = day ? (day.dateKey || day.date) : `empty-${i}`;
+                          const isSelected = selectedActivityDate && day && (day.dateKey === selectedActivityDate || day.date === selectedActivityDate);
+                          const tipContent = day ? `${day.displayDate || day.date}${day.posts.length > 0 ? '\n' + day.posts.map((p: any) => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined;
+                          return (
+                            <div 
+                              key={dateKey} 
+                              className={day ? `activity-cell level-${day.level}${isSelected ? ' is-selected' : ''}` : 'activity-cell hidden'} 
+                              style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                              data-tooltip={tipContent}
+                              onClick={() => {
+                                if (day) {
+                                  setSelectedActivityDate(dateKey);
+                                  setSelectedActivityPage(1);
+                                }
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -1923,31 +1982,25 @@ export function ThemeOverlays({
                     {selectedActivity ? (
                       <div className="activity-details">
                         <div className="activity-details__head">
-                          <strong>{selectedActivity.date}</strong>
-                          {activityPagination.total > 1 && (
-                            <div className="activity-pagination">
-                              <button
-                                disabled={activityPagination.current === 1}
-                                onClick={() => setSelectedActivityPage(p => Math.max(1, p - 1))}
-                              >
-                                <ArrowLeft className="h-3 w-3" />
-                              </button>
-                              <span>{activityPagination.current} / {activityPagination.total}</span>
-                              <button
-                                disabled={activityPagination.current === activityPagination.total}
-                                onClick={() => setSelectedActivityPage(p => Math.min(activityPagination.total, p + 1))}
-                              >
-                                <ArrowRight className="h-3 w-3" />
-                              </button>
-                            </div>
+                          <div className="activity-details__title-group">
+                            <strong>{selectedActivity.displayDate || selectedActivity.date}</strong>
+                            <span className="activity-count-badge">
+                              {selectedActivity.posts.length > 0 ? `${selectedActivity.posts.length} 篇内容` : '无记录'}
+                            </span>
+                          </div>
+                          {selectedActivity.posts.length > 3 && (
+                            <span className="activity-scroll-hint">可滑动浏览全部</span>
                           )}
                         </div>
-                        {activityPagination.items.length > 0 ? (
+                        {selectedActivity.posts.length > 0 ? (
                           <ul className="activity-details-list">
-                            {activityPagination.items.map((p, i) => (
+                            {selectedActivity.posts.map((p: any, i: number) => (
                               <li key={i}>
                                 <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
-                                <a href={p.href}>{p.title}</a>
+                                <a href={p.href} title={p.title}>
+                                  {p.type === 'update' && <span className="activity-post-tag update">[更新]</span>}
+                                  {p.title}
+                                </a>
                               </li>
                             ))}
                           </ul>

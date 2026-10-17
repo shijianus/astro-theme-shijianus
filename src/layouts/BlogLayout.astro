@@ -81,14 +81,20 @@ const globalData = createSidebarData(slimPosts as any);
 globalData.totalReadingMinutes = totalReadingMinutes;
 globalData.totalWords = totalWords;
 
-const overlayPosts = globalData.recentPosts.map((entry) => ({
-  title: entry.data.title,
-  href: getPostPath(entry),
-  description: getExcerpt(entry, 96),
-  category: resolveCategory(entry),
-  cover: resolveCover(entry),
-  date: entry.data.pubDate.toLocaleDateString('zh-CN'),
-}));
+const overlayPosts = globalData.recentPosts.map((entry) => {
+  const pubDateObj = new Date(entry.data.pubDate);
+  const upDateObj = entry.data.updatedDate ? new Date(entry.data.updatedDate) : undefined;
+  return {
+    title: entry.data.title,
+    href: getPostPath(entry),
+    description: getExcerpt(entry, 96),
+    category: resolveCategory(entry),
+    cover: resolveCover(entry),
+    date: entry.data.pubDate.toLocaleDateString('zh-CN'),
+    isoDate: pubDateObj.toISOString().split('T')[0],
+    updatedDate: upDateObj ? upDateObj.toISOString().split('T')[0] : undefined,
+  };
+});
 
 const overlayTags = globalData.tags.map((tag) => ({
   label: tag.label,

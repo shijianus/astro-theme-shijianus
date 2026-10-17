@@ -1469,9 +1469,38 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
 }
 
 #console .activity-cell:hover { 
-    opacity: 0.7 !important; 
+    opacity: 0.8 !important; 
     transform: none !important;
-    z-index: 999999 !important;
+    z-index: 1000000 !important;
+}
+
+#console .activity-cell.is-selected {
+    outline: 2px solid var(--theme-main, #425aef) !important;
+    outline-offset: 1px !important;
+    z-index: 99999 !important;
+}
+
+/* Console Activity Cell Upward Tooltip (置顶展示，杜绝下边缘截断) */
+#console .activity-cell[data-tooltip]::before {
+    position: absolute !important;
+    top: auto !important;
+    bottom: calc(100% + 8px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(4px) !important;
+    z-index: 1000000 !important;
+    pointer-events: none !important;
+    white-space: pre-line !important;
+    text-align: left !important;
+    max-width: min(340px, 85vw) !important;
+    width: max-content !important;
+    line-height: 1.4 !important;
+    box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+#console .activity-cell[data-tooltip]:hover::before {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(0) !important;
 }
 
 /* GitHub Dark Mode Colors - Authentic Flat Palette */
@@ -1646,14 +1675,17 @@ html:not([lang^="zh"]) .webinfo-item span {
 #console .activity-legend-footer { border: none !important; margin-top: 8px !important; }
 
 .activity-details-footer {
-  margin-top: 12px !important;
-  padding-top: 12px !important;
+  margin-top: 10px !important;
+  padding-top: 10px !important;
   border-top: var(--style-border-always);
-  height: 124px !important; /* FIXED HEIGHT: Locks the bottom area */
+  height: 124px !important;
   min-height: 124px !important;
+  max-height: 124px !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .selected-day-preview {
@@ -1665,7 +1697,7 @@ html:not([lang^="zh"]) .webinfo-item span {
 .activity-details {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  gap: 6px !important;
   height: 100% !important;
 }
 
@@ -1673,30 +1705,64 @@ html:not([lang^="zh"]) .webinfo-item span {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
+}
+
+.activity-details__title-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
 .activity-details__head strong {
     font-size: 13px !important;
     color: var(--font-color) !important;
+    font-family: var(--font-family-mono, monospace) !important;
+}
+
+.activity-count-badge {
+    font-size: 11px !important;
+    font-family: var(--font-family-mono, monospace) !important;
+    font-weight: 600 !important;
+    color: var(--theme-main, #425aef) !important;
+    background: rgba(66, 90, 239, 0.1) !important;
+    padding: 1px 6px !important;
+    border-radius: 4px !important;
+}
+
+.activity-scroll-hint {
+    font-size: 11px !important;
+    color: var(--text-muted, #8c959f) !important;
+    opacity: 0.8 !important;
 }
 
 .activity-details-list {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  gap: 6px !important;
   list-style: none !important;
-  padding: 0 !important;
+  padding: 0 4px 0 0 !important;
   margin: 0 !important;
   flex: 1 !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+}
+
+.activity-details-list::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.activity-details-list::-webkit-scrollbar-thumb {
+  background: rgba(140, 149, 159, 0.3) !important;
+  border-radius: 4px !important;
 }
 
 .activity-details-list li {
   display: flex !important;
-  align-items: flex-start !important;
-  gap: 8px !important;
+  align-items: center !important;
+  gap: 6px !important;
   font-size: 12px !important;
-  line-height: 1.4 !important;
+  line-height: 1.3 !important;
   color: var(--font-color) !important;
 }
 
@@ -1704,9 +1770,15 @@ html:not([lang^="zh"]) .webinfo-item span {
   color: var(--theme-main) !important;
   opacity: 0.9 !important;
   flex-shrink: 0 !important;
-  width: 14px !important;
-  height: 14px !important;
-  margin-top: 2px !important;
+  width: 13px !important;
+  height: 13px !important;
+}
+
+.activity-post-tag.update {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #2da44e !important;
+  margin-right: 4px !important;
 }
 
 .activity-details-list a {
@@ -1716,6 +1788,10 @@ html:not([lang^="zh"]) .webinfo-item span {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+}
+
+.activity-details-list a:hover {
+  color: var(--theme-main, #425aef) !important;
 }
 
 .no-activity-text,
