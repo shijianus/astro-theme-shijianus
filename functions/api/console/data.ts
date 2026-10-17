@@ -1,80 +1,70 @@
 import { jsonResponse, optionsResponse } from '../../_lib/http';
 import type { AppEnv } from '../../_lib/types';
+import metricsSnapshot from '../../../public/data/console-metrics.json';
 
 export const onRequest: PagesFunction<AppEnv> = async (context) => {
-  if (context.request.method === 'OPTIONS') {
-    return optionsResponse(context.request, context.env);
+  const { request, env } = context;
+
+  if (request.method === 'OPTIONS') {
+    return optionsResponse(request, env);
   }
 
-  if (context.request.method !== 'GET') {
+  if (request.method !== 'GET') {
     return jsonResponse(
+      request,
+      env,
       { ok: false, error: 'Method Not Allowed' },
-      context.request,
-      context.env,
       { status: 405 },
     );
   }
 
   try {
-    const url = new URL(context.request.url);
+    const url = new URL(request.url);
     const assetUrl = new URL('/data/console-metrics.json', url.origin);
-    
+
     let baseData: any = null;
-    try {
-      const assetBinding = (context.env as any)?.ASSETS;
-      const res = assetBinding
-        ? await assetBinding.fetch(new Request(assetUrl.toString()))
-        : await fetch(assetUrl.toString());
-      if (res && res.ok) {
-        baseData = await res.json();
+    const assetBinding = (env as any)?.ASSETS;
+    if (assetBinding && typeof assetBinding.fetch === 'function') {
+      try {
+        const res = await assetBinding.fetch(new Request(assetUrl.toString()));
+        if (res && res.ok) {
+          baseData = await res.json();
+        }
+      } catch {
+        // Fallback gracefully to bundled snapshot
       }
-    } catch (e) {
-      // Fallback seamlessly if assets fetch fails
+    }
+
+    if (!baseData || !baseData.ok) {
+      baseData = JSON.parse(JSON.stringify(metricsSnapshot));
     }
 
     const now = new Date();
     const START_DATE = new Date('2024-01-01T00:00:00Z');
     const dynamicUptimeDays = Math.floor((now.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (baseData && baseData.ok) {
+    if (baseData && baseData.stats) {
       baseData.stats.uptimeDays = dynamicUptimeDays;
-      baseData.servedAt = now.toISOString();
-
-      return jsonResponse(
-        baseData,
-        context.request,
-        context.env,
-        {
-          headers: {
-            'Cache-Control': 'public, max-age=60, s-maxage=300',
-          },
-        },
-      );
     }
+    baseData.servedAt = now.toISOString();
 
-    // 兜底响应
     return jsonResponse(
+      request,
+      env,
+      baseData,
       {
-        ok: true,
-        stats: {
-          uptimeDays: dynamicUptimeDays,
-          activeStatus: 'Status 3',
-          activeLevel: 'Lv.3',
-          densityStatus: 'Level 4 (Ultra)',
-          densityLevel: 'Lv.4',
+        headers: {
+          'Cache-Control': 'public, max-age=60, s-maxage=300',
         },
-        activity: [],
-        servedAt: now.toISOString(),
       },
-      context.request,
-      context.env,
     );
   } catch (err: any) {
     return jsonResponse(
-      { ok: false, error: err.message || 'Internal Server Error' },
-      context.request,
-      context.env,
+      request,
+      env,
+      { ok: false, error: err?.message || 'Internal Server Error' },
       { status: 500 },
     );
   }
 };
+
