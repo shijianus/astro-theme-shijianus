@@ -5737,7 +5737,7 @@
   - 验证默认模式（`disableParentNav: false`）：父级按钮拥有各自有效跳转 URL，点击正常导航；
   - 验证死按钮模式（`disableParentNav: true`）：父级按钮变为死 button，点击不发生跳转，悬浮展开下拉菜单后点击子菜单项正常导航；0 控制台报错。
 
-### Task 268: 文章页 Post Hero 移除多语言框、Tag 空间截断、标题框严格限制与动态自适应字号、Meta 位于波纹之上及默认统一度设定
+### Task 268: 文章页 Post Hero 移除多语言框、Tag 空间截断、标题框严格限制与动态自适应字号、Meta 位于波纹之上及默认统一度设定 (`ee85193`)
 - [x] **多语言选择框移除**：从 `PostHero.astro` 彻底移除 `class="post-hero__translations"` 结构，语言切换统一由全站统一语言系统（顶栏与账号中心）负责，不在文章标题区域冗余展示。
 - [x] **Tag 空间截断机制**：为 `class="post-hero__badges"` 设定严格横向单行限制与空间边界，实现基于空间的标签智能剔除算法（`fitTagsToSpace`）。当某 tag 超过容器可用边界时隐藏该 tag，并继续探测后续较短 tag 是否能容纳，杜绝边缘被截断半个标签的破损视觉；支持配置数量上限 `maxTags`。
 - [x] **标题与副标题框严格限制与动态自适应字号**：
@@ -5747,6 +5747,11 @@
 - [x] **层级严格控制**：确保 `class="post-hero__meta-grid"` 渲染层级严格高于 `class="post-hero__waves"`（`z-index: 12` 远高于波浪的 `z-index: 2`），确保作者/日期/分类/浏览量等元信息绝对不会被水波纹遮挡。
 - [x] **默认统一高度设定**：为 `class="page-shell__hero"` 及 `.post-hero` 设定默认统一度（桌面端 `clamp(390px, 30vw, 440px)`，移动端 `clamp(280px, 44vh, 320px)`），且严格控制最大高度低于 `50vh`（绝不扩展到半屏），同时确保首页 Hero 保持自适应不受影响。
 - [x] **全量构建与自动化 Playwright E2E 测试**：编写并执行 `scripts/verify-post-hero-optimizations.mjs`，覆盖桌面端与移动端，对 5 项需求全部进行像素级断言，100% 验证通过。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实链路端到端审计**：
+  - 代码全量推送至 `origin` 与 `cf` 远端仓库；
+  - 静态资产与 Functions 全量部署至 Cloudflare Pages 生产边缘节点（`https://0671a4ae.shijianus-blog.pages.dev` 及绑定生产域名 `https://blog.epocanvas.com`）；
+  - 编写并执行生产自动化测试脚本 `scripts/verify-live-hero-optimizations.mjs`，覆盖多篇文章及移动端视口，实测 0 控制台报错、0 语言选择框、Tag 空间截断生效、标题严格受控且自适应字号、Meta Grid 严格置于波浪之上、高度统一且严格低于 50vh，全部实机验证 100% PASS 通过。
+
 
 
 
