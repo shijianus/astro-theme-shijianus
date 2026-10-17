@@ -5773,9 +5773,15 @@
 - [x] **动态字号自适应算法升级与安全边界检测**：
   - 在 `src/components/theme/PostHero.astro` 中重构 `fitTitleAndLede` 算法：桌面端基准字号 40px，安全下限 28px（确保始终显著大于正文各级标题）；移动端基准 26px，安全下限 18px。
   - 动态检测 `titleEl.offsetHeight > maxTitleHeight || (metaGrid && metaGrid.getBoundingClientRect().bottom > root.getBoundingClientRect().bottom - 20)`，当标题超出高度或逼近水波纹/元信息边界时平滑步进下调字号，确保文本 100% 完整可见（`titleVisibleText === titleFullText`，`isTruncated === false`）。
-- [x] **自动化测试套件断言加固与全视口验证通过**：
-  - 更新 `scripts/verify-post-hero-optimizations.mjs` 与 `scripts/verify-live-hero-optimizations.mjs`，增加严格的截断探测：`hasEllipsis` 必须为 false、`isTruncated` 必须为 false、`titleFullText === titleVisibleText`。
-  - 本地 E2E 测试全部 100% PASS，桌面端超长标题 40px 完整无截断展示，移动端 375x667 零截断。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实链路端到端审计**：
+  - 双远端推送：全量同步至 `origin` 与 `cf` 仓库；
+  - 编译并全量部署至 Cloudflare Pages 生产边缘节点（`https://b50f8ce0.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com`）；
+  - 执行线上 E2E 审计脚本（`scripts/verify-live-hero-optimizations.mjs`），双目标 100% PASS：
+    - `isTruncated === false`，`hasEllipsis === false`，主标题完整展示率 100%；
+    - 桌面端标题基准字号保持大字号 40px（方框高度 200.4px <= 270px），移动端字号 26px，绝不劣于正文字号；
+    - 标签与水波纹层级严格分明，`metaGrid` 位于水波纹之上（z-index 12 > 2）；
+    - 默认统一度严格受控（425.5px < 50vh: 450px），零半屏越界。
+
 
 
 

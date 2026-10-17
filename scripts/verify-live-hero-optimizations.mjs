@@ -2,7 +2,7 @@ import fs from 'fs';
 import { chromium } from 'playwright';
 
 const LIVE_TARGETS = [
-  'https://0057c72e.shijianus-blog.pages.dev',
+  'https://b50f8ce0.shijianus-blog.pages.dev',
   'https://blog.epocanvas.com',
 ];
 
