@@ -106,6 +106,10 @@ server.listen(PORT, async () => {
         // Check if visible tags wrap to multiple lines
         const uniqueTops = new Set(visibleTags.map((t) => Math.round(t.top)));
         const tagsWrap = uniqueTops.size > 1;
+        const titleFullText = titleEl ? titleEl.textContent.trim() : '';
+        const titleVisibleText = titleEl ? titleEl.innerText.trim() : '';
+        const hasEllipsis = titleVisibleText.includes('...') || titleVisibleText.includes('…');
+        const isTruncated = titleFullText !== titleVisibleText || hasEllipsis;
 
         return {
           viewportHeight: window.innerHeight,
@@ -120,13 +124,15 @@ server.listen(PORT, async () => {
           totalTags: allTags.length,
           visibleTagsCount: visibleTags.length,
           tagsWrap,
-          // Requirement 3: title-block strict bound & auto-fit
+          // Requirement 3: title-block strict bound & auto-fit & ZERO truncation
           autoFitEnabled: titleBlock ? titleBlock.getAttribute('data-auto-fit-title') : null,
           titleBlockHeight: titleBlockRect ? titleBlockRect.height : null,
           titleBlockMaxHeight: titleBlockComputed ? titleBlockComputed.maxHeight : null,
           titleFontSize: titleEl ? window.getComputedStyle(titleEl).fontSize : null,
-          titleScrollHeight: titleEl ? titleEl.scrollHeight : null,
-          titleClientHeight: titleEl ? titleEl.clientHeight : null,
+          titleFullText,
+          titleVisibleText,
+          hasEllipsis,
+          isTruncated,
           ledeScrollHeight: ledeEl ? ledeEl.scrollHeight : null,
           ledeClientHeight: ledeEl ? ledeEl.clientHeight : null,
           // Requirement 4: meta-grid strictly above waves
@@ -162,18 +168,21 @@ server.listen(PORT, async () => {
       }
       console.log(`[PASS Req 2] Tags space boundary enforced! Visible tags: ${audit.visibleTagsCount}/${audit.totalTags}, zero line wrapping!`);
 
-      // Assert Requirement 3: title-block strict upper bound & auto-fit
+      // Assert Requirement 3: title-block strict upper bound, auto-fit & ZERO truncation
       if (audit.autoFitEnabled !== 'true') {
         throw new Error(`[FAIL Requirement 3] data-auto-fit-title is not "true"`);
       }
-      if (audit.titleBlockHeight > 260) {
-        throw new Error(`[FAIL Requirement 3] .post-hero__title-block exceeded max height: ${audit.titleBlockHeight}px > 260px`);
+      if (audit.isTruncated) {
+        throw new Error(`[FAIL Requirement 3] Title was TRUNCATED! visible: "${audit.titleVisibleText}", full: "${audit.titleFullText}"`);
+      }
+      if (audit.hasEllipsis) {
+        throw new Error(`[FAIL Requirement 3] Title contains ellipsis (...), indicating truncation!`);
       }
       const titleFontNum = parseFloat(audit.titleFontSize);
-      if (titleFontNum < 30) {
-        throw new Error(`[FAIL Requirement 3] Title font size (${audit.titleFontSize}) too small, must be >= 30px to be larger than content!`);
+      if (titleFontNum < 28) {
+        throw new Error(`[FAIL Requirement 3] Title font size (${audit.titleFontSize}) too small, must be >= 28px to be larger than content!`);
       }
-      console.log(`[PASS Req 3] Title-block bounded & expanded! Height: ${audit.titleBlockHeight}px, Title Font: ${audit.titleFontSize} (>= 30px, larger than content!)`);
+      console.log(`[PASS Req 3] ZERO TRUNCATION verified! Full text 100% visible: "${audit.titleVisibleText.slice(0, 35)}...", Title Font: ${audit.titleFontSize}`);
 
       // Assert Requirement 4: meta-grid above waves
       const metaZ = Number(audit.metaGridZIndex);

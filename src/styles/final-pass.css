@@ -7639,7 +7639,7 @@ body[data-type='post'] .page-shell__hero,
   border-radius: 0 !important;
   min-height: 390px !important;
   height: clamp(390px, 30vw, 440px) !important;
-  max-height: min(460px, 46vh) !important;
+  max-height: min(480px, 48vh) !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
 }
@@ -7650,7 +7650,7 @@ body[data-type='post'] .page-shell__hero,
   .post-hero {
     min-height: 280px !important;
     height: clamp(280px, 44vh, 320px) !important;
-    max-height: 45vh !important;
+    max-height: 48vh !important;
   }
 }
 
@@ -7756,8 +7756,8 @@ body[data-type='home'] .page-shell__hero {
 .post-hero__title-block[data-auto-fit-title="true"] {
   width: 100% !important;
   max-width: 100% !important;
-  max-height: clamp(190px, 24vw, 255px) !important;
-  overflow: hidden !important;
+  max-height: clamp(190px, 24vw, 270px) !important;
+  overflow: visible !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
@@ -7766,13 +7766,14 @@ body[data-type='home'] .page-shell__hero {
 
 .post-hero__title-block[data-auto-fit-title="true"] h1,
 .post-hero__title-block[data-auto-fit-title="true"] .post-hero__title {
-  display: -webkit-box !important;
-  -webkit-box-orient: vertical !important;
-  -webkit-line-clamp: 3 !important;
-  overflow: hidden !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
   line-height: 1.28 !important;
   margin: 0 !important;
-  font-size: clamp(2rem, 3.2vw, 2.75rem) !important;
+  font-size: clamp(1.85rem, 3vw, 2.65rem);
   font-weight: 800 !important;
   letter-spacing: -0.015em !important;
   color: #ffffff !important;

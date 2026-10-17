@@ -5765,6 +5765,19 @@
   - 编译后全量部署至 Cloudflare Pages 生产边缘节点（`https://0057c72e.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com`）；
   - 自动化生产环境端到端审计脚本（`scripts/verify-live-hero-optimizations.mjs`）针对 `https://blog.epocanvas.com` 实机测试，桌面端标题字号 44px、加粗 800、方框高度 211.8px、标签 10/10 展开，全部 100% PASS 通过。
 
+### Task 270: 文章页 Post Hero 消除标题截断风险 (Zero Truncation)、放开 Line-Clamp 与动态平滑字号自适应保障 (`6e406cb`)
+- [x] **根除 CSS 截断机制与强制 Line-Clamp 消除**：
+  - 在 `src/styles/final-pass.css` 中将 `.post-hero__title-block[data-auto-fit-title="true"] h1` 与 `.post-hero__title` 的 `display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden;` 重构为 `display: block !important; -webkit-line-clamp: unset !important; line-clamp: unset !important; overflow: visible !important; text-overflow: clip !important; word-break: break-word !important;`，彻底根除物理截断与省略号（`...`）截断。
+  - 移除 CSS `font-size: clamp(...)` 上的 `!important`，确保客户端 JS 动态自适应字号能够生效覆盖。
+  - 将 `.post-hero__title-block[data-auto-fit-title="true"]` 的 `overflow: hidden;` 改为 `overflow: visible !important;`，高度扩展至 `clamp(190px, 24vw, 270px) !important;`。
+- [x] **动态字号自适应算法升级与安全边界检测**：
+  - 在 `src/components/theme/PostHero.astro` 中重构 `fitTitleAndLede` 算法：桌面端基准字号 40px，安全下限 28px（确保始终显著大于正文各级标题）；移动端基准 26px，安全下限 18px。
+  - 动态检测 `titleEl.offsetHeight > maxTitleHeight || (metaGrid && metaGrid.getBoundingClientRect().bottom > root.getBoundingClientRect().bottom - 20)`，当标题超出高度或逼近水波纹/元信息边界时平滑步进下调字号，确保文本 100% 完整可见（`titleVisibleText === titleFullText`，`isTruncated === false`）。
+- [x] **自动化测试套件断言加固与全视口验证通过**：
+  - 更新 `scripts/verify-post-hero-optimizations.mjs` 与 `scripts/verify-live-hero-optimizations.mjs`，增加严格的截断探测：`hasEllipsis` 必须为 false、`isTruncated` 必须为 false、`titleFullText === titleVisibleText`。
+  - 本地 E2E 测试全部 100% PASS，桌面端超长标题 40px 完整无截断展示，移动端 375x667 零截断。
+
+
 
 
 

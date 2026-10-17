@@ -284,39 +284,44 @@ const hasMedia = Boolean(image || video);
         }
       }
 
-      // 2. Title & lede auto-sizing & strict bounding limit
+      // 2. Title & lede auto-sizing & strict non-truncation guarantee
       const titleBlock = root.querySelector('.post-hero__title-block');
       if (titleBlock instanceof HTMLElement && titleBlock.getAttribute('data-auto-fit-title') === 'true') {
         const titleEl = titleBlock.querySelector('h1, .post-hero__title');
         const ledeEl = titleBlock.querySelector('.post-hero__lede');
+        const metaGrid = root.querySelector('.post-hero__meta-grid');
 
         const fitTitleAndLede = () => {
           if (titleEl instanceof HTMLElement) {
             const isMobile = window.innerWidth <= 768;
-            // Base title size: 40px on desktop (clamp 2.1rem ~ 2.85rem), 28px on mobile
-            // Minimum title size: 30px on desktop (strictly larger than content h1/h2 headings!), 22px on mobile
-            const baseTitleSize = isMobile ? 28 : 40;
-            const minTitleSize = isMobile ? 22 : 30;
+            // Base title size: 40px on desktop (clamp 2rem ~ 2.75rem), 26px on mobile
+            // Minimum title size: 28px on desktop (must be strictly larger than article body headings!), 18px on mobile
+            const baseTitleSize = isMobile ? 26 : 40;
+            const minTitleSize = isMobile ? 18 : 28;
+            const maxTitleHeight = isMobile ? 140 : 175;
 
-            titleEl.style.fontSize = `${baseTitleSize}px`;
+            titleEl.style.setProperty('font-size', `${baseTitleSize}px`, 'important');
 
             let currentSize = baseTitleSize;
-            while (titleEl.scrollHeight > titleEl.clientHeight + 2 && currentSize > minTitleSize) {
-              currentSize -= 1;
-              titleEl.style.fontSize = `${currentSize}px`;
+            while (
+              (titleEl.offsetHeight > maxTitleHeight || (metaGrid && metaGrid.getBoundingClientRect().bottom > root.getBoundingClientRect().bottom - 20)) &&
+              currentSize > minTitleSize
+            ) {
+              currentSize -= isMobile ? 0.5 : 1;
+              titleEl.style.setProperty('font-size', `${currentSize}px`, 'important');
             }
           }
 
           if (ledeEl instanceof HTMLElement) {
             const isMobile = window.innerWidth <= 768;
-            const baseLedeSize = isMobile ? 14 : 15.5;
-            const minLedeSize = isMobile ? 12 : 13;
-            ledeEl.style.fontSize = `${baseLedeSize}px`;
+            const baseLedeSize = isMobile ? 13.5 : 15;
+            const minLedeSize = isMobile ? 11.5 : 12;
+            ledeEl.style.setProperty('font-size', `${baseLedeSize}px`, 'important');
 
             let currentSize = baseLedeSize;
             while (ledeEl.scrollHeight > ledeEl.clientHeight + 2 && currentSize > minLedeSize) {
               currentSize -= 0.5;
-              ledeEl.style.fontSize = `${currentSize}px`;
+              ledeEl.style.setProperty('font-size', `${currentSize}px`, 'important');
             }
           }
         };
