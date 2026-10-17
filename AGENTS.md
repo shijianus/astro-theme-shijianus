@@ -5747,7 +5747,7 @@
 - [x] **层级严格控制**：确保 `class="post-hero__meta-grid"` 渲染层级严格高于 `class="post-hero__waves"`（`z-index: 12` 远高于波浪的 `z-index: 2`），确保作者/日期/分类/浏览量等元信息绝对不会被水波纹遮挡。
 - [x] **默认统一高度设定**：为 `class="page-shell__hero"` 及 `.post-hero` 设定默认统一度（桌面端 `clamp(390px, 30vw, 440px)`，移动端 `clamp(280px, 44vh, 320px)`），且严格控制最大高度低于 `50vh`（绝不扩展到半屏），同时确保首页 Hero 保持自适应不受影响。
 - [x] **全量构建与自动化 Playwright E2E 测试**：编写并执行 `scripts/verify-post-hero-optimizations.mjs`，覆盖桌面端与移动端，对 5 项需求全部进行像素级断言，100% 验证通过。
-### Task 269: 文章页 Post Hero 标题字号扩大、强化加粗视觉、解除横向 1080px 宽度限制充分利用右侧与上下空隙、防止字体过小劣于正文字号
+### Task 269: 文章页 Post Hero 标题字号扩大、强化加粗视觉、解除横向 1080px 宽度限制充分利用右侧与上下空隙、防止字体过小劣于正文字号 (`2b1b3c0`)
 - [x] **根除标题过小与正文字号倒挂缺陷**：
   - 针对原限制下超长标题被压缩至 22.5px、小于正文一级/二级标题的问题，重设字号下限：桌面端基准提升至 40px~44px，算法强制最低下限为 30px（确保永远显著大于正文内容）；移动端提升至 28px~32px，最低下限为 22px。
   - 增强视觉加粗度与投影：采用 `font-weight: 800 !important; letter-spacing: -0.015em !important; text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45) !important;`，彰显大标题恢弘气质。
@@ -5760,6 +5760,11 @@
 - [x] **自动化测试与全链路验证通过**：
   - 实机 Playwright 测算结果：桌面端标题实测达到 44px（`font-weight: 800`，宽度 1288px），高度 215px，上下左右充分利用，零多余留白；
   - 自动化测试套件（`scripts/verify-post-hero-optimizations.mjs`）桌面与移动端 100% PASS。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实链路端到端审计**：
+  - 代码全量同步至 `origin` 与 `cf` 远端；
+  - 编译后全量部署至 Cloudflare Pages 生产边缘节点（`https://0057c72e.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com`）；
+  - 自动化生产环境端到端审计脚本（`scripts/verify-live-hero-optimizations.mjs`）针对 `https://blog.epocanvas.com` 实机测试，桌面端标题字号 44px、加粗 800、方框高度 211.8px、标签 10/10 展开，全部 100% PASS 通过。
+
 
 
 
