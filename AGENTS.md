@@ -5811,7 +5811,7 @@
     4. 点击 Prev 按钮流式无刷新回退至 `https://blog.epocanvas.com/`，探针依然保持；
     5. 全程 0 致命控制台报错，全部生产端断言 100% PASS 通过。
 
-### Task 22: 控制台热力图 (`console-activity-grid`) 悬浮说明置顶、文章完整展示与 Standards 分级规范后端真实测算
+### Task 22: 控制台热力图 (`console-activity-grid`) 悬浮说明置顶、文章完整展示与 Standards 分级规范后端真实测算 (`a3b2f8d`)
 - [x] **热力图方格说明内容置顶与抗裁剪优化**：
   - 彻底解决下边缘遮挡：重构 `#console .activity-cell[data-tooltip]` 悬浮提示为向上置顶弹出（`bottom: calc(100% + 8px); top: auto;` 并赋予最高层级 `z-index: 1000000 !important;`），防止被父容器 `overflow-x: auto` 垂直下边缘裁切；
   - 根除 React 水合错位 Bug：将热力图方格遍历的 `key={i}` 彻底重构为 `key={day.dateKey}`，保证客户端与服务端日期节点一对一精确绑定，彻底解决点击高频发文日弹出空数据的致命缺陷。
