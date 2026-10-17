@@ -121,7 +121,11 @@ async function runLiveAudit() {
         if (audit.autoFitEnabled !== 'true') {
           throw new Error(`[FAIL Req 3] auto-fit title attribute not set`);
         }
-        console.log(`  ✓ Req 3: Title bounded strictly (height: ${audit.titleBlockHeight}px, font: ${audit.titleFontSize})`);
+        const liveTitleFont = parseFloat(audit.titleFontSize || '0');
+        if (liveTitleFont < 30) {
+          throw new Error(`[FAIL Req 3] Live title font (${audit.titleFontSize}) is smaller than 30px! Must be larger than content.`);
+        }
+        console.log(`  ✓ Req 3: Title bounded strictly & expanded (height: ${audit.titleBlockHeight}px, font: ${audit.titleFontSize} >= 30px)`);
 
         const metaZ = parseInt(audit.metaGridZIndex || '0', 10);
         const wavesZ = parseInt(audit.wavesZIndex || '0', 10);

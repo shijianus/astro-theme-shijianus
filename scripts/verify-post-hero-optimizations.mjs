@@ -166,10 +166,14 @@ server.listen(PORT, async () => {
       if (audit.autoFitEnabled !== 'true') {
         throw new Error(`[FAIL Requirement 3] data-auto-fit-title is not "true"`);
       }
-      if (audit.titleBlockHeight > 195) {
-        throw new Error(`[FAIL Requirement 3] .post-hero__title-block exceeded max height: ${audit.titleBlockHeight}px > 195px`);
+      if (audit.titleBlockHeight > 260) {
+        throw new Error(`[FAIL Requirement 3] .post-hero__title-block exceeded max height: ${audit.titleBlockHeight}px > 260px`);
       }
-      console.log(`[PASS Req 3] Title-block bounded strictly! Height: ${audit.titleBlockHeight}px, Title Font: ${audit.titleFontSize}`);
+      const titleFontNum = parseFloat(audit.titleFontSize);
+      if (titleFontNum < 30) {
+        throw new Error(`[FAIL Requirement 3] Title font size (${audit.titleFontSize}) too small, must be >= 30px to be larger than content!`);
+      }
+      console.log(`[PASS Req 3] Title-block bounded & expanded! Height: ${audit.titleBlockHeight}px, Title Font: ${audit.titleFontSize} (>= 30px, larger than content!)`);
 
       // Assert Requirement 4: meta-grid above waves
       const metaZ = Number(audit.metaGridZIndex);

@@ -750,9 +750,9 @@ body[data-type='tag-detail'] .page-main {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 76px clamp(1.5rem, 5vw, 4rem) clamp(44px, 5vw, 60px);
+  padding: 68px clamp(1.5rem, 4vw, 3.5rem) clamp(36px, 4vw, 48px);
   box-sizing: border-box;
-  gap: 14px;
+  gap: 10px;
   animation: post-info-slide-in 0.6s 0.16s backwards;
 }
 
@@ -762,7 +762,7 @@ body[data-type='tag-detail'] .page-main {
   align-items: center;
   gap: 8px 10px;
   width: 100%;
-  max-width: min(720px, calc(100% - 24px));
+  max-width: min(1100px, calc(100% - 24px));
   overflow: hidden;
 }
 

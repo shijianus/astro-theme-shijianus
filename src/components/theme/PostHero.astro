@@ -242,8 +242,8 @@ const hasMedia = Boolean(image || video);
           const parentPaddingRight = parseFloat(parentStyle.paddingRight) || 0;
           const parentInnerRight = parentRect.right - parentPaddingRight;
 
-          // Strict spatial boundary: container left + 720px maximum, but never exceeding parent inner right - 12px
-          const maxRight = Math.min(containerRect.left + 720, parentInnerRight - 12);
+          // Strict spatial boundary: container left + 1100px maximum, but never exceeding parent inner right - 12px
+          const maxRight = Math.min(containerRect.left + 1100, parentInnerRight - 12);
 
           let currentRight = containerRect.left;
           if (primaryBadge instanceof HTMLElement) {
@@ -293,27 +293,29 @@ const hasMedia = Boolean(image || video);
         const fitTitleAndLede = () => {
           if (titleEl instanceof HTMLElement) {
             const isMobile = window.innerWidth <= 768;
-            const baseTitleSize = isMobile ? 26 : 36;
-            const minTitleSize = isMobile ? 18 : 20;
+            // Base title size: 40px on desktop (clamp 2.1rem ~ 2.85rem), 28px on mobile
+            // Minimum title size: 30px on desktop (strictly larger than content h1/h2 headings!), 22px on mobile
+            const baseTitleSize = isMobile ? 28 : 40;
+            const minTitleSize = isMobile ? 22 : 30;
 
             titleEl.style.fontSize = `${baseTitleSize}px`;
 
             let currentSize = baseTitleSize;
             while (titleEl.scrollHeight > titleEl.clientHeight + 2 && currentSize > minTitleSize) {
-              currentSize -= 1.5;
+              currentSize -= 1;
               titleEl.style.fontSize = `${currentSize}px`;
             }
           }
 
           if (ledeEl instanceof HTMLElement) {
             const isMobile = window.innerWidth <= 768;
-            const baseLedeSize = isMobile ? 13.5 : 15;
-            const minLedeSize = isMobile ? 11.5 : 12;
+            const baseLedeSize = isMobile ? 14 : 15.5;
+            const minLedeSize = isMobile ? 12 : 13;
             ledeEl.style.fontSize = `${baseLedeSize}px`;
 
             let currentSize = baseLedeSize;
             while (ledeEl.scrollHeight > ledeEl.clientHeight + 2 && currentSize > minLedeSize) {
-              currentSize -= 1;
+              currentSize -= 0.5;
               ledeEl.style.fontSize = `${currentSize}px`;
             }
           }
