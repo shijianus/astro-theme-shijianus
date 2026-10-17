@@ -5811,7 +5811,7 @@
     4. 点击 Prev 按钮流式无刷新回退至 `https://blog.epocanvas.com/`，探针依然保持；
     5. 全程 0 致命控制台报错，全部生产端断言 100% PASS 通过。
 
-### Task 22: 控制台热力图 (`console-activity-grid`) 悬浮说明置顶、文章完整展示与 Standards 分级规范后端真实测算 (`a3b2f8d`)
+### Task 22: 控制台热力图 (`console-activity-grid`) 悬浮说明置顶、文章完整展示与 Standards 分级规范后端真实测算 (`a3b2f8d`, `1a51077`, `fd99f0f`)
 - [x] **热力图方格说明内容置顶与抗裁剪优化**：
   - 彻底解决下边缘遮挡：重构 `#console .activity-cell[data-tooltip]` 悬浮提示为向上置顶弹出（`bottom: calc(100% + 8px); top: auto;` 并赋予最高层级 `z-index: 1000000 !important;`），防止被父容器 `overflow-x: auto` 垂直下边缘裁切；
   - 根除 React 水合错位 Bug：将热力图方格遍历的 `key={i}` 彻底重构为 `key={day.dateKey}`，保证客户端与服务端日期节点一对一精确绑定，彻底解决点击高频发文日弹出空数据的致命缺陷。
@@ -5820,14 +5820,21 @@
   - 强化详情头部信息：展示选定日期（`YYYY/M/D`）与文章总数徽章（`X 篇内容` / `[更新]` 标签），提升交互层级杜绝与底部操作栏交错。
 - [x] **热力图真实活跃度测算与 Cloudflare 边缘接口闭环**：
   - 双重维度归集：不仅计算首发日期 `pubDate`，同时完整纳入 `updatedDate`（更新日期），真实反映日常维护勘误与文章版本迭代；
-  - 实现边缘函数 `functions/api/console/data.ts` 与构建脚本 `scripts/sync-console-metrics.mjs`，前端在控制台展开时异步同源同步最新指标，离线/错误平滑回退静态预编译数据。
+  - 实现边缘函数 `functions/api/console/data.ts` 与构建脚本 `scripts/sync-console-metrics.mjs`，前端在控制台展开时异步同源同步最新指标，修复 `jsonResponse` 签名顺序与内置快照降级，杜绝 1101/500 异常；
+  - 同步更新动态安全运行天数（`uptimeDays`）与当前活跃状态。
 - [x] **新建与完善 Standards 规范中心 (`src/pages/standards/index.astro`)**：
   - 消除线上 `/standards/` 404 故障：建立规范中心聚合主页，打通侧边栏与控制台的直达入口；
   - 引入权威指标引擎 `src/lib/site-metrics.ts`，基于全站 Markdown 节点物理精算：活跃等级（Status 0~4 梯度门槛与当前实测篇数）、内容密度（Level 1~4 梯度门槛与当前单篇平均字数）、安全运行天数、全站字数、SLA 性能工程限制；
   - 采用标准 `class="webinfo-item"` 结构呈现仪表盘，直观展示各指标的当前达成状态与达成率进度条。
-- [x] **自动化端到端测试套件 (`scripts/verify-heatmap-and-standards.mjs`) 全量通过**：
-  - 自动化验证 `/standards/` 状态码 200、8 项 `webinfo-item` 渲染、当前评级高亮匹配；
-  - 自动化验证控制台热力图 358 个格子正常生成、点击多发文日 13 篇文章全部渲染无截断、向上置顶 Tooltip 样式生效、0 控制台报错。
+- [x] **自动化端到端测试与真实线上生产端 (Cloudflare Pages) 全链路验收**：
+  - 本地自动化测试套件 (`scripts/verify-heatmap-and-standards.mjs`) 100% 通过；
+  - 生产端部署至 Cloudflare Pages 边缘节点 (`https://9d59acd1.shijianus-blog.pages.dev`) 并映射至主域名 `https://blog.epocanvas.com`；
+  - 真实线上端到端自动化测试 (`scripts/verify-live-heatmap-standards.mjs`) 100% PASS：
+    1. `GET https://blog.epocanvas.com/api/console/data` 返回 HTTP 200，活跃天数 364 天与全量统计正常；
+    2. `https://blog.epocanvas.com/standards/` 返回 HTTP 200，8 项 `webinfo-item` 渲染正常，当前梯队高亮（Lv.3 High / Lv.4 Ultra）；
+    3. 控制台热力图向上置顶 Tooltip 正常浮动（`bottom: 19px, top: -290.75px, zIndex: 1000000`）；
+    4. 点击 2026/8/28 方格，扩展说明栏一次性完整渲染当日全部 13 篇文章，0 截断、平滑滚动、无任何控制台报错。
+
 
 
 

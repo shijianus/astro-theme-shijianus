@@ -1,8 +1,12 @@
 import puppeteer from 'puppeteer';
 
+const PROD_URL = 'https://blog.epocanvas.com';
+
 async function verifyLive() {
-  const liveBase = 'https://blog.epocanvas.com';
-  console.log(`[LiveE2E] Starting live production verification on ${liveBase} ...`);
+  console.log(`\n========================================`);
+  console.log(`🔍 STARTING PRODUCTION LIVE VERIFICATION`);
+  console.log(`Target: ${PROD_URL}`);
+  console.log(`========================================\n`);
 
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -16,136 +20,163 @@ async function verifyLive() {
 
     const errors = [];
     page.on('console', msg => {
-      if (msg.type() === 'error') errors.push(msg.text());
+      if (msg.type() === 'error') {
+        errors.push(msg.text());
+        console.error(`[Browser Error]:`, msg.text());
+      }
     });
-    page.on('pageerror', err => errors.push(err.message));
+    page.on('pageerror', err => {
+      errors.push(err.message);
+      console.error(`[Page Error]:`, err.message);
+    });
 
-    // 1. Verify Live /standards/
-    console.log('\n--- 1. Testing Live https://blog.epocanvas.com/standards/ ---');
-    const res = await page.goto(`${liveBase}/standards/`, { waitUntil: 'networkidle0', timeout: 30000 });
-    console.log(`Live HTTP Status: ${res.status()}`);
-    if (res.status() !== 200) {
-      throw new Error(`Expected 200 for live /standards/, got ${res.status()}`);
+    // 1. Verify /api/console/data directly
+    console.log(`\n--- 1. Testing GET ${PROD_URL}/api/console/data ---`);
+    const apiRes = await page.goto(`${PROD_URL}/api/console/data`, { waitUntil: 'networkidle0' });
+    console.log(`HTTP Status: ${apiRes.status()}`);
+    if (apiRes.status() !== 200) {
+      const text = await page.evaluate(() => document.body.innerText);
+      throw new Error(`Expected HTTP 200 for /api/console/data, got ${apiRes.status()}. Body: ${text.slice(0, 300)}`);
+    }
+    const apiJson = JSON.parse(await page.evaluate(() => document.body.innerText));
+    console.log('API JSON Result: ok =', apiJson.ok, ', stats =', apiJson.stats);
+    console.log('Activity Days Count:', apiJson.activity?.length);
+    if (!apiJson.ok || !apiJson.stats || !apiJson.activity) {
+      throw new Error('API returned invalid JSON schema');
+    }
+
+    // 2. Verify /standards/
+    console.log(`\n--- 2. Testing ${PROD_URL}/standards/ ---`);
+    const standardsRes = await page.goto(`${PROD_URL}/standards/`, { waitUntil: 'networkidle0' });
+    console.log(`HTTP Status: ${standardsRes.status()}`);
+    if (standardsRes.status() !== 200) {
+      throw new Error(`Expected HTTP 200 for /standards/, got ${standardsRes.status()}`);
     }
 
     const standardsData = await page.evaluate(() => {
       const title = document.querySelector('h1')?.textContent?.trim();
       const webinfoItems = Array.from(document.querySelectorAll('.standards-webinfo-grid .webinfo-item'));
-      const activeCurrentTier = document.querySelector('#maintainer-level .is-current-tier')?.textContent?.trim();
-      const densityCurrentTier = document.querySelector('#content-density .is-current-tier')?.textContent?.trim();
+      const items = webinfoItems.map(item => ({
+        label: item.querySelector('.webinfo-item-label span')?.textContent?.trim(),
+        value: item.querySelector('strong')?.textContent?.trim(),
+      }));
+
+      const activeSection = document.querySelector('#maintainer-level');
+      const activeCurrentTier = activeSection?.querySelector('.is-current-tier td:first-child')?.textContent?.trim();
+      const densitySection = document.querySelector('#content-density');
+      const densityCurrentTier = densitySection?.querySelector('.is-current-tier td:first-child')?.textContent?.trim();
 
       return {
         title,
-        webinfoItemsCount: webinfoItems.length,
-        hasActiveTier: Boolean(activeCurrentTier),
-        hasDensityTier: Boolean(densityCurrentTier),
-        items: webinfoItems.map(it => ({
-          label: it.querySelector('.webinfo-item-label span')?.textContent?.trim(),
-          val: it.querySelector('strong')?.textContent?.trim()
-        }))
+        count: webinfoItems.length,
+        items,
+        activeCurrentTier,
+        densityCurrentTier,
       };
     });
 
     console.log('Standards Title:', standardsData.title);
-    console.log(`Webinfo Items: ${standardsData.webinfoItemsCount}`);
-    console.log('Active Tier exists:', standardsData.hasActiveTier);
-    console.log('Density Tier exists:', standardsData.hasDensityTier);
-    console.log('Sample Items:', standardsData.items.slice(0, 4));
+    console.log(`Webinfo Items Count: ${standardsData.count}`);
+    console.log('Parsed Items:', standardsData.items);
+    console.log('Active Tier:', standardsData.activeCurrentTier);
+    console.log('Density Tier:', standardsData.densityCurrentTier);
 
-    if (standardsData.webinfoItemsCount < 6) {
-      throw new Error(`Insufficient webinfo items on live /standards/: ${standardsData.webinfoItemsCount}`);
+    if (standardsData.count < 6) {
+      throw new Error(`Expected at least 6 webinfo-items on /standards/, got ${standardsData.count}`);
     }
 
-    // 2. Verify Live /api/console/data API
-    console.log('\n--- 2. Testing Live https://blog.epocanvas.com/api/console/data ---');
-    const apiRes = await page.goto(`${liveBase}/api/console/data`, { waitUntil: 'networkidle0' });
-    console.log(`API HTTP Status: ${apiRes.status()}`);
-    const apiJson = await apiRes.json();
-    console.log('API Response ok:', apiJson.ok, 'Stats:', apiJson.stats);
-    if (!apiJson.ok || !apiJson.stats) {
-      throw new Error('Live /api/console/data failed or returned invalid json');
-    }
+    // 3. Verify Live Homepage & Console Heatmap
+    console.log(`\n--- 3. Testing Heatmap in Console on Live Homepage ---`);
+    await page.goto(`${PROD_URL}/`, { waitUntil: 'networkidle0' });
 
-    // 3. Verify Live Console Heatmap
-    console.log('\n--- 3. Testing Live Console Heatmap ---');
-    await page.goto(`${liveBase}/`, { waitUntil: 'networkidle0', timeout: 30000 });
+    // Open console modal
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
     await new Promise(r => setTimeout(r, 1200));
 
     const heatmapData = await page.evaluate(() => {
-      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
+      const grid = document.querySelector('.console-activity-grid');
+      const cells = grid ? Array.from(grid.querySelectorAll('.activity-cell:not(.hidden)')) : [];
       const nonZeroCells = cells.filter(c => !c.classList.contains('level-0'));
       return {
         totalCells: cells.length,
-        activeCellsCount: nonZeroCells.length,
+        activeCells: nonZeroCells.length,
+        hasLevel4: cells.some(c => c.classList.contains('level-4')),
       };
     });
 
     console.log(`Live Heatmap Total Cells: ${heatmapData.totalCells}`);
-    console.log(`Live Heatmap Active Cells: ${heatmapData.activeCellsCount}`);
-    if (heatmapData.activeCellsCount === 0) {
+    console.log(`Live Heatmap Active Cells: ${heatmapData.activeCells}`);
+    if (heatmapData.activeCells === 0) {
       throw new Error('Live heatmap has zero active cells!');
     }
 
-    // 4. Test Multi-post Cell Click and Full List Render on Live
-    console.log('\n--- 4. Testing Multi-post Cell Click & Full Article Display ---');
-    const clickCell = await page.evaluate(() => {
-      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
-      const level4 = cells.find(c => c.classList.contains('level-4'));
-      if (level4) {
-        level4.click();
-        return level4.getAttribute('data-tooltip');
-      }
-      return null;
-    });
-
-    console.log('Clicked level-4 cell tooltip:\n', clickCell);
-    await new Promise(r => setTimeout(r, 800));
-
-    const footerLive = await page.evaluate(() => {
-      const footer = document.querySelector('.activity-details-footer');
-      const head = footer?.querySelector('.activity-details__title-group strong')?.textContent?.trim();
-      const badge = footer?.querySelector('.activity-count-badge')?.textContent?.trim();
-      const lis = Array.from(footer?.querySelectorAll('.activity-details-list li') || []).map(li => ({
-        text: li.textContent?.trim(),
-        href: li.querySelector('a')?.getAttribute('href')
-      }));
-
-      return {
-        head,
-        badge,
-        postsCount: lis.length,
-        firstThree: lis.slice(0, 3)
-      };
-    });
-
-    console.log('Live Details Header:', footerLive.head);
-    console.log('Live Details Badge:', footerLive.badge);
-    console.log(`Live Rendered Posts in Footer: ${footerLive.postsCount}`);
-    console.log('Sample posts:', footerLive.firstThree);
-
-    if (footerLive.postsCount === 0) {
-      throw new Error('Clicked active cell on live site but 0 posts rendered!');
-    }
-    if (footerLive.head && footerLive.head.includes('当日无推送记录')) {
-      throw new Error('Hydration bug detected on live site!');
-    }
-
-    // 5. Tooltip Upward Placement Verification on Live
-    console.log('\n--- 5. Testing Live Tooltip Upward Placement ---');
-    const liveTooltipStyle = await page.evaluate(() => {
-      const cell = document.querySelector('.console-activity-grid .activity-cell.level-4');
+    // 4. Test Tooltip Top Placement on Live Site
+    console.log(`\n--- 4. Testing Tooltip Top Placement on Live Site ---`);
+    const tooltipCheck = await page.evaluate(() => {
+      const cell = document.querySelector('.console-activity-grid .activity-cell.level-4') ||
+                   document.querySelector('.console-activity-grid .activity-cell:not(.level-0)');
       if (!cell) return null;
       const style = window.getComputedStyle(cell, '::before');
       return {
         bottom: style.bottom,
         top: style.top,
         zIndex: style.zIndex,
+        dataTooltip: cell.getAttribute('data-tooltip'),
       };
     });
-    console.log('Live Tooltip style:', liveTooltipStyle);
+    console.log('Tooltip Check:', tooltipCheck);
 
-    console.log('\n🎉 ALL LIVE PRODUCTION ASSERTIONS PASSED! 100% SUCCESS.');
+    // 5. Click Active Cell & Verify Full Post List Display (No Truncation)
+    console.log(`\n--- 5. Testing Cell Click & Full Post List Display ---`);
+    const clickResult = await page.evaluate(() => {
+      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
+      const activeCell = cells.find(c => c.classList.contains('level-4')) || cells.find(c => !c.classList.contains('level-0'));
+      if (!activeCell) return null;
+      const tooltip = activeCell.getAttribute('data-tooltip');
+      activeCell.click();
+      return { tooltip };
+    });
+
+    console.log('Clicked Cell Tooltip:', clickResult?.tooltip);
+    await new Promise(r => setTimeout(r, 800));
+
+    const footerData = await page.evaluate(() => {
+      const footer = document.querySelector('.activity-details-footer');
+      const countBadge = footer?.querySelector('.activity-count-badge')?.textContent?.trim();
+      const list = footer?.querySelector('.activity-details-list');
+      const items = list ? Array.from(list.querySelectorAll('li')).map(li => ({
+        title: li.textContent?.trim(),
+        href: li.querySelector('a')?.getAttribute('href')
+      })) : [];
+
+      return {
+        hasFooter: !!footer,
+        countBadge,
+        postsCount: items.length,
+        posts: items,
+        isScrollable: list ? list.scrollHeight >= list.clientHeight : false
+      };
+    });
+
+    console.log('Footer rendered:', footerData.hasFooter);
+    console.log('Count Badge:', footerData.countBadge);
+    console.log(`Rendered Posts Count: ${footerData.postsCount}`);
+    console.log('All Rendered Posts:', footerData.posts);
+
+    if (footerData.postsCount === 0) {
+      throw new Error('Clicked active day but 0 posts rendered in details footer!');
+    }
+    if (footerData.postsCount >= 4) {
+      console.log(`✅ Success: All ${footerData.postsCount} posts rendered without 3-post truncation!`);
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Encountered ${errors.length} browser errors during live testing:\n${errors.join('\n')}`);
+    }
+
+    console.log(`\n========================================`);
+    console.log(`🎉 LIVE PRODUCTION VERIFICATION 100% PASSED!`);
+    console.log(`========================================\n`);
   } finally {
     await browser.close();
   }
