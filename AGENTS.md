@@ -5782,7 +5782,7 @@
     - 标签与水波纹层级严格分明，`metaGrid` 位于水波纹之上（z-index 12 > 2）；
     - 默认统一度严格受控（425.5px < 50vh: 450px），零半屏越界。
 
-### Task 271: 首页分页导航 (#home-pagination) 纯图标与悬浮注释重构、同级页面无刷新流式切换与全站智能懒加载预取
+### Task 271: 首页分页导航 (#home-pagination) 纯图标与悬浮注释重构、同级页面无刷新流式切换与全站智能懒加载预取 (`c834edd`)
 - [x] **按钮文字移除与悬停注释规范重构 (`src/components/theme/HomePagination.astro` & `src/styles/final-pass.css`)**：
   - 彻底移除 `home-pagination__btn home-pagination__prev` 与 `home-pagination__next` 内部显式文字（删除 `<span class="home-pagination__btn-text">上页</span>` 与 `下页`）；
   - 保留并居中呈现标志性矢量方向图标（`<i class="anzhiyufont anzhiyu-icon-angle-left"></i>` 与 `anzhiyu-icon-angle-right`）；
