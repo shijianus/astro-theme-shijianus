@@ -5801,10 +5801,16 @@
   - 注入跨浏览器防抖 hover prefetch 引擎，在 Safari / Firefox 下平滑回退；
   - 全局自动扫描并强制非首屏图片应用 `loading="lazy"` 与 `decoding="async"`，极大减少网络请求次数；
   - 严格保留跨界面跳转时的必要站点内过渡动效与完整布局渲染（“站点内跨度必须保留”）。
-- [x] **自动化端到端测试覆盖 (`scripts/verify-home-pagination-lazy.mjs`)**：
-  - 编写并执行全流程 Playwright E2E 自动化测试套件；
-  - 验证 Prev/Next 按钮无显式文字、图标存在、方形尺寸（36px x 36px）、悬停 Tooltip 正常浮现；
-  - 验证切换分页时全局 Probe `window.__NO_RELOAD_TEST_PROBE__` 完美保留（证明 0 硬刷新）、URL 准确更新、双向导航正常；全部断言 100% PASS。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与线上实机全链路审计 (`scripts/verify-live-pagination-lazy.mjs`)**：
+  - 代码全量同步至 `origin` 与 `cf` 远端；
+  - 编译后全量部署至 Cloudflare Pages 生产边缘节点（`https://c60ba7ef.shijianus-blog.pages.dev` 及绑定域名 `https://blog.epocanvas.com`）；
+  - 执行真实生产环境自动化 Playwright 审计脚本，在 `https://blog.epocanvas.com/` 上完成实机端到端全链路验证：
+    1. Prev 按钮无文字显式、矢量箭头图标存在、禁用态 Tooltip（“已是第一页”）显示正常、尺寸 36px x 36px 完美对称；
+    2. Next 按钮无文字显式、矢量箭头图标存在、悬停动态浮现“下一页”注释、尺寸 36px x 36px；
+    3. 点击 Next 按钮触发同级页面无刷新流式切换，`window.__LIVE_NO_RELOAD_PROBE__` 探针 100% 保持（证实 0 硬刷新、音频不中断、画布不重置），URL 平滑切换至 `https://blog.epocanvas.com/page/2/`；
+    4. 点击 Prev 按钮流式无刷新回退至 `https://blog.epocanvas.com/`，探针依然保持；
+    5. 全程 0 致命控制台报错，全部生产端断言 100% PASS 通过。
+
 
 
 
