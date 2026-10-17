@@ -401,8 +401,7 @@ const formatLabels: Record<string, string> = {
 };
 const formatBadge = postEntry.data.postFormat && postEntry.data.postFormat !== 'standard' ? [formatLabels[postEntry.data.postFormat] || postEntry.data.postFormat] : [];
 const scannedTags = [...new Set(postEntry.data.tags.map((tag) => tag.trim()).filter(Boolean))];
-const tagLimit = Math.max(0, siteConfig.post.hero.maxTags - originalBadge.length - formatBadge.length);
-const badges = isUnlocked ? [...originalBadge, ...formatBadge, ...scannedTags.slice(0, tagLimit)] : ['受限'];
+const badges = isUnlocked ? [...originalBadge, ...formatBadge, ...scannedTags.slice(0, 20)] : ['受限'];
 const heroImage = isUnlocked ? resolveExplicitCover(postEntry) : '';
 const heroImageAlt = isUnlocked ? resolveCoverAlt(postEntry) : PROTECTED_POST_TITLE;
 const heroImageUrl = heroImage ? new URL(heroImage, siteConfig.site.url) : null;
@@ -555,8 +554,8 @@ const heroSummary = isUnlocked
         badges={badges}
         meta={meta}
         runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
-        translations={translationsByLang}
-        currentLang={effectiveCurrentLang}
+        maxTags={siteConfig.post.hero.maxTags ?? 10}
+        autoFitTitle={siteConfig.post.hero.autoFitTitle ?? true}
       />
     </Fragment>
 
@@ -813,8 +812,6 @@ const heroSummary = isUnlocked
                   container.appendChild(tempTmpl.content.cloneNode(true));
                   container.dataset.contentFeatures = 'true';
                 }
-                const heroTranslations = document.querySelector('.post-hero__translations');
-                if (heroTranslations) heroTranslations.style.display = '';
                 const current = document.documentElement.dataset.localeVariant || document.documentElement.lang || defaultLang;
                 if (window.switchArticleLanguage) {
                   window.switchArticleLanguage(current);
@@ -1013,15 +1010,6 @@ const heroSummary = isUnlocked
                 }
               }
 
-              // 4. Update PostHero buttons active state
-              document.querySelectorAll('.post-hero__lang-tag').forEach((btn) => {
-                const isMatch = btn.dataset.targetLang === targetLang;
-                btn.classList.toggle('is-active', isMatch);
-                btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
-                if (isMatch) btn.setAttribute('aria-current', 'page');
-                else btn.removeAttribute('aria-current');
-              });
-
               // 5. Update AI Summary text if present
               const aiSummaryContent = document.querySelector('.ai-summary__content, .ai-summary__text');
               if (aiSummaryContent && staticSummariesByLang[targetLang]) {
@@ -1106,15 +1094,6 @@ const heroSummary = isUnlocked
                 window.dispatchEvent(new Event('resize'));
               }, 10);
             };
-
-            // Attach click listeners to PostHero language buttons
-            document.querySelectorAll('.post-hero__lang-tag[data-target-lang]').forEach((btn) => {
-              btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const tLang = this.dataset.targetLang;
-                if (tLang) window.switchArticleLanguage(tLang);
-              });
-            });
 
             // Listen for global locale changes from header/account drawer
             window.addEventListener('shijianus:localechange', function (e) {

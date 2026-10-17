@@ -895,6 +895,7 @@ export const siteConfig = {
     hero: {
       detectOriginalTag: true,
       maxTags: 10,
+      autoFitTitle: true,
       runtimeMetrics: true,
       fallbackImage: '/media/shijianus/default.png',
       remoteFallbackImage:

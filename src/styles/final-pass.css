@@ -7626,8 +7626,9 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   box-sizing: border-box !important;
 }
 
-/* Task B: Force Hero Section to full width (100vw) with consistent height */
-.page-shell__hero,
+/* Task B: Force Hero Section to full width (100vw) with consistent height capped below half screen */
+.page-shell__hero:has(.post-hero),
+body[data-type='post'] .page-shell__hero,
 .post-hero {
   width: 100vw !important;
   max-width: 100vw !important;
@@ -7636,17 +7637,30 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 380px !important;
-  height: clamp(380px, 32vw, 440px) !important;
-  max-height: 480px !important;
+  min-height: 390px !important;
+  height: clamp(390px, 30vw, 440px) !important;
+  max-height: min(460px, 46vh) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 @media screen and (max-width: 768px) {
-  .page-shell__hero,
+  .page-shell__hero:has(.post-hero),
+  body[data-type='post'] .page-shell__hero,
   .post-hero {
-    min-height: 340px !important;
-    height: 340px !important;
+    min-height: 280px !important;
+    height: clamp(280px, 44vh, 320px) !important;
+    max-height: 45vh !important;
   }
+}
+
+body[data-type='home'] .page-shell__hero {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
 .post-hero.is-pure-color,
@@ -7666,16 +7680,28 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
 }
 
 .post-hero__inner {
+  position: relative !important;
+  z-index: 10 !important;
   max-width: 1400px !important;
   width: 100% !important;
+  padding-bottom: clamp(44px, 5vw, 60px) !important;
 }
 
-.post-hero__title-block,
-.post-hero__lede {
-  max-width: 100% !important;
+/* Post Hero Badges: Strict horizontal space boundary */
+.post-hero__badges {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: min(720px, calc(100% - 24px)) !important;
+  overflow: hidden !important;
+  margin-bottom: 2px !important;
 }
 
 .post-hero__badge.is-primary {
+  flex-shrink: 0 !important;
   min-height: 22px !important;
   padding: 1px 8px !important;
   border-radius: 4px !important;
@@ -7683,11 +7709,14 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   color: var(--theme-main, #425aef) !important;
   font-weight: 700 !important;
   font-size: 11.5px !important;
+  white-space: nowrap !important;
 }
 
 .post-hero__tag {
   display: inline-flex !important;
   align-items: center !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
   gap: 2px !important;
   padding: 2px 6px !important;
   color: rgba(255, 255, 255, 0.88) !important;
@@ -7696,6 +7725,10 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   text-decoration: none !important;
   border-radius: 4px !important;
   transition: color 0.18s ease, background-color 0.18s ease !important;
+}
+
+.post-hero__tag[data-hidden-by-space="true"] {
+  display: none !important;
 }
 
 .post-hero__tag:hover {
@@ -7709,87 +7742,78 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   font-size: 11px !important;
 }
 
+/* Post Hero Translations: Removed from hero title */
 .post-hero__translations {
-  display: inline-flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  gap: 6px 8px !important;
-  margin-top: 4px !important;
-  padding: 3px 8px !important;
-  border-radius: 6px !important;
-  background: rgba(0, 0, 0, 0.22) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  width: fit-content !important;
+  display: none !important;
 }
 
-.post-hero__translations-label {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+/* Post Hero Title Block: Strict bounding limits & auto-fitting font size */
+.post-hero__title-block {
+  width: 100% !important;
 }
 
-.post-hero__translations-icon {
-  width: 12px !important;
-  height: 12px !important;
-  color: rgba(255, 255, 255, 0.9) !important;
+.post-hero__title-block[data-auto-fit-title="true"] {
+  max-width: min(1080px, 100%) !important;
+  max-height: clamp(130px, 16vw, 175px) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 6px !important;
 }
 
-.post-hero__translations-list {
-  display: inline-flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  gap: 4px 6px !important;
-}
-
-.post-hero__lang-tag {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  padding: 1.5px 7px !important;
-  border: none !important;
-  outline: none !important;
-  cursor: pointer !important;
-  font-family: inherit !important;
-  line-height: inherit !important;
-  border-radius: 4px !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  transition: all 0.18s ease !important;
-}
-
-.post-hero__lang-tag:active:not(.is-active) {
-  transform: scale(0.96) !important;
-}
-
-.post-hero__lang-tag:hover {
-  background: rgba(255, 255, 255, 0.28) !important;
-  color: #ffffff !important;
-}
-
-.post-hero__lang-tag.is-active {
-  background: #ffffff !important;
-  color: var(--theme-main, #425aef) !important;
-  cursor: default !important;
+.post-hero__title-block[data-auto-fit-title="true"] h1,
+.post-hero__title-block[data-auto-fit-title="true"] .post-hero__title {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
 }
 
-.post-hero__lang-tag.is-active .lang-dot {
-  width: 5px !important;
-  height: 5px !important;
-  border-radius: 50% !important;
-  background: var(--theme-main, #425aef) !important;
+.post-hero__title-block[data-auto-fit-title="true"] .post-hero__lede {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  font-size: 14.5px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
 }
 
+/* When auto-fit is disabled, all bounding box limits are removed */
+.post-hero__title-block[data-auto-fit-title="false"] {
+  max-width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+.post-hero__title-block[data-auto-fit-title="false"] h1,
+.post-hero__title-block[data-auto-fit-title="false"] .post-hero__title {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.post-hero__title-block[data-auto-fit-title="false"] .post-hero__lede {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Post Hero Meta Grid: Guaranteed above waves (z-index: 12 > 2) */
 .post-hero__meta-grid {
+  position: relative !important;
+  z-index: 12 !important;
   display: flex !important;
   flex-wrap: wrap !important;
   align-items: center !important;
@@ -7797,7 +7821,7 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   width: 100% !important;
   max-width: 100% !important;
   margin-top: 4px !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
   font-size: 12.5px !important;
   line-height: 1.5 !important;
 }

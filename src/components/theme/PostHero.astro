@@ -1,5 +1,5 @@
 ---
-import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, Globe, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, type LucideIcon } from 'lucide-react';
 import { normalizeLangCode } from '../../lib/content';
 
 type PostHeroMetaItem = {
@@ -22,6 +22,8 @@ interface Props {
   badges?: string[];
   meta?: PostHeroMetaItem[];
   runtimeMetrics?: boolean;
+  maxTags?: number;
+  autoFitTitle?: boolean;
   translations?: Record<string, {
     slug: string;
     url: string;
@@ -32,7 +34,6 @@ interface Props {
 }
 
 import { getLocaleMeta } from '../../config/i18n';
-
 
 const {
   slug,
@@ -47,12 +48,9 @@ const {
   badges = [],
   meta = [],
   runtimeMetrics = true,
-  translations = {},
-  currentLang = 'zh-CN',
+  maxTags = 10,
+  autoFitTitle = true,
 } = Astro.props;
-
-const translationEntries = Object.entries(translations);
-const hasTranslations = translationEntries.length > 1;
 
 const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
   calendar: CalendarDays,
@@ -110,7 +108,7 @@ const hasMedia = Boolean(image || video);
 
   <div class="post-hero__inner">
     {badges.length > 0 && (
-      <div class="post-hero__badges">
+      <div class="post-hero__badges" data-max-tags={maxTags}>
         {badges.map((item, index) => {
           if (index === 0 && (item === '原创' || item === '转载' || item === '受限')) {
             return <span class="post-hero__badge is-primary" data-badge-type={item}>{item}</span>;
@@ -119,7 +117,7 @@ const hasMedia = Boolean(image || video);
             item.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')
           );
           return (
-            <a href={`/tags/${tagSlug}/`} class="post-hero__tag">
+            <a href={`/tags/${tagSlug}/`} class="post-hero__tag" data-hero-tag>
               <span class="post-hero__tag-hash">#</span>
               <span class="post-hero__tag-name">{item}</span>
             </a>
@@ -128,37 +126,11 @@ const hasMedia = Boolean(image || video);
       </div>
     )}
 
-    {hasTranslations && (
-      <div class="post-hero__translations" aria-label="Available translations">
-        <span class="post-hero__translations-label">
-          <Globe className="post-hero__translations-icon" aria-hidden="true" />
-          <span data-translations-label>语言版本:</span>
-        </span>
-        <div class="post-hero__translations-list">
-          {translationEntries.map(([langKey, item]) => {
-            const normalizedKey = normalizeLangCode(langKey);
-            const isActive = normalizedKey === normalizeLangCode(currentLang);
-            const meta = getLocaleMeta(normalizedKey);
-            return (
-              <button
-                type="button"
-                class:list={['post-hero__lang-tag', isActive && 'is-active']}
-                data-target-lang={normalizedKey}
-                aria-current={isActive ? 'page' : undefined}
-                aria-pressed={isActive ? 'true' : 'false'}
-                title={isActive ? `当前语言: ${meta.native}` : `切换至 ${meta.native}`}
-              >
-                <span class="lang-dot"></span>
-                {meta.native}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    <div class="post-hero__title-block">
-      <h1>{title}</h1>
+    <div
+      class="post-hero__title-block"
+      data-auto-fit-title={autoFitTitle ? 'true' : 'false'}
+    >
+      <h1 class="post-hero__title">{title}</h1>
       {summary && <p class="post-hero__lede">{summary}</p>}
     </div>
 
@@ -248,6 +220,115 @@ const hasMedia = Boolean(image || video);
         }, { once: true });
       }
 
+      // 1. Tag space-based truncation prevention & horizontal limit
+      const badgesContainer = root.querySelector('.post-hero__badges');
+      if (badgesContainer instanceof HTMLElement) {
+        const primaryBadge = badgesContainer.querySelector('.post-hero__badge.is-primary');
+        const tagElements = Array.from(badgesContainer.querySelectorAll('[data-hero-tag]'));
+        const maxTagsLimit = Number(badgesContainer.getAttribute('data-max-tags') || '10');
+
+        const fitTagsToSpace = () => {
+          tagElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.removeAttribute('data-hidden-by-space');
+              el.style.removeProperty('display');
+            }
+          });
+
+          const parent = badgesContainer.parentElement || root;
+          const containerRect = badgesContainer.getBoundingClientRect();
+          const parentRect = parent.getBoundingClientRect();
+          const parentStyle = window.getComputedStyle(parent);
+          const parentPaddingRight = parseFloat(parentStyle.paddingRight) || 0;
+          const parentInnerRight = parentRect.right - parentPaddingRight;
+
+          // Strict spatial boundary: container left + 720px maximum, but never exceeding parent inner right - 12px
+          const maxRight = Math.min(containerRect.left + 720, parentInnerRight - 12);
+
+          let currentRight = containerRect.left;
+          if (primaryBadge instanceof HTMLElement) {
+            const pRect = primaryBadge.getBoundingClientRect();
+            currentRight = pRect.right + 8;
+          }
+
+          let displayedCount = 0;
+
+          for (const el of tagElements) {
+            if (!(el instanceof HTMLElement)) continue;
+
+            if (displayedCount >= maxTagsLimit) {
+              el.setAttribute('data-hidden-by-space', 'true');
+              el.style.setProperty('display', 'none', 'important');
+              continue;
+            }
+
+            const tagWidth = el.offsetWidth;
+            const gap = displayedCount === 0 && !primaryBadge ? 0 : 8;
+
+            if (currentRight + gap + tagWidth <= maxRight) {
+              el.removeAttribute('data-hidden-by-space');
+              el.style.removeProperty('display');
+              currentRight += gap + tagWidth;
+              displayedCount++;
+            } else {
+              el.setAttribute('data-hidden-by-space', 'true');
+              el.style.setProperty('display', 'none', 'important');
+            }
+          }
+        };
+
+        requestAnimationFrame(fitTagsToSpace);
+        window.addEventListener('resize', fitTagsToSpace, { passive: true });
+        if (document.fonts) {
+          document.fonts.ready.then(fitTagsToSpace).catch(() => {});
+        }
+      }
+
+      // 2. Title & lede auto-sizing & strict bounding limit
+      const titleBlock = root.querySelector('.post-hero__title-block');
+      if (titleBlock instanceof HTMLElement && titleBlock.getAttribute('data-auto-fit-title') === 'true') {
+        const titleEl = titleBlock.querySelector('h1, .post-hero__title');
+        const ledeEl = titleBlock.querySelector('.post-hero__lede');
+
+        const fitTitleAndLede = () => {
+          if (titleEl instanceof HTMLElement) {
+            const isMobile = window.innerWidth <= 768;
+            const baseTitleSize = isMobile ? 26 : 36;
+            const minTitleSize = isMobile ? 18 : 20;
+
+            titleEl.style.fontSize = `${baseTitleSize}px`;
+
+            let currentSize = baseTitleSize;
+            while (titleEl.scrollHeight > titleEl.clientHeight + 2 && currentSize > minTitleSize) {
+              currentSize -= 1.5;
+              titleEl.style.fontSize = `${currentSize}px`;
+            }
+          }
+
+          if (ledeEl instanceof HTMLElement) {
+            const isMobile = window.innerWidth <= 768;
+            const baseLedeSize = isMobile ? 13.5 : 15;
+            const minLedeSize = isMobile ? 11.5 : 12;
+            ledeEl.style.fontSize = `${baseLedeSize}px`;
+
+            let currentSize = baseLedeSize;
+            while (ledeEl.scrollHeight > ledeEl.clientHeight + 2 && currentSize > minLedeSize) {
+              currentSize -= 1;
+              ledeEl.style.fontSize = `${currentSize}px`;
+            }
+          }
+        };
+
+        requestAnimationFrame(fitTitleAndLede);
+        window.addEventListener('resize', fitTitleAndLede, { passive: true });
+        window.addEventListener('shijianus:localechange', () => {
+          setTimeout(fitTitleAndLede, 25);
+        });
+        if (document.fonts) {
+          document.fonts.ready.then(fitTitleAndLede).catch(() => {});
+        }
+      }
+
       if (root.dataset.runtimeMetrics !== 'true') return;
 
       const slug = root.dataset.postSlug;
@@ -281,42 +362,36 @@ const hasMedia = Boolean(image || video);
 
       const HERO_I18N = {
         'zh-CN': {
-          translationsLabel: '语言版本:',
           badgeOriginal: '原创',
           badgeReprint: '转载',
           viewsUnit: '次',
           dwellUnit: '分钟',
         },
         'zh-Hant': {
-          translationsLabel: '語言版本:',
           badgeOriginal: '原創',
           badgeReprint: '轉載',
           viewsUnit: '次',
           dwellUnit: '分鐘',
         },
         'en': {
-          translationsLabel: 'Translations:',
           badgeOriginal: 'Original',
           badgeReprint: 'Reprint',
           viewsUnit: 'views',
           dwellUnit: 'min',
         },
         'es': {
-          translationsLabel: 'Idiomas:',
           badgeOriginal: 'Original',
           badgeReprint: 'Reimpresión',
           viewsUnit: 'vistas',
           dwellUnit: 'min',
         },
         'de': {
-          translationsLabel: 'Sprachen:',
           badgeOriginal: 'Original',
           badgeReprint: 'Nachdruck',
           viewsUnit: 'Aufrufe',
           dwellUnit: 'Min.',
         },
         'fr': {
-          translationsLabel: 'Langues :',
           badgeOriginal: 'Original',
           badgeReprint: 'Réimpression',
           viewsUnit: 'vues',
@@ -332,9 +407,6 @@ const hasMedia = Boolean(image || video);
           : ['en', 'es', 'de', 'fr'].includes((targetLang || '').split('-')[0]) ? (targetLang || '').split('-')[0]
           : 'zh-CN';
         const t = HERO_I18N[currentHeroLang] || HERO_I18N['zh-CN'];
-
-        const labelEl = root.querySelector('[data-translations-label]');
-        if (labelEl) labelEl.textContent = t.translationsLabel;
 
         const badgeEl = root.querySelector('.post-hero__badge.is-primary');
         if (badgeEl) {
@@ -381,18 +453,6 @@ const hasMedia = Boolean(image || video);
         },
         { once: true },
       );
-
-      root.querySelectorAll('.post-hero__lang-tag[data-target-lang]').forEach((link) => {
-        link.addEventListener('click', () => {
-          const targetLang = link.getAttribute('data-target-lang');
-          if (targetLang) {
-            try {
-              window.localStorage.setItem('shijianus-locale-variant', targetLang);
-              window.localStorage.setItem('shijianus-manual-locale-selected', targetLang);
-            } catch (_) {}
-          }
-        });
-      });
     });
   })();
 </script>
