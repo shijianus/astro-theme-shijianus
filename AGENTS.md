@@ -5853,6 +5853,25 @@
     3. 控制台热力图向上置顶 Tooltip 正常浮动；
     4. 点击 2026/8/28 方格，挂载在 `document.body` 上的视口级浮层成功弹出（`isInsideWrapper: false`，`isFixed: true`），当日 13 篇文章完整呈现，零截断，无控制台报错。
 
+### Task 24: 活跃等级与内容密度规范独立分篇 (EES-002 / EES-003)、构建时预计算嵌入与管理员配置化系统落地 (`bb46d7c`)
+- [x] **后端算法完整补齐与构建时预计算嵌入 (Centralized Build-Time Baked Algorithms)**：
+  - 新建统一规范配置文件 `src/config/standards.ts`，定义权威 `standardsConfig` 与梯队匹配函数 `matchActivityTier`、`matchContentDensityTier`；
+  - 在 `scripts/sync-console-metrics.mjs` prebuild 钩子中全量接入算法计算，将最终匹配的评级数据直接嵌入 `public/data/console-metrics.json`；
+  - 在 `src/lib/site-metrics.ts` 中消除硬编码分歧，实现 SSG 静态构建页面与动态边缘 API 100% 数据镜像对齐，彻底杜绝计算冲突。
+- [x] **活跃等级与内容密度完全分离为 2 篇独立技术规范文章 (Separated Dedicated Standard Posts)**：
+  - 新建 `src/pages/standards/activity-level.astro`（《系统工程标准：站长活跃等级分级与评估规范 (EES-002)》），深入论述滚动 30 天滑动窗口模型、防刷去重准则与 5 级阶梯标准；保持单栏流式技术文档排版，`showAside={false}` 彻底移除侧边栏；
+  - 重构 `src/pages/standards/content-density.astro`（《系统工程标准：全站内容密度分级与度量规范 (EES-003)》），深入剖析 Markdown 纯文本清洗流水线、全站均值模型、长文排版支撑准则与 4 级密度标准；同样采用单栏技术文档排版，彻底移除侧边栏；
+  - 维持 `src/pages/standards/maintainer-level.astro` 别名兼容，双向无缝跳转。
+- [x] **规则合理均衡且支持管理员配置文件自定义 (Configurable Standards System)**：
+  - 活跃等级：Lv.0 维护休眠（0篇）、Lv.1 周期推送（1~2篇）、Lv.2 稳定维护（3~4篇）、Lv.3 高频迭代（5~8篇）、Lv.4 极客狂热（9+篇），不设定苛刻的日更要求，契合技术思考沉淀周期；
+  - 内容密度：Lv.1 微动态速记（<=800字）、Lv.2 标准技术博文（801~1500字）、Lv.3 详实系统专栏（1501~3000字）、Lv.4 硬核深度长文（>3000字），倡导硬核技术输出；
+  - 管理员可在 `src/config/standards.ts` 中一键修改阈值与文案，全站构建与 API 自动同步。
+- [x] **总纲枢纽与全域组件精准导向 (Full Internal Linking Alignment)**：
+  - `src/pages/standards/index.astro` 升级为系统标准总纲（EES-001），并在 Section 2 与 Section 3 设立醒目的独立文章跳转入口卡片（`.doc-split-entry-card`）；
+  - `src/components/theme/Sidebar.astro` 与 `src/components/ThemeOverlays.tsx` 中控台的 `activeLevel` 与 `density` 链接分别精准指向 `/standards/activity-level/` 与 `/standards/content-density/`。
+- [x] **本地端到端测试全绿通过 (`scripts/verify-heatmap-and-standards.mjs`)**：
+  - 覆盖 API 数据结构、Standards 总纲双入口、Activity Level 独立文章、Content Density 独立文章及控制台热力图脱壳浮层，100% PASS。
+
 
 
 
