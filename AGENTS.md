@@ -5845,8 +5845,14 @@
 - [x] **`/standards/` 规范页面文档化架构重构 (学习官方文档构造，移除侧边栏)**：
   - 彻底清除侧边栏（`showAside={false}`），采用现代技术文档标准单栏流式布局（`max-width: 1060px; margin: 32px auto`）；
   - 引入规范文档完整标准构造：RFC 级头部元信息（ Living Standard / 生产环境持续生效 / SPEC-ID: EES-001）、§ 1 ~ § 6 章节锚点快速导航条（Pills Nav）、8 项 `webinfo-item` 核心运行态仪表盘、活跃与内容密度分级阶梯对照表（动态高亮当前达标阶梯）、工程架构 SLA 性能硬性指标清单、代码质量守则与可验证的数据字典 API 契约。
-- [x] **本地与云端自动化端到端测试全量通过**：
-  - 本地自动化测试脚本 (`scripts/verify-heatmap-and-standards.mjs`) 100% PASS（验证 Has Sidebar = false，6 项导航锚点齐全，点击 8/28 方格成功唤出挂载于 body 的视口级浮层并完整渲染全部 13 篇文章，0 报错）。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实公网链路验收 100% 通过 (`559befe`)**：
+  - Cloudflare Pages 生产边缘节点全量部署成功（`https://31460110.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`）；
+  - 针对真实生产域名 `https://blog.epocanvas.com` 执行端到端自动化测试 (`scripts/verify-live-heatmap-standards.mjs`) 100% PASS：
+    1. `GET /api/console/data` HTTP 200，364 天活动数据与实时指标同步；
+    2. `/standards/` 页面 HTTP 200，侧边栏完全消除（`hasSidebar: false`），6 项文档导航锚点与 8 项 `webinfo-item` 渲染正常，当前梯队动态高亮（高频迭代 Lv.3 / 硬核深度长文 Lv.4）；
+    3. 控制台热力图向上置顶 Tooltip 正常浮动；
+    4. 点击 2026/8/28 方格，挂载在 `document.body` 上的视口级浮层成功弹出（`isInsideWrapper: false`，`isFixed: true`），当日 13 篇文章完整呈现，零截断，无控制台报错。
+
 
 
 
