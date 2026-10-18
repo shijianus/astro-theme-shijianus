@@ -293,13 +293,14 @@ export interface ActivityDay {
   displayDate: string; // e.g. 2026/8/27
   level: number;      // 0 - 4
   posts: ActivityPostItem[];
+  isFuture?: boolean;
 }
 
 /**
- * 构建权威热力图数据 (含发布与更新记录，去重多语言冗余)
+ * 构建权威热力图数据 (含发布与更新记录，去重多语言冗余，严格对齐真实日历)
  */
 export function buildHeatmapActivity(posts: PostEntry[], now = new Date()): {
-  days: (ActivityDay | null)[];
+  days: ActivityDay[];
   monthLabels: { label: string; index: number }[];
   totalActivities: number;
 } {
@@ -309,8 +310,8 @@ export function buildHeatmapActivity(posts: PostEntry[], now = new Date()): {
   const activityMap = new Map<string, ActivityPostItem[]>();
 
   const addActivity = (dateStr: string, item: ActivityPostItem) => {
+    if (!dateStr) return;
     const list = activityMap.get(dateStr) ?? [];
-    // 避免同篇同类型重复计入
     if (!list.some((existing) => existing.href === item.href && existing.type === item.type)) {
       list.push(item);
       activityMap.set(dateStr, list);
@@ -343,26 +344,23 @@ export function buildHeatmapActivity(posts: PostEntry[], now = new Date()): {
     }
   }
 
-  // 2. 52 周日历框架生成 (固化 UTC+8 业务时间对齐)
-  const utc8Time = now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000);
-  const today = new Date(utc8Time);
+  // 2. 52 周日历框架生成 (严格以真实当天为基准对齐 Sunday ~ Saturday)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   today.setHours(0, 0, 0, 0);
 
-  const totalSlots = 52 * 7;
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - today.getDay() - (51 * 7));
+  const currentWeekSunday = new Date(today);
+  currentWeekSunday.setDate(today.getDate() - today.getDay());
 
-  const days: (ActivityDay | null)[] = [];
+  const startDate = new Date(currentWeekSunday);
+  startDate.setDate(currentWeekSunday.getDate() - (51 * 7));
+
+  const totalSlots = 52 * 7;
+  const days: ActivityDay[] = [];
   let totalActivities = 0;
 
   for (let i = 0; i < totalSlots; i++) {
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + i);
-
-    if (currentDate > today) {
-      days.push(null);
-      continue;
-    }
 
     const y = currentDate.getFullYear();
     const m = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -370,22 +368,26 @@ export function buildHeatmapActivity(posts: PostEntry[], now = new Date()): {
     const dateKey = `${y}-${m}-${d}`;
     const displayDate = `${y}/${parseInt(m, 10)}/${parseInt(d, 10)}`;
 
-    const items = activityMap.get(dateKey) || [];
+    const isFuture = currentDate > today;
+    const items = isFuture ? [] : (activityMap.get(dateKey) || []);
     const count = items.length;
     totalActivities += count;
 
     // 贡献等级梯队：0 篇为 0；1 篇为 1；2~3 篇为 2；4~6 篇为 3；7+ 篇为 4
     let level = 0;
-    if (count >= 7) level = 4;
-    else if (count >= 4) level = 3;
-    else if (count >= 2) level = 2;
-    else if (count >= 1) level = 1;
+    if (!isFuture) {
+      if (count >= 7) level = 4;
+      else if (count >= 4) level = 3;
+      else if (count >= 2) level = 2;
+      else if (count >= 1) level = 1;
+    }
 
     days.push({
       date: dateKey,
       displayDate,
       level,
       posts: items,
+      isFuture,
     });
   }
 

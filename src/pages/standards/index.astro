@@ -12,25 +12,64 @@ const sidebarData = createSidebarData(allPosts);
 <BlogLayout 
   title="站点工程标准与分级规范 - EpoCanvas" 
   description="客观映射系统活跃等级、内容密度、代码工程规范与性能物理指标体系。"
-  sidebarData={sidebarData}
+  showAside={false}
   pageType="standards"
+  sidebarData={sidebarData}
 >
-  <div class="standards-page-container">
-    <header class="standards-hero">
-      <div class="standards-hero__badge">Engineering Standards v2.6.0</div>
-      <h1 class="standards-hero__title">系统工程规范与分级指标</h1>
-      <p class="standards-hero__subtitle">
-        数据是系统的脉络。本站所有活跃度、内容密度与运行时指标均由构建引擎与边缘函数物理精算，客观映射每一次部署与交互的回响。
+  <div class="standards-doc-container">
+    <!-- 规范文档元信息头部 (RFC / Technical Spec Header) -->
+    <header class="standards-doc-header">
+      <div class="standards-doc-header__badge-row">
+        <span class="standards-spec-badge">EES-2026.4 / Living Standard</span>
+        <span class="standards-spec-status">● 生产环境持续生效</span>
+        <span class="standards-spec-code">SPEC-ID: EES-001</span>
+      </div>
+      <h1 class="standards-doc-header__title">系统工程标准与指标分级规范</h1>
+      <p class="standards-doc-header__lede">
+        EpoCanvas Engineering Standards (EES) 为本站系统工程架构、内容密度、日常活跃与边缘计算性能的最高执行准则。
+        全站所有状态指标均由底层构建引擎、D1 物理数据库与 Cloudflare 全球边缘节点物理精算，杜绝任何人工虚假修饰。
       </p>
+
+      <div class="standards-doc-meta-grid">
+        <div class="meta-item">
+          <span class="meta-item__k">标准定义版本</span>
+          <strong class="meta-item__v">v2.6.0 (2026 Revision)</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">运行时架构</span>
+          <strong class="meta-item__v">Astro 5 Islands + Cloudflare Edge</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">计算刷新机制</span>
+          <strong class="meta-item__v">边缘动态精算 / 每日自动归档</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">权威数据源</span>
+          <strong class="meta-item__v"><a href="/api/console/data" target="_blank">GET /api/console/data</a></strong>
+        </div>
+      </div>
     </header>
 
-    <!-- 核心指标仪表盘 (标准 webinfo-item 网格) -->
-    <section class="standards-card card-widget">
-      <div class="standards-card__header">
-        <h2 class="standards-card__title">站点核心状态仪表盘</h2>
-        <span class="standards-card__tag">实时测算</span>
+    <!-- 文档快速导航条 (Document Navigation Anchors) -->
+    <nav class="standards-doc-nav" aria-label="规范文档目录导航">
+      <a href="#section-dashboard" class="doc-nav-pill">§ 1. 核心状态仪表盘</a>
+      <a href="#section-active-level" class="doc-nav-pill">§ 2. 活跃等级规范</a>
+      <a href="#section-content-density" class="doc-nav-pill">§ 3. 内容密度规范</a>
+      <a href="#section-engineering-sla" class="doc-nav-pill">§ 4. 架构与 SLA 规范</a>
+      <a href="#section-badges" class="doc-nav-pill">§ 5. 徽章体系与认证</a>
+      <a href="#section-schema" class="doc-nav-pill">§ 6. 数据字典与 API</a>
+    </nav>
+
+    <!-- § 1. 核心状态仪表盘 -->
+    <section class="standards-doc-section" id="section-dashboard">
+      <div class="section-title-wrap">
+        <div class="section-num">1.0</div>
+        <div>
+          <h2 class="standards-section-title">核心状态仪表盘 (Live Metrics Dashboard)</h2>
+          <p class="standards-section-desc">当前站点运行态核心指标精算快照，数据严格同源同步。</p>
+        </div>
       </div>
-      
+
       <div class="card-webinfo-grid standards-webinfo-grid">
         <div class="webinfo-item">
           <div class="webinfo-item-label">
@@ -90,15 +129,22 @@ const sidebarData = createSidebarData(allPosts);
       </div>
     </section>
 
-    <!-- 活跃等级分级说明体系 -->
-    <section class="standards-card card-widget" id="maintainer-level">
-      <div class="standards-card__header">
+    <!-- § 2. 活跃等级分级规范 -->
+    <section class="standards-doc-section" id="section-active-level">
+      <div class="section-title-wrap">
+        <div class="section-num">2.0</div>
         <div>
-          <h2 class="standards-card__title">1. 活跃等级分级规范 (Active Level)</h2>
-          <p class="standards-card__desc">基于全站近 30 天内公开文章的物理发布数量进行动态阶梯评定。</p>
+          <h2 class="standards-section-title">活跃等级分级规范 (Active Level Specification)</h2>
+          <p class="standards-section-desc">基于全站近 30 天内公开文章的物理发布与修订更新频率进行客观动态阶梯评定。</p>
         </div>
-        <div class="standards-current-badge">
-          当前评定：<span class="badge-tag is-active">{metrics.activeLevel.status} ({metrics.activeLevel.title})</span>
+      </div>
+
+      <div class="doc-callout doc-callout--info">
+        <div class="doc-callout__icon">ℹ️</div>
+        <div class="doc-callout__content">
+          <strong>计算公式与采样准则：</strong>
+          统计窗口设定为自然日 [T - 30天, T]。仅统计具备独立 URL 的公开文章节点（排除多语言副本衍生），
+          当日发布记为首发，后续技术勘误与深度补充均由热力图双重维度追踪。
         </div>
       </div>
 
@@ -108,9 +154,9 @@ const sidebarData = createSidebarData(allPosts);
             <tr>
               <th>等级标识</th>
               <th>评级名称</th>
-              <th>近30天发文阈值</th>
-              <th>标准说明与维护状态</th>
-              <th>本站达标状态</th>
+              <th>发文数量阈值 (近30天)</th>
+              <th>维护状态与节奏描述</th>
+              <th>当前达标判定</th>
             </tr>
           </thead>
           <tbody>
@@ -122,15 +168,15 @@ const sidebarData = createSidebarData(allPosts);
                 <td><strong>{tier.title}</strong></td>
                 <td>{tier.description}</td>
                 <td>
-                  {tier.level === 'Status 4' && '高密度极速迭代，多专栏并行推进'}
-                  {tier.level === 'Status 3' && '高频深度迭代，系统保持周更或半周更'}
-                  {tier.level === 'Status 2' && '稳定节奏维护，稳步推进专题'}
+                  {tier.level === 'Status 4' && '高密度极速迭代，多专栏并行推进，周更 >= 2 篇'}
+                  {tier.level === 'Status 3' && '高频深度迭代，系统保持周更或半周更节奏'}
+                  {tier.level === 'Status 2' && '稳定节奏维护，稳步推进技术专题与知识沉淀'}
                   {tier.level === 'Status 1' && '周期常规推送，系统处于基础维护状态'}
                   {tier.level === 'Status 0' && '近30天暂无更新，系统处于休眠维护中'}
                 </td>
                 <td>
                   {tier.isCurrent ? (
-                    <span class="status-indicator current">✓ 当前达标 ({metrics.recentPostCount30d} 篇)</span>
+                    <span class="status-indicator current">✓ 当前实测达标 ({metrics.recentPostCount30d} 篇)</span>
                   ) : (
                     <span class="status-indicator">未激活</span>
                   )}
@@ -143,7 +189,7 @@ const sidebarData = createSidebarData(allPosts);
 
       <div class="standards-summary-box">
         <div class="summary-meta">
-          <span>当前近30天实测发文：<strong>{metrics.recentPostCount30d} 篇</strong></span>
+          <span>近 30 天实测发文：<strong>{metrics.recentPostCount30d} 篇</strong></span>
           <span>{metrics.standards.activeLevel.nextMilestone}</span>
         </div>
         <div class="standards-progress-bar">
@@ -152,15 +198,22 @@ const sidebarData = createSidebarData(allPosts);
       </div>
     </section>
 
-    <!-- 内容密度分级说明体系 -->
-    <section class="standards-card card-widget" id="content-density">
-      <div class="standards-card__header">
+    <!-- § 3. 内容密度分级规范 -->
+    <section class="standards-doc-section" id="section-content-density">
+      <div class="section-title-wrap">
+        <div class="section-num">3.0</div>
         <div>
-          <h2 class="standards-card__title">2. 内容密度分级规范 (Content Density)</h2>
-          <p class="standards-card__desc">基于全站公开文章的物理总字数与有效篇数加权精算的平均单篇信息密度评级。</p>
+          <h2 class="standards-section-title">内容密度分级规范 (Content Density Specification)</h2>
+          <p class="standards-section-desc">基于全站公开文章物理总字数与有效篇数的加权单篇信息密度评级体系。</p>
         </div>
-        <div class="standards-current-badge">
-          当前评定：<span class="badge-tag is-active">{metrics.densityLevel.level} ({metrics.densityLevel.title})</span>
+      </div>
+
+      <div class="doc-callout doc-callout--info">
+        <div class="doc-callout__icon">📐</div>
+        <div class="doc-callout__content">
+          <strong>统计模型：</strong>
+          字数统计对 Markdown 语法符号（如 `#`, `*`, `[]`, 代码围栏标记）进行预清理，
+          中文字符按物理字频计算，西文字符按空格词项（Tokens）加权合并，真实反应文章技术含金量与叙事厚度。
         </div>
       </div>
 
@@ -171,8 +224,8 @@ const sidebarData = createSidebarData(allPosts);
               <th>密度等级</th>
               <th>评级定位</th>
               <th>单篇平均字数阈值</th>
-              <th>排版规范与内容厚度</th>
-              <th>本站达标状态</th>
+              <th>排版规范与内容要求</th>
+              <th>当前达标判定</th>
             </tr>
           </thead>
           <tbody>
@@ -184,14 +237,14 @@ const sidebarData = createSidebarData(allPosts);
                 <td><strong>{tier.title}</strong></td>
                 <td>{tier.description}</td>
                 <td>
-                  {tier.level === 'Level 4' && '深度硬核长文，图文并茂，配备完整架构剖析与思维导图'}
+                  {tier.level === 'Level 4' && '深度硬核长文，图文并茂，配备完整架构剖析、KaTeX 公式或交互导图'}
                   {tier.level === 'Level 3' && '系统级专栏教程，逻辑严谨，涵盖完整代码演练'}
-                  {tier.level === 'Level 2' && '标准技术博文，聚焦单一技术点或问题解决方案'}
+                  {tier.level === 'Level 2' && '标准技术博文，聚焦单一技术点或特定问题解决方案'}
                   {tier.level === 'Level 1' && '碎片化微动态、速记随笔或轻量提示卡'}
                 </td>
                 <td>
                   {tier.isCurrent ? (
-                    <span class="status-indicator current">✓ 当前达标 (均篇 {metrics.avgWordsPerPost} 字)</span>
+                    <span class="status-indicator current">✓ 当前实测达标 (均篇 {metrics.avgWordsPerPost.toLocaleString()} 字)</span>
                   ) : (
                     <span class="status-indicator">未激活</span>
                   )}
@@ -204,8 +257,8 @@ const sidebarData = createSidebarData(allPosts);
 
       <div class="standards-summary-box">
         <div class="summary-meta">
-          <span>全站公开文章：<strong>{metrics.totalPosts} 篇</strong></span>
-          <span>全站总字数：<strong>{metrics.totalWords.toLocaleString()} 字</strong></span>
+          <span>公开文章数：<strong>{metrics.totalPosts} 篇</strong></span>
+          <span>物理总字数：<strong>{metrics.totalWords.toLocaleString()} 字</strong></span>
           <span>平均单篇字数：<strong>{metrics.avgWordsPerPost.toLocaleString()} 字/篇</strong></span>
         </div>
         <div class="standards-progress-bar">
@@ -214,15 +267,13 @@ const sidebarData = createSidebarData(allPosts);
       </div>
     </section>
 
-    <!-- 架构与性能工程标准 -->
-    <section class="standards-card card-widget" id="architecture">
-      <div class="standards-card__header">
+    <!-- § 4. 架构与性能工程 SLA -->
+    <section class="standards-doc-section" id="section-engineering-sla">
+      <div class="section-title-wrap">
+        <div class="section-num">4.0</div>
         <div>
-          <h2 class="standards-card__title">3. 系统架构与性能硬性限制 (Engineering SLA)</h2>
-          <p class="standards-card__desc">基于 Astro 现代化 Islands 架构与 Cloudflare 全球分布式边缘计算的性能承诺。</p>
-        </div>
-        <div class="standards-current-badge">
-          <span class="badge-tag">SLA 工业级合规</span>
+          <h2 class="standards-section-title">系统架构与性能硬性限制 (Engineering SLA)</h2>
+          <p class="standards-section-desc">基于 Astro 现代化 Islands 架构与 Cloudflare 全球分布式边缘计算的性能承诺。</p>
         </div>
       </div>
 
@@ -243,14 +294,14 @@ const sidebarData = createSidebarData(allPosts);
               <td>&lt; 50ms</td>
               <td>&lt; 150ms</td>
               <td><span class="perf-tag">&lt; 35ms (CF Edge)</span></td>
-              <td>国际收银台, 动态统计, 赞赏通知</td>
+              <td>控制台指标、评论系统、国际收银台</td>
             </tr>
             <tr>
               <td><strong>首屏打包体积 (Bundle Size)</strong></td>
               <td>&lt; 150KB</td>
               <td>&lt; 300KB</td>
               <td><span class="perf-tag">~ 112KB (Gzip)</span></td>
-              <td>全站首屏水合与静态资产加载</td>
+              <td>全站首屏水合与静态资产极速加载</td>
             </tr>
             <tr>
               <td><strong>LCP (最大内容绘制)</strong></td>
@@ -266,102 +317,321 @@ const sidebarData = createSidebarData(allPosts);
               <td><span class="perf-tag">0 次 (Islands Isolated)</span></td>
               <td>复杂热力图、TOC 目录交互、控制台展开</td>
             </tr>
+            <tr>
+              <td><strong>国际化容错度 (Polyglot Fallback)</strong></td>
+              <td>100% 自动降级</td>
+              <td>不允许 404</td>
+              <td><span class="perf-tag">100% Canonical 兜底</span></td>
+              <td>多语言未翻译页面平滑回退中文/英文主版本</td>
+            </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- § 5. 徽章体系与认证规则 -->
+    <section class="standards-doc-section" id="section-badges">
+      <div class="section-title-wrap">
+        <div class="section-num">5.0</div>
+        <div>
+          <h2 class="standards-section-title">徽章体系与认证规则 (Badges & Certification)</h2>
+          <p class="standards-section-desc">站点各卡片与文章头部分配的视觉徽章标准及其实际含义。</p>
+        </div>
+      </div>
+
+      <div class="standards-badge-grid">
+        <div class="badge-card">
+          <div class="badge-card__preview">
+            <span class="tier-badge tier-badge--current">Lv.3 High</span>
+          </div>
+          <div class="badge-card__content">
+            <h4>高频迭代徽标</h4>
+            <p>近 30 天内公开发布文章达 5~8 篇，系统保持稳定快节奏迭代时在规范与控制台点亮。</p>
+          </div>
+        </div>
+
+        <div class="badge-card">
+          <div class="badge-card__preview">
+            <span class="tier-badge tier-badge--current">Lv.4 Ultra</span>
+          </div>
+          <div class="badge-card__content">
+            <h4>超强密度徽标</h4>
+            <p>全站平均单篇字数超过 3,000 字，系统文章普遍具备深度技术拆解与思维导图时点亮。</p>
+          </div>
+        </div>
+
+        <div class="badge-card">
+          <div class="badge-card__preview">
+            <span class="tier-badge">1000d+</span>
+          </div>
+          <div class="badge-card__content">
+            <h4>千日长青徽标</h4>
+            <p>自 2024-01-01 起安全稳定运营满 1,000 天，代表站点长期维护、永不闭源与数据持久化。</p>
+          </div>
+        </div>
+
+        <div class="badge-card">
+          <div class="badge-card__preview">
+            <span class="tier-badge">10w+ 字</span>
+          </div>
+          <div class="badge-card__content">
+            <h4>十万字量级徽标</h4>
+            <p>全站原创技术文档与剖析总字数突破 100,000 字，达到中大型技术专栏知识库规模。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- § 6. 数据字典与 API 合约 -->
+    <section class="standards-doc-section" id="section-schema">
+      <div class="section-title-wrap">
+        <div class="section-num">6.0</div>
+        <div>
+          <h2 class="standards-section-title">数据字典与 API 合约 (Data Dictionary & API)</h2>
+          <p class="standards-section-desc">面向自动化审计、监控探针与第三方调用的 JSON 数据合约规范。</p>
+        </div>
+      </div>
+
+      <div class="doc-code-block">
+        <div class="doc-code-block__header">
+          <span>GET /api/console/data (Response Contract)</span>
+          <span>application/json</span>
+        </div>
+        <pre><code>{`{
+  "ok": true,
+  "stats": {
+    "posts": ${metrics.totalPosts},
+    "totalWords": ${metrics.totalWords},
+    "readingMinutes": ${metrics.totalReadingMinutes},
+    "avgWordsPerPost": ${metrics.avgWordsPerPost},
+    "uptimeDays": ${metrics.uptimeDays},
+    "recentPostCount30d": ${metrics.recentPostCount30d},
+    "activeStatus": "${metrics.activeLevel.status}",
+    "activeLevel": "${metrics.activeLevel.level}",
+    "densityStatus": "${metrics.densityLevel.level}",
+    "densityLevel": "${metrics.densityLevel.shortLevel}"
+  },
+  "activity": [
+    {
+      "date": "2026-08-28",
+      "displayDate": "2026/8/28",
+      "level": 4,
+      "posts": [ ... ],
+      "isFuture": false
+    }
+  ],
+  "servedAt": "${new Date().toISOString()}"
+}`}</code></pre>
       </div>
     </section>
   </div>
 </BlogLayout>
 
 <style>
-  .standards-page-container {
-    max-width: 1300px;
-    width: 95vw;
-    margin: 24px auto 48px;
+  .standards-doc-container {
+    max-width: 1060px;
+    width: 100%;
+    margin: 32px auto 64px;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
   }
 
-  .standards-hero {
+  .standards-doc-header {
     background: var(--card-bg, #ffffff);
     border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
-    border-radius: 8px;
-    padding: 36px 32px;
+    border-radius: 12px;
+    padding: 36px 36px 30px;
     box-shadow: var(--anzhiyu-shadow-border);
   }
 
-  .standards-hero__badge {
-    display: inline-block;
+  .standards-doc-header__badge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .standards-spec-badge {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     color: var(--theme-main, #425aef);
     background: rgba(66, 90, 239, 0.1);
     padding: 4px 10px;
     border-radius: 4px;
-    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-mono, monospace);
+  }
+
+  .standards-spec-status {
+    font-size: 12px;
+    font-weight: 500;
+    color: #2da44e;
+  }
+
+  .standards-spec-code {
+    font-size: 11px;
+    color: var(--text-muted, #656d76);
+    font-family: var(--font-family-mono, monospace);
+    margin-left: auto;
+  }
+
+  .standards-doc-header__title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 14px 0;
+    color: var(--font-color, #1f2328);
+    letter-spacing: -0.6px;
+    line-height: 1.25;
+  }
+
+  .standards-doc-header__lede {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text-muted, #57606a);
+    margin: 0 0 24px 0;
+    max-width: 900px;
+  }
+
+  .standards-doc-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    padding-top: 20px;
+    border-top: 1px solid var(--card-border, rgba(0,0,0,0.06));
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-item__k {
+    font-size: 11px;
+    color: var(--text-muted, #8c959f);
+    text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .standards-hero__title {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 12px 0;
+  .meta-item__v {
+    font-size: 13px;
     color: var(--font-color, #1f2328);
-    letter-spacing: -0.5px;
+    font-weight: 600;
   }
 
-  .standards-hero__subtitle {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-muted, #656d76);
-    margin: 0;
-    max-width: 850px;
+  .meta-item__v a {
+    color: var(--theme-main, #425aef);
+    text-decoration: none;
   }
 
-  .standards-card {
+  .meta-item__v a:hover {
+    text-decoration: underline;
+  }
+
+  /* Document Navigation Pills */
+  .standards-doc-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--card-bg, #ffffff);
+    padding: 12px 18px;
+    border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
+    border-radius: 10px;
+    box-shadow: var(--anzhiyu-shadow-border);
+    position: sticky;
+    top: 72px;
+    z-index: 40;
+    backdrop-filter: blur(16px);
+  }
+
+  .doc-nav-pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--font-color, #1f2328);
+    background: var(--card-bg-light, rgba(0,0,0,0.03));
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .doc-nav-pill:hover {
+    background: var(--theme-main, #425aef);
+    color: #ffffff;
+  }
+
+  /* Document Sections */
+  .standards-doc-section {
     background: var(--card-bg, #ffffff);
     border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
-    border-radius: 8px;
-    padding: 24px 28px;
+    border-radius: 12px;
+    padding: 30px 32px;
     box-shadow: var(--anzhiyu-shadow-border);
-  }
-
-  .standards-card__header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .standards-card__title {
-    font-size: 18px;
-    font-weight: 600;
+  .section-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .section-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--theme-main, #425aef);
+    font-family: var(--font-family-mono, monospace);
+    background: rgba(66, 90, 239, 0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+
+  .standards-section-title {
+    font-size: 20px;
+    font-weight: 700;
     margin: 0;
     color: var(--font-color, #1f2328);
   }
 
-  .standards-card__desc {
+  .standards-section-desc {
     font-size: 13px;
-    color: var(--text-muted, #656d76);
+    color: var(--text-muted, #57606a);
     margin: 4px 0 0 0;
+    line-height: 1.5;
   }
 
-  .standards-card__tag {
-    font-size: 12px;
-    background: rgba(66, 90, 239, 0.08);
-    color: var(--theme-main, #425aef);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
+  /* Callout Banners */
+  .doc-callout {
+    display: flex;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
   }
 
+  .doc-callout--info {
+    background: rgba(66, 90, 239, 0.05);
+    border-left: 4px solid var(--theme-main, #425aef);
+    color: var(--font-color, #1f2328);
+  }
+
+  .doc-callout__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* Webinfo Items Grid */
   .standards-webinfo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 14px;
   }
 
@@ -369,20 +639,20 @@ const sidebarData = createSidebarData(allPosts);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 14px 18px;
-    border-radius: 6px;
+    padding: 16px 18px;
+    border-radius: 8px;
     background: var(--card-bg-light, rgba(0,0,0,0.02));
     border: 1px solid var(--card-border, rgba(0,0,0,0.06));
-    min-height: 72px;
+    min-height: 76px;
   }
 
   .standards-webinfo-grid .webinfo-item-label {
     font-size: 12px;
-    color: var(--text-muted, #656d76);
+    color: var(--text-muted, #57606a);
   }
 
   .standards-webinfo-grid .webinfo-item strong {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--font-color, #1f2328);
     margin-top: 6px;
@@ -393,69 +663,58 @@ const sidebarData = createSidebarData(allPosts);
     color: var(--theme-main, #425aef);
   }
 
-  .standards-current-badge {
-    font-size: 13px;
-    color: var(--text-muted, #656d76);
-  }
-
-  .badge-tag {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 12px;
-    background: rgba(0,0,0,0.05);
-    color: var(--font-color, #1f2328);
-  }
-
-  .badge-tag.is-active {
-    background: #425aef;
-    color: #ffffff;
-  }
-
+  /* Tables */
   .standards-table-wrapper {
     overflow-x: auto;
-    margin-top: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border, rgba(0,0,0,0.08));
   }
 
   .standards-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+    text-align: left;
   }
 
   .standards-table th {
-    text-align: left;
-    padding: 10px 14px;
+    background: var(--card-bg-light, rgba(0,0,0,0.03));
+    color: var(--text-muted, #57606a);
     font-weight: 600;
-    color: var(--text-muted, #656d76);
-    border-bottom: 2px solid var(--theme-border, rgba(0,0,0,0.08));
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--card-border, rgba(0,0,0,0.08));
     white-space: nowrap;
   }
 
   .standards-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--theme-border-light, rgba(0,0,0,0.05));
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--card-border, rgba(0,0,0,0.05));
     color: var(--font-color, #1f2328);
+    vertical-align: middle;
+  }
+
+  .standards-table tr:last-child td {
+    border-bottom: none;
   }
 
   .standards-table tr.is-current-tier {
-    background: rgba(66, 90, 239, 0.04);
+    background: rgba(66, 90, 239, 0.05);
   }
 
   .tier-badge {
     display: inline-block;
-    font-size: 11px;
-    font-family: monospace;
-    font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
-    background: rgba(0,0,0,0.06);
-    color: var(--font-color, #1f2328);
+    font-size: 11px;
+    font-family: var(--font-family-mono, monospace);
+    font-weight: 700;
+    background: var(--card-bg-light, rgba(0,0,0,0.06));
+    color: var(--text-muted, #57606a);
+    white-space: nowrap;
   }
 
   .tier-badge--current {
-    background: #425aef;
+    background: var(--theme-main, #425aef);
     color: #ffffff;
   }
 
@@ -465,63 +724,140 @@ const sidebarData = createSidebarData(allPosts);
   }
 
   .status-indicator.current {
-    color: #1a7f37;
+    color: #2da44e;
     font-weight: 600;
   }
 
   .perf-tag {
     display: inline-block;
-    font-size: 11px;
-    font-family: monospace;
-    color: #1a7f37;
-    background: rgba(26, 127, 55, 0.1);
-    padding: 2px 6px;
+    padding: 2px 8px;
     border-radius: 4px;
+    background: rgba(45, 164, 78, 0.1);
+    color: #2da44e;
     font-weight: 600;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 12px;
   }
 
+  /* Summary Box & Progress */
   .standards-summary-box {
-    margin-top: 16px;
-    padding: 14px 18px;
-    background: var(--card-bg-light, rgba(0,0,0,0.02));
-    border-radius: 6px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: var(--card-bg-light, rgba(0,0,0,0.02));
+    border: 1px solid var(--card-border, rgba(0,0,0,0.06));
   }
 
   .summary-meta {
     display: flex;
     justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted, #57606a);
     flex-wrap: wrap;
     gap: 8px;
-    font-size: 12px;
-    color: var(--text-muted, #656d76);
   }
 
   .summary-meta strong {
-    color: var(--font-color, #1f2328);
+    color: var(--theme-main, #425aef);
   }
 
   .standards-progress-bar {
     width: 100%;
     height: 6px;
-    background: rgba(0,0,0,0.08);
-    border-radius: 3px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);
     overflow: hidden;
   }
 
   .standards-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #425aef, #2ea043);
-    border-radius: 3px;
+    border-radius: 999px;
+    background: var(--theme-main, #425aef);
     transition: width 0.3s ease;
   }
 
+  /* Badge Grid */
+  .standards-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .badge-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 8px;
+    background: var(--card-bg-light, rgba(0,0,0,0.02));
+    border: 1px solid var(--card-border, rgba(0,0,0,0.06));
+  }
+
+  .badge-card h4 {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--font-color, #1f2328);
+  }
+
+  .badge-card p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-muted, #57606a);
+  }
+
+  /* Code Block */
+  .doc-code-block {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .doc-code-block__header {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 11px;
+    color: #8b949e;
+    font-family: var(--font-family-mono, monospace);
+  }
+
+  .doc-code-block pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #e6edf3;
+    font-family: var(--font-family-mono, monospace);
+  }
+
   @media (max-width: 768px) {
-    .standards-hero { padding: 24px 20px; }
-    .standards-hero__title { font-size: 22px; }
-    .standards-card { padding: 18px 16px; }
-    .standards-webinfo-grid { grid-template-columns: 1fr 1fr; }
+    .standards-doc-container {
+      padding: 0 12px;
+      margin: 16px auto 36px;
+    }
+
+    .standards-doc-header {
+      padding: 24px 20px;
+    }
+
+    .standards-doc-header__title {
+      font-size: 24px;
+    }
+
+    .standards-doc-section {
+      padding: 20px 16px;
+    }
+
+    .standards-doc-nav {
+      top: 60px;
+      padding: 8px 12px;
+    }
   }
 </style>

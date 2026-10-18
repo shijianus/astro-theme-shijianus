@@ -511,6 +511,9 @@ export function ThemeOverlays({
 
       if (data && data.ok) {
         if (data.stats) setSyncStats(data.stats);
+        if (Array.isArray(data.posts) && data.posts.length > 0) {
+          setDynamicPosts(data.posts);
+        }
         if (Array.isArray(data.activity) && data.activity.length > 0) {
           setDynamicActivity(data.activity);
         }
@@ -521,10 +524,18 @@ export function ThemeOverlays({
 
     syncConsoleData();
   }, [consoleOpen, stats]);
+  const [dynamicPosts, setDynamicPosts] = useState<any[] | null>(null);
+  const [activePopover, setActivePopover] = useState<{ day: any; left: number; top: number; placement: 'top' | 'bottom' } | null>(null);
   const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
   const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
   const [selectedActivityPage, setSelectedActivityPage] = useState(1);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!consoleOpen) {
+      setActivePopover(null);
+    }
+  }, [consoleOpen]);
 
   useEffect(() => {
     // Fetch latest hot comment if available
@@ -541,61 +552,58 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
-    if (dynamicActivity && dynamicActivity.length > 0) {
-      return dynamicActivity.map((day: any) => {
-        if (!day) return null;
-        return {
-          ...day,
-          dateKey: day.date,
-          displayDate: day.displayDate || day.date,
-          rawDate: new Date(day.date),
-        };
-      });
-    }
-
+    // 权威真实日期同步：严格取客户端当前本地年月日，杜绝时区漂移与冻结
     const now = new Date();
-    const utc8Time = now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000);
-    const today = new Date(utc8Time);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     today.setHours(0, 0, 0, 0);
 
-    const totalSlots = 52 * 7;
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - today.getDay() - (51 * 7));
+    const currentWeekSunday = new Date(today);
+    currentWeekSunday.setDate(today.getDate() - today.getDay());
 
-    // 建立文章发布与更新索引表
-    const postDateMap = new Map<string, { title: string; href: string; type: string }[]>();
-    for (const p of posts) {
-      const pubKey = p.isoDate || (p.date ? (() => {
+    const gridStartDate = new Date(currentWeekSunday);
+    gridStartDate.setDate(currentWeekSunday.getDate() - (51 * 7));
+
+    // 建立文章发布与更新索引表 (以 YYYY-MM-DD 为唯一键)
+    const postList = dynamicPosts && dynamicPosts.length > 0 ? dynamicPosts : posts;
+    const postDateMap = new Map<string, { title: string; href: string; type: string; date: string }[]>();
+
+    const registerPost = (dateStr: string, item: { title: string; href: string; type: string; date: string }) => {
+      if (!dateStr) return;
+      const list = postDateMap.get(dateStr) || [];
+      if (!list.some(x => x.href === item.href && x.type === item.type)) {
+        list.push(item);
+        postDateMap.set(dateStr, list);
+      }
+    };
+
+    for (const p of postList) {
+      const pubKey = p.pubDate || p.isoDate || (p.date ? (() => {
+        const m = String(p.date).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
         const d = new Date(p.date);
         return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
       })() : '');
 
       if (pubKey) {
-        const list = postDateMap.get(pubKey) || [];
-        if (!list.some(x => x.href === p.href)) {
-          list.push({ title: p.title, href: p.href, type: 'publish' });
-          postDateMap.set(pubKey, list);
-        }
+        registerPost(pubKey, { title: p.title, href: p.href, type: 'publish', date: pubKey });
       }
 
-      if (p.updatedDate && p.updatedDate !== pubKey) {
-        const list = postDateMap.get(p.updatedDate) || [];
-        if (!list.some(x => x.href === p.href)) {
-          list.push({ title: `${p.title} (更新)`, href: p.href, type: 'update' });
-          postDateMap.set(p.updatedDate, list);
-        }
+      const upKey = p.updatedDate ? (() => {
+        const m = String(p.updatedDate).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+        const d = new Date(p.updatedDate);
+        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+      })() : '';
+
+      if (upKey && upKey !== pubKey) {
+        registerPost(upKey, { title: `${p.title} (更新)`, href: p.href, type: 'update', date: upKey });
       }
     }
 
     const data = [];
-    for (let i = 0; i < totalSlots; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      
-      if (currentDate > today) {
-        data.push(null);
-        continue;
-      }
+    for (let i = 0; i < 364; i++) {
+      const currentDate = new Date(gridStartDate);
+      currentDate.setDate(gridStartDate.getDate() + i);
 
       const y = currentDate.getFullYear();
       const m = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -603,14 +611,17 @@ export function ThemeOverlays({
       const dateKey = `${y}-${m}-${d}`;
       const displayDate = `${y}/${parseInt(m, 10)}/${parseInt(d, 10)}`;
 
-      const dayPosts = postDateMap.get(dateKey) || [];
+      const isFuture = currentDate > today;
+      const dayPosts = isFuture ? [] : (postDateMap.get(dateKey) || []);
       const count = dayPosts.length;
 
       let level = 0;
-      if (count >= 7) level = 4;
-      else if (count >= 4) level = 3;
-      else if (count >= 2) level = 2;
-      else if (count >= 1) level = 1;
+      if (!isFuture) {
+        if (count >= 7) level = 4;
+        else if (count >= 4) level = 3;
+        else if (count >= 2) level = 2;
+        else if (count >= 1) level = 1;
+      }
 
       data.push({
         dateKey,
@@ -619,10 +630,11 @@ export function ThemeOverlays({
         rawDate: currentDate,
         level,
         posts: dayPosts,
+        isFuture,
       });
     }
     return data;
-  }, [posts, dynamicActivity]);
+  }, [posts, dynamicPosts]);
 
   const selectedActivity = useMemo(() => {
     if (!selectedActivityDate) return null;
@@ -1970,13 +1982,27 @@ export function ThemeOverlays({
                           return (
                             <div 
                               key={dateKey} 
-                              className={day ? `activity-cell level-${day.level}${isSelected ? ' is-selected' : ''}` : 'activity-cell hidden'} 
-                              style={day ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+                              className={day ? `activity-cell level-${day.level}${day.isFuture ? ' is-future' : ''}${isSelected ? ' is-selected' : ''}` : 'activity-cell hidden'} 
+                              style={day && !day.isFuture ? {} : { opacity: 0.2, cursor: 'default' }}
                               data-tooltip={tipContent}
-                              onClick={() => {
-                                if (day) {
+                              onClick={(e) => {
+                                if (day && !day.isFuture) {
                                   setSelectedActivityDate(dateKey);
                                   setSelectedActivityPage(1);
+                                  if (day.posts && day.posts.length > 0) {
+                                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                    const popoverWidth = Math.min(380, window.innerWidth - 32);
+                                    let left = rect.left + rect.width / 2 - popoverWidth / 2;
+                                    left = Math.max(16, Math.min(left, window.innerWidth - popoverWidth - 16));
+                                    let top = rect.top - 12;
+                                    const placement = top < 260 ? 'bottom' : 'top';
+                                    if (placement === 'bottom') {
+                                      top = rect.bottom + 12;
+                                    }
+                                    setActivePopover({ day, left, top, placement });
+                                  } else {
+                                    setActivePopover(null);
+                                  }
                                 }
                               }}
                             />
@@ -2018,6 +2044,48 @@ export function ThemeOverlays({
                     ) : <span className="activity-hint-text">{t('console.activity.hint', '点击方块查看记录')}</span>}
                   </div>
                 </div>
+
+                {/* Screen-Level Unconstrained Popover (完全在屏幕中展示，杜绝 heatmap-internal-wrapper 截断) */}
+                {activePopover && (
+                  <div 
+                    className={`activity-screen-popover placement-${activePopover.placement}`}
+                    style={{
+                      left: `${activePopover.left}px`,
+                      top: `${activePopover.top}px`,
+                    }}
+                  >
+                    <div className="activity-screen-popover__head">
+                      <div className="activity-screen-popover__title">
+                        <strong>{activePopover.day.displayDate || activePopover.day.date}</strong>
+                        <span className="activity-count-badge">
+                          {activePopover.day.posts.length > 0 ? `${activePopover.day.posts.length} 篇内容` : '无记录'}
+                        </span>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="activity-screen-popover__close"
+                        onClick={() => setActivePopover(null)}
+                        aria-label="关闭"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    <ul className="activity-screen-popover__list">
+                      {activePopover.day.posts.map((p: any, idx: number) => (
+                        <li key={idx}>
+                          <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
+                          <a href={p.href} title={p.title} onClick={() => setActivePopover(null)}>
+                            {p.type === 'update' && <span className="activity-post-tag update">[更新]</span>}
+                            {p.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="activity-screen-popover__footer">
+                      <span>点击文章标题即可直接阅读</span>
+                    </div>
+                  </div>
+                )}
               </section>
             </div>
           </div>

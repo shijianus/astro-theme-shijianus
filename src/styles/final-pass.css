@@ -1678,10 +1678,10 @@ html:not([lang^="zh"]) .webinfo-item span {
   margin-top: 10px !important;
   padding-top: 10px !important;
   border-top: var(--style-border-always);
-  height: 124px !important;
-  min-height: 124px !important;
-  max-height: 124px !important;
-  overflow: hidden !important;
+  min-height: 90px !important;
+  max-height: 260px !important;
+  height: auto !important;
+  overflow: visible !important;
   display: flex !important;
   flex-direction: column !important;
   position: relative !important;
@@ -1743,10 +1743,117 @@ html:not([lang^="zh"]) .webinfo-item span {
   list-style: none !important;
   padding: 0 4px 0 0 !important;
   margin: 0 !important;
-  flex: 1 !important;
+  flex: 1 1 auto !important;
+  max-height: 200px !important;
   overflow-y: auto !important;
   scrollbar-width: thin !important;
 }
+
+/* Screen-Level Unconstrained Popover (完全在屏幕中展示，杜绝 heatmap-internal-wrapper 截断) */
+.activity-screen-popover {
+  position: fixed !important;
+  z-index: 2000000 !important;
+  width: min(380px, calc(100vw - 32px)) !important;
+  max-height: min(440px, 75vh) !important;
+  background: var(--console-theme-bg, #1a1e29) !important;
+  border: 1px solid var(--theme-main, #425aef) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(66, 90, 239, 0.25) !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.activity-screen-popover.placement-top {
+  transform: translateY(-100%) !important;
+}
+
+.activity-screen-popover__head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.activity-screen-popover__title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.activity-screen-popover__title strong {
+  font-size: 14px !important;
+  color: var(--font-color, #ffffff) !important;
+  font-family: var(--font-family-mono, monospace) !important;
+}
+
+.activity-screen-popover__close {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted, #8c959f) !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  line-height: 1 !important;
+  transition: color 0.15s, background 0.15s !important;
+}
+
+.activity-screen-popover__close:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.activity-screen-popover__list {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  overflow-y: auto !important;
+  max-height: 320px !important;
+  scrollbar-width: thin !important;
+}
+
+.activity-screen-popover__list li {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+.activity-screen-popover__list li a {
+  color: var(--font-color, #e6edf3) !important;
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+}
+
+.activity-screen-popover__list li a:hover {
+  color: var(--theme-main, #425aef) !important;
+  text-decoration: underline !important;
+}
+
+.activity-screen-popover__footer {
+  margin-top: 10px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-size: 11px !important;
+  color: var(--text-muted, #8c959f) !important;
+  text-align: right !important;
+}
+
 
 .activity-details-list::-webkit-scrollbar {
   width: 4px !important;

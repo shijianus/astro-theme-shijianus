@@ -156,24 +156,21 @@ function run() {
     }
   }
 
-  // 52 weeks grid (align to UTC+8)
-  const utc8Time = now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000);
-  const today = new Date(utc8Time);
+  // 52 weeks grid (aligned strictly to Sunday ~ Saturday relative to today)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   today.setHours(0, 0, 0, 0);
 
-  const totalSlots = 52 * 7;
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - today.getDay() - (51 * 7));
+  const currentWeekSunday = new Date(today);
+  currentWeekSunday.setDate(today.getDate() - today.getDay());
 
+  const startDate = new Date(currentWeekSunday);
+  startDate.setDate(currentWeekSunday.getDate() - (51 * 7));
+
+  const totalSlots = 52 * 7;
   const days = [];
   for (let i = 0; i < totalSlots; i++) {
     const cur = new Date(startDate);
     cur.setDate(startDate.getDate() + i);
-
-    if (cur > today) {
-      days.push(null);
-      continue;
-    }
 
     const y = cur.getFullYear();
     const m = String(cur.getMonth() + 1).padStart(2, '0');
@@ -181,20 +178,24 @@ function run() {
     const dateKey = `${y}-${m}-${d}`;
     const displayDate = `${y}/${parseInt(m, 10)}/${parseInt(d, 10)}`;
 
-    const items = activityMap.get(dateKey) || [];
+    const isFuture = cur > today;
+    const items = isFuture ? [] : (activityMap.get(dateKey) || []);
     const count = items.length;
 
     let level = 0;
-    if (count >= 7) level = 4;
-    else if (count >= 4) level = 3;
-    else if (count >= 2) level = 2;
-    else if (count >= 1) level = 1;
+    if (!isFuture) {
+      if (count >= 7) level = 4;
+      else if (count >= 4) level = 3;
+      else if (count >= 2) level = 2;
+      else if (count >= 1) level = 1;
+    }
 
     days.push({
       date: dateKey,
       displayDate,
       level,
       posts: items,
+      isFuture,
     });
   }
 
