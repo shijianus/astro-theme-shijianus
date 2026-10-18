@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import path from 'path';
 import fs from 'fs';
 
-const BASE_URL = 'https://7b75e6a2.shijianus-blog.pages.dev';
+const BASE_URL = process.env.BASE_URL || 'https://ae0ded11.shijianus-blog.pages.dev';
 const OUTPUT_DIR = path.resolve(process.cwd(), 'playwright-report/live-standards-audit');
 
 if (!fs.existsSync(OUTPUT_DIR)) {
