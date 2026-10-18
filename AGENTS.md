@@ -5871,6 +5871,15 @@
   - `src/components/theme/Sidebar.astro` 与 `src/components/ThemeOverlays.tsx` 中控台的 `activeLevel` 与 `density` 链接分别精准指向 `/standards/activity-level/` 与 `/standards/content-density/`。
 - [x] **本地端到端测试全绿通过 (`scripts/verify-heatmap-and-standards.mjs`)**：
   - 覆盖 API 数据结构、Standards 总纲双入口、Activity Level 独立文章、Content Density 独立文章及控制台热力图脱壳浮层，100% PASS。
+- [x] **生产环境 (Cloudflare Pages) 全量部署与真实公网链路验收 100% 通过 (`8be742c`)**：
+  - Cloudflare Pages 生产边缘节点全量部署成功（`https://f4afba15.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`）；
+  - 针对真实生产主域名 `https://blog.epocanvas.com` 执行端到端自动化测试 (`scripts/verify-live-heatmap-standards.mjs`) 100% PASS：
+    1. `GET /api/console/data` HTTP 200，API 返回 `activeHref: '/standards/activity-level/'` 与 `densityHref: '/standards/content-density/'`，内嵌完整 `standardsConfig`；
+    2. `/standards/` 页面 HTTP 200，无侧边栏，8 项仪表盘渲染正常，两张独立文章入口卡片（EES-002 与 EES-003）渲染正常且链接无误；
+    3. `/standards/activity-level/` 页面 HTTP 200，无侧边栏，6 项导航锚点齐全，当前阶梯（高频迭代 Lv.3）高亮且附带跨规范跳转链接；
+    4. `/standards/content-density/` 页面 HTTP 200，无侧边栏，6 项导航锚点齐全，当前阶梯（硬核深度长文 Lv.4）高亮且附带跨规范跳转链接；
+    5. 控制台与热力图交互：侧边栏与控制台中活跃等级与内容密度精准导向独立文章，点击热力图方格挂载于 body 的视口级浮层成功弹出，13 篇文章全量呈现无截断，0 控制台报错。
+
 
 
 
