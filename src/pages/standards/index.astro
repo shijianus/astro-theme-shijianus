@@ -137,6 +137,7 @@ const sidebarData = createSidebarData(allPosts);
           <h2 class="standards-section-title">活跃等级分级规范 (Active Level Specification)</h2>
           <p class="standards-section-desc">基于全站近 30 天内公开文章的物理发布与修订更新频率进行客观动态阶梯评定。</p>
         </div>
+      </div>
       <!-- 独立规范文章入口卡片 -->
       <div class="doc-split-entry-card">
         <div class="doc-split-entry-card__content">
@@ -221,6 +222,7 @@ const sidebarData = createSidebarData(allPosts);
           <h2 class="standards-section-title">内容密度分级规范 (Content Density Specification)</h2>
           <p class="standards-section-desc">基于全站公开文章物理总字数与有效篇数的加权单篇信息密度评级体系。</p>
         </div>
+      </div>
       <!-- 独立规范文章入口卡片 -->
       <div class="doc-split-entry-card">
         <div class="doc-split-entry-card__content">
@@ -990,5 +992,40 @@ const sidebarData = createSidebarData(allPosts);
       top: 60px;
       padding: 8px 12px;
     }
+  }
+
+  [data-theme='dark'] .standards-doc-section,
+  [data-theme='dark'] .standards-doc-header,
+  [data-theme='dark'] .standards-doc-nav {
+    background: var(--card-bg, #1a1e29);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme='dark'] .standards-webinfo-grid .webinfo-item,
+  [data-theme='dark'] .badge-card,
+  [data-theme='dark'] .standards-summary-box {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme='dark'] .standards-table th {
+    background: rgba(255, 255, 255, 0.04);
+    color: #8b949e;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme='dark'] .standards-table td {
+    color: var(--font-color, #e6edf3);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme='dark'] .doc-callout--info {
+    background: rgba(66, 90, 239, 0.1);
+    color: var(--font-color, #e6edf3);
+  }
+
+  [data-theme='dark'] .doc-split-entry-card {
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.15) 0%, rgba(66, 90, 239, 0.04) 100%);
+    border-color: rgba(66, 90, 239, 0.35);
   }
 </style>

@@ -49,10 +49,41 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
       baseData.stats.densityHref = '/standards/content-density/';
     }
 
-    // 动态严格按当前请求日期生成 52 周日历
+    // 动态严格按当前请求日期生成 52 周日历并重算近 30 天活跃状态
     if (baseData && baseData.posts && Array.isArray(baseData.posts)) {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       today.setHours(0, 0, 0, 0);
+
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+      const dynamicRecentCount = baseData.posts.filter((p: any) => {
+        const d = new Date(p.pubDate);
+        return d >= thirtyDaysAgo && d <= now;
+      }).length;
+
+      if (baseData.stats) {
+        baseData.stats.recentPostCount30d = dynamicRecentCount;
+        const tiers = baseData.standardsConfig?.activityLevels || [
+          { status: 'Status 4', level: 'Lv.4', minPosts: 9, title: '极客狂热', badge: 'Lv.4 Ultra' },
+          { status: 'Status 3', level: 'Lv.3', minPosts: 5, maxPosts: 8, title: '高频迭代', badge: 'Lv.3 High' },
+          { status: 'Status 2', level: 'Lv.2', minPosts: 3, maxPosts: 4, title: '稳定维护', badge: 'Lv.2 Standard' },
+          { status: 'Status 1', level: 'Lv.1', minPosts: 1, maxPosts: 2, title: '周期推送', badge: 'Lv.1 Low' },
+          { status: 'Status 0', level: 'Lv.0', minPosts: 0, maxPosts: 0, title: '维护休眠', badge: 'Lv.0 Idle' },
+        ];
+        const matched = tiers.find((t: any) => {
+          if (t.maxPosts !== undefined) {
+            return dynamicRecentCount >= t.minPosts && dynamicRecentCount <= t.maxPosts;
+          }
+          return dynamicRecentCount >= t.minPosts;
+        }) || tiers[tiers.length - 1];
+
+        baseData.stats.activeStatus = matched.status;
+        baseData.stats.activeLevel = matched.level;
+        baseData.stats.activeTitle = matched.title;
+        baseData.stats.activeBadge = matched.badge;
+      }
 
       const currentWeekSunday = new Date(today);
       currentWeekSunday.setDate(today.getDate() - today.getDay());

@@ -526,7 +526,7 @@ export function ThemeOverlays({
     syncConsoleData();
   }, [consoleOpen, stats]);
   const [dynamicPosts, setDynamicPosts] = useState<any[] | null>(null);
-  const [activePopover, setActivePopover] = useState<{ day: any; left: number; top: number; placement: 'top' | 'bottom' } | null>(null);
+  const [pinnedActivityDate, setPinnedActivityDate] = useState<string | null>(null);
   const [latestComment, setLatestComment] = useState<{ name: string; content: string; date: string } | null>(null);
   const [selectedActivityDate, setSelectedActivityDate] = useState<string | null>(null);
   const [selectedActivityPage, setSelectedActivityPage] = useState(1);
@@ -534,20 +534,31 @@ export function ThemeOverlays({
 
   useEffect(() => {
     if (!consoleOpen) {
-      setActivePopover(null);
+      setPinnedActivityDate(null);
     }
   }, [consoleOpen]);
 
   useEffect(() => {
-    if (!activePopover) return;
+    if (!pinnedActivityDate) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setActivePopover(null);
+        setPinnedActivityDate(null);
       }
     };
+    const handleDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('.activity-cell')) {
+        return;
+      }
+      setPinnedActivityDate(null);
+    };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activePopover]);
+    document.addEventListener('click', handleDocClick);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('click', handleDocClick);
+    };
+  }, [pinnedActivityDate]);
 
   useEffect(() => {
     // Fetch latest hot comment if available
@@ -1998,32 +2009,21 @@ export function ThemeOverlays({
                       <div className="console-activity-grid">
                         {activityData.map((day: any, i: number) => {
                           const dateKey = day ? (day.dateKey || day.date) : `empty-${i}`;
+                          const isPinned = pinnedActivityDate && day && (day.dateKey === pinnedActivityDate || day.date === pinnedActivityDate);
                           const isSelected = selectedActivityDate && day && (day.dateKey === selectedActivityDate || day.date === selectedActivityDate);
                           const tipContent = day ? `${day.displayDate || day.date}${day.posts.length > 0 ? '\n' + day.posts.map((p: any) => '· ' + p.title).join('\n') : '\nNo contributions'}` : undefined;
                           return (
                             <div 
                               key={dateKey} 
-                              className={day ? `activity-cell level-${day.level}${day.isFuture ? ' is-future' : ''}${isSelected ? ' is-selected' : ''}` : 'activity-cell hidden'} 
+                              className={day ? `activity-cell level-${day.level}${day.isFuture ? ' is-future' : ''}${isSelected ? ' is-selected' : ''}${isPinned ? ' is-pinned' : ''}` : 'activity-cell hidden'} 
                               style={day && !day.isFuture ? {} : { opacity: 0.2, cursor: 'default' }}
                               data-tooltip={tipContent}
                               onClick={(e) => {
+                                e.stopPropagation();
                                 if (day && !day.isFuture) {
                                   setSelectedActivityDate(dateKey);
                                   setSelectedActivityPage(1);
-                                  if (day.posts && day.posts.length > 0) {
-                                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                    const popoverWidth = Math.min(380, window.innerWidth - 32);
-                                    let left = rect.left + rect.width / 2 - popoverWidth / 2;
-                                    left = Math.max(16, Math.min(left, window.innerWidth - popoverWidth - 16));
-                                    let top = rect.top - 12;
-                                    const placement = top < 260 ? 'bottom' : 'top';
-                                    if (placement === 'bottom') {
-                                      top = rect.bottom + 12;
-                                    }
-                                    setActivePopover({ day, left, top, placement });
-                                  } else {
-                                    setActivePopover(null);
-                                  }
+                                  setPinnedActivityDate((prev) => prev === dateKey ? null : dateKey);
                                 }
                               }}
                             />
@@ -3618,65 +3618,6 @@ export function ThemeOverlays({
             </div>
           </nav>
         </>
-      )}
-
-      {/* Screen-Level Unconstrained Popover (Portal to body, 完全在屏幕视口中展示，杜绝 heatmap-internal-wrapper 截断) */}
-      {typeof document !== 'undefined' && activePopover && createPortal(
-        <div 
-          className="activity-screen-popover-backdrop"
-          onClick={() => setActivePopover(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="活跃度文章详情"
-        >
-          <div 
-            className={`activity-screen-popover placement-${activePopover.placement}`}
-            style={{
-              left: `${activePopover.left}px`,
-              top: `${activePopover.top}px`,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="activity-screen-popover__head">
-              <div className="activity-screen-popover__title">
-                <strong>{activePopover.day.displayDate || activePopover.day.date}</strong>
-                <span className="activity-count-badge">
-                  {activePopover.day.posts.length > 0 ? `${activePopover.day.posts.length} 篇内容` : '无记录'}
-                </span>
-              </div>
-              <button 
-                type="button" 
-                className="activity-screen-popover__close"
-                onClick={() => setActivePopover(null)}
-                aria-label="关闭"
-              >
-                &times;
-              </button>
-            </div>
-            <ul className="activity-screen-popover__list">
-              {activePopover.day.posts.map((p: any, idx: number) => (
-                <li key={idx}>
-                  <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
-                  <a 
-                    href={p.href} 
-                    title={p.title} 
-                    onClick={() => {
-                      setActivePopover(null);
-                      setConsoleOpen(false);
-                    }}
-                  >
-                    {p.type === 'update' && <span className="activity-post-tag update">[更新]</span>}
-                    {p.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <div className="activity-screen-popover__footer">
-              <span>点击文章标题即可直接阅读 · 按 ESC 或点击外部可关闭</span>
-            </div>
-          </div>
-        </div>,
-        document.body
       )}
     </>
   );

@@ -1,8 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
+import PostCopyright from '../../components/theme/PostCopyright.astro';
+import { PostComments } from '../../components/theme/PostComments';
 import { calculateSiteMetrics } from '../../lib/site-metrics.ts';
 import { createSidebarData } from '../../lib/theme.ts';
+import { siteConfig } from '../../config/site.ts';
 import { standardsConfig, matchActivityTier } from '../../config/standards.ts';
 
 const allPosts = await getCollection('posts');
@@ -40,7 +43,7 @@ const currentTier = matchActivityTier(metrics.recentPostCount30d);
         </div>
         <div class="meta-item">
           <span class="meta-item__k">当前实时判定</span>
-          <strong class="meta-item__v" style={{ color: currentTier.badgeColor }}>
+          <strong id="live-header-active-level" class="meta-item__v" style={{ color: currentTier.badgeColor }}>
             {currentTier.level} {currentTier.title} ({currentTier.status})
           </strong>
         </div>
@@ -80,7 +83,7 @@ const currentTier = matchActivityTier(metrics.recentPostCount30d);
           <div class="webinfo-item-label">
             <span>当前活跃等级</span>
           </div>
-          <strong class="highlight-val" style={{ color: currentTier.badgeColor }}>
+          <strong id="live-active-level" class="highlight-val" style={{ color: currentTier.badgeColor }}>
             {currentTier.level} ({currentTier.title})
           </strong>
         </div>
@@ -89,21 +92,21 @@ const currentTier = matchActivityTier(metrics.recentPostCount30d);
           <div class="webinfo-item-label">
             <span>近 30 天发布篇数</span>
           </div>
-          <strong>{metrics.recentPostCount30d} 篇</strong>
+          <strong id="live-recent-count">{metrics.recentPostCount30d} 篇</strong>
         </div>
 
         <div class="webinfo-item">
           <div class="webinfo-item-label">
             <span>全站安全运行</span>
           </div>
-          <strong>{metrics.uptimeDays} 天</strong>
+          <strong id="live-uptime-days">{metrics.uptimeDays} 天</strong>
         </div>
 
         <div class="webinfo-item">
           <div class="webinfo-item-label">
             <span>下级晋升里程碑</span>
           </div>
-          <strong style="font-size: 13px !important;">{metrics.standards.activeLevel.nextMilestone}</strong>
+          <strong id="live-milestone-short" style="font-size: 13px !important;">{metrics.standards.activeLevel.nextMilestone}</strong>
         </div>
       </div>
 
@@ -111,12 +114,12 @@ const currentTier = matchActivityTier(metrics.recentPostCount30d);
       <div class="tier-progress-card">
         <div class="tier-progress-card__header">
           <span class="tier-progress-label">活跃度指标进展 (Current Tier Progress)</span>
-          <span class="tier-progress-value">{metrics.standards.activeLevel.progressPercent}%</span>
+          <span id="live-progress-val" class="tier-progress-value">{metrics.standards.activeLevel.progressPercent}%</span>
         </div>
         <div class="tier-progress-bar">
-          <div class="tier-progress-fill" style={`width: ${metrics.standards.activeLevel.progressPercent}%; background: ${currentTier.badgeColor};`}></div>
+          <div id="live-progress-fill" class="tier-progress-fill" style={`width: ${metrics.standards.activeLevel.progressPercent}%; background: ${currentTier.badgeColor};`}></div>
         </div>
-        <p class="tier-progress-hint">
+        <p id="live-milestone-hint" class="tier-progress-hint">
           {metrics.standards.activeLevel.nextMilestone}。数据严格基于近 30 天公开 Markdown 正文时间戳计算。
         </p>
       </div>
@@ -299,6 +302,82 @@ export const standardsConfig = &#123;
         </a>
       </div>
     </section>
+
+    <!-- 文章标准底部版权与交互工具栏 (Post Copyright & Tools) -->
+    <PostCopyright
+      permalink={new URL(Astro.url.pathname, siteConfig.site.url).href}
+      title="系统工程标准：站长活跃等级分级与评估规范 (EES-002)"
+      shortTitle="活跃等级评估规范 (EES-002)"
+      authorName={siteConfig.site.author.name}
+      authorRole={siteConfig.site.author.role}
+      authorAvatar={siteConfig.site.author.avatar}
+      badge="原创规范"
+      copyrightTitle={siteConfig.post.copyright.title}
+      notice={siteConfig.post.copyright.notice}
+      copyLabel={siteConfig.post.copyright.copyLabel}
+      rewardLabel={siteConfig.post.copyright.rewardLabel}
+      rewardNote={siteConfig.post.copyright.rewardNote}
+      aboutTitle={siteConfig.post.tools.aboutTitle}
+      modeHref={siteConfig.post.tools.modeHref}
+      modeLabel={siteConfig.post.tools.modeLabel}
+      modeDescription={siteConfig.post.tools.modeDescription}
+      shareLabel={siteConfig.post.tools.shareLabel}
+      rewardHref={siteConfig.post.tools.rewardHref}
+      rewardDescription={siteConfig.post.tools.rewardDescription}
+      copyDoneLabel={siteConfig.post.tools.copyDoneLabel}
+      shareDoneLabel={siteConfig.post.tools.shareDoneLabel}
+      shareFallbackLabel={siteConfig.post.tools.shareFallbackLabel}
+    />
+
+    <hr class="custom-hr" />
+
+    <!-- 交互式讨论与评论区 (Post Comments) -->
+    <div id="post-comment" class="post-comment-container">
+      <PostComments
+        client:only="react"
+        slug="standards-activity-level"
+        title="系统工程标准：站长活跃等级分级与评估规范 (EES-002)"
+        heading={siteConfig.post.comments.title}
+        policyLabel={siteConfig.post.comments.policyLabel}
+        notice={siteConfig.post.comments.notice}
+        submitLabel={siteConfig.post.comments.submitLabel}
+        previewLabel={siteConfig.post.comments.previewLabel}
+        emptyTitle={siteConfig.post.comments.emptyTitle}
+        emptySummary={siteConfig.post.comments.emptySummary}
+        tips={siteConfig.post.comments.tips}
+        integration={siteConfig.integrations.comments}
+      />
+    </div>
+
+    <!-- 客户端边缘动态校准脚本：确保护航状态永远客观同步 -->
+    <script is:inline>
+      (async function checkLiveActiveStatus() {
+        try {
+          const res = await fetch('/api/console/data');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data || !data.stats) return;
+
+          const stats = data.stats;
+          const countEl = document.getElementById('live-recent-count');
+          if (countEl && typeof stats.recentPostCount30d === 'number') {
+            countEl.textContent = stats.recentPostCount30d + ' 篇';
+          }
+          const levelEl = document.getElementById('live-active-level');
+          if (levelEl && stats.activeLevel && stats.activeTitle) {
+            levelEl.textContent = stats.activeLevel + ' (' + stats.activeTitle + ')';
+          }
+          const headerLevelEl = document.getElementById('live-header-active-level');
+          if (headerLevelEl && stats.activeLevel && stats.activeTitle) {
+            headerLevelEl.textContent = stats.activeLevel + ' ' + stats.activeTitle + ' (' + (stats.activeStatus || '') + ')';
+          }
+          const uptimeEl = document.getElementById('live-uptime-days');
+          if (uptimeEl && stats.uptimeDays) {
+            uptimeEl.textContent = stats.uptimeDays + ' 天';
+          }
+        } catch (_) {}
+      })();
+    </script>
   </div>
 </BlogLayout>
 
@@ -699,5 +778,30 @@ export const standardsConfig = &#123;
     color: var(--font-color-sub);
     margin: 0;
     line-height: 1.5;
+  }
+
+  [data-theme='dark'] .standards-card,
+  [data-theme='dark'] .standards-table-wrapper,
+  [data-theme='dark'] .tier-progress-card,
+  [data-theme='dark'] .cross-spec-card {
+    background: var(--card-bg, #1a1e29);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme='dark'] .standards-table th {
+    background: rgba(255, 255, 255, 0.04);
+    color: #8b949e;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme='dark'] .standards-table td {
+    color: var(--font-color, #e6edf3);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme='dark'] .formula-box,
+  [data-theme='dark'] .code-block-preview {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e6edf3;
   }
 </style>

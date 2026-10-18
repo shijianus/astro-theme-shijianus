@@ -1474,10 +1474,8 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     z-index: 1000000 !important;
 }
 
-#console .activity-cell.is-selected {
-    outline: 2px solid var(--theme-main, #425aef) !important;
-    outline-offset: 1px !important;
-    z-index: 99999 !important;
+#console .activity-cell.is-pinned {
+    z-index: 1000000 !important;
 }
 
 /* Console Activity Cell Upward Tooltip (置顶展示，杜绝下边缘截断) */
@@ -1497,10 +1495,12 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
     box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5) !important;
 }
 
-#console .activity-cell[data-tooltip]:hover::before {
+#console .activity-cell[data-tooltip]:hover::before,
+#console .activity-cell.is-pinned[data-tooltip]::before {
     opacity: 1 !important;
     visibility: visible !important;
     transform: translateX(-50%) translateY(0) !important;
+    pointer-events: auto !important;
 }
 
 /* GitHub Dark Mode Colors - Authentic Flat Palette */
@@ -1749,46 +1749,6 @@ html:not([lang^="zh"]) .webinfo-item span {
   scrollbar-width: thin !important;
 }
 
-/* Screen-Level Unconstrained Popover (完全在屏幕中展示，杜绝 heatmap-internal-wrapper 截断) */
-.activity-screen-popover-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 10000000 !important;
-  background: rgba(0, 0, 0, 0.45) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  display: flex !important;
-  pointer-events: auto !important;
-}
-
-.activity-screen-popover {
-  position: fixed !important;
-  z-index: 10000001 !important;
-  width: min(440px, calc(100vw - 32px)) !important;
-  max-height: min(520px, 80vh) !important;
-  background: var(--console-theme-bg, #1a1e29) !important;
-  border: 1px solid var(--theme-main, #425aef) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(66, 90, 239, 0.3) !important;
-  padding: 16px 18px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-@media (max-width: 640px) {
-  .activity-screen-popover {
-    left: 16px !important;
-    right: 16px !important;
-    width: auto !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    max-height: 75vh !important;
-  }
-}
-
 @media (min-width: 861px) {
   #console .activity-grid-container {
     overflow: visible !important;
@@ -1799,93 +1759,6 @@ html:not([lang^="zh"]) .webinfo-item span {
   #console .console-activity-grid {
     overflow: visible !important;
   }
-}
-
-@keyframes popoverFadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.activity-screen-popover.placement-top {
-  transform: translateY(-100%) !important;
-}
-
-.activity-screen-popover__head {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 10px !important;
-  padding-bottom: 8px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-.activity-screen-popover__title {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-.activity-screen-popover__title strong {
-  font-size: 14px !important;
-  color: var(--font-color, #ffffff) !important;
-  font-family: var(--font-family-mono, monospace) !important;
-}
-
-.activity-screen-popover__close {
-  background: transparent !important;
-  border: none !important;
-  color: var(--text-muted, #8c959f) !important;
-  font-size: 18px !important;
-  cursor: pointer !important;
-  padding: 2px 6px !important;
-  border-radius: 4px !important;
-  line-height: 1 !important;
-  transition: color 0.15s, background 0.15s !important;
-}
-
-.activity-screen-popover__close:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.activity-screen-popover__list {
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  overflow-y: auto !important;
-  max-height: 320px !important;
-  scrollbar-width: thin !important;
-}
-
-.activity-screen-popover__list li {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 8px !important;
-  font-size: 13px !important;
-  line-height: 1.4 !important;
-}
-
-.activity-screen-popover__list li a {
-  color: var(--font-color, #e6edf3) !important;
-  text-decoration: none !important;
-  transition: color 0.15s !important;
-}
-
-.activity-screen-popover__list li a:hover {
-  color: var(--theme-main, #425aef) !important;
-  text-decoration: underline !important;
-}
-
-.activity-screen-popover__footer {
-  margin-top: 10px !important;
-  padding-top: 8px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  font-size: 11px !important;
-  color: var(--text-muted, #8c959f) !important;
-  text-align: right !important;
 }
 
 

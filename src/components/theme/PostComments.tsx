@@ -4399,3 +4399,5 @@ ${Array.from({ length: modalTableRows }, (_, r) => `| ${Array.from({ length: mod
     </div>
   );
 }
+
+export default PostComments;

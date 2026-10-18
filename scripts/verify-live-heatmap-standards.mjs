@@ -77,6 +77,9 @@ async function verifyLive() {
         href: card.querySelector('.doc-split-btn')?.getAttribute('href'),
       }));
 
+      // Verify no broken section-title-wrap layout
+      const brokenWraps = Array.from(document.querySelectorAll('.section-title-wrap')).filter(w => w.children.length > 2);
+
       return {
         title,
         hasSidebar,
@@ -85,6 +88,7 @@ async function verifyLive() {
         activeLink,
         densityLink,
         splitCards,
+        brokenWrapsCount: brokenWraps.length,
       };
     });
 
@@ -95,6 +99,7 @@ async function verifyLive() {
     console.log('Active Link in dashboard:', standardsData.activeLink);
     console.log('Density Link in dashboard:', standardsData.densityLink);
     console.log('Split Cards:', standardsData.splitCards);
+    console.log('Broken section-title-wraps count:', standardsData.brokenWrapsCount);
 
     if (standardsData.hasSidebar) {
       throw new Error('Failure: Standards page must NOT have a sidebar (showAside={false})!');
@@ -111,9 +116,12 @@ async function verifyLive() {
     if (standardsData.splitCards.length < 2) {
       throw new Error(`Expected 2 split article entry cards on /standards/, got ${standardsData.splitCards.length}`);
     }
+    if (standardsData.brokenWrapsCount > 0) {
+      throw new Error('Failure: Detected broken .section-title-wrap on live /standards/!');
+    }
 
-    // 3. Verify /standards/activity-level/
-    console.log(`\n--- 3. Testing ${PROD_URL}/standards/activity-level/ ---`);
+    // 3. Verify /standards/activity-level/ (Separate Post & Required Bottom Box)
+    console.log(`\n--- 3. Testing ${PROD_URL}/standards/activity-level/ & Bottom Box ---`);
     const actRes = await page.goto(`${PROD_URL}/standards/activity-level/`, { waitUntil: 'networkidle0' });
     console.log(`HTTP Status: ${actRes.status()}`);
     if (actRes.status() !== 200) {
@@ -126,18 +134,25 @@ async function verifyLive() {
       const currentTierRow = document.querySelector('tr.is-current-tier');
       const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
       const crossLinkDensity = document.querySelector('a[href*="content-density"]')?.getAttribute('href');
-      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkDensity };
+      const hasCopyrightBox = !!document.querySelector('.post-copyright');
+      const hasCommentBox = !!document.querySelector('#post-comment');
+      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkDensity, hasCopyrightBox, hasCommentBox };
     });
     console.log('Activity Title:', actData.title);
     console.log('Activity Has Sidebar:', actData.hasSidebar, '(Must be false)');
     console.log('Activity Matched Tier:', actData.currentTierTitle);
     console.log('Cross Link to Density:', actData.crossLinkDensity);
+    console.log('Has Copyright Bottom Box:', actData.hasCopyrightBox);
+    console.log('Has Comment Bottom Box:', actData.hasCommentBox);
+
     if (actData.hasSidebar) throw new Error('/standards/activity-level/ must NOT have a sidebar!');
     if (!actData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/activity-level/!');
     if (!actData.crossLinkDensity?.includes('content-density')) throw new Error('Missing cross-link to content-density!');
+    if (!actData.hasCopyrightBox) throw new Error('Missing copyright bottom box on /standards/activity-level/!');
+    if (!actData.hasCommentBox) throw new Error('Missing comment box on /standards/activity-level/!');
 
-    // 4. Verify /standards/content-density/
-    console.log(`\n--- 4. Testing ${PROD_URL}/standards/content-density/ ---`);
+    // 4. Verify /standards/content-density/ (Separate Post & Required Bottom Box)
+    console.log(`\n--- 4. Testing ${PROD_URL}/standards/content-density/ & Bottom Box ---`);
     const densRes = await page.goto(`${PROD_URL}/standards/content-density/`, { waitUntil: 'networkidle0' });
     console.log(`HTTP Status: ${densRes.status()}`);
     if (densRes.status() !== 200) {
@@ -150,17 +165,24 @@ async function verifyLive() {
       const currentTierRow = document.querySelector('tr.is-current-tier');
       const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
       const crossLinkActivity = document.querySelector('a[href*="activity-level"]')?.getAttribute('href');
-      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkActivity };
+      const hasCopyrightBox = !!document.querySelector('.post-copyright');
+      const hasCommentBox = !!document.querySelector('#post-comment');
+      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkActivity, hasCopyrightBox, hasCommentBox };
     });
     console.log('Density Title:', densData.title);
     console.log('Density Has Sidebar:', densData.hasSidebar, '(Must be false)');
     console.log('Density Matched Tier:', densData.currentTierTitle);
     console.log('Cross Link to Activity:', densData.crossLinkActivity);
+    console.log('Has Copyright Bottom Box:', densData.hasCopyrightBox);
+    console.log('Has Comment Bottom Box:', densData.hasCommentBox);
+
     if (densData.hasSidebar) throw new Error('/standards/content-density/ must NOT have a sidebar!');
     if (!densData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/content-density/!');
     if (!densData.crossLinkActivity?.includes('activity-level')) throw new Error('Missing cross-link to activity-level!');
+    if (!densData.hasCopyrightBox) throw new Error('Missing copyright bottom box on /standards/content-density/!');
+    if (!densData.hasCommentBox) throw new Error('Missing comment box on /standards/content-density/!');
 
-    // 5. Verify Live Homepage & Console Heatmap
+    // 5. Verify Live Homepage & Console Heatmap In-Place Pinned Tooltip
     console.log(`\n--- 5. Testing Heatmap in Console on Live Homepage ---`);
     await page.goto(`${PROD_URL}/`, { waitUntil: 'networkidle0' });
 
@@ -183,50 +205,69 @@ async function verifyLive() {
       throw new Error('Live console density item must link to /standards/content-density/!');
     }
 
-    // Click Active Cell & Verify Screen-Level Popover
-    console.log('Clicking active cell in live heatmap...');
+    // Click Active Cell & Verify In-Place Tooltip Pinning (No Popover, No Outline)
+    console.log('Clicking active cell in live heatmap to pin native tooltip...');
     await page.evaluate(() => {
       const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
       const activeCell = cells.find(c => c.classList.contains('level-4')) || cells.find(c => !c.classList.contains('level-0'));
       if (activeCell) activeCell.click();
     });
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 500));
 
-    // Verify Screen-Level Popover
-    const popoverData = await page.evaluate(() => {
-      const popover = document.querySelector('.activity-screen-popover');
-      if (!popover) return null;
-      const isInsideWrapper = !!popover.closest('.heatmap-internal-wrapper');
-      const isFixed = window.getComputedStyle(popover).position === 'fixed';
-      const badge = popover.querySelector('.activity-count-badge')?.textContent?.trim();
-      const items = Array.from(popover.querySelectorAll('.activity-screen-popover__list li')).map(li => ({
-        title: li.textContent?.trim(),
-        href: li.querySelector('a')?.getAttribute('href')
-      }));
+    const pinData = await page.evaluate(() => {
+      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
+      const pinnedCell = cells.find(c => c.classList.contains('is-pinned'));
+      const popoverExists = !!document.querySelector('.activity-screen-popover');
+      const backdropExists = !!document.querySelector('.activity-screen-popover-backdrop');
+
+      let outlineStyle = '';
+      if (pinnedCell) {
+        outlineStyle = window.getComputedStyle(pinnedCell).outlineStyle;
+      }
 
       return {
-        exists: true,
-        isInsideWrapper,
-        isFixed,
-        badge,
-        postsCount: items.length,
+        isPinned: !!pinnedCell,
+        tooltipAttr: pinnedCell?.getAttribute('data-tooltip'),
+        outlineStyle,
+        popoverExists,
+        backdropExists,
       };
     });
 
-    console.log('Live Screen Popover exists:', popoverData?.exists);
-    console.log('Live Screen Popover inside wrapper:', popoverData?.isInsideWrapper, '(Must be false)');
-    console.log('Live Screen Popover fixed:', popoverData?.isFixed);
-    console.log('Live Screen Popover Badge:', popoverData?.badge);
-    console.log(`Live Screen Popover Posts Count: ${popoverData?.postsCount}`);
+    console.log('Live Cell is-pinned:', pinData.isPinned);
+    console.log('Live Cell outline style:', pinData.outlineStyle, '(Must be none)');
+    console.log('Live Popover exists:', pinData.popoverExists, '(Must be false)');
+    console.log('Live Backdrop exists:', pinData.backdropExists, '(Must be false)');
 
-    if (!popoverData || !popoverData.exists) {
-      throw new Error('Failed: Expected .activity-screen-popover on live site on cell click!');
+    if (!pinData.isPinned) {
+      throw new Error('Failed: Expected clicked cell to receive .is-pinned class!');
     }
-    if (popoverData.isInsideWrapper) {
-      throw new Error('Failed: .activity-screen-popover must NOT be inside .heatmap-internal-wrapper!');
+    if (pinData.popoverExists) {
+      throw new Error('Failed: .activity-screen-popover must NOT exist on cell click!');
     }
-    if (popoverData.postsCount < 4) {
-      throw new Error(`Expected all posts without 3-post truncation, got ${popoverData.postsCount}`);
+    if (pinData.backdropExists) {
+      throw new Error('Failed: .activity-screen-popover-backdrop must NOT exist!');
+    }
+    if (pinData.outlineStyle !== 'none' && pinData.outlineStyle !== '') {
+      throw new Error(`Failed: Cell must NOT have an outline border, got: ${pinData.outlineStyle}`);
+    }
+
+    // Click outside on console profile area to unpin
+    console.log('Clicking outside to test auto-unpinning on live site...');
+    await page.evaluate(() => {
+      const profile = document.querySelector('.console-profile') || document.body;
+      profile.click();
+    });
+    await new Promise(r => setTimeout(r, 300));
+
+    const liveUnpin = await page.evaluate(() => {
+      const pinned = document.querySelector('.console-activity-grid .activity-cell.is-pinned');
+      return { stillPinned: !!pinned };
+    });
+    console.log('Live Cell still pinned after outside click:', liveUnpin.stillPinned, '(Must be false)');
+
+    if (liveUnpin.stillPinned) {
+      throw new Error('Failed: Tooltip should automatically unpin when clicking outside on live site!');
     }
 
     if (errors.length > 0) {
