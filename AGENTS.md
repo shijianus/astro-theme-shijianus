@@ -5877,19 +5877,25 @@
     1. `GET /api/console/data` HTTP 200，API 返回 `activeHref: '/standards/activity-level/'` 与 `densityHref: '/standards/content-density/'`，内嵌完整 `standardsConfig`；
     2. `/standards/` 页面 HTTP 200，无侧边栏，8 项仪表盘渲染正常，两张独立文章入口卡片（EES-002 与 EES-003）渲染正常且链接无误；
     3. `/standards/activity-level/` 页面 HTTP 200，无侧边栏，6 项导航锚点齐全，当前阶梯（高频迭代 Lv.3）高亮且附带跨规范跳转链接；
-    4. `/standards/content-density/` 页面 HTTP 200，无侧边栏，6 项导航锚点齐全，当前阶梯（硬核深度长文 Lv.4）高亮且附带跨规范跳转链接；
-    5. 控制台与热力图交互：侧边栏与控制台中活跃等级与内容密度精准导向独立文章，点击热力图方格挂载于 body 的视口级浮层成功弹出，13 篇文章全量呈现无截断，0 控制台报错。
 
-
-
-
-
-
-
-
-
-
-
-
+### Task 25: 热力图就地固定原生注释框、补齐规范文章底部版权/评论框与修复 standards 排版缺陷 (`df38518`)
+- [x] **热力图就地固定原生注释框 (In-Place Native Tooltip Pinning)**：
+  - 彻底清理多余的视口级浮层与黑色遮罩 (`.activity-screen-popover`、`.activity-screen-popover-backdrop` 及 Portal 节点)；
+  - 点击方格直接就地固定当前单元格的原生 Tooltip 气泡（通过赋予 `.is-pinned` 类保持 `[data-tooltip]::before` 常驻可见：`opacity: 1; visibility: visible; pointer-events: auto;`）；
+  - 移除单元格本身突兀的额外高亮边框（`outline: none`）；
+  - 绑定全局 document 点击监听：点击外部任意区域或控制台其他地方，`.is-pinned` 状态立即解除并自然淡出，同时完全不拦截外部点击事件。
+- [x] **`/standards/activity-level/` 与 `content-density/` 补齐标准底部框与内容真实性重塑**：
+  - 补齐文章底部标准组件：注入 `<PostCopyright>` 原创版权声明卡片、`<hr class="custom-hr" />` 及 `<PostComments client:only="react" />` 原生自建评论区；
+  - 修复 `PostComments` 模块导入/导出兼容性（补齐 `export default PostComments` 与 named import `{ PostComments }`），根治客户端水合抛出的 React Error #130；
+  - 彻底重写真实技术内容：摒弃假大空的模板化套话，基于全站真实工程事实论述——滚动 30 天滑动窗口模型、多语言版本去重与主版本锚定流水线、草稿/归档排除机制及 `pubDate` 物理时间戳防刷准则；
+  - 保证当前状态与全站发文真实联动：在 `functions/api/console/data.ts` 中基于实时请求时刻精算近 30 天文章数与对应等级，并在客户端引入 live sync 校准脚本，确保展示的“当前状态”动态准确。
+- [x] **`/standards/` 整体与 `.standards-doc-section` 严重错位与排版修复**：
+  - 彻底定位并根除根本病因：Section 2.0 (行 134) 与 Section 3.0 (行 218) 遗漏了闭合 `</div>` 标签，导致 `display: flex` 的 `.section-title-wrap` 吞噬了其后的所有卡片与表格，引发严重的横向挤压形变；
+  - 补齐闭合标签，使文档完全恢复单栏垂直流式的 Anzhiyu 优雅技术文档排版；
+  - 全面补齐 `[data-theme='dark']` 深色模式样式适配，保证卡片、表格与标题在深浅色模式下均对比清晰、质感协调。
+- [x] **本地自动化测试与生产端真实链路验收 100% 全部通过**：
+  - 本地测试套件 `scripts/verify-heatmap-and-standards.mjs` 5 大专项断言全部 100% PASS；
+  - 全量构建并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（部署标识：`c0aa4121.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
+  - 运行 `scripts/verify-live-heatmap-standards.mjs` 针对公网生产域名 `https://blog.epocanvas.com` 执行真实实机测试，HTTP 200、0 控制台报错、就地点击固定原生 Tooltip、点击外部自动解除、无 popover 遮罩、无 outline 边框、底部版权/评论框渲染正常、`.section-title-wrap` 异常计数为 0，公网 E2E 验证 100% PASS！
 
 
