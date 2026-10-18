@@ -379,32 +379,17 @@ $$\text{TotalReadingMinutes} \ne \text{Math.round}\left(\frac{\text{TotalWords}}
 | 思维导图 (Mindmap) | 呈现全局概念树与模块依赖关系 | 代替严谨的代码实现或算法证明 |
 | 表格 (Tables) | 参数对照、环境变量说明、测试基准对比 | 在单元格中塞入大量多行连续长文本段落 |
 
-## 13. 管理员调整密度阈值与算法演进路线
+## 13. 文本分词与跨语言信息熵度量分析
 
-### 13.1 当前阈值调整操作规范
+在多语言工程知识库中，不同书写系统的表意密度与物理字符长度存在显著的跨语言信息熵差异。度量全站平均篇幅时，必须建立严谨的跨语言字符等价性认知模型。
 
-权威配置位于 `src/config/standards.ts` 的 `standardsConfig.contentDensityLevels`：
+### 13.1 意音文字与拼音文字的信息熵差异
 
-```ts
-export interface ContentDensityLevelConfig {
-  minAvgWords: number;         // 最小平均字数（闭区间）
-  maxAvgWords: number | null;  // 最大平均字数（闭区间，无上限填 null）
-  status: string;              // 状态描述
-  level: string;               // 等级字符串（如 "Level 4 (Ultra)"）
-  shortLevel: string;          // 简短等级标识（如 "Lv.4"）
-  badge: string;               // 徽章标识文案（如 "Lv.4 Ultra"）
-  title: string;               // 展示标题（如 "硬核深度长文"）
-  description: string;         // 区间特征说明
-  badgeColor: string;          // 规范主题色
-  readingExpectation: string;  // 预估阅读时间特征
-}
-```
+1. **表意字符高密度特征**：现代汉字属于表意文字（Logographic Script），单个 UTF-16 码元通常对应一个独立的语素（Morpheme）甚至词汇，其平均信息熵在 8 至 9.5 比特/字符；
+2. **表音字母序列展开特征**：拉丁与西欧语系（如英语、德语、西班牙语）属于拼音文字（Alphabetic Script），一个概念词汇通常由 4 至 15 个字母序列拼写而成（例如汉字“架构”仅占 2 字符，英文 `architecture` 占 12 字符，德文 `Softwarearchitektur` 占 20 字符）。因此，在同一技术论证深度下，西文版本的物理字符计数天然是中文版本的 2.5 至 4 倍；
+3. **等价阅读负荷模型**：当前算法通过 `latinTokens`（空格分段计数）在一定程度上对西文长词提供了缓冲，但在全站多语言混合聚合时，系统未对多语言样本强行施加人工权重修正，从而客观记录各语言形态下的物理字符体量。
 
-调整时必须注意：
-- 严格保证区间连贯，如 Lv.2 的 `maxAvgWords: 1500` 与 Lv.3 的 `minAvgWords: 1501`；
-- 检查 `src/lib/site-metrics.ts` 中写死的进度提示文本（如 `801`、`1501`、`3001`）是否同步调整。
-
-### 13.2 下一代基于 AST 的精准分词演进提案 (PROPOSED)
+### 13.2 抽象语法树 (MDAST) 精准纯文本提取流水线规范 (PROPOSED)
 
 针对当前算法将图片 URL 与 HTML 属性混入字数的局限，拟定下一代（v3.0）算法技术路线：
 

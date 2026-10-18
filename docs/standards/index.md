@@ -378,21 +378,46 @@ Cache-Control: public, max-age=60, s-maxage=300
   </details>
 </div>
 
-## 11. 标准的配置与演进流程
+## 11. 数据契约与接口序列化规范
 
-EES 规范的权威配置定义于代码文件：
+边缘 API 接口（`GET /api/console/data`）与静态快照（`console-metrics.json`）遵循严格的数据模式契约与字段不变性约束。各消费端（前端中控台、指标仪表盘、规范页面）必须基于以下权威 Schema 进行类型映射：
 
-```text
-src/config/standards.ts
+```ts
+export interface ConsoleMetricsPayload {
+  ok: boolean;
+  generatedAt: string; // ISO-8601 快照生成时刻
+  servedAt?: string;    // ISO-8601 边缘请求处理时刻
+  stats: {
+    posts: number;              // 公开有效文章数 (>= 0)
+    totalWords: number;         // 全站估算总字数 (>= 0)
+    avgWordsPerPost: number;    // 取整后的平均字数
+    readingMinutes: number;     // 逐篇累加总阅读耗时 (分钟)
+    recentPostCount30d: number; // 滑动窗口发文量 (>= 0)
+    uptimeDays: number;         // 站点累计运行日数
+    activeLevel: ActivityTier;  // 活跃等级完整对象
+    densityLevel: DensityTier;  // 内容密度等级完整对象
+  };
+  standardsConfig: {
+    specId: string;             // 如 "EES-2026.4"
+    version: string;            // 如 "2.6.0"
+    siteStartDate: string;      // 固定基准起点
+    activityLevels: ActivityLevelConfig[];
+    contentDensityLevels: ContentDensityLevelConfig[];
+  };
+  activity: Array<{
+    date: string;               // "YYYY-MM-DD"
+    count: number;              // 当日聚合事件数
+    level: 0 | 1 | 2 | 3 | 4;   // 5 级量化色阶
+  }>;
+}
 ```
 
-当团队需要调整阈值、文案或计算规则时，必须遵循以下维护流程：
+### 11.1 字段不变性与边缘计算约束
 
-1. **区间完整性校验**：确保修改后的数值区间连续闭合，不存在未覆盖的数值空档或重叠冲突；
-2. **双端逻辑联动**：检查 `src/lib/site-metrics.ts` 与 `scripts/sync-console-metrics.mjs` 中的硬编码常量是否同步更新；
-3. **自动化测试回归**：运行完整的指标算法专项测试矩阵，覆盖边界用例；
-4. **快照重建与部署**：重新生成 `console-metrics.json`，确保页面与 API 使用一致的配置；
-5. **规范版本递增**：在配置文件中递增版本号（如由 `v2.6.0` 递增），并在本文档的历史记录中予以记录。
+1. **类型确定性**：数值字段必须为合法的非负整数或浮点数，严禁在异常状态下返回 `null`、`undefined` 或 NaN；
+2. **时钟单调性**：`servedAt` 时间戳严禁早于 `generatedAt`，当检测到边缘节点系统时钟回拨或快照跨越时，接口应强制将 `servedAt` 锚定在不早于快照时间点的有效范围内；
+3. **负载体积控制**：52 周日历矩阵严格限定为 364 个元素数组，全量 JSON 负载体积在未压缩状态下不得超过 32 KB，在 Gzip / Brotli 压缩后应保持在 6 KB 以内，以严格满足 Cloudflare Workers 128 MB 内存与低延迟执行预算；
+4. **向后兼容性保证**：未来规范升级若引入新字段，必须采取增量添加原则，严禁直接修改或删除既有核心字段，确保旧版缓存与各类客户端在架构演进期间的解析兼容。
 
 ## 12. 公开核验清单
 
