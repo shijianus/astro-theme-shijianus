@@ -5833,7 +5833,21 @@
     1. `GET https://blog.epocanvas.com/api/console/data` 返回 HTTP 200，活跃天数 364 天与全量统计正常；
     2. `https://blog.epocanvas.com/standards/` 返回 HTTP 200，8 项 `webinfo-item` 渲染正常，当前梯队高亮（Lv.3 High / Lv.4 Ultra）；
     3. 控制台热力图向上置顶 Tooltip 正常浮动（`bottom: 19px, top: -290.75px, zIndex: 1000000`）；
-    4. 点击 2026/8/28 方格，扩展说明栏一次性完整渲染当日全部 13 篇文章，0 截断、平滑滚动、无任何控制台报错。
+
+### Task 23: 控制台热力图文章视口级 Portal 浮层重构、彻底解除 `heatmap-internal-wrapper` 空间限制、日历严格双向同步与 `/standards/` 文档架构无侧边栏纯净展示 (`757a357`)
+- [x] **视口级 Portal 独立浮层 (`activity-screen-popover`) 重构**：
+  - 彻底打破卡片与容器边界：将热力图浮动卡片由原内部嵌套改为基于 React `createPortal` 挂载至 `document.body` 顶层，彻底解除 `heatmap-internal-wrapper` 与父容器 `overflow` / `transform` 坐标系束缚；
+  - 屏幕级自适应定位：基于真实单元格视口边界计算（`getBoundingClientRect`），桌面端自适应浮动吸附（若上方高度充足置顶展示，否则向下伸展并限制于视口内）；移动端全屏居中卡片展示（`left: 16px; right: 16px; top: 50%; transform: translateY(-50%)`）；
+  - 全量文章展示与交互：一次性完整展示当日所有文章（如 13 篇文章全量呈现），支持高对比滚动条与直接点击跳转；配备半透明安全遮罩（`activity-screen-popover-backdrop`）、`ESC` 快捷键退出与点击卡片外部自动关闭。
+- [x] **热力图日期全链路严格双向同步**：
+  - 权威数据优先驱动：`activityData` 优先采用后端边缘函数 `/api/console/data`（或快照 `console-metrics.json`）预计算的权威 52 周活动天数，保证客户端与服务端数据 100% 镜像一致；
+  - 消除跨时区漂移：时间戳解析采用物理正则提取（`YYYY-MM-DD`）替代原生 `toISOString().split('T')[0]` UTC 强制转换，杜绝西五区至西八区（PST）等本地时区造成的日历错位与“今日”冻结问题。
+- [x] **`/standards/` 规范页面文档化架构重构 (学习官方文档构造，移除侧边栏)**：
+  - 彻底清除侧边栏（`showAside={false}`），采用现代技术文档标准单栏流式布局（`max-width: 1060px; margin: 32px auto`）；
+  - 引入规范文档完整标准构造：RFC 级头部元信息（ Living Standard / 生产环境持续生效 / SPEC-ID: EES-001）、§ 1 ~ § 6 章节锚点快速导航条（Pills Nav）、8 项 `webinfo-item` 核心运行态仪表盘、活跃与内容密度分级阶梯对照表（动态高亮当前达标阶梯）、工程架构 SLA 性能硬性指标清单、代码质量守则与可验证的数据字典 API 契约。
+- [x] **本地与云端自动化端到端测试全量通过**：
+  - 本地自动化测试脚本 (`scripts/verify-heatmap-and-standards.mjs`) 100% PASS（验证 Has Sidebar = false，6 项导航锚点齐全，点击 8/28 方格成功唤出挂载于 body 的视口级浮层并完整渲染全部 13 篇文章，0 报错）。
+
 
 
 
