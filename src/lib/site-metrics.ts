@@ -1,5 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 import { estimateWordCount, estimateReadingMinutes, getPostPath, getPublicPosts, sortPostsByDate } from './content.ts';
+import { standardsConfig, matchActivityTier, matchContentDensityTier, type ActivityTier, type ContentDensityTier } from '../config/standards.ts';
 
 type PostEntry = CollectionEntry<'posts'>;
 
@@ -24,6 +25,7 @@ export interface MetricStandard {
   thresholds: StandardThreshold[];
   nextMilestone?: string;
   progressPercent: number;
+  href?: string;
 }
 
 export interface FullSiteMetrics {
@@ -39,6 +41,8 @@ export interface FullSiteMetrics {
     levelNumber: number;
     title: string;
     description: string;
+    badge: string;
+    href: string;
   };
   densityLevel: {
     level: string; // e.g. "Level 4 (Ultra)"
@@ -46,6 +50,8 @@ export interface FullSiteMetrics {
     levelNumber: number;
     title: string;
     description: string;
+    badge: string;
+    href: string;
   };
   standards: {
     activeLevel: MetricStandard;
@@ -53,6 +59,7 @@ export interface FullSiteMetrics {
     runtime: MetricStandard;
     wordCount: MetricStandard;
   };
+  standardsConfig: typeof standardsConfig;
 }
 
 const START_DATE = new Date('2024-01-01T00:00:00Z');
@@ -90,47 +97,24 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
     return postDate >= thirtyDaysAgo && postDate <= now;
   }).length;
 
-  // 1. 活跃等级分级测算 (Active / Maintainer Level)
-  let activeStatus = 'Status 0';
-  let activeLevel = 'Lv.0';
-  let activeLevelNum = 0;
-  let activeTitle = '维护休眠';
-  let activeDesc = '近30天暂无公开发布，系统处于常规维护休眠状态';
+  // 1. 活跃等级分级测算 (Active / Maintainer Level) - 统一调用规范配置
+  const activeTier = matchActivityTier(recentPostCount30d);
+  const activeStatus = activeTier.status;
+  const activeLevel = activeTier.level;
+  const activeLevelNum = parseInt(activeTier.level.replace('Lv.', ''), 10) || 0;
+  const activeTitle = activeTier.title;
+  const activeDesc = activeTier.description;
 
-  if (recentPostCount30d > 8) {
-    activeStatus = 'Status 4';
-    activeLevel = 'Lv.4';
-    activeLevelNum = 4;
-    activeTitle = '极度活跃';
-    activeDesc = '近30天发布 > 8 篇，内容高密度产出与极速迭代';
-  } else if (recentPostCount30d >= 5) {
-    activeStatus = 'Status 3';
-    activeLevel = 'Lv.3';
-    activeLevelNum = 3;
-    activeTitle = '高频迭代';
-    activeDesc = '近30天发布 5~8 篇，保持高质量与快节奏迭代更新';
-  } else if (recentPostCount30d >= 3) {
-    activeStatus = 'Status 2';
-    activeLevel = 'Lv.2';
-    activeLevelNum = 2;
-    activeTitle = '稳定维护';
-    activeDesc = '近30天发布 3~4 篇，系统节奏稳定，稳步推进技术专题';
-  } else if (recentPostCount30d >= 1) {
-    activeStatus = 'Status 1';
-    activeLevel = 'Lv.1';
-    activeLevelNum = 1;
-    activeTitle = '周期推送';
-    activeDesc = '近30天发布 1~2 篇，处于周期性常规推送与维护中';
-  }
-
-  // 活跃度各梯队标准
-  const activeThresholds: StandardThreshold[] = [
-    { level: 'Status 4', badge: 'Lv.4 Ultra', title: '极度活跃', min: 9, description: '近 30 天发文 > 8 篇', isCurrent: activeLevelNum === 4 },
-    { level: 'Status 3', badge: 'Lv.3 High', title: '高频迭代', min: 5, max: 8, description: '近 30 天发文 5 ~ 8 篇', isCurrent: activeLevelNum === 3 },
-    { level: 'Status 2', badge: 'Lv.2 Standard', title: '稳定维护', min: 3, max: 4, description: '近 30 天发文 3 ~ 4 篇', isCurrent: activeLevelNum === 2 },
-    { level: 'Status 1', badge: 'Lv.1 Low', title: '周期推送', min: 1, max: 2, description: '近 30 天发文 1 ~ 2 篇', isCurrent: activeLevelNum === 1 },
-    { level: 'Status 0', badge: 'Lv.0 Idle', title: '维护休眠', min: 0, max: 0, description: '近 30 天无新发文章', isCurrent: activeLevelNum === 0 },
-  ];
+  // 活跃度各梯队标准 (由 standardsConfig 统一驱动)
+  const activeThresholds: StandardThreshold[] = standardsConfig.activityLevels.map((tier) => ({
+    level: tier.status,
+    badge: tier.badge,
+    title: tier.title,
+    min: tier.minPosts,
+    max: tier.maxPosts,
+    description: tier.description,
+    isCurrent: tier.level === activeTier.level,
+  }));
 
   let nextActiveMilestone: string | undefined;
   let activeProgressPercent = 100;
@@ -151,39 +135,23 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
     activeProgressPercent = 100;
   }
 
-  // 2. 内容密度分级测算 (Content Density Level)
-  let densityStatus = 'Level 1 (Low)';
-  let densityShort = 'Lv.1';
-  let densityLevelNum = 1;
-  let densityTitle = '微动态速记';
-  let densityDesc = '全站平均单篇字数 <= 800 字，侧重碎片速记与敏捷分享';
+  // 2. 内容密度分级测算 (Content Density Level) - 统一调用规范配置
+  const densityTier = matchContentDensityTier(avgWordsPerPost);
+  const densityStatus = densityTier.status;
+  const densityShort = densityTier.level;
+  const densityLevelNum = parseInt(densityTier.level.replace('Lv.', ''), 10) || 1;
+  const densityTitle = densityTier.title;
+  const densityDesc = densityTier.description;
 
-  if (avgWordsPerPost > 3000) {
-    densityStatus = 'Level 4 (Ultra)';
-    densityShort = 'Lv.4';
-    densityLevelNum = 4;
-    densityTitle = '硬核深度长文';
-    densityDesc = '全站平均单篇字数 > 3000 字，具备极高的技术沉淀与详实图文论述';
-  } else if (avgWordsPerPost > 1500) {
-    densityStatus = 'Level 3 (High)';
-    densityShort = 'Lv.3';
-    densityLevelNum = 3;
-    densityTitle = '详实系统专栏';
-    densityDesc = '全站平均单篇字数 1500~3000 字，体系完备、图文并茂的专业级专栏文章';
-  } else if (avgWordsPerPost > 800) {
-    densityStatus = 'Level 2 (Standard)';
-    densityShort = 'Lv.2';
-    densityLevelNum = 2;
-    densityTitle = '标准技术博客';
-    densityDesc = '全站平均单篇字数 800~1500 字，标准技术博文规范，论述清晰明确';
-  }
-
-  const densityThresholds: StandardThreshold[] = [
-    { level: 'Level 4', badge: 'Lv.4 Ultra', title: '硬核深度长文', min: 3001, description: '平均单篇字数 > 3,000 字', isCurrent: densityLevelNum === 4 },
-    { level: 'Level 3', badge: 'Lv.3 High', title: '详实系统专栏', min: 1501, max: 3000, description: '平均单篇字数 1,501 ~ 3,000 字', isCurrent: densityLevelNum === 3 },
-    { level: 'Level 2', badge: 'Lv.2 Standard', title: '标准技术博客', min: 801, max: 1500, description: '平均单篇字数 801 ~ 1,500 字', isCurrent: densityLevelNum === 2 },
-    { level: 'Level 1', badge: 'Lv.1 Low', title: '微动态速记', min: 0, max: 800, description: '平均单篇字数 <= 800 字', isCurrent: densityLevelNum === 1 },
-  ];
+  const densityThresholds: StandardThreshold[] = standardsConfig.contentDensityLevels.map((tier) => ({
+    level: tier.status,
+    badge: tier.badge,
+    title: tier.title,
+    min: tier.minAvgWords,
+    max: tier.maxAvgWords,
+    description: tier.description,
+    isCurrent: tier.level === densityTier.level,
+  }));
 
   let nextDensityMilestone: string | undefined;
   let densityProgressPercent = 100;
@@ -214,6 +182,8 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
       levelNumber: activeLevelNum,
       title: activeTitle,
       description: activeDesc,
+      badge: activeTier.badge,
+      href: '/standards/activity-level/',
     },
     densityLevel: {
       level: densityStatus,
@@ -221,6 +191,8 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
       levelNumber: densityLevelNum,
       title: densityTitle,
       description: densityDesc,
+      badge: densityTier.badge,
+      href: '/standards/content-density/',
     },
     standards: {
       activeLevel: {
@@ -234,6 +206,7 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
         thresholds: activeThresholds,
         nextMilestone: nextActiveMilestone,
         progressPercent: activeProgressPercent,
+        href: '/standards/activity-level/',
       },
       contentDensity: {
         key: 'density',
@@ -246,6 +219,7 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
         thresholds: densityThresholds,
         nextMilestone: nextDensityMilestone,
         progressPercent: densityProgressPercent,
+        href: '/standards/content-density/',
       },
       runtime: {
         key: 'runtime',
@@ -261,6 +235,7 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
           { level: '100d+', badge: '100d+', title: '稳步发展', min: 100, max: 499, description: '运行 100 ~ 499 天', isCurrent: uptimeDays >= 100 && uptimeDays < 500 },
         ],
         progressPercent: 100,
+        href: '/standards/',
       },
       wordCount: {
         key: 'words',
@@ -276,8 +251,10 @@ export function calculateSiteMetrics(posts: PostEntry[], now = new Date()): Full
           { level: '10w+', badge: '10w+', title: '初具规模', min: 100000, max: 499999, description: '总字数 10 万 ~ 50 万字', isCurrent: totalWords >= 100000 && totalWords < 500000 },
         ],
         progressPercent: Math.min(100, Math.round((totalWords / 1000000) * 100)),
+        href: '/standards/',
       },
     },
+    standardsConfig,
   };
 }
 

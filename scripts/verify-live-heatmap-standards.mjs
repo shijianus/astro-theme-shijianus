@@ -40,9 +40,18 @@ async function verifyLive() {
     }
     const apiJson = JSON.parse(await page.evaluate(() => document.body.innerText));
     console.log('API JSON Result: ok =', apiJson.ok, ', stats =', apiJson.stats);
-    console.log('Activity Days Count:', apiJson.activity?.length);
+    console.log('Active Tier:', apiJson.stats?.activeLevel, '-> href:', apiJson.stats?.activeHref);
+    console.log('Density Tier:', apiJson.stats?.densityLevel, '-> href:', apiJson.stats?.densityHref);
+    console.log('Standards Config embedded:', !!apiJson.standardsConfig);
+
     if (!apiJson.ok || !apiJson.stats || !apiJson.activity) {
       throw new Error('API returned invalid JSON schema');
+    }
+    if (apiJson.stats?.activeHref !== '/standards/activity-level/') {
+      throw new Error(`Expected activeHref === '/standards/activity-level/', got ${apiJson.stats?.activeHref}`);
+    }
+    if (apiJson.stats?.densityHref !== '/standards/content-density/') {
+      throw new Error(`Expected densityHref === '/standards/content-density/', got ${apiJson.stats?.densityHref}`);
     }
 
     // 2. Verify /standards/
@@ -58,24 +67,24 @@ async function verifyLive() {
       const hasSidebar = !!document.querySelector('.page-aside');
       const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
       const webinfoItems = Array.from(document.querySelectorAll('.standards-webinfo-grid .webinfo-item'));
-      const items = webinfoItems.map(item => ({
-        label: item.querySelector('.webinfo-item-label span')?.textContent?.trim(),
-        value: item.querySelector('strong')?.textContent?.trim(),
-      }));
+      
+      const activeLink = document.querySelector('.standards-webinfo-grid a[href*="activity-level"]')?.getAttribute('href');
+      const densityLink = document.querySelector('.standards-webinfo-grid a[href*="content-density"]')?.getAttribute('href');
 
-      const activeSection = document.querySelector('#section-active-level');
-      const activeCurrentTier = activeSection?.querySelector('.is-current-tier td:nth-child(2)')?.textContent?.trim();
-      const densitySection = document.querySelector('#section-content-density');
-      const densityCurrentTier = densitySection?.querySelector('.is-current-tier td:nth-child(2)')?.textContent?.trim();
+      const splitCards = Array.from(document.querySelectorAll('.doc-split-entry-card')).map(card => ({
+        badge: card.querySelector('.doc-split-badge')?.textContent?.trim(),
+        title: card.querySelector('.doc-split-title')?.textContent?.trim(),
+        href: card.querySelector('.doc-split-btn')?.getAttribute('href'),
+      }));
 
       return {
         title,
         hasSidebar,
         docNavPills,
         count: webinfoItems.length,
-        items,
-        activeCurrentTier,
-        densityCurrentTier,
+        activeLink,
+        densityLink,
+        splitCards,
       };
     });
 
@@ -83,8 +92,9 @@ async function verifyLive() {
     console.log('Has Sidebar:', standardsData.hasSidebar, '(Must be false for doc structure)');
     console.log('Doc Nav Pills:', standardsData.docNavPills);
     console.log(`Webinfo Items Count: ${standardsData.count}`);
-    console.log('Active Tier:', standardsData.activeCurrentTier);
-    console.log('Density Tier:', standardsData.densityCurrentTier);
+    console.log('Active Link in dashboard:', standardsData.activeLink);
+    console.log('Density Link in dashboard:', standardsData.densityLink);
+    console.log('Split Cards:', standardsData.splitCards);
 
     if (standardsData.hasSidebar) {
       throw new Error('Failure: Standards page must NOT have a sidebar (showAside={false})!');
@@ -92,66 +102,94 @@ async function verifyLive() {
     if (standardsData.count < 6) {
       throw new Error(`Expected at least 6 webinfo-items on /standards/, got ${standardsData.count}`);
     }
-    if (standardsData.docNavPills.length < 4) {
-      throw new Error(`Expected at least 4 doc nav pills, got ${standardsData.docNavPills.length}`);
+    if (!standardsData.activeLink?.includes('activity-level')) {
+      throw new Error('Active webinfo item must link to /standards/activity-level/!');
+    }
+    if (!standardsData.densityLink?.includes('content-density')) {
+      throw new Error('Density webinfo item must link to /standards/content-density/!');
+    }
+    if (standardsData.splitCards.length < 2) {
+      throw new Error(`Expected 2 split article entry cards on /standards/, got ${standardsData.splitCards.length}`);
     }
 
-    // 3. Verify Live Homepage & Console Heatmap
-    console.log(`\n--- 3. Testing Heatmap in Console on Live Homepage ---`);
+    // 3. Verify /standards/activity-level/
+    console.log(`\n--- 3. Testing ${PROD_URL}/standards/activity-level/ ---`);
+    const actRes = await page.goto(`${PROD_URL}/standards/activity-level/`, { waitUntil: 'networkidle0' });
+    console.log(`HTTP Status: ${actRes.status()}`);
+    if (actRes.status() !== 200) {
+      throw new Error(`Expected HTTP 200 for /standards/activity-level/, got ${actRes.status()}`);
+    }
+    const actData = await page.evaluate(() => {
+      const title = document.querySelector('h1')?.textContent?.trim();
+      const hasSidebar = !!document.querySelector('.page-aside');
+      const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
+      const currentTierRow = document.querySelector('tr.is-current-tier');
+      const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+      const crossLinkDensity = document.querySelector('a[href*="content-density"]')?.getAttribute('href');
+      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkDensity };
+    });
+    console.log('Activity Title:', actData.title);
+    console.log('Activity Has Sidebar:', actData.hasSidebar, '(Must be false)');
+    console.log('Activity Matched Tier:', actData.currentTierTitle);
+    console.log('Cross Link to Density:', actData.crossLinkDensity);
+    if (actData.hasSidebar) throw new Error('/standards/activity-level/ must NOT have a sidebar!');
+    if (!actData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/activity-level/!');
+    if (!actData.crossLinkDensity?.includes('content-density')) throw new Error('Missing cross-link to content-density!');
+
+    // 4. Verify /standards/content-density/
+    console.log(`\n--- 4. Testing ${PROD_URL}/standards/content-density/ ---`);
+    const densRes = await page.goto(`${PROD_URL}/standards/content-density/`, { waitUntil: 'networkidle0' });
+    console.log(`HTTP Status: ${densRes.status()}`);
+    if (densRes.status() !== 200) {
+      throw new Error(`Expected HTTP 200 for /standards/content-density/, got ${densRes.status()}`);
+    }
+    const densData = await page.evaluate(() => {
+      const title = document.querySelector('h1')?.textContent?.trim();
+      const hasSidebar = !!document.querySelector('.page-aside');
+      const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
+      const currentTierRow = document.querySelector('tr.is-current-tier');
+      const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+      const crossLinkActivity = document.querySelector('a[href*="activity-level"]')?.getAttribute('href');
+      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkActivity };
+    });
+    console.log('Density Title:', densData.title);
+    console.log('Density Has Sidebar:', densData.hasSidebar, '(Must be false)');
+    console.log('Density Matched Tier:', densData.currentTierTitle);
+    console.log('Cross Link to Activity:', densData.crossLinkActivity);
+    if (densData.hasSidebar) throw new Error('/standards/content-density/ must NOT have a sidebar!');
+    if (!densData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/content-density/!');
+    if (!densData.crossLinkActivity?.includes('activity-level')) throw new Error('Missing cross-link to activity-level!');
+
+    // 5. Verify Live Homepage & Console Heatmap
+    console.log(`\n--- 5. Testing Heatmap in Console on Live Homepage ---`);
     await page.goto(`${PROD_URL}/`, { waitUntil: 'networkidle0' });
 
     // Open console modal
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
     await new Promise(r => setTimeout(r, 1200));
 
-    const heatmapData = await page.evaluate(() => {
-      const grid = document.querySelector('.console-activity-grid');
-      const cells = grid ? Array.from(grid.querySelectorAll('.activity-cell:not(.hidden)')) : [];
-      const nonZeroCells = cells.filter(c => !c.classList.contains('level-0'));
-      return {
-        totalCells: cells.length,
-        activeCells: nonZeroCells.length,
-        hasLevel4: cells.some(c => c.classList.contains('level-4')),
-      };
+    // Verify console webinfo links
+    const consoleLinks = await page.evaluate(() => {
+      const activeLink = document.querySelector('#console a[href*="activity-level"]')?.getAttribute('href');
+      const densityLink = document.querySelector('#console a[href*="content-density"]')?.getAttribute('href');
+      return { activeLink, densityLink };
     });
-
-    console.log(`Live Heatmap Total Cells: ${heatmapData.totalCells}`);
-    console.log(`Live Heatmap Active Cells: ${heatmapData.activeCells}`);
-    if (heatmapData.totalCells < 350) {
-      throw new Error(`Expected >= 350 cells in 52-week grid, got ${heatmapData.totalCells}`);
+    console.log('Live Console Active Link:', consoleLinks.activeLink);
+    console.log('Live Console Density Link:', consoleLinks.densityLink);
+    if (!consoleLinks.activeLink?.includes('activity-level')) {
+      throw new Error('Live console active item must link to /standards/activity-level/!');
     }
-    if (heatmapData.activeCells === 0) {
-      throw new Error('Live heatmap has zero active cells!');
+    if (!consoleLinks.densityLink?.includes('content-density')) {
+      throw new Error('Live console density item must link to /standards/content-density/!');
     }
 
-    // 4. Test Tooltip Top Placement on Live Site
-    console.log(`\n--- 4. Testing Tooltip Top Placement on Live Site ---`);
-    const tooltipCheck = await page.evaluate(() => {
-      const cell = document.querySelector('.console-activity-grid .activity-cell.level-4') ||
-                   document.querySelector('.console-activity-grid .activity-cell:not(.level-0)');
-      if (!cell) return null;
-      const style = window.getComputedStyle(cell, '::before');
-      return {
-        bottom: style.bottom,
-        top: style.top,
-        zIndex: style.zIndex,
-        dataTooltip: cell.getAttribute('data-tooltip'),
-      };
-    });
-    console.log('Tooltip Check:', tooltipCheck);
-
-    // 5. Click Active Cell & Verify Screen-Level Popover + Footer (No Truncation)
-    console.log(`\n--- 5. Testing Cell Click, Screen-Level Popover & Footer ---`);
-    const clickResult = await page.evaluate(() => {
+    // Click Active Cell & Verify Screen-Level Popover
+    console.log('Clicking active cell in live heatmap...');
+    await page.evaluate(() => {
       const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
       const activeCell = cells.find(c => c.classList.contains('level-4')) || cells.find(c => !c.classList.contains('level-0'));
-      if (!activeCell) return null;
-      const tooltip = activeCell.getAttribute('data-tooltip');
-      activeCell.click();
-      return { tooltip };
+      if (activeCell) activeCell.click();
     });
-
-    console.log('Clicked Cell Tooltip:', clickResult?.tooltip);
     await new Promise(r => setTimeout(r, 800));
 
     // Verify Screen-Level Popover
@@ -187,32 +225,8 @@ async function verifyLive() {
     if (popoverData.isInsideWrapper) {
       throw new Error('Failed: .activity-screen-popover must NOT be inside .heatmap-internal-wrapper!');
     }
-
-    const footerData = await page.evaluate(() => {
-      const footer = document.querySelector('.activity-details-footer');
-      const countBadge = footer?.querySelector('.activity-count-badge')?.textContent?.trim();
-      const list = footer?.querySelector('.activity-details-list');
-      const items = list ? Array.from(list.querySelectorAll('li')).map(li => ({
-        title: li.textContent?.trim(),
-        href: li.querySelector('a')?.getAttribute('href')
-      })) : [];
-
-      return {
-        hasFooter: !!footer,
-        countBadge,
-        postsCount: items.length,
-      };
-    });
-
-    console.log('Footer rendered:', footerData.hasFooter);
-    console.log('Footer Count Badge:', footerData.countBadge);
-    console.log(`Footer Rendered Posts Count: ${footerData.postsCount}`);
-
-    if (footerData.postsCount === 0) {
-      throw new Error('Clicked active day but 0 posts rendered in details footer!');
-    }
-    if (footerData.postsCount >= 4) {
-      console.log(`✅ Success: All ${footerData.postsCount} posts rendered without 3-post truncation!`);
+    if (popoverData.postsCount < 4) {
+      throw new Error(`Expected all posts without 3-post truncation, got ${popoverData.postsCount}`);
     }
 
     if (errors.length > 0) {

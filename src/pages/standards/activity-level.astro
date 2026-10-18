@@ -1,0 +1,703 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { calculateSiteMetrics } from '../../lib/site-metrics.ts';
+import { createSidebarData } from '../../lib/theme.ts';
+import { standardsConfig, matchActivityTier } from '../../config/standards.ts';
+
+const allPosts = await getCollection('posts');
+const metrics = calculateSiteMetrics(allPosts);
+const sidebarData = createSidebarData(allPosts);
+
+const currentTier = matchActivityTier(metrics.recentPostCount30d);
+---
+
+<BlogLayout 
+  title="站长活跃等级分级与评估规范 (EES-002) - EpoCanvas Standards" 
+  description="基于滚动时间窗口发布频度、心跳持续度与防刷去重机制的站长活跃度物理精算模型与分级规范。"
+  showAside={false}
+  pageType="standards"
+  sidebarData={sidebarData}
+>
+  <div class="standards-doc-container">
+    <!-- 规范文档元信息头部 (RFC / Technical Spec Header) -->
+    <header class="standards-doc-header">
+      <div class="standards-doc-header__badge-row">
+        <span class="standards-spec-badge">EES-2026.4 / Sub-Spec</span>
+        <span class="standards-spec-status">● 生产环境持续生效</span>
+        <span class="standards-spec-code">SPEC-ID: EES-002 (Activity Level)</span>
+      </div>
+      <h1 class="standards-doc-header__title">系统工程标准：站长活跃等级分级与评估规范</h1>
+      <p class="standards-doc-header__lede">
+        本规范（EES-002）是 EpoCanvas 工程标准体系的重要支柱，专门定义站长与内容维护团队的发布活跃度度量准则。
+        杜绝“伪活跃”与商业化“日更水文”，以滚动 30 天为时间窗口，客观映射技术沉淀与系统维护节奏。
+      </p>
+
+      <div class="standards-doc-meta-grid">
+        <div class="meta-item">
+          <span class="meta-item__k">规范协议标准</span>
+          <strong class="meta-item__v">EES-002 / v2.6.0</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">当前实时判定</span>
+          <strong class="meta-item__v" style={{ color: currentTier.badgeColor }}>
+            {currentTier.level} {currentTier.title} ({currentTier.status})
+          </strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">精算时间窗口</span>
+          <strong class="meta-item__v">Rolling 30 Days (滑动 30 天)</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">上级标准总纲</span>
+          <strong class="meta-item__v"><a href="/standards/">EES-001 工程标准总纲</a></strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- 文档快速导航条 (Document Navigation Anchors) -->
+    <nav class="standards-doc-nav" aria-label="活跃等级规范目录导航">
+      <a href="#section-assessment" class="doc-nav-pill">§ 1. 运行态实时判定</a>
+      <a href="#section-algorithm" class="doc-nav-pill">§ 2. 评定算法与数学模型</a>
+      <a href="#section-tiers" class="doc-nav-pill">§ 3. 五级阶梯完整对照表</a>
+      <a href="#section-cadence" class="doc-nav-pill">§ 4. 创作节奏与心跳衰减</a>
+      <a href="#section-config" class="doc-nav-pill">§ 5. 管理员自定义配置指南</a>
+      <a href="#section-related" class="doc-nav-pill">§ 6. 关联规范：内容密度</a>
+    </nav>
+
+    <!-- § 1. 运行态实时判定 -->
+    <section class="standards-doc-section" id="section-assessment">
+      <div class="section-title-wrap">
+        <div class="section-num">1.0</div>
+        <div>
+          <h2 class="standards-section-title">运行态实时判定 (Live Assessment Dashboard)</h2>
+          <p class="standards-section-desc">当前站点在构建时完成的权威物理精算快照，与边缘 API 严格保持镜像同步。</p>
+        </div>
+      </div>
+
+      <div class="card-webinfo-grid standards-webinfo-grid">
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>当前活跃等级</span>
+          </div>
+          <strong class="highlight-val" style={{ color: currentTier.badgeColor }}>
+            {currentTier.level} ({currentTier.title})
+          </strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>近 30 天发布篇数</span>
+          </div>
+          <strong>{metrics.recentPostCount30d} 篇</strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>全站安全运行</span>
+          </div>
+          <strong>{metrics.uptimeDays} 天</strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>下级晋升里程碑</span>
+          </div>
+          <strong style="font-size: 13px !important;">{metrics.standards.activeLevel.nextMilestone}</strong>
+        </div>
+      </div>
+
+      <!-- 进度条提示 -->
+      <div class="tier-progress-card">
+        <div class="tier-progress-card__header">
+          <span class="tier-progress-label">活跃度指标进展 (Current Tier Progress)</span>
+          <span class="tier-progress-value">{metrics.standards.activeLevel.progressPercent}%</span>
+        </div>
+        <div class="tier-progress-bar">
+          <div class="tier-progress-fill" style={`width: ${metrics.standards.activeLevel.progressPercent}%; background: ${currentTier.badgeColor};`}></div>
+        </div>
+        <p class="tier-progress-hint">
+          {metrics.standards.activeLevel.nextMilestone}。数据严格基于近 30 天公开 Markdown 正文时间戳计算。
+        </p>
+      </div>
+    </section>
+
+    <!-- § 2. 评定算法与数学模型 -->
+    <section class="standards-doc-section" id="section-algorithm">
+      <div class="section-title-wrap">
+        <div class="section-num">2.0</div>
+        <div>
+          <h2 class="standards-section-title">评定算法与数学模型 (Algorithm & Formula)</h2>
+          <p class="standards-section-desc">客观严谨的算法设计，杜绝日更疲劳，杜绝跨月数据断崖。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <h3 class="standards-card__title">2.1 为什么采用滚动 30 天窗口 (Rolling 30-Day Window)？</h3>
+        <p>
+          传统博客若按“自然月”统计（如 1 号重置为 0），会导致每月月初所有站点均跌入“休眠状态”，严重脱离真实创作节奏。
+          EES-002 规范强制采用<strong>时间滑动窗口</strong>：
+        </p>
+        <div class="formula-box">
+          <code>Window(t) = [t - 30 days, t]</code><br />
+          <code>Score = Count(publicPosts ∈ Window(t))</code>
+        </div>
+        <p>
+          任意时刻请求时，系统仅审查当前时间点往前推算严格 30 天内（720 小时）发布的有效内容。
+        </p>
+
+        <h3 class="standards-card__title" style="margin-top: 24px;">2.2 防刷与去重过滤机制</h3>
+        <ul class="standards-list">
+          <li><strong>草稿与隐藏文章过滤</strong>：所有 <code>draft: true</code> 或被标记为隐藏的实验性条目严格排除；</li>
+          <li><strong>多语言去重 (Canonical Slug Deduplication)</strong>：同一篇技术文章的英文、繁体等多语言版本归一化到唯一规范键，不重复累计发文量，严禁通过翻译制造虚假繁荣；</li>
+          <li><strong>更新与初次发布权衡</strong>：热力图虽记录更新时间，但<strong>活跃等级以首次正式公开日期（pubDate）为核心依据</strong>，杜绝反复修改错别字伪造更新频次。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- § 3. 五级阶梯完整对照表 -->
+    <section class="standards-doc-section" id="section-tiers">
+      <div class="section-title-wrap">
+        <div class="section-num">3.0</div>
+        <div>
+          <h2 class="standards-section-title">五级阶梯完整对照表 (Tiers Specification)</h2>
+          <p class="standards-section-desc">合理梯度划分：既不过于苛刻（非商业日更媒体），也不过低失效。</p>
+        </div>
+      </div>
+
+      <div class="standards-table-wrapper">
+        <table class="standards-table">
+          <thead>
+            <tr>
+              <th>等级代号</th>
+              <th>阶梯称号</th>
+              <th>近30天发文门槛</th>
+              <th>建议发布节奏</th>
+              <th>阶梯释义与心智状态</th>
+              <th>达标状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            {standardsConfig.activityLevels.map((tier) => {
+              const isCurrent = tier.level === currentTier.level;
+              return (
+                <tr class={isCurrent ? 'is-current-tier' : ''}>
+                  <td>
+                    <span class="tier-badge" style={{ borderColor: tier.badgeColor, color: tier.badgeColor }}>
+                      {tier.badge}
+                    </span>
+                  </td>
+                  <td><strong>{tier.title}</strong></td>
+                  <td>
+                    <code>{tier.minPosts}{tier.maxPosts !== undefined ? ` ~ ${tier.maxPosts}` : '+'} 篇</code>
+                  </td>
+                  <td>{tier.paceGuide}</td>
+                  <td>{tier.description}</td>
+                  <td>
+                    {isCurrent ? (
+                      <span class="current-tag" style={{ background: tier.badgeColor }}>★ 当前达标</span>
+                    ) : (
+                      <span class="tier-status-pill">未达标</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- § 4. 创作节奏与心跳衰减 -->
+    <section class="standards-doc-section" id="section-cadence">
+      <div class="section-title-wrap">
+        <div class="section-num">4.0</div>
+        <div>
+          <h2 class="standards-section-title">创作节奏与心跳衰减 (Cadence & Anti-Burnout)</h2>
+          <p class="standards-section-desc">平衡长期可持续性与内容价值的工程哲学。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <div class="standards-callout info">
+          <strong>💡 核心哲学：技术沉淀需要呼吸周期</strong>
+          <p>
+            技术写作不同于快讯推文，深度文章需要前期调研、代码验证与长文打磨。
+            Lv.2（每周 1 篇）与 Lv.3（每周 1~2 篇）被定义为个人站长的黄金舒适区。
+            严禁为了追求 Lv.4 而拆分水文，损害站点的内容密度（参见 EES-003）。
+          </p>
+        </div>
+
+        <h3 class="standards-card__title" style="margin-top: 20px;">心跳衰减机制 (Inactivity Decay)</h3>
+        <p>
+          若站长连续超过 30 天未发布新内容，滚动窗口内的篇数将自然衰减至 0，系统将自动降至 <strong>Lv.0 维护休眠</strong>。
+          这并非“惩罚”，而是真实客观反映系统的静态维护状态，向访客传达最真实的工程脉络。
+        </p>
+      </div>
+    </section>
+
+    <!-- § 5. 管理员自定义配置指南 -->
+    <section class="standards-doc-section" id="section-config">
+      <div class="section-title-wrap">
+        <div class="section-num">5.0</div>
+        <div>
+          <h2 class="standards-section-title">管理员自定义配置指南 (Configuration Guide)</h2>
+          <p class="standards-section-desc">默认规则统一，但允许各站站长在配置文件中随心定制。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <p>
+          本站所有分级阶梯与判定阈值均完全剥离至独立配置文件中。管理员只需修改 <code>src/config/standards.ts</code> 中的 <code>activityLevels</code> 数组，即可重新标定等级：
+        </p>
+        <pre class="code-block-preview"><code>// src/config/standards.ts
+export const standardsConfig = &#123;
+  activityLevels: [
+    &#123;
+      status: 'Status 4',
+      level: 'Lv.4',
+      badge: 'Lv.4 Ultra',
+      title: '极客狂热',
+      minPosts: 9, // 自定义阈值
+      description: '近 30 天发文 >= 9 篇',
+      badgeColor: '#8e44ad',
+    &#125;,
+    // ... 可自由增减或修改阶梯
+  ],
+&#125;;</code></pre>
+        <p style="margin-top: 12px; font-size: 13px; color: var(--font-color-sub);">
+          修改后，下次运行 <code>npm run build</code> 或 <code>npm run console:sync</code>，静态页面与边缘 API 将立即同步适配最新标准。
+        </p>
+      </div>
+    </section>
+
+    <!-- § 6. 关联规范：内容密度 -->
+    <section class="standards-doc-section" id="section-related">
+      <div class="section-title-wrap">
+        <div class="section-num">6.0</div>
+        <div>
+          <h2 class="standards-section-title">关联规范与跳转 (Related Specifications)</h2>
+          <p class="standards-section-desc">活跃度必须与内容密度双向协同，避免单向失衡。</p>
+        </div>
+      </div>
+
+      <div class="cross-spec-nav-grid">
+        <a href="/standards/content-density/" class="cross-spec-card">
+          <div class="cross-spec-card__badge">EES-003</div>
+          <div class="cross-spec-card__title">全站内容密度分级与度量规范 →</div>
+          <p class="cross-spec-card__desc">
+            了解本站如何精算平均单篇字数，杜绝灌水，倡导系统性与万字长文沉淀。
+          </p>
+        </a>
+
+        <a href="/standards/" class="cross-spec-card">
+          <div class="cross-spec-card__badge">EES-001</div>
+          <div class="cross-spec-card__title">返回系统工程标准总纲 (Portal Hub) →</div>
+          <p class="cross-spec-card__desc">
+            查阅 8 项核心仪表盘、架构 SLA 指标清单、徽章体系与完整数据字典 API 契约。
+          </p>
+        </a>
+      </div>
+    </section>
+  </div>
+</BlogLayout>
+
+<style>
+  .standards-doc-container {
+    max-width: 1060px;
+    margin: 32px auto 64px auto;
+    padding: 0 20px;
+    color: var(--font-color);
+  }
+
+  .standards-doc-header {
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--theme-border-light);
+  }
+
+  .standards-doc-header__badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .standards-spec-badge {
+    background: var(--theme-main);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-mono);
+  }
+
+  .standards-spec-status {
+    background: rgba(43, 164, 113, 0.12);
+    color: #2ba471;
+    border: 1px solid rgba(43, 164, 113, 0.3);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .standards-spec-code {
+    background: var(--theme-card-bg);
+    color: var(--font-color-sub);
+    border: 1px solid var(--theme-border-light);
+    font-size: 11px;
+    font-family: var(--font-family-mono);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .standards-doc-header__title {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin: 0 0 12px 0;
+    color: var(--font-color);
+  }
+
+  .standards-doc-header__lede {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--font-color-sub);
+    margin: 0 0 24px 0;
+  }
+
+  .standards-doc-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-item__k {
+    font-size: 11px;
+    color: var(--font-color-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meta-item__v {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--font-color);
+  }
+
+  .meta-item__v a {
+    color: var(--theme-main);
+    text-decoration: underline;
+  }
+
+  .standards-doc-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+    padding: 12px;
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    position: sticky;
+    top: 68px;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+  }
+
+  .doc-nav-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--font-color-sub);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .doc-nav-pill:hover {
+    color: #fff;
+    background: var(--theme-main);
+  }
+
+  .standards-doc-section {
+    margin-bottom: 48px;
+    scroll-margin-top: 140px;
+  }
+
+  .section-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: var(--font-family-mono);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--theme-main);
+    background: rgba(66, 90, 239, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+    margin-top: 4px;
+  }
+
+  .standards-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--font-color);
+  }
+
+  .standards-section-desc {
+    font-size: 13px;
+    color: var(--font-color-sub);
+    margin: 0;
+  }
+
+  .standards-webinfo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .standards-webinfo-grid .webinfo-item {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 80px;
+  }
+
+  .standards-webinfo-grid .webinfo-item-label {
+    font-size: 12px;
+    color: var(--font-color-sub);
+  }
+
+  .standards-webinfo-grid .webinfo-item strong {
+    font-size: 18px !important;
+    font-weight: 800;
+    font-family: var(--font-family-mono);
+    color: var(--font-color);
+  }
+
+  .tier-progress-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 18px;
+  }
+
+  .tier-progress-card__header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .tier-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .tier-progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .tier-progress-hint {
+    font-size: 12px;
+    color: var(--font-color-sub);
+    margin: 0;
+  }
+
+  .standards-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 24px;
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .standards-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    color: var(--font-color);
+  }
+
+  .formula-box {
+    background: rgba(0, 0, 0, 0.04);
+    border-left: 3px solid var(--theme-main);
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 14px 0;
+    font-family: var(--font-family-mono);
+    font-size: 13px;
+  }
+
+  .standards-list {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+  }
+
+  .standards-list li {
+    margin-bottom: 8px;
+  }
+
+  .standards-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    background: var(--theme-card-bg);
+  }
+
+  .standards-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .standards-table th {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--font-color-sub);
+    border-bottom: 1px solid var(--theme-border-light);
+  }
+
+  .standards-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--theme-border-light);
+    color: var(--font-color);
+  }
+
+  .standards-table tr.is-current-tier {
+    background: rgba(66, 90, 239, 0.07);
+  }
+
+  .standards-table tr.is-current-tier td {
+    font-weight: 600;
+  }
+
+  .tier-badge {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+  }
+
+  .current-tag {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .tier-status-pill {
+    font-size: 11px;
+    color: var(--font-color-sub);
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .standards-callout {
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+
+  .standards-callout.info {
+    background: rgba(66, 90, 239, 0.08);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+  }
+
+  .code-block-preview {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 14px;
+    border-radius: 6px;
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 12px 0 0 0;
+  }
+
+  .cross-spec-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .cross-spec-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cross-spec-card:hover {
+    border-color: var(--theme-main);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.12);
+  }
+
+  .cross-spec-card__badge {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--theme-main);
+  }
+
+  .cross-spec-card__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--font-color);
+  }
+
+  .cross-spec-card__desc {
+    font-size: 12px;
+    color: var(--font-color-sub);
+    margin: 0;
+    line-height: 1.5;
+  }
+</style>

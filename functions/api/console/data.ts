@@ -45,6 +45,8 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
 
     if (baseData && baseData.stats) {
       baseData.stats.uptimeDays = dynamicUptimeDays;
+      baseData.stats.activeHref = '/standards/activity-level/';
+      baseData.stats.densityHref = '/standards/content-density/';
     }
 
     // 动态严格按当前请求日期生成 52 周日历

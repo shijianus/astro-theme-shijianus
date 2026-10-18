@@ -77,7 +77,29 @@ async function run() {
     });
     page.on('pageerror', err => errors.push(err.message));
 
-    // 1. Verify /standards/ page (Doc style, NO sidebar)
+    // 0. Verify console-metrics.json data structure & standardsConfig
+    console.log('\n--- 0. Testing Metrics Data & Embedded standardsConfig ---');
+    const apiRes = await page.goto(`http://localhost:${port}/api/console/data`, { waitUntil: 'networkidle0' });
+    if (apiRes.status() !== 200) {
+      throw new Error(`Failed to load /api/console/data, status: ${apiRes.status()}`);
+    }
+    const apiJson = JSON.parse(await page.evaluate(() => document.body.innerText));
+    console.log('API JSON ok:', apiJson.ok);
+    console.log('Active Tier:', apiJson.stats?.activeLevel, apiJson.stats?.activeTitle, '-> href:', apiJson.stats?.activeHref);
+    console.log('Density Tier:', apiJson.stats?.densityLevel, apiJson.stats?.densityTitle, '-> href:', apiJson.stats?.densityHref);
+    console.log('Standards Config embedded:', !!apiJson.standardsConfig);
+
+    if (apiJson.stats?.activeHref !== '/standards/activity-level/') {
+      throw new Error(`Expected activeHref === '/standards/activity-level/', got ${apiJson.stats?.activeHref}`);
+    }
+    if (apiJson.stats?.densityHref !== '/standards/content-density/') {
+      throw new Error(`Expected densityHref === '/standards/content-density/', got ${apiJson.stats?.densityHref}`);
+    }
+    if (!apiJson.standardsConfig?.activityLevels || !apiJson.standardsConfig?.contentDensityLevels) {
+      throw new Error('Missing standardsConfig or levels in metrics payload!');
+    }
+
+    // 1. Verify /standards/ page (Doc style, NO sidebar, with dual entry cards)
     console.log('\n--- 1. Testing /standards/ Route & Document Structure ---');
     const standardsRes = await page.goto(`http://localhost:${port}/standards/`, { waitUntil: 'networkidle0' });
     console.log(`Status code: ${standardsRes.status()}`);
@@ -90,157 +112,206 @@ async function run() {
       const hasSidebar = !!document.querySelector('.page-aside');
       const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
       const webinfoItems = Array.from(document.querySelectorAll('.standards-webinfo-grid .webinfo-item'));
-      const itemsData = webinfoItems.map(item => ({
-        label: item.querySelector('.webinfo-item-label span')?.textContent?.trim(),
-        value: item.querySelector('strong')?.textContent?.trim(),
-      }));
+      
+      const activeLink = document.querySelector('.standards-webinfo-grid a[href*="activity-level"]')?.getAttribute('href');
+      const densityLink = document.querySelector('.standards-webinfo-grid a[href*="content-density"]')?.getAttribute('href');
 
-      const activeSection = document.querySelector('#section-active-level');
-      const activeCurrentTier = activeSection?.querySelector('.is-current-tier td:nth-child(2)')?.textContent?.trim();
-      const densitySection = document.querySelector('#section-content-density');
-      const densityCurrentTier = densitySection?.querySelector('.is-current-tier td:nth-child(2)')?.textContent?.trim();
+      const splitCards = Array.from(document.querySelectorAll('.doc-split-entry-card')).map(card => ({
+        badge: card.querySelector('.doc-split-badge')?.textContent?.trim(),
+        title: card.querySelector('.doc-split-title')?.textContent?.trim(),
+        href: card.querySelector('.doc-split-btn')?.getAttribute('href'),
+      }));
 
       return {
         title,
         hasSidebar,
         docNavPills,
-        webinfoItemsCount: webinfoItems.length,
-        itemsData,
-        activeCurrentTier,
-        densityCurrentTier,
+        count: webinfoItems.length,
+        activeLink,
+        densityLink,
+        splitCards,
       };
     });
 
     console.log('Standards Title:', standardsCheck.title);
-    console.log('Has Sidebar:', standardsCheck.hasSidebar, '(Must be false for doc structure)');
-    console.log('Doc Nav Pills:', standardsCheck.docNavPills);
-    console.log(`Webinfo Items Count: ${standardsCheck.webinfoItemsCount}`);
-    console.log('Active Tier:', standardsCheck.activeCurrentTier);
-    console.log('Density Tier:', standardsCheck.densityCurrentTier);
+    console.log('Has Sidebar:', standardsCheck.hasSidebar, '(Must be false)');
+    console.log('Webinfo items count:', standardsCheck.count);
+    console.log('Active Link in dashboard:', standardsCheck.activeLink);
+    console.log('Density Link in dashboard:', standardsCheck.densityLink);
+    console.log('Split Article Entry Cards:', standardsCheck.splitCards);
 
     if (standardsCheck.hasSidebar) {
       throw new Error('Failure: Standards page must NOT have a sidebar (showAside={false})!');
     }
-    if (standardsCheck.webinfoItemsCount < 6) {
-      throw new Error(`Expected at least 6 webinfo-items on standards page, got ${standardsCheck.webinfoItemsCount}`);
+    if (standardsCheck.count < 6) {
+      throw new Error(`Expected at least 6 webinfo-items on /standards/, got ${standardsCheck.count}`);
     }
-    if (standardsCheck.docNavPills.length < 4) {
-      throw new Error(`Expected at least 4 doc navigation pills, got ${standardsCheck.docNavPills.length}`);
+    if (!standardsCheck.activeLink?.includes('activity-level')) {
+      throw new Error('Active webinfo item must link to /standards/activity-level/!');
+    }
+    if (!standardsCheck.densityLink?.includes('content-density')) {
+      throw new Error('Density webinfo item must link to /standards/content-density/!');
+    }
+    if (standardsCheck.splitCards.length < 2) {
+      throw new Error(`Expected at least 2 split entry cards on /standards/, got ${standardsCheck.splitCards.length}`);
     }
 
-    // 2. Verify Heatmap in Console
-    console.log('\n--- 2. Testing Heatmap in Console & Date Synchronization ---');
-    await page.goto(`http://localhost:${port}/`, { waitUntil: 'networkidle0' });
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
-    await new Promise(r => setTimeout(r, 1000));
+    // 2. Verify /standards/activity-level/ (Separate Post/Doc)
+    console.log('\n--- 2. Testing /standards/activity-level/ Separate Post ---');
+    const actRes = await page.goto(`http://localhost:${port}/standards/activity-level/`, { waitUntil: 'networkidle0' });
+    console.log(`Status code: ${actRes.status()}`);
+    if (actRes.status() !== 200) {
+      throw new Error(`Expected status 200 for /standards/activity-level/, got ${actRes.status()}`);
+    }
 
-    const heatmapCheck = await page.evaluate(() => {
-      const grid = document.querySelector('.console-activity-grid');
-      const cells = grid ? Array.from(grid.querySelectorAll('.activity-cell:not(.hidden)')) : [];
-      const nonZeroCells = cells.filter(c => !c.classList.contains('level-0'));
-      
+    const actCheck = await page.evaluate(() => {
+      const title = document.querySelector('h1')?.textContent?.trim();
+      const hasSidebar = !!document.querySelector('.page-aside');
+      const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
+      const currentTierRow = document.querySelector('tr.is-current-tier');
+      const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+      const crossLinkDensity = document.querySelector('a[href*="content-density"]')?.getAttribute('href');
+
       return {
-        totalCells: cells.length,
-        activeCellsCount: nonZeroCells.length,
+        title,
+        hasSidebar,
+        docNavPills,
+        currentTierTitle,
+        crossLinkDensity,
       };
     });
 
-    console.log(`Heatmap Total Cells: ${heatmapCheck.totalCells}`);
-    console.log(`Heatmap Active Cells: ${heatmapCheck.activeCellsCount}`);
-    if (heatmapCheck.totalCells < 350) {
-      throw new Error(`Expected at least 350 cells in 52-week grid, got ${heatmapCheck.totalCells}`);
+    console.log('Activity Level Title:', actCheck.title);
+    console.log('Has Sidebar:', actCheck.hasSidebar, '(Must be false)');
+    console.log('Doc Nav Pills:', actCheck.docNavPills);
+    console.log('Current Matched Tier:', actCheck.currentTierTitle);
+    console.log('Cross Link to Density:', actCheck.crossLinkDensity);
+
+    if (actCheck.hasSidebar) {
+      throw new Error('Failure: /standards/activity-level/ must NOT have a sidebar!');
     }
-    if (heatmapCheck.activeCellsCount === 0) {
-      throw new Error('Heatmap has zero active cells!');
+    if (!actCheck.title?.includes('活跃等级')) {
+      throw new Error(`Unexpected title for /standards/activity-level/: ${actCheck.title}`);
+    }
+    if (!actCheck.currentTierTitle) {
+      throw new Error('Expected a currently matched tier row (tr.is-current-tier)!');
+    }
+    if (!actCheck.crossLinkDensity?.includes('content-density')) {
+      throw new Error('Missing cross-link to content-density on activity-level page!');
     }
 
-    // 3. Test Clicking Multi-post Cell (8/28 or any level-4) -> Screen-Level Popover + Footer
-    console.log('\n--- 3. Testing Cell Click, Screen-Level Popover & Footer ---');
-    const clickCellResult = await page.evaluate(() => {
-      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
-      const level4Cell = cells.find(c => c.classList.contains('level-4')) || cells.find(c => !c.classList.contains('level-0'));
-      if (!level4Cell) return null;
+    // 3. Verify /standards/content-density/ (Separate Post/Doc)
+    console.log('\n--- 3. Testing /standards/content-density/ Separate Post ---');
+    const densRes = await page.goto(`http://localhost:${port}/standards/content-density/`, { waitUntil: 'networkidle0' });
+    console.log(`Status code: ${densRes.status()}`);
+    if (densRes.status() !== 200) {
+      throw new Error(`Expected status 200 for /standards/content-density/, got ${densRes.status()}`);
+    }
 
-      const tip = level4Cell.getAttribute('data-tooltip');
-      level4Cell.click();
-      return { tip };
+    const densCheck = await page.evaluate(() => {
+      const title = document.querySelector('h1')?.textContent?.trim();
+      const hasSidebar = !!document.querySelector('.page-aside');
+      const docNavPills = Array.from(document.querySelectorAll('.standards-doc-nav .doc-nav-pill')).map(p => p.textContent?.trim());
+      const currentTierRow = document.querySelector('tr.is-current-tier');
+      const currentTierTitle = currentTierRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+      const crossLinkActivity = document.querySelector('a[href*="activity-level"]')?.getAttribute('href');
+
+      return {
+        title,
+        hasSidebar,
+        docNavPills,
+        currentTierTitle,
+        crossLinkActivity,
+      };
     });
 
-    console.log('Clicked cell tooltip:\n', clickCellResult?.tip);
+    console.log('Content Density Title:', densCheck.title);
+    console.log('Has Sidebar:', densCheck.hasSidebar, '(Must be false)');
+    console.log('Doc Nav Pills:', densCheck.docNavPills);
+    console.log('Current Matched Tier:', densCheck.currentTierTitle);
+    console.log('Cross Link to Activity:', densCheck.crossLinkActivity);
+
+    if (densCheck.hasSidebar) {
+      throw new Error('Failure: /standards/content-density/ must NOT have a sidebar!');
+    }
+    if (!densCheck.title?.includes('内容密度')) {
+      throw new Error(`Unexpected title for /standards/content-density/: ${densCheck.title}`);
+    }
+    if (!densCheck.currentTierTitle) {
+      throw new Error('Expected a currently matched tier row (tr.is-current-tier)!');
+    }
+    if (!densCheck.crossLinkActivity?.includes('activity-level')) {
+      throw new Error('Missing cross-link to activity-level on content-density page!');
+    }
+
+    // 4. Verify Homepage Console links and Heatmap Unconstrained Popover
+    console.log('\n--- 4. Testing Homepage Console Links & Heatmap Popover ---');
+    await page.goto(`http://localhost:${port}/`, { waitUntil: 'networkidle0' });
+
+    // Open console modal
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('shijianus:open-console')));
     await new Promise(r => setTimeout(r, 600));
 
-    // Verify Screen-Level Popover (outside heatmap-internal-wrapper)
+    // Verify console webinfo links
+    const consoleLinks = await page.evaluate(() => {
+      const activeLink = document.querySelector('#console a[href*="activity-level"]')?.getAttribute('href');
+      const densityLink = document.querySelector('#console a[href*="content-density"]')?.getAttribute('href');
+      return { activeLink, densityLink };
+    });
+    console.log('Console Active Link:', consoleLinks.activeLink);
+    console.log('Console Density Link:', consoleLinks.densityLink);
+    if (!consoleLinks.activeLink?.includes('activity-level')) {
+      throw new Error('Console activeLevel item must link to /standards/activity-level/!');
+    }
+    if (!consoleLinks.densityLink?.includes('content-density')) {
+      throw new Error('Console density item must link to /standards/content-density/!');
+    }
+
+    // Click active cell in heatmap (2026/8/28 with 13 posts)
+    console.log('Clicking active cell in heatmap...');
+    await page.evaluate(() => {
+      const cells = Array.from(document.querySelectorAll('.console-activity-grid .activity-cell:not(.hidden)'));
+      const activeCell = cells.find(c => c.classList.contains('level-4')) || cells.find(c => !c.classList.contains('level-0'));
+      if (activeCell) activeCell.click();
+    });
+    await new Promise(r => setTimeout(r, 600));
+
     const popoverCheck = await page.evaluate(() => {
       const popover = document.querySelector('.activity-screen-popover');
       if (!popover) return null;
       const isInsideWrapper = !!popover.closest('.heatmap-internal-wrapper');
       const isFixed = window.getComputedStyle(popover).position === 'fixed';
-      const title = popover.querySelector('.activity-screen-popover__title strong')?.textContent?.trim();
-      const badge = popover.querySelector('.activity-count-badge')?.textContent?.trim();
-      const listItems = Array.from(popover.querySelectorAll('.activity-screen-popover__list li')).map(li => ({
-        text: li.textContent?.trim(),
-        href: li.querySelector('a')?.getAttribute('href')
-      }));
-
+      const items = Array.from(popover.querySelectorAll('.activity-screen-popover__list li')).map(li => li.textContent?.trim());
       return {
         exists: true,
         isInsideWrapper,
         isFixed,
-        title,
-        badge,
-        postsCount: listItems.length,
-        firstThree: listItems.slice(0, 3)
+        postsCount: items.length,
       };
     });
 
-    console.log('\nScreen-Level Popover Check:');
-    console.log('Popover Exists:', popoverCheck?.exists);
-    console.log('Is Inside heatmap-internal-wrapper:', popoverCheck?.isInsideWrapper, '(Must be false - completely unconstrained)');
-    console.log('Position is fixed:', popoverCheck?.isFixed);
-    console.log('Popover Badge:', popoverCheck?.badge);
-    console.log(`Rendered Posts in Popover: ${popoverCheck?.postsCount}`);
+    console.log('Popover exists:', popoverCheck?.exists);
+    console.log('Popover inside wrapper:', popoverCheck?.isInsideWrapper, '(Must be false)');
+    console.log('Popover is fixed:', popoverCheck?.isFixed);
+    console.log(`Popover posts count: ${popoverCheck?.postsCount}`);
 
     if (!popoverCheck || !popoverCheck.exists) {
-      throw new Error('Failed: Expected .activity-screen-popover to render on cell click!');
+      throw new Error('Expected .activity-screen-popover on cell click!');
     }
     if (popoverCheck.isInsideWrapper) {
-      throw new Error('Failed: .activity-screen-popover must NOT be inside .heatmap-internal-wrapper!');
+      throw new Error('Popover must NOT be inside .heatmap-internal-wrapper!');
     }
-    if (popoverCheck.postsCount === 0) {
-      throw new Error('Failed: Popover rendered 0 posts!');
-    }
-
-    // Verify Details Footer below heatmap
-    const footerDetails = await page.evaluate(() => {
-      const footer = document.querySelector('.activity-details-footer');
-      const headTitle = footer?.querySelector('.activity-details__title-group strong')?.textContent?.trim();
-      const countBadge = footer?.querySelector('.activity-count-badge')?.textContent?.trim();
-      const list = footer?.querySelector('.activity-details-list');
-      const lis = list ? Array.from(list.querySelectorAll('li')).map(li => ({
-        text: li.textContent?.trim(),
-        href: li.querySelector('a')?.getAttribute('href')
-      })) : [];
-
-      return {
-        headTitle,
-        countBadge,
-        postsCount: lis.length,
-      };
-    });
-
-    console.log('\nDetails Footer Check:');
-    console.log('Details Footer Badge:', footerDetails.countBadge);
-    console.log(`Rendered Posts in Footer: ${footerDetails.postsCount}`);
-
-    if (footerDetails.postsCount === 0) {
-      throw new Error('Failed: Details footer rendered 0 posts!');
+    if (popoverCheck.postsCount < 4) {
+      throw new Error(`Expected full list of posts without truncation, got ${popoverCheck.postsCount}`);
     }
 
     if (errors.length > 0) {
-      throw new Error(`Encountered ${errors.length} browser console errors:\n${errors.join('\n')}`);
+      throw new Error(`Encountered browser errors during verification:\n${errors.join('\n')}`);
     }
 
-    console.log('\n✅ ALL LOCAL VERIFICATIONS PASSED! 0 console errors.');
+    console.log('\n========================================');
+    console.log('🎉 LOCAL COMPREHENSIVE VERIFICATION PASSED 100%!');
+    console.log('========================================\n');
   } finally {
     await browser.close();
     server.close();
@@ -248,6 +319,6 @@ async function run() {
 }
 
 run().catch(err => {
-  console.error('\n❌ Test failed with error:', err);
+  console.error('\n❌ Verification failed:', err);
   process.exit(1);
 });

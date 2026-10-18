@@ -1,26 +1,705 @@
 ---
+import { getCollection } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
+import { calculateSiteMetrics } from '../../lib/site-metrics.ts';
+import { createSidebarData } from '../../lib/theme.ts';
+import { standardsConfig, matchContentDensityTier } from '../../config/standards.ts';
+
+const allPosts = await getCollection('posts');
+const metrics = calculateSiteMetrics(allPosts);
+const sidebarData = createSidebarData(allPosts);
+
+const currentTier = matchContentDensityTier(metrics.avgWordsPerPost);
 ---
 
-<BlogLayout showAside={false} title="Content Density Specifications">
-  <article class="theme-card article-body post-content" style="max-width: 1400px; width: 95vw; margin: 40px auto; padding: 40px;">
-    <h1>Content Density Specifications</h1>
-    
-    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-        <thead>
-          <tr style="border-bottom: 2px solid var(--theme-border);">
-            <th style="text-align: left; padding: 12px;">元素类型 (Element)</th>
-            <th style="text-align: left; padding: 12px;">内边距 (Padding)</th>
-            <th style="text-align: left; padding: 12px;">外边距 (Margin)</th>
-            <th style="text-align: left; padding: 12px;">字体尺寸 (Font Size)</th>
-            <th style="text-align: left; padding: 12px;">行高 (Line Height)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">标准正文 (Standard Text)</td><td style="padding: 12px;">p-4 (16px)</td><td style="padding: 12px;">m-2 (8px)</td><td style="padding: 12px;">16px</td><td style="padding: 12px;">1.6</td></tr>
-          <tr style="border-bottom: 1px solid var(--theme-border-light);"><td style="padding: 12px;">数据表格 (Data Table)</td><td style="padding: 12px;">p-2 (8px)</td><td style="padding: 12px;">m-1 (4px)</td><td style="padding: 12px;">14px</td><td style="padding: 12px;">1.4</td></tr>
-          <tr><td style="padding: 12px;">控制台/代码块 (Code Block)</td><td style="padding: 12px;">p-3 (12px)</td><td style="padding: 12px;">m-2 (8px)</td><td style="padding: 12px;">13px</td><td style="padding: 12px;">1.5</td></tr>
-        </tbody>
-    </table>
-  </article>
+<BlogLayout 
+  title="全站内容密度分级与度量规范 (EES-003) - EpoCanvas Standards" 
+  description="倡导硬核深度的技术沉淀，拒绝碎片灌水；基于全站物理文本字数、代码加权与信息密度的分级评定体系。"
+  showAside={false}
+  pageType="standards"
+  sidebarData={sidebarData}
+>
+  <div class="standards-doc-container">
+    <!-- 规范文档元信息头部 (RFC / Technical Spec Header) -->
+    <header class="standards-doc-header">
+      <div class="standards-doc-header__badge-row">
+        <span class="standards-spec-badge">EES-2026.4 / Sub-Spec</span>
+        <span class="standards-spec-status">● 生产环境持续生效</span>
+        <span class="standards-spec-code">SPEC-ID: EES-003 (Content Density)</span>
+      </div>
+      <h1 class="standards-doc-header__title">系统工程标准：全站内容密度分级与度量规范</h1>
+      <p class="standards-doc-header__lede">
+        本规范（EES-003）是 EpoCanvas 工程标准体系的核心支柱之一，专门度量技术博客的信息厚度与篇幅深度。
+        拒绝无意义灌水与碎片空洞，倡导体系化、高质量、图文代码兼备的深度硬核沉淀。
+      </p>
+
+      <div class="standards-doc-meta-grid">
+        <div class="meta-item">
+          <span class="meta-item__k">规范协议标准</span>
+          <strong class="meta-item__v">EES-003 / v2.6.0</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">当前实时判定</span>
+          <strong class="meta-item__v" style={{ color: currentTier.badgeColor }}>
+            {currentTier.level} {currentTier.title} ({currentTier.status})
+          </strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">平均单篇字数</span>
+          <strong class="meta-item__v">{metrics.avgWordsPerPost.toLocaleString()} 字/篇</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item__k">上级标准总纲</span>
+          <strong class="meta-item__v"><a href="/standards/">EES-001 工程标准总纲</a></strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- 文档快速导航条 (Document Navigation Anchors) -->
+    <nav class="standards-doc-nav" aria-label="内容密度规范目录导航">
+      <a href="#section-assessment" class="doc-nav-pill">§ 1. 运行态实时判定</a>
+      <a href="#section-algorithm" class="doc-nav-pill">§ 2. 文本分词与字数精算算法</a>
+      <a href="#section-tiers" class="doc-nav-pill">§ 3. 四级密度阶梯完整对照表</a>
+      <a href="#section-quality" class="doc-nav-pill">§ 4. 深度长文与排版质量守则</a>
+      <a href="#section-config" class="doc-nav-pill">§ 5. 管理员自定义配置指南</a>
+      <a href="#section-related" class="doc-nav-pill">§ 6. 关联规范：活跃等级</a>
+    </nav>
+
+    <!-- § 1. 运行态实时判定 -->
+    <section class="standards-doc-section" id="section-assessment">
+      <div class="section-title-wrap">
+        <div class="section-num">1.0</div>
+        <div>
+          <h2 class="standards-section-title">运行态实时判定 (Live Assessment Dashboard)</h2>
+          <p class="standards-section-desc">当前站点在构建时完成的权威物理精算快照，与边缘 API 严格保持镜像同步。</p>
+        </div>
+      </div>
+
+      <div class="card-webinfo-grid standards-webinfo-grid">
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>当前内容密度</span>
+          </div>
+          <strong class="highlight-val" style={{ color: currentTier.badgeColor }}>
+            {currentTier.level} ({currentTier.title})
+          </strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>平均单篇字数</span>
+          </div>
+          <strong>{metrics.avgWordsPerPost.toLocaleString()} 字/篇</strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>全站物理总字数</span>
+          </div>
+          <strong>{metrics.totalWords.toLocaleString()} 字</strong>
+        </div>
+
+        <div class="webinfo-item">
+          <div class="webinfo-item-label">
+            <span>下级晋升里程碑</span>
+          </div>
+          <strong style="font-size: 13px !important;">{metrics.standards.contentDensity.nextMilestone}</strong>
+        </div>
+      </div>
+
+      <!-- 进度条提示 -->
+      <div class="tier-progress-card">
+        <div class="tier-progress-card__header">
+          <span class="tier-progress-label">内容密度指标进展 (Content Density Progress)</span>
+          <span class="tier-progress-value">{metrics.standards.contentDensity.progressPercent}%</span>
+        </div>
+        <div class="tier-progress-bar">
+          <div class="tier-progress-fill" style={`width: ${metrics.standards.contentDensity.progressPercent}%; background: ${currentTier.badgeColor};`}></div>
+        </div>
+        <p class="tier-progress-hint">
+          {metrics.standards.contentDensity.nextMilestone}。数据严格基于全站 {metrics.totalPosts} 篇公开 Markdown 文章的纯文本物理统计。
+        </p>
+      </div>
+    </section>
+
+    <!-- § 2. 文本分词与字数精算算法 -->
+    <section class="standards-doc-section" id="section-algorithm">
+      <div class="section-title-wrap">
+        <div class="section-num">2.0</div>
+        <div>
+          <h2 class="standards-section-title">文本分词与字数精算算法 (Word Counting Engine)</h2>
+          <p class="standards-section-desc">剔除语法杂质，准确识别中英混合排版，得出最纯粹的技术信息量。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <h3 class="standards-card__title">2.1 纯文本清洗与规范化流水线</h3>
+        <p>
+          未经清洗的 Markdown 文件充斥着语法标记（如 <code>#</code>、<code>*</code>、<code>[]()</code>、HTML 标签等），直接统计字符会导致虚高 15%~30%。
+          EES-003 规定了严格的文本清洗管道：
+        </p>
+        <div class="formula-box">
+          <code>RawMarkdown → StripFrontmatter → StripSyntaxNoise → Tokenize(CJK + Latin) → TrueWords</code>
+        </div>
+        <ul class="standards-list">
+          <li><strong>去除 Frontmatter</strong>：剥离 YAML 头部的元数据与标签，不计入正文字数；</li>
+          <li><strong>语法标记剔除</strong>：过滤标题符号、链接 URL、图片引用及 Markdown 格式修饰符；</li>
+          <li><strong>中英混合分词模型</strong>：对中日韩（CJK）统一表意文字按纯字符计数，对英文、数字及拉丁单词按空白词切分（Word Tokens），取其紧凑长度与词元最大值，杜绝中英字数统计标准失衡。</li>
+        </ul>
+
+        <h3 class="standards-card__title" style="margin-top: 24px;">2.2 为什么以“全站平均单篇字数”作为核心基准？</h3>
+        <p>
+          总字数只能衡量“体量积累”，而无法反映“单篇深度”。如果一个站点拥有 100 篇内容，其中 99 篇是 100 字的随手速记，即便总字数达标，也无法体现专栏的扎实程度。
+          因此，EES-003 以 <strong>全站物理均值（Avg Words Per Post）</strong> 作为分级黄金指标：
+        </p>
+        <div class="formula-box">
+          <code>AvgWords = TotalCleanWords / TotalPublicPosts</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- § 3. 四级密度阶梯完整对照表 -->
+    <section class="standards-doc-section" id="section-tiers">
+      <div class="section-title-wrap">
+        <div class="section-num">3.0</div>
+        <div>
+          <h2 class="standards-section-title">四级密度阶梯完整对照表 (Tiers Specification)</h2>
+          <p class="standards-section-desc">清晰定位文章深度心智模型，帮助读者建立合理的阅读预期。</p>
+        </div>
+      </div>
+
+      <div class="standards-table-wrapper">
+        <table class="standards-table">
+          <thead>
+            <tr>
+              <th>等级代号</th>
+              <th>阶梯称号</th>
+              <th>单篇平均字数门槛</th>
+              <th>读者心智与阅读耗时</th>
+              <th>阶梯释义与推荐适用场景</th>
+              <th>达标状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            {standardsConfig.contentDensityLevels.map((tier) => {
+              const isCurrent = tier.level === currentTier.level;
+              return (
+                <tr class={isCurrent ? 'is-current-tier' : ''}>
+                  <td>
+                    <span class="tier-badge" style={{ borderColor: tier.badgeColor, color: tier.badgeColor }}>
+                      {tier.badge}
+                    </span>
+                  </td>
+                  <td><strong>{tier.title}</strong></td>
+                  <td>
+                    <code>{tier.minAvgWords.toLocaleString()}{tier.maxAvgWords !== undefined ? ` ~ ${tier.maxAvgWords.toLocaleString()}` : '+'} 字</code>
+                  </td>
+                  <td>{tier.readingExpectation}</td>
+                  <td>{tier.description}</td>
+                  <td>
+                    {isCurrent ? (
+                      <span class="current-tag" style={{ background: tier.badgeColor }}>★ 当前达标</span>
+                    ) : (
+                      <span class="tier-status-pill">未达标</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- § 4. 深度长文与排版质量守则 -->
+    <section class="standards-doc-section" id="section-quality">
+      <div class="section-title-wrap">
+        <div class="section-num">4.0</div>
+        <div>
+          <h2 class="standards-section-title">深度长文与排版质量守则 (Quality & Formatting)</h2>
+          <p class="standards-section-desc">深度的本质是结构化与清晰度，而非冗余堆砌。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <div class="standards-callout info">
+          <strong>💡 深度长文的三大支撑准则</strong>
+          <p>
+            凡单篇字数超过 3,000 字（Lv.4 梯队）的技术长文，必须配置完备的辅助阅读体系，杜绝造成读者的认知超载：
+          </p>
+        </div>
+
+        <ul class="standards-list">
+          <li><strong>目录导航（TOC）必备</strong>：长文必须具备左/右侧粘性目录（Sticky TOC），支持滚动平滑定位与当前阅读锚点高亮；</li>
+          <li><strong>视觉节奏调节</strong>：每 600~800 字正文应穿插代码块（Code Blocks）、流程图（Mermaid/Markmap）、告示框（Callouts）或图片相册，打破纯文本沉闷感；</li>
+          <li><strong>折叠手风琴（Details/Collapse）</strong>：冗长的配置清单、调试日志或补充代码段应使用折叠面板包裹，保障核心论述主线的连贯流畅。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- § 5. 管理员自定义配置指南 -->
+    <section class="standards-doc-section" id="section-config">
+      <div class="section-title-wrap">
+        <div class="section-num">5.0</div>
+        <div>
+          <h2 class="standards-section-title">管理员自定义配置指南 (Configuration Guide)</h2>
+          <p class="standards-section-desc">灵活可配，适应不同博主的创作习惯与文体风格。</p>
+        </div>
+      </div>
+
+      <div class="standards-card">
+        <p>
+          管理员可自由在 <code>src/config/standards.ts</code> 中自定义 <code>contentDensityLevels</code> 数组，以匹配个人技术写作风格（如专注于简短 Tip 备忘的博主可调低阈值，专注源码剖析的博主可进一步拉高）：
+        </p>
+        <pre class="code-block-preview"><code>// src/config/standards.ts
+export const standardsConfig = &#123;
+  contentDensityLevels: [
+    &#123;
+      status: 'Level 4 (Ultra)',
+      level: 'Lv.4',
+      badge: 'Lv.4 Ultra',
+      title: '硬核深度长文',
+      minAvgWords: 3001, // 自定义阈值
+      description: '全站平均单篇字数 > 3,000 字',
+      readingExpectation: '单篇需 15 ~ 35 分钟',
+      badgeColor: '#8e44ad',
+    &#125;,
+    // ... 可自由调整各阶梯字数界限
+  ],
+&#125;;</code></pre>
+        <p style="margin-top: 12px; font-size: 13px; color: var(--font-color-sub);">
+          修改后，本地构建或自动化同步脚本将自动基于新标准重新评定等级并嵌入全站。
+        </p>
+      </div>
+    </section>
+
+    <!-- § 6. 关联规范：活跃等级 -->
+    <section class="standards-doc-section" id="section-related">
+      <div class="section-title-wrap">
+        <div class="section-num">6.0</div>
+        <div>
+          <h2 class="standards-section-title">关联规范与跳转 (Related Specifications)</h2>
+          <p class="standards-section-desc">质量与频度相辅相成，构建完整的工程自洽体系。</p>
+        </div>
+      </div>
+
+      <div class="cross-spec-nav-grid">
+        <a href="/standards/activity-level/" class="cross-spec-card">
+          <div class="cross-spec-card__badge">EES-002</div>
+          <div class="cross-spec-card__title">查阅站长活跃等级分级与评估规范 →</div>
+          <p class="cross-spec-card__desc">
+            了解基于滑动 30 天时间窗口的心跳发布频度精算与 5 级阶梯判定模型。
+          </p>
+        </a>
+
+        <a href="/standards/" class="cross-spec-card">
+          <div class="cross-spec-card__badge">EES-001</div>
+          <div class="cross-spec-card__title">返回系统工程标准总纲 (Portal Hub) →</div>
+          <p class="cross-spec-card__desc">
+            查阅 8 项核心仪表盘、架构 SLA 指标清单、徽章体系与完整数据字典 API 契约。
+          </p>
+        </a>
+      </div>
+    </section>
+  </div>
 </BlogLayout>
+
+<style>
+  .standards-doc-container {
+    max-width: 1060px;
+    margin: 32px auto 64px auto;
+    padding: 0 20px;
+    color: var(--font-color);
+  }
+
+  .standards-doc-header {
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--theme-border-light);
+  }
+
+  .standards-doc-header__badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .standards-spec-badge {
+    background: var(--theme-main);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-mono);
+  }
+
+  .standards-spec-status {
+    background: rgba(43, 164, 113, 0.12);
+    color: #2ba471;
+    border: 1px solid rgba(43, 164, 113, 0.3);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .standards-spec-code {
+    background: var(--theme-card-bg);
+    color: var(--font-color-sub);
+    border: 1px solid var(--theme-border-light);
+    font-size: 11px;
+    font-family: var(--font-family-mono);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .standards-doc-header__title {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin: 0 0 12px 0;
+    color: var(--font-color);
+  }
+
+  .standards-doc-header__lede {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--font-color-sub);
+    margin: 0 0 24px 0;
+  }
+
+  .standards-doc-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-item__k {
+    font-size: 11px;
+    color: var(--font-color-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meta-item__v {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--font-color);
+  }
+
+  .meta-item__v a {
+    color: var(--theme-main);
+    text-decoration: underline;
+  }
+
+  .standards-doc-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+    padding: 12px;
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    position: sticky;
+    top: 68px;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+  }
+
+  .doc-nav-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--font-color-sub);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .doc-nav-pill:hover {
+    color: #fff;
+    background: var(--theme-main);
+  }
+
+  .standards-doc-section {
+    margin-bottom: 48px;
+    scroll-margin-top: 140px;
+  }
+
+  .section-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: var(--font-family-mono);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--theme-main);
+    background: rgba(66, 90, 239, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+    margin-top: 4px;
+  }
+
+  .standards-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--font-color);
+  }
+
+  .standards-section-desc {
+    font-size: 13px;
+    color: var(--font-color-sub);
+    margin: 0;
+  }
+
+  .standards-webinfo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .standards-webinfo-grid .webinfo-item {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 80px;
+  }
+
+  .standards-webinfo-grid .webinfo-item-label {
+    font-size: 12px;
+    color: var(--font-color-sub);
+  }
+
+  .standards-webinfo-grid .webinfo-item strong {
+    font-size: 18px !important;
+    font-weight: 800;
+    font-family: var(--font-family-mono);
+    color: var(--font-color);
+  }
+
+  .tier-progress-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 18px;
+  }
+
+  .tier-progress-card__header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .tier-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .tier-progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .tier-progress-hint {
+    font-size: 12px;
+    color: var(--font-color-sub);
+    margin: 0;
+  }
+
+  .standards-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 24px;
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .standards-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    color: var(--font-color);
+  }
+
+  .formula-box {
+    background: rgba(0, 0, 0, 0.04);
+    border-left: 3px solid var(--theme-main);
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 14px 0;
+    font-family: var(--font-family-mono);
+    font-size: 13px;
+  }
+
+  .standards-list {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+  }
+
+  .standards-list li {
+    margin-bottom: 8px;
+  }
+
+  .standards-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    background: var(--theme-card-bg);
+  }
+
+  .standards-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .standards-table th {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--font-color-sub);
+    border-bottom: 1px solid var(--theme-border-light);
+  }
+
+  .standards-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--theme-border-light);
+    color: var(--font-color);
+  }
+
+  .standards-table tr.is-current-tier {
+    background: rgba(142, 68, 173, 0.08);
+  }
+
+  .standards-table tr.is-current-tier td {
+    font-weight: 600;
+  }
+
+  .tier-badge {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+  }
+
+  .current-tag {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .tier-status-pill {
+    font-size: 11px;
+    color: var(--font-color-sub);
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .standards-callout {
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+
+  .standards-callout.info {
+    background: rgba(142, 68, 173, 0.08);
+    border: 1px solid rgba(142, 68, 173, 0.2);
+  }
+
+  .code-block-preview {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 14px;
+    border-radius: 6px;
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 12px 0 0 0;
+  }
+
+  .cross-spec-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .cross-spec-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border-light);
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cross-spec-card:hover {
+    border-color: var(--theme-main);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.12);
+  }
+
+  .cross-spec-card__badge {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--theme-main);
+  }
+
+  .cross-spec-card__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--font-color);
+  }
+
+  .cross-spec-card__desc {
+    font-size: 12px;
+    color: var(--font-color-sub);
+    margin: 0;
+    line-height: 1.5;
+  }
+</style>

@@ -71,19 +71,19 @@ const sidebarData = createSidebarData(allPosts);
       </div>
 
       <div class="card-webinfo-grid standards-webinfo-grid">
-        <div class="webinfo-item">
+        <a href="/standards/activity-level/" class="webinfo-item webinfo-item--link" title="查看活跃等级独立规范全文 (EES-002)">
           <div class="webinfo-item-label">
-            <span>活跃等级 (Active)</span>
+            <span>活跃等级 (Active) ↗</span>
           </div>
           <strong class="highlight-val">{metrics.activeLevel.level}</strong>
-        </div>
+        </a>
 
-        <div class="webinfo-item">
+        <a href="/standards/content-density/" class="webinfo-item webinfo-item--link" title="查看内容密度独立规范全文 (EES-003)">
           <div class="webinfo-item-label">
-            <span>内容密度 (Density)</span>
+            <span>内容密度 (Density) ↗</span>
           </div>
           <strong class="highlight-val">{metrics.densityLevel.shortLevel}</strong>
-        </div>
+        </a>
 
         <div class="webinfo-item">
           <div class="webinfo-item-label">
@@ -137,6 +137,21 @@ const sidebarData = createSidebarData(allPosts);
           <h2 class="standards-section-title">活跃等级分级规范 (Active Level Specification)</h2>
           <p class="standards-section-desc">基于全站近 30 天内公开文章的物理发布与修订更新频率进行客观动态阶梯评定。</p>
         </div>
+      <!-- 独立规范文章入口卡片 -->
+      <div class="doc-split-entry-card">
+        <div class="doc-split-entry-card__content">
+          <div class="doc-split-entry-card__tag-row">
+            <span class="doc-split-badge">独立规范文章 · EES-002</span>
+            <span class="doc-split-status">★ 当前实测达标：{metrics.activeLevel.level} ({metrics.activeLevel.title})</span>
+          </div>
+          <h3 class="doc-split-title">《系统工程标准：站长活跃等级分级与评估规范》</h3>
+          <p class="doc-split-desc">
+            本规范已独立拆分为专项技术文章体系，完整阐释滚动 30 天滑动窗口数学模型、防刷去重准则、心跳衰减机制与五级完整阶梯对照表。
+          </p>
+        </div>
+        <a href="/standards/activity-level/" class="doc-split-btn">
+          阅读活跃等级独立文章全文 →
+        </a>
       </div>
 
       <div class="doc-callout doc-callout--info">
@@ -206,6 +221,21 @@ const sidebarData = createSidebarData(allPosts);
           <h2 class="standards-section-title">内容密度分级规范 (Content Density Specification)</h2>
           <p class="standards-section-desc">基于全站公开文章物理总字数与有效篇数的加权单篇信息密度评级体系。</p>
         </div>
+      <!-- 独立规范文章入口卡片 -->
+      <div class="doc-split-entry-card">
+        <div class="doc-split-entry-card__content">
+          <div class="doc-split-entry-card__tag-row">
+            <span class="doc-split-badge">独立规范文章 · EES-003</span>
+            <span class="doc-split-status">★ 当前实测达标：{metrics.densityLevel.shortLevel} ({metrics.densityLevel.title})</span>
+          </div>
+          <h3 class="doc-split-title">《系统工程标准：全站内容密度分级与度量规范》</h3>
+          <p class="doc-split-desc">
+            本规范已独立拆分为专项技术文章体系，深入剖析文本分词清洗流水线、全站均值精算模型、长文排版支撑准则与四级完整阶梯对照表。
+          </p>
+        </div>
+        <a href="/standards/content-density/" class="doc-split-btn">
+          阅读内容密度独立文章全文 →
+        </a>
       </div>
 
       <div class="doc-callout doc-callout--info">
@@ -837,7 +867,108 @@ const sidebarData = createSidebarData(allPosts);
     font-family: var(--font-family-mono, monospace);
   }
 
+  /* Doc Split Entry Card */
+  .doc-split-entry-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.08) 0%, rgba(66, 90, 239, 0.02) 100%);
+    border: 1px solid rgba(66, 90, 239, 0.25);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+
+  .doc-split-entry-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .doc-split-entry-card__tag-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .doc-split-badge {
+    font-family: var(--font-family-mono, monospace);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--theme-main, #425aef);
+    background: rgba(66, 90, 239, 0.12);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .doc-split-status {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2ba471;
+  }
+
+  .doc-split-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--font-color, #1f2328);
+  }
+
+  .doc-split-desc {
+    font-size: 13px;
+    color: var(--text-muted, #57606a);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .doc-split-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    background: var(--theme-main, #425aef);
+    color: #ffffff !important;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(66, 90, 239, 0.25);
+  }
+
+  .doc-split-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
+    background: #364cd9;
+  }
+
+  .standards-webinfo-grid a.webinfo-item--link {
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .standards-webinfo-grid a.webinfo-item--link:hover {
+    border-color: var(--theme-main, #425aef);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.12);
+  }
+
   @media (max-width: 768px) {
+    .doc-split-entry-card {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 16px;
+    }
+
+    .doc-split-btn {
+      width: 100%;
+      text-align: center;
+    }
+
     .standards-doc-container {
       padding: 0 12px;
       margin: 16px auto 36px;

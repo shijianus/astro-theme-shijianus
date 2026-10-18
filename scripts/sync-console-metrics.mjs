@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
+import { standardsConfig, matchActivityTier, matchContentDensityTier } from '../src/config/standards.ts';
+
 const POSTS_DIR = path.resolve(process.cwd(), 'src/content/posts');
 const PUBLIC_DATA_DIR = path.resolve(process.cwd(), 'public/data');
 const OUTPUT_FILE = path.resolve(PUBLIC_DATA_DIR, 'console-metrics.json');
@@ -111,18 +113,12 @@ function run() {
   const recentPosts30d = publicPosts.filter(p => p.pubDate >= thirtyDaysAgo && p.pubDate <= now);
   const recentPostCount30d = recentPosts30d.length;
 
-  let activeStatus = 'Status 0';
-  let activeLevel = 'Lv.0';
-  if (recentPostCount30d > 8) { activeStatus = 'Status 4'; activeLevel = 'Lv.4'; }
-  else if (recentPostCount30d >= 5) { activeStatus = 'Status 3'; activeLevel = 'Lv.3'; }
-  else if (recentPostCount30d >= 3) { activeStatus = 'Status 2'; activeLevel = 'Lv.2'; }
-  else if (recentPostCount30d >= 1) { activeStatus = 'Status 1'; activeLevel = 'Lv.1'; }
-
-  let densityStatus = 'Level 1 (Low)';
-  let densityLevel = 'Lv.1';
-  if (avgWordsPerPost > 3000) { densityStatus = 'Level 4 (Ultra)'; densityLevel = 'Lv.4'; }
-  else if (avgWordsPerPost > 1500) { densityStatus = 'Level 3 (High)'; densityLevel = 'Lv.3'; }
-  else if (avgWordsPerPost > 800) { densityStatus = 'Level 2 (Standard)'; densityLevel = 'Lv.2'; }
+  const activeTier = matchActivityTier(recentPostCount30d);
+  const densityTier = matchContentDensityTier(avgWordsPerPost);
+  const activeStatus = activeTier.status;
+  const activeLevel = activeTier.level;
+  const densityStatus = densityTier.status;
+  const densityLevel = densityTier.level;
 
   // Build 52-week activity map
   const activityMap = new Map();
@@ -211,10 +207,21 @@ function run() {
       recentPostCount30d,
       activeStatus,
       activeLevel,
+      activeTitle: activeTier.title,
+      activeBadge: activeTier.badge,
+      activeHref: '/standards/activity-level/',
       densityStatus,
       densityLevel,
+      densityTitle: densityTier.title,
+      densityBadge: densityTier.badge,
+      densityHref: '/standards/content-density/',
       latestPostDate: publicPosts[0] ? publicPosts[0].pubDate.toISOString().split('T')[0].replace(/-/g, '.') : '-',
       latestPostHref: publicPosts[0] ? publicPosts[0].href : '/archives/',
+    },
+    standardsConfig,
+    currentTiers: {
+      activity: activeTier,
+      density: densityTier,
     },
     activity: days,
     posts: publicPosts.map(p => ({

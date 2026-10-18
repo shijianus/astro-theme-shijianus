@@ -761,13 +761,13 @@ export function ThemeOverlays({
         label: t('console.status.activityLevel', '活跃等级'),
         value: activeLevel,
         tooltip: t('console.status.activityLevelTooltip', convertText(`基于近30天内发布文章数量(${recentPostCount}篇)计算的实时活跃等级`, localeVariant)),
-        href: '/standards',
+        href: syncStats?.activeHref || '/standards/activity-level/',
       },
       {
         label: t('console.status.density', '内容密度'),
         value: densityLevel,
         tooltip: t('console.status.densityTooltip', convertText(`基于全站平均单篇字数(${Math.round(avgWords)})计算的系统信息密度评级`, localeVariant)),
-        href: '/standards',
+        href: syncStats?.densityHref || '/standards/content-density/',
       },
       {
         label: t('console.status.readingTime', '全站阅读'),
