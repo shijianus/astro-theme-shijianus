@@ -5898,7 +5898,7 @@
   - 全量构建并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（部署标识：`c0aa4121.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
   - 运行 `scripts/verify-live-heatmap-standards.mjs` 针对公网生产域名 `https://blog.epocanvas.com` 执行真实实机测试，HTTP 200、0 控制台报错、就地点击固定原生 Tooltip、点击外部自动解除、无 popover 遮罩、无 outline 边框、底部版权/评论框渲染正常、`.section-title-wrap` 异常计数为 0，公网 E2E 验证 100% PASS！
 
-### Task 26: 官方工程标准纯粹化 (禁止版权与评论区)、统一蓝色透明背板 (.page-main)、近30天发文/样本实录与真实工程算法论证
+### Task 26: 官方工程标准纯粹化 (禁止版权与评论区)、统一蓝色透明背板 (.page-main)、近30天发文/样本实录与真实工程算法论证 (`6f15416`)
 - [x] **官方工程技术规范纯粹化 (消除个人博客元素)**：
   - `/standards/activity-level/` 与 `/standards/content-density/` 属于官方技术规范页面（不属于个人 blog），彻底移除 `class="post-copyright"` 原创版权卡片、`<hr class="custom-hr" />` 与 `#post-comment` 评论区组件；
   - 维持 100% 纯净严肃的技术规范正文，消除非技术杂质。
