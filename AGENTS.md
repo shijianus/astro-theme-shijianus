@@ -5936,6 +5936,25 @@
 - [x] **Playwright 真实浏览器端到端视觉审计全绿**：
   - 编写并执行自动化测试脚本 `scripts/verify-standards-visual.mjs`，全量覆盖 5 大规范页面的 `data-type="standards"` 标识、1254px+ 宽屏布局、博文干扰部件隐藏性、数学公式渲染与暗黑模式视觉呈现，所有断言 100% 通过（ALL AUDITS PASSED ✓）。
 
-
-
-
+### Task 28: 规范页面彻底独立化与去引导解耦：完全清除 standards-spec-nav、消除跨页面关联导航及全链路 Playwright 视觉端到端核验 (`37f063a`)
+- [x] **完全清除 `class="standards-spec-nav"` 导航栏**：
+  1. 从所有规范页面模板中彻底移除 `<nav class="standards-spec-nav">` 及其子元素（`.spec-nav-pill`），涵盖：
+     - `src/pages/standards/activity-level.astro`
+     - `src/pages/standards/content-density.astro`
+     - `src/pages/standards/index.astro`
+     - `src/pages/version.astro`
+     - `src/pages/status.astro`
+  2. 从 `src/styles/final-pass.css` 中全面清理 `.standards-spec-nav` 与 `.spec-nav-pill` 的无用样式规则，确保全局代码 0 残留。
+- [x] **彻底消除跨页面相互引导与统一文章感 (Enforce Complete Independence)**：
+  1. 彻底删除各规范文档末尾的“关联规范导航”章节及所有跨页面跳转链接（如 `[返回 EES-001]`, `[阅读 EES-003]`, `<a class="article-bookmark">` 等）；
+  2. 清除 `docs/standards/index.md` 选项卡中的“详见独立子规范”跳转引导；
+  3. 将体系说明表格由“页面路径/文件位置”解耦为纯技术规范领域边界与数据源定义；
+  4. 将顶部元信息中的 `Sub-Spec: ...` 重构为独立的规范领域徽标（如 `活跃等级规范`, `内容密度规范`, `版本与架构`, `运行状态拓扑`, `工程标准总纲`），杜绝章节从属感。
+- [x] **文档深度充实与严谨度量保障**：
+  1. 保持所有独立规范文档内容完整充实（每篇均超 4,000 ~ 12,000 字），严格杜绝任何 AI 提示词泄露与凑数无用信息；
+  2. 保持独立行 `$$C(E)$$` 分段数学公式、KaTeX 渲染、量化矩阵表与宽屏阅读质感。
+- [x] **全流程自动化 Playwright 视觉审计全绿 (`scripts/verify-standards-visual.mjs`)**：
+  1. 5 个独立规范页面断言全部通过：`specNavRemoved: true`（`.standards-spec-nav` 计数严格为 0）；
+  2. 宽屏阅读模式 `standards-spec-shell width = 1254px` 居中且视觉优雅；
+  3. 普通博文控件（`#readmode`、`#post-comment`、`#post-end-recommendation`）全部隐匿；
+  4. 截取并核验浅色与深色模式下的真实视口与公式渲染截图。
