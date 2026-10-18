@@ -461,21 +461,17 @@ const sidebarData = createSidebarData(allPosts);
 
 <style>
   .standards-doc-container {
-    max-width: 1060px;
-    width: 100%;
-    margin: 32px auto 64px;
-    padding: 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 32px;
   }
 
   .standards-doc-header {
-    background: var(--card-bg, #ffffff);
-    border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
-    border-radius: 12px;
-    padding: 36px 36px 30px;
-    box-shadow: var(--anzhiyu-shadow-border);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(66, 90, 239, 0.15);
+    box-shadow: none;
+    padding: 0 0 32px 0;
   }
 
   .standards-doc-header__badge-row {
@@ -533,7 +529,7 @@ const sidebarData = createSidebarData(allPosts);
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 14px;
     padding-top: 20px;
-    border-top: 1px solid var(--card-border, rgba(0,0,0,0.06));
+    border-top: 1px solid rgba(66, 90, 239, 0.15);
   }
 
   .meta-item {
@@ -569,15 +565,16 @@ const sidebarData = createSidebarData(allPosts);
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    background: var(--card-bg, #ffffff);
-    padding: 12px 18px;
-    border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
-    border-radius: 10px;
-    box-shadow: var(--anzhiyu-shadow-border);
+    background: rgba(195, 218, 255, 0.65);
+    padding: 8px 12px;
+    border: 1px solid rgba(66, 90, 239, 0.22);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(66, 90, 239, 0.08);
     position: sticky;
     top: 72px;
     z-index: 40;
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .doc-nav-pill {
@@ -586,26 +583,32 @@ const sidebarData = createSidebarData(allPosts);
     padding: 6px 12px;
     border-radius: 6px;
     color: var(--font-color, #1f2328);
-    background: var(--card-bg-light, rgba(0,0,0,0.03));
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(66, 90, 239, 0.15);
     text-decoration: none;
     transition: all 0.15s ease;
   }
 
   .doc-nav-pill:hover {
-    background: var(--theme-main, #425aef);
-    color: #ffffff;
+    background: var(--theme-main, #425aef) !important;
+    color: #ffffff !important;
   }
 
   /* Document Sections */
   .standards-doc-section {
-    background: var(--card-bg, #ffffff);
-    border: var(--style-border-always, 1px solid rgba(0,0,0,0.08));
-    border-radius: 12px;
-    padding: 30px 32px;
-    box-shadow: var(--anzhiyu-shadow-border);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(66, 90, 239, 0.15);
+    box-shadow: none;
+    padding: 0 0 32px 0;
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+
+  .standards-doc-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
   }
 
   .section-title-wrap {
@@ -994,11 +997,15 @@ const sidebarData = createSidebarData(allPosts);
     }
   }
 
-  [data-theme='dark'] .standards-doc-section,
-  [data-theme='dark'] .standards-doc-header,
   [data-theme='dark'] .standards-doc-nav {
-    background: var(--card-bg, #1a1e29);
+    background: rgba(18, 36, 78, 0.65);
+    border-color: rgba(66, 90, 239, 0.35);
+  }
+
+  [data-theme='dark'] .doc-nav-pill {
+    background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.08);
+    color: #e6edf3;
   }
 
   [data-theme='dark'] .standards-webinfo-grid .webinfo-item,

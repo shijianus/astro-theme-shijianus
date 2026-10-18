@@ -5898,4 +5898,25 @@
   - 全量构建并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（部署标识：`c0aa4121.shijianus-blog.pages.dev`，主域名：`https://blog.epocanvas.com`）；
   - 运行 `scripts/verify-live-heatmap-standards.mjs` 针对公网生产域名 `https://blog.epocanvas.com` 执行真实实机测试，HTTP 200、0 控制台报错、就地点击固定原生 Tooltip、点击外部自动解除、无 popover 遮罩、无 outline 边框、底部版权/评论框渲染正常、`.section-title-wrap` 异常计数为 0，公网 E2E 验证 100% PASS！
 
+### Task 26: 官方工程标准纯粹化 (禁止版权与评论区)、统一蓝色透明背板 (.page-main)、近30天发文/样本实录与真实工程算法论证
+- [x] **官方工程技术规范纯粹化 (消除个人博客元素)**：
+  - `/standards/activity-level/` 与 `/standards/content-density/` 属于官方技术规范页面（不属于个人 blog），彻底移除 `class="post-copyright"` 原创版权卡片、`<hr class="custom-hr" />` 与 `#post-comment` 评论区组件；
+  - 维持 100% 纯净严肃的技术规范正文，消除非技术杂质。
+- [x] **统一蓝色透明大背板 (.page-main 与 post post-page-shell 深度对齐)**：
+  - 彻底消除各 section 割裂分散的白色小卡片背景；外层容器应用与文章页 `class="post post-page-shell"` / `.page-main` 统一的通透蓝背板（亮色冰川蓝微光 `var(--home-blue-card-bg)` / 暗色深邃深蓝 `rgba(18, 36, 78, 0.34)`，1px 蓝微光边框，零模糊透视 `backdrop-filter: none !important`）；
+  - 背板内部各 section 背景设为纯透明并由细线（`rgba(66, 90, 239, 0.15)`）无缝区隔，子卡片使用极浅半透明色（亮色 0.45 / 暗色 0.04），视觉层次浑然一体；
+  - 同步应用于 `/standards/` 首页、`/standards/activity-level/` 与 `/standards/content-density/`。
+- [x] **实证数据真实性与去伪存真**：
+  - 拒绝假大空内容与偷懒模板，Section 2 注入真实工程核验数据：
+    1. `/standards/activity-level/` 建立《近 30 天滑动窗口发文实录与时间戳核验表》，逐行列出当前 7 篇真实文章的标题、Slug、发布日期、距今天数、字数与状态；
+    2. 深度推导滑动窗口数学模型、CJK/多语言归一化去重、时间戳防御、心跳衰减模型与管理员配置白皮书；
+    3. `/standards/content-density/` 建立《深度长文样板实录表》，展示清洗后纯文本字数、预估阅读时间与密度评级；
+    4. 论述 AST 纯文本清洗流水线（排除代码块、数学块、前言等）与加权度量模型。
+- [x] **热力图方格点击原地锁定 (In-Place Pinning)**：
+  - 点击方格原地添加 `.is-pinned` 锁定原生的 tooltip 注释框（非新建多余的弹出层），不加高亮遮罩，无额外 outline 边框；
+  - 点击外部任意区域自然解除固定并自动消失。
+- [x] **本地自动化测试与构建验收 100% 全部通过**：
+  - `scripts/verify-heatmap-and-standards.mjs` 测试全部通过，验证了统一背板样式、无版权框、无评论区、实证表格行数与热力图原地锁定。
+
+
 

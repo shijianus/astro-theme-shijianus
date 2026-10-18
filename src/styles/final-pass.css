@@ -9711,7 +9711,9 @@ body[data-type='home'] .category-bar {
 /* 6b. Target: 文章页透明化改造 (class="page-main", class="aside-sticky-box", class="card-widget card-categories" 保持原有色彩，零模糊透视) */
 /* 6b. Target: 文章页透明化改造 (class="page-main", class="aside-sticky-box", class="card-widget card-categories" 保持原本蓝色底色，零模糊透视) */
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] .page-main,
-body[data-type='post'] .page-main {
+body[data-type='post'] .page-main,
+:root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='standards'] .page-main,
+body[data-type='standards'] .page-main {
   background: var(--home-blue-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -9721,13 +9723,98 @@ body[data-type='post'] .page-main {
 }
 
 :root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] .page-main,
-:root[data-theme='dark'] body[data-type='post'] .page-main {
+:root[data-theme='dark'] body[data-type='post'] .page-main,
+:root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='standards'] .page-main,
+:root[data-theme='dark'] body[data-type='standards'] .page-main {
   background: rgba(18, 36, 78, 0.34) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(66, 90, 239, 0.40) !important;
   box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 0 16px 2px rgba(66, 90, 239, 0.20) !important;
 }
+
+/* Standards 统一蓝色透明背板与无缝分节规范 */
+body[data-type='standards'] .page-main {
+  max-width: 1100px !important;
+  margin: 32px auto 64px !important;
+  padding: 36px 36px !important;
+}
+
+@media (max-width: 768px) {
+  body[data-type='standards'] .page-main {
+    margin: 16px auto 36px !important;
+    padding: 20px 16px !important;
+  }
+}
+
+body[data-type='standards'] .standards-doc-container {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body[data-type='standards'] .standards-doc-header,
+body[data-type='standards'] .standards-doc-section {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0 32px 0 !important;
+  border-bottom: 1px solid rgba(66, 90, 239, 0.15) !important;
+}
+
+body[data-type='standards'] .standards-doc-section:last-of-type {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+body[data-type='standards'] .standards-doc-nav {
+  background: rgba(195, 218, 255, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(66, 90, 239, 0.22) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.08) !important;
+  padding: 8px 12px !important;
+}
+
+:root[data-theme='dark'] body[data-type='standards'] .standards-doc-nav {
+  background: rgba(18, 36, 78, 0.65) !important;
+  border-color: rgba(66, 90, 239, 0.35) !important;
+}
+
+body[data-type='standards'] .doc-nav-pill {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(66, 90, 239, 0.15) !important;
+}
+
+:root[data-theme='dark'] body[data-type='standards'] .doc-nav-pill {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body[data-type='standards'] .standards-webinfo-grid .webinfo-item,
+body[data-type='standards'] .standards-card,
+body[data-type='standards'] .standards-table-wrapper,
+body[data-type='standards'] .tier-progress-card,
+body[data-type='standards'] .cross-spec-card,
+body[data-type='standards'] .doc-split-entry-card {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(66, 90, 239, 0.18) !important;
+}
+
+:root[data-theme='dark'] body[data-type='standards'] .standards-webinfo-grid .webinfo-item,
+:root[data-theme='dark'] body[data-type='standards'] .standards-card,
+:root[data-theme='dark'] body[data-type='standards'] .standards-table-wrapper,
+:root[data-theme='dark'] body[data-type='standards'] .tier-progress-card,
+:root[data-theme='dark'] body[data-type='standards'] .cross-spec-card,
+:root[data-theme='dark'] body[data-type='standards'] .doc-split-entry-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
 
 :root:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),
 :root[data-theme='dark']:not([data-card-style='solid']):not([data-translucent='false']) body[data-type='post'] :is(.page-main > #post, #post, div#post, .post-page-shell, .post),

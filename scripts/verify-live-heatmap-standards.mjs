@@ -136,23 +136,41 @@ async function verifyLive() {
       const crossLinkDensity = document.querySelector('a[href*="content-density"]')?.getAttribute('href');
       const hasCopyrightBox = !!document.querySelector('.post-copyright');
       const hasCommentBox = !!document.querySelector('#post-comment');
-      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkDensity, hasCopyrightBox, hasCommentBox };
+      const empiricalTable = document.querySelector('#section-empirical table');
+      const empiricalRows = empiricalTable ? empiricalTable.querySelectorAll('tbody tr').length : 0;
+      const pageMain = document.querySelector('.page-main');
+      const mainStyle = pageMain ? window.getComputedStyle(pageMain) : null;
+      return {
+        title,
+        hasSidebar,
+        docNavPills,
+        currentTierTitle,
+        crossLinkDensity,
+        hasCopyrightBox,
+        hasCommentBox,
+        empiricalRows,
+        mainBg: mainStyle?.backgroundColor,
+        mainFilter: mainStyle?.backdropFilter,
+      };
     });
     console.log('Activity Title:', actData.title);
     console.log('Activity Has Sidebar:', actData.hasSidebar, '(Must be false)');
     console.log('Activity Matched Tier:', actData.currentTierTitle);
     console.log('Cross Link to Density:', actData.crossLinkDensity);
-    console.log('Has Copyright Bottom Box:', actData.hasCopyrightBox);
-    console.log('Has Comment Bottom Box:', actData.hasCommentBox);
+    console.log('Has Copyright Bottom Box:', actData.hasCopyrightBox, '(Must be false for official standards)');
+    console.log('Has Comment Bottom Box:', actData.hasCommentBox, '(Must be false for official standards)');
+    console.log('Activity Empirical Rows:', actData.empiricalRows);
+    console.log('Unified Page Main Bg:', actData.mainBg);
 
     if (actData.hasSidebar) throw new Error('/standards/activity-level/ must NOT have a sidebar!');
     if (!actData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/activity-level/!');
     if (!actData.crossLinkDensity?.includes('content-density')) throw new Error('Missing cross-link to content-density!');
-    if (!actData.hasCopyrightBox) throw new Error('Missing copyright bottom box on /standards/activity-level/!');
-    if (!actData.hasCommentBox) throw new Error('Missing comment box on /standards/activity-level/!');
+    if (actData.hasCopyrightBox) throw new Error('/standards/activity-level/ must NOT have .post-copyright!');
+    if (actData.hasCommentBox) throw new Error('/standards/activity-level/ must NOT have #post-comment!');
+    if (actData.empiricalRows === 0) throw new Error('Missing empirical rows on live /standards/activity-level/!');
 
-    // 4. Verify /standards/content-density/ (Separate Post & Required Bottom Box)
-    console.log(`\n--- 4. Testing ${PROD_URL}/standards/content-density/ & Bottom Box ---`);
+    // 4. Verify /standards/content-density/ (Separate Spec & Unified Backplate)
+    console.log(`\n--- 4. Testing ${PROD_URL}/standards/content-density/ & Empirical Samples ---`);
     const densRes = await page.goto(`${PROD_URL}/standards/content-density/`, { waitUntil: 'networkidle0' });
     console.log(`HTTP Status: ${densRes.status()}`);
     if (densRes.status() !== 200) {
@@ -167,20 +185,38 @@ async function verifyLive() {
       const crossLinkActivity = document.querySelector('a[href*="activity-level"]')?.getAttribute('href');
       const hasCopyrightBox = !!document.querySelector('.post-copyright');
       const hasCommentBox = !!document.querySelector('#post-comment');
-      return { title, hasSidebar, docNavPills, currentTierTitle, crossLinkActivity, hasCopyrightBox, hasCommentBox };
+      const sampleTable = document.querySelector('#section-empirical table');
+      const sampleRows = sampleTable ? sampleTable.querySelectorAll('tbody tr').length : 0;
+      const pageMain = document.querySelector('.page-main');
+      const mainStyle = pageMain ? window.getComputedStyle(pageMain) : null;
+      return {
+        title,
+        hasSidebar,
+        docNavPills,
+        currentTierTitle,
+        crossLinkActivity,
+        hasCopyrightBox,
+        hasCommentBox,
+        sampleRows,
+        mainBg: mainStyle?.backgroundColor,
+        mainFilter: mainStyle?.backdropFilter,
+      };
     });
     console.log('Density Title:', densData.title);
     console.log('Density Has Sidebar:', densData.hasSidebar, '(Must be false)');
     console.log('Density Matched Tier:', densData.currentTierTitle);
     console.log('Cross Link to Activity:', densData.crossLinkActivity);
-    console.log('Has Copyright Bottom Box:', densData.hasCopyrightBox);
-    console.log('Has Comment Bottom Box:', densData.hasCommentBox);
+    console.log('Has Copyright Bottom Box:', densData.hasCopyrightBox, '(Must be false)');
+    console.log('Has Comment Bottom Box:', densData.hasCommentBox, '(Must be false)');
+    console.log('Density Sample Rows:', densData.sampleRows);
+    console.log('Unified Page Main Bg:', densData.mainBg);
 
     if (densData.hasSidebar) throw new Error('/standards/content-density/ must NOT have a sidebar!');
     if (!densData.currentTierTitle) throw new Error('Missing is-current-tier row on /standards/content-density/!');
     if (!densData.crossLinkActivity?.includes('activity-level')) throw new Error('Missing cross-link to activity-level!');
-    if (!densData.hasCopyrightBox) throw new Error('Missing copyright bottom box on /standards/content-density/!');
-    if (!densData.hasCommentBox) throw new Error('Missing comment box on /standards/content-density/!');
+    if (densData.hasCopyrightBox) throw new Error('/standards/content-density/ must NOT have .post-copyright!');
+    if (densData.hasCommentBox) throw new Error('/standards/content-density/ must NOT have #post-comment!');
+    if (densData.sampleRows === 0) throw new Error('Missing sample rows on live /standards/content-density/!');
 
     // 5. Verify Live Homepage & Console Heatmap In-Place Pinned Tooltip
     console.log(`\n--- 5. Testing Heatmap in Console on Live Homepage ---`);

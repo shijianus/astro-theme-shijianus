@@ -181,6 +181,11 @@ async function run() {
       const crossLinkDensity = document.querySelector('a[href*="content-density"]')?.getAttribute('href');
       const hasCopyrightBox = !!document.querySelector('.post-copyright');
       const hasCommentBox = !!document.querySelector('#post-comment');
+      const empiricalTable = document.querySelector('#section-empirical table');
+      const empiricalRows = empiricalTable ? empiricalTable.querySelectorAll('tbody tr').length : 0;
+
+      const pageMain = document.querySelector('.page-main');
+      const mainStyle = pageMain ? window.getComputedStyle(pageMain) : null;
 
       return {
         title,
@@ -190,6 +195,9 @@ async function run() {
         crossLinkDensity,
         hasCopyrightBox,
         hasCommentBox,
+        empiricalRows,
+        mainBg: mainStyle?.backgroundColor,
+        mainFilter: mainStyle?.backdropFilter,
       };
     });
 
@@ -198,8 +206,11 @@ async function run() {
     console.log('Doc Nav Pills:', actCheck.docNavPills);
     console.log('Current Matched Tier:', actCheck.currentTierTitle);
     console.log('Cross Link to Density:', actCheck.crossLinkDensity);
-    console.log('Has Article Copyright Box:', actCheck.hasCopyrightBox);
-    console.log('Has Article Comment Box:', actCheck.hasCommentBox);
+    console.log('Has Article Copyright Box:', actCheck.hasCopyrightBox, '(Must be false for official standards)');
+    console.log('Has Article Comment Box:', actCheck.hasCommentBox, '(Must be false for official standards)');
+    console.log('Empirical Audit Table Rows:', actCheck.empiricalRows);
+    console.log('Unified Page Main Bg:', actCheck.mainBg);
+    console.log('Unified Page Main Filter:', actCheck.mainFilter, '(Zero blur)');
 
     if (actCheck.hasSidebar) {
       throw new Error('Failure: /standards/activity-level/ must NOT have a sidebar!');
@@ -213,15 +224,18 @@ async function run() {
     if (!actCheck.crossLinkDensity?.includes('content-density')) {
       throw new Error('Missing cross-link to content-density on activity-level page!');
     }
-    if (!actCheck.hasCopyrightBox) {
-      throw new Error('Failure: /standards/activity-level/ is missing the required article copyright bottom box (.post-copyright)!');
+    if (actCheck.hasCopyrightBox) {
+      throw new Error('Failure: /standards/activity-level/ must NOT have .post-copyright (official doc page, not blog post)!');
     }
-    if (!actCheck.hasCommentBox) {
-      throw new Error('Failure: /standards/activity-level/ is missing the required comment box (#post-comment)!');
+    if (actCheck.hasCommentBox) {
+      throw new Error('Failure: /standards/activity-level/ must NOT have #post-comment!');
+    }
+    if (actCheck.empiricalRows === 0) {
+      throw new Error('Failure: Missing empirical audit table rows in Section 2 of activity-level!');
     }
 
-    // 3. Verify /standards/content-density/ (Separate Post/Doc with Bottom Box)
-    console.log('\n--- 3. Testing /standards/content-density/ Separate Post & Bottom Box ---');
+    // 3. Verify /standards/content-density/ (Separate Spec with Unified Backplate & Empirical Samples)
+    console.log('\n--- 3. Testing /standards/content-density/ Spec & Empirical Table ---');
     const densRes = await page.goto(`http://localhost:${port}/standards/content-density/`, { waitUntil: 'networkidle0' });
     console.log(`Status code: ${densRes.status()}`);
     if (densRes.status() !== 200) {
@@ -237,6 +251,11 @@ async function run() {
       const crossLinkActivity = document.querySelector('a[href*="activity-level"]')?.getAttribute('href');
       const hasCopyrightBox = !!document.querySelector('.post-copyright');
       const hasCommentBox = !!document.querySelector('#post-comment');
+      const sampleTable = document.querySelector('#section-empirical table');
+      const sampleRows = sampleTable ? sampleTable.querySelectorAll('tbody tr').length : 0;
+
+      const pageMain = document.querySelector('.page-main');
+      const mainStyle = pageMain ? window.getComputedStyle(pageMain) : null;
 
       return {
         title,
@@ -246,6 +265,9 @@ async function run() {
         crossLinkActivity,
         hasCopyrightBox,
         hasCommentBox,
+        sampleRows,
+        mainBg: mainStyle?.backgroundColor,
+        mainFilter: mainStyle?.backdropFilter,
       };
     });
 
@@ -254,8 +276,10 @@ async function run() {
     console.log('Doc Nav Pills:', densCheck.docNavPills);
     console.log('Current Matched Tier:', densCheck.currentTierTitle);
     console.log('Cross Link to Activity:', densCheck.crossLinkActivity);
-    console.log('Has Density Copyright Box:', densCheck.hasCopyrightBox);
-    console.log('Has Density Comment Box:', densCheck.hasCommentBox);
+    console.log('Has Density Copyright Box:', densCheck.hasCopyrightBox, '(Must be false)');
+    console.log('Has Density Comment Box:', densCheck.hasCommentBox, '(Must be false)');
+    console.log('Density Sample Rows:', densCheck.sampleRows);
+    console.log('Unified Page Main Bg:', densCheck.mainBg);
 
     if (densCheck.hasSidebar) {
       throw new Error('Failure: /standards/content-density/ must NOT have a sidebar!');
@@ -269,11 +293,14 @@ async function run() {
     if (!densCheck.crossLinkActivity?.includes('activity-level')) {
       throw new Error('Missing cross-link to activity-level on content-density page!');
     }
-    if (!densCheck.hasCopyrightBox) {
-      throw new Error('Failure: /standards/content-density/ is missing copyright bottom box (.post-copyright)!');
+    if (densCheck.hasCopyrightBox) {
+      throw new Error('Failure: /standards/content-density/ must NOT have .post-copyright!');
     }
-    if (!densCheck.hasCommentBox) {
-      throw new Error('Failure: /standards/content-density/ is missing comment box (#post-comment)!');
+    if (densCheck.hasCommentBox) {
+      throw new Error('Failure: /standards/content-density/ must NOT have #post-comment!');
+    }
+    if (densCheck.sampleRows === 0) {
+      throw new Error('Failure: Missing empirical sample table rows in Section 2 of content-density!');
     }
 
     // 4. Verify Homepage Console links and Heatmap In-Place Pinned Tooltip (No Popover, No Outline)
