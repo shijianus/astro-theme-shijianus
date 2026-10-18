@@ -1,4 +1,5 @@
 import React, { type CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   UserRound,
   Bell,
@@ -538,6 +539,17 @@ export function ThemeOverlays({
   }, [consoleOpen]);
 
   useEffect(() => {
+    if (!activePopover) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActivePopover(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activePopover]);
+
+  useEffect(() => {
     // Fetch latest hot comment if available
     const threads = readAllLocalThreads();
     if (threads.length > 0) {
@@ -552,7 +564,16 @@ export function ThemeOverlays({
   }, [commentThreadVersion]);
 
   const activityData = useMemo(() => {
-    // 权威真实日期同步：严格取客户端当前本地年月日，杜绝时区漂移与冻结
+    // 权威真实日期同步：优先使用后端边缘计算同步的真实 52 周活动记录
+    if (dynamicActivity && dynamicActivity.length > 0) {
+      return dynamicActivity.map((day: any) => ({
+        ...day,
+        dateKey: day.date,
+        rawDate: new Date(day.date + 'T00:00:00'),
+      }));
+    }
+
+    // 本地实时生成降级：严格取客户端当前本地年月日，杜绝时区漂移与冻结
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     today.setHours(0, 0, 0, 0);
@@ -563,7 +584,7 @@ export function ThemeOverlays({
     const gridStartDate = new Date(currentWeekSunday);
     gridStartDate.setDate(currentWeekSunday.getDate() - (51 * 7));
 
-    // 建立文章发布与更新索引表 (以 YYYY-MM-DD 为唯一键)
+    // 建立文章发布与更新索引表 (以 YYYY-MM-DD 为唯一键，消除时区偏移)
     const postList = dynamicPosts && dynamicPosts.length > 0 ? dynamicPosts : posts;
     const postDateMap = new Map<string, { title: string; href: string; type: string; date: string }[]>();
 
@@ -581,7 +602,7 @@ export function ThemeOverlays({
         const m = String(p.date).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
         if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
         const d = new Date(p.date);
-        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+        return isNaN(d.getTime()) ? '' : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       })() : '');
 
       if (pubKey) {
@@ -592,7 +613,7 @@ export function ThemeOverlays({
         const m = String(p.updatedDate).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
         if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
         const d = new Date(p.updatedDate);
-        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+        return isNaN(d.getTime()) ? '' : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       })() : '';
 
       if (upKey && upKey !== pubKey) {
@@ -634,7 +655,7 @@ export function ThemeOverlays({
       });
     }
     return data;
-  }, [posts, dynamicPosts]);
+  }, [posts, dynamicPosts, dynamicActivity]);
 
   const selectedActivity = useMemo(() => {
     if (!selectedActivityDate) return null;
@@ -2044,48 +2065,6 @@ export function ThemeOverlays({
                     ) : <span className="activity-hint-text">{t('console.activity.hint', '点击方块查看记录')}</span>}
                   </div>
                 </div>
-
-                {/* Screen-Level Unconstrained Popover (完全在屏幕中展示，杜绝 heatmap-internal-wrapper 截断) */}
-                {activePopover && (
-                  <div 
-                    className={`activity-screen-popover placement-${activePopover.placement}`}
-                    style={{
-                      left: `${activePopover.left}px`,
-                      top: `${activePopover.top}px`,
-                    }}
-                  >
-                    <div className="activity-screen-popover__head">
-                      <div className="activity-screen-popover__title">
-                        <strong>{activePopover.day.displayDate || activePopover.day.date}</strong>
-                        <span className="activity-count-badge">
-                          {activePopover.day.posts.length > 0 ? `${activePopover.day.posts.length} 篇内容` : '无记录'}
-                        </span>
-                      </div>
-                      <button 
-                        type="button" 
-                        className="activity-screen-popover__close"
-                        onClick={() => setActivePopover(null)}
-                        aria-label="关闭"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                    <ul className="activity-screen-popover__list">
-                      {activePopover.day.posts.map((p: any, idx: number) => (
-                        <li key={idx}>
-                          <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
-                          <a href={p.href} title={p.title} onClick={() => setActivePopover(null)}>
-                            {p.type === 'update' && <span className="activity-post-tag update">[更新]</span>}
-                            {p.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="activity-screen-popover__footer">
-                      <span>点击文章标题即可直接阅读</span>
-                    </div>
-                  </div>
-                )}
               </section>
             </div>
           </div>
@@ -3639,6 +3618,65 @@ export function ThemeOverlays({
             </div>
           </nav>
         </>
+      )}
+
+      {/* Screen-Level Unconstrained Popover (Portal to body, 完全在屏幕视口中展示，杜绝 heatmap-internal-wrapper 截断) */}
+      {typeof document !== 'undefined' && activePopover && createPortal(
+        <div 
+          className="activity-screen-popover-backdrop"
+          onClick={() => setActivePopover(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="活跃度文章详情"
+        >
+          <div 
+            className={`activity-screen-popover placement-${activePopover.placement}`}
+            style={{
+              left: `${activePopover.left}px`,
+              top: `${activePopover.top}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="activity-screen-popover__head">
+              <div className="activity-screen-popover__title">
+                <strong>{activePopover.day.displayDate || activePopover.day.date}</strong>
+                <span className="activity-count-badge">
+                  {activePopover.day.posts.length > 0 ? `${activePopover.day.posts.length} 篇内容` : '无记录'}
+                </span>
+              </div>
+              <button 
+                type="button" 
+                className="activity-screen-popover__close"
+                onClick={() => setActivePopover(null)}
+                aria-label="关闭"
+              >
+                &times;
+              </button>
+            </div>
+            <ul className="activity-screen-popover__list">
+              {activePopover.day.posts.map((p: any, idx: number) => (
+                <li key={idx}>
+                  <GitCommit className="h-3.5 w-3.5 activity-commit-icon" />
+                  <a 
+                    href={p.href} 
+                    title={p.title} 
+                    onClick={() => {
+                      setActivePopover(null);
+                      setConsoleOpen(false);
+                    }}
+                  >
+                    {p.type === 'update' && <span className="activity-post-tag update">[更新]</span>}
+                    {p.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="activity-screen-popover__footer">
+              <span>点击文章标题即可直接阅读 · 按 ESC 或点击外部可关闭</span>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </>
   );

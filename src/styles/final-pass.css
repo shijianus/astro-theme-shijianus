@@ -1750,21 +1750,55 @@ html:not([lang^="zh"]) .webinfo-item span {
 }
 
 /* Screen-Level Unconstrained Popover (完全在屏幕中展示，杜绝 heatmap-internal-wrapper 截断) */
+.activity-screen-popover-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000000 !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
 .activity-screen-popover {
   position: fixed !important;
-  z-index: 2000000 !important;
-  width: min(380px, calc(100vw - 32px)) !important;
-  max-height: min(440px, 75vh) !important;
+  z-index: 10000001 !important;
+  width: min(440px, calc(100vw - 32px)) !important;
+  max-height: min(520px, 80vh) !important;
   background: var(--console-theme-bg, #1a1e29) !important;
   border: 1px solid var(--theme-main, #425aef) !important;
   border-radius: 12px !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(66, 90, 239, 0.25) !important;
-  padding: 14px 16px !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(66, 90, 239, 0.3) !important;
+  padding: 16px 18px !important;
   display: flex !important;
   flex-direction: column !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
   animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@media (max-width: 640px) {
+  .activity-screen-popover {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    max-height: 75vh !important;
+  }
+}
+
+@media (min-width: 861px) {
+  #console .activity-grid-container {
+    overflow: visible !important;
+  }
+  #console .heatmap-internal-wrapper {
+    overflow: visible !important;
+  }
+  #console .console-activity-grid {
+    overflow: visible !important;
+  }
 }
 
 @keyframes popoverFadeIn {
