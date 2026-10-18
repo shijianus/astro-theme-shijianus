@@ -1,24 +1,68 @@
 ---
 import { getCollection } from 'astro:content';
-import PlaceholderPageShell from '../components/theme/PlaceholderPageShell.astro';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPublicPosts } from '../lib/content';
-import { createSidebarData } from '../lib/theme';
+import ContentFeatureEnhancer from '../components/ContentFeatureEnhancer.astro';
+import { createSidebarData } from '../lib/theme.ts';
+import {
+  Content,
+  frontmatter,
+} from '../../docs/standards/status.md';
 
-const posts = getPublicPosts(await getCollection('posts'));
-const sidebarData = createSidebarData(posts);
+const allPosts = await getCollection('posts');
+const sidebarData = createSidebarData(allPosts);
 ---
 
-<BlogLayout title="站点状态" showAside={false} pageType="page" sidebarData={sidebarData}>
-  <PlaceholderPageShell
-    eyebrow="运行 / 状态"
-    title="站点状态"
-    summary="这个页面预留给运行状态、重构里程碑、页面完成度和后续路线图，让读者能直接看到当前站点还在做什么。"
-    statusLabel="状态面板待接入"
-    notes={[
-      '之后可以直接接入运行时间、构建状态、评论数据库与访问统计。',
-      '现在先把路径、布局和导航层级固定下来，避免以后再拆菜单。',
-      '占位页借用 404 的建设中语义，但本身已经是正式可访问页面。',
-    ]}
-  />
+<BlogLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  showAside={false}
+  pageType="standards"
+  sidebarData={sidebarData}
+  lang="zh-CN"
+>
+  <div class="standards-spec-shell">
+    <header class="standards-spec-header">
+      <div class="standards-spec-header__meta">
+        <span class="standards-badge standards-badge--primary">EES-005</span>
+        <span class="standards-badge standards-badge--status">● 生产环境持续生效</span>
+        <span class="standards-badge standards-badge--version">Sub-Spec: Runtime Status</span>
+      </div>
+      <h1 class="standards-spec-header__title">{frontmatter.title}</h1>
+      <p class="standards-spec-header__desc">{frontmatter.description}</p>
+
+      <nav class="standards-spec-nav" aria-label="工程标准体系规范导航">
+        <a href="/standards/" class="spec-nav-pill">
+          <span class="pill-id">EES-001</span>
+          <span class="pill-name">工程标准总纲</span>
+        </a>
+        <a href="/standards/activity-level/" class="spec-nav-pill">
+          <span class="pill-id">EES-002</span>
+          <span class="pill-name">活跃等级规范</span>
+        </a>
+        <a href="/standards/content-density/" class="spec-nav-pill">
+          <span class="pill-id">EES-003</span>
+          <span class="pill-name">内容密度规范</span>
+        </a>
+        <a href="/version/" class="spec-nav-pill">
+          <span class="pill-id">EES-004</span>
+          <span class="pill-name">版本协议规范</span>
+        </a>
+        <a href="/status/" class="spec-nav-pill is-active" aria-current="page">
+          <span class="pill-id">EES-005</span>
+          <span class="pill-name">运行状态规范</span>
+        </a>
+      </nav>
+    </header>
+
+    <article
+      id="article-container"
+      class="article-body post-content standards-article-body"
+      data-content-features="true"
+      data-lang="zh-CN"
+    >
+      <Content />
+    </article>
+  </div>
+
+  <ContentFeatureEnhancer lang="zh-CN" />
 </BlogLayout>

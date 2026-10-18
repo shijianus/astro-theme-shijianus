@@ -789,6 +789,7 @@ export function ThemeOverlays({
         label: t('console.status.architecture', '系统架构'),
         value: 'Astro Edge',
         tooltip: t('console.status.architectureTooltip', '基于 Astro 核心引擎与 Edge Functions 的现代响应式架构'),
+        href: '/status/',
       },
     ];
   }, [stats, posts, t, localeVariant]);

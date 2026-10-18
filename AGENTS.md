@@ -5918,5 +5918,24 @@
 - [x] **本地自动化测试与构建验收 100% 全部通过**：
   - `scripts/verify-heatmap-and-standards.mjs` 测试全部通过，验证了统一背板样式、无版权框、无评论区、实证表格行数与热力图原地锁定。
 
+### Task 27: 规范页全量隔离与色阶映射公式修复、站点概览全链路说明页升格及 Playwright 视觉验收 (`8cfb014`)
+- [x] **修复单日色阶量化公式与 KaTeX 渲染**：
+  1. 彻底解决 `"单日聚合事件数到视觉色阶（0 至 4 阶）的映射逻辑："` 后的语法与渲染异常；在 `docs/standards/activity-level.md`、`content-density.md` 与 `index.md` 顶部开启 `math: true`；
+  2. 将多行分段函数统一规范化为标准独立行 `$$` display math 块；
+  3. 配套补齐《单日色阶量化映射矩阵表》（涵盖事件区间 $E$、色阶 $C(E)$、CSS 类名、色阶饱和度语义与维护特征）及强类型 TypeScript 参考实现，杜绝公式裸文本泄露。
+- [x] **“站点概览”全量链接说明页升格为隔离规范页 (区别于普通博文)**：
+  1. 全面排查“站点概览”与侧边栏站点信息中涉及的所有 URL 链接：
+     - `/standards/` (EES-001 工程标准总纲)
+     - `/standards/activity-level/` (EES-002 活跃等级规范)
+     - `/standards/content-density/` (EES-003 内容密度规范)
+     - `/version/` (EES-004 版本协议与架构规范)
+     - `/status/` (EES-005 运行状态与服务拓扑规范)
+  2. 统一部署独立规范壳层（`.standards-spec-shell`）与 RFC 元数据徽章，统一应用 `body[data-type="standards"]` 1400px 宽屏阅读模式；
+  3. 彻底屏蔽普通博文特有的右侧栏阅读模式按钮 (`#readmode`)、评论区 (`#post-comment`)、上一篇/下一篇推荐 (`#pagination.pagination-post`)、版权卡片与 AI 摘要；
+  4. 全量部署高质感毛玻璃数据表格（Frosted Glass Table UI）、斑马纹悬浮与代码徽标。
+- [x] **Playwright 真实浏览器端到端视觉审计全绿**：
+  - 编写并执行自动化测试脚本 `scripts/verify-standards-visual.mjs`，全量覆盖 5 大规范页面的 `data-type="standards"` 标识、1254px+ 宽屏布局、博文干扰部件隐藏性、数学公式渲染与暗黑模式视觉呈现，所有断言 100% 通过（ALL AUDITS PASSED ✓）。
+
+
 
 

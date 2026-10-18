@@ -8,7 +8,7 @@ category: "工程规范"
 group: "EpoCanvas Standards"
 tags: ["EpoCanvas", "工程标准", "指标体系", "Astro", "可复核性"]
 toc: true
-math: false
+math: true
 mermaid: false
 mindmap: true
 draft: false
@@ -46,13 +46,15 @@ EES 拒绝把多维度的复杂工程质量压缩为一个单一的分数。发�
 
 ### 1.1 文档体系结构
 
-EES 规范体系由一个总纲与两个专项子规范构成，各文档分工如下：
+EES 规范体系由一个总纲与四个专项子规范构成，各文档分工如下：
 
 | 规范编号 | 规范名称 | 核心职责与回答的问题 | 对应页面路径 | 内容文件位置 |
-| --- | --- | --- | --- | --- |
-| EES-001 | 工程标准总纲 | 指标体系组织、数据链路流向、核验边界与一致性原则 | `/standards/` | `docs/standards/index.md` |
-| EES-002 | 活跃等级规范 | 近 30 天滑动窗口发布频次计算、五级阈值与时间边界 | `/standards/activity-level/` | `docs/standards/activity-level.md` |
-| EES-003 | 内容密度规范 | 正文字数估算算法、全站平均篇幅、四级阈值与阅读耗时 | `/standards/content-density/` | `docs/standards/content-density.md` |
+| :--- | :--- | :--- | :--- | :--- |
+| **EES-001** | 工程标准总纲 | 指标体系组织、数据链路流向、核验边界与一致性原则 | `/standards/` | `docs/standards/index.md` |
+| **EES-002** | 活跃等级规范 | 近 30 天滑动窗口发布频次计算、五级阈值与时间边界 | `/standards/activity-level/` | `docs/standards/activity-level.md` |
+| **EES-003** | 内容密度规范 | 正文字数估算算法、全站平均篇幅、四级阈值与阅读耗时 | `/standards/content-density/` | `docs/standards/content-density.md` |
+| **EES-004** | 版本协议规范 | 语义化版本控制、不可变 Git SHA 追溯、架构分层与授权边界 | `/version/` | `docs/standards/version.md` |
+| **EES-005** | 运行状态规范 | 全球 Anycast 边缘拓扑、SLA 可靠性承诺、探针机制与容灾降级 | `/status/` | `docs/standards/status.md` |
 
 当前配置文件标识与基线版本：
 

@@ -8,7 +8,7 @@ category: "工程规范"
 group: "EpoCanvas Standards"
 tags: ["EpoCanvas", "内容密度", "字数统计", "Markdown", "技术写作"]
 toc: true
-math: false
+math: true
 mermaid: false
 mindmap: true
 draft: false
@@ -231,12 +231,16 @@ export function estimateWordCount(entry: CollectionEntry<'posts'>): number {
 
 全站指标的计算流程如下：
 
-$$\text{TotalWords} = \sum_{i=1}^{N} W_i$$
+$$
+\text{TotalWords} = \sum_{i=1}^{N} W_i
+$$
 
-$$\text{AvgWordsPerPost} = \begin{cases} 
+$$
+\text{AvgWordsPerPost} = \begin{cases} 
 \text{Math.round}\left(\frac{\text{TotalWords}}{N}\right), & N > 0 \\
 0, & N = 0 
-\end{cases}$$
+\end{cases}
+$$
 
 关键工程约束：
 1. **先计算浮点数商，再执行四舍五入**；
@@ -255,8 +259,14 @@ $$\text{AvgWordsPerPost} = \begin{cases}
 | **全站累加** | **5,850 字** | — |
 
 执行全站平均计算：
-$$\text{Average} = \frac{5850}{3} = 1950.0$$
-$$\text{AvgWordsPerPost} = \text{Math.round}(1950.0) = 1950$$
+
+$$
+\text{Average} = \frac{5850}{3} = 1950.0
+$$
+
+$$
+\text{AvgWordsPerPost} = \text{Math.round}(1950.0) = 1950
+$$
 
 最终等级匹配：1950 落在 $[1501, 3000]$ 区间内，全站内容密度判定为 **Lv.3 High（详实系统专栏）**。
 
@@ -326,11 +336,15 @@ export function estimateReadingMinutes(entry: CollectionEntry<'posts'>): number 
 
 在全站指标聚合时，`metrics.totalReadingMinutes` 是**逐篇文章预计阅读分钟数的直接累加和**，即：
 
-$$\text{TotalReadingMinutes} = \sum_{i=1}^{N} \text{ReadingMinutes}_i$$
+$$
+\text{TotalReadingMinutes} = \sum_{i=1}^{N} \text{ReadingMinutes}_i
+$$
 
 而非：
 
-$$\text{TotalReadingMinutes} \ne \text{Math.round}\left(\frac{\text{TotalWords}}{220}\right)$$
+$$
+\text{TotalReadingMinutes} \ne \text{Math.round}\left(\frac{\text{TotalWords}}{220}\right)
+$$
 
 **数学差异证明**：
 若有 5 篇短文，每篇字数均为 60 字：

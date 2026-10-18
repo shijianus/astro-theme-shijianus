@@ -8,7 +8,7 @@ category: "工程规范"
 group: "EpoCanvas Standards"
 tags: ["EpoCanvas", "活跃等级", "发布频率", "时间窗口", "内容统计"]
 toc: true
-math: false
+math: true
 mermaid: false
 mindmap: true
 draft: false
@@ -158,7 +158,10 @@ const isInRecentWindow = pubDate >= lowerBound && pubDate <= now;
 ```
 
 其数学模型可表示为：
-$$W_{\text{calendar}} = [\text{midnight}(T_{\text{now}} - 30\text{d}), T_{\text{now}}]$$
+
+$$
+W_{\text{calendar}} = [\text{midnight}(T_{\text{now}} - 30\text{d}), T_{\text{now}}]
+$$
 
 该算法的核心特征：
 - 下界被强制校准为 30 天前那一日的本地时间 `00:00:00.000`；
@@ -178,7 +181,10 @@ const isRecentDetail = pubDate >= thirtyDaysAgo && pubDate <= now;
 ```
 
 其数学模型可表示为：
-$$W_{\text{epoch}} = [T_{\text{now}} - 2{,}592{,}000{,}000\text{ms}, T_{\text{now}}]$$
+
+$$
+W_{\text{epoch}} = [T_{\text{now}} - 2{,}592{,}000{,}000\text{ms}, T_{\text{now}}]
+$$
 
 ### 4.3 边界差异的可复核案例
 
@@ -294,15 +300,44 @@ pubDate = 2026-09-18T08:00:00.000Z
 2. 每一篇具备有效 `updatedDate` 且其年月日与 `pubDate` 不同的文章，为更新日期贡献 1 次修订事件；
 3. 同一天内发布且更新的文章，不计为两次同日事件，合并为 1 次活动。
 
-单日聚合事件数到视觉色阶（0 至 4 阶）的映射逻辑：
+单日聚合事件数到视觉色阶（0 至 4 阶）的映射逻辑由分段函数 $C(E)$ 精确定义：
 
-$$C(E) = \begin{cases} 
+$$
+C(E) = \begin{cases} 
 0, & E = 0 \\
 1, & E = 1 \\
 2, & 2 \le E \le 3 \\
 3, & 4 \le E \le 6 \\
 4, & E \ge 7 
-\end{cases}$$
+\end{cases}
+$$
+
+**单日色阶量化映射矩阵表 (Daily Activity Color Level Mapping Table)**：
+
+| 聚合事件区间 $E$ | 视觉色阶 $C(E)$ | 核心 CSS 类名 | 色阶饱和度与视觉语义 | 典型行为特征与维护指标 |
+| :--- | :--- | :--- | :--- | :--- |
+| **$E = 0$** | **Level 0 (休眠阶)** | `.activity-cell.level-0` | 无底色填充（灰阶微光，透明度 0.15） | 当日无文章新增，亦无旧文版本修订 |
+| **$E = 1$** | **Level 1 (初阶活跃)** | `.activity-cell.level-1` | 浅绿微光底色（低饱和度，温和呈现） | 单篇技术文章发布或小节修订 |
+| **$2 \le E \le 3$** | **Level 2 (常规活跃)** | `.activity-cell.level-2` | 中浅明亮青绿（中等饱和度，稳定产出） | 当日发布多篇内容或进行关键章节系统重构 |
+| **$4 \le E \le 6$** | **Level 3 (高频活跃)** | `.activity-cell.level-3` | 鲜亮饱满翠绿（高对比度，密集交付） | 密集迭代、技术专栏批量推进或全站功能重写 |
+| **$E \ge 7$** | **Level 4 (极高活跃)** | `.activity-cell.level-4` | 极高饱和高亮翠绿（最高视觉层级与微光效果） | 重大架构发布、全语系文档交付或高强度马拉松式更新 |
+
+在运行时矩阵生成中，该映射逻辑由 TypeScript 强类型判定函数保证严格执行：
+
+```typescript
+/**
+ * 将单日聚合事件数 E 映射为 0 至 4 阶视觉色阶
+ * @param count 单日有效发布与修订事件聚合总数
+ * @returns 0 | 1 | 2 | 3 | 4
+ */
+export function resolveHeatmapCellLevel(count: number): 0 | 1 | 2 | 3 | 4 {
+  if (count <= 0) return 0;
+  if (count === 1) return 1;
+  if (count <= 3) return 2;
+  if (count <= 6) return 3;
+  return 4;
+}
+```
 
 ### 7.3 热力图与发文等级的核心差异
 
