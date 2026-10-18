@@ -9847,69 +9847,6 @@ body[data-type='standards'] .standards-spec-header__desc {
   margin: 0 0 20px 0;
 }
 
-/* 规范三件套导航胶囊 */
-body[data-type='standards'] .standards-spec-nav {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 14px;
-  background: rgba(195, 218, 255, 0.45);
-  border: 1px solid rgba(66, 90, 239, 0.2);
-  border-radius: 8px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-:root[data-theme='dark'] body[data-type='standards'] .standards-spec-nav {
-  background: rgba(18, 36, 78, 0.55);
-  border-color: rgba(66, 90, 239, 0.35);
-}
-
-body[data-type='standards'] .spec-nav-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--font-color);
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(66, 90, 239, 0.16);
-  text-decoration: none !important;
-  transition: all 0.2s ease;
-}
-
-:root[data-theme='dark'] body[data-type='standards'] .spec-nav-pill {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-body[data-type='standards'] .spec-nav-pill:hover {
-  background: rgba(66, 90, 239, 0.12);
-  border-color: var(--theme-main, #425aef);
-  color: var(--theme-main, #425aef);
-  transform: translateY(-1px);
-}
-
-body[data-type='standards'] .spec-nav-pill.is-active {
-  background: var(--theme-main, #425aef) !important;
-  border-color: var(--theme-main, #425aef) !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.35);
-}
-
-body[data-type='standards'] .spec-nav-pill .pill-id {
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.08);
-  font-family: var(--font-family-mono, monospace);
-}
-
-body[data-type='standards'] .spec-nav-pill.is-active .pill-id {
-  background: rgba(255, 255, 255, 0.22);
-}
 
 /* ==========================================================================
    表格顶级 UI 优化部署 (Table UI Optimization Deployment)

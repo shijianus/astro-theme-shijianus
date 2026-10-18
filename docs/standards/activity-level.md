@@ -464,8 +464,3 @@ export function resolveHeatmapCellLevel(count: number): 0 | 1 | 2 | 3 | 4 {
     </div>
   </details>
 </div>
-
-## 13. 关联规范导航
-
-- [返回 EES-001：EpoCanvas 工程标准总纲](/standards/)
-- [阅读 EES-003：全站内容密度分级与度量规范](/standards/content-density/)

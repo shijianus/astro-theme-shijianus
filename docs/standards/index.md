@@ -48,13 +48,13 @@ EES 拒绝把多维度的复杂工程质量压缩为一个单一的分数。发�
 
 EES 规范体系由一个总纲与四个专项子规范构成，各文档分工如下：
 
-| 规范编号 | 规范名称 | 核心职责与回答的问题 | 对应页面路径 | 内容文件位置 |
-| :--- | :--- | :--- | :--- | :--- |
-| **EES-001** | 工程标准总纲 | 指标体系组织、数据链路流向、核验边界与一致性原则 | `/standards/` | `docs/standards/index.md` |
-| **EES-002** | 活跃等级规范 | 近 30 天滑动窗口发布频次计算、五级阈值与时间边界 | `/standards/activity-level/` | `docs/standards/activity-level.md` |
-| **EES-003** | 内容密度规范 | 正文字数估算算法、全站平均篇幅、四级阈值与阅读耗时 | `/standards/content-density/` | `docs/standards/content-density.md` |
-| **EES-004** | 版本协议规范 | 语义化版本控制、不可变 Git SHA 追溯、架构分层与授权边界 | `/version/` | `docs/standards/version.md` |
-| **EES-005** | 运行状态规范 | 全球 Anycast 边缘拓扑、SLA 可靠性承诺、探针机制与容灾降级 | `/status/` | `docs/standards/status.md` |
+| 规范编号 | 规范领域 | 核心职责与系统边界 | 权威数据源 |
+| :--- | :--- | :--- | :--- |
+| **EES-001** | 工程标准总纲 | 顶层指标体系组织、数据链路流向、核验边界与一致性原则 | `src/config/standards.ts` |
+| **EES-002** | 活跃等级模型 | 近 30 天滑动窗口发布频次计算、五级离散阈值与时间边界 | 博客文章集合与时序发布流 |
+| **EES-003** | 内容密度模型 | 正文字数精算算法、全站平均篇幅、四级阈值与阅读耗时 | 文章纯文本内容长度特征 |
+| **EES-004** | 版本协议规范 | 语义化版本控制、不可变 Git SHA 追溯、架构分层与授权边界 | Git 仓库提交元信息与环境变量 |
+| **EES-005** | 运行拓扑规范 | 全球 Anycast 边缘拓扑、SLA 可靠性承诺、探针机制与容灾降级 | Cloudflare 边缘指标与 D1 数据库 |
 
 当前配置文件标识与基线版本：
 
@@ -220,11 +220,9 @@ public/data/console-metrics.json（随静态资产部署至全球 CDN）
   <div class="article-tabs__panels">
     <div class="article-tabs__panel is-active">
       <p><strong>活跃等级</strong>衡量的是“发布的时间频度”。它只以滚动时间窗口内的公开发表文章数量为依据，反映的是作者近期的创作节奏。它不衡量单篇文章的篇幅厚度，不衡量历史修改频度，更不代表服务架构的可用性健康度。</p>
-      <p>详见独立子规范：<a href="/standards/activity-level/">EES-002 站长活跃等级分级与评估规范</a>。</p>
     </div>
     <div class="article-tabs__panel">
       <p><strong>内容密度</strong>衡量的是“文章的平均篇幅规模”。它以全站全部入选公开文章的算术平均字符数与词数估算为依据，反映的是全站技术沉淀的篇幅结构。它不代表单篇文章的语义含金量，也不是技术正确性或学术价值的自动认证。</p>
-      <p>详见独立子规范：<a href="/standards/content-density/">EES-003 全站内容密度分级与度量规范</a>。</p>
     </div>
   </div>
 </div>
@@ -433,21 +431,3 @@ export interface ConsoleMetricsPayload {
 - [ ] 已核查 `/api/console/data` 的 `generatedAt`、`servedAt` 与 HTTP 缓存头；
 - [ ] 已核实受限访问文章的元数据没有意外泄露至公共快照产物中；
 - [ ] 已确认所有对外展示文案与当前代码实际逻辑严格吻合。
-
-## 13. 关联规范导航
-
-<a class="article-bookmark" href="/standards/activity-level/">
-  <div class="article-bookmark__content">
-    <div class="article-bookmark__title">EES-002：站长活跃等级分级与评估规范</div>
-    <p class="article-bookmark__desc">深入了解近 30 天滑动窗口数学定义、双轨时间下界差异、多语言归组算法与 52 周热力图生成机制。</p>
-    <div class="article-bookmark__site"><span class="badge badge-primary">Activity Spec</span><span>近窗口发布频率</span></div>
-  </div>
-</a>
-
-<a class="article-bookmark" href="/standards/content-density/">
-  <div class="article-bookmark__content">
-    <div class="article-bookmark__title">EES-003：全站内容密度分级与度量规范</div>
-    <p class="article-bookmark__desc">深入了解正文字符串清理算法、UTF-16 长度特征、全站算术均值精算模型与预计阅读时长计算原理。</p>
-    <div class="article-bookmark__site"><span class="badge badge-primary">Density Spec</span><span>全站平均篇幅</span></div>
-  </div>
-</a>

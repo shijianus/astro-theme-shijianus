@@ -463,8 +463,3 @@ $$
     </div>
   </details>
 </div>
-
-## 16. 关联规范导航
-
-- [返回 EES-001：EpoCanvas 工程标准总纲](/standards/)
-- [阅读 EES-002：站长活跃等级分级与评估规范](/standards/activity-level/)

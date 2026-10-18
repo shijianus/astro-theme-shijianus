@@ -96,9 +96,9 @@ async function runAudit() {
     const recoVisible = await page.locator('#post-end-recommendation').isVisible().catch(() => false);
     console.log(`[Audit] Hidden widgets check: #readmode=${readmodeVisible}, #post-comment=${commentVisible}, #post-end-recommendation=${recoVisible}`);
 
-    // 4. Verify spec nav pills
-    const activePillText = await page.locator('.spec-nav-pill.is-active').innerText().catch(() => 'None');
-    console.log(`[Audit] Active spec nav pill = "${activePillText.replace(/\n/g, ' ')}"`);
+    // 4. Verify that standards-spec-nav is COMPLETELY REMOVED (0 elements)
+    const specNavCount = await page.locator('.standards-spec-nav').count();
+    console.log(`[Audit] .standards-spec-nav count = ${specNavCount} (Expected: 0)`);
 
     // 5. Special check for activity-level: check KaTeX formula and color mapping table
     if (item.url.includes('activity-level')) {
@@ -149,7 +149,8 @@ async function runAudit() {
       width: articleBox?.width,
       readmodeHidden: !readmodeVisible,
       commentsHidden: !commentVisible,
-      passed: dataType === 'standards' && (articleBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible,
+      specNavRemoved: specNavCount === 0,
+      passed: dataType === 'standards' && (articleBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible && specNavCount === 0,
     });
   }
 

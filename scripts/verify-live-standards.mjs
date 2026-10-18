@@ -38,12 +38,12 @@ async function verifyLive() {
     const readmodeVisible = await page.locator('#readmode').isVisible().catch(() => false);
     const commentVisible = await page.locator('#post-comment').isVisible().catch(() => false);
     const recoVisible = await page.locator('#post-end-recommendation').isVisible().catch(() => false);
-    const activePill = await page.locator('.spec-nav-pill.is-active').innerText().catch(() => 'None');
+    const specNavCount = await page.locator('.standards-spec-nav').count();
 
     console.log(`[Live Audit] HTTP Status: ${status}`);
     console.log(`[Live Audit] body[data-type]: "${dataType}"`);
     console.log(`[Live Audit] Shell width: ${shellBox?.width}px`);
-    console.log(`[Live Audit] Active Pill: "${activePill.replace(/\n/g, ' ')}"`);
+    console.log(`[Live Audit] .standards-spec-nav count: ${specNavCount} (Expected: 0)`);
     console.log(`[Live Audit] Hidden Widgets: readmode=${!readmodeVisible}, comment=${!commentVisible}, reco=${!recoVisible}`);
 
     if (r.path.includes('activity-level')) {
@@ -78,7 +78,8 @@ async function verifyLive() {
       width: shellBox?.width,
       readmodeHidden: !readmodeVisible,
       commentsHidden: !commentVisible,
-      passed: status === 200 && dataType === 'standards' && (shellBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible,
+      specNavRemoved: specNavCount === 0,
+      passed: status === 200 && dataType === 'standards' && (shellBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible && specNavCount === 0,
     });
   }
 
