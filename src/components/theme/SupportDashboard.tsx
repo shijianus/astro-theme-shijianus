@@ -880,7 +880,7 @@ export const SupportDashboard: React.FC = () => {
               <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" />
             </button>
             <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-              🔒 {t('support.stripeFootnote', '由 Stripe 提供金融级加密结账 · 支持 Apple Pay / Google Pay / 国际信用卡')}
+              🔒 {t('support.stripeFootnote', '由 Stripe 提供支付页面与安全机制 · 可用方式按环境显示')}
             </p>
           </div>
         </div>
@@ -1449,7 +1449,7 @@ export const SupportDashboard: React.FC = () => {
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                         {searchQuery
                           ? convertText('请尝试更换关键词搜索', locale)
-                          : convertText('所有通过 Stripe 国际收银台、微信、支付宝等完成的赞赏均在此实时公开展示。欢迎通过上方收银台成为第一位支持者 ✨', locale)}
+                          : convertText('名录会在服务端完成记录与筛选后更新，可能受支付、网络与数据库状态影响。欢迎通过上方收银台支持本站 ✨', locale)}
                       </p>
                     </td>
                   </tr>
