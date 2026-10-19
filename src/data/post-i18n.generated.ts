@@ -142,21 +142,21 @@ export const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: str
     "fr": "Inventaire complet ! Guide complet pour l'obtention des niveaux de lecteur, titres et badges du blog EpoCanvas (Mise à jour continue en 2026)",
     "es": "¡Análisis completo! Guía definitiva para obtener niveles, títulos y insignias de lector del blog EpoCanvas (actualización continua 2026)",
     "de": "Umfassende Übersicht! Der vollständige Leitfaden zum Erwerb von Leserleveln, Titeln und Abzeichen im EpoCanvas Blog (Kontinuierlich aktualisiert 2026)",
-    "zh-Hant": "全網盤點！EpoCanvas 部落格讀者等級、稱號與徽章獲取完全指南（2026 持續更新）"
+    "zh-Hant": "EpoCanvas 社群身份、等級與徽章說明"
   },
   "全面盘点 EpoCanvas 博客原创自研的信任阶梯（TL.0 ~ TL.100+）、11 级常规读者称号、6 大绝版荣誉称号、管理员与站长权限、15+ 枚成就徽章的判定算法与解锁秘籍。LV 准入门槛与 TL 权重双轨制、35分活动封顶、突破100+特权、瀑布锁链、防踩坑指北与名片排版全揭秘。": {
     "en": "A comprehensive inventory of EpoCanvas blog's original self-developed Trust Ladder (TL.0 ~ TL.100+), 11 levels of regular reader titles, 6 major out-of-print honorary titles, administrator and webmaster permissions, and the judgment algorithms and unlock secrets for 15+ achievement badges. Full revelation of the LV entry threshold and TL weight dual-track system, 35-point activity cap, breakthrough 100+ privileges, waterfall chain, anti-pitfall guide, and business card layout.",
     "fr": "Inventaire complet de l'échelle de confiance (TL.0 ~ TL.100+) développée par le blog EpoCanvas, des 11 titres de lecteur réguliers, des 6 titres honorifiques rares, des permissions d'administrateur et de webmaster, ainsi que des algorithmes de détermination et des astuces de déverrouillage pour plus de 15 badges de réussite. Le système à double voie des seuils d'entrée LV et des pondérations TL, le plafond de 35 points pour les activités, les privilèges au-delà de 100+, les chaînes en cascade, le guide anti-pièges et la révélation complète de la mise en page des cartes de visite.",
     "es": "Análisis exhaustivo del sistema de confianza (TL.0 ~ TL.100+) desarrollado por el blog EpoCanvas, 11 niveles de títulos de lector regulares, 6 títulos honoríficos exclusivos, permisos de administrador y webmaster, y los algoritmos de determinación y secretos de desbloqueo de más de 15 insignias de logros. Revelación completa del sistema de doble vía de umbral de entrada LV y peso TL, límite de 35 puntos por actividad, privilegios para superar el 100+, cadenas de cascada, guía para evitar trampas y diseño de tarjetas de presentación.",
     "de": "Eine umfassende Übersicht über die von EpoCanvas Blog selbst entwickelten Vertrauensstufen (TL.0 ~ TL.100+), 11 reguläre Lesertitel, 6 große vergriffene Ehrentitel, Administrator- und Webmaster-Berechtigungen, sowie die Bewertungsalgorithmen und Freischaltgeheimnisse von über 15 Erfolgsabzeichen. Das zweigleisige System aus LV-Zugangsschwellen und TL-Gewichtung, die 35-Punkte-Obergrenze für Aktivitäten, Privilegien für über 100+, Kaskadenketten, ein Leitfaden zur Vermeidung von Fallstricken und die vollständige Enthüllung des Visitenkarten-Layouts.",
-    "zh-Hant": "全面盤點 EpoCanvas 部落格原創自研的信任階梯（TL.0 ~ TL.100+）、11 級常規讀者稱號、6 大絕版榮譽稱號、管理員與站長權限、15+ 枚成就徽章的判定演算法與解鎖秘籍。LV 準入門檻與 TL 權重雙軌制、35 分活動封頂、突破 100+ 特權、瀑布鎖鏈、防踩坑指北與名片排版全揭秘。"
+    "zh-Hant": "以目前可核對的客戶端與服務端程式碼，說明 LV、TL、社群角色、成就徽章與佩戴規則；同時標出仍待統一的身份計算差異。"
   },
   "全面盘点 EpoCanvas 博客原创自研的信任阶梯（TL.0 ~ TL.100+）、11 级常规读者称号、6 大绝版荣誉称号、管理员与站长权限、15+ 枚成就...": {
     "en": "A comprehensive inventory of EpoCanvas blog's original self-developed Trust Ladd...",
     "fr": "Inventaire complet de l'échelle de confiance (TL.0 ~ TL.100+) développée par le...",
     "es": "Análisis exhaustivo del sistema de confianza (TL.0 ~ TL.100+) desarrollado por e...",
     "de": "Eine umfassende Übersicht über die von EpoCanvas Blog selbst entwickelten Vertra...",
-    "zh-Hant": "全面盤點 EpoCanvas 部落格原創自研的信任階梯（TL.0 ~ TL.100+）、11 級常規讀者稱號、6 大絕版榮譽稱號、管理員與站長權限、15+ 枚成..."
+    "zh-Hant": "以目前可核對的客戶端與服務端程式碼，說明 LV、TL、社群角色、成就徽章與佩戴規則；同時標出仍待統一的身份計算差異。"
   },
   "社区指南": {
     "en": "Community Guide",
@@ -170,7 +170,7 @@ export const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: str
     "fr": "Communauté de lecteurs",
     "es": "Comunidad de lectores",
     "de": "Leser-Community",
-    "zh-Hant": "讀者社群"
+    "zh-Hant": "讀者身份"
   },
   "等级阶梯": {
     "en": "Level Hierarchy",
@@ -191,7 +191,7 @@ export const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: str
     "fr": "EpoCanvas",
     "es": "EpoCanvas",
     "de": "EpoCanvas",
-    "zh-Hant": "EpoCanvas"
+    "zh-Hant": "KaTeX"
   },
   "内容优先的首页，为什么比功能堆叠更耐用": {
     "en": "Content-First Homepages: Why They're More Durable Than Feature Stacks",
@@ -226,49 +226,49 @@ export const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: str
     "fr": "Guide panoramique des formats de contenu pour générateurs de sites statiques (SSG) et thèmes de blog : du support courant aux fonctionnalités spéciales, interactions avec les menus déroulants et embellissement typographique",
     "es": "Guía panorámica de formatos de contenido para generadores de sitios estáticos (SSG) y temas de blog: desde soporte principal hasta funciones especiales, interacción con menús desplegables y embellecimiento tipográfico",
     "de": "Statische Seitengeneratoren (SSG) und Umfassender Leitfaden zu Blog-Themen-Inhaltsformaten: Von Mainstream-Unterstützung bis zu speziellen Funktionen, Dropdown-Interaktionen und typografischer Verschönerung",
-    "zh-Hant": "靜態站點生成器（SSG）與部落格主題內容格式全景指南：從主流支援到特異功能、下拉框互動與排版美化"
+    "zh-Hant": "EpoCanvas 內容格式與 Markdown 實作指南"
   },
   "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流静态站点与博客系统的内容格式支持清单。从 Markdown、MDX、HTML、AsciiDoc、Org-mode、RST 到全量实装的 WordPress Post Formats、交互式下拉框切换器、手风琴折叠、KaTeX 数学公式、Mermaid 图表与密码加密特异功能。": {
     "en": "A comprehensive and systematic overview of content format support for mainstream static site and blog systems like Hugo, Jekyll, Eleventy, Astro, Hexo, and WordPress. Covering Markdown, MDX, HTML, AsciiDoc, Org-mode, RST, to fully implemented WordPress Post Formats, interactive dropdown switchers, accordion collapses, KaTeX mathematical formulas, Mermaid diagrams, and password encryption special features.",
     "fr": "Inventaire systématique et complet des formats de contenu pris en charge par les principaux systèmes de sites statiques et de blogs tels que Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress. Du Markdown, MDX, HTML, AsciiDoc, Org-mode, RST aux formats de publication WordPress entièrement implémentés, sélecteurs interactifs à liste déroulante, accordéons, formules mathématiques KaTeX, diagrammes Mermaid et fonctionnalités spéciales de chiffrement par mot de passe.",
     "es": "Revisión sistemática completa de la lista de soporte de formatos de contenido para los principales sistemas de sitios estáticos y blogs como Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress. Desde Markdown, MDX, HTML, AsciiDoc, Org-mode, RST hasta la implementación completa de WordPress Post Formats, selectores desplegables interactivos, acordeones, fórmulas matemáticas KaTeX, diagramas Mermaid y funciones especiales de cifrado de contraseña.",
     "de": "Eine umfassende und systematische Übersicht über die wichtigsten statischen Websites und Blog-Systeme wie Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress und deren unterstützte Inhaltsformate. Von Markdown, MDX, HTML, AsciiDoc, Org-mode, RST bis hin zu vollständig implementierten WordPress Post Formats, interaktiven Dropdown-Umschaltern, Akkordeon-Faltfunktionen, KaTeX-Mathematikformeln, Mermaid-Diagrammen und speziellen Passwortverschlüsselungsfunktionen.",
-    "zh-Hant": "全面系統梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流靜態站點與部落格系統的內容格式支援清單。從 Markdown、MDX、HTML、AsciiDoc、Org-mode、RST 到全量實裝的 WordPress Post Formats、互動式下拉框切換器、手風琴摺疊、KaTeX 數學公式、Mermaid 圖表與密碼加密特異功能。"
+    "zh-Hant": "以本專案目前的 Astro 內容管線為準，說明 Markdown、MDX、GFM、數學式、程式碼、表格、互動元件、圖表、媒體與受保護內容的可用範圍、寫法與限制。"
   },
   "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流静态站点与博客系统的内容格式支持清单。从 Markdow...": {
     "en": "A comprehensive and systematic overview of content format support for mainstream...",
     "fr": "Inventaire systématique et complet des formats de contenu pris en charge par les...",
     "es": "Revisión sistemática completa de la lista de soporte de formatos de contenido pa...",
     "de": "Eine umfassende und systematische Übersicht über die wichtigsten statischen Webs...",
-    "zh-Hant": "全面系統梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流靜態站點與部落格系統的內容格式支援清單。從 Markdo..."
+    "zh-Hant": "以本專案目前的 Astro 內容管線為準，說明 Markdown、MDX、GFM、數學式、程式碼、表格、互動元件、圖表、媒體與受保護內容的可用範圍、寫法與限制。"
   },
   "SSG": {
     "en": "SSG",
     "fr": "SSG",
     "es": "SSG",
     "de": "SSG",
-    "zh-Hant": "SSG"
+    "zh-Hant": "Markdown"
   },
   "MDX": {
     "en": "MDX",
     "fr": "MDX",
     "es": "MDX",
     "de": "MDX",
-    "zh-Hant": "MDX"
+    "zh-Hant": "Astro"
   },
   "主题格式": {
     "en": "Theme Formats",
     "fr": "Formats de thème",
     "es": "Formatos de Tema",
     "de": "Themenformate",
-    "zh-Hant": "主題格式"
+    "zh-Hant": "GFM"
   },
   "排版规范": {
     "en": "Typography Standards",
     "fr": "Normes typographiques",
     "es": "Estándares Tipográficos",
     "de": "Typografie-Standards",
-    "zh-Hant": "排版規範"
+    "zh-Hant": "Mermaid"
   },
   "Mindmap": {
     "en": "Mindmap",
@@ -282,7 +282,7 @@ export const POST_TRANSLATIONS: Record<string, { en: string; fr: string; es: str
     "fr": "Carte mentale",
     "es": "Mapa Mental",
     "de": "Gedankenkarte",
-    "zh-Hant": "心智圖"
+    "zh-Hant": "思维导图"
   },
   "示例：Astro 特殊格式与特异功能综合测试大全": {
     "en": "Example: Comprehensive Test of Astro's Special Formats and Unique Features",

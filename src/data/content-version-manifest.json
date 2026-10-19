@@ -162,10 +162,10 @@
     "updatedDate": "2026-09-11"
   },
   "src/content/posts/badges-guide-zh-Hant.md": {
-    "contentHash": "81de3f71de1ed2358850af900dbd4940635540f7909a600d60b9781bc2644426",
-    "version": "v0.0.1",
+    "contentHash": "dc1aa44cc4a612132858e0928e92c5c7e6c74aa617f9f677a0eea484cff143b6",
+    "version": "v0.1.0",
     "pubDate": "2026-09-11",
-    "updatedDate": "2026-09-11"
+    "updatedDate": "2026-10-19"
   },
   "src/content/posts/badges-guide.md": {
     "contentHash": "22a7a82b17ce22f06c4c88a89afbcd46d5c230bf40941eafc1dfc0eb6dd59770",
@@ -234,10 +234,10 @@
     "updatedDate": "2026-08-27"
   },
   "src/content/posts/content-formats-and-markup-mastery-zh-Hant.md": {
-    "contentHash": "083d636c7f6eed5ac6b5990572dda30d9e1d8bd1ade79b1b98bb2ec00b86802e",
-    "version": "v0.0.1",
+    "contentHash": "c9fb9d526b9ac1aa16700c621056ad15d8f36afea5d5cff1d8a533c775ba32f9",
+    "version": "v0.2.0",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-10-19"
   },
   "src/content/posts/content-formats-and-markup-mastery.md": {
     "contentHash": "51bf6b830bd05d885d550104f178fadd350567b0cae13064dda4f421d6ca0f25",

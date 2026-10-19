@@ -152,8 +152,8 @@
       "zh-Hant": {
         "filename": "badges-guide-zh-Hant.md",
         "slug": "badges-guide-zh-Hant",
-        "title": "全網盤點！EpoCanvas 部落格讀者等級、稱號與徽章獲取完全指南（2026 持續更新）",
-        "isAiGenerated": true
+        "title": "EpoCanvas 社群身份、等級與徽章說明",
+        "isAiGenerated": false
       },
       "zh-CN": {
         "filename": "badges-guide.md",
@@ -234,8 +234,8 @@
       "zh-Hant": {
         "filename": "content-formats-and-markup-mastery-zh-Hant.md",
         "slug": "content-formats-and-markup-mastery-zh-Hant",
-        "title": "靜態站點生成器（SSG）與部落格主題內容格式全景指南：從主流支援到特異功能、下拉框互動與排版美化",
-        "isAiGenerated": true
+        "title": "EpoCanvas 內容格式與 Markdown 實作指南",
+        "isAiGenerated": false
       },
       "zh-CN": {
         "filename": "content-formats-and-markup-mastery.md",

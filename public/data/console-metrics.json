@@ -1,17 +1,17 @@
 {
   "ok": true,
-  "generatedAt": "2026-10-19T06:33:15.808Z",
+  "generatedAt": "2026-10-19T08:02:36.830Z",
   "stats": {
     "posts": 30,
     "totalWords": 100922,
     "readingMinutes": 461,
     "avgWordsPerPost": 3364,
     "uptimeDays": 1022,
-    "recentPostCount30d": 7,
-    "activeStatus": "Status 3",
-    "activeLevel": "Lv.3",
-    "activeTitle": "高频迭代",
-    "activeBadge": "Lv.3 High",
+    "recentPostCount30d": 3,
+    "activeStatus": "Status 2",
+    "activeLevel": "Lv.2",
+    "activeTitle": "稳定维护",
+    "activeBadge": "Lv.2 Standard",
     "activeHref": "/standards/activity-level/",
     "densityStatus": "Level 4 (Ultra)",
     "densityLevel": "Lv.4",
@@ -138,16 +138,16 @@
   },
   "currentTiers": {
     "activity": {
-      "key": "status-3",
-      "status": "Status 3",
-      "level": "Lv.3",
-      "badge": "Lv.3 High",
-      "title": "高频迭代",
-      "minPosts": 5,
-      "maxPosts": 8,
-      "description": "近 30 天发文 5 ~ 8 篇，保持高质量与快节奏迭代更新",
-      "paceGuide": "每周 1 ~ 2 篇（高产持续创作阶段）",
-      "badgeColor": "#425aef"
+      "key": "status-2",
+      "status": "Status 2",
+      "level": "Lv.2",
+      "badge": "Lv.2 Standard",
+      "title": "稳定维护",
+      "minPosts": 3,
+      "maxPosts": 4,
+      "description": "近 30 天发文 3 ~ 4 篇，系统节奏稳定，稳步推进技术专题",
+      "paceGuide": "每周约 1 篇（健康稳定博主基线）",
+      "badgeColor": "#0052d9"
     },
     "density": {
       "key": "level-4",
@@ -1264,8 +1264,15 @@
     {
       "date": "2026-04-01",
       "displayDate": "2026/4/1",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "主题重构启动记录 (更新)",
+          "href": "/posts/hello-world/",
+          "type": "update",
+          "date": "2026-04-01"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -1313,8 +1320,15 @@
     {
       "date": "2026-04-07",
       "displayDate": "2026/4/7",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "把主题配置做成可接 API 的契约 (更新)",
+          "href": "/posts/api-ready-theme-contracts/",
+          "type": "update",
+          "date": "2026-04-07"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -1341,8 +1355,15 @@
     {
       "date": "2026-04-10",
       "displayDate": "2026/4/10",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "极客感界面为什么更需要可读性 (更新)",
+          "href": "/posts/readable-geek-interfaces/",
+          "type": "update",
+          "date": "2026-04-10"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -1362,8 +1383,15 @@
     {
       "date": "2026-04-12",
       "displayDate": "2026/4/12",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "通过重构来学习，比单纯临摹更有效 (更新)",
+          "href": "/posts/learning-through-rebuilds/",
+          "type": "update",
+          "date": "2026-04-12"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -1390,8 +1418,15 @@
     {
       "date": "2026-04-15",
       "displayDate": "2026/4/15",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "内容优先的首页，为什么比功能堆叠更耐用 (更新)",
+          "href": "/posts/content-first-homepage/",
+          "type": "update",
+          "date": "2026-04-15"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -1460,15 +1495,40 @@
     {
       "date": "2026-04-24",
       "displayDate": "2026/4/24",
-      "level": 0,
-      "posts": [],
+      "level": 2,
+      "posts": [
+        {
+          "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块 (更新)",
+          "href": "/posts/anzhiyu-markdown-showcase/",
+          "type": "update",
+          "date": "2026-04-24"
+        },
+        {
+          "title": "Markdown 扫描与展示能力全量示例 (更新)",
+          "href": "/posts/markdown-scan-showcase/",
+          "type": "update",
+          "date": "2026-04-24"
+        }
+      ],
       "isFuture": false
     },
     {
       "date": "2026-04-25",
       "displayDate": "2026/4/25",
-      "level": 2,
+      "level": 3,
       "posts": [
+        {
+          "title": "文章访问控制实验室 (更新)",
+          "href": "/posts/access-control-lab/",
+          "type": "update",
+          "date": "2026-04-25"
+        },
+        {
+          "title": "封面、图床与视频适配实验室 (更新)",
+          "href": "/posts/media-capability-lab/",
+          "type": "update",
+          "date": "2026-04-25"
+        },
         {
           "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
           "href": "/posts/anzhiyu-markdown-showcase/",
@@ -2361,8 +2421,87 @@
     {
       "date": "2026-08-27",
       "displayDate": "2026/8/27",
-      "level": 0,
-      "posts": [],
+      "level": 4,
+      "posts": [
+        {
+          "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化 (更新)",
+          "href": "/posts/content-formats-and-markup-mastery/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：Astro 特殊格式与特异功能综合测试大全 (更新)",
+          "href": "/posts/example-all-special-formats/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：Callouts 告示框与提示卡完整展示 (更新)",
+          "href": "/posts/example-callouts/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：代码块全量增强功能展示 (更新)",
+          "href": "/posts/example-code-enhancements/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：折叠面板、手风琴与下拉框格式展示 (更新)",
+          "href": "/posts/example-details-collapse/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：富媒体嵌入、Post Formats 与聊天气泡展示 (更新)",
+          "href": "/posts/example-embeds/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：Front Matter 扩展字段与 Zod 验证展示 (更新)",
+          "href": "/posts/example-frontmatter-fields/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：图片画廊、拍立得相纸与灯箱展示 (更新)",
+          "href": "/posts/example-gallery-figure/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：KaTeX 数学公式渲染展示 (更新)",
+          "href": "/posts/example-math/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：Mermaid 11 图表与可视化展示 (更新)",
+          "href": "/posts/example-mermaid/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：Markmap 动态交互式思维导图与无限层级扩展 (更新)",
+          "href": "/posts/example-mindmap/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "示例：多标签页与多代码版本切换展示 (更新)",
+          "href": "/posts/example-tabs/",
+          "type": "update",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版 (更新)",
+          "href": "/posts/markdown-syntax-mastery/",
+          "type": "update",
+          "date": "2026-08-27"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -2545,8 +2684,15 @@
     {
       "date": "2026-09-11",
       "displayDate": "2026/9/11",
-      "level": 0,
-      "posts": [],
+      "level": 1,
+      "posts": [
+        {
+          "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新） (更新)",
+          "href": "/posts/badges-guide/",
+          "type": "update",
+          "date": "2026-09-11"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -2601,8 +2747,33 @@
     {
       "date": "2026-09-18",
       "displayDate": "2026/9/18",
-      "level": 0,
-      "posts": [],
+      "level": 3,
+      "posts": [
+        {
+          "title": "测试i18n双向容错解析文章 (更新)",
+          "href": "/posts/test-i18n-resilience/",
+          "type": "update",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "测试矩阵：大小写不规范测试主篇 (更新)",
+          "href": "/posts/test-matrix-casing/",
+          "type": "update",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "测试矩阵：双后缀文件名下的中文翻译 (更新)",
+          "href": "/posts/test-matrix-native/",
+          "type": "update",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "Test Matrix: Native English Canonical Post (更新)",
+          "href": "/posts/test-native-english-clean/",
+          "type": "update",
+          "date": "2026-09-18"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -2640,8 +2811,27 @@
     {
       "date": "2026-09-20",
       "displayDate": "2026/9/20",
-      "level": 0,
-      "posts": [],
+      "level": 2,
+      "posts": [
+        {
+          "title": "Dot Notation Casing Test (English) (更新)",
+          "href": "/posts/test-audit-dot-casing/",
+          "type": "update",
+          "date": "2026-09-20"
+        },
+        {
+          "title": "单语言独立文章隔离审计测试 (更新)",
+          "href": "/posts/test-audit-monolingual-single/",
+          "type": "update",
+          "date": "2026-09-20"
+        },
+        {
+          "title": "多语言全矩阵极限审计测试 (中文版) (更新)",
+          "href": "/posts/test-audit-polyglot-matrix/",
+          "type": "update",
+          "date": "2026-09-20"
+        }
+      ],
       "isFuture": false
     },
     {
@@ -2864,7 +3054,7 @@
       "displayDate": "2026/10/19",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-20",
@@ -2907,210 +3097,210 @@
       "title": "Dot Notation Casing Test (English)",
       "href": "/posts/test-audit-dot-casing/",
       "pubDate": "2026-09-21",
-      "updatedDate": null,
+      "updatedDate": "2026-09-20",
       "category": "Audit Test"
     },
     {
       "title": "单语言独立文章隔离审计测试",
       "href": "/posts/test-audit-monolingual-single/",
       "pubDate": "2026-09-21",
-      "updatedDate": null,
+      "updatedDate": "2026-09-20",
       "category": "审计测试"
     },
     {
       "title": "多语言全矩阵极限审计测试 (中文版)",
       "href": "/posts/test-audit-polyglot-matrix/",
       "pubDate": "2026-09-21",
-      "updatedDate": null,
+      "updatedDate": "2026-09-20",
       "category": "审计测试"
     },
     {
       "title": "测试i18n双向容错解析文章",
       "href": "/posts/test-i18n-resilience/",
       "pubDate": "2026-09-19",
-      "updatedDate": "2026-09-19",
+      "updatedDate": "2026-09-18",
       "category": "测试验证"
     },
     {
       "title": "测试矩阵：大小写不规范测试主篇",
       "href": "/posts/test-matrix-casing/",
       "pubDate": "2026-09-19",
-      "updatedDate": null,
+      "updatedDate": "2026-09-18",
       "category": "测试"
     },
     {
       "title": "测试矩阵：双后缀文件名下的中文翻译",
       "href": "/posts/test-matrix-native/",
       "pubDate": "2026-09-19",
-      "updatedDate": null,
+      "updatedDate": "2026-09-18",
       "category": "测试"
     },
     {
       "title": "Test Matrix: Native English Canonical Post",
       "href": "/posts/test-native-english-clean/",
       "pubDate": "2026-09-19",
-      "updatedDate": null,
+      "updatedDate": "2026-09-18",
       "category": "Test"
     },
     {
       "title": "全网盘点！EpoCanvas 博客读者等级、称号与徽章获取完全指南（2026 持续更新）",
       "href": "/posts/badges-guide/",
       "pubDate": "2026-09-12",
-      "updatedDate": null,
+      "updatedDate": "2026-09-11",
       "category": "社区指南"
     },
     {
       "title": "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化",
       "href": "/posts/content-formats-and-markup-mastery/",
       "pubDate": "2026-08-28",
-      "updatedDate": "2026-08-28",
+      "updatedDate": "2026-08-27",
       "category": "系统设计"
     },
     {
       "title": "示例：Astro 特殊格式与特异功能综合测试大全",
       "href": "/posts/example-all-special-formats/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：Callouts 告示框与提示卡完整展示",
       "href": "/posts/example-callouts/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：代码块全量增强功能展示",
       "href": "/posts/example-code-enhancements/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：折叠面板、手风琴与下拉框格式展示",
       "href": "/posts/example-details-collapse/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：富媒体嵌入、Post Formats 与聊天气泡展示",
       "href": "/posts/example-embeds/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：Front Matter 扩展字段与 Zod 验证展示",
       "href": "/posts/example-frontmatter-fields/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：图片画廊、拍立得相纸与灯箱展示",
       "href": "/posts/example-gallery-figure/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：KaTeX 数学公式渲染展示",
       "href": "/posts/example-math/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：Mermaid 11 图表与可视化展示",
       "href": "/posts/example-mermaid/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：Markmap 动态交互式思维导图与无限层级扩展",
       "href": "/posts/example-mindmap/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "示例：多标签页与多代码版本切换展示",
       "href": "/posts/example-tabs/",
       "pubDate": "2026-08-28",
-      "updatedDate": null,
+      "updatedDate": "2026-08-27",
       "category": "示例"
     },
     {
       "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版",
       "href": "/posts/markdown-syntax-mastery/",
       "pubDate": "2026-08-28",
-      "updatedDate": "2026-08-28",
+      "updatedDate": "2026-08-27",
       "category": "前端工程"
     },
     {
       "title": "文章访问控制实验室",
       "href": "/posts/access-control-lab/",
       "pubDate": "2026-04-26",
-      "updatedDate": "2026-04-26",
+      "updatedDate": "2026-04-25",
       "category": "系统设计"
     },
     {
       "title": "封面、图床与视频适配实验室",
       "href": "/posts/media-capability-lab/",
       "pubDate": "2026-04-26",
-      "updatedDate": "2026-04-26",
+      "updatedDate": "2026-04-25",
       "category": "前端工程"
     },
     {
       "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
       "href": "/posts/anzhiyu-markdown-showcase/",
       "pubDate": "2026-04-25",
-      "updatedDate": "2026-04-25",
+      "updatedDate": "2026-04-24",
       "category": "前端工程"
     },
     {
       "title": "Markdown 扫描与展示能力全量示例",
       "href": "/posts/markdown-scan-showcase/",
       "pubDate": "2026-04-25",
-      "updatedDate": null,
+      "updatedDate": "2026-04-24",
       "category": "系统设计"
     },
     {
       "title": "内容优先的首页，为什么比功能堆叠更耐用",
       "href": "/posts/content-first-homepage/",
       "pubDate": "2026-04-16",
-      "updatedDate": null,
+      "updatedDate": "2026-04-15",
       "category": "前端工程"
     },
     {
       "title": "通过重构来学习，比单纯临摹更有效",
       "href": "/posts/learning-through-rebuilds/",
       "pubDate": "2026-04-13",
-      "updatedDate": null,
+      "updatedDate": "2026-04-12",
       "category": "学习笔记"
     },
     {
       "title": "极客感界面为什么更需要可读性",
       "href": "/posts/readable-geek-interfaces/",
       "pubDate": "2026-04-11",
-      "updatedDate": null,
+      "updatedDate": "2026-04-10",
       "category": "产品观察"
     },
     {
       "title": "把主题配置做成可接 API 的契约",
       "href": "/posts/api-ready-theme-contracts/",
       "pubDate": "2026-04-08",
-      "updatedDate": null,
+      "updatedDate": "2026-04-07",
       "category": "系统设计"
     },
     {
       "title": "主题重构启动记录",
       "href": "/posts/hello-world/",
       "pubDate": "2026-04-02",
-      "updatedDate": null,
+      "updatedDate": "2026-04-01",
       "category": "前端工程"
     }
   ]
