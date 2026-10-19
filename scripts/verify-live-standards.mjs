@@ -39,7 +39,7 @@ async function verifyLive() {
     const specShellCount = await page.locator('.standards-spec-shell').count();
     const headerBox = await page.locator('.standards-spec-header').boundingBox();
     const tagsCount = await page.locator('.standards-spec-header .post-hero__badges').count();
-    const statsCount = await page.locator('.standards-spec-header .post-hero__meta-grid').count();
+    const metaGridCount = await page.locator('.standards-spec-header .post-hero__meta-grid').count();
     const wavesCount = await page.locator('.standards-spec-header .post-hero__waves').count();
     const readmodeVisible = await page.locator('#readmode').isVisible().catch(() => false);
     const commentVisible = await page.locator('#post-comment').isVisible().catch(() => false);
@@ -52,7 +52,7 @@ async function verifyLive() {
     console.log(`[Live Audit] .standards-spec-shell count: ${specShellCount} (Expected: 0)`);
     console.log(`[Live Audit] .standards-spec-header height: ${headerBox?.height}px`);
     console.log(`[Live Audit] tags in header: ${tagsCount} (Expected: 0)`);
-    console.log(`[Live Audit] stats in header: ${statsCount} (Expected: 0)`);
+    console.log(`[Live Audit] metadata grids in header: ${metaGridCount} (Expected: 1)`);
     console.log(`[Live Audit] waves in header: ${wavesCount} (Expected: 1)`);
     console.log(`[Live Audit] Hidden Widgets: readmode=${!readmodeVisible}, comment=${!commentVisible}, reco=${!recoVisible}`);
 
@@ -80,7 +80,7 @@ async function verifyLive() {
     await page.screenshot({ path: shotPath });
     console.log(`[Live Audit] Saved page screenshot to: ${shotPath}`);
 
-    const isHeaderValid = (headerBox?.height || 0) >= 380 && tagsCount === 0 && statsCount === 0 && wavesCount === 1;
+    const isHeaderValid = (headerBox?.height || 0) >= 380 && tagsCount === 0 && metaGridCount === 1 && wavesCount === 1;
     const isMainValid = (mainBox?.width || 0) > 1000 && articleContainerCount === 0 && specShellCount === 0;
 
     results.push({
@@ -92,7 +92,7 @@ async function verifyLive() {
       headerHeight: Math.round(headerBox?.height || 0),
       articleContainerRemoved: articleContainerCount === 0,
       noTags: tagsCount === 0,
-      noStats: statsCount === 0,
+      singleMetadataGrid: metaGridCount === 1,
       passed: status === 200 && dataType === 'standards' && isMainValid && isHeaderValid && !readmodeVisible && !commentVisible,
     });
   }
