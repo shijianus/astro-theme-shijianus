@@ -5979,3 +5979,25 @@
   4. `.standards-spec-header` 高度达到 426px ~ 432px（严格在 390px ~ 440px 区间），无 tag、无 stats、水波纹为 1；
   5. 全部断言通过率 100%（ALL AUDITS PASSED ✓），截取完整视觉报告。
 
+### Task 30: Hero Header 中上部排版与留白收敛、版本号与发布/更新双日期体系及 Build 阶段自动推进小版本 (`cb5069b`)
+- [x] **Hero Header 视觉重构与留白收敛 (Upper-Middle Placement & Whitespace Reduction)**:
+  1. 将 `.standards-spec-header` 与 `.post-hero` 标题与副标题由原本的垂直居中（`justify-content: center`）调整为中上部位锚定（`justify-content: flex-start`，`padding-top: clamp(34px, 5vh, 52px)`），彻底消除原 432px 高度下标题上方与下方的巨幅空洞感；
+  2. 深度收敛 `.post-hero__inner` 的留白：将原本固定 `68px` 的过大内边距收敛为自适应 `clamp(34px, 4.8vh, 48px) clamp(1.5rem, 4vw, 3.5rem) clamp(24px, 3vh, 36px)`，保证视觉中心稳定在视口中上部（30% 水位线）；
+  3. 保留底部安知鱼 4 层 Parallax 动态视差水波纹动画与纯色蓝底渐变，达到饱满灵动的视觉美感。
+- [x] **版本号、发布日期与更新日期全链路集成 (Versioning & Date System)**:
+  1. 规范专属 `StandardsHero.astro` 深度集成：正式展示 `版本 vX.Y.Z`、`发表于 MM/DD/YY`、`更新于 MM/DD/YY`（精确到日，如 `10/18/26`），杜绝标签与阅读时长干扰；
+  2. 普通博文 `PostHero.astro` 与 `src/pages/posts/[slug].astro` 同步支持版本与双日期：默认开启展示（`showVersion: true`，`showDates: true`），站长可在 `siteConfig.post.hero` 中自主配置开关；
+  3. 扩充 `src/content.config.ts` 的 `postsCollection` 架构以合法校验 `version: z.string().optional()`。
+- [x] **Build 阶段内容 Diff 智能探测、自动推进小版本与日期同步 (Build-Time Auto Patch Bump)**:
+  1. 新增 `scripts/sync-content-versions.mjs`，在 `package.json` 的 `prebuild`、`build`、`build:static` 中前置自动执行；
+  2. 纯内容 Hash 算法：剥离 `version` 与 `updatedDate` 干扰项，计算正文与实质元信息的 SHA-256 签名，持久化至 `src/data/content-version-manifest.json`；
+  3. 智能判定机制：
+     - 若作者未手动更新版本号且内容发生了变动，自动向后推进一小版本（SemVer Patch：`v0.0.1` -> `v0.0.2`，`v1.2.0` -> `v1.2.1`，绝不跨越主次版本）；
+     - 若作者已手动定义新版本，无条件尊重作者意图；
+     - 自动记录当前 build 激活时间并精确同步 `updatedDate`（YYYY-MM-DD / MM/DD/YY）；
+  4. 编写并执行单元与动态模拟测试套件（`scripts/test-auto-version-bump.mjs`），断言验证 100% 成功。
+- [x] **Playwright 视觉与结构端到端自动化审计通过 (`scripts/verify-hero-versioning.mjs`)**：
+  1. 覆盖 5 大工程规范页及普通博文全视口；
+  2. 断言验证 `headerHeight` 严格保持 426px ~ 432px，`titleTop` 均在 57px ~ 83px（`isUpperMiddle: true` 100% 通过）；
+  3. 结构断言 `#article-container count === 0`，版本与 `MM/DD/YY` 日期格式校验全部通过。
+
