@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 import { bumpPatchVersion, formatIsoDate } from './sync-content-versions.mjs';
 
 const PORT = 4329;
-const BASE_URL = `http://127.0.0.1:${PORT}`;
+const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${PORT}`;
 const OUTPUT_DIR = path.resolve(process.cwd(), 'playwright-report/hero-versioning-audit');
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -39,7 +39,7 @@ async function runAudit() {
     throw new Error('Unit tests for bumpPatchVersion failed!');
   }
 
-  const server = await startServer();
+  const server = process.env.BASE_URL ? null : await startServer();
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
@@ -134,7 +134,7 @@ async function runAudit() {
     }
   } finally {
     await browser.close();
-    server.kill();
+    if (server) server.kill();
   }
 }
 
