@@ -1,157 +1,132 @@
 ---
-title: "EpoCanvas 运行状态与服务拓扑规范：边缘分发、SLA 可靠性与健康检查"
-description: "系统阐述 EpoCanvas 生产环境服务拓扑结构、全球 Anycast 边缘分发 SLA、Cloudflare D1 数据事务延迟、健康检查探针机制与容灾降级规范。"
+title: "EpoCanvas 系統狀態與服務邊界：可驗證性、故障模式與運維責任"
+description: "以可追溯證據說明 EpoCanvas 的靜態建置、邊緣函式、D1 資料、支付與通知邊界，並區分已實作、已測試、線上觀測與尚待規劃的狀態資訊。"
 pubDate: 2026-10-18
 updatedDate: 2026-10-18
-author: "shijianus"
-category: "工程规范"
+author: "EpoCanvas 工程團隊"
+category: "工程規範"
 group: "EpoCanvas Standards"
-tags: ["EpoCanvas", "运行状态", "SLA", "边缘拓扑", "健康检查", "容灾降级"]
+tags: ["EpoCanvas", "系統狀態", "服務邊界", "D1", "故障處理", "可驗證性"]
 toc: true
-math: true
+math: false
 mermaid: false
-mindmap: true
+mindmap: false
 draft: false
-lang: "zh-CN"
+lang: "zh-Hant"
 i18nKey: "ees-status-topology"
+version: "v1.0.0"
 ---
 
-# EpoCanvas 运行状态与服务拓扑规范
+# EpoCanvas 系統狀態與服務邊界
 
 <div class="article-aside">
-  <p><span class="badge badge-primary">EES-005</span> <span class="badge badge-success">运行拓扑</span> <span class="badge badge-warning">生产持续生效</span></p>
-  <p>本规范定义 EpoCanvas 全球边缘基础设施的物理部署拓扑、核心服务 SLA 可靠性指标、高频健康探针检测链路以及极端故障下的自愈降级准则。</p>
+  <p><span class="badge badge-primary">EES-005</span> <span class="badge badge-success">運行邊界</span> <span class="badge badge-warning">以證據為準</span></p>
+  <p>本規範不是即時監控儀表板，也不把未經監控資料支持的性能數字寫成 SLA。它定義目前程式碼可確認的服務邊界、失敗行為、證據等級與後續觀測要求。</p>
 </div>
 
 > [!IMPORTANT]
-> 运行状态不是静态数字的粉饰，而是对分布式节点真实吞吐、事务延迟及网络回响的严格度量。所有拓扑节点必须具备透明可验证的健康审计能力。
+> 「已部署」不等於「持續可用」，「本地測試通過」也不等於「生產端到端已驗證」。任何狀態宣告都必須附帶來源、測試或生產觀測證據；沒有證據時，標示為 `PROPOSED`。
 
-## 1. 规范元信息与拓扑概览
+## 1. 證據等級
 
-EpoCanvas 依托现代无服务器与边缘计算（Serverless & Edge Computing）基础设施构筑。全站废除了传统单体服务器集中托管与中心化数据库架构，全面迁移至全球分布式 Anycast 边缘网络。
+本頁使用四種狀態標籤，避免把架構描述、測試結果與營運承諾混在一起：
 
-每个终端请求均由距离访客物理位置最近的边缘 PoP（Point of Presence）节点接管，在 50ms 感知阈值内完成静态分发或边缘微服务计算。
+| 標籤 | 含義 | 可以支持的說法 |
+| :--- | :--- | :--- |
+| `SOURCE-VERIFIED` | 可由目前倉庫的程式碼、設定或資料結構直接核對 | 「存在此路由」、「這個 API 會讀取 D1」、「缺少密鑰時回傳錯誤」 |
+| `TEST-VERIFIED` | 有可重跑的自動化測試、建置日誌或明確測試產物 | 「在某個提交與指定環境通過某項測試」 |
+| `LIVE-VERIFIED` | 有帶時間、提交版本與生產端證據的實際觀測 | 「在某個時間窗內，指定網址回應 200」 |
+| `PROPOSED` | 尚未由目前程式碼或有效觀測證明的設計、指標或承諾 | 「未來應增加探針」、「建議建立錯誤預算」 |
 
-| 规范元属性 | 取值与标准声明 |
-| :--- | :--- |
-| **标准代号** | `EES-005 (EpoCanvas Engineering Standard 005)` |
-| **当前状态协议** | `Status Protocol v2.6.0` |
-| **生效状态** | **生产环境持续生效 (Active In Production)** |
-| **适用服务族** | 边缘 Pages 托管、D1 关系型存储、Telegram Bot 异步总线、Stripe 收银网关 |
-| **归属工程族** | EpoCanvas Standards Ecosystem |
+本頁沒有為服務設定公開可用性百分比、固定 RTT、固定冷啟動時間或固定資料保留期限。這些數值若日後要成為承諾，必須先建立監控定義、採樣方法、維護窗口與公開報告。
 
----
+## 2. 目前可由原始碼確認的服務拓撲
 
-## 2. 全球服务拓扑与网络架构 (Infrastructure Topology)
+### 2.1 靜態內容與建置模式
 
-系统拓扑解耦为四个相互隔离但高速协同的无状态服务单元：
+`astro.config.mjs` 依 `BLOG_BUILD_TARGET` 選擇輸出模式：
 
-### 2.1 边缘静态交付矩阵 (Global Static Mesh)
+- `static` 模式輸出靜態站點，並在公開建置流程中設定 `PUBLIC_STATIC_EXPORT=1`；
+- 非靜態模式使用 Astro Node adapter，供需要伺服器執行時的路由使用；
+- `package.json` 提供 `build:static`、`pages:build` 與 Cloudflare Pages 部署指令。
 
-- **网络覆盖**：全球超过 300 个核心城市 Anycast 数据中心节点；
-- **分发机制**：构建时生成的纯静态 HTML、原子化 CSS 与 WebP 图像自动推送到全球边缘缓存层；
-- **传输安全**：强制启用 TLS 1.3、HTTP/3 (QUIC) 协议，开启 0-RTT 握手恢复；
-- **物理延迟**：亚太、北美及欧洲核心节点静态资源请求平均 RTT 低于 **25ms**。
+這些是建置選項，不是對每一個路由實際部署狀態的即時保證。部署是否完成，必須以對應提交的建置與部署紀錄確認。
 
-### 2.2 无冷启动边缘函数 (Zero-Cold-Start Edge Functions)
+### 2.2 邊緣 API 與資料儲存
 
-- **运行时环境**：基于 Google V8 Isolates 轻量级安全沙盒；
-- **冷启动指标**：完全消除传统基于 Docker / JVM 容器长达数秒的冷启动停顿，启动开销低于 **5ms**；
-- **处理范围**：负责 `/api/comments` 原生留言树检索、`/api/create-checkout-session` 支付会话构造及跨语系动态内容适配。
+目前 `functions/api/` 包含評論、帳號、控制台資料、支付意圖、Checkout Session、匯率、地理資訊與讚賞等 API。`functions/_lib/types.ts` 將 `DB`/`USER_DB` 描述為 D1-like binding；實際環境是否綁定資料庫由部署設定決定。
 
-### 2.3 分布式数据存储 (Cloudflare D1 Edge SQLite)
+評論 API 的邊界目前可由 `functions/api/comments.ts` 確認：
 
-- **存储模型**：关系型 SQLite 引擎全球多副本只读分发，主写节点保证强一致性（Serial Consistency）；
-- **数据隔离**：文章留言评论树、点赞统计、支持者寄语按租户与哈希键严格隔离；
-- **事务时延**：读操作就近边缘单跳完成（< 15ms），写操作事务提交耗时稳定于 **60ms** 以内。
+1. 有 D1 時，評論表會保存文章識別、父子關係、作者資料、內容、會話、IP/地區、狀態、Reaction 與時間欄位；
+2. 沒有 D1 時，開發或 fallback 路徑使用程序記憶體資料，開發環境另有本地落盤邏輯；這不是耐久性資料庫，也不是靜態快照；
+3. 讀取支援最新/最熱排序，公開回應會遮蔽其他使用者的電子郵件、IP、User-Agent 與會話令牌；
+4. D1 查詢失敗時目前可能回傳空評論集合以維持頁面可讀，這不應被解讀為「資料庫內沒有評論」。
 
-### 2.4 外部可信服务网关 (Trusted Upstream Gateways)
+### 2.3 支付與通知
 
-- **支付网关**：直接对接 Stripe Global API，采用 TLS 双向证书校验与 Webhook 签名验证；
-- **通知总线**：基于异步事件池分发至 Telegram Bot 网关，保障订单与高优先级通知实时触达站长终端。
+- `functions/api/create-checkout-session.ts` 與 `functions/api/create-payment-intent.ts` 對接 Stripe；缺少 `STRIPE_SECRET_KEY` 時會拒絕建立支付請求。
+- 目前程式碼沒有證明 Stripe 失效時會自動切換到其他支付通道，也沒有在本頁宣稱此類故障轉移。
+- Telegram Bot 通知使用環境變數注入的 token/chat ID；通知失敗與核心資料落地是分開的錯誤邊界，不能把「訊息送達」當成支付成功證據。
+- API 與通知的真實可用性仍需透過指定時間窗的生產測試或監控證據確認。
 
----
+## 3. 服務狀態如何理解
 
-## 3. 服务等级协议与量化可靠性指标 (SLA Metrics)
+### 3.1 `SOURCE-VERIFIED` 的最低狀態
 
-系统核心组件的物理可靠性度量与可用性承诺如下表所示：
+下表只描述程式碼存在的能力，不描述目前線上是否健康：
 
-| 服务节点 / 接口 | 核心指标定义 | 承诺 SLA | 实际观测基线 | 异常告警阈值 |
-| :--- | :--- | :--- | :--- | :--- |
-| **全局静态路由** | 首字节时间 (TTFB) | $\ge 99.95\%$ | $< 45\text{ms}$ | $> 120\text{ms}$ |
-| **文章详情与目录** | 静态资产完全加载时间 | $\ge 99.90\%$ | $< 350\text{ms}$ | $> 800\text{ms}$ |
-| **D1 留言读取 API** | 递归评论树构造与查询耗时 | $\ge 99.85\%$ | $< 65\text{ms}$ | $> 250\text{ms}$ |
-| **D1 留言提交 API** | 事务写入与幂等性校验 | $\ge 99.80\%$ | $< 95\text{ms}$ | $> 400\text{ms}$ |
-| **Stripe 收银网关** | 支付意图构造与会话生成 | $\ge 99.90\%$ | $< 620\text{ms}$ | $> 1500\text{ms}$ |
-| **Telegram 通知总线** | 异步消息排队与落地延迟 | $\ge 99.50\%$ | $< 1200\text{ms}$ | $> 5000\text{ms}$ |
+| 元件 | 可確認能力 | 失敗或限制 |
+| :--- | :--- | :--- |
+| Astro 內容管線 | Markdown/MDX 內容、獨立規範路由與靜態輸出設定 | 建置錯誤會阻止產物生成；未經部署不能視為線上可見 |
+| Cloudflare Pages 目標 | `pages:build` 與 `wrangler pages deploy` 指令存在 | 部署命令本身不提供持續監控，也不證明自動回滾 |
+| 評論 API | D1 持久化、排序、回覆、Reaction 與身份驗證分支 | D1 不可用時可能使用程序 fallback 或回傳空集合 |
+| 帳號 API | 會話、Epomail/本地讀者流程與角色判定 | 會話會過期；管理權限受服務端驗證約束 |
+| Stripe API | 建立 Checkout Session/PaymentIntent 的路由 | 依賴環境密鑰與 Stripe 可用性；沒有源碼證據支持自動故障轉移 |
+| Telegram 通知 | 可選的評論/讚賞事件通知 | 依賴 token、chat ID 與外部網路；不是交易提交的唯一依據 |
 
----
+### 3.2 `TEST-VERIFIED` 與 `LIVE-VERIFIED`
 
-## 4. 健康检查与多维探针机制 (Health Probes)
+一份合格的測試或線上狀態紀錄至少要包含：
 
-为确保全球节点的稳定性，系统部署了由内而外的立体健康检查链路：
+- 測試/觀測時間與時區；
+- Git Commit SHA 或部署識別；
+- 目標網址、API、請求條件與使用的資料類型；
+- 通過與失敗的原始結果；
+- 是否為預覽、開發、沙盒或生產環境。
 
-### 4.1 边缘存活探针 (Liveness Probes)
+缺少上述資料的截圖、單次手動點擊或舊版報告，不足以支持持續性 SLA。這也是為什麼本規範不直接沿用歷史頁面中的全球節點數、固定延遲與固定成功率。
 
-边缘函数内置高频存活探针，由全球分布式监控巡检节点每隔 60 秒发起无状态 HTTP HEAD 请求：
+## 4. 故障邊界與降級原則
 
-$$
-\text{Probe Status} = \begin{cases} 
-\text{HEALTHY}, & \text{HTTP 200 \& } T_{\text{response}} < 500\text{ms} \\
-\text{DEGRADED}, & \text{HTTP 200 \& } 500\text{ms} \le T_{\text{response}} < 2000\text{ms} \\
-\text{UNHEALTHY}, & \text{HTTP 5xx / Timeout} 
-\end{cases}
-$$
+目前可確認與尚待設計的行為如下：
 
-### 4.2 数据库连接与读写探测 (D1 Read/Write Synthetic Checks)
+| 故障 | 已由程式碼確認的行為 | 尚不能宣稱的能力 |
+| :--- | :--- | :--- |
+| D1 暫時不可用 | 評論 API 有記憶體 fallback/錯誤處理分支 | 不等於跨節點一致、不等於可恢復的持久快照 |
+| 評論查詢失敗 | 可能回應空集合並保留正文頁面 | 不等於最近留言快照，也不等於資料已刪除 |
+| Stripe 密鑰缺失 | 建立支付請求時回傳錯誤 | 不等於會自動改走微信、支付寶、PayPal 或其他通道 |
+| Telegram 發送失敗 | 記錄通知錯誤，核心請求可與通知分離 | 不等於系統會由定時任務自動補發 |
+| 靜態建置失敗 | 不應產生可交付的完整產物 | 不等於平台會自動回滾到某個已知健康版本 |
 
-每日定期执行虚拟事务心跳（Synthetic Heartbeat Transaction），检验 D1 存储引擎在边缘节点的写入可用性与外键完整性约束：
+## 5. `PROPOSED`：未來應補齊的運維能力
 
-```typescript
-export async function runD1HealthCheck(db: D1Database): Promise<{ ok: boolean; latencyMs: number }> {
-  const start = performance.now();
-  try {
-    const row = await db.prepare('SELECT 1 as alive, datetime("now") as now').first<{ alive: number; now: string }>();
-    const latencyMs = Math.round(performance.now() - start);
-    return {
-      ok: row?.alive === 1,
-      latencyMs,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Math.round(performance.now() - start),
-    };
-  }
-}
-```
+以下項目是建議中的工程工作，不是目前已啟用的功能：
 
-### 4.3 支付链路端到端闭环探测 (Payment Sandbox Probing)
+1. 建立匿名 `GET /health` 或等價狀態端點，分離靜態站點、D1、支付與通知的健康語義；
+2. 為 D1 讀取、評論寫入、Stripe 沙盒與 Telegram 通知建立可重跑的合成測試，並標記沙盒資料；
+3. 設計錯誤預算、維護窗口、告警閾值與生產報告格式，而不是直接填入固定 SLA 數字；
+4. 為評論 API 的空集合 fallback 增加可辨識的 `degraded` 訊號，避免讀者誤認為「目前沒有評論」；
+5. 若未來需要持久化 fallback，應明確定義資料一致性、重試、冪等與恢復責任；
+6. 建立以部署 SHA 為索引的建置、部署、回滾與安全事件紀錄。
 
-通过 Stripe API 提供的预置沙盒凭证，持续轮询 Express Checkout、Apple Pay 域名关联证书（Domain Association）及多币种定价转换接口的状态，防止第三方凭证静默过期。
+## 6. 發布前狀態核對
 
----
+- [ ] 建置命令、輸出模式與目標專案已確認。
+- [ ] 變更已提交，Commit SHA 可回溯到本次產物。
+- [ ] D1 migration 與環境變數變更已在對應環境驗證。
+- [ ] 評論、登入、支付與通知等受影響 API 有明確測試結果。
+- [ ] 若宣稱線上狀態，已附帶生產網址、時間與原始結果。
+- [ ] 所有未實作的監控、SLA、容災或故障轉移內容已標為 `PROPOSED`。
 
-## 5. 灾备容灾与自愈降级规范 (Disaster Recovery & Fallback)
-
-当局部基础设施发生物理性故障或遭遇不可抗力时，系统必须按照确定性状态机执行优雅降级：
-
-### 5.1 D1 数据库不可用时的降级模式
-
-- **写操作熔断**：若 D1 发生集群级不可用，前端留言提交按钮自动切换为“维护中”置灰状态，弹窗提示友好引导，杜绝用户请求反复悬挂；
-- **读操作静态快照降级**：若实时留言查询失败，系统平滑退回最近一次构建生成的静态留言快照或优雅空状态（0 评论展示），确保正文阅读与技术文档完全不受影响。
-
-### 5.2 支付通道不可用时的双重路由保护
-
-- **自动故障转移**：当 Stripe API 返回 5xx 故障或触发网络超时时，系统收银台模态框平滑提示切换至微信赞赏码、支付宝赞赏码或 PayPal 独立收款通道；
-- **通知幂等落盘**：即便 Telegram Bot 网络遭到限流，支付落地数据仍在本地 D1 数据库完好记录，待网络恢复后由定时任务重新补发。
-
----
-
-## 6. 运维审计与变更追溯准则
-
-所有涉及生产环境运行状态的改动（包括数据库结构演进、环境变量更新、监控报警规则调整）均必须遵守以下铁律：
-
-1. **零单点变更**：任何配置更改必须记录于版本受控的环境变量清单（如 `.dev.vars` / Wrangler 配置），严禁私自在生产面板做无版本记录的手动覆盖；
-2. **渐进式生效验证**：在全量流量接入前，必须在 Preview 部署环境完成端到端链路验收（包括 Playwright 浏览器自动化回归测试）；
-3. **可复核日志**：每次发布完成后，将对应的 Git Commit SHA 注入部署状态，实现“从每一个线上报错精准追溯到具体那一行 Git 提交”的确定性闭环。
+最後更新：2026-10-18。

@@ -19,12 +19,15 @@ const sidebarData = createSidebarData(allPosts);
   showAside={false}
   pageType="standards"
   sidebarData={sidebarData}
-  lang="zh-CN"
+  lang="zh-Hant"
 >
   <StandardsHero
     slot="hero"
     title={frontmatter.title}
     description={frontmatter.description}
+    version={frontmatter.version}
+    pubDate={frontmatter.pubDate}
+    updatedDate={frontmatter.updatedDate}
   />
 
   <Content />

@@ -1,243 +1,134 @@
 ---
-title: "EpoCanvas 版本协议与架构规范：语义化控制、边缘分层与授权边界"
-description: "系统阐述 EpoCanvas 的语义化版本控制（SemVer 2.0.0）、不可变 Git SHA 部署追溯、Astro 边缘混合架构分层、依赖链路契约与专有独占授权边界。"
+title: "EpoCanvas 版本與架構規範：語意化變更、部署追溯與授權邊界"
+description: "說明 EpoCanvas 如何管理內容與程式版本、Git 提交追溯、Astro 建置分層、依賴契約，以及程式碼、文章與第三方依賴的不同授權邊界。"
 pubDate: 2026-10-18
 updatedDate: 2026-10-18
-author: "shijianus"
-category: "工程规范"
+author: "EpoCanvas 工程團隊"
+category: "工程規範"
 group: "EpoCanvas Standards"
-tags: ["EpoCanvas", "语义化版本", "边缘计算", "架构分层", "专有协议", "依赖规范"]
+tags: ["EpoCanvas", "版本管理", "SemVer", "Git SHA", "架構分層", "授權"]
 toc: true
-math: true
+math: false
 mermaid: false
-mindmap: true
+mindmap: false
 draft: false
-lang: "zh-CN"
+lang: "zh-Hant"
 i18nKey: "ees-version-protocol"
+version: "v1.0.0"
 ---
 
-# EpoCanvas 版本协议与系统架构规范
+# EpoCanvas 版本與架構規範
 
 <div class="article-aside">
-  <p><span class="badge badge-primary">EES-004</span> <span class="badge badge-success">版本与架构</span> <span class="badge badge-warning">生产环境强制执行</span></p>
-  <p>本规范定义 EpoCanvas 及 shijianus-blog 核心引擎的语义化版本控制机制、Git SHA 不可变部署溯源、四层系统架构划分以及专有知识产权授权边界。</p>
+  <p><span class="badge badge-primary">EES-004</span> <span class="badge badge-success">版本與架構</span> <span class="badge badge-warning">以倉庫證據為準</span></p>
+  <p>本規範描述版本如何被命名、變更如何被追溯，以及不同內容與程式資產適用的授權。它不把某個歷史部署標識或未驗證的性能數字當成永久產品版本。</p>
 </div>
 
 > [!IMPORTANT]
-> 任何向生产环境分发的部署物，均必须严格绑定唯一的 Git Commit SHA，且版本号必须符合语义化版本规范。未经过完整测试、未执行版本标注或未同步全量远端的改动，严禁进入生产边缘网络。
+> 版本號只描述變更意義；真正的部署身份仍必須回到 Git Commit SHA、建置輸出與部署記錄。沒有提交、建置與目標環境證據的版本標籤，不足以證明線上已更新。
 
-## 1. 规范元信息与设计哲学
+## 1. 版本識別的三個層次
 
-EpoCanvas 遵循“契约先于实现、架构决定上限、可追溯性保障稳定性”的设计哲学。作为高密度、高交互的现代化博客技术底座，系统既要保障纯静态内容的高性能极速交付，又要支撑多币种动态收银台、D1 原生留言树、Telegram 异步事件流及跨语系实时渲染等边缘动态能力。
+EpoCanvas 同時處理三種容易被混淆的識別：
 
-为了确保长达数年的持续演进过程中架构不退化、接口不破损、协议可复核，特制定本规范作为全站版本控制与架构演进的唯一法定依据。
+| 識別 | 作用 | 來源 |
+| :--- | :--- | :--- |
+| 內容版本 | 描述某篇規範或文章的語意變更 | Markdown front matter 的 `version` 與 `updatedDate` |
+| 程式提交 | 精確指出源碼狀態 | Git Commit SHA |
+| 部署/建置識別 | 指出某份產物在哪個環境生成或上線 | 建置日誌、Pages deployment ID 或平台紀錄 |
 
-| 规范元属性 | 取值与标准声明 |
-| :--- | :--- |
-| **标准代号** | `EES-004 (EpoCanvas Engineering Standard 004)` |
-| **当前核心版本** | `v2.6.0-shijianus` |
-| **生效状态** | **生产环境持续生效 (Active In Production)** |
-| **适用范围** | `shijianus-blog` 代码仓库、Functions 边缘服务、静态资产构建流水线 |
-| **归属工程族** | EpoCanvas Standards Ecosystem |
+內容版本可以相同於不同環境；部署識別也可能因重新建置而不同。因此，問題回報至少應同時提供頁面網址、內容版本（若有）、提交或部署識別與發生時間。
 
----
+## 2. 內容版本與 SemVer
 
-## 2. 语义化版本控制体系 (SemVer 2.0.0 Formalization)
+內容版本採用 `MAJOR.MINOR.PATCH` 的語意化思路：
 
-本系统严格采纳 [Semantic Versioning 2.0.0](https://semver.org/) 规范，版本标识符结构定义如下：
+- `MAJOR`：內容契約、資料語義或使用方式發生不相容變更；
+- `MINOR`：新增向後相容的章節、字段、規則或功能說明；
+- `PATCH`：勘誤、例子修正、文字澄清、連結更新與不改變契約的排版調整。
 
-$$
-\text{Version} = \text{MAJOR}.\text{MINOR}.\text{PATCH}[-\text{PRERELEASE}][+\text{BUILD}]
-$$
+目前倉庫的 `scripts/sync-content-versions.mjs` 會計算排除 `version`/`updatedDate` 的內容雜湊：首次發現的檔案使用既定預設版本；內容變更而作者沒有手動提升版本時，工具會自動增加 patch；作者明確修改版本時，工具會保留該版本並更新日期。
 
-例如当前生产版本：`v2.6.0-shijianus`。
+這個腳本管理的是內容檔案，不是 npm 套件版本，也不是 Cloudflare 平台的部署版本。建置時自動修改內容 front matter 或版本清單時，應檢查差異並在適當提交中記錄，而不是把產生檔案當成未審核的黑盒結果。
 
-### 2.1 主版本号 (MAJOR)：破坏性架构跃迁
+## 3. 何時需要提升版本
 
-主版本号仅在发生系统级、破坏性（Breaking Change）重构或底层存储契约变更时递增：
+### 3.1 內容與政策
 
-1. **运行时范式转换**：从纯客户端 CSR / SSG 向边缘混合计算（Edge Hybrid Computing）的全面跃迁；
-2. **数据模式不兼容变更**：Cloudflare D1 关系型数据库或核心 SQLite 表结构的破坏性重写，无法通过平滑自动化迁移脚本向前兼容；
-3. **前端样式与交互规范重写**：核心 UI 体系发生根本性范式转换，导致历史组件无法正常挂载；
-4. **外部接口协议废弃**：支付回调、留言鉴权或多语言路由的底层签名算法发生非兼容升级。
+新增或改寫評論規則、隱私說明、工程指標、權限契約時，至少需要 `MINOR` 或更高層級的人工判斷。若文字修正會改變使用者原本可以依賴的行為，不能只做 `PATCH`。
 
-### 2.2 次版本号 (MINOR)：向后兼容的特性交付
+### 3.2 API 與資料結構
 
-次版本号在引入向后兼容的新功能、新规范模块或非破坏性组件扩展时递增：
+以下變更應視為高風險，必須附帶相容性說明與測試：
 
-1. **新工程规范纳入**：新增独立子规范（如活跃等级规范 EES-002、内容密度规范 EES-003、版本协议规范 EES-004）；
-2. **动态功能模块交付**：引入全新内嵌式 Stripe 收银台、YouTube 风格可折叠评论树或动态中控台概览面板；
-3. **依赖核心版本升级**：在保持现有页面与 API 行为完全不变的前提下，升级 Astro、React 或 Tailwind 核心驱动；
-4. **国际化支持扩充**：新增德语、法语、西班牙语等多语言词条字典与本地化定价策略。
+1. API 請求或回應字段改名、刪除或改變型別；
+2. 評論、帳號、讚賞或支付資料表的 migration；
+3. 鑑權、會話、管理員 token 或公開資料遮蔽規則；
+4. 文章路由、加密文章路由或多語言解析規則；
+5. 會導致既有文章無法建置或既有瀏覽器互動失效的 UI/Markdown 契約。
 
-### 2.3 修订号 (PATCH)：缺陷修复与微观优化
+### 3.3 修正與重構
 
-修订号用于日常日常缺陷修复、样式细微收敛及非功能性调整：
+只修復錯字、補充來源、調整不改變行為的 CSS 或優化內部實作時，可以使用 `PATCH`。如果修復同時更正了對外政策、公開資料範圍或可觀察行為，應在提交訊息與變更說明中明確寫出影響。
 
-1. **UI/UX 细节打磨**：圆角统一从粗大胶囊收敛至精致 8px 方圆角、修复 3D 翻转卡片背面闪烁；
-2. **CSS/JS 兼容性补丁**：解决特定移动端视口溢出、右侧悬浮工具条垂直避让冲突、暗黑模式对比度校准；
-3. **文档与注释完善**：修正公式排版错误、丰富工程原理阐述、优化代码注释完整性；
-4. **构建流水线微调**：优化 Vite 打包分块、压缩静态图片与字体资源。
+## 4. Git SHA 與發布追溯
 
-### 2.4 预发布与元数据标签
+生產發布應遵守以下最低流程：
 
-- **PRERELEASE**：采用 `-alpha`（内部验证阶段）、`-beta`（集成测试阶段）、`-rc.N`（发布候选阶段）或 `-shijianus`（专有分支发布标识）；
-- **BUILD**：附带 Git 短提交哈希或构建时间戳（如 `+build.3093134`），用于生产环境精确定位物理镜像版本。
+1. 在工作區確認目標變更與既有使用者修改的邊界；
+2. 以單一、可描述的提交保存一個獨立邏輯組，輸出完整或短 SHA；
+3. 執行與變更風險相稱的建置、單元測試或瀏覽器測試；
+4. 以同一提交或明確的建置產物部署至目標 Cloudflare Pages 專案；
+5. 保存部署識別、目標網址、驗證時間與失敗輸出。
 
----
+Git 提交是追溯源碼的證據，不是線上可用性的證據。若工作區含有未提交的其他修改，不應把整個工作區誤當成該提交的純淨發布物；發布前應隔離、提交或明確排除它們。
 
-## 3. 不可变 Git SHA 部署追溯机制
+## 5. 目前架構的責任分層
 
-在 EpoCanvas 交付流水线中，“代码即状态，提交即证明”。为杜绝任何“本地能跑但生产环境报错”或“生产环境运行着未受版本管理的代码”的情况，系统强制实施不可变追溯标准：
+本節只描述目前倉庫可確認的責任邊界：
 
-### 3.1 零脏树发布原则 (Zero-Dirty-Tree Invariant)
+| 層 | 目前責任 | 主要證據 |
+| :--- | :--- | :--- |
+| 內容層 | Markdown/MDX front matter、規範正文、文章資產與內容版本 | `src/content.config.ts`、`docs/standards/`、`src/content/posts/` |
+| 渲染層 | Astro 路由、Markdown/MDX、React islands、靜態或 Node 輸出模式 | `astro.config.mjs`、`src/pages/`、`src/layouts/` |
+| 業務層 | 評論、帳號、支付、讚賞、控制台與通知 API | `functions/api/`、`functions/_lib/` |
+| 儲存與外部服務層 | D1 binding、Epomail、Stripe、Telegram 與 Cloudflare Pages | 環境型別、API 實作與部署設定 |
+| 表現層 | 主題 CSS、文章元件、響應式佈局與互動增強 | `src/components/`、`src/styles/` |
 
-任何进入 Cloudflare Pages 编译节点的发布包，工作区必须处于完全干净（Clean Tree）状态：
+「採用某個框架」不等於所有性能、可用性或第三方服務行為都由本倉庫保證。每一層的外部依賴都必須以實際環境配置與測試結果為準。
 
-- 严禁任何未提交的本地临时修改直接打包部署；
-- 严禁通过人工修改生产边缘 Functions 代码跳过版本流水线；
-- 严禁在部署产物中残留任何未受版本控制的临时调试文件。
+## 6. 依賴契約
 
-### 3.2 40 位 SHA 全链路指纹绑定
+`package.json` 是目前直接依賴版本範圍的主要來源。當升級 Astro、React、Tailwind、Markdown/數學插件、Stripe SDK、Lucide 或其他關鍵套件時，至少檢查：
 
-每一次合法的生产部署物，均必须关联一个唯一的 40 位 Git Commit SHA。该哈希值通过构建期环境变量注入系统全局上下文：
+- 內容集合 schema 與 front matter 解析；
+- 靜態輸出與 Node/Functions 路由；
+- React client directive、水合與表單狀態；
+- Markdown 表格、程式碼、數學式、Mermaid、加密內容與互動增強；
+- 支付、帳號、評論 API 的請求格式與錯誤處理；
+- 生產建置大小、瀏覽器相容性與既有視覺回歸結果。
 
-```typescript
-export interface BuildMetadata {
-  /** 完整的 40 位 Git SHA */
-  readonly commitSha: string;
-  /** 规范化短哈希 (7 位) */
-  readonly shortSha: string;
-  /** 构建触发的物理时间戳 (ISO 8601) */
-  readonly builtAt: string;
-  /** 当前环境标识 */
-  readonly environment: 'production' | 'preview' | 'development';
-}
-```
+上游套件的版本與許可證以 lockfile、套件本身及其授權文件為準，不應只依賴本頁的摘要。
 
-### 3.3 多远端镜像全量同步 (Multi-Remote Invariant)
+## 7. 授權邊界
 
-本仓库配置有多个上游远端分支：
-1. `origin`：GitHub 权威开源代码镜像主仓库；
-2. `cf`：Cloudflare Pages 自动化构建与边缘分发专用仓库。
+目前倉庫根目錄的 `LICENSE` 是 MIT License，適用範圍應以該文件與各檔案的實際聲明為準。文章頁的版權元件另以 CC BY-NC-SA 4.0 對文章內容作公開展示說明。兩者不是同一個授權：
 
-阶段性发布必须确保执行 `git push --all origin && git push cf main`，使两大远端的 HEAD 指针时刻保持 100% 同步，杜绝代码割裂。
+1. **程式碼**：優先依根目錄 MIT License；第三方套件仍受各自授權約束。
+2. **文章正文與內容素材**：除另有特別聲明外，依文章頁所標示的 CC BY-NC-SA 4.0 條件使用；轉載應保留作者、來源與授權資訊，商業使用需另行確認。
+3. **商標、帳號、密鑰、個人資料與第三方素材**：不因程式碼或文章授權而自動取得使用權。
+4. **生成資產與外部服務內容**：需回到其來源、平台條款與單獨聲明判斷。
 
----
+因此，本規範不再使用「整個 EpoCanvas 是專有獨占授權」這種會與根目錄 MIT License 衝突的總括說法。若某個元件有不同授權，應在該元件或其附帶文件中明確標註。
 
-## 4. 边缘混合计算架构分层规范 (Architectural Layering)
+## 8. 發布前檢查表
 
-EpoCanvas 采用清晰的四层分层架构，每一层拥有严格的职责边界与契约约束：
-
-```
-+---------------------------------------------------------------+
-|  Layer 4: 表现层与原子化样式 (Tailwind v4 / Anzhiyu Tokens)    |
-+---------------------------------------------------------------+
-|  Layer 3: 业务编排与数据状态机 (React 19 Islands / D1 / TG)     |
-+---------------------------------------------------------------+
-|  Layer 2: 核心渲染与混合流水线 (Astro 6.x / Vite 7 / Remark)   |
-+---------------------------------------------------------------+
-|  Layer 1: 全球 Anycast 边缘基础设施 (Cloudflare Pages Runtime) |
-+---------------------------------------------------------------+
-```
-
-### 4.1 Layer 1: 全球 Anycast 边缘基础设施 (Edge Infrastructure)
-
-- **运行时环境**：Cloudflare Pages Edge Runtime（基于 Google V8 Isolates 无冷启动沙盒）；
-- **网络拓扑**：全球 300+ 城市 Anycast 边缘节点，首屏 TTFB（Time To First Byte）严格控制在 50ms 以内；
-- **资源缓存策略**：静态 HTML/JS/CSS/WebP 资源实施全球边缘强缓存（`Cache-Control: public, max-age=31536000, immutable`），动态 API 路由采用私有无缓存策略。
-
-### 4.2 Layer 2: 核心渲染与混合流水线 (Hybrid Core Engine)
-
-- **静态第一原则**：默认所有文章页、归档页、规范说明页均采用零 JavaScript 纯静态编译，输出原生高语义 HTML 结构；
-- **孤岛架构 (Islands Architecture)**：仅在需要动态交互的局部区域（如中控台、收银台模态框、留言互动区）按需挂载轻量 React 孤岛；
-- **MDX/MDAST 管道**：基于 `remark-gfm`、`remark-math`、`rehype-katex` 与自定义 AST 转换器，在构建期完成公式预编译、代码块语法高亮与目录索引树生成。
-
-### 4.3 Layer 3: 业务编排与数据状态机 (State Machine & Persistence)
-
-- **持久化存储**：使用 Cloudflare D1（Serverless SQLite），保障留言点赞、支持者祝福、用户身份的分布式高一致性写入；
-- **支付网关**：集成 Stripe Embedded Checkout 与 PaymentIntents，支持 Google Pay、Apple Pay、Link 及全球信用卡支付通道；
-- **事件通知总线**：构建异步 Telegram Bot 消息推送流水线，全流程监控支付落地、用户寄语与敏感异常。
-
-### 4.4 Layer 4: 表现层与原子化样式体系 (Presentation & Styling)
-
-- **样式底层**：采用 Tailwind CSS v4 原子级样式引擎与 PostCSS 流水线，CSS 文件体积极致精简；
-- **视觉语言**：汲取安知鱼（Anzhiyu）标志性设计精髓（`#425aef` 主题蓝、高通透 Frosted Glass 玻璃拟态、双层响应式流式布局）；
-- **微交互与质感**：提供 60fps 平滑视差水波纹、3D 空间变换翻转卡片、自适应暗黑模式与键盘快捷键响应。
-
----
-
-## 5. 核心驱动依赖协议矩阵 (Dependency Stack Invariants)
-
-系统技术栈选型严格遵循“现代、高内聚、轻运行时、高可审计性”的原则。全站核心依赖矩阵如下表所示：
-
-| 驱动包名称 | 语义化约束范围 | 核心功能定位 | 破坏性升级审计要求 |
-| :--- | :--- | :--- | :--- |
-| **`astro`** | `^6.1.3` | 静态生成、混合 SSR 路由分发与内容集合引擎 | 需审计内容集合 Schema 校验与适配器中间件变更 |
-| **`react`** / **`react-dom`** | `^19.2.4` | 复杂动态孤岛（收银台、留言区、控制台） | 严格验证 Client Directive（`client:idle`/`client:load`）行为 |
-| **`@tailwindcss/vite`** | `^4.2.2` | 极速原子化样式编译与主题变量注入 | 需审计 CSS 变量作用域与自定义 utilities 兼容性 |
-| **`lucide-react`** | `^0.460.0` | 统一的矢量视觉图标协议与无障碍图形标识 | 验证图标树摇（Tree-Shaking）与打包体积增量 |
-| **`remark-math`** / **`rehype-katex`** | `^6.0.0` / `^7.0.0` | 科学与工程 LaTeX 数学公式编译管道 | 确保构建期预渲染为纯 HTML/MathML，前端 0 JS 负担 |
-| **`opencc-js`** | `^1.0.5` | 简繁双向高保真语义转换与跨语系渲染引擎 | 需验证字典加载性能与词汇匹配精准度 |
-| **`qrcode`** | `^1.5.4` | 动态客户端/边缘端赞赏与分享二维码生成 | 确保 Canvas/SVG 矢量输出在高分屏下清晰无毛刺 |
-
----
-
-## 6. 专有授权边界与知识产权准则 (Proprietary Licensing)
-
-shijianus-blog 代码仓库与其核心定制主题 **EpoCanvas** 声明如下知识产权与授权约束：
-
-```
-+--------------------------------------------------------------------------+
-|                 EPOCANVAS PROPRIETARY LICENSE AGREEMENT                  |
-|                                                                          |
-|  Copyright (c) 2024-2026 shijianus. All Rights Reserved.                |
-|                                                                          |
-|  1. 本工程包含作者高度原创的 UI/UX 视觉体系、微交互逻辑与架构设计。       |
-|  2. 未经原作者书面正式授权，任何组织或个人不得：                          |
-|     - 将本项目整体或核心组件打包为商业付费模板销售；                     |
-|     - 抹除原作者版权署名或伪造原创声明；                                |
-|     - 搭建公开提供镜像服务的同构站点。                                   |
-|  3. 允许出于学术研究、技术交流及个人非商业学习目的之代码阅读与技术借鉴。   |
-+--------------------------------------------------------------------------+
-```
-
-### 6.1 授权等级分类
-
-1. **公开技术规范与博文内容**：遵循开放阅览协议，允许注明出处后的合规引用与技术探讨，禁止批量无授权抓取或洗稿；
-2. **主题设计与定制代码**：属于私人专有独占资产（Proprietary Rights），受法律保护；
-3. **第三方开源依赖**：严格遵守 Astro (MIT)、React (MIT)、Tailwind CSS (MIT) 等上游组件的原生开源许可证。
-
----
-
-## 7. 容灾、零漂移保障与回滚状态机 (Rollback Protocol)
-
-生产环境的绝对稳定性高于一切特性迭代。系统在架构层面预置了完善的零漂移（Zero-Drift）与回滚机制：
-
-### 7.1 边缘瞬时回滚机制 (Instant Edge Rollback)
-
-Cloudflare Pages 对每一次部署保留永久且不可篡改的 Deployment 镜像快照：
-
-- 一旦线上生产监控探针捕获到严重异常（如 5xx 错误率骤增、支付链路中断），运维脚本可通过 Cloudflare API 执行瞬时切换；
-- 回滚过程仅涉及全球 Anycast 边缘路由指针的重新指向，耗时小于 **1.5 秒**，且完全无需经历重新打包与编译流程。
-
-### 7.2 数据版本向前兼容状态机
-
-在涉及 Cloudflare D1 数据库模式调整时，必须严格执行三阶段演进策略（Expand -> Migrate -> Contract）：
-
-1. **扩充阶段 (Expand)**：先在数据库中新增字段或表，新旧两套代码均能读取；
-2. **迁移阶段 (Migrate)**：将历史数据按幂等脚本平滑转移；
-3. **收敛阶段 (Contract)**：待生产环境全量更新稳定运行至少 7 个日历日后，方可执行废弃字段的物理清理。
-
----
-
-## 8. 规范复核与审计检查清单 (Audit Checklist)
-
-在进行版本发布或重大架构评审时，必须逐项核验以下检查点：
-
-- [ ] **语义化判定**：版本号升级幅度是否与实际改动级别（Major/Minor/Patch）完全对齐？
-- [ ] **Git 纯净度**：本地分支是否存在未提交代码？Commit Hash 是否已明确打印记录？
-- [ ] **远端一致性**：`origin` 与 `cf` 远端的 HEAD SHA 是否 100% 相同？
-- [ ] **公式与渲染**：规范页内部的所有 LaTeX 数学公式、数据表格在浅色/暗黑模式下是否均渲染正常且无错位？
-- [ ] **UI 规范隔离**：该页面是否已剥离博文特有的右侧栏阅读模式按钮、评论框与末尾推荐？
-- [ ] **授权声明完整**：核心版权归属与专有协议标识是否准确无误？
+- [ ] 變更類型與 SemVer 層級已說明。
+- [ ] front matter 的 `version`、`updatedDate` 與版本清單已同步。
+- [ ] API、資料庫、身份或內容路由變更有相容性說明。
+- [ ] 建置與測試結果包含環境、時間與提交 SHA。
+- [ ] 部署只針對正確的 Pages 專案，不跨專案使用產物。
+- [ ] 程式碼、文章、第三方素材與秘密資料的授權/保密邊界清楚。
+- [ ] 未驗證的性能、SLA、監控或容災內容已標為待驗證或 `PROPOSED`。
+
+最後更新：2026-10-18。
