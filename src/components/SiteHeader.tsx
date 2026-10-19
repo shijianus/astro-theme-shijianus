@@ -768,7 +768,7 @@ export function SiteHeader({
                             queueSubmenuClose(item.href);
                           }}
                         >
-                          {item.children.slice(0, 4).map((child) => {
+                          {item.children.slice(0, 6).map((child) => {
                             const childIconEnabled = child.showIcon ?? showSubmenuIcon ?? true;
                             const childEffectiveIcon = child.icon || resolveDefaultNavIcon(child.href, 'link');
                             return (
@@ -994,7 +994,7 @@ export function SiteHeader({
                   </a>
                   {item.children && item.children.length > 0 && (
                     <div className="site-mobile-sublinks">
-                      {item.children.slice(0, 4).map((child) => (
+                      {item.children.slice(0, 6).map((child) => (
                         <a
                           key={child.href}
                           href={child.href}
