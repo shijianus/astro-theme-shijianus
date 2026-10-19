@@ -333,7 +333,7 @@ export const aboutConfig: AboutConfig = {
       { name: 'VS Code & 终端', desc: '核心代码编写与调试工具，深度配合 TypeScript 语言服务与 Git 分支交互。', icon: 'code', badge: 'Editor' },
       { name: 'Obsidian / Markdown', desc: '知识结构化归档与长文思考沉淀，通过双向链接构建本地离线知识图谱。', icon: 'zap' },
       { name: 'Chrome / Edge DevTools', desc: '跨引擎排版与前端调试，深度分析网络请求时延、CSS 渲染瓶颈与控制台日志。', icon: 'figma' },
-      { name: 'Cloudflare Pages & GitHub', desc: '分布式边缘网络与 GitOps 自动化流水线，提供零停机的生产部署与 D1 数据库支撑。', icon: 'cloud', badge: 'Cloud' },
+      { name: 'Cloudflare Pages & GitHub', desc: '以 GitHub 作为代码与发布来源，使用 Cloudflare Pages 承载静态页面与 Functions；D1 用于部分动态资料。', icon: 'cloud', badge: 'Cloud' },
     ],
   },
   manifesto: {
@@ -364,14 +364,14 @@ export const aboutConfig: AboutConfig = {
   topology: {
     tips: '系统架构 / Architecture Topology',
     title: '全栈工程架构与云端底座',
-    lead: '从浏览器感知交互、排版编译管道到底层全球分布式边缘运算的全链路技术选型。',
+    lead: '从浏览器感知交互、排版编译管道到 Cloudflare Pages 与 D1 等托管服务的全链路技术选型。',
     tiers: [
       {
         num: '01',
         title: '感知交互层',
         subtitle: 'Client & UX Tier',
         items: [
-          { name: 'Astro 6', role: 'Islands 极速渲染', color: 'blue' },
+          { name: 'Astro 6', role: 'Islands 内容与交互分工', color: 'blue' },
           { name: 'React 19', role: '动态交互状态岛', color: 'blue' },
           { name: 'TypeScript', role: '全链路类型守卫', color: 'blue' },
           { name: 'Tailwind CSS', role: '现代原子设计系统', color: 'blue' },
@@ -390,13 +390,13 @@ export const aboutConfig: AboutConfig = {
       },
       {
         num: '03',
-        title: '分布式边缘底座',
+        title: '托管与数据底座',
         subtitle: 'Edge & Cloud',
         items: [
-          { name: 'Cloudflare Pages', role: '全球 Anycast 边缘', color: 'purple' },
-          { name: 'Cloudflare D1', role: '边缘分布式 SQLite', color: 'purple' },
-          { name: 'Workers Serverless', role: '零冷启动轻量路由', color: 'purple' },
-          { name: 'GitOps 流水线', role: '多远端双向自动同步', color: 'purple' },
+          { name: 'Cloudflare Pages', role: '静态页面与 Functions 承载', color: 'purple' },
+          { name: 'Cloudflare D1', role: 'SQLite 动态资料库', color: 'purple' },
+          { name: 'Workers Serverless', role: 'Serverless 请求处理', color: 'purple' },
+          { name: 'GitOps 流水线', role: 'Git 版本控制与多远端发布', color: 'purple' },
         ],
       },
     ],
@@ -437,7 +437,7 @@ export const aboutConfig: AboutConfig = {
   milestones: {
     tips: '演进足迹 / Milestones',
     title: '站点演进与造物足迹',
-    lead: '从一行简单的 Markdown，到高度工程化、全球边缘化分发的内容产品演进史。',
+    lead: '从一行简单的 Markdown，到可持续维护、可测试并可部署的内容产品演进史。',
     items: [
       {
         year: '2006',
@@ -459,7 +459,7 @@ export const aboutConfig: AboutConfig = {
         year: '2024',
         tag: '工程重构 (Engineering Practice)',
         title: '开启现代前端工程化实践',
-        desc: '搭建个人独立博客，由静态站点重构为模块化前端工程架构，确立工业级维护与自动化测试标准。',
+        desc: '搭建个人独立博客，由静态站点重构为模块化前端工程架构，并建立版本控制、建置与自动化测试流程。',
         dotClass: '',
         hasLine: true,
       },
@@ -467,7 +467,7 @@ export const aboutConfig: AboutConfig = {
         year: '2026',
         tag: '旗舰成型 (Flagship Maturity)',
         title: '自研 Shijianus 旗舰主题与边缘原生底座',
-        desc: '深度集成 Cloudflare D1 边缘原生留言系统、国际多币种收银台、多语言自动流水线与端到端自动化测试，达到工业级水准。',
+        desc: '整合 Cloudflare D1 留言系统、国际多币种收银台、多语言内容流水线与端到端测试；各项能力依赖当前部署配置与第三方服务状态。',
         dotClass: '',
         tagClass: 'current-tag',
         hasLine: true,
@@ -723,11 +723,11 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
     de: 'Engine-übergreifendes Frontend-Debugging, Analyse von Netzwerk-Wasserfällen, CSS und Logs.',
   },
   'Cloudflare Pages & GitHub': { en: 'Cloudflare Pages & GitHub', fr: 'Cloudflare Pages & GitHub', es: 'Cloudflare Pages & GitHub', de: 'Cloudflare Pages & GitHub' },
-  '分布式边缘网络与 GitOps 自动化流水线，提供零停机的生产部署与 D1 数据库支撑。': {
-    en: 'Global edge network and GitOps CI/CD, providing zero-downtime production deployments backed by Cloudflare D1.',
-    fr: 'Réseau distribué à la périphérie et GitOps CI/CD pour des déploiements sans indisponibilité et D1.',
-    es: 'Red distribuida en el borde y GitOps CI/CD para despliegues sin interrupciones con Cloudflare D1.',
-    de: 'Verteiltes Edge-Netzwerk und GitOps-Pipeline für unterbrechungsfreie Bereitstellung mit D1.',
+  '以 GitHub 作为代码与发布来源，使用 Cloudflare Pages 承载静态页面与 Functions；D1 用于部分动态资料。': {
+    en: 'GitHub serves as the source for code and releases; Cloudflare Pages hosts static pages and Functions, while D1 stores selected dynamic data.',
+    fr: 'GitHub sert de source pour le code et les publications ; Cloudflare Pages héberge les pages statiques et les Functions, tandis que D1 stocke certaines données dynamiques.',
+    es: 'GitHub sirve como fuente del código y las publicaciones; Cloudflare Pages aloja páginas estáticas y Functions, mientras D1 almacena algunos datos dinámicos.',
+    de: 'GitHub dient als Quelle für Code und Veröffentlichungen; Cloudflare Pages hostet statische Seiten und Functions, während D1 ausgewählte dynamische Daten speichert.',
   },
 
   // 7. 数字花园建站宣言
@@ -768,16 +768,16 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
 
   // 8. 系统架构三层拓扑
   '系统架构 / Architecture Topology': { en: 'System Architecture / Architecture Topology', fr: 'Architecture Système / Topologie', es: 'Arquitectura de Sistemas / Topología', de: 'Systemarchitektur / Topologie' },
-  '全栈工程架构与云端底座': { en: 'Full-Stack Engineering & Cloud Infrastructure', fr: 'Architecture Full-Stack & Infrastructure Cloud', es: 'Arquitectura Full-Stack e Infraestructura Cloud', de: 'Full-Stack-Architektur & Cloud-Infrastruktur' },
-  '从浏览器感知交互、排版编译管道到底层全球分布式边缘运算的全链路技术选型。': {
-    en: 'End-to-end tech stack from client-side perceptual UX to content compilation and global edge compute.',
-    fr: 'De la perception et l expérience client aux pipelines de compilation et au calcul distribué à la périphérie.',
-    es: 'De la experiencia de usuario y diseño a la compilación de contenidos y computación en el borde global.',
-    de: 'Vom Nutzererlebnis im Browser über Inhalts-Pipelines bis hin zur weltweit verteilten Edge-Infrastruktur.',
+  '全栈工程架构与云端底座': { en: 'Full-Stack Engineering & Hosted Services', fr: 'Architecture Full-Stack & Services Hébergés', es: 'Arquitectura Full-Stack y Servicios Alojados', de: 'Full-Stack-Architektur & Gehostete Dienste' },
+  '从浏览器感知交互、排版编译管道到 Cloudflare Pages 与 D1 等托管服务的全链路技术选型。': {
+    en: 'End-to-end technology choices from browser interaction and content compilation to hosted services such as Cloudflare Pages and D1.',
+    fr: 'Des interactions dans le navigateur et de la compilation de contenu aux services hébergés comme Cloudflare Pages et D1.',
+    es: 'Decisiones tecnológicas de extremo a extremo, desde la interacción en el navegador y la compilación hasta servicios como Cloudflare Pages y D1.',
+    de: 'Technologieentscheidungen von Browser-Interaktionen und Inhaltskompilierung bis zu gehosteten Diensten wie Cloudflare Pages und D1.',
   },
   '感知交互层': { en: 'Perceptual UX Tier', fr: 'Couche Expérience & Perception', es: 'Capa de Experiencia de Usuario', de: 'Wahrnehmungs- & UX-Schicht' },
   'Client & UX Tier': { en: 'Client & UX Tier', fr: 'Couche Client & UX', es: 'Capa Cliente y UX', de: 'Client- & UX-Ebene' },
-  'Islands 极速渲染': { en: 'Islands Lightning Rendering', fr: 'Rendu ultrarapide par Îlots', es: 'Renderizado ultrarrápido por Islas', de: 'Islands Blitzschnelles Rendern' },
+  'Islands 内容与交互分工': { en: 'Islands Content and Interaction Boundaries', fr: 'Séparation du contenu et des interactions par Islands', es: 'Separación de contenido e interacción con Islands', de: 'Islands für klare Inhalts- und Interaktionsgrenzen' },
   '动态交互状态岛': { en: 'Interactive Dynamic Islands', fr: 'Îlots interactifs dynamiques', es: 'Islas dinámicas interactivas', de: 'Interaktive dynamische Inseln' },
   '全链路类型守卫': { en: 'End-to-End Type Safety', fr: 'Sécurité de typage de bout en bout', es: 'Seguridad de tipos de extremo a extremo', de: 'Durchgängige Typsicherheit' },
   '现代原子设计系统': { en: 'Modern Atomic Design System', fr: 'Système de design atomique moderne', es: 'Sistema moderno de diseño atómico', de: 'Modernes atomares Designsystem' },
@@ -789,13 +789,13 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
   '知识拓扑可视化': { en: 'Knowledge Graph Visualization', fr: 'Visualisation de graphes de savoir', es: 'Visualización de grafos de conocimiento', de: 'Visualisierung von Wissensgraphen' },
   'i18n 多语言': { en: 'i18n Multilingual', fr: 'i18n Multilingue', es: 'i18n Multilingüe', de: 'i18n Mehrsprachig' },
   '多语种语义分块转译': { en: 'Multilingual Semantic Chunking', fr: 'Traduction sémantique multilingue', es: 'Traducción semántica multilingüe', de: 'Mehrsprachige semantische Übersetzung' },
-  '分布式边缘底座': { en: 'Distributed Edge Foundation', fr: 'Socle Distribué à la Périphérie', es: 'Base distribuida en el borde', de: 'Verteiltes Edge-Fundament' },
+  '托管与数据底座': { en: 'Hosted Services and Data Foundation', fr: 'Services Hébergés et Socle de Données', es: 'Servicios Alojados y Base de Datos', de: 'Gehostete Dienste und Datengrundlage' },
   'Edge & Cloud': { en: 'Edge & Cloud', fr: 'Edge & Cloud', es: 'Edge y Cloud', de: 'Edge & Cloud' },
-  '全球 Anycast 边缘': { en: 'Global Anycast Edge Network', fr: 'Réseau Anycast mondial', es: 'Red Anycast global en el borde', de: 'Weltweites Anycast-Edge-Netzwerk' },
-  '边缘分布式 SQLite': { en: 'Distributed Edge SQLite', fr: 'SQLite distribué sur le réseau bord', es: 'SQLite distribuido en el borde', de: 'Verteiltes Edge-SQLite' },
-  '零冷启动轻量路由': { en: 'Zero-Cold-Start Serverless Routing', fr: 'Routage Serverless sans démarrage à froid', es: 'Enrutamiento sin arranque en frío', de: 'Serverless-Routing ohne Kaltstart' },
+  '静态页面与 Functions 承载': { en: 'Static Pages and Functions Hosting', fr: 'Hébergement de Pages Statiques et Functions', es: 'Alojamiento de Páginas Estáticas y Functions', de: 'Hosting für Statische Seiten und Functions' },
+  'SQLite 动态资料库': { en: 'SQLite Store for Dynamic Data', fr: 'Base SQLite pour Données Dynamiques', es: 'Almacén SQLite para Datos Dinámicos', de: 'SQLite-Speicher für Dynamische Daten' },
+  'Serverless 请求处理': { en: 'Serverless Request Handling', fr: 'Traitement de Requêtes Serverless', es: 'Procesamiento de Solicitudes Serverless', de: 'Serverless-Anfragenverarbeitung' },
   'GitOps 流水线': { en: 'GitOps Pipeline', fr: 'Pipeline GitOps', es: 'Canalización GitOps', de: 'GitOps-Pipeline' },
-  '多远端双向自动同步': { en: 'Multi-Remote Dual Automated Sync', fr: 'Synchronisation automatique multi-dépôts', es: 'Sincronización automática multidestino', de: 'Automatische Synchronisierung mehrerer Remotes' },
+  'Git 版本控制与多远端发布': { en: 'Git Version Control and Multi-Remote Releases', fr: 'Contrôle de Version Git et Publications Multi-Dépôts', es: 'Control de Versiones Git y Publicaciones Multidestino', de: 'Git-Versionsverwaltung und Veröffentlichungen auf Mehreren Remotes' },
 
   // 9. 灵感音轨与创作角落
   '灵感音轨': { en: 'Soundtrack', fr: 'Bande Sonore', es: 'Banda Sonora', de: 'Inspirations-Soundtrack' },
@@ -826,11 +826,11 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
   // 10. 演进里程碑
   '演进足迹 / Milestones': { en: 'Evolution Milestones', fr: 'Jalons d Évolution', es: 'Hitos de Evolución', de: 'Entwicklungsmeilensteine' },
   '站点演进与造物足迹': { en: 'Journey & Evolution Milestones', fr: 'Parcours et Jalons de Création', es: 'Recorrido e Hitos de Creación', de: 'Reise & Meilensteine des Schaffens' },
-  '从一行简单的 Markdown，到高度工程化、全球边缘化分发的内容产品演进史。': {
-    en: 'The evolution from a single line of Markdown to an engineered, globally distributed content platform.',
-    fr: 'L évolution d une simple ligne de Markdown vers une plateforme éditoriale distribuée mondialement.',
-    es: 'La evolución de una simple línea de Markdown a una plataforma editorial de distribución global.',
-    de: 'Der Weg von einer einfachen Zeile Markdown zu einer durchdachten, weltweit verteilten Plattform.',
+  '从一行简单的 Markdown，到可持续维护、可测试并可部署的内容产品演进史。': {
+    en: 'The evolution from a single line of Markdown to a maintainable, testable, and deployable content product.',
+    fr: 'L évolution d une simple ligne de Markdown vers un produit éditorial maintenable, testable et déployable.',
+    es: 'La evolución de una simple línea de Markdown a un producto de contenido mantenible, comprobable y desplegable.',
+    de: 'Der Weg von einer einfachen Zeile Markdown zu einem wartbaren, testbaren und bereitstellbaren Content-Produkt.',
   },
   '始于盛夏 (Origins)': { en: 'Origins (Summer 2006)', fr: 'Origines (Été 2006)', es: 'Orígenes (Verano 2006)', de: 'Ursprung (Sommer 2006)' },
   '出生于 2006 年': { en: 'Born in 2006', fr: 'Né en 2006', es: 'Nacido en 2006', de: 'Geboren 2006' },
@@ -850,11 +850,11 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
   },
   '工程重构 (Engineering Practice)': { en: 'Engineering Practice (2024)', fr: 'Pratique d Ingénierie (2024)', es: 'Práctica de Ingeniería (2024)', de: 'Ingenieurpraxis (2024)' },
   '开启现代前端工程化实践': { en: 'Adopting Modern Frontend Engineering', fr: 'Adoption de l ingénierie frontend moderne', es: 'Adopción de ingeniería frontend moderna', de: 'Einführung moderner Frontend-Engineering-Praxis' },
-  '搭建个人独立博客，由静态站点重构为模块化前端工程架构，确立工业级维护与自动化测试标准。': {
-    en: 'Built this independent blog, refactoring from a static site into a modular frontend engineering architecture with industrial testing standards.',
-    fr: 'Création de ce blog indépendant, restructuré en architecture frontend modulaire avec des standards de test industriels.',
-    es: 'Construcción de este blog independiente, evolucionando a una arquitectura frontend modular con estándares de pruebas industriales.',
-    de: 'Aufbau dieses unabhängigen Blogs, Umstellung auf eine modulare Frontend-Architektur mit industriellen Teststandards.',
+  '搭建个人独立博客，由静态站点重构为模块化前端工程架构，并建立版本控制、建置与自动化测试流程。': {
+    en: 'Built this independent blog by moving from a static site to a modular frontend architecture with version control, builds, and automated tests.',
+    fr: 'Création de ce blog indépendant, passé d un site statique à une architecture frontend modulaire avec contrôle de version, builds et tests automatisés.',
+    es: 'Construcción de este blog independiente, evolucionando de un sitio estático a una arquitectura frontend modular con control de versiones, compilaciones y pruebas automatizadas.',
+    de: 'Aufbau dieses unabhängigen Blogs als modulare Frontend-Architektur mit Versionsverwaltung, Builds und automatisierten Tests.',
   },
   '旗舰成型 (Flagship Maturity)': { en: 'Flagship Maturity (2026)', fr: 'Maturité Majeure (2026)', es: 'Madurez del Proyecto (2026)', de: 'Flaggschiff-Reife (2026)' },
   '自研 Shijianus 旗舰主题与边缘原生底座': {
@@ -863,11 +863,11 @@ export const aboutI18nDictionary: Record<string, TranslationDict> = {
     es: 'Desarrollo del tema Shijianus y la plataforma en el borde',
     de: 'Entwicklung des Shijianus-Themes und der Edge-Infrastruktur',
   },
-  '深度集成 Cloudflare D1 边缘原生留言系统、国际多币种收银台、多语言自动流水线与端到端自动化测试，达到工业级水准。': {
-    en: 'Integrating edge comments on Cloudflare D1, international checkout, automated multilingual pipelines, and end-to-end tests.',
-    fr: 'Intégration de commentaires distribués D1, paiement international, pipeline multilingue et tests de bout en bout.',
-    es: 'Integración de comentarios en D1, pasarela de pago internacional, pipeline multilingüe y pruebas de extremo a extremo.',
-    de: 'Integration von D1-Kommentaren am Edge, internationalem Checkout, mehrsprachiger Pipeline und End-to-End-Tests.',
+  '整合 Cloudflare D1 留言系统、国际多币种收银台、多语言内容流水线与端到端测试；各项能力依赖当前部署配置与第三方服务状态。': {
+    en: 'Integrating Cloudflare D1 comments, international multi-currency checkout, multilingual content workflows, and end-to-end tests; each capability depends on the current deployment configuration and third-party services.',
+    fr: 'Intégration des commentaires Cloudflare D1, d un paiement international multidevise, de workflows de contenu multilingues et de tests de bout en bout ; chaque capacité dépend de la configuration et des services tiers actuels.',
+    es: 'Integración de comentarios con Cloudflare D1, pagos internacionales multidivisa, flujos de contenido multilingües y pruebas de extremo a extremo; cada capacidad depende de la configuración de despliegue y los servicios de terceros actuales.',
+    de: 'Integration von Cloudflare-D1-Kommentaren, internationalem Multiwährungs-Checkout, mehrsprachigen Content-Workflows und End-to-End-Tests; jede Fähigkeit hängt von der aktuellen Bereitstellungskonfiguration und Drittanbieterdiensten ab.',
   },
   '未来': { en: 'Future', fr: 'Futur', es: 'Futuro', de: 'Zukunft' },
   '持续演进 (Continuous Evolution)': { en: 'Continuous Evolution', fr: 'Évolution Continue', es: 'Evolución Continua', de: 'Kontinuierliche Entwicklung' },
