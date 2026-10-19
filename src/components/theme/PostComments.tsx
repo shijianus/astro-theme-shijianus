@@ -1839,7 +1839,7 @@ export function PostComments({
               : tC.loginAsGuest}
           </a>
           <a
-            href="/about"
+            href="/community/privacy-and-data/"
             target="_blank"
             rel="noreferrer"
             title={tC.policyTitle}

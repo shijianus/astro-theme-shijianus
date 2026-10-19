@@ -444,6 +444,8 @@ export const siteConfig = {
           { label: '请喝咖啡', href: '/support/', description: '赞赏与支援名录', icon: 'mug-hot' },
           { label: '站点状态', href: '/status/', description: '查看当前重构进度', icon: 'chart-bar' },
           { label: '主题路线', href: '/roadmap/', description: '尚在整理中的专题入口', icon: 'compass' },
+          { label: '社群政策', href: '/community/', description: '公约、隐私与使用规范', icon: 'book' },
+          { label: '工程标准', href: '/standards/', description: '系统指标与架构规范', icon: 'book' },
         ],
       },
     ] satisfies SiteNavItem[],
@@ -694,9 +696,10 @@ export const siteConfig = {
       {
         title: '协议',
         links: [
-          { label: '隐私说明', href: '/about/#about-reward' },
-          { label: '版权说明', href: '/about/' },
-          { label: '使用条款', href: '/tags/' },
+          { label: '隐私说明', href: '/community/privacy-and-data/' },
+          { label: '版权说明', href: '/community/content-license/' },
+          { label: '使用条款', href: '/community/terms-of-use/' },
+          { label: '社群公约', href: '/community/code-of-conduct/' },
         ] satisfies SiteNavItem[],
       },
       {
